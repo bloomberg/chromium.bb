@@ -7,6 +7,7 @@
 <translation id="1061441684050139317">Chrome doit disposer de l'accès au micro pour le partager avec ce site.</translation>
 <translation id="1080790410959514870">Vous vous déconnectez d'un compte géré par <ph name="DOMAIN_NAME" />. Cette opération va entraîner la suppression des données Chrome stockées sur l'appareil, mais celles-ci seront conservées dans votre compte Google.</translation>
 <translation id="1098052486217676340">Terminé</translation>
+<translation id="1111673857033749125">Les favoris enregistrés sur vos autres appareils s'affichent ici.</translation>
 <translation id="1121094540300013208">Statistiques d'utilisation et rapports d'erreur</translation>
 <translation id="1137305377394488060">de la dernière heure</translation>
 <translation id="1178581264944972037">Suspendre</translation>
@@ -25,6 +26,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="1285320974508926690">Ne jamais traduire ce site</translation>
 <translation id="1291207594882862231">Effacer l'historique, vider le cache, supprimer les cookies et les données du site…</translation>
 <translation id="129553762522093515">Récemment fermés</translation>
+<translation id="1326317727527857210">Connectez-vous à Chrome pour accéder à vos onglets sur vos autres appareils.</translation>
 <translation id="13410144310025252">Affichez-les dans Chrome.</translation>
 <translation id="1369915414381695676">Site "<ph name="SITE_NAME" />" ajouté</translation>
 <translation id="1373696734384179344">Mémoire insuffisante pour télécharger le contenu sélectionné.</translation>
@@ -99,6 +101,11 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="2268044343513325586">Affiner</translation>
 <translation id="2315043854645842844">La sélection de certificat côté client n'est pas compatible avec le système d'exploitation.</translation>
 <translation id="2321958826496381788">Faites glisser le curseur pour lire le texte aisément. Sa taille doit être similaire à celle-ci lorsque vous appuyez deux fois sur un paragraphe.</translation>
+<translation id="2331464965008647960">Des appareils à proximité diffusent des pages Web via le Bluetooth. Chrome recherche les pages à proximité et les affiche lorsque vous réactivez votre l'appareil. Ces pages sont analysées par un service Google pour améliorer la qualité des résultats.
+
+Vous pouvez contrôler le Web physique dans les paramètres de Chrome.
+
+<ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">Installation…</translation>
 <translation id="2351097562818989364">Les paramètres de traduction ont été réinitialisés.</translation>
 <translation id="2359808026110333948">Continuer</translation>
@@ -156,6 +163,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="307329814453917357">Proposer de traduire des pages avec Google Traduction</translation>
 <translation id="3089395242580810162">Ouvrir dans un onglet de nav. privée</translation>
 <translation id="3090193911106258841">Accès à l'entrée audio et vidéo en cours…</translation>
+<translation id="3117051980354074377">Connectez-vous à Chrome pour accéder à vos favoris sur vos autres appareils.</translation>
 <translation id="3137521801621304719">Désactiver le mode navigation privée</translation>
 <translation id="3149891296864842641">Option d'expédition</translation>
 <translation id="3162882791484435636">Sélectionner une option d'expédition</translation>
@@ -220,6 +228,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4062305924942672200">Informations légales</translation>
 <translation id="4089831646916293264">Cette fonctionnalité peut perturber l'accès aux services de données premium fournis par votre opérateur.</translation>
 <translation id="4099578267706723511">Envoyez des statistiques d'utilisation et des rapports d'erreur pour améliorer Chrome.</translation>
+<translation id="410351446219883937">Lecture automatique</translation>
 <translation id="411254640334432676">Échec du téléchargement.</translation>
 <translation id="4113030288477039509">Géré par votre administrateur</translation>
 <translation id="4165986682804962316">Paramètres du site</translation>
@@ -374,6 +383,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="6042308850641462728">Plus</translation>
 <translation id="604996488070107836">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison d'une erreur inconnue.</translation>
 <translation id="605721222689873409">AA</translation>
+<translation id="605904398899306450">Autoriser les sites à lire automatiquement les fichiers multimédias importants (recommandé)</translation>
 <translation id="6075798973483050474">Modifier la page d'accueil</translation>
 <translation id="6108923351542677676">Configuration en cours…</translation>
 <translation id="6112702117600201073">Actualisation de la page</translation>
@@ -410,6 +420,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6550675742724504774">Options</translation>
 <translation id="656628257199996201">Toujours traduire les pages en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Modifier la carte de paiement</translation>
+<translation id="6573431926118603307">Les onglets que vous avez ouverts dans Chrome sur vos autres appareils s'affichent ici.</translation>
 <translation id="6575643671698722332">Échec de la réinitialisation. Veuillez vous assurer que l'appareil connecté, puis réessayez.</translation>
 <translation id="6600954340915313787">Copiée dans Chrome</translation>
 <translation id="6612358246767739896">Contenu protégé</translation>
@@ -512,6 +523,8 @@ Votre compte Google conserve peut-être d'autres formes d'historique de navigati
 <translation id="7791543448312431591">Ajouter</translation>
 <translation id="780301667611848630">Non merci</translation>
 <translation id="7829298379596169484">Accès à l'entrée audio en cours…</translation>
+<translation id="7837582000577464779">Une erreur s'est produite lors du traitement de votre commande. Veuillez vérifier votre compte, puis réessayer.</translation>
+<translation id="7840369537802583269">Détecter et lire les fichiers multimédias importants pour un site spécifique.</translation>
 <translation id="7846076177841592234">Annuler la sélection</translation>
 <translation id="7851858861565204677">Autres appareils</translation>
 <translation id="7876243839304621966">Tout supprimer</translation>
@@ -568,6 +581,7 @@ Votre compte Google conserve peut-être d'autres formes d'historique de navigati
 <translation id="862875433388403934">Il se peut que le contenu (films, musique, etc.) téléchargé dans d'autres applications ne soit plus lisible tant que ces applications n'ont pas obtenu de nouvelles licences sur la base d'un nouvel identifiant d'appareil.
 
 Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le contenu que vous avez téléchargé.</translation>
+<translation id="8636825310635137004">Activez la synchronisation pour accéder à vos onglets sur vos autres appareils.</translation>
 <translation id="8660471606262461360">Informations issues de Google Payments</translation>
 <translation id="8676374126336081632">Effacer la saisie</translation>
 <translation id="869891660844655955">Date d'expiration</translation>

@@ -143,6 +143,11 @@ Bármely érték, amely nem ebben a tartományban van, a közelebbi határhoz le
 <translation id="1608755754295374538">Azon URL-ek, amelyek rákérdezés nélkül hozzáférést kapnak a hangrögzítő eszközökhöz</translation>
 <translation id="1617235075406854669">Böngészési és letöltési előzmények törlésének engedélyezése</translation>
 <translation id="1617384279878333801">Engedélyezi a személyek hozzáadását a profilkezelőben</translation>
+<translation id="163200210584085447">A listában szereplő mintákat a rendszer egyezteti a kérelmező
+      URL biztonsági eredetével. Ha van egyezés, a böngésző a SAML
+      bejelentkező oldalakon engedélyezi a videórögzítő eszközökhöz való
+      hozzáférést. Ha nincs egyezés, a böngésző automatikusan megtagadja
+      a hozzáférést. A helyettesítőkarakter-minták használata nem megengedett.</translation>
 <translation id="1655229863189977773">Lemezgyorsítótár méretének beállítása bájtban</translation>
 <translation id="166427968280387991">Proxyszerver</translation>
 <translation id="1675002386741412210">Támogatott a következőkön:</translation>
@@ -259,6 +264,7 @@ Ha a házirend konfigurálatlanul marad, a felhasználó döntheti el, hogy kív
 <translation id="2113068765175018713">Eszköz működési idejének korlátozása automatikus újraindítással</translation>
 <translation id="2127599828444728326">Értesítések engedélyezése ezeken a webhelyeken</translation>
 <translation id="2131902621292742709">Képernyő elsötétítésének késleltetése akkumulátorról való működés során</translation>
+<translation id="2134437727173969994">A képernyő zárolásának engedélyezése</translation>
 <translation id="2137064848866899664">Ha a házirend be van állítva, minden kijelző elfordul a
       megadott tájolásba minden újraindításkor, illetve a házirend értékének
       módosítása utáni első csatlakozáskor. A felhasználók bejelentkezés után
@@ -843,6 +849,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="3967075520570946456">Az üdvözlőoldal megjelenítésének engedélyezése az operációs rendszer frissítését követő első böngészőindításkor.</translation>
 <translation id="3973371701361892765">A polc soha ne legyen automatikusan elrejtve</translation>
 <translation id="3984028218719007910">Meghatározza, hogy a(z) <ph name="PRODUCT_OS_NAME" /> megtartja-e a helyi fiókadatokat a kijelentkezést követően. Ha a beállítás igaz, akkor a(z) <ph name="PRODUCT_OS_NAME" /> nem tart meg állandó fiókokat, és a rendszer elveti a felhasználói munkamenet minden adatát a kijelentkezés után. Ha a házirend beállítása hamis, vagy nincs beállítva a házirend, akkor az eszköz megtarthatja a (titkosított) helyi felhasználói adatokat.</translation>
+<translation id="3997519162482760140">Azon URL-ek, amelyek hozzáférést kapnak a videórögzítő eszközökhöz a SAML bejelentkezési oldalakon</translation>
 <translation id="4001275826058808087">Vállalati eszközök rendszergazdái annak szabályozására használhatják ezt a jelölőt, hogy engedélyezik-e a felhasználóknak az ajánlatok beváltását Chrome OS-regisztráció útján.
 
       Ha a házirend értéke igaz, vagy ha nincs beállítva, a felhasználók beválthatnak ajánlatokat Chrome OS-regisztráció útján.
@@ -868,6 +875,9 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
           Ha a házirend nincs beállítva, a rendszer az alapértelmezett időtartamot használja.
 
           A házirend értékét ezredmásodpercben kell megadni.</translation>
+<translation id="4115096483386877940">A képernyő zárolásának engedélyezése.
+
+      Ha a házirend értéke hamis, a felhasználók nem tudják zárolni a képernyőt (csak a felhasználói munkamenetből való kijelentkezés lesz lehetséges). Ha a beállítás igaz, vagy ha nincs megadva, a jelszóval hitelesített felhasználók zárolhatják a képernyőt.</translation>
 <translation id="4121350739760194865">Megakadályozza az alkalmazáspromóciók megjelenését az új lap oldalon</translation>
 <translation id="4147054660081653009">Klienstanúsítvány a RemoteAccessHostTokenValidationUrl eléréséhez.
 

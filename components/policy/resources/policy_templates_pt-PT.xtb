@@ -144,6 +144,11 @@
 <translation id="1608755754295374538">URLs aos quais será concedido acesso a dispositivos de captura de áudio imediatamente</translation>
 <translation id="1617235075406854669">Ativar a eliminação do histórico de transferências e do navegador</translation>
 <translation id="1617384279878333801">Ativar adicionar pessoa no gestor de perfis</translation>
+<translation id="163200210584085447">Os padrões nesta lista serão comparados com a origem de
+      segurança do URL que faz o pedido. Caso seja encontrada uma correspondência, o acesso a dispositivos de
+      captura de vídeo é concedido nas páginas de início de sessão SAML. Caso não seja encontrada uma
+      correspondência, o acesso é automaticamente negado. Não são permitidos padrões com
+      carateres universais.</translation>
 <translation id="1655229863189977773">Definir o tamanho da cache do disco em bytes</translation>
 <translation id="166427968280387991">Servidor proxy</translation>
 <translation id="1675002386741412210">Suportado em:</translation>
@@ -259,6 +264,7 @@
 <translation id="2113068765175018713">Limitar o tempo de atividade do dispositivo reiniciando automaticamente</translation>
 <translation id="2127599828444728326">Permitir notificações nestes Web sites</translation>
 <translation id="2131902621292742709">Atraso do escurecimento do ecrã quando o dispositivo está a utilizar a energia da bateria</translation>
+<translation id="2134437727173969994">Permitir o bloqueio do ecrã</translation>
 <translation id="2137064848866899664">Se esta política estiver definida, cada ecrã é rodado para a
       orientação especificada em todos os reinícios e da primeira vez que for ligado
       após a alteração do valor da política. Os utilizadores podem alterar a rotação
@@ -845,6 +851,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3967075520570946456">Ativar a apresentação da página de boas-vindas da primeira vez que o navegador for iniciado após uma atualização do SO.</translation>
 <translation id="3973371701361892765">Nunca ocultar automaticamente a prateleira</translation>
 <translation id="3984028218719007910">Determina se o <ph name="PRODUCT_OS_NAME" /> mantém os dados de contas locais depois de terminar sessão. Se esta política estiver definida como verdadeira, o <ph name="PRODUCT_OS_NAME" /> não mantém contas persistentes e todos os dados da sessão do utilizador serão rejeitados depois de terminar sessão. Se estiver definida como falsa ou não estiver configurada, o dispositivo pode manter dados de utilizadores locais (encriptados).</translation>
+<translation id="3997519162482760140">URLs aos quais será concedido acesso a dispositivos de captura de vídeo nas páginas de início de sessão SAML</translation>
 <translation id="4001275826058808087">Os administradores de TI para dispositivos empresariais podem utilizar este sinalizador para permitir que os utilizadores resgatem ofertas através do Registo no SO Chrome.
 
       Se esta política estiver definida como verdadeira ou não estiver definida, os utilizadores poderão resgatar ofertas através do Registo no SO Chrome.
@@ -870,6 +877,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Quando esta política não está definida, utiliza-se um período de tempo predefinido.
 
           O valor da política deve ser especificado em milissegundos.</translation>
+<translation id="4115096483386877940">Permitir o bloqueio do ecrã.
+
+      Se esta política estiver definida como falsa, os utilizadores não podem bloquear o ecrã (podem apenas terminar a sessão de utilizador). Se esta política estiver definida como verdadeira ou não estiver definida, os utilizadores que efetuaram a autenticação com uma palavra-passe podem bloquear o ecrã.</translation>
 <translation id="4121350739760194865">Impedir a apresentação de promoções de aplicações na página de novo separador</translation>
 <translation id="4147054660081653009">Certificado de cliente para associação a RemoteAccessHostTokenValidationUrl.
 

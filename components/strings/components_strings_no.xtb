@@ -199,7 +199,7 @@
 <translation id="2969319727213777354">Klokken må være riktig stilt før du kan opprette sikre tilkoblinger. Grunnen til dette er at sertifikatene nettsteder identifiserer seg med, bare er gyldige i visse tidsperioder. Ettersom klokken på enheten din er feil, kan ikke Google Chrome bekrefte disse sertifikatene.</translation>
 <translation id="2972581237482394796">Gjø&amp;r om</translation>
 <translation id="2985306909656435243">Hvis du slår på dette alternativet, lagrer Chromium en kopi av kortet ditt på denne enheten, slik at det går raskere å fylle ut skjemaer.</translation>
-<translation id="2989984781570875765">Legg inn utløpsdatoen og den tresifrede verifiseringskoden du finner på baksiden av <ph name="CREDIT_CARD" /></translation>
+<translation id="2989984781570875765">Legg inn utløpsdatoen og den tresifrede verifiseringskoden du finner på baksiden av dette kortet: <ph name="CREDIT_CARD" /></translation>
 <translation id="2991174974383378012">Deling med nettsteder</translation>
 <translation id="3005723025932146533">Vis lagret kopi</translation>
 <translation id="3010559122411665027">Listeoppføring «<ph name="ENTRY_INDEX" />»: <ph name="ERROR" /></translation>
@@ -347,7 +347,7 @@
 <translation id="450710068430902550">Deling med administratoren</translation>
 <translation id="4522570452068850558">Detaljer</translation>
 <translation id="4535734014498033861">Tilkobling til mellomtjener mislyktes.</translation>
-<translation id="4553532082208702698">Skriv inn den firesifrede verfiseringskoden du finner på forsiden av <ph name="CREDIT_CARD" /></translation>
+<translation id="4553532082208702698">Skriv inn den firesifrede verfiseringskoden du finner på forsiden av dette kortet: <ph name="CREDIT_CARD" /></translation>
 <translation id="4558551763791394412">Prøv å slå av utvidelsene dine.</translation>
 <translation id="4587425331216688090">Vil du fjerne adressen fra Chrome?</translation>
 <translation id="4592951414987517459">Tilkoblingen til <ph name="DOMAIN" /> er kryptert med en moderne chifferserie.</translation>
@@ -355,7 +355,7 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Dette er en utvidelsesside.</translation>
 <translation id="467662567472608290">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren inneholder feil. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
-<translation id="4683417246209150705">Skriv inn den tresifrede verifiseringskoden du finner på baksiden av <ph name="CREDIT_CARD" /></translation>
+<translation id="4683417246209150705">Skriv inn den tresifrede verifiseringskoden du finner på baksiden av dette kortet: <ph name="CREDIT_CARD" /></translation>
 <translation id="4697214168136963651"><ph name="URL" /> ble blokkert</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">Tilkoblingen ble avbrutt</translation>
@@ -440,8 +440,8 @@
 <translation id="5650551054760837876">Ingen søkeresultater funnet.</translation>
 <translation id="5663999524854166235">Skriv inn den tresifrede verifiseringskoden du finner på baksiden av kortet ditt</translation>
 <translation id="5677928146339483299">Blokkert</translation>
-<translation id="5696590819423335174">Skriv inn utløpsdatoen og den firesifrede verifiseringskoden du finner på forsiden av <ph name="CREDIT_CARD" /></translation>
-<translation id="5699278517904102888">Skriv inn den tresifrede verifiseringskoden du finner på baksiden av <ph name="CREDIT_CARD" /></translation>
+<translation id="5696590819423335174">Skriv inn utløpsdatoen og den firesifrede verifiseringskoden du finner på forsiden av dette kortet: <ph name="CREDIT_CARD" /></translation>
+<translation id="5699278517904102888">Skriv inn den tresifrede verifiseringskoden du finner på baksiden av dette kortet: <ph name="CREDIT_CARD" /></translation>
 <translation id="5710435578057952990">Identiteten til dette nettstedet er ikke verifisert.</translation>
 <translation id="5720705177508910913">Gjeldende bruker</translation>
 <translation id="5785756445106461925">Denne siden inneholder i tillegg andre ressurser som ikke er sikre. Disse ressursene er synlige for andre mens de sendes frem og tilbake, og eventuelle angripere kan modifisere dem for å endre på utseendet til siden.</translation>
@@ -605,7 +605,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="7610193165460212391">Verdien er utenfor rekkevidden <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Utløpsdato: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Du har allerede data som er kryptert med en annen versjon av Google-kontopassordet ditt. Skriv det inn nedenfor.</translation>
-<translation id="7633887239437305289">Skriv inn den firesifrede verifiseringskoden du finner på forsiden av <ph name="CREDIT_CARD" /></translation>
+<translation id="7633887239437305289">Skriv inn den firesifrede verifiseringskoden du finner på forsiden av dette kortet: <ph name="CREDIT_CARD" /></translation>
 <translation id="7634554953375732414">Tilkoblingen til dette nettstedet er ikke privat.</translation>
 <translation id="7637571805876720304">Vil du fjerne kredittkortet fra Chromium?</translation>
 <translation id="7643817847124207232">Internett-tilkoblingen er blitt borte.</translation>

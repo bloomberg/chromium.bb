@@ -150,6 +150,10 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 <translation id="1608755754295374538">URLs a las que se concederá acceso a dispositivos de captura de audio sin confirmación</translation>
 <translation id="1617235075406854669">Habilitar eliminación de historial de navegación y de descargas</translation>
 <translation id="1617384279878333801">Habilitar la opción para añadir usuarios en el administrador de perfiles</translation>
+<translation id="163200210584085447">Los patrones de esta lista se compararán con el origen de seguridad
+      de la URL solicitante. Si se encuentra alguna coincidencia, se concederá acceso a dispositivos de captura de vídeo
+      en páginas de inicio de sesión con SAML. De lo contrario, el acceso se denegará automáticamente. Los patrones comodín no están
+      permitidos.</translation>
 <translation id="1655229863189977773">Establecer tamaño de caché de disco en bytes</translation>
 <translation id="166427968280387991">Servidor proxy</translation>
 <translation id="1675002386741412210">Compatible con:</translation>
@@ -275,6 +279,7 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
 <translation id="2113068765175018713">Limitar tiempo de actividad de dispositivo mediante reinicio automático</translation>
 <translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="2131902621292742709">Retraso de atenuado de pantalla cuando el dispositivo funciona con la batería</translation>
+<translation id="2134437727173969994">Permitir que se bloquee la pantalla</translation>
 <translation id="2137064848866899664">Si se establece esta política, se girará cada pantalla a la
       orientación especificada cada vez que se reinicie el dispositivo y la primera vez que se conecte
       después de cambiar el valor de la política. Los usuarios podrán cambiar la rotación
@@ -903,6 +908,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="3967075520570946456">Habilitar la opción para que aparezca la página de bienvenida al abrir el navegador por primera vez después de actualizar el sistema operativo.</translation>
 <translation id="3973371701361892765">No ocultar automáticamente los archivos</translation>
 <translation id="3984028218719007910">Permite determinar si <ph name="PRODUCT_OS_NAME" /> mantiene los datos de cuenta locales tras cerrar la sesión. Si el valor se establece en "true", <ph name="PRODUCT_OS_NAME" /> no conservará ninguna cuenta de forma permanente y todos los datos de la sesión del usuario se descartarán al cerrar la sesión. Si esta política no se configura o el valor correspondiente se establece en "false", el dispositivo puede guardar datos de usuario locales (encriptados).</translation>
+<translation id="3997519162482760140">URLs a las que los dispositivos de captura de vídeo podrán acceder en las páginas de inicio de sesión con SAML</translation>
 <translation id="4001275826058808087">Los administradores de TI para dispositivos de empresa pueden utilizar esta opción para controlar si permiten que los usuarios canjeen ofertas a través del servicio de registro de Chrome OS.
 
 Si esta política se establece en True o no se establece, los usuarios podrán canjear ofertas a través del servicio de registro de Chrome OS.
@@ -936,6 +942,9 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
           Cuando no se establece esta política, se utiliza un valor de tiempo predeterminado.
 
           El valor de la política se debe especificar en milisegundos.</translation>
+<translation id="4115096483386877940">Permite bloquear la pantalla.
+
+      Si se asigna el valor False a esta política, los usuarios no pueden bloquear la pantalla (solo pueden cerrar su sesión de usuario). Si se asigna True o si no se establece ningún valor, los usuarios autenticados mediante contraseña pueden bloquear la pantalla.</translation>
 <translation id="4121350739760194865">Evitar que las promociones de aplicaciones aparezcan en la página Nueva pestaña</translation>
 <translation id="4147054660081653009">Certificado de cliente para establecer conexión con RemoteAccessHostTokenValidationUrl.
 

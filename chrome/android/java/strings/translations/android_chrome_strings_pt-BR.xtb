@@ -7,6 +7,7 @@
 <translation id="1061441684050139317">O Chrome precisa ter acesso ao microfone para compartilhá-lo com este site.</translation>
 <translation id="1080790410959514870">Você está se desconectando de uma conta gerenciada por <ph name="DOMAIN_NAME" />. Essa ação excluirá os dados do Google Chrome armazenados neste dispositivo, mas os dados permanecerão na sua Conta do Google.</translation>
 <translation id="1098052486217676340">Concluído</translation>
+<translation id="1111673857033749125">Favoritos salvos nos seus outros dispositivos serão exibidos aqui.</translation>
 <translation id="1121094540300013208">Relatórios de uso e falhas</translation>
 <translation id="1137305377394488060">da última hora</translation>
 <translation id="1178581264944972037">Pausar</translation>
@@ -25,6 +26,7 @@
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
 <translation id="1291207594882862231">Limpar histórico, cookies, dados do site, cache…</translation>
 <translation id="129553762522093515">Recentemente fechadas</translation>
+<translation id="1326317727527857210">Para ver as guias dos seus outros dispositivos, faça login no Chrome.</translation>
 <translation id="13410144310025252">Ver no Chrome</translation>
 <translation id="1369915414381695676">Site <ph name="SITE_NAME" /> adicionado</translation>
 <translation id="1373696734384179344">Memória insuficiente para fazer o download do conteúdo selecionado.</translation>
@@ -99,6 +101,11 @@
 <translation id="2268044343513325586">Refinar</translation>
 <translation id="2315043854645842844">A seleção de certificado do cliente não é compatível com o sistema operacional.</translation>
 <translation id="2321958826496381788">Arraste o controle deslizante até que você possa ler confortavelmente. O texto deve ter pelo menos este tamanho após um toque duplo em um parágrafo.</translation>
+<translation id="2331464965008647960">Dispositivos próximos a você estão transmitindo páginas da Web por Bluetooth. O Chrome procurará e exibirá páginas quando você ativar seu dispositivo. Elas passarão por um serviço do Google para melhorar a qualidade dos resultados de páginas.
+
+É possível controlar a Web física nas configurações do Chrome.
+
+<ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">Instalando...</translation>
 <translation id="2351097562818989364">As configurações de tradução foram redefinidas.</translation>
 <translation id="2359808026110333948">Continuar</translation>
@@ -156,6 +163,7 @@
 <translation id="307329814453917357">Oferecer para traduzir páginas usando o Google Tradutor</translation>
 <translation id="3089395242580810162">Abrir em guia anônima</translation>
 <translation id="3090193911106258841">Acessando entrada de áudio e vídeo</translation>
+<translation id="3117051980354074377">Para ver os favoritos dos seus outros dispositivos, faça login no Chrome.</translation>
 <translation id="3137521801621304719">Sair do modo de navegação anônima</translation>
 <translation id="3149891296864842641">Opção de envio</translation>
 <translation id="3162882791484435636">Selecionar opção de envio</translation>
@@ -220,6 +228,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="4062305924942672200">Informações legais</translation>
 <translation id="4089831646916293264">Este elemento pode interferir no acesso a serviços de dados Premium fornecidos pela sua operadora.</translation>
 <translation id="4099578267706723511">Ajude a melhorar o Chrome. Envie estatísticas de uso e relatório de falha ao Google.</translation>
+<translation id="410351446219883937">Reprodução automática</translation>
 <translation id="411254640334432676">Falha no download.</translation>
 <translation id="4113030288477039509">Gerenciado pelo seu administrador</translation>
 <translation id="4165986682804962316">Configurações do site</translation>
@@ -372,6 +381,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="6042308850641462728">Mais</translation>
 <translation id="604996488070107836">Falha no download do arquivo <ph name="FILE_NAME" /> devido a um erro desconhecido.</translation>
 <translation id="605721222689873409">AA</translation>
+<translation id="605904398899306450">Permite que os sites reproduzam mídias importantes automaticamente (recomendado)</translation>
 <translation id="6075798973483050474">Editar página inicial</translation>
 <translation id="6108923351542677676">Configuração em andamento...</translation>
 <translation id="6112702117600201073">Atualizando página</translation>
@@ -408,6 +418,7 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="6550675742724504774">Opções</translation>
 <translation id="656628257199996201">Sempre traduzir <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Editar cartão de crédito</translation>
+<translation id="6573431926118603307">As guias que você abriu no Chrome nos seus outros dispositivos serão exibidas aqui.</translation>
 <translation id="6575643671698722332">Falha na redefinição. Veja se o dispositivo está on-line e tente novamente.</translation>
 <translation id="6600954340915313787">Copiado no Chrome</translation>
 <translation id="6612358246767739896">Conteúdo protegido</translation>
@@ -510,6 +521,8 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="7791543448312431591">Adicionar</translation>
 <translation id="780301667611848630">Não</translation>
 <translation id="7829298379596169484">Acessando entrada de áudio</translation>
+<translation id="7837582000577464779">Ocorreu um erro ao processar seu pedido. Verifique sua conta e tente novamente.</translation>
+<translation id="7840369537802583269">Detectar e reproduzir mídias importantes para um site específico.</translation>
 <translation id="7846076177841592234">Cancelar seleção</translation>
 <translation id="7851858861565204677">Outros dispositivos</translation>
 <translation id="7876243839304621966">Remover tudo</translation>
@@ -565,6 +578,7 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="8627706565932943526">Erro de sincronização</translation>
 <translation id="862875433388403934">Conteúdo (filmes, música, etc.) baixado em outros aplicativos pode não ser cobrado até que esses aplicativos readquiram licenças baseadas em uma nova credencial do dispositivo.
 Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado.</translation>
+<translation id="8636825310635137004">Para ver as guias dos seus outros dispositivos, ative a sincronização.</translation>
 <translation id="8660471606262461360">Do Google Payments</translation>
 <translation id="8676374126336081632">Limpar entrada</translation>
 <translation id="869891660844655955">Validade</translation>

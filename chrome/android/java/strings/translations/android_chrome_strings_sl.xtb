@@ -7,6 +7,7 @@
 <translation id="1061441684050139317">Chrome potrebuje dostop do mikrofona, če želite, da temu spletnemu mestu omogoči dostop do njega.</translation>
 <translation id="1080790410959514870">Odjavljate se iz računa, ki ga upravlja <ph name="DOMAIN_NAME" />. S tem bodo izbrisani podatki, ki jih je Chrome shranil v tej napravi, vendar bodo podatki ostali v vašem Google Računu.</translation>
 <translation id="1098052486217676340">Končano</translation>
+<translation id="1111673857033749125">Tu bodo prikazani zaznamki, shranjeni v drugih napravah.</translation>
 <translation id="1121094540300013208">Poročila o uporabi in zrušitvah</translation>
 <translation id="1137305377394488060">zadnje ure</translation>
 <translation id="1178581264944972037">Prekini</translation>
@@ -25,6 +26,7 @@
 <translation id="1285320974508926690">Nikoli ne prevedi tega spletnega mesta</translation>
 <translation id="1291207594882862231">Izbris zgodovine, piškotkov, podatkov spletnih mest, predpomnilnika …</translation>
 <translation id="129553762522093515">Nedavno zaprto</translation>
+<translation id="1326317727527857210">Če želite dostopati do zavihkov v drugih napravah, se prijavite v Chrome.</translation>
 <translation id="13410144310025252">Ogled v Chromu</translation>
 <translation id="1369915414381695676">Spletno mesto <ph name="SITE_NAME" /> je bilo dodano</translation>
 <translation id="1373696734384179344">Za prenos izbrane vsebine ni dovolj pomnilnika.</translation>
@@ -99,6 +101,11 @@
 <translation id="2268044343513325586">Izboljšaj iskanje</translation>
 <translation id="2315043854645842844">Operacijski sistem ne podpira izbire potrdila pri odjemalcu.</translation>
 <translation id="2321958826496381788">Drsnik povlecite do želene velikosti pisave. Besedilo naj bo po dvakratnem dotiku odstavka videti vsaj tolikšno.</translation>
+<translation id="2331464965008647960">Naprave v vaši bližini oddajajo spletne strani prek Bluetootha. Chrome bo iskal strani in jih prikazal, ko preklopite napravo iz stanja pripravljenosti. Te strani bo zaradi izboljšanja kakovosti rezultatov za strani obdelala Googlova storitev.
+
+Fizični splet lahko nadzirate v Chromovih nastavitvah.
+
+<ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">Nameščanje ...</translation>
 <translation id="2351097562818989364">Nastavitve za prevajanje so ponastavljene.</translation>
 <translation id="2359808026110333948">Nadaljuj</translation>
@@ -156,6 +163,7 @@
 <translation id="307329814453917357">Ponudi prevajanje strani z Google Prevajalnikom</translation>
 <translation id="3089395242580810162">Odpri v zavihku brez beleženja zgodovine</translation>
 <translation id="3090193911106258841">Dostopanje do zvočnih vhodov in videovhodov</translation>
+<translation id="3117051980354074377">Če želite dostopati do zaznamkov v drugih napravah, se prijavite v Chrome.</translation>
 <translation id="3137521801621304719">Izklop načina brez beleženja zgodovine</translation>
 <translation id="3149891296864842641">Možnost pošiljanja</translation>
 <translation id="3162882791484435636">Izbira možnosti pošiljanja</translation>
@@ -220,6 +228,7 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="4062305924942672200">Pravne informacije</translation>
 <translation id="4089831646916293264">Ta funkcija lahko ovira dostop do plačljivih podatkovnih storitev operaterja.</translation>
 <translation id="4099578267706723511">Pomagajte izboljšati Chrome s pošiljanjem statističnih podatkov o uporabi in poročil o zrušitvah Googlu.</translation>
+<translation id="410351446219883937">Samodejno predvajanje</translation>
 <translation id="411254640334432676">Prenos ni uspel.</translation>
 <translation id="4113030288477039509">Upravlja skrbnik</translation>
 <translation id="4165986682804962316">Nastavitve spletnega mesta</translation>
@@ -373,6 +382,7 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="6042308850641462728">Več</translation>
 <translation id="604996488070107836">Prenos datoteke <ph name="FILE_NAME" /> ni uspel zaradi neznane napake.</translation>
 <translation id="605721222689873409">LL</translation>
+<translation id="605904398899306450">Dovoli spletnim mestom samodejno predvajanje pomembne vsebine (priporočljivo)</translation>
 <translation id="6075798973483050474">Urejanje domače strani</translation>
 <translation id="6108923351542677676">Poteka nastavitev …</translation>
 <translation id="6112702117600201073">Osveževanje strani</translation>
@@ -409,6 +419,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6550675742724504774">Možnosti</translation>
 <translation id="656628257199996201">Vedno prevedi ta jezik: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Urejanje kreditne kartice</translation>
+<translation id="6573431926118603307">Zavihki, ki ste jih odprli v Chromu v drugih napravah, bodo prikazani tukaj.</translation>
 <translation id="6575643671698722332">Ponastavitev ni uspela. Vzpostavite povezavo in poskusite znova.</translation>
 <translation id="6600954340915313787">Kopirano v Chrome</translation>
 <translation id="6612358246767739896">Zaščitena vsebina</translation>
@@ -511,6 +522,8 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="7791543448312431591">Dodaj</translation>
 <translation id="780301667611848630">Ne, hvala</translation>
 <translation id="7829298379596169484">Dostopanje do zvočnega vhoda</translation>
+<translation id="7837582000577464779">Pri obdelavi naročila je prišlo do napake. Preverite račun in poskusite znova.</translation>
+<translation id="7840369537802583269">Zaznavanje in predvajanje pomembne vsebine za določeno spletno mesto.</translation>
 <translation id="7846076177841592234">Prekliči izbor</translation>
 <translation id="7851858861565204677">Druge naprave</translation>
 <translation id="7876243839304621966">Odstrani vse</translation>
@@ -567,6 +580,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="862875433388403934">Prenesene vsebine (filmov, glasbe ipd.) morda ne bo mogoče več predvajati v drugih aplikacijah, dokler te znova ne pridobijo licenc na podlagi nove poverilnice naprave.
 
 Nove licence dobite tako, da se povežete v internet in predvajate preneseno vsebino.</translation>
+<translation id="8636825310635137004">Če želite dostopati do zavihkov iz drugih naprav, vklopite sinhronizacijo.</translation>
 <translation id="8660471606262461360">Iz storitve Google Payments</translation>
 <translation id="8676374126336081632">Izbriši vnos</translation>
 <translation id="869891660844655955">Datum izteka</translation>

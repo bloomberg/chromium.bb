@@ -154,6 +154,11 @@
 <translation id="1608755754295374538">URL, kuriems bus suteikta prieiga prie garso užfiksavimo įrenginių be paraginimo</translation>
 <translation id="1617235075406854669">Įgalinti naršyklės ištrynimą ir atsisiuntimo istoriją</translation>
 <translation id="1617384279878333801">Asmens pridėjimo profilių tvarkymo priemonėje įgalinimas</translation>
+<translation id="163200210584085447">Šiame sąraše pateikti šablonai bus atitaikomi
+      pagal užklausą pateikiančio URL saugos kilmę. Jei bus rasta atitiktis, prieiga prie vaizdo įrašus
+      fiksuojančių įrenginių bus suteikta SAML prisijungimo puslapiuose. Neradus atitikties,
+      prieiga bus automatiškai uždrausta. Pakaitos simbolių šablonai
+      neleidžiami.</translation>
 <translation id="1655229863189977773">Nustatyti disko talpyklos dydį baitais</translation>
 <translation id="166427968280387991">Tarpinis serveris</translation>
 <translation id="1675002386741412210">Palaikoma naudojant:</translation>
@@ -275,6 +280,7 @@
 <translation id="2113068765175018713">Apriboti įrenginio veiksenos laiką automatiškai įkeliant operacinę sistemą iš naujo</translation>
 <translation id="2127599828444728326">Leisti pranešimus šiose svetainėse</translation>
 <translation id="2131902621292742709">Ekrano pritemdymo delsa, kai naudojama akumuliatoriaus energija</translation>
+<translation id="2134437727173969994">Leidimas užrakinti ekraną</translation>
 <translation id="2137064848866899664">Jei ši politika nustatyta, kiekvienas ekranas pasukamas
       nurodyta kryptimi kiekvieną kartą paleidus įrenginį iš naujo ir pirmą kartą
       jį prijungus po politikos pasikeitimo. Naudotojai gali prisijungti ir keisti ekrano
@@ -906,6 +912,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="3967075520570946456">Įgalinkite darbo pradžios puslapio rodymą pirmą kartą paleidus naršyklę po OS naujovinimo.</translation>
 <translation id="3973371701361892765">Niekada automatiškai neslėpti lentynos</translation>
 <translation id="3984028218719007910">Nustatoma, ar „<ph name="PRODUCT_OS_NAME" />“ paliekami vietiniai paskyros duomenys atsijungus. Jei nustatyta į „true“ (tiesa), jokios nuolatinės paskyros nelaikomos „<ph name="PRODUCT_OS_NAME" />“ ir visi duomenys iš naudotojo sesijos atmetami atsijungus. Jei ši politika nustatyta į „false“ (netiesa) arba nesukonfigūruota, įrenginyje gali būti laikomi (šifruoti) vietiniai naudotojo duomenys.</translation>
+<translation id="3997519162482760140">URL, kuriems bus suteikta prieiga prie vaizdo įrašus fiksuojančių įrenginių SAML prisijungimo puslapiuose</translation>
 <translation id="4001275826058808087">Įmonės įrenginių IT administratoriai gali naudoti šią žymą, kad valdytų, ar leisti naudotojams išpirkti pasiūlymus vykdant „Chrome“ OS registraciją.
 
       Jei ši politika galioja arba nėra nustatyta, naudotojai galės išpirkti pasiūlymus vykdydami „Chrome“ OS registraciją.
@@ -939,6 +946,9 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Kai ši politika nenustatyta, naudojama numatytoji laiko trukmė.
 
           Politikos vertė turėtų būti nurodyta milisekundėmis.</translation>
+<translation id="4115096483386877940">Leidimas užrakinti ekraną.
+
+      Jei ši politika nustatyta kaip „false“, naudotojai negalės užrakinti ekrano (bus galima tik atsijungti nuo naudotojo seanso). Jei nustatymas nustatytas kaip „true“ arba nenustatytas, ekraną galės užrakinti naudotojai, autentifikuoti naudojant slaptažodį.</translation>
 <translation id="4121350739760194865">Neleisti rodyti programų reklamų naujo skirtuko puslapyje</translation>
 <translation id="4147054660081653009">Kliento sertifikatas, skirtas prisijungti prie „RemoteAccessHostTokenValidationUrl“.
 

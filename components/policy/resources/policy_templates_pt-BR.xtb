@@ -140,6 +140,11 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="1608755754295374538">URLs que terão acesso a dispositivos de captura de áudio sem solicitação</translation>
 <translation id="1617235075406854669">Ativar exclusão do histórico do navegador e de downloads</translation>
 <translation id="1617384279878333801">Ativar a adição de pessoa no gerenciador de perfil</translation>
+<translation id="163200210584085447">Os padrões nesta lista serão comparados com a origem
+      de segurança do URL solicitante. Se for encontrada uma correspondência, o acesso a dispositivos de captura
+      de vídeo será concedido em páginas de login SAML. Se nenhuma correspondência for
+      encontrada, o acesso será negado automaticamente. Padrões curingas não são
+      permitidos.</translation>
 <translation id="1655229863189977773">Define o tamanho do cache de disco em bytes</translation>
 <translation id="166427968280387991">Servidor proxy</translation>
 <translation id="1675002386741412210">Com suporte em:</translation>
@@ -247,6 +252,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="2113068765175018713">Limitar tempo de execução do dispositivo reiniciando automaticamente</translation>
 <translation id="2127599828444728326">Permitir notificações nesses sites</translation>
 <translation id="2131902621292742709">Intervalo de escurecimento de tela no funcionamento com energia da bateria</translation>
+<translation id="2134437727173969994">Autorizar bloqueio da tela</translation>
 <translation id="2137064848866899664">Se esta política está definida, cada tela gira para a
       orientação especificada em cada reinicialização e na primeira vez em que se conectar
       após a alteração do valor da política. É possível alterar a rotação
@@ -827,6 +833,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="3967075520570946456">Ativar a exibição da página de boas-vindas na primeira inicialização do navegador após a atualização do sistema operacional.</translation>
 <translation id="3973371701361892765">Nunca ocultar automaticamente a estante</translation>
 <translation id="3984028218719007910">Determina se o <ph name="PRODUCT_OS_NAME" /> deve manter os dados locais da conta após a saída. Se for configurada como true, nenhuma conta persistente será mantida pelo <ph name="PRODUCT_OS_NAME" /> e todos os dados da sessão do usuário serão descartados após a saída. Se esta política for configurada como false ou não for configurada, o dispositivo poderá manter os dados locais do usuário (criptografados).</translation>
+<translation id="3997519162482760140">URLs que terão acesso a dispositivos de captura de vídeo em páginas de login SAML</translation>
 <translation id="4001275826058808087">Administradores de TI de dispositivos corporativos podem usar essa sinalização para controlar se os usuários têm permissão para resgatar ofertas por meio de registro do Chrome OS.
 
       Se essa política for definida como "true" ou não for definida, os usuários terão permissão para resgatar ofertas por meio do registro do Chrome OS.
@@ -852,6 +859,9 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Quando esta política não está definida, é usado um período padrão.
 
           O valor da política deve ser especificado em milissegundos.</translation>
+<translation id="4115096483386877940">Autorizar bloqueio da tela.
+
+      Se esta política for definida como false, os usuários não poderão bloquear a tela (só será possível sair da sessão do usuário). Se esta configuração for definida como true ou não for definida, os usuários que fizeram a autenticação com uma senha poderão bloquear a tela.</translation>
 <translation id="4121350739760194865">Evitar que promoções de aplicativos apareçam na página nova guia</translation>
 <translation id="4147054660081653009">Certificado do cliente para conexão a RemoteAccessHostTokenValidationUrl.
 

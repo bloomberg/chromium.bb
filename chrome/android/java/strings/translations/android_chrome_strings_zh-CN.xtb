@@ -7,6 +7,7 @@
 <translation id="1061441684050139317">Chrome 需要具有麦克风使用权限，才能批准此网站的分享请求。</translation>
 <translation id="1080790410959514870">您要退出某个由 <ph name="DOMAIN_NAME" /> 管理的帐户。这会导致系统删除此设备上存储的 Chrome 数据，但这些数据仍会保留在您的 Google 帐户中。</translation>
 <translation id="1098052486217676340">已完成</translation>
+<translation id="1111673857033749125">您在其他设备上保存的书签将列在此处。</translation>
 <translation id="1121094540300013208">使用情况统计信息和崩溃报告</translation>
 <translation id="1137305377394488060">过去 1 小时</translation>
 <translation id="1178581264944972037">暂停</translation>
@@ -25,6 +26,7 @@
 <translation id="1285320974508926690">一律不翻译此网站</translation>
 <translation id="1291207594882862231">清除历史记录、Cookie、网站数据、缓存内容…</translation>
 <translation id="129553762522093515">最近关闭的标签页</translation>
+<translation id="1326317727527857210">要在您的其他设备上访问您的标签页，请登录 Chrome。</translation>
 <translation id="13410144310025252">您可以在 Chrome 中浏览这些网页</translation>
 <translation id="1369915414381695676">网站 <ph name="SITE_NAME" /> 已添加</translation>
 <translation id="1373696734384179344">内存不足，无法下载所选内容。</translation>
@@ -99,6 +101,11 @@
 <translation id="2268044343513325586">优化</translation>
 <translation id="2315043854645842844">操作系统不支持选择客户端证书。</translation>
 <translation id="2321958826496381788">拖动该滑块，将文字调整到适合您阅读的大小。点按两次某段落后，显示的文字至少应是这么大。</translation>
+<translation id="2331464965008647960">附近有设备在通过蓝牙播报网页。当您唤醒自己的设备时，Chrome 将会搜索并显示这些网页。这些网页将经由 Google 服务进行处理，以让网页搜索结果的展示效果更理想。
+
+您可以在 Chrome 设置部分中控制实物网。
+
+<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">正在安装…</translation>
 <translation id="2351097562818989364">您的翻译设置已重置。</translation>
 <translation id="2359808026110333948">继续</translation>
@@ -156,6 +163,7 @@
 <translation id="307329814453917357">询问是否要使用“Google 翻译”来翻译网页内容</translation>
 <translation id="3089395242580810162">在隐身标签页中打开</translation>
 <translation id="3090193911106258841">正在存取音频和视频输入</translation>
+<translation id="3117051980354074377">要在您的其他设备上访问您的书签，请登录 Chrome。</translation>
 <translation id="3137521801621304719">退出隐身模式</translation>
 <translation id="3149891296864842641">送货方式</translation>
 <translation id="3162882791484435636">选择送货方式</translation>
@@ -220,6 +228,7 @@
 <translation id="4062305924942672200">法律信息</translation>
 <translation id="4089831646916293264">此功能可能会导致您无法使用运营商提供的付费数据网络服务。</translation>
 <translation id="4099578267706723511">将使用情况统计信息和崩溃报告发送给 Google，帮助我们完善 Chrome。</translation>
+<translation id="410351446219883937">自动播放</translation>
 <translation id="411254640334432676">下载失败。</translation>
 <translation id="4113030288477039509">由您的管理员管理</translation>
 <translation id="4165986682804962316">网站设置</translation>
@@ -373,6 +382,7 @@
 <translation id="6042308850641462728">更多</translation>
 <translation id="604996488070107836">出现未知错误，未能下载 <ph name="FILE_NAME" />。</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="605904398899306450">允许网站自动播放重要的媒体（推荐）</translation>
 <translation id="6075798973483050474">修改主页</translation>
 <translation id="6108923351542677676">正在设置…</translation>
 <translation id="6112702117600201073">正在刷新页面</translation>
@@ -409,6 +419,7 @@
 <translation id="6550675742724504774">选项</translation>
 <translation id="656628257199996201">一律翻译<ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">修改信用卡</translation>
+<translation id="6573431926118603307">您在其他设备上的 Chrome 中打开的标签页将列在此处。</translation>
 <translation id="6575643671698722332">重置失败。请确保您的设备已联网，然后重试。</translation>
 <translation id="6600954340915313787">已复制到 Chrome</translation>
 <translation id="6612358246767739896">受保护的内容</translation>
@@ -511,6 +522,8 @@
 <translation id="7791543448312431591">添加</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7829298379596169484">正在存取音频输入</translation>
+<translation id="7837582000577464779">处理您的订单时出错。请检查您的帐户，然后重试。</translation>
+<translation id="7840369537802583269">检测并播放特定网站的重要媒体。</translation>
 <translation id="7846076177841592234">取消选择</translation>
 <translation id="7851858861565204677">来自其他设备的同步</translation>
 <translation id="7876243839304621966">全部删除</translation>
@@ -567,6 +580,7 @@
 <translation id="862875433388403934">其他应用中下载的内容（例如电影、音乐等）将无法再播放，除非这些应用根据新的设备凭据重新获得许可。
 
 要获得新的许可，请连接到互联网并播放您下载的内容。</translation>
+<translation id="8636825310635137004">要在您的其他设备上访问您的标签页，请开启同步功能。</translation>
 <translation id="8660471606262461360">来自 Google Payments</translation>
 <translation id="8676374126336081632">清除输入的内容</translation>
 <translation id="869891660844655955">截止日期</translation>

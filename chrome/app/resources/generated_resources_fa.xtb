@@ -294,6 +294,7 @@
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (شناسه برنامه افزودنی «<ph name="EXTENSION_ID" />») در این نوع جلسه مجاز نیست.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="1420684932347524586">‏اوه! ایجاد کلید خصوصی RSA تصادفی ناموفق بود.</translation>
+<translation id="1421115928968836111">‏این گزینه مجوزهای Flash Player را برای محتوای محافظت‌شده لغو می‌کند.</translation>
 <translation id="1425734930786274278">کوکی‌های زیر مسدود شدند (کوکی‌های شخص ثالث بدون استثنا مسدود می‌شوند):</translation>
 <translation id="1426410128494586442">بله</translation>
 <translation id="1427049173708736891">‏وقتی تلفن Android شما قفل نباشد و در همین اطراف باشد، قفل <ph name="DEVICE_TYPE" /> خودتان را باز نگه‌دارید— لازم نیست گذرواژه‌تان را تایپ کنید.</translation>
@@ -519,6 +520,7 @@
 <translation id="1707463636381878959">به اشتراک گذاشتن این شبکه با سایر کاربران</translation>
 <translation id="1708199901407471282">هنگام باز کردن صفحه وب پیشنهادی از صفحه «برگه جدید»، اگر برگه‌ای از قبل برای آن پیشنهاد باز باشد، به‌جای بار کردن پیشنهاد در برگه‌ای جدید، به برگه‌ای که از قبل باز است می‌رود.</translation>
 <translation id="1708338024780164500">(غیرفعال)</translation>
+<translation id="1708713382908678956"><ph name="NAME_PH" /> (شناسه: <ph name="ID_PH" />)</translation>
 <translation id="1711973684025117106">فشرده‌سازی انجام نشد، خطای غیرمنتظره: $1</translation>
 <translation id="1715941336038158809">نام کاربری یا گذرواژه نامعتبر است.</translation>
 <translation id="1717733954209022288">‏کادر تأیید ذخیره کارت Google Payments</translation>
@@ -795,6 +797,7 @@
 <translation id="2168214441502403371">صفحه‌کلید فارسی</translation>
 <translation id="2168725742002792683">پسوندهای فایل</translation>
 <translation id="2169062631698640254">در هر صورت وارد سیستم شود</translation>
+<translation id="2175042898143291048">همیشه این کار انجام شود</translation>
 <translation id="2175607476662778685">نوار راه‌اندازی سریع</translation>
 <translation id="2176045495080708525">افزودنه‌های زیر در حال حاضر نصب هستند:</translation>
 <translation id="2177950615300672361">برگه ناشناس: <ph name="TAB_NAME" /></translation>
@@ -1933,7 +1936,6 @@
 <translation id="3688507211863392146">نوشتن بر روی فایل‌ها و پوشه‌هایی که در برنامه باز می‌کنید</translation>
 <translation id="3688526734140524629">تغییر کانال</translation>
 <translation id="3688578402379768763">به‌روز</translation>
-<translation id="3690976161240450479">ورود به سیستم انجام نشد. لطفاً با سرپرستتان تماس بگیرید یا دوباره امتحان کنید.</translation>
 <translation id="3693415264595406141">گذرواژه:</translation>
 <translation id="3694027410380121301">انتخاب برگه قبلی</translation>
 <translation id="3694678678240097321">اگر برنامه افزودنی برای اجرا در همه نشانی‌های وب مجوز درخواست کرده باشد، به رضایت کاربر برای اجرای یک اسکریپت توسط برنامه افزودنی در صفحه نیاز است.</translation>
@@ -2229,6 +2231,7 @@
 <translation id="4116663294526079822">همیشه مجاز در این سایت</translation>
 <translation id="411666854932687641">حافظه خصوصی</translation>
 <translation id="4118990158415604803">اتصال به شبکه‌های دیگر توسط سرپرست شما غیرفعال شده است.</translation>
+<translation id="4119034994132515155">{COUNT,plural, =1{و ۱ مورد دیگر}one{و # مورد دیگر}other{و # مورد دیگر}}</translation>
 <translation id="4119828560634133962">تبلیغات ثبت پیش‌نمایش چاپ</translation>
 <translation id="4120329147617730038">یکی از سرپرستان ورود چندگانه به سیستم را برای <ph name="USER_EMAIL" /> غیرمجاز کرده است.
 برای ادامه همه کاربران باید از سیستم خارج شوند.</translation>
@@ -2368,9 +2371,11 @@
 <translation id="4345703751611431217">ناسازگاری نرم‌افزار: بیشتر بیاموزید</translation>
 <translation id="4348766275249686434">جمع‌آوری خطاها</translation>
 <translation id="4350019051035968019">این دستگاه نمی‌تواند در دامنه‌ای که حسابتان متعلق به آن است، ثبت نام کند زیرا دستگاه برای مدیریت توسط دامنه دیگری علامت‌گذاری شده است.</translation>
+<translation id="4354806558096370704">‏استفاده از مرحله نهایی چاپ CUPS محلی را امکان‌پذیر می‌کند.</translation>
 <translation id="4358697938732213860">افزودن آدرس</translation>
 <translation id="4359408040881008151">به دلیل برنامه(های) افزودنی وابسته نصب شد.</translation>
 <translation id="4361190688154226069">هدف‌یابی بر مبنای مستطیل در بازدیدها</translation>
+<translation id="4364414793200746179">‏اعلان Android MediaStyle</translation>
 <translation id="4364444725319685468"><ph name="FILE_NAME" /> بارگیری شد</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> در حال اشتراک‌گذاری یک پنجره است.</translation>
 <translation id="4364830672918311045">نمایش اعلان‌ها</translation>
@@ -2772,6 +2777,7 @@
 <translation id="4988792151665380515">صادر کردن کلید عمومی ناموفق بود.</translation>
 <translation id="49896407730300355">چرخاندن خلاف جهت ع&amp;قربه‌های ساعت</translation>
 <translation id="4989966318180235467">بازرسی صفحه &amp;پس‌زمینه</translation>
+<translation id="4990343175649730969">‏بارگیری ابزار پاک‌سازی Chrome</translation>
 <translation id="4991420928586866460">در نظر گرفتن کلیدهای ردیف بالا به عنوان کلیدهای عملکرد</translation>
 <translation id="499165176004408815">استفاده از حالت کنتراست بالا</translation>
 <translation id="4992066212339426712">باصدا کردن</translation>
@@ -3296,6 +3302,7 @@
 <translation id="5741245087700236983"><ph name="PROFILE_NAME" />: انتخاب برای ویرایش</translation>
 <translation id="5741454054957165976">‏نسخه جدید مداخله نماینده کاربر را برای بار کردن WebFonts فعال کنید.</translation>
 <translation id="574392208103952083">متوسط</translation>
+<translation id="5744368829843057748">‏ترجمه 2016Q2 UI</translation>
 <translation id="5745056705311424885">‏کارت حافظهٔ USB شناسایی شد</translation>
 <translation id="5746169159649715125">‏ذخیره به‌عنوان PDF</translation>
 <translation id="5747611503456050045">تازه‌سازی‌های صفحه که با پیمایش عمودی محتوا فعال می‌شوند.</translation>
@@ -3403,6 +3410,7 @@
 <translation id="5884474295213649357">‏این برگه به دستگاه USB متصل است.</translation>
 <translation id="5885324376209859881">مدیریت تنظیمات رسانه...</translation>
 <translation id="5889282057229379085">‏حداکثر تعداد CA های متوسط: <ph name="NUM_INTERMEDIATE_CA" /></translation>
+<translation id="5891822366999803429">به ما بگویید چه اتفاقی افتاده است.</translation>
 <translation id="5892290200158927959">‏صفحه‌کلید BÉPO فرانسوی</translation>
 <translation id="5892507820957994680">‏فهرست تفسیر و اجرای نرم‌افزار داخلی را لغو می‌کند و شتاب دهنده GPU را در پیکربندی های سیستم پشتیبانی نشده فعال می‌کند.</translation>
 <translation id="5895138241574237353">راه‌اندازی مجدد</translation>
@@ -3544,6 +3552,7 @@
 <translation id="6122093587541546701">ایمیل (اختیاری):</translation>
 <translation id="6122875415561139701">عملیات نوشتن در این دستگاه مجاز نیست: «<ph name="DEVICE_NAME" />».</translation>
 <translation id="6124650939968185064">افزودنه‌های زیر به این برنامه افزودنی وابسته هستند:</translation>
+<translation id="6127945163801765632">بخش «همه نشانک‌ها» در مدیر نشانک فعال شود.</translation>
 <translation id="6129938384427316298">‏نظر گواهی Netscape</translation>
 <translation id="6129953537138746214">فضا</translation>
 <translation id="6132383530370527946">چاپ کوچک</translation>
@@ -3570,6 +3579,7 @@
 <translation id="6164005077879661055">با حذف این کاربر نظارت‌شده، کلیه فایل‌ها و داده‌های محلی مربوط به کاربر نظارت‌شده برای همیشه حذف خواهند شد. وب‌سایت‌های بازدید شده و تنظیمات این کاربر نظارت‌شده همچنان برای مدیر در <ph name="MANAGEMENT_URL" /> قابل مشاهده خواهد بود.</translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
 <translation id="6166185671393271715">‏وارد کردن گذرواژه‌ها به Chrome</translation>
+<translation id="6169666352732958425">ارسال محتوای میز کار امکان‌پذیر نیست.</translation>
 <translation id="6171550060231646388">‏قابلیت‌های سخت‌افزاری شبیه‌سازی‌شده «Ok Google»</translation>
 <translation id="6175314957787328458">‏GUID دامنه Microsoft</translation>
 <translation id="6178664161104547336">انتخاب گواهی</translation>
@@ -3763,6 +3773,7 @@
 <translation id="6458308652667395253">مدیریت انسداد جاوا اسکریپت...</translation>
 <translation id="6459488832681039634">استفاده از انتخاب برای یافتن</translation>
 <translation id="6460423884798879930">‏قابلیت ارسال اطلاعات تأیید هویت اضافی در بسته اولیه SYN را برای سرویس‌گیرنده‌ای که قبلاً متصل شده است به کار می‌اندازد و باعث می‌شود ارسال داده سریع‌تر آغاز شود.</translation>
+<translation id="6460474910028274178">بهبود منطق فعال‌سازی و جستجو برای واسط کاربری ابزارک اعلان ترجمه</translation>
 <translation id="6460601847208524483">یافتن بعدی</translation>
 <translation id="6462080265650314920">نوع محتوای برنامه باید «<ph name="CONTENT_TYPE" />» باشد.</translation>
 <translation id="6462082050341971451">آیا هنوز آنجا هستید؟</translation>
@@ -3892,6 +3903,7 @@
 <translation id="6663792236418322902">برای بازیابی این فایل در فرصتی دیگر به گذرواژه انتخابی شما لازم است. لطفاً آن را در مکانی امن نگهداری کنید.</translation>
 <translation id="6664237456442406323">‏متأسفانه، رایانه شما با یک شناسه سخت‌افزار ناقص پیکربندی شده است. این موضوح سیستم عامل Chrome را از به‌روزرسانی با جدیدترین اصلاحات امنیتی باز می‌دارد که <ph name="BEGIN_BOLD" />می‌تواند رایانه شما را در برابر حملات مخرب آسیب‌پذیر نماید<ph name="END_BOLD" />.</translation>
 <translation id="6666647326143344290">‏با حساب Google خود</translation>
+<translation id="667517062706956822">‏می‌خواهید Google این صفحه را از <ph name="SOURCE_LANGUAGE" /> به <ph name="TARGET_LANGUAGE" /> ترجمه کند؟</translation>
 <translation id="6675665718701918026">دستگاه نشانگر متصل شد</translation>
 <translation id="6677037229676347494">شناسه مورد انتظار «<ph name="EXPECTED_ID" />» است، اما شناسه «<ph name="NEW_ID" />» بود.</translation>
 <translation id="6680028776254050810">تغییر کاربران</translation>
@@ -3943,6 +3955,7 @@
 <translation id="6746392203843147041">افزایش صدا</translation>
 <translation id="6748140994595080445">نحوه بکارگیری و نمایش زبان‌ها توسط <ph name="APP_NAME" /> را تغییر دهید.</translation>
 <translation id="6748465660675848252">می‌توانید ادامه دهید، اما تنها تنظیمات و داده‌های همگام‌سازی شده شما بازیابی می‌شوند. همه داده‌های محلی از دست می‌روند.</translation>
+<translation id="6751256176799620176">۱ پوشه انتخاب شد</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (ناشناس)</translation>
 <translation id="6759193508432371551">بازنشانی به تنظیمات کارخانه</translation>
 <translation id="6760765581316020278">‏صفحه‌کلید ویتنامی (VNI)</translation>
@@ -4582,6 +4595,7 @@
 <translation id="7717014941119698257">دانلود: <ph name="STATUS" /></translation>
 <translation id="7719421816612904796">مهلت آموزش تمام شد</translation>
 <translation id="771953673318695590">QA</translation>
+<translation id="7720375555307821262">‏برای نظارت بر این شخص، <ph name="BEGIN_LINK" />به سیستم Chrome وارد شوید<ph name="END_LINK" />.</translation>
 <translation id="7724603315864178912">برش</translation>
 <translation id="7730449930968088409">ثبت محتوا از صفحه شما</translation>
 <translation id="7730494089396812859">‏نمایش جزئیات پشتیبان‌گیری Cloud</translation>
@@ -4675,7 +4689,6 @@
 <translation id="7859704718976024901">سابقه مرور</translation>
 <translation id="7861215335140947162">&amp;فایلهای بارگیری‌شده</translation>
 <translation id="7864539943188674973">غیرفعال کردن بلوتوث</translation>
-<translation id="7868891395842935202">‏«چارچوب آزمایشی» را برای کنترل دسترسی به آزمایش‌های API فعال می‌کند.</translation>
 <translation id="7870576007982733437">در صورت امکان از مدیر بارگیری سیستم استفاده کنید.</translation>
 <translation id="7870790288828963061">‏برنامه‌های کیوسکی با نسخه جدیدتر پیدا نشد. موردی برای به‌روزرسانی وجود ندارد. لطفاً فلش USB را خارج کنید.</translation>
 <translation id="787150342916295244">اسکن کارت اعتباری</translation>
@@ -5004,7 +5017,6 @@
 <translation id="8309505303672555187">انتخاب شبکه:</translation>
 <translation id="8312871300878166382">جای‌گذاری در پوشه</translation>
 <translation id="8314013494437618358">ترکیب رشته‌ای</translation>
-<translation id="8314576811984836978">چارچوب آزمایشی.</translation>
 <translation id="8319414634934645341">کاربرد کلید توسعه یافته</translation>
 <translation id="8322814362483282060">این صفحه از دسترسی به میکروفون شما بازداشته شده است.</translation>
 <translation id="8326478304147373412">‏PKCS #7، زنجیره گواهی</translation>
@@ -5065,7 +5077,6 @@
 <translation id="8418240940464873056">حالت هانجا</translation>
 <translation id="8418445294933751433">&amp;نمایش به‌صورت برگه</translation>
 <translation id="8420060421540670057">‏نمایش فایل‌های سندنگار Google</translation>
-<translation id="8420728540268437431">این صفحه در حال ترجمه شدن است …</translation>
 <translation id="842274098655511832">‏افزونه‌های پیش‌نویس WebGL</translation>
 <translation id="8424039430705546751">پایین</translation>
 <translation id="8425213833346101688">تغییر</translation>
@@ -5252,6 +5263,7 @@
 <translation id="8690754533598178758">‏استثناهای میکروفون Adobe Flash Player فرق می‌کند.</translation>
 <translation id="8691686986795184760">(توسط خط‌مشی سازمانی فعال شده است)</translation>
 <translation id="869257642790614972">باز کردن مجدد آخرین برگه بسته شده</translation>
+<translation id="8695770993395462321">‏CUPS محلی</translation>
 <translation id="8695825812785969222">باز کردن &amp;مکان...</translation>
 <translation id="8698464937041809063">‏طراحی Google </translation>
 <translation id="869884720829132584">منوی برنامه</translation>
@@ -5594,6 +5606,7 @@
 <translation id="9189690067274055051">برای ورود، قفل تلفنتان را باز کرده و آن را به <ph name="DEVICE_TYPE" /> نزدیک‌تر کنید.</translation>
 <translation id="9190063653747922532">‏L2TP/IPSec + کلید از قبل مشترک شده</translation>
 <translation id="9201305942933582053">‏Google Now برای Chrome!</translation>
+<translation id="9202646163273566462">مشاهده همه نشانک‌ها را به‌عنوان مقصد پیش‌فرض مدیر نشانک امکان‌پذیر می‌کند.</translation>
 <translation id="9203398526606335860">&amp;نمایه سازی فعال شد</translation>
 <translation id="9203478404496196495">وصل کردن صدای برگه</translation>
 <translation id="9203962528777363226">سرپرست این دستگاه امکان افزوده شدن کاربران جدید را غیرفعال کرده است</translation>
@@ -5620,6 +5633,7 @@
 <translation id="939736085109172342">پوشهٔ جدید</translation>
 <translation id="940425055435005472">اندازه قلم:</translation>
 <translation id="941543339607623937">کلید خصوصی نامعتبر.</translation>
+<translation id="94157737897675170">{COUNT,plural, =0{هیچ‌}=1{۱ برنامه ($1)}=2{۲ برنامه ($1،‏ $2)}one{# برنامه ($1،‏ $2،‏ $3)}other{# برنامه ($1،‏ $2،‏ $3)}}</translation>
 <translation id="942532530371314860">‏<ph name="APP_NAME" /> در حال اشتراک‌گذاری یک برگه Chrome و صوت است.</translation>
 <translation id="942954117721265519">تصویری در دایرکتوری وجود ندارد.</translation>
 <translation id="945522503751344254">ارسال بازخورد</translation>

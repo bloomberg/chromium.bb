@@ -7,6 +7,7 @@
 <translation id="1061441684050139317">Chrome memerlukan akses mikrofon untuk berbagi dengan situs ini.</translation>
 <translation id="1080790410959514870">Anda keluar dari akun yang dikelola oleh <ph name="DOMAIN_NAME" />. Tindakan ini akan menghapus data Chrome yang tersimpan di perangkat ini, namun data akan tetap berada di Akun Google Anda.</translation>
 <translation id="1098052486217676340">Selesai</translation>
+<translation id="1111673857033749125">Bookmark yang tersimpan di perangkat lainnya akan muncul di sini.</translation>
 <translation id="1121094540300013208">Laporan kerusakan dan penggunaan</translation>
 <translation id="1137305377394488060">satu jam terakhir</translation>
 <translation id="1178581264944972037">Jeda</translation>
@@ -25,6 +26,7 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="1285320974508926690">Jangan pernah terjemahkan situs ini</translation>
 <translation id="1291207594882862231">Menghapus riwayat, cookie, data situs, cache...</translation>
 <translation id="129553762522093515">Barusan ditutup</translation>
+<translation id="1326317727527857210">Untuk mendapatkan tab dari perangkat lainnya, masuk ke Chrome.</translation>
 <translation id="13410144310025252">Lihat di Chrome</translation>
 <translation id="1369915414381695676">Situs <ph name="SITE_NAME" /> ditambahkan</translation>
 <translation id="1373696734384179344">Memori tidak cukup untuk mengunduh konten yang dipilih.</translation>
@@ -99,6 +101,11 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="2268044343513325586">Saring</translation>
 <translation id="2315043854645842844">Pilihan sertifikat sisi klien tidak didukung oleh sistem operasi.</translation>
 <translation id="2321958826496381788">Seret penggeser sampai Anda dapat membacanya dengan nyaman. Teks harus terlihat setidaknya sebesar ini setelah paragraf diketuk dua kali.</translation>
+<translation id="2331464965008647960">Perangkat di sekitar Anda menyiarkan laman web melalui Bluetooth. Chrome akan memindai laman dan menampilkannya saat Anda membangunkan perangkat. Laman ini akan diproses melalui layanan Google untuk meningkatkan kualitas hasil laman.
+
+Anda dapat mengontrol Web Fisik di Setelan Chrome.
+
+<ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">Memasang...</translation>
 <translation id="2351097562818989364">Setelan terjemah telah disetel ulang.</translation>
 <translation id="2359808026110333948">Lanjut</translation>
@@ -156,6 +163,7 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="307329814453917357">Tawarkan untuk menerjemahkan laman dengan Google Terjemahan</translation>
 <translation id="3089395242580810162">Buka di tab penyamaran</translation>
 <translation id="3090193911106258841">Mengakses masukan audio dan video</translation>
+<translation id="3117051980354074377">Untuk mendapatkan bookmark dari perangkat lainnya, masuk ke Chrome.</translation>
 <translation id="3137521801621304719">Tutup mode penyamaran</translation>
 <translation id="3149891296864842641">Opsi pengiriman</translation>
 <translation id="3162882791484435636">Pilih opsi pengiriman</translation>
@@ -220,6 +228,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4062305924942672200">Informasi hukum</translation>
 <translation id="4089831646916293264">Fitur ini dapat mengganggu akses ke layanan data premium yang disediakan oleh operator Anda.</translation>
 <translation id="4099578267706723511">Bantu penyempurnaan Chrome dengan mengirimkan statistik penggunaan dan laporan kerusakan ke Google.</translation>
+<translation id="410351446219883937">Putar otomatis</translation>
 <translation id="411254640334432676">Unduhan gagal.</translation>
 <translation id="4113030288477039509">Dikelola oleh administrator</translation>
 <translation id="4165986682804962316">Setelan situs</translation>
@@ -373,6 +382,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="6042308850641462728">Lainnya</translation>
 <translation id="604996488070107836">Unduhan <ph name="FILE_NAME" /> gagal karena kesalahan tak dikenal.</translation>
 <translation id="605721222689873409">TT</translation>
+<translation id="605904398899306450">Izinkan situs memutar media yang penting secara otomatis (disarankan)</translation>
 <translation id="6075798973483050474">Edit laman beranda</translation>
 <translation id="6108923351542677676">Penyiapan sedang berlangsung...</translation>
 <translation id="6112702117600201073">Menyegarkan laman</translation>
@@ -409,6 +419,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6550675742724504774">Opsi</translation>
 <translation id="656628257199996201">Selalu terjemahkan bahasa <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Edit kartu kredit</translation>
+<translation id="6573431926118603307">Tab yang telah dibuka di Chrome pada perangkat lainnya akan muncul di sini.</translation>
 <translation id="6575643671698722332">Gagal menyetel ulang. Pastikan perangkat tersambung ke internet dan coba lagi.</translation>
 <translation id="6600954340915313787">Disalin ke Chrome</translation>
 <translation id="6612358246767739896">Konten dilindungi</translation>
@@ -511,6 +522,8 @@ Akun Google Anda mungkin memiliki bentuk riwayat penjelajahan lain seperti penel
 <translation id="7791543448312431591">Tambahkan</translation>
 <translation id="780301667611848630">Lain kali</translation>
 <translation id="7829298379596169484">Mengakses masukan audio</translation>
+<translation id="7837582000577464779">Terjadi kesalahan saat memproses pesanan.  Periksa akun Anda dan coba lagi.</translation>
+<translation id="7840369537802583269">Mendeteksi dan memutar media yang penting untuk situs tertentu.</translation>
 <translation id="7846076177841592234">Batalkan pilihan</translation>
 <translation id="7851858861565204677">Perangkat lain</translation>
 <translation id="7876243839304621966">Hapus semua</translation>
@@ -567,6 +580,7 @@ Akun Google Anda mungkin memiliki bentuk riwayat penjelajahan lain seperti penel
 <translation id="862875433388403934">Konten (film, musik, dsb.) yang diunduh di aplikasi lain mungkin tidak dapat diputar lagi hingga aplikasi tersebut mendapatkan kembali lisensi berdasarkan kredensial perangkat yang baru.
 
 Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diunduh.</translation>
+<translation id="8636825310635137004">Untuk mendapatkan tab dari perangkat lainnya, aktifkan sinkronisasi.</translation>
 <translation id="8660471606262461360">Dari Google Payments</translation>
 <translation id="8676374126336081632">Hapus masukan</translation>
 <translation id="869891660844655955">Tanggal kedaluwarsa</translation>

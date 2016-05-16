@@ -7,6 +7,7 @@
 <translation id="1061441684050139317">Chrome skal have adgang til mikrofonen for at kunne dele den med dette website.</translation>
 <translation id="1080790410959514870">Du er ved at logge ud af en konto, der administreres af <ph name="DOMAIN_NAME" />. Dette medfører sletning af de Chrome-data, der er gemt på denne enhed, men dataene forbliver på din Google-konto.</translation>
 <translation id="1098052486217676340">Afsluttet</translation>
+<translation id="1111673857033749125">Bogmærker, der er gemt på dine andre enheder, vises her.</translation>
 <translation id="1121094540300013208">Forbrugs- og nedbrudsrapporter</translation>
 <translation id="1137305377394488060">den seneste time</translation>
 <translation id="1178581264944972037">Pause</translation>
@@ -25,6 +26,7 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="1285320974508926690">Oversæt aldrig dette website</translation>
 <translation id="1291207594882862231">Ryd historik, cookies, websitedata, cache...</translation>
 <translation id="129553762522093515">Senest lukkede</translation>
+<translation id="1326317727527857210">Log ind på Chrome for at få adgang til dine faner på dine andre enheder.</translation>
 <translation id="13410144310025252">Se dem i Chrome</translation>
 <translation id="1369915414381695676">Websitet <ph name="SITE_NAME" /> blev tilføjet</translation>
 <translation id="1373696734384179344">Der er ikke nok hukommelse til at downloade det valgte indhold.</translation>
@@ -99,6 +101,11 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="2268044343513325586">Juster</translation>
 <translation id="2315043854645842844">Klientens certifikatvalg understøttes ikke af operativsystemet.</translation>
 <translation id="2321958826496381788">Træk i skyderen, indtil du kan læse dette uden problemer. Når du trykker to gange på et afsnit, skal teksten som minimum være på denne størrelse.</translation>
+<translation id="2331464965008647960">Der er enheder i nærheden af dig, som udsender websider via Bluetooth. Chrome scanner efter sider og viser dem, når du starter din enhed. Siderne går gennem en Google-tjeneste, så kvaliteten af sideresultaterne forbedres.
+
+Du kan kontrollere Fysisk web i Chrome-indstillingerne.
+
+<ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">Installerer…</translation>
 <translation id="2351097562818989364">Dine oversættelsesindstillinger er nulstillet.</translation>
 <translation id="2359808026110333948">Fortsæt</translation>
@@ -156,6 +163,7 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="307329814453917357">Tilbyd at oversætte sider ved hjælp af Google Oversæt</translation>
 <translation id="3089395242580810162">Åbn i inkognitofane</translation>
 <translation id="3090193911106258841">Åbner lyd- og videoinput</translation>
+<translation id="3117051980354074377">Log ind på Chrome for at se dine bogmærker på dine andre enheder.</translation>
 <translation id="3137521801621304719">Slå inkognitotilstand fra</translation>
 <translation id="3149891296864842641">Forsendelsesmuligheder</translation>
 <translation id="3162882791484435636">Vælg forsendelsesmulighed</translation>
@@ -220,6 +228,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4062305924942672200">Juridiske oplysninger</translation>
 <translation id="4089831646916293264">Denne funktion kan forstyrre adgangen til eksklusive datatjenester, der leveres af dit mobilselskab.</translation>
 <translation id="4099578267706723511">Hjælp med at gøre Chrome bedre ved at sende brugsstatistik og nedbrudsrapporter til Google.</translation>
+<translation id="410351446219883937">Autoplay</translation>
 <translation id="411254640334432676">Download mislykkedes.</translation>
 <translation id="4113030288477039509">Administreres af din administrator</translation>
 <translation id="4165986682804962316">Indstillinger for website</translation>
@@ -373,6 +382,7 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="6042308850641462728">Mere</translation>
 <translation id="604996488070107836"><ph name="FILE_NAME" /> kunne ikke downloades, da der opstod en ukendt fejl.</translation>
 <translation id="605721222689873409">ÅÅ</translation>
+<translation id="605904398899306450">Tillad, at websites afspiller vigtige medier automatisk (anbefales)</translation>
 <translation id="6075798973483050474">Rediger startside</translation>
 <translation id="6108923351542677676">Konfigurationen er i gang...</translation>
 <translation id="6112702117600201073">Opdaterer siden</translation>
@@ -409,6 +419,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6550675742724504774">Valgmuligheder</translation>
 <translation id="656628257199996201">Oversæt altid <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Rediger kreditkort</translation>
+<translation id="6573431926118603307">Faner, du har åbnet i Chrome på dine andre enheder, vises her.</translation>
 <translation id="6575643671698722332">Nulstillingsfejl. Sørg for, at enheden er online, og prøv igen.</translation>
 <translation id="6600954340915313787">Kopieret til Chrome</translation>
 <translation id="6612358246767739896">Beskyttet indhold</translation>
@@ -511,6 +522,8 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="7791543448312431591">Tilføj</translation>
 <translation id="780301667611848630">Nej tak</translation>
 <translation id="7829298379596169484">Åbner lydinput</translation>
+<translation id="7837582000577464779">Der opstod en fejl under behandlingen af din ordre.  Kontrollér din konto, og prøv igen.</translation>
+<translation id="7840369537802583269">Find og afspil vigtige medier for et bestemt website.</translation>
 <translation id="7846076177841592234">Annuller valg</translation>
 <translation id="7851858861565204677">Andre enheder</translation>
 <translation id="7876243839304621966">Fjern alt</translation>
@@ -567,6 +580,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="862875433388403934">Indhold (film, musik m.m.), der er downloadet i andre applikationer, kan muligvis ikke længere afspilles, før disse applikationer får nye licenser, der er baseret på nye loginoplysninger for enheden.
 
 Du kan få nye licenser ved at oprette forbindelse til internettet og afspille det indhold, du har downloadet.</translation>
+<translation id="8636825310635137004">Aktivér synkronisering for at få adgang til dine faner på dine andre enheder.</translation>
 <translation id="8660471606262461360">Fra Google Payments</translation>
 <translation id="8676374126336081632">Ryd indtastning</translation>
 <translation id="869891660844655955">Udløbsdato</translation>

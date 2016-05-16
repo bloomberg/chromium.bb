@@ -144,6 +144,11 @@
 <translation id="1608755754295374538">Webadresser, der får adgang til lydoptagelsesenheder, uden at du skal give tilladelse hertil</translation>
 <translation id="1617235075406854669">Aktivér sletning af browser- og downloadhistorik</translation>
 <translation id="1617384279878333801">Aktivér funktionen Tilføj person i profiladministratoren</translation>
+<translation id="163200210584085447">Mønstre på denne liste sammenlignes med sikkerhedskilden
+      for den anmodede webadresse.  Hvis der findes et match, gives der
+      adgang til videooptagelsesenheder på SAML-loginsider.  Hvis der ikke findes
+      noget match, nægtes der automatisk adgang.  Mønstre med jokertegn
+      tillades ikke.</translation>
 <translation id="1655229863189977773">Angiv diskcache i bytes</translation>
 <translation id="166427968280387991">Proxyserver</translation>
 <translation id="1675002386741412210">Understøttes på:</translation>
@@ -259,6 +264,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2113068765175018713">Begræns oppetid for enheden vha. automatisk genstart</translation>
 <translation id="2127599828444728326">Tillad underretninger på disse websites</translation>
 <translation id="2131902621292742709">Skærmnedtoningsforsinkelse, når batteriet bruges</translation>
+<translation id="2134437727173969994">Tillad låsning af skærmen</translation>
 <translation id="2137064848866899664">Hvis denne politik er angivet, roteres hver visning i den
       angivne retning ved hver genstart og første gang, der oprettes forbindelse,
       efter politikkens værdi ændres. Brugere kan ændre visningens
@@ -853,6 +859,7 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
 <translation id="3967075520570946456">Aktivér visning af velkomstsiden, når browseren genstartes efter opgradering af operativsystemet.</translation>
 <translation id="3973371701361892765">Skjul aldrig hylden automatisk</translation>
 <translation id="3984028218719007910">Bestemmer, om <ph name="PRODUCT_OS_NAME" /> bevarer lokale kontodata efter logout. Hvis den er angivet til sand, er der ingen vedvarende konti, der bevares af <ph name="PRODUCT_OS_NAME" />, og alle data fra brugersessionen kasseres efter logout. Hvis denne politik er angivet til falsk eller ikke er konfigureret, kan enheden beholde (krypterede) lokale brugerdata.</translation>
+<translation id="3997519162482760140">Webadresser, der får adgang til videooptagelsesenheder på SAML-loginsider</translation>
 <translation id="4001275826058808087">It-administratorer for virksomhedsenheder kan bruge denne markering til at kontrollere, om brugerne skal have tilladelse til at indløse tilbud via Chrome OS-registrering.
 
       Hvis denne politik er angivet til Sand eller ikke er angivet, kan brugerne indløse kampagnetilbud via Chrome OS-registrering.
@@ -878,6 +885,9 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
           Hvis denne politik ikke indstilles, anvendes standardindstillingen.
 
           Værdien for politikken bør angives i millisekunder.</translation>
+<translation id="4115096483386877940">Tillad låsning af skærmen.
+
+      Hvis denne politik er angivet som falsk, kan brugerne ikke låse skærmen (de kan kun logge ud fra brugersessionen). Hvis indstillingen er angivet som sand eller ikke er angivet, kan brugere, der har godkendt med en adgangskode, låse skærmen.</translation>
 <translation id="4121350739760194865">Undgå, at appkampagner vises på ny fane-siden</translation>
 <translation id="4147054660081653009">Klientcertifikat til at oprette forbindelse til RemoteAccessHostTokenValidationUrl.
 

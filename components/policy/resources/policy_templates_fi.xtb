@@ -144,6 +144,11 @@
 <translation id="1608755754295374538">URL-osoitteet, joille on myönnetty pääsy äänikaappauslaitteisiin ilman erillisen luvan pyytämistä</translation>
 <translation id="1617235075406854669">Salli selaus- ja lataushistorian poistaminen</translation>
 <translation id="1617384279878333801">Salli profiilien luominen käyttäjäprofiilien hallinnassa</translation>
+<translation id="163200210584085447">Tämän luettelon osoitemalleja verrataan pyytävän URL-osoitteen
+      suojaustiedon alkuperään. Jos vastaavuus havaitaan, videontallennuslaitteiden
+      käyttö sallitaan SAML-kirjautumissivuilla. Jos vastaavuutta ei löydetä,
+      käyttö estetään automaattisesti. Jokerimerkkien käyttö malleissa ei ole
+      sallittua.</translation>
 <translation id="1655229863189977773">Aseta levyn välimuistin koko tavuina</translation>
 <translation id="166427968280387991">Välityspalvelin</translation>
 <translation id="1675002386741412210">Tuettu kohteissa:</translation>
@@ -254,6 +259,7 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
 <translation id="2113068765175018713">Rajoita laitteen käyttöaikaa automaattisella uudelleenkäynnistyksellä</translation>
 <translation id="2127599828444728326">Salli ilmoitukset näillä sivustoilla</translation>
 <translation id="2131902621292742709">Ruudun himmennyksen viive käytettäessä laitetta akkuvirralla</translation>
+<translation id="2134437727173969994">Salli näytön lukitseminen</translation>
 <translation id="2137064848866899664">Kun tämä käytäntö on määritetty, jokaista näyttöä kierretään
       käytännön mukaisesti aina laitteen uudelleenkäynnistyksen yhteydessä ja 
       ensimmäisellä kerralla, kun se yhdistetään käytännön arvomuutoksen jälkeen. 
@@ -841,6 +847,7 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 <translation id="3967075520570946456">Määritä tervetulosivun näyttäminen, kun selain käynnistetään ensimmäisen kerran käyttöjärjestelmän päivityksen jälkeen.</translation>
 <translation id="3973371701361892765">Älä koskaan piilota hyllyä automaattisesti</translation>
 <translation id="3984028218719007910">Määrittää, säilyttääkö <ph name="PRODUCT_OS_NAME" /> paikalliset käyttäjätilitiedot uloskirjautumisen jälkeen. Jos asetus on tosi, <ph name="PRODUCT_OS_NAME" /> ei säilytä tilitietoja pysyvästi ja käyttökerran tiedot poistetaan uloskirjautumisen jälkeen. Jos käytännön asetus on epätosi tai sitä ei määritetä, paikalliset käyttäjätiedot voidaan tallentaa laitteelle salattuina.</translation>
+<translation id="3997519162482760140">URL-osoitteet, joille sallitaan videon kaappauslaitteiden käyttö SAML-kirjautumissivuilla</translation>
 <translation id="4001275826058808087">Yrityslaitteiden järjestelmänvalvojat voivat hallita tämän käytännön avulla, sallitaanko käyttäjien lunastaa tarjouksia Chrome-käyttöjärjestelmän rekisteröitymisen kautta.
 
       Jos käytännön arvoksi on asetettu tosi tai sille ei aseteta mitään arvoa, käyttäjät voivat lunastaa tarjouksia Chrome-käyttöjärjestelmän rekisteröitymisen kautta.
@@ -866,6 +873,9 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
           Kun tälle käytännölle ei ole asetettu arvoa, se käyttää ajan oletusarvoa.
 
           Tämän käytännön arvo täytyy määrittää millisekunteina.</translation>
+<translation id="4115096483386877940">Salli näytön lukitseminen
+
+      Jos tämän käytännön arvo on Epätosi, käyttäjät voivat lukita näytön (vain istunnosta uloskirjautuminen on mahdollista). Jos käytännön arvo on Tosi tai sitä ei aseteta, salasanatodennuksen tehneet käyttäjät voivat lukita näytön.</translation>
 <translation id="4121350739760194865">Estä sovelluskampanjoita näkymästä uusi välilehti -sivulla</translation>
 <translation id="4147054660081653009">Asiakasvarmenne yhteyden muodostamiseksi osoitteeseen RemoteAccessHostTokenValidationUrl.
 

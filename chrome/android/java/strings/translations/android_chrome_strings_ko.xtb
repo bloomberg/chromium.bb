@@ -7,6 +7,7 @@
 <translation id="1061441684050139317">이 사이트에 공유하려면 Chrome에 마이크 액세스 권한이 있어야 합니다.</translation>
 <translation id="1080790410959514870"><ph name="DOMAIN_NAME" />에서 관리하는 계정에서 로그아웃합니다. 로그아웃하면 이 기기에 저장된 Chrome 데이터는 삭제되지만 Google 계정에는 데이터가 남습니다.</translation>
 <translation id="1098052486217676340">완료</translation>
+<translation id="1111673857033749125">다른 기기에서 저장한 북마크가 여기에 표시됩니다.</translation>
 <translation id="1121094540300013208">사용 및 충돌 보고서</translation>
 <translation id="1137305377394488060">지난 1시간</translation>
 <translation id="1178581264944972037">일시중지</translation>
@@ -25,6 +26,7 @@
 <translation id="1285320974508926690">이 사이트 번역 안함</translation>
 <translation id="1291207594882862231">방문 기록, 쿠키, 사이트 데이터, 캐시 삭제…</translation>
 <translation id="129553762522093515">최근에 닫은 탭</translation>
+<translation id="1326317727527857210">다른 기기에서 탭을 가져오려면 Chrome에 로그인하세요.</translation>
 <translation id="13410144310025252">Chrome에서 보기</translation>
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> 사이트 추가됨</translation>
 <translation id="1373696734384179344">선택한 콘텐츠를 다운로드할 공간이 부족합니다.</translation>
@@ -99,6 +101,11 @@
 <translation id="2268044343513325586">상세검색</translation>
 <translation id="2315043854645842844">클라이언트측 인증서 선택이 운영체제에서 지원되지 않습니다.</translation>
 <translation id="2321958826496381788">편하게 읽을 수 있을 때까지 슬라이더를 드래그하세요. 단락을 두 번 탭하면 텍스트가 이 이상의 크기로 표시됩니다.</translation>
+<translation id="2331464965008647960">주변 기기에서 블루투스를 사용하여 웹페이지를 전송합니다. 내 기기의 대기 모드가 해제되었을 때 Chrome에서 페이지를 스캔하고 표시합니다. 이 페이지는 페이지 결과의 품질을 높이기 위해 Google 서비스를 거칩니다.
+
+Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
+
+<ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">설치 중...</translation>
 <translation id="2351097562818989364">번역 설정이 재설정되었습니다.</translation>
 <translation id="2359808026110333948">계속</translation>
@@ -156,6 +163,7 @@
 <translation id="307329814453917357">Google 번역을 사용하여 페이지를 번역할 것을 제안합니다.</translation>
 <translation id="3089395242580810162">시크릿 탭에서 열기</translation>
 <translation id="3090193911106258841">오디오 및 비디오 입력 장치에 액세스</translation>
+<translation id="3117051980354074377">다른 기기에서 북마크를 가져오려면 Chrome에 로그인하세요.</translation>
 <translation id="3137521801621304719">시크릿 모드 나가기</translation>
 <translation id="3149891296864842641">배송 옵션</translation>
 <translation id="3162882791484435636">배송 옵션 선택</translation>
@@ -220,6 +228,7 @@
 <translation id="4062305924942672200">법적 정보</translation>
 <translation id="4089831646916293264">이 기능을 사용하면 이동통신사에서 제공하는 프리미엄 데이터 서비스에 액세스하는 데 문제가 생길 수 있습니다.</translation>
 <translation id="4099578267706723511">사용 통계와 오류 보고서를 Google로 전송하면 Chrome 개선에 도움이 됩니다.</translation>
+<translation id="410351446219883937">자동재생</translation>
 <translation id="411254640334432676">다운로드에 실패했습니다.</translation>
 <translation id="4113030288477039509">관리자가 관리합니다.</translation>
 <translation id="4165986682804962316">사이트 설정</translation>
@@ -373,6 +382,7 @@
 <translation id="6042308850641462728">더보기</translation>
 <translation id="604996488070107836">알 수 없는 오류로 인해 <ph name="FILE_NAME" /> 다운로드에 실패했습니다.</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="605904398899306450">사이트에서 중요한 미디어를 자동재생하도록 허용(권장)</translation>
 <translation id="6075798973483050474">홈 페이지 수정</translation>
 <translation id="6108923351542677676">설정 진행 중...</translation>
 <translation id="6112702117600201073">페이지 새로고침</translation>
@@ -409,6 +419,7 @@
 <translation id="6550675742724504774">옵션</translation>
 <translation id="656628257199996201"><ph name="SOURCE_LANGUAGE" /> 항상 번역</translation>
 <translation id="6571070086367343653">신용카드 수정</translation>
+<translation id="6573431926118603307">다른 기기의 Chrome에서 연 탭이 여기에 표시됩니다.</translation>
 <translation id="6575643671698722332">재설정하지 못했습니다. 온라인 연결을 확인하고 다시 시도하세요.</translation>
 <translation id="6600954340915313787">Chrome에 복사됨</translation>
 <translation id="6612358246767739896">보호된 콘텐츠</translation>
@@ -511,6 +522,8 @@
 <translation id="7791543448312431591">추가</translation>
 <translation id="780301667611848630">아니요, 괜찮습니다.</translation>
 <translation id="7829298379596169484">오디오 입력 장치에 액세스 중</translation>
+<translation id="7837582000577464779">주문을 처리하는 중에 오류가 발생했습니다. 계정을 확인한 후 다시 시도해 주세요.</translation>
+<translation id="7840369537802583269">특정 사이트의 중요 미디어를 감지하고 재생합니다.</translation>
 <translation id="7846076177841592234">선택 취소</translation>
 <translation id="7851858861565204677">다른 기기</translation>
 <translation id="7876243839304621966">모두 삭제</translation>
@@ -567,6 +580,7 @@
 <translation id="862875433388403934">다른 애플리케이션에서 다운로드한 콘텐츠(영화, 음악 등)는 해당 애플리케이션이 새로운 기기 사용자 인증 정보를 기반으로 라이선스를 다시 취득해야 재생할 수 있습니다.
 
 새로운 라이선스를 취득하려면 인터넷에 연결하고 다운로드한 콘텐츠를 재생하세요.</translation>
+<translation id="8636825310635137004">다른 기기에서 탭을 가져오려면 동기화를 사용 설정하세요.</translation>
 <translation id="8660471606262461360">출처: Google Payments</translation>
 <translation id="8676374126336081632">입력내용 지우기</translation>
 <translation id="869891660844655955">유효기간</translation>

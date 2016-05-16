@@ -7,6 +7,7 @@
 <translation id="1061441684050139317">Chrome needs microphone access to share it with this site.</translation>
 <translation id="1080790410959514870">You are signing out of an account managed by <ph name="DOMAIN_NAME" />. This will delete the Chrome data stored on this device, but the data will remain in your Google Account.</translation>
 <translation id="1098052486217676340">Finished</translation>
+<translation id="1111673857033749125">Bookmarks saved on your other devices will appear here.</translation>
 <translation id="1121094540300013208">Usage and crash reports</translation>
 <translation id="1137305377394488060">past hour</translation>
 <translation id="1178581264944972037">Pause</translation>
@@ -25,6 +26,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1285320974508926690">Never translate this site</translation>
 <translation id="1291207594882862231">Clear history, cookies, site data, cache…</translation>
 <translation id="129553762522093515">Recently closed</translation>
+<translation id="1326317727527857210">To get your tabs from your other devices, sign in to Chrome.</translation>
 <translation id="13410144310025252">View them in Chrome</translation>
 <translation id="1369915414381695676">Site <ph name="SITE_NAME" /> added</translation>
 <translation id="1373696734384179344">Insufficient memory to download the selected content.</translation>
@@ -99,6 +101,11 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2268044343513325586">Refine</translation>
 <translation id="2315043854645842844">Client side certificate selection is not supported by the operating system.</translation>
 <translation id="2321958826496381788">Drag the slider until you can read this comfortably. Text should look at least this big after double-tapping on a paragraph.</translation>
+<translation id="2331464965008647960">Devices near to you are broadcasting web pages over Bluetooth. Chrome will scan for pages and display them when you wake up your device. These pages will go through a Google service to improve the quality of page results.
+
+You can control the Physical Web in Chrome Settings.
+
+<ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">Installing…</translation>
 <translation id="2351097562818989364">Your translate settings have been reset.</translation>
 <translation id="2359808026110333948">Continue</translation>
@@ -156,6 +163,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="307329814453917357">Offer to translate pages using Google Translate</translation>
 <translation id="3089395242580810162">Open in incognito tab</translation>
 <translation id="3090193911106258841">Accessing audio and video input</translation>
+<translation id="3117051980354074377">To get your bookmarks your other devices, sign in to Chrome.</translation>
 <translation id="3137521801621304719">Leave incognito mode</translation>
 <translation id="3149891296864842641">Delivery option</translation>
 <translation id="3162882791484435636">Select shipping option</translation>
@@ -220,6 +228,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4062305924942672200">Legal information</translation>
 <translation id="4089831646916293264">This feature may interfere with access to premium data services provided by your operator.</translation>
 <translation id="4099578267706723511">Help make Chrome better by sending usage statistics and crash reports to Google.</translation>
+<translation id="410351446219883937">Auto-play</translation>
 <translation id="411254640334432676">Download failed.</translation>
 <translation id="4113030288477039509">Managed by your administrator</translation>
 <translation id="4165986682804962316">Site settings</translation>
@@ -373,6 +382,7 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="6042308850641462728">More</translation>
 <translation id="604996488070107836"><ph name="FILE_NAME" /> download failed due to an unknown error.</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="605904398899306450">Allow sites to auto-play important media (recommended)</translation>
 <translation id="6075798973483050474">Edit home page</translation>
 <translation id="6108923351542677676">Setup in progress…</translation>
 <translation id="6112702117600201073">Refreshing page</translation>
@@ -409,6 +419,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6550675742724504774">Options</translation>
 <translation id="656628257199996201">Always translate <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Edit credit card</translation>
+<translation id="6573431926118603307">Tabs that you've opened in Chrome on your other devices will appear here.</translation>
 <translation id="6575643671698722332">Reset failed. Ensure that your device is online and try again.</translation>
 <translation id="6600954340915313787">Copied to Chrome</translation>
 <translation id="6612358246767739896">Protected content</translation>
@@ -511,6 +522,8 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="7791543448312431591">Add</translation>
 <translation id="780301667611848630">No, thank you</translation>
 <translation id="7829298379596169484">Accessing audio input</translation>
+<translation id="7837582000577464779">There was an error processing your order.  Please check your account and try again.</translation>
+<translation id="7840369537802583269">Detect and play back important media for a specific site.</translation>
 <translation id="7846076177841592234">Cancel selection</translation>
 <translation id="7851858861565204677">Other Devices</translation>
 <translation id="7876243839304621966">Remove all</translation>
@@ -565,6 +578,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8617240290563765734">Open the suggested URL specified in the downloaded content?</translation>
 <translation id="8627706565932943526">Sync error</translation>
 <translation id="862875433388403934">Content (films, music, etc.) downloaded in other applications may no longer be playable until those applications re-acquire licences based on a new device credential. To obtain new licences, connect to the Internet and play your downloaded content.</translation>
+<translation id="8636825310635137004">To get your tabs from your other devices, turn on sync.</translation>
 <translation id="8660471606262461360">From Google Payments</translation>
 <translation id="8676374126336081632">Clear input</translation>
 <translation id="869891660844655955">Expiry date</translation>

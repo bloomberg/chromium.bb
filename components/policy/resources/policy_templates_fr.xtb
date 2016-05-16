@@ -155,6 +155,12 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="1608755754295374538">URL autorisées à accéder aux appareils de capture audio sans avis préalable</translation>
 <translation id="1617235075406854669">Activer la suppression de l'historique du navigateur et de l'historique des téléchargements</translation>
 <translation id="1617384279878333801">Autoriser l'ajout de personnes dans le gestionnaire de profils</translation>
+<translation id="163200210584085447">Les formats de cette liste seront mis en correspondance avec la source
+      de sécurité de l'URL à l'origine de la demande. En cas de correspondance,
+      l'accès aux appareils de capture vidéo est autorisé sur les pages de
+      connexion SAML. Si aucune correspondance n'est détectée, l'accès est
+      automatiquement refusé. Les formats contenant des caractères génériques
+      ne sont pas autorisés.</translation>
 <translation id="1655229863189977773">Définir la taille du cache du disque en octets</translation>
 <translation id="166427968280387991">Serveur proxy</translation>
 <translation id="1675002386741412210">Compatible avec :</translation>
@@ -276,6 +282,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
 <translation id="2113068765175018713">Limiter le temps de fonctionnement de l'appareil en redémarrant automatiquement</translation>
 <translation id="2127599828444728326">Autoriser les notifications sur ces sites</translation>
 <translation id="2131902621292742709">Délai d'assombrissement de l'écran (batterie)</translation>
+<translation id="2134437727173969994">Autoriser le verrouillage de l'écran</translation>
 <translation id="2137064848866899664">Si cette règle est définie, chaque écran pivote en fonction de
       l'orientation spécifiée à chaque redémarrage et lors de sa première
       connexion après la modification de la valeur de la règle. Les utilisateurs
@@ -908,6 +915,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="3967075520570946456">Activer l'affichage de la page d'accueil à la première exécution du navigateur suivant la mise à jour de l'OS</translation>
 <translation id="3973371701361892765">Ne jamais masquer automatiquement l'étagère</translation>
 <translation id="3984028218719007910">Détermine si <ph name="PRODUCT_OS_NAME" /> doit conserver les données locales des comptes après la déconnexion. Si cette règle est définie sur "true", aucun compte persistant n'est conservé par <ph name="PRODUCT_OS_NAME" />. Par ailleurs, toutes les données de la session utilisateur sont supprimées après la déconnexion. Si cette règle est définie sur "false" ou si elle n'est pas configurée, l'appareil peut conserver des données utilisateur locales (chiffrées).</translation>
+<translation id="3997519162482760140">URL autorisées à accéder aux appareils de capture vidéo sur les pages de connexion SAML</translation>
 <translation id="4001275826058808087">Les administrateurs informatiques des appareils d'entreprise peuvent utiliser cet indicateur pour autoriser ou non les utilisateurs à profiter de leurs offres via le service d'enregistrement de Chrome OS.
 
       Si cette règle est définie sur "True" ou si elle n'est pas définie, les utilisateurs peuvent utiliser leurs offres via ce service.
@@ -941,6 +949,9 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
                       Si cette règle n'est pas définie, une durée par défaut est utilisée.
 
                       La valeur de cette règle doit être indiquée en millisecondes.</translation>
+<translation id="4115096483386877940">Autoriser le verrouillage de l'écran.
+
+      Si cette règle est définie sur "False", les utilisateurs ne peuvent pas verrouiller l'écran (seule la déconnexion de la session de l'utilisateur est possible). Si ce paramètre est défini sur "True", ou s'il n'est pas configuré, les utilisateurs ayant procédé à l'authentification avec un mot de passe peuvent verrouiller l'écran.</translation>
 <translation id="4121350739760194865">Empêcher les promotions pour des applications de s'afficher sur la page Nouvel onglet</translation>
 <translation id="4147054660081653009">Certificat client pour se connecter à RemoteAccessHostTokenValidationUrl.
 

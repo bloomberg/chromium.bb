@@ -7,6 +7,7 @@
 <translation id="1061441684050139317">Aby Chrome mohl s těmito webovými stránkami sdílet mikrofon, musí k němu mít přístup.</translation>
 <translation id="1080790410959514870">Odhlašujete se z účtu, který je spravován doménou <ph name="DOMAIN_NAME" />. Data prohlížeče Chrome uložená v tomto zařízení touto akcí smažete, avšak v účtu Google tato data zůstanou.</translation>
 <translation id="1098052486217676340">Dokončeno</translation>
+<translation id="1111673857033749125">Zde se objeví záložky, které jste si uložili v ostatních zařízeních.</translation>
 <translation id="1121094540300013208">Zprávy o využití a selhání</translation>
 <translation id="1137305377394488060">z uplynulé hodiny</translation>
 <translation id="1178581264944972037">Pozastavit</translation>
@@ -25,6 +26,7 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="1285320974508926690">Tento web nikdy nepřekládat</translation>
 <translation id="1291207594882862231">Vymazat historii, soubory cookie, data webů, mezipaměť…</translation>
 <translation id="129553762522093515">Nedávno zavřené</translation>
+<translation id="1326317727527857210">Chcete-li získat přístup ke kartám ze svých ostatních zařízení, přihlaste se do Chromu.</translation>
 <translation id="13410144310025252">Zobrazte je v Chromu</translation>
 <translation id="1369915414381695676">Byl přidán web <ph name="SITE_NAME" /></translation>
 <translation id="1373696734384179344">Ke stažení vybraného obsahu není k dispozici dostatek paměti.</translation>
@@ -99,6 +101,11 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="2268044343513325586">Upřesnit</translation>
 <translation id="2315043854645842844">Volbu certifikátu na straně klienta operační systém nepodporuje.</translation>
 <translation id="2321958826496381788">Přetahujte posuvník tak dlouho, dokud nebudete moci pohodlně přečíst tento text. Po dvojitém klepnutí na odstavec by měl být text alespoň takto velký.</translation>
+<translation id="2331464965008647960">Zařízení v okolí vysílají webové stránky přes Bluetooth. Když zařízení probudíte z režimu spánku, Chrome tyto stránky vyhledá a zobrazí. Stránky budou za účelem zlepšení kvality zpracovány službou Google.
+
+Fyzický web můžete ovládat v nastavení Chromu.
+
+<ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">Instalace…</translation>
 <translation id="2351097562818989364">Nastavení překladů bylo resetováno.</translation>
 <translation id="2359808026110333948">Pokračovat</translation>
@@ -156,6 +163,7 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="307329814453917357">Nabízet překlad stránek pomocí Překladače Google</translation>
 <translation id="3089395242580810162">Otevřít na anonymní kartě</translation>
 <translation id="3090193911106258841">Přístup ke vstupu zvuku a videa</translation>
+<translation id="3117051980354074377">Chcete-li získat přístup k záložkám ze svých ostatních zařízení, přihlaste se do Chromu.</translation>
 <translation id="3137521801621304719">Ukončit anonymní režim</translation>
 <translation id="3149891296864842641">Způsob dopravy</translation>
 <translation id="3162882791484435636">Vyberte způsob dopravy</translation>
@@ -220,6 +228,7 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4062305924942672200">Právní informace</translation>
 <translation id="4089831646916293264">Tato funkce může být v konfliktu s prémiovými datovými službami poskytovanými vaším operátorem.</translation>
 <translation id="4099578267706723511">Pomozte Chrome zlepšovat – posílejte Googlu statistiky využití a zprávy o selhání.</translation>
+<translation id="410351446219883937">Automatické přehrávání</translation>
 <translation id="411254640334432676">Stahování se nezdařilo.</translation>
 <translation id="4113030288477039509">Spravováno vaším administrátorem</translation>
 <translation id="4165986682804962316">Nastavení webu</translation>
@@ -373,6 +382,7 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="6042308850641462728">Více</translation>
 <translation id="604996488070107836">Stažení souboru <ph name="FILE_NAME" /> se nezdařilo z důvodu neznámé chyby.</translation>
 <translation id="605721222689873409">RR</translation>
+<translation id="605904398899306450">Povolit webům automaticky přehrávat důležitý mediální obsah (doporučeno)</translation>
 <translation id="6075798973483050474">Upravit domovskou stránku</translation>
 <translation id="6108923351542677676">Probíhá nastavování…</translation>
 <translation id="6112702117600201073">Obnovování stránky</translation>
@@ -409,6 +419,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6550675742724504774">Možnosti</translation>
 <translation id="656628257199996201">Vždy překládat jazyk <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Upravit platební kartu</translation>
+<translation id="6573431926118603307">Zde se objeví karty, které jste otevřeli v Chromu ve svých ostatních zařízeních.</translation>
 <translation id="6575643671698722332">Resetování se nezdařilo. Zkontrolujte, zda je zařízení online, a zkuste to znovu.</translation>
 <translation id="6600954340915313787">Zkopírováno do Chromu</translation>
 <translation id="6612358246767739896">Chráněný obsah</translation>
@@ -511,6 +522,8 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="7791543448312431591">Přidat</translation>
 <translation id="780301667611848630">Ne, děkuji</translation>
 <translation id="7829298379596169484">Přístup ke zvukovému vstupu</translation>
+<translation id="7837582000577464779">Při zpracování objednávky došlo k chybě. Zkontrolujte účet a zkuste to znovu.</translation>
+<translation id="7840369537802583269">Rozpoznat a přehrát mediální obsah, který je pro konkrétní web důležitý.</translation>
 <translation id="7846076177841592234">Zrušit výběr</translation>
 <translation id="7851858861565204677">Jiná zařízení</translation>
 <translation id="7876243839304621966">Odstranit vše</translation>
@@ -567,6 +580,7 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="862875433388403934">Obsah (filmy, hudba atd.) stažený v jiných aplikacích možná nebude možné přehrát, dokud dané aplikace znovu nezískají licence s novými identifikačními údaji zařízení.
 
 Chcete-li získat nové licence, připojte se k internetu a přehrajte stažený obsah.</translation>
+<translation id="8636825310635137004">Chcete-li získat přístup ke kartám ze svých ostatních zařízení, zapněte synchronizaci.</translation>
 <translation id="8660471606262461360">Od služby Google Payments</translation>
 <translation id="8676374126336081632">Vymazat vstup</translation>
 <translation id="869891660844655955">Datum vypršení platnosti</translation>

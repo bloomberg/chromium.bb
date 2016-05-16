@@ -7,6 +7,7 @@
 <translation id="1061441684050139317">Chrome necesita acceso al micrófono para compartirlo con este sitio.</translation>
 <translation id="1080790410959514870">Saldrás de una cuenta administrada por <ph name="DOMAIN_NAME" />. Esta acción eliminará los datos de Chrome almacenados en este dispositivo, aunque estos se mantendrán en la cuenta de Google.</translation>
 <translation id="1098052486217676340">Finalizado</translation>
+<translation id="1111673857033749125">Los marcadores guardados en tus otros dispositivos aparecerán aquí.</translation>
 <translation id="1121094540300013208">Informes de uso y de fallos</translation>
 <translation id="1137305377394488060">hace una hora</translation>
 <translation id="1178581264944972037">Detener</translation>
@@ -25,6 +26,7 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="1285320974508926690">Nunca traducir este sitio</translation>
 <translation id="1291207594882862231">Borra el historial, las cookies, los datos del sitio, la caché…</translation>
 <translation id="129553762522093515">Cerrado recientemente</translation>
+<translation id="1326317727527857210">Accede a Chrome para obtener las pestañas de tus otros dispositivos.</translation>
 <translation id="13410144310025252">Ver en Chrome</translation>
 <translation id="1369915414381695676">Se agregó el sitio <ph name="SITE_NAME" />.</translation>
 <translation id="1373696734384179344">Memoria insuficiente para descargar el contenido seleccionado</translation>
@@ -99,6 +101,11 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="2268044343513325586">Definir mejor</translation>
 <translation id="2315043854645842844">El sistema operativo no admite la selección de certificados del lado del cliente.</translation>
 <translation id="2321958826496381788">Arrastra el control deslizante hasta que puedas leer esto cómodamente. El texto debería verse, al menos, de este tamaño al tocar dos veces un párrafo.</translation>
+<translation id="2331464965008647960">Los dispositivos cercanos están transmitiendo páginas web a través de Bluetooth. Chrome buscará páginas y las mostrará cuando actives tu dispositivo. Estas páginas pasarán por un servicio de Google que mejorará la calidad de los resultados.
+
+Puedes controlar la Web física desde la configuración de Chrome.
+
+<ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">Instalando…</translation>
 <translation id="2351097562818989364">Se restableció la configuración de traducción.</translation>
 <translation id="2359808026110333948">Continuar</translation>
@@ -156,6 +163,7 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="307329814453917357">Ofrecer la traducción de páginas con Google Traductor</translation>
 <translation id="3089395242580810162">Abrir en pestaña de incógnito</translation>
 <translation id="3090193911106258841">Accediendo a la entrada de video y de audio</translation>
+<translation id="3117051980354074377">Accede a Chrome para obtener los marcadores de tus otros dispositivos.</translation>
 <translation id="3137521801621304719">Salir del modo de navegación de incógnito</translation>
 <translation id="3149891296864842641">Opción de envío</translation>
 <translation id="3162882791484435636">Seleccionar la opción de envío</translation>
@@ -220,6 +228,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4062305924942672200">Información legal</translation>
 <translation id="4089831646916293264">Esta función puede interferir con el acceso a servicios de datos de alta calidad brindados por el proveedor.</translation>
 <translation id="4099578267706723511">Envía las estadísticas de uso y los informes de fallos a Google para ayudarnos a mejorar Chrome.</translation>
+<translation id="410351446219883937">Reproducción automática</translation>
 <translation id="411254640334432676">Se produjo un error durante la descarga.</translation>
 <translation id="4113030288477039509">Administrado por tu administrador</translation>
 <translation id="4165986682804962316">Configuración del sitio</translation>
@@ -374,6 +383,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="6042308850641462728">Más</translation>
 <translation id="604996488070107836"><ph name="FILE_NAME" /> no se pudo descargar debido a un error desconocido.</translation>
 <translation id="605721222689873409">AA</translation>
+<translation id="605904398899306450">Permitir que los sitios reproduzcan de forma automática medios importantes (opción recomendada)</translation>
 <translation id="6075798973483050474">Editar la Página principal</translation>
 <translation id="6108923351542677676">Configuración en curso…</translation>
 <translation id="6112702117600201073">Actualizando la página</translation>
@@ -410,6 +420,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6550675742724504774">Opciones</translation>
 <translation id="656628257199996201">Traducir siempre el texto en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Editar tarjeta de crédito</translation>
+<translation id="6573431926118603307">Aquí aparecerán las pestañas que abriste en Chrome en tus otros dispositivos.</translation>
 <translation id="6575643671698722332">Error al restablecer. Comprueba la conexión y vuelve a intentarlo.</translation>
 <translation id="6600954340915313787">Se copió en Chrome.</translation>
 <translation id="6612358246767739896">Contenido protegido</translation>
@@ -512,6 +523,8 @@ Es posible que tu cuenta de Google tenga otros formularios del historial de nave
 <translation id="7791543448312431591">Agregar</translation>
 <translation id="780301667611848630">No, gracias</translation>
 <translation id="7829298379596169484">Accediendo a la entrada de audio</translation>
+<translation id="7837582000577464779">Se produjo un error al procesar tu pedido. Comprueba tu cuenta e inténtalo de nuevo.</translation>
+<translation id="7840369537802583269">Detecta y reproduce medios importantes para un sitio específico.</translation>
 <translation id="7846076177841592234">Cancelar la selección</translation>
 <translation id="7851858861565204677">Otros dispositivos</translation>
 <translation id="7876243839304621966">Eliminar todo</translation>
@@ -568,6 +581,7 @@ Es posible que tu cuenta de Google tenga otros formularios del historial de nave
 <translation id="862875433388403934">Tal vez no puedas reproducir el contenido descargado (películas, música, etc.) en otras aplicaciones hasta que dichas aplicaciones vuelvan a adquirir licencias basadas en una nueva credencial de dispositivo.
 
 Conéctate a Internet y reproduce el contenido descargado para obtener licencias nuevas.</translation>
+<translation id="8636825310635137004">Activa la sincronización para obtener las pestañas de tus otros dispositivos.</translation>
 <translation id="8660471606262461360">De Google Payments</translation>
 <translation id="8676374126336081632">Borrar entrada</translation>
 <translation id="869891660844655955">Fecha de vencimiento</translation>

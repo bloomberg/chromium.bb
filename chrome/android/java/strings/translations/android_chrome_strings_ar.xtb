@@ -7,6 +7,7 @@
 <translation id="1061441684050139317">‏يحتاج Chrome إلى الحصول على حق الوصول إلى الميكرفون لمشاركته مع هذا الموقع.</translation>
 <translation id="1080790410959514870">‏أنت بصدد الخروج من حساب تحت إدارة <ph name="DOMAIN_NAME" />. سيؤدي هذا إلى حذف بيانات Chrome المخزنة على هذا الجهاز، إلا أن البيانات ستظل في حسابك على Google.</translation>
 <translation id="1098052486217676340">تم الانتهاء</translation>
+<translation id="1111673857033749125">ستظهر هنا الإشارات التي تم حفظها على أجهزتك الأخرى.</translation>
 <translation id="1121094540300013208">تقارير الاستخدام والأعطال</translation>
 <translation id="1137305377394488060">الساعة الماضية</translation>
 <translation id="1178581264944972037">تعليق</translation>
@@ -25,6 +26,7 @@
 <translation id="1285320974508926690">عدم ترجمة هذا الموقع مطلقًا</translation>
 <translation id="1291207594882862231">محو السجل وملفات تعريف الارتباط وبيانات المواقع وذاكرة التخزين المؤقت...</translation>
 <translation id="129553762522093515">المغلقة حديثًا</translation>
+<translation id="1326317727527857210">‏للحصول على علامات التبويب من أجهزتك الأخرى، سجّل الدخول إلى Chrome.</translation>
 <translation id="13410144310025252">‏عرضها في Chrome</translation>
 <translation id="1369915414381695676">تمت إضافة الموقع <ph name="SITE_NAME" /></translation>
 <translation id="1373696734384179344">لا توجد ذاكرة كافية لتنزيل المحتوى المحدد.</translation>
@@ -99,6 +101,11 @@
 <translation id="2268044343513325586">تحسين</translation>
 <translation id="2315043854645842844">لا يدعم نظام التشغيل تحديد الشهادة من جانب العميل.</translation>
 <translation id="2321958826496381788">يمكنك سحب شريط التمرير حتى تتمكن من قراءة هذا النص بسهولة. يجب أن يظهر النص بهذا الحجم على الأقل بعد النقر مرتين على إحدى الفقرات.</translation>
+<translation id="2331464965008647960">‏تبث الأجهزة المجاورة لك صفحات ويب عبر بلوتوث. سيعمل Chrome على فحص الصفحات وعرضها عند تشغيل جهازك. وستمر هذه الصفحات عبر خدمة Google لتحسين جودة نتائج الصفحات.
+
+يمكنك التحكم في الشبكة المادية من خلال إعدادات Chrome.
+
+<ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">جارٍ التثبيت...</translation>
 <translation id="2351097562818989364">تم إعادة ضبط إعداداتك للترجمة.</translation>
 <translation id="2359808026110333948">المتابعة</translation>
@@ -156,6 +163,7 @@
 <translation id="307329814453917357">‏عرض ترجمة الصفحات باستخدام ترجمة Google.</translation>
 <translation id="3089395242580810162">فتح في علامة تبويب تصفح متخفي</translation>
 <translation id="3090193911106258841">جارٍ الوصول إلى إدخال الصوت والفيديو</translation>
+<translation id="3117051980354074377">‏للحصول على الإشارات من أجهزتك الأخرى، سجّل الدخول إلى Chrome.</translation>
 <translation id="3137521801621304719">مغادرة وضع التصفح المتخفي</translation>
 <translation id="3149891296864842641">خيار الشحن</translation>
 <translation id="3162882791484435636">حدد خيار الشحن</translation>
@@ -218,6 +226,7 @@
 <translation id="4062305924942672200">المعلومات القانونية</translation>
 <translation id="4089831646916293264">قد تتداخل هذه الميزة مع إمكانية الوصول إلى خدمات البيانات المتميزة التي يقدّمها مشغّل شبكة الجوال.</translation>
 <translation id="4099578267706723511">‏ساعد في تحسين Chrome عن طريق إرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google.</translation>
+<translation id="410351446219883937">تشغيل تلقائي</translation>
 <translation id="411254640334432676">فشلت عملية التنزيل</translation>
 <translation id="4113030288477039509">يديره المسؤول</translation>
 <translation id="4165986682804962316">إعدادات الموقع</translation>
@@ -372,6 +381,7 @@
 <translation id="6042308850641462728">المزيد</translation>
 <translation id="604996488070107836">أخفق تنزيل الملف <ph name="FILE_NAME" /> بسبب خطأ غير معلوم.</translation>
 <translation id="605721222689873409">العام</translation>
+<translation id="605904398899306450">السماح للمواقع بالتشغيل التلقائي للوسائط المهمة (موصى به)</translation>
 <translation id="6075798973483050474">تعديل الصفحة الرئيسية</translation>
 <translation id="6108923351542677676">الإعداد قيد التقدّم…</translation>
 <translation id="6112702117600201073">يتم الآن تحديث الصفحة</translation>
@@ -408,6 +418,7 @@
 <translation id="6550675742724504774">خيارات</translation>
 <translation id="656628257199996201">ترجمة <ph name="SOURCE_LANGUAGE" /> دائمًا</translation>
 <translation id="6571070086367343653">تعديل بطاقة الائتمان</translation>
+<translation id="6573431926118603307">‏ستظهر هنا علامات التبويب التي فتحتها في Chrome من أجهزتك الأخرى.</translation>
 <translation id="6575643671698722332">أخفقت إعادة التعيين. تأكد من مدى اتصال جهازك وأعد المحاولة.</translation>
 <translation id="6600954340915313787">‏تم النسخ إلى Chrome</translation>
 <translation id="6612358246767739896">محتوى محمي</translation>
@@ -510,6 +521,8 @@
 <translation id="7791543448312431591">إضافة</translation>
 <translation id="780301667611848630">لا، شكرًا</translation>
 <translation id="7829298379596169484">جارٍ الوصول إلى إدخال الصوت</translation>
+<translation id="7837582000577464779">حدث خطأ أثناء معالجة طلبك.  الرجاء التحقق من حسابك والمحاولة مرة أخرى.</translation>
+<translation id="7840369537802583269">اكتشاف وتشغيل الوسائط المهمة لموقع معين.</translation>
 <translation id="7846076177841592234">إلغاء التحديد</translation>
 <translation id="7851858861565204677">أجهزة أخرى</translation>
 <translation id="7876243839304621966">إزالة الكل</translation>
@@ -566,6 +579,7 @@
 <translation id="862875433388403934">قد لا يكون المحتوى (أفلام، موسيقى، وما إلى ذلك) الذي تم تنزيله في تطبيقات أخرى قابلاً للتشغيل حتى تُعيد هذه التطبيقات الحصول على التراخيص استنادًا إلى بيانات اعتماد الجهاز الجديدة.
 
 للحصول على تراخيص جديدة، عليك الاتصال بالإنترنت ثم تشغيل المحتوى الذي تم تنزيله.</translation>
+<translation id="8636825310635137004">للحصول على علامات التبويب من أجهزتك الأخرى، شغِّل المزامنة.</translation>
 <translation id="8660471606262461360">‏من Google Payments</translation>
 <translation id="8676374126336081632">محو الإرسال</translation>
 <translation id="869891660844655955">تاريخ انتهاء الصلاحية</translation>

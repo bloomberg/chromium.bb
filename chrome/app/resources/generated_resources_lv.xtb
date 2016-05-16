@@ -1938,7 +1938,6 @@ no <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3688507211863392146">Rakstīt failos un mapēs, kurus atverat lietojumprogrammā</translation>
 <translation id="3688526734140524629">Mainīt kanālu</translation>
 <translation id="3688578402379768763">Atjaunināts</translation>
-<translation id="3690976161240450479">Neizdevās pierakstīties. Lūdzu, sazinieties ar administratoru vai mēģiniet vēlreiz.</translation>
 <translation id="3693415264595406141">Parole:</translation>
 <translation id="3694027410380121301">Atlasīt iepriekšējo cilni</translation>
 <translation id="3694678678240097321">Ja paplašinājums, kas lapā izpilda skriptu, lūdza atļauju darboties visos vietrāžos URL, ir nepieciešama lietotāja piekrišana.</translation>
@@ -4685,7 +4684,6 @@ Iespējams, dažas funkcijas nebūs pieejamas. Pārbaudiet, vai profils eksistē
 <translation id="7859704718976024901">Pārlūkošanas vēsture</translation>
 <translation id="7861215335140947162">Lejupielādes</translation>
 <translation id="7864539943188674973">Atspējot Bluetooth</translation>
-<translation id="7868891395842935202">Iespējo eksperimentālo struktūru, lai pārvaldītu piekļuvi API eksperimentiem.</translation>
 <translation id="7870576007982733437">Izmantot sistēmas lejupielāžu pārvaldnieku, kad tas ir iespējams.</translation>
 <translation id="7870790288828963061">Netika atrasta neviena Kioska lietotne ar jaunāku versiju. Nav jāatjaunina neviena lietotne. Lūdzu, izņemiet USB atmiņas karti.</translation>
 <translation id="787150342916295244">Kredītkartes skenēšana</translation>
@@ -5016,7 +5014,6 @@ Tiek rēķināts atlikušais uzlādes laiks</translation>
 <translation id="8309505303672555187">Atlasīt tīklu:</translation>
 <translation id="8312871300878166382">Ielīmēt mapē</translation>
 <translation id="8314013494437618358">Pavedienu kompozicionēšana</translation>
-<translation id="8314576811984836978">Eksperimentālā struktūra</translation>
 <translation id="8319414634934645341">Paplašināta atslēgas lietošana</translation>
 <translation id="8322814362483282060">Šīs lapas piekļuve jūsu mikrofonam ir bloķēta.</translation>
 <translation id="8326478304147373412">PKCS #7, sertificēšanas ķēde</translation>
@@ -5077,7 +5074,6 @@ Tiek rēķināts atlikušais uzlādes laiks</translation>
 <translation id="8418240940464873056">Ķīniešu valodas režīms</translation>
 <translation id="8418445294933751433">Rādīt kā cilni</translation>
 <translation id="8420060421540670057">Rādīt Google dokumentu failus</translation>
-<translation id="8420728540268437431">Šī lapa tiek tulkota...</translation>
 <translation id="842274098655511832">WebGL melnraksta paplašinājumi</translation>
 <translation id="8424039430705546751">uz leju</translation>
 <translation id="8425213833346101688">Mainīt</translation>

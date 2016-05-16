@@ -144,6 +144,11 @@
 <translation id="1608755754295374538">URL-ovi koji će dobiti pristup uređajima za snimanje zvuka bez postavljanja upita</translation>
 <translation id="1617235075406854669">Omogući brisanje povijesti preglednika i preuzimanja</translation>
 <translation id="1617384279878333801">Omogućivanje dodavanja osobe u upravitelju profila</translation>
+<translation id="163200210584085447">Uzorci na tom popisu usporedit će se sa sigurnosnim
+      izvorištem URL-a koji šalje zahtjev. Ako se podudaranje pronađe, pristup
+      uređajima za videosnimanje dodijelit će se na SAML stranicama za
+      prijavu. Ako se podudaranje ne pronađe, pristup će se automatski odbiti.
+      Uzorci sa zamjenskim znakovima nisu dopušteni.</translation>
 <translation id="1655229863189977773">Postavite veličinu predmemorije diska u bajtovima</translation>
 <translation id="166427968280387991">Proxy poslužitelj</translation>
 <translation id="1675002386741412210">Podržano na:</translation>
@@ -259,6 +264,7 @@
 <translation id="2113068765175018713">Ograničavanje vremena rada uređaja automatskim ponovnim pokretanjem sustava</translation>
 <translation id="2127599828444728326">Dopuštanje obavijesti na ovim web-lokacijama</translation>
 <translation id="2131902621292742709">Odgoda zatamnjivanja zaslona za vrijeme baterijskog napajanja</translation>
+<translation id="2134437727173969994">Dopusti zaključavanje zaslona</translation>
 <translation id="2137064848866899664">Ako se to pravilo postavi, svaki se zaslon zakreće na navedeno
       usmjerenje pri svakom ponovnom pokretanju i prilikom prvog povezivanja
       nakon promjene vrijednosti pravila. Korisnici mogu promijeniti usmjerenje
@@ -840,6 +846,7 @@
 <translation id="3967075520570946456">Omogućivanje prikazivanja stranice dobrodošlice prilikom prvog pokretanja preglednika nakon nadogradnje OS-a.</translation>
 <translation id="3973371701361892765">Nikada nemoj automatski sakriti policu</translation>
 <translation id="3984028218719007910">Određuje hoće li sustav <ph name="PRODUCT_OS_NAME" /> zadržati lokalne podatke računa nakon odjave. Ako je to pravilo postavljeno na "istinito", sustav <ph name="PRODUCT_OS_NAME" /> ne zadržava trajne račune i svi podaci s korisnikove sesije bit će odbačeni nakon odjave. Ako je to pravilo postavljeno na "lažno" ili ako nije konfigurirano, uređaj će možda zadržavati (kriptirane) lokalne korisničke podatke.</translation>
+<translation id="3997519162482760140">URL-ovi koji će dobiti pristup uređajima za videosnimanje na SAML stranicama za prijavu</translation>
 <translation id="4001275826058808087">IT administratori za poslovne uređaje pomoću te oznake mogu kontrolirati hoće li korisnici moći iskoristiti ponude registracijom OS-a Chrome.
 
       Ako je ovo pravilo postavljeno na istinito ili ako nije postavljeno, korisnici će moći iskoristiti ponude registracijom OS-a Chrome.
@@ -865,6 +872,9 @@
           Kada pravilo nije postavljeno, upotrebljava se zadano vrijeme.
 
           Vrijednost pravila treba navesti u milisekundama.</translation>
+<translation id="4115096483386877940">Dopusti zaključavanje zaslona.
+
+      Ako se to pravilo postavi na False, korisnici neće moći zaključati zaslon (bit će moguća samo odjava s korisničke sesije). Ako se to pravilo postavi na True ili se ne postavi, korisnici koji su se autentificirali zaporkom moći će zaključati zaslon.</translation>
 <translation id="4121350739760194865">Sprječavanje prikaza promocija aplikacija na stranici Nova kartica</translation>
 <translation id="4147054660081653009">Certifikat klijenta za povezivanje na RemoteAccessHostTokenValidationUrl.
 

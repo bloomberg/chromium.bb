@@ -149,6 +149,11 @@
 <translation id="1608755754295374538">Nettadresser som uten forespørsel blir gitt tilgang til enheter med lydopptak</translation>
 <translation id="1617235075406854669">Gjør det mulig å slette nettleser- og nedlastingslogg</translation>
 <translation id="1617384279878333801">Slå på «Legg til person» i profilbehandlingen</translation>
+<translation id="163200210584085447">Mønstrene på denne listen stilles opp mot sikkerhetskilden
+      til nettadressen forespørselen kommer fra. Hvis det finnes samsvar, blir det gitt
+      tilgang til videoopptaksenheter på SAML-påloggingssider. Hvis det ikke blir funnet
+      samsvar, blir tilgangen avvist automatisk. Mønstre med jokertegn er ikke
+      tillatt.</translation>
 <translation id="1655229863189977773">Angi størrelse på diskbuffer i byte</translation>
 <translation id="166427968280387991">Proxytjener</translation>
 <translation id="1675002386741412210">Støttes på:</translation>
@@ -268,6 +273,7 @@
 <translation id="2113068765175018713">Begrens enhetens driftstid ved å bruke automatisk omstart</translation>
 <translation id="2127599828444728326">Tillat varslinger på disse nettstedene</translation>
 <translation id="2131902621292742709">Forsinkelse for nedtonet skjerm når enheten kjører på batteristrøm</translation>
+<translation id="2134437727173969994">Tillat låsing av skjermen</translation>
 <translation id="2137064848866899664">Hvis denne regelen er angitt, roteres alle skjermer til den
       spesifiserte retningen hver gang enheten starter, og første gang den kobles
       til etter at regelverdien er endret. Brukerne kan endre skjermrotasjonen
@@ -547,7 +553,7 @@
 
           Lar deg spesifisere hvilken proxy-tjener som brukes av <ph name="PRODUCT_NAME" />, og hindrer brukerne i å endre innstillingene for proxy-tjenere. ARC-apper kan også bruke denne proxy-tjeneren.
 
-          Hvis du velger at det aldri skal brukes proxy-tjenere og alltid kobles til direkte, ignoreres alle andre alternativer.
+          Hvis du velger å aldri bruke proxy-tjenere og alltid koble til direkte, ignoreres alle andre alternativer.
 
           Hvis du velger at systeminnstillingene for proxy-tjenere skal brukes, eller at proxy-tjenere skal oppdages automatisk, ignoreres alle andre alternativer.
 
@@ -672,7 +678,7 @@
 <translation id="3206731874112238027">Slå av forhåndsvisning av utskrifter (avviklet)</translation>
 <translation id="3208854390109736596">Lar deg spesifisere hvilken proxy-tjener som brukes av <ph name="PRODUCT_NAME" />, og hindrer brukerne i å endre innstillingene for proxy-tjenere. ARC-apper kan også bruke denne proxy-tjeneren.
 
-      Hvis du velger at det aldri skal brukes proxy-tjenere og alltid kobles til direkte, ignoreres alle andre alternativer.
+      Hvis du velger å aldri bruke proxy-tjenere og alltid koble til direkte, ignoreres alle andre alternativer.
 
       Hvis du velger at proxy-tjenere skal oppdages automatisk, ignoreres alle andre alternativer.
 
@@ -870,6 +876,7 @@
 <translation id="3967075520570946456">Slå på visning av velkomstsiden ved den første oppstarten av nettleseren etter at operativsystemet er oppgradert.</translation>
 <translation id="3973371701361892765">Aldri skjul hyllen automatisk</translation>
 <translation id="3984028218719007910">Avgjør om <ph name="PRODUCT_OS_NAME" /> beholder lokal kontodata etter avlogging. Hvis retningslinjen er angitt som Sann, beholdes det ikke noen vedvarende kontoer av <ph name="PRODUCT_OS_NAME" />, og all data fra brukerøkten blir forkastet etter avlogging. Hvis denne retningslinjen er angitt som Usann eller ikke er konfigurert, kan enheten beholde (kryptert) lokal brukerdata.</translation>
+<translation id="3997519162482760140">Nettadresser som gis tilgang til videoopptaksenheter på SAML-påloggingssider</translation>
 <translation id="4001275826058808087">IT-administratorer for bedriftsenheter kan bruke denne markeringen til å kontrollere om brukerne kan innløse tilbud via Chrome OS- registrering.
 
       Hvis denne innstillingen angis som sann eller ikke angis, kan brukere innløse tilbud via Chrome OS-registrering.
@@ -897,6 +904,9 @@
           Når innstillingen ikke er konfigurert, brukes standard tidslengde.
 
           Innstillingsverdien må angis i millisekunder.</translation>
+<translation id="4115096483386877940">Tillat låsing av skjermen.
+
+      Hvis denne regelen settes til false (usann), kan ikke brukerne låse skjermen (det er bare mulig å logge av fra brukerøkten). Hvis denne regelen settes til true (sann) eller ikke angis, kan brukere som har autentisert med et passord, låse skjermen.</translation>
 <translation id="4121350739760194865">Gjør at programkampanjer ikke vises på siden Ny fane</translation>
 <translation id="4147054660081653009">Klientsertifikat for tilkobling til RemoteAccessHostTokenValidationUrl.
 
@@ -1409,7 +1419,7 @@
       Denne retningslinjen påvirker alle typer lagringsmedier, for eksempel USB-flashstasjoner, eksterne harddisker, SD-kort og andre minnekort, optisk lagring osv. Intern lagring påvirkes ikke, så filer du har lastet ned til nedlastingsmappen, er fortsatt tilgjengelige. Google Disk påvirkes heller ikke av denne retningslinjen.
 
       Hvis denne innstillingen er deaktivert eller ikke konfigurert, kan brukere anvende alle typer ekstern lagring som støttes, på enhetene sine.</translation>
-<translation id="6076099373507468537">Definerer listen over USB-enheter som kan kobles fra kjernedriveren, så de kan brukes via chrome.usb API direkte i nettprogrammer. Oppføringene er par av leverandør- og produktkoder som identifiserer spesifikke USB-enheter.
+<translation id="6076099373507468537">Definerer listen over USB-enheter som kan kobles fra kjernedriveren, så de kan brukes via chrome.usb API direkte i nettprogrammer. Oppføringene er parvise leverandør- og produktkoder som identifiserer spesifikke USB-enheter.
 
       Hvis denne regelen ikke er spesifisert, er listen over frakoblingsbare USB-enheter tom.</translation>
 <translation id="6095999036251797924">Angir hvor mye tid som kan gå uten brukeraktivitet før skjermen låses når nettstrøm eller batteri brukes.
@@ -1941,7 +1951,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis regelen settes til false (usann), rapporteres ikke øktinformasjonen.
       Hvis den settes til true (sann) eller ikke angis, rapporteres øktinformasjonen.</translation>
 <translation id="7774768074957326919">Bruk systeminnstillingene for mellomtjener</translation>
-<translation id="7775831859772431793">Du kan spesifisere nettadressen til proxytjeneren her.
+<translation id="7775831859772431793">Du kan spesifisere nettadressen til proxy-tjeneren her.
 
           Denne regelen trer bare i kraft hvis du har valgt manuelle innstillinger for proxy-tjenere under «Velg hvordan innstillinger for proxy-tjener angis».
 
@@ -2359,7 +2369,7 @@ programtillegg. Shockwave Flash-programtillegget tilhører for eksempel Adobe Fl
           Protokollbehandlere som registreres via denne innstillingen, slås sammen med de som er registrert av brukeren, og begge er tilgjengelige for bruk. Brukeren kan overstyre protokollbehandlerne som innstillingen har installert, ved å installere en ny standardbehandler, men kan ikke fjerne en protokollbehandler som er registrert via en innstilling.</translation>
 <translation id="913138516158420759">Lar deg spesifisere hvilken proxy-tjener som brukes av <ph name="PRODUCT_NAME" />, og hindrer brukerne i å endre innstillingene for proxy-tjenere. ARC-apper kan også bruke denne proxy-tjeneren.
 
-          Hvis du velger at det aldri skal brukes proxy-tjenere og alltid kobles til direkte, ignoreres alle andre alternativer.
+          Hvis du velger å aldri bruke proxy-tjenere og alltid koble til direkte, ignoreres alle andre alternativer.
 
           Hvis du velger at systeminnstillingene for proxy-tjenere skal brukes, ignoreres alle andre alternativer.
 

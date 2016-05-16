@@ -7,6 +7,7 @@
 <translation id="1061441684050139317">O Chrome necessita de acesso ao microfone para o partilhar com este site.</translation>
 <translation id="1080790410959514870">Está a terminar sessão numa conta gerida por <ph name="DOMAIN_NAME" />. Esta ação elimina os dados do Chrome armazenados neste dispositivo, mas os dados permanecem na sua Conta Google.</translation>
 <translation id="1098052486217676340">Concluído</translation>
+<translation id="1111673857033749125">Os marcadores guardados nos seus outros dispositivos são apresentados aqui.</translation>
 <translation id="1121094540300013208">Relatórios de utilização e falhas</translation>
 <translation id="1137305377394488060">da hora anterior</translation>
 <translation id="1178581264944972037">Pausa</translation>
@@ -25,6 +26,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="1285320974508926690">Nunca traduzir este site</translation>
 <translation id="1291207594882862231">Limpar histórico, cookies, dados de sites, cache…</translation>
 <translation id="129553762522093515">Fechados recentemente</translation>
+<translation id="1326317727527857210">Para obter os separadores dos seus outros dispositivos, inicie sessão no Chrome.</translation>
 <translation id="13410144310025252">Vê-los no Chrome</translation>
 <translation id="1369915414381695676">Site <ph name="SITE_NAME" /> adicionado</translation>
 <translation id="1373696734384179344">Memória insuficiente para transferir o conteúdo selecionado.</translation>
@@ -99,6 +101,11 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="2268044343513325586">Refinar</translation>
 <translation id="2315043854645842844">O sistema operativo não suporta a seleção do certificado do lado do cliente.</translation>
 <translation id="2321958826496381788">Arraste o controlo de deslize até conseguir ler confortavelmente. O texto deve ter, pelo menos, este tamanho depois de tocar duas vezes num parágrafo.</translation>
+<translation id="2331464965008647960">Existem dispositivos próximos de si a transmitir páginas Web através de Bluetooth. O Chrome procura páginas e apresenta-as quando reativar o dispositivo. Estas páginas passam por um serviço Google para melhorar a qualidade dos resultados da página.
+
+Pode controlar a Web física nas Definições do Chrome.
+
+<ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">A instalar...</translation>
 <translation id="2351097562818989364">As definições de tradução foram repostas.</translation>
 <translation id="2359808026110333948">Continuar</translation>
@@ -156,6 +163,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="307329814453917357">Oferecer-se para traduzir páginas com o Google Tradutor</translation>
 <translation id="3089395242580810162">Abrir no separador anónimo</translation>
 <translation id="3090193911106258841">A aceder à entrada de áudio e de vídeo</translation>
+<translation id="3117051980354074377">Para obter os marcadores dos seus outros dispositivos, inicie sessão no Chrome.</translation>
 <translation id="3137521801621304719">Sair do modo de navegação anónima</translation>
 <translation id="3149891296864842641">Opção de envio</translation>
 <translation id="3162882791484435636">Selecionar opção de envio</translation>
@@ -220,6 +228,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4062305924942672200">Informações legais</translation>
 <translation id="4089831646916293264">Esta funcionalidade pode interferir com o acesso a serviços de dados premium fornecidos pelo seu operador.</translation>
 <translation id="4099578267706723511">Ajude a melhorar o Chrome ao enviar estatísticas de utilização e relatórios de falhas para a Google.</translation>
+<translation id="410351446219883937">Reprodução automática</translation>
 <translation id="411254640334432676">A transferência falhou.</translation>
 <translation id="4113030288477039509">Gerido pelo administrador</translation>
 <translation id="4165986682804962316">Definições de sites</translation>
@@ -373,6 +382,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="6042308850641462728">Mais</translation>
 <translation id="604996488070107836">A transferência de <ph name="FILE_NAME" /> falhou devido a um erro desconhecido.</translation>
 <translation id="605721222689873409">AA</translation>
+<translation id="605904398899306450">Permitir que os sites reproduzam automaticamente conteúdos multimédia importantes (recomendado)</translation>
 <translation id="6075798973483050474">Editar página inicial</translation>
 <translation id="6108923351542677676">Configuração em curso…</translation>
 <translation id="6112702117600201073">A atualizar a página</translation>
@@ -409,6 +419,7 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="6550675742724504774">Opções</translation>
 <translation id="656628257199996201">Traduzir sempre <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6571070086367343653">Editar cartão de crédito</translation>
+<translation id="6573431926118603307">Os separadores que abriu no Chrome nos seus outros dispositivos são apresentados aqui.</translation>
 <translation id="6575643671698722332">Falha ao repor. Verifique se o dispositivo está online e tente novamente.</translation>
 <translation id="6600954340915313787">Copiado para o Chrome</translation>
 <translation id="6612358246767739896">Conteúdo protegido</translation>
@@ -511,6 +522,8 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="7791543448312431591">Adicionar</translation>
 <translation id="780301667611848630">Não, obrigado</translation>
 <translation id="7829298379596169484">A aceder à entrada de áudio</translation>
+<translation id="7837582000577464779">Ocorreu um erro ao processar a encomenda. Verifique a sua conta e tente novamente.</translation>
+<translation id="7840369537802583269">Detetar e reproduzir conteúdos multimédia importantes de um site específico.</translation>
 <translation id="7846076177841592234">Cancelar seleção</translation>
 <translation id="7851858861565204677">Outros aparelhos</translation>
 <translation id="7876243839304621966">Remover tudo</translation>
@@ -567,6 +580,7 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="862875433388403934">É possível que os conteúdos (filmes, música, etc.) transferidos noutras aplicações deixem de ser reproduzíveis enquanto essas aplicações não voltarem a obter licenças com base numa nova credencial de dispositivo.
 
 Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transferido.</translation>
+<translation id="8636825310635137004">Para obter os separadores dos seus outros dispositivos, ative a sincronização.</translation>
 <translation id="8660471606262461360">Do Google Payments</translation>
 <translation id="8676374126336081632">Limpar texto</translation>
 <translation id="869891660844655955">Data de expiração</translation>

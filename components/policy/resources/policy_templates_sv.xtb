@@ -154,6 +154,11 @@
 <translation id="1608755754295374538">Webbadresser som ska ges tillgång till ljudinspelningsenheter utan meddelande</translation>
 <translation id="1617235075406854669">Aktivera borttagning av webb- och nedladdningshistorik</translation>
 <translation id="1617384279878333801">Gör att en person kan läggas till i profilhanteraren</translation>
+<translation id="163200210584085447">Mönster på den här listan kommer att matchas mot den begärande
+      webbadressens säkerhetsursprung. Om det blir en träff får adressen
+      åtkomst till videoinspelningsenheter på inloggningssidor med SAML.
+      Om det inte blir någon träff nekas åtkomst automatiskt. Mönster
+      med jokertecken får inte användas.</translation>
 <translation id="1655229863189977773">Ange enhetens cachestorlek i byte</translation>
 <translation id="166427968280387991">Proxyserver</translation>
 <translation id="1675002386741412210">Stöds av:</translation>
@@ -279,6 +284,7 @@
 <translation id="2113068765175018713">Begränsa enhetens upptid genom att starta om automatiskt</translation>
 <translation id="2127599828444728326">Tillåt meddelanden på dessa webbplatser</translation>
 <translation id="2131902621292742709">Skärmdämpningstid när enheten drivs av batteriet</translation>
+<translation id="2134437727173969994">Tillåt att skärmen låses</translation>
 <translation id="2137064848866899664">När den här principen har ställts in roteras alla skärmar till
       den angivna riktningen vid varje omstart och första gången som skärmen
       ansluts efter att värdet i principen har ändrats. Användarna kan ändra
@@ -909,6 +915,7 @@
 <translation id="3967075520570946456">Gör att välkomstsidan visas när webbläsaren startas för första gången efter en uppgradering av operativsystemet.</translation>
 <translation id="3973371701361892765">Dölj aldrig hyllan automatiskt</translation>
 <translation id="3984028218719007910">Avgör om <ph name="PRODUCT_OS_NAME" /> ska spara lokala kontodata efter utloggning. Om värdet är sant sparas inga konton permanent av <ph name="PRODUCT_OS_NAME" /> och alla data från användarsessionen kasseras efter utloggning. Om policyn är inställd på falskt eller inte konfigurerad kan lokala användardata sparas (krypterade) i enheten.</translation>
+<translation id="3997519162482760140">Webbadresser som ska beviljas åtkomst till videoinspelningsenheter på inloggningssidor med SAML</translation>
 <translation id="4001275826058808087">IT-administratörer för företagsenheter kan använda den här flaggan för att styra om användarna ska kunna utnyttja erbjudanden via registrering i Chrome OS.
 
       Om policyn är inställd på sant eller inte är inställd kan användarna utnyttja erbjudanden via registrering i Chrome OS.
@@ -942,6 +949,9 @@
           Om policyn inte är inställd används standardtiden.
 
           Policyns värde anges i millisekunder.</translation>
+<translation id="4115096483386877940">Tillåt att skärmen låses.
+
+      Om principen är inställd på falskt kan användare inte låsa skärmen (utan endast logga ut från användarsessionen). Om principen är inställd på sant eller inte har angetts kan användare som har autentiserats med ett lösenord låsa skärmen.</translation>
 <translation id="4121350739760194865">Förhindra att appkampanjer visas på den nya fliksidan</translation>
 <translation id="4147054660081653009">Klientcertifikat för anslutning till RemoteAccessHostTokenValidationUrl.
 

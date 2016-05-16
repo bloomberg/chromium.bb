@@ -7,6 +7,7 @@
 <translation id="1061441684050139317">Chrome'un mikrofonu bu siteyle paylaşması için mikrofon erişimine ihtiyacı var.</translation>
 <translation id="1080790410959514870"><ph name="DOMAIN_NAME" /> tarafından yönetilen bir hesaptan çıkış yapıyorsunuz. Bu işlem, bu cihazda depolanan Chrome verilerini siler, ancak veriler Google Hesabınızda kalmaya devam eder.</translation>
 <translation id="1098052486217676340">Bitti</translation>
+<translation id="1111673857033749125">Diğer cihazlarınızda kaydedilmiş yer işaretleri burada görünür.</translation>
 <translation id="1121094540300013208">Kullanım ve kilitlenme raporları</translation>
 <translation id="1137305377394488060">son 1 saat</translation>
 <translation id="1178581264944972037">Duraklat</translation>
@@ -25,6 +26,7 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="1285320974508926690">Bu siteyi hiçbir zaman çevirme</translation>
 <translation id="1291207594882862231">Geçmişi, çerezleri, site verilerini, önbelleği temizleyin…</translation>
 <translation id="129553762522093515">Son kapatılan</translation>
+<translation id="1326317727527857210">Diğer cihazlarınızdaki sekmelerinize ulaşmak için Chrome'da oturum açın.</translation>
 <translation id="13410144310025252">Bunları Chrome'da görüntüle</translation>
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> sitesi eklendi</translation>
 <translation id="1373696734384179344">Seçilen içeriği indirmek için bellek yetersiz.</translation>
@@ -99,6 +101,11 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="2268044343513325586">Hassaslaştır</translation>
 <translation id="2315043854645842844">İstemci tarafı sertifika seçimi, işletim sistemi tarafından desteklenmiyor.</translation>
 <translation id="2321958826496381788">Bu yazıyı rahatça okuyana kadar kaydırma çubuğunu sürükleyin. Bir paragrafa iki kez hafifçe dokunduğunuzda metin en az bunun kadar büyük görünmelidir.</translation>
+<translation id="2331464965008647960">Etrafınızdaki cihazlar Bluetooth üzerinden web sayfaları yayınlıyor. Chrome sayfaları tarayacak ve cihazınızı uyku modundan çıkardığınızda bu sayfaları görüntüleyecek. Sayfa sonuçlarının kalitesini iyileştirmek için bu sayfalar bir Google hizmetiyle işlenerek sunulacaktır.
+
+Chrome Ayarları'ndan Fiziksel Web'i kontrol edebilirsiniz.
+
+<ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">Yükleniyor…</translation>
 <translation id="2351097562818989364">Çeviri ayarlarınız sıfırlandı.</translation>
 <translation id="2359808026110333948">Devam Et</translation>
@@ -156,6 +163,7 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="307329814453917357">Sayfaları Google Çeviri ile çevirmeyi öner</translation>
 <translation id="3089395242580810162">Gizli sekmede aç</translation>
 <translation id="3090193911106258841">Ses ve video girişlerine erişiliyor</translation>
+<translation id="3117051980354074377">Diğer cihazlarınızdaki yer işaretlerinizi almak için Chrome'da oturum açın.</translation>
 <translation id="3137521801621304719">Gizli moddan çık</translation>
 <translation id="3149891296864842641">Gönderim seçeneği</translation>
 <translation id="3162882791484435636">Gönderim seçeneğini belirleyin</translation>
@@ -220,6 +228,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4062305924942672200">Yasal bilgiler</translation>
 <translation id="4089831646916293264">Bu özellik, operatörünüz tarafından sağlanan birinci sınıf veri hizmetlerine erişime engel olabilir.</translation>
 <translation id="4099578267706723511">Google'a kullanım istatistikleri ve kilitlenme raporları göndererek Chrome'u iyileştirmeye yardımcı olun.</translation>
+<translation id="410351446219883937">Otomatik oynatma</translation>
 <translation id="411254640334432676">İndirme başarısız oldu.</translation>
 <translation id="4113030288477039509">Yöneticiniz tarafından yönetiliyor</translation>
 <translation id="4165986682804962316">Site ayarları</translation>
@@ -373,6 +382,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6042308850641462728">Daha fazla</translation>
 <translation id="604996488070107836">Bilinmeyen bir hata nedeniyle <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="605904398899306450">Sitelerin, önemli medyaları otomatik olarak oynatmasına izin verir (önerilen)</translation>
 <translation id="6075798973483050474">Ana sayfayı düzenle</translation>
 <translation id="6108923351542677676">Kurulum devam ediyor…</translation>
 <translation id="6112702117600201073">Sayfa yenileniyor</translation>
@@ -409,6 +419,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6550675742724504774">Seçenekler</translation>
 <translation id="656628257199996201"><ph name="SOURCE_LANGUAGE" /> dilini her zaman çevir</translation>
 <translation id="6571070086367343653">Kredi kartını düzenle</translation>
+<translation id="6573431926118603307">Diğer cihazlarınızda Chrome ile açtığınız sekmeler burada görünür.</translation>
 <translation id="6575643671698722332">Sıfırlanamadı. Cihazınızın çevrimiçi olduğundan emin olun ve tekrar deneyin.</translation>
 <translation id="6600954340915313787">Chrome'a kopyalandı</translation>
 <translation id="6612358246767739896">Korunan içerik</translation>
@@ -511,6 +522,8 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="7791543448312431591">Ekle</translation>
 <translation id="780301667611848630">Hayır, teşekkürler</translation>
 <translation id="7829298379596169484">Ses girişine erişiliyor</translation>
+<translation id="7837582000577464779">Siparişiniz işlenirken bir hata oldu. Lütfen hesabınızı kontrol edin ve tekrar deneyin.</translation>
+<translation id="7840369537802583269">Belirli bir site için önemli medyaları algılayın ve oynatın.</translation>
 <translation id="7846076177841592234">Seçimi iptal et</translation>
 <translation id="7851858861565204677">Diğer cihazlar</translation>
 <translation id="7876243839304621966">Tümünü kaldır</translation>
@@ -567,6 +580,7 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="862875433388403934">Diğer uygulamalarda indirilen içerikler (film, müzik vb.), ilgili uygulamalar cihazın yeni kimlik bilgilerine dayanarak yeniden lisans alana kadar oynatılmayabilir.
 
 Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği oynatın.</translation>
+<translation id="8636825310635137004">Diğer cihazlarınızdaki sekmelerinize ulaşmak için senkronizasyonu etkinleştirin.</translation>
 <translation id="8660471606262461360">Google Payments'tan</translation>
 <translation id="8676374126336081632">Girişi temizle</translation>
 <translation id="869891660844655955">Son kullanma tarihi</translation>

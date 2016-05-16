@@ -293,6 +293,7 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="1415990189994829608"><ph name="EXTENSION_NAME" /> (ID de extensão "<ph name="EXTENSION_ID" />") não é permitido neste tipo de sessão.</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="1420684932347524586">Ops! Falha ao gerar a chave privada RSA aleatória.</translation>
+<translation id="1421115928968836111">Isso desautorizará as licenças do Flash Player para conteúdo protegido.</translation>
 <translation id="1425734930786274278">Os cookies a seguir foram bloqueados (cookies de terceiros estão sendo bloqueados sem exceções):</translation>
 <translation id="1426410128494586442">Sim</translation>
 <translation id="1427049173708736891">Manter seu <ph name="DEVICE_TYPE" /> desbloqueado quando seu smartphone Android estiver desbloqueado e nas proximidades. É necessário digitar sua senha.</translation>
@@ -521,6 +522,7 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="1707463636381878959">Compartilhar esta rede</translation>
 <translation id="1708199901407471282">Ao abrir uma sugestão de página da Web a partir da página "Nova guia", se uma guia já estiver aberta para a sugestão, alterne para ela em vez de carregar a sugestão na nova guia.</translation>
 <translation id="1708338024780164500">(Inativa)</translation>
+<translation id="1708713382908678956"><ph name="NAME_PH" /> (código: <ph name="ID_PH" />)</translation>
 <translation id="1711973684025117106">Falha na compactação, erro inesperado: $1</translation>
 <translation id="1715941336038158809">Nome de usuário ou senha inválida.</translation>
 <translation id="1717733954209022288">Caixa de seleção para salvar cartão do Google Payments</translation>
@@ -797,6 +799,7 @@ Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.<
 <translation id="2168214441502403371">Teclado persa</translation>
 <translation id="2168725742002792683">Extensões de arquivo</translation>
 <translation id="2169062631698640254">Fazer login assim mesmo</translation>
+<translation id="2175042898143291048">Sempre fazer isso</translation>
 <translation id="2175607476662778685">Barra de inicialização rápida</translation>
 <translation id="2176045495080708525">As seguintes extensões foram instaladas:</translation>
 <translation id="2177950615300672361">Guia anônima: <ph name="TAB_NAME" /></translation>
@@ -1936,7 +1939,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3688507211863392146">Realizar gravações em arquivos e pastas que você abre no aplicativo</translation>
 <translation id="3688526734140524629">Mudar de canal</translation>
 <translation id="3688578402379768763">Atualizado</translation>
-<translation id="3690976161240450479">Falha no login. Entre em contato com o administrador ou tente novamente.</translation>
 <translation id="3693415264595406141">Senha:</translation>
 <translation id="3694027410380121301">Selecionar guia anterior</translation>
 <translation id="3694678678240097321">Exige o consentimento do usuário para uma extensão que executa um script na página, se a extensão tiver solicitado permissão para ser executada em todos os URLs.</translation>
@@ -2232,6 +2234,7 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4116663294526079822">Sempre permitir neste site</translation>
 <translation id="411666854932687641">Memória privada</translation>
 <translation id="4118990158415604803">A conexão com outras redes foi desativada pelo seu administrador.</translation>
+<translation id="4119034994132515155">{COUNT,plural, =1{e mais uma foto}one{e mais #}other{e mais #}}</translation>
 <translation id="4119828560634133962">Registro de promoções na visualização de impressão</translation>
 <translation id="4120329147617730038">Um administrador desativou o login múltiplo para <ph name="USER_EMAIL" />.
 Todos os usuários devem sair para continuar.</translation>
@@ -2370,9 +2373,11 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="4345703751611431217">Incompatibilidade de software: saiba mais</translation>
 <translation id="4348766275249686434">Coletar erros</translation>
 <translation id="4350019051035968019">Este dispositivo não pode ser inscrito no domínio ao qual sua conta pertence, porque ele está marcado para ser gerenciado por outro domínio.</translation>
+<translation id="4354806558096370704">Ativa o uso do back-end de impressão CUPS nativo.</translation>
 <translation id="4358697938732213860">Adicionar um endereço</translation>
 <translation id="4359408040881008151">Instalada devido a extensões dependentes.</translation>
 <translation id="4361190688154226069">Segmentação baseada em retângulo para visualizações</translation>
+<translation id="4364414793200746179">Notificação MediaStyle do Android</translation>
 <translation id="4364444725319685468"><ph name="FILE_NAME" /> transferido por download</translation>
 <translation id="4364567974334641491">O app <ph name="APP_NAME" /> está compartilhando uma janela.</translation>
 <translation id="4364830672918311045">Exibir notificações</translation>
@@ -2774,6 +2779,7 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="4988792151665380515">Falha ao exportar chave pública.</translation>
 <translation id="49896407730300355">Girar no s&amp;entido anti-horário</translation>
 <translation id="4989966318180235467">Inspecionar página de &amp;fundo</translation>
+<translation id="4990343175649730969">Fazer o download da Ferramenta de limpeza do Chrome</translation>
 <translation id="4991420928586866460">Tratar teclas de linha superior como teclas de função</translation>
 <translation id="499165176004408815">Usar modo de alto contraste</translation>
 <translation id="4992066212339426712">Ativar som</translation>
@@ -3298,6 +3304,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5741245087700236983"><ph name="PROFILE_NAME" />: selecione para editar</translation>
 <translation id="5741454054957165976">Ativar a nova versão da intervenção de User Agent para carregamento de WebFonts.</translation>
 <translation id="574392208103952083">Médio</translation>
+<translation id="5744368829843057748">Interface do usuário do Tradutor 2016Q2</translation>
 <translation id="5745056705311424885">Cartão de memória USB detectado</translation>
 <translation id="5746169159649715125">Salvar como PDF</translation>
 <translation id="5747611503456050045">Recarregamento da página acionado por conteúdo de rolagem vertical excessiva.</translation>
@@ -3405,6 +3412,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5884474295213649357">Esta guia está conectada a um dispositivo USB.</translation>
 <translation id="5885324376209859881">Gerenciar configurações de mídia...</translation>
 <translation id="5889282057229379085">Número máximo de autoridades de certificação intermediárias: <ph name="NUM_INTERMEDIATE_CA" /></translation>
+<translation id="5891822366999803429">Conte-nos o que está acontecendo.</translation>
 <translation id="5892290200158927959">Teclado BÉPO francês</translation>
 <translation id="5892507820957994680">Substitui a lista de renderização do software integrado e permite a aceleração GPU em configurações do sistema não suportadas.</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
@@ -3546,6 +3554,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6122093587541546701">E-mail (opcional):</translation>
 <translation id="6122875415561139701">A operação de escrita não é permitida em: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="6124650939968185064">As extensões a seguir dependem desta extensão:</translation>
+<translation id="6127945163801765632">Ativar a seção "todos os favoritos" no gerenciador de favoritos.</translation>
 <translation id="6129938384427316298">Comentário do certificado do Netscape</translation>
 <translation id="6129953537138746214">Espaço</translation>
 <translation id="6132383530370527946">Texto legal</translation>
@@ -3573,6 +3582,7 @@ Não exponha nenhuma informação confidencial.</translation>
 permanentemente excluídos assim que esse usuário for removido. Os websites visitados por esse usuário supervisionado e suas configurações ainda poderão ser vistos pelo administrador em <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6166185671393271715">Importar senhas para o Chrome</translation>
+<translation id="6169666352732958425">Não é possível transmitir a área de trabalho.</translation>
 <translation id="6171550060231646388">Recursos "Ok Google" de hardware simulado</translation>
 <translation id="6175314957787328458">GUID do domínio da Microsoft</translation>
 <translation id="6178664161104547336">Selecione um certificado</translation>
@@ -3766,6 +3776,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6458308652667395253">Gerenciar o bloqueio de JavaScript...</translation>
 <translation id="6459488832681039634">Usar seleção para buscar</translation>
 <translation id="6460423884798879930">Ativar a opção de enviar informações extras de autenticação no pacote SYN inicial para um cliente anteriormente conectado, permitindo mais rapidez no início do envio de dados.</translation>
+<translation id="6460474910028274178">Melhoria na lógica de acionamento e na aparência da interface do usuário do Tradutor Bubble</translation>
 <translation id="6460601847208524483">Localizar próximo</translation>
 <translation id="6462080265650314920">Os aplicativos devem ser servidos com o tipo de conteúdo "<ph name="CONTENT_TYPE" />".</translation>
 <translation id="6462082050341971451">Você ainda está aí?</translation>
@@ -3895,6 +3906,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6663792236418322902">A senha escolhida será solicitada para restaurar este arquivo mais tarde. Guarde-a em um local seguro.</translation>
 <translation id="6664237456442406323">Infelizmente, seu computador está configurado com um ID de hardware mal formado. Isso impede que o Chrome OS seja atualizado com as correções de segurança mais recentes e, por isso, seu computador <ph name="BEGIN_BOLD" />pode ficar vulnerável a ataques maliciosos<ph name="END_BOLD" />.</translation>
 <translation id="6666647326143344290">com sua Conta do Google</translation>
+<translation id="667517062706956822">Deseja que o Google traduza esta página de <ph name="SOURCE_LANGUAGE" /> para <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Dispositivo apontador conectado</translation>
 <translation id="6677037229676347494">ID esperado "<ph name="EXPECTED_ID" />", mas era "<ph name="NEW_ID" />".</translation>
 <translation id="6680028776254050810">Trocar usuários</translation>
@@ -3946,6 +3958,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6746392203843147041">aumentar volume</translation>
 <translation id="6748140994595080445">Alterar a forma como o <ph name="APP_NAME" /> manipula e exibe os idiomas.</translation>
 <translation id="6748465660675848252">É possível prosseguir, mas apenas seus dados e configurações sincronizados serão restaurados. Todos os dados locais serão perdidos.</translation>
+<translation id="6751256176799620176">1 pasta selecionada</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" /> (Modo anônimo)</translation>
 <translation id="6759193508432371551">Configuração original</translation>
 <translation id="6760765581316020278">Teclado vietnamita (VNI)</translation>
@@ -4586,6 +4599,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7717014941119698257">Fazendo download <ph name="STATUS" /></translation>
 <translation id="7719421816612904796">O tempo de treinamento expirou.</translation>
 <translation id="771953673318695590">QA</translation>
+<translation id="7720375555307821262">Para supervisionar essa pessoa, <ph name="BEGIN_LINK" />faça login no Chrome<ph name="END_LINK" />.</translation>
 <translation id="7724603315864178912">Recortar</translation>
 <translation id="7730449930968088409">Capturar o conteúdo da sua tela</translation>
 <translation id="7730494089396812859">Exibir detalhes do backup em nuvem</translation>
@@ -4679,7 +4693,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7859704718976024901">Histórico de navegação</translation>
 <translation id="7861215335140947162">&amp;Downloads</translation>
 <translation id="7864539943188674973">Desativar bluetooth</translation>
-<translation id="7868891395842935202">Permite que a estrutura experimental controle o acesso a experimentos de API.</translation>
 <translation id="7870576007982733437">Usar o gerenciador de downloads do sistema quando aplicável.</translation>
 <translation id="7870790288828963061">Nenhum aplicativo de quiosque com versão mais recente foi encontrado. Não há nada para ser atualizado. Remova o pendrive.</translation>
 <translation id="787150342916295244">Digitalização de cartão de crédito</translation>
@@ -5008,7 +5021,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8309505303672555187">Selecione uma rede:</translation>
 <translation id="8312871300878166382">Colar na pasta</translation>
 <translation id="8314013494437618358">Composição de thread</translation>
-<translation id="8314576811984836978">Estrutura experimental.</translation>
 <translation id="8319414634934645341">Uso estendido de chave</translation>
 <translation id="8322814362483282060">Esta página foi impedida de acessar seu microfone.</translation>
 <translation id="8326478304147373412">PKCS #7, cadeia de certificados</translation>
@@ -5069,7 +5081,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8418240940464873056">Modo letras japonesas (Hanja)</translation>
 <translation id="8418445294933751433">&amp;Mostrar como guia</translation>
 <translation id="8420060421540670057">Mostrar arquivos do Google Docs</translation>
-<translation id="8420728540268437431">Esta página está sendo traduzida...</translation>
 <translation id="842274098655511832">Extensões de rascunho do WebGL</translation>
 <translation id="8424039430705546751">para baixo</translation>
 <translation id="8425213833346101688">Alterar</translation>
@@ -5256,6 +5267,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8690754533598178758">As exceções do microfone do Adobe Flash Player são diferentes.</translation>
 <translation id="8691686986795184760">Ativado pela política empresarial</translation>
 <translation id="869257642790614972">Reabrir a última guia fechada</translation>
+<translation id="8695770993395462321">CUPS nativo</translation>
 <translation id="8695825812785969222">Abrir &amp;local...</translation>
 <translation id="8698464937041809063">Desenho do Google</translation>
 <translation id="869884720829132584">Menu Aplicativos</translation>
@@ -5597,6 +5609,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="9189690067274055051">Desbloqueie seu smartphone e aproxime-o do <ph name="DEVICE_TYPE" /> para entrar.</translation>
 <translation id="9190063653747922532">L2TP/IPSEC + chave pré-compartilhada</translation>
 <translation id="9201305942933582053">Google Now para o Chrome!</translation>
+<translation id="9202646163273566462">Ativa a visualização de todos os favoritos como destino padrão do gerenciador de favoritos.</translation>
 <translation id="9203398526606335860">&amp;Criação de perfil ativada</translation>
 <translation id="9203478404496196495">Ativar o som da guia</translation>
 <translation id="9203962528777363226">O administrador deste dispositivo desativou a adição de novos usuários</translation>
@@ -5623,6 +5636,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="939736085109172342">Nova pasta</translation>
 <translation id="940425055435005472">Tamanho da fonte:</translation>
 <translation id="941543339607623937">Chave privada inválida.</translation>
+<translation id="94157737897675170">{COUNT,plural, =0{nenhum}=1{1 app ($1)}=2{2 apps ($1, $2)}other{# apps ($1, $2, $3)}}</translation>
 <translation id="942532530371314860">O app <ph name="APP_NAME" /> está compartilhando áudio e uma guia do Chrome.</translation>
 <translation id="942954117721265519">Não há imagens neste diretório.</translation>
 <translation id="945522503751344254">Enviar comentários</translation>
