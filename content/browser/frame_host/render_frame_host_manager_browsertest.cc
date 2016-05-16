@@ -2720,4 +2720,41 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, CtrlClickSubframeLink) {
                     "window.domAutomationController.send(ctrlClickLink());"));
 }
 
+// Ensure that we don't update the wrong NavigationEntry's title after an
+// ignored commit during a cross-process navigation.
+// See https://crbug.con/577449.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       UnloadPushStateOnCrossProcessNavigation) {
+  StartEmbeddedServer();
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+
+  // Give an initial page an unload handler that does a pushState, which will be
+  // ignored by the browser process.  It then does a title update which is
+  // meant for a NavigationEntry that will never be created.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title2.html")));
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(),
+                            "window.onunload=function(e){"
+                            "history.pushState({}, 'foo', 'foo');"
+                            "document.title='foo'; };\n"));
+  base::string16 title = web_contents->GetTitle();
+  NavigationEntryImpl* entry = web_contents->GetController().GetEntryAtIndex(0);
+
+  // Navigate the first tab to a different site and wait for the old process to
+  // complete its unload handler and exit.
+  RenderFrameHostImpl* rfh_a = root->current_frame_host();
+  rfh_a->DisableSwapOutTimerForTesting();
+  RenderProcessHostWatcher exit_observer(
+      rfh_a->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  TestNavigationObserver commit_observer(web_contents);
+  shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  commit_observer.Wait();
+  exit_observer.Wait();
+
+  // Ensure the entry's title hasn't changed after the ignored commit.
+  EXPECT_EQ(title, entry->GetTitle());
+}
+
 }  // namespace content

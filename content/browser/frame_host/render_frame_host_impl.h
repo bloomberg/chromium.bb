@@ -583,6 +583,8 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
                            RestoreSubframeFileAccessForHistoryNavigation);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
                            RenderViewInitAfterNewProxyAndProcessKill);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
+                           UnloadPushStateOnCrossProcessNavigation);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, CrashSubframe);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
                            RenderViewHostIsNotReusedAfterDelayedSwapOutACK);

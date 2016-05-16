@@ -134,6 +134,28 @@ base::i18n::TextDirection WebTextDirectionToChromeTextDirection(
   }
 }
 
+// Ensure that we reset nav_entry_id_ in OnDidCommitProvisionalLoad if any of
+// the validations fail and lead to an early return.  Call disable() once we
+// know the commit will be successful.  Resetting nav_entry_id_ avoids acting on
+// any UpdateState or UpdateTitle messages after an ignored commit.
+class ScopedCommitStateResetter {
+ public:
+  explicit ScopedCommitStateResetter(RenderFrameHostImpl* render_frame_host)
+      : render_frame_host_(render_frame_host), disabled_(false) {}
+
+  ~ScopedCommitStateResetter() {
+    if (!disabled_) {
+      render_frame_host_->set_nav_entry_id(0);
+    }
+  }
+
+  void disable() { disabled_ = true; }
+
+ private:
+  RenderFrameHostImpl* render_frame_host_;
+  bool disabled_;
+};
+
 }  // namespace
 
 // static
@@ -708,6 +730,10 @@ void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
 
   // The renderer process is gone, so this frame can no longer be loading.
   ResetLoadingState();
+
+  // Any future UpdateState or UpdateTitle messages from this or a recreated
+  // process should be ignored until the next commit.
+  set_nav_entry_id(0);
 }
 
 bool RenderFrameHostImpl::CreateRenderFrame(int proxy_routing_id,
@@ -951,6 +977,7 @@ void RenderFrameHostImpl::OnDidFailLoadWithError(
 // get a new page_id because we need to create a new navigation entry for that
 // action.
 void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
+  ScopedCommitStateResetter commit_state_resetter(this);
   RenderProcessHost* process = GetProcess();
 
   // Read the parameters out of the IPC message directly to avoid making another
@@ -1108,6 +1135,9 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
 
   accessibility_reset_count_ = 0;
   frame_tree_node()->navigator()->DidNavigate(this, validated_params);
+
+  // Since we didn't early return, it's safe to keep the commit state.
+  commit_state_resetter.disable();
 
   // For a top-level frame, there are potential security concerns associated
   // with displaying graphics from a previously loaded page after the URL in
