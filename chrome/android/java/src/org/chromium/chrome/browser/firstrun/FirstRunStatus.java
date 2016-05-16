@@ -13,7 +13,8 @@ import org.chromium.base.ContextUtils;
  */
 public class FirstRunStatus {
 
-    private static final String FIRST_RUN_FLOW_COMPLETE = "first_run_flow";
+    // Needed by ChromeBackupAgent
+    public static final String FIRST_RUN_FLOW_COMPLETE = "first_run_flow";
 
     /**
      * Sets the "main First Run Experience flow complete" preference.

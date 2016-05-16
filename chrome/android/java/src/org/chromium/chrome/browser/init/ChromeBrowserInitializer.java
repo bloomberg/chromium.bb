@@ -62,7 +62,6 @@ import java.util.Locale;
  */
 public class ChromeBrowserInitializer {
     private static final String TAG = "BrowserInitializer";
-    private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
     private static ChromeBrowserInitializer sChromeBrowserInitiliazer;
 
     private final Handler mHandler;
@@ -74,6 +73,9 @@ public class ChromeBrowserInitializer {
     private boolean mNativeInitializationComplete;
 
     private MinidumpDirectoryObserver mMinidumpDirectoryObserver;
+
+    // Public to allow use in ChromeBackupAgent
+    public static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
 
     /**
      * A callback to be executed when there is a new version available in Play Store.

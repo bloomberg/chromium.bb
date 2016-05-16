@@ -36,7 +36,6 @@ public class PrivacyPreferences extends PreferenceFragment
     private static final String PREF_SAFE_BROWSING = "safe_browsing";
     private static final String PREF_CONTEXTUAL_SEARCH = "contextual_search";
     private static final String PREF_NETWORK_PREDICTIONS = "network_predictions";
-    private static final String PREF_CRASH_DUMP_UPLOAD = "crash_dump_upload";
     private static final String PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR =
             "crash_dump_upload_no_cellular";
     private static final String PREF_DO_NOT_TRACK = "do_not_track";
@@ -44,6 +43,9 @@ public class PrivacyPreferences extends PreferenceFragment
     private static final String PREF_PHYSICAL_WEB = "physical_web";
 
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
+
+    // Needed for ChromeBackupAgent
+    public static final String PREF_CRASH_DUMP_UPLOAD = "crash_dump_upload";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

@@ -411,6 +411,7 @@ jinja_template("chrome_sync_shell_apk_manifest") {
 # GYP: //chrome/android/chrome_apk.gyp:chrome_public_apk_template_resources
 jinja_template_resources("chrome_public_apk_template_resources") {
   resources = [
+    "java/res_template/xml/chromebackupscheme.xml",
     "java/res_template/xml/searchable.xml",
     "java/res_template/xml/syncadapter.xml",
   ]
@@ -421,6 +422,7 @@ jinja_template_resources("chrome_public_apk_template_resources") {
 # GYP: //chrome/android/chrome_apk.gyp:chrome_sync_shell_apk_template_resources
 jinja_template_resources("chrome_sync_shell_apk_template_resources") {
   resources = [
+    "java/res_template/xml/chromebackupscheme.xml",
     "java/res_template/xml/searchable.xml",
     "java/res_template/xml/syncadapter.xml",
   ]

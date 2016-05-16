@@ -8,7 +8,6 @@ import android.accounts.Account;
 import android.content.Context;
 import android.preference.PreferenceManager;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.sync.AndroidSyncSettings;
 
 /**
@@ -18,7 +17,7 @@ public class ChromeSigninController {
 
     public static final String TAG = "ChromeSigninController";
 
-    @VisibleForTesting
+    // Used by ChromeBackupAgent and for testing.
     public static final String SIGNED_IN_ACCOUNT_KEY = "google.services.username";
 
     private static final Object LOCK = new Object();

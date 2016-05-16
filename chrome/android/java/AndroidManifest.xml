@@ -101,7 +101,9 @@ by a child template that "extends" this file.
         android:icon="@mipmap/app_icon"
         android:label="@string/app_name"
         android:largeHeap="false"
-        android:allowBackup="false"
+        android:allowBackup="true"
+        android:backupAgent="org.chromium.chrome.browser.ChromeBackupAgent"
+        android:fullBackupContent="@xml/chromebackupscheme"
         android:supportsRtl="true"
         {% block extra_application_attributes %}{% endblock %}>
 

@@ -41,9 +41,11 @@ public final class FirstRunSignInProcessor {
      * SharedPreferences preference names to keep the state of the First Run Experience.
      */
     private static final String FIRST_RUN_FLOW_SIGNIN_COMPLETE = "first_run_signin_complete";
-    private static final String FIRST_RUN_FLOW_SIGNIN_ACCOUNT_NAME =
+
+    // Needed by ChromeBackupAgent
+    public static final String FIRST_RUN_FLOW_SIGNIN_SETUP = "first_run_signin_setup";
+    public static final String FIRST_RUN_FLOW_SIGNIN_ACCOUNT_NAME =
             "first_run_signin_account_name";
-    private static final String FIRST_RUN_FLOW_SIGNIN_SETUP = "first_run_signin_setup";
 
     /**
      * Initiates the automatic sign-in process in background.
