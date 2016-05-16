@@ -277,16 +277,11 @@ bool FrameTreeNode::IsDescendantOf(FrameTreeNode* other) const {
 }
 
 FrameTreeNode* FrameTreeNode::PreviousSibling() const {
-  if (!parent_)
-    return nullptr;
+  return GetSibling(-1);
+}
 
-  for (size_t i = 0; i < parent_->child_count(); ++i) {
-    if (parent_->child_at(i) == this)
-      return (i == 0) ? nullptr : parent_->child_at(i - 1);
-  }
-
-  NOTREACHED() << "FrameTreeNode not found in its parent's children.";
-  return nullptr;
+FrameTreeNode* FrameTreeNode::NextSibling() const {
+  return GetSibling(1);
 }
 
 bool FrameTreeNode::IsLoading() const {
@@ -492,6 +487,24 @@ void FrameTreeNode::TraceSnapshot() const {
       TRACE_ID_WITH_SCOPE("FrameTreeNode", frame_tree_node_id_),
       std::unique_ptr<base::trace_event::ConvertableToTraceFormat>(
           new TracedFrameTreeNode(*this)));
+}
+
+FrameTreeNode* FrameTreeNode::GetSibling(int relative_offset) const {
+  if (!parent_)
+    return nullptr;
+
+  for (size_t i = 0; i < parent_->child_count(); ++i) {
+    if (parent_->child_at(i) == this) {
+      if ((relative_offset < 0 && static_cast<size_t>(-relative_offset) > i) ||
+          i + relative_offset >= parent_->child_count()) {
+        return nullptr;
+      }
+      return parent_->child_at(i + relative_offset);
+    }
+  }
+
+  NOTREACHED() << "FrameTreeNode not found in its parent's children.";
+  return nullptr;
 }
 
 }  // namespace content

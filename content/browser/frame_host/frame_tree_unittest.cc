@@ -342,8 +342,8 @@ TEST_F(FrameTreeTest, FindFrames) {
   EXPECT_EQ(nullptr, frame_tree->FindByName("no such frame"));
 }
 
-// Check that PreviousSibling() is retrieved correctly.
-TEST_F(FrameTreeTest, PreviousSibling) {
+// Check that PreviousSibling() and NextSibling() are retrieved correctly.
+TEST_F(FrameTreeTest, GetSibling) {
   main_test_rfh()->InitializeRenderFrameIfNeeded();
 
   // Add a few child frames to the main frame.
@@ -368,11 +368,19 @@ TEST_F(FrameTreeTest, PreviousSibling) {
       blink::WebSandboxFlags::None, blink::WebFrameOwnerProperties());
   FrameTreeNode* grandchild = child1->child_at(0);
 
+  // Test PreviousSibling().
   EXPECT_EQ(nullptr, root->PreviousSibling());
   EXPECT_EQ(nullptr, child0->PreviousSibling());
   EXPECT_EQ(child0, child1->PreviousSibling());
   EXPECT_EQ(child1, child2->PreviousSibling());
   EXPECT_EQ(nullptr, grandchild->PreviousSibling());
+
+  // Test NextSibling().
+  EXPECT_EQ(nullptr, root->NextSibling());
+  EXPECT_EQ(child1, child0->NextSibling());
+  EXPECT_EQ(child2, child1->NextSibling());
+  EXPECT_EQ(nullptr, child2->NextSibling());
+  EXPECT_EQ(nullptr, grandchild->NextSibling());
 }
 
 // Do some simple manipulations of the frame tree, making sure that

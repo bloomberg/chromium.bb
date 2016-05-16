@@ -206,6 +206,10 @@ class CONTENT_EXPORT FrameTreeNode {
   // |children_|, or nullptr if there is no such node.
   FrameTreeNode* PreviousSibling() const;
 
+  // Return the node immediately following this node in its parent's
+  // |children_|, or nullptr if there is no such node.
+  FrameTreeNode* NextSibling() const;
+
   // Returns true if this node is in a loading state.
   bool IsLoading() const;
 
@@ -275,6 +279,8 @@ class CONTENT_EXPORT FrameTreeNode {
   void set_parent(FrameTreeNode* parent) { parent_ = parent; }
 
   void TraceSnapshot() const;
+
+  FrameTreeNode* GetSibling(int relative_offset) const;
 
   // The next available browser-global FrameTreeNode ID.
   static int next_frame_tree_node_id_;
