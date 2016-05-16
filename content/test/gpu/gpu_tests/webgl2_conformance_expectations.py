@@ -88,15 +88,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Failing because the tests are using invalid combinations of source and
     # destination formats, see https://github.com/KhronosGroup/WebGL/issues/1628
     self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-r8-red-unsigned_byte.html',
-        ['d3d9', 'd3d11', 'opengl'], bug=483282)
-    self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-rg8-rg-unsigned_byte.html',
-        ['d3d9', 'd3d11', 'opengl'], bug=483282)
-    self.Fail('conformance2/textures/webgl_canvas/' +
-        'tex-2d-rgb8-rgb-unsigned_byte.html',
-        ['d3d9', 'd3d11', 'opengl'], bug=483282)
-    self.Fail('conformance2/textures/webgl_canvas/' +
         'tex-2d-rgb565-rgb-unsigned_byte.html',
         ['d3d9', 'd3d11', 'opengl'], bug=483282)
     self.Fail('conformance2/textures/webgl_canvas/' +
@@ -117,20 +108,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Windows only.
 
-    self.Fail('deqp/functional/gles3/negativefragmentapi.html',
-        ['win'], bug=483282)
     self.Fail('deqp/functional/gles3/vertexarrays.html',
         ['win'], bug=483282)
 
-    self.Fail('conformance2/textures/canvas/' +
-        'tex-2d-r8-red-unsigned_byte.html',
-        ['win'], bug=483282)
-    self.Fail('conformance2/textures/canvas/' +
-        'tex-2d-rg8-rg-unsigned_byte.html',
-        ['win'], bug=483282)
-    self.Fail('conformance2/textures/canvas/' +
-        'tex-2d-rgb8-rgb-unsigned_byte.html',
-        ['win'], bug=483282)
     self.Fail('conformance2/textures/canvas/' +
         'tex-2d-rgb565-rgb-unsigned_byte.html',
         ['win'], bug=483282)
@@ -161,8 +141,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win'], bug=483282)
     self.Skip('conformance2/transform_feedback/transform_feedback.html',
         ['win'], bug=483282)
-    self.Fail('conformance2/glsl3/const-array-init.html',
-        ['win'], bug=1198) # angle bug ID
     self.Skip('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
         ['win'], bug=1266) # angle bug ID
     self.Fail('conformance2/state/gl-object-get-calls.html',
