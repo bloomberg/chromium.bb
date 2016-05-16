@@ -437,7 +437,7 @@ TEST_F(MenuButtonTest, InkDropStateForMenuButtonActivationsWithoutListener) {
   button()->set_ink_drop_delegate(&ink_drop_delegate);
   button()->Activate(nullptr);
 
-  EXPECT_EQ(InkDropState::HIDDEN, ink_drop_delegate.state());
+  EXPECT_EQ(InkDropState::HIDDEN, ink_drop_delegate.GetTargetInkDropState());
 }
 
 TEST_F(MenuButtonTest,
@@ -448,7 +448,8 @@ TEST_F(MenuButtonTest,
   button()->set_ink_drop_delegate(&ink_drop_delegate);
   button()->Activate(nullptr);
 
-  EXPECT_EQ(InkDropState::ACTION_TRIGGERED, ink_drop_delegate.state());
+  EXPECT_EQ(InkDropState::ACTION_TRIGGERED,
+            ink_drop_delegate.GetTargetInkDropState());
 }
 
 TEST_F(
@@ -461,7 +462,7 @@ TEST_F(
   button()->set_ink_drop_delegate(&ink_drop_delegate);
   button()->Activate(nullptr);
 
-  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop_delegate.state());
+  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop_delegate.GetTargetInkDropState());
 
   // Prevent the button from accessing invalid memory during clean up.
   button()->set_ink_drop_delegate(nullptr);
@@ -476,7 +477,8 @@ TEST_F(MenuButtonTest,
   button()->set_ink_drop_delegate(&ink_drop_delegate);
   button()->Activate(nullptr);
 
-  EXPECT_EQ(InkDropState::DEACTIVATED, ink_drop_delegate.state());
+  EXPECT_EQ(InkDropState::DEACTIVATED,
+            ink_drop_delegate.GetTargetInkDropState());
 }
 
 TEST_F(MenuButtonTest, InkDropStateForMenuButtonsWithPressedLocks) {
@@ -487,18 +489,19 @@ TEST_F(MenuButtonTest, InkDropStateForMenuButtonsWithPressedLocks) {
   std::unique_ptr<MenuButton::PressedLock> pressed_lock1(
       new MenuButton::PressedLock(button()));
 
-  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop_delegate.state());
+  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop_delegate.GetTargetInkDropState());
 
   std::unique_ptr<MenuButton::PressedLock> pressed_lock2(
       new MenuButton::PressedLock(button()));
 
-  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop_delegate.state());
+  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop_delegate.GetTargetInkDropState());
 
   pressed_lock1.reset();
-  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop_delegate.state());
+  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop_delegate.GetTargetInkDropState());
 
   pressed_lock2.reset();
-  EXPECT_EQ(InkDropState::DEACTIVATED, ink_drop_delegate.state());
+  EXPECT_EQ(InkDropState::DEACTIVATED,
+            ink_drop_delegate.GetTargetInkDropState());
 }
 
 // Verifies only one ink drop animation is triggered when multiple PressedLocks
@@ -511,13 +514,14 @@ TEST_F(MenuButtonTest, OneInkDropAnimationForReentrantPressedLocks) {
   std::unique_ptr<MenuButton::PressedLock> pressed_lock1(
       new MenuButton::PressedLock(button()));
 
-  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop_delegate.state());
+  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop_delegate.GetTargetInkDropState());
   ink_drop_delegate.OnAction(InkDropState::ACTION_PENDING);
 
   std::unique_ptr<MenuButton::PressedLock> pressed_lock2(
       new MenuButton::PressedLock(button()));
 
-  EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop_delegate.state());
+  EXPECT_EQ(InkDropState::ACTION_PENDING,
+            ink_drop_delegate.GetTargetInkDropState());
 }
 
 // Verifies the InkDropState is left as ACTIVATED if a PressedLock is active
@@ -532,7 +536,7 @@ TEST_F(MenuButtonTest,
 
   button()->Activate(nullptr);
 
-  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop_delegate.state());
+  EXPECT_EQ(InkDropState::ACTIVATED, ink_drop_delegate.GetTargetInkDropState());
 }
 
 #if defined(USE_AURA)

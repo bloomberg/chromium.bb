@@ -35,6 +35,9 @@ class VIEWS_EXPORT InkDropDelegate {
   // Enables or disables the hover state.
   virtual void SetHovered(bool is_hovered) = 0;
 
+  // Returns the current InkDropState
+  virtual InkDropState GetTargetInkDropState() const = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(InkDropDelegate);
 };

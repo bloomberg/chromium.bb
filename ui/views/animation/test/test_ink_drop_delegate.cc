@@ -24,5 +24,9 @@ void TestInkDropDelegate::SetHovered(bool is_hovered) {
   is_hovered_ = is_hovered;
 }
 
+InkDropState TestInkDropDelegate::GetTargetInkDropState() const {
+  return state_;
+}
+
 }  // namespace test
 }  // namespace views

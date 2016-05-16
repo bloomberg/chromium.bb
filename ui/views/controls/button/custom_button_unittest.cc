@@ -86,7 +86,7 @@ class TestCustomButton : public CustomButton, public ButtonListener {
 };
 
 // An InkDropDelegate that keeps track of ink drop visibility.
-class TestInkDropDelegateThatTracksVisibilty : public InkDropDelegate {
+class TestInkDropDelegateThatTracksVisibilty : public TestInkDropDelegate {
  public:
   TestInkDropDelegateThatTracksVisibilty(bool* ink_shown, bool* ink_hidden)
       : ink_shown_(ink_shown), ink_hidden_(ink_hidden) {}
@@ -94,7 +94,8 @@ class TestInkDropDelegateThatTracksVisibilty : public InkDropDelegate {
 
   // InkDropDelegate:
   void OnAction(InkDropState state) override {
-    switch (state) {
+    TestInkDropDelegate::OnAction(state);
+    switch (GetTargetInkDropState()) {
       case InkDropState::ACTION_PENDING:
       case InkDropState::ALTERNATE_ACTION_PENDING:
       case InkDropState::ACTIVATED:
@@ -448,7 +449,7 @@ TEST_F(CustomButtonTest, HideInkDropWhenShowingContextMenu) {
   button()->ShowContextMenu(gfx::Point(), ui::MENU_SOURCE_MOUSE);
 
   EXPECT_FALSE(ink_drop_delegate->is_hovered());
-  EXPECT_EQ(InkDropState::HIDDEN, ink_drop_delegate->state());
+  EXPECT_EQ(InkDropState::HIDDEN, ink_drop_delegate->GetTargetInkDropState());
 }
 
 TEST_F(CustomButtonTest, DontHideInkDropWhenShowingContextMenu) {
@@ -464,7 +465,8 @@ TEST_F(CustomButtonTest, DontHideInkDropWhenShowingContextMenu) {
   button()->ShowContextMenu(gfx::Point(), ui::MENU_SOURCE_MOUSE);
 
   EXPECT_TRUE(ink_drop_delegate->is_hovered());
-  EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop_delegate->state());
+  EXPECT_EQ(InkDropState::ACTION_PENDING,
+            ink_drop_delegate->GetTargetInkDropState());
 }
 
 TEST_F(CustomButtonTest, InkDropAfterTryingToShowContextMenu) {
@@ -478,7 +480,8 @@ TEST_F(CustomButtonTest, InkDropAfterTryingToShowContextMenu) {
   button()->ShowContextMenu(gfx::Point(), ui::MENU_SOURCE_MOUSE);
 
   EXPECT_TRUE(ink_drop_delegate->is_hovered());
-  EXPECT_EQ(InkDropState::ACTION_PENDING, ink_drop_delegate->state());
+  EXPECT_EQ(InkDropState::ACTION_PENDING,
+            ink_drop_delegate->GetTargetInkDropState());
 }
 
 }  // namespace views

@@ -35,6 +35,10 @@ void ButtonInkDropDelegate::SetHovered(bool is_hovered) {
   ink_drop_->SetHovered(is_hovered);
 }
 
+InkDropState ButtonInkDropDelegate::GetTargetInkDropState() const {
+  return ink_drop_->GetTargetInkDropState();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ui::EventHandler:
 

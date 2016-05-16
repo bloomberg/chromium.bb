@@ -268,6 +268,10 @@ bool CustomButton::OnKeyPressed(const ui::KeyEvent& event) {
   // KeyRelease and Enter clicks the button on KeyPressed.
   if (event.key_code() == ui::VKEY_SPACE) {
     SetState(STATE_PRESSED);
+    if (ink_drop_delegate_ &&
+        ink_drop_delegate_->GetTargetInkDropState() !=
+            views::InkDropState::ACTION_PENDING)
+      ink_drop_delegate_->OnAction(views::InkDropState::ACTION_PENDING);
   } else if (event.key_code() == ui::VKEY_RETURN) {
     SetState(STATE_NORMAL);
     NotifyClick(event);

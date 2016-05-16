@@ -16,14 +16,13 @@ class TestInkDropDelegate : public InkDropDelegate {
   TestInkDropDelegate();
   ~TestInkDropDelegate() override;
 
-  InkDropState state() const { return state_; }
-
   bool is_hovered() const { return is_hovered_; }
 
   // InkDropDelegate:
   void OnAction(InkDropState state) override;
   void SnapToActivated() override;
   void SetHovered(bool is_hovered) override;
+  InkDropState GetTargetInkDropState() const override;
 
  private:
   InkDropState state_;
