@@ -34,52 +34,29 @@ class CC_EXPORT NinePatchLayerImpl : public UIResourceLayerImpl {
   // The bitmap stretches out the bounds of the layer.  The following picture
   // illustrates the parameters associated with the dimensions.
   //
-  // Layer space layout
+  // Layer space layout              Bitmap space layout
   //
-  // --------------------------------
-  // |         :    :               |
-  // |         J    C               |
-  // |         :    :               |
-  // |      ------------------      |
-  // |      |       :        |      |
-  // |~~~I~~|  ------------  |      |
-  // |      |  |          |  |      |
-  // |      |  |          |  |      |
-  // |~~~A~~|~~|          |~~|~B~~~~|
-  // |      |  |          |  |      |
-  // |      L  ------------  |      |
-  // |      |       :        |      |
-  // |      ---K--------------      |
-  // |              D               |
-  // |              :               |
-  // |              :               |
-  // --------------------------------
-  //
-  // Bitmap space layout
-  //
-  // ~~~~~~~~~~ W ~~~~~~~~~~
-  // :     :                |
-  // :     Y                |
-  // :     :                |
-  // :~~X~~------------     |
-  // :     |          :     |
-  // :     |          :     |
-  // H     |          Q     |
-  // :     |          :     |
-  // :     ~~~~~P~~~~~      |
-  // :                      |
-  // :                      |
-  // :                      |
-  // ------------------------
+  // ------------------------       ~~~~~~~~~~ W ~~~~~~~~~~
+  // |          :           |       :     :                |
+  // |          C           |       :     Y                |
+  // |          :           |       :     :                |
+  // |     ------------     |       :~~X~~------------     |
+  // |     |          |     |       :     |          :     |
+  // |     |          |     |       :     |          :     |
+  // |~~A~~|          |~~B~~|       H     |          Q     |
+  // |     |          |     |       :     |          :     |
+  // |     ------------     |       :     ~~~~~P~~~~~      |
+  // |          :           |       :                      |
+  // |          D           |       :                      |
+  // |          :           |       :                      |
+  // ------------------------       ------------------------
   //
   // |image_bounds| = (W, H)
   // |image_aperture| = (X, Y, P, Q)
   // |border| = (A, C, A + B, C + D)
-  // |occlusion_rectangle| = (I, J, K, L)
   // |fill_center| indicates whether to draw the center quad or not.
   void SetLayout(const gfx::Rect& image_aperture,
                  const gfx::Rect& border,
-                 const gfx::Rect& layer_occlusion,
                  bool fill_center,
                  bool nearest_neighbor);
 
@@ -95,20 +72,9 @@ class CC_EXPORT NinePatchLayerImpl : public UIResourceLayerImpl {
   NinePatchLayerImpl(LayerTreeImpl* tree_impl, int id);
 
  private:
-  class Patch {
-   public:
-    Patch(const gfx::Rect& image_rect, const gfx::Rect& layer_rect);
-
-    gfx::Rect image_rect;
-    gfx::Rect layer_rect;
-  };
-
   const char* LayerTypeAsString() const override;
 
   void CheckGeometryLimitations();
-
-  std::vector<Patch> ComputeQuadsWithOcclusion() const;
-  std::vector<Patch> ComputeQuadsWithoutOcclusion() const;
 
   // The transparent center region that shows the parent layer's contents in
   // image space.
@@ -120,8 +86,6 @@ class CC_EXPORT NinePatchLayerImpl : public UIResourceLayerImpl {
   bool fill_center_;
 
   bool nearest_neighbor_;
-
-  gfx::Rect layer_occlusion_;
 
   DISALLOW_COPY_AND_ASSIGN(NinePatchLayerImpl);
 };

@@ -57,14 +57,6 @@ void NinePatchLayer::SetNearestNeighbor(bool nearest_neighbor) {
   SetNeedsCommit();
 }
 
-void NinePatchLayer::SetLayerOcclusion(const gfx::Rect& occlusion) {
-  if (layer_occlusion_ == occlusion)
-    return;
-
-  layer_occlusion_ = occlusion;
-  SetNeedsCommit();
-}
-
 void NinePatchLayer::PushPropertiesTo(LayerImpl* layer) {
   UIResourceLayer::PushPropertiesTo(layer);
   TRACE_EVENT0("cc", "NinePatchLayer::PushPropertiesTo");
@@ -75,8 +67,8 @@ void NinePatchLayer::PushPropertiesTo(LayerImpl* layer) {
   } else {
     DCHECK(layer_tree_host());
 
-    layer_impl->SetLayout(image_aperture_, border_, layer_occlusion_,
-                          fill_center_, nearest_neighbor_);
+    layer_impl->SetLayout(image_aperture_, border_, fill_center_,
+                          nearest_neighbor_);
   }
 }
 

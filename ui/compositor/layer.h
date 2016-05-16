@@ -314,9 +314,7 @@ class COMPOSITOR_EXPORT Layer
   // called for LAYER_NINE_PATCH.
   void UpdateNinePatchLayerImage(const gfx::ImageSkia& image);
   void UpdateNinePatchLayerAperture(const gfx::Rect& aperture_in_dip);
-  // Updates the area completely occluded by another layer, this can be an
-  // empty rectangle if nothing is occluded.
-  void UpdateNinePatchOcclusion(const gfx::Rect& occlusion);
+  void UpdateNinePatchLayerBorder(const gfx::Rect& border);
 
   // Adds |invalid_rect| to the Layer's pending invalid rect and calls
   // ScheduleDraw(). Returns false if the paint request is ignored.
