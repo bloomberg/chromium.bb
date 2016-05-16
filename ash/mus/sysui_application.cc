@@ -12,6 +12,7 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/ash_window_tree_host_platform.h"
+#include "ash/material_design/material_design_controller.h"
 #include "ash/mus/app_list_presenter_mus.h"
 #include "ash/mus/keyboard_ui_mus.h"
 #include "ash/mus/shelf_delegate_mus.h"
@@ -198,6 +199,7 @@ class AshInit {
                   const ::shell::Identity& identity) {
     InitializeResourceBundle(connector);
     aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
+    ash::MaterialDesignController::Initialize();
     views::WindowManagerConnection::Create(connector, identity);
 
     display::Screen* screen = display::Screen::GetScreen();
