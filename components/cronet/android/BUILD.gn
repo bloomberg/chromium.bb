@@ -41,9 +41,9 @@ java_cpp_enum("net_request_priority_java") {
   ]
 }
 
-java_cpp_enum("network_quality_observations_java") {
+java_cpp_enum("network_quality_observation_source_java") {
   sources = [
-    "//net/nqe/network_quality_estimator.h",
+    "//net/nqe/network_quality_observation_source.h",
   ]
 }
 
@@ -264,7 +264,7 @@ android_library("cronet_api") {
     ":http_cache_type_java",
     ":url_request_error_java",
     ":load_states_list",
-    ":network_quality_observations_java",
+    ":network_quality_observation_source_java",
   ]
 
   run_findbugs_override = true

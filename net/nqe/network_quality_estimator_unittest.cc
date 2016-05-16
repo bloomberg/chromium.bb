@@ -27,6 +27,9 @@
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_status_code.h"
 #include "net/nqe/external_estimate_provider.h"
+#include "net/nqe/network_quality_observation.h"
+#include "net/nqe/network_quality_observation_source.h"
+#include "net/nqe/observation_buffer.h"
 #include "net/socket/socket_performance_watcher.h"
 #include "net/socket/socket_performance_watcher_factory.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -151,20 +154,19 @@ class TestRTTObserver : public NetworkQualityEstimator::RTTObserver {
   struct Observation {
     Observation(int32_t ms,
                 const base::TimeTicks& ts,
-                NetworkQualityEstimator::ObservationSource src)
+                NetworkQualityObservationSource src)
         : rtt_ms(ms), timestamp(ts), source(src) {}
     int32_t rtt_ms;
     base::TimeTicks timestamp;
-    NetworkQualityEstimator::ObservationSource source;
+    NetworkQualityObservationSource source;
   };
 
   std::vector<Observation>& observations() { return observations_; }
 
   // RttObserver implementation:
-  void OnRTTObservation(
-      int32_t rtt_ms,
-      const base::TimeTicks& timestamp,
-      NetworkQualityEstimator::ObservationSource source) override {
+  void OnRTTObservation(int32_t rtt_ms,
+                        const base::TimeTicks& timestamp,
+                        NetworkQualityObservationSource source) override {
     observations_.push_back(Observation(rtt_ms, timestamp, source));
   }
 
@@ -178,11 +180,11 @@ class TestThroughputObserver
   struct Observation {
     Observation(int32_t kbps,
                 const base::TimeTicks& ts,
-                NetworkQualityEstimator::ObservationSource src)
+                NetworkQualityObservationSource src)
         : throughput_kbps(kbps), timestamp(ts), source(src) {}
     int32_t throughput_kbps;
     base::TimeTicks timestamp;
-    NetworkQualityEstimator::ObservationSource source;
+    NetworkQualityObservationSource source;
   };
 
   std::vector<Observation>& observations() { return observations_; }
@@ -191,7 +193,7 @@ class TestThroughputObserver
   void OnThroughputObservation(
       int32_t throughput_kbps,
       const base::TimeTicks& timestamp,
-      NetworkQualityEstimator::ObservationSource source) override {
+      NetworkQualityObservationSource source) override {
     observations_.push_back(Observation(throughput_kbps, timestamp, source));
   }
 
@@ -224,9 +226,6 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
   base::RunLoop().Run();
 
   // Both RTT and downstream throughput should be updated.
-  EXPECT_TRUE(estimator.GetURLRequestRTTEstimate(&rtt));
-  EXPECT_TRUE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
-
   EXPECT_TRUE(estimator.GetURLRequestRTTEstimate(&rtt));
   EXPECT_TRUE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
 
@@ -282,8 +281,9 @@ TEST(NetworkQualityEstimatorTest, StoreObservations) {
   context.set_network_quality_estimator(&estimator);
   context.Init();
 
-  // Push 10 more observations than the maximum buffer size.
-  for (size_t i = 0; i < estimator.kMaximumObservationsBufferSize + 10U; ++i) {
+  // Push more observations than the maximum buffer size.
+  const size_t kMaxObservations = 1000;
+  for (size_t i = 0; i < kMaxObservations; ++i) {
     std::unique_ptr<URLRequest> request(context.CreateRequest(
         estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
     request->Start();
@@ -299,149 +299,6 @@ TEST(NetworkQualityEstimatorTest, StoreObservations) {
   EXPECT_FALSE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
 }
 
-// Verifies that the percentiles are correctly computed. All observations have
-// the same timestamp. Kbps percentiles must be in decreasing order. RTT
-// percentiles must be in increasing order.
-TEST(NetworkQualityEstimatorTest, PercentileSameTimestamps) {
-  std::map<std::string, std::string> variation_params;
-  TestNetworkQualityEstimator estimator(variation_params);
-  base::TimeTicks now = base::TimeTicks::Now();
-
-  // Network quality should be unavailable when no observations are available.
-  base::TimeDelta rtt;
-  EXPECT_FALSE(estimator.GetURLRequestRTTEstimate(&rtt));
-  int32_t kbps;
-  EXPECT_FALSE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
-
-  // Insert samples from {1,2,3,..., 100}. First insert odd samples, then even
-  // samples. This helps in verifying that the order of samples does not matter.
-  for (int i = 1; i <= 99; i += 2) {
-    estimator.downstream_throughput_kbps_observations_.AddObservation(
-        NetworkQualityEstimator::ThroughputObservation(
-            i, now, NetworkQualityEstimator::URL_REQUEST));
-    estimator.rtt_observations_.AddObservation(
-        NetworkQualityEstimator::RttObservation(
-            base::TimeDelta::FromMilliseconds(i), now,
-            NetworkQualityEstimator::URL_REQUEST));
-    EXPECT_TRUE(estimator.GetURLRequestRTTEstimate(&rtt));
-    EXPECT_TRUE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
-  }
-
-  for (int i = 1; i <= 99; i += 2) {
-    // Insert TCP observation which should not be taken into account when
-    // computing median RTT at HTTP layer.
-    estimator.rtt_observations_.AddObservation(
-        NetworkQualityEstimator::RttObservation(
-            base::TimeDelta::FromMilliseconds(10000), now,
-            NetworkQualityEstimator::TCP));
-
-    // Insert QUIC observation which should not be taken into account when
-    // computing median RTT at HTTP layer.
-    estimator.rtt_observations_.AddObservation(
-        NetworkQualityEstimator::RttObservation(
-            base::TimeDelta::FromMilliseconds(10000), now,
-            NetworkQualityEstimator::QUIC));
-  }
-
-  for (int i = 2; i <= 100; i += 2) {
-    estimator.downstream_throughput_kbps_observations_.AddObservation(
-        NetworkQualityEstimator::ThroughputObservation(
-            i, now, NetworkQualityEstimator::URL_REQUEST));
-    estimator.rtt_observations_.AddObservation(
-        NetworkQualityEstimator::RttObservation(
-            base::TimeDelta::FromMilliseconds(i), now,
-            NetworkQualityEstimator::URL_REQUEST));
-    EXPECT_TRUE(estimator.GetURLRequestRTTEstimate(&rtt));
-    EXPECT_TRUE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
-  }
-
-  for (int i = 0; i <= 100; ++i) {
-    // Checks if the difference between the two integers is less than 1. This is
-    // required because computed percentiles may be slightly different from
-    // what is expected due to floating point computation errors and integer
-    // rounding off errors.
-    EXPECT_NEAR(estimator.GetDownlinkThroughputKbpsEstimateInternal(
-                    base::TimeTicks(), i),
-                100 - i, 1);
-    std::vector<NetworkQualityEstimator::ObservationSource>
-        disallowed_observation_sources;
-    disallowed_observation_sources.push_back(NetworkQualityEstimator::TCP);
-    disallowed_observation_sources.push_back(NetworkQualityEstimator::QUIC);
-    EXPECT_NEAR(estimator
-                    .GetRTTEstimateInternal(disallowed_observation_sources,
-                                            base::TimeTicks(), i)
-                    .InMilliseconds(),
-                i, 1);
-  }
-
-  EXPECT_TRUE(estimator.GetURLRequestRTTEstimate(&rtt));
-  EXPECT_TRUE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
-}
-
-// Verifies that the percentiles are correctly computed. Observations have
-// different timestamps with half the observations being very old and the rest
-// of them being very recent. Percentiles should factor in recent observations
-// much more heavily than older samples. Kbps percentiles must be in decreasing
-// order. RTT percentiles must be in increasing order.
-TEST(NetworkQualityEstimatorTest, PercentileDifferentTimestamps) {
-  std::map<std::string, std::string> variation_params;
-  TestNetworkQualityEstimator estimator(variation_params);
-  base::TimeTicks now = base::TimeTicks::Now();
-  base::TimeTicks very_old = now - base::TimeDelta::FromDays(365);
-
-  // First 50 samples have very old timestamp.
-  for (int i = 1; i <= 50; ++i) {
-    estimator.downstream_throughput_kbps_observations_.AddObservation(
-        NetworkQualityEstimator::ThroughputObservation(
-            i, very_old, NetworkQualityEstimator::URL_REQUEST));
-    estimator.rtt_observations_.AddObservation(
-        NetworkQualityEstimator::RttObservation(
-            base::TimeDelta::FromMilliseconds(i), very_old,
-            NetworkQualityEstimator::URL_REQUEST));
-  }
-
-  // Next 50 (i.e., from 51 to 100) have recent timestamp.
-  for (int i = 51; i <= 100; ++i) {
-    estimator.downstream_throughput_kbps_observations_.AddObservation(
-        NetworkQualityEstimator::ThroughputObservation(
-            i, now, NetworkQualityEstimator::URL_REQUEST));
-
-    // Insert TCP observation which should not be taken into account when
-    // computing median RTT at HTTP layer.
-    estimator.rtt_observations_.AddObservation(
-        NetworkQualityEstimator::RttObservation(
-            base::TimeDelta::FromMilliseconds(10000), now,
-            NetworkQualityEstimator::TCP));
-
-    estimator.rtt_observations_.AddObservation(
-        NetworkQualityEstimator::RttObservation(
-            base::TimeDelta::FromMilliseconds(i), now,
-            NetworkQualityEstimator::URL_REQUEST));
-  }
-
-  std::vector<NetworkQualityEstimator::ObservationSource>
-      disallowed_observation_sources;
-  disallowed_observation_sources.push_back(NetworkQualityEstimator::TCP);
-  disallowed_observation_sources.push_back(NetworkQualityEstimator::QUIC);
-
-  // Older samples have very little weight. So, all percentiles are >= 51
-  // (lowest value among recent observations).
-  for (int i = 1; i < 100; ++i) {
-    // Checks if the difference between the two integers is less than 1. This is
-    // required because computed percentiles may be slightly different from
-    // what is expected due to floating point computation errors and integer
-    // rounding off errors.
-    EXPECT_NEAR(estimator.GetDownlinkThroughputKbpsEstimateInternal(
-                    base::TimeTicks(), i),
-                51 + 0.49 * (100 - i), 1);
-    EXPECT_NEAR(estimator
-                    .GetRTTEstimateInternal(disallowed_observation_sources,
-                                            base::TimeTicks(), i)
-                    .InMilliseconds(),
-                51 + 0.49 * i, 1);
-  }
-}
-
 // This test notifies NetworkQualityEstimator of received data. Next,
 // throughput and RTT percentiles are checked for correctness by doing simple
 // verifications.
@@ -449,15 +306,16 @@ TEST(NetworkQualityEstimatorTest, ComputedPercentiles) {
   std::map<std::string, std::string> variation_params;
   TestNetworkQualityEstimator estimator(variation_params);
 
-  std::vector<NetworkQualityEstimator::ObservationSource>
-      disallowed_observation_sources;
-  disallowed_observation_sources.push_back(NetworkQualityEstimator::TCP);
-  disallowed_observation_sources.push_back(NetworkQualityEstimator::QUIC);
+  std::vector<NetworkQualityObservationSource> disallowed_observation_sources;
+  disallowed_observation_sources.push_back(
+      NETWORK_QUALITY_OBSERVATION_SOURCE_TCP);
+  disallowed_observation_sources.push_back(
+      NETWORK_QUALITY_OBSERVATION_SOURCE_QUIC);
 
-  EXPECT_EQ(NetworkQualityEstimator::InvalidRTT(),
+  EXPECT_EQ(nqe::internal::InvalidRTT(),
             estimator.GetRTTEstimateInternal(disallowed_observation_sources,
                                              base::TimeTicks(), 100));
-  EXPECT_EQ(NetworkQualityEstimator::kInvalidThroughput,
+  EXPECT_EQ(nqe::internal::kInvalidThroughput,
             estimator.GetDownlinkThroughputKbpsEstimateInternal(
                 base::TimeTicks(), 100));
 
@@ -467,7 +325,7 @@ TEST(NetworkQualityEstimatorTest, ComputedPercentiles) {
   context.Init();
 
   // Number of observations are more than the maximum buffer size.
-  for (size_t i = 0; i < estimator.kMaximumObservationsBufferSize + 100U; ++i) {
+  for (size_t i = 0; i < 1000U; ++i) {
     std::unique_ptr<URLRequest> request(context.CreateRequest(
         estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
     request->Start();
@@ -531,9 +389,8 @@ TEST(NetworkQualityEstimatorTest, ObtainOperatingParams) {
 
   // Peak network quality should not be affected by the network quality
   // estimator field trial.
-  EXPECT_EQ(NetworkQualityEstimator::InvalidRTT(),
-            estimator.peak_network_quality_.rtt());
-  EXPECT_EQ(NetworkQualityEstimator::kInvalidThroughput,
+  EXPECT_EQ(nqe::internal::InvalidRTT(), estimator.peak_network_quality_.rtt());
+  EXPECT_EQ(nqe::internal::kInvalidThroughput,
             estimator.peak_network_quality_.downstream_throughput_kbps());
 
   // Simulate network change to 2G. Only the Kbps default estimate should be
@@ -707,11 +564,12 @@ TEST(NetworkQualityEstimatorTest, TestCaching) {
   // Cache entry will not be added for (NONE, "").
   estimator.downstream_throughput_kbps_observations_.AddObservation(
       NetworkQualityEstimator::ThroughputObservation(
-          1, base::TimeTicks::Now(), NetworkQualityEstimator::URL_REQUEST));
+          1, base::TimeTicks::Now(),
+          NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
   estimator.rtt_observations_.AddObservation(
       NetworkQualityEstimator::RttObservation(
           base::TimeDelta::FromMilliseconds(1000), base::TimeTicks::Now(),
-          NetworkQualityEstimator::URL_REQUEST));
+          NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
   estimator.SimulateNetworkChangeTo(
       NetworkChangeNotifier::ConnectionType::CONNECTION_2G, "test-1");
   EXPECT_EQ(expected_cache_size, estimator.cached_network_qualities_.size());
@@ -721,11 +579,12 @@ TEST(NetworkQualityEstimatorTest, TestCaching) {
   // the cache.
   estimator.downstream_throughput_kbps_observations_.AddObservation(
       NetworkQualityEstimator::ThroughputObservation(
-          1, base::TimeTicks::Now(), NetworkQualityEstimator::URL_REQUEST));
+          1, base::TimeTicks::Now(),
+          NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
   estimator.rtt_observations_.AddObservation(
       NetworkQualityEstimator::RttObservation(
           base::TimeDelta::FromMilliseconds(1000), base::TimeTicks::Now(),
-          NetworkQualityEstimator::URL_REQUEST));
+          NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
 
   estimator.SimulateNetworkChangeTo(
       NetworkChangeNotifier::ConnectionType::CONNECTION_3G, "test-1");
@@ -737,11 +596,12 @@ TEST(NetworkQualityEstimatorTest, TestCaching) {
   // the cache.
   estimator.downstream_throughput_kbps_observations_.AddObservation(
       NetworkQualityEstimator::ThroughputObservation(
-          2, base::TimeTicks::Now(), NetworkQualityEstimator::URL_REQUEST));
+          2, base::TimeTicks::Now(),
+          NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
   estimator.rtt_observations_.AddObservation(
       NetworkQualityEstimator::RttObservation(
           base::TimeDelta::FromMilliseconds(500), base::TimeTicks::Now(),
-          NetworkQualityEstimator::URL_REQUEST));
+          NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
   estimator.SimulateNetworkChangeTo(
       NetworkChangeNotifier::ConnectionType::CONNECTION_3G, "test-2");
   ++expected_cache_size;
@@ -805,11 +665,12 @@ TEST(NetworkQualityEstimatorTest, TestLRUCacheMaximumSize) {
   for (size_t i = 0; i < network_count; ++i) {
     estimator.downstream_throughput_kbps_observations_.AddObservation(
         NetworkQualityEstimator::ThroughputObservation(
-            2, base::TimeTicks::Now(), NetworkQualityEstimator::URL_REQUEST));
+            2, base::TimeTicks::Now(),
+            NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
     estimator.rtt_observations_.AddObservation(
         NetworkQualityEstimator::RttObservation(
             base::TimeDelta::FromMilliseconds(500), base::TimeTicks::Now(),
-            NetworkQualityEstimator::URL_REQUEST));
+            NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
 
     if (i == 100)
       update_time_of_network_100 = base::TimeTicks::Now();
@@ -826,11 +687,12 @@ TEST(NetworkQualityEstimatorTest, TestLRUCacheMaximumSize) {
   // One more call so that the last network is also written to cache.
   estimator.downstream_throughput_kbps_observations_.AddObservation(
       NetworkQualityEstimator::ThroughputObservation(
-          2, base::TimeTicks::Now(), NetworkQualityEstimator::URL_REQUEST));
+          2, base::TimeTicks::Now(),
+          NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
   estimator.rtt_observations_.AddObservation(
       NetworkQualityEstimator::RttObservation(
           base::TimeDelta::FromMilliseconds(500), base::TimeTicks::Now(),
-          NetworkQualityEstimator::URL_REQUEST));
+          NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
   estimator.SimulateNetworkChangeTo(
       NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI,
       base::SizeTToString(network_count - 1));
@@ -857,19 +719,19 @@ TEST(NetworkQualityEstimatorTest, TestGetMedianRTTSince) {
   // First sample has very old timestamp.
   estimator.downstream_throughput_kbps_observations_.AddObservation(
       NetworkQualityEstimator::ThroughputObservation(
-          1, old, NetworkQualityEstimator::URL_REQUEST));
+          1, old, NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
   estimator.rtt_observations_.AddObservation(
       NetworkQualityEstimator::RttObservation(
           base::TimeDelta::FromMilliseconds(1), old,
-          NetworkQualityEstimator::URL_REQUEST));
+          NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
 
   estimator.downstream_throughput_kbps_observations_.AddObservation(
       NetworkQualityEstimator::ThroughputObservation(
-          100, now, NetworkQualityEstimator::URL_REQUEST));
+          100, now, NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
   estimator.rtt_observations_.AddObservation(
       NetworkQualityEstimator::RttObservation(
           base::TimeDelta::FromMilliseconds(100), now,
-          NetworkQualityEstimator::URL_REQUEST));
+          NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
 
   const struct {
     base::TimeTicks start_timestamp;
@@ -1248,12 +1110,14 @@ TEST(NetworkQualityEstimatorTest, TestObservers) {
   for (const auto& observation : rtt_observer.observations()) {
     EXPECT_LE(0, observation.rtt_ms);
     EXPECT_LE(0, (observation.timestamp - then).InMilliseconds());
-    EXPECT_EQ(NetworkQualityEstimator::URL_REQUEST, observation.source);
+    EXPECT_EQ(NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST,
+              observation.source);
   }
   for (const auto& observation : throughput_observer.observations()) {
     EXPECT_LE(0, observation.throughput_kbps);
     EXPECT_LE(0, (observation.timestamp - then).InMilliseconds());
-    EXPECT_EQ(NetworkQualityEstimator::URL_REQUEST, observation.source);
+    EXPECT_EQ(NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST,
+              observation.source);
   }
 
   // Verify that observations from TCP and QUIC are passed on to the observers.
@@ -1319,7 +1183,7 @@ TEST(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
   for (size_t i = 0; i < 2; ++i) {
     size_t before_count_tcp_rtt_observations = 0;
     for (const auto& observation : rtt_observer.observations()) {
-      if (observation.source == NetworkQualityEstimator::TCP)
+      if (observation.source == NETWORK_QUALITY_OBSERVATION_SOURCE_TCP)
         ++before_count_tcp_rtt_observations;
     }
 
@@ -1330,7 +1194,7 @@ TEST(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
 
     size_t after_count_tcp_rtt_observations = 0;
     for (const auto& observation : rtt_observer.observations()) {
-      if (observation.source == NetworkQualityEstimator::TCP)
+      if (observation.source == NETWORK_QUALITY_OBSERVATION_SOURCE_TCP)
         ++after_count_tcp_rtt_observations;
     }
     // At least one notification should be received per socket performance

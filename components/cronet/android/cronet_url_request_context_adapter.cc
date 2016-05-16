@@ -746,7 +746,7 @@ base::Thread* CronetURLRequestContextAdapter::GetFileThread() {
 void CronetURLRequestContextAdapter::OnRTTObservation(
     int32_t rtt_ms,
     const base::TimeTicks& timestamp,
-    net::NetworkQualityEstimator::ObservationSource source) {
+    net::NetworkQualityObservationSource source) {
   Java_CronetUrlRequestContext_onRttObservation(
       base::android::AttachCurrentThread(), jcronet_url_request_context_.obj(),
       rtt_ms, (timestamp - base::TimeTicks::UnixEpoch()).InMilliseconds(),
@@ -756,7 +756,7 @@ void CronetURLRequestContextAdapter::OnRTTObservation(
 void CronetURLRequestContextAdapter::OnThroughputObservation(
     int32_t throughput_kbps,
     const base::TimeTicks& timestamp,
-    net::NetworkQualityEstimator::ObservationSource source) {
+    net::NetworkQualityObservationSource source) {
   Java_CronetUrlRequestContext_onThroughputObservation(
       base::android::AttachCurrentThread(), jcronet_url_request_context_.obj(),
       throughput_kbps,

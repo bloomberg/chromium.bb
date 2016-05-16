@@ -40,10 +40,10 @@
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
         {
-          'target_name': 'network_quality_observations_java',
+          'target_name': 'network_quality_observation_source_java',
           'type': 'none',
           'variables': {
-            'source_file': '../net/nqe/network_quality_estimator.h',
+            'source_file': '../net/nqe/network_quality_observation_source.h',
           },
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },
@@ -231,7 +231,7 @@
             'url_request_error_java',
             'cronet_version',
             'load_states_list',
-            'network_quality_observations_java',
+            'network_quality_observation_source_java',
             '../third_party/android_tools/android_tools.gyp:android_support_annotations_javalib',
           ],
           'variables': {
@@ -250,7 +250,7 @@
             'chromium_url_request_java',
             'libcronet',
             'net_request_priority_java',
-            'network_quality_observations_java',
+            'network_quality_observation_source_java',
             '../third_party/android_tools/android_tools.gyp:android_support_annotations_javalib',
           ],
           'variables': {

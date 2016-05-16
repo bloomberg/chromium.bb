@@ -19,6 +19,7 @@
 #include "base/threading/thread.h"
 #include "components/prefs/json_pref_store.h"
 #include "net/nqe/network_quality_estimator.h"
+#include "net/nqe/network_quality_observation_source.h"
 
 class PrefService;
 
@@ -143,16 +144,15 @@ class CronetURLRequestContextAdapter
   void ProvideThroughputObservationsOnNetworkThread(bool should);
 
   // net::NetworkQualityEstimator::RTTObserver implementation.
-  void OnRTTObservation(
-      int32_t rtt_ms,
-      const base::TimeTicks& timestamp,
-      net::NetworkQualityEstimator::ObservationSource source) override;
+  void OnRTTObservation(int32_t rtt_ms,
+                        const base::TimeTicks& timestamp,
+                        net::NetworkQualityObservationSource source) override;
 
   // net::NetworkQualityEstimator::ThroughputObserver implementation.
   void OnThroughputObservation(
       int32_t throughput_kbps,
       const base::TimeTicks& timestamp,
-      net::NetworkQualityEstimator::ObservationSource source) override;
+      net::NetworkQualityObservationSource source) override;
 
   // Network thread is owned by |this|, but is destroyed from java thread.
   base::Thread* network_thread_;
