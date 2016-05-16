@@ -3,7 +3,7 @@ URL: http://www.webrtc.org
 Version: unknown
 Revision: 12750
 License: BSD
-License File: source/talk/COPYING
+License File: ../webrtc/LICENSE
 Security Critical: yes
 
 Description:

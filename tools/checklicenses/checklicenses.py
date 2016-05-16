@@ -419,9 +419,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/lcov/contrib/galaxy/genflat.pl': [
         'GPL (v2 or later)',
     ],
-    'third_party/libjingle/source/talk': [  # http://crbug.com/98310
-        'UNKNOWN',
-    ],
     'third_party/libjpeg_turbo': [  # http://crbug.com/98314
         'UNKNOWN',
     ],
