@@ -54,6 +54,11 @@ bool MaterialDesignController::IsMaterialExperimental() {
 }
 
 // static
+bool MaterialDesignController::IsShelfMaterial() {
+  return MaterialDesignController::IsMaterialExperimental();
+}
+
+// static
 MaterialDesignController::Mode MaterialDesignController::mode() {
   return mode_;
 }

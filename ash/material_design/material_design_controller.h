@@ -41,6 +41,9 @@ class ASH_EXPORT MaterialDesignController {
   // Maps to "--ash-md=experimental" command line switch value.
   static bool IsMaterialExperimental();
 
+  // Returns true if Material Design features are enabled for Chrome OS shelf.
+  static bool IsShelfMaterial();
+
  private:
   friend class test::MaterialDesignControllerTestAPI;
 
