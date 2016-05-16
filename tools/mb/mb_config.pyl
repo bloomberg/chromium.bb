@@ -40,6 +40,8 @@
       'Android GN Builder (dbg)': 'android_gn_debug_bot_minimal_symbols',
       'Android MIPS Builder (dbg)':
           'android_gn_debug_static_minimal_symbols_mipsel',
+      'Android N5X Swarm Builder':
+          'swarming_android_gn_release_bot_minimal_symbols_arm64',
       'Android Swarm Builder':
           'swarming_android_gn_release_bot_minimal_symbols',
       'Android WebView CTS L-MR1 (dbg)': 'none',
@@ -1448,6 +1450,10 @@
 
     'swarming_android_gn_release_bot_minimal_symbols': [
       'swarming', 'android', 'gn', 'release_bot_minimal_symbols',
+    ],
+
+    'swarming_android_gn_release_bot_minimal_symbols_arm64': [
+      'swarming', 'android', 'gn', 'release_bot_minimal_symbols', 'arm64',
     ],
 
     'swarming_android_gn_release_trybot': [
