@@ -1036,7 +1036,7 @@
                   '|third_party/WebKit/LayoutTests/platform/chromium.*/fast/regions/'
     },
     'blink_custom_elements': {
-      'filepath': 'third_party/WebKit/Source/core/dom/CustomElement' \
+      'filepath': 'third_party/WebKit/Source/core/dom/custom/' \
                   '|third_party/WebKit/Source/bindings/v8/.*CustomElement',
     },
     'blink_device_light': {
@@ -1295,6 +1295,11 @@
                   '|content/shell/(common|browser|renderer)/layout_test/' \
                   '|content/test/layouttest_support.cc' \
                   '|content/public/test/layouttest_support.h' \
+    },
+    'xml': {
+      'filepath': 'third_party/WebKit/Source/core/xml/' \
+                  '|third_party/libxml/' \
+                  '|third_party/libxslt/',
     },
   },
 
@@ -1839,5 +1844,6 @@
     'test_runner': [ 'jochen+watch@chromium.org',
                      'mlamouri+watch-test-runner@chromium.org' ],
     'clank_uma_settings': ['gayane+watch@chromium.org'],
+    'xml': [ 'dominicc+watchlist@chromium.org' ],
   },
 }
