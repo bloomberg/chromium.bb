@@ -537,16 +537,18 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       "simd/scale_yuv_to_rgb_sse.asm",
     ]
 
-    # TODO(ajwong): Only export if shared_library build...
     yasm_flags = [
       "-DCHROMIUM",
-      "-DEXPORT_SYMBOLS",
 
       # In addition to the same path as source asm, let yasm %include
       # search path be relative to src/ per Chromium policy.
       "-I",
       rebase_path("..", root_build_dir),
     ]
+
+    if (is_component_build) {
+      yasm_flags += [ "-DEXPORT_SYMBOLS" ]
+    }
 
     inputs = [
       "//third_party/x86inc/x86inc.asm",
