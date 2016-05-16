@@ -138,6 +138,7 @@ test("components_unittests") {
 
     # Direct dependencies of components/test/run_all_unittests.cc.
     "//components/content_settings/core/common",
+    "//mojo/edk/system",
     "//net",
     "//testing/gtest",
     "//ui/base",
@@ -197,7 +198,6 @@ test("components_unittests") {
       "//components/wallpaper:unit_tests",
       "//components/web_cache/browser:unit_tests",
       "//components/webcrypto:unit_tests",
-      "//mojo/edk/system",
 
       # These are the deps required by the code in this target.
       "//components/policy:policy_component",
