@@ -689,12 +689,6 @@ bool SelectionEditor::modify(EAlteration alter, unsigned verticalDistance, Verti
     if (!verticalDistance)
         return false;
 
-    if (userTriggered == UserTriggered) {
-        FrameSelection* trialFrameSelection = FrameSelection::create();
-        trialFrameSelection->setSelection(m_selection);
-        trialFrameSelection->modify(alter, verticalDistance, direction, NotUserTriggered);
-    }
-
     willBeModified(alter, direction == FrameSelection::DirectionUp ? DirectionBackward : DirectionForward);
 
     VisiblePosition pos;
