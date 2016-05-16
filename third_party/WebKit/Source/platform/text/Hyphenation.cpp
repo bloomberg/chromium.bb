@@ -16,6 +16,7 @@ Hyphenation::HyphenationMap& Hyphenation::getHyphenationMap()
 
 Hyphenation* Hyphenation::get(const AtomicString& locale)
 {
+    DCHECK(!locale.isNull());
     Hyphenation::HyphenationMap& hyphenationMap = getHyphenationMap();
     auto result = hyphenationMap.add(locale, nullptr);
     if (result.isNewEntry)

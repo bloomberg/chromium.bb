@@ -40,6 +40,8 @@
 #include "core/layout/line/TrailingObjects.h"
 #include "core/layout/line/WordMeasurement.h"
 #include "core/paint/PaintLayer.h"
+#include "platform/fonts/CharacterRange.h"
+#include "platform/text/Hyphenation.h"
 #include "platform/text/TextBreakIterator.h"
 #include "wtf/Allocator.h"
 #include "wtf/Vector.h"
@@ -99,7 +101,7 @@ public:
     void handleReplaced();
     bool handleText(WordMeasurements&, bool& hyphenated);
     void prepareForNextCharacter(const LineLayoutText&, bool& prohibitBreakInside, bool previousCharacterIsSpace);
-    bool canBreakAtWhitespace(bool breakWords, WordMeasurement&, bool stoppedIgnoringSpaces, bool& hyphenated, float charWidth, float& hyphenWidth, bool betweenWords, bool midWordBreak, bool canBreakMidWord, bool previousCharacterIsSpace, float lastWidthMeasurement, const LineLayoutText&, const Font&, bool applyWordSpacing, float wordSpacing);
+    bool canBreakAtWhitespace(bool breakWords, WordMeasurement&, bool stoppedIgnoringSpaces, float charWidth, bool& hyphenated, bool disableSoftHyphen, float& hyphenWidth, bool betweenWords, bool midWordBreak, bool canBreakMidWord, bool previousCharacterIsSpace, float lastWidthMeasurement, const LineLayoutText&, const Font&, bool applyWordSpacing, float wordSpacing);
     bool trailingSpaceExceedsAvailableWidth(bool canBreakMidWord, const LineLayoutText&, WordMeasurement&, bool applyWordSpacing, bool wordSpacing, const Font&);
     WordMeasurement& calculateWordWidth(WordMeasurements&, LineLayoutText&, unsigned lastSpace, float& lastWidthMeasurement, float wordSpacingForWordMeasurement, const Font&, float wordTrailingSpaceWidth, UChar);
     void stopIgnoringSpaces(unsigned& lastSpace);
@@ -117,6 +119,7 @@ private:
     bool rewindToMidWordBreak(WordMeasurement&, int end, float width);
     bool rewindToFirstMidWordBreak(LineLayoutText, const ComputedStyle&, const Font&, bool breakAll, WordMeasurement&);
     bool rewindToMidWordBreak(LineLayoutText, const ComputedStyle&, const Font&, bool breakAll, WordMeasurement&);
+    bool hyphenate(LineLayoutText, const ComputedStyle&, const Font&, const Hyphenation&, float lastSpaceWordSpacing, WordMeasurement&);
 
     InlineBidiResolver& m_resolver;
 
@@ -560,8 +563,8 @@ ALWAYS_INLINE bool BreakingContext::rewindToMidWordBreak(
     wordMeasurement.endOffset = end;
     wordMeasurement.width = width;
 
-    m_current.moveTo(m_current.getLineLayoutItem(), end);
-    m_lineBreak.moveTo(m_current.getLineLayoutItem(), m_current.offset());
+    m_current.moveTo(m_current.getLineLayoutItem(), end, m_current.nextBreakablePosition());
+    m_lineBreak.moveTo(m_current.getLineLayoutItem(), end, m_current.nextBreakablePosition());
     return true;
 }
 
@@ -622,6 +625,47 @@ ALWAYS_INLINE bool BreakingContext::rewindToMidWordBreak(LineLayoutText text,
     return rewindToMidWordBreak(wordMeasurement, end, rect.width());
 }
 
+ALWAYS_INLINE bool BreakingContext::hyphenate(LineLayoutText text,
+    const ComputedStyle& style, const Font& font,
+    const Hyphenation& hyphenation, float lastSpaceWordSpacing,
+    WordMeasurement& wordMeasurement)
+{
+    const unsigned minimumPrefixLength = 2;
+    const unsigned minimumSuffixLength = 2;
+    unsigned start = wordMeasurement.startOffset;
+    unsigned len = wordMeasurement.endOffset - start;
+    if (len <= minimumSuffixLength)
+        return false;
+
+    float hyphenWidth = text.hyphenWidth(font, textDirectionFromUnicode(m_resolver.position().direction()));
+    float maxPrefixWidth = m_width.availableWidth()
+        - m_width.currentWidth() - hyphenWidth - lastSpaceWordSpacing;
+
+    // If the maximum width available for the prefix before the hyphen is small, then it is very unlikely
+    // that an hyphenation opportunity exists, so do not bother to look for it.
+    // These are heuristic numbers for performance added in http://wkb.ug/45606 .
+    const int minPrefixWidthNumerator = 5;
+    const int minPrefixWidthDenominator = 4;
+    if (maxPrefixWidth <= font.getFontDescription().computedSize() * minPrefixWidthNumerator / minPrefixWidthDenominator)
+        return false;
+
+    TextRun run = constructTextRun(font, text, start, len, style);
+    run.setTabSize(!m_collapseWhiteSpace, style.getTabSize());
+    run.setXPos(m_width.currentWidth());
+    unsigned maxPrefixLength = font.offsetForPosition(run, maxPrefixWidth, false);
+    if (maxPrefixLength < minimumPrefixLength)
+        return false;
+
+    unsigned prefixLength = hyphenation.lastHyphenLocation(
+        text.text().createView(start, len),
+        std::min(maxPrefixLength, len - minimumSuffixLength) + 1);
+    if (!prefixLength || prefixLength < minimumPrefixLength)
+        return false;
+
+    CharacterRange range = font.getCharacterRange(run, 0, prefixLength);
+    return rewindToMidWordBreak(wordMeasurement, start + prefixLength, range.width());
+}
+
 inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool& hyphenated)
 {
     if (!m_current.offset())
@@ -660,6 +704,9 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     // See: fast/css3-text/css3-word-break/word-break-all-wrap-with-floats.html
     float widthMeasurementAtLastBreakOpportunity = 0;
 
+    Hyphenation* hyphenation = style.getHyphens() == HyphensAuto
+        ? Hyphenation::get(font.getFontDescription().locale()) : nullptr;
+    bool disableSoftHyphen = style.getHyphens() == HyphensNone;
     float hyphenWidth = 0;
 
     if (layoutText.isSVGInlineText()) {
@@ -705,7 +752,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
             m_width.setTrailingWhitespaceWidth(0);
         }
 
-        if (c == softHyphenCharacter && m_autoWrap && !hyphenWidth) {
+        if (c == softHyphenCharacter && m_autoWrap && !hyphenWidth && !disableSoftHyphen) {
             hyphenWidth = layoutText.hyphenWidth(font, textDirectionFromUnicode(m_resolver.position().direction()));
             m_width.addUncommittedWidth(hyphenWidth);
         }
@@ -726,7 +773,8 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
 
         // Determine if we are in the whitespace between words.
         int nextBreakablePosition = m_current.nextBreakablePosition();
-        bool betweenWords = c == newlineCharacter || (m_currWS != PRE && !m_atStart && m_layoutTextInfo.m_lineBreakIterator.isBreakable(m_current.offset(), nextBreakablePosition, lineBreakType));
+        bool betweenWords = c == newlineCharacter || (m_currWS != PRE && !m_atStart && m_layoutTextInfo.m_lineBreakIterator.isBreakable(m_current.offset(), nextBreakablePosition, lineBreakType)
+            && (!disableSoftHyphen || m_current.previousInSameNode() != softHyphenCharacter));
         m_current.setNextBreakablePosition(nextBreakablePosition);
 
         // If we're in the middle of a word or at the start of a new one and can't break there, then continue to the next character.
@@ -788,18 +836,31 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
             m_width.fitBelowFloats(m_lineInfo.isFirstLine());
 
         midWordBreak = false;
-        if (canBreakMidWord && !m_width.fitsOnLine()) {
-            m_width.addUncommittedWidth(-wordMeasurement.width);
-            if (rewindToMidWordBreak(layoutText, style, font, breakAll, wordMeasurement)) {
-                lastWidthMeasurement = wordMeasurement.width + lastSpaceWordSpacing;
-                midWordBreak = true;
+        if (!m_width.fitsOnLine()) {
+            if (canBreakMidWord) {
+                m_width.addUncommittedWidth(-wordMeasurement.width);
+                if (rewindToMidWordBreak(layoutText, style, font, breakAll, wordMeasurement)) {
+                    lastWidthMeasurement = wordMeasurement.width + lastSpaceWordSpacing;
+                    midWordBreak = true;
+                }
+                m_width.addUncommittedWidth(wordMeasurement.width);
+            } else if (hyphenation) {
+                m_width.addUncommittedWidth(-wordMeasurement.width);
+                DCHECK(lastSpace == static_cast<unsigned>(wordMeasurement.startOffset));
+                DCHECK(m_current.offset() == static_cast<unsigned>(wordMeasurement.endOffset));
+                if (hyphenate(layoutText, style, font, *hyphenation, lastSpaceWordSpacing, wordMeasurement)) {
+                    m_width.addUncommittedWidth(wordMeasurement.width);
+                    hyphenated = true;
+                    m_atEnd = true;
+                    return false;
+                }
+                m_width.addUncommittedWidth(wordMeasurement.width);
             }
-            m_width.addUncommittedWidth(wordMeasurement.width);
         }
 
         // If there is a soft-break available at this whitespace position then take it.
         applyWordSpacing = wordSpacing && m_currentCharacterIsSpace;
-        if (canBreakAtWhitespace(breakWords, wordMeasurement, stoppedIgnoringSpaces, hyphenated, charWidth, hyphenWidth, betweenWords, midWordBreak, canBreakMidWord, previousCharacterIsSpace, lastWidthMeasurement, layoutText, font, applyWordSpacing, wordSpacing))
+        if (canBreakAtWhitespace(breakWords, wordMeasurement, stoppedIgnoringSpaces, charWidth, hyphenated, disableSoftHyphen, hyphenWidth, betweenWords, midWordBreak, canBreakMidWord, previousCharacterIsSpace, lastWidthMeasurement, layoutText, font, applyWordSpacing, wordSpacing))
             return false;
 
         // If there is a hard-break available at this whitespace position then take it.
@@ -882,10 +943,23 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     if (midWordBreak) {
         m_width.commit();
         m_atEnd = true;
-    } else if (!m_width.fitsOnLine() && !hyphenated
-        && m_lineBreak.previousInSameNode() == softHyphenCharacter) {
-        hyphenated = true;
-        m_atEnd = true;
+    } else if (!m_width.fitsOnLine()) {
+        if (hyphenation && (m_nextObject || m_lineInfo.isEmpty())) {
+            m_width.addUncommittedWidth(-wordMeasurement.width);
+            DCHECK(lastSpace == static_cast<unsigned>(wordMeasurement.startOffset));
+            DCHECK(m_current.offset() == static_cast<unsigned>(wordMeasurement.endOffset));
+            if (hyphenate(layoutText, style, font, *hyphenation, lastSpaceWordSpacing, wordMeasurement)) {
+                hyphenated = true;
+                m_atEnd = true;
+            }
+            m_width.addUncommittedWidth(wordMeasurement.width);
+        }
+        if (!hyphenated
+            && m_lineBreak.previousInSameNode() == softHyphenCharacter
+            && !disableSoftHyphen) {
+            hyphenated = true;
+            m_atEnd = true;
+        }
     }
     return false;
 }
@@ -961,7 +1035,7 @@ inline bool BreakingContext::trailingSpaceExceedsAvailableWidth(bool canBreakMid
     return false;
 }
 
-inline bool BreakingContext::canBreakAtWhitespace(bool breakWords, WordMeasurement& wordMeasurement, bool stoppedIgnoringSpaces, bool& hyphenated, float charWidth, float& hyphenWidth, bool betweenWords, bool midWordBreak, bool canBreakMidWord, bool previousCharacterIsSpace, float lastWidthMeasurement, const LineLayoutText& layoutText, const Font& font, bool applyWordSpacing, float wordSpacing)
+inline bool BreakingContext::canBreakAtWhitespace(bool breakWords, WordMeasurement& wordMeasurement, bool stoppedIgnoringSpaces, float charWidth, bool& hyphenated, bool disableSoftHyphen, float& hyphenWidth, bool betweenWords, bool midWordBreak, bool canBreakMidWord, bool previousCharacterIsSpace, float lastWidthMeasurement, const LineLayoutText& layoutText, const Font& font, bool applyWordSpacing, float wordSpacing)
 {
     if (!m_autoWrap && !breakWords)
         return false;
@@ -978,7 +1052,7 @@ inline bool BreakingContext::canBreakAtWhitespace(bool breakWords, WordMeasureme
             m_lineInfo.setPreviousLineBrokeCleanly(true);
             wordMeasurement.endOffset = m_lineBreak.offset();
         }
-        if (m_lineBreak.getLineLayoutItem() && m_lineBreak.offset() && m_lineBreak.getLineLayoutItem().isText() && LineLayoutText(m_lineBreak.getLineLayoutItem()).textLength() && LineLayoutText(m_lineBreak.getLineLayoutItem()).characterAt(m_lineBreak.offset() - 1) == softHyphenCharacter)
+        if (m_lineBreak.getLineLayoutItem() && m_lineBreak.offset() && m_lineBreak.getLineLayoutItem().isText() && LineLayoutText(m_lineBreak.getLineLayoutItem()).textLength() && LineLayoutText(m_lineBreak.getLineLayoutItem()).characterAt(m_lineBreak.offset() - 1) == softHyphenCharacter && !disableSoftHyphen)
             hyphenated = true;
         if (m_lineBreak.offset() && m_lineBreak.offset() != (unsigned)wordMeasurement.endOffset && !wordMeasurement.width) {
             if (charWidth) {

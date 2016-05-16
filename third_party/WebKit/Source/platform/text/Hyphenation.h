@@ -14,15 +14,13 @@
 
 namespace blink {
 
-class StringView;
-
 class PLATFORM_EXPORT Hyphenation : public RefCounted<Hyphenation> {
 public:
     virtual ~Hyphenation() {}
 
     static Hyphenation* get(const AtomicString& locale);
 
-    virtual size_t lastHyphenLocation(const StringView&, size_t beforeIndex, const AtomicString& locale) const = 0;
+    virtual size_t lastHyphenLocation(const StringView&, size_t beforeIndex) const = 0;
 
     static void setForTesting(const AtomicString& locale, PassRefPtr<Hyphenation>);
     static void clearForTesting();

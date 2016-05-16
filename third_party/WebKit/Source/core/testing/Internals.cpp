@@ -121,6 +121,7 @@
 #include "core/testing/InternalSettings.h"
 #include "core/testing/LayerRect.h"
 #include "core/testing/LayerRectList.h"
+#include "core/testing/MockHyphenation.h"
 #include "core/testing/PrivateScriptTest.h"
 #include "core/testing/TypeConversions.h"
 #include "core/testing/UnionTypesTest.h"
@@ -1546,6 +1547,11 @@ void Internals::setContinuousSpellCheckingEnabled(bool enabled)
 
     if (enabled != contextDocument()->frame()->spellChecker().isContinuousSpellCheckingEnabled())
         contextDocument()->frame()->spellChecker().toggleContinuousSpellChecking();
+}
+
+void Internals::setMockHyphenation(const AtomicString& locale)
+{
+    Hyphenation::setForTesting(locale, adoptRef(new MockHyphenation));
 }
 
 bool Internals::isOverwriteModeEnabled(Document* document)

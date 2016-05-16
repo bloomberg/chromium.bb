@@ -11,7 +11,7 @@ namespace blink {
 
 class NoHyphenation : public Hyphenation {
 public:
-    size_t lastHyphenLocation(const StringView&, size_t beforeIndex, const AtomicString& locale) const override
+    size_t lastHyphenLocation(const StringView&, size_t beforeIndex) const override
     {
         return 0;
     }

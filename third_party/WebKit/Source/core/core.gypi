@@ -3881,6 +3881,8 @@
             'testing/LayerRect.h',
             'testing/LayerRectList.cpp',
             'testing/LayerRectList.h',
+            'testing/MockHyphenation.cpp',
+            'testing/MockHyphenation.h',
             'testing/NullExecutionContext.cpp',
             'testing/NullExecutionContext.h',
             'testing/PrivateScriptTest.cpp',

@@ -751,6 +751,13 @@ FloatRect Font::selectionRectForComplexText(const TextRun& run,
     return FloatRect(point.x() + range.start, point.y(), range.width(), height);
 }
 
+CharacterRange Font::getCharacterRange(const TextRun& run, unsigned from, unsigned to) const
+{
+    FontCachePurgePreventer purgePreventer;
+    CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
+    return shaper.getCharacterRange(this, run, from, to);
+}
+
 Vector<CharacterRange> Font::individualCharacterRanges(const TextRun& run) const
 {
     // TODO(pdr): Android is temporarily (crbug.com/577306) using the old simple
