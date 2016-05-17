@@ -272,7 +272,7 @@ TEST(SdkMediaCodecBridgeTest, InvalidOpusHeader) {
 }
 
 TEST(SdkMediaCodecBridgeTest, PresentationTimestampsDoNotDecrease) {
-  SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
+  SKIP_TEST_IF_VP8_DECODER_IS_NOT_SUPPORTED();
 
   std::unique_ptr<VideoCodecBridge> media_codec(VideoCodecBridge::CreateDecoder(
       kCodecVP8, false, gfx::Size(320, 240), nullptr, nullptr));
