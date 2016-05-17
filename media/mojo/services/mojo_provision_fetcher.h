@@ -12,11 +12,11 @@
 
 namespace media {
 
-// A ProvisionFetcher that proxies to a interfaces::ProvisionFetcherPtr.
+// A ProvisionFetcher that proxies to a mojom::ProvisionFetcherPtr.
 class MojoProvisionFetcher : public ProvisionFetcher {
  public:
   explicit MojoProvisionFetcher(
-      interfaces::ProvisionFetcherPtr provision_fetcher_ptr);
+      mojom::ProvisionFetcherPtr provision_fetcher_ptr);
   ~MojoProvisionFetcher() final;
 
   // ProvisionFetcher implementation:
@@ -25,12 +25,12 @@ class MojoProvisionFetcher : public ProvisionFetcher {
                 const ResponseCB& response_cb) final;
 
  private:
-  // Callback for interfaces::ProvisionFetcherPtr::Retrieve().
+  // Callback for mojom::ProvisionFetcherPtr::Retrieve().
   void OnResponse(const ResponseCB& response_cb,
                   bool success,
                   const std::string& response);
 
-  interfaces::ProvisionFetcherPtr provision_fetcher_ptr_;
+  mojom::ProvisionFetcherPtr provision_fetcher_ptr_;
 
   base::WeakPtrFactory<MojoProvisionFetcher> weak_factory_;
 

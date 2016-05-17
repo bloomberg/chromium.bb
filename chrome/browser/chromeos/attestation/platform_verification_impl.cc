@@ -12,7 +12,7 @@
 namespace chromeos {
 namespace attestation {
 
-using media::interfaces::PlatformVerification;
+using media::mojom::PlatformVerification;
 
 // static
 void PlatformVerificationImpl::Create(

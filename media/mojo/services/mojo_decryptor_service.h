@@ -24,40 +24,40 @@ namespace media {
 class DecoderBuffer;
 class MediaKeys;
 
-// A interfaces::Decryptor implementation. This object is owned by the creator,
+// A mojom::Decryptor implementation. This object is owned by the creator,
 // and uses a weak binding across the mojo interface.
-class MojoDecryptorService : public interfaces::Decryptor {
+class MojoDecryptorService : public mojom::Decryptor {
  public:
   // Constructs a MojoDecryptorService and binds it to the |request|. Keeps a
   // copy of |cdm| to prevent it from being deleted as long as it is needed.
   // |error_handler| will be called if a connection error occurs.
   MojoDecryptorService(const scoped_refptr<MediaKeys>& cdm,
-                       mojo::InterfaceRequest<interfaces::Decryptor> request,
+                       mojo::InterfaceRequest<mojom::Decryptor> request,
                        const mojo::Closure& error_handler);
 
   ~MojoDecryptorService() final;
 
-  // interfaces::Decryptor implementation.
+  // mojom::Decryptor implementation.
   void Initialize(mojo::ScopedDataPipeConsumerHandle receive_pipe,
                   mojo::ScopedDataPipeProducerHandle transmit_pipe) final;
-  void Decrypt(interfaces::DemuxerStream::Type stream_type,
-               interfaces::DecoderBufferPtr encrypted,
+  void Decrypt(mojom::DemuxerStream::Type stream_type,
+               mojom::DecoderBufferPtr encrypted,
                const DecryptCallback& callback) final;
-  void CancelDecrypt(interfaces::DemuxerStream::Type stream_type) final;
+  void CancelDecrypt(mojom::DemuxerStream::Type stream_type) final;
   void InitializeAudioDecoder(
-      interfaces::AudioDecoderConfigPtr config,
+      mojom::AudioDecoderConfigPtr config,
       const InitializeAudioDecoderCallback& callback) final;
   void InitializeVideoDecoder(
-      interfaces::VideoDecoderConfigPtr config,
+      mojom::VideoDecoderConfigPtr config,
       const InitializeVideoDecoderCallback& callback) final;
   void DecryptAndDecodeAudio(
-      interfaces::DecoderBufferPtr encrypted,
+      mojom::DecoderBufferPtr encrypted,
       const DecryptAndDecodeAudioCallback& callback) final;
   void DecryptAndDecodeVideo(
-      interfaces::DecoderBufferPtr encrypted,
+      mojom::DecoderBufferPtr encrypted,
       const DecryptAndDecodeVideoCallback& callback) final;
-  void ResetDecoder(interfaces::DemuxerStream::Type stream_type) final;
-  void DeinitializeDecoder(interfaces::DemuxerStream::Type stream_type) final;
+  void ResetDecoder(mojom::DemuxerStream::Type stream_type) final;
+  void DeinitializeDecoder(mojom::DemuxerStream::Type stream_type) final;
   void ReleaseSharedBuffer(mojo::ScopedSharedBufferHandle buffer,
                            uint64_t buffer_size) final;
 
@@ -82,13 +82,13 @@ class MojoDecryptorService : public interfaces::Decryptor {
                       const scoped_refptr<VideoFrame>& frame);
 
   // Helper functions to write and read a DecoderBuffer.
-  interfaces::DecoderBufferPtr TransferDecoderBuffer(
+  mojom::DecoderBufferPtr TransferDecoderBuffer(
       const scoped_refptr<DecoderBuffer>& buffer);
   scoped_refptr<DecoderBuffer> ReadDecoderBuffer(
-      interfaces::DecoderBufferPtr buffer);
+      mojom::DecoderBufferPtr buffer);
 
   // A weak binding is used to connect to the MojoDecryptor.
-  mojo::Binding<interfaces::Decryptor> binding_;
+  mojo::Binding<mojom::Decryptor> binding_;
 
   // DataPipes for serializing the data section of DecoderBuffer into/from.
   mojo::ScopedDataPipeProducerHandle producer_handle_;

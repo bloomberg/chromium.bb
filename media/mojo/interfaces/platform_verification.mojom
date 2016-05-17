@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // TODO(xhwang): Move this out of media if it is needed anywhere else.
-module media.interfaces;
+module media.mojom;
 
 // Allows authorized services to verify that the underlying platform is trusted.
 // An example of a trusted platform is a Chrome OS device in verified boot mode.

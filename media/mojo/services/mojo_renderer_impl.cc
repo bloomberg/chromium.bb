@@ -18,7 +18,7 @@ namespace media {
 
 MojoRendererImpl::MojoRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    interfaces::RendererPtr remote_renderer)
+    mojom::RendererPtr remote_renderer)
     : task_runner_(task_runner),
       remote_renderer_info_(remote_renderer.PassInterface()),
       binding_(this) {
@@ -59,18 +59,18 @@ void MojoRendererImpl::Initialize(
   client_ = client;
   init_cb_ = init_cb;
 
-  // Create audio and video interfaces::DemuxerStream and bind its lifetime to
+  // Create audio and video mojom::DemuxerStream and bind its lifetime to
   // the pipe.
   DemuxerStream* const audio =
       demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO);
   DemuxerStream* const video =
       demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO);
 
-  interfaces::DemuxerStreamPtr audio_stream;
+  mojom::DemuxerStreamPtr audio_stream;
   if (audio)
     new MojoDemuxerStreamImpl(audio, GetProxy(&audio_stream));
 
-  interfaces::DemuxerStreamPtr video_stream;
+  mojom::DemuxerStreamPtr video_stream;
   if (video)
     new MojoDemuxerStreamImpl(video, GetProxy(&video_stream));
 
@@ -156,8 +156,7 @@ void MojoRendererImpl::OnTimeUpdate(int64_t time_usec, int64_t max_time_usec) {
   time_ = base::TimeDelta::FromMicroseconds(time_usec);
 }
 
-void MojoRendererImpl::OnBufferingStateChange(
-    interfaces::BufferingState state) {
+void MojoRendererImpl::OnBufferingStateChange(mojom::BufferingState state) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   client_->OnBufferingStateChange(static_cast<media::BufferingState>(state));

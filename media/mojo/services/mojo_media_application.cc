@@ -35,7 +35,7 @@ void MojoMediaApplication::Initialize(shell::Connector* connector,
 }
 
 bool MojoMediaApplication::AcceptConnection(shell::Connection* connection) {
-  connection->AddInterface<interfaces::ServiceFactory>(this);
+  connection->AddInterface<mojom::ServiceFactory>(this);
   return true;
 }
 
@@ -46,7 +46,7 @@ bool MojoMediaApplication::ShellConnectionLost() {
 
 void MojoMediaApplication::Create(
     shell::Connection* connection,
-    mojo::InterfaceRequest<interfaces::ServiceFactory> request) {
+    mojo::InterfaceRequest<mojom::ServiceFactory> request) {
   // The created object is owned by the pipe.
   new ServiceFactoryImpl(std::move(request), connection->GetRemoteInterfaces(),
                          media_log_, ref_factory_.CreateRef(),

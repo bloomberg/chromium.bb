@@ -24,7 +24,7 @@ class MojoMediaClient;
 
 class MojoMediaApplication
     : public shell::ShellClient,
-      public shell::InterfaceFactory<interfaces::ServiceFactory> {
+      public shell::InterfaceFactory<mojom::ServiceFactory> {
  public:
   MojoMediaApplication(std::unique_ptr<MojoMediaClient> mojo_media_client,
                        const base::Closure& quit_closure);
@@ -38,9 +38,9 @@ class MojoMediaApplication
   bool AcceptConnection(shell::Connection* connection) final;
   bool ShellConnectionLost() final;
 
-  // shell::InterfaceFactory<interfaces::ServiceFactory> implementation.
+  // shell::InterfaceFactory<mojom::ServiceFactory> implementation.
   void Create(shell::Connection* connection,
-              mojo::InterfaceRequest<interfaces::ServiceFactory> request) final;
+              mojo::InterfaceRequest<mojom::ServiceFactory> request) final;
 
   // Note: Since each instance runs on a different thread, do not share a common
   // MojoMediaClient with other instances to avoid threading issues. Hence using

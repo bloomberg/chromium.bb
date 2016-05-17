@@ -20,7 +20,7 @@ const int kTimeUpdateIntervalMs = 50;
 MojoRendererService::MojoRendererService(
     base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
     std::unique_ptr<media::Renderer> renderer,
-    mojo::InterfaceRequest<interfaces::Renderer> request)
+    mojo::InterfaceRequest<mojom::Renderer> request)
     : binding_(this, std::move(request)),
       mojo_cdm_service_context_(mojo_cdm_service_context),
       state_(STATE_UNINITIALIZED),
@@ -37,9 +37,9 @@ MojoRendererService::~MojoRendererService() {
 }
 
 void MojoRendererService::Initialize(
-    interfaces::RendererClientPtr client,
-    interfaces::DemuxerStreamPtr audio,
-    interfaces::DemuxerStreamPtr video,
+    mojom::RendererClientPtr client,
+    mojom::DemuxerStreamPtr audio,
+    mojom::DemuxerStreamPtr video,
     const mojo::Callback<void(bool)>& callback) {
   DVLOG(1) << __FUNCTION__;
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
@@ -116,17 +116,16 @@ void MojoRendererService::OnEnded() {
 }
 
 void MojoRendererService::OnStatisticsUpdate(const PipelineStatistics& stats) {
-  // TODO(alokp): Plumb the event to interfaces::RendererClient. crbug/585287
+  // TODO(alokp): Plumb the event to mojom::RendererClient. crbug/585287
 }
 
 void MojoRendererService::OnBufferingStateChange(BufferingState state) {
   DVLOG(2) << __FUNCTION__ << "(" << state << ")";
-  client_->OnBufferingStateChange(
-      static_cast<interfaces::BufferingState>(state));
+  client_->OnBufferingStateChange(static_cast<mojom::BufferingState>(state));
 }
 
 void MojoRendererService::OnWaitingForDecryptionKey() {
-  // TODO(alokp): Plumb the event to interfaces::RendererClient. crbug/585287
+  // TODO(alokp): Plumb the event to mojom::RendererClient. crbug/585287
 }
 
 void MojoRendererService::OnStreamReady(

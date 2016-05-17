@@ -18,20 +18,20 @@ namespace content {
 
 class RenderFrameHost;
 
-// An media::interfaces::ProvisionFetcher implementation based on
+// A media::mojom::ProvisionFetcher implementation based on
 // media::ProvisionFetcher.
-class ProvisionFetcherImpl : public media::interfaces::ProvisionFetcher {
+class ProvisionFetcherImpl : public media::mojom::ProvisionFetcher {
  public:
   static void Create(
       RenderFrameHost* render_frame_host,
-      mojo::InterfaceRequest<media::interfaces::ProvisionFetcher> request);
+      mojo::InterfaceRequest<media::mojom::ProvisionFetcher> request);
 
   ProvisionFetcherImpl(
       std::unique_ptr<media::ProvisionFetcher> provision_fetcher,
       mojo::InterfaceRequest<ProvisionFetcher> request);
   ~ProvisionFetcherImpl() override;
 
-  // media::interfaces::ProvisionFetcher implementation.
+  // media::mojom::ProvisionFetcher implementation.
   void Retrieve(const mojo::String& default_url,
                 const mojo::String& request_data,
                 const RetrieveCallback& callback) final;
@@ -42,7 +42,7 @@ class ProvisionFetcherImpl : public media::interfaces::ProvisionFetcher {
                   bool success,
                   const std::string& response);
 
-  mojo::StrongBinding<media::interfaces::ProvisionFetcher> binding_;
+  mojo::StrongBinding<media::mojom::ProvisionFetcher> binding_;
   std::unique_ptr<media::ProvisionFetcher> provision_fetcher_;
 
   base::WeakPtrFactory<ProvisionFetcherImpl> weak_factory_;

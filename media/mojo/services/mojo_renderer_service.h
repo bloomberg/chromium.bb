@@ -26,22 +26,22 @@ class MediaKeys;
 class MojoCdmServiceContext;
 class Renderer;
 
-// An interfaces::Renderer implementation that use a media::Renderer to render
+// A mojom::Renderer implementation that use a media::Renderer to render
 // media streams.
-class MojoRendererService : public interfaces::Renderer, public RendererClient {
+class MojoRendererService : public mojom::Renderer, public RendererClient {
  public:
   // |mojo_cdm_service_context| can be used to find the CDM to support
   // encrypted media. If null, encrypted media is not supported.
   MojoRendererService(
       base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
       std::unique_ptr<media::Renderer> renderer,
-      mojo::InterfaceRequest<interfaces::Renderer> request);
+      mojo::InterfaceRequest<mojom::Renderer> request);
   ~MojoRendererService() final;
 
-  // interfaces::Renderer implementation.
-  void Initialize(interfaces::RendererClientPtr client,
-                  interfaces::DemuxerStreamPtr audio,
-                  interfaces::DemuxerStreamPtr video,
+  // mojom::Renderer implementation.
+  void Initialize(mojom::RendererClientPtr client,
+                  mojom::DemuxerStreamPtr audio,
+                  mojom::DemuxerStreamPtr video,
                   const mojo::Callback<void(bool)>& callback) final;
   void Flush(const mojo::Closure& callback) final;
   void StartPlayingFrom(int64_t time_delta_usec) final;
@@ -88,7 +88,7 @@ class MojoRendererService : public interfaces::Renderer, public RendererClient {
                      const mojo::Callback<void(bool)>& callback,
                      bool success);
 
-  mojo::StrongBinding<interfaces::Renderer> binding_;
+  mojo::StrongBinding<mojom::Renderer> binding_;
 
   base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context_;
 
@@ -99,7 +99,7 @@ class MojoRendererService : public interfaces::Renderer, public RendererClient {
   base::RepeatingTimer time_update_timer_;
   uint64_t last_media_time_usec_;
 
-  interfaces::RendererClientPtr client_;
+  mojom::RendererClientPtr client_;
 
   // Hold a reference to the CDM set on the |renderer_| so that the CDM won't be
   // destructed while the |renderer_| is still using it.

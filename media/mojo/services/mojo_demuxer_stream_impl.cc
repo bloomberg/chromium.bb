@@ -19,7 +19,7 @@ namespace media {
 
 MojoDemuxerStreamImpl::MojoDemuxerStreamImpl(
     media::DemuxerStream* stream,
-    mojo::InterfaceRequest<interfaces::DemuxerStream> request)
+    mojo::InterfaceRequest<mojom::DemuxerStream> request)
     : binding_(this, std::move(request)),
       stream_(stream),
       weak_factory_(this) {}
@@ -52,20 +52,20 @@ void MojoDemuxerStreamImpl::Initialize(const InitializeCallback& callback) {
   stream_pipe_ = std::move(data_pipe.producer_handle);
 
   // Prepare the initial config.
-  interfaces::AudioDecoderConfigPtr audio_config;
-  interfaces::VideoDecoderConfigPtr video_config;
+  mojom::AudioDecoderConfigPtr audio_config;
+  mojom::VideoDecoderConfigPtr video_config;
   if (stream_->type() == media::DemuxerStream::AUDIO) {
     audio_config =
-        interfaces::AudioDecoderConfig::From(stream_->audio_decoder_config());
+        mojom::AudioDecoderConfig::From(stream_->audio_decoder_config());
   } else if (stream_->type() == media::DemuxerStream::VIDEO) {
     video_config =
-        interfaces::VideoDecoderConfig::From(stream_->video_decoder_config());
+        mojom::VideoDecoderConfig::From(stream_->video_decoder_config());
   } else {
     NOTREACHED() << "Unsupported stream type: " << stream_->type();
     return;
   }
 
-  callback.Run(static_cast<interfaces::DemuxerStream::Type>(stream_->type()),
+  callback.Run(static_cast<mojom::DemuxerStream::Type>(stream_->type()),
                std::move(data_pipe.consumer_handle), std::move(audio_config),
                std::move(video_config));
 }
@@ -83,8 +83,8 @@ void MojoDemuxerStreamImpl::OnBufferReady(
     const ReadCallback& callback,
     media::DemuxerStream::Status status,
     const scoped_refptr<media::DecoderBuffer>& buffer) {
-  interfaces::AudioDecoderConfigPtr audio_config;
-  interfaces::VideoDecoderConfigPtr video_config;
+  mojom::AudioDecoderConfigPtr audio_config;
+  mojom::VideoDecoderConfigPtr video_config;
 
   if (status == media::DemuxerStream::kConfigChanged) {
     DVLOG(2) << __FUNCTION__ << ": ConfigChange!";
@@ -92,24 +92,24 @@ void MojoDemuxerStreamImpl::OnBufferReady(
     // Status obtained via Run() below.
     if (stream_->type() == media::DemuxerStream::AUDIO) {
       audio_config =
-          interfaces::AudioDecoderConfig::From(stream_->audio_decoder_config());
+          mojom::AudioDecoderConfig::From(stream_->audio_decoder_config());
     } else if (stream_->type() == media::DemuxerStream::VIDEO) {
       video_config =
-          interfaces::VideoDecoderConfig::From(stream_->video_decoder_config());
+          mojom::VideoDecoderConfig::From(stream_->video_decoder_config());
     } else {
       NOTREACHED() << "Unsupported config change encountered for type: "
                    << stream_->type();
     }
 
-    callback.Run(interfaces::DemuxerStream::Status::CONFIG_CHANGED,
-                 interfaces::DecoderBufferPtr(), std::move(audio_config),
+    callback.Run(mojom::DemuxerStream::Status::CONFIG_CHANGED,
+                 mojom::DecoderBufferPtr(), std::move(audio_config),
                  std::move(video_config));
     return;
   }
 
   if (status == media::DemuxerStream::kAborted) {
-    callback.Run(interfaces::DemuxerStream::Status::ABORTED,
-                 interfaces::DecoderBufferPtr(), std::move(audio_config),
+    callback.Run(mojom::DemuxerStream::Status::ABORTED,
+                 mojom::DecoderBufferPtr(), std::move(audio_config),
                  std::move(video_config));
     return;
   }
@@ -129,8 +129,8 @@ void MojoDemuxerStreamImpl::OnBufferReady(
   // TODO(dalecurtis): Once we can write framed data to the DataPipe, fill via
   // the producer handle and then read more to keep the pipe full.  Waiting for
   // space can be accomplished using an AsyncWaiter.
-  callback.Run(static_cast<interfaces::DemuxerStream::Status>(status),
-               interfaces::DecoderBuffer::From(buffer), std::move(audio_config),
+  callback.Run(static_cast<mojom::DemuxerStream::Status>(status),
+               mojom::DecoderBuffer::From(buffer), std::move(audio_config),
                std::move(video_config));
 }
 

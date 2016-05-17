@@ -19,7 +19,7 @@ namespace media {
 
 MojoAudioDecoder::MojoAudioDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    interfaces::AudioDecoderPtr remote_decoder)
+    mojom::AudioDecoderPtr remote_decoder)
     : task_runner_(task_runner),
       remote_decoder_info_(remote_decoder.PassInterface()),
       binding_(this),
@@ -75,7 +75,7 @@ void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
   // and the callback won't be dispatched if |remote_decoder_| is destroyed.
   remote_decoder_->Initialize(
       binding_.CreateInterfacePtrAndBind(),
-      interfaces::AudioDecoderConfig::From(config), cdm_id,
+      mojom::AudioDecoderConfig::From(config), cdm_id,
       base::Bind(&MojoAudioDecoder::OnInitialized, base::Unretained(this)));
 }
 
@@ -126,7 +126,7 @@ bool MojoAudioDecoder::NeedsBitstreamConversion() const {
   return needs_bitstream_conversion_;
 }
 
-void MojoAudioDecoder::OnBufferDecoded(interfaces::AudioBufferPtr buffer) {
+void MojoAudioDecoder::OnBufferDecoded(mojom::AudioBufferPtr buffer) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -164,13 +164,13 @@ void MojoAudioDecoder::OnInitialized(bool success,
 }
 
 static media::DecodeStatus ConvertDecodeStatus(
-    interfaces::AudioDecoder::DecodeStatus status) {
+    mojom::AudioDecoder::DecodeStatus status) {
   switch (status) {
-    case interfaces::AudioDecoder::DecodeStatus::OK:
+    case mojom::AudioDecoder::DecodeStatus::OK:
       return media::DecodeStatus::OK;
-    case interfaces::AudioDecoder::DecodeStatus::ABORTED:
+    case mojom::AudioDecoder::DecodeStatus::ABORTED:
       return media::DecodeStatus::ABORTED;
-    case interfaces::AudioDecoder::DecodeStatus::DECODE_ERROR:
+    case mojom::AudioDecoder::DecodeStatus::DECODE_ERROR:
       return media::DecodeStatus::DECODE_ERROR;
   }
   NOTREACHED();
@@ -178,7 +178,7 @@ static media::DecodeStatus ConvertDecodeStatus(
 }
 
 void MojoAudioDecoder::OnDecodeStatus(
-    interfaces::AudioDecoder::DecodeStatus status) {
+    mojom::AudioDecoder::DecodeStatus status) {
   DVLOG(1) << __FUNCTION__ << ": status:" << status;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -214,10 +214,9 @@ void MojoAudioDecoder::CreateDataPipe() {
   remote_decoder_->SetDataSource(std::move(write_pipe.consumer_handle));
 }
 
-interfaces::DecoderBufferPtr MojoAudioDecoder::TransferDecoderBuffer(
+mojom::DecoderBufferPtr MojoAudioDecoder::TransferDecoderBuffer(
     const scoped_refptr<DecoderBuffer>& media_buffer) {
-  interfaces::DecoderBufferPtr buffer =
-      interfaces::DecoderBuffer::From(media_buffer);
+  mojom::DecoderBufferPtr buffer = mojom::DecoderBuffer::From(media_buffer);
   if (media_buffer->end_of_stream())
     return buffer;
 

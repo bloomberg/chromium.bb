@@ -17,7 +17,7 @@ namespace {
 
 std::unique_ptr<ProvisionFetcher> CreateProvisionFetcher(
     shell::mojom::InterfaceProvider* interface_provider) {
-  interfaces::ProvisionFetcherPtr provision_fetcher_ptr;
+  mojom::ProvisionFetcherPtr provision_fetcher_ptr;
   shell::GetInterface(interface_provider, &provision_fetcher_ptr);
   return base::WrapUnique(
       new MojoProvisionFetcher(std::move(provision_fetcher_ptr)));

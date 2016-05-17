@@ -20,9 +20,9 @@ namespace media {
 
 class DemuxerStreamProvider;
 
-// A media::Renderer that proxies to a interfaces::Renderer. That
-// interfaces::Renderer proxies back to the MojoRendererImpl via the
-// interfaces::RendererClient interface.
+// A media::Renderer that proxies to a mojom::Renderer. That
+// mojom::Renderer proxies back to the MojoRendererImpl via the
+// mojom::RendererClient interface.
 //
 // This class can be created on any thread, where the |remote_renderer| is
 // connected and passed in the constructor. Then Initialize() will be called on
@@ -30,11 +30,11 @@ class DemuxerStreamProvider;
 // |task_runner|*. That means all Renderer and RendererClient methods will be
 // called/dispached on the |task_runner|. The only exception is GetMediaTime(),
 // which can be called on any thread.
-class MojoRendererImpl : public Renderer, public interfaces::RendererClient {
+class MojoRendererImpl : public Renderer, public mojom::RendererClient {
  public:
   MojoRendererImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      interfaces::RendererPtr remote_renderer);
+      mojom::RendererPtr remote_renderer);
   ~MojoRendererImpl() override;
 
   // Renderer implementation.
@@ -52,10 +52,10 @@ class MojoRendererImpl : public Renderer, public interfaces::RendererClient {
   bool HasVideo() override;
 
  private:
-  // interfaces::RendererClient implementation, dispatched on the
+  // mojom::RendererClient implementation, dispatched on the
   // |task_runner_|.
   void OnTimeUpdate(int64_t time_usec, int64_t max_time_usec) override;
-  void OnBufferingStateChange(interfaces::BufferingState state) override;
+  void OnBufferingStateChange(mojom::BufferingState state) override;
   void OnEnded() override;
   void OnError() override;
 
@@ -79,10 +79,10 @@ class MojoRendererImpl : public Renderer, public interfaces::RendererClient {
   // This class is constructed on one thread and used exclusively on another
   // thread. This member is used to safely pass the RendererPtr from one thread
   // to another. It is set in the constructor and is consumed in Initialize().
-  interfaces::RendererPtrInfo remote_renderer_info_;
+  mojom::RendererPtrInfo remote_renderer_info_;
 
   // Remote Renderer, bound to |task_runner_| during Initialize().
-  interfaces::RendererPtr remote_renderer_;
+  mojom::RendererPtr remote_renderer_;
 
   // Binding for RendererClient, bound to the |task_runner_|.
   mojo::Binding<RendererClient> binding_;

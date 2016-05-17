@@ -23,7 +23,7 @@ namespace media {
 
 MojoDecryptorService::MojoDecryptorService(
     const scoped_refptr<MediaKeys>& cdm,
-    mojo::InterfaceRequest<interfaces::Decryptor> request,
+    mojo::InterfaceRequest<mojom::Decryptor> request,
     const mojo::Closure& error_handler)
     : binding_(this, std::move(request)), cdm_(cdm), weak_factory_(this) {
   DVLOG(1) << __FUNCTION__;
@@ -42,8 +42,8 @@ void MojoDecryptorService::Initialize(
   consumer_handle_ = std::move(receive_pipe);
 }
 
-void MojoDecryptorService::Decrypt(interfaces::DemuxerStream::Type stream_type,
-                                   interfaces::DecoderBufferPtr encrypted,
+void MojoDecryptorService::Decrypt(mojom::DemuxerStream::Type stream_type,
+                                   mojom::DecoderBufferPtr encrypted,
                                    const DecryptCallback& callback) {
   DVLOG(3) << __FUNCTION__;
   decryptor_->Decrypt(
@@ -53,14 +53,14 @@ void MojoDecryptorService::Decrypt(interfaces::DemuxerStream::Type stream_type,
 }
 
 void MojoDecryptorService::CancelDecrypt(
-    interfaces::DemuxerStream::Type stream_type) {
+    mojom::DemuxerStream::Type stream_type) {
   DVLOG(1) << __FUNCTION__;
   decryptor_->CancelDecrypt(
       static_cast<media::Decryptor::StreamType>(stream_type));
 }
 
 void MojoDecryptorService::InitializeAudioDecoder(
-    interfaces::AudioDecoderConfigPtr config,
+    mojom::AudioDecoderConfigPtr config,
     const InitializeAudioDecoderCallback& callback) {
   DVLOG(1) << __FUNCTION__;
   decryptor_->InitializeAudioDecoder(
@@ -70,7 +70,7 @@ void MojoDecryptorService::InitializeAudioDecoder(
 }
 
 void MojoDecryptorService::InitializeVideoDecoder(
-    interfaces::VideoDecoderConfigPtr config,
+    mojom::VideoDecoderConfigPtr config,
     const InitializeVideoDecoderCallback& callback) {
   DVLOG(1) << __FUNCTION__;
   decryptor_->InitializeVideoDecoder(
@@ -80,7 +80,7 @@ void MojoDecryptorService::InitializeVideoDecoder(
 }
 
 void MojoDecryptorService::DecryptAndDecodeAudio(
-    interfaces::DecoderBufferPtr encrypted,
+    mojom::DecoderBufferPtr encrypted,
     const DecryptAndDecodeAudioCallback& callback) {
   DVLOG(3) << __FUNCTION__;
   decryptor_->DecryptAndDecodeAudio(
@@ -89,7 +89,7 @@ void MojoDecryptorService::DecryptAndDecodeAudio(
 }
 
 void MojoDecryptorService::DecryptAndDecodeVideo(
-    interfaces::DecoderBufferPtr encrypted,
+    mojom::DecoderBufferPtr encrypted,
     const DecryptAndDecodeVideoCallback& callback) {
   DVLOG(3) << __FUNCTION__;
   decryptor_->DecryptAndDecodeVideo(
@@ -98,14 +98,14 @@ void MojoDecryptorService::DecryptAndDecodeVideo(
 }
 
 void MojoDecryptorService::ResetDecoder(
-    interfaces::DemuxerStream::Type stream_type) {
+    mojom::DemuxerStream::Type stream_type) {
   DVLOG(1) << __FUNCTION__;
   decryptor_->ResetDecoder(
       static_cast<media::Decryptor::StreamType>(stream_type));
 }
 
 void MojoDecryptorService::DeinitializeDecoder(
-    interfaces::DemuxerStream::Type stream_type) {
+    mojom::DemuxerStream::Type stream_type) {
   DVLOG(1) << __FUNCTION__;
   decryptor_->DeinitializeDecoder(
       static_cast<media::Decryptor::StreamType>(stream_type));
@@ -157,9 +157,9 @@ void MojoDecryptorService::OnAudioDecoded(
                                                     << status << ")";
   DVLOG_IF(3, status == media::Decryptor::kSuccess) << __FUNCTION__;
 
-  mojo::Array<interfaces::AudioBufferPtr> audio_buffers;
+  mojo::Array<mojom::AudioBufferPtr> audio_buffers;
   for (const auto& frame : frames)
-    audio_buffers.push_back(interfaces::AudioBuffer::From(frame));
+    audio_buffers.push_back(mojom::AudioBuffer::From(frame));
 
   callback.Run(static_cast<Decryptor::Status>(status),
                std::move(audio_buffers));
@@ -189,13 +189,12 @@ void MojoDecryptorService::OnVideoDecoded(
   }
 
   callback.Run(static_cast<Decryptor::Status>(status),
-               interfaces::VideoFrame::From(frame));
+               mojom::VideoFrame::From(frame));
 }
 
-interfaces::DecoderBufferPtr MojoDecryptorService::TransferDecoderBuffer(
+mojom::DecoderBufferPtr MojoDecryptorService::TransferDecoderBuffer(
     const scoped_refptr<DecoderBuffer>& encrypted) {
-  interfaces::DecoderBufferPtr buffer =
-      interfaces::DecoderBuffer::From(encrypted);
+  mojom::DecoderBufferPtr buffer = mojom::DecoderBuffer::From(encrypted);
   if (encrypted->end_of_stream())
     return buffer;
 
@@ -212,7 +211,7 @@ interfaces::DecoderBufferPtr MojoDecryptorService::TransferDecoderBuffer(
 }
 
 scoped_refptr<DecoderBuffer> MojoDecryptorService::ReadDecoderBuffer(
-    interfaces::DecoderBufferPtr buffer) {
+    mojom::DecoderBufferPtr buffer) {
   scoped_refptr<DecoderBuffer> media_buffer(
       buffer.To<scoped_refptr<DecoderBuffer>>());
   if (media_buffer->end_of_stream())

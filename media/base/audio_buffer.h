@@ -29,7 +29,7 @@ class StructPtr;
 namespace media {
 class AudioBus;
 
-namespace interfaces {
+namespace mojom {
 class AudioBuffer;
 }
 
@@ -152,7 +152,7 @@ class MEDIA_EXPORT AudioBuffer
 
   // mojo::TypeConverter added as a friend so that AudioBuffer can be
   // transferred across a mojo connection.
-  friend struct mojo::TypeConverter<mojo::StructPtr<interfaces::AudioBuffer>,
+  friend struct mojo::TypeConverter<mojo::StructPtr<mojom::AudioBuffer>,
                                     scoped_refptr<AudioBuffer>>;
 
   // Allocates aligned contiguous buffer to hold all channel data (1 block for

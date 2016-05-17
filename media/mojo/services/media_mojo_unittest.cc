@@ -37,14 +37,14 @@ const char kInvalidKeySystem[] = "invalid.key.system";
 #endif
 const char kSecurityOrigin[] = "http://foo.com";
 
-class MockRendererClient : public interfaces::RendererClient {
+class MockRendererClient : public mojom::RendererClient {
  public:
   MockRendererClient(){};
   ~MockRendererClient() override{};
 
-  // interfaces::RendererClient implementation.
+  // mojom::RendererClient implementation.
   MOCK_METHOD2(OnTimeUpdate, void(int64_t time_usec, int64_t max_time_usec));
-  MOCK_METHOD1(OnBufferingStateChange, void(interfaces::BufferingState state));
+  MOCK_METHOD1(OnBufferingStateChange, void(mojom::BufferingState state));
   MOCK_METHOD0(OnEnded, void());
   MOCK_METHOD0(OnError, void());
 
@@ -75,9 +75,9 @@ class MediaShellTest : public shell::test::ShellTest {
   // MOCK_METHOD* doesn't support move only types. Work around this by having
   // an extra method.
   MOCK_METHOD2(OnCdmInitializedInternal, void(bool result, int cdm_id));
-  void OnCdmInitialized(interfaces::CdmPromiseResultPtr result,
+  void OnCdmInitialized(mojom::CdmPromiseResultPtr result,
                         int cdm_id,
-                        interfaces::DecryptorPtr decryptor) {
+                        mojom::DecryptorPtr decryptor) {
     OnCdmInitializedInternal(result->success, cdm_id);
   }
 
@@ -90,7 +90,7 @@ class MediaShellTest : public shell::test::ShellTest {
         .Times(Exactly(1))
         .WillOnce(InvokeWithoutArgs(run_loop_.get(), &base::RunLoop::Quit));
     cdm_->Initialize(
-        key_system, kSecurityOrigin, interfaces::CdmConfig::From(CdmConfig()),
+        key_system, kSecurityOrigin, mojom::CdmConfig::From(CdmConfig()),
         base::Bind(&MediaShellTest::OnCdmInitialized, base::Unretained(this)));
   }
 
@@ -102,7 +102,7 @@ class MediaShellTest : public shell::test::ShellTest {
 
     video_demuxer_stream_.set_video_decoder_config(video_config);
 
-    interfaces::DemuxerStreamPtr video_stream;
+    mojom::DemuxerStreamPtr video_stream;
     new MojoDemuxerStreamImpl(&video_demuxer_stream_, GetProxy(&video_stream));
 
     EXPECT_CALL(*this, OnRendererInitialized(expected_result))
@@ -119,12 +119,12 @@ class MediaShellTest : public shell::test::ShellTest {
  protected:
   std::unique_ptr<base::RunLoop> run_loop_;
 
-  interfaces::ServiceFactoryPtr service_factory_;
-  interfaces::ContentDecryptionModulePtr cdm_;
-  interfaces::RendererPtr renderer_;
+  mojom::ServiceFactoryPtr service_factory_;
+  mojom::ContentDecryptionModulePtr cdm_;
+  mojom::RendererPtr renderer_;
 
   StrictMock<MockRendererClient> renderer_client_;
-  mojo::Binding<interfaces::RendererClient> renderer_client_binding_;
+  mojo::Binding<mojom::RendererClient> renderer_client_binding_;
 
   StrictMock<MockDemuxerStream> video_demuxer_stream_;
 

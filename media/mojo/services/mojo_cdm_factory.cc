@@ -52,9 +52,9 @@ void MojoCdmFactory::Create(
     return;
   }
 
-  interfaces::ContentDecryptionModulePtr cdm_ptr;
-  shell::GetInterface<interfaces::ContentDecryptionModule>(interface_provider_,
-                                                           &cdm_ptr);
+  mojom::ContentDecryptionModulePtr cdm_ptr;
+  shell::GetInterface<mojom::ContentDecryptionModule>(interface_provider_,
+                                                      &cdm_ptr);
 
   MojoCdm::Create(key_system, security_origin, cdm_config, std::move(cdm_ptr),
                   session_message_cb, session_closed_cb,

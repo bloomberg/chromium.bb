@@ -13,8 +13,8 @@
 namespace media {
 
 DemuxerStreamProviderShim::DemuxerStreamProviderShim(
-    interfaces::DemuxerStreamPtr audio,
-    interfaces::DemuxerStreamPtr video,
+    mojom::DemuxerStreamPtr audio,
+    mojom::DemuxerStreamPtr video,
     const base::Closure& demuxer_ready_cb)
     : demuxer_ready_cb_(demuxer_ready_cb),
       streams_ready_(0),

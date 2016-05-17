@@ -15,7 +15,7 @@ class SingleThreadTaskRunner;
 
 namespace media {
 
-// A VideoDecoder that proxies to an interfaces::VideoDecoder.
+// A VideoDecoder that proxies to a mojom::VideoDecoder.
 class MojoVideoDecoder : public VideoDecoder {
  public:
   MojoVideoDecoder();

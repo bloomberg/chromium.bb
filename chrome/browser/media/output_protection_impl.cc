@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
 
-using media::interfaces::OutputProtection;
+using media::mojom::OutputProtection;
 
 // static
 void OutputProtectionImpl::Create(

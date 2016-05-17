@@ -16,7 +16,7 @@ namespace content {
 // static
 void ProvisionFetcherImpl::Create(
     RenderFrameHost* render_frame_host,
-    mojo::InterfaceRequest<media::interfaces::ProvisionFetcher> request) {
+    mojo::InterfaceRequest<media::mojom::ProvisionFetcher> request) {
   net::URLRequestContextGetter* context_getter =
       BrowserContext::GetDefaultStoragePartition(
           render_frame_host->GetProcess()->GetBrowserContext())->

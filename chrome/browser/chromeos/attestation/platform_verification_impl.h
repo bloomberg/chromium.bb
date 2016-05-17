@@ -17,15 +17,14 @@
 namespace chromeos {
 namespace attestation {
 
-// Implements media::interfaces::PlatformVerification on ChromeOS using
+// Implements media::mojom::PlatformVerification on ChromeOS using
 // PlatformVerificationFlow. Can only be used on the UI thread because
 // PlatformVerificationFlow lives on the UI thread.
-class PlatformVerificationImpl
-    : public media::interfaces::PlatformVerification {
+class PlatformVerificationImpl : public media::mojom::PlatformVerification {
  public:
   static void Create(
       content::RenderFrameHost* render_frame_host,
-      mojo::InterfaceRequest<media::interfaces::PlatformVerification> request);
+      mojo::InterfaceRequest<media::mojom::PlatformVerification> request);
 
   PlatformVerificationImpl(
       content::RenderFrameHost* render_frame_host,
@@ -46,7 +45,7 @@ class PlatformVerificationImpl
                             const std::string& signature,
                             const std::string& platform_key_certificate);
 
-  mojo::StrongBinding<media::interfaces::PlatformVerification> binding_;
+  mojo::StrongBinding<media::mojom::PlatformVerification> binding_;
 
   content::RenderFrameHost* const render_frame_host_;
 

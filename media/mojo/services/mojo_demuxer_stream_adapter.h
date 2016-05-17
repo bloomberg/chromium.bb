@@ -18,18 +18,18 @@ namespace media {
 
 // This class acts as a MojoRendererService-side stub for a real DemuxerStream
 // that is part of a Pipeline in a remote application. Roughly speaking, it
-// takes a interfaces::DemuxerStreamPtr and exposes it as a DemuxerStream for
+// takes a mojom::DemuxerStreamPtr and exposes it as a DemuxerStream for
 // use by
 // media components.
 class MojoDemuxerStreamAdapter : public DemuxerStream {
  public:
-  // |demuxer_stream| is connected to the interfaces::DemuxerStream that |this|
+  // |demuxer_stream| is connected to the mojom::DemuxerStream that |this|
   // will
   //     become the client of.
   // |stream_ready_cb| will be invoked when |demuxer_stream| has fully
   //     initialized and |this| is ready for use.
   // NOTE: Illegal to call any methods until |stream_ready_cb| is invoked.
-  MojoDemuxerStreamAdapter(interfaces::DemuxerStreamPtr demuxer_stream,
+  MojoDemuxerStreamAdapter(mojom::DemuxerStreamPtr demuxer_stream,
                            const base::Closure& stream_ready_cb);
   ~MojoDemuxerStreamAdapter() override;
 
@@ -43,23 +43,23 @@ class MojoDemuxerStreamAdapter : public DemuxerStream {
   VideoRotation video_rotation() override;
 
  private:
-  void OnStreamReady(interfaces::DemuxerStream::Type type,
+  void OnStreamReady(mojom::DemuxerStream::Type type,
                      mojo::ScopedDataPipeConsumerHandle pipe,
-                     interfaces::AudioDecoderConfigPtr audio_config,
-                     interfaces::VideoDecoderConfigPtr video_config);
+                     mojom::AudioDecoderConfigPtr audio_config,
+                     mojom::VideoDecoderConfigPtr video_config);
 
   // The callback from |demuxer_stream_| that a read operation has completed.
   // |read_cb| is a callback from the client who invoked Read() on |this|.
-  void OnBufferReady(interfaces::DemuxerStream::Status status,
-                     interfaces::DecoderBufferPtr buffer,
-                     interfaces::AudioDecoderConfigPtr audio_config,
-                     interfaces::VideoDecoderConfigPtr video_config);
+  void OnBufferReady(mojom::DemuxerStream::Status status,
+                     mojom::DecoderBufferPtr buffer,
+                     mojom::AudioDecoderConfigPtr audio_config,
+                     mojom::VideoDecoderConfigPtr video_config);
 
-  void UpdateConfig(interfaces::AudioDecoderConfigPtr audio_config,
-                    interfaces::VideoDecoderConfigPtr video_config);
+  void UpdateConfig(mojom::AudioDecoderConfigPtr audio_config,
+                    mojom::VideoDecoderConfigPtr video_config);
 
   // See constructor for descriptions.
-  interfaces::DemuxerStreamPtr demuxer_stream_;
+  mojom::DemuxerStreamPtr demuxer_stream_;
   base::Closure stream_ready_cb_;
 
   // The last ReadCB received through a call to Read().

@@ -15,13 +15,13 @@
 
 namespace media {
 
-// A Decryptor implementation based on interfaces::DecryptorPtr.
+// A Decryptor implementation based on mojom::DecryptorPtr.
 // This class is single threaded. The |remote_decryptor| is connected before
 // being passed to MojoDecryptor, but it is bound to the thread MojoDecryptor
 // lives on the first time it is used in this class.
 class MojoDecryptor : public Decryptor {
  public:
-  explicit MojoDecryptor(interfaces::DecryptorPtr remote_decryptor);
+  explicit MojoDecryptor(mojom::DecryptorPtr remote_decryptor);
   ~MojoDecryptor() final;
 
   // Decryptor implementation.
@@ -48,14 +48,14 @@ class MojoDecryptor : public Decryptor {
  private:
   // Called when a buffer is decrypted.
   void OnBufferDecrypted(const DecryptCB& decrypt_cb,
-                         interfaces::Decryptor::Status status,
-                         interfaces::DecoderBufferPtr buffer);
+                         mojom::Decryptor::Status status,
+                         mojom::DecoderBufferPtr buffer);
   void OnAudioDecoded(const AudioDecodeCB& audio_decode_cb,
-                      interfaces::Decryptor::Status status,
-                      mojo::Array<interfaces::AudioBufferPtr> audio_buffers);
+                      mojom::Decryptor::Status status,
+                      mojo::Array<mojom::AudioBufferPtr> audio_buffers);
   void OnVideoDecoded(const VideoDecodeCB& video_decode_cb,
-                      interfaces::Decryptor::Status status,
-                      interfaces::VideoFramePtr video_frame);
+                      mojom::Decryptor::Status status,
+                      mojom::VideoFramePtr video_frame);
 
   // Called when done with a VideoFrame in order to reuse the shared memory.
   void ReleaseSharedBuffer(mojo::ScopedSharedBufferHandle buffer,
@@ -67,14 +67,14 @@ class MojoDecryptor : public Decryptor {
   void CreateDataPipes();
 
   // Helper functions to write and read a DecoderBuffer.
-  interfaces::DecoderBufferPtr TransferDecoderBuffer(
+  mojom::DecoderBufferPtr TransferDecoderBuffer(
       const scoped_refptr<DecoderBuffer>& buffer);
   scoped_refptr<DecoderBuffer> ReadDecoderBuffer(
-      interfaces::DecoderBufferPtr buffer);
+      mojom::DecoderBufferPtr buffer);
 
   base::ThreadChecker thread_checker_;
 
-  interfaces::DecryptorPtr remote_decryptor_;
+  mojom::DecryptorPtr remote_decryptor_;
 
   // DataPipes for serializing the data section of DecoderBuffer into/from.
   mojo::ScopedDataPipeProducerHandle producer_handle_;

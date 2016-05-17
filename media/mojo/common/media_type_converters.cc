@@ -32,15 +32,14 @@ namespace mojo {
 #define ASSERT_ENUM_EQ(media_enum, media_prefix, mojo_prefix, value)        \
   static_assert(media::media_prefix##value ==                               \
                     static_cast<media::media_enum>(                         \
-                        media::interfaces::media_enum::mojo_prefix##value), \
+                        media::mojom::media_enum::mojo_prefix##value),      \
                 "Mismatched enum: " #media_prefix #value " != " #media_enum \
                 "::" #mojo_prefix #value)
 
-#define ASSERT_ENUM_EQ_RAW(media_enum, media_enum_value, mojo_enum_value)     \
-  static_assert(                                                              \
-      media::media_enum_value ==                                              \
-          static_cast<media::media_enum>(media::interfaces::mojo_enum_value), \
-      "Mismatched enum: " #media_enum_value " != " #mojo_enum_value)
+#define ASSERT_ENUM_EQ_RAW(media_enum, media_enum_value, mojo_enum_value)      \
+  static_assert(media::media_enum_value == static_cast<media::media_enum>(     \
+                                               media::mojom::mojo_enum_value), \
+                "Mismatched enum: " #media_enum_value " != " #mojo_enum_value)
 
 // BufferingState.
 ASSERT_ENUM_EQ(BufferingState, BUFFERING_, , HAVE_NOTHING);
@@ -120,13 +119,12 @@ ASSERT_ENUM_EQ_RAW(DemuxerStream::Type,
 ASSERT_ENUM_EQ_RAW(DemuxerStream::Type,
                    DemuxerStream::VIDEO,
                    DemuxerStream::Type::VIDEO);
-static_assert(media::DemuxerStream::NUM_TYPES ==
-                  static_cast<media::DemuxerStream::Type>(
-                      static_cast<int>(
-                          media::interfaces::DemuxerStream::Type::LAST_TYPE) +
-                      2),
-              "Mismatched enum: media::DemuxerStream::NUM_TYPES != "
-              "media::interfaces::DemuxerStream::Type::LAST_TYPE + 2");
+static_assert(
+    media::DemuxerStream::NUM_TYPES ==
+        static_cast<media::DemuxerStream::Type>(
+            static_cast<int>(media::mojom::DemuxerStream::Type::LAST_TYPE) + 2),
+    "Mismatched enum: media::DemuxerStream::NUM_TYPES != "
+    "media::mojom::DemuxerStream::Type::LAST_TYPE + 2");
 
 // DemuxerStream Status.
 ASSERT_ENUM_EQ_RAW(DemuxerStream::Status,
@@ -260,10 +258,10 @@ ASSERT_ENUM_EQ_RAW(Decryptor::Status,
                    Decryptor::Status::DECRYPTION_ERROR);
 
 // CdmException
-#define ASSERT_CDM_EXCEPTION(value)                                           \
-  static_assert(                                                              \
-      media::MediaKeys::value == static_cast<media::MediaKeys::Exception>(    \
-                                     media::interfaces::CdmException::value), \
+#define ASSERT_CDM_EXCEPTION(value)                                        \
+  static_assert(                                                           \
+      media::MediaKeys::value == static_cast<media::MediaKeys::Exception>( \
+                                     media::mojom::CdmException::value),   \
       "Mismatched CDM Exception")
 ASSERT_CDM_EXCEPTION(NOT_SUPPORTED_ERROR);
 ASSERT_CDM_EXCEPTION(INVALID_STATE_ERROR);
@@ -274,23 +272,23 @@ ASSERT_CDM_EXCEPTION(CLIENT_ERROR);
 ASSERT_CDM_EXCEPTION(OUTPUT_ERROR);
 
 // CDM Session Type
-#define ASSERT_CDM_SESSION_TYPE(value)                                         \
-  static_assert(                                                               \
-      media::MediaKeys::value ==                                               \
-          static_cast<media::MediaKeys::SessionType>(                          \
-              media::interfaces::ContentDecryptionModule::SessionType::value), \
+#define ASSERT_CDM_SESSION_TYPE(value)                                    \
+  static_assert(                                                          \
+      media::MediaKeys::value ==                                          \
+          static_cast<media::MediaKeys::SessionType>(                     \
+              media::mojom::ContentDecryptionModule::SessionType::value), \
       "Mismatched CDM Session Type")
 ASSERT_CDM_SESSION_TYPE(TEMPORARY_SESSION);
 ASSERT_CDM_SESSION_TYPE(PERSISTENT_LICENSE_SESSION);
 ASSERT_CDM_SESSION_TYPE(PERSISTENT_RELEASE_MESSAGE_SESSION);
 
 // CDM InitDataType
-#define ASSERT_CDM_INIT_DATA_TYPE(value)                             \
-  static_assert(media::EmeInitDataType::value ==                     \
-                    static_cast<media::EmeInitDataType>(             \
-                        media::interfaces::ContentDecryptionModule:: \
-                            InitDataType::value),                    \
-                "Mismatched CDM Init Data Type")
+#define ASSERT_CDM_INIT_DATA_TYPE(value)                                   \
+  static_assert(                                                           \
+      media::EmeInitDataType::value ==                                     \
+          static_cast<media::EmeInitDataType>(                             \
+              media::mojom::ContentDecryptionModule::InitDataType::value), \
+      "Mismatched CDM Init Data Type")
 ASSERT_CDM_INIT_DATA_TYPE(UNKNOWN);
 ASSERT_CDM_INIT_DATA_TYPE(WEBM);
 ASSERT_CDM_INIT_DATA_TYPE(CENC);
@@ -300,7 +298,7 @@ ASSERT_CDM_INIT_DATA_TYPE(KEYIDS);
 #define ASSERT_CDM_KEY_STATUS(value)                                  \
   static_assert(media::CdmKeyInformation::value ==                    \
                     static_cast<media::CdmKeyInformation::KeyStatus>( \
-                        media::interfaces::CdmKeyStatus::value),      \
+                        media::mojom::CdmKeyStatus::value),           \
                 "Mismatched CDM Key Status")
 ASSERT_CDM_KEY_STATUS(USABLE);
 ASSERT_CDM_KEY_STATUS(INTERNAL_ERROR);
@@ -310,74 +308,74 @@ ASSERT_CDM_KEY_STATUS(OUTPUT_DOWNSCALED);
 ASSERT_CDM_KEY_STATUS(KEY_STATUS_PENDING);
 
 // CDM Message Type
-#define ASSERT_CDM_MESSAGE_TYPE(value)                             \
-  static_assert(media::MediaKeys::value ==                         \
-                    static_cast<media::MediaKeys::MessageType>(    \
-                        media::interfaces::CdmMessageType::value), \
-                "Mismatched CDM Message Type")
+#define ASSERT_CDM_MESSAGE_TYPE(value)                                       \
+  static_assert(                                                             \
+      media::MediaKeys::value == static_cast<media::MediaKeys::MessageType>( \
+                                     media::mojom::CdmMessageType::value),   \
+      "Mismatched CDM Message Type")
 ASSERT_CDM_MESSAGE_TYPE(LICENSE_REQUEST);
 ASSERT_CDM_MESSAGE_TYPE(LICENSE_RENEWAL);
 ASSERT_CDM_MESSAGE_TYPE(LICENSE_RELEASE);
 
 template <>
-struct TypeConverter<media::interfaces::PatternPtr,
+struct TypeConverter<media::mojom::PatternPtr,
                      media::EncryptionScheme::Pattern> {
-  static media::interfaces::PatternPtr Convert(
+  static media::mojom::PatternPtr Convert(
       const media::EncryptionScheme::Pattern& input);
 };
 template <>
 struct TypeConverter<media::EncryptionScheme::Pattern,
-                     media::interfaces::PatternPtr> {
+                     media::mojom::PatternPtr> {
   static media::EncryptionScheme::Pattern Convert(
-      const media::interfaces::PatternPtr& input);
+      const media::mojom::PatternPtr& input);
 };
 
 // static
-media::interfaces::PatternPtr
-TypeConverter<media::interfaces::PatternPtr, media::EncryptionScheme::Pattern>::
+media::mojom::PatternPtr
+TypeConverter<media::mojom::PatternPtr, media::EncryptionScheme::Pattern>::
     Convert(const media::EncryptionScheme::Pattern& input) {
-  media::interfaces::PatternPtr mojo_pattern(media::interfaces::Pattern::New());
+  media::mojom::PatternPtr mojo_pattern(media::mojom::Pattern::New());
   mojo_pattern->encrypt_blocks = input.encrypt_blocks();
   mojo_pattern->skip_blocks = input.skip_blocks();
   return mojo_pattern;
 }
 
 // static
-media::EncryptionScheme::Pattern
-TypeConverter<media::EncryptionScheme::Pattern, media::interfaces::PatternPtr>::
-    Convert(const media::interfaces::PatternPtr& input) {
+media::EncryptionScheme::Pattern TypeConverter<
+    media::EncryptionScheme::Pattern,
+    media::mojom::PatternPtr>::Convert(const media::mojom::PatternPtr& input) {
   return media::EncryptionScheme::Pattern(input->encrypt_blocks,
                                           input->skip_blocks);
 }
 
 // static
-media::interfaces::EncryptionSchemePtr TypeConverter<
-    media::interfaces::EncryptionSchemePtr,
+media::mojom::EncryptionSchemePtr TypeConverter<
+    media::mojom::EncryptionSchemePtr,
     media::EncryptionScheme>::Convert(const media::EncryptionScheme& input) {
-  media::interfaces::EncryptionSchemePtr mojo_encryption_scheme(
-      media::interfaces::EncryptionScheme::New());
+  media::mojom::EncryptionSchemePtr mojo_encryption_scheme(
+      media::mojom::EncryptionScheme::New());
   mojo_encryption_scheme->mode =
-      static_cast<media::interfaces::CipherMode>(input.mode());
+      static_cast<media::mojom::CipherMode>(input.mode());
   mojo_encryption_scheme->pattern =
-      media::interfaces::Pattern::From(input.pattern());
+      media::mojom::Pattern::From(input.pattern());
   return mojo_encryption_scheme;
 }
 
 // static
 media::EncryptionScheme
-TypeConverter<media::EncryptionScheme, media::interfaces::EncryptionSchemePtr>::
-    Convert(const media::interfaces::EncryptionSchemePtr& input) {
+TypeConverter<media::EncryptionScheme, media::mojom::EncryptionSchemePtr>::
+    Convert(const media::mojom::EncryptionSchemePtr& input) {
   return media::EncryptionScheme(
       static_cast<media::EncryptionScheme::CipherMode>(input->mode),
       input->pattern.To<media::EncryptionScheme::Pattern>());
 }
 
 // static
-media::interfaces::SubsampleEntryPtr TypeConverter<
-    media::interfaces::SubsampleEntryPtr,
-    media::SubsampleEntry>::Convert(const media::SubsampleEntry& input) {
-  media::interfaces::SubsampleEntryPtr mojo_subsample_entry(
-      media::interfaces::SubsampleEntry::New());
+media::mojom::SubsampleEntryPtr
+TypeConverter<media::mojom::SubsampleEntryPtr, media::SubsampleEntry>::Convert(
+    const media::SubsampleEntry& input) {
+  media::mojom::SubsampleEntryPtr mojo_subsample_entry(
+      media::mojom::SubsampleEntry::New());
   mojo_subsample_entry->clear_bytes = input.clear_bytes;
   mojo_subsample_entry->cypher_bytes = input.cypher_bytes;
   return mojo_subsample_entry;
@@ -385,43 +383,43 @@ media::interfaces::SubsampleEntryPtr TypeConverter<
 
 // static
 media::SubsampleEntry
-TypeConverter<media::SubsampleEntry, media::interfaces::SubsampleEntryPtr>::
-    Convert(const media::interfaces::SubsampleEntryPtr& input) {
+TypeConverter<media::SubsampleEntry, media::mojom::SubsampleEntryPtr>::Convert(
+    const media::mojom::SubsampleEntryPtr& input) {
   return media::SubsampleEntry(input->clear_bytes, input->cypher_bytes);
 }
 
 // static
-media::interfaces::DecryptConfigPtr TypeConverter<
-    media::interfaces::DecryptConfigPtr,
-    media::DecryptConfig>::Convert(const media::DecryptConfig& input) {
-  media::interfaces::DecryptConfigPtr mojo_decrypt_config(
-      media::interfaces::DecryptConfig::New());
+media::mojom::DecryptConfigPtr
+TypeConverter<media::mojom::DecryptConfigPtr, media::DecryptConfig>::Convert(
+    const media::DecryptConfig& input) {
+  media::mojom::DecryptConfigPtr mojo_decrypt_config(
+      media::mojom::DecryptConfig::New());
   mojo_decrypt_config->key_id = input.key_id();
   mojo_decrypt_config->iv = input.iv();
   mojo_decrypt_config->subsamples =
-      Array<media::interfaces::SubsampleEntryPtr>::From(input.subsamples());
+      Array<media::mojom::SubsampleEntryPtr>::From(input.subsamples());
   return mojo_decrypt_config;
 }
 
 // static
 std::unique_ptr<media::DecryptConfig>
 TypeConverter<std::unique_ptr<media::DecryptConfig>,
-              media::interfaces::DecryptConfigPtr>::
-    Convert(const media::interfaces::DecryptConfigPtr& input) {
+              media::mojom::DecryptConfigPtr>::
+    Convert(const media::mojom::DecryptConfigPtr& input) {
   return base::WrapUnique(new media::DecryptConfig(
       input->key_id, input->iv,
       input->subsamples.To<std::vector<media::SubsampleEntry>>()));
 }
 
 // static
-media::interfaces::DecoderBufferPtr
-TypeConverter<media::interfaces::DecoderBufferPtr,
+media::mojom::DecoderBufferPtr
+TypeConverter<media::mojom::DecoderBufferPtr,
               scoped_refptr<media::DecoderBuffer>>::
     Convert(const scoped_refptr<media::DecoderBuffer>& input) {
   DCHECK(input);
 
-  media::interfaces::DecoderBufferPtr mojo_buffer(
-      media::interfaces::DecoderBuffer::New());
+  media::mojom::DecoderBufferPtr mojo_buffer(
+      media::mojom::DecoderBuffer::New());
   if (input->end_of_stream())
     return mojo_buffer;
 
@@ -445,7 +443,7 @@ TypeConverter<media::interfaces::DecoderBufferPtr,
 
   if (input->decrypt_config()) {
     mojo_buffer->decrypt_config =
-        media::interfaces::DecryptConfig::From(*input->decrypt_config());
+        media::mojom::DecryptConfig::From(*input->decrypt_config());
   }
 
   // TODO(dalecurtis): We intentionally do not serialize the data section of
@@ -458,8 +456,8 @@ TypeConverter<media::interfaces::DecoderBufferPtr,
 // static
 scoped_refptr<media::DecoderBuffer>
 TypeConverter<scoped_refptr<media::DecoderBuffer>,
-              media::interfaces::DecoderBufferPtr>::
-    Convert(const media::interfaces::DecoderBufferPtr& input) {
+              media::mojom::DecoderBufferPtr>::
+    Convert(const media::mojom::DecoderBufferPtr& input) {
   if (!input->data_size)
     return media::DecoderBuffer::CreateEOSBuffer();
 
@@ -495,17 +493,16 @@ TypeConverter<scoped_refptr<media::DecoderBuffer>,
 }
 
 // static
-media::interfaces::AudioDecoderConfigPtr TypeConverter<
-    media::interfaces::AudioDecoderConfigPtr,
-    media::AudioDecoderConfig>::Convert(const media::AudioDecoderConfig&
-                                            input) {
-  media::interfaces::AudioDecoderConfigPtr config(
-      media::interfaces::AudioDecoderConfig::New());
-  config->codec = static_cast<media::interfaces::AudioCodec>(input.codec());
+media::mojom::AudioDecoderConfigPtr
+TypeConverter<media::mojom::AudioDecoderConfigPtr, media::AudioDecoderConfig>::
+    Convert(const media::AudioDecoderConfig& input) {
+  media::mojom::AudioDecoderConfigPtr config(
+      media::mojom::AudioDecoderConfig::New());
+  config->codec = static_cast<media::mojom::AudioCodec>(input.codec());
   config->sample_format =
-      static_cast<media::interfaces::SampleFormat>(input.sample_format());
+      static_cast<media::mojom::SampleFormat>(input.sample_format());
   config->channel_layout =
-      static_cast<media::interfaces::ChannelLayout>(input.channel_layout());
+      static_cast<media::mojom::ChannelLayout>(input.channel_layout());
   config->samples_per_second = input.samples_per_second();
   if (!input.extra_data().empty()) {
     config->extra_data = mojo::Array<uint8_t>::From(input.extra_data());
@@ -513,15 +510,14 @@ media::interfaces::AudioDecoderConfigPtr TypeConverter<
   config->seek_preroll_usec = input.seek_preroll().InMicroseconds();
   config->codec_delay = input.codec_delay();
   config->encryption_scheme =
-      media::interfaces::EncryptionScheme::From(input.encryption_scheme());
+      media::mojom::EncryptionScheme::From(input.encryption_scheme());
   return config;
 }
 
 // static
 media::AudioDecoderConfig
-TypeConverter<media::AudioDecoderConfig,
-              media::interfaces::AudioDecoderConfigPtr>::
-    Convert(const media::interfaces::AudioDecoderConfigPtr& input) {
+TypeConverter<media::AudioDecoderConfig, media::mojom::AudioDecoderConfigPtr>::
+    Convert(const media::mojom::AudioDecoderConfigPtr& input) {
   media::AudioDecoderConfig config;
   config.Initialize(static_cast<media::AudioCodec>(input->codec),
                     static_cast<media::SampleFormat>(input->sample_format),
@@ -534,18 +530,17 @@ TypeConverter<media::AudioDecoderConfig,
 }
 
 // static
-media::interfaces::VideoDecoderConfigPtr TypeConverter<
-    media::interfaces::VideoDecoderConfigPtr,
-    media::VideoDecoderConfig>::Convert(const media::VideoDecoderConfig&
-                                            input) {
-  media::interfaces::VideoDecoderConfigPtr config(
-      media::interfaces::VideoDecoderConfig::New());
-  config->codec = static_cast<media::interfaces::VideoCodec>(input.codec());
+media::mojom::VideoDecoderConfigPtr
+TypeConverter<media::mojom::VideoDecoderConfigPtr, media::VideoDecoderConfig>::
+    Convert(const media::VideoDecoderConfig& input) {
+  media::mojom::VideoDecoderConfigPtr config(
+      media::mojom::VideoDecoderConfig::New());
+  config->codec = static_cast<media::mojom::VideoCodec>(input.codec());
   config->profile =
-      static_cast<media::interfaces::VideoCodecProfile>(input.profile());
-  config->format = static_cast<media::interfaces::VideoFormat>(input.format());
+      static_cast<media::mojom::VideoCodecProfile>(input.profile());
+  config->format = static_cast<media::mojom::VideoFormat>(input.format());
   config->color_space =
-      static_cast<media::interfaces::ColorSpace>(input.color_space());
+      static_cast<media::mojom::ColorSpace>(input.color_space());
   config->coded_size = Size::From(input.coded_size());
   config->visible_rect = Rect::From(input.visible_rect());
   config->natural_size = Size::From(input.natural_size());
@@ -553,15 +548,14 @@ media::interfaces::VideoDecoderConfigPtr TypeConverter<
     config->extra_data = mojo::Array<uint8_t>::From(input.extra_data());
   }
   config->encryption_scheme =
-      media::interfaces::EncryptionScheme::From(input.encryption_scheme());
+      media::mojom::EncryptionScheme::From(input.encryption_scheme());
   return config;
 }
 
 // static
 media::VideoDecoderConfig
-TypeConverter<media::VideoDecoderConfig,
-              media::interfaces::VideoDecoderConfigPtr>::
-    Convert(const media::interfaces::VideoDecoderConfigPtr& input) {
+TypeConverter<media::VideoDecoderConfig, media::mojom::VideoDecoderConfigPtr>::
+    Convert(const media::mojom::VideoDecoderConfigPtr& input) {
   media::VideoDecoderConfig config;
   config.Initialize(
       static_cast<media::VideoCodec>(input->codec),
@@ -575,14 +569,14 @@ TypeConverter<media::VideoDecoderConfig,
 }
 
 // static
-media::interfaces::CdmKeyInformationPtr TypeConverter<
-    media::interfaces::CdmKeyInformationPtr,
+media::mojom::CdmKeyInformationPtr TypeConverter<
+    media::mojom::CdmKeyInformationPtr,
     media::CdmKeyInformation>::Convert(const media::CdmKeyInformation& input) {
-  media::interfaces::CdmKeyInformationPtr info(
-      media::interfaces::CdmKeyInformation::New());
+  media::mojom::CdmKeyInformationPtr info(
+      media::mojom::CdmKeyInformation::New());
   std::vector<uint8_t> key_id_copy(input.key_id);
   info->key_id.Swap(&key_id_copy);
-  info->status = static_cast<media::interfaces::CdmKeyStatus>(input.status);
+  info->status = static_cast<media::mojom::CdmKeyStatus>(input.status);
   info->system_code = input.system_code;
   return info;
 }
@@ -590,8 +584,8 @@ media::interfaces::CdmKeyInformationPtr TypeConverter<
 // static
 std::unique_ptr<media::CdmKeyInformation>
 TypeConverter<std::unique_ptr<media::CdmKeyInformation>,
-              media::interfaces::CdmKeyInformationPtr>::
-    Convert(const media::interfaces::CdmKeyInformationPtr& input) {
+              media::mojom::CdmKeyInformationPtr>::
+    Convert(const media::mojom::CdmKeyInformationPtr& input) {
   return base::WrapUnique(new media::CdmKeyInformation(
       input->key_id.storage(),
       static_cast<media::CdmKeyInformation::KeyStatus>(input->status),
@@ -599,10 +593,10 @@ TypeConverter<std::unique_ptr<media::CdmKeyInformation>,
 }
 
 // static
-media::interfaces::CdmConfigPtr
-TypeConverter<media::interfaces::CdmConfigPtr, media::CdmConfig>::Convert(
+media::mojom::CdmConfigPtr
+TypeConverter<media::mojom::CdmConfigPtr, media::CdmConfig>::Convert(
     const media::CdmConfig& input) {
-  media::interfaces::CdmConfigPtr config(media::interfaces::CdmConfig::New());
+  media::mojom::CdmConfigPtr config(media::mojom::CdmConfig::New());
   config->allow_distinctive_identifier = input.allow_distinctive_identifier;
   config->allow_persistent_state = input.allow_persistent_state;
   config->use_hw_secure_codecs = input.use_hw_secure_codecs;
@@ -611,8 +605,8 @@ TypeConverter<media::interfaces::CdmConfigPtr, media::CdmConfig>::Convert(
 
 // static
 media::CdmConfig
-TypeConverter<media::CdmConfig, media::interfaces::CdmConfigPtr>::Convert(
-    const media::interfaces::CdmConfigPtr& input) {
+TypeConverter<media::CdmConfig, media::mojom::CdmConfigPtr>::Convert(
+    const media::mojom::CdmConfigPtr& input) {
   media::CdmConfig config;
   config.allow_distinctive_identifier = input->allow_distinctive_identifier;
   config.allow_persistent_state = input->allow_persistent_state;
@@ -621,16 +615,14 @@ TypeConverter<media::CdmConfig, media::interfaces::CdmConfigPtr>::Convert(
 }
 
 // static
-media::interfaces::AudioBufferPtr
-TypeConverter<media::interfaces::AudioBufferPtr,
-              scoped_refptr<media::AudioBuffer>>::
+media::mojom::AudioBufferPtr
+TypeConverter<media::mojom::AudioBufferPtr, scoped_refptr<media::AudioBuffer>>::
     Convert(const scoped_refptr<media::AudioBuffer>& input) {
-  media::interfaces::AudioBufferPtr buffer(
-      media::interfaces::AudioBuffer::New());
+  media::mojom::AudioBufferPtr buffer(media::mojom::AudioBuffer::New());
   buffer->sample_format =
-      static_cast<media::interfaces::SampleFormat>(input->sample_format_);
+      static_cast<media::mojom::SampleFormat>(input->sample_format_);
   buffer->channel_layout =
-      static_cast<media::interfaces::ChannelLayout>(input->channel_layout());
+      static_cast<media::mojom::ChannelLayout>(input->channel_layout());
   buffer->channel_count = input->channel_count();
   buffer->sample_rate = input->sample_rate();
   buffer->frame_count = input->frame_count();
@@ -648,9 +640,8 @@ TypeConverter<media::interfaces::AudioBufferPtr,
 
 // static
 scoped_refptr<media::AudioBuffer>
-TypeConverter<scoped_refptr<media::AudioBuffer>,
-              media::interfaces::AudioBufferPtr>::
-    Convert(const media::interfaces::AudioBufferPtr& input) {
+TypeConverter<scoped_refptr<media::AudioBuffer>, media::mojom::AudioBufferPtr>::
+    Convert(const media::mojom::AudioBufferPtr& input) {
   if (input->end_of_stream)
     return media::AudioBuffer::CreateEOSBuffer();
 
@@ -672,11 +663,10 @@ TypeConverter<scoped_refptr<media::AudioBuffer>,
 }
 
 // static
-media::interfaces::VideoFramePtr
-TypeConverter<media::interfaces::VideoFramePtr,
-              scoped_refptr<media::VideoFrame>>::
+media::mojom::VideoFramePtr
+TypeConverter<media::mojom::VideoFramePtr, scoped_refptr<media::VideoFrame>>::
     Convert(const scoped_refptr<media::VideoFrame>& input) {
-  media::interfaces::VideoFramePtr frame(media::interfaces::VideoFrame::New());
+  media::mojom::VideoFramePtr frame(media::mojom::VideoFrame::New());
   frame->end_of_stream =
       input->metadata()->IsTrue(media::VideoFrameMetadata::END_OF_STREAM);
   if (frame->end_of_stream)
@@ -694,7 +684,7 @@ TypeConverter<media::interfaces::VideoFramePtr,
   CHECK_EQ(MOJO_RESULT_OK, result);
   CHECK(duplicated_handle.is_valid());
 
-  frame->format = static_cast<media::interfaces::VideoFormat>(input->format());
+  frame->format = static_cast<media::mojom::VideoFormat>(input->format());
   frame->coded_size = Size::From(input->coded_size());
   frame->visible_rect = Rect::From(input->visible_rect());
   frame->natural_size = Size::From(input->natural_size());
@@ -712,9 +702,8 @@ TypeConverter<media::interfaces::VideoFramePtr,
 
 // static
 scoped_refptr<media::VideoFrame>
-TypeConverter<scoped_refptr<media::VideoFrame>,
-              media::interfaces::VideoFramePtr>::
-    Convert(const media::interfaces::VideoFramePtr& input) {
+TypeConverter<scoped_refptr<media::VideoFrame>, media::mojom::VideoFramePtr>::
+    Convert(const media::mojom::VideoFramePtr& input) {
   if (input->end_of_stream)
     return media::VideoFrame::CreateEOSFrame();
 

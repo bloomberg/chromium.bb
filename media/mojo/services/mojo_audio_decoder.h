@@ -18,12 +18,11 @@ class SingleThreadTaskRunner;
 
 namespace media {
 
-// An AudioDecoder that proxies to an interfaces::AudioDecoder.
-class MojoAudioDecoder : public AudioDecoder,
-                         public interfaces::AudioDecoderClient {
+// An AudioDecoder that proxies to a mojom::AudioDecoder.
+class MojoAudioDecoder : public AudioDecoder, public mojom::AudioDecoderClient {
  public:
   MojoAudioDecoder(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                   interfaces::AudioDecoderPtr remote_decoder);
+                   mojom::AudioDecoderPtr remote_decoder);
   ~MojoAudioDecoder() final;
 
   // AudioDecoder implementation.
@@ -38,7 +37,7 @@ class MojoAudioDecoder : public AudioDecoder,
   bool NeedsBitstreamConversion() const final;
 
   // AudioDecoderClient implementation.
-  void OnBufferDecoded(interfaces::AudioBufferPtr buffer) final;
+  void OnBufferDecoded(mojom::AudioBufferPtr buffer) final;
 
  private:
   // Callback for connection error on |remote_decoder_|.
@@ -48,7 +47,7 @@ class MojoAudioDecoder : public AudioDecoder,
   void OnInitialized(bool success, bool needs_bitstream_conversion);
 
   // Called when |remote_decoder_| accepted or rejected DecoderBuffer.
-  void OnDecodeStatus(interfaces::AudioDecoder::DecodeStatus decode_status);
+  void OnDecodeStatus(mojom::AudioDecoder::DecodeStatus decode_status);
 
   // called when |remote_decoder_| finished Reset() sequence.
   void OnResetDone();
@@ -58,7 +57,7 @@ class MojoAudioDecoder : public AudioDecoder,
   void CreateDataPipe();
 
   // A helper method to serialize the data section of DecoderBuffer into pipe.
-  interfaces::DecoderBufferPtr TransferDecoderBuffer(
+  mojom::DecoderBufferPtr TransferDecoderBuffer(
       const scoped_refptr<DecoderBuffer>& media_buffer);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -67,9 +66,9 @@ class MojoAudioDecoder : public AudioDecoder,
   // thread. This member is used to safely pass the AudioDecoderPtr from one
   // thread to another. It is set in the constructor and is consumed in
   // Initialize().
-  interfaces::AudioDecoderPtrInfo remote_decoder_info_;
+  mojom::AudioDecoderPtrInfo remote_decoder_info_;
 
-  interfaces::AudioDecoderPtr remote_decoder_;
+  mojom::AudioDecoderPtr remote_decoder_;
 
   // DataPipe for serializing the data section of DecoderBuffer.
   mojo::ScopedDataPipeProducerHandle producer_handle_;

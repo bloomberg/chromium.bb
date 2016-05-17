@@ -21,7 +21,7 @@
 
 namespace media {
 
-MojoDecryptor::MojoDecryptor(interfaces::DecryptorPtr remote_decryptor)
+MojoDecryptor::MojoDecryptor(mojom::DecryptorPtr remote_decryptor)
     : remote_decryptor_(std::move(remote_decryptor)), weak_factory_(this) {
   DVLOG(1) << __FUNCTION__;
   CreateDataPipes();
@@ -54,7 +54,7 @@ void MojoDecryptor::Decrypt(StreamType stream_type,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   remote_decryptor_->Decrypt(
-      static_cast<interfaces::DemuxerStream::Type>(stream_type),
+      static_cast<mojom::DemuxerStream::Type>(stream_type),
       TransferDecoderBuffer(encrypted),
       base::Bind(&MojoDecryptor::OnBufferDecrypted, weak_factory_.GetWeakPtr(),
                  decrypt_cb));
@@ -65,7 +65,7 @@ void MojoDecryptor::CancelDecrypt(StreamType stream_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   remote_decryptor_->CancelDecrypt(
-      static_cast<interfaces::DemuxerStream::Type>(stream_type));
+      static_cast<mojom::DemuxerStream::Type>(stream_type));
 }
 
 void MojoDecryptor::InitializeAudioDecoder(const AudioDecoderConfig& config,
@@ -74,7 +74,7 @@ void MojoDecryptor::InitializeAudioDecoder(const AudioDecoderConfig& config,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   remote_decryptor_->InitializeAudioDecoder(
-      interfaces::AudioDecoderConfig::From(config), init_cb);
+      mojom::AudioDecoderConfig::From(config), init_cb);
 }
 
 void MojoDecryptor::InitializeVideoDecoder(const VideoDecoderConfig& config,
@@ -83,7 +83,7 @@ void MojoDecryptor::InitializeVideoDecoder(const VideoDecoderConfig& config,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   remote_decryptor_->InitializeVideoDecoder(
-      interfaces::VideoDecoderConfig::From(config), init_cb);
+      mojom::VideoDecoderConfig::From(config), init_cb);
 }
 
 void MojoDecryptor::DecryptAndDecodeAudio(
@@ -115,7 +115,7 @@ void MojoDecryptor::ResetDecoder(StreamType stream_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   remote_decryptor_->ResetDecoder(
-      static_cast<interfaces::DemuxerStream::Type>(stream_type));
+      static_cast<mojom::DemuxerStream::Type>(stream_type));
 }
 
 void MojoDecryptor::DeinitializeDecoder(StreamType stream_type) {
@@ -123,7 +123,7 @@ void MojoDecryptor::DeinitializeDecoder(StreamType stream_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   remote_decryptor_->DeinitializeDecoder(
-      static_cast<interfaces::DemuxerStream::Type>(stream_type));
+      static_cast<mojom::DemuxerStream::Type>(stream_type));
 }
 
 void MojoDecryptor::OnKeyAdded() {
@@ -138,11 +138,11 @@ void MojoDecryptor::OnKeyAdded() {
 }
 
 void MojoDecryptor::OnBufferDecrypted(const DecryptCB& decrypt_cb,
-                                      interfaces::Decryptor::Status status,
-                                      interfaces::DecoderBufferPtr buffer) {
-  DVLOG_IF(1, status != interfaces::Decryptor::Status::SUCCESS)
+                                      mojom::Decryptor::Status status,
+                                      mojom::DecoderBufferPtr buffer) {
+  DVLOG_IF(1, status != mojom::Decryptor::Status::SUCCESS)
       << __FUNCTION__ << "(" << status << ")";
-  DVLOG_IF(3, status == interfaces::Decryptor::Status::SUCCESS) << __FUNCTION__;
+  DVLOG_IF(3, status == mojom::Decryptor::Status::SUCCESS) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (buffer.is_null()) {
@@ -156,11 +156,11 @@ void MojoDecryptor::OnBufferDecrypted(const DecryptCB& decrypt_cb,
 
 void MojoDecryptor::OnAudioDecoded(
     const AudioDecodeCB& audio_decode_cb,
-    interfaces::Decryptor::Status status,
-    mojo::Array<interfaces::AudioBufferPtr> audio_buffers) {
-  DVLOG_IF(1, status != interfaces::Decryptor::Status::SUCCESS)
+    mojom::Decryptor::Status status,
+    mojo::Array<mojom::AudioBufferPtr> audio_buffers) {
+  DVLOG_IF(1, status != mojom::Decryptor::Status::SUCCESS)
       << __FUNCTION__ << "(" << status << ")";
-  DVLOG_IF(3, status == interfaces::Decryptor::Status::SUCCESS) << __FUNCTION__;
+  DVLOG_IF(3, status == mojom::Decryptor::Status::SUCCESS) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   Decryptor::AudioFrames audio_frames;
@@ -171,11 +171,11 @@ void MojoDecryptor::OnAudioDecoded(
 }
 
 void MojoDecryptor::OnVideoDecoded(const VideoDecodeCB& video_decode_cb,
-                                   interfaces::Decryptor::Status status,
-                                   interfaces::VideoFramePtr video_frame) {
-  DVLOG_IF(1, status != interfaces::Decryptor::Status::SUCCESS)
+                                   mojom::Decryptor::Status status,
+                                   mojom::VideoFramePtr video_frame) {
+  DVLOG_IF(1, status != mojom::Decryptor::Status::SUCCESS)
       << __FUNCTION__ << "(" << status << ")";
-  DVLOG_IF(3, status == interfaces::Decryptor::Status::SUCCESS) << __FUNCTION__;
+  DVLOG_IF(3, status == mojom::Decryptor::Status::SUCCESS) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (video_frame.is_null()) {
@@ -228,10 +228,9 @@ void MojoDecryptor::CreateDataPipes() {
                                 std::move(read_pipe.producer_handle));
 }
 
-interfaces::DecoderBufferPtr MojoDecryptor::TransferDecoderBuffer(
+mojom::DecoderBufferPtr MojoDecryptor::TransferDecoderBuffer(
     const scoped_refptr<DecoderBuffer>& encrypted) {
-  interfaces::DecoderBufferPtr buffer =
-      interfaces::DecoderBuffer::From(encrypted);
+  mojom::DecoderBufferPtr buffer = mojom::DecoderBuffer::From(encrypted);
   if (encrypted->end_of_stream())
     return buffer;
 
@@ -246,7 +245,7 @@ interfaces::DecoderBufferPtr MojoDecryptor::TransferDecoderBuffer(
 }
 
 scoped_refptr<DecoderBuffer> MojoDecryptor::ReadDecoderBuffer(
-    interfaces::DecoderBufferPtr buffer) {
+    mojom::DecoderBufferPtr buffer) {
   scoped_refptr<DecoderBuffer> media_buffer(
       buffer.To<scoped_refptr<DecoderBuffer>>());
   if (media_buffer->end_of_stream())

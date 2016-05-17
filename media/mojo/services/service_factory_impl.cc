@@ -26,7 +26,7 @@
 namespace media {
 
 ServiceFactoryImpl::ServiceFactoryImpl(
-    mojo::InterfaceRequest<interfaces::ServiceFactory> request,
+    mojo::InterfaceRequest<mojom::ServiceFactory> request,
     shell::mojom::InterfaceProvider* interfaces,
     scoped_refptr<MediaLog> media_log,
     std::unique_ptr<shell::ShellConnectionRef> connection_ref,
@@ -43,10 +43,10 @@ ServiceFactoryImpl::~ServiceFactoryImpl() {
   DVLOG(1) << __FUNCTION__;
 }
 
-// interfaces::ServiceFactory implementation.
+// mojom::ServiceFactory implementation.
 
 void ServiceFactoryImpl::CreateAudioDecoder(
-    mojo::InterfaceRequest<interfaces::AudioDecoder> request) {
+    mojo::InterfaceRequest<mojom::AudioDecoder> request) {
 #if defined(ENABLE_MOJO_AUDIO_DECODER)
   scoped_refptr<base::SingleThreadTaskRunner> task_runner(
       base::MessageLoop::current()->task_runner());
@@ -64,7 +64,7 @@ void ServiceFactoryImpl::CreateAudioDecoder(
 }
 
 void ServiceFactoryImpl::CreateRenderer(
-    mojo::InterfaceRequest<interfaces::Renderer> request) {
+    mojo::InterfaceRequest<mojom::Renderer> request) {
 #if defined(ENABLE_MOJO_RENDERER)
   // The created object is owned by the pipe.
   // The audio and video sinks are owned by the client.
@@ -93,7 +93,7 @@ void ServiceFactoryImpl::CreateRenderer(
 }
 
 void ServiceFactoryImpl::CreateCdm(
-    mojo::InterfaceRequest<interfaces::ContentDecryptionModule> request) {
+    mojo::InterfaceRequest<mojom::ContentDecryptionModule> request) {
 #if defined(ENABLE_MOJO_CDM)
   CdmFactory* cdm_factory = GetCdmFactory();
   if (!cdm_factory)

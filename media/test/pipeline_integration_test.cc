@@ -682,7 +682,7 @@ class PipelineIntegrationTestHost : public shell::test::ShellTest,
   std::unique_ptr<Renderer> CreateRenderer() override {
     connector()->ConnectToInterface("mojo:media", &media_service_factory_);
 
-    interfaces::RendererPtr mojo_renderer;
+    mojom::RendererPtr mojo_renderer;
     media_service_factory_->CreateRenderer(mojo::GetProxy(&mojo_renderer));
 
     return base::WrapUnique(new MojoRendererImpl(message_loop_.task_runner(),
@@ -690,7 +690,7 @@ class PipelineIntegrationTestHost : public shell::test::ShellTest,
   }
 
  private:
-  interfaces::ServiceFactoryPtr media_service_factory_;
+  mojom::ServiceFactoryPtr media_service_factory_;
 };
 #else
 class PipelineIntegrationTestHost : public testing::Test,

@@ -17,7 +17,7 @@
 namespace media {
 
 MojoDemuxerStreamAdapter::MojoDemuxerStreamAdapter(
-    interfaces::DemuxerStreamPtr demuxer_stream,
+    mojom::DemuxerStreamPtr demuxer_stream,
     const base::Closure& stream_ready_cb)
     : demuxer_stream_(std::move(demuxer_stream)),
       stream_ready_cb_(stream_ready_cb),
@@ -72,10 +72,10 @@ VideoRotation MojoDemuxerStreamAdapter::video_rotation() {
 
 // TODO(xhwang): Pass liveness here.
 void MojoDemuxerStreamAdapter::OnStreamReady(
-    interfaces::DemuxerStream::Type type,
+    mojom::DemuxerStream::Type type,
     mojo::ScopedDataPipeConsumerHandle pipe,
-    interfaces::AudioDecoderConfigPtr audio_config,
-    interfaces::VideoDecoderConfigPtr video_config) {
+    mojom::AudioDecoderConfigPtr audio_config,
+    mojom::VideoDecoderConfigPtr video_config) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(pipe.is_valid());
   DCHECK_EQ(DemuxerStream::UNKNOWN, type_);
@@ -88,27 +88,27 @@ void MojoDemuxerStreamAdapter::OnStreamReady(
 }
 
 void MojoDemuxerStreamAdapter::OnBufferReady(
-    interfaces::DemuxerStream::Status status,
-    interfaces::DecoderBufferPtr buffer,
-    interfaces::AudioDecoderConfigPtr audio_config,
-    interfaces::VideoDecoderConfigPtr video_config) {
+    mojom::DemuxerStream::Status status,
+    mojom::DecoderBufferPtr buffer,
+    mojom::AudioDecoderConfigPtr audio_config,
+    mojom::VideoDecoderConfigPtr video_config) {
   DVLOG(3) << __FUNCTION__;
   DCHECK(!read_cb_.is_null());
   DCHECK_NE(type_, DemuxerStream::UNKNOWN);
   DCHECK(stream_pipe_.is_valid());
 
-  if (status == interfaces::DemuxerStream::Status::CONFIG_CHANGED) {
+  if (status == mojom::DemuxerStream::Status::CONFIG_CHANGED) {
     UpdateConfig(std::move(audio_config), std::move(video_config));
     base::ResetAndReturn(&read_cb_).Run(DemuxerStream::kConfigChanged, nullptr);
     return;
   }
 
-  if (status == interfaces::DemuxerStream::Status::ABORTED) {
+  if (status == mojom::DemuxerStream::Status::ABORTED) {
     base::ResetAndReturn(&read_cb_).Run(DemuxerStream::kAborted, nullptr);
     return;
   }
 
-  DCHECK_EQ(status, interfaces::DemuxerStream::Status::OK);
+  DCHECK_EQ(status, mojom::DemuxerStream::Status::OK);
   scoped_refptr<DecoderBuffer> media_buffer(
       buffer.To<scoped_refptr<DecoderBuffer>>());
 
@@ -136,8 +136,8 @@ void MojoDemuxerStreamAdapter::OnBufferReady(
 }
 
 void MojoDemuxerStreamAdapter::UpdateConfig(
-    interfaces::AudioDecoderConfigPtr audio_config,
-    interfaces::VideoDecoderConfigPtr video_config) {
+    mojom::AudioDecoderConfigPtr audio_config,
+    mojom::VideoDecoderConfigPtr video_config) {
   DCHECK_NE(type_, DemuxerStream::UNKNOWN);
 
   switch(type_) {

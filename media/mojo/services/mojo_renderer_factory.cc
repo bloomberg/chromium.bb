@@ -26,8 +26,8 @@ std::unique_ptr<Renderer> MojoRendererFactory::CreateRenderer(
     AudioRendererSink* /* audio_renderer_sink */,
     VideoRendererSink* /* video_renderer_sink */,
     const RequestSurfaceCB& /* request_surface_cb */) {
-  interfaces::RendererPtr renderer_ptr;
-  shell::GetInterface<interfaces::Renderer>(interface_provider_, &renderer_ptr);
+  mojom::RendererPtr renderer_ptr;
+  shell::GetInterface<mojom::Renderer>(interface_provider_, &renderer_ptr);
 
   return std::unique_ptr<Renderer>(
       new MojoRendererImpl(media_task_runner, std::move(renderer_ptr)));

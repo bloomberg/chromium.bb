@@ -24,9 +24,9 @@ void MojoDecoderFactory::CreateAudioDecoders(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     ScopedVector<AudioDecoder>* audio_decoders) {
 #if defined(ENABLE_MOJO_AUDIO_DECODER)
-  interfaces::AudioDecoderPtr audio_decoder_ptr;
-  shell::GetInterface<interfaces::AudioDecoder>(interface_provider_,
-                                                &audio_decoder_ptr);
+  mojom::AudioDecoderPtr audio_decoder_ptr;
+  shell::GetInterface<mojom::AudioDecoder>(interface_provider_,
+                                           &audio_decoder_ptr);
 
   audio_decoders->push_back(
       new media::MojoAudioDecoder(task_runner, std::move(audio_decoder_ptr)));

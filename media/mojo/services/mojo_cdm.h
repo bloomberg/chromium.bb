@@ -30,18 +30,18 @@ namespace media {
 
 class MojoDecryptor;
 
-// A MediaKeys that proxies to a interfaces::ContentDecryptionModule. That
-// interfaces::ContentDecryptionModule proxies back to the MojoCdm via the
-// interfaces::ContentDecryptionModuleClient interface.
+// A MediaKeys that proxies to a mojom::ContentDecryptionModule. That
+// mojom::ContentDecryptionModule proxies back to the MojoCdm via the
+// mojom::ContentDecryptionModuleClient interface.
 class MojoCdm : public MediaKeys,
                 public CdmContext,
-                public interfaces::ContentDecryptionModuleClient {
+                public mojom::ContentDecryptionModuleClient {
  public:
   static void Create(
       const std::string& key_system,
       const GURL& security_origin,
       const media::CdmConfig& cdm_config,
-      interfaces::ContentDecryptionModulePtr remote_cdm,
+      mojom::ContentDecryptionModulePtr remote_cdm,
       const media::SessionMessageCB& session_message_cb,
       const media::SessionClosedCB& session_closed_cb,
       const media::LegacySessionErrorCB& legacy_session_error_cb,
@@ -75,7 +75,7 @@ class MojoCdm : public MediaKeys,
   int GetCdmId() const final;
 
  private:
-  MojoCdm(interfaces::ContentDecryptionModulePtr remote_cdm,
+  MojoCdm(mojom::ContentDecryptionModulePtr remote_cdm,
           const SessionMessageCB& session_message_cb,
           const SessionClosedCB& session_closed_cb,
           const LegacySessionErrorCB& legacy_session_error_cb,
@@ -91,20 +91,20 @@ class MojoCdm : public MediaKeys,
 
   void OnConnectionError();
 
-  // interfaces::ContentDecryptionModuleClient implementation.
+  // mojom::ContentDecryptionModuleClient implementation.
   void OnSessionMessage(const mojo::String& session_id,
-                        interfaces::CdmMessageType message_type,
+                        mojom::CdmMessageType message_type,
                         mojo::Array<uint8_t> message,
                         const mojo::String& legacy_destination_url) final;
   void OnSessionClosed(const mojo::String& session_id) final;
   void OnLegacySessionError(const mojo::String& session_id,
-                            interfaces::CdmException exception,
+                            mojom::CdmException exception,
                             uint32_t system_code,
                             const mojo::String& error_message) final;
   void OnSessionKeysChange(
       const mojo::String& session_id,
       bool has_additional_usable_key,
-      mojo::Array<interfaces::CdmKeyInformationPtr> keys_info) final;
+      mojo::Array<mojom::CdmKeyInformationPtr> keys_info) final;
   void OnSessionExpirationUpdate(const mojo::String& session_id,
                                  double new_expiry_time_sec) final;
 
@@ -112,9 +112,9 @@ class MojoCdm : public MediaKeys,
   // Note: Cannot use OnPromiseResult() below since we need to handle connection
   // error. Also we have extra parameters |cdm_id| and |decryptor|, which aren't
   // needed in CdmInitializedPromise.
-  void OnCdmInitialized(interfaces::CdmPromiseResultPtr result,
+  void OnCdmInitialized(mojom::CdmPromiseResultPtr result,
                         int cdm_id,
-                        interfaces::DecryptorPtr decryptor);
+                        mojom::DecryptorPtr decryptor);
 
   // Callback when new decryption key is available.
   void OnKeyAdded();
@@ -125,7 +125,7 @@ class MojoCdm : public MediaKeys,
   // "unable to match function definition to an existing declaration".
   template <typename... T>
   void OnPromiseResult(std::unique_ptr<CdmPromiseTemplate<T...>> promise,
-                       interfaces::CdmPromiseResultPtr result,
+                       mojom::CdmPromiseResultPtr result,
                        typename MojoTypeTrait<T>::MojoType... args) {
     if (result->success)
       promise->resolve(args.template To<T>()...);  // See ISO C++03 14.2/4.
@@ -135,7 +135,7 @@ class MojoCdm : public MediaKeys,
 
   base::ThreadChecker thread_checker_;
 
-  interfaces::ContentDecryptionModulePtr remote_cdm_;
+  mojom::ContentDecryptionModulePtr remote_cdm_;
   mojo::Binding<ContentDecryptionModuleClient> binding_;
 
   // Protects |cdm_id_|, |decryptor_ptr_|, |decryptor_| and
@@ -150,7 +150,7 @@ class MojoCdm : public MediaKeys,
   // The DecryptorPtr exposed by the remote CDM. Set after initialization is
   // completed and cleared after |decryptor_| is created. May be null after
   // initialization if the CDM doesn't support a Decryptor.
-  interfaces::DecryptorPtr decryptor_ptr_;
+  mojom::DecryptorPtr decryptor_ptr_;
 
   // Decryptor based on |decryptor_ptr_|, lazily created in GetDecryptor().
   // Since GetDecryptor() can be called on a different thread, use

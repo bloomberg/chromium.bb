@@ -34,12 +34,12 @@ class CONTENT_EXPORT MediaInterfaceProvider
                     mojo::ScopedMessagePipeHandle pipe) final;
 
  private:
-  media::interfaces::ServiceFactory* GetMediaServiceFactory();
+  media::mojom::ServiceFactory* GetMediaServiceFactory();
   void OnConnectionError();
 
   base::ThreadChecker thread_checker_;
   ConnectToApplicationCB connect_to_app_cb_;
-  media::interfaces::ServiceFactoryPtr media_service_factory_;
+  media::mojom::ServiceFactoryPtr media_service_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaInterfaceProvider);
 };

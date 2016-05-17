@@ -27,7 +27,7 @@ namespace media {
 
 template <typename PromiseType>
 static void RejectPromise(std::unique_ptr<PromiseType> promise,
-                          interfaces::CdmPromiseResultPtr result) {
+                          mojom::CdmPromiseResultPtr result) {
   promise->reject(static_cast<MediaKeys::Exception>(result->exception),
                   result->system_code, result->error_message);
 }
@@ -37,7 +37,7 @@ void MojoCdm::Create(
     const std::string& key_system,
     const GURL& security_origin,
     const media::CdmConfig& cdm_config,
-    interfaces::ContentDecryptionModulePtr remote_cdm,
+    mojom::ContentDecryptionModulePtr remote_cdm,
     const media::SessionMessageCB& session_message_cb,
     const media::SessionClosedCB& session_closed_cb,
     const media::LegacySessionErrorCB& legacy_session_error_cb,
@@ -57,7 +57,7 @@ void MojoCdm::Create(
                           std::move(promise));
 }
 
-MojoCdm::MojoCdm(interfaces::ContentDecryptionModulePtr remote_cdm,
+MojoCdm::MojoCdm(mojom::ContentDecryptionModulePtr remote_cdm,
                  const SessionMessageCB& session_message_cb,
                  const SessionClosedCB& session_closed_cb,
                  const LegacySessionErrorCB& legacy_session_error_cb,
@@ -122,8 +122,7 @@ void MojoCdm::InitializeCdm(const std::string& key_system,
   pending_init_promise_ = std::move(promise);
 
   remote_cdm_->Initialize(
-      key_system, security_origin.spec(),
-      interfaces::CdmConfig::From(cdm_config),
+      key_system, security_origin.spec(), mojom::CdmConfig::From(cdm_config),
       base::Bind(&MojoCdm::OnCdmInitialized, base::Unretained(this)));
 }
 
@@ -160,10 +159,8 @@ void MojoCdm::CreateSessionAndGenerateRequest(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   remote_cdm_->CreateSessionAndGenerateRequest(
-      static_cast<interfaces::ContentDecryptionModule::SessionType>(
-          session_type),
-      static_cast<interfaces::ContentDecryptionModule::InitDataType>(
-          init_data_type),
+      static_cast<mojom::ContentDecryptionModule::SessionType>(session_type),
+      static_cast<mojom::ContentDecryptionModule::InitDataType>(init_data_type),
       mojo::Array<uint8_t>::From(init_data),
       base::Bind(&MojoCdm::OnPromiseResult<std::string>, base::Unretained(this),
                  base::Passed(&promise)));
@@ -176,8 +173,7 @@ void MojoCdm::LoadSession(SessionType session_type,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   remote_cdm_->LoadSession(
-      static_cast<interfaces::ContentDecryptionModule::SessionType>(
-          session_type),
+      static_cast<mojom::ContentDecryptionModule::SessionType>(session_type),
       session_id, base::Bind(&MojoCdm::OnPromiseResult<std::string>,
                              base::Unretained(this), base::Passed(&promise)));
 }
@@ -244,7 +240,7 @@ int MojoCdm::GetCdmId() const {
 }
 
 void MojoCdm::OnSessionMessage(const mojo::String& session_id,
-                               interfaces::CdmMessageType message_type,
+                               mojom::CdmMessageType message_type,
                                mojo::Array<uint8_t> message,
                                const mojo::String& legacy_destination_url) {
   DVLOG(2) << __FUNCTION__;
@@ -270,7 +266,7 @@ void MojoCdm::OnSessionClosed(const mojo::String& session_id) {
 }
 
 void MojoCdm::OnLegacySessionError(const mojo::String& session_id,
-                                   interfaces::CdmException exception,
+                                   mojom::CdmException exception,
                                    uint32_t system_code,
                                    const mojo::String& error_message) {
   DVLOG(2) << __FUNCTION__;
@@ -284,7 +280,7 @@ void MojoCdm::OnLegacySessionError(const mojo::String& session_id,
 void MojoCdm::OnSessionKeysChange(
     const mojo::String& session_id,
     bool has_additional_usable_key,
-    mojo::Array<interfaces::CdmKeyInformationPtr> keys_info) {
+    mojo::Array<mojom::CdmKeyInformationPtr> keys_info) {
   DVLOG(2) << __FUNCTION__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -319,9 +315,9 @@ void MojoCdm::OnSessionExpirationUpdate(const mojo::String& session_id,
       session_id, base::Time::FromDoubleT(new_expiry_time_sec));
 }
 
-void MojoCdm::OnCdmInitialized(interfaces::CdmPromiseResultPtr result,
+void MojoCdm::OnCdmInitialized(mojom::CdmPromiseResultPtr result,
                                int cdm_id,
-                               interfaces::DecryptorPtr decryptor) {
+                               mojom::DecryptorPtr decryptor) {
   DVLOG(2) << __FUNCTION__ << " cdm_id: " << cdm_id;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(pending_init_promise_);

@@ -27,22 +27,21 @@ class MediaLog;
 class MojoMediaClient;
 class RendererFactory;
 
-class ServiceFactoryImpl : public interfaces::ServiceFactory {
+class ServiceFactoryImpl : public mojom::ServiceFactory {
  public:
-  ServiceFactoryImpl(mojo::InterfaceRequest<interfaces::ServiceFactory> request,
+  ServiceFactoryImpl(mojo::InterfaceRequest<mojom::ServiceFactory> request,
                      shell::mojom::InterfaceProvider* interfaces,
                      scoped_refptr<MediaLog> media_log,
                      std::unique_ptr<shell::ShellConnectionRef> connection_ref,
                      MojoMediaClient* mojo_media_client);
   ~ServiceFactoryImpl() final;
 
-  // interfaces::ServiceFactory implementation.
+  // mojom::ServiceFactory implementation.
   void CreateAudioDecoder(
-      mojo::InterfaceRequest<interfaces::AudioDecoder> audio_decoder) final;
-  void CreateRenderer(
-      mojo::InterfaceRequest<interfaces::Renderer> renderer) final;
+      mojo::InterfaceRequest<mojom::AudioDecoder> audio_decoder) final;
+  void CreateRenderer(mojo::InterfaceRequest<mojom::Renderer> renderer) final;
   void CreateCdm(
-      mojo::InterfaceRequest<interfaces::ContentDecryptionModule> cdm) final;
+      mojo::InterfaceRequest<mojom::ContentDecryptionModule> cdm) final;
 
  private:
 #if defined(ENABLE_MOJO_RENDERER)
@@ -58,7 +57,7 @@ class ServiceFactoryImpl : public interfaces::ServiceFactory {
 #endif  // defined(ENABLE_MOJO_CDM)
 
   MojoCdmServiceContext cdm_service_context_;
-  mojo::StrongBinding<interfaces::ServiceFactory> binding_;
+  mojo::StrongBinding<mojom::ServiceFactory> binding_;
   shell::mojom::InterfaceProvider* interfaces_;
   scoped_refptr<MediaLog> media_log_;
   std::unique_ptr<shell::ShellConnectionRef> connection_ref_;

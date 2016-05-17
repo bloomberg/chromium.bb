@@ -21,24 +21,24 @@ namespace media {
 class MediaKeys;
 class MojoCdmServiceContext;
 
-class MojoAudioDecoderService : public interfaces::AudioDecoder {
+class MojoAudioDecoderService : public mojom::AudioDecoder {
  public:
   MojoAudioDecoderService(
       base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
       std::unique_ptr<media::AudioDecoder> decoder,
-      mojo::InterfaceRequest<interfaces::AudioDecoder> request);
+      mojo::InterfaceRequest<mojom::AudioDecoder> request);
 
   ~MojoAudioDecoderService() final;
 
-  // interfaces::AudioDecoder implementation
-  void Initialize(interfaces::AudioDecoderClientPtr client,
-                  interfaces::AudioDecoderConfigPtr config,
+  // mojom::AudioDecoder implementation
+  void Initialize(mojom::AudioDecoderClientPtr client,
+                  mojom::AudioDecoderConfigPtr config,
                   int32_t cdm_id,
                   const InitializeCallback& callback) final;
 
   void SetDataSource(mojo::ScopedDataPipeConsumerHandle receive_pipe) final;
 
-  void Decode(interfaces::DecoderBufferPtr buffer,
+  void Decode(mojom::DecoderBufferPtr buffer,
               const DecodeCallback& callback) final;
 
   void Reset(const ResetCallback& callback) final;
@@ -62,11 +62,11 @@ class MojoAudioDecoderService : public interfaces::AudioDecoder {
   // A helper method to read and deserialize DecoderBuffer from data pipe.
   // Returns empty scoped_refptr in case of an error.
   scoped_refptr<DecoderBuffer> ReadDecoderBuffer(
-      interfaces::DecoderBufferPtr buffer);
+      mojom::DecoderBufferPtr buffer);
 
   // A binding represents the association between the service and the
   // communication channel, i.e. the pipe.
-  mojo::StrongBinding<interfaces::AudioDecoder> binding_;
+  mojo::StrongBinding<mojom::AudioDecoder> binding_;
 
   // DataPipe for serializing the data section of DecoderBuffer.
   mojo::ScopedDataPipeConsumerHandle consumer_handle_;
@@ -78,7 +78,7 @@ class MojoAudioDecoderService : public interfaces::AudioDecoder {
   std::unique_ptr<media::AudioDecoder> decoder_;
 
   // The destination for the decoded buffers.
-  interfaces::AudioDecoderClientPtr client_;
+  mojom::AudioDecoderClientPtr client_;
 
   // Hold a reference to the CDM to keep it alive for the lifetime of the
   // |decoder_|. The |cdm_| owns the CdmContext which is passed to |decoder_|.

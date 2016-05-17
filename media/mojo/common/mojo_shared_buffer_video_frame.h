@@ -25,7 +25,7 @@ class StructPtr;
 
 namespace media {
 
-namespace interfaces {
+namespace mojom {
 class VideoFrame;
 }
 
@@ -80,7 +80,7 @@ class MojoSharedBufferVideoFrame : public VideoFrame {
  private:
   // mojo::TypeConverter added as a friend so that MojoSharedBufferVideoFrame
   // can be transferred across a mojo connection.
-  friend struct mojo::TypeConverter<mojo::StructPtr<interfaces::VideoFrame>,
+  friend struct mojo::TypeConverter<mojo::StructPtr<mojom::VideoFrame>,
                                     scoped_refptr<VideoFrame>>;
   friend class MojoDecryptorService;
 
