@@ -98,7 +98,7 @@ void WebFileSystemCallbacks::didCreateSnapshotFile(const WebFileInfo& webFileInf
     // to return from this method so the underlying file will not be deleted.
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->appendFile(webFileInfo.platformPath, 0, webFileInfo.length, invalidFileTime());
-    RefPtr<BlobDataHandle> snapshotBlob = BlobDataHandle::create(blobData.release(), webFileInfo.length);
+    RefPtr<BlobDataHandle> snapshotBlob = BlobDataHandle::create(std::move(blobData), webFileInfo.length);
 
     FileMetadata fileMetadata;
     fileMetadata.modificationTime = webFileInfo.modificationTime;

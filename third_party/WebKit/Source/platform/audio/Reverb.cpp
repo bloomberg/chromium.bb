@@ -117,7 +117,7 @@ void Reverb::initialize(AudioBus* impulseResponseBuffer, size_t renderSliceSize,
         AudioChannel* channel = impulseResponseBuffer->channel(i);
 
         OwnPtr<ReverbConvolver> convolver = adoptPtr(new ReverbConvolver(channel, renderSliceSize, maxFFTSize, convolverRenderPhase, useBackgroundThreads));
-        m_convolvers.append(convolver.release());
+        m_convolvers.append(std::move(convolver));
 
         convolverRenderPhase += renderSliceSize;
     }

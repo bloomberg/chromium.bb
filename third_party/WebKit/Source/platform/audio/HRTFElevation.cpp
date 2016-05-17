@@ -256,8 +256,8 @@ PassOwnPtr<HRTFElevation> HRTFElevation::createForSubject(const String& subjectN
         }
     }
 
-    OwnPtr<HRTFElevation> hrtfElevation = adoptPtr(new HRTFElevation(kernelListL.release(), kernelListR.release(), elevation, sampleRate));
-    return hrtfElevation.release();
+    OwnPtr<HRTFElevation> hrtfElevation = adoptPtr(new HRTFElevation(std::move(kernelListL), std::move(kernelListR), elevation, sampleRate));
+    return hrtfElevation;
 }
 
 PassOwnPtr<HRTFElevation> HRTFElevation::createByInterpolatingSlices(HRTFElevation* hrtfElevation1, HRTFElevation* hrtfElevation2, float x, float sampleRate)
@@ -285,8 +285,8 @@ PassOwnPtr<HRTFElevation> HRTFElevation::createByInterpolatingSlices(HRTFElevati
     // Interpolate elevation angle.
     double angle = (1.0 - x) * hrtfElevation1->elevationAngle() + x * hrtfElevation2->elevationAngle();
 
-    OwnPtr<HRTFElevation> hrtfElevation = adoptPtr(new HRTFElevation(kernelListL.release(), kernelListR.release(), static_cast<int>(angle), sampleRate));
-    return hrtfElevation.release();
+    OwnPtr<HRTFElevation> hrtfElevation = adoptPtr(new HRTFElevation(std::move(kernelListL), std::move(kernelListR), static_cast<int>(angle), sampleRate));
+    return hrtfElevation;
 }
 
 void HRTFElevation::getKernelsFromAzimuth(double azimuthBlend, unsigned azimuthIndex, HRTFKernel* &kernelL, HRTFKernel* &kernelR, double& frameDelayL, double& frameDelayR)

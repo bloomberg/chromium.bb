@@ -209,7 +209,7 @@ void GraphicsContext::setShadow(const FloatSize& offset, float blur, const Color
         if (shadowMode != DrawShadowOnly)
             drawLooperBuilder.clear();
 
-        setDrawLooper(drawLooperBuilder.release());
+        setDrawLooper(std::move(drawLooperBuilder));
         return;
     }
 
@@ -217,7 +217,7 @@ void GraphicsContext::setShadow(const FloatSize& offset, float blur, const Color
     if (shadowMode == DrawShadowAndForeground) {
         drawLooperBuilder->addUnmodifiedContent();
     }
-    setDrawLooper(drawLooperBuilder.release());
+    setDrawLooper(std::move(drawLooperBuilder));
 }
 
 void GraphicsContext::setDrawLooper(PassOwnPtr<DrawLooperBuilder> drawLooperBuilder)
@@ -480,7 +480,7 @@ void GraphicsContext::drawInnerShadow(const FloatRoundedRect& rect, const Color&
     OwnPtr<DrawLooperBuilder> drawLooperBuilder = DrawLooperBuilder::create();
     drawLooperBuilder->addShadow(FloatSize(shadowOffset), shadowBlur, shadowColor,
         DrawLooperBuilder::ShadowRespectsTransforms, DrawLooperBuilder::ShadowIgnoresAlpha);
-    setDrawLooper(drawLooperBuilder.release());
+    setDrawLooper(std::move(drawLooperBuilder));
     fillRectWithRoundedHole(outerRect, roundedHole, fillColor);
 }
 

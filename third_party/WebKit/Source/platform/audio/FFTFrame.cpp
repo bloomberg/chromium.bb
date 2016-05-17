@@ -64,7 +64,7 @@ PassOwnPtr<FFTFrame> FFTFrame::createInterpolatedFrame(const FFTFrame& frame1, c
     // Put back into frequency domain.
     newFrame->doFFT(buffer.data());
 
-    return newFrame.release();
+    return newFrame;
 }
 
 void FFTFrame::interpolateFrequencyComponents(const FFTFrame& frame1, const FFTFrame& frame2, double interp)

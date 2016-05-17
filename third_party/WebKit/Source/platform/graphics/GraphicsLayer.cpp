@@ -89,8 +89,7 @@ static PaintInvalidationTrackingMap& paintInvalidationTrackingMap()
 
 PassOwnPtr<GraphicsLayer> GraphicsLayer::create(GraphicsLayerClient* client)
 {
-    OwnPtr<GraphicsLayer> layer = adoptPtr(new GraphicsLayer(client));
-    return layer.release();
+    return adoptPtr(new GraphicsLayer(client));
 }
 
 GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)

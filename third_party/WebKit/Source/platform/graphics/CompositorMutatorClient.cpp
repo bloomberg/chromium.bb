@@ -32,7 +32,7 @@ base::Closure CompositorMutatorClient::TakeMutations()
 
     return base::Bind(&CompositorMutationsTarget::applyMutations,
         base::Unretained(m_mutationsTarget),
-        base::Owned(m_mutations.release().leakPtr()));
+        base::Owned(m_mutations.leakPtr()));
 }
 
 void CompositorMutatorClient::setMutationsForTesting(PassOwnPtr<CompositorMutations> mutations)

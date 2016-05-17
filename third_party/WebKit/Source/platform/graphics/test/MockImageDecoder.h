@@ -151,7 +151,7 @@ public:
     {
         OwnPtr<MockImageDecoder> decoder = MockImageDecoder::create(m_client);
         decoder->setSize(m_decodedSize.width(), m_decodedSize.height());
-        return decoder.release();
+        return std::move(decoder);
     }
 
 private:

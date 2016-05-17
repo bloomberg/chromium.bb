@@ -208,7 +208,7 @@ public:
     static PassRefPtr<DrawingBufferForTests> create(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const IntSize& size, PreserveDrawingBuffer preserve)
     {
         OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(contextProvider->contextGL());
-        RefPtr<DrawingBufferForTests> drawingBuffer = adoptRef(new DrawingBufferForTests(std::move(contextProvider), extensionsUtil.release(), preserve));
+        RefPtr<DrawingBufferForTests> drawingBuffer = adoptRef(new DrawingBufferForTests(std::move(contextProvider), std::move(extensionsUtil), preserve));
         bool multisampleExtensionSupported = false;
         if (!drawingBuffer->initialize(size, multisampleExtensionSupported)) {
             drawingBuffer->beginDestruction();
@@ -259,8 +259,8 @@ protected:
     {
         OwnPtr<GLES2InterfaceForTests> gl = adoptPtr(new GLES2InterfaceForTests);
         m_gl = gl.get();
-        OwnPtr<WebGraphicsContext3DProviderForTests> provider = adoptPtr(new WebGraphicsContext3DProviderForTests(gl.release()));
-        m_drawingBuffer = DrawingBufferForTests::create(provider.release(), IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve);
+        OwnPtr<WebGraphicsContext3DProviderForTests> provider = adoptPtr(new WebGraphicsContext3DProviderForTests(std::move(gl)));
+        m_drawingBuffer = DrawingBufferForTests::create(std::move(provider), IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve);
         CHECK(m_drawingBuffer);
     }
 
@@ -481,11 +481,11 @@ protected:
     {
         OwnPtr<GLES2InterfaceForTests> gl = adoptPtr(new GLES2InterfaceForTests);
         m_gl = gl.get();
-        OwnPtr<WebGraphicsContext3DProviderForTests> provider = adoptPtr(new WebGraphicsContext3DProviderForTests(gl.release()));
+        OwnPtr<WebGraphicsContext3DProviderForTests> provider = adoptPtr(new WebGraphicsContext3DProviderForTests(std::move(gl)));
         RuntimeEnabledFeatures::setWebGLImageChromiumEnabled(true);
         m_imageId0 = m_gl->nextImageIdToBeCreated();
         EXPECT_CALL(*m_gl, BindTexImage2DMock(m_imageId0)).Times(1);
-        m_drawingBuffer = DrawingBufferForTests::create(provider.release(),
+        m_drawingBuffer = DrawingBufferForTests::create(std::move(provider),
             IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve);
         CHECK(m_drawingBuffer);
         testing::Mock::VerifyAndClearExpectations(m_gl);
@@ -661,7 +661,7 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported)
         SCOPED_TRACE(cases[i].testCaseName);
         OwnPtr<DepthStencilTrackingGLES2Interface> gl = adoptPtr(new DepthStencilTrackingGLES2Interface);
         DepthStencilTrackingGLES2Interface* trackingGL = gl.get();
-        OwnPtr<WebGraphicsContext3DProviderForTests> provider = adoptPtr(new WebGraphicsContext3DProviderForTests(gl.release()));
+        OwnPtr<WebGraphicsContext3DProviderForTests> provider = adoptPtr(new WebGraphicsContext3DProviderForTests(std::move(gl)));
         DrawingBuffer::PreserveDrawingBuffer preserve = DrawingBuffer::Preserve;
 
         bool premultipliedAlpha = false;
@@ -670,7 +670,7 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported)
         bool wantStencilBuffer = cases[i].requestStencil;
         bool wantAntialiasing = false;
         RefPtr<DrawingBuffer> drawingBuffer = DrawingBuffer::create(
-            provider.release(),
+            std::move(provider),
             IntSize(10, 10),
             premultipliedAlpha,
             wantAlphaChannel,
@@ -739,9 +739,9 @@ protected:
         OwnPtr<GLES2InterfaceForTests> gl = adoptPtr(new GLES2InterfaceForTests);
         gl->setAllowImageChromium(false);
         m_gl = gl.get();
-        OwnPtr<WebGraphicsContext3DProviderForTests> provider = adoptPtr(new WebGraphicsContext3DProviderForTests(gl.release()));
+        OwnPtr<WebGraphicsContext3DProviderForTests> provider = adoptPtr(new WebGraphicsContext3DProviderForTests(std::move(gl)));
         RuntimeEnabledFeatures::setWebGLImageChromiumEnabled(true);
-        m_drawingBuffer = DrawingBufferForTests::create(provider.release(),
+        m_drawingBuffer = DrawingBufferForTests::create(std::move(provider),
             IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve);
     }
 

@@ -99,7 +99,7 @@ PassOwnPtr<AudioChannel> HRTFKernel::createImpulseResponse()
     fftFrame.addConstantGroupDelay(m_frameDelay);
     fftFrame.doInverseFFT(channel->mutableData());
 
-    return channel.release();
+    return channel;
 }
 
 // Interpolates two kernels with x: 0 -> 1 and returns the result.
@@ -121,7 +121,7 @@ PassOwnPtr<HRTFKernel> HRTFKernel::createInterpolatedKernel(HRTFKernel* kernel1,
     float frameDelay = (1 - x) * kernel1->frameDelay() + x * kernel2->frameDelay();
 
     OwnPtr<FFTFrame> interpolatedFrame = FFTFrame::createInterpolatedFrame(*kernel1->fftFrame(), *kernel2->fftFrame(), x);
-    return HRTFKernel::create(interpolatedFrame.release(), frameDelay, sampleRate1);
+    return HRTFKernel::create(std::move(interpolatedFrame), frameDelay, sampleRate1);
 }
 
 } // namespace blink

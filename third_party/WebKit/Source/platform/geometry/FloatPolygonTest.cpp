@@ -41,7 +41,7 @@ public:
         OwnPtr<Vector<FloatPoint>> vertices = adoptPtr(new Vector<FloatPoint>(coordinatesLength / 2));
         for (unsigned i = 0; i < coordinatesLength; i += 2)
             (*vertices)[i / 2] = FloatPoint(coordinates[i], coordinates[i + 1]);
-        m_polygon = adoptPtr(new FloatPolygon(vertices.release(), fillRule));
+        m_polygon = adoptPtr(new FloatPolygon(std::move(vertices), fillRule));
     }
 
     const FloatPolygon& polygon() const { return *m_polygon; }

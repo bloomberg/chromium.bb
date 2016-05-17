@@ -46,7 +46,7 @@ PassOwnPtr<DeferredImageDecoder> DeferredImageDecoder::create(const SharedBuffer
     if (!actualDecoder)
         return nullptr;
 
-    return adoptPtr(new DeferredImageDecoder(actualDecoder.release()));
+    return adoptPtr(new DeferredImageDecoder(std::move(actualDecoder)));
 }
 
 PassOwnPtr<DeferredImageDecoder> DeferredImageDecoder::createForTesting(PassOwnPtr<ImageDecoder> actualDecoder)

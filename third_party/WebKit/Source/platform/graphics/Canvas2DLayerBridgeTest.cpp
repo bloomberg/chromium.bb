@@ -160,7 +160,7 @@ protected:
         FakeGLES2Interface gl;
         OwnPtr<FakeWebGraphicsContext3DProvider> contextProvider = adoptPtr(new FakeWebGraphicsContext3DProvider(&gl));
 
-        Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(contextProvider.release(), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::DisableAcceleration)));
+        Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(std::move(contextProvider), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::DisableAcceleration)));
 
         const GrGLTextureInfo* textureInfo = skia::GrBackendObjectToGrGLTextureInfo(bridge->newImageSnapshot(PreferAcceleration, SnapshotReasonUnknown)->getTextureHandle(true));
         EXPECT_EQ(textureInfo, nullptr);
@@ -173,7 +173,7 @@ protected:
         OwnPtr<FakeWebGraphicsContext3DProvider> contextProvider = adoptPtr(new FakeWebGraphicsContext3DProvider(&gl));
 
         gl.setIsContextLost(true);
-        Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(contextProvider.release(), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::EnableAcceleration)));
+        Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(std::move(contextProvider), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::EnableAcceleration)));
         EXPECT_TRUE(bridge->checkSurfaceValid());
         EXPECT_FALSE(bridge->isAccelerated());
     }
@@ -184,7 +184,7 @@ protected:
             // No fallback case.
             FakeGLES2Interface gl;
             OwnPtr<FakeWebGraphicsContext3DProvider> contextProvider = adoptPtr(new FakeWebGraphicsContext3DProvider(&gl));
-            Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(contextProvider.release(), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::EnableAcceleration)));
+            Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(std::move(contextProvider), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::EnableAcceleration)));
             EXPECT_TRUE(bridge->checkSurfaceValid());
             EXPECT_TRUE(bridge->isAccelerated());
             RefPtr<SkImage> snapshot = bridge->newImageSnapshot(PreferAcceleration, SnapshotReasonUnknown);
@@ -197,7 +197,7 @@ protected:
             FakeGLES2Interface gl;
             OwnPtr<FakeWebGraphicsContext3DProvider> contextProvider = adoptPtr(new FakeWebGraphicsContext3DProvider(&gl));
             GrContext* gr = contextProvider->grContext();
-            Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(contextProvider.release(), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::EnableAcceleration)));
+            Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(std::move(contextProvider), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::EnableAcceleration)));
             EXPECT_TRUE(bridge->checkSurfaceValid());
             EXPECT_TRUE(bridge->isAccelerated()); // We don't yet know that allocation will fail
             // This will cause SkSurface_Gpu creation to fail without
@@ -214,7 +214,7 @@ protected:
         FakeGLES2Interface gl;
         OwnPtr<FakeWebGraphicsContext3DProvider> contextProvider = adoptPtr(new FakeWebGraphicsContext3DProvider(&gl));
 
-        Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(contextProvider.release(), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::ForceAccelerationForTesting)));
+        Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(std::move(contextProvider), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::ForceAccelerationForTesting)));
         EXPECT_TRUE(bridge->checkSurfaceValid());
         SkPaint paint;
         uint32_t genID = bridge->getOrCreateSurface()->generationID();
@@ -236,7 +236,7 @@ protected:
     {
         FakeGLES2Interface gl;
         OwnPtr<FakeWebGraphicsContext3DProvider> contextProvider = adoptPtr(new FakeWebGraphicsContext3DProvider(&gl));
-        Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(contextProvider.release(), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::ForceAccelerationForTesting)));
+        Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(std::move(contextProvider), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::ForceAccelerationForTesting)));
         bridge->m_lastImageId = 1;
 
         NullWebExternalBitmap bitmap;
@@ -253,7 +253,7 @@ protected:
         {
             FakeGLES2Interface gl;
             OwnPtr<FakeWebGraphicsContext3DProvider> contextProvider = adoptPtr(new FakeWebGraphicsContext3DProvider(&gl));
-            Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(contextProvider.release(), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::ForceAccelerationForTesting)));
+            Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(std::move(contextProvider), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::ForceAccelerationForTesting)));
             WebExternalTextureMailbox mailbox;
             bridge->prepareMailbox(&mailbox, 0);
             bridge->mailboxReleased(mailbox, lostResource);
@@ -266,7 +266,7 @@ protected:
             WebExternalTextureMailbox mailbox;
             Canvas2DLayerBridge* rawBridge;
             {
-                Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(contextProvider.release(), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::ForceAccelerationForTesting)));
+                Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(std::move(contextProvider), IntSize(300, 150), 0, NonOpaque, Canvas2DLayerBridge::ForceAccelerationForTesting)));
                 bridge->prepareMailbox(&mailbox, 0);
                 rawBridge = bridge.get();
             } // bridge goes out of scope, but object is kept alive by self references.
@@ -281,7 +281,7 @@ protected:
         {
             FakeGLES2Interface gl;
             OwnPtr<FakeWebGraphicsContext3DProvider> contextProvider = adoptPtr(new FakeWebGraphicsContext3DProvider(&gl));
-            Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(contextProvider.release(), IntSize(300, 300), 0, NonOpaque, Canvas2DLayerBridge::EnableAcceleration)));
+            Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(std::move(contextProvider), IntSize(300, 300), 0, NonOpaque, Canvas2DLayerBridge::EnableAcceleration)));
             SkPaint paint;
             bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), paint);
             RefPtr<SkImage> image = bridge->newImageSnapshot(PreferAcceleration, SnapshotReasonUnknown);
@@ -292,7 +292,7 @@ protected:
         {
             FakeGLES2Interface gl;
             OwnPtr<FakeWebGraphicsContext3DProvider> contextProvider = adoptPtr(new FakeWebGraphicsContext3DProvider(&gl));
-            Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(contextProvider.release(), IntSize(300, 300), 0, NonOpaque, Canvas2DLayerBridge::EnableAcceleration)));
+            Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(std::move(contextProvider), IntSize(300, 300), 0, NonOpaque, Canvas2DLayerBridge::EnableAcceleration)));
             SkPaint paint;
             bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), paint);
             RefPtr<SkImage> image = bridge->newImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown);
@@ -347,7 +347,7 @@ public:
 void runCreateBridgeTask(Canvas2DLayerBridgePtr* bridgePtr, gpu::gles2::GLES2Interface* gl, Canvas2DLayerBridgeTest* testHost, WaitableEvent* doneEvent)
 {
     OwnPtr<FakeWebGraphicsContext3DProvider> contextProvider = adoptPtr(new FakeWebGraphicsContext3DProvider(gl));
-    *bridgePtr = testHost->makeBridge(contextProvider.release(), IntSize(300, 300), Canvas2DLayerBridge::EnableAcceleration);
+    *bridgePtr = testHost->makeBridge(std::move(contextProvider), IntSize(300, 300), Canvas2DLayerBridge::EnableAcceleration);
     // draw+flush to trigger the creation of a GPU surface
     (*bridgePtr)->didDraw(FloatRect(0, 0, 1, 1));
     (*bridgePtr)->finalizeFrame(FloatRect(0, 0, 1, 1));
@@ -446,7 +446,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationLifeCycle)
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
     MockLogger* mockLoggerPtr = mockLogger.get();
-    bridge->setLoggerForTesting(mockLogger.release());
+    bridge->setLoggerForTesting(std::move(mockLogger));
 
     // Test entering hibernation
     OwnPtr<WaitableEvent> hibernationStartedEvent = adoptPtr(new WaitableEvent());
@@ -490,7 +490,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationReEntry)
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
     MockLogger* mockLoggerPtr = mockLogger.get();
-    bridge->setLoggerForTesting(mockLogger.release());
+    bridge->setLoggerForTesting(std::move(mockLogger));
 
     // Test entering hibernation
     OwnPtr<WaitableEvent> hibernationStartedEvent = adoptPtr(new WaitableEvent());
@@ -543,7 +543,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationLifeCycleWithDeferredRenderi
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
     MockLogger* mockLoggerPtr = mockLogger.get();
-    bridge->setLoggerForTesting(mockLogger.release());
+    bridge->setLoggerForTesting(std::move(mockLogger));
 
     // Test entering hibernation
     OwnPtr<WaitableEvent> hibernationStartedEvent = adoptPtr(new WaitableEvent());
@@ -609,7 +609,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_BackgroundRenderingWhileHibernating)
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
     MockLogger* mockLoggerPtr = mockLogger.get();
-    bridge->setLoggerForTesting(mockLogger.release());
+    bridge->setLoggerForTesting(std::move(mockLogger));
 
     // Test entering hibernation
     OwnPtr<WaitableEvent> hibernationStartedEvent = adoptPtr(new WaitableEvent());
@@ -664,7 +664,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_BackgroundRenderingWhileHibernatingWith
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
     MockLogger* mockLoggerPtr = mockLogger.get();
-    bridge->setLoggerForTesting(mockLogger.release());
+    bridge->setLoggerForTesting(std::move(mockLogger));
 
     // Test entering hibernation
     OwnPtr<WaitableEvent> hibernationStartedEvent = adoptPtr(new WaitableEvent());
@@ -724,7 +724,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_DisableDeferredRenderingWhileHibernatin
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
     MockLogger* mockLoggerPtr = mockLogger.get();
-    bridge->setLoggerForTesting(mockLogger.release());
+    bridge->setLoggerForTesting(std::move(mockLogger));
 
     // Test entering hibernation
     OwnPtr<WaitableEvent> hibernationStartedEvent = adoptPtr(new WaitableEvent());
@@ -781,7 +781,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_TeardownWhileHibernating)
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
     MockLogger* mockLoggerPtr = mockLogger.get();
-    bridge->setLoggerForTesting(mockLogger.release());
+    bridge->setLoggerForTesting(std::move(mockLogger));
 
     // Test entering hibernation
     OwnPtr<WaitableEvent> hibernationStartedEvent = adoptPtr(new WaitableEvent());
@@ -834,7 +834,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_TeardownWhileHibernationIsPending)
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
     MockLogger* mockLoggerPtr = mockLogger.get();
-    bridge->setLoggerForTesting(mockLogger.release());
+    bridge->setLoggerForTesting(std::move(mockLogger));
 
     // Test entering hibernation
     OwnPtr<WaitableEvent> hibernationScheduledEvent = adoptPtr(new WaitableEvent());
@@ -874,7 +874,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationAbortedDueToPendingTeardown)
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
     MockLogger* mockLoggerPtr = mockLogger.get();
-    bridge->setLoggerForTesting(mockLogger.release());
+    bridge->setLoggerForTesting(std::move(mockLogger));
 
     // Test entering hibernation
     OwnPtr<WaitableEvent> hibernationAbortedEvent = adoptPtr(new WaitableEvent());
@@ -908,7 +908,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationAbortedDueToVisibilityChange
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
     MockLogger* mockLoggerPtr = mockLogger.get();
-    bridge->setLoggerForTesting(mockLogger.release());
+    bridge->setLoggerForTesting(std::move(mockLogger));
 
     // Test entering hibernation
     OwnPtr<WaitableEvent> hibernationAbortedEvent = adoptPtr(new WaitableEvent());
@@ -945,7 +945,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationAbortedDueToLostContext)
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
     MockLogger* mockLoggerPtr = mockLogger.get();
-    bridge->setLoggerForTesting(mockLogger.release());
+    bridge->setLoggerForTesting(std::move(mockLogger));
 
     gl.setIsContextLost(true);
     // Test entering hibernation
@@ -980,7 +980,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileHibernating)
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
     MockLogger* mockLoggerPtr = mockLogger.get();
-    bridge->setLoggerForTesting(mockLogger.release());
+    bridge->setLoggerForTesting(std::move(mockLogger));
 
     // Test entering hibernation
     OwnPtr<WaitableEvent> hibernationStartedEvent = adoptPtr(new WaitableEvent());
@@ -1019,7 +1019,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
     MockLogger* mockLoggerPtr = mockLogger.get();
-    bridge->setLoggerForTesting(mockLogger.release());
+    bridge->setLoggerForTesting(std::move(mockLogger));
 
     // Test entering hibernation
     OwnPtr<WaitableEvent> hibernationStartedEvent = adoptPtr(new WaitableEvent());

@@ -337,21 +337,21 @@ void ShapeResult::insertRun(PassOwnPtr<ShapeResult::RunInfo> runToInsert,
     if (HB_DIRECTION_IS_FORWARD(run->m_direction)) {
         for (size_t pos = 0; pos < m_runs.size(); ++pos) {
             if (m_runs.at(pos)->m_startIndex > run->m_startIndex) {
-                m_runs.insert(pos, run.release());
+                m_runs.insert(pos, std::move(run));
                 break;
             }
         }
     } else {
         for (size_t pos = 0; pos < m_runs.size(); ++pos) {
             if (m_runs.at(pos)->m_startIndex < run->m_startIndex) {
-                m_runs.insert(pos, run.release());
+                m_runs.insert(pos, std::move(run));
                 break;
             }
         }
     }
     // If we didn't find an existing slot to place it, append.
     if (run)
-        m_runs.append(run.release());
+        m_runs.append(std::move(run));
 }
 
 } // namespace blink

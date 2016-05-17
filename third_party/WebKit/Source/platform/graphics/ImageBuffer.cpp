@@ -73,7 +73,7 @@ PassOwnPtr<ImageBuffer> ImageBuffer::create(const IntSize& size, OpacityMode opa
     OwnPtr<ImageBufferSurface> surface(adoptPtr(new UnacceleratedImageBufferSurface(size, opacityMode, initializationMode)));
     if (!surface->isValid())
         return nullptr;
-    return adoptPtr(new ImageBuffer(surface.release()));
+    return adoptPtr(new ImageBuffer(std::move(surface)));
 }
 
 ImageBuffer::ImageBuffer(PassOwnPtr<ImageBufferSurface> surface)

@@ -27,7 +27,7 @@ TEST(CompositorMutatorClient, CallbackForNonNullMutationsShouldApply)
 
     CompositorMutatorClient client(&target);
     OwnPtr<CompositorMutations> mutations = adoptPtr(new CompositorMutations());
-    client.setMutationsForTesting(mutations.release());
+    client.setMutationsForTesting(std::move(mutations));
 
     EXPECT_CALL(target, applyMutations(_));
     client.TakeMutations().Run();

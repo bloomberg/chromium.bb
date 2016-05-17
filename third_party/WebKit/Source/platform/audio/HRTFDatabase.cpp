@@ -41,8 +41,7 @@ const unsigned HRTFDatabase::NumberOfTotalElevations = NumberOfRawElevations * I
 
 PassOwnPtr<HRTFDatabase> HRTFDatabase::create(float sampleRate)
 {
-    OwnPtr<HRTFDatabase> hrtfDatabase = adoptPtr(new HRTFDatabase(sampleRate));
-    return hrtfDatabase.release();
+    return adoptPtr(new HRTFDatabase(sampleRate));
 }
 
 HRTFDatabase::HRTFDatabase(float sampleRate)
@@ -56,7 +55,7 @@ HRTFDatabase::HRTFDatabase(float sampleRate)
         if (!hrtfElevation.get())
             return;
 
-        m_elevations[elevationIndex] = hrtfElevation.release();
+        m_elevations[elevationIndex] = std::move(hrtfElevation);
         elevationIndex += InterpolationFactor;
     }
 

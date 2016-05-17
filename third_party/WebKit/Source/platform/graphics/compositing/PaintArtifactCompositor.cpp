@@ -423,7 +423,7 @@ scoped_refptr<cc::Layer> PaintArtifactCompositor::layerForPaintChunk(const Paint
     layer->SetDoubleSided(!paintChunk.properties.backfaceHidden);
     if (paintChunk.knownToBeOpaque)
         layer->SetContentsOpaque(true);
-    m_contentLayerClients.append(contentLayerClient.release());
+    m_contentLayerClients.append(std::move(contentLayerClient));
     return layer;
 }
 

@@ -165,7 +165,7 @@ bool ImageFrameGenerator::decodeToYUV(SegmentReader* data, size_t index, const S
     decoder->setData(data, true);
 
     OwnPtr<ImagePlanes> imagePlanes = adoptPtr(new ImagePlanes(planes, rowBytes));
-    decoder->setImagePlanes(imagePlanes.release());
+    decoder->setImagePlanes(std::move(imagePlanes));
 
     ASSERT(decoder->canDecodeToYUV());
 
@@ -234,7 +234,7 @@ SkBitmap ImageFrameGenerator::tryToResumeDecode(SegmentReader* data, bool allDat
         else
             ImageDecodingStore::instance().unlockDecoder(this, decoder);
     } else if (!removeDecoder) {
-        ImageDecodingStore::instance().insertDecoder(this, decoderContainer.release());
+        ImageDecodingStore::instance().insertDecoder(this, std::move(decoderContainer));
     }
     return fullSizeImage;
 }
@@ -332,7 +332,7 @@ bool ImageFrameGenerator::getYUVComponentSizes(SegmentReader* data, SkYUVSizeInf
     // Setting a dummy ImagePlanes object signals to the decoder that we want to do YUV decoding.
     decoder->setData(data, true);
     OwnPtr<ImagePlanes> dummyImagePlanes = adoptPtr(new ImagePlanes);
-    decoder->setImagePlanes(dummyImagePlanes.release());
+    decoder->setImagePlanes(std::move(dummyImagePlanes));
 
     return updateYUVComponentSizes(decoder.get(), sizeInfo->fSizes, sizeInfo->fWidthBytes);
 }

@@ -28,7 +28,7 @@ PassOwnPtr<Extensions3DUtil> Extensions3DUtil::create(gpu::gles2::GLES2Interface
 {
     OwnPtr<Extensions3DUtil> out = adoptPtr(new Extensions3DUtil(gl));
     out->initializeExtensions();
-    return out.release();
+    return out;
 }
 
 Extensions3DUtil::Extensions3DUtil(gpu::gles2::GLES2Interface* gl)

@@ -103,7 +103,7 @@ public:
         OwnPtr<MockImageDecoder> decoder = MockImageDecoder::create(this);
         m_actualDecoder = decoder.get();
         m_actualDecoder->setSize(1, 1);
-        m_lazyDecoder = DeferredImageDecoder::createForTesting(decoder.release());
+        m_lazyDecoder = DeferredImageDecoder::createForTesting(std::move(decoder));
         m_surface = SkSurface::MakeRasterN32Premul(100, 100);
         ASSERT_TRUE(m_surface.get());
         m_decodeRequestCount = 0;
@@ -361,7 +361,7 @@ TEST_F(DeferredImageDecoderTest, frameOpacity)
 {
     OwnPtr<ImageDecoder> actualDecoder = ImageDecoder::create(*m_data,
         ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileApplied);
-    OwnPtr<DeferredImageDecoder> decoder = DeferredImageDecoder::createForTesting(actualDecoder.release());
+    OwnPtr<DeferredImageDecoder> decoder = DeferredImageDecoder::createForTesting(std::move(actualDecoder));
     decoder->setData(*m_data, true);
 
     SkImageInfo pixInfo = SkImageInfo::MakeN32Premul(1, 1);

@@ -141,7 +141,7 @@ PassOwnPtr<Vector<char>> PictureSnapshot::replay(unsigned fromStep, unsigned toS
         return nullptr;
 
     base64Encode(encodedImage, *base64Data);
-    return base64Data.release();
+    return base64Data;
 }
 
 PassOwnPtr<PictureSnapshot::Timings> PictureSnapshot::profile(unsigned minRepeatCount, double minDuration, const FloatRect* clipRect) const
@@ -169,7 +169,7 @@ PassOwnPtr<PictureSnapshot::Timings> PictureSnapshot::profile(unsigned minRepeat
         m_picture->playback(&canvas);
         now = WTF::monotonicallyIncreasingTime();
     }
-    return timings.release();
+    return timings;
 }
 
 PassRefPtr<JSONArray> PictureSnapshot::snapshotCommandLog() const

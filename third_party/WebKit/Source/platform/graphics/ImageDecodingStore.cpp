@@ -99,7 +99,7 @@ void ImageDecodingStore::insertDecoder(const ImageFrameGenerator* generator, Pas
 
     MutexLocker lock(m_mutex);
     ASSERT(!m_decoderCacheMap.contains(newCacheEntry->cacheKey()));
-    insertCacheInternal(newCacheEntry.release(), &m_decoderCacheMap, &m_decoderCacheKeyMap);
+    insertCacheInternal(std::move(newCacheEntry), &m_decoderCacheMap, &m_decoderCacheKeyMap);
 }
 
 void ImageDecodingStore::removeDecoder(const ImageFrameGenerator* generator, const ImageDecoder* decoder)
