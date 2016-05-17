@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "ui/aura/env_observer.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/views_export.h"
@@ -36,12 +37,8 @@ class VIEWS_EXPORT X11DesktopHandler : public ui::PlatformEventDispatcher,
 
   // Gets/sets the X11 server time of the most recent mouse click, touch or
   // key press on a Chrome window.
-  int wm_user_time_ms() const {
-    return wm_user_time_ms_;
-  }
-  void set_wm_user_time_ms(unsigned long time_ms) {
-    wm_user_time_ms_ = time_ms;
-  }
+  int wm_user_time_ms() const { return wm_user_time_ms_; }
+  void set_wm_user_time_ms(Time time_ms);
 
   // Sends a request to the window manager to activate |window|.
   // This method should only be called if the window is already mapped.
@@ -95,7 +92,7 @@ class VIEWS_EXPORT X11DesktopHandler : public ui::PlatformEventDispatcher,
 
   // The X11 server time of the most recent mouse click, touch, or key press
   // on a Chrome window.
-  unsigned long wm_user_time_ms_;
+  Time wm_user_time_ms_;
 
   // The active window according to X11 server.
   ::Window current_window_;

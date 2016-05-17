@@ -16,6 +16,7 @@
 using Time = unsigned long;
 using XEvent = union _XEvent;
 using XID = unsigned long;
+using XWindow = unsigned long;
 
 namespace ui {
 
@@ -62,6 +63,10 @@ class EVENTS_EXPORT X11EventSource {
   XDisplay* display() { return display_; }
   Time last_seen_server_time() const { return last_seen_server_time_; }
 
+  // Explicitly asks the X11 server for the current timestamp, and updates
+  // |last_seen_server_time| with this value.
+  Time UpdateLastSeenServerTime();
+
   void StopCurrentEventStream();
   void OnDispatcherListChanged();
 
@@ -84,6 +89,11 @@ class EVENTS_EXPORT X11EventSource {
 
   // The last timestamp seen in an XEvent.
   Time last_seen_server_time_;
+
+  // State necessary for UpdateLastSeenServerTime
+  bool dummy_initialized_;
+  XWindow dummy_window_;
+  XAtom dummy_atom_;
 
   // Keeps track of whether this source should continue to dispatch all the
   // available events.

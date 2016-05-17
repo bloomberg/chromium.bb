@@ -12341,6 +12341,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Event.Latency.X11EventSource.UpdateServerTime"
+    units="microseconds">
+  <owner>thomasanderson@chromium.org</owner>
+  <summary>Time to request a timestamp from the X server.</summary>
+</histogram>
+
 <histogram name="Event.PassiveListeners" enum="EventResultType">
   <owner>dtapuska@chromium.org</owner>
   <summary>

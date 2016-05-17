@@ -1139,6 +1139,9 @@ const char kHelpShort[]                     = "h";
 
 // Specifies which password store to use (detect, default, gnome, kwallet).
 const char kPasswordStore[]                 = "password-store";
+
+// Updates X11Desktophandler::wm_user_time_ms with the latest X server time.
+const char kWmUserTimeMs[]              = "wm-user-time-ms";
 #endif
 
 #if defined(OS_MACOSX)

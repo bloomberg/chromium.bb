@@ -43,7 +43,7 @@ X11DesktopHandler::X11DesktopHandler()
     : xdisplay_(gfx::GetXDisplay()),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       x_active_window_(None),
-      wm_user_time_ms_(0),
+      wm_user_time_ms_(CurrentTime),
       current_window_(None),
       current_window_active_state_(NOT_ACTIVE),
       atom_cache_(xdisplay_, kAtomsToCache),
@@ -91,6 +91,10 @@ void X11DesktopHandler::ActivateWindow(::Window window) {
 
     // If the window is not already active, send a hint to activate it
     if (x_active_window_ != window) {
+      if (wm_user_time_ms_ == CurrentTime) {
+        set_wm_user_time_ms(
+            ui::X11EventSource::GetInstance()->UpdateLastSeenServerTime());
+      }
       XEvent xclient;
       memset(&xclient, 0, sizeof(xclient));
       xclient.type = ClientMessage;
@@ -117,6 +121,18 @@ void X11DesktopHandler::ActivateWindow(::Window window) {
     XSetInputFocus(xdisplay_, window, RevertToParent, CurrentTime);
 
     OnActiveWindowChanged(window, ACTIVE);
+  }
+}
+
+void X11DesktopHandler::set_wm_user_time_ms(Time time_ms) {
+  if (time_ms != CurrentTime) {
+    int64_t event_time_64 = time_ms;
+    int64_t time_difference = wm_user_time_ms_ - event_time_64;
+    // Ignore timestamps that go backwards. However, X server time is a 32-bit
+    // millisecond counter, so if the time goes backwards by more than half the
+    // range of the 32-bit counter, treat it as a rollover.
+    if (time_difference < 0 || time_difference > (UINT32_MAX >> 1))
+      wm_user_time_ms_ = time_ms;
   }
 }
 

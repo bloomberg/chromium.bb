@@ -4,10 +4,12 @@
 
 #include "ui/events/platform/x11/x11_event_source.h"
 
+#include <X11/Xatom.h>
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event_utils.h"
@@ -78,6 +80,13 @@ void UpdateDeviceList() {
   DeviceDataManagerX11::GetInstance()->UpdateDeviceList(display);
 }
 
+Bool IsPropertyNotifyForTimestamp(Display* display,
+                                  XEvent* event,
+                                  XPointer arg) {
+  return event->type == PropertyNotify &&
+         event->xproperty.window == *reinterpret_cast<Window*>(arg);
+}
+
 }  // namespace
 
 X11EventSource* X11EventSource::instance_ = nullptr;
@@ -87,6 +96,7 @@ X11EventSource::X11EventSource(X11EventSourceDelegate* delegate,
     : delegate_(delegate),
       display_(display),
       last_seen_server_time_(CurrentTime),
+      dummy_initialized_(false),
       continue_stream_(true) {
   DCHECK(!instance_);
   instance_ = this;
@@ -100,6 +110,8 @@ X11EventSource::X11EventSource(X11EventSourceDelegate* delegate,
 X11EventSource::~X11EventSource() {
   DCHECK_EQ(this, instance_);
   instance_ = nullptr;
+  if (dummy_initialized_)
+    XDestroyWindow(display_, dummy_window_);
 }
 
 // static
@@ -132,6 +144,38 @@ void X11EventSource::BlockUntilWindowMapped(XID window) {
     XWindowEvent(display_, window, StructureNotifyMask, &event);
     ExtractCookieDataDispatchEvent(&event);
   } while (event.type != MapNotify);
+}
+
+Time X11EventSource::UpdateLastSeenServerTime() {
+  base::TimeTicks start = base::TimeTicks::Now();
+
+  DCHECK(display_);
+
+  if (!dummy_initialized_) {
+    // Create a new Window and Atom that will be used for the property change.
+    dummy_window_ = XCreateSimpleWindow(display_, DefaultRootWindow(display_),
+                                        0, 0, 1, 1, 0, 0, 0);
+    dummy_atom_ = XInternAtom(display_, "CHROMIUM_TIMESTAMP", False);
+    XSelectInput(display_, dummy_window_, PropertyChangeMask);
+    dummy_initialized_ = true;
+  }
+
+  // Make a no-op property change on |dummy_window_|.
+  XChangeProperty(display_, dummy_window_, dummy_atom_, XA_STRING, 8,
+                  PropModeAppend, nullptr, 0);
+
+  // Observe the resulting PropertyNotify event to obtain the timestamp.
+  XEvent event;
+  XIfEvent(display_, &event, IsPropertyNotifyForTimestamp,
+           reinterpret_cast<XPointer>(&dummy_window_));
+
+  last_seen_server_time_ = event.xproperty.time;
+
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "Event.Latency.X11EventSource.UpdateServerTime",
+      (base::TimeTicks::Now() - start).InMicroseconds(), 0,
+      base::TimeDelta::FromMilliseconds(1).InMicroseconds(), 50);
+  return last_seen_server_time_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
