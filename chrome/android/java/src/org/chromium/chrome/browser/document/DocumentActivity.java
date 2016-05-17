@@ -276,29 +276,6 @@ public class DocumentActivity extends ChromeActivity {
 
         FirstRunSignInProcessor.start(this);
 
-        if (!preferenceManager.hasAttemptedMigrationOnUpgrade()) {
-            InitializationObserver observer = new InitializationObserver(
-                    ChromeApplication.getDocumentTabModelSelector().getModel(false)) {
-                @Override
-                protected void runImmediately() {
-                    DocumentMigrationHelper.migrateTabsToDocumentForUpgrade(DocumentActivity.this,
-                            DocumentMigrationHelper.FINALIZE_MODE_NO_ACTION);
-                }
-
-                @Override
-                public boolean isSatisfied(int currentState) {
-                    return currentState == DocumentTabModelImpl.STATE_FULLY_LOADED;
-                }
-
-                @Override
-                public boolean isCanceled() {
-                    return false;
-                }
-            };
-
-            observer.runWhenReady();
-        }
-
         getWindow().setFeatureInt(Window.FEATURE_INDETERMINATE_PROGRESS,
                 Window.PROGRESS_VISIBILITY_OFF);
 

@@ -270,7 +270,7 @@ public class TabPersistentStore extends TabPersister {
         mTabContentManager = cache;
     }
 
-    private static void logExecutionTime(String name, long time) {
+    private void logExecutionTime(String name, long time) {
         if (LibraryLoader.isInitialized()) {
             RecordHistogram.recordTimesHistogram("Android.StrictMode.TabPersistentStore." + name,
                     SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
@@ -791,7 +791,7 @@ public class TabPersistentStore extends TabPersister {
         mPreferences.edit().putBoolean(PREF_HAS_COMPUTED_MAX_ID, true).apply();
     }
 
-    public static int readSavedStateFile(File folder, OnTabStateReadCallback callback)
+    private int readSavedStateFile(File folder, OnTabStateReadCallback callback)
             throws IOException {
         DataInputStream stream = null;
         // As we do this in startup, and restoring the tab state is critical to
@@ -1095,7 +1095,7 @@ public class TabPersistentStore extends TabPersister {
      *
      * @return True if the tab is definitely Incognito, false if it's not or if it's undecideable.
      */
-    private static boolean isIncognitoTabBeingRestored(
+    private boolean isIncognitoTabBeingRestored(
             TabRestoreDetails tabDetails, TabState tabState) {
         if (tabState != null) {
             // The Tab's previous state was completely restored.
