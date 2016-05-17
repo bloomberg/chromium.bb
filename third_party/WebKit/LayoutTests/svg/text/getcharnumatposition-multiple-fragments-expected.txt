@@ -1,5 +1,0 @@
-AAAA
- This is a testharness.js-based test.
-PASS SVGTextContentElement.getCharNumAtPosition w/ multiple fragments per text box. 
-Harness: the test ran to completion.
-

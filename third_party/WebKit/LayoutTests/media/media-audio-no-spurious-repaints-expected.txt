@@ -26,7 +26,7 @@ CONSOLE MESSAGE: line 29: FAIL! An unexpected number of repaints occurred; expec
   ]
 }
 
- This is a testharness.js-based test.
+This is a testharness.js-based test.
 FAIL Verifies there are no spurious repaints for audio in a video tag. Cannot read property 'length' of undefined
 Harness: the test ran to completion.
 

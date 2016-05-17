@@ -1,4 +1,4 @@
- This is a testharness.js-based test.
+This is a testharness.js-based test.
 PASS "transform: initial;" should parse as "initial" 
 PASS "transform: initial;" should be computed to "none" 
 PASS "transform: inherit;" should parse as "inherit" 

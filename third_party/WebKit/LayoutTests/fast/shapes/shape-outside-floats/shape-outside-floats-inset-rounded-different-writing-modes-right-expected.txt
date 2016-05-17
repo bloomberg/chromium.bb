@@ -1,17 +1,3 @@
-The block squares should wrap around the top of the blue shape. They should not overlap the shape.
-
-X
-X
-X
-X
-X
-X
-X
-X
-X
-X
-X
-X
 This is a testharness.js-based test.
 PASS 1st square doesn't overlap shape. 
 FAIL 2nd square is properly affected by shape. assert_approx_equals: expected 97 +/- 0.5 but got 97.6875

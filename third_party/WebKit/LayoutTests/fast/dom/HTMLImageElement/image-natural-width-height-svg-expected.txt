@@ -1,4 +1,3 @@
-
 This is a testharness.js-based test.
 PASS naturalWidth/Height of SVG in <img>, width/height in pixels 
 FAIL naturalWidth/Height of SVG in <img>, width in pixels; height unspecified assert_equals: expected "500x0" but got "500x150"

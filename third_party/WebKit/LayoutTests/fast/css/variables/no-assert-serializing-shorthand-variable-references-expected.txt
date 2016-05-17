@@ -1,5 +1,0 @@
-:root { --bgcolor: green; background: 10px var(--bgcolor); }
-This is a testharness.js-based test.
-PASS shorthand variable references can be serialized 
-Harness: the test ran to completion.
-

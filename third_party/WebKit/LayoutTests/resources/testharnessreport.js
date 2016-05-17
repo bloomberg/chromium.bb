@@ -107,12 +107,11 @@
 
         function done() {
             if (self.testRunner) {
-                var logDiv = document.getElementById('log');
-                if ((isCSSWGTest() || isJSTest()) && logDiv) {
-                    // Assume it's a CSSWG style test, and anything other than
-                    // the log div isn't material to the testrunner output, so
+                if (isCSSWGTest() || isJSTest()) {
+                    // Anything isn't material to the testrunner output, so
                     // should be hidden from the text dump.
-                    document.body.textContent = '';
+                    if (document.body)
+                        document.body.textContent = '';
                 }
             }
 

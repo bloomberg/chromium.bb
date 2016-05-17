@@ -800,7 +800,8 @@ global object
     setter onnotificationclose
     setter onpush
     setter onsync
-This is a testharness.js-based test.
-PASS Verify the interface of ServiceWorkerGlobalScope 
-Harness: the test ran to completion.
+PASS Verify the interface of ServiceWorkerGlobalScope
+PASS successfullyParsed is true
+
+TEST COMPLETE
 
