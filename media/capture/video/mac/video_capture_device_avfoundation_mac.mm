@@ -38,7 +38,18 @@ enum MacBookVersions {
   MACBOOK_AIR_6,
   MACBOOK_AIR_7,
   MACBOOK_AIR_8,
-  MAX_MACBOOK_VERSION = MACBOOK_AIR_8
+  MACBOOK_AIR_3,
+  MACBOOK_AIR_4,
+  MACBOOK_4,
+  MACBOOK_9,
+  MACBOOK_10,
+  MACBOOK_PRO_10,
+  MACBOOK_PRO_9,
+  MACBOOK_PRO_8,
+  MACBOOK_PRO_7,
+  MACBOOK_PRO_6,
+  MACBOOK_PRO_5,
+  MAX_MACBOOK_VERSION = MACBOOK_PRO_5
 };
 
 MacBookVersions GetMacBookModel(const std::string& model) {
@@ -46,12 +57,17 @@ MacBookVersions GetMacBookModel(const std::string& model) {
     const char* name;
     MacBookVersions version;
   } static const kModelToVersion[] = {
-      {"MacBook5,", MACBOOK_5},          {"MacBook6,", MACBOOK_6},
-      {"MacBook7,", MACBOOK_7},          {"MacBook8,", MACBOOK_8},
-      {"MacBookPro11,", MACBOOK_PRO_11}, {"MacBookPro12,", MACBOOK_PRO_12},
-      {"MacBookPro13,", MACBOOK_PRO_13}, {"MacBookAir5,", MACBOOK_AIR_5},
-      {"MacBookAir6,", MACBOOK_AIR_6},   {"MacBookAir7,", MACBOOK_AIR_7},
-      {"MacBookAir8,", MACBOOK_AIR_8},
+      {"MacBook4,", MACBOOK_4},          {"MacBook5,", MACBOOK_5},
+      {"MacBook6,", MACBOOK_6},          {"MacBook7,", MACBOOK_7},
+      {"MacBook8,", MACBOOK_8},          {"MacBook9,", MACBOOK_9},
+      {"MacBook10,", MACBOOK_10},        {"MacBookPro5,", MACBOOK_PRO_5},
+      {"MacBookPro6,", MACBOOK_PRO_6},   {"MacBookPro7,", MACBOOK_PRO_7},
+      {"MacBookPro8,", MACBOOK_PRO_8},   {"MacBookPro9,", MACBOOK_PRO_9},
+      {"MacBookPro10,", MACBOOK_PRO_10}, {"MacBookPro11,", MACBOOK_PRO_11},
+      {"MacBookPro12,", MACBOOK_PRO_12}, {"MacBookPro13,", MACBOOK_PRO_13},
+      {"MacBookAir3,", MACBOOK_AIR_3},   {"MacBookAir4,", MACBOOK_AIR_4},
+      {"MacBookAir5,", MACBOOK_AIR_5},   {"MacBookAir6,", MACBOOK_AIR_6},
+      {"MacBookAir7,", MACBOOK_AIR_7},   {"MacBookAir8,", MACBOOK_AIR_8},
   };
 
   for (const auto& entry : kModelToVersion) {

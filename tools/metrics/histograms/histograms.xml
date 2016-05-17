@@ -78219,6 +78219,17 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="9" label="MacBookAir6,X"/>
   <int value="10" label="MacBookAir7,X"/>
   <int value="11" label="MacBookAir8,X"/>
+  <int value="12" label="MacBookAir3,X"/>
+  <int value="13" label="MacBookAir4,X"/>
+  <int value="14" label="MacBook4,X"/>
+  <int value="15" label="MacBook9,X"/>
+  <int value="16" label="MacBook10,X"/>
+  <int value="17" label="MacBookPro10,X"/>
+  <int value="18" label="MacBookPro9,X"/>
+  <int value="19" label="MacBookPro8,X"/>
+  <int value="20" label="MacBookPro7,X"/>
+  <int value="21" label="MacBookPro6,X"/>
+  <int value="22" label="MacBookPro5,X"/>
 </enum>
 
 <enum name="MainFrameStorable" type="int">
