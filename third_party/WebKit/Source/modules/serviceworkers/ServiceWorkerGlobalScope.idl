@@ -40,8 +40,6 @@
 
   [CallWith=ScriptState, RaisesException] Promise<Response> fetch(RequestInfo input, optional Dictionary init);
 
-  [RaisesException] void close();
-
   [CallWith=ScriptState] Promise<void> skipWaiting();
 
   attribute EventHandler onactivate;

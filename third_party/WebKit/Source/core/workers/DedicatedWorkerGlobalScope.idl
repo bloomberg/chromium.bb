@@ -35,5 +35,8 @@
     Exposed=DedicatedWorker,
 ] interface DedicatedWorkerGlobalScope : WorkerGlobalScope {
     [PostMessage, RaisesException] void postMessage(any message, optional sequence<Transferable> transfer);
+
+    void close();
+
     attribute EventHandler onmessage;
 };

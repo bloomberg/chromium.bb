@@ -124,11 +124,6 @@ ServiceWorkerRegistration* ServiceWorkerGlobalScope::registration()
     return m_registration;
 }
 
-void ServiceWorkerGlobalScope::close(ExceptionState& exceptionState)
-{
-    exceptionState.throwDOMException(InvalidAccessError, "Not supported.");
-}
-
 ScriptPromise ServiceWorkerGlobalScope::skipWaiting(ScriptState* scriptState)
 {
     ExecutionContext* executionContext = scriptState->getExecutionContext();

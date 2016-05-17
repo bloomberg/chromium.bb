@@ -244,8 +244,9 @@ void ServiceWorkerGlobalScopeProxy::workerGlobalScopeStarted(WorkerGlobalScope* 
 
 void ServiceWorkerGlobalScopeProxy::workerGlobalScopeClosed()
 {
-    DCHECK(m_embeddedWorker);
-    document().postTask(BLINK_FROM_HERE, createCrossThreadTask(&WebEmbeddedWorkerImpl::terminateWorkerContext, AllowCrossThreadAccess(m_embeddedWorker)));
+    // This should never be called because close() is not defined in
+    // ServiceWorkerGlobalScope.
+    NOTREACHED();
 }
 
 void ServiceWorkerGlobalScopeProxy::willDestroyWorkerGlobalScope()

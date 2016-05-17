@@ -638,7 +638,6 @@ interface WorkerGlobalScope : EventTarget
     method btoa
     method clearInterval
     method clearTimeout
-    method close
     method constructor
     method createImageBitmap
     method fetch
@@ -788,7 +787,6 @@ global object
     getter onpush
     getter onsync
     getter registration
-    method close
     method fetch
     method gc
     method skipWaiting

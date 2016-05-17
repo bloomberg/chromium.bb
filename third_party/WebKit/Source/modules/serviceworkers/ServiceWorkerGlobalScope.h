@@ -69,8 +69,6 @@ public:
 
     ScriptPromise fetch(ScriptState*, const RequestInfo&, const Dictionary&, ExceptionState&);
 
-    void close(ExceptionState&);
-
     ScriptPromise skipWaiting(ScriptState*);
 
     void setRegistration(std::unique_ptr<WebServiceWorkerRegistration::Handle>);

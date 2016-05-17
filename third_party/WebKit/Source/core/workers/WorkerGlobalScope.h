@@ -125,7 +125,11 @@ public:
 
     WorkerInspectorController* workerInspectorController() { return m_workerInspectorController.get(); }
 
-    bool isClosing() { return m_closing; }
+    // Returns true when the WorkerGlobalScope is closing (e.g. via close()
+    // method). If this returns true, the worker is going to be shutdown after
+    // the current task execution. Workers that don't support close operation
+    // should always return false.
+    bool isClosing() const { return m_closing; }
 
     double timeOrigin() const { return m_timeOrigin; }
 

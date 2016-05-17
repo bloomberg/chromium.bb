@@ -8,7 +8,6 @@ test(function() {
                      self,
                      {
                        clients: 'object',
-                       close: 'function',
                        registration: 'object',
                        skipWaiting: 'function',
 

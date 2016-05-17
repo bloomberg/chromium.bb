@@ -645,7 +645,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method btoa
 [Worker]     method clearInterval
 [Worker]     method clearTimeout
-[Worker]     method close
 [Worker]     method constructor
 [Worker]     method createImageBitmap
 [Worker]     method fetch
@@ -848,6 +847,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter caches
 [Worker]     getter name
 [Worker]     getter onconnect
+[Worker]     method close
 [Worker]     method gc
 [Worker]     method webkitRequestFileSystem
 [Worker]     method webkitRequestFileSystemSync

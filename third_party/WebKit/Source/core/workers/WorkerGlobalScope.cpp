@@ -159,7 +159,8 @@ WorkerLocation* WorkerGlobalScope::location() const
 
 void WorkerGlobalScope::close()
 {
-    // Let current script run to completion, but tell the worker micro task runner to tear down the thread after this task.
+    // Let current script run to completion, but tell the worker micro task
+    // runner to tear down the thread after this task.
     m_closing = true;
 }
 

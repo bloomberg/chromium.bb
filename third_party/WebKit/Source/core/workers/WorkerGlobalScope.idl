@@ -32,7 +32,6 @@
     readonly attribute WorkerGlobalScope self;
     readonly attribute WorkerLocation location;
 
-    void close();
     // TODO(philipj): onerror should be an OnErrorEventHandler.
     attribute EventHandler onerror;
     // attribute EventHandler onlanguagechange;

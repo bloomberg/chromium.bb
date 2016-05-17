@@ -36,5 +36,8 @@
 ] interface SharedWorkerGlobalScope : WorkerGlobalScope {
     readonly attribute DOMString name;
     // TODO(philipj): readonly attribute ApplicationCache applicationCache;
+
+    void close();
+
     attribute EventHandler onconnect;
 };
