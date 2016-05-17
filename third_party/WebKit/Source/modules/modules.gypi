@@ -1318,6 +1318,8 @@
       'notifications/NotificationEvent.h',
       'notifications/NotificationImageLoader.cpp',
       'notifications/NotificationImageLoader.h',
+      'notifications/NotificationManager.cpp',
+      'notifications/NotificationManager.h',
       'notifications/NotificationPermissionCallback.h',
       'notifications/NotificationPermissionClient.cpp',
       'notifications/NotificationPermissionClient.h',
