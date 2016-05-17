@@ -103,7 +103,7 @@ void Platform::initialize(Platform* platform)
         ASSERT(!s_gcTaskRunner);
         s_gcTaskRunner = new GCTaskRunner(s_platform->m_mainThread);
         base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(PartitionAllocMemoryDumpProvider::instance(), "PartitionAlloc", base::ThreadTaskRunnerHandle::Get());
-        s_platform->registerMemoryDumpProvider(FontCacheMemoryDumpProvider::instance(), "FontCaches");
+        base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(FontCacheMemoryDumpProvider::instance(), "FontCaches", base::ThreadTaskRunnerHandle::Get());
     }
 
     CompositorFactory::initializeDefault();
@@ -115,7 +115,7 @@ void Platform::shutdown()
     CompositorFactory::shutdown();
 
     if (s_platform->m_mainThread) {
-        s_platform->unregisterMemoryDumpProvider(FontCacheMemoryDumpProvider::instance());
+        base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(FontCacheMemoryDumpProvider::instance());
         base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(PartitionAllocMemoryDumpProvider::instance());
         base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(BlinkGCMemoryDumpProvider::instance());
 

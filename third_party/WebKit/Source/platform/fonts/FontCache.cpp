@@ -29,8 +29,8 @@
 
 #include "platform/fonts/FontCache.h"
 
+#include "base/trace_event/process_memory_dump.h"
 #include "platform/FontFamilyNames.h"
-
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/AcceptLanguagesResolver.h"
@@ -342,26 +342,24 @@ void FontCache::invalidate()
     purge(ForcePurge);
 }
 
-void FontCache::dumpFontPlatformDataCache(WebProcessMemoryDump* memoryDump)
+void FontCache::dumpFontPlatformDataCache(base::trace_event::ProcessMemoryDump* memoryDump)
 {
     ASSERT(isMainThread());
     if (!gFontPlatformDataCache)
         return;
-    String dumpName = String("font_caches/font_platform_data_cache");
-    WebMemoryAllocatorDump* dump = memoryDump->createMemoryAllocatorDump(dumpName);
+    base::trace_event::MemoryAllocatorDump* dump = memoryDump->CreateAllocatorDump("font_caches/font_platform_data_cache");
     size_t fontPlatformDataObjectsSize = gFontPlatformDataCache->size() * sizeof(FontPlatformData);
-    dump->addScalar("size", "bytes", fontPlatformDataObjectsSize);
-    memoryDump->addSuballocation(dump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
+    dump->AddScalar("size", "bytes", fontPlatformDataObjectsSize);
+    memoryDump->AddSuballocation(dump->guid(), WTF::Partitions::kAllocatedObjectPoolName);
 }
 
-void FontCache::dumpShapeResultCache(WebProcessMemoryDump* memoryDump)
+void FontCache::dumpShapeResultCache(base::trace_event::ProcessMemoryDump* memoryDump)
 {
     ASSERT(isMainThread());
     if (!gFallbackListShaperCache) {
         return;
     }
-    String dumpName = String("font_caches/shape_caches");
-    WebMemoryAllocatorDump* dump = memoryDump->createMemoryAllocatorDump(dumpName);
+    base::trace_event::MemoryAllocatorDump* dump = memoryDump->CreateAllocatorDump("font_caches/shape_caches");
     size_t shapeResultCacheSize = 0;
     FallbackListShaperCache::iterator iter;
     for (iter = gFallbackListShaperCache->begin();
@@ -369,8 +367,8 @@ void FontCache::dumpShapeResultCache(WebProcessMemoryDump* memoryDump)
         ++iter) {
         shapeResultCacheSize += iter->value->byteSize();
     }
-    dump->addScalar("size", "bytes", shapeResultCacheSize);
-    memoryDump->addSuballocation(dump->guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
+    dump->AddScalar("size", "bytes", shapeResultCacheSize);
+    memoryDump->AddSuballocation(dump->guid(), WTF::Partitions::kAllocatedObjectPoolName);
 }
 
 // SkFontMgr requires script-based locale names, like "zh-Hant" and "zh-Hans",
