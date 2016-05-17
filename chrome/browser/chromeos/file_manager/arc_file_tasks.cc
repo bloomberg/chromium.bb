@@ -11,9 +11,11 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/user_manager/user_manager.h"
@@ -21,6 +23,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/filename_util.h"
 #include "storage/browser/fileapi/file_system_url.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 namespace file_manager {
@@ -114,10 +117,16 @@ void OnArcHandlerList(
     mojo::Array<arc::mojom::UrlHandlerInfoPtr> handlers) {
   for (const arc::mojom::UrlHandlerInfoPtr& handler : handlers) {
     // TODO(crbug.com/578725): Wire action to "verb" once it's implemented.
+    std::string name(handler->name);
+    if (handler->action == arc::mojom::ActionType::SEND ||
+        handler->action == arc::mojom::ActionType::SEND_MULTIPLE) {
+      name = l10n_util::GetStringFUTF8(IDS_FILE_BROWSER_SHARE_WITH_ACTION_LABEL,
+                                       base::UTF8ToUTF16(name));
+    }
     result_list->push_back(FullTaskDescriptor(
         TaskDescriptor(handler->package_name, TASK_TYPE_ARC_APP,
                        ArcActionToString(handler->action)),
-        handler->name,
+        name,
         GURL(""),                                        // TODO: get the icon
         false,                                           // is_default,
         handler->action != arc::mojom::ActionType::VIEW  // is_generic
