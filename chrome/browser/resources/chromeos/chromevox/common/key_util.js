@@ -471,7 +471,7 @@ cvox.KeyUtil.keySequenceToString = function(
 
   if (keySequence.cvoxModifier || keySequence.prefixKey) {
     if (str != '') {
-      str = 'Cvox+' + str;
+      str = 'ChromeVox+' + str;
     } else {
       str = 'Cvox';
     }
