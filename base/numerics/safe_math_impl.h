@@ -201,7 +201,8 @@ typename std::enable_if<std::numeric_limits<T>::is_integer &&
 CheckedMul(T x, T y, RangeConstraint* validity) {
   // If either side is zero then the result will be zero.
   if (!x || !y) {
-    return RANGE_VALID;
+    *validity = RANGE_VALID;
+    return static_cast<T>(0);
 
   } else if (x > 0) {
     if (y > 0)
