@@ -75,6 +75,12 @@ struct CONTENT_EXPORT DropData {
   std::string file_contents;
 
   std::map<base::string16, base::string16> custom_data;
+
+  // The key-modifiers present for this update, included here so BrowserPlugin
+  // can forward them to the guest renderer.
+  // TODO(wjmaclean): This can probably be removed when BrowserPlugin goes
+  // away, https://crbug.com/533069.
+  int key_modifiers;
 };
 
 }  // namespace content

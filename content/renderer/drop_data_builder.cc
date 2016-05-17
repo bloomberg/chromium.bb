@@ -23,6 +23,7 @@ namespace content {
 // static
 DropData DropDataBuilder::Build(const WebDragData& drag_data) {
   DropData result;
+  result.key_modifiers = drag_data.modifierKeyState();
   result.referrer_policy = blink::WebReferrerPolicyDefault;
 
   const WebVector<WebDragData::Item>& item_list = drag_data.items();

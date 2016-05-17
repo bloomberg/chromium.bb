@@ -305,6 +305,7 @@ WebDragData DataObject::toWebDragData()
 {
     WebDragData data;
     data.initialize();
+    data.setModifierKeyState(m_modifiers);
     WebVector<WebDragData::Item> itemList(length());
 
     for (size_t i = 0; i < length(); ++i) {

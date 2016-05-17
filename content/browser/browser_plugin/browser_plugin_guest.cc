@@ -805,17 +805,19 @@ void BrowserPluginGuest::OnDragStatusUpdate(int browser_plugin_instance_id,
       // coming from the guest.
       if (!embedder->DragEnteredGuest(this))
         dragged_url_ = drop_data.url;
-      host->DragTargetDragEnter(drop_data, location, location, mask, 0);
+      host->DragTargetDragEnter(drop_data, location, location, mask,
+                                drop_data.key_modifiers);
       break;
     case blink::WebDragStatusOver:
-      host->DragTargetDragOver(location, location, mask, 0);
+      host->DragTargetDragOver(location, location, mask,
+                               drop_data.key_modifiers);
       break;
     case blink::WebDragStatusLeave:
       embedder->DragLeftGuest(this);
       host->DragTargetDragLeave();
       break;
     case blink::WebDragStatusDrop:
-      host->DragTargetDrop(location, location, 0);
+      host->DragTargetDrop(location, location, drop_data.key_modifiers);
       if (dragged_url_.is_valid()) {
         delegate_->DidDropLink(dragged_url_);
         dragged_url_ = GURL();

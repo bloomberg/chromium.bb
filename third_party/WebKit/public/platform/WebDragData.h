@@ -137,6 +137,16 @@ public:
         m_filesystemId = filesystemId;
     }
 
+    int modifierKeyState() const
+    {
+        return m_modifierKeyState;
+    }
+
+    void setModifierKeyState(int state)
+    {
+        m_modifierKeyState = state;
+    }
+
 private:
     bool m_valid;
     WebVector<Item> m_itemList;
