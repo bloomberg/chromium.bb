@@ -56,75 +56,46 @@ void NavigationObserver::Wait() {
   message_loop_runner_->Run();
 }
 
-PromptObserver::PromptObserver() {
-}
-PromptObserver::~PromptObserver() {
+BubbleObserver::BubbleObserver(content::WebContents* web_contents)
+    : passwords_model_delegate_(
+          PasswordsModelDelegateFromWebContents(web_contents)) {}
+
+bool BubbleObserver::IsSaveShowingPrompt() const {
+  return passwords_model_delegate_->GetState() ==
+      password_manager::ui::PENDING_PASSWORD_STATE;
 }
 
-bool PromptObserver::IsShowingUpdatePrompt() const {
-  // TODO(dvadym): Make this method pure virtual as soon as update UI is
-  // implemented for infobar. http://crbug.com/359315
-  return false;
+bool BubbleObserver::IsShowingUpdatePrompt() const {
+  return passwords_model_delegate_->GetState() ==
+      password_manager::ui::PENDING_PASSWORD_UPDATE_STATE;
 }
 
-void PromptObserver::Accept() const {
-  ASSERT_TRUE(IsShowingPrompt());
-  AcceptImpl();
+void BubbleObserver::Dismiss() const  {
+  passwords_model_delegate_->OnBubbleHidden();
+  // Navigate away to reset the state to inactive.
+  static_cast<content::WebContentsObserver*>(
+      static_cast<ManagePasswordsUIController*>(passwords_model_delegate_))
+                ->DidNavigateMainFrame(content::LoadCommittedDetails(),
+                                       content::FrameNavigateParams());
+  ASSERT_EQ(password_manager::ui::INACTIVE_STATE,
+            passwords_model_delegate_->GetState());
 }
 
-void PromptObserver::AcceptUpdatePrompt(
+void BubbleObserver::AcceptSavePrompt() const {
+  ASSERT_TRUE(IsSaveShowingPrompt());
+  passwords_model_delegate_->SavePassword();
+  EXPECT_FALSE(IsSaveShowingPrompt());
+}
+
+void BubbleObserver::AcceptUpdatePrompt(
     const autofill::PasswordForm& form) const {
-  EXPECT_TRUE(IsShowingUpdatePrompt());
-  AcceptUpdatePromptImpl(form);
+  ASSERT_TRUE(IsShowingUpdatePrompt());
+  passwords_model_delegate_->UpdatePassword(form);
+  EXPECT_FALSE(IsShowingUpdatePrompt());
 }
 
-class BubbleObserver : public PromptObserver {
- public:
-  explicit BubbleObserver(content::WebContents* web_contents)
-      : passwords_model_delegate_(
-            PasswordsModelDelegateFromWebContents(web_contents)) {}
-
-  ~BubbleObserver() override {}
-
-  void Dismiss() const override {
-    passwords_model_delegate_->OnBubbleHidden();
-    // Navigate away to reset the state to inactive.
-    static_cast<content::WebContentsObserver*>(
-        static_cast<ManagePasswordsUIController*>(passwords_model_delegate_))
-            ->DidNavigateMainFrame(content::LoadCommittedDetails(),
-                                   content::FrameNavigateParams());
-    ASSERT_EQ(password_manager::ui::INACTIVE_STATE,
-              passwords_model_delegate_->GetState());
-  }
-
- private:
-  // PromptObserver:
-  bool IsShowingPrompt() const override {
-    return passwords_model_delegate_->GetState() ==
-           password_manager::ui::PENDING_PASSWORD_STATE;
-  }
-
-  bool IsShowingUpdatePrompt() const override {
-    return passwords_model_delegate_->GetState() ==
-           password_manager::ui::PENDING_PASSWORD_UPDATE_STATE;
-  }
-
-  void AcceptImpl() const override {
-    passwords_model_delegate_->SavePassword();
-    EXPECT_FALSE(IsShowingPrompt());
-  }
-
-  void AcceptUpdatePromptImpl(
-      const autofill::PasswordForm& form) const override {
-    passwords_model_delegate_->UpdatePassword(form);
-    EXPECT_FALSE(IsShowingUpdatePrompt());
-  }
-  PasswordsModelDelegate* const passwords_model_delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(BubbleObserver);
-};
-
-std::unique_ptr<PromptObserver> PromptObserver::Create(
+// static
+std::unique_ptr<BubbleObserver> BubbleObserver::Create(
     content::WebContents* web_contents) {
   return base::WrapUnique(new BubbleObserver(web_contents));
 }
@@ -182,12 +153,12 @@ void PasswordManagerBrowserTestBase::VerifyPasswordIsSavedAndFilled(
   NavigateToFile(filename);
 
   NavigationObserver observer(WebContents());
-  std::unique_ptr<PromptObserver> prompt_observer(
-      PromptObserver::Create(WebContents()));
+  std::unique_ptr<BubbleObserver> prompt_observer(
+      BubbleObserver::Create(WebContents()));
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submission_script));
   observer.Wait();
 
-  prompt_observer->Accept();
+  prompt_observer->AcceptSavePrompt();
 
   // Spin the message loop to make sure the password store had a chance to save
   // the password.

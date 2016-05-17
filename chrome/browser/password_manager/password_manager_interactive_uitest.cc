@@ -45,16 +45,16 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, UsernameChanged) {
   NavigateToFile("/password/signup_form.html");
 
   NavigationObserver observer(WebContents());
-  std::unique_ptr<PromptObserver> prompt_observer(
-      PromptObserver::Create(WebContents()));
+  std::unique_ptr<BubbleObserver> prompt_observer(
+      BubbleObserver::Create(WebContents()));
   std::string fill_and_submit =
       "document.getElementById('username_field').value = 'temp';"
       "document.getElementById('password_field').value = 'random';"
       "document.getElementById('input_submit_button').click()";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
-  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
-  prompt_observer->Accept();
+  EXPECT_TRUE(prompt_observer->IsSaveShowingPrompt());
+  prompt_observer->AcceptSavePrompt();
 
   // Spin the message loop to make sure the password store had a chance to save
   // the password.
@@ -84,14 +84,14 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, UsernameChanged) {
   WaitForElementValue("username_field", "tempORARY");
 
   NavigationObserver second_observer(WebContents());
-  std::unique_ptr<PromptObserver> second_prompt_observer(
-      PromptObserver::Create(WebContents()));
+  std::unique_ptr<BubbleObserver> second_prompt_observer(
+      BubbleObserver::Create(WebContents()));
   std::string submit =
       "document.getElementById('input_submit_button').click();";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submit));
   second_observer.Wait();
-  EXPECT_TRUE(second_prompt_observer->IsShowingPrompt());
-  second_prompt_observer->Accept();
+  EXPECT_TRUE(second_prompt_observer->IsSaveShowingPrompt());
+  second_prompt_observer->AcceptSavePrompt();
 
   // Spin the message loop to make sure the password store had a chance to save
   // the password.

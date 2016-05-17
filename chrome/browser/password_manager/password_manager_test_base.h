@@ -16,6 +16,8 @@ namespace autofill {
 struct PasswordForm;
 }
 
+class PasswordsModelDelegate;
+
 class NavigationObserver : public content::WebContentsObserver {
  public:
   explicit NavigationObserver(content::WebContents* web_contents);
@@ -53,26 +55,26 @@ class NavigationObserver : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(NavigationObserver);
 };
 
-// Observes the save password prompt (bubble or infobar) for a specified
-// WebContents, keeps track of whether or not it is currently shown, and allows
-// accepting saving passwords through it.
-class PromptObserver {
+// Observes the save password prompt for a specified WebContents, keeps track of
+// whether or not it is currently shown, and allows accepting saving passwords
+// through it.
+class BubbleObserver {
  public:
-  virtual ~PromptObserver();
+  explicit BubbleObserver(content::WebContents* web_contents);
 
   // Checks if the save prompt is being currently shown.
-  virtual bool IsShowingPrompt() const = 0;
+  bool IsSaveShowingPrompt() const;
 
   // Checks if the update prompt is being currently shown.
-  virtual bool IsShowingUpdatePrompt() const;
+  bool IsShowingUpdatePrompt() const;
 
   // Dismisses the prompt currently open and moves the controller to the
   // inactive state.
-  virtual void Dismiss() const = 0;
+  void Dismiss() const;
 
   // Expecting that the prompt is shown, saves the password. Checks that the
   // prompt is no longer visible afterwards.
-  void Accept() const;
+  void AcceptSavePrompt() const;
 
   // Expecting that the prompt is shown, update |form| with the password from
   // observed form. Checks that the prompt is no longer visible afterwards.
@@ -80,27 +82,13 @@ class PromptObserver {
 
   // Chooses the right implementation of PromptObserver and creates an instance
   // of it.
-  static std::unique_ptr<PromptObserver> Create(
+  static std::unique_ptr<BubbleObserver> Create(
       content::WebContents* web_contents);
 
- protected:
-  PromptObserver();
-
-  // Accepts the password. The implementation can assume that the prompt is
-  // currently shown, but is required to verify that the prompt is eventually
-  // closed.
-  virtual void AcceptImpl() const = 0;
-
-  // Accepts the password update. The implementation can assume that the prompt
-  // is currently shown, but is required to verify that the prompt is eventually
-  // closed.
-  // TODO(dvadym): Make this method pure virtual as soon as update UI is
-  // implemented for infobar. http://crbug.com/359315
-  virtual void AcceptUpdatePromptImpl(
-      const autofill::PasswordForm& form) const {}
-
  private:
-  DISALLOW_COPY_AND_ASSIGN(PromptObserver);
+  PasswordsModelDelegate* const passwords_model_delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(BubbleObserver);
 };
 
 class PasswordManagerBrowserTestBase : public InProcessBrowserTest {
