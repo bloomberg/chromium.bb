@@ -278,15 +278,11 @@ class WidgetTestInteractive : public WidgetTest {
   ~WidgetTestInteractive() override {}
 
   void SetUp() override {
-    // On mus these tests run as part of views::ViewTestSuite which already does
-    // this initialization.
-    if (!IsMus()) {
-      gfx::GLSurfaceTestSupport::InitializeOneOff();
-      ui::RegisterPathProvider();
-      base::FilePath ui_test_pak_path;
-      ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
-      ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
-    }
+    gfx::GLSurfaceTestSupport::InitializeOneOff();
+    ui::RegisterPathProvider();
+    base::FilePath ui_test_pak_path;
+    ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
+    ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
     WidgetTest::SetUp();
   }
 
@@ -653,7 +649,7 @@ TEST_F(WidgetTestInteractive, ViewFocusOnWidgetActivationChanges) {
 TEST_F(WidgetTestInteractive, ViewFocusOnHWNDEnabledChanges) {
   Widget* widget = CreateTopLevelFramelessPlatformWidget();
   widget->SetContentsView(new View);
-  for (int i = 0; i < 2; ++i) {
+  for (size_t i = 0; i < 2; ++i) {
     widget->GetContentsView()->AddChildView(new View);
     widget->GetContentsView()->child_at(i)->SetFocusBehavior(
         View::FocusBehavior::ALWAYS);
@@ -881,10 +877,6 @@ class ModalDialogDelegate : public DialogDelegateView {
 // Tests whether the focused window is set correctly when a modal window is
 // created and destroyed. When it is destroyed it should focus the owner window.
 TEST_F(WidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
-  // Fails on mus due to focus issues. http://crbug.com/611601
-  if (IsMus())
-    return;
-
   TestWidgetFocusChangeListener focus_listener;
   WidgetFocusManager::GetInstance()->AddFocusChangeListener(&focus_listener);
   const std::vector<gfx::NativeView>& focus_changes =
@@ -956,10 +948,6 @@ TEST_F(WidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
 
 // Test that when opening a system-modal window, capture is released.
 TEST_F(WidgetTestInteractive, MAYBE_SystemModalWindowReleasesCapture) {
-  // Crashes on mus due to capture issue. http://crbug.com/611764
-  if (IsMus())
-    return;
-
   TestWidgetFocusChangeListener focus_listener;
   WidgetFocusManager::GetInstance()->AddFocusChangeListener(&focus_listener);
 
@@ -1020,11 +1008,6 @@ TEST_F(WidgetTestInteractive, CanActivateFlagIsHonored) {
 #if defined(USE_AURA)
 // Test that touch selection quick menu is not activated when opened.
 TEST_F(WidgetTestInteractive, TouchSelectionQuickMenuIsNotActivated) {
-  // Fails on mus because the USER_PRIVATE window container is not visible by
-  // default. See http://crbug.com/611601
-  if (IsMus())
-    return;
-
 #if defined(OS_WIN)
   views_delegate()->set_use_desktop_native_widgets(true);
 #endif  // !defined(OS_WIN)
@@ -1056,11 +1039,6 @@ TEST_F(WidgetTestInteractive, TouchSelectionQuickMenuIsNotActivated) {
 #endif  // defined(USE_AURA)
 
 TEST_F(WidgetTestInteractive, DisableViewDoesNotActivateWidget) {
-  // Fails on mus because the USER_PRIVATE window container is not visible by
-  // default. See http://crbug.com/611601
-  if (IsMus())
-    return;
-
 #if defined(OS_WIN)
   views_delegate()->set_use_desktop_native_widgets(true);
 #endif  // !defined(OS_WIN)
@@ -1307,15 +1285,11 @@ class WidgetCaptureTest : public ViewsTestBase {
   ~WidgetCaptureTest() override {}
 
   void SetUp() override {
-    // On mus these tests run as part of views::ViewTestSuite which already does
-    // this initialization.
-    if (!IsMus()) {
-      gfx::GLSurfaceTestSupport::InitializeOneOff();
-      ui::RegisterPathProvider();
-      base::FilePath ui_test_pak_path;
-      ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
-      ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
-    }
+    gfx::GLSurfaceTestSupport::InitializeOneOff();
+    ui::RegisterPathProvider();
+    base::FilePath ui_test_pak_path;
+    ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
+    ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
     ViewsTestBase::SetUp();
   }
 
@@ -1382,20 +1356,12 @@ TEST_F(WidgetCaptureTest, Capture) {
 #if !defined(OS_CHROMEOS)
 // See description in TestCapture(). Creates DesktopNativeWidget.
 TEST_F(WidgetCaptureTest, CaptureDesktopNativeWidget) {
-  // Fails on mus. http://crbug.com/611764
-  if (IsMus())
-    return;
-
   TestCapture(true);
 }
 #endif
 
 // Test that no state is set if capture fails.
 TEST_F(WidgetCaptureTest, FailedCaptureRequestIsNoop) {
-  // Fails on mus. http://crbug.com/611764
-  if (IsMus())
-    return;
-
   Widget widget;
   Widget::InitParams params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -1438,10 +1404,6 @@ TEST_F(WidgetCaptureTest, FailedCaptureRequestIsNoop) {
 // Test that a synthetic mouse exit is sent to the widget which was handling
 // mouse events when a different widget grabs capture.
 TEST_F(WidgetCaptureTest, MAYBE_MouseExitOnCaptureGrab) {
-  // Fails on mus. http://crbug.com/611764
-  if (IsMus())
-    return;
-
   Widget widget1;
   Widget::InitParams params1 =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -1697,10 +1659,6 @@ TEST_F(WidgetInputMethodInteractiveTest, OneWindow) {
 // Test input method focus changes affected by focus changes cross 2 windows
 // which shares the same top window.
 TEST_F(WidgetInputMethodInteractiveTest, TwoWindows) {
-  // Fails on mus. http://crbug.com/611766
-  if (IsMus())
-    return;
-
   Widget* parent = CreateWidget();
   parent->SetBounds(gfx::Rect(100, 100, 100, 100));
 

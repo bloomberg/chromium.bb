@@ -658,7 +658,6 @@ group("gn_only") {
       "//media/mojo/services:media_mojo_shell_unittests",
       "//mojo",
       "//services/navigation",
-      "//ui/views/mus:views_mus_interactive_ui_tests",
       "//ui/views/mus:views_mus_unittests",
     ]
   }

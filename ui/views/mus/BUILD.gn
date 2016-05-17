@@ -127,38 +127,6 @@ group("for_shared_library") {
   }
 }
 
-source_set("test_support") {
-  testonly = true
-
-  sources = [
-    "../run_all_unittests.cc",
-    "../run_all_unittests.h",
-    "../test/native_widget_factory_mus.cc",
-    "views_mus_test_suite.cc",
-    "views_mus_test_suite.h",
-  ]
-
-  deps = [
-    ":mus",
-    "//base",
-    "//base/test:test_support",
-    "//services/shell/background:lib",
-    "//services/shell/background/tests:test_support",
-    "//services/shell/public/cpp:sources",
-    "//testing/gtest",
-    "//ui/aura",
-    "//ui/gl:test_support",
-    "//ui/resources",
-    "//ui/resources:ui_test_pak",
-    "//ui/views",
-    "//ui/views:test_support_internal",
-  ]
-
-  data_deps = [
-    "//ui/resources:ui_test_pak_data",
-  ]
-}
-
 test("views_mus_unittests") {
   testonly = true
 
@@ -166,6 +134,9 @@ test("views_mus_unittests") {
 
   # TODO(sky): add more files.
   sources = [
+    "../run_all_unittests.cc",
+    "../run_all_unittests.h",
+    "../test/native_widget_factory_mus.cc",
     "../view_targeter_unittest.cc",
     "../widget/native_widget_unittest.cc",
     "../widget/widget_unittest.cc",
@@ -178,13 +149,17 @@ test("views_mus_unittests") {
 
   deps = [
     ":mus",
-    ":test_support",
     "//base",
     "//base:i18n",
+    "//base/test:test_support",
     "//cc",
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
-    "//services/shell/background:main",  # Provides main().
+    "//services/shell/background:lib",
+    "//services/shell/background:main",
+    "//services/shell/background/tests:test_support",
+    "//services/shell/public/cpp:sources",
+    "//services/shell/runner/host:lib",
     "//skia",
     "//testing/gtest",
     "//third_party/icu",
@@ -201,7 +176,11 @@ test("views_mus_unittests") {
     "//ui/events/platform",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
+    "//ui/gl:test_support",
+    "//ui/resources",
+    "//ui/resources:ui_test_pak",
     "//ui/strings",
+    "//ui/touch_selection",
     "//ui/views",
     "//ui/views:test_support_internal",
     "//ui/wm",
@@ -211,6 +190,12 @@ test("views_mus_unittests") {
   data_deps = [
     ":unittests_manifest",
     "//mash/wm",
+  ]
+
+  # TODO(thakis): This should be a data_deps on //ui/resources:ui_test_pak, but
+  # that has no effect.  (See similar TODOs elsewhere ui_test.pak is listed)
+  data = [
+    "$root_out_dir/ui_test.pak",
   ]
 
   if (is_win) {
@@ -239,64 +224,10 @@ test("views_mus_unittests") {
   }
 }
 
-# Tests that must run sequentially because they access system-wide features
-# like capture.
-test("views_mus_interactive_ui_tests") {
-  testonly = true
-
-  configs += [ "//build/config:precompiled_headers" ]
-
-  sources = [
-    "../widget/widget_interactive_uitest.cc",
-    "interactive_ui_tests_mus.cc",
-  ]
-
-  deps = [
-    ":mus",
-    ":test_support",
-    "//base",
-    "//services/shell/background:main",  # Provides main().
-    "//ui/aura",
-    "//ui/base",
-    "//ui/base/ime",
-    "//ui/events:events_base",
-    "//ui/events:test_support",
-    "//ui/gl:test_support",
-    "//ui/touch_selection",
-    "//ui/views",
-    "//ui/views:test_support_internal",
-    "//ui/wm",
-  ]
-
-  data_deps = [
-    ":interactive_ui_tests_manifest",
-    "//mash/wm",
-  ]
-
-  if (is_win) {
-    deps += [
-      "//build/win:default_exe_manifest",
-      "//third_party/iaccessible2",
-      "//third_party/wtl",
-    ]
-    libs = [
-      "imm32.lib",
-      "oleacc.lib",
-      "comctl32.lib",
-    ]
-  }
-}
-
 mojo_application_manifest("unittests_manifest") {
   type = "exe"
   application_name = "views_mus_unittests"
   source = "unittests_manifest.json"
-}
-
-mojo_application_manifest("interactive_ui_tests_manifest") {
-  type = "exe"
-  application_name = "views_mus_interactive_ui_tests"
-  source = "interactive_ui_tests_manifest.json"
 }
 
 group("for_component") {
