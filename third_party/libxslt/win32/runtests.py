@@ -8,7 +8,9 @@ from subprocess import Popen, PIPE
 
 xsltproc = path.join(os.getcwd(), "win32", "bin.msvc", "xsltproc.exe")
 if not path.isfile(xsltproc):
-    raise FileNotFoundError(xsltproc)
+    xsltproc = path.join(os.getcwd(), "win32", "bin.mingw", "xsltproc.exe")
+    if not path.isfile(xsltproc):
+        raise FileNotFoundError(xsltproc)
 
 def runtests(xsl_dir, xml_dir="."):
     old_dir = os.getcwd()
@@ -67,6 +69,9 @@ runtests("tests/exslt/functions")
 
 print("## Running exslt math tests")
 runtests("tests/exslt/math")
+
+print("## Running exslt saxon tests")
+runtests("tests/exslt/saxon")
 
 print("## Running exslt sets tests")
 runtests("tests/exslt/sets")

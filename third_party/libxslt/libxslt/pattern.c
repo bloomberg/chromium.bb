@@ -2104,7 +2104,7 @@ xsltAddTemplate(xsltStylesheetPtr style, xsltTemplatePtr cur,
             void *dup = xmlHashLookup2(style->namedTemplates, cur->name,
                                        cur->nameURI);
             if (dup != NULL) {
-                xsltTransformError(NULL, style, NULL,
+                xsltTransformError(NULL, style, cur->elem,
                                    "xsl:template: error duplicate name '%s'\n",
                                    cur->name);
                 style->errors++;

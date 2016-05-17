@@ -119,7 +119,7 @@ am__uninstall_files_from_dir = { \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(man3dir)" \
-	"$(DESTDIR)$(exsltincdir)"
+	"$(DESTDIR)$(exsltincdir)" "$(DESTDIR)$(exsltincdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libexslt_la_DEPENDENCIES = $(top_builddir)/libxslt/libxslt.la \
@@ -178,7 +178,7 @@ am__can_run_installinfo = \
 man3dir = $(mandir)/man3
 NROFF = nroff
 MANS = $(man_MANS)
-HEADERS = $(exsltinc_HEADERS)
+HEADERS = $(exsltinc_HEADERS) $(nodist_exsltinc_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
 # and print each of them once, without duplicates.  Input order is
@@ -199,14 +199,14 @@ am__define_uniq_tagged_files = \
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} /work/cb/src/third_party/libxslt/missing aclocal-1.14
+ACLOCAL = ${SHELL} /usr/local/google/work/cb/src/third_party/libxslt/missing aclocal-1.14
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 0
 AR = ar
 AS = as
-AUTOCONF = ${SHELL} /work/cb/src/third_party/libxslt/missing autoconf
-AUTOHEADER = ${SHELL} /work/cb/src/third_party/libxslt/missing autoheader
-AUTOMAKE = ${SHELL} /work/cb/src/third_party/libxslt/missing automake-1.14
+AUTOCONF = ${SHELL} /usr/local/google/work/cb/src/third_party/libxslt/missing autoconf
+AUTOHEADER = ${SHELL} /usr/local/google/work/cb/src/third_party/libxslt/missing autoheader
+AUTOMAKE = ${SHELL} /usr/local/google/work/cb/src/third_party/libxslt/missing automake-1.14
 AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
@@ -227,7 +227,7 @@ EGREP = /bin/grep -E
 EXEEXT = 
 EXSLT_INCLUDEDIR = -I${includedir}
 EXSLT_LIBDIR = -L${libdir}
-EXSLT_LIBS = -lexslt -lxslt -L/work/cb/src/third_party/libxml/linux -L/usr/local/lib -lxml2 -lz -lm -ldl -lm -lgcrypt
+EXSLT_LIBS = -lexslt -lxslt -L/usr/local/google/work/cb/src/third_party/libxml/linux -L/usr/local/lib -lxml2 -lz -lm -ldl -lm -lgcrypt
 EXTRA_LIBS = 
 FGREP = /bin/grep -F
 GREP = /bin/grep
@@ -252,8 +252,8 @@ LIBGCRYPT_LIBS = -lgcrypt
 LIBOBJS = 
 LIBS = 
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
-LIBXML_CFLAGS = -I/work/cb/src/third_party/libxml/linux/include
-LIBXML_LIBS = -L/work/cb/src/third_party/libxml/linux -L/usr/local/lib -lxml2 -lz -lm -ldl
+LIBXML_CFLAGS = -I/usr/local/google/work/cb/src/third_party/libxml/linux/include
+LIBXML_LIBS = -L/usr/local/google/work/cb/src/third_party/libxml/linux -L/usr/local/lib -lxml2 -lz -lm -ldl
 LIBXML_REQUIRED_VERSION = 2.6.27
 LIBXML_SRC = ../../libxml/linux/
 LIBXSLT_DEFAULT_PLUGINS_PATH = /usr/local/lib/libxslt-plugins
@@ -268,7 +268,7 @@ LIBXSLT_VERSION_NUMBER = 10128
 LIPO = 
 LN_S = ln -s
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /work/cb/src/third_party/libxslt/missing makeinfo
+MAKEINFO = ${SHELL} /usr/local/google/work/cb/src/third_party/libxslt/missing makeinfo
 MANIFEST_TOOL = :
 MKDIR_P = /bin/mkdir -p
 MV = /bin/mv
@@ -296,7 +296,7 @@ PYTHON_SITE_PACKAGES = /usr/lib/python2.7/dist-packages
 PYTHON_SUBDIR = python
 PYTHON_VERSION = 2.7
 RANLIB = ranlib
-RELDATE = Sat Apr  2 2016
+RELDATE = Sat May 14 2016
 RM = /bin/rm
 SED = /bin/sed
 SET_MAKE = 
@@ -315,18 +315,18 @@ WITH_MODULES = 0
 WITH_TRIO = 0
 WITH_XSLT_DEBUG = 0
 XMLLINT = /usr/bin/xmllint
-XML_CONFIG = /work/cb/src/third_party/libxml/linux/xml2-config
+XML_CONFIG = /usr/local/google/work/cb/src/third_party/libxml/linux/xml2-config
 XSLTPROC = /usr/bin/xsltproc
 XSLTPROCDV = 
 XSLT_INCLUDEDIR = -I${includedir}
 XSLT_LIBDIR = -L${libdir}
-XSLT_LIBS = -lxslt -L/work/cb/src/third_party/libxml/linux -L/usr/local/lib -lxml2 -lz -lm -ldl -lm
+XSLT_LIBS = -lxslt -L/usr/local/google/work/cb/src/third_party/libxml/linux -L/usr/local/lib -lxml2 -lz -lm -ldl -lm
 XSLT_LOCALE_WINAPI = 0
 XSLT_LOCALE_XLOCALE = 1
-abs_builddir = /work/cb/src/third_party/libxslt/linux/libexslt
-abs_srcdir = /work/cb/src/third_party/libxslt/linux/../libexslt
-abs_top_builddir = /work/cb/src/third_party/libxslt/linux
-abs_top_srcdir = /work/cb/src/third_party/libxslt/linux/..
+abs_builddir = /usr/local/google/work/cb/src/third_party/libxslt/linux/libexslt
+abs_srcdir = /usr/local/google/work/cb/src/third_party/libxslt/linux/../libexslt
+abs_top_builddir = /usr/local/google/work/cb/src/third_party/libxslt/linux
+abs_top_srcdir = /usr/local/google/work/cb/src/third_party/libxslt/linux/..
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_DUMPBIN = 
@@ -355,7 +355,7 @@ host_vendor = unknown
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /work/cb/src/third_party/libxslt/install-sh
+install_sh = ${SHELL} /usr/local/google/work/cb/src/third_party/libxslt/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -385,8 +385,10 @@ lib_LTLIBRARIES = libexslt.la
 exsltincdir = $(includedir)/libexslt
 exsltinc_HEADERS = \
 	exslt.h				\
-	exsltconfig.h			\
 	exsltexports.h
+
+nodist_exsltinc_HEADERS = \
+	exsltconfig.h
 
 libexslt_la_SOURCES = \
 	exslt.c				\
@@ -587,6 +589,27 @@ uninstall-exsltincHEADERS:
 	@list='$(exsltinc_HEADERS)'; test -n "$(exsltincdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(exsltincdir)'; $(am__uninstall_files_from_dir)
+install-nodist_exsltincHEADERS: $(nodist_exsltinc_HEADERS)
+	@$(NORMAL_INSTALL)
+	@list='$(nodist_exsltinc_HEADERS)'; test -n "$(exsltincdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(exsltincdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(exsltincdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(exsltincdir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(exsltincdir)" || exit $$?; \
+	done
+
+uninstall-nodist_exsltincHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(nodist_exsltinc_HEADERS)'; test -n "$(exsltincdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(exsltincdir)'; $(am__uninstall_files_from_dir)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -674,7 +697,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(LTLIBRARIES) $(MANS) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(man3dir)" "$(DESTDIR)$(exsltincdir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(man3dir)" "$(DESTDIR)$(exsltincdir)" "$(DESTDIR)$(exsltincdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -730,7 +753,8 @@ info: info-am
 
 info-am:
 
-install-data-am: install-exsltincHEADERS install-man
+install-data-am: install-exsltincHEADERS install-man \
+	install-nodist_exsltincHEADERS
 
 install-dvi: install-dvi-am
 
@@ -777,7 +801,7 @@ ps: ps-am
 ps-am:
 
 uninstall-am: uninstall-exsltincHEADERS uninstall-libLTLIBRARIES \
-	uninstall-man
+	uninstall-man uninstall-nodist_exsltincHEADERS
 
 uninstall-man: uninstall-man3
 
@@ -791,13 +815,15 @@ uninstall-man: uninstall-man3
 	install-data-am install-dvi install-dvi-am install-exec \
 	install-exec-am install-exsltincHEADERS install-html \
 	install-html-am install-info install-info-am \
-	install-libLTLIBRARIES install-man install-man3 install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
+	install-libLTLIBRARIES install-man install-man3 \
+	install-nodist_exsltincHEADERS install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	tags tags-am uninstall uninstall-am uninstall-exsltincHEADERS \
-	uninstall-libLTLIBRARIES uninstall-man uninstall-man3
+	uninstall-libLTLIBRARIES uninstall-man uninstall-man3 \
+	uninstall-nodist_exsltincHEADERS
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

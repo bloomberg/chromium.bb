@@ -227,7 +227,8 @@ xsltNumberFormatDecimal(xmlBufferPtr buffer,
 }
 
 static void
-xsltNumberFormatAlpha(xmlBufferPtr buffer,
+xsltNumberFormatAlpha(xsltNumberDataPtr data,
+		      xmlBufferPtr buffer,
 		      double number,
 		      int is_upper)
 {
@@ -237,8 +238,25 @@ xsltNumberFormatAlpha(xmlBufferPtr buffer,
     char *alpha_list;
     double alpha_size = (double)(sizeof(alpha_upper_list) - 1);
 
-    if (number < 1.0)
+    /*
+     * XSLT 1.0 isn't clear on how to handle zero, but XSLT 2.0 says:
+     *
+     *     For all format tokens other than the first kind above (one that
+     *     consists of decimal digits), there may be implementation-defined
+     *     lower and upper bounds on the range of numbers that can be
+     *     formatted using this format token; indeed, for some numbering
+     *     sequences there may be intrinsic limits. [...] Numbers that fall
+     *     outside this range must be formatted using the format token 1.
+     *
+     * The "a" token has an intrinsic lower limit of 1.
+     */
+    if (number < 1.0) {
+        xsltNumberFormatDecimal(buffer, number, '0', 1,
+                                data->digitsPerGroup,
+                                data->groupingCharacter,
+                                data->groupingCharacterLen);
         return;
+    }
 
     /* Build buffer from back */
     pointer = &temp_string[sizeof(temp_string)];
@@ -256,10 +274,23 @@ xsltNumberFormatAlpha(xmlBufferPtr buffer,
 }
 
 static void
-xsltNumberFormatRoman(xmlBufferPtr buffer,
+xsltNumberFormatRoman(xsltNumberDataPtr data,
+		      xmlBufferPtr buffer,
 		      double number,
 		      int is_upper)
 {
+    /*
+     * See discussion in xsltNumberFormatAlpha. Also use a reasonable upper
+     * bound to avoid denial of service.
+     */
+    if (number < 1.0 || number > 5000.0) {
+        xsltNumberFormatDecimal(buffer, number, '0', 1,
+                                data->digitsPerGroup,
+                                data->groupingCharacter,
+                                data->groupingCharacterLen);
+        return;
+    }
+
     /*
      * Based on an example by Jim Walsh
      */
@@ -443,6 +474,23 @@ xsltNumberFormatInsertNumbers(xsltNumberDataPtr data,
     for (i = 0; i < numbers_max; i++) {
 	/* Insert number */
 	number = numbers[(numbers_max - 1) - i];
+        /* Round to nearest like XSLT 2.0 */
+        number = floor(number + 0.5);
+        /*
+         * XSLT 1.0 isn't clear on how to handle negative numbers, but XSLT
+         * 2.0 says:
+         *
+         *     It is a non-recoverable dynamic error if any undiscarded item
+         *     in the atomized sequence supplied as the value of the value
+         *     attribute of xsl:number cannot be converted to an integer, or
+         *     if the resulting integer is less than 0 (zero).
+         */
+        if (number < 0.0) {
+            xsltTransformError(NULL, NULL, NULL,
+                    "xsl-number : negative value\n");
+            /* Recover by treating negative values as zero. */
+            number = 0.0;
+        }
 	if (i < tokens->nTokens) {
 	  /*
 	   * The "n"th format token will be used to format the "n"th
@@ -486,28 +534,16 @@ xsltNumberFormatInsertNumbers(xsltNumberDataPtr data,
 
 		switch (token->token) {
 		case 'A':
-		    xsltNumberFormatAlpha(buffer,
-					  number,
-					  TRUE);
-
+		    xsltNumberFormatAlpha(data, buffer, number, TRUE);
 		    break;
 		case 'a':
-		    xsltNumberFormatAlpha(buffer,
-					  number,
-					  FALSE);
-
+		    xsltNumberFormatAlpha(data, buffer, number, FALSE);
 		    break;
 		case 'I':
-		    xsltNumberFormatRoman(buffer,
-					  number,
-					  TRUE);
-
+		    xsltNumberFormatRoman(data, buffer, number, TRUE);
 		    break;
 		case 'i':
-		    xsltNumberFormatRoman(buffer,
-					  number,
-					  FALSE);
-
+		    xsltNumberFormatRoman(data, buffer, number, FALSE);
 		    break;
 		default:
 		    if (IS_DIGIT_ZERO(token->token)) {

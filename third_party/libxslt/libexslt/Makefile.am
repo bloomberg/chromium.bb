@@ -10,8 +10,9 @@ exsltincdir = $(includedir)/libexslt
 
 exsltinc_HEADERS =                      \
 	exslt.h				\
-	exsltconfig.h			\
 	exsltexports.h
+nodist_exsltinc_HEADERS =               \
+	exsltconfig.h
 
 libexslt_la_SOURCES =                   \
 	exslt.c				\

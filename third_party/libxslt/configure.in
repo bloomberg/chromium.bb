@@ -716,6 +716,7 @@ tests/exslt/Makefile
 tests/exslt/common/Makefile
 tests/exslt/functions/Makefile
 tests/exslt/math/Makefile
+tests/exslt/saxon/Makefile
 tests/exslt/sets/Makefile
 tests/exslt/strings/Makefile
 tests/exslt/date/Makefile

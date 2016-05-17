@@ -119,7 +119,7 @@ am__uninstall_files_from_dir = { \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(man3dir)" \
-	"$(DESTDIR)$(exsltincdir)"
+	"$(DESTDIR)$(exsltincdir)" "$(DESTDIR)$(exsltincdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libexslt_la_DEPENDENCIES = $(top_builddir)/libxslt/libxslt.la \
@@ -178,7 +178,7 @@ am__can_run_installinfo = \
 man3dir = $(mandir)/man3
 NROFF = nroff
 MANS = $(man_MANS)
-HEADERS = $(exsltinc_HEADERS)
+HEADERS = $(exsltinc_HEADERS) $(nodist_exsltinc_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
 # and print each of them once, without duplicates.  Input order is
@@ -385,8 +385,10 @@ lib_LTLIBRARIES = libexslt.la
 exsltincdir = $(includedir)/libexslt
 exsltinc_HEADERS = \
 	exslt.h				\
-	exsltconfig.h			\
 	exsltexports.h
+
+nodist_exsltinc_HEADERS = \
+	exsltconfig.h
 
 libexslt_la_SOURCES = \
 	exslt.c				\
@@ -587,6 +589,27 @@ uninstall-exsltincHEADERS:
 	@list='$(exsltinc_HEADERS)'; test -n "$(exsltincdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(exsltincdir)'; $(am__uninstall_files_from_dir)
+install-nodist_exsltincHEADERS: $(nodist_exsltinc_HEADERS)
+	@$(NORMAL_INSTALL)
+	@list='$(nodist_exsltinc_HEADERS)'; test -n "$(exsltincdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(exsltincdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(exsltincdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(exsltincdir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(exsltincdir)" || exit $$?; \
+	done
+
+uninstall-nodist_exsltincHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(nodist_exsltinc_HEADERS)'; test -n "$(exsltincdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(exsltincdir)'; $(am__uninstall_files_from_dir)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -674,7 +697,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(LTLIBRARIES) $(MANS) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(man3dir)" "$(DESTDIR)$(exsltincdir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(man3dir)" "$(DESTDIR)$(exsltincdir)" "$(DESTDIR)$(exsltincdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -730,7 +753,8 @@ info: info-am
 
 info-am:
 
-install-data-am: install-exsltincHEADERS install-man
+install-data-am: install-exsltincHEADERS install-man \
+	install-nodist_exsltincHEADERS
 
 install-dvi: install-dvi-am
 
@@ -777,7 +801,7 @@ ps: ps-am
 ps-am:
 
 uninstall-am: uninstall-exsltincHEADERS uninstall-libLTLIBRARIES \
-	uninstall-man
+	uninstall-man uninstall-nodist_exsltincHEADERS
 
 uninstall-man: uninstall-man3
 
@@ -791,13 +815,15 @@ uninstall-man: uninstall-man3
 	install-data-am install-dvi install-dvi-am install-exec \
 	install-exec-am install-exsltincHEADERS install-html \
 	install-html-am install-info install-info-am \
-	install-libLTLIBRARIES install-man install-man3 install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
+	install-libLTLIBRARIES install-man install-man3 \
+	install-nodist_exsltincHEADERS install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	tags tags-am uninstall uninstall-am uninstall-exsltincHEADERS \
-	uninstall-libLTLIBRARIES uninstall-man uninstall-man3
+	uninstall-libLTLIBRARIES uninstall-man uninstall-man3 \
+	uninstall-nodist_exsltincHEADERS
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

@@ -14382,7 +14382,7 @@ RELDATE=`date +'%a %b %e %Y'`
 rm -f COPYING.LIB COPYING 2>/dev/null && $LN_S $srcdir/Copyright COPYING
 
 
-ac_config_files="$ac_config_files Makefile libxslt.pc libexslt.pc libxslt/Makefile libxslt/xsltconfig.h libxslt/xsltwin32config.h libexslt/Makefile libexslt/exsltconfig.h xsltproc/Makefile python/Makefile python/tests/Makefile tests/Makefile tests/docs/Makefile tests/REC1/Makefile tests/REC2/Makefile tests/REC/Makefile tests/general/Makefile tests/reports/Makefile tests/extensions/Makefile tests/namespaces/Makefile tests/keys/Makefile tests/numbers/Makefile tests/documents/Makefile tests/xmlspec/Makefile tests/multiple/Makefile tests/xinclude/Makefile tests/XSLTMark/Makefile tests/docbook/Makefile tests/exslt/Makefile tests/exslt/common/Makefile tests/exslt/functions/Makefile tests/exslt/math/Makefile tests/exslt/sets/Makefile tests/exslt/strings/Makefile tests/exslt/date/Makefile tests/exslt/dynamic/Makefile tests/exslt/crypto/Makefile tests/plugins/Makefile doc/Makefile xslt-config libxslt.spec"
+ac_config_files="$ac_config_files Makefile libxslt.pc libexslt.pc libxslt/Makefile libxslt/xsltconfig.h libxslt/xsltwin32config.h libexslt/Makefile libexslt/exsltconfig.h xsltproc/Makefile python/Makefile python/tests/Makefile tests/Makefile tests/docs/Makefile tests/REC1/Makefile tests/REC2/Makefile tests/REC/Makefile tests/general/Makefile tests/reports/Makefile tests/extensions/Makefile tests/namespaces/Makefile tests/keys/Makefile tests/numbers/Makefile tests/documents/Makefile tests/xmlspec/Makefile tests/multiple/Makefile tests/xinclude/Makefile tests/XSLTMark/Makefile tests/docbook/Makefile tests/exslt/Makefile tests/exslt/common/Makefile tests/exslt/functions/Makefile tests/exslt/math/Makefile tests/exslt/saxon/Makefile tests/exslt/sets/Makefile tests/exslt/strings/Makefile tests/exslt/date/Makefile tests/exslt/dynamic/Makefile tests/exslt/crypto/Makefile tests/plugins/Makefile doc/Makefile xslt-config libxslt.spec"
 
 
 cat >confcache <<\_ACEOF
@@ -15440,6 +15440,7 @@ do
     "tests/exslt/common/Makefile") CONFIG_FILES="$CONFIG_FILES tests/exslt/common/Makefile" ;;
     "tests/exslt/functions/Makefile") CONFIG_FILES="$CONFIG_FILES tests/exslt/functions/Makefile" ;;
     "tests/exslt/math/Makefile") CONFIG_FILES="$CONFIG_FILES tests/exslt/math/Makefile" ;;
+    "tests/exslt/saxon/Makefile") CONFIG_FILES="$CONFIG_FILES tests/exslt/saxon/Makefile" ;;
     "tests/exslt/sets/Makefile") CONFIG_FILES="$CONFIG_FILES tests/exslt/sets/Makefile" ;;
     "tests/exslt/strings/Makefile") CONFIG_FILES="$CONFIG_FILES tests/exslt/strings/Makefile" ;;
     "tests/exslt/date/Makefile") CONFIG_FILES="$CONFIG_FILES tests/exslt/date/Makefile" ;;

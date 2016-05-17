@@ -367,8 +367,11 @@ xsltExtModuleRegisterDynamic(const xmlChar * URI)
         i++;
     }
 
-    if (*(i - 1) == '_')
+    /* Strip underscores from end of string. */
+    while (i > ext_name && *(i - 1) == '_') {
+        i--;
         *i = '\0';
+    }
 
     /* determine module directory */
     ext_directory = (xmlChar *) getenv("LIBXSLT_PLUGINS_PATH");

@@ -499,11 +499,8 @@ exsltCryptoMd4Function (xmlXPathParserContextPtr ctxt, int nargs) {
     unsigned char hex[MD5_DIGEST_LENGTH * 2 + 1];
 
     str_len = exsltCryptoPopString (ctxt, nargs, &str);
-    if (str_len == 0) {
-	xmlXPathReturnEmptyString (ctxt);
-	xmlFree (str);
+    if (str_len == 0)
 	return;
-    }
 
     PLATFORM_HASH (ctxt, PLATFORM_MD4, (const char *) str, str_len,
 		   (char *) hash);
@@ -532,11 +529,8 @@ exsltCryptoMd5Function (xmlXPathParserContextPtr ctxt, int nargs) {
     unsigned char hex[MD5_DIGEST_LENGTH * 2 + 1];
 
     str_len = exsltCryptoPopString (ctxt, nargs, &str);
-    if (str_len == 0) {
-	xmlXPathReturnEmptyString (ctxt);
-	xmlFree (str);
+    if (str_len == 0)
 	return;
-    }
 
     PLATFORM_HASH (ctxt, PLATFORM_MD5, (const char *) str, str_len,
 		   (char *) hash);
@@ -565,11 +559,8 @@ exsltCryptoSha1Function (xmlXPathParserContextPtr ctxt, int nargs) {
     unsigned char hex[SHA1_DIGEST_LENGTH * 2 + 1];
 
     str_len = exsltCryptoPopString (ctxt, nargs, &str);
-    if (str_len == 0) {
-	xmlXPathReturnEmptyString (ctxt);
-	xmlFree (str);
+    if (str_len == 0)
 	return;
-    }
 
     PLATFORM_HASH (ctxt, PLATFORM_SHA1, (const char *) str, str_len,
 		   (char *) hash);

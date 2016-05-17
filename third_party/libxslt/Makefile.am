@@ -56,8 +56,8 @@ tests: dummy
 valgrind:
 	@echo '## Running the regression tests under Valgrind'
 	@echo '## Go get a cup of coffee it is gonna take a while ...'
-	@(cd tests ; $(MAKE) CHECKER='valgrind -q' tests)
-	@(cd xsltproc ; $(MAKE) CHECKER='valgrind -q' tests)
+	@(cd tests ; $(MAKE) CHECKER='libtool --mode=execute valgrind -q --leak-check=full' tests)
+	@(cd xsltproc ; $(MAKE) CHECKER='libtool --mode=execute valgrind -q --leak-check=full' tests)
 
 cleanup:
 	-@(find . -name .\#\* -exec rm {} \;)

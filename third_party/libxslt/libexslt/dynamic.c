@@ -167,10 +167,27 @@ exsltDynMapFunction(xmlXPathParserContextPtr ctxt, int nargs)
         ctxt->context->proximityPosition = 0;
         for (i = 0; i < nodeset->nodeNr; i++) {
             xmlXPathObjectPtr subResult = NULL;
+            xmlNodePtr cur = nodeset->nodeTab[i];
 
             ctxt->context->proximityPosition++;
-            ctxt->context->node = nodeset->nodeTab[i];
-            ctxt->context->doc = nodeset->nodeTab[i]->doc;
+            ctxt->context->node = cur;
+
+            if (cur->type == XML_NAMESPACE_DECL) {
+                /*
+                * The XPath module sets the owner element of a ns-node on
+                * the ns->next field.
+                */
+                cur = (xmlNodePtr) ((xmlNsPtr) cur)->next;
+                if ((cur == NULL) || (cur->type != XML_ELEMENT_NODE)) {
+                    xsltGenericError(xsltGenericErrorContext,
+                        "Internal error in exsltDynMapFunction: "
+                        "Cannot retrieve the doc of a namespace node.\n");
+                    continue;
+                }
+                ctxt->context->doc = cur->doc;
+            } else {
+                ctxt->context->doc = cur->doc;
+            }
 
             subResult = xmlXPathCompiledEval(comp, ctxt->context);
             if (subResult != NULL) {

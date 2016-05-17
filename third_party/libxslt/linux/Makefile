@@ -226,14 +226,14 @@ distuninstallcheck_listfiles = find . -type f -print
 am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
-ACLOCAL = ${SHELL} /work/cb/src/third_party/libxslt/missing aclocal-1.14
+ACLOCAL = ${SHELL} /usr/local/google/work/cb/src/third_party/libxslt/missing aclocal-1.14
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 0
 AR = ar
 AS = as
-AUTOCONF = ${SHELL} /work/cb/src/third_party/libxslt/missing autoconf
-AUTOHEADER = ${SHELL} /work/cb/src/third_party/libxslt/missing autoheader
-AUTOMAKE = ${SHELL} /work/cb/src/third_party/libxslt/missing automake-1.14
+AUTOCONF = ${SHELL} /usr/local/google/work/cb/src/third_party/libxslt/missing autoconf
+AUTOHEADER = ${SHELL} /usr/local/google/work/cb/src/third_party/libxslt/missing autoheader
+AUTOMAKE = ${SHELL} /usr/local/google/work/cb/src/third_party/libxslt/missing automake-1.14
 AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
@@ -254,7 +254,7 @@ EGREP = /bin/grep -E
 EXEEXT = 
 EXSLT_INCLUDEDIR = -I${includedir}
 EXSLT_LIBDIR = -L${libdir}
-EXSLT_LIBS = -lexslt -lxslt -L/work/cb/src/third_party/libxml/linux -L/usr/local/lib -lxml2 -lz -lm -ldl -lm -lgcrypt
+EXSLT_LIBS = -lexslt -lxslt -L/usr/local/google/work/cb/src/third_party/libxml/linux -L/usr/local/lib -lxml2 -lz -lm -ldl -lm -lgcrypt
 EXTRA_LIBS = 
 FGREP = /bin/grep -F
 GREP = /bin/grep
@@ -279,8 +279,8 @@ LIBGCRYPT_LIBS = -lgcrypt
 LIBOBJS = 
 LIBS = 
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
-LIBXML_CFLAGS = -I/work/cb/src/third_party/libxml/linux/include
-LIBXML_LIBS = -L/work/cb/src/third_party/libxml/linux -L/usr/local/lib -lxml2 -lz -lm -ldl
+LIBXML_CFLAGS = -I/usr/local/google/work/cb/src/third_party/libxml/linux/include
+LIBXML_LIBS = -L/usr/local/google/work/cb/src/third_party/libxml/linux -L/usr/local/lib -lxml2 -lz -lm -ldl
 LIBXML_REQUIRED_VERSION = 2.6.27
 LIBXML_SRC = ../../libxml/linux/
 LIBXSLT_DEFAULT_PLUGINS_PATH = /usr/local/lib/libxslt-plugins
@@ -295,7 +295,7 @@ LIBXSLT_VERSION_NUMBER = 10128
 LIPO = 
 LN_S = ln -s
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /work/cb/src/third_party/libxslt/missing makeinfo
+MAKEINFO = ${SHELL} /usr/local/google/work/cb/src/third_party/libxslt/missing makeinfo
 MANIFEST_TOOL = :
 MKDIR_P = /bin/mkdir -p
 MV = /bin/mv
@@ -323,7 +323,7 @@ PYTHON_SITE_PACKAGES = /usr/lib/python2.7/dist-packages
 PYTHON_SUBDIR = python
 PYTHON_VERSION = 2.7
 RANLIB = ranlib
-RELDATE = Sat Apr  2 2016
+RELDATE = Sat May 14 2016
 RM = /bin/rm
 SED = /bin/sed
 SET_MAKE = 
@@ -342,18 +342,18 @@ WITH_MODULES = 0
 WITH_TRIO = 0
 WITH_XSLT_DEBUG = 0
 XMLLINT = /usr/bin/xmllint
-XML_CONFIG = /work/cb/src/third_party/libxml/linux/xml2-config
+XML_CONFIG = /usr/local/google/work/cb/src/third_party/libxml/linux/xml2-config
 XSLTPROC = /usr/bin/xsltproc
 XSLTPROCDV = 
 XSLT_INCLUDEDIR = -I${includedir}
 XSLT_LIBDIR = -L${libdir}
-XSLT_LIBS = -lxslt -L/work/cb/src/third_party/libxml/linux -L/usr/local/lib -lxml2 -lz -lm -ldl -lm
+XSLT_LIBS = -lxslt -L/usr/local/google/work/cb/src/third_party/libxml/linux -L/usr/local/lib -lxml2 -lz -lm -ldl -lm
 XSLT_LOCALE_WINAPI = 0
 XSLT_LOCALE_XLOCALE = 1
-abs_builddir = /work/cb/src/third_party/libxslt/linux
-abs_srcdir = /work/cb/src/third_party/libxslt/linux/..
-abs_top_builddir = /work/cb/src/third_party/libxslt/linux
-abs_top_srcdir = /work/cb/src/third_party/libxslt/linux/..
+abs_builddir = /usr/local/google/work/cb/src/third_party/libxslt/linux
+abs_srcdir = /usr/local/google/work/cb/src/third_party/libxslt/linux/..
+abs_top_builddir = /usr/local/google/work/cb/src/third_party/libxslt/linux
+abs_top_srcdir = /usr/local/google/work/cb/src/third_party/libxslt/linux/..
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_DUMPBIN = 
@@ -382,7 +382,7 @@ host_vendor = unknown
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /work/cb/src/third_party/libxslt/install-sh
+install_sh = ${SHELL} /usr/local/google/work/cb/src/third_party/libxslt/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -1054,8 +1054,8 @@ tests: dummy
 valgrind:
 	@echo '## Running the regression tests under Valgrind'
 	@echo '## Go get a cup of coffee it is gonna take a while ...'
-	@(cd tests ; $(MAKE) CHECKER='valgrind -q' tests)
-	@(cd xsltproc ; $(MAKE) CHECKER='valgrind -q' tests)
+	@(cd tests ; $(MAKE) CHECKER='libtool --mode=execute valgrind -q --leak-check=full' tests)
+	@(cd xsltproc ; $(MAKE) CHECKER='libtool --mode=execute valgrind -q --leak-check=full' tests)
 
 cleanup:
 	-@(find . -name .\#\* -exec rm {} \;)
