@@ -375,11 +375,5 @@ class GclientApi(recipe_api.RecipeApi):
     assert patch_project is None or isinstance(patch_project, basestring)
     cfg = gclient_config or self.c
     path, revision = cfg.patch_projects.get(patch_project, (None, None))
-
-    # TODO(kjellander): Remove this hack when http://crbug.com/611808 is fixed.
-    if patch_project == 'webrtc' and path == 'src/third_party':
-      assert revision == 'HEAD', 'revision was %s' % revision
-      path = 'src/third_party/webrtc'
-
     if path and revision and path not in cfg.revisions:
       cfg.revisions[path] = revision

@@ -93,11 +93,6 @@ def RunSteps(api):
 
   assert not api.gclient.is_blink_mode
 
-  if api.properties.get('patch_project'):
-    api.gclient.set_patch_project_revision(
-        patch_project=api.properties.get('patch_project'),
-        gclient_config=api.gclient.make_config('chromium_bare'))
-
 
 def GenTests(api):
   yield api.test('basic')
@@ -105,8 +100,3 @@ def GenTests(api):
   yield api.test('revision') + api.properties(revision='abc')
 
   yield api.test('tryserver') + api.properties.tryserver()
-
-  yield (
-      api.test('tryserver_webrtc_patch') +
-      api.properties.tryserver(patch_project='webrtc')
-  )
