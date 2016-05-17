@@ -206,6 +206,7 @@
       'MD Top Chrome Win material':
         'gyp_debug_bot_minimal_symbols_x64',
       'MD Top Chrome Linux material': 'gn_debug_bot',
+      'LTO Linux': 'gn_official_goma_lto',
       'LTO Linux Perf': 'gn_official_goma_lto',
       'Libfuzzer Upload Linux ASan': 'gn_release_libfuzzer_asan',
       'Libfuzzer Upload Linux ASan Debug': 'gn_debug_libfuzzer_asan',
