@@ -1068,6 +1068,12 @@ if (!is_android) {
                 chrome_tests_gypi_values.chrome_browser_tests_views_non_mac_sources,
                 ".",
                 "//chrome")
+        if (!is_chromeos) {
+          sources += rebase_path(
+                  chrome_tests_gypi_values.chrome_browser_tests_views_non_cros_or_mac_sources,
+                  ".",
+                  "//chrome")
+        }
       }
     }
 
@@ -1122,6 +1128,10 @@ if (!is_android) {
       }
       if (toolkit_views) {
         sources -= [ "../browser/ui/views/select_file_dialog_extension_browsertest.cc" ]
+      }
+      if (is_win || is_linux) {
+        sources +=
+            [ "../browser/ui/views/ime/input_ime_apitest_nonchromeos.cc" ]
       }
     }
     if (enable_web_speech) {
