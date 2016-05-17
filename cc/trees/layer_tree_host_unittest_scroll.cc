@@ -497,6 +497,63 @@ class LayerTreeHostScrollTestFractionalScroll : public LayerTreeHostScrollTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostScrollTestFractionalScroll);
 
+class LayerTreeHostScrollTestScrollSnapping : public LayerTreeHostScrollTest {
+ public:
+  LayerTreeHostScrollTestScrollSnapping() : scroll_amount_(1.75, 0) {}
+
+  void SetupTree() override {
+    LayerTreeHostScrollTest::SetupTree();
+    layer_tree_host()
+        ->outer_viewport_scroll_layer()
+        ->scroll_clip_layer()
+        ->SetForceRenderSurfaceForTesting(true);
+    gfx::Transform translate;
+    translate.Translate(0.25f, 0.f);
+    layer_tree_host()
+        ->outer_viewport_scroll_layer()
+        ->scroll_clip_layer()
+        ->SetTransform(translate);
+    layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 0.1f, 100.f);
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    LayerImpl* scroll_layer = impl->OuterViewportScrollLayer();
+    gfx::Transform translate;
+
+    // Check that screen space transform of the scrollable layer is correctly
+    // snapped to integers.
+    switch (impl->active_tree()->source_frame_number()) {
+      case 0:
+        EXPECT_EQ(gfx::Transform(),
+                  scroll_layer->draw_properties().screen_space_transform);
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 1:
+        translate.Translate(-2, 0);
+        EXPECT_EQ(translate,
+                  scroll_layer->draw_properties().screen_space_transform);
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 2:
+        translate.Translate(-3, 0);
+        EXPECT_EQ(translate,
+                  scroll_layer->draw_properties().screen_space_transform);
+        EndTest();
+        break;
+    }
+    scroll_layer->ScrollBy(scroll_amount_);
+  }
+
+  void AfterTest() override {}
+
+ private:
+  gfx::Vector2dF scroll_amount_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostScrollTestScrollSnapping);
+
 class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
  public:
   LayerTreeHostScrollTestCaseWithChild()

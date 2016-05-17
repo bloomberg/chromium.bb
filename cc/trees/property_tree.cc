@@ -1108,20 +1108,20 @@ void TransformTree::UndoSnapping(TransformNode* node) {
 
 void TransformTree::UpdateSnapping(TransformNode* node) {
   if (!node->data.scrolls || node->data.to_screen_is_potentially_animated ||
-      !node->data.to_target.IsScaleOrTranslation() ||
+      !node->data.to_screen.IsScaleOrTranslation() ||
       !node->data.ancestors_are_invertible) {
     return;
   }
 
-  // Scroll snapping must be done in target space (the pixels we care about).
-  // This means we effectively snap the target space transform. If TT is the
-  // target space transform and TT' is TT with its translation components
-  // rounded, then what we're after is the scroll delta X, where TT * X = TT'.
+  // Scroll snapping must be done in screen space (the pixels we care about).
+  // This means we effectively snap the screen space transform. If ST is the
+  // screen space transform and ST' is ST with its translation components
+  // rounded, then what we're after is the scroll delta X, where ST * X = ST'.
   // I.e., we want a transform that will realize our scroll snap. It follows
-  // that X = TT^-1 * TT'. We cache TT and TT^-1 to make this more efficient.
-  gfx::Transform rounded = node->data.to_target;
+  // that X = ST^-1 * ST'. We cache ST and ST^-1 to make this more efficient.
+  gfx::Transform rounded = node->data.to_screen;
   rounded.RoundTranslationComponents();
-  gfx::Transform delta = node->data.from_target;
+  gfx::Transform delta = node->data.from_screen;
   delta *= rounded;
 
   DCHECK(delta.IsApproximatelyIdentityOrTranslation(SkDoubleToMScalar(1e-4)))
@@ -1131,12 +1131,12 @@ void TransformTree::UpdateSnapping(TransformNode* node) {
 
   // Now that we have our scroll delta, we must apply it to each of our
   // combined, to/from matrices.
-  node->data.to_target = rounded;
+  node->data.to_screen = rounded;
   node->data.to_parent.Translate(translation.x(), translation.y());
-  node->data.from_target.matrix().postTranslate(-translation.x(),
-                                                -translation.y(), 0);
-  node->data.to_screen.Translate(translation.x(), translation.y());
   node->data.from_screen.matrix().postTranslate(-translation.x(),
+                                                -translation.y(), 0);
+  node->data.to_target.Translate(translation.x(), translation.y());
+  node->data.from_target.matrix().postTranslate(-translation.x(),
                                                 -translation.y(), 0);
 
   node->data.scroll_snap = translation;
