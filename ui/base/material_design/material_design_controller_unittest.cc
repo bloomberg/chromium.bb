@@ -24,7 +24,9 @@ class MaterialDesignControllerTest : public testing::Test {
   // testing::Test:
   void SetUp() override;
   void TearDown() override;
+
   void SetCommandLineSwitch(const std::string& value_string);
+  bool CurrentModeIsDefaultMode();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MaterialDesignControllerTest);
@@ -52,6 +54,11 @@ void MaterialDesignControllerTest::SetCommandLineSwitch(
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kTopChromeMD, value_string);
 #endif  // defined(ENABLE_TOPCHROME_MD)
+}
+
+bool MaterialDesignControllerTest::CurrentModeIsDefaultMode() {
+  return MaterialDesignController::GetMode() ==
+      test::MaterialDesignControllerTestAPI::DefaultMode();
 }
 
 class MaterialDesignControllerTestMaterial :
@@ -132,8 +139,7 @@ TEST_F(
 TEST_F(
     MaterialDesignControllerTestDefault,
     DisabledCommandLineValueMapsToNonMaterialModeWhenCompileTimeFlagEnabled) {
-  EXPECT_EQ(MaterialDesignController::DefaultMode(),
-            MaterialDesignController::GetMode());
+  EXPECT_TRUE(CurrentModeIsDefaultMode());
 }
 
 // Verify the current mode is reported as the default mode when no command line
@@ -142,14 +148,12 @@ TEST_F(MaterialDesignControllerTest,
        NoCommandLineValueMapsToNonMaterialModeWhenCompileTimeFlagEnabled) {
   ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kTopChromeMD));
-  EXPECT_EQ(MaterialDesignController::DefaultMode(),
-            MaterialDesignController::GetMode());
+  EXPECT_TRUE(CurrentModeIsDefaultMode());
 }
 
 // Verify an invalid command line value uses the default mode.
 TEST_F(MaterialDesignControllerTestInvalid, InvalidCommandLineValue) {
-  EXPECT_EQ(MaterialDesignController::DefaultMode(),
-            MaterialDesignController::GetMode());
+  EXPECT_TRUE(CurrentModeIsDefaultMode());
 }
 
 // Verify that MaterialDesignController::IsModeMaterial() will be true when

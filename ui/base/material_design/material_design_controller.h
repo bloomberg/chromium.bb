@@ -31,6 +31,10 @@ class UI_BASE_EXPORT MaterialDesignController {
   // Initializes |mode_|. Must be called before checking |mode_|.
   static void Initialize();
 
+  // Same as Initialize(), but uses |mode| (instead of DefaultMode()) as the
+  // default value if no command-line switch or field trial overrides it.
+  static void InitializeWithDefaultMode(Mode mode);
+
   // Get the current Mode that should be used by the system.
   static Mode GetMode();
 
@@ -40,9 +44,6 @@ class UI_BASE_EXPORT MaterialDesignController {
   // Returns true if the current mode is a material design variant and this mode
   // should be extended to cover secondary UI.
   static bool IsSecondaryUiMaterial();
-
-  // Returns the per-platform default material design variant.
-  static Mode DefaultMode();
 
  private:
   friend class test::MaterialDesignControllerTestAPI;
@@ -58,10 +59,6 @@ class UI_BASE_EXPORT MaterialDesignController {
   // etc.). For example, this controls use of MD inside bubbles and dialogs.
   static bool include_secondary_ui_;
 
-  // Declarations only. Do not allow construction of an object.
-  MaterialDesignController();
-  ~MaterialDesignController();
-
   // Resets the initialization state to uninitialized. To be used by tests to
   // allow calling Initialize() more than once.
   static void Uninitialize();
@@ -70,7 +67,10 @@ class UI_BASE_EXPORT MaterialDesignController {
   // used by tests to directly set the mode.
   static void SetMode(Mode mode);
 
-  DISALLOW_COPY_AND_ASSIGN(MaterialDesignController);
+  // Returns the per-platform default material design variant.
+  static Mode DefaultMode();
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(MaterialDesignController);
 };
 
 }  // namespace ui
