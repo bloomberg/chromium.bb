@@ -643,10 +643,10 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
     items[static_cast<size_t>(DenialComboboxIndex::NEVER_TRANSLATE_SITE)] =
         l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_SITE);
     denial_combobox_model_.reset(new ui::SimpleComboboxModel(items));
-    denial_combobox_ = new views::Combobox(denial_combobox_model_.get());
+    denial_combobox_ = new views::Combobox(denial_combobox_model_.get(),
+                                           views::Combobox::STYLE_ACTION);
     denial_combobox_->set_id(COMBOBOX_ID_DENIAL);
     denial_combobox_->set_listener(this);
-    denial_combobox_->SetStyle(views::Combobox::STYLE_ACTION);
     layout->AddView(denial_combobox_);
   }
 

@@ -49,7 +49,8 @@ class VIEWS_EXPORT PlatformStyle {
   static std::unique_ptr<FocusableBorder> CreateComboboxBorder();
 
   // Creates the appropriate background for a Combobox.
-  static std::unique_ptr<Background> CreateComboboxBackground();
+  static std::unique_ptr<Background> CreateComboboxBackground(
+      int shoulder_width);
 
   // Creates the default label button border for the given |style|. Used when a
   // custom default border is not provided for a particular LabelButton class.

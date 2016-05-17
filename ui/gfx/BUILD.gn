@@ -148,7 +148,6 @@ component("gfx") {
     "platform_font_mac.mm",
     "platform_font_win.cc",
     "platform_font_win.h",
-    "scoped_canvas.h",
     "scoped_cg_context_save_gstate_mac.h",
     "scoped_ns_graphics_context_save_gstate_mac.h",
     "scoped_ns_graphics_context_save_gstate_mac.mm",
@@ -220,6 +219,8 @@ component("gfx") {
       "image/image_skia_operations.h",
       "paint_throbber.cc",
       "paint_throbber.h",
+      "scoped_canvas.cc",
+      "scoped_canvas.h",
     ]
   }
 

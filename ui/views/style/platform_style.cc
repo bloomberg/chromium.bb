@@ -52,7 +52,8 @@ std::unique_ptr<FocusableBorder> PlatformStyle::CreateComboboxBorder() {
 }
 
 // static
-std::unique_ptr<Background> PlatformStyle::CreateComboboxBackground() {
+std::unique_ptr<Background> PlatformStyle::CreateComboboxBackground(
+    int shoulder_width) {
   return nullptr;
 }
 

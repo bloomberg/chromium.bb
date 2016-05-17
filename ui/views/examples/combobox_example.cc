@@ -49,9 +49,8 @@ void ComboboxExample::CreateExampleView(View* container) {
   disabled_combobox_->SetSelectedIndex(4);
   disabled_combobox_->SetEnabled(false);
 
-  action_combobox_ = new Combobox(&combobox_model_);
+  action_combobox_ = new Combobox(&combobox_model_, Combobox::STYLE_ACTION);
   action_combobox_->set_listener(this);
-  action_combobox_->SetStyle(Combobox::STYLE_ACTION);
   // Note: STYLE_ACTION comboboxes always have the first item selected by
   // default.
 

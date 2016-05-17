@@ -278,6 +278,7 @@
         'render_text_harfbuzz.h',
         'render_text_mac.h',
         'render_text_mac.mm',
+        'scoped_canvas.cc',
         'scoped_canvas.h',
         'scoped_cg_context_save_gstate_mac.h',
         'scoped_ns_graphics_context_save_gstate_mac.h',

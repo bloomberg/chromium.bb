@@ -7,34 +7,34 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/native_theme/native_theme_mac.h"
-#include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/view.h"
 
 using ui::NativeThemeMac;
 
 namespace views {
 
-ComboboxBackgroundMac::ComboboxBackgroundMac() {}
+ComboboxBackgroundMac::ComboboxBackgroundMac(int container_width)
+    : container_width_(container_width) {}
 
 ComboboxBackgroundMac::~ComboboxBackgroundMac() {}
 
 void ComboboxBackgroundMac::Paint(gfx::Canvas* canvas, View* view) const {
-  DCHECK_EQ(view->GetClassName(), Combobox::kViewClassName);
-  Combobox* combobox = static_cast<Combobox*>(view);
+  gfx::RectF bounds(view->GetLocalBounds());
+  gfx::ScopedRTLFlipCanvas scoped_canvas(canvas, view->bounds());
 
-  gfx::RectF bounds(combobox->GetLocalBounds());
   // Inset the left side far enough to draw only the arrow button, and inset the
   // other three sides by half a pixel so the edge of the background doesn't
   // paint outside the border.
-  bounds.Inset(bounds.width() - combobox->GetArrowButtonWidth(), 0.5, 0.5, 0.5);
+  bounds.Inset(bounds.width() - container_width_, 0.5, 0.5, 0.5);
 
   // TODO(tapted): Check whether the Widget is active, and use the NORMAL
   // BackgroundType if it is inactive. Handling this properly also requires the
   // control to observe the Widget for activation changes and invalidate.
   NativeThemeMac::ButtonBackgroundType type =
       NativeThemeMac::ButtonBackgroundType::HIGHLIGHTED;
-  if (!combobox->enabled())
+  if (!view->enabled())
     type = NativeThemeMac::ButtonBackgroundType::DISABLED;
 
   SkPaint paint;

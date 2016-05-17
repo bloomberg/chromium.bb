@@ -162,6 +162,7 @@
       'target_name': 'views_examples_with_content_exe',
       'type': 'executable',
       'dependencies': [
+        '../resources/views_resources.gyp:views_resources',
         '../../views_content_client/views_content_client.gyp:views_content_client',
         'views_examples_with_content_lib',
       ],

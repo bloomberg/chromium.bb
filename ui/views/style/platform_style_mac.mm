@@ -44,8 +44,9 @@ std::unique_ptr<FocusableBorder> PlatformStyle::CreateComboboxBorder() {
 }
 
 // static
-std::unique_ptr<Background> PlatformStyle::CreateComboboxBackground() {
-  return base::WrapUnique(new ComboboxBackgroundMac);
+std::unique_ptr<Background> PlatformStyle::CreateComboboxBackground(
+    int shoulder_width) {
+  return base::WrapUnique(new ComboboxBackgroundMac(shoulder_width));
 }
 
 // static

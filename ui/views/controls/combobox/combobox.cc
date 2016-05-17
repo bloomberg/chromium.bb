@@ -46,6 +46,10 @@ namespace views {
 
 namespace {
 
+// Action style arrow container padding widths
+const int kActionLeftPadding = 12;
+const int kActionRightPadding = 11;
+
 // Menu border widths
 const int kMenuBorderWidthLeft = 1;
 const int kMenuBorderWidthTop = 1;
@@ -53,12 +57,6 @@ const int kMenuBorderWidthRight = 1;
 
 // Limit how small a combobox can be.
 const int kMinComboboxWidth = 25;
-
-// Size of the combobox arrow margins
-const int kDisclosureArrowLeftPadding = 7;
-const int kDisclosureArrowRightPadding = 7;
-const int kDisclosureArrowButtonLeftPadding = 11;
-const int kDisclosureArrowButtonRightPadding = 12;
 
 // Define the id of the first item in the menu (since it needs to be > 0)
 const int kFirstMenuItemId = 1000;
@@ -88,6 +86,22 @@ const int kFocusedPressedMenuButtonImages[] =
     MENU_IMAGE_GRID(IDR_COMBOBOX_BUTTON_F_P);
 
 #undef MENU_IMAGE_GRID
+
+gfx::Rect PositionArrowWithinContainer(const gfx::Rect& container_bounds,
+                                       const gfx::Size& arrow_size,
+                                       Combobox::Style style) {
+  gfx::Rect bounds(container_bounds);
+  if (style == Combobox::STYLE_ACTION) {
+    // This positions the arrow horizontally. The later call to
+    // ClampToCenteredSize will position it vertically without touching the
+    // horizontal position.
+    bounds.Inset(kActionLeftPadding, 0, kActionRightPadding, 0);
+    DCHECK_EQ(bounds.width(), arrow_size.width());
+  }
+
+  bounds.ClampToCenteredSize(arrow_size);
+  return bounds;
+}
 
 // The transparent button which holds a button state but is not rendered.
 class TransparentButton : public CustomButton {
@@ -343,11 +357,11 @@ class Combobox::ComboboxMenuModelAdapter : public ui::MenuModel,
 ////////////////////////////////////////////////////////////////////////////////
 // Combobox, public:
 
-Combobox::Combobox(ui::ComboboxModel* model)
+Combobox::Combobox(ui::ComboboxModel* model, Style style)
     : model_(model),
-      style_(STYLE_NORMAL),
+      style_(style),
       listener_(NULL),
-      selected_index_(model_->GetDefaultIndex()),
+      selected_index_(style == STYLE_ACTION ? 0 : model_->GetDefaultIndex()),
       invalid_(false),
       menu_model_adapter_(new ComboboxMenuModelAdapter(this, model)),
       text_button_(new TransparentButton(this)),
@@ -361,8 +375,10 @@ Combobox::Combobox(ui::ComboboxModel* model)
 #endif
 
   UpdateBorder();
+  arrow_image_ = PlatformStyle::CreateComboboxArrow(enabled(), style);
   // set_background() takes ownership but takes a raw pointer.
-  std::unique_ptr<Background> b = PlatformStyle::CreateComboboxBackground();
+  std::unique_ptr<Background> b =
+      PlatformStyle::CreateComboboxBackground(GetArrowContainerWidth());
   set_background(b.release());
 
   // Initialize the button images.
@@ -402,19 +418,6 @@ Combobox::~Combobox() {
 const gfx::FontList& Combobox::GetFontList() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   return rb.GetFontListWithDelta(ui::kLabelFontSizeDelta);
-}
-
-void Combobox::SetStyle(Style style) {
-  if (style_ == style)
-    return;
-
-  style_ = style;
-  if (style_ == STYLE_ACTION)
-    selected_index_ = 0;
-
-  UpdateBorder();
-  content_size_ = GetContentSize();
-  PreferredSizeChanged();
 }
 
 void Combobox::ModelChanged() {
@@ -465,12 +468,6 @@ void Combobox::SetInvalid(bool invalid) {
   SchedulePaint();
 }
 
-int Combobox::GetArrowButtonWidth() const {
-  return GetDisclosureArrowLeftPadding() +
-         ArrowSize().width() +
-         GetDisclosureArrowRightPadding();
-}
-
 void Combobox::Layout() {
   PrefixDelegate::Layout();
 
@@ -484,9 +481,7 @@ void Combobox::Layout() {
       break;
     }
     case STYLE_ACTION: {
-      arrow_button_width = GetDisclosureArrowLeftPadding() +
-          ArrowSize().width() +
-          GetDisclosureArrowRightPadding();
+      arrow_button_width = GetArrowContainerWidth();
       text_button_width = width() - arrow_button_width;
       break;
     }
@@ -495,6 +490,11 @@ void Combobox::Layout() {
   int arrow_button_x = std::max(0, text_button_width);
   text_button_->SetBounds(0, 0, std::max(0, text_button_width), height());
   arrow_button_->SetBounds(arrow_button_x, 0, arrow_button_width, height());
+}
+
+void Combobox::OnEnabledChanged() {
+  PrefixDelegate::OnEnabledChanged();
+  arrow_image_ = PlatformStyle::CreateComboboxArrow(enabled(), style_);
 }
 
 int Combobox::GetRowCount() {
@@ -529,8 +529,7 @@ gfx::Size Combobox::GetPreferredSize() const {
                         Textfield::kTextPadding,
                         Textfield::kTextPadding);
   int total_width = std::max(kMinComboboxWidth, content_size_.width()) +
-                    insets.width() + GetDisclosureArrowLeftPadding() +
-                    ArrowSize().width() + GetDisclosureArrowRightPadding();
+                    insets.width() + GetArrowContainerWidth();
   return gfx::Size(total_width, content_size_.height() + insets.height());
 }
 
@@ -738,8 +737,7 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
   base::string16 text = model()->GetItemAt(selected_index_);
 
   gfx::Size arrow_size = ArrowSize();
-  int disclosure_arrow_offset = width() - arrow_size.width() -
-      GetDisclosureArrowLeftPadding() - GetDisclosureArrowRightPadding();
+  int disclosure_arrow_offset = width() - GetArrowContainerWidth();
 
   const gfx::FontList& font_list = Combobox::GetFontList();
   int text_width = gfx::GetStringWidth(text, font_list);
@@ -750,26 +748,19 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
   AdjustBoundsForRTLUI(&text_bounds);
   canvas->DrawStringRect(text, font_list, text_color, text_bounds);
 
-  int arrow_x = disclosure_arrow_offset + GetDisclosureArrowLeftPadding();
-  gfx::Rect arrow_bounds(arrow_x,
-                         height() / 2 - arrow_size.height() / 2,
-                         arrow_size.width(),
-                         arrow_size.height());
+  gfx::Rect arrow_bounds(disclosure_arrow_offset, 0, GetArrowContainerWidth(),
+                         height());
+  arrow_bounds =
+      PositionArrowWithinContainer(arrow_bounds, ArrowSize(), style_);
   AdjustBoundsForRTLUI(&arrow_bounds);
 
-  gfx::ImageSkia arrow_image = PlatformStyle::CreateComboboxArrow(
-      enabled(), style_);
-  canvas->DrawImageInt(arrow_image, arrow_bounds.x(), arrow_bounds.y());
+  canvas->DrawImageInt(arrow_image_, arrow_bounds.x(), arrow_bounds.y());
 }
 
 void Combobox::PaintButtons(gfx::Canvas* canvas) {
   DCHECK(style_ == STYLE_ACTION);
 
-  gfx::ScopedCanvas scoped_canvas(canvas);
-  if (base::i18n::IsRTL()) {
-    canvas->Translate(gfx::Vector2d(width(), 0));
-    canvas->Scale(-1, 1);
-  }
+  gfx::ScopedRTLFlipCanvas scoped_canvas(canvas, bounds());
 
   bool focused = HasFocus();
   const std::vector<const gfx::ImageSkia*>& arrow_button_images =
@@ -877,30 +868,8 @@ void Combobox::OnPerformAction() {
     selected_index_ = 0;
 }
 
-int Combobox::GetDisclosureArrowLeftPadding() const {
-  switch (style_) {
-    case STYLE_NORMAL:
-      return kDisclosureArrowLeftPadding;
-    case STYLE_ACTION:
-      return kDisclosureArrowButtonLeftPadding;
-  }
-  NOTREACHED();
-  return 0;
-}
-
-int Combobox::GetDisclosureArrowRightPadding() const {
-  switch (style_) {
-    case STYLE_NORMAL:
-      return kDisclosureArrowRightPadding;
-    case STYLE_ACTION:
-      return kDisclosureArrowButtonRightPadding;
-  }
-  NOTREACHED();
-  return 0;
-}
-
 gfx::Size Combobox::ArrowSize() const {
-  return PlatformStyle::CreateComboboxArrow(enabled(), style_).size();
+  return arrow_image_.size();
 }
 
 gfx::Size Combobox::GetContentSize() const {
@@ -924,6 +893,14 @@ PrefixSelector* Combobox::GetPrefixSelector() {
   if (!selector_)
     selector_.reset(new PrefixSelector(this));
   return selector_.get();
+}
+
+int Combobox::GetArrowContainerWidth() const {
+  const int kNormalPadding = 7;
+  int padding = style_ == STYLE_NORMAL
+                    ? kNormalPadding * 2
+                    : kActionLeftPadding + kActionRightPadding;
+  return ArrowSize().width() + padding;
 }
 
 }  // namespace views
