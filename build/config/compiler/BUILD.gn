@@ -501,14 +501,8 @@ config("compiler_cpu_abi") {
       }
     } else if (current_cpu == "arm") {
       if (is_clang && !is_android && !is_nacl) {
-        cflags += [
-          "-target",
-          "arm-linux-gnueabihf",
-        ]
-        ldflags += [
-          "-target",
-          "arm-linux-gnueabihf",
-        ]
+        cflags += [ "--target=arm-linux-gnueabihf" ]
+        ldflags += [ "--target=arm-linux-gnueabihf" ]
       }
       if (!is_nacl) {
         cflags += [
@@ -530,14 +524,10 @@ config("compiler_cpu_abi") {
       if (mips_arch_variant == "r6") {
         if (is_clang) {
           cflags += [
-            "-target",
-            "mipsel-linux-gnu",
+            "--target=mipsel-linux-gnu",
             "-march=mips32r6",
           ]
-          ldflags += [
-            "-target",
-            "mipsel-linux-gnu",
-          ]
+          ldflags += [ "--target=mipsel-linux-gnu" ]
         } else {
           cflags += [
             "-mips32r6",
@@ -554,26 +544,18 @@ config("compiler_cpu_abi") {
         if (is_clang) {
           if (is_android) {
             cflags += [
-              "-target",
-              "mipsel-linux-android",
+              "--target=mipsel-linux-android",
               "-march=mipsel",
               "-mcpu=mips32r2",
             ]
-            ldflags += [
-              "-target",
-              "mipsel-linux-android",
-            ]
+            ldflags += [ "--target=mipsel-linux-android" ]
           } else {
             cflags += [
-              "-target",
-              "mipsel-linux-gnu",
+              "--target=mipsel-linux-gnu",
               "-march=mipsel",
               "-mcpu=mips32r2",
             ]
-            ldflags += [
-              "-target",
-              "mipsel-linux-gnu",
-            ]
+            ldflags += [ "--target=mipsel-linux-gnu" ]
           }
         } else {
           cflags += [
@@ -588,26 +570,18 @@ config("compiler_cpu_abi") {
         if (is_clang) {
           if (is_android) {
             cflags += [
-              "-target",
-              "mipsel-linux-android",
+              "--target=mipsel-linux-android",
               "-march=mipsel",
               "-mcpu=mips32",
             ]
-            ldflags += [
-              "-target",
-              "mipsel-linux-android",
-            ]
+            ldflags += [ "--target=mipsel-linux-android" ]
           } else {
             cflags += [
-              "-target",
-              "mipsel-linux-gnu",
+              "--target=mipsel-linux-gnu",
               "-march=mipsel",
               "-mcpu=mips32",
             ]
-            ldflags += [
-              "-target",
-              "mipsel-linux-gnu",
-            ]
+            ldflags += [ "--target=mipsel-linux-gnu" ]
           }
         } else {
           cflags += [
