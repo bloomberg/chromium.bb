@@ -21,6 +21,10 @@
         '../../gfx/gfx.gyp:gfx_geometry',
         '../../views/views.gyp:views',
         '../app_list.gyp:app_list',
+
+        # Temporary dependency to fix compile flake in http://crbug.com/611898.
+        # TODO(tapted): Remove once http://crbug.com/612382 is fixed.
+        '../../accessibility/accessibility.gyp:ax_gen',
       ],
       'defines': [
         'APP_LIST_PRESENTER_IMPLEMENTATION',
