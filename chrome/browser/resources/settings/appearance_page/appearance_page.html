@@ -51,10 +51,12 @@
             </div>
           </div>
           <template is="dom-if" if="[[allowResetTheme_]]">
-            <paper-button id="resetTheme" on-tap="resetTheme_"
-                class="secondary-action">
-              $i18n{resetToDefaultTheme}
-            </paper-button>
+            <div class="secondary-action">
+              <paper-button id="resetTheme" on-tap="resetTheme_"
+                  class="secondary-button">
+                $i18n{resetToDefaultTheme}
+              </paper-button>
+            </div>
           </template>
         </div>
         <div class="settings-box two-line">

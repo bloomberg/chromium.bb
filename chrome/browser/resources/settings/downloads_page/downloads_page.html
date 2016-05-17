@@ -14,10 +14,12 @@
         <div>$i18n{downloadLocation}</div>
         <div class="secondary">[[prefs.download.default_directory.value]]</div>
       </div>
-      <paper-button class="secondary-action" id="changeDownloadsPath"
-          on-tap="selectDownloadLocation_">
-        $i18n{changeDownloadLocation}
-      </paper-button>
+      <div class="secondary-action">
+        <paper-button class="secondary-button" id="changeDownloadsPath"
+            on-tap="selectDownloadLocation_">
+          $i18n{changeDownloadLocation}
+        </paper-button>
+      </div>
     </div>
     <div class="settings-box block">
       <settings-checkbox pref="{{prefs.download.prompt_for_download}}"

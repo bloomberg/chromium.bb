@@ -15,6 +15,11 @@
 
   <dom-module id="cr-settings">
     <template>
+      <style>
+        :host {
+          color: var(--paper-grey-800);
+        }
+      </style>
       <settings-prefs id="prefs" prefs="{{prefs_}}"></settings-prefs>
       <settings-ui id="ui" prefs="{{prefs_}}"></settings-ui>
     </template>
