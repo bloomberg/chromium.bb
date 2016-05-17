@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/memory/free_deleter.h"
-#include "base/win/windows_version.h"
 #include "net/base/ip_address.h"
 #include "net/dns/dns_protocol.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -329,7 +328,6 @@ TEST(DnsConfigServiceWinTest, ConvertSuffixSearch) {
       { "a.b", "connection.suffix" },
     },
     {  // Devolution disabled when no explicit level.
-       // Windows XP and Vista use a default level = 2, but we don't.
       {
         { false },
         { false },
@@ -395,16 +393,11 @@ TEST(DnsConfigServiceWinTest, AppendToMultiLabelName) {
     { 0 },
   };
 
-  // The default setting was true pre-Vista.
-  bool default_value = (base::win::GetVersion() < base::win::VERSION_VISTA);
-
   const struct TestCase {
     internal::DnsSystemSettings::RegDword input;
     bool expected_output;
   } cases[] = {
-    { { true, 0 }, false },
-    { { true, 1 }, true },
-    { { false, 0 }, default_value },
+      {{true, 0}, false}, {{true, 1}, true}, {{false, 0}, false},
   };
 
   for (const auto& t : cases) {
