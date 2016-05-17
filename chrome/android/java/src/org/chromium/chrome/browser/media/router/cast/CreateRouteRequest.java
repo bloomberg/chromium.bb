@@ -184,7 +184,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
         if (mState == STATE_API_CONNECTION_SUSPENDED) return;
 
         try {
-            launchApplication(mApiClient, mSource.getApplicationId(), false)
+            launchApplication(mApiClient, mSource.getApplicationId(), true)
                     .setResultCallback(this);
             mState = STATE_LAUNCHING_APPLICATION;
         } catch (Exception e) {
