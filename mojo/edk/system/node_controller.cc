@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_handle.h"
+#include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
 #include "crypto/random.h"
 #include "mojo/edk/embedder/embedder_internal.h"
@@ -189,6 +190,14 @@ void NodeController::ReservePort(const std::string& token,
   base::AutoLock lock(reserved_ports_lock_);
   auto result = reserved_ports_.insert(std::make_pair(token, port));
   DCHECK(result.second);
+
+  // Safeguard against unpredictable and exceptional cases where a reservation
+  // holder may disappear without ever claiming their reservation.
+  io_task_runner_->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&NodeController::CancelReservation,
+                 base::Unretained(this), token),
+      base::TimeDelta::FromMinutes(1));
 }
 
 void NodeController::MergePortIntoParent(const std::string& token,
@@ -538,6 +547,19 @@ void NodeController::DropAllPeers() {
     delete this;
 }
 
+void NodeController::CancelReservation(const std::string& token) {
+  ports::PortRef reserved_port;
+  {
+    base::AutoLock lock(reserved_ports_lock_);
+    auto iter = reserved_ports_.find(token);
+    if (iter == reserved_ports_.end())  // Already claimed!
+      return;
+    reserved_port = iter->second;
+    reserved_ports_.erase(iter);
+  }
+  node_->ClosePort(reserved_port);
+}
+
 void NodeController::GenerateRandomPortName(ports::PortName* port_name) {
   GenerateRandomName(port_name);
 }
@@ -879,6 +901,8 @@ void NodeController::OnIntroduce(const ports::NodeName& from_node,
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
 
   if (!channel_handle.is_valid()) {
+    node_->LostConnectionToNode(name);
+
     DLOG(ERROR) << "Could not be introduced to peer " << name;
     base::AutoLock lock(peers_lock_);
     pending_peer_messages_.erase(name);
