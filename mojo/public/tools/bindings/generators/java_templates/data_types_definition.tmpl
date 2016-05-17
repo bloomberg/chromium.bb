@@ -122,6 +122,19 @@ if (decoder{{level+1}} == null) {
 {{variable}} = {{kind|java_type}}.decode(decoder{{level}}, {{offset}});
 {% else %}
 {{variable}} = decoder{{level}}.{{kind|decode_method(offset, bit)}};
+{%   if kind|is_array_kind and kind.kind|is_enum_kind %}
+{%     if kind|is_nullable_kind %}
+if ({{variable}} != null) {
+{%     else %}
+{
+{%     endif %}
+    for (int i{{level}} = 0; i{{level}} < {{variable}}.length; ++i{{level}}) {
+        {{kind.kind|java_class_for_enum}}.validate({{variable}}[i{{level}}]);
+    }
+}
+{%   elif kind|is_enum_kind %}
+    {{kind|java_class_for_enum}}.validate({{variable}});
+{%   endif %}
 {% endif %}
 {% endmacro %}
 

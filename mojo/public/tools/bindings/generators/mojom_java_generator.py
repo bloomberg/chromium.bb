@@ -237,6 +237,10 @@ def GetNameForKind(context, kind):
   elements += _GetNameHierachy(kind)
   return '.'.join(elements)
 
+@contextfilter
+def GetJavaClassForEnum(context, kind):
+  return GetNameForKind(context, kind)
+
 def GetBoxedJavaType(context, kind, with_generics=True):
   unboxed_type = GetJavaType(context, kind, False, with_generics)
   if unboxed_type in _java_primitive_to_boxed_type:
@@ -416,6 +420,7 @@ class Generator(generator.Generator):
     'interface_response_name': GetInterfaceResponseName,
     'is_array_kind': mojom.IsArrayKind,
     'is_any_handle_kind': mojom.IsAnyHandleKind,
+    "is_enum_kind": mojom.IsEnumKind,
     'is_interface_request_kind': mojom.IsInterfaceRequestKind,
     'is_map_kind': mojom.IsMapKind,
     'is_nullable_kind': mojom.IsNullableKind,
@@ -424,6 +429,7 @@ class Generator(generator.Generator):
     'is_struct_kind': mojom.IsStructKind,
     'is_union_array_kind': IsUnionArrayKind,
     'is_union_kind': mojom.IsUnionKind,
+    'java_class_for_enum': GetJavaClassForEnum,
     'java_true_false': GetJavaTrueFalse,
     'java_type': GetJavaType,
     'method_ordinal_name': GetMethodOrdinalName,
