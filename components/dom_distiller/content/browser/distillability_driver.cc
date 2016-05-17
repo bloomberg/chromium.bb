@@ -73,7 +73,11 @@ void DistillabilityDriver::DidStartProvisionalLoadForFrame(
 
 void DistillabilityDriver::SetupMojoService() {
   if (!web_contents()) return;
-  web_contents()->GetMainFrame()->GetServiceRegistry()->AddService(
+
+  content::RenderFrameHost* frame_host = web_contents()->GetMainFrame();
+  if (!frame_host || !frame_host->GetServiceRegistry()) return;
+
+  frame_host->GetServiceRegistry()->AddService(
       base::Bind(&DistillabilityDriver::CreateDistillabilityService,
           weak_factory_.GetWeakPtr()));
 }
