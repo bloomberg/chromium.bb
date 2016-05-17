@@ -4501,6 +4501,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
         }));
   }
 
+  [self didUpdateSSLStatusForCurrentNavigationItem];
   [self loadCancelled];
 }
 
