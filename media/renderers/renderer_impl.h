@@ -22,6 +22,7 @@
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/renderer.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -128,6 +129,8 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   // Callback executed when a runtime error happens.
   void OnError(PipelineStatus error);
   void OnWaitingForDecryptionKey();
+  void OnVideoNaturalSizeChange(const gfx::Size& size);
+  void OnVideoOpacityChange(bool opaque);
 
   State state_;
 

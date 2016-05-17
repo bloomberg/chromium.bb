@@ -1548,6 +1548,7 @@
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../ui/gfx/gfx.gyp:gfx_test_support',
       ],
       'sources': [
         'audio/audio_unittest_util.cc',

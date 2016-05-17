@@ -156,6 +156,8 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline,
   void OnStatisticsUpdate(const PipelineStatistics& stats) override;
   void OnBufferingStateChange(BufferingState state) override;
   void OnWaitingForDecryptionKey() override;
+  void OnVideoNaturalSizeChange(const gfx::Size& size) override;
+  void OnVideoOpacityChange(bool opaque) override;
 
   // The following "task" methods correspond to the public methods, but these
   // methods are run as the result of posting a task to the Pipeline's

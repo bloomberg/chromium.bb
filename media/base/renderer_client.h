@@ -5,6 +5,9 @@
 #ifndef MEDIA_BASE_RENDERER_CLIENT_H_
 #define MEDIA_BASE_RENDERER_CLIENT_H_
 
+#include "media/base/pipeline_status.h"
+#include "ui/gfx/geometry/size.h"
+
 namespace media {
 
 // Interface used by Renderer, AudioRenderer, and VideoRenderer implementations
@@ -25,6 +28,14 @@ class RendererClient {
 
   // Executed whenever the key needed to decrypt the stream is not available.
   virtual void OnWaitingForDecryptionKey() = 0;
+
+  // Executed for the first video frame and whenever natural size changes.
+  // Only used if media stream contains video track.
+  virtual void OnVideoNaturalSizeChange(const gfx::Size& size) = 0;
+
+  // Executed for the first video frame and whenever opacity changes.
+  // Only used if media stream contains video track.
+  virtual void OnVideoOpacityChange(bool opaque) = 0;
 };
 
 }  // namespace media

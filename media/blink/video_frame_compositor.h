@@ -53,18 +53,9 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor
  public:
   // |compositor_task_runner| is the task runner on which this class will live,
   // though it may be constructed on any thread.
-  //
-  // |natural_size_changed_cb| is run with the new natural size of the video
-  // frame whenever a change in natural size is detected. Run on the same
-  // thread as the caller of UpdateCurrentFrame().
-  //
-  // |opacity_changed_cb| is run when a change in opacity is detected. It *is*
-  // called the first time UpdateCurrentFrame() is called. Run on the same
-  // thread as the caller of UpdateCurrentFrame().
-  VideoFrameCompositor(
-      const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
-      const base::Callback<void(gfx::Size)>& natural_size_changed_cb,
-      const base::Callback<void(bool)>& opacity_changed_cb);
+  explicit VideoFrameCompositor(
+      const scoped_refptr<base::SingleThreadTaskRunner>&
+          compositor_task_runner);
 
   // Destruction must happen on the compositor thread; Stop() must have been
   // called before destruction starts.
@@ -125,8 +116,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor
   // must be used to change |rendering_| state.
   void OnRendererStateUpdate(bool new_state);
 
-  // Handles setting of |current_frame_| and fires |natural_size_changed_cb_|
-  // and |opacity_changed_cb_| when the frame properties changes.
+  // Handles setting of |current_frame_|.
   bool ProcessNewFrame(const scoped_refptr<VideoFrame>& frame);
 
   // Called by |background_rendering_timer_| when enough time elapses where we
@@ -135,19 +125,14 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor
 
   // If |callback_| is available, calls Render() with the provided properties.
   // Updates |is_background_rendering_|, |last_interval_|, and resets
-  // |background_rendering_timer_|.  Ensures that natural size and opacity
-  // changes are correctly fired.  Returns true if there's a new frame available
-  // via GetCurrentFrame().
+  // |background_rendering_timer_|. Returns true if there's a new frame
+  // available via GetCurrentFrame().
   bool CallRender(base::TimeTicks deadline_min,
                   base::TimeTicks deadline_max,
                   bool background_rendering);
 
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
   std::unique_ptr<base::TickClock> tick_clock_;
-
-  // These callbacks are executed on the compositor thread.
-  const base::Callback<void(gfx::Size)> natural_size_changed_cb_;
-  const base::Callback<void(bool)> opacity_changed_cb_;
 
   // Allows tests to disable the background rendering task.
   bool background_rendering_enabled_;

@@ -118,13 +118,15 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
 
   // Pipeline::Client overrides
   void OnError(PipelineStatus status) override { NOTREACHED(); }
-  void OnEnded() override{};
-  void OnMetadata(PipelineMetadata metadata) override{};
-  void OnBufferingStateChange(BufferingState state) override{};
-  void OnDurationChange() override{};
+  void OnEnded() override {}
+  void OnMetadata(PipelineMetadata metadata) override {}
+  void OnBufferingStateChange(BufferingState state) override {}
+  void OnDurationChange() override {}
   void OnAddTextTrack(const TextTrackConfig& config,
-                      const AddTextTrackDoneCB& done_cb) override{};
-  void OnWaitingForDecryptionKey() override{};
+                      const AddTextTrackDoneCB& done_cb) override {}
+  void OnWaitingForDecryptionKey() override {}
+  void OnVideoNaturalSizeChange(const gfx::Size& size) override {}
+  void OnVideoOpacityChange(bool opaque) override {}
 
   base::MessageLoop message_loop_;
 

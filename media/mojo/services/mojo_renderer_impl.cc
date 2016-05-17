@@ -13,6 +13,7 @@
 #include "media/base/demuxer_stream_provider.h"
 #include "media/base/renderer_client.h"
 #include "media/mojo/services/mojo_demuxer_stream_impl.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
 
 namespace media {
 
@@ -176,6 +177,18 @@ void MojoRendererImpl::OnError() {
   // TODO(tim): Should we plumb error code from remote renderer?
   // http://crbug.com/410451.
   client_->OnError(PIPELINE_ERROR_DECODE);
+}
+
+void MojoRendererImpl::OnVideoNaturalSizeChange(mojo::SizePtr size) {
+  DVLOG(2) << __FUNCTION__ << ": " << size->width << "," << size->height;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_->OnVideoNaturalSizeChange(size.To<gfx::Size>());
+}
+
+void MojoRendererImpl::OnVideoOpacityChange(bool opaque) {
+  DVLOG(2) << __FUNCTION__ << ": " << opaque;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_->OnVideoOpacityChange(opaque);
 }
 
 void MojoRendererImpl::OnConnectionError() {

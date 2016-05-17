@@ -122,8 +122,6 @@ class CmaRenderer : public ::media::Renderer {
   bool received_video_eos_;
 
   // Data members for helping the creation of the video hole frame.
-  gfx::Size initial_natural_size_;
-  bool initial_video_hole_created_;
   ::media::GpuVideoAcceleratorFactories* gpu_factories_;
   std::unique_ptr<HoleFrameFactory> hole_frame_factory_;
 

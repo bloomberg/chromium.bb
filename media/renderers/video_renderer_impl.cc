@@ -60,6 +60,8 @@ VideoRendererImpl::VideoRendererImpl(
       render_first_frame_and_stop_(false),
       posted_maybe_stop_after_first_paint_(false),
       last_video_memory_usage_(0),
+      have_renderered_frames_(false),
+      last_frame_opaque_(false),
       weak_factory_(this) {
   if (gpu_factories &&
       gpu_factories->ShouldUseGpuMemoryBuffersForVideoFrames()) {
@@ -141,6 +143,7 @@ void VideoRendererImpl::Initialize(
   DCHECK(!posted_maybe_stop_after_first_paint_);
   DCHECK(!was_background_rendering_);
   DCHECK(!time_progressing_);
+  DCHECK(!have_renderered_frames_);
 
   low_delay_ = (stream->liveness() == DemuxerStream::LIVENESS_LIVE);
   UMA_HISTOGRAM_BOOLEAN("Media.VideoRenderer.LowDelay", low_delay_);
@@ -178,6 +181,24 @@ scoped_refptr<VideoFrame> VideoRendererImpl::Render(
   // Due to how the |algorithm_| holds frames, this should never be null if
   // we've had a proper startup sequence.
   DCHECK(result);
+
+  // Notify client of size and opacity changes if this is the first frame
+  // or if those have changed from the last frame.
+  if (!have_renderered_frames_ ||
+      (last_frame_natural_size_ != result->natural_size())) {
+    last_frame_natural_size_ = result->natural_size();
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&VideoRendererImpl::OnVideoNaturalSizeChange,
+                   weak_factory_.GetWeakPtr(), last_frame_natural_size_));
+  }
+  if (!have_renderered_frames_ ||
+      (last_frame_opaque_ != IsOpaque(result->format()))) {
+    last_frame_opaque_ = IsOpaque(result->format());
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&VideoRendererImpl::OnVideoOpacityChange,
+                              weak_factory_.GetWeakPtr(), last_frame_opaque_));
+  }
 
   // Declare HAVE_NOTHING if we reach a state where we can't progress playback
   // any further.  We don't want to do this if we've already done so, reached
@@ -237,6 +258,7 @@ scoped_refptr<VideoFrame> VideoRendererImpl::Render(
   task_runner_->PostTask(FROM_HERE, base::Bind(&VideoRendererImpl::AttemptRead,
                                                weak_factory_.GetWeakPtr()));
 
+  have_renderered_frames_ = true;
   return result;
 }
 
@@ -292,6 +314,16 @@ void VideoRendererImpl::OnBufferingStateChange(BufferingState state) {
 void VideoRendererImpl::OnWaitingForDecryptionKey() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   client_->OnWaitingForDecryptionKey();
+}
+
+void VideoRendererImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_->OnVideoNaturalSizeChange(size);
+}
+
+void VideoRendererImpl::OnVideoOpacityChange(bool opaque) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_->OnVideoOpacityChange(opaque);
 }
 
 void VideoRendererImpl::SetTickClockForTesting(

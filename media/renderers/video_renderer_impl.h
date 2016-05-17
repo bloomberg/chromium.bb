@@ -95,6 +95,8 @@ class MEDIA_EXPORT VideoRendererImpl
   void OnStatisticsUpdate(const PipelineStatistics& stats);
   void OnBufferingStateChange(BufferingState state);
   void OnWaitingForDecryptionKey();
+  void OnVideoNaturalSizeChange(const gfx::Size& size);
+  void OnVideoOpacityChange(bool opaque);
 
   // Callback for |video_frame_stream_| to deliver decoded video frames and
   // report video decoding status. If a frame is available the planes will be
@@ -284,6 +286,12 @@ class MEDIA_EXPORT VideoRendererImpl
   // Memory usage of |algorithm_| recorded during the last UpdateStats_Locked()
   // call.
   int64_t last_video_memory_usage_;
+
+  // Indicates if Render() has been called yet.
+  bool have_renderered_frames_;
+  // Tracks last frame properties to detect and notify client of any changes.
+  gfx::Size last_frame_natural_size_;
+  bool last_frame_opaque_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<VideoRendererImpl> weak_factory_;

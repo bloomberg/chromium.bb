@@ -236,6 +236,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnAddTextTrack(const TextTrackConfig& config,
                       const AddTextTrackDoneCB& done_cb) override;
   void OnWaitingForDecryptionKey() override;
+  void OnVideoNaturalSizeChange(const gfx::Size& size) override;
+  void OnVideoOpacityChange(bool opaque) override;
 
   // Actually seek. Avoids causing |should_notify_time_changed_| to be set when
   // |time_updated| is false.
@@ -271,10 +273,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Gets the duration value reported by the pipeline.
   double GetPipelineDuration() const;
-
-  // Callbacks from |pipeline_| that are forwarded to |client_|.
-  void OnNaturalSizeChanged(gfx::Size size);
-  void OnOpacityChanged(bool opaque);
 
   // Called by VideoRendererImpl on its internal thread with the new frame to be
   // painted.

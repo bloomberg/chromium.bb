@@ -192,10 +192,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
           params.compositor_task_runner()
               ? params.compositor_task_runner()
               : base::MessageLoop::current()->task_runner()),
-      compositor_(new VideoFrameCompositor(
-          compositor_task_runner_,
-          BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnNaturalSizeChanged),
-          BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnOpacityChanged))),
+      compositor_(new VideoFrameCompositor(compositor_task_runner_)),
       is_cdm_attached_(false),
 #if defined(OS_ANDROID)  // WMPI_CAST
       cast_impl_(this, client_, params.context_3d_cb()),
@@ -1083,6 +1080,35 @@ void WebMediaPlayerImpl::OnWaitingForDecryptionKey() {
   encrypted_client_->didResumePlaybackBlockedForKey();
 }
 
+void WebMediaPlayerImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DCHECK_NE(ready_state_, WebMediaPlayer::ReadyStateHaveNothing);
+
+  if (size == pipeline_metadata_.natural_size)
+    return;
+
+  TRACE_EVENT0("media", "WebMediaPlayerImpl::OnNaturalSizeChanged");
+  media_log_->AddEvent(
+      media_log_->CreateVideoSizeSetEvent(size.width(), size.height()));
+
+  if (fullscreen_ && surface_manager_)
+    surface_manager_->NaturalSizeChanged(size);
+
+  pipeline_metadata_.natural_size = size;
+  client_->sizeChanged();
+}
+
+void WebMediaPlayerImpl::OnVideoOpacityChange(bool opaque) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+  DCHECK_NE(ready_state_, WebMediaPlayer::ReadyStateHaveNothing);
+
+  opaque_ = opaque;
+  // Modify content opaqueness of cc::Layer directly so that
+  // SetContentsOpaqueIsFixed is ignored.
+  if (video_weblayer_)
+    video_weblayer_->layer()->SetContentsOpaque(opaque_);
+}
+
 void WebMediaPlayerImpl::OnHidden() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   UpdatePlayState();
@@ -1340,35 +1366,6 @@ double WebMediaPlayerImpl::GetPipelineDuration() const {
     return std::numeric_limits<double>::infinity();
 
   return duration.InSecondsF();
-}
-
-void WebMediaPlayerImpl::OnNaturalSizeChanged(gfx::Size size) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-  DCHECK_NE(ready_state_, WebMediaPlayer::ReadyStateHaveNothing);
-
-  if (size == pipeline_metadata_.natural_size)
-    return;
-
-  TRACE_EVENT0("media", "WebMediaPlayerImpl::OnNaturalSizeChanged");
-  media_log_->AddEvent(
-      media_log_->CreateVideoSizeSetEvent(size.width(), size.height()));
-
-  if (fullscreen_ && surface_manager_)
-    surface_manager_->NaturalSizeChanged(size);
-
-  pipeline_metadata_.natural_size = size;
-  client_->sizeChanged();
-}
-
-void WebMediaPlayerImpl::OnOpacityChanged(bool opaque) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-  DCHECK_NE(ready_state_, WebMediaPlayer::ReadyStateHaveNothing);
-
-  opaque_ = opaque;
-  // Modify content opaqueness of cc::Layer directly so that
-  // SetContentsOpaqueIsFixed is ignored.
-  if (video_weblayer_)
-    video_weblayer_->layer()->SetContentsOpaque(opaque_);
 }
 
 static void GetCurrentFrameAndSignal(

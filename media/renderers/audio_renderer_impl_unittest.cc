@@ -127,9 +127,13 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
   }
   MOCK_METHOD1(OnBufferingStateChange, void(BufferingState));
   MOCK_METHOD0(OnWaitingForDecryptionKey, void(void));
+  MOCK_METHOD1(OnVideoNaturalSizeChange, void(const gfx::Size&));
+  MOCK_METHOD1(OnVideoOpacityChange, void(bool));
 
   void InitializeRenderer(const PipelineStatusCB& pipeline_status_cb) {
     EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
+    EXPECT_CALL(*this, OnVideoNaturalSizeChange(_)).Times(0);
+    EXPECT_CALL(*this, OnVideoOpacityChange(_)).Times(0);
     renderer_->Initialize(&demuxer_stream_, nullptr, this, pipeline_status_cb);
   }
 

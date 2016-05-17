@@ -11,6 +11,7 @@
 #include "media/base/renderer.h"
 #include "media/mojo/services/demuxer_stream_provider_shim.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
 
 namespace media {
 
@@ -126,6 +127,16 @@ void MojoRendererService::OnBufferingStateChange(BufferingState state) {
 
 void MojoRendererService::OnWaitingForDecryptionKey() {
   // TODO(alokp): Plumb the event to mojom::RendererClient. crbug/585287
+}
+
+void MojoRendererService::OnVideoNaturalSizeChange(const gfx::Size& size) {
+  DVLOG(2) << __FUNCTION__ << "(" << size.ToString() << ")";
+  client_->OnVideoNaturalSizeChange(mojo::Size::From(size));
+}
+
+void MojoRendererService::OnVideoOpacityChange(bool opaque) {
+  DVLOG(2) << __FUNCTION__ << "(" << opaque << ")";
+  client_->OnVideoOpacityChange(opaque);
 }
 
 void MojoRendererService::OnStreamReady(

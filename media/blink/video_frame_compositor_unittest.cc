@@ -29,16 +29,8 @@ class VideoFrameCompositorTest : public testing::Test,
  public:
   VideoFrameCompositorTest()
       : tick_clock_(new base::SimpleTestTickClock()),
-        compositor_(new VideoFrameCompositor(
-            message_loop.task_runner(),
-            base::Bind(&VideoFrameCompositorTest::NaturalSizeChanged,
-                       base::Unretained(this)),
-            base::Bind(&VideoFrameCompositorTest::OpacityChanged,
-                       base::Unretained(this)))),
-        did_receive_frame_count_(0),
-        natural_size_changed_count_(0),
-        opacity_changed_count_(0),
-        opaque_(false) {
+        compositor_(new VideoFrameCompositor(message_loop.task_runner())),
+        did_receive_frame_count_(0) {
     compositor_->SetVideoFrameProviderClient(this);
     compositor_->set_tick_clock_for_testing(
         std::unique_ptr<base::TickClock>(tick_clock_));
@@ -58,11 +50,6 @@ class VideoFrameCompositorTest : public testing::Test,
 
   VideoFrameCompositor* compositor() { return compositor_.get(); }
   int did_receive_frame_count() { return did_receive_frame_count_; }
-  int natural_size_changed_count() { return natural_size_changed_count_; }
-  gfx::Size natural_size() { return natural_size_; }
-
-  int opacity_changed_count() { return opacity_changed_count_; }
-  bool opaque() { return opaque_; }
 
  protected:
   // cc::VideoFrameProvider::Client implementation.
@@ -77,16 +64,6 @@ class VideoFrameCompositorTest : public testing::Test,
                                          base::TimeTicks,
                                          bool));
   MOCK_METHOD0(OnFrameDropped, void());
-
-  void NaturalSizeChanged(gfx::Size natural_size) {
-    ++natural_size_changed_count_;
-    natural_size_ = natural_size;
-  }
-
-  void OpacityChanged(bool opaque) {
-    ++opacity_changed_count_;
-    opaque_ = opaque;
-  }
 
   void StartVideoRendererSink() {
     EXPECT_CALL(*this, StartRendering());
@@ -117,10 +94,6 @@ class VideoFrameCompositorTest : public testing::Test,
   std::unique_ptr<VideoFrameCompositor> compositor_;
 
   int did_receive_frame_count_;
-  int natural_size_changed_count_;
-  gfx::Size natural_size_;
-  int opacity_changed_count_;
-  bool opaque_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameCompositorTest);
 };
@@ -138,145 +111,6 @@ TEST_F(VideoFrameCompositorTest, PaintFrameUsingOldRenderingPath) {
   scoped_refptr<VideoFrame> actual = compositor()->GetCurrentFrame();
   EXPECT_EQ(expected, actual);
   EXPECT_EQ(1, did_receive_frame_count());
-}
-
-TEST_F(VideoFrameCompositorTest, NaturalSizeChanged) {
-  gfx::Size initial_size(8, 8);
-  scoped_refptr<VideoFrame> initial_frame =
-      VideoFrame::CreateBlackFrame(initial_size);
-
-  gfx::Size larger_size(16, 16);
-  scoped_refptr<VideoFrame> larger_frame =
-      VideoFrame::CreateBlackFrame(larger_size);
-
-  gfx::Size empty_size(0, 0);
-
-  // Initial expectations.
-  EXPECT_EQ(empty_size, natural_size());
-  EXPECT_EQ(0, natural_size_changed_count());
-
-  // Callback is fired for the first frame.
-  compositor()->PaintFrameUsingOldRenderingPath(initial_frame);
-  EXPECT_EQ(initial_size, natural_size());
-  EXPECT_EQ(1, natural_size_changed_count());
-
-  // Callback should be fired once.
-  compositor()->PaintFrameUsingOldRenderingPath(larger_frame);
-  EXPECT_EQ(larger_size, natural_size());
-  EXPECT_EQ(2, natural_size_changed_count());
-
-  compositor()->PaintFrameUsingOldRenderingPath(larger_frame);
-  EXPECT_EQ(larger_size, natural_size());
-  EXPECT_EQ(2, natural_size_changed_count());
-
-  // Callback is fired once more when switching back to initial size.
-  compositor()->PaintFrameUsingOldRenderingPath(initial_frame);
-  EXPECT_EQ(initial_size, natural_size());
-  EXPECT_EQ(3, natural_size_changed_count());
-
-  compositor()->PaintFrameUsingOldRenderingPath(initial_frame);
-  EXPECT_EQ(initial_size, natural_size());
-  EXPECT_EQ(3, natural_size_changed_count());
-
-  natural_size_changed_count_ = 0;
-  natural_size_ = empty_size;
-  compositor()->clear_current_frame_for_testing();
-
-  EXPECT_CALL(*this, Render(_, _, _))
-      .WillOnce(Return(initial_frame))
-      .WillOnce(Return(larger_frame))
-      .WillOnce(Return(initial_frame))
-      .WillOnce(Return(initial_frame));
-  StartVideoRendererSink();
-
-  // Starting the sink will issue one Render() call, ensure the callback is
-  // fired for the first frame.
-  EXPECT_EQ(1, natural_size_changed_count());
-  EXPECT_EQ(initial_size, natural_size());
-
-  // Once another frame is received with a different size it should fire.
-  EXPECT_TRUE(
-      compositor()->UpdateCurrentFrame(base::TimeTicks(), base::TimeTicks()));
-  RenderFrame();
-  EXPECT_EQ(larger_size, natural_size());
-  EXPECT_EQ(2, natural_size_changed_count());
-
-  EXPECT_TRUE(
-      compositor()->UpdateCurrentFrame(base::TimeTicks(), base::TimeTicks()));
-  RenderFrame();
-  EXPECT_EQ(initial_size, natural_size());
-  EXPECT_EQ(3, natural_size_changed_count());
-
-  EXPECT_FALSE(
-      compositor()->UpdateCurrentFrame(base::TimeTicks(), base::TimeTicks()));
-  EXPECT_EQ(initial_size, natural_size());
-  EXPECT_EQ(3, natural_size_changed_count());
-  RenderFrame();
-
-  StopVideoRendererSink(true);
-}
-
-TEST_F(VideoFrameCompositorTest, OpacityChanged) {
-  gfx::Size size(8, 8);
-  scoped_refptr<VideoFrame> opaque_frame = CreateOpaqueFrame();
-  scoped_refptr<VideoFrame> not_opaque_frame = VideoFrame::CreateFrame(
-      PIXEL_FORMAT_YV12A, size, gfx::Rect(size), size, base::TimeDelta());
-
-  // Initial expectations.
-  EXPECT_FALSE(opaque());
-  EXPECT_EQ(0, opacity_changed_count());
-
-  // Callback is fired for the first frame.
-  compositor()->PaintFrameUsingOldRenderingPath(not_opaque_frame);
-  EXPECT_FALSE(opaque());
-  EXPECT_EQ(1, opacity_changed_count());
-
-  // Callback shouldn't be first subsequent times with same opaqueness.
-  compositor()->PaintFrameUsingOldRenderingPath(not_opaque_frame);
-  EXPECT_FALSE(opaque());
-  EXPECT_EQ(1, opacity_changed_count());
-
-  // Callback is fired when using opacity changes.
-  compositor()->PaintFrameUsingOldRenderingPath(opaque_frame);
-  EXPECT_TRUE(opaque());
-  EXPECT_EQ(2, opacity_changed_count());
-
-  // Callback shouldn't be first subsequent times with same opaqueness.
-  compositor()->PaintFrameUsingOldRenderingPath(opaque_frame);
-  EXPECT_TRUE(opaque());
-  EXPECT_EQ(2, opacity_changed_count());
-
-  opacity_changed_count_ = 0;
-  compositor()->clear_current_frame_for_testing();
-
-  EXPECT_CALL(*this, Render(_, _, _))
-      .WillOnce(Return(not_opaque_frame))
-      .WillOnce(Return(not_opaque_frame))
-      .WillOnce(Return(opaque_frame))
-      .WillOnce(Return(opaque_frame));
-  StartVideoRendererSink();
-  EXPECT_FALSE(opaque());
-  EXPECT_EQ(1, opacity_changed_count());
-
-  EXPECT_TRUE(
-      compositor()->UpdateCurrentFrame(base::TimeTicks(), base::TimeTicks()));
-  RenderFrame();
-  EXPECT_FALSE(opaque());
-  EXPECT_EQ(1, opacity_changed_count());
-
-  EXPECT_TRUE(
-      compositor()->UpdateCurrentFrame(base::TimeTicks(), base::TimeTicks()));
-  RenderFrame();
-  EXPECT_TRUE(opaque());
-  EXPECT_EQ(2, opacity_changed_count());
-
-  EXPECT_FALSE(
-      compositor()->UpdateCurrentFrame(base::TimeTicks(), base::TimeTicks()));
-  EXPECT_TRUE(opaque());
-  EXPECT_EQ(2, opacity_changed_count());
-  RenderFrame();
-
-  StopVideoRendererSink(true);
 }
 
 TEST_F(VideoFrameCompositorTest, VideoRendererSinkFrameDropped) {

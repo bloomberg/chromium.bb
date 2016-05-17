@@ -6,6 +6,7 @@ module media.mojom;
 
 import "media/mojo/interfaces/demuxer_stream.mojom";
 import "media/mojo/interfaces/media_types.mojom";
+import "ui/mojo/geometry/geometry.mojom";
 
 interface Renderer {
   // Initializes the Renderer with one or both of an audio and video stream,
@@ -52,4 +53,10 @@ interface RendererClient {
   // this error happens during an operation that has a completion callback,
   // OnError() will be called before firing the completion callback.
   OnError();
+
+  // Executed for the first video frame and whenever natural size changes.
+  OnVideoNaturalSizeChange(mojo.Size size);
+
+  // Executed for the first video frame and whenever opacity changes.
+  OnVideoOpacityChange(bool opaque);
 };

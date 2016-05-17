@@ -56,6 +56,12 @@ class MEDIA_EXPORT Pipeline {
 
     // Executed whenever the key needed to decrypt the stream is not available.
     virtual void OnWaitingForDecryptionKey() = 0;
+
+    // Executed for the first video frame and whenever natural size changes.
+    virtual void OnVideoNaturalSizeChange(const gfx::Size& size) = 0;
+
+    // Executed for the first video frame and whenever opacity changes.
+    virtual void OnVideoOpacityChange(bool opaque) = 0;
   };
 
   virtual ~Pipeline() {}

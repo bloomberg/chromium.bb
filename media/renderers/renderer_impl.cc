@@ -48,6 +48,14 @@ class RendererImpl::RendererClientInternal : public RendererClient {
   void OnWaitingForDecryptionKey() override {
     renderer_->OnWaitingForDecryptionKey();
   }
+  void OnVideoNaturalSizeChange(const gfx::Size& size) override {
+    DCHECK(type_ == DemuxerStream::VIDEO);
+    renderer_->OnVideoNaturalSizeChange(size);
+  }
+  void OnVideoOpacityChange(bool opaque) override {
+    DCHECK(type_ == DemuxerStream::VIDEO);
+    renderer_->OnVideoOpacityChange(opaque);
+  }
 
  private:
   DemuxerStream::Type type_;
@@ -677,6 +685,16 @@ void RendererImpl::OnError(PipelineStatus error) {
 void RendererImpl::OnWaitingForDecryptionKey() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   client_->OnWaitingForDecryptionKey();
+}
+
+void RendererImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_->OnVideoNaturalSizeChange(size);
+}
+
+void RendererImpl::OnVideoOpacityChange(bool opaque) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_->OnVideoOpacityChange(opaque);
 }
 
 }  // namespace media

@@ -17,13 +17,9 @@ namespace media {
 const int kBackgroundRenderingTimeoutMs = 250;
 
 VideoFrameCompositor::VideoFrameCompositor(
-    const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
-    const base::Callback<void(gfx::Size)>& natural_size_changed_cb,
-    const base::Callback<void(bool)>& opacity_changed_cb)
+    const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner)
     : compositor_task_runner_(compositor_task_runner),
       tick_clock_(new base::DefaultTickClock()),
-      natural_size_changed_cb_(natural_size_changed_cb),
-      opacity_changed_cb_(opacity_changed_cb),
       background_rendering_enabled_(true),
       background_rendering_timer_(
           FROM_HERE,
@@ -192,15 +188,6 @@ bool VideoFrameCompositor::ProcessNewFrame(
   // Set the flag indicating that the current frame is unrendered, if we get a
   // subsequent PutCurrentFrame() call it will mark it as rendered.
   rendered_last_frame_ = false;
-
-  if (!current_frame_ ||
-      current_frame_->natural_size() != frame->natural_size()) {
-    natural_size_changed_cb_.Run(frame->natural_size());
-  }
-
-  if (!current_frame_ ||
-      IsOpaque(current_frame_->format()) != IsOpaque(frame->format()))
-    opacity_changed_cb_.Run(IsOpaque(frame->format()));
 
   current_frame_ = frame;
   return true;

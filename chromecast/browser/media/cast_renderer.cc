@@ -103,7 +103,6 @@ void CastRenderer::Initialize(
       demuxer_stream_provider->GetStream(::media::DemuxerStream::VIDEO);
   if (video_stream) {
     VideoPipelineClient video_client;
-    // TODO(alokp): Set VideoPipelineClient::natural_size_changed_cb.
     video_client.av_pipeline_client.wait_for_key_cb = base::Bind(
         &CastRenderer::OnWaitingForDecryptionKey, weak_factory_.GetWeakPtr());
     video_client.av_pipeline_client.eos_cb = base::Bind(
@@ -112,6 +111,8 @@ void CastRenderer::Initialize(
         base::Bind(&CastRenderer::OnError, weak_factory_.GetWeakPtr());
     video_client.av_pipeline_client.statistics_cb = base::Bind(
         &CastRenderer::OnStatisticsUpdate, weak_factory_.GetWeakPtr());
+    video_client.natural_size_changed_cb = base::Bind(
+        &CastRenderer::OnVideoNaturalSizeChange, weak_factory_.GetWeakPtr());
     // TODO(alokp): Change MediaPipelineImpl API to accept a single config
     // after CmaRenderer is deprecated.
     std::vector<::media::VideoDecoderConfig> video_configs;
@@ -204,6 +205,16 @@ void CastRenderer::OnBufferingStateChange(::media::BufferingState state) {
 void CastRenderer::OnWaitingForDecryptionKey() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   client_->OnWaitingForDecryptionKey();
+}
+
+void CastRenderer::OnVideoNaturalSizeChange(const gfx::Size& size) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_->OnVideoNaturalSizeChange(size);
+}
+
+void CastRenderer::OnVideoOpacityChange(bool opaque) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_->OnVideoOpacityChange(opaque);
 }
 
 }  // namespace media

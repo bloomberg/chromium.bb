@@ -5,6 +5,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chromecast/browser/media/media_pipeline_backend_factory.h"
 #include "media/base/renderer.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -48,6 +49,8 @@ class CastRenderer : public ::media::Renderer {
   void OnStatisticsUpdate(const ::media::PipelineStatistics& stats);
   void OnBufferingStateChange(::media::BufferingState state);
   void OnWaitingForDecryptionKey();
+  void OnVideoNaturalSizeChange(const gfx::Size& size);
+  void OnVideoOpacityChange(bool opaque);
 
   const CreateMediaPipelineBackendCB create_backend_cb_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

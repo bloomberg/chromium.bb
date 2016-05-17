@@ -58,6 +58,8 @@ class MojoRendererImpl : public Renderer, public mojom::RendererClient {
   void OnBufferingStateChange(mojom::BufferingState state) override;
   void OnEnded() override;
   void OnError() override;
+  void OnVideoNaturalSizeChange(mojo::SizePtr size) override;
+  void OnVideoOpacityChange(bool opaque) override;
 
   // Callback for connection error on |remote_renderer_|.
   void OnConnectionError();

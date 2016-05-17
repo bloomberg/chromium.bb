@@ -77,7 +77,7 @@ class PipelineImplTest : public ::testing::Test {
  public:
   // Used for setting expectations on pipeline callbacks.  Using a StrictMock
   // also lets us test for missing callbacks.
-  class CallbackHelper : public Pipeline::Client {
+  class CallbackHelper : public MockPipelineClient {
    public:
     CallbackHelper() {}
     virtual ~CallbackHelper() {}
@@ -86,16 +86,6 @@ class PipelineImplTest : public ::testing::Test {
     MOCK_METHOD1(OnSeek, void(PipelineStatus));
     MOCK_METHOD1(OnSuspend, void(PipelineStatus));
     MOCK_METHOD1(OnResume, void(PipelineStatus));
-
-    // Pipeline::Client overrides.
-    MOCK_METHOD1(OnError, void(PipelineStatus));
-    MOCK_METHOD0(OnEnded, void());
-    MOCK_METHOD1(OnMetadata, void(PipelineMetadata));
-    MOCK_METHOD1(OnBufferingStateChange, void(BufferingState));
-    MOCK_METHOD0(OnDurationChange, void());
-    MOCK_METHOD2(OnAddTextTrack,
-                 void(const TextTrackConfig&, const AddTextTrackDoneCB&));
-    MOCK_METHOD0(OnWaitingForDecryptionKey, void());
 
    private:
     DISALLOW_COPY_AND_ASSIGN(CallbackHelper);

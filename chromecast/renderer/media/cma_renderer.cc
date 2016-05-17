@@ -61,8 +61,6 @@ CmaRenderer::CmaRenderer(std::unique_ptr<MediaPipelineProxy> media_pipeline,
       has_video_(false),
       received_audio_eos_(false),
       received_video_eos_(false),
-      initial_natural_size_(gfx::Size()),
-      initial_video_hole_created_(false),
       gpu_factories_(gpu_factories),
       time_interpolator_(
           new ::media::TimeDeltaInterpolator(&default_tick_clock_)),
@@ -153,19 +151,6 @@ void CmaRenderer::StartPlayingFrom(base::TimeDelta time) {
     client_->OnError(::media::PIPELINE_ERROR_ABORT);
     CompleteStateTransition(kError);
     return;
-  }
-
-  // Create a video hole frame just before starting playback.
-  // Note that instead of creating the video hole frame in Initialize(), we do
-  // it here because paint_cb_ (which eventually calls OnOpacityChanged)
-  // expects the current state to not be HaveNothing. And the place where
-  // the ready state is changed to HaveMetadata (OnPipelineMetadata) is
-  // right before the pipeline calls StartPlayingFrom (in
-  // Pipeline::StateTransitionTask).
-  if (HasVideo() && !initial_video_hole_created_) {
-    initial_video_hole_created_ = true;
-    video_renderer_sink_->PaintFrameUsingOldRenderingPath(
-        hole_frame_factory_->CreateHoleFrame(initial_natural_size_));
   }
 
   {
@@ -330,8 +315,6 @@ void CmaRenderer::InitializeVideoPipeline() {
   if (config.codec() == ::media::kCodecH264)
     stream->EnableBitstreamConverter();
 
-  initial_natural_size_ = config.natural_size();
-
   std::vector<::media::VideoDecoderConfig> configs;
   configs.push_back(config);
   media_pipeline_->InitializeVideo(configs, std::move(frame_provider),
@@ -397,6 +380,7 @@ void CmaRenderer::OnNaturalSizeChanged(const gfx::Size& size) {
   DCHECK(thread_checker_.CalledOnValidThread());
   video_renderer_sink_->PaintFrameUsingOldRenderingPath(
       hole_frame_factory_->CreateHoleFrame(size));
+  client_->OnVideoNaturalSizeChange(size);
 }
 
 void CmaRenderer::OnPlaybackTimeUpdated(base::TimeDelta time,

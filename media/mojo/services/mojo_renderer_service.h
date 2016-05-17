@@ -64,6 +64,8 @@ class MojoRendererService : public mojom::Renderer, public RendererClient {
   void OnStatisticsUpdate(const PipelineStatistics& stats) final;
   void OnBufferingStateChange(BufferingState state) final;
   void OnWaitingForDecryptionKey() final;
+  void OnVideoNaturalSizeChange(const gfx::Size& size) final;
+  void OnVideoOpacityChange(bool opaque) final;
 
   // Called when the DemuxerStreamProviderShim is ready to go (has a config,
   // pipe handle, etc) and can be handed off to a renderer for use.

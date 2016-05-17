@@ -39,14 +39,22 @@ const char kSecurityOrigin[] = "http://foo.com";
 
 class MockRendererClient : public mojom::RendererClient {
  public:
-  MockRendererClient(){};
-  ~MockRendererClient() override{};
+  MockRendererClient() {}
+  ~MockRendererClient() override {}
 
   // mojom::RendererClient implementation.
   MOCK_METHOD2(OnTimeUpdate, void(int64_t time_usec, int64_t max_time_usec));
   MOCK_METHOD1(OnBufferingStateChange, void(mojom::BufferingState state));
   MOCK_METHOD0(OnEnded, void());
   MOCK_METHOD0(OnError, void());
+  MOCK_METHOD1(OnVideoOpacityChange, void(bool opaque));
+
+  // TODO(alokp): gmock does not support move-only function arguments.
+  // Convert this into MOCK_METHOD after gmock implements this feature.
+  // https://github.com/google/googletest/issues/395
+  // If we need to use this mock method before the gmock bug gets fixed, we
+  // would need to define a MOCK_METHOD using non movable type which calls this.
+  void OnVideoNaturalSizeChange(mojo::SizePtr size) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockRendererClient);

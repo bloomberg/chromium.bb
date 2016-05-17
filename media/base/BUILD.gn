@@ -397,7 +397,7 @@ source_set("test_support") {
     "//media:media_features",
     "//media:shared_memory_support",
     "//testing/gmock",
-    "//ui/gfx/geometry",
+    "//ui/gfx:test_support",
   ]
 }
 

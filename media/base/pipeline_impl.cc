@@ -399,6 +399,22 @@ void PipelineImpl::OnWaitingForDecryptionKey() {
       base::Bind(&Pipeline::Client::OnWaitingForDecryptionKey, weak_client_));
 }
 
+void PipelineImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&Pipeline::Client::OnVideoNaturalSizeChange,
+                            weak_client_, size));
+}
+
+void PipelineImpl::OnVideoOpacityChange(bool opaque) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
+
+  main_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&Pipeline::Client::OnVideoOpacityChange,
+                            weak_client_, opaque));
+}
+
 void PipelineImpl::SetDuration(TimeDelta duration) {
   // TODO(alokp): Add thread DCHECK after ensuring that all Demuxer
   // implementations call DemuxerHost on the media thread.
