@@ -7,6 +7,9 @@
 #include <cups/ppd.h>
 #include <stddef.h>
 
+#include <string>
+#include <vector>
+
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -40,8 +43,9 @@ const char kPageSize[] = "PageSize";
 const double kMicronsPerPoint = 10.0f * kHundrethsMMPerInch / kPointsPerInch;
 
 void ParseLpOptions(const base::FilePath& filepath,
-                    const std::string& printer_name,
-                    int* num_options, cups_option_t** options) {
+                    base::StringPiece printer_name,
+                    int* num_options,
+                    cups_option_t** options) {
   std::string content;
   if (!base::ReadFileToString(filepath, &content))
     return;
@@ -86,14 +90,15 @@ void ParseLpOptions(const base::FilePath& filepath,
     line = base::TrimWhitespaceASCII(line, base::TRIM_ALL);
     if (line.empty())
       continue;
+
     // Parse the selected printer custom options. Need to pass a
     // null-terminated string.
     *num_options = cupsParseOptions(line.as_string().c_str(), 0, options);
   }
 }
 
-void MarkLpOptions(const std::string& printer_name, ppd_file_t** ppd) {
-  cups_option_t* options = NULL;
+void MarkLpOptions(base::StringPiece printer_name, ppd_file_t** ppd) {
+  cups_option_t* options = nullptr;
   int num_options = 0;
 
   const char kSystemLpOptionPath[] = "/etc/cups/lpoptions";
@@ -105,11 +110,10 @@ void MarkLpOptions(const std::string& printer_name, ppd_file_t** ppd) {
   PathService::Get(base::DIR_HOME, &homedir);
   file_locations.push_back(base::FilePath(homedir.Append(kUserLpOptionPath)));
 
-  for (std::vector<base::FilePath>::const_iterator it = file_locations.begin();
-       it != file_locations.end(); ++it) {
+  for (const base::FilePath& location : file_locations) {
     num_options = 0;
-    options = NULL;
-    ParseLpOptions(*it, printer_name, &num_options, &options);
+    options = nullptr;
+    ParseLpOptions(location, printer_name, &num_options, &options);
     if (num_options > 0 && options) {
       cupsMarkOptions(*ppd, num_options, options);
       cupsFreeOptions(num_options, options);
@@ -125,29 +129,29 @@ bool GetBasicColorModelSettings(ppd_file_t* ppd,
   if (!color_model)
     return false;
 
-  if (ppdFindChoice(color_model, printing::kBlack))
-    *color_model_for_black = printing::BLACK;
-  else if (ppdFindChoice(color_model, printing::kGray))
-    *color_model_for_black = printing::GRAY;
-  else if (ppdFindChoice(color_model, printing::kGrayscale))
-    *color_model_for_black = printing::GRAYSCALE;
+  if (ppdFindChoice(color_model, kBlack))
+    *color_model_for_black = BLACK;
+  else if (ppdFindChoice(color_model, kGray))
+    *color_model_for_black = GRAY;
+  else if (ppdFindChoice(color_model, kGrayscale))
+    *color_model_for_black = GRAYSCALE;
 
-  if (ppdFindChoice(color_model, printing::kColor))
-    *color_model_for_color = printing::COLOR;
-  else if (ppdFindChoice(color_model, printing::kCMYK))
-    *color_model_for_color = printing::CMYK;
-  else if (ppdFindChoice(color_model, printing::kRGB))
-    *color_model_for_color = printing::RGB;
-  else if (ppdFindChoice(color_model, printing::kRGBA))
-    *color_model_for_color = printing::RGBA;
-  else if (ppdFindChoice(color_model, printing::kRGB16))
-    *color_model_for_color = printing::RGB16;
-  else if (ppdFindChoice(color_model, printing::kCMY))
-    *color_model_for_color = printing::CMY;
-  else if (ppdFindChoice(color_model, printing::kKCMY))
-    *color_model_for_color = printing::KCMY;
-  else if (ppdFindChoice(color_model, printing::kCMY_K))
-    *color_model_for_color = printing::CMY_K;
+  if (ppdFindChoice(color_model, kColor))
+    *color_model_for_color = COLOR;
+  else if (ppdFindChoice(color_model, kCMYK))
+    *color_model_for_color = CMYK;
+  else if (ppdFindChoice(color_model, kRGB))
+    *color_model_for_color = RGB;
+  else if (ppdFindChoice(color_model, kRGBA))
+    *color_model_for_color = RGBA;
+  else if (ppdFindChoice(color_model, kRGB16))
+    *color_model_for_color = RGB16;
+  else if (ppdFindChoice(color_model, kCMY))
+    *color_model_for_color = CMY;
+  else if (ppdFindChoice(color_model, kKCMY))
+    *color_model_for_color = KCMY;
+  else if (ppdFindChoice(color_model, kCMY_K))
+    *color_model_for_color = CMY_K;
 
   ppd_choice_t* marked_choice = ppdFindMarkedChoice(ppd, kColorModel);
   if (!marked_choice)
@@ -155,12 +159,9 @@ bool GetBasicColorModelSettings(ppd_file_t* ppd,
 
   if (marked_choice) {
     *color_is_default =
-        !base::EqualsCaseInsensitiveASCII(marked_choice->choice,
-                                          printing::kBlack) &&
-        !base::EqualsCaseInsensitiveASCII(marked_choice->choice,
-                                          printing::kGray) &&
-        !base::EqualsCaseInsensitiveASCII(marked_choice->choice,
-                                          printing::kGrayscale);
+        !base::EqualsCaseInsensitiveASCII(marked_choice->choice, kBlack) &&
+        !base::EqualsCaseInsensitiveASCII(marked_choice->choice, kGray) &&
+        !base::EqualsCaseInsensitiveASCII(marked_choice->choice, kGrayscale);
   }
   return true;
 }
@@ -173,15 +174,15 @@ bool GetPrintOutModeColorSettings(ppd_file_t* ppd,
   if (!printout_mode)
     return false;
 
-  *color_model_for_color = printing::PRINTOUTMODE_NORMAL;
-  *color_model_for_black = printing::PRINTOUTMODE_NORMAL;
+  *color_model_for_color = PRINTOUTMODE_NORMAL;
+  *color_model_for_black = PRINTOUTMODE_NORMAL;
 
   // Check to see if NORMAL_GRAY value is supported by PrintoutMode.
   // If NORMAL_GRAY is not supported, NORMAL value is used to
   // represent grayscale. If NORMAL_GRAY is supported, NORMAL is used to
   // represent color.
-  if (ppdFindChoice(printout_mode, printing::kNormalGray))
-    *color_model_for_black = printing::PRINTOUTMODE_NORMAL_GRAY;
+  if (ppdFindChoice(printout_mode, kNormalGray))
+    *color_model_for_black = PRINTOUTMODE_NORMAL_GRAY;
 
   // Get the default marked choice to identify the default color setting
   // value.
@@ -192,12 +193,12 @@ bool GetPrintOutModeColorSettings(ppd_file_t* ppd,
   }
   if (printout_mode_choice) {
     if (base::EqualsCaseInsensitiveASCII(printout_mode_choice->choice,
-                                         printing::kNormalGray) ||
+                                         kNormalGray) ||
         base::EqualsCaseInsensitiveASCII(printout_mode_choice->choice,
                                          kHighGray) ||
         base::EqualsCaseInsensitiveASCII(printout_mode_choice->choice,
-                                          kDraftGray)) {
-      *color_model_for_black = printing::PRINTOUTMODE_NORMAL_GRAY;
+                                         kDraftGray)) {
+      *color_model_for_black = PRINTOUTMODE_NORMAL_GRAY;
       *color_is_default = false;
     }
   }
@@ -213,11 +214,11 @@ bool GetColorModeSettings(ppd_file_t* ppd,
   if (!color_mode_option)
     return false;
 
-  if (ppdFindChoice(color_mode_option, printing::kColor))
-    *color_model_for_color = printing::COLORMODE_COLOR;
+  if (ppdFindChoice(color_mode_option, kColor))
+    *color_model_for_color = COLORMODE_COLOR;
 
-  if (ppdFindChoice(color_mode_option, printing::kMonochrome))
-    *color_model_for_black = printing::COLORMODE_MONOCHROME;
+  if (ppdFindChoice(color_mode_option, kMonochrome))
+    *color_model_for_black = COLORMODE_MONOCHROME;
 
   ppd_choice_t* mode_choice = ppdFindMarkedChoice(ppd, kColorMode);
   if (!mode_choice) {
@@ -226,8 +227,8 @@ bool GetColorModeSettings(ppd_file_t* ppd,
   }
 
   if (mode_choice) {
-    *color_is_default = base::EqualsCaseInsensitiveASCII(
-        mode_choice->choice, printing::kColor);
+    *color_is_default =
+        base::EqualsCaseInsensitiveASCII(mode_choice->choice, kColor);
   }
   return true;
 }
@@ -237,14 +238,14 @@ bool GetHPColorSettings(ppd_file_t* ppd,
                         ColorModel* color_model_for_color,
                         bool* color_is_default) {
   // HP printers use "Color/Color Model" attribute in their ppds.
-  ppd_option_t* color_mode_option = ppdFindOption(ppd, printing::kColor);
+  ppd_option_t* color_mode_option = ppdFindOption(ppd, kColor);
   if (!color_mode_option)
     return false;
 
-  if (ppdFindChoice(color_mode_option, printing::kColor))
-    *color_model_for_color = printing::HP_COLOR_COLOR;
-  if (ppdFindChoice(color_mode_option, printing::kBlack))
-    *color_model_for_black = printing::HP_COLOR_BLACK;
+  if (ppdFindChoice(color_mode_option, kColor))
+    *color_model_for_color = HP_COLOR_COLOR;
+  if (ppdFindChoice(color_mode_option, kBlack))
+    *color_model_for_black = HP_COLOR_BLACK;
 
   ppd_choice_t* mode_choice = ppdFindMarkedChoice(ppd, kColorMode);
   if (!mode_choice) {
@@ -252,8 +253,8 @@ bool GetHPColorSettings(ppd_file_t* ppd,
                                 color_mode_option->defchoice);
   }
   if (mode_choice) {
-    *color_is_default = base::EqualsCaseInsensitiveASCII(
-        mode_choice->choice, printing::kColor);
+    *color_is_default =
+        base::EqualsCaseInsensitiveASCII(mode_choice->choice, kColor);
   }
   return true;
 }
@@ -267,13 +268,13 @@ bool GetProcessColorModelSettings(ppd_file_t* ppd,
   if (!color_mode_option)
     return false;
 
-  if (ppdFindChoice(color_mode_option, printing::kRGB))
-    *color_model_for_color = printing::PROCESSCOLORMODEL_RGB;
-  else if (ppdFindChoice(color_mode_option, printing::kCMYK))
-    *color_model_for_color = printing::PROCESSCOLORMODEL_CMYK;
+  if (ppdFindChoice(color_mode_option, kRGB))
+    *color_model_for_color = PROCESSCOLORMODEL_RGB;
+  else if (ppdFindChoice(color_mode_option, kCMYK))
+    *color_model_for_color = PROCESSCOLORMODEL_CMYK;
 
-  if (ppdFindChoice(color_mode_option, printing::kGreyscale))
-    *color_model_for_black = printing::PROCESSCOLORMODEL_GREYSCALE;
+  if (ppdFindChoice(color_mode_option, kGreyscale))
+    *color_model_for_black = PROCESSCOLORMODEL_GREYSCALE;
 
   ppd_choice_t* mode_choice = ppdFindMarkedChoice(ppd, kProcessColorModel);
   if (!mode_choice) {
@@ -282,8 +283,8 @@ bool GetProcessColorModelSettings(ppd_file_t* ppd,
   }
 
   if (mode_choice) {
-    *color_is_default = !base::EqualsCaseInsensitiveASCII(
-        mode_choice->choice, printing::kGreyscale);
+    *color_is_default =
+        !base::EqualsCaseInsensitiveASCII(mode_choice->choice, kGreyscale);
   }
   return true;
 }
@@ -293,7 +294,7 @@ bool GetColorModelSettings(ppd_file_t* ppd,
                            ColorModel* cm_color,
                            bool* is_color) {
   bool is_color_device = false;
-  ppd_attr_t* attr = ppdFindAttr(ppd, kColorDevice, NULL);
+  ppd_attr_t* attr = ppdFindAttr(ppd, kColorDevice, nullptr);
   if (attr && attr->value)
     is_color_device = ppd->color_device;
 
@@ -315,7 +316,7 @@ const int kDefaultIPPServerPort = 631;
 // functionality.
 HttpConnectionCUPS::HttpConnectionCUPS(const GURL& print_server_url,
                                        http_encryption_t encryption)
-    : http_(NULL) {
+    : http_(nullptr) {
   // If we have an empty url, use default print server.
   if (print_server_url.is_empty())
     return;
@@ -325,14 +326,14 @@ HttpConnectionCUPS::HttpConnectionCUPS(const GURL& print_server_url,
     port = kDefaultIPPServerPort;
 
   http_ = httpConnectEncrypt(print_server_url.host().c_str(), port, encryption);
-  if (http_ == NULL) {
+  if (!http_) {
     LOG(ERROR) << "CP_CUPS: Failed connecting to print server: "
                << print_server_url;
   }
 }
 
 HttpConnectionCUPS::~HttpConnectionCUPS() {
-  if (http_ != NULL)
+  if (http_)
     httpClose(http_);
 }
 
@@ -344,10 +345,9 @@ http_t* HttpConnectionCUPS::http() {
   return http_;
 }
 
-bool ParsePpdCapabilities(
-    const std::string& printer_name,
-    const std::string& printer_capabilities,
-    PrinterSemanticCapsAndDefaults* printer_info) {
+bool ParsePpdCapabilities(base::StringPiece printer_name,
+                          base::StringPiece printer_capabilities,
+                          PrinterSemanticCapsAndDefaults* printer_info) {
   base::FilePath ppd_file_path;
   if (!base::CreateTemporaryFile(&ppd_file_path))
     return false;
@@ -372,7 +372,7 @@ bool ParsePpdCapabilities(
   ppdMarkDefaults(ppd);
   MarkLpOptions(printer_name, &ppd);
 
-  printing::PrinterSemanticCapsAndDefaults caps;
+  PrinterSemanticCapsAndDefaults caps;
   caps.collate_capable = true;
   caps.collate_default = true;
   caps.copies_capable = true;
@@ -387,9 +387,9 @@ bool ParsePpdCapabilities(
   if (duplex_choice) {
     caps.duplex_capable = true;
     if (!base::EqualsCaseInsensitiveASCII(duplex_choice->choice, kDuplexNone))
-      caps.duplex_default = printing::LONG_EDGE;
+      caps.duplex_default = LONG_EDGE;
     else
-      caps.duplex_default = printing::SIMPLEX;
+      caps.duplex_default = SIMPLEX;
   }
 
   bool is_color = false;

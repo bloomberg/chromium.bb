@@ -7,8 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorDuplexLongEdge) {
-  std::string test_ppd_data;
-  test_ppd_data.append(
+  const char kTestPpdData[] =
       "*PPD-Adobe: \"4.3\"\n\n"
       "*OpenGroup: General/General\n\n"
       "*OpenUI *ColorModel/Color Model: PickOne\n"
@@ -29,10 +28,10 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorDuplexLongEdge) {
       "*Duplex DuplexTumble/ShortEdge: \""
       "<</Duplex true/Tumble true>>setpagedevice\"\n"
       "*CloseUI: *Duplex\n\n"
-      "*CloseGroup: General\n");
+      "*CloseGroup: General\n";
 
   printing::PrinterSemanticCapsAndDefaults caps;
-  EXPECT_TRUE(printing::ParsePpdCapabilities("test", test_ppd_data, &caps));
+  EXPECT_TRUE(printing::ParsePpdCapabilities("test", kTestPpdData, &caps));
   EXPECT_TRUE(caps.collate_capable);
   EXPECT_TRUE(caps.collate_default);
   EXPECT_TRUE(caps.copies_capable);
@@ -44,8 +43,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorDuplexLongEdge) {
 
 // Test duplex detection code, which regressed in http://crbug.com/103999.
 TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorDuplexSimples) {
-  std::string test_ppd_data;
-  test_ppd_data.append(
+  const char kTestPpdData[] =
       "*PPD-Adobe: \"4.3\"\n\n"
       "*OpenGroup: General/General\n\n"
       "*OpenUI *Duplex/Double-Sided Printing: PickOne\n"
@@ -57,10 +55,10 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorDuplexSimples) {
       "*Duplex DuplexTumble/Short Edge (Flip): "
       "\"<</Duplex true/Tumble true>>setpagedevice\"\n"
       "*CloseUI: *Duplex\n\n"
-      "*CloseGroup: General\n");
+      "*CloseGroup: General\n";
 
   printing::PrinterSemanticCapsAndDefaults caps;
-  EXPECT_TRUE(printing::ParsePpdCapabilities("test", test_ppd_data, &caps));
+  EXPECT_TRUE(printing::ParsePpdCapabilities("test", kTestPpdData, &caps));
   EXPECT_TRUE(caps.collate_capable);
   EXPECT_TRUE(caps.collate_default);
   EXPECT_TRUE(caps.copies_capable);
@@ -71,8 +69,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorDuplexSimples) {
 }
 
 TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorNoDuplex) {
-  std::string test_ppd_data;
-  test_ppd_data.append(
+  const char kTestPpdData[] =
       "*PPD-Adobe: \"4.3\"\n\n"
       "*OpenGroup: General/General\n\n"
       "*OpenUI *ColorModel/Color Model: PickOne\n"
@@ -84,10 +81,10 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorNoDuplex) {
       "<</cupsColorSpace 3/cupsColorOrder 0>>"
       "setpagedevice\"\n"
       "*CloseUI: *ColorModel\n"
-      "*CloseGroup: General\n");
+      "*CloseGroup: General\n";
 
   printing::PrinterSemanticCapsAndDefaults caps;
-  EXPECT_TRUE(printing::ParsePpdCapabilities("test", test_ppd_data, &caps));
+  EXPECT_TRUE(printing::ParsePpdCapabilities("test", kTestPpdData, &caps));
   EXPECT_TRUE(caps.collate_capable);
   EXPECT_TRUE(caps.collate_default);
   EXPECT_TRUE(caps.copies_capable);
@@ -98,8 +95,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingNoColorNoDuplex) {
 }
 
 TEST(PrintBackendCupsHelperTest, TestPpdParsingColorTrueDuplexLongEdge) {
-  std::string test_ppd_data;
-  test_ppd_data.append(
+  const char kTestPpdData[] =
       "*PPD-Adobe: \"4.3\"\n\n"
       "*ColorDevice: True\n"
       "*DefaultColorSpace: CMYK\n\n"
@@ -120,10 +116,10 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingColorTrueDuplexLongEdge) {
       "*Duplex DuplexTumble/ShortEdge: \""
       "<</Duplex true/Tumble true>>setpagedevice\"\n"
       "*CloseUI: *Duplex\n\n"
-      "*CloseGroup: General\n");
+      "*CloseGroup: General\n";
 
   printing::PrinterSemanticCapsAndDefaults caps;
-  EXPECT_TRUE(printing::ParsePpdCapabilities("test", test_ppd_data, &caps));
+  EXPECT_TRUE(printing::ParsePpdCapabilities("test", kTestPpdData, &caps));
   EXPECT_TRUE(caps.collate_capable);
   EXPECT_TRUE(caps.collate_default);
   EXPECT_TRUE(caps.copies_capable);
@@ -134,8 +130,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingColorTrueDuplexLongEdge) {
 }
 
 TEST(PrintBackendCupsHelperTest, TestPpdParsingColorFalseDuplexLongEdge) {
-  std::string test_ppd_data;
-  test_ppd_data.append(
+  const char kTestPpdData[] =
       "*PPD-Adobe: \"4.3\"\n\n"
       "*ColorDevice: True\n"
       "*DefaultColorSpace: CMYK\n\n"
@@ -160,10 +155,10 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingColorFalseDuplexLongEdge) {
       "*Duplex DuplexTumble/ShortEdge: \""
       "<</Duplex true/Tumble true>>setpagedevice\"\n"
       "*CloseUI: *Duplex\n\n"
-      "*CloseGroup: General\n");
+      "*CloseGroup: General\n";
 
   printing::PrinterSemanticCapsAndDefaults caps;
-  EXPECT_TRUE(printing::ParsePpdCapabilities("test", test_ppd_data, &caps));
+  EXPECT_TRUE(printing::ParsePpdCapabilities("test", kTestPpdData, &caps));
   EXPECT_TRUE(caps.collate_capable);
   EXPECT_TRUE(caps.collate_default);
   EXPECT_TRUE(caps.copies_capable);
@@ -174,8 +169,7 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingColorFalseDuplexLongEdge) {
 }
 
 TEST(PrintBackendCupsHelperTest, TestPpdParsingPageSize) {
-  std::string test_ppd_data;
-  test_ppd_data.append(
+  const char kTestPpdData[] =
       "*PPD-Adobe: \"4.3\"\n\n"
       "*OpenUI *PageSize: PickOne\n"
       "*OrderDependency: 30 AnySetup *PageSize\n"
@@ -191,10 +185,10 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingPageSize) {
       "*DefaultPaperDimension: Letter\n"
       "*PaperDimension Letter/US Letter: \"612   792\"\n"
       "*PaperDimension Legal/US Legal: \"612  1008\"\n\n"
-      "*CloseUI: *PageSize\n\n");
+      "*CloseUI: *PageSize\n\n";
 
   printing::PrinterSemanticCapsAndDefaults caps;
-  EXPECT_TRUE(printing::ParsePpdCapabilities("test", test_ppd_data, &caps));
+  EXPECT_TRUE(printing::ParsePpdCapabilities("test", kTestPpdData, &caps));
   ASSERT_EQ(2UL, caps.papers.size());
   EXPECT_EQ("Letter", caps.papers[0].vendor_id);
   EXPECT_EQ("US Letter", caps.papers[0].display_name);
