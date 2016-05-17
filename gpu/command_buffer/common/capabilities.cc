@@ -84,6 +84,8 @@ Capabilities::Capabilities()
       surfaceless(false),
       flips_vertically(false),
       msaa_is_slow(false),
+      disable_webgl_multisampling_color_mask_usage(false),
+      disable_webgl_rgb_multisampling_usage(false),
       chromium_image_rgb_emulation(false),
       major_version(2),
       minor_version(0) {}
