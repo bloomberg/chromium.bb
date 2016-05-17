@@ -565,6 +565,8 @@ void DownloadProtectionServiceTest::CheckClientDownloadReportCorruptZip(
 
   Mock::VerifyAndClearExpectations(sb_service_.get());
   Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
+
+  base::DeleteFile(tmp_path_, false);
 }
 
 
@@ -1201,6 +1203,8 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
             GetClientDownloadRequest()->download_type());
   ClearClientDownloadRequest();
   Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
+
+  base::DeleteFile(tmp_path_, false);
 }
 
 TEST_F(DownloadProtectionServiceTest,
