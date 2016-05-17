@@ -398,6 +398,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux'], bug=483282)
     self.Fail('deqp/functional/gles3/texturefiltering/cube_sizes_00.html',
         ['linux'], bug=606021)
+    self.Flaky('deqp/functional/gles3/texturefiltering/cube_sizes_03.html',
+        ['linux'], bug=606021)
 
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
         ['linux', 'amd', 'intel'], bug=483282)
