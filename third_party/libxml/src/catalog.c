@@ -47,9 +47,9 @@
 #define MAX_CATAL_DEPTH	50
 
 #ifdef _WIN32
-# define PATH_SEPARATOR ';'
+# define PATH_SEAPARATOR ';'
 #else
-# define PATH_SEPARATOR ':'
+# define PATH_SEAPARATOR ':'
 #endif
 
 /**
@@ -3247,7 +3247,7 @@ xmlLoadCatalogs(const char *pathss) {
 	while (xmlIsBlank_ch(*cur)) cur++;
 	if (*cur != 0) {
 	    paths = cur;
-	    while ((*cur != 0) && (*cur != PATH_SEPARATOR) && (!xmlIsBlank_ch(*cur)))
+	    while ((*cur != 0) && (*cur != PATH_SEAPARATOR) && (!xmlIsBlank_ch(*cur)))
 		cur++;
 	    path = xmlStrndup((const xmlChar *)paths, cur - paths);
 #ifdef _WIN32
@@ -3263,7 +3263,7 @@ xmlLoadCatalogs(const char *pathss) {
 		xmlFree(path);
 	    }
 	}
-	while (*cur == PATH_SEPARATOR)
+	while (*cur == PATH_SEAPARATOR)
 	    cur++;
     }
 }

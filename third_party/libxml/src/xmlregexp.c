@@ -1544,7 +1544,6 @@ static int
 xmlFAGenerateTransitions(xmlRegParserCtxtPtr ctxt, xmlRegStatePtr from,
 	                 xmlRegStatePtr to, xmlRegAtomPtr atom) {
     xmlRegStatePtr end;
-    int nullable = 0;
 
     if (atom == NULL) {
 	ERROR("genrate transition: atom == NULL");
@@ -1731,13 +1730,6 @@ xmlFAGenerateTransitions(xmlRegParserCtxtPtr ctxt, xmlRegStatePtr from,
     if (xmlRegAtomPush(ctxt, atom) < 0) {
 	return(-1);
     }
-    if ((atom->quant == XML_REGEXP_QUANT_RANGE) &&
-        (atom->min == 0) && (atom->max > 0)) {
-	nullable = 1;
-	atom->min = 1;
-        if (atom->max == 1)
-	    atom->quant = XML_REGEXP_QUANT_OPT;
-    }
     xmlRegStateAddTrans(ctxt, from, atom, to, -1, -1);
     ctxt->state = end;
     switch (atom->quant) {
@@ -1755,8 +1747,11 @@ xmlFAGenerateTransitions(xmlRegParserCtxtPtr ctxt, xmlRegStatePtr from,
 	    xmlRegStateAddTrans(ctxt, to, atom, to, -1, -1);
 	    break;
 	case XML_REGEXP_QUANT_RANGE:
-	    if (nullable)
+#if DV_test
+	    if (atom->min == 0) {
 		xmlFAGenerateEpsilonTransition(ctxt, from, to);
+	    }
+#endif
 	    break;
 	default:
 	    break;
@@ -6350,7 +6345,7 @@ struct _xmlExpCtxt {
 /**
  * xmlExpNewCtxt:
  * @maxNodes:  the maximum number of nodes
- * @dict:  optional dictionary to use internally
+ * @dict:  optional dictionnary to use internally
  *
  * Creates a new context for manipulating expressions
  *
@@ -7209,7 +7204,7 @@ xmlExpStringDerive(xmlExpCtxtPtr ctxt, xmlExpNodePtr exp,
         return(NULL);
     }
     /*
-     * check the string is in the dictionary, if yes use an interned
+     * check the string is in the dictionnary, if yes use an interned
      * copy, otherwise we know it's not an acceptable input
      */
     input = xmlDictExists(ctxt->dict, str, len);
