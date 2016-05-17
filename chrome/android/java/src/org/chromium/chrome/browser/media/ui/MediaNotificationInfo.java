@@ -48,8 +48,9 @@ public class MediaNotificationInfo {
         private String mOrigin = "";
         private int mTabId = Tab.INVALID_TAB_ID;
         private boolean mIsPrivate = true;
-        private int mIcon = -1;
+        private int mIcon = 0;
         private Bitmap mLargeIcon = null;
+        private int mDefaultLargeIcon = 0;
         private int mActions = ACTION_PLAY_PAUSE | ACTION_SWIPEAWAY;
         private int mId = INVALID_ID;
         private Intent mContentIntent = null;
@@ -74,6 +75,7 @@ public class MediaNotificationInfo {
                     mIsPrivate,
                     mIcon,
                     mLargeIcon,
+                    mDefaultLargeIcon,
                     mActions,
                     mId,
                     mContentIntent,
@@ -112,6 +114,11 @@ public class MediaNotificationInfo {
 
         public Builder setLargeIcon(Bitmap icon) {
             mLargeIcon = icon;
+            return this;
+        }
+
+        public Builder setDefaultLargeIcon(int icon) {
+            mDefaultLargeIcon = icon;
             return this;
         }
 
@@ -177,6 +184,11 @@ public class MediaNotificationInfo {
     public final Bitmap largeIcon;
 
     /**
+     * The id of the default large icon from R.drawable.
+     */
+    public final int defaultLargeIcon;
+
+    /**
      * The id to use for the notification itself.
      */
     public final int id;
@@ -230,6 +242,7 @@ public class MediaNotificationInfo {
             boolean isPrivate,
             int icon,
             Bitmap largeIcon,
+            int defaultLargeIcon,
             int actions,
             int id,
             Intent contentIntent,
@@ -241,6 +254,7 @@ public class MediaNotificationInfo {
         this.isPrivate = isPrivate;
         this.icon = icon;
         this.largeIcon = largeIcon;
+        this.defaultLargeIcon = defaultLargeIcon;
         this.mActions = actions;
         this.id = id;
         this.contentIntent = contentIntent;
@@ -259,6 +273,7 @@ public class MediaNotificationInfo {
                 && icon == other.icon
                 && (largeIcon == other.largeIcon
                         || (largeIcon != null && largeIcon.sameAs(other.largeIcon)))
+                && defaultLargeIcon == other.defaultLargeIcon
                 && mActions == other.mActions
                 && id == other.id
                 && (metadata == other.metadata
@@ -280,6 +295,7 @@ public class MediaNotificationInfo {
         result = 31 * result + tabId;
         result = 31 * result + icon;
         result = 31 * result + (largeIcon == null ? 0 : largeIcon.hashCode());
+        result = 31 * result + defaultLargeIcon;
         result = 31 * result + mActions;
         result = 31 * result + id;
         result = 31 * result + listener.hashCode();

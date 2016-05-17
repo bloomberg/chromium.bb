@@ -109,6 +109,7 @@ public class CastNotificationControl implements MediaRouteController.UiListener,
                 .setIcon(R.drawable.ic_notification_media_route)
                 .setContentIntent(contentIntent)
                 .setLargeIcon(mMediaRouteController.getPoster())
+                .setDefaultLargeIcon(R.drawable.cast_playing_square)
                 .setId(R.id.remote_notification)
                 .setListener(this);
         mState = initialState;

@@ -381,8 +381,7 @@ public class MediaNotificationManager {
     private NotificationCompat.Builder mNotificationBuilder;
 
     private Bitmap mNotificationIcon;
-
-    private final Bitmap mDefaultLargeIcon;
+    private Bitmap mDefaultLargeIcon;
 
     // |mMediaNotificationInfo| should be not null if and only if the notification is showing.
     private MediaNotificationInfo mMediaNotificationInfo;
@@ -409,9 +408,6 @@ public class MediaNotificationManager {
         mPlayDescription = context.getResources().getString(R.string.accessibility_play);
         mPauseDescription = context.getResources().getString(R.string.accessibility_pause);
         mStopDescription = context.getResources().getString(R.string.accessibility_stop);
-
-        mDefaultLargeIcon = BitmapFactory.decodeResource(
-                context.getResources(), R.drawable.ic_music_video);
     }
 
     /**
@@ -619,10 +615,17 @@ public class MediaNotificationManager {
 
     private void setMediaStyleLayoutForNotificationBuilder(NotificationCompat.Builder builder) {
         setMediaStyleNotificationText(builder);
-        if (mMediaNotificationInfo.largeIcon != null) {
+        if (!mMediaNotificationInfo.supportsPlayPause()) {
+            builder.setLargeIcon(null);
+        } else if (mMediaNotificationInfo.largeIcon != null) {
             builder.setLargeIcon(mMediaNotificationInfo.largeIcon);
-        } else if (!TextUtils.equals(Build.VERSION.CODENAME, "N")
-                && mMediaNotificationInfo.supportsPlayPause()) {
+        } else if (!isRunningN()) {
+            if (mDefaultLargeIcon == null) {
+                int resourceId = (mMediaNotificationInfo.defaultLargeIcon != 0)
+                        ? mMediaNotificationInfo.defaultLargeIcon : R.drawable.audio_playing_square;
+                mDefaultLargeIcon = BitmapFactory.decodeResource(
+                        mContext.getResources(), resourceId);
+            }
             builder.setLargeIcon(mDefaultLargeIcon);
         }
         // TODO(zqzhang): It's weird that setShowWhen() don't work on K. Calling setWhen() to force
@@ -726,8 +729,7 @@ public class MediaNotificationManager {
     private void setMediaStyleNotificationText(NotificationCompat.Builder builder) {
         builder.setContentTitle(mMediaNotificationInfo.metadata.getTitle());
         String artistAndAlbumText = getArtistAndAlbumText(mMediaNotificationInfo.metadata);
-        // TODO(zqzhang): update this when N is released.
-        if (TextUtils.equals(Build.VERSION.CODENAME, "N") || !artistAndAlbumText.isEmpty()) {
+        if (isRunningN() || !artistAndAlbumText.isEmpty()) {
             builder.setContentText(artistAndAlbumText);
             builder.setSubText(mMediaNotificationInfo.origin);
         } else {
@@ -743,5 +745,15 @@ public class MediaNotificationManager {
             return artist + album;
         }
         return artist + " - " + album;
+    }
+
+    private boolean isRunningN() {
+        // TODO(zqzhang): update this when N is released.
+        if (TextUtils.equals(Build.VERSION.CODENAME, "N")) return true;
+        if (TextUtils.equals(Build.VERSION.CODENAME, "REL")
+                && Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+            return true;
+        }
+        return false;
     }
 }

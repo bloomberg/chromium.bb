@@ -128,6 +128,7 @@ public class MediaSessionTabHelper {
                                 .setPrivate(mTab.isIncognito())
                                 .setIcon(R.drawable.audio_playing)
                                 .setLargeIcon(mFavicon)
+                                .setDefaultLargeIcon(R.drawable.audio_playing_square)
                                 .setActions(MediaNotificationInfo.ACTION_PLAY_PAUSE
                                         | MediaNotificationInfo.ACTION_SWIPEAWAY)
                                 .setContentIntent(contentIntent)
