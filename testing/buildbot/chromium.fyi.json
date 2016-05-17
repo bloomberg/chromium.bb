@@ -8159,12 +8159,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "cast_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "cc_unittests"
       },
       {
@@ -8385,12 +8379,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "remoting_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "sandbox_linux_unittests"
       },
       {
         "swarming": {
