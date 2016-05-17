@@ -29,6 +29,7 @@
 
 #include "platform/fonts/FontDescription.h"
 
+#include "platform/Language.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/StringHasher.h"
 #include "wtf/text/AtomicStringHash.h"
@@ -125,8 +126,13 @@ FontDescription::VariantLigatures FontDescription::getVariantLigatures() const
 static const AtomicString& defaultLocale()
 {
     DEFINE_STATIC_LOCAL(AtomicString, locale, ());
-    if (locale.isNull())
-        locale = AtomicString("en");
+    if (locale.isNull()) {
+        AtomicString defaultLocale = defaultLanguage();
+        if (!defaultLocale.isEmpty())
+            locale = defaultLocale;
+        else
+            locale = AtomicString("en");
+    }
     return locale;
 }
 

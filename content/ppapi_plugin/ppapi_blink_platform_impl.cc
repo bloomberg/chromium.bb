@@ -200,8 +200,7 @@ blink::WebString PpapiBlinkPlatformImpl::cookies(
 }
 
 blink::WebString PpapiBlinkPlatformImpl::defaultLocale() {
-  NOTREACHED();
-  return blink::WebString();
+  return blink::WebString::fromUTF8("en");
 }
 
 blink::WebThemeEngine* PpapiBlinkPlatformImpl::themeEngine() {
