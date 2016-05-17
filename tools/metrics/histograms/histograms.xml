@@ -35573,6 +35573,35 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Events related to Google CAPTCHA pages being seen by users.</summary>
 </histogram>
 
+<histogram
+    name="PageLoad.DocumentTiming.NavigationToDOMContentLoadedEventFired"
+    units="ms">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time from navigation timing's navigation start to the time the
+    DOMContentLoaded event is fired, for main frame documents.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.DocumentTiming.NavigationToFirstLayout" units="ms">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time from navigation timing's navigation start to the time the
+    first layout is performed, for main frame documents.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.DocumentTiming.NavigationToLoadEventFired" units="ms">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time from navigation timing's navigation start to the time the
+    load event is fired, for main frame documents.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.EventCounts" enum="PageLoadEvent">
   <owner>csharrison@chromium.org</owner>
   <owner>bmcquade@chromium.org</owner>
@@ -35676,6 +35705,88 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"
+    units="ms">
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    The time from navigation start to first &quot;contentful&quot; paint.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.PaintTiming.NavigationToFirstImagePaint" units="ms">
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    Measures the time from navigation timing's navigation start to the time the
+    first image is painted, for main frame documents. For images that render
+    progressively, this is recorded as soon as any image pixels have been drawn.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.PaintTiming.NavigationToFirstPaint" units="ms">
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    Measures the time from navigation timing's navigation start to the time the
+    first paint is performed, for main frame documents.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.PaintTiming.NavigationToFirstTextPaint" units="ms">
+  <owner>ksakamoto@chromium.org</owner>
+  <summary>
+    Measures the time from navigation timing's navigation start to the time the
+    first non-blank text is painted, for main frame documents.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.PaintTiming.ParseStartToFirstContentfulPaint"
+    units="ms">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time from when the HTML parser started, to when the page first
+    paints content.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.ParseTiming.NavigationToParseStart" units="ms">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time from navigation timing's navigation start to the time the
+    parser started, for main frame documents.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.ParseTiming.ParseBlockedOnScriptLoad" units="ms">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time that the HTML parser spent blocked on the load of scripts,
+    for main frame documents that finished parsing.
+  </summary>
+</histogram>
+
+<histogram
+    name="PageLoad.ParseTiming.ParseBlockedOnScriptLoadFromDocumentWrite"
+    units="ms">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time that the HTML parser spent blocked on the load of scripts
+    inserted from document.write, for main frame documents that finished
+    parsing.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.ParseTiming.ParseDuration" units="ms">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the time that the HTML parser was active, for main frame documents
+    that finished parsing.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Timing.NavigationToDOMContentLoadedEventFired"
     units="ms">
   <owner>bmcquade@chromium.org</owner>
@@ -35757,7 +35868,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>csharrison@chromium.org</owner>
   <summary>
     Measures the time from navigation timing's navigation start to the time the
-    DOMContentLoaded event is fired, for main frame documents.
+    DOMContentLoaded event is fired, for main frame documents. This metric is
+    being phased out in favor of the PageLoad.DocumentTiming equivalent and will
+    be deprecated in M54.
   </summary>
 </histogram>
 
@@ -35784,7 +35897,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="PageLoad.Timing2.NavigationToFirstContentfulPaint" units="ms">
   <owner>ksakamoto@chromium.org</owner>
   <summary>
-    The time from navigation start to first &quot;contentful&quot; paint.
+    The time from navigation start to first &quot;contentful&quot; paint.  This
+    metric is being phased out in favor of the PageLoad.PaintTiming equivalent
+    and will be deprecated in M54.
   </summary>
 </histogram>
 
@@ -35804,6 +35919,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Measures the time from navigation timing's navigation start to the time the
     first image is painted, for main frame documents. For images that render
     progressively, this is recorded as soon as any image pixels have been drawn.
+    This metric is being phased out in favor of the PageLoad.PaintTiming
+    equivalent and will be deprecated in M54.
   </summary>
 </histogram>
 
@@ -35812,7 +35929,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>csharrison@chromium.org</owner>
   <summary>
     Measures the time from navigation timing's navigation start to the time the
-    first layout is performed, for main frame documents.
+    first layout is performed, for main frame documents. This metric is being
+    phased out in favor of the PageLoad.DocumentTiming equivalent and will be
+    deprecated in M54.
   </summary>
 </histogram>
 
@@ -35820,7 +35939,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>ksakamoto@chromium.org</owner>
   <summary>
     Measures the time from navigation timing's navigation start to the time the
-    first paint is performed, for main frame documents.
+    first paint is performed, for main frame documents. This metric is being
+    phased out in favor of the PageLoad.PaintTiming equivalent and will be
+    deprecated in M54.
   </summary>
 </histogram>
 
@@ -35828,7 +35949,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>ksakamoto@chromium.org</owner>
   <summary>
     Measures the time from navigation timing's navigation start to the time the
-    first non-blank text is painted, for main frame documents.
+    first non-blank text is painted, for main frame documents. This metric is
+    being phased out in favor of the PageLoad.PaintTiming equivalent and will be
+    deprecated in M54.
   </summary>
 </histogram>
 
@@ -35837,7 +35960,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>csharrison@chromium.org</owner>
   <summary>
     Measures the time from navigation timing's navigation start to the time the
-    load event is fired, for main frame documents.
+    load event is fired, for main frame documents. This metric is being phased
+    out in favor of the PageLoad.DocumentTiming equivalent and will be
+    deprecated in M54.
   </summary>
 </histogram>
 
@@ -35856,7 +35981,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>csharrison@chromium.org</owner>
   <summary>
     Measures the time that the HTML parser spent blocked on the load of scripts,
-    for main frame documents that finished parsing.
+    for main frame documents that finished parsing. This metric is being phased
+    out in favor of the PageLoad.ParseTiming equivalent and will be deprecated
+    in M54.
   </summary>
 </histogram>
 
@@ -35878,7 +36005,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Measures the time that the HTML parser spent blocked on the load of scripts
     inserted from document.write, for main frame documents that finished
-    parsing.
+    parsing. This metric is being phased out in favor of the
+    PageLoad.ParseTiming equivalent and will be deprecated in M54.
   </summary>
 </histogram>
 
@@ -35887,7 +36015,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>csharrison@chromium.org</owner>
   <summary>
     Measures the time that the HTML parser was active, for main frame documents
-    that finished parsing.
+    that finished parsing. This metric is being phased out in favor of the
+    PageLoad.ParseTiming equivalent and will be deprecated in M54.
   </summary>
 </histogram>
 
@@ -35896,7 +36025,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>csharrison@chromium.org</owner>
   <summary>
     Measures the time from when the HTML parser started, to when the page first
-    paints content.
+    paints content. This metric is being phased out in favor of the
+    PageLoad.PaintTiming equivalent and will be deprecated in M54.
   </summary>
 </histogram>
 
@@ -91580,6 +91710,9 @@ To add a new entry, add it with any value and run test to compute valid value.
              help loading-dev to understand the impact of logging metrics at
              the end of a page load."/>
   <affected-histogram name="PageLoad.Timing2.NavigationToFirstContentfulPaint"/>
+  <obsolete>
+    Deprecated by PageLoad.PaintTiming.NavigationToFirstContentfulPaint.
+  </obsolete>
 </histogram_suffixes>
 
 <histogram_suffixes name="IndexedDBLevelDBErrnoMethods" separator=".">
@@ -93584,11 +93717,28 @@ To add a new entry, add it with any value and run test to compute valid value.
       name="PageLoad.Clients.DocWrite.Evaluator.Timing2.ParseDuration"/>
   <affected-histogram
       name="PageLoad.Clients.ServiceWorker.Timing2.NavigationToFirstContentfulPaint"/>
+  <affected-histogram
+      name="PageLoad.DocumentTiming.NavigationToDOMContentLoadedEventFired"/>
+  <affected-histogram name="PageLoad.DocumentTiming.NavigationToFirstLayout"/>
+  <affected-histogram
+      name="PageLoad.DocumentTiming.NavigationToLoadEventFired"/>
   <suffix name="Background"
       label="The page was backgrounded at least once from navigation start to
              this event."/>
   <affected-histogram name="PageLoad.Events.Committed"/>
   <affected-histogram name="PageLoad.Events.Provisional"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
+  <affected-histogram name="PageLoad.PaintTiming.NavigationToFirstImagePaint"/>
+  <affected-histogram name="PageLoad.PaintTiming.NavigationToFirstPaint"/>
+  <affected-histogram name="PageLoad.PaintTiming.NavigationToFirstTextPaint"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.ParseStartToFirstContentfulPaint"/>
+  <affected-histogram name="PageLoad.ParseTiming.NavigationToParseStart"/>
+  <affected-histogram name="PageLoad.ParseTiming.ParseBlockedOnScriptLoad"/>
+  <affected-histogram
+      name="PageLoad.ParseTiming.ParseBlockedOnScriptLoadFromDocumentWrite"/>
+  <affected-histogram name="PageLoad.ParseTiming.ParseDuration"/>
   <affected-histogram name="PageLoad.Timing2.NavigationToCommit"/>
   <affected-histogram
       name="PageLoad.Timing2.NavigationToDOMContentLoadedEventFired"/>
