@@ -14,7 +14,7 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
 # Provides a way for the utility library to push ldflags to dependents.
 config("utility_ldflags") {
   if (is_mac && safe_browsing_mode == 1) {
-    ldflags = [ "/usr/lib/libbz2.dylib" ]
+    libs = [ "bz2" ]
   }
 }
 

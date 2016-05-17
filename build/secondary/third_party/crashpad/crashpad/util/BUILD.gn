@@ -9,7 +9,7 @@ if (is_mac) {
 # Allows the source set to inject ldflags for targets that link to it.
 config("util_link_config") {
   if (is_mac) {
-    ldflags = [ "/usr/lib/libbsm.dylib" ]
+    libs = [ "bsm" ]
   }
 }
 
