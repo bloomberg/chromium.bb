@@ -21374,13 +21374,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Media.MSE.PlaybackDuration" units="seconds">
+<histogram name="Media.MSE.PlaybackDuration" units="ms">
   <owner>qinmin@chromium.org</owner>
   <owner>timav@chromium.org</owner>
   <summary>
     Duration of an uninterrupted MSE playback. This is the time interval between
     the playback starts or resumes and the moment when user stops the playback
-    by pressing pause, initiating a seek etc. Measured in media time in seconds.
+    by pressing pause, initiating a seek etc. Measured in media time in
+    milliseconds.
   </summary>
 </histogram>
 
