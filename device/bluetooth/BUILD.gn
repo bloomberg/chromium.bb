@@ -229,6 +229,7 @@ component("bluetooth") {
         "dbus/bluetooth_gatt_application_service_provider.h",
         "dbus/bluetooth_gatt_application_service_provider_impl.cc",
         "dbus/bluetooth_gatt_application_service_provider_impl.h",
+        "dbus/bluetooth_gatt_attribute_value_delegate.cc",
         "dbus/bluetooth_gatt_attribute_value_delegate.h",
         "dbus/bluetooth_gatt_characteristic_client.cc",
         "dbus/bluetooth_gatt_characteristic_client.h",

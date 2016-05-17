@@ -31,6 +31,7 @@ void TestBluetoothLocalGattServiceDelegate::OnCharacteristicReadRequest(
     error_callback.Run();
     return;
   }
+  last_seen_device_ = device->GetIdentifier();
   callback.Run(BluetoothGattServerTest::GetValue(value_to_write_));
 }
 
@@ -47,6 +48,7 @@ void TestBluetoothLocalGattServiceDelegate::OnCharacteristicWriteRequest(
     error_callback.Run();
     return;
   }
+  last_seen_device_ = device->GetIdentifier();
   last_written_value_ = BluetoothGattServerTest::GetInteger(value);
   callback.Run();
 }
@@ -62,6 +64,7 @@ void TestBluetoothLocalGattServiceDelegate::OnDescriptorReadRequest(
     error_callback.Run();
     return;
   }
+  last_seen_device_ = device->GetIdentifier();
   callback.Run(BluetoothGattServerTest::GetValue(value_to_write_));
 }
 
@@ -77,6 +80,7 @@ void TestBluetoothLocalGattServiceDelegate::OnDescriptorWriteRequest(
     error_callback.Run();
     return;
   }
+  last_seen_device_ = device->GetIdentifier();
   last_written_value_ = BluetoothGattServerTest::GetInteger(value);
   callback.Run();
 }

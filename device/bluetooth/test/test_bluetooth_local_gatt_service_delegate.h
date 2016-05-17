@@ -74,6 +74,7 @@ class TestBluetoothLocalGattServiceDelegate
   bool should_fail_;
   uint64_t last_written_value_;
   uint64_t value_to_write_;
+  std::string last_seen_device_;
 
  private:
   BluetoothLocalGattService* expected_service_;

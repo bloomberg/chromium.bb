@@ -40,11 +40,13 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattDescriptorServiceProvider
   // methods do nothing, if the associated service was not registered with the
   // GATT manager.
   void GetValue(
+      const dbus::ObjectPath& device_path,
       const device::BluetoothLocalGattService::Delegate::ValueCallback&
           callback,
       const device::BluetoothLocalGattService::Delegate::ErrorCallback&
           error_callback);
   void SetValue(
+      const dbus::ObjectPath& device_path,
       const std::vector<uint8_t>& value,
       const base::Closure& callback,
       const device::BluetoothLocalGattService::Delegate::ErrorCallback&

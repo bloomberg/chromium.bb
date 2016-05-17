@@ -17,6 +17,9 @@ class BluetoothLocalGattDescriptorTest : public BluetoothGattServerTest {
     BluetoothGattServerTest::SetUp();
 
     StartGattSetup();
+    // We will need this device to use with simulating read/write attribute
+    // value events.
+    device_ = SimulateLowEnergyDevice(1);
     characteristic_ = BluetoothLocalGattCharacteristic::Create(
         BluetoothUUID(kTestUUIDGenericAttribute),
         device::BluetoothLocalGattCharacteristic::Properties(),
@@ -40,16 +43,18 @@ class BluetoothLocalGattDescriptorTest : public BluetoothGattServerTest {
   base::WeakPtr<BluetoothLocalGattCharacteristic> characteristic_;
   base::WeakPtr<BluetoothLocalGattDescriptor> read_descriptor_;
   base::WeakPtr<BluetoothLocalGattDescriptor> write_descriptor_;
+  BluetoothDevice* device_;
 };
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 TEST_F(BluetoothLocalGattDescriptorTest, ReadLocalDescriptorValue) {
   delegate_->value_to_write_ = 0x1337;
   SimulateLocalGattDescriptorValueReadRequest(
-      read_descriptor_.get(), GetReadValueCallback(Call::EXPECTED),
+      device_, read_descriptor_.get(), GetReadValueCallback(Call::EXPECTED),
       GetCallback(Call::NOT_EXPECTED));
 
   EXPECT_EQ(delegate_->value_to_write_, GetInteger(last_read_value_));
+  EXPECT_EQ(device_->GetIdentifier(), delegate_->last_seen_device_);
 }
 #endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
@@ -57,10 +62,11 @@ TEST_F(BluetoothLocalGattDescriptorTest, ReadLocalDescriptorValue) {
 TEST_F(BluetoothLocalGattDescriptorTest, WriteLocalDescriptorValue) {
   const uint64_t kValueToWrite = 0x7331ul;
   SimulateLocalGattDescriptorValueWriteRequest(
-      write_descriptor_.get(), GetValue(kValueToWrite),
+      device_, write_descriptor_.get(), GetValue(kValueToWrite),
       GetCallback(Call::EXPECTED), GetCallback(Call::NOT_EXPECTED));
 
   EXPECT_EQ(kValueToWrite, delegate_->last_written_value_);
+  EXPECT_EQ(device_->GetIdentifier(), delegate_->last_seen_device_);
 }
 #endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
@@ -69,10 +75,11 @@ TEST_F(BluetoothLocalGattDescriptorTest, ReadLocalDescriptorValueFail) {
   delegate_->value_to_write_ = 0x1337;
   delegate_->should_fail_ = true;
   SimulateLocalGattDescriptorValueReadRequest(
-      read_descriptor_.get(), GetReadValueCallback(Call::NOT_EXPECTED),
+      device_, read_descriptor_.get(), GetReadValueCallback(Call::NOT_EXPECTED),
       GetCallback(Call::EXPECTED));
 
   EXPECT_NE(delegate_->value_to_write_, GetInteger(last_read_value_));
+  EXPECT_NE(device_->GetIdentifier(), delegate_->last_seen_device_);
 }
 #endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
@@ -81,10 +88,11 @@ TEST_F(BluetoothLocalGattDescriptorTest, WriteLocalDescriptorValueFail) {
   const uint64_t kValueToWrite = 0x7331ul;
   delegate_->should_fail_ = true;
   SimulateLocalGattDescriptorValueWriteRequest(
-      write_descriptor_.get(), GetValue(kValueToWrite),
+      device_, write_descriptor_.get(), GetValue(kValueToWrite),
       GetCallback(Call::NOT_EXPECTED), GetCallback(Call::EXPECTED));
 
   EXPECT_NE(kValueToWrite, delegate_->last_written_value_);
+  EXPECT_NE(device_->GetIdentifier(), delegate_->last_seen_device_);
 }
 #endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
@@ -93,10 +101,11 @@ TEST_F(BluetoothLocalGattDescriptorTest,
        ReadLocalDescriptorValueWrongPermissions) {
   delegate_->value_to_write_ = 0x1337;
   SimulateLocalGattDescriptorValueReadRequest(
-      write_descriptor_.get(), GetReadValueCallback(Call::NOT_EXPECTED),
-      GetCallback(Call::EXPECTED));
+      device_, write_descriptor_.get(),
+      GetReadValueCallback(Call::NOT_EXPECTED), GetCallback(Call::EXPECTED));
 
   EXPECT_NE(delegate_->value_to_write_, GetInteger(last_read_value_));
+  EXPECT_NE(device_->GetIdentifier(), delegate_->last_seen_device_);
 }
 #endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 
@@ -105,10 +114,11 @@ TEST_F(BluetoothLocalGattDescriptorTest,
        WriteLocalDescriptorValueWrongPermissions) {
   const uint64_t kValueToWrite = 0x7331ul;
   SimulateLocalGattDescriptorValueWriteRequest(
-      read_descriptor_.get(), GetValue(kValueToWrite),
+      device_, read_descriptor_.get(), GetValue(kValueToWrite),
       GetCallback(Call::NOT_EXPECTED), GetCallback(Call::EXPECTED));
 
   EXPECT_NE(kValueToWrite, delegate_->last_written_value_);
+  EXPECT_NE(device_->GetIdentifier(), delegate_->last_seen_device_);
 }
 #endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
 

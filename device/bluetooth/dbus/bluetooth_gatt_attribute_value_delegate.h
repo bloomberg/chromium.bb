@@ -11,13 +11,25 @@
 #include "base/callback_forward.h"
 #include "device/bluetooth/bluetooth_local_gatt_service.h"
 
+namespace dbus {
+class ObjectPath;
+}
+
+namespace device {
+class BluetoothDevice;
+}
+
 namespace bluez {
+
+class BluetoothLocalGattServiceBlueZ;
 
 // A simpler interface for reacting to GATT attribute value requests by the
 // DBus attribute service providers.
 class BluetoothGattAttributeValueDelegate {
  public:
-  virtual ~BluetoothGattAttributeValueDelegate() {}
+  explicit BluetoothGattAttributeValueDelegate(
+      BluetoothLocalGattServiceBlueZ* service);
+  virtual ~BluetoothGattAttributeValueDelegate();
 
   // This method will be called when a remote device requests to read the
   // value of the exported GATT attribute. Invoke |callback| with a value
@@ -27,6 +39,7 @@ class BluetoothGattAttributeValueDelegate {
   // invoked after a reasonable amount of time, since the request will time
   // out if left pending for too long causing a disconnection.
   virtual void GetValue(
+      const dbus::ObjectPath& device_path,
       const device::BluetoothLocalGattService::Delegate::ValueCallback&
           callback,
       const device::BluetoothLocalGattService::Delegate::ErrorCallback&
@@ -40,6 +53,7 @@ class BluetoothGattAttributeValueDelegate {
   // invoked after a reasonable amount of time, since the request will time
   // out if left pending for too long causing a disconnection.
   virtual void SetValue(
+      const dbus::ObjectPath& device_path,
       const std::vector<uint8_t>& value,
       const base::Closure& callback,
       const device::BluetoothLocalGattService::Delegate::ErrorCallback&
@@ -54,6 +68,19 @@ class BluetoothGattAttributeValueDelegate {
   // notifications for this characteristic. This will never be called for
   // descriptors.
   virtual void StopNotifications() = 0;
+
+ protected:
+  // Gets the Bluetooth device object on the current service's adapter with
+  // the given object path.
+  device::BluetoothDevice* GetDeviceWithPath(
+      const dbus::ObjectPath& object_path);
+
+  const BluetoothLocalGattServiceBlueZ* service() { return service_; }
+
+ private:
+  const BluetoothLocalGattServiceBlueZ* service_;
+
+  DISALLOW_COPY_AND_ASSIGN(BluetoothGattAttributeValueDelegate);
 };
 
 }  // namespace bluez

@@ -60,7 +60,7 @@ class BluetoothLocalGattServiceBlueZ
                  std::unique_ptr<BluetoothLocalGattCharacteristicBlueZ>>&
   GetCharacteristics() const;
 
-  Delegate* GetDelegate() { return delegate_; }
+  Delegate* GetDelegate() const { return delegate_; }
 
   static dbus::ObjectPath AddGuidToObjectPath(const std::string& path);
 

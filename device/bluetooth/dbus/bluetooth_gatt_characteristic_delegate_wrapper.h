@@ -29,11 +29,13 @@ class BluetoothGattCharacteristicDelegateWrapper
 
   // BluetoothGattAttributeValueDelegate overrides:
   void GetValue(
+      const dbus::ObjectPath& device_path,
       const device::BluetoothLocalGattService::Delegate::ValueCallback&
           callback,
       const device::BluetoothLocalGattService::Delegate::ErrorCallback&
           error_callback) override;
   void SetValue(
+      const dbus::ObjectPath& device_path,
       const std::vector<uint8_t>& value,
       const base::Closure& callback,
       const device::BluetoothLocalGattService::Delegate::ErrorCallback&
@@ -42,7 +44,6 @@ class BluetoothGattCharacteristicDelegateWrapper
   void StopNotifications() override;
 
  private:
-  BluetoothLocalGattServiceBlueZ* service_;
   BluetoothLocalGattCharacteristicBlueZ* characteristic_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothGattCharacteristicDelegateWrapper);

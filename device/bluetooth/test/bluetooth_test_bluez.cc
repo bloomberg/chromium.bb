@@ -5,6 +5,7 @@
 #include "device/bluetooth/test/bluetooth_test_bluez.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -12,17 +13,19 @@
 #include "base/run_loop.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluez/bluetooth_adapter_bluez.h"
+#include "device/bluetooth/bluez/bluetooth_device_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_gatt_characteristic_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_gatt_descriptor_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_local_gatt_characteristic_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_local_gatt_descriptor_bluez.h"
+#include "device/bluetooth/bluez/bluetooth_local_gatt_service_bluez.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_device_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_gatt_characteristic_service_provider.h"
 #include "device/bluetooth/dbus/fake_bluetooth_gatt_descriptor_service_provider.h"
 #include "device/bluetooth/dbus/fake_bluetooth_gatt_manager_client.h"
-#include "device/bluetooth/test/bluetooth_gatt_server_test.h"
+#include "device/bluetooth/test/test_bluetooth_local_gatt_service_delegate.h"
 
 namespace device {
 
@@ -44,6 +47,12 @@ void ClosureCallback(const base::Closure& quit_closure,
                      const base::Closure& callback) {
   callback.Run();
   quit_closure.Run();
+}
+
+dbus::ObjectPath GetDevicePath(BluetoothDevice* device) {
+  bluez::BluetoothDeviceBlueZ* device_bluez =
+      static_cast<bluez::BluetoothDeviceBlueZ*>(device);
+  return device_bluez->object_path();
 }
 
 }  // namespace
@@ -124,6 +133,7 @@ BluetoothDevice* BluetoothTestBlueZ::SimulateLowEnergyDevice(
 }
 
 void BluetoothTestBlueZ::SimulateLocalGattCharacteristicValueReadRequest(
+    BluetoothDevice* from_device,
     BluetoothLocalGattCharacteristic* characteristic,
     const BluetoothLocalGattService::Delegate::ValueCallback& value_callback,
     const base::Closure& error_callback) {
@@ -147,12 +157,14 @@ void BluetoothTestBlueZ::SimulateLocalGattCharacteristicValueReadRequest(
 
   base::RunLoop run_loop;
   characteristic_provider->GetValue(
+      GetDevicePath(from_device),
       base::Bind(&GetValueCallback, run_loop.QuitClosure(), value_callback),
       base::Bind(&ClosureCallback, run_loop.QuitClosure(), error_callback));
   run_loop.Run();
 }
 
 void BluetoothTestBlueZ::SimulateLocalGattCharacteristicValueWriteRequest(
+    BluetoothDevice* from_device,
     BluetoothLocalGattCharacteristic* characteristic,
     const std::vector<uint8_t>& value_to_write,
     const base::Closure& success_callback,
@@ -177,13 +189,14 @@ void BluetoothTestBlueZ::SimulateLocalGattCharacteristicValueWriteRequest(
 
   base::RunLoop run_loop;
   characteristic_provider->SetValue(
-      value_to_write,
+      GetDevicePath(from_device), value_to_write,
       base::Bind(&ClosureCallback, run_loop.QuitClosure(), success_callback),
       base::Bind(&ClosureCallback, run_loop.QuitClosure(), error_callback));
   run_loop.Run();
 }
 
 void BluetoothTestBlueZ::SimulateLocalGattDescriptorValueReadRequest(
+    BluetoothDevice* from_device,
     BluetoothLocalGattDescriptor* descriptor,
     const BluetoothLocalGattService::Delegate::ValueCallback& value_callback,
     const base::Closure& error_callback) {
@@ -205,12 +218,14 @@ void BluetoothTestBlueZ::SimulateLocalGattDescriptorValueReadRequest(
 
   base::RunLoop run_loop;
   descriptor_provider->GetValue(
+      GetDevicePath(from_device),
       base::Bind(&GetValueCallback, run_loop.QuitClosure(), value_callback),
       base::Bind(&ClosureCallback, run_loop.QuitClosure(), error_callback));
   run_loop.Run();
 }
 
 void BluetoothTestBlueZ::SimulateLocalGattDescriptorValueWriteRequest(
+    BluetoothDevice* from_device,
     BluetoothLocalGattDescriptor* descriptor,
     const std::vector<uint8_t>& value_to_write,
     const base::Closure& success_callback,
@@ -233,7 +248,7 @@ void BluetoothTestBlueZ::SimulateLocalGattDescriptorValueWriteRequest(
 
   base::RunLoop run_loop;
   descriptor_provider->SetValue(
-      value_to_write,
+      GetDevicePath(from_device), value_to_write,
       base::Bind(&ClosureCallback, run_loop.QuitClosure(), success_callback),
       base::Bind(&ClosureCallback, run_loop.QuitClosure(), error_callback));
   run_loop.Run();

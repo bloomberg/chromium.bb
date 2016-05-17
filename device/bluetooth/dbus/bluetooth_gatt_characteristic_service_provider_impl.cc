@@ -266,6 +266,7 @@ void BluetoothGattCharacteristicServiceProviderImpl::ReadValue(
   DCHECK(OnOriginThread());
   DCHECK(delegate_);
   delegate_->GetValue(
+      dbus::ObjectPath(),
       base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnReadValue,
                  weak_ptr_factory_.GetWeakPtr(), method_call, response_sender),
       base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnFailure,
@@ -291,7 +292,7 @@ void BluetoothGattCharacteristicServiceProviderImpl::WriteValue(
 
   DCHECK(delegate_);
   delegate_->SetValue(
-      value,
+      dbus::ObjectPath(), value,
       base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnWriteValue,
                  weak_ptr_factory_.GetWeakPtr(), method_call, response_sender),
       base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnFailure,

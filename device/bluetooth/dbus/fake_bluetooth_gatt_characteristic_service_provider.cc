@@ -113,6 +113,7 @@ void FakeBluetoothGattCharacteristicServiceProvider::SendValueChanged(
 }
 
 void FakeBluetoothGattCharacteristicServiceProvider::GetValue(
+    const dbus::ObjectPath& device_path,
     const device::BluetoothLocalGattService::Delegate::ValueCallback& callback,
     const device::BluetoothLocalGattService::Delegate::ErrorCallback&
         error_callback) {
@@ -136,10 +137,11 @@ void FakeBluetoothGattCharacteristicServiceProvider::GetValue(
 
   // Pass on to the delegate.
   DCHECK(delegate_);
-  delegate_->GetValue(callback, error_callback);
+  delegate_->GetValue(device_path, callback, error_callback);
 }
 
 void FakeBluetoothGattCharacteristicServiceProvider::SetValue(
+    const dbus::ObjectPath& device_path,
     const std::vector<uint8_t>& value,
     const base::Closure& callback,
     const device::BluetoothLocalGattService::Delegate::ErrorCallback&
@@ -164,7 +166,7 @@ void FakeBluetoothGattCharacteristicServiceProvider::SetValue(
 
   // Pass on to the delegate.
   DCHECK(delegate_);
-  delegate_->SetValue(value, callback, error_callback);
+  delegate_->SetValue(device_path, value, callback, error_callback);
 }
 
 bool FakeBluetoothGattCharacteristicServiceProvider::NotificationsChange(
