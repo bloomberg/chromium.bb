@@ -93,17 +93,13 @@ class SigninManagerBase : public KeyedService {
   AccountInfo GetAuthenticatedAccountInfo() const;
 
   // If a user has previously signed in (and has not signed out), this returns
-  // the account id. Otherwise, it returns an empty string.  This id can be used
-  // to uniquely identify an account, so for example can be used as a key to
-  // map accounts to data.
-  //
-  // TODO(rogerta): eventually the account id should be an obfuscated gaia id.
-  // For now though, this function returns the same value as
-  // GetAuthenticatedAccountInfo().email since lots of code assumes the unique
-  // id for an account is the username.  For code that needs a unique id to
-  // represent the connected account, call this method. Example: the
-  // AccountStatusMap type in MutableProfileOAuth2TokenService.  For code that
-  // needs to know the normalized email address of the connected account, use
+  // the account id. Otherwise, it returns an empty string.  This id is the
+  // G+/Focus obfuscated gaia id of the user. It can be used to uniquely
+  // identify an account, so for example as a key to map accounts to data. For
+  // code that needs a unique id to represent the connected account, call this
+  // method. Example: the AccountStatusMap type in
+  // MutableProfileOAuth2TokenService. For code that needs to know the
+  // normalized email address of the connected account, use
   // GetAuthenticatedAccountInfo().email.  Example: to show the string "Signed
   // in as XXX" in the hotdog menu.
   const std::string& GetAuthenticatedAccountId() const;
