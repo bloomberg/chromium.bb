@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 
+#include "base/debug/dump_without_crashing.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
@@ -176,6 +177,7 @@ void RenderWidgetHostInputEventRouter::RouteGestureEvent(
       // TODO(wjmaclean): this only happens on Windows, and should not happen.
       // https://crbug.com/595422
       gesture_target_ = nullptr;
+      base::debug::DumpWithoutCrashing();
       return;
     }
 
