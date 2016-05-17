@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace shell {
@@ -14,68 +15,54 @@ namespace shell {
 class ShellConnectionRefImpl : public ShellConnectionRef {
  public:
   ShellConnectionRefImpl(
-      ShellConnectionRefFactory* factory,
+      base::WeakPtr<ShellConnectionRefFactory> factory,
       scoped_refptr<base::SingleThreadTaskRunner> shell_client_task_runner)
       : factory_(factory),
-        shell_client_task_runner_(shell_client_task_runner) {}
-  ~ShellConnectionRefImpl() override {
-#ifndef NDEBUG
-    // Ensure that this object is used on only one thread at a time, or else
-    // there could be races where the object is being reset on one thread and
-    // cloned on another.
-    if (clone_task_runner_)
-      DCHECK(clone_task_runner_->BelongsToCurrentThread());
-#endif
+        shell_client_task_runner_(shell_client_task_runner) {
+    // This object is not thread-safe but may be used exclusively on a different
+    // thread from the one which constructed it.
+    thread_checker_.DetachFromThread();
+  }
 
-    if (shell_client_task_runner_->BelongsToCurrentThread()) {
+  ~ShellConnectionRefImpl() override {
+    DCHECK(thread_checker_.CalledOnValidThread());
+
+    if (shell_client_task_runner_->BelongsToCurrentThread() && factory_) {
       factory_->Release();
     } else {
       shell_client_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&ShellConnectionRefFactory::Release,
-                     base::Unretained(factory_)));
+          base::Bind(&ShellConnectionRefFactory::Release, factory_));
     }
   }
 
  private:
   // ShellConnectionRef:
   std::unique_ptr<ShellConnectionRef> Clone() override {
-    if (shell_client_task_runner_->BelongsToCurrentThread()) {
+    DCHECK(thread_checker_.CalledOnValidThread());
+
+    if (shell_client_task_runner_->BelongsToCurrentThread() && factory_) {
       factory_->AddRef();
     } else {
       shell_client_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&ShellConnectionRefFactory::AddRef,
-                     base::Unretained(factory_)));
+          base::Bind(&ShellConnectionRefFactory::AddRef, factory_));
     }
-
-#ifndef NDEBUG
-    // Ensure that this object is used on only one thread at a time, or else
-    // there could be races where the object is being reset on one thread and
-    // cloned on another.
-    if (clone_task_runner_) {
-      DCHECK(clone_task_runner_->BelongsToCurrentThread());
-    } else {
-      clone_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-    }
-#endif
 
     return base::WrapUnique(
         new ShellConnectionRefImpl(factory_, shell_client_task_runner_));
   }
 
-  ShellConnectionRefFactory* factory_;
+  base::WeakPtr<ShellConnectionRefFactory> factory_;
   scoped_refptr<base::SingleThreadTaskRunner> shell_client_task_runner_;
-
-#ifndef NDEBUG
-  scoped_refptr<base::SingleThreadTaskRunner> clone_task_runner_;
-#endif
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellConnectionRefImpl);
 };
 
 ShellConnectionRefFactory::ShellConnectionRefFactory(
-    const base::Closure& quit_closure) : quit_closure_(quit_closure) {
+    const base::Closure& quit_closure)
+    : quit_closure_(quit_closure), weak_factory_(this) {
   DCHECK(!quit_closure_.is_null());
 }
 
@@ -84,7 +71,8 @@ ShellConnectionRefFactory::~ShellConnectionRefFactory() {}
 std::unique_ptr<ShellConnectionRef> ShellConnectionRefFactory::CreateRef() {
   AddRef();
   return base::WrapUnique(
-      new ShellConnectionRefImpl(this, base::ThreadTaskRunnerHandle::Get()));
+      new ShellConnectionRefImpl(weak_factory_.GetWeakPtr(),
+                                 base::ThreadTaskRunnerHandle::Get()));
 }
 
 void ShellConnectionRefFactory::AddRef() {

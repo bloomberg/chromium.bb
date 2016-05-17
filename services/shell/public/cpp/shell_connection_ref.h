@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 
 namespace shell {
 
@@ -48,6 +49,7 @@ class ShellConnectionRefFactory {
 
   const base::Closure quit_closure_;
   int ref_count_ = 0;
+  base::WeakPtrFactory<ShellConnectionRefFactory> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellConnectionRefFactory);
 };
