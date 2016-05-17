@@ -580,19 +580,6 @@ html[dir=rtl] .action-box-area.active ~ .action-box-menu {
   text-align: end;
 }
 
-.action-box-remove-user-warning .remove-warning-button {
-  background: rgb(197, 57, 41);
-  border-radius: 2px;
-  color: white;
-  line-height: 32px;
-  padding: 0 16px;
-  width: 100%;
-}
-
-.action-box-remove-user-warning .remove-warning-button.keyboard-focus {
-  font-weight: normal;
-}
-
 /* Hide dialog elements not in a correct category. Only combinations currently
    in use are included here. */
 .pod.legacy-supervised .non-sync,

@@ -197,5 +197,16 @@ html[dir=rtl] .main-pane {
 }
 
 .action-box-remove-user-warning .remove-warning-button {
-  height: 30px;
+  background: rgb(197, 57, 41);
+  border-radius: 2px;
+  color: white;
+  font-weight: 500;
+  line-height: 32px;
+  padding: 0 16px;
+  width: 100%;
+}
+
+.action-box-remove-user-warning .remove-warning-button[focused] {
+  background: rgb(173, 50, 36);
+  font-weight: 500;
 }

@@ -49,11 +49,10 @@
       }
 
       .pod.faded {
-        opacity: 1;
+        opacity: .6;
       }
 
-      .pod.focused,
-      .pod.hovered {
+      .pod.focused {
         box-shadow: 0 10px 10px 0 rgba(0, 0, 0, .26),
                     0 14px 28px 0 rgba(0, 0, 0, .25);
       }
@@ -61,6 +60,7 @@
       .pod .user-image-pane {
         border-top-left-radius: 2px;
         border-top-right-radius: 2px;
+        overflow: hidden;
         position: static;
       }
 
@@ -92,8 +92,6 @@
       }
 
       .pod .indicator-container {
-        background-color: rgba(255, 255, 255, .85);
-        border-radius: 0;
         bottom: 10px;
         height: 20px;
         left: auto;
@@ -112,39 +110,34 @@
       .pod .indicator-container > .indicator {
         -webkit-mask-position: center;
         -webkit-mask-repeat: no-repeat;
-        -webkit-mask-size: 20px;
-        background-color: var(--paper-grey-600);
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: 18px;
+        -webkit-mask-size: 16px;
+        background: var(--paper-grey-600);
         display: none;
-        float: left;
-        height: 20px;
-        width: 20px;
+        height: 100%;
       }
 
       .pod.locked .locked-indicator {
         -webkit-mask-image: url(../../../../ui/webui/resources/images/lock.svg);
-        display: initial;
+        display: block;
       }
 
       .pod.legacy-supervised .legacy-supervised-indicator {
         -webkit-mask-image:
             url(../../../../ui/webui/resources/images/supervisor_account.svg);
-        display: initial;
+        display: block;
       }
 
       .pod.child .child-indicator {
         -webkit-mask-image:
             url(../../../../ui/webui/resources/images/account_child_invert.svg);
-        display: initial;
+        display: block;
       }
 
       .action-box-area:focus ~ .user-image-gradient-area,
       .action-box-area.hovered ~ .user-image-gradient-area {
-        background-image: linear-gradient(rgba(0, 0, 0, .4), transparent 100%);
+        background-image: linear-gradient(rgba(0, 0, 0, .2), transparent 100%);
         display: initial;
-        height: 56px;
+        height: 40px;
         position: absolute;
         top: 0;
         width: 100%;
@@ -194,8 +187,8 @@
       }
 
       .reauth-hint-container .reauth-warning {
-        height: 20px;
-        width: 20px;
+        --iron-icon-height: 20px;
+        --iron-icon-width: 20px;
       }
 
       .action-box-area.active .action-box-button {
@@ -257,9 +250,19 @@
       }
 
       .action-box-remove-user-warning .remove-warning-button {
-        background: var(--google-red-700);
+        --paper-button: {
+          background: var(--google-red-700);
+          color: white;
+          font-weight: 500;
+        };
+        --paper-button-flat-keyboard-focus: {
+          background: rgb(173, 50, 36);
+          font-weight: 500;
+        };
+        border-radius: 2px;
+        line-height: 32px;
         min-width: 72px;
-        width: auto;
+        padding: 0 16px;
       }
     </style>
   </template>
