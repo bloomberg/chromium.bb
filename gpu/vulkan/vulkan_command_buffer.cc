@@ -148,14 +148,20 @@ void VulkanCommandBuffer::ResetIfDirty() {
     // using the asynchronous SubmissionFinished() function.
     VkDevice device = device_queue_->GetVulkanDevice();
     vkWaitForFences(device, 1, &submission_fence_, true, UINT64_MAX);
-
-    vkResetCommandBuffer(command_buffer_, 0);
-    record_type_ = RECORD_TYPE_EMPTY;
+    VkResult result = vkResetCommandBuffer(command_buffer_, 0);
+    if (VK_SUCCESS != result) {
+      DLOG(ERROR) << "vkResetCommandBuffer() failed: " << result;
+    } else {
+      record_type_ = RECORD_TYPE_EMPTY;
+    }
   }
 }
 
 CommandBufferRecorderBase::~CommandBufferRecorderBase() {
-  vkEndCommandBuffer(handle_);
+  VkResult result = vkEndCommandBuffer(handle_);
+  if (VK_SUCCESS != result) {
+    DLOG(ERROR) << "vkEndCommandBuffer() failed: " << result;
+  }
 };
 
 ScopedMultiUseCommandBufferRecorder::ScopedMultiUseCommandBufferRecorder(
@@ -164,7 +170,11 @@ ScopedMultiUseCommandBufferRecorder::ScopedMultiUseCommandBufferRecorder(
   ValidateMultiUse(command_buffer);
   VkCommandBufferBeginInfo begin_info = {};
   begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-  vkBeginCommandBuffer(handle_, &begin_info);
+  VkResult result = vkBeginCommandBuffer(handle_, &begin_info);
+
+  if (VK_SUCCESS != result) {
+    DLOG(ERROR) << "vkBeginCommandBuffer() failed: " << result;
+  }
 }
 
 ScopedSingleUseCommandBufferRecorder::ScopedSingleUseCommandBufferRecorder(
@@ -174,7 +184,11 @@ ScopedSingleUseCommandBufferRecorder::ScopedSingleUseCommandBufferRecorder(
   VkCommandBufferBeginInfo begin_info = {};
   begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-  vkBeginCommandBuffer(handle_, &begin_info);
+  VkResult result = vkBeginCommandBuffer(handle_, &begin_info);
+
+  if (VK_SUCCESS != result) {
+    DLOG(ERROR) << "vkBeginCommandBuffer() failed: " << result;
+  }
 }
 
 }  // namespace gpu
