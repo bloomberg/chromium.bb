@@ -67,8 +67,9 @@ FetchResponseData* FetchResponseData::createWithBuffer(BodyStreamBuffer* buffer)
     return response;
 }
 
-FetchResponseData* FetchResponseData::createBasicFilteredResponse()
+FetchResponseData* FetchResponseData::createBasicFilteredResponse() const
 {
+    DCHECK_EQ(m_type, DefaultType);
     // "A basic filtered response is a filtered response whose type is |basic|,
     // header list excludes any headers in internal response's header list whose
     // name is `Set-Cookie` or `Set-Cookie2`."
@@ -82,12 +83,13 @@ FetchResponseData* FetchResponseData::createBasicFilteredResponse()
     }
     response->m_buffer = m_buffer;
     response->m_mimeType = m_mimeType;
-    response->m_internalResponse = this;
+    response->m_internalResponse = const_cast<FetchResponseData*>(this);
     return response;
 }
 
-FetchResponseData* FetchResponseData::createCORSFilteredResponse()
+FetchResponseData* FetchResponseData::createCORSFilteredResponse() const
 {
+    DCHECK_EQ(m_type, DefaultType);
     // "A CORS filtered response is a filtered response whose type is |CORS|,
     // header list excludes all headers in internal response's header list,
     // except those whose name is either one of `Cache-Control`,
@@ -109,12 +111,13 @@ FetchResponseData* FetchResponseData::createCORSFilteredResponse()
     }
     response->m_buffer = m_buffer;
     response->m_mimeType = m_mimeType;
-    response->m_internalResponse = this;
+    response->m_internalResponse = const_cast<FetchResponseData*>(this);
     return response;
 }
 
-FetchResponseData* FetchResponseData::createOpaqueFilteredResponse()
+FetchResponseData* FetchResponseData::createOpaqueFilteredResponse() const
 {
+    DCHECK_EQ(m_type, DefaultType);
     // "An opaque filtered response is a filtered response whose type is
     // 'opaque', url list is the empty list, status is 0, status message is the
     // empty byte sequence, header list is the empty list, body is null, and
@@ -122,12 +125,13 @@ FetchResponseData* FetchResponseData::createOpaqueFilteredResponse()
     //
     // https://fetch.spec.whatwg.org/#concept-filtered-response-opaque
     FetchResponseData* response = new FetchResponseData(OpaqueType, 0, "");
-    response->m_internalResponse = this;
+    response->m_internalResponse = const_cast<FetchResponseData*>(this);
     return response;
 }
 
-FetchResponseData* FetchResponseData::createOpaqueRedirectFilteredResponse()
+FetchResponseData* FetchResponseData::createOpaqueRedirectFilteredResponse() const
 {
+    DCHECK_EQ(m_type, DefaultType);
     // "An opaque filtered response is a filtered response whose type is
     // 'opaqueredirect', status is 0, status message is the empty byte sequence,
     // header list is the empty list, body is null, and cache state is 'none'."
@@ -135,7 +139,7 @@ FetchResponseData* FetchResponseData::createOpaqueRedirectFilteredResponse()
     // https://fetch.spec.whatwg.org/#concept-filtered-response-opaque-redirect
     FetchResponseData* response = new FetchResponseData(OpaqueRedirectType, 0, "");
     response->m_url = m_url;
-    response->m_internalResponse = this;
+    response->m_internalResponse = const_cast<FetchResponseData*>(this);
     return response;
 }
 

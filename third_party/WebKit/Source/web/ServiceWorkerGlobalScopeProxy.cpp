@@ -147,12 +147,14 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int eventID, const WebSer
 
 void ServiceWorkerGlobalScopeProxy::dispatchForeignFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest)
 {
-    ForeignFetchRespondWithObserver* observer = ForeignFetchRespondWithObserver::create(workerGlobalScope(), eventID, webRequest.url(), webRequest.mode(), webRequest.frameType(), webRequest.requestContext());
+    RefPtr<SecurityOrigin> origin = SecurityOrigin::create(webRequest.referrerUrl());
+    ForeignFetchRespondWithObserver* observer = ForeignFetchRespondWithObserver::create(workerGlobalScope(), eventID, webRequest.url(), webRequest.mode(), webRequest.frameType(), webRequest.requestContext(), origin);
     Request* request = Request::create(workerGlobalScope()->scriptController()->getScriptState(), webRequest);
     request->getHeaders()->setGuard(Headers::ImmutableGuard);
     ForeignFetchEventInit eventInit;
     eventInit.setCancelable(true);
     eventInit.setRequest(request);
+    eventInit.setOrigin(origin->toString());
     ForeignFetchEvent* fetchEvent = ForeignFetchEvent::create(EventTypeNames::foreignfetch, eventInit, observer);
     DispatchEventResult dispatchResult = workerGlobalScope()->dispatchEvent(fetchEvent);
     observer->didDispatchEvent(dispatchResult);

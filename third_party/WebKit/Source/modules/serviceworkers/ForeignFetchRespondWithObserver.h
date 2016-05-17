@@ -13,12 +13,14 @@ namespace blink {
 // notifies the client.
 class MODULES_EXPORT ForeignFetchRespondWithObserver final : public RespondWithObserver {
 public:
-    static ForeignFetchRespondWithObserver* create(ExecutionContext*, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode, WebURLRequest::FrameType, WebURLRequest::RequestContext);
+    static ForeignFetchRespondWithObserver* create(ExecutionContext*, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode, WebURLRequest::FrameType, WebURLRequest::RequestContext, PassRefPtr<SecurityOrigin>);
 
     void responseWasFulfilled(const ScriptValue&) override;
 
 private:
-    ForeignFetchRespondWithObserver(ExecutionContext*, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode, WebURLRequest::FrameType, WebURLRequest::RequestContext);
+    ForeignFetchRespondWithObserver(ExecutionContext*, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode, WebURLRequest::FrameType, WebURLRequest::RequestContext, PassRefPtr<SecurityOrigin>);
+
+    RefPtr<SecurityOrigin> m_requestOrigin;
 };
 
 } // namespace blink

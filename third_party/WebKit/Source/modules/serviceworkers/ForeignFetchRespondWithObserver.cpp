@@ -8,9 +8,9 @@
 
 namespace blink {
 
-ForeignFetchRespondWithObserver* ForeignFetchRespondWithObserver::create(ExecutionContext* context, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode requestMode, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext)
+ForeignFetchRespondWithObserver* ForeignFetchRespondWithObserver::create(ExecutionContext* context, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode requestMode, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext, PassRefPtr<SecurityOrigin> requestOrigin)
 {
-    return new ForeignFetchRespondWithObserver(context, eventID, requestURL, requestMode, frameType, requestContext);
+    return new ForeignFetchRespondWithObserver(context, eventID, requestURL, requestMode, frameType, requestContext, requestOrigin);
 }
 
 void ForeignFetchRespondWithObserver::responseWasFulfilled(const ScriptValue& value)
@@ -23,13 +23,36 @@ void ForeignFetchRespondWithObserver::responseWasFulfilled(const ScriptValue& va
         return;
     }
 
-    // TODO(mek): Handle foreign fetch specific response parameters.
     Response* response = foreignFetchResponse.response();
+    const FetchResponseData* internalResponse = response->response();
+    const bool isOpaque = internalResponse->getType() == FetchResponseData::OpaqueType || internalResponse->getType() == FetchResponseData::OpaqueRedirectType;
+    if (internalResponse->getType() != FetchResponseData::DefaultType)
+        internalResponse = internalResponse->internalResponse();
+
+    if (!foreignFetchResponse.hasOrigin()) {
+        if (foreignFetchResponse.hasHeaders() && !foreignFetchResponse.headers().isEmpty()) {
+            responseWasRejected(WebServiceWorkerResponseErrorForeignFetchHeadersWithoutOrigin);
+            return;
+        }
+
+        // If response isn't already opaque, make it opaque.
+        if (!isOpaque) {
+            FetchResponseData* opaqueData = internalResponse->createOpaqueFilteredResponse();
+            response = Response::create(getExecutionContext(), opaqueData);
+        }
+    } else if (m_requestOrigin->toString() != foreignFetchResponse.origin()) {
+        responseWasRejected(WebServiceWorkerResponseErrorForeignFetchMismatchedOrigin);
+        return;
+    } else if (!isOpaque) {
+        // TODO(mek): Handle |headers| response attribute, and properly filter response.
+    }
+
     RespondWithObserver::responseWasFulfilled(ScriptValue::from(value.getScriptState(), response));
 }
 
-ForeignFetchRespondWithObserver::ForeignFetchRespondWithObserver(ExecutionContext* context, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode requestMode, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext)
+ForeignFetchRespondWithObserver::ForeignFetchRespondWithObserver(ExecutionContext* context, int eventID, const KURL& requestURL, WebURLRequest::FetchRequestMode requestMode, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext, PassRefPtr<SecurityOrigin> requestOrigin)
     : RespondWithObserver(context, eventID, requestURL, requestMode, frameType, requestContext)
+    , m_requestOrigin(requestOrigin)
 {
 }
 

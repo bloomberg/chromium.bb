@@ -34,10 +34,13 @@ public:
     static FetchResponseData* createNetworkErrorResponse();
     static FetchResponseData* createWithBuffer(BodyStreamBuffer*);
 
-    FetchResponseData* createBasicFilteredResponse();
-    FetchResponseData* createCORSFilteredResponse();
-    FetchResponseData* createOpaqueFilteredResponse();
-    FetchResponseData* createOpaqueRedirectFilteredResponse();
+    FetchResponseData* createBasicFilteredResponse() const;
+    FetchResponseData* createCORSFilteredResponse() const;
+    FetchResponseData* createOpaqueFilteredResponse() const;
+    FetchResponseData* createOpaqueRedirectFilteredResponse() const;
+
+    FetchResponseData* internalResponse() { return m_internalResponse; }
+    const FetchResponseData* internalResponse() const { return m_internalResponse; }
 
     FetchResponseData* clone(ScriptState*);
 

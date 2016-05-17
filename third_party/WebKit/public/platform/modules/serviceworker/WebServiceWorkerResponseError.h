@@ -22,7 +22,9 @@ enum WebServiceWorkerResponseError {
     WebServiceWorkerResponseErrorResponseTypeOpaqueRedirect,
     WebServiceWorkerResponseErrorBodyLocked,
     WebServiceWorkerResponseErrorNoForeignFetchResponse,
-    WebServiceWorkerResponseErrorLast = WebServiceWorkerResponseErrorNoForeignFetchResponse,
+    WebServiceWorkerResponseErrorForeignFetchHeadersWithoutOrigin,
+    WebServiceWorkerResponseErrorForeignFetchMismatchedOrigin,
+    WebServiceWorkerResponseErrorLast = WebServiceWorkerResponseErrorForeignFetchMismatchedOrigin,
 };
 
 } // namespace blink

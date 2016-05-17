@@ -251,6 +251,7 @@ interface FileReaderSync
     method readAsDataURL
     method readAsText
 interface ForeignFetchEvent : ExtendableEvent
+    getter origin
     getter request
     method constructor
     method respondWith

@@ -6,4 +6,5 @@
 
 dictionary ForeignFetchEventInit : ExtendableEventInit {
   required Request request;
+  USVString origin = "null";
 };

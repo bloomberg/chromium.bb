@@ -30,6 +30,11 @@ Request* ForeignFetchEvent::request() const
     return m_request;
 }
 
+String ForeignFetchEvent::origin() const
+{
+    return m_origin;
+}
+
 void ForeignFetchEvent::respondWith(ScriptState* scriptState, ScriptPromise scriptPromise, ExceptionState& exceptionState)
 {
     stopImmediatePropagation();
@@ -52,6 +57,8 @@ ForeignFetchEvent::ForeignFetchEvent(const AtomicString& type, const ForeignFetc
 {
     if (initializer.hasRequest())
         m_request = initializer.request();
+    if (initializer.hasOrigin())
+        m_origin = initializer.origin();
 }
 
 DEFINE_TRACE(ForeignFetchEvent)

@@ -9,6 +9,7 @@
     RuntimeEnabled=ForeignFetch,
 ] interface ForeignFetchEvent : ExtendableEvent {
     [SameObject] readonly attribute Request request;
+    readonly attribute USVString origin;
 
     [CallWith=ScriptState, RaisesException] void respondWith(Promise<ForeignFetchResponse> r);
 };

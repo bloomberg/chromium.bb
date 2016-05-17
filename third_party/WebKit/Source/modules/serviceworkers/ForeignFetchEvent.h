@@ -30,6 +30,7 @@ public:
     static ForeignFetchEvent* create(const AtomicString& type, const ForeignFetchEventInit&, ForeignFetchRespondWithObserver*);
 
     Request* request() const;
+    String origin() const;
 
     void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
 
@@ -44,6 +45,7 @@ protected:
 private:
     Member<ForeignFetchRespondWithObserver> m_observer;
     Member<Request> m_request;
+    String m_origin;
 };
 
 } // namespace blink
