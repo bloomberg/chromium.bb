@@ -28,19 +28,27 @@ bool InputDeviceEquals(const ui::InputDevice& a, const ui::InputDevice& b) {
 
 }  // namespace
 
+DeviceDataManager::TouchscreenInfo::TouchscreenInfo() {
+  Reset();
+}
+
+void DeviceDataManager::TouchscreenInfo::Reset() {
+  radius_scale = 1.0;
+  target_display = display::Display::kInvalidDisplayID;
+  device_transform = gfx::Transform();
+}
+
 // static
-DeviceDataManager* DeviceDataManager::instance_ = NULL;
+DeviceDataManager* DeviceDataManager::instance_ = nullptr;
 
-DeviceDataManager::DeviceDataManager() {
-  ClearTouchDeviceAssociations();
-}
+DeviceDataManager::DeviceDataManager() {}
 
-DeviceDataManager::~DeviceDataManager() {
-}
+DeviceDataManager::~DeviceDataManager() {}
 
 // static
 DeviceDataManager* DeviceDataManager::instance() { return instance_; }
 
+// static
 void DeviceDataManager::set_instance(DeviceDataManager* instance) {
   DCHECK(instance)
       << "Must reset the DeviceDataManager using DeleteInstance().";
@@ -59,10 +67,11 @@ void DeviceDataManager::CreateInstance() {
   base::AtExitManager::RegisterTask(base::Bind(DeleteInstance));
 }
 
+// static
 void DeviceDataManager::DeleteInstance() {
   if (instance_) {
     delete instance_;
-    instance_ = NULL;
+    instance_ = nullptr;
   }
 }
 
@@ -74,16 +83,12 @@ DeviceDataManager* DeviceDataManager::GetInstance() {
 
 // static
 bool DeviceDataManager::HasInstance() {
-  return instance_ != NULL;
+  return instance_ != nullptr;
 }
 
 void DeviceDataManager::ClearTouchDeviceAssociations() {
-  for (int i = 0; i < kMaxDeviceNum; i++) {
-    touch_device_transformer_map_[i] = gfx::Transform();
-    touch_device_to_target_display_map_[i] =
-        display::Display::kInvalidDisplayID;
-    touch_radius_scale_map_[i] = 1.0;
-  }
+  for (auto& touch_info : touch_map_)
+    touch_info.Reset();
 }
 
 bool DeviceDataManager::IsTouchDeviceIdValid(
@@ -96,21 +101,21 @@ void DeviceDataManager::UpdateTouchInfoForDisplay(
     int touch_device_id,
     const gfx::Transform& touch_transformer) {
   if (IsTouchDeviceIdValid(touch_device_id)) {
-    touch_device_to_target_display_map_[touch_device_id] = target_display_id;
-    touch_device_transformer_map_[touch_device_id] = touch_transformer;
+    touch_map_[touch_device_id].target_display = target_display_id;
+    touch_map_[touch_device_id].device_transform = touch_transformer;
   }
 }
 
 void DeviceDataManager::UpdateTouchRadiusScale(int touch_device_id,
                                                double scale) {
   if (IsTouchDeviceIdValid(touch_device_id))
-    touch_radius_scale_map_[touch_device_id] = scale;
+    touch_map_[touch_device_id].radius_scale = scale;
 }
 
 void DeviceDataManager::ApplyTouchRadiusScale(int touch_device_id,
                                               double* radius) {
   if (IsTouchDeviceIdValid(touch_device_id))
-    *radius = (*radius) * touch_radius_scale_map_[touch_device_id];
+    *radius = (*radius) * touch_map_[touch_device_id].radius_scale;
 }
 
 void DeviceDataManager::ApplyTouchTransformer(int touch_device_id,
@@ -118,8 +123,7 @@ void DeviceDataManager::ApplyTouchTransformer(int touch_device_id,
                                               float* y) {
   if (IsTouchDeviceIdValid(touch_device_id)) {
     gfx::Point3F point(*x, *y, 0.0);
-    const gfx::Transform& trans =
-        touch_device_transformer_map_[touch_device_id];
+    const gfx::Transform& trans = touch_map_[touch_device_id].device_transform;
     trans.TransformPoint(&point);
     *x = point.x();
     *y = point.y();
@@ -129,7 +133,7 @@ void DeviceDataManager::ApplyTouchTransformer(int touch_device_id,
 int64_t DeviceDataManager::GetTargetDisplayForTouchDevice(
     int touch_device_id) const {
   if (IsTouchDeviceIdValid(touch_device_id))
-    return touch_device_to_target_display_map_[touch_device_id];
+    return touch_map_[touch_device_id].target_display;
   return display::Display::kInvalidDisplayID;
 }
 

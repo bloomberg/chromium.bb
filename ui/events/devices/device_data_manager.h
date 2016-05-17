@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <array>
 #include <memory>
 #include <vector>
 
@@ -58,6 +59,14 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
     return keyboard_devices_;
   }
 
+  const std::vector<InputDevice>& mouse_devices() const {
+    return mouse_devices_;
+  }
+
+  const std::vector<InputDevice>& touchpad_devices() const {
+    return touchpad_devices_;
+  }
+
   bool device_lists_complete() const { return device_lists_complete_; }
 
   void AddObserver(InputDeviceEventObserver* observer);
@@ -85,6 +94,16 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
   void OnDeviceListsComplete() override;
 
  private:
+  // Information related to a touchscreen device.
+  struct TouchscreenInfo {
+    TouchscreenInfo();
+    void Reset();
+
+    double radius_scale;
+    int64_t target_display;
+    gfx::Transform device_transform;
+  };
+
   friend class test::DeviceDataManagerTestAPI;
 
   static DeviceDataManager* instance_;
@@ -97,13 +116,6 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
   void NotifyObserversTouchpadDeviceConfigurationChanged();
   void NotifyObserversDeviceListsComplete();
 
-  double touch_radius_scale_map_[kMaxDeviceNum];
-
-  // Index table to find the target display id for a touch device.
-  int64_t touch_device_to_target_display_map_[kMaxDeviceNum];
-  // Index table to find the TouchTransformer for a touch device.
-  gfx::Transform touch_device_transformer_map_[kMaxDeviceNum];
-
   std::vector<TouchscreenDevice> touchscreen_devices_;
   std::vector<KeyboardDevice> keyboard_devices_;
   std::vector<InputDevice> mouse_devices_;
@@ -113,6 +125,11 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
   base::ObserverList<InputDeviceEventObserver> observers_;
 
   bool touch_screens_enabled_ = true;
+
+  // Contains touchscreen device info for each device mapped by device ID. Will
+  // have default values if the device with corresponding ID isn't a touchscreen
+  // or doesn't exist.
+  std::array<TouchscreenInfo, kMaxDeviceNum> touch_map_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceDataManager);
 };
