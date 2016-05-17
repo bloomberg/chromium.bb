@@ -264,12 +264,22 @@ class UserMediaClientImplTest : public ::testing::Test {
   }
 
   void FakeMediaStreamDispatcherRequestMediaDevicesComplete() {
+    // There may be repeated replies due to device or configuration changes.
+    used_media_impl_->OnDevicesEnumerated(
+        ms_dispatcher_->audio_input_request_id(),
+        ms_dispatcher_->audio_input_array());
     used_media_impl_->OnDevicesEnumerated(
         ms_dispatcher_->audio_input_request_id(),
         ms_dispatcher_->audio_input_array());
     used_media_impl_->OnDevicesEnumerated(
         ms_dispatcher_->audio_output_request_id(),
         ms_dispatcher_->audio_output_array());
+    used_media_impl_->OnDevicesEnumerated(
+        ms_dispatcher_->audio_output_request_id(),
+        ms_dispatcher_->audio_output_array());
+    used_media_impl_->OnDevicesEnumerated(
+        ms_dispatcher_->video_request_id(),
+        ms_dispatcher_->video_array());
     used_media_impl_->OnDevicesEnumerated(
         ms_dispatcher_->video_request_id(),
         ms_dispatcher_->video_array());

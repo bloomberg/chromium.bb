@@ -753,7 +753,8 @@ void UserMediaClientImpl::OnDevicesEnumerated(
   DVLOG(1) << "UserMediaClientImpl::OnDevicesEnumerated(" << request_id << ")";
 
   MediaDevicesRequestInfo* request = FindMediaDevicesRequestInfo(request_id);
-  DCHECK(request);
+  if (!request)
+    return;
 
   if (request_id == request->audio_input_request_id) {
     request->has_audio_input_returned = true;
