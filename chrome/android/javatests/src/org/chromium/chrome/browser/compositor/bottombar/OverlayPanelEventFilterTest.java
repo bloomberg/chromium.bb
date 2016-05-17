@@ -1,0 +1,492 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser.compositor.bottombar;
+
+import android.content.Context;
+import android.test.InstrumentationTestCase;
+import android.test.suitebuilder.annotation.SmallTest;
+import android.view.MotionEvent;
+import android.view.ViewConfiguration;
+import android.view.ViewGroup;
+
+import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilterHost;
+import org.chromium.chrome.browser.compositor.layouts.eventfilter.OverlayPanelEventFilter;
+import org.chromium.content.browser.ContentViewCore;
+
+/**
+ * Class responsible for testing the OverlayPanelEventFilter.
+ */
+public class OverlayPanelEventFilterTest extends InstrumentationTestCase {
+
+    private static final float PANEL_ALMOST_MAXIMIZED_OFFSET_Y_DP = 50.f;
+    private static final float BAR_HEIGHT_DP = 100.f;
+
+    private static final float LAYOUT_WIDTH_DP = 600.f;
+    private static final float LAYOUT_HEIGHT_DP = 800.f;
+
+    // A small value used to check whether two floats are almost equal.
+    private static final float EPSILON = 1e-04f;
+
+    private float mTouchSlopDp;
+    private float mDpToPx;
+
+    private float mAlmostMaximizedContentOffsetYDp;
+    private float mMaximizedContentOffsetYDp;
+
+    private float mContentVerticalScroll;
+
+    private boolean mWasTapDetectedOnContent;
+    private boolean mWasScrollDetectedOnContent;
+
+    private MockOverlayPanel mPanel;
+    private OverlayPanelEventFilterWrapper mEventFilter;
+
+    private boolean mShouldLockHorizontalMotionInContent;
+    private MotionEvent mEventPropagatedToContent;
+    private boolean mEventWasScroll;
+    private boolean mEventWasTap;
+
+    // --------------------------------------------------------------------------------------------
+    // OverlayPanelEventFilterWrapper
+    // --------------------------------------------------------------------------------------------
+
+    /**
+     * Wrapper around OverlayPanelEventFilter used by tests.
+     */
+    public final class OverlayPanelEventFilterWrapper extends OverlayPanelEventFilter {
+        public OverlayPanelEventFilterWrapper(Context context, EventFilterHost host,
+                OverlayPanel panel) {
+            super(context, host, panel);
+        }
+
+        @Override
+        protected float getContentViewVerticalScroll() {
+            return mContentVerticalScroll;
+        }
+
+        @Override
+        protected void propagateEventToContentViewCore(MotionEvent e) {
+            mEventPropagatedToContent = MotionEvent.obtain(e);
+            super.propagateEventToContentViewCore(e);
+            mEventPropagatedToContent.recycle();
+        }
+
+        @Override
+        protected boolean handleSingleTapUp(MotionEvent e) {
+            boolean handled = super.handleSingleTapUp(e);
+            mEventWasTap = true;
+            return handled;
+        }
+
+        @Override
+        protected boolean handleScroll(MotionEvent e1, MotionEvent e2, float distanceY) {
+            boolean handled = super.handleScroll(e1, e2, distanceY);
+            mEventWasScroll = true;
+            return handled;
+        }
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // StubbedContentViewCore
+    // --------------------------------------------------------------------------------------------
+
+    private final class StubbedContentViewCore extends ContentViewCore {
+        public StubbedContentViewCore(Context context) {
+            super(context);
+        }
+
+        @Override
+        public ViewGroup getContainerView() {
+            return new ViewGroup(getContext()) {
+                @Override
+                public boolean dispatchTouchEvent(MotionEvent e) {
+                    if (e.getActionMasked() != MotionEvent.ACTION_CANCEL) {
+                        mWasScrollDetectedOnContent = mEventWasScroll;
+                        mWasTapDetectedOnContent = mEventWasTap;
+
+                        // Check that the event offset is correct.
+                        if (!mShouldLockHorizontalMotionInContent) {
+                            float propagatedEventY = mEventPropagatedToContent.getY();
+                            float offsetY = mPanel.getContentY() * mDpToPx;
+                            assertEquals(propagatedEventY - offsetY, e.getY(), EPSILON);
+                        }
+                    } else {
+                        mWasScrollDetectedOnContent = false;
+                        mWasTapDetectedOnContent = false;
+                    }
+                    return super.dispatchTouchEvent(e);
+                }
+
+                @Override
+                public void onLayout(boolean changed, int l, int t, int r, int b) {}
+            };
+        }
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // MockOverlayPanel
+    // --------------------------------------------------------------------------------------------
+
+    /**
+     * Mocks an OverlayPanel, so it doesn't create ContentViewCore.
+     */
+    public final class MockOverlayPanel extends OverlayPanel {
+        private boolean mWasTapDetectedOnPanel = false;
+        private boolean mWasScrollDetectedOnPanel = false;
+        private ContentViewCore mContentViewCore;
+
+        public MockOverlayPanel(Context context, OverlayPanelManager panelManager) {
+            super(context, null, null, panelManager);
+            mContentViewCore = new StubbedContentViewCore(context);
+        }
+
+        @Override
+        public OverlayPanelContent createNewOverlayPanelContent() {
+            return new MockOverlayPanelContent();
+        }
+
+        /**
+         * Override creation and destruction of the ContentViewCore as they rely on native methods.
+         */
+        private class MockOverlayPanelContent extends OverlayPanelContent {
+            public MockOverlayPanelContent() {
+                super(null, null, null);
+            }
+
+            @Override
+            public void removeLastHistoryEntry(String url, long timeInMs) {}
+        }
+
+        @Override
+        public ContentViewCore getContentViewCore() {
+            return mContentViewCore;
+        }
+
+        public boolean getWasTapDetected() {
+            return mWasTapDetectedOnPanel;
+        }
+
+        public boolean getWasScrollDetected() {
+            return mWasScrollDetectedOnPanel;
+        }
+
+        // GestureHandler overrides.
+
+        @Override
+        public void onDown(float x, float y, boolean fromMouse, int buttons) {}
+
+        @Override
+        public void onUpOrCancel() {}
+
+        @Override
+        public void drag(float x, float y, float dx, float dy, float tx, float ty) {
+            mWasScrollDetectedOnPanel = true;
+        }
+
+        @Override
+        public void click(float x, float y, boolean fromMouse, int buttons) {
+            mWasTapDetectedOnPanel = true;
+        }
+
+        @Override
+        public void fling(float x, float y, float velocityX, float velocityY) {}
+
+        @Override
+        public void onLongPress(float x, float y) {}
+
+        @Override
+        public void onPinch(float x0, float y0, float x1, float y1, boolean firstEvent) {}
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // Test Suite
+    // --------------------------------------------------------------------------------------------
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+
+        Context context = getInstrumentation().getTargetContext();
+
+        mDpToPx = context.getResources().getDisplayMetrics().density;
+        mTouchSlopDp = ViewConfiguration.get(context).getScaledTouchSlop() / mDpToPx;
+
+        mPanel = new MockOverlayPanel(context, new OverlayPanelManager());
+        mEventFilter = new OverlayPanelEventFilterWrapper(context, null, mPanel);
+
+        mPanel.setSearchBarHeightForTesting(BAR_HEIGHT_DP);
+        mPanel.setHeightForTesting(LAYOUT_HEIGHT_DP);
+        mPanel.setIsFullWidthSizePanelForTesting(true);
+
+        // NOTE(pedrosimonetti): This should be called after calling the method
+        // setIsFullWidthSizePanelForTesting(), otherwise it will crash the test.
+        mPanel.onSizeChanged(LAYOUT_WIDTH_DP, LAYOUT_HEIGHT_DP);
+
+        setContentViewVerticalScroll(0);
+
+        mAlmostMaximizedContentOffsetYDp =
+                PANEL_ALMOST_MAXIMIZED_OFFSET_Y_DP + BAR_HEIGHT_DP;
+        mMaximizedContentOffsetYDp = BAR_HEIGHT_DP;
+
+        mWasTapDetectedOnContent = false;
+        mWasScrollDetectedOnContent = false;
+
+        mShouldLockHorizontalMotionInContent = false;
+    }
+
+    @SmallTest
+    @Feature({"OverlayPanel"})
+    public void testTapContentView() {
+        positionPanelInAlmostMaximizedState();
+
+        // Simulate tap.
+        simulateActionDownEvent(0.f, mAlmostMaximizedContentOffsetYDp + 1.f);
+        simulateActionUpEvent(0.f, mAlmostMaximizedContentOffsetYDp + 1.f);
+
+        assertFalse(mPanel.getWasScrollDetected());
+        assertFalse(mPanel.getWasTapDetected());
+
+        assertTrue(mWasTapDetectedOnContent);
+        assertFalse(mWasScrollDetectedOnContent);
+    }
+
+    @SmallTest
+    @Feature({"OverlayPanel"})
+    public void testScrollingContentViewDragsPanel() {
+        positionPanelInAlmostMaximizedState();
+
+        // Simulate swipe up sequence.
+        simulateActionDownEvent(0.f, mAlmostMaximizedContentOffsetYDp + 1.f);
+        simulateActionMoveEvent(0.f, mMaximizedContentOffsetYDp);
+        simulateActionUpEvent(0.f, mMaximizedContentOffsetYDp);
+
+        assertTrue(mPanel.getWasScrollDetected());
+        assertFalse(mPanel.getWasTapDetected());
+
+        assertFalse(mWasScrollDetectedOnContent);
+        assertFalse(mWasTapDetectedOnContent);
+    }
+
+    @SmallTest
+    @Feature({"OverlayPanel"})
+    public void testScrollUpContentView() {
+        positionPanelInMaximizedState();
+
+        // Simulate swipe up sequence.
+        simulateActionDownEvent(0.f, mAlmostMaximizedContentOffsetYDp + 1.f);
+        simulateActionMoveEvent(0.f, mMaximizedContentOffsetYDp);
+        simulateActionUpEvent(0.f, mMaximizedContentOffsetYDp);
+
+        assertFalse(mPanel.getWasScrollDetected());
+        assertFalse(mPanel.getWasTapDetected());
+
+        assertTrue(mWasScrollDetectedOnContent);
+        assertFalse(mWasTapDetectedOnContent);
+    }
+
+    @SmallTest
+    @Feature({"OverlayPanel"})
+    public void testScrollDownContentView() {
+        positionPanelInMaximizedState();
+
+        // When the Panel is maximized and the scroll position is greater than zero, a swipe down
+        // on the ContentView should trigger a scroll on it.
+        setContentViewVerticalScroll(100.f);
+
+        // Simulate swipe down sequence.
+        simulateActionDownEvent(0.f, mMaximizedContentOffsetYDp + 1.f);
+        simulateActionMoveEvent(0.f, mAlmostMaximizedContentOffsetYDp);
+        simulateActionUpEvent(0.f, mAlmostMaximizedContentOffsetYDp);
+
+        assertFalse(mPanel.getWasScrollDetected());
+        assertFalse(mPanel.getWasTapDetected());
+
+        assertTrue(mWasScrollDetectedOnContent);
+        assertFalse(mWasTapDetectedOnContent);
+    }
+
+    @SmallTest
+    @Feature({"OverlayPanel"})
+    public void testDragByOverscrollingContentView() {
+        positionPanelInMaximizedState();
+
+        // When the Panel is maximized and the scroll position is zero, a swipe down on the
+        // ContentView should trigger a swipe on the Panel.
+        setContentViewVerticalScroll(0.f);
+
+        // Simulate swipe down sequence.
+        simulateActionDownEvent(0.f, mMaximizedContentOffsetYDp + 1.f);
+        simulateActionMoveEvent(0.f, mAlmostMaximizedContentOffsetYDp);
+        simulateActionUpEvent(0.f, mAlmostMaximizedContentOffsetYDp);
+
+        assertTrue(mPanel.getWasScrollDetected());
+        assertFalse(mPanel.getWasTapDetected());
+
+        assertFalse(mWasScrollDetectedOnContent);
+        assertFalse(mWasTapDetectedOnContent);
+    }
+
+    @SmallTest
+    @Feature({"OverlayPanel"})
+    public void testUnwantedScrollDoesNotHappenInContentView() {
+        positionPanelInAlmostMaximizedState();
+
+        float contentViewOffsetYStart = mAlmostMaximizedContentOffsetYDp + 1.f;
+        float contentViewOffsetYEnd = mMaximizedContentOffsetYDp - 1.f;
+
+        // Simulate swipe up to maximized position.
+        simulateActionDownEvent(0.f, contentViewOffsetYStart);
+        simulateActionMoveEvent(0.f, mMaximizedContentOffsetYDp);
+        positionPanelInMaximizedState();
+
+        // Confirm that the Panel got a scroll event.
+        assertTrue(mPanel.getWasScrollDetected());
+
+        // Continue the swipe up for one more dp. From now on, the events might be forwarded
+        // to the ContentView.
+        simulateActionMoveEvent(0.f, contentViewOffsetYEnd);
+        simulateActionUpEvent(0.f, contentViewOffsetYEnd);
+
+        // But 1 dp is not enough to trigger a scroll in the ContentView, and in this
+        // particular case, it should also not trigger a tap because the total displacement
+        // of the touch gesture is greater than the touch slop.
+        float contentViewOffsetDelta =
+                contentViewOffsetYStart - contentViewOffsetYEnd;
+        assertTrue(Math.abs(contentViewOffsetDelta) > mTouchSlopDp);
+
+        assertFalse(mPanel.getWasTapDetected());
+
+        assertFalse(mWasScrollDetectedOnContent);
+        assertFalse(mWasTapDetectedOnContent);
+    }
+
+    @SmallTest
+    @Feature({"OverlayPanel"})
+    public void testDragPanelThenContinuouslyScrollContentView() {
+        positionPanelInAlmostMaximizedState();
+
+        // Simulate swipe up to maximized position.
+        simulateActionDownEvent(0.f, mAlmostMaximizedContentOffsetYDp + 1.f);
+        simulateActionMoveEvent(0.f, mMaximizedContentOffsetYDp);
+        positionPanelInMaximizedState();
+
+        // Confirm that the Panel got a scroll event.
+        assertTrue(mPanel.getWasScrollDetected());
+
+        // Continue the swipe up for one more dp. From now on, the events might be forwarded
+        // to the ContentView.
+        simulateActionMoveEvent(0.f, mMaximizedContentOffsetYDp - 1.f);
+
+        // Now keep swiping up an amount greater than the touch slop. In this case a scroll
+        // should be triggered in the ContentView.
+        simulateActionMoveEvent(0.f, mMaximizedContentOffsetYDp - 2 * mTouchSlopDp);
+        simulateActionUpEvent(0.f, mMaximizedContentOffsetYDp - 2 * mTouchSlopDp);
+
+        assertFalse(mPanel.getWasTapDetected());
+
+        assertTrue(mWasScrollDetectedOnContent);
+        assertFalse(mWasTapDetectedOnContent);
+    }
+
+    @SmallTest
+    @Feature({"OverlayPanel"})
+    public void testTapPanel() {
+        positionPanelInAlmostMaximizedState();
+
+        // Simulate tap.
+        simulateActionDownEvent(0.f, mAlmostMaximizedContentOffsetYDp - 1.f);
+        simulateActionUpEvent(0.f, mAlmostMaximizedContentOffsetYDp - 1.f);
+
+        assertFalse(mPanel.getWasScrollDetected());
+        assertTrue(mPanel.getWasTapDetected());
+
+        assertFalse(mWasScrollDetectedOnContent);
+        assertFalse(mWasTapDetectedOnContent);
+    }
+
+    @SmallTest
+    @Feature({"OverlayPanel"})
+    public void testScrollPanel() {
+        positionPanelInAlmostMaximizedState();
+
+        // Simulate swipe up sequence.
+        simulateActionDownEvent(0.f, mAlmostMaximizedContentOffsetYDp - 1.f);
+        simulateActionMoveEvent(0.f, mMaximizedContentOffsetYDp);
+        simulateActionUpEvent(0.f, mMaximizedContentOffsetYDp);
+
+        assertTrue(mPanel.getWasScrollDetected());
+        assertFalse(mPanel.getWasTapDetected());
+
+        assertFalse(mWasScrollDetectedOnContent);
+        assertFalse(mWasTapDetectedOnContent);
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // Helpers
+    // --------------------------------------------------------------------------------------------
+
+    /**
+     * Positions the Panel in the almost maximized state.
+     */
+    private void positionPanelInAlmostMaximizedState() {
+        mPanel.setMaximizedForTesting(false);
+        mPanel.setOffsetYForTesting(PANEL_ALMOST_MAXIMIZED_OFFSET_Y_DP);
+    }
+
+    /**
+     * Positions the Panel in the maximized state.
+     */
+    private void positionPanelInMaximizedState() {
+        mPanel.setMaximizedForTesting(true);
+        mPanel.setOffsetYForTesting(0);
+    }
+
+    /**
+     * Sets the vertical scroll position of the ContentView.
+     * @param contentViewVerticalScroll The vertical scroll position.
+     */
+    private void setContentViewVerticalScroll(float contentViewVerticalScroll) {
+        mContentVerticalScroll = contentViewVerticalScroll;
+    }
+
+    /**
+     * Simulates a MotionEvent in the OverlayPanelEventFilter.
+     * @param action The event's action.
+     * @param x The event's x coordinate in dps.
+     * @param y The event's y coordinate in dps.
+     */
+    private void simulateEvent(int action, float x, float y) {
+        MotionEvent motionEvent = MotionEvent.obtain(0, 0, action, x * mDpToPx, y * mDpToPx, 0);
+        mEventFilter.onTouchEventInternal(motionEvent);
+    }
+
+    /**
+     * Simulates a MotionEvent.ACTION_DOWN in the OverlayPanelEventFilter.
+     * @param x The event's x coordinate in dps.
+     * @param y The event's y coordinate in dps.
+     */
+    private void simulateActionDownEvent(float x, float y) {
+        simulateEvent(MotionEvent.ACTION_DOWN, x, y);
+    }
+
+    /**
+     * Simulates a MotionEvent.ACTION_MOVE in the OverlayPanelEventFilter.
+     * @param x The event's x coordinate in dps.
+     * @param y The event's y coordinate in dps.
+     */
+    private void simulateActionMoveEvent(float x, float y) {
+        simulateEvent(MotionEvent.ACTION_MOVE, x, y);
+    }
+
+    /**
+     * Simulates a MotionEvent.ACTION_UP in the OverlayPanelEventFilter.
+     * @param x The event's x coordinate in dps.
+     * @param y The event's y coordinate in dps.
+     */
+    private void simulateActionUpEvent(float x, float y) {
+        simulateEvent(MotionEvent.ACTION_UP, x, y);
+    }
+}
