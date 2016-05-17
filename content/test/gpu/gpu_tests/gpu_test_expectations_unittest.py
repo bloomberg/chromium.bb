@@ -63,7 +63,9 @@ class SampleTestExpectations(gpu_test_expectations.GpuTestExpectations):
     self.Fail('test4.html', ['imagination'])
     self.Fail('test5.html', [('imagination', 'PowerVR SGX 554')])
     # Test ANGLE conditions.
-    self.Fail('test6.html', ['win', 'd3d9'], bug=345)
+    self.Fail('test6-1.html', ['win', 'd3d9'], bug=345)
+    self.Fail('test6-2.html', ['opengl'], bug=345)
+    self.Fail('test6-3.html', ['no_angle'], bug=345)
     # Test flaky expectations.
     self.Flaky('test7.html', bug=123, max_num_retries=5)
     self.Flaky('test8.html', ['win'], bug=123, max_num_retries=6)
@@ -155,11 +157,26 @@ class GpuTestExpectationsTest(unittest.TestCase):
   # Test ANGLE conditions.
   def testANGLEConditions(self):
     ps = story_set.StorySet()
-    page = page_module.Page('http://test.com/test6.html', ps)
+    page = page_module.Page('http://test.com/test6-1.html', ps)
     self.assertExpectationEquals('pass', page, StubPlatform('win'),
-                                 gl_renderer='Direct3D11')
+                                 gl_renderer='ANGLE Direct3D11')
     self.assertExpectationEquals('fail', page, StubPlatform('win'),
-                                 gl_renderer='Direct3D9')
+                                 gl_renderer='ANGLE Direct3D9')
+
+    # Regression test for a native mac GL_RENDERER string matching
+    # an ANGLE expectation.
+    page = page_module.Page('http://test.com/test6-2.html', ps)
+    self.assertExpectationEquals('pass', page, StubPlatform('mac'),
+                                 gl_renderer='Mac Something OpenGL')
+    self.assertExpectationEquals('fail', page, StubPlatform('win'),
+                                 gl_renderer='ANGLE OpenGL')
+
+    # Tests for the no_angle keyword
+    page = page_module.Page('http://test.com/test6-3.html', ps)
+    self.assertExpectationEquals('fail', page, StubPlatform('mac'),
+                                 gl_renderer='Mac Something OpenGL')
+    self.assertExpectationEquals('pass', page, StubPlatform('win'),
+                                 gl_renderer='ANGLE OpenGL')
 
   # Ensure retry mechanism is working.
   def testFlakyExpectation(self):

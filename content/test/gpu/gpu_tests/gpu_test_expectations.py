@@ -123,7 +123,7 @@ class GpuTestExpectations(test_expectations.TestExpectations):
   def _GetANGLERenderer(self, gpu_info):
     if gpu_info and gpu_info.aux_attributes:
       gl_renderer = gpu_info.aux_attributes.get('gl_renderer')
-      if gl_renderer:
+      if gl_renderer and 'ANGLE' in gl_renderer:
         if 'Direct3D11' in gl_renderer:
           return 'd3d11'
         elif 'Direct3D9' in gl_renderer:
