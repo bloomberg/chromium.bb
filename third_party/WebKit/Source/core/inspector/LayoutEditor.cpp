@@ -33,7 +33,7 @@ PassOwnPtr<protocol::DictionaryValue> createAnchor(const String& type, const Str
     object->setString("type", type);
     object->setString("propertyName", propertyName);
     object->setObject("propertyValue", std::move(valueDescription));
-    return object.release();
+    return object;
 }
 
 PassOwnPtr<protocol::DictionaryValue> pointToJSON(FloatPoint point)
@@ -41,7 +41,7 @@ PassOwnPtr<protocol::DictionaryValue> pointToJSON(FloatPoint point)
     OwnPtr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
     object->setNumber("x", point.x());
     object->setNumber("y", point.y());
-    return object.release();
+    return object;
 }
 
 PassOwnPtr<protocol::DictionaryValue> quadToJSON(FloatQuad& quad)
@@ -51,7 +51,7 @@ PassOwnPtr<protocol::DictionaryValue> quadToJSON(FloatQuad& quad)
     object->setObject("p2", pointToJSON(quad.p2()));
     object->setObject("p3", pointToJSON(quad.p3()));
     object->setObject("p4", pointToJSON(quad.p4()));
-    return object.release();
+    return object;
 }
 
 bool isMutableUnitType(CSSPrimitiveValue::UnitType unitType)
@@ -178,7 +178,7 @@ void LayoutEditor::rebuild()
     appendAnchorFor(anchors.get(), "margin", "margin-bottom");
     appendAnchorFor(anchors.get(), "margin", "margin-left");
 
-    object->setArray("anchors", anchors.release());
+    object->setArray("anchors", std::move(anchors));
 
     FloatQuad content, padding, border, margin;
     InspectorHighlight::buildNodeQuads(m_element.get(), &content, &padding, &border, &margin);
@@ -186,7 +186,7 @@ void LayoutEditor::rebuild()
     object->setObject("paddingQuad", quadToJSON(padding));
     object->setObject("marginQuad", quadToJSON(margin));
     object->setObject("borderQuad", quadToJSON(border));
-    evaluateInOverlay("showLayoutEditor", object.release());
+    evaluateInOverlay("showLayoutEditor", std::move(object));
     editableSelectorUpdated(false);
 }
 
@@ -271,14 +271,14 @@ PassOwnPtr<protocol::DictionaryValue> LayoutEditor::createValueDescription(const
         m_growsInside.set(propertyName, growInside(propertyName, cssValue));
 
     object->setBoolean("growInside", m_growsInside.get(propertyName));
-    return object.release();
+    return object;
 }
 
 void LayoutEditor::appendAnchorFor(protocol::ListValue* anchors, const String& type, const String& propertyName)
 {
     OwnPtr<protocol::DictionaryValue> description = createValueDescription(propertyName);
     if (description)
-        anchors->pushValue(createAnchor(type, propertyName, description.release()));
+        anchors->pushValue(createAnchor(type, propertyName, std::move(description)));
 }
 
 void LayoutEditor::overlayStartedPropertyChange(const String& anchorName)
@@ -375,7 +375,7 @@ PassOwnPtr<protocol::DictionaryValue> LayoutEditor::currentSelectorInfo(CSSStyle
 
     Document* ownerDocument = m_element->ownerDocument();
     if (!ownerDocument->isActive() || !rule)
-        return object.release();
+        return object;
 
     Vector<String> medias;
     buildMediaListChain(rule, medias);
@@ -383,13 +383,13 @@ PassOwnPtr<protocol::DictionaryValue> LayoutEditor::currentSelectorInfo(CSSStyle
     for (size_t i = 0; i < medias.size(); ++i)
         mediaListValue->pushValue(protocol::StringValue::create(medias[i]));
 
-    object->setArray("medias", mediaListValue.release());
+    object->setArray("medias", std::move(mediaListValue));
 
     TrackExceptionState exceptionState;
     StaticElementList* elements = ownerDocument->querySelectorAll(AtomicString(currentSelectorText), exceptionState);
 
     if (!elements || exceptionState.hadException())
-        return object.release();
+        return object;
 
     OwnPtr<protocol::ListValue> highlights = protocol::ListValue::create();
     InspectorHighlightConfig config = affectedNodesHighlightConfig();
@@ -402,8 +402,8 @@ PassOwnPtr<protocol::DictionaryValue> LayoutEditor::currentSelectorInfo(CSSStyle
         highlights->pushValue(highlight.asProtocolValue());
     }
 
-    object->setArray("nodes", highlights.release());
-    return object.release();
+    object->setArray("nodes", std::move(highlights));
+    return object;
 }
 
 bool LayoutEditor::setCSSPropertyValueInCurrentRule(const String& value)

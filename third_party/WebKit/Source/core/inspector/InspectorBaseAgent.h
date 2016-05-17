@@ -78,7 +78,7 @@ public:
         if (!m_state) {
             OwnPtr<protocol::DictionaryValue> newState = protocol::DictionaryValue::create();
             m_state = newState.get();
-            state->setObject(m_name, newState.release());
+            state->setObject(m_name, std::move(newState));
         }
     }
 

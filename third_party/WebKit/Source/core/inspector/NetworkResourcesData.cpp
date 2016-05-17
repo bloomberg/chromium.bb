@@ -190,7 +190,7 @@ void NetworkResourcesData::responseReceived(const String& requestId, const Strin
         if (mimeType.isEmpty())
             mimeType = AtomicString("text/plain");
         blobData->setContentType(mimeType);
-        resourceData->setDownloadedFileBlob(BlobDataHandle::create(blobData.release(), -1));
+        resourceData->setDownloadedFileBlob(BlobDataHandle::create(std::move(blobData), -1));
     }
 }
 

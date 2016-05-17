@@ -219,7 +219,7 @@ PassOwnPtr<GraphicsLayer> CompositedLayerMapping::createGraphicsLayer(Compositin
     if (Node* owningNode = m_owningLayer.layoutObject()->generatingNode())
         graphicsLayer->setOwnerNodeId(DOMNodeIds::idForNode(owningNode));
 
-    return graphicsLayer.release();
+    return graphicsLayer;
 }
 
 void CompositedLayerMapping::createPrimaryGraphicsLayer()

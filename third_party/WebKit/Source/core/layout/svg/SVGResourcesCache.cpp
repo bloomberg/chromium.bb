@@ -48,7 +48,7 @@ void SVGResourcesCache::addResourcesFromLayoutObject(LayoutObject* object, const
         return;
 
     // Put object in cache.
-    SVGResources* resources = m_cache.set(object, newResources.release()).storedValue->value.get();
+    SVGResources* resources = m_cache.set(object, std::move(newResources)).storedValue->value.get();
 
     // Run cycle-detection _afterwards_, so self-references can be caught as well.
     SVGResourcesCycleSolver solver(object, resources);

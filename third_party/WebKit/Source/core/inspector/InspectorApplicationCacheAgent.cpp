@@ -104,7 +104,7 @@ void InspectorApplicationCacheAgent::getFramesWithManifests(ErrorString*, OwnPtr
                 .setFrameId(IdentifiersFactory::frameId(frame))
                 .setManifestURL(manifestURL)
                 .setStatus(static_cast<int>(host->getStatus())).build();
-            (*result)->addItem(value.release());
+            (*result)->addItem(std::move(value));
         }
     }
 }
@@ -168,7 +168,7 @@ PassOwnPtr<protocol::Array<protocol::ApplicationCache::ApplicationCacheResource>
     for (int i = 0; it != end; ++it, i++)
         resources->addItem(buildObjectForApplicationCacheResource(*it));
 
-    return resources.release();
+    return resources;
 }
 
 PassOwnPtr<protocol::ApplicationCache::ApplicationCacheResource> InspectorApplicationCacheAgent::buildObjectForApplicationCacheResource(const ApplicationCacheHost::ResourceInfo& resourceInfo)
@@ -193,7 +193,7 @@ PassOwnPtr<protocol::ApplicationCache::ApplicationCacheResource> InspectorApplic
         .setUrl(resourceInfo.m_resource.getString())
         .setSize(static_cast<int>(resourceInfo.m_size))
         .setType(builder.toString()).build();
-    return value.release();
+    return value;
 }
 
 DEFINE_TRACE(InspectorApplicationCacheAgent)

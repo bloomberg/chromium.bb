@@ -25,7 +25,7 @@ public:
     PathBuilder() : m_path(protocol::ListValue::create()) { }
     virtual ~PathBuilder() { }
 
-    PassOwnPtr<protocol::ListValue> release() { return m_path.release(); }
+    PassOwnPtr<protocol::ListValue> release() { return std::move(m_path); }
 
     void appendPath(const Path& path)
     {
@@ -122,7 +122,7 @@ PassOwnPtr<protocol::Array<double>> buildArrayForQuad(const FloatQuad& quad)
     array->addItem(quad.p3().y());
     array->addItem(quad.p4().x());
     array->addItem(quad.p4().y());
-    return array.release();
+    return array;
 }
 
 Path quadToPath(const FloatQuad& quad)
@@ -200,7 +200,7 @@ PassOwnPtr<protocol::DictionaryValue> buildElementInfo(Element* element)
     LayoutObject* layoutObject = element->layoutObject();
     FrameView* containingView = element->document().view();
     if (!layoutObject || !containingView)
-        return elementInfo.release();
+        return elementInfo;
 
     // layoutObject the getBoundingClientRect() data in the tooltip
     // to be consistent with the rulers (see http://crbug.com/262338).
@@ -208,7 +208,7 @@ PassOwnPtr<protocol::DictionaryValue> buildElementInfo(Element* element)
     elementInfo->setString("nodeWidth", String::number(boundingBox->width()));
     elementInfo->setString("nodeHeight", String::number(boundingBox->height()));
 
-    return elementInfo.release();
+    return elementInfo;
 }
 
 } // namespace
@@ -262,7 +262,7 @@ void InspectorHighlight::appendPath(PassOwnPtr<protocol::ListValue> path, const 
         object->setString("outlineColor", outlineColor.serialized());
     if (!name.isEmpty())
         object->setString("name", name);
-    m_highlightPaths->pushValue(object.release());
+    m_highlightPaths->pushValue(std::move(object));
 }
 
 void InspectorHighlight::appendEventTargetQuads(Node* eventTargetNode, const InspectorHighlightConfig& highlightConfig)
@@ -330,7 +330,7 @@ PassOwnPtr<protocol::DictionaryValue> InspectorHighlight::asProtocolValue() cons
     if (m_elementInfo)
         object->setValue("elementInfo", m_elementInfo->clone());
     object->setBoolean("displayAsMaterial", m_displayAsMaterial);
-    return object.release();
+    return object;
 }
 
 // static

@@ -687,7 +687,7 @@ PassOwnPtr<protocol::CSS::SourceRange> InspectorStyleSheetBase::buildSourceRange
         .setStartColumn(start.m_column.zeroBasedInt())
         .setEndLine(end.m_line.zeroBasedInt())
         .setEndColumn(end.m_column.zeroBasedInt()).build();
-    return result.release();
+    return result;
 }
 
 InspectorStyle* InspectorStyle::create(CSSStyleDeclaration* style, CSSRuleSourceData* sourceData, InspectorStyleSheetBase* parentStyleSheet)
@@ -718,7 +718,7 @@ PassOwnPtr<protocol::CSS::CSSStyle> InspectorStyle::buildObjectForStyle()
         }
     }
 
-    return result.release();
+    return result;
 }
 
 PassOwnPtr<protocol::Array<protocol::CSS::CSSComputedStyleProperty>> InspectorStyle::buildArrayForComputedStyle()
@@ -731,10 +731,10 @@ PassOwnPtr<protocol::Array<protocol::CSS::CSSComputedStyleProperty>> InspectorSt
         OwnPtr<protocol::CSS::CSSComputedStyleProperty> entry = protocol::CSS::CSSComputedStyleProperty::create()
             .setName(property.name)
             .setValue(property.value).build();
-        result->addItem(entry.release());
+        result->addItem(std::move(entry));
     }
 
-    return result.release();
+    return result;
 }
 
 bool InspectorStyle::styleText(String* result)
@@ -828,17 +828,17 @@ PassOwnPtr<protocol::CSS::CSSStyle> InspectorStyle::styleWithProperties()
                         .setValue(shorthandValue(shorthand)).build();
                     if (!m_style->getPropertyPriority(name).isEmpty())
                         entry->setImportant(true);
-                    shorthandEntries->addItem(entry.release());
+                    shorthandEntries->addItem(std::move(entry));
                 }
             }
         }
-        propertiesObject->addItem(property.release());
+        propertiesObject->addItem(std::move(property));
     }
 
     OwnPtr<protocol::CSS::CSSStyle> result = protocol::CSS::CSSStyle::create()
-        .setCssProperties(propertiesObject.release())
-        .setShorthandEntries(shorthandEntries.release()).build();
-    return result.release();
+        .setCssProperties(std::move(propertiesObject))
+        .setShorthandEntries(std::move(shorthandEntries)).build();
+    return result;
 }
 
 String InspectorStyle::shorthandValue(const String& shorthandProperty)
@@ -1339,7 +1339,7 @@ PassOwnPtr<protocol::CSS::CSSStyleSheetHeader> InspectorStyleSheet::buildObjectF
     String sourceMapURLValue = sourceMapURL();
     if (!sourceMapURLValue.isEmpty())
         result->setSourceMapURL(sourceMapURLValue);
-    return result.release();
+    return result;
 }
 
 PassOwnPtr<protocol::Array<protocol::CSS::Value>> InspectorStyleSheet::selectorsFromSource(CSSRuleSourceData* sourceData, const String& sheetText)
@@ -1360,9 +1360,9 @@ PassOwnPtr<protocol::Array<protocol::CSS::Value>> InspectorStyleSheet::selectors
         OwnPtr<protocol::CSS::Value> simpleSelector = protocol::CSS::Value::create()
             .setText(selector.stripWhiteSpace()).build();
         simpleSelector->setRange(buildSourceRangeObject(range));
-        result->addItem(simpleSelector.release());
+        result->addItem(std::move(simpleSelector));
     }
-    return result.release();
+    return result;
 }
 
 PassOwnPtr<protocol::CSS::SelectorList> InspectorStyleSheet::buildObjectForSelectorList(CSSStyleRule* rule)
@@ -1382,7 +1382,7 @@ PassOwnPtr<protocol::CSS::SelectorList> InspectorStyleSheet::buildObjectForSelec
             selectors->addItem(protocol::CSS::Value::create().setText(selector->selectorText()).build());
     }
     return protocol::CSS::SelectorList::create()
-        .setSelectors(selectors.release())
+        .setSelectors(std::move(selectors))
         .setText(selectorText).build();
 }
 
@@ -1407,7 +1407,7 @@ PassOwnPtr<protocol::CSS::CSSRule> InspectorStyleSheet::buildObjectForRuleWithou
             result->setStyleSheetId(id());
     }
 
-    return result.release();
+    return result;
 }
 
 PassOwnPtr<protocol::CSS::CSSKeyframeRule> InspectorStyleSheet::buildObjectForKeyframeRule(CSSKeyframeRule* keyframeRule)
@@ -1422,12 +1422,12 @@ PassOwnPtr<protocol::CSS::CSSKeyframeRule> InspectorStyleSheet::buildObjectForKe
         keyText->setRange(buildSourceRangeObject(sourceData->ruleHeaderRange));
     OwnPtr<protocol::CSS::CSSKeyframeRule> result = protocol::CSS::CSSKeyframeRule::create()
         // TODO(samli): keyText() normalises 'from' and 'to' keyword values.
-        .setKeyText(keyText.release())
+        .setKeyText(std::move(keyText))
         .setOrigin(m_origin)
         .setStyle(buildObjectForStyle(keyframeRule->style())).build();
     if (canBind(m_origin) && !id().isEmpty())
         result->setStyleSheetId(id());
-    return result.release();
+    return result;
 }
 
 bool InspectorStyleSheet::getText(String* result)

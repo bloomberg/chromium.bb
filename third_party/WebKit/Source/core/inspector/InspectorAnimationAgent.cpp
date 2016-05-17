@@ -121,7 +121,7 @@ static PassOwnPtr<protocol::Animation::AnimationEffect> buildObjectForAnimationE
         .setFill(computedTiming.fill())
         .setBackendNodeId(DOMNodeIds::idForNode(effect->target()))
         .setEasing(easing).build();
-    return animationObject.release();
+    return animationObject;
 }
 
 static PassOwnPtr<protocol::Animation::KeyframeStyle> buildObjectForStringKeyframe(const StringKeyframe* keyframe)
@@ -133,7 +133,7 @@ static PassOwnPtr<protocol::Animation::KeyframeStyle> buildObjectForStringKeyfra
     OwnPtr<protocol::Animation::KeyframeStyle> keyframeObject = protocol::Animation::KeyframeStyle::create()
         .setOffset(offset)
         .setEasing(keyframe->easing().toString()).build();
-    return keyframeObject.release();
+    return keyframeObject;
 }
 
 static PassOwnPtr<protocol::Animation::KeyframesRule> buildObjectForAnimationKeyframes(const KeyframeEffect* effect)
@@ -151,7 +151,7 @@ static PassOwnPtr<protocol::Animation::KeyframesRule> buildObjectForAnimationKey
         const StringKeyframe* stringKeyframe = toStringKeyframe(keyframe.get());
         keyframes->addItem(buildObjectForStringKeyframe(stringKeyframe));
     }
-    return protocol::Animation::KeyframesRule::create().setKeyframes(keyframes.release()).build();
+    return protocol::Animation::KeyframesRule::create().setKeyframes(std::move(keyframes)).build();
 }
 
 PassOwnPtr<protocol::Animation::Animation> InspectorAnimationAgent::buildObjectForAnimation(blink::Animation& animation)
@@ -175,7 +175,7 @@ PassOwnPtr<protocol::Animation::Animation> InspectorAnimationAgent::buildObjectF
     m_idToAnimationType.set(id, animationType);
 
     OwnPtr<protocol::Animation::AnimationEffect> animationEffectObject = buildObjectForAnimationEffect(toKeyframeEffect(animation.effect()), animationType == AnimationType::CSSTransition);
-    animationEffectObject->setKeyframesRule(keyframeRule.release());
+    animationEffectObject->setKeyframesRule(std::move(keyframeRule));
 
     OwnPtr<protocol::Animation::Animation> animationObject = protocol::Animation::Animation::create()
         .setId(id)
@@ -185,11 +185,11 @@ PassOwnPtr<protocol::Animation::Animation> InspectorAnimationAgent::buildObjectF
         .setPlaybackRate(animation.playbackRate())
         .setStartTime(normalizedStartTime(animation))
         .setCurrentTime(animation.currentTime())
-        .setSource(animationEffectObject.release())
+        .setSource(std::move(animationEffectObject))
         .setType(animationType).build();
     if (animationType != AnimationType::WebAnimation)
         animationObject->setCssId(createCSSId(animation));
-    return animationObject.release();
+    return animationObject;
 }
 
 void InspectorAnimationAgent::getPlaybackRate(ErrorString*, double* playbackRate)

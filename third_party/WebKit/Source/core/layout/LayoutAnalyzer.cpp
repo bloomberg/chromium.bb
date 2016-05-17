@@ -111,7 +111,7 @@ PassOwnPtr<TracedValue> LayoutAnalyzer::toTracedValue()
         if (m_counters[i] > 0)
             tracedValue->setInteger(nameForCounter(static_cast<Counter>(i)), m_counters[i]);
     }
-    return tracedValue.release();
+    return tracedValue;
 }
 
 const char* LayoutAnalyzer::nameForCounter(Counter counter) const

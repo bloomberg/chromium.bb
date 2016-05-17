@@ -142,7 +142,7 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
                 floatValueForLength(values.at(i + 1), boxHeight));
             (*vertices)[i / 2] = physicalPointToLogical(vertex, logicalBoxSize.height().toFloat(), writingMode);
         }
-        shape = createPolygonShape(vertices.release(), polygon->getWindRule());
+        shape = createPolygonShape(std::move(vertices), polygon->getWindRule());
         break;
     }
 
@@ -176,16 +176,16 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
     shape->m_writingMode = writingMode;
     shape->m_margin = margin;
 
-    return shape.release();
+    return shape;
 }
 
 PassOwnPtr<Shape> Shape::createEmptyRasterShape(WritingMode writingMode, float margin)
 {
     OwnPtr<RasterShapeIntervals> intervals = adoptPtr(new RasterShapeIntervals(0, 0));
-    OwnPtr<RasterShape> rasterShape = adoptPtr(new RasterShape(intervals.release(), IntSize()));
+    OwnPtr<RasterShape> rasterShape = adoptPtr(new RasterShape(std::move(intervals), IntSize()));
     rasterShape->m_writingMode = writingMode;
     rasterShape->m_margin = margin;
-    return rasterShape.release();
+    return std::move(rasterShape);
 }
 
 PassOwnPtr<Shape> Shape::createRasterShape(Image* image, float threshold, const LayoutRect& imageR, const LayoutRect& marginR, WritingMode writingMode, float margin)
@@ -234,10 +234,10 @@ PassOwnPtr<Shape> Shape::createRasterShape(Image* image, float threshold, const 
         }
     }
 
-    OwnPtr<RasterShape> rasterShape = adoptPtr(new RasterShape(intervals.release(), marginRect.size()));
+    OwnPtr<RasterShape> rasterShape = adoptPtr(new RasterShape(std::move(intervals), marginRect.size()));
     rasterShape->m_writingMode = writingMode;
     rasterShape->m_margin = margin;
-    return rasterShape.release();
+    return std::move(rasterShape);
 }
 
 PassOwnPtr<Shape> Shape::createLayoutBoxShape(const FloatRoundedRect& roundedRect, WritingMode writingMode, float margin)
@@ -248,7 +248,7 @@ PassOwnPtr<Shape> Shape::createLayoutBoxShape(const FloatRoundedRect& roundedRec
     shape->m_writingMode = writingMode;
     shape->m_margin = margin;
 
-    return shape.release();
+    return shape;
 }
 
 } // namespace blink

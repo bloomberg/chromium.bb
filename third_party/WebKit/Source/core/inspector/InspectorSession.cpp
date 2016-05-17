@@ -50,7 +50,7 @@ void InspectorSession::attach(V8InspectorSession* v8Session, const String* saved
     if (restore) {
         OwnPtr<protocol::Value> state = protocol::parseJSON(*savedState);
         if (state)
-            m_state = protocol::DictionaryValue::cast(state.release());
+            m_state = protocol::DictionaryValue::cast(std::move(state));
         if (!m_state)
             m_state = protocol::DictionaryValue::create();
     } else {
@@ -138,7 +138,7 @@ void InspectorSession::scriptExecutionBlockedByCSP(const String& directiveText)
     ASSERT(isInstrumenting());
     OwnPtr<protocol::DictionaryValue> directive = protocol::DictionaryValue::create();
     directive->setString("directiveText", directiveText);
-    m_v8Session->breakProgramOnException(protocol::Debugger::Paused::ReasonEnum::CSPViolation, directive.release());
+    m_v8Session->breakProgramOnException(protocol::Debugger::Paused::ReasonEnum::CSPViolation, std::move(directive));
 }
 
 void InspectorSession::asyncTaskScheduled(const String& taskName, void* task)

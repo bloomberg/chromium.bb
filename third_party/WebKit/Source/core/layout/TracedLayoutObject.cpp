@@ -103,7 +103,7 @@ PassOwnPtr<TracedValue> TracedLayoutObject::create(const LayoutView& view, bool 
 {
     OwnPtr<TracedValue> tracedValue = TracedValue::create();
     dumpToTracedValue(view, traceGeometry, tracedValue.get());
-    return tracedValue.release();
+    return tracedValue;
 }
 
 } // namespace blink

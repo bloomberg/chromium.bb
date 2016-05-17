@@ -167,7 +167,7 @@ PassOwnPtr<TextResourceDecoder> InspectorPageAgent::createResourceTextDecoder(co
     if (DOMImplementation::isXMLMIMEType(mimeType)) {
         OwnPtr<TextResourceDecoder> decoder = TextResourceDecoder::create("application/xml");
         decoder->useLenientXMLDecoding();
-        return decoder.release();
+        return decoder;
     }
     if (equalIgnoringCase(mimeType, "text/html"))
         return TextResourceDecoder::create("text/html", "UTF-8");
@@ -397,7 +397,7 @@ void InspectorPageAgent::addScriptToEvaluateOnLoad(ErrorString*, const String& s
     if (!scripts) {
         OwnPtr<protocol::DictionaryValue> newScripts = protocol::DictionaryValue::create();
         scripts = newScripts.get();
-        m_state->setObject(PageAgentState::pageAgentScriptsToEvaluateOnLoad, newScripts.release());
+        m_state->setObject(PageAgentState::pageAgentScriptsToEvaluateOnLoad, std::move(newScripts));
     }
     // Assure we don't override existing ids -- m_lastScriptIdentifier could get out of sync WRT actual
     // scripts once we restored the scripts from the cookie during navigation.
@@ -540,7 +540,7 @@ void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& 
 
     OwnPtr<protocol::Array<protocol::Debugger::SearchMatch>> results;
     results = V8ContentSearchUtil::searchInTextByLines(m_v8Session, content, query, caseSensitive, isRegex);
-    callback->sendSuccess(results.release());
+    callback->sendSuccess(std::move(results));
 }
 
 void InspectorPageAgent::searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const Maybe<bool>& optionalCaseSensitive, const Maybe<bool>& optionalIsRegex, PassOwnPtr<SearchInResourceCallback> callback)
@@ -706,7 +706,7 @@ PassOwnPtr<protocol::Page::Frame> InspectorPageAgent::buildObjectForFrame(LocalF
         frameObject->setName(name);
     }
 
-    return frameObject.release();
+    return frameObject;
 }
 
 PassOwnPtr<protocol::Page::FrameResourceTree> InspectorPageAgent::buildObjectForFrameTree(LocalFrame* frame)
@@ -724,7 +724,7 @@ PassOwnPtr<protocol::Page::FrameResourceTree> InspectorPageAgent::buildObjectFor
             resourceObject->setCanceled(true);
         else if (cachedResource->getStatus() == Resource::LoadError)
             resourceObject->setFailed(true);
-        subresources->addItem(resourceObject.release());
+        subresources->addItem(std::move(resourceObject));
     }
 
     HeapVector<Member<Document>> allImports = InspectorPageAgent::importsForFrame(frame);
@@ -733,12 +733,12 @@ PassOwnPtr<protocol::Page::FrameResourceTree> InspectorPageAgent::buildObjectFor
             .setUrl(urlWithoutFragment(import->url()).getString())
             .setType(resourceTypeJson(InspectorPageAgent::DocumentResource))
             .setMimeType(import->suggestedMIMEType()).build();
-        subresources->addItem(resourceObject.release());
+        subresources->addItem(std::move(resourceObject));
     }
 
     OwnPtr<protocol::Page::FrameResourceTree> result = protocol::Page::FrameResourceTree::create()
-        .setFrame(frameObject.release())
-        .setResources(subresources.release()).build();
+        .setFrame(std::move(frameObject))
+        .setResources(std::move(subresources)).build();
 
     OwnPtr<protocol::Array<protocol::Page::FrameResourceTree>> childrenArray;
     for (Frame* child = frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
@@ -748,8 +748,8 @@ PassOwnPtr<protocol::Page::FrameResourceTree> InspectorPageAgent::buildObjectFor
             childrenArray = protocol::Array<protocol::Page::FrameResourceTree>::create();
         childrenArray->addItem(buildObjectForFrameTree(toLocalFrame(child)));
     }
-    result->setChildFrames(childrenArray.release());
-    return result.release();
+    result->setChildFrames(std::move(childrenArray));
+    return result;
 }
 
 void InspectorPageAgent::startScreencast(ErrorString*, const Maybe<String>& format, const Maybe<int>& quality, const Maybe<int>& maxWidth, const Maybe<int>& maxHeight, const Maybe<int>& everyNthFrame)

@@ -82,7 +82,7 @@ PassOwnPtr<FloatingObject> FloatingObject::create(LayoutBox* layoutObject)
     newObj->setShouldPaint(!layoutObject->hasSelfPaintingLayer()); // If a layer exists, the float will paint itself. Otherwise someone else will.
     newObj->setIsDescendant(true);
 
-    return newObj.release();
+    return newObj;
 }
 
 PassOwnPtr<FloatingObject> FloatingObject::copyToNewContainer(LayoutSize offset, bool shouldPaint, bool isDescendant) const
@@ -94,7 +94,7 @@ PassOwnPtr<FloatingObject> FloatingObject::unsafeClone() const
 {
     OwnPtr<FloatingObject> cloneObject = adoptPtr(new FloatingObject(layoutObject(), getType(), m_frameRect, m_shouldPaint, m_isDescendant, false));
     cloneObject->m_isPlaced = m_isPlaced;
-    return cloneObject.release();
+    return cloneObject;
 }
 
 template <FloatingObject::Type FloatTypeValue>
@@ -388,7 +388,7 @@ void FloatingObjects::moveAllToFloatInfoMap(LayoutBoxToFloatInfoMap& map)
     while (!m_set.isEmpty()) {
         OwnPtr<FloatingObject> floatingObject = m_set.takeFirst();
         LayoutBox* layoutObject = floatingObject->layoutObject();
-        map.add(layoutObject, floatingObject.release());
+        map.add(layoutObject, std::move(floatingObject));
     }
     clear();
 }

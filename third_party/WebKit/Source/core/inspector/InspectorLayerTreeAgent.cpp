@@ -76,9 +76,9 @@ static PassOwnPtr<protocol::LayerTree::ScrollRect> buildScrollRect(const WebRect
         .setHeight(rect.height)
         .setWidth(rect.width).build();
     OwnPtr<protocol::LayerTree::ScrollRect> scrollRectObject = protocol::LayerTree::ScrollRect::create()
-        .setRect(rectObject.release())
+        .setRect(std::move(rectObject))
         .setType(type).build();
-    return scrollRectObject.release();
+    return scrollRectObject;
 }
 
 static PassOwnPtr<Array<protocol::LayerTree::ScrollRect>> buildScrollRectsForLayer(GraphicsLayer* graphicsLayer, bool reportWheelScrollers)
@@ -95,7 +95,7 @@ static PassOwnPtr<Array<protocol::LayerTree::ScrollRect>> buildScrollRectsForLay
         WebRect webRect(webLayer->position().x, webLayer->position().y, webLayer->bounds().width, webLayer->bounds().height);
         scrollRects->addItem(buildScrollRect(webRect, protocol::LayerTree::ScrollRect::TypeEnum::WheelEventHandler));
     }
-    return scrollRects->length() ? scrollRects.release() : nullptr;
+    return scrollRects->length() ? std::move(scrollRects) : nullptr;
 }
 
 static PassOwnPtr<protocol::LayerTree::Layer> buildObjectForLayer(GraphicsLayer* graphicsLayer, int nodeId, bool reportWheelEventListeners)
@@ -127,7 +127,7 @@ static PassOwnPtr<protocol::LayerTree::Layer> buildObjectForLayer(GraphicsLayer*
         OwnPtr<Array<double>> transformArray = Array<double>::create();
         for (size_t i = 0; i < WTF_ARRAY_LENGTH(flattenedMatrix); ++i)
             transformArray->addItem(flattenedMatrix[i]);
-        layerObject->setTransform(transformArray.release());
+        layerObject->setTransform(std::move(transformArray));
         const FloatPoint3D& transformOrigin = graphicsLayer->transformOrigin();
         // FIXME: rename these to setTransformOrigin*
         if (webLayer->bounds().width > 0)
@@ -142,8 +142,8 @@ static PassOwnPtr<protocol::LayerTree::Layer> buildObjectForLayer(GraphicsLayer*
     }
     OwnPtr<Array<protocol::LayerTree::ScrollRect>> scrollRects = buildScrollRectsForLayer(graphicsLayer, reportWheelEventListeners);
     if (scrollRects)
-        layerObject->setScrollRects(scrollRects.release());
-    return layerObject.release();
+        layerObject->setScrollRects(std::move(scrollRects));
+    return layerObject;
 }
 
 InspectorLayerTreeAgent::InspectorLayerTreeAgent(InspectedFrames* inspectedFrames)
@@ -200,7 +200,7 @@ void InspectorLayerTreeAgent::didPaint(const GraphicsLayer* graphicsLayer, Graph
         .setY(rect.y())
         .setWidth(rect.width())
         .setHeight(rect.height()).build();
-    frontend()->layerPainted(idForLayer(graphicsLayer), domRect.release());
+    frontend()->layerPainted(idForLayer(graphicsLayer), std::move(domRect));
 }
 
 PassOwnPtr<Array<protocol::LayerTree::Layer>> InspectorLayerTreeAgent::buildLayerTree()
@@ -216,7 +216,7 @@ PassOwnPtr<Array<protocol::LayerTree::Layer>> InspectorLayerTreeAgent::buildLaye
     bool haveBlockingWheelEventHandlers = m_inspectedFrames->root()->chromeClient().eventListenerProperties(WebEventListenerClass::MouseWheel) == WebEventListenerProperties::Blocking;
 
     gatherGraphicsLayers(rootGraphicsLayer(), layerIdToNodeIdMap, layers, haveBlockingWheelEventHandlers, scrollingLayerId);
-    return layers.release();
+    return layers;
 }
 
 void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(PaintLayer* root, LayerIdToNodeIdMap& layerIdToNodeIdMap)
@@ -430,7 +430,7 @@ void InspectorLayerTreeAgent::profileSnapshot(ErrorString* errorString, const St
         OwnPtr<Array<double>> outRow = Array<double>::create();
         for (size_t j = 0; j < row.size(); ++j)
             outRow->addItem(row[j]);
-        (*outTimings)->addItem(outRow.release());
+        (*outTimings)->addItem(std::move(outRow));
     }
 }
 

@@ -896,7 +896,7 @@ void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int no
                 entry->setInlineStyle(styleSheet->buildObjectForStyle(styleSheet->inlineStyle()));
         }
 
-        inheritedEntries->fromJust()->addItem(entry.release());
+        inheritedEntries->fromJust()->addItem(std::move(entry));
         parentElement = parentElement->parentOrShadowHostElement();
     }
 
@@ -931,7 +931,7 @@ PassOwnPtr<protocol::Array<protocol::CSS::CSSKeyframesRule>> InspectorCSSAgent::
     StyleResolver& styleResolver = ownerDocument->ensureStyleResolver();
     RefPtr<ComputedStyle> style = styleResolver.styleForElement(element);
     if (!style)
-        return cssKeyframesRules.release();
+        return cssKeyframesRules;
     const CSSAnimationData* animationData = style->animations();
     for (size_t i = 0; animationData && i < animationData->nameList().size(); ++i) {
         AtomicString animationName(animationData->nameList()[i]);
@@ -963,10 +963,10 @@ PassOwnPtr<protocol::Array<protocol::CSS::CSSKeyframesRule>> InspectorCSSAgent::
         if (sourceData)
             name->setRange(inspectorStyleSheet->buildSourceRangeObject(sourceData->ruleHeaderRange));
         cssKeyframesRules->addItem(protocol::CSS::CSSKeyframesRule::create()
-            .setAnimationName(name.release())
-            .setKeyframes(keyframes.release()).build());
+            .setAnimationName(std::move(name))
+            .setKeyframes(std::move(keyframes)).build());
     }
-    return cssKeyframesRules.release();
+    return cssKeyframesRules;
 }
 
 void InspectorCSSAgent::getInlineStylesForNode(ErrorString* errorString, int nodeId, Maybe<protocol::CSS::CSSStyle>* inlineStyle, Maybe<protocol::CSS::CSSStyle>* attributesStyle)
@@ -1244,7 +1244,7 @@ void InspectorCSSAgent::setStyleTexts(ErrorString* errorString, PassOwnPtr<proto
         Member<StyleSheetAction> action = actions.at(i);
         m_domAgent->history()->appendPerformedAction(action);
     }
-    *result = serializedStyles.release();
+    *result = std::move(serializedStyles);
 }
 
 CSSStyleDeclaration* InspectorCSSAgent::setStyleText(ErrorString* errorString, InspectorStyleSheetBase* inspectorStyleSheet, const SourceRange& range, const String& text)
@@ -1418,15 +1418,15 @@ PassOwnPtr<protocol::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(const Me
             if (mediaValues->computeLength(expValue.value, expValue.unit, computedLength))
                 mediaQueryExpression->setComputedLength(computedLength);
 
-            expressionArray->addItem(mediaQueryExpression.release());
+            expressionArray->addItem(std::move(mediaQueryExpression));
             hasExpressionItems = true;
         }
         if (!hasExpressionItems)
             continue;
         OwnPtr<protocol::CSS::MediaQuery> mediaQuery = protocol::CSS::MediaQuery::create()
             .setActive(mediaEvaluator->eval(query, nullptr))
-            .setExpressions(expressionArray.release()).build();
-        mediaListArray->addItem(mediaQuery.release());
+            .setExpressions(std::move(expressionArray)).build();
+        mediaListArray->addItem(std::move(mediaQuery));
         hasMediaQueryItems = true;
     }
 
@@ -1434,7 +1434,7 @@ PassOwnPtr<protocol::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(const Me
         .setText(media->mediaText())
         .setSource(source).build();
     if (hasMediaQueryItems)
-        mediaObject->setMediaList(mediaListArray.release());
+        mediaObject->setMediaList(std::move(mediaListArray));
 
     if (inspectorStyleSheet && mediaListSource != MediaListSourceLinkedSheet)
         mediaObject->setStyleSheetId(inspectorStyleSheet->id());
@@ -1444,11 +1444,11 @@ PassOwnPtr<protocol::CSS::CSSMedia> InspectorCSSAgent::buildMediaObject(const Me
 
         CSSRule* parentRule = media->parentRule();
         if (!parentRule)
-            return mediaObject.release();
+            return mediaObject;
         InspectorStyleSheet* inspectorStyleSheet = bindStyleSheet(parentRule->parentStyleSheet());
         mediaObject->setRange(inspectorStyleSheet->ruleHeaderSourceRange(parentRule));
     }
-    return mediaObject.release();
+    return mediaObject;
 }
 
 void InspectorCSSAgent::collectMediaQueriesFromStyleSheet(CSSStyleSheet* styleSheet, protocol::Array<protocol::CSS::CSSMedia>* mediaArray)
@@ -1519,7 +1519,7 @@ PassOwnPtr<protocol::Array<protocol::CSS::CSSMedia>> InspectorCSSAgent::buildMed
             }
         }
     }
-    return mediaArray.release();
+    return mediaArray;
 }
 
 InspectorStyleSheetForInlineStyle* InspectorCSSAgent::asInspectorStyleSheet(Element* element)
@@ -1711,7 +1711,7 @@ PassOwnPtr<protocol::CSS::CSSRule> InspectorCSSAgent::buildObjectForRule(CSSStyl
 
     OwnPtr<protocol::CSS::CSSRule> result = inspectorStyleSheet->buildObjectForRuleWithoutMedia(rule);
     result->setMedia(buildMediaListChain(rule));
-    return result.release();
+    return result;
 }
 
 static inline bool matchesPseudoElement(const CSSSelector* selector, PseudoId elementPseudoId)
@@ -1730,7 +1730,7 @@ PassOwnPtr<protocol::Array<protocol::CSS::RuleMatch>> InspectorCSSAgent::buildAr
 {
     OwnPtr<protocol::Array<protocol::CSS::RuleMatch>> result = protocol::Array<protocol::CSS::RuleMatch>::create();
     if (!ruleList)
-        return result.release();
+        return result;
 
     HeapVector<Member<CSSStyleRule>> uniqRules = filterDuplicateRules(ruleList);
     for (unsigned i = 0; i < uniqRules.size(); ++i) {
@@ -1754,12 +1754,12 @@ PassOwnPtr<protocol::Array<protocol::CSS::RuleMatch>> InspectorCSSAgent::buildAr
             ++index;
         }
         result->addItem(protocol::CSS::RuleMatch::create()
-            .setRule(ruleObject.release())
-            .setMatchingSelectors(matchingSelectors.release())
+            .setRule(std::move(ruleObject))
+            .setMatchingSelectors(std::move(matchingSelectors))
             .build());
     }
 
-    return result.release();
+    return result;
 }
 
 PassOwnPtr<protocol::CSS::CSSStyle> InspectorCSSAgent::buildObjectForAttributesStyle(Element* element)

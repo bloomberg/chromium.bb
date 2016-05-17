@@ -212,7 +212,7 @@ public:
                 OwnPtr<GridArea> result = adoptPtr(new GridArea(GridSpan::translatedDefiniteGridSpan(m_rowIndex, m_rowIndex + rowSpan), GridSpan::translatedDefiniteGridSpan(m_columnIndex, m_columnIndex + columnSpan)));
                 // Advance the iterator to avoid an infinite loop where we would return the same grid area over and over.
                 ++varyingTrackIndex;
-                return result.release();
+                return result;
             }
         }
         return nullptr;
@@ -640,7 +640,7 @@ double LayoutGrid::computeFlexFactorUnitSize(const Vector<GridTrack>& tracks, Gr
         }
     }
     if (!validFlexFactorUnit)
-        return computeFlexFactorUnitSize(tracks, direction, flexFactorSum, leftOverSpace, flexibleTracksIndexes, additionalTracksToTreatAsInflexible.release());
+        return computeFlexFactorUnitSize(tracks, direction, flexFactorSum, leftOverSpace, flexibleTracksIndexes, std::move(additionalTracksToTreatAsInflexible));
     return hypotheticalFactorUnitSize;
 }
 

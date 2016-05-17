@@ -1187,7 +1187,7 @@ static PassOwnPtr<TracedValue> jsonObjectForPaintInvalidationInfo(const LayoutRe
     OwnPtr<TracedValue> value = TracedValue::create();
     addJsonObjectForRect(value.get(), "rect", rect);
     value->setString("invalidation_reason", invalidationReason);
-    return value.release();
+    return value;
 }
 
 static void invalidatePaintRectangleOnWindow(const LayoutBoxModelObject& paintInvalidationContainer, const IntRect& dirtyRect)
@@ -1338,7 +1338,7 @@ static PassOwnPtr<TracedValue> jsonObjectForOldAndNewRects(const LayoutRect& old
     addJsonObjectForPoint(value.get(), "oldLocation", oldLocation);
     addJsonObjectForRect(value.get(), "newRect", newRect);
     addJsonObjectForPoint(value.get(), "newLocation", newLocation);
-    return value.release();
+    return value;
 }
 
 LayoutRect LayoutObject::selectionRectInViewCoordinates() const

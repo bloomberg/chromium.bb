@@ -103,7 +103,7 @@ PassOwnPtr<RasterShapeIntervals> RasterShapeIntervals::computeShapeMarginInterva
     }
 
     result->initializeBounds();
-    return result.release();
+    return result;
 }
 
 void RasterShapeIntervals::initializeBounds()

@@ -186,7 +186,7 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
             v8::Local<v8::Value> columns = arguments->argumentCount() > 1 ? arguments->argumentAt(1).v8Value() : v8::Local<v8::Value>();
             OwnPtr<protocol::Runtime::RemoteObject> inspectorValue = m_v8Session->wrapTable(context, table, columns);
             if (inspectorValue)
-                jsonArgs->addItem(inspectorValue.release());
+                jsonArgs->addItem(std::move(inspectorValue));
             else
                 jsonArgs = nullptr;
         } else {
@@ -196,11 +196,11 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
                     jsonArgs = nullptr;
                     break;
                 }
-                jsonArgs->addItem(inspectorValue.release());
+                jsonArgs->addItem(std::move(inspectorValue));
             }
         }
         if (jsonArgs)
-            jsonObj->setParameters(jsonArgs.release());
+            jsonObj->setParameters(std::move(jsonArgs));
     }
     if (consoleMessage->callStack())
         jsonObj->setStack(consoleMessage->callStack()->buildInspectorObject());
@@ -208,7 +208,7 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
         jsonObj->setMessageId(consoleMessage->messageId());
     if (consoleMessage->relatedMessageId())
         jsonObj->setRelatedMessageId(consoleMessage->relatedMessageId());
-    frontend()->messageAdded(jsonObj.release());
+    frontend()->messageAdded(std::move(jsonObj));
     frontend()->flush();
 }
 

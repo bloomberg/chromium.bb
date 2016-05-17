@@ -3026,7 +3026,7 @@ FloatingObject* LayoutBlockFlow::insertFloatingObject(LayoutBox& floatBox)
 
     setLogicalWidthForFloat(*newObj, logicalWidthForChild(floatBox) + marginStartForChild(floatBox) + marginEndForChild(floatBox));
 
-    return m_floatingObjects->add(newObj.release());
+    return m_floatingObjects->add(std::move(newObj));
 }
 
 void LayoutBlockFlow::removeFloatingObject(LayoutBox* floatBox)

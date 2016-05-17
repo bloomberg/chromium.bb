@@ -279,7 +279,7 @@ PassOwnPtr<SVGResources> SVGResources::buildResources(const LayoutObject* object
             registerPendingResource(extensions, id, element);
     }
 
-    return (!resources || !resources->hasResourceData()) ? nullptr : resources.release();
+    return (!resources || !resources->hasResourceData()) ? nullptr : std::move(resources);
 }
 
 void SVGResources::layoutIfNeeded()

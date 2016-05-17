@@ -114,7 +114,7 @@ PassOwnPtr<PatternData> LayoutSVGResourcePattern::buildPatternData(const LayoutO
     patternData->transform.translate(tileBounds.x(), tileBounds.y());
     patternData->transform.preMultiply(attributes.patternTransform());
 
-    return patternData.release();
+    return patternData;
 }
 
 SVGPaintServer LayoutSVGResourcePattern::preparePaintServer(const LayoutObject& object)
