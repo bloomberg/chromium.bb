@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/browser_dialogs.h"
 
+#include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/ui/login/login_handler.h"
 
@@ -33,4 +34,8 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_window,
 ExtensionInstallPrompt::ShowDialogCallback
 ExtensionInstallPrompt::GetDefaultShowDialogCallback() {
   return ExtensionInstallPrompt::GetViewsShowDialogCallback();
+}
+
+void ChromeDevicePermissionsPrompt::ShowDialog() {
+  ShowDialogViews();
 }

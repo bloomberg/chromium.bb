@@ -159,7 +159,7 @@ gfx::Size DevicePermissionsDialogView::GetPreferredSize() const {
   return gfx::Size(500, 250);
 }
 
-void ChromeDevicePermissionsPrompt::ShowDialog() {
+void ChromeDevicePermissionsPrompt::ShowDialogViews() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   web_modal::WebContentsModalDialogManager* manager =

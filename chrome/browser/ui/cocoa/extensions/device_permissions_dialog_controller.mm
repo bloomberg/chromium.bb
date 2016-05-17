@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "chrome/browser/ui/cocoa/extensions/device_permissions_view_controller.h"
@@ -56,6 +57,8 @@ void DevicePermissionsDialogController::OnConstrainedWindowClosed(
 }
 
 void ChromeDevicePermissionsPrompt::ShowDialog() {
+  if (chrome::ToolkitViewsWebUIDialogsEnabled())
+    return ChromeDevicePermissionsPrompt::ShowDialogViews();
   web_modal::WebContentsModalDialogManager* manager =
       web_modal::WebContentsModalDialogManager::FromWebContents(web_contents());
   if (manager) {

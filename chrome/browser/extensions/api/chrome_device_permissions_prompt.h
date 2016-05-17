@@ -17,6 +17,10 @@ class ChromeDevicePermissionsPrompt
 
  private:
   void ShowDialog() override;
+
+  // Shows the Views permissions prompt specifically. This is a temporary hack
+  // for MacViews; do not use this.
+  void ShowDialogViews();
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_CHROME_DEVICE_PERMISSIONS_PROMPT_H_
