@@ -14,50 +14,19 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
-// Abstracts system implementation of popovers and action sheets.
-@protocol ContextMenuControllerImpl<NSObject>
-
-// Whether the context menu is visible.
-@property(nonatomic, readonly, getter=isVisible) BOOL visible;
-
-// Displays a context menu.
-- (void)showWithHolder:(ContextMenuHolder*)menuHolder
-               atPoint:(CGPoint)localPoint
-                inView:(UIView*)view;
-
-// Dismisses displayed context menu.
-- (void)dismissAnimated:(BOOL)animated
-      completionHandler:(ProceduralBlock)completionHandler;
-
-@end
-
-// Backs up ContextMenuController by using UIAlertController.
-@interface AlertController : NSObject<ContextMenuControllerImpl> {
+@interface ContextMenuController () {
+  // Underlying system alert.
   base::WeakNSObject<UIAlertController> _alert;
 }
 // Redefined to readwrite.
 @property(nonatomic, readwrite, getter=isVisible) BOOL visible;
 @end
 
-// Displays a context menu. Implements Bridge pattern.
-@implementation ContextMenuController {
-  base::scoped_nsprotocol<id<ContextMenuControllerImpl>> _impl;
-}
-
-- (BOOL)isVisible {
-  return [_impl isVisible];
-}
-
-- (instancetype)init {
-  self = [super init];
-  if (self) {
-    _impl.reset([[AlertController alloc] init]);
-  }
-  return self;
-}
+@implementation ContextMenuController
+@synthesize visible = _visible;
 
 - (void)dealloc {
-  [_impl dismissAnimated:NO completionHandler:nil];
+  [_alert dismissViewControllerAnimated:NO completion:nil];
   [super dealloc];
 }
 
@@ -69,37 +38,7 @@
   // don't show the context menu.
   if (![view window] && ![view isKindOfClass:[UIWindow class]])
     return;
-  [_impl showWithHolder:menuHolder atPoint:point inView:view];
-}
 
-- (void)dismissAnimated:(BOOL)animated
-      completionHandler:(ProceduralBlock)completionHandler {
-  [_impl dismissAnimated:animated completionHandler:completionHandler];
-}
-
-@end
-
-@implementation AlertController
-@synthesize visible = _visible;
-
-- (CGSize)sizeForTitleThatFitsMenuWithHolder:(ContextMenuHolder*)menuHolder
-                                     atPoint:(CGPoint)point
-                                      inView:(UIView*)view {
-  // Presenting and dismissing a dummy UIAlertController flushes a screen.
-  // As a workaround return an estimation of the space available depending
-  // on the device's type.
-  const CGFloat kAvailableWidth = 320;
-  const CGFloat kAvailableHeightTablet = 200;
-  const CGFloat kAvailableHeightPhone = 100;
-  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
-    return CGSizeMake(kAvailableWidth, kAvailableHeightTablet);
-  }
-  return CGSizeMake(kAvailableWidth, kAvailableHeightPhone);
-}
-
-- (void)showWithHolder:(ContextMenuHolder*)menuHolder
-               atPoint:(CGPoint)point
-                inView:(UIView*)view {
   UIAlertController* alert = [UIAlertController
       alertControllerWithTitle:menuHolder.menuTitle
                        message:nil
@@ -109,7 +48,7 @@
       CGRectMake(point.x, point.y, 1.0, 1.0);
 
   // Add the actions.
-  base::WeakNSObject<AlertController> weakSelf(self);
+  base::WeakNSObject<ContextMenuController> weakSelf(self);
   [menuHolder.itemTitles enumerateObjectsUsingBlock:^(
                              NSString* itemTitle, NSUInteger itemIndex, BOOL*) {
     void (^actionHandler)(UIAlertAction*) = ^(UIAlertAction* action) {
