@@ -69,7 +69,7 @@ public final class UploadDataProviders {
      * @return A new UploadDataProvider for the given data
      */
     public static UploadDataProvider create(byte[] data, int offset, int length) {
-        return new ByteBufferUploadProvider(ByteBuffer.wrap(data, offset, length));
+        return new ByteBufferUploadProvider(ByteBuffer.wrap(data, offset, length).slice());
     }
 
     /**

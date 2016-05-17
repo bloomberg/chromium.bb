@@ -206,4 +206,29 @@ public class UploadDataProvidersTest extends CronetTestBase {
         assertEquals("Exception received from UploadDataProvider", callback.mError.getMessage());
         assertEquals(exceptionMessage, callback.mError.getCause().getMessage());
     }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    // Tests that creating a ByteBufferUploadProvider using a byte array with an
+    // offset gives a ByteBuffer with position 0. crbug.com/603124.
+    public void testCreateByteBufferUploadWithArrayOffset() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        // This URL will trigger a rewind().
+        UrlRequest.Builder builder =
+                new UrlRequest.Builder(NativeTestServer.getRedirectToEchoBody(), callback,
+                        callback.getExecutor(), mTestFramework.mCronetEngine);
+        builder.addHeader("Content-Type", "useless/string");
+        byte[] uploadData = LOREM.getBytes("UTF-8");
+        int offset = 5;
+        byte[] uploadDataWithPadding = new byte[uploadData.length + offset];
+        System.arraycopy(uploadData, 0, uploadDataWithPadding, offset, uploadData.length);
+        UploadDataProvider dataProvider =
+                UploadDataProviders.create(uploadDataWithPadding, offset, uploadData.length);
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        UrlRequest urlRequest = builder.build();
+        urlRequest.start();
+        callback.blockForDone();
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals(LOREM, callback.mResponseAsString);
+    }
 }
