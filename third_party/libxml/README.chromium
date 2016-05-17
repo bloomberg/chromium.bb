@@ -1,6 +1,6 @@
 Name: libxml
 URL: http://xmlsoft.org
-Version: 2.9.3
+Version: 8effcb578e0590cc01bbcab0f9dccefc6bdbcdbd
 License: MIT
 License File: src/Copyright
 Security Critical: yes
@@ -10,10 +10,8 @@ Description:
 libxml2 from libxml.org.
 
 Modifications:
-- Import https://git.gnome.org/browse/libxml2/commit/?id=a7a94612aa3b16779e2c74e1fa353b5d9786c602 from upstream
 - Add helper classes in chromium/libxml_utils.cc and
   chromium/include/libxml/libxml_utils.h.
-- Include fix for runtime blowups on larger xpath expressions, https://bugzilla.gnome.org/show_bug.cgi?id=760325
 - Fix printf format specifiers, https://chromium.googlesource.com/chromium/src/+/d31995076e55f1aac2f935c53b585a90ece27a11
 - Add second workaround for VS 2015 Update 2 code-gen bug - crbug.com/599427
 - Add patch from https://bugzilla.gnome.org/show_bug.cgi?id=758588 for
@@ -22,38 +20,48 @@ Modifications:
 
 To import a new snapshot:
 
-On Linux, get the latest tar, untar, and replace src/ with libxml2-X.Y.Z/.
+1. git clone git://git.gnome.org/libxml2
 
-Generate config.h, include/libxml/xmlversion.h, and xml2-config:
+2. Note the commit and export the repository to third_party/libxml/src
 
-cd linux
-../src/configure --without-iconv --with-icu --without-ftp --without-http \
-    --without-lzma
-cd ..
-Patch config.h to not define HAVE_RAND_R since we use this file on Android
-and it does not have it.
+3. Update README.chromium with the commit
 
-On a Mac, do the same in the mac/ subdir for config.h and
-include/libxml/xmlversion.h and copy those to the Linux box in mac/
+4. Apply the patches mentioned above; for fixes that have flowed in
+   from upstream updates, remove them from README.chromium.
 
-On a Windows box:
-cd libxml2-2.9.2\win32
-cscript //E:jscript configure.js compiler=msvc iconv=no icu=yes ftp=no http=no
-Then copy VC10/config.h and include/libxml/xmlversion.h to win32/ on Linux.
-Patch win32/config.h to wrap the #define snprintf with:
-  #if _MSC_VER < 1900
-  #endif
+5. Generate config.h, include/libxml/xmlversion.h, and xml2-config:
 
-Remove:
-  src/doc/
-  src/example/
-  src/macos/libxml2.mcp.xml.sit.hqx
-  src/os400/
-  src/python/
-  src/result/
-  src/test/
-  src/vms/
-  src/win32/wince
-  src/VxWorks/
+   cd linux
+   ../src/configure --without-iconv --with-icu --without-ftp \
+       --without-http --without-lzma
 
-Update BUILD.gn and libxml.gyp as necessary to add/remove files, etc.
+6. Patch config.h to not define HAVE_RAND_R since we use this file on
+   Android which does not have it.
+
+7. On a Mac, do the same in the mac/ subdir for config.h and
+   include/libxml/xmlversion.h and copy those to the Linux box in mac/
+
+8. On a Windows box:
+
+   cd win32
+   cscript //E:jscript configure.js compiler=msvc iconv=no icu=yes \
+       ftp=no http=no
+
+   Then copy VC10/config.h and include/libxml/xmlversion.h to win32/
+   on Linux.
+
+9. Remove the following, and any other new unneeded files:
+
+   src/doc/
+   src/example/
+   src/macos/libxml2.mcp.xml.sit.hqx
+   src/os400/
+   src/python/
+   src/result/
+   src/test/
+   src/vms/
+   src/win32/wince
+   src/VxWorks/
+
+10. Update BUILD.gn and libxml.gyp as necessary to add/remove files,
+    etc.
