@@ -39,7 +39,6 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 #include "ui/base/cocoa/animation_utils.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/gfx/image/image_skia.h"
@@ -1015,21 +1014,11 @@ TEST_F(BookmarkBarControllerTest, BookmarkButtonSizing) {
   // Make sure the internal bookmark button also is the correct height.
   NSArray* buttons = [bar_ buttons];
   EXPECT_GT([buttons count], 0u);
-  const bool kIsModeMaterial = ui::MaterialDesignController::IsModeMaterial();
-
   for (NSButton* button in buttons) {
-    if (kIsModeMaterial) {
-      EXPECT_FLOAT_EQ(
-          (chrome::kBookmarkBarHeight +
-              bookmarks::kMaterialVisualHeightOffset) -
-                  2 * bookmarks::BookmarkVerticalPadding(),
-          [button frame].size.height);
-    } else {
-      EXPECT_FLOAT_EQ(
-          (chrome::kBookmarkBarHeight + bookmarks::kVisualHeightOffset) -
-              2 * bookmarks::BookmarkVerticalPadding(),
-          [button frame].size.height);
-    }
+    EXPECT_FLOAT_EQ(
+        (chrome::kBookmarkBarHeight + bookmarks::kVisualHeightOffset) -
+            2 * bookmarks::kBookmarkVerticalPadding,
+        [button frame].size.height);
   }
 }
 
@@ -1574,90 +1563,42 @@ TEST_F(BookmarkBarControllerTest, ShrinkOrHideView) {
   EXPECT_TRUE([view isHidden]);
 }
 
-// Simiulate browser window width change and ensure that the bookmark buttons
-// that should be visible are visible.
 TEST_F(BookmarkBarControllerTest, LastBookmarkResizeBehavior) {
   // Hide the apps shortcut.
   profile()->GetPrefs()->SetBoolean(
       bookmarks::prefs::kShowAppsShortcutInBookmarkBar, false);
   ASSERT_TRUE([bar_ appsPageShortcutButtonIsHidden]);
 
-  // Add three buttons to the bookmark bar.
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* root = model->bookmark_bar_node();
   const std::string model_string("1b 2f:[ 2f1b 2f2b ] 3b ");
   bookmarks::test::AddNodesFromModelString(model, root, model_string);
   [bar_ frameDidChange];
 
-  // Step through simulated window resizings. In resizing from the first width
-  // to the second, the bookmark bar should transition from displaying one
-  // button to two. Of the next 5 widths, the third transitions the bar from
-  // displaying two buttons to three. The next width (200.0) resizes the bar to
-  // a large width that does not change the number of visible buttons, and the
-  // remaining widths step through all the previous resizings in reverse, which
-  // should correspond to the previous number of visible buttons.
-  //
-  // To recalibrate this test for new OS releases, etc., determine values for
-  // |view_widths[1]| and |view_widths[4]| which will cause a visible button
-  // transition from 1 -> 2 and 2 -> 3, respectively. With those two widths you
-  // can easily compute all widths from 0 through 6. |view_widths[7]| is always
-  // 200.0, and the remainder are the reverse of widths 0 through 6. When all
-  // three buttons are visible, be sure to sanity check with frames (i.e. under
-  // MD the first button should start at x=10, and there should be 16pt of space
-  // between the buttons).
-  //
   // The default font changed between OSX Mavericks, OSX Yosemite, and
   // OSX El Capitan, so this test requires different widths to trigger the
-  // appropriate results. Button widths and locations also changed with
-  // Material Design.
-  CGFloat view_widths_el_capitan[] =
-      { 121.0, 122.0, 149.0, 150.0, 151.0, 152.0,
-        153.0, 200.0, 153.0, 152.0, 151.0, 150.0,
-        149.0, 122.0, 121.0 };
-  CGFloat view_widths_yosemite[] =
-      { 121.0, 122.0, 148.0, 149.0, 150.0, 151.0,
-        152.0, 200.0, 152.0, 151.0, 150.0, 149.0,
-        148.0, 122.0, 121.0 };
-  CGFloat view_widths_rest[] =
-      { 123.0, 124.0, 151.0, 152.0, 153.0, 154.0,
-        155.0, 200.0, 155.0, 154.0, 153.0, 152.0,
-        151.0, 124.0, 123.0 };
-  CGFloat material_view_widths_el_capitan[] =
-      { 139.0, 140.0, 150.0, 151.0, 152.0, 153.0,
-        154.0, 200.0, 154.0, 153.0, 152.0, 151.0,
-        150.0, 140.0, 139.0 };
-  CGFloat material_view_widths_yosemite[] =
-      { 140.0, 141.0, 150.0, 151.0, 152.0, 153.0,
-        154.0, 200.0, 154.0, 153.0, 152.0, 151.0,
-        150.0, 141.0, 140.0 };
-  CGFloat material_view_widths_rest[] =
-      { 142.0, 143.0, 153.0, 154.0, 155.0, 156.0,
-        157.0, 200.0, 157.0, 156.0, 155.0, 154.0,
-        153.0, 143.0, 142.0 };
-  CGFloat* view_widths = NULL;
-  bool is_mode_material = ui::MaterialDesignController::IsModeMaterial();
-  if (base::mac::IsOSElCapitan()) {
-    view_widths = is_mode_material ? material_view_widths_el_capitan
-                                   : view_widths_el_capitan;
-  } else if (base::mac::IsOSYosemite()) {
-    view_widths = is_mode_material ? material_view_widths_yosemite
-                                   : view_widths_yosemite;
-  } else {
-    view_widths = is_mode_material ? material_view_widths_rest
-                                   : view_widths_rest;
-  }
+  // appropriate results. The Mavericks and El Capitan font widths are close
+  // enough to use the same sizes.
+  CGFloat viewWidthsYosemite[] = { 121.0, 122.0, 148.0, 149.0, 150.0, 151.0,
+                                   152.0, 200.0, 152.0, 151.0, 150.0, 149.0,
+                                   148.0, 122.0, 121.0 };
+  CGFloat viewWidthsRest[] = { 123.0, 124.0, 151.0, 152.0, 153.0, 154.0,
+                               155.0, 200.0, 155.0, 154.0, 153.0, 152.0,
+                               151.0, 124.0, 123.0 };
+  CGFloat* viewWidths = base::mac::IsOSYosemite() ? viewWidthsYosemite :
+                                                    viewWidthsRest;
 
-  BOOL off_the_side_button_is_hidden_results[] =
-      { NO, NO, NO, NO, YES, YES, YES, YES, YES, YES, YES, NO, NO, NO, NO};
-  int displayed_button_count_results[] =
-      { 1, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 1 };
-  for (unsigned int i = 0; i < arraysize(view_widths_yosemite); ++i) {
+  BOOL offTheSideButtonIsHiddenResults[] = { NO, NO, NO, NO, YES, YES, YES, YES,
+                                             YES, YES, YES, NO, NO, NO, NO};
+  int displayedButtonCountResults[] = { 1, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 2, 2,
+                                        2, 1 };
+  for (unsigned int i = 0; i < arraysize(viewWidthsYosemite); ++i) {
     NSRect frame = [[bar_ view] frame];
-    frame.size.width = view_widths[i] + bookmarks::BookmarkRightMargin();
+    frame.size.width = viewWidths[i] + bookmarks::kBookmarkRightMargin;
     [[bar_ view] setFrame:frame];
-    EXPECT_EQ(off_the_side_button_is_hidden_results[i],
+    EXPECT_EQ(offTheSideButtonIsHiddenResults[i],
               [bar_ offTheSideButtonIsHidden]);
-    EXPECT_EQ(displayed_button_count_results[i], [bar_ displayedButtonCount]);
+    EXPECT_EQ(displayedButtonCountResults[i], [bar_ displayedButtonCount]);
   }
 }
 
@@ -2109,8 +2050,8 @@ TEST_F(BookmarkBarControllerDragDropTest, DropPositionIndicator) {
   BookmarkButton* targetButton = [bar_ buttonWithTitleEqualTo:@"1b"];
   ASSERT_TRUE(targetButton);
   NSPoint targetPoint = [targetButton left];
-  CGFloat leftMarginIndicatorPosition = bookmarks::BookmarkLeftMargin() - 0.5 *
-                                        bookmarks::BookmarkHorizontalPadding();
+  CGFloat leftMarginIndicatorPosition = bookmarks::kBookmarkLeftMargin - 0.5 *
+                                        bookmarks::kBookmarkHorizontalPadding;
   const CGFloat baseOffset = targetPoint.x;
   CGFloat expected = leftMarginIndicatorPosition;
   CGFloat actual = [bar_ indicatorPosForDragToPoint:targetPoint];
@@ -2123,7 +2064,7 @@ TEST_F(BookmarkBarControllerDragDropTest, DropPositionIndicator) {
   targetButton = [bar_ buttonWithTitleEqualTo:@"4b"];
   targetPoint = [targetButton right];
   targetPoint.x += 100;  // Somewhere off to the right.
-  CGFloat xDelta = 0.5 * bookmarks::BookmarkHorizontalPadding();
+  CGFloat xDelta = 0.5 * bookmarks::kBookmarkHorizontalPadding;
   expected = NSMaxX([targetButton frame]) + xDelta;
   actual = [bar_ indicatorPosForDragToPoint:targetPoint];
   EXPECT_CGFLOAT_EQ(expected, actual);

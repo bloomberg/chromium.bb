@@ -621,7 +621,7 @@ TEST_F(BookmarkBarFolderControllerTest, MenuPlacementWhileScrollingDeleting) {
   // make sure the top has not moved.
   oldTop = newTop;
   const CGFloat scrollOneBookmark = bookmarks::kBookmarkFolderButtonHeight +
-      bookmarks::BookmarkVerticalPadding();
+      bookmarks::kBookmarkVerticalPadding;
   NSUInteger buttonCounter = 0;
   NSUInteger extraButtonLimit = 3;
   while (![bbfc canScrollDown] || extraButtonLimit > 0) {
@@ -773,7 +773,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveBarBookmarkToFolder) {
   BookmarkButton* draggedButton = [bar_ buttonWithTitleEqualTo:@"1b"];
   ASSERT_TRUE(draggedButton);
   CGFloat horizontalShift =
-      NSWidth([draggedButton frame]) + bookmarks::BookmarkHorizontalPadding();
+      NSWidth([draggedButton frame]) + bookmarks::kBookmarkHorizontalPadding;
   BookmarkButton* targetButton =
       [folderController buttonWithTitleEqualTo:@"2f1b"];
   ASSERT_TRUE(targetButton);
@@ -1285,7 +1285,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   NSWindow* folderWindow = [folderController window];
   EXPECT_TRUE(folderWindow);
   CGFloat expectedHeight = (CGFloat)bookmarks::kBookmarkFolderButtonHeight +
-      (2*bookmarks::BookmarkVerticalPadding());
+      (2*bookmarks::kBookmarkVerticalPadding);
   NSRect windowFrame = [folderWindow frame];
   CGFloat windowHeight = NSHeight(windowFrame);
   EXPECT_CGFLOAT_EQ(expectedHeight, windowHeight);
@@ -1593,7 +1593,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DropPositionIndicator) {
   EXPECT_TRUE(folder);
 
   // Test a series of points starting at the top of the folder.
-  const CGFloat yOffset = 0.5 * bookmarks::BookmarkVerticalPadding();
+  const CGFloat yOffset = 0.5 * bookmarks::kBookmarkVerticalPadding;
   BookmarkButton* targetButton = [folder buttonWithTitleEqualTo:@"2f1b"];
   ASSERT_TRUE(targetButton);
   NSPoint targetPoint = [targetButton top];

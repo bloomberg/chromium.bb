@@ -5,7 +5,6 @@
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_button_cell.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
 
@@ -58,14 +57,14 @@ TEST_F(BookmarkBarFolderButtonCellTest, FaviconPositioning) {
   NSRect rect = NSMakeRect(20, 20, 20, 20);
 
   [cell setBookmarkCellText:@"" image:image];
-  float icon_x_without_title = ([cell imageRectForBounds:rect]).origin.x;
+  float cell_x_without_title = ([cell imageRectForBounds:rect]).origin.x;
   float cell_width_without_title = ([cell cellSize]).width;
 
   [cell setBookmarkCellText:@"test" image:image];
-  float icon_x_with_title = ([cell imageRectForBounds:rect]).origin.x;
+  float cell_x_with_title = ([cell imageRectForBounds:rect]).origin.x;
   float cell_width_with_title = ([cell cellSize]).width;
 
-  EXPECT_LT(icon_x_without_title, icon_x_with_title);
+  EXPECT_LT(cell_x_without_title, cell_x_with_title);
   EXPECT_LT(cell_width_without_title, cell_width_with_title);
 
   [folder_cell setBookmarkCellText:@"" image:image];

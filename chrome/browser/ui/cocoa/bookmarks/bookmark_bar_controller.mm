@@ -67,13 +67,8 @@
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_skia_util_mac.h"
-#include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
 
 using base::UserMetricsAction;
@@ -249,38 +244,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 
 @end
 
-namespace bookmarks {
-
-CGFloat BookmarkHorizontalPadding() {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return 1.0;
-  }
-  return 16.0;
-}
-
-CGFloat BookmarkVerticalPadding() {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return 2.0;
-  }
-  return 4.0;
-}
-
-CGFloat BookmarkLeftMargin() {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return 2.0;
-  }
-  return 10.0;
-}
-
-CGFloat BookmarkRightMargin() {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return 2.0;
-  }
-  return 10.0;
-}
-
-}  // namespace bookmarks
-
 @implementation BookmarkBarController
 
 @synthesize currentState = currentState_;
@@ -312,10 +275,6 @@ CGFloat BookmarkRightMargin() {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     folderImage_.reset(
         rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER).CopyNSImage());
-    if (ui::MaterialDesignController::IsModeMaterial()) {
-      folderImageWhite_.reset(
-          rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER_WHITE).CopyNSImage());
-    }
     defaultImage_.reset(
         rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).CopyNSImage());
 
@@ -466,21 +425,12 @@ CGFloat BookmarkRightMargin() {
   // expects.  We will resize ourselves open later if needed.
   [[self view] setFrame:NSMakeRect(0, 0, initialWidth_, 0)];
 
-  const bool isModeMaterial = ui::MaterialDesignController::IsModeMaterial();
-
   // Complete init of the "off the side" button, as much as we can.
-  if (isModeMaterial) {
-    [offTheSideButton_ setImage:[self offTheSideButtonImage:NO]];
-    BookmarkButtonCell* offTheSideCell = [offTheSideButton_ cell];
-    [offTheSideCell setTag:kMaterialStandardButtonTypeWithLimitedClickFeedback];
-    [offTheSideCell setImagePosition:NSImageOnly];
-  } else {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    [offTheSideButton_ setImage:
-          rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_CHEVRONS).ToNSImage()];
-    [offTheSideButton_.draggableButton setDraggable:NO];
-    [offTheSideButton_.draggableButton setActsOnMouseDown:YES];
-  }
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  [offTheSideButton_ setImage:
+        rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_CHEVRONS).ToNSImage()];
+  [offTheSideButton_.draggableButton setDraggable:NO];
+  [offTheSideButton_.draggableButton setActsOnMouseDown:YES];
 
   // We are enabled by default.
   barIsEnabled_ = YES;
@@ -489,24 +439,6 @@ CGFloat BookmarkRightMargin() {
   // fields to aid in resizing when the window frame changes.
   originalNoItemsRect_ = [[buttonView_ noItemTextfield] frame];
   originalImportBookmarksRect_ = [[buttonView_ importBookmarksButton] frame];
-  if (isModeMaterial) {
-    // Bookmark buttons are shorter and start farther from the bookmark bar's
-    // left edge so adjust the positions of the noItems and importBookmarks
-    // textfields.
-    const CGFloat kMaterialBookmarksTextfieldOffsetX = 14;
-    const CGFloat kMaterialBookmarksTextfieldOffsetY = -2;
-    originalNoItemsRect_.origin =
-        NSOffsetRect(originalNoItemsRect_,
-                     kMaterialBookmarksTextfieldOffsetX,
-                     kMaterialBookmarksTextfieldOffsetY).origin;
-    [[buttonView_ noItemTextfield] setFrame:originalNoItemsRect_];
-
-    originalImportBookmarksRect_.origin =
-        NSOffsetRect(originalImportBookmarksRect_,
-                     kMaterialBookmarksTextfieldOffsetX,
-                     kMaterialBookmarksTextfieldOffsetY).origin;
-    [[buttonView_ importBookmarksButton] setFrame:originalImportBookmarksRect_];
-  }
 
   // To make life happier when the bookmark bar is floating, the chevron is a
   // child of the button view.
@@ -601,12 +533,7 @@ CGFloat BookmarkRightMargin() {
   // Add padding to the detached bookmark bar.
   // The state of our morph (if any); 1 is total bubble, 0 is the regular bar.
   CGFloat morph = [self detachedMorphProgress];
-  CGFloat padding = 0;
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    padding = bookmarks::kMaterialNTPBookmarkBarPadding;
-  } else {
-    padding = bookmarks::kNTPBookmarkBarPadding;
-  }
+  CGFloat padding = bookmarks::kNTPBookmarkBarPadding;
   buttonViewFrame =
       NSInsetRect(buttonViewFrame, morph * padding, morph * padding);
 
@@ -703,44 +630,25 @@ CGFloat BookmarkRightMargin() {
   return [self isInState:BookmarkBar::SHOW] ? 0 : 1;
 }
 
-- (NSImage*)faviconForNode:(const BookmarkNode*)node
-             forADarkTheme:(BOOL)forADarkTheme {
+- (NSImage*)faviconForNode:(const BookmarkNode*)node {
   if (!node)
     return defaultImage_;
 
-  if (forADarkTheme && ui::MaterialDesignController::IsModeMaterial()) {
-    if (node == managedBookmarkService_->managed_node()) {
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      return rb.GetNativeImageNamed(
-          IDR_BOOKMARK_BAR_FOLDER_MANAGED_WHITE).ToNSImage();
-    }
-
-    if (node == managedBookmarkService_->supervised_node()) {
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      return rb.GetNativeImageNamed(
-          IDR_BOOKMARK_BAR_FOLDER_SUPERVISED_WHITE).ToNSImage();
-    }
-
-    if (node->is_folder())
-      return folderImageWhite_;
-  } else {
-    if (node == managedBookmarkService_->managed_node()) {
-      // Most users never see this node, so the image is only loaded if needed.
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      return rb.GetNativeImageNamed(
-          IDR_BOOKMARK_BAR_FOLDER_MANAGED).ToNSImage();
-    }
-
-    if (node == managedBookmarkService_->supervised_node()) {
-      // Most users never see this node, so the image is only loaded if needed.
-      ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-      return rb.GetNativeImageNamed(
-          IDR_BOOKMARK_BAR_FOLDER_SUPERVISED).ToNSImage();
-    }
-
-    if (node->is_folder())
-      return folderImage_;
+  if (node == managedBookmarkService_->managed_node()) {
+    // Most users never see this node, so the image is only loaded if needed.
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    return rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER_MANAGED).ToNSImage();
   }
+
+  if (node == managedBookmarkService_->supervised_node()) {
+    // Most users never see this node, so the image is only loaded if needed.
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    return rb.GetNativeImageNamed(
+        IDR_BOOKMARK_BAR_FOLDER_SUPERVISED).ToNSImage();
+  }
+
+  if (node->is_folder())
+    return folderImage_;
 
   const gfx::Image& favicon = bookmarkModel_->GetFavicon(node);
   if (!favicon.IsEmpty())
@@ -903,20 +811,6 @@ CGFloat BookmarkRightMargin() {
   chrome::ShowImportDialog(browser_);
 }
 
-- (NSButton*)offTheSideButton {
-  return offTheSideButton_;
-}
-
-- (NSImage*)offTheSideButtonImage:(BOOL)forDarkMode {
-  const int kIconSize = 16;
-  SkColor vectorIconColor = forDarkMode ? SkColorSetA(SK_ColorWHITE, 0xCC)
-                                        : gfx::kChromeIconGrey;
-  return NSImageFromImageSkia(
-      gfx::CreateVectorIcon(gfx::VectorIconId::OVERFLOW_CHEVRON,
-                            kIconSize,
-                            vectorIconColor));
-}
-
 #pragma mark Private Methods
 
 // Called after a theme change took place, possibly for a different profile.
@@ -933,7 +827,7 @@ CGFloat BookmarkRightMargin() {
 // Position the right-side buttons including the off-the-side chevron.
 - (void)positionRightSideButtons {
   int maxX = NSMaxX([[self buttonView] bounds]) -
-      bookmarks::BookmarkHorizontalPadding();
+      bookmarks::kBookmarkHorizontalPadding;
   int right = maxX;
 
   int ignored = 0;
@@ -1171,7 +1065,7 @@ CGFloat BookmarkRightMargin() {
                                                  action:nil
                                           keyEquivalent:@""] autorelease];
   [menu addItem:item];
-  [item setImage:[self faviconForNode:child forADarkTheme:NO]];
+  [item setImage:[self faviconForNode:child]];
   if (child->is_folder()) {
     NSMenu* submenu = [[[NSMenu alloc] initWithTitle:title] autorelease];
     [menu setSubmenu:submenu forItem:item];
@@ -1257,7 +1151,7 @@ CGFloat BookmarkRightMargin() {
 
   CGFloat maxViewX = NSMaxX([[self view] bounds]);
   int xOffset =
-      bookmarks::BookmarkLeftMargin() - bookmarks::BookmarkHorizontalPadding();
+      bookmarks::kBookmarkLeftMargin - bookmarks::kBookmarkHorizontalPadding;
 
   // Draw the apps bookmark if needed.
   if (![appsPageShortcutButton_ isHidden]) {
@@ -1269,7 +1163,7 @@ CGFloat BookmarkRightMargin() {
 
   // Draw the managed bookmark folder if needed.
   if (![managedBookmarksButton_ isHidden]) {
-    xOffset += bookmarks::BookmarkHorizontalPadding();
+    xOffset += bookmarks::kBookmarkHorizontalPadding;
     NSRect frame =
         [self frameForBookmarkButtonFromCell:[managedBookmarksButton_ cell]
                                      xOffset:&xOffset];
@@ -1278,7 +1172,7 @@ CGFloat BookmarkRightMargin() {
 
   // Draw the supervised bookmark folder if needed.
   if (![supervisedBookmarksButton_ isHidden]) {
-    xOffset += bookmarks::BookmarkHorizontalPadding();
+    xOffset += bookmarks::kBookmarkHorizontalPadding;
     NSRect frame =
         [self frameForBookmarkButtonFromCell:[supervisedBookmarksButton_ cell]
                                      xOffset:&xOffset];
@@ -1355,7 +1249,7 @@ CGFloat BookmarkRightMargin() {
   NSMutableArray* buttons = [self buttons];
   for (NSButton* button in buttons) {
     if (NSMaxX([button frame]) > (NSMinX([offTheSideButton_ frame]) -
-                                  bookmarks::BookmarkHorizontalPadding()))
+                                  bookmarks::kBookmarkHorizontalPadding))
       break;
     [buttonView_ addSubview:button];
     ++displayedButtonCount_;
@@ -1739,25 +1633,25 @@ CGFloat BookmarkRightMargin() {
 // Returns NSZeroRect if there is no such button in the bookmark bar.
 // Enables you to work out where a button will end up when it is done animating.
 - (NSRect)finalRectOfButton:(BookmarkButton*)wantedButton {
-  CGFloat left = bookmarks::BookmarkLeftMargin();
+  CGFloat left = bookmarks::kBookmarkLeftMargin;
   NSRect buttonFrame = NSZeroRect;
 
   // Draw the apps bookmark if needed.
   if (![appsPageShortcutButton_ isHidden]) {
     left = NSMaxX([appsPageShortcutButton_ frame]) +
-        bookmarks::BookmarkHorizontalPadding();
+        bookmarks::kBookmarkHorizontalPadding;
   }
 
   // Draw the managed bookmarks folder if needed.
   if (![managedBookmarksButton_ isHidden]) {
     left = NSMaxX([managedBookmarksButton_ frame]) +
-        bookmarks::BookmarkHorizontalPadding();
+        bookmarks::kBookmarkHorizontalPadding;
   }
 
   // Draw the supervised bookmarks folder if needed.
   if (![supervisedBookmarksButton_ isHidden]) {
     left = NSMaxX([supervisedBookmarksButton_ frame]) +
-        bookmarks::BookmarkHorizontalPadding();
+        bookmarks::kBookmarkHorizontalPadding;
   }
 
   for (NSButton* button in buttons_.get()) {
@@ -1766,7 +1660,7 @@ CGFloat BookmarkRightMargin() {
       continue;
     buttonFrame = [button frame];
     buttonFrame.origin.x = left;
-    left += buttonFrame.size.width + bookmarks::BookmarkHorizontalPadding();
+    left += buttonFrame.size.width + bookmarks::kBookmarkHorizontalPadding;
     if (button == wantedButton)
       return buttonFrame;
   }
@@ -1785,14 +1679,14 @@ CGFloat BookmarkRightMargin() {
   // If necessary, pull in the width to account for the Other Bookmarks button.
   if ([self setOtherBookmarksButtonVisibility]) {
     maxViewX = [otherBookmarksButton_ frame].origin.x -
-        bookmarks::BookmarkRightMargin();
+        bookmarks::kBookmarkRightMargin;
   }
 
   [self positionRightSideButtons];
   // If we're already overflowing, then we need to account for the chevron.
   if (visible) {
     maxViewX =
-        [offTheSideButton_ frame].origin.x - bookmarks::BookmarkRightMargin();
+        [offTheSideButton_ frame].origin.x - bookmarks::kBookmarkRightMargin;
   }
 
   return maxViewX;
@@ -1830,27 +1724,20 @@ CGFloat BookmarkRightMargin() {
   // for more buttons.
   int xOffset;
   if (displayedButtonCount_ > 0) {
-    xOffset = NSMaxX([self finalRectOfLastButton]);
-
-    // Adding the padding here causes the distance between button 1 and 2 to
-    // be twice the padding instead of 1x. Pre-Material Design the padding was
-    // 1pt, so this bug was not noticeable. With MD's padding, this error puts
-    // 32pts of space between buttons.
-    if (!ui::MaterialDesignController::IsModeMaterial()) {
-      xOffset += bookmarks::BookmarkHorizontalPadding();
-    }
+    xOffset = NSMaxX([self finalRectOfLastButton]) +
+        bookmarks::kBookmarkHorizontalPadding;
   } else if (![managedBookmarksButton_ isHidden]) {
     xOffset = NSMaxX([managedBookmarksButton_ frame]) +
-        bookmarks::BookmarkHorizontalPadding();
+        bookmarks::kBookmarkHorizontalPadding;
   } else if (![supervisedBookmarksButton_ isHidden]) {
     xOffset = NSMaxX([supervisedBookmarksButton_ frame]) +
-        bookmarks::BookmarkHorizontalPadding();
+        bookmarks::kBookmarkHorizontalPadding;
   } else if (![appsPageShortcutButton_ isHidden]) {
     xOffset = NSMaxX([appsPageShortcutButton_ frame]) +
-        bookmarks::BookmarkHorizontalPadding();
+        bookmarks::kBookmarkHorizontalPadding;
   } else {
-    xOffset = bookmarks::BookmarkLeftMargin() -
-        bookmarks::BookmarkHorizontalPadding();
+    xOffset = bookmarks::kBookmarkLeftMargin -
+        bookmarks::kBookmarkHorizontalPadding;
   }
   for (int i = displayedButtonCount_; i < barCount; ++i) {
     const BookmarkNode* child = node->GetChild(i);
@@ -1882,6 +1769,10 @@ CGFloat BookmarkRightMargin() {
 
 - (NSMutableArray*)buttons {
   return buttons_.get();
+}
+
+- (NSButton*)offTheSideButton {
+  return offTheSideButton_;
 }
 
 - (NSButton*)appsPageShortcutButton {
@@ -1935,19 +1826,13 @@ CGFloat BookmarkRightMargin() {
 // Return an autoreleased NSCell suitable for a bookmark button.
 // TODO(jrg): move much of the cell config into the BookmarkButtonCell class.
 - (BookmarkButtonCell*)cellForBookmarkNode:(const BookmarkNode*)node {
-  BOOL darkTheme = [[[self view] window] hasDarkTheme];
-  NSImage* image = node ? [self faviconForNode:node forADarkTheme:darkTheme]
-                        : nil;
+  NSImage* image = node ? [self faviconForNode:node] : nil;
   BookmarkButtonCell* cell =
       [BookmarkButtonCell buttonCellForNode:node
                                        text:nil
                                       image:image
                              menuController:contextMenuController_];
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    [cell setTag:kMaterialStandardButtonTypeWithLimitedClickFeedback];
-  } else {
-    [cell setTag:kStandardButtonTypeWithLimitedClickFeedback];
-  }
+  [cell setTag:kStandardButtonTypeWithLimitedClickFeedback];
 
   // Note: a quirk of setting a cell's text color is that it won't work
   // until the cell is associated with a button, so we can't theme the cell yet.
@@ -1964,11 +1849,7 @@ CGFloat BookmarkRightMargin() {
       [BookmarkButtonCell buttonCellWithText:text
                                        image:image
                               menuController:contextMenuController_];
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    [cell setTag:kMaterialStandardButtonTypeWithLimitedClickFeedback];
-  } else {
-    [cell setTag:kStandardButtonTypeWithLimitedClickFeedback];
-  }
+  [cell setTag:kStandardButtonTypeWithLimitedClickFeedback];
 
   // Note: a quirk of setting a cell's text color is that it won't work
   // until the cell is associated with a button, so we can't theme the cell yet.
@@ -1984,15 +1865,11 @@ CGFloat BookmarkRightMargin() {
                                  xOffset:(int*)xOffset {
   DCHECK(xOffset);
   NSRect bounds = [buttonView_ bounds];
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    bounds.size.height = bookmarks::kMaterialBookmarkButtonHeight;
-  } else {
-    bounds.size.height = bookmarks::kBookmarkButtonHeight;
-  }
+  bounds.size.height = bookmarks::kBookmarkButtonHeight;
 
   NSRect frame = NSInsetRect(bounds,
-                             bookmarks::BookmarkHorizontalPadding(),
-                             bookmarks::BookmarkVerticalPadding());
+                             bookmarks::kBookmarkHorizontalPadding,
+                             bookmarks::kBookmarkVerticalPadding);
   frame.size.width = [self widthForBookmarkButtonCell:cell];
 
   // Add an X offset based on what we've already done
@@ -2295,15 +2172,15 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     CGFloat left;
     if (![supervisedBookmarksButton_ isHidden]) {
       left = NSMaxX([supervisedBookmarksButton_ frame]) +
-             bookmarks::BookmarkHorizontalPadding();
+             bookmarks::kBookmarkHorizontalPadding;
     } else if (![managedBookmarksButton_ isHidden]) {
       left = NSMaxX([managedBookmarksButton_ frame]) +
-             bookmarks::BookmarkHorizontalPadding();
+             bookmarks::kBookmarkHorizontalPadding;
     } else if (![appsPageShortcutButton_ isHidden]) {
       left = NSMaxX([appsPageShortcutButton_ frame]) +
-             bookmarks::BookmarkHorizontalPadding();
+             bookmarks::kBookmarkHorizontalPadding;
     } else {
-      left = bookmarks::BookmarkLeftMargin();
+      left = bookmarks::kBookmarkLeftMargin;
     }
     CGFloat paddingWidth = bookmarks::kDefaultBookmarkWidth;
     BookmarkButton* draggedButton = [BookmarkButton draggedButton];
@@ -2326,7 +2203,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       left += buttonFrame.size.width;
       if (left > insertionPos_)
         buttonFrame.origin.x += paddingWidth;
-      left += bookmarks::BookmarkHorizontalPadding();
+      left += bookmarks::kBookmarkHorizontalPadding;
       if (innerContentAnimationsEnabled_)
         [[button animator] setFrame:buttonFrame];
       else
@@ -2342,15 +2219,15 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (void)resetAllButtonPositionsWithAnimation:(BOOL)animate {
 
   // Position the apps bookmark if needed.
-  CGFloat left = bookmarks::BookmarkLeftMargin();
+  CGFloat left = bookmarks::kBookmarkLeftMargin;
   if (![appsPageShortcutButton_ isHidden]) {
-    int xOffset = bookmarks::BookmarkLeftMargin() -
-            bookmarks::BookmarkHorizontalPadding();
+    int xOffset =
+        bookmarks::kBookmarkLeftMargin - bookmarks::kBookmarkHorizontalPadding;
     NSRect frame =
         [self frameForBookmarkButtonFromCell:[appsPageShortcutButton_ cell]
                                      xOffset:&xOffset];
     [appsPageShortcutButton_ setFrame:frame];
-    left = xOffset + bookmarks::BookmarkHorizontalPadding();
+    left = xOffset + bookmarks::kBookmarkHorizontalPadding;
   }
 
   // Position the managed bookmarks folder if needed.
@@ -2360,7 +2237,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
         [self frameForBookmarkButtonFromCell:[managedBookmarksButton_ cell]
                                      xOffset:&xOffset];
     [managedBookmarksButton_ setFrame:frame];
-    left = xOffset + bookmarks::BookmarkHorizontalPadding();
+    left = xOffset + bookmarks::kBookmarkHorizontalPadding;
   }
 
   // Position the supervised bookmarks folder if needed.
@@ -2370,7 +2247,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
         [self frameForBookmarkButtonFromCell:[supervisedBookmarksButton_ cell]
                                      xOffset:&xOffset];
     [supervisedBookmarksButton_ setFrame:frame];
-    left = xOffset + bookmarks::BookmarkHorizontalPadding();
+    left = xOffset + bookmarks::kBookmarkHorizontalPadding;
   }
 
   animate &= innerContentAnimationsEnabled_;
@@ -2381,7 +2258,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       continue;
     NSRect buttonFrame = [button frame];
     buttonFrame.origin.x = left;
-    left += buttonFrame.size.width + bookmarks::BookmarkHorizontalPadding();
+    left += buttonFrame.size.width + bookmarks::kBookmarkHorizontalPadding;
     if (animate)
       [[button animator] setFrame:buttonFrame];
     else
@@ -2510,10 +2387,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   for (BookmarkButton* button in buttons_.get()) {
     const BookmarkNode* cellnode = [button bookmarkNode];
     if (cellnode == node) {
-      BOOL darkTheme = [[[self view] window] hasDarkTheme];
-      NSImage* theImage = [self faviconForNode:node forADarkTheme:darkTheme];
       [[button cell] setBookmarkCellText:[button title]
-                                   image:theImage];
+                                   image:[self faviconForNode:node]];
       // Adding an image means we might need more room for the
       // bookmark.  Test for it by growing the button (if needed)
       // and shifting everything else over.
@@ -2676,16 +2551,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // bookmark folders, not a button context menu.
 - (void)closeAllBookmarkFolders {
   [self watchForExitEvent:NO];
-
-  // Grab the parent button under Material Design to make sure that the
-  // highlighting that was applied while revealing the menu is turned off.
-  BookmarkButton* parentButton = nil;
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    parentButton = [folderController_ parentButton];
-  }
   [folderController_ close];
-  [[parentButton cell] setHighlighted:NO];
-  [parentButton setNeedsDisplay:YES];
   folderController_ = nil;
 }
 
@@ -2828,7 +2694,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // Return the x position for a drop indicator.
 - (CGFloat)indicatorPosForDragToPoint:(NSPoint)point {
   CGFloat x = 0;
-  CGFloat halfHorizontalPadding = 0.5 * bookmarks::BookmarkHorizontalPadding();
+  CGFloat halfHorizontalPadding = 0.5 * bookmarks::kBookmarkHorizontalPadding;
   int destIndex = [self indexForDragToPoint:point];
   int numButtons = displayedButtonCount_;
 
@@ -2841,7 +2707,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
   } else if (![appsPageShortcutButton_ isHidden]) {
     leftmostX = NSMaxX([appsPageShortcutButton_ frame]) + halfHorizontalPadding;
   } else {
-    leftmostX = bookmarks::BookmarkLeftMargin() - halfHorizontalPadding;
+    leftmostX = bookmarks::kBookmarkLeftMargin - halfHorizontalPadding;
   }
 
   // If it's a drop strictly between existing buttons ...
@@ -2944,7 +2810,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (void)addButtonForNode:(const BookmarkNode*)node
                  atIndex:(NSInteger)buttonIndex {
   int newOffset =
-      bookmarks::BookmarkLeftMargin() - bookmarks::BookmarkHorizontalPadding();
+      bookmarks::kBookmarkLeftMargin - bookmarks::kBookmarkHorizontalPadding;
   if (buttonIndex == -1)
     buttonIndex = [buttons_ count];  // New button goes at the end.
   if (buttonIndex <= (NSInteger)[buttons_ count]) {
@@ -2952,7 +2818,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       BookmarkButton* targetButton = [buttons_ objectAtIndex:buttonIndex - 1];
       NSRect targetFrame = [targetButton frame];
       newOffset = targetFrame.origin.x + NSWidth(targetFrame) +
-          bookmarks::BookmarkHorizontalPadding();
+          bookmarks::kBookmarkHorizontalPadding;
     }
     BookmarkButton* newButton = [self buttonForNode:node xOffset:&newOffset];
     ++displayedButtonCount_;
