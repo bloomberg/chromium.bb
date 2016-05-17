@@ -200,6 +200,7 @@ INSTANTIATE_TEST_CASE_P(
                                          kEnableNativeBuffers),
                        // These formats are guaranteed to work on all platforms.
                        ::testing::Values(gfx::BufferFormat::R_8,
+                                         gfx::BufferFormat::RGB_565,
                                          gfx::BufferFormat::RGBA_4444,
                                          gfx::BufferFormat::RGBA_8888,
                                          gfx::BufferFormat::BGRA_8888,

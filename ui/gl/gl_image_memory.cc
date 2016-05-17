@@ -44,6 +44,7 @@ bool ValidFormat(BufferFormat format) {
     case BufferFormat::DXT5:
     case BufferFormat::ETC1:
     case BufferFormat::R_8:
+    case BufferFormat::RGB_565:
     case BufferFormat::RGBA_4444:
     case BufferFormat::RGBX_8888:
     case BufferFormat::RGBA_8888:
@@ -69,6 +70,7 @@ bool IsCompressedFormat(BufferFormat format) {
     case BufferFormat::ETC1:
       return true;
     case BufferFormat::R_8:
+    case BufferFormat::RGB_565:
     case BufferFormat::RGBA_4444:
     case BufferFormat::RGBX_8888:
     case BufferFormat::RGBA_8888:
@@ -105,6 +107,7 @@ GLenum TextureFormat(BufferFormat format) {
       return GL_RGBA;
     case BufferFormat::BGRA_8888:
       return GL_BGRA_EXT;
+    case BufferFormat::RGB_565:
     case BufferFormat::RGBX_8888:
     case BufferFormat::BGRX_8888:
       return GL_RGB;
@@ -125,6 +128,7 @@ GLenum DataFormat(BufferFormat format) {
       return GL_RGBA;
     case BufferFormat::BGRX_8888:
       return GL_BGRA_EXT;
+    case BufferFormat::RGB_565:
     case BufferFormat::RGBA_4444:
     case BufferFormat::RGBA_8888:
     case BufferFormat::BGRA_8888:
@@ -148,6 +152,8 @@ GLenum DataFormat(BufferFormat format) {
 
 GLenum DataType(BufferFormat format) {
   switch (format) {
+    case BufferFormat::RGB_565:
+      return GL_UNSIGNED_SHORT_5_6_5;
     case BufferFormat::RGBA_4444:
       return GL_UNSIGNED_SHORT_4_4_4_4;
     case BufferFormat::RGBX_8888:
@@ -174,6 +180,7 @@ GLenum DataType(BufferFormat format) {
 
 GLint DataRowLength(size_t stride, BufferFormat format) {
   switch (format) {
+    case BufferFormat::RGB_565:
     case BufferFormat::RGBA_4444:
       return base::checked_cast<GLint>(stride) / 2;
     case BufferFormat::RGBX_8888:
@@ -255,6 +262,7 @@ std::unique_ptr<uint8_t[]> GLES2Data(const gfx::Size& size,
                             dst[1] = src[1];
                             dst[2] = src[0];
                           }, data_format, data_type, data_row_length);
+    case BufferFormat::RGB_565:
     case BufferFormat::RGBA_4444:
     case BufferFormat::RGBA_8888:
     case BufferFormat::BGRA_8888:

@@ -78,6 +78,8 @@ bool IsImageFormatCompatibleWithGpuMemoryBufferFormat(
     case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::UYVY_422:
       return format == BufferFormatForInternalFormat(internalformat);
+    case gfx::BufferFormat::RGB_565:
+      return internalformat == GL_RGB;
     case gfx::BufferFormat::RGBA_4444:
       return internalformat == GL_RGBA;
   }
@@ -105,6 +107,7 @@ bool IsGpuMemoryBufferFormatSupported(gfx::BufferFormat format,
       return capabilities.texture_rg;
     case gfx::BufferFormat::UYVY_422:
       return capabilities.image_ycbcr_422;
+    case gfx::BufferFormat::RGB_565:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::RGBX_8888:
@@ -130,6 +133,7 @@ bool IsImageSizeValidForGpuMemoryBufferFormat(const gfx::Size& size,
       // by the block size.
       return size.width() % 4 == 0 && size.height() % 4 == 0;
     case gfx::BufferFormat::R_8:
+    case gfx::BufferFormat::RGB_565:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::RGBX_8888:
