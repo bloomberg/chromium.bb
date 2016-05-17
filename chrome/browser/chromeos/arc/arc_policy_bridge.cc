@@ -10,10 +10,13 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
+#include "chromeos/network/onc/onc_utils.h"
+#include "components/onc/onc_constants.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/user_manager/user.h"
@@ -24,7 +27,8 @@ namespace arc {
 
 namespace {
 
-const char* kArcGlobalAppRestrictions = "globalAppRestrictions";
+const char kArcGlobalAppRestrictions[] = "globalAppRestrictions";
+const char kArcCaCerts[] = "caCerts";
 
 // invert_bool_value: If the Chrome policy and the ARC policy with boolean value
 // have opposite semantics, set this to true so the bool is inverted before
@@ -84,6 +88,95 @@ void AddGlobalAppRestriction(const std::string& arc_app_restriction_name,
   }
 }
 
+void AddOncCaCertsToPolicies(const policy::PolicyMap& policy_map,
+                             base::DictionaryValue* filtered_policies) {
+  const base::Value* const policy_value =
+      policy_map.GetValue(policy::key::kArcCertificatesSyncMode);
+  int32_t mode = ArcCertsSyncMode::SYNC_DISABLED;
+
+  // Old certs should be uninstalled if the sync is disabled or policy is not
+  // set.
+  if (!policy_value || !policy_value->GetAsInteger(&mode) ||
+      mode != ArcCertsSyncMode::COPY_CA_CERTS) {
+    return;
+  }
+
+  // Importing CA certificates from device policy is not allowed.
+  // Import only from user policy.
+  const base::Value* onc_policy_value =
+      policy_map.GetValue(policy::key::kOpenNetworkConfiguration);
+  if (!onc_policy_value) {
+    VLOG(1) << "onc policy is not set.";
+    return;
+  }
+  std::string onc_blob;
+  if (!onc_policy_value->GetAsString(&onc_blob)) {
+    LOG(ERROR) << "Value of onc policy has invalid format.";
+    return;
+  }
+
+  base::ListValue certificates;
+  {
+    base::ListValue unused_network_configs;
+    base::DictionaryValue unused_global_network_config;
+    if (!chromeos::onc::ParseAndValidateOncForImport(
+            onc_blob, onc::ONCSource::ONC_SOURCE_USER_POLICY,
+            "" /* no passphrase */, &unused_network_configs,
+            &unused_global_network_config, &certificates)) {
+      LOG(ERROR) << "Value of onc policy has invalid format =" << onc_blob;
+    }
+  }
+
+  std::unique_ptr<base::ListValue> ca_certs(
+      base::WrapUnique(new base::ListValue()));
+  for (const auto entry : certificates) {
+    const base::DictionaryValue* certificate = nullptr;
+    if (!entry->GetAsDictionary(&certificate)) {
+      DLOG(FATAL) << "Value of a certificate entry is not a dictionary "
+                  << "value.";
+      continue;
+    }
+
+    std::string cert_type;
+    certificate->GetStringWithoutPathExpansion(::onc::certificate::kType,
+                                               &cert_type);
+    if (cert_type != ::onc::certificate::kAuthority)
+      continue;
+
+    const base::ListValue* trust_list = NULL;
+    bool web_trust_flag = false;
+    if (certificate->GetListWithoutPathExpansion(::onc::certificate::kTrustBits,
+                                                 &trust_list)) {
+      for (base::ListValue::const_iterator it = trust_list->begin();
+           it != trust_list->end(); ++it) {
+        std::string trust_type;
+        if (!(*it)->GetAsString(&trust_type))
+          NOTREACHED();
+
+        if (trust_type == ::onc::certificate::kWeb) {
+          // "Web" implies that the certificate is to be trusted for SSL
+          // identification.
+          web_trust_flag = true;
+          break;
+        }
+      }
+    }
+    if (!web_trust_flag)
+      continue;
+
+    std::string x509_data;
+    if (!certificate->GetStringWithoutPathExpansion(::onc::certificate::kX509,
+                                                    &x509_data)) {
+      continue;
+    }
+
+    base::DictionaryValue data;
+    data.SetString("X509", x509_data);
+    ca_certs->Append(data.DeepCopy());
+  }
+  filtered_policies->Set(kArcCaCerts, std::move(ca_certs));
+}
+
 std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map) {
   base::DictionaryValue filtered_policies;
   // Parse ArcPolicy as JSON string before adding other policies to the
@@ -126,6 +219,9 @@ std::string GetFilteredJSONPolicies(const policy::PolicyMap& policy_map) {
   AddGlobalAppRestriction("com.android.browser:URLWhitelist",
                           policy::key::kURLWhitelist, policy_map,
                           &filtered_policies);
+
+  // Add CA certificates.
+  AddOncCaCertsToPolicies(policy_map, &filtered_policies);
 
   std::string policy_json;
   JSONStringValueSerializer serializer(&policy_json);

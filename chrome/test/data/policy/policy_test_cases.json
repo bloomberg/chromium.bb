@@ -2462,6 +2462,12 @@
     ]
   },
 
+  "ArcCertificatesSyncMode": {
+    "os": ["chromeos"],
+    "can_be_recommended": false,
+    "test_policy": { "ArcCertificatesSyncMode": 0 }
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {
@@ -2683,7 +2689,7 @@
 
   "AllowKioskAppControlChromeVersion": {
   },
-  
+
   "LoginAuthenticationBehavior": {
     "os": ["chromeos"],
     "test_policy": { "LoginAuthenticationBehavior": 1 },

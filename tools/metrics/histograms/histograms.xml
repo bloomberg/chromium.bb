@@ -68983,6 +68983,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="URLs that will be granted access to video capture devices on
              SAML login pages"/>
   <int value="329" label="Permit locking the screen"/>
+  <int value="330" label="Set certificate availability for ARC-apps"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

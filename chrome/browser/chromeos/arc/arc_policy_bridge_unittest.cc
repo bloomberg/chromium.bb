@@ -19,6 +19,37 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
+char kFakeONC[] =
+    "{\"NetworkConfigurations\":["
+    "{\"GUID\":\"{485d6076-dd44-6b6d-69787465725f5040}\","
+    "\"Type\":\"WiFi\","
+    "\"Name\":\"My WiFi Network\","
+    "\"WiFi\":{"
+    "\"HexSSID\":\"737369642D6E6F6E65\","  // "ssid-none"
+    "\"Security\":\"None\"}"
+    "}"
+    "],"
+    "\"GlobalNetworkConfiguration\":{"
+    "\"AllowOnlyPolicyNetworksToAutoconnect\":true,"
+    "},"
+    "\"Certificates\":["
+    "{ \"GUID\":\"{f998f760-272b-6939-4c2beffe428697ac}\","
+    "\"PKCS12\":\"abc\","
+    "\"Type\":\"Client\"},"
+    "{\"Type\":\"Authority\","
+    "\"TrustBits\":[\"Web\"],"
+    "\"X509\":\"TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ"
+    "1dCBieSB0aGlzIHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpc"
+    "yBhIGx1c3Qgb2YgdGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCB"
+    "pbiB0aGUgY29udGludWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZ"
+    "GdlLCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4"
+    "=\","
+    "\"GUID\":\"{00f79111-51e0-e6e0-76b3b55450d80a1b}\"}"
+    "]}";
+
+}  // namespace
 namespace arc {
 
 using testing::ReturnRef;
@@ -201,6 +232,38 @@ TEST_F(ArcPolicyBridgeTest, URLWhitelistTest) {
                            "[\"www.whitelist1.com\","
                            "\"www.whitelist2.com\""
                            "]}}"));
+}
+
+TEST_F(ArcPolicyBridgeTest, CaCertificateTest) {
+  // Enable CA certificates sync.
+  policy_map().Set(
+      policy::key::kArcCertificatesSyncMode, policy::POLICY_LEVEL_MANDATORY,
+      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+      base::WrapUnique(
+          new base::FundamentalValue(ArcCertsSyncMode::COPY_CA_CERTS)),
+      nullptr);
+  policy_map().Set(policy::key::kOpenNetworkConfiguration,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_CLOUD,
+                   base::WrapUnique(new base::StringValue(kFakeONC)), nullptr);
+  policy_bridge()->GetPolicies(PolicyStringCallback(
+      "{\"caCerts\":"
+      "[{\"X509\":\"TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24"
+      "sIGJ1dCBieSB0aGlzIHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGl"
+      "jaCBpcyBhIGx1c3Qgb2YgdGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGV"
+      "saWdodCBpbiB0aGUgY29udGludWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Y"
+      "ga25vd2xlZGdlLCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCB"
+      "wbGVhc3VyZS4=\"}"
+      "]}"));
+
+  // Disable CA certificates sync.
+  policy_map().Set(
+      policy::key::kArcCertificatesSyncMode, policy::POLICY_LEVEL_MANDATORY,
+      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+      base::WrapUnique(
+          new base::FundamentalValue(ArcCertsSyncMode::SYNC_DISABLED)),
+      nullptr);
+  policy_bridge()->GetPolicies(PolicyStringCallback("{}"));
 }
 
 TEST_F(ArcPolicyBridgeTest, MultiplePoliciesTest) {

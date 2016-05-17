@@ -17,6 +17,15 @@ class PolicyMap;
 
 namespace arc {
 
+// Constants for the ARC certs sync mode are defined in the policy, please keep
+// its in sync.
+enum ArcCertsSyncMode : int32_t {
+  // Certificates sync is disabled.
+  SYNC_DISABLED = 0,
+  // Copy of CA certificates is enabled.
+  COPY_CA_CERTS = 1
+};
+
 class ArcPolicyBridge : public ArcService,
                         public ArcBridgeService::Observer,
                         public mojom::PolicyHost,
