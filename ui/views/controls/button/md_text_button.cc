@@ -10,6 +10,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/blue_button.h"
 #include "ui/views/painter.h"
 
 namespace views {
@@ -51,6 +52,19 @@ LabelButton* MdTextButton::CreateSecondaryUiButton(ButtonListener* listener,
 }
 
 // static
+LabelButton* MdTextButton::CreateSecondaryUiBlueButton(
+    ButtonListener* listener,
+    const base::string16& text) {
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    MdTextButton* md_button = MdTextButton::CreateMdButton(listener, text);
+    md_button->SetCallToAction(MdTextButton::STRONG_CALL_TO_ACTION);
+    return md_button;
+  }
+
+  return new BlueButton(listener, text);
+}
+
+// static
 MdTextButton* MdTextButton::CreateMdButton(ButtonListener* listener,
                                            const base::string16& text) {
   MdTextButton* button = new MdTextButton(listener);
@@ -60,6 +74,7 @@ MdTextButton* MdTextButton::CreateMdButton(ButtonListener* listener,
   button->SetBorder(
       Border::CreateEmptyBorder(kVerticalPadding, kHorizontalPadding,
                                 kVerticalPadding, kHorizontalPadding));
+  ConfigureDefaultFocus(button);
   return button;
 }
 

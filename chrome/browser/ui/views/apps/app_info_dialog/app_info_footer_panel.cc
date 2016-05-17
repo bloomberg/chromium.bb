@@ -14,7 +14,7 @@
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/view.h"
@@ -51,29 +51,24 @@ AppInfoFooterPanel::~AppInfoFooterPanel() {
 
 void AppInfoFooterPanel::CreateButtons() {
   if (CanCreateShortcuts()) {
-    create_shortcuts_button_ = new views::LabelButton(
-        this,
-        l10n_util::GetStringUTF16(
-            IDS_APPLICATION_INFO_CREATE_SHORTCUTS_BUTTON_TEXT));
-    create_shortcuts_button_->SetStyle(views::Button::STYLE_BUTTON);
+    create_shortcuts_button_ = views::MdTextButton::CreateSecondaryUiButton(
+        this, l10n_util::GetStringUTF16(
+                  IDS_APPLICATION_INFO_CREATE_SHORTCUTS_BUTTON_TEXT));
   }
 
 #if defined(USE_ASH)
   if (CanSetPinnedToShelf()) {
-    pin_to_shelf_button_ = new views::LabelButton(
+    pin_to_shelf_button_ = views::MdTextButton::CreateSecondaryUiButton(
         this, l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_PIN));
-    pin_to_shelf_button_->SetStyle(views::Button::STYLE_BUTTON);
-    unpin_from_shelf_button_ = new views::LabelButton(
+    unpin_from_shelf_button_ = views::MdTextButton::CreateSecondaryUiButton(
         this, l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_UNPIN));
-    unpin_from_shelf_button_->SetStyle(views::Button::STYLE_BUTTON);
   }
 #endif
 
   if (CanUninstallApp()) {
-    remove_button_ = new views::LabelButton(
+    remove_button_ = views::MdTextButton::CreateSecondaryUiButton(
         this,
         l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_UNINSTALL_BUTTON_TEXT));
-    remove_button_->SetStyle(views::Button::STYLE_BUTTON);
   }
 }
 

@@ -9,7 +9,7 @@
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -174,12 +174,10 @@ void AutoSigninFirstRunDialogView::InitWindow() {
   BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
   layout->StartRowWithPadding(0, DOUBLE_BUTTON_COLUMN_SET, 0,
                               3 * views::kRelatedControlVerticalSpacing);
-  ok_button_ = new views::LabelButton(
+  ok_button_ = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_AUTO_SIGNIN_FIRST_RUN_OK));
-  ok_button_->SetStyle(views::Button::STYLE_BUTTON);
-  turn_off_button_ = new views::LabelButton(
+  turn_off_button_ = views::MdTextButton::CreateSecondaryUiButton(
       this, l10n_util::GetStringUTF16(IDS_AUTO_SIGNIN_FIRST_RUN_TURN_OFF));
-  turn_off_button_->SetStyle(views::Button::STYLE_BUTTON);
   layout->AddView(ok_button_);
   layout->AddView(turn_off_button_);
   layout->AddPaddingRow(0, views::kButtonVEdgeMarginNew);

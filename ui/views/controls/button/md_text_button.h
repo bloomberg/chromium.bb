@@ -31,6 +31,8 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   // secondary UI (as opposed to just "top chrome"/"primary" UI).
   static LabelButton* CreateSecondaryUiButton(ButtonListener* listener,
                                               const base::string16& text);
+  static LabelButton* CreateSecondaryUiBlueButton(ButtonListener* listener,
+                                                  const base::string16& text);
   static MdTextButton* CreateMdButton(ButtonListener* listener,
                                       const base::string16& text);
 

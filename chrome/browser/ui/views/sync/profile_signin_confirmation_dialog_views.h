@@ -9,21 +9,12 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/window/dialog_delegate.h"
 
 class Browser;
 class Profile;
-
-namespace content {
-class WebContents;
-}
-
-namespace views {
-class StyledLabel;
-}
 
 // A tab-modal dialog to allow a user signing in with a managed account
 // to create a new Chrome profile.
@@ -71,9 +62,6 @@ class ProfileSigninConfirmationDialogViews : public views::DialogDelegateView,
   // is true, the dialog will offer to create a new profile before signin.
   void Show(bool prompt_for_new_profile);
 
-  // Weak ptr to label for dialog explanation text.
-  views::StyledLabel* explanation_label_;
-
   // Weak ptr to parent view.
   Browser* browser_;
 
@@ -85,9 +73,6 @@ class ProfileSigninConfirmationDialogViews : public views::DialogDelegateView,
 
   // Whether the user should be prompted to create a new profile.
   bool prompt_for_new_profile_;
-
-  // The button to continue with signin, if an extra button is required.
-  views::LabelButton* continue_signin_button_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSigninConfirmationDialogViews);
 };

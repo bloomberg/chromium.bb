@@ -20,9 +20,10 @@
 #include "content/public/browser/render_view_host.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/blue_button.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/separator.h"
@@ -175,15 +176,6 @@ void AddTitleRowWithLink(views::GridLayout* layout,
   layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 }
 
-std::unique_ptr<views::LabelButton> GenerateButton(
-    views::ButtonListener* listener,
-    const base::string16& text) {
-  std::unique_ptr<views::LabelButton> button(
-      new views::LabelButton(listener, text));
-  button->SetStyle(views::Button::STYLE_BUTTON);
-  return button;
-}
-
 }  // namespace
 
 // ManagePasswordsBubbleView::AutoSigninView ----------------------------------
@@ -313,12 +305,11 @@ ManagePasswordsBubbleView::PendingView::PendingView(
         1, &parent->model()->pending_password());
     item = new ManagePasswordItemsView(parent_->model(), credentials);
   }
-  save_button_ = new views::BlueButton(
+  save_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
       this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON));
-  never_button_ = GenerateButton(
+  never_button_ = views::MdTextButton::CreateSecondaryUiButton(
       this,
-      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON))
-           .release();
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON));
 
   // Title row.
   BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
@@ -451,8 +442,8 @@ ManagePasswordsBubbleView::ManageView::ManageView(
   manage_link_->SetUnderline(false);
   manage_link_->set_listener(this);
 
-  done_button_ =
-      GenerateButton(this, l10n_util::GetStringUTF16(IDS_DONE)).release();
+  done_button_ = views::MdTextButton::CreateSecondaryUiButton(
+      this, l10n_util::GetStringUTF16(IDS_DONE));
 
   BuildColumnSet(layout, LINK_BUTTON_COLUMN_SET);
   layout->StartRowWithPadding(0, LINK_BUTTON_COLUMN_SET, 0,
@@ -527,8 +518,8 @@ ManagePasswordsBubbleView::SaveConfirmationView::SaveConfirmationView(
   layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
   layout->AddView(confirmation);
 
-  ok_button_ =
-      GenerateButton(this, l10n_util::GetStringUTF16(IDS_OK)).release();
+  ok_button_ = views::MdTextButton::CreateSecondaryUiButton(
+      this, l10n_util::GetStringUTF16(IDS_OK));
 
   BuildColumnSet(layout, SINGLE_BUTTON_COLUMN_SET);
   layout->StartRowWithPadding(
@@ -659,9 +650,8 @@ ManagePasswordsBubbleView::UpdatePendingView::UpdatePendingView(
     forms.push_back(&parent->model()->pending_password());
     item = new ManagePasswordItemsView(parent_->model(), forms);
   }
-  nope_button_ = GenerateButton(
-      this,
-      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CANCEL_BUTTON)).release();
+  nope_button_ = views::MdTextButton::CreateSecondaryUiButton(
+      this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CANCEL_BUTTON));
 
   update_button_ = new views::BlueButton(
       this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_UPDATE_BUTTON));

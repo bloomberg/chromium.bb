@@ -20,7 +20,6 @@ class ImageSkia;
 
 namespace views {
 class ImageView;
-class LabelButton;
 }
 
 namespace chromeos {
@@ -105,7 +104,7 @@ class NetworkConfigView : public views::DialogDelegateView,
   Delegate* delegate_;
 
   // Button in lower-left corner, may be null or hidden.
-  views::LabelButton* advanced_button_;
+  views::View* advanced_button_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConfigView);
 };

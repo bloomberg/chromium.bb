@@ -306,17 +306,10 @@ LabelButton* DialogClientView::CreateDialogButton(ui::DialogButton type) {
   if (GetDialogDelegate()->UseNewStyleForThisDialog() &&
       GetDialogDelegate()->GetDefaultDialogButton() == type &&
       GetDialogDelegate()->ShouldDefaultButtonBeBlue()) {
-    if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-      MdTextButton* md_button = MdTextButton::CreateMdButton(this, title);
-      md_button->SetCallToAction(MdTextButton::STRONG_CALL_TO_ACTION);
-      button = md_button;
-    } else {
-      button = new BlueButton(this, title);
-    }
+    return MdTextButton::CreateSecondaryUiBlueButton(this, title);
   } else {
     button = MdTextButton::CreateSecondaryUiButton(this, title);
   }
-  Button::ConfigureDefaultFocus(button);
 
   const int kDialogMinButtonWidth = 75;
   button->SetMinSize(gfx::Size(kDialogMinButtonWidth, 0));

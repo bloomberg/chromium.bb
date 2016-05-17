@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -50,8 +50,8 @@ class AutoSigninFirstRunDialogView : public views::DialogDelegateView,
   // Sets up the child views.
   void InitWindow();
 
-  views::LabelButton* ok_button_;
-  views::LabelButton* turn_off_button_;
+  views::View* ok_button_;
+  views::View* turn_off_button_;
 
   // A weak pointer to the controller.
   PasswordDialogController* controller_;
