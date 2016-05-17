@@ -35,7 +35,11 @@ var observationB = null;
 
 // Test that the PeerConnection object is gc'd if close is called.
 var pcA = new webkitRTCPeerConnection(null, null);
-var observationA = internals.observeGC(pcA);
+// Do not pass the object directly to observeGC function. This may
+// remain live on this function's stack preventing GC from collecting
+// it. Accessing the object inside an inner function will prevent any
+// unneeded references on this function's stack.
+var observationA = internals.observeGC((() => {return pcA;})());
 pcA.close();
 pcA = null;
 asyncGC(function() {
@@ -44,7 +48,11 @@ asyncGC(function() {
 
     // Test that the PeerConnection object is not gc'd if close is not called.
     pcB = new webkitRTCPeerConnection(null, null);
-    observationB = internals.observeGC(pcB);
+    // Do not pass the object directly to observeGC function. This may
+    // remain live on this function's stack preventing GC from collecting
+    // it. Accessing the object inside an inner function will prevent any
+    // unneeded references on this function's stack.
+    observationB = internals.observeGC((() => {return pcB;})());
     pcB = null;
     asyncGC(function() {
         shouldBeFalse('observationB.wasCollected');

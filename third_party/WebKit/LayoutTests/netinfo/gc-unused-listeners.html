@@ -16,7 +16,11 @@ var callback = function(e) {
 };
 
 // Add a listener.
-var callbackObserver = internals.observeGC(callback);
+// Do not pass the object directly to observeGC function. This may
+// remain live on this function's stack preventing GC from collecting
+// it. Accessing the object inside an inner function will prevent any
+// unneeded references on this function's stack.
+var callbackObserver = internals.observeGC((() => {return callback;})());
 connection.addEventListener('typechange', callback);
 gc();
 shouldBeFalse('callbackObserver.wasCollected');

@@ -40,7 +40,11 @@ function onOpen(evt)
         cursor.primaryKey.cursor = cursor;
         cursor.value.cursor = cursor;
 
-        cursorObserver = internals.observeGC(cursor);
+        // Do not pass the object directly to observeGC function. This may
+        // remain live on this function's stack preventing GC from collecting
+        // it. Accessing the object inside an inner function will prevent any
+        // unneeded references on this function's stack.
+        cursorObserver = internals.observeGC((() => {return cursor;})());
 
         cursorRequest = null;
         cursor = null;

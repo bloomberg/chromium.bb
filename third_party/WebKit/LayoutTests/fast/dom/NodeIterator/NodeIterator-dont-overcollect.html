@@ -11,10 +11,14 @@
     };
     var nodeIterator = document.createNodeIterator(document, NodeFilter.SHOW_ELEMENT, callback, false);
 
-    var callbackObservation = internals.observeGC(callback);
+    // Do not pass the object as a parameter to observeGC function. This may
+    // remain live on this function's stack preventing GC from collecting
+    // it. Accessing the object inside an inner function will prevent any
+    // unneeded references on this function's stack.
+    var callbackObservation = internals.observeGC((() => {return callback;})());
     callback = null;
-    var nodeFilterObservation = internals.observeGC(nodeIterator.filter);
-    var nodeIteratorObservation = internals.observeGC(nodeIterator);
+    var nodeFilterObservation = internals.observeGC((() => {return nodeIterator.filter;})());
+    var nodeIteratorObservation = internals.observeGC((() => {return nodeIterator;})());
 
     gc();
     shouldBeFalse('nodeFilterObservation.wasCollected');

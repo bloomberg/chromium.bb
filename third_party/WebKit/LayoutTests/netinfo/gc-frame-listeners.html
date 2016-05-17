@@ -12,17 +12,29 @@ shouldBe('typeof window.internals.observeGC', '"function"',
 'this test requires window.internals');
 
 var childFrame = document.createElement('iframe');
-var childFrameObserver = internals.observeGC(childFrame);
+// Do not pass the object directly to observeGC function. This may
+// remain live on this function's stack preventing GC from collecting
+// it. Accessing the object inside an inner function will prevent any
+// unneeded references on this function's stack.
+var childFrameObserver = internals.observeGC((() => {return childFrame;})());
 
 document.body.appendChild(childFrame);
 
 var childConnection = childFrame.contentWindow.navigator.connection;
-var childConnectionObserver = internals.observeGC(childConnection);
+// Do not pass the object directly to observeGC function. This may
+// remain live on this function's stack preventing GC from collecting
+// it. Accessing the object inside an inner function will prevent any
+// unneeded references on this function's stack.
+var childConnectionObserver = internals.observeGC((() => {return childConnection;})());
 
 var callback = function(e) {
 	testFailed("Should not get here.");
 };
-var callbackObserver = internals.observeGC(callback);
+// Do not pass the object directly to observeGC function. This may
+// remain live on this function's stack preventing GC from collecting
+// it. Accessing the object inside an inner function will prevent any
+// unneeded references on this function's stack.
+var callbackObserver = internals.observeGC((() => {return callback;})());
 
 // Add the event listener and make sure it doesn't get collected.
 childConnection.addEventListener('typechange', callback);

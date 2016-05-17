@@ -10,7 +10,11 @@ shouldBe('typeof window.internals.observeGC', '"function"',
 // "Generic Kid's Movie III": ... where nobody dies.
 
 var valueA = {};
-observationA = internals.observeGC(valueA);
+// Do not pass the object directly to observeGC function. This may
+// remain live on this function's stack preventing GC from collecting
+// it. Accessing the object inside an inner function will prevent any
+// unneeded references on this function's stack.
+observationA = internals.observeGC((() => {return valueA;})());
 gc();
 shouldBeFalse('observationA.wasCollected');
 // value ineligible for GC should not be flagged as collected
@@ -20,7 +24,11 @@ observationA = null;
 // "Romeo and GCuliet": Romeo JavaScript finds G.uliet C.apulet and dies.
 
 var valueB = {};
-observationB = internals.observeGC(valueB);
+// Do not pass the object directly to observeGC function. This may
+// remain live on this function's stack preventing GC from collecting
+// it. Accessing the object inside an inner function will prevent any
+// unneeded references on this function's stack.
+observationB = internals.observeGC((() => {return valueB;})());
 valueB = null;
 gc();
 shouldBeTrue('observationB.wasCollected');
@@ -31,7 +39,11 @@ observationB = null;
 // innocence. And a DOM node.
 
 var valueC = document.createElement('div');
-observationC = internals.observeGC(valueC);
+// Do not pass the object directly to observeGC function. This may
+// remain live on this function's stack preventing GC from collecting
+// it. Accessing the object inside an inner function will prevent any
+// unneeded references on this function's stack.
+observationC = internals.observeGC((() => {return valueC;})());
 valueC = null;
 gc();
 shouldBeTrue('observationC.wasCollected');
@@ -40,13 +52,19 @@ observationC = null;
 
 // Now, movies that failed:
 
-shouldThrow('internals.observeGC(undefined)', '"TypeError: value to observe is null or undefined"');
-shouldThrow('internals.observeGC(null)', '"TypeError: value to observe is null or undefined"');
+shouldThrow('internals.observeGC(undefined)',
+    '"TypeError: value to observe is null or undefined"');
+shouldThrow('internals.observeGC(null)',
+   '"TypeError: value to observe is null or undefined"');
 
 // Try to create objects and observers that will die at once
 
 var valueD = {};
-var observerD = internals.observeGC(valueD);
+// Do not pass the object directly to observeGC function. This may
+// remain live on this function's stack preventing GC from collecting
+// it. Accessing the object inside an inner function will prevent any
+// unneeded references on this function's stack.
+var observerD = internals.observeGC((() => {return valueD;})());
 valueD.observer = observerD;
 observerD.observed = valueD;
 valueD = observerD = null;
