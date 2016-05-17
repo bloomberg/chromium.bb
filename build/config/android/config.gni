@@ -21,6 +21,10 @@ if (is_android) {
     extra_chrome_shared_library_configs = []
   }
 
+  if (!defined(default_android_ndk_root)) {
+    default_android_ndk_root = "//third_party/android_tools/ndk"
+  }
+
   if (!defined(default_android_sdk_root)) {
     default_android_sdk_root = "//third_party/android_tools/sdk"
     default_android_sdk_version = "23"
@@ -51,6 +55,8 @@ if (is_android) {
   }
 
   declare_args() {
+    android_ndk_root = default_android_ndk_root
+
     android_sdk_root = default_android_sdk_root
     android_sdk_version = default_android_sdk_version
     android_sdk_build_tools_version = default_android_sdk_build_tools_version
@@ -147,7 +153,6 @@ if (is_android) {
   android_sdk = "${android_sdk_root}/platforms/android-${android_sdk_version}"
 
   # Path to the Android NDK and SDK.
-  android_ndk_root = "//third_party/android_tools/ndk"
   android_ndk_include_dir = "$android_ndk_root/usr/include"
 
   android_sdk_tools = "${android_sdk_root}/tools"
