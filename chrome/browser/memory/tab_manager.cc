@@ -165,15 +165,6 @@ void TabManager::Start() {
   if (!base::FeatureList::IsEnabled(features::kAutomaticTabDiscarding))
     return;
 
-  // Check the variation parameter to see if a tab be discarded more than once.
-  // Default is to only discard once per tab.
-  std::string allow_multiple_discards = variations::GetVariationParamValue(
-      features::kAutomaticTabDiscarding.name, "AllowMultipleDiscards");
-  if (allow_multiple_discards == "true")
-    discard_once_ = false;
-  else
-    discard_once_ = true;
-
   // Check the variation parameter to see if a tab is to be protected for an
   // amount of time after being backgrounded. The value is in seconds.
   std::string minimum_protection_time_string =
@@ -188,12 +179,10 @@ void TabManager::Start() {
             base::TimeDelta::FromSeconds(minimum_protection_time_seconds);
     }
   }
-
-#elif defined(OS_CHROMEOS)
-  // On Chrome OS, tab manager is always started and tabs can be discarded more
-  // than once.
-  discard_once_ = false;
 #endif
+
+  // Check if only one discard is allowed.
+  discard_once_ = CanOnlyDiscardOnce();
 
   if (!update_timer_.IsRunning()) {
     update_timer_.Start(FROM_HERE,
@@ -561,8 +550,8 @@ void TabManager::PurgeAndSuspendBackgroundedTabs() {
   }
   if (purge_and_suspend_time <= 0)
     return;
-  auto purge_and_suspend_time_threshold = NowTicks() -
-      base::TimeDelta::FromSeconds(purge_and_suspend_time);
+  auto purge_and_suspend_time_threshold =
+      NowTicks() - base::TimeDelta::FromSeconds(purge_and_suspend_time);
   auto tab_stats = GetUnsortedTabStats();
   for (auto& tab : tab_stats) {
     if (!tab.render_process_host->IsProcessBackgrounded())
@@ -856,6 +845,23 @@ bool TabManager::DiscardTabImpl() {
       return true;
   }
   return false;
+}
+
+// Check the variation parameter to see if a tab can be discarded only once or
+// multiple times.
+// Default is to only discard once per tab.
+bool TabManager::CanOnlyDiscardOnce() {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  // On Windows and MacOS, default to discarding only once unless otherwise
+  // specified by the variation parameter.
+  // TODO(georgesak): Add Linux when automatic discarding is enabled for that
+  // platform.
+  std::string allow_multiple_discards = variations::GetVariationParamValue(
+      features::kAutomaticTabDiscarding.name, "AllowMultipleDiscards");
+  return (allow_multiple_discards != "true");
+#else
+  return false;
+#endif
 }
 
 // Things to collect on the browser thread (because TabStripModel isn't thread

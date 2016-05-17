@@ -243,6 +243,9 @@ class TabManager : public TabStripModelObserver {
   // Implementation of DiscardTab.
   bool DiscardTabImpl();
 
+  // Returns true if tabs can be discarded only once.
+  bool CanOnlyDiscardOnce();
+
   // Timer to periodically update the stats of the renderers.
   base::RepeatingTimer update_timer_;
 
