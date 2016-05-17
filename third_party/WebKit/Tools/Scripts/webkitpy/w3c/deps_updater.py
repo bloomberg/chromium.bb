@@ -28,12 +28,12 @@ class DepsUpdater(object):
     def main(self, argv=None):
         self.parse_args(argv)
 
-        self.cd('')
         if not self.checkout_is_okay():
             return 1
 
         self.print_('## noting the current Chromium commitish')
-        chromium_commitish = self.run(['git', 'show-ref', 'HEAD'])[1].split()[0]
+        _, show_ref_output = self.run(['git', 'show-ref', 'HEAD'])
+        chromium_commitish = show_ref_output.split()[0]
 
         if self.target == 'wpt':
             import_commitish = self.update(
@@ -76,7 +76,8 @@ class DepsUpdater(object):
         self.target = args.target
 
     def checkout_is_okay(self):
-        if self.run(['git', 'diff', '--quiet', 'HEAD'], exit_on_failure=False)[0]:
+        git_diff_retcode, _ = self.run(['git', 'diff', '--quiet', 'HEAD'], exit_on_failure=False)
+        if git_diff_retcode:
             self.print_('## checkout is dirty, aborting')
             return False
 
@@ -95,58 +96,56 @@ class DepsUpdater(object):
 
         return True
 
-    def update(self, dest, url):
+    def update(self, dest_dir_name, url):
         """Updates an imported repository.
 
         Args:
-            dest: The destination directory name.
+            dest_dir_name: The destination directory name.
             url: URL of the git repository.
 
         Returns:
             A string for the commit description "<destination>@<commitish>".
         """
-        self.print_('## cloning %s into %s' % (url, dest))
-        self.cd('')
-        self.run(['git', 'clone', url, dest])
+        temp_repo_path = self.path_from_webkit_base(dest_dir_name)
+        self.print_('## cloning %s into %s' % (url, temp_repo_path))
+        self.run(['git', 'clone', url, temp_repo_path])
 
-        self.cd(dest)
-        self.run(['git', 'submodule', 'update', '--init', '--recursive'])
+        self.run(['git', 'submodule', 'update', '--init', '--recursive'], cwd=temp_repo_path)
 
         self.print_('## noting the revision we are importing')
-        master_commitish = self.run(['git', 'show-ref', 'origin/master'])[1].split()[0]
+        _, show_ref_output = self.run(['git', 'show-ref', 'origin/master'], cwd=temp_repo_path)
+        master_commitish = show_ref_output.split()[0]
 
-        self.print_('## cleaning out tests from LayoutTests/imported/%s' % dest)
-        dest_repo = self.path_from_webkit_base('LayoutTests', 'imported', dest)
-        files_to_delete = self.fs.files_under(dest_repo, file_filter=self.is_not_baseline)
+        self.print_('## cleaning out tests from LayoutTests/imported/%s' % dest_dir_name)
+        dest_path = self.path_from_webkit_base('LayoutTests', 'imported', dest_dir_name)
+        files_to_delete = self.fs.files_under(dest_path, file_filter=self.is_not_baseline)
         for subpath in files_to_delete:
             self.remove('LayoutTests', 'imported', subpath)
 
         self.print_('## importing the tests')
-        src_repo = self.path_from_webkit_base(dest)
+        src_repo = self.path_from_webkit_base(dest_dir_name)
         import_path = self.path_from_webkit_base('Tools', 'Scripts', 'import-w3c-tests')
         self.run([self.host.executable, import_path, '-d', 'imported', src_repo])
 
-        self.cd('')
-        self.run(['git', 'add', '--all', 'LayoutTests/imported/%s' % dest])
+        self.run(['git', 'add', '--all', 'LayoutTests/imported/%s' % dest_dir_name])
 
         self.print_('## deleting manual tests')
-        files_to_delete = self.fs.files_under(dest_repo, file_filter=self.is_manual_test)
+        files_to_delete = self.fs.files_under(dest_path, file_filter=self.is_manual_test)
         for subpath in files_to_delete:
             self.remove('LayoutTests', 'imported', subpath)
 
         self.print_('## deleting any orphaned baselines')
-        previous_baselines = self.fs.files_under(dest_repo, file_filter=self.is_baseline)
+        previous_baselines = self.fs.files_under(dest_path, file_filter=self.is_baseline)
         for subpath in previous_baselines:
-            full_path = self.fs.join(dest_repo, subpath)
+            full_path = self.fs.join(dest_path, subpath)
             if self.fs.glob(full_path.replace('-expected.txt', '*')) == [full_path]:
                 self.fs.remove(full_path)
 
         if not self.keep_w3c_repos_around:
-            self.print_('## deleting %s repo directory' % dest)
-            self.cd('')
-            self.rmtree(repo)
+            self.print_('## deleting %s repo directory' % temp_repo_path)
+            self.rmtree(temp_repo_path)
 
-        return '%s@%s' % (dest, master_commitish)
+        return '%s@%s' % (dest_dir_name, master_commitish)
 
     def commit_changes_if_needed(self, chromium_commitish, import_commitish):
         if self.run(['git', 'diff', '--quiet', 'HEAD'], exit_on_failure=False)[0]:
@@ -176,11 +175,12 @@ class DepsUpdater(object):
     def is_not_baseline(self, fs, dirname, basename):
         return not self.is_baseline(fs, dirname, basename)
 
-    def run(self, cmd, exit_on_failure=True):
+    def run(self, cmd, exit_on_failure=True, cwd=None):
         if self.verbose:
             self.print_(' '.join(cmd))
 
-        proc = self.executive.popen(cmd, stdout=self.executive.PIPE, stderr=self.executive.PIPE)
+        cwd = cwd or self.finder.webkit_base()
+        proc = self.executive.popen(cmd, stdout=self.executive.PIPE, stderr=self.executive.PIPE, cwd=cwd)
         out, err = proc.communicate()
         if proc.returncode or self.verbose:
             self.print_('# ret> %d' % proc.returncode)
@@ -193,12 +193,6 @@ class DepsUpdater(object):
         if exit_on_failure and proc.returncode:
             self.host.exit(proc.returncode)
         return proc.returncode, out
-
-    def cd(self, *comps):
-        dest = self.path_from_webkit_base(*comps)
-        if self.verbose:
-            self.print_('cd %s' % dest)
-        self.fs.chdir(dest)
 
     def copyfile(self, source, destination):
         if self.verbose:
