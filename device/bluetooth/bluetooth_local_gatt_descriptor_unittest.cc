@@ -46,8 +46,8 @@ class BluetoothLocalGattDescriptorTest : public BluetoothGattServerTest {
 TEST_F(BluetoothLocalGattDescriptorTest, ReadLocalDescriptorValue) {
   delegate_->value_to_write_ = 0x1337;
   SimulateLocalGattDescriptorValueReadRequest(
-      service_.get(), read_descriptor_.get(),
-      GetReadValueCallback(Call::EXPECTED), GetCallback(Call::NOT_EXPECTED));
+      read_descriptor_.get(), GetReadValueCallback(Call::EXPECTED),
+      GetCallback(Call::NOT_EXPECTED));
 
   EXPECT_EQ(delegate_->value_to_write_, GetInteger(last_read_value_));
 }
@@ -57,7 +57,7 @@ TEST_F(BluetoothLocalGattDescriptorTest, ReadLocalDescriptorValue) {
 TEST_F(BluetoothLocalGattDescriptorTest, WriteLocalDescriptorValue) {
   const uint64_t kValueToWrite = 0x7331ul;
   SimulateLocalGattDescriptorValueWriteRequest(
-      service_.get(), write_descriptor_.get(), GetValue(kValueToWrite),
+      write_descriptor_.get(), GetValue(kValueToWrite),
       GetCallback(Call::EXPECTED), GetCallback(Call::NOT_EXPECTED));
 
   EXPECT_EQ(kValueToWrite, delegate_->last_written_value_);
@@ -69,8 +69,8 @@ TEST_F(BluetoothLocalGattDescriptorTest, ReadLocalDescriptorValueFail) {
   delegate_->value_to_write_ = 0x1337;
   delegate_->should_fail_ = true;
   SimulateLocalGattDescriptorValueReadRequest(
-      service_.get(), read_descriptor_.get(),
-      GetReadValueCallback(Call::NOT_EXPECTED), GetCallback(Call::EXPECTED));
+      read_descriptor_.get(), GetReadValueCallback(Call::NOT_EXPECTED),
+      GetCallback(Call::EXPECTED));
 
   EXPECT_NE(delegate_->value_to_write_, GetInteger(last_read_value_));
 }
@@ -81,7 +81,7 @@ TEST_F(BluetoothLocalGattDescriptorTest, WriteLocalDescriptorValueFail) {
   const uint64_t kValueToWrite = 0x7331ul;
   delegate_->should_fail_ = true;
   SimulateLocalGattDescriptorValueWriteRequest(
-      service_.get(), write_descriptor_.get(), GetValue(kValueToWrite),
+      write_descriptor_.get(), GetValue(kValueToWrite),
       GetCallback(Call::NOT_EXPECTED), GetCallback(Call::EXPECTED));
 
   EXPECT_NE(kValueToWrite, delegate_->last_written_value_);
@@ -93,8 +93,8 @@ TEST_F(BluetoothLocalGattDescriptorTest,
        ReadLocalDescriptorValueWrongPermissions) {
   delegate_->value_to_write_ = 0x1337;
   SimulateLocalGattDescriptorValueReadRequest(
-      service_.get(), write_descriptor_.get(),
-      GetReadValueCallback(Call::NOT_EXPECTED), GetCallback(Call::EXPECTED));
+      write_descriptor_.get(), GetReadValueCallback(Call::NOT_EXPECTED),
+      GetCallback(Call::EXPECTED));
 
   EXPECT_NE(delegate_->value_to_write_, GetInteger(last_read_value_));
 }
@@ -105,7 +105,7 @@ TEST_F(BluetoothLocalGattDescriptorTest,
        WriteLocalDescriptorValueWrongPermissions) {
   const uint64_t kValueToWrite = 0x7331ul;
   SimulateLocalGattDescriptorValueWriteRequest(
-      service_.get(), read_descriptor_.get(), GetValue(kValueToWrite),
+      read_descriptor_.get(), GetValue(kValueToWrite),
       GetCallback(Call::NOT_EXPECTED), GetCallback(Call::EXPECTED));
 
   EXPECT_NE(kValueToWrite, delegate_->last_written_value_);

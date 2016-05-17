@@ -124,7 +124,6 @@ BluetoothDevice* BluetoothTestBlueZ::SimulateLowEnergyDevice(
 }
 
 void BluetoothTestBlueZ::SimulateLocalGattCharacteristicValueReadRequest(
-    BluetoothLocalGattService* service,
     BluetoothLocalGattCharacteristic* characteristic,
     const BluetoothLocalGattService::Delegate::ValueCallback& value_callback,
     const base::Closure& error_callback) {
@@ -140,7 +139,8 @@ void BluetoothTestBlueZ::SimulateLocalGattCharacteristicValueReadRequest(
               characteristic_bluez->object_path());
 
   bluez::BluetoothLocalGattServiceBlueZ* service_bluez =
-      static_cast<bluez::BluetoothLocalGattServiceBlueZ*>(service);
+      static_cast<bluez::BluetoothLocalGattServiceBlueZ*>(
+          characteristic->GetService());
   static_cast<TestBluetoothLocalGattServiceDelegate*>(
       service_bluez->GetDelegate())
       ->set_expected_characteristic(characteristic);
@@ -153,7 +153,6 @@ void BluetoothTestBlueZ::SimulateLocalGattCharacteristicValueReadRequest(
 }
 
 void BluetoothTestBlueZ::SimulateLocalGattCharacteristicValueWriteRequest(
-    BluetoothLocalGattService* service,
     BluetoothLocalGattCharacteristic* characteristic,
     const std::vector<uint8_t>& value_to_write,
     const base::Closure& success_callback,
@@ -170,7 +169,8 @@ void BluetoothTestBlueZ::SimulateLocalGattCharacteristicValueWriteRequest(
               characteristic_bluez->object_path());
 
   bluez::BluetoothLocalGattServiceBlueZ* service_bluez =
-      static_cast<bluez::BluetoothLocalGattServiceBlueZ*>(service);
+      static_cast<bluez::BluetoothLocalGattServiceBlueZ*>(
+          characteristic->GetService());
   static_cast<TestBluetoothLocalGattServiceDelegate*>(
       service_bluez->GetDelegate())
       ->set_expected_characteristic(characteristic);
@@ -184,7 +184,6 @@ void BluetoothTestBlueZ::SimulateLocalGattCharacteristicValueWriteRequest(
 }
 
 void BluetoothTestBlueZ::SimulateLocalGattDescriptorValueReadRequest(
-    BluetoothLocalGattService* service,
     BluetoothLocalGattDescriptor* descriptor,
     const BluetoothLocalGattService::Delegate::ValueCallback& value_callback,
     const base::Closure& error_callback) {
@@ -198,7 +197,8 @@ void BluetoothTestBlueZ::SimulateLocalGattDescriptorValueReadRequest(
           descriptor_bluez->object_path());
 
   bluez::BluetoothLocalGattServiceBlueZ* service_bluez =
-      static_cast<bluez::BluetoothLocalGattServiceBlueZ*>(service);
+      static_cast<bluez::BluetoothLocalGattServiceBlueZ*>(
+          descriptor->GetCharacteristic()->GetService());
   static_cast<TestBluetoothLocalGattServiceDelegate*>(
       service_bluez->GetDelegate())
       ->set_expected_descriptor(descriptor);
@@ -211,7 +211,6 @@ void BluetoothTestBlueZ::SimulateLocalGattDescriptorValueReadRequest(
 }
 
 void BluetoothTestBlueZ::SimulateLocalGattDescriptorValueWriteRequest(
-    BluetoothLocalGattService* service,
     BluetoothLocalGattDescriptor* descriptor,
     const std::vector<uint8_t>& value_to_write,
     const base::Closure& success_callback,
@@ -226,7 +225,8 @@ void BluetoothTestBlueZ::SimulateLocalGattDescriptorValueWriteRequest(
           descriptor_bluez->object_path());
 
   bluez::BluetoothLocalGattServiceBlueZ* service_bluez =
-      static_cast<bluez::BluetoothLocalGattServiceBlueZ*>(service);
+      static_cast<bluez::BluetoothLocalGattServiceBlueZ*>(
+          descriptor->GetCharacteristic()->GetService());
   static_cast<TestBluetoothLocalGattServiceDelegate*>(
       service_bluez->GetDelegate())
       ->set_expected_descriptor(descriptor);
@@ -240,7 +240,6 @@ void BluetoothTestBlueZ::SimulateLocalGattDescriptorValueWriteRequest(
 }
 
 bool BluetoothTestBlueZ::SimulateLocalGattCharacteristicNotificationsRequest(
-    BluetoothLocalGattService* service,
     BluetoothLocalGattCharacteristic* characteristic,
     bool start) {
   bluez::BluetoothLocalGattCharacteristicBlueZ* characteristic_bluez =
@@ -255,7 +254,8 @@ bool BluetoothTestBlueZ::SimulateLocalGattCharacteristicNotificationsRequest(
               characteristic_bluez->object_path());
 
   bluez::BluetoothLocalGattServiceBlueZ* service_bluez =
-      static_cast<bluez::BluetoothLocalGattServiceBlueZ*>(service);
+      static_cast<bluez::BluetoothLocalGattServiceBlueZ*>(
+          characteristic->GetService());
   static_cast<TestBluetoothLocalGattServiceDelegate*>(
       service_bluez->GetDelegate())
       ->set_expected_characteristic(characteristic);

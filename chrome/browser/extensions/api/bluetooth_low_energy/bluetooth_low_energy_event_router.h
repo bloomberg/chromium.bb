@@ -311,36 +311,36 @@ class BluetoothLowEnergyEventRouter
 
   // device::BluetoothLocalGattService::Delegate overrides.
   void OnCharacteristicReadRequest(
-      const device::BluetoothLocalGattService* service,
+      const device::BluetoothDevice* device,
       const device::BluetoothLocalGattCharacteristic* characteristic,
       int offset,
       const Delegate::ValueCallback& value_callback,
       const Delegate::ErrorCallback& error_callback) override;
   void OnCharacteristicWriteRequest(
-      const device::BluetoothLocalGattService* service,
+      const device::BluetoothDevice* device,
       const device::BluetoothLocalGattCharacteristic* characteristic,
       const std::vector<uint8_t>& value,
       int offset,
       const base::Closure& callback,
       const Delegate::ErrorCallback& error_callback) override;
   void OnDescriptorReadRequest(
-      const device::BluetoothLocalGattService* service,
+      const device::BluetoothDevice* device,
       const device::BluetoothLocalGattDescriptor* descriptor,
       int offset,
       const Delegate::ValueCallback& value_callback,
       const Delegate::ErrorCallback& error_callback) override;
   void OnDescriptorWriteRequest(
-      const device::BluetoothLocalGattService* service,
+      const device::BluetoothDevice* device,
       const device::BluetoothLocalGattDescriptor* descriptor,
       const std::vector<uint8_t>& value,
       int offset,
       const base::Closure& callback,
       const Delegate::ErrorCallback& error_callback) override;
   void OnNotificationsStart(
-      const device::BluetoothLocalGattService* service,
+      const device::BluetoothDevice* device,
       const device::BluetoothLocalGattCharacteristic* characteristic) override;
   void OnNotificationsStop(
-      const device::BluetoothLocalGattService* service,
+      const device::BluetoothDevice* device,
       const device::BluetoothLocalGattCharacteristic* characteristic) override;
 
   // extensions::ExtensionRegistryObserver overrides:

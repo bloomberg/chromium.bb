@@ -1433,7 +1433,7 @@ void BluetoothLowEnergyNotifyCharacteristicValueChangedFunction::DoWork() {
                       ? *params_->notification.should_indicate
                       : false;
   device::BluetoothLocalGattCharacteristic::NotificationStatus status =
-      characteristic->NotifyValueChanged(uint8_vector, indicate);
+      characteristic->NotifyValueChanged(nullptr, uint8_vector, indicate);
 
   switch (status) {
     case device::BluetoothLocalGattCharacteristic::NOTIFICATION_SUCCESS:

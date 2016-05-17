@@ -73,6 +73,7 @@ BluetoothLocalGattCharacteristicBlueZ::GetPermissions() const {
 
 device::BluetoothLocalGattCharacteristic::NotificationStatus
 BluetoothLocalGattCharacteristicBlueZ::NotifyValueChanged(
+    const device::BluetoothDevice* device,
     const std::vector<uint8_t>& new_value,
     bool indicate) {
   if (indicate && !(properties_ & PROPERTY_INDICATE))
@@ -85,8 +86,8 @@ BluetoothLocalGattCharacteristicBlueZ::NotifyValueChanged(
              : SERVICE_NOT_REGISTERED;
 }
 
-BluetoothLocalGattServiceBlueZ*
-BluetoothLocalGattCharacteristicBlueZ::GetService() {
+device::BluetoothLocalGattService*
+BluetoothLocalGattCharacteristicBlueZ::GetService() const {
   return service_;
 }
 

@@ -55,14 +55,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattCharacteristic
       Permissions permissions,
       BluetoothLocalGattService* service);
 
-  // Notify that the remote central that the value of this characteristic has
-  // been changed and the new value is |new_value|. |indicate| should be set to
-  // true if we want to use an indication instead of a notification. An
-  // indication waits for a response from the remote, making it more reliable
-  // but notifications may be faster.
+  // Notify the remote device |device| that the value of characteristic
+  // |characteristic| has changed and the new value is |new_value|. |indicate|
+  // should be set to true if we want to use an indication instead of a
+  // notification. An indication waits for a response from the remote, making
+  // it more reliable but notifications may be faster.
   virtual NotificationStatus NotifyValueChanged(
+      const BluetoothDevice* device,
       const std::vector<uint8_t>& new_value,
       bool indicate) = 0;
+
+  virtual BluetoothLocalGattService* GetService() const = 0;
 
  protected:
   BluetoothLocalGattCharacteristic();

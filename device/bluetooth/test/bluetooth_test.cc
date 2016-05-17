@@ -69,7 +69,6 @@ BluetoothDevice* BluetoothTestBase::SimulateLowEnergyDevice(
 }
 
 bool BluetoothTestBase::SimulateLocalGattCharacteristicNotificationsRequest(
-    BluetoothLocalGattService* service,
     BluetoothLocalGattCharacteristic* characteristic,
     bool start) {
   NOTIMPLEMENTED();

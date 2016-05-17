@@ -47,8 +47,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattService
     typedef base::Callback<void(const std::vector<uint8_t>&)> ValueCallback;
     typedef base::Closure ErrorCallback;
 
-    // Called when a remote device in the central role requests to read the
-    // value of the characteristic |characteristic| starting at offset |offset|.
+    // Called when a remote device |device| requests to read the value of the
+    // characteristic |characteristic| starting at offset |offset|.
     // This method is only called if the characteristic was specified as
     // readable and any authentication and authorization challenges were
     // satisfied by the remote device.
@@ -61,14 +61,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattService
     // invoked, the request will time out and result in an error. Therefore,
     // delegates MUST invoke either |callback| or |error_callback|.
     virtual void OnCharacteristicReadRequest(
-        const BluetoothLocalGattService* service,
+        const BluetoothDevice* device,
         const BluetoothLocalGattCharacteristic* characteristic,
         int offset,
         const ValueCallback& callback,
         const ErrorCallback& error_callback) = 0;
 
-    // Called when a remote device in the central role requests to write the
-    // value of the characteristic |characteristic| starting at offset |offset|.
+    // Called when a remote device |device| requests to write the value of the
+    // characteristic |characteristic| starting at offset |offset|.
     // This method is only called if the characteristic was specified as
     // writable and any authentication and authorization challenges were
     // satisfied by the remote device.
@@ -79,16 +79,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattService
     // will time out and result in an error. Therefore, delegates MUST invoke
     // either |callback| or |error_callback|.
     virtual void OnCharacteristicWriteRequest(
-        const BluetoothLocalGattService* service,
+        const BluetoothDevice* device,
         const BluetoothLocalGattCharacteristic* characteristic,
         const std::vector<uint8_t>& value,
         int offset,
         const base::Closure& callback,
         const ErrorCallback& error_callback) = 0;
 
-    // Called when a remote device in the central role requests to read the
-    // value of the descriptor |descriptor| starting at offset |offset|.
-    // This method is only called if the characteristic was specified as
+    // Called when a remote device |device| requests to read the value of the
+    // descriptor |descriptor| starting at offset |offset|.
+    // This method is only called if the descriptor was specified as
     // readable and any authentication and authorization challenges were
     // satisfied by the remote device.
     //
@@ -100,15 +100,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattService
     // invoked, the request will time out and result in an error. Therefore,
     // delegates MUST invoke either |callback| or |error_callback|.
     virtual void OnDescriptorReadRequest(
-        const BluetoothLocalGattService* service,
+        const BluetoothDevice* device,
         const BluetoothLocalGattDescriptor* descriptor,
         int offset,
         const ValueCallback& callback,
         const ErrorCallback& error_callback) = 0;
 
-    // Called when a remote device in the central role requests to write the
-    // value of the descriptor |descriptor| starting at offset |offset|.
-    // This method is only called if the characteristic was specified as
+    // Called when a remote device |devie| requests to write the value of the
+    // descriptor |descriptor| starting at offset |offset|.
+    // This method is only called if the descriptor was specified as
     // writable and any authentication and authorization challenges were
     // satisfied by the remote device.
     //
@@ -118,25 +118,25 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattService
     // will time out and result in an error. Therefore, delegates MUST invoke
     // either |callback| or |error_callback|.
     virtual void OnDescriptorWriteRequest(
-        const BluetoothLocalGattService* service,
+        const BluetoothDevice* device,
         const BluetoothLocalGattDescriptor* descriptor,
         const std::vector<uint8_t>& value,
         int offset,
         const base::Closure& callback,
         const ErrorCallback& error_callback) = 0;
 
-    // Called when a remote device requests notifications to start for
+    // Called when a remote device |device| requests notifications to start for
     // |characteristic|. This is only called if the characteristic has
     // specified the notify or indicate property.
     virtual void OnNotificationsStart(
-        const BluetoothLocalGattService* service,
+        const BluetoothDevice* device,
         const BluetoothLocalGattCharacteristic* characteristic) = 0;
 
-    // Called when a remote device requests notifications to stop for
+    // Called when a remote device |device| requests notifications to stop for
     // |characteristic|. This is only called if the characteristic has
     // specified the notify or indicate property.
     virtual void OnNotificationsStop(
-        const BluetoothLocalGattService* service,
+        const BluetoothDevice* device,
         const BluetoothLocalGattCharacteristic* characteristic) = 0;
   };
 

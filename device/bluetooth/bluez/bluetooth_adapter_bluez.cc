@@ -1145,7 +1145,9 @@ bool BluetoothAdapterBlueZ::SendValueChanged(
     BluetoothLocalGattCharacteristicBlueZ* characteristic,
     const std::vector<uint8_t>& value) {
   if (registered_gatt_services_.count(
-          characteristic->GetService()->object_path()) == 0)
+          static_cast<BluetoothLocalGattServiceBlueZ*>(
+              characteristic->GetService())
+              ->object_path()) == 0)
     return false;
   gatt_application_provider_->SendValueChanged(characteristic->object_path(),
                                                value);

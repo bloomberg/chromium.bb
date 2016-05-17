@@ -51,6 +51,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattDescriptor
       BluetoothGattCharacteristic::Permissions permissions,
       BluetoothLocalGattCharacteristic* characteristic);
 
+  virtual BluetoothLocalGattCharacteristic* GetCharacteristic() const = 0;
+
  protected:
   BluetoothLocalGattDescriptor();
   ~BluetoothLocalGattDescriptor() override;

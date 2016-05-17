@@ -61,7 +61,7 @@ BluetoothLocalGattDescriptorBlueZ::GetPermissions() const {
   return permissions_;
 }
 
-BluetoothLocalGattCharacteristicBlueZ*
+device::BluetoothLocalGattCharacteristic*
 BluetoothLocalGattDescriptorBlueZ::GetCharacteristic() const {
   return characteristic_;
 }

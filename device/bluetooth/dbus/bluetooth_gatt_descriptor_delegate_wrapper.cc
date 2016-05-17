@@ -17,7 +17,7 @@ void BluetoothGattDescriptorDelegateWrapper::GetValue(
     const device::BluetoothLocalGattService::Delegate::ValueCallback& callback,
     const device::BluetoothLocalGattService::Delegate::ErrorCallback&
         error_callback) {
-  service_->GetDelegate()->OnDescriptorReadRequest(service_, descriptor_, 0,
+  service_->GetDelegate()->OnDescriptorReadRequest(nullptr, descriptor_, 0,
                                                    callback, error_callback);
 }
 
@@ -27,7 +27,7 @@ void BluetoothGattDescriptorDelegateWrapper::SetValue(
     const device::BluetoothLocalGattService::Delegate::ErrorCallback&
         error_callback) {
   service_->GetDelegate()->OnDescriptorWriteRequest(
-      service_, descriptor_, value, 0, callback, error_callback);
+      nullptr, descriptor_, value, 0, callback, error_callback);
 }
 
 }  // namespace bluez

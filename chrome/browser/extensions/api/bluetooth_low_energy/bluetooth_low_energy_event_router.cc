@@ -1091,12 +1091,12 @@ void BluetoothLowEnergyEventRouter::GattDescriptorValueChanged(
 }
 
 void BluetoothLowEnergyEventRouter::OnCharacteristicReadRequest(
-    const device::BluetoothLocalGattService* service,
+    const device::BluetoothDevice* device,
     const device::BluetoothLocalGattCharacteristic* characteristic,
     int offset,
     const Delegate::ValueCallback& value_callback,
     const Delegate::ErrorCallback& error_callback) {
-  const std::string& service_id = service->GetIdentifier();
+  const std::string& service_id = characteristic->GetService()->GetIdentifier();
   if (service_id_to_extension_id_.find(service_id) ==
       service_id_to_extension_id_.end()) {
     LOG(DFATAL) << "Service with ID " << service_id
@@ -1117,13 +1117,13 @@ void BluetoothLowEnergyEventRouter::OnCharacteristicReadRequest(
 }
 
 void BluetoothLowEnergyEventRouter::OnCharacteristicWriteRequest(
-    const device::BluetoothLocalGattService* service,
+    const device::BluetoothDevice* device,
     const device::BluetoothLocalGattCharacteristic* characteristic,
     const std::vector<uint8_t>& value,
     int offset,
     const base::Closure& callback,
     const Delegate::ErrorCallback& error_callback) {
-  const std::string& service_id = service->GetIdentifier();
+  const std::string& service_id = characteristic->GetService()->GetIdentifier();
   if (service_id_to_extension_id_.find(service_id) ==
       service_id_to_extension_id_.end()) {
     LOG(DFATAL) << "Service with ID " << service_id
@@ -1148,12 +1148,13 @@ void BluetoothLowEnergyEventRouter::OnCharacteristicWriteRequest(
 }
 
 void BluetoothLowEnergyEventRouter::OnDescriptorReadRequest(
-    const device::BluetoothLocalGattService* service,
+    const device::BluetoothDevice* device,
     const device::BluetoothLocalGattDescriptor* descriptor,
     int offset,
     const Delegate::ValueCallback& value_callback,
     const Delegate::ErrorCallback& error_callback) {
-  const std::string& service_id = service->GetIdentifier();
+  const std::string& service_id =
+      descriptor->GetCharacteristic()->GetService()->GetIdentifier();
   if (service_id_to_extension_id_.find(service_id) ==
       service_id_to_extension_id_.end()) {
     LOG(DFATAL) << "Service with ID " << service_id
@@ -1176,13 +1177,14 @@ void BluetoothLowEnergyEventRouter::OnDescriptorReadRequest(
 }
 
 void BluetoothLowEnergyEventRouter::OnDescriptorWriteRequest(
-    const device::BluetoothLocalGattService* service,
+    const device::BluetoothDevice* device,
     const device::BluetoothLocalGattDescriptor* descriptor,
     const std::vector<uint8_t>& value,
     int offset,
     const base::Closure& callback,
     const Delegate::ErrorCallback& error_callback) {
-  const std::string& service_id = service->GetIdentifier();
+  const std::string& service_id =
+      descriptor->GetCharacteristic()->GetService()->GetIdentifier();
   if (service_id_to_extension_id_.find(service_id) ==
       service_id_to_extension_id_.end()) {
     LOG(DFATAL) << "Service with ID " << service_id
@@ -1207,11 +1209,11 @@ void BluetoothLowEnergyEventRouter::OnDescriptorWriteRequest(
 }
 
 void BluetoothLowEnergyEventRouter::OnNotificationsStart(
-    const device::BluetoothLocalGattService* service,
+    const device::BluetoothDevice* device,
     const device::BluetoothLocalGattCharacteristic* characteristic) {}
 
 void BluetoothLowEnergyEventRouter::OnNotificationsStop(
-    const device::BluetoothLocalGattService* service,
+    const device::BluetoothDevice* device,
     const device::BluetoothLocalGattCharacteristic* characteristic) {}
 
 void BluetoothLowEnergyEventRouter::OnExtensionUnloaded(

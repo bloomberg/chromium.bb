@@ -19,7 +19,7 @@ void BluetoothGattCharacteristicDelegateWrapper::GetValue(
     const device::BluetoothLocalGattService::Delegate::ErrorCallback&
         error_callback) {
   service_->GetDelegate()->OnCharacteristicReadRequest(
-      service_, characteristic_, 0, callback, error_callback);
+      nullptr, characteristic_, 0, callback, error_callback);
 }
 
 void BluetoothGattCharacteristicDelegateWrapper::SetValue(
@@ -28,15 +28,15 @@ void BluetoothGattCharacteristicDelegateWrapper::SetValue(
     const device::BluetoothLocalGattService::Delegate::ErrorCallback&
         error_callback) {
   service_->GetDelegate()->OnCharacteristicWriteRequest(
-      service_, characteristic_, value, 0, callback, error_callback);
+      nullptr, characteristic_, value, 0, callback, error_callback);
 }
 
 void BluetoothGattCharacteristicDelegateWrapper::StartNotifications() {
-  service_->GetDelegate()->OnNotificationsStart(service_, characteristic_);
+  service_->GetDelegate()->OnNotificationsStart(nullptr, characteristic_);
 }
 
 void BluetoothGattCharacteristicDelegateWrapper::StopNotifications() {
-  service_->GetDelegate()->OnNotificationsStop(service_, characteristic_);
+  service_->GetDelegate()->OnNotificationsStop(nullptr, characteristic_);
 }
 
 }  // namespace bluez

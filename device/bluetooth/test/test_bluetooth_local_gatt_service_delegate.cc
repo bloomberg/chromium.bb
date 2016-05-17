@@ -20,13 +20,13 @@ TestBluetoothLocalGattServiceDelegate::
     ~TestBluetoothLocalGattServiceDelegate() {}
 
 void TestBluetoothLocalGattServiceDelegate::OnCharacteristicReadRequest(
-    const BluetoothLocalGattService* service,
+    const BluetoothDevice* device,
     const BluetoothLocalGattCharacteristic* characteristic,
     int offset,
     const ValueCallback& callback,
     const ErrorCallback& error_callback) {
-  EXPECT_EQ(expected_service_, service);
-  EXPECT_EQ(expected_characteristic_, characteristic);
+  EXPECT_EQ(expected_characteristic_->GetIdentifier(),
+            characteristic->GetIdentifier());
   if (should_fail_) {
     error_callback.Run();
     return;
@@ -35,14 +35,14 @@ void TestBluetoothLocalGattServiceDelegate::OnCharacteristicReadRequest(
 }
 
 void TestBluetoothLocalGattServiceDelegate::OnCharacteristicWriteRequest(
-    const BluetoothLocalGattService* service,
+    const BluetoothDevice* device,
     const BluetoothLocalGattCharacteristic* characteristic,
     const std::vector<uint8_t>& value,
     int offset,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  EXPECT_EQ(expected_service_, service);
-  EXPECT_EQ(expected_characteristic_, characteristic);
+  EXPECT_EQ(expected_characteristic_->GetIdentifier(),
+            characteristic->GetIdentifier());
   if (should_fail_) {
     error_callback.Run();
     return;
@@ -52,13 +52,12 @@ void TestBluetoothLocalGattServiceDelegate::OnCharacteristicWriteRequest(
 }
 
 void TestBluetoothLocalGattServiceDelegate::OnDescriptorReadRequest(
-    const BluetoothLocalGattService* service,
+    const BluetoothDevice* device,
     const BluetoothLocalGattDescriptor* descriptor,
     int offset,
     const ValueCallback& callback,
     const ErrorCallback& error_callback) {
-  EXPECT_EQ(expected_service_, service);
-  EXPECT_EQ(expected_descriptor_, descriptor);
+  EXPECT_EQ(expected_descriptor_->GetIdentifier(), descriptor->GetIdentifier());
   if (should_fail_) {
     error_callback.Run();
     return;
@@ -67,14 +66,13 @@ void TestBluetoothLocalGattServiceDelegate::OnDescriptorReadRequest(
 }
 
 void TestBluetoothLocalGattServiceDelegate::OnDescriptorWriteRequest(
-    const BluetoothLocalGattService* service,
+    const BluetoothDevice* device,
     const BluetoothLocalGattDescriptor* descriptor,
     const std::vector<uint8_t>& value,
     int offset,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  EXPECT_EQ(expected_service_, service);
-  EXPECT_EQ(expected_descriptor_, descriptor);
+  EXPECT_EQ(expected_descriptor_->GetIdentifier(), descriptor->GetIdentifier());
   if (should_fail_) {
     error_callback.Run();
     return;
@@ -84,19 +82,19 @@ void TestBluetoothLocalGattServiceDelegate::OnDescriptorWriteRequest(
 }
 
 void TestBluetoothLocalGattServiceDelegate::OnNotificationsStart(
-    const BluetoothLocalGattService* service,
+    const BluetoothDevice* device,
     const BluetoothLocalGattCharacteristic* characteristic) {
-  EXPECT_EQ(expected_service_, service);
-  EXPECT_EQ(expected_characteristic_, characteristic);
+  EXPECT_EQ(expected_characteristic_->GetIdentifier(),
+            characteristic->GetIdentifier());
   notifications_started_for_characteristic_[characteristic->GetIdentifier()] =
       true;
 }
 
 void TestBluetoothLocalGattServiceDelegate::OnNotificationsStop(
-    const BluetoothLocalGattService* service,
+    const BluetoothDevice* device,
     const BluetoothLocalGattCharacteristic* characteristic) {
-  EXPECT_EQ(expected_service_, service);
-  EXPECT_EQ(expected_characteristic_, characteristic);
+  EXPECT_EQ(expected_characteristic_->GetIdentifier(),
+            characteristic->GetIdentifier());
   notifications_started_for_characteristic_[characteristic->GetIdentifier()] =
       false;
 }

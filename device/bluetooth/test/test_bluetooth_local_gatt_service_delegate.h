@@ -24,35 +24,35 @@ class TestBluetoothLocalGattServiceDelegate
 
   // BluetoothLocalGattService::Delegate overrides:
   void OnCharacteristicReadRequest(
-      const BluetoothLocalGattService* service,
+      const BluetoothDevice* device,
       const BluetoothLocalGattCharacteristic* characteristic,
       int offset,
       const ValueCallback& callback,
       const ErrorCallback& error_callback) override;
   void OnCharacteristicWriteRequest(
-      const BluetoothLocalGattService* service,
+      const BluetoothDevice* device,
       const BluetoothLocalGattCharacteristic* characteristic,
       const std::vector<uint8_t>& value,
       int offset,
       const base::Closure& callback,
       const ErrorCallback& error_callback) override;
-  void OnDescriptorReadRequest(const BluetoothLocalGattService* service,
+  void OnDescriptorReadRequest(const BluetoothDevice* device,
                                const BluetoothLocalGattDescriptor* descriptor,
                                int offset,
                                const ValueCallback& callback,
                                const ErrorCallback& error_callback) override;
 
-  void OnDescriptorWriteRequest(const BluetoothLocalGattService* service,
+  void OnDescriptorWriteRequest(const BluetoothDevice* device,
                                 const BluetoothLocalGattDescriptor* descriptor,
                                 const std::vector<uint8_t>& value,
                                 int offset,
                                 const base::Closure& callback,
                                 const ErrorCallback& error_callback) override;
   void OnNotificationsStart(
-      const BluetoothLocalGattService* service,
+      const BluetoothDevice* device,
       const BluetoothLocalGattCharacteristic* characteristic) override;
   void OnNotificationsStop(
-      const BluetoothLocalGattService* service,
+      const BluetoothDevice* device,
       const BluetoothLocalGattCharacteristic* characteristic) override;
 
   bool NotificationStatusForCharacteristic(

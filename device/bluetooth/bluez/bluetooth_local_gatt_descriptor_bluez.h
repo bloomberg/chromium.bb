@@ -33,8 +33,7 @@ class BluetoothLocalGattDescriptorBlueZ
   device::BluetoothUUID GetUUID() const override;
   device::BluetoothGattCharacteristic::Permissions GetPermissions()
       const override;
-
-  BluetoothLocalGattCharacteristicBlueZ* GetCharacteristic() const;
+  device::BluetoothLocalGattCharacteristic* GetCharacteristic() const override;
 
  private:
   // Needs access to weak_ptr_factory_.

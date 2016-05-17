@@ -39,10 +39,10 @@ class BluetoothLocalGattCharacteristicBlueZ
   Permissions GetPermissions() const override;
 
   // device::BluetoothLocalGattCharacteristic overrides:
-  NotificationStatus NotifyValueChanged(const std::vector<uint8_t>& new_value,
+  NotificationStatus NotifyValueChanged(const device::BluetoothDevice* device,
+                                        const std::vector<uint8_t>& new_value,
                                         bool indicate) override;
-
-  BluetoothLocalGattServiceBlueZ* GetService();
+  device::BluetoothLocalGattService* GetService() const override;
 
   const std::vector<std::unique_ptr<BluetoothLocalGattDescriptorBlueZ>>&
   GetDescriptors() const;
