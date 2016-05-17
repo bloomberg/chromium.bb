@@ -962,18 +962,14 @@ std::unique_ptr<GpuCommandBufferStub> GpuChannel::CreateCommandBuffer(
     return nullptr;
   }
 
-  std::unique_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
-      this, sync_point_manager_, task_runner_.get(), share_group,
-      init_params.surface_handle, mailbox_manager_.get(), preempted_flag_.get(),
-      init_params.size, disallowed_features_, init_params.attribs,
-      init_params.gpu_preference, stream_id, route_id, watchdog_,
-      init_params.active_url));
-
   scoped_refptr<GpuChannelMessageQueue> queue = LookupStream(stream_id);
   if (!queue)
     queue = CreateStream(stream_id, stream_priority);
 
-  if (!stub->Initialize(std::move(shared_state_shm))) {
+  std::unique_ptr<GpuCommandBufferStub> stub(GpuCommandBufferStub::Create(
+      this, share_group, init_params, route_id, std::move(shared_state_shm)));
+
+  if (!stub) {
     DestroyStreamIfNecessary(queue);
     return nullptr;
   }

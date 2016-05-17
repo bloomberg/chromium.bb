@@ -46,6 +46,7 @@ class MailboxManager;
 }
 }
 
+struct GPUCreateCommandBufferConfig;
 struct GpuCommandBufferMsg_CreateImage_Params;
 struct GpuCommandBufferMsg_SwapBuffersCompleted_Params;
 
@@ -72,23 +73,12 @@ class GPU_EXPORT GpuCommandBufferStub
   typedef base::Callback<void(const std::vector<ui::LatencyInfo>&)>
       LatencyInfoCallback;
 
-  GpuCommandBufferStub(
-      GpuChannel* channel,
-      SyncPointManager* sync_point_manager,
-      base::SingleThreadTaskRunner* task_runner,
-      GpuCommandBufferStub* share_group,
-      SurfaceHandle surface_handle,
-      gles2::MailboxManager* mailbox_manager,
-      PreemptionFlag* preempt_by_flag,
-      const gfx::Size& size,
-      const gles2::DisallowedFeatures& disallowed_features,
-      const std::vector<int32_t>& attribs,
-      gfx::GpuPreference gpu_preference,
-      int32_t stream_id,
-      int32_t route_id,
-      GpuWatchdog* watchdog,
-      const GURL& active_url);
-  bool Initialize(std::unique_ptr<base::SharedMemory> shared_state_shm);
+  static std::unique_ptr<GpuCommandBufferStub> Create(
+    GpuChannel* channel,
+    GpuCommandBufferStub* share_group,
+    const GPUCreateCommandBufferConfig& init_params,
+    int32_t route_id,
+    std::unique_ptr<base::SharedMemory> shared_state_shm);
 
   ~GpuCommandBufferStub() override;
 
@@ -120,10 +110,6 @@ class GPU_EXPORT GpuCommandBufferStub
   // Identifies the stream for this command buffer.
   int32_t stream_id() const { return stream_id_; }
 
-  gfx::GpuPreference gpu_preference() { return gpu_preference_; }
-
-  int32_t GetRequestedAttribute(int attr) const;
-
   // Sends a message to the console.
   void SendConsoleMessage(int32_t id, const std::string& message);
 
@@ -146,13 +132,19 @@ class GPU_EXPORT GpuCommandBufferStub
                                  base::TimeDelta interval);
 
  private:
+  GpuCommandBufferStub(GpuChannel* channel,
+                       const GPUCreateCommandBufferConfig& init_params,
+                       int32_t route_id);
+
+  bool Initialize(GpuCommandBufferStub* share_group,
+                  const GPUCreateCommandBufferConfig& init_params,
+                  std::unique_ptr<base::SharedMemory> shared_state_shm);
+
   GpuMemoryManager* GetMemoryManager() const;
 
   void Destroy();
 
   bool MakeCurrent();
-
-  scoped_refptr<gfx::GLSurface> CreateSurface();
 
   // Message handlers:
   void OnSetGetBuffer(int32_t shm_id, IPC::Message* reply_message);
@@ -223,21 +215,11 @@ class GPU_EXPORT GpuCommandBufferStub
   // are destroyed. So a raw pointer is safe.
   GpuChannel* const channel_;
 
-  // Outlives the stub.
-  SyncPointManager* const sync_point_manager_;
-
-  // Task runner for main thread.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
   // The group of contexts that share namespaces with this context.
   scoped_refptr<gles2::ContextGroup> context_group_;
 
   bool initialized_;
   const SurfaceHandle surface_handle_;
-  gfx::Size initial_size_;
-  gles2::DisallowedFeatures disallowed_features_;
-  std::vector<int32_t> requested_attribs_;
-  gfx::GpuPreference gpu_preference_;
   bool use_virtualized_gl_context_;
   const CommandBufferId command_buffer_id_;
   const int32_t stream_id_;
@@ -249,9 +231,6 @@ class GPU_EXPORT GpuCommandBufferStub
   std::unique_ptr<CommandExecutor> executor_;
   std::unique_ptr<SyncPointClient> sync_point_client_;
   scoped_refptr<gfx::GLSurface> surface_;
-  gfx::GLSurface::Format surface_format_;
-
-  GpuWatchdog* watchdog_;
 
   base::ObserverList<DestructionObserver> destruction_observers_;
 
@@ -260,8 +239,6 @@ class GPU_EXPORT GpuCommandBufferStub
   base::TimeTicks process_delayed_work_time_;
   uint32_t previous_processed_num_;
   base::TimeTicks last_idle_time_;
-
-  scoped_refptr<PreemptionFlag> preemption_flag_;
 
   LatencyInfoCallback latency_info_callback_;
 

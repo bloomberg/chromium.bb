@@ -84,6 +84,22 @@ class GPU_EXPORT GpuChannel
     return gpu_channel_manager_;
   }
 
+  SyncPointManager* sync_point_manager() const { return sync_point_manager_; }
+
+  GpuWatchdog* watchdog() const { return watchdog_; }
+
+  const scoped_refptr<gles2::MailboxManager>& mailbox_manager() const {
+    return mailbox_manager_;
+  }
+
+  const scoped_refptr<base::SingleThreadTaskRunner>& task_runner() const {
+    return task_runner_;
+  }
+
+  const scoped_refptr<PreemptionFlag>& preempted_flag() const {
+    return preempted_flag_;
+  }
+
   const std::string& channel_id() const { return channel_id_; }
 
   virtual base::ProcessId GetClientPID() const;
@@ -245,7 +261,6 @@ class GPU_EXPORT GpuChannel
 
   scoped_refptr<gles2::MailboxManager> mailbox_manager_;
 
-  gles2::DisallowedFeatures disallowed_features_;
   GpuWatchdog* const watchdog_;
 
   // Map of stream id to appropriate message queue.
