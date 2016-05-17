@@ -65,8 +65,10 @@ const char kWindowStationSdFormat[] = "O:SYG:SYD:(A;CIOIIO;GA;;;SY)"
 
 // Security descriptor of the worker process. It gives access SYSTEM full access
 // to the process. It gives READ_CONTROL, SYNCHRONIZE, PROCESS_QUERY_INFORMATION
-// and PROCESS_TERMINATE rights to the built-in administrators group.
-const char kWorkerProcessSd[] = "O:SYG:SYD:(A;;GA;;;SY)(A;;0x120401;;;BA)";
+// and PROCESS_TERMINATE rights to the built-in administrators group.  It also
+// gives PROCESS_QUERY_LIMITED_INFORMATION to the authenticated users group.
+const char kWorkerProcessSd[] =
+    "O:SYG:SYD:(A;;GA;;;SY)(A;;0x120401;;;BA)(A;;0x1000;;;AU)";
 
 // Security descriptor of the worker process threads. It gives access SYSTEM
 // full access to the threads. It gives READ_CONTROL, SYNCHRONIZE,
@@ -296,7 +298,7 @@ void UnprivilegedProcessDelegate::LaunchProcess(
 
   ScopedHandle worker_process;
   {
-    // Take a lock why any inheritable handles are open to make sure that only
+    // Take a lock when any inheritable handles are open to make sure that only
     // one process inherits them.
     base::AutoLock lock(g_inherit_handles_lock.Get());
 
