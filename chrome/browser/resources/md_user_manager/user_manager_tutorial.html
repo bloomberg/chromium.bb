@@ -1,6 +1,6 @@
+<link rel="import" href="chrome://md-user-manager/icons.html">
 <link rel="import" href="chrome://md-user-manager/shared_styles.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 
 <dom-module id="user-manager-tutorial">
@@ -228,7 +228,8 @@
       </template>
       <template is="dom-if" if="[[!isStepHidden_(currentStep_, 'notYou')]]">
         <div class="tutorial-slide" id="notYou">
-          <iron-icon id="dismiss" icon="close" on-tap="onDissmissTap_">
+          <iron-icon id="dismiss" icon="user-manager:close"
+              on-tap="onDissmissTap_">
           </iron-icon>
           <div class="slide-buttons">
             <div class="slide-text">

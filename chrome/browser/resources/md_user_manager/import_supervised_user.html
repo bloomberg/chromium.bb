@@ -1,9 +1,9 @@
+<link rel="import" href="chrome://md-user-manager/icons.html">
 <link rel="import" href="chrome://md-user-manager/profile_browser_proxy.html">
 <link rel="import" href="chrome://md-user-manager/shared_styles.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
@@ -102,7 +102,7 @@
         <div id="dialog">
           <div id="title-bar" class="horizontal justified layout">
             <span id="title">$i18n{supervisedUserImportTitle}</span>
-            <paper-icon-button icon="close" on-tap="onCancelTap_">
+            <paper-icon-button icon="user-manager:close" on-tap="onCancelTap_">
             </paper-icon-button>
           </div>
           <div id="message">[[getMessage_(supervisedUsers_)]]</div>

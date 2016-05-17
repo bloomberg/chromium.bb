@@ -65,36 +65,37 @@ content::WebUIDataSource* MDUserManagerUI::CreateUIDataSource(
   source->AddResourcePath("control_bar.js", IDR_MD_CONTROL_BAR_JS);
   source->AddResourcePath("create_profile.html", IDR_MD_CREATE_PROFILE_HTML);
   source->AddResourcePath("create_profile.js", IDR_MD_CREATE_PROFILE_JS);
+  source->AddResourcePath("icons.html", IDR_MD_USER_MANAGER_ICONS_HTML);
+  source->AddResourcePath("import_supervised_user.html",
+                          IDR_MD_IMPORT_SUPERVISED_USER_HTML);
+  source->AddResourcePath("import_supervised_user.js",
+                          IDR_MD_IMPORT_SUPERVISED_USER_JS);
   source->AddResourcePath("profile_browser_proxy.html",
                           IDR_MD_PROFILE_BROWSER_PROXY_HTML);
   source->AddResourcePath("profile_browser_proxy.js",
                           IDR_MD_PROFILE_BROWSER_PROXY_JS);
+  source->AddResourcePath("shared_styles.html",
+                          IDR_MD_USER_MANAGER_SHARED_STYLES_HTML);
   source->AddResourcePath("strings.html", IDR_MD_USER_MANAGER_STRINGS_HTML);
+  source->AddResourcePath("supervised_user_create_confirm.html",
+                          IDR_MD_SUPERVISED_USER_CREATE_CONFIRM_HTML);
+  source->AddResourcePath("supervised_user_create_confirm.js",
+                          IDR_MD_SUPERVISED_USER_CREATE_CONFIRM_JS);
   source->AddResourcePath("supervised_user_learn_more.html",
                           IDR_MD_SUPERVISED_USER_LEARN_MORE_HTML);
   source->AddResourcePath("supervised_user_learn_more.js",
                           IDR_MD_SUPERVISED_USER_LEARN_MORE_JS);
-  source->AddResourcePath("user_manager_styles.html",
-                          IDR_MD_USER_MANAGER_STYLES_HTML);
   source->AddResourcePath("user_manager.js", IDR_MD_USER_MANAGER_JS);
   source->AddResourcePath("user_manager_pages.html",
                           IDR_MD_USER_MANAGER_PAGES_HTML);
   source->AddResourcePath("user_manager_pages.js",
                           IDR_MD_USER_MANAGER_PAGES_JS);
+  source->AddResourcePath("user_manager_styles.html",
+                          IDR_MD_USER_MANAGER_STYLES_HTML);
   source->AddResourcePath("user_manager_tutorial.html",
                           IDR_MD_USER_MANAGER_TUTORIAL_HTML);
   source->AddResourcePath("user_manager_tutorial.js",
                           IDR_MD_USER_MANAGER_TUTORIAL_JS);
-  source->AddResourcePath("shared_styles.html",
-                          IDR_MD_USER_MANAGER_SHARED_STYLES_HTML);
-  source->AddResourcePath("import_supervised_user.html",
-                          IDR_MD_IMPORT_SUPERVISED_USER_HTML);
-  source->AddResourcePath("import_supervised_user.js",
-                          IDR_MD_IMPORT_SUPERVISED_USER_JS);
-  source->AddResourcePath("supervised_user_create_confirm.html",
-                          IDR_MD_SUPERVISED_USER_CREATE_CONFIRM_HTML);
-  source->AddResourcePath("supervised_user_create_confirm.js",
-                          IDR_MD_SUPERVISED_USER_CREATE_CONFIRM_JS);
 
   source->SetDefaultResource(IDR_MD_USER_MANAGER_HTML);
 

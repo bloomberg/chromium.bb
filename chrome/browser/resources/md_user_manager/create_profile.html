@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://md-user-manager/icons.html">
 <link rel="import" href="chrome://md-user-manager/import_supervised_user.html">
 <link rel="import" href="chrome://md-user-manager/profile_browser_proxy.html">
 <link rel="import" href="chrome://md-user-manager/shared_styles.html">
@@ -7,7 +8,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
@@ -150,7 +150,7 @@
       }
     </style>
     <div id="message-container" hidden="[[!message_]]">
-      <iron-icon icon="warning"></iron-icon>
+      <iron-icon icon="user-manager:warning"></iron-icon>
       <span id="message" inner-h-t-m-l="[[message_]]"></span>
     </div>
     <div class="container">
