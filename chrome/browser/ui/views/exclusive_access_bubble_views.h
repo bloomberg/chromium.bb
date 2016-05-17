@@ -47,21 +47,9 @@ class ExclusiveAccessBubbleViews : public ExclusiveAccessBubble,
  private:
   class ExclusiveAccessView;
 
-  enum AnimatedAttribute {
-    ANIMATED_ATTRIBUTE_BOUNDS,
-    ANIMATED_ATTRIBUTE_OPACITY
-  };
-
-  // Returns the expected animated attribute based on flags and bubble type.
-  AnimatedAttribute ExpectedAnimationAttribute();
-
   // Starts or stops polling the mouse location based on |popup_| and
   // |bubble_type_|.
   void UpdateMouseWatcher();
-
-  // Updates any state which depends on whether the user is in immersive
-  // fullscreen.
-  void UpdateForImmersiveState();
 
   // Updates |popup|'s bounds given |animation_| and |animated_attribute_|.
   void UpdateBounds();
@@ -95,9 +83,6 @@ class ExclusiveAccessBubbleViews : public ExclusiveAccessBubble,
 
   // Animation controlling showing/hiding of the exit bubble.
   std::unique_ptr<gfx::SlideAnimation> animation_;
-
-  // Attribute animated by |animation_|.
-  AnimatedAttribute animated_attribute_;
 
   // The contents of the popup.
   ExclusiveAccessView* view_;

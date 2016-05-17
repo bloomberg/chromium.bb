@@ -25,10 +25,8 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/bubble/bubble_border.h"
-#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/layout/box_layout.h"
@@ -44,7 +42,7 @@
 
 namespace {
 
-// Space between the site info label and the buttons / link.
+// Space between the site info label and the link.
 const int kMiddlePaddingPx = 30;
 
 const int kOuterPaddingHorizPx = 40;
@@ -52,40 +50,6 @@ const int kOuterPaddingVertPx = 8;
 
 // Partially-transparent background color.
 const SkColor kBackgroundColor = SkColorSetARGB(0xcc, 0x28, 0x2c, 0x32);
-
-class ButtonView : public views::View {
- public:
-  ButtonView(views::ButtonListener* listener, int between_button_spacing);
-  ~ButtonView() override;
-
-  views::LabelButton* accept_button() const { return accept_button_; }
-  views::LabelButton* deny_button() const { return deny_button_; }
-
- private:
-  views::LabelButton* accept_button_;
-  views::LabelButton* deny_button_;
-  DISALLOW_COPY_AND_ASSIGN(ButtonView);
-};
-
-ButtonView::ButtonView(views::ButtonListener* listener,
-                       int between_button_spacing)
-    : accept_button_(nullptr), deny_button_(nullptr) {
-  accept_button_ = new views::LabelButton(listener, base::string16());
-  accept_button_->SetStyle(views::Button::STYLE_BUTTON);
-  accept_button_->SetFocusBehavior(FocusBehavior::NEVER);
-  AddChildView(accept_button_);
-
-  deny_button_ = new views::LabelButton(listener, base::string16());
-  deny_button_->SetStyle(views::Button::STYLE_BUTTON);
-  deny_button_->SetFocusBehavior(FocusBehavior::NEVER);
-  AddChildView(deny_button_);
-
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
-                                        between_button_spacing));
-}
-
-ButtonView::~ButtonView() {
-}
 
 // Class containing the exit instruction text. Contains fancy styling on the
 // keyboard key (not just a simple label).
@@ -183,22 +147,17 @@ void InstructionView::SetText(const base::string16& text) {
 
 class ExclusiveAccessBubbleViews::ExclusiveAccessView
     : public views::View,
-      public views::ButtonListener,
       public views::LinkListener {
  public:
   ExclusiveAccessView(ExclusiveAccessBubbleViews* bubble,
                       const base::string16& accelerator,
-                      const GURL& url,
                       ExclusiveAccessBubbleType bubble_type);
   ~ExclusiveAccessView() override;
-
-  // views::ButtonListener
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::LinkListener
   void LinkClicked(views::Link* source, int event_flags) override;
 
-  void UpdateContent(const GURL& url, ExclusiveAccessBubbleType bubble_type);
+  void UpdateContent(ExclusiveAccessBubbleType bubble_type);
 
  private:
   ExclusiveAccessBubbleViews* bubble_;
@@ -206,14 +165,8 @@ class ExclusiveAccessBubbleViews::ExclusiveAccessView
   // Clickable hint text for exiting fullscreen mode. (Non-simplified mode
   // only.)
   views::Link* link_;
-  // Informational label: 'www.foo.com has gone fullscreen'. (Non-simplified
-  // mode only.)
-  views::Label* message_label_;
-  // Clickable buttons to exit fullscreen. (Non-simplified mode only.)
-  // TODO(mgiuca): Delete this; it is no longer used on any code path.
-  ButtonView* button_view_;
   // Instruction for exiting fullscreen / mouse lock. Only present if there is
-  // no link or button (always present in simplified mode).
+  // no link (always present in simplified mode).
   InstructionView* exit_instruction_;
   const base::string16 browser_fullscreen_exit_accelerator_;
 
@@ -223,12 +176,9 @@ class ExclusiveAccessBubbleViews::ExclusiveAccessView
 ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
     ExclusiveAccessBubbleViews* bubble,
     const base::string16& accelerator,
-    const GURL& url,
     ExclusiveAccessBubbleType bubble_type)
     : bubble_(bubble),
       link_(nullptr),
-      message_label_(nullptr),
-      button_view_(nullptr),
       exit_instruction_(nullptr),
       browser_fullscreen_exit_accelerator_(accelerator) {
   const SkColor kForegroundColor = SK_ColorWHITE;
@@ -242,12 +192,6 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   const gfx::FontList& font_list =
       rb.GetFontList(ui::ResourceBundle::MediumFont);
-
-  if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
-    message_label_ = new views::Label(base::string16(), font_list);
-    message_label_->SetEnabledColor(kForegroundColor);
-    message_label_->SetBackgroundColor(kBackgroundColor);
-  }
 
   exit_instruction_ = new InstructionView(base::string16(), font_list,
                                           kForegroundColor, kBackgroundColor);
@@ -265,15 +209,8 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
   link_->SetBackgroundColor(kBackgroundColor);
   link_->SetVisible(false);
 
-  button_view_ = new ButtonView(this, kPaddingPx);
-
   int outer_padding_horiz = kOuterPaddingHorizPx;
   int outer_padding_vert = kOuterPaddingVertPx;
-  if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
-    DCHECK(message_label_);
-    AddChildView(message_label_);
-  }
-  AddChildView(button_view_);
   AddChildView(exit_instruction_);
   AddChildView(link_);
 
@@ -282,19 +219,10 @@ ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
                            outer_padding_vert, kMiddlePaddingPx);
   SetLayoutManager(layout);
 
-  UpdateContent(url, bubble_type);
+  UpdateContent(bubble_type);
 }
 
 ExclusiveAccessBubbleViews::ExclusiveAccessView::~ExclusiveAccessView() {
-}
-
-void ExclusiveAccessBubbleViews::ExclusiveAccessView::ButtonPressed(
-    views::Button* sender,
-    const ui::Event& event) {
-  if (sender == button_view_->accept_button())
-    bubble_->Accept();
-  else
-    bubble_->Cancel();
 }
 
 void ExclusiveAccessBubbleViews::ExclusiveAccessView::LinkClicked(
@@ -304,7 +232,6 @@ void ExclusiveAccessBubbleViews::ExclusiveAccessView::LinkClicked(
 }
 
 void ExclusiveAccessBubbleViews::ExclusiveAccessView::UpdateContent(
-    const GURL& url,
     ExclusiveAccessBubbleType bubble_type) {
   DCHECK_NE(EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE, bubble_type);
 
@@ -334,7 +261,6 @@ void ExclusiveAccessBubbleViews::ExclusiveAccessView::UpdateContent(
   link_->SetVisible(link_visible);
   exit_instruction_->SetText(bubble_->GetInstructionText(accelerator));
   exit_instruction_->SetVisible(!link_visible);
-  button_view_->SetVisible(false);
 }
 
 // ExclusiveAccessBubbleViews --------------------------------------------------
@@ -348,8 +274,7 @@ ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
                             bubble_type),
       bubble_view_context_(context),
       popup_(nullptr),
-      animation_(new gfx::SlideAnimation(this)),
-      animated_attribute_(ExpectedAnimationAttribute()) {
+      animation_(new gfx::SlideAnimation(this)) {
   // With the simplified fullscreen UI flag, initially hide the bubble;
   // otherwise, initially show it.
   double initial_value =
@@ -362,7 +287,7 @@ ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
       bubble_view_context_->GetAcceleratorProvider()
           ->GetAcceleratorForCommandId(IDC_FULLSCREEN, &accelerator);
   DCHECK(got_accelerator);
-  view_ = new ExclusiveAccessView(this, accelerator.GetShortcutText(), url,
+  view_ = new ExclusiveAccessView(this, accelerator.GetShortcutText(),
                                   bubble_type_);
 
   // TODO(yzshen): Change to use the new views bubble, BubbleDelegateView.
@@ -427,7 +352,7 @@ void ExclusiveAccessBubbleViews::UpdateContent(
 
   url_ = url;
   bubble_type_ = bubble_type;
-  view_->UpdateContent(url_, bubble_type_);
+  view_->UpdateContent(bubble_type_);
 
   gfx::Size size = GetPopupRect(true).size();
   view_->SetSize(size);
@@ -451,19 +376,8 @@ views::View* ExclusiveAccessBubbleViews::GetView() {
   return view_;
 }
 
-ExclusiveAccessBubbleViews::AnimatedAttribute
-ExclusiveAccessBubbleViews::ExpectedAnimationAttribute() {
-  // TODO(mgiuca): Delete this function.
-  return ANIMATED_ATTRIBUTE_OPACITY;
-}
-
 void ExclusiveAccessBubbleViews::UpdateMouseWatcher() {
-  bool should_watch_mouse = false;
-  if (popup_->IsVisible())
-    should_watch_mouse =
-        !exclusive_access_bubble::ShowButtonsForType(bubble_type_);
-  else
-    should_watch_mouse = CanMouseTriggerSlideIn();
+  bool should_watch_mouse = popup_->IsVisible() || CanMouseTriggerSlideIn();
 
   if (should_watch_mouse == IsWatchingMouse())
     return;
@@ -472,28 +386,6 @@ void ExclusiveAccessBubbleViews::UpdateMouseWatcher() {
     StartWatchingMouse();
   else
     StopWatchingMouse();
-}
-
-void ExclusiveAccessBubbleViews::UpdateForImmersiveState() {
-  AnimatedAttribute expected_animated_attribute = ExpectedAnimationAttribute();
-  if (animated_attribute_ != expected_animated_attribute) {
-    // If an animation is currently in progress, skip to the end because
-    // switching the animated attribute midway through the animation looks
-    // weird.
-    animation_->End();
-
-    animated_attribute_ = expected_animated_attribute;
-
-    // We may have finished hiding |popup_|. However, the bounds animation
-    // assumes |popup_| has the opacity when it is fully shown and the opacity
-    // animation assumes |popup_| has the bounds when |popup_| is fully shown.
-    if (animated_attribute_ == ANIMATED_ATTRIBUTE_BOUNDS)
-      popup_->SetOpacity(255);
-    else
-      UpdateBounds();
-  }
-
-  UpdateMouseWatcher();
 }
 
 void ExclusiveAccessBubbleViews::UpdateBounds() {
@@ -510,21 +402,12 @@ views::View* ExclusiveAccessBubbleViews::GetBrowserRootView() const {
 
 void ExclusiveAccessBubbleViews::AnimationProgressed(
     const gfx::Animation* animation) {
-  if (animated_attribute_ == ANIMATED_ATTRIBUTE_OPACITY) {
-    int opacity = animation_->CurrentValueBetween(0, 255);
-    if (opacity == 0) {
-      popup_->Hide();
-    } else {
-      popup_->Show();
-      popup_->SetOpacity(opacity);
-    }
+  int opacity = animation_->CurrentValueBetween(0, 255);
+  if (opacity == 0) {
+    popup_->Hide();
   } else {
-    if (GetPopupRect(false).IsEmpty()) {
-      popup_->Hide();
-    } else {
-      UpdateBounds();
-      popup_->Show();
-    }
+    popup_->Show();
+    popup_->SetOpacity(opacity);
   }
 }
 
@@ -557,14 +440,6 @@ gfx::Rect ExclusiveAccessBubbleViews::GetPopupRect(
   int desired_top = kSimplifiedPopupTopPx - view_->border()->GetInsets().top();
   int y = top_container_bottom + desired_top;
 
-  if (!ignore_animation_state &&
-      animated_attribute_ == ANIMATED_ATTRIBUTE_BOUNDS) {
-    int total_height = size.height() + desired_top;
-    int popup_bottom = animation_->CurrentValueBetween(total_height, 0);
-    int y_offset = std::min(popup_bottom, desired_top);
-    size.set_height(size.height() - popup_bottom + y_offset);
-    y -= y_offset;
-  }
   return gfx::Rect(gfx::Point(x, y), size);
 }
 
@@ -603,7 +478,7 @@ void ExclusiveAccessBubbleViews::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_FULLSCREEN_CHANGED, type);
-  UpdateForImmersiveState();
+  UpdateMouseWatcher();
 }
 
 void ExclusiveAccessBubbleViews::OnWidgetVisibilityChanged(
