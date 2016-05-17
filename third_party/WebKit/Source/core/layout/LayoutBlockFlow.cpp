@@ -3697,6 +3697,7 @@ bool LayoutBlockFlow::recalcInlineChildrenOverflowAfterStyleChange()
     GlyphOverflowAndFallbackFontsMap textBoxDataMap;
     for (ListHashSet<RootInlineBox*>::const_iterator it = lineBoxes.begin(); it != lineBoxes.end(); ++it) {
         RootInlineBox* box = *it;
+        box->clearKnownToHaveNoOverflow();
         box->computeOverflow(box->lineTop(), box->lineBottom(), textBoxDataMap);
     }
     return childrenOverflowChanged;
