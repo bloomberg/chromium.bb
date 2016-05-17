@@ -8,16 +8,12 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "components/safe_browsing_db/v4_store.h"
 
 namespace safe_browsing {
 
 class V4Database;
-
-typedef base::Callback<void(std::unique_ptr<V4Database>)>
-    NewDatabaseReadyCallback;
 
 typedef const base::hash_map<UpdateListIdentifier,
                              const base::FilePath::CharType>
@@ -47,19 +43,18 @@ class V4DatabaseFactory {
 // The V4Database serves as a single place to manage all the V4Stores.
 class V4Database {
  public:
-  // Factory method to create a V4Database. It creates the database on the
-  // provided |db_task_runner|. When the database creation is complete, it calls
-  // the NewDatabaseReadyCallback on the same thread as it was called.
-  static void Create(
+  // Factory method for obtaining a V4Database implementation.
+  // It is not thread safe.
+  // The availability of each list is controlled by the one flag on this
+  // method.
+  static V4Database* Create(
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
       const base::FilePath& base_path,
-      ListInfoMap list_info_map,
-      NewDatabaseReadyCallback callback);
+      ListInfoMap list_info_map);
 
-  // Destroys the provided v4_database on its task_runner since this may be a
-  // long operation.
-  static void Destroy(std::unique_ptr<V4Database> v4_database);
-
+  V4Database(
+     const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
+     StoreMap store_map);
   virtual ~V4Database();
 
   // Deletes the current database and creates a new one.
@@ -71,25 +66,7 @@ class V4Database {
     factory_ = factory;
   }
 
- protected:
-  V4Database(const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
-             StoreMap store_map);
-
  private:
-  // Factory method to create a V4Database. When the database creation is
-  // complete, it calls the NewDatabaseReadyCallback on |callback_task_runner|.
-  static void CreateOnTaskRunner(
-      const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
-      const base::FilePath& base_path,
-      ListInfoMap list_info_map,
-      const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
-      NewDatabaseReadyCallback callback);
-
-  const scoped_refptr<base::SequencedTaskRunner> db_task_runner_;
-
-  // Map of UpdateListIdentifier to the V4Store.
-  StoreMap store_map_;
-
   // The factory that controls the creation of V4Database objects.
   // This is used *only* by tests.
   static V4DatabaseFactory* factory_;

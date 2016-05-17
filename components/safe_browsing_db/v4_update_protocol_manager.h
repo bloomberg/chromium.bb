@@ -68,9 +68,6 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate,
   // net::URLFetcherDelegate interface.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  // Schedule the next update without backoff.
-  void ScheduleNextUpdate();
-
  protected:
   // Constructs a V4UpdateProtocolManager that issues network requests using
   // |request_context_getter|.
@@ -127,8 +124,8 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate,
   // Returns whether another update is currently scheduled.
   bool IsUpdateScheduled() const;
 
-  // Schedule the next update with backoff specified.
-  void ScheduleNextUpdateWithBackoff(bool back_off);
+  // Schedule the next update, considering whether we are in backoff.
+  void ScheduleNextUpdate(bool back_off);
 
   // Schedule the next update, after the given interval.
   void ScheduleNextUpdateAfterInterval(base::TimeDelta interval);
@@ -168,7 +165,7 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate,
   int url_fetcher_id_;
 
   // The callback that's called when GetUpdates completes.
-  V4UpdateCallback update_callback_;
+  V4UpdateCallback callback_;
 
   // The pending update request. The request must be canceled when the object is
   // destroyed.
@@ -176,8 +173,6 @@ class V4UpdateProtocolManager : public net::URLFetcherDelegate,
 
   // Timer to setup the next update request.
   base::OneShotTimer update_timer_;
-
-  base::Time last_response_time_;
 
   DISALLOW_COPY_AND_ASSIGN(V4UpdateProtocolManager);
 };
