@@ -50,29 +50,26 @@ component("blink") {
 }
 
 # GYP version: //cc/blink/cc_blink_tests.gyp:cc_blink_unittests
-# TODO(GYP): make linking work on the mac.
-if (!is_mac) {
-  test("cc_blink_unittests") {
-    sources = [
-      "web_layer_impl_fixed_bounds_unittest.cc",
+test("cc_blink_unittests") {
+  sources = [
+    "web_layer_impl_fixed_bounds_unittest.cc",
 
-      # Setup.
-      "test/cc_blink_test_suite.cc",
-      "test/run_all_unittests.cc",
-    ]
+    # Setup.
+    "test/cc_blink_test_suite.cc",
+    "test/run_all_unittests.cc",
+  ]
 
-    deps = [
-      ":blink",
-      "//base/test:test_support",
-      "//base/third_party/dynamic_annotations",
-      "//cc",
-      "//cc:test_support",
-      "//skia",
-      "//testing/gmock",
-      "//testing/gtest",
-      "//third_party/WebKit/public:blink_for_unittests",
-      "//ui/gfx:test_support",
-      "//ui/gfx/geometry",
-    ]
-  }
+  deps = [
+    ":blink",
+    "//base/test:test_support",
+    "//base/third_party/dynamic_annotations",
+    "//cc",
+    "//cc:test_support",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/WebKit/public:blink_for_unittests",
+    "//ui/gfx:test_support",
+    "//ui/gfx/geometry",
+  ]
 }
