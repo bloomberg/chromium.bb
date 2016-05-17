@@ -14,6 +14,8 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 
 #if defined(USE_AURA)
 #include "chromecast/graphics/cast_screen.h"
@@ -68,21 +70,15 @@ CastContentWindow::~CastContentWindow() {
 #endif
 }
 
-void CastContentWindow::CreateWindowTree(
-    const gfx::Size& initial_size,
-    content::WebContents* web_contents) {
+void CastContentWindow::CreateWindowTree(content::WebContents* web_contents) {
 #if defined(USE_AURA)
   // Aura initialization
-  CastScreen* cast_screen =
-      shell::CastBrowserProcess::GetInstance()->cast_screen();
-  if (!display::Screen::GetScreen())
-    display::Screen::SetScreenInstance(cast_screen);
-  if (cast_screen->GetPrimaryDisplay().size() != initial_size)
-    cast_screen->UpdateDisplaySize(initial_size);
-
+  DCHECK(display::Screen::GetScreen());
+  gfx::Size display_size =
+      display::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel();
   CHECK(aura::Env::GetInstance());
   window_tree_host_.reset(
-      aura::WindowTreeHost::Create(gfx::Rect(initial_size)));
+      aura::WindowTreeHost::Create(gfx::Rect(display_size)));
   window_tree_host_->InitHost();
   window_tree_host_->window()->SetLayoutManager(
       new CastFillLayout(window_tree_host_->window()));
@@ -106,11 +102,14 @@ void CastContentWindow::CreateWindowTree(
 }
 
 std::unique_ptr<content::WebContents> CastContentWindow::CreateWebContents(
-    const gfx::Size& initial_size,
     content::BrowserContext* browser_context) {
+  CHECK(display::Screen::GetScreen());
+  gfx::Size display_size =
+      display::Screen::GetScreen()->GetPrimaryDisplay().size();
+
   content::WebContents::CreateParams create_params(browser_context, NULL);
   create_params.routing_id = MSG_ROUTING_NONE;
-  create_params.initial_size = initial_size;
+  create_params.initial_size = display_size;
   content::WebContents* web_contents = content::WebContents::Create(
       create_params);
   content::WebContentsObserver::Observe(web_contents);

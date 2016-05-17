@@ -19,7 +19,6 @@ import org.chromium.chromecast.base.ChromecastConfigAndroid;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.DeviceUtils;
-import org.chromium.content.common.ContentSwitches;
 import org.chromium.net.NetworkChangeNotifier;
 
 /**
@@ -58,9 +57,6 @@ public class CastBrowserHelper {
                 }
             }
         }
-
-        CommandLine.getInstance().appendSwitchWithValue(
-                ContentSwitches.FORCE_DEVICE_SCALE_FACTOR, "1");
 
         waitForDebuggerIfNeeded();
 

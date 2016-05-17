@@ -19,13 +19,11 @@ import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.content.browser.ActivityContentVideoViewEmbedder;
 import org.chromium.content.browser.ContentVideoViewEmbedder;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.common.ContentSwitches;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -36,9 +34,6 @@ public class CastShellActivity extends Activity {
     private static final boolean DEBUG = false;
 
     private static final String ACTIVE_SHELL_URL_KEY = "activeUrl";
-    private static final int DEFAULT_HEIGHT_PIXELS = 720;
-    public static final String ACTION_EXTRA_RESOLUTION_HEIGHT =
-            "org.chromium.chromecast.shell.intent.extra.RESOLUTION_HEIGHT";
 
     private CastWindowManager mCastWindowManager;
     private AudioManager mAudioManager;
@@ -112,7 +107,6 @@ public class CastShellActivity extends Activity {
                     finish();
                 }
             });
-        setResolution();
         mCastWindowManager.setWindow(new WindowAndroid(this));
 
         registerBroadcastReceiver();
@@ -268,29 +262,6 @@ public class CastShellActivity extends Activity {
     private void unregisterBroadcastReceiver() {
         LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
         broadcastManager.unregisterReceiver(mBroadcastReceiver);
-    }
-
-    private void setResolution() {
-        CommandLine commandLine = CommandLine.getInstance();
-        int defaultHeight = DEFAULT_HEIGHT_PIXELS;
-        if (commandLine.hasSwitch(CastSwitches.DEFAULT_RESOLUTION_HEIGHT)) {
-            String commandLineHeightString =
-                    commandLine.getSwitchValue(CastSwitches.DEFAULT_RESOLUTION_HEIGHT);
-            try {
-                defaultHeight = Integer.parseInt(commandLineHeightString);
-            } catch (NumberFormatException e) {
-                Log.w(TAG, "Ignored invalid height: %d", commandLineHeightString);
-            }
-        }
-        int requestedHeight =
-                getIntent().getIntExtra(ACTION_EXTRA_RESOLUTION_HEIGHT, defaultHeight);
-        int displayHeight = getResources().getDisplayMetrics().heightPixels;
-        // Clamp within [defaultHeight, displayHeight]
-        int desiredHeight = Math.min(displayHeight, Math.max(defaultHeight, requestedHeight));
-        double deviceScaleFactor = ((double) displayHeight) / desiredHeight;
-        Log.d(TAG, "Using scale factor %f to set height %d", deviceScaleFactor, desiredHeight);
-        commandLine.appendSwitchWithValue(
-                ContentSwitches.FORCE_DEVICE_SCALE_FACTOR, String.valueOf(deviceScaleFactor));
     }
 
     private void exitIfUrlMissing() {

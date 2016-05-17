@@ -61,8 +61,7 @@ CastWindowAndroid::CastWindowAndroid(content::BrowserContext* browser_context)
 }
 
 void CastWindowAndroid::Initialize() {
-  web_contents_ =
-      content_window_->CreateWebContents(gfx::Size(), browser_context_);
+  web_contents_ = content_window_->CreateWebContents(browser_context_);
   web_contents_->SetDelegate(this);
   content::WebContentsObserver::Observe(web_contents_.get());
 

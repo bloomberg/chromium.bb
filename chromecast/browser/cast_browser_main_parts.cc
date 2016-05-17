@@ -368,11 +368,7 @@ int CastBrowserMainParts::PreCreateThreads() {
 #endif
 
 #if defined(USE_AURA)
-  // Screen can (and should) exist even with no displays connected. Its presence
-  // is assumed as an interface to access display information, e.g. from metrics
-  // code.  See CastContentWindow::CreateWindowTree for update when resolution
-  // is available.
-  cast_browser_process_->SetCastScreen(base::WrapUnique(new CastScreen));
+  cast_browser_process_->SetCastScreen(base::WrapUnique(new CastScreen()));
   DCHECK(!display::Screen::GetScreen());
   display::Screen::SetScreenInstance(cast_browser_process_->cast_screen());
 #endif
@@ -424,11 +420,10 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   // TODO(halliwell) move audio builds to use ozone_platform_cast, then can
   // simplify this by removing DISABLE_DISPLAY condition.  Should then also
   // assert(ozone_platform_cast) in BUILD.gn where it depends on //ui/ozone.
-  video_plane_controller_.reset(
-      new media::VideoPlaneController(GetMediaTaskRunner()));
-  cast_browser_process_->cast_screen()->SetDisplayResizeCallback(
-      base::Bind(&media::VideoPlaneController::SetGraphicsPlaneResolution,
-                 base::Unretained(video_plane_controller_.get())));
+  gfx::Size display_size =
+      display::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel();
+  video_plane_controller_.reset(new media::VideoPlaneController(
+      Size(display_size.width(), display_size.height()), GetMediaTaskRunner()));
   ui::OverlayManagerCast::SetOverlayCompositedCallback(
       base::Bind(&media::VideoPlaneController::SetGeometry,
                  base::Unretained(video_plane_controller_.get())));

@@ -37,12 +37,10 @@ class CastContentWindow : public content::WebContentsObserver {
   // CreateWindowTree).
   void SetTransparent() { transparent_ = true; }
 
-  // Create a window with the given size for |web_contents|.
-  void CreateWindowTree(const gfx::Size& initial_size,
-                        content::WebContents* web_contents);
+  // Create a full-screen window for |web_contents|.
+  void CreateWindowTree(content::WebContents* web_contents);
 
   std::unique_ptr<content::WebContents> CreateWebContents(
-      const gfx::Size& initial_size,
       content::BrowserContext* browser_context);
 
   // content::WebContentsObserver implementation:

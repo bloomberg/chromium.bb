@@ -5,7 +5,6 @@
 #ifndef CHROMECAST_GRAPHICS_CAST_SCREEN_H_
 #define CHROMECAST_GRAPHICS_CAST_SCREEN_H_
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "chromecast/public/graphics_types.h"
 #include "ui/display/display.h"
@@ -24,12 +23,6 @@ class CastBrowserMainParts;
 class CastScreen : public display::Screen {
  public:
   ~CastScreen() override;
-
-  using DisplayResizeCallback = base::Callback<void(const Size&)>;
-  void SetDisplayResizeCallback(const DisplayResizeCallback& cb);
-
-  // Updates the primary display size.
-  void UpdateDisplaySize(const gfx::Size& size);
 
   // display::Screen overrides:
   gfx::Point GetCursorScreenPoint() override;
@@ -50,7 +43,6 @@ class CastScreen : public display::Screen {
   CastScreen();
 
   display::Display display_;
-  DisplayResizeCallback display_resize_cb_;
 
   friend class shell::CastBrowserMainParts;
 

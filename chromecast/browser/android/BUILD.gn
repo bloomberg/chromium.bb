@@ -32,7 +32,6 @@ android_library("cast_shell_java") {
     "$java_src_dir/org/chromium/chromecast/shell/CastCrashUploader.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastMetricsHelper.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastShellActivity.java",
-    "$java_src_dir/org/chromium/chromecast/shell/CastSwitches.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastSysInfoAndroid.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastWindowAndroid.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastWindowManager.java",

@@ -32,7 +32,8 @@ namespace media {
 // constructed on.
 class VideoPlaneController {
  public:
-  explicit VideoPlaneController(
+  VideoPlaneController(
+      const Size& graphics_resolution,
       scoped_refptr<base::SingleThreadTaskRunner> media_task_runner);
   ~VideoPlaneController();
   // Sets the video plane geometry in *graphics plane coordinates*. If there is
@@ -45,13 +46,6 @@ class VideoPlaneController {
   // then later when it changes. If there is no change to the screen resolution
   // from the last call to this method, it is a no-op.
   void SetScreenResolution(const Size& resolution);
-
-  // Sets graphics hardware plane resolution, and clears any cached video plane
-  // geometry parameters. This must be called at least once when the hardware
-  // graphics plane resolution (same resolution as display::Screen) is known,
-  // then later when it changes. If there is no change to the graphics plane
-  // resolution from the last call to this method, it is a no-op.
-  void SetGraphicsPlaneResolution(const Size& resolution);
 
   // After Pause is called, no further calls to VideoPlane::SetGeometry will be
   // made except for any pending calls already scheduled on the media thread.
@@ -84,9 +78,8 @@ class VideoPlaneController {
 
   // Current resolutions
   bool have_screen_res_;
-  bool have_graphics_plane_res_;
   Size screen_res_;
-  Size graphics_plane_res_;
+  const Size graphics_plane_res_;
 
   // Saved video plane parameters (in graphics plane coordinates)
   // for use when screen resolution changes.

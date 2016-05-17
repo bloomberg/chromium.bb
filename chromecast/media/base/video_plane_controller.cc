@@ -140,12 +140,12 @@ class VideoPlaneController::RateLimitedSetVideoPlaneGeometry
 };
 
 VideoPlaneController::VideoPlaneController(
+    const Size& graphics_resolution,
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner)
     : is_paused_(false),
       have_screen_res_(false),
-      have_graphics_plane_res_(false),
       screen_res_(0, 0),
-      graphics_plane_res_(0, 0),
+      graphics_plane_res_(graphics_resolution),
       have_video_plane_geometry_(false),
       video_plane_display_rect_(0, 0),
       video_plane_transform_(VideoPlane::TRANSFORM_NONE),
@@ -193,27 +193,6 @@ void VideoPlaneController::SetScreenResolution(const Size& resolution) {
   screen_res_ = resolution;
 
   MaybeRunSetGeometry();
-}
-
-void VideoPlaneController::SetGraphicsPlaneResolution(const Size& resolution) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(ResolutionSizeValid(resolution));
-  if (have_graphics_plane_res_ && SizeEqual(resolution, graphics_plane_res_)) {
-    VLOG(2) << "No change found in graphics plane resolution.";
-    return;
-  }
-
-  VLOG(1) << "New graphics plane resolution " << resolution.width << "x"
-          << resolution.height;
-
-  have_graphics_plane_res_ = true;
-  graphics_plane_res_ = resolution;
-
-  // Any cached video plane geometry parameters are no longer valid since they
-  // were relative to the PREVIOUS graphics plane resolution. Thus, the cached
-  // parameters are cleared, and it's the caller's responsibility to call
-  // SetGeometry() with arguments relative to the NEW graphics plane if needed.
-  ClearVideoPlaneGeometry();
 }
 
 void VideoPlaneController::Pause() {
@@ -267,8 +246,7 @@ void VideoPlaneController::MaybeRunSetGeometry() {
 }
 
 bool VideoPlaneController::HaveDataForSetGeometry() const {
-  return have_screen_res_ && have_graphics_plane_res_ &&
-         have_video_plane_geometry_;
+  return have_screen_res_ && have_video_plane_geometry_;
 }
 
 void VideoPlaneController::ClearVideoPlaneGeometry() {

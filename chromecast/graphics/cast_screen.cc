@@ -6,9 +6,12 @@
 
 #include <stdint.h>
 
+#include "base/command_line.h"
+#include "chromecast/public/graphics_properties_shlib.h"
 #include "ui/aura/env.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -18,30 +21,21 @@ namespace {
 
 const int64_t kDisplayId = 1;
 
-const int k720pWidth = 1280;
-const int k720pHeight = 720;
-
-// When CastScreen is first initialized, we may not have any display info
-// available. These constants hold the initial size that we default to, and
-// the size can be updated when we have actual display info at hand with
-// UpdateDisplaySize().
-const int kInitDisplayWidth = k720pWidth;
-const int kInitDisplayHeight = k720pHeight;
+// Helper to return the screen resolution (device pixels)
+// to use.
+gfx::Size GetScreenResolution() {
+  if (GraphicsPropertiesShlib::IsSupported(
+          GraphicsPropertiesShlib::k1080p,
+          base::CommandLine::ForCurrentProcess()->argv())) {
+    return gfx::Size(1920, 1080);
+  } else {
+    return gfx::Size(1280, 720);
+  }
+}
 
 }  // namespace
 
 CastScreen::~CastScreen() {
-}
-
-void CastScreen::SetDisplayResizeCallback(const DisplayResizeCallback& cb) {
-  DCHECK(!cb.is_null());
-  display_resize_cb_ = cb;
-}
-
-void CastScreen::UpdateDisplaySize(const gfx::Size& size) {
-  display_.SetScaleAndBounds(1.0f, gfx::Rect(size));
-  if (!display_resize_cb_.is_null())
-    display_resize_cb_.Run(Size(size.width(), size.height()));
 }
 
 gfx::Point CastScreen::GetCursorScreenPoint() {
@@ -89,8 +83,10 @@ void CastScreen::AddObserver(display::DisplayObserver* observer) {}
 void CastScreen::RemoveObserver(display::DisplayObserver* observer) {}
 
 CastScreen::CastScreen() : display_(kDisplayId) {
-  display_.SetScaleAndBounds(1.0f,
-                             gfx::Rect(kInitDisplayWidth, kInitDisplayHeight));
+  // Device scale factor computed relative to 720p display
+  const gfx::Size size = GetScreenResolution();
+  const float device_scale_factor = size.height() / 720.0f;
+  display_.SetScaleAndBounds(device_scale_factor, gfx::Rect(size));
 }
 
 }  // namespace chromecast

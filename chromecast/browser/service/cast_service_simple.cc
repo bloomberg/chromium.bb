@@ -51,12 +51,9 @@ void CastServiceSimple::FinalizeInternal() {
 }
 
 void CastServiceSimple::StartInternal() {
-  // This is the simple version that hard-codes the size.
-  gfx::Size initial_size(1280, 720);
-
   window_.reset(new CastContentWindow);
-  web_contents_ = window_->CreateWebContents(initial_size, browser_context());
-  window_->CreateWindowTree(initial_size, web_contents_.get());
+  web_contents_ = window_->CreateWebContents(browser_context());
+  window_->CreateWindowTree(web_contents_.get());
 
   web_contents_->GetController().LoadURL(startup_url_, content::Referrer(),
                                          ui::PAGE_TRANSITION_TYPED,

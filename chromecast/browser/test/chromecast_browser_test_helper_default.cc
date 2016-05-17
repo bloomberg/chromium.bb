@@ -22,11 +22,10 @@ class DefaultHelper : public ChromecastBrowserTestHelper {
 
   content::WebContents* NavigateToURL(const GURL& url) override {
     window_.reset(new CastContentWindow);
-    gfx::Size initial_size(1280, 720);
 
     web_contents_ = window_->CreateWebContents(
-        initial_size, CastBrowserProcess::GetInstance()->browser_context());
-    window_->CreateWindowTree(initial_size, web_contents_.get());
+        CastBrowserProcess::GetInstance()->browser_context());
+    window_->CreateWindowTree(web_contents_.get());
 
     content::WaitForLoadStop(web_contents_.get());
     content::TestNavigationObserver same_tab_observer(web_contents_.get(), 1);
