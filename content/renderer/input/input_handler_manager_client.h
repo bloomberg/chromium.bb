@@ -48,6 +48,7 @@ class CONTENT_EXPORT InputHandlerManagerClient {
   virtual void DidRemoveInputHandler(int routing_id) = 0;
   virtual void DidOverscroll(int routing_id,
                              const DidOverscrollParams& params) = 0;
+  virtual void DidStartFlinging(int routing_id) = 0;
   virtual void DidStopFlinging(int routing_id) = 0;
   virtual void NotifyInputEventHandled(int routing_id,
                                        blink::WebInputEvent::Type type) = 0;

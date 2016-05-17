@@ -245,6 +245,10 @@ void InputHandlerManager::DidOverscroll(int routing_id,
   client_->DidOverscroll(routing_id, params);
 }
 
+void InputHandlerManager::DidStartFlinging(int routing_id) {
+  client_->DidStartFlinging(routing_id);
+}
+
 void InputHandlerManager::DidStopFlinging(int routing_id) {
   client_->DidStopFlinging(routing_id);
 }

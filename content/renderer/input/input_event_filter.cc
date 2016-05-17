@@ -59,6 +59,15 @@ void InputEventFilter::SetBoundHandler(const Handler& handler) {
   handler_ = handler;
 }
 
+void InputEventFilter::SetIsFlingingInMainThreadEventQueue(int routing_id,
+                                                           bool is_flinging) {
+  RouteQueueMap::iterator iter = route_queues_.find(routing_id);
+  if (iter == route_queues_.end() || !iter->second)
+    return;
+
+  iter->second->set_is_flinging(is_flinging);
+}
+
 void InputEventFilter::DidAddInputHandler(int routing_id) {
   base::AutoLock locked(routes_lock_);
   routes_.insert(routing_id);
@@ -82,7 +91,12 @@ void InputEventFilter::DidOverscroll(int routing_id,
       new InputHostMsg_DidOverscroll(routing_id, params)));
 }
 
+void InputEventFilter::DidStartFlinging(int routing_id) {
+  SetIsFlingingInMainThreadEventQueue(routing_id, true);
+}
+
 void InputEventFilter::DidStopFlinging(int routing_id) {
+  SetIsFlingingInMainThreadEventQueue(routing_id, false);
   SendMessage(base::WrapUnique(new InputHostMsg_DidStopFlinging(routing_id)));
 }
 

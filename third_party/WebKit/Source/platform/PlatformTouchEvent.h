@@ -32,6 +32,7 @@ public:
         : PlatformEvent(PlatformEvent::TouchStart)
         , m_dispatchType(PlatformEvent::Blocking)
         , m_causesScrollingIfUncanceled(false)
+        , m_dispatchedDuringFling(false)
     {
     }
 
@@ -40,11 +41,13 @@ public:
     DispatchType dispatchType() const { return m_dispatchType; }
     bool cancelable() const { return m_dispatchType == PlatformEvent::Blocking; }
     bool causesScrollingIfUncanceled() const { return m_causesScrollingIfUncanceled; }
+    bool dispatchedDuringFling() const { return m_dispatchedDuringFling; }
 
 protected:
     Vector<PlatformTouchPoint> m_touchPoints;
     DispatchType m_dispatchType;
     bool m_causesScrollingIfUncanceled;
+    bool m_dispatchedDuringFling;
 };
 
 } // namespace blink

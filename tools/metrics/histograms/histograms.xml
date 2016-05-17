@@ -12433,6 +12433,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Event.Touch.TouchDispositionsDuringFling"
+    enum="TouchEventDispatchResultType">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Records the disposition (handled or not handled) of touch start events. Only
+    recorded while there is an active fling animation.
+  </summary>
+</histogram>
+
+<histogram name="Event.Touch.TouchDispositionsOutsideFling"
+    enum="TouchEventDispatchResultType">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Records the disposition (handled or not handled) of touch start events. Only
+    recorded while there is no active fling animation.
+  </summary>
+</histogram>
+
 <histogram name="Event.TouchDuration" units="ms">
   <owner>kuscher@google.com</owner>
   <owner>rbyers@chromium.org</owner>

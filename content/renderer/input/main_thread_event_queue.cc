@@ -8,7 +8,7 @@ namespace content {
 
 MainThreadEventQueue::MainThreadEventQueue(int routing_id,
                                            MainThreadEventQueueClient* client)
-    : routing_id_(routing_id), client_(client) {}
+    : routing_id_(routing_id), client_(client), is_flinging_(false) {}
 
 MainThreadEventQueue::~MainThreadEventQueue() {}
 
@@ -63,6 +63,7 @@ bool MainThreadEventQueue::HandleEvent(
     PendingTouchEvent modified_dispatch_type_event =
         PendingTouchEvent(*static_cast<const blink::WebTouchEvent*>(event),
                           latency, dispatch_type);
+    modified_dispatch_type_event.event.dispatchedDuringFling = is_flinging_;
 
     // Adjust the |dispatchType| on the event since the compositor
     // determined all event listeners are passive.

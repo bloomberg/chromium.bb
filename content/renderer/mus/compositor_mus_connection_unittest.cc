@@ -127,6 +127,7 @@ class TestInputHandlerManagerClient
   void DidRemoveInputHandler(int routing_id) override {}
   void DidOverscroll(int routing_id,
                      const content::DidOverscrollParams& params) override {}
+  void DidStartFlinging(int routing_id) override {}
   void DidStopFlinging(int routing_id) override {}
   void NotifyInputEventHandled(int routing_id,
                                blink::WebInputEvent::Type type) override {}

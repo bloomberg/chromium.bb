@@ -97,6 +97,10 @@ void BlimpInputHandlerWrapper::DidOverscroll(
   DCHECK(compositor_thread_checker_.CalledOnValidThread());
 }
 
+void BlimpInputHandlerWrapper::DidStartFlinging() {
+  DCHECK(compositor_thread_checker_.CalledOnValidThread());
+}
+
 void BlimpInputHandlerWrapper::DidStopFlinging() {
   DCHECK(compositor_thread_checker_.CalledOnValidThread());
 }

@@ -469,6 +469,7 @@ PlatformTouchEventBuilder::PlatformTouchEventBuilder(Widget* widget, const WebTo
     m_modifiers = event.modifiers;
     m_timestamp = event.timeStampSeconds;
     m_causesScrollingIfUncanceled = event.movedBeyondSlopRegion;
+    m_dispatchedDuringFling = event.dispatchedDuringFling;
 
     for (unsigned i = 0; i < event.touchesLength; ++i)
         m_touchPoints.append(PlatformTouchPointBuilder(widget, event.touches[i]));

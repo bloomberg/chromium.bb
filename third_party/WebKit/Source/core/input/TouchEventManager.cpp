@@ -251,6 +251,17 @@ WebInputEventResult TouchEventManager::dispatchTouchEvents(
                     DEFINE_STATIC_LOCAL(EnumerationHistogram, touchDispositionsBeforePageLoadHistogram, ("Event.Touch.TouchDispositionsBeforePageLoad", TouchEventDispatchResultTypeMax));
                     touchDispositionsBeforePageLoadHistogram.count((domDispatchResult != DispatchEventResult::NotCanceled) ? HandledTouches : UnhandledTouches);
                 }
+
+                // Report the touch disposition, split by whether there is an active fling animation.
+                if (event.type() == PlatformEvent::TouchStart) {
+                    if (event.dispatchedDuringFling()) {
+                        DEFINE_STATIC_LOCAL(EnumerationHistogram, touchDispositionsDuringFlingHistogram, ("Event.Touch.TouchDispositionsDuringFling", TouchEventDispatchResultTypeMax));
+                        touchDispositionsDuringFlingHistogram.count((domDispatchResult != DispatchEventResult::NotCanceled) ? HandledTouches : UnhandledTouches);
+                    } else {
+                        DEFINE_STATIC_LOCAL(EnumerationHistogram, touchDispositionsOutsideFlingHistogram, ("Event.Touch.TouchDispositionsOutsideFling", TouchEventDispatchResultTypeMax));
+                        touchDispositionsOutsideFlingHistogram.count((domDispatchResult != DispatchEventResult::NotCanceled) ? HandledTouches : UnhandledTouches);
+                    }
+                }
             }
             eventResult = EventHandler::mergeEventResult(eventResult,
                 EventHandler::toWebInputEventResult(domDispatchResult));

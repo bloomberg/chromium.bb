@@ -65,6 +65,7 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   void DidRemoveInputHandler(int routing_id) override;
   void DidOverscroll(int routing_id,
                      const DidOverscrollParams& params) override;
+  void DidStartFlinging(int routing_id) override;
   void DidStopFlinging(int routing_id) override;
   void NotifyInputEventHandled(int routing_id,
                                blink::WebInputEvent::Type type) override;
@@ -87,6 +88,7 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
   void ForwardToHandler(const IPC::Message& message);
   void SendMessage(std::unique_ptr<IPC::Message> message);
   void SendMessageOnIOThread(std::unique_ptr<IPC::Message> message);
+  void SetIsFlingingInMainThreadEventQueue(int routing_id, bool is_flinging);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   base::Callback<void(const IPC::Message&)> main_listener_;

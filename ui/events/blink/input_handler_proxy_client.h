@@ -38,6 +38,8 @@ class InputHandlerProxyClient {
       const gfx::Vector2dF& current_fling_velocity,
       const gfx::PointF& causal_event_viewport_point) = 0;
 
+  virtual void DidStartFlinging() = 0;
+
   virtual void DidStopFlinging() = 0;
 
   virtual void DidAnimateForInput() = 0;

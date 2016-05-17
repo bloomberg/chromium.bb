@@ -85,6 +85,7 @@ class CONTENT_EXPORT InputHandlerManager {
   void DidOverscroll(int routing_id, const DidOverscrollParams& params);
 
   // Called from the compositor's thread.
+  void DidStartFlinging(int routing_id);
   void DidStopFlinging(int routing_id);
 
   // Called from the compositor's thread.

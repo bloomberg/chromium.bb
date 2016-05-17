@@ -241,6 +241,8 @@ void SynchronousCompositorFilter::DidOverscroll(
   proxy->DidOverscroll(params);
 }
 
+void SynchronousCompositorFilter::DidStartFlinging(int routing_id) {}
+
 void SynchronousCompositorFilter::DidStopFlinging(int routing_id) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
   Send(new InputHostMsg_DidStopFlinging(routing_id));

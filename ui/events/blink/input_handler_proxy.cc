@@ -778,6 +778,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
                            TRACE_EVENT_SCOPE_THREAD);
       gesture_scroll_on_impl_thread_ = false;
       fling_may_be_active_on_main_thread_ = true;
+      client_->DidStartFlinging();
       return DID_NOT_HANDLE;
     }
     case cc::InputHandler::SCROLL_IGNORED: {
@@ -1276,6 +1277,7 @@ bool InputHandlerProxy::TouchpadFlingScroll(
       // the subarea but then is flung "under" the pointer.
       client_->TransferActiveWheelFlingAnimation(fling_parameters_);
       fling_may_be_active_on_main_thread_ = true;
+      client_->DidStartFlinging();
       CancelCurrentFlingWithoutNotifyingClient();
       break;
   }

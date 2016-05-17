@@ -633,6 +633,10 @@ public:
     // touch-point has moved (by whatever amount).
     bool movedBeyondSlopRegion;
 
+    // Whether there was an active fling animation when the event was
+    // dispatched.
+    bool dispatchedDuringFling;
+
     // A unique identifier for the touch event.
     uint32_t uniqueTouchEventId;
 
@@ -641,6 +645,7 @@ public:
         , touchesLength(0)
         , dispatchType(Blocking)
         , movedBeyondSlopRegion(false)
+        , dispatchedDuringFling(false)
         , uniqueTouchEventId(0)
     {
     }

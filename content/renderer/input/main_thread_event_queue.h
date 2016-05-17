@@ -106,12 +106,15 @@ class CONTENT_EXPORT MainThreadEventQueue {
   // in flight.
   void EventHandled(blink::WebInputEvent::Type type);
 
+  void set_is_flinging(bool is_flinging) { is_flinging_ = is_flinging; }
+
  private:
   friend class MainThreadEventQueueTest;
   int routing_id_;
   MainThreadEventQueueClient* client_;
   WebInputEventQueue<PendingMouseWheelEvent> wheel_events_;
   WebInputEventQueue<PendingTouchEvent> touch_events_;
+  bool is_flinging_;
 
   DISALLOW_COPY_AND_ASSIGN(MainThreadEventQueue);
 };
