@@ -30,7 +30,7 @@ struct VisibleNetworkDetails {
 };
 
 struct ConfiguredNetworkDetails {
-  string passphrase;
+  string? passphrase;
   bool autoconnect;
 };
 
