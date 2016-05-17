@@ -163,6 +163,7 @@ class MemoryLongRunningIdleGmail(_MemoryV8Benchmark):
     return cls.IsSvelte(possible_browser)  # http://crbug.com/611167
 
 
+@benchmark.Disabled('android-webview') # http://crbug.com/612210
 class MemoryLongRunningIdleGmailBackground(_MemoryV8Benchmark):
   """Use (recorded) real world web sites and measure memory consumption
   of long running idle Gmail page """
