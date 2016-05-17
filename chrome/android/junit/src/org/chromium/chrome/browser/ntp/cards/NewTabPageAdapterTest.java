@@ -67,7 +67,9 @@ public class NewTabPageAdapterTest {
         List<NewTabPageListItem> loadedItems = new ArrayList<>(ntpa.getItemsForTesting());
         assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, ntpa.getItemViewType(0));
         assertEquals(NewTabPageListItem.VIEW_TYPE_HEADER, ntpa.getItemViewType(1));
-        assertEquals(snippets, loadedItems.subList(2, loadedItems.size()));
+        assertEquals(snippets, loadedItems.subList(2, loadedItems.size() - 1));
+        assertEquals(
+                NewTabPageListItem.VIEW_TYPE_SPACING, ntpa.getItemViewType(loadedItems.size() - 1));
 
         // The adapter should ignore any new incoming data.
         mSnippetsObserver.onSnippetsReceived(Arrays.asList(new SnippetArticle[] {
@@ -84,7 +86,8 @@ public class NewTabPageAdapterTest {
     public void testSnippetLoadingInitiallyEmpty() {
         NewTabPageAdapter ntpa = new NewTabPageAdapter(mNewTabPageManager, null);
 
-        // If we don't get anything, we should still have the above-the-fold item present.
+        // If we don't get anything, we should still have the above-the-fold item and the spacing
+        // present.
         mSnippetsObserver.onSnippetsReceived(new ArrayList<SnippetArticle>());
         assertEquals(1, ntpa.getItemCount());
         assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, ntpa.getItemViewType(0));
@@ -95,7 +98,9 @@ public class NewTabPageAdapterTest {
         List<NewTabPageListItem> loadedItems = new ArrayList<>(ntpa.getItemsForTesting());
         assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, ntpa.getItemViewType(0));
         assertEquals(NewTabPageListItem.VIEW_TYPE_HEADER, ntpa.getItemViewType(1));
-        assertEquals(snippets, loadedItems.subList(2, loadedItems.size()));
+        assertEquals(snippets, loadedItems.subList(2, loadedItems.size() - 1));
+        assertEquals(
+                NewTabPageListItem.VIEW_TYPE_SPACING, ntpa.getItemViewType(loadedItems.size() - 1));
 
         // The adapter should ignore any new incoming data.
         mSnippetsObserver.onSnippetsReceived(Arrays.asList(new SnippetArticle[] {
@@ -115,15 +120,15 @@ public class NewTabPageAdapterTest {
 
         List<SnippetArticle> snippets = createDummySnippets();
         mSnippetsObserver.onSnippetsReceived(snippets);
-        assertEquals(2 + snippets.size(), ntpa.getItemCount());
+        assertEquals(3 + snippets.size(), ntpa.getItemCount());
 
         // When we clear the snippets, we should only have the header and above-the-fold left.
         mSnippetsObserver.onSnippetsCleared();
-        assertEquals(2, ntpa.getItemCount());
+        assertEquals(3, ntpa.getItemCount());
 
         // The adapter should now be waiting for new snippets.
         mSnippetsObserver.onSnippetsReceived(snippets);
-        assertEquals(2 + snippets.size(), ntpa.getItemCount());
+        assertEquals(3 + snippets.size(), ntpa.getItemCount());
     }
 
     private List<SnippetArticle> createDummySnippets() {

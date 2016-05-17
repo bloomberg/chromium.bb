@@ -33,20 +33,38 @@ import java.util.List;
  */
 public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements SnippetsObserver {
     private static final String TAG = "Ntp";
+    private static final Interpolator FADE_INTERPOLATOR = new FastOutLinearInInterpolator();
 
     private final NewTabPageManager mNewTabPageManager;
     private final NewTabPageLayout mNewTabPageLayout;
     private final AboveTheFoldListItem mAboveTheFoldListItem;
     private final List<NewTabPageListItem> mNewTabPageListItems;
     private final ItemTouchCallbacks mItemTouchCallbacks;
+    private NewTabPageRecyclerView mRecyclerView;
     private boolean mWantsSnippets;
-
-    private static final Interpolator FADE_INTERPOLATOR = new FastOutLinearInInterpolator();
 
     private class ItemTouchCallbacks extends ItemTouchHelper.Callback {
         @Override
         public void onSwiped(ViewHolder viewHolder, int direction) {
-            NewTabPageAdapter.this.dismissItem(viewHolder.getAdapterPosition());
+            mRecyclerView.onItemDismissStarted(viewHolder.itemView);
+
+            // This is going to have a effect at the next layout pass, which is going to happen
+            // after the item has been removed from the adapter and the layout.
+            mRecyclerView.refreshBottomSpacing();
+
+            NewTabPageAdapter.this.dismissItem(viewHolder);
+        }
+
+        @Override
+        public void clearView(RecyclerView recyclerView, ViewHolder viewHolder) {
+            // clearView() is called when an interaction with the item is finished, which does
+            // not mean that the user went all the way and dismissed the item before releasing it.
+            // We need to check that the item has been removed.
+            if (viewHolder.getAdapterPosition() == RecyclerView.NO_POSITION) {
+                mRecyclerView.onItemDismissFinished(viewHolder.itemView);
+            }
+
+            super.clearView(recyclerView, viewHolder);
         }
 
         @Override
@@ -146,6 +164,10 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
                     SnippetArticleViewHolder.createView(parent), mNewTabPageManager);
         }
 
+        if (viewType == NewTabPageListItem.VIEW_TYPE_SPACING) {
+            return new NewTabPageViewHolder(SpacingListItem.createView(parent));
+        }
+
         return null;
     }
 
@@ -174,24 +196,33 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         mNewTabPageListItems.add(mAboveTheFoldListItem);
         mNewTabPageListItems.add(new SnippetHeaderListItem());
         mNewTabPageListItems.addAll(listSnippets);
+        mNewTabPageListItems.add(new SpacingListItem());
 
         notifyDataSetChanged();
     }
 
-    private void dismissItem(int position) {
-        assert getItemViewType(position) == NewTabPageListItem.VIEW_TYPE_SNIPPET;
+    @Override
+    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+
+        // We are assuming for now that the adapter is used with a single RecyclerView.
+        // Getting the reference as we are doing here is going to be broken if that changes.
+        assert mRecyclerView == null;
+
+        // FindBugs chokes on the cast below when not checked, raising BC_UNCONFIRMED_CAST
+        assert recyclerView instanceof NewTabPageRecyclerView;
+
+        mRecyclerView = (NewTabPageRecyclerView) recyclerView;
+    }
+
+    private void dismissItem(ViewHolder itemViewHolder) {
+        assert itemViewHolder.getItemViewType() == NewTabPageListItem.VIEW_TYPE_SNIPPET;
+
+        int position = itemViewHolder.getAdapterPosition();
         mNewTabPageManager.onSnippetDismissed((SnippetArticle) mNewTabPageListItems.get(position));
+
         mNewTabPageListItems.remove(position);
-
-        int numRemovedItems = 1;
-        if (mNewTabPageListItems.size() == 2) {
-            // There's only the above-the-fold item and the header left, so we remove the header.
-            position = 1; // When present, the header is always at that position.
-            mNewTabPageListItems.remove(position);
-            ++numRemovedItems;
-        }
-
-        notifyItemRangeRemoved(position, numRemovedItems);
+        notifyItemRemoved(position);
     }
 
     List<NewTabPageListItem> getItemsForTesting() {

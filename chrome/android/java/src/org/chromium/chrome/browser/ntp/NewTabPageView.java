@@ -553,6 +553,9 @@ public class NewTabPageView extends FrameLayout
         snippetHeader.setAlpha(headerAlpha);
         params.height = headerHeight;
         snippetHeader.setLayoutParams(params);
+
+        // Update the space at the bottom, which needs to know about the height of the header.
+        mRecyclerView.refreshBottomSpacing();
     }
 
     /**

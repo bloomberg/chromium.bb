@@ -17,7 +17,7 @@ public interface NewTabPageListItem {
      * @see Adapter#getItemViewType(int)
      * @see NewTabPageListItem#getType()
      */
-    @IntDef({VIEW_TYPE_ABOVE_THE_FOLD, VIEW_TYPE_HEADER, VIEW_TYPE_SNIPPET})
+    @IntDef({VIEW_TYPE_ABOVE_THE_FOLD, VIEW_TYPE_HEADER, VIEW_TYPE_SNIPPET, VIEW_TYPE_SPACING})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ViewType {}
 
@@ -38,6 +38,12 @@ public interface NewTabPageListItem {
      * @see Adapter#getItemViewType(int)
      */
     public static final int VIEW_TYPE_SNIPPET = 3;
+
+    /**
+      * View type for a {@link SpacingListItem} used to provide spacing at the end of the list.
+      * @see Adapter#getItemViewType(int)
+      */
+    public static final int VIEW_TYPE_SPACING = 4;
 
     /**
       * Returns the type ({@link ViewType}) of this list item. This is so we can
