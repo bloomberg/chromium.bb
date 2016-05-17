@@ -172,8 +172,9 @@ void NodeChannel::Start() {
 #endif
 
   base::AutoLock lock(channel_lock_);
-  DCHECK(channel_);
-  channel_->Start();
+  // ShutDown() may have already been called, in which case |channel_| is null.
+  if (channel_)
+    channel_->Start();
 }
 
 void NodeChannel::ShutDown() {
