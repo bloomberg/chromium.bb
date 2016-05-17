@@ -30,21 +30,21 @@ test(function() {
 
 test(function() {
   assert_throws(new TypeError(), function() {
-    testElement.styleMap.set('width', new NumberValue(4));
+    testElement.styleMap.set('width', new CSSNumberValue(4));
   });
 }, "Attempting to set an invalid type for a property throws");
 
 test(function() {
   testElement.styleMap.set('width', new SimpleLength(2, 'px'));
   assert_throws(new TypeError(), function() {
-    testElement.styleMap.set('width', new NumberValue(4));
+    testElement.styleMap.set('width', new CSSNumberValue(4));
   });
   assert_equals(testElement.styleMap.get('width').cssString, '2px');
 }, "Attempting to set an invalid type for a property does not change the value");
 
 test(function() {
   assert_throws(new TypeError(), function() {
-    testElement.styleMap.set('lemons', new NumberValue(4));
+    testElement.styleMap.set('lemons', new CSSNumberValue(4));
   });
   assert_throws(new TypeError(), function() {
     testElement.styleMap.set('lemons', null);

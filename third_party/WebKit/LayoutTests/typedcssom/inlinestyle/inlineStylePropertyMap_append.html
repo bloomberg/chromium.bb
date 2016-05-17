@@ -16,13 +16,13 @@ test(function() {
 test(function() {
   // TODO(meade): Use a property that supports multiple values when that is available.
   assert_throws(new TypeError(), function() {
-    testElement.styleMap.append('width', new NumberValue(70));
+    testElement.styleMap.append('width', new CSSNumberValue(70));
   });
 }, "Appending an invalid type to a property throws");
 
 test(function() {
   assert_throws(new TypeError(), function() {
-    testElement.styleMap.append('lemons', new NumberValue(6));
+    testElement.styleMap.append('lemons', new CSSNumberValue(6));
   });
 }, "Attempting to append to an invalid property throws");
 

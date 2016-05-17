@@ -447,6 +447,10 @@ interface CSSNamespaceRule : CSSRule
     getter namespaceURI
     getter prefix
     method constructor
+interface CSSNumberValue : StyleValue
+    attribute @@toStringTag
+    getter value
+    method constructor
 interface CSSPageRule : CSSRule
     attribute @@toStringTag
     getter selectorText
@@ -4021,10 +4025,6 @@ interface Notification : EventTarget
     setter onclose
     setter onerror
     setter onshow
-interface NumberValue : StyleValue
-    attribute @@toStringTag
-    getter value
-    method constructor
 interface OfflineAudioCompletionEvent : Event
     attribute @@toStringTag
     getter renderedBuffer

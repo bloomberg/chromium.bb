@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NumberValue_h
-#define NumberValue_h
+#ifndef CSSNumberValue_h
+#define CSSNumberValue_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
@@ -13,13 +13,13 @@
 
 namespace blink {
 
-class CORE_EXPORT NumberValue final : public StyleValue {
-    WTF_MAKE_NONCOPYABLE(NumberValue);
+class CORE_EXPORT CSSNumberValue final : public StyleValue {
+    WTF_MAKE_NONCOPYABLE(CSSNumberValue);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static NumberValue* create(double value)
+    static CSSNumberValue* create(double value)
     {
-        return new NumberValue(value);
+        return new CSSNumberValue(value);
     }
 
     double value() const { return m_value; }
@@ -32,7 +32,7 @@ Number);
 
     StyleValueType type() const override { return StyleValueType::NumberType; }
 private:
-    NumberValue(double value) : m_value(value) {}
+    CSSNumberValue(double value) : m_value(value) {}
 
     double m_value;
 };
