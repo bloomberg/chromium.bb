@@ -74,6 +74,19 @@ chrome.test.getConfig(function(config) {
     }
   };
 
+  var testSetWallpaperThumbnail = function(relativeURL) {
+    var url = baseURL + relativeURL;
+    chrome.wallpaper.setWallpaper(
+      { 'url': url,
+        'layout': 'CENTER_CROPPED',
+        'filename': 'test',
+        'thumbnail': true
+      }, pass(function(thumbnail) {
+        var buffer = new Uint8Array(thumbnail);
+        chrome.test.assertTrue(buffer.length > 0);
+      }));
+  };
+
   chrome.test.runTests([
     function setJpgWallpaperFromAppLocalFile() {
       testSetWallpaperFromArrayBuffer('test.jpg');
@@ -104,6 +117,9 @@ chrome.test.getConfig(function(config) {
                               false,
                               'Set wallpaper was canceled.');
       testSetWallpaperFromURL('test.jpg', true);
+    },
+    function getThumbnailAferSetWallpaper() {
+      testSetWallpaperThumbnail('test.jpg');
     }
   ]);
 });
