@@ -121,7 +121,7 @@ FrameTreeNode::FrameTreeNode(
 }
 
 FrameTreeNode::~FrameTreeNode() {
-  children_.clear();
+  std::vector<std::unique_ptr<FrameTreeNode>>().swap(children_);
   frame_tree_->FrameRemoved(this);
   FOR_EACH_OBSERVER(Observer, observers_, OnFrameTreeNodeDestroyed(this));
 
@@ -490,7 +490,7 @@ void FrameTreeNode::TraceSnapshot() const {
 }
 
 FrameTreeNode* FrameTreeNode::GetSibling(int relative_offset) const {
-  if (!parent_)
+  if (!parent_ || !parent_->child_count())
     return nullptr;
 
   for (size_t i = 0; i < parent_->child_count(); ++i) {
