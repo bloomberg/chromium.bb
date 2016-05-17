@@ -7,7 +7,8 @@
 Visit the application URL in your browser, and upload a JSON dictionary with the
 following keys:
 
--   `action` (string): the action to perform. Only `trace` is supported.
+-   `action` (string): the action to perform. Only `trace` and `report` are
+    supported.
 -   `action_params` (dictionary): the parameters associated to the action.
     See below for more details.
 -   `backend_params` (dictionary): the parameters configuring the backend for
@@ -30,11 +31,21 @@ following keys:
 
 ### Parameters for the `trace` action
 
+The trace action takes a list of URLs as input and generates a list of traces by
+running Chrome.
+
 -   `urls` (list of strings): the list of URLs to process.
 -   `repeat_count` (integer, optional): the number of traces to be generated
     for each URL. Defaults to 1.
 -   `emulate_device` (string, optional): the device to emulate (e.g. `Nexus 4`).
 -   `emulate_network` (string, optional): the network to emulate.
+
+### Parameters for the `report` action
+
+Finds all the traces in the bucket (specified in the backend parameters) and
+generates a report in BigQuery.
+
+This action has no parameters.
 
 ## Development
 
