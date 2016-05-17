@@ -165,7 +165,7 @@ void ScriptProcessorHandler::process(size_t framesToProcess)
             // Fire the event on the main thread with the appropriate buffer
             // index.
             context()->getExecutionContext()->postTask(BLINK_FROM_HERE,
-                createCrossThreadTask(&ScriptProcessorHandler::fireProcessEvent, AllowCrossThreadAccess(this), m_doubleBufferIndex));
+                createCrossThreadTask(&ScriptProcessorHandler::fireProcessEvent, PassRefPtr<ScriptProcessorHandler>(this), m_doubleBufferIndex));
         }
 
         swapBuffers();

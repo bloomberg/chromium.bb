@@ -251,6 +251,7 @@ template <typename T>
 AllowCrossThreadAccessWrapper<T*> AllowCrossThreadAccess(T* value)
 {
     static_assert(!blink::IsGarbageCollectedType<T>::value, "Use wrapCrossThreadPersistent() instead for garbage-collected pointers");
+    static_assert(!WTF::IsSubclassOfTemplate<T, ThreadSafeRefCounted>::value, "Use PassRefPtr<T> instead for ThreadSafeRefCounted");
     return AllowCrossThreadAccessWrapper<T*>(value);
 }
 

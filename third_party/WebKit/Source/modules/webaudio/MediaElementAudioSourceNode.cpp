@@ -177,9 +177,7 @@ void MediaElementAudioSourceHandler::process(size_t numberOfFrames)
                 m_maybePrintCORSMessage = false;
                 if (context()->getExecutionContext()) {
                     context()->getExecutionContext()->postTask(BLINK_FROM_HERE,
-                        createCrossThreadTask(&MediaElementAudioSourceHandler::printCORSMessage,
-                            AllowCrossThreadAccess(this),
-                            m_currentSrcString));
+                        createCrossThreadTask(&MediaElementAudioSourceHandler::printCORSMessage, PassRefPtr<MediaElementAudioSourceHandler>(this), m_currentSrcString));
                 }
             }
             outputBus->zero();

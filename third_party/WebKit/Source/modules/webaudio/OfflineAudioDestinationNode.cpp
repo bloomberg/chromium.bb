@@ -203,10 +203,7 @@ void OfflineAudioDestinationHandler::suspendOfflineRendering()
     if (context()->getExecutionContext()) {
         context()->getExecutionContext()->postTask(
             BLINK_FROM_HERE,
-            createCrossThreadTask(
-                &OfflineAudioDestinationHandler::notifySuspend,
-                this,
-                context()->currentSampleFrame()));
+            createCrossThreadTask(&OfflineAudioDestinationHandler::notifySuspend, PassRefPtr<OfflineAudioDestinationHandler>(this), context()->currentSampleFrame()));
     }
 }
 
@@ -217,7 +214,7 @@ void OfflineAudioDestinationHandler::finishOfflineRendering()
     // The actual rendering has been completed. Notify the context.
     if (context()->getExecutionContext()) {
         context()->getExecutionContext()->postTask(BLINK_FROM_HERE,
-            createCrossThreadTask(&OfflineAudioDestinationHandler::notifyComplete, AllowCrossThreadAccess(this)));
+            createCrossThreadTask(&OfflineAudioDestinationHandler::notifyComplete, PassRefPtr<OfflineAudioDestinationHandler>(this)));
     }
 }
 
