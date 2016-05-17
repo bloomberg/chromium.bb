@@ -200,7 +200,7 @@ class GPU_EXPORT GpuChannel
   std::unique_ptr<GpuCommandBufferStub> CreateCommandBuffer(
       const GPUCreateCommandBufferConfig& init_params,
       int32_t route_id,
-      base::SharedMemoryHandle shared_state_shm);
+      std::unique_ptr<base::SharedMemory> shared_state_shm);
 
   // The lifetime of objects of this class is managed by a GpuChannelManager.
   // The GpuChannelManager destroy all the GpuChannels that they own when they

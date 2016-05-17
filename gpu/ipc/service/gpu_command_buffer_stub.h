@@ -88,7 +88,7 @@ class GPU_EXPORT GpuCommandBufferStub
       int32_t route_id,
       GpuWatchdog* watchdog,
       const GURL& active_url);
-  bool Initialize(base::SharedMemoryHandle shared_state_shm);
+  bool Initialize(std::unique_ptr<base::SharedMemory> shared_state_shm);
 
   ~GpuCommandBufferStub() override;
 
@@ -157,8 +157,7 @@ class GPU_EXPORT GpuCommandBufferStub
   // Message handlers:
   void OnSetGetBuffer(int32_t shm_id, IPC::Message* reply_message);
   void OnTakeFrontBuffer(const Mailbox& mailbox);
-  void OnReturnFrontBuffer(const Mailbox& mailbox,
-                           bool is_lost);
+  void OnReturnFrontBuffer(const Mailbox& mailbox, bool is_lost);
   void OnGetState(IPC::Message* reply_message);
   void OnWaitForTokenInRange(int32_t start,
                              int32_t end,

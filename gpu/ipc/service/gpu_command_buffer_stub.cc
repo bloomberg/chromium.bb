@@ -518,12 +518,9 @@ scoped_refptr<gfx::GLSurface> GpuCommandBufferStub::CreateSurface() {
 }
 
 bool GpuCommandBufferStub::Initialize(
-    base::SharedMemoryHandle shared_state_handle) {
+    std::unique_ptr<base::SharedMemory> shared_state_shm) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::Initialize");
   DCHECK(!command_buffer_.get());
-
-  std::unique_ptr<base::SharedMemory> shared_state_shm(
-      new base::SharedMemory(shared_state_handle, false));
 
   command_buffer_.reset(new CommandBufferService(
       context_group_->transfer_buffer_manager()));
