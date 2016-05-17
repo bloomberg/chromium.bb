@@ -48,7 +48,6 @@
           'osx/nacl_clock.c',
           'osx/nacl_host_dir.c',
           'osx/nacl_semaphore.c',
-          'osx/strnlen_osx.c',
         ],
       }],
       ['os_posix==1', {
