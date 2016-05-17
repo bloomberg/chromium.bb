@@ -168,6 +168,13 @@ void NTPSnippetsBridge::NTPSnippetsServiceShutdown() {
   snippet_service_observer_.Remove(ntp_snippets_service_);
 }
 
+void NTPSnippetsBridge::NTPSnippetsServiceCleared() {
+  // The user signed out or disabled sync. Since snippets rely on those, we
+  // clear them to be consistent with the initially signed out state.
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_SnippetsBridge_onSnippetsCleared(env, observer_.obj());
+}
+
 void NTPSnippetsBridge::OnImageFetched(ScopedJavaGlobalRef<jobject> callback,
                                        const std::string& snippet_id,
                                        const SkBitmap* bitmap) {

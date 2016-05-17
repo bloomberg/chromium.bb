@@ -78,6 +78,8 @@ void SnippetsInternalsMessageHandler::NTPSnippetsServiceLoaded() {
       base::StringValue(ntp_snippets_service_->last_json()));
 }
 
+void SnippetsInternalsMessageHandler::NTPSnippetsServiceCleared() {}
+
 void SnippetsInternalsMessageHandler::RegisterMessages() {
   // additional initialization (web_ui() does not work from the constructor)
   ntp_snippets_service_ = NTPSnippetsServiceFactory::GetInstance()->

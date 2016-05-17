@@ -39,6 +39,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     private final AboveTheFoldListItem mAboveTheFoldListItem;
     private final List<NewTabPageListItem> mNewTabPageListItems;
     private final ItemTouchCallbacks mItemTouchCallbacks;
+    private boolean mWantsSnippets;
 
     private static final Interpolator FADE_INTERPOLATOR = new FastOutLinearInInterpolator();
 
@@ -93,6 +94,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         mItemTouchCallbacks = new ItemTouchCallbacks();
         mNewTabPageListItems = new ArrayList<NewTabPageListItem>();
         mNewTabPageListItems.add(mAboveTheFoldListItem);
+        mWantsSnippets = true;
         mNewTabPageManager.setSnippetsObserver(this);
     }
 
@@ -103,31 +105,24 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
 
     @Override
     public void onSnippetsReceived(List<SnippetArticle> listSnippets) {
+        if (!mWantsSnippets) return;
+
         int newSnippetCount = listSnippets.size();
         Log.d(TAG, "Received %d new snippets.", newSnippetCount);
 
         // At first, there might be no snippets available, we wait until they have been fetched.
         if (newSnippetCount == 0) return;
 
-        // Copy thumbnails over
-        for (SnippetArticle newSnippet : listSnippets) {
-            int existingSnippetIdx = mNewTabPageListItems.indexOf(newSnippet);
-            if (existingSnippetIdx == -1) continue;
-
-            newSnippet.setThumbnailBitmap(
-                    ((SnippetArticle) mNewTabPageListItems.get(existingSnippetIdx))
-                            .getThumbnailBitmap());
-        }
-
-        mNewTabPageListItems.clear();
-        mNewTabPageListItems.add(mAboveTheFoldListItem);
-        mNewTabPageListItems.add(new SnippetHeaderListItem());
-        mNewTabPageListItems.addAll(listSnippets);
-
-        notifyDataSetChanged();
+        loadSnippets(listSnippets);
 
         // We don't want to get notified of other changes.
-        mNewTabPageManager.setSnippetsObserver(null);
+        mWantsSnippets = false;
+    }
+
+    @Override
+    public void onSnippetsCleared() {
+        loadSnippets(new ArrayList<SnippetArticle>());
+        mWantsSnippets = true;
     }
 
     @Override
@@ -162,6 +157,25 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     @Override
     public int getItemCount() {
         return mNewTabPageListItems.size();
+    }
+
+    private void loadSnippets(List<SnippetArticle> listSnippets) {
+        // Copy thumbnails over
+        for (SnippetArticle newSnippet : listSnippets) {
+            int existingSnippetIdx = mNewTabPageListItems.indexOf(newSnippet);
+            if (existingSnippetIdx == -1) continue;
+
+            newSnippet.setThumbnailBitmap(
+                    ((SnippetArticle) mNewTabPageListItems.get(existingSnippetIdx))
+                            .getThumbnailBitmap());
+        }
+
+        mNewTabPageListItems.clear();
+        mNewTabPageListItems.add(mAboveTheFoldListItem);
+        mNewTabPageListItems.add(new SnippetHeaderListItem());
+        mNewTabPageListItems.addAll(listSnippets);
+
+        notifyDataSetChanged();
     }
 
     private void dismissItem(int position) {

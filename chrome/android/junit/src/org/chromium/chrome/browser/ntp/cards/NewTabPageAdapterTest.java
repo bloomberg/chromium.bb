@@ -5,8 +5,6 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -63,20 +61,18 @@ public class NewTabPageAdapterTest {
         assertEquals(1, ntpa.getItemCount());
         assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, ntpa.getItemViewType(0));
 
-        List<SnippetArticle> snippets = Arrays.asList(new SnippetArticle[] {
-                new SnippetArticle("https://site.com/url1", "title1", "pub1", "txt1",
-                        "https://site.com/url1", "https://amp.site.com/url1", null, 0, 0),
-                new SnippetArticle("https://site.com/url2", "title2", "pub2", "txt2",
-                        "https://site.com/url2", "https://amp.site.com/url1", null, 0, 0),
-                new SnippetArticle("https://site.com/url3", "title3", "pub3", "txt3",
-                        "https://site.com/url3", "https://amp.site.com/url1", null, 0, 0)});
+        List<SnippetArticle> snippets = createDummySnippets();
         mSnippetsObserver.onSnippetsReceived(snippets);
 
-        List<NewTabPageListItem> loadedItems = ntpa.getItemsForTesting();
+        List<NewTabPageListItem> loadedItems = new ArrayList<>(ntpa.getItemsForTesting());
         assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, ntpa.getItemViewType(0));
         assertEquals(NewTabPageListItem.VIEW_TYPE_HEADER, ntpa.getItemViewType(1));
         assertEquals(snippets, loadedItems.subList(2, loadedItems.size()));
-        assertNull(mSnippetsObserver);
+
+        // The adapter should ignore any new incoming data.
+        mSnippetsObserver.onSnippetsReceived(Arrays.asList(new SnippetArticle[] {
+                new SnippetArticle("foo", "title1", "pub1", "txt1", "foo", "bar", null, 0, 0)}));
+        assertEquals(loadedItems, ntpa.getItemsForTesting());
     }
 
     /**
@@ -92,19 +88,51 @@ public class NewTabPageAdapterTest {
         mSnippetsObserver.onSnippetsReceived(new ArrayList<SnippetArticle>());
         assertEquals(1, ntpa.getItemCount());
         assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, ntpa.getItemViewType(0));
-        assertNotNull(mSnippetsObserver);
 
         // We should load new snippets when we get notified about them.
-        List<SnippetArticle> snippets = Arrays.asList(new SnippetArticle[] {
-                new SnippetArticle("https://site.com/url1", "title1", "pub1", "txt1",
-                        "https://site.com/url1", "https://amp.site.com/url1", null, 0, 0),
-                new SnippetArticle("https://site.com/url2", "title2", "pub2", "txt2",
-                        "https://site.com/url2", "https://amp.site.com/url1", null, 0, 0)});
+        List<SnippetArticle> snippets = createDummySnippets();
         mSnippetsObserver.onSnippetsReceived(snippets);
-        List<NewTabPageListItem> loadedItems = ntpa.getItemsForTesting();
+        List<NewTabPageListItem> loadedItems = new ArrayList<>(ntpa.getItemsForTesting());
         assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, ntpa.getItemViewType(0));
         assertEquals(NewTabPageListItem.VIEW_TYPE_HEADER, ntpa.getItemViewType(1));
         assertEquals(snippets, loadedItems.subList(2, loadedItems.size()));
-        assertNull(mSnippetsObserver);
+
+        // The adapter should ignore any new incoming data.
+        mSnippetsObserver.onSnippetsReceived(Arrays.asList(new SnippetArticle[] {
+                new SnippetArticle("foo", "title1", "pub1", "txt1", "foo", "bar", null, 0, 0)}));
+        assertEquals(loadedItems, ntpa.getItemsForTesting());
+    }
+
+    /**
+     * Tests that the adapter clears the snippets when asked to.
+     */
+    @Test
+    @Feature({"Ntp"})
+    public void testSnippetClearing() {
+        NewTabPageAdapter ntpa = new NewTabPageAdapter(mNewTabPageManager, null);
+        assertEquals(1, ntpa.getItemCount());
+        assertEquals(NewTabPageListItem.VIEW_TYPE_ABOVE_THE_FOLD, ntpa.getItemViewType(0));
+
+        List<SnippetArticle> snippets = createDummySnippets();
+        mSnippetsObserver.onSnippetsReceived(snippets);
+        assertEquals(2 + snippets.size(), ntpa.getItemCount());
+
+        // When we clear the snippets, we should only have the header and above-the-fold left.
+        mSnippetsObserver.onSnippetsCleared();
+        assertEquals(2, ntpa.getItemCount());
+
+        // The adapter should now be waiting for new snippets.
+        mSnippetsObserver.onSnippetsReceived(snippets);
+        assertEquals(2 + snippets.size(), ntpa.getItemCount());
+    }
+
+    private List<SnippetArticle> createDummySnippets() {
+        return Arrays.asList(new SnippetArticle[] {
+                new SnippetArticle("https://site.com/url1", "title1", "pub1", "txt1",
+                        "https://site.com/url1", "https://amp.site.com/url1", null, 0, 0),
+                new SnippetArticle("https://site.com/url2", "title2", "pub2", "txt2",
+                        "https://site.com/url2", "https://amp.site.com/url1", null, 0, 0),
+                new SnippetArticle("https://site.com/url3", "title3", "pub3", "txt3",
+                        "https://site.com/url3", "https://amp.site.com/url1", null, 0, 0)});
     }
 }

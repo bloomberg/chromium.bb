@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.ntp.snippets;
 import android.graphics.Bitmap;
 
 import org.chromium.base.Callback;
-
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.profiles.Profile;
 
@@ -36,6 +35,9 @@ public class SnippetsBridge {
      */
     public interface SnippetsObserver {
         void onSnippetsReceived(List<SnippetArticle> snippets);
+
+        /** Called when the service wants to force clear the displayed snippets. */
+        void onSnippetsCleared();
     }
 
     /**
@@ -137,6 +139,11 @@ public class SnippetsBridge {
         }
 
         mObserver.onSnippetsReceived(newSnippets);
+    }
+
+    @CalledByNative
+    private void onSnippetsCleared() {
+        if (mObserver != null) mObserver.onSnippetsCleared();
     }
 
     private native long nativeInit(Profile profile);

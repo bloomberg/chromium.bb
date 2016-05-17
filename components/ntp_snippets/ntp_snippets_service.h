@@ -198,6 +198,11 @@ class NTPSnippetsServiceObserver {
   virtual void NTPSnippetsServiceLoaded() = 0;
   // Sent when the service is shutting down.
   virtual void NTPSnippetsServiceShutdown() = 0;
+  // Sent every time the service has its data sources cleared.
+  // Note: we use it as signal that the user signed out or disabled sync, but it
+  // can be triggered in other cases, when the suggestions service returns no
+  // hosts. (e.g. the user manually removed all MostLikely tiles.)
+  virtual void NTPSnippetsServiceCleared() = 0;
 
  protected:
   virtual ~NTPSnippetsServiceObserver() {}

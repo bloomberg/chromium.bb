@@ -331,6 +331,11 @@ void NTPSnippetsService::OnSuggestionsChanged(
   StoreSnippetsToPrefs();
   StoreSnippetHostsToPrefs(hosts);
 
+  if (hosts.empty()) {
+    FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
+                      NTPSnippetsServiceCleared());
+  }
+
   FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
                     NTPSnippetsServiceLoaded());
 
