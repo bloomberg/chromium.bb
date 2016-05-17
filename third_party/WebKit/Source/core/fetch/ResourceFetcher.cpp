@@ -53,8 +53,6 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
-#define PRELOAD_DEBUG 0
-
 using blink::WebURLRequest;
 
 namespace blink {
@@ -829,10 +827,6 @@ void ResourceFetcher::preloadStarted(Resource* resource)
     if (!m_preloads)
         m_preloads = new HeapListHashSet<Member<Resource>>;
     m_preloads->add(resource);
-
-#if PRELOAD_DEBUG
-    printf("PRELOADING %s\n",  resource->url().string().latin1().data());
-#endif
 }
 
 bool ResourceFetcher::isPreloaded(const KURL& url) const
@@ -849,11 +843,10 @@ bool ResourceFetcher::isPreloaded(const KURL& url) const
 
 void ResourceFetcher::clearPreloads(ClearPreloadsPolicy policy)
 {
-#if PRELOAD_DEBUG
-    printPreloadStats();
-#endif
     if (!m_preloads)
         return;
+
+    logPreloadStats();
 
     for (auto resource : *m_preloads) {
         resource->decreasePreloadCount();
@@ -1070,55 +1063,114 @@ void ResourceFetcher::reloadLoFiImages()
     }
 }
 
-#if PRELOAD_DEBUG
-void ResourceFetcher::printPreloadStats()
+void ResourceFetcher::logPreloadStats()
 {
     if (!m_preloads)
         return;
-
     unsigned scripts = 0;
     unsigned scriptMisses = 0;
     unsigned stylesheets = 0;
     unsigned stylesheetMisses = 0;
     unsigned images = 0;
     unsigned imageMisses = 0;
+    unsigned fonts = 0;
+    unsigned fontMisses = 0;
+    unsigned medias = 0;
+    unsigned mediaMisses = 0;
+    unsigned textTracks = 0;
+    unsigned textTrackMisses = 0;
+    unsigned imports = 0;
+    unsigned importMisses = 0;
+    unsigned raws = 0;
+    unsigned rawMisses = 0;
     for (auto resource : *m_preloads) {
-        if (resource->getPreloadResult() == Resource::PreloadNotReferenced)
-            printf("!! UNREFERENCED PRELOAD %s\n", resource->url().string().latin1().data());
-        else if (resource->getPreloadResult() == Resource::PreloadReferencedWhileComplete)
-            printf("HIT COMPLETE PRELOAD %s\n", resource->url().string().latin1().data());
-        else if (resource->getPreloadResult() == Resource::PreloadReferencedWhileLoading)
-            printf("HIT LOADING PRELOAD %s\n", resource->url().string().latin1().data());
-
-        if (resource->getType() == Resource::Script) {
-            scripts++;
-            if (resource->getPreloadResult() < Resource::PreloadReferencedWhileLoading)
-                scriptMisses++;
-        } else if (resource->getType() == Resource::CSSStyleSheet) {
-            stylesheets++;
-            if (resource->getPreloadResult() < Resource::PreloadReferencedWhileLoading)
-                stylesheetMisses++;
-        } else {
+        int missCount = resource->getPreloadResult() == Resource::PreloadNotReferenced ? 1 : 0;
+        switch (resource->getType()) {
+        case Resource::Image:
             images++;
-            if (resource->getPreloadResult() < Resource::PreloadReferencedWhileLoading)
-                imageMisses++;
+            imageMisses += missCount;
+            break;
+        case Resource::Script:
+            scripts++;
+            scriptMisses += missCount;
+            break;
+        case Resource::CSSStyleSheet:
+            stylesheets++;
+            stylesheetMisses += missCount;
+            break;
+        case Resource::Font:
+            fonts++;
+            fontMisses += missCount;
+            break;
+        case Resource::Media:
+            medias++;
+            mediaMisses += missCount;
+            break;
+        case Resource::TextTrack:
+            textTracks++;
+            textTrackMisses += missCount;
+            break;
+        case Resource::ImportResource:
+            imports++;
+            importMisses += missCount;
+            break;
+        case Resource::Raw:
+            raws++;
+            rawMisses += missCount;
+            break;
+        default:
+            ASSERT_NOT_REACHED();
         }
-
-        if (resource->errorOccurred())
-            memoryCache()->remove(resource.get());
-
-        resource->decreasePreloadCount();
     }
-    m_preloads.clear();
-
-    if (scripts)
-        printf("SCRIPTS: %d (%d hits, hit rate %d%%)\n", scripts, scripts - scriptMisses, (scripts - scriptMisses) * 100 / scripts);
-    if (stylesheets)
-        printf("STYLESHEETS: %d (%d hits, hit rate %d%%)\n", stylesheets, stylesheets - stylesheetMisses, (stylesheets - stylesheetMisses) * 100 / stylesheets);
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, imagePreloads, ("PreloadScanner.Counts.Image", 0, 100, 5));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, imagePreloadMisses, ("PreloadScanner.Counts.Miss.Image", 0, 100, 5));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, scriptPreloads, ("PreloadScanner.Counts.Script", 0, 100, 5));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, scriptPreloadMisses, ("PreloadScanner.Counts.Miss.Script", 0, 100, 5));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, stylesheetPreloads, ("PreloadScanner.Counts.CSSStyleSheet", 0, 100, 5));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, stylesheetPreloadMisses, ("PreloadScanner.Counts.Miss.CSSStyleSheet", 0, 100, 5));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, fontPreloads, ("PreloadScanner.Counts.Font", 0, 100, 5));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, fontPreloadMisses, ("PreloadScanner.Counts.Miss.Font", 0, 100, 5));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, mediaPreloads, ("PreloadScanner.Counts.Media", 0, 100, 5));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, mediaPreloadMisses, ("PreloadScanner.Counts.Miss.Media", 0, 100, 5));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, textTrackPreloads, ("PreloadScanner.Counts.TextTrack", 0, 100, 5));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, textTrackPreloadMisses, ("PreloadScanner.Counts.Miss.TextTrack", 0, 100, 5));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, importPreloads, ("PreloadScanner.Counts.Import", 0, 100, 5));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, importPreloadMisses, ("PreloadScanner.Counts.Miss.Import", 0, 100, 5));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, rawPreloads, ("PreloadScanner.Counts.Raw", 0, 100, 5));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, rawPreloadMisses, ("PreloadScanner.Counts.Miss.Raw", 0, 100, 5));
     if (images)
-        printf("IMAGES:  %d (%d hits, hit rate %d%%)\n", images, images - imageMisses, (images - imageMisses) * 100 / images);
+        imagePreloads.count(images);
+    if (imageMisses)
+        imagePreloadMisses.count(imageMisses);
+    if (scripts)
+        scriptPreloads.count(scripts);
+    if (scriptMisses)
+        scriptPreloadMisses.count(scriptMisses);
+    if (stylesheets)
+        stylesheetPreloads.count(stylesheets);
+    if (stylesheetMisses)
+        stylesheetPreloadMisses.count(stylesheetMisses);
+    if (fonts)
+        fontPreloads.count(fonts);
+    if (fontMisses)
+        fontPreloadMisses.count(fontMisses);
+    if (medias)
+        mediaPreloads.count(medias);
+    if (mediaMisses)
+        mediaPreloadMisses.count(mediaMisses);
+    if (textTracks)
+        textTrackPreloads.count(textTracks);
+    if (textTrackMisses)
+        textTrackPreloadMisses.count(textTrackMisses);
+    if (imports)
+        importPreloads.count(imports);
+    if (importMisses)
+        importPreloadMisses.count(importMisses);
+    if (raws)
+        rawPreloads.count(raws);
+    if (rawMisses)
+        rawPreloadMisses.count(rawMisses);
 }
-#endif
 
 const ResourceLoaderOptions& ResourceFetcher::defaultResourceOptions()
 {

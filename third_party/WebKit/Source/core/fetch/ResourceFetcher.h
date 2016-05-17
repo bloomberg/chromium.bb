@@ -94,7 +94,7 @@ public:
     int countPreloads() const { return m_preloads ? m_preloads->size() : 0; }
     void clearPreloads(ClearPreloadsPolicy = ClearAllPreloads);
     void preloadStarted(Resource*);
-    void printPreloadStats();
+    void logPreloadStats();
 
     MHTMLArchive* archive() const { return m_archive.get(); }
     ArchiveResource* createArchive(Resource*);
