@@ -294,6 +294,17 @@ Polymer({
     },
 
     /**
+     * Whether the search input should be padded as if it were at the bottom of
+     * the dialog.
+     * @type {boolean}
+     */
+    searchUseBottomPadding: {
+      type: Boolean,
+      reflectToAttribute: true,
+      value: true,
+    },
+
+    /**
      * Whether to show the user domain of sinks associated with identity.
      * @type {boolean|undefined}
      */
@@ -767,6 +778,18 @@ Polymer({
   },
 
   /**
+   * @param {?Element} element Element to compute padding for.
+   * @return {number} Computes the amount of vertical padding (top + bottom) on
+   *     |element|.
+   * @private
+   */
+  computeElementVerticalPadding_: function(element) {
+    var paddingBottom, paddingTop;
+    [paddingBottom, paddingTop] = this.getElementVerticalPadding_(element);
+    return paddingBottom + paddingTop;
+  },
+
+  /**
    * Computes an array of substring indices that mark where substrings of
    * |searchString| occur in |sinkName|.
    *
@@ -1002,18 +1025,21 @@ Polymer({
    * Computes the height of the sink list view element when search results are
    * being shown.
    *
+   * @param {?Element} deviceMissing No devices message element.
    * @param {?Element} noMatches No search matches element.
    * @param {?Element} results Search results list element.
-   * @param {?Element} search Search input container element.
+   * @param {number} searchOffsetHeight Search input container element height.
    * @param {number} maxHeight Max height of the list elements.
    * @return {number} The height of the sink list view when search results are
    *     being shown.
    * @private
    */
-  computeTotalSearchHeight_: function(noMatches, results, search, maxHeight) {
-    var contentHeight = (noMatches.hasAttribute('hidden')) ?
-        results.offsetHeight : noMatches.offsetHeight;
-    return Math.min(contentHeight, maxHeight) + search.offsetHeight;
+  computeTotalSearchHeight_: function(
+      deviceMissing, noMatches, results, searchOffsetHeight, maxHeight) {
+    var contentHeight = deviceMissing.offsetHeight +
+        ((noMatches.hasAttribute('hidden')) ?
+         results.offsetHeight : noMatches.offsetHeight);
+    return Math.min(contentHeight, maxHeight) + searchOffsetHeight;
   },
 
   /**
@@ -1099,6 +1125,18 @@ Polymer({
     return this.castModeList.find(function(element, index, array) {
       return element.type == castModeType;
     });
+  },
+
+  /**
+   * @param {?Element} element Element to compute padding for.
+   * @return {!Array<number>} Array containing the element's bottom padding
+   *     value and the element's top padding value, in that order.
+   * @private
+   */
+  getElementVerticalPadding_: function(element) {
+    var style = window.getComputedStyle(element);
+    return [parseInt(style.getPropertyValue('padding-bottom'), 10) || 0,
+            parseInt(style.getPropertyValue('padding-top'), 10) || 0];
   },
 
   /**
@@ -1274,11 +1312,24 @@ Polymer({
     var view = this.$['sink-list-view'];
 
     var hasList = this.hasConditionalElement_(list);
-    // Same reason for omission of |search.offsetHeight| as above.
-    var initialHeight = resultsContainer.offsetHeight;
-    // Force the view height to be max height.
+    var initialHeight = view.offsetHeight;
+    // Force the view height to be max dialog height.
     view.style['overflow'] = 'hidden';
 
+    var searchInitialOffsetHeight = search.offsetHeight;
+    var searchInitialPaddingBottom, searchInitialPaddingTop;
+    [searchInitialPaddingBottom, searchInitialPaddingTop] =
+        this.getElementVerticalPadding_(search);
+    var searchPadding = searchInitialPaddingBottom + searchInitialPaddingTop;
+    var searchHeight = search.offsetHeight - searchPadding;
+    this.searchUseBottomPadding = true;
+    var searchFinalPaddingBottom, searchFinalPaddingTop;
+    [searchFinalPaddingBottom, searchFinalPaddingTop] =
+        this.getElementVerticalPadding_(search);
+    var searchFinalOffsetHeight =
+        searchHeight + searchFinalPaddingBottom + searchFinalPaddingTop;
+
+    var resultsInitialTop = 0;
     var finalHeight = 0;
     // Get final view height ahead of animation.
     if (hasList) {
@@ -1287,6 +1338,10 @@ Polymer({
       this.hideSinkListForAnimation_ = false;
       finalHeight += list.offsetHeight;
       list.style['position'] = 'relative';
+    } else {
+      resultsInitialTop +=
+          deviceMissing.offsetHeight + searchInitialOffsetHeight;
+      finalHeight += deviceMissing.offsetHeight;
     }
 
     var searchInitialTop = hasList ? 0 : deviceMissing.offsetHeight;
@@ -1297,27 +1352,39 @@ Polymer({
 
     var duration =
         this.computeAnimationDuration_(searchFinalTop - searchInitialTop);
+    var timing = {duration: duration, easing: 'ease-in-out', fill: 'forwards'};
 
     // This GroupEffect does the reverse of |moveSearchToTop_|. It fades the
     // sink list in while sliding the search input and search results list down.
     // The dialog height is also adjusted smoothly to the sink list height.
+    var deviceMissingEffect = new KeyframeEffect(deviceMissing,
+        [{'marginBottom': searchInitialOffsetHeight},
+         {'marginBottom': searchFinalOffsetHeight}],
+        timing);
     var listEffect = new KeyframeEffect(list,
         [{'opacity': '0'}, {'opacity': '1'}],
-        {duration: duration, easing: 'ease-in-out', fill: 'forwards'});
+        timing);
     var resultsEffect = new KeyframeEffect(resultsContainer,
-        [{'top': '0px', 'paddingTop': resultsContainer.style['padding-top']},
+        [{'top': resultsInitialTop + 'px',
+          'paddingTop': resultsContainer.style['padding-top']},
          {'top': '100%', 'paddingTop': '0px'}],
-        {duration: duration, easing: 'ease-in-out', fill: 'forwards'});
+        timing);
     var searchEffect = new KeyframeEffect(search,
-        [{'top': searchInitialTop + 'px', 'marginTop': '0px'},
-         {'top': '100%', 'marginTop': '-' + (search.offsetHeight + 16) + 'px'}],
-        {duration: duration, easing: 'ease-in-out', fill: 'forwards'});
+        [{'top': searchInitialTop + 'px', 'marginTop': '0px',
+          'paddingBottom': searchInitialPaddingBottom + 'px',
+          'paddingTop': searchInitialPaddingTop + 'px'},
+         {'top': '100%', 'marginTop': '-' + searchFinalOffsetHeight + 'px',
+          'paddingBottom': searchFinalPaddingBottom + 'px',
+          'paddingTop': searchFinalPaddingTop + 'px'}],
+        timing);
     var viewEffect = new KeyframeEffect(view,
-        [{'height': initialHeight + 'px'}, {'height': finalHeight + 'px'}],
-        {duration: duration, easing: 'ease-in-out', fill: 'forwards'});
+        [{'height': initialHeight + 'px', 'paddingBottom': '0px'},
+         {'height': finalHeight + 'px',
+          'paddingBottom': searchFinalOffsetHeight + 'px'}],
+        timing);
     var player = document.timeline.play(new GroupEffect(hasList ?
           [listEffect, resultsEffect, searchEffect, viewEffect] :
-          [resultsEffect, searchEffect, viewEffect]));
+          [deviceMissingEffect, resultsEffect, searchEffect, viewEffect]));
 
     var that = this;
     var finalizeAnimation = function() {
@@ -1356,48 +1423,71 @@ Polymer({
 
     // Saves current search container |offsetHeight| which includes bottom
     // padding.
-    var searchOffsetHeight = search.offsetHeight;
+    var searchInitialOffsetHeight = search.offsetHeight;
     var hasList = this.hasConditionalElement_(list);
-    var searchInitialTop = hasList ? list.offsetHeight - searchOffsetHeight :
-                                     deviceMissing.offsetHeight;
+    var searchInitialTop = hasList ?
+        list.offsetHeight - searchInitialOffsetHeight :
+        deviceMissing.offsetHeight;
     var searchFinalTop = hasList ? 0 : deviceMissing.offsetHeight;
-    resultsContainer.style['max-height'] = this.sinkListMaxHeight_ + 'px';
+    var searchInitialPaddingBottom, searchInitialPaddingTop;
+    [searchInitialPaddingBottom, searchInitialPaddingTop] =
+        this.getElementVerticalPadding_(search);
+    var searchPadding = searchInitialPaddingBottom + searchInitialPaddingTop;
+    var searchHeight = search.offsetHeight - searchPadding;
+    this.searchUseBottomPadding =
+        this.shouldSearchUseBottomPadding_(deviceMissing);
+    var searchFinalPaddingBottom, searchFinalPaddingTop;
+    [searchFinalPaddingBottom, searchFinalPaddingTop] =
+        this.getElementVerticalPadding_(search);
+    var searchFinalOffsetHeight =
+        searchHeight + searchFinalPaddingBottom + searchFinalPaddingTop;
 
-    // Omitting |search.offsetHeight| because |list| is padded with
-    // |search.offsetHeight| and |offsetHeight| includes padding.
-    var initialHeight = hasList ?
-        list.offsetHeight :
-        deviceMissing.offsetHeight + searchOffsetHeight;
+    // Omitting |search.offsetHeight| because it is handled by view animation
+    // separately.
+    var initialHeight =
+        hasList ? list.offsetHeight : deviceMissing.offsetHeight;
     view.style['overflow'] = 'hidden';
-    search.className = '';
 
-    var finalHeight = this.computeTotalSearchHeight_(noMatches, results, search,
-        this.sinkListMaxHeight_);
+    var resultsPadding = this.computeElementVerticalPadding_(results);
+    var finalHeight = this.computeTotalSearchHeight_(
+        deviceMissing, noMatches, results, searchFinalOffsetHeight,
+        this.sinkListMaxHeight_ + resultsPadding);
 
     var duration =
         this.computeAnimationDuration_(searchFinalTop - searchInitialTop);
+    var timing = {duration: duration, easing: 'ease-in-out', fill: 'forwards'};
 
     // This GroupEffect will cause the sink list to fade out while the search
     // input and search results list slide up. The dialog will also resize
     // smoothly to the new search result list height.
+    var deviceMissingEffect = new KeyframeEffect(deviceMissing,
+        [{'marginBottom': searchInitialOffsetHeight},
+         {'marginBottom': searchFinalOffsetHeight}],
+        timing);
     var listEffect = new KeyframeEffect(list,
         [{'opacity': '1'}, {'opacity': '0'}],
-        {duration: duration, easing: 'ease-in-out', fill: 'forwards'});
+        timing);
     var resultsEffect = new KeyframeEffect(resultsContainer,
         [{'top': '100%', 'paddingTop': '0px'},
          {'top': searchFinalTop + 'px',
-           'paddingTop': search.offsetHeight + 'px'}],
-        {duration: duration, easing: 'ease-in-out', fill: 'forwards'});
+          'paddingTop': searchFinalOffsetHeight + 'px'}],
+        timing);
     var searchEffect = new KeyframeEffect(search,
-        [{'top': '100%', 'marginTop': '-' + searchOffsetHeight + 'px'},
-         {'top': searchFinalTop + 'px', 'marginTop': '0px'}],
-        {duration: duration, easing: 'ease-in-out', fill: 'forwards'});
+        [{'top': '100%', 'marginTop': '-' + searchInitialOffsetHeight + 'px',
+          'paddingBottom': searchInitialPaddingBottom + 'px',
+          'paddingTop': searchInitialPaddingTop + 'px'},
+         {'top': searchFinalTop + 'px', 'marginTop': '0px',
+          'paddingBottom': searchFinalPaddingBottom + 'px',
+          'paddingTop': searchFinalPaddingTop + 'px'}],
+        timing);
     var viewEffect = new KeyframeEffect(view,
-        [{'height': initialHeight + 'px'}, {'height': finalHeight + 'px'}],
-        {duration: duration, easing: 'ease-in-out', fill: 'forwards'});
+        [{'height': initialHeight + 'px',
+          'paddingBottom': searchInitialOffsetHeight + 'px'},
+         {'height': finalHeight + 'px', 'paddingBottom': '0px'}],
+        timing);
     var player = document.timeline.play(new GroupEffect(hasList ?
           [listEffect, resultsEffect, searchEffect, viewEffect] :
-          [resultsEffect, searchEffect, viewEffect]));
+          [deviceMissingEffect, resultsEffect, searchEffect, viewEffect]));
 
     var that = this;
     var finalizeAnimation = function() {
@@ -1639,7 +1729,8 @@ Polymer({
     var list = this.$$('#sink-list');
     var resultsContainer = this.$$('#search-results-container');
     var search = this.$['sink-search'];
-    search.className = 'bottom';
+    var view = this.$['sink-list-view'];
+    this.searchUseBottomPadding = true;
     search.style['top'] = '';
     if (resultsContainer) {
       resultsContainer.style['position'] = '';
@@ -1650,7 +1741,7 @@ Polymer({
     var hasList = this.hasConditionalElement_(list);
     if (hasList) {
       search.style['margin-top'] = '-' + search.offsetHeight + 'px';
-      list.style['padding-bottom'] = search.offsetHeight + 'px';
+      view.style['padding-bottom'] = search.offsetHeight + 'px';
       list.style['opacity'] = '';
     } else {
       deviceMissing.style['margin-bottom'] = search.offsetHeight + 'px';
@@ -1684,8 +1775,9 @@ Polymer({
     // If there is a height mismatch between where the animation calculated the
     // height should be and where it is now because the search results changed
     // during the animation, correct it with... another animation.
-    var finalHeight = this.computeTotalSearchHeight_(noMatches, results, search,
-        this.sinkListMaxHeight_);
+    var resultsPadding = this.computeElementVerticalPadding_(results);
+    var finalHeight = this.computeTotalSearchHeight_(deviceMissing, noMatches,
+        results, search.offsetHeight, this.sinkListMaxHeight_ + resultsPadding);
     if (finalHeight != view.offsetHeight) {
       var viewEffect = new KeyframeEffect(view,
           [{'height': view.offsetHeight + 'px'},
@@ -1693,7 +1785,6 @@ Polymer({
           {duration:
               this.computeAnimationDuration_(finalHeight - view.offsetHeight),
            easing: 'ease-in-out', fill: 'forwards'});
-      var that = this;
       var player = document.timeline.play(viewEffect);
       if (this.heightAdjustmentPlayer_) {
         this.heightAdjustmentPlayer_.cancel();
@@ -1705,6 +1796,7 @@ Polymer({
 
     var hasList = this.hasConditionalElement_(list);
     search.style['margin-top'] = '';
+    deviceMissing.style['margin-bottom'] = search.offsetHeight + 'px';
     var searchFinalTop = hasList ? 0 : deviceMissing.offsetHeight;
     var resultsPaddingTop = hasList ? search.offsetHeight + 'px' : '0px';
     search.style['top'] = searchFinalTop + 'px';
@@ -1715,6 +1807,7 @@ Polymer({
     resultsContainer.style['overflow-y'] = 'auto';
 
     view.style['overflow'] = '';
+    view.style['padding-bottom'] = '';
     if (this.filterTransitionPlayer_) {
       this.filterTransitionPlayer_.cancel();
       this.filterTransitionPlayer_ = null;
@@ -1985,6 +2078,16 @@ Polymer({
   },
 
   /**
+   * @param {?Element} deviceMissing Device missing message element.
+   * @return {boolean} Whether the search input should use vertical padding as
+   *     if it were the lowest (at the very bottom) item in the dialog.
+   * @private
+   */
+  shouldSearchUseBottomPadding_: function(deviceMissing) {
+    return !deviceMissing.hasAttribute('hidden');
+  },
+
+  /**
    * Shows the cast mode list.
    *
    * @private
@@ -2075,8 +2178,11 @@ Polymer({
   showSinkList_: function() {
     if (this.currentView_ == media_router.MediaRouterView.FILTER) {
       this.queueMoveSearchToBottom_();
+      this.currentView_ = media_router.MediaRouterView.SINK_LIST;
+    } else {
+      this.currentView_ = media_router.MediaRouterView.SINK_LIST;
+      this.putSearchAtBottom_();
     }
-    this.currentView_ = media_router.MediaRouterView.SINK_LIST;
   },
 
   /**
@@ -2123,20 +2229,27 @@ Polymer({
       var issueHeight = this.$$('#issue-banner') &&
           this.$$('#issue-banner').style.display != 'none' ?
               this.$$('#issue-banner').offsetHeight : 0;
-      var searchHeight = this.$$('#sink-search').offsetHeight;
+      var search = this.$['sink-search'];
+      var searchHeight = search.offsetHeight;
 
       this.$['container-header'].style.marginTop = firstRunFlowHeight + 'px';
       this.$['content'].style.marginTop =
           firstRunFlowHeight + headerHeight + 'px';
 
-      this.sinkListMaxHeight_ = this.dialogHeight_ - headerHeight -
-          firstRunFlowHeight - issueHeight - searchHeight;
       var sinkList = this.$$('#sink-list');
+      var sinkListPadding =
+          sinkList ? this.computeElementVerticalPadding_(sinkList) : 0;
+      var searchPadding = this.computeElementVerticalPadding_(search);
+
+      var sinkListMaxHeight = this.dialogHeight_ - headerHeight -
+          firstRunFlowHeight - issueHeight - searchHeight + searchPadding -
+          sinkListPadding;
+      this.sinkListMaxHeight_ = sinkListMaxHeight;
       if (sinkList) {
         sinkList.style.maxHeight = this.sinkListMaxHeight_ + 'px';
         var searchResults = this.$$('#search-results');
         if (searchResults)
-          searchResults.style.maxHeight = sinkList.style.maxHeight;
+          searchResults.style.maxHeight = this.sinkListMaxHeight_ + 'px';
       }
     });
   },

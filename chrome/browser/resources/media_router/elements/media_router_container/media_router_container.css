@@ -193,6 +193,10 @@ paper-menu {
   /* TODO(crbug/589697): Handle overflow of very long domain names. */
 }
 
+#sink-list {
+  padding-bottom: 0;
+}
+
 #sink-list-view {
   position: relative;
 }
@@ -204,13 +208,16 @@ paper-menu {
 }
 
 #sink-search {
+  padding-bottom: 0;
+  padding-top: 4px;
   position: absolute;
   top: 100%;
   width: 100%;
 }
 
-#sink-search.bottom {
+:host([search-use-bottom-padding]) #sink-search {
   padding-bottom: 16px;
+  padding-top: 0;
 }
 
 /* Separate icon class is a consequence of box-sizing: border-box set by

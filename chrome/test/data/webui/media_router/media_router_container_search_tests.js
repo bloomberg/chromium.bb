@@ -167,7 +167,7 @@ cr.define('media_router_container_search', function() {
               container.$$('#sink-list').querySelectorAll('paper-item');
           assertEquals(fakeSinkList.length, sinkList.length);
           MockInteractions.tap(container.$['sink-search-icon']);
-          setTimeout(function() {
+          chainOnAnimationPromise(function() {
             var searchResults =
                 container.$$('#search-results').querySelectorAll('paper-item');
             assertEquals(fakeSinkList.length, searchResults.length);
@@ -181,7 +181,7 @@ cr.define('media_router_container_search', function() {
 
         var searchInput = container.$['sink-search-input'];
         searchInput.value = 'no existing sink';
-        setTimeout(function() {
+        chainOnAnimationPromise(function() {
           var searchResults =
               container.$$('#search-results').querySelectorAll('paper-item');
           assertEquals(1, searchResults.length);
@@ -197,7 +197,7 @@ cr.define('media_router_container_search', function() {
 
         var searchInput = container.$['sink-search-input'];
         searchInput.value = fakeSinkList[0].name;
-        setTimeout(function() {
+        chainOnAnimationPromise(function() {
           var searchResults =
               container.$$('#search-results').querySelectorAll('paper-item');
           assertEquals(1, searchResults.length);
@@ -213,7 +213,7 @@ cr.define('media_router_container_search', function() {
 
         var searchInput = container.$['sink-search-input'];
         searchInput.value = 'no existing sink';
-        setTimeout(function() {
+        chainOnAnimationPromise(function() {
           var searchResults =
               container.$$('#search-results').querySelectorAll('paper-item');
           container.addEventListener(
@@ -232,7 +232,7 @@ cr.define('media_router_container_search', function() {
 
         var searchInput = container.$['sink-search-input'];
         searchInput.value = foundSink.name;
-        setTimeout(function() {
+        chainOnAnimationPromise(function() {
           var searchResults =
               container.$$('#search-results').querySelectorAll('paper-item');
           MockInteractions.tap(searchResults[0]);
@@ -261,13 +261,13 @@ cr.define('media_router_container_search', function() {
 
         var searchInput = container.$['sink-search-input'];
         searchInput.value = foundSink.name;
-        setTimeout(function() {
+        chainOnAnimationPromise(function() {
           var searchResults =
               container.$$('#search-results').querySelectorAll('paper-item');
           MockInteractions.tap(searchResults[0]);
           MockInteractions.tap(
               container.$['container-header'].$$('#back-button'));
-          setTimeout(function() {
+          chainOnAnimationPromise(function() {
             checkCurrentView(media_router.MediaRouterView.SINK_LIST);
             checkSpinningSinkInSinkList(
                 pseudoSink, fakeSinkListWithPseudoSink.length);
@@ -281,7 +281,7 @@ cr.define('media_router_container_search', function() {
 
         var searchInput = container.$['sink-search-input'];
         searchInput.value = foundSink.name;
-        setTimeout(function() {
+        chainOnAnimationPromise(function() {
           var searchResults =
               container.$$('#search-results').querySelectorAll('paper-item');
           MockInteractions.tap(searchResults[0]);
@@ -302,7 +302,7 @@ cr.define('media_router_container_search', function() {
 
         var searchInput = container.$['sink-search-input'];
         searchInput.value = foundSink.name;
-        setTimeout(function() {
+        chainOnAnimationPromise(function() {
           var searchResults =
               container.$$('#search-results').querySelectorAll('paper-item');
           MockInteractions.tap(searchResults[0]);
@@ -327,7 +327,7 @@ cr.define('media_router_container_search', function() {
 
         var searchInput = container.$['sink-search-input'];
         searchInput.value = foundSink.name;
-        setTimeout(function() {
+        chainOnAnimationPromise(function() {
           var searchResults =
               container.$$('#search-results').querySelectorAll('paper-item');
           MockInteractions.tap(searchResults[0]);
@@ -339,7 +339,7 @@ cr.define('media_router_container_search', function() {
             checkCurrentView(media_router.MediaRouterView.ROUTE_DETAILS);
             MockInteractions.tap(
                 container.$['container-header'].$$('#back-button'));
-            setTimeout(function() {
+            chainOnAnimationPromise(function() {
               checkCurrentView(media_router.MediaRouterView.SINK_LIST);
               sinkList =
                   container.$$('#sink-list').querySelectorAll('paper-item');
@@ -410,7 +410,7 @@ cr.define('media_router_container_search', function() {
 
         var searchInput = container.$['sink-search-input'];
         searchInput.value = foundSink.name;
-        setTimeout(function() {
+        chainOnAnimationPromise(function() {
           var searchResults =
               container.$$('#search-results').querySelectorAll('paper-item');
           MockInteractions.tap(searchResults[0]);
@@ -437,7 +437,7 @@ cr.define('media_router_container_search', function() {
 
         var searchInput = container.$['sink-search-input'];
         searchInput.value = foundSink.name;
-        setTimeout(function() {
+        chainOnAnimationPromise(function() {
           var noMatches = container.$$('#no-search-matches');
           var searchResults = container.$$('#search-results');
           checkElementVisible(noMatches, true);
