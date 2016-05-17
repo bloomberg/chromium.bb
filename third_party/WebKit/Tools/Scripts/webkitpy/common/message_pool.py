@@ -36,7 +36,7 @@ and concurrency.futures.ProcessPoolExecutor, with the following differences:
   may receive events as tasks are processed.
 
 If you don't need these features, use multiprocessing.Pool or concurrency.futures
-intead.
+instead.
 
 """
 

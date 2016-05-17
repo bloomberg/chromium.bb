@@ -310,7 +310,7 @@ class ArgumentParser(object):
                           dest="filter_value", help=filter_help)
 
         git_commit_help = ("check all changes in the given commit. "
-                           "Use 'commit_id..' to check all changes after commmit_id")
+                           "Use 'commit_id..' to check all changes after commit_id")
         parser.add_option("-g", "--git-diff", "--git-commit",
                           metavar="COMMIT", dest="git_commit", help=git_commit_help,)
 

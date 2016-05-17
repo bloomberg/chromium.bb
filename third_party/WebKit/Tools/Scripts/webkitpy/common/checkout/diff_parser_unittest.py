@@ -45,7 +45,7 @@ class DiffParserTest(unittest.TestCase):
         self.assertTrue('WebCore/style/StyleFlexibleBoxData.h' in parser.files)
         diff = parser.files['WebCore/style/StyleFlexibleBoxData.h']
         self.assertEqual(7, len(diff.lines))
-        # The first two unchaged lines.
+        # The first two unchanged lines.
         self.assertEqual((47, 47), diff.lines[0][0:2])
         self.assertEqual('', diff.lines[0][2])
         self.assertEqual((48, 48), diff.lines[1][0:2])

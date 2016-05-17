@@ -2424,7 +2424,7 @@ class CppStyleTest(CppStyleTestBase):
             '  [runtime/printf_format] [3]')
 
         self.assert_lint(
-            r'snprintf(file, "Never mix %d and %1$d parmaeters!", value);',
+            r'snprintf(file, "Never mix %d and %1$d parameters!", value);',
             '%N$ formats are unconventional.  Try rewriting to avoid them.'
             '  [runtime/printf_format] [2]')
 
@@ -4909,7 +4909,7 @@ class WebKitStyleTest(CppStyleTestBase):
     def test_ctype_fucntion(self):
         self.assert_lint(
             'int i = isascii(8);',
-            'Use equivelent function in <wtf/ASCIICType.h> instead of the '
+            'Use equivalent function in <wtf/ASCIICType.h> instead of the '
             'isascii() function.  [runtime/ctype_function] [4]',
             'foo.cpp')
 

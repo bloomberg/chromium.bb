@@ -111,7 +111,7 @@ class WinPort(base.Port):
         # see comments in check_httpd(), above, for why this routine exists and what it's doing.
         try:
             # Note that we HKCR is a union of HKLM and HKCR (with the latter
-            # overridding the former), so reading from HKCR ensures that we get
+            # overriding the former), so reading from HKCR ensures that we get
             # the value if it is set in either place. See als comments below.
             hkey = _winreg.OpenKey(_winreg.HKEY_CLASSES_ROOT, sub_key)
             args = _winreg.QueryValue(hkey, '').split()

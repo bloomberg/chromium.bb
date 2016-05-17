@@ -233,7 +233,7 @@ def bindings_tests(output_directory, verbose):
             return False
 
         if not filecmp.cmp(reference_filename, output_filename):
-            # cmp is much faster than diff, and usual case is "no differance",
+            # cmp is much faster than diff, and usual case is "no difference",
             # so only run diff if cmp detects a difference
             print 'FAIL: %s' % reference_basename
             print diff(reference_filename, output_filename)

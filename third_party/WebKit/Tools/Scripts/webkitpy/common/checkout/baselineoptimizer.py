@@ -94,7 +94,7 @@ class BaselineOptimizer(object):
         # test suite in the name and the virtual baseline name is not a strict superset of the non-virtual name.
         # For example, virtual/gpu/fast/canvas/foo-expected.png corresponds to fast/canvas/foo-expected.png and
         # the baseline directories are like platform/mac/virtual/gpu/fast/canvas. So, to get the path
-        # to the baseline in the platform directory, we need to append jsut foo-expected.png to the directory.
+        # to the baseline in the platform directory, we need to append just foo-expected.png to the directory.
         virtual_suite = self._virtual_suite(baseline_name)
         if virtual_suite:
             baseline_name_without_virtual = baseline_name[len(virtual_suite.name) + 1:]

@@ -41,7 +41,7 @@ _log = logging.getLogger(__name__)
 def convert_for_webkit(new_path, filename, reference_support_info, host=Host()):
     """ Converts a file's |contents| so it will function correctly in its |new_path| in Webkit.
 
-    Returns the list of modified properties and the modified text if the file was modifed, None otherwise."""
+    Returns the list of modified properties and the modified text if the file was modified, None otherwise."""
     contents = host.filesystem.read_binary_file(filename)
     converter = _W3CTestConverter(new_path, filename, reference_support_info, host)
     if filename.endswith('.css'):

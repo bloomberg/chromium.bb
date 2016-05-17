@@ -80,7 +80,7 @@ def command_line(cmd, *args):
 
 class ExecutiveTest(unittest.TestCase):
 
-    def assert_interpreter_for_content(self, intepreter, content):
+    def assert_interpreter_for_content(self, interpreter, content):
         fs = MockFileSystem()
 
         tempfile, temp_name = fs.open_binary_tempfile('')
@@ -88,7 +88,7 @@ class ExecutiveTest(unittest.TestCase):
         tempfile.close()
         file_interpreter = Executive.interpreter_for_script(temp_name, fs)
 
-        self.assertEqual(file_interpreter, intepreter)
+        self.assertEqual(file_interpreter, interpreter)
 
     def test_interpreter_for_script(self):
         self.assert_interpreter_for_content(None, '')
@@ -121,7 +121,7 @@ class ExecutiveTest(unittest.TestCase):
 
     def test_popen_args(self):
         executive = Executive()
-        # Explicitly naming the 'args' argument should not thow an exception.
+        # Explicitly naming the 'args' argument should not throw an exception.
         executive.popen(args=command_line('echo', 1), stdout=executive.PIPE).wait()
 
     def test_run_command_with_unicode(self):

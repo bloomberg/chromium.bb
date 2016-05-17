@@ -52,7 +52,7 @@ class BrowserTestPortOverrides(object):
         return browser_test_driver.BrowserTestDriver
 
     def layout_tests_dir(self):
-        """Overriden function from the base port class. Redirects everything
+        """Overridden function from the base port class. Redirects everything
         to src/chrome/test/data/printing/layout_tests.
         """
         return self.path_from_chromium_base('chrome', 'test', 'data', 'printing', 'layout_tests')  # pylint: disable=E1101

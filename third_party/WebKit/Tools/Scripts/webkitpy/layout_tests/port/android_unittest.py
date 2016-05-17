@@ -49,7 +49,7 @@ INVALID_ENTRY_TOMBSTONE_TEST_TYPE = 3
 INVALID_ENTRIES_TOMBSTONE_TEST_TYPE = 4
 
 # Any "adb" commands will be interpret by this class instead of executing actual
-# commansd on the file system, which we don't want to do.
+# commands on the file system, which we don't want to do.
 
 
 class MockAndroidDebugBridge:

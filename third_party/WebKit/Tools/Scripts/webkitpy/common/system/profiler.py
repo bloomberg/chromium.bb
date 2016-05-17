@@ -208,6 +208,6 @@ class IProfiler(SingleFileOutputProfiler):
         self._profiler_process = self._host.executive.popen(cmd)
 
     def profile_after_exit(self):
-        # It seems like a nicer user experiance to wait on the profiler to exit to prevent
+        # It seems like a nicer user experience to wait on the profiler to exit to prevent
         # it from spewing to stderr at odd times.
         self._profiler_process.wait()

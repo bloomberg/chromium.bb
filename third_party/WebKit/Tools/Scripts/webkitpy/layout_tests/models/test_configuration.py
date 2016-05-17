@@ -285,7 +285,7 @@ class TestConfigurationConverter(object):
         while try_abbreviating(self._collapsing_sets_by_size.values()):
             pass
 
-        # 4) Substitute specifier subsets that match macros witin each set:
+        # 4) Substitute specifier subsets that match macros within each set:
         #   (win7, win10, release) -> (win, release)
         self.collapse_macros(self._configuration_macros, specifiers_list)
 

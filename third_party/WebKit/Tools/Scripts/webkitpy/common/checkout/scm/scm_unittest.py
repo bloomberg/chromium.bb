@@ -90,7 +90,7 @@ class SCMTestBase(unittest.TestCase):
 
     def _make_diff(self, command, *args):
         # We use this wrapper to disable output decoding. diffs should be treated as
-        # binary files since they may include text files of multiple differnet encodings.
+        # binary files since they may include text files of multiple different encodings.
         return self._run([command, "diff"] + list(args), decode_output=False)
 
     def _git_diff(self, *args):

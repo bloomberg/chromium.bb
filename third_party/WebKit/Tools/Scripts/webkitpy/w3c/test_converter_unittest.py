@@ -414,7 +414,7 @@ CONTENT OF TEST
             expected_path = re.sub(reference_support_info['reference_relpath'], '', path, 1)
             element = reference_support_info['elements'][idx]
             expected_tag = '<' + element + ' src=\"' + expected_path + '\">'
-            self.assertTrue(expected_tag in converted[1], 'relative path ' + path + ' was not converted correcty')
+            self.assertTrue(expected_tag in converted[1], 'relative path ' + path + ' was not converted correctly')
             idx += 1
 
     def generate_test_content(self, full_property_list, num_test_properties, html):

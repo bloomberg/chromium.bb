@@ -247,11 +247,11 @@ def _convert_to_lower_with_underscores(text):
     text = sub(r'(?<=[A-Za-z0-9])([A-Z])(?=[a-z])', r'_\1', text)
 
     # Next add underscores before capitals at the end of words if it was
-    # preceeded by lower case letter or number.
+    # preceded by lower case letter or number.
     # (This puts an underscore before A in isA but not A in CBA).
     text = sub(r'(?<=[a-z0-9])([A-Z])(?=\b)', r'_\1', text)
 
-    # Next add underscores when you have a captial letter which is followed by a capital letter
+    # Next add underscores when you have a capital letter which is followed by a capital letter
     # but is not proceeded by one. (This puts an underscore before A in 'WordADay').
     text = sub(r'(?<=[a-z0-9])([A-Z][A-Z_])', r'_\1', text)
 
@@ -479,7 +479,7 @@ def create_skeleton_parameters(all_parameters):
 
 
 def find_parameter_name_index(skeleton_parameter):
-    """Determines where the parametere name starts given the skeleton parameter."""
+    """Determines where the parameter name starts given the skeleton parameter."""
     # The first space from the right in the simplified parameter is where the parameter
     # name starts unless the first space is before any content in the simplified parameter.
     before_name_index = skeleton_parameter.rstrip().rfind(' ')
@@ -1675,7 +1675,7 @@ def check_for_function_lengths(clean_lines, line_number, function_state, error):
     http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml#Write_Short_Functions
 
     Blank/comment lines are not counted so as to avoid encouraging the removal
-    of vertical space and commments just to get through a lint check.
+    of vertical space and comments just to get through a lint check.
     NOLINT *on the last line of a function* disables this check.
 
     Args:
@@ -2308,7 +2308,7 @@ def check_max_min_macros(clean_lines, line_number, file_state, error):
 
 def check_ctype_functions(clean_lines, line_number, file_state, error):
     """Looks for use of the standard functions in ctype.h and suggest they be replaced
-       by use of equivilent ones in <wtf/ASCIICType.h>?.
+       by use of equivalent ones in <wtf/ASCIICType.h>?.
 
     Args:
       clean_lines: A CleansedLines instance containing the file.
@@ -2327,7 +2327,7 @@ def check_ctype_functions(clean_lines, line_number, file_state, error):
 
     ctype_function = ctype_function_search.group('ctype_function')
     error(line_number, 'runtime/ctype_function', 4,
-          'Use equivelent function in <wtf/ASCIICType.h> instead of the %s() function.'
+          'Use equivalent function in <wtf/ASCIICType.h> instead of the %s() function.'
           % (ctype_function))
 
 
@@ -3404,7 +3404,7 @@ def check_language(filename, clean_lines, line_number, file_extension, include_s
                 continue
             # A catch all for tricky sizeof cases, including 'sizeof expression',
             # 'sizeof(*type)', 'sizeof(const type)', 'sizeof(struct StructName)'
-            # requires skipping the next token becasue we split on ' ' and '*'.
+            # requires skipping the next token because we split on ' ' and '*'.
             if tok.startswith('sizeof'):
                 skip_next = True
                 continue
@@ -3621,7 +3621,7 @@ def check_for_toFoo_definition(filename, pattern, error):
             except UnicodeDecodeError:
                 # There would be no non-ascii characters in the codebase ever. The only exception
                 # would be comments/copyright text which might have non-ascii characters. Hence,
-                # it is prefectly safe to catch the UnicodeDecodeError and just pass the line.
+                # it is perfectly safe to catch the UnicodeDecodeError and just pass the line.
                 pass
 
         return matches
@@ -4058,7 +4058,7 @@ def _process_lines(filename, file_extension, lines, error, min_confidence):
       filename: Filename of the file that is being processed.
       file_extension: The extension (dot not included) of the file.
       lines: An array of strings, each representing a line of the file, with the
-             last element being empty if the file is termined with a newline.
+             last element being empty if the file is terminated with a newline.
       error: A callable to which errors are reported, which takes 4 arguments:
     """
     lines = (['// marker so line numbers and indices both start at 1'] + lines +

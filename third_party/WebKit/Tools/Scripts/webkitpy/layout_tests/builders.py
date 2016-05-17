@@ -32,7 +32,7 @@ import re
 
 This class is used to keep a list of all builder bots running layout tests on
 the Chromium waterfall. There are other waterfalls that run layout tests but
-this list is the one we care about in the context of TestExpectatoins. The
+this list is the one we care about in the context of TestExpectations. The
 builders are hard coded in the constructor but can be overridden for unit tests.
 
 """

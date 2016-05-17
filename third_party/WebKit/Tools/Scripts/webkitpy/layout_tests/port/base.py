@@ -266,7 +266,7 @@ class Port(object):
             # memory usage may also grow over time, up to a certain point.
             # Relaunching the driver periodically helps keep it under control.
             return 40
-        # The default is infinte batch size.
+        # The default is infinite batch size.
         return None
 
     def default_child_processes(self):
@@ -508,12 +508,12 @@ class Port(object):
 
         executable = self._path_to_image_diff()
         # Note that although we are handed 'old', 'new', image_diff wants 'new', 'old'.
-        comand = [executable, '--diff', native_actual_filename, native_expected_filename, native_diff_filename]
+        command = [executable, '--diff', native_actual_filename, native_expected_filename, native_diff_filename]
 
         result = None
         err_str = None
         try:
-            exit_code = self._executive.run_command(comand, return_exit_code=True)
+            exit_code = self._executive.run_command(command, return_exit_code=True)
             if exit_code == 0:
                 # The images are the same.
                 result = None

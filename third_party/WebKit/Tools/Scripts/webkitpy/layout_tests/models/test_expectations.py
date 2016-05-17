@@ -47,7 +47,7 @@ _log = logging.getLogger(__name__)
 (PASS, FAIL, TEXT, IMAGE, IMAGE_PLUS_TEXT, AUDIO, TIMEOUT, CRASH, LEAK, SKIP, WONTFIX,
  SLOW, REBASELINE, NEEDS_REBASELINE, NEEDS_MANUAL_REBASELINE, MISSING, FLAKY, NOW, NONE) = range(19)
 
-# FIXME: Perhas these two routines should be part of the Port instead?
+# FIXME: Perhaps these two routines should be part of the Port instead?
 BASELINE_SUFFIX_LIST = ('png', 'wav', 'txt')
 
 WEBKIT_BUG_PREFIX = 'webkit.org/b/'
@@ -652,7 +652,7 @@ class TestExpectationsModel(object):
         return self._test_to_expectations[test]
 
     def get_expectations_string(self, test):
-        """Returns the expectatons for the given test as an uppercase string.
+        """Returns the expectations for the given test as an uppercase string.
         If there are no expectations for the test, then "PASS" is returned."""
         if self.get_expectation_line(test).is_skipped_outside_expectations_file:
             return 'NOTRUN'
@@ -729,7 +729,7 @@ class TestExpectationsModel(object):
             self._result_type_to_tests[FAIL].add(test)
 
     def _clear_expectations_for_test(self, test):
-        """Remove prexisting expectations for this test.
+        """Remove preexisting expectations for this test.
         This happens if we are seeing a more precise path
         than a previous listing.
         """

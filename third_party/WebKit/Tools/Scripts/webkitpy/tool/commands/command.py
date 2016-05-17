@@ -48,7 +48,7 @@ class Command(object):
         self.options = options
         self.requires_local_commits = requires_local_commits
         self._tool = None
-        # option_parser can be overriden by the tool using set_option_parser
+        # option_parser can be overridden by the tool using set_option_parser
         # This default parser will be used for standalone_help printing.
         self.option_parser = HelpPrintingOptionParser(usage=optparse.SUPPRESS_USAGE, add_help_option=False, option_list=self.options)
 
@@ -141,7 +141,7 @@ class HelpPrintingOptionParser(optparse.OptionParser):
     def error(self, msg):
         self.print_usage(sys.stderr)
         error_message = "%s: error: %s\n" % (self.get_prog_name(), msg)
-        # This method is overriden to add this one line to the output:
+        # This method is overridden to add this one line to the output:
         error_message += "\nType \"%s --help\" to see usage.\n" % self.get_prog_name()
         self.exit(1, error_message)
 

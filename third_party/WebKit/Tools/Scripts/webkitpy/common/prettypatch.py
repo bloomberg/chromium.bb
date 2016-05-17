@@ -46,7 +46,7 @@ class PrettyPatch(object):
         return diff_file
 
     def pretty_diff(self, diff):
-        # pretify.rb will hang forever if given no input.
+        # prettify.rb will hang forever if given no input.
         # Avoid the hang by returning an empty string.
         if not diff:
             return ""

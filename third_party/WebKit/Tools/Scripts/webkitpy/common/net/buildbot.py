@@ -97,7 +97,7 @@ class Builder(object):
                      build_number=int(build_dictionary['number']),
                      # 'revision' may be None if a trunk build was started by the force-build button on the web page.
                      revision=(int(revision_string) if revision_string else None),
-                     # Buildbot uses any nubmer other than 0 to mean fail.  Since we fetch with
+                     # Buildbot uses any number other than 0 to mean fail.  Since we fetch with
                      # filter=1, passing builds may contain no 'results' value.
                      is_green=(not build_dictionary.get('results')),
                      )

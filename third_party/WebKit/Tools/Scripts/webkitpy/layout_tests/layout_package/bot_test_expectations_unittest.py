@@ -129,7 +129,7 @@ class BotTestExpectationsTest(unittest.TestCase):
                     'maybeflaky.html': self._results_from_string('FP'),
                     'notflakypass.html': self._results_from_string('P'),
                     'notflakyfail.html': self._results_from_string('F'),
-                    # Even if there are no expected results, it's not very flaky if it didn't do mulitple retries.
+                    # Even if there are no expected results, it's not very flaky if it didn't do multiple retries.
                     # This accounts for the latest expectations not necessarily matching the expectations
                     # at the time of the given run.
                     'notverflakynoexpected.html': self._results_from_string('FT'),

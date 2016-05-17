@@ -117,8 +117,8 @@ Flakiness dashboard: %s
         lines = filter(lambda line: fs.exists(fs.join(port.layout_tests_dir(), line.path)), lines)
 
         test_names = [line.name for line in lines]
-        flakiness_dashbord_url = self.FLAKINESS_DASHBOARD_URL % ','.join(test_names)
+        flakiness_dashboard_url = self.FLAKINESS_DASHBOARD_URL % ','.join(test_names)
         expectations_string = TestExpectations.list_to_string(lines)
 
         # pylint: disable=E1601
-        print self.OUTPUT % (self.HEADER, expectations_string, flakiness_dashbord_url)
+        print self.OUTPUT % (self.HEADER, expectations_string, flakiness_dashboard_url)

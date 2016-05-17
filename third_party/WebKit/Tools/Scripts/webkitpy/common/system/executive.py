@@ -126,7 +126,7 @@ class Executive(object):
 
     def kill_process(self, pid):
         """Attempts to kill the given pid.
-        Will fail silently if pid does not exist or insufficient permisssions."""
+        Will fail silently if pid does not exist or insufficient permissions."""
         if sys.platform == "win32":
             # We only use taskkill.exe on windows (not cygwin) because subprocess.pid
             # is a CYGWIN pid and taskkill.exe expects a windows pid.
@@ -324,7 +324,7 @@ class Executive(object):
         # Popen in Python 2.5 and before does not automatically encode unicode objects.
         # http://bugs.python.org/issue5290
         # See https://bugs.webkit.org/show_bug.cgi?id=37528
-        # for an example of a regresion caused by passing a unicode string directly.
+        # for an example of a regression caused by passing a unicode string directly.
         # FIXME: We may need to encode differently on different platforms.
         if isinstance(input, unicode):
             input = input.encode(self._child_process_encoding())

@@ -150,7 +150,7 @@ class DepsUpdater(object):
 
     def commit_changes_if_needed(self, chromium_commitish, import_commitish):
         if self.run(['git', 'diff', '--quiet', 'HEAD'], exit_on_failure=False)[0]:
-            self.print_('## commiting changes')
+            self.print_('## committing changes')
             commit_msg = ('Import %s\n'
                           '\n'
                           'Using update-w3c-deps in Chromium %s.\n'
