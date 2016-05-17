@@ -790,20 +790,28 @@ void NodeController::OnAcceptBrokerClient(const ports::NodeName& from_node,
   DVLOG(1) << "Child " << name_ << " accepted by broker " << broker_name;
 }
 
-void NodeController::OnPortsMessage(Channel::MessagePtr channel_message) {
+void NodeController::OnPortsMessage(const ports::NodeName& from_node,
+                                    Channel::MessagePtr channel_message) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
 
   void* data;
   size_t num_data_bytes;
   NodeChannel::GetPortsMessageData(
       channel_message.get(), &data, &num_data_bytes);
+  if (!num_data_bytes) {
+    DropPeer(from_node);
+    return;
+  }
 
   size_t num_header_bytes, num_payload_bytes, num_ports_bytes;
-  ports::Message::Parse(data,
-                        num_data_bytes,
-                        &num_header_bytes,
-                        &num_payload_bytes,
-                        &num_ports_bytes);
+  if (!ports::Message::Parse(data,
+                             num_data_bytes,
+                             &num_header_bytes,
+                             &num_payload_bytes,
+                             &num_ports_bytes)) {
+    DropPeer(from_node);
+    return;
+  }
 
   CHECK(channel_message);
   ports::ScopedMessage message(
@@ -938,7 +946,7 @@ void NodeController::OnRelayPortsMessage(const ports::NodeName& from_node,
 
   if (destination == name_) {
     // Great, we can deliver this message locally.
-    OnPortsMessage(std::move(message));
+    OnPortsMessage(from_node, std::move(message));
     return;
   }
 

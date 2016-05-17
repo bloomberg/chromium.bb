@@ -528,7 +528,7 @@ void NodeChannel::OnChannelMessage(const void* payload,
           new Channel::Message(payload_size, num_handles));
       message->SetHandles(std::move(handles));
       memcpy(message->mutable_payload(), payload, payload_size);
-      delegate_->OnPortsMessage(std::move(message));
+      delegate_->OnPortsMessage(remote_node_name_, std::move(message));
       return;
     }
 

@@ -53,7 +53,8 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
     virtual void OnAcceptBrokerClient(const ports::NodeName& from_node,
                                       const ports::NodeName& broker_name,
                                       ScopedPlatformHandle broker_channel) = 0;
-    virtual void OnPortsMessage(Channel::MessagePtr message) = 0;
+    virtual void OnPortsMessage(const ports::NodeName& from_node,
+                                Channel::MessagePtr message) = 0;
     virtual void OnRequestPortMerge(const ports::NodeName& from_node,
                                     const ports::PortName& connector_port_name,
                                     const std::string& token) = 0;

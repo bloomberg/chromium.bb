@@ -162,7 +162,8 @@ class NodeController : public ports::NodeDelegate,
   void OnAcceptBrokerClient(const ports::NodeName& from_node,
                             const ports::NodeName& broker_name,
                             ScopedPlatformHandle broker_channel) override;
-  void OnPortsMessage(Channel::MessagePtr message) override;
+  void OnPortsMessage(const ports::NodeName& from_node,
+                      Channel::MessagePtr message) override;
   void OnRequestPortMerge(const ports::NodeName& from_node,
                           const ports::PortName& connector_port_name,
                           const std::string& token) override;

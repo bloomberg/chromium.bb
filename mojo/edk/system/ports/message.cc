@@ -14,11 +14,13 @@ namespace edk {
 namespace ports {
 
 // static
-void Message::Parse(const void* bytes,
+bool Message::Parse(const void* bytes,
                     size_t num_bytes,
                     size_t* num_header_bytes,
                     size_t* num_payload_bytes,
                     size_t* num_ports_bytes) {
+  if (num_bytes < sizeof(EventHeader))
+    return false;
   const EventHeader* header = static_cast<const EventHeader*>(bytes);
   switch (header->type) {
     case EventType::kUser:
@@ -41,24 +43,32 @@ void Message::Parse(const void* bytes,
       *num_header_bytes = sizeof(EventHeader) + sizeof(MergePortEventData);
       break;
     default:
-      CHECK(false) << "Bad event type";
-      return;
+      return false;
   }
 
   if (header->type == EventType::kUser) {
+    if (num_bytes < sizeof(EventHeader) + sizeof(UserEventData))
+      return false;
     const UserEventData* event_data =
         reinterpret_cast<const UserEventData*>(
             reinterpret_cast<const char*>(header + 1));
+    if (event_data->num_ports > std::numeric_limits<uint16_t>::max())
+      return false;
     *num_header_bytes = sizeof(EventHeader) +
                         sizeof(UserEventData) +
                         event_data->num_ports * sizeof(PortDescriptor);
     *num_ports_bytes = event_data->num_ports * sizeof(PortName);
+    if (num_bytes < *num_header_bytes + *num_ports_bytes)
+      return false;
     *num_payload_bytes = num_bytes - *num_header_bytes - *num_ports_bytes;
   } else {
+    if (*num_header_bytes != num_bytes)
+      return false;
     *num_payload_bytes = 0;
     *num_ports_bytes = 0;
-    DCHECK_EQ(num_bytes, *num_header_bytes);
   }
+
+  return true;
 }
 
 Message::Message(size_t num_payload_bytes, size_t num_ports)

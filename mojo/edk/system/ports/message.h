@@ -27,8 +27,9 @@ class Message {
  public:
   virtual ~Message() {}
 
-  // Inspect the message at |bytes| and return the size of each section.
-  static void Parse(const void* bytes,
+  // Inspect the message at |bytes| and return the size of each section. Returns
+  // |false| if the message is malformed and |true| otherwise.
+  static bool Parse(const void* bytes,
                     size_t num_bytes,
                     size_t* num_header_bytes,
                     size_t* num_payload_bytes,
