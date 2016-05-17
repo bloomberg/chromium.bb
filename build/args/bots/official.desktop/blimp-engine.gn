@@ -3,5 +3,8 @@ import("//build/args/blimp_engine.gn")
 # Use release build to improve engine performance, especially WebP encoding.
 is_debug = false
 
+# Designate this as an official build to pick up breakpad symbols.
+is_official_build = true
+
 # Turn on DCHECK to find bugs.
 dcheck_always_on = true
