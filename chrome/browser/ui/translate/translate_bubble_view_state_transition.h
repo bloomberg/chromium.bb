@@ -68,6 +68,9 @@ enum TranslateBubbleUiEvent {
   // The user deactivated the translate page action icon.
   PAGE_ACTION_ICON_DEACTIVATED,
 
+  // The translate bubble was shown to the user.
+  BUBBLE_SHOWN,
+
   TRANSLATE_BUBBLE_UI_EVENT_MAX
 };
 

@@ -156,6 +156,7 @@ views::Widget* TranslateBubbleView::ShowBubble(
   views::Widget* bubble_widget =
       views::BubbleDialogDelegateView::CreateBubble(view);
   view->ShowForReason(reason);
+  translate::ReportUiAction(translate::BUBBLE_SHOWN);
   return bubble_widget;
 }
 
