@@ -492,7 +492,6 @@ static PassOwnPtr<TracedValue> genericTimerData(ExecutionContext* context, int t
     value->setInteger("timerId", timerId);
     if (LocalFrame* frame = frameForExecutionContext(context))
         value->setString("frame", toHexString(frame));
-    setCallStack(value.get());
     return value.release();
 }
 
@@ -501,12 +500,15 @@ PassOwnPtr<TracedValue> InspectorTimerInstallEvent::data(ExecutionContext* conte
     OwnPtr<TracedValue> value = genericTimerData(context, timerId);
     value->setInteger("timeout", timeout);
     value->setBoolean("singleShot", singleShot);
+    setCallStack(value.get());
     return value.release();
 }
 
 PassOwnPtr<TracedValue> InspectorTimerRemoveEvent::data(ExecutionContext* context, int timerId)
 {
-    return genericTimerData(context, timerId);
+    OwnPtr<TracedValue> value = genericTimerData(context, timerId);
+    setCallStack(value.get());
+    return value.release();
 }
 
 PassOwnPtr<TracedValue> InspectorTimerFireEvent::data(ExecutionContext* context, int timerId)
