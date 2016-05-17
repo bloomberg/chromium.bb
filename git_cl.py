@@ -2138,7 +2138,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     except httplib.HTTPException:
       return 'error'
 
-    if data['status'] == 'ABANDONED':
+    if data['status'] in ('ABANDONED', 'MERGED'):
       return 'closed'
 
     cq_label = data['labels'].get('Commit-Queue', {})
