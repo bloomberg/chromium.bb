@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>request-body-blob-iframe</title>
+<body></body>
+<script>
+var blob = new Blob(['it\'s me the blob',
+                     'and more blob!']);
+fetch('resources/simple.html?post-with-blob-body',
+      { method: 'POST', body: blob })
+  .then(resp => resp.text())
+  .then(text => { parent.done(text); })
+  .catch(error => { parent.done(error); });
+</script>

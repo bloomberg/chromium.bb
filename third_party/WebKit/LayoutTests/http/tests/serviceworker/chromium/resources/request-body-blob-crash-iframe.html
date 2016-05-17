@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>request-body-blob-iframe</title>
+<body></body>
+<script>
+// Make a big blob to force async construction.
+var blob = new Blob(['it\'s me the blob',
+                     new Float64Array(2*1024*1024),
+                     'and more blob!']);
+fetch('resources/simple.html?post-with-blob-body',
+      { method: 'POST', body: blob })
+  .then(resp => resp.text())
+  .then(text => { parent.done(text); })
+  .catch(error => { parent.done(error); });
+</script>

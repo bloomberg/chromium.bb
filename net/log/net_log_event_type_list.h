@@ -2031,6 +2031,19 @@ EVENT_TYPE(SERVICE_WORKER_ERROR_KILLED_WITH_BLOB)
 // finishes responding with a stream.
 EVENT_TYPE(SERVICE_WORKER_ERROR_KILLED_WITH_STREAM)
 
+// This event is emitted when a request to be forwarded to a Service Worker has
+// request body blobs, and it may be necessary to wait for them to finish
+// construction. The END phase event parameter is:
+//   {
+//     "success": Whether the request blobs finished construction successfully.
+//   }
+EVENT_TYPE(SERVICE_WORKER_WAITING_FOR_REQUEST_BODY_BLOB)
+
+// This event is emitted when a request failed to be forwarded to a Service
+// Worker, because it had a request body with a blob that failed to be
+// constructed.
+EVENT_TYPE(SERVICE_WORKER_ERROR_REQUEST_BODY_BLOB_FAILED)
+
 // ------------------------------------------------------------------------
 // Global events
 // ------------------------------------------------------------------------
