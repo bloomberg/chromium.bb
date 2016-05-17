@@ -38,7 +38,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
-#include "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -52,12 +51,10 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "grit/chrome_unscaled_resources.h"
-#include "grit/components_strings.h"
 #import "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
-#import "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_family.h"
 
@@ -635,50 +632,6 @@ bool ShouldUpgradeShortcutFor(Profile* profile,
 
 }  // namespace
 
-@interface CrCreateAppShortcutCheckboxObserver : NSObject {
- @private
-  NSButton* checkbox_;
-  NSButton* continueButton_;
-}
-
-- (id)initWithCheckbox:(NSButton*)checkbox
-        continueButton:(NSButton*)continueButton;
-- (void)startObserving;
-- (void)stopObserving;
-@end
-
-@implementation CrCreateAppShortcutCheckboxObserver
-
-- (id)initWithCheckbox:(NSButton*)checkbox
-        continueButton:(NSButton*)continueButton {
-  if ((self = [super init])) {
-    checkbox_ = checkbox;
-    continueButton_ = continueButton;
-  }
-  return self;
-}
-
-- (void)startObserving {
-  [checkbox_ addObserver:self
-              forKeyPath:@"cell.state"
-                 options:0
-                 context:nil];
-}
-
-- (void)stopObserving {
-  [checkbox_ removeObserver:self
-                 forKeyPath:@"cell.state"];
-}
-
-- (void)observeValueForKeyPath:(NSString*)keyPath
-                      ofObject:(id)object
-                        change:(NSDictionary*)change
-                       context:(void*)context {
-  [continueButton_ setEnabled:([checkbox_ state] == NSOnState)];
-}
-
-@end
-
 namespace web_app {
 
 WebAppShortcutCreator::WebAppShortcutCreator(
@@ -1145,68 +1098,6 @@ bool MaybeRebuildShortcut(const base::CommandLine& command_line) {
   return true;
 }
 
-// Called when the app's ShortcutInfo (with icon) is loaded when creating app
-// shortcuts.
-void CreateAppShortcutInfoLoaded(
-    Profile* profile,
-    const extensions::Extension* app,
-    const base::Callback<void(bool)>& close_callback,
-    std::unique_ptr<ShortcutInfo> shortcut_info) {
-  base::scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
-
-  NSButton* continue_button = [alert
-      addButtonWithTitle:l10n_util::GetNSString(IDS_CREATE_SHORTCUTS_COMMIT)];
-  [continue_button setKeyEquivalent:kKeyEquivalentReturn];
-
-  NSButton* cancel_button =
-      [alert addButtonWithTitle:l10n_util::GetNSString(IDS_CANCEL)];
-  [cancel_button setKeyEquivalent:kKeyEquivalentEscape];
-
-  [alert setMessageText:l10n_util::GetNSString(IDS_CREATE_SHORTCUTS_LABEL)];
-  [alert setAlertStyle:NSInformationalAlertStyle];
-
-  base::scoped_nsobject<NSButton> application_folder_checkbox(
-      [[NSButton alloc] initWithFrame:NSZeroRect]);
-  [application_folder_checkbox setButtonType:NSSwitchButton];
-  [application_folder_checkbox
-      setTitle:l10n_util::GetNSString(IDS_CREATE_SHORTCUTS_APP_FOLDER_CHKBOX)];
-  [application_folder_checkbox setState:NSOnState];
-  [application_folder_checkbox sizeToFit];
-
-  base::scoped_nsobject<CrCreateAppShortcutCheckboxObserver> checkbox_observer(
-      [[CrCreateAppShortcutCheckboxObserver alloc]
-          initWithCheckbox:application_folder_checkbox
-            continueButton:continue_button]);
-  [checkbox_observer startObserving];
-
-  [alert setAccessoryView:application_folder_checkbox];
-
-  const int kIconPreviewSizePixels = 128;
-  const int kIconPreviewTargetSize = 64;
-  const gfx::Image* icon = shortcut_info->favicon.GetBest(
-      kIconPreviewSizePixels, kIconPreviewSizePixels);
-
-  if (icon && !icon->IsEmpty()) {
-    NSImage* icon_image = icon->ToNSImage();
-    [icon_image
-        setSize:NSMakeSize(kIconPreviewTargetSize, kIconPreviewTargetSize)];
-    [alert setIcon:icon_image];
-  }
-
-  bool dialog_accepted = false;
-  if ([alert runModal] == NSAlertFirstButtonReturn &&
-      [application_folder_checkbox state] == NSOnState) {
-    dialog_accepted = true;
-    CreateShortcuts(
-        SHORTCUT_CREATION_BY_USER, ShortcutLocations(), profile, app);
-  }
-
-  [checkbox_observer stopObserving];
-
-  if (!close_callback.is_null())
-    close_callback.Run(dialog_accepted);
-}
-
 void UpdateShortcutsForAllApps(Profile* profile,
                                const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -1292,21 +1183,3 @@ void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
 }  // namespace internals
 
 }  // namespace web_app
-
-namespace chrome {
-
-void ShowCreateChromeAppShortcutsDialog(
-    gfx::NativeWindow /*parent_window*/,
-    Profile* profile,
-    const extensions::Extension* app,
-    const base::Callback<void(bool)>& close_callback) {
-  web_app::GetShortcutInfoForApp(
-      app,
-      profile,
-      base::Bind(&web_app::CreateAppShortcutInfoLoaded,
-                 profile,
-                 app,
-                 close_callback));
-}
-
-}  // namespace chrome

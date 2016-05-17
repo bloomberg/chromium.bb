@@ -431,6 +431,12 @@ source_set("ui") {
               gypi_values.chrome_browser_ui_views_extensions_non_mac_sources,
               ".",
               "//chrome")
+
+      sources -= [
+        "views/extensions/extension_popup_aura.cc",
+        "views/extensions/extension_popup_aura.h",
+      ]
+
       deps += [ "//extensions/components/native_app_window" ]
     } else {
       sources += rebase_path(gypi_values.chrome_browser_ui_cocoa_sources,
