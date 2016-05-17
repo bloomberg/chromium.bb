@@ -1378,4 +1378,31 @@ TEST_F(MultibufferDataSourceTest, Http_NotStreamingAfterRedirect) {
   Stop();
 }
 
+TEST_F(MultibufferDataSourceTest, LengthKnownAtEOF) {
+  Initialize(kHttpUrl, true);
+  // Server responds without content-length.
+  WebURLResponse response = response_generator_->Generate200();
+  response.clearHTTPHeaderField(WebString::fromUTF8("Content-Length"));
+  response.setExpectedContentLength(kPositionNotSpecified);
+  Respond(response);
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize));
+  ReceiveData(kDataSize);
+  int64_t len;
+  EXPECT_FALSE(data_source_->GetSize(&len));
+  EXPECT_TRUE(data_source_->IsStreaming());
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  ReadAt(0);
+
+  ReadAt(kDataSize);
+  EXPECT_CALL(host_, SetTotalBytes(kDataSize));
+  EXPECT_CALL(*this, ReadCallback(0));
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 2));
+  FinishLoading();
+
+  // Done loading, now we should know the length.
+  EXPECT_TRUE(data_source_->GetSize(&len));
+  EXPECT_EQ(kDataSize, len);
+  Stop();
+}
+
 }  // namespace media
