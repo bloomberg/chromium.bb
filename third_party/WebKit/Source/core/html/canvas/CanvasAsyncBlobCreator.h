@@ -5,7 +5,6 @@
 #include "core/CoreExport.h"
 #include "core/dom/DOMTypedArray.h"
 #include "core/fileapi/BlobCallback.h"
-#include "platform/Task.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
@@ -52,7 +51,7 @@ protected:
     virtual void scheduleInitiateJpegEncoding(const double&);
     virtual void idleEncodeRowsPng(double deadlineSeconds);
     virtual void idleEncodeRowsJpeg(double deadlineSeconds);
-    virtual void postDelayedTaskToMainThread(const WebTraceLocation&, SameThreadTask*, double delayMs);
+    virtual void postDelayedTaskToMainThread(const WebTraceLocation&, std::unique_ptr<SameThreadClosure>, double delayMs);
     virtual void signalAlternativeCodePathFinishedForTesting() { }
     virtual void createBlobAndInvokeCallback();
     virtual void createNullAndInvokeCallback();

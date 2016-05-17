@@ -113,7 +113,6 @@
       'StorageQuotaCallbacks.h',
       'Supplementable.cpp',
       'Supplementable.h',
-      'Task.h',
       'TaskSynchronizer.cpp',
       'TaskSynchronizer.h',
       'Theme.cpp',

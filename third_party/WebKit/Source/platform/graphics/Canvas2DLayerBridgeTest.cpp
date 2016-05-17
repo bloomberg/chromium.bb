@@ -27,7 +27,6 @@
 #include "SkSurface.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
-#include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/graphics/ImageBuffer.h"

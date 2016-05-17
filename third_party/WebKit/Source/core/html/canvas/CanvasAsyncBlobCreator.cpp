@@ -118,7 +118,7 @@ void CanvasAsyncBlobCreator::scheduleAsyncBlobCreation(bool canUseIdlePeriodSche
         }
         // We post the below task to check if the above idle task isn't late.
         // There's no risk of concurrency as both tasks are on main thread.
-        this->postDelayedTaskToMainThread(BLINK_FROM_HERE, new SameThreadTask(bind(&CanvasAsyncBlobCreator::idleTaskStartTimeoutEvent, this, quality)), IdleTaskStartTimeoutDelay);
+        this->postDelayedTaskToMainThread(BLINK_FROM_HERE, bind(&CanvasAsyncBlobCreator::idleTaskStartTimeoutEvent, this, quality), IdleTaskStartTimeoutDelay);
     } else if (m_mimeType == MimeTypeWebp) {
         BackgroundTaskRunner::TaskSize taskSize = (m_size.height() * m_size.width() >= LongTaskImageSizeThreshold) ? BackgroundTaskRunner::TaskSizeLongRunningTask : BackgroundTaskRunner::TaskSizeShortRunningTask;
         BackgroundTaskRunner::postOnBackgroundThread(BLINK_FROM_HERE, threadSafeBind(&CanvasAsyncBlobCreator::encodeImageOnEncoderThread, AllowCrossThreadAccess(this), quality), taskSize);
@@ -309,7 +309,7 @@ void CanvasAsyncBlobCreator::idleTaskStartTimeoutEvent(double quality)
 {
     if (m_idleTaskStatus == IdleTaskStarted) {
         // Even if the task started quickly, we still want to ensure completion
-        this->postDelayedTaskToMainThread(BLINK_FROM_HERE, new SameThreadTask(bind(&CanvasAsyncBlobCreator::idleTaskCompleteTimeoutEvent, this)), IdleTaskCompleteTimeoutDelay);
+        this->postDelayedTaskToMainThread(BLINK_FROM_HERE, bind(&CanvasAsyncBlobCreator::idleTaskCompleteTimeoutEvent, this), IdleTaskCompleteTimeoutDelay);
     } else if (m_idleTaskStatus == IdleTaskNotStarted) {
         // If the idle task does not start after a delay threshold, we will
         // force it to happen on main thread (even though it may cause more
@@ -361,9 +361,10 @@ void CanvasAsyncBlobCreator::idleTaskCompleteTimeoutEvent()
     }
 }
 
-void CanvasAsyncBlobCreator::postDelayedTaskToMainThread(const WebTraceLocation& location, SameThreadTask* task, double delayMs)
+void CanvasAsyncBlobCreator::postDelayedTaskToMainThread(const WebTraceLocation& location, std::unique_ptr<SameThreadClosure> task, double delayMs)
 {
-    Platform::current()->mainThread()->getWebTaskRunner()->postDelayedTask(location, task, delayMs);
+    DCHECK(isMainThread());
+    Platform::current()->mainThread()->getWebTaskRunner()->postDelayedTask(location, std::move(task), delayMs);
 }
 
 } // namespace blink

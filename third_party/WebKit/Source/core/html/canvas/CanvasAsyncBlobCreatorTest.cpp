@@ -5,7 +5,6 @@
 #include "core/html/canvas/CanvasAsyncBlobCreator.h"
 
 #include "core/html/ImageData.h"
-#include "platform/Task.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -35,7 +34,7 @@ protected:
     void createBlobAndInvokeCallback() override { };
     void createNullAndInvokeCallback() override { };
     void signalAlternativeCodePathFinishedForTesting() override;
-    void postDelayedTaskToMainThread(const WebTraceLocation&, SameThreadTask*, double delayMs) override;
+    void postDelayedTaskToMainThread(const WebTraceLocation&, std::unique_ptr<SameThreadClosure>, double delayMs) override;
 };
 
 void MockCanvasAsyncBlobCreator::signalAlternativeCodePathFinishedForTesting()
@@ -43,9 +42,10 @@ void MockCanvasAsyncBlobCreator::signalAlternativeCodePathFinishedForTesting()
     testing::exitRunLoop();
 }
 
-void MockCanvasAsyncBlobCreator::postDelayedTaskToMainThread(const WebTraceLocation& location, SameThreadTask* task, double delayMs)
+void MockCanvasAsyncBlobCreator::postDelayedTaskToMainThread(const WebTraceLocation& location, std::unique_ptr<SameThreadClosure> task, double delayMs)
 {
-    Platform::current()->mainThread()->getWebTaskRunner()->postTask(location, task);
+    DCHECK(isMainThread());
+    Platform::current()->mainThread()->getWebTaskRunner()->postTask(location, std::move(task));
 }
 
 //==============================================================================
