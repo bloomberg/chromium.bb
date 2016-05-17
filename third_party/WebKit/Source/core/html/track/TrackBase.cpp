@@ -66,9 +66,4 @@ DEFINE_TRACE(TrackBase)
     visitor->trace(m_mediaElement);
 }
 
-void TrackBase::setKind(const AtomicString& kind)
-{
-    m_kind = kind;
-}
-
 } // namespace blink

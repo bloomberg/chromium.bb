@@ -45,16 +45,9 @@ public:
     WebMediaPlayer::TrackType type() const { return m_type; }
 
     const AtomicString& kind() const { return m_kind; }
-    virtual void setKind(const AtomicString&);
-
     AtomicString label() const { return m_label; }
-    void setLabel(const AtomicString& label) { m_label = label; }
-
     AtomicString language() const { return m_language; }
-    void setLanguage(const AtomicString& language) { m_language = language; }
-
     String id() const { return m_id; }
-    void setId(const String& id) { m_id = id; }
 
     void setMediaElement(HTMLMediaElement* mediaElement) { m_mediaElement = mediaElement; }
     HTMLMediaElement* mediaElement() const { return m_mediaElement; }
@@ -65,7 +58,6 @@ public:
 protected:
     TrackBase(WebMediaPlayer::TrackType, const AtomicString& kind, const AtomicString& label, const AtomicString& language, const String& id);
 
-private:
     WebMediaPlayer::TrackId m_trackId;
     WebMediaPlayer::TrackType m_type;
     AtomicString m_kind;

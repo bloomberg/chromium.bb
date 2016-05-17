@@ -142,17 +142,6 @@ bool TextTrack::isVisualKind() const
     return kind() == subtitlesKeyword() || kind() == captionsKeyword();
 }
 
-void TextTrack::setKind(const AtomicString& newKind)
-{
-    AtomicString oldKind = kind();
-    TrackBase::setKind(newKind);
-
-    // If kind changes from visual to non-visual and mode is 'showing', then force mode to 'hidden'.
-    // FIXME: This is not per spec. crbug.com/460923
-    if (oldKind != kind() && mode() == showingKeyword() && !isVisualKind())
-        setMode(hiddenKeyword());
-}
-
 void TextTrack::setMode(const AtomicString& mode)
 {
     ASSERT(mode == disabledKeyword() || mode == hiddenKeyword() || mode == showingKeyword());

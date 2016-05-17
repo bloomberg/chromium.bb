@@ -58,7 +58,6 @@ public:
     virtual void setTrackList(TextTrackList*);
     TextTrackList* trackList() { return m_trackList; }
 
-    void setKind(const AtomicString&) override;
     bool isVisualKind() const;
 
     static const AtomicString& subtitlesKeyword();
@@ -71,6 +70,11 @@ public:
     static const AtomicString& disabledKeyword();
     static const AtomicString& hiddenKeyword();
     static const AtomicString& showingKeyword();
+
+    void setKind(const AtomicString& kind) { m_kind = kind; }
+    void setLabel(const AtomicString& label) { m_label = label; }
+    void setLanguage(const AtomicString& language) { m_language = language; }
+    void setId(const String& id) { m_id = id; }
 
     AtomicString mode() const { return m_mode; }
     virtual void setMode(const AtomicString&);
