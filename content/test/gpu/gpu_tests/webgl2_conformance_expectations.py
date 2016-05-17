@@ -396,6 +396,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux'], bug=483282)
     self.Fail('conformance2/rendering/draw-buffers.html',
         ['linux'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturefiltering/cube_sizes_00.html',
+        ['linux'], bug=606021)
 
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
         ['linux', 'amd', 'intel'], bug=483282)
@@ -405,26 +407,24 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux NVIDIA only.
     self.Fail('conformance2/glsl3/array-complex-indexing.html',
         ['linux', 'nvidia'], bug=606498)
-    self.Fail('deqp/functional/gles3/fbostatequery.html',
-        ['linux', 'nvidia'], bug=483282)
-    self.Fail('deqp/functional/gles3/shaderswitch.html',
-        ['linux', 'nvidia'], bug=605646)
-    self.Fail('deqp/functional/gles3/texturefiltering/cube_sizes_00.html',
-        ['linux', 'nvidia'], bug=606021)
     self.Fail('deqp/functional/gles3/vertexarrays.html',
         ['linux', 'nvidia', 'debug'], bug=483282)
 
     # Linux NVIDIA with ANGLE only
     self.Fail('deqp/functional/gles3/buffercopy.html',
         ['linux', 'nvidia', 'opengl'], bug=483282)
+    self.Fail('deqp/functional/gles3/bufferobjectquery.html',
+        ['linux', 'nvidia', 'opengl'], bug=483282)
     self.Fail('conformance2/buffers/bound-buffer-size-change-test.html',
+        ['linux', 'nvidia', 'opengl'], bug=483282)
+    self.Fail('conformance2/buffers/buffer-copying-contents.html',
         ['linux', 'nvidia', 'opengl'], bug=483282)
     self.Fail('conformance2/reading/read-pixels-pack-parameters.html',
         ['linux', 'nvidia', 'opengl'], bug=483282)
+    self.Fail('conformance2/transform_feedback/transform_feedback.html',
+        ['linux', 'nvidia', 'opengl'], bug=483282)
 
     # Linux Intel with ANGLE only
-    self.Fail('deqp/functional/gles3/texturefiltering/cube_sizes_00.html',
-        ['linux', 'intel', 'opengl'], bug=606021)
     self.Fail('deqp/functional/gles3/pixelbufferobject.html',
         ['linux', 'intel', 'opengl'], bug=483282)
 
@@ -464,6 +464,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=295792)
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
         ['linux', 'amd'], bug=483282)
+    self.Fail('conformance2/textures/misc/tex-unpack-params.html',
+        ['linux', 'amd', 'no_angle'], bug=483282)
 
     # Conflicting expectations to test that the
     # "Expectations Have No collisions" unittest works.
