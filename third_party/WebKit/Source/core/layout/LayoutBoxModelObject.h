@@ -334,6 +334,8 @@ protected:
     // See continuation above for more details.
     void setContinuation(LayoutBoxModelObject*);
 
+    virtual LayoutSize accumulateInFlowPositionOffsets() const { return LayoutSize(); }
+
     LayoutRect localCaretRectForEmptyElement(LayoutUnit width, LayoutUnit textIndentOffset);
 
     bool hasAutoHeightOrContainingBlockWithAutoHeight() const;

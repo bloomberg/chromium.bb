@@ -833,12 +833,6 @@ void LayoutBlock::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pai
     BlockPainter(*this).paintObject(paintInfo, paintOffset);
 }
 
-LayoutInline* LayoutBlock::inlineElementContinuation() const
-{
-    LayoutBoxModelObject* continuation = this->continuation();
-    return continuation && continuation->isInline() ? toLayoutInline(continuation) : 0;
-}
-
 bool LayoutBlock::isSelectionRoot() const
 {
     if (isPseudoElement())

@@ -113,7 +113,7 @@ LayoutInline* LayoutInline::inlineElementContinuation() const
     LayoutBoxModelObject* continuation = this->continuation();
     if (!continuation || continuation->isInline())
         return toLayoutInline(continuation);
-    return toLayoutBlock(continuation)->inlineElementContinuation();
+    return toLayoutBlockFlow(continuation)->inlineElementContinuation();
 }
 
 void LayoutInline::updateFromStyle()
@@ -141,12 +141,13 @@ static LayoutObject* inFlowPositionedInlineAncestor(LayoutObject* p)
 static void updateInFlowPositionOfAnonymousBlockContinuations(LayoutObject* block, const ComputedStyle& newStyle, const ComputedStyle& oldStyle, LayoutObject* containingBlockOfEndOfContinuation)
 {
     for (; block && block != containingBlockOfEndOfContinuation && block->isAnonymousBlock(); block = block->nextSibling()) {
-        if (!toLayoutBlock(block)->isAnonymousBlockContinuation())
+        LayoutBlockFlow* blockFlow = toLayoutBlockFlow(block);
+        if (!blockFlow->isAnonymousBlockContinuation())
             continue;
 
         // If we are no longer in-flow positioned but our descendant block(s) still have an in-flow positioned ancestor then
         // their containing anonymous block should keep its in-flow positioning.
-        if (oldStyle.hasInFlowPosition() && inFlowPositionedInlineAncestor(toLayoutBlock(block)->inlineElementContinuation()))
+        if (oldStyle.hasInFlowPosition() && inFlowPositionedInlineAncestor(blockFlow->inlineElementContinuation()))
             continue;
 
         RefPtr<ComputedStyle> newBlockStyle = ComputedStyle::clone(block->styleRef());
@@ -274,7 +275,7 @@ static LayoutBoxModelObject* nextContinuation(LayoutObject* layoutObject)
 {
     if (layoutObject->isInline() && !layoutObject->isAtomicInlineLevel())
         return toLayoutInline(layoutObject)->continuation();
-    return toLayoutBlock(layoutObject)->inlineElementContinuation();
+    return toLayoutBlockFlow(layoutObject)->inlineElementContinuation();
 }
 
 LayoutBoxModelObject* LayoutInline::continuationBefore(LayoutObject* beforeChild)
@@ -839,7 +840,7 @@ PositionWithAffinity LayoutInline::positionForPoint(const LayoutPoint& point)
         LayoutBox* contBlock = c->isInline() ? c->containingBlock() : toLayoutBlock(c);
         if (c->isInline() || c->slowFirstChild())
             return c->positionForPoint(parentBlockPoint - contBlock->locationOffset());
-        c = toLayoutBlock(c)->inlineElementContinuation();
+        c = toLayoutBlockFlow(c)->inlineElementContinuation();
     }
 
     return LayoutBoxModelObject::positionForPoint(point);

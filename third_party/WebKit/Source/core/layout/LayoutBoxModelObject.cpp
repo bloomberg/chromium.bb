@@ -532,22 +532,6 @@ void LayoutBoxModelObject::updateFromStyle()
     setHorizontalWritingMode(styleToUse.isHorizontalWritingMode());
 }
 
-static LayoutSize accumulateInFlowPositionOffsets(const LayoutObject* child)
-{
-    if (!child->isAnonymousBlock() || !child->isInFlowPositioned())
-        return LayoutSize();
-    LayoutSize offset;
-    LayoutObject* p = toLayoutBlock(child)->inlineElementContinuation();
-    while (p && p->isLayoutInline()) {
-        if (p->isInFlowPositioned()) {
-            LayoutInline* layoutInline = toLayoutInline(p);
-            offset += layoutInline->offsetForInFlowPosition();
-        }
-        p = p->parent();
-    }
-    return offset;
-}
-
 LayoutBlock* LayoutBoxModelObject::containingBlockForAutoHeightDetection(Length logicalHeight) const
 {
     // For percentage heights: The percentage is calculated with respect to the height of the generated box's
@@ -598,7 +582,7 @@ bool LayoutBoxModelObject::hasAutoHeightOrContainingBlockWithAutoHeight() const
 
 LayoutSize LayoutBoxModelObject::relativePositionOffset() const
 {
-    LayoutSize offset = accumulateInFlowPositionOffsets(this);
+    LayoutSize offset = accumulateInFlowPositionOffsets();
 
     LayoutBlock* containingBlock = this->containingBlock();
 

@@ -154,6 +154,8 @@ public:
 
     void removeFloatingObjects();
 
+    LayoutInline* inlineElementContinuation() const;
+
     void addChild(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) override;
     void removeChild(LayoutObject*) override;
 
@@ -346,6 +348,8 @@ protected:
 
     Node* nodeForHitTest() const final;
     bool hitTestChildren(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
+
+    LayoutSize accumulateInFlowPositionOffsets() const override;
 
 private:
     bool layoutBlockFlow(bool relayoutChildren, LayoutUnit& pageLogicalHeight, SubtreeLayoutScope&);

@@ -2333,6 +2333,12 @@ void LayoutBlockFlow::setStaticInlinePositionForChild(LayoutBox& child, LayoutUn
     child.layer()->setStaticInlinePosition(inlinePosition);
 }
 
+LayoutInline* LayoutBlockFlow::inlineElementContinuation() const
+{
+    LayoutBoxModelObject* continuation = this->continuation();
+    return continuation && continuation->isInline() ? toLayoutInline(continuation) : nullptr;
+}
+
 void LayoutBlockFlow::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
 {
     if (LayoutMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
@@ -3380,6 +3386,18 @@ bool LayoutBlockFlow::hitTestFloats(HitTestResult& result, const HitTestLocation
     }
 
     return false;
+}
+
+LayoutSize LayoutBlockFlow::accumulateInFlowPositionOffsets() const
+{
+    if (!isAnonymousBlock() || !isInFlowPositioned())
+        return LayoutSize();
+    LayoutSize offset;
+    for (const LayoutObject* p = inlineElementContinuation(); p && p->isLayoutInline(); p = p->parent()) {
+        if (p->isInFlowPositioned())
+            offset += toLayoutInline(p)->offsetForInFlowPosition();
+    }
+    return offset;
 }
 
 LayoutUnit LayoutBlockFlow::logicalLeftFloatOffsetForLine(LayoutUnit logicalTop, LayoutUnit fixedOffset, LayoutUnit logicalHeight) const

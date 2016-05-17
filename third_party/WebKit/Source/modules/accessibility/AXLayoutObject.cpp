@@ -135,8 +135,8 @@ static inline LayoutInline* startOfContinuations(LayoutObject* r)
     }
 
     // Blocks with a previous continuation always have a next continuation
-    if (r->isLayoutBlock() && toLayoutBlock(r)->inlineElementContinuation())
-        return toLayoutInline(toLayoutBlock(r)->inlineElementContinuation()->node()->layoutObject());
+    if (r->isLayoutBlockFlow() && toLayoutBlockFlow(r)->inlineElementContinuation())
+        return toLayoutInline(toLayoutBlockFlow(r)->inlineElementContinuation()->node()->layoutObject());
 
     return 0;
 }
@@ -146,7 +146,7 @@ static inline LayoutObject* endOfContinuations(LayoutObject* layoutObject)
     LayoutObject* prev = layoutObject;
     LayoutObject* cur = layoutObject;
 
-    if (!cur->isLayoutInline() && !cur->isLayoutBlock())
+    if (!cur->isLayoutInline() && !cur->isLayoutBlockFlow())
         return layoutObject;
 
     while (cur) {
@@ -155,7 +155,7 @@ static inline LayoutObject* endOfContinuations(LayoutObject* layoutObject)
             cur = toLayoutInline(cur)->inlineElementContinuation();
             ASSERT(cur || !toLayoutInline(prev)->continuation());
         } else {
-            cur = toLayoutBlock(cur)->inlineElementContinuation();
+            cur = toLayoutBlockFlow(cur)->inlineElementContinuation();
         }
     }
 
@@ -173,8 +173,8 @@ static LayoutBoxModelObject* nextContinuation(LayoutObject* layoutObject)
     ASSERT(layoutObject);
     if (layoutObject->isLayoutInline() && !layoutObject->isAtomicInlineLevel())
         return toLayoutInline(layoutObject)->continuation();
-    if (layoutObject->isLayoutBlock())
-        return toLayoutBlock(layoutObject)->inlineElementContinuation();
+    if (layoutObject->isLayoutBlockFlow())
+        return toLayoutBlockFlow(layoutObject)->inlineElementContinuation();
     return 0;
 }
 
@@ -1545,7 +1545,7 @@ AXObject* AXLayoutObject::rawNextSibling() const
 
     LayoutObject* nextSibling = 0;
 
-    LayoutInline* inlineContinuation = m_layoutObject->isLayoutBlock() ? toLayoutBlock(m_layoutObject)->inlineElementContinuation() : 0;
+    LayoutInline* inlineContinuation = m_layoutObject->isLayoutBlockFlow() ? toLayoutBlockFlow(m_layoutObject)->inlineElementContinuation() : nullptr;
     if (inlineContinuation) {
         // Case 1: node is a block and has an inline continuation. Next sibling is the inline continuation's first child.
         nextSibling = firstChildConsideringContinuation(inlineContinuation);
@@ -2219,7 +2219,7 @@ LayoutObject* AXLayoutObject::layoutParentObject() const
     if (!m_layoutObject)
         return 0;
 
-    LayoutObject* startOfConts = m_layoutObject->isLayoutBlock() ? startOfContinuations(m_layoutObject) : 0;
+    LayoutObject* startOfConts = m_layoutObject->isLayoutBlockFlow() ? startOfContinuations(m_layoutObject) : nullptr;
     if (startOfConts) {
         // Case 1: node is a block and is an inline's continuation. Parent
         // is the start of the continuation chain.
