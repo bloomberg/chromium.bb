@@ -30,6 +30,7 @@ def CommonChecks(input_api, output_api):
   # web service instead.
   blacklist = [
     r'.*isolateserver_smoke_test\.py$',
+    r'.*isolateserver_load_test\.py$',
     r'.*swarming_smoke_test\.py$',
   ]
   if not input_api.is_committing:
@@ -40,12 +41,12 @@ def CommonChecks(input_api, output_api):
       r'.*url_open_timeout_test\.py$',
     ])
 
-  output.extend(
-      input_api.canned_checks.RunUnitTestsInDirectory(
-          input_api, output_api,
-          input_api.os_path.join(input_api.PresubmitLocalPath(), 'tests'),
-          whitelist=[r'.+_test\.py$'],
-          blacklist=blacklist))
+  unit_tests = input_api.canned_checks.GetUnitTestsRecursively(
+      input_api, output_api,
+      input_api.os_path.join(input_api.PresubmitLocalPath()),
+      whitelist=[r'.+_test\.py$'],
+      blacklist=blacklist)
+  output.extend(input_api.RunTests(unit_tests))
   return output
 
 
