@@ -33,9 +33,9 @@ class CONTENT_EXPORT ServiceRegistryImpl
   void BindRemoteServiceProvider(
       shell::mojom::InterfaceProviderPtr service_provider) override;
   void AddService(const std::string& service_name,
-                  const ServiceFactory service_factory) override;
+                  const ServiceFactory& service_factory) override;
   void RemoveService(const std::string& service_name) override;
-  void ConnectToRemoteService(const base::StringPiece& service_name,
+  void ConnectToRemoteService(base::StringPiece service_name,
                               mojo::ScopedMessagePipeHandle handle) override;
   void AddServiceOverrideForTesting(
       const std::string& service_name,

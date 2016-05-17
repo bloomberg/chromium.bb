@@ -45,7 +45,7 @@ class CONTENT_EXPORT ServiceRegistry {
   // service will override the factory. Existing connections to the service are
   // unaffected.
   template <typename Interface>
-  void AddService(const base::Callback<void(mojo::InterfaceRequest<Interface>)>
+  void AddService(const base::Callback<void(mojo::InterfaceRequest<Interface>)>&
                       service_factory) {
     AddService(Interface::Name_,
                base::Bind(&ServiceRegistry::ForwardToServiceFactory<Interface>,
@@ -53,7 +53,7 @@ class CONTENT_EXPORT ServiceRegistry {
   }
   virtual void AddService(
       const std::string& service_name,
-      const base::Callback<void(mojo::ScopedMessagePipeHandle)>
+      const base::Callback<void(mojo::ScopedMessagePipeHandle)>&
           service_factory) = 0;
 
   // Remove future access to the service implementing Interface. Existing
@@ -69,7 +69,7 @@ class CONTENT_EXPORT ServiceRegistry {
   void ConnectToRemoteService(mojo::InterfaceRequest<Interface> ptr) {
     ConnectToRemoteService(Interface::Name_, ptr.PassMessagePipe());
   }
-  virtual void ConnectToRemoteService(const base::StringPiece& name,
+  virtual void ConnectToRemoteService(base::StringPiece name,
                                       mojo::ScopedMessagePipeHandle handle) = 0;
 
   // Registers a local service factory to intercept ConnectToRemoteService
@@ -87,7 +87,7 @@ class CONTENT_EXPORT ServiceRegistry {
  private:
   template <typename Interface>
   static void ForwardToServiceFactory(
-      const base::Callback<void(mojo::InterfaceRequest<Interface>)>
+      const base::Callback<void(mojo::InterfaceRequest<Interface>)>&
           service_factory,
       mojo::ScopedMessagePipeHandle handle) {
     service_factory.Run(mojo::MakeRequest<Interface>(std::move(handle)));

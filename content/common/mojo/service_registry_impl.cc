@@ -43,7 +43,7 @@ void ServiceRegistryImpl::BindRemoteServiceProvider(
 }
 
 void ServiceRegistryImpl::AddService(const std::string& service_name,
-                                     const ServiceFactory service_factory) {
+                                     const ServiceFactory& service_factory) {
   service_factories_[service_name] = service_factory;
 }
 
@@ -52,7 +52,7 @@ void ServiceRegistryImpl::RemoveService(const std::string& service_name) {
 }
 
 void ServiceRegistryImpl::ConnectToRemoteService(
-    const base::StringPiece& service_name,
+    base::StringPiece service_name,
     mojo::ScopedMessagePipeHandle handle) {
   auto override_it = service_overrides_.find(service_name.as_string());
   if (override_it != service_overrides_.end()) {
