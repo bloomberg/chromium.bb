@@ -1168,7 +1168,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, CrossOriginFetchWithSaveData) {
   cross_origin_server.ServeFilesFromSourceDirectory("content/test/data");
   cross_origin_server.RegisterRequestHandler(
       base::Bind(&VerifySaveDataNotInAccessControlRequestHeader));
-  cross_origin_server.Start();
+  ASSERT_TRUE(cross_origin_server.Start());
 
   MockContentBrowserClient content_browser_client;
   content_browser_client.set_data_saver_enabled(true);

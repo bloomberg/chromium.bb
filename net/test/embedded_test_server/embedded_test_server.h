@@ -133,7 +133,7 @@ class EmbeddedTestServer {
   // This is the equivalent of calling InitializeAndListen() followed by
   // StartAcceptingConnections().
   // Returns whether a listening socket has been successfully created.
-  bool Start();
+  bool Start() WARN_UNUSED_RESULT;
 
   // Starts listening for incoming connections but will not yet accept them.
   // Returns whether a listening socket has been succesfully created.
