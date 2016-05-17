@@ -54,19 +54,17 @@ class TestMultiBufferDataProvider : public ResourceMultiBufferDataProvider {
   ~TestMultiBufferDataProvider() override {
     CHECK_EQ(static_cast<size_t>(1), test_data_providers.erase(this));
   }
-  void SetLoadingToFalse() {
-    // Check that we have not been destroyed first.
-    if (test_data_providers.find(this) != test_data_providers.end()) {
-      loading_ = false;
-    }
-  }
   void Start() override {
     // Create a mock active loader.
     // Keep track of active loading state via loadAsynchronously() and cancel().
     NiceMock<MockWebURLLoader>* url_loader = new NiceMock<MockWebURLLoader>();
     ON_CALL(*url_loader, cancel())
-        .WillByDefault(
-            Invoke(this, &TestMultiBufferDataProvider::SetLoadingToFalse));
+        .WillByDefault(Invoke([this]() {
+          // Check that we have not been destroyed first.
+          if (test_data_providers.find(this) != test_data_providers.end()) {
+            this->loading_ = false;
+          }
+        }));
     loading_ = true;
     active_loader_.reset(
         new ActiveLoader(std::unique_ptr<WebURLLoader>(url_loader)));
