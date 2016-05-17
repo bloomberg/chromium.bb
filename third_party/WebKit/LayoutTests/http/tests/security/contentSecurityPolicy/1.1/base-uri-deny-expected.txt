@@ -1,4 +1,4 @@
-CONSOLE ERROR: Refused to set the document's base URI to 'http://example.com/' because it violates the following Content Security Policy directive: "base-uri 'self'".
+CONSOLE ERROR: line 24: Refused to set the document's base URI to 'http://example.com/' because it violates the following Content Security Policy directive: "base-uri 'self'".
 
 Check that base URIs cannot be set if they violate the page's policy.
 

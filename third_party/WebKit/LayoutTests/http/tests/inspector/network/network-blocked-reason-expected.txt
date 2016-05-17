@@ -1,4 +1,4 @@
-CONSOLE ERROR: Refused to load the script 'https://www.example.com/csp.js' because it violates the following Content Security Policy directive: "script-src 'self' 'unsafe-inline'".
+CONSOLE ERROR: line 11: Refused to load the script 'https://www.example.com/csp.js' because it violates the following Content Security Policy directive: "script-src 'self' 'unsafe-inline'".
 
 Tests that blocked reason is recognized correctly.
 

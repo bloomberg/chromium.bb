@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 1: Refused to execute JavaScript URL because it violates the following Content Security Policy directive: "script-src 'self'". Either the 'unsafe-inline' keyword, a hash ('sha256-...'), or a nonce ('nonce-...') is required to enable inline execution.
+CONSOLE ERROR: line 6: Refused to execute JavaScript URL because it violates the following Content Security Policy directive: "script-src 'self'". Either the 'unsafe-inline' keyword, a hash ('sha256-...'), or a nonce ('nonce-...') is required to enable inline execution.
 
 Tests that pause on exception works for inline script URLs blocked by CSP.
 
