@@ -19,6 +19,9 @@
     },
     {
       'target_name': 'autofill_section',
+      'dependencies': [
+        '<(EXTERNS_GYP):autofill_private',
+      ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {

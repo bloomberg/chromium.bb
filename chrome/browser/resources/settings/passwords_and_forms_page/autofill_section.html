@@ -1,10 +1,78 @@
+<link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://md-settings/passwords_and_forms_page/passwords_shared_css.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 
 <dom-module id="settings-autofill-section">
   <template>
-    <style include="settings-shared"></style>
-    <!-- TODO(hcarmona): Implement this. -->
+    <style include="settings-shared passwords-shared">
+      .link-item {
+        border-top: var(--settings-separator-line);
+      }
+
+      .type-column {
+        align-items: center;
+        flex: 2;
+      }
+
+      .expiration-column {
+        align-items: center;
+        display: flex;
+        flex: 1;
+      }
+
+      .expiration-date {
+        flex: 1;
+      }
+    </style>
+    <div class="heading">$i18n{addresses}</div>
+    <div class="item-list">
+      <iron-list id="addressList" items="[[addresses]]"
+          class="vertical-list list-section">
+        <template>
+          <div class="list-item two-line">
+            <div id="addressSummary" class="start">[[address_(item)]]</div>
+            <paper-icon-button id="addressMenu" icon="more-vert"
+                tabindex$="[[tabIndex]]">
+            </paper-icon-button>
+          </div>
+        </template>
+      </iron-list>
+      <div class="list-item link-item">
+        <a is="action-link" on-tap="onAddAddressTap_">$i18n{addAddress}</a>
+      </div>
+    </div>
+    <div class="heading">$i18n{creditCards}</div>
+    <div class="item-list">
+      <div class="list-item column-header">
+        <div class="type-column">$i18n{creditCardType}</div>
+        <div class="expiration-column">$i18n{creditCardExpiration}</div>
+      </div>
+      <iron-list id="creditCardList" items="[[creditCards]]"
+          class="vertical-list list-section list-with-header">
+        <template>
+          <div class="list-item two-line">
+            <div id="creditCardLabel"
+                class="type-column">[[item.metadata.summaryLabel]]</div>
+            <div class="expiration-column">
+              <div id="creditCardExpiration"
+                  class="expiration-date">[[expiration_(item)]]</div>
+              <paper-icon-button icon="more-vert"
+                  tabindex$="[[tabIndex]]">
+              </paper-icon-button>
+            </div>
+          </div>
+        </template>
+      </iron-list>
+      <div class="list-item link-item">
+        <a is="action-link" on-tap="onAddCreditCardTap_">
+          $i18n{addCreditCard}
+        </a>
+      </div>
+    </div>
   </template>
+  <link rel="import" type="css" href="chrome://resources/css/action_link.css">
   <script src="chrome://md-settings/passwords_and_forms_page/autofill_section.js"></script>
 </dom-module>
