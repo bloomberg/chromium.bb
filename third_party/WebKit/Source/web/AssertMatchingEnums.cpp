@@ -633,6 +633,9 @@ STATIC_ASSERT_ENUM(WebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin
 STATIC_ASSERT_ENUM(WebContentSecurityPolicyTypeReport, ContentSecurityPolicyHeaderTypeReport);
 STATIC_ASSERT_ENUM(WebContentSecurityPolicyTypeEnforce, ContentSecurityPolicyHeaderTypeEnforce);
 
+STATIC_ASSERT_ENUM(WebContentSecurityPolicySourceHTTP, ContentSecurityPolicyHeaderSourceHTTP);
+STATIC_ASSERT_ENUM(WebContentSecurityPolicySourceMeta, ContentSecurityPolicyHeaderSourceMeta);
+
 STATIC_ASSERT_ENUM(WebURLResponse::HTTPVersionUnknown, ResourceResponse::HTTPVersionUnknown);
 STATIC_ASSERT_ENUM(WebURLResponse::HTTPVersion_0_9,
     ResourceResponse::HTTPVersion_0_9);

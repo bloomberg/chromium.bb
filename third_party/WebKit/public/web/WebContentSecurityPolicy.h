@@ -39,6 +39,12 @@ enum WebContentSecurityPolicyType {
     WebContentSecurityPolicyTypeLast = WebContentSecurityPolicyTypeEnforce
 };
 
+enum WebContentSecurityPolicySource {
+    WebContentSecurityPolicySourceHTTP,
+    WebContentSecurityPolicySourceMeta,
+    WebContentSecurityPolicySourceLast = WebContentSecurityPolicySourceMeta
+};
+
 } // namespace blink
 
 #endif

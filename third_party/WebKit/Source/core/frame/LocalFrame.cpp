@@ -800,6 +800,11 @@ void LocalFrame::scheduleVisualUpdateUnlessThrottled()
     page()->animator().scheduleVisualUpdate(this);
 }
 
+FrameLoaderClient* LocalFrame::client() const
+{
+    return static_cast<FrameLoaderClient*>(Frame::client());
+}
+
 DEFINE_WEAK_IDENTIFIER_MAP(LocalFrame);
 
 FrameNavigationDisabler::FrameNavigationDisabler(LocalFrame& frame)

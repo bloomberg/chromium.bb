@@ -18,6 +18,7 @@ public:
 
     static RemoteSecurityContext* create();
     void setReplicatedOrigin(PassRefPtr<SecurityOrigin>);
+    void resetReplicatedContentSecurityPolicy();
 
     // FIXME: implement
     void didUpdateSecurityOrigin() override { }

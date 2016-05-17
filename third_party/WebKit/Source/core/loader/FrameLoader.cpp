@@ -436,6 +436,12 @@ void FrameLoader::receivedFirstData()
 
     client()->dispatchDidCommitLoad(m_currentItem.get(), historyCommitType);
 
+    // When the embedder gets notified (above) that the new navigation has
+    // committed, the embedder will drop the old Content Security Policy and
+    // therefore now is a good time to report to the embedder the Content
+    // Security Policies that have accumulated so far for the new navigation.
+    m_frame->securityContext()->contentSecurityPolicy()->reportAccumulatedHeaders(client());
+
     // didObserveLoadingBehavior() must be called after dispatchDidCommitLoad() is called for the metrics tracking logic to handle it properly.
     if (client()->isControlledByServiceWorker(*m_documentLoader))
         client()->didObserveLoadingBehavior(WebLoadingBehaviorServiceWorkerControlled);
@@ -1359,14 +1365,22 @@ bool FrameLoader::shouldContinueForNavigationPolicy(const ResourceRequest& reque
 
     // If we're loading content into a subframe, check against the parent's Content Security Policy
     // and kill the load if that check fails, unless we should bypass the main world's CSP.
-    // FIXME: CSP checks are broken for OOPI. For now, this policy always allows frames with a remote parent...
-    if ((shouldCheckMainWorldContentSecurityPolicy == CheckContentSecurityPolicy) && (m_frame->deprecatedLocalOwner() && !m_frame->deprecatedLocalOwner()->document().contentSecurityPolicy()->allowChildFrameFromSource(request.url(), request.followedRedirect() ? ContentSecurityPolicy::DidRedirect : ContentSecurityPolicy::DidNotRedirect))) {
-        // Fire a load event, as timing attacks would otherwise reveal that the
-        // frame was blocked. This way, it looks like every other cross-origin
-        // page load.
-        m_frame->document()->enforceSandboxFlags(SandboxOrigin);
-        m_frame->owner()->dispatchLoad();
-        return false;
+    if (shouldCheckMainWorldContentSecurityPolicy == CheckContentSecurityPolicy) {
+        Frame* parentFrame = m_frame->tree().parent();
+        if (parentFrame) {
+            ContentSecurityPolicy* parentPolicy = parentFrame->securityContext()->contentSecurityPolicy();
+            ContentSecurityPolicy::RedirectStatus redirectStatus = request.followedRedirect()
+                ? ContentSecurityPolicy::DidRedirect
+                : ContentSecurityPolicy::DidNotRedirect;
+            if (!parentPolicy->allowChildFrameFromSource(request.url(), redirectStatus)) {
+                // Fire a load event, as timing attacks would otherwise reveal that the
+                // frame was blocked. This way, it looks like every other cross-origin
+                // page load.
+                m_frame->document()->enforceSandboxFlags(SandboxOrigin);
+                m_frame->owner()->dispatchLoad();
+                return false;
+            }
+        }
     }
 
     bool isFormSubmission = type == NavigationTypeFormSubmitted || type == NavigationTypeFormResubmitted;

@@ -50,6 +50,7 @@
 #include "content/child/weburlresponse_extradata_impl.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/clipboard_messages.h"
+#include "content/common/content_security_policy_header.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
@@ -2793,6 +2794,20 @@ void RenderFrameImpl::didChangeSandboxFlags(blink::WebFrame* child_frame,
                                             blink::WebSandboxFlags flags) {
   Send(new FrameHostMsg_DidChangeSandboxFlags(
       routing_id_, GetRoutingIdForFrameOrProxy(child_frame), flags));
+}
+
+void RenderFrameImpl::didAddContentSecurityPolicy(
+    const blink::WebString& header_value,
+    blink::WebContentSecurityPolicyType type,
+    blink::WebContentSecurityPolicySource source) {
+  if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
+    return;
+
+  ContentSecurityPolicyHeader header;
+  header.header_value = base::UTF16ToUTF8(base::StringPiece16(header_value));
+  header.type = type;
+  header.source = source;
+  Send(new FrameHostMsg_DidAddContentSecurityPolicy(routing_id_, header));
 }
 
 void RenderFrameImpl::didChangeFrameOwnerProperties(

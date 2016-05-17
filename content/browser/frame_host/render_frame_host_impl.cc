@@ -542,6 +542,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnDidAccessInitialDocument)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeOpener, OnDidChangeOpener)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeName, OnDidChangeName)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidAddContentSecurityPolicy,
+                        OnDidAddContentSecurityPolicy)
     IPC_MESSAGE_HANDLER(FrameHostMsg_EnforceStrictMixedContentChecking,
                         OnEnforceStrictMixedContentChecking)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateToUniqueOrigin,
@@ -1534,6 +1536,11 @@ void RenderFrameHostImpl::OnDidChangeName(const std::string& name,
   if (old_name.empty() && !name.empty())
     frame_tree_node_->render_manager()->CreateProxiesForNewNamedFrame();
   delegate_->DidChangeName(this, name);
+}
+
+void RenderFrameHostImpl::OnDidAddContentSecurityPolicy(
+    const ContentSecurityPolicyHeader& header) {
+  frame_tree_node()->AddContentSecurityPolicy(header);
 }
 
 void RenderFrameHostImpl::OnEnforceStrictMixedContentChecking() {

@@ -55,6 +55,7 @@
 #include "ipc/ipc_security_test_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "ui/display/display_switches.h"
@@ -6330,6 +6331,219 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     EXPECT_EQ(blink::WebSandboxFlags::None,
               root->child_at(0)->effective_sandbox_flags());
   }
+}
+
+// Test that a cross-origin frame's navigation can be blocked by CSP frame-src.
+// In this version of a test, CSP comes from HTTP headers.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       CrossSiteIframeBlockedByParentCSPFromHeaders) {
+  GURL main_url(
+      embedded_test_server()->GetURL("a.com", "/frame-src-self-and-b.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  // Sanity-check that the test page has the expected shape for testing.
+  GURL old_subframe_url(
+      embedded_test_server()->GetURL("b.com", "/title2.html"));
+  EXPECT_FALSE(root->child_at(0)->HasSameOrigin(*root));
+  EXPECT_EQ(old_subframe_url, root->child_at(0)->current_url());
+  const std::vector<ContentSecurityPolicyHeader>& root_csp =
+      root->current_replication_state().accumulated_csp_headers;
+  EXPECT_EQ(1u, root_csp.size());
+  EXPECT_EQ("frame-src 'self' http://b.com:*", root_csp[0].header_value);
+
+  // Monitor subframe's load events via main frame's title.
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "document.querySelector('iframe').onload = "
+                            "    function() { document.title = 'loaded'; };"));
+  EXPECT_TRUE(
+      ExecuteScript(shell()->web_contents(), "document.title = 'not loaded';"));
+  base::string16 expected_title(base::UTF8ToUTF16("loaded"));
+  TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+
+  // Try to navigate the subframe to a blocked URL.
+  TestNavigationObserver load_observer(shell()->web_contents());
+  GURL blocked_url = embedded_test_server()->GetURL("c.com", "/title3.html");
+  EXPECT_TRUE(
+      ExecuteScript(root->child_at(0)->current_frame_host(),
+                    "window.location.href = '" + blocked_url.spec() + "';"));
+
+  // The blocked frame should still fire a load event in its parent's process.
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  // Check that the current RenderFrameHost has stopped loading.
+  if (root->child_at(0)->current_frame_host()->is_loading()) {
+    ADD_FAILURE() << "Blocked RenderFrameHost shouldn't be loading anything";
+    load_observer.Wait();
+  }
+
+  // The blocked frame should stay at the old location.
+  EXPECT_EQ(old_subframe_url, root->child_at(0)->current_url());
+
+  // The blocked frame should keep the old title.
+  std::string frame_title;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      root->child_at(0)->current_frame_host(),
+      "domAutomationController.send(document.title)", &frame_title));
+  EXPECT_EQ("Title Of Awesomeness", frame_title);
+
+  // Navigate to a URL without CSP.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+
+  // Verify that the frame's CSP got correctly reset to an empty set.
+  EXPECT_EQ(0u,
+            root->current_replication_state().accumulated_csp_headers.size());
+}
+
+// Test that a cross-origin frame's navigation can be blocked by CSP frame-src.
+// In this version of a test, CSP comes from a <meta> element added after the
+// page has already loaded.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       CrossSiteIframeBlockedByParentCSPFromMeta) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  // Navigate the subframe to a location we will disallow in the future.
+  GURL old_subframe_url(
+      embedded_test_server()->GetURL("b.com", "/title2.html"));
+  NavigateFrameToURL(root->child_at(0), old_subframe_url);
+
+  // Add frame-src CSP via a new <meta> element.
+  EXPECT_TRUE(ExecuteScript(
+      shell()->web_contents(),
+      "var meta = document.createElement('meta');"
+      "meta.httpEquiv = 'Content-Security-Policy';"
+      "meta.content = 'frame-src https://a.com:*';"
+      "document.getElementsByTagName('head')[0].appendChild(meta);"));
+
+  // Sanity-check that the test page has the expected shape for testing.
+  // (the CSP should not have an effect on the already loaded frames).
+  EXPECT_FALSE(root->child_at(0)->HasSameOrigin(*root));
+  EXPECT_EQ(old_subframe_url, root->child_at(0)->current_url());
+  const std::vector<ContentSecurityPolicyHeader>& root_csp =
+      root->current_replication_state().accumulated_csp_headers;
+  EXPECT_EQ(1u, root_csp.size());
+  EXPECT_EQ("frame-src https://a.com:*", root_csp[0].header_value);
+
+  // Monitor subframe's load events via main frame's title.
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "document.querySelector('iframe').onload = "
+                            "    function() { document.title = 'loaded'; };"));
+  EXPECT_TRUE(
+      ExecuteScript(shell()->web_contents(), "document.title = 'not loaded';"));
+  base::string16 expected_title(base::UTF8ToUTF16("loaded"));
+  TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+
+  // Try to navigate the subframe to a blocked URL.
+  TestNavigationObserver load_observer2(shell()->web_contents());
+  GURL blocked_url = embedded_test_server()->GetURL("c.com", "/title3.html");
+  EXPECT_TRUE(
+      ExecuteScript(root->child_at(0)->current_frame_host(),
+                    "window.location.href = '" + blocked_url.spec() + "';"));
+
+  // The blocked frame should still fire a load event in its parent's process.
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  // Check that the current RenderFrameHost has stopped loading.
+  if (root->child_at(0)->current_frame_host()->is_loading()) {
+    ADD_FAILURE() << "Blocked RenderFrameHost shouldn't be loading anything";
+    load_observer2.Wait();
+  }
+
+  // The blocked frame should stay at the old location.
+  EXPECT_EQ(old_subframe_url, root->child_at(0)->current_url());
+
+  // The blocked frame should keep the old title.
+  std::string frame_title;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      root->child_at(0)->current_frame_host(),
+      "domAutomationController.send(document.title)", &frame_title));
+  EXPECT_EQ("Title Of Awesomeness", frame_title);
+}
+
+// Test that a cross-origin frame's navigation can be blocked by CSP frame-src.
+// In this version of a test, CSP is inherited by srcdoc iframe from a parent
+// that declared CSP via HTTP headers.  Cross-origin frame navigating to a
+// blocked location is a child of the srcdoc iframe.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       CrossSiteIframeBlockedByCSPInheritedBySrcDocParent) {
+  GURL main_url(
+      embedded_test_server()->GetURL("a.com", "/frame-src-self-and-b.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* srcdoc_frame = root->child_at(1);
+  EXPECT_TRUE(srcdoc_frame != nullptr);
+  FrameTreeNode* navigating_frame = srcdoc_frame->child_at(0);
+  EXPECT_TRUE(navigating_frame != nullptr);
+
+  // Sanity-check that the test page has the expected shape for testing.
+  // (the CSP should not have an effect on the already loaded frames).
+  GURL old_subframe_url(
+      embedded_test_server()->GetURL("b.com", "/title2.html"));
+  EXPECT_TRUE(srcdoc_frame->HasSameOrigin(*root));
+  EXPECT_FALSE(srcdoc_frame->HasSameOrigin(*navigating_frame));
+  EXPECT_EQ(old_subframe_url, navigating_frame->current_url());
+  const std::vector<ContentSecurityPolicyHeader>& srcdoc_csp =
+      srcdoc_frame->current_replication_state().accumulated_csp_headers;
+  EXPECT_EQ(1u, srcdoc_csp.size());
+  EXPECT_EQ("frame-src 'self' http://b.com:*", srcdoc_csp[0].header_value);
+
+  // Monitor navigating_frame's load events via srcdoc_frame posting
+  // a message to the parent frame.
+  EXPECT_TRUE(
+      ExecuteScript(root->current_frame_host(),
+                    "window.addEventListener('message', function(event) {"
+                    "  document.title = event.data;"
+                    "});"));
+  EXPECT_TRUE(ExecuteScript(
+      srcdoc_frame->current_frame_host(),
+      "document.querySelector('iframe').onload = "
+      "    function() { window.top.postMessage('loaded', '*'); };"));
+  EXPECT_TRUE(
+      ExecuteScript(shell()->web_contents(), "document.title = 'not loaded';"));
+  base::string16 expected_title(base::UTF8ToUTF16("loaded"));
+  TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+
+  // Try to navigate the subframe to a blocked URL.
+  TestNavigationObserver load_observer2(shell()->web_contents());
+  GURL blocked_url = embedded_test_server()->GetURL("c.com", "/title3.html");
+  EXPECT_TRUE(
+      ExecuteScript(navigating_frame->current_frame_host(),
+                    "window.location.href = '" + blocked_url.spec() + "';"));
+
+  // The blocked frame should still fire a load event in its parent's process.
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  // Check that the current RenderFrameHost has stopped loading.
+  if (navigating_frame->current_frame_host()->is_loading()) {
+    ADD_FAILURE() << "Blocked RenderFrameHost shouldn't be loading anything";
+    load_observer2.Wait();
+  }
+
+  // The blocked frame should stay at the old location.
+  EXPECT_EQ(old_subframe_url, navigating_frame->current_url());
+
+  // The blocked frame should keep the old title.
+  std::string frame_title;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      navigating_frame->current_frame_host(),
+      "domAutomationController.send(document.title)", &frame_title));
+  EXPECT_EQ("Title Of Awesomeness", frame_title);
+
+  // Navigate the subframe to a URL without CSP.
+  NavigateFrameToURL(srcdoc_frame,
+                     embedded_test_server()->GetURL("a.com", "/title1.html"));
+
+  // Verify that the frame's CSP got correctly reset to an empty set.
+  EXPECT_EQ(
+      0u,
+      srcdoc_frame->current_replication_state().accumulated_csp_headers.size());
 }
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScreenCoordinates) {

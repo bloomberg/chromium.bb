@@ -4,8 +4,11 @@
 
 #include "web/WebRemoteFrameImpl.h"
 
+#include "core/dom/RemoteSecurityContext.h"
+#include "core/dom/SecurityContext.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/page/Page.h"
@@ -645,6 +648,19 @@ void WebRemoteFrameImpl::setReplicatedName(const WebString& name, const WebStrin
 {
     DCHECK(frame());
     frame()->tree().setPrecalculatedName(name, uniqueName);
+}
+
+void WebRemoteFrameImpl::addReplicatedContentSecurityPolicyHeader(const WebString& headerValue, WebContentSecurityPolicyType type, WebContentSecurityPolicySource source) const
+{
+    frame()->securityContext()->contentSecurityPolicy()->addPolicyFromHeaderValue(
+        headerValue,
+        static_cast<ContentSecurityPolicyHeaderType>(type),
+        static_cast<ContentSecurityPolicyHeaderSource>(source));
+}
+
+void WebRemoteFrameImpl::resetReplicatedContentSecurityPolicy() const
+{
+    frame()->securityContext()->resetReplicatedContentSecurityPolicy();
 }
 
 void WebRemoteFrameImpl::setReplicatedShouldEnforceStrictMixedContentChecking(bool shouldEnforce) const

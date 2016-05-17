@@ -18,6 +18,7 @@
 #include "cc/surfaces/surface_sequence.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
+#include "content/common/content_security_policy_header.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/navigation_gesture.h"
@@ -387,6 +388,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::FrameReplicationState)
   IPC_STRUCT_TRAITS_MEMBER(sandbox_flags)
   IPC_STRUCT_TRAITS_MEMBER(name)
   IPC_STRUCT_TRAITS_MEMBER(unique_name)
+  IPC_STRUCT_TRAITS_MEMBER(accumulated_csp_headers)
   IPC_STRUCT_TRAITS_MEMBER(scope)
   IPC_STRUCT_TRAITS_MEMBER(should_enforce_strict_mixed_content_checking)
   IPC_STRUCT_TRAITS_MEMBER(has_potentially_trustworthy_unique_origin)
@@ -544,6 +546,12 @@ IPC_STRUCT_BEGIN(FrameHostMsg_CreateChildFrame_Params)
   IPC_STRUCT_MEMBER(blink::WebSandboxFlags, sandbox_flags)
   IPC_STRUCT_MEMBER(blink::WebFrameOwnerProperties, frame_owner_properties)
 IPC_STRUCT_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::ContentSecurityPolicyHeader)
+  IPC_STRUCT_TRAITS_MEMBER(header_value)
+  IPC_STRUCT_TRAITS_MEMBER(type)
+  IPC_STRUCT_TRAITS_MEMBER(source)
+IPC_STRUCT_TRAITS_END()
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 // This message is used for supporting popup menus on Mac OS X and Android using
@@ -775,6 +783,13 @@ IPC_MESSAGE_ROUTED2(FrameMsg_DidUpdateName,
                     std::string /* name */,
                     std::string /* unique_name */)
 
+// Updates replicated ContentSecurityPolicy in a frame proxy.
+IPC_MESSAGE_ROUTED1(FrameMsg_AddContentSecurityPolicy,
+                    content::ContentSecurityPolicyHeader)
+
+// Resets ContentSecurityPolicy in a frame proxy / in RemoteSecurityContext.
+IPC_MESSAGE_ROUTED0(FrameMsg_ResetContentSecurityPolicy)
+
 // Update a proxy's replicated enforcement of strict mixed content
 // checking.  Used when the frame's mixed content setting is changed in
 // another process.
@@ -968,6 +983,15 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateState, content::PageState /* state */)
 IPC_MESSAGE_ROUTED2(FrameHostMsg_DidChangeName,
                     std::string /* name */,
                     std::string /* unique_name */)
+
+// Notifies the browser process about a new Content Security Policy that needs
+// to be applies to the frame.  This message is sent when a frame commits
+// navigation to a new location (reporting accumulated policies from HTTP
+// headers and/or policies that might have been inherited from the parent frame)
+// or when a new policy has been discovered afterwards (i.e. found in a
+// dynamically added or a static <meta> element).
+IPC_MESSAGE_ROUTED1(FrameHostMsg_DidAddContentSecurityPolicy,
+                    content::ContentSecurityPolicyHeader)
 
 // Sent when the frame starts enforcing strict mixed content
 // checking. Sending this information in DidCommitProvisionalLoad isn't

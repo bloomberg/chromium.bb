@@ -277,6 +277,7 @@
       'common/content_param_traits.h',
       'common/content_param_traits_macros.h',
       'common/content_paths.cc',
+      'common/content_security_policy_header.h',
       'common/content_switches_internal.cc',
       'common/content_switches_internal.h',
       'common/cross_site_document_classifier.cc',

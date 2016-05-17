@@ -5,7 +5,11 @@
 #ifndef CONTENT_COMMON_FRAME_REPLICATION_STATE_H_
 #define CONTENT_COMMON_FRAME_REPLICATION_STATE_H_
 
+#include <string>
+#include <vector>
+
 #include "content/common/content_export.h"
+#include "content/common/content_security_policy_header.h"
 #include "url/origin.h"
 
 namespace blink {
@@ -78,6 +82,10 @@ struct CONTENT_EXPORT FrameReplicationState {
   // might arrive at a different value when recalculating the unique name from
   // scratch.
   std::string unique_name;
+
+  // Accumulated CSP headers - gathered from http headers, <meta> elements,
+  // parent frames (in case of about:blank frames).
+  std::vector<ContentSecurityPolicyHeader> accumulated_csp_headers;
 
   // Whether the frame is in a document tree or a shadow tree, per the Shadow
   // DOM spec: https://w3c.github.io/webcomponents/spec/shadow/

@@ -39,6 +39,7 @@
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"
 #include "platform/heap/Handle.h"
+#include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/ResourceLoadPriority.h"
 #include "platform/weborigin/Referrer.h"
 #include "public/platform/WebEffectiveConnectionType.h"
@@ -219,6 +220,12 @@ public:
     virtual void didUpdateToUniqueOrigin() {}
 
     virtual void didChangeSandboxFlags(Frame* childFrame, SandboxFlags) { }
+
+    // Called when a new Content Security Policy is added to the frame's
+    // document.  This can be triggered by handling of HTTP headers, handling
+    // of <meta> element, or by inheriting CSP from the parent (in case of
+    // about:blank).
+    virtual void didAddContentSecurityPolicy(const String& headerValue, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource) { }
 
     virtual void didChangeFrameOwnerProperties(HTMLFrameElementBase*) { }
 

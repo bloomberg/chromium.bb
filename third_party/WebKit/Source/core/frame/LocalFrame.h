@@ -177,6 +177,8 @@ public:
 
     ServiceRegistry* serviceRegistry() { return m_serviceRegistry; }
 
+    FrameLoaderClient* client() const;
+
 private:
     friend class FrameNavigationDisabler;
 

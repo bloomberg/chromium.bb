@@ -935,6 +935,27 @@ void RenderFrameHostManager::OnDidUpdateName(const std::string& name,
   }
 }
 
+void RenderFrameHostManager::OnDidAddContentSecurityPolicy(
+    const ContentSecurityPolicyHeader& header) {
+  if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
+    return;
+
+  for (const auto& pair : proxy_hosts_) {
+    pair.second->Send(new FrameMsg_AddContentSecurityPolicy(
+        pair.second->GetRoutingID(), header));
+  }
+}
+
+void RenderFrameHostManager::OnDidResetContentSecurityPolicy() {
+  if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
+    return;
+
+  for (const auto& pair : proxy_hosts_) {
+    pair.second->Send(
+        new FrameMsg_ResetContentSecurityPolicy(pair.second->GetRoutingID()));
+  }
+}
+
 void RenderFrameHostManager::OnEnforceStrictMixedContentChecking(
     bool should_enforce) {
   if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())

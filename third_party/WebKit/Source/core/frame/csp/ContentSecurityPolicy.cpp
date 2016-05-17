@@ -31,6 +31,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/SandboxFlags.h"
 #include "core/events/SecurityPolicyViolationEvent.h"
+#include "core/frame/FrameClient.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
@@ -42,6 +43,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/loader/PingLoader.h"
 #include "platform/JSONValues.h"
 #include "platform/ParsingUtilities.h"
@@ -157,13 +159,20 @@ void ContentSecurityPolicy::bindToExecutionContext(ExecutionContext* executionCo
     applyPolicySideEffectsToExecutionContext();
 }
 
+void ContentSecurityPolicy::setupSelf(const SecurityOrigin& securityOrigin)
+{
+    // Ensure that 'self' processes correctly.
+    m_selfProtocol = securityOrigin.protocol();
+    m_selfSource = new CSPSource(this, m_selfProtocol, securityOrigin.host(), securityOrigin.port(), String(), CSPSource::NoWildcard, CSPSource::NoWildcard);
+}
+
 void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
 {
     ASSERT(m_executionContext);
-    ASSERT(getSecurityOrigin());
-    // Ensure that 'self' processes correctly.
-    m_selfProtocol = getSecurityOrigin()->protocol();
-    m_selfSource = new CSPSource(this, m_selfProtocol, getSecurityOrigin()->host(), getSecurityOrigin()->port(), String(), CSPSource::NoWildcard, CSPSource::NoWildcard);
+
+    SecurityOrigin* securityOrigin = m_executionContext->securityContext().getSecurityOrigin();
+    DCHECK(securityOrigin);
+    setupSelf(*securityOrigin);
 
     if (didSetReferrerPolicy())
         m_executionContext->setReferrerPolicy(m_referrerPolicy);
@@ -182,8 +191,8 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
         if (m_insecureRequestsPolicy == SecurityContext::InsecureRequestsUpgrade) {
             UseCounter::count(document, UseCounter::UpgradeInsecureRequestsEnabled);
             document->setInsecureRequestsPolicy(m_insecureRequestsPolicy);
-            if (!getSecurityOrigin()->host().isNull())
-                document->addInsecureNavigationUpgrade(getSecurityOrigin()->host().impl()->hash());
+            if (!securityOrigin->host().isNull())
+                document->addInsecureNavigationUpgrade(securityOrigin->host().impl()->hash());
         }
 
         for (const auto& consoleMessage : m_consoleMessages)
@@ -225,14 +234,14 @@ void ContentSecurityPolicy::copyStateFrom(const ContentSecurityPolicy* other)
 {
     ASSERT(m_policies.isEmpty());
     for (const auto& policy : other->m_policies)
-        addPolicyFromHeaderValue(policy->header(), policy->headerType(), policy->headerSource());
+        addAndReportPolicyFromHeaderValue(policy->header(), policy->headerType(), policy->headerSource());
 }
 
 void ContentSecurityPolicy::copyPluginTypesFrom(const ContentSecurityPolicy* other)
 {
     for (const auto& policy : other->m_policies) {
         if (policy->hasPluginTypes()) {
-            addPolicyFromHeaderValue(policy->pluginTypesText(), policy->headerType(), policy->headerSource());
+            addAndReportPolicyFromHeaderValue(policy->pluginTypesText(), policy->headerType(), policy->headerSource());
         }
     }
 }
@@ -240,14 +249,14 @@ void ContentSecurityPolicy::copyPluginTypesFrom(const ContentSecurityPolicy* oth
 void ContentSecurityPolicy::didReceiveHeaders(const ContentSecurityPolicyResponseHeaders& headers)
 {
     if (!headers.contentSecurityPolicy().isEmpty())
-        addPolicyFromHeaderValue(headers.contentSecurityPolicy(), ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
+        addAndReportPolicyFromHeaderValue(headers.contentSecurityPolicy(), ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
     if (!headers.contentSecurityPolicyReportOnly().isEmpty())
-        addPolicyFromHeaderValue(headers.contentSecurityPolicyReportOnly(), ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceHTTP);
+        addAndReportPolicyFromHeaderValue(headers.contentSecurityPolicyReportOnly(), ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceHTTP);
 }
 
 void ContentSecurityPolicy::didReceiveHeader(const String& header, ContentSecurityPolicyHeaderType type, ContentSecurityPolicyHeaderSource source)
 {
-    addPolicyFromHeaderValue(header, type, source);
+    addAndReportPolicyFromHeaderValue(header, type, source);
 
     // This might be called after we've been bound to an execution context. For example, a <meta>
     // element might be injected after page load.
@@ -295,6 +304,30 @@ void ContentSecurityPolicy::addPolicyFromHeaderValue(const String& header, Conte
         skipExactly<UChar>(position, end, ',');
         begin = position;
     }
+}
+
+void ContentSecurityPolicy::reportAccumulatedHeaders(FrameLoaderClient* client) const
+{
+    // Notify the embedder about headers that have accumulated before the
+    // navigation got committed.  See comments in
+    // addAndReportPolicyFromHeaderValue for more details and context.
+    DCHECK(client);
+    for (const auto& policy : m_policies) {
+        client->didAddContentSecurityPolicy(
+            policy->header(), policy->headerType(), policy->headerSource());
+    }
+}
+
+void ContentSecurityPolicy::addAndReportPolicyFromHeaderValue(const String& header, ContentSecurityPolicyHeaderType type, ContentSecurityPolicyHeaderSource source)
+{
+    // Notify about the new header, so that it can be reported back to the
+    // browser process.  This is needed in order to:
+    // 1) replicate CSP directives (i.e. frame-src) to OOPIFs (only for now / short-term).
+    // 2) enforce CSP in the browser process (not yet / long-term - see https://crbug.com/376522).
+    if (document() && document()->frame())
+        document()->frame()->client()->didAddContentSecurityPolicy(header, type, source);
+
+    addPolicyFromHeaderValue(header, type, source);
 }
 
 void ContentSecurityPolicy::setOverrideAllowInlineStyle(bool value)
@@ -702,11 +735,6 @@ bool ContentSecurityPolicy::didSetReferrerPolicy() const
     return false;
 }
 
-SecurityOrigin* ContentSecurityPolicy::getSecurityOrigin() const
-{
-    return m_executionContext->securityContext().getSecurityOrigin();
-}
-
 const KURL ContentSecurityPolicy::url() const
 {
     return m_executionContext->contextURL();
@@ -788,6 +816,16 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
 void ContentSecurityPolicy::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<String>& reportEndpoints, const String& header, ViolationType violationType, LocalFrame* contextFrame)
 {
     ASSERT(violationType == URLViolation || blockedURL.isEmpty());
+
+    // TODO(lukasza): Support sending reports from OOPIFs - https://crbug.com/611232
+    // (or move CSP child-src and frame-src checks to the browser process - see
+    // https://crbug.com/376522).
+    if (!m_executionContext && !contextFrame) {
+        DCHECK(equalIgnoringCase(effectiveDirective, ContentSecurityPolicy::ChildSrc)
+            || equalIgnoringCase(effectiveDirective, ContentSecurityPolicy::FrameSrc));
+        return;
+    }
+
     ASSERT((m_executionContext && !contextFrame) || (equalIgnoringCase(effectiveDirective, ContentSecurityPolicy::FrameAncestors) && contextFrame));
 
     // FIXME: Support sending reports from worker.

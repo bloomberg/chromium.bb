@@ -927,6 +927,19 @@ void FrameLoaderClientImpl::didChangeSandboxFlags(Frame* childFrame, SandboxFlag
     m_webFrame->client()->didChangeSandboxFlags(WebFrame::fromFrame(childFrame), static_cast<WebSandboxFlags>(flags));
 }
 
+void FrameLoaderClientImpl::didAddContentSecurityPolicy(
+    const String& headerValue,
+    ContentSecurityPolicyHeaderType type,
+    ContentSecurityPolicyHeaderSource source)
+{
+    if (m_webFrame->client()) {
+        m_webFrame->client()->didAddContentSecurityPolicy(
+            headerValue,
+            static_cast<WebContentSecurityPolicyType>(type),
+            static_cast<WebContentSecurityPolicySource>(source));
+    }
+}
+
 void FrameLoaderClientImpl::didChangeFrameOwnerProperties(HTMLFrameElementBase* frameElement)
 {
     if (!m_webFrame->client())

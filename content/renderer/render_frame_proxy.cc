@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "content/child/webmessageportchannel_impl.h"
+#include "content/common/content_security_policy_header.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/input_messages.h"
@@ -215,6 +216,10 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
       state.should_enforce_strict_mixed_content_checking);
   web_frame_->setReplicatedPotentiallyTrustworthyUniqueOrigin(
       state.has_potentially_trustworthy_unique_origin);
+
+  web_frame_->resetReplicatedContentSecurityPolicy();
+  for (const auto& header : state.accumulated_csp_headers)
+    OnAddContentSecurityPolicy(header);
 }
 
 // Update the proxy's SecurityContext and FrameOwner with new sandbox flags
@@ -258,6 +263,10 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateSandboxFlags, OnDidUpdateSandboxFlags)
     IPC_MESSAGE_HANDLER(FrameMsg_DispatchLoad, OnDispatchLoad)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateName, OnDidUpdateName)
+    IPC_MESSAGE_HANDLER(FrameMsg_AddContentSecurityPolicy,
+                        OnAddContentSecurityPolicy)
+    IPC_MESSAGE_HANDLER(FrameMsg_ResetContentSecurityPolicy,
+                        OnResetContentSecurityPolicy)
     IPC_MESSAGE_HANDLER(FrameMsg_EnforceStrictMixedContentChecking,
                         OnEnforceStrictMixedContentChecking)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateOrigin, OnDidUpdateOrigin)
@@ -326,6 +335,17 @@ void RenderFrameProxy::OnDidUpdateName(const std::string& name,
                                        const std::string& unique_name) {
   web_frame_->setReplicatedName(blink::WebString::fromUTF8(name),
                                 blink::WebString::fromUTF8(unique_name));
+}
+
+void RenderFrameProxy::OnAddContentSecurityPolicy(
+    const ContentSecurityPolicyHeader& header) {
+  web_frame_->addReplicatedContentSecurityPolicyHeader(
+      blink::WebString::fromUTF8(header.header_value), header.type,
+      header.source);
+}
+
+void RenderFrameProxy::OnResetContentSecurityPolicy() {
+  web_frame_->resetReplicatedContentSecurityPolicy();
 }
 
 void RenderFrameProxy::OnEnforceStrictMixedContentChecking(

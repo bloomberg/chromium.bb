@@ -27,6 +27,7 @@ class FrameTree;
 class NavigationRequest;
 class Navigator;
 class RenderFrameHostImpl;
+struct ContentSecurityPolicyHeader;
 
 // When a page contains iframes, its renderer process maintains a tree structure
 // of those frames. We are mirroring this tree in the browser process. This
@@ -144,6 +145,14 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // Set the current name and notify proxies about the update.
   void SetFrameName(const std::string& name, const std::string& unique_name);
+
+  // Add CSP header to replication state and notify proxies about the update.
+  void AddContentSecurityPolicy(const ContentSecurityPolicyHeader& header);
+
+  // Discards previous CSP headers and notifies proxies about the update.
+  // Typically invoked after committing navigation to a new document (since the
+  // new document comes with a fresh set of CSP http headers).
+  void ResetContentSecurityPolicy();
 
   // Sets the current enforcement of strict mixed content checking and
   // notifies proxies about the update.

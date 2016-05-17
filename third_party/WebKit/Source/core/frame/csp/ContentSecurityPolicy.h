@@ -55,6 +55,7 @@ class ConsoleMessage;
 class CSPDirectiveList;
 class CSPSource;
 class Document;
+class FrameLoaderClient;
 class KURL;
 class ResourceRequest;
 class SecurityOrigin;
@@ -142,11 +143,14 @@ public:
     DECLARE_TRACE();
 
     void bindToExecutionContext(ExecutionContext*);
+    void setupSelf(const SecurityOrigin&);
     void copyStateFrom(const ContentSecurityPolicy*);
     void copyPluginTypesFrom(const ContentSecurityPolicy*);
 
     void didReceiveHeaders(const ContentSecurityPolicyResponseHeaders&);
     void didReceiveHeader(const String&, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
+    void addPolicyFromHeaderValue(const String&, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
+    void reportAccumulatedHeaders(FrameLoaderClient*) const;
 
     PassOwnPtr<Vector<CSPHeaderAndType>> headers() const;
 
@@ -271,11 +275,11 @@ private:
 
     void applyPolicySideEffectsToExecutionContext();
 
-    SecurityOrigin* getSecurityOrigin() const;
     KURL completeURL(const String&) const;
 
     void logToConsole(const String& message, MessageLevel = ErrorMessageLevel);
-    void addPolicyFromHeaderValue(const String&, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
+
+    void addAndReportPolicyFromHeaderValue(const String&, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
 
     bool shouldSendViolationReport(const String&) const;
     void didSendViolationReport(const String&);

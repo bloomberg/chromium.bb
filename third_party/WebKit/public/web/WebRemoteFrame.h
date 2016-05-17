@@ -5,6 +5,7 @@
 #ifndef WebRemoteFrame_h
 #define WebRemoteFrame_h
 
+#include "public/web/WebContentSecurityPolicy.h"
 #include "public/web/WebFrame.h"
 #include "public/web/WebSandboxFlags.h"
 
@@ -13,6 +14,7 @@ namespace blink {
 enum class WebTreeScopeType;
 class WebFrameClient;
 class WebRemoteFrameClient;
+class WebString;
 
 class WebRemoteFrame : public WebFrame {
 public:
@@ -38,6 +40,12 @@ public:
 
     // Set frame |name| and |uniqueName| replicated from another process.
     virtual void setReplicatedName(const WebString& name, const WebString& uniqueName) const = 0;
+
+    // Adds |header| to the set of replicated CSP headers.
+    virtual void addReplicatedContentSecurityPolicyHeader(const WebString& headerValue, WebContentSecurityPolicyType, WebContentSecurityPolicySource) const = 0;
+
+    // Resets replicated CSP headers to an empty set.
+    virtual void resetReplicatedContentSecurityPolicy() const = 0;
 
     // Set frame enforcement of strict mixed content checking replicated from another process.
     virtual void setReplicatedShouldEnforceStrictMixedContentChecking(bool) const = 0;

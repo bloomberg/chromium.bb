@@ -245,6 +245,17 @@ void FrameTreeNode::SetFrameName(const std::string& name,
   replication_state_.unique_name = unique_name;
 }
 
+void FrameTreeNode::AddContentSecurityPolicy(
+    const ContentSecurityPolicyHeader& header) {
+  replication_state_.accumulated_csp_headers.push_back(header);
+  render_manager_.OnDidAddContentSecurityPolicy(header);
+}
+
+void FrameTreeNode::ResetContentSecurityPolicy() {
+  replication_state_.accumulated_csp_headers.clear();
+  render_manager_.OnDidResetContentSecurityPolicy();
+}
+
 void FrameTreeNode::SetEnforceStrictMixedContentChecking(bool should_enforce) {
   if (should_enforce ==
       replication_state_.should_enforce_strict_mixed_content_checking) {

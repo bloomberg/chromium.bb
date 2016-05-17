@@ -57,6 +57,7 @@
 #include "public/platform/WebStorageQuotaType.h"
 #include "public/platform/WebURLError.h"
 #include "public/platform/WebURLRequest.h"
+#include "public/web/WebContentSecurityPolicy.h"
 #include <v8.h>
 
 namespace blink {
@@ -196,6 +197,12 @@ public:
 
     // The sandbox flags have changed for a child frame of this frame.
     virtual void didChangeSandboxFlags(WebFrame* childFrame, WebSandboxFlags flags) { }
+
+    // Called when a new Content Security Policy is added to the frame's
+    // document.  This can be triggered by handling of HTTP headers, handling
+    // of <meta> element, or by inheriting CSP from the parent (in case of
+    // about:blank).
+    virtual void didAddContentSecurityPolicy(const WebString& headerValue, WebContentSecurityPolicyType, WebContentSecurityPolicySource) { }
 
     // Some frame owner properties have changed for a child frame of this frame.
     // Frame owner properties currently include: scrolling, marginwidth and

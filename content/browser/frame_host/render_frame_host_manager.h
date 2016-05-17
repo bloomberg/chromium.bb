@@ -48,6 +48,7 @@ class RenderWidgetHostView;
 class TestWebContents;
 class WebUIImpl;
 struct CommonNavigationParams;
+struct ContentSecurityPolicyHeader;
 struct FrameReplicationState;
 
 // Manages RenderFrameHosts for a FrameTreeNode. It maintains a
@@ -432,6 +433,12 @@ class CONTENT_EXPORT RenderFrameHostManager
   // |name| and the recalculated |unique_name| and replicates them into all
   // frame proxies.
   void OnDidUpdateName(const std::string& name, const std::string& unique_name);
+
+  // Sends the newly added Content Security Policy header to all the proxies.
+  void OnDidAddContentSecurityPolicy(const ContentSecurityPolicyHeader& header);
+
+  // Resets Content Security Policy in all the proxies.
+  void OnDidResetContentSecurityPolicy();
 
   // Sends updated enforcement of strict mixed content checking to all
   // frame proxies when the frame changes its setting.
