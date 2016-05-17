@@ -445,7 +445,11 @@ TEST_F(CoreTest, InvalidArguments) {
 // (for required pointer arguments) will still cause death, but perhaps not
 // predictably.
 TEST_F(CoreTest, InvalidArgumentsDeath) {
+#if defined(OFFICIAL_BUILD)
+  const char kMemoryCheckFailedRegex[] = "";
+#else
   const char kMemoryCheckFailedRegex[] = "Check failed";
+#endif
 
   // |WaitMany()|:
   {

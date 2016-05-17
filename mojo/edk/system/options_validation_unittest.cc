@@ -95,7 +95,11 @@ TEST(OptionsValidationTest, Invalid) {
 // (for required pointer arguments) will still cause death, but perhaps not
 // predictably.
 TEST(OptionsValidationTest, InvalidDeath) {
+#if defined(OFFICIAL_BUILD)
+  const char kMemoryCheckFailedRegex[] = "";
+#else
   const char kMemoryCheckFailedRegex[] = "Check failed";
+#endif
 
   // Null:
   EXPECT_DEATH_IF_SUPPORTED(
