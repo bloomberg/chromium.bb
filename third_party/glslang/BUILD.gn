@@ -44,6 +44,8 @@ static_library("SPIRV") {
     "src/SPIRV/GlslangToSpv.cpp",
     "src/SPIRV/GlslangToSpv.h",
     "src/SPIRV/InReadableOrder.cpp",
+    "src/SPIRV/Logger.cpp",
+    "src/SPIRV/Logger.h",
     "src/SPIRV/SPVRemapper.cpp",
     "src/SPIRV/SPVRemapper.h",
     "src/SPIRV/SpvBuilder.cpp",
@@ -123,6 +125,8 @@ static_library("glslang") {
     "src/glslang/MachineIndependent/preprocessor/PpSymbols.cpp",
     "src/glslang/MachineIndependent/preprocessor/PpTokens.cpp",
     "src/glslang/MachineIndependent/preprocessor/PpTokens.h",
+    "src/glslang/MachineIndependent/propagateNoContraction.cpp",
+    "src/glslang/MachineIndependent/propagateNoContraction.h",
     "src/glslang/MachineIndependent/reflection.cpp",
     "src/glslang/MachineIndependent/reflection.h",
     "src/glslang/Public/ShaderLang.h",
@@ -147,10 +151,14 @@ static_library("HLSL") {
   sources = [
     "src/hlsl/hlslGrammar.cpp",
     "src/hlsl/hlslGrammar.h",
+    "src/hlsl/hlslOpMap.cpp",
+    "src/hlsl/hlslOpMap.h",
     "src/hlsl/hlslParseHelper.cpp",
     "src/hlsl/hlslParseHelper.h",
     "src/hlsl/hlslScanContext.cpp",
     "src/hlsl/hlslScanContext.h",
+    "src/hlsl/hlslTokenStream.cpp",
+    "src/hlsl/hlslTokenStream.h",
     "src/hlsl/hlslTokens.h",
   ]
 

@@ -30,6 +30,8 @@ if (enable_vulkan) {
         "vulkan_platform.h",
         "vulkan_render_pass.cc",
         "vulkan_render_pass.h",
+        "vulkan_shader_module.cc",
+        "vulkan_shader_module.h",
         "vulkan_surface.cc",
         "vulkan_surface.h",
         "vulkan_swap_chain.cc",
@@ -67,7 +69,10 @@ if (enable_vulkan) {
 
   test("vulkan_tests") {
     sources = [
+      "tests/basic_vulkan_test.cc",
+      "tests/basic_vulkan_test.h",
       "tests/native_window.h",
+      "tests/shader_module_unittest.cc",
       "tests/vulkan_test.cc",
       "tests/vulkan_tests_main.cc",
     ]
