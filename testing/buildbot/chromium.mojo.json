@@ -25,6 +25,9 @@
         "test": "mus_ws_unittests"
       },
       {
+        "test": "views_mus_interactive_ui_tests"
+      },
+      {
         "test": "views_mus_unittests"
       }
     ]
@@ -47,6 +50,9 @@
       },
       {
         "test": "mus_ws_unittests"
+      },
+      {
+        "test": "views_mus_interactive_ui_tests"
       },
       {
         "test": "views_mus_unittests"

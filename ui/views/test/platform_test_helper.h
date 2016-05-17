@@ -21,7 +21,10 @@ class PlatformTestHelper {
   static void set_factory(const Factory& factory);
   static std::unique_ptr<PlatformTestHelper> Create();
 
-  virtual bool IsMus() const = 0;
+  // Whether we are running under the mus environment. Methods are static so
+  // that they can be called before Create().
+  static void SetIsMus();
+  static bool IsMus();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PlatformTestHelper);
