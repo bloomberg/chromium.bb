@@ -18,6 +18,7 @@ namespace features {
 // alongside the definition of their values in the .cc file.
 CONTENT_EXPORT extern const base::Feature kBrotliEncoding;
 CONTENT_EXPORT extern const base::Feature kCredentialManagementAPI;
+CONTENT_EXPORT extern const base::Feature kDefaultEnableGpuRasterization;
 CONTENT_EXPORT extern const base::Feature kDownloadResumption;
 CONTENT_EXPORT extern const base::Feature kDocumentWriteEvaluator;
 CONTENT_EXPORT extern const base::Feature kNewMediaPlaybackUi;

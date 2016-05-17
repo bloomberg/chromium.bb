@@ -19,6 +19,11 @@ const base::Feature kBrotliEncoding{"brotli-encoding",
 const base::Feature kCredentialManagementAPI{"CredentialManagementAPI",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable GPU Rasterization by default. This can still be overridden by
+// --force-gpu-rasterization or --disable-gpu-rasterization.
+const base::Feature kDefaultEnableGpuRasterization{
+    "DefaultEnableGpuRasterization", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Downloads resumption will be controllable via a flag until it's enabled
 // permanently. See https://crbug.com/7648
 const base::Feature kDownloadResumption{"DownloadResumption",

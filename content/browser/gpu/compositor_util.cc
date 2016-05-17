@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
@@ -17,6 +18,7 @@
 #include "cc/base/switches.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/config/gpu_feature_type.h"
 
@@ -233,9 +235,9 @@ bool IsGpuRasterizationEnabled() {
   return true;
 #endif
 
-  // explicitly disable GPU rasterization on all non-android devices until we
-  // have full test coverage.
-  return false;
+  // Gpu Rasterization on platforms that are not fully enabled is controlled by
+  // a finch experiment.
+  return base::FeatureList::IsEnabled(features::kDefaultEnableGpuRasterization);
 }
 
 bool IsAsyncWorkerContextEnabled() {
