@@ -12,6 +12,16 @@
       About Chrome
     </message>
   </if>
+  <if expr="not chromeos">
+    <message name="IDS_SETTINGS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Chrome help page.">
+      Get help with Chrome
+    </message>
+  </if>
+  <if expr="chromeos">
+    <message name="IDS_SETTINGS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Chrome help page.">
+      Get help with Chrome OS
+    </message>
+  </if>
 
   <!-- Default Browser Page -->
   <if expr="not chromeos">

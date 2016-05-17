@@ -6,6 +6,7 @@
     {
       'target_name': 'about_page',
       'dependencies': [
+        'about_page_browser_proxy',
         '../settings_page/compiled_resources2.gyp:main_page_behavior',
         '../settings_page/compiled_resources2.gyp:settings_animated_pages',
       ],

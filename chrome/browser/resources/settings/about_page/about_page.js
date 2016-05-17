@@ -21,6 +21,9 @@ Polymer({
     },
   },
 
+  /** @private {?settings.AboutPageBrowserProxy} */
+  browserProxy_: null,
+
   /**
    * @type {string} Selector to get the sections.
    * TODO(michaelpg): replace duplicate docs with @override once b/24294625
@@ -28,9 +31,19 @@ Polymer({
    */
   sectionSelector: 'settings-section',
 
+  /** @override */
+  ready: function() {
+    this.browserProxy_ = settings.AboutPageBrowserProxyImpl.getInstance();
+  },
+
    /** @override */
   attached: function() {
     this.scroller = this.parentElement;
+  },
+
+  /** @private */
+  onHelpTap_: function() {
+    this.browserProxy_.openHelpPage();
   },
 
 <if expr="chromeos">
@@ -39,6 +52,13 @@ Polymer({
     var animatedPages = /** @type {!SettingsAnimatedPagesElement} */ (
         this.$.pages);
     animatedPages.setSubpageChain(['detailed-build-info']);
+  },
+</if>
+
+<if expr="_google_chrome">
+  /** @private */
+  onReportIssueTap_: function() {
+    this.browserProxy_.openFeedbackDialog();
   },
 </if>
 });

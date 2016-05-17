@@ -11,6 +11,8 @@ cr.define('settings_about_page', function() {
   var TestAboutPageBrowserProxy = function() {
     settings.TestBrowserProxy.call(this, [
       'refreshUpdateStatus',
+      'openHelpPage',
+      'openFeedbackDialog',
       'getCurrentChannel',
       'getVersionInfo',
     ]);
@@ -47,17 +49,58 @@ cr.define('settings_about_page', function() {
       this.methodCalled('getVersionInfo');
       return Promise.resolve(this.versionInfo_);
     },
+
+    /** @override */
+    openFeedbackDialog: function() {
+      this.methodCalled('openFeedbackDialog');
+    },
+
+    /** @override */
+    openHelpPage: function() {
+      this.methodCalled('openHelpPage');
+    },
   };
 
   function registerAboutPageTests() {
-      suite('AboutPageTest', function() {
-        test('Initialization', function() {
-          // TODO(dpapad): Implement this test once <settings-about-page> is
-          // ready. Currently this is needed to avoid failing with
-          // "Failure: Mocha ran, but no mocha tests were run!" on non-ChromeOS
-          // test bots.
-        });
+    suite('AboutPageTest', function() {
+      var page = null;
+      var browserProxy = null;
+
+      setup(function() {
+        browserProxy = new TestAboutPageBrowserProxy();
+        settings.AboutPageBrowserProxyImpl.instance_ = browserProxy;
+        PolymerTest.clearBody();
+        page = document.createElement('settings-about-page');
+        document.body.appendChild(page);
       });
+
+      test('GetHelp', function() {
+        assertTrue(!!page.$.help);
+        MockInteractions.tap(page.$.help);
+        return browserProxy.whenCalled('openHelpPage');
+      });
+    });
+  }
+
+  function registerOfficialBuildTests() {
+    suite('AboutPageTest_OfficialBuild', function() {
+      var page = null;
+      var browserProxy = null;
+
+      setup(function() {
+        browserProxy = new TestAboutPageBrowserProxy();
+        settings.AboutPageBrowserProxyImpl.instance_ = browserProxy;
+        PolymerTest.clearBody();
+        page = document.createElement('settings-about-page');
+        document.body.appendChild(page);
+      });
+
+      test('ReportAnIssue', function() {
+        assertTrue(!!page.$.reportIssue);
+        MockInteractions.tap(page.$.reportIssue);
+        return browserProxy.whenCalled('openFeedbackDialog');
+      });
+    });
   }
 
   if (cr.isChromeOS) {
@@ -106,5 +149,6 @@ cr.define('settings_about_page', function() {
       }
       registerAboutPageTests();
     },
+    registerOfficialBuildTests: registerOfficialBuildTests,
   };
 });

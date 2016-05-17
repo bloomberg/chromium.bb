@@ -16,6 +16,11 @@
       Currently on <ph name="CHANNEL_NAME">$1<ex>stable</ex></ph>
     </message>
   </if>
+  <if expr="_google_chrome">
+    <message name="IDS_SETTINGS_ABOUT_PAGE_REPORT_AN_ISSUE" desc="Text of the button which allows the user to report an issue with Chrome.">
+      Report an issue
+    </message>
+  </if>
 
   <!-- Policy Indicators -->
   <message name="IDS_SETTINGS_CONTROLLED_SETTING_EXTENSION" desc="Text displayed in the controlled settings indicator tooltip when a setting's value is enforced by an extension.">

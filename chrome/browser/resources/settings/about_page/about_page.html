@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://md-settings/about_page/about_page_browser_proxy.html">
 <link rel="import" href="chrome://md-settings/settings_page/main_page_behavior.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_section.html">
@@ -44,17 +45,14 @@
             </div>
             <paper-button class="secondary-action">Check for update</paper-button>
           </div>
-          <div class="settings-box two-line">
-            <!-- TODO(dpapad): Implement this. -->
-            <div class="start">
-              <div>Get help with Chrome</div>
-              <div class="secondary">Open the Help Center</div>
-            </div>
+          <div id="help" class="settings-box two-line" on-tap="onHelpTap_">
+            $i18n{aboutGetHelpUsingChrome}
           </div>
-          <div class="settings-box">
-            <!-- TODO(dpapad): Implement this. -->
-            Report an issue
+<if expr="_google_chrome">
+          <div id="reportIssue" class="settings-box" on-tap="onReportIssueTap_">
+            $i18n{aboutReportAnIssue}
           </div>
+</if>
 <if expr="chromeos">
           <div class="settings-box" on-tap="onDetailedBuildInfoTap_">
             <!-- TODO(dpapad): Localize string. -->

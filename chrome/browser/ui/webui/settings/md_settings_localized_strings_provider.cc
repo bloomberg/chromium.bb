@@ -133,6 +133,11 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
 #else
       {"aboutProductTitle", IDS_PRODUCT_NAME},
 #endif
+      {"aboutGetHelpUsingChrome", IDS_SETTINGS_GET_HELP_USING_CHROME},
+
+#if defined(GOOGLE_CHROME_BUILD)
+      {"aboutReportAnIssue", IDS_SETTINGS_ABOUT_PAGE_REPORT_AN_ISSUE},
+#endif
 
 #if defined(OS_CHROMEOS)
       {"aboutChannelStable", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_STABLE},

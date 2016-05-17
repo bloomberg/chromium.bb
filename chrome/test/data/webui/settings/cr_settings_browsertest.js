@@ -91,6 +91,13 @@ TEST_F('CrSettingsAboutPageTest', 'AboutPage', function() {
   mocha.run();
 });
 
+GEN('#if defined(GOOGLE_CHROME_BUILD)');
+TEST_F('CrSettingsAboutPageTest', 'AboutPage_OfficialBuild', function() {
+  settings_about_page.registerOfficialBuildTests();
+  mocha.run();
+});
+GEN('#endif');
+
 GEN('#if defined(OS_CHROMEOS)');
 /**
  * Test fixture for
