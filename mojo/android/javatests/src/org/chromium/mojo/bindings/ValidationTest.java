@@ -59,6 +59,11 @@ public class ValidationTest extends MojoTestCase {
             if (pathname.getName().startsWith("conformance_mthd13_good_2")) {
                 return false;
             }
+            // TODO(yzshen): skip enum validation tests because the feature is
+            // not supported in Java yet. crbug.com/581392
+            if (pathname.getName().indexOf("enum") != -1) {
+                return false;
+            }
             return pathname.isFile() && pathname.getName().startsWith(mPrefix)
                     && pathname.getName().endsWith(".data");
         }
