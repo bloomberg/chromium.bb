@@ -109,8 +109,6 @@ views::View* ProfileSigninConfirmationDialogViews::CreateExtraView() {
     continue_signin_button_ =
         new views::LabelButton(this, continue_signin_text);
     continue_signin_button_->SetStyle(views::Button::STYLE_BUTTON);
-    views::Button::ConfigureDefaultFocus(continue_signin_button_);
-    continue_signin_button_->set_request_focus_on_press(true);
   }
   return continue_signin_button_;
 }
