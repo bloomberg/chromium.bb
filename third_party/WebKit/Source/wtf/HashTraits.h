@@ -102,10 +102,7 @@ template <typename T> struct GenericHashTraits : GenericHashTraitsBase<std::is_i
     typedef const T& IteratorConstReferenceType;
     static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return *x; }
     static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return *x; }
-    // Type for functions that take ownership, such as add.
-    // The store function either not be called or called once to store something
-    // passed in.  The value passed to the store function will be PassInType.
-    typedef const T& PassInType;
+
     template <typename IncomingValueType>
     static void store(IncomingValueType&& value, T& storage) { storage = std::forward<IncomingValueType>(value); }
 
@@ -164,7 +161,6 @@ template <typename P> struct HashTraits<OwnPtr<P>> : SimpleClassHashTraits<OwnPt
 
     typedef typename OwnPtr<P>::PtrType PeekInType;
 
-    typedef PassOwnPtr<P> PassInType;
     static void store(PassOwnPtr<P> value, OwnPtr<P>& storage) { storage = std::move(value); }
 
     typedef typename OwnPtr<P>::PtrType PeekOutType;
@@ -187,7 +183,6 @@ template <typename P> struct HashTraits<RefPtr<P>> : SimpleClassHashTraits<RefPt
     static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return *x; }
     static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return *x; }
 
-    typedef PassRefPtr<P> PassInType;
     static void store(PassRefPtr<P> value, RefPtr<P>& storage) { storage = value; }
 
     typedef P* PeekOutType;
@@ -205,7 +200,6 @@ struct HashTraits<std::unique_ptr<T>> : SimpleClassHashTraits<std::unique_ptr<T>
 
     using PeekInType = T*;
 
-    using PassInType = std::unique_ptr<T>;
     static void store(std::unique_ptr<T>&& value, std::unique_ptr<T>& storage) { storage = std::move(value); }
 
     using PeekOutType = T*;

@@ -42,7 +42,6 @@ private:
     typedef HashArg HashFunctions;
     typedef TraitsArg ValueTraits;
     typedef typename ValueTraits::PeekInType ValuePeekInType;
-    typedef typename ValueTraits::PassInType ValuePassInType;
 
 public:
     typedef typename ValueTraits::TraitType ValueType;

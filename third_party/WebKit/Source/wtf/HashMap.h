@@ -58,7 +58,6 @@ public:
     typedef typename ValueTraits::TraitType ValueType;
 
 private:
-    typedef typename MappedTraits::PassInType MappedPassInType;
     typedef typename MappedTraits::PeekOutType MappedPeekType;
 
     typedef HashArg HashFunctions;
@@ -142,7 +141,8 @@ public:
     //   static unsigned hash(const T&);
     //   static bool equal(const ValueType&, const T&);
     //   static translate(ValueType&, const T&, unsigned hashCode);
-    template <typename HashTranslator, typename T> AddResult add(const T&, MappedPassInType);
+    template <typename HashTranslator, typename IncomingKeyType, typename IncomingMappedType>
+    AddResult add(IncomingKeyType&&, IncomingMappedType&&);
 
     static bool isValidKey(KeyPeekInType);
 
@@ -377,11 +377,11 @@ HashMap<T, U, V, W, X, Y>::set(IncomingKeyType&& key, IncomingMappedType&& mappe
 }
 
 template <typename T, typename U, typename V, typename W, typename X, typename Y>
-template <typename HashTranslator, typename TYPE>
-typename HashMap<T, U, V, W, X, Y>::AddResult
-HashMap<T, U, V, W, X, Y>::add(const TYPE& key, MappedPassInType value)
+template <typename HashTranslator, typename IncomingKeyType, typename IncomingMappedType>
+auto HashMap<T, U, V, W, X, Y>::add(IncomingKeyType&& key, IncomingMappedType&& mapped) -> AddResult
 {
-    return m_impl.template addPassingHashCode<HashMapTranslatorAdapter<ValueTraits, HashTranslator>>(key, value);
+    return m_impl.template addPassingHashCode<HashMapTranslatorAdapter<ValueTraits, HashTranslator>>(
+        std::forward<IncomingKeyType>(key), std::forward<IncomingMappedType>(mapped));
 }
 
 template <typename T, typename U, typename V, typename W, typename X, typename Y>

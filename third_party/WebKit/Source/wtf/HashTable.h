@@ -353,11 +353,9 @@ public:
     typedef Traits ValueTraits;
     typedef Key KeyType;
     typedef typename KeyTraits::PeekInType KeyPeekInType;
-    typedef typename KeyTraits::PassInType KeyPassInType;
     typedef Value ValueType;
     typedef Extractor ExtractorType;
     typedef KeyTraits KeyTraitsType;
-    typedef typename Traits::PassInType ValuePassInType;
     typedef IdentityHashTranslator<HashFunctions> IdentityTranslatorType;
     typedef HashTableAddResult<HashTable, ValueType> AddResult;
 
