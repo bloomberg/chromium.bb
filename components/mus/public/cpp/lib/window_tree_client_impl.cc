@@ -166,6 +166,9 @@ WindowTreeClientImpl::~WindowTreeClientImpl() {
   while (!tracker.windows().empty())
     delete tracker.windows().front();
 
+  FOR_EACH_OBSERVER(WindowTreeConnectionObserver, observers_,
+                    OnWillDestroyConnection(this));
+
   delegate_->OnConnectionLost(this);
 }
 

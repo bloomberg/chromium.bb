@@ -73,6 +73,10 @@ class WmWindowMus : public ash::wm::WmWindow, public mus::WindowObserver {
     return static_cast<const WmWindowMus*>(window);
   }
 
+  ash::wm::WindowState* GetWindowState() {
+    return ash::wm::WmWindow::GetWindowState();
+  }
+
   // WmWindow:
   const ash::wm::WmWindow* GetRootWindow() const override;
   ash::wm::WmRootWindowController* GetRootWindowController() override;
@@ -163,8 +167,6 @@ class WmWindowMus : public ash::wm::WmWindow, public mus::WindowObserver {
   void RemoveObserver(ash::wm::WmWindowObserver* observer) override;
 
  private:
-  void NotifyStackingChanged();
-
   // mus::WindowObserver:
   void OnTreeChanged(const TreeChangeParams& params) override;
   void OnWindowReordered(mus::Window* window,
@@ -181,6 +183,11 @@ class WmWindowMus : public ash::wm::WmWindow, public mus::WindowObserver {
   void OnWindowDestroying(mus::Window* window) override;
 
   mus::Window* window_;
+
+  // The shell window id of this window. Shell window ids are defined in
+  // ash/wm/common/wm_shell_window_ids.h.
+  int shell_window_id_ = -1;
+
   std::unique_ptr<ash::wm::WindowState> window_state_;
 
   views::Widget* widget_ = nullptr;

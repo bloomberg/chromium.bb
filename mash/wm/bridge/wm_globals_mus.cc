@@ -12,6 +12,7 @@
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "mash/wm/bridge/wm_root_window_controller_mus.h"
 #include "mash/wm/bridge/wm_window_mus.h"
+#include "mash/wm/container_ids.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
 #include "mash/wm/root_window_controller.h"
 
@@ -25,7 +26,7 @@ WmGlobalsMus::WmGlobalsMus(mus::WindowTreeConnection* connection)
 }
 
 WmGlobalsMus::~WmGlobalsMus() {
-  connection_->RemoveObserver(this);
+  RemoveConnectionObserver();
   WmGlobals::Set(nullptr);
 }
 
@@ -172,7 +173,22 @@ void WmGlobalsMus::RemoveOverviewModeObserver(
 
 // static
 bool WmGlobalsMus::IsActivationParent(mus::Window* window) {
-  return window && window->local_id() == ash::kShellWindowId_DefaultContainer;
+  if (!window)
+    return false;
+
+  for (size_t i = 0; i < kNumActivationContainers; ++i) {
+    if (window->local_id() == static_cast<int>(kActivationContainers[i]))
+      return true;
+  }
+  return false;
+}
+
+void WmGlobalsMus::RemoveConnectionObserver() {
+  if (!connection_)
+    return;
+
+  connection_->RemoveObserver(this);
+  connection_ = nullptr;
 }
 
 void WmGlobalsMus::OnWindowTreeFocusChanged(mus::Window* gained_focus,
@@ -184,6 +200,12 @@ void WmGlobalsMus::OnWindowTreeFocusChanged(mus::Window* gained_focus,
 
   FOR_EACH_OBSERVER(ash::wm::WmActivationObserver, activation_observers_,
                     OnWindowActivated(gained_active, lost_active));
+}
+
+void WmGlobalsMus::OnWillDestroyConnection(
+    mus::WindowTreeConnection* connection) {
+  DCHECK_EQ(connection, connection_);
+  RemoveConnectionObserver();
 }
 
 }  // namespace wm

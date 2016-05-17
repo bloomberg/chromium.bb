@@ -30,21 +30,7 @@ namespace wm {
 MUS_DEFINE_OWNED_WINDOW_PROPERTY_KEY(mash::wm::WmWindowMus,
                                      kWmWindowKey,
                                      nullptr);
-MUS_DEFINE_LOCAL_WINDOW_PROPERTY_KEY(int, kShellWindowIdKey, -1);
-
 namespace {
-
-mus::Window* GetMusWindowByShellId(mus::Window* window, int id) {
-  if (window->GetLocalProperty(kShellWindowIdKey) == id)
-    return window;
-
-  for (mus::Window* child : window->children()) {
-    mus::Window* result = GetMusWindowByShellId(child, id);
-    if (result)
-      return result;
-  }
-  return nullptr;
-}
 
 // This classes is used so that the WindowState constructor can be made
 // protected. GetWindowState() is the only place that should be creating
@@ -165,11 +151,11 @@ ash::wm::WmGlobals* WmWindowMus::GetGlobals() const {
 }
 
 void WmWindowMus::SetShellWindowId(int id) {
-  window_->set_local_id(id);
+  shell_window_id_ = id;
 }
 
 int WmWindowMus::GetShellWindowId() const {
-  return window_->local_id();
+  return shell_window_id_;
 }
 
 ui::wm::WindowType WmWindowMus::GetType() const {
@@ -343,10 +329,15 @@ void WmWindowMus::Animate(::wm::WindowAnimationType type) {
 }
 
 void WmWindowMus::SetBounds(const gfx::Rect& bounds) {
-  if (layout_manager_adapter_)
-    layout_manager_adapter_->layout_manager()->SetChildBounds(this, bounds);
-  else
-    window_->SetBounds(bounds);
+  if (window_->parent()) {
+    WmWindowMus* parent = WmWindowMus::Get(window_->parent());
+    if (parent->layout_manager_adapter_) {
+      parent->layout_manager_adapter_->layout_manager()->SetChildBounds(this,
+                                                                        bounds);
+      return;
+    }
+  }
+  SetBoundsDirect(bounds);
 }
 
 void WmWindowMus::SetBoundsWithTransitionDelay(const gfx::Rect& bounds,
@@ -379,7 +370,7 @@ void WmWindowMus::SetBoundsInScreen(const gfx::Rect& bounds_in_screen,
 }
 
 gfx::Rect WmWindowMus::GetBoundsInScreen() const {
-  return ConvertRectToScreen(window_->bounds());
+  return ConvertRectToScreen(gfx::Rect(window_->bounds().size()));
 }
 
 const gfx::Rect& WmWindowMus::GetBounds() const {
@@ -510,6 +501,12 @@ bool WmWindowMus::IsActive() const {
 
 void WmWindowMus::Activate() {
   window_->SetFocus();
+  ash::wm::WmWindow* top_level = GetToplevelWindow();
+  if (!top_level)
+    return;
+
+  // TODO(sky): mus should do this too.
+  GetMusWindow(top_level)->MoveToFront();
 }
 
 void WmWindowMus::Deactivate() {
@@ -539,7 +536,14 @@ std::vector<ash::wm::WmWindow*> WmWindowMus::GetChildren() {
 }
 
 ash::wm::WmWindow* WmWindowMus::GetChildByShellWindowId(int id) {
-  return Get(GetMusWindowByShellId(window_, id));
+  if (id == shell_window_id_)
+    return this;
+  for (mus::Window* child : window_->children()) {
+    ash::wm::WmWindow* result = Get(child)->GetChildByShellWindowId(id);
+    if (result)
+      return result;
+  }
+  return nullptr;
 }
 
 void WmWindowMus::SnapToPixelBoundaryIfNecessary() {
@@ -554,11 +558,6 @@ void WmWindowMus::RemoveObserver(ash::wm::WmWindowObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void WmWindowMus::NotifyStackingChanged() {
-  FOR_EACH_OBSERVER(ash::wm::WmWindowObserver, observers_,
-                    OnWindowStackingChanged(this));
-}
-
 void WmWindowMus::OnTreeChanged(const TreeChangeParams& params) {
   ash::wm::WmWindowObserver::TreeChangeParams wm_params;
   wm_params.target = Get(params.target);
@@ -571,10 +570,8 @@ void WmWindowMus::OnTreeChanged(const TreeChangeParams& params) {
 void WmWindowMus::OnWindowReordered(mus::Window* window,
                                     mus::Window* relative_window,
                                     mus::mojom::OrderDirection direction) {
-  if (!window_->parent())
-    return;
-
-  static_cast<WmWindowMus*>(Get(window_->parent()))->NotifyStackingChanged();
+  FOR_EACH_OBSERVER(ash::wm::WmWindowObserver, observers_,
+                    OnWindowStackingChanged(this));
 }
 
 void WmWindowMus::OnWindowSharedPropertyChanged(
@@ -582,6 +579,9 @@ void WmWindowMus::OnWindowSharedPropertyChanged(
     const std::string& name,
     const std::vector<uint8_t>* old_data,
     const std::vector<uint8_t>* new_data) {
+  if (name == mus::mojom::WindowManager::kShowState_Property)
+    GetWindowState()->OnWindowShowStateChanged();
+
   // Deal with always on top and snap.
   NOTIMPLEMENTED();
 }

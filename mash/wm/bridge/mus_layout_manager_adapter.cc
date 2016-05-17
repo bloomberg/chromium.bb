@@ -51,6 +51,7 @@ void MusLayoutManagerAdapter::OnTreeChanging(const TreeChangeParams& params) {
 void MusLayoutManagerAdapter::OnTreeChanged(const TreeChangeParams& params) {
   if (params.new_parent == window_) {
     layout_manager_->OnWindowAddedToLayout(WmWindowMus::Get(params.target));
+    params.target->AddObserver(&child_window_observer_);
   } else if (params.old_parent == window_) {
     params.target->RemoveObserver(&child_window_observer_);
     layout_manager_->OnWindowRemovedFromLayout(WmWindowMus::Get(params.target));

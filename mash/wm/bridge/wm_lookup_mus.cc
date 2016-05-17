@@ -12,9 +12,14 @@
 namespace mash {
 namespace wm {
 
-WmLookupMus::WmLookupMus() {}
+WmLookupMus::WmLookupMus() {
+  WmLookup::Set(this);
+}
 
-WmLookupMus::~WmLookupMus() {}
+WmLookupMus::~WmLookupMus() {
+  if (WmLookupMus::Get() == this)
+    WmLookup::Set(nullptr);
+}
 
 ash::wm::WmRootWindowController*
 WmLookupMus::GetRootWindowControllerWithDisplayId(int64_t id) {

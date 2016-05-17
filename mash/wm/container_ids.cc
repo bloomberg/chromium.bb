@@ -13,7 +13,13 @@ namespace wm {
 const mojom::Container kActivationContainers[] = {
     // TODO(sky): figure out right set of containers. I suspect this should be
     // all non containers.
-    mojom::Container::USER_PRIVATE,
+    mojom::Container::USER_PRIVATE_WINDOWS,
+    mojom::Container::USER_PRIVATE_ALWAYS_ON_TOP_WINDOWS,
+    mojom::Container::USER_PRIVATE_DOCKED_WINDOWS,
+    mojom::Container::USER_PRIVATE_PRESENTATION_WINDOWS,
+    mojom::Container::USER_PRIVATE_PANELS,
+    mojom::Container::USER_PRIVATE_APP_LIST,
+    mojom::Container::USER_PRIVATE_SYSTEM_MODAL,
     // Bubble windows must be allowed to activate because some of them rely on
     // deactivation to close.
     mojom::Container::BUBBLES,

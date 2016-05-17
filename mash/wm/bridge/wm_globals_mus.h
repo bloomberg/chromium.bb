@@ -74,9 +74,12 @@ class WmGlobalsMus : public ash::wm::WmGlobals,
   // Returns true if |window| is a window that can have active children.
   static bool IsActivationParent(mus::Window* window);
 
+  void RemoveConnectionObserver();
+
   // mus::WindowTreeConnectionObserver:
   void OnWindowTreeFocusChanged(mus::Window* gained_focus,
                                 mus::Window* lost_focus) override;
+  void OnWillDestroyConnection(mus::WindowTreeConnection* connection) override;
 
   mus::WindowTreeConnection* connection_;
 

@@ -20,8 +20,7 @@ MUS_DECLARE_WINDOW_PROPERTY_TYPE(mash::wm::WmRootWindowControllerMus*);
 namespace mash {
 namespace wm {
 
-// TODO(sky): it likely makes more sense to hang this off RootWindowSettings.
-MUS_DEFINE_OWNED_WINDOW_PROPERTY_KEY(mash::wm::WmRootWindowControllerMus,
+MUS_DEFINE_LOCAL_WINDOW_PROPERTY_KEY(mash::wm::WmRootWindowControllerMus*,
                                      kWmRootWindowControllerKey,
                                      nullptr);
 
@@ -45,6 +44,12 @@ const WmRootWindowControllerMus* WmRootWindowControllerMus::Get(
     return nullptr;
 
   return window->GetRoot()->GetLocalProperty(kWmRootWindowControllerKey);
+}
+
+void WmRootWindowControllerMus::NotifyFullscreenStateChange(
+    bool is_fullscreen) {
+  FOR_EACH_OBSERVER(ash::wm::WmRootWindowControllerObserver, observers_,
+                    OnFullscreenStateChanged(is_fullscreen));
 }
 
 gfx::Point WmRootWindowControllerMus::ConvertPointToScreen(
@@ -120,12 +125,12 @@ ash::wm::WmWindow* WmRootWindowControllerMus::FindEventTarget(
 
 void WmRootWindowControllerMus::AddObserver(
     ash::wm::WmRootWindowControllerObserver* observer) {
-  NOTIMPLEMENTED();
+  observers_.AddObserver(observer);
 }
 
 void WmRootWindowControllerMus::RemoveObserver(
     ash::wm::WmRootWindowControllerObserver* observer) {
-  NOTIMPLEMENTED();
+  observers_.RemoveObserver(observer);
 }
 
 }  // namespace wm

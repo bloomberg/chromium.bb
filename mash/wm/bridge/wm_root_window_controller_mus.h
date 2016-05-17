@@ -41,6 +41,8 @@ class WmRootWindowControllerMus : public ash::wm::WmRootWindowController {
     return root_window_controller_;
   }
 
+  void NotifyFullscreenStateChange(bool is_fullscreen);
+
   // Screen conversion functions.
   gfx::Point ConvertPointToScreen(const WmWindowMus* source,
                                   const gfx::Point& point) const;
@@ -69,6 +71,7 @@ class WmRootWindowControllerMus : public ash::wm::WmRootWindowController {
  private:
   WmGlobalsMus* globals_;
   RootWindowController* root_window_controller_;
+  base::ObserverList<ash::wm::WmRootWindowControllerObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WmRootWindowControllerMus);
 };

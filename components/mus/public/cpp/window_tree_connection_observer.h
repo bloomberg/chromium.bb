@@ -8,11 +8,15 @@
 namespace mus {
 
 class Window;
+class WindowTreeConnection;
 
 class WindowTreeConnectionObserver {
  public:
   virtual void OnWindowTreeFocusChanged(Window* gained_focus,
                                         Window* lost_focus) {}
+
+  // Called right before the connection is destroyed.
+  virtual void OnWillDestroyConnection(WindowTreeConnection* connection) {}
 
  protected:
   virtual ~WindowTreeConnectionObserver() {}
