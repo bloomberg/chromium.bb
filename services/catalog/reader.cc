@@ -107,8 +107,10 @@ void ScanDir(
     // build (e.g. for applications that are packaged into others) and are not
     // valid standalone packages.
     base::FilePath package_path = GetPackagePath(package_dir, entry->name());
-    if (!base::PathExists(package_path))
+    if (entry->name() != "mojo:shell" && entry->name() != "mojo:catalog" &&
+        !base::PathExists(package_path)) {
       continue;
+    }
 
     original_thread_task_runner->PostTask(
         FROM_HERE,
