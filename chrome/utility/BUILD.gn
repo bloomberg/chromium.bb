@@ -117,3 +117,25 @@ static_library("utility") {
     deps += [ "//pdf" ]
   }
 }
+
+if (is_mac) {
+  import("//testing/libfuzzer/fuzzer_test.gni")
+  fuzzer_test("safe_browsing_dmg_fuzzer") {
+    sources = [
+      "safe_browsing/mac/fuzzer.cc",
+      "safe_browsing/mac/hfs.cc",
+      "safe_browsing/mac/hfs.h",
+      "safe_browsing/mac/read_stream.cc",
+      "safe_browsing/mac/read_stream.h",
+      "safe_browsing/mac/udif.cc",
+      "safe_browsing/mac/udif.h",
+    ]
+
+    additional_configs = [ ":utility_ldflags" ]
+
+    deps = [
+      "//base",
+      "//third_party/zlib",
+    ]
+  }
+}
