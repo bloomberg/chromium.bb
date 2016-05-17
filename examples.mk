@@ -172,7 +172,7 @@ aom_cx_set_ref.SRCS                += video_common.h
 aom_cx_set_ref.SRCS                += video_writer.h video_writer.c
 aom_cx_set_ref.SRCS                += aom_ports/msvc.h
 aom_cx_set_ref.GUID                 = C5E31F7F-96F6-48BD-BD3E-10EBF6E8057A
-aom_cx_set_ref.DESCRIPTION          = VP8 set encoder reference frame
+aom_cx_set_ref.DESCRIPTION          = AV1 set encoder reference frame
 endif
 endif
 
