@@ -48,8 +48,6 @@ static const char kRedirectLoopLearnMoreUrl[] =
     "https://support.google.com/chrome?p=rl_error";
 static const char kWeakDHKeyLearnMoreUrl[] =
     "https://support.google.com/chrome?p=dh_error";
-static const char kSslInvalidResponseLearnMoreUrl[] =
-    "https://support.google.com/chrome?p=ir_ssl_error";
 static const int kGoogleCachedCopySuggestionType = 0;
 
 enum NAV_SUGGESTIONS {
@@ -267,7 +265,7 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_HEADING_INSECURE_CONNECTION,
    IDS_ERRORPAGES_SUMMARY_INVALID_RESPONSE,
    IDS_ERRORPAGES_DETAILS_SSL_PROTOCOL_ERROR,
-   SUGGEST_RELOAD | SUGGEST_LEARNMORE_STANDALONE,
+   SUGGEST_RELOAD,
   },
   {net::ERR_BAD_SSL_CLIENT_AUTH_CERT,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
@@ -330,7 +328,7 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_HEADING_INSECURE_CONNECTION,
    IDS_ERRORPAGES_SUMMARY_INVALID_RESPONSE,
    IDS_ERRORPAGES_DETAILS_SSL_FALLBACK_BEYOND_MINIMUM_VERSION,
-   SUGGEST_LEARNMORE_STANDALONE,
+   SUGGEST_NONE,
   },
   {net::ERR_SSL_VERSION_OR_CIPHER_MISMATCH,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
@@ -596,20 +594,10 @@ void AddLinkedSuggestionToList(const int error_code,
       suggestion_string = l10n_util::GetStringUTF16(
           IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY);
       break;
-    case net::ERR_SSL_FALLBACK_BEYOND_MINIMUM_VERSION:
-      learn_more_url =  GURL(kSslInvalidResponseLearnMoreUrl);
-      suggestion_string = l10n_util::GetStringUTF16(
-          IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY);
-      break;
     case net::ERR_TOO_MANY_REDIRECTS:
       learn_more_url = GURL(kRedirectLoopLearnMoreUrl);
       suggestion_string = l10n_util::GetStringUTF16(
           IDS_ERRORPAGES_SUGGESTION_CLEAR_COOKIES_SUMMARY);
-      break;
-    case net::ERR_SSL_PROTOCOL_ERROR:
-      learn_more_url = GURL(kSslInvalidResponseLearnMoreUrl);
-      suggestion_string = l10n_util::GetStringUTF16(
-          IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY);
       break;
     default:
       NOTREACHED();
