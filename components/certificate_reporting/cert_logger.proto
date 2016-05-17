@@ -91,4 +91,10 @@ message CertLoggerRequest {
   // |cert_chain|, which is the chain the client built during
   // verification.
   optional string unverified_cert_chain = 8;
+
+  // True if the certificate was rooted at a standard CA root ,as opposed to a
+  // user-installed root, but is only meaningful if the underlying certificate
+  // validation library built a trusted chain (i.e. the Chrome net stack set the
+  // error, not the library).
+  optional bool is_issued_by_known_root = 9;
 };

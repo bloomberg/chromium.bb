@@ -68,15 +68,9 @@ std::string GetPEMEncodedChain() {
   return cert_data;
 }
 
-// Test that a serialized ErrorReport can be deserialized as
-// a CertLoggerRequest protobuf (which is the format that the receiving
-// server expects it in) with the right data in it.
-TEST(ErrorReportTest, SerializedReportAsProtobuf) {
+void VerifyErrorReportSerialization(const ErrorReport& report,
+                                    const SSLInfo& ssl_info) {
   std::string serialized_report;
-  SSLInfo ssl_info;
-  ASSERT_NO_FATAL_FAILURE(
-      GetTestSSLInfo(INCLUDE_UNVERIFIED_CERT_CHAIN, &ssl_info));
-  ErrorReport report(kDummyHostname, ssl_info);
   ASSERT_TRUE(report.Serialize(&serialized_report));
 
   CertLoggerRequest deserialized_report;
@@ -86,10 +80,30 @@ TEST(ErrorReportTest, SerializedReportAsProtobuf) {
   EXPECT_EQ(GetPEMEncodedChain(), deserialized_report.unverified_cert_chain());
   EXPECT_EQ(1, deserialized_report.pin().size());
   EXPECT_EQ(kDummyFailureLog, deserialized_report.pin().Get(0));
-
+  EXPECT_EQ(
+      ssl_info.is_issued_by_known_root,
+      deserialized_report.is_issued_by_known_root());
   EXPECT_THAT(
       deserialized_report.cert_error(),
       UnorderedElementsAre(kFirstReportedCertError, kSecondReportedCertError));
+}
+
+// Test that a serialized ErrorReport can be deserialized as
+// a CertLoggerRequest protobuf (which is the format that the receiving
+// server expects it in) with the right data in it.
+TEST(ErrorReportTest, SerializedReportAsProtobuf) {
+  SSLInfo ssl_info;
+  ASSERT_NO_FATAL_FAILURE(
+      GetTestSSLInfo(INCLUDE_UNVERIFIED_CERT_CHAIN, &ssl_info));
+  ErrorReport report_known(kDummyHostname, ssl_info);
+  ASSERT_NO_FATAL_FAILURE(
+      VerifyErrorReportSerialization(report_known, ssl_info));
+  // Test that both values for |is_issued_by_known_root| are serialized
+  // correctly.
+  ssl_info.is_issued_by_known_root = false;
+  ErrorReport report_unknown(kDummyHostname, ssl_info);
+  ASSERT_NO_FATAL_FAILURE(
+      VerifyErrorReportSerialization(report_unknown, ssl_info));
 }
 
 TEST(ErrorReportTest, SerializedReportAsProtobufWithInterstitialInfo) {
@@ -120,6 +134,9 @@ TEST(ErrorReportTest, SerializedReportAsProtobufWithInterstitialInfo) {
             deserialized_report.interstitial_info().interstitial_reason());
   EXPECT_EQ(true, deserialized_report.interstitial_info().user_proceeded());
   EXPECT_EQ(true, deserialized_report.interstitial_info().overridable());
+  EXPECT_EQ(
+      ssl_info.is_issued_by_known_root,
+      deserialized_report.is_issued_by_known_root());
 
   EXPECT_THAT(
       deserialized_report.cert_error(),

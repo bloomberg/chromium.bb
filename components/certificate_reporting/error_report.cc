@@ -77,6 +77,7 @@ ErrorReport::ErrorReport(const std::string& hostname,
   }
 
   cert_report_->add_pin(ssl_info.pinning_failure_log);
+  cert_report_->set_is_issued_by_known_root(ssl_info.is_issued_by_known_root);
 
   AddCertStatusToReportErrors(ssl_info.cert_status, cert_report_.get());
 }
