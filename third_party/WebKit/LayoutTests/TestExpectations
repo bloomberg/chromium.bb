@@ -1379,5 +1379,3 @@ crbug.com/609067 [ Mac ] bluetooth/writeValue/value-too-long.html [ Skip ]
 crbug.com/609067 [ Mac ] bluetooth/writeValue/write-fails.html [ Skip ]
 crbug.com/609067 [ Mac ] bluetooth/writeValue/write-succeeds.html [ Skip ]
 crbug.com/609067 [ Mac ] bluetooth/writeValue/write-updates-value.html [ Skip ]
-
-crbug.com/487344 http/tests/media/video-buffered-range-contains-currentTime.html [ NeedsRebaseline ]
