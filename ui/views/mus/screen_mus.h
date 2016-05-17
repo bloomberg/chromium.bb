@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/views/mus/display_list.h"
 #include "ui/views/mus/mus_export.h"
 
 namespace shell {
@@ -35,8 +36,6 @@ class VIEWS_MUS_EXPORT ScreenMus
   void Init(shell::Connector* connector);
 
  private:
-  int FindDisplayIndexById(int64_t id) const;
-
   // Invoked when a display changed in some weay, including being added.
   // If |is_primary| is true, |changed_display| is the primary display.
   void ProcessDisplayChanged(const display::Display& changed_display,
@@ -58,17 +57,17 @@ class VIEWS_MUS_EXPORT ScreenMus
   void RemoveObserver(display::DisplayObserver* observer) override;
 
   // mus::mojom::DisplayManager:
-  void OnDisplays(mojo::Array<mus::mojom::DisplayPtr> displays) override;
-  void OnDisplaysChanged(mojo::Array<mus::mojom::DisplayPtr> display) override;
+  void OnDisplays(
+      mojo::Array<mus::mojom::DisplayPtr> transport_displays) override;
+  void OnDisplaysChanged(
+      mojo::Array<mus::mojom::DisplayPtr> transport_displays) override;
   void OnDisplayRemoved(int64_t id) override;
 
   ScreenMusDelegate* delegate_;  // Can be nullptr.
   mus::mojom::DisplayManagerPtr display_manager_;
-  std::vector<display::Display> displays_;
-  int primary_display_index_;
   mojo::Binding<mus::mojom::DisplayManagerObserver>
       display_manager_observer_binding_;
-  base::ObserverList<display::DisplayObserver> observers_;
+  DisplayList display_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenMus);
 };

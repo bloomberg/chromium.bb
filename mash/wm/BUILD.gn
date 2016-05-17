@@ -160,6 +160,8 @@ source_set("unittests") {
     "app_launch_unittest.cc",
     "frame/move_loop_unittest.cc",
     "layout_manager_unittest.cc",
+    "test/wm_test_screen.cc",
+    "test/wm_test_screen.h",
     "window_manager_unittest.cc",
   ]
 
@@ -180,12 +182,15 @@ source_set("unittests") {
     "//mojo/public/cpp/system",
     "//services/shell/public/cpp:shell_test_support",
     "//testing/gtest",
+    "//ui/aura",
     "//ui/base",
+    "//ui/display",
     "//ui/events",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/mojo/geometry:interfaces",
     "//ui/mojo/geometry:util",
+    "//ui/views/mus",
   ]
 
   data_deps = [
