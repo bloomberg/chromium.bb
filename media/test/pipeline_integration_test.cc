@@ -109,6 +109,9 @@ const char kMP4VideoVP9[] = "video/mp4; codecs=\"vp09.00.00.08.01.01.00.00\"";
 const char kMP4Video[] = "video/mp4; codecs=\"avc1.4D4041\"";
 const char kMP4Audio[] = "audio/mp4; codecs=\"mp4a.40.2\"";
 const char kMP3[] = "audio/mpeg";
+#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
+const char kMP2AudioSBR[] = "video/mp2t; codecs=\"avc1.4D4041,mp4a.40.5\"";
+#endif
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
 // Key used to encrypt test files.
@@ -1788,6 +1791,24 @@ TEST_F(PipelineIntegrationTest,
   source.Shutdown();
   Stop();
 }
+
+#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
+TEST_F(PipelineIntegrationTest, Mp2ts_AAC_HE_SBR_Audio) {
+  EXPECT_CALL(*this, OnDurationChange()).Times(AnyNumber());
+
+  MockMediaSource source("bear-1280x720-aac_he.ts", kMP2AudioSBR,
+                         kAppendWholeFile);
+  StartPipelineWithMediaSource(&source);
+
+  source.EndOfStream();
+  ASSERT_EQ(PIPELINE_OK, pipeline_status_);
+
+  // When SBR is not taken into account correctly by mpeg2ts parser, it will
+  // estimate audio frame durations incorrectly and that will lead to gaps in
+  // buffered ranges (so this check will fail) and stalled playback.
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+}
+#endif
 
 TEST_F(PipelineIntegrationTest,
        MAYBE_EME(EncryptedPlayback_NoEncryptedFrames_MP4_CENC_AudioOnly)) {

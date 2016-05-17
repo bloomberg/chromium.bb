@@ -182,19 +182,28 @@ bool EsParserAdts::UpdateAudioConfiguration(const uint8_t* adts_header) {
 
   if (!audio_decoder_config.Matches(last_audio_decoder_config_)) {
     DVLOG(1) << "Sampling frequency: "
-             << audio_decoder_config.samples_per_second();
+             << audio_decoder_config.samples_per_second()
+             << " SBR=" << sbr_in_mimetype_;
     DVLOG(1) << "Channel layout: "
              << ChannelLayoutToString(audio_decoder_config.channel_layout());
+
+    // For AAC audio with SBR (Spectral Band Replication) the sampling rate is
+    // doubled in ParseAdtsHeader above, but AudioTimestampHelper should still
+    // use the original sample rate to compute audio timestamps and durations
+    // correctly.
+    int samples_per_second = sbr_in_mimetype_
+                                 ? audio_decoder_config.samples_per_second() / 2
+                                 : audio_decoder_config.samples_per_second();
     // Reset the timestamp helper to use a new time scale.
     if (audio_timestamp_helper_ &&
         audio_timestamp_helper_->base_timestamp() != kNoTimestamp()) {
       base::TimeDelta base_timestamp = audio_timestamp_helper_->GetTimestamp();
       audio_timestamp_helper_.reset(
-          new AudioTimestampHelper(audio_decoder_config.samples_per_second()));
+          new AudioTimestampHelper(samples_per_second));
       audio_timestamp_helper_->SetBaseTimestamp(base_timestamp);
     } else {
       audio_timestamp_helper_.reset(
-          new AudioTimestampHelper(audio_decoder_config.samples_per_second()));
+          new AudioTimestampHelper(samples_per_second));
     }
     // Audio config notification.
     last_audio_decoder_config_ = audio_decoder_config;
