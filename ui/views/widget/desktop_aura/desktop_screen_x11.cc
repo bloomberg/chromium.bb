@@ -286,6 +286,7 @@ DesktopScreenX11::DesktopScreenX11(
       has_xrandr_(false),
       xrandr_event_base_(0),
       displays_(test_displays),
+      primary_display_index_(0),
       atom_cache_(xdisplay_, kAtomsToCache) {}
 
 std::vector<display::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
