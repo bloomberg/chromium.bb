@@ -53,7 +53,7 @@ public:
             // The bridge has already disappeared.
             return;
         }
-        m_bridge->getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&Bridge::runTask, AllowCrossThreadAccess(m_bridge.get()), passed(std::move(task))));
+        m_bridge->getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&Bridge::runTask, wrapCrossThreadPersistent(m_bridge.get()), passed(std::move(task))));
     }
 
     ~CrossThreadHolder()

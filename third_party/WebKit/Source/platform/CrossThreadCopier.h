@@ -250,6 +250,7 @@ struct CrossThreadCopier<AllowCrossThreadAccessWrapper<T>> {
 template <typename T>
 AllowCrossThreadAccessWrapper<T*> AllowCrossThreadAccess(T* value)
 {
+    static_assert(!blink::IsGarbageCollectedType<T>::value, "Use wrapCrossThreadPersistent() instead for garbage-collected pointers");
     return AllowCrossThreadAccessWrapper<T*>(value);
 }
 

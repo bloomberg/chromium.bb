@@ -439,7 +439,7 @@ void ScriptStreamer::streamingCompleteOnBackgroundThread()
 
     // notifyFinished might already be called, or it might be called in the
     // future (if the parsing finishes earlier because of a parse error).
-    m_loadingTaskRunner->postTask(BLINK_FROM_HERE, threadSafeBind(&ScriptStreamer::streamingComplete, AllowCrossThreadAccess(this)));
+    m_loadingTaskRunner->postTask(BLINK_FROM_HERE, threadSafeBind(&ScriptStreamer::streamingComplete, wrapCrossThreadPersistent(this)));
 
     // The task might delete ScriptStreamer, so it's not safe to do anything
     // after posting it. Note that there's no way to guarantee that this
@@ -547,7 +547,7 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
             return;
         }
 
-        ScriptStreamerThread::shared()->postTask(threadSafeBind(&ScriptStreamerThread::runScriptStreamingTask, passed(std::move(scriptStreamingTask)), AllowCrossThreadAccess(this)));
+        ScriptStreamerThread::shared()->postTask(threadSafeBind(&ScriptStreamerThread::runScriptStreamingTask, passed(std::move(scriptStreamingTask)), wrapCrossThreadPersistent(this)));
         recordStartedStreamingHistogram(m_scriptType, 1);
     }
     if (m_stream)
