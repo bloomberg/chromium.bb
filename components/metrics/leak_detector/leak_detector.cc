@@ -268,8 +268,10 @@ void LeakDetector::AllocHook(const void* ptr, size_t size) {
 
       // Pass leak reports to observers.
       std::vector<MemoryLeakReportProto> leak_report_protos;
+      leak_report_protos.reserve(leak_reports.size());
       std::transform(leak_reports.begin(), leak_reports.end(),
-                     leak_report_protos.begin(), &ConvertLeakReportToProto);
+                     std::back_inserter(leak_report_protos),
+                     &ConvertLeakReportToProto);
       detector->NotifyObservers(leak_report_protos);
     }
   }
