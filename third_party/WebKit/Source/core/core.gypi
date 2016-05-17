@@ -668,6 +668,8 @@
             'layout/LayoutTextFragment.h',
             'layout/LayoutTable.cpp',
             'layout/LayoutTable.h',
+            'layout/LayoutTableBoxComponent.cpp',
+            'layout/LayoutTableBoxComponent.h',
             'layout/LayoutTableCaption.cpp',
             'layout/LayoutTableCaption.h',
             'layout/LayoutTableCell.cpp',

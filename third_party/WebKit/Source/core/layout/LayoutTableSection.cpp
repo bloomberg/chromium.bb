@@ -88,7 +88,7 @@ void CellSpan::ensureConsistency(const unsigned maximumSpanSize)
 }
 
 LayoutTableSection::LayoutTableSection(Element* element)
-    : LayoutBox(element)
+    : LayoutTableBoxComponent(element)
     , m_cCol(0)
     , m_cRow(0)
     , m_outerBorderStart(0)
@@ -109,7 +109,7 @@ LayoutTableSection::~LayoutTableSection()
 
 void LayoutTableSection::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
-    LayoutBox::styleDidChange(diff, oldStyle);
+    LayoutTableBoxComponent::styleDidChange(diff, oldStyle);
     propagateStyleToAnonymousChildren();
 
     // If border was changed, notify table.
@@ -120,7 +120,7 @@ void LayoutTableSection::styleDidChange(StyleDifference diff, const ComputedStyl
 
 void LayoutTableSection::willBeRemovedFromTree()
 {
-    LayoutBox::willBeRemovedFromTree();
+    LayoutTableBoxComponent::willBeRemovedFromTree();
 
     // Preventively invalidate our cells as we may be re-inserted into
     // a new table which would require us to rebuild our structure.
@@ -184,7 +184,7 @@ void LayoutTableSection::addChild(LayoutObject* child, LayoutObject* beforeChild
         beforeChild = splitAnonymousBoxesAroundChild(beforeChild);
 
     ASSERT(!beforeChild || beforeChild->isTableRow());
-    LayoutBox::addChild(child, beforeChild);
+    LayoutTableBoxComponent::addChild(child, beforeChild);
 }
 
 void LayoutTableSection::ensureRows(unsigned numRows)
@@ -1446,13 +1446,6 @@ CellSpan LayoutTableSection::spannedEffectiveColumns(const LayoutRect& flippedRe
     }
 
     return CellSpan(startColumn, endColumn);
-}
-
-
-void LayoutTableSection::imageChanged(WrappedImagePtr, const IntRect*)
-{
-    // FIXME: Examine cells and issue paint invalidations of only the rect the image paints in.
-    setShouldDoFullPaintInvalidation();
 }
 
 void LayoutTableSection::recalcCells()

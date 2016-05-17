@@ -51,7 +51,7 @@ static const unsigned maxRowIndex = 0x7FFFFFFE; // 2,147,483,646
 // allow some layout overflow to occur).
 //
 // LayoutTableRow doesn't establish a containing block for the underlying
-// LayoutTableCells. That's why it inherits from LayoutBox and not LayoutBlock.
+// LayoutTableCells. That's why it inherits from LayoutTableBoxComponent and not LayoutBlock.
 // One oddity is that LayoutTableRow doesn't establish a new coordinate system
 // for its children. LayoutTableCells are positioned with respect to the
 // enclosing LayoutTableSection (this object's parent()). This particularity is
@@ -62,7 +62,7 @@ static const unsigned maxRowIndex = 0x7FFFFFFE; // 2,147,483,646
 // LayoutTableRow is also positioned with respect to the enclosing
 // LayoutTableSection. See LayoutTableSection::layoutRows() for the placement
 // logic.
-class CORE_EXPORT LayoutTableRow final : public LayoutBox {
+class CORE_EXPORT LayoutTableRow final : public LayoutTableBoxComponent {
 public:
     explicit LayoutTableRow(Element*);
 
@@ -71,9 +71,6 @@ public:
 
     LayoutTableRow* previousRow() const;
     LayoutTableRow* nextRow() const;
-
-    const LayoutObjectChildList* children() const { return &m_children; }
-    LayoutObjectChildList* children() { return &m_children; }
 
     LayoutTableSection* section() const { return toLayoutTableSection(parent()); }
     LayoutTable* table() const { return toLayoutTable(parent()->parent()); }
@@ -134,10 +131,8 @@ public:
 
 private:
     void addOverflowFromCell(const LayoutTableCell*);
-    LayoutObjectChildList* virtualChildren() override { return children(); }
-    const LayoutObjectChildList* virtualChildren() const override { return children(); }
 
-    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableRow || LayoutBox::isOfType(type); }
+    bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableRow || LayoutTableBoxComponent::isOfType(type); }
 
     void willBeRemovedFromTree() override;
 
@@ -157,14 +152,10 @@ private:
 
     void paint(const PaintInfo&, const LayoutPoint&) const override;
 
-    void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
-
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
 
     void nextSibling() const = delete;
     void previousSibling() const = delete;
-
-    LayoutObjectChildList m_children;
 
     // This field should never be read directly. It should be read through
     // rowIndex() above instead. This is to ensure that we never read this
@@ -186,14 +177,12 @@ inline LayoutTableRow* LayoutTableRow::nextRow() const
 
 inline LayoutTableRow* LayoutTableSection::firstRow() const
 {
-    ASSERT(children() == virtualChildren());
-    return toLayoutTableRow(children()->firstChild());
+    return toLayoutTableRow(firstChild());
 }
 
 inline LayoutTableRow* LayoutTableSection::lastRow() const
 {
-    ASSERT(children() == virtualChildren());
-    return toLayoutTableRow(children()->lastChild());
+    return toLayoutTableRow(lastChild());
 }
 
 } // namespace blink

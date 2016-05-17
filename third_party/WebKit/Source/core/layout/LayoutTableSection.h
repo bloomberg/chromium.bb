@@ -27,6 +27,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/LayoutTable.h"
+#include "core/layout/LayoutTableBoxComponent.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -95,17 +96,14 @@ class LayoutTableRow;
 // LayoutTableSection is responsible for laying out LayoutTableRows and
 // LayoutTableCells (see layoutRows()). However it is not their containing
 // block, the enclosing LayoutTable (this object's parent()) is. This is why
-// this class inherits from LayoutBox and not LayoutBlock.
-class CORE_EXPORT LayoutTableSection final : public LayoutBox {
+// this class inherits from LayoutTableBoxComponent and not LayoutBlock.
+class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
 public:
-    LayoutTableSection(Element*);
+    explicit LayoutTableSection(Element*);
     ~LayoutTableSection() override;
 
     LayoutTableRow* firstRow() const;
     LayoutTableRow* lastRow() const;
-
-    const LayoutObjectChildList* children() const { return &m_children; }
-    LayoutObjectChildList* children() { return &m_children; }
 
     void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) override;
 
@@ -308,16 +306,11 @@ protected:
     bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override;
 
 private:
-    LayoutObjectChildList* virtualChildren() override { return children(); }
-    const LayoutObjectChildList* virtualChildren() const override { return children(); }
-
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectTableSection || LayoutBox::isOfType(type); }
 
     void willBeRemovedFromTree() override;
 
     void layout() override;
-
-    void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 
     int borderSpacingForRow(unsigned row) const { return m_grid[row].rowLayoutObject ? table()->vBorderSpacing() : 0; }
 
@@ -353,8 +346,6 @@ private:
     CellSpan spannedEffectiveColumns(const LayoutRect& flippedRect) const;
 
     void setLogicalPositionForCell(LayoutTableCell*, unsigned effectiveColumn) const;
-
-    LayoutObjectChildList m_children;
 
     // The representation of the rows and their cells (CellStruct).
     Vector<RowStruct> m_grid;

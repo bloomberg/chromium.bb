@@ -383,14 +383,12 @@ inline LayoutTableCell* LayoutTableCell::nextCell() const
 
 inline LayoutTableCell* LayoutTableRow::firstCell() const
 {
-    ASSERT(children() == virtualChildren());
-    return toLayoutTableCell(children()->firstChild());
+    return toLayoutTableCell(firstChild());
 }
 
 inline LayoutTableCell* LayoutTableRow::lastCell() const
 {
-    ASSERT(children() == virtualChildren());
-    return toLayoutTableCell(children()->lastChild());
+    return toLayoutTableCell(lastChild());
 }
 
 } // namespace blink

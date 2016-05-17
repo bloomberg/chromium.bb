@@ -39,7 +39,7 @@ namespace blink {
 using namespace HTMLNames;
 
 LayoutTableRow::LayoutTableRow(Element* element)
-    : LayoutBox(element)
+    : LayoutTableBoxComponent(element)
     , m_rowIndex(unsetRowIndex)
 {
     // init LayoutObject attributes
@@ -48,7 +48,7 @@ LayoutTableRow::LayoutTableRow(Element* element)
 
 void LayoutTableRow::willBeRemovedFromTree()
 {
-    LayoutBox::willBeRemovedFromTree();
+    LayoutTableBoxComponent::willBeRemovedFromTree();
 
     section()->setNeedsCellRecalc();
 }
@@ -65,7 +65,7 @@ void LayoutTableRow::styleDidChange(StyleDifference diff, const ComputedStyle* o
 {
     ASSERT(style()->display() == TABLE_ROW);
 
-    LayoutBox::styleDidChange(diff, oldStyle);
+    LayoutTableBoxComponent::styleDidChange(diff, oldStyle);
     propagateStyleToAnonymousChildren();
 
     if (section() && oldStyle && style()->logicalHeight() != oldStyle->logicalHeight())
@@ -144,7 +144,7 @@ void LayoutTableRow::addChild(LayoutObject* child, LayoutObject* beforeChild)
     LayoutTableCell* cell = toLayoutTableCell(child);
 
     ASSERT(!beforeChild || beforeChild->isTableCell());
-    LayoutBox::addChild(cell, beforeChild);
+    LayoutTableBoxComponent::addChild(cell, beforeChild);
 
     // Generated content can result in us having a null section so make sure to null check our parent.
     if (parent())
@@ -214,12 +214,6 @@ bool LayoutTableRow::nodeAtPoint(HitTestResult& result, const HitTestLocation& l
 void LayoutTableRow::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
     TableRowPainter(*this).paint(paintInfo, paintOffset);
-}
-
-void LayoutTableRow::imageChanged(WrappedImagePtr, const IntRect*)
-{
-    // FIXME: Examine cells and issue paint invalidations of only the rect the image paints in.
-    setShouldDoFullPaintInvalidation();
 }
 
 LayoutTableRow* LayoutTableRow::createAnonymous(Document* document)
