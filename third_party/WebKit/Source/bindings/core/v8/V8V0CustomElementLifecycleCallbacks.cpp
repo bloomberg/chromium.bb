@@ -147,7 +147,7 @@ void V8V0CustomElementLifecycleCallbacks::created(Element* element)
     if (!m_scriptState->contextIsValid())
         return;
 
-    element->setCustomElementState(Element::Upgraded);
+    element->setV0CustomElementState(Element::V0Upgraded);
 
     ScriptState::Scope scope(m_scriptState.get());
     v8::Isolate* isolate = m_scriptState->isolate();

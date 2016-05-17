@@ -104,13 +104,13 @@ bool V0CustomElement::isValidName(const AtomicString& name, NameSet validNames)
 
 void V0CustomElement::define(Element* element, V0CustomElementDefinition* definition)
 {
-    switch (element->getCustomElementState()) {
-    case Element::NotCustomElement:
-    case Element::Upgraded:
+    switch (element->getV0CustomElementState()) {
+    case Element::V0NotCustomElement:
+    case Element::V0Upgraded:
         ASSERT_NOT_REACHED();
         break;
 
-    case Element::WaitingForUpgrade:
+    case Element::V0WaitingForUpgrade:
         element->setCustomElementDefinition(definition);
         V0CustomElementScheduler::scheduleCallback(definition->callbacks(), element, V0CustomElementLifecycleCallbacks::CreatedCallback);
         break;
@@ -119,13 +119,13 @@ void V0CustomElement::define(Element* element, V0CustomElementDefinition* defini
 
 void V0CustomElement::attributeDidChange(Element* element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
 {
-    DCHECK_EQ(element->getCustomElementState(), Element::Upgraded);
+    DCHECK_EQ(element->getV0CustomElementState(), Element::V0Upgraded);
     V0CustomElementScheduler::scheduleAttributeChangedCallback(element->customElementDefinition()->callbacks(), element, name, oldValue, newValue);
 }
 
 void V0CustomElement::didAttach(Element* element, const Document& document)
 {
-    DCHECK_EQ(element->getCustomElementState(), Element::Upgraded);
+    DCHECK_EQ(element->getV0CustomElementState(), Element::V0Upgraded);
     if (!document.domWindow())
         return;
     V0CustomElementScheduler::scheduleCallback(element->customElementDefinition()->callbacks(), element, V0CustomElementLifecycleCallbacks::AttachedCallback);
@@ -133,7 +133,7 @@ void V0CustomElement::didAttach(Element* element, const Document& document)
 
 void V0CustomElement::didDetach(Element* element, const Document& document)
 {
-    DCHECK_EQ(element->getCustomElementState(), Element::Upgraded);
+    DCHECK_EQ(element->getV0CustomElementState(), Element::V0Upgraded);
     if (!document.domWindow())
         return;
     V0CustomElementScheduler::scheduleCallback(element->customElementDefinition()->callbacks(), element, V0CustomElementLifecycleCallbacks::DetachedCallback);
@@ -141,13 +141,13 @@ void V0CustomElement::didDetach(Element* element, const Document& document)
 
 void V0CustomElement::wasDestroyed(Element* element)
 {
-    switch (element->getCustomElementState()) {
-    case Element::NotCustomElement:
+    switch (element->getV0CustomElementState()) {
+    case Element::V0NotCustomElement:
         ASSERT_NOT_REACHED();
         break;
 
-    case Element::WaitingForUpgrade:
-    case Element::Upgraded:
+    case Element::V0WaitingForUpgrade:
+    case Element::V0Upgraded:
         V0CustomElementObserver::notifyElementWasDestroyed(element);
         break;
     }

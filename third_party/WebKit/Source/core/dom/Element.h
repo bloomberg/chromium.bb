@@ -374,8 +374,8 @@ public:
     void setIsInCanvasSubtree(bool value) { setElementFlag(IsInCanvasSubtree, value); }
     bool isInCanvasSubtree() const { return hasElementFlag(IsInCanvasSubtree); }
 
-    bool isUpgradedCustomElement() { return getCustomElementState() == Upgraded; }
-    bool isUnresolvedCustomElement() { return getCustomElementState() == WaitingForUpgrade; }
+    bool isUpgradedV0CustomElement() { return getV0CustomElementState() == V0Upgraded; }
+    bool isUnresolvedV0CustomElement() { return getV0CustomElementState() == V0WaitingForUpgrade; }
 
     AtomicString computeInheritedLanguage() const;
     Locale& locale() const;

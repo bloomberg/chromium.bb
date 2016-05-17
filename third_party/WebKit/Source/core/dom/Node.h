@@ -244,19 +244,19 @@ public:
     bool isFirstLetterPseudoElement() const { return getPseudoId() == PseudoIdFirstLetter; }
     virtual PseudoId getPseudoId() const { return PseudoIdNone; }
 
-    bool isCustomElement() const { return getFlag(CustomElementFlag); }
-    enum CustomElementState {
-        NotCustomElement  = 0,
-        WaitingForUpgrade = 1 << 0,
-        Upgraded          = 1 << 1
+    bool isV0CustomElement() const { return getFlag(V0CustomElementFlag); }
+    enum V0CustomElementState {
+        V0NotCustomElement  = 0,
+        V0WaitingForUpgrade = 1 << 0,
+        V0Upgraded          = 1 << 1
     };
-    CustomElementState getCustomElementState() const
+    V0CustomElementState getV0CustomElementState() const
     {
-        return isCustomElement()
-            ? (getFlag(CustomElementUpgradedFlag) ? Upgraded : WaitingForUpgrade)
-            : NotCustomElement;
+        return isV0CustomElement()
+            ? (getFlag(V0CustomElementUpgradedFlag) ? V0Upgraded : V0WaitingForUpgrade)
+            : V0NotCustomElement;
     }
-    void setCustomElementState(CustomElementState newState);
+    void setV0CustomElementState(V0CustomElementState newState);
 
     virtual bool isMediaControlElement() const { return false; }
     virtual bool isMediaControls() const { return false; }
@@ -713,8 +713,8 @@ private:
         ChildNeedsStyleRecalcFlag = 1 << 18,
         StyleChangeMask = 1 << nodeStyleChangeShift | 1 << (nodeStyleChangeShift + 1),
 
-        CustomElementFlag = 1 << 21,
-        CustomElementUpgradedFlag = 1 << 22,
+        V0CustomElementFlag = 1 << 21,
+        V0CustomElementUpgradedFlag = 1 << 22,
 
         HasNameOrIsEditingTextFlag = 1 << 23,
         HasWeakReferencesFlag = 1 << 24,

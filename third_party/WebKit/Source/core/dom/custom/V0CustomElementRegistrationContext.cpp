@@ -81,7 +81,7 @@ Element* V0CustomElementRegistrationContext::createCustomTagElement(Document& do
         return Element::create(tagName, &document);
     }
 
-    element->setCustomElementState(Element::WaitingForUpgrade);
+    element->setV0CustomElementState(Element::V0WaitingForUpgrade);
     resolveOrScheduleResolution(element, nullAtom);
     return element;
 }
@@ -101,7 +101,7 @@ void V0CustomElementRegistrationContext::resolveOrScheduleResolution(Element* el
     DCHECK(!type.isNull());
 
     V0CustomElementDescriptor descriptor(type, element->namespaceURI(), element->localName());
-    DCHECK_EQ(element->getCustomElementState(), Element::WaitingForUpgrade);
+    DCHECK_EQ(element->getV0CustomElementState(), Element::V0WaitingForUpgrade);
 
     V0CustomElementScheduler::resolveOrScheduleResolution(this, element, descriptor);
 }
@@ -112,7 +112,7 @@ void V0CustomElementRegistrationContext::resolve(Element* element, const V0Custo
     if (definition) {
         V0CustomElement::define(element, definition);
     } else {
-        DCHECK_EQ(element->getCustomElementState(), Element::WaitingForUpgrade);
+        DCHECK_EQ(element->getV0CustomElementState(), Element::V0WaitingForUpgrade);
         m_candidates->add(descriptor, element);
     }
 }
@@ -134,7 +134,7 @@ void V0CustomElementRegistrationContext::setTypeExtension(Element* element, cons
     if (!context)
         return;
 
-    if (element->isCustomElement()) {
+    if (element->isV0CustomElement()) {
         // This can happen if:
         // 1. The element has a custom tag, which takes precedence over
         //    type extensions.
@@ -149,7 +149,7 @@ void V0CustomElementRegistrationContext::setTypeExtension(Element* element, cons
     if (!V0CustomElement::isValidName(type))
         return;
 
-    element->setCustomElementState(Element::WaitingForUpgrade);
+    element->setV0CustomElementState(Element::V0WaitingForUpgrade);
     context->didGiveTypeExtension(element, element->document().convertLocalName(type));
 }
 

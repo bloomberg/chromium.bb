@@ -253,7 +253,7 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
     if (candidate.isLink() && m_context.elementLinkState() != style->insideLink())
         return false;
 
-    if (candidate.isUnresolvedCustomElement() != element().isUnresolvedCustomElement())
+    if (candidate.isUnresolvedV0CustomElement() != element().isUnresolvedV0CustomElement())
         return false;
 
     if (element().parentOrShadowHostElement() != parent) {

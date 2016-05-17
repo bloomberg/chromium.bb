@@ -2303,29 +2303,29 @@ bool Node::isUserActionElementFocused() const
     return document().userActionElements().isFocused(this);
 }
 
-void Node::setCustomElementState(CustomElementState newState)
+void Node::setV0CustomElementState(V0CustomElementState newState)
 {
-    CustomElementState oldState = getCustomElementState();
+    V0CustomElementState oldState = getV0CustomElementState();
 
     switch (newState) {
-    case NotCustomElement:
+    case V0NotCustomElement:
         ASSERT_NOT_REACHED(); // Everything starts in this state
         return;
 
-    case WaitingForUpgrade:
-        DCHECK_EQ(NotCustomElement, oldState);
+    case V0WaitingForUpgrade:
+        DCHECK_EQ(V0NotCustomElement, oldState);
         break;
 
-    case Upgraded:
-        DCHECK_EQ(WaitingForUpgrade, oldState);
+    case V0Upgraded:
+        DCHECK_EQ(V0WaitingForUpgrade, oldState);
         break;
     }
 
     DCHECK(isHTMLElement() || isSVGElement());
-    setFlag(CustomElementFlag);
-    setFlag(newState == Upgraded, CustomElementUpgradedFlag);
+    setFlag(V0CustomElementFlag);
+    setFlag(newState == V0Upgraded, V0CustomElementUpgradedFlag);
 
-    if (oldState == NotCustomElement || newState == Upgraded)
+    if (oldState == V0NotCustomElement || newState == V0Upgraded)
         toElement(this)->pseudoStateChanged(CSSSelector::PseudoUnresolved);
 }
 

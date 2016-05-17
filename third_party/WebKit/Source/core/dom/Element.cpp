@@ -1421,7 +1421,7 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
             rareData->intersectionObserverData()->activateValidIntersectionObservers(*this);
     }
 
-    if (isUpgradedCustomElement() && inShadowIncludingDocument())
+    if (isUpgradedV0CustomElement() && inShadowIncludingDocument())
         V0CustomElement::didAttach(this, document());
 
     TreeScope& scope = insertionPoint->treeScope();
@@ -1482,7 +1482,7 @@ void Element::removedFrom(ContainerNode* insertionPoint)
         if (hasPendingResources())
             document().accessSVGExtensions().removeElementFromPendingResources(this);
 
-        if (isUpgradedCustomElement())
+        if (isUpgradedV0CustomElement())
             V0CustomElement::didDetach(this, insertionPoint->document());
 
         if (needsStyleInvalidation())
@@ -1931,7 +1931,7 @@ ShadowRoot* Element::attachShadow(const ScriptState* scriptState, const ShadowRo
     OriginsUsingFeatures::countMainWorldOnly(scriptState, document(), OriginsUsingFeatures::Feature::ElementAttachShadow);
 
     const AtomicString& tagName = localName();
-    bool tagNameIsSupported = isCustomElement()
+    bool tagNameIsSupported = isV0CustomElement()
         || tagName == HTMLNames::articleTag
         || tagName == HTMLNames::asideTag
         || tagName == HTMLNames::blockquoteTag
@@ -3179,7 +3179,7 @@ void Element::willModifyAttribute(const QualifiedName& name, const AtomicString&
 
     if (oldValue != newValue) {
         document().styleEngine().attributeChangedForElement(name, *this);
-        if (isUpgradedCustomElement())
+        if (isUpgradedV0CustomElement())
             V0CustomElement::attributeDidChange(this, name.localName(), oldValue, newValue);
     }
 
