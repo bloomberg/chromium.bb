@@ -67,9 +67,8 @@ function test()
         var url = frame.uiSourceCode().url();
         InspectorTest.addResult(InspectorTest.formatters.formatAsURL(url));
         setUrls(url, cpuProfile.head);
-        var lineProfile = new WebInspector.TimelineModel.LineLevelProfile();
+        var lineProfile = new WebInspector.LineLevelProfile.instance();
         lineProfile.appendCPUProfile(new WebInspector.CPUProfileDataModel(cpuProfile));
-        WebInspector.panels.timeline._setLineLevelCPUProfile(lineProfile);
         setTimeout(() => InspectorTest.completeTest(), 0);
     }
 }

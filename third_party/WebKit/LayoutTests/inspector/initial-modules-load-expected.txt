@@ -46,7 +46,9 @@ Loaded modules:
     network
     platform
     sdk
+    snippets
     source_frame
+    sources
     ui
     ui_lazy
     workspace
