@@ -216,10 +216,10 @@ def main():
       code1 = RunPythonTests(chromedriver,
                              ref_chromedriver,
                              chrome=chrome_path,
-                             chrome_version=version[0],
+                             chrome_version=version,
                              chrome_version_name='v%s' % version_name)
       code2 = RunJavaTests(chromedriver, chrome=chrome_path,
-                           chrome_version=version[0],
+                           chrome_version=version,
                            chrome_version_name='v%s' % version_name)
       code = code or code1 or code2
       _KillChromes()
