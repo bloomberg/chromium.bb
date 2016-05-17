@@ -83,6 +83,8 @@ class SigninSupervisedUserImportHandler : public content::WebUIMessageHandler {
   // only one in-flight such request.
   std::string webui_callback_id_;
 
+  Profile* last_used_profile;
+
   base::WeakPtrFactory<SigninSupervisedUserImportHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninSupervisedUserImportHandler);

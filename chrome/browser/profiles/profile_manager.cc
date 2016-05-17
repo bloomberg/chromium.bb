@@ -354,13 +354,17 @@ Profile* ProfileManager::GetLastUsedProfile() {
 // static
 Profile* ProfileManager::GetLastUsedProfileAllowedByPolicy() {
   Profile* profile = GetLastUsedProfile();
-  if (profile->IsGuestSession() ||
-      profile->IsSystemProfile() ||
-      IncognitoModePrefs::GetAvailability(profile->GetPrefs()) ==
-      IncognitoModePrefs::FORCED) {
+  if (IncognitoModeForced(profile))
     return profile->GetOffTheRecordProfile();
-  }
   return profile;
+}
+
+// static
+bool ProfileManager::IncognitoModeForced(Profile* profile) {
+  return profile->IsGuestSession() ||
+         profile->IsSystemProfile() ||
+         IncognitoModePrefs::GetAvailability(profile->GetPrefs()) ==
+             IncognitoModePrefs::FORCED;
 }
 
 // static

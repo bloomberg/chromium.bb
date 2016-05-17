@@ -32,6 +32,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/referrer.h"
 #include "grit/theme_resources.h"
@@ -93,12 +94,30 @@ void SigninSupervisedUserImportHandler::OpenUrlInLastActiveProfileBrowser(
                                 NEW_FOREGROUND_TAB,
                                 ui::PAGE_TRANSITION_LINK,
                                 false);
-  // Get the browser owned by the last used profile.
-  Browser* browser =
-      chrome::FindLastActiveWithProfile(ProfileManager::GetLastUsedProfile());
-  DCHECK(browser);
-  if (browser)
+  // ProfileManager::GetLastUsedProfile() will attempt to load the default
+  // profile if there is no last used profile. If the default profile is not
+  // fully loaded and initialized, it will attempt to do so synchronously.
+  // Therefore we cannot use that method here. If the last used profile is not
+  // loaded, we do nothing. This is an edge case and should not happen often.
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  base::FilePath last_used_profile_dir =
+      profile_manager->GetLastUsedProfileDir(profile_manager->user_data_dir());
+  Profile* last_used_profile =
+      profile_manager->GetProfileByPath(last_used_profile_dir);
+
+  if (last_used_profile) {
+    // Last used profile may be the Guest Profile.
+    if (ProfileManager::IncognitoModeForced(last_used_profile))
+      last_used_profile = last_used_profile->GetOffTheRecordProfile();
+
+    // Get the browser owned by the last used profile or create a new one if
+    // it doesn't exist.
+    Browser* browser = chrome::FindLastActiveWithProfile(last_used_profile);
+    if (!browser)
+      browser = new Browser(Browser::CreateParams(Browser::TYPE_TABBED,
+                                                  last_used_profile));
     browser->OpenURL(params);
+  }
 }
 
 void SigninSupervisedUserImportHandler::GetExistingSupervisedUsers(

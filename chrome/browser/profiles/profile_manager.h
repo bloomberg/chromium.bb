@@ -60,6 +60,10 @@ class ProfileManager : public base::NonThreadSafe,
   // will be used to open new browser windows.
   static Profile* GetLastUsedProfileAllowedByPolicy();
 
+  // Helper function that returns true if incognito mode is forced for |profile|
+  // (normal mode is not available for browsing).
+  static bool IncognitoModeForced(Profile* profile);
+
   // Same as instance method but provides the default user_data_dir as well.
   static std::vector<Profile*> GetLastOpenedProfiles();
 
