@@ -332,10 +332,10 @@ TEST_F(RemoteSecurityKeyIpcServerTest, SendResponseTimeout) {
   // Create a channel, connect to it via IPC, issue a request, and send
   // a response, but do not close the channel after that.  The connection
   // should be terminated after the initial timeout period has elapsed.
+  base::TimeDelta request_timeout(base::TimeDelta::FromMilliseconds(500));
   std::string channel_name(GetUniqueTestChannelName());
   ASSERT_TRUE(remote_security_key_ipc_server_->CreateChannel(
-      channel_name,
-      /*request_timeout=*/base::TimeDelta::FromMilliseconds(500)));
+      channel_name, request_timeout));
 
   // Create a fake client and connect to the IPC server channel.
   FakeRemoteSecurityKeyIpcClient fake_ipc_client(
@@ -359,7 +359,7 @@ TEST_F(RemoteSecurityKeyIpcServerTest, SendResponseTimeout) {
   WaitForOperationComplete();
   base::TimeDelta elapsed_time = base::Time::NowFromSystemTime() - start_time;
 
-  ASSERT_NEAR(elapsed_time.InMilliseconds(), kInitialConnectTimeoutMs,
+  ASSERT_NEAR(elapsed_time.InMilliseconds(), request_timeout.InMilliseconds(),
               kConnectionTimeoutErrorDeltaMs);
 }
 

@@ -103,7 +103,7 @@ bool RemoteSecurityKeyIpcServerImpl::SendResponse(const std::string& response) {
 
   // Since we have received a response, we update the timer and wait
   // for a subsequent request.
-  timer_.Start(FROM_HERE, initial_connect_timeout_,
+  timer_.Start(FROM_HERE, security_key_request_timeout_,
                base::Bind(&RemoteSecurityKeyIpcServerImpl::OnChannelError,
                           base::Unretained(this)));
 
