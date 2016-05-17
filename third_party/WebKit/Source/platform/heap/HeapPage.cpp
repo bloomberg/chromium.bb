@@ -30,6 +30,7 @@
 
 #include "platform/heap/HeapPage.h"
 
+#include "base/trace_event/process_memory_dump.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
@@ -135,23 +136,23 @@ void BaseArena::cleanupPages()
 void BaseArena::takeSnapshot(const String& dumpBaseName, ThreadState::GCSnapshotInfo& info)
 {
     // |dumpBaseName| at this point is "blink_gc/thread_X/heaps/HeapName"
-    WebMemoryAllocatorDump* allocatorDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpBaseName);
+    base::trace_event::MemoryAllocatorDump* allocatorDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpBaseName);
     size_t pageCount = 0;
     BasePage::HeapSnapshotInfo heapInfo;
     for (BasePage* page = m_firstUnsweptPage; page; page = page->next()) {
         String dumpName = dumpBaseName + String::format("/pages/page_%lu", static_cast<unsigned long>(pageCount++));
-        WebMemoryAllocatorDump* pageDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName);
+        base::trace_event::MemoryAllocatorDump* pageDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName);
 
         page->takeSnapshot(pageDump, info, heapInfo);
     }
-    allocatorDump->addScalar("blink_page_count", "objects", pageCount);
+    allocatorDump->AddScalar("blink_page_count", "objects", pageCount);
 
     // When taking a full dump (w/ freelist), both the /buckets and /pages
     // report their free size but they are not meant to be added together.
     // Therefore, here we override the free_size of the parent heap to be
     // equal to the free_size of the sum of its heap pages.
-    allocatorDump->addScalar("free_size", "bytes", heapInfo.freeSize);
-    allocatorDump->addScalar("free_count", "objects", heapInfo.freeCount);
+    allocatorDump->AddScalar("free_size", "bytes", heapInfo.freeSize);
+    allocatorDump->AddScalar("free_count", "objects", heapInfo.freeCount);
 }
 
 #if ENABLE(ASSERT)
@@ -389,9 +390,9 @@ bool NormalPageArena::pagesToBeSweptContains(Address address)
 void NormalPageArena::takeFreelistSnapshot(const String& dumpName)
 {
     if (m_freeList.takeSnapshot(dumpName)) {
-        WebMemoryAllocatorDump* bucketsDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName + "/buckets");
-        WebMemoryAllocatorDump* pagesDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName + "/pages");
-        BlinkGCMemoryDumpProvider::instance()->currentProcessMemoryDump()->addOwnershipEdge(pagesDump->guid(), bucketsDump->guid());
+        base::trace_event::MemoryAllocatorDump* bucketsDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName + "/buckets");
+        base::trace_event::MemoryAllocatorDump* pagesDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName + "/pages");
+        BlinkGCMemoryDumpProvider::instance()->currentProcessMemoryDump()->AddOwnershipEdge(pagesDump->guid(), bucketsDump->guid());
     }
 }
 
@@ -1019,9 +1020,9 @@ bool FreeList::takeSnapshot(const String& dumpBaseName)
         }
 
         String dumpName = dumpBaseName + String::format("/buckets/bucket_%lu", static_cast<unsigned long>(1 << i));
-        WebMemoryAllocatorDump* bucketDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName);
-        bucketDump->addScalar("free_count", "objects", entryCount);
-        bucketDump->addScalar("free_size", "bytes", freeSize);
+        base::trace_event::MemoryAllocatorDump* bucketDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(dumpName);
+        bucketDump->AddScalar("free_count", "objects", entryCount);
+        bucketDump->AddScalar("free_size", "bytes", freeSize);
         didDumpBucketStats = true;
     }
     return didDumpBucketStats;
@@ -1360,7 +1361,7 @@ void NormalPage::markOrphaned()
     BasePage::markOrphaned();
 }
 
-void NormalPage::takeSnapshot(WebMemoryAllocatorDump* pageDump, ThreadState::GCSnapshotInfo& info, HeapSnapshotInfo& heapInfo)
+void NormalPage::takeSnapshot(base::trace_event::MemoryAllocatorDump* pageDump, ThreadState::GCSnapshotInfo& info, HeapSnapshotInfo& heapInfo)
 {
     HeapObjectHeader* header = nullptr;
     size_t liveCount = 0;
@@ -1391,12 +1392,12 @@ void NormalPage::takeSnapshot(WebMemoryAllocatorDump* pageDump, ThreadState::GCS
         }
     }
 
-    pageDump->addScalar("live_count", "objects", liveCount);
-    pageDump->addScalar("dead_count", "objects", deadCount);
-    pageDump->addScalar("free_count", "objects", freeCount);
-    pageDump->addScalar("live_size", "bytes", liveSize);
-    pageDump->addScalar("dead_size", "bytes", deadSize);
-    pageDump->addScalar("free_size", "bytes", freeSize);
+    pageDump->AddScalar("live_count", "objects", liveCount);
+    pageDump->AddScalar("dead_count", "objects", deadCount);
+    pageDump->AddScalar("free_count", "objects", freeCount);
+    pageDump->AddScalar("live_size", "bytes", liveSize);
+    pageDump->AddScalar("dead_size", "bytes", deadSize);
+    pageDump->AddScalar("free_size", "bytes", freeSize);
     heapInfo.freeSize += freeSize;
     heapInfo.freeCount += freeCount;
 }
@@ -1489,7 +1490,7 @@ void LargeObjectPage::markOrphaned()
     BasePage::markOrphaned();
 }
 
-void LargeObjectPage::takeSnapshot(WebMemoryAllocatorDump* pageDump, ThreadState::GCSnapshotInfo& info, HeapSnapshotInfo&)
+void LargeObjectPage::takeSnapshot(base::trace_event::MemoryAllocatorDump* pageDump, ThreadState::GCSnapshotInfo& info, HeapSnapshotInfo&)
 {
     size_t liveSize = 0;
     size_t deadSize = 0;
@@ -1510,10 +1511,10 @@ void LargeObjectPage::takeSnapshot(WebMemoryAllocatorDump* pageDump, ThreadState
         info.deadSize[gcInfoIndex] += payloadSize;
     }
 
-    pageDump->addScalar("live_count", "objects", liveCount);
-    pageDump->addScalar("dead_count", "objects", deadCount);
-    pageDump->addScalar("live_size", "bytes", liveSize);
-    pageDump->addScalar("dead_size", "bytes", deadSize);
+    pageDump->AddScalar("live_count", "objects", liveCount);
+    pageDump->AddScalar("dead_count", "objects", deadCount);
+    pageDump->AddScalar("live_size", "bytes", liveSize);
+    pageDump->AddScalar("dead_size", "bytes", deadSize);
 }
 
 #if ENABLE(ASSERT)

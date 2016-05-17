@@ -31,6 +31,7 @@
 #ifndef HeapPage_h
 #define HeapPage_h
 
+#include "base/trace_event/memory_allocator_dump.h"
 #include "platform/PlatformExport.h"
 #include "platform/heap/BlinkGC.h"
 #include "platform/heap/GCInfo.h"
@@ -401,7 +402,7 @@ public:
         size_t freeSize = 0;
     };
 
-    virtual void takeSnapshot(WebMemoryAllocatorDump*, ThreadState::GCSnapshotInfo&, HeapSnapshotInfo&) = 0;
+    virtual void takeSnapshot(base::trace_event::MemoryAllocatorDump*, ThreadState::GCSnapshotInfo&, HeapSnapshotInfo&) = 0;
 #if ENABLE(ASSERT)
     virtual bool contains(Address) = 0;
 #endif
@@ -477,7 +478,7 @@ public:
     void checkAndMarkPointer(Visitor*, Address) override;
     void markOrphaned() override;
 
-    void takeSnapshot(WebMemoryAllocatorDump*, ThreadState::GCSnapshotInfo&, HeapSnapshotInfo&) override;
+    void takeSnapshot(base::trace_event::MemoryAllocatorDump*, ThreadState::GCSnapshotInfo&, HeapSnapshotInfo&) override;
 #if ENABLE(ASSERT)
     // Returns true for the whole blinkPageSize page that the page is on, even
     // for the header, and the unmapped guard page at the start. That ensures
@@ -534,7 +535,7 @@ public:
     void checkAndMarkPointer(Visitor*, Address) override;
     void markOrphaned() override;
 
-    void takeSnapshot(WebMemoryAllocatorDump*, ThreadState::GCSnapshotInfo&, HeapSnapshotInfo&) override;
+    void takeSnapshot(base::trace_event::MemoryAllocatorDump*, ThreadState::GCSnapshotInfo&, HeapSnapshotInfo&) override;
 #if ENABLE(ASSERT)
     // Returns true for any address that is on one of the pages that this
     // large object uses. That ensures that we can use a negative result to

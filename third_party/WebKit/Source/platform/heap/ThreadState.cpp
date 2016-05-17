@@ -30,6 +30,7 @@
 
 #include "platform/heap/ThreadState.h"
 
+#include "base/trace_event/process_memory_dump.h"
 #include "platform/Histogram.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
@@ -1525,15 +1526,15 @@ void ThreadState::takeSnapshot(SnapshotType type)
         totalDeadSize += info.deadSize[gcInfoIndex];
     }
 
-    WebMemoryAllocatorDump* threadDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(threadDumpName);
-    threadDump->addScalar("live_count", "objects", totalLiveCount);
-    threadDump->addScalar("dead_count", "objects", totalDeadCount);
-    threadDump->addScalar("live_size", "bytes", totalLiveSize);
-    threadDump->addScalar("dead_size", "bytes", totalDeadSize);
+    base::trace_event::MemoryAllocatorDump* threadDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(threadDumpName);
+    threadDump->AddScalar("live_count", "objects", totalLiveCount);
+    threadDump->AddScalar("dead_count", "objects", totalDeadCount);
+    threadDump->AddScalar("live_size", "bytes", totalLiveSize);
+    threadDump->AddScalar("dead_size", "bytes", totalDeadSize);
 
-    WebMemoryAllocatorDump* heapsDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(heapsDumpName);
-    WebMemoryAllocatorDump* classesDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(classesDumpName);
-    BlinkGCMemoryDumpProvider::instance()->currentProcessMemoryDump()->addOwnershipEdge(classesDump->guid(), heapsDump->guid());
+    base::trace_event::MemoryAllocatorDump* heapsDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(heapsDumpName);
+    base::trace_event::MemoryAllocatorDump* classesDump = BlinkGCMemoryDumpProvider::instance()->createMemoryAllocatorDumpForCurrentGC(classesDumpName);
+    BlinkGCMemoryDumpProvider::instance()->currentProcessMemoryDump()->AddOwnershipEdge(classesDump->guid(), heapsDump->guid());
 }
 
 } // namespace blink

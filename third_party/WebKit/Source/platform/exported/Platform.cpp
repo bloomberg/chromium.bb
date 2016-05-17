@@ -34,6 +34,7 @@
 #include "platform/PartitionAllocMemoryDumpProvider.h"
 #include "platform/fonts/FontCacheMemoryDumpProvider.h"
 #include "platform/graphics/CompositorFactory.h"
+#include "platform/heap/BlinkGCMemoryDumpProvider.h"
 #include "platform/heap/GCTaskRunner.h"
 #include "platform/web_memory_dump_provider_adapter.h"
 #include "public/platform/Platform.h"
@@ -92,6 +93,8 @@ void Platform::initialize(Platform* platform)
     WTF::initialize(callOnMainThreadFunction);
 
     ProcessHeap::init();
+    if (base::ThreadTaskRunnerHandle::IsSet())
+        base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(BlinkGCMemoryDumpProvider::instance(), "BlinkGC", base::ThreadTaskRunnerHandle::Get());
 
     ThreadState::attachMainThread();
 
@@ -114,6 +117,8 @@ void Platform::shutdown()
     if (s_platform->m_mainThread) {
         s_platform->unregisterMemoryDumpProvider(FontCacheMemoryDumpProvider::instance());
         base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(PartitionAllocMemoryDumpProvider::instance());
+        base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(BlinkGCMemoryDumpProvider::instance());
+
         ASSERT(s_gcTaskRunner);
         delete s_gcTaskRunner;
         s_gcTaskRunner = nullptr;

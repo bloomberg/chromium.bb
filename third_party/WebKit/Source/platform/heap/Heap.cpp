@@ -114,9 +114,6 @@ void ProcessHeap::init()
     s_isLowEndDevice = base::SysInfo::IsLowEndDevice();
 
     GCInfoTable::init();
-
-    if (Platform::current() && Platform::current()->currentThread())
-        Platform::current()->registerMemoryDumpProvider(BlinkGCMemoryDumpProvider::instance(), "BlinkGC");
 }
 
 void ProcessHeap::resetHeapCounters()
@@ -128,9 +125,6 @@ void ProcessHeap::resetHeapCounters()
 void ProcessHeap::shutdown()
 {
     ASSERT(!s_shutdownComplete);
-
-    if (Platform::current() && Platform::current()->currentThread())
-        Platform::current()->unregisterMemoryDumpProvider(BlinkGCMemoryDumpProvider::instance());
 
     {
         // The main thread must be the last thread that gets detached.
