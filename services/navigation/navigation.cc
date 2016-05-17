@@ -17,7 +17,9 @@ Navigation::Navigation()
 }
 Navigation::~Navigation() {}
 
-void Navigation::SetBrowserContext(content::BrowserContext* browser_context) {
+void Navigation::Init(shell::Connector* connector,
+                      content::BrowserContext* browser_context) {
+  connector_ = connector;
   browser_context_ = browser_context;
   for (auto& pending : pending_creates_)
     CreateView(std::move(pending.first), std::move(pending.second));
@@ -41,8 +43,8 @@ void Navigation::CreateView(mojom::ViewClientPtr client,
         std::make_pair(std::move(client), std::move(request)));
     return;
   }
-  new ViewImpl(browser_context_, std::move(client), std::move(request),
-               ref_factory_.CreateRef());
+  new ViewImpl(connector_, browser_context_, std::move(client),
+               std::move(request), ref_factory_.CreateRef());
 }
 
 void Navigation::ViewFactoryLost() {

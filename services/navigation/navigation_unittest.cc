@@ -41,6 +41,17 @@ class NavigationTest : public shell::test::ShellTest,
     if (++load_count_ == 2 && loop_)
       loop_->Quit();
   }
+  void NavigationStateChanged(const GURL& url,
+                              const mojo::String& title,
+                              bool can_go_back,
+                              bool can_go_forward) override {}
+  void LoadProgressChanged(double progress) override {}
+  void ViewCreated(mojom::ViewPtr,
+                   mojom::ViewClientRequest,
+                   bool,
+                   mojo::RectPtr,
+                   bool) override {}
+  void Close() override {}
 
   int load_count_ = 0;
   mojo::Binding<mojom::ViewClient> binding_;
@@ -50,13 +61,13 @@ class NavigationTest : public shell::test::ShellTest,
   DISALLOW_COPY_AND_ASSIGN(NavigationTest);
 };
 
-TEST_F(NavigationTest, LoadURL) {
+TEST_F(NavigationTest, Navigate) {
   mojom::ViewFactoryPtr view_factory;
   connector()->ConnectToInterface("exe:navigation", &view_factory);
 
   mojom::ViewPtr view;
   view_factory->CreateView(GetViewClient(), GetProxy(&view));
-  view->LoadUrl(GURL("about:blank"));
+  view->NavigateTo(GURL("about:blank"));
 
   base::RunLoop loop;
   QuitOnLoadingStateChange(&loop);
