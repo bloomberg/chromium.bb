@@ -83,6 +83,7 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/network_connect_delegate_chromeos.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
@@ -189,14 +190,6 @@ void InitializeNetworkPortalDetector() {
         new NetworkPortalDetectorImpl(
             g_browser_process->system_request_context(), true));
   }
-}
-
-bool IsRunningAsMusClient() {
-#if defined(MOJO_SHELL_CLIENT)
-  return content::MojoShellConnection::Get() &&
-         content::MojoShellConnection::Get()->UsingExternalShell();
-#endif
-  return false;
 }
 
 }  // namespace
@@ -390,7 +383,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 // about_flags settings are applied in ChromeBrowserMainParts::PreCreateThreads.
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
 #if defined(MOJO_SHELL_CLIENT)
-  if (IsRunningAsMusClient()) {
+  if (chrome::IsRunningInMash()) {
     content::MojoShellConnection::Get()->AddListener(
         base::WrapUnique(new ChromeInterfaceFactory));
   }
@@ -487,7 +480,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   media::SoundsManager::Create();
 
-  if (!IsRunningAsMusClient()) {
+  if (!chrome::IsRunningInMash()) {
     // Initialize magnification manager before ash tray is created. And this
     // must be placed after UserManager::SessionStarted();
     // TODO(sad): These components expects the ash::Shell instance to be
@@ -744,7 +737,7 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
 void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   system::InputDeviceSettings::Get()->InitTouchDevicesStatusFromLocalPrefs();
 
-  if (!IsRunningAsMusClient()) {
+  if (!chrome::IsRunningInMash()) {
     // These are dependent on the ash::Shell singleton already having been
     // initialized. Consequently, these cannot be used when running as a mus
     // client.
@@ -822,7 +815,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   power_button_observer_.reset();
   idle_action_warning_observer_.reset();
 
-  if (!IsRunningAsMusClient())
+  if (!chrome::IsRunningInMash())
     MagnificationManager::Shutdown();
 
   media::SoundsManager::Shutdown();
@@ -860,7 +853,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // Ash needs to be closed before UserManager is destroyed.
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
 
-  if (!IsRunningAsMusClient())
+  if (!chrome::IsRunningInMash())
     AccessibilityManager::Shutdown();
 
   input_method::Shutdown();
