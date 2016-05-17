@@ -6,112 +6,19 @@
 #define CHROME_BROWSER_UI_VIEWS_DESKTOP_CAPTURE_DESKTOP_MEDIA_PICKER_VIEWS_H_
 
 #include "base/macros.h"
-#include "chrome/browser/media/desktop_media_list_observer.h"
 #include "chrome/browser/media/desktop_media_picker.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {
-class ImageView;
-class Label;
 class Checkbox;
 class TabbedPane;
 }  // namespace views
 
-class DesktopMediaPickerDialogView;
-class DesktopMediaPickerViews;
+class DesktopMediaListView;
 class DesktopMediaSourceView;
-
-// View that shows a list of desktop media sources available from
-// DesktopMediaList.
-class DesktopMediaListView : public views::View,
-                             public DesktopMediaListObserver {
- public:
-  DesktopMediaListView(DesktopMediaPickerDialogView* parent,
-                       std::unique_ptr<DesktopMediaList> media_list);
-  ~DesktopMediaListView() override;
-
-  void StartUpdating(content::DesktopMediaID dialog_window_id);
-
-  // Called by DesktopMediaSourceView when selection has changed.
-  void OnSelectionChanged();
-
-  // Called by DesktopMediaSourceView when a source has been double-clicked.
-  void OnDoubleClick();
-
-  // Returns currently selected source.
-  DesktopMediaSourceView* GetSelection();
-
-  // views::View overrides.
-  gfx::Size GetPreferredSize() const override;
-  void Layout() override;
-  bool OnKeyPressed(const ui::KeyEvent& event) override;
-
- private:
-  // DesktopMediaList::Observer interface
-  void OnSourceAdded(DesktopMediaList* list, int index) override;
-  void OnSourceRemoved(DesktopMediaList* list, int index) override;
-  void OnSourceMoved(DesktopMediaList* list,
-                     int old_index,
-                     int new_index) override;
-  void OnSourceNameChanged(DesktopMediaList* list, int index) override;
-  void OnSourceThumbnailChanged(DesktopMediaList* list, int index) override;
-
-  // Accepts whatever happens to be selected right now.
-  void AcceptSelection();
-
-  DesktopMediaPickerDialogView* parent_;
-  std::unique_ptr<DesktopMediaList> media_list_;
-  base::WeakPtrFactory<DesktopMediaListView> weak_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(DesktopMediaListView);
-};
-
-// View used for each item in DesktopMediaListView. Shows a single desktop media
-// source as a thumbnail with the title under it.
-class DesktopMediaSourceView : public views::View {
- public:
-  DesktopMediaSourceView(DesktopMediaListView* parent,
-                         content::DesktopMediaID source_id);
-  ~DesktopMediaSourceView() override;
-
-  // Updates thumbnail and title from |source|.
-  void SetName(const base::string16& name);
-  void SetThumbnail(const gfx::ImageSkia& thumbnail);
-
-  // Id for the source shown by this View.
-  const content::DesktopMediaID& source_id() const { return source_id_; }
-
-  // Returns true if the source is selected.
-  bool is_selected() const { return selected_; }
-
-  // views::View interface.
-  const char* GetClassName() const override;
-  void Layout() override;
-  views::View* GetSelectedViewForGroup(int group) override;
-  bool IsGroupFocusTraversable() const override;
-  void OnPaint(gfx::Canvas* canvas) override;
-  void OnFocus() override;
-  void OnBlur() override;
-  bool OnMousePressed(const ui::MouseEvent& event) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
-
- private:
-  // Updates selection state of the element. If |selected| is true then also
-  // calls SetSelected(false) for the source view that was selected before that
-  // (if any).
-  void SetSelected(bool selected);
-
-  DesktopMediaListView* parent_;
-  content::DesktopMediaID source_id_;
-
-  views::ImageView* image_view_;
-  views::Label* label_;
-
-  bool selected_;
-
-  DISALLOW_COPY_AND_ASSIGN(DesktopMediaSourceView);
-};
+class DesktopMediaPickerViews;
 
 // Dialog view used for DesktopMediaPickerViews.
 class DesktopMediaPickerDialogView : public views::DialogDelegateView,
@@ -160,6 +67,16 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
   int GetIndexOfSourceTypeForTesting(
       content::DesktopMediaID::Type source_type) const;
   views::TabbedPane* GetPaneForTesting() const;
+
+  static const int kThumbnailWidth = 160;
+  static const int kThumbnailHeight = 100;
+  static const int kThumbnailMargin = 10;
+  static const int kLabelHeight = 40;
+  static const int kListItemWidth = kThumbnailMargin * 2 + kThumbnailWidth;
+  static const int kListItemHeight =
+      kThumbnailMargin * 2 + kThumbnailHeight + kLabelHeight;
+  static const int kListColumns = 3;
+  static const int kTotalListWidth = kListColumns * kListItemWidth;
 
  private:
   void SwitchSourceType(int index);

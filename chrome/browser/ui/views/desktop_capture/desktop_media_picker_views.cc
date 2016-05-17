@@ -4,17 +4,12 @@
 
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_picker_views.h"
 
-#include <stddef.h>
-#include <utility>
-
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/strings/utf_string_conversions.h"
-#include "build/build_config.h"
-#include "chrome/browser/media/combined_desktop_media_list.h"
 #include "chrome/browser/media/desktop_media_list.h"
+#include "chrome/browser/ui/views/desktop_capture/desktop_media_list_view.h"
+#include "chrome/browser/ui/views/desktop_capture/desktop_media_source_view.h"
 #include "chrome/browser/ui/views/desktop_media_picker_views_deprecated.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/google_chrome_strings.h"
@@ -27,15 +22,9 @@
 #include "grit/components_strings.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
-#include "ui/native_theme/native_theme.h"
-#include "ui/views/background.h"
-#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/checkbox.h"
-#include "ui/views/controls/image_view.h"
-#include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/layout/box_layout.h"
@@ -48,21 +37,6 @@ using content::DesktopMediaID;
 
 namespace {
 
-const int kThumbnailWidth = 160;
-const int kThumbnailHeight = 100;
-const int kThumbnailMargin = 10;
-const int kLabelHeight = 40;
-const int kListItemWidth = kThumbnailMargin * 2 + kThumbnailWidth;
-const int kListItemHeight =
-    kThumbnailMargin * 2 + kThumbnailHeight + kLabelHeight;
-const int kListColumns = 3;
-const int kTotalListWidth = kListColumns * kListItemWidth;
-
-const int kDesktopMediaSourceViewGroupId = 1;
-
-const char kDesktopMediaSourceViewClassName[] =
-    "DesktopMediaPicker_DesktopMediaSourceView";
-
 #if !defined(USE_ASH)
 DesktopMediaID::Id AcceleratedWidgetToDesktopMediaId(
     gfx::AcceleratedWidget accelerated_widget) {
@@ -74,330 +48,7 @@ DesktopMediaID::Id AcceleratedWidgetToDesktopMediaId(
 }
 #endif
 
-int GetMediaListViewHeightForRows(size_t rows) {
-  return kListItemHeight * rows;
-}
-
 }  // namespace
-
-DesktopMediaSourceView::DesktopMediaSourceView(DesktopMediaListView* parent,
-                                               DesktopMediaID source_id)
-    : parent_(parent),
-      source_id_(source_id),
-      image_view_(new views::ImageView()),
-      label_(new views::Label()),
-      selected_(false) {
-  AddChildView(image_view_);
-  AddChildView(label_);
-  SetFocusBehavior(FocusBehavior::ALWAYS);
-}
-
-DesktopMediaSourceView::~DesktopMediaSourceView() {}
-
-void DesktopMediaSourceView::SetName(const base::string16& name) {
-  label_->SetText(name);
-}
-
-void DesktopMediaSourceView::SetThumbnail(const gfx::ImageSkia& thumbnail) {
-  image_view_->SetImage(thumbnail);
-}
-
-void DesktopMediaSourceView::SetSelected(bool selected) {
-  if (selected == selected_)
-    return;
-  selected_ = selected;
-
-  if (selected) {
-    // Unselect all other sources.
-    Views neighbours;
-    parent()->GetViewsInGroup(GetGroup(), &neighbours);
-    for (Views::iterator i(neighbours.begin()); i != neighbours.end(); ++i) {
-      if (*i != this) {
-        DCHECK_EQ((*i)->GetClassName(), kDesktopMediaSourceViewClassName);
-        DesktopMediaSourceView* source_view =
-            static_cast<DesktopMediaSourceView*>(*i);
-        source_view->SetSelected(false);
-      }
-    }
-
-    const SkColor bg_color = GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
-    set_background(views::Background::CreateSolidBackground(bg_color));
-
-    parent_->OnSelectionChanged();
-  } else {
-    set_background(NULL);
-  }
-
-  SchedulePaint();
-}
-
-const char* DesktopMediaSourceView::GetClassName() const {
-  return kDesktopMediaSourceViewClassName;
-}
-
-void DesktopMediaSourceView::Layout() {
-  image_view_->SetBounds(kThumbnailMargin, kThumbnailMargin, kThumbnailWidth,
-                         kThumbnailHeight);
-  label_->SetBounds(kThumbnailMargin, kThumbnailHeight + kThumbnailMargin,
-                    kThumbnailWidth, kLabelHeight);
-}
-
-views::View* DesktopMediaSourceView::GetSelectedViewForGroup(int group) {
-  Views neighbours;
-  parent()->GetViewsInGroup(group, &neighbours);
-  if (neighbours.empty())
-    return NULL;
-
-  for (Views::iterator i(neighbours.begin()); i != neighbours.end(); ++i) {
-    DCHECK_EQ((*i)->GetClassName(), kDesktopMediaSourceViewClassName);
-    DesktopMediaSourceView* source_view =
-        static_cast<DesktopMediaSourceView*>(*i);
-    if (source_view->selected_)
-      return source_view;
-  }
-  return NULL;
-}
-
-bool DesktopMediaSourceView::IsGroupFocusTraversable() const {
-  return false;
-}
-
-void DesktopMediaSourceView::OnPaint(gfx::Canvas* canvas) {
-  View::OnPaint(canvas);
-  if (HasFocus()) {
-    gfx::Rect bounds(GetLocalBounds());
-    bounds.Inset(kThumbnailMargin / 2, kThumbnailMargin / 2);
-    canvas->DrawFocusRect(bounds);
-  }
-}
-
-void DesktopMediaSourceView::OnFocus() {
-  View::OnFocus();
-  SetSelected(true);
-  ScrollRectToVisible(gfx::Rect(size()));
-  // We paint differently when focused.
-  SchedulePaint();
-}
-
-void DesktopMediaSourceView::OnBlur() {
-  View::OnBlur();
-  // We paint differently when focused.
-  SchedulePaint();
-}
-
-bool DesktopMediaSourceView::OnMousePressed(const ui::MouseEvent& event) {
-  if (event.GetClickCount() == 1) {
-    RequestFocus();
-  } else if (event.GetClickCount() == 2) {
-    RequestFocus();
-    parent_->OnDoubleClick();
-  }
-  return true;
-}
-
-void DesktopMediaSourceView::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP &&
-      event->details().tap_count() == 2) {
-    RequestFocus();
-    parent_->OnDoubleClick();
-    event->SetHandled();
-    return;
-  }
-
-  // Detect tap gesture using ET_GESTURE_TAP_DOWN so the view also gets focused
-  // on the long tap (when the tap gesture starts).
-  if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
-    RequestFocus();
-    event->SetHandled();
-  }
-}
-
-DesktopMediaListView::DesktopMediaListView(
-    DesktopMediaPickerDialogView* parent,
-    std::unique_ptr<DesktopMediaList> media_list)
-    : parent_(parent), media_list_(std::move(media_list)), weak_factory_(this) {
-  media_list_->SetThumbnailSize(gfx::Size(kThumbnailWidth, kThumbnailHeight));
-  SetFocusBehavior(FocusBehavior::ALWAYS);
-}
-
-DesktopMediaListView::~DesktopMediaListView() {}
-
-void DesktopMediaListView::StartUpdating(DesktopMediaID dialog_window_id) {
-  media_list_->SetViewDialogWindowId(dialog_window_id);
-  media_list_->StartUpdating(this);
-}
-
-void DesktopMediaListView::OnSelectionChanged() {
-  parent_->OnSelectionChanged();
-}
-
-void DesktopMediaListView::OnDoubleClick() {
-  parent_->OnDoubleClick();
-}
-
-DesktopMediaSourceView* DesktopMediaListView::GetSelection() {
-  for (int i = 0; i < child_count(); ++i) {
-    DesktopMediaSourceView* source_view =
-        static_cast<DesktopMediaSourceView*>(child_at(i));
-    DCHECK_EQ(source_view->GetClassName(), kDesktopMediaSourceViewClassName);
-    if (source_view->is_selected())
-      return source_view;
-  }
-  return NULL;
-}
-
-gfx::Size DesktopMediaListView::GetPreferredSize() const {
-  int total_rows = (child_count() + kListColumns - 1) / kListColumns;
-  return gfx::Size(kTotalListWidth,
-                   GetMediaListViewHeightForRows(total_rows));
-}
-
-void DesktopMediaListView::Layout() {
-  int x = 0;
-  int y = 0;
-
-  for (int i = 0; i < child_count(); ++i) {
-    if (x + kListItemWidth > kTotalListWidth) {
-      x = 0;
-      y += kListItemHeight;
-    }
-
-    View* source_view = child_at(i);
-    source_view->SetBounds(x, y, kListItemWidth, kListItemHeight);
-
-    x += kListItemWidth;
-  }
-
-  y += kListItemHeight;
-}
-
-bool DesktopMediaListView::OnKeyPressed(const ui::KeyEvent& event) {
-  int position_increment = 0;
-  switch (event.key_code()) {
-    case ui::VKEY_UP:
-      position_increment = -kListColumns;
-      break;
-    case ui::VKEY_DOWN:
-      position_increment = kListColumns;
-      break;
-    case ui::VKEY_LEFT:
-      position_increment = -1;
-      break;
-    case ui::VKEY_RIGHT:
-      position_increment = 1;
-      break;
-    default:
-      return false;
-  }
-
-  if (position_increment != 0) {
-    DesktopMediaSourceView* selected = GetSelection();
-    DesktopMediaSourceView* new_selected = NULL;
-
-    if (selected) {
-      int index = GetIndexOf(selected);
-      int new_index = index + position_increment;
-      if (new_index >= child_count())
-        new_index = child_count() - 1;
-      else if (new_index < 0)
-        new_index = 0;
-      if (index != new_index) {
-        new_selected =
-            static_cast<DesktopMediaSourceView*>(child_at(new_index));
-      }
-    } else if (has_children()) {
-      new_selected = static_cast<DesktopMediaSourceView*>(child_at(0));
-    }
-
-    if (new_selected) {
-      GetFocusManager()->SetFocusedView(new_selected);
-    }
-
-    return true;
-  }
-
-  return false;
-}
-
-void DesktopMediaListView::OnSourceAdded(DesktopMediaList* list, int index) {
-  const DesktopMediaList::Source& source = media_list_->GetSource(index);
-  DesktopMediaSourceView* source_view =
-      new DesktopMediaSourceView(this, source.id);
-  source_view->SetName(source.name);
-  source_view->SetGroup(kDesktopMediaSourceViewGroupId);
-  AddChildViewAt(source_view, index);
-
-  PreferredSizeChanged();
-
-  if (child_count() % kListColumns == 1)
-    parent_->OnMediaListRowsChanged();
-
-  // Auto select the first screen.
-  if (index == 0 && source.id.type == DesktopMediaID::TYPE_SCREEN)
-    source_view->RequestFocus();
-
-  std::string autoselect_source =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kAutoSelectDesktopCaptureSource);
-  if (!autoselect_source.empty() &&
-      base::ASCIIToUTF16(autoselect_source) == source.name) {
-    // Select, then accept and close the dialog when we're done adding sources.
-    source_view->OnFocus();
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&DesktopMediaListView::AcceptSelection,
-                   weak_factory_.GetWeakPtr()));
-  }
-}
-
-void DesktopMediaListView::OnSourceRemoved(DesktopMediaList* list, int index) {
-  DesktopMediaSourceView* view =
-      static_cast<DesktopMediaSourceView*>(child_at(index));
-  DCHECK(view);
-  DCHECK_EQ(view->GetClassName(), kDesktopMediaSourceViewClassName);
-  bool was_selected = view->is_selected();
-  RemoveChildView(view);
-  delete view;
-
-  if (was_selected)
-    OnSelectionChanged();
-
-  PreferredSizeChanged();
-
-  if (child_count() % kListColumns == 0)
-    parent_->OnMediaListRowsChanged();
-}
-
-void DesktopMediaListView::OnSourceMoved(DesktopMediaList* list,
-                                         int old_index,
-                                         int new_index) {
-  DesktopMediaSourceView* view =
-      static_cast<DesktopMediaSourceView*>(child_at(old_index));
-  ReorderChildView(view, new_index);
-  PreferredSizeChanged();
-}
-
-void DesktopMediaListView::OnSourceNameChanged(DesktopMediaList* list,
-                                               int index) {
-  const DesktopMediaList::Source& source = media_list_->GetSource(index);
-  DesktopMediaSourceView* source_view =
-      static_cast<DesktopMediaSourceView*>(child_at(index));
-  source_view->SetName(source.name);
-}
-
-void DesktopMediaListView::OnSourceThumbnailChanged(DesktopMediaList* list,
-                                                    int index) {
-  const DesktopMediaList::Source& source = media_list_->GetSource(index);
-  DesktopMediaSourceView* source_view =
-      static_cast<DesktopMediaSourceView*>(child_at(index));
-  source_view->SetThumbnail(source.thumbnail);
-}
-
-void DesktopMediaListView::AcceptSelection() {
-  OnSelectionChanged();
-  OnDoubleClick();
-}
 
 DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     content::WebContents* parent_web_contents,
@@ -430,8 +81,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
         new DesktopMediaListView(this, std::move(screen_list)));
 
     screen_scroll_view->SetContents(list_views_.back());
-    screen_scroll_view->ClipHeightTo(GetMediaListViewHeightForRows(1),
-                                     GetMediaListViewHeightForRows(2));
+    screen_scroll_view->ClipHeightTo(kListItemHeight, kListItemHeight * 2);
     pane_->AddTab(
         l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_SCREEN),
         screen_scroll_view);
@@ -446,8 +96,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
         new DesktopMediaListView(this, std::move(window_list)));
 
     window_scroll_view->SetContents(list_views_.back());
-    window_scroll_view->ClipHeightTo(GetMediaListViewHeightForRows(1),
-                                     GetMediaListViewHeightForRows(2));
+    window_scroll_view->ClipHeightTo(kListItemHeight, kListItemHeight * 2);
 
     pane_->AddTab(
         l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_WINDOW),
@@ -462,8 +111,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     list_views_.push_back(new DesktopMediaListView(this, std::move(tab_list)));
 
     tab_scroll_view->SetContents(list_views_.back());
-    tab_scroll_view->ClipHeightTo(GetMediaListViewHeightForRows(1),
-                                  GetMediaListViewHeightForRows(2));
+    tab_scroll_view->ClipHeightTo(kListItemHeight, kListItemHeight * 2);
 
     pane_->AddTab(
         l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_TAB),
