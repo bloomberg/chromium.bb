@@ -161,7 +161,6 @@ Button* TouchSelectionMenuRunnerViews::Menu::CreateButton(
   LabelButton* button = new LabelButton(this, label);
   button->SetMinSize(gfx::Size(kMenuButtonMinWidth, kMenuButtonMinHeight));
   Button::ConfigureDefaultFocus(button);
-  button->set_request_focus_on_press(false);
   const gfx::FontList& font_list =
       ui::ResourceBundle::GetSharedInstance().GetFontList(
           ui::ResourceBundle::SmallFont);

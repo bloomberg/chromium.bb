@@ -161,6 +161,7 @@ views::LabelButton* InfoBarView::CreateTextButton(
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   button->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
   views::Button::ConfigureDefaultFocus(button);
+  button->set_request_focus_on_press(true);
   button->SetTextColor(views::Button::STATE_NORMAL, GetInfobarTextColor());
   button->SetTextColor(views::Button::STATE_HOVERED, GetInfobarTextColor());
   return button;
@@ -275,10 +276,10 @@ void InfoBarView::ViewHierarchyChanged(
       BarControlButton* close = new BarControlButton(this);
       close->SetIcon(gfx::VectorIconId::BAR_CLOSE,
                      base::Bind(&GetInfobarTextColor));
-      close->set_request_focus_on_press(false);
       close_button_ = close;
     } else {
       close_button_ = new views::ImageButton(this);
+      close_button_->set_request_focus_on_press(true);
       ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       close_button_->SetImage(views::CustomButton::STATE_NORMAL,
                               rb.GetImageNamed(IDR_CLOSE_1).ToImageSkia());

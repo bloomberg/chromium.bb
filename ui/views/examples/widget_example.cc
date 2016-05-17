@@ -88,6 +88,7 @@ void WidgetExample::BuildButton(View* container,
                                 int tag) {
   LabelButton* button = new LabelButton(this, ASCIIToUTF16(label));
   Button::ConfigureDefaultFocus(button);
+  button->set_request_focus_on_press(true);
   button->set_tag(tag);
   container->AddChildView(button);
 }

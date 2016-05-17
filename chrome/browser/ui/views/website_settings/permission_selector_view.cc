@@ -72,6 +72,7 @@ PermissionMenuButton::PermissionMenuButton(const base::string16& text,
   UpdateThemedBorder();
 
   Button::ConfigureDefaultFocus(this);
+  set_request_focus_on_press(true);
   is_rtl_display_ =
       base::i18n::RIGHT_TO_LEFT == base::i18n::GetStringDirection(text);
 }

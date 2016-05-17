@@ -120,7 +120,6 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   item->AddObserver(this);
 
   set_context_menu_controller(this);
-  set_request_focus_on_press(false);
 
   SetAnimationDuration(0);
 }

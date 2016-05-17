@@ -216,6 +216,7 @@ void LabelButton::SetStyle(ButtonStyle style) {
   SetFocusPainter(nullptr);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   Button::ConfigureDefaultFocus(this);
+  set_request_focus_on_press(true);
   SetMinSize(gfx::Size(PlatformStyle::kMinLabelButtonWidth,
                        PlatformStyle::kMinLabelButtonHeight));
 

@@ -73,12 +73,9 @@ ToolbarActionView::ToolbarActionView(
   set_context_menu_controller(this);
 
   // If the button is within a menu, we need to make it focusable in order to
-  // have it accessible via keyboard navigation, but it shouldn't request focus
-  // (because that would close the menu).
-  if (delegate_->ShownInsideMenu()) {
-    set_request_focus_on_press(false);
+  // have it accessible via keyboard navigation.
+  if (delegate_->ShownInsideMenu())
     SetFocusBehavior(FocusBehavior::ALWAYS);
-  }
 
   UpdateState();
 }

@@ -45,6 +45,7 @@ void ButtonExample::CreateExampleView(View* container) {
 
   label_button_ = new LabelButton(this, ASCIIToUTF16(kLabelButton));
   Button::ConfigureDefaultFocus(label_button_);
+  label_button_->set_request_focus_on_press(true);
   container->AddChildView(label_button_);
 
   styled_button_ = new LabelButton(this, ASCIIToUTF16("Styled Button"));
@@ -72,6 +73,7 @@ void ButtonExample::CreateExampleView(View* container) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   image_button_ = new ImageButton(this);
   Button::ConfigureDefaultFocus(image_button_);
+  image_button_->set_request_focus_on_press(true);
   image_button_->SetImage(ImageButton::STATE_NORMAL,
                           rb.GetImageNamed(IDR_CLOSE).ToImageSkia());
   image_button_->SetImage(ImageButton::STATE_HOVERED,

@@ -60,7 +60,7 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   int triggerable_event_flags() const { return triggerable_event_flags_; }
 
   // Sets whether |RequestFocus| should be invoked on a mouse press. The default
-  // is true.
+  // is false.
   void set_request_focus_on_press(bool value) {
     request_focus_on_press_ = value;
   }

@@ -306,7 +306,6 @@ NotifierSettingsView::NotifierButton::NotifierButton(
     // Create a more-info button that will be right-aligned.
     learn_more_ = new views::ImageButton(this);
     learn_more_->SetFocusPainter(CreateFocusPainter());
-    learn_more_->set_request_focus_on_press(false);
     views::Button::ConfigureDefaultFocus(learn_more_);
 
     ui::ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -584,6 +583,7 @@ void NotifierSettingsView::UpdateContentsView(
     notifier_group_selector_->SetFocusPainter(nullptr);
     notifier_group_selector_->set_animate_on_state_change(false);
     views::Button::ConfigureDefaultFocus(notifier_group_selector_);
+    notifier_group_selector_->set_request_focus_on_press(true);
     contents_title_view->AddChildView(notifier_group_selector_);
   }
 

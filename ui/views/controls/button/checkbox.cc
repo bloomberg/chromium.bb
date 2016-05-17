@@ -29,6 +29,7 @@ Checkbox::Checkbox(const base::string16& label)
   button_border->set_insets(gfx::Insets(0, 0, 0, 2));
   SetBorder(std::move(button_border));
   Button::ConfigureDefaultFocus(this);
+  set_request_focus_on_press(true);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 

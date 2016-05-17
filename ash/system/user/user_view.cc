@@ -405,8 +405,6 @@ void UserView::AddUserCard(user::LoginStatus login) {
     }
     auto* button =
         new ButtonFromView(contents_view, this, !user_index_, insets);
-    // A click on the button should not trigger a focus change.
-    button->set_request_focus_on_press(false);
     user_card_view_ = button;
     is_user_card_button_ = true;
   }
@@ -461,7 +459,6 @@ void UserView::ToggleAddUserMenuOption() {
                                               add_user_enabled_ ? this : NULL,
                                               add_user_enabled_,
                                               gfx::Insets(1, 1, 1, 1));
-  button->set_request_focus_on_press(false);
   button->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT));
   button->ForceBorderVisible(true);

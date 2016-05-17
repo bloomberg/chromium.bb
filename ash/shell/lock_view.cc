@@ -31,6 +31,7 @@ class LockView : public views::WidgetDelegateView,
     unlock_button_->SetStyle(views::Button::STYLE_BUTTON);
     AddChildView(unlock_button_);
     views::Button::ConfigureDefaultFocus(unlock_button_);
+    unlock_button_->set_request_focus_on_press(true);
   }
   ~LockView() override {}
 

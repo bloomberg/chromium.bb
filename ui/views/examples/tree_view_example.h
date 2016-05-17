@@ -15,6 +15,7 @@
 
 namespace views {
 
+class LabelButton;
 class MenuRunner;
 class TreeView;
 
@@ -70,9 +71,9 @@ class VIEWS_EXAMPLES_EXPORT TreeViewExample
   TreeView* tree_view_;
 
   // Control buttons to modify the model.
-  Button* add_;
-  Button* remove_;
-  Button* change_title_;
+  LabelButton* add_;
+  LabelButton* remove_;
+  LabelButton* change_title_;
 
   typedef ui::TreeNodeWithValue<int> NodeType;
 

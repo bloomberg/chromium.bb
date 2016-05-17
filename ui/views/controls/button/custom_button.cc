@@ -442,7 +442,7 @@ CustomButton::CustomButton(ButtonListener* listener)
       animate_on_state_change_(true),
       is_throbbing_(false),
       triggerable_event_flags_(ui::EF_LEFT_MOUSE_BUTTON),
-      request_focus_on_press_(true),
+      request_focus_on_press_(false),
       ink_drop_delegate_(nullptr),
       notify_action_(NOTIFY_ON_RELEASE),
       has_ink_drop_action_on_click_(false),
