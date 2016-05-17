@@ -53,6 +53,8 @@ scoped_refptr<ResourceResponse> ResourceResponse::DeepCopy() const {
       head.service_worker_ready_time;
   new_response->head.is_using_lofi = head.is_using_lofi;
   new_response->head.effective_connection_type = head.effective_connection_type;
+  new_response->head.signed_certificate_timestamps =
+      head.signed_certificate_timestamps;
   return new_response;
 }
 

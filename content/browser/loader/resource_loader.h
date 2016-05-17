@@ -15,7 +15,6 @@
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/resource_controller.h"
-#include "content/public/common/signed_certificate_timestamp_id_and_status.h"
 #include "net/url_request/url_request.h"
 
 namespace net {
@@ -95,14 +94,6 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
 
   void StartRequestInternal();
   void CancelRequestInternal(int error, bool from_renderer);
-  // Stores the SignedCertificateTimestamps held in |sct_list| in the
-  // SignedCertificateTimestampStore singleton, associated with |process_id|.
-  // On return, |sct_ids| contains the assigned ID and verification status of
-  // each SignedCertificateTimestamp.
-  void StoreSignedCertificateTimestamps(
-      const net::SignedCertificateTimestampAndStatusList& sct_list,
-      int process_id,
-      SignedCertificateTimestampIDStatusList* sct_ids);
   void CompleteResponseStarted();
   void StartReading(bool is_continuation);
   void ResumeReading();

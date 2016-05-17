@@ -29,7 +29,6 @@
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
-#include "content/public/browser/signed_certificate_timestamp_store.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
@@ -52,20 +51,6 @@ using base::TimeTicks;
 namespace content {
 namespace {
 
-void StoreSignedCertificateTimestamps(
-    const net::SignedCertificateTimestampAndStatusList& sct_list,
-    int process_id,
-    SignedCertificateTimestampIDStatusList* sct_ids) {
-  SignedCertificateTimestampStore* sct_store(
-      SignedCertificateTimestampStore::GetInstance());
-
-  for (auto iter = sct_list.begin(); iter != sct_list.end(); ++iter) {
-    const int sct_id(sct_store->Store(iter->sct.get(), process_id));
-    sct_ids->push_back(
-        SignedCertificateTimestampIDAndStatus(sct_id, iter->status));
-  }
-}
-
 void GetSSLStatusForRequest(const GURL& url,
                             const net::SSLInfo& ssl_info,
                             int child_id,
@@ -74,13 +59,9 @@ void GetSSLStatusForRequest(const GURL& url,
   DCHECK(ssl_info.cert);
   int cert_id = cert_store->StoreCert(ssl_info.cert.get(), child_id);
 
-  SignedCertificateTimestampIDStatusList signed_certificate_timestamp_ids;
-  StoreSignedCertificateTimestamps(ssl_info.signed_certificate_timestamps,
-                                   child_id, &signed_certificate_timestamp_ids);
-
   *ssl_status = SSLStatus(SSLPolicy::GetSecurityStyleForResource(
                               url, cert_id, ssl_info.cert_status),
-                          cert_id, signed_certificate_timestamp_ids, ssl_info);
+                          cert_id, ssl_info);
 }
 
 void PopulateResourceResponse(ResourceRequestInfoImpl* info,
@@ -136,6 +117,13 @@ void PopulateResourceResponse(ResourceRequestInfoImpl* info,
     response->head.has_major_certificate_errors =
         net::IsCertStatusError(ssl_status.cert_status) &&
         !net::IsCertStatusMinorError(ssl_status.cert_status);
+    if (info->ShouldReportRawHeaders()) {
+      // Only pass the Signed Certificate Timestamps (SCTs) when the network
+      // panel of the DevTools is open, i.e. ShouldReportRawHeaders() is set.
+      // These data are used to populate the requests in the security panel too.
+      response->head.signed_certificate_timestamps =
+          request->ssl_info().signed_certificate_timestamps;
+    }
   } else {
     // We should not have any SSL state.
     DCHECK(!request->ssl_info().cert_status);

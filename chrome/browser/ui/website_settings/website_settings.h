@@ -11,7 +11,6 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/security_state/security_state_model.h"
-#include "content/public/common/signed_certificate_timestamp_id_and_status.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -198,11 +197,6 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   // For secure connection |cert_id_| is set to the ID of the server
   // certificate. For non secure connections |cert_id_| is 0.
   int cert_id_;
-  // For secure connection, |signed_certificate_timestamp_ids_| is the list of
-  // all Signed Certificate Timestamps and their validation status.
-  // Empty if no SCTs accompanied the certificate
-  content::SignedCertificateTimestampIDStatusList
-      signed_certificate_timestamp_ids_;
 
   // Status of the connection to the website.
   SiteConnectionStatus site_connection_status_;

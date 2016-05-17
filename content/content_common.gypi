@@ -194,8 +194,6 @@
       'public/common/security_style.h',
       'public/common/send_zygote_child_ping_linux.h',
       'public/common/service_registry.h',
-      'public/common/signed_certificate_timestamp_id_and_status.cc',
-      'public/common/signed_certificate_timestamp_id_and_status.h',
       'public/common/speech_recognition_error.h',
       'public/common/speech_recognition_grammar.h',
       'public/common/speech_recognition_result.cc',

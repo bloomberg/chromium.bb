@@ -18,8 +18,9 @@ void SetTestStatus(SSLStatus* status) {
   status->security_bits = 80;
   status->key_exchange_info = 23;
   status->connection_status = net::SSL_CONNECTION_VERSION_TLS1_2;
-  status->signed_certificate_timestamp_ids.push_back(
-      SignedCertificateTimestampIDAndStatus(1, net::ct::SCT_STATUS_OK));
+  status->num_unknown_scts = 0;
+  status->num_invalid_scts = 0;
+  status->num_valid_scts = 1;
 }
 
 bool SSLStatusAreEqual(const SSLStatus& a, const SSLStatus &b) {
@@ -30,13 +31,15 @@ bool SSLStatusAreEqual(const SSLStatus& a, const SSLStatus &b) {
 
 std::ostream& operator<<(std::ostream& os, const SSLStatus& status) {
   return os << "Security Style: " << status.security_style
-      << "\nCert ID: " << status.cert_id
-      << "\nCert Status: " << status.cert_status
-      << "\nSecurity bits: " << status.security_bits
-      << "\nKey exchange info: " << status.key_exchange_info
-      << "\nConnection status: " << status.connection_status
-      << "\nContent Status: " << status.content_status
-      << "\nNumber of SCTs: " << status.signed_certificate_timestamp_ids.size();
+            << "\nCert ID: " << status.cert_id
+            << "\nCert Status: " << status.cert_status
+            << "\nSecurity bits: " << status.security_bits
+            << "\nKey exchange info: " << status.key_exchange_info
+            << "\nConnection status: " << status.connection_status
+            << "\nContent Status: " << status.content_status
+            << "\nNumber of unknown SCTs: " << status.num_unknown_scts
+            << "\nNumber of invalid SCTs: " << status.num_invalid_scts
+            << "\nNumber of valid SCTs: " << status.num_valid_scts;
 }
 
 // Test that a valid serialized SSLStatus returns true on
@@ -50,8 +53,6 @@ TEST(SSLStatusSerializationTest, DeserializeSerializedStatus) {
   SSLStatus deserialized;
   ASSERT_TRUE(DeserializeSecurityInfo(serialized, &deserialized));
   EXPECT_PRED2(SSLStatusAreEqual, status, deserialized);
-  EXPECT_EQ(SignedCertificateTimestampIDAndStatus(1, net::ct::SCT_STATUS_OK),
-            deserialized.signed_certificate_timestamp_ids[0]);
   // Test that |content_status| has the default (initialized) value.
   EXPECT_EQ(SSLStatus::NORMAL_CONTENT, deserialized.content_status);
 }

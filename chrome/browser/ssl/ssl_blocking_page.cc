@@ -31,7 +31,6 @@
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/signed_certificate_timestamp_store.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/ssl_status.h"
@@ -199,19 +198,8 @@ void SSLBlockingPage::OverrideEntry(NavigationEntry* entry) {
       ssl_info_.cert.get(), process_id);
   DCHECK(cert_id);
 
-  content::SignedCertificateTimestampStore* sct_store(
-      content::SignedCertificateTimestampStore::GetInstance());
-  content::SignedCertificateTimestampIDStatusList sct_ids;
-  for (const auto& sct_and_status : ssl_info_.signed_certificate_timestamps) {
-    const int sct_id(sct_store->Store(sct_and_status.sct.get(), process_id));
-    DCHECK(sct_id);
-    sct_ids.push_back(content::SignedCertificateTimestampIDAndStatus(
-        sct_id, sct_and_status.status));
-  }
-
-  entry->GetSSL() =
-      content::SSLStatus(content::SECURITY_STYLE_AUTHENTICATION_BROKEN, cert_id,
-                         sct_ids, ssl_info_);
+  entry->GetSSL() = content::SSLStatus(
+      content::SECURITY_STYLE_AUTHENTICATION_BROKEN, cert_id, ssl_info_);
 }
 
 void SSLBlockingPage::SetSSLCertReporterForTesting(

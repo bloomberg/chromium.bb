@@ -20,8 +20,10 @@
 #include "content/public/common/resource_response.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/request_priority.h"
+#include "net/cert/signed_certificate_timestamp.h"
 #include "net/http/http_response_info.h"
 #include "net/nqe/network_quality_estimator.h"
+#include "net/ssl/signed_certificate_timestamp_and_status.h"
 #include "net/url_request/redirect_info.h"
 
 #ifndef CONTENT_COMMON_RESOURCE_MESSAGES_H_
@@ -84,6 +86,17 @@ struct ParamTraits<net::LoadTimingInfo> {
 template <>
 struct ParamTraits<scoped_refptr<content::ResourceRequestBody> > {
   typedef scoped_refptr<content::ResourceRequestBody> param_type;
+  static void GetSize(base::PickleSizer* s, const param_type& p);
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
+struct ParamTraits<scoped_refptr<net::ct::SignedCertificateTimestamp>> {
+  typedef scoped_refptr<net::ct::SignedCertificateTimestamp> param_type;
   static void GetSize(base::PickleSizer* s, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
@@ -164,6 +177,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(proxy_server)
   IPC_STRUCT_TRAITS_MEMBER(is_using_lofi)
   IPC_STRUCT_TRAITS_MEMBER(effective_connection_type)
+  IPC_STRUCT_TRAITS_MEMBER(signed_certificate_timestamps)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(net::RedirectInfo)
@@ -174,6 +188,13 @@ IPC_STRUCT_TRAITS_BEGIN(net::RedirectInfo)
   IPC_STRUCT_TRAITS_MEMBER(new_referrer)
   IPC_STRUCT_TRAITS_MEMBER(referred_token_binding_host)
 IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(net::SignedCertificateTimestampAndStatus)
+  IPC_STRUCT_TRAITS_MEMBER(sct)
+  IPC_STRUCT_TRAITS_MEMBER(status)
+IPC_STRUCT_TRAITS_END()
+
+IPC_ENUM_TRAITS_MAX_VALUE(net::ct::SCTVerifyStatus, net::ct::SCT_STATUS_MAX)
 
 // Parameters for a resource request.
 IPC_STRUCT_BEGIN(ResourceHostMsg_Request)

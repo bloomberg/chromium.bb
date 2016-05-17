@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
 
 namespace {
@@ -37,13 +38,9 @@ std::string SerializeSecurityInfo(const SSLStatus& ssl_status) {
   pickle.WriteInt(ssl_status.security_bits);
   pickle.WriteInt(ssl_status.key_exchange_info);
   pickle.WriteInt(ssl_status.connection_status);
-  pickle.WriteInt(ssl_status.signed_certificate_timestamp_ids.size());
-  for (SignedCertificateTimestampIDStatusList::const_iterator iter =
-           ssl_status.signed_certificate_timestamp_ids.begin();
-       iter != ssl_status.signed_certificate_timestamp_ids.end(); ++iter) {
-    pickle.WriteInt(iter->id);
-    pickle.WriteUInt16(iter->status);
-  }
+  pickle.WriteUInt32(ssl_status.num_unknown_scts);
+  pickle.WriteUInt32(ssl_status.num_invalid_scts);
+  pickle.WriteUInt32(ssl_status.num_valid_scts);
   return std::string(static_cast<const char*>(pickle.data()), pickle.size());
 }
 
@@ -55,16 +52,17 @@ bool DeserializeSecurityInfo(const std::string& state, SSLStatus* ssl_status) {
     return true;
   }
 
-  base::Pickle pickle(state.data(), static_cast<int>(state.size()));
+  base::Pickle pickle(state.data(), base::checked_cast<int>(state.size()));
   base::PickleIterator iter(pickle);
   int security_style;
-  int num_scts_to_read;
   if (!iter.ReadInt(&security_style) || !iter.ReadInt(&ssl_status->cert_id) ||
       !iter.ReadUInt32(&ssl_status->cert_status) ||
       !iter.ReadInt(&ssl_status->security_bits) ||
       !iter.ReadInt(&ssl_status->key_exchange_info) ||
       !iter.ReadInt(&ssl_status->connection_status) ||
-      !iter.ReadInt(&num_scts_to_read)) {
+      !iter.ReadUInt32(&ssl_status->num_unknown_scts) ||
+      !iter.ReadUInt32(&ssl_status->num_invalid_scts) ||
+      !iter.ReadUInt32(&ssl_status->num_valid_scts)) {
     *ssl_status = SSLStatus();
     return false;
   }
@@ -86,19 +84,6 @@ bool DeserializeSecurityInfo(const std::string& state, SSLStatus* ssl_status) {
   if (ssl_status->key_exchange_info < 0) {
     *ssl_status = SSLStatus();
     return false;
-  }
-
-  for (; num_scts_to_read > 0; --num_scts_to_read) {
-    int id;
-    uint16_t status;
-    if (!iter.ReadInt(&id) || !iter.ReadUInt16(&status)) {
-      *ssl_status = SSLStatus();
-      return false;
-    }
-
-    ssl_status->signed_certificate_timestamp_ids.push_back(
-        SignedCertificateTimestampIDAndStatus(
-            id, static_cast<net::ct::SCTVerifyStatus>(status)));
   }
 
   return true;

@@ -7,7 +7,6 @@
 
 #include "content/common/content_export.h"
 #include "content/public/common/security_style.h"
-#include "content/public/common/signed_certificate_timestamp_id_and_status.h"
 #include "net/cert/cert_status_flags.h"
 
 namespace net {
@@ -36,8 +35,6 @@ struct CONTENT_EXPORT SSLStatus {
   SSLStatus();
   SSLStatus(SecurityStyle security_style,
             int cert_id,
-            const SignedCertificateTimestampIDStatusList&
-                signed_certificate_timestamp_ids,
             const net::SSLInfo& ssl_info);
   SSLStatus(const SSLStatus& other);
   ~SSLStatus();
@@ -49,8 +46,9 @@ struct CONTENT_EXPORT SSLStatus {
            key_exchange_info == status.key_exchange_info &&
            connection_status == status.connection_status &&
            content_status == status.content_status &&
-           signed_certificate_timestamp_ids ==
-               status.signed_certificate_timestamp_ids;
+           num_unknown_scts == status.num_unknown_scts &&
+           num_invalid_scts == status.num_invalid_scts &&
+           num_valid_scts == status.num_valid_scts;
   }
 
   content::SecurityStyle security_style;
@@ -62,7 +60,10 @@ struct CONTENT_EXPORT SSLStatus {
   int connection_status;
   // A combination of the ContentStatusFlags above.
   int content_status;
-  SignedCertificateTimestampIDStatusList signed_certificate_timestamp_ids;
+  // Signed Certificate Timestamps (SCTs) of Certificate Transparency (CT).
+  uint32_t num_unknown_scts;
+  uint32_t num_invalid_scts;
+  uint32_t num_valid_scts;
 };
 
 }  // namespace content

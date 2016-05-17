@@ -434,4 +434,48 @@ void ParamTraits<scoped_refptr<content::ResourceRequestBody> >::Log(
   l->append("<ResourceRequestBody>");
 }
 
+void ParamTraits<scoped_refptr<net::ct::SignedCertificateTimestamp>>::GetSize(
+    base::PickleSizer* s,
+    const param_type& p) {
+  GetParamSize(s, p.get() != NULL);
+  if (p.get()) {
+    GetParamSize(s, static_cast<unsigned int>(p->version));
+    GetParamSize(s, p->log_id);
+    GetParamSize(s, p->timestamp);
+    GetParamSize(s, p->extensions);
+    GetParamSize(s, static_cast<unsigned int>(p->signature.hash_algorithm));
+    GetParamSize(s,
+                 static_cast<unsigned int>(p->signature.signature_algorithm));
+    GetParamSize(s, p->signature.signature_data);
+    GetParamSize(s, static_cast<unsigned int>(p->origin));
+    GetParamSize(s, p->log_description);
+  }
+}
+
+void ParamTraits<scoped_refptr<net::ct::SignedCertificateTimestamp>>::Write(
+    base::Pickle* m,
+    const param_type& p) {
+  WriteParam(m, p.get() != NULL);
+  if (p.get())
+    p->Persist(m);
+}
+
+bool ParamTraits<scoped_refptr<net::ct::SignedCertificateTimestamp>>::Read(
+    const base::Pickle* m,
+    base::PickleIterator* iter,
+    param_type* r) {
+  bool has_object;
+  if (!ReadParam(m, iter, &has_object))
+    return false;
+  if (has_object)
+    *r = net::ct::SignedCertificateTimestamp::CreateFromPickle(iter);
+  return true;
+}
+
+void ParamTraits<scoped_refptr<net::ct::SignedCertificateTimestamp>>::Log(
+    const param_type& p,
+    std::string* l) {
+  l->append("<SignedCertificateTimestamp>");
+}
+
 }  // namespace IPC
