@@ -467,8 +467,24 @@ void Layer::SetOpacity(float opacity) {
   DCHECK(IsPropertyChangeAllowed());
   if (opacity_ == opacity)
     return;
+  // We need to force a property tree rebuild when opacity changes from 1 to a
+  // non-1 value or vice-versa as render surfaces can change.
+  bool force_rebuild = opacity == 1.f || opacity_ == 1.f;
   opacity_ = opacity;
   SetSubtreePropertyChanged();
+  if (layer_tree_host_ && !force_rebuild) {
+    PropertyTrees* property_trees = layer_tree_host_->property_trees();
+    auto effect_id_to_index = property_trees->effect_id_to_index_map.find(id());
+    if (effect_id_to_index != property_trees->effect_id_to_index_map.end()) {
+      EffectNode* node =
+          property_trees->effect_tree.Node(effect_id_to_index->second);
+      node->data.opacity = opacity;
+      node->data.effect_changed = true;
+      property_trees->effect_tree.set_needs_update(true);
+      SetNeedsCommitNoRebuild();
+      return;
+    }
+  }
   SetNeedsCommit();
 }
 

@@ -9651,6 +9651,53 @@ TEST_F(LayerTreeHostCommonTest, LargeTransformTest) {
   EXPECT_TRUE(root_in_rsll);
 }
 
+TEST_F(LayerTreeHostCommonTest, PropertyTreesRebuildWithOpacityChanges) {
+  const gfx::Transform identity_matrix;
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<LayerWithForcedDrawsContent> child =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
+  root->AddChild(child);
+
+  host()->SetRootLayer(root);
+
+  SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(child.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(20, 20), true, false);
+
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+
+  // Changing the opacity from 1 to non-1 value should trigger rebuild of
+  // property trees as a new effect node will be created.
+  child->SetOpacity(0.5f);
+  PropertyTrees* property_trees = host()->property_trees();
+  EXPECT_TRUE(property_trees->needs_rebuild);
+
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  EXPECT_NE(property_trees->effect_id_to_index_map.find(child->id()),
+            property_trees->effect_id_to_index_map.end());
+
+  // child already has an effect node. Changing its opacity shouldn't trigger
+  // a property trees rebuild.
+  child->SetOpacity(0.8f);
+  property_trees = host()->property_trees();
+  EXPECT_FALSE(property_trees->needs_rebuild);
+
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  EXPECT_NE(property_trees->effect_id_to_index_map.find(child->id()),
+            property_trees->effect_id_to_index_map.end());
+
+  // Changing the opacity from non-1 value to 1 should trigger a rebuild of
+  // property trees as the effect node may no longer be needed.
+  child->SetOpacity(1.f);
+  property_trees = host()->property_trees();
+  EXPECT_TRUE(property_trees->needs_rebuild);
+
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  EXPECT_EQ(property_trees->effect_id_to_index_map.find(child->id()),
+            property_trees->effect_id_to_index_map.end());
+}
+
 TEST_F(LayerTreeHostCommonTest, OpacityAnimationsTrackingTest) {
   const gfx::Transform identity_matrix;
   scoped_refptr<Layer> root = Layer::Create();
