@@ -1149,6 +1149,10 @@ void AutomationInternalCustomBindings::OnAtomicUpdateFinished(
             api::automation::TREE_CHANGE_TYPE_NODECHANGED,
             tree, node);
         break;
+      // Unhandled.
+      case NODE_REPARENTED:
+      case SUBTREE_REPARENTED:
+        break;
     }
   }
 

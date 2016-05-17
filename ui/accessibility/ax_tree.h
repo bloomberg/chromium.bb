@@ -70,7 +70,9 @@ class AX_EXPORT AXTreeDelegate {
   enum ChangeType {
     NODE_CREATED,
     SUBTREE_CREATED,
-    NODE_CHANGED
+    NODE_CHANGED,
+    NODE_REPARENTED,
+    SUBTREE_REPARENTED
   };
 
   struct Change {

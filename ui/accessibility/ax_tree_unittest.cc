@@ -62,6 +62,12 @@ class FakeAXTreeDelegate : public AXTreeDelegate {
         case SUBTREE_CREATED:
           subtree_creation_finished_ids_.push_back(id);
           break;
+        case NODE_REPARENTED:
+          node_reparented_finished_ids_.push_back(id);
+          break;
+        case SUBTREE_REPARENTED:
+          subtree_reparented_finished_ids_.push_back(id);
+          break;
         case NODE_CHANGED:
           change_finished_ids_.push_back(id);
           break;
@@ -82,6 +88,12 @@ class FakeAXTreeDelegate : public AXTreeDelegate {
   const std::vector<int32_t>& subtree_creation_finished_ids() {
     return subtree_creation_finished_ids_;
   }
+  const std::vector<int32_t>& node_reparented_finished_ids() {
+    return node_reparented_finished_ids_;
+  }
+  const std::vector<int32_t>& subtree_reparented_finished_ids() {
+    return subtree_reparented_finished_ids_;
+  }
   const std::vector<int32_t>& change_finished_ids() {
     return change_finished_ids_;
   }
@@ -95,6 +107,8 @@ class FakeAXTreeDelegate : public AXTreeDelegate {
   std::vector<int32_t> changed_ids_;
   std::vector<int32_t> node_creation_finished_ids_;
   std::vector<int32_t> subtree_creation_finished_ids_;
+  std::vector<int32_t> node_reparented_finished_ids_;
+  std::vector<int32_t> subtree_reparented_finished_ids_;
   std::vector<int32_t> change_finished_ids_;
 };
 
@@ -382,6 +396,40 @@ TEST(AXTreeTest, TreeDelegateIsCalledForTreeDataChanges) {
   EXPECT_EQ("New Title", tree.data().title);
 
   tree.SetDelegate(NULL);
+}
+
+TEST(AXTreeTest, ReparentingDoesNotTriggerNodeCreated) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(3);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids.push_back(2);
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].child_ids.push_back(3);
+  initial_state.nodes[2].id = 3;
+
+  FakeAXTreeDelegate fake_delegate;
+  AXTree tree(initial_state);
+  tree.SetDelegate(&fake_delegate);
+
+  AXTreeUpdate update;
+  update.nodes.resize(2);
+  update.node_id_to_clear = 2;
+  update.root_id = 1;
+  update.nodes[0].id = 1;
+  update.nodes[0].child_ids.push_back(3);
+  update.nodes[1].id = 3;
+  EXPECT_TRUE(tree.Unserialize(update)) << tree.error();
+  std::vector<int> created = fake_delegate.node_creation_finished_ids();
+  std::vector<int> subtree_reparented =
+      fake_delegate.subtree_reparented_finished_ids();
+  std::vector<int> node_reparented =
+      fake_delegate.node_reparented_finished_ids();
+  ASSERT_EQ(std::find(created.begin(), created.end(), 3), created.end());
+  ASSERT_NE(std::find(subtree_reparented.begin(), subtree_reparented.end(), 3),
+            subtree_reparented.end());
+  ASSERT_EQ(std::find(node_reparented.begin(), node_reparented.end(), 3),
+            node_reparented.end());
 }
 
 }  // namespace ui

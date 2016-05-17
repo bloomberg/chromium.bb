@@ -291,7 +291,7 @@ cursors.Cursor.prototype = {
    * @return {boolean}
    */
   isValid: function() {
-    return this.node.role !== undefined;
+    return !!this.node.root;
   }
 };
 
