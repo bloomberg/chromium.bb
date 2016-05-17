@@ -397,7 +397,7 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
     SecurityOrigin* starterOrigin = document->getSecurityOrigin();
 
     WorkerClients* workerClients = WorkerClients::create();
-    provideContentSettingsClientToWorker(workerClients, m_contentSettingsClient.release());
+    provideContentSettingsClientToWorker(workerClients, std::move(m_contentSettingsClient));
     provideIndexedDBClientToWorker(workerClients, IndexedDBClientImpl::create());
     provideServiceWorkerGlobalScopeClientToWorker(workerClients, ServiceWorkerGlobalScopeClientImpl::create(*m_workerContextClient));
     provideServiceWorkerContainerClientToWorker(workerClients, adoptPtr(m_workerContextClient->createServiceWorkerProvider()));
@@ -426,7 +426,7 @@ void WebEmbeddedWorkerImpl::startWorkerThread()
     m_workerGlobalScopeProxy = ServiceWorkerGlobalScopeProxy::create(*this, *document, *m_workerContextClient);
     m_loaderProxy = WorkerLoaderProxy::create(this);
     m_workerThread = ServiceWorkerThread::create(m_loaderProxy, *m_workerGlobalScopeProxy);
-    m_workerThread->start(startupData.release());
+    m_workerThread->start(std::move(startupData));
     m_workerInspectorProxy->workerThreadCreated(document, m_workerThread.get(), scriptURL);
 }
 

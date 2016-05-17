@@ -402,7 +402,7 @@ static PassOwnPtr<protocol::DictionaryValue> buildObjectForSize(const IntSize& s
     OwnPtr<protocol::DictionaryValue> result = protocol::DictionaryValue::create();
     result->setNumber("width", size.width());
     result->setNumber("height", size.height());
-    return result.release();
+    return result;
 }
 
 void InspectorOverlay::drawNodeHighlight()
@@ -423,7 +423,7 @@ void InspectorOverlay::drawNodeHighlight()
             Element* element = elements->item(i);
             InspectorHighlight highlight(element, m_nodeHighlightConfig, false);
             OwnPtr<protocol::DictionaryValue> highlightJSON = highlight.asProtocolValue();
-            evaluateInOverlay("drawHighlight", highlightJSON.release());
+            evaluateInOverlay("drawHighlight", std::move(highlightJSON));
         }
     }
 
@@ -433,7 +433,7 @@ void InspectorOverlay::drawNodeHighlight()
         highlight.appendEventTargetQuads(m_eventTargetNode.get(), m_nodeHighlightConfig);
 
     OwnPtr<protocol::DictionaryValue> highlightJSON = highlight.asProtocolValue();
-    evaluateInOverlay("drawHighlight", highlightJSON.release());
+    evaluateInOverlay("drawHighlight", std::move(highlightJSON));
 }
 
 void InspectorOverlay::drawQuadHighlight()
@@ -536,7 +536,7 @@ void InspectorOverlay::reset(const IntSize& viewportSize, const IntPoint& docume
     resetData->setNumber("pageZoomFactor", m_webViewImpl->mainFrameImpl()->frame()->pageZoomFactor());
     resetData->setNumber("scrollX", documentScrollOffset.x());
     resetData->setNumber("scrollY", documentScrollOffset.y());
-    evaluateInOverlay("reset", resetData.release());
+    evaluateInOverlay("reset", std::move(resetData));
 }
 
 void InspectorOverlay::evaluateInOverlay(const String& method, const String& argument)

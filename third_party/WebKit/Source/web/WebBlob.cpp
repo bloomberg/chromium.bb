@@ -48,7 +48,7 @@ WebBlob WebBlob::createFromFile(const WebString& path, long long size)
 {
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->appendFile(path, 0, size, invalidFileTime());
-    return Blob::create(BlobDataHandle::create(blobData.release(), size));
+    return Blob::create(BlobDataHandle::create(std::move(blobData), size));
 }
 
 WebBlob WebBlob::fromV8Value(v8::Local<v8::Value> value)

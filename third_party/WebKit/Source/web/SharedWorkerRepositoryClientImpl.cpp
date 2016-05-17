@@ -149,7 +149,7 @@ void SharedWorkerRepositoryClientImpl::connect(SharedWorker* worker, PassOwnPtr<
 
     // The connector object manages its own lifecycle (and the lifecycles of the two worker objects).
     // It will free itself once connecting is completed.
-    SharedWorkerConnector* connector = new SharedWorkerConnector(worker, url, name, std::move(port), webWorkerConnector.release());
+    SharedWorkerConnector* connector = new SharedWorkerConnector(worker, url, name, std::move(port), std::move(webWorkerConnector));
     connector->connect();
 }
 

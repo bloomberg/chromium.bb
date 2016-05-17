@@ -200,7 +200,7 @@ TEST(VectorTest, OwnPtr)
     EXPECT_EQ(1u, vector.size());
     EXPECT_EQ(1, destructNumber);
 
-    OwnPtr<DestructCounter> ownCounter1 = vector[0].release();
+    OwnPtr<DestructCounter> ownCounter1 = std::move(vector[0]);
     vector.remove(0);
     ASSERT_EQ(counter1, ownCounter1->get());
     ASSERT_EQ(0u, vector.size());

@@ -346,7 +346,7 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
     InspectorInstrumentation::scriptImported(m_loadingDocument.get(), m_mainScriptLoader->identifier(), m_mainScriptLoader->script());
     m_mainScriptLoader.clear();
 
-    workerThread()->start(startupData.release());
+    workerThread()->start(std::move(startupData));
     m_workerInspectorProxy->workerThreadCreated(toDocument(m_loadingDocument.get()), workerThread(), m_url);
     m_client->workerScriptLoaded();
 }

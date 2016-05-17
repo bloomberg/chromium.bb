@@ -124,7 +124,7 @@ public:
             return;
         OwnPtr<ClientMessageLoopAdapter> instance = adoptPtr(new ClientMessageLoopAdapter(adoptPtr(client->createClientMessageLoop())));
         s_instance = instance.get();
-        MainThreadDebugger::instance()->setClientMessageLoop(instance.release());
+        MainThreadDebugger::instance()->setClientMessageLoop(std::move(instance));
     }
 
     static void webViewImplClosed(WebViewImpl* view)

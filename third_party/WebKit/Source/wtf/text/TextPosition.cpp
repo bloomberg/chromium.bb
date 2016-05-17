@@ -45,7 +45,7 @@ PassOwnPtr<Vector<unsigned>> lineEndings(const String& text)
     }
     result->append(text.length());
 
-    return result.release();
+    return result;
 }
 
 OrdinalNumber TextPosition::toOffset(const Vector<unsigned>& lineEndings)

@@ -212,7 +212,7 @@ void ownPtrTest()
     EXPECT_EQ(1u, deque.size());
     EXPECT_EQ(1, destructNumber);
 
-    OwnPtr<DestructCounter> ownCounter1 = deque.first().release();
+    OwnPtr<DestructCounter> ownCounter1 = std::move(deque.first());
     deque.removeFirst();
     EXPECT_EQ(counter1, ownCounter1->get());
     EXPECT_EQ(0u, deque.size());
