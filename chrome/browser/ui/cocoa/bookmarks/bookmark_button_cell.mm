@@ -6,23 +6,40 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_context_menu_cocoa_controller.h"
 #include "chrome/grit/generated_resources.h"
 #import "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/browser/user_metrics.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
 
 using base::UserMetricsAction;
 using bookmarks::BookmarkNode;
 
+namespace {
+
 const int kHierarchyButtonXMargin = 4;
+const int kIconTextSpacer = 4;
+const int kTextRightPadding = 1;
+const int kIconLeftPadding = 3;
+
+const int kDefaultFontSize = 12;
+
+};  // namespace
 
 @interface BookmarkButtonCell(Private)
 - (void)configureBookmarkButtonCell;
 - (void)applyTextColor;
+// Returns the title the button cell displays. Note that a button cell can
+// have a title string assigned but it won't be visible if its image position
+// is NSImageOnly.
+- (NSString*)visibleTitle;
+// Returns the dictionary of attributes to associate with the button title.
+- (NSDictionary*)titleTextAttributes;
 @end
 
 
@@ -121,11 +138,17 @@ const int kHierarchyButtonXMargin = 4;
 // Perform all normal init routines specific to the BookmarkButtonCell.
 - (void)configureBookmarkButtonCell {
   [self setButtonType:NSMomentaryPushInButton];
-  [self setBezelStyle:NSShadowlessSquareBezelStyle];
   [self setShowsBorderOnlyWhileMouseInside:YES];
   [self setControlSize:NSSmallControlSize];
   [self setAlignment:NSLeftTextAlignment];
-  [self setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    [self setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+    [self setBezelStyle:NSShadowlessSquareBezelStyle];
+  } else {
+    [self setFont:[NSFont systemFontOfSize:kDefaultFontSize]];
+    [self setBordered:NO];
+    [self setBezeled:NO];
+  }
   [self setWraps:NO];
   // NSLineBreakByTruncatingMiddle seems more common on OSX but let's
   // try to match Windows for a bit to see what happens.
@@ -149,6 +172,13 @@ const int kHierarchyButtonXMargin = 4;
 }
 
 - (NSSize)cellSizeForBounds:(NSRect)aRect {
+  // There's no bezel or border in Material Design so return cellSize.
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    NSSize size = [self cellSize];
+    size.width = std::min(aRect.size.width, size.width);
+    size.height = std::min(aRect.size.height, size.height);
+    return size;
+  }
   NSSize size = [super cellSizeForBounds:aRect];
   // Cocoa seems to slightly underestimate how much space we need, so we
   // compensate here to avoid a clipped rendering.
@@ -222,18 +252,9 @@ const int kHierarchyButtonXMargin = 4;
 
 // We must reapply the text color after any setTitle: call
 - (void)applyTextColor {
-  base::scoped_nsobject<NSMutableParagraphStyle> style(
-      [NSMutableParagraphStyle new]);
-  [style setAlignment:NSLeftTextAlignment];
-  NSDictionary* dict = [NSDictionary
-                         dictionaryWithObjectsAndKeys:textColor_,
-                         NSForegroundColorAttributeName,
-                         [self font], NSFontAttributeName,
-                         style.get(), NSParagraphStyleAttributeName,
-                         [NSNumber numberWithFloat:0.2], NSKernAttributeName,
-                         nil];
   base::scoped_nsobject<NSAttributedString> ats(
-      [[NSAttributedString alloc] initWithString:[self title] attributes:dict]);
+      [[NSAttributedString alloc] initWithString:[self title]
+                                      attributes:[self titleTextAttributes]]);
   [self setAttributedTitle:ats.get()];
 }
 
@@ -262,14 +283,77 @@ const int kHierarchyButtonXMargin = 4;
   }
 }
 
+- (NSDictionary*)titleTextAttributes {
+  base::scoped_nsobject<NSMutableParagraphStyle> style(
+      [NSMutableParagraphStyle new]);
+  [style setAlignment:NSNaturalTextAlignment];
+  [style setLineBreakMode:NSLineBreakByTruncatingTail];
+  NSColor* textColor = textColor_.get();
+  if (!textColor) {
+    textColor = [NSColor blackColor];
+  }
+  if (![self isEnabled]) {
+    textColor = [textColor colorWithAlphaComponent:0.5];
+  }
+  NSFont* theFont = [self font];
+  if (!theFont) {
+    theFont = [NSFont systemFontOfSize:kDefaultFontSize];
+  }
+
+  return @{
+     NSFontAttributeName : theFont,
+     NSForegroundColorAttributeName : textColor,
+     NSParagraphStyleAttributeName : style.get(),
+     NSKernAttributeName : [NSNumber numberWithFloat:0.2]
+  };
+}
+
+- (NSString*)visibleTitle {
+  return [self imagePosition] != NSImageOnly ? [self title] : @"";
+}
+
 // Add extra size for the arrow so it doesn't overlap the text.
 // Does not sanity check to be sure this is actually a folder node.
 - (NSSize)cellSize {
-  NSSize cellSize = [super cellSize];
+  NSSize cellSize = NSZeroSize;
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    cellSize = [super cellSize];
+  } else {
+    // Return the space needed to display the image and title, with a little
+    // distance between them.
+    cellSize = NSMakeSize(kIconLeftPadding + [[self image] size].width,
+                          bookmarks::kMaterialBookmarkButtonHeight);
+    NSString* title = [self visibleTitle];
+    if ([title length] > 0) {
+      CGFloat textWidth =
+          [title sizeWithAttributes:[self titleTextAttributes]].width;
+      cellSize.width +=
+          kIconTextSpacer + std::ceil(textWidth) + kTextRightPadding;
+    }
+  }
+
   if (drawFolderArrow_) {
     cellSize.width += [arrowImage_ size].width + 2 * kHierarchyButtonXMargin;
   }
   return cellSize;
+}
+
+- (NSRect)imageRectForBounds:(NSRect)theRect {
+  NSRect imageRect = [super imageRectForBounds:theRect];
+  // In Material Design, add a little space between the image and the button's
+  // left edge, but only if there's a visible title.
+  if ([[self visibleTitle] length] &&
+      ui::MaterialDesignController::IsModeMaterial()) {
+    imageRect.origin.x += kIconLeftPadding;
+  }
+  return imageRect;
+}
+
+- (CGFloat)textStartXOffset {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    return [super textStartXOffset];
+  }
+  return kIconLeftPadding + [[self image] size].width + kIconTextSpacer;
 }
 
 // Override cell drawing to add a submenu arrow like a real menu.
