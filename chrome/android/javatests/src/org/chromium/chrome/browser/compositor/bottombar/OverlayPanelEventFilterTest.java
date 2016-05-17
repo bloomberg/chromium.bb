@@ -432,6 +432,7 @@ public class OverlayPanelEventFilterTest extends InstrumentationTestCase {
      * Positions the Panel in the almost maximized state.
      */
     private void positionPanelInAlmostMaximizedState() {
+        mPanel.setSearchBarHeightForTesting(BAR_HEIGHT_DP);
         mPanel.setMaximizedForTesting(false);
         mPanel.setOffsetYForTesting(PANEL_ALMOST_MAXIMIZED_OFFSET_Y_DP);
     }
@@ -440,6 +441,7 @@ public class OverlayPanelEventFilterTest extends InstrumentationTestCase {
      * Positions the Panel in the maximized state.
      */
     private void positionPanelInMaximizedState() {
+        mPanel.setSearchBarHeightForTesting(BAR_HEIGHT_DP);
         mPanel.setMaximizedForTesting(true);
         mPanel.setOffsetYForTesting(0);
     }

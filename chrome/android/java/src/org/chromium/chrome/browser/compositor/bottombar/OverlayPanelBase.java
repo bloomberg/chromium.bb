@@ -111,9 +111,6 @@ abstract class OverlayPanelBase {
      */
     private float mBasePageTargetY = 0.f;
 
-    /** Whether the Panel is showing. */
-    private boolean mIsShowing;
-
     /** The current context. */
     protected final Context mContext;
 
@@ -272,7 +269,7 @@ abstract class OverlayPanelBase {
      * @return Whether the Panel is showing.
      */
     public boolean isShowing() {
-        return mIsShowing;
+        return mHeight > 0;
     }
 
     /**
@@ -281,13 +278,6 @@ abstract class OverlayPanelBase {
      */
     public boolean isPanelOpened() {
         return mHeight > mBarHeightPeeking;
-    }
-
-    /**
-     * Starts showing the Panel.
-     */
-    protected void startShowing() {
-        mIsShowing = true;
     }
 
     /**
@@ -590,7 +580,7 @@ abstract class OverlayPanelBase {
      */
     protected void setPanelState(PanelState state, StateChangeReason reason) {
         if (state == PanelState.CLOSED) {
-            mIsShowing = false;
+            mHeight = 0;
             onClosed(reason);
         }
 
@@ -702,8 +692,6 @@ abstract class OverlayPanelBase {
      * Initializes the UI state.
      */
     protected void initializeUiState() {
-        mIsShowing = false;
-
         mPxToDp = 1.f / mContext.getResources().getDisplayMetrics().density;
 
         mToolbarHeight = mContext.getResources().getDimension(

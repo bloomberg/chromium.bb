@@ -65,6 +65,12 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
         }
 
         @Override
+        public void peekPanel(StateChangeReason reason) {
+            setHeightForTesting(1);
+            super.peekPanel(reason);
+        }
+
+        @Override
         public void setBasePageTextControlsVisibility(boolean visible) {}
     }
 

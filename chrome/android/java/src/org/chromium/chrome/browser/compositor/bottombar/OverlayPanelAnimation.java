@@ -114,10 +114,6 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
     protected void peekPanel(StateChangeReason reason) {
         updateBasePageTargetY();
 
-        // Indicate to the Compositor that for now on the Panel should be
-        // rendered, until it's closed.
-        startShowing();
-
         // TODO(pedrosimonetti): Implement custom animation with the following values.
         // int SEARCH_BAR_ANIMATION_DURATION_MS = 218;
         // float SEARCH_BAR_SLIDE_OFFSET_DP = 40;

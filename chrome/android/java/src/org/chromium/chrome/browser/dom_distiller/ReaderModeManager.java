@@ -267,7 +267,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
     public void onAddInfoBar(InfoBarContainer container, InfoBar infoBar, boolean isFirst) {
         mContainerHasInfoBars = true;
         // If the panel is opened past the peeking state, obscure the infobar.
-        if (mReaderModePanel != null && mReaderModePanel.isPanelOpened()) {
+        if (mReaderModePanel != null && mReaderModePanel.isPanelOpened() && container != null) {
             container.setIsObscuredByOtherView(true);
         } else if (isFirst) {
             // Temporarily hides the reader mode button while the infobars are shown.
