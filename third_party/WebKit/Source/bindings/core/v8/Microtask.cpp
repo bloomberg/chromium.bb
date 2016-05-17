@@ -45,19 +45,14 @@ void Microtask::performCheckpoint(v8::Isolate* isolate)
 
 static void microtaskFunctionCallback(void* data)
 {
-    OwnPtr<WebTaskRunner::Task> task = adoptPtr(static_cast<WebTaskRunner::Task*>(data));
-    task->run();
-}
-
-void Microtask::enqueueMicrotask(std::unique_ptr<WebTaskRunner::Task> callback)
-{
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    isolate->EnqueueMicrotask(&microtaskFunctionCallback, callback.release());
+    std::unique_ptr<SameThreadClosure> task = wrapUnique(static_cast<SameThreadClosure*>(data));
+    (*task)();
 }
 
 void Microtask::enqueueMicrotask(std::unique_ptr<SameThreadClosure> callback)
 {
-    enqueueMicrotask(wrapUnique(new SameThreadTask(std::move(callback))));
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    isolate->EnqueueMicrotask(&microtaskFunctionCallback, static_cast<void*>(callback.release()));
 }
 
 } // namespace blink
