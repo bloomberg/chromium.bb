@@ -7,6 +7,7 @@ import os
 import re
 import sys
 
+import common.clovis_paths
 from common.clovis_task import ClovisTask
 from common.loading_trace_database import LoadingTraceDatabase
 import controller
@@ -32,10 +33,11 @@ class TraceTaskHandler(object):
     self._base_path = base_path
     self._is_initialized = False
     self._trace_database = None
+    trace_database_filename = common.clovis_paths.TRACE_DATABASE_PREFIX
     if instance_name:
-      trace_database_filename = 'trace_database_%s.json' % instance_name
+      trace_database_filename += '_%s.json' % instance_name
     else:
-      trace_database_filename = 'trace_database.json'
+      trace_database_filename += '.json'
     self._trace_database_path = os.path.join(base_path, trace_database_filename)
 
     # Initialize the global options that will be used during trace generation.

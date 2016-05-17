@@ -7,6 +7,7 @@ import uuid
 
 from googleapiclient import errors
 
+import common.clovis_paths
 from common.loading_trace_database import LoadingTraceDatabase
 import common.google_error_helper as google_error_helper
 from failure_database import FailureDatabase
@@ -134,7 +135,5 @@ class ReportTaskHandler(object):
 
     if rows:
       tag = clovis_task.BackendParams()['tag']
-      # BigQuery table names can contain only alpha numeric characters and
-      # underscores.
-      table_id = ''.join(c for c in tag if c.isalnum() or c == '_')
+      table_id = common.clovis_paths.GetBigQueryTableID(tag)
       self._StreamRowsToBigQuery(rows, table_id)

@@ -13,6 +13,7 @@ from google.appengine.api import (app_identity, taskqueue)
 from google.appengine.ext import deferred
 from oauth2client.client import GoogleCredentials
 
+import common.clovis_paths
 from common.clovis_task import ClovisTask
 import common.google_instance_helper
 from common.loading_trace_database import LoadingTraceDatabase
@@ -201,15 +202,16 @@ def GetTracePaths(bucket):
 
   This function assumes a specific structure for the files in the bucket. These
   assumptions must match the behavior of the backend:
-  - The trace databases are located under a 'trace' directory under |bucket|.
-  - The trace databases files are the only objects with the 'trace_database'
-    prefix in their name.
+  - The trace databases are located under the TRACE_DIR directory in the bucket.
+  - The trace databases files are the only objects with the
+    TRACE_DATABASE_PREFIX prefix in their name.
 
   Returns:
     list: The list of paths to traces, as strings.
   """
   traces = []
-  prefix = os.path.join('/', bucket, 'trace', 'trace_database')
+  prefix = os.path.join('/', bucket, common.clovis_paths.TRACE_DIR,
+                        common.clovis_paths.TRACE_DATABASE_PREFIX)
   file_stats = cloudstorage.listbucket(prefix)
 
   for file_stat in file_stats:
@@ -260,11 +262,7 @@ def StartFromJsonString(http_body_str):
     if bucket:
       task_url = 'https://console.cloud.google.com/storage/' + bucket
   elif task.Action() == 'report':
-    # This must match the table path defined in ReportTaskHandler.
-    table_id = ''.join(c for c in task_tag if c.isalnum() or c == '_')
-    table_name = 'clovis_dataset.report_' + table_id
-    task_url = 'https://bigquery.cloud.google.com/table/%s:%s' %(project_name,
-                                                                 table_name)
+    task_url = common.clovis_paths.GetBigQueryTableURL(project_name, task_tag)
   else:
     error_string = 'Unsupported action: %s.' % task.Action()
     clovis_logger.error(error_string)
