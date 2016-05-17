@@ -293,7 +293,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
      * @param visible If the text controls are visible.
      */
     protected void setBasePageTextControlsVisibility(boolean visible) {
-        if (mActivity == null) return;
+        if (mActivity == null || mActivity.getActivityTab() == null) return;
 
         ContentViewCore baseContentView = mActivity.getActivityTab().getContentViewCore();
         if (baseContentView == null) return;
