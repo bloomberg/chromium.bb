@@ -30,7 +30,7 @@
 
     // Increment this if you change the data in ways that mean users with
     // existing data should get a new version.
-    "kCurrentDataVersion": 90
+    "kCurrentDataVersion": 91
   },
 
   // The following engines are included in country lists and are added to the
@@ -578,7 +578,7 @@
     "yandex_by": {
       "name": "\u042f\u043d\u0434\u0435\u043a\u0441",
       "keyword": "yandex.by",
-      "favicon_url": "https://yandex.st/lego/_/pDu9OWAQKB0s2J9IojKpiS_Eho.ico",
+      "favicon_url": "https://yastatic.net/lego/_/pDu9OWAQKB0s2J9IojKpiS_Eho.ico",
       "search_url": "https://yandex.by/{yandex:searchPath}?text={searchTerms}",
       "suggest_url": "https://api.browser.yandex.by/suggest/get?part={searchTerms}",
       "image_url": "https://yandex.by/images/search/?rpt=imageview",
@@ -591,7 +591,7 @@
     "yandex_kz": {
       "name": "\u042f\u043d\u0434\u0435\u043a\u0441",
       "keyword": "yandex.kz",
-      "favicon_url": "https://yandex.st/lego/_/pDu9OWAQKB0s2J9IojKpiS_Eho.ico",
+      "favicon_url": "https://yastatic.net/lego/_/pDu9OWAQKB0s2J9IojKpiS_Eho.ico",
       "search_url": "https://yandex.kz/{yandex:searchPath}?text={searchTerms}",
       "suggest_url": "https://api.browser.yandex.kz/suggest/get?part={searchTerms}",
       "image_url": "https://yandex.kz/images/search/?rpt=imageview",
@@ -604,7 +604,7 @@
     "yandex_ru": {
       "name": "\u042f\u043d\u0434\u0435\u043a\u0441",
       "keyword": "yandex.ru",
-      "favicon_url": "https://yandex.st/lego/_/pDu9OWAQKB0s2J9IojKpiS_Eho.ico",
+      "favicon_url": "https://yastatic.net/lego/_/pDu9OWAQKB0s2J9IojKpiS_Eho.ico",
       "search_url": "https://yandex.ru/{yandex:searchPath}?text={searchTerms}",
       "suggest_url": "https://api.browser.yandex.ru/suggest/get?part={searchTerms}",
       "image_url": "https://yandex.ru/images/search/?rpt=imageview",
@@ -617,7 +617,7 @@
     "yandex_tr": {
       "name": "Yandex",
       "keyword": "yandex.com.tr",
-      "favicon_url": "https://yandex.st/lego/_/rBTjd6UOPk5913OSn5ZQVYMTQWQ.ico",
+      "favicon_url": "https://yastatic.net/lego/_/rBTjd6UOPk5913OSn5ZQVYMTQWQ.ico",
       "search_url": "https://www.yandex.com.tr/{yandex:searchPath}?text={searchTerms}",
       "suggest_url": "https://api.browser.yandex.com.tr/suggest/get?part={searchTerms}",
       "image_url": "https://yandex.com.tr/gorsel/search?rpt=imageview",
@@ -630,7 +630,7 @@
     "yandex_ua": {
       "name": "\u042f\u043d\u0434\u0435\u043a\u0441",
       "keyword": "yandex.ua",
-      "favicon_url": "https://yandex.st/lego/_/pDu9OWAQKB0s2J9IojKpiS_Eho.ico",
+      "favicon_url": "https://yastatic.net/lego/_/pDu9OWAQKB0s2J9IojKpiS_Eho.ico",
       "search_url": "https://yandex.ua/{yandex:searchPath}?text={searchTerms}",
       "suggest_url": "https://api.browser.yandex.ua/suggest/get?part={searchTerms}",
       "image_url": "https://yandex.ua/images/search/?rpt=imageview",
