@@ -437,6 +437,14 @@ Polymer({
           sinkCount: this.allSinks.length,
         });
       }, 3000 /* 3 seconds */);
+
+      // For Mac platforms, request data after a short delay after load. This
+      // appears to speed up initial data load time on Mac.
+      if (cr.isMac) {
+        this.async(function() {
+          this.fire('request-initial-data');
+        }, 25 /* 0.025 seconds */);
+      }
     });
   },
 

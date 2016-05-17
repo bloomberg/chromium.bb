@@ -20,7 +20,9 @@ cr.define('media_router', function() {
    * router content, such as the media sink and media route lists.
    */
   function initialize() {
-    media_router.browserApi.requestInitialData();
+    // For non-Mac platforms, request data immediately after initialization.
+    if (!cr.isMac)
+      onRequestInitialData();
 
     container = /** @type {!MediaRouterContainerElement} */
         ($('media-router-container'));
@@ -51,6 +53,8 @@ cr.define('media_router', function() {
     container.addEventListener('report-sink-count', onSinkCountReported);
     container.addEventListener('report-resolved-route',
                                onReportRouteCreationOutcome);
+    container.addEventListener('request-initial-data',
+                               onRequestInitialData);
     container.addEventListener('search-sinks-and-create-route',
                                onSearchSinksAndCreateRoute);
     container.addEventListener('show-initial-state', onShowInitialState);
@@ -287,6 +291,13 @@ cr.define('media_router', function() {
     /** @type {{outcome: number}} */
     var detail = event.detail;
     media_router.browserApi.reportRouteCreationOutcome(detail.outcome);
+  }
+
+  /**
+   * Requests for initial data to load into the dialog.
+   */
+  function onRequestInitialData() {
+    media_router.browserApi.requestInitialData();
   }
 
   /**
