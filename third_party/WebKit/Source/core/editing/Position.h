@@ -170,7 +170,6 @@ public:
     static PositionTemplate<Strategy> firstPositionInNode(Node* anchorNode);
     static PositionTemplate<Strategy> lastPositionInNode(Node* anchorNode);
     static int minOffsetForNode(Node* anchorNode, int offset);
-    static bool offsetIsBeforeLastNodeOffset(int offset, Node* anchorNode);
     static PositionTemplate<Strategy> firstPositionInOrBeforeNode(Node* anchorNode);
     static PositionTemplate<Strategy> lastPositionInOrAfterNode(Node* anchorNode);
 
@@ -338,24 +337,6 @@ int PositionTemplate<Strategy>::minOffsetForNode(Node* anchorNode, int offset)
 inline int minOffsetForNode(Node* anchorNode, int offset)
 {
     return Position::minOffsetForNode(anchorNode, offset);
-}
-
-template <typename Strategy>
-bool PositionTemplate<Strategy>::offsetIsBeforeLastNodeOffset(int offset, Node* anchorNode)
-{
-    if (anchorNode->offsetInCharacters())
-        return offset < anchorNode->maxCharacterOffset();
-
-    int currentOffset = 0;
-    for (Node* node = Strategy::firstChild(*anchorNode); node && currentOffset < offset; node = Strategy::nextSibling(*node))
-        currentOffset++;
-
-    return offset < currentOffset;
-}
-
-inline bool offsetIsBeforeLastNodeOffset(int offset, Node* anchorNode)
-{
-    return Position::offsetIsBeforeLastNodeOffset(offset, anchorNode);
 }
 
 template <typename Strategy>

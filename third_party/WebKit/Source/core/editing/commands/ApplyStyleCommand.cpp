@@ -112,6 +112,16 @@ bool isEmptyFontTag(const Element* element, ShouldStyleAttributeBeEmpty shouldSt
     return hasNoAttributeOrOnlyStyleAttribute(toHTMLFontElement(element), shouldStyleAttributeBeEmpty);
 }
 
+static bool offsetIsBeforeLastNodeOffset(int offset, Node* anchorNode)
+{
+    if (anchorNode->offsetInCharacters())
+        return offset < anchorNode->maxCharacterOffset();
+    int currentOffset = 0;
+    for (Node* node = NodeTraversal::firstChild(*anchorNode); node && currentOffset < offset; node = NodeTraversal::nextSibling(*node))
+        currentOffset++;
+    return offset < currentOffset;
+}
+
 ApplyStyleCommand::ApplyStyleCommand(Document& document, const EditingStyle* style, EditAction editingAction, EPropertyLevel propertyLevel)
     : CompositeEditCommand(document)
     , m_style(style->copy())
