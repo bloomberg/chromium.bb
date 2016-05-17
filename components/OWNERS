@@ -28,6 +28,8 @@ per-file cast_certificate.gypi=file://components/cast_certificate/OWNERS
 
 per-file cdm.gypi=file://components/cdm/OWNERS
 
+per-file certificate_transparency.gypi=file://components/certificate_transparency/OWNERS
+
 per-file chrome_apps.gypi=file://components/chrome_apps/OWNERS
 
 per-file cloud_devices.gypi=file://components/cloud_devices/OWNERS
