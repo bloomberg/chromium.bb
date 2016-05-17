@@ -1362,7 +1362,7 @@ emit_structs(struct wl_list *message_list, struct interface *interface, enum sid
 
 	if (side == CLIENT) {
 	    printf("/**\n"
-		   " * @ingroup %s_iface\n"
+		   " * @ingroup iface_%s\n"
 		   " */\n", interface->name);
 	    printf("static inline int\n"
 		   "%s_add_listener(struct %s *%s,\n"
