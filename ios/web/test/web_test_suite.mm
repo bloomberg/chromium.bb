@@ -5,7 +5,10 @@
 #include "ios/web/test/web_test_suite.h"
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/statistics_recorder.h"
+#import "ios/web/public/test/test_web_client.h"
+#include "ios/web/public/url_schemes.h"
 #include "ios/web/web_thread_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,11 +26,10 @@ class WebTestSuiteListener : public testing::EmptyTestEventListener {
 };
 
 WebTestSuite::WebTestSuite(int argc, char** argv)
-    : base::TestSuite(argc, argv) {
-}
+    : base::TestSuite(argc, argv),
+      web_client_(base::WrapUnique(new TestWebClient)) {}
 
-WebTestSuite::~WebTestSuite() {
-}
+WebTestSuite::~WebTestSuite() {}
 
 void WebTestSuite::Initialize() {
   base::TestSuite::Initialize();
@@ -39,6 +41,8 @@ void WebTestSuite::Initialize() {
 
   testing::UnitTest::GetInstance()->listeners().Append(
       new WebTestSuiteListener);
+
+  RegisterWebSchemes(false);
 }
 
 }  // namespace web

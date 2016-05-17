@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/test/test_suite.h"
+#include "ios/web/public/test/scoped_testing_web_client.h"
 
 namespace web {
 
@@ -19,6 +20,8 @@ class WebTestSuite : public base::TestSuite {
   void Initialize() override;
 
  private:
+  // Sets web client on construction and restores the original on destruction.
+  ScopedTestingWebClient web_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTestSuite);
 };

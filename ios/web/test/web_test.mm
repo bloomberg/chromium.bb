@@ -38,12 +38,7 @@ namespace web {
 
 #pragma mark -
 
-WebTest::WebTest() : web_client_(base::WrapUnique(new TestWebClient)) {
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    RegisterWebSchemes(false);
-  });
-}
+WebTest::WebTest() : web_client_(base::WrapUnique(new TestWebClient)) {}
 
 WebTest::~WebTest() {}
 
