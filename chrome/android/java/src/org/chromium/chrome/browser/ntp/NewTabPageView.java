@@ -560,15 +560,24 @@ public class NewTabPageView extends FrameLayout
      * the RecyclerView.
      */
     private void initializeSearchBoxRecyclerViewScrollHandling() {
+        final NewTabPageUma.SnapStateObserver snapStateObserver =
+                new NewTabPageUma.SnapStateObserver();
+
         final Runnable mSnapScrollRunnable = new Runnable() {
             @Override
             public void run() {
                 assert mPendingSnapScroll;
+                NewTabPageUma.SnapState currentSnapState = updateSnapScroll();
+                snapStateObserver.updateSnapState(currentSnapState);
+            }
 
+            private NewTabPageUma.SnapState updateSnapScroll() {
                 // These calculations only work if the first item is visible (since
                 // computeVerticalScrollOffset only takes into account visible items).
                 // Luckily, we only need to perform the calculations if the first item is visible.
-                if (!mRecyclerView.isFirstItemVisible()) return;
+                if (!mRecyclerView.isFirstItemVisible()) {
+                    return NewTabPageUma.SnapState.BELOW_THE_FOLD;
+                }
 
                 final int currentScroll = getVerticalScroll();
 
@@ -580,7 +589,9 @@ public class NewTabPageView extends FrameLayout
 
                 assert currentScroll >= 0;
                 // Do not do any scrolling if the user is currently viewing articles.
-                if (currentScroll > topOfSnippetsScroll) return;
+                if (currentScroll >= topOfSnippetsScroll) {
+                    return NewTabPageUma.SnapState.BELOW_THE_FOLD;
+                }
 
                 // If Most Likely is fully visible when we are scrolled to the top, we have two
                 // snap points: the Top and Articles.
@@ -591,6 +602,7 @@ public class NewTabPageView extends FrameLayout
                 int targetScroll;
                 // Set peeking card vertical scroll to be vertical scroll.
                 mPeekingCardVerticalScrollStart = 0;
+                NewTabPageUma.SnapState snapState = NewTabPageUma.SnapState.ABOVE_THE_FOLD;
                 if (currentScroll < mNewTabPageLayout.getHeight() / 3) {
                     // In either case, if in the top 1/3 of the original NTP, snap to the top.
                     targetScroll = 0;
@@ -603,9 +615,11 @@ public class NewTabPageView extends FrameLayout
                 } else {
                     // Otherwise, snap to the Articles.
                     targetScroll = topOfSnippetsScroll;
+                    snapState = NewTabPageUma.SnapState.BELOW_THE_FOLD;
                 }
                 mRecyclerView.smoothScrollBy(0, targetScroll - currentScroll);
                 mPendingSnapScroll = false;
+                return snapState;
             }
         };
 

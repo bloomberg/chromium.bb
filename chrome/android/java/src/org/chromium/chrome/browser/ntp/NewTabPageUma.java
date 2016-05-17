@@ -64,7 +64,7 @@ public class NewTabPageUma {
      * Do not remove or change existing values other than NUM_SNIPPETS_ACTIONS. */
     @IntDef({SNIPPETS_ACTION_SHOWN, SNIPPETS_ACTION_SCROLLED, SNIPPETS_ACTION_CLICKED,
              SNIPPETS_ACTION_DISMISSED_OBSOLETE, SNIPPETS_ACTION_DISMISSED_VISITED,
-             SNIPPETS_ACTION_DISMISSED_UNVISITED})
+             SNIPPETS_ACTION_DISMISSED_UNVISITED, SNIPPETS_ACTION_SCROLLED_BELOW_THE_FOLD_ONCE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface SnippetsAction {}
     /** Snippets are enabled and are being shown to the user. */
@@ -79,8 +79,10 @@ public class NewTabPageUma {
     public static final int SNIPPETS_ACTION_DISMISSED_VISITED = 4;
     /** A snippet has been swiped away, it had not been viewed by the user (on this device). */
     public static final int SNIPPETS_ACTION_DISMISSED_UNVISITED = 5;
+    /** The snippet list has been scrolled below the fold (once per NTP load). */
+    public static final int SNIPPETS_ACTION_SCROLLED_BELOW_THE_FOLD_ONCE = 6;
     /** The number of possible actions. */
-    private static final int NUM_SNIPPETS_ACTIONS = 6;
+    private static final int NUM_SNIPPETS_ACTIONS = 7;
 
     /**
      * Records an action taken by the user on the NTP.
@@ -163,5 +165,39 @@ public class NewTabPageUma {
         assert impressionType < NUM_NTP_IMPRESSION;
         RecordHistogram.recordEnumeratedHistogram(
                 "Android.NTP.Impression", impressionType, NUM_NTP_IMPRESSION);
+    }
+
+    /**
+     * Snap state representing which part of the NTP the user is reading.
+     */
+    public enum SnapState {
+        ABOVE_THE_FOLD,
+        BELOW_THE_FOLD,
+    }
+
+    /**
+     * Snap state observer that records UMA actions or histograms.
+     */
+    public static class SnapStateObserver {
+        private SnapState mSnapState = SnapState.ABOVE_THE_FOLD;
+        private boolean mEverBelowTheFold = false;
+
+        public void updateSnapState(SnapState state) {
+            if (state == mSnapState) return;
+            mSnapState = state;
+
+            switch (state) {
+                case ABOVE_THE_FOLD:
+                    RecordUserAction.record("MobileNTP.Snippets.ScrolledAboveTheFold");
+                    break;
+                case BELOW_THE_FOLD:
+                    RecordUserAction.record("MobileNTP.Snippets.ScrolledBelowTheFold");
+                    if (!mEverBelowTheFold) {
+                        mEverBelowTheFold = true;
+                        recordSnippetAction(SNIPPETS_ACTION_SCROLLED_BELOW_THE_FOLD_ONCE);
+                    }
+                    break;
+            }
+        }
     }
 }

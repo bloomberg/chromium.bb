@@ -8754,6 +8754,20 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileNTP.Snippets.ScrolledAboveTheFold">
+  <owner>mastiz@chromium.org</owner>
+  <description>
+    Android: User scrolled above the fold (not reading snippets cards).
+  </description>
+</action>
+
+<action name="MobileNTP.Snippets.ScrolledBelowTheFold">
+  <owner>mastiz@chromium.org</owner>
+  <description>
+    Android: User scrolled to the snippet cards below the fold.
+  </description>
+</action>
+
 <action name="MobileNTP.Snippets.ShowLess">
   <owner>knn@chromium.org</owner>
   <description>
