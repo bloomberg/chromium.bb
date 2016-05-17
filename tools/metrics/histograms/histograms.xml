@@ -72923,6 +72923,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1365" label="PannerNodeSetOrientation"/>
   <int value="1366" label="AudioListenerSetPosition"/>
   <int value="1367" label="AudioListenerSetOrientation"/>
+  <int value="1368" label="IntersectionObserver_Constructor"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

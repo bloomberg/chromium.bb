@@ -1181,6 +1181,7 @@ public:
         PannerNodeSetOrientation = 1365,
         AudioListenerSetPosition = 1366,
         AudioListenerSetOrientation = 1367,
+        IntersectionObserver_Constructor = 1368,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
