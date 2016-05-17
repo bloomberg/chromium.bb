@@ -262,9 +262,10 @@ class ContentClientInitializer {
 #endif  // !CHROME_MULTIPLE_DLL_CHILD
 
 #if !defined(CHROME_MULTIPLE_DLL_BROWSER)
+    base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
     if (process_type == switches::kGpuProcess ||
-        base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kSingleProcess)) {
+        cmd->HasSwitch(switches::kSingleProcess) ||
+        (process_type.empty() && cmd->HasSwitch(switches::kInProcessGPU))) {
       if (delegate)
         content_client->gpu_ = delegate->CreateContentGpuClient();
       if (!content_client->gpu_)
@@ -272,8 +273,7 @@ class ContentClientInitializer {
     }
 
     if (process_type == switches::kRendererProcess ||
-        base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kSingleProcess)) {
+        cmd->HasSwitch(switches::kSingleProcess)) {
       if (delegate)
         content_client->renderer_ = delegate->CreateContentRendererClient();
       if (!content_client->renderer_)
@@ -281,8 +281,7 @@ class ContentClientInitializer {
     }
 
     if (process_type == switches::kUtilityProcess ||
-        base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kSingleProcess)) {
+        cmd->HasSwitch(switches::kSingleProcess)) {
       if (delegate)
         content_client->utility_ = delegate->CreateContentUtilityClient();
       // TODO(scottmg): http://crbug.com/237249 Should be in _child.
