@@ -99,8 +99,6 @@ void ArrayBufferContents::copyTo(ArrayBufferContents& other)
 
 void ArrayBufferContents::allocateMemoryWithFlags(size_t size, InitializationPolicy policy, int flags, void*& data)
 {
-    if (s_adjustAmountOfExternalAllocatedMemoryFunction)
-        s_adjustAmountOfExternalAllocatedMemoryFunction(static_cast<int>(size));
     data = partitionAllocGenericFlags(WTF::Partitions::bufferPartition(), flags, size, WTF_HEAP_PROFILER_TYPE_NAME(ArrayBufferContents));
     if (policy == ZeroInitialize && data)
         memset(data, '\0', size);
@@ -119,8 +117,6 @@ void ArrayBufferContents::allocateMemoryOrNull(size_t size, InitializationPolicy
 void ArrayBufferContents::freeMemory(void* data, size_t size)
 {
     Partitions::bufferFree(data);
-    if (s_adjustAmountOfExternalAllocatedMemoryFunction)
-        s_adjustAmountOfExternalAllocatedMemoryFunction(-static_cast<int>(size));
 }
 
 ArrayBufferContents::DataHolder::DataHolder()
@@ -131,6 +127,8 @@ ArrayBufferContents::DataHolder::DataHolder()
 ArrayBufferContents::DataHolder::~DataHolder()
 {
     ArrayBufferContents::freeMemory(m_data, m_sizeInBytes);
+    if (s_adjustAmountOfExternalAllocatedMemoryFunction)
+        s_adjustAmountOfExternalAllocatedMemoryFunction(-static_cast<int>(m_sizeInBytes));
 
     m_data = nullptr;
     m_sizeInBytes = 0;
@@ -141,6 +139,8 @@ void ArrayBufferContents::DataHolder::allocateNew(unsigned sizeInBytes, SharingT
 {
     ASSERT(!m_data);
     void* data = nullptr;
+    if (s_adjustAmountOfExternalAllocatedMemoryFunction)
+        s_adjustAmountOfExternalAllocatedMemoryFunction(static_cast<int>(sizeInBytes));
     allocateMemory(sizeInBytes, policy, data);
     m_data = data;
     m_sizeInBytes = data ? sizeInBytes : 0;
