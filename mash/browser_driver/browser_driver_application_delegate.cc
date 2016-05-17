@@ -58,6 +58,33 @@ BrowserDriverApplicationDelegate::BrowserDriverApplicationDelegate()
 
 BrowserDriverApplicationDelegate::~BrowserDriverApplicationDelegate() {}
 
+void BrowserDriverApplicationDelegate::OnAvailableCatalogEntries(
+    const mojo::Array<catalog::mojom::EntryPtr>& entries) {
+  if (entries.empty()) {
+    LOG(ERROR) << "Unable to install accelerators for launching chrome.";
+    return;
+  }
+
+  mus::mojom::AcceleratorRegistrarPtr registrar;
+  connector_->ConnectToInterface(entries[0]->name, &registrar);
+
+  if (binding_.is_bound())
+    binding_.Unbind();
+  registrar->SetHandler(binding_.CreateInterfacePtrAndBind());
+  // If the window manager restarts, the handler pipe will close and we'll need
+  // to re-add our accelerators when the window manager comes back up.
+  binding_.set_connection_error_handler(
+      base::Bind(&BrowserDriverApplicationDelegate::AddAccelerators,
+                 weak_factory_.GetWeakPtr()));
+
+  for (const AcceleratorSpec& spec : g_spec) {
+    registrar->AddAccelerator(
+        static_cast<uint32_t>(spec.id),
+        mus::CreateKeyMatcher(spec.keyboard_code, spec.event_flags),
+        base::Bind(&AssertTrue));
+  }
+}
+
 void BrowserDriverApplicationDelegate::Initialize(
     shell::Connector* connector,
     const shell::Identity& identity,
@@ -100,26 +127,11 @@ void BrowserDriverApplicationDelegate::OnAccelerator(
 }
 
 void BrowserDriverApplicationDelegate::AddAccelerators() {
-  // TODO(beng): find some other way to get the window manager. I don't like
-  //             having to specify it by URL because it may differ per display.
-  mus::mojom::AcceleratorRegistrarPtr registrar;
-  connector_->ConnectToInterface("mojo:desktop_wm", &registrar);
-
-  if (binding_.is_bound())
-    binding_.Unbind();
-  registrar->SetHandler(binding_.CreateInterfacePtrAndBind());
-  // If the window manager restarts, the handler pipe will close and we'll need
-  // to re-add our accelerators when the window manager comes back up.
-  binding_.set_connection_error_handler(
-      base::Bind(&BrowserDriverApplicationDelegate::AddAccelerators,
+  connector_->ConnectToInterface("mojo:catalog", &catalog_);
+  catalog_->GetEntriesProvidingClass(
+      "mus:window_manager",
+      base::Bind(&BrowserDriverApplicationDelegate::OnAvailableCatalogEntries,
                  weak_factory_.GetWeakPtr()));
-
-  for (const AcceleratorSpec& spec : g_spec) {
-    registrar->AddAccelerator(
-        static_cast<uint32_t>(spec.id),
-        mus::CreateKeyMatcher(spec.keyboard_code, spec.event_flags),
-        base::Bind(&AssertTrue));
-  }
 }
 
 }  // namespace browser_driver

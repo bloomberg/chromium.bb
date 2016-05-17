@@ -36,9 +36,6 @@ class Instance : public shell::mojom::ShellResolver,
   void CacheReady(EntryCache* cache);
 
  private:
-  using MojoNameAliasMap =
-      std::map<std::string, std::pair<std::string, std::string>>;
-
   // shell::mojom::ShellResolver:
   void ResolveMojoName(const mojo::String& mojo_name,
                        const ResolveMojoNameCallback& callback) override;

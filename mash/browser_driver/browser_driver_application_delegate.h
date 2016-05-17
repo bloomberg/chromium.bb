@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/mus/public/interfaces/accelerator_registrar.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/shell/public/cpp/shell_client.h"
 
 namespace mash {
@@ -26,6 +27,9 @@ class BrowserDriverApplicationDelegate : public shell::ShellClient,
   ~BrowserDriverApplicationDelegate() override;
 
  private:
+  void OnAvailableCatalogEntries(
+      const mojo::Array<catalog::mojom::EntryPtr>& entries);
+
   // shell::ShellClient:
   void Initialize(shell::Connector* connector,
                   const shell::Identity& identity,
@@ -39,6 +43,7 @@ class BrowserDriverApplicationDelegate : public shell::ShellClient,
   void AddAccelerators();
 
   shell::Connector* connector_;
+  catalog::mojom::CatalogPtr catalog_;
   mojo::Binding<mus::mojom::AcceleratorHandler> binding_;
   base::WeakPtrFactory<BrowserDriverApplicationDelegate> weak_factory_;
 

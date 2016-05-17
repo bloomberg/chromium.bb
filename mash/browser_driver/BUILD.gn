@@ -19,6 +19,7 @@ source_set("lib") {
     "//components/mus/common:mus_common",
     "//components/mus/public/interfaces",
     "//mash/public/interfaces",
+    "//services/catalog/public/interfaces",
     "//services/shell/public/cpp:sources",
   ]
 

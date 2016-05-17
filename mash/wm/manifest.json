@@ -3,6 +3,9 @@
   "name": "mojo:desktop_wm",
   "display_name": "Window Manager",
   "capabilities": {
+    "provided": {
+      "mus:window_manager" : [ "mus::mojom::AcceleratorRegistrar" ]
+    },
     "required": {
       "*": { "classes": [ "app" ] },
       "mojo:mus": { "interfaces": [ "mus::mojom::WindowManagerFactoryService" ] }
