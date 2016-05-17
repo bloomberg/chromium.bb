@@ -6,6 +6,7 @@
 #define CSSPaintDefinition_h
 
 #include "bindings/core/v8/ScopedPersistent.h"
+#include "core/CSSPropertyNames.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
 #include <v8.h>
@@ -19,7 +20,7 @@ class ScriptState;
 // the author.
 class CSSPaintDefinition final : public GarbageCollectedFinalized<CSSPaintDefinition> {
 public:
-    static CSSPaintDefinition* create(ScriptState*, v8::Local<v8::Function> constructor, v8::Local<v8::Function> paint);
+    static CSSPaintDefinition* create(ScriptState*, v8::Local<v8::Function> constructor, v8::Local<v8::Function> paint, Vector<CSSPropertyID>&, Vector<AtomicString>& customInvalidationProperties);
     virtual ~CSSPaintDefinition();
 
     // Invokes the javascript 'paint' callback on an instance of the javascript
@@ -29,6 +30,8 @@ public:
     // This may return a nullptr (representing an invalid image) if javascript
     // throws an error.
     PassRefPtr<Image> paint(const IntSize&);
+    const Vector<CSSPropertyID>& nativeInvalidationProperties() const { return m_nativeInvalidationProperties; }
+    const Vector<AtomicString>& customInvalidationProperties() const { return m_customInvalidationProperties; }
 
     ScriptState* getScriptState() const { return m_scriptState.get(); }
 
@@ -37,7 +40,7 @@ public:
     DEFINE_INLINE_TRACE() { };
 
 private:
-    CSSPaintDefinition(ScriptState*, v8::Local<v8::Function> constructor, v8::Local<v8::Function> paint);
+    CSSPaintDefinition(ScriptState*, v8::Local<v8::Function> constructor, v8::Local<v8::Function> paint, Vector<CSSPropertyID>& nativeInvalidationProperties, Vector<AtomicString>& customInvalidationProperties);
 
     void maybeCreatePaintInstance();
 
@@ -53,6 +56,9 @@ private:
     ScopedPersistent<v8::Object> m_instance;
 
     bool m_didCallConstructor;
+
+    Vector<CSSPropertyID> m_nativeInvalidationProperties;
+    Vector<AtomicString> m_customInvalidationProperties;
 };
 
 } // namespace blink

@@ -17,16 +17,18 @@
 
 namespace blink {
 
-CSSPaintDefinition* CSSPaintDefinition::create(ScriptState* scriptState, v8::Local<v8::Function> constructor, v8::Local<v8::Function> paint)
+CSSPaintDefinition* CSSPaintDefinition::create(ScriptState* scriptState, v8::Local<v8::Function> constructor, v8::Local<v8::Function> paint, Vector<CSSPropertyID>& nativeInvalidationProperties, Vector<AtomicString>& customInvalidationProperties)
 {
-    return new CSSPaintDefinition(scriptState, constructor, paint);
+    return new CSSPaintDefinition(scriptState, constructor, paint, nativeInvalidationProperties, customInvalidationProperties);
 }
 
-CSSPaintDefinition::CSSPaintDefinition(ScriptState* scriptState, v8::Local<v8::Function> constructor, v8::Local<v8::Function> paint)
+CSSPaintDefinition::CSSPaintDefinition(ScriptState* scriptState, v8::Local<v8::Function> constructor, v8::Local<v8::Function> paint, Vector<CSSPropertyID>& nativeInvalidationProperties, Vector<AtomicString>& customInvalidationProperties)
     : m_scriptState(scriptState)
     , m_constructor(scriptState->isolate(), constructor)
     , m_paint(scriptState->isolate(), paint)
 {
+    m_nativeInvalidationProperties.swap(nativeInvalidationProperties);
+    m_customInvalidationProperties.swap(customInvalidationProperties);
 }
 
 CSSPaintDefinition::~CSSPaintDefinition()

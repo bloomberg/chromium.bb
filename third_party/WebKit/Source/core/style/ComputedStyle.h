@@ -1658,6 +1658,8 @@ public:
     bool hasAuthorBackground() const { return rareNonInheritedData->m_hasAuthorBackground; };
     bool hasAuthorBorder() const { return rareNonInheritedData->m_hasAuthorBorder; };
 
+    void addPaintImage(StyleImage*);
+
     // Initial values for all the properties
     static EBorderCollapse initialBorderCollapse() { return BorderCollapseSeparate; }
     static EBorderStyle initialBorderStyle() { return BorderStyleNone; }
@@ -1927,6 +1929,7 @@ private:
     bool diffNeedsFullLayout(const ComputedStyle& other) const;
     bool diffNeedsPaintInvalidationSubtree(const ComputedStyle& other) const;
     bool diffNeedsPaintInvalidationObject(const ComputedStyle& other) const;
+    bool diffNeedsPaintInvalidationObjectForPaintImage(const StyleImage*, const ComputedStyle& other) const;
     void updatePropertySpecificDifferences(const ComputedStyle& other, StyleDifference&) const;
 
     bool requireTransformOrigin(ApplyTransformOrigin applyOrigin, ApplyMotionPath) const;

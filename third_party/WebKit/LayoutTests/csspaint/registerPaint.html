@@ -12,6 +12,8 @@ function runner(tests) {
         return chain.then(function() {
             if (obj.expectedError) {
                 console.log('The worklet should throw an error with: "' + obj.expectedError + '"');
+            } else if (obj.expectedMessage) {
+                console.log('The worklet should log a warning with: "' + obj.expectedMessage + '"');
             } else {
                 console.log('The worklet should not throw an error.');
             }
@@ -54,6 +56,9 @@ function runTest() {
         script: "registerPaint('foo9', class { paint() { } }); console.log('Success for \\'foo9\\'.');",
     }, {
         script: "var c = function() { }; c.prototype.paint = function() { }; registerPaint('foo10', c); console.log('Success for \\'foo10\\'.');",
+    }, {
+        expectedMessage: "-webkit-border-radius is a prefixed property which is not supported.",
+        script: "registerPaint('foo11', class { static get inputProperties() { return ['-webkit-border-radius']; } paint() { } });"
     }]);
 }
 </script>

@@ -14,6 +14,7 @@ HEADER_TEMPLATE = """
 #ifndef %(class_name)s_h
 #define %(class_name)s_h
 
+#include "core/CoreExport.h"
 #include "core/css/parser/CSSParserMode.h"
 #include "wtf/HashFunctions.h"
 #include "wtf/HashTraits.h"
@@ -60,7 +61,7 @@ inline bool isPropertyAlias(CSSPropertyID id) { return id & 512; }
 
 CSSPropertyID unresolvedCSSPropertyID(const WTF::String&);
 
-CSSPropertyID cssPropertyID(const WTF::String&);
+CSSPropertyID CORE_EXPORT cssPropertyID(const WTF::String&);
 
 } // namespace blink
 

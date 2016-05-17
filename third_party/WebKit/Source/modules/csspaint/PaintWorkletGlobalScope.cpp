@@ -6,6 +6,8 @@
 
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
+#include "core/CSSPropertyNames.h"
+#include "core/css/parser/CSSVariableParser.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/inspector/MainThreadDebugger.h"
 #include "modules/csspaint/CSSPaintDefinition.h"
@@ -62,13 +64,29 @@ void PaintWorkletGlobalScope::registerPaint(const String& name, const ScriptValu
     if (!v8Call(constructor->Get(context, v8String(isolate, "inputProperties")), inputPropertiesValue))
         return;
 
+    Vector<CSSPropertyID> nativeInvalidationProperties;
+    Vector<AtomicString> customInvalidationProperties;
+
     if (!isUndefinedOrNull(inputPropertiesValue)) {
-        toImplArray<Vector<String>>(inputPropertiesValue, 0, isolate, exceptionState);
+        Vector<String> properties = toImplArray<Vector<String>>(inputPropertiesValue, 0, isolate, exceptionState);
 
         if (exceptionState.hadException())
             return;
 
-        // TODO(ikilpatrick): Hook up invalidation based on these inputProperties.
+        for (const auto& property : properties) {
+            CSSPropertyID propertyID = cssPropertyID(property);
+            if (propertyID == CSSPropertyInvalid) {
+                if (CSSVariableParser::isValidVariableName(property))
+                    customInvalidationProperties.append(property);
+            } else {
+                // Disallow prefixes.
+                if (property[0] == '-') {
+                    addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, property + " is a prefixed property which is not supported."));
+                } else {
+                    nativeInvalidationProperties.append(propertyID);
+                }
+            }
+        }
     }
 
     v8::Local<v8::Value> prototypeValue;
@@ -103,7 +121,7 @@ void PaintWorkletGlobalScope::registerPaint(const String& name, const ScriptValu
 
     v8::Local<v8::Function> paint = v8::Local<v8::Function>::Cast(paintValue);
 
-    CSSPaintDefinition* definition = CSSPaintDefinition::create(scriptController()->getScriptState(), constructor, paint);
+    CSSPaintDefinition* definition = CSSPaintDefinition::create(scriptController()->getScriptState(), constructor, paint, nativeInvalidationProperties, customInvalidationProperties);
     m_paintDefinitions.set(name, definition);
 
     // Set the definition on any pending generators.

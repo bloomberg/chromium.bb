@@ -22,6 +22,8 @@
 
 #include "core/style/ComputedStyle.h"
 
+#include "core/css/CSSPaintValue.h"
+#include "core/css/CSSPropertyEquality.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/TextAutosizer.h"
@@ -45,6 +47,7 @@
 #include "platform/transforms/ScaleTransformOperation.h"
 #include "platform/transforms/TranslateTransformOperation.h"
 #include "wtf/MathExtras.h"
+#include "wtf/PtrUtil.h"
 
 #include <algorithm>
 
@@ -762,6 +765,43 @@ bool ComputedStyle::diffNeedsPaintInvalidationObject(const ComputedStyle& other)
     if (resize() != other.resize())
         return true;
 
+    if (rareNonInheritedData->m_paintImages) {
+        for (const auto& image : *rareNonInheritedData->m_paintImages) {
+            if (diffNeedsPaintInvalidationObjectForPaintImage(image, other))
+                return true;
+        }
+    }
+
+    return false;
+}
+
+bool ComputedStyle::diffNeedsPaintInvalidationObjectForPaintImage(const StyleImage* image, const ComputedStyle& other) const
+{
+    CSSPaintValue* value = toCSSPaintValue(image->cssValue());
+
+    // NOTE: If the invalidation properties vectors are null, we are invalid as
+    // we haven't yet been painted (and can't provide the invalidation
+    // properties yet).
+    if (!value->nativeInvalidationProperties() || !value->customInvalidationProperties())
+        return true;
+
+    for (CSSPropertyID propertyID : *value->nativeInvalidationProperties()) {
+        // TODO(ikilpatrick): remove isInterpolableProperty check once
+        // CSSPropertyEquality::propertiesEqual correctly handles all properties.
+        if (!CSSPropertyMetadata::isInterpolableProperty(propertyID) || !CSSPropertyEquality::propertiesEqual(propertyID, *this, other))
+            return true;
+    }
+
+    if (variables() || other.variables()) {
+        for (const AtomicString& property : *value->customInvalidationProperties()) {
+            CSSVariableData* thisVar = variables() ? variables()->getVariable(property) : nullptr;
+            CSSVariableData* otherVar = other.variables() ? other.variables()->getVariable(property) : nullptr;
+
+            if (!dataEquivalent(thisVar, otherVar))
+                return true;
+        }
+    }
+
     return false;
 }
 
@@ -817,6 +857,13 @@ void ComputedStyle::updatePropertySpecificDifferences(const ComputedStyle& other
                 diff.setTextDecorationOrColorChanged();
         }
     }
+}
+
+void ComputedStyle::addPaintImage(StyleImage* image)
+{
+    if (!rareNonInheritedData.access()->m_paintImages)
+        rareNonInheritedData.access()->m_paintImages = WTF::wrapUnique(new Vector<Persistent<StyleImage>>());
+    rareNonInheritedData.access()->m_paintImages->append(image);
 }
 
 void ComputedStyle::addCursor(StyleImage* image, bool hotSpotSpecified, const IntPoint& hotSpot)

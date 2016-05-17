@@ -132,10 +132,16 @@ void ElementStyleResources::loadPendingSVGDocuments(ComputedStyle* computedStyle
     }
 }
 
-StyleImage* ElementStyleResources::loadPendingImage(StylePendingImage* pendingImage, CrossOriginAttributeValue crossOrigin)
+StyleImage* ElementStyleResources::loadPendingImage(ComputedStyle* style, StylePendingImage* pendingImage, CrossOriginAttributeValue crossOrigin)
 {
     if (CSSImageValue* imageValue = pendingImage->cssImageValue())
         return imageValue->cacheImage(m_document, crossOrigin);
+
+    if (CSSPaintValue* paintValue = pendingImage->cssPaintValue()) {
+        StyleGeneratedImage* image = StyleGeneratedImage::create(*paintValue);
+        style->addPaintImage(image);
+        return image;
+    }
 
     if (CSSImageGeneratorValue* imageGeneratorValue = pendingImage->cssImageGeneratorValue()) {
         imageGeneratorValue->loadSubimages(m_document);
@@ -177,7 +183,7 @@ void ElementStyleResources::loadPendingImages(ComputedStyle* style)
         case CSSPropertyBackgroundImage: {
             for (FillLayer* backgroundLayer = &style->accessBackgroundLayers(); backgroundLayer; backgroundLayer = backgroundLayer->next()) {
                 if (backgroundLayer->image() && backgroundLayer->image()->isPendingImage())
-                    backgroundLayer->setImage(loadPendingImage(toStylePendingImage(backgroundLayer->image())));
+                    backgroundLayer->setImage(loadPendingImage(style, toStylePendingImage(backgroundLayer->image())));
             }
             break;
         }
@@ -186,7 +192,7 @@ void ElementStyleResources::loadPendingImages(ComputedStyle* style)
                 if (contentData->isImage()) {
                     StyleImage* image = toImageContentData(contentData)->image();
                     if (image->isPendingImage())
-                        toImageContentData(contentData)->setImage(loadPendingImage(toStylePendingImage(image)));
+                        toImageContentData(contentData)->setImage(loadPendingImage(style, toStylePendingImage(image)));
                 }
             }
             break;
@@ -197,7 +203,7 @@ void ElementStyleResources::loadPendingImages(ComputedStyle* style)
                     CursorData& currentCursor = cursorList->at(i);
                     if (StyleImage* image = currentCursor.image()) {
                         if (image->isPendingImage())
-                            currentCursor.setImage(loadPendingImage(toStylePendingImage(image)));
+                            currentCursor.setImage(loadPendingImage(style, toStylePendingImage(image)));
                     }
                 }
             }
@@ -205,19 +211,19 @@ void ElementStyleResources::loadPendingImages(ComputedStyle* style)
         }
         case CSSPropertyListStyleImage: {
             if (style->listStyleImage() && style->listStyleImage()->isPendingImage())
-                style->setListStyleImage(loadPendingImage(toStylePendingImage(style->listStyleImage())));
+                style->setListStyleImage(loadPendingImage(style, toStylePendingImage(style->listStyleImage())));
             break;
         }
         case CSSPropertyBorderImageSource: {
             if (style->borderImageSource() && style->borderImageSource()->isPendingImage())
-                style->setBorderImageSource(loadPendingImage(toStylePendingImage(style->borderImageSource())));
+                style->setBorderImageSource(loadPendingImage(style, toStylePendingImage(style->borderImageSource())));
             break;
         }
         case CSSPropertyWebkitBoxReflect: {
             if (StyleReflection* reflection = style->boxReflect()) {
                 const NinePieceImage& maskImage = reflection->mask();
                 if (maskImage.image() && maskImage.image()->isPendingImage()) {
-                    StyleImage* loadedImage = loadPendingImage(toStylePendingImage(maskImage.image()));
+                    StyleImage* loadedImage = loadPendingImage(style, toStylePendingImage(maskImage.image()));
                     reflection->setMask(NinePieceImage(loadedImage, maskImage.imageSlices(), maskImage.fill(), maskImage.borderSlices(), maskImage.outset(), maskImage.horizontalRule(), maskImage.verticalRule()));
                 }
             }
@@ -225,19 +231,19 @@ void ElementStyleResources::loadPendingImages(ComputedStyle* style)
         }
         case CSSPropertyWebkitMaskBoxImageSource: {
             if (style->maskBoxImageSource() && style->maskBoxImageSource()->isPendingImage())
-                style->setMaskBoxImageSource(loadPendingImage(toStylePendingImage(style->maskBoxImageSource())));
+                style->setMaskBoxImageSource(loadPendingImage(style, toStylePendingImage(style->maskBoxImageSource())));
             break;
         }
         case CSSPropertyWebkitMaskImage: {
             for (FillLayer* maskLayer = &style->accessMaskLayers(); maskLayer; maskLayer = maskLayer->next()) {
                 if (maskLayer->image() && maskLayer->image()->isPendingImage())
-                    maskLayer->setImage(loadPendingImage(toStylePendingImage(maskLayer->image())));
+                    maskLayer->setImage(loadPendingImage(style, toStylePendingImage(maskLayer->image())));
             }
             break;
         }
         case CSSPropertyShapeOutside:
             if (style->shapeOutside() && style->shapeOutside()->image() && style->shapeOutside()->image()->isPendingImage())
-                style->shapeOutside()->setImage(loadPendingImage(toStylePendingImage(style->shapeOutside()->image()), CrossOriginAttributeAnonymous));
+                style->shapeOutside()->setImage(loadPendingImage(style, toStylePendingImage(style->shapeOutside()->image()), CrossOriginAttributeAnonymous));
             break;
         default:
             ASSERT_NOT_REACHED();

@@ -45,6 +45,7 @@ public:
     void* ownPtrs[4];
     Persistent<void*> persistentHandles[2];
     void* refPtrs[2];
+    void* uniquePtrs[1];
 
     FillLayer fillLayers;
     NinePieceImage ninePieces;

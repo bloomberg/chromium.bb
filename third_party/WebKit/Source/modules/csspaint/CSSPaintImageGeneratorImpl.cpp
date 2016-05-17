@@ -58,6 +58,18 @@ PassRefPtr<Image> CSSPaintImageGeneratorImpl::paint(const IntSize& size)
     return m_definition ? m_definition->paint(size) : nullptr;
 }
 
+const Vector<CSSPropertyID>& CSSPaintImageGeneratorImpl::nativeInvalidationProperties() const
+{
+    DEFINE_STATIC_LOCAL(Vector<CSSPropertyID>, emptyVector, ());
+    return m_definition ? m_definition->nativeInvalidationProperties() : emptyVector;
+}
+
+const Vector<AtomicString>& CSSPaintImageGeneratorImpl::customInvalidationProperties() const
+{
+    DEFINE_STATIC_LOCAL(Vector<AtomicString>, emptyVector, ());
+    return m_definition ? m_definition->customInvalidationProperties() : emptyVector;
+}
+
 DEFINE_TRACE(CSSPaintImageGeneratorImpl)
 {
     visitor->trace(m_definition);

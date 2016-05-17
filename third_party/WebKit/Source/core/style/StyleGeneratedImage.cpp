@@ -34,6 +34,8 @@ StyleGeneratedImage::StyleGeneratedImage(const CSSImageGeneratorValue& value)
     , m_fixedSize(m_imageGeneratorValue->isFixedSize())
 {
     m_isGeneratedImage = true;
+    if (value.isPaintValue())
+        m_isPaintImage = true;
 }
 
 CSSValue* StyleGeneratedImage::cssValue() const

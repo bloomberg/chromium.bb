@@ -1,0 +1,107 @@
+CONSOLE MESSAGE: line 55: 
+
+Test case:
+max-height: [inline not set] => max-height: 160px
+The worklet console should log: 'Succussful invalidation for: max-height'
+CONSOLE MESSAGE: line 11: Successful invalidation for: max-height
+CONSOLE MESSAGE: line 55: 
+
+Test case:
+max-height: 100px => max-height: 160px
+The worklet console should log: 'Succussful invalidation for: max-height'
+CONSOLE MESSAGE: line 11: Successful invalidation for: max-height
+CONSOLE MESSAGE: line 55: 
+
+Test case:
+max-height: 100px => max-height: calc(50px + 50px)
+The worklet console should log nothing
+CONSOLE MESSAGE: line 55: 
+
+Test case:
+max-height: 100px => max-height: calc(50px + var(--fiftypx))
+The worklet console should log nothing
+CONSOLE MESSAGE: line 55: 
+
+Test case:
+flex-basis: [inline not set] => flex-basis: 100px
+The worklet console should log: 'Succussful invalidation for: flex-basis'
+CONSOLE MESSAGE: line 11: Successful invalidation for: flex-basis
+CONSOLE MESSAGE: line 55: 
+
+Test case:
+flex-basis: 100px => flex-basis: [inline not set]
+The worklet console should log: 'Succussful invalidation for: flex-basis'
+CONSOLE MESSAGE: line 11: Successful invalidation for: flex-basis
+CONSOLE MESSAGE: line 55: 
+
+Test case:
+flex-basis: [inline not set] => flex-basis: 200px
+The worklet console should log nothing
+CONSOLE MESSAGE: line 55: 
+
+Test case:
+flex-basis: 200px => flex-basis: [inline not set]
+The worklet console should log nothing
+CONSOLE MESSAGE: line 55: 
+
+Test case:
+color: [inline not set] => color: red
+The worklet console should log: 'Succussful invalidation for: color'
+CONSOLE MESSAGE: line 11: Successful invalidation for: color
+CONSOLE MESSAGE: line 55: 
+
+Test case:
+color: #F00 => color: red
+The worklet console should log nothing
+CONSOLE MESSAGE: line 55: 
+
+Test case:
+border-top-color: [inline not set] => border-top-color: blue
+The worklet console should log: 'Succussful invalidation for: border-top-color'
+CONSOLE MESSAGE: line 11: Successful invalidation for: border-top-color
+CONSOLE MESSAGE: line 55: 
+
+Test case:
+border-top-color: rgb(0,0,255) => border-top-color: blue
+The worklet console should log nothing
+CONSOLE MESSAGE: line 55: 
+
+Test case:
+--foo: [inline not set] => --foo: foo
+The worklet console should log: 'Succussful invalidation for: --foo'
+CONSOLE MESSAGE: line 11: Successful invalidation for: --foo
+CONSOLE MESSAGE: line 55: 
+
+Test case:
+--foo: foo => --foo: var(--str)
+The worklet console should log nothing
+CONSOLE MESSAGE: line 55: 
+
+Test case:
+--str: [inline not set] => --str: bar
+The worklet console should log: 'Succussful invalidation for: --str'
+CONSOLE MESSAGE: line 11: Successful invalidation for: --str
+CONSOLE MESSAGE: line 55: 
+
+Test case:
+--str: [inline not set] => --str: foo
+The worklet console should log nothing
+This is a testharness.js-based test.
+PASS max-height: [inline not set] => max-height: 160px 
+PASS max-height: 100px => max-height: 160px 
+PASS max-height: 100px => max-height: calc(50px + 50px) 
+PASS max-height: 100px => max-height: calc(50px + var(--fiftypx)) 
+PASS flex-basis: [inline not set] => flex-basis: 100px 
+PASS flex-basis: 100px => flex-basis: [inline not set] 
+PASS flex-basis: [inline not set] => flex-basis: 200px 
+PASS flex-basis: 200px => flex-basis: [inline not set] 
+PASS color: [inline not set] => color: red 
+PASS color: #F00 => color: red 
+PASS border-top-color: [inline not set] => border-top-color: blue 
+PASS border-top-color: rgb(0,0,255) => border-top-color: blue 
+PASS --foo: [inline not set] => --foo: foo 
+PASS --foo: foo => --foo: var(--str) 
+PASS --str: [inline not set] => --str: bar 
+PASS --str: [inline not set] => --str: foo 
+Harness: the test ran to completion.
+

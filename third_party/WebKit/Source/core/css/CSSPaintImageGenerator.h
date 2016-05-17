@@ -5,6 +5,7 @@
 #ifndef CSSPaintImageGenerator_h
 #define CSSPaintImageGenerator_h
 
+#include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
@@ -38,6 +39,9 @@ public:
     // Invokes the CSS Paint API 'paint' callback. May return a nullptr
     // representing an invalid image if an error occurred.
     virtual PassRefPtr<Image> paint(const IntSize&) = 0;
+
+    virtual const Vector<CSSPropertyID>& nativeInvalidationProperties() const = 0;
+    virtual const Vector<AtomicString>& customInvalidationProperties() const = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 };

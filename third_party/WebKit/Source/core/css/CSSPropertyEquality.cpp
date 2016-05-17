@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/css/CSSPropertyEquality.h"
+#include "core/css/CSSPropertyEquality.h"
 
-#include "core/animation/css/CSSAnimations.h"
-#include "core/style/DataEquivalency.h"
 #include "core/style/ComputedStyle.h"
+#include "core/style/DataEquivalency.h"
 #include "core/style/ShadowList.h"
+
+// TODO(ikilpatrick): generate this file.
 
 namespace blink {
 
@@ -40,7 +41,7 @@ bool fillLayersEqual(const FillLayer& aLayers, const FillLayer& bLayers)
                 return false;
             break;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             return true;
         }
 
@@ -332,7 +333,7 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const ComputedStyl
     case CSSPropertyZIndex:
         return a.hasAutoZIndex() == b.hasAutoZIndex() && (a.hasAutoZIndex() || a.zIndex() == b.zIndex());
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return true;
     }
 }

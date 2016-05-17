@@ -153,6 +153,8 @@ public:
 
     Vector<String> m_callbackSelectors;
 
+    std::unique_ptr<Vector<Persistent<StyleImage>>> m_paintImages;
+
     StyleContentAlignmentData m_alignContent;
     StyleSelfAlignmentData m_alignItems;
     StyleSelfAlignmentData m_alignSelf;

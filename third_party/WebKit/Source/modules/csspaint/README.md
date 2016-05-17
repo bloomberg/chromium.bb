@@ -49,6 +49,15 @@ This method returns the `PaintGeneratedImage`.
 
 The `SkPicture` is produced from a `RecordingImageBufferSurface`.
 
+### Style Invalidation
+
+The `CSSPaintDefinition` keeps a list of both native and custom properties it will invalidate on.
+During style invalidation `ComputedStyle` checks if it has any `CSSPaintValue`s, and if any of their
+properties have changed; if so it will invalidate paint for that `ComputedStyle`.
+
+If the `CSSPaintValue` doesn't have a corresponding `CSSPaintDefinition` yet, it doesn't invalidate
+paint.
+
 ## Testing
 
 Tests live [here](../../../LayoutTests/csspaint/).

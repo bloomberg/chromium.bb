@@ -33,7 +33,7 @@
 #include "core/animation/AnimationEffect.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
-#include "core/animation/css/CSSPropertyEquality.h"
+#include "core/css/CSSPropertyEquality.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "platform/animation/AnimationUtilities.h"

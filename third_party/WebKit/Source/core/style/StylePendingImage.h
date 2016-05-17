@@ -30,6 +30,7 @@
 #include "core/css/CSSImageGeneratorValue.h"
 #include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSImageValue.h"
+#include "core/css/CSSPaintValue.h"
 #include "core/style/StyleImage.h"
 #include "platform/graphics/Image.h"
 
@@ -57,6 +58,7 @@ public:
     }
 
     CSSImageValue* cssImageValue() const { return m_value->isImageValue() ? toCSSImageValue(m_value.get()) : 0; }
+    CSSPaintValue* cssPaintValue() const { return m_value->isPaintValue() ? toCSSPaintValue(m_value.get()) : 0; }
     CSSImageGeneratorValue* cssImageGeneratorValue() const { return m_value->isImageGeneratorValue() ? toCSSImageGeneratorValue(m_value.get()) : 0; }
     CSSCursorImageValue* cssCursorImageValue() const { return m_value->isCursorImageValue() ? toCSSCursorImageValue(m_value.get()) : 0; }
     CSSImageSetValue* cssImageSetValue() const { return m_value->isImageSetValue() ? toCSSImageSetValue(m_value.get()) : 0; }

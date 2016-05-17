@@ -66,7 +66,7 @@ private:
     void loadPendingSVGDocuments(ComputedStyle*);
     void loadPendingImages(ComputedStyle*);
 
-    StyleImage* loadPendingImage(StylePendingImage*, CrossOriginAttributeValue = CrossOriginAttributeNotSet);
+    StyleImage* loadPendingImage(ComputedStyle*, StylePendingImage*, CrossOriginAttributeValue = CrossOriginAttributeNotSet);
 
     Member<Document> m_document;
     HashSet<CSSPropertyID> m_pendingImageProperties;

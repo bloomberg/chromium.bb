@@ -77,6 +77,7 @@ public:
     ALWAYS_INLINE bool isGeneratedImage() const { return m_isGeneratedImage; }
     ALWAYS_INLINE bool isImageResourceSet() const { return m_isImageResourceSet; }
     ALWAYS_INLINE bool isInvalidImage() const { return m_isInvalidImage; }
+    ALWAYS_INLINE bool isPaintImage() const { return m_isPaintImage; }
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
@@ -87,6 +88,7 @@ protected:
         , m_isGeneratedImage(false)
         , m_isImageResourceSet(false)
         , m_isInvalidImage(false)
+        , m_isPaintImage(false)
     {
     }
     bool m_isImageResource:1;
@@ -94,6 +96,7 @@ protected:
     bool m_isGeneratedImage:1;
     bool m_isImageResourceSet:1;
     bool m_isInvalidImage:1;
+    bool m_isPaintImage:1;
 
     static LayoutSize applyZoom(const LayoutSize&, float multiplier);
     LayoutSize imageSizeForSVGImage(SVGImage*, float multiplier, const LayoutSize& defaultObjectSize) const;

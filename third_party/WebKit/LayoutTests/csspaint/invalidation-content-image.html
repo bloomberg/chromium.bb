@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<head>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/run-after-layout-and-paint.js"></script>
+<script src="resources/test-runner-invalidation-logging.js"></script>
+<style>
+    div {
+        width: 100px;
+        height: 100px;
+
+        flex-basis: 200px;
+        --str:foo;
+        --fiftypx: 50px;
+    }
+</style>
+</head>
+<p>This tests the invalidation behaviour of the paint callback.</p>
+<p>See the devtools console for additional test output.</p>
+<script>
+// TODO(ikilpatrick): Should test shorthands.
+testRunnerInvalidationLogging('content', [
+    { property: 'max-height', value: '160px' },
+    { property: 'max-height', prevValue: '100px', value: '160px' },
+    { property: 'max-height', prevValue: '100px', value: 'calc(50px + 50px)', noInvalidation: true },
+    { property: 'max-height', prevValue: '100px', value: 'calc(50px + var(--fiftypx))', noInvalidation: true },
+    { property: 'flex-basis', value: '100px' },
+    { property: 'flex-basis', prevValue: '100px' },
+    { property: 'flex-basis', value: '200px', noInvalidation: true },
+    { property: 'flex-basis', prevValue: '200px', noInvalidation: true },
+    { property: 'color', value: 'red' },
+    { property: 'color', prevValue: '#F00', value: 'red', noInvalidation: true },
+    { property: 'border-top-color', value: 'blue' },
+    { property: 'border-top-color', prevValue: 'rgb(0,0,255)', value: 'blue', noInvalidation: true },
+    { property: '--foo', value: 'foo' },
+    { property: '--foo', prevValue: 'foo', value: 'var(--str)', noInvalidation: true},
+    { property: '--str', value: 'bar'},
+    { property: '--str', value: 'foo', noInvalidation: true },
+]);
+</script>

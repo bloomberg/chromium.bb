@@ -28,12 +28,21 @@ public:
     bool isFixedSize() const { return false; }
     IntSize fixedSize(const LayoutObject&) { return IntSize(); }
 
-    bool isPending() const { return false; }
+    bool isPending() const { return true; }
     bool knownToBeOpaque(const LayoutObject&) const { return false; }
 
     void loadSubimages(Document*) { }
 
     bool equals(const CSSPaintValue&) const;
+
+    const Vector<CSSPropertyID>* nativeInvalidationProperties() const
+    {
+        return m_generator ? &m_generator->nativeInvalidationProperties() : nullptr;
+    }
+    const Vector<AtomicString>* customInvalidationProperties() const
+    {
+        return m_generator ? &m_generator->customInvalidationProperties() : nullptr;
+    }
 
     DECLARE_TRACE_AFTER_DISPATCH();
 
