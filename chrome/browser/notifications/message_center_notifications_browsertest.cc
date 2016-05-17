@@ -14,6 +14,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/lifetime/keep_alive_registry.h"
+#include "chrome/browser/lifetime/keep_alive_types.h"
 #include "chrome/browser/notifications/message_center_notification_manager.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -188,6 +190,32 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
   manager()->CancelById("n", NotificationUIManager::GetProfileID(profile()));
   EXPECT_EQ("Display_", delegate->log());
   EXPECT_EQ("Close_programmatically_", delegate2->log());
+
+  delegate->Release();
+  delegate2->Release();
+}
+
+IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, VerifyKeepAlives) {
+  EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
+      KeepAliveOrigin::NOTIFICATION));
+
+  TestDelegate* delegate;
+  manager()->Add(CreateTestNotification("a", &delegate), profile());
+  EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
+      KeepAliveOrigin::NOTIFICATION));
+
+  TestDelegate* delegate2;
+  manager()->Add(CreateRichTestNotification("b", &delegate2), profile());
+  EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
+      KeepAliveOrigin::NOTIFICATION));
+
+  manager()->CancelById("a", NotificationUIManager::GetProfileID(profile()));
+  EXPECT_TRUE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
+      KeepAliveOrigin::NOTIFICATION));
+
+  manager()->CancelById("b", NotificationUIManager::GetProfileID(profile()));
+  EXPECT_FALSE(KeepAliveRegistry::GetInstance()->IsOriginRegistered(
+      KeepAliveOrigin::NOTIFICATION));
 
   delegate->Release();
   delegate2->Release();

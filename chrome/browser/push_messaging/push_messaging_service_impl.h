@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_PUSH_MESSAGING_PUSH_MESSAGING_SERVICE_IMPL_H_
 
 #include <stdint.h>
-
 #include <memory>
 #include <set>
 #include <vector>
@@ -17,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/background/background_trigger.h"
+#include "chrome/common/features.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/gcm_driver/common/gcm_messages.h"
@@ -36,6 +36,7 @@
 class Profile;
 class PushMessagingAppIdentifier;
 class PushMessagingServiceObserver;
+class ScopedKeepAlive;
 struct PushSubscriptionOptions;
 
 namespace gcm {
@@ -243,6 +244,12 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
 
   std::unique_ptr<PushMessagingServiceObserver>
       push_messaging_service_observer_;
+
+#if BUILDFLAG(ENABLE_BACKGROUND)
+  // KeepAlive registered while we have in-flight push messages, to make sure
+  // we can finish processing them without being interrupted.
+  std::unique_ptr<ScopedKeepAlive> in_flight_keep_alive_;
+#endif
 
   base::WeakPtrFactory<PushMessagingServiceImpl> weak_factory_;
 
