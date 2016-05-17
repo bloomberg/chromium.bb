@@ -321,10 +321,13 @@ TEST_F(AssociatedURLLoaderTest, SameOriginRestriction)
 TEST_F(AssociatedURLLoaderTest, CrossOriginSuccess)
 {
     // This is cross-origin since the frame was loaded from www.test.com.
-    KURL url = toKURL("http://www.other.com/CrossOriginSuccess.html");
+    KURL url = toKURL("http://www.other.com/CrossOriginSuccess");
     WebURLRequest request;
     request.initialize();
     request.setURL(url);
+    // No-CORS requests (CrossOriginRequestPolicyAllow) aren't allowed for the
+    // default context. So we set the context as Script here.
+    request.setRequestContext(WebURLRequest::RequestContextScript);
 
     m_expectedResponse = WebURLResponse();
     m_expectedResponse.initialize();

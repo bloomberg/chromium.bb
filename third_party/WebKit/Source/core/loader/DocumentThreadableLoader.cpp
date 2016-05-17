@@ -93,6 +93,25 @@ private:
     const char* debugName() const override { return "EmptyDataHandle"; }
 };
 
+// No-CORS requests are allowed for all these contexts, and plugin contexts with
+// private permission when we set skipServiceWorker flag in PepperURLLoaderHost.
+bool IsNoCORSAllowedContext(WebURLRequest::RequestContext context, bool skipServiceWorker)
+{
+    switch (context) {
+    case WebURLRequest::RequestContextAudio:
+    case WebURLRequest::RequestContextVideo:
+    case WebURLRequest::RequestContextObject:
+    case WebURLRequest::RequestContextFavicon:
+    case WebURLRequest::RequestContextImage:
+    case WebURLRequest::RequestContextScript:
+        return true;
+    case WebURLRequest::RequestContextPlugin:
+        return skipServiceWorker;
+    default:
+        return false;
+    }
+}
+
 } // namespace
 
 // Max number of CORS redirects handled in DocumentThreadableLoader.
@@ -186,50 +205,48 @@ void DocumentThreadableLoader::start(const ResourceRequest& request)
             page->chromeClient().didObserveNonGetFetchFromScript();
     }
 
+    ResourceRequest newRequest(request);
+    if (m_requestContext != WebURLRequest::RequestContextFetch) {
+        // When the request context is not "fetch",
+        // |crossOriginRequestPolicy| represents the fetch request mode,
+        // and |credentialsRequested| represents the fetch credentials mode.
+        // So we set those flags here so that we can see the correct request
+        // mode and credentials mode in the service worker's fetch event
+        // handler.
+        switch (m_options.crossOriginRequestPolicy) {
+        case DenyCrossOriginRequests:
+            newRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeSameOrigin);
+            break;
+        case UseAccessControl:
+            if (m_options.preflightPolicy == ForcePreflight)
+                newRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeCORSWithForcedPreflight);
+            else
+                newRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeCORS);
+            break;
+        case AllowCrossOriginRequests:
+            SECURITY_CHECK(IsNoCORSAllowedContext(m_requestContext, request.skipServiceWorker()));
+            newRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeNoCORS);
+            break;
+        }
+        if (m_resourceLoaderOptions.allowCredentials == AllowStoredCredentials)
+            newRequest.setFetchCredentialsMode(WebURLRequest::FetchCredentialsModeInclude);
+        else
+            newRequest.setFetchCredentialsMode(WebURLRequest::FetchCredentialsModeSameOrigin);
+    }
+
     // We assume that ServiceWorker is skipped for sync requests and unsupported
     // protocol requests by content/ code.
     if (m_async && !request.skipServiceWorker() && SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(request.url().protocol()) && m_document->fetcher()->isControlledByServiceWorker()) {
-        ResourceRequest newRequest(request);
-        const WebURLRequest::RequestContext requestContext(request.requestContext());
-        if (requestContext != WebURLRequest::RequestContextFetch) {
-            // When the request context is not "fetch",
-            // |crossOriginRequestPolicy| represents the fetch request mode,
-            // and |credentialsRequested| represents the fetch credentials mode.
-            // So we set those flags here so that we can see the correct request
-            // mode and credentials mode in the service worker's fetch event
-            // handler.
-            switch (m_options.crossOriginRequestPolicy) {
-            case DenyCrossOriginRequests:
-                newRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeSameOrigin);
-                break;
-            case UseAccessControl:
-                if (m_options.preflightPolicy == ForcePreflight)
-                    newRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeCORSWithForcedPreflight);
-                else
-                    newRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeCORS);
-                break;
-            case AllowCrossOriginRequests:
-                // No-CORS requests are allowed only for those contexts.
-                SECURITY_CHECK(requestContext == WebURLRequest::RequestContextAudio || requestContext == WebURLRequest::RequestContextVideo || requestContext == WebURLRequest::RequestContextObject || requestContext == WebURLRequest::RequestContextFavicon || requestContext == WebURLRequest::RequestContextImage || requestContext == WebURLRequest::RequestContextScript);
-                newRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeNoCORS);
-                break;
-            }
-            if (m_resourceLoaderOptions.allowCredentials == AllowStoredCredentials)
-                newRequest.setFetchCredentialsMode(WebURLRequest::FetchCredentialsModeInclude);
-            else
-                newRequest.setFetchCredentialsMode(WebURLRequest::FetchCredentialsModeSameOrigin);
-        }
         if (newRequest.fetchRequestMode() == WebURLRequest::FetchRequestModeCORS || newRequest.fetchRequestMode() == WebURLRequest::FetchRequestModeCORSWithForcedPreflight) {
             m_fallbackRequestForServiceWorker = ResourceRequest(request);
             m_fallbackRequestForServiceWorker.setSkipServiceWorker(true);
         }
-
         loadRequest(newRequest, m_resourceLoaderOptions);
         // |this| may be dead here.
         return;
     }
 
-    dispatchInitialRequest(request);
+    dispatchInitialRequest(newRequest);
     // |this| may be dead here in async mode.
 }
 

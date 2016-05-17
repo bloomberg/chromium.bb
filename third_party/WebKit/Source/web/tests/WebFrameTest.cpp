@@ -7903,6 +7903,8 @@ TEST_P(ParameterizedWebFrameTest, LoaderOriginAccess)
 
     // Cross-origin request.
     KURL resourceUrl(ParsedURLString, "chrome://test.pdf");
+    ResourceRequest request(resourceUrl);
+    request.setRequestContext(WebURLRequest::RequestContextObject);
     registerMockedChromeURLLoad("test.pdf");
 
     LocalFrame* frame(toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame()));
@@ -7914,14 +7916,14 @@ TEST_P(ParameterizedWebFrameTest, LoaderOriginAccess)
     options.crossOriginRequestPolicy = UseAccessControl;
     ResourceLoaderOptions resourceLoaderOptions;
     DocumentThreadableLoader::loadResourceSynchronously(
-        *frame->document(), ResourceRequest(resourceUrl), client, options, resourceLoaderOptions);
+        *frame->document(), request, client, options, resourceLoaderOptions);
     EXPECT_TRUE(client.failed());
 
     client.reset();
     // Try to load the request with cross origin access. Should succeed.
     options.crossOriginRequestPolicy = AllowCrossOriginRequests;
     DocumentThreadableLoader::loadResourceSynchronously(
-        *frame->document(), ResourceRequest(resourceUrl), client, options, resourceLoaderOptions);
+        *frame->document(), request, client, options, resourceLoaderOptions);
     EXPECT_FALSE(client.failed());
 }
 

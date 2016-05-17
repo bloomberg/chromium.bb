@@ -336,7 +336,7 @@ public:
     void startLoader(const KURL& url)
     {
         ResourceRequest request(url);
-        request.setRequestContext(WebURLRequest::RequestContextInternal);
+        request.setRequestContext(WebURLRequest::RequestContextObject);
         m_helper->startLoader(request);
     }
 
