@@ -16,8 +16,18 @@
 // Alternatively referencing the ChromeDelayLoadHook function somehow will
 // cause this declaration of these variables to take preference to the delay
 // load runtime's defaults (in delayimp.lib).
+#if _MSC_FULL_VER >= 190024112
+// Prior to Visual Studio 2015 Update 3, these hooks were non-const.  They were
+// made const to improve security (global, writable function pointers are bad).
+// This #ifdef is needed for testing of VS 2015 Update 3 pre-release and can be
+// removed when we formally switch to Update 3 or higher.
+// TODO(612313): remove the #if when we update toolchains.
+const PfnDliHook __pfnDliNotifyHook2 = ChromeDelayLoadHook;
+const PfnDliHook __pfnDliFailureHook2 = ChromeDelayLoadHook;
+#else
 PfnDliHook __pfnDliNotifyHook2 = ChromeDelayLoadHook;
 PfnDliHook __pfnDliFailureHook2 = ChromeDelayLoadHook;
+#endif
 
 
 namespace {
