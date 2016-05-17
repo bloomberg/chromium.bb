@@ -13,25 +13,17 @@
 
 namespace safe_browsing {
 
-#if defined(OS_WIN)
-// Enables analysis of suspicious modules loaded in the process.
-extern const base::Feature kIncidentReportingModuleLoadAnalysis{
-    "IncidentReportingModuleLoadAnalysis", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
-
 void RegisterModuleLoadAnalysis(
     const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager) {
 #if defined(OS_WIN)
   DCHECK(database_manager);
-  if (base::FeatureList::IsEnabled(kIncidentReportingModuleLoadAnalysis)) {
-    scoped_refptr<SafeBrowsingService> safe_browsing_service(
-        g_browser_process->safe_browsing_service());
+  scoped_refptr<SafeBrowsingService> safe_browsing_service(
+      g_browser_process->safe_browsing_service());
 
-    if (safe_browsing_service) {
-      safe_browsing_service
-          ->RegisterExtendedReportingOnlyDelayedAnalysisCallback(
-              base::Bind(&VerifyModuleLoadState, database_manager));
-    }
+  if (safe_browsing_service) {
+    safe_browsing_service
+        ->RegisterExtendedReportingOnlyDelayedAnalysisCallback(
+            base::Bind(&VerifyModuleLoadState, database_manager));
   }
 #endif
 }
