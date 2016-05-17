@@ -29,10 +29,6 @@ bool MainDelegate::BasicStartupComplete(int* exit_code) {
 }
 
 void MainDelegate::PreSandboxStartup() {
-  base::FilePath path;
-  PathService::Get(base::DIR_MODULE, &path);
-  base::FilePath pak_path = path.Append(FILE_PATH_LITERAL("navigation.pak"));
-  ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_path);
   ui::InitializeInputMethodForTesting();
 }
 

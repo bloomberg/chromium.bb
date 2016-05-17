@@ -10,7 +10,6 @@ mojom("interfaces") {
   ]
 
   deps = [
-    "//ui/mojo/geometry:interfaces",
     "//url/mojo:url_mojom_gurl",
   ]
 }

@@ -24,8 +24,7 @@ class Navigation : public shell::ShellClient,
   Navigation();
   ~Navigation() override;
 
-  void Init(shell::Connector* connector,
-            content::BrowserContext* browser_context);
+  void SetBrowserContext(content::BrowserContext* browser_context);
 
  private:
   // shell::ShellClient:
@@ -41,7 +40,6 @@ class Navigation : public shell::ShellClient,
 
   void ViewFactoryLost();
 
-  shell::Connector* connector_ = nullptr;
   shell::ShellConnectionRefFactory ref_factory_;
   std::set<std::unique_ptr<shell::ShellConnectionRef>> refs_;
   content::BrowserContext* browser_context_ = nullptr;

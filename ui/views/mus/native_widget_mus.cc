@@ -472,10 +472,10 @@ void NativeWidgetMus::OnPlatformWindowClosed() {
   window_tree_client_.reset();  // Uses |content_|.
   capture_client_.reset();      // Uses |content_|.
 
+  cursor_manager_.reset();      // Uses |window_|.
+
   window_tree_host_->RemoveObserver(this);
   window_tree_host_.reset();
-
-  cursor_manager_.reset();  // Uses |window_|.
 
   mus_window_observer_.reset(nullptr);
 

@@ -22,15 +22,6 @@ group("all") {
   ]
 }
 
-group("browser") {
-  testonly = true
-
-  deps = [
-    ":all",
-    "//mash/browser",
-  ]
-}
-
 test("mash_unittests") {
   deps = [
     "//base",

@@ -5,7 +5,6 @@
 #include "services/navigation/content_client/browser_main_parts.h"
 
 #include "base/message_loop/message_loop.h"
-#include "content/public/common/mojo_shell_connection.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_net_log.h"
 #include "services/navigation/navigation.h"
@@ -26,8 +25,7 @@ void BrowserMainParts::PreMainMessageLoopRun() {
   net_log_.reset(new content::ShellNetLog("ash_shell"));
   browser_context_.reset(
       new content::ShellBrowserContext(false, net_log_.get()));
-  navigation_->Init(content::MojoShellConnection::Get()->GetConnector(),
-                    browser_context());
+  navigation_->SetBrowserContext(browser_context());
 }
 
 void BrowserMainParts::PostMainMessageLoopRun() {
