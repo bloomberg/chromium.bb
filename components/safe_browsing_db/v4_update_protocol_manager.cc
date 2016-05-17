@@ -100,8 +100,9 @@ std::unique_ptr<V4UpdateProtocolManager> V4UpdateProtocolManager::Create(
     const base::hash_map<UpdateListIdentifier, std::string>&
         current_list_states,
     V4UpdateCallback callback) {
-  if (!factory_)
+  if (!factory_) {
     factory_ = new V4UpdateProtocolManagerFactoryImpl();
+  }
   return factory_->CreateProtocolManager(request_context_getter, config,
                                          current_list_states, callback);
 }
@@ -116,7 +117,7 @@ V4UpdateProtocolManager::V4UpdateProtocolManager(
     const V4ProtocolConfig& config,
     const base::hash_map<UpdateListIdentifier, std::string>&
         current_list_states,
-    V4UpdateCallback callback)
+    V4UpdateCallback update_callback)
     : current_list_states_(current_list_states),
       update_error_count_(0),
       update_back_off_mult_(1),
@@ -126,8 +127,11 @@ V4UpdateProtocolManager::V4UpdateProtocolManager(
       config_(config),
       request_context_getter_(request_context_getter),
       url_fetcher_id_(0),
-      callback_(callback) {
-  ScheduleNextUpdate(false /* no back off */);
+      update_callback_(update_callback) {
+  // Do not auto-schedule updates. Let the owner (V4LocalDatabaseManager) do it
+  // when it is ready to process updates.
+  DVLOG(1) << "V4UpdateProtocolManager::V4UpdateProtocolManager: "
+           << "next_update_interval_: " << next_update_interval_;
 }
 
 V4UpdateProtocolManager::~V4UpdateProtocolManager() {}
@@ -136,7 +140,13 @@ bool V4UpdateProtocolManager::IsUpdateScheduled() const {
   return update_timer_.IsRunning();
 }
 
-void V4UpdateProtocolManager::ScheduleNextUpdate(bool back_off) {
+void V4UpdateProtocolManager::ScheduleNextUpdate() {
+  ScheduleNextUpdateWithBackoff(false);
+}
+
+void V4UpdateProtocolManager::ScheduleNextUpdateWithBackoff(bool back_off) {
+  DCHECK(CalledOnValidThread());
+
   // TODO(vakh): Set disable_auto_update correctly using the command line
   // switch.
   if (config_.disable_auto_update) {
@@ -154,10 +164,23 @@ void V4UpdateProtocolManager::ScheduleNextUpdate(bool back_off) {
 base::TimeDelta V4UpdateProtocolManager::GetNextUpdateInterval(bool back_off) {
   DCHECK(CalledOnValidThread());
   DCHECK(next_update_interval_ > base::TimeDelta());
+
   base::TimeDelta next = next_update_interval_;
   if (back_off) {
     next = V4ProtocolManagerUtil::GetNextBackOffInterval(
         &update_error_count_, &update_back_off_mult_);
+  }
+
+  if (!last_response_time_.is_null()) {
+    // The callback spent some time updating the database, including disk I/O.
+    // Do not wait that extra time.
+    base::TimeDelta callback_time = Time::Now() - last_response_time_;
+    if (callback_time < next) {
+      next -= callback_time;
+    } else {
+      // If the callback took too long, schedule the next update with no delay.
+      next = base::TimeDelta();
+    }
   }
   DVLOG(1) << "V4UpdateProtocolManager::GetNextUpdateInterval: "
            << "next_interval: " << next;
@@ -168,6 +191,7 @@ void V4UpdateProtocolManager::ScheduleNextUpdateAfterInterval(
     base::TimeDelta interval) {
   DCHECK(CalledOnValidThread());
   DCHECK(interval >= base::TimeDelta());
+
   // Unschedule any current timer.
   update_timer_.Stop();
   update_timer_.Start(FROM_HERE, interval, this,
@@ -252,8 +276,8 @@ void V4UpdateProtocolManager::IssueUpdateRequest() {
     return;
   }
 
-  std::string req_base64 = GetBase64SerializedUpdateRequestProto(
-      current_list_states_);
+  std::string req_base64 =
+      GetBase64SerializedUpdateRequestProto(current_list_states_);
   GURL update_url = GetUpdateUrl(req_base64);
 
   request_.reset(net::URLFetcher::Create(url_fetcher_id_++, update_url,
@@ -278,10 +302,10 @@ void V4UpdateProtocolManager::OnURLFetchComplete(
   V4ProtocolManagerUtil::RecordHttpResponseOrErrorCode(
       "SafeBrowsing.V4UpdateHttpResponseOrErrorCode", status, response_code);
 
+  last_response_time_ = Time::Now();
+
   std::vector<ListUpdateResponse> list_update_responses;
-  bool back_off;
   if (status.is_success() && response_code == net::HTTP_OK) {
-    back_off = false;
     RecordUpdateResult(V4OperationResult::STATUS_200);
     ResetUpdateErrors();
     std::string data;
@@ -290,11 +314,14 @@ void V4UpdateProtocolManager::OnURLFetchComplete(
       list_update_responses.clear();
       RecordUpdateResult(V4OperationResult::PARSE_ERROR);
     }
+    request_.reset();
+
     // Invoke the callback with list_update_responses.
     // The caller should update its state now, based on list_update_responses.
-    callback_.Run(list_update_responses);
+    // The callback must call ScheduleNextUpdate() at the end to resume
+    // downloading updates.
+    update_callback_.Run(list_update_responses);
   } else {
-    back_off = true;
     DVLOG(1) << "SafeBrowsing GetEncodedUpdates request for: "
              << source->GetURL() << " failed with error: " << status.error()
              << " and response code: " << response_code;
@@ -306,9 +333,10 @@ void V4UpdateProtocolManager::OnURLFetchComplete(
     }
     // TODO(vakh): Figure out whether it is just a network error vs backoff vs
     // another condition and RecordUpdateResult more accurately.
+
+    request_.reset();
+    ScheduleNextUpdateWithBackoff(true);
   }
-  request_.reset();
-  ScheduleNextUpdate(back_off);
 }
 
 GURL V4UpdateProtocolManager::GetUpdateUrl(
