@@ -60,16 +60,19 @@ void CustomElementsRegistry::define(ScriptState* scriptState,
     v8::Isolate* isolate = scriptState->isolate();
     v8::Local<v8::Context> context = scriptState->context();
 
-    // TODO(dominicc): Make this check for constructors and not just
-    // functions when
-    // https://bugs.chromium.org/p/v8/issues/detail?id=4993 is fixed.
     v8::Local<v8::Value> constructorValue = constructorScriptValue.v8Value();
     if (!constructorValue->IsFunction()) {
+        // Not even a function.
         exceptionState.throwTypeError(
             "constructor argument is not a constructor");
         return;
     }
     v8::Local<v8::Object> constructor = constructorValue.As<v8::Object>();
+    if (!constructor->IsConstructor()) {
+        exceptionState.throwTypeError(
+            "constructor argument is not a constructor");
+        return;
+    }
 
     // Raise an exception if the name is not valid.
     if (!CustomElement::isValidName(name)) {

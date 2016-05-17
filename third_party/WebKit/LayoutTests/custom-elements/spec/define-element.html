@@ -16,7 +16,13 @@
 test_with_window((w) => {
   assert_throws(TypeError.prototype, () => {
     w.customElements.define('a-a', 42);
-  }, 'defining a non-constructor should throw a TypeError');
+  }, 'defining a number "constructor" should throw a TypeError');
+  assert_throws(TypeError.prototype, () => {
+    w.customElements.define('a-a', () => {});
+  }, 'defining an arrow function "constructor" should throw a TypeError');
+  assert_throws(TypeError.prototype, () => {
+    w.customElements.define('a-a', { m() {} }.m);
+  }, 'defining a concise method "constructor" should throw a TypeError');
 }, 'A "constructor" that is not a constructor');
 
 test_with_window((w) => {
@@ -78,10 +84,8 @@ test_with_window((w) => {
 
 test_with_window((w) => {
   assert_throws(TypeError.prototype, () => {
-    let not_a_constructor = new Object();
+    let not_a_constructor = () => {};
     let invalid_name = 'annotation-xml';
-    // TODO(dominicc): When V8 supports IsConstructor, replace this with a
-    // function.
     w.customElements.define(invalid_name, not_a_constructor);
   }, 'Defining an element with an invalid name and invalid constructor ' +
      'should throw a TypeError for the constructor and not a SyntaxError');
