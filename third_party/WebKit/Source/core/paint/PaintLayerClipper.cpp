@@ -212,8 +212,7 @@ void PaintLayerClipper::calculateRects(const ClipRectsContext& context, const La
     layerBounds = LayoutRect(offset, LayoutSize(m_layer.size()));
 
     // Update the clip rects that will be passed to child layers.
-    if ((layoutObject.hasOverflowClip() && shouldRespectOverflowClip(context))
-        || (layoutObject.styleRef().containsPaint() && layoutObject.isBox())) {
+    if ((layoutObject.hasOverflowClip() || layoutObject.styleRef().containsPaint()) && shouldRespectOverflowClip(context)) {
         foregroundRect.intersect(toLayoutBox(layoutObject).overflowClipRect(offset, context.overlayScrollbarClipBehavior));
         if (layoutObject.styleRef().hasBorderRadius())
             foregroundRect.setHasRadius(true);

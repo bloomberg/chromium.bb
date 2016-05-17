@@ -36,8 +36,7 @@ BoxClipper::BoxClipper(const LayoutBox& box, const PaintInfo& paintInfo, const L
     }
 
     bool isControlClip = m_box.hasControlClip();
-    bool isOverflowOrContainmentClip = (m_box.hasOverflowClip() && !m_box.layer()->isSelfPaintingLayer())
-        || m_box.style()->containsPaint();
+    bool isOverflowOrContainmentClip = (m_box.hasOverflowClip() || box.styleRef().containsPaint()) && !m_box.layer()->isSelfPaintingLayer();
 
     if (!isControlClip && !isOverflowOrContainmentClip)
         return;
