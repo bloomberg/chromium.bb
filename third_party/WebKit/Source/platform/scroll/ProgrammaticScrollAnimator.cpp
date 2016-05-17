@@ -127,7 +127,7 @@ void ProgrammaticScrollAnimator::updateCompositorAnimations()
             int animationId = animation->id();
             int animationGroupId = animation->group();
 
-            if (addAnimation(animation.release())) {
+            if (addAnimation(std::move(animation))) {
                 sentToCompositor = true;
                 m_runState = RunState::RunningOnCompositor;
                 m_compositorAnimationId = animationId;

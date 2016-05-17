@@ -169,7 +169,7 @@ PassOwnPtr<JPEGImageEncoderState> JPEGImageEncoderState::create(const IntSize& i
     jpeg_start_compress(cinfo, TRUE);
 
     cinfo->client_data = 0;
-    return encoderState.release();
+    return std::move(encoderState);
 }
 
 int JPEGImageEncoder::computeCompressionQuality(const double& quality)
@@ -236,7 +236,7 @@ bool JPEGImageEncoder::encode(const ImageDataBuffer& imageData, const double& qu
     if (!encoderState)
         return false;
 
-    return JPEGImageEncoder::encodeWithPreInitializedState(encoderState.release(), imageData.pixels());
+    return JPEGImageEncoder::encodeWithPreInitializedState(std::move(encoderState), imageData.pixels());
 }
 
 } // namespace blink

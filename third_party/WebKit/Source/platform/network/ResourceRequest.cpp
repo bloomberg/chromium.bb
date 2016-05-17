@@ -49,7 +49,7 @@ ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
     setHTTPMethod(AtomicString(data->m_httpMethod));
     setPriority(data->m_priority, data->m_intraPriorityValue);
 
-    m_httpHeaderFields.adopt(data->m_httpHeaders.release());
+    m_httpHeaderFields.adopt(std::move(data->m_httpHeaders));
 
     setHTTPBody(data->m_httpBody);
     setAttachedCredential(data->m_attachedCredential);
@@ -118,7 +118,7 @@ PassOwnPtr<CrossThreadResourceRequestData> ResourceRequest::copyData() const
     data->m_isExternalRequest = m_isExternalRequest;
     data->m_inputPerfMetricReportPolicy = m_inputPerfMetricReportPolicy;
     data->m_followedRedirect = m_followedRedirect;
-    return data.release();
+    return data;
 }
 
 bool ResourceRequest::isEmpty() const

@@ -565,7 +565,7 @@ PassOwnPtr<SecurityOrigin::PrivilegeData> SecurityOrigin::createPrivilegeData() 
     privilegeData->m_universalAccess = m_universalAccess;
     privilegeData->m_canLoadLocalResources = m_canLoadLocalResources;
     privilegeData->m_blockLocalAccessFromLocalOrigin = m_blockLocalAccessFromLocalOrigin;
-    return privilegeData.release();
+    return privilegeData;
 }
 
 void SecurityOrigin::transferPrivilegesFrom(PassOwnPtr<PrivilegeData> privilegeData)

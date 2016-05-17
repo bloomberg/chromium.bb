@@ -213,7 +213,7 @@ PassOwnPtr<Vector<String>> LocaleICU::createLabelVector(const UDateFormat* dateF
             return PassOwnPtr<Vector<String>>();
         labels->append(String::adopt(buffer));
     }
-    return labels.release();
+    return labels;
 }
 
 static PassOwnPtr<Vector<String>> createFallbackWeekDayShortLabels()
@@ -227,7 +227,7 @@ static PassOwnPtr<Vector<String>> createFallbackWeekDayShortLabels()
     labels->append("Thu");
     labels->append("Fri");
     labels->append("Sat");
-    return labels.release();
+    return labels;
 }
 
 void LocaleICU::initializeCalendar()
@@ -253,7 +253,7 @@ static PassOwnPtr<Vector<String>> createFallbackMonthLabels()
     labels->reserveCapacity(WTF_ARRAY_LENGTH(WTF::monthFullName));
     for (unsigned i = 0; i < WTF_ARRAY_LENGTH(WTF::monthFullName); ++i)
         labels->append(WTF::monthFullName[i]);
-    return labels.release();
+    return labels;
 }
 
 const Vector<String>& LocaleICU::monthLabels()
@@ -293,7 +293,7 @@ static PassOwnPtr<Vector<String>> createFallbackAMPMLabels()
     labels->reserveCapacity(2);
     labels->append("AM");
     labels->append("PM");
-    return labels.release();
+    return labels;
 }
 
 void LocaleICU::initializeDateTimeFormat()

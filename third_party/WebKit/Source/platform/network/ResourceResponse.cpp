@@ -111,7 +111,7 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
     setHTTPStatusCode(data->m_httpStatusCode);
     setHTTPStatusText(AtomicString(data->m_httpStatusText));
 
-    m_httpHeaderFields.adopt(data->m_httpHeaders.release());
+    m_httpHeaderFields.adopt(std::move(data->m_httpHeaders));
     setLastModifiedDate(data->m_lastModifiedDate);
     setResourceLoadTiming(data->m_resourceLoadTiming.release());
     m_securityInfo = data->m_securityInfo;
@@ -195,7 +195,7 @@ PassOwnPtr<CrossThreadResourceResponseData> ResourceResponse::copyData() const
     // Bug https://bugs.webkit.org/show_bug.cgi?id=60397 this doesn't support
     // whatever values may be present in the opaque m_extraData structure.
 
-    return data.release();
+    return data;
 }
 
 bool ResourceResponse::isHTTP() const
@@ -545,7 +545,7 @@ void ResourceResponse::setDownloadedFilePath(const String& downloadedFilePath)
     OwnPtr<BlobData> blobData = BlobData::create();
     blobData->appendFile(m_downloadedFilePath);
     blobData->detachFromCurrentThread();
-    m_downloadedFileHandle = BlobDataHandle::create(blobData.release(), -1);
+    m_downloadedFileHandle = BlobDataHandle::create(std::move(blobData), -1);
 }
 
 bool ResourceResponse::compare(const ResourceResponse& a, const ResourceResponse& b)

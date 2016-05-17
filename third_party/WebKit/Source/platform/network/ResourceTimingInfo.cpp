@@ -17,7 +17,7 @@ PassOwnPtr<ResourceTimingInfo> ResourceTimingInfo::adopt(PassOwnPtr<CrossThreadR
     info->m_finalResponse = ResourceResponse(data->m_finalResponse.get());
     for (auto& responseData : data->m_redirectChain)
         info->m_redirectChain.append(ResourceResponse(responseData.get()));
-    return info.release();
+    return info;
 }
 
 PassOwnPtr<CrossThreadResourceTimingInfoData> ResourceTimingInfo::copyData() const
@@ -32,7 +32,7 @@ PassOwnPtr<CrossThreadResourceTimingInfoData> ResourceTimingInfo::copyData() con
     for (const auto& response : m_redirectChain)
         data->m_redirectChain.append(response.copyData());
     data->m_isMainResource = m_isMainResource;
-    return data.release();
+    return data;
 }
 
 } // namespace blink

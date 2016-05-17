@@ -255,7 +255,7 @@ bool ScrollAnimator::sendAnimationToCompositor()
     int animationId = animation->id();
     int animationGroupId = animation->group();
 
-    bool sentToCompositor = addAnimation(animation.release());
+    bool sentToCompositor = addAnimation(std::move(animation));
     if (sentToCompositor) {
         m_runState = RunState::RunningOnCompositor;
         m_compositorAnimationId = animationId;

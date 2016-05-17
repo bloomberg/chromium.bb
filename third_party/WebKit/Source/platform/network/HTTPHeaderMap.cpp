@@ -49,7 +49,7 @@ PassOwnPtr<CrossThreadHTTPHeaderMapData> HTTPHeaderMap::copyData() const
     for (HTTPHeaderMap::const_iterator it = begin(); it != endIt; ++it)
         data->uncheckedAppend(std::make_pair(it->key.getString().isolatedCopy(), it->value.getString().isolatedCopy()));
 
-    return data.release();
+    return data;
 }
 
 void HTTPHeaderMap::adopt(PassOwnPtr<CrossThreadHTTPHeaderMapData> data)
