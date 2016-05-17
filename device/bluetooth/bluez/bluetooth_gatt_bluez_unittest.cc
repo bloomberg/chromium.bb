@@ -450,7 +450,6 @@ TEST_F(BluetoothGattBlueZTest, GattCharacteristicAddedAndRemoved) {
   // value changed signals. Service changed should be fired once for
   // descriptor added.
   EXPECT_EQ(0, observer.gatt_service_changed_count());
-  EXPECT_EQ(1, observer.gatt_discovery_complete_count());
   EXPECT_EQ(3, observer.gatt_characteristic_added_count());
   EXPECT_EQ(0, observer.gatt_characteristic_removed_count());
   EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
@@ -471,7 +470,6 @@ TEST_F(BluetoothGattBlueZTest, GattCharacteristicAddedAndRemoved) {
   fake_bluetooth_gatt_characteristic_client_->ExposeHeartRateCharacteristics(
       fake_bluetooth_gatt_service_client_->GetHeartRateServicePath());
   EXPECT_EQ(0, observer.gatt_service_changed_count());
-  EXPECT_EQ(1, observer.gatt_discovery_complete_count());
   EXPECT_EQ(6, observer.gatt_characteristic_added_count());
   EXPECT_EQ(3, observer.gatt_characteristic_removed_count());
   EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
@@ -927,14 +925,12 @@ TEST_F(BluetoothGattBlueZTest, GattDescriptorValue) {
       device->GetGattService(observer.last_gatt_service_id());
 
   EXPECT_EQ(0, observer.gatt_service_changed_count());
-  EXPECT_EQ(0, observer.gatt_discovery_complete_count());
   EXPECT_EQ(0, observer.gatt_descriptor_value_changed_count());
   EXPECT_TRUE(service->GetCharacteristics().empty());
 
   // Run the message loop so that the characteristics appear.
   base::MessageLoop::current()->Run();
   EXPECT_EQ(0, observer.gatt_service_changed_count());
-  EXPECT_EQ(1, observer.gatt_discovery_complete_count());
 
   // Only the Heart Rate Measurement characteristic has a descriptor.
   BluetoothRemoteGattCharacteristic* characteristic =

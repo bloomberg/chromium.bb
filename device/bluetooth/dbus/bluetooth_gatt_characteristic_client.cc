@@ -16,13 +16,6 @@
 
 namespace bluez {
 
-namespace {
-
-// TODO(armansito): Move this constant to cros_system_api.
-const char kValueProperty[] = "Value";
-
-}  // namespace
-
 // static
 const char BluetoothGattCharacteristicClient::kNoResponseError[] =
     "org.chromium.Error.NoResponse";
@@ -37,12 +30,10 @@ BluetoothGattCharacteristicClient::Properties::Properties(
     : dbus::PropertySet(object_proxy, interface_name, callback) {
   RegisterProperty(bluetooth_gatt_characteristic::kUUIDProperty, &uuid);
   RegisterProperty(bluetooth_gatt_characteristic::kServiceProperty, &service);
-  RegisterProperty(kValueProperty, &value);
+  RegisterProperty(bluetooth_gatt_characteristic::kValueProperty, &value);
   RegisterProperty(bluetooth_gatt_characteristic::kNotifyingProperty,
                    &notifying);
   RegisterProperty(bluetooth_gatt_characteristic::kFlagsProperty, &flags);
-  RegisterProperty(bluetooth_gatt_characteristic::kDescriptorsProperty,
-                   &descriptors);
 }
 
 BluetoothGattCharacteristicClient::Properties::~Properties() {}

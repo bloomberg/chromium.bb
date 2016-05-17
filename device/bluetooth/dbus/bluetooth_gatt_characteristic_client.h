@@ -47,10 +47,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicClient
     // descriptor bit field. [read-only, optional]
     dbus::Property<std::vector<std::string>> flags;
 
-    // Array of object paths representing the descriptors of this
-    // characteristic. [read-only]
-    dbus::Property<std::vector<dbus::ObjectPath>> descriptors;
-
     Properties(dbus::ObjectProxy* object_proxy,
                const std::string& interface_name,
                const PropertyChangedCallback& callback);

@@ -165,19 +165,7 @@ void BluetoothRemoteGattServiceBlueZ::GattServicePropertyChanged(
           ->GetProperties(object_path);
   DCHECK(properties);
 
-  if (property_name != properties->characteristics.name()) {
-    NotifyServiceChanged();
-    return;
-  }
-
-  if (discovery_complete_)
-    return;
-
-  VLOG(1) << "All characteristics were discovered for service: "
-          << object_path.value();
-  discovery_complete_ = true;
-  DCHECK(GetAdapter());
-  GetAdapter()->NotifyGattDiscoveryComplete(this);
+  NotifyServiceChanged();
 }
 
 void BluetoothRemoteGattServiceBlueZ::GattCharacteristicAdded(
