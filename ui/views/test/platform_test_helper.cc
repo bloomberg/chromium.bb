@@ -17,12 +17,13 @@ class DefaultPlatformTestHelper : public PlatformTestHelper {
 
   ~DefaultPlatformTestHelper() override {}
 
+  bool IsMus() const override { return false; }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultPlatformTestHelper);
 };
 
 PlatformTestHelper::Factory test_helper_factory;
-bool is_mus = false;
 
 }  // namespace
 
@@ -36,16 +37,6 @@ std::unique_ptr<PlatformTestHelper> PlatformTestHelper::Create() {
   return !test_helper_factory.is_null()
              ? test_helper_factory.Run()
              : base::WrapUnique(new DefaultPlatformTestHelper);
-}
-
-// static
-void PlatformTestHelper::SetIsMus() {
-  is_mus = true;
-}
-
-// static
-bool PlatformTestHelper::IsMus() {
-  return is_mus;
 }
 
 }  // namespace views
