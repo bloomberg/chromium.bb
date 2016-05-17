@@ -92,6 +92,10 @@ def _get_arg_parser():
                     help='Don\'t patch specified file(s).')
   parser.add_option('-d', '--ignore_deps', action='store_true',
                     help='Don\'t run gclient sync on DEPS changes.')
+  parser.add_option('--extra_patchlevel', type='int',
+                    help='Number of directories the patch level number should '
+                         'be incremented (useful for patches from repos with '
+                         'different directory hierarchies).')
 
   auth.add_auth_options(parser)
   return parser
@@ -255,6 +259,8 @@ def main():
                           if patch.filename not in options.blacklist]
     for patch in patchset.patches:
       print(patch)
+      if options.extra_patchlevel:
+        patch.patchlevel += options.extra_patchlevel
     full_dir = os.path.abspath(options.root_dir)
     scm_type = scm.determine_scm(full_dir)
     if scm_type == 'svn':
