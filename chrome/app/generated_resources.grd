@@ -469,8 +469,8 @@ are declared in build/common.gypi.
       <message name="IDS_MD_HISTORY_HISTORY_MENU_ITEM" desc="Label displayed in history sidebar button to display history.">
         History
       </message>
-      <message name="IDS_MD_HISTORY_OPEN_TABS_MENU_ITEM" desc="Label displayed in history sidebar button to display open tabs.">
-        Open tabs
+      <message name="IDS_MD_HISTORY_OPEN_TABS_MENU_ITEM" desc="Label displayed in history sidebar button to display synced tabs from other devices.">
+        Synced tabs
       </message>
 
       <!-- Generic terms -->
