@@ -12,6 +12,11 @@
 <dom-module id="import-supervised-user">
   <template>
     <style include="shared-styles">
+      :host {
+        --item-height: 52px;
+        --items-container-max-height: calc(var(--item-height) * 4);
+      }
+
       #backdrop {
         align-items: center;
         background: rgba(255, 255, 255, 0.6);
@@ -35,16 +40,18 @@
       }
 
       #title-bar {
+        -webkit-padding-end: 6px;
+        -webkit-padding-start: 16px;
         align-items: center;
         border-bottom: 1px solid rgba(0, 0, 0, .12);
         font-size: 16px;
-        padding: 16px;
+        padding-bottom: 6px;
+        padding-top: 6px;
       }
 
       #title-bar paper-icon-button {
         --paper-icon-button: {
-          height: 36px;
-          width: 36px;
+          padding: 10px;
         };
       }
 
@@ -54,10 +61,15 @@
         word-wrap: break-word;
       }
 
+      paper-listbox {
+        max-height: var(--items-container-max-height);
+        overflow: auto;
+      }
+
       paper-listbox paper-item {
         --paper-item: {
           font-size: inherit;
-          height: 52px;
+          height: var(--item-height);
           line-height: inherit;
           padding: 0 16px;
         };
