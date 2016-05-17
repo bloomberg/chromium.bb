@@ -103,7 +103,7 @@ var SiteSettingsBehaviorImpl = {
       case settings.ContentSettingsTypes.COOKIES:
         return 'settings:cookie';
       case settings.ContentSettingsTypes.FULLSCREEN:
-        return 'settings:fullscreen';
+        return 'cr:fullscreen';
       case settings.ContentSettingsTypes.GEOLOCATION:
         return 'settings:location-on';
       case settings.ContentSettingsTypes.IMAGES:

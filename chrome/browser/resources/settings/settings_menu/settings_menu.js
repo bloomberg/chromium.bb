@@ -57,6 +57,6 @@ Polymer({
    * @private
    * */
   arrowState_: function(opened) {
-    return opened ? 'settings:arrow-drop-up' : 'settings:arrow-drop-down';
+    return opened ? 'settings:arrow-drop-up' : 'cr:arrow-drop-down';
   },
 });
