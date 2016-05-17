@@ -142,6 +142,9 @@
     ],
     "PasswordSeparatedSigninFlow": [
         {
+            "enable_features": [
+                "UsePasswordSeparatedSigninFlow"
+            ],
             "group_name": "Enabled"
         }
     ],
