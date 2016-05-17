@@ -102,8 +102,8 @@ class TracingTrack(devtools_monitor.Track):
   def GetMainFrameID(self):
     """Returns the main frame ID."""
     if not self._main_frame_id:
-      navigation_start_events = [e for e in self.GetEvents()
-          if e.Matches('blink.user_timing', 'navigationStart')]
+      navigation_start_events = self.GetMatchingEvents(
+          'blink.user_timing', 'navigationStart')
       first_event = min(navigation_start_events, key=lambda e: e.start_msec)
       self._main_frame_id = first_event.args['frame']
 

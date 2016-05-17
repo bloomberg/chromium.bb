@@ -27,8 +27,10 @@ class LoadingReport(object):
         FirstContentfulPaintLens(self.trace).SatisfiedMs())
     self._significant_paint_msec = (
         FirstSignificantPaintLens(self.trace).SatisfiedMs())
-    self._base_msec = min(
-        r.start_msec for r in self.trace.request_track.GetEvents())
+    navigation_start_events = trace.tracing_track.GetMatchingEvents(
+        'blink.user_timing', 'navigationStart')
+    self._navigation_start_msec = min(
+        e.start_msec for e in navigation_start_events)
     # TODO(lizeb): This is not PLT. Should correlate with
     # RenderFrameImpl::didStopLoading.
     self._max_msec = max(
@@ -36,12 +38,12 @@ class LoadingReport(object):
 
     network_lens = NetworkActivityLens(self.trace)
     if network_lens.total_download_bytes > 0:
-      self._contentful_byte_frac = network_lens.DownloadedBytesAt(
-          self._contentful_paint_msec -
-          self._base_msec) / float(network_lens.total_download_bytes)
-      self._significant_byte_frac = network_lens.DownloadedBytesAt(
-          self._significant_paint_msec -
-          self._base_msec) / float(network_lens.total_download_bytes)
+      self._contentful_byte_frac = (
+          network_lens.DownloadedBytesAt(self._contentful_paint_msec)
+          / float(network_lens.total_download_bytes))
+      self._significant_byte_frac = (
+          network_lens.DownloadedBytesAt(self._significant_paint_msec)
+          / float(network_lens.total_download_bytes))
     else:
       self._contentful_byte_frac = float('Nan')
       self._significant_byte_frac = float('Nan')
@@ -50,10 +52,12 @@ class LoadingReport(object):
     """Returns a report as a dict."""
     return {
         'url': self.trace.url,
-        'first_text_ms': self._text_msec - self._base_msec,
-        'contentful_paint_ms': self._contentful_paint_msec - self._base_msec,
-        'significant_paint_ms': self._significant_paint_msec - self._base_msec,
-        'plt_ms': self._max_msec - self._base_msec,
+        'first_text_ms': self._text_msec - self._navigation_start_msec,
+        'contentful_paint_ms': (self._contentful_paint_msec
+                                - self._navigation_start_msec),
+        'significant_paint_ms': (self._significant_paint_msec
+                                 - self._navigation_start_msec),
+        'plt_ms': self._max_msec - self._navigation_start_msec,
         'contentful_byte_frac': self._contentful_byte_frac,
         'significant_byte_frac': self._significant_byte_frac,}
 
