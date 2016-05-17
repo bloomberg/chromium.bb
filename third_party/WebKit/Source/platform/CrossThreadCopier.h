@@ -159,6 +159,11 @@ struct CrossThreadCopier<CrossThreadPersistent<T>> : public CrossThreadCopierPas
     STATIC_ONLY(CrossThreadCopier);
 };
 
+template<typename T>
+struct CrossThreadCopier<WeakPtr<T>> : public CrossThreadCopierPassThrough<WeakPtr<T>> {
+    STATIC_ONLY(CrossThreadCopier);
+};
+
 template <typename T>
 struct CrossThreadCopier<WTF::PassedWrapper<T>> {
     STATIC_ONLY(CrossThreadCopier);
@@ -217,19 +222,17 @@ struct CrossThreadCopier<Member<T>> {
     }
 };
 
-// |T| is |C*| or |const WeakPtr<C>&|.
+// |T| is a pointer type.
 template <typename T>
 struct AllowCrossThreadAccessWrapper {
     STACK_ALLOCATED();
 public:
     T value() const { return m_value; }
 private:
-    // Only constructible from AllowCrossThreadAccess().
+    // Only constructible from AllowCrossThreadAccess*().
     explicit AllowCrossThreadAccessWrapper(T value) : m_value(value) { }
     template <typename U>
     friend AllowCrossThreadAccessWrapper<U*> AllowCrossThreadAccess(U*);
-    template <typename U>
-    friend AllowCrossThreadAccessWrapper<const WeakPtr<U>&> AllowCrossThreadAccess(const WeakPtr<U>&);
 
     // This raw pointer is safe since AllowCrossThreadAccessWrapper is
     // always stack-allocated. Ideally this should be Member<T> if T is
@@ -253,12 +256,6 @@ AllowCrossThreadAccessWrapper<T*> AllowCrossThreadAccess(T* value)
     static_assert(!blink::IsGarbageCollectedType<T>::value, "Use wrapCrossThreadPersistent() instead for garbage-collected pointers");
     static_assert(!WTF::IsSubclassOfTemplate<T, ThreadSafeRefCounted>::value, "Use PassRefPtr<T> instead for ThreadSafeRefCounted");
     return AllowCrossThreadAccessWrapper<T*>(value);
-}
-
-template <typename T>
-AllowCrossThreadAccessWrapper<const WeakPtr<T>&> AllowCrossThreadAccess(const WeakPtr<T>& value)
-{
-    return AllowCrossThreadAccessWrapper<const WeakPtr<T>&>(value);
 }
 
 } // namespace blink

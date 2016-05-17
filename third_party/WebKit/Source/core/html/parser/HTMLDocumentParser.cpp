@@ -396,7 +396,7 @@ void HTMLDocumentParser::discardSpeculationsAndResumeFrom(PassOwnPtr<ParsedChunk
     m_input.current().clear(); // FIXME: This should be passed in instead of cleared.
 
     ASSERT(checkpoint->unparsedInput.isSafeToSendToAnotherThread());
-    HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::resumeFrom, AllowCrossThreadAccess(m_backgroundParser), passed(std::move(checkpoint))));
+    HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::resumeFrom, m_backgroundParser, passed(std::move(checkpoint))));
 }
 
 size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk> popChunk)
@@ -418,7 +418,7 @@ size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Par
     OwnPtr<CompactHTMLTokenStream> tokens = std::move(chunk->tokens);
     size_t elementTokenCount = 0;
 
-    HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::startedChunkWithCheckpoint, AllowCrossThreadAccess(m_backgroundParser), chunk->inputCheckpoint));
+    HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::startedChunkWithCheckpoint, m_backgroundParser, chunk->inputCheckpoint));
 
     for (const auto& xssInfo : chunk->xssInfos) {
         m_textPosition = xssInfo->m_textPosition;
@@ -551,7 +551,7 @@ void HTMLDocumentParser::forcePlaintextForTextDocument()
         if (!m_haveBackgroundParser)
             startBackgroundParser();
 
-        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::forcePlaintextForTextDocument, AllowCrossThreadAccess(m_backgroundParser)));
+        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::forcePlaintextForTextDocument, m_backgroundParser));
     } else
         m_tokenizer->setState(HTMLTokenizer::PLAINTEXTState);
 }
@@ -743,7 +743,7 @@ void HTMLDocumentParser::stopBackgroundParser()
     ASSERT(m_haveBackgroundParser);
     m_haveBackgroundParser = false;
 
-    HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::stop, AllowCrossThreadAccess(m_backgroundParser)));
+    HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::stop, m_backgroundParser));
     m_weakFactory.revokeAll();
 }
 
@@ -851,7 +851,7 @@ void HTMLDocumentParser::finish()
     if (m_haveBackgroundParser) {
         if (!m_input.haveSeenEndOfFile())
             m_input.closeWithoutMarkingEndOfFile();
-        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::finish, AllowCrossThreadAccess(m_backgroundParser)));
+        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::finish, m_backgroundParser));
         return;
     }
 
@@ -1016,7 +1016,7 @@ void HTMLDocumentParser::appendBytes(const char* data, size_t length)
         memcpy(buffer->data(), data, length);
         TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.debug"), "HTMLDocumentParser::appendBytes", "size", (unsigned)length);
 
-        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::appendRawBytesFromMainThread, AllowCrossThreadAccess(m_backgroundParser), passed(std::move(buffer))));
+        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::appendRawBytesFromMainThread, m_backgroundParser, passed(std::move(buffer))));
         return;
     }
 
@@ -1040,7 +1040,7 @@ void HTMLDocumentParser::flush()
             return;
         }
 
-        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::flush, AllowCrossThreadAccess(m_backgroundParser)));
+        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::flush, m_backgroundParser));
     } else {
         DecodedDataDocumentParser::flush();
     }
@@ -1052,7 +1052,7 @@ void HTMLDocumentParser::setDecoder(PassOwnPtr<TextResourceDecoder> decoder)
     DecodedDataDocumentParser::setDecoder(std::move(decoder));
 
     if (m_haveBackgroundParser)
-        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::setDecoder, AllowCrossThreadAccess(m_backgroundParser), passed(takeDecoder())));
+        HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::setDecoder, m_backgroundParser, passed(takeDecoder())));
 }
 
 void HTMLDocumentParser::pumpPreloadQueue()
