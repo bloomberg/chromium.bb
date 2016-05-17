@@ -217,6 +217,11 @@
             "group_name": "Enable"
         }
     ],
+    "PasswordSeparatedSigninFlow": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "PreRead": [
         {
             "group_name": "NoPrefetchArgument2",
