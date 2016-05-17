@@ -210,6 +210,10 @@ class GFX_EXPORT RenderText {
   // Creates another instance of the same concrete class.
   virtual std::unique_ptr<RenderText> CreateInstanceOfSameType() const = 0;
 
+  // Like above but copies all style settings too.
+  std::unique_ptr<RenderText> CreateInstanceOfSameStyle(
+      const base::string16& text) const;
+
   const base::string16& text() const { return text_; }
   void SetText(const base::string16& text);
   void AppendText(const base::string16& text);
@@ -264,6 +268,14 @@ class GFX_EXPORT RenderText {
   // TODO(ckocagil): Multiline text rendering is not supported on Mac.
   bool multiline() const { return multiline_; }
   void SetMultiline(bool multiline);
+
+  // If multiline, a non-zero value will cap the number of lines rendered,
+  // and elide the rest (currently only ELIDE_TAIL supported.)
+  void SetMaxLines(size_t max_lines);
+  size_t max_lines() const { return max_lines_; }
+
+  // Returns the actual number of lines, broken by |lines_|.
+  size_t GetNumLines();
 
   // TODO(mukai): ELIDE_LONG_WORDS is not supported.
   WordWrapBehavior word_wrap_behavior() const { return word_wrap_behavior_; }
@@ -776,6 +788,9 @@ class GFX_EXPORT RenderText {
   // Whether the text should be broken into multiple lines. Uses the width of
   // |display_rect_| as the width cap.
   bool multiline_;
+
+  // If multiple lines, the maximum number of lines to render, or 0.
+  size_t max_lines_;
 
   // The wrap behavior when the text is broken into lines. Do nothing unless
   // |multiline_| is set. The default value is IGNORE_LONG_WORDS.

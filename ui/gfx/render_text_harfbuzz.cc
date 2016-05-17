@@ -782,11 +782,9 @@ bool RenderTextHarfBuzz::MultilineSupported() const {
 }
 
 const base::string16& RenderTextHarfBuzz::GetDisplayText() {
-  // TODO(oshima): Consider supporting eliding multi-line text.
-  // This requires max_line support first.
-  if (multiline() ||
-      elide_behavior() == NO_ELIDE ||
-      elide_behavior() == FADE_TAIL) {
+  // TODO(krb): Consider other elision modes for multiline.
+  if ((multiline() && (max_lines() == 0 || elide_behavior() != ELIDE_TAIL)) ||
+      elide_behavior() == NO_ELIDE || elide_behavior() == FADE_TAIL) {
     // Call UpdateDisplayText to clear |display_text_| and |text_elided_|
     // on the RenderText class.
     UpdateDisplayText(0);

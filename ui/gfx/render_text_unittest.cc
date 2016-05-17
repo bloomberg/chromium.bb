@@ -644,6 +644,7 @@ TEST_F(RenderTextTest, RevealObscuredText) {
 
 // TODO(PORT): Fails for RenderTextMac.
 #if !defined(OS_MACOSX)
+
 TEST_F(RenderTextTest, ElidedText) {
   // TODO(skanuj) : Add more test cases for following
   // - RenderText styles.
@@ -741,6 +742,60 @@ TEST_F(RenderTextTest, ElidedObscuredText) {
   EXPECT_EQ(WideToUTF16(L"abcdef"), render_text->text());
   EXPECT_EQ(WideToUTF16(L"**\x2026"), render_text->GetDisplayText());
 }
+
+TEST_F(RenderTextTest, MultilineElide) {
+  std::unique_ptr<RenderText> render_text(new RenderTextHarfBuzz);
+  base::string16 input_text;
+  // Aim for 3 lines of text.
+  for (int i = 0; i < 20; ++i)
+    input_text.append(ASCIIToUTF16("hello world "));
+  render_text->SetText(input_text);
+  // Apply a style that tweaks the layout to make sure elision is calculated
+  // with these styles. This can expose a behavior in layout where text is
+  // slightly different width. This must be done after |SetText()|.
+  render_text->ApplyStyle(gfx::BOLD, true, gfx::Range(1, 20));
+  render_text->ApplyStyle(gfx::ITALIC, true, gfx::Range(1, 20));
+  render_text->ApplyStyle(gfx::DIAGONAL_STRIKE, true, gfx::Range(1, 20));
+  render_text->SetMultiline(true);
+  render_text->SetElideBehavior(ELIDE_TAIL);
+  render_text->SetMaxLines(3);
+  const gfx::Size size = render_text->GetStringSize();
+  // Fit in 3 lines. (If we knew the width of a word, we could
+  // anticipate word wrap better.)
+  render_text->SetDisplayRect(gfx::Rect((size.width() + 96) / 3, 0));
+  // Trigger rendering.
+  render_text->GetStringSize();
+  EXPECT_EQ(input_text, render_text->GetDisplayText());
+
+  const base::char16 kEllipsisUTF16[] = {0x2026, 0};
+  base::string16 actual_text;
+  // Try widening the space gradually, one pixel at a time, trying
+  // to trigger a failure in layout. There was an issue where, right at
+  // the edge of a word getting truncated, the estimate would be wrong
+  // and it would wrap instead.
+  for (int i = (size.width() - 12) / 3; i < (size.width() + 30) / 3; ++i) {
+    render_text->SetDisplayRect(gfx::Rect(i, 0));
+    // Trigger rendering.
+    render_text->GetStringSize();
+    actual_text = render_text->GetDisplayText();
+    EXPECT_LT(actual_text.size(), input_text.size());
+    EXPECT_EQ(actual_text, input_text.substr(0, actual_text.size() - 1) +
+                               base::string16(kEllipsisUTF16));
+    EXPECT_EQ(3U, render_text->GetNumLines());
+  }
+  // Now remove line restriction.
+  render_text->SetMaxLines(0);
+  render_text->GetStringSize();
+  EXPECT_EQ(input_text, render_text->GetDisplayText());
+
+  // And put it back.
+  render_text->SetMaxLines(3);
+  render_text->GetStringSize();
+  EXPECT_LT(actual_text.size(), input_text.size());
+  EXPECT_EQ(actual_text, input_text.substr(0, actual_text.size() - 1) +
+                             base::string16(kEllipsisUTF16));
+}
+
 #endif  // !defined(OS_MACOSX)
 
 TEST_F(RenderTextTest, ElidedEmail) {

@@ -106,6 +106,11 @@ class MultilineExample::RenderTextView : public View {
     InvalidateLayout();
   }
 
+  void SetMaxLines(int max_lines) {
+    render_text_->SetMaxLines(max_lines);
+    render_text_->SetElideBehavior(max_lines ? gfx::ELIDE_TAIL : gfx::NO_ELIDE);
+  }
+
  private:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
     gfx::Rect bounds = GetLocalBounds();
@@ -123,8 +128,8 @@ MultilineExample::MultilineExample()
       render_text_view_(NULL),
       label_(NULL),
       textfield_(NULL),
-      label_checkbox_(NULL) {
-}
+      label_checkbox_(NULL),
+      elision_checkbox_(NULL) {}
 
 MultilineExample::~MultilineExample() {
 }
@@ -146,6 +151,11 @@ void MultilineExample::CreateExampleView(View* container) {
   label_checkbox_->SetChecked(true);
   label_checkbox_->set_listener(this);
   label_checkbox_->set_request_focus_on_press(false);
+
+  elision_checkbox_ = new Checkbox(ASCIIToUTF16("elide text?"));
+  elision_checkbox_->SetChecked(false);
+  elision_checkbox_->set_listener(this);
+  elision_checkbox_->set_request_focus_on_press(false);
 
   textfield_ = new Textfield();
   textfield_->set_controller(this);
@@ -169,6 +179,9 @@ void MultilineExample::CreateExampleView(View* container) {
   layout->AddView(label_);
 
   layout->StartRow(0, 0);
+  layout->AddView(elision_checkbox_);
+
+  layout->StartRow(0, 0);
   layout->AddView(new Label(ASCIIToUTF16("Sample Text:")));
   layout->AddView(textfield_);
 }
@@ -183,9 +196,12 @@ void MultilineExample::ContentsChanged(Textfield* sender,
 }
 
 void MultilineExample::ButtonPressed(Button* sender, const ui::Event& event) {
-  DCHECK_EQ(sender, label_checkbox_);
-  label_->SetText(label_checkbox_->checked() ? textfield_->text() :
-                                               base::string16());
+  if (sender == label_checkbox_) {
+    label_->SetText(label_checkbox_->checked() ? textfield_->text()
+                                               : base::string16());
+  } else if (sender == elision_checkbox_) {
+    render_text_view_->SetMaxLines(elision_checkbox_->checked() ? 3 : 0);
+  }
   container()->Layout();
   container()->SchedulePaint();
 }

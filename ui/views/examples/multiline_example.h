@@ -45,6 +45,9 @@ class VIEWS_EXAMPLES_EXPORT MultilineExample : public ExampleBase,
   // Checkbox to enable and disable text rendering in |label_|.
   Checkbox* label_checkbox_;
 
+  // Checkbox to toggle text elision in |render_text_view_|.
+  Checkbox* elision_checkbox_;
+
   DISALLOW_COPY_AND_ASSIGN(MultilineExample);
 };
 
