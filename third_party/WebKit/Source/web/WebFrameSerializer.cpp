@@ -47,12 +47,16 @@
 #include "platform/SharedBuffer.h"
 #include "platform/mhtml/MHTMLArchive.h"
 #include "platform/mhtml/MHTMLParser.h"
+#include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
+#include "public/platform/WebURLResponse.h"
 #include "public/platform/WebVector.h"
+#include "public/web/WebDataSource.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebFrame.h"
+#include "public/web/WebFrameSerializerCacheControlPolicy.h"
 #include "public/web/WebFrameSerializerClient.h"
 #include "web/WebFrameSerializerImpl.h"
 #include "web/WebLocalFrameImpl.h"
@@ -138,16 +142,27 @@ bool MHTMLFrameSerializerDelegate::shouldSkipResource(const KURL& url)
 
 } // namespace
 
-WebData WebFrameSerializer::generateMHTMLHeader(
-    const WebString& boundary, WebLocalFrame* frame)
+bool WebFrameSerializer::generateMHTMLHeader(
+    const WebString& boundary, WebFrameSerializerCacheControlPolicy cacheControlPolicy,
+    WebLocalFrame* frame, WebData* data)
 {
-    Document* document = toWebLocalFrameImpl(frame)->frame()->document();
+    WebLocalFrameImpl* webLocalFrameImpl = toWebLocalFrameImpl(frame);
+    DCHECK(webLocalFrameImpl);
+
+    if (cacheControlPolicy == WebFrameSerializerCacheControlPolicy::FailForNoStoreMainFrame) {
+        const ResourceResponse& response = webLocalFrameImpl->dataSource()->response().toResourceResponse();
+        if (response.cacheControlContainsNoStore())
+            return false;
+    }
+
+    Document* document = webLocalFrameImpl->frame()->document();
 
     RefPtr<SharedBuffer> buffer = SharedBuffer::create();
     MHTMLArchive::generateMHTMLHeader(
         boundary, document->title(), document->suggestedMIMEType(),
         *buffer);
-    return buffer.release();
+    *data = buffer.release();
+    return true;
 }
 
 WebData WebFrameSerializer::generateMHTMLParts(

@@ -18,6 +18,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/mhtml_generation_params.h"
 #include "extensions/common/extension_messages.h"
 
 using content::BrowserThread;
@@ -132,8 +133,7 @@ void PageCaptureSaveAsMHTMLFunction::TemporaryFileCreated(bool success) {
   }
 
   web_contents->GenerateMHTML(
-      mhtml_path_,
-      false /* use_binary_encoding */,
+      content::MHTMLGenerationParams(mhtml_path_),
       base::Bind(&PageCaptureSaveAsMHTMLFunction::MHTMLGenerated, this));
 }
 

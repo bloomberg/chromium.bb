@@ -146,6 +146,8 @@
       'public/common/media_stream_request.h',
       'public/common/menu_item.cc',
       'public/common/menu_item.h',
+      'public/common/mhtml_generation_params.cc',
+      'public/common/mhtml_generation_params.h',
       'public/common/mojo_application_info.cc',
       'public/common/mojo_application_info.h',
       'public/common/mojo_channel_switches.cc',

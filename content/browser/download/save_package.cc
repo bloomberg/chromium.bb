@@ -48,6 +48,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/mhtml_generation_params.h"
 #include "net/base/filename_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_util.h"
@@ -338,8 +339,9 @@ void SavePackage::InitWithDownloadItem(
     DCHECK(!saved_main_directory_path_.empty());
     GetSavableResourceLinks();
   } else if (save_type_ == SAVE_PAGE_TYPE_AS_MHTML) {
+    MHTMLGenerationParams mhtml_generation_params(saved_main_file_path_);
     web_contents()->GenerateMHTML(
-        saved_main_file_path_, false /* use_binary_encoding */,
+        mhtml_generation_params,
         base::Bind(&SavePackage::OnMHTMLGenerated, this));
   } else {
     DCHECK_EQ(SAVE_PAGE_TYPE_AS_ONLY_HTML, save_type_);

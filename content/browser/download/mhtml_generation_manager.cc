@@ -24,6 +24,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/mhtml_generation_params.h"
 #include "net/base/mime_util.h"
 
 namespace content {
@@ -34,7 +35,7 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
  public:
   Job(int job_id,
       WebContents* web_contents,
-      bool use_binary_encoding,
+      const MHTMLGenerationParams& params,
       const GenerateMHTMLCallback& callback);
   ~Job() override;
 
@@ -88,8 +89,10 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
   // See also MHTMLGenerationManager::id_to_job_ map.
   int job_id_;
 
-  // Whether to use binary encoding while generating MHTML.
-  bool use_binary_encoding_;
+  // User-configurable parameters. Includes the file location, binary encoding
+  // choices, and whether to skip storing resources marked
+  // Cache-Control: no-store.
+  MHTMLGenerationParams params_;
 
   // The IDs of frames that still need to be processed.
   std::queue<int> pending_frame_tree_node_ids_;
@@ -125,10 +128,10 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
 
 MHTMLGenerationManager::Job::Job(int job_id,
                                  WebContents* web_contents,
-                                 bool use_binary_encoding,
+                                 const MHTMLGenerationParams& params,
                                  const GenerateMHTMLCallback& callback)
     : job_id_(job_id),
-      use_binary_encoding_(use_binary_encoding),
+      params_(params),
       frame_tree_node_id_of_busy_frame_(FrameTreeNode::kFrameTreeNodeInvalidId),
       mhtml_boundary_marker_(net::GenerateMimeMultipartBoundary()),
       salt_(base::GenerateGUID()),
@@ -178,7 +181,8 @@ bool MHTMLGenerationManager::Job::SendToNextRenderFrame() {
   FrameMsg_SerializeAsMHTML_Params ipc_params;
   ipc_params.job_id = job_id_;
   ipc_params.mhtml_boundary_marker = mhtml_boundary_marker_;
-  ipc_params.mhtml_binary_encoding = use_binary_encoding_;
+  ipc_params.mhtml_binary_encoding = params_.use_binary_encoding;
+  ipc_params.mhtml_cache_control_policy = params_.cache_control_policy;
 
   int frame_tree_node_id = pending_frame_tree_node_ids_.front();
   pending_frame_tree_node_ids_.pop();
@@ -297,16 +301,15 @@ MHTMLGenerationManager::~MHTMLGenerationManager() {
 }
 
 void MHTMLGenerationManager::SaveMHTML(WebContents* web_contents,
-                                       bool use_binary_encoding,
-                                       const base::FilePath& file_path,
+                                       const MHTMLGenerationParams& params,
                                        const GenerateMHTMLCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  int job_id = NewJob(web_contents, use_binary_encoding, callback);
+  int job_id = NewJob(web_contents, params, callback);
 
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&MHTMLGenerationManager::CreateFile, file_path),
+      base::Bind(&MHTMLGenerationManager::CreateFile, params.file_path),
       base::Bind(&MHTMLGenerationManager::OnFileAvailable,
                  base::Unretained(this),  // Safe b/c |this| is a singleton.
                  job_id));
@@ -403,13 +406,12 @@ void MHTMLGenerationManager::OnFileClosed(int job_id,
 }
 
 int MHTMLGenerationManager::NewJob(WebContents* web_contents,
-                                   bool use_binary_encoding,
+                                   const MHTMLGenerationParams& params,
                                    const GenerateMHTMLCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   int job_id = next_job_id_++;
-  id_to_job_[job_id] =
-      new Job(job_id, web_contents, use_binary_encoding, callback);
+  id_to_job_[job_id] = new Job(job_id, web_contents, params, callback);
   return job_id;
 }
 

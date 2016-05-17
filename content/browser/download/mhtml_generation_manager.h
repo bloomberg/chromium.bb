@@ -1,7 +1,6 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 #ifndef CONTENT_BROWSER_DOWNLOAD_MHTML_GENERATION_MANAGER_H_
 #define CONTENT_BROWSER_DOWNLOAD_MHTML_GENERATION_MANAGER_H_
 
@@ -15,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/process/process.h"
+#include "content/public/common/mhtml_generation_params.h"
 #include "ipc/ipc_platform_file.h"
 
 namespace base {
@@ -40,8 +40,7 @@ class MHTMLGenerationManager {
   // Instructs the render view to generate a MHTML representation of the current
   // page for |web_contents|.
   void SaveMHTML(WebContents* web_contents,
-                 bool use_binary_encoding,
-                 const base::FilePath& file_path,
+                 const MHTMLGenerationParams& params,
                  const GenerateMHTMLCallback& callback);
 
   // Handler for FrameHostMsg_SerializeAsMHTMLResponse (a notification from the
@@ -75,7 +74,7 @@ class MHTMLGenerationManager {
 
   // Creates and registers a new job.
   int NewJob(WebContents* web_contents,
-             bool use_binary_encoding,
+             const MHTMLGenerationParams& params,
              const GenerateMHTMLCallback& callback);
 
   // Finds job by id.  Returns nullptr if no job with a given id was found.

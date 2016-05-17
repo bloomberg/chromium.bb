@@ -68,6 +68,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/mhtml_generation_params.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/ssl_status.h"
 #include "jni/AwContents_jni.h"
@@ -403,8 +404,7 @@ void AwContents::GenerateMHTML(JNIEnv* env,
   j_callback->Reset(env, callback);
   base::FilePath target_path(ConvertJavaStringToUTF8(env, jpath));
   web_contents_->GenerateMHTML(
-      target_path,
-      false /* use_binary_encoding */,
+      content::MHTMLGenerationParams(target_path),
       base::Bind(&GenerateMHTMLCallback, base::Owned(j_callback), target_path));
 }
 

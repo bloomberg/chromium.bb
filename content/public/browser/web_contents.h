@@ -60,6 +60,7 @@ class WebContentsDelegate;
 struct CustomContextMenuContext;
 struct DropData;
 struct Manifest;
+struct MHTMLGenerationParams;
 struct PageImportanceSignals;
 struct RendererPreferences;
 
@@ -547,8 +548,7 @@ class WebContents : public PageNavigator,
   // 'base64'.  Binary encoding is known to have interoperability issues and is
   // not the recommended encoding for shareable content.
   virtual void GenerateMHTML(
-      const base::FilePath& file,
-      bool use_binary_encoding,
+      const MHTMLGenerationParams& params,
       const base::Callback<void(int64_t /* size of the file */)>& callback) = 0;
 
   // Returns the contents MIME type after a navigation.

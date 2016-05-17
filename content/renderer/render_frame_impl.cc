@@ -69,6 +69,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/isolated_world_ids.h"
+#include "content/public/common/mhtml_generation_params.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_constants.h"
@@ -4942,9 +4943,12 @@ void RenderFrameImpl::OnSerializeAsMHTML(
 
   // Generate MHTML header if needed.
   if (IsMainFrame()) {
-    data =
-        WebFrameSerializer::generateMHTMLHeader(mhtml_boundary, GetWebFrame());
-    if (file.WriteAtCurrentPos(data.data(), data.size()) < 0) {
+    blink::WebFrameSerializerCacheControlPolicy policy =
+        static_cast<blink::WebFrameSerializerCacheControlPolicy>(
+            params.mhtml_cache_control_policy);
+    success = WebFrameSerializer::generateMHTMLHeader(mhtml_boundary, policy,
+                                                      GetWebFrame(), &data);
+    if (success && file.WriteAtCurrentPos(data.data(), data.size()) < 0) {
       success = false;
     }
   }

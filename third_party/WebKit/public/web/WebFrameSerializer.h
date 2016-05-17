@@ -36,6 +36,7 @@
 #include "../platform/WebString.h"
 #include "../platform/WebURL.h"
 #include "../platform/WebVector.h"
+#include "WebFrameSerializerCacheControlPolicy.h"
 
 namespace blink {
 
@@ -47,7 +48,8 @@ template <typename T> class WebVector;
 // Serialization of frame contents into html or mhtml.
 class WebFrameSerializer {
 public:
-    // Generates and returns an MHTML header.
+    // Generates an MHTML header; returns false if an error occurred.  The
+    // header will be returned via the WebData out-param.
     //
     // Contents of the header (i.e. title and mime type) will be based
     // on the frame passed as an argument (which typically should be
@@ -56,8 +58,9 @@ public:
     // Same |boundary| needs to used for all generateMHTMLHeader and
     // generateMHTMLParts and generateMHTMLFooter calls that belong to the same
     // MHTML document (see also rfc1341, section 7.2.1, "boundary" description).
-    BLINK_EXPORT static WebData generateMHTMLHeader(
-        const WebString& boundary, WebLocalFrame*);
+    BLINK_EXPORT static bool generateMHTMLHeader(
+        const WebString& boundary, WebFrameSerializerCacheControlPolicy, WebLocalFrame*,
+        WebData*);
 
     // Delegate for controling the behavior of generateMHTMLParts method.
     class MHTMLPartsGenerationDelegate {

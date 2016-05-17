@@ -83,6 +83,7 @@ struct AXEventNotificationDetails;
 struct ColorSuggestion;
 struct FaviconURL;
 struct LoadNotificationDetails;
+struct MHTMLGenerationParams;
 struct ResourceRedirectDetails;
 struct ResourceRequestDetails;
 
@@ -351,8 +352,7 @@ class CONTENT_EXPORT WebContentsImpl
   void SaveFrameWithHeaders(const GURL& url,
                             const Referrer& referrer,
                             const std::string& headers) override;
-  void GenerateMHTML(const base::FilePath& file,
-                     bool use_binary_encoding,
+  void GenerateMHTML(const MHTMLGenerationParams& params,
                      const base::Callback<void(int64_t)>& callback) override;
   const std::string& GetContentsMimeType() const override;
   bool WillNotifyDisconnection() const override;

@@ -16,6 +16,7 @@
 #include "chrome/browser/ssl/chrome_security_state_model_client.h"
 #include "components/security_state/security_state_model.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/mhtml_generation_params.h"
 #include "net/base/filename_util.h"
 
 namespace offline_pages {
@@ -119,10 +120,14 @@ void OfflinePageMHTMLArchiver::GenerateMHTML(
       archives_dir.Append(
           GenerateFileName(url, base::UTF16ToUTF8(title), archive_id)));
 
+  content::MHTMLGenerationParams params(file_path);
+  params.cache_control_policy =
+      content::MHTMLCacheControlPolicy::FAIL_FOR_NO_STORE_MAIN_FRAME;
+  params.use_binary_encoding = true;
+
   web_contents_->GenerateMHTML(
-      file_path, true /* use_binary_encoding */,
-      base::Bind(&OfflinePageMHTMLArchiver::OnGenerateMHTMLDone,
-                 weak_ptr_factory_.GetWeakPtr(), url, file_path));
+      params, base::Bind(&OfflinePageMHTMLArchiver::OnGenerateMHTMLDone,
+                         weak_ptr_factory_.GetWeakPtr(), url, file_path));
 }
 
 void OfflinePageMHTMLArchiver::OnGenerateMHTMLDone(
