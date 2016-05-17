@@ -722,6 +722,21 @@ void ConvertConstraintsToWebrtcOfferOptions(
 base::LazyInstance<std::set<RTCPeerConnectionHandler*> >::Leaky
     g_peer_connection_handlers = LAZY_INSTANCE_INITIALIZER;
 
+void OverrideDefaultCertificateBasedOnExperiment(
+    webrtc::PeerConnectionInterface::RTCConfiguration* config) {
+  if (base::FeatureList::IsEnabled(features::kWebRtcEcdsaDefault)) {
+    if (config->certificates.empty()) {
+      rtc::scoped_refptr<rtc::RTCCertificate> certificate =
+          PeerConnectionDependencyFactory::GenerateDefaultCertificate();
+      config->certificates.push_back(certificate);
+    }
+  }
+  // If the ECDSA experiment is not running we rely on the default being RSA for
+  // the control group. See bug related to this: crbug.com/611698.
+  static_assert(rtc::KT_DEFAULT == rtc::KT_RSA, "This code relies on "
+      "KT_DEFAULT == KT_RSA for RSA certificate generation.");
+}
+
 }  // namespace
 
 // Implementation of LocalRTCStatsRequest.
@@ -952,14 +967,7 @@ bool RTCPeerConnectionHandler::initialize(
 
   webrtc::PeerConnectionInterface::RTCConfiguration config;
   GetNativeRtcConfiguration(server_configuration, &config);
-
-  if (base::FeatureList::IsEnabled(features::kWebRtcEcdsaDefault)) {
-    if (config.certificates.empty()) {
-      rtc::scoped_refptr<rtc::RTCCertificate> certificate =
-          PeerConnectionDependencyFactory::GenerateDefaultCertificate();
-      config.certificates.push_back(certificate);
-    }
-  }
+  OverrideDefaultCertificateBasedOnExperiment(&config);
 
   // Choose between RTC smoothness algorithm and prerenderer smoothing.
   // Prerenderer smoothing is turned on if RTC smoothness is turned off.
@@ -996,14 +1004,7 @@ bool RTCPeerConnectionHandler::InitializeForTest(
   DCHECK(thread_checker_.CalledOnValidThread());
   webrtc::PeerConnectionInterface::RTCConfiguration config;
   GetNativeRtcConfiguration(server_configuration, &config);
-
-  if (base::FeatureList::IsEnabled(features::kWebRtcEcdsaDefault)) {
-    if (config.certificates.empty()) {
-      rtc::scoped_refptr<rtc::RTCCertificate> certificate =
-          PeerConnectionDependencyFactory::GenerateDefaultCertificate();
-      config.certificates.push_back(certificate);
-    }
-  }
+  OverrideDefaultCertificateBasedOnExperiment(&config);
 
   peer_connection_observer_ = new Observer(weak_factory_.GetWeakPtr());
   CopyConstraintsIntoRtcConfiguration(options, &config);

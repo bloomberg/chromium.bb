@@ -84,7 +84,7 @@ const base::Feature kWebFontsInterventionV2{"WebFontsInterventionV2",
 // Makes WebRTC use ECDSA certs by default (i.e., when no cert type was
 // specified in JS).
 const base::Feature kWebRtcEcdsaDefault {"WebRTC-EnableWebRtcEcdsa",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the WebUSB API is enabled:
 // https://wicg.github.io/webusb
