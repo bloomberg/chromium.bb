@@ -404,8 +404,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Time window for which we record old navigations, in milliseconds.
   static const int kNavigationRecordWindowMs = 5000;
 
-  void OnCancelPrerenderHandle(PrerenderData* prerender_data);
-
   // Returns whether prerendering is currently enabled or the reason why it is
   // disabled.
   chrome_browser_net::NetworkPredictionStatus GetPredictionStatus() const;
