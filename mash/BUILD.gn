@@ -28,6 +28,7 @@ group("browser") {
   deps = [
     ":all",
     "//mash/browser",
+    "//mash/webtest",
   ]
 }
 
