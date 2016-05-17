@@ -456,6 +456,9 @@ source_set("unit_tests") {
 }
 
 if (is_linux) {
+  _runtime_deps = "$root_gen_dir/blimp-engine.runtime_deps"
+  _rebased_runtime_deps = rebase_path(_runtime_deps, root_out_dir)
+
   executable("blimp_engine_app") {
     sources = [
       "app/blimp_main.cc",
@@ -469,19 +472,51 @@ if (is_linux) {
       "//blimp/net",
       "//content/public/app:both",
     ]
-  }
 
-  group("engine") {
-    deps = [
-      ":blimp_engine_app",
+    data_deps = [
       ":pak",
       "//sandbox/linux:chrome_sandbox",
       "//third_party/blimp_fonts",
     ]
 
-    # List dependencies as both deps and data_deps to ensure changes trigger a
-    # rebuild and "gn desc ... runtime_deps" correctly prints the data_deps.
-    data_deps = deps
+    # Setting this causes GN to write the list of runtime dependencies
+    # for this target to the specified location. We use this list of
+    # files to generate the tarball below in :blimp_engine_bundle,
+    # so that it will contain everything we need to run the engine.
+    write_runtime_deps = _runtime_deps
+  }
+
+  group("engine") {
+    public_deps = [
+      ":blimp_engine_app",
+    ]
+  }
+
+  _manifest = "$root_gen_dir/engine-manifest.txt"
+  _rebased_manifest = rebase_path(_manifest, root_out_dir)
+
+  action("generate_manifest") {
+    script = "//blimp/tools/generate-engine-manifest.py"
+    args = [
+      "--runtime-deps-file",
+      _rebased_runtime_deps,
+      "--output",
+      _rebased_manifest,
+    ]
+    inputs = [
+      _runtime_deps,
+    ]
+    outputs = [
+      _manifest,
+    ]
+
+    # By specifying a dependency (not a data_dependency) on :engine,
+    # we can be sure that everything is built before the action is
+    # complete (though not necessarily before we generate the manifest
+    # itself).
+    deps = [
+      ":engine",
+    ]
   }
 
   # Builds and bundles the engine into a tarball that can be used to build a
@@ -493,25 +528,17 @@ if (is_linux) {
     _rebased_out_dir = rebase_path(root_out_dir)
     _rebased_dockerfile = rebase_path("//blimp/engine/Dockerfile")
     _rebased_startup_script = rebase_path("//blimp/engine/start_engine.sh")
-    _rebased_manifest = rebase_path("//blimp/engine/engine-manifest.txt")
     _bundle = "$root_out_dir/blimp_engine_bundle.tar.gz"
 
-    # Detail the target & "source"-file dependencies, and output, for GN.
+    # Depending on this ensures that both the manifest is generated
+    # and everything in the manifest has been built.
     deps = [
-      # Other than //blimp/engine, the deps are listed here to ensure that the
-      # bundle generation has all required files available, because some of
-      # these are transitive data_deps which are not guaranteed to be available
-      # at build time.
-      ":blimp_engine_app",  # blimp_engine_app from manifest.
-      ":pak",  # blimp_engine.pak
-      "//blimp/engine",
-      "//sandbox/linux:chrome_sandbox",  # chrome_sandbox from manifest.
-      "//third_party/icu:icudata",  # icudtl.dat
-      "//v8",  # natives_blob.bin
+      ":generate_manifest",
     ]
+
     sources = [
+      _manifest,
       _rebased_dockerfile,
-      _rebased_manifest,
       _rebased_startup_script,
     ]
     outputs = [
