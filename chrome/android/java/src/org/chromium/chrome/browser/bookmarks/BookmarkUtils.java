@@ -83,7 +83,8 @@ public class BookmarkUtils {
 
                         @Override
                         public void onAction(Object actionData) { }
-                    }, Snackbar.TYPE_NOTIFICATION).setSingleLine(false);
+                    }, Snackbar.TYPE_NOTIFICATION, Snackbar.UMA_BOOKMARK_ADDED)
+                    .setSingleLine(false);
             RecordUserAction.record("EnhancedBookmarks.AddingFailed");
         } else {
             String folderName = bookmarkModel.getBookmarkTitle(
@@ -92,13 +93,14 @@ public class BookmarkUtils {
                     createSnackbarControllerForEditButton(activity, bookmarkId);
             if (getLastUsedParent(activity) == null) {
                 snackbar = Snackbar.make(activity.getString(R.string.bookmark_page_saved),
-                        snackbarController, Snackbar.TYPE_ACTION);
+                        snackbarController, Snackbar.TYPE_ACTION, Snackbar.UMA_BOOKMARK_ADDED);
             } else {
-                snackbar = Snackbar.make(folderName, snackbarController, Snackbar.TYPE_ACTION)
+                snackbar = Snackbar.make(folderName, snackbarController, Snackbar.TYPE_ACTION,
+                        Snackbar.UMA_BOOKMARK_ADDED)
                         .setTemplateText(activity.getString(R.string.bookmark_page_saved_folder));
             }
-            snackbar.setSingleLine(false).setAction(
-                    activity.getString(R.string.bookmark_item_edit), null);
+            snackbar.setSingleLine(false).setAction(activity.getString(R.string.bookmark_item_edit),
+                    null);
         }
         snackbarManager.showSnackbar(snackbar);
 

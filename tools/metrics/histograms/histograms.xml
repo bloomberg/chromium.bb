@@ -51596,6 +51596,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Snackbar.Shown" enum="SnackbarIdentifier">
+  <owner>ianwen@chromium.org</owner>
+  <summary>
+    Records how many times a particular snackbar was shown to the user.
+  </summary>
+</histogram>
+
 <histogram name="SoftwareReporter.Cleaner.HasCompleted" enum="SRTCompleted">
   <owner>mad@chromium.org</owner>
   <summary>
@@ -85972,6 +85979,24 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Compressed"/>
   <int value="4" label="YUV"/>
   <int value="5" label="RGBA"/>
+</enum>
+
+<enum name="SnackbarIdentifier" type="int">
+  <int value="-2" label="TEST_SNACKBAR"/>
+  <int value="-1" label="UNKNOWN"/>
+  <int value="0" label="BOOKMARK_ADDED"/>
+  <int value="1" label="BOOKMARK_DELETE_UNDO"/>
+  <int value="2" label="NTP_MOST_VISITED_DELETE_UNDO"/>
+  <int value="3" label="OFFLINE_PAGE_RELOAD"/>
+  <int value="4" label="AUTO_LOGIN"/>
+  <int value="5" label="OMNIBOX_GEOLOCATION"/>
+  <int value="6" label="LOFI"/>
+  <int value="7" label="DATA_USE_STARTED"/>
+  <int value="8" label="DATA_USE_ENDED"/>
+  <int value="9" label="DOWNLOAD_SUCCEEDED"/>
+  <int value="10" label="DOWNLOAD_FAILED"/>
+  <int value="11" label="TAB_CLOSE_UNDO"/>
+  <int value="12" label="TAB_CLOSE_ALL_UNDO"/>
 </enum>
 
 <enum name="SnippetsInteractions" type="int">

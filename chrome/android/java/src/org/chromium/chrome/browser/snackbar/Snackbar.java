@@ -14,7 +14,7 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
  * set*() methods, and show it using {@link SnackbarManager#showSnackbar(Snackbar)}. Example:
  *
  *   SnackbarManager.showSnackbar(
- *           Snackbar.make("Closed example.com", controller)
+ *           Snackbar.make("Closed example.com", controller, Snackbar.UMA_TAB_CLOSE_UNDO)
  *           .setAction("undo", actionData));
  */
 public class Snackbar {
@@ -31,6 +31,25 @@ public class Snackbar {
      */
     public static final int TYPE_NOTIFICATION = 1;
 
+    /**
+     * UMA Identifiers of features using snackbar. See SnackbarIdentifier enum in histograms.
+     */
+    public static final int UMA_TEST_SNACKBAR = -2;
+    public static final int UMA_UNKNOWN = -1;
+    public static final int UMA_BOOKMARK_ADDED = 0;
+    public static final int UMA_BOOKMARK_DELETE_UNDO = 1;
+    public static final int UMA_NTP_MOST_VISITED_DELETE_UNDO = 2;
+    public static final int UMA_OFFLINE_PAGE_RELOAD = 3;
+    public static final int UMA_AUTO_LOGIN = 4;
+    public static final int UMA_OMNIBOX_GEOLOCATION = 5;
+    public static final int UMA_LOFI = 6;
+    public static final int UMA_DATA_USE_STARTED = 7;
+    public static final int UMA_DATA_USE_ENDED = 8;
+    public static final int UMA_DOWNLOAD_SUCCEEDED = 9;
+    public static final int UMA_DOWNLOAD_FAILED = 10;
+    public static final int UMA_TAB_CLOSE_UNDO = 11;
+    public static final int UMA_TAB_CLOSE_ALL_UNDO = 12;
+
     private SnackbarController mController;
     private CharSequence mText;
     private String mTemplateText;
@@ -41,18 +60,22 @@ public class Snackbar {
     private int mDurationMs;
     private Bitmap mProfileImage;
     private int mType;
+    private int mIdentifier = UMA_UNKNOWN;
 
     // Prevent instantiation.
     private Snackbar() {}
 
     /**
-     * Creates and returns a snackbar to display the given text.
+     * Creates and returns a snackbar to display the given text. If this is a snackbar for a new
+     * feature shown to the user, please add the feature name to SnackbarIdentifier in histograms.
      *
      * @param text The text to show on the snackbar.
      * @param controller The SnackbarController to receive callbacks about the snackbar's state.
      * @param type Type of the snackbar. Either {@link #TYPE_ACTION} or {@link #TYPE_NOTIFICATION}.
+     * @param identifier The feature code of the snackbar. Should be one of the UMA* constants above
      */
-    public static Snackbar make(CharSequence text, SnackbarController controller, int type) {
+    public static Snackbar make(CharSequence text, SnackbarController controller, int type,
+            int identifier) {
         Snackbar s = new Snackbar();
         s.mText = text;
         s.mController = controller;
@@ -143,6 +166,10 @@ public class Snackbar {
 
     int getDuration() {
         return mDurationMs;
+    }
+
+    int getIdentifier() {
+        return mIdentifier;
     }
 
     /**

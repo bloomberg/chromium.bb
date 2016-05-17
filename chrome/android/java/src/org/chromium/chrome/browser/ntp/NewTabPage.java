@@ -656,8 +656,10 @@ public class NewTabPage
             };
         }
         Context context = mNewTabPageView.getContext();
-        Snackbar snackbar = Snackbar.make(context.getString(R.string.most_visited_item_removed),
-                mMostVisitedItemRemovedController, Snackbar.TYPE_ACTION)
+        Snackbar snackbar = Snackbar
+                .make(context.getString(R.string.most_visited_item_removed),
+                        mMostVisitedItemRemovedController, Snackbar.TYPE_ACTION,
+                        Snackbar.UMA_NTP_MOST_VISITED_DELETE_UNDO)
                 .setAction(context.getString(R.string.undo), url);
         mTab.getSnackbarManager().showSnackbar(snackbar);
     }

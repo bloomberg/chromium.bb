@@ -164,9 +164,8 @@ public class OfflinePageUtils {
         Log.d(TAG, "showReloadSnackbar called with controller " + snackbarController);
         Snackbar snackbar =
                 Snackbar.make(context.getString(R.string.offline_pages_viewing_offline_page),
-                                snackbarController, Snackbar.TYPE_ACTION)
-                        .setSingleLine(false)
-                        .setAction(context.getString(R.string.reload), tabId);
+                        snackbarController, Snackbar.TYPE_ACTION, Snackbar.UMA_OFFLINE_PAGE_RELOAD)
+                        .setSingleLine(false).setAction(context.getString(R.string.reload), tabId);
         snackbar.setDuration(SNACKBAR_DURATION);
         snackbarManager.showSnackbar(snackbar);
     }
@@ -239,7 +238,7 @@ public class OfflinePageUtils {
         int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
         if (scale == 0) return 0;
 
-        int percentage = (int) Math.round(100 * level / (float) scale);
+        int percentage = Math.round(100 * level / (float) scale);
         Log.d(TAG, "Battery Percentage is " + percentage);
         return percentage;
     }

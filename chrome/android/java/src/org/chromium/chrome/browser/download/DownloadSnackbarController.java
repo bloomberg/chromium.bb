@@ -55,7 +55,7 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
         if (getSnackbarManager() == null) return;
         Snackbar snackbar = Snackbar.make(
                 mContext.getString(R.string.download_succeeded_message, downloadInfo.getFileName()),
-                this, Snackbar.TYPE_NOTIFICATION);
+                this, Snackbar.TYPE_NOTIFICATION, Snackbar.UMA_DOWNLOAD_SUCCEEDED);
         // TODO(qinmin): Coalesce snackbars if multiple downloads finish at the same time.
         snackbar.setDuration(SNACKBAR_DURATION_IN_MILLISECONDS).setSingleLine(false);
         Pair<DownloadInfo, Long> actionData = null;
@@ -71,13 +71,15 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
     /**
      * Called to display the download failed snackbar.
      *
-     * @param filename File name of the failed download.
-     * @param whether to show all downloads in case the failure is caused by duplicated files.
+     * @param errorMessage     The message to show on the snackbar.
+     * @param showAllDownloads Whether to show all downloads in case the failure is caused by
+     *                         duplicated files.
      */
     public void onDownloadFailed(String errorMessage, boolean showAllDownloads) {
         if (getSnackbarManager() == null) return;
         // TODO(qinmin): Coalesce snackbars if multiple downloads finish at the same time.
-        Snackbar snackbar = Snackbar.make(errorMessage, this, Snackbar.TYPE_NOTIFICATION)
+        Snackbar snackbar = Snackbar
+                .make(errorMessage, this, Snackbar.TYPE_NOTIFICATION, Snackbar.UMA_DOWNLOAD_FAILED)
                 .setSingleLine(false)
                 .setDuration(SNACKBAR_DURATION_IN_MILLISECONDS);
         if (showAllDownloads) {

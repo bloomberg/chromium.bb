@@ -147,11 +147,13 @@ public class SnackbarCollectionUnitTest {
     }
 
     private Snackbar makeActionSnackbar(SnackbarController controller) {
-        return Snackbar.make(ACTION_TITLE, controller, Snackbar.TYPE_ACTION);
+        return Snackbar.make(ACTION_TITLE, controller, Snackbar.TYPE_ACTION,
+                Snackbar.UMA_TEST_SNACKBAR);
     }
 
     private Snackbar makeNotificationSnackbar(SnackbarController controller) {
-        return Snackbar.make(NOTIFICATION_TITLE, controller, Snackbar.TYPE_NOTIFICATION);
+        return Snackbar.make(NOTIFICATION_TITLE, controller, Snackbar.TYPE_NOTIFICATION,
+                Snackbar.UMA_TEST_SNACKBAR);
     }
 
     private Snackbar makeActionSnackbar() {

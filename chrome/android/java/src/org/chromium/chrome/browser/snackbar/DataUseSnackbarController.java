@@ -44,13 +44,14 @@ public class DataUseSnackbarController implements SnackbarManager.SnackbarContro
      */
     public void showDataUseTrackingStartedBar() {
         assert DataUseTabUIManager.shouldShowDataUseStartedUI();
-        mSnackbarManager.showSnackbar(
-                Snackbar.make(DataUseTabUIManager.getDataUseUIString(
-                                      DataUseUIMessage.DATA_USE_TRACKING_STARTED_SNACKBAR_MESSAGE),
-                                this, Snackbar.TYPE_NOTIFICATION)
-                        .setAction(DataUseTabUIManager.getDataUseUIString(
-                                           DataUseUIMessage.DATA_USE_TRACKING_SNACKBAR_ACTION),
-                                STARTED_SNACKBAR));
+        mSnackbarManager.showSnackbar(Snackbar
+                .make(DataUseTabUIManager.getDataUseUIString(
+                        DataUseUIMessage.DATA_USE_TRACKING_STARTED_SNACKBAR_MESSAGE), this,
+                        Snackbar.TYPE_NOTIFICATION, Snackbar.UMA_DATA_USE_STARTED)
+                .setAction(
+                        DataUseTabUIManager.getDataUseUIString(
+                                DataUseUIMessage.DATA_USE_TRACKING_SNACKBAR_ACTION),
+                        STARTED_SNACKBAR));
         DataUseTabUIManager.recordDataUseUIAction(DataUsageUIAction.STARTED_SNACKBAR_SHOWN);
     }
 
@@ -64,7 +65,7 @@ public class DataUseSnackbarController implements SnackbarManager.SnackbarContro
         mSnackbarManager.showSnackbar(
                 Snackbar.make(DataUseTabUIManager.getDataUseUIString(
                                       DataUseUIMessage.DATA_USE_TRACKING_ENDED_SNACKBAR_MESSAGE),
-                                this, Snackbar.TYPE_NOTIFICATION)
+                                this, Snackbar.TYPE_NOTIFICATION, Snackbar.UMA_DATA_USE_ENDED)
                         .setAction(DataUseTabUIManager.getDataUseUIString(
                                            DataUseUIMessage.DATA_USE_TRACKING_SNACKBAR_ACTION),
                                 ENDED_SNACKBAR));

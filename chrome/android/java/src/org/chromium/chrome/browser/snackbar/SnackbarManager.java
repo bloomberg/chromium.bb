@@ -10,6 +10,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 
 /**
@@ -105,6 +106,8 @@ public class SnackbarManager implements OnClickListener {
      */
     public void showSnackbar(Snackbar snackbar) {
         if (!mActivityInForeground || mIsDisabledForTesting) return;
+        RecordHistogram.recordSparseSlowlyHistogram("Snackbar.Shown", snackbar.getIdentifier());
+
         mSnackbars.add(snackbar);
         updateView();
         mView.announceforAccessibility();

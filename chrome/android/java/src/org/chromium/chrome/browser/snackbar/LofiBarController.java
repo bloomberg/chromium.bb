@@ -100,9 +100,10 @@ public class LofiBarController implements SnackbarManager.SnackbarController {
                 .getString(isPreview ? R.string.data_reduction_lo_fi_preview_snackbar_action
                         : R.string.data_reduction_lo_fi_snackbar_action);
 
-        mSnackbarManager.showSnackbar(Snackbar.make(message, this, Snackbar.TYPE_NOTIFICATION)
-                .setAction(buttonText, isPreview ? PREVIEW_SNACKBAR : LOFI_SNACKBAR)
-                .setDuration(DEFAULT_LO_FI_SNACKBAR_SHOW_DURATION_MS));
+        mSnackbarManager.showSnackbar(
+                Snackbar.make(message, this, Snackbar.TYPE_NOTIFICATION, Snackbar.UMA_LOFI)
+                        .setAction(buttonText, isPreview ? PREVIEW_SNACKBAR : LOFI_SNACKBAR)
+                        .setDuration(DEFAULT_LO_FI_SNACKBAR_SHOW_DURATION_MS));
         DataReductionProxySettings.getInstance().incrementLoFiSnackbarShown();
         DataReductionProxyUma.dataReductionProxyLoFiUIAction(
                 DataReductionProxyUma.ACTION_LOAD_IMAGES_SNACKBAR_SHOWN);

@@ -83,7 +83,8 @@ public class GeolocationSnackbarController implements SnackbarController {
         int durationMs = DeviceClassManager.isAccessibilityModeEnabled(view.getContext())
                 ? ACCESSIBILITY_SNACKBAR_DURATION_MS : SNACKBAR_DURATION_MS;
         final GeolocationSnackbarController controller = new GeolocationSnackbarController();
-        final Snackbar snackbar = Snackbar.make(message, controller, Snackbar.TYPE_ACTION)
+        final Snackbar snackbar = Snackbar
+                .make(message, controller, Snackbar.TYPE_ACTION, Snackbar.UMA_OMNIBOX_GEOLOCATION)
                 .setAction(settings, view)
                 .setSingleLine(false)
                 .setDuration(durationMs);
