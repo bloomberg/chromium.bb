@@ -595,11 +595,11 @@ TEST_F('OutputE2ETest', 'ToggleButton', function() {
     function(root) {
       var el = root.firstChild;
       var o = new Output().withSpeech(cursors.Range.fromNode(el));
-      assertEqualsJSON({string_: '|Subscribe|Check box|not checked', spans_: [
-        {value: {earconId: 'CHECK_OFF'}, start: 0, end: 0},
+      assertEqualsJSON({string_: '|Subscribe|Button|Pressed', spans_: [
+        {value: {earconId: 'CHECK_ON'}, start: 0, end: 0},
         {value: 'name', start: 1, end:10},
-        {value: 'role', start: 11, end: 20},
-        {value: 'state', start: 21, end: 32}
+        {value: 'role', start: 11, end: 17},
+        {value: 'state', start: 18, end: 25}
       ]}, o.speechOutputForTest);
   });
 });

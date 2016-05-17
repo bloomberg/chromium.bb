@@ -315,7 +315,7 @@ Output.ROLE_INFO_ = {
     msgId: 'role_toolbar'
   },
   toggleButton: {
-    msgId: 'role_checkbox',
+    msgId: 'role_button',
     inherits: 'checkBox'
   },
   tree: {
@@ -362,6 +362,17 @@ Output.STATE_INFO_ = {
     },
     off: {
       msgId: 'aria_expanded_false'
+    }
+  },
+  pressed: {
+    on: {
+      msgId: 'aria_pressed_true'
+    },
+    off: {
+      msgId: 'aria_pressed_false'
+    },
+        omitted: {
+      msgId: 'aria_pressed_false'
     }
   },
   visited: {
@@ -501,6 +512,10 @@ Output.RULES = {
       speak: '$name $value $if($multiline, @tag_textarea, $if(' +
           '$inputType, $inputType, $role)) $description',
       braille: ''
+    },
+    toggleButton: {
+      speak: '$if($pressed, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
+             '$name $role $pressed $description'
     },
     toolbar: {
       enter: '$name $role $description'

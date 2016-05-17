@@ -673,6 +673,33 @@ TEST_F('BackgroundTest', 'SelectOptionSelected', function() {
         .call(selectLastOption)
         .expectNextSpeechUtteranceIsNot('apple')
         .expectSpeech('grapefruit')
+            .replay();
+  });
+});
+
+TEST_F('BackgroundTest', 'ToggleButton', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <div aria-pressed="true" role="button">ok</div>
+    <div aria-pressed="false" role="button">cancel</div>
+    <div aria-pressed role="button">close</div>
+  */}, function(root) {
+    var b = global.backgroundObj;
+    var move = b.onGotCommand.bind(b, 'nextObject');
+    mockFeedback.call(move)
+        .expectSpeech('ok')
+        .expectSpeech('Button')
+        .expectSpeech('Pressed')
+
+        .call(move)
+        .expectSpeech('cancel')
+        .expectSpeech('Button')
+        .expectSpeech('Not pressed')
+
+        .call(move)
+        .expectSpeech('close')
+        .expectSpeech('Button')
+
         .replay();
   });
 });
