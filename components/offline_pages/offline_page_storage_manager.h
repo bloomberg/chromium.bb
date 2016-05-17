@@ -36,6 +36,8 @@ class OfflinePageStorageManager {
   // This interface should be implemented by clients managed by storage manager.
   class Client {
    public:
+    virtual ~Client() {}
+
     // Asks the client to get all offline pages and invoke |callback|.
     virtual void GetAllPages(
         const MultipleOfflinePageItemCallback& callback) = 0;

@@ -50,6 +50,8 @@ class StorageManagerTestClient : public OfflinePageStorageManager::Client {
       AddPages(setting);
   }
 
+  ~StorageManagerTestClient() override;
+
   void GetAllPages(const MultipleOfflinePageItemCallback& callback) override {
     callback.Run(pages_);
   }
@@ -78,6 +80,8 @@ class StorageManagerTestClient : public OfflinePageStorageManager::Client {
 
   int64_t next_offline_id_;
 };
+
+StorageManagerTestClient::~StorageManagerTestClient() {}
 
 void StorageManagerTestClient::AddPages(const PageSettings& setting) {
   std::string name_space = setting.name_space;

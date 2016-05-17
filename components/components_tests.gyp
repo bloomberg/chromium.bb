@@ -421,8 +421,11 @@
       'offline_pages/background/save_page_request_unittest.cc',
     ],
     'offline_pages_unittest_sources': [
+      'offline_pages/archive_manager_unittest.cc',
+      'offline_pages/client_policy_controller_unittest.cc',
       'offline_pages/offline_page_metadata_store_impl_unittest.cc',
       'offline_pages/offline_page_model_unittest.cc',
+      'offline_pages/offline_page_storage_manager_unittest.cc',
       'offline_pages/snapshot_controller_unittest.cc',
     ],
     'omnibox_unittest_sources': [

@@ -34,7 +34,7 @@ class SequencedTaskRunner;
 class Time;
 class TimeDelta;
 class TimeTicks;
-}
+}  // namespace base
 
 namespace offline_pages {
 
