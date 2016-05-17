@@ -33,7 +33,9 @@
 #include "chrome/browser/ui/webui/profile_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/google_chrome_strings.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
@@ -117,22 +119,16 @@ void SigninCreateProfileHandler::GetLocalizedValues(
   localized_strings->SetString(
       "supervisedUserCreatedTitle",
        l10n_util::GetStringUTF16(IDS_LEGACY_SUPERVISED_USER_CREATED_TITLE));
-  // The first substitution parameter remains to be filled by the page JS.
+  // The first two substitution parameters remain to be filled by the page JS.
   localized_strings->SetString(
-      "supervisedUserCreatedTextPart1",
+      "supervisedUserCreatedText",
       l10n_util::GetStringFUTF16(
-            IDS_SUPERVISED_USER_CREATED_TEXT_PART1,
+            IDS_SUPERVISED_USER_CREATED_TEXT,
             base::ASCIIToUTF16("$1"),
+            base::ASCIIToUTF16("$2"),
             base::ASCIIToUTF16(chrome::kLegacySupervisedUserManagementURL),
             base::ASCIIToUTF16(
                 chrome::kLegacySupervisedUserManagementDisplayURL)));
-  // The first two substitution parameters remain to be filled by the page JS.
-  localized_strings->SetString(
-      "supervisedUserCreatedTextPart2",
-      l10n_util::GetStringFUTF16(
-            IDS_SUPERVISED_USER_CREATED_TEXT_PART2,
-            base::ASCIIToUTF16("$1"),
-            base::ASCIIToUTF16("$2")));
   localized_strings->SetString(
       "exitAndChildlockLabel",
       l10n_util::GetStringUTF16(

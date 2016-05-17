@@ -47,8 +47,7 @@ Polymer({
 
   /**
    * Handles tap events from dynamically created links in the
-   * supervisedUserCreatedTextPart1 and supervisedUserCreatedTextPart2 i18n
-   * strings.
+   * supervisedUserCreatedText i18n string.
    * @param {!Event} event
    * @private
    */
@@ -98,26 +97,14 @@ Polymer({
   },
 
   /**
-   * Computed binding returning the part 1 of the confirmation message. Returns
-   * sanitized HTML that is safe to set as innerHTML.
+   * Computed binding returning the sanitized confirmation HTML message that is
+   * safe to set as innerHTML.
    * @param {?ProfileInfo} profileInfo
    * @return {string}
    * @private
    */
-  htmlMessage1_: function(profileInfo) {
-    return this.i18n('supervisedUserCreatedTextPart1',
-                     HTMLEscape(this.elideProfileName_(profileInfo)));
-  },
-
-  /**
-   * Computed binding returning the part 2 of the confirmation message. Returns
-   * sanitized HTML that is safe to set as innerHTML.
-   * @param {?ProfileInfo} profileInfo
-   * @return {string}
-   * @private
-   */
-  htmlMessage2_: function(profileInfo) {
-    return this.i18n('supervisedUserCreatedTextPart2',
+  confirmationMessage_: function(profileInfo) {
+    return this.i18n('supervisedUserCreatedText',
                      this.elideProfileName_(profileInfo),
                      this.elideCustodianUsername_(profileInfo));
   },

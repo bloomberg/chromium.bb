@@ -33,9 +33,6 @@
 
       .content-area {
         padding-top: 32px;
-      }
-
-      .content {
         white-space: pre-wrap;
         word-wrap: break-word;
       }
@@ -70,15 +67,8 @@
         <span id="title">[[titleText_(profileInfo)]]</span>
         <iron-icon icon="supervisor-account"></iron-icon>
       </div>
-      <div class="content-area">
-        <div class="content" inner-h-t-m-l="[[htmlMessage1_(profileInfo)]]">
-        </div>
-        <div id="childlock-button-example">
-          <iron-icon icon="lock"></iron-icon>
-          <span>$i18n{exitAndChildlockLabel}</span>
-        </div>
-        <div class="content" inner-h-t-m-l="[[htmlMessage2_(profileInfo)]]">
-        </div>
+      <div class="content-area"
+          inner-h-t-m-l="[[confirmationMessage_(profileInfo)]]">
       </div>
       <div id="actions">
         <paper-button id="ok" class="action secondary" on-tap="onOkTap_">
