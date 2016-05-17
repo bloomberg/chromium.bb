@@ -16,7 +16,7 @@
 #include "core/page/Page.h"
 #include "platform/Histogram.h"
 #include "platform/PlatformTouchEvent.h"
-
+#include "wtf/CurrentTime.h"
 
 
 namespace blink {
@@ -243,13 +243,20 @@ WebInputEventResult TouchEventManager::dispatchTouchEvents(
                 DEFINE_STATIC_LOCAL(EnumerationHistogram, rootDocumentListenerHistogram, ("Event.Touch.TargetAndDispatchResult", TouchTargetAndDispatchResultTypeMax));
                 rootDocumentListenerHistogram.count(toTouchTargetHistogramValue(eventTarget, domDispatchResult));
 
-                // Count the handled touch starts and first touch moves before and after the page is fully loaded respectively.
+                // Record the disposition and latency of touch starts and first touch moves before and after the page is fully loaded respectively.
+                int64_t latencyInMicros = static_cast<int64_t>((currentTime() - event.timestamp()) * 1000000.0);
                 if (m_frame->document()->isLoadCompleted()) {
                     DEFINE_STATIC_LOCAL(EnumerationHistogram, touchDispositionsAfterPageLoadHistogram, ("Event.Touch.TouchDispositionsAfterPageLoad", TouchEventDispatchResultTypeMax));
                     touchDispositionsAfterPageLoadHistogram.count((domDispatchResult != DispatchEventResult::NotCanceled) ? HandledTouches : UnhandledTouches);
+
+                    DEFINE_STATIC_LOCAL(CustomCountHistogram, eventLatencyAfterPageLoadHistogram, ("Event.Touch.TouchLatencyAfterPageLoad", 1, 100000000, 50));
+                    eventLatencyAfterPageLoadHistogram.count(latencyInMicros);
                 } else {
                     DEFINE_STATIC_LOCAL(EnumerationHistogram, touchDispositionsBeforePageLoadHistogram, ("Event.Touch.TouchDispositionsBeforePageLoad", TouchEventDispatchResultTypeMax));
                     touchDispositionsBeforePageLoadHistogram.count((domDispatchResult != DispatchEventResult::NotCanceled) ? HandledTouches : UnhandledTouches);
+
+                    DEFINE_STATIC_LOCAL(CustomCountHistogram, eventLatencyBeforePageLoadHistogram, ("Event.Touch.TouchLatencyBeforePageLoad", 1, 100000000, 50));
+                    eventLatencyBeforePageLoadHistogram.count(latencyInMicros);
                 }
 
                 // Report the touch disposition, split by whether there is an active fling animation.

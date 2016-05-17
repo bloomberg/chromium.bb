@@ -12451,6 +12451,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Event.Touch.TouchLatencyAfterPageLoad" units="microseconds">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Time between when a touch event was generated and the event was processed.
+    Recorded only for touch start events and the first touchmove events per
+    scroll that occur after the page is fully loaded.
+  </summary>
+</histogram>
+
+<histogram name="Event.Touch.TouchLatencyBeforePageLoad" units="microseconds">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Time between when a touch event was generated and the event was processed.
+    Recorded only for touch start events and the first touchmove events per
+    scroll that occur before the page is fully loaded. This histogram tracks the
+    benefit of forcing passive event listeners before the page is fully loaded.
+  </summary>
+</histogram>
+
 <histogram name="Event.TouchDuration" units="ms">
   <owner>kuscher@google.com</owner>
   <owner>rbyers@chromium.org</owner>
