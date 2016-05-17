@@ -126,7 +126,9 @@ void logConsoleError(ExecutionContext* context, const String& message)
         return;
     // FIXME: It's not good to report the bad usage without indicating what source line it came from.
     // We should pass additional parameters so we can tell the console where the mistake occurred.
-    context->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message));
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message);
+    consoleMessage->collectCallStack();
+    context->addConsoleMessage(consoleMessage);
 }
 
 enum HeaderValueCategoryByRFC7230 {
