@@ -278,8 +278,8 @@ class WidgetTestInteractive : public WidgetTest {
   ~WidgetTestInteractive() override {}
 
   void SetUp() override {
-    // On mus these tests run as part of views::ViewTestSuite which already does
-    // this initialization.
+    // On mus these tests run as part of views::ViewsTestSuite which already
+    // does this initialization.
     if (!IsMus()) {
       gfx::GLSurfaceTestSupport::InitializeOneOff();
       ui::RegisterPathProvider();
@@ -1307,8 +1307,8 @@ class WidgetCaptureTest : public ViewsTestBase {
   ~WidgetCaptureTest() override {}
 
   void SetUp() override {
-    // On mus these tests run as part of views::ViewTestSuite which already does
-    // this initialization.
+    // On mus these tests run as part of views::ViewsTestSuite which already
+    // does this initialization.
     if (!IsMus()) {
       gfx::GLSurfaceTestSupport::InitializeOneOff();
       ui::RegisterPathProvider();

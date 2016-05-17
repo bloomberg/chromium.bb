@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/run_all_unittests.h"
+#include "ui/views/views_test_suite.h"
 
 int main(int argc, char** argv) {
-  return views::ViewTestSuite(argc, argv).RunTests();
+  return views::ViewsTestSuite(argc, argv).RunTests();
 }

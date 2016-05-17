@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/run_all_unittests.h"
+#include "ui/views/views_test_suite.h"
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -23,22 +23,22 @@
 
 namespace views {
 
-ViewTestSuite::ViewTestSuite(int argc, char** argv)
+ViewsTestSuite::ViewsTestSuite(int argc, char** argv)
     : base::TestSuite(argc, argv), argc_(argc), argv_(argv) {}
 
-ViewTestSuite::~ViewTestSuite() {}
+ViewsTestSuite::~ViewsTestSuite() {}
 
-int ViewTestSuite::RunTests() {
+int ViewsTestSuite::RunTests() {
   return base::LaunchUnitTests(
-      argc_, argv_, base::Bind(&ViewTestSuite::Run, base::Unretained(this)));
+      argc_, argv_, base::Bind(&ViewsTestSuite::Run, base::Unretained(this)));
 }
 
-int ViewTestSuite::RunTestsSerially() {
+int ViewsTestSuite::RunTestsSerially() {
   return base::LaunchUnitTestsSerially(
-      argc_, argv_, base::Bind(&ViewTestSuite::Run, base::Unretained(this)));
+      argc_, argv_, base::Bind(&ViewsTestSuite::Run, base::Unretained(this)));
 }
 
-void ViewTestSuite::Initialize() {
+void ViewsTestSuite::Initialize() {
   base::TestSuite::Initialize();
   gfx::GLSurfaceTestSupport::InitializeOneOff();
   ui::RegisterPathProvider();
@@ -51,7 +51,7 @@ void ViewTestSuite::Initialize() {
 #endif
 }
 
-void ViewTestSuite::Shutdown() {
+void ViewsTestSuite::Shutdown() {
 #if defined(USE_AURA)
   env_.reset();
 #endif

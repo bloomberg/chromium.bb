@@ -8,19 +8,19 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "ui/views/run_all_unittests.h"
+#include "ui/views/views_test_suite.h"
 
 namespace views {
 
 class ShellConnection;
 
-class ViewsMusTestSuite : public ViewTestSuite {
+class ViewsMusTestSuite : public ViewsTestSuite {
  public:
   ViewsMusTestSuite(int argc, char** argv);
   ~ViewsMusTestSuite() override;
 
  private:
-  // ViewTestSuite:
+  // ViewsTestSuite:
   void Initialize() override;
   void Shutdown() override;
 

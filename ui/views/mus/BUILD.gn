@@ -133,9 +133,9 @@ source_set("test_support") {
   testonly = true
 
   sources = [
-    "../run_all_unittests.cc",
-    "../run_all_unittests.h",
     "../test/native_widget_factory_mus.cc",
+    "../views_test_suite.cc",
+    "../views_test_suite.h",
     "views_mus_test_suite.cc",
     "views_mus_test_suite.h",
   ]

@@ -124,19 +124,19 @@ class ShellConnection {
 };
 
 ViewsMusTestSuite::ViewsMusTestSuite(int argc, char** argv)
-    : ViewTestSuite(argc, argv) {}
+    : ViewsTestSuite(argc, argv) {}
 
 ViewsMusTestSuite::~ViewsMusTestSuite() {}
 
 void ViewsMusTestSuite::Initialize() {
   PlatformTestHelper::SetIsMus();
-  ViewTestSuite::Initialize();
+  ViewsTestSuite::Initialize();
   shell_connections_.reset(new ShellConnection);
 }
 
 void ViewsMusTestSuite::Shutdown() {
   shell_connections_.reset();
-  ViewTestSuite::Shutdown();
+  ViewsTestSuite::Shutdown();
 }
 
 }  // namespace views

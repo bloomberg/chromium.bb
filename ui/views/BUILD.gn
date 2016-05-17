@@ -310,9 +310,9 @@ if (is_mac) {
   test("macviews_interactive_ui_tests") {
     sources = [
       "cocoa/bridged_native_widget_interactive_uitest.mm",
-      "run_all_unittests.cc",
-      "run_all_unittests.h",
       "run_all_unittests_main.cc",
+      "views_test_suite.cc",
+      "views_test_suite.h",
       "widget/native_widget_mac_interactive_uitest.mm",
     ]
     deps = [

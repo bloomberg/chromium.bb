@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_VIEWS_RUN_ALL_UNITTESTS_H_
-#define UI_VIEWS_RUN_ALL_UNITTESTS_H_
+#ifndef UI_VIEWS_VIEWS_TEST_SUITE_H_
+#define UI_VIEWS_VIEWS_TEST_SUITE_H_
 
-#include "base/callback_forward.h"
 #include "base/test/test_suite.h"
 
 #if defined(USE_AURA)
@@ -18,11 +17,10 @@ class Env;
 
 namespace views {
 
-// TODO(jamescook): Rename this to ViewsTestSuite and rename the file to match.
-class ViewTestSuite : public base::TestSuite {
+class ViewsTestSuite : public base::TestSuite {
  public:
-  ViewTestSuite(int argc, char** argv);
-  ~ViewTestSuite() override;
+  ViewsTestSuite(int argc, char** argv);
+  ~ViewsTestSuite() override;
 
   int RunTests();
   int RunTestsSerially();
@@ -39,9 +37,9 @@ class ViewTestSuite : public base::TestSuite {
   int argc_;
   char** argv_;
 
-  DISALLOW_COPY_AND_ASSIGN(ViewTestSuite);
+  DISALLOW_COPY_AND_ASSIGN(ViewsTestSuite);
 };
 
 }  // namespace
 
-#endif  // UI_VIEWS_RUN_ALL_UNITTESTS_H_
+#endif  // UI_VIEWS_VIEWS_TEST_SUITE_H_
