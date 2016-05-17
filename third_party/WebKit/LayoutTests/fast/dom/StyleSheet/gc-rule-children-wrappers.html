@@ -31,7 +31,10 @@
     function test(expr, expectedType, testWhat)
     {
         shouldBe(expr + ".type", expectedType);
-        eval(expr + "." + testWhat).foo = "bar"
+        // Do initialization work in an inner function to avoid references to
+        // objects remaining live on this function's stack frame
+        // (http://crbug.com/595672/).
+        (() => {eval(expr + "." + testWhat).foo = "bar";})();
         gc();
         shouldBe(expr + "." + testWhat + ".foo", "'bar'");
     }

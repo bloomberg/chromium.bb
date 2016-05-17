@@ -19,7 +19,10 @@ var nodeListKind = {
 var i = 1;
 for (var kind in nodeListKind) {
     var code = nodeListKind[kind];
-    eval(code).customProperty = i;
+    // Do initialization work in an inner function to avoid references to
+    // objects remaining live on this function's stack frame
+    // (http://crbug.com/595672/).
+    (() => {eval(code).customProperty = i})();
     gc();
     shouldBe(code + '.customProperty', '' + i++);
 }

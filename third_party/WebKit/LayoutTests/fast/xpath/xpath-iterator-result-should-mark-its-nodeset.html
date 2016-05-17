@@ -20,10 +20,18 @@
 
         function test(type)
         {
-            var doc = (new DOMParser).parseFromString("<html><body><span></span></body></html>", "text/xml");
-            doc.getElementsByTagName("span")[0].foo = "PASS";
-            var result = doc.evaluate("//span", doc.documentElement, null, type, null);
-            doc = 0;
+            var doc, result;
+            function initialize() {
+              doc = (new DOMParser).parseFromString("<html><body><span></span></body></html>", "text/xml");
+              doc.getElementsByTagName("span")[0].foo = "PASS";
+              result = doc.evaluate("//span", doc.documentElement, null, type, null);
+              doc = 0;
+            }
+
+            // Do initialization work in an inner function to avoid references
+            // to objects remaining live on this function's stack frame
+            // (http://crbug.com/595672/).
+            initialize();
             gc();
             var console = document.getElementById("console");
             console.appendChild(document.createTextNode(result.iterateNext().foo));

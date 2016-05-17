@@ -20,9 +20,17 @@
 
         function test(type)
         {
-            document.getElementsByTagName("span")[0].foo = "PASS";
-            var result = document.evaluate("//span", document.documentElement, null, type, null);
-            document.body.removeChild(document.getElementsByTagName("span")[0]);
+            var result;
+            function initialize() {
+                document.getElementsByTagName("span")[0].foo = "PASS";
+                result = document.evaluate("//span", document.documentElement, null, type, null);
+                document.body.removeChild(document.getElementsByTagName("span")[0]);
+            }
+
+            // Do initialization work in an inner function to avoid references
+            // to objects remaining live on this function's stack frame
+            // (http://crbug.com/595672/).
+            initialize();
             gc();
             var console = document.getElementById("console");
             console.appendChild(document.createTextNode(result.singleNodeValue.foo));
