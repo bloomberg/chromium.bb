@@ -26,7 +26,9 @@ using ExtensionsMap = std::map<der::Input, ParsedExtension>;
 // Describes all parsed properties of a certificate that are relevant for
 // certificate verification.
 struct FullyParsedCert {
-  ParsedCertificate cert;
+  der::Input tbs_certificate_tlv;
+  der::Input signature_algorithm_tlv;
+  der::BitString signature_value;
   ParsedTbsCertificate tbs;
 
   std::unique_ptr<SignatureAlgorithm> signature_algorithm;
@@ -84,19 +86,20 @@ WARN_UNUSED_RESULT bool GetSequenceValue(const der::Input& tlv,
 WARN_UNUSED_RESULT bool FullyParseCertificate(const der::Input& cert_tlv,
                                               FullyParsedCert* out) {
   // Parse the outer Certificate.
-  if (!ParseCertificate(cert_tlv, &out->cert))
+  if (!ParseCertificate(cert_tlv, &out->tbs_certificate_tlv,
+                        &out->signature_algorithm_tlv, &out->signature_value))
     return false;
 
   // Parse the signature algorithm contained in the Certificate (there is
   // another one in the TBSCertificate, which is checked later by
   // VerifySignatureAlgorithmsMatch)
   out->signature_algorithm =
-      SignatureAlgorithm::CreateFromDer(out->cert.signature_algorithm_tlv);
+      SignatureAlgorithm::CreateFromDer(out->signature_algorithm_tlv);
   if (!out->signature_algorithm)
     return false;
 
   // Parse the TBSCertificate.
-  if (!ParseTbsCertificate(out->cert.tbs_certificate_tlv, &out->tbs))
+  if (!ParseTbsCertificate(out->tbs_certificate_tlv, &out->tbs))
     return false;
 
   // Reset state relating to extensions (which may not get overwritten). This is
@@ -244,7 +247,7 @@ WARN_UNUSED_RESULT bool IsRsaWithSha1SignatureAlgorithm(
 // compatibility sake.
 WARN_UNUSED_RESULT bool VerifySignatureAlgorithmsMatch(
     const FullyParsedCert& cert) {
-  const der::Input& alg1_tlv = cert.cert.signature_algorithm_tlv;
+  const der::Input& alg1_tlv = cert.signature_algorithm_tlv;
   const der::Input& alg2_tlv = cert.tbs.signature_algorithm_tlv;
 
   // Ensure that the two DER-encoded signature algorithms are byte-for-byte
@@ -279,9 +282,9 @@ WARN_UNUSED_RESULT bool BasicCertificateProcessing(
   // Verify the digital signature using the previous certificate's key (RFC
   // 5280 section 6.1.3 step a.1).
   if (!skip_issuer_checks) {
-    if (!VerifySignedData(
-            *cert.signature_algorithm, cert.cert.tbs_certificate_tlv,
-            cert.cert.signature_value, working_spki, signature_policy)) {
+    if (!VerifySignedData(*cert.signature_algorithm, cert.tbs_certificate_tlv,
+                          cert.signature_value, working_spki,
+                          signature_policy)) {
       return false;
     }
   }
@@ -515,12 +518,15 @@ std::unique_ptr<TrustAnchor> TrustAnchor::CreateFromCertificateData(
   }
 
   // Parse the certificate to get its name.
-  ParsedCertificate cert;
-  if (!ParseCertificate(result->cert(), &cert))
+  der::Input tbs_certificate_tlv;
+  der::Input signature_algorithm_tlv;
+  der::BitString signature_value;
+  if (!ParseCertificate(result->cert(), &tbs_certificate_tlv,
+                        &signature_algorithm_tlv, &signature_value))
     return nullptr;
 
   ParsedTbsCertificate tbs;
-  if (!ParseTbsCertificate(cert.tbs_certificate_tlv, &tbs))
+  if (!ParseTbsCertificate(tbs_certificate_tlv, &tbs))
     return nullptr;
 
   result->name_ = tbs.subject_tlv;
@@ -728,10 +734,13 @@ WARN_UNUSED_RESULT bool BuildSimplePathToTrustAnchor(
   // Otherwise if it is not trusted, check whether its issuer is trusted. If
   // so, make *that* trusted certificate the root. If the issuer is not in
   // the trust store then give up and fail (this is not full path building).
-  ParsedCertificate cert;
+  der::Input tbs_certificate_tlv;
+  der::Input signature_algorithm_tlv;
+  der::BitString signature_value;
   ParsedTbsCertificate tbs;
-  if (!ParseCertificate(certs_der.back(), &cert) ||
-      !ParseTbsCertificate(cert.tbs_certificate_tlv, &tbs)) {
+  if (!ParseCertificate(certs_der.back(), &tbs_certificate_tlv,
+                        &signature_algorithm_tlv, &signature_value) ||
+      !ParseTbsCertificate(tbs_certificate_tlv, &tbs)) {
     return false;
   }
 

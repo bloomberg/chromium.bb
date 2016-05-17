@@ -26,14 +26,17 @@ bool FindExtension(const der::Input& oid,
 }
 
 void ParseCertificateForFuzzer(const der::Input& in) {
-  ParsedCertificate cert;
-  if (!ParseCertificate(in, &cert))
+  der::Input tbs_certificate_tlv;
+  der::Input signature_algorithm_tlv;
+  der::BitString signature_value;
+  if (!ParseCertificate(in, &tbs_certificate_tlv, &signature_algorithm_tlv,
+                        &signature_value))
     return;
   std::unique_ptr<SignatureAlgorithm> sig_alg(
-      SignatureAlgorithm::CreateFromDer(cert.signature_algorithm_tlv));
+      SignatureAlgorithm::CreateFromDer(signature_algorithm_tlv));
 
   ParsedTbsCertificate tbs;
-  if (!ParseTbsCertificate(cert.tbs_certificate_tlv, &tbs))
+  if (!ParseTbsCertificate(tbs_certificate_tlv, &tbs))
     return;
 
   ignore_result(VerifySerialNumber(tbs.serial_number));

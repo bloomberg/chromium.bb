@@ -177,12 +177,15 @@ WARN_UNUSED_RESULT bool CheckTargetCertificate(
   // TODO(eroman): Simplify this. The certificate chain verification
   // function already parses this stuff, awkward to re-do it here.
 
-  net::ParsedCertificate cert;
-  if (!net::ParseCertificate(cert_der, &cert))
+  net::der::Input tbs_certificate_tlv;
+  net::der::Input signature_algorithm_tlv;
+  net::der::BitString signature_value;
+  if (!net::ParseCertificate(cert_der, &tbs_certificate_tlv,
+                             &signature_algorithm_tlv, &signature_value))
     return false;
 
   net::ParsedTbsCertificate tbs;
-  if (!net::ParseTbsCertificate(cert.tbs_certificate_tlv, &tbs))
+  if (!net::ParseTbsCertificate(tbs_certificate_tlv, &tbs))
     return false;
 
   // Get the extensions.
