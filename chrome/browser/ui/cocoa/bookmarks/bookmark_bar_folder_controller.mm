@@ -123,7 +123,7 @@ struct LayoutMetrics {
 
 NSRect GetFirstButtonFrameForHeight(CGFloat height) {
   CGFloat y = height - bookmarks::kBookmarkFolderButtonHeight -
-      bookmarks::kBookmarkVerticalPadding;
+      bookmarks::BookmarkVerticalPadding();
   return NSMakeRect(0, y, bookmarks::kDefaultBookmarkWidth,
                     bookmarks::kBookmarkFolderButtonHeight);
 }
@@ -365,7 +365,9 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
 #pragma mark Private Methods
 
 - (BookmarkButtonCell*)cellForBookmarkNode:(const BookmarkNode*)child {
-  NSImage* image = child ? [barController_ faviconForNode:child] : nil;
+  NSImage* image = child ? [barController_ faviconForNode:child
+                                            forADarkTheme:NO]
+                         : nil;
   BookmarkContextMenuCocoaController* menuController =
       [barController_ menuController];
   BookmarkBarFolderButtonCell* cell =
@@ -547,12 +549,12 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
     newWindowTopLeft.x = [self childFolderWindowLeftForWidth:windowWidth];
     NSPoint topOfWindow = NSMakePoint(0,
                                       NSMaxY([parentButton_ frame]) -
-                                          bookmarks::kBookmarkVerticalPadding);
+                                          bookmarks::BookmarkVerticalPadding());
     topOfWindow = ui::ConvertPointFromWindowToScreen(
         [parentButton_ window],
         [[parentButton_ superview] convertPoint:topOfWindow toView:nil]);
     newWindowTopLeft.y = topOfWindow.y +
-                         2 * bookmarks::kBookmarkVerticalPadding;
+                         2 * bookmarks::BookmarkVerticalPadding();
   }
   return newWindowTopLeft;
 }
@@ -567,7 +569,7 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
   // This does not take into account any padding which may be required at the
   // top and/or bottom of the window.
   return (buttonCount * bookmarks::kBookmarkFolderButtonHeight) +
-      2 * bookmarks::kBookmarkVerticalPadding;
+      2 * bookmarks::BookmarkVerticalPadding();
 }
 
 - (void)adjustWindowLeft:(CGFloat)windowLeft
@@ -1739,7 +1741,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
         [buttons_ objectAtIndex:static_cast<NSUInteger>(destIndex)];
     DCHECK(button);
     NSRect buttonFrame = [button frame];
-    y = NSMaxY(buttonFrame) + 0.5 * bookmarks::kBookmarkVerticalPadding;
+    y = NSMaxY(buttonFrame) + 0.5 * bookmarks::BookmarkVerticalPadding();
 
     // If it's a drop at the end (past the last button, if there are any) ...
   } else if (destIndex == numButtons) {
@@ -1750,7 +1752,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
           [buttons_ objectAtIndex:static_cast<NSUInteger>(destIndex - 1)];
       DCHECK(button);
       NSRect buttonFrame = [button frame];
-      y = buttonFrame.origin.y - 0.5 * bookmarks::kBookmarkVerticalPadding;
+      y = buttonFrame.origin.y - 0.5 * bookmarks::BookmarkVerticalPadding();
 
     }
   } else {
@@ -1779,7 +1781,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 - (void)faviconLoadedForNode:(const BookmarkNode*)node {
   for (BookmarkButton* button in buttons_.get()) {
     if ([button bookmarkNode] == node) {
-      [button setImage:[barController_ faviconForNode:node]];
+      BOOL darkTheme = [[button window] hasDarkTheme];
+      [button setImage:[barController_ faviconForNode:node
+                                        forADarkTheme:darkTheme]];
       [button setNeedsDisplay:YES];
       return;
     }

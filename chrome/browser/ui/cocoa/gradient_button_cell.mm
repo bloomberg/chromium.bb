@@ -206,6 +206,13 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
   isMouseInside_ = flag;
   if (pulseState_ != gradient_button_cell::kPulsingContinuous) {
     if (animated) {
+      // In Material Design, if the button is already fully on, don't pulse it
+      // on again if the mouse is within its bounds.
+      if ([self tag] == kMaterialStandardButtonTypeWithLimitedClickFeedback &&
+          isMouseInside_ && pulseState_ == gradient_button_cell::kPulsedOn) {
+        return;
+      }
+
       [self setPulseState:(isMouseInside_ ? gradient_button_cell::kPulsingOn :
                            gradient_button_cell::kPulsingOff)];
     } else {
@@ -319,6 +326,19 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
   return trackingArea_ && isMouseInside_;
 }
 
+- (BOOL)startTrackingAt:(NSPoint)startPoint inView:(NSView *)controlView {
+  if ([self tag] == kMaterialStandardButtonTypeWithLimitedClickFeedback) {
+    // The user has just clicked down in the button. In Material Design, set the
+    // pulsed (hover) state to off now so that if the user keeps the mouse held
+    // down while dragging it out of the button's bounds, the button will draw
+    // itself in its normal state. This is unrelated to dragging the button
+    // in the button bar, which takes a different path through the code.
+    [self setPulseState:gradient_button_cell::kPulsedOff];
+  }
+
+  return [super startTrackingAt:startPoint inView:controlView];
+}
+
 // Since we have our own drawWithFrame:, we need to also have our own
 // logic for determining when the mouse is inside for honoring this
 // request.
@@ -348,6 +368,35 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
                            active:(BOOL)active
                         cellFrame:(NSRect)cellFrame
                   defaultGradient:(NSGradient*)defaultGradient {
+  // For Material Design, draw a solid rounded rect behind the button, based on
+  // the hover and pressed states.
+  if ([self tag] == kMaterialStandardButtonTypeWithLimitedClickFeedback) {
+    const CGFloat kEightPercentAlpha = 0.08;
+    const CGFloat kFourPercentAlpha = 0.04;
+
+    // The alpha is always at least 8%. Default the color to black.
+    CGFloat alpha = kEightPercentAlpha;
+    CGFloat color = 0.0;
+    // If a dark theme, incrase the opacity slightly and use white.
+    if ([[controlView window] hasDarkTheme]) {
+      alpha += kFourPercentAlpha;
+      color = 1.0;
+    }
+    // If clicked or highlighted, the background is slightly more opaque. If not
+    // clicked or highlighted, adjust the alpha by the animation fade in
+    // percentage.
+    if (showClickedGradient || showHighlightGradient) {
+      alpha += kFourPercentAlpha;
+    } else {
+      alpha *= hoverAlpha;
+    }
+
+    // Fill the path.
+    [[NSColor colorWithCalibratedWhite:color alpha:alpha] set];
+    [innerPath fill];
+    return;
+  }
+
   BOOL isFlatButton = [self showsBorderOnlyWhileMouseInside];
 
   // For flat (unbordered when not hovered) buttons, never use the toolbar
@@ -461,14 +510,16 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
                    innerFrame:(NSRect*)returnInnerFrame
                     innerPath:(NSBezierPath**)returnInnerPath
                      clipPath:(NSBezierPath**)returnClipPath {
-  const CGFloat lineWidth = [controlView cr_lineWidth];
-  const CGFloat halfLineWidth = lineWidth / 2.0;
+  const CGFloat kLineWidth = [controlView cr_lineWidth];
+  const CGFloat kHalfLineWidth = kLineWidth / 2.0;
 
-  // Constants from Cole.  Will kConstant them once the feedback loop
-  // is complete.
-  NSRect drawFrame = NSInsetRect(cellFrame, 1.5 * lineWidth, 1.5 * lineWidth);
-  NSRect innerFrame = NSInsetRect(cellFrame, lineWidth, lineWidth);
-  const CGFloat radius = 3;
+  NSRect drawFrame = cellFrame;
+  NSRect innerFrame = NSInsetRect(cellFrame, kLineWidth, kLineWidth);
+  CGFloat cornerRadius = 2;
+  if ([self tag] != kMaterialStandardButtonTypeWithLimitedClickFeedback) {
+    drawFrame = NSInsetRect(cellFrame, 1.5 * kLineWidth, 1.5 * kLineWidth);
+    cornerRadius = 3;
+  }
 
   ButtonType type = [[(NSControl*)controlView cell] tag];
   switch (type) {
@@ -496,18 +547,18 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
   if (returnInnerPath) {
     DCHECK(*returnInnerPath == nil);
     *returnInnerPath = [NSBezierPath bezierPathWithRoundedRect:drawFrame
-                                                       xRadius:radius
-                                                       yRadius:radius];
-    [*returnInnerPath setLineWidth:lineWidth];
+                                                       xRadius:cornerRadius
+                                                       yRadius:cornerRadius];
+    [*returnInnerPath setLineWidth:kLineWidth];
   }
   if (returnClipPath) {
     DCHECK(*returnClipPath == nil);
     NSRect clipPathRect =
-        NSInsetRect(drawFrame, -halfLineWidth, -halfLineWidth);
+        NSInsetRect(drawFrame, -kHalfLineWidth, -kHalfLineWidth);
     *returnClipPath = [NSBezierPath
         bezierPathWithRoundedRect:clipPathRect
-                          xRadius:radius + halfLineWidth
-                          yRadius:radius + halfLineWidth];
+                          xRadius:cornerRadius + kHalfLineWidth
+                          yRadius:cornerRadius + kHalfLineWidth];
   }
 }
 
@@ -563,6 +614,12 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
                              NSCompositeSourceOver);
   }
   [self drawInteriorWithFrame:innerFrame inView:controlView];
+}
+
+- (CGFloat)textStartXOffset {
+  // 11 is the magic number needed to make this match the native
+  // NSButtonCell's label display.
+  return [[self image] size].width + 11;
 }
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
@@ -645,10 +702,14 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
   // Empirically, Cocoa will draw an extra 2 pixels past NSWidth(cellFrame)
   // before it clips the text.
   const CGFloat kOverflowBeforeClip = 2;
-  BOOL clipping = YES;
+  BOOL isModeMaterial =
+      [self tag] == kMaterialStandardButtonTypeWithLimitedClickFeedback;
+  // For Material Design we don't want to clip the text. For all other button
+  // cell modes, we do.
+  BOOL shouldClipTheTitle = !isModeMaterial;
   if (std::floor(size.width) <= (NSWidth(cellFrame) + kOverflowBeforeClip)) {
     cellFrame.origin.y += ([self verticalTextOffset] - 1);
-    clipping = NO;
+    shouldClipTheTitle = NO;
   }
 
   // Gradient is about twice our line height long.
@@ -662,12 +723,10 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
   NSPoint textOffset = NSZeroPoint;
   {
     gfx::ScopedNSGraphicsContextSaveGState scopedGState;
-    if (clipping)
+    if (shouldClipTheTitle)
       [NSBezierPath clipRect:solidPart];
 
-    // 11 is the magic number needed to make this match the native
-    // NSButtonCell's label display.
-    CGFloat textLeft = [[self image] size].width + 11;
+    CGFloat textLeft = [self textStartXOffset];
 
     // For some reason, the height of cellFrame as passed in is totally bogus.
     // For vertical centering purposes, we need the bounds of the containing
@@ -678,10 +737,20 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
     textOffset = NSMakePoint(textLeft,
                              (NSHeight(buttonFrame) - size.height) / 2 +
                              [self verticalTextOffset]);
-    [title drawAtPoint:textOffset];
+    // WIth Material Design we want an ellipsis if the title is too long to fit,
+    // so have to use drawInRect: instead of drawAtPoint:.
+    if (isModeMaterial) {
+      NSRect textBounds = NSMakeRect(textOffset.x,
+                                     textOffset.y,
+                                     NSWidth(buttonFrame) - textOffset.x,
+                                     NSHeight(buttonFrame));
+      [title drawInRect:textBounds];
+    } else {
+      [title drawAtPoint:textOffset];
+    }
   }
 
-  if (!clipping)
+  if (!shouldClipTheTitle)
     return cellFrame;
 
   // Draw the gradient part with a transparency layer. This makes the text look

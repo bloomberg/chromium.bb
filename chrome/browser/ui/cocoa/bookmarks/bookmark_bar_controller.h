@@ -48,16 +48,16 @@ class ManagedBookmarkService;
 const CGFloat kDefaultBookmarkWidth = 150.0;
 
 // Horizontal frame inset for buttons in the bookmark bar.
-const CGFloat kBookmarkHorizontalPadding = 1.0;
+CGFloat BookmarkHorizontalPadding();
 
 // Vertical frame inset for buttons in the bookmark bar.
-const CGFloat kBookmarkVerticalPadding = 2.0;
+CGFloat BookmarkVerticalPadding();
 
 // Left margin before the first button in the bookmark bar.
-const CGFloat kBookmarkLeftMargin = 2.0;
+CGFloat BookmarkLeftMargin();
 
 // Right margin before the last button in the bookmark bar.
-const CGFloat kBookmarkRightMargin = 2.0;
+CGFloat BookmarkRightMargin();
 
 // Used as a min/max width for buttons on menus (not on the bar).
 const CGFloat kBookmarkMenuButtonMinimumWidth = 100.0;
@@ -195,6 +195,10 @@ willAnimateFromState:(BookmarkBar::State)oldState
 
   // The folder image so we can use one copy for all buttons
   base::scoped_nsobject<NSImage> folderImage_;
+
+  // The Material Design Incognito folder image so we can use one copy for all
+  // buttons
+  base::scoped_nsobject<NSImage> folderImageWhite_;
 
   // The default image, so we can use one copy for all buttons.
   base::scoped_nsobject<NSImage> defaultImage_;
@@ -363,8 +367,10 @@ willAnimateFromState:(BookmarkBar::State)oldState
 // Called by our view when it is moved to a window.
 - (void)viewDidMoveToWindow;
 
-// Provide a favicon for a bookmark node.  May return nil.
-- (NSImage*)faviconForNode:(const bookmarks::BookmarkNode*)node;
+// Provide a favicon for a bookmark node, specifying whether or not it's for
+// use with a dark window theme.  May return nil.
+- (NSImage*)faviconForNode:(const bookmarks::BookmarkNode*)node
+             forADarkTheme:(BOOL)forADarkTheme;
 
 // Used for situations where the bookmark bar folder menus should no longer
 // be actively popping up. Called when the window loses focus, a click has
@@ -390,6 +396,13 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (IBAction)openOffTheSideFolderFromButton:(id)sender;
 // Import bookmarks from another browser.
 - (IBAction)importBookmarks:(id)sender;
+
+// Returns the "off the side" button (aka the chevron button).
+- (NSButton*)offTheSideButton;
+
+// Returns the "off the side" button image.
+- (NSImage*)offTheSideButtonImage:(BOOL)forDarkMode;
+
 @end
 
 // Redirects from BookmarkBarBridge, the C++ object which glues us to
@@ -421,7 +434,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (void)openOrCloseBookmarkFolderForOffTheSideButton;
 - (BookmarkBarView*)buttonView;
 - (NSMutableArray*)buttons;
-- (NSButton*)offTheSideButton;
 - (NSButton*)appsPageShortcutButton;
 - (BOOL)offTheSideButtonIsHidden;
 - (BOOL)appsPageShortcutButtonIsHidden;

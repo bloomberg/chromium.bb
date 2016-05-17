@@ -30,6 +30,7 @@ enum {
   // doesn't darken using the theme's "pressed" gradient. Instead uses the
   // normal un-pressed gradient.
   kStandardButtonTypeWithLimitedClickFeedback = 3,
+  kMaterialStandardButtonTypeWithLimitedClickFeedback = 4,
 };
 typedef NSInteger ButtonType;
 
@@ -105,6 +106,9 @@ typedef enum {
 
 // Actually fetches current mouse position and does a hit test.
 - (BOOL)isMouseReallyInside;
+
+// Returns the offset of the start of the text in the cell.
+- (CGFloat)textStartXOffset;
 
 // Defines the top offset of text within the cell. Used by drawTitle and can
 // be overriden by objects that inherit this class for placement of text.
