@@ -8,11 +8,13 @@
 #include <windows.h>
 
 #include <stddef.h>
+#include <map>
 #include <memory>
 #include <set>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -517,6 +519,16 @@ class VIEWS_EXPORT HWNDMessageHandler :
   void SetBoundsInternal(const gfx::Rect& bounds_in_pixels,
                          bool force_size_changed);
 
+  // Checks if there is a full screen window on the same monitor as the
+  // |window| which is becoming active. If yes then we reduce the size of the
+  // fullscreen window by 1 px to ensure that maximized windows on the same
+  // monitor don't draw over the taskbar.
+  void CheckAndHandleBackgroundFullscreenOnMonitor(HWND window);
+
+  // Provides functionality to reduce the bounds of the fullscreen window by 1
+  // px on activation loss to a window on the same monitor.
+  void OnBackgroundFullscreen();
+
   HWNDMessageHandlerDelegate* delegate_;
 
   std::unique_ptr<FullscreenHandler> fullscreen_handler_;
@@ -650,6 +662,12 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // Set to true if the window is a background fullscreen window, i.e a
   // fullscreen window which lost activation. Defaults to false.
   bool background_fullscreen_hack_;
+
+  // This is a map of the HMONITOR to full screeen window instance. It is safe
+  // to keep a raw pointer to the HWNDMessageHandler instance as we track the
+  // window destruction and ensure that the map is cleaned up.
+  using FullscreenWindowMonitorMap = std::map<HMONITOR, HWNDMessageHandler*>;
+  static base::LazyInstance<FullscreenWindowMonitorMap> fullscreen_monitor_map_;
 
   // The WeakPtrFactories below must occur last in the class definition so they
   // get destroyed last.

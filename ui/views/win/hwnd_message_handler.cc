@@ -300,6 +300,10 @@ class HWNDMessageHandler::ScopedRedrawLock {
   DISALLOW_COPY_AND_ASSIGN(ScopedRedrawLock);
 };
 
+// static HWNDMessageHandler member initialization.
+base::LazyInstance<HWNDMessageHandler::FullscreenWindowMonitorMap>
+    HWNDMessageHandler::fullscreen_monitor_map_ = LAZY_INSTANCE_INITIALIZER;
+
 ////////////////////////////////////////////////////////////////////////////////
 // HWNDMessageHandler, public:
 
@@ -813,6 +817,18 @@ void HWNDMessageHandler::SetFullscreen(bool fullscreen) {
   // window, then go ahead and do it now.
   if (!fullscreen && dwm_transition_desired_)
     PerformDwmTransition();
+
+  // Add the fullscreen window to the fullscreen window map which is used to
+  // handle window activations.
+  HMONITOR monitor = MonitorFromWindow(hwnd(), MONITOR_DEFAULTTOPRIMARY);
+  if (fullscreen) {
+    (fullscreen_monitor_map_.Get())[monitor] = this;
+  } else {
+    FullscreenWindowMonitorMap::iterator iter =
+        fullscreen_monitor_map_.Get().find(monitor);
+    if (iter != fullscreen_monitor_map_.Get().end())
+      fullscreen_monitor_map_.Get().erase(iter);
+  }
 }
 
 void HWNDMessageHandler::SizeConstraintsChanged() {
@@ -1021,18 +1037,18 @@ void HWNDMessageHandler::PostProcessActivateMessage(
   // By reducing the size of the fullscreen window by 1px, we ensure that the
   // taskbar no longer treats the window and in turn the thread as a fullscreen
   // thread. This in turn ensures that maximized windows on the same thread
-  /// don't obscure the taskbar, etc.
+  // don't obscure the taskbar, etc.
+  // Please note that this taskbar behavior only occurs if the window becoming
+  // active is on the same monitor as the fullscreen window.
   if (!active) {
     if (IsFullscreen() && ::IsWindow(window_gaining_or_losing_activation)) {
-      // Reduce the bounds of the window by 1px to ensure that Windows does
-      // not treat this like a fullscreen window.
-      MONITORINFO monitor_info = {sizeof(monitor_info)};
-      GetMonitorInfo(MonitorFromWindow(hwnd(), MONITOR_DEFAULTTOPRIMARY),
-                      &monitor_info);
-      gfx::Rect shrunk_rect(monitor_info.rcMonitor);
-      shrunk_rect.set_height(shrunk_rect.height() - 1);
-      background_fullscreen_hack_ = true;
-      SetBoundsInternal(shrunk_rect, false);
+      HMONITOR active_window_monitor = MonitorFromWindow(
+          window_gaining_or_losing_activation, MONITOR_DEFAULTTOPRIMARY);
+      HMONITOR fullscreen_window_monitor =
+          MonitorFromWindow(hwnd(), MONITOR_DEFAULTTOPRIMARY);
+
+      if (active_window_monitor == fullscreen_window_monitor)
+        OnBackgroundFullscreen();
     }
   } else if (background_fullscreen_hack_) {
     // Restore the bounds of the window to fullscreen.
@@ -1042,6 +1058,13 @@ void HWNDMessageHandler::PostProcessActivateMessage(
                    &monitor_info);
     SetBoundsInternal(gfx::Rect(monitor_info.rcMonitor), false);
     background_fullscreen_hack_ = false;
+  } else {
+    // If the window becoming active has a fullscreen window on the same
+    // monitor then we need to reduce the size of the fullscreen window by
+    // 1 px. Please refer to the comments above for the reasoning behind
+    // this.
+    CheckAndHandleBackgroundFullscreenOnMonitor(
+        window_gaining_or_losing_activation);
   }
 }
 
@@ -1337,6 +1360,16 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
 void HWNDMessageHandler::OnDestroy() {
   windows_session_change_observer_.reset(nullptr);
   delegate_->HandleDestroying();
+  // If the window going away is a fullscreen window then remove its references
+  // from the full screen window map.
+  for (auto iter = fullscreen_monitor_map_.Get().begin();
+       iter != fullscreen_monitor_map_.Get().end();
+       iter++) {
+    if (iter->second == this) {
+      fullscreen_monitor_map_.Get().erase(iter);
+      break;
+    }
+  }
 }
 
 void HWNDMessageHandler::OnDisplayChange(UINT bits_per_pixel,
@@ -1397,6 +1430,9 @@ void HWNDMessageHandler::OnExitSizeMove() {
   // trackpoint drivers.
   if (in_size_loop_ && needs_scroll_styles_)
     AddScrollStylesToWindow(hwnd());
+  // If the window was moved to a monitor which has a fullscreen window active,
+  // we need to reduce the size of the fullscreen window by 1px.
+  CheckAndHandleBackgroundFullscreenOnMonitor(hwnd());
 }
 
 void HWNDMessageHandler::OnGetMinMaxInfo(MINMAXINFO* minmax_info) {
@@ -2683,5 +2719,29 @@ void HWNDMessageHandler::SetBoundsInternal(const gfx::Rect& bounds_in_pixels,
     direct_manipulation_helper_->SetBounds(bounds_in_pixels);
 }
 
+void HWNDMessageHandler::CheckAndHandleBackgroundFullscreenOnMonitor(
+    HWND window) {
+  HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY);
+
+  FullscreenWindowMonitorMap::iterator iter =
+      fullscreen_monitor_map_.Get().find(monitor);
+  if (iter != fullscreen_monitor_map_.Get().end()) {
+    DCHECK(iter->second);
+    if (window != iter->second->hwnd())
+      iter->second->OnBackgroundFullscreen();
+  }
+}
+
+void HWNDMessageHandler::OnBackgroundFullscreen() {
+  // Reduce the bounds of the window by 1px to ensure that Windows does
+  // not treat this like a fullscreen window.
+  MONITORINFO monitor_info = {sizeof(monitor_info)};
+  GetMonitorInfo(MonitorFromWindow(hwnd(), MONITOR_DEFAULTTOPRIMARY),
+                 &monitor_info);
+  gfx::Rect shrunk_rect(monitor_info.rcMonitor);
+  shrunk_rect.set_height(shrunk_rect.height() - 1);
+  background_fullscreen_hack_ = true;
+  SetBoundsInternal(shrunk_rect, false);
+}
 
 }  // namespace views
