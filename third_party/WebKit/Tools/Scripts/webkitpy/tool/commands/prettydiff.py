@@ -26,14 +26,67 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from webkitpy.tool.commands.abstractsequencedcommand import AbstractSequencedCommand
-from webkitpy.tool.steps.confirmdiff import ConfirmDiff
+import logging
+import optparse
+import sys
+import urllib
+
+from webkitpy.common.prettypatch import PrettyPatch
+from webkitpy.common.system.executive import ScriptError
+from webkitpy.tool.commands.command import Command
 
 
-class PrettyDiff(AbstractSequencedCommand):
+_log = logging.getLogger(__name__)
+
+
+class PrettyDiff(Command):
     name = "pretty-diff"
     help_text = "Shows the pretty diff in the default browser"
     show_in_main_help = True
-    steps = [
-        ConfirmDiff,
-    ]
+
+    def __init__(self):
+        options = [
+            optparse.make_option("-g", "--git-commit", action="store", dest="git_commit",
+                                 help=("Operate on a local commit. If a range, the commits are squashed into one. <ref>.... "
+                                       "includes the working copy changes. UPSTREAM can be used for the upstream/tracking branch."))
+        ]
+        super(PrettyDiff, self).__init__(options)
+
+    def execute(self, options, args, tool):
+        pretty_diff_file = self._show_pretty_diff(options)
+        if pretty_diff_file:
+            diff_correct = tool.user.confirm("Was that diff correct?")
+            pretty_diff_file.close()
+            if not diff_correct:
+                sys.exit(1)
+
+    def _show_pretty_diff(self, options):
+        if not self._tool.user.can_open_url():
+            return None
+        try:
+            pretty_patch = PrettyPatch(self._tool.executive)
+            patch = self._diff(options)
+            pretty_diff_file = pretty_patch.pretty_diff_file(patch)
+            self._open_pretty_diff(pretty_diff_file.name)
+            # We return the pretty_diff_file here because we need to keep the
+            # file alive until the user has had a chance to confirm the diff.
+            return pretty_diff_file
+        except ScriptError as e:
+            _log.warning("PrettyPatch failed.  :(")
+            _log.error(e.message_with_output())
+            self._exit(e.exit_code or 2)
+        except OSError:
+            _log.warning("PrettyPatch unavailable.")
+
+    def _diff(self, options):
+        changed_files = self._tool.scm().changed_files(options.git_commit)
+        return self._tool.scm().create_patch(options.git_commit,
+                                             changed_files=changed_files)
+
+    def _open_pretty_diff(self, file_path):
+        if self._tool.platform.is_cygwin():
+            assert file_path.endswith('.html')
+            self._tool.executive.run_command(['cygstart', file_path])
+            return
+        url = "file://%s" % urllib.quote(file_path)
+        self._tool.user.open_url(url)
