@@ -978,6 +978,19 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
                                         flags_ui::kAddSentinels);
   }
 #endif  // !defined(OS_CHROMEOS)
+  // The MaterialDesignController needs to look at command line flags, which
+  // are not available until this point. Now that they are, proceed with
+  // initializing the MaterialDesignController.
+  ui::MaterialDesignController::Initialize();
+#if defined(OS_CHROMEOS)
+  ash::MaterialDesignController::Initialize();
+#endif  // !defined(OS_CHROMEOS)
+
+#if defined(OS_MACOSX)
+  // Material Design resource packs can be loaded now that command line flags
+  // are set. See https://crbug.com/585290 .
+  ui::ResourceBundle::GetSharedInstance().LoadMaterialDesignResources();
+#endif
 
 #if defined(OS_WIN)
   // This is needed to enable ETW exporting when requested in about:flags.
@@ -999,11 +1012,56 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   crash_keys::SetCrashKeysFromCommandLine(
       *base::CommandLine::ForCurrentProcess());
 
+  // Mac starts it earlier in |PreMainMessageLoopStart()| (because it is
+  // needed when loading the MainMenu.nib and the language doesn't depend on
+  // anything since it comes from Cocoa.
+#if defined(OS_MACOSX)
+  std::string locale =
+      parameters().ui_task ? "en-US" : l10n_util::GetLocaleOverride();
+  browser_process_->SetApplicationLocale(locale);
+#else
+  const std::string locale =
+      local_state_->GetString(prefs::kApplicationLocale);
+
+  // On a POSIX OS other than ChromeOS, the parameter that is passed to the
+  // method InitSharedInstance is ignored.
+
+  TRACE_EVENT_BEGIN0("startup",
+      "ChromeBrowserMainParts::PreCreateThreadsImpl:InitResourceBundle");
+  const std::string loaded_locale =
+      ui::ResourceBundle::InitSharedInstanceWithLocale(
+          locale, NULL, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+  TRACE_EVENT_END0("startup",
+      "ChromeBrowserMainParts::PreCreateThreadsImpl:InitResourceBundle");
+
+  if (loaded_locale.empty() &&
+      !parsed_command_line().HasSwitch(switches::kNoErrorDialogs)) {
+    ShowMissingLocaleMessageBox();
+    return chrome::RESULT_CODE_MISSING_DATA;
+  }
+  CHECK(!loaded_locale.empty()) << "Locale could not be found for " << locale;
+  browser_process_->SetApplicationLocale(loaded_locale);
+
+  {
+    TRACE_EVENT0("startup",
+        "ChromeBrowserMainParts::PreCreateThreadsImpl:AddDataPack");
+    base::FilePath resources_pack_path;
+    PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
+#if defined(OS_ANDROID)
+    ui::LoadMainAndroidPackFile("assets/resources.pak", resources_pack_path);
+#else
+    ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+        resources_pack_path, ui::SCALE_FACTOR_NONE);
+#endif  // defined(OS_ANDROID)
+  }
+#endif  // defined(OS_MACOSX)
+
   // Android does first run in Java instead of native.
   // Chrome OS has its own out-of-box-experience code.
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   // On first run, we need to process the predictor preferences before the
-  // browser's profile_manager object is created.
+  // browser's profile_manager object is created, but after ResourceBundle
+  // is initialized.
   if (first_run::IsChromeFirstRun()) {
     first_run::ProcessMasterPreferencesResult pmp_result =
         first_run::ProcessMasterPreferences(user_data_dir_,
@@ -1091,74 +1149,6 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   // metrics and initialize field trials. The field trials are needed by
   // IOThread's initialization which happens in BrowserProcess:PreCreateThreads.
   SetupMetricsAndFieldTrials();
-
-  // The MaterialDesignController needs to look at command line flags and field
-  // trials, which are not available until this point. Now that they are,
-  // proceed with initializing the MaterialDesignController.
-#if defined(OS_WIN)
-  const version_info::Channel channel = chrome::GetChannel();
-  ui::MaterialDesignController::InitializeWithDefaultMode(
-      ((channel == version_info::Channel::UNKNOWN) ||
-       (channel == version_info::Channel::CANARY) ||
-       (channel == version_info::Channel::DEV))
-          ? ui::MaterialDesignController::MATERIAL_NORMAL
-          : ui::MaterialDesignController::NON_MATERIAL);
-#else
-  ui::MaterialDesignController::Initialize();
-#if defined(OS_CHROMEOS)
-  ash::MaterialDesignController::Initialize();
-#endif  // !defined(OS_CHROMEOS)
-#endif  // !defined(OS_WIN)
-
-#if defined(OS_MACOSX)
-  // Material Design resource packs can be loaded now that command line flags
-  // are set. See https://crbug.com/585290 .
-  ui::ResourceBundle::GetSharedInstance().LoadMaterialDesignResources();
-#endif
-
-  // Mac starts it earlier in |PreMainMessageLoopStart()| (because it is
-  // needed when loading the MainMenu.nib and the language doesn't depend on
-  // anything since it comes from Cocoa.
-#if defined(OS_MACOSX)
-  std::string locale =
-      parameters().ui_task ? "en-US" : l10n_util::GetLocaleOverride();
-  browser_process_->SetApplicationLocale(locale);
-#else
-  const std::string locale =
-      local_state_->GetString(prefs::kApplicationLocale);
-
-  // On a POSIX OS other than ChromeOS, the parameter that is passed to the
-  // method InitSharedInstance is ignored.
-
-  TRACE_EVENT_BEGIN0("startup",
-      "ChromeBrowserMainParts::PreCreateThreadsImpl:InitResourceBundle");
-  const std::string loaded_locale =
-      ui::ResourceBundle::InitSharedInstanceWithLocale(
-          locale, nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
-  TRACE_EVENT_END0("startup",
-      "ChromeBrowserMainParts::PreCreateThreadsImpl:InitResourceBundle");
-
-  if (loaded_locale.empty() &&
-      !parsed_command_line().HasSwitch(switches::kNoErrorDialogs)) {
-    ShowMissingLocaleMessageBox();
-    return chrome::RESULT_CODE_MISSING_DATA;
-  }
-  CHECK(!loaded_locale.empty()) << "Locale could not be found for " << locale;
-  browser_process_->SetApplicationLocale(loaded_locale);
-
-  {
-    TRACE_EVENT0("startup",
-        "ChromeBrowserMainParts::PreCreateThreadsImpl:AddDataPack");
-    base::FilePath resources_pack_path;
-    PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
-#if defined(OS_ANDROID)
-    ui::LoadMainAndroidPackFile("assets/resources.pak", resources_pack_path);
-#else
-    ResourceBundle::GetSharedInstance().AddDataPackFromPath(
-        resources_pack_path, ui::SCALE_FACTOR_NONE);
-#endif  // defined(OS_ANDROID)
-  }
-#endif  // defined(OS_MACOSX)
 
   // ChromeOS needs ResourceBundle::InitSharedInstance to be called before this.
   browser_process_->PreCreateThreads();

@@ -519,6 +519,7 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
     base::debug::InstallHandleHooks();
   else
     base::win::DisableHandleVerifier();
+
 #endif
 
   chrome::RegisterPathProvider();

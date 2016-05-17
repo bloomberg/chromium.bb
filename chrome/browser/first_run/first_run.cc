@@ -70,7 +70,6 @@
 #include "extensions/browser/extension_system.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
 using base::UserMetricsAction;
@@ -726,9 +725,6 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
   // ping_delay is missing.
   out_prefs->ping_delay = 90;
   if (install_prefs.get()) {
-    // The ResourceBundle hasn't been loaded yet, but we need strings from it.
-    ResourceBundle::TemporaryLoader loader;
-
     if (!internal::ShowPostInstallEULAIfNeeded(install_prefs.get()))
       return EULA_EXIT_NOW;
 

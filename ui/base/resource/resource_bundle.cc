@@ -57,8 +57,6 @@
 #include "ui/display/win/dpi.h"
 #endif
 
-// Helpers --------------------------------------------------------------------
-
 namespace ui {
 
 namespace {
@@ -116,29 +114,6 @@ SkBitmap CreateEmptyBitmap() {
 
 }  // namespace
 
-
-// ResourceBundle::TemporaryLoader --------------------------------------------
-
-ResourceBundle::TemporaryLoader::TemporaryLoader()
-    : already_loaded_(ResourceBundle::HasSharedInstance()) {
-  if (!already_loaded_) {
-    std::string locale = l10n_util::GetApplicationLocale(std::string());
-    const char kUserDataDirDialogFallbackLocale[] = "en-US";
-    if (locale.empty())
-      locale = kUserDataDirDialogFallbackLocale;
-    ui::ResourceBundle::InitSharedInstanceWithLocale(
-        locale, nullptr, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
-  }
-}
-
-ResourceBundle::TemporaryLoader::~TemporaryLoader() {
-  if (!already_loaded_)
-    ResourceBundle::CleanupSharedInstance();
-}
-
-
-// ResourceBundle::ResourceBundleImageSource ----------------------------------
-
 // An ImageSkiaSource that loads bitmaps for the requested scale factor from
 // ResourceBundle on demand for a given |resource_id|. If the bitmap for the
 // requested scale factor does not exist, it will return the 1x bitmap scaled
@@ -195,9 +170,6 @@ class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
 
   DISALLOW_COPY_AND_ASSIGN(ResourceBundleImageSource);
 };
-
-
-// ResourceBundle -------------------------------------------------------------
 
 // static
 std::string ResourceBundle::InitSharedInstanceWithLocale(

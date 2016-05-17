@@ -19,14 +19,8 @@ MaterialDesignControllerTestAPI::~MaterialDesignControllerTestAPI() {
   MaterialDesignController::mode_ = previous_mode_;
 }
 
-// static
 void MaterialDesignControllerTestAPI::Uninitialize() {
   MaterialDesignController::Uninitialize();
-}
-
-// static
-MaterialDesignController::Mode MaterialDesignControllerTestAPI::DefaultMode() {
-  return MaterialDesignController::DefaultMode();
 }
 
 }  // namespace test

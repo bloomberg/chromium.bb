@@ -116,29 +116,6 @@ class UI_BASE_EXPORT ResourceBundle {
     virtual ~Delegate() {}
   };
 
-  // A class which is designed to be instantiated on the stack during early
-  // startup code that needs access to string resources before the
-  // ResourceBundle may be loaded.
-  //
-  // This incurs a performance hit, so this should only be used in exceptional
-  // circumstances.  Most uses of resources should wait until after the
-  // ResourceBundle has been loaded properly.
-  class UI_BASE_EXPORT TemporaryLoader {
-   public:
-    TemporaryLoader();
-    ~TemporaryLoader();
-
-   private:
-    // Mac loads resources earlier than other platforms and thus may have
-    // already initialized the resource bundle when we're constructed.  Instead
-    // of trying to ifdef Mac or otherwise define exactly when we should and
-    // shouldn't load, we just set this based on whether the shared instance
-    // exists and then do nothing if it's set.
-    bool already_loaded_;
-
-    DISALLOW_COPY_AND_ASSIGN(TemporaryLoader);
-  };
-
   // Initialize the ResourceBundle for this process. Does not take ownership of
   // the |delegate| value. Returns the language selected.
   // NOTE: Mac ignores this and always loads up resources for the language

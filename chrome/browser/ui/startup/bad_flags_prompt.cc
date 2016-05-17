@@ -125,14 +125,26 @@ void MaybeShowInvalidUserDataDirWarningDialog() {
 
   startup_metric_utils::SetNonBrowserUIDisplayed();
 
-  // The ResourceBundle hasn't been loaded yet, but we need strings from it.
-  ResourceBundle::TemporaryLoader loader;
+  // Ensure the ResourceBundle is initialized for string resource access.
+  bool cleanup_resource_bundle = false;
+  if (!ResourceBundle::HasSharedInstance()) {
+    cleanup_resource_bundle = true;
+    std::string locale = l10n_util::GetApplicationLocale(std::string());
+    const char kUserDataDirDialogFallbackLocale[] = "en-US";
+    if (locale.empty())
+      locale = kUserDataDirDialogFallbackLocale;
+    ui::ResourceBundle::InitSharedInstanceWithLocale(
+        locale, NULL, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
+  }
 
   const base::string16& title =
       l10n_util::GetStringUTF16(IDS_CANT_WRITE_USER_DIRECTORY_TITLE);
   const base::string16& message =
       l10n_util::GetStringFUTF16(IDS_CANT_WRITE_USER_DIRECTORY_SUMMARY,
                                  user_data_dir.LossyDisplayName());
+
+  if (cleanup_resource_bundle)
+    ResourceBundle::CleanupSharedInstance();
 
   // More complex dialogs cannot be shown before the earliest calls here.
   ShowWarningMessageBox(NULL, title, message);

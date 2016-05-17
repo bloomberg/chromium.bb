@@ -21,7 +21,6 @@ class MaterialDesignControllerTestAPI {
 
   // Wrapper functions for MaterialDesignController internal functions.
   static void Uninitialize();
-  static MaterialDesignController::Mode DefaultMode();
 
  private:
   const MaterialDesignController::Mode previous_mode_;

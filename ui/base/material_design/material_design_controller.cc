@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_base_switches.h"
@@ -27,8 +26,8 @@
 
 namespace ui {
 
-// static
 bool MaterialDesignController::is_mode_initialized_ = false;
+
 MaterialDesignController::Mode MaterialDesignController::mode_ =
     MaterialDesignController::NON_MATERIAL;
 
@@ -36,11 +35,6 @@ bool MaterialDesignController::include_secondary_ui_ = false;
 
 // static
 void MaterialDesignController::Initialize() {
-  InitializeWithDefaultMode(DefaultMode());
-}
-
-// static
-void MaterialDesignController::InitializeWithDefaultMode(Mode mode) {
   TRACE_EVENT0("startup", "MaterialDesignController::InitializeMode");
   CHECK(!is_mode_initialized_);
 #if !defined(ENABLE_TOPCHROME_MD)
@@ -62,22 +56,7 @@ void MaterialDesignController::InitializeWithDefaultMode(Mode mode) {
                  << "' for command line switch '" << switches::kTopChromeMD
                  << "'.";
     }
-
-    // The field trial value, if any, overrides the provided default mode.
-    constexpr char kMaterialDesignModeFieldTrialName[] = "MaterialDesignMode";
-    constexpr char kNonMaterialGroupName[] = "NonMaterial";
-    constexpr char kMaterialNormalGroupName[] = "MaterialNormal";
-    constexpr char kMaterialHybridGroupName[] = "MaterialHybrid";
-    const std::string group =
-        base::FieldTrialList::FindFullName(kMaterialDesignModeFieldTrialName);
-    if (group == kNonMaterialGroupName)
-      mode = NON_MATERIAL;
-    else if (group == kMaterialNormalGroupName)
-      mode = MATERIAL_NORMAL;
-    else if (group == kMaterialHybridGroupName)
-      mode = MATERIAL_HYBRID;
-
-    SetMode(mode);
+    SetMode(DefaultMode());
   }
 
   include_secondary_ui_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -99,17 +78,6 @@ bool MaterialDesignController::IsModeMaterial() {
 // static
 bool MaterialDesignController::IsSecondaryUiMaterial() {
   return IsModeMaterial() && include_secondary_ui_;
-}
-
-// static
-void MaterialDesignController::Uninitialize() {
-  is_mode_initialized_ = false;
-}
-
-// static
-void MaterialDesignController::SetMode(MaterialDesignController::Mode mode) {
-  mode_ = mode;
-  is_mode_initialized_ = true;
 }
 
 // static
@@ -145,11 +113,22 @@ MaterialDesignController::Mode MaterialDesignController::DefaultMode() {
   }
 #endif  // defined(USE_OZONE)
   return MATERIAL_NORMAL;
-#elif defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+#elif defined(OS_LINUX) || defined(OS_MACOSX)
   return MATERIAL_NORMAL;
 #else
   return NON_MATERIAL;
 #endif  // defined(OS_CHROMEOS)
+}
+
+// static
+void MaterialDesignController::Uninitialize() {
+  is_mode_initialized_ = false;
+}
+
+// static
+void MaterialDesignController::SetMode(MaterialDesignController::Mode mode) {
+  mode_ = mode;
+  is_mode_initialized_ = true;
 }
 
 }  // namespace ui
