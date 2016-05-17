@@ -51,8 +51,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
       std::string address,
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner);
 
-  // Converts CBUUID into std::string
-  static std::string StringWithCBUUID(CBUUID* UUID);
   // Converts CBUUID into BluetoothUUID
   static BluetoothUUID BluetoothUUIDWithCBUUID(CBUUID* UUID);
 
