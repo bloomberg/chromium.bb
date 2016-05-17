@@ -284,13 +284,13 @@ void VariationsSeedProcessor::CreateTrialFromStudy(
   }
 
   trial->SetForced();
+  if (processed_study.is_expired())
+    trial->Disable();
 
   if (enables_or_disables_features)
     RegisterFeatureOverrides(processed_study, trial.get(), feature_list);
 
-  if (processed_study.is_expired()) {
-    trial->Disable();
-  } else if (study.activation_type() == Study_ActivationType_ACTIVATION_AUTO) {
+  if (study.activation_type() == Study_ActivationType_ACTIVATION_AUTO) {
     const std::string& group_name = trial->group_name();
 
     // Don't try to apply overrides if none of the experiments in this study had
