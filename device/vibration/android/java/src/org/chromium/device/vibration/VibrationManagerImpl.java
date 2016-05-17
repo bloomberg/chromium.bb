@@ -57,6 +57,7 @@ public class VibrationManagerImpl implements VibrationManager {
         if (sVibratorWrapper == null) {
             sVibratorWrapper = new AndroidVibratorWrapper();
         }
+        // TODO(mvanouwerkerk): What happens if permission is revoked? Handle this better.
         mHasVibratePermission =
                 context.checkCallingOrSelfPermission(android.Manifest.permission.VIBRATE)
                 == PackageManager.PERMISSION_GRANTED;
@@ -72,7 +73,7 @@ public class VibrationManagerImpl implements VibrationManager {
     public void onConnectionError(MojoException e) {}
 
     @Override
-    public void vibrate(long milliseconds) {
+    public void vibrate(long milliseconds, VibrateResponse callback) {
         // Though the Blink implementation already sanitizes vibration times, don't
         // trust any values passed from the client.
         long sanitizedMilliseconds = Math.max(MINIMUM_VIBRATION_DURATION_MS,
@@ -82,10 +83,12 @@ public class VibrationManagerImpl implements VibrationManager {
                 && mHasVibratePermission) {
             sVibratorWrapper.vibrate(mVibrator, sanitizedMilliseconds);
         }
+        callback.call();
     }
 
     @Override
-    public void cancel() {
+    public void cancel(CancelResponse callback) {
         if (mHasVibratePermission) sVibratorWrapper.cancel(mVibrator);
+        callback.call();
     }
 }

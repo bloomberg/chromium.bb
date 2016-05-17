@@ -1171,28 +1171,6 @@ void RendererBlinkPlatformImpl::SetMockDeviceOrientationDataForTesting(
 
 //------------------------------------------------------------------------------
 
-void RendererBlinkPlatformImpl::vibrate(unsigned int milliseconds) {
-  GetConnectedVibrationManagerService()->Vibrate(
-      base::checked_cast<int64_t>(milliseconds));
-  vibration_manager_.reset();
-}
-
-void RendererBlinkPlatformImpl::cancelVibration() {
-  GetConnectedVibrationManagerService()->Cancel();
-  vibration_manager_.reset();
-}
-
-device::VibrationManagerPtr&
-RendererBlinkPlatformImpl::GetConnectedVibrationManagerService() {
-  if (!vibration_manager_) {
-    RenderThread::Get()->GetServiceRegistry()->ConnectToRemoteService(
-        mojo::GetProxy(&vibration_manager_));
-  }
-  return vibration_manager_;
-}
-
-//------------------------------------------------------------------------------
-
 // static
 PlatformEventObserverBase*
 RendererBlinkPlatformImpl::CreatePlatformEventObserverFromType(

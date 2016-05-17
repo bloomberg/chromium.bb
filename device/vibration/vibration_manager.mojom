@@ -5,6 +5,7 @@
 module device;
 
 interface VibrationManager {
-  Vibrate(int64 milliseconds);
-  Cancel();
+  // TODO(mvanouwerkerk): Add something like StructTraits to validate arguments.
+  Vibrate(int64 milliseconds) => ();
+  Cancel() => ();
 };

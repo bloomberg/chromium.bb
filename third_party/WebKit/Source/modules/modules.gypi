@@ -1549,6 +1549,8 @@
       'storage/StorageNamespaceController.h',
       'vibration/NavigatorVibration.cpp',
       'vibration/NavigatorVibration.h',
+      'vibration/VibrationController.cpp',
+      'vibration/VibrationController.h',
       'vr/NavigatorVR.cpp',
       'vr/NavigatorVR.h',
       'vr/VRController.cpp',

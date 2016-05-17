@@ -20,7 +20,6 @@
 #include "content/renderer/origin_trials/web_trial_token_validator_impl.h"
 #include "content/renderer/top_level_blame_context.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
-#include "device/vibration/vibration_manager.mojom.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBFactory.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 
@@ -196,8 +195,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void queryStorageUsageAndQuota(const blink::WebURL& storage_partition,
                                  blink::WebStorageQuotaType,
                                  blink::WebStorageQuotaCallbacks) override;
-  void vibrate(unsigned int milliseconds) override;
-  void cancelVibration() override;
   blink::WebThread* currentThread() override;
   blink::BlameContext* topLevelBlameContext() override;
   void recordRappor(const char* metric,
@@ -251,7 +248,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   // Use the data previously set via SetMockDevice...DataForTesting() and send
   // them to the registered listener.
   void SendFakeDeviceEventDataForTesting(blink::WebPlatformEventType type);
-  device::VibrationManagerPtr& GetConnectedVibrationManagerService();
 
   std::unique_ptr<blink::WebThread> main_thread_;
 
@@ -299,9 +295,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   cc_blink::WebCompositorSupportImpl compositor_support_;
 
   std::unique_ptr<blink::WebScrollbarBehavior> web_scrollbar_behavior_;
-
-  // Handle to the Vibration mojo service.
-  device::VibrationManagerPtr vibration_manager_;
 
   IDMap<PlatformEventObserverBase, IDMapOwnPointer> platform_event_observers_;
 

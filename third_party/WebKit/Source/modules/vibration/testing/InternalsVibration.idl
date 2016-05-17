@@ -29,6 +29,6 @@
  */
 
 partial interface Internals {
-    boolean isVibrating(Document document);
-    sequence<unsigned long> pendingVibrationPattern(Document document);
+    boolean isVibrating(Navigator navigator);
+    sequence<unsigned long> pendingVibrationPattern(Navigator navigator);
 };

@@ -54,13 +54,13 @@ class ServiceRegistrar {
         assert applicationContext != null;
         registry.addService(BatteryMonitor.MANAGER,
                 new BatteryMonitorImplementationFactory(applicationContext));
-        registry.addService(VibrationManager.MANAGER,
-                new VibrationManagerImplementationFactory(applicationContext));
     }
 
     @CalledByNative
     static void registerFrameHostServices(ServiceRegistry registry, Context applicationContext) {
         assert applicationContext != null;
+        registry.addService(VibrationManager.MANAGER,
+                new VibrationManagerImplementationFactory(applicationContext));
         // TODO(avayvod): Register the PresentationService implementation here.
     }
 }

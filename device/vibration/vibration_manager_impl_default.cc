@@ -14,8 +14,11 @@ namespace {
 
 class VibrationManagerEmptyImpl : public VibrationManager {
  public:
-  void Vibrate(int64_t milliseconds) override {}
-  void Cancel() override {}
+  void Vibrate(int64_t milliseconds, const VibrateCallback& callback) override {
+    callback.Run();
+  }
+
+  void Cancel(const CancelCallback& callback) override { callback.Run(); }
 
  private:
   friend VibrationManagerImpl;

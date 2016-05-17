@@ -8,13 +8,13 @@ description('Tests the cancelVibration during pattern vibration is working.');
 
 function vibrate(pattern) {
     navigator.vibrate(pattern);
-    shouldBeTrue('internals.isVibrating(document)');
+    shouldBeTrue('internals.isVibrating(navigator)');
 }
 
 function cancelVibration(time) {
     setTimeout(function() {
         navigator.vibrate(0);
-        shouldBeFalse('internals.isVibrating(document)');
+        shouldBeFalse('internals.isVibrating(navigator)');
         doNextTest();
     }, time);
 }
@@ -53,7 +53,7 @@ function doTest(num) {
 var count = 1;
 if (window.testRunner) {
     window.jsTestIsAsync = true;
-    shouldBeFalse('internals.isVibrating(document)'); // Before vibration test.
+    shouldBeFalse('internals.isVibrating(navigator)'); // Before vibration test.
     doTest(count);
 } else {
     debug('This test can not be run without the TestRunner');

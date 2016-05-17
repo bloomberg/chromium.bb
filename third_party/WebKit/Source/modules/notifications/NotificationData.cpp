@@ -10,7 +10,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/notifications/Notification.h"
 #include "modules/notifications/NotificationOptions.h"
-#include "modules/vibration/NavigatorVibration.h"
+#include "modules/vibration/VibrationController.h"
 #include "public/platform/WebURL.h"
 #include "wtf/CurrentTime.h"
 
@@ -65,7 +65,7 @@ WebNotificationData createWebNotificationData(ExecutionContext* executionContext
     if (options.hasBadge() && !options.badge().isEmpty())
         webData.badge = completeURL(executionContext, options.badge());
 
-    webData.vibrate = NavigatorVibration::sanitizeVibrationPattern(options.vibrate());
+    webData.vibrate = VibrationController::sanitizeVibrationPattern(options.vibrate());
     webData.timestamp = options.hasTimestamp() ? static_cast<double>(options.timestamp()) : WTF::currentTimeMS();
     webData.renotify = options.renotify();
     webData.silent = options.silent();

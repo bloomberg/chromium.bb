@@ -271,7 +271,7 @@
       'browser/tracing/memory_tracing_browsertest.cc',
       'browser/tracing/tracing_controller_browsertest.cc',
       'browser/utility_process_host_impl_browsertest.cc',
-      'browser/vibration_manager_integration_browsertest.cc',
+      'browser/vibration_browsertest.cc',
       'browser/wake_lock/wake_lock_browsertest.cc',
       'browser/web_contents/opened_by_dom_browsertest.cc',
       'browser/web_contents/web_contents_impl_browsertest.cc',

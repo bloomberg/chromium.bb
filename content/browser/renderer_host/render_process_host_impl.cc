@@ -156,7 +156,6 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "content/public/common/url_constants.h"
 #include "device/battery/battery_monitor_impl.h"
-#include "device/vibration/vibration_manager_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -1022,9 +1021,6 @@ void RenderProcessHostImpl::RegisterMojoServices() {
 #if !defined(OS_ANDROID)
   mojo_application_host_->service_registry()->AddService(
       base::Bind(&device::BatteryMonitorImpl::Create));
-
-  mojo_application_host_->service_registry()->AddService(
-      base::Bind(&device::VibrationManagerImpl::Create));
 #endif
 
   mojo_application_host_->service_registry()->AddService(

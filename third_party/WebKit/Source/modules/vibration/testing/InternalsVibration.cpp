@@ -30,22 +30,23 @@
 
 #include "modules/vibration/testing/InternalsVibration.h"
 
-#include "core/dom/Document.h"
+#include "core/frame/Navigator.h"
 #include "core/testing/Internals.h"
 #include "modules/vibration/NavigatorVibration.h"
+#include "modules/vibration/VibrationController.h"
 
 namespace blink {
 
-bool InternalsVibration::isVibrating(Internals&, Document* document)
+bool InternalsVibration::isVibrating(Internals&, Navigator* navigator)
 {
-    ASSERT(document && document->page());
-    return NavigatorVibration::from(*document->page()).isVibrating();
+    DCHECK(navigator && navigator->frame());
+    return NavigatorVibration::from(*navigator).controller()->isRunning();
 }
 
-Vector<unsigned> InternalsVibration::pendingVibrationPattern(Internals&, Document* document)
+Vector<unsigned> InternalsVibration::pendingVibrationPattern(Internals&, Navigator* navigator)
 {
-    ASSERT(document && document->page());
-    return NavigatorVibration::from(*document->page()).pattern();
+    DCHECK(navigator && navigator->frame());
+    return NavigatorVibration::from(*navigator).controller()->pattern();
 }
 
 } // namespace blink

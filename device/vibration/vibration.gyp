@@ -19,6 +19,20 @@
       ],
     },
     {
+      # GN version: //device/vibration:mojo_bindings_blink
+      'target_name': 'device_vibration_mojo_bindings_for_blink',
+      'type': 'static_library',
+      'variables': {
+        'for_blink': 'true',
+      },
+      'includes': [
+        '../../mojo/mojom_bindings_generator.gypi',
+      ],
+      'sources': [
+        'vibration_manager.mojom',
+      ],
+    },
+    {
       # GN version: //device/vibration
       'target_name': 'device_vibration',
       'type': '<(component)',

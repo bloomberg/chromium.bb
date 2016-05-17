@@ -402,16 +402,6 @@ public:
     // renderer was created with threaded rendering desabled.
     virtual WebThread* compositorThread() const { return 0; }
 
-    // Vibration -----------------------------------------------------------
-
-    // Starts a vibration for the given duration in milliseconds. If there is currently an active
-    // vibration it will be cancelled before the new one is started.
-    virtual void vibrate(unsigned time) { }
-
-    // Cancels the current vibration, if there is one.
-    virtual void cancelVibration() { }
-
-
     // Testing -------------------------------------------------------------
 
     // Gets a pointer to URLLoaderMockFactory for testing. Will not be available in production builds.

@@ -20,57 +20,48 @@
 #ifndef NavigatorVibration_h
 #define NavigatorVibration_h
 
-#include "core/page/Page.h"
-#include "core/page/PageLifecycleObserver.h"
+#include "core/frame/DOMWindowProperty.h"
 #include "modules/ModulesExport.h"
-#include "platform/Timer.h"
-#include "wtf/PassOwnPtr.h"
+#include "platform/Supplementable.h"
+#include "platform/heap/GarbageCollected.h"
+#include "platform/heap/Handle.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
-class LocalFrame;
 class Navigator;
-class UnsignedLongOrUnsignedLongSequence;
+class VibrationController;
 
 class MODULES_EXPORT NavigatorVibration final
     : public GarbageCollectedFinalized<NavigatorVibration>
-    , public Supplement<Page>
-    , public PageLifecycleObserver {
+    , public Supplement<Navigator>
+    , public DOMWindowProperty {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorVibration);
+    WTF_MAKE_NONCOPYABLE(NavigatorVibration);
 public:
-    typedef Vector<unsigned> VibrationPattern;
+    using VibrationPattern = Vector<unsigned>;
 
     virtual ~NavigatorVibration();
 
-    bool vibrate(const VibrationPattern&);
-    void cancelVibration();
-    void timerStartFired(Timer<NavigatorVibration>*);
-    void timerStopFired(Timer<NavigatorVibration>*);
-
-    // Inherited from PageLifecycleObserver
-    void pageVisibilityChanged() override;
-    void didCommitLoad(LocalFrame*) override;
+    static NavigatorVibration& from(Navigator&);
 
     static bool vibrate(Navigator&, unsigned time);
     static bool vibrate(Navigator&, const VibrationPattern&);
-    static NavigatorVibration& from(Page&);
-    static VibrationPattern sanitizeVibrationPattern(const UnsignedLongOrUnsignedLongSequence&);
 
-    bool isVibrating() const { return m_isVibrating; }
-
-    VibrationPattern pattern() const { return m_pattern; }
+    VibrationController* controller();
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    explicit NavigatorVibration(Page&);
     static const char* supplementName();
 
-    Timer<NavigatorVibration> m_timerStart;
-    Timer<NavigatorVibration> m_timerStop;
-    bool m_isVibrating;
-    VibrationPattern m_pattern;
+    explicit NavigatorVibration(Navigator&);
+
+    // Inherited from DOMWindowProperty.
+    void willDetachGlobalObjectFromFrame() override;
+
+    Member<VibrationController> m_controller;
 };
 
 } // namespace blink

@@ -36,14 +36,14 @@
 
 namespace blink {
 
-class Document;
 class Internals;
+class Navigator;
 
 class InternalsVibration {
     STATIC_ONLY(InternalsVibration);
 public:
-    static bool isVibrating(Internals&, Document*);
-    static Vector<unsigned> pendingVibrationPattern(Internals&, Document*);
+    static bool isVibrating(Internals&, Navigator*);
+    static Vector<unsigned> pendingVibrationPattern(Internals&, Navigator*);
 };
 
 } // namespace blink

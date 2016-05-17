@@ -78,6 +78,7 @@
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
+#include "device/vibration/vibration_manager_impl.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/gfx/geometry/quad_f.h"
@@ -1945,6 +1946,11 @@ void RenderFrameHostImpl::RegisterMojoServices() {
 
   GetServiceRegistry()->AddService(base::Bind(
       &PresentationServiceImpl::CreateMojoService, base::Unretained(this)));
+
+#if !defined(OS_ANDROID)
+  GetServiceRegistry()->AddService(
+      base::Bind(&device::VibrationManagerImpl::Create));
+#endif
 
   bool enable_web_bluetooth = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableWebBluetooth);

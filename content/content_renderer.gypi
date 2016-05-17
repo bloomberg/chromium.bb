@@ -13,7 +13,6 @@
     '../components/url_formatter/url_formatter.gyp:url_formatter',
     '../device/battery/battery.gyp:device_battery',
     '../device/battery/battery.gyp:device_battery_mojo_bindings',
-    '../device/vibration/vibration.gyp:device_vibration',
     '../device/vibration/vibration.gyp:device_vibration_mojo_bindings',
     '../gin/gin.gyp:gin',
     '../gpu/gpu.gyp:gpu',
