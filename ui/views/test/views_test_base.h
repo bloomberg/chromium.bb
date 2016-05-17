@@ -29,6 +29,9 @@ class ViewsTestBase : public PlatformTest {
   ViewsTestBase();
   ~ViewsTestBase() override;
 
+  // Whether the test is running under mus.
+  static bool IsMus();
+
   // testing::Test:
   void SetUp() override;
   void TearDown() override;
@@ -43,7 +46,6 @@ class ViewsTestBase : public PlatformTest {
   // would use an ifdef, but for the time being we're not compiling differently,
   // so that a define is not possible.
   void DisableNativeWidgetMus();
-  bool IsMus() const;
 
  protected:
   TestViewsDelegate* views_delegate() const {

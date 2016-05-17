@@ -246,10 +246,8 @@ test("views_unittests") {
     "//url",
   ]
 
-  # TODO(thakis): This should be a data_deps on //ui/resources:ui_test_pak, but
-  # that has no effect.  (See similar TODOs elsewhere ui_test.pak is listed)
-  data = [
-    "$root_out_dir/ui_test.pak",
+  data_deps = [
+    "//ui/resources:ui_test_pak_data",
   ]
 
   if (is_win) {

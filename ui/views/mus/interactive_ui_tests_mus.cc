@@ -5,5 +5,5 @@
 #include "ui/views/mus/views_mus_test_suite.h"
 
 int MasterProcessMain(int argc, char** argv) {
-  return views::ViewsMusTestSuite(argc, argv).RunTests();
+  return views::ViewsMusTestSuite(argc, argv).RunTestsSerially();
 }

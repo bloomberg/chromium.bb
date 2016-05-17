@@ -18,12 +18,14 @@ class Env;
 
 namespace views {
 
+// TODO(jamescook): Rename this to ViewsTestSuite and rename the file to match.
 class ViewTestSuite : public base::TestSuite {
  public:
   ViewTestSuite(int argc, char** argv);
   ~ViewTestSuite() override;
 
   int RunTests();
+  int RunTestsSerially();
 
  protected:
   // base::TestSuite:

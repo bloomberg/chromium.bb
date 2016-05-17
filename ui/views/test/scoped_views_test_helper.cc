@@ -44,7 +44,7 @@ ScopedViewsTestHelper::ScopedViewsTestHelper(
   // context-factory is used when creating Widgets (to set-up the compositor for
   // the corresponding mus::Windows). So unset the context-factory, so that
   // NativeWidgetMus installs the correct context-factory that can talk to mus.
-  if (platform_test_helper_->IsMus())
+  if (PlatformTestHelper::IsMus())
     aura::Env::GetInstance()->set_context_factory(nullptr);
 #endif
 
@@ -67,10 +67,6 @@ ScopedViewsTestHelper::~ScopedViewsTestHelper() {
 
 gfx::NativeWindow ScopedViewsTestHelper::GetContext() {
   return test_helper_->GetContext();
-}
-
-bool ScopedViewsTestHelper::IsMus() const {
-  return platform_test_helper_->IsMus();
 }
 
 }  // namespace views
