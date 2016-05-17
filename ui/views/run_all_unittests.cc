@@ -33,6 +33,11 @@ int ViewTestSuite::RunTests() {
       argc_, argv_, base::Bind(&ViewTestSuite::Run, base::Unretained(this)));
 }
 
+int ViewTestSuite::RunTestsSerially() {
+  return base::LaunchUnitTestsSerially(
+      argc_, argv_, base::Bind(&ViewTestSuite::Run, base::Unretained(this)));
+}
+
 void ViewTestSuite::Initialize() {
   base::TestSuite::Initialize();
   gfx::GLSurfaceTestSupport::InitializeOneOff();

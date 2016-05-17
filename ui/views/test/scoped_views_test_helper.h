@@ -39,8 +39,6 @@ class ScopedViewsTestHelper {
 
   TestViewsDelegate* views_delegate() { return views_delegate_.get(); };
 
-  bool IsMus() const;
-
  private:
   std::unique_ptr<TestViewsDelegate> views_delegate_;
   std::unique_ptr<ViewsTestHelper> test_helper_;

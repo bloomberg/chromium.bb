@@ -10,6 +10,7 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/test/material_design_controller_test_api.h"
+#include "ui/views/test/platform_test_helper.h"
 
 namespace views {
 
@@ -23,6 +24,11 @@ ViewsTestBase::~ViewsTestBase() {
       << "You have overridden SetUp but never called super class's SetUp";
   CHECK(teardown_called_)
       << "You have overridden TearDown but never called super class's TearDown";
+}
+
+// static
+bool ViewsTestBase::IsMus() {
+  return PlatformTestHelper::IsMus();
 }
 
 void ViewsTestBase::SetUp() {
@@ -69,10 +75,6 @@ void ViewsTestBase::DisableNativeWidgetMus() {
 
 gfx::NativeWindow ViewsTestBase::GetContext() {
   return test_helper_->GetContext();
-}
-
-bool ViewsTestBase::IsMus() const {
-  return test_helper_->IsMus();
 }
 
 }  // namespace views

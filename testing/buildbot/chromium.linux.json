@@ -1112,6 +1112,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "views_mus_interactive_ui_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "views_mus_unittests"
       },
       {
