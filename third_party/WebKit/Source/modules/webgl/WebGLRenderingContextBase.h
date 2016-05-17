@@ -27,6 +27,7 @@
 #define WebGLRenderingContextBase_h
 
 #include "bindings/core/v8/Nullable.h"
+#include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
@@ -37,7 +38,6 @@
 #include "core/layout/LayoutBoxModelObject.h"
 #include "modules/webgl/WebGLContextAttributes.h"
 #include "modules/webgl/WebGLExtensionName.h"
-#include "modules/webgl/WebGLObject.h"
 #include "modules/webgl/WebGLTexture.h"
 #include "modules/webgl/WebGLVertexArrayObjectBase.h"
 #include "platform/Timer.h"
@@ -1040,11 +1040,11 @@ protected:
     // latched into the context's state, or which are implicitly
     // linked together (like programs and their attached shaders), are
     // not garbage collected before they should be.
-    V8CopyablePersistent<v8::Array> m_2DTextureWrappers;
-    V8CopyablePersistent<v8::Array> m_2DArrayTextureWrappers;
-    V8CopyablePersistent<v8::Array> m_3DTextureWrappers;
-    V8CopyablePersistent<v8::Array> m_cubeMapTextureWrappers;
-    V8CopyablePersistent<v8::Array> m_extensionWrappers;
+    ScopedPersistent<v8::Array> m_2DTextureWrappers;
+    ScopedPersistent<v8::Array> m_2DArrayTextureWrappers;
+    ScopedPersistent<v8::Array> m_3DTextureWrappers;
+    ScopedPersistent<v8::Array> m_cubeMapTextureWrappers;
+    ScopedPersistent<v8::Array> m_extensionWrappers;
 
     // The "catch-all" array for the rest of the preserved object
     // wrappers. The enum below defines how the indices in this array
@@ -1058,9 +1058,9 @@ protected:
         PreservedDefaultVAO,
         PreservedVAO,
     };
-    V8CopyablePersistent<v8::Array> m_miscWrappers;
+    ScopedPersistent<v8::Array> m_miscWrappers;
 
-    static void preserveObjectWrapper(ScriptState*, ScriptWrappable* sourceObject, v8::Local<v8::String> hiddenValueName, V8CopyablePersistent<v8::Array>* persistentCache, uint32_t index, ScriptWrappable* targetObject);
+    static void preserveObjectWrapper(ScriptState*, ScriptWrappable* sourceObject, v8::Local<v8::String> hiddenValueName, ScopedPersistent<v8::Array>* persistentCache, uint32_t index, ScriptWrappable* targetObject);
 
     // Called to lazily instantiate the wrapper for the default VAO
     // during calls to bindBuffer and vertexAttribPointer (from

@@ -1545,7 +1545,7 @@ void WebGLRenderingContextBase::bindTexture(ScriptState* scriptState, GLenum tar
     // during restoration of texture unit bindings. Skip the
     // preserveObjectWrapper work in this case.
     v8::Local<v8::String> hiddenValueName;
-    V8CopyablePersistent<v8::Array>* persistentCache = nullptr;
+    ScopedPersistent<v8::Array>* persistentCache = nullptr;
     if (target == GL_TEXTURE_2D) {
         m_textureUnits[m_activeTextureUnit].m_texture2DBinding = texture;
 
@@ -6284,27 +6284,27 @@ void WebGLRenderingContextBase::findNewMaxNonDefaultTextureUnit()
     m_onePlusMaxNonDefaultTextureUnit = 0;
 }
 
-void WebGLRenderingContextBase::preserveObjectWrapper(ScriptState* scriptState, ScriptWrappable* sourceObject, v8::Local<v8::String> hiddenValueName, V8CopyablePersistent<v8::Array>* persistentCache, uint32_t index, ScriptWrappable* targetObject)
+void WebGLRenderingContextBase::preserveObjectWrapper(ScriptState* scriptState, ScriptWrappable* sourceObject, v8::Local<v8::String> hiddenValueName, ScopedPersistent<v8::Array>* persistentCache, uint32_t index, ScriptWrappable* targetObject)
 {
     v8::Isolate* isolate = scriptState->isolate();
-    if (persistentCache->IsEmpty()) {
+    if (persistentCache->isEmpty()) {
         // TODO(kbr): eliminate the persistent caches and just use
         // V8HiddenValue::getHiddenValue. Unfortunately, it's
         // currently too slow to use. crbug.com/611864
-        persistentCache->Reset(isolate, v8::Array::New(isolate));
+        persistentCache->set(isolate, v8::Array::New(isolate));
         V8HiddenValue::setHiddenValue(
             scriptState,
             sourceObject->newLocalWrapper(isolate),
             hiddenValueName,
-            persistentCache->Get(isolate));
+            persistentCache->newLocal(isolate));
         // It is important to mark the persistent cache as weak
         // (phantom, actually). Otherwise there will be a reference
         // cycle between it and its JavaScript wrapper, and currently
         // there are problems collecting such cycles.
-        persistentCache->SetWeak();
+        persistentCache->setPhantom();
     }
 
-    v8::Local<v8::Array> localCache = persistentCache->Get(isolate);
+    v8::Local<v8::Array> localCache = persistentCache->newLocal(isolate);
     if (targetObject) {
         v8CallOrCrash(localCache->Set(scriptState->context(), index, targetObject->newLocalWrapper(isolate)));
     } else {

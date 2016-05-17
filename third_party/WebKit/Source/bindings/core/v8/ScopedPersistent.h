@@ -72,6 +72,13 @@ public:
         m_handle.SetWeak(parameters, callback, type);
     }
 
+    // Turns this handle into a weak phantom handle without
+    // finalization callback.
+    void setPhantom()
+    {
+        m_handle.SetWeak();
+    }
+
     void clearWeak()
     {
         m_handle.template ClearWeak<void>();

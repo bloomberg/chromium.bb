@@ -109,7 +109,7 @@ void WebGLVertexArrayObjectBase::unbindBuffer(WebGLBuffer* buffer)
     }
 }
 
-V8CopyablePersistent<v8::Array>* WebGLVertexArrayObjectBase::getPersistentCache()
+ScopedPersistent<v8::Array>* WebGLVertexArrayObjectBase::getPersistentCache()
 {
     return &m_arrayBufferWrappers;
 }
