@@ -47,6 +47,14 @@ class ScriptsSmokeTest(unittest.TestCase):
     self.assertIn('Pass --browser to list benchmarks', stdout)
     self.assertIn('dummy_benchmark.stable_benchmark_1', stdout)
 
+  @benchmark.Enabled('android')
+  def testRunBenchmarkListListsOutBenchmarksOnAndroid(self):
+    return_code, stdout = self.RunPerfScript(
+        'run_benchmark list --device=android --browser=android-chromium')
+    self.assertEquals(return_code, 0, stdout)
+    self.assertIn('Pass --browser to list benchmarks', stdout)
+    self.assertIn('dummy_benchmark.stable_benchmark_1', stdout)
+
   def testRunTrybotWithTypo(self):
     return_code, stdout = self.RunPerfScript('run_benchmark try linux octaenz')
     self.assertIn('No benchmark named "octaenz"', stdout)
