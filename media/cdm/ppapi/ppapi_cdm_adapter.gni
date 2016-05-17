@@ -59,8 +59,8 @@ template("ppapi_cdm_adapter") {
       libs += [ "rt" ]
     }
 
-    if (is_linux && !is_component_build) {
-      # CDM adapter depends on a CDM even in non-component builds.
+    if (is_linux) {
+      # CDM adapter depends on a CDM in component and non-component builds.
       configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
     }
 
