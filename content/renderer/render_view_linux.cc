@@ -6,6 +6,7 @@
 
 #include "content/public/common/renderer_preferences.h"
 #include "third_party/WebKit/public/web/linux/WebFontRendering.h"
+#include "third_party/skia/include/core/SkFontLCDConfig.h"
 #include "ui/gfx/font_render_params.h"
 
 using blink::WebFontRendering;
@@ -53,10 +54,10 @@ void RenderViewImpl::UpdateFontRenderingFromRendererPrefs() {
   WebFontRendering::setHinting(RendererPreferencesToSkiaHinting(prefs));
   WebFontRendering::setAutoHint(prefs.use_autohinter);
   WebFontRendering::setUseBitmaps(prefs.use_bitmaps);
-  WebFontRendering::setLCDOrder(
+  SkFontLCDConfig::SetSubpixelOrder(
       gfx::FontRenderParams::SubpixelRenderingToSkiaLCDOrder(
           prefs.subpixel_rendering));
-  WebFontRendering::setLCDOrientation(
+  SkFontLCDConfig::SetSubpixelOrientation(
       gfx::FontRenderParams::SubpixelRenderingToSkiaLCDOrientation(
           prefs.subpixel_rendering));
   WebFontRendering::setAntiAlias(prefs.should_antialias_text);

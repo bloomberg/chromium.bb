@@ -32,7 +32,6 @@
 #define WebFontRendering_h
 
 #include "../../platform/WebCommon.h"
-#include <SkFontLCDConfig.h>
 #include <SkFontMgr.h>
 #include <SkPaint.h>
 
@@ -49,8 +48,6 @@ public:
     BLINK_EXPORT static void setAntiAlias(bool);
     BLINK_EXPORT static void setSubpixelRendering(bool);
     BLINK_EXPORT static void setSubpixelPositioning(bool);
-    BLINK_EXPORT static void setLCDOrder(SkFontLCDConfig::LCDOrder);
-    BLINK_EXPORT static void setLCDOrientation(SkFontLCDConfig::LCDOrientation);
     BLINK_EXPORT static void setDefaultFontSize(int);
 };
 

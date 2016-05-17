@@ -46,18 +46,6 @@ void WebFontRendering::setStatusFontMetrics(const wchar_t* familyName, int32_t f
 }
 
 // static
-void WebFontRendering::setLCDOrder(SkFontLCDConfig::LCDOrder order)
-{
-    SkFontLCDConfig::SetSubpixelOrder(order);
-}
-
-// static
-void WebFontRendering::setLCDOrientation(SkFontLCDConfig::LCDOrientation orientation)
-{
-    SkFontLCDConfig::SetSubpixelOrientation(orientation);
-}
-
-// static
 void WebFontRendering::setAntialiasedTextEnabled(bool enabled)
 {
     FontCache::setAntialiasedTextEnabled(enabled);

@@ -84,18 +84,6 @@ void WebFontRendering::setSubpixelPositioning(bool useSubpixelPositioning)
 }
 
 // static
-void WebFontRendering::setLCDOrder(SkFontLCDConfig::LCDOrder order)
-{
-    SkFontLCDConfig::SetSubpixelOrder(order);
-}
-
-// static
-void WebFontRendering::setLCDOrientation(SkFontLCDConfig::LCDOrientation orientation)
-{
-    SkFontLCDConfig::SetSubpixelOrientation(orientation);
-}
-
-// static
 void WebFontRendering::setDefaultFontSize(int size)
 {
     LayoutThemeFontProvider::setDefaultFontSize(size);
