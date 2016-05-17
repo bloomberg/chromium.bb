@@ -26,11 +26,11 @@ public:
     virtual void frameDetached(DetachType) { }
 
     // Notifies the embedder that a postMessage was issued to a remote frame.
-    virtual void postMessageEvent(
+    virtual void forwardPostMessage(
         WebLocalFrame* sourceFrame,
         WebRemoteFrame* targetFrame,
         WebSecurityOrigin targetOrigin,
-        WebDOMMessageEvent) { }
+        WebDOMMessageEvent) {}
 
     // Send initial drawing parameters to a child frame that is being rendered
     // out of process.

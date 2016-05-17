@@ -72,7 +72,7 @@ void RemoteFrame::navigate(Document& originDocument, const KURL& url, bool repla
     ResourceRequest request(url);
     request.setHTTPReferrer(SecurityPolicy::generateReferrer(originDocument.getReferrerPolicy(), url, originDocument.outgoingReferrer()));
     request.setHasUserGesture(userGestureStatus == UserGestureStatus::Active);
-    remoteFrameClient()->navigate(request, replaceCurrentItem);
+    client()->navigate(request, replaceCurrentItem);
 }
 
 void RemoteFrame::navigate(const FrameLoadRequest& passedRequest)
@@ -83,7 +83,7 @@ void RemoteFrame::navigate(const FrameLoadRequest& passedRequest)
 
 void RemoteFrame::reload(FrameLoadType frameLoadType, ClientRedirectPolicy clientRedirectPolicy)
 {
-    remoteFrameClient()->reload(frameLoadType, clientRedirectPolicy);
+    client()->reload(frameLoadType, clientRedirectPolicy);
 }
 
 void RemoteFrame::detach(FrameDetachType type)
@@ -125,18 +125,18 @@ bool RemoteFrame::shouldClose()
 
 void RemoteFrame::forwardInputEvent(Event* event)
 {
-    remoteFrameClient()->forwardInputEvent(event);
+    client()->forwardInputEvent(event);
 }
 
 void RemoteFrame::frameRectsChanged(const IntRect& frameRect)
 {
-    remoteFrameClient()->frameRectsChanged(frameRect);
+    client()->frameRectsChanged(frameRect);
 }
 
 void RemoteFrame::visibilityChanged(bool visible)
 {
-    if (remoteFrameClient())
-        remoteFrameClient()->visibilityChanged(visible);
+    if (client())
+        client()->visibilityChanged(visible);
 }
 
 void RemoteFrame::setView(RemoteFrameView* view)
@@ -169,9 +169,9 @@ void RemoteFrame::createView()
         deprecatedLocalOwner()->setWidget(m_view);
 }
 
-RemoteFrameClient* RemoteFrame::remoteFrameClient() const
+RemoteFrameClient* RemoteFrame::client() const
 {
-    return static_cast<RemoteFrameClient*>(client());
+    return static_cast<RemoteFrameClient*>(Frame::client());
 }
 
 void RemoteFrame::setRemotePlatformLayer(WebLayer* layer)
@@ -188,7 +188,7 @@ void RemoteFrame::setRemotePlatformLayer(WebLayer* layer)
 
 void RemoteFrame::advanceFocus(WebFocusType type, LocalFrame* source)
 {
-    remoteFrameClient()->advanceFocus(type, source);
+    client()->advanceFocus(type, source);
 }
 
 } // namespace blink

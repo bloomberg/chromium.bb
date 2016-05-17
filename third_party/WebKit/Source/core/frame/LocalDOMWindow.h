@@ -206,6 +206,9 @@ protected:
     void addedEventListener(const AtomicString& eventType, RegisteredEventListener&) override;
     void removedEventListener(const AtomicString& eventType, const RegisteredEventListener&) override;
 
+    // Protected DOMWindow overrides.
+    void schedulePostMessage(MessageEvent*, PassRefPtr<SecurityOrigin> target, Document* source) override;
+
 private:
     class WindowFrameObserver;
 

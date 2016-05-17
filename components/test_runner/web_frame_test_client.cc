@@ -730,19 +730,6 @@ blink::WebNavigationPolicy WebFrameTestClient::decidePolicyForNavigation(
   return result;
 }
 
-bool WebFrameTestClient::willCheckAndDispatchMessageEvent(
-    blink::WebLocalFrame* source_frame,
-    blink::WebFrame* target_frame,
-    blink::WebSecurityOrigin target,
-    blink::WebDOMMessageEvent event) {
-  if (test_runner_->shouldInterceptPostMessage()) {
-    delegate_->PrintMessage("intercepted postMessage\n");
-    return true;
-  }
-
-  return false;
-}
-
 void WebFrameTestClient::checkIfAudioSinkExistsAndIsAuthorized(
     const blink::WebString& sink_id,
     const blink::WebSecurityOrigin& security_origin,

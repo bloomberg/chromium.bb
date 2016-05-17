@@ -1005,7 +1005,6 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       in_frame_tree_(false),
       render_view_(params.render_view->AsWeakPtr()),
       routing_id_(params.routing_id),
-      render_frame_proxy_(NULL),
       is_detaching_(false),
       proxy_routing_id_(MSG_ROUTING_NONE),
 #if defined(ENABLE_PLUGINS)
@@ -1573,11 +1572,6 @@ void RenderFrameImpl::OnSwapOut(
   // Swap out and stop sending any IPC messages that are not ACKs.
   if (is_main_frame_)
     render_view_->SetSwappedOut(true);
-
-  // Set the proxy here, since OnStop() below could cause an onload event
-  // handler to execute, which could trigger code such as
-  // willCheckAndDispatchMessageEvent() that needs the proxy.
-  set_render_frame_proxy(proxy);
 
   // Transfer settings such as initial drawing parameters to the remote frame,
   // if one is created, that will replace this frame.
@@ -4137,34 +4131,6 @@ blink::WebMIDIClient* RenderFrameImpl::webMIDIClient() {
   if (!midi_dispatcher_)
     midi_dispatcher_ = new MidiDispatcher(this);
   return midi_dispatcher_;
-}
-
-bool RenderFrameImpl::willCheckAndDispatchMessageEvent(
-    blink::WebLocalFrame* source_frame,
-    blink::WebFrame* target_frame,
-    blink::WebSecurityOrigin target_origin,
-    blink::WebDOMMessageEvent event) {
-  DCHECK(!frame_ || frame_ == target_frame);
-
-  // TODO(alexmos, nasko): When swapped-out:// disappears, this should be
-  // cleaned up so that RenderFrameProxy::postMessageEvent is the only path for
-  // cross-process postMessages.
-
-  // It is possible to get here on a swapped-out frame without a
-  // |render_frame_proxy_|. This happens when:
-  // - This process only has one active RenderView and is about to go away
-  //   (e.g., due to cross-process navigation).
-  // - The top frame has a subframe with an unload handler.
-  // - The subframe sends a postMessage to the top-level frame in its unload
-  //   handler.
-  // See https://crbug.com/475651 for details.  We return false here, since we
-  // don't want to deliver the message to the new process in this case.
-  if (!render_frame_proxy_)
-    return false;
-
-  render_frame_proxy_->postMessageEvent(
-      source_frame, render_frame_proxy_->web_frame(), target_origin, event);
-  return true;
 }
 
 blink::WebString RenderFrameImpl::userAgentOverride() {

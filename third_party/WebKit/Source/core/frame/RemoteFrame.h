@@ -60,13 +60,13 @@ public:
 
     RemoteFrameView* view() const;
 
+    RemoteFrameClient* client() const;
+
 private:
     RemoteFrame(RemoteFrameClient*, FrameHost*, FrameOwner*);
 
     // Internal Frame helper overrides:
     WindowProxyManager* getWindowProxyManager() const override { return m_windowProxyManager.get(); }
-
-    RemoteFrameClient* remoteFrameClient() const;
 
     Member<RemoteFrameView> m_view;
     Member<RemoteSecurityContext> m_securityContext;

@@ -32,6 +32,7 @@ class IdleRequestCallback;
 class IdleRequestOptions;
 class Location;
 class LocalDOMWindow;
+class MessageEvent;
 class MediaQueryList;
 class Navigator;
 class Screen;
@@ -216,6 +217,8 @@ public:
 
 protected:
     DOMWindow();
+
+    virtual void schedulePostMessage(MessageEvent*, PassRefPtr<SecurityOrigin> target, Document* source) = 0;
 
     // Set to true when close() has been called. Needed for
     // |window.closed| determinism; having it return 'true'

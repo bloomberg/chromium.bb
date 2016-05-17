@@ -892,15 +892,6 @@ WebCookieJar* FrameLoaderClientImpl::cookieJar() const
     return m_webFrame->client()->cookieJar();
 }
 
-bool FrameLoaderClientImpl::willCheckAndDispatchMessageEvent(
-    SecurityOrigin* target, MessageEvent* event, LocalFrame* sourceFrame) const
-{
-    if (!m_webFrame->client())
-        return false;
-    return m_webFrame->client()->willCheckAndDispatchMessageEvent(
-        WebLocalFrameImpl::fromFrame(sourceFrame), m_webFrame, WebSecurityOrigin(target), WebDOMMessageEvent(event));
-}
-
 void FrameLoaderClientImpl::frameFocused() const
 {
     if (m_webFrame->client())

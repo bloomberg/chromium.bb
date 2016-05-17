@@ -51,6 +51,7 @@
 #include "content/renderer/history_controller.h"
 #include "content/renderer/history_serialization.h"
 #include "content/renderer/navigation_state_impl.h"
+#include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/shell/browser/shell.h"

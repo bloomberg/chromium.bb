@@ -24,6 +24,9 @@ public:
     virtual void reload(FrameLoadType, ClientRedirectPolicy) = 0;
     virtual unsigned backForwardLength() = 0;
 
+    // Forwards a postMessage for a remote frame.
+    virtual void forwardPostMessage(MessageEvent*, PassRefPtr<SecurityOrigin> target, LocalFrame* sourceFrame) const = 0;
+
     // FIXME: Remove this method once we have input routing in the browser
     // process. See http://crbug.com/339659.
     virtual void forwardInputEvent(Event*) = 0;

@@ -199,7 +199,7 @@ public:
 
     // WebRemoteFrameClient overrides:
     void frameDetached(DetachType) override;
-    void postMessageEvent(
+    void forwardPostMessage(
         WebLocalFrame* sourceFrame,
         WebRemoteFrame* targetFrame,
         WebSecurityOrigin targetOrigin,

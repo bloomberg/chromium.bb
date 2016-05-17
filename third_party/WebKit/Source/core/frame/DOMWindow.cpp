@@ -15,6 +15,7 @@
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/Location.h"
+#include "core/frame/RemoteDOMWindow.h"
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
@@ -220,18 +221,8 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const Mes
         UseCounter::count(frame(), UseCounter::PostMessageFromInsecureToSecure);
 
     MessageEvent* event = MessageEvent::create(std::move(channels), message, sourceOrigin, String(), source, sourceSuborigin);
-    // Give the embedder a chance to intercept this postMessage.  If the
-    // target is a remote frame, the message will be forwarded through the
-    // browser process.
-    if (frame()->client()->willCheckAndDispatchMessageEvent(target.get(), event, source->document()->frame()))
-        return;
 
-    // Capture stack trace only when inspector front-end is loaded as it may be time consuming.
-    RefPtr<ScriptCallStack> stackTrace;
-    if (InspectorInstrumentation::consoleAgentEnabled(sourceDocument))
-        stackTrace = ScriptCallStack::capture();
-
-    blink::toLocalDOMWindow(this)->schedulePostMessage(event, target.get(), stackTrace.release());
+    schedulePostMessage(event, std::move(target), sourceDocument);
 }
 
 // FIXME: Once we're throwing exceptions for cross-origin access violations, we will always sanitize the target

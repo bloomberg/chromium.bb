@@ -101,11 +101,6 @@ class WebFrameTestClient : public blink::WebFrameClient {
                              unsigned identifier) override;
   blink::WebNavigationPolicy decidePolicyForNavigation(
       const blink::WebFrameClient::NavigationPolicyInfo& info) override;
-  bool willCheckAndDispatchMessageEvent(
-      blink::WebLocalFrame* source_frame,
-      blink::WebFrame* target_frame,
-      blink::WebSecurityOrigin target,
-      blink::WebDOMMessageEvent event) override;
   void checkIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
       const blink::WebSecurityOrigin& security_origin,

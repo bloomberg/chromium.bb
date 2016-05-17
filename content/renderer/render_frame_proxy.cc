@@ -166,15 +166,6 @@ RenderFrameProxy::RenderFrameProxy(int routing_id, int frame_routing_id)
 }
 
 RenderFrameProxy::~RenderFrameProxy() {
-  // TODO(nasko): Set the render_frame_proxy to null to avoid a double deletion
-  // when detaching the main frame. This can be removed once RenderFrameImpl and
-  // RenderFrameProxy have been completely decoupled. See
-  // https://crbug.com/357747.
-  RenderFrameImpl* render_frame =
-      RenderFrameImpl::FromRoutingID(frame_routing_id_);
-  if (render_frame)
-    render_frame->set_render_frame_proxy(nullptr);
-
   render_widget_->UnregisterRenderFrameProxy(this);
 
   CHECK(!web_frame_);
@@ -384,7 +375,7 @@ void RenderFrameProxy::frameDetached(DetachType type) {
   delete this;
 }
 
-void RenderFrameProxy::postMessageEvent(
+void RenderFrameProxy::forwardPostMessage(
     blink::WebLocalFrame* source_frame,
     blink::WebRemoteFrame* target_frame,
     blink::WebSecurityOrigin target_origin,

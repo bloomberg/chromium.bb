@@ -81,6 +81,10 @@ public:
 
     void frameDetached();
 
+protected:
+    // Protected DOMWindow overrides:
+    void schedulePostMessage(MessageEvent*, PassRefPtr<SecurityOrigin> target, Document* source) override;
+
 private:
     explicit RemoteDOMWindow(RemoteFrame&);
 

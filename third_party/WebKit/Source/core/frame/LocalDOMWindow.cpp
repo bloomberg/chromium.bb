@@ -124,7 +124,7 @@ private:
 class PostMessageTimer final : public GarbageCollectedFinalized<PostMessageTimer>, public SuspendableTimer {
     USING_GARBAGE_COLLECTED_MIXIN(PostMessageTimer);
 public:
-    PostMessageTimer(LocalDOMWindow& window, MessageEvent* event, SecurityOrigin* targetOrigin, PassRefPtr<ScriptCallStack> stackTrace, UserGestureToken* userGestureToken)
+    PostMessageTimer(LocalDOMWindow& window, MessageEvent* event, PassRefPtr<SecurityOrigin> targetOrigin, PassRefPtr<ScriptCallStack> stackTrace, UserGestureToken* userGestureToken)
         : SuspendableTimer(window.document())
         , m_event(event)
         , m_window(&window)
@@ -663,14 +663,19 @@ Navigator* LocalDOMWindow::navigator() const
     return m_navigator.get();
 }
 
-void LocalDOMWindow::schedulePostMessage(MessageEvent* event, SecurityOrigin* target, PassRefPtr<ScriptCallStack> stackTrace)
+void LocalDOMWindow::schedulePostMessage(MessageEvent* event, PassRefPtr<SecurityOrigin> target, Document* source)
 {
     // Allowing unbounded amounts of messages to build up for a suspended context
     // is problematic; consider imposing a limit or other restriction if this
     // surfaces often as a problem (see crbug.com/587012).
 
+    // Capture stack trace only when inspector front-end is loaded as it may be time consuming.
+    RefPtr<ScriptCallStack> stackTrace;
+    if (InspectorInstrumentation::consoleAgentEnabled(source))
+        stackTrace = ScriptCallStack::capture();
+
     // Schedule the message.
-    PostMessageTimer* timer = new PostMessageTimer(*this, event, target, stackTrace, UserGestureIndicator::currentToken());
+    PostMessageTimer* timer = new PostMessageTimer(*this, event, target, stackTrace.release(), UserGestureIndicator::currentToken());
     timer->startOneShot(0, BLINK_FROM_HERE);
     timer->suspendIfNeeded();
     m_postMessageTimers.add(timer);

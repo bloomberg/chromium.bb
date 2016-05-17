@@ -273,18 +273,6 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
     return test_client()->userMediaClient();
   }
 
-  bool willCheckAndDispatchMessageEvent(
-      blink::WebLocalFrame* source_frame,
-      blink::WebFrame* target_frame,
-      blink::WebSecurityOrigin target,
-      blink::WebDOMMessageEvent event) override {
-    if (test_client()->willCheckAndDispatchMessageEvent(
-            source_frame, target_frame, target, event))
-      return true;
-    return Base::willCheckAndDispatchMessageEvent(
-        source_frame, target_frame, target, event);
-  }
-
   void postAccessibilityEvent(const blink::WebAXObject& object,
                               blink::WebAXEvent event) override {
     test_client()->postAccessibilityEvent(object, event);

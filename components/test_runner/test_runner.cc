@@ -212,7 +212,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetDomainRelaxationForbiddenForURLScheme(bool forbidden,
                                                 const std::string& scheme);
   void SetImagesAllowed(bool allowed);
-  void SetInterceptPostMessage(bool value);
   void SetIsolatedWorldContentSecurityPolicy(int world_id,
                                              const std::string& policy);
   void SetIsolatedWorldSecurityOrigin(int world_id,
@@ -274,7 +273,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   bool FindString(const std::string& search_text,
                   const std::vector<std::string>& options_array);
   bool HasCustomPageSizeStyle(int page_index);
-  bool InterceptPostMessage();
   bool IsChooserShown();
 
   bool IsCommandEnabled(const std::string& command);
@@ -441,9 +439,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("hasCustomPageSizeStyle",
                  &TestRunnerBindings::HasCustomPageSizeStyle)
       .SetMethod("insertStyleSheet", &TestRunnerBindings::InsertStyleSheet)
-      .SetProperty("interceptPostMessage",
-                   &TestRunnerBindings::InterceptPostMessage,
-                   &TestRunnerBindings::SetInterceptPostMessage)
       .SetMethod("isChooserShown", &TestRunnerBindings::IsChooserShown)
       .SetMethod("isCommandEnabled", &TestRunnerBindings::IsCommandEnabled)
       .SetMethod("keepWebHistory", &TestRunnerBindings::NotImplemented)
@@ -1473,19 +1468,6 @@ int TestRunnerBindings::WebHistoryItemCount() {
   return false;
 }
 
-bool TestRunnerBindings::InterceptPostMessage() {
-  if (runner_)
-    return runner_->shouldInterceptPostMessage();
-  return false;
-}
-
-void TestRunnerBindings::SetInterceptPostMessage(bool value) {
-  if (runner_) {
-    runner_->layout_test_runtime_flags_.set_intercept_post_message(value);
-    runner_->OnLayoutTestRuntimeFlagsChanged();
-  }
-}
-
 void TestRunnerBindings::ForceNextWebGLContextCreationToFail() {
   if (view_runner_)
     view_runner_->ForceNextWebGLContextCreationToFail();
@@ -1897,10 +1879,6 @@ bool TestRunner::policyDelegateIsPermissive() const {
 
 bool TestRunner::policyDelegateShouldNotifyDone() const {
   return layout_test_runtime_flags_.policy_delegate_should_notify_done();
-}
-
-bool TestRunner::shouldInterceptPostMessage() const {
-  return layout_test_runtime_flags_.intercept_post_message();
 }
 
 bool TestRunner::shouldDumpResourcePriorities() const {

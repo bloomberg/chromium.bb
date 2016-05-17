@@ -8,6 +8,8 @@
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/MediaQueryList.h"
+#include "core/dom/Document.h"
+#include "core/frame/RemoteFrameClient.h"
 
 namespace blink {
 
@@ -341,6 +343,11 @@ RemoteDOMWindow::RemoteDOMWindow(RemoteFrame& frame)
 void RemoteDOMWindow::frameDetached()
 {
     m_frame = nullptr;
+}
+
+void RemoteDOMWindow::schedulePostMessage(MessageEvent* event, PassRefPtr<SecurityOrigin> target, Document* source)
+{
+    m_frame->client()->forwardPostMessage(event, target, source->frame());
 }
 
 } // namespace blink

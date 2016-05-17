@@ -38,9 +38,6 @@ public:
 
     virtual unsigned backForwardLength() = 0;
 
-    // Returns true if the embedder intercepted the postMessage call
-    virtual bool willCheckAndDispatchMessageEvent(SecurityOrigin* /*target*/, MessageEvent*, LocalFrame* /*sourceFrame*/) const { return false; }
-
     virtual void frameFocused() const = 0;
 
     virtual BlameContext* frameBlameContext() { return nullptr; }

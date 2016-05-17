@@ -581,22 +581,14 @@ public:
 
     virtual WebMIDIClient* webMIDIClient() { return 0; }
 
-
-    // Messages ------------------------------------------------------
-
-    // Notifies the embedder that a postMessage was issued on this frame, and
-    // gives the embedder a chance to handle it instead of WebKit. Returns true
-    // if the embedder handled it.
-    virtual bool willCheckAndDispatchMessageEvent(
-        WebLocalFrame* sourceFrame,
-        WebFrame* targetFrame,
-        WebSecurityOrigin target,
-        WebDOMMessageEvent event) { return false; }
+    // User agent ------------------------------------------------------
 
     // Asks the embedder if a specific user agent should be used. Non-empty
     // strings indicate an override should be used. Otherwise,
     // Platform::current()->userAgent() will be called to provide one.
     virtual WebString userAgentOverride() { return WebString(); }
+
+    // Do not track ----------------------------------------------------
 
     // Asks the embedder what value the network stack will send for the DNT
     // header. An empty string indicates that no DNT header will be send.

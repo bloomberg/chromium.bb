@@ -52,7 +52,6 @@ void LayoutTestRuntimeFlags::Reset() {
   set_dump_resource_priorities(false);
   set_dump_resource_response_mime_types(false);
   set_dump_navigation_policy(false);
-  set_intercept_post_message(false);
 
   set_dump_title_changes(false);
   set_dump_icon_changes(false);

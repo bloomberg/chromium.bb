@@ -150,7 +150,6 @@ class TestRunner : public WebTestRunner {
   bool policyDelegateEnabled() const;
   bool policyDelegateIsPermissive() const;
   bool policyDelegateShouldNotifyDone() const;
-  bool shouldInterceptPostMessage() const;
   bool shouldDumpResourcePriorities() const;
   void setToolTipText(const blink::WebString&);
   void setDragImage(const blink::WebImage& drag_image);

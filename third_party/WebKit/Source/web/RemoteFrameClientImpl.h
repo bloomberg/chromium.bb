@@ -28,13 +28,13 @@ public:
     Frame* nextSibling() const override;
     Frame* firstChild() const override;
     Frame* lastChild() const override;
-    bool willCheckAndDispatchMessageEvent(SecurityOrigin*, MessageEvent*, LocalFrame*) const override;
     void frameFocused() const override;
 
     // RemoteFrameClient overrides:
     void navigate(const ResourceRequest&, bool shouldReplaceCurrentEntry) override;
     void reload(FrameLoadType, ClientRedirectPolicy) override;
     unsigned backForwardLength() override;
+    void forwardPostMessage(MessageEvent*, PassRefPtr<SecurityOrigin> target, LocalFrame* source) const override;
     void forwardInputEvent(Event*) override;
     void frameRectsChanged(const IntRect& frameRect) override;
     void advanceFocus(WebFocusType, LocalFrame*) override;

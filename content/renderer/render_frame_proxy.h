@@ -124,10 +124,10 @@ class CONTENT_EXPORT RenderFrameProxy
 
   // blink::WebRemoteFrameClient implementation:
   void frameDetached(DetachType type) override;
-  void postMessageEvent(blink::WebLocalFrame* sourceFrame,
-                        blink::WebRemoteFrame* targetFrame,
-                        blink::WebSecurityOrigin target,
-                        blink::WebDOMMessageEvent event) override;
+  void forwardPostMessage(blink::WebLocalFrame* sourceFrame,
+                          blink::WebRemoteFrame* targetFrame,
+                          blink::WebSecurityOrigin target,
+                          blink::WebDOMMessageEvent event) override;
   void initializeChildFrame(float scale_factor) override;
   void navigate(const blink::WebURLRequest& request,
                 bool should_replace_current_entry) override;

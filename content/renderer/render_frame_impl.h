@@ -31,7 +31,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/frame_blame_context.h"
 #include "content/renderer/mojo/blink_service_registry_impl.h"
-#include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_platform_file.h"
@@ -229,12 +228,6 @@ class CONTENT_EXPORT RenderFrameImpl
                                         int* opener_view_routing_id);
 
   ~RenderFrameImpl() override;
-
-  // TODO(nasko): This can be removed once we don't have a swapped out state on
-  // RenderFrames. See https://crbug.com/357747.
-  void set_render_frame_proxy(RenderFrameProxy* proxy) {
-    render_frame_proxy_ = proxy;
-  }
 
   // Called by RenderWidget when meaningful layout has happened.
   // See RenderFrameObserver::DidMeaningfulLayout declaration for details.
@@ -586,11 +579,6 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebUserMediaClient* userMediaClient() override;
   blink::WebEncryptedMediaClient* encryptedMediaClient() override;
   blink::WebMIDIClient* webMIDIClient() override;
-  bool willCheckAndDispatchMessageEvent(
-      blink::WebLocalFrame* source_frame,
-      blink::WebFrame* target_frame,
-      blink::WebSecurityOrigin target_origin,
-      blink::WebDOMMessageEvent event) override;
   blink::WebString userAgentOverride() override;
   blink::WebString doNotTrackValue() override;
   bool allowWebGL(bool default_value) override;
@@ -1045,9 +1033,6 @@ class CONTENT_EXPORT RenderFrameImpl
   base::WeakPtr<RenderViewImpl> render_view_;
   int routing_id_;
 
-  // TODO(nasko): This can be removed once we don't have a swapped out state on
-  // RenderFrame. See https://crbug.com/357747.
-  RenderFrameProxy* render_frame_proxy_;
   bool is_detaching_;
 
   // If this frame was created to replace a proxy, this will store the routing

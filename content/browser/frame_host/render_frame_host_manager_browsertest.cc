@@ -939,10 +939,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // http://crbug.com/153701 is fixed.
 }
 
-// Test for crbug.com/278336. MessagePorts should work cross-process. I.e.,
-// messages which contain Transferables and get intercepted by
-// RenderViewImpl::willCheckAndDispatchMessageEvent (because the RenderView is
-// swapped out) should work.
+// Test for crbug.com/278336. MessagePorts should work cross-process. Messages
+// which contain Transferables that need to be forwarded between processes via
+// RenderFrameProxy::willCheckAndDispatchMessageEvent should work.
 // Specifically:
 // 1) Create 2 windows (opener and "foo") and send "foo" cross-process.
 // 2) Post a message containing a message port from opener to "foo".

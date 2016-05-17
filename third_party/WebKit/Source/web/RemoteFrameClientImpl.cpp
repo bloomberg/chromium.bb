@@ -117,14 +117,6 @@ Frame* RemoteFrameClientImpl::lastChild() const
     return toCoreFrame(m_webFrame->lastChild());
 }
 
-bool RemoteFrameClientImpl::willCheckAndDispatchMessageEvent(
-    SecurityOrigin* target, MessageEvent* event, LocalFrame* sourceFrame) const
-{
-    if (m_webFrame->client())
-        m_webFrame->client()->postMessageEvent(WebLocalFrameImpl::fromFrame(sourceFrame), m_webFrame, WebSecurityOrigin(target), WebDOMMessageEvent(event));
-    return true;
-}
-
 void RemoteFrameClientImpl::frameFocused() const
 {
     if (m_webFrame->client())
@@ -151,6 +143,13 @@ unsigned RemoteFrameClientImpl::backForwardLength()
     // navigation and the subsequent one moving the frame out-of-process.
     // See https://crbug.com/501116.
     return 2;
+}
+
+void RemoteFrameClientImpl::forwardPostMessage(
+    MessageEvent* event, PassRefPtr<SecurityOrigin> target, LocalFrame* sourceFrame) const
+{
+    if (m_webFrame->client())
+        m_webFrame->client()->forwardPostMessage(WebLocalFrameImpl::fromFrame(sourceFrame), m_webFrame, WebSecurityOrigin(target), WebDOMMessageEvent(event));
 }
 
 // FIXME: Remove this code once we have input routing in the browser

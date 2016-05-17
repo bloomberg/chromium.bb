@@ -146,9 +146,6 @@ class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
   // WebFrameClient::decidePolicyForNavigation.
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_navigation_policy)
 
-  // Bound variable to set whether postMessages should be intercepted or not
-  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(intercept_post_message)
-
   // If true, output a message when the page title is changed.
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_title_changes)
 
