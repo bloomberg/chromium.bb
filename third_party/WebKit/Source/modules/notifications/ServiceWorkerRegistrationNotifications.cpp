@@ -75,7 +75,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptSta
     ScriptPromise promise = resolver->promise();
 
     OwnPtr<WebNotificationShowCallbacks> callbacks = adoptPtr(new CallbackPromiseAdapter<void, void>(resolver));
-    ServiceWorkerRegistrationNotifications::from(executionContext, registration).prepareShow(data, callbacks.release());
+    ServiceWorkerRegistrationNotifications::from(executionContext, registration).prepareShow(data, std::move(callbacks));
 
     return promise;
 }

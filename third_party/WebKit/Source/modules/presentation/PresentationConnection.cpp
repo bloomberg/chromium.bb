@@ -357,7 +357,7 @@ void PresentationConnection::didReceiveBinaryMessage(const uint8_t* data, size_t
     case BinaryTypeBlob: {
         OwnPtr<BlobData> blobData = BlobData::create();
         blobData->appendBytes(data, length);
-        Blob* blob = Blob::create(BlobDataHandle::create(blobData.release(), length));
+        Blob* blob = Blob::create(BlobDataHandle::create(std::move(blobData), length));
         dispatchEvent(MessageEvent::create(blob));
         return;
     }

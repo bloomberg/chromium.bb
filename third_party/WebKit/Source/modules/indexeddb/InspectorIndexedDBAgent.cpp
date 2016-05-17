@@ -118,7 +118,7 @@ public:
         OwnPtr<protocol::Array<String>> databaseNames = protocol::Array<String>::create();
         for (size_t i = 0; i < databaseNamesList->length(); ++i)
             databaseNames->addItem(databaseNamesList->anonymousIndexedGetter(i));
-        m_requestCallback->sendSuccess(databaseNames.release());
+        m_requestCallback->sendSuccess(std::move(databaseNames));
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -286,14 +286,14 @@ static PassOwnPtr<KeyPath> keyPathFromIDBKeyPath(const IDBKeyPath& idbKeyPath)
         const Vector<String>& stringArray = idbKeyPath.array();
         for (size_t i = 0; i < stringArray.size(); ++i)
             array->addItem(stringArray[i]);
-        keyPath->setArray(array.release());
+        keyPath->setArray(std::move(array));
         break;
     }
     default:
         ASSERT_NOT_REACHED();
     }
 
-    return keyPath.release();
+    return keyPath;
 }
 
 class DatabaseLoader final : public ExecutableWithDatabase {
@@ -324,22 +324,22 @@ public:
                     .setKeyPath(keyPathFromIDBKeyPath(indexMetadata.keyPath))
                     .setUnique(indexMetadata.unique)
                     .setMultiEntry(indexMetadata.multiEntry).build();
-                indexes->addItem(objectStoreIndex.release());
+                indexes->addItem(std::move(objectStoreIndex));
             }
 
             OwnPtr<ObjectStore> objectStore = ObjectStore::create()
                 .setName(objectStoreMetadata.name)
                 .setKeyPath(keyPathFromIDBKeyPath(objectStoreMetadata.keyPath))
                 .setAutoIncrement(objectStoreMetadata.autoIncrement)
-                .setIndexes(indexes.release()).build();
-            objectStores->addItem(objectStore.release());
+                .setIndexes(std::move(indexes)).build();
+            objectStores->addItem(std::move(objectStore));
         }
         OwnPtr<DatabaseWithObjectStores> result = DatabaseWithObjectStores::create()
             .setName(databaseMetadata.name)
             .setVersion(databaseMetadata.version)
-            .setObjectStores(objectStores.release()).build();
+            .setObjectStores(std::move(objectStores)).build();
 
-        m_requestCallback->sendSuccess(result.release());
+        m_requestCallback->sendSuccess(std::move(result));
     }
 
     RequestCallback* getRequestCallback() override { return m_requestCallback.get(); }
@@ -479,12 +479,12 @@ public:
             .setKey(key)
             .setPrimaryKey(primaryKey)
             .setValue(value).build();
-        m_result->addItem(dataEntry.release());
+        m_result->addItem(std::move(dataEntry));
     }
 
     void end(bool hasMore)
     {
-        m_requestCallback->sendSuccess(m_result.release(), hasMore);
+        m_requestCallback->sendSuccess(std::move(m_result), hasMore);
     }
 
     DEFINE_INLINE_VIRTUAL_TRACE()
@@ -544,7 +544,7 @@ public:
         } else {
             idbRequest = idbObjectStore->openCursor(getScriptState(), m_idbKeyRange.get(), WebIDBCursorDirectionNext);
         }
-        OpenCursorCallback* openCursorCallback = OpenCursorCallback::create(getScriptState(), m_requestCallback.release(), m_skipCount, m_pageSize);
+        OpenCursorCallback* openCursorCallback = OpenCursorCallback::create(getScriptState(), std::move(m_requestCallback), m_skipCount, m_pageSize);
         idbRequest->addEventListener(EventTypeNames::success, openCursorCallback, false);
     }
 
@@ -778,7 +778,7 @@ public:
             m_requestCallback->sendFailure(String::format("Could not clear object store '%s': %d", m_objectStoreName.utf8().data(), ec));
             return;
         }
-        idbTransaction->addEventListener(EventTypeNames::complete, ClearObjectStoreListener::create(m_requestCallback.release()), false);
+        idbTransaction->addEventListener(EventTypeNames::complete, ClearObjectStoreListener::create(std::move(m_requestCallback)), false);
     }
 
     RequestCallback* getRequestCallback() override { return m_requestCallback.get(); }

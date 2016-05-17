@@ -56,9 +56,9 @@ MediaStream* HTMLCanvasElementCapture::captureStream(HTMLCanvasElement& element,
 
     CanvasCaptureMediaStreamTrack* canvasTrack;
     if (givenFrameRate)
-        canvasTrack = CanvasCaptureMediaStreamTrack::create(track, &element, handler.release(), frameRate);
+        canvasTrack = CanvasCaptureMediaStreamTrack::create(track, &element, std::move(handler), frameRate);
     else
-        canvasTrack = CanvasCaptureMediaStreamTrack::create(track, &element, handler.release());
+        canvasTrack = CanvasCaptureMediaStreamTrack::create(track, &element, std::move(handler));
     // We want to capture a frame in the beginning.
     canvasTrack->requestFrame();
 

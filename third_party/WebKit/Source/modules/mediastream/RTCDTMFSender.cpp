@@ -51,7 +51,7 @@ RTCDTMFSender* RTCDTMFSender::create(ExecutionContext* context, WebRTCPeerConnec
         return nullptr;
     }
 
-    RTCDTMFSender* dtmfSender = new RTCDTMFSender(context, track, handler.release());
+    RTCDTMFSender* dtmfSender = new RTCDTMFSender(context, track, std::move(handler));
     dtmfSender->suspendIfNeeded();
     return dtmfSender;
 }

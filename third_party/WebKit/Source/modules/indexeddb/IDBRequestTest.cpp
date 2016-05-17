@@ -131,7 +131,7 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping)
         EXPECT_EQ(request->readyState(), "pending");
 
         getExecutionContext()->stopActiveDOMObjects();
-        request->onUpgradeNeeded(oldVersion, backend.release(), metadata, WebIDBDataLossNone, String());
+        request->onUpgradeNeeded(oldVersion, std::move(backend), metadata, WebIDBDataLossNone, String());
     }
 
     {
@@ -142,7 +142,7 @@ TEST_F(IDBRequestTest, ConnectionsAfterStopping)
         EXPECT_EQ(request->readyState(), "pending");
 
         getExecutionContext()->stopActiveDOMObjects();
-        request->onSuccess(backend.release(), metadata);
+        request->onSuccess(std::move(backend), metadata);
     }
 }
 

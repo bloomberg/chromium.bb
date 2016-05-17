@@ -155,7 +155,7 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& e
         return 0;
     }
 
-    SourceBuffer* buffer = SourceBuffer::create(webSourceBuffer.release(), this, m_asyncEventQueue.get());
+    SourceBuffer* buffer = SourceBuffer::create(std::move(webSourceBuffer), this, m_asyncEventQueue.get());
     // 6. Add the new object to sourceBuffers and fire a addsourcebuffer on that object.
     m_sourceBuffers->add(buffer);
 

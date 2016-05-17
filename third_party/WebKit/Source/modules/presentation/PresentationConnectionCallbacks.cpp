@@ -27,7 +27,7 @@ void PresentationConnectionCallbacks::onSuccess(std::unique_ptr<WebPresentationC
 
     if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
         return;
-    m_resolver->resolve(PresentationConnection::take(m_resolver.get(), result.release(), m_request));
+    m_resolver->resolve(PresentationConnection::take(m_resolver.get(), std::move(result), m_request));
 }
 
 void PresentationConnectionCallbacks::onError(const WebPresentationError& error)

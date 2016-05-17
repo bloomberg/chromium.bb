@@ -161,7 +161,7 @@ void DOMFileSystem::createWriter(const FileEntry* fileEntry, FileWriterCallback*
     FileWriter* fileWriter = FileWriter::create(getExecutionContext());
     FileWriterBaseCallback* conversionCallback = ConvertToFileWriterCallback::create(successCallback);
     OwnPtr<AsyncFileSystemCallbacks> callbacks = FileWriterBaseCallbacks::create(fileWriter, conversionCallback, errorCallback, m_context);
-    fileSystem()->createFileWriter(createFileSystemURL(fileEntry), fileWriter, callbacks.release());
+    fileSystem()->createFileWriter(createFileSystemURL(fileEntry), fileWriter, std::move(callbacks));
 }
 
 void DOMFileSystem::createFile(const FileEntry* fileEntry, BlobCallback* successCallback, ErrorCallback* errorCallback)

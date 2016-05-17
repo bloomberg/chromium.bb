@@ -215,7 +215,7 @@ FileWriterSync* DOMFileSystemSync::createWriter(const FileEntrySync* fileEntry, 
     OwnPtr<AsyncFileSystemCallbacks> callbacks = FileWriterBaseCallbacks::create(fileWriter, successCallback, errorCallback, m_context);
     callbacks->setShouldBlockUntilCompletion(true);
 
-    fileSystem()->createFileWriter(createFileSystemURL(fileEntry), fileWriter, callbacks.release());
+    fileSystem()->createFileWriter(createFileSystemURL(fileEntry), fileWriter, std::move(callbacks));
     if (errorCode != FileError::OK) {
         FileError::throwDOMException(exceptionState, errorCode);
         return 0;

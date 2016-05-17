@@ -306,7 +306,7 @@ void MediaRecorder::writeData(const char* data, size_t length, bool lastInSlice)
 
     // Cache |m_blobData->length()| before release()ng it.
     const long long blobDataLength = m_blobData->length();
-    createBlobEvent(Blob::create(BlobDataHandle::create(m_blobData.release(), blobDataLength)));
+    createBlobEvent(Blob::create(BlobDataHandle::create(std::move(m_blobData), blobDataLength)));
 }
 
 void MediaRecorder::onError(const WebString& message)

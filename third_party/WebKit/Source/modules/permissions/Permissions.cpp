@@ -194,7 +194,7 @@ ScriptPromise Permissions::requestAll(ScriptState* scriptState, const Vector<Dic
 
     WebVector<WebPermissionType> internalWebPermissions = *internalPermissions;
     client->requestPermissions(internalWebPermissions, KURL(KURL(), scriptState->getExecutionContext()->getSecurityOrigin()->toString()),
-        new PermissionsCallback(resolver, internalPermissions.release(), callerIndexToInternalIndex.release()));
+        new PermissionsCallback(resolver, std::move(internalPermissions), std::move(callerIndexToInternalIndex)));
     return promise;
 }
 

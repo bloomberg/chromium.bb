@@ -68,7 +68,7 @@ Blob* PushMessageData::blob() const
     // provided, following the specification.
 
     const long long byteLength = blobData->length();
-    return Blob::create(BlobDataHandle::create(blobData.release(), byteLength));
+    return Blob::create(BlobDataHandle::create(std::move(blobData), byteLength));
 }
 
 ScriptValue PushMessageData::json(ScriptState* scriptState, ExceptionState& exceptionState) const

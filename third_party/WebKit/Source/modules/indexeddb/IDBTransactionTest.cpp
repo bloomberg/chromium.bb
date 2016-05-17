@@ -93,7 +93,7 @@ TEST_F(IDBTransactionTest, EnsureLifetime)
     OwnPtr<MockWebIDBDatabase> backend = MockWebIDBDatabase::create();
     EXPECT_CALL(*backend, close())
         .Times(1);
-    Persistent<IDBDatabase> db = IDBDatabase::create(getExecutionContext(), backend.release(), FakeIDBDatabaseCallbacks::create());
+    Persistent<IDBDatabase> db = IDBDatabase::create(getExecutionContext(), std::move(backend), FakeIDBDatabaseCallbacks::create());
 
     const int64_t transactionId = 1234;
     const HashSet<String> transactionScope = HashSet<String>();
@@ -129,7 +129,7 @@ TEST_F(IDBTransactionTest, TransactionFinish)
         .Times(1);
     EXPECT_CALL(*backend, close())
         .Times(1);
-    Persistent<IDBDatabase> db = IDBDatabase::create(getExecutionContext(), backend.release(), FakeIDBDatabaseCallbacks::create());
+    Persistent<IDBDatabase> db = IDBDatabase::create(getExecutionContext(), std::move(backend), FakeIDBDatabaseCallbacks::create());
 
     const HashSet<String> transactionScope = HashSet<String>();
     Persistent<IDBTransaction> transaction = IDBTransaction::create(getScriptState(), transactionId, transactionScope, WebIDBTransactionModeReadOnly, db.get());

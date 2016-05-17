@@ -67,7 +67,7 @@ RTCDataChannel* RTCDataChannel::create(ExecutionContext* context, WebRTCPeerConn
         exceptionState.throwDOMException(NotSupportedError, "RTCDataChannel is not supported");
         return nullptr;
     }
-    RTCDataChannel* channel = new RTCDataChannel(context, handler.release());
+    RTCDataChannel* channel = new RTCDataChannel(context, std::move(handler));
     channel->suspendIfNeeded();
 
     return channel;

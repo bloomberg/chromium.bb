@@ -63,7 +63,7 @@ public:
     virtual ~CallbackWrapper() { }
     PassOwnPtr<AsyncFileSystemCallbacks> release()
     {
-        return m_callbacks.release();
+        return std::move(m_callbacks);
     }
 
     DEFINE_INLINE_TRACE() { }
