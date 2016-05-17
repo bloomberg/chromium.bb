@@ -4,6 +4,8 @@
 
 module navigation.mojom;
 
+import "components/mus/public/interfaces/window_tree.mojom";
+import "ui/mojo/geometry/geometry.mojom";
 import "url/mojo/url.mojom";
 
 interface ViewFactory {
@@ -12,8 +14,29 @@ interface ViewFactory {
 
 interface ViewClient {
   LoadingStateChanged(bool is_loading);
+  NavigationStateChanged(url.mojom.Url url,
+                         string title,
+                         bool can_go_back,
+                         bool can_go_forward);
+  LoadProgressChanged(double progress);
+  ViewCreated(View view,
+              ViewClient& client,
+              bool is_popup,
+              mojo.Rect initial_rect,
+              bool user_gesture);
+  Close();
 };
 
 interface View {
-  LoadUrl(url.mojom.Url url);
+  // Navigates the view to |url|.
+  NavigateTo(url.mojom.Url url);
+
+  GoBack();
+  GoForward();
+  Reload(bool skip_cache);
+  Stop();
+
+  // Obtains a Mus WindowTreeClient for the View, so it can be embedded in a
+  // UI.
+  GetWindowTreeClient(mus.mojom.WindowTreeClient& client);
 };

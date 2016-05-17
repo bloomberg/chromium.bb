@@ -3,6 +3,9 @@
   "name": "exe:navigation",
   "display_name": "Navigation",
   "capabilities": {
+    "provided": {
+      "app":  [ "navigation::mojom::ViewFactory" ]
+    },
     "required": {
       "*": { "classes": [ "app" ] },
       "mojo:shell": { "classes": [ "shell:client_process", "shell:user_id", "shell:instance_name" ] }
