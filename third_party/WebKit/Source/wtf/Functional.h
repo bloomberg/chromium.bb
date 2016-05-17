@@ -124,6 +124,7 @@ class FunctionWrapper<R(*)(Parameters...)> {
     DISALLOW_NEW();
 public:
     typedef R ResultType;
+    static const size_t numberOfArguments = sizeof...(Parameters);
 
     explicit FunctionWrapper(R(*function)(Parameters...))
         : m_function(function)
@@ -147,6 +148,8 @@ class FunctionWrapper<R(C::*)(Parameters...)> {
     DISALLOW_NEW();
 public:
     typedef R ResultType;
+    // + 1 is for |this| as an argument.
+    static const size_t numberOfArguments = sizeof...(Parameters) + 1;
 
     explicit FunctionWrapper(R(C::*function)(Parameters...))
         : m_function(function)
