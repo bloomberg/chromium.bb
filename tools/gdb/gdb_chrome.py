@@ -211,7 +211,7 @@ pp_set.add_printer('base::TimeDelta', '^base::TimeDelta$', TimeDeltaPrinter)
 
 class TimeTicksPrinter(TimeDeltaPrinter):
     def __init__(self, val):
-        self._timedelta = datetime.timedelta(microseconds=int(val['ticks_']))
+        self._timedelta = datetime.timedelta(microseconds=int(val['us_']))
 pp_set.add_printer('base::TimeTicks', '^base::TimeTicks$', TimeTicksPrinter)
 
 
