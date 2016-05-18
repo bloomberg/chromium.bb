@@ -230,7 +230,7 @@ imported/web-platform-tests/geolocation-API [ Skip ]
 ## Owners: tkent@chromium.org
 # imported/web-platform-tests/html [ Pass ]
 ## Owners: TBD
-# imported/web-platform-tests/html-imports [ Pass ]
+# imported/wpt/html-imports [ Pass ]
 imported/web-platform-tests/html-longdesc [ Skip ]
 imported/web-platform-tests/html-media-capture [ Skip ]
 imported/web-platform-tests/http [ Skip ]
@@ -314,7 +314,7 @@ imported/wpt/gamepad/OWNERS [ Skip ]
 imported/web-platform-tests/FileAPI/OWNERS [ Skip ]
 imported/web-platform-tests/html/OWNERS [ Skip ]
 imported/wpt/webrtc/OWNERS [ Skip ]
-imported/web-platform-tests/html-imports/OWNERS [ Skip ]
+imported/wpt/html-imports/OWNERS [ Skip ]
 imported/wpt/IndexedDB/OWNERS [ Skip ]
 imported/wpt/dom/OWNERS [ Skip ]
 imported/web-platform-tests/shadow-dom/OWNERS [ Skip ]
@@ -608,9 +608,9 @@ imported/web-platform-tests/html/editing/dnd/platform/plugin/swfsources [ Skip ]
 imported/web-platform-tests/html/syntax/parsing/template [ Skip ]
 
 # these contain an extraneous debug log div ..
-imported/web-platform-tests/html-imports/link-import-null.html [ Skip ]
-imported/web-platform-tests/html-imports/link-import.html [ Skip ]
-imported/web-platform-tests/html-imports/loading-import.html [ Skip ]
+imported/wpt/html-imports/link-import-null.html [ Skip ]
+imported/wpt/html-imports/link-import.html [ Skip ]
+imported/wpt/html-imports/loading-import.html [ Skip ]
 
 # We'll never be able to test WebRTC deny tests since we always auto-allow
 # user media.
