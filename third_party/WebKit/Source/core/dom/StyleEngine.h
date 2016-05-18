@@ -177,6 +177,8 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+    DECLARE_TRACE_WRAPPERS();
+
 private:
     // CSSFontSelectorClient implementation.
     void fontsNeedUpdate(CSSFontSelector*) override;

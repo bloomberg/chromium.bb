@@ -8,9 +8,11 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
+#include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/ElementRareData.h"
 #include "core/dom/NodeListsNodeData.h"
 #include "core/dom/NodeRareData.h"
+#include "core/dom/StyleEngine.h"
 #include "core/html/imports/HTMLImportsController.h"
 #include "platform/heap/HeapPage.h"
 
@@ -103,11 +105,11 @@ void ScriptWrappableVisitor::dispatchTraceWrappers(const ScriptWrappable* wrappa
     wrappable->traceWrappers(this);
 }
 
-#define DEFINE_DISPATCH_TRACE_WRAPPERS(className)                 \
+#define DEFINE_DISPATCH_TRACE_WRAPPERS(className)                    \
 void ScriptWrappableVisitor::dispatchTraceWrappers(const className* traceable) const \
-{                                                                 \
-    traceable->traceWrappers(this);                               \
-}                                                                 \
+{                                                                    \
+    traceable->traceWrappers(this);                                  \
+}                                                                    \
 
 WRAPPER_VISITOR_SPECIAL_CLASSES(DEFINE_DISPATCH_TRACE_WRAPPERS);
 

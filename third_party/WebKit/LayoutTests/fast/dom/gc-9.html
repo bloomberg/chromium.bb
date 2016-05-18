@@ -146,6 +146,8 @@ var objectsToTest = [
     [ "document.styleSheets[0]", "allow custom" ],
     [ "document.styleSheets[0].cssRules", "allow custom"],
     [ "document.styleSheets[0].cssRules[0]", "allow custom" ],
+    [ "document.getElementsByTagName('style')[0].sheet", "allow custom" ],
+    [ "document.getElementsByTagName('svg')[0].firstChild.sheet", "allow custom" ],
 
     [ "new XPathEvaluator()" ], // XPathEvaluator
     [ "new XPathEvaluator().evaluate('/', document, null, 0, null)" ], // XPathResult
@@ -208,6 +210,7 @@ function testPropertiesAgain()
     <link></link>
     <output></output>
     <iframe></iframe>
+    <svg><style></style></svg>
 </div>
 
 </body>

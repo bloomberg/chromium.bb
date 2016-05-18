@@ -257,9 +257,6 @@ void objectGroupingForMajorGC(v8::Isolate* isolate, bool constructRetainedObject
 
 void gcPrologueForMajorGC(v8::Isolate* isolate, bool constructRetainedObjectInfos)
 {
-    if (RuntimeEnabledFeatures::traceWrappablesEnabled())
-        return;
-
     objectGroupingForMajorGC(isolate, constructRetainedObjectInfos);
 }
 

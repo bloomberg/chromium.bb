@@ -43,7 +43,7 @@ public:
 
     HTMLStyleElement* getNamedItem(const AtomicString&) const;
 
-    Document* document() { return m_treeScope ? &m_treeScope->document() : nullptr; }
+    Document* document() const { return m_treeScope ? &m_treeScope->document() : nullptr; }
 
     CSSStyleSheet* anonymousNamedGetter(const AtomicString&);
 
@@ -51,7 +51,7 @@ public:
 
 private:
     explicit StyleSheetList(TreeScope*);
-    const HeapVector<Member<StyleSheet>>& styleSheets();
+    const HeapVector<Member<StyleSheet>>& styleSheets() const;
 
     Member<TreeScope> m_treeScope;
 };

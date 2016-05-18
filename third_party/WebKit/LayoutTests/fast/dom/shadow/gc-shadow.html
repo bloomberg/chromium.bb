@@ -19,6 +19,8 @@ if (window.internals) {
 
         var shadow = p.createShadowRoot();
         shadow.tattoo = 'I <3 WebKit';
+        shadow.innerHTML = '<style>background-color: red;</style><div>Shadow</div>';
+        shadow.styleSheets.tattoo = 'I <3 WebKit cssom';
         shadow = null;
     }
 
@@ -26,6 +28,7 @@ if (window.internals) {
 
     for (i = 0; i < ps.length; i++) {
         shouldBe('internals.shadowRoot(ps[' + i + ']).tattoo', '"I <3 WebKit"');
+        shouldBe('internals.shadowRoot(ps[' + i + ']).styleSheets.tattoo', '"I <3 WebKit cssom"');
     }
 }
 </script>

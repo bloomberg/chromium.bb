@@ -759,4 +759,12 @@ DEFINE_TRACE(StyleEngine)
     CSSFontSelectorClient::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(StyleEngine)
+{
+    for (auto sheet : m_injectedAuthorStyleSheets) {
+        visitor->traceWrappers(sheet);
+    }
+    visitor->traceWrappers(m_documentStyleSheetCollection);
+}
+
 } // namespace blink

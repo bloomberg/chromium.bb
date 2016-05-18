@@ -29,6 +29,7 @@
 #define DocumentStyleSheetCollection_h
 
 #include "core/dom/TreeScopeStyleSheetCollection.h"
+#include "platform/heap/WrapperVisitor.h"
 
 namespace blink {
 
@@ -51,6 +52,8 @@ public:
     {
         TreeScopeStyleSheetCollection::trace(visitor);
     }
+
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
 private:
     explicit DocumentStyleSheetCollection(TreeScope&);

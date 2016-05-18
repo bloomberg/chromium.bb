@@ -20,6 +20,8 @@ class ScriptWrappable;
     V(NodeRareData);                                                 \
     V(NodeListsNodeData);                                            \
     V(ElementRareData);                                              \
+    V(StyleEngine);                                                  \
+    V(DocumentStyleSheetCollection);                                 \
 
 #define FORWARD_DECLARE_SPECIAL_CLASSES(className)                   \
     class className;
@@ -69,6 +71,8 @@ WRAPPER_VISITOR_SPECIAL_CLASSES(FORWARD_DECLARE_SPECIAL_CLASSES);
 #define DEFINE_TRACE_WRAPPERS_AFTER_DISPATCH(T)                      \
     void T::traceWrappersAfterDispatch(const WrapperVisitor* visitor) const
 
+#define DEFINE_INLINE_TRACE_WRAPPERS() DECLARE_TRACE_WRAPPERS()
+#define DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() DECLARE_VIRTUAL_TRACE_WRAPPERS()
 
 // ###########################################################################
 // TODO(hlopko): Get rid of virtual calls using CRTP

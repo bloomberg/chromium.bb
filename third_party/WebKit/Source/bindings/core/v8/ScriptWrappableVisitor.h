@@ -47,7 +47,7 @@ public:
 
     void markWrapper(const v8::Persistent<v8::Object>*) const;
     virtual void dispatchTraceWrappers(const ScriptWrappable*) const;
-#define DECLARE_DISPATCH_TRACE_WRAPPERS(className)               \
+#define DECLARE_DISPATCH_TRACE_WRAPPERS(className)                   \
     virtual void dispatchTraceWrappers(const className*) const;
 
     WRAPPER_VISITOR_SPECIAL_CLASSES(DECLARE_DISPATCH_TRACE_WRAPPERS);

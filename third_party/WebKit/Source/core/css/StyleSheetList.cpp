@@ -36,7 +36,7 @@ StyleSheetList::StyleSheetList(TreeScope* treeScope)
 {
 }
 
-inline const HeapVector<Member<StyleSheet>>& StyleSheetList::styleSheets()
+inline const HeapVector<Member<StyleSheet>>& StyleSheetList::styleSheets() const
 {
     return document()->styleEngine().styleSheetsForStyleSheetList(*m_treeScope);
 }

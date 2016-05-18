@@ -373,6 +373,12 @@ DEFINE_TRACE(ShadowRoot)
     DocumentFragment::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(ShadowRoot)
+{
+    visitor->traceWrappers(m_styleSheetList);
+    DocumentFragment::traceWrappers(visitor);
+}
+
 std::ostream& operator<<(std::ostream& ostream, const ShadowRootType& type)
 {
     switch (type) {

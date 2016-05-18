@@ -49,10 +49,10 @@ template<typename T> class EventSender;
 using LinkEventSender = EventSender<HTMLLinkElement>;
 
 //
-// LinkStyle handles dynaically change-able link resources, which is
+// LinkStyle handles dynamically change-able link resources, which is
 // typically @rel="stylesheet".
 //
-// It could be @rel="shortcut icon" or soething else though. Each of
+// It could be @rel="shortcut icon" or something else though. Each of
 // types might better be handled by a separate class, but dynamically
 // changing @rel makes it harder to move such a design so we are
 // sticking current way so far.
