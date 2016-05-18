@@ -27,9 +27,9 @@
 
 #include "cc/animation/timing_function.h"
 #include "platform/animation/AnimationUtilities.h" // For blend()
-#include "platform/animation/UnitBezier.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
+#include "ui/gfx/geometry/cubic_bezier.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -153,6 +153,7 @@ public:
 private:
     explicit CubicBezierTimingFunction(FunctionSubType subType, double x1, double y1, double x2, double y2)
         : TimingFunction(kCubicBezierFunction)
+        , m_bezier(x1, y1, x2, y2)
         , m_x1(x1)
         , m_y1(y1)
         , m_x2(x2)
@@ -166,12 +167,12 @@ private:
     // number of solutions found.
     size_t findIntersections(double intersectionY, double& solution1, double& solution2, double& solution3) const;
 
-    double m_x1;
-    double m_y1;
-    double m_x2;
-    double m_y2;
+    gfx::CubicBezier m_bezier;
+    const double m_x1;
+    const double m_y1;
+    const double m_x2;
+    const double m_y2;
     FunctionSubType m_subType;
-    mutable OwnPtr<UnitBezier> m_bezier;
 };
 
 class PLATFORM_EXPORT StepsTimingFunction final : public TimingFunction {

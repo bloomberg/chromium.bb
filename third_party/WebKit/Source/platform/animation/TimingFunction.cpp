@@ -46,9 +46,7 @@ String CubicBezierTimingFunction::toString() const
 
 double CubicBezierTimingFunction::evaluate(double fraction, double accuracy) const
 {
-    if (!m_bezier)
-        m_bezier = adoptPtr(new UnitBezier(m_x1, m_y1, m_x2, m_y2));
-    return m_bezier->solveWithEpsilon(fraction, accuracy);
+    return m_bezier.SolveWithEpsilon(fraction, accuracy);
 }
 
 // This works by taking taking the derivative of the cubic bezier, on the y
@@ -89,22 +87,20 @@ void CubicBezierTimingFunction::range(double* minValue, double* maxValue) const
 
     // If the solution is in the range [0,1] then we include it, otherwise we
     // ignore it.
-    if (!m_bezier)
-        m_bezier = adoptPtr(new UnitBezier(m_x1, m_y1, m_x2, m_y2));
 
     // An interesting fact about these beziers is that they are only
     // actually evaluated in [0,1]. After that we take the tangent at that point
     // and linearly project it out.
     if (0 < t1 && t1 < 1)
-        solution1 = m_bezier->sampleCurveY(t1);
+        solution1 = m_bezier.SampleCurveY(t1);
 
     if (0 < t2 && t2 < 1)
-        solution2 = m_bezier->sampleCurveY(t2);
+        solution2 = m_bezier.SampleCurveY(t2);
 
     // Since our input values can be out of the range 0->1 so we must also
     // consider the minimum and maximum points.
-    double solutionMin = m_bezier->solveWithEpsilon(*minValue, std::numeric_limits<double>::epsilon());
-    double solutionMax = m_bezier->solveWithEpsilon(*maxValue, std::numeric_limits<double>::epsilon());
+    double solutionMin = m_bezier.SolveWithEpsilon(*minValue, std::numeric_limits<double>::epsilon());
+    double solutionMax = m_bezier.SolveWithEpsilon(*maxValue, std::numeric_limits<double>::epsilon());
     *minValue = std::min(std::min(solutionMin, solutionMax), 0.0);
     *maxValue = std::max(std::max(solutionMin, solutionMax), 1.0);
     *minValue = std::min(std::min(*minValue, solution1), solution2);

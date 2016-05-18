@@ -28,7 +28,7 @@
 #include "core/CoreExport.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/animation/SVGSMILElement.h"
-#include "platform/animation/UnitBezier.h"
+#include "ui/gfx/geometry/cubic_bezier.h"
 #include "wtf/Functional.h"
 #include "wtf/Vector.h"
 
@@ -212,7 +212,7 @@ private:
     // changed to use doubles.
     Vector<float> m_keyTimes;
     Vector<float> m_keyPoints;
-    Vector<UnitBezier> m_keySplines;
+    Vector<gfx::CubicBezier> m_keySplines;
     String m_lastValuesAnimationFrom;
     String m_lastValuesAnimationTo;
     bool m_hasInvalidCSSAttributeType;

@@ -106,7 +106,7 @@ fail:
 }
 
 template<typename CharType>
-static bool parseKeySplinesInternal(const String& string, Vector<UnitBezier>& result)
+static bool parseKeySplinesInternal(const String& string, Vector<gfx::CubicBezier>& result)
 {
     const CharType* ptr = string.getCharacters<CharType>();
     const CharType* end = ptr + string.length();
@@ -136,13 +136,13 @@ static bool parseKeySplinesInternal(const String& string, Vector<UnitBezier>& re
             ptr++;
         skipOptionalSVGSpaces(ptr, end);
 
-        result.append(UnitBezier(posA, posB, posC, posD));
+        result.append(gfx::CubicBezier(posA, posB, posC, posD));
     }
 
     return ptr == end;
 }
 
-static bool parseKeySplines(const String& string, Vector<UnitBezier>& result)
+static bool parseKeySplines(const String& string, Vector<gfx::CubicBezier>& result)
 {
     result.clear();
     if (string.isEmpty())
@@ -451,11 +451,11 @@ float SVGAnimationElement::calculatePercentForSpline(float percent, unsigned spl
 {
     ASSERT(getCalcMode() == CalcModeSpline);
     ASSERT_WITH_SECURITY_IMPLICATION(splineIndex < m_keySplines.size());
-    UnitBezier bezier = m_keySplines[splineIndex];
+    gfx::CubicBezier bezier = m_keySplines[splineIndex];
     SMILTime duration = simpleDuration();
     if (!duration.isFinite())
         duration = 100.0;
-    return narrowPrecisionToFloat(bezier.solveWithEpsilon(percent, solveEpsilon(duration.value())));
+    return narrowPrecisionToFloat(bezier.SolveWithEpsilon(percent, solveEpsilon(duration.value())));
 }
 
 float SVGAnimationElement::calculatePercentFromKeyPoints(float percent) const
