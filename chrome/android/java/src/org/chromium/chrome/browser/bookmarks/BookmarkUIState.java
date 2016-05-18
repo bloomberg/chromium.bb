@@ -95,4 +95,15 @@ class BookmarkUIState {
         BookmarkUIState other = (BookmarkUIState) obj;
         return mState == other.mState && TextUtils.equals(mUrl, other.mUrl);
     }
+
+    /**
+     * @return Whether this state is valid
+     */
+    boolean isValid(BookmarkModel bookmarkModel) {
+        if (mState == STATE_FOLDER) {
+            return mFolder != null && bookmarkModel.doesBookmarkExist(mFolder)
+                    && !mFolder.equals(bookmarkModel.getRootFolderId());
+        }
+        return mUrl != null;
+    }
 }

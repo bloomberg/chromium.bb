@@ -253,6 +253,10 @@ public class BookmarkManager implements BookmarkDelegate {
      * navigation.
      */
     private void setState(BookmarkUIState state) {
+        if (!state.isValid(mBookmarkModel)) {
+            state = BookmarkUIState.createAllBookmarksState(mBookmarkModel);
+        }
+
         if (!mStateStack.isEmpty() && mStateStack.peek().equals(state)) return;
 
         // The loading state is not persisted in history stack and once we have a valid state it
