@@ -5,6 +5,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 
 #if defined(TOOLKIT_VIEWS)
@@ -22,6 +23,10 @@
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "ui/base/page_transition_types.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "chrome/browser/ui/app_list/app_list_service_disabled_mac.h"
 #endif
 
 namespace {
@@ -87,6 +92,26 @@ bool IsProfileSignedOut(Profile* profile) {
           .GetProfileAttributesWithPath(profile->GetPath(), &entry);
   return has_entry && entry->IsSigninRequired();
 }
+
+// Opens a Chrome browser tab at chrome://apps.
+void OpenAppsPage(Profile* fallback_profile) {
+  Browser* browser = chrome::FindLastActive();
+  Profile* app_list_profile = browser ? browser->profile() : fallback_profile;
+  app_list_profile = app_list_profile->GetOriginalProfile();
+
+  if (IsProfileSignedOut(app_list_profile) ||
+      app_list_profile->IsSystemProfile() ||
+      app_list_profile->IsGuestSession()) {
+    UserManager::Show(base::FilePath(), profiles::USER_MANAGER_NO_TUTORIAL,
+                      profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
+    return;
+  }
+
+  chrome::NavigateParams params(app_list_profile,
+                                GURL(chrome::kChromeUIAppsURL),
+                                ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+  chrome::Navigate(&params);
+}
 #endif
 
 }  // namespace
@@ -98,7 +123,11 @@ AppListService* AppListService::Get() {
 
 // static
 void AppListService::InitAll(Profile* initial_profile,
-                             const base::FilePath& profile_path) {}
+                             const base::FilePath& profile_path) {
+#if defined(OS_MACOSX)
+  InitAppsPageLegacyShimHandler(&OpenAppsPage);
+#endif
+}
 
 // static
 void AppListService::RegisterPrefs(PrefRegistrySimple* registry) {}
@@ -111,20 +140,7 @@ bool AppListService::HandleLaunchCommandLine(
   if (!command_line.HasSwitch(switches::kShowAppList))
     return false;
 
-  Browser* browser = chrome::FindLastActive();
-  Profile* app_list_profile = browser ? browser->profile() : launch_profile;
-
-  if (IsProfileSignedOut(app_list_profile) ||
-      app_list_profile->IsSystemProfile()) {
-    UserManager::Show(base::FilePath(), profiles::USER_MANAGER_NO_TUTORIAL,
-                      profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
-    return true;
-  }
-
-  chrome::NavigateParams params(app_list_profile,
-                                GURL(chrome::kChromeUIAppsURL),
-                                ui::PAGE_TRANSITION_AUTO_BOOKMARK);
-  chrome::Navigate(&params);
+  OpenAppsPage(launch_profile);
   return true;
 #else
   return false;

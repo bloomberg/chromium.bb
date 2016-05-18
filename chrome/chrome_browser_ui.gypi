@@ -2683,7 +2683,10 @@
     ],
     # Used when the app list is disabled.
     'chrome_browser_ui_non_app_list_sources': [
+      'browser/ui/app_list/app_list_service.h',
       'browser/ui/app_list/app_list_service_disabled.cc',
+      'browser/ui/app_list/app_list_service_disabled_mac.h',
+      'browser/ui/app_list/app_list_service_disabled_mac.mm',
     ],
     'chrome_browser_ui_extensions_sources': [
       'browser/ui/extensions/accelerator_priority.cc',
