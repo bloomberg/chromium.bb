@@ -43,9 +43,9 @@
 #include <sys/file.h>
 #include <sys/stat.h>
 
+#include "wayland-util.h"
 #include "wayland-private.h"
 #include "wayland-server.h"
-#include "wayland-server-protocol.h"
 #include "wayland-os.h"
 
 /* This is the size of the char array in struct sock_addr_un.
