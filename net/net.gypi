@@ -1383,6 +1383,7 @@
       'cert/nss_profile_filter_chromeos_unittest.cc',
       'cert/pem_tokenizer_unittest.cc',
       'cert/signed_certificate_timestamp_unittest.cc',
+      'cert/sth_distributor_unittest.cc',
       'cert/test_root_certs_unittest.cc',
       'cert/x509_cert_types_unittest.cc',
       'cert/x509_certificate_unittest.cc',

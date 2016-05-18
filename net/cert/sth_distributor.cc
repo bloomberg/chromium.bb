@@ -25,6 +25,16 @@ STHDistributor::STHDistributor()
 STHDistributor::~STHDistributor() {}
 
 void STHDistributor::NewSTHObserved(const SignedTreeHead& sth) {
+  auto it = std::find_if(observed_sths_.begin(), observed_sths_.end(),
+                         [&sth](const SignedTreeHead& other) {
+                           return sth.log_id == other.log_id;
+                         });
+
+  if (it == observed_sths_.end())
+    observed_sths_.push_back(sth);
+  else
+    *it = sth;
+
   FOR_EACH_OBSERVER(STHObserver, observer_list_, NewSTHObserved(sth));
 
   if (sth.log_id.compare(0, sth.log_id.size(),
@@ -40,6 +50,13 @@ void STHDistributor::NewSTHObserved(const SignedTreeHead& sth) {
 
 void STHDistributor::RegisterObserver(STHObserver* observer) {
   observer_list_.AddObserver(observer);
+  // Make a local copy, because notifying the |observer| of a
+  // new STH may result in this class being notified of a
+  // (different) new STH, thus invalidating the iterator.
+  std::vector<SignedTreeHead> local_sths(observed_sths_);
+
+  for (const auto& sth : local_sths)
+    observer->NewSTHObserved(sth);
 }
 
 void STHDistributor::UnregisterObserver(STHObserver* observer) {

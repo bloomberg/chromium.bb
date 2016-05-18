@@ -45,5 +45,19 @@ void PrintTo(const SignedTreeHead& sth, std::ostream* os) {
         << "}";
 }
 
+bool operator==(const SignedTreeHead& lhs, const SignedTreeHead& rhs) {
+  return std::tie(lhs.version, lhs.timestamp, lhs.tree_size, lhs.log_id) ==
+             std::tie(rhs.version, rhs.timestamp, rhs.tree_size, rhs.log_id) &&
+         memcmp(lhs.sha256_root_hash, rhs.sha256_root_hash,
+                kSthRootHashLength) == 0 &&
+         lhs.signature.SignatureParametersMatch(
+             rhs.signature.hash_algorithm, rhs.signature.signature_algorithm) &&
+         lhs.signature.signature_data == rhs.signature.signature_data;
+}
+
+bool operator!=(const SignedTreeHead& lhs, const SignedTreeHead& rhs) {
+  return !(lhs == rhs);
+}
+
 }  // namespace ct
 }  // namespace net
