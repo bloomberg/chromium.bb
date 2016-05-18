@@ -3064,29 +3064,16 @@ double WebViewImpl::zoomLevel()
     return m_zoomLevel;
 }
 
-void WebViewImpl::propagateZoomToLocalFrameRoots(Frame* frame)
+void WebViewImpl::propagateZoomFactorToLocalFrameRoots(Frame* frame, float zoomFactor)
 {
     if (frame->isLocalRoot()) {
         LocalFrame* localFrame = toLocalFrame(frame);
-
-        if (!WebLocalFrameImpl::pluginContainerFromFrame(localFrame)) {
-            float zoomFactor = m_zoomFactorOverride ? m_zoomFactorOverride : static_cast<float>(zoomLevelToZoomFactor(m_zoomLevel));
-            if (m_zoomFactorForDeviceScaleFactor) {
-                if (m_compositorDeviceScaleFactorOverride) {
-                    // Adjust the page's DSF so that DevicePixelRatio becomes m_zoomFactorForDeviceScaleFactor.
-                    page()->setDeviceScaleFactor(m_zoomFactorForDeviceScaleFactor / m_compositorDeviceScaleFactorOverride);
-                    zoomFactor *= m_compositorDeviceScaleFactorOverride;
-                } else {
-                    page()->setDeviceScaleFactor(1.f);
-                    zoomFactor *= m_zoomFactorForDeviceScaleFactor;
-                }
-            }
+        if (!WebLocalFrameImpl::pluginContainerFromFrame(localFrame))
             localFrame->setPageZoomFactor(zoomFactor);
-        }
     }
 
     for (Frame* child = frame->tree().firstChild(); child; child = child->tree().nextSibling())
-        propagateZoomToLocalFrameRoots(child);
+        propagateZoomFactorToLocalFrameRoots(child, zoomFactor);
 }
 
 double WebViewImpl::setZoomLevel(double zoomLevel)
@@ -3098,7 +3085,18 @@ double WebViewImpl::setZoomLevel(double zoomLevel)
     else
         m_zoomLevel = zoomLevel;
 
-    propagateZoomToLocalFrameRoots(m_page->mainFrame());
+    float zoomFactor = m_zoomFactorOverride ? m_zoomFactorOverride : static_cast<float>(zoomLevelToZoomFactor(m_zoomLevel));
+    if (m_zoomFactorForDeviceScaleFactor) {
+        if (m_compositorDeviceScaleFactorOverride) {
+            // Adjust the page's DSF so that DevicePixelRatio becomes m_zoomFactorForDeviceScaleFactor.
+            page()->setDeviceScaleFactor(m_zoomFactorForDeviceScaleFactor / m_compositorDeviceScaleFactorOverride);
+            zoomFactor *= m_compositorDeviceScaleFactorOverride;
+        } else {
+            page()->setDeviceScaleFactor(1.f);
+            zoomFactor *= m_zoomFactorForDeviceScaleFactor;
+        }
+    }
+    propagateZoomFactorToLocalFrameRoots(m_page->mainFrame(), zoomFactor);
 
     return m_zoomLevel;
 }
