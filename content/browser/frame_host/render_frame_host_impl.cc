@@ -37,6 +37,7 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/geolocation/geolocation_service_context.h"
+#include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
@@ -70,6 +71,7 @@
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -208,6 +210,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
                                          bool hidden)
     : render_view_host_(render_view_host),
       delegate_(delegate),
+      frame_host_binding_(this),
       site_instance_(static_cast<SiteInstanceImpl*>(site_instance)),
       process_(site_instance->GetProcess()),
       cross_process_frame_connector_(NULL),
@@ -1987,6 +1990,9 @@ void RenderFrameHostImpl::RegisterMojoServices() {
   }
 #endif
 
+  GetServiceRegistry()->AddService<mojom::FrameHost>(base::Bind(
+      &RenderFrameHostImpl::BindFrameHostService, base::Unretained(this)));
+
   GetContentClient()->browser()->RegisterRenderFrameMojoServices(
       GetServiceRegistry(), this);
 }
@@ -2569,6 +2575,21 @@ int RenderFrameHostImpl::GetProxyCount() {
   return frame_tree_node_->render_manager()->GetProxyCount();
 }
 
+void RenderFrameHostImpl::GetHostZoomLevel(
+    const GURL& url,
+    const GetHostZoomLevelCallback& callback) {
+  RenderProcessHost* render_process_host =
+      RenderProcessHost::FromID(GetProcess()->GetID());
+  double zoom_level = 0.0;
+  if (render_process_host) {
+    const HostZoomMapImpl* host_zoom_map = static_cast<const HostZoomMapImpl*>(
+        render_process_host->GetStoragePartition()->GetHostZoomMap());
+    zoom_level = host_zoom_map->GetZoomLevelForView(url, GetProcess()->GetID(),
+                                                    routing_id_);
+  }
+  callback.Run(zoom_level);
+}
+
 #if defined(OS_MACOSX)
 
 void RenderFrameHostImpl::DidSelectPopupMenuItem(int selected_index) {
@@ -2795,6 +2816,14 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(
       focused_frame_tree_node->current_frame_host();
   DCHECK(focused_frame);
   dst->focused_tree_id = focused_frame->GetAXTreeID();
+}
+
+void RenderFrameHostImpl::BindFrameHostService(
+    mojom::FrameHostRequest request) {
+  frame_host_binding_.Bind(std::move(request));
+  frame_host_binding_.set_connection_error_handler(
+      base::Bind(&mojo::Binding<mojom::FrameHost>::Unbind,
+                 base::Unretained(&frame_host_binding_)));
 }
 
 void RenderFrameHostImpl::CreateWebBluetoothService(

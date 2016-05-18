@@ -241,7 +241,6 @@ class TestFilterSpecifyingChild : public ResourceMessageFilter {
             NULL,
             NULL,
             NULL,
-            NULL,
             base::Bind(&TestFilterSpecifyingChild::GetContexts,
                        base::Unretained(this))),
         resource_context_(resource_context),
