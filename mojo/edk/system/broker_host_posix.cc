@@ -88,19 +88,27 @@ void BrokerHost::OnBufferRequest(size_t num_bytes) {
 void BrokerHost::OnChannelMessage(const void* payload,
                                   size_t payload_size,
                                   ScopedPlatformHandleVectorPtr handles) {
+  if (payload_size < sizeof(BrokerMessageHeader))
+    return;
+
   const BrokerMessageHeader* header =
       static_cast<const BrokerMessageHeader*>(payload);
   switch (header->type) {
-    case BrokerMessageType::BUFFER_REQUEST: {
-      const BufferRequestData* request =
-          reinterpret_cast<const BufferRequestData*>(header + 1);
-      OnBufferRequest(request->size);
+    case BrokerMessageType::BUFFER_REQUEST:
+      if (payload_size ==
+            sizeof(BrokerMessageHeader) + sizeof(BufferRequestData)) {
+        const BufferRequestData* request =
+            reinterpret_cast<const BufferRequestData*>(header + 1);
+        OnBufferRequest(request->size);
+        return;
+      }
       break;
-    }
+
     default:
-      LOG(ERROR) << "Unexpected broker message type: " << header->type;
       break;
   }
+
+  LOG(ERROR) << "Unexpected broker message type: " << header->type;
 }
 
 void BrokerHost::OnChannelError() {
