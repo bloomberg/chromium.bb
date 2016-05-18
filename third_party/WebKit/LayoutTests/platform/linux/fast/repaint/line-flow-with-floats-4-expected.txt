@@ -13,7 +13,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [369, 440, 52, 59],
+          "rect": [368, 440, 53, 59],
           "reason": "incremental"
         },
         {

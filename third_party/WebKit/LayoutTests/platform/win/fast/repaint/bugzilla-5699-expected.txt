@@ -42,16 +42,6 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutBR BR",
-          "rect": [43, 178, 1, 17],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBR BR",
-          "rect": [43, 148, 1, 17],
-          "reason": "bounds change"
-        },
-        {
           "object": "InlineFlowBox",
           "reason": "style change"
         },
@@ -78,6 +68,10 @@
         {
           "object": "InlineTextBox '\u00A0'",
           "reason": "style change"
+        },
+        {
+          "object": "LayoutBR BR",
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBR BR",

@@ -42,12 +42,21 @@
           "reason": "incremental"
         },
         {
+          "object": "LayoutText #text",
+          "rect": [368, 404, 1, 36],
+          "reason": "incremental"
+        },
+        {
           "object": "InlineTextBox ' was in a furious passion, and went\n'",
           "reason": "full"
         },
         {
           "object": "InlineTextBox 'Alice began to feel very uneasy: to be sure, she had not as\n'",
           "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Queen'",
+          "reason": "incremental"
         },
         {
           "object": "InlineTextBox 'Queen'",
@@ -144,6 +153,10 @@
         {
           "object": "InlineTextBox 'the hedgehogs; and in\n'",
           "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'the'",
+          "reason": "incremental"
         },
         {
           "object": "InlineTextBox 'the'",

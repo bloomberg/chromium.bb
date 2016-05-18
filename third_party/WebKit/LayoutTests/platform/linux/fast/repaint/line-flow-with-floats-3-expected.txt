@@ -23,6 +23,11 @@
         },
         {
           "object": "LayoutText #text",
+          "rect": [65, 380, 289, 19],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutText #text",
           "rect": [303, 420, 67, 19],
           "reason": "bounds change"
         },
@@ -34,11 +39,6 @@
         {
           "object": "LayoutText #text",
           "rect": [353, 440, 16, 59],
-          "reason": "incremental"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [352, 380, 2, 19],
           "reason": "incremental"
         },
         {
@@ -59,7 +59,7 @@
         },
         {
           "object": "InlineTextBox 'The players all played at once without waiting'",
-          "reason": "incremental"
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'They\u2019re dreadfully fond of beheading people here; the great'",

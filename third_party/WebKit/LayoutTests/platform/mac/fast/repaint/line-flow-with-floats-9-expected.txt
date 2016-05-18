@@ -107,6 +107,11 @@
           "reason": "scroll"
         },
         {
+          "object": "LayoutText #text",
+          "rect": [419, 242, 1, 126],
+          "reason": "incremental"
+        },
+        {
           "object": "InlineTextBox ' twist itself round and look up in her face, with\n'",
           "reason": "full"
         },
@@ -121,6 +126,10 @@
         {
           "object": "InlineTextBox 'Alice began to feel very uneasy: to be sure, she had not as\n'",
           "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'Alice soon came to the conclusion that it was a very'",
+          "reason": "incremental"
         },
         {
           "object": "InlineTextBox 'Queen'",
@@ -155,6 +164,10 @@
           "reason": "full"
         },
         {
+          "object": "InlineTextBox 'always getting up and walking off to other parts of\n'",
+          "reason": "incremental"
+        },
+        {
           "object": "InlineTextBox 'arm, with its legs hanging down,\n'",
           "reason": "full"
         },
@@ -171,6 +184,10 @@
           "reason": "full"
         },
         {
+          "object": "InlineTextBox 'begin again, it was very provoking to find that the'",
+          "reason": "incremental"
+        },
+        {
           "object": "InlineTextBox 'besides all\n'",
           "reason": "full"
         },
@@ -185,6 +202,10 @@
         {
           "object": "InlineTextBox 'comfortably enough, under her'",
           "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'crawling away: besides all\n'",
+          "reason": "incremental"
         },
         {
           "object": "InlineTextBox 'difficult game indeed.\n'",
@@ -243,6 +264,10 @@
           "reason": "bounds change"
         },
         {
+          "object": "InlineTextBox 'hedgehog had\n'",
+          "reason": "incremental"
+        },
+        {
           "object": "InlineTextBox 'her head!\u2019 about once in a minute.\n'",
           "reason": "full"
         },
@@ -299,6 +324,14 @@
           "reason": "bounds change"
         },
         {
+          "object": "InlineTextBox 'ridge or furrow in the way wherever\n'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'send the hedgehog to, and, as the doubled-up\n'",
+          "reason": "incremental"
+        },
+        {
           "object": "InlineTextBox 'she had got its neck nicely straightened\n'",
           "reason": "full"
         },
@@ -307,12 +340,20 @@
           "reason": "full"
         },
         {
+          "object": "InlineTextBox 'she wanted to'",
+          "reason": "incremental"
+        },
+        {
           "object": "InlineTextBox 'shouting \u2018Off with his head!\u2019 or \u2018Off with\n'",
           "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'soldiers were always getting up and walking off to'",
           "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'soldiers were'",
+          "reason": "incremental"
         },
         {
           "object": "InlineTextBox 'stamping about, and'",
@@ -339,6 +380,10 @@
           "reason": "full"
         },
         {
+          "object": "InlineTextBox 'the ground,'",
+          "reason": "incremental"
+        },
+        {
           "object": "InlineTextBox 'the'",
           "reason": "full"
         },
@@ -347,12 +392,20 @@
           "reason": "full"
         },
         {
+          "object": "InlineTextBox 'this, there was generally a'",
+          "reason": "incremental"
+        },
+        {
           "object": "InlineTextBox 'to\n'",
           "reason": "full"
         },
         {
           "object": "InlineTextBox 'unrolled itself, and was in the act of crawling away:'",
           "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'unrolled itself, and was in the act of'",
+          "reason": "incremental"
         },
         {
           "object": "InlineTextBox 'was in a furious passion, and went\n'",

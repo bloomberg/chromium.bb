@@ -58,7 +58,7 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [368, 80, 52, 108],
+          "rect": [367, 80, 53, 108],
           "reason": "incremental"
         },
         {
@@ -80,6 +80,11 @@
           "object": "LayoutText #text",
           "rect": [14, 188, 40, 18],
           "reason": "bounds change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [368, 422, 1, 54],
+          "reason": "incremental"
         },
         {
           "object": "InlineTextBox ' twist itself round and look up in her face, with\n'",
@@ -120,6 +125,10 @@
         {
           "object": "InlineTextBox 'a very short time '",
           "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'about once in a minute.\n'",
+          "reason": "incremental"
         },
         {
           "object": "InlineTextBox 'about, and shouting \u2018Off with his head!\u2019 or \u2018Off with'",
@@ -246,6 +255,10 @@
           "reason": "full"
         },
         {
+          "object": "InlineTextBox 'her head!\u2019'",
+          "reason": "incremental"
+        },
+        {
           "object": "InlineTextBox 'here; the great\n'",
           "reason": "full"
         },
@@ -314,12 +327,20 @@
           "reason": "bounds change"
         },
         {
+          "object": "InlineTextBox 'shouting \u2018Off with his head!\u2019 or \u2018Off with\n'",
+          "reason": "incremental"
+        },
+        {
           "object": "InlineTextBox 'soldiers were always getting up and walking off to'",
           "reason": "full"
         },
         {
           "object": "InlineTextBox 'soldiers were'",
           "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'stamping about, and'",
+          "reason": "incremental"
         },
         {
           "object": "InlineTextBox 'stamping'",
@@ -380,6 +401,10 @@
         {
           "object": "InlineTextBox 'very provoking to find that the hedgehog had\n'",
           "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox 'was in a furious passion, and went\n'",
+          "reason": "incremental"
         },
         {
           "object": "InlineTextBox 'way wherever\n'",

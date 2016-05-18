@@ -1,0 +1,100 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow P",
+          "rect": [8, 386, 418, 54],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [14, 404, 355, 36],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [368, 422, 1, 54],
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox ' was in a furious passion, and went\n'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox ' was in a furious passion, and went\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ''",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox ''",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'Queen'",
+          "reason": "style change"
+        },
+        {
+          "object": "InlineTextBox 'a very short time '",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'about, and shouting \u2018Off with his head!\u2019 or \u2018Off with'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'for the hedgehogs; and in\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'for turns,\n'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'her head!\u2019 about once in a minute.\n'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'quarrelling all the while, and fighting'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'stamping'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'stamping'",
+          "reason": "full"
+        },
+        {
+          "object": "InlineTextBox 'the'",
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutInline SPAN id='theQueen'",
+          "reason": "style change"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
+        },
+        {
+          "object": "RootInlineBox",
+          "reason": "full"
+        }
+      ]
+    }
+  ]
+}
+
