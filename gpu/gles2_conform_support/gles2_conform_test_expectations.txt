@@ -24,6 +24,8 @@
 //  91531 MAC WIN LINUX : conformance_more_* = SKIP
 //  91532 MAC NVIDIA 0x0640 : tex_image_and_sub_image_2d_with_video = PASS FAIL
 
+612551 WIN LINUX MAC CHROMEOS : GL2ExtensionTests_egl_image_input_run = SKIP
+
 517966 WIN OPENGL : GL2FixedTests_blend_input_run = FAIL
 517966 WIN OPENGL : GL2FixedTests_buffer_clear_input_run = FAIL
 517966 WIN OPENGL : GL2FixedTests_buffer_color_input_run = FAIL
