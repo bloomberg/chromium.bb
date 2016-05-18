@@ -85,7 +85,7 @@ public class WebsitePermissionsFetcher {
         // Background sync permission is per-origin.
         queue.add(new BackgroundSyncExceptionInfoFetcher());
         // Autoplay permission is per-origin.
-        queue.add(new AutoplayInfoFetcher());
+        queue.add(new AutoplayExceptionInfoFetcher());
 
         queue.add(new PermissionsAvailableCallbackRunner());
 
@@ -143,7 +143,7 @@ public class WebsitePermissionsFetcher {
             queue.add(new ProtectedMediaIdentifierInfoFetcher());
         } else if (category.showAutoplaySites()) {
             // Autoplay permission is per-origin.
-            queue.add(new AutoplayInfoFetcher());
+            queue.add(new AutoplayExceptionInfoFetcher());
         }
         queue.add(new PermissionsAvailableCallbackRunner());
         queue.next();
@@ -175,6 +175,40 @@ public class WebsitePermissionsFetcher {
         return mSitesByHost.get(host);
     }
 
+    private void setException(int contentSettingsType) {
+        for (ContentSettingException exception :
+                WebsitePreferenceBridge.getContentSettingsExceptions(contentSettingsType)) {
+            // The pattern "*" represents the default setting, not a specific website.
+            if (exception.getPattern().equals("*")) continue;
+            WebsiteAddress address = WebsiteAddress.create(exception.getPattern());
+            if (address == null) continue;
+            Set<Website> sites = findOrCreateSitesByHost(address);
+            for (Website site : sites) {
+                switch (contentSettingsType) {
+                    case ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY:
+                        site.setAutoplayException(exception);
+                        break;
+                    case ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC:
+                        site.setBackgroundSyncException(exception);
+                        break;
+                    case ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES:
+                        site.setCookieException(exception);
+                        break;
+                    case ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT:
+                        site.setJavaScriptException(exception);
+                        break;
+                    case ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS:
+                        site.setPopupException(exception);
+                        break;
+                    default:
+                        assert false : "Unexpected content setting type received: "
+                                       + contentSettingsType;
+                        break;
+                }
+            }
+        }
+    }
+
     /**
      * A single task in the WebsitePermissionsFetcher task queue. We need fetching of features to be
      * serialized, as we need to have all the origins in place prior to populating the hosts.
@@ -203,21 +237,10 @@ public class WebsitePermissionsFetcher {
         }
     }
 
-    private class AutoplayInfoFetcher extends Task {
+    private class AutoplayExceptionInfoFetcher extends Task {
         @Override
         public void run() {
-            for (ContentSettingException exception
-                    : WebsitePreferenceBridge.getContentSettingsExceptions(
-                            ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY)) {
-                // The pattern "*" represents the default setting, not a specific website.
-                if (exception.getPattern().equals("*")) continue;
-                WebsiteAddress address = WebsiteAddress.create(exception.getPattern());
-                if (address == null) continue;
-                Set<Website> sites = findOrCreateSitesByHost(address);
-                for (Website site : sites) {
-                    site.setAutoplayException(exception);
-                }
-            }
+            setException(ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY);
         }
     }
 
@@ -246,55 +269,21 @@ public class WebsitePermissionsFetcher {
     private class PopupExceptionInfoFetcher extends Task {
         @Override
         public void run() {
-            for (ContentSettingException exception :
-                    WebsitePreferenceBridge.getContentSettingsExceptions(
-                            ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS)) {
-                // The pattern "*" represents the default setting, not a
-                // specific website.
-                if (exception.getPattern().equals("*")) continue;
-                WebsiteAddress address = WebsiteAddress.create(exception.getPattern());
-                if (address == null) continue;
-                Set<Website> sites = findOrCreateSitesByHost(address);
-                for (Website site : sites) {
-                    site.setPopupException(exception);
-                }
-            }
+            setException(ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS);
         }
     }
 
     private class JavaScriptExceptionInfoFetcher extends Task {
         @Override
         public void run() {
-            for (ContentSettingException exception
-                    : WebsitePreferenceBridge.getContentSettingsExceptions(
-                            ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT)) {
-                // The pattern "*" represents the default setting, not a specific website.
-                if (exception.getPattern().equals("*")) continue;
-                WebsiteAddress address = WebsiteAddress.create(exception.getPattern());
-                if (address == null) continue;
-                Set<Website> sites = findOrCreateSitesByHost(address);
-                for (Website site : sites) {
-                    site.setJavaScriptException(exception);
-                }
-            }
+            setException(ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT);
         }
     }
 
     private class CookieExceptionInfoFetcher extends Task {
         @Override
         public void run() {
-            for (ContentSettingException exception :
-                    WebsitePreferenceBridge.getContentSettingsExceptions(
-                            ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES)) {
-                // The pattern "*" represents the default setting, not a specific website.
-                if (exception.getPattern().equals("*")) continue;
-                WebsiteAddress address = WebsiteAddress.create(exception.getPattern());
-                if (address == null) continue;
-                Set<Website> sites = findOrCreateSitesByHost(address);
-                for (Website site : sites) {
-                    site.setCookieException(exception);
-                }
-            }
+            setException(ContentSettingsType.CONTENT_SETTINGS_TYPE_COOKIES);
         }
     }
 
@@ -418,18 +407,7 @@ public class WebsitePermissionsFetcher {
     private class BackgroundSyncExceptionInfoFetcher extends Task {
         @Override
         public void run() {
-            for (ContentSettingException exception :
-                    WebsitePreferenceBridge.getContentSettingsExceptions(
-                            ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC)) {
-                // The pattern "*" represents the default setting, not a specific website.
-                if (exception.getPattern().equals("*")) continue;
-                WebsiteAddress address = WebsiteAddress.create(exception.getPattern());
-                if (address == null) continue;
-                Set<Website> sites = findOrCreateSitesByHost(address);
-                for (Website site : sites) {
-                    site.setBackgroundSyncException(exception);
-                }
-            }
+            setException(ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC);
         }
     }
 
