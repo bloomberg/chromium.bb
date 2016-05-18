@@ -33,9 +33,6 @@ const char kTestData4[] = "supercalifragilisticexpialidocious";
 const int kTestDataLength1 = arraysize(kTestData1) - 1;
 const int kTestDataLength2 = arraysize(kTestData2) - 1;
 const int kTestDataLength4 = arraysize(kTestData4) - 1;
-const int kElapsedTimeSeconds = 5;
-const base::TimeDelta kElapsedTimeDelta = base::TimeDelta::FromSeconds(
-    kElapsedTimeSeconds);
 
 // SHA-256 hash of kTestData1 (excluding terminating NUL).
 const uint8_t kHashOfTestData1[] = {

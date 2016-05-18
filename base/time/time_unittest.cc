@@ -723,16 +723,21 @@ TEST(TimeTicks, SnappedToNextTickOverflow) {
 }
 
 TEST(TimeDelta, FromAndIn) {
-  EXPECT_TRUE(TimeDelta::FromDays(2) == TimeDelta::FromHours(48));
-  EXPECT_TRUE(TimeDelta::FromHours(3) == TimeDelta::FromMinutes(180));
-  EXPECT_TRUE(TimeDelta::FromMinutes(2) == TimeDelta::FromSeconds(120));
-  EXPECT_TRUE(TimeDelta::FromSeconds(2) == TimeDelta::FromMilliseconds(2000));
-  EXPECT_TRUE(TimeDelta::FromMilliseconds(2) ==
-              TimeDelta::FromMicroseconds(2000));
-  EXPECT_TRUE(TimeDelta::FromSecondsD(2.3) ==
-              TimeDelta::FromMilliseconds(2300));
-  EXPECT_TRUE(TimeDelta::FromMillisecondsD(2.5) ==
-              TimeDelta::FromMicroseconds(2500));
+  // static_assert also checks that the contained expression is a constant
+  // expression, meaning all its components are suitable for initializing global
+  // variables.
+  static_assert(TimeDelta::FromDays(2) == TimeDelta::FromHours(48), "");
+  static_assert(TimeDelta::FromHours(3) == TimeDelta::FromMinutes(180), "");
+  static_assert(TimeDelta::FromMinutes(2) == TimeDelta::FromSeconds(120), "");
+  static_assert(TimeDelta::FromSeconds(2) == TimeDelta::FromMilliseconds(2000),
+                "");
+  static_assert(
+      TimeDelta::FromMilliseconds(2) == TimeDelta::FromMicroseconds(2000), "");
+  static_assert(
+      TimeDelta::FromSecondsD(2.3) == TimeDelta::FromMilliseconds(2300), "");
+  static_assert(
+      TimeDelta::FromMillisecondsD(2.5) == TimeDelta::FromMicroseconds(2500),
+      "");
   EXPECT_EQ(13, TimeDelta::FromDays(13).InDays());
   EXPECT_EQ(13, TimeDelta::FromHours(13).InHours());
   EXPECT_EQ(13, TimeDelta::FromMinutes(13).InMinutes());

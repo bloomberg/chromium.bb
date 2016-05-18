@@ -42,10 +42,6 @@ enum ClearAllStatus {
   CLEAR_ALL_STATUS_COUNT
 };
 
-// Threshold for how old offline copy of a page should be before we offer to
-// delete it to free up space.
-const base::TimeDelta kPageCleanUpThreshold = base::TimeDelta::FromDays(30);
-
 // The maximum histogram size for the metrics that measure time between views of
 // a given page.
 const base::TimeDelta kMaxOpenedPageHistogramBucket =

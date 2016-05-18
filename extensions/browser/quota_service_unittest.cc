@@ -30,7 +30,6 @@ namespace {
 const char kGenericName[] = "name";
 const Config kFrozenConfig = {0, TimeDelta::FromDays(0)};
 const Config k2PerMinute = {2, TimeDelta::FromMinutes(1)};
-const Config k20PerHour = {20, TimeDelta::FromHours(1)};
 const TimeTicks kStartTime = TimeTicks();
 const TimeTicks k1MinuteAfterStart = kStartTime + TimeDelta::FromMinutes(1);
 

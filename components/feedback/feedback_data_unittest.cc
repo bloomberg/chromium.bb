@@ -27,9 +27,6 @@ const char kHistograms[] = "";
 const char kImageData[] = "";
 const char kFileData[] = "";
 
-const base::TimeDelta kRetryDelayForTest =
-    base::TimeDelta::FromMilliseconds(100);
-
 using content::BrowserThread;
 
 class MockUploader : public feedback::FeedbackUploader, public KeyedService {
