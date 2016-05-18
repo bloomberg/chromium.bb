@@ -84,7 +84,7 @@ class WebContentsLoadStopObserver : content::WebContentsObserver {
 
 class ServiceWorkerTest : public ExtensionApiTest {
  public:
-  ServiceWorkerTest() : current_channel_(version_info::Channel::DEV) {}
+  ServiceWorkerTest() : current_channel_(version_info::Channel::STABLE) {}
 
   ~ServiceWorkerTest() override {}
 
@@ -158,7 +158,11 @@ class ServiceWorkerTest : public ExtensionApiTest {
   }
 
  private:
-  // Sets the channel to "dev" since service workers are restricted to dev.
+  // Sets the channel to "stable".
+  // Not useful after we've opened extension Service Workers to stable
+  // channel.
+  // TODO(lazyboy): Remove this when ExtensionServiceWorkersEnabled() is
+  // removed.
   ScopedCurrentChannel current_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerTest);
@@ -236,23 +240,8 @@ class ServiceWorkerPushMessagingTest : public ServiceWorkerTest {
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerPushMessagingTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, RegisterSucceedsOnDev) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, RegisterSucceeds) {
   StartTestFromBackgroundPage("register.js", kExpectSuccess);
-}
-
-// This feature is restricted to dev, so on beta it should have existing
-// behavior - which is for it to fail.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, RegisterFailsOnBeta) {
-  ScopedCurrentChannel current_channel_override(
-      version_info::Channel::BETA);
-  std::string error;
-  const Extension* extension =
-      StartTestFromBackgroundPage("register.js", &error);
-  EXPECT_EQ(
-      "Failed to register a ServiceWorker: The URL protocol of the current "
-      "origin ('chrome-extension://" +
-          extension->id() + "') is not supported.",
-      error);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, UpdateRefreshesServiceWorker) {

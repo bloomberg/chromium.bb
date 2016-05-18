@@ -11,7 +11,7 @@ namespace extensions {
 namespace feature_util {
 
 bool ExtensionServiceWorkersEnabled() {
-  return GetCurrentChannel() <= version_info::Channel::DEV;
+  return true;
 }
 
 }  // namespace feature_util
