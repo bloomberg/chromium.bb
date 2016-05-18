@@ -167,8 +167,6 @@ static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCal
 {% set getter = named_property_getter %}
 static void namedPropertyGetter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    if (!name->IsString())
-        return;
     auto nameString = name.As<v8::String>();
     {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
     AtomicString propertyName = toCoreAtomicString(nameString);
@@ -204,6 +202,8 @@ static void namedPropertyGetter(v8::Local<v8::Name> name, const v8::PropertyCall
 {% set getter = named_property_getter %}
 static void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    if (!name->IsString())
+        return;
     {% if getter.is_custom %}
     {{v8_class}}::namedPropertyGetterCustom(name, info);
     {% else %}
@@ -222,8 +222,6 @@ static void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::Prop
 {% set setter = named_property_setter %}
 static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    if (!name->IsString())
-        return;
     auto nameString = name.As<v8::String>();
     {% if setter.has_exception_state %}
     v8::String::Utf8Value namedProperty(nameString);
@@ -275,6 +273,8 @@ static void namedPropertySetter(v8::Local<v8::Name> name, v8::Local<v8::Value> v
 {% set setter = named_property_setter %}
 static void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    if (!name->IsString())
+        return;
     {% if setter.is_custom %}
     {{v8_class}}::namedPropertySetterCustom(name, v8Value, info);
     {% else %}
@@ -295,8 +295,6 @@ static void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::
    communicate property attributes. #}
 static void namedPropertyQuery(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
-    if (!name->IsString())
-        return;
     {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name.As<v8::String>());
     v8::String::Utf8Value namedProperty(name);
@@ -324,6 +322,8 @@ static void namedPropertyQuery(v8::Local<v8::Name> name, const v8::PropertyCallb
 {% set getter = named_property_getter %}
 static void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
+    if (!name->IsString())
+        return;
     {% if getter.is_custom_property_query %}
     {{v8_class}}::namedPropertyQueryCustom(name, info);
     {% else %}
@@ -341,8 +341,6 @@ static void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::Prope
 {% set deleter = named_property_deleter %}
 static void namedPropertyDeleter(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
-    if (!name->IsString())
-        return;
     {{cpp_class}}* impl = {{v8_class}}::toImpl(info.Holder());
     AtomicString propertyName = toCoreAtomicString(name.As<v8::String>());
     {% if deleter.is_raises_exception %}
@@ -379,6 +377,8 @@ static void namedPropertyDeleter(v8::Local<v8::Name> name, const v8::PropertyCal
 {% set deleter = named_property_deleter %}
 static void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
+    if (!name->IsString())
+        return;
     {% if deleter.is_custom %}
     {{v8_class}}::namedPropertyDeleterCustom(name, info);
     {% else %}

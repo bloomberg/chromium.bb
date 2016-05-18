@@ -207,21 +207,29 @@ static void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCal
 
 static void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    if (!name->IsString())
+        return;
     V8TestInterface3::namedPropertyGetterCustom(name, info);
 }
 
 static void namedPropertySetterCallback(v8::Local<v8::Name> name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
+    if (!name->IsString())
+        return;
     V8TestInterface3::namedPropertySetterCustom(name, v8Value, info);
 }
 
 static void namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
+    if (!name->IsString())
+        return;
     V8TestInterface3::namedPropertyQueryCustom(name, info);
 }
 
 static void namedPropertyDeleterCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Boolean>& info)
 {
+    if (!name->IsString())
+        return;
     V8TestInterface3::namedPropertyDeleterCustom(name, info);
 }
 

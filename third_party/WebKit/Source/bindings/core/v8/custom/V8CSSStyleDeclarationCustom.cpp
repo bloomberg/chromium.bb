@@ -175,8 +175,6 @@ void V8CSSStyleDeclaration::namedPropertyEnumeratorCustom(const v8::PropertyCall
 
 void V8CSSStyleDeclaration::namedPropertyQueryCustom(v8::Local<v8::Name> v8Name, const v8::PropertyCallbackInfo<v8::Integer>& info)
 {
-    if (!v8Name->IsString())
-        return;
     // NOTE: cssPropertyInfo lookups incur several mallocs.
     // Successful lookups have the same cost the first time, but are cached.
     if (cssPropertyInfo(v8Name.As<v8::String>())) {
@@ -187,9 +185,6 @@ void V8CSSStyleDeclaration::namedPropertyQueryCustom(v8::Local<v8::Name> v8Name,
 
 void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    if (!name->IsString())
-        return;
-
     // Search the style declaration.
     CSSPropertyID unresolvedProperty = cssPropertyInfo(name.As<v8::String>());
 
@@ -212,8 +207,6 @@ void V8CSSStyleDeclaration::namedPropertyGetterCustom(v8::Local<v8::Name> name, 
 
 void V8CSSStyleDeclaration::namedPropertySetterCustom(v8::Local<v8::Name> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    if (!name->IsString())
-        return;
     CSSStyleDeclaration* impl = V8CSSStyleDeclaration::toImpl(info.Holder());
     CSSPropertyID unresolvedProperty = cssPropertyInfo(name.As<v8::String>());
     if (!unresolvedProperty)

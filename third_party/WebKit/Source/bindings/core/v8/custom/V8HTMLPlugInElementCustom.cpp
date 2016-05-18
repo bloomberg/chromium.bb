@@ -94,29 +94,21 @@ void setScriptableObjectProperty(PropertyType property, v8::Local<v8::Value> val
 
 void V8HTMLEmbedElement::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    if (!name->IsString())
-        return;
     getScriptableObjectProperty<V8HTMLEmbedElement>(name.As<v8::String>(), info);
 }
 
 void V8HTMLObjectElement::namedPropertyGetterCustom(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    if (!name->IsString())
-        return;
     getScriptableObjectProperty<V8HTMLObjectElement>(name.As<v8::String>(), info);
 }
 
 void V8HTMLEmbedElement::namedPropertySetterCustom(v8::Local<v8::Name> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    if (!name->IsString())
-        return;
     setScriptableObjectProperty<V8HTMLEmbedElement>(name.As<v8::String>(), value, info);
 }
 
 void V8HTMLObjectElement::namedPropertySetterCustom(v8::Local<v8::Name> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    if (!name->IsString())
-        return;
     setScriptableObjectProperty<V8HTMLObjectElement>(name.As<v8::String>(), value, info);
 }
 
