@@ -68,6 +68,13 @@ public final class MockUrlRequestJobFactory {
         return nativeGetMockUrlForSSLCertificateError();
     }
 
+    /**
+     * Constructs a mock URL that will hang when try to read response body from the remote.
+     */
+    public static String getMockUrlForHangingRead() {
+        return nativeGetMockUrlForHangingRead();
+    }
+
     private static native void nativeAddUrlInterceptors();
 
     private static native String nativeGetMockUrlWithFailure(int phase, int netError);
@@ -78,4 +85,6 @@ public final class MockUrlRequestJobFactory {
     private static native String nativeGetMockUrlForClientCertificateRequest();
 
     private static native String nativeGetMockUrlForSSLCertificateError();
+
+    private static native String nativeGetMockUrlForHangingRead();
 }

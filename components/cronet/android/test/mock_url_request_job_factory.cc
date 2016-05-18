@@ -9,6 +9,7 @@
 #include "jni/MockUrlRequestJobFactory_jni.h"
 #include "net/test/url_request/ssl_certificate_error_job.h"
 #include "net/test/url_request/url_request_failed_job.h"
+#include "net/test/url_request/url_request_hanging_read_job.h"
 #include "net/test/url_request/url_request_mock_data_job.h"
 #include "url/gurl.h"
 
@@ -17,6 +18,7 @@ namespace cronet {
 void AddUrlInterceptors(JNIEnv* env, const JavaParamRef<jclass>& jcaller) {
   net::URLRequestMockDataJob::AddUrlHandler();
   net::URLRequestFailedJob::AddUrlHandler();
+  net::URLRequestHangingReadJob::AddUrlHandler();
   net::SSLCertificateErrorJob::AddUrlHandler();
 }
 
@@ -53,6 +55,13 @@ ScopedJavaLocalRef<jstring> GetMockUrlForClientCertificateRequest(
     JNIEnv* jenv,
     const JavaParamRef<jclass>& jcaller) {
   GURL url(net::URLRequestMockDataJob::GetMockUrlForClientCertificateRequest());
+  return base::android::ConvertUTF8ToJavaString(jenv, url.spec());
+}
+
+ScopedJavaLocalRef<jstring> GetMockUrlForHangingRead(
+    JNIEnv* jenv,
+    const JavaParamRef<jclass>& jcaller) {
+  GURL url(net::URLRequestHangingReadJob::GetMockHttpUrl());
   return base::android::ConvertUTF8ToJavaString(jenv, url.spec());
 }
 

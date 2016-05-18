@@ -396,6 +396,15 @@ public class CronetHttpURLConnection extends HttpURLConnection {
         return false;
     }
 
+    @Override
+    public void setConnectTimeout(int timeout) {
+        // Per-request connect timeout is not supported because of late binding.
+        // Sockets are assigned to requests according to request priorities
+        // when sockets are connected. This requires requests with the same host,
+        // domain and port to have same timeout.
+        throw new UnsupportedOperationException("Not supported");
+    }
+
     /**
      * Used by {@link CronetInputStream} to get more data from the network
      * stack. This should only be called after the request has started. Note
@@ -405,7 +414,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
      */
     void getMoreData(ByteBuffer byteBuffer) throws IOException {
         mRequest.read(byteBuffer);
-        mMessageLoop.loop();
+        mMessageLoop.loop(getReadTimeout());
     }
 
     /**

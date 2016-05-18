@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -87,6 +88,39 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
         assertEquals("OK", connection.getResponseMessage());
         assertEquals("PUT", TestUtil.getResponseAsString(connection));
         connection.disconnect();
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunCronetHttpURLConnection
+    public void testConnectTimeout() throws Exception {
+        URL url = new URL(NativeTestServer.getEchoMethodURL());
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        try {
+            connection.setConnectTimeout(1000);
+            fail();
+        } catch (UnsupportedOperationException e) {
+            // Expected
+        }
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunCronetHttpURLConnection
+    public void testReadTimeout() throws Exception {
+        // Add url interceptors.
+        MockUrlRequestJobFactory.setUp();
+        URL url = new URL(MockUrlRequestJobFactory.getMockUrlForHangingRead());
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setReadTimeout(1000);
+        assertEquals(200, connection.getResponseCode());
+        InputStream in = connection.getInputStream();
+        try {
+            in.read();
+            fail();
+        } catch (SocketTimeoutException e) {
+            // Expected
+        }
     }
 
     @SmallTest

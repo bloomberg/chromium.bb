@@ -630,6 +630,8 @@
         'test/url_request/ssl_certificate_error_job.h',
         'test/url_request/url_request_failed_job.cc',
         'test/url_request/url_request_failed_job.h',
+        'test/url_request/url_request_hanging_read_job.cc',
+        'test/url_request/url_request_hanging_read_job.h',
         'test/url_request/url_request_mock_data_job.cc',
         'test/url_request/url_request_mock_data_job.h',
         'test/url_request/url_request_slow_download_job.cc',
