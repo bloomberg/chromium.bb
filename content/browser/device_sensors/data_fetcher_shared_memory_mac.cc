@@ -204,8 +204,15 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
       return sudden_motion_sensor_available;
     }
     case CONSUMER_TYPE_ORIENTATION_ABSOLUTE: {
-      NOTIMPLEMENTED();
-      break;
+      orientation_absolute_buffer_ =
+          static_cast<DeviceOrientationHardwareBuffer*>(buffer);
+      // Absolute device orientation not available on Mac, let the
+      // implementation fire an all-null event to signal this to blink.
+      orientation_absolute_buffer_->seqlock.WriteBegin();
+      orientation_absolute_buffer_->data.absolute = true;
+      orientation_absolute_buffer_->data.allAvailableSensorsAreActive = true;
+      orientation_absolute_buffer_->seqlock.WriteEnd();
+      return false;
     }
     case CONSUMER_TYPE_LIGHT: {
       if (!ambient_light_sensor_)
@@ -248,8 +255,13 @@ bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
       }
       return true;
     case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
-      NOTIMPLEMENTED();
-      break;
+      if (orientation_absolute_buffer_) {
+        orientation_absolute_buffer_->seqlock.WriteBegin();
+        orientation_absolute_buffer_->data.allAvailableSensorsAreActive = false;
+        orientation_absolute_buffer_->seqlock.WriteEnd();
+        orientation_absolute_buffer_ = nullptr;
+      }
+      return true;
     case CONSUMER_TYPE_LIGHT:
       if (light_buffer_) {
         light_buffer_->seqlock.WriteBegin();
