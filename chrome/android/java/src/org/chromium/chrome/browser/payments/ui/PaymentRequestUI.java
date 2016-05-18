@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.SectionSepa
 import org.chromium.chrome.browser.widget.AlwaysDismissedDialog;
 import org.chromium.chrome.browser.widget.DualControlLayout;
 import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
+import org.chromium.chrome.browser.widget.animation.FocusAnimator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -161,7 +162,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private final PaymentResultUI mResultUI;
 
     private final ScrollView mPaymentContainer;
-    private final ViewGroup mPaymentContainerLayout;
+    private final LinearLayout mPaymentContainerLayout;
     private final DualControlLayout mButtonBar;
     private final Button mEditButton;
     private final Button mPayButton;
@@ -184,7 +185,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private SectionInformation mShippingOptionsSectionInformation;
 
     private Animator mSheetAnimator;
-    private Animator mSectionAnimator;
+    private FocusAnimator mSectionAnimator;
     private int mAnimatorTranslation;
     private boolean mIsInitialLayoutComplete;
 
@@ -247,7 +248,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         // Create all the possible sections.
         mSectionSeparators = new ArrayList<SectionSeparator>();
         mPaymentContainerLayout =
-                (ViewGroup) mBottomSheetContainer.findViewById(R.id.paymentContainerLayout);
+                (LinearLayout) mBottomSheetContainer.findViewById(R.id.paymentContainerLayout);
         mOrderSummarySection = new LineItemBreakdownSection(activity,
                 activity.getString(R.string.payments_order_summary_label), this);
         mShippingSummarySection = new ExtraTextSection(activity,
@@ -611,7 +612,18 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
     /** Update the display status of each expandable section. */
     private void updateSectionVisibility() {
-        mPaymentContainerLayout.addOnLayoutChangeListener(new PaymentsSectionAnimator());
+        Runnable animationEndRunnable = new Runnable() {
+            @Override
+            public void run() {
+                mSectionAnimator = null;
+                notifyReadyToClose();
+                notifyReadyForInput();
+                notifyReadyToPay();
+            }
+        };
+        mSectionAnimator = new FocusAnimator(
+                mPaymentContainerLayout, mSelectedSection, animationEndRunnable);
+
         mOrderSummarySection.setDisplayMode(mSelectedSection == mOrderSummarySection
                 ? PaymentRequestSection.DISPLAY_MODE_FOCUSED
                 : PaymentRequestSection.DISPLAY_MODE_EXPANDABLE);
@@ -758,144 +770,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             notifyReadyToClose();
             notifyReadyForInput();
             notifyReadyToPay();
-        }
-    }
-
-    /** Animates sections expanding and collapsing as the user selects them. */
-    private class PaymentsSectionAnimator
-            extends AnimatorListenerAdapter implements OnLayoutChangeListener {
-        private final ArrayList<Integer> mOriginalTops = new ArrayList<Integer>();
-
-        public PaymentsSectionAnimator() {
-            calculateTops(mOriginalTops, mPaymentContainerLayout);
-        }
-
-        @Override
-        public void onLayoutChange(View v, int left, int top, int right, int bottom,
-                int oldLeft, int oldTop, int oldRight, int oldBottom) {
-            mPaymentContainerLayout.removeOnLayoutChangeListener(this);
-
-            boolean isAnotherAnimationRunning = mSectionAnimator != null;
-            boolean didNumberOfChildrenChange =
-                    mOriginalTops.size() != (mPaymentContainerLayout.getChildCount() + 1);
-            if (isAnotherAnimationRunning || didNumberOfChildrenChange) {
-                makeSelectedSectionVisible();
-                return;
-            }
-
-            // Don't animate if children are already all in the correct places.
-            ArrayList<Integer> finalHeights = new ArrayList<Integer>();
-            calculateTops(finalHeights, mPaymentContainerLayout);
-
-            boolean isAnimationNecessary = false;
-            for (int i = 0; i < finalHeights.size() && !isAnimationNecessary; i++) {
-                isAnimationNecessary |= finalHeights.get(i).compareTo(mOriginalTops.get(i)) != 0;
-            }
-            if (!isAnimationNecessary) {
-                makeSelectedSectionVisible();
-                return;
-            }
-
-            // Animate each section moving and changing size to match their final locations.
-            ArrayList<Animator> animators = new ArrayList<Animator>();
-            for (int i = 0; i < mPaymentContainerLayout.getChildCount(); i++) {
-                if (mOriginalTops.get(i).compareTo(finalHeights.get(i)) == 0
-                        && mOriginalTops.get(i + 1).compareTo(finalHeights.get(i + 1)) == 0) {
-                    continue;
-                }
-
-                final View section = mPaymentContainerLayout.getChildAt(i);
-                final int translationDifference = mOriginalTops.get(i) - finalHeights.get(i);
-                final int oldHeight = mOriginalTops.get(i + 1) - mOriginalTops.get(i);
-                final int newHeight = finalHeights.get(i + 1) - finalHeights.get(i);
-
-                ValueAnimator sectionAnimator = ValueAnimator.ofFloat(0f, 1f);
-                sectionAnimator.addUpdateListener(new AnimatorUpdateListener() {
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator animation) {
-                        float progress = (Float) animation.getAnimatedValue();
-                        section.setTranslationY((1f - progress) * translationDifference);
-
-                        if (oldHeight != newHeight) {
-                            float animatedHeight =
-                                    oldHeight * (1f - progress) + newHeight * progress;
-                            section.setBottom(section.getTop() + (int) animatedHeight);
-                        }
-                    }
-                });
-                sectionAnimator.addListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animator) {
-                        section.setTranslationY(0);
-                    }
-                });
-                animators.add(sectionAnimator);
-            }
-
-            // Animate the height of the container itself changing.
-            int oldContainerHeight = mOriginalTops.get(mOriginalTops.size() - 1);
-            int newContainerHeight = finalHeights.get(finalHeights.size() - 1);
-            ValueAnimator layoutAnimator =
-                    ValueAnimator.ofInt(oldContainerHeight, newContainerHeight);
-            layoutAnimator.addUpdateListener(new AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    mPaymentContainerLayout.setBottom(((Integer) animation.getAnimatedValue()));
-                    makeSelectedSectionVisible();
-                }
-            });
-            animators.add(layoutAnimator);
-
-            // Set up and kick off the animation.
-            AnimatorSet animator = new AnimatorSet();
-            animator.setDuration(DIALOG_ENTER_ANIMATION_MS);
-            animator.setInterpolator(new LinearOutSlowInInterpolator());
-            animator.playTogether(animators);
-
-            mSectionAnimator = animator;
-            mSectionAnimator.addListener(this);
-            mSectionAnimator.start();
-        }
-
-        @Override
-        public void onAnimationEnd(Animator animator) {
-            mSectionAnimator = null;
-            notifyReadyToClose();
-            notifyReadyForInput();
-            notifyReadyToPay();
-        }
-
-        /** Scroll the layout so that the selected section is on screen. */
-        private void makeSelectedSectionVisible() {
-            if (mSelectedSection != null) {
-                mPaymentContainer.requestChildFocus(mPaymentContainerLayout, mSelectedSection);
-            }
-
-            // Using ScrollView#requestChildFocus fails to account for the LinearLayout inside of it
-            // dynamically changing height.
-            int viewportHeight = mPaymentContainer.getBottom() - mPaymentContainer.getTop();
-            int scrollMax = Math.max(
-                    0, mPaymentContainerLayout.getMeasuredHeight() - viewportHeight);
-            if (mPaymentContainer.getScrollY() > scrollMax) mPaymentContainer.setScrollY(scrollMax);
-        }
-
-        /**
-         * Calculates where the top of each child view should be.
-         *
-         * @param tops   Y-coordinates of the tops of each child view.  The last value represents
-         *               the total height of the layout and points at the bottom of the last child.
-         * @param layout Layout with all the children.
-         */
-        private void calculateTops(ArrayList<Integer> tops, ViewGroup layout) {
-            tops.clear();
-
-            int runningTotal = 0;
-            for (int i = 0; i < layout.getChildCount(); i++) {
-                tops.add(runningTotal);
-                runningTotal += layout.getChildAt(i).getMeasuredHeight();
-            }
-
-            tops.add(runningTotal);
         }
     }
 
