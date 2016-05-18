@@ -4,8 +4,24 @@
 
 module blink.mojom;
 
+// Equivalent to idl MediaSettingsRange, arbitrary range representing the
+// allowed variations of a Capability or an Option.
+// http://w3c.github.io/mediacapture-image/#mediasettingsrange
+struct Range {
+  uint32 max;
+  uint32 min;
+  uint32 initial;
+};
+
+struct PhotoCapabilities {
+  Range zoom;
+};
+
 interface ImageCapture
 {
-    TakePhoto(string sourceid)
+    GetCapabilities(string source_id)
+        => (PhotoCapabilities capabilities);
+
+    TakePhoto(string source_id)
         => (string mime_type, array<uint8> data);
 };

@@ -18,6 +18,7 @@ namespace blink {
 
 class ExceptionState;
 class MediaStreamTrack;
+class PhotoCapabilities;
 class WebImageCaptureFrameGrabber;
 
 // TODO(mcasas): Consideradding a LayoutTest checking that this class is not
@@ -42,6 +43,8 @@ public:
     // ContextLifecycleObserver
     void contextDestroyed() override;
 
+    PhotoCapabilities* photoCapabilities() const { return m_photoCapabilities.get(); }
+
     MediaStreamTrack* videoStreamTrack() const { return m_streamTrack.get(); }
 
     ScriptPromise takePhoto(ScriptState*, ExceptionState&);
@@ -53,8 +56,11 @@ public:
 private:
     ImageCapture(ExecutionContext*, MediaStreamTrack*);
 
+    void onCapabilities(mojom::blink::PhotoCapabilitiesPtr);
     void onTakePhoto(ScriptPromiseResolver*, const String& mimeType, mojo::WTFArray<uint8_t> data);
     void onServiceConnectionError();
+
+    Member<PhotoCapabilities> m_photoCapabilities;
 
     Member<MediaStreamTrack> m_streamTrack;
     OwnPtr<WebImageCaptureFrameGrabber> m_frameGrabber;

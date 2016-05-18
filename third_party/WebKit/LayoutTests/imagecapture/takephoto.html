@@ -19,20 +19,21 @@ async_test(function(t) {
   var stream = canvas.captureStream();
 
   mockImageCaptureReady
-    .then((mock) => {
-      var capturer = new ImageCapture(stream.getVideoTracks()[0]);
-
-      capturer.takePhoto()
-        .then(blob => {
-            assert_true(blob.size > 0);
-            t.done();
-        })
-        .catch(error => {
-            assert_unreached("Error during takePhoto(): " + error);
-        });
+    .then(mock => {
+      return new ImageCapture(stream.getVideoTracks()[0]);
     })
     .catch(error => {
       assert_unreached("Error creating MockImageCapture: " + error);
+    })
+    .then(capturer => {
+      return capturer.takePhoto();
+    })
+    .then(blob => {
+        assert_true(blob.size > 0);
+        t.done();
+    })
+    .catch(error => {
+        assert_unreached("Error during takePhoto(): " + error);
     });
 }, 'exercises the ImageCapture API takePhoto()');
 

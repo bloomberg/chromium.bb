@@ -18,6 +18,9 @@ class ImageCaptureImpl : public blink::mojom::ImageCapture {
       mojo::InterfaceRequest<blink::mojom::ImageCapture> request);
   ~ImageCaptureImpl() override;
 
+  void GetCapabilities(const mojo::String& source_id,
+                       const GetCapabilitiesCallback& callback) override;
+
   void TakePhoto(const mojo::String& source_id,
                  const TakePhotoCallback& callback) override;
 

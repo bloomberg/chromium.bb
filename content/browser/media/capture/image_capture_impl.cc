@@ -60,6 +60,18 @@ void ImageCaptureImpl::Create(
 
 ImageCaptureImpl::~ImageCaptureImpl() {}
 
+void ImageCaptureImpl::GetCapabilities(
+    const mojo::String& source_id,
+    const GetCapabilitiesCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  blink::mojom::PhotoCapabilitiesPtr empty_capabilities =
+      blink::mojom::PhotoCapabilities::New();
+  empty_capabilities->zoom = blink::mojom::Range::New();
+  callback.Run(std::move(empty_capabilities));
+}
+
+
 void ImageCaptureImpl::TakePhoto(const mojo::String& source_id,
                                  const TakePhotoCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

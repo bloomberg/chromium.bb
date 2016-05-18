@@ -11,6 +11,8 @@
 #include "core/fileapi/Blob.h"
 #include "core/frame/ImageBitmap.h"
 #include "modules/EventTargetModules.h"
+#include "modules/imagecapture/MediaSettingsRange.h"
+#include "modules/imagecapture/PhotoCapabilities.h"
 #include "modules/mediastream/MediaStreamTrack.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/Platform.h"
@@ -127,6 +129,7 @@ ScriptPromise ImageCapture::grabFrame(ScriptState* scriptState, ExceptionState& 
 ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
     : ActiveScriptWrappable(this)
     , ContextLifecycleObserver(context)
+    , m_photoCapabilities(PhotoCapabilities::create())
     , m_streamTrack(track)
 {
     DCHECK(m_streamTrack);
@@ -135,6 +138,13 @@ ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
     Platform::current()->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_service));
 
     m_service.set_connection_error_handler(createBaseCallback(bind(&ImageCapture::onServiceConnectionError, WeakPersistentThisPointer<ImageCapture>(this))));
+
+    m_service->GetCapabilities(m_streamTrack->component()->source()->id(), createBaseCallback(bind<mojom::blink::PhotoCapabilitiesPtr>(&ImageCapture::onCapabilities, this)));
+}
+
+void ImageCapture::onCapabilities(mojom::blink::PhotoCapabilitiesPtr capabilities)
+{
+    m_photoCapabilities->setZoom(MediaSettingsRange::create(capabilities->zoom->max, capabilities->zoom->min, capabilities->zoom->initial));
 }
 
 void ImageCapture::onTakePhoto(ScriptPromiseResolver* resolver, const String& mimeType, mojo::WTFArray<uint8_t> data)
@@ -161,6 +171,7 @@ void ImageCapture::onServiceConnectionError()
 
 DEFINE_TRACE(ImageCapture)
 {
+    visitor->trace(m_photoCapabilities);
     visitor->trace(m_streamTrack);
     visitor->trace(m_serviceRequests);
     EventTargetWithInlineData::trace(visitor);
