@@ -72,7 +72,8 @@ class _MemorySystemHealthBenchmark(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'system_health.memory_%s' % cls.page_set.PLATFORM
 
-
+# https://github.com/catapult-project/catapult/issues/2340
+@benchmark.Disabled('all')
 class DesktopMemorySystemHealth(_MemorySystemHealthBenchmark):
   """Desktop Chrome Memory System Health Benchmark."""
   page_set = page_sets.DesktopMemorySystemHealthStorySet
@@ -81,7 +82,8 @@ class DesktopMemorySystemHealth(_MemorySystemHealthBenchmark):
   def ShouldDisable(cls, possible_browser):
     return possible_browser.platform.GetDeviceTypeName() != 'Desktop'
 
-
+# https://github.com/catapult-project/catapult/issues/2340
+@benchmark.Disabled('all')
 class MobileMemorySystemHealth(_MemorySystemHealthBenchmark):
   """Mobile Chrome Memory System Health Benchmark."""
   page_set = page_sets.MobileMemorySystemHealthStorySet
