@@ -52,7 +52,7 @@ VideoFrameExternalResources::ResourceType ResourceTypeForVideoFrame(
                      ? VideoFrameExternalResources::RGBA_RESOURCE
                      : VideoFrameExternalResources::STREAM_TEXTURE_RESOURCE;
         case GL_TEXTURE_RECTANGLE_ARB:
-          return VideoFrameExternalResources::IO_SURFACE;
+          return VideoFrameExternalResources::RGB_RESOURCE;
         default:
           NOTREACHED();
           break;
@@ -66,7 +66,7 @@ VideoFrameExternalResources::ResourceType ResourceTypeForVideoFrame(
         case GL_TEXTURE_EXTERNAL_OES:
           return VideoFrameExternalResources::YUV_RESOURCE;
         case GL_TEXTURE_RECTANGLE_ARB:
-          return VideoFrameExternalResources::IO_SURFACE;
+          return VideoFrameExternalResources::RGB_RESOURCE;
         default:
           NOTREACHED();
           break;
