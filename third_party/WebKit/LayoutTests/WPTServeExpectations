@@ -42,13 +42,13 @@ crbug.com/508725 imported/web-platform-tests/html/dom/elements/global-attributes
 crbug.com/508725 imported/web-platform-tests/html/webappapis/system-state-and-capabilities/the-navigator-object/protocol.html [ Failure ]
 
 # Requires HTTPS (requires "secure origin") for getUserMedia()
-crbug.com/608457 imported/web-platform-tests/mediacapture-streams/GUM-optional-constraint.html [ Failure ]
-crbug.com/608457 imported/web-platform-tests/mediacapture-streams/MediaDevices-getUserMedia.html [ Failure ]
-crbug.com/608457 imported/web-platform-tests/mediacapture-streams/MediaStream-gettrackid.html [ Failure ]
-crbug.com/608457 imported/web-platform-tests/mediacapture-streams/MediaStreamTrack-id.html [ Failure ]
+crbug.com/608457 imported/wpt/mediacapture-streams/GUM-optional-constraint.html [ Failure ]
+crbug.com/608457 imported/wpt/mediacapture-streams/MediaDevices-getUserMedia.html [ Failure ]
+crbug.com/608457 imported/wpt/mediacapture-streams/MediaStream-gettrackid.html [ Failure ]
+crbug.com/608457 imported/wpt/mediacapture-streams/MediaStreamTrack-id.html [ Failure ]
 crbug.com/608457 imported/wpt/webrtc/simplecall.html [ Failure ]
 
 # These tests time out because they are async tests that use getUserMedia().
-crbug.com/608457 imported/web-platform-tests/mediacapture-streams/MediaStream-video-only.html [ Timeout ]
-crbug.com/608457 imported/web-platform-tests/mediacapture-streams/MediaStream-MediaElement-srcObject.html [ Timeout ]
-crbug.com/608457 imported/web-platform-tests/mediacapture-streams/MediaStream-add-audio-track.html [ Timeout ]
+crbug.com/608457 imported/wpt/mediacapture-streams/MediaStream-video-only.html [ Timeout ]
+crbug.com/608457 imported/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.html [ Timeout ]
+crbug.com/608457 imported/wpt/mediacapture-streams/MediaStream-add-audio-track.html [ Timeout ]

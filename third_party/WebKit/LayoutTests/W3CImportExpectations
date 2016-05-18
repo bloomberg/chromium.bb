@@ -244,7 +244,7 @@ imported/web-platform-tests/manifest [ Skip ]
 imported/web-platform-tests/media [ Skip ]
 imported/web-platform-tests/media-source [ Skip ]
 ## Owners: phoglund@chromium.org
-# imported/web-platform-tests/mediacapture-streams [ Pass ]
+# imported/wpt/mediacapture-streams [ Pass ]
 imported/web-platform-tests/microdata [ Skip ]
 imported/web-platform-tests/mixed-content [ Skip ]
 imported/web-platform-tests/navigation-timing [ Skip ]
@@ -322,7 +322,7 @@ imported/wpt/encoding/OWNERS [ Skip ]
 imported/wpt/hr-time/OWNERS [ Skip ]
 imported/web-platform-tests/pointerevents/OWNERS [ Skip ]
 imported/wpt/webstorage/OWNERS [ Skip ]
-imported/web-platform-tests/mediacapture-streams/OWNERS [ Skip ]
+imported/wpt/mediacapture-streams/OWNERS [ Skip ]
 imported/wpt/touch-events/OWNERS [ Skip ]
 imported/wpt/uievents/OWNERS [ Skip ]
 imported/wpt/web-animations/OWNERS [ Skip ]
@@ -614,7 +614,7 @@ imported/web-platform-tests/html-imports/loading-import.html [ Skip ]
 
 # We'll never be able to test WebRTC deny tests since we always auto-allow
 # user media.
-imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/deny.html [ Skip ]
+imported/wpt/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/deny.html [ Skip ]
 
 # Requires http server.
 imported/wpt/dom/nodes/Document-URL.sub.html [ Skip ]
@@ -640,8 +640,8 @@ imported/web-platform-tests/html/semantics/scripting-1/the-script-element/serve-
 imported/wpt/custom-elements/v0/creating-and-passing-registries/no-registry-test.html [ Skip ]
 
 # crbug.com/404303: Was broken as of 2014-07-06.
-imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/unknownkey-option-param.html
-imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/empty-option-param.html
+imported/wpt/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/unknownkey-option-param.html
+imported/wpt/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/empty-option-param.html
 
 # Uses custom request handler
 imported/wpt/encoding/single-byte-decoder.html [ Skip ]
