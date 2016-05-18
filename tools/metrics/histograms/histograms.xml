@@ -12470,6 +12470,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Event.Touch.TouchStartLatencyDuringFling" units="microseconds">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Time between when a touch start event was generated and the event was
+    processed. Recorded only when there was an active fling animation. This
+    histogram tracks the benefit of forcing passive event listeners during
+    fling.
+  </summary>
+</histogram>
+
+<histogram name="Event.Touch.TouchStartLatencyOutsideFling"
+    units="microseconds">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Time between when a touch start event was generated and the event was
+    processed. Recorded only when there was no active fling animation.
+  </summary>
+</histogram>
+
 <histogram name="Event.TouchDuration" units="ms">
   <owner>kuscher@google.com</owner>
   <owner>rbyers@chromium.org</owner>

@@ -327,4 +327,24 @@ TEST_F(RenderWidgetUnittest, RenderWidgetInputEventUmaMetrics) {
       PASSIVE_LISTENER_UMA_ENUM_CANCELABLE_AND_CANCELED, 1);
 }
 
+TEST_F(RenderWidgetUnittest, TouchStartDuringOrOutsideFlingUmaMetrics) {
+  EXPECT_CALL(*widget()->mock_webwidget(), handleInputEvent(_))
+      .Times(2)
+      .WillRepeatedly(
+          ::testing::Return(blink::WebInputEventResult::NotHandled));
+
+  SyntheticWebTouchEvent touch;
+  touch.PressPoint(10, 10);
+  touch.dispatchType = blink::WebInputEvent::DispatchType::Blocking;
+  touch.dispatchedDuringFling = true;
+  widget()->SendInputEvent(touch);
+  histogram_tester().ExpectTotalCount(
+      "Event.Touch.TouchStartLatencyDuringFling", 1);
+
+  touch.dispatchedDuringFling = false;
+  widget()->SendInputEvent(touch);
+  histogram_tester().ExpectTotalCount(
+      "Event.Touch.TouchStartLatencyOutsideFling", 1);
+}
+
 }  // namespace content

@@ -329,9 +329,27 @@ void RenderWidgetInputHandler::HandleInputEvent(
   if (input_event.type == WebInputEvent::TouchStart ||
       input_event.type == WebInputEvent::TouchMove ||
       input_event.type == WebInputEvent::TouchEnd) {
-    LogPassiveEventListenersUma(
-        processed, static_cast<const WebTouchEvent&>(input_event).dispatchType,
-        input_event.timeStampSeconds, latency_info);
+    const WebTouchEvent& touch = static_cast<const WebTouchEvent&>(input_event);
+
+    LogPassiveEventListenersUma(processed, touch.dispatchType,
+                                input_event.timeStampSeconds, latency_info);
+
+    if (input_event.type == WebInputEvent::TouchStart &&
+        touch.dispatchType == WebInputEvent::Blocking &&
+        base::TimeTicks::IsHighResolution()) {
+      base::TimeTicks now = base::TimeTicks::Now();
+      if (touch.dispatchedDuringFling) {
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Event.Touch.TouchStartLatencyDuringFling",
+            GetEventLatencyMicros(input_event.timeStampSeconds, now), 1,
+            100000000, 50);
+      } else {
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Event.Touch.TouchStartLatencyOutsideFling",
+            GetEventLatencyMicros(input_event.timeStampSeconds, now), 1,
+            100000000, 50);
+      }
+    }
   } else if (input_event.type == WebInputEvent::MouseWheel) {
     LogPassiveEventListenersUma(
         processed,
