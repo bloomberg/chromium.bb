@@ -564,9 +564,10 @@ if (is_linux) {
     ]
   }
 
-  # Creates a breakpad symbol file for the engine. This takes a long time so
-  # it should only be done as part of the official build.
+  # Crash symbols should only be created and uploaded from official builders.
   if (is_official_build) {
+    # Action to create a Breakpad symbol file for the Engine. This can take
+    # a long time.
     action("blimp_symbols") {
       script = "//build/linux/dump_app_syms.py"
 
@@ -592,8 +593,11 @@ if (is_linux) {
         rebase_path(symbol_file, root_build_dir),
       ]
 
+      # Include symupload target here as it is needed by the buildbots to upload
+      # the symbol file created by dump_syms.
       deps = [
         ":blimp_engine_app",
+        "//breakpad:symupload",
         dump_syms_label,
       ]
     }
