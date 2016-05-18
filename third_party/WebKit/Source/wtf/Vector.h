@@ -406,7 +406,7 @@ public:
     {
     }
 
-    VectorBuffer(size_t capacity)
+    explicit VectorBuffer(size_t capacity)
     {
         // Calling malloc(0) might take a lock and may actually do an allocation
         // on some systems.
