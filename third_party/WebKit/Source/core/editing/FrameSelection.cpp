@@ -907,7 +907,17 @@ bool FrameSelection::setSelectedRange(Range* range, TextAffinity affinity, Selec
 
 bool FrameSelection::setSelectedRange(const EphemeralRange& range, TextAffinity affinity, SelectionDirectionalMode directional, SetSelectionOptions options)
 {
-    return m_selectionEditor->setSelectedRange(range, affinity, directional, options);
+    if (range.isNull())
+        return false;
+    m_selectionEditor->resetLogicalRange();
+    // Since |FrameSeleciton::setSelection()| dispatches events and DOM tree
+    // can be modified by event handlers, we should create |Range| object before
+    // calling it.
+    Range* logicalRange = createRange(range);
+    VisibleSelection newSelection(range.startPosition(), range.endPosition(), affinity, directional == SelectionDirectionalMode::Directional);
+    setSelection(newSelection, options);
+    m_selectionEditor->setLogicalRange(logicalRange);
+    return true;
 }
 
 Range* FrameSelection::firstRange() const

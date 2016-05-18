@@ -837,11 +837,10 @@ LayoutUnit SelectionModifier::lineDirectionPointForBlockDirectionNavigation(EPos
     return x;
 }
 
-bool SelectionEditor::setSelectedRange(const EphemeralRange& range, TextAffinity affinity, SelectionDirectionalMode directional, FrameSelection::SetSelectionOptions options)
+// TODO(yosin) We should utilize |resetLogicalRange()| in other places where
+// reset |m_logicalRange|.
+void SelectionEditor::resetLogicalRange()
 {
-    if (range.isNull())
-        return false;
-
     // Non-collapsed ranges are not allowed to start at the end of a line that is wrapped,
     // they start at the beginning of the next line instead
     if (m_logicalRange) {
@@ -849,16 +848,13 @@ bool SelectionEditor::setSelectedRange(const EphemeralRange& range, TextAffinity
         m_logicalRange = nullptr;
     }
     stopObservingVisibleSelectionChangeIfNecessary();
+}
 
-    // Since |FrameSeleciton::setSelection()| dispatches events and DOM tree
-    // can be modified by event handlers, we should create |Range| object before
-    // calling it.
-    m_logicalRange = createRange(range);
-
-    VisibleSelection newSelection(range.startPosition(), range.endPosition(), affinity, directional == SelectionDirectionalMode::Directional);
-    m_frameSelection->setSelection(newSelection, options);
+void SelectionEditor::setLogicalRange(Range* range)
+{
+    DCHECK(!m_logicalRange) << "A logical range should be one.";
+    m_logicalRange = range;
     startObservingVisibleSelectionChange();
-    return true;
 }
 
 Range* SelectionEditor::firstRange() const

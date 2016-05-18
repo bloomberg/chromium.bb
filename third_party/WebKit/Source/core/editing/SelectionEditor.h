@@ -64,6 +64,10 @@ public:
     // |VisibleSelection|'s |firstRange()| is returned.
     Range* firstRange() const;
 
+    // There functions are exposed for |FrameSelection|.
+    void resetLogicalRange();
+    void setLogicalRange(Range*);
+
     // VisibleSelectionChangeObserver interface.
     void didChangeVisibleSelection() override;
 
