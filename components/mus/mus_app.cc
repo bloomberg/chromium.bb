@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
-#include "components/mus/common/args.h"
+#include "components/mus/common/switches.h"
 #include "components/mus/gles2/gpu_impl.h"
 #include "components/mus/ws/display.h"
 #include "components/mus/ws/display_binding.h"
@@ -138,8 +138,8 @@ void MusApp::Initialize(shell::Connector* connector,
   tracing_.Initialize(connector, identity.name());
   TRACE_EVENT0("mus", "MusApp::Initialize started");
 
-  test_config_ =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(kUseTestConfig);
+  test_config_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseTestConfig);
 #if defined(USE_X11)
   XInitThreads();
   if (test_config_)

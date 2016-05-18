@@ -922,7 +922,7 @@ TEST_F(WidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
   modal_dialog_widget->Show();
 
   gfx::NativeView modal_native_view = modal_dialog_widget->GetNativeView();
-  EXPECT_EQ(3u, focus_changes.size());
+  ASSERT_EQ(3u, focus_changes.size());
   EXPECT_EQ(nullptr, focus_changes[1]);
   EXPECT_EQ(modal_native_view, focus_changes[2]);
 
@@ -936,7 +936,7 @@ TEST_F(WidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
   modal_dialog_widget->CloseNow();
 #endif
 
-  EXPECT_EQ(5u, focus_changes.size());
+  ASSERT_EQ(5u, focus_changes.size());
   EXPECT_EQ(nullptr, focus_changes[3]);
   EXPECT_EQ(top_level_native_view, focus_changes[4]);
 
@@ -1020,11 +1020,6 @@ TEST_F(WidgetTestInteractive, CanActivateFlagIsHonored) {
 #if defined(USE_AURA)
 // Test that touch selection quick menu is not activated when opened.
 TEST_F(WidgetTestInteractive, TouchSelectionQuickMenuIsNotActivated) {
-  // Fails on mus because the USER_PRIVATE window container is not visible by
-  // default. See http://crbug.com/611601
-  if (IsMus())
-    return;
-
 #if defined(OS_WIN)
   views_delegate()->set_use_desktop_native_widgets(true);
 #endif  // !defined(OS_WIN)
@@ -1056,8 +1051,7 @@ TEST_F(WidgetTestInteractive, TouchSelectionQuickMenuIsNotActivated) {
 #endif  // defined(USE_AURA)
 
 TEST_F(WidgetTestInteractive, DisableViewDoesNotActivateWidget) {
-  // Fails on mus because the USER_PRIVATE window container is not visible by
-  // default. See http://crbug.com/611601
+  // Times out on mus. See http://crbug.com/612193
   if (IsMus())
     return;
 

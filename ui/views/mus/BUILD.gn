@@ -144,6 +144,7 @@ source_set("test_support") {
     ":mus",
     "//base",
     "//base/test:test_support",
+    "//components/mus/common:mus_common",
     "//services/shell/background:lib",
     "//services/shell/background/tests:test_support",
     "//services/shell/public/cpp:sources",

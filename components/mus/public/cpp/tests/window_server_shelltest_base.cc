@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "components/mus/common/args.h"
+#include "components/mus/common/switches.h"
 #include "services/shell/public/cpp/shell_client.h"
 #include "services/shell/public/cpp/shell_test.h"
 #include "ui/gl/gl_switches.h"
@@ -47,8 +47,8 @@ void EnsureCommandLineSwitch(const std::string& name) {
 
 WindowServerShellTestBase::WindowServerShellTestBase()
     : ShellTest(kTestAppName) {
-  EnsureCommandLineSwitch(kUseTestConfig);
-  EnsureCommandLineSwitch(switches::kOverrideUseGLWithOSMesaForTests);
+  EnsureCommandLineSwitch(switches::kUseTestConfig);
+  EnsureCommandLineSwitch(::switches::kOverrideUseGLWithOSMesaForTests);
 }
 
 WindowServerShellTestBase::~WindowServerShellTestBase() {}

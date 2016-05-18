@@ -294,18 +294,28 @@ bool WindowTree::SetWindowOpacity(const ClientWindowId& window_id,
 bool WindowTree::SetFocus(const ClientWindowId& window_id) {
   ServerWindow* window = GetWindowByClientId(window_id);
   ServerWindow* currently_focused = window_server_->GetFocusedWindow();
-  if (!currently_focused && !window)
+  if (!currently_focused && !window) {
+    DVLOG(1) << "SetFocus failure, no focused window to clear.";
     return false;
+  }
 
   Display* display = GetDisplay(window);
-  if (window && (!display || !window->can_focus() || !window->IsDrawn()))
+  if (window && (!display || !window->can_focus() || !window->IsDrawn())) {
+    DVLOG(1) << "SetFocus failure, window cannot be focused.";
     return false;
+  }
 
-  if (!access_policy_->CanSetFocus(window))
+  if (!access_policy_->CanSetFocus(window)) {
+    DVLOG(1) << "SetFocus failure, blocked by access policy.";
     return false;
+  }
 
   Operation op(this, window_server_, OperationType::SET_FOCUS);
-  return window_server_->SetFocusedWindow(window);
+  bool success = window_server_->SetFocusedWindow(window);
+  if (!success) {
+    DVLOG(1) << "SetFocus failure, could not SetFocusedWindow.";
+  }
+  return success;
 }
 
 bool WindowTree::Embed(const ClientWindowId& window_id,

@@ -12,6 +12,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
+#include "components/mus/common/switches.h"
 #include "services/shell/background/background_shell.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/shell_client.h"
@@ -23,6 +24,12 @@
 
 namespace views {
 namespace {
+
+void EnsureCommandLineSwitch(const std::string& name) {
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (!cmd_line->HasSwitch(name))
+    cmd_line->AppendSwitch(name);
+}
 
 class DefaultShellClient : public shell::ShellClient {
  public:
@@ -130,6 +137,11 @@ ViewsMusTestSuite::~ViewsMusTestSuite() {}
 
 void ViewsMusTestSuite::Initialize() {
   PlatformTestHelper::SetIsMus();
+  // Let other mojo apps know that we're running in tests. Do this with a
+  // command line flag to avoid making blocking calls to other processes for
+  // setup for tests (e.g. to unlock the screen in the window manager).
+  EnsureCommandLineSwitch(mus::switches::kUseTestConfig);
+
   ViewsTestSuite::Initialize();
   shell_connections_.reset(new ShellConnection);
 }

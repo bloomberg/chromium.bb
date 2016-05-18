@@ -6,14 +6,14 @@ import("//testing/test.gni")
 
 component("mus_common") {
   sources = [
-    "args.cc",
-    "args.h",
     "event_matcher_util.cc",
     "event_matcher_util.h",
     "event_param_traits.cc",
     "event_param_traits.h",
     "event_param_traits_macros.h",
     "mus_common_export.h",
+    "switches.cc",
+    "switches.h",
     "transient_window_utils.h",
     "types.h",
     "util.h",

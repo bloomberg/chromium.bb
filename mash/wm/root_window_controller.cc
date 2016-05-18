@@ -10,7 +10,9 @@
 #include <sstream>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "components/mus/common/event_matcher_util.h"
+#include "components/mus/common/switches.h"
 #include "components/mus/common/util.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
@@ -190,8 +192,12 @@ void RootWindowController::CreateContainer(
   layout_managers_[window].reset(new FillLayout(window));
 
   // User private windows are hidden by default until the window manager learns
-  // the lock state, so their contents are never accidentally revealed.
-  window->SetVisible(container != mojom::Container::USER_PRIVATE);
+  // the lock state, so their contents are never accidentally revealed. Tests,
+  // however, usually assume the screen is unlocked.
+  const bool is_test = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      mus::switches::kUseTestConfig);
+  window->SetVisible(container != mojom::Container::USER_PRIVATE || is_test);
+
   mus::Window* parent =
       root_->GetChildByLocalId(ContainerToLocalId(parent_container));
   parent->AddChild(window);
