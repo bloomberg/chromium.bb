@@ -2586,7 +2586,7 @@ egl_choose_config(struct gl_renderer *gr, const EGLint *attribs,
 		goto out;
 	}
 
-	if (!visual_id)
+	if (!visual_id || n_ids == 0)
 		config_index = 0;
 
 	for (i = 0; config_index == -1 && i < n_ids; i++)
