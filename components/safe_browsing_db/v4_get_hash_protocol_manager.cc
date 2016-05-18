@@ -163,7 +163,7 @@ std::string V4GetHashProtocolManager::GetHashRequest(
 bool V4GetHashProtocolManager::ParseHashResponse(
     const std::string& data,
     std::vector<SBFullHashResult>* full_hashes,
-    base::TimeDelta* negative_cache_duration) {
+    base::Time* negative_cache_expire) {
   FindFullHashesResponse response;
 
   if (!response.ParseFromString(data)) {
@@ -171,11 +171,11 @@ bool V4GetHashProtocolManager::ParseHashResponse(
     return false;
   }
 
-  if (response.has_negative_cache_duration()) {
-    // Seconds resolution is good enough so we ignore the nanos field.
-    *negative_cache_duration = base::TimeDelta::FromSeconds(
-        response.negative_cache_duration().seconds());
-  }
+  // negative_cache_duration should always be set.
+  DCHECK(response.has_negative_cache_duration());
+  // Seconds resolution is good enough so we ignore the nanos field.
+  *negative_cache_expire = clock_->Now() + base::TimeDelta::FromSeconds(
+      response.negative_cache_duration().seconds());
 
   if (response.has_minimum_wait_duration()) {
     // Seconds resolution is good enough so we ignore the nanos field.
@@ -313,7 +313,7 @@ void V4GetHashProtocolManager::GetFullHashes(
       RecordGetHashResult(V4OperationResult::MIN_WAIT_DURATION_ERROR);
     }
     std::vector<SBFullHashResult> full_hashes;
-    callback.Run(full_hashes, base::TimeDelta());
+    callback.Run(full_hashes, base::Time());
     return;
   }
 
@@ -364,13 +364,13 @@ void V4GetHashProtocolManager::OnURLFetchComplete(
 
   const FullHashCallback& callback = it->second;
   std::vector<SBFullHashResult> full_hashes;
-  base::TimeDelta negative_cache_duration;
+  base::Time negative_cache_expire;
   if (status.is_success() && response_code == net::HTTP_OK) {
     RecordGetHashResult(V4OperationResult::STATUS_200);
     ResetGetHashErrors();
     std::string data;
     source->GetResponseAsString(&data);
-    if (!ParseHashResponse(data, &full_hashes, &negative_cache_duration)) {
+    if (!ParseHashResponse(data, &full_hashes, &negative_cache_expire)) {
       full_hashes.clear();
       RecordGetHashResult(V4OperationResult::PARSE_ERROR);
     }
@@ -391,7 +391,7 @@ void V4GetHashProtocolManager::OnURLFetchComplete(
   // Invoke the callback with full_hashes, even if there was a parse error or
   // an error response code (in which case full_hashes will be empty). The
   // caller can't be blocked indefinitely.
-  callback.Run(full_hashes, negative_cache_duration);
+  callback.Run(full_hashes, negative_cache_expire);
 
   hash_requests_.erase(it);
 }

@@ -30,7 +30,7 @@ namespace {
 void InvokeFullHashCallback(
     V4GetHashProtocolManager::FullHashCallback callback,
     const std::vector<SBFullHashResult>& full_hashes) {
-  callback.Run(full_hashes, base::TimeDelta::FromMinutes(0));
+  callback.Run(full_hashes, base::Time::UnixEpoch());
 }
 
 // A TestV4GetHashProtocolManager that returns fixed responses from the

@@ -119,7 +119,7 @@ bool SafeBrowsingDatabaseManager::CheckApiBlacklistUrl(const GURL& url,
 void SafeBrowsingDatabaseManager::HandleGetHashesWithApisResults(
     SafeBrowsingApiCheck* check,
     const std::vector<SBFullHashResult>& full_hash_results,
-    const base::TimeDelta& negative_cache_duration) {
+    const base::Time& negative_cache_expire) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(check);
 

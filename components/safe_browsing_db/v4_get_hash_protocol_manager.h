@@ -44,9 +44,10 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
   // Parameters:
   //   - The vector of full hash results. If empty, indicates that there
   //     were no matches, and that the resource is safe.
-  //   - The negative cache duration of the result.
+  //   - The negative cache expire time of the result. This value may be
+  //     uninitialized, and the results should not be cached in this case.
   typedef base::Callback<void(const std::vector<SBFullHashResult>&,
-                              const base::TimeDelta&)>
+                              const base::Time&)>
       FullHashCallback;
 
   ~V4GetHashProtocolManager() override;
@@ -118,13 +119,13 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
                              ThreatType threat_type);
 
   // Parses a FindFullHashesResponse protocol buffer and fills the results in
-  // |full_hashes| and |negative_cache_duration|. |data| is a serialized
-  // FindFullHashes protocol buffer. |negative_cache_duration| is the duration
-  // to cache the response for entities that did not match the threat list.
+  // |full_hashes| and |negative_cache_expire|. |data| is a serialized
+  // FindFullHashes protocol buffer. |negative_cache_expire| is the cache expiry
+  // time of the response for entities that did not match the threat list.
   // Returns true if parsing is successful, false otherwise.
   bool ParseHashResponse(const std::string& data_base64,
                          std::vector<SBFullHashResult>* full_hashes,
-                         base::TimeDelta* negative_cache_duration);
+                         base::Time* negative_cache_expire);
 
   // Resets the gethash error counter and multiplier.
   void ResetGetHashErrors();

@@ -224,7 +224,7 @@ class SafeBrowsingDatabaseManager
   virtual void HandleGetHashesWithApisResults(
       SafeBrowsingApiCheck* check,
       const std::vector<SBFullHashResult>& full_hash_results,
-      const base::TimeDelta& negative_cache_duration);
+      const base::Time& negative_cache_expire);
 
   // Created and destroyed via StartOnIOThread/StopOnIOThread.
   V4GetHashProtocolManager* v4_get_hash_protocol_manager_;
