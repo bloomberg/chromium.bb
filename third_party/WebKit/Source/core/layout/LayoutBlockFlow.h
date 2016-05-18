@@ -400,6 +400,8 @@ private:
 
     virtual RootInlineBox* createRootInlineBox(); // Subclassed by SVG
 
+    void dirtyLinesFromChangedChild(LayoutObject* child) final { m_lineBoxes.dirtyLinesFromChangedChild(LineLayoutItem(this), LineLayoutItem(child)); }
+
     bool isPagedOverflow(const ComputedStyle&);
 
     enum FlowThreadType {
