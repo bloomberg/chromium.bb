@@ -1643,4 +1643,83 @@ TEST_F(WindowSelectorTest, CancelOverviewOnTap) {
   EXPECT_FALSE(IsSelecting());
 }
 
+// Tests that transformed Rect scaling preserves its aspect ratio.
+TEST_F(WindowSelectorTest, TransformedRectMaintainsAspect) {
+  gfx::Rect rect(50, 50, 200, 400);
+  gfx::Rect bounds(100, 100, 50, 50);
+  gfx::Rect transformed_rect =
+      ScopedTransformOverviewWindow::ShrinkRectToFitPreservingAspectRatio(
+          rect, bounds, 0, 0);
+  EXPECT_EQ(rect.height() / rect.width(),
+            transformed_rect.height() / transformed_rect.width());
+
+  rect = gfx::Rect(50, 50, 400, 200);
+  transformed_rect =
+      ScopedTransformOverviewWindow::ShrinkRectToFitPreservingAspectRatio(
+          rect, bounds, 0, 0);
+  EXPECT_EQ(rect.height() / rect.width(),
+            transformed_rect.height() / transformed_rect.width());
+
+  rect = gfx::Rect(50, 50, 25, 25);
+  transformed_rect =
+      ScopedTransformOverviewWindow::ShrinkRectToFitPreservingAspectRatio(
+          rect, bounds, 0, 0);
+  EXPECT_EQ(rect.height() / rect.width(),
+            transformed_rect.height() / transformed_rect.width());
+
+  rect = gfx::Rect(50, 50, 25, 50);
+  transformed_rect =
+      ScopedTransformOverviewWindow::ShrinkRectToFitPreservingAspectRatio(
+          rect, bounds, 0, 0);
+  EXPECT_EQ(rect.height() / rect.width(),
+            transformed_rect.height() / transformed_rect.width());
+
+  rect = gfx::Rect(50, 50, 50, 25);
+  transformed_rect =
+      ScopedTransformOverviewWindow::ShrinkRectToFitPreservingAspectRatio(
+          rect, bounds, 0, 0);
+  EXPECT_EQ(rect.height() / rect.width(),
+            transformed_rect.height() / transformed_rect.width());
+}
+
+// Tests that transformed Rect fits in target bounds and is vertically centered.
+TEST_F(WindowSelectorTest, TransformedRectIsCentered) {
+  gfx::Rect rect(50, 50, 200, 400);
+  gfx::Rect bounds(100, 100, 50, 50);
+  gfx::Rect transformed_rect =
+      ScopedTransformOverviewWindow::ShrinkRectToFitPreservingAspectRatio(
+          rect, bounds, 0, 0);
+  EXPECT_GE(transformed_rect.x(), bounds.x());
+  EXPECT_LE(transformed_rect.right(), bounds.right());
+  EXPECT_GE(transformed_rect.y(), bounds.y());
+  EXPECT_LE(transformed_rect.bottom(), bounds.bottom());
+  EXPECT_NEAR(transformed_rect.x() - bounds.x(),
+              bounds.right() - transformed_rect.right(), 1);
+  EXPECT_NEAR(transformed_rect.y() - bounds.y(),
+              bounds.bottom() - transformed_rect.bottom(), 1);
+}
+
+// Tests that transformed Rect fits in target bounds and is vertically centered
+// when inset and header height are specified.
+TEST_F(WindowSelectorTest, TransformedRectIsCenteredWithInset) {
+  gfx::Rect rect(50, 50, 400, 200);
+  gfx::Rect bounds(100, 100, 50, 50);
+  const float scale = static_cast<float>(bounds.width()) / rect.width();
+  const int inset = 20;
+  const int header_height = 10;
+  gfx::Rect transformed_rect =
+      ScopedTransformOverviewWindow::ShrinkRectToFitPreservingAspectRatio(
+          rect, bounds, inset, header_height);
+  EXPECT_GE(transformed_rect.x(), bounds.x());
+  EXPECT_LE(transformed_rect.right(), bounds.right());
+  EXPECT_GE(transformed_rect.y() + (int)(scale * inset) - header_height,
+            bounds.y());
+  EXPECT_LE(transformed_rect.bottom(), bounds.bottom());
+  EXPECT_NEAR(transformed_rect.x() - bounds.x(),
+              bounds.right() - transformed_rect.right(), 1);
+  EXPECT_NEAR(
+      transformed_rect.y() + (int)(scale * inset) - header_height - bounds.y(),
+      bounds.bottom() - transformed_rect.bottom(), 1);
+}
+
 }  // namespace ash

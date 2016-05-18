@@ -125,9 +125,10 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Creates the window label.
   void CreateWindowLabel(const base::string16& title);
 
-  // Updates the close button's bounds. Any change in bounds will be animated
-  // from the current bounds to the new bounds as per the |animation_type|.
-  void UpdateCloseButtonLayout(OverviewAnimationType animation_type);
+  // Updates the close button's and title label's bounds. Any change in bounds
+  // will be animated from the current bounds to the new bounds as per the
+  // |animation_type|.
+  void UpdateHeaderLayout(OverviewAnimationType animation_type);
 
   // Updates the close buttons accessibility name.
   void UpdateCloseButtonAccessibilityName();
@@ -153,7 +154,9 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // Label under the window displaying its active tab name.
   std::unique_ptr<views::Widget> window_label_;
 
-  // View for the label under the window.
+  // View for the label under the window or (with material design) above it.
+  // TODO(varkha): We should be able to use one widget for both the label and
+  // the close button with material design.
   OverviewLabelButton* window_label_button_view_;
 
   // The close buttons widget container.

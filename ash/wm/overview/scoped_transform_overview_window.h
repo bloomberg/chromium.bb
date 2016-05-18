@@ -5,6 +5,7 @@
 #ifndef ASH_WM_OVERVIEW_SCOPED_TRANSFORM_OVERVIEW_WINDOW_H_
 #define ASH_WM_OVERVIEW_SCOPED_TRANSFORM_OVERVIEW_WINDOW_H_
 
+#include "ash/ash_export.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -33,15 +34,18 @@ class ScopedWindowCopy;
 // class allows transforming the windows with a helper to determine the best
 // fit in certain bounds. The window's state is restored on destruction of this
 // object.
-class ScopedTransformOverviewWindow {
+class ASH_EXPORT ScopedTransformOverviewWindow {
  public:
   typedef ScopedVector<ScopedOverviewAnimationSettings> ScopedAnimationSettings;
 
   // Returns |rect| having been shrunk to fit within |bounds| (preserving the
-  // aspect ratio).
-  static gfx::Rect ShrinkRectToFitPreservingAspectRatio(
-      const gfx::Rect& rect,
-      const gfx::Rect& bounds);
+  // aspect ratio). Takes into account a window header that is |top_view_inset|
+  // tall in the original window getting replaced by a window caption that is
+  // |title_height| tall in transformed window.
+  static gfx::Rect ShrinkRectToFitPreservingAspectRatio(const gfx::Rect& rect,
+                                                        const gfx::Rect& bounds,
+                                                        int top_view_inset,
+                                                        int title_height);
 
   // Returns the transform turning |src_rect| into |dst_rect|.
   static gfx::Transform GetTransformForRect(const gfx::Rect& src_rect,

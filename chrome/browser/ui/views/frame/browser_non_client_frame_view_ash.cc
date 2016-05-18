@@ -11,6 +11,7 @@
 #include "ash/frame/default_header_painter.h"
 #include "ash/frame/frame_border_hit_test_controller.h"
 #include "ash/frame/header_painter_util.h"
+#include "ash/material_design/material_design_controller.h"
 #include "ash/shell.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -308,6 +309,9 @@ void BrowserNonClientFrameViewAsh::Layout() {
   if (avatar_button())
     LayoutAvatar();
   BrowserNonClientFrameView::Layout();
+  frame()->GetNativeWindow()->SetProperty(
+      aura::client::kTopViewInset,
+      browser_view()->IsTabStripVisible() ? 0 : GetTopInset(true));
 }
 
 const char* BrowserNonClientFrameViewAsh::GetClassName() const {
@@ -348,6 +352,16 @@ void BrowserNonClientFrameViewAsh::ChildPreferredSizeChanged(
 
 ///////////////////////////////////////////////////////////////////////////////
 // ash::ShellObserver:
+
+void BrowserNonClientFrameViewAsh::OnOverviewModeStarting() {
+  if (ash::MaterialDesignController::IsOverviewMaterial())
+    caption_button_container_->SetVisible(false);
+}
+
+void BrowserNonClientFrameViewAsh::OnOverviewModeEnded() {
+  if (ash::MaterialDesignController::IsOverviewMaterial())
+    caption_button_container_->SetVisible(true);
+}
 
 void BrowserNonClientFrameViewAsh::OnMaximizeModeStarted() {
   caption_button_container_->UpdateSizeButtonVisibility();

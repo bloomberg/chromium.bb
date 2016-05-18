@@ -36,6 +36,7 @@ DEFINE_WINDOW_PROPERTY_KEY(
     ui::WindowShowState, kRestoreShowStateKey, ui::SHOW_STATE_DEFAULT);
 DEFINE_WINDOW_PROPERTY_KEY(
     ui::WindowShowState, kShowStateKey, ui::SHOW_STATE_DEFAULT);
+DEFINE_WINDOW_PROPERTY_KEY(int, kTopViewInset, 0);
 
 }  // namespace client
 }  // namespace aura

@@ -65,6 +65,8 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   void ChildPreferredSizeChanged(views::View* child) override;
 
   // ash::ShellObserver:
+  void OnOverviewModeStarting() override;
+  void OnOverviewModeEnded() override;
   void OnMaximizeModeStarted() override;
   void OnMaximizeModeEnded() override;
 

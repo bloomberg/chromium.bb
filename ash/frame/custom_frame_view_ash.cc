@@ -517,6 +517,12 @@ gfx::Size CustomFrameViewAsh::GetPreferredSize() const {
       bounds).size();
 }
 
+void CustomFrameViewAsh::Layout() {
+  views::NonClientFrameView::Layout();
+  frame_->GetNativeWindow()->SetProperty(aura::client::kTopViewInset,
+                                         NonClientTopBorderHeight());
+}
+
 const char* CustomFrameViewAsh::GetClassName() const {
   return kViewClassName;
 }

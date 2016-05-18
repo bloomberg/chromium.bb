@@ -7,6 +7,8 @@
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_header_painter.h"
 #include "ash/frame/frame_border_hit_test_controller.h"
+#include "ui/aura/client/aura_constants.h"
+#include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/image_view.h"
@@ -76,6 +78,8 @@ void PanelFrameView::Layout() {
   if (!header_painter_)
     return;
   header_painter_->LayoutHeader();
+  frame_->GetNativeWindow()->SetProperty(aura::client::kTopViewInset,
+                                         NonClientTopBorderHeight());
 }
 
 void PanelFrameView::GetWindowMask(const gfx::Size&, gfx::Path*) {
