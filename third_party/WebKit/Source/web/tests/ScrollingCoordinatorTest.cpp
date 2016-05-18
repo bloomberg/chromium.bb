@@ -59,7 +59,7 @@ public:
         // to be initialized.
         webViewImpl()->updateAllLifecyclePhases();
         webViewImpl()->setRootGraphicsLayer(
-            webViewImpl()->mainFrameImpl()->frame()->view()->layoutView()->compositor()->rootGraphicsLayer());
+            webViewImpl()->mainFrameImpl()->frame()->view()->layoutViewItem().compositor()->rootGraphicsLayer());
     }
 
     ~ScrollingCoordinatorTest() override
@@ -489,10 +489,10 @@ TEST_F(ScrollingCoordinatorTest, iframeScrolling)
     ASSERT_TRUE(layoutPart->widget()->isFrameView());
 
     FrameView* innerFrameView = toFrameView(layoutPart->widget());
-    LayoutView* innerLayoutView = innerFrameView->layoutView();
-    ASSERT_TRUE(innerLayoutView);
+    LayoutViewItem innerLayoutViewItem = innerFrameView->layoutViewItem();
+    ASSERT_FALSE(innerLayoutViewItem.isNull());
 
-    PaintLayerCompositor* innerCompositor = innerLayoutView->compositor();
+    PaintLayerCompositor* innerCompositor = innerLayoutViewItem.compositor();
     ASSERT_TRUE(innerCompositor->inCompositingMode());
     ASSERT_TRUE(innerCompositor->scrollLayer());
 
@@ -533,10 +533,10 @@ TEST_F(ScrollingCoordinatorTest, rtlIframe)
     ASSERT_TRUE(layoutPart->widget()->isFrameView());
 
     FrameView* innerFrameView = toFrameView(layoutPart->widget());
-    LayoutView* innerLayoutView = innerFrameView->layoutView();
-    ASSERT_TRUE(innerLayoutView);
+    LayoutViewItem innerLayoutViewItem = innerFrameView->layoutViewItem();
+    ASSERT_FALSE(innerLayoutViewItem.isNull());
 
-    PaintLayerCompositor* innerCompositor = innerLayoutView->compositor();
+    PaintLayerCompositor* innerCompositor = innerLayoutViewItem.compositor();
     ASSERT_TRUE(innerCompositor->inCompositingMode());
     ASSERT_TRUE(innerCompositor->scrollLayer());
 
