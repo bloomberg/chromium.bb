@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "ui/gfx/animation/tween.h"
@@ -48,7 +49,8 @@ class ToolbarActionViewController;
 // app menu. The main bar can have only a single row of icons with flexible
 // width, whereas the overflow bar has multiple rows of icons with a fixed
 // width (the width of the menu).
-class ToolbarActionsBar : public ToolbarActionsModel::Observer {
+class ToolbarActionsBar : public ToolbarActionsModel::Observer,
+                          public TabStripModelObserver {
  public:
   // A struct to contain the platform settings.
   struct PlatformSettings {
@@ -219,6 +221,9 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer {
   // Displays the given |bubble| once the toolbar is no longer animating.
   void ShowToolbarActionBubble(
       std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble);
+  // Same as above, but uses PostTask() in all cases.
+  void ShowToolbarActionBubbleAsync(
+      std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble);
 
   // Returns the underlying toolbar actions, but does not order them. Primarily
   // for use in testing.
@@ -266,6 +271,11 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer {
   void OnToolbarVisibleCountChanged() override;
   void OnToolbarHighlightModeChanged(bool is_highlighting) override;
   void OnToolbarModelInitialized() override;
+
+  // TabStripModelObserver:
+  void TabInsertedAt(content::WebContents* contents,
+                     int index,
+                     bool foreground) override;
 
   // Resizes the delegate (if necessary) to the preferred size using the given
   // |tween_type| and optionally suppressing the chevron.
@@ -351,6 +361,8 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer {
 
   // True if a bubble is currently being shown.
   bool is_showing_bubble_;
+
+  ScopedObserver<TabStripModel, TabStripModelObserver> tab_strip_observer_;
 
   base::ObserverList<ToolbarActionsBarObserver> observers_;
 

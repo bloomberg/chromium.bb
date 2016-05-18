@@ -86,7 +86,6 @@
 #include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 #include "chrome/browser/ui/views/session_crashed_bubble_view.h"
-#include "chrome/browser/ui/views/settings_api_bubble_helper_views.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -1549,9 +1548,6 @@ void BrowserView::TabInsertedAt(WebContents* contents,
   }
 #endif
   web_contents_close_handler_->TabInserted();
-
-  if (foreground)
-    extensions::MaybeShowExtensionControlledNewTabPage(browser(), contents);
 }
 
 void BrowserView::TabDetachedAt(WebContents* contents, int index) {

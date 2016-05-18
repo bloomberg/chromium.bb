@@ -6,10 +6,18 @@
 
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/test_extension_dir.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_factory.h"
+#include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "chrome/common/pref_names.h"
+#include "components/omnibox/browser/omnibox_view.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/test/extension_test_message_listener.h"
 
@@ -37,6 +45,24 @@ void ExtensionMessageBubbleBrowserTest::TearDownOnMainThread() {
   ExtensionMessageBubbleFactory::set_override_for_tests(
       ExtensionMessageBubbleFactory::NO_OVERRIDE);
   BrowserActionsBarBrowserTest::TearDownOnMainThread();
+}
+
+void ExtensionMessageBubbleBrowserTest::AddSettingsOverrideExtension(
+    const std::string& settings_override_value) {
+  DCHECK(!custom_extension_dir_);
+  custom_extension_dir_.reset(new extensions::TestExtensionDir());
+  std::string manifest = base::StringPrintf(
+    "{\n"
+    "  'name': 'settings override',\n"
+    "  'version': '0.1',\n"
+    "  'manifest_version': 2,\n"
+    "  'description': 'controls settings',\n"
+    "  'chrome_settings_overrides': {\n"
+    "    %s\n"
+    "  }\n"
+    "}", settings_override_value.c_str());
+  custom_extension_dir_->WriteManifestWithSingleQuotes(manifest);
+  ASSERT_TRUE(LoadExtension(custom_extension_dir_->unpacked_path()));
 }
 
 void ExtensionMessageBubbleBrowserTest::TestBubbleAnchoredToExtensionAction() {
@@ -142,4 +168,57 @@ void ExtensionMessageBubbleBrowserTest::TestDevModeBubbleIsntShownTwice() {
   Browser* third_browser = new Browser(Browser::CreateParams(profile()));
   base::RunLoop().RunUntilIdle();
   CheckBubbleIsNotPresent(third_browser);
+}
+
+void ExtensionMessageBubbleBrowserTest::TestControlledNewTabPageBubbleShown() {
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
+                                          .AppendASCII("override")
+                                          .AppendASCII("newtab")));
+  CheckBubbleIsNotPresent(browser());
+  chrome::NewTab(browser());
+  base::RunLoop().RunUntilIdle();
+  CheckBubble(browser(), ANCHOR_BROWSER_ACTION);
+  CloseBubble(browser());
+}
+
+void ExtensionMessageBubbleBrowserTest::TestControlledHomeBubbleShown() {
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kShowHomeButton, true);
+
+  const char kHomePage[] = "'homepage': 'https://www.google.com'\n";
+  AddSettingsOverrideExtension(kHomePage);
+
+  CheckBubbleIsNotPresent(browser());
+
+  chrome::ExecuteCommandWithDisposition(browser(),
+                                        IDC_HOME, NEW_FOREGROUND_TAB);
+  base::RunLoop().RunUntilIdle();
+
+  CheckBubble(browser(), ANCHOR_BROWSER_ACTION);
+  CloseBubble(browser());
+}
+
+void ExtensionMessageBubbleBrowserTest::TestControlledSearchBubbleShown() {
+  const char kSearchProvider[] =
+      "'search_provider': {\n"
+      "  'search_url': 'https://www.google.com/search?q={searchTerms}',\n"
+      "  'is_default': true,\n"
+      "  'favicon_url': 'https://www.google.com/favicon.icon',\n"
+      "  'keyword': 'TheGoogs',\n"
+      "  'name': 'Google',\n"
+      "  'encoding': 'UTF-8'\n"
+      "}\n";
+  AddSettingsOverrideExtension(kSearchProvider);
+
+  CheckBubbleIsNotPresent(browser());
+
+  OmniboxView* omnibox =
+      browser()->window()->GetLocationBar()->GetOmniboxView();
+  omnibox->OnBeforePossibleChange();
+  omnibox->SetUserText(base::ASCIIToUTF16("search for this"));
+  omnibox->OnAfterPossibleChange(true);
+  omnibox->model()->AcceptInput(CURRENT_TAB, false);
+  base::RunLoop().RunUntilIdle();
+
+  CheckBubble(browser(), ANCHOR_BROWSER_ACTION);
+  CloseBubble(browser());
 }

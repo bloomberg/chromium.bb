@@ -1,9 +1,9 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_SETTINGS_API_BUBBLE_HELPER_VIEWS_H_
-#define CHROME_BROWSER_UI_VIEWS_SETTINGS_API_BUBBLE_HELPER_VIEWS_H_
+#ifndef CHROME_BROWSER_UI_EXTENSIONS_SETTINGS_API_BUBBLE_HELPERS_H_
+#define CHROME_BROWSER_UI_EXTENSIONS_SETTINGS_API_BUBBLE_HELPERS_H_
 
 #include "components/omnibox/browser/autocomplete_match.h"
 
@@ -38,4 +38,4 @@ void MaybeShowExtensionControlledNewTabPage(
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_UI_VIEWS_SETTINGS_API_BUBBLE_HELPER_VIEWS_H_
+#endif  // CHROME_BROWSER_UI_EXTENSIONS_SETTINGS_API_BUBBLE_HELPERS_H_

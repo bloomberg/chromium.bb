@@ -60,6 +60,15 @@ class ExtensionMessageBubbleViewBrowserTest
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleViewBrowserTest);
 };
 
+class ExtensionMessageBubbleViewBrowserTestRedesign
+    : public ExtensionMessageBubbleViewBrowserTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ExtensionMessageBubbleViewBrowserTest::SetUpCommandLine(command_line);
+    override_redesign_.reset();
+  }
+};
+
 void ExtensionMessageBubbleViewBrowserTest::CheckBubble(Browser* browser,
                                                         AnchorPosition anchor) {
   ToolbarView* toolbar_view = GetToolbarViewForBrowser(browser);
@@ -68,6 +77,7 @@ void ExtensionMessageBubbleViewBrowserTest::CheckBubble(Browser* browser,
   views::View* anchor_view = nullptr;
   switch (anchor) {
     case ANCHOR_BROWSER_ACTION:
+      DCHECK_GT(container->num_toolbar_actions(), 0u);
       anchor_view = container->GetToolbarActionViewAt(0);
       break;
     case ANCHOR_APP_MENU:
@@ -127,3 +137,22 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
                        TestDevModeBubbleIsntShownTwice) {
   TestDevModeBubbleIsntShownTwice();
 }
+
+// Tests for the extension bubble and settings overrides. These bubbles are
+// currently only shown on Windows.
+#if defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTestRedesign,
+                       TestControlledNewTabPageMessageBubble) {
+  TestControlledNewTabPageBubbleShown();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTestRedesign,
+                       TestControlledHomeMessageBubble) {
+  TestControlledHomeBubbleShown();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTestRedesign,
+                       TestControlledSearchMessageBubble) {
+  TestControlledSearchBubbleShown();
+}
+#endif  // defined(OS_WIN)

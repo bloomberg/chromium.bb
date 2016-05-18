@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
-#include "chrome/browser/ui/views/settings_api_bubble_helper_views.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -62,6 +61,10 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/browser_process.h"
+#endif
+
+#if defined(ENABLE_EXTENSIONS)
+#include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
 #endif
 
 using bookmarks::BookmarkNodeData;
@@ -602,8 +605,10 @@ void OmniboxViewViews::ShowImeIfNeeded() {
 }
 
 void OmniboxViewViews::OnMatchOpened(AutocompleteMatch::Type match_type) {
+#if defined(ENABLE_EXTENSIONS)
   extensions::MaybeShowExtensionControlledSearchNotification(
       profile_, location_bar_view_->GetWebContents(), match_type);
+#endif
 }
 
 int OmniboxViewViews::GetOmniboxTextLength() const {

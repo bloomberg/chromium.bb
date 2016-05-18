@@ -10,6 +10,10 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/toolbar/browser_actions_bar_browsertest.h"
 
+namespace extensions {
+class TestExtensionDir;
+}
+
 class ExtensionMessageBubbleBrowserTest
     : public BrowserActionsBarBrowserTest {
  protected:
@@ -34,6 +38,10 @@ class ExtensionMessageBubbleBrowserTest
 
   // Checks that there is no active bubble for the given |browser|.
   virtual void CheckBubbleIsNotPresent(Browser* browser) = 0;
+
+  // Adds a new extension that uses the chrome_settings_overrides api to
+  // override a setting specified in |settings_override_value|.
+  void AddSettingsOverrideExtension(const std::string& settings_override_value);
 
   // The following are essentially the different tests, but we can't define the
   // tests in this file, since it relies on platform-specific implementation
@@ -68,9 +76,25 @@ class ExtensionMessageBubbleBrowserTest
   // Regression test for crbug.com/607099.
   void TestDevModeBubbleIsntShownTwice();
 
+  // Tests that the bubble indicating an extension is controlling a user's
+  // new tab page is shown.
+  void TestControlledNewTabPageBubbleShown();
+
+  // Tests that the bubble indicating an extension is controlling a user's
+  // home page is shown.
+  void TestControlledHomeBubbleShown();
+
+  // Tests that the bubble indicating an extension is controlling a user's
+  // search engine is shown.
+  void TestControlledSearchBubbleShown();
+
  private:
   std::unique_ptr<extensions::FeatureSwitch::ScopedOverride>
       dev_mode_bubble_override_;
+
+  // The backing directory for a custom extension loaded during a test. Null if
+  // no custom extension is loaded.
+  std::unique_ptr<extensions::TestExtensionDir> custom_extension_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleBrowserTest);
 };

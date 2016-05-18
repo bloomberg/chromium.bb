@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_bridge.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_factory.h"
+#include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
@@ -136,9 +137,12 @@ ToolbarActionsBar::ToolbarActionsBar(ToolbarActionsBarDelegate* delegate,
       popped_out_action_(nullptr),
       is_popped_out_sticky_(false),
       is_showing_bubble_(false),
+      tab_strip_observer_(this),
       weak_ptr_factory_(this) {
   if (model_)  // |model_| can be null in unittests.
     model_observer_.Add(model_);
+
+  tab_strip_observer_.Add(browser_->tab_strip_model());
 }
 
 ToolbarActionsBar::~ToolbarActionsBar() {
@@ -610,6 +614,14 @@ void ToolbarActionsBar::ShowToolbarActionBubble(
   }
 }
 
+void ToolbarActionsBar::ShowToolbarActionBubbleAsync(
+    std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ToolbarActionsBar::ShowToolbarActionBubble,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            base::Passed(std::move(bubble))));
+}
+
 void ToolbarActionsBar::MaybeShowExtensionBubble(
     std::unique_ptr<extensions::ExtensionMessageBubbleController> controller) {
   if (!controller->ShouldShow())
@@ -801,6 +813,13 @@ void ToolbarActionsBar::OnToolbarModelInitialized() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "ToolbarActionsBar::OnToolbarModelInitialized"));
   ResizeDelegate(gfx::Tween::EASE_OUT, false);
+}
+
+void ToolbarActionsBar::TabInsertedAt(content::WebContents* contents,
+                                      int index,
+                                      bool foreground) {
+  if (foreground)
+    extensions::MaybeShowExtensionControlledNewTabPage(browser_, contents);
 }
 
 void ToolbarActionsBar::ReorderActions() {
