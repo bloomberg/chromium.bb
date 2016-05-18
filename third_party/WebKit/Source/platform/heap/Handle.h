@@ -40,7 +40,6 @@
 #include "platform/heap/Visitor.h"
 #include "wtf/Allocator.h"
 #include "wtf/Atomics.h"
-#include "wtf/Functional.h"
 #include "wtf/HashFunctions.h"
 #include "wtf/TypeTraits.h"
 
@@ -1159,16 +1158,6 @@ struct IsWeak<blink::WeakMember<T>> {
     STATIC_ONLY(IsWeak);
     static const bool value = true;
 };
-
-template<typename T> inline T* getPtr(const blink::Member<T>& p)
-{
-    return p.get();
-}
-
-template<typename T> inline T* getPtr(const blink::Persistent<T>& p)
-{
-    return p.get();
-}
 
 // For wtf/Functional.h
 template<typename T, bool isGarbageCollected> struct PointerParamStorageTraits;
