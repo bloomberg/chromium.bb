@@ -13,7 +13,6 @@
 #include "cc/base/math_util.h"
 #include "cc/output/filter_operations.h"
 #include "cc/quads/debug_border_draw_quad.h"
-#include "cc/quads/io_surface_draw_quad.h"
 #include "cc/quads/largest_draw_quad.h"
 #include "cc/quads/picture_draw_quad.h"
 #include "cc/quads/render_pass.h"
@@ -405,30 +404,6 @@ TEST(DrawQuadTest, CopyDebugBorderDrawQuad) {
   EXPECT_EQ(width, copy_quad->width);
 }
 
-TEST(DrawQuadTest, CopyIOSurfaceDrawQuad) {
-  gfx::Rect opaque_rect(33, 47, 10, 12);
-  gfx::Rect visible_rect(40, 50, 30, 20);
-  gfx::Size size(58, 95);
-  ResourceId resource_id = 72;
-  IOSurfaceDrawQuad::Orientation orientation = IOSurfaceDrawQuad::UNFLIPPED;
-  CREATE_SHARED_STATE();
-
-  CREATE_QUAD_5_NEW(IOSurfaceDrawQuad, opaque_rect, visible_rect, size,
-                    resource_id, orientation);
-  EXPECT_EQ(DrawQuad::IO_SURFACE_CONTENT, copy_quad->material);
-  EXPECT_EQ(visible_rect, copy_quad->visible_rect);
-  EXPECT_EQ(opaque_rect, copy_quad->opaque_rect);
-  EXPECT_EQ(size, copy_quad->io_surface_size);
-  EXPECT_EQ(resource_id, copy_quad->io_surface_resource_id());
-  EXPECT_EQ(orientation, copy_quad->orientation);
-
-  CREATE_QUAD_3_ALL(IOSurfaceDrawQuad, size, resource_id, orientation);
-  EXPECT_EQ(DrawQuad::IO_SURFACE_CONTENT, copy_quad->material);
-  EXPECT_EQ(size, copy_quad->io_surface_size);
-  EXPECT_EQ(resource_id, copy_quad->io_surface_resource_id());
-  EXPECT_EQ(orientation, copy_quad->orientation);
-}
-
 TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
   RenderPassId render_pass_id(22, 64);
@@ -757,21 +732,6 @@ TEST_F(DrawQuadIteratorTest, DebugBorderDrawQuad) {
   EXPECT_EQ(0, IterateAndCount(quad_new));
 }
 
-TEST_F(DrawQuadIteratorTest, IOSurfaceDrawQuad) {
-  gfx::Rect opaque_rect(33, 47, 10, 12);
-  gfx::Rect visible_rect(40, 50, 30, 20);
-  gfx::Size size(58, 95);
-  ResourceId resource_id = 72;
-  IOSurfaceDrawQuad::Orientation orientation = IOSurfaceDrawQuad::UNFLIPPED;
-
-  CREATE_SHARED_STATE();
-  CREATE_QUAD_5_NEW(IOSurfaceDrawQuad, opaque_rect, visible_rect, size,
-                    resource_id, orientation);
-  EXPECT_EQ(resource_id, quad_new->io_surface_resource_id());
-  EXPECT_EQ(1, IterateAndCount(quad_new));
-  EXPECT_EQ(resource_id + 1, quad_new->io_surface_resource_id());
-}
-
 TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
   RenderPassId render_pass_id(22, 64);
@@ -958,9 +918,6 @@ TEST(DrawQuadTest, LargestQuadType) {
       case DrawQuad::DEBUG_BORDER:
         largest = std::max(largest, sizeof(DebugBorderDrawQuad));
         break;
-      case DrawQuad::IO_SURFACE_CONTENT:
-        largest = std::max(largest, sizeof(IOSurfaceDrawQuad));
-        break;
       case DrawQuad::PICTURE_CONTENT:
         largest = std::max(largest, sizeof(PictureDrawQuad));
         break;
@@ -1001,9 +958,6 @@ TEST(DrawQuadTest, LargestQuadType) {
     switch (static_cast<DrawQuad::Material>(i)) {
       case DrawQuad::DEBUG_BORDER:
         LOG(ERROR) << "DebugBorderDrawQuad " << sizeof(DebugBorderDrawQuad);
-        break;
-      case DrawQuad::IO_SURFACE_CONTENT:
-        LOG(ERROR) << "IOSurfaceDrawQuad " << sizeof(IOSurfaceDrawQuad);
         break;
       case DrawQuad::PICTURE_CONTENT:
         LOG(ERROR) << "PictureDrawQuad " << sizeof(PictureDrawQuad);

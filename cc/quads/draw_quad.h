@@ -38,7 +38,6 @@ class CC_EXPORT DrawQuad {
   enum Material {
     INVALID,
     DEBUG_BORDER,
-    IO_SURFACE_CONTENT,
     PICTURE_CONTENT,
     RENDER_PASS,
     SOLID_COLOR,

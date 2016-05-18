@@ -13,7 +13,6 @@
 #include "cc/output/filter_operations.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/draw_quad.h"
-#include "cc/quads/io_surface_draw_quad.h"
 #include "cc/quads/largest_draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
@@ -345,9 +344,6 @@ void ParamTraits<cc::RenderPass>::Write(base::Pickle* m, const param_type& p) {
       case cc::DrawQuad::DEBUG_BORDER:
         WriteParam(m, *cc::DebugBorderDrawQuad::MaterialCast(quad));
         break;
-      case cc::DrawQuad::IO_SURFACE_CONTENT:
-        WriteParam(m, *cc::IOSurfaceDrawQuad::MaterialCast(quad));
-        break;
       case cc::DrawQuad::PICTURE_CONTENT:
         NOTREACHED();
         break;
@@ -453,9 +449,6 @@ bool ParamTraits<cc::RenderPass>::Read(const base::Pickle* m,
       case cc::DrawQuad::DEBUG_BORDER:
         draw_quad = ReadDrawQuad<cc::DebugBorderDrawQuad>(m, iter, p);
         break;
-      case cc::DrawQuad::IO_SURFACE_CONTENT:
-        draw_quad = ReadDrawQuad<cc::IOSurfaceDrawQuad>(m, iter, p);
-        break;
       case cc::DrawQuad::PICTURE_CONTENT:
         NOTREACHED();
         return false;
@@ -542,9 +535,6 @@ void ParamTraits<cc::RenderPass>::Log(const param_type& p, std::string* l) {
     switch (quad->material) {
       case cc::DrawQuad::DEBUG_BORDER:
         LogParam(*cc::DebugBorderDrawQuad::MaterialCast(quad), l);
-        break;
-      case cc::DrawQuad::IO_SURFACE_CONTENT:
-        LogParam(*cc::IOSurfaceDrawQuad::MaterialCast(quad), l);
         break;
       case cc::DrawQuad::PICTURE_CONTENT:
         NOTREACHED();

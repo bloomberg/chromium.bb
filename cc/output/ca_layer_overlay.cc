@@ -5,7 +5,6 @@
 #include "cc/output/ca_layer_overlay.h"
 
 #include "base/metrics/histogram.h"
-#include "cc/quads/io_surface_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
@@ -38,17 +37,6 @@ enum CALayerResult {
   CA_LAYER_FAILED_YUV_VIDEO_CONTENT,
   CA_LAYER_FAILED_COUNT,
 };
-
-CALayerResult FromIOSurfaceQuad(ResourceProvider* resource_provider,
-                                const IOSurfaceDrawQuad* quad,
-                                CALayerOverlay* ca_layer_overlay) {
-  unsigned resource_id = quad->io_surface_resource_id();
-  if (!resource_provider->IsOverlayCandidate(resource_id))
-    return CA_LAYER_FAILED_IO_SURFACE_NOT_CANDIDATE;
-  ca_layer_overlay->contents_resource_id = resource_id;
-  ca_layer_overlay->contents_rect = gfx::RectF(0, 0, 1, 1);
-  return CA_LAYER_SUCCESS;
-}
 
 CALayerResult FromStreamVideoQuad(ResourceProvider* resource_provider,
                                   const StreamVideoDrawQuad* quad,
@@ -155,10 +143,6 @@ CALayerResult FromDrawQuad(ResourceProvider* resource_provider,
       quad->shared_quad_state->quad_to_target_transform.matrix();
 
   switch (quad->material) {
-    case DrawQuad::IO_SURFACE_CONTENT:
-      return FromIOSurfaceQuad(resource_provider,
-                               IOSurfaceDrawQuad::MaterialCast(quad),
-                               ca_layer_overlay);
     case DrawQuad::TEXTURE_CONTENT:
       return FromTextureQuad(resource_provider,
                              TextureDrawQuad::MaterialCast(quad),

@@ -8,7 +8,6 @@
 #include <limits>
 #include "base/logging.h"
 #include "cc/base/math_util.h"
-#include "cc/quads/io_surface_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
@@ -208,9 +207,6 @@ bool OverlayCandidate::FromDrawQuad(ResourceProvider* resource_provider,
       return FromStreamVideoQuad(resource_provider,
                                  StreamVideoDrawQuad::MaterialCast(quad),
                                  candidate);
-    case DrawQuad::IO_SURFACE_CONTENT:
-      return FromIOSurfaceQuad(
-          resource_provider, IOSurfaceDrawQuad::MaterialCast(quad), candidate);
     default:
       break;
   }
@@ -309,23 +305,6 @@ bool OverlayCandidate::FromStreamVideoQuad(ResourceProvider* resource_provider,
         gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL, candidate->transform);
     candidate->uv_rect = gfx::RectF(uv0.x(), uv0.y(), delta.x(), delta.y());
   }
-  return true;
-}
-
-// static
-bool OverlayCandidate::FromIOSurfaceQuad(ResourceProvider* resource_provider,
-                                         const IOSurfaceDrawQuad* quad,
-                                         OverlayCandidate* candidate) {
-  if (!resource_provider->IsOverlayCandidate(quad->io_surface_resource_id()))
-    return false;
-  gfx::OverlayTransform overlay_transform = GetOverlayTransform(
-      quad->shared_quad_state->quad_to_target_transform, false);
-  if (overlay_transform != gfx::OVERLAY_TRANSFORM_NONE)
-    return false;
-  candidate->resource_id = quad->io_surface_resource_id();
-  candidate->resource_size_in_pixels = quad->io_surface_size;
-  candidate->transform = overlay_transform;
-  candidate->uv_rect = gfx::RectF(1.f, 1.f);
   return true;
 }
 

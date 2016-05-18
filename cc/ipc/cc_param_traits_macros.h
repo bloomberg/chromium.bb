@@ -11,7 +11,6 @@
 #include "cc/output/filter_operation.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/draw_quad.h"
-#include "cc/quads/io_surface_draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/render_pass_id.h"
 #include "cc/quads/shared_quad_state.h"
@@ -34,8 +33,6 @@
 #define IPC_MESSAGE_EXPORT CC_IPC_EXPORT
 
 IPC_ENUM_TRAITS_MAX_VALUE(cc::DrawQuad::Material, cc::DrawQuad::MATERIAL_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(cc::IOSurfaceDrawQuad::Orientation,
-                          cc::IOSurfaceDrawQuad::ORIENTATION_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(cc::FilterOperation::FilterType,
                           cc::FilterOperation::FILTER_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(cc::ResourceFormat, cc::RESOURCE_FORMAT_MAX)
@@ -73,12 +70,6 @@ IPC_STRUCT_TRAITS_BEGIN(cc::DebugBorderDrawQuad)
   IPC_STRUCT_TRAITS_PARENT(cc::DrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(color)
   IPC_STRUCT_TRAITS_MEMBER(width)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(cc::IOSurfaceDrawQuad)
-  IPC_STRUCT_TRAITS_PARENT(cc::DrawQuad)
-  IPC_STRUCT_TRAITS_MEMBER(io_surface_size)
-  IPC_STRUCT_TRAITS_MEMBER(orientation)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::RenderPassDrawQuad)

@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "cc/quads/debug_border_draw_quad.h"
-#include "cc/quads/io_surface_draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/solid_color_draw_quad.h"
@@ -210,12 +209,6 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
   DebugBorderDrawQuad* debug_border_quad =
       to_pass->CreateAndAppendDrawQuad<DebugBorderDrawQuad>();
   debug_border_quad->SetNew(shared_state, rect, visible_rect, SK_ColorRED, 1);
-
-  IOSurfaceDrawQuad* io_surface_quad =
-      to_pass->CreateAndAppendDrawQuad<IOSurfaceDrawQuad>();
-  io_surface_quad->SetNew(shared_state, rect, opaque_rect, visible_rect,
-                          gfx::Size(50, 50), resource7,
-                          IOSurfaceDrawQuad::FLIPPED);
 
   if (child_pass.layer_id) {
     RenderPassDrawQuad* render_pass_quad =

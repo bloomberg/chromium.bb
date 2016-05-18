@@ -26,7 +26,6 @@ using cc::DebugBorderDrawQuad;
 using cc::DrawQuad;
 using cc::FilterOperation;
 using cc::FilterOperations;
-using cc::IOSurfaceDrawQuad;
 using cc::PictureDrawQuad;
 using cc::RenderPass;
 using cc::RenderPassId;
@@ -82,10 +81,6 @@ class CCParamTraitsTest : public testing::Test {
         Compare(DebugBorderDrawQuad::MaterialCast(a),
                 DebugBorderDrawQuad::MaterialCast(b));
         break;
-      case DrawQuad::IO_SURFACE_CONTENT:
-        Compare(IOSurfaceDrawQuad::MaterialCast(a),
-                IOSurfaceDrawQuad::MaterialCast(b));
-        break;
       case DrawQuad::PICTURE_CONTENT:
         Compare(PictureDrawQuad::MaterialCast(a),
                 PictureDrawQuad::MaterialCast(b));
@@ -125,12 +120,6 @@ class CCParamTraitsTest : public testing::Test {
   void Compare(const DebugBorderDrawQuad* a, const DebugBorderDrawQuad* b) {
     EXPECT_EQ(a->color, b->color);
     EXPECT_EQ(a->width, b->width);
-  }
-
-  void Compare(const IOSurfaceDrawQuad* a, const IOSurfaceDrawQuad* b) {
-    EXPECT_EQ(a->io_surface_size.ToString(), b->io_surface_size.ToString());
-    EXPECT_EQ(a->io_surface_resource_id(), b->io_surface_resource_id());
-    EXPECT_EQ(a->orientation, b->orientation);
   }
 
   void Compare(const RenderPassDrawQuad* a, const RenderPassDrawQuad* b) {
@@ -264,8 +253,6 @@ TEST_F(CCParamTraitsTest, AllQuads) {
   SkXfermode::Mode arbitrary_blend_mode1 = SkXfermode::kScreen_Mode;
   SkXfermode::Mode arbitrary_blend_mode2 = SkXfermode::kLighten_Mode;
   SkXfermode::Mode arbitrary_blend_mode3 = SkXfermode::kOverlay_Mode;
-  IOSurfaceDrawQuad::Orientation arbitrary_orientation =
-      IOSurfaceDrawQuad::UNFLIPPED;
   ResourceId arbitrary_resourceid1 = 55;
   ResourceId arbitrary_resourceid2 = 47;
   ResourceId arbitrary_resourceid3 = 23;
@@ -320,15 +307,6 @@ TEST_F(CCParamTraitsTest, AllQuads) {
                          arbitrary_color, arbitrary_int);
   pass_cmp->CopyFromAndAppendDrawQuad(debugborder_in,
                                       debugborder_in->shared_quad_state);
-
-  IOSurfaceDrawQuad* iosurface_in =
-      pass_in->CreateAndAppendDrawQuad<IOSurfaceDrawQuad>();
-  iosurface_in->SetAll(
-      shared_state1_in, arbitrary_rect2, arbitrary_rect2_inside_rect2,
-      arbitrary_rect1_inside_rect2, arbitrary_bool1, arbitrary_size1,
-      arbitrary_resourceid3, arbitrary_orientation);
-  pass_cmp->CopyFromAndAppendDrawQuad(iosurface_in,
-                                      iosurface_in->shared_quad_state);
 
   SharedQuadState* shared_state2_in = pass_in->CreateAndAppendSharedQuadState();
   shared_state2_in->SetAll(arbitrary_matrix2, arbitrary_size2, arbitrary_rect2,
@@ -418,7 +396,7 @@ TEST_F(CCParamTraitsTest, AllQuads) {
   ASSERT_EQ(0u, child_pass_in->quad_list.size());
   Compare(pass_cmp.get(), pass_in.get());
   ASSERT_EQ(3u, pass_in->shared_quad_state_list.size());
-  ASSERT_EQ(9u, pass_in->quad_list.size());
+  ASSERT_EQ(8u, pass_in->quad_list.size());
   for (cc::SharedQuadStateList::ConstIterator
            cmp_iterator = pass_cmp->shared_quad_state_list.begin(),
            in_iterator = pass_in->shared_quad_state_list.begin();
@@ -462,7 +440,7 @@ TEST_F(CCParamTraitsTest, AllQuads) {
       std::move(frame_out.render_pass_list[1]);
   Compare(pass_cmp.get(), pass_out.get());
   ASSERT_EQ(3u, pass_out->shared_quad_state_list.size());
-  ASSERT_EQ(9u, pass_out->quad_list.size());
+  ASSERT_EQ(8u, pass_out->quad_list.size());
   for (cc::SharedQuadStateList::ConstIterator
            cmp_iterator = pass_cmp->shared_quad_state_list.begin(),
            out_iterator = pass_out->shared_quad_state_list.begin();

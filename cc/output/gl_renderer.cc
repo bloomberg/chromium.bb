@@ -526,10 +526,6 @@ void GLRenderer::DoDrawQuad(DrawingFrame* frame,
     case DrawQuad::DEBUG_BORDER:
       DrawDebugBorderQuad(frame, DebugBorderDrawQuad::MaterialCast(quad));
       break;
-    case DrawQuad::IO_SURFACE_CONTENT:
-      DrawIOSurfaceQuad(frame, IOSurfaceDrawQuad::MaterialCast(quad),
-                        clip_region);
-      break;
     case DrawQuad::PICTURE_CONTENT:
       // PictureDrawQuad should only be used for resourceless software draws.
       NOTREACHED();
@@ -2480,55 +2476,6 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
   }
 }
 
-void GLRenderer::DrawIOSurfaceQuad(const DrawingFrame* frame,
-                                   const IOSurfaceDrawQuad* quad,
-                                   const gfx::QuadF* clip_region) {
-  SetBlendEnabled(quad->ShouldDrawWithBlending());
-
-  TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
-      gl_, &highp_threshold_cache_, highp_threshold_min_,
-      quad->shared_quad_state->visible_quad_layer_rect.bottom_right());
-
-  TexTransformTextureProgramBinding binding;
-  binding.Set(GetTextureIOSurfaceProgram(tex_coord_precision));
-
-  SetUseProgram(binding.program_id);
-  gl_->Uniform1i(binding.sampler_location, 0);
-  if (quad->orientation == IOSurfaceDrawQuad::FLIPPED) {
-    gl_->Uniform4f(
-        binding.tex_transform_location, 0, quad->io_surface_size.height(),
-        quad->io_surface_size.width(), quad->io_surface_size.height() * -1.0f);
-  } else {
-    gl_->Uniform4f(binding.tex_transform_location, 0, 0,
-                   quad->io_surface_size.width(),
-                   quad->io_surface_size.height());
-  }
-
-  const float vertex_opacity[] = {quad->shared_quad_state->opacity,
-                                  quad->shared_quad_state->opacity,
-                                  quad->shared_quad_state->opacity,
-                                  quad->shared_quad_state->opacity};
-  gl_->Uniform1fv(binding.vertex_opacity_location, 4, vertex_opacity);
-
-  ResourceProvider::ScopedReadLockGL lock(resource_provider_,
-                                          quad->io_surface_resource_id());
-  DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
-  gl_->BindTexture(GL_TEXTURE_RECTANGLE_ARB, lock.texture_id());
-
-  if (!clip_region) {
-    DrawQuadGeometry(frame, quad->shared_quad_state->quad_to_target_transform,
-                     gfx::RectF(quad->rect), binding.matrix_location);
-  } else {
-    float uvs[8] = {0};
-    GetScaledUVs(quad->visible_rect, clip_region, uvs);
-    DrawQuadGeometryClippedByQuadF(
-        frame, quad->shared_quad_state->quad_to_target_transform,
-        gfx::RectF(quad->rect), *clip_region, binding.matrix_location, uvs);
-  }
-
-  gl_->BindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);
-}
-
 void GLRenderer::FinishDrawingFrame(DrawingFrame* frame) {
   if (use_sync_query_) {
     DCHECK(current_sync_query_);
@@ -3412,19 +3359,6 @@ GLRenderer::GetNonPremultipliedTextureBackgroundProgram(
   return program;
 }
 
-const GLRenderer::TextureProgram* GLRenderer::GetTextureIOSurfaceProgram(
-    TexCoordPrecision precision) {
-  DCHECK_GE(precision, 0);
-  DCHECK_LE(precision, LAST_TEX_COORD_PRECISION);
-  TextureProgram* program = &texture_io_surface_program_[precision];
-  if (!program->initialized()) {
-    TRACE_EVENT0("cc", "GLRenderer::textureIOSurfaceProgram::initialize");
-    program->Initialize(output_surface_->context_provider(), precision,
-                        SAMPLER_TYPE_2D_RECT);
-  }
-  return program;
-}
-
 const GLRenderer::VideoYUVProgram* GLRenderer::GetVideoYUVProgram(
     TexCoordPrecision precision,
     SamplerType sampler) {
@@ -3525,7 +3459,6 @@ void GLRenderer::CleanupSharedObjects() {
       texture_background_program_[i][j].Cleanup(gl_);
       nonpremultiplied_texture_background_program_[i][j].Cleanup(gl_);
     }
-    texture_io_surface_program_[i].Cleanup(gl_);
 
     video_stream_texture_program_[i].Cleanup(gl_);
   }

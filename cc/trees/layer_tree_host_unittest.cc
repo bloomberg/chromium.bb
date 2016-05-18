@@ -32,7 +32,6 @@
 #include "cc/output/swap_promise.h"
 #include "cc/playback/display_item_list_settings.h"
 #include "cc/quads/draw_quad.h"
-#include "cc/quads/io_surface_draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/test/fake_content_layer_client.h"

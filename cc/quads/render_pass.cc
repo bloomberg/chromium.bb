@@ -17,7 +17,6 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/draw_quad.h"
-#include "cc/quads/io_surface_draw_quad.h"
 #include "cc/quads/largest_draw_quad.h"
 #include "cc/quads/picture_draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
@@ -229,9 +228,6 @@ DrawQuad* RenderPass::CopyFromAndAppendDrawQuad(
   switch (quad->material) {
     case DrawQuad::DEBUG_BORDER:
       CopyFromAndAppendTypedDrawQuad<DebugBorderDrawQuad>(quad);
-      break;
-    case DrawQuad::IO_SURFACE_CONTENT:
-      CopyFromAndAppendTypedDrawQuad<IOSurfaceDrawQuad>(quad);
       break;
     case DrawQuad::PICTURE_CONTENT:
       CopyFromAndAppendTypedDrawQuad<PictureDrawQuad>(quad);

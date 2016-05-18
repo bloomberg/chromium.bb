@@ -133,7 +133,6 @@ class GLRendererShaderPixelTest : public GLRendererPixelTest {
   }
 
   void TestShadersWithPrecision(TexCoordPrecision precision) {
-    EXPECT_PROGRAM_VALID(renderer()->GetTextureIOSurfaceProgram(precision));
     // This program uses external textures and sampler, so it won't compile
     // everywhere.
     if (renderer()->Capabilities().using_egl_image)
@@ -947,7 +946,7 @@ TEST_F(GLRendererTest, ActiveTextureState) {
 
     // The remaining quads also use GL_LINEAR because nearest neighbor
     // filtering is currently only used with tile quads.
-    EXPECT_CALL(*context, drawElements(_, _, _, _)).Times(6);
+    EXPECT_CALL(*context, drawElements(_, _, _, _)).Times(5);
   }
 
   gfx::Rect viewport_rect(100, 100);

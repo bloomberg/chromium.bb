@@ -317,7 +317,6 @@ void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame,
       NOTREACHED();
       break;
     case DrawQuad::INVALID:
-    case DrawQuad::IO_SURFACE_CONTENT:
     case DrawQuad::YUV_VIDEO_CONTENT:
     case DrawQuad::STREAM_VIDEO_CONTENT:
       DrawUnsupportedQuad(frame, quad);

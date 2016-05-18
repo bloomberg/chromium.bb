@@ -16,7 +16,6 @@
 #include "cc/output/program_binding.h"
 #include "cc/output/renderer.h"
 #include "cc/quads/debug_border_draw_quad.h"
-#include "cc/quads/io_surface_draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
@@ -194,9 +193,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                           const TextureDrawQuad* quad,
                           const gfx::QuadF* clip_region);
   void FlushTextureQuadCache(BoundGeometry flush_binding);
-  void DrawIOSurfaceQuad(const DrawingFrame* frame,
-                         const IOSurfaceDrawQuad* quad,
-                         const gfx::QuadF* clip_region);
   void DrawTileQuad(const DrawingFrame* frame,
                     const TileDrawQuad* quad,
                     const gfx::QuadF* clip_region);
@@ -400,8 +396,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   const NonPremultipliedTextureBackgroundProgram*
   GetNonPremultipliedTextureBackgroundProgram(TexCoordPrecision precision,
                                               SamplerType sampler);
-  const TextureProgram* GetTextureIOSurfaceProgram(
-      TexCoordPrecision precision);
 
   const VideoYUVProgram* GetVideoYUVProgram(TexCoordPrecision precision,
                                             SamplerType sampler);
@@ -441,7 +435,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   NonPremultipliedTextureBackgroundProgram
       nonpremultiplied_texture_background_program_[LAST_TEX_COORD_PRECISION +
                                                    1][LAST_SAMPLER_TYPE + 1];
-  TextureProgram texture_io_surface_program_[LAST_TEX_COORD_PRECISION + 1];
 
   RenderPassProgram
       render_pass_program_[LAST_TEX_COORD_PRECISION + 1][LAST_BLEND_MODE + 1];

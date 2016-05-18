@@ -23,7 +23,6 @@ class Rect;
 namespace cc {
 
 class DrawQuad;
-class IOSurfaceDrawQuad;
 class StreamVideoDrawQuad;
 class TextureDrawQuad;
 class ResourceProvider;
@@ -90,9 +89,6 @@ class CC_EXPORT OverlayCandidate {
   static bool FromStreamVideoQuad(ResourceProvider* resource_provider,
                                   const StreamVideoDrawQuad* quad,
                                   OverlayCandidate* candidate);
-  static bool FromIOSurfaceQuad(ResourceProvider* resource_provider,
-                                const IOSurfaceDrawQuad* quad,
-                                OverlayCandidate* candidate);
 };
 
 typedef std::vector<OverlayCandidate> OverlayCandidateList;
