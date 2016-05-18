@@ -638,6 +638,18 @@ crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-vr
 crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-vrl-220.xht [ Failure ]
 crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-vrl-224.xht [ Failure ]
 
+crbug.com/612055 fast/repaint/block-layout-inline-children-float-positioned.html [ NeedsRebaseline ]
+crbug.com/612055 fast/repaint/bugzilla-5699.html [ NeedsRebaseline ]
+crbug.com/612055 fast/repaint/bugzilla-6278.html [ NeedsRebaseline ]
+crbug.com/612055 fast/repaint/line-flow-with-floats-1.html [ NeedsRebaseline ]
+crbug.com/612055 fast/repaint/line-flow-with-floats-3.html [ NeedsRebaseline ]
+crbug.com/612055 fast/repaint/line-flow-with-floats-4.html [ NeedsRebaseline ]
+crbug.com/612055 fast/repaint/line-flow-with-floats-5.html [ NeedsRebaseline ]
+crbug.com/612055 fast/repaint/line-flow-with-floats-7.html [ NeedsRebaseline ]
+crbug.com/612055 fast/repaint/line-flow-with-floats-8.html [ NeedsRebaseline ]
+crbug.com/612055 fast/repaint/line-flow-with-floats-9.html [ NeedsRebaseline ]
+crbug.com/612055 fast/repaint/line-flow-with-floats-10.html [ NeedsRebaseline ]
+
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-block-alignment-003.xht [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-block-alignment-005.xht [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-block-alignment-007.xht [ Failure ]
