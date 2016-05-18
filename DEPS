@@ -83,7 +83,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling NaCl
   # and whatever else without interference from each other.
-  'nacl_revision': '7975b186d213188b50bec674a83e45ab11a90cfd',
+  'nacl_revision': '4eebc9bc011b2ea84c225a4b47068cb98790646e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling dEQP
   # and whatever else without interference from each other.
