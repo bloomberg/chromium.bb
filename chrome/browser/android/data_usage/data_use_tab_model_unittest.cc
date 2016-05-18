@@ -138,40 +138,49 @@ class DataUseTabModelTest : public testing::Test {
   }
 
   // Checks if the DataUse object for the given |tab_id| with request start time
-  // |at_time| is labeled as an empty string.
-  void ExpectEmptyDataUseLabelAtTime(SessionID::id_type tab_id,
+  // |at_time| is labeled as an empty tracking info.
+  void ExpectEmptyTrackingInfoAtTime(SessionID::id_type tab_id,
                                      const base::TimeTicks& at_time) const {
-    ExpectDataUseLabelAtTimeWithReturn(tab_id, at_time, false, std::string());
+    ExpectTrackingInfoAtTimeWithReturn(tab_id, at_time, false,
+                                       DataUseTabModel::TrackingInfo());
   }
 
   // Checks if the DataUse object for the given |tab_id| is labeled as an empty
-  // string.
-  void ExpectEmptyDataUseLabel(SessionID::id_type tab_id) const {
-    ExpectDataUseLabelAtTimeWithReturn(tab_id, tick_clock_->NowTicks(), false,
-                                       std::string());
+  // tracking info.
+  void ExpectEmptyTrackingInfo(SessionID::id_type tab_id) const {
+    ExpectTrackingInfoAtTimeWithReturn(tab_id, tick_clock_->NowTicks(), false,
+                                       DataUseTabModel::TrackingInfo());
   }
 
   // Checks if the DataUse object for given |tab_id| is labeled as
-  // |expected_label|.
-  void ExpectDataUseLabel(SessionID::id_type tab_id,
-                          const std::string& expected_label) const {
-    ExpectDataUseLabelAtTimeWithReturn(tab_id, tick_clock_->NowTicks(),
-                                       !expected_label.empty(), expected_label);
+  // |expected_label| with custom tab indicated by |expected_is_custom_tab|.
+  void ExpectTrackingInfo(SessionID::id_type tab_id,
+                          const std::string& expected_label,
+                          const std::string& expected_tag) const {
+    DataUseTabModel::TrackingInfo expected_tracking_info;
+    expected_tracking_info.label = expected_label;
+    expected_tracking_info.tag = expected_tag;
+    ExpectTrackingInfoAtTimeWithReturn(tab_id, tick_clock_->NowTicks(),
+                                       !expected_label.empty(),
+                                       expected_tracking_info);
   }
 
-  // Checks if GetLabelForDataUse labels the DataUse object for |tab_id| with
-  // request start time |at_time|, as |expected_label| and returns
-  // |expected_return|.
-  void ExpectDataUseLabelAtTimeWithReturn(
+  // Checks if GetTrackingInfoForTabAtTime returns the tracking info for the
+  // DataUse object for |tab_id| with request start time |at_time|, as
+  // |expected_tracking_info| and returns |expected_return|.
+  void ExpectTrackingInfoAtTimeWithReturn(
       SessionID::id_type tab_id,
       const base::TimeTicks& at_time,
       bool expected_return,
-      const std::string& expected_label) const {
-    std::string actual_label;
-    bool actual_return = data_use_tab_model_->GetLabelForTabAtTime(
-        tab_id, at_time, &actual_label);
+      const DataUseTabModel::TrackingInfo& expected_tracking_info) const {
+    DataUseTabModel::TrackingInfo actual_tracking_info;
+    bool actual_return = data_use_tab_model_->GetTrackingInfoForTabAtTime(
+        tab_id, at_time, &actual_tracking_info);
     EXPECT_EQ(expected_return, actual_return);
-    EXPECT_EQ(expected_label, actual_label);
+    if (expected_return) {
+      EXPECT_EQ(expected_tracking_info.label, actual_tracking_info.label);
+      EXPECT_EQ(expected_tracking_info.tag, actual_tracking_info.tag);
+    }
   }
 
   void StartTrackingDataUse(SessionID::id_type tab_id,
@@ -209,15 +218,15 @@ TEST_F(DataUseTabModelTest, SingleTabTracking) {
   ExpectTabEntrySize(TabEntrySize::ZERO);
 
   // No label is applied initially.
-  ExpectEmptyDataUseLabel(kTabID1);
-  ExpectEmptyDataUseLabel(kTabID2);
+  ExpectEmptyTrackingInfo(kTabID1);
+  ExpectEmptyTrackingInfo(kTabID2);
 
   StartTrackingDataUse(kTabID1, kTestLabel1);
   ExpectTabEntrySize(TabEntrySize::ONE);
 
   EXPECT_TRUE(IsTrackingDataUse(kTabID1));
-  ExpectDataUseLabel(kTabID1, kTestLabel1);
-  ExpectEmptyDataUseLabel(kTabID2);
+  ExpectTrackingInfo(kTabID1, kTestLabel1, DataUseTabModel::kDefaultTag);
+  ExpectEmptyTrackingInfo(kTabID2);
 
   EndTrackingDataUse(kTabID1);
   ExpectTabEntrySize(TabEntrySize::ONE);
@@ -228,9 +237,9 @@ TEST_F(DataUseTabModelTest, SingleTabTracking) {
 // correctly for DataUse objects corresponding to different tab ids.
 TEST_F(DataUseTabModelTest, MultipleTabTracking) {
   ExpectTabEntrySize(TabEntrySize::ZERO);
-  ExpectEmptyDataUseLabel(kTabID1);
-  ExpectEmptyDataUseLabel(kTabID2);
-  ExpectEmptyDataUseLabel(kTabID3);
+  ExpectEmptyTrackingInfo(kTabID1);
+  ExpectEmptyTrackingInfo(kTabID2);
+  ExpectEmptyTrackingInfo(kTabID3);
 
   StartTrackingDataUse(kTabID1, kTestLabel1);
   StartTrackingDataUse(kTabID2, kTestLabel2);
@@ -240,9 +249,9 @@ TEST_F(DataUseTabModelTest, MultipleTabTracking) {
   EXPECT_TRUE(IsTrackingDataUse(kTabID1));
   EXPECT_TRUE(IsTrackingDataUse(kTabID2));
   EXPECT_TRUE(IsTrackingDataUse(kTabID3));
-  ExpectDataUseLabel(kTabID1, kTestLabel1);
-  ExpectDataUseLabel(kTabID2, kTestLabel2);
-  ExpectDataUseLabel(kTabID3, kTestLabel3);
+  ExpectTrackingInfo(kTabID1, kTestLabel1, DataUseTabModel::kDefaultTag);
+  ExpectTrackingInfo(kTabID2, kTestLabel2, DataUseTabModel::kDefaultTag);
+  ExpectTrackingInfo(kTabID3, kTestLabel3, DataUseTabModel::kDefaultTag);
 
   EndTrackingDataUse(kTabID1);
   EndTrackingDataUse(kTabID2);
@@ -255,9 +264,9 @@ TEST_F(DataUseTabModelTest, MultipleTabTracking) {
   // Future data use object should be labeled as an empty string.
   base::TimeTicks future_time =
       tick_clock_->NowTicks() + base::TimeDelta::FromMilliseconds(20);
-  ExpectEmptyDataUseLabelAtTime(kTabID1, future_time);
-  ExpectEmptyDataUseLabelAtTime(kTabID2, future_time);
-  ExpectEmptyDataUseLabelAtTime(kTabID3, future_time);
+  ExpectEmptyTrackingInfoAtTime(kTabID1, future_time);
+  ExpectEmptyTrackingInfoAtTime(kTabID2, future_time);
+  ExpectEmptyTrackingInfoAtTime(kTabID3, future_time);
 }
 
 // Checks that the mock observer receives start and end tracking events for a
@@ -350,7 +359,7 @@ TEST_F(DataUseTabModelTest, TabCloseEventEndsTracking) {
   EXPECT_FALSE(IsTrackingDataUse(kTabID1));
 
   // Future data use object should be labeled as an empty string.
-  ExpectEmptyDataUseLabelAtTime(
+  ExpectEmptyTrackingInfoAtTime(
       kTabID1, tick_clock_->NowTicks() + base::TimeDelta::FromMilliseconds(20));
 }
 
@@ -528,7 +537,7 @@ TEST_F(DataUseTabModelTest, NavigationEnterEvent) {
       std::string());
   ExpectTabEntrySize(TabEntrySize::ONE);
   EXPECT_TRUE(IsTrackingDataUse(kTabID1));
-  ExpectDataUseLabel(kTabID1, kTestLabel1);
+  ExpectTrackingInfo(kTabID1, kTestLabel1, DataUseTabModel::kDefaultTag);
   EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
       kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLFooBar)));
 
@@ -539,7 +548,7 @@ TEST_F(DataUseTabModelTest, NavigationEnterEvent) {
       std::string());
   ExpectTabEntrySize(TabEntrySize::TWO);
   EXPECT_TRUE(IsTrackingDataUse(kTabID2));
-  ExpectDataUseLabel(kTabID2, kTestLabel2);
+  ExpectTrackingInfo(kTabID2, kTestLabel2, DataUseTabModel::kDefaultTag);
   EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
       kTabID2, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLFooBar)));
 }
@@ -625,14 +634,19 @@ TEST_F(DataUseTabModelTest, AllNavigationEnterEvents) {
 
   for (const auto& test : all_enter_transition_tests) {
     EXPECT_FALSE(IsTrackingDataUse(tab_id));
-    ExpectEmptyDataUseLabel(tab_id);
+    ExpectEmptyTrackingInfo(tab_id);
 
     // Tracking should start.
     data_use_tab_model_->OnNavigationEvent(tab_id, test.transition,
                                            GURL(test.url), test.package);
 
+    const std::string expected_tag =
+        test.transition == DataUseTabModel::TRANSITION_CUSTOM_TAB
+            ? DataUseTabModel::kCustomTabTag
+            : DataUseTabModel::kDefaultTag;
+
     EXPECT_TRUE(IsTrackingDataUse(tab_id));
-    ExpectDataUseLabel(tab_id, test.expect_label);
+    ExpectTrackingInfo(tab_id, test.expect_label, expected_tag);
     if (test.transition != DataUseTabModel::TRANSITION_CUSTOM_TAB) {
       EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
           tab_id, DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION,
@@ -707,7 +721,7 @@ TEST_F(DataUseTabModelTest, AllNavigationExitAndEnterEvents) {
     data_use_tab_model_->OnNavigationEvent(tab_id, transition, GURL(kURLFoo),
                                            std::string());
     EXPECT_TRUE(IsTrackingDataUse(tab_id));
-    ExpectDataUseLabel(tab_id, kTestLabel1);
+    ExpectTrackingInfo(tab_id, kTestLabel1, DataUseTabModel::kDefaultTag);
     EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
         tab_id, DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION, GURL(kURLBar)));
 
@@ -715,7 +729,7 @@ TEST_F(DataUseTabModelTest, AllNavigationExitAndEnterEvents) {
     data_use_tab_model_->OnNavigationEvent(tab_id, transition, GURL(kURLFoo),
                                            std::string());
     EXPECT_TRUE(IsTrackingDataUse(tab_id));
-    ExpectDataUseLabel(tab_id, kTestLabel1);
+    ExpectTrackingInfo(tab_id, kTestLabel1, DataUseTabModel::kDefaultTag);
 
     // Tracking should end.
     EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
@@ -800,7 +814,8 @@ TEST_F(DataUseTabModelTest, SingleTabTransitionSequence) {
     tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
 
     EXPECT_EQ(!test.expected_label.empty(), IsTrackingDataUse(kTabID1));
-    ExpectDataUseLabel(kTabID1, test.expected_label);
+    ExpectTrackingInfo(kTabID1, test.expected_label,
+                       DataUseTabModel::kDefaultTag);
 
     if (test.observer_event == STARTED || test.observer_event == CONTINUES) {
       EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
@@ -865,7 +880,8 @@ TEST_F(DataUseTabModelTest, SingleCustomTabTransitionSequence) {
     tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
 
     EXPECT_EQ(!test.expected_label.empty(), IsTrackingDataUse(kTabID1));
-    ExpectDataUseLabel(kTabID1, test.expected_label);
+    ExpectTrackingInfo(kTabID1, test.expected_label,
+                       DataUseTabModel::kCustomTabTag);
 
     // Tracking never ends.
     EXPECT_FALSE(data_use_tab_model_->WouldNavigationEventEndTracking(

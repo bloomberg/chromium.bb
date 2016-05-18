@@ -127,6 +127,10 @@ namespace chrome {
 
 namespace android {
 
+// static
+const char DataUseTabModel::kDefaultTag[] = "ChromeTab";
+const char DataUseTabModel::kCustomTabTag[] = "ChromeCustomTab";
+
 DataUseTabModel::DataUseTabModel()
     : max_tab_entries_(GetMaxTabEntries()),
       max_sessions_per_tab_(GetMaxSessionsPerTab()),
@@ -205,12 +209,13 @@ void DataUseTabModel::OnTrackingLabelRemoved(std::string label) {
     tab_entry.second.EndTrackingWithLabel(label);
 }
 
-bool DataUseTabModel::GetLabelForTabAtTime(SessionID::id_type tab_id,
-                                           base::TimeTicks timestamp,
-                                           std::string* output_label) const {
+bool DataUseTabModel::GetTrackingInfoForTabAtTime(
+    SessionID::id_type tab_id,
+    base::TimeTicks timestamp,
+    TrackingInfo* output_tracking_info) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  *output_label = "";
+  output_tracking_info->label = "";
 
   // Data use that cannot be attributed to a tab will not be labeled.
   if (!IsValidTabID(tab_id))
@@ -218,7 +223,15 @@ bool DataUseTabModel::GetLabelForTabAtTime(SessionID::id_type tab_id,
 
   TabEntryMap::const_iterator tab_entry_iterator = active_tabs_.find(tab_id);
   if (tab_entry_iterator != active_tabs_.end()) {
-    return tab_entry_iterator->second.GetLabel(timestamp, output_label);
+    bool is_available = tab_entry_iterator->second.GetLabel(
+        timestamp, &output_tracking_info->label);
+    if (is_available) {
+      output_tracking_info->tag =
+          tab_entry_iterator->second.is_custom_tab_package_match()
+              ? DataUseTabModel::kCustomTabTag
+              : DataUseTabModel::kDefaultTag;
+    }
+    return is_available;
   }
 
   return false;  // Tab session not found.

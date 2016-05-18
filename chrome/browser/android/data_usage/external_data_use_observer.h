@@ -19,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "chrome/browser/android/data_usage/data_use_tab_model.h"
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "net/base/network_change_notifier.h"
 
@@ -38,7 +39,6 @@ namespace chrome {
 
 namespace android {
 
-class DataUseTabModel;
 class ExternalDataUseObserverBridge;
 
 // This class allows platform APIs that are external to Chromium to observe how
@@ -119,13 +119,19 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // DataUseReportKey is a unique identifier for a data use report.
   struct DataUseReportKey {
     DataUseReportKey(const std::string& label,
+                     const std::string& tag,
                      net::NetworkChangeNotifier::ConnectionType connection_type,
                      const std::string& mcc_mnc);
+
+    DataUseReportKey(const DataUseReportKey& other);
 
     bool operator==(const DataUseReportKey& other) const;
 
     // Label provided by the matching rules.
     const std::string label;
+
+    // Tag to report for the data usage.
+    const std::string tag;
 
     // Type of network used by the request.
     const net::NetworkChangeNotifier::ConnectionType connection_type;
@@ -182,22 +188,25 @@ class ExternalDataUseObserver : public data_usage::DataUseAggregator::Observer {
   // data_usage::DataUseAggregator::Observer implementation:
   void OnDataUse(const data_usage::DataUse& data_use) override;
 
-  // Called by DataUseTabModel when a label has been applied to the |data_use|
-  // object. |label_applied| is true if a label can be applied to the |data_use|
-  // object. |label| is owned by the caller.
-  void DataUseLabelApplied(const data_usage::DataUse& data_use,
-                           const base::Time& start_time,
-                           const base::Time& end_time,
-                           const std::string* label,
-                           bool label_applied);
+  // Called by DataUseTabModel when tracking info has been retrieved for the
+  // |data_use| object. |tracking_info_valid| is true if |tracking_info| is
+  // populated that applies to the |data_use| object. |tracking_info| is owned
+  // by the caller.
+  void DataUseTrackingInfoRetrieved(
+      const data_usage::DataUse& data_use,
+      const base::Time& start_time,
+      const base::Time& end_time,
+      const DataUseTabModel::TrackingInfo* tracking_info,
+      bool tracking_info_valid);
 
   // Adds |data_use| to buffered reports. |data_use| is the data use report
   // received from DataUseAggregator. |label| is a non-empty label that applies
-  // to |data_use|. |start_time| and |end_time| are the start, and end times of
-  // the interval during which bytes reported in |data_use| went over the
-  // network.
+  // to |data_use|. |tag| is the tag to be applied for this data use.
+  // |start_time| and |end_time| are the start, and end times of the interval
+  // during which bytes reported in |data_use| went over the network.
   void BufferDataUseReport(const data_usage::DataUse& data_use,
                            const std::string& label,
+                           const std::string& tag,
                            const base::Time& start_time,
                            const base::Time& end_time);
 

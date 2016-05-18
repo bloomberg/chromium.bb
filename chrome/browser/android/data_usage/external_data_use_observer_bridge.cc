@@ -132,6 +132,7 @@ void ExternalDataUseObserverBridge::FetchMatchingRulesDone(
 
 void ExternalDataUseObserverBridge::ReportDataUse(
     const std::string& label,
+    const std::string& tag,
     net::NetworkChangeNotifier::ConnectionType connection_type,
     const std::string& mcc_mnc,
     const base::Time& start_time,
@@ -151,7 +152,8 @@ void ExternalDataUseObserverBridge::ReportDataUse(
 
   Java_ExternalDataUseObserver_reportDataUse(
       env, j_external_data_use_observer_.obj(),
-      ConvertUTF8ToJavaString(env, label).obj(), connection_type,
+      ConvertUTF8ToJavaString(env, label).obj(),
+      ConvertUTF8ToJavaString(env, tag).obj(), connection_type,
       ConvertUTF8ToJavaString(env, mcc_mnc).obj(), start_time_milliseconds,
       end_time_milliseconds, bytes_downloaded, bytes_uploaded);
 }

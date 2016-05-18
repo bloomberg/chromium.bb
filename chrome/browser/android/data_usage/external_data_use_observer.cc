@@ -14,7 +14,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
-#include "chrome/browser/android/data_usage/data_use_tab_model.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer_bridge.h"
 #include "components/data_usage/core/data_use.h"
 #include "components/variations/variations_associated_data.h"
@@ -238,16 +237,17 @@ void ExternalDataUseObserver::OnDataUse(const data_usage::DataUse& data_use) {
     FetchMatchingRules();
   }
 
-  std::unique_ptr<std::string> label(new std::string());
+  std::unique_ptr<DataUseTabModel::TrackingInfo> tracking_info(
+      new DataUseTabModel::TrackingInfo());
 
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&DataUseTabModel::GetLabelForTabAtTime,
+      base::Bind(&DataUseTabModel::GetTrackingInfoForTabAtTime,
                  base::Unretained(data_use_tab_model_), data_use.tab_id,
-                 data_use.request_start, label.get()),
-      base::Bind(&ExternalDataUseObserver::DataUseLabelApplied, GetWeakPtr(),
-                 data_use, previous_report_time_, now_time,
-                 base::Owned(label.release())));
+                 data_use.request_start, tracking_info.get()),
+      base::Bind(&ExternalDataUseObserver::DataUseTrackingInfoRetrieved,
+                 GetWeakPtr(), data_use, previous_report_time_, now_time,
+                 base::Owned(tracking_info.release())));
 
   previous_report_time_ = now_time;
 }
@@ -281,24 +281,26 @@ void ExternalDataUseObserver::FetchMatchingRules() {
                  base::Unretained(external_data_use_observer_bridge_)));
 }
 
-void ExternalDataUseObserver::DataUseLabelApplied(
+void ExternalDataUseObserver::DataUseTrackingInfoRetrieved(
     const data_usage::DataUse& data_use,
     const base::Time& start_time,
     const base::Time& end_time,
-    const std::string* label,
-    bool label_applied) {
+    const DataUseTabModel::TrackingInfo* tracking_info,
+    bool tracking_info_valid) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!label_applied)
+  if (!tracking_info_valid)
     return;
 
-  BufferDataUseReport(data_use, *label, start_time, end_time);
+  BufferDataUseReport(data_use, tracking_info->label, tracking_info->tag,
+                      start_time, end_time);
   SubmitBufferedDataUseReport(false);
 }
 
 void ExternalDataUseObserver::BufferDataUseReport(
     const data_usage::DataUse& data_use,
     const std::string& label,
+    const std::string& tag,
     const base::Time& start_time,
     const base::Time& end_time) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -310,7 +312,7 @@ void ExternalDataUseObserver::BufferDataUseReport(
     return;
 
   DataUseReportKey data_use_report_key =
-      DataUseReportKey(label, data_use.connection_type, data_use.mcc_mnc);
+      DataUseReportKey(label, tag, data_use.connection_type, data_use.mcc_mnc);
 
   DataUseReport report =
       DataUseReport(start_time, end_time, data_use.rx_bytes, data_use.tx_bytes);
@@ -391,8 +393,8 @@ void ExternalDataUseObserver::SubmitBufferedDataUseReport(bool immediate) {
       FROM_HERE,
       base::Bind(&ExternalDataUseObserverBridge::ReportDataUse,
                  base::Unretained(external_data_use_observer_bridge_),
-                 key.label, key.connection_type, key.mcc_mnc, report.start_time,
-                 report.end_time, report.bytes_downloaded,
+                 key.label, key.tag, key.connection_type, key.mcc_mnc,
+                 report.start_time, report.end_time, report.bytes_downloaded,
                  report.bytes_uploaded));
 }
 
@@ -408,14 +410,22 @@ DataUseTabModel* ExternalDataUseObserver::GetDataUseTabModel() const {
 
 ExternalDataUseObserver::DataUseReportKey::DataUseReportKey(
     const std::string& label,
+    const std::string& tag,
     net::NetworkChangeNotifier::ConnectionType connection_type,
     const std::string& mcc_mnc)
-    : label(label), connection_type(connection_type), mcc_mnc(mcc_mnc) {}
+    : label(label),
+      tag(tag),
+      connection_type(connection_type),
+      mcc_mnc(mcc_mnc) {}
+
+ExternalDataUseObserver::DataUseReportKey::DataUseReportKey(
+    const ExternalDataUseObserver::DataUseReportKey& other) =
+    default;
 
 bool ExternalDataUseObserver::DataUseReportKey::operator==(
     const DataUseReportKey& other) const {
-  return label == other.label && connection_type == other.connection_type &&
-         mcc_mnc == other.mcc_mnc;
+  return label == other.label && tag == other.tag &&
+         connection_type == other.connection_type && mcc_mnc == other.mcc_mnc;
 }
 
 ExternalDataUseObserver::DataUseReport::DataUseReport(
@@ -440,6 +450,7 @@ size_t ExternalDataUseObserver::DataUseReportKeyHash::operator()(
   std::hash<std::string> hash_function;
   size_t hash = 1;
   hash = hash * 23 + hash_function(k.label);
+  hash = hash * 31 + hash_function(k.tag);
   hash = hash * 43 + k.connection_type;
   hash = hash * 83 + hash_function(k.mcc_mnc);
   return hash;

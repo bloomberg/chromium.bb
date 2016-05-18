@@ -78,6 +78,20 @@ class DataUseUITabModelTest : public testing::Test {
                                             label);
   }
 
+  void ExpectDataUseTrackingInfo(SessionID::id_type tab_id,
+                                 const base::TimeTicks& at_time,
+                                 const std::string& expected_label,
+                                 const std::string& expected_tag) const {
+    DataUseTabModel::TrackingInfo actual_tracking_info;
+    bool tracking_info_valid = data_use_tab_model_->GetTrackingInfoForTabAtTime(
+        tab_id, at_time, &actual_tracking_info);
+    EXPECT_NE(expected_label.empty(), tracking_info_valid);
+    if (tracking_info_valid) {
+      EXPECT_EQ(expected_label, actual_tracking_info.label);
+      EXPECT_EQ(expected_tag, actual_tracking_info.tag);
+    }
+  }
+
  protected:
   void SetUp() override {
     io_task_runner_ = content::BrowserThread::GetMessageLoopProxyForThread(
@@ -162,10 +176,9 @@ TEST_F(DataUseUITabModelTest, ReportTabEventsTest) {
         data_use_ui_tab_model()->CheckAndResetDataUseTrackingEnded(foo_tab_id))
         << i;
 
-    std::string got_label;
-    data_use_tab_model()->GetLabelForTabAtTime(
-        foo_tab_id, base::TimeTicks::Now(), &got_label);
-    EXPECT_EQ(tests[i].expected_label, got_label) << i;
+    ExpectDataUseTrackingInfo(foo_tab_id, base::TimeTicks::Now(),
+                              tests[i].expected_label,
+                              DataUseTabModel::kDefaultTag);
 
     // Report closure of tab.
     data_use_ui_tab_model()->ReportTabClosure(foo_tab_id);
@@ -173,10 +186,9 @@ TEST_F(DataUseUITabModelTest, ReportTabEventsTest) {
     // DataUse object should not be labeled.
     EXPECT_FALSE(
         data_use_ui_tab_model()->CheckAndResetDataUseTrackingEnded(foo_tab_id));
-    data_use_tab_model()->GetLabelForTabAtTime(
+    ExpectDataUseTrackingInfo(
         foo_tab_id, base::TimeTicks::Now() + base::TimeDelta::FromMinutes(10),
-        &got_label);
-    EXPECT_EQ(std::string(), got_label) << i;
+        std::string(), DataUseTabModel::kDefaultTag);
   }
 
   // Start a custom tab with matching package name and verify if tracking
@@ -316,10 +328,8 @@ TEST_F(DataUseUITabModelTest, EntranceExitStateForDialog) {
         data_use_ui_tab_model()->CheckAndResetDataUseTrackingEnded(foo_tab_id))
         << i;
 
-    std::string got_label;
-    data_use_tab_model()->GetLabelForTabAtTime(
-        foo_tab_id, base::TimeTicks::Now(), &got_label);
-    EXPECT_EQ(kFooLabel, got_label) << i;
+    ExpectDataUseTrackingInfo(foo_tab_id, base::TimeTicks::Now(), kFooLabel,
+                              DataUseTabModel::kDefaultTag);
 
     // Tab enters non-tracking state.
     data_use_ui_tab_model()->ReportBrowserNavigation(
@@ -358,9 +368,8 @@ TEST_F(DataUseUITabModelTest, EntranceExitStateForDialog) {
 
     const std::string expected_label =
         tests[i].user_proceeded_with_navigation ? "" : kFooLabel;
-    data_use_tab_model()->GetLabelForTabAtTime(
-        foo_tab_id, base::TimeTicks::Now(), &got_label);
-    EXPECT_EQ(expected_label, got_label) << i;
+    ExpectDataUseTrackingInfo(foo_tab_id, base::TimeTicks::Now(),
+                              expected_label, DataUseTabModel::kDefaultTag);
 
     if (tests[i].user_proceeded_with_navigation) {
       // No UI element should be shown afterwards if the dialog box was shown

@@ -246,7 +246,8 @@ TEST_F(ExternalDataUseObserverTest, ReportsMergedCorrectly) {
 
   for (const auto& expected_report : expected_data_use_reports) {
     const ExternalDataUseObserver::DataUseReportKey key(
-        kDefaultLabel, net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
+        kDefaultLabel, DataUseTabModel::kDefaultTag,
+        net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
         expected_report.mcc_mnc);
 
     EXPECT_NE(buffered_data_reports().end(), buffered_data_reports().find(key));
@@ -269,7 +270,8 @@ TEST_F(ExternalDataUseObserverTest, TimestampsMergedCorrectly) {
   base::Time end_timestamp = start_timestamp + base::TimeDelta::FromSeconds(1);
   for (size_t i = 0; i < num_iterations; ++i) {
     external_data_use_observer()->BufferDataUseReport(
-        default_data_use(), kDefaultLabel, start_timestamp, end_timestamp);
+        default_data_use(), kDefaultLabel, DataUseTabModel::kDefaultTag,
+        start_timestamp, end_timestamp);
 
     start_timestamp += base::TimeDelta::FromSeconds(1);
     end_timestamp += base::TimeDelta::FromSeconds(1);
@@ -332,7 +334,8 @@ TEST_F(ExternalDataUseObserverTest, MultipleMatchingRules) {
   EXPECT_EQ(1U, buffered_data_reports().size());
 
   const ExternalDataUseObserver::DataUseReportKey key_bar(
-      kBarLabel, net::NetworkChangeNotifier::CONNECTION_UNKNOWN, kBarMccMnc);
+      kBarLabel, DataUseTabModel::kDefaultTag,
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, kBarMccMnc);
   EXPECT_NE(buffered_data_reports().end(),
             buffered_data_reports().find(key_bar));
 }
@@ -343,16 +346,23 @@ TEST_F(ExternalDataUseObserverTest, HashFunction) {
   ExternalDataUseObserver::DataUseReportKeyHash hash;
 
   ExternalDataUseObserver::DataUseReportKey foo(
-      kFooLabel, net::NetworkChangeNotifier::CONNECTION_UNKNOWN, kFooMccMnc);
+      kFooLabel, DataUseTabModel::kDefaultTag,
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, kFooMccMnc);
   ExternalDataUseObserver::DataUseReportKey bar_label(
-      kBarLabel, net::NetworkChangeNotifier::CONNECTION_UNKNOWN, kFooMccMnc);
+      kBarLabel, DataUseTabModel::kDefaultTag,
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, kFooMccMnc);
+  ExternalDataUseObserver::DataUseReportKey bar_custom_tab_tag(
+      kBarLabel, DataUseTabModel::kCustomTabTag,
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, kFooMccMnc);
   ExternalDataUseObserver::DataUseReportKey bar_network_type(
-      kFooLabel, net::NetworkChangeNotifier::CONNECTION_WIFI, kFooMccMnc);
+      kFooLabel, DataUseTabModel::kDefaultTag,
+      net::NetworkChangeNotifier::CONNECTION_WIFI, kFooMccMnc);
   ExternalDataUseObserver::DataUseReportKey bar_mcc_mnc(
-      kFooLabel, net::NetworkChangeNotifier::CONNECTION_UNKNOWN, kBarMccMnc);
+      kFooLabel, DataUseTabModel::kDefaultTag,
+      net::NetworkChangeNotifier::CONNECTION_UNKNOWN, kBarMccMnc);
 
   EXPECT_NE(hash(foo), hash(bar_label));
-  EXPECT_NE(hash(foo), hash(bar_label));
+  EXPECT_NE(hash(foo), hash(bar_custom_tab_tag));
   EXPECT_NE(hash(foo), hash(bar_network_type));
   EXPECT_NE(hash(foo), hash(bar_mcc_mnc));
 }

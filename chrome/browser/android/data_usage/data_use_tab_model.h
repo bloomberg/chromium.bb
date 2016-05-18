@@ -43,6 +43,12 @@ class ExternalDataUseObserverBridge;
 // events that took place.
 class DataUseTabModel {
  public:
+  // TrackingInfo maintains the tracking information for a single tab.
+  struct TrackingInfo {
+    std::string label;
+    std::string tag;
+  };
+
   // TransitionType enumerates the types of possible browser navigation events
   // and transitions.
   enum TransitionType {
@@ -84,6 +90,11 @@ class DataUseTabModel {
     virtual void OnDataUseTabModelReady() = 0;
   };
 
+  // The tags to report for data usage from a default chrome tab, and a chrome
+  // custom tab.
+  static const char kDefaultTag[];
+  static const char kCustomTabTag[];
+
   DataUseTabModel();
 
   // Initializes |this| on UI thread. |external_data_use_observer_bridge| is the
@@ -117,14 +128,15 @@ class DataUseTabModel {
   // the TabDataUseObserver.
   virtual void OnTrackingLabelRemoved(std::string label);
 
-  // Gets the label for the tab with id |tab_id| at time |timestamp|.
-  // |output_label| must not be null. If a tab tracking session is found that
-  // was active at |timestamp|, returns true and |output_label| is populated
-  // with its label. Otherwise, returns false and |output_label| is set to
-  // empty string.
-  virtual bool GetLabelForTabAtTime(SessionID::id_type tab_id,
-                                    base::TimeTicks timestamp,
-                                    std::string* output_label) const;
+  // Gets the tracking information for the tab with id |tab_id| at time
+  // |timestamp|. |output_info| must not be null. If a tab tracking session is
+  // found that was active at |timestamp|, returns true and
+  // |output_tracking_info| is populated with its information. Otherwise,
+  // returns false.
+  virtual bool GetTrackingInfoForTabAtTime(
+      SessionID::id_type tab_id,
+      base::TimeTicks timestamp,
+      TrackingInfo* output_tracking_info) const;
 
   // Returns true if the navigation event would end the tracking session for
   // |tab_id|. |transition| is the type of the UI event/transition. |url| is the
