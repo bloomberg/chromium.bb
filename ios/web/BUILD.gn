@@ -116,12 +116,12 @@ source_set("web") {
     "public/ssl_status.cc",
     "public/ssl_status.h",
     "public/string_util.h",
+    "public/url_data_source_ios.h",
     "public/url_scheme_util.h",
     "public/url_schemes.h",
     "public/url_schemes.mm",
     "public/url_util.h",
     "public/user_metrics.h",
-    "public/web/url_data_source_ios.h",
     "public/web_capabilities.cc",
     "public/web_capabilities.h",
     "public/web_client.h",
@@ -260,6 +260,7 @@ source_set("web") {
 source_set("core") {
   deps = [
     "//base",
+    "//url",
   ]
 
   sources = [
@@ -382,11 +383,13 @@ bundle_data("ios_web_unittests_bundle_data") {
 
 test("ios_web_unittests") {
   deps = [
+    ":core",
     ":ios_web_unittests_bundle_data",
     ":test_support",
     ":web",
     "//base",
     "//base/test:test_support",
+    "//ios/net",
     "//ios/testing:ocmock_support",
     "//net:test_support",
     "//testing/gmock",

@@ -17,5 +17,8 @@ source_set("web") {
   deps = [
     "//base",
     "//ios/web",
+    "//url",
   ]
+
+  allow_circular_includes_from = [ "//ios/web" ]
 }

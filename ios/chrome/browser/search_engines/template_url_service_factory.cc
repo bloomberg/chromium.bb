@@ -22,7 +22,7 @@
 #include "ios/chrome/browser/web_data_service_factory.h"
 
 #if defined(ENABLE_RLZ)
-#include "components/rlz/rlz_tracker.h"
+#include "components/rlz/rlz_tracker.h"  // nogncheck
 #endif
 
 namespace ios {

@@ -7,7 +7,9 @@ import("//testing/test.gni")
 source_set("net") {
   deps = [
     "//base",
+    "//base:i18n",
     "//net",
+    "//url:url_features",
   ]
 
   sources = [
