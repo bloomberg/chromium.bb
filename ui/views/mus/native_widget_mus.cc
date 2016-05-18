@@ -423,7 +423,7 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
   // For Chrome, we need the GpuProcessTransportFactory so that renderer and
   // browser pixels are composited into a single backing
   // SoftwareOutputDeviceMus.
-  if (!default_context_factory) {
+  if (!default_context_factory && connector) {
     context_factory_.reset(
         new SurfaceContextFactory(connector, window_, surface_type_));
     aura::Env::GetInstance()->set_context_factory(context_factory_.get());
@@ -1220,17 +1220,21 @@ void NativeWidgetMus::OnHostCloseRequested(const aura::WindowTreeHost* host) {
 }
 
 void NativeWidgetMus::OnMusWindowVisibilityChanging(mus::Window* window) {
-  native_widget_delegate_->OnNativeWidgetVisibilityChanging(!window->visible());
+  if (window == window_) {
+    native_widget_delegate_->OnNativeWidgetVisibilityChanging(
+        !window->visible());
+  }
 }
 
 void NativeWidgetMus::OnMusWindowVisibilityChanged(mus::Window* window) {
+  if (window != window_)
+    return;
+
   if (window->visible()) {
     window_tree_host_->Show();
-    window_->SetVisible(true);
     GetNativeWindow()->Show();
   } else {
     window_tree_host_->Hide();
-    window_->SetVisible(false);
     GetNativeWindow()->Hide();
   }
   native_widget_delegate_->OnNativeWidgetVisibilityChanged(window->visible());

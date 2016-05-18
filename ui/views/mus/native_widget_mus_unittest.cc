@@ -8,6 +8,7 @@
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
+#include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -226,6 +227,29 @@ TEST_F(NativeWidgetMusTest, GetName) {
   mus::Window* window =
       static_cast<NativeWidgetMus*>(widget.native_widget_private())->window();
   EXPECT_EQ("MyWidget", window->GetName());
+}
+
+// Verifies changing the visibility of a child mus::Window doesn't change the
+// visibility of the parent.
+TEST_F(NativeWidgetMusTest, ChildVisibilityDoesntEffectParent) {
+  Widget widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget.Init(params);
+  widget.Show();
+  mus::Window* window =
+      static_cast<NativeWidgetMus*>(widget.native_widget_private())->window();
+  ASSERT_TRUE(window->visible());
+
+  // Create a child window, make it visible and parent it to the Widget's
+  // window.
+  mus::Window* child_window = window->connection()->NewWindow();
+  child_window->SetVisible(true);
+  window->AddChild(child_window);
+
+  // Hide the child, this should not impact the visibility of the parent.
+  child_window->SetVisible(false);
+  EXPECT_TRUE(window->visible());
 }
 
 // Tests that child aura::Windows cannot be activated.
