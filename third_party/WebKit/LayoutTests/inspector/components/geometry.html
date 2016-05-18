@@ -104,11 +104,20 @@ function test()
                 next();
             },
 
-            function testRadToDeg(next)
+            function testRadiansToDegrees(next)
             {
                 var angles = [Math.PI, Math.PI / 4, Math.PI / 6];
                 for (var i = 0; i < angles.length; ++i)
-                    InspectorTest.addResult(String.sprintf("deg: %.4f", WebInspector.Geometry.radToDeg(angles[i])));
+                    InspectorTest.addResult(String.sprintf("deg: %.4f", WebInspector.Geometry.radiansToDegrees(angles[i])));
+
+                next();
+            },
+
+            function testDegreesToRadians(next)
+            {
+                var angles = [-30, 0, 30, 90, 180];
+                for (var i = 0; i < angles.length; ++i)
+                    InspectorTest.addResult(String.sprintf("rad: %.4f", WebInspector.Geometry.degreesToRadians(angles[i])));
 
                 next();
             },
@@ -126,6 +135,25 @@ function test()
                 for (var i = 0; i < rotationMatrices.length; ++i) {
                     var angles = WebInspector.Geometry.EulerAngles.fromRotationMatrix(new WebKitCSSMatrix(rotationMatrices[i]));
                     InspectorTest.addResult(String.sprintf("Euler angles: %.4f %.4f %.4f", angles.alpha, angles.beta, angles.gamma));
+                }
+                next();
+            },
+
+            function testEulerAnglesToRotate3DString(next)
+            {
+                var angles = [
+                    new WebInspector.Geometry.EulerAngles(0, 0, 0),
+                    new WebInspector.Geometry.EulerAngles(1, 2, 3),
+                    new WebInspector.Geometry.EulerAngles(-1, -2, 3),
+                    new WebInspector.Geometry.EulerAngles(-1, 2, -3),
+                    new WebInspector.Geometry.EulerAngles(0, 1, 2),
+                    new WebInspector.Geometry.EulerAngles(1, 0, 2),
+                    new WebInspector.Geometry.EulerAngles(1, 2, 0)
+                ];
+
+                for (var i = 0; i < angles.length; ++i) {
+                    var rotate3DString = angles[i].toRotate3DString();
+                    InspectorTest.addResult(String.sprintf("Transform: %s", rotate3DString));
                 }
                 next();
             }
