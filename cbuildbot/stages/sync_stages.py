@@ -625,8 +625,8 @@ class ManifestVersionedSyncStage(SyncStage):
     target_version = self.manifest_manager.current_version
 
     # Print the Blamelist here.
-    url_prefix = 'http://chromeos-images.corp.google.com/diff/report?'
-    url = url_prefix + 'from=%s&to=%s' % (previous_version, target_version)
+    url_prefix = 'https://crosland.corp.google.com/log/'
+    url = url_prefix + '%s..%s' % (previous_version, target_version)
     logging.PrintBuildbotLink('Blamelist', url)
     # The testManifestVersionedSyncOnePartBranch interacts badly with this
     # function.  It doesn't fully initialize self.manifest_manager which
