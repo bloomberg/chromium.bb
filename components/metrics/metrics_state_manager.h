@@ -61,12 +61,19 @@ class MetricsStateManager {
   // Returns the preferred entropy provider used to seed persistent activities
   // based on whether or not metrics reporting is permitted on this client.
   //
-  // If metrics reporting is enabled, this method returns an entropy provider
-  // that has a high source of entropy, partially based on the client ID.
-  // Otherwise, it returns an entropy provider that is based on a low entropy
-  // source.
+  // If there's consent to report metrics, this method returns an entropy
+  // provider that has a high source of entropy, partially based on the client
+  // ID. Otherwise, it returns an entropy provider that is based on a low
+  // entropy source.
   std::unique_ptr<const base::FieldTrial::EntropyProvider>
-  CreateEntropyProvider();
+  CreateDefaultEntropyProvider();
+
+  // Returns an entropy provider that is based on a low entropy source. This
+  // provider is the same type of provider returned by
+  // CreateDefaultEntropyProvider when there's no consent to report metrics, but
+  // will be a new instance.
+  std::unique_ptr<const base::FieldTrial::EntropyProvider>
+  CreateLowEntropyProvider();
 
   // Creates the MetricsStateManager, enforcing that only a single instance
   // of the class exists at a time. Returns NULL if an instance exists already.

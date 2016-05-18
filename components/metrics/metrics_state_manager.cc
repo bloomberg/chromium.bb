@@ -43,6 +43,12 @@ int GenerateLowEntropySource() {
   return base::RandInt(0, kMaxLowEntropySize - 1);
 }
 
+// Records the given |low_entorpy_source_value| in a histogram.
+void LogLowEntropyValue(int low_entropy_source_value) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("UMA.LowEntropySourceValue",
+                              low_entropy_source_value);
+}
+
 }  // namespace
 
 // static
@@ -148,18 +154,17 @@ void MetricsStateManager::CheckForClonedInstall(
 }
 
 std::unique_ptr<const base::FieldTrial::EntropyProvider>
-MetricsStateManager::CreateEntropyProvider() {
-  // For metrics reporting-enabled users, we combine the client ID and low
-  // entropy source to get the final entropy source. Otherwise, only use the low
-  // entropy source.
-  // This has two useful properties:
-  //  1) It makes the entropy source less identifiable for parties that do not
-  //     know the low entropy source.
-  //  2) It makes the final entropy source resettable.
-  const int low_entropy_source_value = GetLowEntropySource();
-  UMA_HISTOGRAM_SPARSE_SLOWLY("UMA.LowEntropySourceValue",
-                              low_entropy_source_value);
+MetricsStateManager::CreateDefaultEntropyProvider() {
   if (enabled_state_provider_->IsConsentGiven()) {
+    // For metrics reporting-enabled users, we combine the client ID and low
+    // entropy source to get the final entropy source. Otherwise, only use the
+    // low entropy source.
+    // This has two useful properties:
+    //  1) It makes the entropy source less identifiable for parties that do not
+    //     know the low entropy source.
+    //  2) It makes the final entropy source resettable.
+    const int low_entropy_source_value = GetLowEntropySource();
+
     UpdateEntropySourceReturnedValue(ENTROPY_SOURCE_HIGH);
     const std::string high_entropy_source =
         client_id_ + base::IntToString(low_entropy_source_value);
@@ -168,6 +173,13 @@ MetricsStateManager::CreateEntropyProvider() {
   }
 
   UpdateEntropySourceReturnedValue(ENTROPY_SOURCE_LOW);
+  return CreateLowEntropyProvider();
+}
+
+std::unique_ptr<const base::FieldTrial::EntropyProvider>
+MetricsStateManager::CreateLowEntropyProvider() {
+  const int low_entropy_source_value = GetLowEntropySource();
+
 #if defined(OS_ANDROID) || defined(OS_IOS)
   return std::unique_ptr<const base::FieldTrial::EntropyProvider>(
       new CachingPermutedEntropyProvider(local_state_, low_entropy_source_value,
@@ -198,8 +210,6 @@ std::unique_ptr<MetricsStateManager> MetricsStateManager::Create(
 // static
 void MetricsStateManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kMetricsResetIds, false);
-  // registry->RegisterIntegerPref(prefs::kMetricsDefaultOptIn,
-  // DEFAULT_UNKNOWN);
   registry->RegisterStringPref(prefs::kMetricsClientID, std::string());
   registry->RegisterInt64Pref(prefs::kMetricsReportingEnabledTimestamp, 0);
   registry->RegisterIntegerPref(prefs::kMetricsLowEntropySource,
@@ -274,11 +284,13 @@ void MetricsStateManager::UpdateLowEntropySource() {
     // it below.
     if (value >= 0 && value < kMaxLowEntropySize) {
       low_entropy_source_ = value;
+      LogLowEntropyValue(low_entropy_source_);
       return;
     }
   }
 
   low_entropy_source_ = GenerateLowEntropySource();
+  LogLowEntropyValue(low_entropy_source_);
   local_state_->SetInteger(prefs::kMetricsLowEntropySource,
                            low_entropy_source_);
   CachingPermutedEntropyProvider::ClearCache(local_state_);

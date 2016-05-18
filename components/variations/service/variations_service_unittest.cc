@@ -133,6 +133,11 @@ class TestVariationsService : public VariationsService {
     return true;
   }
 
+  std::unique_ptr<const base::FieldTrial::EntropyProvider>
+  CreateLowEntropyProvider() override {
+    return std::unique_ptr<const base::FieldTrial::EntropyProvider>(nullptr);
+  }
+
  private:
   bool LoadSeed(VariationsSeed* seed) override {
     if (!seed_stored_)
@@ -290,8 +295,8 @@ TEST_F(VariationsServiceTest, CreateTrialsFromSeed) {
   // Check that field trials are created from the seed. Since the test study has
   // only 1 experiment with 100% probability weight, we must be part of it.
   EXPECT_TRUE(service.CreateTrialsFromSeed(base::FeatureList::GetInstance()));
-  EXPECT_EQ(base::FieldTrialList::FindFullName(kTestSeedStudyName),
-            kTestSeedExperimentName);
+  EXPECT_EQ(kTestSeedExperimentName,
+            base::FieldTrialList::FindFullName(kTestSeedStudyName));
 }
 
 TEST_F(VariationsServiceTest, CreateTrialsFromSeedNoLastFetchTime) {

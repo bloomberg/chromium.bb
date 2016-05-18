@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/mock_entropy_provider.h"
 #include "components/variations/processed_study.h"
 #include "components/variations/proto/study.pb.h"
 #include "components/variations/variations_associated_data.h"
@@ -18,34 +19,13 @@
 namespace variations {
 
 namespace {
-
-// An implementation of EntropyProvider that always returns a specific entropy
-// value, regardless of field trial.
-class TestEntropyProvider : public base::FieldTrial::EntropyProvider {
- public:
-  explicit TestEntropyProvider(double entropy_value)
-      : entropy_value_(entropy_value) {}
-  ~TestEntropyProvider() override {}
-
-  // base::FieldTrial::EntropyProvider implementation:
-  double GetEntropyForTrial(const std::string& trial_name,
-                            uint32_t randomization_seed) const override {
-    return entropy_value_;
-  }
-
- private:
-  const double entropy_value_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestEntropyProvider);
-};
-
 // Creates and activates a single-group field trial with name |trial_name| and
-// group |group_name| and variations |params| (if not NULL).
+// group |group_name| and variations |params| (if not null).
 void CreateTrial(const std::string& trial_name,
                  const std::string& group_name,
                  const std::map<std::string, std::string>* params) {
   base::FieldTrialList::CreateFieldTrial(trial_name, group_name);
-  if (params != NULL)
+  if (params != nullptr)
     AssociateVariationParams(trial_name, group_name, *params);
   base::FieldTrialList::FindFullName(trial_name);
 }
@@ -85,8 +65,7 @@ Study_Experiment_Param* AddExperimentParam(const std::string& param_name,
 
 class VariationsSeedSimulatorTest : public ::testing::Test {
  public:
-  VariationsSeedSimulatorTest() : field_trial_list_(NULL) {
-  }
+  VariationsSeedSimulatorTest() : field_trial_list_(nullptr) {}
 
   ~VariationsSeedSimulatorTest() override {
     // Ensure that the maps are cleared between tests, since they are stored as
@@ -99,8 +78,11 @@ class VariationsSeedSimulatorTest : public ::testing::Test {
   // |studies| and the current field trial state.
   VariationsSeedSimulator::Result SimulateDifferences(
       const std::vector<ProcessedStudy>& studies) {
-    TestEntropyProvider provider(0.5);
-    VariationsSeedSimulator seed_simulator(provider);
+    // Should pick the first group that has non-zero probability weight.
+    base::MockEntropyProvider default_provider(0);
+    // Should pick default groups, if they have non-zero probability weight.
+    base::MockEntropyProvider low_provider(1.0 - 1e-8);
+    VariationsSeedSimulator seed_simulator(default_provider, low_provider);
     return seed_simulator.ComputeDifferences(studies);
   }
 
@@ -146,7 +128,7 @@ class VariationsSeedSimulatorTest : public ::testing::Test {
 };
 
 TEST_F(VariationsSeedSimulatorTest, PermanentNoChanges) {
-  CreateTrial("A", "B", NULL);
+  CreateTrial("A", "B", nullptr);
 
   std::vector<ProcessedStudy> processed_studies;
   Study study = CreateStudy("A", Study_Consistency_PERMANENT);
@@ -165,7 +147,7 @@ TEST_F(VariationsSeedSimulatorTest, PermanentNoChanges) {
 }
 
 TEST_F(VariationsSeedSimulatorTest, PermanentGroupChange) {
-  CreateTrial("A", "B", NULL);
+  CreateTrial("A", "B", nullptr);
 
   Study study = CreateStudy("A", Study_Consistency_PERMANENT);
   Study_Experiment* experiment = AddExperiment("C", 100, &study);
@@ -184,8 +166,24 @@ TEST_F(VariationsSeedSimulatorTest, PermanentGroupChange) {
   EXPECT_EQ("1 0 0", SimulateStudyDifferences(&study));
 }
 
+TEST_F(VariationsSeedSimulatorTest, PermanentGroupChangeDueToExperimentID) {
+  CreateTrial("A", "B", nullptr);
+  CreateTrial("X", "Y", nullptr);
+
+  Study study = CreateStudy("A", Study_Consistency_PERMANENT);
+  Study_Experiment* experiment_b = AddExperiment("B", 50, &study);
+  AddExperiment("Default", 50, &study);
+
+  EXPECT_EQ("0 0 0", SimulateStudyDifferences(&study));
+
+  // Adding a google_web_experiment_id will cause the low entropy provider to be
+  // used, causing a group change.
+  experiment_b->set_google_web_experiment_id(1234);
+  EXPECT_EQ("1 0 0", SimulateStudyDifferences(&study));
+}
+
 TEST_F(VariationsSeedSimulatorTest, PermanentExpired) {
-  CreateTrial("A", "B", NULL);
+  CreateTrial("A", "B", nullptr);
 
   Study study = CreateStudy("A", Study_Consistency_PERMANENT);
   Study_Experiment* experiment = AddExperiment("B", 1, &study);
@@ -206,7 +204,7 @@ TEST_F(VariationsSeedSimulatorTest, PermanentExpired) {
 }
 
 TEST_F(VariationsSeedSimulatorTest, SessionRandomized) {
-  CreateTrial("A", "B", NULL);
+  CreateTrial("A", "B", nullptr);
 
   Study study = CreateStudy("A", Study_Consistency_SESSION);
   Study_Experiment* experiment = AddExperiment("B", 1, &study);
@@ -228,7 +226,7 @@ TEST_F(VariationsSeedSimulatorTest, SessionRandomized) {
 }
 
 TEST_F(VariationsSeedSimulatorTest, SessionRandomizedGroupRemoved) {
-  CreateTrial("A", "B", NULL);
+  CreateTrial("A", "B", nullptr);
 
   Study study = CreateStudy("A", Study_Consistency_SESSION);
   AddExperiment("C", 1, &study);
@@ -239,7 +237,7 @@ TEST_F(VariationsSeedSimulatorTest, SessionRandomizedGroupRemoved) {
 }
 
 TEST_F(VariationsSeedSimulatorTest, SessionRandomizedGroupProbabilityZero) {
-  CreateTrial("A", "B", NULL);
+  CreateTrial("A", "B", nullptr);
 
   Study study = CreateStudy("A", Study_Consistency_SESSION);
   Study_Experiment* experiment = AddExperiment("B", 0, &study);
@@ -260,7 +258,7 @@ TEST_F(VariationsSeedSimulatorTest, SessionRandomizedGroupProbabilityZero) {
 }
 
 TEST_F(VariationsSeedSimulatorTest, SessionRandomizedExpired) {
-  CreateTrial("A", "B", NULL);
+  CreateTrial("A", "B", nullptr);
 
   Study study = CreateStudy("A", Study_Consistency_SESSION);
   Study_Experiment* experiment = AddExperiment("B", 1, &study);
@@ -359,7 +357,7 @@ TEST_F(VariationsSeedSimulatorTest, ParamsRemoved) {
 }
 
 TEST_F(VariationsSeedSimulatorTest, ParamsAdded) {
-  CreateTrial("A", "B", NULL);
+  CreateTrial("A", "B", nullptr);
 
   std::vector<ProcessedStudy> processed_studies;
   Study study = CreateStudy("A", Study_Consistency_PERMANENT);

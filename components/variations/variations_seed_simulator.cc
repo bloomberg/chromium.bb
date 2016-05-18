@@ -13,6 +13,7 @@
 #include "components/variations/proto/study.pb.h"
 #include "components/variations/study_filtering.h"
 #include "components/variations/variations_associated_data.h"
+#include "components/variations/variations_seed_processor.h"
 
 namespace variations {
 
@@ -103,9 +104,10 @@ VariationsSeedSimulator::Result::~Result() {
 }
 
 VariationsSeedSimulator::VariationsSeedSimulator(
-    const base::FieldTrial::EntropyProvider& entropy_provider)
-    : entropy_provider_(entropy_provider) {
-}
+    const base::FieldTrial::EntropyProvider& default_entropy_provider,
+    const base::FieldTrial::EntropyProvider& low_entropy_provider)
+    : default_entropy_provider_(default_entropy_provider),
+      low_entropy_provider_(low_entropy_provider) {}
 
 VariationsSeedSimulator::~VariationsSeedSimulator() {
 }
@@ -209,8 +211,13 @@ VariationsSeedSimulator::PermanentStudyGroupChanged(
   const Study& study = *processed_study.study();
   DCHECK_EQ(Study_Consistency_PERMANENT, study.consistency());
 
-  const std::string simulated_group = SimulateGroupAssignment(entropy_provider_,
-                                                              processed_study);
+  const base::FieldTrial::EntropyProvider& entropy_provider =
+      VariationsSeedProcessor::ShouldStudyUseLowEntropy(study)
+          ? low_entropy_provider_
+          : default_entropy_provider_;
+
+  const std::string simulated_group =
+      SimulateGroupAssignment(entropy_provider, processed_study);
   const Study_Experiment* experiment = FindExperiment(study, selected_group);
   if (simulated_group != selected_group) {
     if (experiment)

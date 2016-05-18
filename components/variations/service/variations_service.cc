@@ -336,6 +336,9 @@ bool VariationsService::CreateTrialsFromSeed(base::FeatureList* feature_list) {
 
   const std::string latest_country =
       local_state_->GetString(prefs::kVariationsCountry);
+
+  std::unique_ptr<const base::FieldTrial::EntropyProvider> low_entropy_provider(
+      CreateLowEntropyProvider());
   // Note that passing |&ui_string_overrider_| via base::Unretained below is
   // safe because the callback is executed synchronously. It is not possible
   // to pass UIStringOverrider itself to VariationSeedProcesor as variations
@@ -347,7 +350,7 @@ bool VariationsService::CreateTrialsFromSeed(base::FeatureList* feature_list) {
       LoadPermanentConsistencyCountry(current_version, latest_country),
       base::Bind(&UIStringOverrider::OverrideUIString,
                  base::Unretained(&ui_string_overrider_)),
-      feature_list);
+      low_entropy_provider.get(), feature_list);
 
   const base::Time now = base::Time::Now();
 
@@ -595,6 +598,11 @@ bool VariationsService::StoreSeed(const std::string& seed_data,
   return true;
 }
 
+std::unique_ptr<const base::FieldTrial::EntropyProvider>
+VariationsService::CreateLowEntropyProvider() {
+  return state_manager_->CreateLowEntropyProvider();
+}
+
 bool VariationsService::LoadSeed(VariationsSeed* seed) {
   return seed_store_.LoadSeed(seed);
 }
@@ -739,9 +747,12 @@ void VariationsService::PerformSimulationWithVersion(
 
   const base::ElapsedTimer timer;
 
-  std::unique_ptr<const base::FieldTrial::EntropyProvider> entropy_provider =
-      state_manager_->CreateEntropyProvider();
-  variations::VariationsSeedSimulator seed_simulator(*entropy_provider);
+  std::unique_ptr<const base::FieldTrial::EntropyProvider> default_provider =
+      state_manager_->CreateDefaultEntropyProvider();
+  std::unique_ptr<const base::FieldTrial::EntropyProvider> low_provider =
+      state_manager_->CreateLowEntropyProvider();
+  variations::VariationsSeedSimulator seed_simulator(*default_provider,
+                                                     *low_provider);
 
   const std::string latest_country =
       local_state_->GetString(prefs::kVariationsCountry);

@@ -39,18 +39,26 @@ class VariationsSeedProcessor {
   virtual ~VariationsSeedProcessor();
 
   // Creates field trials from the specified variations |seed|, based on the
-  // specified configuration, as specified in the parameters.
-  void CreateTrialsFromSeed(const VariationsSeed& seed,
-                            const std::string& locale,
-                            const base::Time& reference_date,
-                            const base::Version& version,
-                            Study_Channel channel,
-                            Study_FormFactor form_factor,
-                            const std::string& hardware_class,
-                            const std::string& session_consistency_country,
-                            const std::string& permanent_consistency_country,
-                            const UIStringOverrideCallback& override_callback,
-                            base::FeatureList* feature_list);
+  // specified configuration, as specified in the parameters. Any study that
+  // should use low entropy will use |low_entropy_provider| for group
+  // selection. These studies are defined by ShouldStudyUseLowEntropy;
+  void CreateTrialsFromSeed(
+      const VariationsSeed& seed,
+      const std::string& locale,
+      const base::Time& reference_date,
+      const base::Version& version,
+      Study_Channel channel,
+      Study_FormFactor form_factor,
+      const std::string& hardware_class,
+      const std::string& session_consistency_country,
+      const std::string& permanent_consistency_country,
+      const UIStringOverrideCallback& override_callback,
+      const base::FieldTrial::EntropyProvider* low_entropy_provider,
+      base::FeatureList* feature_list);
+
+  // If the given |study| should alwoys use low entropy. This is true for any
+  // study that can send data to other Google properties.
+  static bool ShouldStudyUseLowEntropy(const Study& study);
 
  private:
   friend class VariationsSeedProcessorTest;
@@ -77,10 +85,14 @@ class VariationsSeedProcessor {
   bool AllowVariationIdWithForcingFlag(const Study& study);
 
   // Creates and registers a field trial from the |processed_study| data.
-  // Disables the trial if |processed_study.is_expired| is true.
-  void CreateTrialFromStudy(const ProcessedStudy& processed_study,
-                            const UIStringOverrideCallback& override_callback,
-                            base::FeatureList* feature_list);
+  // Disables the trial if |processed_study.is_expired| is true. Uses
+  // |low_entropy_provider| if ShouldStudyUseLowEntropy returns true for the
+  // study.
+  void CreateTrialFromStudy(
+      const ProcessedStudy& processed_study,
+      const UIStringOverrideCallback& override_callback,
+      const base::FieldTrial::EntropyProvider* low_entropy_provider,
+      base::FeatureList* feature_list);
 
   DISALLOW_COPY_AND_ASSIGN(VariationsSeedProcessor);
 };

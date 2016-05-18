@@ -114,7 +114,7 @@ TEST_F(MetricsStateManagerTest, ClientIdCorrectlyFormatted) {
 
 TEST_F(MetricsStateManagerTest, EntropySourceUsed_Low) {
   std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
-  state_manager->CreateEntropyProvider();
+  state_manager->CreateDefaultEntropyProvider();
   EXPECT_EQ(MetricsStateManager::ENTROPY_SOURCE_LOW,
             state_manager->entropy_source_returned());
 }
@@ -122,7 +122,7 @@ TEST_F(MetricsStateManagerTest, EntropySourceUsed_Low) {
 TEST_F(MetricsStateManagerTest, EntropySourceUsed_High) {
   EnableMetricsReporting();
   std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
-  state_manager->CreateEntropyProvider();
+  state_manager->CreateDefaultEntropyProvider();
   EXPECT_EQ(MetricsStateManager::ENTROPY_SOURCE_HIGH,
             state_manager->entropy_source_returned());
 }

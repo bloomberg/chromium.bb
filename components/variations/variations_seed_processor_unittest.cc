@@ -20,6 +20,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/mock_entropy_provider.h"
 #include "components/variations/processed_study.h"
 #include "components/variations/study_filtering.h"
 #include "components/variations/variations_associated_data.h"
@@ -120,16 +121,33 @@ class VariationsSeedProcessorTest : public ::testing::Test {
   }
 
   bool CreateTrialFromStudy(const Study& study) {
-    return CreateTrialFromStudyWithFeatureList(study, &feature_list_);
+    return CreateTrialFromStudyWithFeatureListAndEntropyOverride(
+        study, nullptr, &feature_list_);
+  }
+
+  bool CreateTrialFromStudyWithEntropyOverride(
+      const Study& study,
+      const base::FieldTrial::EntropyProvider* override_entropy_provider) {
+    return CreateTrialFromStudyWithFeatureListAndEntropyOverride(
+        study, override_entropy_provider, &feature_list_);
   }
 
   bool CreateTrialFromStudyWithFeatureList(const Study& study,
                                            base::FeatureList* feature_list) {
+    return CreateTrialFromStudyWithFeatureListAndEntropyOverride(study, nullptr,
+                                                                 feature_list);
+  }
+
+  bool CreateTrialFromStudyWithFeatureListAndEntropyOverride(
+      const Study& study,
+      const base::FieldTrial::EntropyProvider* override_entropy_provider,
+      base::FeatureList* feature_list) {
     ProcessedStudy processed_study;
     const bool is_expired = internal::IsStudyExpired(study, base::Time::Now());
     if (processed_study.Init(&study, is_expired)) {
       VariationsSeedProcessor().CreateTrialFromStudy(
-          processed_study, override_callback_.callback(), feature_list);
+          processed_study, override_callback_.callback(),
+          override_entropy_provider, feature_list);
       return true;
     }
     return false;
@@ -240,7 +258,7 @@ TEST_F(VariationsSeedProcessorTest,
     seed_processor.CreateTrialsFromSeed(
         seed, "en-CA", base::Time::Now(), version, Study_Channel_STABLE,
         Study_FormFactor_DESKTOP, "", "", "", override_callback_.callback(),
-        &feature_list);
+        nullptr, &feature_list);
     EXPECT_EQ(kGroup1Name, base::FieldTrialList::FindFullName(kTrialName));
   }
 
@@ -254,7 +272,7 @@ TEST_F(VariationsSeedProcessorTest,
     seed_processor.CreateTrialsFromSeed(
         seed, "en-CA", base::Time::Now(), version, Study_Channel_STABLE,
         Study_FormFactor_DESKTOP, "", "", "", override_callback_.callback(),
-        &feature_list);
+        nullptr, &feature_list);
     EXPECT_EQ(kGroup1Name, base::FieldTrialList::FindFullName(kTrialName));
   }
 }
@@ -502,7 +520,7 @@ TEST_F(VariationsSeedProcessorTest, StartsActive) {
   seed_processor.CreateTrialsFromSeed(
       seed, "en-CA", base::Time::Now(), base::Version("20.0.0.0"),
       Study_Channel_STABLE, Study_FormFactor_DESKTOP, "", "", "",
-      override_callback_.callback(), &feature_list_);
+      override_callback_.callback(), nullptr, &feature_list_);
 
   // Non-specified and ACTIVATION_EXPLICIT should not start active, but
   // ACTIVATION_AUTO should.
@@ -810,6 +828,54 @@ TEST_F(VariationsSeedProcessorTest, FeaturesInExpiredStudies) {
     EXPECT_EQ(test_case.expected_feature_enabled,
               base::FeatureList::IsEnabled(test_case.feature));
   }
+}
+
+TEST_F(VariationsSeedProcessorTest, LowEntropyStudyTest) {
+  const std::string kTrial1Name = "A";
+  const std::string kTrial2Name = "B";
+  const std::string kGroup1Name = "AA";
+  const std::string kDefaultName = "Default";
+
+  VariationsSeed seed;
+  Study* study1 = seed.add_study();
+  study1->set_name(kTrial1Name);
+  study1->set_consistency(variations::Study_Consistency_PERMANENT);
+  study1->set_default_experiment_name(kDefaultName);
+  AddExperiment(kGroup1Name, 50, study1);
+  AddExperiment(kDefaultName, 50, study1);
+  Study* study2 = seed.add_study();
+  study2->set_name(kTrial2Name);
+  study2->set_consistency(variations::Study_Consistency_PERMANENT);
+  study2->set_default_experiment_name(kDefaultName);
+  AddExperiment(kGroup1Name, 50, study2);
+  AddExperiment(kDefaultName, 50, study2);
+  study2->mutable_experiment(0)->set_google_web_experiment_id(kExperimentId);
+
+  // An entorpy value of 0.1 will cause the AA group to be chosen, since AA is
+  // the only non-default group, and has a probability percent above 0.1.
+  base::MockEntropyProvider* mock_high_entropy_provider =
+      new base::MockEntropyProvider(0.1);
+
+  // The field trial list takes ownership of the provider.
+  base::FieldTrialList field_trial_list(mock_high_entropy_provider);
+
+  // Use a stack instance, since nothing takes ownership of this provider.
+  // This entropy value will cause the default group to be chosen since it's a
+  // 50/50 trial.
+  base::MockEntropyProvider mock_low_entropy_provider(0.9);
+
+  EXPECT_TRUE(CreateTrialFromStudyWithEntropyOverride(
+      *study1, &mock_low_entropy_provider));
+  EXPECT_TRUE(CreateTrialFromStudyWithEntropyOverride(
+      *study2, &mock_low_entropy_provider));
+
+  // Since no experiment in study1 sends experiment IDs, it will use the high
+  // entropy provider, which selects the non-default group.
+  EXPECT_EQ(kGroup1Name, base::FieldTrialList::FindFullName(kTrial1Name));
+
+  // Since an experiment in study2 has google_web_experiment_id set, it will use
+  // the low entropy provider, which selects the default group.
+  EXPECT_EQ(kDefaultName, base::FieldTrialList::FindFullName(kTrial2Name));
 }
 
 }  // namespace variations
