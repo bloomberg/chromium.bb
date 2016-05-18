@@ -23,21 +23,11 @@
 #include "base/android/build_info.h"
 #endif
 
-#include "widevine_cdm_version.h"  //  In SHARED_INTERMEDIATE_DIR.
-
 #if defined(ENABLE_PEPPER_CDMS)
-// Platform-specific filename relative to the chrome executable.
-const char kClearKeyCdmAdapterFileName[] =
-#if defined(OS_MACOSX)
-    "clearkeycdmadapter.plugin";
-#elif defined(OS_WIN)
-    "clearkeycdmadapter.dll";
-#elif defined(OS_POSIX)
-    "libclearkeycdmadapter.so";
+#include "chrome/browser/media/pepper_cdm_test_helper.h"
 #endif
 
-const char kClearKeyCdmPluginMimeType[] = "application/x-ppapi-clearkey-cdm";
-#endif  // defined(ENABLE_PEPPER_CDMS)
+#include "widevine_cdm_version.h"  //  In SHARED_INTERMEDIATE_DIR.
 
 // Available key systems.
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
@@ -108,7 +98,7 @@ static bool IsMSESupported() {
 // Base class for encrypted media tests.
 class EncryptedMediaTestBase : public MediaBrowserTest {
  public:
-  EncryptedMediaTestBase() : is_pepper_cdm_registered_(false) {}
+  EncryptedMediaTestBase() {}
 
   bool IsExternalClearKey(const std::string& key_system) {
     if (key_system == kExternalClearKeyKeySystem)
@@ -261,56 +251,17 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
 
 #if defined(ENABLE_PEPPER_CDMS)
     if (IsExternalClearKey(key_system)) {
-      RegisterPepperCdm(command_line, kClearKeyCdmAdapterFileName, key_system);
+      RegisterPepperCdm(command_line, kClearKeyCdmAdapterFileName,
+                        kClearKeyCdmDisplayName, kClearKeyCdmPepperMimeType);
     }
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
     else if (IsWidevine(key_system)) {  // NOLINT
-      RegisterPepperCdm(command_line, kWidevineCdmAdapterFileName, key_system);
+      RegisterPepperCdm(command_line, kWidevineCdmAdapterFileName,
+                        kWidevineCdmDisplayName, kWidevineCdmPluginMimeType);
     }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
 #endif  // defined(ENABLE_PEPPER_CDMS)
   }
-
- private:
-#if defined(ENABLE_PEPPER_CDMS)
-  void RegisterPepperCdm(base::CommandLine* command_line,
-                         const std::string& adapter_name,
-                         const std::string& key_system) {
-    DCHECK(!is_pepper_cdm_registered_)
-        << "RegisterPepperCdm() can only be called once.";
-    is_pepper_cdm_registered_ = true;
-
-    // Append the switch to register the Clear Key CDM Adapter.
-    base::FilePath plugin_dir;
-    EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
-    base::FilePath plugin_lib = plugin_dir.AppendASCII(adapter_name);
-    EXPECT_TRUE(base::PathExists(plugin_lib)) << plugin_lib.value();
-    base::FilePath::StringType pepper_plugin = plugin_lib.value();
-    pepper_plugin.append(FILE_PATH_LITERAL("#CDM#0.1.0.0;"));
-#if defined(OS_WIN)
-    pepper_plugin.append(base::ASCIIToUTF16(GetPepperType(key_system)));
-#else
-    pepper_plugin.append(GetPepperType(key_system));
-#endif
-    command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
-                                     pepper_plugin);
-  }
-
-  // Adapted from key_systems.cc.
-  std::string GetPepperType(const std::string& key_system) {
-    if (IsExternalClearKey(key_system))
-      return kClearKeyCdmPluginMimeType;
-#if defined(WIDEVINE_CDM_AVAILABLE)
-    if (IsWidevine(key_system))
-      return kWidevineCdmPluginMimeType;
-#endif  // WIDEVINE_CDM_AVAILABLE
-
-    NOTREACHED();
-    return "";
-  }
-#endif  // defined(ENABLE_PEPPER_CDMS)
-
-  bool is_pepper_cdm_registered_;
 };
 
 #if defined(ENABLE_PEPPER_CDMS)

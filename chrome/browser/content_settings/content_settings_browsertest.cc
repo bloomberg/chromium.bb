@@ -43,6 +43,10 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
+#if defined(ENABLE_PEPPER_CDMS)
+#include "chrome/browser/media/pepper_cdm_test_helper.h"
+#endif
+
 using content::BrowserThread;
 using net::URLRequestMockHTTPJob;
 
@@ -317,32 +321,19 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectCrossOrigin) {
 #if defined(ENABLE_PLUGINS)
 class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
  protected:
-  static const char kExternalClearKeyMimeType[];
-
   // Registers any CDM plugins not registered by default.
   void SetUpCommandLine(base::CommandLine* command_line) override {
 #if defined(ENABLE_PEPPER_CDMS)
-    // Platform-specific filename relative to the chrome executable.
-#if defined(OS_WIN)
-    const char kLibraryName[] = "clearkeycdmadapter.dll";
-#else  // !defined(OS_WIN)
-#if defined(OS_MACOSX)
-    const char kLibraryName[] = "clearkeycdmadapter.plugin";
-#elif defined(OS_POSIX)
-    const char kLibraryName[] = "libclearkeycdmadapter.so";
-#endif  // defined(OS_MACOSX)
-#endif  // defined(OS_WIN)
-
     // Append the switch to register the External Clear Key CDM.
-    base::FilePath::StringType pepper_plugins = BuildPepperPluginRegistration(
-        kLibraryName, "Clear Key CDM", kExternalClearKeyMimeType);
+    base::FilePath::StringType pepper_plugins = BuildPepperCdmRegistration(
+        kClearKeyCdmAdapterFileName, kClearKeyCdmDisplayName,
+        kClearKeyCdmPepperMimeType);
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
     // The CDM must be registered when it is a component.
     pepper_plugins.append(FILE_PATH_LITERAL(","));
-    pepper_plugins.append(
-        BuildPepperPluginRegistration(kWidevineCdmAdapterFileName,
-                                      kWidevineCdmDisplayName,
-                                      kWidevineCdmPluginMimeType));
+    pepper_plugins.append(BuildPepperCdmRegistration(
+        kWidevineCdmAdapterFileName, kWidevineCdmDisplayName,
+        kWidevineCdmPluginMimeType));
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
     command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
                                      pepper_plugins);
@@ -428,40 +419,7 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
               tab_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
     EXPECT_FALSE(tab_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS));
   }
-
- private:
-  // Builds the string to pass to kRegisterPepperPlugins for a single
-  // plugin using the provided parameters and a dummy version.
-  // Multiple results may be passed to kRegisterPepperPlugins, separated by ",".
-  base::FilePath::StringType BuildPepperPluginRegistration(
-      const char* library_name,
-      const char* display_name,
-      const char* mime_type) {
-    base::FilePath plugin_dir;
-    EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
-
-    base::FilePath plugin_lib = plugin_dir.AppendASCII(library_name);
-    EXPECT_TRUE(base::PathExists(plugin_lib));
-
-    base::FilePath::StringType pepper_plugin = plugin_lib.value();
-    std::string string_to_append = "#";
-    string_to_append.append(display_name);
-    string_to_append.append("#A CDM#0.1.0.0;");
-    string_to_append.append(mime_type);
-
-#if defined(OS_WIN)
-    pepper_plugin.append(base::ASCIIToUTF16(string_to_append));
-#else
-    pepper_plugin.append(string_to_append);
-#endif
-
-    return pepper_plugin;
-  }
 };
-
-const char
-PepperContentSettingsSpecialCasesTest::kExternalClearKeyMimeType[] =
-    "application/x-ppapi-clearkey-cdm";
 
 class PepperContentSettingsSpecialCasesPluginsBlockedTest
     : public PepperContentSettingsSpecialCasesTest {
@@ -496,7 +454,7 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesTest, Baseline) {
       ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                  CONTENT_SETTING_ALLOW);
 
-  RunLoadPepperPluginTest(kExternalClearKeyMimeType, true);
+  RunLoadPepperPluginTest(kClearKeyCdmPepperMimeType, true);
 }
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
@@ -507,7 +465,7 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesTest, Baseline) {
 // The plugin successfully loaded above is blocked.
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
                        Normal) {
-  RunLoadPepperPluginTest(kExternalClearKeyMimeType, false);
+  RunLoadPepperPluginTest(kClearKeyCdmPepperMimeType, false);
 }
 
 #if defined(WIDEVINE_CDM_AVAILABLE) && !defined(OS_CHROMEOS)

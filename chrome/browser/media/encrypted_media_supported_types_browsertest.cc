@@ -27,11 +27,15 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
-#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
+#if defined(ENABLE_PEPPER_CDMS)
+#include "chrome/browser/media/pepper_cdm_test_helper.h"
+#endif
 
 #if defined(OS_ANDROID)
 #error This file needs to be updated to run on Android.
 #endif
+
+#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 namespace chrome {
 
@@ -83,8 +87,8 @@ const char kUnexpectedResult[] = "unexpected result";
 // Expectations for Widevine.
 // Note: Widevine is not available on platforms using components because
 // RegisterPepperCdm() cannot set the codecs.
-// TODO(ddorwin): Enable these tests after we have the ability to use the CUS
-// in these tests. See http://crbug.com/356833.
+// TODO(xhwang): Enable these tests after we have the ability to use the
+// manifest in these tests. See http://crbug.com/586634
 #if defined(WIDEVINE_CDM_AVAILABLE) && !defined(WIDEVINE_CDM_IS_COMPONENT)
 #define EXPECT_WV_SUCCESS EXPECT_SUCCESS
 #define EXPECT_WV_PROPRIETARY EXPECT_PROPRIETARY
@@ -100,7 +104,7 @@ const char kUnexpectedResult[] = "unexpected result";
 
 class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
  protected:
-  EncryptedMediaSupportedTypesTest() : is_pepper_cdm_registered_(false) {
+  EncryptedMediaSupportedTypesTest() {
     audio_webm_codecs_.push_back("opus");
     audio_webm_codecs_.push_back("vorbis");
 
@@ -146,32 +150,6 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
     return video_mp4_hi10p_codecs_;
   }
   const CodecVector& invalid_codecs() const { return invalid_codecs_; }
-
-  // Update the command line to load |adapter_name| for
-  // |pepper_type_for_key_system|.
-  void RegisterPepperCdm(base::CommandLine* command_line,
-                         const std::string& adapter_name,
-                         const std::string& pepper_type_for_key_system,
-                         bool expect_adapter_exists = true) {
-    DCHECK(!is_pepper_cdm_registered_)
-        << "RegisterPepperCdm() can only be called once.";
-    is_pepper_cdm_registered_ = true;
-
-    // Append the switch to register the appropriate adapter.
-    base::FilePath plugin_dir;
-    EXPECT_TRUE(PathService::Get(base::DIR_MODULE, &plugin_dir));
-    base::FilePath plugin_lib = plugin_dir.AppendASCII(adapter_name);
-    EXPECT_EQ(expect_adapter_exists, base::PathExists(plugin_lib));
-    base::FilePath::StringType pepper_plugin = plugin_lib.value();
-    pepper_plugin.append(FILE_PATH_LITERAL("#CDM#0.1.0.0;"));
-#if defined(OS_WIN)
-    pepper_plugin.append(base::ASCIIToUTF16(pepper_type_for_key_system));
-#else
-    pepper_plugin.append(pepper_type_for_key_system);
-#endif
-    command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
-                                     pepper_plugin);
-  }
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
@@ -266,8 +244,6 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
   CodecVector video_mp4_codecs_;
   CodecVector video_mp4_hi10p_codecs_;
   CodecVector invalid_codecs_;
-
-  bool is_pepper_cdm_registered_;
 };
 
 // For ClearKey, nothing additional is required.
@@ -282,19 +258,8 @@ class EncryptedMediaSupportedTypesExternalClearKeyTest
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaSupportedTypesTest::SetUpCommandLine(command_line);
-
-    // Platform-specific filename relative to the chrome executable.
-    const char adapter_file_name[] =
-#if defined(OS_MACOSX)
-        "clearkeycdmadapter.plugin";
-#elif defined(OS_WIN)
-        "clearkeycdmadapter.dll";
-#elif defined(OS_POSIX)
-        "libclearkeycdmadapter.so";
-#endif
-
-    const std::string pepper_name("application/x-ppapi-clearkey-cdm");
-    RegisterPepperCdm(command_line, adapter_file_name, pepper_name);
+    RegisterPepperCdm(command_line, kClearKeyCdmAdapterFileName,
+                      kClearKeyCdmDisplayName, kClearKeyCdmPepperMimeType);
   }
 #endif  // defined(ENABLE_PEPPER_CDMS)
 };
@@ -313,9 +278,8 @@ class EncryptedMediaSupportedTypesClearKeyCDMRegisteredWithWrongPathTest
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaSupportedTypesTest::SetUpCommandLine(command_line);
-    RegisterPepperCdm(command_line,
-                      "clearkeycdmadapterwrongname.dll",
-                      "application/x-ppapi-clearkey-cdm",
+    RegisterPepperCdm(command_line, "clearkeycdmadapterwrongname.dll",
+                      kClearKeyCdmDisplayName, kClearKeyCdmPepperMimeType,
                       false);
   }
 };
@@ -326,10 +290,9 @@ class EncryptedMediaSupportedTypesWidevineCDMRegisteredWithWrongPathTest
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaSupportedTypesTest::SetUpCommandLine(command_line);
-    RegisterPepperCdm(command_line,
-                      "widevinecdmadapterwrongname.dll",
-                      "application/x-ppapi-widevine-cdm",
-                      false);
+    RegisterPepperCdm(command_line, "widevinecdmadapterwrongname.dll",
+                      "Widevine Content Decryption Module",
+                      "application/x-ppapi-widevine-cdm", false);
   }
 };
 #endif  // defined(ENABLE_PEPPER_CDMS)
