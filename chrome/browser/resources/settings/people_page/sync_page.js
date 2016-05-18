@@ -84,6 +84,17 @@ Polymer({
         return settings.SyncBrowserProxyImpl.getInstance();
       },
     },
+
+    /**
+     * The unload callback is needed because the sign-in flow needs to know
+     * if the user has closed the tab with the sync settings. This property is
+     * non-null if the user is currently navigated on the sync settings route.
+     * @private {Function}
+     */
+    unloadCallback_: {
+      type: Object,
+      value: null,
+    },
   },
 
   /** @override */
@@ -92,19 +103,66 @@ Polymer({
                           this.handlePageStatusChanged_.bind(this));
     this.addWebUIListener('sync-prefs-changed',
                           this.handleSyncPrefsChanged_.bind(this));
+
+    if (this.isCurrentRouteOnSyncPage_())
+      this.onNavigateToPage_();
+  },
+
+  /** @override */
+  detached: function() {
+    if (this.isCurrentRouteOnSyncPage_())
+      this.onNavigateAwayFromPage_();
+  },
+
+  /**
+   * @private
+   * @return {boolean} Whether the current route shows the sync page.
+   */
+  isCurrentRouteOnSyncPage_: function() {
+    return this.currentRoute &&
+        this.currentRoute.section == 'people' &&
+        this.currentRoute.subpage.length == 1 &&
+        this.currentRoute.subpage[0] == 'sync';
   },
 
   /** @private */
   currentRouteChanged_: function() {
-    if (this.currentRoute.section == 'people' &&
-        this.currentRoute.subpage.length == 1 &&
-        this.currentRoute.subpage[0] == 'sync') {
-      // Display loading page until the settings have been retrieved.
-      this.selectedPage_ = settings.PageStatus.SPINNER;
-      this.browserProxy_.didNavigateToSyncPage();
-    } else {
-      this.browserProxy_.didNavigateAwayFromSyncPage();
-    }
+    if (!this.isAttached)
+      return;
+
+    if (this.isCurrentRouteOnSyncPage_())
+      this.onNavigateToPage_();
+    else
+      this.onNavigateAwayFromPage_();
+  },
+
+  /** @private */
+  onNavigateToPage_: function() {
+    // The element is not ready for C++ interaction until it is attached.
+    assert(this.isAttached);
+    assert(this.isCurrentRouteOnSyncPage_());
+
+    if (this.unloadCallback_)
+      return;
+
+    // Display loading page until the settings have been retrieved.
+    this.selectedPage_ = settings.PageStatus.SPINNER;
+
+    this.browserProxy_.didNavigateToSyncPage();
+
+    this.unloadCallback_ = this.onNavigateAwayFromPage_.bind(this);
+    window.addEventListener('unload', this.unloadCallback_);
+  },
+
+  /** @private */
+  onNavigateAwayFromPage_: function() {
+    if (!this.unloadCallback_)
+      return;
+
+    this.browserProxy_.didNavigateAwayFromSyncPage();
+
+    window.removeEventListener('unload', this.unloadCallback_);
+    this.unloadCallback_ = null;
   },
 
   /**
@@ -201,9 +259,7 @@ Polymer({
         this.selectedPage_ = pageStatus;
         return;
       case settings.PageStatus.DONE:
-        if (this.currentRoute.section == 'people' &&
-            this.currentRoute.subpage.length == 1 &&
-            this.currentRoute.subpage[0] == 'sync') {
+        if (this.isCurrentRouteOnSyncPage_()) {
           // Event is caught by settings-animated-pages.
           this.fire('subpage-back');
         }

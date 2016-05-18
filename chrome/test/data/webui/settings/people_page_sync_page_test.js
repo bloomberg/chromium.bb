@@ -10,6 +10,8 @@ cr.define('settings_people_page_sync_page', function() {
    */
   var TestSyncBrowserProxy = function() {
     settings.TestBrowserProxy.call(this, [
+      'didNavigateToSyncPage',
+      'didNavigateAwayFromSyncPage',
       'setSyncDatatypes',
       'setSyncEncryption',
     ]);
@@ -20,6 +22,16 @@ cr.define('settings_people_page_sync_page', function() {
 
   TestSyncBrowserProxy.prototype = {
     __proto__: settings.TestBrowserProxy.prototype,
+
+    /** @override */
+    didNavigateToSyncPage: function() {
+      this.methodCalled('didNavigateToSyncPage');
+    },
+
+    /** @override */
+    didNavigateAwayFromSyncPage: function() {
+      this.methodCalled('didNavigateAwayFromSyncPage');
+    },
 
     /** @override */
     setSyncDatatypes: function(syncPrefs) {
@@ -93,6 +105,11 @@ cr.define('settings_people_page_sync_page', function() {
 
         PolymerTest.clearBody();
         syncPage = document.createElement('settings-sync-page');
+        syncPage.currentRoute = {
+          section: 'people',
+          subpage: ['sync'],
+        };
+
         document.body.appendChild(syncPage);
 
         cr.webUIListenerCallback('page-status-changed',
@@ -112,6 +129,49 @@ cr.define('settings_people_page_sync_page', function() {
       });
 
       teardown(function() { syncPage.remove(); });
+
+      test('NotifiesHandlerOfNavigation', function() {
+        function testNavigateAway() {
+          syncPage.currentRoute = {
+            section: 'people',
+            subpage: [],
+          };
+          return browserProxy.whenCalled('didNavigateAwayFromSyncPage');
+        }
+
+        function testNavigateBack() {
+          browserProxy.resetResolver('didNavigateToSyncPage');
+          syncPage.currentRoute = {
+            section: 'people',
+            subpage: ['sync'],
+          };
+          return browserProxy.whenCalled('didNavigateToSyncPage');
+        }
+
+        function testDetach() {
+          browserProxy.resetResolver('didNavigateAwayFromSyncPage');
+          syncPage.remove();
+          return browserProxy.whenCalled('didNavigateAwayFromSyncPage');
+        }
+
+        function testRecreate() {
+          browserProxy.resetResolver('didNavigateToSyncPage');
+          syncPage = document.createElement('settings-sync-page');
+          syncPage.currentRoute = {
+            section: 'people',
+            subpage: ['sync'],
+          };
+
+          document.body.appendChild(syncPage);
+          return browserProxy.whenCalled('didNavigateToSyncPage');
+        }
+
+        return browserProxy.whenCalled('didNavigateToSyncPage')
+            .then(testNavigateAway)
+            .then(testNavigateBack)
+            .then(testDetach)
+            .then(testRecreate);
+      }),
 
       test('LoadingAndTimeout', function() {
         cr.webUIListenerCallback('page-status-changed',
