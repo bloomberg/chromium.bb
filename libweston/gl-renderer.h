@@ -69,12 +69,12 @@ struct gl_renderer_interface {
 
 	EGLDisplay (*display)(struct weston_compositor *ec);
 
-	int (*output_create)(struct weston_output *output,
-			     EGLNativeWindowType window_for_legacy,
-			     void *window_for_platform,
-			     const EGLint *attribs,
-			     const EGLint *visual_id,
-			     const int n_ids);
+	int (*output_window_create)(struct weston_output *output,
+				    EGLNativeWindowType window_for_legacy,
+				    void *window_for_platform,
+				    const EGLint *attribs,
+				    const EGLint *visual_id,
+				    const int n_ids);
 
 	void (*output_destroy)(struct weston_output *output);
 

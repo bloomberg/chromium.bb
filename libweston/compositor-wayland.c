@@ -700,12 +700,12 @@ wayland_output_init_gl_renderer(struct wayland_output *output)
 		return -1;
 	}
 
-	if (gl_renderer->output_create(&output->base,
-				       output->gl.egl_window,
-				       output->gl.egl_window,
-				       gl_renderer->alpha_attribs,
-				       NULL,
-				       0) < 0)
+	if (gl_renderer->output_window_create(&output->base,
+					      output->gl.egl_window,
+					      output->gl.egl_window,
+					      gl_renderer->alpha_attribs,
+					      NULL,
+					      0) < 0)
 		goto cleanup_window;
 
 	return 0;

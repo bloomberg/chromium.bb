@@ -1836,12 +1836,12 @@ drm_output_init_egl(struct drm_output *output, struct drm_backend *b)
 
 	if (format[1])
 		n_formats = 2;
-	if (gl_renderer->output_create(&output->base,
-				       (EGLNativeWindowType)output->gbm_surface,
-				       output->gbm_surface,
-				       gl_renderer->opaque_attribs,
-				       format,
-				       n_formats) < 0) {
+	if (gl_renderer->output_window_create(&output->base,
+					      (EGLNativeWindowType)output->gbm_surface,
+					      output->gbm_surface,
+					      gl_renderer->opaque_attribs,
+					      format,
+					      n_formats) < 0) {
 		weston_log("failed to create gl renderer output state\n");
 		gbm_surface_destroy(output->gbm_surface);
 		return -1;

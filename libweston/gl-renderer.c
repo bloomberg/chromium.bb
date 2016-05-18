@@ -2640,12 +2640,12 @@ static int
 gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface);
 
 static int
-gl_renderer_output_create(struct weston_output *output,
-			  EGLNativeWindowType window_for_legacy,
-			  void *window_for_platform,
-			  const EGLint *attribs,
-			  const EGLint *visual_id,
-			  int n_ids)
+gl_renderer_output_window_create(struct weston_output *output,
+				 EGLNativeWindowType window_for_legacy,
+				 void *window_for_platform,
+				 const EGLint *attribs,
+				 const EGLint *visual_id,
+				 int n_ids)
 {
 	struct weston_compositor *ec = output->compositor;
 	struct gl_renderer *gr = get_renderer(ec);
@@ -3284,7 +3284,7 @@ WL_EXPORT struct gl_renderer_interface gl_renderer_interface = {
 
 	.display_create = gl_renderer_display_create,
 	.display = gl_renderer_display,
-	.output_create = gl_renderer_output_create,
+	.output_window_create = gl_renderer_output_window_create,
 	.output_destroy = gl_renderer_output_destroy,
 	.output_surface = gl_renderer_output_surface,
 	.output_set_border = gl_renderer_output_set_border,

@@ -923,12 +923,13 @@ x11_output_enable(struct weston_output *base)
 		 * but eglCreateWindowSurface takes a Window. */
 		Window xid = (Window) output->window;
 
-		ret = gl_renderer->output_create(&output->base,
-						 (EGLNativeWindowType) output->window,
-						 &xid,
-						 gl_renderer->opaque_attribs,
-						 NULL,
-						 0);
+		ret = gl_renderer->output_window_create(
+					&output->base,
+					(EGLNativeWindowType) output->window,
+					&xid,
+					gl_renderer->opaque_attribs,
+					NULL,
+					0);
 		if (ret < 0)
 			goto err;
 	}
