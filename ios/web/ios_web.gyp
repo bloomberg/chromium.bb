@@ -51,6 +51,9 @@
         '../../ios/net/ios_net.gyp:ios_net',
         '../../ios/third_party/blink/blink_html_tokenizer.gyp:blink_html_tokenizer',
         '../../net/net.gyp:net',
+        '../../mojo/mojo_edk.gyp:mojo_system_impl',
+        '../../mojo/mojo_public.gyp:mojo_public',
+        '../../services/shell/shell_public.gyp:shell_public',
         '../../ui/base/ui_base.gyp:ui_base',
         '../../ui/gfx/gfx.gyp:gfx',
         '../../ui/gfx/gfx.gyp:gfx_geometry',
@@ -266,6 +269,8 @@
         'webui/crw_web_ui_manager.mm',
         'webui/crw_web_ui_page_builder.h',
         'webui/crw_web_ui_page_builder.mm',
+        'webui/mojo_facade.h',
+        'webui/mojo_facade.mm',
         'webui/shared_resources_data_source_ios.h',
         'webui/shared_resources_data_source_ios.mm',
         'webui/url_data_manager_ios.cc',
@@ -437,6 +442,7 @@
         '../../testing/gtest.gyp:gtest',
         '../../third_party/ocmock/ocmock.gyp:ocmock',
         'ios_web',
+        'test_mojo_bindings',
       ],
       'include_dirs': [
         '../..',
@@ -492,6 +498,35 @@
         'test/web_test_suite.mm',
         'test/wk_web_view_crash_utils.h',
         'test/wk_web_view_crash_utils.mm',
+        '<(SHARED_INTERMEDIATE_DIR)/ios/web/test/mojo_test.mojom.cc',
+      ],
+    },
+    {
+      # GN version: //ios/web/test:mojo_bindings
+      'target_name': 'test_mojo_bindings_mojom',
+      'type': 'none',
+      'variables': {
+        'mojom_files': [
+          'test/mojo_test.mojom',
+        ],
+      },
+      'include_dirs': [
+        '..',
+      ],
+      'includes': [ '../../mojo/mojom_bindings_generator_explicit.gypi' ],
+    },
+    {
+      # GN version: //ios/web/test:mojo_bindings
+      'target_name': 'test_mojo_bindings',
+      'type': 'static_library',
+      'dependencies': [
+        '../../mojo/mojo_base.gyp:mojo_common_lib',
+        '../../mojo/mojo_base.gyp:mojo_url_type_converters',
+        '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
+        'test_mojo_bindings_mojom',
+      ],
+      'include_dirs': [
+        '..',
       ],
     },
     {
