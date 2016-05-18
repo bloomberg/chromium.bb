@@ -229,7 +229,7 @@ MediaStreamVideoTrack::MediaStreamVideoTrack(
           new MediaStreamVideoTrack::FrameDeliverer(source->io_task_runner(),
                                                     enabled)),
       constraints_(constraints),
-      source_(source) {
+      source_(source->GetWeakPtr()) {
   DCHECK(!constraints.isNull());
   source->AddTrack(this,
                    base::Bind(

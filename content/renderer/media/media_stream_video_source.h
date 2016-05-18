@@ -98,6 +98,10 @@ class CONTENT_EXPORT MediaStreamVideoSource
 
   const media::VideoCaptureFormat* GetCurrentFormat() const;
 
+  base::WeakPtr<MediaStreamVideoSource> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
+
  protected:
   void DoStopSource() override;
 
