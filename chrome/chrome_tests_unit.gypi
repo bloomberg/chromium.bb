@@ -627,6 +627,7 @@
       'common/extensions/api/extension_action/page_action_manifest_unittest.cc',
       'common/extensions/api/storage/storage_schema_manifest_handler_unittest.cc',
       'common/extensions/chrome_extensions_client_unittest.cc',
+      'common/extensions/chrome_manifest_url_handlers_unittest.cc',
       'common/extensions/command_unittest.cc',
       'common/extensions/extension_icon_set_unittest.cc',
       'common/extensions/extension_unittest.cc',

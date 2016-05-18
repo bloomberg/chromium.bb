@@ -267,6 +267,7 @@ extern const char kChromeVersionTooLow[];
 extern const char kDevToolsExperimental[];
 extern const char kDisabledByPolicy[];
 extern const char kExpectString[];
+extern const char kFileNotFound[];
 extern const char kInvalidAboutPage[];
 extern const char kInvalidAboutPageExpectRelativePath[];
 extern const char kInvalidAllFrames[];

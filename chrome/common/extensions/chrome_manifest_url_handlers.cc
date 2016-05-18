@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -15,6 +16,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/permissions_parser.h"
@@ -104,18 +106,16 @@ bool URLOverridesHandler::Parse(Extension* extension, base::string16* error) {
     std::string page = iter.key();
     std::string val;
     // Restrict override pages to a list of supported URLs.
-    bool is_override = (page != chrome::kChromeUINewTabHost &&
-                        page != chrome::kChromeUIBookmarksHost &&
-                        page != chrome::kChromeUIHistoryHost);
+    bool is_allowed_host = page == chrome::kChromeUINewTabHost ||
+                           page == chrome::kChromeUIBookmarksHost ||
+                           page == chrome::kChromeUIHistoryHost;
 #if defined(OS_CHROMEOS)
-    is_override =
-        (is_override && page != chrome::kChromeUIActivationMessageHost);
-#endif
-#if defined(OS_CHROMEOS)
-    is_override = (is_override && page != keyboard::kKeyboardHost);
+    is_allowed_host = is_allowed_host ||
+                      page == chrome::kChromeUIActivationMessageHost ||
+                      page == keyboard::kKeyboardHost;
 #endif
 
-    if (is_override || !iter.value().GetAsString(&val)) {
+    if (!is_allowed_host || !iter.value().GetAsString(&val)) {
       *error = base::ASCIIToUTF16(errors::kInvalidChromeURLOverrides);
       return false;
     }
@@ -144,6 +144,29 @@ bool URLOverridesHandler::Parse(Extension* extension, base::string16* error) {
   }
   extension->SetManifestData(keys::kChromeURLOverrides,
                              url_overrides.release());
+  return true;
+}
+
+bool URLOverridesHandler::Validate(
+    const Extension* extension,
+    std::string* error,
+    std::vector<InstallWarning>* warnings) const {
+  const URLOverrides::URLOverrideMap& overrides =
+      URLOverrides::GetChromeURLOverrides(extension);
+  if (overrides.empty())
+    return true;
+
+  for (const auto& entry : overrides) {
+    base::FilePath relative_path =
+        file_util::ExtensionURLToRelativeFilePath(entry.second);
+    base::FilePath resource_path =
+        extension->GetResource(relative_path).GetFilePath();
+    if (resource_path.empty() || !base::PathExists(resource_path)) {
+      *error = ErrorUtils::FormatErrorMessage(errors::kFileNotFound,
+                                              relative_path.AsUTF8Unsafe());
+      return false;
+    }
+  }
   return true;
 }
 

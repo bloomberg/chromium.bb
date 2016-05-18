@@ -293,6 +293,7 @@ const char kChromeVersionTooLow[] =
 const char kDisabledByPolicy[] =
     "This extension has been disabled by your administrator.";
 const char kExpectString[] = "Expect string value.";
+const char kFileNotFound[] = "File not found: *.";
 const char kInvalidAboutPage[] = "Invalid value for 'about_page'.";
 const char kInvalidAboutPageExpectRelativePath[] =
     "Invalid value for 'about_page'. Value must be a relative path.";
