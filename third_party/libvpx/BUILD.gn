@@ -113,97 +113,99 @@ if (current_cpu == "x86" || current_cpu == "x64") {
   }
 }
 
-static_library("libvpx_intrinsics_mmx") {
-  configs += [ ":libvpx_config" ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  configs += [ ":libvpx_warnings" ]
-  if (!is_win) {
-    cflags = [ "-mmmx" ]
+if (current_cpu == "x86" || current_cpu == "x64") {
+  static_library("libvpx_intrinsics_mmx") {
+    configs += [ ":libvpx_config" ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    configs += [ ":libvpx_warnings" ]
+    if (!is_win) {
+      cflags = [ "-mmmx" ]
+    }
+    if (current_cpu == "x86") {
+      sources = libvpx_srcs_x86_mmx
+    } else if (current_cpu == "x64") {
+      sources = libvpx_srcs_x86_64_mmx
+    }
   }
-  if (current_cpu == "x86") {
-    sources = libvpx_srcs_x86_mmx
-  } else if (current_cpu == "x64") {
-    sources = libvpx_srcs_x86_64_mmx
-  }
-}
 
-static_library("libvpx_intrinsics_sse2") {
-  configs += [ ":libvpx_config" ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  configs += [ ":libvpx_warnings" ]
-  if (!is_win || is_clang) {
-    cflags = [ "-msse2" ]
+  static_library("libvpx_intrinsics_sse2") {
+    configs += [ ":libvpx_config" ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    configs += [ ":libvpx_warnings" ]
+    if (!is_win || is_clang) {
+      cflags = [ "-msse2" ]
+    }
+    if (current_cpu == "x86") {
+      sources = libvpx_srcs_x86_sse2
+    } else if (current_cpu == "x64") {
+      sources = libvpx_srcs_x86_64_sse2
+    }
   }
-  if (current_cpu == "x86") {
-    sources = libvpx_srcs_x86_sse2
-  } else if (current_cpu == "x64") {
-    sources = libvpx_srcs_x86_64_sse2
-  }
-}
 
-static_library("libvpx_intrinsics_ssse3") {
-  configs += [ ":libvpx_config" ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  configs += [ ":libvpx_warnings" ]
-  if (!is_win || is_clang) {
-    cflags = [ "-mssse3" ]
+  static_library("libvpx_intrinsics_ssse3") {
+    configs += [ ":libvpx_config" ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    configs += [ ":libvpx_warnings" ]
+    if (!is_win || is_clang) {
+      cflags = [ "-mssse3" ]
+    }
+    if (current_cpu == "x86") {
+      sources = libvpx_srcs_x86_ssse3
+    } else if (current_cpu == "x64") {
+      sources = libvpx_srcs_x86_64_ssse3
+    }
   }
-  if (current_cpu == "x86") {
-    sources = libvpx_srcs_x86_ssse3
-  } else if (current_cpu == "x64") {
-    sources = libvpx_srcs_x86_64_ssse3
-  }
-}
 
-static_library("libvpx_intrinsics_sse4_1") {
-  configs += [ ":libvpx_config" ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  configs += [ ":libvpx_warnings" ]
-  if (!is_win || is_clang) {
-    cflags = [ "-msse4.1" ]
+  static_library("libvpx_intrinsics_sse4_1") {
+    configs += [ ":libvpx_config" ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    configs += [ ":libvpx_warnings" ]
+    if (!is_win || is_clang) {
+      cflags = [ "-msse4.1" ]
+    }
+    if (current_cpu == "x86") {
+      sources = libvpx_srcs_x86_sse4_1
+    } else if (current_cpu == "x64") {
+      sources = libvpx_srcs_x86_64_sse4_1
+    }
   }
-  if (current_cpu == "x86") {
-    sources = libvpx_srcs_x86_sse4_1
-  } else if (current_cpu == "x64") {
-    sources = libvpx_srcs_x86_64_sse4_1
-  }
-}
 
-static_library("libvpx_intrinsics_avx") {
-  configs += [ ":libvpx_config" ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  configs += [ ":libvpx_warnings" ]
-  if (is_win) {
-    cflags = [ "/arch:AVX" ]
-  } else {
-    cflags = [ "-mavx" ]
+  static_library("libvpx_intrinsics_avx") {
+    configs += [ ":libvpx_config" ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    configs += [ ":libvpx_warnings" ]
+    if (is_win) {
+      cflags = [ "/arch:AVX" ]
+    } else {
+      cflags = [ "-mavx" ]
+    }
+    if (current_cpu == "x86") {
+      sources = libvpx_srcs_x86_avx
+    } else if (current_cpu == "x64") {
+      sources = libvpx_srcs_x86_64_avx
+    }
   }
-  if (current_cpu == "x86") {
-    sources = libvpx_srcs_x86_avx
-  } else if (current_cpu == "x64") {
-    sources = libvpx_srcs_x86_64_avx
-  }
-}
 
-static_library("libvpx_intrinsics_avx2") {
-  configs += [ ":libvpx_config" ]
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
-  configs += [ ":libvpx_warnings" ]
-  if (is_win) {
-    cflags = [ "/arch:AVX2" ]
-  } else {
-    cflags = [ "-mavx2" ]
-  }
-  if (current_cpu == "x86") {
-    sources = libvpx_srcs_x86_avx2
-  } else if (current_cpu == "x64") {
-    sources = libvpx_srcs_x86_64_avx2
+  static_library("libvpx_intrinsics_avx2") {
+    configs += [ ":libvpx_config" ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    configs += [ ":libvpx_warnings" ]
+    if (is_win) {
+      cflags = [ "/arch:AVX2" ]
+    } else {
+      cflags = [ "-mavx2" ]
+    }
+    if (current_cpu == "x86") {
+      sources = libvpx_srcs_x86_avx2
+    } else if (current_cpu == "x64") {
+      sources = libvpx_srcs_x86_64_avx2
+    }
   }
 }
 
