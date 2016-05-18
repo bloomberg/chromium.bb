@@ -72,22 +72,18 @@ void BlobTransportController::InitiateBlobTransfer(
     main_runner->PostTask(FROM_HERE, base::Bind(&IncChildProcessRefCount));
   }
 
-  std::vector<storage::DataElement> descriptions;
+  // TODO(dmurph): handle racy io thread scheduling, so we can send both
+  // messages ASAP.
   std::set<std::string> referenced_blobs = consolidation->referenced_blobs();
-  BlobTransportController::GetDescriptions(
-      consolidation.get(), kBlobStorageIPCThresholdBytes, &descriptions);
-  // I post the task first to make sure that we store our consolidation before
-  // we get a request back from the browser.
-  io_runner->PostTask(
-      FROM_HERE,
-      base::Bind(&BlobTransportController::StoreBlobDataForRequests,
-                 base::Unretained(BlobTransportController::GetInstance()), uuid,
-                 base::Passed(std::move(consolidation)),
-                 base::Passed(std::move(main_runner))));
-  // TODO(dmurph): Merge register and start messages.
   sender->Send(new BlobStorageMsg_RegisterBlobUUID(uuid, content_type, "",
                                                    referenced_blobs));
-  sender->Send(new BlobStorageMsg_StartBuildingBlob(uuid, descriptions));
+  io_runner->PostTask(
+      FROM_HERE,
+      base::Bind(&BlobTransportController::StoreBlobDataAndStart,
+                 base::Unretained(BlobTransportController::GetInstance()), uuid,
+                 base::Passed(&consolidation),
+                 base::Passed(&sender),
+                 base::Passed(&main_runner)));
 }
 
 void BlobTransportController::OnMemoryRequest(
@@ -198,10 +194,16 @@ void BlobTransportController::ClearForTesting() {
   blob_storage_.clear();
 }
 
-void BlobTransportController::StoreBlobDataForRequests(
+void BlobTransportController::StoreBlobDataAndStart(
     const std::string& uuid,
     std::unique_ptr<BlobConsolidation> consolidation,
+    scoped_refptr<ThreadSafeSender> sender,
     scoped_refptr<base::SingleThreadTaskRunner> main_runner) {
+  std::vector<storage::DataElement> descriptions;
+  BlobTransportController::GetDescriptions(
+      consolidation.get(), kBlobStorageIPCThresholdBytes, &descriptions);
+  sender->Send(new BlobStorageMsg_StartBuildingBlob(uuid, descriptions));
+
   if (!main_thread_runner_.get()) {
     main_thread_runner_ = std::move(main_runner);
   }

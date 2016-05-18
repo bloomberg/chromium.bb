@@ -280,16 +280,16 @@ TEST_F(BlobTransportControllerTest, TestPublicMethods) {
   // Check that we have the 'increase ref' pending task.
   EXPECT_TRUE(main_thread_runner_->HasPendingTask());
   // Check that we have the 'store' pending task.
+  EXPECT_FALSE(holder->IsTransporting(kBlobUUID));
   EXPECT_TRUE(io_thread_runner_->HasPendingTask());
+  io_thread_runner_->RunPendingTasks();
+  EXPECT_TRUE(holder->IsTransporting(kBlobUUID));
   // Check that we've sent the data.
   ExpectRegisterAndStartMessage(kBlobUUID, kBlobContentType,
                                 &message_descriptions);
   main_thread_runner_->ClearPendingTasks();
 
   // Check that we got the correct start message.
-  EXPECT_FALSE(holder->IsTransporting(kBlobUUID));
-  io_thread_runner_->RunPendingTasks();
-  EXPECT_TRUE(holder->IsTransporting(kBlobUUID));
   base::Tuple<std::string, std::vector<DataElement>> message_contents;
   EXPECT_EQ(MakeBlobElement(KRefBlobUUID, 10, 10), message_descriptions[0]);
 
