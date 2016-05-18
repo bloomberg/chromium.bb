@@ -6,7 +6,7 @@ import("//build/config/chrome_build.gni")
 import("//tools/grit/grit_rule.gni")
 
 group("strings") {
-  deps = [
+  public_deps = [
     ":ios_chromium_strings",
     ":ios_google_chrome_strings",
     ":ios_strings",

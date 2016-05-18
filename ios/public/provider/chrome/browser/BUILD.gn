@@ -27,6 +27,9 @@ source_set("browser") {
   deps = [
     "//base",
     "//components/autofill/core/browser",
+    "//components/favicon_base",
+    "//components/metrics",
+    "//components/sync_sessions",
     "//ios/public/provider/web",
     "//ios/web",
   ]

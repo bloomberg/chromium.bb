@@ -64,7 +64,8 @@ check_targets = [
   "//google_update/*",
   "//gpu/*",
 
-  #"//ios/*",
+  "//ios/*",
+  "//ios_internal/*",
   "//ipc/*",
 
   #"//jingle/*",

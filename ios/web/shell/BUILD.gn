@@ -15,6 +15,10 @@ ios_app_bundle("ios_web_shell") {
 
   deps = [
     ":shell",
+
+    # All shared libraries must have the sanitizer deps to properly link in
+    # asan mode (this target will be empty in other cases).
+    "//build/config/sanitizers:deps",
   ]
 
   ldflags = [
@@ -67,15 +71,13 @@ source_set("shell") {
     ":main_view_bundle_data",
     ":shell_bundle_data",
     "//base",
+    "//ios/net",
     "//ios/web",
+    "//ios/web:user_agent",
     "//ios/web/public/app",
     "//net",
     "//net:extras",
     "//ui/base",
-
-    # All shared libraries must have the sanitizer deps to properly link in
-    # asan mode (this target will be empty in other cases).
-    "//build/config/sanitizers:deps",
   ]
 
   libs = [

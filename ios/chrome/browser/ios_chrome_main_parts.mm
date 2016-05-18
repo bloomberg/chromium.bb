@@ -51,8 +51,8 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(ENABLE_RLZ)
-#include "components/rlz/rlz_tracker.h"
-#include "ios/chrome/browser/rlz/rlz_tracker_delegate_impl.h"
+#include "components/rlz/rlz_tracker.h"                        // nogncheck
+#include "ios/chrome/browser/rlz/rlz_tracker_delegate_impl.h"  // nogncheck
 #endif
 
 IOSChromeMainParts::IOSChromeMainParts(
