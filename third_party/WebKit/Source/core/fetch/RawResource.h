@@ -28,6 +28,7 @@
 #include "core/fetch/ResourceClient.h"
 #include "public/platform/WebDataConsumerHandle.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/WeakPtr.h"
 
 namespace blink {
 class FetchRequest;
@@ -103,6 +104,9 @@ inline RawResource* toRawResource(Resource* resource)
 
 class CORE_EXPORT RawResourceClient : public ResourceClient {
 public:
+    RawResourceClient()
+        : m_weakFactory(this) { }
+    WeakPtr<RawResourceClient> createWeakPtr() { return m_weakFactory.createWeakPtr(); }
     ~RawResourceClient() override {}
     static bool isExpectedType(ResourceClient* client) { return client->getResourceClientType() == RawResourceType; }
     ResourceClientType getResourceClientType() const final { return RawResourceType; }
@@ -115,6 +119,9 @@ public:
     virtual void redirectBlocked() {}
     virtual void dataDownloaded(Resource*, int) { }
     virtual void didReceiveResourceTiming(Resource*, const ResourceTimingInfo&) { }
+
+private:
+    WeakPtrFactory<RawResourceClient> m_weakFactory;
 };
 
 } // namespace blink
