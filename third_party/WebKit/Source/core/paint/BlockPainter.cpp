@@ -6,22 +6,18 @@
 
 #include "core/editing/DragCaretController.h"
 #include "core/editing/FrameSelection.h"
-#include "core/frame/Settings.h"
-#include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutFlexibleBox.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/api/LineLayoutBox.h"
 #include "core/page/Page.h"
+#include "core/paint/BlockFlowPainter.h"
 #include "core/paint/BoxClipper.h"
 #include "core/paint/BoxPainter.h"
-#include "core/paint/InlinePainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
-#include "core/paint/LineBoxListPainter.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
-#include "core/paint/ScopeRecorder.h"
 #include "core/paint/ScrollRecorder.h"
 #include "core/paint/ScrollableAreaPainter.h"
 #include "platform/graphics/paint/ClipRecorder.h"
@@ -181,10 +177,14 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
 
         const PaintInfo& contentsPaintInfo = scrolledPaintInfo ? *scrolledPaintInfo : paintInfo;
 
-        paintContents(contentsPaintInfo, paintOffset);
-
-        if (paintPhase == PaintPhaseFloat || paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip)
-            m_layoutBlock.paintFloats(contentsPaintInfo, paintOffset);
+        if (m_layoutBlock.isLayoutBlockFlow()) {
+            BlockFlowPainter blockFlowPainter(toLayoutBlockFlow(m_layoutBlock));
+            blockFlowPainter.paintContents(contentsPaintInfo, paintOffset);
+            if (paintPhase == PaintPhaseFloat || paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip)
+                blockFlowPainter.paintFloats(contentsPaintInfo, paintOffset);
+        } else {
+            paintContents(contentsPaintInfo, paintOffset);
+        }
     }
 
     if (shouldPaintSelfOutline(paintPhase))
@@ -237,21 +237,9 @@ bool BlockPainter::intersectsPaintRect(const PaintInfo& paintInfo, const LayoutP
 
 void BlockPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    // Avoid painting descendants of the root element when stylesheets haven't loaded. This eliminates FOUC.
-    // It's ok not to draw, because later on, when all the stylesheets do load, styleResolverMayHaveChanged()
-    // on Document will trigger a full paint invalidation.
-    if (m_layoutBlock.document().didLayoutWithPendingStylesheets() && !m_layoutBlock.isLayoutView())
-        return;
-
-    if (m_layoutBlock.childrenInline()) {
-        if (shouldPaintDescendantOutlines(paintInfo.phase))
-            ObjectPainter(m_layoutBlock).paintInlineChildrenOutlines(paintInfo, paintOffset);
-        else
-            LineBoxListPainter(m_layoutBlock.lineBoxes()).paint(m_layoutBlock, paintInfo, paintOffset);
-    } else {
-        PaintInfo paintInfoForDescendants = paintInfo.forDescendants();
-        m_layoutBlock.paintChildren(paintInfoForDescendants, paintOffset);
-    }
+    DCHECK(!m_layoutBlock.childrenInline());
+    PaintInfo paintInfoForDescendants = paintInfo.forDescendants();
+    m_layoutBlock.paintChildren(paintInfoForDescendants, paintOffset);
 }
 
 } // namespace blink

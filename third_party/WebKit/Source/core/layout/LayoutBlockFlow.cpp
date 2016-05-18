@@ -2845,11 +2845,6 @@ void LayoutBlockFlow::invalidateDisplayItemClients(const LayoutBoxModelObject& p
         startOfContinuations->invalidateDisplayItemClient(*startOfContinuations);
 }
 
-void LayoutBlockFlow::paintFloats(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
-{
-    BlockFlowPainter(*this).paintFloats(paintInfo, paintOffset);
-}
-
 void LayoutBlockFlow::clipOutFloatingObjects(const LayoutBlock* rootBlock, ClipScope& clipScope,
     const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock) const
 {

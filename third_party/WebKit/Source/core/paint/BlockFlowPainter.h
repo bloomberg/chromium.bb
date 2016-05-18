@@ -17,7 +17,9 @@ class BlockFlowPainter {
     STACK_ALLOCATED();
 public:
     BlockFlowPainter(const LayoutBlockFlow& layoutBlockFlow) : m_layoutBlockFlow(layoutBlockFlow) { }
+    void paintContents(const PaintInfo&, const LayoutPoint&);
     void paintFloats(const PaintInfo&, const LayoutPoint&);
+
 private:
     const LayoutBlockFlow& m_layoutBlockFlow;
 };

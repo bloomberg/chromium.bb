@@ -25,6 +25,7 @@ public:
 
     void paint(const PaintInfo&, const LayoutPoint& paintOffset);
     void paintObject(const PaintInfo&, const LayoutPoint&);
+    void paintContents(const PaintInfo&, const LayoutPoint&);
     void paintChildren(const PaintInfo&, const LayoutPoint&);
     void paintChild(const LayoutBox&, const PaintInfo&, const LayoutPoint&);
     void paintOverflowControlsIfNeeded(const PaintInfo&, const LayoutPoint&);
@@ -39,7 +40,6 @@ public:
 
 private:
     void paintCarets(const PaintInfo&, const LayoutPoint&);
-    void paintContents(const PaintInfo&, const LayoutPoint&);
 
     const LayoutBlock& m_layoutBlock;
 };

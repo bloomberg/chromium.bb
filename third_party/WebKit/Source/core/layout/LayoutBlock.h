@@ -300,9 +300,6 @@ public:
     virtual void paintObject(const PaintInfo&, const LayoutPoint&) const;
     virtual void paintChildren(const PaintInfo&, const LayoutPoint&) const;
 
-    // FIXME-BLOCKFLOW: Remove virtualization when all callers have moved to LayoutBlockFlow
-    virtual void paintFloats(const PaintInfo&, const LayoutPoint&) const { }
-
 protected:
     virtual void adjustInlineDirectionLineBounds(unsigned /* expansionOpportunityCount */, LayoutUnit& /* logicalLeft */, LayoutUnit& /* logicalWidth */) const { }
 

@@ -66,7 +66,7 @@ class InlineTextBox;
 // m_preferredLogicalWidthsDirty.
 //
 // The previous comment applies also for painting. See e.g.
-// BlockPainter::paintContents in particular the use of LineBoxListPainter.
+// BlockFlowPainter::paintContents in particular the use of LineBoxListPainter.
 class CORE_EXPORT LayoutText : public LayoutObject {
 public:
     // FIXME: If the node argument is not a Text node or the string argument is

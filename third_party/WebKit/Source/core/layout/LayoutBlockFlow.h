@@ -385,7 +385,6 @@ private:
     void invalidatePaintForOverflow() final;
     void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason) const override;
 
-    void paintFloats(const PaintInfo&, const LayoutPoint&) const final;
     virtual void clipOutFloatingObjects(const LayoutBlock*, ClipScope&, const LayoutPoint&, const LayoutSize&) const;
     void clearFloats(EClear);
 
