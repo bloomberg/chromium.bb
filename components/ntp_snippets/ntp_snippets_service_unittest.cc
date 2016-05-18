@@ -335,32 +335,34 @@ TEST_F(NTPSnippetsServiceTest, InsertAtFront) {
       "\"thumbnailUrl\" : \"http://localhost/salient_image\","
       "\"creationTimestampSec\" : \"%s\","
       "\"expiryTimestampSec\" : \"%s\","
-      "\"sourceCorpusInfo\" : [{\"corpusId\": \"http://first\","
+      "\"sourceCorpusInfo\" : [{\"corpusId\": \"%s\","
       "\"publisherData\": {"
       "\"sourceName\": \"Source 1\""
       "},"
       "\"ampUrl\": \"\"}]"
       "}}"
       "]}";
+  const std::string first_url = "http://first";
   std::string json_str(base::StringPrintf(
-      json_str_format, "http://first",
+      json_str_format, first_url.c_str(),
       NTPSnippet::TimeToJsonString(GetDefaultCreationTime()).c_str(),
-      NTPSnippet::TimeToJsonString(expiry_time).c_str()));
+      NTPSnippet::TimeToJsonString(expiry_time).c_str(), first_url.c_str()));
 
   LoadFromJSONString(json_str);
 
-  EXPECT_THAT(service()->snippets(), ElementsAre(IdEq("http://first")));
+  EXPECT_THAT(service()->snippets(), ElementsAre(IdEq(first_url)));
 
+  const std::string second_url = "http://second";
   json_str = base::StringPrintf(
-      json_str_format, "http://second",
+      json_str_format, second_url.c_str(),
       NTPSnippet::TimeToJsonString(GetDefaultCreationTime()).c_str(),
-      NTPSnippet::TimeToJsonString(expiry_time).c_str());
+      NTPSnippet::TimeToJsonString(expiry_time).c_str(), second_url.c_str());
 
   LoadFromJSONString(json_str);
 
   // The snippet loaded last should be at the first position in the list now.
   EXPECT_THAT(service()->snippets(),
-              ElementsAre(IdEq("http://second"), IdEq("http://first")));
+              ElementsAre(IdEq(second_url), IdEq(first_url)));
 }
 
 TEST_F(NTPSnippetsServiceTest, LimitNumSnippets) {
@@ -376,7 +378,7 @@ TEST_F(NTPSnippetsServiceTest, LimitNumSnippets) {
       "\"thumbnailUrl\" : \"http://localhost/salient_image\","
       "\"creationTimestampSec\" : \"%s\","
       "\"expiryTimestampSec\" : \"%s\","
-      "\"sourceCorpusInfo\" : [{\"corpusId\": \"http://first\","
+      "\"sourceCorpusInfo\" : [{\"corpusId\": \"http://localhost/%i\","
       "\"publisherData\": {"
       "\"sourceName\": \"Source 1\""
       "},"
@@ -389,11 +391,13 @@ TEST_F(NTPSnippetsServiceTest, LimitNumSnippets) {
     snippets1.push_back(base::StringPrintf(
         json_str_format, i,
         NTPSnippet::TimeToJsonString(GetDefaultCreationTime()).c_str(),
-        NTPSnippet::TimeToJsonString(expiry_time).c_str()));
+        NTPSnippet::TimeToJsonString(expiry_time).c_str(), i /* for corpusId */
+        ));
     snippets2.push_back(base::StringPrintf(
         json_str_format, snippets_per_load + i,
         NTPSnippet::TimeToJsonString(GetDefaultCreationTime()).c_str(),
-        NTPSnippet::TimeToJsonString(expiry_time).c_str()));
+        NTPSnippet::TimeToJsonString(expiry_time).c_str(),
+        snippets_per_load + i /* for corpusId */));
   }
 
   LoadFromJSONString(
@@ -776,4 +780,69 @@ TEST_F(NTPSnippetsServiceTest, LogNumArticlesHistogram) {
   CreateSnippetsService(/*enabled=*/true);
   tester.ExpectTotalCount("NewTabPage.Snippets.NumArticlesFetched", 4);
 }
+
+const char kChromeReaderResponseMultipleUrls[] =
+    "{ \"recos\": [{ "
+    "  \"contentInfo\": { "
+    "    \"url\": \"%s\", "
+    "    \"creationTimestampSec\": \"%s\", "
+    "    \"expiryTimestampSec\" : \"%s\","
+    "    \"title\": \"Stolen doggie finally gets returned to owner\", "
+    "    \"snippet\": \"It\'s at least this man\'s best friend.\", "
+    "    \"thumbnailUrl\": \"http://t0.gstatic.com/images?q=tbn:1\", "
+    "    \"sourceCorpusInfo\": [{"
+    "      \"type\" : \"CHROME_LOGS\", "
+    "      \"corpusId\": \"http://mashable.com/2016/05/11/stolen\", "
+    "      \"publisherData\": { "
+    "        \"sourceName\": \"Mashable\", "
+    "        \"sourceLogoUrl\": \"http://t3.gstatic.com/images?q=tbn:2\" "
+    "      }, "
+    "      \"ampUrl\": \"http://mashable-amphtml.googleusercontent.com/1\" "
+    "    }, { "
+    "      \"type\": \"CHROME_LOGS\", "
+    "      \"corpusId\": \"http://www.aol.com/article/2016/05/stolen-doggie\", "
+    "      \"publisherData\":  { "
+    "        \"sourceName\": \"AOL\", "
+    "        \"sourceLogoUrl\": \"http://t2.gstatic.com/images?q=tbn:3\" "
+    "      }, "
+    "      \"ampUrl\": \"http://mashable-amphtml.googleusercontent.com/1\" "
+    "    }, { "
+    "      \"type\": \"CHROME_LOGS\", "
+    "      \"corpusId\": \"http://mashable.com/2016/05/11/stolen?utm_cid=1\", "
+    "      \"publisherData\": { "
+    "        \"sourceName\": \"Mashable\", "
+    "        \"sourceLogoUrl\": \"http://t3.gstatic.com/images?q=tbn:2\" "
+    "      }, "
+    "      \"ampUrl\": \"http://mashable-amphtml.googleusercontent.com/1\" "
+    "    }] "
+    "  }, "
+    "  \"score\" : \"0.099307865\" "
+    "}]} ";
+
+TEST_F(NTPSnippetsServiceTest, DiscardShouldRespectAllKnownUrls) {
+  const std::string url_mashable = "http://mashable.com/2016/05/11/stolen";
+  const std::string url_aol =
+      "http://www.aol.com/article/2016/05/stolen-doggie";
+
+  LoadFromJSONString(base::StringPrintf(
+      kChromeReaderResponseMultipleUrls, url_mashable.c_str(),
+      NTPSnippet::TimeToJsonString(GetDefaultCreationTime()).c_str(),
+      NTPSnippet::TimeToJsonString(base::Time::Now() +
+                                   base::TimeDelta::FromHours(1))
+          .c_str()));
+  ASSERT_THAT(service()->snippets(), SizeIs(1));
+  // Discard the snippet via the mashable source corpus ID.
+  EXPECT_TRUE(service()->DiscardSnippet(url_mashable));
+  EXPECT_THAT(service()->snippets(), IsEmpty());
+
+  // The same article from the AOL domain should now be detected as discarded.
+  LoadFromJSONString(base::StringPrintf(
+      kChromeReaderResponseMultipleUrls, url_aol.c_str(),
+      NTPSnippet::TimeToJsonString(GetDefaultCreationTime()).c_str(),
+      NTPSnippet::TimeToJsonString(base::Time::Now() +
+                                   base::TimeDelta::FromHours(1))
+          .c_str()));
+  ASSERT_THAT(service()->snippets(), IsEmpty());
+}
+
 }  // namespace ntp_snippets

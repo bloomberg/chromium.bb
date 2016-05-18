@@ -161,13 +161,13 @@ std::unique_ptr<base::ListValue> SnippetsToListValue(
   return list;
 }
 
-bool ContainsSnippet(const NTPSnippet::PtrVector& haystack,
-                     const std::unique_ptr<NTPSnippet>& needle) {
-  const std::string& id = needle->id();
-  return std::find_if(haystack.begin(), haystack.end(),
-                      [&id](const std::unique_ptr<NTPSnippet>& snippet) {
-                        return snippet->id() == id;
-                      }) != haystack.end();
+void InsertAllIDs(const NTPSnippet::PtrVector& snippets,
+                  std::set<std::string>* ids) {
+  for (const std::unique_ptr<NTPSnippet>& snippet : snippets) {
+    ids->insert(snippet->id());
+    for (const SnippetSource& source : snippet->sources())
+      ids->insert(source.url.spec());
+  }
 }
 
 void WrapImageFetchedCallback(
@@ -393,12 +393,21 @@ void NTPSnippetsService::OnFetchFinished(
 
 void NTPSnippetsService::MergeSnippets(NTPSnippet::PtrVector new_snippets) {
   // Remove new snippets that we already have, or that have been discarded.
+  std::set<std::string> old_snippet_ids;
+  InsertAllIDs(discarded_snippets_, &old_snippet_ids);
+  InsertAllIDs(snippets_, &old_snippet_ids);
   new_snippets.erase(
-      std::remove_if(new_snippets.begin(), new_snippets.end(),
-                     [this](const std::unique_ptr<NTPSnippet>& snippet) {
-                       return ContainsSnippet(discarded_snippets_, snippet) ||
-                              ContainsSnippet(snippets_, snippet);
-                     }),
+      std::remove_if(
+          new_snippets.begin(), new_snippets.end(),
+          [&old_snippet_ids](const std::unique_ptr<NTPSnippet>& snippet) {
+            if (old_snippet_ids.count(snippet->id()))
+              return true;
+            for (const SnippetSource& source : snippet->sources()) {
+              if (old_snippet_ids.count(source.url.spec()))
+                return true;
+            }
+            return false;
+          }),
       new_snippets.end());
 
   // Fill in default publish/expiry dates where required.
@@ -433,7 +442,6 @@ void NTPSnippetsService::MergeSnippets(NTPSnippet::PtrVector new_snippets) {
                                   num_snippets_discarded);
     }
   }
-
   // Insert the new snippets at the front.
   snippets_.insert(snippets_.begin(),
                    std::make_move_iterator(new_snippets.begin()),
