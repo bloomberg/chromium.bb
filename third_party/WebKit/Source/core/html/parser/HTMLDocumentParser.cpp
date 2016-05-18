@@ -86,13 +86,13 @@ static HTMLTokenizer::State tokenizerStateForContextElement(Element* contextElem
     return HTMLTokenizer::DataState;
 }
 
-HTMLDocumentParser::HTMLDocumentParser(HTMLDocument& document, bool reportErrors, ParserSynchronizationPolicy syncPolicy)
+HTMLDocumentParser::HTMLDocumentParser(HTMLDocument& document, ParserSynchronizationPolicy syncPolicy)
     : ScriptableDocumentParser(document)
     , m_options(&document)
     , m_token(syncPolicy == ForceSynchronousParsing ? adoptPtr(new HTMLToken) : nullptr)
     , m_tokenizer(syncPolicy == ForceSynchronousParsing ? HTMLTokenizer::create(m_options) : nullptr)
     , m_scriptRunner(HTMLScriptRunner::create(&document, this))
-    , m_treeBuilder(HTMLTreeBuilder::create(this, &document, getParserContentPolicy(), reportErrors, m_options))
+    , m_treeBuilder(HTMLTreeBuilder::create(this, &document, getParserContentPolicy(), m_options))
     , m_loadingTaskRunner(adoptPtr(document.loadingTaskRunner()->clone()))
     , m_parserScheduler(HTMLParserScheduler::create(this, m_loadingTaskRunner.get()))
     , m_xssAuditorDelegate(&document)

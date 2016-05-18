@@ -194,14 +194,6 @@ void willDestroyResource(Resource* cachedResource)
     }
 }
 
-bool collectingHTMLParseErrors(Document* document)
-{
-    ASSERT(isMainThread());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(document))
-        return instrumentingAgentsSet().contains(instrumentingAgents);
-    return false;
-}
-
 bool consoleAgentEnabled(ExecutionContext* executionContext)
 {
     InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(executionContext);

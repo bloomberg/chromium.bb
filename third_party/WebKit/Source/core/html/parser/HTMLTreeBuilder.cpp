@@ -266,7 +266,7 @@ private:
     unsigned m_end;
 };
 
-HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser, HTMLDocument* document, ParserContentPolicy parserContentPolicy, bool, const HTMLParserOptions& options)
+HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser, HTMLDocument* document, ParserContentPolicy parserContentPolicy, const HTMLParserOptions& options)
     : m_framesetOk(true)
 #if ENABLE(ASSERT)
     , m_isAttached(true)

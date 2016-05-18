@@ -70,9 +70,9 @@ class PumpSession;
 class HTMLDocumentParser :  public ScriptableDocumentParser, private HTMLScriptRunnerHost {
     USING_GARBAGE_COLLECTED_MIXIN(HTMLDocumentParser);
 public:
-    static HTMLDocumentParser* create(HTMLDocument& document, bool reportErrors, ParserSynchronizationPolicy backgroundParsingPolicy)
+    static HTMLDocumentParser* create(HTMLDocument& document, ParserSynchronizationPolicy backgroundParsingPolicy)
     {
-        return new HTMLDocumentParser(document, reportErrors, backgroundParsingPolicy);
+        return new HTMLDocumentParser(document, backgroundParsingPolicy);
     }
     ~HTMLDocumentParser() override;
     DECLARE_VIRTUAL_TRACE();
@@ -118,7 +118,7 @@ protected:
     void append(const String&) override;
     void finish() final;
 
-    HTMLDocumentParser(HTMLDocument&, bool reportErrors, ParserSynchronizationPolicy);
+    HTMLDocumentParser(HTMLDocument&, ParserSynchronizationPolicy);
     HTMLDocumentParser(DocumentFragment*, Element* contextElement, ParserContentPolicy);
 
     HTMLTreeBuilder* treeBuilder() const { return m_treeBuilder.get(); }

@@ -33,7 +33,7 @@ namespace blink {
 using namespace HTMLNames;
 
 TextDocumentParser::TextDocumentParser(HTMLDocument& document, ParserSynchronizationPolicy syncPolicy)
-    : HTMLDocumentParser(document, false, syncPolicy)
+    : HTMLDocumentParser(document, syncPolicy)
     , m_haveInsertedFakePreElement(false)
 {
 }

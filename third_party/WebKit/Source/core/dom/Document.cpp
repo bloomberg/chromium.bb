@@ -2357,10 +2357,8 @@ CanvasFontCache* Document::canvasFontCache()
 
 DocumentParser* Document::createParser()
 {
-    if (isHTMLDocument()) {
-        bool reportErrors = InspectorInstrumentation::collectingHTMLParseErrors(this);
-        return HTMLDocumentParser::create(toHTMLDocument(*this), reportErrors, m_parserSyncPolicy);
-    }
+    if (isHTMLDocument())
+        return HTMLDocumentParser::create(toHTMLDocument(*this), m_parserSyncPolicy);
     // FIXME: this should probably pass the frame instead
     return XMLDocumentParser::create(*this, view());
 }
