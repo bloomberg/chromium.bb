@@ -14,6 +14,7 @@ class JavaTestRunner(object):
   """Runs java tests on the host."""
 
   def __init__(self, args):
+    self._coverage_dir = args.coverage_dir
     self._package_filter = args.package_filter
     self._runner_filter = args.runner_filter
     self._sdk_version = args.sdk_version
@@ -28,17 +29,28 @@ class JavaTestRunner(object):
     with tempfile.NamedTemporaryFile() as json_file:
       java_script = os.path.join(
           constants.GetOutDirectory(), 'bin', 'helper', self._test_suite)
-      command = [java_script,
-                 '-test-jars', self._test_suite + '.jar',
-                 '-json-results-file', json_file.name]
+      command = [java_script]
+
+      # Add Jar arguments.
+      jar_args = ['-test-jars', self._test_suite + '.jar',
+              '-json-results-file', json_file.name]
       if self._test_filter:
-        command.extend(['-gtest-filter', self._test_filter])
+        jar_args.extend(['-gtest-filter', self._test_filter])
       if self._package_filter:
-        command.extend(['-package-filter', self._package_filter])
+        jar_args.extend(['-package-filter', self._package_filter])
       if self._runner_filter:
-        command.extend(['-runner-filter', self._runner_filter])
+        jar_args.extend(['-runner-filter', self._runner_filter])
       if self._sdk_version:
-        command.extend(['-sdk-version', self._sdk_version])
+        jar_args.extend(['-sdk-version', self._sdk_version])
+      command.extend(['--jar-args', '"%s"' % ' '.join(jar_args)])
+
+      # Add JVM arguments.
+      jvm_args = []
+      if self._coverage_dir:
+        jvm_args.append('-Demma.coverage.out.file=%s' % self._coverage_dir)
+      if jvm_args:
+        command.extend(['--jvm-args', '"%s"' % ' '.join(jvm_args)])
+
       return_code = cmd_helper.RunCmd(command)
       results_list = json_results.ParseResultsFromJson(
           json.loads(json_file.read()))
