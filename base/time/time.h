@@ -579,56 +579,54 @@ class BASE_EXPORT Time : public time_internal::TimeBase<Time> {
                                  Time* parsed_time);
 };
 
-// Inline the TimeDelta factory methods, for fast TimeDelta construction.
-
 // static
-constexpr inline TimeDelta TimeDelta::FromDays(int days) {
+constexpr TimeDelta TimeDelta::FromDays(int days) {
   return days == std::numeric_limits<int>::max()
              ? Max()
              : TimeDelta(days * Time::kMicrosecondsPerDay);
 }
 
 // static
-constexpr inline TimeDelta TimeDelta::FromHours(int hours) {
+constexpr TimeDelta TimeDelta::FromHours(int hours) {
   return hours == std::numeric_limits<int>::max()
              ? Max()
              : TimeDelta(hours * Time::kMicrosecondsPerHour);
 }
 
 // static
-constexpr inline TimeDelta TimeDelta::FromMinutes(int minutes) {
+constexpr TimeDelta TimeDelta::FromMinutes(int minutes) {
   return minutes == std::numeric_limits<int>::max()
              ? Max()
              : TimeDelta(minutes * Time::kMicrosecondsPerMinute);
 }
 
 // static
-constexpr inline TimeDelta TimeDelta::FromSeconds(int64_t secs) {
+constexpr TimeDelta TimeDelta::FromSeconds(int64_t secs) {
   return FromProduct(secs, Time::kMicrosecondsPerSecond);
 }
 
 // static
-constexpr inline TimeDelta TimeDelta::FromMilliseconds(int64_t ms) {
+constexpr TimeDelta TimeDelta::FromMilliseconds(int64_t ms) {
   return FromProduct(ms, Time::kMicrosecondsPerMillisecond);
 }
 
 // static
-constexpr inline TimeDelta TimeDelta::FromSecondsD(double secs) {
+constexpr TimeDelta TimeDelta::FromSecondsD(double secs) {
   return FromDouble(secs * Time::kMicrosecondsPerSecond);
 }
 
 // static
-constexpr inline TimeDelta TimeDelta::FromMillisecondsD(double ms) {
+constexpr TimeDelta TimeDelta::FromMillisecondsD(double ms) {
   return FromDouble(ms * Time::kMicrosecondsPerMillisecond);
 }
 
 // static
-constexpr inline TimeDelta TimeDelta::FromMicroseconds(int64_t us) {
+constexpr TimeDelta TimeDelta::FromMicroseconds(int64_t us) {
   return TimeDelta(us);
 }
 
 // static
-constexpr inline TimeDelta TimeDelta::FromDouble(double value) {
+constexpr TimeDelta TimeDelta::FromDouble(double value) {
   // TODO(crbug.com/612601): Use saturated_cast<int64_t>(value) once we sort out
   // the Min() behavior.
   return value > std::numeric_limits<int64_t>::max()
@@ -639,8 +637,8 @@ constexpr inline TimeDelta TimeDelta::FromDouble(double value) {
 }
 
 // static
-constexpr inline TimeDelta TimeDelta::FromProduct(int64_t value,
-                                                  int64_t positive_value) {
+constexpr TimeDelta TimeDelta::FromProduct(int64_t value,
+                                           int64_t positive_value) {
   return (DCHECK(positive_value > 0),
           value > std::numeric_limits<int64_t>::max() / positive_value
               ? Max()
