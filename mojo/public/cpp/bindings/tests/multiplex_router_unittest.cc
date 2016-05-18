@@ -12,9 +12,9 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/lib/interface_endpoint_client.h"
-#include "mojo/public/cpp/bindings/lib/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/message_filter.h"
+#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/bindings/tests/message_queue.h"
 #include "mojo/public/cpp/bindings/tests/router_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,7 +25,6 @@ namespace {
 
 using mojo::internal::InterfaceEndpointClient;
 using mojo::internal::MultiplexRouter;
-using mojo::internal::ScopedInterfaceEndpointHandle;
 
 class MultiplexRouterTest : public testing::Test {
  public:

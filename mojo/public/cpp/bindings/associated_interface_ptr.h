@@ -68,8 +68,7 @@ class AssociatedInterfacePtr {
                 base::ThreadTaskRunnerHandle::Get()) {
     reset();
 
-    bool is_local =
-        internal::AssociatedInterfacePtrInfoHelper::GetHandle(&info).is_local();
+    bool is_local = info.handle().is_local();
 
     DCHECK(is_local) << "The AssociatedInterfacePtrInfo is supposed to be used "
                         "at the other side of the message pipe.";

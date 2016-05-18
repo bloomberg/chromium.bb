@@ -24,8 +24,8 @@ AssociatedGroup& AssociatedGroup::operator=(const AssociatedGroup& other) {
 }
 
 void AssociatedGroup::CreateEndpointHandlePair(
-    internal::ScopedInterfaceEndpointHandle* local_endpoint,
-    internal::ScopedInterfaceEndpointHandle* remote_endpoint) {
+    ScopedInterfaceEndpointHandle* local_endpoint,
+    ScopedInterfaceEndpointHandle* remote_endpoint) {
   if (!router_)
     return;
 

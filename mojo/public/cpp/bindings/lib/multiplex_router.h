@@ -26,7 +26,7 @@
 #include "mojo/public/cpp/bindings/lib/pipe_control_message_handler.h"
 #include "mojo/public/cpp/bindings/lib/pipe_control_message_handler_delegate.h"
 #include "mojo/public/cpp/bindings/lib/pipe_control_message_proxy.h"
-#include "mojo/public/cpp/bindings/lib/scoped_interface_endpoint_handle.h"
+#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 namespace base {
 class SingleThreadTaskRunner;

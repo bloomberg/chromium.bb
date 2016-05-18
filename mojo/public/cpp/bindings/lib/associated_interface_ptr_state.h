@@ -22,7 +22,7 @@
 #include "mojo/public/cpp/bindings/lib/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/lib/interface_id.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
-#include "mojo/public/cpp/bindings/lib/scoped_interface_endpoint_handle.h"
+#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace mojo {
@@ -90,7 +90,7 @@ class AssociatedInterfacePtrState {
 
     version_ = info.version();
     endpoint_client_.reset(new InterfaceEndpointClient(
-        AssociatedInterfacePtrInfoHelper::PassHandle(&info), nullptr,
+        info.PassHandle(), nullptr,
         base::WrapUnique(new typename Interface::ResponseValidator_()), false,
         std::move(runner)));
     proxy_.reset(new Proxy(endpoint_client_.get()));
@@ -103,11 +103,7 @@ class AssociatedInterfacePtrState {
     ScopedInterfaceEndpointHandle handle = endpoint_client_->PassHandle();
     endpoint_client_.reset();
     proxy_.reset();
-
-    AssociatedInterfacePtrInfo<Interface> result;
-    result.set_version(version_);
-    AssociatedInterfacePtrInfoHelper::SetHandle(&result, std::move(handle));
-    return result;
+    return AssociatedInterfacePtrInfo<Interface>(std::move(handle), version_);
   }
 
   bool is_bound() const { return !!endpoint_client_; }

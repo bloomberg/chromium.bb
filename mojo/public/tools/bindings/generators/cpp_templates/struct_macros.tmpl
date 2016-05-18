@@ -123,7 +123,7 @@
 {%-     if kind|is_associated_interface_kind %}
   mojo::internal::AssociatedInterfacePtrInfoToData(std::move({{input_field}}), &{{output}}->{{name}});
 {%-     else %}
-  {{output}}->{{name}} = mojo::internal::AssociatedInterfaceRequestHelper::PassHandle(&{{input_field}}).release();
+  {{output}}->{{name}} = {{input_field}}.PassHandle().release();
 {%-     endif %}
 {%-   elif kind|is_enum_kind %}
   {{output}}->{{name}} = static_cast<int32_t>({{input_field}});

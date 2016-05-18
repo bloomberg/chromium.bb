@@ -18,7 +18,7 @@
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/lib/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
-#include "mojo/public/cpp/bindings/lib/scoped_interface_endpoint_handle.h"
+#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 namespace mojo {
 
@@ -86,8 +86,7 @@ class AssociatedBinding {
   void Bind(AssociatedInterfaceRequest<Interface> request,
             scoped_refptr<base::SingleThreadTaskRunner> runner =
                 base::ThreadTaskRunnerHandle::Get()) {
-    internal::ScopedInterfaceEndpointHandle handle =
-        internal::AssociatedInterfaceRequestHelper::PassHandle(&request);
+    ScopedInterfaceEndpointHandle handle = request.PassHandle();
 
     DCHECK(handle.is_local())
         << "The AssociatedInterfaceRequest is supposed to be used at the "
@@ -123,8 +122,7 @@ class AssociatedBinding {
     DCHECK(endpoint_client_);
 
     AssociatedInterfaceRequest<Interface> request;
-    internal::AssociatedInterfaceRequestHelper::SetHandle(
-        &request, endpoint_client_->PassHandle());
+    request.Bind(endpoint_client_->PassHandle());
 
     endpoint_client_.reset();
     connection_error_handler_.reset();

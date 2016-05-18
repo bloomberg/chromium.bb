@@ -89,10 +89,8 @@ bool {{struct.name}}DataView::Read{{name|under_to_camel}}(
   if (data_->header_.version < {{pf.min_version}})
     return result;
 {%-     endif %}
-  mojo::internal::AssociatedInterfaceRequestHelper::SetHandle(
-      &result,
-      context_->router->CreateLocalEndpointHandle(
-          mojo::internal::FetchAndReset(&data_->{{name}})));
+  result.Bind(context_->router->CreateLocalEndpointHandle(
+      mojo::internal::FetchAndReset(&data_->{{name}})));
   return result;
 }
 

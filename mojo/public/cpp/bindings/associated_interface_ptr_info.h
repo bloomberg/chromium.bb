@@ -9,13 +9,9 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/lib/scoped_interface_endpoint_handle.h"
+#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 namespace mojo {
-
-namespace internal {
-class AssociatedInterfacePtrInfoHelper;
-}
 
 // AssociatedInterfacePtrInfo stores necessary information to construct an
 // associated interface pointer. It is similar to InterfacePtrInfo except that
@@ -32,6 +28,10 @@ class AssociatedInterfacePtrInfo {
     other.version_ = 0u;
   }
 
+  AssociatedInterfacePtrInfo(ScopedInterfaceEndpointHandle handle,
+                             uint32_t version)
+      : handle_(std::move(handle)), version_(version) {}
+
   ~AssociatedInterfacePtrInfo() {}
 
   AssociatedInterfacePtrInfo& operator=(AssociatedInterfacePtrInfo&& other) {
@@ -46,43 +46,22 @@ class AssociatedInterfacePtrInfo {
 
   bool is_valid() const { return handle_.is_valid(); }
 
+  ScopedInterfaceEndpointHandle PassHandle() {
+    return std::move(handle_);
+  }
+  const ScopedInterfaceEndpointHandle& handle() const { return handle_; }
+  void set_handle(ScopedInterfaceEndpointHandle handle) {
+    handle_ = std::move(handle);
+  }
+
   uint32_t version() const { return version_; }
   void set_version(uint32_t version) { version_ = version; }
 
  private:
-  friend class internal::AssociatedInterfacePtrInfoHelper;
-
-  internal::ScopedInterfaceEndpointHandle handle_;
+  ScopedInterfaceEndpointHandle handle_;
   uint32_t version_;
 };
 
-namespace internal {
-
-// With this helper, AssociatedInterfacePtrInfo doesn't have to expose any
-// operations related to ScopedInterfaceEndpointHandle, which is an internal
-// class.
-class AssociatedInterfacePtrInfoHelper {
- public:
-  template <typename Interface>
-  static ScopedInterfaceEndpointHandle PassHandle(
-      AssociatedInterfacePtrInfo<Interface>* info) {
-    return std::move(info->handle_);
-  }
-
-  template <typename Interface>
-  static const ScopedInterfaceEndpointHandle& GetHandle(
-      AssociatedInterfacePtrInfo<Interface>* info) {
-    return info->handle_;
-  }
-
-  template <typename Interface>
-  static void SetHandle(AssociatedInterfacePtrInfo<Interface>* info,
-                        ScopedInterfaceEndpointHandle handle) {
-    info->handle_ = std::move(handle);
-  }
-};
-
-}  // namespace internal
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_ASSOCIATED_INTERFACE_PTR_INFO_H_

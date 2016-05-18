@@ -69,8 +69,7 @@ inline void AssociatedInterfacePtrInfoToData(
     AssociatedInterfacePtrInfo<T> input,
     AssociatedInterface_Data* output) {
   output->version = input.version();
-  output->interface_id =
-      AssociatedInterfacePtrInfoHelper::PassHandle(&input).release();
+  output->interface_id = input.PassHandle().release();
 }
 
 template <typename T>
@@ -78,8 +77,7 @@ inline void AssociatedInterfaceDataToPtrInfo(
     AssociatedInterface_Data* input,
     AssociatedInterfacePtrInfo<T>* output,
     MultiplexRouter* router) {
-  AssociatedInterfacePtrInfoHelper::SetHandle(
-      output,
+  output->set_handle(
       router->CreateLocalEndpointHandle(FetchAndReset(&input->interface_id)));
   output->set_version(input->version);
 }

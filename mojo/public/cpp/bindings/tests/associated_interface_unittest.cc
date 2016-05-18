@@ -26,10 +26,7 @@ namespace mojo {
 namespace test {
 namespace {
 
-using mojo::internal::AssociatedInterfacePtrInfoHelper;
-using mojo::internal::AssociatedInterfaceRequestHelper;
 using mojo::internal::MultiplexRouter;
-using mojo::internal::ScopedInterfaceEndpointHandle;
 
 class IntegerSenderImpl : public IntegerSender {
  public:
@@ -99,33 +96,21 @@ class AssociatedInterfaceTest : public testing::Test {
   AssociatedInterfacePtrInfo<T> EmulatePassingAssociatedPtrInfo(
       AssociatedInterfacePtrInfo<T> ptr_info,
       scoped_refptr<MultiplexRouter> target) {
-    ScopedInterfaceEndpointHandle handle =
-        AssociatedInterfacePtrInfoHelper::PassHandle(&ptr_info);
+    ScopedInterfaceEndpointHandle handle = ptr_info.PassHandle();
     CHECK(!handle.is_local());
-
-    ScopedInterfaceEndpointHandle new_handle =
-        target->CreateLocalEndpointHandle(handle.release());
-
-    AssociatedInterfacePtrInfo<T> result;
-    AssociatedInterfacePtrInfoHelper::SetHandle(&result, std::move(new_handle));
-    result.set_version(ptr_info.version());
-    return std::move(result);
+    return AssociatedInterfacePtrInfo<T>(
+        target->CreateLocalEndpointHandle(handle.release()),
+        ptr_info.version());
   }
 
   template <typename T>
   AssociatedInterfaceRequest<T> EmulatePassingAssociatedRequest(
       AssociatedInterfaceRequest<T> request,
       scoped_refptr<MultiplexRouter> target) {
-    ScopedInterfaceEndpointHandle handle =
-        AssociatedInterfaceRequestHelper::PassHandle(&request);
+    ScopedInterfaceEndpointHandle handle = request.PassHandle();
     CHECK(!handle.is_local());
-
-    ScopedInterfaceEndpointHandle new_handle =
-        target->CreateLocalEndpointHandle(handle.release());
-
-    AssociatedInterfaceRequest<T> result;
-    AssociatedInterfaceRequestHelper::SetHandle(&result, std::move(new_handle));
-    return std::move(result);
+    return MakeAssociatedRequest<T>(
+        target->CreateLocalEndpointHandle(handle.release()));
   }
 
   // Okay to call from any thread.

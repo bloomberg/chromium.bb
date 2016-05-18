@@ -2,30 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/cpp/bindings/lib/scoped_interface_endpoint_handle.h"
+#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 #include "base/logging.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
 
 namespace mojo {
-namespace internal {
 
 ScopedInterfaceEndpointHandle::ScopedInterfaceEndpointHandle()
-    : ScopedInterfaceEndpointHandle(kInvalidInterfaceId, true, nullptr) {}
+    : ScopedInterfaceEndpointHandle(internal::kInvalidInterfaceId, true,
+                                    nullptr) {}
 
 ScopedInterfaceEndpointHandle::ScopedInterfaceEndpointHandle(
-    InterfaceId id,
+    internal::InterfaceId id,
     bool is_local,
-    scoped_refptr<MultiplexRouter> router)
+    scoped_refptr<internal::MultiplexRouter> router)
     : id_(id), is_local_(is_local), router_(std::move(router)) {
-  DCHECK(!IsValidInterfaceId(id) || router_);
+  DCHECK(!internal::IsValidInterfaceId(id) || router_);
 }
 
 ScopedInterfaceEndpointHandle::ScopedInterfaceEndpointHandle(
     ScopedInterfaceEndpointHandle&& other)
     : id_(other.id_), is_local_(other.is_local_) {
   router_.swap(other.router_);
-  other.id_ = kInvalidInterfaceId;
+  other.id_ = internal::kInvalidInterfaceId;
 }
 
 ScopedInterfaceEndpointHandle::~ScopedInterfaceEndpointHandle() {
@@ -41,12 +41,12 @@ ScopedInterfaceEndpointHandle& ScopedInterfaceEndpointHandle::operator=(
 }
 
 void ScopedInterfaceEndpointHandle::reset() {
-  if (!IsValidInterfaceId(id_))
+  if (!internal::IsValidInterfaceId(id_))
     return;
 
   router_->CloseEndpointHandle(id_, is_local_);
 
-  id_ = kInvalidInterfaceId;
+  id_ = internal::kInvalidInterfaceId;
   is_local_ = true;
   router_ = nullptr;
 }
@@ -58,15 +58,14 @@ void ScopedInterfaceEndpointHandle::swap(ScopedInterfaceEndpointHandle& other) {
   swap(other.router_, router_);
 }
 
-InterfaceId ScopedInterfaceEndpointHandle::release() {
-  InterfaceId result = id_;
+internal::InterfaceId ScopedInterfaceEndpointHandle::release() {
+  internal::InterfaceId result = id_;
 
-  id_ = kInvalidInterfaceId;
+  id_ = internal::kInvalidInterfaceId;
   is_local_ = true;
   router_ = nullptr;
 
   return result;
 }
 
-}  // namespace internal
 }  // namespace mojo
