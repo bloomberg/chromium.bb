@@ -2455,12 +2455,12 @@ TEST_F(WebFrameTest, updateOverlayScrollbarLayers)
     FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), m_baseURL + "large-div.html");
 
     FrameView* view = webViewHelper.webViewImpl()->mainFrameImpl()->frameView();
-    EXPECT_TRUE(view->layoutView()->compositor()->layerForHorizontalScrollbar());
-    EXPECT_TRUE(view->layoutView()->compositor()->layerForVerticalScrollbar());
+    EXPECT_TRUE(view->layoutViewItem().compositor()->layerForHorizontalScrollbar());
+    EXPECT_TRUE(view->layoutViewItem().compositor()->layerForVerticalScrollbar());
 
     webViewHelper.resize(WebSize(viewWidth * 10, viewHeight * 10));
-    EXPECT_FALSE(view->layoutView()->compositor()->layerForHorizontalScrollbar());
-    EXPECT_FALSE(view->layoutView()->compositor()->layerForVerticalScrollbar());
+    EXPECT_FALSE(view->layoutViewItem().compositor()->layerForHorizontalScrollbar());
+    EXPECT_FALSE(view->layoutViewItem().compositor()->layerForVerticalScrollbar());
 }
 
 void setScaleAndScrollAndLayout(WebViewImpl* webView, WebPoint scroll, float scale)
@@ -6673,9 +6673,9 @@ TEST_P(ParameterizedWebFrameTest, FullscreenWithTinyViewport)
     webViewHelper.resize(WebSize(viewportWidth, viewportHeight));
     webViewImpl->updateAllLifecyclePhases();
 
-    LayoutView* layoutView = webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutView();
-    EXPECT_EQ(320, layoutView->logicalWidth().floor());
-    EXPECT_EQ(533, layoutView->logicalHeight().floor());
+    LayoutViewItem layoutViewItem = webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutViewItem();
+    EXPECT_EQ(320, layoutViewItem.logicalWidth().floor());
+    EXPECT_EQ(533, layoutViewItem.logicalHeight().floor());
     EXPECT_FLOAT_EQ(1.2, webViewImpl->pageScaleFactor());
     EXPECT_FLOAT_EQ(1.2, webViewImpl->minimumPageScaleFactor());
     EXPECT_FLOAT_EQ(5.0, webViewImpl->maximumPageScaleFactor());
@@ -6685,16 +6685,16 @@ TEST_P(ParameterizedWebFrameTest, FullscreenWithTinyViewport)
     Fullscreen::from(*document).requestFullscreen(*document->documentElement(), Fullscreen::PrefixedRequest);
     webViewImpl->didEnterFullScreen();
     webViewImpl->updateAllLifecyclePhases();
-    EXPECT_EQ(384, layoutView->logicalWidth().floor());
-    EXPECT_EQ(640, layoutView->logicalHeight().floor());
+    EXPECT_EQ(384, layoutViewItem.logicalWidth().floor());
+    EXPECT_EQ(640, layoutViewItem.logicalHeight().floor());
     EXPECT_FLOAT_EQ(1.0, webViewImpl->pageScaleFactor());
     EXPECT_FLOAT_EQ(1.0, webViewImpl->minimumPageScaleFactor());
     EXPECT_FLOAT_EQ(1.0, webViewImpl->maximumPageScaleFactor());
 
     webViewImpl->didExitFullScreen();
     webViewImpl->updateAllLifecyclePhases();
-    EXPECT_EQ(320, layoutView->logicalWidth().floor());
-    EXPECT_EQ(533, layoutView->logicalHeight().floor());
+    EXPECT_EQ(320, layoutViewItem.logicalWidth().floor());
+    EXPECT_EQ(533, layoutViewItem.logicalHeight().floor());
     EXPECT_FLOAT_EQ(1.2, webViewImpl->pageScaleFactor());
     EXPECT_FLOAT_EQ(1.2, webViewImpl->minimumPageScaleFactor());
     EXPECT_FLOAT_EQ(5.0, webViewImpl->maximumPageScaleFactor());
@@ -6713,14 +6713,14 @@ TEST_P(ParameterizedWebFrameTest, FullscreenResizeWithTinyViewport)
     webViewHelper.resize(WebSize(viewportWidth, viewportHeight));
     webViewImpl->updateAllLifecyclePhases();
 
-    LayoutView* layoutView = webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutView();
+    LayoutViewItem layoutViewItem = webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutViewItem();
     Document* document = toWebLocalFrameImpl(webViewImpl->mainFrame())->frame()->document();
     UserGestureIndicator gesture(DefinitelyProcessingUserGesture);
     Fullscreen::from(*document).requestFullscreen(*document->documentElement(), Fullscreen::PrefixedRequest);
     webViewImpl->didEnterFullScreen();
     webViewImpl->updateAllLifecyclePhases();
-    EXPECT_EQ(384, layoutView->logicalWidth().floor());
-    EXPECT_EQ(640, layoutView->logicalHeight().floor());
+    EXPECT_EQ(384, layoutViewItem.logicalWidth().floor());
+    EXPECT_EQ(640, layoutViewItem.logicalHeight().floor());
     EXPECT_FLOAT_EQ(1.0, webViewImpl->pageScaleFactor());
     EXPECT_FLOAT_EQ(1.0, webViewImpl->minimumPageScaleFactor());
     EXPECT_FLOAT_EQ(1.0, webViewImpl->maximumPageScaleFactor());
@@ -6731,16 +6731,16 @@ TEST_P(ParameterizedWebFrameTest, FullscreenResizeWithTinyViewport)
     client.m_screenInfo.rect.height = viewportHeight;
     webViewHelper.resize(WebSize(viewportWidth, viewportHeight));
     webViewImpl->updateAllLifecyclePhases();
-    EXPECT_EQ(640, layoutView->logicalWidth().floor());
-    EXPECT_EQ(384, layoutView->logicalHeight().floor());
+    EXPECT_EQ(640, layoutViewItem.logicalWidth().floor());
+    EXPECT_EQ(384, layoutViewItem.logicalHeight().floor());
     EXPECT_FLOAT_EQ(1.0, webViewImpl->pageScaleFactor());
     EXPECT_FLOAT_EQ(1.0, webViewImpl->minimumPageScaleFactor());
     EXPECT_FLOAT_EQ(1.0, webViewImpl->maximumPageScaleFactor());
 
     webViewImpl->didExitFullScreen();
     webViewImpl->updateAllLifecyclePhases();
-    EXPECT_EQ(320, layoutView->logicalWidth().floor());
-    EXPECT_EQ(192, layoutView->logicalHeight().floor());
+    EXPECT_EQ(320, layoutViewItem.logicalWidth().floor());
+    EXPECT_EQ(192, layoutViewItem.logicalHeight().floor());
     EXPECT_FLOAT_EQ(2, webViewImpl->pageScaleFactor());
     EXPECT_FLOAT_EQ(2, webViewImpl->minimumPageScaleFactor());
     EXPECT_FLOAT_EQ(5.0, webViewImpl->maximumPageScaleFactor());
@@ -6763,9 +6763,9 @@ TEST_P(ParameterizedWebFrameTest, FullscreenRestoreScaleFactorUponExiting)
     client.m_screenInfo.rect.width = screenSizeMinusStatusBarsMinusUrlBar.width;
     client.m_screenInfo.rect.height = screenSizeMinusStatusBarsMinusUrlBar.height;
     webViewHelper.resize(screenSizeMinusStatusBarsMinusUrlBar);
-    LayoutView* layoutView = webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutView();
-    EXPECT_EQ(screenSizeMinusStatusBarsMinusUrlBar.width, layoutView->logicalWidth().floor());
-    EXPECT_EQ(screenSizeMinusStatusBarsMinusUrlBar.height, layoutView->logicalHeight().floor());
+    LayoutViewItem layoutViewItem = webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->layoutViewItem();
+    EXPECT_EQ(screenSizeMinusStatusBarsMinusUrlBar.width, layoutViewItem.logicalWidth().floor());
+    EXPECT_EQ(screenSizeMinusStatusBarsMinusUrlBar.height, layoutViewItem.logicalHeight().floor());
     EXPECT_FLOAT_EQ(1.0, webViewImpl->pageScaleFactor());
     EXPECT_FLOAT_EQ(1.0, webViewImpl->minimumPageScaleFactor());
     EXPECT_FLOAT_EQ(5.0, webViewImpl->maximumPageScaleFactor());
@@ -6784,8 +6784,8 @@ TEST_P(ParameterizedWebFrameTest, FullscreenRestoreScaleFactorUponExiting)
     client.m_screenInfo.rect.width = screenSize.width;
     client.m_screenInfo.rect.height = screenSize.height;
     webViewHelper.resize(screenSize);
-    EXPECT_EQ(screenSize.width, layoutView->logicalWidth().floor());
-    EXPECT_EQ(screenSize.height, layoutView->logicalHeight().floor());
+    EXPECT_EQ(screenSize.width, layoutViewItem.logicalWidth().floor());
+    EXPECT_EQ(screenSize.height, layoutViewItem.logicalHeight().floor());
     EXPECT_FLOAT_EQ(1.0, webViewImpl->pageScaleFactor());
     EXPECT_FLOAT_EQ(1.0, webViewImpl->minimumPageScaleFactor());
     EXPECT_FLOAT_EQ(1.0, webViewImpl->maximumPageScaleFactor());
@@ -6798,8 +6798,8 @@ TEST_P(ParameterizedWebFrameTest, FullscreenRestoreScaleFactorUponExiting)
     client.m_screenInfo.rect.width = screenSizeMinusStatusBarsMinusUrlBar.width;
     client.m_screenInfo.rect.height = screenSizeMinusStatusBarsMinusUrlBar.height;
     webViewHelper.resize(screenSizeMinusStatusBarsMinusUrlBar);
-    EXPECT_EQ(screenSizeMinusStatusBarsMinusUrlBar.width, layoutView->logicalWidth().floor());
-    EXPECT_EQ(screenSizeMinusStatusBarsMinusUrlBar.height, layoutView->logicalHeight().floor());
+    EXPECT_EQ(screenSizeMinusStatusBarsMinusUrlBar.width, layoutViewItem.logicalWidth().floor());
+    EXPECT_EQ(screenSizeMinusStatusBarsMinusUrlBar.height, layoutViewItem.logicalHeight().floor());
     EXPECT_FLOAT_EQ(1.0, webViewImpl->pageScaleFactor());
     EXPECT_FLOAT_EQ(1.0, webViewImpl->minimumPageScaleFactor());
     EXPECT_FLOAT_EQ(5.0, webViewImpl->maximumPageScaleFactor());

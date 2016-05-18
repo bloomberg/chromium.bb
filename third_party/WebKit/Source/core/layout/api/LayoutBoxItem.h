@@ -52,6 +52,16 @@ public:
         return toBox()->location();
     }
 
+    LayoutUnit logicalWidth() const
+    {
+        return toBox()->logicalWidth();
+    }
+
+    LayoutUnit logicalHeight() const
+    {
+        return toBox()->logicalHeight();
+    }
+
     LayoutUnit minPreferredLogicalWidth() const
     {
         return toBox()->minPreferredLogicalWidth();
