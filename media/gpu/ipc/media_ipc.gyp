@@ -25,7 +25,6 @@
         'common/create_video_encoder_params.h',
         'common/media_message_generator.cc',
         'common/media_message_generator.h',
-        'common/media_messages.cc',
         'common/media_messages.h',
         'common/media_param_traits.h',
         'common/media_param_traits.cc',

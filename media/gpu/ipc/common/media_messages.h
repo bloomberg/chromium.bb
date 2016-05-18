@@ -9,7 +9,6 @@
 #include "gpu/ipc/common/gpu_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/param_traits_macros.h"
-#include "media/base/bitstream_buffer.h"
 #include "media/gpu/ipc/common/media_param_traits.h"
 #include "media/video/jpeg_decode_accelerator.h"
 #include "media/video/video_decode_accelerator.h"
@@ -17,25 +16,6 @@
 #include "ui/gfx/ipc/gfx_param_traits.h"
 
 #define IPC_MESSAGE_START MediaMsgStart
-
-#ifndef MEDIA_GPU_IPC_COMMON_MEDIA_MESSAGES_H_
-#define MEDIA_GPU_IPC_COMMON_MEDIA_MESSAGES_H_
-
-namespace IPC {
-template <>
-struct ParamTraits<media::BitstreamBuffer> {
-  using param_type = media::BitstreamBuffer;
-  static void GetSize(base::PickleSizer* s, const param_type& p);
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-}  // namespace IPC
-
-#endif  // MEDIA_GPU_IPC_COMMON_MEDIA_MESSAGES_H_
 
 IPC_STRUCT_BEGIN(AcceleratedJpegDecoderMsg_Decode_Params)
   IPC_STRUCT_MEMBER(media::BitstreamBuffer, input_buffer)
