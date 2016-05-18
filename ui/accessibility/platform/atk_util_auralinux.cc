@@ -53,7 +53,45 @@ const char kAccessibilityEnabled[] = "ACCESSIBILITY_ENABLED";
 const char kGnomeAccessibilityEnabledKey[] =
     "/desktop/gnome/interface/accessibility";
 
-#endif
+bool PlatformShouldEnableAccessibility() {
+  GConfClient* client = gconf_client_get_default();
+  if (!client) {
+    LOG(ERROR) << "gconf_client_get_default failed";
+    return false;
+  }
+
+  GError* error = nullptr;
+  gboolean value = gconf_client_get_bool(client,
+                                         kGnomeAccessibilityEnabledKey,
+                                         &error);
+  g_object_unref(client);
+
+  if (error) {
+    VLOG(1) << "gconf_client_get_bool failed";
+    g_error_free(error);
+    return false;
+  }
+
+  return value;
+}
+
+#else  // !defined(USE_GCONF)
+
+bool PlatformShouldEnableAccessibility() {
+  // TODO(iceman): implement this for non-GNOME desktops.
+  return false;
+}
+
+#endif  // defined(USE_GCONF)
+
+bool ShouldEnableAccessibility() {
+  char* enable_accessibility = getenv(kAccessibilityEnabled);
+  if ((enable_accessibility && atoi(enable_accessibility) == 1) ||
+      PlatformShouldEnableAccessibility())
+    return true;
+
+  return false;
+}
 
 }  // namespace
 
@@ -161,6 +199,9 @@ void AtkUtilAuraLinux::Initialize(
   // Register our util class.
   g_type_class_unref(g_type_class_ref(ATK_UTIL_AURALINUX_TYPE));
 
+  if (!ShouldEnableAccessibility())
+    return;
+
   init_task_runner->PostTaskAndReply(
       FROM_HERE,
       base::Bind(
@@ -177,33 +218,7 @@ AtkUtilAuraLinux::~AtkUtilAuraLinux() {
 #if defined(USE_GCONF)
 
 void AtkUtilAuraLinux::CheckIfAccessibilityIsEnabledOnFileThread() {
-  char* enable_accessibility = getenv(kAccessibilityEnabled);
-  if ((enable_accessibility && atoi(enable_accessibility) == 1) ||
-      CheckPlatformAccessibilitySupportOnFileThread())
-    is_enabled_ = AccessibilityModuleInitOnFileThread();
-}
-
-bool AtkUtilAuraLinux::CheckPlatformAccessibilitySupportOnFileThread() {
-  GConfClient* client = gconf_client_get_default();
-  if (!client) {
-    LOG(ERROR) << "gconf_client_get_default failed";
-    return false;
-  }
-
-  GError* error = nullptr;
-  bool is_enabled = gconf_client_get_bool(client,
-                                    kGnomeAccessibilityEnabledKey,
-                                    &error);
-
-  g_object_unref(client);
-
-  if (error) {
-    VLOG(1) << "gconf_client_get_bool failed";
-    g_error_free(error);
-    return false;
-  }
-
-  return is_enabled;
+  is_enabled_ = AccessibilityModuleInitOnFileThread();
 }
 
 void AtkUtilAuraLinux::FinishAccessibilityInitOnUIThread() {
