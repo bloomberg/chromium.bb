@@ -1182,6 +1182,9 @@ public:
         AudioListenerSetPosition = 1366,
         AudioListenerSetOrientation = 1367,
         IntersectionObserver_Constructor = 1368,
+        DurableStoragePersist = 1369,
+        DurableStoragePersisted = 1370,
+        DurableStorageEstimate = 1371,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

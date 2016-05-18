@@ -73040,6 +73040,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1366" label="AudioListenerSetPosition"/>
   <int value="1367" label="AudioListenerSetOrientation"/>
   <int value="1368" label="IntersectionObserver_Constructor"/>
+  <int value="1369" label="DurableStoragePersist"/>
+  <int value="1370" label="DurableStoragePersisted"/>
+  <int value="1371" label="DurableStorageEstimate"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

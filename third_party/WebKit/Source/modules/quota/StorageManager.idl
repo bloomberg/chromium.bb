@@ -6,10 +6,10 @@
 
 [
     Exposed=(Window,Worker),
-    RuntimeEnabled=DurableStorage,
+    OriginTrialEnabled=DurableStorage,
 ] interface StorageManager {
-    [CallWith=ScriptState] Promise<boolean> persisted();
-    [Exposed=Window, CallWith=ScriptState] Promise<boolean> persist();
+    [CallWith=ScriptState, MeasureAs=DurableStoragePersisted] Promise<boolean> persisted();
+    [Exposed=Window, CallWith=ScriptState, MeasureAs=DurableStoragePersist] Promise<boolean> persist();
 
-    [RuntimeEnabled=StorageEstimate, CallWith=ScriptState] Promise<StorageEstimate> estimate();
+    [RuntimeEnabled=StorageEstimate, CallWith=ScriptState, MeasureAs=DurableStorageEstimate] Promise<StorageEstimate> estimate();
 };
