@@ -10,7 +10,6 @@
 #include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_header_list.h"
-#include "net/quic/quic_headers_stream.h"
 #include "net/quic/quic_spdy_session.h"
 #include "net/quic/quic_time.h"
 
@@ -375,6 +374,8 @@ void QuicHeadersStream::OnControlFrameHeaderData(SpdyStreamId stream_id,
 }
 
 void QuicHeadersStream::OnHeaderList(const QuicHeaderList& header_list) {
+  DVLOG(1) << "Received header list for stream " << stream_id_ << ": "
+           << header_list.DebugString();
   if (measure_headers_hol_blocking_time_) {
     if (prev_max_timestamp_ > cur_max_timestamp_) {
       // prev_max_timestamp_ > cur_max_timestamp_ implies that

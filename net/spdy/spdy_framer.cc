@@ -21,6 +21,7 @@
 #include "net/spdy/spdy_bug_tracker.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_frame_reader.h"
+#include "net/spdy/spdy_headers_block_parser.h"
 #include "third_party/zlib/zlib.h"
 
 using base::StringPiece;
@@ -170,6 +171,7 @@ SpdyFramer::SpdyFramer(SpdyMajorVersion version)
       expect_continuation_(0),
       visitor_(NULL),
       debug_visitor_(NULL),
+      header_handler_(nullptr),
       display_protocol_("SPDY"),
       protocol_version_(version),
       enable_compression_(true),
@@ -448,6 +450,8 @@ const char* SpdyFramer::ErrorCodeToString(int error_code) {
       return "SPDY_INVALID_CONTROL_FRAME_FLAGS";
     case SPDY_UNEXPECTED_FRAME:
       return "UNEXPECTED_FRAME";
+    case SPDY_INTERNAL_FRAMER_ERROR:
+      return "SPDY_INTERNAL_FRAMER_ERROR";
   }
   return "UNKNOWN_ERROR";
 }
@@ -1609,6 +1613,21 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
         return original_len - len;
 #endif
     }
+
+    if (current_frame_type_ != CONTINUATION) {
+      header_handler_ = visitor_->OnHeaderFrameStart(current_frame_stream_id_);
+      if (header_handler_ == nullptr) {
+        SPDY_BUG << "visitor_->OnHeaderFrameStart returned nullptr";
+        set_error(SPDY_INTERNAL_FRAMER_ERROR);
+        return original_len - len;
+      }
+      if (protocol_version() == SPDY3) {
+        header_parser_.reset(
+            new SpdyHeadersBlockParser(protocol_version(), header_handler_));
+      } else {
+        GetHpackDecoder()->HandleControlFrameHeadersStart(header_handler_);
+      }
+    }
     CHANGE_STATE(SPDY_CONTROL_FRAME_HEADER_BLOCK);
   }
   return original_len - len;
@@ -1665,19 +1684,19 @@ size_t SpdyFramer::ProcessControlFrameHeaderBlock(const char* data,
         size_t compressed_len = 0;
         if (GetHpackDecoder()->HandleControlFrameHeadersComplete(
                 &compressed_len)) {
-          // TODO(jgraettinger): To be removed with migration to
-          // SpdyHeadersHandlerInterface. Serializes the HPACK block as a SPDY3
-          // block, delivered via reentrant call to
-          // ProcessControlFrameHeaderBlock().
-          DeliverHpackBlockAsSpdy3Block(compressed_len);
-          return process_bytes;
+          visitor_->OnHeaderFrameEnd(current_frame_stream_id_, true);
+          if (state_ == SPDY_ERROR) {
+            return data_len;
+          }
+        } else {
+          set_error(SPDY_DECOMPRESS_FAILURE);
+          processed_successfully = false;
         }
-        set_error(SPDY_DECOMPRESS_FAILURE);
-        processed_successfully = false;
       } else {
-        // The complete header block has been delivered. We send a zero-length
-        // OnControlFrameHeaderData() to indicate this.
-        visitor_->OnControlFrameHeaderData(current_frame_stream_id_, NULL, 0);
+        visitor_->OnHeaderFrameEnd(current_frame_stream_id_, true);
+        if (state_ == SPDY_ERROR) {
+          return data_len;
+        }
       }
     }
     if (processed_successfully) {
@@ -3088,8 +3107,12 @@ bool SpdyFramer::IncrementallyDecompressControlFrameHeaderData(
     if ((rv == Z_OK) || input_exhausted) {
       size_t decompressed_len = arraysize(buffer) - decomp->avail_out;
       if (decompressed_len > 0) {
-        processed_successfully = visitor_->OnControlFrameHeaderData(
+        processed_successfully = header_parser_->HandleControlFrameHeadersData(
             stream_id, buffer, decompressed_len);
+        if (header_parser_->get_error() ==
+            SpdyHeadersBlockParser::NEED_MORE_DATA) {
+          processed_successfully = true;
+        }
       }
       if (!processed_successfully) {
         // Assume that the problem was the header block was too large for the
@@ -3110,8 +3133,11 @@ bool SpdyFramer::IncrementallyDeliverControlFrameHeaderData(
   bool read_successfully = true;
   while (read_successfully && len > 0) {
     size_t bytes_to_deliver = std::min(len, kHeaderDataChunkMaxSize);
-    read_successfully = visitor_->OnControlFrameHeaderData(stream_id, data,
-                                                           bytes_to_deliver);
+    read_successfully = header_parser_->HandleControlFrameHeadersData(
+        stream_id, data, bytes_to_deliver);
+    if (header_parser_->get_error() == SpdyHeadersBlockParser::NEED_MORE_DATA) {
+      read_successfully = true;
+    }
     data += bytes_to_deliver;
     len -= bytes_to_deliver;
     if (!read_successfully) {
