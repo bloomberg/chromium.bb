@@ -70,6 +70,7 @@ public:
 
     virtual ContextType getContextType() const = 0;
     virtual bool isAccelerated() const { return false; }
+    virtual bool shouldAntialias() const { return false; }
     virtual bool hasAlpha() const { return true; }
     virtual void setIsHidden(bool) = 0;
     virtual bool isContextLost() const { return true; }

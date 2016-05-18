@@ -302,6 +302,11 @@ void CanvasRenderingContext2D::restoreCanvasMatrixClipStack(SkCanvas* c) const
     c->restore();
 }
 
+bool CanvasRenderingContext2D::shouldAntialias() const
+{
+    return state().shouldAntialias();
+}
+
 void CanvasRenderingContext2D::setShouldAntialias(bool doAA)
 {
     modifiableState().setShouldAntialias(doAA);

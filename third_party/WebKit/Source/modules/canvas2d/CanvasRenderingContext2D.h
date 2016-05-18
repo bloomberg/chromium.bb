@@ -85,6 +85,7 @@ public:
 
     bool isContextLost() const override;
 
+    bool shouldAntialias() const override;
     void setShouldAntialias(bool) override;
 
     void scrollPathIntoView();
