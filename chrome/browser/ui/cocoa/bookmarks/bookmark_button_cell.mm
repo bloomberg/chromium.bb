@@ -24,7 +24,7 @@ namespace {
 
 const int kHierarchyButtonXMargin = 4;
 const int kIconTextSpacer = 4;
-const int kTextRightPadding = 1;
+const int kTextRightPadding = 3;
 const int kIconLeftPadding = 3;
 
 const int kDefaultFontSize = 12;
@@ -322,7 +322,7 @@ const int kDefaultFontSize = 12;
     // Return the space needed to display the image and title, with a little
     // distance between them.
     cellSize = NSMakeSize(kIconLeftPadding + [[self image] size].width,
-                          bookmarks::kMaterialBookmarkButtonHeight);
+                          bookmarks::kBookmarkButtonHeight);
     NSString* title = [self visibleTitle];
     if ([title length] > 0) {
       CGFloat textWidth =
@@ -342,9 +342,11 @@ const int kDefaultFontSize = 12;
   NSRect imageRect = [super imageRectForBounds:theRect];
   // In Material Design, add a little space between the image and the button's
   // left edge, but only if there's a visible title.
-  if ([[self visibleTitle] length] &&
-      ui::MaterialDesignController::IsModeMaterial()) {
-    imageRect.origin.x += kIconLeftPadding;
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    imageRect.origin.y -= 1;
+    if ([[self visibleTitle] length]) {
+      imageRect.origin.x += kIconLeftPadding;
+    }
   }
   return imageRect;
 }
@@ -385,7 +387,10 @@ const int kDefaultFontSize = 12;
 }
 
 - (int)verticalTextOffset {
-  return 0;
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    return 0;
+  }
+  return -1;
 }
 
 @end

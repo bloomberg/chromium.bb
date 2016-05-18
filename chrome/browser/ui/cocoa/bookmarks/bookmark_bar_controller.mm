@@ -602,11 +602,7 @@ CGFloat BookmarkRightMargin() {
   // The state of our morph (if any); 1 is total bubble, 0 is the regular bar.
   CGFloat morph = [self detachedMorphProgress];
   CGFloat padding = 0;
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    padding = bookmarks::kMaterialNTPBookmarkBarPadding;
-  } else {
-    padding = bookmarks::kNTPBookmarkBarPadding;
-  }
+  padding = bookmarks::kNTPBookmarkBarPadding;
   buttonViewFrame =
       NSInsetRect(buttonViewFrame, morph * padding, morph * padding);
 
@@ -1983,11 +1979,7 @@ CGFloat BookmarkRightMargin() {
                                  xOffset:(int*)xOffset {
   DCHECK(xOffset);
   NSRect bounds = [buttonView_ bounds];
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    bounds.size.height = bookmarks::kMaterialBookmarkButtonHeight;
-  } else {
-    bounds.size.height = bookmarks::kBookmarkButtonHeight;
-  }
+  bounds.size.height = bookmarks::kBookmarkButtonHeight;
 
   NSRect frame = NSInsetRect(bounds,
                              bookmarks::BookmarkHorizontalPadding(),

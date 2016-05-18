@@ -546,6 +546,12 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
     *returnInnerFrame = innerFrame;
   if (returnInnerPath) {
     DCHECK(*returnInnerPath == nil);
+    // In Material Design on Retina, nudge the hover background by 1px.
+    if ([self tag] == kMaterialStandardButtonTypeWithLimitedClickFeedback &&
+        kLineWidth < 1) {
+      drawFrame.origin.y -= kLineWidth;
+    }
+
     *returnInnerPath = [NSBezierPath bezierPathWithRoundedRect:drawFrame
                                                        xRadius:cornerRadius
                                                        yRadius:cornerRadius];

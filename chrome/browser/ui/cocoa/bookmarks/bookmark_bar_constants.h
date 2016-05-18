@@ -17,22 +17,17 @@ namespace bookmarks {
 
 // Correction used for computing other values based on the height.
 const int kVisualHeightOffset = 2;
-const int kMaterialVisualHeightOffset = 0;
+const int kMaterialVisualHeightOffset = 2;
 
 // The amount of space between the inner bookmark bar and the outer toolbar on
 // new tab pages.
 const int kNTPBookmarkBarPadding =
     (chrome::kNTPBookmarkBarHeight -
         (chrome::kBookmarkBarHeight + kVisualHeightOffset)) / 2;
-const int kMaterialNTPBookmarkBarPadding =
-    (chrome::kNTPBookmarkBarHeight -
-        (chrome::kBookmarkBarHeight + kMaterialVisualHeightOffset)) / 2;
 
 // The height of buttons in the bookmark bar.
 const int kBookmarkButtonHeight =
     chrome::kBookmarkBarHeight + kVisualHeightOffset;
-const int kMaterialBookmarkButtonHeight =
-    chrome::kBookmarkBarHeight + kMaterialVisualHeightOffset;
 
 // The height of buttons in a bookmark bar folder menu.
 const CGFloat kBookmarkFolderButtonHeight = 24.0;
