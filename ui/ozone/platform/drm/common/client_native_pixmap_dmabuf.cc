@@ -72,7 +72,10 @@ ClientNativePixmapDmaBuf::ClientNativePixmapDmaBuf(int dmabuf_fd,
   size_t map_size = stride_ * size_.height();
   data_ = mmap(nullptr, map_size, (PROT_READ | PROT_WRITE), MAP_SHARED,
                dmabuf_fd, 0);
-  CHECK_NE(data_, MAP_FAILED);
+  if (data_ == MAP_FAILED) {
+    PLOG(ERROR) << "Failed mmap().";
+    base::TerminateBecauseOutOfMemory(map_size);
+  }
 }
 
 ClientNativePixmapDmaBuf::~ClientNativePixmapDmaBuf() {
