@@ -49,6 +49,7 @@ class NavigationController {
   enum ReloadType {
     NO_RELOAD,                   // Normal load, restore, or history navigation.
     RELOAD,                      // Normal (cache-validating) reload.
+    RELOAD_MAIN_RESOURCE,        // Reload validating only the main resource.
     RELOAD_BYPASSING_CACHE,      // Reload bypassing the cache (shift-reload).
     RELOAD_ORIGINAL_REQUEST_URL, // Reload using the original request URL.
     RELOAD_DISABLE_LOFI_MODE     // Reload with Lo-Fi mode disabled.

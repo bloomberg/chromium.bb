@@ -739,7 +739,7 @@ STATIC_ASSERT_ENUM(FrameLoaderClient::UnloadHandler, WebFrameClient::UnloadHandl
 STATIC_ASSERT_ENUM(WebFrameLoadType::Standard, FrameLoadTypeStandard);
 STATIC_ASSERT_ENUM(WebFrameLoadType::BackForward, FrameLoadTypeBackForward);
 STATIC_ASSERT_ENUM(WebFrameLoadType::Reload, FrameLoadTypeReload);
-STATIC_ASSERT_ENUM(WebFrameLoadType::Same, FrameLoadTypeSame);
+STATIC_ASSERT_ENUM(WebFrameLoadType::ReloadMainResource, FrameLoadTypeReloadMainResource);
 STATIC_ASSERT_ENUM(WebFrameLoadType::ReplaceCurrentItem, FrameLoadTypeReplaceCurrentItem);
 STATIC_ASSERT_ENUM(WebFrameLoadType::InitialInChildFrame, FrameLoadTypeInitialInChildFrame);
 STATIC_ASSERT_ENUM(WebFrameLoadType::InitialHistoryLoad, FrameLoadTypeInitialHistoryLoad);

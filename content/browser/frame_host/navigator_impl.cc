@@ -52,14 +52,16 @@ FrameMsg_Navigate_Type::Value GetNavigationType(
     BrowserContext* browser_context, const NavigationEntryImpl& entry,
     NavigationController::ReloadType reload_type) {
   switch (reload_type) {
-    case NavigationControllerImpl::RELOAD:
+    case NavigationController::RELOAD:
       return FrameMsg_Navigate_Type::RELOAD;
-    case NavigationControllerImpl::RELOAD_BYPASSING_CACHE:
-    case NavigationControllerImpl::RELOAD_DISABLE_LOFI_MODE:
+    case NavigationController::RELOAD_MAIN_RESOURCE:
+      return FrameMsg_Navigate_Type::RELOAD_MAIN_RESOURCE;
+    case NavigationController::RELOAD_BYPASSING_CACHE:
+    case NavigationController::RELOAD_DISABLE_LOFI_MODE:
       return FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE;
-    case NavigationControllerImpl::RELOAD_ORIGINAL_REQUEST_URL:
+    case NavigationController::RELOAD_ORIGINAL_REQUEST_URL:
       return FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
-    case NavigationControllerImpl::NO_RELOAD:
+    case NavigationController::NO_RELOAD:
       break;  // Fall through to rest of function.
   }
 

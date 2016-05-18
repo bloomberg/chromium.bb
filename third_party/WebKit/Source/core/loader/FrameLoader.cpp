@@ -137,7 +137,7 @@ ResourceRequest FrameLoader::resourceRequestFromHistoryItem(HistoryItem* item, W
 ResourceRequest FrameLoader::resourceRequestForReload(FrameLoadType frameLoadType,
     const KURL& overrideURL, ClientRedirectPolicy clientRedirectPolicy)
 {
-    ASSERT(frameLoadType == FrameLoadTypeReload || frameLoadType == FrameLoadTypeReloadBypassingCache);
+    ASSERT(frameLoadType == FrameLoadTypeReload || frameLoadType == FrameLoadTypeReloadMainResource || frameLoadType == FrameLoadTypeReloadBypassingCache);
     WebCachePolicy cachePolicy = frameLoadType == FrameLoadTypeReloadBypassingCache ? WebCachePolicy::BypassingCache : WebCachePolicy::ValidatingCacheData;
     if (!m_currentItem)
         return ResourceRequest();
@@ -809,7 +809,7 @@ FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& reques
 
     if (request.resourceRequest().url() == m_documentLoader->urlForHistory()) {
         if (!request.originDocument())
-            return FrameLoadTypeSame;
+            return FrameLoadTypeReloadMainResource;
         return request.resourceRequest().httpMethod() == HTTPNames::POST ? FrameLoadTypeStandard : FrameLoadTypeReplaceCurrentItem;
     }
 
@@ -1287,7 +1287,7 @@ bool FrameLoader::shouldPerformFragmentNavigation(bool isFormSubmission, const S
     return (!isFormSubmission || equalIgnoringCase(httpMethod, HTTPNames::GET))
         && loadType != FrameLoadTypeReload
         && loadType != FrameLoadTypeReloadBypassingCache
-        && loadType != FrameLoadTypeSame
+        && loadType != FrameLoadTypeReloadMainResource
         && loadType != FrameLoadTypeBackForward
         && url.hasFragmentIdentifier()
         && equalIgnoringFragmentIdentifier(m_frame->document()->url(), url)

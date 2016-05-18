@@ -413,8 +413,8 @@ TEST_F(FrameFetchContextTest, MainResource)
     EXPECT_EQ(WebCachePolicy::ReturnCacheDataElseLoad, fetchContext->resourceRequestCachePolicy(request, Resource::MainResource, FetchRequest::NoDefer));
     document->frame()->host()->setOverrideEncoding(AtomicString());
 
-    // FrameLoadTypeSame
-    document->frame()->loader().setLoadType(FrameLoadTypeSame);
+    // FrameLoadTypeReloadMainResource
+    document->frame()->loader().setLoadType(FrameLoadTypeReloadMainResource);
     EXPECT_EQ(WebCachePolicy::ValidatingCacheData, fetchContext->resourceRequestCachePolicy(request, Resource::MainResource, FetchRequest::NoDefer));
 
     // Conditional request

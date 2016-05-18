@@ -6064,20 +6064,20 @@ TEST_P(ParameterizedWebFrameTest, ReloadIframe)
 class TestSameDocumentWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     TestSameDocumentWebFrameClient()
-        : m_frameLoadTypeSameSeen(false)
+        : m_frameLoadTypeReloadMainResourceSeen(false)
     {
     }
 
     virtual void willSendRequest(WebLocalFrame* frame, unsigned, WebURLRequest&, const WebURLResponse&)
     {
-        if (toWebLocalFrameImpl(frame)->frame()->loader().loadType() == FrameLoadTypeSame)
-            m_frameLoadTypeSameSeen = true;
+        if (toWebLocalFrameImpl(frame)->frame()->loader().loadType() == FrameLoadTypeReloadMainResource)
+            m_frameLoadTypeReloadMainResourceSeen = true;
     }
 
-    bool frameLoadTypeSameSeen() const { return m_frameLoadTypeSameSeen; }
+    bool frameLoadTypeReloadMainResourceSeen() const { return m_frameLoadTypeReloadMainResourceSeen; }
 
 private:
-    bool m_frameLoadTypeSameSeen;
+    bool m_frameLoadTypeReloadMainResourceSeen;
 };
 
 TEST_P(ParameterizedWebFrameTest, NavigateToSame)
@@ -6086,13 +6086,13 @@ TEST_P(ParameterizedWebFrameTest, NavigateToSame)
     TestSameDocumentWebFrameClient client;
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "navigate_to_same.html", true, &client);
-    EXPECT_FALSE(client.frameLoadTypeSameSeen());
+    EXPECT_FALSE(client.frameLoadTypeReloadMainResourceSeen());
 
     FrameLoadRequest frameRequest(0, ResourceRequest(toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->document()->url()));
     toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->loader().load(frameRequest);
     FrameTestHelpers::pumpPendingRequestsForFrameToLoad(webViewHelper.webView()->mainFrame());
 
-    EXPECT_TRUE(client.frameLoadTypeSameSeen());
+    EXPECT_TRUE(client.frameLoadTypeReloadMainResourceSeen());
 }
 
 class TestSameDocumentWithImageWebFrameClient : public FrameTestHelpers::TestWebFrameClient {

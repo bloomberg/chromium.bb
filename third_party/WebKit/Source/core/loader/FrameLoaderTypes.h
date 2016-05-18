@@ -31,11 +31,12 @@
 
 namespace blink {
 
+// See WebFrameLoadType in public/web/WebFrameLoadType.h for details.
 enum FrameLoadType {
     FrameLoadTypeStandard,
     FrameLoadTypeBackForward,
     FrameLoadTypeReload,
-    FrameLoadTypeSame, // user loads same URL again (but not reload button)
+    FrameLoadTypeReloadMainResource,
     FrameLoadTypeReplaceCurrentItem,
     FrameLoadTypeInitialInChildFrame,
     FrameLoadTypeInitialHistoryLoad,

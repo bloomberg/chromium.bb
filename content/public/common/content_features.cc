@@ -56,7 +56,7 @@ const base::Feature kNewMediaPlaybackUi{"NewMediaPlaybackUi",
 // Non-validating reload on reload-to-refresh-content (e.g. pull-to-refresh).
 // See https://crbug.com/558829
 const base::Feature kNonValidatingReloadOnRefreshContent{
-    "NonValidatingReloadOnRefreshContent",
+    "NonValidatingReloadOnRefreshContentV2",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // An experiment to optimize resource loading IPC for small resources.

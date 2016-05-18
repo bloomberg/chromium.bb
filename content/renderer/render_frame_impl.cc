@@ -608,9 +608,39 @@ media::Context3D GetSharedMainThreadContext3D(
 }
 
 bool IsReload(FrameMsg_Navigate_Type::Value navigation_type) {
-  return navigation_type == FrameMsg_Navigate_Type::RELOAD ||
-         navigation_type == FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE ||
-         navigation_type == FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
+  switch (navigation_type) {
+    case FrameMsg_Navigate_Type::RELOAD:
+    case FrameMsg_Navigate_Type::RELOAD_MAIN_RESOURCE:
+    case FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE:
+    case FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL:
+      return true;
+    case FrameMsg_Navigate_Type::RESTORE:
+    case FrameMsg_Navigate_Type::RESTORE_WITH_POST:
+    case FrameMsg_Navigate_Type::NORMAL:
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
+WebFrameLoadType ReloadFrameLoadTypeFor(
+    FrameMsg_Navigate_Type::Value navigation_type) {
+  switch (navigation_type) {
+    case FrameMsg_Navigate_Type::RELOAD:
+    case FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL:
+      return WebFrameLoadType::Reload;
+    case FrameMsg_Navigate_Type::RELOAD_MAIN_RESOURCE:
+      return WebFrameLoadType::ReloadMainResource;
+    case FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE:
+      return WebFrameLoadType::ReloadBypassingCache;
+    case FrameMsg_Navigate_Type::RESTORE:
+    case FrameMsg_Navigate_Type::RESTORE_WITH_POST:
+    case FrameMsg_Navigate_Type::NORMAL:
+      NOTREACHED();
+      return WebFrameLoadType::Standard;
+  }
+  NOTREACHED();
+  return WebFrameLoadType::Standard;
 }
 
 RenderFrameImpl::CreateRenderFrameImplFunction g_create_render_frame_impl =
@@ -5320,10 +5350,7 @@ void RenderFrameImpl::NavigateInternal(
   // corresponds to a back/forward navigation event. Update the parameters
   // depending on the navigation type.
   if (is_reload) {
-    bool bypass_cache = (common_params.navigation_type ==
-                         FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE);
-    load_type = bypass_cache ? WebFrameLoadType::ReloadBypassingCache
-                             : WebFrameLoadType::Reload;
+    load_type = ReloadFrameLoadTypeFor(common_params.navigation_type);
 
     if (!browser_side_navigation) {
       const GURL override_url =

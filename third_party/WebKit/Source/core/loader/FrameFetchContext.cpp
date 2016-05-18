@@ -104,7 +104,7 @@ bool shouldDisallowFetchForMainFrameScript(const ResourceRequest& request, Fetch
     // recover if blocking of a script is leading to a page break and the user
     // reloads the page.
     const FrameLoadType loadType = document.frame()->loader().loadType();
-    const bool isReload = loadType == FrameLoadTypeReload || loadType == FrameLoadTypeReloadBypassingCache || loadType == FrameLoadTypeSame;
+    const bool isReload = loadType == FrameLoadTypeReload || loadType == FrameLoadTypeReloadBypassingCache || loadType == FrameLoadTypeReloadMainResource;
     if (isReload) {
         // Recording this metric since an increase in number of reloads for pages
         // where a script was blocked could be indicative of a page break.
@@ -235,7 +235,7 @@ WebCachePolicy FrameFetchContext::resourceRequestCachePolicy(const ResourceReque
             return WebCachePolicy::ReturnCacheDataDontLoad;
         if (!frame()->host()->overrideEncoding().isEmpty())
             return WebCachePolicy::ReturnCacheDataElseLoad;
-        if (frameLoadType == FrameLoadTypeSame || request.isConditional() || request.httpMethod() == "POST")
+        if (frameLoadType == FrameLoadTypeReloadMainResource || request.isConditional() || request.httpMethod() == "POST")
             return WebCachePolicy::ValidatingCacheData;
 
         for (Frame* f = frame(); f; f = f->tree().parent()) {
