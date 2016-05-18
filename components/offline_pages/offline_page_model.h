@@ -293,6 +293,7 @@ class OfflinePageModel : public KeyedService,
                             bool success);
   void InformSavePageDone(const SavePageCallback& callback,
                           SavePageResult result,
+                          const ClientId& client_id,
                           int64_t offline_id);
   void DeletePendingArchiver(OfflinePageArchiver* archiver);
 

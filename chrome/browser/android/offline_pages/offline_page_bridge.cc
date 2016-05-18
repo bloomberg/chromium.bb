@@ -303,12 +303,15 @@ void OfflinePageBridge::SavePage(
   ScopedJavaGlobalRef<jobject> j_callback_ref;
   j_callback_ref.Reset(env, j_callback_obj);
 
+  GURL url;
+  std::unique_ptr<OfflinePageArchiver> archiver;
+
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
-  GURL url(web_contents->GetLastCommittedURL());
-
-  std::unique_ptr<OfflinePageArchiver> archiver(
-      new OfflinePageMHTMLArchiver(web_contents));
+  if (web_contents) {
+    url = web_contents->GetLastCommittedURL();
+    archiver.reset(new OfflinePageMHTMLArchiver(web_contents));
+  }
 
   offline_pages::ClientId client_id;
   client_id.name_space = ConvertJavaStringToUTF8(env, j_namespace);

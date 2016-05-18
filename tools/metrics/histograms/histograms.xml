@@ -34459,6 +34459,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="OfflinePages.Edit.BookmarkUrlChangedForOfflinePage"
     enum="BooleanMatched">
+  <obsolete>
+    Deprecated 5/2016. Offline pages no longer depend on bookmarks UI.
+  </obsolete>
   <owner>dougarnett@chromium.org</owner>
   <summary>
     Whether a user-edited bookmark URL had a saved offline page.
@@ -34466,6 +34469,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="OfflinePages.Filter.OnlineWhenEntering" enum="Boolean">
+  <obsolete>
+    Deprecated 5/2016. Offline pages no longer depend on bookmarks UI.
+  </obsolete>
   <owner>fgorski@chromium.org</owner>
   <owner>jianli@chromium.org</owner>
   <summary>
@@ -34475,6 +34481,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="OfflinePages.Filter.OnlineWhenLeaving" enum="Boolean">
+  <obsolete>
+    Deprecated 5/2016. Offline pages no longer depend on bookmarks UI.
+  </obsolete>
   <owner>fgorski@chromium.org</owner>
   <owner>jianli@chromium.org</owner>
   <summary>
@@ -34491,6 +34500,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="OfflinePages.IncognitoSave" enum="Boolean">
+  <obsolete>
+    Deprecated 5/2016. Not longer needed.
+  </obsolete>
   <owner>jianli@chromium.org</owner>
   <summary>
     Whether the page that was being saved offline was in incognito mode.
@@ -34498,6 +34510,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="OfflinePages.LaunchLocation" enum="StarsLaunchLocation">
+  <obsolete>
+    Deprecated 5/2016. Offline pages no longer depend on bookmarks UI.
+  </obsolete>
   <owner>fgorski@chromium.org</owner>
   <owner>jianli@chromium.org</owner>
   <summary>Logs a UI location from which an offline page is launched.</summary>
@@ -34538,12 +34553,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="OfflinePages.OfflinePageCount">
+  <obsolete>
+    Deprecated 5/2016. This was the dup of OfflinePages.SavedPageCount.
+  </obsolete>
   <owner>fgorski@chromium.org</owner>
   <owner>jianli@chromium.org</owner>
   <summary>Number of offline pages the user has. Android only.</summary>
 </histogram>
 
 <histogram name="OfflinePages.OnlineOnOpen" enum="Boolean">
+  <obsolete>
+    Deprecated 5/2016. Offline pages no longer depend on bookmarks UI.
+  </obsolete>
   <owner>jianli@chromium.org</owner>
   <summary>
     Whether the user was online when a saved page with offline copy was opened.
@@ -34625,6 +34646,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="OfflinePagesSharedPageWasOffline">
   <owner>dewittj@chromium.org</owner>
   <summary>Whether a shared page was an offline page or not.</summary>
+</histogram>
+
+<histogram name="OfflinePages.ShowOfflinePageOnBadNetwork" enum="Boolean">
+  <owner>jianli@chromium.org</owner>
+  <summary>
+    Whether an offline page is shown, instead of error page, when the network is
+    disconnected or poor condition.
+  </summary>
 </histogram>
 
 <histogram name="OfflinePages.TotalPageSize" units="MB">
@@ -93795,6 +93824,21 @@ To add a new entry, add it with any value and run test to compute valid value.
              asynchronous nature of the analysis)."/>
   <affected-histogram name="SBOffDomainInclusion.Abort"/>
   <affected-histogram name="SBOffDomainInclusion2.Abort"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="OfflinePagesNamespace" separator=".">
+  <suffix name="bookmark" label="Offline bookmark cache"/>
+  <suffix name="last-n" label="Offline recent pages"/>
+  <affected-histogram name="OfflinePages.DeletePage.AccessCount"/>
+  <affected-histogram name="OfflinePages.DeletePage.LastOpenToCreated"/>
+  <affected-histogram name="OfflinePages.DeletePage.PageSize"/>
+  <affected-histogram name="OfflinePages.DeletePage.TimeSinceLastOpen"/>
+  <affected-histogram name="OfflinePages.FirstOpenSinceCreated"/>
+  <affected-histogram name="OfflinePages.OpenSinceLastOpen"/>
+  <affected-histogram name="OfflinePages.PageLifetime"/>
+  <affected-histogram name="OfflinePages.PageSize"/>
+  <affected-histogram name="OfflinePages.SavePageResult"/>
+  <affected-histogram name="OfflinePages.SavePageTime"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="OmniboxProviderTime" separator=".">

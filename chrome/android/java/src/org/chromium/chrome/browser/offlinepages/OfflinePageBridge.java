@@ -30,7 +30,6 @@ import java.util.Set;
 @JNINamespace("offline_pages::android")
 public class OfflinePageBridge {
     public static final String BOOKMARK_NAMESPACE = "bookmark";
-    public static final long INVALID_OFFLINE_ID = 0;
 
     /**
      * Retrieves the OfflinePageBridge for the given profile, creating it the first time
@@ -389,13 +388,6 @@ public class OfflinePageBridge {
             final SavePageCallback callback) {
         assert mIsNativeOfflinePageModelLoaded;
         assert webContents != null;
-
-        if (webContents.isDestroyed()) {
-            callback.onSavePageDone(SavePageResult.CONTENT_UNAVAILABLE, null, INVALID_OFFLINE_ID);
-            RecordHistogram.recordEnumeratedHistogram("OfflinePages.SavePageResult",
-                    SavePageResult.CONTENT_UNAVAILABLE, SavePageResult.RESULT_COUNT);
-            return;
-        }
 
         SavePageCallback callbackWrapper = new SavePageCallback() {
             @Override

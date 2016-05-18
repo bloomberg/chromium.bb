@@ -104,6 +104,18 @@ void EnsureArchivesDirCreated(const base::FilePath& archives_dir) {
   CHECK(base::CreateDirectory(archives_dir));
 }
 
+std::string AddHistogramSuffix(const ClientId& client_id,
+                               const char* histogram_name) {
+  if (client_id.name_space.empty()) {
+    NOTREACHED();
+    return histogram_name;
+  }
+  std::string adjusted_histogram_name(histogram_name);
+  adjusted_histogram_name += ".";
+  adjusted_histogram_name += client_id.name_space;
+  return adjusted_histogram_name;
+}
+
 }  // namespace
 
 // static
@@ -150,12 +162,18 @@ void OfflinePageModel::SavePage(const GURL& url,
 
   // Skip saving the page that is not intended to be saved, like local file
   // page.
-  if (!CanSavePage(url)) {
-    InformSavePageDone(callback, SavePageResult::SKIPPED, kInvalidOfflineId);
+  if (url.is_valid() && !CanSavePage(url)) {
+    InformSavePageDone(callback, SavePageResult::SKIPPED, client_id,
+                       kInvalidOfflineId);
     return;
   }
 
-  DCHECK(archiver.get());
+  // The web contents is not available if archiver is not created and passed.
+  if (!archiver.get()) {
+    InformSavePageDone(callback, SavePageResult::CONTENT_UNAVAILABLE, client_id,
+                       kInvalidOfflineId);
+    return;
+  }
 
   int64_t offline_id = GenerateOfflineId();
 
@@ -182,17 +200,16 @@ void OfflinePageModel::MarkPageAccessed(int64_t offline_id) {
   base::TimeDelta time_since_last_accessed =
       now - offline_page_item.last_access_time;
 
-  // The last access time was set to same as creation time when the page was
-  // created.
-  if (offline_page_item.creation_time == offline_page_item.last_access_time) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS("OfflinePages.FirstOpenSinceCreated",
-                                time_since_last_accessed.InMinutes(), 1,
-                                kMaxOpenedPageHistogramBucket.InMinutes(), 50);
-  } else {
-    UMA_HISTOGRAM_CUSTOM_COUNTS("OfflinePages.OpenSinceLastOpen",
-                                time_since_last_accessed.InMinutes(), 1,
-                                kMaxOpenedPageHistogramBucket.InMinutes(), 50);
-  }
+  // When the access account is still zero, the page is opened for the first
+  // time since its creation.
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      AddHistogramSuffix(
+          offline_page_item.client_id,
+          (offline_page_item.access_count == 0) ?
+              "OfflinePages.FirstOpenSinceCreated" :
+              "OfflinePages.OpenSinceLastOpen").c_str(),
+      time_since_last_accessed.InMinutes(), 1,
+      kMaxOpenedPageHistogramBucket.InMinutes(), 50);
 
   offline_page_item.last_access_time = now;
   offline_page_item.access_count++;
@@ -560,14 +577,14 @@ void OfflinePageModel::OnCreateArchiveDone(const GURL& requested_url,
     // TODO(fgorski): We have created an archive for a wrong URL. It should be
     // deleted from here, once archiver has the right functionality.
     InformSavePageDone(callback, SavePageResult::ARCHIVE_CREATION_FAILED,
-                       offline_id);
+                       client_id, offline_id);
     DeletePendingArchiver(archiver);
     return;
   }
 
   if (archiver_result != ArchiverResult::SUCCESSFULLY_CREATED) {
     SavePageResult result = ToSavePageResult(archiver_result);
-    InformSavePageDone(callback, result, offline_id);
+    InformSavePageDone(callback, result, client_id, offline_id);
     DeletePendingArchiver(archiver);
     return;
   }
@@ -589,14 +606,18 @@ void OfflinePageModel::OnAddOfflinePageDone(OfflinePageArchiver* archiver,
     offline_pages_[offline_page.offline_id] = offline_page;
     result = SavePageResult::SUCCESS;
     UMA_HISTOGRAM_TIMES(
-        "OfflinePages.SavePageTime",
+        AddHistogramSuffix(
+            offline_page.client_id, "OfflinePages.SavePageTime").c_str(),
         base::Time::Now() - offline_page.creation_time);
     UMA_HISTOGRAM_MEMORY_KB(
-        "OfflinePages.PageSize", offline_page.file_size / 1024);
+        AddHistogramSuffix(
+            offline_page.client_id, "OfflinePages.PageSize").c_str(),
+        offline_page.file_size / 1024);
   } else {
     result = SavePageResult::STORE_FAILURE;
   }
-  InformSavePageDone(callback, result, offline_page.offline_id);
+  InformSavePageDone(callback, result, offline_page.client_id,
+                     offline_page.offline_id);
   DeletePendingArchiver(archiver);
 
   FOR_EACH_OBSERVER(Observer, observers_, OfflinePageModelChanged(this));
@@ -652,9 +673,10 @@ void OfflinePageModel::OnLoadDone(
 
 void OfflinePageModel::InformSavePageDone(const SavePageCallback& callback,
                                           SavePageResult result,
+                                          const ClientId& client_id,
                                           int64_t offline_id) {
   UMA_HISTOGRAM_ENUMERATION(
-      "OfflinePages.SavePageResult",
+      AddHistogramSuffix(client_id, "OfflinePages.SavePageResult").c_str(),
       static_cast<int>(result),
       static_cast<int>(SavePageResult::RESULT_COUNT));
   callback.Run(result, offline_id);
@@ -695,29 +717,36 @@ void OfflinePageModel::OnRemoveOfflinePagesDone(
     if (iter == offline_pages_.end())
       continue;
     total_size += iter->second.file_size;
+    ClientId client_id = iter->second.client_id;
     UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "OfflinePages.PageLifetime",
+        AddHistogramSuffix(client_id, "OfflinePages.PageLifetime").c_str(),
         (now - iter->second.creation_time).InMinutes(),
         1,
         base::TimeDelta::FromDays(365).InMinutes(),
         100);
     UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "OfflinePages.DeletePage.TimeSinceLastOpen",
+        AddHistogramSuffix(
+            client_id, "OfflinePages.DeletePage.TimeSinceLastOpen").c_str(),
         (now - iter->second.last_access_time).InMinutes(),
         1,
         base::TimeDelta::FromDays(365).InMinutes(),
         100);
     UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "OfflinePages.DeletePage.LastOpenToCreated",
+        AddHistogramSuffix(
+            client_id, "OfflinePages.DeletePage.LastOpenToCreated").c_str(),
         (iter->second.last_access_time - iter->second.creation_time).
             InMinutes(),
         1,
         base::TimeDelta::FromDays(365).InMinutes(),
         100);
     UMA_HISTOGRAM_MEMORY_KB(
-        "OfflinePages.DeletePage.PageSize", iter->second.file_size / 1024);
+        AddHistogramSuffix(
+            client_id, "OfflinePages.DeletePage.PageSize").c_str(),
+        iter->second.file_size / 1024);
     UMA_HISTOGRAM_COUNTS(
-        "OfflinePages.DeletePage.AccessCount", iter->second.access_count);
+        AddHistogramSuffix(
+            client_id, "OfflinePages.DeletePage.AccessCount").c_str(),
+        iter->second.access_count);
     FOR_EACH_OBSERVER(
         Observer, observers_,
         OfflinePageDeleted(iter->second.offline_id, iter->second.client_id));

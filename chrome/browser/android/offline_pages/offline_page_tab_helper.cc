@@ -89,6 +89,7 @@ void OfflinePageTabHelper::DidFinishNavigation(
   if (error_code == net::OK &&
       OfflinePageUtils::IsOfflinePage(
           web_contents()->GetBrowserContext(), navigation_handle->GetURL())) {
+    UMA_HISTOGRAM_BOOLEAN("OfflinePages.ShowOfflinePageOnBadNetwork", true);
     OfflinePageUtils::MarkPageAccessed(
         web_contents()->GetBrowserContext(), navigation_handle->GetURL());
   }
@@ -104,6 +105,7 @@ void OfflinePageTabHelper::DidFinishNavigation(
   // On a forward or back transition, don't affect the order of the nav stack.
   if (navigation_handle->GetPageTransition() ==
       ui::PAGE_TRANSITION_FORWARD_BACK) {
+    UMA_HISTOGRAM_BOOLEAN("OfflinePages.ShowOfflinePageOnBadNetwork", false);
     return;
   }
 
@@ -114,8 +116,10 @@ void OfflinePageTabHelper::DidFinishNavigation(
   // in this case.
   GURL offline_url = offline_pages::OfflinePageUtils::GetOfflineURLForOnlineURL(
       web_contents()->GetBrowserContext(), navigation_handle->GetURL());
-  if (!offline_url.is_valid())
+  if (!offline_url.is_valid()) {
+    UMA_HISTOGRAM_BOOLEAN("OfflinePages.ShowOfflinePageOnBadNetwork", false);
     return;
+  }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
