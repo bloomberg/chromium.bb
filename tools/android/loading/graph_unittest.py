@@ -143,6 +143,36 @@ class GraphTestCase(unittest.TestCase):
         set([6]),
         set(n.index for n in g.ReachableNodes([nodes[6]])))
 
+  def testAncestorNodes(self, serialize=False):
+    (nodes, _, g) = self.MakeGraph(
+        7,
+        [(0, 1),
+         (0, 2),
+         (1, 3),
+         (3, 4),
+         (5, 6)], serialize)
+    self.assertSetEqual(
+        set([0, 1, 3]),
+        set(n.index for n in g.AncestorNodes([nodes[4]])))
+    self.assertSetEqual(
+        set([0, 1]),
+        set(n.index for n in g.AncestorNodes([nodes[3]])))
+    self.assertSetEqual(
+        set([0]),
+        set(n.index for n in g.AncestorNodes([nodes[1]])))
+    self.assertSetEqual(
+        set(),
+        set(n.index for n in g.AncestorNodes([nodes[0]])))
+    self.assertSetEqual(
+        set([0]),
+        set(n.index for n in g.AncestorNodes([nodes[2]])))
+    self.assertSetEqual(
+        set([5]),
+        set(n.index for n in g.AncestorNodes([nodes[6]])))
+    self.assertSetEqual(
+        set(),
+        set(n.index for n in g.AncestorNodes([nodes[5]])))
+
   def testCost(self, serialize=False):
     (nodes, edges, g) = self.MakeGraph(
         7,

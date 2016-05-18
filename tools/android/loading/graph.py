@@ -161,18 +161,23 @@ class DirectedGraph(object):
       should_stop: (callable) Returns True when a node should stop the
                    exploration and be skipped.
     """
-    visited = set()
-    fifo = collections.deque([n for n in roots if not should_stop(n)])
-    while len(fifo) != 0:
-      node = fifo.pop()
-      if should_stop(node):
-        continue
-      visited.add(node)
-      for e in self.OutEdges(node):
-        if e.to_node not in visited and not should_stop(e.to_node):
-          visited.add(e.to_node)
-        fifo.appendleft(e.to_node)
-    return list(visited)
+    return self._ExploreFrom(
+        roots, lambda n: (e.to_node for e in self.OutEdges(n)),
+        should_stop=should_stop)
+
+  def AncestorNodes(self, descendants):
+    """Returns a set of nodes that are ancestors of a set of nodes.
+
+    This is not quite the opposite of ReachableNodes, because (in a tree) it
+    will not include |descendants|.
+
+    Args:
+      descendants: ([Node]) List of nodes to start from.
+
+    """
+    return set(self._ExploreFrom(
+        descendants,
+        lambda n: (e.from_node for e in self.InEdges(n)))) - set(descendants)
 
   def Cost(self, roots=None, path_list=None, costs_out=None):
     """Compute the cost of the graph.
@@ -246,3 +251,26 @@ class DirectedGraph(object):
       edges.append(edge)
     result = DirectedGraph(index_to_node.values(), edges)
     return result
+
+  def _ExploreFrom(self, initial, expand, should_stop=lambda n: False):
+    """Explore from a set of nodes.
+
+    Args:
+      initial: ([Node]) List of nodes to start from.
+      expand: (callable) Given a node, return an iterator of nodes to explore
+        from that node.
+      should_stop: (callable) Returns True when a node should stop the
+                   exploration and be skipped.
+    """
+    visited = set()
+    fifo = collections.deque([n for n in initial if not should_stop(n)])
+    while fifo:
+      node = fifo.pop()
+      if should_stop(node):
+        continue
+      visited.add(node)
+      for n in expand(node):
+        if n not in visited and not should_stop(n):
+          visited.add(n)
+          fifo.appendleft(n)
+    return list(visited)

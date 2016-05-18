@@ -5,6 +5,7 @@
 """Views a trace as an annotated request dependency graph."""
 
 import dependency_graph
+import request_dependencies_lens
 
 
 class RequestNode(dependency_graph.RequestNode):
@@ -52,6 +53,11 @@ class LoadingGraphView(object):
     self._graph = None
     self._BuildGraph()
 
+  @classmethod
+  def FromTrace(cls, trace):
+    """Create a graph from a trace with no additional annotation."""
+    return cls(trace, request_dependencies_lens.RequestDependencyLens(trace))
+
   def RemoveAds(self):
     """Updates the graph to remove the Ads.
 
@@ -61,6 +67,34 @@ class LoadingGraphView(object):
     self._requests = [n.request for n in self._graph.graph.ReachableNodes(
         roots, should_stop=lambda n: n.is_ad or n.is_tracking)]
     self._BuildGraph()
+
+  def GetInversionsAtTime(self, msec):
+    """Return the inversions, if any for an event.
+
+    An inversion is when a node is finished before an event, but an ancestor is
+    not finished. For example, an image is loaded before a first paint, but the
+    HTML which requested the image has not finished loading at the time of the
+    paint due to incremental parsing.
+
+    Args:
+      msec: the time of the event, from the same base as requests.
+
+    Returns:
+      The inverted Requests, ordered by start time, or None if there is no
+      inversion.
+    """
+    completed_requests = []
+    for rq in self._requests:
+      if rq.end_msec <= msec:
+        completed_requests.append(rq)
+    inversions = []
+    for rq in self._graph.AncestorRequests(completed_requests):
+      if rq.end_msec > msec:
+        inversions.append(rq)
+    if inversions:
+      inversions.sort(key=lambda rq: rq.start_msec)
+      return inversions
+    return None
 
   @property
   def deps_graph(self):

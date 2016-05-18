@@ -7,6 +7,7 @@
 When executed as a script, takes a trace filename and print the report.
 """
 
+from loading_graph_view import LoadingGraphView
 import loading_trace
 from network_activity_lens import NetworkActivityLens
 from user_satisfied_lens import (
@@ -48,6 +49,12 @@ class LoadingReport(object):
       self._contentful_byte_frac = float('Nan')
       self._significant_byte_frac = float('Nan')
 
+    graph = LoadingGraphView.FromTrace(trace)
+    self._contentful_inversion = graph.GetInversionsAtTime(
+        self._contentful_paint_msec)
+    self._significant_inversion = graph.GetInversionsAtTime(
+        self._significant_paint_msec)
+
   def GenerateReport(self):
     """Returns a report as a dict."""
     return {
@@ -59,7 +66,16 @@ class LoadingReport(object):
                                  - self._navigation_start_msec),
         'plt_ms': self._max_msec - self._navigation_start_msec,
         'contentful_byte_frac': self._contentful_byte_frac,
-        'significant_byte_frac': self._significant_byte_frac,}
+        'significant_byte_frac': self._significant_byte_frac,
+
+        # Take the first (earliest) inversions.
+        'contentful_inversion': (self._contentful_inversion[0].url
+                                 if self._contentful_inversion
+                                 else None),
+        'significant_inversion': (self._significant_inversion[0].url
+                                  if self._significant_inversion
+                                  else None)
+    }
 
   @classmethod
   def FromTraceFilename(cls, filename):

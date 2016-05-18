@@ -129,6 +129,18 @@ class RequestDependencyGraph(object):
     else:
       return self._deps_graph.Cost(path_list=path_list, costs_out=costs_out)
 
+  def AncestorRequests(self, descendants):
+    """Return requests that are ancestors of a set of requests.
+
+    Args:
+      descendants: ([Request]) List of requests.
+
+    Returns:
+      List of Requests that are ancestors of descendants.
+    """
+    return [n.request for n in self.graph.AncestorNodes(
+        self._nodes_by_id[r.request_id] for r in descendants)]
+
   def _HandleTimingDependencies(self):
     try:
       for n in self._deps_graph.TopologicalSort():

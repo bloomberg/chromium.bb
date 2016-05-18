@@ -18,40 +18,44 @@ class LoadingReportTestCase(unittest.TestCase):
   _SIGNIFICANT_PAINT = 50
   _DURATION = 400
   _REQUEST_OFFSET = 5
+  _MAIN_FRAME_ID = 1
 
-  @classmethod
-  def _MakeTrace(cls):
-    trace_creator = test_utils.TraceCreator()
-    requests = [trace_creator.RequestAt(cls._FIRST_REQUEST_TIME),
-                trace_creator.RequestAt(
-                    cls._NAVIGATION_START_TIME + cls._REQUEST_OFFSET,
-                    cls._DURATION)]
-    requests[0].timing.receive_headers_end = 0
-    requests[1].timing.receive_headers_end = 0
-    requests[0].encoded_data_length = 128
-    requests[1].encoded_data_length = 1024
-    trace = trace_creator.CreateTrace(
-        requests,
-        [{'ts': cls._NAVIGATION_START_TIME * cls.MILLI_TO_MICRO, 'ph': 'R',
-          'cat': 'blink.user_timing',
-          'name': 'navigationStart',
-          'args': {'frame': 1}},
-         {'ts': cls._CONTENTFUL_PAINT * cls.MILLI_TO_MICRO, 'ph': 'I',
-          'cat': 'blink.user_timing',
-          'name': 'firstContentfulPaint',
-          'args': {'frame': 1}},
-         {'ts': cls._TEXT_PAINT * cls.MILLI_TO_MICRO, 'ph': 'I',
-          'cat': 'blink.user_timing',
-          'name': 'firstPaint',
-          'args': {'frame': 1}},
-         {'ts': 90 * cls.MILLI_TO_MICRO, 'ph': 'I',
-          'cat': 'blink',
-          'name': 'FrameView::synchronizedPaint'},
-         {'ts': cls._SIGNIFICANT_PAINT * cls.MILLI_TO_MICRO, 'ph': 'I',
-          'cat': 'foobar', 'name': 'biz',
-          'args': {'counters': {
-              'LayoutObjectsThatHadNeverHadLayout': 10
-          }}}], 1)
+  def setUp(self):
+    self.trace_creator = test_utils.TraceCreator()
+    self.requests = [self.trace_creator.RequestAt(self._FIRST_REQUEST_TIME),
+                     self.trace_creator.RequestAt(
+                         self._FIRST_REQUEST_TIME + self._REQUEST_OFFSET,
+                         self._DURATION)]
+    self.requests[0].timing.receive_headers_end = 0
+    self.requests[1].timing.receive_headers_end = 0
+    self.requests[0].encoded_data_length = 128
+    self.requests[1].encoded_data_length = 1024
+
+    self.trace_events = [
+        {'ts': self._NAVIGATION_START_TIME * self.MILLI_TO_MICRO, 'ph': 'R',
+         'cat': 'blink.user_timing',
+         'name': 'navigationStart',
+         'args': {'frame': 1}},
+        {'ts': self._CONTENTFUL_PAINT * self.MILLI_TO_MICRO, 'ph': 'I',
+         'cat': 'blink.user_timing',
+         'name': 'firstContentfulPaint',
+         'args': {'frame': self._MAIN_FRAME_ID}},
+        {'ts': self._TEXT_PAINT * self.MILLI_TO_MICRO, 'ph': 'I',
+         'cat': 'blink.user_timing',
+         'name': 'firstPaint',
+         'args': {'frame': self._MAIN_FRAME_ID}},
+        {'ts': 90 * self.MILLI_TO_MICRO, 'ph': 'I',
+         'cat': 'blink',
+         'name': 'FrameView::synchronizedPaint'},
+        {'ts': self._SIGNIFICANT_PAINT * self.MILLI_TO_MICRO, 'ph': 'I',
+         'cat': 'foobar', 'name': 'biz',
+         'args': {'counters': {
+             'LayoutObjectsThatHadNeverHadLayout': 10
+         }}}]
+
+  def _MakeTrace(self):
+    trace = self.trace_creator.CreateTrace(
+        self.requests, self.trace_events, self._MAIN_FRAME_ID)
     return trace
 
   def testGenerateReport(self):
@@ -64,10 +68,29 @@ class LoadingReportTestCase(unittest.TestCase):
                      loading_report['significant_paint_ms'])
     self.assertEqual(self._CONTENTFUL_PAINT - self._NAVIGATION_START_TIME,
                      loading_report['contentful_paint_ms'])
-    self.assertEqual(self._REQUEST_OFFSET + self._DURATION,
+    self.assertEqual(self._FIRST_REQUEST_TIME - self._NAVIGATION_START_TIME +
+                     self._REQUEST_OFFSET + self._DURATION,
                      loading_report['plt_ms'])
-    self.assertAlmostEqual(0.34, loading_report['contentful_byte_frac'])
-    self.assertAlmostEqual(0.184, loading_report['significant_byte_frac'], 2)
+    self.assertAlmostEqual(0.333, loading_report['contentful_byte_frac'], 2)
+    self.assertAlmostEqual(0.178, loading_report['significant_byte_frac'], 2)
+    self.assertEqual(None, loading_report['contentful_inversion'])
+    self.assertEqual(None, loading_report['significant_inversion'])
+
+  def testInversion(self):
+    self.requests[0].timing.loading_finished = 4 * (
+        self._REQUEST_OFFSET + self._DURATION)
+    self.requests[1].initiator['type'] = 'parser'
+    self.requests[1].initiator['url'] = self.requests[0].url
+    for e in self.trace_events:
+      if e['name'] == 'firstContentfulPaint':
+        e['ts'] = self.MILLI_TO_MICRO * (
+            self._FIRST_REQUEST_TIME +  self._REQUEST_OFFSET +
+            self._DURATION + 1)
+        break
+    loading_report = report.LoadingReport(self._MakeTrace()).GenerateReport()
+    self.assertEqual(self.requests[0].url,
+                     loading_report['contentful_inversion'])
+    self.assertEqual(None, loading_report['significant_inversion'])
 
 
 if __name__ == '__main__':

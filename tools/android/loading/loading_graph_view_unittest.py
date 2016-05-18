@@ -79,6 +79,29 @@ class LoadingGraphViewTestCase(unittest.TestCase):
         [TestRequests.FIRST_REDIRECT_REQUEST.request_id])
     self.assertSetEqual(expected_request_ids, request_ids)
 
+  def testEventInversion(self):
+    self._UpdateRequestTiming({
+        '1234.redirect.1': (0, 0),
+        '1234.redirect.2': (0, 0),
+        '1234.1': (10, 100),
+        '1234.12': (20, 50),
+        '1234.42': (40, 70),
+        '1234.56': (40, 150)})
+    graph_view = loading_graph_view.LoadingGraphView(
+        self.trace, self.deps_lens)
+    self.assertEqual(None, graph_view.GetInversionsAtTime(40))
+    self.assertEqual('1234.1', graph_view.GetInversionsAtTime(60)[0].request_id)
+    self.assertEqual('1234.1', graph_view.GetInversionsAtTime(80)[0].request_id)
+    self.assertEqual(None, graph_view.GetInversionsAtTime(110))
+    self.assertEqual(None, graph_view.GetInversionsAtTime(160))
+
+  def _UpdateRequestTiming(self, changes):
+    for rq in self.trace.request_track.GetEvents():
+      if rq.request_id in changes:
+        start_msec, end_msec = changes[rq.request_id]
+        rq.timing.request_time = float(start_msec) / 1000
+        rq.timing.loading_finished = end_msec - start_msec
+
 
 if __name__ == '__main__':
   unittest.main()

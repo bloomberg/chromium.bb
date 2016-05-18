@@ -72,6 +72,15 @@ class TestRequests(object):
 
   @classmethod
   def CreateLoadingTrace(cls, trace_events=None):
+    # This creates a set of requests with the following dependency structure.
+    #
+    # 1234.redirect.1 -> 1234.redirect.2
+    # 1234.redirect.2 -> 1234.1
+    # 1234.1 -> 1234.12
+    # 1234.1 -> 1234.42
+    # 1234.1 -> 1234.56
+    # 1234.12 -> 1234.13
+
     trace = test_utils.LoadingTraceFromEvents(
         [cls.FIRST_REDIRECT_REQUEST, cls.SECOND_REDIRECT_REQUEST,
          cls.REDIRECTED_REQUEST, cls.REQUEST, cls.JS_REQUEST, cls.JS_REQUEST_2,
