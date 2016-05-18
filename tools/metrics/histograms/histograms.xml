@@ -33233,6 +33233,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.LogoClick" enum="NewTabPageLogoClick">
+  <owner>ianwen@chromium.org</owner>
+  <summary>
+    Histogram tracking how many users click on the static logo or animated logo
+    on NTP.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.LogoDownloadOutcome"
     enum="NewTabPageLogoDownloadOutcome">
   <owner>ianwen@chromium.org</owner>
@@ -33247,6 +33255,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>ianwen@chromium.org</owner>
   <summary>
     The amount of time it takes to download the static logo. Android only.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.LogoShown" enum="NewTabPageLogoShown">
+  <owner>ianwen@chromium.org</owner>
+  <summary>
+    Histogram tracking how many static logos and animated logos are shown to
+    users.
   </summary>
 </histogram>
 
@@ -80509,6 +80525,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Renamed root partner folder"/>
 </enum>
 
+<enum name="NewTabPageLogoClick" type="int">
+  <int value="0" label="Static logo clicked"/>
+  <int value="1" label="CTA image clicked"/>
+  <int value="2" label="Animated logo clicked"/>
+</enum>
+
 <enum name="NewTabPageLogoDownloadOutcome" type="int">
   <summary>
     These values are defined in LogoDownloadOutcome enum in
@@ -80520,6 +80542,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Parsing failed"/>
   <int value="4" label="Decoding failed"/>
   <int value="5" label="Logo revalidated"/>
+</enum>
+
+<enum name="NewTabPageLogoShown" type="int">
+  <int value="0" label="Static logo shown"/>
+  <int value="1" label="CTA image shown"/>
 </enum>
 
 <enum name="NewTabPageMobilePromo" type="int">

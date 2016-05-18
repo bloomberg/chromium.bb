@@ -98,6 +98,16 @@ public class NewTabPage
     static final int ID_OPEN_IN_INCOGNITO_TAB = 2;
     static final int ID_REMOVE = 3;
 
+    // UMA enum constants. CTA means the "click-to-action" icon.
+    private static final String LOGO_SHOWN_UMA_NAME = "NewTabPage.LogoShown";
+    private static final int STATIC_LOGO_SHOWN = 0;
+    private static final int CTA_IMAGE_SHOWN = 1;
+
+    private static final String LOGO_CLICK_UMA_NAME = "NewTabPage.LogoClick";
+    private static final int STATIC_LOGO_CLICKED = 0;
+    private static final int CTA_IMAGE_CLICKED = 1;
+    private static final int ANIMATED_LOGO_CLICKED = 2;
+
     private static MostVisitedSites sMostVisitedSitesForTests;
 
     private final Tab mTab;
@@ -496,6 +506,7 @@ public class NewTabPage
             if (mIsDestroyed) return;
 
             if (!isAnimatedLogoShowing && mAnimatedLogoUrl != null) {
+                RecordHistogram.recordSparseSlowlyHistogram(LOGO_CLICK_UMA_NAME, CTA_IMAGE_CLICKED);
                 mNewTabPageView.showLogoLoadingView();
                 mLogoBridge.getAnimatedLogo(new LogoBridge.AnimatedLogoCallback() {
                     @Override
@@ -505,6 +516,8 @@ public class NewTabPage
                     }
                 }, mAnimatedLogoUrl);
             } else if (mOnLogoClickUrl != null) {
+                RecordHistogram.recordSparseSlowlyHistogram(LOGO_CLICK_UMA_NAME,
+                        isAnimatedLogoShowing ? ANIMATED_LOGO_CLICKED : STATIC_LOGO_CLICKED);
                 mTab.loadUrl(new LoadUrlParams(mOnLogoClickUrl, PageTransition.LINK));
             }
         }
@@ -518,6 +531,10 @@ public class NewTabPage
                     if (mIsDestroyed) return;
                     mOnLogoClickUrl = logo != null ? logo.onClickUrl : null;
                     mAnimatedLogoUrl = logo != null ? logo.animatedLogoUrl : null;
+                    if (logo != null) {
+                        RecordHistogram.recordSparseSlowlyHistogram(LOGO_SHOWN_UMA_NAME,
+                                logo.animatedLogoUrl == null ? STATIC_LOGO_SHOWN : CTA_IMAGE_SHOWN);
+                    }
                     logoObserver.onLogoAvailable(logo, fromCache);
                 }
             };
