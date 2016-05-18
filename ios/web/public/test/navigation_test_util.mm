@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/web/public/test/navigation_test_util.h"
+#import "ios/web/public/test/navigation_test_util.h"
 
 #import "ios/web/public/navigation_manager.h"
 
 using web::NavigationManager;
 
 namespace web {
-namespace navigation_test_util {
+namespace test {
 
 void LoadUrl(web::WebState* web_state, const GURL& url) {
   NavigationManager* navigation_manager = web_state->GetNavigationManager();
@@ -18,5 +18,5 @@ void LoadUrl(web::WebState* web_state, const GURL& url) {
   navigation_manager->LoadURLWithParams(params);
 }
 
-}  // namespace navigation_test_util
+}  // namespace test
 }  // namespace web

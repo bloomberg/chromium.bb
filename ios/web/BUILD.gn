@@ -281,6 +281,22 @@ source_set("user_agent") {
   ]
 }
 
+source_set("earl_grey_test_support") {
+  testonly = true
+
+  deps = [
+    ":test_support",
+    "//ios/third_party/earl_grey",
+  ]
+
+  sources = [
+    "public/test/earl_grey/web_view_matchers.h",
+    "public/test/earl_grey/web_view_matchers.mm",
+    "public/test/web_view_interaction_test_util.h",
+    "public/test/web_view_interaction_test_util.mm",
+  ]
+}
+
 source_set("test_support") {
   testonly = true
 

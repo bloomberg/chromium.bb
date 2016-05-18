@@ -9,12 +9,12 @@
 #include "url/gurl.h"
 
 namespace web {
-namespace navigation_test_util {
+namespace test {
 
 // Loads |url| in |web_state| with transition of type ui::PAGE_TRANSITION_TYPED.
 void LoadUrl(web::WebState* web_state, const GURL& url);
 
-}  // namespace navigation_test_util
+}  // namespace test
 }  // namespace web
 
 #endif  // IOS_WEB_SHELL_PUBLIC_TEST_NAVIGATION_TEST_UTIL_H_

@@ -430,6 +430,21 @@
       ],
     },
     {
+      # GN version: //ios/web:earl_grey_test_support
+      'target_name': 'ios_web_earl_grey_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        'ios_web_test_support',
+        '<(DEPTH)/ios/third_party/earl_grey/earl_grey.gyp:EarlGrey',
+      ],
+      'sources': [
+        'public/test/earl_grey/web_view_matchers.h',
+        'public/test/earl_grey/web_view_matchers.mm',
+        'public/test/web_view_interaction_test_util.h',
+        'public/test/web_view_interaction_test_util.mm',
+      ],
+    },
+    {
       # GN version: //ios/web:test_support
       'target_name': 'ios_web_test_support',
       'type': 'static_library',

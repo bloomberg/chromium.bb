@@ -58,6 +58,7 @@
       },
       'dependencies': [
         'ios_web_shell_earl_grey_test_support',
+        '<(DEPTH)/ios/third_party/earl_grey/earl_grey.gyp:EarlGrey',
       ],
       'sources': [
         'shell/test/web_shell_navigation_egtest.mm',
@@ -104,19 +105,16 @@
       'type': 'static_library',
       'dependencies': [
         '<(DEPTH)/ios/third_party/earl_grey/earl_grey.gyp:EarlGrey',
-        'ios_web.gyp:ios_web_test_support',
+        'ios_web.gyp:ios_web_earl_grey_test_support',
         '../testing/earl_grey/earl_grey_support.gyp:earl_grey_support',
       ],
-      'export_dependent_settings': [
-        '<(DEPTH)/ios/third_party/earl_grey/earl_grey.gyp:EarlGrey',
-      ],
       'sources': [
-        'public/test/earl_grey/web_view_matchers.h',
-        'public/test/earl_grey/web_view_matchers.mm',
-        'public/test/web_view_interaction_test_util.h',
-        'public/test/web_view_interaction_test_util.mm',
+        'shell/test/app/navigation_test_util.h',
+        'shell/test/app/navigation_test_util.mm',
         'shell/test/app/web_shell_test_util.h',
         'shell/test/app/web_shell_test_util.mm',
+        'shell/test/app/web_view_interaction_test_util.h',
+        'shell/test/app/web_view_interaction_test_util.mm',
         'shell/test/earl_grey/shell_matchers.h',
         'shell/test/earl_grey/shell_matchers.mm',
       ],

@@ -39,7 +39,7 @@ id<GREYMatcher> addressField() {
 @implementation GREYMatchers (WebShellAdditions)
 
 + (id<GREYMatcher>)matcherForWebViewContainingText:(NSString*)text {
-  web::WebState* webState = web::web_shell_test_util::GetCurrentWebState();
+  web::WebState* webState = web::shell_test_util::GetCurrentWebState();
   return web::webViewContainingText(text, webState);
 }
 

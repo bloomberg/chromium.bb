@@ -9,7 +9,7 @@
 #import "ios/web/shell/view_controller.h"
 
 namespace web {
-namespace web_shell_test_util {
+namespace shell_test_util {
 
 web::WebState* GetCurrentWebState() {
   ViewController* view_controller = static_cast<ViewController*>([[
@@ -17,5 +17,5 @@ web::WebState* GetCurrentWebState() {
   return view_controller.webState;
 }
 
-}  // namespace web_shell_test_util
+}  // namespace shell_test_util
 }  // namespace web
