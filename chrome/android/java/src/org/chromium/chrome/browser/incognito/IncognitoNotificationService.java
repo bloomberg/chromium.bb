@@ -87,7 +87,7 @@ public class IncognitoNotificationService extends IntentService {
             for (int i = 0; i < TabWindowManager.MAX_SIMULTANEOUS_SELECTORS; i++) {
                 if (processedSelectors.contains(i)) continue;
                 clearedIncognito &= deleteIncognitoStateFilesInDirectory(
-                        TabPersistentStore.getStateDirectory(this, i));
+                        TabPersistentStore.getOrCreateSelectorStateDirectory(i));
             }
         }
 

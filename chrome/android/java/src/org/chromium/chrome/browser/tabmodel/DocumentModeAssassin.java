@@ -543,6 +543,6 @@ public class DocumentModeAssassin {
 
     /** @return Where tabbed mode data is stored for the main {@link TabModelImpl}. */
     protected File getTabbedDataDirectory() {
-        return TabPersistentStore.getStateDirectory(getContext(), TAB_MODEL_INDEX);
+        return TabPersistentStore.getOrCreateSelectorStateDirectory(TAB_MODEL_INDEX);
     }
 }

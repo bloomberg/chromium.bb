@@ -163,8 +163,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         initialize(isIncognitoSelected(), normalModel, incognitoModel);
         mRegularTabCreator.setTabModel(normalModel, mTabContentManager);
         mIncognitoTabCreator.setTabModel(incognitoModel, mTabContentManager);
-
-        mTabSaver.setTabContentManager(tabContentProvider);
+        mTabSaver.setTabContentManager(mTabContentManager);
 
         addObserver(new EmptyTabModelSelectorObserver() {
             @Override

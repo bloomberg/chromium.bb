@@ -115,9 +115,7 @@ public class StorageDelegate extends TabPersister {
     }
 
     private void preloadStateDirectory() {
-        if (sBaseStateDirectoryFetchTask != null) {
-            return;
-        }
+        if (sBaseStateDirectoryFetchTask != null) return;
 
         sBaseStateDirectoryFetchTask = new AsyncTask<Void, Void, File>() {
             @Override
@@ -139,8 +137,7 @@ public class StorageDelegate extends TabPersister {
 
         // If the AsyncTask failed for some reason, we have no choice but to fall back to
         // main-thread disk access.
-        return ContextUtils.getApplicationContext().getDir(
-                STATE_DIRECTORY, Context.MODE_PRIVATE);
+        return ContextUtils.getApplicationContext().getDir(STATE_DIRECTORY, Context.MODE_PRIVATE);
     }
 
     /**
