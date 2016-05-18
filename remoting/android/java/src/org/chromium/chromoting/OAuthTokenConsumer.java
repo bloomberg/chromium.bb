@@ -5,8 +5,14 @@
 package org.chromium.chromoting;
 
 import android.content.Context;
+import android.os.AsyncTask;
+
+import com.google.android.gms.auth.GoogleAuthException;
+import com.google.android.gms.auth.GoogleAuthUtil;
 
 import org.chromium.chromoting.base.OAuthTokenFetcher;
+
+import java.io.IOException;
 
 /**
  * This helper guards same auth token requesting task shouldn't be run more than once at the same
@@ -37,6 +43,8 @@ public class OAuthTokenConsumer {
      * Each OAuthTokenConsumer is supposed to work for one specific task. It is the caller's
      * responsibility to supply equivalent callbacks (variables being captured can vary) for the
      * same consumer.
+     * If user recoverable exception occurs and |context| is an activity, |callback| will not be
+     * run and onActivityResult() of the activity will be called instead.
      * @param account User's account name (email).
      * @param callback the callback to be called
      * @return true if the consumer will run |callback| when the token is fetched and false
@@ -59,7 +67,9 @@ public class OAuthTokenConsumer {
             @Override
             public void onError(OAuthTokenFetcher.Error error) {
                 mWaitingForAuthToken = false;
-                callback.onError(error);
+                if (error != OAuthTokenFetcher.Error.INTERRUPTED) {
+                    callback.onError(error);
+                }
             }
         }).fetch();
         return true;
@@ -72,5 +82,35 @@ public class OAuthTokenConsumer {
      */
     public String getLatestToken() {
         return mLatestToken;
+    }
+
+    /**
+     * Revokes the latest token fetched by the consumer.
+     * @param callback onTokenFetch(null) will be called if the token is cleared successfully.
+     *                 onError(error) will be called if any error occurs. |callback| can be null,
+     *                 in which case token will be cleared without running the callback.
+     */
+    public void revokeLatestToken(final OAuthTokenFetcher.Callback callback) {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                try {
+                    GoogleAuthUtil.clearToken(mContext, mLatestToken);
+                    mLatestToken = null;
+                    if (callback != null) {
+                        callback.onTokenFetched(null);
+                    }
+                } catch (GoogleAuthException e) {
+                    if (callback != null) {
+                        callback.onError(OAuthTokenFetcher.Error.UNEXPECTED);
+                    }
+                } catch (IOException e) {
+                    if (callback != null) {
+                        callback.onError(OAuthTokenFetcher.Error.NETWORK);
+                    }
+                }
+                return null;
+            }
+        }.execute();
     }
 }

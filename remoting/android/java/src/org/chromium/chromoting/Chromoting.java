@@ -366,6 +366,10 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
             if (resultCode == RESULT_OK) {
                 // User gave OAuth permission to this app (or recovered from any OAuth failure),
                 // so retry fetching the token.
+
+                // We actually don't know which consumer triggers the startActivityForResult() but
+                // refreshing the host list is the safest action.
+                // TODO(yuweih): Distinguish token consumer.
                 refreshHostList();
             } else {
                 // User denied permission or cancelled the dialog, so cancel the request.
@@ -640,6 +644,10 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
             return;
         }
 
+        // We don't know which consumer triggers onError. Refreshing host list is the most common
+        // use case and the latest token should be mostly the same on all consumers.
+        // TODO(yuweih): distinguish token consumer.
+        mHostListRetrievingConsumer.revokeLatestToken(null);
         Log.e(TAG, "Fresh auth token was rejected.");
         explanation = getString(R.string.error_authentication_failed);
         Toast.makeText(this, explanation, Toast.LENGTH_LONG).show();

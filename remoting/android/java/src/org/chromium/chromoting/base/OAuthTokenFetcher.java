@@ -40,8 +40,16 @@ public class OAuthTokenFetcher {
         void onError(Error error);
     }
 
-    /** Error types that can be returned as non-recoverable errors from the token-fetcher. */
-    public enum Error { NETWORK, UI, UNEXPECTED }
+    /** Error types that can be returned from the token-fetcher. */
+    public enum Error {
+        NETWORK,
+        UI,  // When a user-recoverable exception occurs and |mContext| is not an activity.
+
+        // When a user-recoverable exception occurs and a new activity is launched prompting user
+        // for input.
+        INTERRUPTED,
+        UNEXPECTED
+    }
 
     /** Request code used for starting the OAuth recovery activity. */
     public static final int REQUEST_CODE_RECOVER_FROM_OAUTH_ERROR = 100;
@@ -132,6 +140,7 @@ public class OAuthTokenFetcher {
             handleError(Error.UI);
             return;
         }
+        handleError(Error.INTERRUPTED);
         final Activity activity = (Activity) mContext;
         activity.runOnUiThread(new Runnable() {
             @Override
