@@ -508,11 +508,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
 
   bool renderer_initialized() const { return renderer_initialized_; }
 
-  bool scale_input_to_viewport() const { return scale_input_to_viewport_; }
-  void set_scale_input_to_viewport(bool scale_input_to_viewport) {
-    scale_input_to_viewport_ = scale_input_to_viewport;
-  }
-
  protected:
   // ---------------------------------------------------------------------------
   // The following method is overridden by RenderViewHost to send upwards to
@@ -805,10 +800,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // RenderWidgetHostView::HasFocus in that in that the focus request may fail,
   // causing HasFocus to return false when is_focused_ is true.
   bool is_focused_;
-
-  // When true, the host will scale the input to viewport.
-  // TODO(oshima): Remove this once crbug.com/563730 is addressed.
-  bool scale_input_to_viewport_;
 
   // This value indicates how long to wait before we consider a renderer hung.
   base::TimeDelta hung_renderer_delay_;

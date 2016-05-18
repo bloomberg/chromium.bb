@@ -18,10 +18,12 @@
 #include "cc/surfaces/surface_sequence.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/compositor/surface_utils.h"
+#include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
+#include "content/common/content_switches_internal.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "content/common/site_isolation_policy.h"
@@ -40,6 +42,29 @@
 #endif
 
 namespace content {
+namespace {
+
+class ScopedInputScaleDisabler {
+ public:
+  ScopedInputScaleDisabler(RenderWidgetHostImpl* host, float scale_factor)
+      : host_(host), scale_factor_(scale_factor) {
+    if (IsUseZoomForDSFEnabled())
+      host_->input_router()->SetDeviceScaleFactor(1.0f);
+  }
+
+  ~ScopedInputScaleDisabler() {
+    if (IsUseZoomForDSFEnabled())
+      host_->input_router()->SetDeviceScaleFactor(scale_factor_);
+  }
+
+ private:
+  RenderWidgetHostImpl* host_;
+  float scale_factor_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedInputScaleDisabler);
+};
+
+}  // namespace
 
 RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
     RenderWidgetHost* widget_host,
@@ -49,8 +74,6 @@ RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
       // |guest| is NULL during test.
       guest_(guest ? guest->AsWeakPtr() : base::WeakPtr<BrowserPluginGuest>()),
       platform_view_(platform_view) {
-  // Inputs for guest view are already scaled.
-  host_->set_scale_input_to_viewport(false);
 }
 
 RenderWidgetHostViewGuest::~RenderWidgetHostViewGuest() {}
@@ -512,6 +535,7 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
     RenderWidgetHostImpl* embedder,
     int browser_plugin_instance_id,
     const blink::WebInputEvent* event) {
+  ScopedInputScaleDisabler disable(host_, current_device_scale_factor());
   if (blink::WebInputEvent::isMouseEventType(event->type)) {
     // The mouse events for BrowserPlugin are modified by all
     // the CSS transforms applied on the <object> and embedder. As a result of

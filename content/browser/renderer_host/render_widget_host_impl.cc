@@ -208,7 +208,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       next_browser_snapshot_id_(1),
       owned_by_render_frame_host_(false),
       is_focused_(false),
-      scale_input_to_viewport_(IsUseZoomForDSFEnabled()),
       hung_renderer_delay_(
           base::TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
       new_content_rendering_delay_(
@@ -1230,7 +1229,7 @@ void RenderWidgetHostImpl::GetWebScreenInfo(blink::WebScreenInfo* result) {
   // TODO(sievers): find a way to make this done another way so the method
   // can be const.
   latency_tracker_.set_device_scale_factor(result->deviceScaleFactor);
-  if (scale_input_to_viewport_)
+  if (IsUseZoomForDSFEnabled())
     input_router_->SetDeviceScaleFactor(result->deviceScaleFactor);
 }
 
