@@ -31,7 +31,6 @@
 #include "core/fetch/ResourceClientOrObserverWalker.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InstanceCounters.h"
 #include "platform/Logging.h"
 #include "platform/SharedBuffer.h"
@@ -47,6 +46,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
+#include "wtf/text/StringBuilder.h"
 #include <algorithm>
 
 namespace blink {
@@ -327,7 +327,6 @@ Resource::~Resource()
 
 void Resource::willDestroyResource()
 {
-    InspectorInstrumentation::willDestroyResource(this);
     willDestroyResourceInternal();
 }
 

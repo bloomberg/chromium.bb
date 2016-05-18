@@ -82,7 +82,7 @@ public:
     class ResourceData final : public GarbageCollectedFinalized<ResourceData> {
         friend class NetworkResourcesData;
     public:
-        ResourceData(const String& requestId, const String& loaderId, const KURL&);
+        ResourceData(NetworkResourcesData*, const String& requestId, const String& loaderId, const KURL&);
 
         String requestId() const { return m_requestId; }
         String loaderId() const { return m_loaderId; }
@@ -135,7 +135,9 @@ public:
         size_t dataLength() const;
         void appendData(const char* data, size_t dataLength);
         size_t decodeDataToContent();
+        void clearWeakMembers(Visitor*);
 
+        Member<NetworkResourcesData> m_networkResourcesData;
         String m_requestId;
         String m_loaderId;
         String m_frameId;
@@ -172,7 +174,6 @@ public:
     void maybeDecodeDataToContent(const String& requestId);
     void addResource(const String& requestId, Resource*);
     ResourceData const* data(const String& requestId);
-    Vector<String> removeResource(Resource*);
     void clear(const String& preservedLoaderId = String());
 
     void setResourcesDataSizeLimits(size_t maximumResourcesContentSize, size_t maximumSingleResourceContentSize);

@@ -35,6 +35,11 @@
 
 namespace blink {
 
+static bool isErrorStatusCode(int statusCode)
+{
+    return statusCode >= 400;
+}
+
 XHRReplayData* XHRReplayData::create(ExecutionContext* executionContext, const AtomicString& method, const KURL& url, bool async, PassRefPtr<EncodedFormData> formData, bool includeCredentials)
 {
     return new XHRReplayData(executionContext, method, url, async, formData, includeCredentials);
@@ -61,8 +66,9 @@ DEFINE_TRACE(XHRReplayData)
 }
 
 // ResourceData
-NetworkResourcesData::ResourceData::ResourceData(const String& requestId, const String& loaderId, const KURL& requestedURL)
-    : m_requestId(requestId)
+NetworkResourcesData::ResourceData::ResourceData(NetworkResourcesData* networkResourcesData, const String& requestId, const String& loaderId, const KURL& requestedURL)
+    : m_networkResourcesData(networkResourcesData)
+    , m_requestId(requestId)
     , m_loaderId(loaderId)
     , m_requestedURL(requestedURL)
     , m_base64Encoded(false)
@@ -75,8 +81,9 @@ NetworkResourcesData::ResourceData::ResourceData(const String& requestId, const 
 
 DEFINE_TRACE(NetworkResourcesData::ResourceData)
 {
+    visitor->trace(m_networkResourcesData);
     visitor->trace(m_xhrReplayData);
-    visitor->trace(m_cachedResource);
+    visitor->template registerWeakMembers<NetworkResourcesData::ResourceData, &NetworkResourcesData::ResourceData::clearWeakMembers>(this);
 }
 
 void NetworkResourcesData::ResourceData::setContent(const String& content, bool base64Encoded)
@@ -118,6 +125,26 @@ unsigned NetworkResourcesData::ResourceData::evictContent()
 void NetworkResourcesData::ResourceData::setResource(Resource* cachedResource)
 {
     m_cachedResource = cachedResource;
+}
+
+void NetworkResourcesData::ResourceData::clearWeakMembers(Visitor* visitor)
+{
+    if (!m_cachedResource || ThreadHeap::isHeapObjectAlive(m_cachedResource))
+        return;
+
+    // Mark loaded resources or resources without the buffer as loaded.
+    if (m_cachedResource->isLoaded() || !m_cachedResource->resourceBuffer()) {
+        if (!isErrorStatusCode(m_cachedResource->response().httpStatusCode())) {
+            String content;
+            bool base64Encoded;
+            if (InspectorPageAgent::cachedResourceContent(m_cachedResource, &content, &base64Encoded))
+                m_networkResourcesData->setResourceContent(requestId(), content, base64Encoded);
+        }
+    } else {
+        // We could be evicting resource being loaded, save the loaded part, the rest will be appended.
+        m_networkResourcesData->maybeAddResourceData(requestId(), m_cachedResource->resourceBuffer()->data(), m_cachedResource->resourceBuffer()->size());
+    }
+    m_cachedResource = nullptr;
 }
 
 size_t NetworkResourcesData::ResourceData::dataLength() const
@@ -164,7 +191,7 @@ DEFINE_TRACE(NetworkResourcesData)
 void NetworkResourcesData::resourceCreated(const String& requestId, const String& loaderId, const KURL& requestedURL)
 {
     ensureNoDataForRequestId(requestId);
-    m_requestIdToResourceDataMap.set(requestId, new ResourceData(requestId, loaderId, requestedURL));
+    m_requestIdToResourceDataMap.set(requestId, new ResourceData(this, requestId, loaderId, requestedURL));
 }
 
 void NetworkResourcesData::responseReceived(const String& requestId, const String& frameId, const ResourceResponse& response)
@@ -305,20 +332,6 @@ HeapVector<Member<NetworkResourcesData::ResourceData>> NetworkResourcesData::res
     HeapVector<Member<ResourceData>> result;
     for (auto& request : m_requestIdToResourceDataMap)
         result.append(request.value);
-    return result;
-}
-
-Vector<String> NetworkResourcesData::removeResource(Resource* cachedResource)
-{
-    Vector<String> result;
-    for (auto& request : m_requestIdToResourceDataMap) {
-        ResourceData* resourceData = request.value;
-        if (resourceData->cachedResource() == cachedResource) {
-            resourceData->setResource(0);
-            result.append(request.key);
-        }
-    }
-
     return result;
 }
 

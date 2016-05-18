@@ -455,7 +455,6 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
         m_overlay->init(cssAgent, debuggerAgent, m_domAgent);
 
     Platform::current()->currentThread()->addTaskObserver(this);
-    InspectorInstrumentation::registerInstrumentingAgents(m_instrumentingAgents.get());
 }
 
 void WebDevToolsAgentImpl::destroySession()
@@ -474,7 +473,6 @@ void WebDevToolsAgentImpl::destroySession()
     m_session.clear();
 
     Platform::current()->currentThread()->removeTaskObserver(this);
-    InspectorInstrumentation::unregisterInstrumentingAgents(m_instrumentingAgents.get());
 }
 
 void WebDevToolsAgentImpl::attach(const WebString& hostId, int sessionId)

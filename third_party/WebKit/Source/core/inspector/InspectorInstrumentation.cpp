@@ -51,16 +51,6 @@
 
 namespace blink {
 
-namespace {
-
-PersistentHeapHashSet<WeakMember<InstrumentingAgents>>& instrumentingAgentsSet()
-{
-    DEFINE_STATIC_LOCAL(PersistentHeapHashSet<WeakMember<InstrumentingAgents>>, instrumentingAgentsSet, ());
-    return instrumentingAgentsSet;
-}
-
-}
-
 namespace InspectorInstrumentation {
 
 AsyncTask::AsyncTask(ExecutionContext* context, void* task) : AsyncTask(context, task, true)
@@ -183,17 +173,6 @@ void continueWithPolicyIgnore(LocalFrame* frame, DocumentLoader* loader, unsigne
     didReceiveResourceResponseButCanceled(frame, loader, identifier, r, resource);
 }
 
-void willDestroyResource(Resource* cachedResource)
-{
-    ASSERT(isMainThread());
-    for (InstrumentingAgents* instrumentingAgents: instrumentingAgentsSet()) {
-        if (!instrumentingAgents->hasInspectorResourceAgents())
-            continue;
-        for (InspectorResourceAgent* resourceAgent : instrumentingAgents->inspectorResourceAgents())
-            resourceAgent->willDestroyResource(cachedResource);
-    }
-}
-
 bool consoleAgentEnabled(ExecutionContext* executionContext)
 {
     InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(executionContext);
@@ -204,19 +183,6 @@ bool consoleAgentEnabled(ExecutionContext* executionContext)
             return true;
     }
     return false;
-}
-
-void registerInstrumentingAgents(InstrumentingAgents* instrumentingAgents)
-{
-    ASSERT(isMainThread());
-    instrumentingAgentsSet().add(instrumentingAgents);
-}
-
-void unregisterInstrumentingAgents(InstrumentingAgents* instrumentingAgents)
-{
-    ASSERT(isMainThread());
-    ASSERT(instrumentingAgentsSet().contains(instrumentingAgents));
-    instrumentingAgentsSet().remove(instrumentingAgents);
 }
 
 InstrumentingAgents* instrumentingAgentsFor(WorkerGlobalScope* workerGlobalScope)

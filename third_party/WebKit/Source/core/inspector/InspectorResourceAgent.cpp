@@ -771,26 +771,6 @@ void InspectorResourceAgent::didFinishEventSourceRequest(ThreadableLoaderClient*
     clearPendingRequestData();
 }
 
-void InspectorResourceAgent::willDestroyResource(Resource* cachedResource)
-{
-    // Mark loaded resources or resources without the buffer as loaded.
-    if (cachedResource->isLoaded() || !cachedResource->resourceBuffer()) {
-        String content;
-        bool base64Encoded;
-        bool hasContent = InspectorPageAgent::cachedResourceContent(cachedResource, &content, &base64Encoded);
-        Vector<String> requestIds = m_resourcesData->removeResource(cachedResource);
-        if (hasContent && !isErrorStatusCode(cachedResource->response().httpStatusCode())) {
-            for (auto& request : requestIds)
-                m_resourcesData->setResourceContent(request, content, base64Encoded);
-        }
-        return;
-    }
-    // We could be evicting resource being loaded, save the loaded part, the rest will be appended.
-    Vector<String> requestIds = m_resourcesData->removeResource(cachedResource);
-    for (auto& request : requestIds)
-        m_resourcesData->maybeAddResourceData(request, cachedResource->resourceBuffer()->data(), cachedResource->resourceBuffer()->size());
-}
-
 void InspectorResourceAgent::applyUserAgentOverride(String* userAgent)
 {
     String16 userAgentOverride;
