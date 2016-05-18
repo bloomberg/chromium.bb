@@ -23350,6 +23350,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Mojo.MachPortRelay.BrokerError"
+    enum="MojoMachPortRelayBrokerError">
+  <owner>amistry@chromium.org</owner>
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    Errors that the broker process encounters while trying to send or receive
+    Mach ports from a child process.
+  </summary>
+</histogram>
+
+<histogram name="Mojo.MachPortRelay.ChildError"
+    enum="MojoMachPortRelayChildError">
+  <owner>amistry@chromium.org</owner>
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    Errors that a child process encounters while trying to receive Mach ports
+    from the broker process.
+  </summary>
+</histogram>
+
 <histogram name="Mojo.Shell.ChildConnectionTime" units="ms">
   <owner>rockot@chromium.org</owner>
   <summary>
@@ -79504,6 +79524,37 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="chrome.dll"/>
   <int value="1" label="chrome_elf.dll"/>
   <int value="2" label="ntdll.dll"/>
+</enum>
+
+<enum name="MojoMachPortRelayBrokerError" type="int">
+  <int value="0" label="SUCCESS">
+    The Mach port was successfully sent or received.
+  </int>
+  <int value="1" label="ERROR_TASK_FOR_PID">
+    Couldn't get a task port for the process with a given pid.
+  </int>
+  <int value="2" label="ERROR_MAKE_RECEIVE_PORT">
+    Couldn't make a port with receive rights in the destination process.
+  </int>
+  <int value="3" label="ERROR_SET_ATTRIBUTES">
+    Couldn't change the attributes of a Mach port.
+  </int>
+  <int value="4" label="ERROR_EXTRACT_DEST_RIGHT">
+    Couldn't extract a right from the destination.
+  </int>
+  <int value="5" label="ERROR_SEND_MACH_PORT">
+    Couldn't send a Mach port in a call to mach_msg().
+  </int>
+  <int value="6" label="ERROR_EXTRACT_SOURCE_RIGHT">
+    Couldn't extract a right from the source.
+  </int>
+</enum>
+
+<enum name="MojoMachPortRelayChildError" type="int">
+  <int value="0" label="SUCCESS">The Mach port was successfully received.</int>
+  <int value="1" label="ERROR_RECEIVE_MACH_MESSAGE">
+    An error occurred while trying to receive a Mach port with mach_msg().
+  </int>
 </enum>
 
 <enum name="MostVisitedTileIndex" type="int">
