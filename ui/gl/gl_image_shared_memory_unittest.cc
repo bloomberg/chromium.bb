@@ -43,7 +43,6 @@ class GLImageSharedMemoryTestDelegate {
 };
 
 using GLImageTestTypes = testing::Types<
-    GLImageSharedMemoryTestDelegate<gfx::BufferFormat::RGB_565>,
     GLImageSharedMemoryTestDelegate<gfx::BufferFormat::RGBX_8888>,
     GLImageSharedMemoryTestDelegate<gfx::BufferFormat::RGBA_8888>,
     GLImageSharedMemoryTestDelegate<gfx::BufferFormat::BGRX_8888>,

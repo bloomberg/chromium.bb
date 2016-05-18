@@ -45,7 +45,6 @@ GLenum GLInternalFormat(gfx::BufferFormat format) {
       GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,    // DXT5
       GL_ETC1_RGB8_OES,                    // ETC1
       GL_R8_EXT,                           // R_8
-      GL_RGB,                              // RGB_565
       GL_RGBA,                             // RGBA_4444
       GL_RGB,                              // RGBX_8888
       GL_RGBA,                             // RGBA_8888
