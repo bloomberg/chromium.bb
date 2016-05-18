@@ -121,6 +121,7 @@ TEST_F(ManagePasswordsBubbleCocoaTest, ShowShouldCreateAndShowBubble) {
   ShowBubble(false);
   EXPECT_TRUE(ManagePasswordsBubbleCocoa::instance());
   EXPECT_TRUE([bubbleWindow() isVisible]);
+  EXPECT_TRUE([bubbleWindow() autorecalculatesKeyViewLoop]);
 }
 
 TEST_F(ManagePasswordsBubbleCocoaTest, CloseShouldCloseAndDeleteBubble) {

@@ -92,6 +92,7 @@
   NSButton* button = [currentController_ defaultButton];
   if (button && [self shouldOpenAsKeyWindow])
     [window setDefaultButtonCell:[button cell]];
+  [window setAutorecalculatesKeyViewLoop:YES];
 
   NSPoint anchorPoint;
   info_bubble::BubbleArrowLocation arrow;
