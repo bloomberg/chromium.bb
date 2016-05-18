@@ -77,10 +77,10 @@ public class ContextualSearchPanelMetrics {
         boolean isSearchPanelFullyPreloaded = mIsSearchPanelFullyPreloaded;
 
         if (isEndingSearch) {
+            long durationMs = (System.nanoTime() - mFirstPeekTimeNs) / MILLISECONDS_TO_NANOSECONDS;
+            ContextualSearchUma.logPanelViewDurationAction(durationMs);
             if (!mDidSearchInvolvePromo) {
                 // Measure duration only when the promo is not involved.
-                long durationMs =
-                        (System.nanoTime() - mFirstPeekTimeNs) / MILLISECONDS_TO_NANOSECONDS;
                 ContextualSearchUma.logDuration(mWasSearchContentViewSeen, isChained, durationMs);
             }
             if (mIsPromoActive) {
@@ -146,6 +146,8 @@ public class ContextualSearchPanelMetrics {
                 || isFirstExitFromMaximized) {
             ContextualSearchUma.logFirstStateExit(fromState, toState, reasonForLogging);
         }
+        // Log individual user actions so they can be sequenced.
+        ContextualSearchUma.logPanelStateUserAction(toState, reasonForLogging);
 
         // We can now modify the state.
         if (isFirstExitFromPeeking) {
@@ -179,9 +181,6 @@ public class ContextualSearchPanelMetrics {
             mIsSerpNavigation = false;
             mWasSelectionPartOfUrl = false;
         }
-
-        // TODO(manzagop): When the user opts in, we should replay his actions for the current
-        // contextual search for the standard (non promo) UMA histograms.
     }
 
     /**

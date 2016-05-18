@@ -65,8 +65,6 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         ContextualSearchTranslateInterface, ContextualSearchNetworkCommunicator,
         ContextualSearchSelectionHandler, ContextualSearchClient {
 
-    private static final String TAG = "ContextualSearch";
-
     private static final boolean ALWAYS_USE_RESOLVED_SEARCH_TERM = true;
     private static final boolean NEVER_USE_RESOLVED_SEARCH_TERM = false;
 
@@ -1271,7 +1269,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
             if (selectionValid) {
                 mSearchPanel.setSearchTerm(selection);
             } else {
-                hideContextualSearch(StateChangeReason.INVALID_SELECTION);
+                hideContextualSearch(StateChangeReason.BASE_PAGE_TAP);
             }
         }
     }

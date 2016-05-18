@@ -2605,6 +2605,43 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="ContextualSearch.BackPressClose">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    Contextual Search closed when the user pressed the Back button.
+  </description>
+</action>
+
+<action name="ContextualSearch.BasePageScrollClose">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    Contextual Search closed when the user scrolled the base page.
+  </description>
+</action>
+
+<action name="ContextualSearch.BasePageTapClose">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    Contextual Search closed when the user tapped on the base page.
+  </description>
+</action>
+
+<action name="ContextualSearch.CloseButtonClose">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    Contextual Search closed when the user pressed the X in the Contextual
+    search Bar.
+  </description>
+</action>
+
+<action name="ContextualSearch.LongpressPeek">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    The Contextual Search Bar peeked up from the bottom of the screen because
+    the user selected text using long-press.
+  </description>
+</action>
+
 <action name="ContextualSearch.ManualRefineMultiWord">
   <owner>donnd@chromium.org</owner>
   <description>
@@ -2618,6 +2655,119 @@ should be able to be added at any place in this file.
   <description>
     Contextual Search updated the search in the Bar in response to manual
     refinement of the selection into a single word.
+  </description>
+</action>
+
+<action name="ContextualSearch.NavigationClose">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    Contextual Search closed when the user navigated to a search result.
+  </description>
+</action>
+
+<action name="ContextualSearch.NavigationMaximize">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    Contextual Search maximized when the user navigated to a search result in
+    the expanded panel.
+  </description>
+</action>
+
+<action name="ContextualSearch.SearchBarTapClose">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    Contextual Search closed when the user tapped the search bar.
+  </description>
+</action>
+
+<action name="ContextualSearch.SearchBarTapExpand">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    The user did a swip or fling to expand the Contextual Search panel.
+  </description>
+</action>
+
+<action name="ContextualSearch.SwipeOrFlingClose">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    The user did a swip or fling to close the Contextual Search panel.
+  </description>
+</action>
+
+<action name="ContextualSearch.SwipeOrFlingExpand">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    The user did a swip or fling to expand the Contextual Search panel.
+  </description>
+</action>
+
+<action name="ContextualSearch.SwipeOrFlingMaximize">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    The user did a swip or fling to maximize the Contextual Search panel.
+  </description>
+</action>
+
+<action name="ContextualSearch.SwipeOrFlingPeek">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    The user did a swip or fling to move the Contextual Search panel to the peek
+    position.
+  </description>
+</action>
+
+<action name="ContextualSearch.TabPromotionClose">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    Contextual Search closed when the user tapped the search bar to promote the
+    search into a separate tab.
+  </description>
+</action>
+
+<action name="ContextualSearch.TapPeek">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    Contextual Search peeked at from the bottom of the screen because the user
+    tapped on text in the base page.
+  </description>
+</action>
+
+<action name="ContextualSearch.UncommonClose">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    Contextual Search closed due to a user action that is relatively uncommon.
+  </description>
+</action>
+
+<action name="ContextualSearch.ViewLessThanOneSecond">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    The user viewed the Contextual Search bar and panel for less than one
+    second.
+  </description>
+</action>
+
+<action name="ContextualSearch.ViewMoreThanTenSeconds">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    The user viewed the Contextual Search bar and panel for more than ten
+    seconds.
+  </description>
+</action>
+
+<action name="ContextualSearch.ViewOneToThreeSeconds">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    The user viewed the Contextual Search bar and panel for a duration between
+    one and three seconds.
+  </description>
+</action>
+
+<action name="ContextualSearch.ViewThreeToTenSeconds">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    The user viewed the Contextual Search bar and panel for a duration between
+    three and three seconds.
   </description>
 </action>
 
