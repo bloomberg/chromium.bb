@@ -183,9 +183,6 @@ void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString,
         return;
     }
 
-    if (!scope.installRemoteObjectAPI(scope.objectGroupName()))
-        return;
-
     v8::MaybeLocal<v8::Value> maybeResultValue = m_debugger->callFunction(functionValue.As<v8::Function>(), scope.context(), scope.object(), argc, argv.get());
     // Re-initialize after running client's code, as it could have destroyed context or session.
     if (!scope.initialize())

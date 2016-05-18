@@ -91,7 +91,6 @@ public:
     public:
         bool initialize();
         bool installCommandLineAPI();
-        bool installRemoteObjectAPI(const String16& objectGroupName);
         void ignoreExceptionsAndMuteConsole();
         void pretendUserGesture();
         v8::Local<v8::Context> context() const { return m_context; }
@@ -111,7 +110,6 @@ public:
     private:
         void cleanup();
         V8DebuggerImpl::PauseOnExceptionsState setPauseOnExceptionsState(V8DebuggerImpl::PauseOnExceptionsState);
-        bool installGlobalObjectExtension(v8::Local<v8::Object>);
 
         v8::HandleScope m_handleScope;
         v8::TryCatch m_tryCatch;

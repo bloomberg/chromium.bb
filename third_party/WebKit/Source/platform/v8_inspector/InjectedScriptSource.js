@@ -68,22 +68,6 @@ function slice(array, index)
 }
 
 /**
- * @param {!Array.<T>} array1
- * @param {!Array.<T>} array2
- * @return {!Array.<T>}
- * @template T
- */
-function concat(array1, array2)
-{
-    var result = [];
-    for (var i = 0; i < array1.length; ++i)
-        push(result, array1[i]);
-    for (var i = 0; i < array2.length; ++i)
-        push(result, array2[i]);
-    return result;
-}
-
-/**
  * @param {*} obj
  * @return {string}
  * @suppress {uselessCode}
@@ -109,31 +93,6 @@ function toStringDescription(obj)
     if (typeof obj === "number" && obj === 0 && 1 / obj < 0)
         return "-0"; // Negative zero.
     return toString(obj);
-}
-
-/**
- * Please use this bind, not the one from Function.prototype
- * @param {function(...)} func
- * @param {?Object} thisObject
- * @param {...} var_args
- * @return {function(...)}
- */
-function bind(func, thisObject, var_args)
-{
-    var args = slice(arguments, 2);
-
-    /**
-     * @param {...} var_args
-     */
-    function bound(var_args)
-    {
-        return InjectedScriptHost.suppressWarningsAndCallFunction(func, thisObject, concat(args, slice(arguments)));
-    }
-    bound.toString = function()
-    {
-        return "bound: " + toString(func);
-    };
-    return bound;
 }
 
 /**
@@ -199,26 +158,6 @@ function isSymbol(obj)
 {
     var type = typeof obj;
     return (type === "symbol");
-}
-
-/**
- * @param {string} str
- * @param {string} searchElement
- * @param {number=} fromIndex
- * @return {number}
- */
-function indexOf(str, searchElement, fromIndex)
-{
-    var len = str.length;
-    var n = fromIndex || 0;
-    var k = max(n >= 0 ? n : len + n, 0);
-
-    while (k < len) {
-        if (str[k] === searchElement)
-            return k;
-        ++k;
-    }
-    return -1;
 }
 
 /**
@@ -634,30 +573,6 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @param {string} objectGroup
-     * @return {!Object}
-     */
-    remoteObjectAPI: function(objectGroup)
-    {
-        /**
-         * @suppressReceiverCheck
-         * @param {*} object
-         * @param {boolean=} forceValueType
-         * @param {boolean=} generatePreview
-         * @param {?Array.<string>=} columnNames
-         * @param {boolean=} isTable
-         * @param {*=} customObjectConfig
-         * @return {!RuntimeAgent.RemoteObject}
-         * @this {InjectedScript}
-         */
-        function wrap(object, forceValueType, generatePreview, columnNames, isTable, customObjectConfig)
-        {
-            return this._wrapObject(object, objectGroup, forceValueType, generatePreview, columnNames, isTable, false, customObjectConfig);
-        }
-        return { bindRemoteObject: bind(wrap, this), __proto__: null};
-    },
-
-    /**
      * @param {*} object
      * @return {boolean}
      */
@@ -875,6 +790,17 @@ InjectedScript.RemoteObject.prototype = {
             Promise.resolve().then(inspectedGlobalObject.console.error.bind(inspectedGlobalObject.console, "Custom Formatter Failed: " + error.message));
         }
 
+        /**
+         * @suppressReceiverCheck
+         * @param {*} object
+         * @param {*=} customObjectConfig
+         * @return {*}
+         */
+        function wrap(object, customObjectConfig)
+        {
+            return InjectedScriptHost.suppressWarningsAndCallFunction(injectedScript._wrapObject, injectedScript, [ object, objectGroupName, false, false, null, false, false, customObjectConfig ]);
+        }
+
         try {
             var formatters = inspectedGlobalObject["devtoolsFormatters"];
             if (!formatters || !isArrayLike(formatters))
@@ -889,7 +815,8 @@ InjectedScript.RemoteObject.prototype = {
                     var hasBody = formatters[i].hasBody(object, customObjectConfig);
                     injectedScript._substituteObjectTagsInCustomPreview(objectGroupName, formatted);
                     var formatterObjectId = injectedScript._bind(formatters[i], objectGroupName);
-                    var result = {header: JSON.stringify(formatted), hasBody: !!hasBody, formatterObjectId: formatterObjectId};
+                    var bindRemoteObjectFunctionId = injectedScript._bind(wrap, objectGroupName);
+                    var result = {header: JSON.stringify(formatted), hasBody: !!hasBody, formatterObjectId: formatterObjectId, bindRemoteObjectFunctionId: bindRemoteObjectFunctionId};
                     if (customObjectConfig)
                         result["configObjectId"] = injectedScript._bind(customObjectConfig, objectGroupName);
                     return result;

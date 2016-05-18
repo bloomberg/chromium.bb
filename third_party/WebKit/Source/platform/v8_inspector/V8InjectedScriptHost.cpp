@@ -282,9 +282,4 @@ v8::Local<v8::Private> V8Debugger::scopeExtensionPrivate(v8::Isolate* isolate)
     return v8::Private::ForApi(isolate, toV8StringInternalized(isolate, "V8Debugger#scopeExtension"));
 }
 
-bool V8Debugger::isRemoteObjectAPIMethod(const String16& name)
-{
-    return name == "bindRemoteObject";
-}
-
 } // namespace blink

@@ -413,34 +413,13 @@ bool InjectedScript::Scope::initialize()
 
 bool InjectedScript::Scope::installCommandLineAPI()
 {
-    ASSERT(m_injectedScript && !m_context.IsEmpty());
+    DCHECK(m_injectedScript && !m_context.IsEmpty() && m_global.IsEmpty());
     v8::Local<v8::Object> extensionObject;
     if (!m_injectedScript->commandLineAPI(m_errorString).ToLocal(&extensionObject))
         return false;
-    return installGlobalObjectExtension(extensionObject);
-}
-
-bool InjectedScript::Scope::installRemoteObjectAPI(const String16& objectGroupName)
-{
-    ASSERT(m_injectedScript && !m_context.IsEmpty());
-    V8FunctionCall function(m_debugger, m_context, m_injectedScript->v8Value(), "remoteObjectAPI");
-    function.appendArgument(objectGroupName);
-    bool hadException = false;
-    v8::Local<v8::Value> extension = function.call(hadException, false);
-    if (hadException || extension.IsEmpty() || !extension->IsObject()) {
-        *m_errorString = "Internal error";
-        return false;
-    }
-    v8::Local<v8::Object> extensionObject = extension.As<v8::Object>();
-    return installGlobalObjectExtension(extensionObject);
-}
-
-bool InjectedScript::Scope::installGlobalObjectExtension(v8::Local<v8::Object> extension)
-{
-    ASSERT(m_global.IsEmpty());
     m_extensionPrivate = V8Debugger::scopeExtensionPrivate(m_debugger->isolate());
     v8::Local<v8::Object> global = m_context->Global();
-    if (!global->SetPrivate(m_context, m_extensionPrivate, extension).FromMaybe(false)) {
+    if (!global->SetPrivate(m_context, m_extensionPrivate, extensionObject).FromMaybe(false)) {
         *m_errorString = "Internal error";
         return false;
     }

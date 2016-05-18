@@ -251,7 +251,7 @@ static bool namedPropertyFromDebuggerScopeExtension(v8::Local<v8::Name> name, co
         return false;
 
     bool isGetter = V8Debugger::isCommandLineAPIGetter(nameString);
-    bool isMethod = !isGetter && (V8Debugger::isCommandLineAPIMethod(nameString) || V8Debugger::isRemoteObjectAPIMethod(nameString));
+    bool isMethod = !isGetter && V8Debugger::isCommandLineAPIMethod(nameString);
     if (!isGetter && !isMethod)
         return false;
 
