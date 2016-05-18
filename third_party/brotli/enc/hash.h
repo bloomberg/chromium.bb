@@ -656,7 +656,7 @@ class HashToBinaryTree {
   void Init(int lgwin, size_t position, size_t bytes, bool is_last) {
     if (need_init_) {
       window_mask_ = (1u << lgwin) - 1u;
-      invalid_pos_ = static_cast<uint32_t>(-window_mask_);
+      invalid_pos_ = static_cast<uint32_t>(0 - window_mask_);
       for (uint32_t i = 0; i < kBucketSize; i++) {
         buckets_[i] = invalid_pos_;
       }

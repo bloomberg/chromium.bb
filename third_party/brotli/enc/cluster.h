@@ -63,7 +63,7 @@ void CompareAndPushToQueue(const HistogramType* out,
     idx1 = t;
   }
   bool store_pair = false;
-  HistogramPair p;
+  HistogramPair p = {};
   p.idx1 = idx1;
   p.idx2 = idx2;
   p.cost_diff = 0.5 * ClusterCostDiff(cluster_size[idx1], cluster_size[idx2]);
