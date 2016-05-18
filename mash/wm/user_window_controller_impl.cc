@@ -89,15 +89,11 @@ UserWindowControllerImpl::~UserWindowControllerImpl() {
   if (!root_controller_)
     return;
 
-  // TODO(msw): should really listen for user window container being destroyed
-  // and cleanup there.
   mus::Window* user_container = GetUserWindowContainer();
   if (!user_container)
     return;
 
-  user_container->RemoveObserver(this);
-  for (auto iter : user_container->children())
-    iter->RemoveObserver(window_property_observer_.get());
+  RemoveObservers(user_container);
 }
 
 void UserWindowControllerImpl::Initialize(
@@ -117,6 +113,13 @@ void UserWindowControllerImpl::Initialize(
 void UserWindowControllerImpl::AssignIdIfNecessary(mus::Window* window) {
   if (window->GetLocalProperty(kUserWindowIdKey) == 0u)
     window->SetLocalProperty(kUserWindowIdKey, next_id_++);
+}
+
+void UserWindowControllerImpl::RemoveObservers(mus::Window* user_container) {
+  user_container->RemoveObserver(this);
+  user_container->connection()->RemoveObserver(this);
+  for (auto iter : user_container->children())
+    iter->RemoveObserver(window_property_observer_.get());
 }
 
 mus::Window* UserWindowControllerImpl::GetUserWindowById(uint32_t id) {
@@ -145,6 +148,11 @@ void UserWindowControllerImpl::OnTreeChanging(const TreeChangeParams& params) {
       user_window_observer_->OnUserWindowRemoved(
           params.target->GetLocalProperty(kUserWindowIdKey));
   }
+}
+
+void UserWindowControllerImpl::OnWindowDestroying(mus::Window* window) {
+  if (window == GetUserWindowContainer())
+    RemoveObservers(window);
 }
 
 void UserWindowControllerImpl::OnWindowTreeFocusChanged(
