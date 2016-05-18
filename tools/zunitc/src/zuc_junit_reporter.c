@@ -30,6 +30,7 @@
 #if ENABLE_JUNIT_XML
 
 #include <fcntl.h>
+#include <inttypes.h>
 #include <libxml/parser.h>
 #include <memory.h>
 #include <stdio.h>
@@ -128,12 +129,12 @@ emit_event(xmlNodePtr parent, struct zuc_event *event)
 			}
 		} else {
 			if (asprintf(&msg, "%s:%d: error: Value of: %s\n"
-				     "  Actual: %ld\n"
-				     "Expected: %s\n"
-				     "Which is: %ld\n",
-				     event->file, event->line, event->expr2,
-				     event->val2, event->expr1,
-				     event->val1) < 0) {
+			             "  Actual: %"PRIdPTR"\n"
+			             "Expected: %s\n"
+			             "Which is: %"PRIdPTR"\n",
+			             event->file, event->line, event->expr2,
+			             event->val2, event->expr1,
+			             event->val1) < 0) {
 				msg = NULL;
 			}
 		}
@@ -151,12 +152,12 @@ emit_event(xmlNodePtr parent, struct zuc_event *event)
 			}
 		} else {
 			if (asprintf(&msg, "%s:%d: error: "
-				     "Expected: (%s) %s (%s),"
-				     " actual: %ld vs %ld\n",
-				     event->file, event->line,
-				     event->expr1, zuc_get_opstr(event->op),
-				     event->expr2, event->val1,
-				     event->val2) < 0) {
+			             "Expected: (%s) %s (%s),"
+			             " actual: %"PRIdPTR" vs %"PRIdPTR"\n",
+			             event->file, event->line,
+			             event->expr1, zuc_get_opstr(event->op),
+			             event->expr2, event->val1,
+			             event->val2) < 0) {
 				msg = NULL;
 			}
 		}
@@ -181,10 +182,11 @@ emit_event(xmlNodePtr parent, struct zuc_event *event)
 		break;
 	default:
 		if (asprintf(&msg, "%s:%d: error: "
-			     "Expected: (%s) %s (%s), actual: %ld vs %ld\n",
-			     event->file, event->line,
-			     event->expr1, zuc_get_opstr(event->op),
-			     event->expr2, event->val1, event->val2) < 0) {
+		             "Expected: (%s) %s (%s), actual: %"PRIdPTR" vs "
+		             "%"PRIdPTR"\n",
+		             event->file, event->line,
+		             event->expr1, zuc_get_opstr(event->op),
+		             event->expr2, event->val1, event->val2) < 0) {
 			msg = NULL;
 		}
 	}

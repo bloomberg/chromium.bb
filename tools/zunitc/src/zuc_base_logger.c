@@ -27,6 +27,7 @@
 
 #include "zuc_base_logger.h"
 
+#include <inttypes.h>
 #include <memory.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -363,9 +364,9 @@ check_triggered(void *data, char const *file, int line,
 		} else {
 			printf("%s:%d: error: Value of: %s\n", file, line,
 			       expr2);
-			printf("  Actual: %ld\n", val2);
+			printf("  Actual: %"PRIdPTR"\n", val2);
 			printf("Expected: %s\n", expr1);
-			printf("Which is: %ld\n", val1);
+			printf("Which is: %"PRIdPTR"\n", val1);
 		}
 		break;
 	case ZUC_OP_NE:
@@ -376,8 +377,9 @@ check_triggered(void *data, char const *file, int line,
 			       (char *)val1, (char *)val2);
 		} else {
 			printf("%s:%d: error: ", file, line);
-			printf("Expected: (%s) %s (%s), actual: %ld vs %ld\n",
-			       expr1, zuc_get_opstr(op), expr2, val1, val2);
+			printf("Expected: (%s) %s (%s), actual: %"PRIdPTR" vs "
+			       "%"PRIdPTR"\n", expr1, zuc_get_opstr(op), expr2,
+			       val1, val2);
 		}
 		break;
 	case ZUC_OP_TERMINATE: {
@@ -392,7 +394,8 @@ check_triggered(void *data, char const *file, int line,
 		break;
 	default:
 		printf("%s:%d: error: ", file, line);
-		printf("Expected: (%s) %s (%s), actual: %ld vs %ld\n",
-		       expr1, zuc_get_opstr(op), expr2, val1, val2);
+		printf("Expected: (%s) %s (%s), actual: %"PRIdPTR" vs "
+		       "%"PRIdPTR"\n", expr1, zuc_get_opstr(op), expr2, val1,
+		       val2);
 	}
 }
