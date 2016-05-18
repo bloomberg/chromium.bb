@@ -26,7 +26,7 @@ PassOwnPtr<protocol::Array<protocol::Profiler::PositionTickInfo>> buildInspector
     OwnPtr<protocol::Array<protocol::Profiler::PositionTickInfo>> array = protocol::Array<protocol::Profiler::PositionTickInfo>::create();
     unsigned lineCount = node->GetHitLineCount();
     if (!lineCount)
-        return array.release();
+        return array;
 
     protocol::Vector<v8::CpuProfileNode::LineTick> entries(lineCount);
     if (node->GetLineTicks(&entries[0], lineCount)) {
@@ -34,11 +34,11 @@ PassOwnPtr<protocol::Array<protocol::Profiler::PositionTickInfo>> buildInspector
             OwnPtr<protocol::Profiler::PositionTickInfo> line = protocol::Profiler::PositionTickInfo::create()
                 .setLine(entries[i].line)
                 .setTicks(entries[i].hit_count).build();
-            array->addItem(line.release());
+            array->addItem(std::move(line));
         }
     }
 
-    return array.release();
+    return array;
 }
 
 PassOwnPtr<protocol::Profiler::CPUProfileNode> buildInspectorObjectFor(v8::Isolate* isolate, const v8::CpuProfileNode* node)
@@ -62,11 +62,11 @@ PassOwnPtr<protocol::Profiler::CPUProfileNode> buildInspectorObjectFor(v8::Isola
         .setColumnNumber(node->GetColumnNumber())
         .setHitCount(node->GetHitCount())
         .setCallUID(node->GetCallUid())
-        .setChildren(children.release())
-        .setPositionTicks(positionTicks.release())
+        .setChildren(std::move(children))
+        .setPositionTicks(std::move(positionTicks))
         .setDeoptReason(node->GetBailoutReason())
         .setId(node->GetNodeId()).build();
-    return result.release();
+    return result;
 }
 
 PassOwnPtr<protocol::Array<int>> buildInspectorObjectForSamples(v8::CpuProfile* v8profile)
@@ -75,7 +75,7 @@ PassOwnPtr<protocol::Array<int>> buildInspectorObjectForSamples(v8::CpuProfile* 
     int count = v8profile->GetSamplesCount();
     for (int i = 0; i < count; i++)
         array->addItem(v8profile->GetSample(i)->GetNodeId());
-    return array.release();
+    return array;
 }
 
 PassOwnPtr<protocol::Array<double>> buildInspectorObjectForTimestamps(v8::CpuProfile* v8profile)
@@ -84,7 +84,7 @@ PassOwnPtr<protocol::Array<double>> buildInspectorObjectForTimestamps(v8::CpuPro
     int count = v8profile->GetSamplesCount();
     for (int i = 0; i < count; i++)
         array->addItem(v8profile->GetSampleTimestamp(i));
-    return array.release();
+    return array;
 }
 
 PassOwnPtr<protocol::Profiler::CPUProfile> createCPUProfile(v8::Isolate* isolate, v8::CpuProfile* v8profile)
@@ -95,7 +95,7 @@ PassOwnPtr<protocol::Profiler::CPUProfile> createCPUProfile(v8::Isolate* isolate
         .setEndTime(static_cast<double>(v8profile->GetEndTime()) / 1000000).build();
     profile->setSamples(buildInspectorObjectForSamples(v8profile));
     profile->setTimestamps(buildInspectorObjectForTimestamps(v8profile));
-    return profile.release();
+    return profile;
 }
 
 PassOwnPtr<protocol::Debugger::Location> currentDebugLocation(V8DebuggerImpl* debugger)
@@ -105,7 +105,7 @@ PassOwnPtr<protocol::Debugger::Location> currentDebugLocation(V8DebuggerImpl* de
         .setScriptId(callStack->topScriptId())
         .setLineNumber(callStack->topLineNumber()).build();
     location->setColumnNumber(callStack->topColumnNumber());
-    return location.release();
+    return location;
 }
 
 volatile int s_lastProfileId = 0;
@@ -176,7 +176,7 @@ void V8ProfilerAgentImpl::consoleProfileEnd(const String16& title)
     if (!profile)
         return;
     OwnPtr<protocol::Debugger::Location> location = currentDebugLocation(m_session->debugger());
-    m_frontend->consoleProfileFinished(id, location.release(), profile.release(), resolvedTitle);
+    m_frontend->consoleProfileFinished(id, std::move(location), std::move(profile), resolvedTitle);
 }
 
 void V8ProfilerAgentImpl::enable(ErrorString*)
@@ -261,7 +261,7 @@ void V8ProfilerAgentImpl::stop(ErrorString* errorString, OwnPtr<protocol::Profil
     m_recordingCPUProfile = false;
     OwnPtr<protocol::Profiler::CPUProfile> cpuProfile = stopProfiling(m_frontendInitiatedProfileId, !!profile);
     if (profile) {
-        *profile = cpuProfile.release();
+        *profile = std::move(cpuProfile);
         if (!profile->get() && errorString)
             *errorString = "Profile is not found";
     }
@@ -291,7 +291,7 @@ PassOwnPtr<protocol::Profiler::CPUProfile> V8ProfilerAgentImpl::stopProfiling(co
     if (serialize)
         result = createCPUProfile(m_isolate, profile);
     profile->Delete();
-    return result.release();
+    return result;
 }
 
 bool V8ProfilerAgentImpl::isRecording() const

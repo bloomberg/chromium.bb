@@ -80,7 +80,7 @@ PassOwnPtr<{{type.id}}> {{type.id}}::parse(protocol::Value* value, ErrorSupport*
     errors->pop();
     if (errors->hasErrors())
         return nullptr;
-    return result.release();
+    return result;
 }
 
 PassOwnPtr<protocol::DictionaryValue> {{type.id}}::serialize() const
@@ -94,7 +94,7 @@ PassOwnPtr<protocol::DictionaryValue> {{type.id}}::serialize() const
     result->setValue("{{property.name}}", toValue({{resolve_type(property).to_raw_type % ("m_" + property.name)}}));
       {% endif %}
     {% endfor %}
-    return result.release();
+    return result;
 }
 
 PassOwnPtr<{{type.id}}> {{type.id}}::clone() const

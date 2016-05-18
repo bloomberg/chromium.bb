@@ -301,7 +301,7 @@ PassOwnPtr<Value> DictionaryValue::clone() const
         ASSERT(value);
         result->setValue(key, value->clone());
     }
-    return result.release();
+    return std::move(result);
 }
 
 DictionaryValue::DictionaryValue()
@@ -329,7 +329,7 @@ PassOwnPtr<Value> ListValue::clone() const
     OwnPtr<ListValue> result = ListValue::create();
     for (Vector<OwnPtr<protocol::Value>>::const_iterator it = m_data.begin(); it != m_data.end(); ++it)
         result->pushValue((*it)->clone());
-    return result.release();
+    return std::move(result);
 }
 
 ListValue::ListValue()

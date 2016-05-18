@@ -40,7 +40,7 @@ public:
         errors->pop();
         if (errors->hasErrors())
             return nullptr;
-        return result.release();
+        return result;
     }
 
     void addItem(const T& value)
@@ -63,7 +63,7 @@ public:
         OwnPtr<protocol::ListValue> result = ListValue::create();
         for (auto& item : m_vector)
             result->pushValue(toValue(item));
-        return result.release();
+        return result;
     }
 
 private:
@@ -96,12 +96,12 @@ public:
         for (size_t i = 0; i < array->size(); ++i) {
             errors->setName(String16::number(i));
             OwnPtr<T> item = FromValue<T>::parse(array->at(i), errors);
-            result->m_vector.append(item.release());
+            result->m_vector.append(std::move(item));
         }
         errors->pop();
         if (errors->hasErrors())
             return nullptr;
-        return result.release();
+        return result;
     }
 
     void addItem(PassOwnPtr<T> value)
@@ -124,7 +124,7 @@ public:
         OwnPtr<protocol::ListValue> result = ListValue::create();
         for (auto& item : m_vector)
             result->pushValue(toValue(item.get()));
-        return result.release();
+        return result;
     }
 
 private:

@@ -98,7 +98,7 @@ PassOwnPtr<InjectedScript> InjectedScript::create(InspectedContext* inspectedCon
         return nullptr;
     if (!injectedScriptValue->IsObject())
         return nullptr;
-    return adoptPtr(new InjectedScript(inspectedContext, injectedScriptValue.As<v8::Object>(), injectedScriptNative.release()));
+    return adoptPtr(new InjectedScript(inspectedContext, injectedScriptValue.As<v8::Object>(), std::move(injectedScriptNative)));
 }
 
 InjectedScript::InjectedScript(InspectedContext* context, v8::Local<v8::Object> object, PassOwnPtr<InjectedScriptNative> injectedScriptNative)
@@ -137,7 +137,7 @@ void InjectedScript::getProperties(ErrorString* errorString, v8::Local<v8::Objec
     protocol::ErrorSupport errors(errorString);
     OwnPtr<Array<PropertyDescriptor>> result = Array<PropertyDescriptor>::parse(protocolValue.get(), &errors);
     if (!hasInternalError(errorString, errors.hasErrors()))
-        *properties = result.release();
+        *properties = std::move(result);
 }
 
 void InjectedScript::releaseObject(const String16& objectId)
@@ -164,7 +164,7 @@ PassOwnPtr<protocol::Runtime::RemoteObject> InjectedScript::wrapObject(ErrorStri
     OwnPtr<protocol::Runtime::RemoteObject> remoteObject = protocol::Runtime::RemoteObject::parse(toProtocolValue(m_context->context(), wrappedObject).get(), &errors);
     if (!remoteObject)
         *errorString = "Object has too long reference chain";
-    return remoteObject.release();
+    return remoteObject;
 }
 
 bool InjectedScript::wrapObjectProperty(ErrorString* errorString, v8::Local<v8::Object> object, v8::Local<v8::Value> key, const String16& groupName, bool forceValueType, bool generatePreview) const
@@ -336,7 +336,7 @@ PassOwnPtr<protocol::Runtime::ExceptionDetails> InjectedScript::createExceptionD
     v8::Local<v8::StackTrace> stackTrace = message->GetStackTrace();
     if (!stackTrace.IsEmpty() && stackTrace->GetFrameCount() > 0)
         exceptionDetailsObject->setStack(m_context->debugger()->createStackTrace(stackTrace, stackTrace->GetFrameCount())->buildInspectorObject());
-    return exceptionDetailsObject.release();
+    return exceptionDetailsObject;
 }
 
 void InjectedScript::wrapEvaluateResult(ErrorString* errorString, v8::MaybeLocal<v8::Value> maybeResultValue, const v8::TryCatch& tryCatch, const String16& objectGroup, bool returnByValue, bool generatePreview, OwnPtr<protocol::Runtime::RemoteObject>* result, Maybe<bool>* wasThrown, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
@@ -350,7 +350,7 @@ void InjectedScript::wrapEvaluateResult(ErrorString* errorString, v8::MaybeLocal
             return;
         if (objectGroup == "console")
             m_lastEvaluationResult.Reset(m_context->isolate(), resultValue);
-        *result = remoteObject.release();
+        *result = std::move(remoteObject);
         if (wasThrown)
             *wasThrown = false;
     } else {
@@ -358,7 +358,7 @@ void InjectedScript::wrapEvaluateResult(ErrorString* errorString, v8::MaybeLocal
         OwnPtr<RemoteObject> remoteObject = wrapObject(errorString, exception, objectGroup, false, generatePreview && !exception->IsNativeError());
         if (!remoteObject)
             return;
-        *result = remoteObject.release();
+        *result = std::move(remoteObject);
         if (exceptionDetails)
             *exceptionDetails = createExceptionDetails(tryCatch.Message());
         if (wasThrown)

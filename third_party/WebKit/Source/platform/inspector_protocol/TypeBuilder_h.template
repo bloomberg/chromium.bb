@@ -166,7 +166,7 @@ public:
         PassOwnPtr<{{type.id}}> build()
         {
             static_assert(STATE == AllFieldsSet, "state should be AllFieldsSet");
-            return m_result.release();
+            return std::move(m_result);
         }
 
     private:

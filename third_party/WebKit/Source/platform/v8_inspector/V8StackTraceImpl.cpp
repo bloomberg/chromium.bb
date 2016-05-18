@@ -118,7 +118,7 @@ PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::create(V8DebuggerAgentImpl* agent
     if (deepest)
         deepest->m_parent.clear();
 
-    return result.release();
+    return result;
 }
 
 PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::capture(V8DebuggerAgentImpl* agent, size_t maxStackSize, const String16& description)
@@ -189,12 +189,12 @@ PassOwnPtr<protocol::Runtime::StackTrace> V8StackTraceImpl::buildInspectorObject
         frames->addItem(m_frames.at(i).buildInspectorObject());
 
     OwnPtr<protocol::Runtime::StackTrace> stackTrace = protocol::Runtime::StackTrace::create()
-        .setCallFrames(frames.release()).build();
+        .setCallFrames(std::move(frames)).build();
     if (!m_description.isEmpty())
         stackTrace->setDescription(m_description);
     if (m_parent)
         stackTrace->setParent(m_parent->buildInspectorObject());
-    return stackTrace.release();
+    return stackTrace;
 }
 
 PassOwnPtr<protocol::Runtime::StackTrace> V8StackTraceImpl::buildInspectorObjectForTail(V8DebuggerAgentImpl* agent) const

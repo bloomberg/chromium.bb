@@ -335,7 +335,7 @@ static PassOwnPtr<protocol::DictionaryValue> buildObjectForBreakpointCookie(cons
     breakpointObject->setNumber(DebuggerAgentState::columnNumber, columnNumber);
     breakpointObject->setString(DebuggerAgentState::condition, condition);
     breakpointObject->setBoolean(DebuggerAgentState::isRegex, isRegex);
-    return breakpointObject.release();
+    return breakpointObject;
 }
 
 static bool matches(V8DebuggerImpl* debugger, const String16& url, const String16& pattern, bool isRegex)
@@ -379,7 +379,7 @@ void V8DebuggerAgentImpl::setBreakpointByUrl(ErrorString* errorString,
     if (!breakpointsCookie) {
         OwnPtr<protocol::DictionaryValue> newValue = protocol::DictionaryValue::create();
         breakpointsCookie = newValue.get();
-        m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, newValue.release());
+        m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, std::move(newValue));
     }
     if (breakpointsCookie->get(breakpointId)) {
         *errorString = "Breakpoint at specified location already exists.";
@@ -394,7 +394,7 @@ void V8DebuggerAgentImpl::setBreakpointByUrl(ErrorString* errorString,
             continue;
         OwnPtr<protocol::Debugger::Location> location = resolveBreakpoint(breakpointId, script.first, breakpoint, UserBreakpointSource);
         if (location)
-            (*locations)->addItem(location.release());
+            (*locations)->addItem(std::move(location));
     }
 
     *outBreakpointId = breakpointId;
@@ -630,7 +630,7 @@ void V8DebuggerAgentImpl::setScriptSource(ErrorString* errorString,
     OwnPtr<Array<CallFrame>> callFrames = currentCallFrames(errorString);
     if (!callFrames)
         return;
-    *newCallFrames = callFrames.release();
+    *newCallFrames = std::move(callFrames);
     *asyncStackTrace = currentAsyncStackTrace();
 
     ScriptsMap::iterator it = m_scripts.find(scriptId);
@@ -711,10 +711,10 @@ void V8DebuggerAgentImpl::getFunctionDetails(ErrorString* errorString, const Str
         OwnPtr<protocol::Array<protocol::Debugger::Scope>> scopeChain = protocol::Array<protocol::Debugger::Scope>::parse(toProtocolValue(scope.context(), scopes).get(), &errorSupport);
         if (hasInternalError(errorString, errorSupport.hasErrors()))
             return;
-        functionDetails->setScopeChain(scopeChain.release());
+        functionDetails->setScopeChain(std::move(scopeChain));
     }
 
-    *details = functionDetails.release();
+    *details = std::move(functionDetails);
 }
 
 void V8DebuggerAgentImpl::getGeneratorObjectDetails(ErrorString* errorString, const String16& objectId, OwnPtr<GeneratorObjectDetails>* outDetails)
@@ -742,7 +742,7 @@ void V8DebuggerAgentImpl::getGeneratorObjectDetails(ErrorString* errorString, co
     OwnPtr<GeneratorObjectDetails> protocolDetails = GeneratorObjectDetails::parse(toProtocolValue(scope.context(), detailsObject).get(), &errors);
     if (hasInternalError(errorString, !protocolDetails))
         return;
-    *outDetails = protocolDetails.release();
+    *outDetails = std::move(protocolDetails);
 }
 
 void V8DebuggerAgentImpl::getCollectionEntries(ErrorString* errorString, const String16& objectId, OwnPtr<protocol::Array<CollectionEntry>>* outEntries)
@@ -776,7 +776,7 @@ void V8DebuggerAgentImpl::getCollectionEntries(ErrorString* errorString, const S
     OwnPtr<protocol::Array<CollectionEntry>> entries = protocol::Array<CollectionEntry>::parse(toProtocolValue(scope.context(), entriesArray).get(), &errors);
     if (hasInternalError(errorString, !entries))
         return;
-    *outEntries = entries.release();
+    *outEntries = std::move(entries);
 }
 
 void V8DebuggerAgentImpl::schedulePauseOnNextStatement(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data)
@@ -1007,7 +1007,7 @@ void V8DebuggerAgentImpl::asyncTaskScheduled(const String16& taskName, void* tas
     v8::HandleScope scope(m_isolate);
     OwnPtr<V8StackTraceImpl> chain = V8StackTraceImpl::capture(this, V8StackTrace::maxCallStackSizeToCapture, taskName);
     if (chain) {
-        m_asyncTaskStacks.set(task, chain.release());
+        m_asyncTaskStacks.set(task, std::move(chain));
         if (recurring)
             m_recurringTasks.add(task);
     }
@@ -1097,7 +1097,7 @@ bool V8DebuggerAgentImpl::setBlackboxPattern(ErrorString* errorString, const Str
         *errorString = "Pattern parser error: " + regex->errorMessage();
         return false;
     }
-    m_blackboxPattern = regex.release();
+    m_blackboxPattern = std::move(regex);
     return true;
 }
 
@@ -1244,7 +1244,7 @@ PassOwnPtr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames(ErrorString*
     OwnPtr<Array<CallFrame>> callFrames = Array<CallFrame>::parse(toProtocolValue(context, objects).get(), &errorSupport);
     if (hasInternalError(errorString, !callFrames))
         return Array<CallFrame>::create();
-    return callFrames.release();
+    return callFrames;
 }
 
 PassOwnPtr<StackTrace> V8DebuggerAgentImpl::currentAsyncStackTrace()
@@ -1324,7 +1324,7 @@ void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScr
         breakpointObject->getString(DebuggerAgentState::condition, &breakpoint.condition);
         OwnPtr<protocol::Debugger::Location> location = resolveBreakpoint(cookie.first, parsedScript.scriptId, breakpoint, UserBreakpointSource);
         if (location)
-            m_frontend->breakpointResolved(cookie.first, location.release());
+            m_frontend->breakpointResolved(cookie.first, std::move(location));
     }
 }
 
@@ -1384,7 +1384,7 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8
     }
 
     ErrorString errorString;
-    m_frontend->paused(currentCallFrames(&errorString), m_breakReason, m_breakAuxData.release(), hitBreakpointIds.release(), currentAsyncStackTrace());
+    m_frontend->paused(currentCallFrames(&errorString), m_breakReason, std::move(m_breakAuxData), std::move(hitBreakpointIds), currentAsyncStackTrace());
     m_scheduledDebuggerStep = NoStep;
     m_javaScriptPauseScheduled = false;
     m_steppingFromFramework = false;

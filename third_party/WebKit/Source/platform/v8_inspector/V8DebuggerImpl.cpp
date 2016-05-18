@@ -741,7 +741,7 @@ PassOwnPtr<V8InspectorSession> V8DebuggerImpl::connect(int contextGroupId)
     ASSERT(!m_sessions.contains(contextGroupId));
     OwnPtr<V8InspectorSessionImpl> session = V8InspectorSessionImpl::create(this, contextGroupId);
     m_sessions.set(contextGroupId, session.get());
-    return session.release();
+    return std::move(session);
 }
 
 void V8DebuggerImpl::disconnect(V8InspectorSessionImpl* session)
@@ -766,7 +766,7 @@ void V8DebuggerImpl::contextCreated(const V8ContextInfo& info)
 
     OwnPtr<InspectedContext> contextOwner = adoptPtr(new InspectedContext(this, info, contextId));
     InspectedContext* inspectedContext = contextOwner.get();
-    m_contexts.get(info.contextGroupId)->set(contextId, contextOwner.release());
+    m_contexts.get(info.contextGroupId)->set(contextId, std::move(contextOwner));
 
     if (V8InspectorSessionImpl* session = m_sessions.get(info.contextGroupId))
         session->runtimeAgentImpl()->reportExecutionContextCreated(inspectedContext);

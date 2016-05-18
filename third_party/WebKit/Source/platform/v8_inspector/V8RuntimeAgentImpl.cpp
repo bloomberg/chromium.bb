@@ -236,11 +236,11 @@ void V8RuntimeAgentImpl::getProperties(
             return;
         propertiesProtocolArray->addItem(InternalPropertyDescriptor::create()
             .setName(toProtocolString(name.As<v8::String>()))
-            .setValue(wrappedValue.release()).build());
+            .setValue(std::move(wrappedValue)).build());
     }
     if (!propertiesProtocolArray->length())
         return;
-    *internalProperties = propertiesProtocolArray.release();
+    *internalProperties = std::move(propertiesProtocolArray);
 }
 
 void V8RuntimeAgentImpl::releaseObject(ErrorString* errorString, const String16& objectId)
@@ -298,7 +298,7 @@ void V8RuntimeAgentImpl::compileScript(ErrorString* errorString,
 
     String16 scriptValueId = String16::number(script->GetUnboundScript()->GetId());
     OwnPtr<v8::Global<v8::Script>> global = adoptPtr(new v8::Global<v8::Script>(m_debugger->isolate(), script));
-    m_compiledScripts.set(scriptValueId, global.release());
+    m_compiledScripts.set(scriptValueId, std::move(global));
     *scriptId = scriptValueId;
 }
 
@@ -420,7 +420,7 @@ void V8RuntimeAgentImpl::reportExecutionContextCreated(InspectedContext* context
         .setName(context->humanReadableName())
         .setOrigin(context->origin())
         .setFrameId(context->frameId()).build();
-    m_frontend->executionContextCreated(description.release());
+    m_frontend->executionContextCreated(std::move(description));
 }
 
 void V8RuntimeAgentImpl::reportExecutionContextDestroyed(InspectedContext* context)

@@ -585,7 +585,7 @@ static void inspectImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool co
     if (copyToClipboard)
         hints->setBoolean("copyToClipboard", true);
     if (V8InspectorSessionImpl* session = helper.currentSession())
-        session->runtimeAgentImpl()->inspect(wrappedObject.release(), hints.release());
+        session->runtimeAgentImpl()->inspect(std::move(wrappedObject), std::move(hints));
 }
 
 void V8Console::inspectCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

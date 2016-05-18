@@ -67,7 +67,7 @@ public:
     {
         OwnPtr<DispatcherImplWeakPtr> weak = adoptPtr(new DispatcherImplWeakPtr(this));
         m_weakPtrs.add(weak.get());
-        return weak.release();
+        return weak;
     }
 
     virtual void dispatch(int sessionId, const String16& message);
@@ -178,7 +178,7 @@ public:
         resultObject->setValue("{{parameter.name}}", toValue({{resolve_type(parameter).to_raw_type % parameter.name}}));
             {% endif %}
           {% endfor %}
-        sendIfActive(resultObject.release(), ErrorString());
+        sendIfActive(std::move(resultObject), ErrorString());
     }
 
     void sendFailure(const ErrorString& error) override
@@ -248,7 +248,7 @@ void DispatcherImpl::{{domain.domain}}_{{command.name}}(int sessionId, int callI
         {%- endif -%}
       {%- endfor %}
       {%- if "async" in command -%}
-        , callback.release()
+        , std::move(callback)
       {%- elif "returns" in command %}
         {%- for property in command.returns -%}
           , &out_{{property.name}}
@@ -266,7 +266,7 @@ void DispatcherImpl::{{domain.domain}}_{{command.name}}(int sessionId, int callI
       {% endfor %}
     }
     if (weak->get())
-        weak->get()->sendResponse(sessionId, callId, error, result.release());
+        weak->get()->sendResponse(sessionId, callId, error, std::move(result));
     {% elif not("async" in command) %}
     if (weak->get())
         weak->get()->sendResponse(sessionId, callId, error);
@@ -285,7 +285,7 @@ void DispatcherImpl::dispatch(int sessionId, const String16& message)
     int callId = 0;
     OwnPtr<protocol::Value> parsedMessage = parseJSON(message);
     ASSERT(parsedMessage);
-    OwnPtr<protocol::DictionaryValue> messageObject = DictionaryValue::cast(parsedMessage.release());
+    OwnPtr<protocol::DictionaryValue> messageObject = DictionaryValue::cast(std::move(parsedMessage));
     ASSERT(messageObject);
 
     protocol::Value* callIdValue = messageObject->get("id");
@@ -304,7 +304,7 @@ void DispatcherImpl::dispatch(int sessionId, const String16& message)
     }
 
     protocol::ErrorSupport errors;
-    ((*this).*(*it->second))(sessionId, callId, messageObject.release(), &errors);
+    ((*this).*(*it->second))(sessionId, callId, std::move(messageObject), &errors);
 }
 
 void DispatcherImpl::sendResponse(int sessionId, int callId, const ErrorString& invocationError, ErrorSupport* errors, PassOwnPtr<protocol::DictionaryValue> result)
@@ -318,7 +318,7 @@ void DispatcherImpl::sendResponse(int sessionId, int callId, const ErrorString& 
     responseMessage->setNumber("id", callId);
     responseMessage->setObject("result", std::move(result));
     if (m_frontendChannel)
-        m_frontendChannel->sendProtocolResponse(sessionId, callId, responseMessage.release());
+        m_frontendChannel->sendProtocolResponse(sessionId, callId, std::move(responseMessage));
 }
 
 void Dispatcher::reportProtocolError(int sessionId, int callId, CommonErrorCode code, const String16& errorMessage) const
@@ -339,10 +339,10 @@ void DispatcherImpl::reportProtocolError(int sessionId, int callId, CommonErrorC
     if (errors && errors->hasErrors())
         error->setString("data", errors->errors());
     OwnPtr<protocol::DictionaryValue> message = DictionaryValue::create();
-    message->setObject("error", error.release());
+    message->setObject("error", std::move(error));
     message->setNumber("id", callId);
     if (m_frontendChannel)
-        m_frontendChannel->sendProtocolResponse(sessionId, callId, message.release());
+        m_frontendChannel->sendProtocolResponse(sessionId, callId, std::move(message));
 }
 
 bool Dispatcher::getCommandName(const String16& message, String16* result)

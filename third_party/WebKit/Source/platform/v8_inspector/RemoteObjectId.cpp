@@ -21,7 +21,7 @@ PassOwnPtr<protocol::DictionaryValue> RemoteObjectIdBase::parseInjectedScriptId(
     OwnPtr<protocol::DictionaryValue> parsedObjectId = adoptPtr(protocol::DictionaryValue::cast(parsedValue.leakPtr()));
     bool success = parsedObjectId->getNumber("injectedScriptId", &m_injectedScriptId);
     if (success)
-        return parsedObjectId.release();
+        return parsedObjectId;
     return nullptr;
 }
 
@@ -41,7 +41,7 @@ PassOwnPtr<RemoteObjectId> RemoteObjectId::parse(ErrorString* errorString, const
         *errorString = "Invalid remote object id";
         return nullptr;
     }
-    return result.release();
+    return result;
 }
 
 RemoteCallFrameId::RemoteCallFrameId() : RemoteObjectIdBase(), m_frameOrdinal(0) { }
@@ -61,7 +61,7 @@ PassOwnPtr<RemoteCallFrameId> RemoteCallFrameId::parse(ErrorString* errorString,
         return nullptr;
     }
 
-    return result.release();
+    return result;
 }
 
 String16 RemoteCallFrameId::serialize(int injectedScriptId, int frameOrdinal)

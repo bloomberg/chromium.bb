@@ -139,7 +139,7 @@ public:
             statsDiff->addItem(updateData[i].count);
             statsDiff->addItem(updateData[i].size);
         }
-        m_frontend->heapStatsUpdate(statsDiff.release());
+        m_frontend->heapStatsUpdate(std::move(statsDiff));
         return kContinue;
     }
 
@@ -379,7 +379,7 @@ PassOwnPtr<protocol::HeapProfiler::SamplingHeapProfileNode> buildSampingHeapProf
         .setColumnNumber(node->column_number)
         .setSelfSize(selfSize)
         .setChildren(std::move(children)).build();
-    return result.release();
+    return result;
 }
 } // namespace
 #endif

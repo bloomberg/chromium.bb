@@ -42,9 +42,9 @@ void Frontend::{{domain.domain}}::{{event.name}}(
     paramsObject->setValue("{{parameter.name}}", toValue({{resolve_type(parameter).to_raw_type % parameter.name}}));
       {% endif %}
     {% endfor %}
-    jsonMessage->setObject("params", paramsObject.release());
+    jsonMessage->setObject("params", std::move(paramsObject));
     if (m_frontendChannel)
-        m_frontendChannel->sendProtocolNotification(jsonMessage.release());
+        m_frontendChannel->sendProtocolNotification(std::move(jsonMessage));
 }
   {% endfor %}
 {% endfor %}

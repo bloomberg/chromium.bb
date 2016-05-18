@@ -110,7 +110,7 @@ PassOwnPtr<protocol::Vector<unsigned>> lineEndings(const String16& text)
     }
     result->append(text.length());
 
-    return result.release();
+    return result;
 }
 
 protocol::Vector<std::pair<int, String16>> scriptRegexpMatchesByLines(const V8Regex& regex, const String16& text)
@@ -204,7 +204,7 @@ PassOwnPtr<protocol::Array<protocol::Debugger::SearchMatch>> searchInTextByLines
     for (const auto& match : matches)
         result->addItem(buildObjectForSearchMatch(match.first, match.second));
 
-    return result.release();
+    return result;
 }
 
 } // namespace V8ContentSearchUtil
@@ -239,9 +239,9 @@ PassOwnPtr<protocol::Value> toProtocolValue(v8::Local<v8::Context> context, v8::
             OwnPtr<protocol::Value> element = toProtocolValue(context, value, maxDepth);
             if (!element)
                 return nullptr;
-            inspectorArray->pushValue(element.release());
+            inspectorArray->pushValue(std::move(element));
         }
-        return inspectorArray.release();
+        return std::move(inspectorArray);
     }
     if (value->IsObject()) {
         OwnPtr<protocol::DictionaryValue> jsonObject = protocol::DictionaryValue::create();
@@ -269,9 +269,9 @@ PassOwnPtr<protocol::Value> toProtocolValue(v8::Local<v8::Context> context, v8::
             OwnPtr<protocol::Value> propertyValue = toProtocolValue(context, property, maxDepth);
             if (!propertyValue)
                 return nullptr;
-            jsonObject->setValue(toProtocolString(propertyName), propertyValue.release());
+            jsonObject->setValue(toProtocolString(propertyName), std::move(propertyValue));
         }
-        return jsonObject.release();
+        return std::move(jsonObject);
     }
     ASSERT_NOT_REACHED();
     return nullptr;
