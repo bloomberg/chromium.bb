@@ -2989,7 +2989,7 @@ gl_renderer_create_pbuffer_surface(struct gl_renderer *gr) {
 }
 
 static int
-gl_renderer_create(struct weston_compositor *ec, EGLenum platform,
+gl_renderer_display_create(struct weston_compositor *ec, EGLenum platform,
 	void *native_window, const EGLint *attribs,
 	const EGLint *visual_id, int n_ids)
 {
@@ -3282,7 +3282,7 @@ WL_EXPORT struct gl_renderer_interface gl_renderer_interface = {
 	.opaque_attribs = gl_renderer_opaque_attribs,
 	.alpha_attribs = gl_renderer_alpha_attribs,
 
-	.create = gl_renderer_create,
+	.display_create = gl_renderer_display_create,
 	.display = gl_renderer_display,
 	.output_create = gl_renderer_output_create,
 	.output_destroy = gl_renderer_output_destroy,

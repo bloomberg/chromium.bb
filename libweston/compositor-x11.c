@@ -1645,8 +1645,9 @@ init_gl_renderer(struct x11_backend *b)
 	if (!gl_renderer)
 		return -1;
 
-	ret = gl_renderer->create(b->compositor, EGL_PLATFORM_X11_KHR, (void *) b->dpy,
-				  gl_renderer->opaque_attribs, NULL, 0);
+	ret = gl_renderer->display_create(b->compositor, EGL_PLATFORM_X11_KHR,
+					  (void *) b->dpy,
+					  gl_renderer->opaque_attribs, NULL, 0);
 
 	return ret;
 }

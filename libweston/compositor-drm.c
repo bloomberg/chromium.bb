@@ -1569,12 +1569,12 @@ drm_backend_create_gl_renderer(struct drm_backend *b)
 
 	if (format[1])
 		n_formats = 3;
-	if (gl_renderer->create(b->compositor,
-				EGL_PLATFORM_GBM_KHR,
-				(void *)b->gbm,
-				gl_renderer->opaque_attribs,
-				format,
-				n_formats) < 0) {
+	if (gl_renderer->display_create(b->compositor,
+					EGL_PLATFORM_GBM_KHR,
+					(void *)b->gbm,
+					gl_renderer->opaque_attribs,
+					format,
+					n_formats) < 0) {
 		return -1;
 	}
 

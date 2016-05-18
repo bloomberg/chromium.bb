@@ -2349,12 +2349,12 @@ wayland_backend_create(struct weston_compositor *compositor,
 	}
 
 	if (!b->use_pixman) {
-		if (gl_renderer->create(compositor,
-					EGL_PLATFORM_WAYLAND_KHR,
-					b->parent.wl_display,
-					gl_renderer->alpha_attribs,
-					NULL,
-					0) < 0) {
+		if (gl_renderer->display_create(compositor,
+						EGL_PLATFORM_WAYLAND_KHR,
+						b->parent.wl_display,
+						gl_renderer->alpha_attribs,
+						NULL,
+						0) < 0) {
 			weston_log("Failed to initialize the GL renderer; "
 				   "falling back to pixman.\n");
 			b->use_pixman = true;
