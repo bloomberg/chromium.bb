@@ -1068,6 +1068,9 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 	struct x11_output *output;
 	struct weston_pointer_axis_event weston_event;
 
+	assert(event->response_type == XCB_BUTTON_PRESS ||
+	       event->response_type == XCB_BUTTON_RELEASE);
+
 	output = x11_backend_find_output(b, button_event->event);
 	if (!output)
 		return;
