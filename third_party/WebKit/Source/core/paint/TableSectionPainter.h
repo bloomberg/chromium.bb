@@ -6,10 +6,12 @@
 #define TableSectionPainter_h
 
 #include "core/paint/PaintPhase.h"
+#include "core/style/ShadowData.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
 
+class CellSpan;
 class CollapsedBorderValue;
 class LayoutPoint;
 class LayoutTableCell;
@@ -26,7 +28,15 @@ public:
 
 private:
     void paintObject(const PaintInfo&, const LayoutPoint&);
-    void paintCell(const LayoutTableCell&, PaintPhase originalPaintPhase, const PaintInfo&, const LayoutPoint&);
+
+    void paintBackgroundsBehindCell(const LayoutTableCell&, const PaintInfo&, const LayoutPoint&);
+    void paintCell(const LayoutTableCell&, const PaintInfo&, const LayoutPoint&);
+
+    // Returns the primary cell that should be painted for the grid item at (row, column)
+    // intersecting dirtiedRows and dirtiedColumns. Returns nullptr if we have painted the grid item
+    // when painting the grid item left to or above (row, column) when painting cells intersecting
+    // dirtiedRows and dirtiedColumns.
+    const LayoutTableCell* primaryCellToPaint(unsigned row, unsigned column, const CellSpan& dirtiedRows, const CellSpan& dirtiedColumns) const;
 
     const LayoutTableSection& m_layoutTableSection;
 };

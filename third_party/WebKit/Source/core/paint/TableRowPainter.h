@@ -6,6 +6,7 @@
 #define TableRowPainter_h
 
 #include "core/layout/LayoutTableRow.h"
+#include "core/style/ShadowData.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -16,7 +17,8 @@ public:
     TableRowPainter(const LayoutTableRow& layoutTableRow) : m_layoutTableRow(layoutTableRow) { }
 
     void paint(const PaintInfo&, const LayoutPoint&);
-    void paintOutlineForRowIfNeeded(const PaintInfo&, const LayoutPoint&);
+    void paintOutline(const PaintInfo&, const LayoutPoint&);
+    void paintBackgroundBehindCell(const LayoutTableCell&, const PaintInfo&, const LayoutPoint&);
 
 private:
     const LayoutTableRow& m_layoutTableRow;

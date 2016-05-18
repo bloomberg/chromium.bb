@@ -88,7 +88,7 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
     int rightWidth = rightBorderValue.width();
 
     // Adjust our x/y/width/height so that we paint the collapsed borders at the correct location.
-    LayoutRect paintRect = paintBounds(paintOffset, AddOffsetFromParent);
+    LayoutRect paintRect = paintRectNotIncludingVisualOverflow(paintOffset + m_layoutTableCell.location());
     IntRect borderRect = pixelSnappedIntRect(paintRect.x() - leftWidth / 2,
         paintRect.y() - topWidth / 2,
         paintRect.width() + leftWidth / 2 + (rightWidth + 1) / 2,
@@ -124,43 +124,40 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
     }
 }
 
-void TableCellPainter::paintBackgroundsBehindCell(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutObject* backgroundObject, DisplayItem::Type type)
+void TableCellPainter::paintContainerBackgroundBehindCell(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutObject& backgroundObject, DisplayItem::Type type)
 {
-    if (!backgroundObject)
-        return;
+    DCHECK(backgroundObject != m_layoutTableCell);
 
     if (m_layoutTableCell.style()->visibility() != VISIBLE)
         return;
 
-    LayoutTable* tableElt = m_layoutTableCell.table();
-    if (!tableElt->collapseBorders() && m_layoutTableCell.style()->emptyCells() == EmptyCellsHide && !m_layoutTableCell.firstChild())
+    LayoutTable* table = m_layoutTableCell.table();
+    if (!table->collapseBorders() && m_layoutTableCell.style()->emptyCells() == EmptyCellsHide && !m_layoutTableCell.firstChild())
         return;
 
-    LayoutRect paintRect = paintBounds(paintOffset, backgroundObject != &m_layoutTableCell ? AddOffsetFromParent : DoNotAddOffsetFromParent);
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutTableCell, type))
+        return;
 
-    // Record drawing only if the cell is painting background from containers.
-    Optional<LayoutObjectDrawingRecorder> recorder;
-    if (backgroundObject != &m_layoutTableCell) {
-        if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutTableCell, type))
-            return;
-        recorder.emplace(paintInfo.context, m_layoutTableCell, type, paintRect);
-    } else {
-        ASSERT(paintRect.location() == paintOffset);
-    }
+    LayoutRect paintRect = paintRectNotIncludingVisualOverflow(paintOffset + m_layoutTableCell.location());
+    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutTableCell, type, paintRect);
+    paintBackground(paintInfo, paintRect, backgroundObject);
+}
 
-    Color c = backgroundObject->resolveColor(CSSPropertyBackgroundColor);
-    const FillLayer& bgLayer = backgroundObject->style()->backgroundLayers();
+void TableCellPainter::paintBackground(const PaintInfo& paintInfo, const LayoutRect& paintRect, const LayoutObject& backgroundObject)
+{
+    Color c = backgroundObject.resolveColor(CSSPropertyBackgroundColor);
+    const FillLayer& bgLayer = backgroundObject.styleRef().backgroundLayers();
     if (bgLayer.hasImage() || c.alpha()) {
         // We have to clip here because the background would paint
         // on top of the borders otherwise.  This only matters for cells and rows.
-        bool shouldClip = backgroundObject->hasLayer() && (backgroundObject == &m_layoutTableCell || backgroundObject == m_layoutTableCell.parent()) && tableElt->collapseBorders();
+        bool shouldClip = backgroundObject.hasLayer() && (backgroundObject == m_layoutTableCell || backgroundObject == m_layoutTableCell.parent()) && m_layoutTableCell.table()->collapseBorders();
         GraphicsContextStateSaver stateSaver(paintInfo.context, shouldClip);
         if (shouldClip) {
             LayoutRect clipRect(paintRect.location(), m_layoutTableCell.size());
             clipRect.expand(m_layoutTableCell.borderInsets());
             paintInfo.context.clip(pixelSnappedIntRect(clipRect));
         }
-        BoxPainter(m_layoutTableCell).paintFillLayers(paintInfo, c, bgLayer, paintRect, BackgroundBleedNone, SkXfermode::kSrcOver_Mode, backgroundObject);
+        BoxPainter(m_layoutTableCell).paintFillLayers(paintInfo, c, bgLayer, paintRect, BackgroundBleedNone, SkXfermode::kSrcOver_Mode, &backgroundObject);
     }
 }
 
@@ -182,13 +179,10 @@ void TableCellPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, 
     // TODO(chrishtr): the pixel-snapping here is likely incorrect.
     LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutTableCell, DisplayItem::BoxDecorationBackground, pixelSnappedIntRect(visualOverflowRect));
 
-    LayoutRect paintRect = paintBounds(paintOffset, DoNotAddOffsetFromParent);
+    LayoutRect paintRect = paintRectNotIncludingVisualOverflow(paintOffset);
 
     BoxPainter::paintBoxShadow(paintInfo, paintRect, m_layoutTableCell.styleRef(), Normal);
-
-    // Paint our cell background.
-    paintBackgroundsBehindCell(paintInfo, paintOffset, &m_layoutTableCell, DisplayItem::BoxDecorationBackground);
-
+    paintBackground(paintInfo, paintRect, m_layoutTableCell);
     BoxPainter::paintBoxShadow(paintInfo, paintRect, m_layoutTableCell.styleRef(), Inset);
 
     if (!needsToPaintBorder)
@@ -209,17 +203,14 @@ void TableCellPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& 
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutTableCell, paintInfo.phase))
         return;
 
-    LayoutRect paintRect = paintBounds(paintOffset, DoNotAddOffsetFromParent);
+    LayoutRect paintRect = paintRectNotIncludingVisualOverflow(paintOffset);
     LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutTableCell, paintInfo.phase, paintRect);
     BoxPainter(m_layoutTableCell).paintMaskImages(paintInfo, paintRect);
 }
 
-LayoutRect TableCellPainter::paintBounds(const LayoutPoint& paintOffset, PaintBoundOffsetBehavior paintBoundOffsetBehavior)
+LayoutRect TableCellPainter::paintRectNotIncludingVisualOverflow(const LayoutPoint& paintOffset)
 {
-    LayoutPoint adjustedPaintOffset = paintOffset;
-    if (paintBoundOffsetBehavior == AddOffsetFromParent)
-        adjustedPaintOffset.moveBy(m_layoutTableCell.location());
-    return LayoutRect(adjustedPaintOffset, LayoutSize(m_layoutTableCell.pixelSnappedSize()));
+    return LayoutRect(paintOffset, LayoutSize(m_layoutTableCell.pixelSnappedSize()));
 }
 
 } // namespace blink

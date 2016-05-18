@@ -47,14 +47,14 @@ public:
     static void paintBoxShadow(const PaintInfo&, const LayoutRect&, const ComputedStyle&, ShadowStyle, bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true);
     static bool shouldForceWhiteBackgroundForPrintEconomy(const ComputedStyle&, const Document&);
 
+    LayoutRect boundsForDrawingRecorder(const LayoutPoint& adjustedPaintOffset);
+
 private:
     void paintBackground(const PaintInfo&, const LayoutRect&, const Color& backgroundColor, BackgroundBleedAvoidance = BackgroundBleedNone);
     static FloatRoundedRect backgroundRoundedRectAdjustedForBleedAvoidance(const LayoutObject&, const LayoutRect&, BackgroundBleedAvoidance, const InlineFlowBox*, const LayoutSize&, bool includeLogicalLeftEdge, bool includeLogicalRightEdge);
     static FloatRoundedRect getBackgroundRoundedRect(const LayoutObject&, const LayoutRect&, const InlineFlowBox*, LayoutUnit inlineBoxWidth, LayoutUnit inlineBoxHeight,
         bool includeLogicalLeftEdge, bool includeLogicalRightEdge);
     static void applyBoxShadowForBackground(GraphicsContext&, const LayoutObject&);
-
-    LayoutRect boundsForDrawingRecorder(const LayoutPoint& paintOffset);
 
     const LayoutBox& m_layoutBox;
 };

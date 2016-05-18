@@ -51,11 +51,10 @@ void BoxPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const 
     paintBoxDecorationBackgroundWithRect(paintInfo, paintOffset, paintRect);
 }
 
-LayoutRect BoxPainter::boundsForDrawingRecorder(const LayoutPoint& paintOffset)
+LayoutRect BoxPainter::boundsForDrawingRecorder(const LayoutPoint& adjustedPaintOffset)
 {
-    // Use the visual overflow rect here, because it will include overflow introduced by the theme.
     LayoutRect bounds = m_layoutBox.visualOverflowRect();
-    bounds.moveBy(paintOffset);
+    bounds.moveBy(adjustedPaintOffset);
     return bounds;
 }
 
