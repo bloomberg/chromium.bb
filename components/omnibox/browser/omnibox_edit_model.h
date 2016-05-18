@@ -388,8 +388,8 @@ class OmniboxEditModel {
   // Conversion between user text and display text. User text is the text the
   // user has input. Display text is the text being shown in the edit. The
   // two are different if a keyword is selected.
-  base::string16 DisplayTextFromUserText(const base::string16& text) const;
-  base::string16 UserTextFromDisplayText(const base::string16& text) const;
+  base::string16 MaybeStripKeyword(const base::string16& text) const;
+  base::string16 MaybePrependKeyword(const base::string16& text) const;
 
   // If there's a selected match, copies it into |match|. Else, returns the
   // default match for the current text, as well as the alternate nav URL, if

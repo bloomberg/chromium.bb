@@ -113,16 +113,14 @@ gfx::VectorIconId OmniboxView::GetVectorIcon(bool invert) const {
 }
 
 void OmniboxView::SetUserText(const base::string16& text) {
-  SetUserText(text, text, true);
+  SetUserText(text, true);
 }
 
 void OmniboxView::SetUserText(const base::string16& text,
-                              const base::string16& display_text,
                               bool update_popup) {
   if (model_.get())
     model_->SetUserText(text);
-  SetWindowTextAndCaretPos(display_text, display_text.length(), update_popup,
-                           true);
+  SetWindowTextAndCaretPos(text, text.length(), update_popup, true);
 }
 
 void OmniboxView::ShowURL() {

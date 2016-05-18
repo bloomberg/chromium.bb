@@ -886,12 +886,19 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, AcceptKeywordBySpace) {
   ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
   ASSERT_EQ(search_keyword, omnibox_view->model()->keyword());
   ASSERT_TRUE(omnibox_view->GetText().empty());
+  size_t start, end;
+  omnibox_view->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(0U, start);
+  EXPECT_EQ(0U, end);
 
   // Revert to keyword hint mode.
   omnibox_view->model()->ClearKeyword();
   ASSERT_TRUE(omnibox_view->model()->is_keyword_hint());
   ASSERT_EQ(search_keyword, omnibox_view->model()->keyword());
   ASSERT_EQ(search_keyword + base::char16(' '), omnibox_view->GetText());
+  omnibox_view->GetSelectionBounds(&start, &end);
+  EXPECT_EQ(search_keyword.length() + 1, start);
+  EXPECT_EQ(search_keyword.length() + 1, end);
 
   // Keyword should also be accepted by typing an ideographic space.
   omnibox_view->OnBeforePossibleChange();
@@ -939,7 +946,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, AcceptKeywordBySpace) {
   ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
   ASSERT_EQ(search_keyword, omnibox_view->model()->keyword());
   ASSERT_EQ(ASCIIToUTF16("a "), omnibox_view->GetText());
-  size_t start, end;
   omnibox_view->GetSelectionBounds(&start, &end);
   EXPECT_EQ(0U, start);
   EXPECT_EQ(0U, end);
@@ -1390,9 +1396,6 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
   ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
   ASSERT_EQ(kSearchKeyword, UTF16ToUTF8(omnibox_view->model()->keyword()));
 
-  // Input something as search text.
-  ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchTextKeys));
-
   // Create a new tab.
   chrome::NewTab(browser());
 
@@ -1400,7 +1403,21 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
   browser()->tab_strip_model()->ActivateTabAt(0, true);
 
   // Make sure we're still in keyword mode.
+  ASSERT_TRUE(omnibox_view->model()->is_keyword_selected());
   ASSERT_EQ(kSearchKeyword, UTF16ToUTF8(omnibox_view->model()->keyword()));
+  ASSERT_EQ(omnibox_view->GetText(), base::string16());
+
+  // Input something as search text.
+  ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchTextKeys));
+
+  // Switch to the second tab and back to the first.
+  browser()->tab_strip_model()->ActivateTabAt(1, true);
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
+
+  // Make sure we're still in keyword mode.
+  ASSERT_TRUE(omnibox_view->model()->is_keyword_selected());
+  ASSERT_EQ(kSearchKeyword, UTF16ToUTF8(omnibox_view->model()->keyword()));
+  ASSERT_EQ(omnibox_view->GetText(), base::ASCIIToUTF16(kSearchText));
 }
 
 // http://crbug.com/133355

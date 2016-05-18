@@ -217,7 +217,6 @@ IN_PROC_BROWSER_TEST_F(NavigationAccessibilityTest,
       BrowserView::GetBrowserViewForBrowser(browser())->
       toolbar()->location_bar()->omnibox_view();
   omnibox_view->SetUserText(base::UTF8ToUTF16(main_url.spec()),
-                            base::UTF8ToUTF16(main_url.spec()),
                             false);
 
   WinAccessibilityEventMonitor monitor(EVENT_OBJECT_FOCUS, EVENT_OBJECT_FOCUS);

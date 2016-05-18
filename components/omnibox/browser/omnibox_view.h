@@ -88,7 +88,6 @@ class OmniboxView {
   // revert to the permanent text.
   void SetUserText(const base::string16& text);
   virtual void SetUserText(const base::string16& text,
-                           const base::string16& display_text,
                            bool update_popup);
 
   // Sets the window text and the caret position. |notify_text_changed| is true

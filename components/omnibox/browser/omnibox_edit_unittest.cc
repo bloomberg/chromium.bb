@@ -42,9 +42,8 @@ class TestingOmniboxView : public OmniboxView {
                  size_t selected_line) override {}
   base::string16 GetText() const override { return text_; }
   void SetUserText(const base::string16& text,
-                   const base::string16& display_text,
                    bool update_popup) override {
-    text_ = display_text;
+    text_ = text;
   }
   void SetWindowTextAndCaretPos(const base::string16& text,
                                 size_t caret_pos,

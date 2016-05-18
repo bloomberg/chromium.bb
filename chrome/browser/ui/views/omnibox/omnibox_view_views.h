@@ -88,7 +88,6 @@ class OmniboxViewViews
   void Update() override;
   base::string16 GetText() const override;
   void SetUserText(const base::string16& text,
-                   const base::string16& display_text,
                    bool update_popup) override;
   void SetForcedQuery() override;
   void GetSelectionBounds(base::string16::size_type* start,
