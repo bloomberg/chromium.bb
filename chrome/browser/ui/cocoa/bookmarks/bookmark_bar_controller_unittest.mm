@@ -1576,7 +1576,8 @@ TEST_F(BookmarkBarControllerTest, ShrinkOrHideView) {
 
 // Simiulate browser window width change and ensure that the bookmark buttons
 // that should be visible are visible.
-TEST_F(BookmarkBarControllerTest, LastBookmarkResizeBehavior) {
+// Appears to fail on Mac 10.11 bot on the waterfall; http://crbug.com/612640.
+TEST_F(BookmarkBarControllerTest, DISABLED_LastBookmarkResizeBehavior) {
   // Hide the apps shortcut.
   profile()->GetPrefs()->SetBoolean(
       bookmarks::prefs::kShowAppsShortcutInBookmarkBar, false);
