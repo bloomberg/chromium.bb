@@ -285,20 +285,14 @@ bool GLImageIOSurface::CopyTexImage(unsigned target) {
   // Note that state restoration is done explicitly instead of scoped binders to
   // avoid https://crbug.com/601729.
   GLint rgb_texture = 0;
-  GLuint y_texture = 0;
-  GLuint uv_texture = 0;
   glGetIntegerv(GL_TEXTURE_BINDING_RECTANGLE_ARB, &rgb_texture);
-  glGenTextures(1, &y_texture);
-  glGenTextures(1, &uv_texture);
   base::ScopedClosureRunner destroy_resources_runner(base::BindBlock(^{
-    glDeleteTextures(1, &y_texture);
-    glDeleteTextures(1, &uv_texture);
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, rgb_texture);
   }));
 
   CGLContextObj cgl_context = CGLGetCurrentContext();
   {
-    glBindTexture(GL_TEXTURE_RECTANGLE_ARB, y_texture);
+    glBindTexture(GL_TEXTURE_RECTANGLE_ARB, yuv_to_rgb_converter->y_texture());
     CGLError cgl_error = CGLTexImageIOSurface2D(
         cgl_context, GL_TEXTURE_RECTANGLE_ARB, GL_RED, size_.width(),
         size_.height(), GL_RED, GL_UNSIGNED_BYTE, io_surface_, 0);
@@ -309,7 +303,7 @@ bool GLImageIOSurface::CopyTexImage(unsigned target) {
     }
   }
   {
-    glBindTexture(GL_TEXTURE_RECTANGLE_ARB, uv_texture);
+    glBindTexture(GL_TEXTURE_RECTANGLE_ARB, yuv_to_rgb_converter->uv_texture());
     CGLError cgl_error = CGLTexImageIOSurface2D(
         cgl_context, GL_TEXTURE_RECTANGLE_ARB, GL_RG, size_.width() / 2,
         size_.height() / 2, GL_RG, GL_UNSIGNED_BYTE, io_surface_, 1);
@@ -321,7 +315,9 @@ bool GLImageIOSurface::CopyTexImage(unsigned target) {
   }
 
   yuv_to_rgb_converter->CopyYUV420ToRGB(
-      GL_TEXTURE_RECTANGLE_ARB, y_texture, uv_texture, size_, rgb_texture);
+      GL_TEXTURE_RECTANGLE_ARB,
+      size_,
+      rgb_texture);
   return true;
 }
 

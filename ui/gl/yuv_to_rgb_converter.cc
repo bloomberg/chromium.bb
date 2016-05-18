@@ -100,12 +100,17 @@ YUVToRGBConverter::YUVToRGBConverter() {
   int uv_sampler_location = glGetUniformLocation(program_, "a_uv_texture");
   DCHECK_NE(-1, uv_sampler_location);
 
+  glGenTextures(1, &y_texture_);
+  glGenTextures(1, &uv_texture_);
+
   glUniform1i(y_sampler_location, 0);
   glUniform1i(uv_sampler_location, 1);
 }
 
 YUVToRGBConverter::~YUVToRGBConverter() {
   gfx::ScopedSetGLToRealGLApi scoped_set_gl_api;
+  glDeleteTextures(1, &y_texture_);
+  glDeleteTextures(1, &uv_texture_);
   glDeleteProgram(program_);
   glDeleteShader(vertex_shader_);
   glDeleteShader(fragment_shader_);
@@ -114,8 +119,6 @@ YUVToRGBConverter::~YUVToRGBConverter() {
 }
 
 void YUVToRGBConverter::CopyYUV420ToRGB(unsigned target,
-                                        unsigned y_texture,
-                                        unsigned uv_texture,
                                         const gfx::Size& size,
                                         unsigned rgb_texture) {
   // Only support for rectangle targets exists so far.
@@ -140,9 +143,9 @@ void YUVToRGBConverter::CopyYUV420ToRGB(unsigned target,
 
   // Set up and issue the draw call.
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, y_texture);
+  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, y_texture_);
   glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, uv_texture);
+  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, uv_texture_);
   gfx::ScopedFrameBufferBinder framebuffer_binder(framebuffer_);
   gfx::ScopedViewport viewport(0, 0, size.width(), size.height());
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
