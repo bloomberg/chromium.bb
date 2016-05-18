@@ -88,22 +88,22 @@ TEST_F(TimingFunctionTest, CubicToString)
 
 TEST_F(TimingFunctionTest, StepToString)
 {
-    RefPtr<TimingFunction> stepTimingStart = StepsTimingFunction::preset(StepsTimingFunction::Start);
+    RefPtr<TimingFunction> stepTimingStart = StepsTimingFunction::preset(StepsTimingFunction::StepPosition::START);
     EXPECT_EQ("step-start", stepTimingStart->toString());
 
-    RefPtr<TimingFunction> stepTimingMiddle = StepsTimingFunction::preset(StepsTimingFunction::Middle);
+    RefPtr<TimingFunction> stepTimingMiddle = StepsTimingFunction::preset(StepsTimingFunction::StepPosition::MIDDLE);
     EXPECT_EQ("step-middle", stepTimingMiddle->toString());
 
-    RefPtr<TimingFunction> stepTimingEnd = StepsTimingFunction::preset(StepsTimingFunction::End);
+    RefPtr<TimingFunction> stepTimingEnd = StepsTimingFunction::preset(StepsTimingFunction::StepPosition::END);
     EXPECT_EQ("step-end", stepTimingEnd->toString());
 
-    RefPtr<TimingFunction> stepTimingCustomStart = StepsTimingFunction::create(3, StepsTimingFunction::Start);
+    RefPtr<TimingFunction> stepTimingCustomStart = StepsTimingFunction::create(3, StepsTimingFunction::StepPosition::START);
     EXPECT_EQ("steps(3, start)", stepTimingCustomStart->toString());
 
-    RefPtr<TimingFunction> stepTimingCustomMiddle = StepsTimingFunction::create(4, StepsTimingFunction::Middle);
+    RefPtr<TimingFunction> stepTimingCustomMiddle = StepsTimingFunction::create(4, StepsTimingFunction::StepPosition::MIDDLE);
     EXPECT_EQ("steps(4, middle)", stepTimingCustomMiddle->toString());
 
-    RefPtr<TimingFunction> stepTimingCustomEnd = StepsTimingFunction::create(5, StepsTimingFunction::End);
+    RefPtr<TimingFunction> stepTimingCustomEnd = StepsTimingFunction::create(5, StepsTimingFunction::StepPosition::END);
     EXPECT_EQ("steps(5, end)", stepTimingCustomEnd->toString());
 }
 
@@ -112,8 +112,8 @@ TEST_F(TimingFunctionTest, BaseOperatorEq)
     RefPtr<TimingFunction> linearTiming = LinearTimingFunction::shared();
     RefPtr<TimingFunction> cubicTiming1 = CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn);
     RefPtr<TimingFunction> cubicTiming2 = CubicBezierTimingFunction::create(0.17, 0.67, 1, -1.73);
-    RefPtr<TimingFunction> stepsTiming1 = StepsTimingFunction::preset(StepsTimingFunction::End);
-    RefPtr<TimingFunction> stepsTiming2 = StepsTimingFunction::create(5, StepsTimingFunction::Start);
+    RefPtr<TimingFunction> stepsTiming1 = StepsTimingFunction::preset(StepsTimingFunction::StepPosition::END);
+    RefPtr<TimingFunction> stepsTiming2 = StepsTimingFunction::create(5, StepsTimingFunction::StepPosition::START);
 
     Vector<std::pair<std::string, RefPtr<TimingFunction>>> v;
     v.append(std::make_pair("linearTiming", linearTiming));
@@ -172,25 +172,25 @@ TEST_F(TimingFunctionTest, CubicOperatorEqReflectivity)
 
 TEST_F(TimingFunctionTest, StepsOperatorEq)
 {
-    RefPtr<TimingFunction> stepsTimingStart1 = StepsTimingFunction::preset(StepsTimingFunction::Start);
-    RefPtr<TimingFunction> stepsTimingStart2 = StepsTimingFunction::preset(StepsTimingFunction::Start);
+    RefPtr<TimingFunction> stepsTimingStart1 = StepsTimingFunction::preset(StepsTimingFunction::StepPosition::START);
+    RefPtr<TimingFunction> stepsTimingStart2 = StepsTimingFunction::preset(StepsTimingFunction::StepPosition::START);
     EXPECT_EQ(*stepsTimingStart1, *stepsTimingStart1);
     EXPECT_EQ(*stepsTimingStart1, *stepsTimingStart2);
 
-    RefPtr<TimingFunction> stepsTimingEnd1 = StepsTimingFunction::preset(StepsTimingFunction::End);
-    RefPtr<TimingFunction> stepsTimingEnd2 = StepsTimingFunction::preset(StepsTimingFunction::End);
+    RefPtr<TimingFunction> stepsTimingEnd1 = StepsTimingFunction::preset(StepsTimingFunction::StepPosition::END);
+    RefPtr<TimingFunction> stepsTimingEnd2 = StepsTimingFunction::preset(StepsTimingFunction::StepPosition::END);
     EXPECT_EQ(*stepsTimingEnd1, *stepsTimingEnd1);
     EXPECT_EQ(*stepsTimingEnd1, *stepsTimingEnd2);
 
-    RefPtr<TimingFunction> stepsTimingCustom1 = StepsTimingFunction::create(5, StepsTimingFunction::Start);
-    RefPtr<TimingFunction> stepsTimingCustom2 = StepsTimingFunction::create(5, StepsTimingFunction::End);
-    RefPtr<TimingFunction> stepsTimingCustom3 = StepsTimingFunction::create(7, StepsTimingFunction::Start);
-    RefPtr<TimingFunction> stepsTimingCustom4 = StepsTimingFunction::create(7, StepsTimingFunction::End);
+    RefPtr<TimingFunction> stepsTimingCustom1 = StepsTimingFunction::create(5, StepsTimingFunction::StepPosition::START);
+    RefPtr<TimingFunction> stepsTimingCustom2 = StepsTimingFunction::create(5, StepsTimingFunction::StepPosition::END);
+    RefPtr<TimingFunction> stepsTimingCustom3 = StepsTimingFunction::create(7, StepsTimingFunction::StepPosition::START);
+    RefPtr<TimingFunction> stepsTimingCustom4 = StepsTimingFunction::create(7, StepsTimingFunction::StepPosition::END);
 
-    EXPECT_EQ(*StepsTimingFunction::create(5, StepsTimingFunction::Start), *stepsTimingCustom1);
-    EXPECT_EQ(*StepsTimingFunction::create(5, StepsTimingFunction::End), *stepsTimingCustom2);
-    EXPECT_EQ(*StepsTimingFunction::create(7, StepsTimingFunction::Start), *stepsTimingCustom3);
-    EXPECT_EQ(*StepsTimingFunction::create(7, StepsTimingFunction::End), *stepsTimingCustom4);
+    EXPECT_EQ(*StepsTimingFunction::create(5, StepsTimingFunction::StepPosition::START), *stepsTimingCustom1);
+    EXPECT_EQ(*StepsTimingFunction::create(5, StepsTimingFunction::StepPosition::END), *stepsTimingCustom2);
+    EXPECT_EQ(*StepsTimingFunction::create(7, StepsTimingFunction::StepPosition::START), *stepsTimingCustom3);
+    EXPECT_EQ(*StepsTimingFunction::create(7, StepsTimingFunction::StepPosition::END), *stepsTimingCustom4);
 
     Vector<std::pair<std::string, RefPtr<TimingFunction>>> v;
     v.append(std::make_pair("stepsTimingStart1", stepsTimingStart1));
@@ -204,8 +204,8 @@ TEST_F(TimingFunctionTest, StepsOperatorEq)
 
 TEST_F(TimingFunctionTest, StepsOperatorEqPreset)
 {
-    RefPtr<TimingFunction> stepsA = StepsTimingFunction::preset(StepsTimingFunction::Start);
-    RefPtr<TimingFunction> stepsB = StepsTimingFunction::create(1, StepsTimingFunction::Start);
+    RefPtr<TimingFunction> stepsA = StepsTimingFunction::preset(StepsTimingFunction::StepPosition::START);
+    RefPtr<TimingFunction> stepsB = StepsTimingFunction::create(1, StepsTimingFunction::StepPosition::START);
     EXPECT_EQ(*stepsA, *stepsB);
     EXPECT_EQ(*stepsB, *stepsA);
 }
@@ -238,7 +238,7 @@ TEST_F(TimingFunctionTest, StepRange)
 {
     double start = 0;
     double end = 1;
-    RefPtr<TimingFunction> steps = StepsTimingFunction::preset(StepsTimingFunction::Start);
+    RefPtr<TimingFunction> steps = StepsTimingFunction::preset(StepsTimingFunction::StepPosition::START);
     steps->range(&start, &end);
     EXPECT_NEAR(0, start, 0.01);
     EXPECT_NEAR(1, end, 0.01);
@@ -348,7 +348,7 @@ TEST_F(TimingFunctionTest, CubicEvaluate)
 
 TEST_F(TimingFunctionTest, StepsEvaluate)
 {
-    RefPtr<TimingFunction> stepsTimingStart = StepsTimingFunction::preset(StepsTimingFunction::Start);
+    RefPtr<TimingFunction> stepsTimingStart = StepsTimingFunction::preset(StepsTimingFunction::StepPosition::START);
     EXPECT_EQ(0.00, stepsTimingStart->evaluate(-1.10, 0));
     EXPECT_EQ(0.00, stepsTimingStart->evaluate(-0.10, 0));
     EXPECT_EQ(1.00, stepsTimingStart->evaluate(0.00, 0));
@@ -357,7 +357,7 @@ TEST_F(TimingFunctionTest, StepsEvaluate)
     EXPECT_EQ(1.00, stepsTimingStart->evaluate(1.00, 0));
     EXPECT_EQ(1.00, stepsTimingStart->evaluate(2.00, 0));
 
-    RefPtr<TimingFunction> stepsTimingMiddle = StepsTimingFunction::preset(StepsTimingFunction::Middle);
+    RefPtr<TimingFunction> stepsTimingMiddle = StepsTimingFunction::preset(StepsTimingFunction::StepPosition::MIDDLE);
     EXPECT_EQ(0.00, stepsTimingMiddle->evaluate(-2.50, 0));
     EXPECT_EQ(0.00, stepsTimingMiddle->evaluate(0.00, 0));
     EXPECT_EQ(0.00, stepsTimingMiddle->evaluate(0.49, 0));
@@ -365,7 +365,7 @@ TEST_F(TimingFunctionTest, StepsEvaluate)
     EXPECT_EQ(1.00, stepsTimingMiddle->evaluate(1.00, 0));
     EXPECT_EQ(1.00, stepsTimingMiddle->evaluate(2.50, 0));
 
-    RefPtr<TimingFunction> stepsTimingEnd = StepsTimingFunction::preset(StepsTimingFunction::End);
+    RefPtr<TimingFunction> stepsTimingEnd = StepsTimingFunction::preset(StepsTimingFunction::StepPosition::END);
     EXPECT_EQ(0.00, stepsTimingEnd->evaluate(-2.00, 0));
     EXPECT_EQ(0.00, stepsTimingEnd->evaluate(0.00, 0));
     EXPECT_EQ(0.00, stepsTimingEnd->evaluate(0.20, 0));
@@ -373,7 +373,7 @@ TEST_F(TimingFunctionTest, StepsEvaluate)
     EXPECT_EQ(1.00, stepsTimingEnd->evaluate(1.00, 0));
     EXPECT_EQ(1.00, stepsTimingEnd->evaluate(2.00, 0));
 
-    RefPtr<TimingFunction> stepsTimingCustomStart = StepsTimingFunction::create(4, StepsTimingFunction::Start);
+    RefPtr<TimingFunction> stepsTimingCustomStart = StepsTimingFunction::create(4, StepsTimingFunction::StepPosition::START);
     EXPECT_EQ(0.00, stepsTimingCustomStart->evaluate(-0.50, 0));
     EXPECT_EQ(0.25, stepsTimingCustomStart->evaluate(0.00, 0));
     EXPECT_EQ(0.25, stepsTimingCustomStart->evaluate(0.24, 0));
@@ -385,7 +385,7 @@ TEST_F(TimingFunctionTest, StepsEvaluate)
     EXPECT_EQ(1.00, stepsTimingCustomStart->evaluate(1.00, 0));
     EXPECT_EQ(1.00, stepsTimingCustomStart->evaluate(1.50, 0));
 
-    RefPtr<TimingFunction> stepsTimingCustomMiddle = StepsTimingFunction::create(4, StepsTimingFunction::Middle);
+    RefPtr<TimingFunction> stepsTimingCustomMiddle = StepsTimingFunction::create(4, StepsTimingFunction::StepPosition::MIDDLE);
     EXPECT_EQ(0.00, stepsTimingCustomMiddle->evaluate(-2.00, 0));
     EXPECT_EQ(0.00, stepsTimingCustomMiddle->evaluate(0.00, 0));
     EXPECT_EQ(0.00, stepsTimingCustomMiddle->evaluate(0.12, 0));
@@ -399,7 +399,7 @@ TEST_F(TimingFunctionTest, StepsEvaluate)
     EXPECT_EQ(1.00, stepsTimingCustomMiddle->evaluate(1.00, 0));
     EXPECT_EQ(1.00, stepsTimingCustomMiddle->evaluate(3.00, 0));
 
-    RefPtr<TimingFunction> stepsTimingCustomEnd = StepsTimingFunction::create(4, StepsTimingFunction::End);
+    RefPtr<TimingFunction> stepsTimingCustomEnd = StepsTimingFunction::create(4, StepsTimingFunction::StepPosition::END);
     EXPECT_EQ(0.00, stepsTimingCustomEnd->evaluate(-2.00, 0));
     EXPECT_EQ(0.00, stepsTimingCustomEnd->evaluate(0.00, 0));
     EXPECT_EQ(0.00, stepsTimingCustomEnd->evaluate(0.24, 0));

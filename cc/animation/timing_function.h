@@ -88,8 +88,12 @@ class CC_EXPORT EaseInOutTimingFunction {
 
 class CC_EXPORT StepsTimingFunction : public TimingFunction {
  public:
-  static std::unique_ptr<StepsTimingFunction> Create(int steps,
-                                                     float steps_start_offset);
+  // Web Animations specification, 3.12.4. Timing in discrete steps.
+  enum class StepPosition { START, MIDDLE, END };
+
+  static std::unique_ptr<StepsTimingFunction> Create(
+      int steps,
+      StepPosition step_position);
   ~StepsTimingFunction() override;
 
   float GetValue(double t) const override;
@@ -99,7 +103,7 @@ class CC_EXPORT StepsTimingFunction : public TimingFunction {
   float Velocity(double time) const override;
 
  protected:
-  StepsTimingFunction(int steps, float steps_start_offset);
+  StepsTimingFunction(int steps, StepPosition step_position);
 
  private:
   int steps_;

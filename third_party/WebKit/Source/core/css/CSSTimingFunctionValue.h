@@ -70,13 +70,13 @@ DEFINE_CSS_VALUE_TYPE_CASTS(CSSCubicBezierTimingFunctionValue, isCubicBezierTimi
 
 class CSSStepsTimingFunctionValue : public CSSValue {
 public:
-    static CSSStepsTimingFunctionValue* create(int steps, StepsTimingFunction::StepAtPosition stepAtPosition)
+    static CSSStepsTimingFunctionValue* create(int steps, StepsTimingFunction::StepPosition stepPosition)
     {
-        return new CSSStepsTimingFunctionValue(steps, stepAtPosition);
+        return new CSSStepsTimingFunctionValue(steps, stepPosition);
     }
 
     int numberOfSteps() const { return m_steps; }
-    StepsTimingFunction::StepAtPosition getStepAtPosition() const { return m_stepAtPosition; }
+    StepsTimingFunction::StepPosition getStepPosition() const { return m_stepPosition; }
 
     String customCSSText() const;
 
@@ -85,15 +85,15 @@ public:
     DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValue::traceAfterDispatch(visitor); }
 
 private:
-    CSSStepsTimingFunctionValue(int steps, StepsTimingFunction::StepAtPosition stepAtPosition)
+    CSSStepsTimingFunctionValue(int steps, StepsTimingFunction::StepPosition stepPosition)
         : CSSValue(StepsTimingFunctionClass)
         , m_steps(steps)
-        , m_stepAtPosition(stepAtPosition)
+        , m_stepPosition(stepPosition)
     {
     }
 
     int m_steps;
-    StepsTimingFunction::StepAtPosition m_stepAtPosition;
+    StepsTimingFunction::StepPosition m_stepPosition;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSStepsTimingFunctionValue, isStepsTimingFunctionValue());

@@ -25,6 +25,7 @@
 #ifndef TimingFunction_h
 #define TimingFunction_h
 
+#include "cc/animation/timing_function.h"
 #include "platform/animation/AnimationUtilities.h" // For blend()
 #include "platform/animation/UnitBezier.h"
 #include "platform/heap/Handle.h"
@@ -175,35 +176,30 @@ private:
 
 class PLATFORM_EXPORT StepsTimingFunction final : public TimingFunction {
 public:
-    enum StepAtPosition {
-        Start,
-        Middle,
-        End
-    };
+    using StepPosition = cc::StepsTimingFunction::StepPosition;
 
-    static PassRefPtr<StepsTimingFunction> create(int steps, StepAtPosition stepAtPosition)
+    static PassRefPtr<StepsTimingFunction> create(int steps, StepPosition stepPosition)
     {
-        return adoptRef(new StepsTimingFunction(steps, stepAtPosition));
+        return adoptRef(new StepsTimingFunction(steps, stepPosition));
     }
 
-    static StepsTimingFunction* preset(StepAtPosition position)
+    static StepsTimingFunction* preset(StepPosition position)
     {
-        DEFINE_STATIC_REF(StepsTimingFunction, start, create(1, Start));
-        DEFINE_STATIC_REF(StepsTimingFunction, middle, create(1, Middle));
-        DEFINE_STATIC_REF(StepsTimingFunction, end, create(1, End));
+        DEFINE_STATIC_REF(StepsTimingFunction, start, create(1, StepPosition::START));
+        DEFINE_STATIC_REF(StepsTimingFunction, middle, create(1, StepPosition::MIDDLE));
+        DEFINE_STATIC_REF(StepsTimingFunction, end, create(1, StepPosition::END));
         switch (position) {
-        case Start:
+        case StepPosition::START:
             return start;
-        case Middle:
+        case StepPosition::MIDDLE:
             return middle;
-        case End:
+        case StepPosition::END:
             return end;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
             return end;
         }
     }
-
 
     ~StepsTimingFunction() override { }
 
@@ -213,18 +209,18 @@ public:
     void range(double* minValue, double* maxValue) const override;
 
     int numberOfSteps() const { return m_steps; }
-    StepAtPosition getStepAtPosition() const { return m_stepAtPosition; }
+    StepPosition getStepPosition() const { return m_stepPosition; }
 
 private:
-    StepsTimingFunction(int steps, StepAtPosition stepAtPosition)
+    StepsTimingFunction(int steps, StepPosition stepPosition)
         : TimingFunction(kStepsFunction)
         , m_steps(steps)
-        , m_stepAtPosition(stepAtPosition)
+        , m_stepPosition(stepPosition)
     {
     }
 
     int m_steps;
-    StepAtPosition m_stepAtPosition;
+    StepPosition m_stepPosition;
 };
 
 PLATFORM_EXPORT bool operator==(const LinearTimingFunction&, const TimingFunction&);

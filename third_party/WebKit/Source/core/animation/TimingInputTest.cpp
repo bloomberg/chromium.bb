@@ -202,19 +202,19 @@ TEST_F(AnimationTimingInputTest, TimingInputTimingFunction)
     EXPECT_TRUE(success);
     EXPECT_EQ(*LinearTimingFunction::shared(), *applyTimingInputString("easing", "linear", success).timingFunction);
     EXPECT_TRUE(success);
-    EXPECT_EQ(*StepsTimingFunction::preset(StepsTimingFunction::Start), *applyTimingInputString("easing", "step-start", success).timingFunction);
+    EXPECT_EQ(*StepsTimingFunction::preset(StepsTimingFunction::StepPosition::START), *applyTimingInputString("easing", "step-start", success).timingFunction);
     EXPECT_TRUE(success);
-    EXPECT_EQ(*StepsTimingFunction::preset(StepsTimingFunction::Middle), *applyTimingInputString("easing", "step-middle", success).timingFunction);
+    EXPECT_EQ(*StepsTimingFunction::preset(StepsTimingFunction::StepPosition::MIDDLE), *applyTimingInputString("easing", "step-middle", success).timingFunction);
     EXPECT_TRUE(success);
-    EXPECT_EQ(*StepsTimingFunction::preset(StepsTimingFunction::End), *applyTimingInputString("easing", "step-end", success).timingFunction);
+    EXPECT_EQ(*StepsTimingFunction::preset(StepsTimingFunction::StepPosition::END), *applyTimingInputString("easing", "step-end", success).timingFunction);
     EXPECT_TRUE(success);
     EXPECT_EQ(*CubicBezierTimingFunction::create(1, 1, 0.3, 0.3), *applyTimingInputString("easing", "cubic-bezier(1, 1, 0.3, 0.3)", success).timingFunction);
     EXPECT_TRUE(success);
-    EXPECT_EQ(*StepsTimingFunction::create(3, StepsTimingFunction::Start), *applyTimingInputString("easing", "steps(3, start)", success).timingFunction);
+    EXPECT_EQ(*StepsTimingFunction::create(3, StepsTimingFunction::StepPosition::START), *applyTimingInputString("easing", "steps(3, start)", success).timingFunction);
     EXPECT_TRUE(success);
-    EXPECT_EQ(*StepsTimingFunction::create(5, StepsTimingFunction::Middle), *applyTimingInputString("easing", "steps(5, middle)", success).timingFunction);
+    EXPECT_EQ(*StepsTimingFunction::create(5, StepsTimingFunction::StepPosition::MIDDLE), *applyTimingInputString("easing", "steps(5, middle)", success).timingFunction);
     EXPECT_TRUE(success);
-    EXPECT_EQ(*StepsTimingFunction::create(5, StepsTimingFunction::End), *applyTimingInputString("easing", "steps(5, end)", success).timingFunction);
+    EXPECT_EQ(*StepsTimingFunction::create(5, StepsTimingFunction::StepPosition::END), *applyTimingInputString("easing", "steps(5, end)", success).timingFunction);
     EXPECT_TRUE(success);
 
     applyTimingInputString("easing", "", success);

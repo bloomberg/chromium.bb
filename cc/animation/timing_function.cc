@@ -66,16 +66,23 @@ std::unique_ptr<TimingFunction> EaseInOutTimingFunction::Create() {
 
 std::unique_ptr<StepsTimingFunction> StepsTimingFunction::Create(
     int steps,
-    float steps_start_offset) {
-  return base::WrapUnique(new StepsTimingFunction(steps, steps_start_offset));
+    StepPosition step_position) {
+  return base::WrapUnique(new StepsTimingFunction(steps, step_position));
 }
 
-StepsTimingFunction::StepsTimingFunction(int steps, float steps_start_offset)
-    : steps_(steps), steps_start_offset_(steps_start_offset) {
-  // Restrict it to CSS presets: step_start, step_end and step_middle.
-  // See the Web Animations specification, 3.12.4. Timing in discrete steps.
-  DCHECK(steps_start_offset_ == 0 || steps_start_offset_ == 1 ||
-         steps_start_offset_ == 0.5);
+StepsTimingFunction::StepsTimingFunction(int steps, StepPosition step_position)
+    : steps_(steps) {
+  switch (step_position) {
+    case StepPosition::START:
+      steps_start_offset_ = 1;
+      break;
+    case StepPosition::MIDDLE:
+      steps_start_offset_ = 0.5;
+      break;
+    case StepPosition::END:
+      steps_start_offset_ = 0;
+      break;
+  }
 }
 
 StepsTimingFunction::~StepsTimingFunction() {

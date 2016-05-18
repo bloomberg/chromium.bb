@@ -445,10 +445,10 @@ TEST(KeyframedAnimationCurveTest, StepsTimingFunctionStepAtStart) {
   std::unique_ptr<KeyframedFloatAnimationCurve> curve(
       KeyframedFloatAnimationCurve::Create());
   const int num_steps = 36;
-  const float steps_start_offset = 1.0f;
   curve->AddKeyframe(FloatKeyframe::Create(
       base::TimeDelta(), 0.f,
-      StepsTimingFunction::Create(num_steps, steps_start_offset)));
+      StepsTimingFunction::Create(num_steps,
+                                  StepsTimingFunction::StepPosition::START)));
   curve->AddKeyframe(FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.0),
                                            num_steps, nullptr));
 
@@ -476,10 +476,10 @@ TEST(KeyframedAnimationCurveTest, StepsTimingFunctionStepAtMiddle) {
   std::unique_ptr<KeyframedFloatAnimationCurve> curve(
       KeyframedFloatAnimationCurve::Create());
   const int num_steps = 36;
-  const float steps_start_offset = 0.5f;
   curve->AddKeyframe(FloatKeyframe::Create(
       base::TimeDelta(), 0.f,
-      StepsTimingFunction::Create(num_steps, steps_start_offset)));
+      StepsTimingFunction::Create(num_steps,
+                                  StepsTimingFunction::StepPosition::MIDDLE)));
   curve->AddKeyframe(FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.0),
                                            num_steps, nullptr));
 
@@ -508,10 +508,10 @@ TEST(KeyframedAnimationCurveTest, StepsTimingFunctionStepAtEnd) {
   std::unique_ptr<KeyframedFloatAnimationCurve> curve(
       KeyframedFloatAnimationCurve::Create());
   const int num_steps = 36;
-  const float steps_start_offset = 0.0f;
   curve->AddKeyframe(FloatKeyframe::Create(
       base::TimeDelta(), 0.f,
-      StepsTimingFunction::Create(num_steps, steps_start_offset)));
+      StepsTimingFunction::Create(num_steps,
+                                  StepsTimingFunction::StepPosition::END)));
   curve->AddKeyframe(FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.0),
                                            num_steps, nullptr));
 
@@ -822,8 +822,10 @@ TEST(KeyframedAnimationCurveTest, CurveTimingInputsOutsideZeroOneRange) {
 TEST(KeyframedAnimationCurveTest, StepsTimingInputsOutsideZeroOneRange) {
   std::unique_ptr<KeyframedFloatAnimationCurve> curve(
       KeyframedFloatAnimationCurve::Create());
-  curve->AddKeyframe(FloatKeyframe::Create(
-      base::TimeDelta(), 0.f, StepsTimingFunction::Create(4, 0.5f)));
+  curve->AddKeyframe(
+      FloatKeyframe::Create(base::TimeDelta(), 0.f,
+                            StepsTimingFunction::Create(
+                                4, StepsTimingFunction::StepPosition::MIDDLE)));
   curve->AddKeyframe(
       FloatKeyframe::Create(base::TimeDelta::FromSecondsD(1.0), 2.f, nullptr));
   // Curve timing function producing timing outputs outside of range [0,1].

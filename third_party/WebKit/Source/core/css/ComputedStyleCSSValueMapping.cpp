@@ -1070,13 +1070,13 @@ static CSSValue* createTimingFunctionValue(const TimingFunction* timingFunction)
     case TimingFunction::kStepsFunction:
         {
             const StepsTimingFunction* stepsTimingFunction = toStepsTimingFunction(timingFunction);
-            StepsTimingFunction::StepAtPosition position = stepsTimingFunction->getStepAtPosition();
+            StepsTimingFunction::StepPosition position = stepsTimingFunction->getStepPosition();
             int steps = stepsTimingFunction->numberOfSteps();
-            ASSERT(position == StepsTimingFunction::Start || position == StepsTimingFunction::End);
+            DCHECK(position == StepsTimingFunction::StepPosition::START || position == StepsTimingFunction::StepPosition::END);
 
             if (steps > 1)
                 return CSSStepsTimingFunctionValue::create(steps, position);
-            CSSValueID valueId = position == StepsTimingFunction::Start ? CSSValueStepStart : CSSValueStepEnd;
+            CSSValueID valueId = position == StepsTimingFunction::StepPosition::START ? CSSValueStepStart : CSSValueStepEnd;
             return cssValuePool().createIdentifierValue(valueId);
         }
 

@@ -396,13 +396,13 @@ PassRefPtr<TimingFunction> CSSToStyleMap::mapAnimationTimingFunction(const CSSVa
         case CSSValueEaseInOut:
             return CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseInOut);
         case CSSValueStepStart:
-            return StepsTimingFunction::preset(StepsTimingFunction::Start);
+            return StepsTimingFunction::preset(StepsTimingFunction::StepPosition::START);
         case CSSValueStepMiddle:
             if (allowStepMiddle)
-                return StepsTimingFunction::preset(StepsTimingFunction::Middle);
+                return StepsTimingFunction::preset(StepsTimingFunction::StepPosition::MIDDLE);
             return CSSTimingData::initialTimingFunction();
         case CSSValueStepEnd:
-            return StepsTimingFunction::preset(StepsTimingFunction::End);
+            return StepsTimingFunction::preset(StepsTimingFunction::StepPosition::END);
         default:
             ASSERT_NOT_REACHED();
             return CSSTimingData::initialTimingFunction();
@@ -418,9 +418,9 @@ PassRefPtr<TimingFunction> CSSToStyleMap::mapAnimationTimingFunction(const CSSVa
         return CSSTimingData::initialTimingFunction();
 
     const CSSStepsTimingFunctionValue& stepsTimingFunction = toCSSStepsTimingFunctionValue(value);
-    if (stepsTimingFunction.getStepAtPosition() == StepsTimingFunction::Middle && !allowStepMiddle)
+    if (stepsTimingFunction.getStepPosition() == StepsTimingFunction::StepPosition::MIDDLE && !allowStepMiddle)
         return CSSTimingData::initialTimingFunction();
-    return StepsTimingFunction::create(stepsTimingFunction.numberOfSteps(), stepsTimingFunction.getStepAtPosition());
+    return StepsTimingFunction::create(stepsTimingFunction.numberOfSteps(), stepsTimingFunction.getStepPosition());
 }
 
 void CSSToStyleMap::mapNinePieceImage(StyleResolverState& state, CSSPropertyID property, const CSSValue& value, NinePieceImage& image)

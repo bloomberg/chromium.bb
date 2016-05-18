@@ -45,28 +45,24 @@ bool CSSCubicBezierTimingFunctionValue::equals(const CSSCubicBezierTimingFunctio
 
 String CSSStepsTimingFunctionValue::customCSSText() const
 {
-    String stepAtPositionString;
-    switch (m_stepAtPosition) {
-    case StepsTimingFunction::Start:
-        stepAtPositionString = "start";
+    String stepPositionString;
+    switch (m_stepPosition) {
+    case StepsTimingFunction::StepPosition::START:
+        stepPositionString = "start";
         break;
-    case StepsTimingFunction::Middle:
-        stepAtPositionString = "middle";
+    case StepsTimingFunction::StepPosition::MIDDLE:
+        stepPositionString = "middle";
         break;
-    case StepsTimingFunction::End:
-        stepAtPositionString = "end";
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-        stepAtPositionString = "end";
+    case StepsTimingFunction::StepPosition::END:
+        stepPositionString = "end";
         break;
     }
-    return "steps(" + String::number(m_steps) + ", " + stepAtPositionString + ')';
+    return "steps(" + String::number(m_steps) + ", " + stepPositionString + ')';
 }
 
 bool CSSStepsTimingFunctionValue::equals(const CSSStepsTimingFunctionValue& other) const
 {
-    return m_steps == other.m_steps && m_stepAtPosition == other.m_stepAtPosition;
+    return m_steps == other.m_steps && m_stepPosition == other.m_stepPosition;
 }
 
 } // namespace blink

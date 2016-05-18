@@ -96,7 +96,7 @@ protected:
         m_linearTimingFunction = LinearTimingFunction::shared();
         m_cubicEaseTimingFunction = CubicBezierTimingFunction::preset(CubicBezierTimingFunction::Ease);
         m_cubicCustomTimingFunction = CubicBezierTimingFunction::create(1, 2, 3, 4);
-        m_stepTimingFunction = StepsTimingFunction::create(1, StepsTimingFunction::End);
+        m_stepTimingFunction = StepsTimingFunction::create(1, StepsTimingFunction::StepPosition::END);
 
         m_timing = createCompositableTiming();
         m_compositorTiming = CompositorAnimationsImpl::CompositorTiming();

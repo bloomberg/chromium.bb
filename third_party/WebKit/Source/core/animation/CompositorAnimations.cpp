@@ -491,28 +491,6 @@ void getCubicBezierTimingFunctionParameters(const TimingFunction& timingFunction
     }
 }
 
-void getStepsTimingFunctionParameters(const TimingFunction& timingFunction, int& outSteps, float& outStepsStartOffset)
-{
-    const StepsTimingFunction& steps = toStepsTimingFunction(timingFunction);
-
-    outSteps = steps.numberOfSteps();
-    switch (steps.getStepAtPosition()) {
-    case StepsTimingFunction::Start:
-        outStepsStartOffset = 1;
-        break;
-    case StepsTimingFunction::Middle:
-        outStepsStartOffset = 0.5;
-        break;
-    case StepsTimingFunction::End:
-        outStepsStartOffset = 0;
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-        outStepsStartOffset = 0;
-        break;
-    }
-}
-
 template<typename PlatformAnimationCurveType, typename PlatformAnimationKeyframeType>
 void addKeyframeWithTimingFunction(PlatformAnimationCurveType& curve, const PlatformAnimationKeyframeType& keyframe, const TimingFunction* timingFunction)
 {
@@ -541,11 +519,8 @@ void addKeyframeWithTimingFunction(PlatformAnimationCurveType& curve, const Plat
     }
 
     case TimingFunction::kStepsFunction: {
-        int steps;
-        float stepsStartOffset;
-        getStepsTimingFunctionParameters(*timingFunction, steps, stepsStartOffset);
-
-        curve.add(keyframe, steps, stepsStartOffset);
+        const StepsTimingFunction& steps = toStepsTimingFunction(*timingFunction);
+        curve.add(keyframe, steps.numberOfSteps(), steps.getStepPosition());
         break;
     }
 
@@ -582,11 +557,8 @@ void setTimingFunctionOnCurve(PlatformAnimationCurveType& curve, TimingFunction*
     }
 
     case TimingFunction::kStepsFunction: {
-        int steps;
-        float stepsStartOffset;
-        getStepsTimingFunctionParameters(*timingFunction, steps, stepsStartOffset);
-
-        curve.setStepsTimingFunction(steps, stepsStartOffset);
+        const StepsTimingFunction& steps = toStepsTimingFunction(*timingFunction);
+        curve.setStepsTimingFunction(steps.numberOfSteps(), steps.getStepPosition());
         break;
     }
 

@@ -114,14 +114,14 @@ void CubicBezierTimingFunction::range(double* minValue, double* maxValue) const
 String StepsTimingFunction::toString() const
 {
     const char* positionString = nullptr;
-    switch (getStepAtPosition()) {
-    case Start:
+    switch (getStepPosition()) {
+    case StepPosition::START:
         positionString = "start";
         break;
-    case Middle:
+    case StepPosition::MIDDLE:
         positionString = "middle";
         break;
-    case End:
+    case StepPosition::END:
         positionString = "end";
         break;
     }
@@ -147,18 +147,15 @@ void StepsTimingFunction::range(double* minValue, double* maxValue) const
 double StepsTimingFunction::evaluate(double fraction, double) const
 {
     double startOffset = 0;
-    switch (m_stepAtPosition) {
-    case Start:
+    switch (m_stepPosition) {
+    case StepPosition::START:
         startOffset = 1;
         break;
-    case Middle:
+    case StepPosition::MIDDLE:
         startOffset = 0.5;
         break;
-    case End:
+    case StepPosition::END:
         startOffset = 0;
-        break;
-    default:
-        ASSERT_NOT_REACHED();
         break;
     }
     return clampTo(floor((m_steps * fraction) + startOffset) / m_steps, 0.0, 1.0);
@@ -188,7 +185,7 @@ bool operator==(const StepsTimingFunction& lhs, const TimingFunction& rhs)
         return false;
 
     const StepsTimingFunction& stf = toStepsTimingFunction(rhs);
-    return (lhs.numberOfSteps() == stf.numberOfSteps()) && (lhs.getStepAtPosition() == stf.getStepAtPosition());
+    return (lhs.numberOfSteps() == stf.numberOfSteps()) && (lhs.getStepPosition() == stf.getStepPosition());
 }
 
 // The generic operator== *must* come after the

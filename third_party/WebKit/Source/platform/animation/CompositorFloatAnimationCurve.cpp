@@ -46,11 +46,11 @@ void CompositorFloatAnimationCurve::add(const CompositorFloatKeyframe& keyframe,
         cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2)));
 }
 
-void CompositorFloatAnimationCurve::add(const CompositorFloatKeyframe& keyframe, int steps, float stepsStartOffset)
+void CompositorFloatAnimationCurve::add(const CompositorFloatKeyframe& keyframe, int steps, StepsTimingFunction::StepPosition stepPosition)
 {
     m_curve->AddKeyframe(cc::FloatKeyframe::Create(
         base::TimeDelta::FromSecondsD(keyframe.time), keyframe.value,
-        cc::StepsTimingFunction::Create(steps, stepsStartOffset)));
+        cc::StepsTimingFunction::Create(steps, stepPosition)));
 }
 
 void CompositorFloatAnimationCurve::setLinearTimingFunction()
@@ -68,9 +68,9 @@ void CompositorFloatAnimationCurve::setCubicBezierTimingFunction(double x1, doub
     m_curve->SetTimingFunction(cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2));
 }
 
-void CompositorFloatAnimationCurve::setStepsTimingFunction(int numberOfSteps, float stepsStartOffset)
+void CompositorFloatAnimationCurve::setStepsTimingFunction(int numberOfSteps, StepsTimingFunction::StepPosition stepPosition)
 {
-    m_curve->SetTimingFunction(cc::StepsTimingFunction::Create(numberOfSteps, stepsStartOffset));
+    m_curve->SetTimingFunction(cc::StepsTimingFunction::Create(numberOfSteps, stepPosition));
 }
 
 float CompositorFloatAnimationCurve::getValue(double time) const

@@ -1183,19 +1183,19 @@ static CSSValue* consumeSteps(CSSParserTokenRange& range)
     if (!steps)
         return nullptr;
 
-    StepsTimingFunction::StepAtPosition position = StepsTimingFunction::End;
+    StepsTimingFunction::StepPosition position = StepsTimingFunction::StepPosition::END;
     if (consumeCommaIncludingWhitespace(args)) {
         switch (args.consumeIncludingWhitespace().id()) {
         case CSSValueMiddle:
             if (!RuntimeEnabledFeatures::webAnimationsAPIEnabled())
                 return nullptr;
-            position = StepsTimingFunction::Middle;
+            position = StepsTimingFunction::StepPosition::MIDDLE;
             break;
         case CSSValueStart:
-            position = StepsTimingFunction::Start;
+            position = StepsTimingFunction::StepPosition::START;
             break;
         case CSSValueEnd:
-            position = StepsTimingFunction::End;
+            position = StepsTimingFunction::StepPosition::END;
             break;
         default:
             return nullptr;
