@@ -31,7 +31,6 @@ class VideoRenderer;
 }  // namespace protocol
 
 class ChromotingJniRuntime;
-class ClientStatusLogger;
 class JniFrameConsumer;
 
 // ClientUserInterface that indirectly makes and receives JNI calls.
@@ -163,7 +162,6 @@ class ChromotingJniInstance
   std::unique_ptr<ChromotingClient> client_;
   XmppSignalStrategy::XmppServerConfig xmpp_config_;
   std::unique_ptr<XmppSignalStrategy> signaling_;  // Must outlive client_
-  std::unique_ptr<ClientStatusLogger> client_status_logger_;
   protocol::ThirdPartyTokenFetchedCallback third_party_token_fetched_callback_;
 
   // Pass this the user's PIN once we have it. To be assigned and accessed on
@@ -188,6 +186,10 @@ class ChromotingJniInstance
   // thread. Once SetCapabilities() is called, this will contain the negotiated
   // set of capabilities for this remoting session.
   std::string capabilities_;
+
+  // Indicates whether the client is connected to the host. Used on network
+  // thread.
+  bool connected_ = false;
 
   friend class base::RefCountedThreadSafe<ChromotingJniInstance>;
 

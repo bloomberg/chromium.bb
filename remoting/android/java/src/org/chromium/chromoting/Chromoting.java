@@ -40,6 +40,7 @@ import org.chromium.chromoting.help.HelpContext;
 import org.chromium.chromoting.help.HelpSingleton;
 import org.chromium.chromoting.jni.Client;
 import org.chromium.chromoting.jni.ConnectionListener;
+import org.chromium.chromoting.jni.JniInterface;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -575,6 +576,7 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
     @Override
     public void onAccountSelected(String accountName) {
         mAccount = accountName;
+        JniInterface.setAccountForLogging(accountName);
 
         // The current host list is no longer valid for the new account, so clear the list.
         mHosts = new HostInfo[0];

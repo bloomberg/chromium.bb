@@ -13,6 +13,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/client/chromoting_client_runtime.h"
+#include "remoting/client/client_telemetry_logger.h"
 #include "remoting/client/jni/chromoting_jni_instance.h"
 #include "remoting/protocol/connection_to_host.h"
 
@@ -48,6 +49,14 @@ class ChromotingJniRuntime {
 
   scoped_refptr<net::URLRequestContextGetter> url_requester() {
     return runtime_->url_requester();
+  }
+
+  // The runtime handles authentication and the caller should not call SetAuth*.
+  // The runtime itself will not send out any logs. Used on the network thread.
+  ClientTelemetryLogger* logger() {
+    DCHECK(runtime_->network_task_runner()->BelongsToCurrentThread());
+    DCHECK(logger_);
+    return logger_.get();
   }
 
   // Initiates a connection with the specified host. Only call when a host
@@ -86,6 +95,9 @@ class ChromotingJniRuntime {
   void CommitPairingCredentials(const std::string& host,
                                 const std::string& id,
                                 const std::string& secret);
+
+  // Fetch OAuth token for the telemetry logger. Call on UI thread.
+  void FetchAuthToken();
 
   // Pops up a third party login page to fetch token required for
   // authentication. Call on UI thread.
@@ -127,6 +139,9 @@ class ChromotingJniRuntime {
   // Detaches JVM from the current thread, then signals. Doesn't own |waiter|.
   void DetachFromVmAndSignal(base::WaitableEvent* waiter);
 
+  // Starts the logger on the network thread.
+  void StartLoggerOnNetworkThread();
+
   // Chromium code's connection to the app message loop. Once created the
   // MessageLoop will live for the life of the program.
   std::unique_ptr<base::MessageLoopForUI> ui_loop_;
@@ -137,6 +152,9 @@ class ChromotingJniRuntime {
 
   // Contains all connection-specific state.
   scoped_refptr<ChromotingJniInstance> session_;
+
+  // For logging session stage changes and stats.
+  std::unique_ptr<ClientTelemetryLogger> logger_;
 
   friend struct base::DefaultSingletonTraits<ChromotingJniRuntime>;
 

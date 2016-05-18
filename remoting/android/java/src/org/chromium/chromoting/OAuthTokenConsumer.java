@@ -4,7 +4,7 @@
 
 package org.chromium.chromoting;
 
-import android.app.Activity;
+import android.content.Context;
 
 import org.chromium.chromoting.base.OAuthTokenFetcher;
 
@@ -13,17 +13,18 @@ import org.chromium.chromoting.base.OAuthTokenFetcher;
  * time.
  */
 public class OAuthTokenConsumer {
-    private Activity mActivity;
+    private Context mContext;
     private String mTokenScope;
     private boolean mWaitingForAuthToken;
     private String mLatestToken;
 
     /**
-     * @param activity The Chromoting activity.
+     * @param context The context used to fetch token. |context| must be an activity if user
+     *                interaction is required to get back the token.
      * @param tokenScope Scope to use when fetching the OAuth token.
      */
-    public OAuthTokenConsumer(Activity activity, String tokenScope) {
-        mActivity = activity;
+    public OAuthTokenConsumer(Context context, String tokenScope) {
+        mContext = context;
         mTokenScope = tokenScope;
         mWaitingForAuthToken = false;
     }
@@ -47,7 +48,7 @@ public class OAuthTokenConsumer {
         }
         mWaitingForAuthToken = true;
 
-        new OAuthTokenFetcher(mActivity, account, mTokenScope, new OAuthTokenFetcher.Callback() {
+        new OAuthTokenFetcher(mContext, account, mTokenScope, new OAuthTokenFetcher.Callback() {
             @Override
             public void onTokenFetched(String token) {
                 mWaitingForAuthToken = false;

@@ -10,10 +10,12 @@
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "jni/JniInterface_jni.h"
+#include "remoting/base/chromium_url_request.h"
 #include "remoting/base/url_request_context_getter.h"
 #include "remoting/client/jni/jni_touch_event_data.h"
 
@@ -24,6 +26,8 @@ using base::android::ToJavaByteArray;
 namespace {
 
 const int kBytesPerPixel = 4;
+
+const char kTelemetryBaseUrl[] = "https://remoting-pa.googleapis.com/v1/events";
 
 }  // namespace
 
@@ -178,6 +182,21 @@ static void SendExtensionMessage(JNIEnv* env,
       ConvertJavaStringToUTF8(env, data));
 }
 
+static void HandleAuthTokenOnNetworkThread(const std::string& token) {
+  ChromotingJniRuntime* runtime = remoting::ChromotingJniRuntime::GetInstance();
+  DCHECK(runtime->network_task_runner()->BelongsToCurrentThread());
+  runtime->logger()->SetAuthToken(token);
+}
+
+static void OnAuthTokenFetched(JNIEnv* env,
+                         const JavaParamRef<jclass>& clazz,
+                         const JavaParamRef<jstring>& token) {
+  ChromotingJniRuntime* runtime = remoting::ChromotingJniRuntime::GetInstance();
+  runtime->network_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&HandleAuthTokenOnNetworkThread,
+                            ConvertJavaStringToUTF8(env, token)));
+}
+
 // ChromotingJniRuntime implementation.
 
 // static
@@ -203,6 +222,9 @@ ChromotingJniRuntime::ChromotingJniRuntime() {
 
   // Pass the main ui loop already attached to be used for creating threads.
   runtime_ = ChromotingClientRuntime::Create(ui_loop_.get());
+  network_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&ChromotingJniRuntime::StartLoggerOnNetworkThread,
+                            base::Unretained(this)));
 }
 
 ChromotingJniRuntime::~ChromotingJniRuntime() {
@@ -278,6 +300,18 @@ void ChromotingJniRuntime::CommitPairingCredentials(const std::string& host,
 
   Java_JniInterface_commitPairingCredentials(
       env, j_host.obj(), j_id.obj(), j_secret.obj());
+}
+
+void ChromotingJniRuntime::FetchAuthToken() {
+  if (!ui_task_runner()->BelongsToCurrentThread()) {
+    ui_task_runner()->PostTask(
+        FROM_HERE, base::Bind(&ChromotingJniRuntime::FetchAuthToken,
+                              base::Unretained(this)));
+    return;
+  }
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  Java_JniInterface_fetchAuthToken(env);
 }
 
 void ChromotingJniRuntime::FetchThirdPartyToken(const std::string& token_url,
@@ -363,4 +397,17 @@ void ChromotingJniRuntime::DetachFromVmAndSignal(base::WaitableEvent* waiter) {
   base::android::DetachFromVM();
   waiter->Signal();
 }
+
+void ChromotingJniRuntime::StartLoggerOnNetworkThread() {
+  DCHECK(network_task_runner()->BelongsToCurrentThread());
+  logger_.reset(new ClientTelemetryLogger(ChromotingEvent::Mode::ME2ME));
+  logger_->Start(
+      base::WrapUnique(
+          new ChromiumUrlRequestFactory(runtime_->url_requester())),
+      kTelemetryBaseUrl);
+  logger_->SetAuthClosure(
+      base::Bind(&ChromotingJniRuntime::FetchAuthToken,
+                 base::Unretained(this)));
+}
+
 }  // namespace remoting

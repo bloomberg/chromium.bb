@@ -18,7 +18,7 @@
 #include "net/socket/client_socket_factory.h"
 #include "remoting/base/chromium_url_request.h"
 #include "remoting/client/audio_player_android.h"
-#include "remoting/client/client_status_logger.h"
+#include "remoting/client/client_telemetry_logger.h"
 #include "remoting/client/jni/android_keymap.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
 #include "remoting/client/jni/jni_frame_consumer.h"
@@ -41,8 +41,6 @@ namespace {
 const char* const kXmppServer = "talk.google.com";
 const int kXmppPort = 5222;
 const bool kXmppUseTls = true;
-
-const char kDirectoryBotJid[] = "remoting@bot.talk.google.com";
 
 // Interval at which to log performance statistics, if enabled.
 const int kPerfStatsIntervalMs = 60000;
@@ -97,7 +95,6 @@ ChromotingJniInstance::~ChromotingJniInstance() {
   DCHECK(!video_renderer_);
   DCHECK(!client_);
   DCHECK(!signaling_);
-  DCHECK(!client_status_logger_);
 }
 
 void ChromotingJniInstance::Disconnect() {
@@ -110,9 +107,18 @@ void ChromotingJniInstance::Disconnect() {
 
   stats_logging_enabled_ = false;
 
+  // User disconnection will not trigger OnConnectionState(Closed, OK).
+  // Remote disconnection will trigger OnConnectionState(...) and later trigger
+  // Disconnect().
+  if (connected_) {
+    jni_runtime_->logger()->LogSessionStateChange(
+        ChromotingEvent::SessionState::CLOSED,
+        ChromotingEvent::ConnectionError::NONE);
+    connected_ = false;
+  }
+
   // |client_| must be torn down before |signaling_|.
   client_.reset();
-  client_status_logger_.reset();
   video_renderer_.reset();
   view_.reset();
   signaling_.reset();
@@ -297,9 +303,14 @@ void ChromotingJniInstance::OnConnectionState(
     protocol::ErrorCode error) {
   DCHECK(jni_runtime_->network_task_runner()->BelongsToCurrentThread());
 
-  EnableStatsLogging(state == protocol::ConnectionToHost::CONNECTED);
+  // This code assumes no intermediate connection state between CONNECTED and
+  // CLOSED/FAILED.
+  connected_ = state == protocol::ConnectionToHost::CONNECTED;
+  EnableStatsLogging(connected_);
 
-  client_status_logger_->LogSessionStateChange(state, error);
+  jni_runtime_->logger()->LogSessionStateChange(
+      ClientTelemetryLogger::TranslateState(state),
+      ClientTelemetryLogger::TranslateError(error));
 
   if (create_pairing_ && state == protocol::ConnectionToHost::CONNECTED) {
     protocol::PairingRequest request;
@@ -404,9 +415,6 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
       new XmppSignalStrategy(net::ClientSocketFactory::GetDefaultFactory(),
                              jni_runtime_->url_requester(), xmpp_config_));
 
-  client_status_logger_.reset(new ClientStatusLogger(
-      ServerLogEntry::ME2ME, signaling_.get(), kDirectoryBotJid));
-
   scoped_refptr<protocol::TransportContext> transport_context =
       new protocol::TransportContext(
           signaling_.get(),
@@ -508,7 +516,7 @@ void ChromotingJniInstance::LogPerfStats() {
       perf_tracker_->round_trip_ms().Average(),
       perf_tracker_->round_trip_ms().Max());
 
-  client_status_logger_->LogStatistics(perf_tracker_.get());
+  jni_runtime_->logger()->LogStatistics(perf_tracker_.get());
 
   jni_runtime_->network_task_runner()->PostDelayedTask(
       FROM_HERE, base::Bind(&ChromotingJniInstance::LogPerfStats, this),
