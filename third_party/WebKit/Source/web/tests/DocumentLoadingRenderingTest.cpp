@@ -4,7 +4,7 @@
 
 #include "core/dom/Document.h"
 #include "core/html/HTMLIFrameElement.h"
-#include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/paint/PaintLayer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "web/tests/sim/SimCompositor.h"
@@ -272,8 +272,8 @@ TEST_F(DocumentLoadingRenderingTest, ShouldNotPaintIframeContentWithPendingSheet
     // invalid paint so we shouldn't draw any text.
     EXPECT_FALSE(frame2.contains(SimCanvas::Text));
 
-    LayoutView* iframeLayoutView = childFrame->contentDocument()->layoutView();
-    const DisplayItemList& displayItemList = iframeLayoutView->layer()->graphicsLayerBacking()->getPaintController().getDisplayItemList();
+    LayoutViewItem iframeLayoutViewItem = childFrame->contentDocument()->layoutViewItem();
+    const DisplayItemList& displayItemList = iframeLayoutViewItem.layer()->graphicsLayerBacking()->getPaintController().getDisplayItemList();
     // Check that the DisplayItemList has no subsequene caching markers. These are not allowed in pending-style-sheets mode
     // since otherwise caching would be incorrect.
     ASSERT_EQ(2u, displayItemList.size());
