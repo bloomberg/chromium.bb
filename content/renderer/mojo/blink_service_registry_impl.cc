@@ -6,31 +6,19 @@
 
 #include <utility>
 
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "content/common/mojo/service_registry_impl.h"
 
 namespace content {
 
 BlinkServiceRegistryImpl::BlinkServiceRegistryImpl(
     base::WeakPtr<content::ServiceRegistry> service_registry)
-    : service_registry_(service_registry),
-      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_ptr_factory_(this) {}
+    : service_registry_(service_registry) {}
 
 BlinkServiceRegistryImpl::~BlinkServiceRegistryImpl() = default;
 
 void BlinkServiceRegistryImpl::connectToRemoteService(
     const char* name,
     mojo::ScopedMessagePipeHandle handle) {
-  if (!main_thread_task_runner_->BelongsToCurrentThread()) {
-    main_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&BlinkServiceRegistryImpl::connectToRemoteService,
-                              weak_ptr_factory_.GetWeakPtr(), name,
-                               base::Passed(&handle)));
-    return;
-  }
-
   if (!service_registry_)
     return;
 

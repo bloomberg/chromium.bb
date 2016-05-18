@@ -6,14 +6,9 @@
 #define CONTENT_RENDERER_MOJO_BLINK_SERVICE_REGISTRY_IMPL_H_
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/WebKit/public/platform/ServiceRegistry.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace content {
 
@@ -33,10 +28,6 @@ class BlinkServiceRegistryImpl : public blink::ServiceRegistry {
 
  private:
   const base::WeakPtr<content::ServiceRegistry> service_registry_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-
-  base::WeakPtrFactory<BlinkServiceRegistryImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BlinkServiceRegistryImpl);
 };

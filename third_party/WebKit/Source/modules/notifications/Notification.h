@@ -52,7 +52,6 @@ namespace blink {
 
 class ExecutionContext;
 class NotificationAction;
-class NotificationManager;
 class NotificationOptions;
 class NotificationPermissionCallback;
 class NotificationResourcesLoader;
@@ -102,6 +101,7 @@ public:
 
     static String permissionString(mojom::blink::PermissionStatus);
     static String permission(ExecutionContext*);
+    static mojom::blink::PermissionStatus checkPermission(ExecutionContext*);
     static ScriptPromise requestPermission(ScriptState*, NotificationPermissionCallback*);
 
     static size_t maxActions();

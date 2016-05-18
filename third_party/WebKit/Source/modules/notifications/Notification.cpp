@@ -41,7 +41,6 @@
 #include "core/frame/UseCounter.h"
 #include "modules/notifications/NotificationAction.h"
 #include "modules/notifications/NotificationData.h"
-#include "modules/notifications/NotificationManager.h"
 #include "modules/notifications/NotificationOptions.h"
 #include "modules/notifications/NotificationPermissionClient.h"
 #include "modules/notifications/NotificationResourcesLoader.h"
@@ -53,7 +52,6 @@
 #include "public/platform/modules/notifications/WebNotificationAction.h"
 #include "public/platform/modules/notifications/WebNotificationConstants.h"
 #include "public/platform/modules/notifications/WebNotificationManager.h"
-#include "public/platform/modules/permissions/permission_status.mojom-blink.h"
 #include "wtf/Functional.h"
 
 namespace blink {
@@ -146,7 +144,7 @@ void Notification::schedulePrepareShow()
 void Notification::prepareShow()
 {
     ASSERT(m_state == NotificationStateIdle);
-    if (NotificationManager::from(getExecutionContext())->permissionStatus() != mojom::blink::PermissionStatus::GRANTED) {
+    if (Notification::checkPermission(getExecutionContext()) != mojom::blink::PermissionStatus::GRANTED) {
         dispatchErrorEvent();
         return;
     }
@@ -352,7 +350,15 @@ String Notification::permissionString(mojom::blink::PermissionStatus permission)
 
 String Notification::permission(ExecutionContext* context)
 {
-    return permissionString(NotificationManager::from(context)->permissionStatus());
+    return permissionString(checkPermission(context));
+}
+
+mojom::blink::PermissionStatus Notification::checkPermission(ExecutionContext* context)
+{
+    SecurityOrigin* origin = context->getSecurityOrigin();
+    ASSERT(origin);
+
+    return notificationManager()->checkPermission(WebSecurityOrigin(origin));
 }
 
 ScriptPromise Notification::requestPermission(ScriptState* scriptState, NotificationPermissionCallback* deprecatedCallback)

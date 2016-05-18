@@ -32,14 +32,12 @@
         '../Source/build/features.gypi',
     ],
     'variables': {
-        # Duplicated in GN: //third_party/WebKit/public:mojo_bindings
         'blink_mojo_sources': [
             'platform/modules/background_sync/background_sync.mojom',
             'platform/modules/bluetooth/web_bluetooth.mojom',
             'platform/modules/geolocation/geolocation.mojom',
             'platform/modules/imagecapture/image_capture.mojom',
             'platform/modules/notifications/notification.mojom',
-            'platform/modules/notifications/notification_service.mojom',
             'platform/modules/permissions/permission.mojom',
             'platform/modules/permissions/permission_status.mojom',
             'platform/modules/presentation/presentation.mojom',
@@ -47,7 +45,6 @@
             'platform/modules/vr/vr_service.mojom',
             'platform/modules/wake_lock/wake_lock_service.mojom',
         ],
-        # Duplicated in GN: //third_party/WebKit/public:android_mojo_bindings
         'blink_android_mojo_sources': [
             'platform/modules/payments/payment_request.mojom',
         ],

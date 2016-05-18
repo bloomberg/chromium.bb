@@ -15,6 +15,12 @@
 
 namespace blink {
 
+namespace mojom {
+namespace blink {
+enum class PermissionStatus;
+}
+}
+
 class WebNotificationDelegate;
 class WebSecurityOrigin;
 class WebServiceWorkerRegistration;
@@ -56,6 +62,9 @@ public:
     // Indicates that the delegate object is being destroyed, and must no longer
     // be used by the embedder to dispatch events.
     virtual void notifyDelegateDestroyed(WebNotificationDelegate*) = 0;
+
+    // Synchronously checks the permission level for the given origin.
+    virtual mojom::blink::PermissionStatus checkPermission(const WebSecurityOrigin&) = 0;
 };
 
 } // namespace blink

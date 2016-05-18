@@ -11,7 +11,6 @@
 #include "modules/notifications/GetNotificationOptions.h"
 #include "modules/notifications/Notification.h"
 #include "modules/notifications/NotificationData.h"
-#include "modules/notifications/NotificationManager.h"
 #include "modules/notifications/NotificationOptions.h"
 #include "modules/notifications/NotificationResourcesLoader.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
@@ -60,7 +59,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(ScriptSta
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "No active registration available on the ServiceWorkerRegistration."));
 
     // If permission for notification's origin is not "granted", reject promise with a TypeError exception, and terminate these substeps.
-    if (NotificationManager::from(executionContext)->permissionStatus() != mojom::blink::PermissionStatus::GRANTED)
+    if (Notification::checkPermission(executionContext) != mojom::blink::PermissionStatus::GRANTED)
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "No notification permission has been granted for this origin."));
 
     // Validate the developer-provided values to get a WebNotificationData object.

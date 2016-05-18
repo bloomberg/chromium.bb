@@ -186,7 +186,6 @@ mojom("mojo_bindings") {
     "platform/modules/geolocation/geolocation.mojom",
     "platform/modules/imagecapture/image_capture.mojom",
     "platform/modules/notifications/notification.mojom",
-    "platform/modules/notifications/notification_service.mojom",
     "platform/modules/permissions/permission.mojom",
     "platform/modules/permissions/permission_status.mojom",
     "platform/modules/presentation/presentation.mojom",

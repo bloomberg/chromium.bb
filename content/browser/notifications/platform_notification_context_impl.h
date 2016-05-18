@@ -6,20 +6,18 @@
 #define CONTENT_BROWSER_NOTIFICATIONS_PLATFORM_NOTIFICATION_CONTEXT_IMPL_H_
 
 #include <stdint.h>
+#include <set>
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/platform_notification_context.h"
-#include "third_party/WebKit/public/platform/modules/notifications/notification_service.mojom.h"
 
 class GURL;
 
@@ -29,11 +27,9 @@ class SequencedTaskRunner;
 
 namespace content {
 
-class BlinkNotificationServiceImpl;
 class BrowserContext;
 class NotificationDatabase;
 struct NotificationDatabaseData;
-class ResourceContext;
 class ServiceWorkerContextWrapper;
 
 // Implementation of the Web Notification storage context. The public methods
@@ -57,17 +53,6 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
 
   // To be called on the UI thread when the context is being shut down.
   void Shutdown();
-
-  // Creates a BlinkNotificationServiceImpl that is owned by this context. Must
-  // be called on the UI thread, although the service will be created on and
-  // bound to the IO thread.
-  void CreateService(
-      int render_process_id,
-      mojo::InterfaceRequest<blink::mojom::NotificationService> request);
-
-  // Removes |service| from the list of owned services, for example because the
-  // Mojo pipe disconnected. Must be called on the IO thread.
-  void RemoveService(BlinkNotificationServiceImpl* service);
 
   // PlatformNotificationContext implementation.
   void ReadNotificationData(int64_t notification_id,
@@ -96,10 +81,6 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
 
   void InitializeOnIO();
   void ShutdownOnIO();
-  void CreateServiceOnIO(
-      int render_process_id,
-      ResourceContext* resource_context,
-      mojo::InterfaceRequest<blink::mojom::NotificationService> request);
 
   // Initializes the database if neccesary. Must be called on the IO thread.
   // |success_closure| will be invoked on a the |task_runner_| thread when
@@ -171,12 +152,6 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
 
   // Indicates whether the database should be pruned when it's opened.
   bool prune_database_on_open_ = false;
-
-  // The notification services are owned by the platform context, and will be
-  // removed when either this class is destroyed or the Mojo pipe disconnects.
-  std::vector<std::unique_ptr<BlinkNotificationServiceImpl>> services_;
-
-  base::WeakPtrFactory<PlatformNotificationContextImpl> weak_factory_to_io_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformNotificationContextImpl);
 };
