@@ -530,7 +530,7 @@ crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/user-interacti
 crbug.com/505364 imported/web-platform-tests/custom-elements/v0/instantiating/extensions-to-document-interface/create-element-interface-type-is-a-type-extension.html [ Failure ]
 crbug.com/505364 imported/csswg-test/css-scoping-1/css-scoping-shadow-slot-display-override.html [ Failure ]
 
-crbug.com/517840 imported/web-platform-tests/webrtc/rtcpeerconnection/rtcpeerconnection-idl.html [ Failure Timeout ]
+crbug.com/517840 imported/wpt/webrtc/rtcpeerconnection/rtcpeerconnection-idl.html [ Failure Timeout ]
 
 crbug.com/603997 compositing/overflow/clear-scroll-parent.html [ NeedsManualRebaseline ]
 crbug.com/603997 virtual/prefer_compositing_to_lcd_text/compositing/overflow/clear-scroll-parent.html [ NeedsManualRebaseline ]
