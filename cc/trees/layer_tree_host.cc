@@ -949,6 +949,14 @@ void LayerTreeHost::BuildPropertyTreesForTesting() {
       gfx::Rect(device_viewport_size_), identity_transform, &property_trees_);
 }
 
+void LayerTreeHost::ReportFixedRasterScaleUseCounters(
+    bool has_fixed_raster_scale_blurry_content,
+    bool has_fixed_raster_scale_potential_performance_regression) {
+  client_->ReportFixedRasterScaleUseCounters(
+      has_fixed_raster_scale_blurry_content,
+      has_fixed_raster_scale_potential_performance_regression);
+}
+
 bool LayerTreeHost::UsingSharedMemoryResources() {
   return GetRendererCapabilities().using_shared_memory_resources;
 }

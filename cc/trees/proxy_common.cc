@@ -9,8 +9,7 @@
 
 namespace cc {
 
-BeginMainFrameAndCommitState::BeginMainFrameAndCommitState()
-    : memory_allocation_limit_bytes(0), evicted_ui_resources(false) {}
+BeginMainFrameAndCommitState::BeginMainFrameAndCommitState() {}
 
 BeginMainFrameAndCommitState::~BeginMainFrameAndCommitState() {}
 
@@ -21,6 +20,10 @@ void BeginMainFrameAndCommitState::ToProtobuf(
   scroll_info->ToProtobuf(proto->mutable_scroll_info());
   proto->set_memory_allocation_limit_bytes(memory_allocation_limit_bytes);
   proto->set_evicted_ui_resources(evicted_ui_resources);
+  proto->set_has_fixed_raster_scale_blurry_content(
+      has_fixed_raster_scale_blurry_content);
+  proto->set_has_fixed_raster_scale_potential_performance_regression(
+      has_fixed_raster_scale_potential_performance_regression);
 }
 
 void BeginMainFrameAndCommitState::FromProtobuf(
@@ -31,6 +34,10 @@ void BeginMainFrameAndCommitState::FromProtobuf(
   scroll_info->FromProtobuf(proto.scroll_info());
   memory_allocation_limit_bytes = proto.memory_allocation_limit_bytes();
   evicted_ui_resources = proto.evicted_ui_resources();
+  has_fixed_raster_scale_blurry_content =
+      proto.has_fixed_raster_scale_blurry_content();
+  has_fixed_raster_scale_potential_performance_regression =
+      proto.has_fixed_raster_scale_potential_performance_regression();
 }
 
 }  // namespace cc

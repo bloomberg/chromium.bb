@@ -186,6 +186,10 @@ void ProxyMain::BeginMainFrame(
 
   layer_tree_host_->WillBeginMainFrame();
 
+  layer_tree_host_->ReportFixedRasterScaleUseCounters(
+      begin_main_frame_state->has_fixed_raster_scale_blurry_content,
+      begin_main_frame_state
+          ->has_fixed_raster_scale_potential_performance_regression);
   layer_tree_host_->BeginMainFrame(begin_main_frame_state->begin_frame_args);
   layer_tree_host_->AnimateLayers(
       begin_main_frame_state->begin_frame_args.frame_time);

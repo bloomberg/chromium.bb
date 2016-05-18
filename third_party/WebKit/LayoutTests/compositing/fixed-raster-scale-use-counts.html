@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<script src="../resources/js-test.js"></script>
+<script>
+window.jsTestIsAsync = true;
+
+var FixedRasterScaleBlurryContent = 1373; // From UseCounter.h
+var FixedRasterScalePotentialPerformanceRegression = 1374; // From UseCounter.h
+
+function verify(step) {
+  switch (step) {
+   case 0: // initial state
+    shouldBeFalse("window.internals.isUseCounted(document, FixedRasterScaleBlurryContent)");
+    shouldBeFalse("window.internals.isUseCounted(document, FixedRasterScalePotentialPerformanceRegression)");
+    break;
+   case 1: // first transform set to 1.0 scale
+    shouldBeFalse("window.internals.isUseCounted(document, FixedRasterScaleBlurryContent)");
+    shouldBeFalse("window.internals.isUseCounted(document, FixedRasterScalePotentialPerformanceRegression)");
+    break;
+   case 2: // remainder of transforms are set to != 1.0 scale 
+   case 3:
+   case 4:
+   case 5:
+    shouldBeTrue("window.internals.isUseCounted(document, FixedRasterScaleBlurryContent)");
+    shouldBeFalse("window.internals.isUseCounted(document, FixedRasterScalePotentialPerformanceRegression)");
+    break;
+   default:
+    shouldBeTrue("window.internals.isUseCounted(document, FixedRasterScaleBlurryContent)");
+    shouldBeTrue("window.internals.isUseCounted(document, FixedRasterScalePotentialPerformanceRegression)");
+    break;
+  }
+}
+
+function mutate(step) {
+  var div = document.getElementById("div");
+
+  // First scale is 1.0; scale is > 1.0 for the remainder of steps.
+  var scale = 2 * (step + 1);
+  div.style.transform = "translateZ(0) scale(" + scale + ", " + scale + ")";
+}
+
+function schedule(step) {
+  if (step <= 8) {
+    if (window.testRunner) {
+      window.testRunner.capturePixelsAsyncThen(function() {
+        verify(step);
+        mutate(step);
+        schedule(step+1);
+      });
+    }
+  } else {
+    finishJSTest();
+  }
+}
+
+requestAnimationFrame(function() { schedule(0); });
+</script>
+<div id="div" style="transform:translateZ(0); width:100px; height:100px; background-color:blue;">non-solid div</div>
+
+</html>

@@ -164,6 +164,11 @@ LayoutRect GraphicsLayer::visualRect() const
     return bounds;
 }
 
+void GraphicsLayer::setHasWillChangeTransformHint(bool hasWillChangeTransform)
+{
+    m_layer->layer()->setHasWillChangeTransformHint(hasWillChangeTransform);
+}
+
 void GraphicsLayer::setDrawDebugRedFillForTesting(bool enabled)
 {
     s_drawDebugRedFill = enabled;

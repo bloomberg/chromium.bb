@@ -251,6 +251,8 @@ public:
     String debugName() const final { return m_client->debugName(this); }
     LayoutRect visualRect() const override;
 
+    void setHasWillChangeTransformHint(bool);
+
 protected:
     String debugName(cc::Layer*) const;
     bool shouldFlattenTransform() const { return m_shouldFlattenTransform; }

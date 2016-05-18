@@ -73050,6 +73050,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1370" label="DurableStoragePersisted"/>
   <int value="1371" label="DurableStorageEstimate"/>
   <int value="1372" label="UntrustedEventDefaultHandled"/>
+  <int value="1373" label="FixedRasterScaleBlurryContent"/>
+  <int value="1374" label="FixedRasterScalePotentialPerformanceRegression"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

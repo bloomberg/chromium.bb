@@ -47,4 +47,6 @@ message BeginMainFrameAndCommitState {
   optional ScrollAndScaleSet scroll_info = 3;
   optional int64 memory_allocation_limit_bytes = 4;
   optional bool evicted_ui_resources = 5;
+  optional bool has_fixed_raster_scale_blurry_content = 6;
+  optional bool has_fixed_raster_scale_potential_performance_regression = 7;
 }

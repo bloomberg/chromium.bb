@@ -513,6 +513,11 @@ class CC_EXPORT LayerImpl {
 
   void ClearLinksToOtherLayers();
 
+  void SetHasWillChangeTransformHint(bool has_will_change);
+  bool has_will_change_transform_hint() const {
+    return has_will_change_transform_hint_;
+  }
+
  protected:
   LayerImpl(LayerTreeImpl* layer_impl,
             int id,
@@ -645,6 +650,7 @@ class CC_EXPORT LayerImpl {
   std::unique_ptr<RenderSurfaceImpl> render_surface_;
 
   bool scrolls_drawn_descendant_;
+  bool has_will_change_transform_hint_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerImpl);
 };

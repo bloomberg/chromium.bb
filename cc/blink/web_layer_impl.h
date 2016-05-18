@@ -130,6 +130,7 @@ class WebLayerImpl : public blink::WebLayer {
   uint64_t elementId() const override;
   void setCompositorMutableProperties(uint32_t properties) override;
   uint32_t compositorMutableProperties() const override;
+  void setHasWillChangeTransformHint(bool has_will_change) override;
 
   void setScrollParent(blink::WebLayer* parent) override;
   void setClipParent(blink::WebLayer* parent) override;

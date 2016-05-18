@@ -915,6 +915,13 @@ void RenderWidget::WillBeginCompositorFrame() {
                     WillBeginCompositorFrame());
 }
 
+void RenderWidget::ReportFixedRasterScaleUseCounters(
+    bool has_blurry_content,
+    bool has_potential_performance_regression) {
+  webwidget_->reportFixedRasterScaleUseCounters(
+      has_blurry_content, has_potential_performance_regression);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetInputHandlerDelegate
 

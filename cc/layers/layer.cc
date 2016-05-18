@@ -79,6 +79,7 @@ Layer::Layer()
       should_check_backface_visibility_(false),
       force_render_surface_for_testing_(false),
       subtree_property_changed_(false),
+      has_will_change_transform_hint_(false),
       background_color_(0),
       safe_opaque_background_color_(0),
       opacity_(1.f),
@@ -1221,6 +1222,8 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   update_rect_.Union(layer->update_rect());
   layer->SetUpdateRect(update_rect_);
 
+  layer->SetHasWillChangeTransformHint(has_will_change_transform_hint());
+
   // Reset any state that should be cleared for the next update.
   subtree_property_changed_ = false;
   update_rect_ = gfx::Rect();
@@ -1422,6 +1425,8 @@ void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto) {
   // See crbug.com/570376.
 
   update_rect_ = gfx::Rect();
+
+  base->set_has_will_change_transform_hint(has_will_change_transform_hint_);
 }
 
 void Layer::FromLayerSpecificPropertiesProto(
@@ -1513,6 +1518,8 @@ void Layer::FromLayerSpecificPropertiesProto(
   scroll_offset_ = ProtoToScrollOffset(base.scroll_offset());
 
   update_rect_.Union(ProtoToRect(base.update_rect()));
+
+  has_will_change_transform_hint_ = base.has_will_change_transform_hint();
 }
 
 std::unique_ptr<LayerImpl> Layer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
@@ -1701,6 +1708,13 @@ void Layer::OnOpacityIsPotentiallyAnimatingChanged(
 bool Layer::HasActiveAnimationForTesting() const {
   return layer_tree_host_ ? layer_tree_host_->HasActiveAnimationForTesting(this)
                           : false;
+}
+
+void Layer::SetHasWillChangeTransformHint(bool has_will_change) {
+  if (has_will_change_transform_hint_ == has_will_change)
+    return;
+  has_will_change_transform_hint_ = has_will_change;
+  SetNeedsCommit();
 }
 
 ScrollbarLayerInterface* Layer::ToScrollbarLayer() {

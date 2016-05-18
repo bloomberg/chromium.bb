@@ -83,6 +83,12 @@ class CONTENT_EXPORT RenderWidgetCompositorDelegate {
   // perform actual painting work.
   virtual void WillBeginCompositorFrame() = 0;
 
+  // Indicates that the last commit would have a blurry content or potential
+  // performance regression in a fixed raster scale layer.
+  virtual void ReportFixedRasterScaleUseCounters(
+      bool has_blurry_content,
+      bool has_potential_performance_regression) = 0;
+
  protected:
   virtual ~RenderWidgetCompositorDelegate() {}
 };

@@ -202,6 +202,8 @@ public:
 
     virtual void setCompositorMutableProperties(uint32_t) = 0;
     virtual uint32_t compositorMutableProperties() const = 0;
+
+    virtual void setHasWillChangeTransformHint(bool) = 0;
 };
 
 } // namespace blink

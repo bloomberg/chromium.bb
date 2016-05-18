@@ -69,6 +69,7 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl,
       ideal_device_scale_(0.f),
       ideal_source_scale_(0.f),
       ideal_contents_scale_(0.f),
+      last_ideal_source_scale_(0.f),
       raster_page_scale_(0.f),
       raster_device_scale_(0.f),
       raster_source_scale_(0.f),
@@ -431,6 +432,17 @@ bool PictureLayerImpl::UpdateTiles() {
   if (!raster_contents_scale_ || ShouldAdjustRasterScale()) {
     RecalculateRasterScales();
     AddTilingsForRasterScale();
+  }
+
+  // Inform layer tree impl if we will have blurry content because of fixed
+  // raster scale (note that this check should happen after we
+  // ReclaculateRasterScales, since that's the function that will determine
+  // whether our raster scale is fixed.
+  if (raster_source_scale_is_fixed_ && !has_will_change_transform_hint()) {
+    if (raster_source_scale_ != ideal_source_scale_)
+      layer_tree_impl()->SetFixedRasterScaleHasBlurryContent();
+    if (ideal_source_scale_ != last_ideal_source_scale_)
+      layer_tree_impl()->SetFixedRasterScaleAttemptedToChangeScale();
   }
 
   if (layer_tree_impl()->IsActiveTree())
@@ -1206,6 +1218,7 @@ void PictureLayerImpl::UpdateIdealScales() {
                           : 1.f;
   ideal_device_scale_ = layer_tree_impl()->device_scale_factor();
   ideal_contents_scale_ = std::max(GetIdealContentsScale(), min_contents_scale);
+  last_ideal_source_scale_ = ideal_source_scale_;
   ideal_source_scale_ =
       ideal_contents_scale_ / ideal_page_scale_ / ideal_device_scale_;
 }

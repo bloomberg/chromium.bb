@@ -130,6 +130,9 @@ class CC_EXPORT PictureLayerImpl
   float ideal_device_scale_;
   float ideal_source_scale_;
   float ideal_contents_scale_;
+  // This refers to the ideal scale from the previous frame (or a previous time
+  // the ideal scale was updated).
+  float last_ideal_source_scale_;
 
   float raster_page_scale_;
   float raster_device_scale_;

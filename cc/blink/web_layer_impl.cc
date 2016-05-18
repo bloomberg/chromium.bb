@@ -417,4 +417,8 @@ void WebLayerImpl::SetContentsOpaqueIsFixed(bool fixed) {
   contents_opaque_is_fixed_ = fixed;
 }
 
+void WebLayerImpl::setHasWillChangeTransformHint(bool has_will_change) {
+  layer_->SetHasWillChangeTransformHint(has_will_change);
+}
+
 }  // namespace cc_blink

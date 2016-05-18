@@ -93,6 +93,9 @@ public:
     void DidCommitAndDrawFrame() override {}
     void DidCompleteSwapBuffers() override {}
     void DidCompletePageScaleAnimation() override {}
+    void ReportFixedRasterScaleUseCounters(
+        bool hasBlurryContent,
+        bool hasPotentialPerformanceRegression) override {}
 
     // cc::LayerTreeHostSingleThreadClient implementation.
     void DidPostSwapBuffers() override {}

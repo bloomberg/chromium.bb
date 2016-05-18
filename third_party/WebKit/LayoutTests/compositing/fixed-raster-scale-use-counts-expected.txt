@@ -1,0 +1,22 @@
+PASS window.internals.isUseCounted(document, FixedRasterScaleBlurryContent) is false
+PASS window.internals.isUseCounted(document, FixedRasterScalePotentialPerformanceRegression) is false
+PASS window.internals.isUseCounted(document, FixedRasterScaleBlurryContent) is false
+PASS window.internals.isUseCounted(document, FixedRasterScalePotentialPerformanceRegression) is false
+PASS window.internals.isUseCounted(document, FixedRasterScaleBlurryContent) is true
+PASS window.internals.isUseCounted(document, FixedRasterScalePotentialPerformanceRegression) is false
+PASS window.internals.isUseCounted(document, FixedRasterScaleBlurryContent) is true
+PASS window.internals.isUseCounted(document, FixedRasterScalePotentialPerformanceRegression) is false
+PASS window.internals.isUseCounted(document, FixedRasterScaleBlurryContent) is true
+PASS window.internals.isUseCounted(document, FixedRasterScalePotentialPerformanceRegression) is false
+PASS window.internals.isUseCounted(document, FixedRasterScaleBlurryContent) is true
+PASS window.internals.isUseCounted(document, FixedRasterScalePotentialPerformanceRegression) is false
+PASS window.internals.isUseCounted(document, FixedRasterScaleBlurryContent) is true
+PASS window.internals.isUseCounted(document, FixedRasterScalePotentialPerformanceRegression) is true
+PASS window.internals.isUseCounted(document, FixedRasterScaleBlurryContent) is true
+PASS window.internals.isUseCounted(document, FixedRasterScalePotentialPerformanceRegression) is true
+PASS window.internals.isUseCounted(document, FixedRasterScaleBlurryContent) is true
+PASS window.internals.isUseCounted(document, FixedRasterScalePotentialPerformanceRegression) is true
+PASS successfullyParsed is true
+
+TEST COMPLETE
+non-solid div

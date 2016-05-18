@@ -82,7 +82,8 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       element_id_(0),
       mutable_properties_(MutableProperty::kNone),
       debug_info_(nullptr),
-      scrolls_drawn_descendant_(false) {
+      scrolls_drawn_descendant_(false),
+      has_will_change_transform_hint_(false) {
   DCHECK_GT(layer_id_, 0);
 
   DCHECK(layer_tree_impl_);
@@ -143,6 +144,13 @@ void LayerImpl::ClearLinksToOtherLayers() {
   children_.clear();
   mask_layer_ = nullptr;
   replica_layer_ = nullptr;
+}
+
+void LayerImpl::SetHasWillChangeTransformHint(bool has_will_change) {
+  if (has_will_change_transform_hint_ == has_will_change)
+    return;
+  has_will_change_transform_hint_ = has_will_change;
+  SetNeedsPushProperties();
 }
 
 void LayerImpl::SetDebugInfo(
@@ -491,6 +499,8 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
   if (owned_debug_info_)
     layer->SetDebugInfo(std::move(owned_debug_info_));
+
+  layer->SetHasWillChangeTransformHint(has_will_change_transform_hint());
 
   // Reset any state that should be cleared for the next update.
   layer_property_changed_ = false;
@@ -1257,6 +1267,9 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
 
   state->SetBoolean("has_animation_bounds",
                     layer_tree_impl_->HasAnimationThatInflatesBounds(this));
+
+  state->SetBoolean("has_will_change_transform_hint",
+                    has_will_change_transform_hint());
 
   gfx::BoxF box;
   if (LayerUtils::GetAnimationBounds(*this, &box))

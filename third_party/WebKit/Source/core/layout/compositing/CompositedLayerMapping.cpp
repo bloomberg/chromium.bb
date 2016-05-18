@@ -556,6 +556,8 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
 
     updateElementIdAndCompositorMutableProperties();
 
+    m_graphicsLayer->setHasWillChangeTransformHint(m_owningLayer.layoutObject()->styleRef().hasWillChangeTransformHint());
+
     return layerConfigChanged;
 }
 

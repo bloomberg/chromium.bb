@@ -503,6 +503,12 @@ void ProxyImpl::ScheduledActionSendBeginMainFrame(const BeginFrameArgs& args) {
       layer_tree_host_impl_->memory_allocation_limit_bytes();
   begin_main_frame_state->evicted_ui_resources =
       layer_tree_host_impl_->EvictedUIResourcesExist();
+  begin_main_frame_state->has_fixed_raster_scale_blurry_content =
+      layer_tree_host_impl_->has_fixed_raster_scale_blurry_content();
+  begin_main_frame_state
+      ->has_fixed_raster_scale_potential_performance_regression =
+      layer_tree_host_impl_
+          ->HasFixedRasterScalePotentialPerformanceRegression();
   channel_impl_->BeginMainFrame(std::move(begin_main_frame_state));
   devtools_instrumentation::DidRequestMainThreadFrame(layer_tree_host_id_);
 }

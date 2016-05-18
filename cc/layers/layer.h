@@ -500,6 +500,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void OnOpacityIsPotentiallyAnimatingChanged(bool has_potential_animation);
   bool HasActiveAnimationForTesting() const;
 
+  void SetHasWillChangeTransformHint(bool has_will_change);
+  bool has_will_change_transform_hint() const {
+    return has_will_change_transform_hint_;
+  }
+
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;
@@ -635,6 +640,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool should_check_backface_visibility_ : 1;
   bool force_render_surface_for_testing_ : 1;
   bool subtree_property_changed_ : 1;
+  bool has_will_change_transform_hint_ : 1;
   Region non_fast_scrollable_region_;
   Region touch_event_handler_region_;
   gfx::PointF position_;

@@ -393,6 +393,9 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
   void RequestScheduleComposite() override { test_hooks_->ScheduleComposite(); }
   void DidCompletePageScaleAnimation() override {}
   void BeginMainFrameNotExpectedSoon() override {}
+  void ReportFixedRasterScaleUseCounters(
+      bool has_blurry_content,
+      bool has_potential_performance_regression) override {}
 
  private:
   explicit LayerTreeHostClientForTesting(TestHooks* test_hooks)

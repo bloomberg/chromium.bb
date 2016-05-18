@@ -156,6 +156,7 @@ public:
     void didNotAcquirePointerLock() override;
     void didLosePointerLock() override;
     void didChangeWindowResizerRect() override;
+    void reportFixedRasterScaleUseCounters(bool hasBlurryContent, bool hasPotentialPerformanceRegression) override;
 
     // WebView methods:
     virtual bool isWebView() const { return true; }

@@ -108,6 +108,7 @@ message BaseLayerProperties {
   optional bool transform_is_invertible = 34;
   optional int32 sorting_context_id = 35;
   optional int32 num_descendants_that_draw_content = 36;
+  optional bool has_will_change_transform_hint = 48;
 
   optional int32 scroll_clip_layer_id = 37;
   optional bool user_scrollable_horizontal = 38;
@@ -124,10 +125,7 @@ message BaseLayerProperties {
   optional Rect update_rect = 46;
 
   // TODO(nyquist): Figure out what to do with LayerAnimationController.
-  // optional LayerAnimationController layer_animation_controller = 48;
-
-  // TODO(nyquist): Figure out what to do with FrameTimingRequests.
-  // repeated FrameTimingRequest frame_timing_requests = 49;
+  // optional LayerAnimationController layer_animation_controller = ???;
 }
 
 message PictureLayerProperties {

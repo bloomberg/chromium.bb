@@ -421,6 +421,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     return image_serialization_processor_;
   }
 
+  void ReportFixedRasterScaleUseCounters(
+      bool has_fixed_raster_scale_blurry_content,
+      bool has_fixed_raster_scale_potential_performance_regression);
+
  protected:
   LayerTreeHost(InitParams* params, CompositorMode mode);
   void InitializeThreaded(

@@ -59,6 +59,7 @@
 #include "core/frame/Settings.h"
 #include "core/frame/SmartClip.h"
 #include "core/frame/TopControls.h"
+#include "core/frame/UseCounter.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMediaElement.h"
@@ -2800,6 +2801,17 @@ void WebViewImpl::didChangeWindowResizerRect()
 {
     if (mainFrameImpl()->frameView())
         mainFrameImpl()->frameView()->windowResizerRectChanged();
+}
+
+void WebViewImpl::reportFixedRasterScaleUseCounters(bool hasBlurryContent, bool hasPotentialPerformanceRegression)
+{
+    if (!mainFrameImpl() || !mainFrameImpl()->frame()->isLocalFrame())
+        return;
+    Document* document = mainFrameImpl()->frame()->document();
+    if (hasBlurryContent)
+        UseCounter::count(document, UseCounter::FixedRasterScaleBlurryContent);
+    if (hasPotentialPerformanceRegression)
+        UseCounter::count(document, UseCounter::FixedRasterScalePotentialPerformanceRegression);
 }
 
 // WebView --------------------------------------------------------------------

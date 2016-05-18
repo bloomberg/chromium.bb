@@ -218,6 +218,11 @@ void SingleThreadProxy::DoCommit() {
   devtools_instrumentation::ScopedCommitTrace commit_task(
       layer_tree_host_->id());
 
+  layer_tree_host_->ReportFixedRasterScaleUseCounters(
+      layer_tree_host_impl_->has_fixed_raster_scale_blurry_content(),
+      layer_tree_host_impl_
+          ->HasFixedRasterScalePotentialPerformanceRegression());
+
   // Commit immediately.
   {
     // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509

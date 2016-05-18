@@ -1952,6 +1952,14 @@ VideoFrameControllerClient* LayerTreeImpl::GetVideoFrameControllerClient()
   return layer_tree_host_impl_;
 }
 
+void LayerTreeImpl::SetFixedRasterScaleHasBlurryContent() {
+  layer_tree_host_impl_->set_fixed_raster_scale_has_blurry_content();
+}
+
+void LayerTreeImpl::SetFixedRasterScaleAttemptedToChangeScale() {
+  layer_tree_host_impl_->SetFixedRasterScaleAttemptedToChangeScale();
+}
+
 void LayerTreeImpl::SetPendingPageScaleAnimation(
     std::unique_ptr<PendingPageScaleAnimation> pending_animation) {
   pending_page_scale_animation_ = std::move(pending_animation);
