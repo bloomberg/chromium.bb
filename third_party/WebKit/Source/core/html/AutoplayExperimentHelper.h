@@ -108,12 +108,13 @@ public:
         // HTMLMediaElement
         virtual double currentTime() const = 0;
         virtual double duration() const = 0;
+        virtual bool paused() const = 0;
         virtual bool ended() const = 0;
         virtual bool muted() const = 0;
         virtual void setMuted(bool) = 0;
         virtual void playInternal() = 0;
-        virtual bool isUserGestureRequiredForPlay() const = 0;
-        virtual void removeUserGestureRequirement() = 0;
+        virtual bool isLockedPendingUserGesture() const = 0;
+        virtual void unlockUserGesture() = 0;
         virtual void recordAutoplayMetric(AutoplayMetrics) = 0;
         virtual bool shouldAutoplay() = 0;
         virtual bool isHTMLVideoElement() const = 0;
@@ -146,7 +147,6 @@ public:
     void playMethodCalled();
     void pauseMethodCalled();
     void loadMethodCalled();
-    void mutedChanged();
     void positionChanged(const IntRect&);
     void updatePositionNotificationRegistration();
     void recordSandboxFailure();
@@ -165,7 +165,19 @@ public:
 
     // Remove the user gesture requirement, and record why.  If there is no
     // gesture requirement, then this does nothing.
-    void removeUserGestureRequirement(AutoplayMetrics);
+    void unlockUserGesture(AutoplayMetrics);
+
+    // Set the reason that we're overridding the user gesture.  If there is no
+    // gesture requirement, then this does nothing.
+    void setDeferredOverrideReason(AutoplayMetrics);
+
+    // Return true if and only if the user gesture requirement is currently
+    // overridden by the experiment, permitting playback.
+    bool isGestureRequirementOverridden() const;
+
+    // Return true if and only if playback is queued but hasn't started yet,
+    // such as if the element doesn't meet visibility requirements.
+    bool isPlaybackDeferred() const;
 
     // Set the position to the current view's position, and
     void triggerAutoplayViewportCheckForTesting();
@@ -210,10 +222,22 @@ private:
     // Un-register for position updates, if we are currently registered.
     void unregisterForPositionUpdatesIfNeeded();
 
+    // Modifiers for checking isEligible().
+    enum EligibilityMode {
+        // Perform all normal eligibility checks.
+        Normal = 0,
+
+        // Perform normal eligibility checks, but skip checking if autoplay has
+        // actually been requested.  In other words, don't fail just becase
+        // nobody has called play() and/or set the autoplay attribute.
+        IgnorePendingPlayback = 1
+    };
+
     // Return true if any only if this player meets (most) of the eligibility
     // requirements for the experiment to override the need for a user
     // gesture.  This includes everything except the visibility test.
-    bool isEligible() const;
+    // |mode| modifies the eligibility check, as described above.
+    bool isEligible(EligibilityMode = Normal) const;
 
     // Return false if and only if m_element is not visible, and we care
     // that it must be visible.
@@ -249,7 +273,7 @@ private:
 
     Client& client() const;
 
-    bool isUserGestureRequiredForPlay() const;
+    bool isLockedPendingUserGesture() const;
 
     inline bool enabled(Mode mode) const
     {
@@ -293,7 +317,7 @@ private:
 
     // Is the current playback the result of autoplay?  If so, then this flag
     // records that the pause / stop should be counted in the autoplay metrics.
-    bool m_waitingForAutoplayPlaybackEnd : 1;
+    bool m_waitingForAutoplayPlaybackStop : 1;
 
     // Did we record that this media element exists in the metrics yet?  This is
     // independent of whether it autoplays; we just want to know how many

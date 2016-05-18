@@ -450,14 +450,22 @@ private:
     // transition to HAVE_METADATA.
     void selectInitialTracksIfNecessary();
 
-    // Return true if and only if we require a user gesture before letting
-    // the media play.
-    bool isUserGestureRequiredForPlay() const;
+    // Return true if and only if a user gesture is required to unlock this
+    // media element for unrestricted autoplay / script control.  Don't confuse
+    // this with isGestureNeededForPlayback().  The latter is usually what one
+    // should use, if checking to see if an action is allowed.
+    bool isLockedPendingUserGesture() const;
 
     // If the user gesture is required, then this will remove it.  Note that
     // one should not generally call this method directly; use the one on
     // m_helper and give it a reason.
-    void removeUserGestureRequirement();
+    void unlockUserGesture();
+
+    // Return true if and only if a user gesture is requried for playback.  Even
+    // if isLockedPendingUserGesture() return true, this might return false if
+    // the requirement is currently overridden.  This does not check if a user
+    // gesture is currently being processed.
+    bool isGestureNeededForPlayback() const;
 
     void setNetworkState(NetworkState);
 
@@ -549,7 +557,7 @@ private:
     PendingActionFlags m_pendingActionFlags;
 
     // FIXME: HTMLMediaElement has way too many state bits.
-    bool m_userGestureRequiredForPlay : 1;
+    bool m_lockedPendingUserGesture : 1;
     bool m_playing : 1;
     bool m_shouldDelayLoadEvent : 1;
     bool m_haveFiredLoadedData : 1;

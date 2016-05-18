@@ -20,9 +20,11 @@ function runTest()
             // gesture override experiment from autoplaying.
             videoShouldNotPlay.pause();
 
-            // Mute them both, and see if only one starts.
-            videoShouldPlay.muted = true;
-            videoShouldNotPlay.muted = true;
+            // Scroll them into view, and see if they start playing.
+            parent.scrollIntoView(true);
+            // TODO(liberato): remove once autoplay gesture override experiment concludes.
+            window.internals.triggerAutoplayViewportCheck(videoShouldPlay);
+            window.internals.triggerAutoplayViewportCheck(videoShouldNotPlay);
             logResult(didPlaybackStart(videoShouldPlay), "First video should play");
             logResult(!didPlaybackStart(videoShouldNotPlay), "Second video should not play");
             testRunner.notifyDone();
@@ -45,12 +47,20 @@ function runTest()
         return !element.paused || element.ended;
     }
 
+    // Start the videos off-screen.
+    var spacer = document.createElement("div");
+    spacer.style.height="1000px";
+    spacer.style.bgcolor="blue";
+    spacer.innerHTML="<p></p>";
+    document.body.appendChild(spacer);
+
+    // Create a container for the videos.
     var parent = document.createElement("div");
     document.body.appendChild(parent);
 
-    // Require a user gesture, but override it for muted videos.
+    // Require a user gesture, but override it for visible videos.
     internals.settings.setMediaPlaybackRequiresUserGesture(true);
-    internals.settings.setAutoplayExperimentMode("enabled-forvideo-ifmuted");
+    internals.settings.setAutoplayExperimentMode("enabled-forvideo-ifviewport");
 
     videoShouldPlay = prepareVideo(parent);
     videoShouldNotPlay = prepareVideo(parent);

@@ -298,12 +298,13 @@ public:
 
     double currentTime() const override { return m_element->currentTime(); }
     double duration() const override { return m_element->duration(); }
+    bool paused() const override { return m_element->paused(); }
     bool ended() const override { return m_element->ended(); }
     bool muted() const override { return m_element->muted(); }
     void setMuted(bool muted) override { m_element->setMuted(muted); }
     void playInternal() override { m_element->playInternal(); }
-    bool isUserGestureRequiredForPlay() const override { return m_element->isUserGestureRequiredForPlay(); }
-    void removeUserGestureRequirement() override { m_element->removeUserGestureRequirement(); }
+    bool isLockedPendingUserGesture() const override { return m_element->isLockedPendingUserGesture(); }
+    void unlockUserGesture() override { m_element->unlockUserGesture(); }
     void recordAutoplayMetric(AutoplayMetrics metric) override { m_element->recordAutoplayMetric(metric); }
     bool shouldAutoplay() override
     {
@@ -412,7 +413,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_cachedTime(std::numeric_limits<double>::quiet_NaN())
     , m_fragmentEndTime(std::numeric_limits<double>::quiet_NaN())
     , m_pendingActionFlags(0)
-    , m_userGestureRequiredForPlay(false)
+    , m_lockedPendingUserGesture(false)
     , m_playing(false)
     , m_shouldDelayLoadEvent(false)
     , m_haveFiredLoadedData(false)
@@ -447,7 +448,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     // default, otherwise the experiment does nothing.
     if ((document.settings() && document.settings()->mediaPlaybackRequiresUserGesture())
         || m_autoplayHelper->isExperimentEnabled()) {
-        m_userGestureRequiredForPlay = true;
+        m_lockedPendingUserGesture = true;
     }
 
     setHasCustomStyleCallbacks();
@@ -1013,7 +1014,7 @@ void HTMLMediaElement::loadResource(const WebMediaPlayerSource& source, ContentT
     if (isStreamOrBlobUrl) {
         bool isMediaStream = source.isMediaStream() || (source.isURL() && isMediaStreamURL(url.getString()));
         if (isMediaStream) {
-            m_autoplayHelper->removeUserGestureRequirement(GesturelessPlaybackEnabledByStream);
+            m_autoplayHelper->unlockUserGesture(GesturelessPlaybackEnabledByStream);
         } else {
             m_mediaSource = HTMLMediaSource::lookup(url.getString());
 
@@ -1620,7 +1621,7 @@ void HTMLMediaElement::setReadyState(ReadyState state)
             // then don't require a user gesture.
             m_autoplayHelper->becameReadyToPlay();
 
-            if (!m_userGestureRequiredForPlay) {
+            if (!isGestureNeededForPlayback()) {
                 m_paused = false;
                 invalidateCachedTime();
                 scheduleEvent(EventTypeNames::play);
@@ -2046,7 +2047,19 @@ Nullable<ExceptionCode> HTMLMediaElement::play()
     m_autoplayHelper->playMethodCalled();
 
     if (!UserGestureIndicator::processingUserGesture()) {
-        if (m_userGestureRequiredForPlay) {
+        if (isGestureNeededForPlayback()) {
+            // If playback is deferred, then don't start playback but don't
+            // fail yet either.
+            if (m_autoplayHelper->isPlaybackDeferred())
+                return nullptr;
+
+            // If we're already playing, then this play would do nothing anyway.
+            // Call playInternal to handle scheduling the promise resolution.
+            if (!m_paused) {
+                playInternal();
+                return nullptr;
+            }
+
             recordAutoplayMetric(PlayMethodFailed);
             String message = ExceptionMessages::failedToExecute("play", "HTMLMediaElement", "API can only be initiated by a user gesture.");
             document().addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
@@ -2057,7 +2070,7 @@ Nullable<ExceptionCode> HTMLMediaElement::play()
         // We ask the helper to remove the gesture requirement for us, so that
         // it can record the reason.
         Platform::current()->recordAction(UserMetricsAction("Media_Play_WithGesture"));
-        m_autoplayHelper->removeUserGestureRequirement(GesturelessPlaybackEnabledByPlayMethod);
+        m_autoplayHelper->unlockUserGesture(GesturelessPlaybackEnabledByPlayMethod);
     }
 
     if (m_error && m_error->code() == MediaError::MEDIA_ERR_SRC_NOT_SUPPORTED)
@@ -2239,8 +2252,6 @@ void HTMLMediaElement::setMuted(bool muted)
         return;
 
     m_muted = muted;
-
-    m_autoplayHelper->mutedChanged();
 
     updateVolume();
 
@@ -3651,14 +3662,20 @@ void HTMLMediaElement::selectInitialTracksIfNecessary()
         videoTracks().anonymousIndexedGetter(0)->setSelected(true);
 }
 
-bool HTMLMediaElement::isUserGestureRequiredForPlay() const
+bool HTMLMediaElement::isLockedPendingUserGesture() const
 {
-    return m_userGestureRequiredForPlay;
+    return m_lockedPendingUserGesture;
 }
 
-void HTMLMediaElement::removeUserGestureRequirement()
+void HTMLMediaElement::unlockUserGesture()
 {
-    m_userGestureRequiredForPlay = false;
+    m_lockedPendingUserGesture = false;
+}
+
+bool HTMLMediaElement::isGestureNeededForPlayback() const
+{
+    return m_lockedPendingUserGesture
+        && !m_autoplayHelper->isGestureRequirementOverridden();
 }
 
 void HTMLMediaElement::setNetworkState(NetworkState state)

@@ -31,7 +31,7 @@ AutoplayExperimentHelper::AutoplayExperimentHelper(Client* client)
     , m_wasInViewport(false)
     , m_autoplayMediaEncountered(false)
     , m_playbackStartedMetricRecorded(false)
-    , m_waitingForAutoplayPlaybackEnd(false)
+    , m_waitingForAutoplayPlaybackStop(false)
     , m_recordedElement(false)
     , m_lastLocationUpdateTime(-std::numeric_limits<double>::infinity())
     , m_viewportTimer(this, &AutoplayExperimentHelper::viewportTimerFired)
@@ -73,28 +73,35 @@ void AutoplayExperimentHelper::becameReadyToPlay()
 
 void AutoplayExperimentHelper::playMethodCalled()
 {
-    // Set the pending state, even if the play isn't going to be pending.
-    // Eligibility can change if, for example, the mute status changes.
-    // Having this set is okay.
-    m_playPending = true;
+    // If a play is already pending, then do nothing.  We're already trying
+    // to play.  Similarly, do nothing if we're already playing.
+    if (m_playPending || !m_client->paused())
+        return;
 
     if (!UserGestureIndicator::utilizeUserGesture()) {
         autoplayMediaEncountered();
 
-        if (isEligible()) {
-            // Remember that userGestureRequiredForPlay is required for
-            // us to be eligible for the experiment.
+        // Check for eligibility, but don't worry if playback is currently
+        // pending.  If we're still not eligible, then this play() will fail.
+        if (isEligible(IgnorePendingPlayback)) {
+            m_playPending = true;
+
             // If we are able to override the gesture requirement now, then
             // do so.  Otherwise, install an event listener if we need one.
+            // We do not actually start playback; play() will do that.
             if (meetsVisibilityRequirements()) {
                 // Override the gesture and assume that play() will succeed.
                 prepareToAutoplay(GesturelessPlaybackStartedByPlayMethodImmediately);
             } else {
                 // Wait for viewport visibility.
+                // TODO(liberato): if the autoplay is allowed soon enough, then
+                // it should still record *Immediately.  Otherwise, we end up
+                // here before the first layout sometimes, when the item is
+                // visible but we just don't know that yet.
                 registerForPositionUpdatesIfNeeded();
             }
         }
-    } else if (isUserGestureRequiredForPlay()) {
+    } else if (isLockedPendingUserGesture()) {
         // If this media tried to autoplay, and we haven't played it yet, then
         // record that the user provided the gesture to start it the first time.
         if (m_autoplayMediaEncountered && !m_playbackStartedMetricRecorded)
@@ -102,6 +109,7 @@ void AutoplayExperimentHelper::playMethodCalled()
         // Don't let future gestureless playbacks affect metrics.
         m_autoplayMediaEncountered = true;
         m_playbackStartedMetricRecorded = true;
+        m_playPending = false;
 
         unregisterForPositionUpdatesIfNeeded();
     }
@@ -116,31 +124,9 @@ void AutoplayExperimentHelper::pauseMethodCalled()
 
 void AutoplayExperimentHelper::loadMethodCalled()
 {
-    if (isUserGestureRequiredForPlay() && UserGestureIndicator::utilizeUserGesture()) {
+    if (isLockedPendingUserGesture() && UserGestureIndicator::utilizeUserGesture()) {
         recordAutoplayMetric(AutoplayEnabledThroughLoad);
-        removeUserGestureRequirement(GesturelessPlaybackEnabledByLoad);
-    }
-}
-
-void AutoplayExperimentHelper::mutedChanged()
-{
-    // If we are no longer eligible for the autoplay experiment, then also
-    // quit listening for events.  If we are eligible, and if we should be
-    // playing, then start playing.  In other words, start playing if
-    // we just needed 'mute' to autoplay.
-
-    // Make sure that autoplay was actually deferred.  If, for example, the
-    // autoplay attribute is set after the media is ready to play, then it
-    // would normally have no effect.  We don't want to start playing.
-    if (!m_autoplayMediaEncountered)
-        return;
-
-    if (!isEligible()) {
-        unregisterForPositionUpdatesIfNeeded();
-    } else {
-        // Try to play.  If we can't, then install a listener.
-        if (!maybeStartPlaying())
-            registerForPositionUpdatesIfNeeded();
+        unlockUserGesture(GesturelessPlaybackEnabledByLoad);
     }
 }
 
@@ -275,9 +261,8 @@ bool AutoplayExperimentHelper::meetsVisibilityRequirements() const
 bool AutoplayExperimentHelper::maybeStartPlaying()
 {
     // See if we're allowed to autoplay now.
-    if (!isEligible() || !meetsVisibilityRequirements()) {
+    if (!isGestureRequirementOverridden())
         return false;
-    }
 
     // Start playing!
     prepareToAutoplay(client().shouldAutoplay()
@@ -296,7 +281,17 @@ bool AutoplayExperimentHelper::maybeStartPlaying()
     return true;
 }
 
-bool AutoplayExperimentHelper::isEligible() const
+bool AutoplayExperimentHelper::isGestureRequirementOverridden() const
+{
+    return isEligible() && meetsVisibilityRequirements();
+}
+
+bool AutoplayExperimentHelper::isPlaybackDeferred() const
+{
+    return m_playPending;
+}
+
+bool AutoplayExperimentHelper::isEligible(EligibilityMode mode) const
 {
     if (m_mode == Mode::ExperimentOff)
         return false;
@@ -309,7 +304,7 @@ bool AutoplayExperimentHelper::isEligible() const
     // This is what prevents us from starting playback more than once.
     // Since this flag is never set to true once it's cleared, it will block
     // the autoplay experiment forever.
-    if (!isUserGestureRequiredForPlay())
+    if (!isLockedPendingUserGesture())
         return false;
 
     // Make sure that this is an element of the right type.
@@ -322,7 +317,7 @@ bool AutoplayExperimentHelper::isEligible() const
     // If nobody has requested playback, either by the autoplay attribute or
     // a play() call, then do nothing.
 
-    if (!m_playPending && !client().shouldAutoplay())
+    if (mode !=  IgnorePendingPlayback && !m_playPending && !client().shouldAutoplay())
         return false;
 
     // Note that the viewport test always returns false on desktop, which is
@@ -345,21 +340,29 @@ bool AutoplayExperimentHelper::isEligible() const
 
 void AutoplayExperimentHelper::muteIfNeeded()
 {
-    if (enabled(PlayMuted)) {
-        ASSERT(!isEligible());
-        // If we are actually changing the muted state, then this will call
-        // mutedChanged().  If isEligible(), then mutedChanged() will try
-        // to start playback, which we should not do here.
+    if (enabled(PlayMuted))
         client().setMuted(true);
-    }
 }
 
-void AutoplayExperimentHelper::removeUserGestureRequirement(AutoplayMetrics metric)
+void AutoplayExperimentHelper::unlockUserGesture(AutoplayMetrics metric)
 {
-    if (client().isUserGestureRequiredForPlay()) {
-        m_autoplayDeferredMetric = metric;
-        client().removeUserGestureRequirement();
-    }
+    // Note that this could be moved back into HTMLMediaElement fairly easily.
+    // It's only here so that we can record the reason, and we can hide the
+    // ordering between unlocking and recording from the element this way.
+    if (!client().isLockedPendingUserGesture())
+        return;
+
+    setDeferredOverrideReason(metric);
+    client().unlockUserGesture();
+}
+
+void AutoplayExperimentHelper::setDeferredOverrideReason(AutoplayMetrics metric)
+{
+    // If the player is unlocked, then we don't care about any later reason.
+    if (!client().isLockedPendingUserGesture())
+        return;
+
+    m_autoplayDeferredMetric = metric;
 }
 
 void AutoplayExperimentHelper::prepareToAutoplay(AutoplayMetrics metric)
@@ -369,7 +372,7 @@ void AutoplayExperimentHelper::prepareToAutoplay(AutoplayMetrics metric)
     // Also note that, at this point, we know that we're goint to start
     // playback.  However, we still don't record the metric here.  Instead,
     // we let playbackStarted() do that later.
-    removeUserGestureRequirement(metric);
+    setDeferredOverrideReason(metric);
 
     // Don't bother to call autoplayMediaEncountered, since whoever initiates
     // playback has do it anyway, in case we don't allow autoplay.
@@ -418,23 +421,34 @@ void AutoplayExperimentHelper::autoplayMediaEncountered()
     }
 }
 
-bool AutoplayExperimentHelper::isUserGestureRequiredForPlay() const
+bool AutoplayExperimentHelper::isLockedPendingUserGesture() const
 {
-    return client().isUserGestureRequiredForPlay();
+    return client().isLockedPendingUserGesture();
 }
 
 void AutoplayExperimentHelper::playbackStarted()
 {
     recordAutoplayMetric(AnyPlaybackStarted);
 
+    // Forget about our most recent visibility check.  If another override is
+    // requested, then we'll have to refresh it.  That way, we don't need to
+    // keep it up to date in the interim.
+    m_lastVisibleRect = IntRect();
+    m_wasInViewport = false;
+
+    // Any pending play is now playing.
+    m_playPending = false;
+
     if (m_playbackStartedMetricRecorded)
         return;
 
+    // Whether we record anything or not, we only want to record metrics for
+    // the initial playback.
     m_playbackStartedMetricRecorded = true;
 
-    // If this is a gestureless start, record why it was allowed.
-    if (!UserGestureIndicator::processingUserGesture()) {
-        m_waitingForAutoplayPlaybackEnd = true;
+    // If this is a gestureless start, then record why it was allowed.
+    if (m_autoplayMediaEncountered) {
+        m_waitingForAutoplayPlaybackStop = true;
         recordAutoplayMetric(m_autoplayDeferredMetric);
     }
 }
@@ -452,8 +466,8 @@ void AutoplayExperimentHelper::playbackStopped()
 
     // If this was a gestureless play, then record that separately.
     // These cover attr and play() gestureless starts.
-    if (m_waitingForAutoplayPlaybackEnd) {
-        m_waitingForAutoplayPlaybackEnd = false;
+    if (m_waitingForAutoplayPlaybackStop) {
+        m_waitingForAutoplayPlaybackStop = false;
 
         recordAutoplayMetric(ended ? AutoplayComplete : AutoplayPaused);
 
