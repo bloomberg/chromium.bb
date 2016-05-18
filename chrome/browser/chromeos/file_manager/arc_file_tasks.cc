@@ -34,6 +34,7 @@ namespace {
 constexpr int kArcInstanceHelperVersionWithUrlListSupport = 4;
 constexpr base::FilePath::CharType kArcDownloadPath[] =
     FILE_PATH_LITERAL("/sdcard/Download");
+constexpr char kAppIdSeparator = '/';
 
 // Returns the Mojo interface for ARC Intent Helper, with version |minVersion|
 // or above. If the ARC bridge is not established, returns null.
@@ -83,6 +84,25 @@ arc::mojom::ActionType StringToArcAction(const std::string& str) {
   return arc::mojom::ActionType::VIEW;
 }
 
+std::string ActivityNameToAppId(const std::string& package_name,
+                                const std::string& activity_name) {
+  return package_name + kAppIdSeparator + activity_name;
+}
+
+arc::mojom::ActivityNamePtr AppIdToActivityName(const std::string& id) {
+  arc::mojom::ActivityNamePtr name = arc::mojom::ActivityName::New();
+
+  const size_t separator = id.find(kAppIdSeparator);
+  if (separator == std::string::npos) {
+    name->package_name = id;
+    name->activity_name = mojo::String();
+  } else {
+    name->package_name = id.substr(0, separator);
+    name->activity_name = id.substr(separator + 1);
+  }
+  return name;
+}
+
 // Converts the Chrome OS file path to ARC file URL.
 bool ConvertToArcUrl(const base::FilePath& path, GURL* arc_url) {
   // Obtain the primary profile. This information is required because currently
@@ -124,8 +144,9 @@ void OnArcHandlerList(
                                        base::UTF8ToUTF16(name));
     }
     result_list->push_back(FullTaskDescriptor(
-        TaskDescriptor(handler->package_name, TASK_TYPE_ARC_APP,
-                       ArcActionToString(handler->action)),
+        TaskDescriptor(
+            ActivityNameToAppId(handler->package_name, handler->activity_name),
+            TASK_TYPE_ARC_APP, ArcActionToString(handler->action)),
         name,
         GURL(""),                                        // TODO: get the icon
         false,                                           // is_default,
@@ -191,8 +212,10 @@ bool ExecuteArcTask(Profile* profile,
     url_with_type->mime_type = mime_types[i];
     urls.push_back(std::move(url_with_type));
   }
-  arc_intent_helper->HandleUrlList(std::move(urls), task.app_id,
-                                   StringToArcAction(task.action_id));
+
+  arc_intent_helper->HandleUrlList(
+      std::move(urls), AppIdToActivityName(task.app_id)->package_name,
+      StringToArcAction(task.action_id));
   return true;
 }
 
