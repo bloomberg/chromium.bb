@@ -6,19 +6,15 @@
 #define CHROME_BROWSER_TASK_MANAGEMENT_PROVIDERS_WEB_CONTENTS_DEVTOOLS_TASK_H_
 
 #include "base/macros.h"
-#include "chrome/browser/task_management/providers/web_contents/renderer_task.h"
+#include "chrome/browser/task_management/providers/web_contents/tab_contents_task.h"
 
 namespace task_management {
 
 // Defines a task manager representation of the developer tools WebContents.
-class DevToolsTask : public RendererTask {
+class DevToolsTask : public TabContentsTask {
  public:
   explicit DevToolsTask(content::WebContents* web_contents);
   ~DevToolsTask() override;
-
-  // task_management::RendererTask:
-  void UpdateTitle() override;
-  void UpdateFavicon() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DevToolsTask);

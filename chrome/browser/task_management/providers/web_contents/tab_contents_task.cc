@@ -59,7 +59,7 @@ base::string16 TabContentsTask::GetCurrentTitle() const {
       extensions::ExtensionRegistry::Get(profile);
   GURL url = web_contents()->GetURL();
 
-  bool is_app = process_map->Contains(process_id()) &&
+  bool is_app = process_map->Contains(GetChildProcessUniqueID()) &&
       extension_registry->enabled_extensions().GetAppByURL(url) != nullptr;
   bool is_extension = HostsExtension(web_contents());
   bool is_incognito = profile->IsOffTheRecord();

@@ -9,21 +9,10 @@
 namespace task_management {
 
 DevToolsTask::DevToolsTask(content::WebContents* web_contents)
-    : RendererTask(RendererTask::GetTitleFromWebContents(web_contents),
-                   RendererTask::GetFaviconFromWebContents(web_contents),
-                   web_contents,
-                   web_contents->GetRenderProcessHost()) {
+    : TabContentsTask(web_contents) {
 }
 
 DevToolsTask::~DevToolsTask() {
-}
-
-void DevToolsTask::UpdateTitle() {
-  // In the case of a devtools tab, we just ignore this event.
-}
-
-void DevToolsTask::UpdateFavicon() {
-  // In the case of a devtools tab, we just ignore this event.
 }
 
 }  // namespace task_management

@@ -116,12 +116,6 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
     return -1;
   }
 
-  // TODO(nick, afakhry): Remove this function. https://crbug.com/606963
-  void DisableNewTaskManagerForBrokenTest() {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kDisableNewTaskManager);
-  }
-
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionBrowserTest::SetUpCommandLine(command_line);
@@ -578,10 +572,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionTab) {
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTabChanges) {
-  // TODO(nick, afakhry): Broken on new task manager because we show
-  // "Extension: Packaged App Test" instead of "App: Packaged App Test".
-  DisableNewTaskManagerForBrokenTest();
-
   ShowTaskManager();
 
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("packaged_app")));
@@ -625,10 +615,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTabChanges) {
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTab) {
-  // TODO(nick, afakhry): Broken on new task manager because we show
-  // "Extension: Packaged App Test" instead of "App: Packaged App Test".
-  DisableNewTaskManagerForBrokenTest();
-
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("packaged_app")));
   ExtensionService* service = extensions::ExtensionSystem::Get(
@@ -656,10 +642,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeAppTab) {
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabChanges) {
-  // TODO(nick, afakhry): Broken on new task manager because we show
-  // "Tab: Unmodified" instead of "App: ".
-  DisableNewTaskManagerForBrokenTest();
-
   ShowTaskManager();
 
   // The app under test acts on URLs whose host is "localhost",
@@ -704,20 +686,11 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabChanges) {
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchApp("Unmodified")));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyExtension()));
 
-  // Disable extension.
+  // Disable extension and reload.
   DisableExtension(last_loaded_extension_id());
-
-  // The hosted app should now show up as a normal "Tab: ".
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("Unmodified")));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyExtension()));
-  ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyApp()));
-
-  // Reload the page.
   ui_test_utils::NavigateToURL(browser(), url);
 
-  // No change expected.
+  // The hosted app should now show up as a normal "Tab: ".
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(2, MatchAnyTab()));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAboutBlankTab()));
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("Unmodified")));
@@ -726,10 +699,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabChanges) {
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeHostedAppTabAfterReload) {
-  // TODO(nick, afakhry): This fails on the new task manager (we never
-  // reclassify the tab as an app). Remove when fixed.
-  DisableNewTaskManagerForBrokenTest();
-
   // The app under test acts on URLs whose host is "localhost",
   // so the URLs we navigate to must have host "localhost".
   host_resolver()->AddRule("*", "127.0.0.1");
@@ -908,10 +877,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerUtilityProcessBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsNewDockedWindow) {
-  // TODO(nick, afakhry): Broken on new task manager because we show
-  // a long chrome-devtools:// URL without a prefix (expecting "Tab: *").
-  DisableNewTaskManagerForBrokenTest();
-
   ShowTaskManager();  // Task manager shown BEFORE dev tools window.
 
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
@@ -923,10 +888,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsNewDockedWindow) {
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsNewUndockedWindow) {
-  // TODO(nick, afakhry): Broken on new task manager because we show
-  // a long chrome-devtools:// URL without a prefix (expecting "Tab: *").
-  DisableNewTaskManagerForBrokenTest();
-
   ShowTaskManager();  // Task manager shown BEFORE dev tools window.
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchAnyTab()));
   DevToolsWindow* devtools =
@@ -937,10 +898,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsNewUndockedWindow) {
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsOldDockedWindow) {
-  // TODO(nick, afakhry): Broken on new task manager because we show
-  // a long chrome-devtools:// URL without a prefix (expecting "Tab: *").
-  DisableNewTaskManagerForBrokenTest();
-
   DevToolsWindow* devtools =
       DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), true);
   ShowTaskManager();  // Task manager shown AFTER dev tools window.
@@ -950,10 +907,6 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsOldDockedWindow) {
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, DevToolsOldUndockedWindow) {
-  // TODO(nick, afakhry): Broken on new task manager because we show
-  // a long chrome-devtools:// URL without a prefix (expecting "Tab: *").
-  DisableNewTaskManagerForBrokenTest();
-
   DevToolsWindow* devtools =
       DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), false);
   ShowTaskManager();  // Task manager shown AFTER dev tools window.
