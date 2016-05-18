@@ -8,14 +8,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcel;
-import android.preference.PreferenceManager;
 import android.util.Base64;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -39,7 +38,6 @@ public abstract class AbstractAppRestrictionsProvider extends PolicyProvider {
     private static Bundle sTestRestrictions = null;
 
     private final Context mContext;
-    private final SharedPreferences mSharedPreferences;
     private final BroadcastReceiver mAppRestrictionsChangedReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -54,7 +52,6 @@ public abstract class AbstractAppRestrictionsProvider extends PolicyProvider {
      */
     public AbstractAppRestrictionsProvider(Context context) {
         mContext = context;
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
     }
 
     /**
@@ -138,13 +135,11 @@ public abstract class AbstractAppRestrictionsProvider extends PolicyProvider {
         p.writeBundle(policies);
         byte bytes[] = p.marshall();
         String s = Base64.encodeToString(bytes, 0);
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
-        ed.putString(PREFERENCE_KEY, s);
-        ed.apply();
+        ContextUtils.getAppSharedPreferences().edit().putString(PREFERENCE_KEY, s).apply();
     }
 
     private Bundle getCachedPolicies() {
-        String s = mSharedPreferences.getString(PREFERENCE_KEY, null);
+        String s = ContextUtils.getAppSharedPreferences().getString(PREFERENCE_KEY, null);
         if (s == null) {
             return null;
         }

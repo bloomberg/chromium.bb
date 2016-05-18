@@ -5,14 +5,13 @@
 package org.chromium.sync.notifier;
 
 import android.accounts.Account;
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.util.Base64;
 import android.util.Log;
 
 import com.google.ipc.invalidation.external.client.types.ObjectId;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 
 import java.util.Collection;
@@ -40,11 +39,11 @@ public class InvalidationPreferences {
      * Wrapper around a {@link android.content.SharedPreferences.Editor} for the preferences.
      * Used to avoid exposing raw preference objects to users of this class.
      */
-    public class EditContext {
+    public static class EditContext {
         private final SharedPreferences.Editor mEditor;
 
         EditContext() {
-            mEditor = PreferenceManager.getDefaultSharedPreferences(mContext).edit();
+            mEditor = ContextUtils.getAppSharedPreferences().edit();
         }
     }
 
@@ -80,14 +79,6 @@ public class InvalidationPreferences {
     // Only one commit call can be in progress at a time.
     private static final Object sCommitLock = new Object();
 
-    private final Context mContext;
-
-    public InvalidationPreferences(Context context) {
-        Context appContext = context.getApplicationContext();
-        if (appContext == null) throw new NullPointerException("Unable to get application context");
-        mContext = appContext;
-    }
-
     /** Returns a new {@link EditContext} to modify the preferences managed by this class. */
     public EditContext edit() {
         return new EditContext();
@@ -111,7 +102,7 @@ public class InvalidationPreferences {
 
     /** Returns the saved sync types, or {@code null} if none exist. */
     @Nullable public Set<String> getSavedSyncedTypes() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
         Set<String> syncedTypes = preferences.getStringSet(PrefKeys.SYNC_TANGO_TYPES, null);
         // Wrap with unmodifiableSet to ensure it's never modified. See crbug.com/568369.
         return syncedTypes == null ? null : Collections.unmodifiableSet(syncedTypes);
@@ -127,7 +118,7 @@ public class InvalidationPreferences {
     /** Returns the saved non-sync object ids, or {@code null} if none exist. */
     @Nullable
     public Set<ObjectId> getSavedObjectIds() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
         Set<String> objectIdStrings = preferences.getStringSet(PrefKeys.TANGO_OBJECT_IDS, null);
         if (objectIdStrings == null) {
             return null;
@@ -154,7 +145,7 @@ public class InvalidationPreferences {
 
     /** Returns the saved account, or {@code null} if none exists. */
     @Nullable public Account getSavedSyncedAccount() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
         String accountName = preferences.getString(PrefKeys.SYNC_ACCT_NAME, null);
         String accountType = preferences.getString(PrefKeys.SYNC_ACCT_TYPE, null);
         if (accountName == null || accountType == null) {
@@ -171,7 +162,7 @@ public class InvalidationPreferences {
 
     /** Returns the notification client internal state. */
     @Nullable public byte[] getInternalNotificationClientState() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
         String base64State = preferences.getString(PrefKeys.SYNC_TANGO_INTERNAL_STATE, null);
         if (base64State == null) {
             return null;

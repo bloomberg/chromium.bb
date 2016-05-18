@@ -222,7 +222,7 @@ public class InvalidationClientService extends AndroidListener {
 
     @Override
     public void writeState(byte[] data) {
-        InvalidationPreferences invPreferences = new InvalidationPreferences(this);
+        InvalidationPreferences invPreferences = new InvalidationPreferences();
         EditContext editContext = invPreferences.edit();
         invPreferences.setInternalNotificationClientState(editContext, data);
         invPreferences.commit(editContext);
@@ -230,7 +230,7 @@ public class InvalidationClientService extends AndroidListener {
 
     @Override
     @Nullable public byte[] readState() {
-        return new InvalidationPreferences(this).getInternalNotificationClientState();
+        return new InvalidationPreferences().getInternalNotificationClientState();
     }
 
     /**
@@ -256,7 +256,7 @@ public class InvalidationClientService extends AndroidListener {
         if (intendedAccount == null) {
             return;
         }
-        InvalidationPreferences invPrefs = new InvalidationPreferences(this);
+        InvalidationPreferences invPrefs = new InvalidationPreferences();
         if (!intendedAccount.equals(invPrefs.getSavedSyncedAccount())) {
             if (sIsClientStarted) {
                 stopClient();
@@ -286,7 +286,7 @@ public class InvalidationClientService extends AndroidListener {
 
     /** Sets the saved sync account in {@link InvalidationPreferences} to {@code owningAccount}. */
     private void setAccount(Account owningAccount) {
-        InvalidationPreferences invPrefs = new InvalidationPreferences(this);
+        InvalidationPreferences invPrefs = new InvalidationPreferences();
         EditContext editContext = invPrefs.edit();
         invPrefs.setAccount(editContext, owningAccount);
         invPrefs.commit(editContext);
@@ -297,7 +297,7 @@ public class InvalidationClientService extends AndroidListener {
      * corresponding object ids.
      */
     private Set<ObjectId> readSyncRegistrationsFromPrefs() {
-        Set<String> savedTypes = new InvalidationPreferences(this).getSavedSyncedTypes();
+        Set<String> savedTypes = new InvalidationPreferences().getSavedSyncedTypes();
         if (savedTypes == null) return Collections.emptySet();
         return ModelTypeHelper.notificationTypesToObjectIds(savedTypes);
     }
@@ -307,7 +307,7 @@ public class InvalidationClientService extends AndroidListener {
      * corresponding object ids.
      */
     private Set<ObjectId> readNonSyncRegistrationsFromPrefs() {
-        Set<ObjectId> objectIds = new InvalidationPreferences(this).getSavedObjectIds();
+        Set<ObjectId> objectIds = new InvalidationPreferences().getSavedObjectIds();
         if (objectIds == null) return Collections.emptySet();
         return objectIds;
     }
@@ -359,7 +359,7 @@ public class InvalidationClientService extends AndroidListener {
                 ? null : readNonSyncRegistrationsFromPrefs();
 
         // Write the new sync types/object ids to preferences.
-        InvalidationPreferences prefs = new InvalidationPreferences(this);
+        InvalidationPreferences prefs = new InvalidationPreferences();
         EditContext editContext = prefs.edit();
         if (syncTypes != null) {
             prefs.setSyncTypes(editContext, syncTypes);

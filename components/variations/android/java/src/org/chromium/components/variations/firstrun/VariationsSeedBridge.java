@@ -5,9 +5,9 @@
 package org.chromium.components.variations.firstrun;
 
 import android.content.Context;
-import android.preference.PreferenceManager;
 import android.util.Base64;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 
 /**
@@ -30,7 +30,7 @@ public class VariationsSeedBridge {
             "variations_seed_native_stored";
 
     protected static String getVariationsFirstRunSeedPref(Context context, String prefName) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getString(prefName, "");
+        return ContextUtils.getAppSharedPreferences().getString(prefName, "");
     }
 
     /**
@@ -40,7 +40,7 @@ public class VariationsSeedBridge {
     @CalledByNative
     public static void setVariationsFirstRunSeed(Context context, byte[] rawSeed, String signature,
             String country, String date, boolean isGzipCompressed) {
-        PreferenceManager.getDefaultSharedPreferences(context)
+        ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putString(VARIATIONS_FIRST_RUN_SEED_BASE64,
                         Base64.encodeToString(rawSeed, Base64.NO_WRAP))
@@ -53,7 +53,7 @@ public class VariationsSeedBridge {
 
     @CalledByNative
     private static void clearFirstRunPrefs(Context context) {
-        PreferenceManager.getDefaultSharedPreferences(context)
+        ContextUtils.getAppSharedPreferences()
                 .edit()
                 .remove(VARIATIONS_FIRST_RUN_SEED_BASE64)
                 .remove(VARIATIONS_FIRST_RUN_SEED_SIGNATURE)
@@ -67,7 +67,7 @@ public class VariationsSeedBridge {
      * Returns the status of the variations first run fetch: was it successful or not.
      */
     public static boolean hasJavaPref(Context context) {
-        return !PreferenceManager.getDefaultSharedPreferences(context)
+        return !ContextUtils.getAppSharedPreferences()
                         .getString(VARIATIONS_FIRST_RUN_SEED_BASE64, "")
                         .isEmpty();
     }
@@ -76,13 +76,13 @@ public class VariationsSeedBridge {
      * Returns the status of the variations seed storing on the C++ side: was it successful or not.
      */
     public static boolean hasNativePref(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
+        return ContextUtils.getAppSharedPreferences().getBoolean(
                 VARIATIONS_FIRST_RUN_SEED_NATIVE_STORED, false);
     }
 
     @CalledByNative
     private static void markVariationsSeedAsStored(Context context) {
-        PreferenceManager.getDefaultSharedPreferences(context)
+        ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putBoolean(VARIATIONS_FIRST_RUN_SEED_NATIVE_STORED, true)
                 .apply();
@@ -112,7 +112,7 @@ public class VariationsSeedBridge {
 
     @CalledByNative
     private static boolean getVariationsFirstRunSeedIsGzipCompressed(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
+        return ContextUtils.getAppSharedPreferences().getBoolean(
                 VARIATIONS_FIRST_RUN_SEED_IS_GZIP_COMPRESSED, false);
     }
 }

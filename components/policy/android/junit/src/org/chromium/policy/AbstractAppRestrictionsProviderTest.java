@@ -18,10 +18,9 @@ import static org.mockito.Mockito.when;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Assert;
 import org.junit.Test;
@@ -81,12 +80,10 @@ public class AbstractAppRestrictionsProviderTest {
         Robolectric.getBackgroundScheduler().pause();
 
         Context context = Robolectric.application;
+        ContextUtils.initApplicationContextForTests(context);
 
         // Clear the preferences
-        SharedPreferences sharedPreferences = PreferenceManager
-                .getDefaultSharedPreferences(context);
-        SharedPreferences.Editor ed = sharedPreferences.edit();
-        ed.clear();
+        ContextUtils.getAppSharedPreferences().edit().clear();
 
         // Set up a bundle for testing.
         Bundle b1 = new Bundle();

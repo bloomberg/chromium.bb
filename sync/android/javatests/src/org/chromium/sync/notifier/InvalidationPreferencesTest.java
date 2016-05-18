@@ -5,14 +5,12 @@
 package org.chromium.sync.notifier;
 
 import android.accounts.Account;
-import android.content.Context;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import com.google.ipc.invalidation.external.client.types.ObjectId;
 
 import org.chromium.base.CollectionUtil;
-import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 
 import java.util.Arrays;
@@ -24,21 +22,13 @@ import java.util.Set;
  * @author dsmyers@google.com (Daniel Myers)
  */
 public class InvalidationPreferencesTest extends InstrumentationTestCase {
-    private Context mContext;
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        mContext = new AdvancedMockContext(getInstrumentation().getContext());
-    }
-
     @SmallTest
     @Feature({"Sync"})
     public void testReadMissingData() {
         /*
          * Test plan: read saved state from empty preferences. Verify that null is returned.
          */
-        InvalidationPreferences invPreferences = new InvalidationPreferences(mContext);
+        InvalidationPreferences invPreferences = new InvalidationPreferences();
         assertNull(invPreferences.getSavedSyncedAccount());
         assertNull(invPreferences.getSavedSyncedTypes());
         assertNull(invPreferences.getSavedObjectIds());
@@ -52,7 +42,7 @@ public class InvalidationPreferencesTest extends InstrumentationTestCase {
          * Test plan: write and read back saved state. Verify that the returned state is what
          * was written.
          */
-        InvalidationPreferences invPreferences = new InvalidationPreferences(mContext);
+        InvalidationPreferences invPreferences = new InvalidationPreferences();
         InvalidationPreferences.EditContext editContext = invPreferences.edit();
 
         // Write mix of valid and invalid types to disk to test that preferences are not

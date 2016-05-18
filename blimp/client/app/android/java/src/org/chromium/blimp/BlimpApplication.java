@@ -8,6 +8,7 @@ import android.app.Application;
 
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.CommandLineInitUtil;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ResourceExtractor;
 
@@ -22,6 +23,7 @@ public class BlimpApplication extends BaseChromiumApplication {
     @Override
     public void onCreate() {
         super.onCreate();
+        ContextUtils.initApplicationContext(this);
         ResourceExtractor.setResourcesToExtract(new ResourceExtractor.ResourceEntry[0]);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, this);
         initCommandLine();

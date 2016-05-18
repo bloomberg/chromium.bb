@@ -13,6 +13,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CollectionUtil;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.invalidation.InvalidationClientService;
@@ -72,7 +73,6 @@ public class InvalidationControllerTest {
 
     private ShadowActivity mShadowActivity;
     private Context mContext;
-    private InvalidationController mController;
 
     /**
      * The names of the preferred ModelTypes.
@@ -89,8 +89,10 @@ public class InvalidationControllerTest {
         Activity activity = Robolectric.buildActivity(Activity.class).setup().get();
         mShadowActivity = Robolectric.shadowOf(activity);
         mContext = activity;
+        ContextUtils.initApplicationContextForTests(mContext.getApplicationContext());
 
         ModelTypeHelper.setTestDelegate(new ModelTypeHelper.TestDelegate() {
+            @Override
             public String toNotificationType(int modelType) {
                 return Integer.toString(modelType);
             }

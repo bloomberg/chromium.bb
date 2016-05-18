@@ -5,9 +5,8 @@
 package org.chromium.blimp.preferences;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.blimp.R;
 
 /**
@@ -20,24 +19,19 @@ public class PreferencesUtil {
     private static final String PREF_LAST_USED_ASSIGNER = "last_known_assigner";
     private static final String DEFAULT_EMPTY_STRING = "";
 
-    private static SharedPreferences getPreferences(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
-    }
-
     /**
      * Finds the assigner to be used from user's last preference. If the app is being used for the
      * first time, the first entry from the assigner array would be used.
      * @return assigner to use.
      */
     public static String findAssignerUrl(Context context) {
-        String lastAssigner = getPreferences(context).getString(PREF_LAST_USED_ASSIGNER, "");
+        String lastAssigner = getLastUsedAssigner(context);
         if (lastAssigner.isEmpty()) {
             String[] assignerUrls = context.getResources().getStringArray(R.array.assigner_urls);
             assert assignerUrls != null && assignerUrls.length > 0;
             lastAssigner = assignerUrls[0];
-            writeString(context, PREF_LAST_USED_ASSIGNER, lastAssigner);
+            setLastUsedAssigner(context, lastAssigner);
         }
-
         return lastAssigner;
     }
 
@@ -66,7 +60,7 @@ public class PreferencesUtil {
      * @return The current value of the preference or a default value
      */
     private static String readString(Context context, String key) {
-        return getPreferences(context).getString(key, DEFAULT_EMPTY_STRING);
+        return ContextUtils.getAppSharedPreferences().getString(key, DEFAULT_EMPTY_STRING);
     }
 
     /**
@@ -76,8 +70,6 @@ public class PreferencesUtil {
      * @param value The new value for the preference
      */
     private static void writeString(Context context, String key, String value) {
-        SharedPreferences.Editor editor = getPreferences(context).edit();
-        editor.putString(key, value);
-        editor.apply();
+        ContextUtils.getAppSharedPreferences().edit().putString(key, value).apply();
     }
 }

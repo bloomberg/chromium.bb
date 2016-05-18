@@ -65,7 +65,7 @@ public class InvalidationService {
     @VisibleForTesting
     @CalledByNative
     public void setRegisteredObjectIds(int[] objectSources, String[] objectNames) {
-        InvalidationPreferences invalidationPreferences = new InvalidationPreferences(mContext);
+        InvalidationPreferences invalidationPreferences = new InvalidationPreferences();
         Account account = invalidationPreferences.getSavedSyncedAccount();
         Intent registerIntent = InvalidationIntentProtocol.createRegisterIntent(
                 account, objectSources, objectNames);
