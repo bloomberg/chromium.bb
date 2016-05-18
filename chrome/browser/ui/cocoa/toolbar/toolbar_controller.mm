@@ -1068,12 +1068,10 @@ class NotificationBridge : public AppMenuBadgeController::Delegate {
   // https://crbug.com/326245 .
   const CGFloat kLineWidth = [[self view] cr_lineWidth];
   const BOOL kIsRetina = (kLineWidth < 1);
-  BOOL reduceHeight = YES;
+  BOOL reduceHeight = NO;
 
-  // If Material Design and Retina, no height adjustment is needed.
-  if (kIsModeMaterial && kIsRetina) {
-    reduceHeight = NO;
-  }
+  // Only adjust the height if Retina and not Material Design.
+  reduceHeight = kIsRetina && !kIsModeMaterial;
 
   return reduceHeight ? kBaseToolbarHeightNormal - 1
                       : kBaseToolbarHeightNormal;

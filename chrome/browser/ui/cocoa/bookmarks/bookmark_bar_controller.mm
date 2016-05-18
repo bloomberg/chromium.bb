@@ -1137,7 +1137,7 @@ CGFloat BookmarkRightMargin() {
 
   CGFloat lineWidth = 0;
   BOOL isRetina = NO;
-  BOOL reduceHeight = YES;
+  BOOL reduceHeight = NO;
 
   switch (currentState_) {
     case BookmarkBar::SHOW:
@@ -1149,10 +1149,9 @@ CGFloat BookmarkRightMargin() {
       lineWidth = [[self view] cr_lineWidth];
       isRetina = (lineWidth < 1);
 
-      // If Material Design and Retina, no height adjustment is needed.
-      if (ui::MaterialDesignController::IsModeMaterial() && isRetina) {
-        reduceHeight = NO;
-      }
+      // Only adjust the height if Retina and not Material Design.
+      reduceHeight =
+          isRetina && !ui::MaterialDesignController::IsModeMaterial();
 
       return reduceHeight ? chrome::kBookmarkBarHeight + 1
                           : chrome::kBookmarkBarHeight;
