@@ -126,6 +126,22 @@ chrome.test.getConfig(function(config) {
           chrome.tabs.move(tab.id,
             {windowId: incognitoWindow.id, index: 0}, fail(errorMsg));
         }));
+    },
+
+    // Tests that it is not possible to create a new window with a tab from a
+    // different profile.
+    function createWindowWithTabFromOtherProfile() {
+      chrome.windows.create({
+        tabId: incognitoTab.id,
+      }, fail('Tabs can only be moved between windows in the same profile.'));
+    },
+
+    // Similarly, try to move a non-incognito tab to an incognito window.
+    function createWindowWithTabFromOtherProfile2() {
+      chrome.windows.create({
+        tabId: normalTab.id,
+        incognito: true,
+      }, fail('Tabs can only be moved between windows in the same profile.'));
     }
   ]);
 });

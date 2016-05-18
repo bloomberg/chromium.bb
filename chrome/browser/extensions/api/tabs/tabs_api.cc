@@ -459,19 +459,41 @@ bool WindowsCreateFunction::RunSync() {
     }
   }
 
+  // Decide whether we are opening a normal window or an incognito window.
+  bool is_error = true;
+  bool open_incognito_window =
+      ShouldOpenIncognitoWindow(create_data, &urls, &is_error);
+  if (is_error)
+    return false;  // error_ member is set inside of ShouldOpenIncognitoWindow.
+
+  Profile* window_profile = GetProfile();
+  if (open_incognito_window)
+    window_profile = window_profile->GetOffTheRecordProfile();
+
   // Look for optional tab id.
   if (create_data && create_data->tab_id) {
     // Find the tab. |source_tab_strip| and |tab_index| will later be used to
     // move the tab into the created window.
+    Browser* source_browser = nullptr;
     if (!GetTabById(*create_data->tab_id,
                     GetProfile(),
                     include_incognito(),
-                    NULL,
+                    &source_browser,
                     &source_tab_strip,
-                    NULL,
+                    nullptr,
                     &tab_index,
                     &error_))
       return false;
+
+    if (!source_browser->window()->IsTabStripEditable()) {
+      error_ = keys::kTabStripNotEditableError;
+      return false;
+    }
+
+    if (source_browser->profile() != window_profile) {
+      error_ = keys::kCanOnlyMoveTabsWithinSameProfileError;
+      return false;
+    }
   }
 
   if (!IsValidStateForWindowsCreateFunction(create_data)) {
@@ -479,7 +501,6 @@ bool WindowsCreateFunction::RunSync() {
     return false;
   }
 
-  Profile* window_profile = GetProfile();
   Browser::Type window_type = Browser::TYPE_TABBED;
   bool create_panel = false;
 
@@ -490,18 +511,6 @@ bool WindowsCreateFunction::RunSync() {
   bool focused = true;
   bool saw_focus_key = false;
   std::string extension_id;
-
-  // Decide whether we are opening a normal window or an incognito window.
-  bool is_error = true;
-  bool open_incognito_window = ShouldOpenIncognitoWindow(create_data, &urls,
-                                                         &is_error);
-  if (is_error) {
-    // error_ member variable is set inside of ShouldOpenIncognitoWindow.
-    return false;
-  }
-  if (open_incognito_window) {
-    window_profile = window_profile->GetOffTheRecordProfile();
-  }
 
   if (create_data) {
     // Figure out window type before figuring out bounds so that default
