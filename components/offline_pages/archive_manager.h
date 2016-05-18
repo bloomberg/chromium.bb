@@ -23,6 +23,11 @@ namespace offline_pages {
 // All tasks are performed using |task_runner_|.
 class ArchiveManager {
  public:
+  struct StorageStats {
+    int64_t free_disk_space;
+    int64_t total_archives_size;
+  };
+
   ArchiveManager(const base::FilePath& archives_dir,
                  const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   virtual ~ArchiveManager();
@@ -50,6 +55,12 @@ class ArchiveManager {
   // Lists all archive files in the archive directory.
   virtual void GetAllArchives(
       const base::Callback<void(const std::set<base::FilePath>&)>& callback)
+      const;
+
+  // Gets stats about archive storage, i.e. total archive sizes and free disk
+  // space.
+  virtual void GetStorageStats(
+      const base::Callback<void(const StorageStats& storage_sizes)>& callback)
       const;
 
  private:

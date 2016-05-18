@@ -10,12 +10,16 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
+#include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/archive_manager.h"
 
 namespace offline_pages {
 
 namespace {
+
+using StorageStatsCallback =
+    base::Callback<void(const ArchiveManager::StorageStats& storage_stats)>;
 
 void EnsureArchivesDirCreatedImpl(const base::FilePath& archives_dir) {
   CHECK(base::CreateDirectory(archives_dir));
@@ -51,6 +55,16 @@ void GetAllArchivesImpl(
     archive_paths.insert(archive_path);
   }
   task_runner->PostTask(FROM_HERE, base::Bind(callback, archive_paths));
+}
+
+void GetStorageStatsImpl(const base::FilePath& archive_dir,
+                         scoped_refptr<base::SequencedTaskRunner> task_runner,
+                         const StorageStatsCallback& callback) {
+  ArchiveManager::StorageStats storage_stats;
+  storage_stats.free_disk_space =
+      base::SysInfo::AmountOfFreeDiskSpace(archive_dir);
+  storage_stats.total_archives_size = base::ComputeDirectorySize(archive_dir);
+  task_runner->PostTask(FROM_HERE, base::Bind(callback, storage_stats));
 }
 
 }  // namespace
@@ -94,6 +108,13 @@ void ArchiveManager::GetAllArchives(
     const {
   task_runner_->PostTask(
       FROM_HERE, base::Bind(GetAllArchivesImpl, archives_dir_,
+                            base::ThreadTaskRunnerHandle::Get(), callback));
+}
+
+void ArchiveManager::GetStorageStats(
+    const StorageStatsCallback& callback) const {
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(GetStorageStatsImpl, archives_dir_,
                             base::ThreadTaskRunnerHandle::Get(), callback));
 }
 

@@ -41,12 +41,17 @@ class ArchiveManagerTest : public testing::Test {
   void ResetManager(const base::FilePath& file_path);
   void Callback(bool result);
   void GetAllArchivesCallback(const std::set<base::FilePath>& archive_paths);
+  void GetStorageStatsCallback(
+      const ArchiveManager::StorageStats& storage_sizes);
 
   ArchiveManager* manager() { return manager_.get(); }
   const base::FilePath& temp_path() const { return temp_dir_.path(); }
   CallbackStatus callback_status() const { return callback_status_; }
   const std::set<base::FilePath>& last_archive_paths() const {
     return last_archvie_paths_;
+  }
+  ArchiveManager::StorageStats last_storage_sizes() const {
+    return last_storage_sizes_;
   }
 
  private:
@@ -57,12 +62,14 @@ class ArchiveManagerTest : public testing::Test {
   std::unique_ptr<ArchiveManager> manager_;
   CallbackStatus callback_status_;
   std::set<base::FilePath> last_archvie_paths_;
+  ArchiveManager::StorageStats last_storage_sizes_;
 };
 
 ArchiveManagerTest::ArchiveManagerTest()
     : task_runner_(new base::TestSimpleTaskRunner),
       task_runner_handle_(task_runner_),
-      callback_status_(CallbackStatus::NOT_CALLED) {}
+      callback_status_(CallbackStatus::NOT_CALLED),
+      last_storage_sizes_({0, 0}) {}
 
 void ArchiveManagerTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -91,6 +98,11 @@ void ArchiveManagerTest::Callback(bool result) {
 void ArchiveManagerTest::GetAllArchivesCallback(
     const std::set<base::FilePath>& archive_paths) {
   last_archvie_paths_ = archive_paths;
+}
+
+void ArchiveManagerTest::GetStorageStatsCallback(
+    const ArchiveManager::StorageStats& storage_sizes) {
+  last_storage_sizes_ = storage_sizes;
 }
 
 TEST_F(ArchiveManagerTest, EnsureArchivesDirCreated) {
@@ -243,6 +255,20 @@ TEST_F(ArchiveManagerTest, GetAllArchives) {
   EXPECT_EQ(expected_paths[0].BaseName(), actual_paths[0].BaseName());
   EXPECT_EQ(expected_paths[1].BaseName(), actual_paths[1].BaseName());
   EXPECT_EQ(expected_paths[2].BaseName(), actual_paths[2].BaseName());
+}
+
+TEST_F(ArchiveManagerTest, GetStorageStats) {
+  base::FilePath archive_path_1;
+  EXPECT_TRUE(base::CreateTemporaryFileInDir(temp_path(), &archive_path_1));
+  base::FilePath archive_path_2;
+  EXPECT_TRUE(base::CreateTemporaryFileInDir(temp_path(), &archive_path_2));
+
+  manager()->GetStorageStats(base::Bind(
+      &ArchiveManagerTest::GetStorageStatsCallback, base::Unretained(this)));
+  PumpLoop();
+  EXPECT_GT(last_storage_sizes().free_disk_space, 0);
+  EXPECT_EQ(last_storage_sizes().total_archives_size,
+            base::ComputeDirectorySize(temp_path()));
 }
 
 }  // namespace offline_pages

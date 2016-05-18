@@ -4,18 +4,13 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
-import android.os.AsyncTask;
-
 import org.chromium.base.Callback;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.components.offlinepages.DeletePageResult;
-import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
@@ -138,46 +133,6 @@ public class OfflinePageBridge {
          * @param clientId The client supplied ID of the deleted offline page.
          */
         public void offlinePageDeleted(long offlineId, ClientId clientId) {}
-    }
-
-    private static void recordFreeSpaceHistograms(
-            final String percentageName, final String bytesName) {
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... params) {
-                int percentage = (int) (1.0 * OfflinePageUtils.getFreeSpaceInBytes()
-                        / OfflinePageUtils.getTotalSpaceInBytes() * 100);
-                RecordHistogram.recordPercentageHistogram(percentageName, percentage);
-                int bytesInMB = (int) (OfflinePageUtils.getFreeSpaceInBytes() / (1024 * 1024));
-                RecordHistogram.recordCustomCountHistogram(bytesName, bytesInMB, 1, 500000, 50);
-                return null;
-            }
-        }.execute();
-    }
-
-    /**
-     * Records histograms related to the cost of storage. It is meant to be used after user
-     * takes an action: save, delete or delete in bulk.
-     *
-     * @param reportingAfterDelete Indicates that reporting has been requested after deleting an
-     *   offline copy.
-     */
-    private void recordStorageHistograms(final boolean reportingAfterDelete) {
-        new AsyncTask<Void, Void, long[]>() {
-            @Override
-            protected long[] doInBackground(Void... params) {
-                // Getting the storage numbers violates strict mode when done on UI thread.
-                return new long[] { OfflinePageUtils.getTotalSpaceInBytes(),
-                        OfflinePageUtils.getFreeSpaceInBytes() };
-            }
-
-            @Override
-            protected void onPostExecute(long[] result) {
-                if (result == null || result.length != 2) return;
-                nativeRecordStorageHistograms(
-                        mNativeOfflinePageBridge, result[0], result[1], reportingAfterDelete);
-            }
-        }.execute();
     }
 
     /**
@@ -371,20 +326,8 @@ public class OfflinePageBridge {
         assert mIsNativeOfflinePageModelLoaded;
         assert webContents != null;
 
-        SavePageCallback callbackWrapper = new SavePageCallback() {
-            @Override
-            public void onSavePageDone(int savePageResult, String url, long offlineId) {
-                if (savePageResult == SavePageResult.SUCCESS && isOfflinePageModelLoaded()) {
-                    recordStorageHistograms(false /* reporting after delete */);
-                }
-                callback.onSavePageDone(savePageResult, url, offlineId);
-            }
-        };
-        recordFreeSpaceHistograms(
-                "OfflinePages.SavePage.FreeSpacePercentage", "OfflinePages.SavePage.FreeSpaceMB");
-
-        nativeSavePage(mNativeOfflinePageBridge, callbackWrapper, webContents,
-                clientId.getNamespace(), clientId.getId());
+        nativeSavePage(mNativeOfflinePageBridge, callback, webContents, clientId.getNamespace(),
+                clientId.getId());
     }
 
     /**
@@ -436,11 +379,7 @@ public class OfflinePageBridge {
             ids[i] = offlineIds.get(i);
         }
 
-        recordFreeSpaceHistograms("OfflinePages.DeletePage.FreeSpacePercentage",
-                "OfflinePages.DeletePage.FreeSpaceMB");
-
-        DeletePageCallback callbackWrapper = wrapCallbackWithHistogramReporting(callback);
-        nativeDeletePages(mNativeOfflinePageBridge, callbackWrapper, ids);
+        nativeDeletePages(mNativeOfflinePageBridge, callback, ids);
     }
 
     /**
@@ -483,19 +422,6 @@ public class OfflinePageBridge {
         CheckPagesExistOfflineCallbackInternal callbackInternal =
                 new CheckPagesExistOfflineCallbackInternal(callback);
         nativeCheckPagesExistOffline(mNativeOfflinePageBridge, urlArray, callbackInternal);
-    }
-
-    private DeletePageCallback wrapCallbackWithHistogramReporting(
-            final DeletePageCallback callback) {
-        return new DeletePageCallback() {
-            @Override
-            public void onDeletePageDone(int deletePageResult) {
-                if (deletePageResult == DeletePageResult.SUCCESS && isOfflinePageModelLoaded()) {
-                    recordStorageHistograms(true /* reporting after delete */);
-                }
-                callback.onDeletePageDone(deletePageResult);
-            }
-        };
     }
 
     @VisibleForTesting
@@ -611,6 +537,4 @@ public class OfflinePageBridge {
     private native void nativeDeletePages(
             long nativeOfflinePageBridge, DeletePageCallback callback, long[] offlineIds);
     private native void nativeCheckMetadataConsistency(long nativeOfflinePageBridge);
-    private native void nativeRecordStorageHistograms(long nativeOfflinePageBridge,
-            long totalSpaceInBytes, long freeSpaceInBytes, boolean reportingAfterDelete);
 }

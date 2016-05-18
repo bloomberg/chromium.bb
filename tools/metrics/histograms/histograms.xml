@@ -34425,12 +34425,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="OfflinePages.DeletePage.FreeSpaceMB" units="MB">
   <owner>jianli@chromium.org</owner>
   <summary>
-    The amount of free space available, in megabytes, on the user's device when
-    the page is being deleted.
+    The amount of free space available, in megabytes, on the user's device after
+    the page is deleted.
+
+    Note that before M52 this operation was started before delete operation.
   </summary>
 </histogram>
 
 <histogram name="OfflinePages.DeletePage.FreeSpacePercentage" units="%">
+  <obsolete>
+    Deprecated as of 5/2016. Marginal applicability.
+  </obsolete>
   <owner>jianli@chromium.org</owner>
   <summary>
     The percentage of free space available on the user's device when the page is
@@ -34642,12 +34647,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="OfflinePages.SavePage.FreeSpaceMB" units="MB">
   <owner>jianli@chromium.org</owner>
   <summary>
-    The amount of free space available, in megabytes, on the user's device when
-    the page is being saved.
+    The amount of free space available, in megabytes, on the user's device after
+    the page is saved.
+
+    Note that before M52 this operation was started before save operation.
   </summary>
 </histogram>
 
 <histogram name="OfflinePages.SavePage.FreeSpacePercentage" units="%">
+  <obsolete>
+    Deprecated as of 5/2016. Marginal applicability.
+  </obsolete>
   <owner>jianli@chromium.org</owner>
   <summary>
     The percentage of free space available on the user's device when the page is
@@ -34694,6 +34704,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="OfflinePages.TotalPageSizePercentage" units="%">
+  <obsolete>
+    Deprecated as of 5/2016. Marginal applicability.
+  </obsolete>
   <owner>fgorski@chromium.org</owner>
   <owner>jianli@chromium.org</owner>
   <summary>
