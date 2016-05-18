@@ -266,7 +266,7 @@ void TranslateUIDelegate::SetLanguageBlocked(bool value) {
     prefs_->UnblockLanguage(GetOriginalLanguageCode());
   }
 
-  UMA_HISTOGRAM_BOOLEAN(kNeverTranslateLang, true);
+  UMA_HISTOGRAM_BOOLEAN(kNeverTranslateLang, value);
 }
 
 bool TranslateUIDelegate::IsSiteBlacklisted() {
@@ -293,7 +293,7 @@ void TranslateUIDelegate::SetSiteBlacklist(bool value) {
     prefs_->RemoveSiteFromBlacklist(host);
   }
 
-  UMA_HISTOGRAM_BOOLEAN(kNeverTranslateSite, true);
+  UMA_HISTOGRAM_BOOLEAN(kNeverTranslateSite, value);
 }
 
 bool TranslateUIDelegate::ShouldAlwaysTranslate() {
@@ -320,7 +320,7 @@ void TranslateUIDelegate::SetAlwaysTranslate(bool value) {
   else
     prefs_->RemoveLanguagePairFromWhitelist(original_lang, target_lang);
 
-  UMA_HISTOGRAM_BOOLEAN(kAlwaysTranslateLang, true);
+  UMA_HISTOGRAM_BOOLEAN(kAlwaysTranslateLang, value);
 }
 
 std::string TranslateUIDelegate::GetPageHost() {
