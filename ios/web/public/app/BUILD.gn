@@ -10,12 +10,10 @@ source_set("app") {
   ]
 
   public_deps = [
-    "//ios/web/app",
-  ]
-
-  deps = [
     "//base",
   ]
 
-  allow_circular_includes_from = [ "//ios/web/app" ]
+  deps = [
+    "//ios/web/app",
+  ]
 }

@@ -20,15 +20,11 @@ source_set("test") {
 
   deps = [
     "//base",
-    "//base/test:test_support",
     "//components/network_time",
     "//components/prefs",
-    "//components/prefs:test_support",
     "//ios/chrome/browser",
     "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser:test_support",
     "//ios/web",
-    "//net",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/base",

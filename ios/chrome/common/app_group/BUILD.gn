@@ -31,7 +31,6 @@ source_set("client") {
 
   deps = [
     ":app_group",
-    "//base",
   ]
 }
 
@@ -43,6 +42,5 @@ source_set("main_app") {
 
   deps = [
     ":app_group",
-    "//base",
   ]
 }

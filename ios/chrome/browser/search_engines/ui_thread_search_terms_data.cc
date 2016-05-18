@@ -21,7 +21,7 @@
 #include "url/gurl.h"
 
 #if defined(ENABLE_RLZ)
-#include "components/rlz/rlz_tracker.h"  // nogncheck
+#include "components/rlz/rlz_tracker.h"
 #endif
 
 namespace ios {
