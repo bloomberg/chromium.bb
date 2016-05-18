@@ -1260,8 +1260,11 @@ def main(argv):
           logging.info('Updating slave build timeout to %d seconds enforced '
                        'by the master', slave_timeout)
           options.timeout = slave_timeout
-          timeout_display_message = ('Slave reached the timeout deadline set '
-                                     'by master.')
+          timeout_display_message = (
+              'This build has reached the timeout deadline set by the master. '
+              'Either this stage or a previous one took too long (see stage '
+              'timing historical summary in ReportStage) or the build failed '
+              'to start on time.')
       else:
         logging.warning('Could not get master deadline for master-slave build. '
                         'Can not set slave timeout.')
