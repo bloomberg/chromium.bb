@@ -66,6 +66,11 @@
   top: 0;
 }
 
+#saml-notice-recording-indicator {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
 #saml-notice-message {
   color: rgb(106, 106, 106);
   font-size: 13px;

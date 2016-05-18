@@ -148,13 +148,7 @@ cr.define('cr.login', function() {
     this.webview_.addEventListener(
         'loadcommit', this.onLoadCommit_.bind(this));
     this.webview_.addEventListener(
-        'permissionrequest', function(e) {
-          if (e.permission === 'media') {
-            // The actual permission check happens in
-            // WebUILoginView::RequestMediaAccessPermission().
-            e.request.allow();
-          }
-        });
+        'permissionrequest', this.onPermissionRequest_.bind(this));
 
     this.webview_.request.onBeforeRequest.addListener(
         this.onInsecureRequest.bind(this),
@@ -457,6 +451,15 @@ cr.define('cr.login', function() {
           {detail: {url: url,
                     isSAMLPage: this.isSamlPage_,
                     domain: this.authDomain}}));
+    },
+
+    onPermissionRequest_: function(permissionEvent) {
+      if (permissionEvent.permission === 'media') {
+        // The actual permission check happens in
+        // WebUILoginView::RequestMediaAccessPermission().
+        this.dispatchEvent(new CustomEvent('videoEnabled'));
+        permissionEvent.request.allow();
+      }
     },
 
     onGetSAMLFlag_: function(channel, msg) {

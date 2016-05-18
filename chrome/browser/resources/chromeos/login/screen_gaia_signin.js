@@ -215,6 +215,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           this.onAuthDomainChange_.bind(this));
       this.gaiaAuthHost_.addEventListener('authFlowChange',
           this.onAuthFlowChange_.bind(this));
+      this.gaiaAuthHost_.addEventListener('videoEnabledChange',
+          this.onVideoEnabledChange_.bind(this));
 
       this.gaiaAuthHost_.addEventListener('loadAbort',
         this.onLoadAbortMessage_.bind(this));
@@ -603,12 +605,36 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
+     * Helper function to update the title bar.
+     */
+    updateSamlNotice_: function() {
+      if (this.gaiaAuthHost_.videoEnabled) {
+        $('saml-notice-message').textContent = loadTimeData.getStringF(
+            'samlNoticeWithVideo',
+            this.gaiaAuthHost_.authDomain);
+        $('saml-notice-recording-indicator').hidden = false;
+        $('saml-notice-container').style.justifyContent = 'flex-start';
+      } else {
+        $('saml-notice-message').textContent = loadTimeData.getStringF(
+            'samlNotice',
+            this.gaiaAuthHost_.authDomain);
+        $('saml-notice-recording-indicator').hidden = true;
+        $('saml-notice-container').style.justifyContent = 'center';
+      }
+    },
+
+    /**
      * Invoked when the authDomain property is changed on the GAIA host.
      */
     onAuthDomainChange_: function() {
-      $('saml-notice-message').textContent = loadTimeData.getStringF(
-          'samlNotice',
-          this.gaiaAuthHost_.authDomain);
+      this.updateSamlNotice_();
+    },
+
+    /**
+     * Invoked when the videoEnabled property is changed on the GAIA host.
+     */
+    onVideoEnabledChange_: function() {
+      this.updateSamlNotice_();
     },
 
     /**

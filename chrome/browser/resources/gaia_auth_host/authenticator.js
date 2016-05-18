@@ -130,6 +130,7 @@ cr.define('cr.login', function() {
     this.skipForNow_ = false;
     this.authFlow = AuthFlow.DEFAULT;
     this.authDomain = '';
+    this.videoEnabled = false;
     this.idpOrigin_ = null;
     this.continueUrl_ = null;
     this.continueUrlWithoutParams_ = null;
@@ -158,6 +159,9 @@ cr.define('cr.login', function() {
     this.samlHandler_.addEventListener(
         'authPageLoaded',
         this.onAuthPageLoaded_.bind(this));
+    this.samlHandler_.addEventListener(
+        'videoEnabled',
+        this.onVideoEnabled_.bind(this));
 
     this.webview_.addEventListener('droplink', this.onDropLink_.bind(this));
     this.webview_.addEventListener(
@@ -208,6 +212,7 @@ cr.define('cr.login', function() {
     this.trusted_ = true;
     this.authFlow = AuthFlow.DEFAULT;
     this.samlHandler_.reset();
+    this.videoEnabled = false;
   };
 
   /**
@@ -733,6 +738,14 @@ cr.define('cr.login', function() {
   };
 
   /**
+   * Invoked when |samlHandler_| fires 'videoEnabled' event.
+   * @private
+   */
+  Authenticator.prototype.onVideoEnabled_ = function(e) {
+    this.videoEnabled = true;
+  };
+
+  /**
    * Invoked when a link is dropped on the webview.
    * @private
    */
@@ -839,6 +852,12 @@ cr.define('cr.login', function() {
    * @type {string}
    */
   cr.defineProperty(Authenticator, 'authDomain');
+
+  /**
+   * True if the page has requested media access.
+   * @type {boolean}
+   */
+  cr.defineProperty(Authenticator, 'videoEnabled');
 
   Authenticator.AuthFlow = AuthFlow;
   Authenticator.AuthMode = AuthMode;
