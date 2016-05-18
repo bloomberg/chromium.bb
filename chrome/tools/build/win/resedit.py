@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -204,22 +204,28 @@ class ResourceEditor(object):
   def UpdateResource(self, res_type, res_lang, res_name, file_path):
     """Inserts or updates a given resource with the contents of a file.
 
+    This is a legacy version of UpdateResourceData, where the data arg is read
+    from a file , rather than passed directly.
+    """
+    _LOGGER.info('Writing resource from file %s', file_path)
+    with open(file_path, 'rb') as f:
+      self.UpdateResourceData(res_type, res_lang, res_name, f.read())
+
+  def UpdateResourceData(self, res_type, res_lang, res_name, data):
+    """Inserts or updates a given resource with the given data.
+
     Args:
       res_type: the type of the resource, e.g. "B7".
       res_lang: the language id of the resource, e.g. 1033.
       res_name: the name of the resource, e.g. "SETUP.EXE".
-      file_path: path to the file containing the new resource data.
+      data: the new resource data.
     """
-    _LOGGER.info('Writing resource "%s:%s" from file %s.',
-        res_type, res_name, file_path)
-
-    with open(file_path, 'rb') as f:
-      win32api.UpdateResource(self.update_handle,
-                              res_type,
-                              res_name,
-                              f.read(),
-                              res_lang);
-
+    _LOGGER.info('Writing resource "%s:%s"', res_type, res_name)
+    win32api.UpdateResource(self.update_handle,
+                            res_type,
+                            res_name,
+                            data,
+                            res_lang)
     self._modified = True
 
   def Commit(self):
@@ -256,29 +262,29 @@ EXAMPLE USAGE:
 %prog mini_installer.exe \\
     --remove BL 1033 SETUP.EXE \\
     --update B7 1033 SETUP.EXE.packed.7z setup.packed.7z \\
-    --output-file mini_installer_packed.exe
+    --output_file mini_installer_packed.exe
 """
 
 def _ParseArgs():
   parser = optparse.OptionParser(_USAGE)
-  parser.add_option('', '--verbose', action='store_true',
+  parser.add_option('--verbose', action='store_true',
       help='Enable verbose logging.')
-  parser.add_option('', '--extract_all',
+  parser.add_option('--extract_all',
       help='Path to a folder which will be created, in which all resources '
            'from the input_file will be stored, each in a file named '
            '"res_type/lang_id/res_name".')
-  parser.add_option('', '--extract', action='append', default=[], nargs=4,
+  parser.add_option('--extract', action='append', default=[], nargs=4,
       help='Extract the resource with the given type, language id and name '
            'to the given file.',
       metavar='type langid name file_path')
-  parser.add_option('', '--remove', action='append', default=[], nargs=3,
+  parser.add_option('--remove', action='append', default=[], nargs=3,
       help='Remove the resource with the given type, langid and name.',
       metavar='type langid name')
-  parser.add_option('', '--update', action='append', default=[], nargs=4,
+  parser.add_option('--update', action='append', default=[], nargs=4,
       help='Insert or update the resource with the given type, langid and '
            'name with the contents of the file given.',
       metavar='type langid name file_path')
-  parser.add_option('', '--output_file',
+  parser.add_option('--output_file',
     help='On success, OUTPUT_FILE will be written with a copy of the '
          'input file with the edits specified by any remove or update '
          'options.')
@@ -295,6 +301,17 @@ def _ParseArgs():
   return options, args
 
 
+def _ConvertInts(*args):
+  """Return args with any all-digit strings converted to ints."""
+  results = []
+  for arg in args:
+    if isinstance(arg, basestring) and arg.isdigit():
+      results.append(int(arg))
+    else:
+      results.append(arg)
+  return results
+
+
 def main(options, args):
   """Main program for the script."""
   if options.verbose:
@@ -307,13 +324,16 @@ def main(options, args):
     editor.ExtractAllToDir(options.extract_all)
 
   for res_type, res_lang, res_name, dest_file in options.extract:
-    editor.ExtractResource(res_type, int(res_lang), res_name, dest_file)
+    res_type, res_lang, res_name = _ConvertInts(res_type, res_lang, res_name)
+    editor.ExtractResource(res_type, res_lang, res_name, dest_file)
 
   for res_type, res_lang, res_name in options.remove:
-    editor.RemoveResource(res_type, int(res_lang), res_name)
+    res_type, res_lang, res_name = _ConvertInts(res_type, res_lang, res_name)
+    editor.RemoveResource(res_type, res_lang, res_name)
 
   for res_type, res_lang, res_name, src_file in options.update:
-    editor.UpdateResource(res_type, int(res_lang), res_name, src_file)
+    res_type, res_lang, res_name = _ConvertInts(res_type, res_lang, res_name)
+    editor.UpdateResource(res_type, res_lang, res_name, src_file)
 
   if editor.modified:
     editor.Commit()
