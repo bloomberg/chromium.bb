@@ -2014,26 +2014,10 @@ bool LayerTreeImpl::HasAnyAnimationTargetingProperty(
       ->HasAnyAnimationTargetingProperty(layer->id(), property);
 }
 
-bool LayerTreeImpl::FilterIsAnimatingOnImplOnly(const LayerImpl* layer) const {
-  return layer_tree_host_impl_->animation_host()->FilterIsAnimatingOnImplOnly(
-      layer->id());
-}
-
-bool LayerTreeImpl::OpacityIsAnimatingOnImplOnly(const LayerImpl* layer) const {
-  return layer_tree_host_impl_->animation_host()->OpacityIsAnimatingOnImplOnly(
-      layer->id());
-}
-
 bool LayerTreeImpl::ScrollOffsetIsAnimatingOnImplOnly(
     const LayerImpl* layer) const {
   return layer_tree_host_impl_->animation_host()
       ->ScrollOffsetIsAnimatingOnImplOnly(layer->id());
-}
-
-bool LayerTreeImpl::TransformIsAnimatingOnImplOnly(
-    const LayerImpl* layer) const {
-  return layer_tree_host_impl_->animation_host()
-      ->TransformIsAnimatingOnImplOnly(layer->id());
 }
 
 bool LayerTreeImpl::AnimationsPreserveAxisAlignment(

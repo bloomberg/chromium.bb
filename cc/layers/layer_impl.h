@@ -227,7 +227,6 @@ class CC_EXPORT LayerImpl {
   const FilterOperations& filters() const { return filters_; }
   bool FilterIsAnimating() const;
   bool HasPotentiallyRunningFilterAnimation() const;
-  bool FilterIsAnimatingOnImplOnly() const;
 
   void SetBackgroundFilters(const FilterOperations& filters);
   const FilterOperations& background_filters() const {
@@ -244,7 +243,6 @@ class CC_EXPORT LayerImpl {
   float opacity() const { return opacity_; }
   bool OpacityIsAnimating() const;
   bool HasPotentiallyRunningOpacityAnimation() const;
-  bool OpacityIsAnimatingOnImplOnly() const;
 
   void SetElementId(uint64_t element_id);
   uint64_t element_id() const { return element_id_; }
@@ -405,7 +403,6 @@ class CC_EXPORT LayerImpl {
   const gfx::Transform& transform() const { return transform_; }
   bool TransformIsAnimating() const;
   bool HasPotentiallyRunningTransformAnimation() const;
-  bool TransformIsAnimatingOnImplOnly() const;
   bool HasOnlyTranslationTransforms() const;
   bool AnimationsPreserveAxisAlignment() const;
 

@@ -1153,18 +1153,16 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   // property trees. So, it is enough to check it only for the current layer.
   if (subtree_property_changed_)
     layer->NoteLayerPropertyChanged();
-  if (!layer->FilterIsAnimatingOnImplOnly() && !FilterIsAnimating())
+  if (!FilterIsAnimating())
     layer->SetFilters(filters_);
-  DCHECK(!(FilterIsAnimating() && layer->FilterIsAnimatingOnImplOnly()));
   layer->SetBackgroundFilters(background_filters());
   layer->SetMasksToBounds(masks_to_bounds_);
   layer->set_main_thread_scrolling_reasons(main_thread_scrolling_reasons_);
   layer->SetNonFastScrollableRegion(non_fast_scrollable_region_);
   layer->SetTouchEventHandlerRegion(touch_event_handler_region_);
   layer->SetContentsOpaque(contents_opaque_);
-  if (!layer->OpacityIsAnimatingOnImplOnly() && !OpacityIsAnimating())
+  if (!OpacityIsAnimating())
     layer->SetOpacity(opacity_);
-  DCHECK(!(OpacityIsAnimating() && layer->OpacityIsAnimatingOnImplOnly()));
   layer->SetBlendMode(blend_mode_);
   layer->SetPosition(position_);
   layer->set_should_flatten_transform_from_property_tree(
@@ -1174,9 +1172,8 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetUseLocalTransformForBackfaceVisibility(
       use_local_transform_for_backface_visibility_);
   layer->SetShouldCheckBackfaceVisibility(should_check_backface_visibility_);
-  if (!layer->TransformIsAnimatingOnImplOnly() && !TransformIsAnimating())
+  if (!TransformIsAnimating())
     layer->SetTransform(transform_);
-  DCHECK(!(TransformIsAnimating() && layer->TransformIsAnimatingOnImplOnly()));
   layer->Set3dSortingContextId(sorting_context_id_);
 
   layer->SetScrollClipLayer(scroll_clip_layer_id_);

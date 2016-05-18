@@ -969,10 +969,6 @@ bool LayerImpl::HasPotentiallyRunningFilterAnimation() const {
   return layer_tree_impl_->HasPotentiallyRunningFilterAnimation(this);
 }
 
-bool LayerImpl::FilterIsAnimatingOnImplOnly() const {
-  return layer_tree_impl_->FilterIsAnimatingOnImplOnly(this);
-}
-
 void LayerImpl::SetBackgroundFilters(
     const FilterOperations& filters) {
   if (background_filters_ == filters)
@@ -1009,10 +1005,6 @@ bool LayerImpl::OpacityIsAnimating() const {
 
 bool LayerImpl::HasPotentiallyRunningOpacityAnimation() const {
   return layer_tree_impl_->HasPotentiallyRunningOpacityAnimation(this);
-}
-
-bool LayerImpl::OpacityIsAnimatingOnImplOnly() const {
-  return layer_tree_impl_->OpacityIsAnimatingOnImplOnly(this);
 }
 
 void LayerImpl::SetElementId(uint64_t element_id) {
@@ -1074,10 +1066,6 @@ bool LayerImpl::TransformIsAnimating() const {
 
 bool LayerImpl::HasPotentiallyRunningTransformAnimation() const {
   return layer_tree_impl_->HasPotentiallyRunningTransformAnimation(this);
-}
-
-bool LayerImpl::TransformIsAnimatingOnImplOnly() const {
-  return layer_tree_impl_->TransformIsAnimatingOnImplOnly(this);
 }
 
 bool LayerImpl::HasOnlyTranslationTransforms() const {
