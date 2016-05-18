@@ -45,8 +45,12 @@ bool BlimpEngineCrashReporterClient::IsRunningUnattended() {
 }
 
 bool BlimpEngineCrashReporterClient::GetCollectStatsConsent() {
-  // Always collect Blimp engine crash reports.
+  // Always collect Blimp engine crash reports on official builds.
+#ifdef OFFICIAL_BUILD
   return true;
+#else
+  return false;
+#endif  // OFFICIAL_BUILD
 }
 
 bool BlimpEngineCrashReporterClient::EnableBreakpadForProcess(
