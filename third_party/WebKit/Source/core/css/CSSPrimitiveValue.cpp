@@ -357,7 +357,7 @@ template<> unsigned short CSSPrimitiveValue::computeLength(const CSSToLengthConv
 
 template<> float CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData) const
 {
-    return static_cast<float>(computeLengthDouble(conversionData));
+    return clampTo<float>(computeLengthDouble(conversionData));
 }
 
 template<> double CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData) const
