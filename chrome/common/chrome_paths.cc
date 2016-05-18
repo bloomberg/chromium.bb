@@ -375,7 +375,7 @@ bool PathProvider(int key, base::FilePath* result) {
     // In the component case, this is the source adapter. Otherwise, it is the
     // actual Pepper module that gets loaded.
     case chrome::FILE_WIDEVINE_CDM_ADAPTER:
-      if (!GetInternalPluginsDirectory(&cur))
+      if (!GetComponentDirectory(&cur))
         return false;
       cur = cur.AppendASCII(kWidevineCdmAdapterFileName);
       break;
