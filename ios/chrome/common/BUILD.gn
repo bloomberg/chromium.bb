@@ -6,6 +6,8 @@ source_set("common") {
   sources = [
     "channel_info.h",
     "channel_info.mm",
+    "material_timing.h",
+    "material_timing.mm",
     "string_util.h",
     "string_util.mm",
   ]
