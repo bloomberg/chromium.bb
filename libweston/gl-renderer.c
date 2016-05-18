@@ -2643,7 +2643,7 @@ static int
 gl_renderer_output_window_create(struct weston_output *output,
 				 EGLNativeWindowType window_for_legacy,
 				 void *window_for_platform,
-				 const EGLint *attribs,
+				 const EGLint *config_attribs,
 				 const EGLint *visual_id,
 				 int n_ids)
 {
@@ -2653,7 +2653,7 @@ gl_renderer_output_window_create(struct weston_output *output,
 	EGLConfig egl_config;
 	int i;
 
-	if (egl_choose_config(gr, attribs, visual_id,
+	if (egl_choose_config(gr, config_attribs, visual_id,
 			      n_ids, &egl_config) == -1) {
 		weston_log("failed to choose EGL config for output\n");
 		return -1;
@@ -2990,7 +2990,7 @@ gl_renderer_create_pbuffer_surface(struct gl_renderer *gr) {
 
 static int
 gl_renderer_display_create(struct weston_compositor *ec, EGLenum platform,
-	void *native_window, const EGLint *attribs,
+	void *native_window, const EGLint *config_attribs,
 	const EGLint *visual_id, int n_ids)
 {
 	struct gl_renderer *gr;
@@ -3054,7 +3054,7 @@ gl_renderer_display_create(struct weston_compositor *ec, EGLenum platform,
 		goto fail_with_error;
 	}
 
-	if (egl_choose_config(gr, attribs, visual_id,
+	if (egl_choose_config(gr, config_attribs, visual_id,
 			      n_ids, &gr->egl_config) < 0) {
 		weston_log("failed to choose EGL config\n");
 		goto fail_terminate;
