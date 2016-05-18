@@ -16,6 +16,7 @@ enum class BufferFormat {
   DXT5,
   ETC1,
   R_8,
+  BGR_565,
   RGBA_4444,
   RGBX_8888,
   RGBA_8888,

@@ -44,6 +44,16 @@ void GLImageTestSupport::SetBufferDataToColor(int width,
                                               const uint8_t color[4],
                                               uint8_t* data) {
   switch (format) {
+    case gfx::BufferFormat::BGR_565:
+      DCHECK_EQ(0, plane);
+      for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+          *reinterpret_cast<uint16_t*>(&data[y * stride + x * 2]) =
+              ((color[2] >> 3) << 11) | ((color[1] >> 2) << 5) |
+              (color[0] >> 3);
+        }
+      }
+      return;
     case gfx::BufferFormat::RGBX_8888:
       DCHECK_EQ(0, plane);
       for (int y = 0; y < height; ++y) {

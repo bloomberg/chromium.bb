@@ -56,6 +56,7 @@ bool ValidFormat(BufferFormat format) {
     case BufferFormat::DXT1:
     case BufferFormat::DXT5:
     case BufferFormat::ETC1:
+    case BufferFormat::BGR_565:
     case BufferFormat::RGBA_4444:
     case BufferFormat::RGBX_8888:
     case BufferFormat::YUV_420:
@@ -83,6 +84,7 @@ GLenum TextureFormat(BufferFormat format) {
     case BufferFormat::DXT1:
     case BufferFormat::DXT5:
     case BufferFormat::ETC1:
+    case BufferFormat::BGR_565:
     case BufferFormat::RGBA_4444:
     case BufferFormat::RGBX_8888:
     case BufferFormat::YUV_420:
@@ -109,6 +111,7 @@ GLenum DataFormat(BufferFormat format) {
     case BufferFormat::DXT1:
     case BufferFormat::DXT5:
     case BufferFormat::ETC1:
+    case BufferFormat::BGR_565:
     case BufferFormat::RGBA_4444:
     case BufferFormat::RGBX_8888:
     case BufferFormat::YUV_420:
@@ -137,6 +140,7 @@ GLenum DataType(BufferFormat format) {
     case BufferFormat::DXT1:
     case BufferFormat::DXT5:
     case BufferFormat::ETC1:
+    case BufferFormat::BGR_565:
     case BufferFormat::RGBA_4444:
     case BufferFormat::RGBX_8888:
     case BufferFormat::YUV_420:
