@@ -170,3 +170,5 @@ use_brlapi = is_chromeos
 enable_webvr = is_android
 
 enable_configuration_policy = !is_ios
+
+enable_mac_keystone = is_mac && is_chrome_branded && is_official_build

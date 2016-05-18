@@ -393,11 +393,13 @@ if (is_win) {
 
   tweak_info_plist("chrome_app_plist") {
     info_plist = "app/app-Info.plist"
+    _keystone_arg = "0"
+    if (enable_mac_keystone) {
+      _keystone_arg = "1"
+    }
     args = [
       "--breakpad=0",
-
-      #"--keystone=???",  # TODO(rsesek): Keystone.
-
+      "--keystone=$_keystone_arg",
       "--scm=1",
       "--bundle_id=$chrome_mac_bundle_id",
     ]
@@ -520,6 +522,11 @@ if (is_win) {
     public_deps = [
       ":chrome_helper_app",
 
+      # keystone_registration_framework copies the framework into the framework
+      # bundle via a script that performs additional actions, rather than
+      # relying on a bundle_data to copy it.
+      ":keystone_registration_framework",
+
       # verify_chrome_framework_order depends on :chrome_framework and, for
       # non-component builds, will ensure the export symbol table is correct.
       ":verify_chrome_framework_order",
@@ -631,6 +638,13 @@ if (is_win) {
       }
     }
 
+    if (enable_mac_keystone) {
+      sources += [
+        "browser/mac/keystone_promote_postflight.sh",
+        "browser/mac/keystone_promote_preflight.sh",
+      ]
+    }
+
     if (v8_use_external_startup_data) {
       sources += [
         "$root_out_dir/natives_blob.bin",
@@ -674,6 +688,32 @@ if (is_win) {
     }
   } else {
     group("flash_player_plugin") {
+    }
+  }
+
+  if (enable_mac_keystone) {
+    action("keystone_registration_framework") {
+      script = "//chrome/tools/build/mac/copy_keystone_framework.py"
+
+      framework_path = "//third_party/googlemac/Releases/Keystone/KeystoneRegistration.framework"
+      output_path = "$root_out_dir/$chrome_framework_name.framework/Frameworks/"
+
+      sources = [
+        framework_path,
+        script,
+      ]
+
+      args = [
+        rebase_path(framework_path, root_out_dir),
+        rebase_path(output_path, root_out_dir),
+      ]
+
+      outputs = [
+        "$output_path/KeystoneRegistration.framework",
+      ]
+    }
+  } else {
+    group("keystone_registration_framework") {
     }
   }
 
