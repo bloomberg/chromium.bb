@@ -18,10 +18,10 @@ namespace data_reduction_proxy {
 namespace internal {
 
 const char kHistogramFirstContentfulPaintDataReductionProxy[] =
-    "PageLoad.Clients.DataReductionProxy.Timing2."
+    "PageLoad.Clients.DataReductionProxy.PaintTiming."
     "NavigationToFirstContentfulPaint";
 const char kHistogramFirstContentfulPaintDataReductionProxyLoFiOn[] =
-    "PageLoad.Clients.DataReductionProxy.LoFiOn.Timing2."
+    "PageLoad.Clients.DataReductionProxy.LoFiOn.PaintTiming."
     "NavigationToFirstContentfulPaint";
 
 }  // namespace internal
@@ -52,17 +52,9 @@ void DataReductionProxyMetricsObserver::OnCommit(
   lofi_requested_ = data->lofi_requested();
 }
 
-void DataReductionProxyMetricsObserver::OnComplete(
+void DataReductionProxyMetricsObserver::OnFirstContentfulPaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  RecordTimingHistograms(timing, info);
-}
-
-// Record first contentful paint UMA for various DataReductionProxy
-// configurations.
-void DataReductionProxyMetricsObserver::RecordTimingHistograms(
-    const page_load_metrics::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) const {
   if (!used_data_reduction_proxy_ ||
       !WasStartedInForegroundEventInForeground(timing.first_contentful_paint,
                                                info))

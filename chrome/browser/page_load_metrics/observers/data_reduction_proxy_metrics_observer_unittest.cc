@@ -61,9 +61,10 @@ class DataReductionProxyMetricsObserverWrapper
     observer_->OnCommit(navigation_handle);
   }
 
-  void OnComplete(const page_load_metrics::PageLoadTiming& timing,
-                  const page_load_metrics::PageLoadExtraInfo& info) override {
-    observer_->OnComplete(timing, info);
+  void OnFirstContentfulPaint(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override {
+    observer_->OnFirstContentfulPaint(timing, info);
   }
 
  private:

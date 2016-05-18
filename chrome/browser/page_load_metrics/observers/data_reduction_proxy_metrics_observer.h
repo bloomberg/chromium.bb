@@ -37,12 +37,9 @@ class DataReductionProxyMetricsObserver
 
   // page_load_metrics::PageLoadMetricsObserver:
   void OnCommit(content::NavigationHandle* navigation_handle) override;
-  void OnComplete(const page_load_metrics::PageLoadTiming& timing,
-                  const page_load_metrics::PageLoadExtraInfo& info) override;
-
-  void RecordTimingHistograms(
+  void OnFirstContentfulPaint(
       const page_load_metrics::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info) const;
+      const page_load_metrics::PageLoadExtraInfo& info) override;
 
  private:
   // True if the navigation requested LoFi.
