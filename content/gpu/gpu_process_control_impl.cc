@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "content/public/common/content_client.h"
-#include "media/mojo/services/mojo_media_application_factory.h"
+#include "media/mojo/services/mojo_media_application_factory.h"  // nogncheck
 #if defined(OS_ANDROID)
 #include "media/base/android/media_client_android.h"
 #endif

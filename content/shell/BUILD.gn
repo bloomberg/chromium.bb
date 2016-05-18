@@ -233,7 +233,6 @@ static_library("content_shell_lib") {
     "//gpu",
     "//ipc",
     "//media",
-    "//media/mojo/services:application_factory",
     "//net",
     "//net:net_resources",
     "//skia",
@@ -266,7 +265,7 @@ static_library("content_shell_lib") {
     ]
   }
   if (mojo_media_host == "browser") {
-    deps += [ "//media/mojo/services:application_factory" ]
+    deps += [ "//media/mojo/services" ]
   }
 
   if (is_win) {

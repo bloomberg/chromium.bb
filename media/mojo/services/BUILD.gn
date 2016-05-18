@@ -84,19 +84,14 @@ source_set("proxy") {
   ]
 }
 
-source_set("cdm_service") {
-  deps = [
-    "//base",
-    "//media",
-    "//media/mojo/common",
-    "//media/mojo/interfaces",
-    "//mojo/common",
-    "//mojo/public/c/system:for_component",
-    "//services/shell/public/interfaces",
-    "//url",
-  ]
+component("services") {
+  output_name = "media_mojo_services"
 
   sources = [
+    "demuxer_stream_provider_shim.cc",
+    "demuxer_stream_provider_shim.h",
+    "mojo_audio_decoder_service.cc",
+    "mojo_audio_decoder_service.h",
     "mojo_cdm_allocator.cc",
     "mojo_cdm_allocator.h",
     "mojo_cdm_promise.cc",
@@ -107,7 +102,39 @@ source_set("cdm_service") {
     "mojo_cdm_service_context.h",
     "mojo_decryptor_service.cc",
     "mojo_decryptor_service.h",
+    "mojo_demuxer_stream_adapter.cc",
+    "mojo_demuxer_stream_adapter.h",
+    "mojo_media_application.cc",
+    "mojo_media_application.h",
+    "mojo_media_application_factory.cc",
+    "mojo_media_application_factory.h",
+    "mojo_media_client.cc",
+    "mojo_media_client.h",
+    "mojo_renderer_service.cc",
+    "mojo_renderer_service.h",
     "mojo_type_trait.h",
+    "service_factory_impl.cc",
+    "service_factory_impl.h",
+  ]
+
+  defines = [ "MEDIA_MOJO_IMPLEMENTATION" ]
+
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+  public_configs = [ ":mojo_media_config" ]
+
+  deps = [
+    "//base",
+    "//media",
+    "//media:shared_memory_support",
+    "//media/mojo/common",
+    "//media/mojo/interfaces",
+    "//mojo/common",
+    "//mojo/public/c/system:for_component",
+    "//services/shell/public/cpp",
+    "//services/shell/public/cpp:sources",
+    "//services/shell/public/interfaces",
+    "//url",
   ]
 
   if (is_android) {
@@ -117,93 +144,8 @@ source_set("cdm_service") {
     ]
   }
 
-  # TODO(xhwang): Needed because targets can depend on cdm_service directly,
-  # which is a bit hacky since we need to access CdmService directly
-  # from C++ code (AVDA). In the future we'll make those decoders part of
-  # MojoMediaApplication, then we won't need this.
-  public_configs = [ ":mojo_media_config" ]
-
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-}
-
-source_set("audio_decoder_service") {
-  sources = [
-    "mojo_audio_decoder_service.cc",
-    "mojo_audio_decoder_service.h",
-  ]
-
-  deps = [
-    ":cdm_service",
-    "//base",
-    "//media",
-    "//media:shared_memory_support",
-    "//media/mojo/common",
-    "//media/mojo/interfaces",
-    "//mojo/common",
-  ]
-}
-
-source_set("renderer_service") {
-  sources = [
-    "demuxer_stream_provider_shim.cc",
-    "demuxer_stream_provider_shim.h",
-    "mojo_demuxer_stream_adapter.cc",
-    "mojo_demuxer_stream_adapter.h",
-    "mojo_renderer_service.cc",
-    "mojo_renderer_service.h",
-  ]
-
-  deps = [
-    ":cdm_service",
-    "//base",
-    "//media",
-    "//media:shared_memory_support",
-    "//media/mojo/common",
-    "//media/mojo/interfaces",
-    "//mojo/common",
-  ]
-}
-
-source_set("application") {
-  sources = [
-    "mojo_media_application.cc",
-    "mojo_media_application.h",
-    "mojo_media_client.cc",
-    "mojo_media_client.h",
-    "service_factory_impl.cc",
-    "service_factory_impl.h",
-  ]
-
-  public_configs = [ ":mojo_media_config" ]
-
-  deps = [
-    ":audio_decoder_service",
-    ":cdm_service",
-    ":renderer_service",
-    "//base",
-    "//media",
-    "//media/mojo/interfaces",
-    "//services/shell/public/cpp",
-  ]
-}
-
-source_set("application_factory") {
-  sources = [
-    "mojo_media_application_factory.cc",
-    "mojo_media_application_factory.h",
-  ]
-
-  public_configs = [ ":mojo_media_config" ]
-
-  deps = [
-    ":application",
-    "//base",
-    "//media",
-    "//services/shell/public/cpp:sources",
-  ]
-
   if (enable_test_mojo_media_client) {
-    defines = [ "ENABLE_TEST_MOJO_MEDIA_CLIENT" ]
+    defines += [ "ENABLE_TEST_MOJO_MEDIA_CLIENT" ]
     sources += [
       "test_mojo_media_client.cc",
       "test_mojo_media_client.h",
@@ -231,7 +173,7 @@ mojo_native_application("media") {
   ]
 
   deps = [
-    ":application",
+    ":services",
     "//base",
     "//media",
     "//mojo/logging",

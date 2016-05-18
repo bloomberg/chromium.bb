@@ -310,7 +310,7 @@
 #endif
 
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-#include "media/mojo/services/mojo_media_application_factory.h"
+#include "media/mojo/services/mojo_media_application_factory.h"  // nogncheck
 #endif
 
 using base::FileDescriptor;

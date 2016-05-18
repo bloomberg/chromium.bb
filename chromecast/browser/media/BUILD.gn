@@ -32,7 +32,7 @@ source_set("media") {
   if (mojo_media_host == "browser") {
     public_deps = [
       "//media/mojo/interfaces",
-      "//media/mojo/services:application",
+      "//media/mojo/services",
       "//services/shell/public/cpp",
     ]
   }

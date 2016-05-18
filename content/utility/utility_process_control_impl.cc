@@ -11,7 +11,7 @@
 #include "content/utility/utility_thread_impl.h"
 
 #if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
-#include "media/mojo/services/mojo_media_application_factory.h"
+#include "media/mojo/services/mojo_media_application_factory.h"  // nogncheck
 #endif
 
 namespace content {

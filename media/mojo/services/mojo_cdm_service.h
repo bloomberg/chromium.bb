@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/media_keys.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
+#include "media/mojo/services/media_mojo_export.h"
 #include "media/mojo/services/mojo_cdm_promise.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "media/mojo/services/mojo_decryptor_service.h"
@@ -36,7 +37,7 @@ class MojoCdmService : public mojom::ContentDecryptionModule {
   // render frame the caller is associated with. In the future, we should move
   // all out-of-process media players into the MojoMediaApplicaiton so that we
   // can use MojoCdmServiceContext (per render frame) to get the CDM.
-  static scoped_refptr<MediaKeys> LegacyGetCdm(int cdm_id);
+  static scoped_refptr<MediaKeys> MEDIA_MOJO_EXPORT LegacyGetCdm(int cdm_id);
 
   // Constructs a MojoCdmService and strongly binds it to the |request|.
   MojoCdmService(

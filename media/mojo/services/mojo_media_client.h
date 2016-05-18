@@ -13,6 +13,7 @@
 #include "media/base/media_log.h"
 #include "media/base/renderer_factory.h"
 #include "media/base/video_renderer_sink.h"
+#include "media/mojo/services/media_mojo_export.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -26,7 +27,7 @@ class InterfaceProvider;
 
 namespace media {
 
-class MojoMediaClient {
+class MEDIA_MOJO_EXPORT MojoMediaClient {
  public:
   virtual ~MojoMediaClient();
 

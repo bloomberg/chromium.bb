@@ -10,8 +10,10 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
+#include "media/mojo/services/media_mojo_export.h"
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/shell_client.h"
 #include "services/shell/public/cpp/shell_connection_ref.h"
@@ -22,9 +24,9 @@ namespace media {
 class MediaLog;
 class MojoMediaClient;
 
-class MojoMediaApplication
-    : public shell::ShellClient,
-      public shell::InterfaceFactory<mojom::ServiceFactory> {
+class MEDIA_MOJO_EXPORT MojoMediaApplication
+    : public NON_EXPORTED_BASE(shell::ShellClient),
+      public NON_EXPORTED_BASE(shell::InterfaceFactory<mojom::ServiceFactory>) {
  public:
   MojoMediaApplication(std::unique_ptr<MojoMediaClient> mojo_media_client,
                        const base::Closure& quit_closure);

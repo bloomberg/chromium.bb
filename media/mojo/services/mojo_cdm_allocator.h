@@ -15,13 +15,14 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "media/cdm/cdm_allocator.h"
+#include "media/mojo/services/media_mojo_export.h"
 #include "mojo/public/cpp/system/buffer.h"
 
 namespace media {
 
 // This is a CdmAllocator that creates buffers using mojo shared memory.
 // The internal logic is similar to ppapi_cdm_buffer.cc.
-class MojoCdmAllocator : public CdmAllocator {
+class MEDIA_MOJO_EXPORT MojoCdmAllocator : public CdmAllocator {
  public:
   MojoCdmAllocator();
   ~MojoCdmAllocator() final;

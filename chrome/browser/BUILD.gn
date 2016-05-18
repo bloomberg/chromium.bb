@@ -940,7 +940,7 @@ source_set("browser") {
     ]
     deps += [ "//media/mojo/interfaces" ]
     if (mojo_media_host == "browser") {
-      deps += [ "//media/mojo/services:application_factory" ]
+      deps += [ "//media/mojo/services" ]
     }
   }
 

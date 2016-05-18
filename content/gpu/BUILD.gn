@@ -57,7 +57,6 @@ source_set("gpu_sources") {
     "//ipc",
     "//media/gpu",
     "//media/gpu/ipc/service",
-    "//media/mojo/services:application_factory",
     "//services/shell/public/interfaces",
     "//skia",
     "//ui/events/ipc",
@@ -67,7 +66,7 @@ source_set("gpu_sources") {
   ]
 
   if (mojo_media_host == "gpu") {
-    deps += [ "//media/mojo/services:application_factory" ]
+    deps += [ "//media/mojo/services" ]
     if (is_android) {
       deps += [ "//media/base/android" ]
     }

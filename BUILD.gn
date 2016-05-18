@@ -791,7 +791,7 @@ group("gn_mojo_targets") {
     deps = [
       "//ipc/mojo:ipc_mojo_perftests",
       "//media/mojo:tests",
-      "//media/mojo/services:cdm_service",
+      "//media/mojo/services",
       "//mojo:tests",
     ]
   }
