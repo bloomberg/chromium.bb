@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import json
+import math
 import uuid
 
 from googleapiclient import errors
@@ -131,6 +132,12 @@ class ReportTaskHandler(object):
         self._logger.error('Failed generating report for: ' + path)
         self._failure_database.AddFailure('report_generation_failed', path)
         continue
+      # Filter out bad values.
+      for key, value in report.items():
+        if type(value) is float and (math.isnan(value) or math.isinf(value)):
+          self._logger.error('Invalid %s for URL:%s' % (key, report.get('url')))
+          self._failure_database.AddFailure('invalid_bigquery_value', key)
+          del report[key]
       rows.append(report)
 
     if rows:
