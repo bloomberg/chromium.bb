@@ -87,6 +87,7 @@ source_set("ipc_common_sources") {
 
   public_deps = [
     ":command_buffer_traits_sources",
+    "//gpu/command_buffer/common:gles2_utils",
   ]
 
   deps = [

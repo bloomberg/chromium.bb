@@ -576,7 +576,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                   bool offscreen,
                   const gfx::Size& offscreen_size,
                   const DisallowedFeatures& disallowed_features,
-                  const std::vector<int32_t>& attribs) override;
+                  const ContextCreationAttribHelper& attrib_helper) override;
   void Destroy(bool have_context) override;
   void SetSurface(const scoped_refptr<gfx::GLSurface>& surface) override;
   void ReleaseSurface() override;
@@ -2737,20 +2737,17 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
 GLES2DecoderImpl::~GLES2DecoderImpl() {
 }
 
-bool GLES2DecoderImpl::Initialize(const scoped_refptr<gfx::GLSurface>& surface,
-                                  const scoped_refptr<gfx::GLContext>& context,
-                                  bool offscreen,
-                                  const gfx::Size& offscreen_size,
-                                  const DisallowedFeatures& disallowed_features,
-                                  const std::vector<int32_t>& attribs) {
+bool GLES2DecoderImpl::Initialize(
+    const scoped_refptr<gfx::GLSurface>& surface,
+    const scoped_refptr<gfx::GLContext>& context,
+    bool offscreen,
+    const gfx::Size& offscreen_size,
+    const DisallowedFeatures& disallowed_features,
+    const ContextCreationAttribHelper& attrib_helper) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::Initialize");
   DCHECK(context->IsCurrent(surface.get()));
   DCHECK(!context_.get());
   DCHECK(!offscreen || !offscreen_size.IsEmpty());
-
-  ContextCreationAttribHelper attrib_parser;
-  if (!attrib_parser.Parse(attribs))
-    return false;
 
   surfaceless_ = surface->IsSurfaceless() && !offscreen;
 
@@ -2782,18 +2779,18 @@ bool GLES2DecoderImpl::Initialize(const scoped_refptr<gfx::GLSurface>& surface,
 
   // Save the loseContextWhenOutOfMemory context creation attribute.
   lose_context_when_out_of_memory_ =
-      attrib_parser.lose_context_when_out_of_memory;
+      attrib_helper.lose_context_when_out_of_memory;
 
   // If the failIfMajorPerformanceCaveat context creation attribute was true
   // and we are using a software renderer, fail.
-  if (attrib_parser.fail_if_major_perf_caveat &&
+  if (attrib_helper.fail_if_major_perf_caveat &&
       feature_info_->feature_flags().is_swiftshader) {
     group_ = NULL;  // Must not destroy ContextGroup if it is not initialized.
     Destroy(true);
     return false;
   }
 
-  if (!group_->Initialize(this, attrib_parser.context_type,
+  if (!group_->Initialize(this, attrib_helper.context_type,
                           disallowed_features)) {
     group_ = NULL;  // Must not destroy ContextGroup if it is not initialized.
     Destroy(true);
@@ -2902,19 +2899,19 @@ bool GLES2DecoderImpl::Initialize(const scoped_refptr<gfx::GLSurface>& surface,
   GLint alpha_bits = 0;
 
   if (offscreen) {
-    if (attrib_parser.samples > 0 && attrib_parser.sample_buffers > 0 &&
+    if (attrib_helper.samples > 0 && attrib_helper.sample_buffers > 0 &&
         features().chromium_framebuffer_multisample) {
       // Per ext_framebuffer_multisample spec, need max bound on sample count.
       // max_sample_count must be initialized to a sane value.  If
       // glGetIntegerv() throws a GL error, it leaves its argument unchanged.
       GLint max_sample_count = 1;
       glGetIntegerv(GL_MAX_SAMPLES_EXT, &max_sample_count);
-      offscreen_target_samples_ = std::min(attrib_parser.samples,
+      offscreen_target_samples_ = std::min(attrib_helper.samples,
                                            max_sample_count);
     } else {
       offscreen_target_samples_ = 1;
     }
-    offscreen_target_buffer_preserved_ = attrib_parser.buffer_preserved;
+    offscreen_target_buffer_preserved_ = attrib_helper.buffer_preserved;
 
     if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2) {
       const bool rgb8_supported =
@@ -2923,12 +2920,12 @@ bool GLES2DecoderImpl::Initialize(const scoped_refptr<gfx::GLSurface>& surface,
       // little precision.  Don't enable multisampling unless 8-bit render
       // buffer formats are available--instead fall back to 8-bit textures.
       if (rgb8_supported && offscreen_target_samples_ > 1) {
-        offscreen_target_color_format_ = attrib_parser.alpha_size > 0 ?
+        offscreen_target_color_format_ = attrib_helper.alpha_size > 0 ?
             GL_RGBA8 : GL_RGB8;
       } else {
         offscreen_target_samples_ = 1;
         offscreen_target_color_format_ =
-            attrib_parser.alpha_size > 0 || workarounds().disable_gl_rgb_format
+            attrib_helper.alpha_size > 0 || workarounds().disable_gl_rgb_format
                 ? GL_RGBA
                 : GL_RGB;
       }
@@ -2939,21 +2936,21 @@ bool GLES2DecoderImpl::Initialize(const scoped_refptr<gfx::GLSurface>& surface,
           feature_info_->feature_flags().packed_depth24_stencil8;
       VLOG(1) << "GL_OES_packed_depth_stencil "
               << (depth24_stencil8_supported ? "" : "not ") << "supported.";
-      if ((attrib_parser.depth_size > 0 || attrib_parser.stencil_size > 0) &&
+      if ((attrib_helper.depth_size > 0 || attrib_helper.stencil_size > 0) &&
           depth24_stencil8_supported) {
         offscreen_target_depth_format_ = GL_DEPTH24_STENCIL8;
         offscreen_target_stencil_format_ = 0;
       } else {
         // It may be the case that this depth/stencil combination is not
         // supported, but this will be checked later by CheckFramebufferStatus.
-        offscreen_target_depth_format_ = attrib_parser.depth_size > 0 ?
+        offscreen_target_depth_format_ = attrib_helper.depth_size > 0 ?
             GL_DEPTH_COMPONENT16 : 0;
-        offscreen_target_stencil_format_ = attrib_parser.stencil_size > 0 ?
+        offscreen_target_stencil_format_ = attrib_helper.stencil_size > 0 ?
             GL_STENCIL_INDEX8 : 0;
       }
     } else {
       offscreen_target_color_format_ =
-          attrib_parser.alpha_size > 0 || workarounds().disable_gl_rgb_format
+          attrib_helper.alpha_size > 0 || workarounds().disable_gl_rgb_format
               ? GL_RGBA
               : GL_RGB;
 
@@ -2965,20 +2962,20 @@ bool GLES2DecoderImpl::Initialize(const scoped_refptr<gfx::GLSurface>& surface,
       VLOG(1) << "GL_EXT_packed_depth_stencil "
               << (depth24_stencil8_supported ? "" : "not ") << "supported.";
 
-      if ((attrib_parser.depth_size > 0 || attrib_parser.stencil_size > 0) &&
+      if ((attrib_helper.depth_size > 0 || attrib_helper.stencil_size > 0) &&
           depth24_stencil8_supported) {
         offscreen_target_depth_format_ = GL_DEPTH24_STENCIL8;
         offscreen_target_stencil_format_ = 0;
       } else {
-        offscreen_target_depth_format_ = attrib_parser.depth_size > 0 ?
+        offscreen_target_depth_format_ = attrib_helper.depth_size > 0 ?
             GL_DEPTH_COMPONENT : 0;
-        offscreen_target_stencil_format_ = attrib_parser.stencil_size > 0 ?
+        offscreen_target_stencil_format_ = attrib_helper.stencil_size > 0 ?
             GL_STENCIL_INDEX : 0;
       }
     }
 
     offscreen_saved_color_format_ =
-        attrib_parser.alpha_size > 0 || workarounds().disable_gl_rgb_format
+        attrib_helper.alpha_size > 0 || workarounds().disable_gl_rgb_format
             ? GL_RGBA
             : GL_RGB;
 
@@ -3081,10 +3078,10 @@ bool GLES2DecoderImpl::Initialize(const scoped_refptr<gfx::GLSurface>& surface,
       // the user requested RGB then RGB. If the user did not specify a
       // preference than use whatever we were given. Same for DEPTH and STENCIL.
       back_buffer_color_format_ =
-          (attrib_parser.alpha_size != 0 && alpha_bits > 0) ? GL_RGBA : GL_RGB;
-      back_buffer_has_depth_ = attrib_parser.depth_size != 0 && depth_bits > 0;
+          (attrib_helper.alpha_size != 0 && alpha_bits > 0) ? GL_RGBA : GL_RGB;
+      back_buffer_has_depth_ = attrib_helper.depth_size != 0 && depth_bits > 0;
       back_buffer_has_stencil_ =
-          attrib_parser.stencil_size != 0 && stencil_bits > 0;
+          attrib_helper.stencil_size != 0 && stencil_bits > 0;
     }
 
     state_.viewport_width = surface->GetSize().width();

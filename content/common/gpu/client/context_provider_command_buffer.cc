@@ -143,8 +143,6 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
     }
 
     DCHECK(attributes_.buffer_preserved);
-    std::vector<int32_t> serialized_attributes;
-    attributes_.Serialize(&serialized_attributes);
 
     // This command buffer is a client-side proxy to the command buffer in the
     // GPU process.
@@ -155,7 +153,7 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
     command_buffer_ = gpu::CommandBufferProxyImpl::Create(
         std::move(channel_), surface_handle_, gfx::Size(),
         shared_command_buffer, stream_id_, stream_priority_,
-        std::move(serialized_attributes), active_url_, gpu_preference_,
+        attributes_, active_url_, gpu_preference_,
         std::move(task_runner));
     if (!command_buffer_) {
       DLOG(ERROR) << "GpuChannelHost failed to create command buffer.";

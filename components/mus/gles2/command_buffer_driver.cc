@@ -156,10 +156,8 @@ bool CommandBufferDriver::Initialize(
 
   gpu::gles2::DisallowedFeatures disallowed_features;
 
-  std::vector<int32_t> attrib_vector;
-  attrib_helper.Serialize(&attrib_vector);
   if (!decoder_->Initialize(surface_, context_, offscreen, gfx::Size(1, 1),
-                            disallowed_features, attrib_vector))
+                            disallowed_features, attrib_helper))
     return false;
 
   command_buffer_->SetPutOffsetChangeCallback(base::Bind(

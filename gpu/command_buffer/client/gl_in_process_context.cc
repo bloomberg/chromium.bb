@@ -106,9 +106,6 @@ bool GLInProcessContextImpl::Initialize(
     ImageFactory* image_factory) {
   DCHECK(size.width() >= 0 && size.height() >= 0);
 
-  std::vector<int32_t> attrib_vector;
-  attribs.Serialize(&attrib_vector);
-
   command_buffer_.reset(new InProcessCommandBuffer(service));
 
   scoped_refptr<gles2::ShareGroup> share_group;
@@ -126,7 +123,7 @@ bool GLInProcessContextImpl::Initialize(
                                    is_offscreen,
                                    window,
                                    size,
-                                   attrib_vector,
+                                   attribs,
                                    gpu_preference,
                                    share_command_buffer,
                                    gpu_memory_buffer_manager,

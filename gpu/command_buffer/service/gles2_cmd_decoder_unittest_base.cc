@@ -430,21 +430,13 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   shared_memory_id_ = kSharedMemoryId;
   shared_memory_base_ = buffer->memory();
 
-  static const int32_t kLoseContextWhenOutOfMemory = 0x10002;
-  static const int32_t kWebGLVersion = 0x10003;
-
-  int32_t attributes[] = {
-      EGL_ALPHA_SIZE,
-      normalized_init.request_alpha ? 8 : 0,
-      EGL_DEPTH_SIZE,
-      normalized_init.request_depth ? 24 : 0,
-      EGL_STENCIL_SIZE,
-      normalized_init.request_stencil ? 8 : 0,
-      kLoseContextWhenOutOfMemory,
-      normalized_init.lose_context_when_out_of_memory ? 1 : 0,
-      kWebGLVersion,
-      init.context_type};
-  std::vector<int32_t> attribs(attributes, attributes + arraysize(attributes));
+  gles2::ContextCreationAttribHelper attribs;
+  attribs.alpha_size = normalized_init.request_alpha ? 8 : 0;
+  attribs.depth_size = normalized_init.request_depth ? 24 : 0;
+  attribs.stencil_size = normalized_init.request_stencil ? 8 : 0;
+  attribs.lose_context_when_out_of_memory =
+      normalized_init.lose_context_when_out_of_memory;
+  attribs.context_type = init.context_type;
 
   decoder_.reset(GLES2Decoder::Create(group_.get()));
   decoder_->SetIgnoreCachedStateForTest(ignore_cached_state_for_test_);

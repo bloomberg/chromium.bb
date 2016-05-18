@@ -326,6 +326,7 @@
         '../ui/gl/gl.gyp:gl_unittest_utils',
         '../ui/gl/gl.gyp:gl_test_support',
         '../url/url.gyp:url_lib',
+        'command_buffer/command_buffer.gyp:gles2_utils',
         'command_buffer_common',
         'command_buffer_service',
         'gpu_config',

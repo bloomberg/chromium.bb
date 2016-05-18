@@ -16,6 +16,7 @@
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/video_encoder_shim.h"
 #include "content/renderer/render_thread_impl.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
@@ -525,12 +526,11 @@ bool PepperVideoEncoderHost::EnsureGpuChannel() {
   if (!channel)
     return false;
 
-  std::vector<int32_t> attribs = {PP_GRAPHICS3DATTRIB_NONE};
   command_buffer_ = gpu::CommandBufferProxyImpl::Create(
       std::move(channel), gpu::kNullSurfaceHandle, gfx::Size(), nullptr,
       gpu::GPU_STREAM_DEFAULT, gpu::GpuStreamPriority::NORMAL,
-      std::move(attribs), GURL::EmptyGURL(), gfx::PreferIntegratedGpu,
-      base::ThreadTaskRunnerHandle::Get());
+      gpu::gles2::ContextCreationAttribHelper(), GURL::EmptyGURL(),
+      gfx::PreferIntegratedGpu, base::ThreadTaskRunnerHandle::Get());
   if (!command_buffer_) {
     Close();
     return false;

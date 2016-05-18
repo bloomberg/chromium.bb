@@ -52,6 +52,10 @@ namespace gpu {
 struct GpuProcessHostedCALayerTreeParamsMac;
 struct Mailbox;
 struct SyncToken;
+
+namespace gles2 {
+struct ContextCreationAttribHelper;
+}
 }
 
 namespace gpu {
@@ -85,7 +89,7 @@ class GPU_EXPORT CommandBufferProxyImpl
       CommandBufferProxyImpl* share_group,
       int32_t stream_id,
       gpu::GpuStreamPriority stream_priority,
-      std::vector<int32_t> attribs,
+      const gpu::gles2::ContextCreationAttribHelper& attribs,
       const GURL& active_url,
       gfx::GpuPreference gpu_preference,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);

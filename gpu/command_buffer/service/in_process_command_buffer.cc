@@ -251,7 +251,7 @@ bool InProcessCommandBuffer::Initialize(
     bool is_offscreen,
     gfx::AcceleratedWidget window,
     const gfx::Size& size,
-    const std::vector<int32_t>& attribs,
+    const gles2::ContextCreationAttribHelper& attribs,
     gfx::GpuPreference gpu_preference,
     InProcessCommandBuffer* share_group,
     GpuMemoryBufferManager* gpu_memory_buffer_manager,

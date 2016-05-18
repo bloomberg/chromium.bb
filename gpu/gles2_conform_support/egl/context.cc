@@ -289,12 +289,10 @@ bool Context::CreateService(gfx::GLSurface* gl_surface) {
   helper.fail_if_major_perf_caveat = false;
   helper.lose_context_when_out_of_memory = kLoseContextWhenOutOfMemory;
   helper.context_type = gpu::gles2::CONTEXT_TYPE_OPENGLES2;
-  std::vector<int32_t> attribs;
-  helper.Serialize(&attribs);
 
   if (!decoder->Initialize(gl_surface, gl_context.get(),
                            gl_surface->IsOffscreen(), gl_surface->GetSize(),
-                           gpu::gles2::DisallowedFeatures(), attribs)) {
+                           gpu::gles2::DisallowedFeatures(), helper)) {
     return false;
   }
 

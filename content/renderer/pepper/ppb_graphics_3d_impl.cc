@@ -18,6 +18,7 @@
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "ppapi/c/ppp_graphics_3d.h"
@@ -257,6 +258,9 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
     }
     attribs.push_back(PP_GRAPHICS3DATTRIB_NONE);
   }
+  gpu::gles2::ContextCreationAttribHelper attrib_helper;
+  if (!attrib_helper.Parse(attribs))
+    return false;
 
   gpu::CommandBufferProxyImpl* share_buffer = NULL;
   if (share_context) {
@@ -268,7 +272,7 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
   command_buffer_ = gpu::CommandBufferProxyImpl::Create(
       std::move(channel), gpu::kNullSurfaceHandle, surface_size, share_buffer,
       gpu::GPU_STREAM_DEFAULT, gpu::GpuStreamPriority::NORMAL,
-      std::move(attribs), GURL::EmptyGURL(), gpu_preference,
+      attrib_helper, GURL::EmptyGURL(), gpu_preference,
       base::ThreadTaskRunnerHandle::Get());
   if (!command_buffer_)
     return false;

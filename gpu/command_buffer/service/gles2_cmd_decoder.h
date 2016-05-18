@@ -45,6 +45,7 @@ class QueryManager;
 class Texture;
 class TransformFeedbackManager;
 class VertexArrayManager;
+struct ContextCreationAttribHelper;
 struct ContextState;
 
 struct DisallowedFeatures {
@@ -151,7 +152,7 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
                           bool offscreen,
                           const gfx::Size& offscreen_size,
                           const DisallowedFeatures& disallowed_features,
-                          const std::vector<int32_t>& attribs) = 0;
+                          const ContextCreationAttribHelper& attrib_helper) = 0;
 
   // Destroys the graphics context.
   virtual void Destroy(bool have_context) = 0;

@@ -75,7 +75,7 @@ std::unique_ptr<CommandBufferProxyImpl> CommandBufferProxyImpl::Create(
     CommandBufferProxyImpl* share_group,
     int32_t stream_id,
     gpu::GpuStreamPriority stream_priority,
-    std::vector<int32_t> attribs,
+    const gpu::gles2::ContextCreationAttribHelper& attribs,
     const GURL& active_url,
     gfx::GpuPreference gpu_preference,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
@@ -90,7 +90,7 @@ std::unique_ptr<CommandBufferProxyImpl> CommandBufferProxyImpl::Create(
       share_group ? share_group->route_id_ : MSG_ROUTING_NONE;
   init_params.stream_id = stream_id;
   init_params.stream_priority = stream_priority;
-  init_params.attribs = std::move(attribs);
+  init_params.attribs = attribs;
   init_params.active_url = active_url;
   init_params.gpu_preference = gpu_preference;
 

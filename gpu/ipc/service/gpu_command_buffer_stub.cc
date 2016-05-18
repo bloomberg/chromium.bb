@@ -447,17 +447,13 @@ bool GpuCommandBufferStub::Initialize(
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::Initialize");
   FastSetActiveURL(active_url_, active_url_hash_, channel_);
 
-  gles2::ContextCreationAttribHelper attrib_helper;
-  if (!attrib_helper.Parse(init_params.attribs))
-    return false;
-
   GpuChannelManager* manager = channel_->gpu_channel_manager();
   DCHECK(manager);
 
   if (share_command_buffer_stub) {
     context_group_ = share_command_buffer_stub->context_group_;
     DCHECK(context_group_->bind_generates_resource() ==
-           attrib_helper.bind_generates_resource);
+           init_params.attribs.bind_generates_resource);
   } else {
     scoped_refptr<gles2::FeatureInfo> feature_info =
         new gles2::FeatureInfo(manager->gpu_driver_bug_workarounds());
@@ -467,7 +463,7 @@ bool GpuCommandBufferStub::Initialize(
                                           command_buffer_id_.GetUnsafeValue()),
         manager->shader_translator_cache(),
         manager->framebuffer_completeness_cache(), feature_info,
-        attrib_helper.bind_generates_resource);
+        init_params.attribs.bind_generates_resource);
   }
 
 #if defined(OS_MACOSX)
@@ -488,10 +484,10 @@ bool GpuCommandBufferStub::Initialize(
   gfx::GLSurface::Format surface_format = gfx::GLSurface::SURFACE_DEFAULT;
   bool offscreen = (surface_handle_ == kNullSurfaceHandle);
 #if defined(OS_ANDROID)
-  if (attrib_helper.red_size <= 5 &&
-      attrib_helper.green_size <= 6 &&
-      attrib_helper.blue_size <= 5 &&
-      attrib_helper.alpha_size == 0)
+  if (init_params.attribs.red_size <= 5 &&
+      init_params.attribs.green_size <= 6 &&
+      init_params.attribs.blue_size <= 5 &&
+      init_params.attribs.alpha_size == 0)
     surface_format = gfx::GLSurface::SURFACE_RGB565;
   gfx::GLSurface* default_surface = manager->GetDefaultOffscreenSurface();
   // We can only use virtualized contexts for onscreen command buffers if their

@@ -13,6 +13,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -49,7 +50,7 @@ class MockGLES2Decoder : public GLES2Decoder {
                     bool offscreen,
                     const gfx::Size& size,
                     const DisallowedFeatures& disallowed_features,
-                    const std::vector<int32_t>& attribs));
+                    const ContextCreationAttribHelper& attrib_helper));
   MOCK_METHOD1(Destroy, void(bool have_context));
   MOCK_METHOD1(SetSurface, void(const scoped_refptr<gfx::GLSurface>& surface));
   MOCK_METHOD0(ReleaseSurface, void());

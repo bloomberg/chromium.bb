@@ -50,6 +50,7 @@ class SyncPointOrderData;
 class SyncPointManager;
 
 namespace gles2 {
+struct ContextCreationAttribHelper;
 class FramebufferCompletenessCache;
 class GLES2Decoder;
 class MailboxManager;
@@ -81,7 +82,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
                   bool is_offscreen,
                   gfx::AcceleratedWidget window,
                   const gfx::Size& size,
-                  const std::vector<int32_t>& attribs,
+                  const gles2::ContextCreationAttribHelper& attribs,
                   gfx::GpuPreference gpu_preference,
                   InProcessCommandBuffer* share_group,
                   GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -169,20 +170,21 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     bool is_offscreen;
     gfx::AcceleratedWidget window;
     const gfx::Size& size;
-    const std::vector<int32_t>& attribs;
+    const gles2::ContextCreationAttribHelper& attribs;
     gfx::GpuPreference gpu_preference;
     gpu::Capabilities* capabilities;  // Ouptut.
     InProcessCommandBuffer* context_group;
     ImageFactory* image_factory;
 
-    InitializeOnGpuThreadParams(bool is_offscreen,
-                                gfx::AcceleratedWidget window,
-                                const gfx::Size& size,
-                                const std::vector<int32_t>& attribs,
-                                gfx::GpuPreference gpu_preference,
-                                gpu::Capabilities* capabilities,
-                                InProcessCommandBuffer* share_group,
-                                ImageFactory* image_factory)
+    InitializeOnGpuThreadParams(
+        bool is_offscreen,
+        gfx::AcceleratedWidget window,
+        const gfx::Size& size,
+        const gles2::ContextCreationAttribHelper& attribs,
+        gfx::GpuPreference gpu_preference,
+        gpu::Capabilities* capabilities,
+        InProcessCommandBuffer* share_group,
+        ImageFactory* image_factory)
         : is_offscreen(is_offscreen),
           window(window),
           size(size),

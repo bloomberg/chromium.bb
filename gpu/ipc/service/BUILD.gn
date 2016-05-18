@@ -139,6 +139,7 @@ test("gpu_ipc_service_unittests") {
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//gpu/command_buffer/common",
+    "//gpu/command_buffer/common:gles2_utils",
     "//gpu/command_buffer/service",
     "//gpu/config",
     "//gpu/ipc/common",

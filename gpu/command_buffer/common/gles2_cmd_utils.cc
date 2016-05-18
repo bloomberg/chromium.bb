@@ -1407,7 +1407,6 @@ const int32_t kSampleBuffers = 0x3032;    // EGL_SAMPLE_BUFFERS
 const int32_t kNone = 0x3038;             // EGL_NONE
 const int32_t kSwapBehavior = 0x3093;     // EGL_SWAP_BEHAVIOR
 const int32_t kBufferPreserved = 0x3094;  // EGL_BUFFER_PRESERVED
-const int32_t kBufferDestroyed = 0x3095;  // EGL_BUFFER_DESTROYED
 
 // Chromium only.
 const int32_t kBindGeneratesResource = 0x10000;
@@ -1434,53 +1433,6 @@ ContextCreationAttribHelper::ContextCreationAttribHelper()
 
 ContextCreationAttribHelper::ContextCreationAttribHelper(
     const ContextCreationAttribHelper& other) = default;
-
-void ContextCreationAttribHelper::Serialize(
-    std::vector<int32_t>* attribs) const {
-  if (alpha_size != -1) {
-    attribs->push_back(kAlphaSize);
-    attribs->push_back(alpha_size);
-  }
-  if (blue_size != -1) {
-    attribs->push_back(kBlueSize);
-    attribs->push_back(blue_size);
-  }
-  if (green_size != -1) {
-    attribs->push_back(kGreenSize);
-    attribs->push_back(green_size);
-  }
-  if (red_size != -1) {
-    attribs->push_back(kRedSize);
-    attribs->push_back(red_size);
-  }
-  if (depth_size != -1) {
-    attribs->push_back(kDepthSize);
-    attribs->push_back(depth_size);
-  }
-  if (stencil_size != -1) {
-    attribs->push_back(kStencilSize);
-    attribs->push_back(stencil_size);
-  }
-  if (samples != -1) {
-    attribs->push_back(kSamples);
-    attribs->push_back(samples);
-  }
-  if (sample_buffers != -1) {
-    attribs->push_back(kSampleBuffers);
-    attribs->push_back(sample_buffers);
-  }
-  attribs->push_back(kSwapBehavior);
-  attribs->push_back(buffer_preserved ? kBufferPreserved : kBufferDestroyed);
-  attribs->push_back(kBindGeneratesResource);
-  attribs->push_back(bind_generates_resource ? 1 : 0);
-  attribs->push_back(kFailIfMajorPerfCaveat);
-  attribs->push_back(fail_if_major_perf_caveat ? 1 : 0);
-  attribs->push_back(kLoseContextWhenOutOfMemory);
-  attribs->push_back(lose_context_when_out_of_memory ? 1 : 0);
-  attribs->push_back(kContextType);
-  attribs->push_back(context_type);
-  attribs->push_back(kNone);
-}
 
 bool ContextCreationAttribHelper::Parse(const std::vector<int32_t>& attribs) {
   for (size_t i = 0; i < attribs.size(); i += 2) {

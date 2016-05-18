@@ -218,7 +218,7 @@ TEST_F(GpuChannelTest, CreateViewCommandBufferAllowed) {
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = 0;
   init_params.stream_priority = GpuStreamPriority::NORMAL;
-  init_params.attribs = std::vector<int>();
+  init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   bool result = false;
@@ -249,7 +249,7 @@ TEST_F(GpuChannelTest, CreateViewCommandBufferDisallowed) {
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = 0;
   init_params.stream_priority = GpuStreamPriority::NORMAL;
-  init_params.attribs = std::vector<int>();
+  init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   bool result = false;
@@ -275,7 +275,7 @@ TEST_F(GpuChannelTest, CreateOffscreenCommandBuffer) {
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = 0;
   init_params.stream_priority = GpuStreamPriority::NORMAL;
-  init_params.attribs = std::vector<int>();
+  init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   bool result = false;
@@ -303,7 +303,7 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = kStreamId1;
   init_params.stream_priority = GpuStreamPriority::NORMAL;
-  init_params.attribs = std::vector<int>();
+  init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   bool result = false;
@@ -323,7 +323,7 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
   init_params.share_group_id = kRouteId1;
   init_params.stream_id = kStreamId2;
   init_params.stream_priority = GpuStreamPriority::NORMAL;
-  init_params.attribs = std::vector<int>();
+  init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
@@ -350,7 +350,7 @@ TEST_F(GpuChannelTest, StreamLifetime) {
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = kStreamId1;
   init_params.stream_priority = kStreamPriority1;
-  init_params.attribs = std::vector<int>();
+  init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   bool result = false;
@@ -375,7 +375,7 @@ TEST_F(GpuChannelTest, StreamLifetime) {
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = kStreamId2;
   init_params.stream_priority = kStreamPriority2;
-  init_params.attribs = std::vector<int>();
+  init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
@@ -403,7 +403,7 @@ TEST_F(GpuChannelTest, RealTimeStreamsDisallowed) {
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = kStreamId;
   init_params.stream_priority = kStreamPriority;
-  init_params.attribs = std::vector<int>();
+  init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   bool result = false;
@@ -433,7 +433,7 @@ TEST_F(GpuChannelTest, RealTimeStreamsAllowed) {
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = kStreamId;
   init_params.stream_priority = kStreamPriority;
-  init_params.attribs = std::vector<int>();
+  init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   bool result = false;
@@ -462,7 +462,7 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
     init_params.share_group_id = MSG_ROUTING_NONE;
     init_params.stream_id = 0;
     init_params.stream_priority = GpuStreamPriority::NORMAL;
-    init_params.attribs = std::vector<int>();
+    init_params.attribs = gles2::ContextCreationAttribHelper();
     init_params.active_url = GURL();
     init_params.gpu_preference = gfx::PreferIntegratedGpu;
     bool result = false;
@@ -484,7 +484,7 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
     init_params.share_group_id = kSharedRouteId;
     init_params.stream_id = 0;
     init_params.stream_priority = GpuStreamPriority::NORMAL;
-    init_params.attribs = std::vector<int>();
+    init_params.attribs = gles2::ContextCreationAttribHelper();
     init_params.active_url = GURL();
     init_params.gpu_preference = gfx::PreferIntegratedGpu;
     bool result = false;
@@ -510,7 +510,7 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
     init_params.share_group_id = kSharedRouteId;
     init_params.stream_id = 0;
     init_params.stream_priority = GpuStreamPriority::NORMAL;
-    init_params.attribs = std::vector<int>();
+    init_params.attribs = gles2::ContextCreationAttribHelper();
     init_params.active_url = GURL();
     init_params.gpu_preference = gfx::PreferIntegratedGpu;
     bool result = false;

@@ -278,17 +278,14 @@ void GLManager::InitializeWithCommandLine(
       share_group ? share_group : new gfx::GLShareGroup;
 
   gfx::GpuPreference gpu_preference(gfx::PreferDiscreteGpu);
-  std::vector<int32_t> attribs;
-  gles2::ContextCreationAttribHelper attrib_helper;
-  attrib_helper.red_size = 8;
-  attrib_helper.green_size = 8;
-  attrib_helper.blue_size = 8;
-  attrib_helper.alpha_size = 8;
-  attrib_helper.depth_size = 16;
-  attrib_helper.stencil_size = 8;
-  attrib_helper.context_type = options.context_type;
-
-  attrib_helper.Serialize(&attribs);
+  gles2::ContextCreationAttribHelper attribs;
+  attribs.red_size = 8;
+  attribs.green_size = 8;
+  attribs.blue_size = 8;
+  attribs.alpha_size = 8;
+  attribs.depth_size = 16;
+  attribs.stencil_size = 8;
+  attribs.context_type = options.context_type;
 
   if (!context_group) {
     GpuDriverBugWorkarounds gpu_driver_bug_workaround(&command_line);

@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
+
 namespace gpu {
 namespace gles2 {
 

@@ -273,14 +273,14 @@ enum ContextType {
   CONTEXT_TYPE_WEBGL1,
   CONTEXT_TYPE_WEBGL2,
   CONTEXT_TYPE_OPENGLES2,
-  CONTEXT_TYPE_OPENGLES3
+  CONTEXT_TYPE_OPENGLES3,
+  CONTEXT_TYPE_LAST = CONTEXT_TYPE_OPENGLES3
 };
 
 struct GLES2_UTILS_EXPORT ContextCreationAttribHelper {
   ContextCreationAttribHelper();
   ContextCreationAttribHelper(const ContextCreationAttribHelper& other);
 
-  void Serialize(std::vector<int32_t>* attribs) const;
   bool Parse(const std::vector<int32_t>& attribs);
 
   // -1 if invalid or unspecified.
