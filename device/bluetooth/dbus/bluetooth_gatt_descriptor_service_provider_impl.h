@@ -58,15 +58,34 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattDescriptorServiceProviderImpl
   void GetAll(dbus::MethodCall* method_call,
               dbus::ExportedObject::ResponseSender response_sender);
 
+  // Called by BlueZ when a remote central is requesting to read the value of
+  // this descriptor.
+  void ReadValue(dbus::MethodCall* method_call,
+                 dbus::ExportedObject::ResponseSender response_sender);
+
+  // Called by BlueZ when a remote central is requesting to write the value of
+  // this descriptor.
+  void WriteValue(dbus::MethodCall* method_call,
+                  dbus::ExportedObject::ResponseSender response_sender);
+
   // Called by dbus:: when a method is exported.
   void OnExported(const std::string& interface_name,
                   const std::string& method_name,
                   bool success);
 
-  // Writes the characteristics's properties into the provided writer. If
-  // value is not null, it is written also, otherwise no value property is
-  // written.
+  // Writes the descriptor's properties into the provided writer.
   void WriteProperties(dbus::MessageWriter* writer) override;
+
+  // Called by the Delegate in response to a method to call to read the value
+  // of this descriptor.
+  void OnReadValue(dbus::MethodCall* method_call,
+                   dbus::ExportedObject::ResponseSender response_sender,
+                   const std::vector<uint8_t>& value);
+
+  // Called by the Delegate in response to a method to call to write the value
+  // of this descriptor.
+  void OnWriteValue(dbus::MethodCall* method_call,
+                    dbus::ExportedObject::ResponseSender response_sender);
 
   // Called by the Delegate in response to a failed method call to get or set
   // the descriptor value.

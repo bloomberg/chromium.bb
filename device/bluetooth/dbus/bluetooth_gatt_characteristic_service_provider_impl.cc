@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "device/bluetooth/dbus/bluetooth_gatt_attribute_helpers.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace bluez {
@@ -264,9 +265,19 @@ void BluetoothGattCharacteristicServiceProviderImpl::ReadValue(
   VLOG(3) << "BluetoothGattCharacteristicServiceProvider::ReadValue: "
           << object_path_.value();
   DCHECK(OnOriginThread());
+
+  dbus::MessageReader reader(method_call);
+  dbus::ObjectPath device_path = ReadDevicePath(&reader);
+  if (device_path.value().empty()) {
+    LOG(WARNING) << "ReadValue called with incorrect parameters: "
+                 << method_call->ToString();
+    // Continue on with an empty device path. This will return a null device to
+    // the delegate, which should know how to handle it.
+  }
+
   DCHECK(delegate_);
   delegate_->GetValue(
-      dbus::ObjectPath(),
+      device_path,
       base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnReadValue,
                  weak_ptr_factory_.GetWeakPtr(), method_call, response_sender),
       base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnFailure,
@@ -284,15 +295,26 @@ void BluetoothGattCharacteristicServiceProviderImpl::WriteValue(
   const uint8_t* bytes = NULL;
   size_t length = 0;
 
-  if (!reader.PopArrayOfBytes(&bytes, &length))
-    VLOG(2) << "Error reading array of bytes in in WriteValue";
   std::vector<uint8_t> value;
+  if (!reader.PopArrayOfBytes(&bytes, &length)) {
+    LOG(WARNING) << "Error reading value parameter. WriteValue called with "
+                    "incorrect parameters: "
+                 << method_call->ToString();
+  }
   if (bytes)
     value.assign(bytes, bytes + length);
 
+  dbus::ObjectPath device_path = ReadDevicePath(&reader);
+  if (device_path.value().empty()) {
+    LOG(WARNING) << "WriteValue called with incorrect parameters: "
+                 << method_call->ToString();
+    // Continue on with an empty device path. This will return a null device to
+    // the delegate, which should know how to handle it.
+  }
+
   DCHECK(delegate_);
   delegate_->SetValue(
-      dbus::ObjectPath(), value,
+      device_path, value,
       base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnWriteValue,
                  weak_ptr_factory_.GetWeakPtr(), method_call, response_sender),
       base::Bind(&BluetoothGattCharacteristicServiceProviderImpl::OnFailure,

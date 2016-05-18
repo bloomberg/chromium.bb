@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_event_router.h"
 
+#include <algorithm>
 #include <iterator>
 #include <utility>
 
@@ -12,6 +13,8 @@
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_connection.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_notify_session.h"
 #include "chrome/browser/extensions/api/bluetooth_low_energy/utils.h"
@@ -27,6 +30,7 @@
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/event_listener_map.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/api/bluetooth/bluetooth_manifest_data.h"
 #include "extensions/common/extension.h"
 
@@ -137,6 +141,16 @@ void PopulateDescriptor(const BluetoothRemoteGattDescriptor* descriptor,
     return;
 
   out->value.reset(new std::vector<char>(value.begin(), value.end()));
+}
+
+void PopulateDevice(const device::BluetoothDevice* device,
+                    apibtle::Request* request) {
+  if (!device)
+    return;
+  request->device.address = device->GetAddress();
+  request->device.name.reset(
+      new std::string(base::UTF16ToUTF8(device->GetName())));
+  request->device.device_class.reset(new int(device->GetBluetoothClass()));
 }
 
 typedef extensions::ApiResourceManager<extensions::BluetoothLowEnergyConnection>
@@ -1109,6 +1123,7 @@ void BluetoothLowEnergyEventRouter::OnCharacteristicReadRequest(
   request.request_id =
       StoreSentRequest(extension_id, base::WrapUnique(new AttributeValueRequest(
                                          value_callback, error_callback)));
+  PopulateDevice(device, &request);
   DispatchEventToExtension(
       extension_id, events::BLUETOOTH_LOW_ENERGY_ON_CHARACTERISTIC_READ_REQUEST,
       apibtle::OnCharacteristicReadRequest::kEventName,
@@ -1139,6 +1154,7 @@ void BluetoothLowEnergyEventRouter::OnCharacteristicWriteRequest(
       base::WrapUnique(new AttributeValueRequest(callback, error_callback)));
   request.value =
       base::WrapUnique(new std::vector<char>(value.begin(), value.end()));
+  PopulateDevice(device, &request);
   DispatchEventToExtension(
       extension_id,
       events::BLUETOOTH_LOW_ENERGY_ON_CHARACTERISTIC_WRITE_REQUEST,
@@ -1168,6 +1184,7 @@ void BluetoothLowEnergyEventRouter::OnDescriptorReadRequest(
   request.request_id =
       StoreSentRequest(extension_id, base::WrapUnique(new AttributeValueRequest(
                                          value_callback, error_callback)));
+  PopulateDevice(device, &request);
   DispatchEventToExtension(
       extension_id,
       events::BLUETOOTH_LOW_ENERGY_ON_CHARACTERISTIC_WRITE_REQUEST,
@@ -1200,6 +1217,7 @@ void BluetoothLowEnergyEventRouter::OnDescriptorWriteRequest(
       base::WrapUnique(new AttributeValueRequest(callback, error_callback)));
   request.value =
       base::WrapUnique(new std::vector<char>(value.begin(), value.end()));
+  PopulateDevice(device, &request);
   DispatchEventToExtension(
       extension_id,
       events::BLUETOOTH_LOW_ENERGY_ON_CHARACTERISTIC_WRITE_REQUEST,
