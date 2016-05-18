@@ -35,19 +35,20 @@
       <iron-icon icon="cr:check" hidden$="[[!device.connected]]">
       </iron-icon>
       <span class="flex"></span>
-      <span hidden$="[[!device.connecting]]"
-          i18n-content="bluetoothConnecting"></span>
+      <span hidden$="[[!device.connecting]]">$i18n{bluetoothConnecting}</span>
       <div hidden$="[[!device.paired]]" on-tap="doNothing_">
         <paper-icon-button icon="cr:more-vert" toggles
             active="{{dropdownOpened}}">
         </paper-icon-button>
         <iron-dropdown opened="{{dropdownOpened}}" on-tap="menuSelected_">
           <div class="dropdown-content">
-            <paper-item id="connect" i18n-content="bluetoothConnect"
-                hidden$="[[device.connected]]"></paper-item>
-            <paper-item id="disconnect" i18n-content="bluetoothDisconnect"
-                hidden$="[[!device.connected]]"></paper-item>
-            <paper-item id="remove" i18n-content="bluetoothRemove"></paper-item>
+            <paper-item id="connect" hidden$="[[device.connected]]">
+              $i18n{bluetoothConnect}
+            </paper-item>
+            <paper-item id="disconnect" hidden$="[[!device.connected]]">
+              $i18n{bluetoothDisconnect}
+            </paper-item>
+            <paper-item id="remove">$i18n{bluetoothRemove}</paper-item>
           </div>
         </iron-dropdown>
       </div>
