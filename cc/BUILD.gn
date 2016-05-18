@@ -793,6 +793,7 @@ test("cc_unittests") {
     "input/scrollbar_animation_controller_linear_fade_unittest.cc",
     "input/scrollbar_animation_controller_thinning_unittest.cc",
     "input/top_controls_manager_unittest.cc",
+    "ipc/cc_param_traits_unittest.cc",
     "layers/heads_up_display_layer_impl_unittest.cc",
     "layers/heads_up_display_unittest.cc",
     "layers/layer_impl_unittest.cc",
@@ -941,6 +942,7 @@ test("cc_unittests") {
     ":cc",
     ":test_support",
     "//base/test:test_support",
+    "//cc/ipc",
     "//cc/proto",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
@@ -967,6 +969,7 @@ test("cc_unittests") {
 test("cc_perftests") {
   sources = [
     "animation/animation_host_perftest.cc",
+    "ipc/cc_param_traits_perftest.cc",
     "layers/layer_perftest.cc",
     "layers/picture_layer_impl_perftest.cc",
     "quads/draw_quad_perftest.cc",
@@ -987,6 +990,7 @@ test("cc_perftests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//cc/ipc",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
     "//gpu",

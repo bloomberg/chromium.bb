@@ -669,7 +669,6 @@
       'child/worker_thread_registry_unittest.cc',
       'common/android/address_parser_unittest.cc',
       'common/android/gin_java_bridge_value_unittest.cc',
-      'common/cc_messages_unittest.cc',
       'common/common_param_traits_unittest.cc',
       'common/cross_site_document_classifier_unittest.cc',
       'common/cursors/webcursor_unittest.cc',
@@ -1257,7 +1256,6 @@
       ],
       'sources': [
         'browser/renderer_host/input/input_router_impl_perftest.cc',
-        'common/cc_messages_perftest.cc',
         'common/discardable_shared_memory_heap_perftest.cc',
         'test/run_all_perftests.cc',
       ],

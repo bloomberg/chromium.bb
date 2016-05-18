@@ -27,7 +27,7 @@ static const int kTimeLimitMillis = 2000;
 static const int kNumWarmupRuns = 20;
 static const int kTimeCheckInterval = 10;
 
-class CCMessagesPerfTest : public testing::Test {
+class CCParamTraitsPerfTest : public testing::Test {
  protected:
   static void RunTest(const std::string& test_name,
                       const CompositorFrame& frame) {
@@ -55,16 +55,12 @@ class CCMessagesPerfTest : public testing::Test {
     }
 
     perf_test::PrintResult(
-        "min_frame_serialization_time",
-        "",
-        test_name,
-        min_time.InMillisecondsF() / kTimeCheckInterval * 1000,
-        "us",
-        true);
+        "min_frame_serialization_time", "", test_name,
+        min_time.InMillisecondsF() / kTimeCheckInterval * 1000, "us", true);
   }
 };
 
-TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_1_4000) {
+TEST_F(CCParamTraitsPerfTest, DelegatedFrame_ManyQuads_1_4000) {
   std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
 
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
@@ -82,7 +78,7 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_1_4000) {
   RunTest("DelegatedFrame_ManyQuads_1_4000", *frame);
 }
 
-TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_1_100000) {
+TEST_F(CCParamTraitsPerfTest, DelegatedFrame_ManyQuads_1_100000) {
   std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
 
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
@@ -100,7 +96,7 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_1_100000) {
   RunTest("DelegatedFrame_ManyQuads_1_100000", *frame);
 }
 
-TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_4000_4000) {
+TEST_F(CCParamTraitsPerfTest, DelegatedFrame_ManyQuads_4000_4000) {
   std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
 
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
@@ -118,7 +114,7 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_4000_4000) {
   RunTest("DelegatedFrame_ManyQuads_4000_4000", *frame);
 }
 
-TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_100000_100000) {
+TEST_F(CCParamTraitsPerfTest, DelegatedFrame_ManyQuads_100000_100000) {
   std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
 
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
@@ -136,8 +132,7 @@ TEST_F(CCMessagesPerfTest, DelegatedFrame_ManyQuads_100000_100000) {
   RunTest("DelegatedFrame_ManyQuads_100000_100000", *frame);
 }
 
-TEST_F(CCMessagesPerfTest,
-       DelegatedFrame_ManyRenderPasses_10000_100) {
+TEST_F(CCParamTraitsPerfTest, DelegatedFrame_ManyRenderPasses_10000_100) {
   std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
   frame->delegated_frame_data.reset(new DelegatedFrameData);
 

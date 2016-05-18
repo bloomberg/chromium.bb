@@ -13,7 +13,6 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/picture_draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
-#include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
@@ -47,7 +46,7 @@ using gfx::Transform;
 namespace content {
 namespace {
 
-class CCMessagesTest : public testing::Test {
+class CCParamTraitsTest : public testing::Test {
  protected:
   void Compare(const RenderPass* a, const RenderPass* b) {
     EXPECT_EQ(a->id, b->id);
@@ -100,8 +99,7 @@ class CCMessagesTest : public testing::Test {
                 TextureDrawQuad::MaterialCast(b));
         break;
       case DrawQuad::TILED_CONTENT:
-        Compare(TileDrawQuad::MaterialCast(a),
-                TileDrawQuad::MaterialCast(b));
+        Compare(TileDrawQuad::MaterialCast(a), TileDrawQuad::MaterialCast(b));
         break;
       case DrawQuad::SOLID_COLOR:
         Compare(SolidColorDrawQuad::MaterialCast(a),
@@ -219,7 +217,7 @@ class CCMessagesTest : public testing::Test {
   }
 };
 
-TEST_F(CCMessagesTest, AllQuads) {
+TEST_F(CCParamTraitsTest, AllQuads) {
   IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
 
   Transform arbitrary_matrix1;
@@ -280,15 +278,14 @@ TEST_F(CCMessagesTest, AllQuads) {
   RenderPassId root_id(10, 14);
 
   FilterOperations arbitrary_filters1;
-  arbitrary_filters1.Append(FilterOperation::CreateGrayscaleFilter(
-      arbitrary_float1));
   arbitrary_filters1.Append(
-      cc::FilterOperation::CreateReferenceFilter(
-          SkBlurImageFilter::Make(arbitrary_sigma, arbitrary_sigma, nullptr)));
+      FilterOperation::CreateGrayscaleFilter(arbitrary_float1));
+  arbitrary_filters1.Append(cc::FilterOperation::CreateReferenceFilter(
+      SkBlurImageFilter::Make(arbitrary_sigma, arbitrary_sigma, nullptr)));
 
   FilterOperations arbitrary_filters2;
-  arbitrary_filters2.Append(FilterOperation::CreateBrightnessFilter(
-      arbitrary_float2));
+  arbitrary_filters2.Append(
+      FilterOperation::CreateBrightnessFilter(arbitrary_float2));
 
   std::unique_ptr<RenderPass> child_pass_in = RenderPass::Create();
   child_pass_in->SetAll(child_id, arbitrary_rect2, arbitrary_rect3,
@@ -317,26 +314,19 @@ TEST_F(CCMessagesTest, AllQuads) {
 
   DebugBorderDrawQuad* debugborder_in =
       pass_in->CreateAndAppendDrawQuad<DebugBorderDrawQuad>();
-  debugborder_in->SetAll(shared_state1_in,
-                         arbitrary_rect3,
+  debugborder_in->SetAll(shared_state1_in, arbitrary_rect3,
                          arbitrary_rect1_inside_rect3,
-                         arbitrary_rect2_inside_rect3,
-                         arbitrary_bool1,
-                         arbitrary_color,
-                         arbitrary_int);
+                         arbitrary_rect2_inside_rect3, arbitrary_bool1,
+                         arbitrary_color, arbitrary_int);
   pass_cmp->CopyFromAndAppendDrawQuad(debugborder_in,
                                       debugborder_in->shared_quad_state);
 
   IOSurfaceDrawQuad* iosurface_in =
       pass_in->CreateAndAppendDrawQuad<IOSurfaceDrawQuad>();
-  iosurface_in->SetAll(shared_state1_in,
-                       arbitrary_rect2,
-                       arbitrary_rect2_inside_rect2,
-                       arbitrary_rect1_inside_rect2,
-                       arbitrary_bool1,
-                       arbitrary_size1,
-                       arbitrary_resourceid3,
-                       arbitrary_orientation);
+  iosurface_in->SetAll(
+      shared_state1_in, arbitrary_rect2, arbitrary_rect2_inside_rect2,
+      arbitrary_rect1_inside_rect2, arbitrary_bool1, arbitrary_size1,
+      arbitrary_resourceid3, arbitrary_orientation);
   pass_cmp->CopyFromAndAppendDrawQuad(iosurface_in,
                                       iosurface_in->shared_quad_state);
 
@@ -356,8 +346,7 @@ TEST_F(CCMessagesTest, AllQuads) {
       arbitrary_resourceid2, arbitrary_vector2df1, arbitrary_size1,
       arbitrary_filters1, arbitrary_vector2df2, arbitrary_filters2);
   pass_cmp->CopyFromAndAppendRenderPassDrawQuad(
-      renderpass_in,
-      renderpass_in->shared_quad_state,
+      renderpass_in, renderpass_in->shared_quad_state,
       renderpass_in->render_pass_id);
 
   SharedQuadState* shared_state3_in = pass_in->CreateAndAppendSharedQuadState();
@@ -370,13 +359,10 @@ TEST_F(CCMessagesTest, AllQuads) {
 
   SolidColorDrawQuad* solidcolor_in =
       pass_in->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-  solidcolor_in->SetAll(shared_state3_in,
-                        arbitrary_rect3,
+  solidcolor_in->SetAll(shared_state3_in, arbitrary_rect3,
                         arbitrary_rect1_inside_rect3,
-                        arbitrary_rect2_inside_rect3,
-                        arbitrary_bool1,
-                        arbitrary_color,
-                        arbitrary_bool2);
+                        arbitrary_rect2_inside_rect3, arbitrary_bool1,
+                        arbitrary_color, arbitrary_bool2);
   pass_cmp->CopyFromAndAppendDrawQuad(solidcolor_in,
                                       solidcolor_in->shared_quad_state);
 
@@ -392,37 +378,27 @@ TEST_F(CCMessagesTest, AllQuads) {
   cc::SurfaceId arbitrary_surface_id(3);
   SurfaceDrawQuad* surface_in =
       pass_in->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
-  surface_in->SetAll(shared_state3_in,
-                     arbitrary_rect2,
-                     arbitrary_rect2_inside_rect2,
-                     arbitrary_rect1_inside_rect2,
-                     arbitrary_bool1,
-                     arbitrary_surface_id);
+  surface_in->SetAll(shared_state3_in, arbitrary_rect2,
+                     arbitrary_rect2_inside_rect2, arbitrary_rect1_inside_rect2,
+                     arbitrary_bool1, arbitrary_surface_id);
   pass_cmp->CopyFromAndAppendDrawQuad(surface_in,
                                       surface_in->shared_quad_state);
 
   TextureDrawQuad* texture_in =
       pass_in->CreateAndAppendDrawQuad<TextureDrawQuad>();
-  texture_in->SetAll(shared_state3_in, arbitrary_rect2,
-                     arbitrary_rect2_inside_rect2, arbitrary_rect1_inside_rect2,
-                     arbitrary_bool1, arbitrary_resourceid1, arbitrary_size1,
-                     arbitrary_bool2, arbitrary_pointf1,
-                     arbitrary_pointf2, arbitrary_color, arbitrary_float_array,
-                     arbitrary_bool4, arbitrary_bool5);
+  texture_in->SetAll(
+      shared_state3_in, arbitrary_rect2, arbitrary_rect2_inside_rect2,
+      arbitrary_rect1_inside_rect2, arbitrary_bool1, arbitrary_resourceid1,
+      arbitrary_size1, arbitrary_bool2, arbitrary_pointf1, arbitrary_pointf2,
+      arbitrary_color, arbitrary_float_array, arbitrary_bool4, arbitrary_bool5);
   pass_cmp->CopyFromAndAppendDrawQuad(texture_in,
                                       texture_in->shared_quad_state);
 
   TileDrawQuad* tile_in = pass_in->CreateAndAppendDrawQuad<TileDrawQuad>();
-  tile_in->SetAll(shared_state3_in,
-                  arbitrary_rect2,
-                  arbitrary_rect2_inside_rect2,
-                  arbitrary_rect1_inside_rect2,
-                  arbitrary_bool1,
-                  arbitrary_resourceid3,
-                  arbitrary_rectf1,
-                  arbitrary_size1,
-                  arbitrary_bool2,
-                  arbitrary_bool3);
+  tile_in->SetAll(shared_state3_in, arbitrary_rect2,
+                  arbitrary_rect2_inside_rect2, arbitrary_rect1_inside_rect2,
+                  arbitrary_bool1, arbitrary_resourceid3, arbitrary_rectf1,
+                  arbitrary_size1, arbitrary_bool2, arbitrary_bool3);
   pass_cmp->CopyFromAndAppendDrawQuad(tile_in, tile_in->shared_quad_state);
 
   YUVVideoDrawQuad* yuvvideo_in =
@@ -452,8 +428,7 @@ TEST_F(CCMessagesTest, AllQuads) {
   }
   for (auto in_iter = pass_in->quad_list.cbegin(),
             cmp_iter = pass_cmp->quad_list.cbegin();
-       in_iter != pass_in->quad_list.cend();
-       ++in_iter, ++cmp_iter)
+       in_iter != pass_in->quad_list.cend(); ++in_iter, ++cmp_iter)
     Compare(*cmp_iter, *in_iter);
 
   for (size_t i = 1; i < pass_in->quad_list.size(); ++i) {
@@ -474,8 +449,8 @@ TEST_F(CCMessagesTest, AllQuads) {
 
   DelegatedFrameData frame_out;
   base::PickleIterator iter(msg);
-  EXPECT_TRUE(IPC::ParamTraits<DelegatedFrameData>::Read(&msg,
-      &iter, &frame_out));
+  EXPECT_TRUE(
+      IPC::ParamTraits<DelegatedFrameData>::Read(&msg, &iter, &frame_out));
 
   // Make sure the out and cmp RenderPasses match.
   std::unique_ptr<RenderPass> child_pass_out =
@@ -497,8 +472,7 @@ TEST_F(CCMessagesTest, AllQuads) {
   }
   for (auto out_iter = pass_out->quad_list.cbegin(),
             cmp_iter = pass_cmp->quad_list.cbegin();
-       out_iter != pass_out->quad_list.cend();
-       ++out_iter, ++cmp_iter)
+       out_iter != pass_out->quad_list.cend(); ++out_iter, ++cmp_iter)
     Compare(*cmp_iter, *out_iter);
 
   for (size_t i = 1; i < pass_out->quad_list.size(); ++i) {
@@ -512,23 +486,15 @@ TEST_F(CCMessagesTest, AllQuads) {
   }
 }
 
-TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
+TEST_F(CCParamTraitsTest, UnusedSharedQuadStates) {
   std::unique_ptr<RenderPass> pass_in = RenderPass::Create();
-  pass_in->SetAll(RenderPassId(1, 1),
-                  gfx::Rect(100, 100),
-                  gfx::Rect(),
-                  gfx::Transform(),
-                  false);
+  pass_in->SetAll(RenderPassId(1, 1), gfx::Rect(100, 100), gfx::Rect(),
+                  gfx::Transform(), false);
 
   // The first SharedQuadState is used.
   SharedQuadState* shared_state1_in = pass_in->CreateAndAppendSharedQuadState();
-  shared_state1_in->SetAll(gfx::Transform(),
-                           gfx::Size(1, 1),
-                           gfx::Rect(),
-                           gfx::Rect(),
-                           false,
-                           1.f,
-                           SkXfermode::kSrcOver_Mode,
+  shared_state1_in->SetAll(gfx::Transform(), gfx::Size(1, 1), gfx::Rect(),
+                           gfx::Rect(), false, 1.f, SkXfermode::kSrcOver_Mode,
                            0);
 
   SolidColorDrawQuad* quad1 =
@@ -538,34 +504,19 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
 
   // The second and third SharedQuadStates are not used.
   SharedQuadState* shared_state2_in = pass_in->CreateAndAppendSharedQuadState();
-  shared_state2_in->SetAll(gfx::Transform(),
-                           gfx::Size(2, 2),
-                           gfx::Rect(),
-                           gfx::Rect(),
-                           false,
-                           1.f,
-                           SkXfermode::kSrcOver_Mode,
+  shared_state2_in->SetAll(gfx::Transform(), gfx::Size(2, 2), gfx::Rect(),
+                           gfx::Rect(), false, 1.f, SkXfermode::kSrcOver_Mode,
                            0);
 
   SharedQuadState* shared_state3_in = pass_in->CreateAndAppendSharedQuadState();
-  shared_state3_in->SetAll(gfx::Transform(),
-                           gfx::Size(3, 3),
-                           gfx::Rect(),
-                           gfx::Rect(),
-                           false,
-                           1.f,
-                           SkXfermode::kSrcOver_Mode,
+  shared_state3_in->SetAll(gfx::Transform(), gfx::Size(3, 3), gfx::Rect(),
+                           gfx::Rect(), false, 1.f, SkXfermode::kSrcOver_Mode,
                            0);
 
   // The fourth SharedQuadState is used.
   SharedQuadState* shared_state4_in = pass_in->CreateAndAppendSharedQuadState();
-  shared_state4_in->SetAll(gfx::Transform(),
-                           gfx::Size(4, 4),
-                           gfx::Rect(),
-                           gfx::Rect(),
-                           false,
-                           1.f,
-                           SkXfermode::kSrcOver_Mode,
+  shared_state4_in->SetAll(gfx::Transform(), gfx::Size(4, 4), gfx::Rect(),
+                           gfx::Rect(), false, 1.f, SkXfermode::kSrcOver_Mode,
                            0);
 
   SolidColorDrawQuad* quad2 =
@@ -575,13 +526,8 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
 
   // The fifth is not used again.
   SharedQuadState* shared_state5_in = pass_in->CreateAndAppendSharedQuadState();
-  shared_state5_in->SetAll(gfx::Transform(),
-                           gfx::Size(5, 5),
-                           gfx::Rect(),
-                           gfx::Rect(),
-                           false,
-                           1.f,
-                           SkXfermode::kSrcOver_Mode,
+  shared_state5_in->SetAll(gfx::Transform(), gfx::Size(5, 5), gfx::Rect(),
+                           gfx::Rect(), false, 1.f, SkXfermode::kSrcOver_Mode,
                            0);
 
   // 5 SharedQuadStates go in.
@@ -615,7 +561,7 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
                 ->quad_layer_bounds.ToString());
 }
 
-TEST_F(CCMessagesTest, Resources) {
+TEST_F(CCParamTraitsTest, Resources) {
   IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
   gfx::Size arbitrary_size(757, 1281);
   gpu::SyncToken arbitrary_token1(gpu::CommandBufferNamespace::GPU_IO, 0,
@@ -658,8 +604,8 @@ TEST_F(CCMessagesTest, Resources) {
   arbitrary_resource2.is_overlay_candidate = false;
 
   std::unique_ptr<RenderPass> renderpass_in = RenderPass::Create();
-  renderpass_in->SetNew(
-      RenderPassId(1, 1), gfx::Rect(), gfx::Rect(), gfx::Transform());
+  renderpass_in->SetNew(RenderPassId(1, 1), gfx::Rect(), gfx::Rect(),
+                        gfx::Transform());
 
   DelegatedFrameData frame_in;
   frame_in.resource_list.push_back(arbitrary_resource1);
@@ -670,8 +616,8 @@ TEST_F(CCMessagesTest, Resources) {
 
   DelegatedFrameData frame_out;
   base::PickleIterator iter(msg);
-  EXPECT_TRUE(IPC::ParamTraits<DelegatedFrameData>::Read(&msg,
-      &iter, &frame_out));
+  EXPECT_TRUE(
+      IPC::ParamTraits<DelegatedFrameData>::Read(&msg, &iter, &frame_out));
 
   ASSERT_EQ(2u, frame_out.resource_list.size());
   Compare(arbitrary_resource1, frame_out.resource_list[0]);
