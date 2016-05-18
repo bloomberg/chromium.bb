@@ -1182,6 +1182,10 @@
         "test": "gpu_unittests"
       },
       {
+        "args": [
+          "--shard-timeout",
+          "240"
+        ],
         "test": "ipc_tests"
       },
       {
