@@ -36,7 +36,6 @@ content::WebUIDataSource* GetWebUIDataSource(const std::string& host) {
   html_source->AddLocalizedString("o", IDS_CERT_INFO_ORGANIZATION_LABEL);
   html_source->AddLocalizedString("ou",
       IDS_CERT_INFO_ORGANIZATIONAL_UNIT_LABEL);
-  html_source->AddLocalizedString("sn", IDS_CERT_INFO_SERIAL_NUMBER_LABEL);
   html_source->AddLocalizedString("validity", IDS_CERT_INFO_VALIDITY_GROUP);
   html_source->AddLocalizedString("issuedOn", IDS_CERT_INFO_ISSUED_ON_LABEL);
   html_source->AddLocalizedString("expiresOn", IDS_CERT_INFO_EXPIRES_ON_LABEL);

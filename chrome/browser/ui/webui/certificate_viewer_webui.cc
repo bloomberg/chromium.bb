@@ -135,9 +135,6 @@ std::string CertificateViewerModalDialog::GetDialogArgs() const {
   cert_info.SetString("general.issued-ou",
       x509_certificate_model::GetSubjectOrgUnitName(cert_hnd,
                                                     alternative_text));
-  cert_info.SetString("general.issued-sn",
-      x509_certificate_model::GetSerialNumberHexified(cert_hnd,
-                                                      alternative_text));
 
   // Issuer information.
   cert_info.SetString("general.issuer-cn",
