@@ -27,6 +27,11 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
   // online.
   /** @const */ var IDLE_TIME_CHECK_FREQUENCY = 5 * 1000;
 
+  // Amount of time allowed for video based SAML logins, to prevent a site
+  // from keeping the camera on indefinitely.  This is a hard deadline and
+  // it will not be extended by user activity.
+  /** @const */ var VIDEO_LOGIN_TIMEOUT = 180 * 1000;
+
   /**
    * The modes this screen can be in.
    * @enum {integer}
@@ -80,6 +85,13 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * @private
      */
     loadAnimationGuardTimer_: undefined,
+
+    /**
+     * Timer id of the video login timer.
+     * @type {number}
+     * @private
+     */
+    videoTimer_: undefined,
 
     /**
      * Whether we've processed 'showView' message - either from GAIA or from
@@ -624,6 +636,16 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     },
 
     /**
+     * Clean up from a video-enabled SAML flow.
+     */
+    clearVideoTimer_: function() {
+      if (this.videoTimer_ !== undefined) {
+        clearTimeout(this.videoTimer_);
+        this.videoTimer_ = undefined;
+      }
+    },
+
+    /**
      * Invoked when the authDomain property is changed on the GAIA host.
      */
     onAuthDomainChange_: function() {
@@ -635,6 +657,12 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     onVideoEnabledChange_: function() {
       this.updateSamlNotice_();
+      if (this.gaiaAuthHost_.videoEnabled && this.videoTimer_ === undefined) {
+        this.videoTimer_ = setTimeout(this.cancel.bind(this),
+            VIDEO_LOGIN_TIMEOUT);
+      } else {
+        this.clearVideoTimer_();
+      }
     },
 
     /**
@@ -855,6 +883,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       // Clear any error messages that were shown before login.
       Oobe.clearErrors();
 
+      this.clearVideoTimer_();
       this.authCompleted_ = true;
       this.updateControlsState();
     },
@@ -948,6 +977,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      * Called when user canceled signin.
      */
     cancel: function() {
+      this.clearVideoTimer_();
       if (!this.navigation_.refreshVisible && !this.navigation_.closeVisible)
         return;
 
