@@ -22,13 +22,19 @@ void TestDataReductionProxyConfigurator::Enable(
     const std::vector<net::ProxyServer>& proxies_for_http) {
   enabled_ = true;
   restricted_ = secure_transport_restricted;
-  proxies_for_http_ = proxies_for_http;
+  DataReductionProxyConfigurator::Enable(secure_transport_restricted,
+                                         proxies_for_http);
 }
 
 void TestDataReductionProxyConfigurator::Disable() {
   enabled_ = false;
   restricted_ = false;
-  proxies_for_http_ = std::vector<net::ProxyServer>();
+  DataReductionProxyConfigurator::Disable();
+}
+
+const std::vector<net::ProxyServer>&
+TestDataReductionProxyConfigurator::proxies_for_http() const {
+  return GetProxyConfig().proxy_rules().proxies_for_http.GetAll();
 }
 
 }  // namespace data_reduction_proxy

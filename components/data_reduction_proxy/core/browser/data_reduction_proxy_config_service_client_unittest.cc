@@ -199,20 +199,23 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     not_found_reads_[1] = net::MockRead(net::SYNCHRONOUS, net::OK);
   }
 
-  void SetDataReductionProxyEnabled(bool enabled) {
-    test_context_->config()->SetStateForTest(enabled, true);
+  void SetDataReductionProxyEnabled(bool enabled, bool secure_proxy_allowed) {
+    test_context_->config()->SetStateForTest(enabled, secure_proxy_allowed);
   }
 
   void ResetBackoffEntryReleaseTime() {
     config_client()->SetCustomReleaseTime(base::TimeTicks::UnixEpoch());
   }
 
-  void VerifyRemoteSuccess() {
+  void VerifyRemoteSuccess(bool expect_secure_proxies) {
     std::vector<net::ProxyServer> expected_http_proxies;
-    expected_http_proxies.push_back(net::ProxyServer::FromURI(
-        kSuccessOrigin, net::ProxyServer::SCHEME_HTTP));
+    if (expect_secure_proxies) {
+      expected_http_proxies.push_back(net::ProxyServer::FromURI(
+          kSuccessOrigin, net::ProxyServer::SCHEME_HTTP));
+    }
     expected_http_proxies.push_back(net::ProxyServer::FromURI(
         kSuccessFallback, net::ProxyServer::SCHEME_HTTP));
+    expected_http_proxies.push_back(net::ProxyServer::Direct());
     EXPECT_EQ(base::TimeDelta::FromSeconds(kConfigRefreshDurationSeconds),
               config_client()->GetDelay());
     EXPECT_THAT(configurator()->proxies_for_http(),
@@ -228,6 +231,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
         kOldSuccessOrigin, net::ProxyServer::SCHEME_HTTP));
     expected_http_proxies.push_back(net::ProxyServer::FromURI(
         kOldSuccessFallback, net::ProxyServer::SCHEME_HTTP));
+    expected_http_proxies.push_back(net::ProxyServer::Direct());
     EXPECT_EQ(base::TimeDelta::FromSeconds(kConfigRefreshDurationSeconds),
               config_client()->GetDelay());
     EXPECT_THAT(configurator()->proxies_for_http(),
@@ -235,12 +239,15 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     EXPECT_EQ(kOldSuccessSessionKey, request_options()->GetSecureSession());
   }
 
-  void VerifySuccessWithLoadedConfig() {
+  void VerifySuccessWithLoadedConfig(bool expect_secure_proxies) {
     std::vector<net::ProxyServer> expected_http_proxies;
-    expected_http_proxies.push_back(net::ProxyServer::FromURI(
-        kPersistedOrigin, net::ProxyServer::SCHEME_HTTP));
+    if (expect_secure_proxies) {
+      expected_http_proxies.push_back(net::ProxyServer::FromURI(
+          kPersistedOrigin, net::ProxyServer::SCHEME_HTTP));
+    }
     expected_http_proxies.push_back(net::ProxyServer::FromURI(
         kPersistedFallback, net::ProxyServer::SCHEME_HTTP));
+    expected_http_proxies.push_back(net::ProxyServer::Direct());
     EXPECT_THAT(configurator()->proxies_for_http(),
                 testing::ContainerEq(expected_http_proxies));
     EXPECT_EQ(kPersistedSessionKey, request_options()->GetSecureSession());
@@ -332,7 +339,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     // Use a remote config.
     AddMockSuccess();
 
-    SetDataReductionProxyEnabled(true);
+    SetDataReductionProxyEnabled(true, true);
 
     config_client()->RetrieveConfig();
     RunUntilIdle();
@@ -343,7 +350,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     std::vector<net::ProxyServer> proxies_for_http =
         configurator()->proxies_for_http();
 
-    EXPECT_EQ(2U, proxies_for_http.size());
+    EXPECT_EQ(3U, proxies_for_http.size());
 
     EXPECT_EQ(net::ProxyServer(
                   expected_primary_proxy_scheme,
@@ -468,7 +475,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, EnsureBackoff) {
 
   EXPECT_EQ(0, config_client()->failed_attempts_before_success());
 
-  SetDataReductionProxyEnabled(true);
+  SetDataReductionProxyEnabled(true, true);
   EXPECT_TRUE(configurator()->proxies_for_http().empty());
 
   // First attempt should be unsuccessful.
@@ -501,14 +508,56 @@ TEST_F(DataReductionProxyConfigServiceClientTest, EnsureBackoff) {
 TEST_F(DataReductionProxyConfigServiceClientTest, RemoteConfigSuccess) {
   Init(true, false, std::string());
   AddMockSuccess();
-  SetDataReductionProxyEnabled(true);
+  SetDataReductionProxyEnabled(true, true);
   EXPECT_TRUE(configurator()->proxies_for_http().empty());
   config_client()->RetrieveConfig();
   RunUntilIdle();
-  VerifyRemoteSuccess();
+  VerifyRemoteSuccess(true);
 #if defined(OS_ANDROID)
   EXPECT_FALSE(config_client()->foreground_fetch_pending());
 #endif
+}
+
+// Tests that the config is read successfully on the first attempt, and secure
+// proxies are not used if the secure check failed.
+TEST_F(DataReductionProxyConfigServiceClientTest,
+       RemoteConfigSuccessWithSecureCheckFail) {
+  Init(true, false, std::string());
+  AddMockSuccess();
+  SetDataReductionProxyEnabled(true, false);
+  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  config_client()->RetrieveConfig();
+  RunUntilIdle();
+  VerifyRemoteSuccess(false);
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(config_client()->foreground_fetch_pending());
+#endif
+}
+
+// Tests that the config is read successfully on the first attempt, and secure
+// proxies are not used if the secure proxy check fails later after some time.
+TEST_F(DataReductionProxyConfigServiceClientTest,
+       RemoteConfigSuccessWithDelayedSecureCheckFail) {
+  Init(true, false, std::string());
+  AddMockSuccess();
+  SetDataReductionProxyEnabled(true, true);
+  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  config_client()->RetrieveConfig();
+  RunUntilIdle();
+  VerifyRemoteSuccess(true);
+#if defined(OS_ANDROID)
+  EXPECT_FALSE(config_client()->foreground_fetch_pending());
+#endif
+
+  std::vector<net::ProxyServer> http_proxies;
+  http_proxies.push_back(
+      net::ProxyServer::FromURI(kSuccessOrigin, net::ProxyServer::SCHEME_HTTP));
+  http_proxies.push_back(net::ProxyServer::FromURI(
+      kSuccessFallback, net::ProxyServer::SCHEME_HTTP));
+
+  // Secure check failed.
+  configurator()->Enable(true /* secure_transport_restricted */, http_proxies);
+  VerifyRemoteSuccess(false);
 }
 
 // Tests that the config is read successfully on the second attempt.
@@ -522,7 +571,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
 
   EXPECT_EQ(0, config_client()->failed_attempts_before_success());
 
-  SetDataReductionProxyEnabled(true);
+  SetDataReductionProxyEnabled(true, true);
   EXPECT_TRUE(configurator()->proxies_for_http().empty());
 
   // First attempt should be unsuccessful.
@@ -536,7 +585,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   // Second attempt should be successful.
   config_client()->RetrieveConfig();
   RunUntilIdle();
-  VerifyRemoteSuccess();
+  VerifyRemoteSuccess(true);
   EXPECT_EQ(0, config_client()->failed_attempts_before_success());
 
   histogram_tester.ExpectUniqueSample(
@@ -547,7 +596,60 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
 // Verifies that the config is fetched successfully after IP address changes.
 TEST_F(DataReductionProxyConfigServiceClientTest, OnIPAddressChange) {
   Init(true, false, std::string());
-  SetDataReductionProxyEnabled(true);
+  const struct {
+    bool secure_proxies_allowed;
+  } tests[] = {
+      {
+          true,
+      },
+      {
+          false,
+      },
+  };
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    SetDataReductionProxyEnabled(true, tests[i].secure_proxies_allowed);
+    config_client()->RetrieveConfig();
+
+    const int kFailureCount = 5;
+
+    std::vector<std::unique_ptr<net::SocketDataProvider>> socket_data_providers;
+    for (int i = 0; i < kFailureCount; ++i) {
+      AddMockFailure();
+      config_client()->RetrieveConfig();
+      RunUntilIdle();
+    }
+
+    // Verify that the backoff increased exponentially.
+    EXPECT_EQ(base::TimeDelta::FromSeconds(320),
+              config_client()->GetDelay());  // 320 = 20 * 2^(5-1)
+    EXPECT_EQ(kFailureCount, config_client()->GetBackoffErrorCount());
+
+    // IP address change should reset.
+    config_client()->OnIPAddressChanged();
+    EXPECT_EQ(0, config_client()->GetBackoffErrorCount());
+    EXPECT_EQ(i == 0, persisted_config().empty());
+    ResetBackoffEntryReleaseTime();
+
+    // Fetching the config should be successful.
+    AddMockSuccess();
+    config_client()->RetrieveConfig();
+    RunUntilIdle();
+    VerifyRemoteSuccess(tests[i].secure_proxies_allowed);
+
+    // Disable in preparation for the next test.
+    configurator()->Disable();
+  }
+}
+
+// Verifies that the config is fetched successfully after IP address changes,
+// and secure proxies are not used if the secure proxy check fails later after
+// some time.
+TEST_F(DataReductionProxyConfigServiceClientTest,
+       OnIPAddressChangeDelayedSecureProxyCheckFail) {
+  Init(true, false, std::string());
+
+  SetDataReductionProxyEnabled(true, true);
   config_client()->RetrieveConfig();
 
   const int kFailureCount = 5;
@@ -574,7 +676,17 @@ TEST_F(DataReductionProxyConfigServiceClientTest, OnIPAddressChange) {
   AddMockSuccess();
   config_client()->RetrieveConfig();
   RunUntilIdle();
-  VerifyRemoteSuccess();
+  VerifyRemoteSuccess(true);
+
+  std::vector<net::ProxyServer> http_proxies;
+  http_proxies.push_back(
+      net::ProxyServer::FromURI(kSuccessOrigin, net::ProxyServer::SCHEME_HTTP));
+  http_proxies.push_back(net::ProxyServer::FromURI(
+      kSuccessFallback, net::ProxyServer::SCHEME_HTTP));
+
+  // Secure check failed.
+  configurator()->Enable(true /* secure_transport_restricted */, http_proxies);
+  VerifyRemoteSuccess(false);
 }
 
 // Verifies that fetching the remote config has no effect if the config client
@@ -582,7 +694,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, OnIPAddressChange) {
 TEST_F(DataReductionProxyConfigServiceClientTest, OnIPAddressChangeDisabled) {
   Init(true, false, std::string());
   config_client()->SetEnabled(false);
-  SetDataReductionProxyEnabled(true);
+  SetDataReductionProxyEnabled(true, true);
   config_client()->RetrieveConfig();
   EXPECT_TRUE(request_options()->GetSecureSession().empty());
 
@@ -620,7 +732,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
   AddMockSuccess();
   AddMockPreviousSuccess();
 
-  SetDataReductionProxyEnabled(true);
+  SetDataReductionProxyEnabled(true, true);
   histogram_tester.ExpectTotalCount(
       "DataReductionProxy.ConfigService.AuthExpired", 0);
   config_client()->RetrieveConfig();
@@ -658,7 +770,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
       "DataReductionProxy.ConfigService.AuthFailure.LatencyPenalty", 1);
 
   // Second remote config should be fetched.
-  VerifyRemoteSuccess();
+  VerifyRemoteSuccess(true);
 
   // Trigger a second auth failure.
   origin =
@@ -704,7 +816,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   AddMockSuccess();
   AddMockPreviousSuccess();
 
-  SetDataReductionProxyEnabled(true);
+  SetDataReductionProxyEnabled(true, true);
   histogram_tester.ExpectTotalCount(
       "DataReductionProxy.ConfigService.AuthExpired", 0);
   config_client()->RetrieveConfig();
@@ -781,7 +893,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, HTTPRequests) {
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     base::HistogramTester histogram_tester;
-    SetDataReductionProxyEnabled(tests[i].enabled_by_user);
+    SetDataReductionProxyEnabled(tests[i].enabled_by_user, true);
 
     net::TestDelegate test_delegate;
 
@@ -808,15 +920,35 @@ TEST_F(DataReductionProxyConfigServiceClientTest, ApplySerializedConfig) {
   Init(true, false, std::string());
   AddMockSuccess();
 
-  SetDataReductionProxyEnabled(true);
+  SetDataReductionProxyEnabled(true, true);
   EXPECT_TRUE(configurator()->proxies_for_http().empty());
   config_client()->ApplySerializedConfig(loaded_config());
-  VerifySuccessWithLoadedConfig();
+  VerifySuccessWithLoadedConfig(true);
   EXPECT_TRUE(persisted_config().empty());
 
   config_client()->RetrieveConfig();
   RunUntilIdle();
-  VerifyRemoteSuccess();
+  VerifyRemoteSuccess(true);
+}
+
+// Tests that remote config can be applied after the serialized config has been
+// applied. Verifies that if the secure transport is restricted, then the
+// secure proxies are not used.
+TEST_F(DataReductionProxyConfigServiceClientTest,
+       ApplySerializedConfigWithSecureTransportRestricted) {
+  Init(true, false, std::string());
+
+  AddMockSuccess();
+
+  SetDataReductionProxyEnabled(true, false);
+  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  config_client()->ApplySerializedConfig(loaded_config());
+  VerifySuccessWithLoadedConfig(false);
+  EXPECT_TRUE(persisted_config().empty());
+
+  config_client()->RetrieveConfig();
+  RunUntilIdle();
+  VerifyRemoteSuccess(false);
 }
 
 // Tests that serialized config has no effect after the config has been
@@ -826,32 +958,32 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   Init(true, false, std::string());
   AddMockSuccess();
 
-  SetDataReductionProxyEnabled(true);
+  SetDataReductionProxyEnabled(true, true);
   EXPECT_TRUE(configurator()->proxies_for_http().empty());
   EXPECT_TRUE(request_options()->GetSecureSession().empty());
 
   // Retrieve the remote config.
   config_client()->RetrieveConfig();
   RunUntilIdle();
-  VerifyRemoteSuccess();
+  VerifyRemoteSuccess(true);
 
   // ApplySerializedConfig should not have any effect since the remote config is
   // already applied.
   config_client()->ApplySerializedConfig(encoded_config());
-  VerifyRemoteSuccess();
+  VerifyRemoteSuccess(true);
 }
 
 // Tests that a local serialized config can be applied successfully if remote
 // config has not been fetched so far.
 TEST_F(DataReductionProxyConfigServiceClientTest, ApplySerializedConfigLocal) {
   Init(true, false, std::string());
-  SetDataReductionProxyEnabled(true);
+  SetDataReductionProxyEnabled(true, true);
   EXPECT_TRUE(configurator()->proxies_for_http().empty());
   EXPECT_TRUE(request_options()->GetSecureSession().empty());
 
   // ApplySerializedConfig should apply the encoded config.
   config_client()->ApplySerializedConfig(encoded_config());
-  EXPECT_EQ(2U, configurator()->proxies_for_http().size());
+  EXPECT_EQ(3U, configurator()->proxies_for_http().size());
   EXPECT_TRUE(persisted_config().empty());
   EXPECT_FALSE(request_options()->GetSecureSession().empty());
 }
@@ -861,7 +993,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, ApplySerializedConfigLocal) {
 // and foreground.
 TEST_F(DataReductionProxyConfigServiceClientTest, FetchConfigOnForeground) {
   Init(true, false, std::string());
-  SetDataReductionProxyEnabled(true);
+  SetDataReductionProxyEnabled(true, true);
 
   {
     // Tests that successful config fetches while Chromium is in background,
@@ -871,7 +1003,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, FetchConfigOnForeground) {
     config_client()->set_application_state_background(true);
     config_client()->RetrieveConfig();
     RunUntilIdle();
-    VerifyRemoteSuccess();
+    VerifyRemoteSuccess(true);
     EXPECT_FALSE(config_client()->foreground_fetch_pending());
     histogram_tester.ExpectTotalCount(
         "DataReductionProxy.ConfigService.FetchLatency", 1);
@@ -927,7 +1059,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, FetchConfigOnForeground) {
         "DataReductionProxy.ConfigService.FetchLatency", 1);
     EXPECT_EQ(base::TimeDelta::FromSeconds(kConfigRefreshDurationSeconds),
               config_client()->GetDelay());
-    VerifyRemoteSuccess();
+    VerifyRemoteSuccess(true);
   }
 }
 #endif

@@ -53,11 +53,6 @@ class DataReductionProxyConfigurator {
   // each time the proxy is enabled, but are not updated while it is enabled.
   virtual void AddHostPatternToBypass(const std::string& pattern);
 
-  // Adds a URL pattern to bypass the proxy. The base implementation strips
-  // everything in |pattern| after the first single slash and then treats it
-  // as a hostname pattern.
-  virtual void AddURLPatternToBypass(const std::string& pattern);
-
   // Returns the current data reduction proxy config, even if it is not the
   // effective configuration used by the proxy service.
   const net::ProxyConfig& GetProxyConfig() const;

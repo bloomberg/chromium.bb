@@ -139,26 +139,16 @@ TEST_F(DataReductionProxyConfiguratorTest, TestDisable) {
 TEST_F(DataReductionProxyConfiguratorTest, TestBypassList) {
   config_->AddHostPatternToBypass("http://www.google.com");
   config_->AddHostPatternToBypass("fefe:13::abc/33");
-  config_->AddURLPatternToBypass("foo.org/images/*");
-  config_->AddURLPatternToBypass("http://foo.com/*");
-  config_->AddURLPatternToBypass("http://baz.com:22/bar/*");
-  config_->AddURLPatternToBypass("http://*bat.com/bar/*");
 
   std::string expected[] = {
     "http://www.google.com",
     "fefe:13::abc/33",
-    "foo.org",
-    "http://foo.com",
-    "http://baz.com:22",
-    "http://*bat.com"
   };
 
-  ASSERT_EQ(config_->bypass_rules_.size(), 6u);
+  ASSERT_EQ(arraysize(expected), config_->bypass_rules_.size());
   int i = 0;
-  for (std::vector<std::string>::iterator it = config_->bypass_rules_.begin();
-       it != config_->bypass_rules_.end(); ++it) {
-    EXPECT_EQ(expected[i++], *it);
-  }
+  for (const std::string& bypass_rule : config_->bypass_rules_)
+    EXPECT_EQ(expected[i++], bypass_rule);
 }
 
 }  // namespace data_reduction_proxy

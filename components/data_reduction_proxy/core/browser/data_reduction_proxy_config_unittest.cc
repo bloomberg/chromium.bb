@@ -169,18 +169,33 @@ TEST_F(DataReductionProxyConfigTest, TestUpdateConfigurator) {
   ResetSettings(true, true, true, false);
 
   std::vector<net::ProxyServer> expected_http_proxies;
-  config()->UpdateConfigurator(true, false);
+  config()->UpdateConfigurator(true /* enabled */,
+                               true /* secure_proxy_allowed */);
   EXPECT_TRUE(configurator()->enabled());
   expected_http_proxies.push_back(net::ProxyServer::FromURI(
       params()->DefaultOrigin(), net::ProxyServer::SCHEME_HTTP));
   expected_http_proxies.push_back(net::ProxyServer::FromURI(
       params()->DefaultFallbackOrigin(), net::ProxyServer::SCHEME_HTTP));
+  expected_http_proxies.push_back(net::ProxyServer::Direct());
   EXPECT_THAT(configurator()->proxies_for_http(),
               testing::ContainerEq(expected_http_proxies));
 
-  config()->UpdateConfigurator(false, false);
+  config()->UpdateConfigurator(false /* enabled */,
+                               false /* secure_proxy_allowed */);
   EXPECT_FALSE(configurator()->enabled());
   EXPECT_TRUE(configurator()->proxies_for_http().empty());
+
+  config()->UpdateConfigurator(true /* enabled */,
+                               false /* secure_proxy_allowed */);
+  EXPECT_TRUE(configurator()->enabled());
+  expected_http_proxies.clear();
+  expected_http_proxies.push_back(net::ProxyServer::FromURI(
+      params()->DefaultOrigin(), net::ProxyServer::SCHEME_HTTP));
+  expected_http_proxies.push_back(net::ProxyServer::FromURI(
+      params()->DefaultFallbackOrigin(), net::ProxyServer::SCHEME_HTTP));
+  expected_http_proxies.push_back(net::ProxyServer::Direct());
+  EXPECT_THAT(configurator()->proxies_for_http(),
+              testing::ContainerEq(expected_http_proxies));
 }
 
 TEST_F(DataReductionProxyConfigTest, TestUpdateConfiguratorHoldback) {

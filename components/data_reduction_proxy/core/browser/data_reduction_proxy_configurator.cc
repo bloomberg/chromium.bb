@@ -74,22 +74,6 @@ void DataReductionProxyConfigurator::AddHostPatternToBypass(
   bypass_rules_.push_back(pattern);
 }
 
-void DataReductionProxyConfigurator::AddURLPatternToBypass(
-    const std::string& pattern) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  size_t pos = pattern.find('/');
-  if (pattern.find('/', pos + 1) == pos + 1)
-    pos = pattern.find('/', pos + 2);
-
-  std::string host_pattern;
-  if (pos != std::string::npos)
-    host_pattern = pattern.substr(0, pos);
-  else
-    host_pattern = pattern;
-
-  AddHostPatternToBypass(host_pattern);
-}
-
 const net::ProxyConfig& DataReductionProxyConfigurator::GetProxyConfig() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return config_;

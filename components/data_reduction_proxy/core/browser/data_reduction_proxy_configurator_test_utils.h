@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 
 namespace net {
@@ -33,10 +34,6 @@ class TestDataReductionProxyConfigurator
 
   void Disable() override;
 
-  void AddHostPatternToBypass(const std::string& pattern) override {}
-
-  void AddURLPatternToBypass(const std::string& pattern) override {}
-
   bool enabled() const {
     return enabled_;
   }
@@ -45,9 +42,9 @@ class TestDataReductionProxyConfigurator
     return restricted_;
   }
 
-  const std::vector<net::ProxyServer>& proxies_for_http() const {
-    return proxies_for_http_;
-  }
+  // Returns the proxies in use by the proxy config. May include the DIRECT
+  // proxy.
+  const std::vector<net::ProxyServer>& proxies_for_http() const;
 
  private:
   // True if the proxy has been enabled, i.e., only after |Enable| has been
@@ -59,8 +56,7 @@ class TestDataReductionProxyConfigurator
   // to false.
   bool restricted_;
 
-  // The origins that are passed to |Enable|.
-  std::vector<net::ProxyServer> proxies_for_http_;
+  DISALLOW_COPY_AND_ASSIGN(TestDataReductionProxyConfigurator);
 };
 
 }  // namespace data_reduction_proxy
