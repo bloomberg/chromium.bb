@@ -172,7 +172,7 @@ crbug.com/453312 html5lib/generated/run-tests20-data.html [ Slow ]
 crbug.com/453312 html5lib/generated/run-webkit01-data.html [ Slow ]
 crbug.com/453312 html5lib/webkit-resumer.html [ Slow ]
 
-crbug.com/577381 [ Linux Debug ] imported/web-platform-tests/encoding/api-invalid-label.html [ Slow ]
+crbug.com/577381 [ Linux Debug ] imported/wpt/encoding/api-invalid-label.html [ Slow ]
 crbug.com/577381 [ Linux Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_tests10.html [ Slow ]
 crbug.com/577381 [ Linux Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_tests21.html [ Slow ]
 crbug.com/577381 [ Linux Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_webkit01.html [ Slow ]
