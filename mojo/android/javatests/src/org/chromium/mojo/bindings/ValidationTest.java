@@ -5,7 +5,6 @@
 package org.chromium.mojo.bindings;
 
 import android.test.suitebuilder.annotation.SmallTest;
-import android.util.Log;
 
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.mojo.HandleMock;
@@ -35,7 +34,8 @@ public class ValidationTest extends MojoTestCase {
      * The path where validation test data is.
      */
     private static final File VALIDATION_TEST_DATA_PATH =
-            new File(UrlUtils.getTestFilePath("bindings/validation"));
+            new File(UrlUtils.getIsolatedTestFilePath(
+                "mojo/public/interfaces/bindings/tests/data/validation"));
 
     /**
      * The data needed for a validation test.
@@ -84,10 +84,10 @@ public class ValidationTest extends MojoTestCase {
             throws FileNotFoundException {
         List<TestData> results = new ArrayList<TestData>();
 
-        // Do not fail if the test data is not present.
+        // Fail if the test data is not present.
         if (!VALIDATION_TEST_DATA_PATH.isDirectory()) {
-            Log.w("ValidationTest", "No test found.");
-            return results;
+            fail("No test data directory found. "
+                    + "Expected directory at: " + VALIDATION_TEST_DATA_PATH);
         }
 
         File[] files = VALIDATION_TEST_DATA_PATH.listFiles(new DataFileFilter(prefix));
