@@ -1,6 +1,7 @@
 /*
  * Copyright © 2012 Intel Corporation
  * Copyright © 2015 Collabora, Ltd.
+ * Copyright © 2016 NVIDIA Corporation
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -2639,6 +2640,67 @@ gl_renderer_output_set_border(struct weston_output *output,
 static int
 gl_renderer_setup(struct weston_compositor *ec, EGLSurface egl_surface);
 
+static EGLSurface
+gl_renderer_create_window_surface(struct gl_renderer *gr,
+				  EGLNativeWindowType window_for_legacy,
+				  void *window_for_platform,
+				  const EGLint *config_attribs,
+				  const EGLint *visual_id,
+				  int n_ids)
+{
+	EGLSurface egl_surface = EGL_NO_SURFACE;
+	EGLConfig egl_config;
+
+	if (egl_choose_config(gr, config_attribs, visual_id,
+			      n_ids, &egl_config) == -1) {
+		weston_log("failed to choose EGL config for output\n");
+		return EGL_NO_SURFACE;
+	}
+
+	if (egl_config != gr->egl_config &&
+	    !gr->has_configless_context) {
+		weston_log("attempted to use a different EGL config for an "
+			   "output but EGL_MESA_configless_context is not "
+			   "supported\n");
+		return EGL_NO_SURFACE;
+	}
+
+	log_egl_config_info(gr->egl_display, egl_config);
+
+	if (gr->create_platform_window)
+		egl_surface = gr->create_platform_window(gr->egl_display,
+							 egl_config,
+							 window_for_platform,
+							 NULL);
+	else
+		egl_surface = eglCreateWindowSurface(gr->egl_display,
+						     egl_config,
+						     window_for_legacy, NULL);
+
+	return egl_surface;
+}
+
+static int
+gl_renderer_output_create(struct weston_output *output,
+			  EGLSurface surface)
+{
+	struct gl_output_state *go;
+	int i;
+
+	go = zalloc(sizeof *go);
+	if (go == NULL)
+		return -1;
+
+	go->egl_surface = surface;
+
+	for (i = 0; i < BUFFER_DAMAGE_COUNT; i++)
+		pixman_region32_init(&go->buffer_damage[i]);
+
+	output->renderer_state = go;
+
+	return 0;
+}
+
 static int
 gl_renderer_output_window_create(struct weston_output *output,
 				 EGLNativeWindowType window_for_legacy,
@@ -2649,55 +2711,24 @@ gl_renderer_output_window_create(struct weston_output *output,
 {
 	struct weston_compositor *ec = output->compositor;
 	struct gl_renderer *gr = get_renderer(ec);
-	struct gl_output_state *go;
-	EGLConfig egl_config;
-	int i;
+	EGLSurface egl_surface = EGL_NO_SURFACE;
+	int ret = 0;
 
-	if (egl_choose_config(gr, config_attribs, visual_id,
-			      n_ids, &egl_config) == -1) {
-		weston_log("failed to choose EGL config for output\n");
-		return -1;
-	}
-
-	if (egl_config != gr->egl_config &&
-	    !gr->has_configless_context) {
-		weston_log("attempted to use a different EGL config for an "
-			   "output but EGL_MESA_configless_context is not "
-			   "supported\n");
-		return -1;
-	}
-
-	go = zalloc(sizeof *go);
-	if (go == NULL)
-		return -1;
-
-	if (gr->create_platform_window) {
-		go->egl_surface =
-			gr->create_platform_window(gr->egl_display,
-						   egl_config,
-						   window_for_platform,
-						   NULL);
-	} else {
-		go->egl_surface =
-			eglCreateWindowSurface(gr->egl_display,
-					       egl_config,
-					       window_for_legacy, NULL);
-	}
-
-	if (go->egl_surface == EGL_NO_SURFACE) {
+	egl_surface = gl_renderer_create_window_surface(gr,
+							window_for_legacy,
+							window_for_platform,
+							config_attribs,
+							visual_id, n_ids);
+	if (egl_surface == EGL_NO_SURFACE) {
 		weston_log("failed to create egl surface\n");
-		free(go);
 		return -1;
 	}
 
-	for (i = 0; i < BUFFER_DAMAGE_COUNT; i++)
-		pixman_region32_init(&go->buffer_damage[i]);
+	ret = gl_renderer_output_create(output, egl_surface);
+	if (ret < 0)
+		eglDestroySurface(gr->egl_display, egl_surface);
 
-	output->renderer_state = go;
-
-	log_egl_config_info(gr->egl_display, egl_config);
-
-	return 0;
+	return ret;
 }
 
 static void
