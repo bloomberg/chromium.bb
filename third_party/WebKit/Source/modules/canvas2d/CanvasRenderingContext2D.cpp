@@ -354,9 +354,9 @@ void CanvasRenderingContext2D::scrollPathIntoViewInternal(const Path& path)
 void CanvasRenderingContext2D::clearRect(double x, double y, double width, double height)
 {
     BaseRenderingContext2D::clearRect(x, y, width, height);
-    FloatRect rect(x, y, width, height);
 
     if (m_hitRegionManager) {
+        FloatRect rect(x, y, width, height);
         m_hitRegionManager->removeHitRegionsInRect(rect, state().transform());
     }
 }
