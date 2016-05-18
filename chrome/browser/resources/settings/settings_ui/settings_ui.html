@@ -119,6 +119,33 @@
         --paper-input-max-width: 200px;
       }
 
+      /* These header elements must create stacking contexts when a section is
+       * expanding to show a sub-page. (It's simpler for them to always create
+       * these stacking contexts, so we do.) But for the overlay to work, the
+       * paper-header-panel's other descendents (rooted at settings-main) must
+       * never create stacking contexts while a dialog is showing. This means
+       * we cannot animate a section expanding/collapsing while a dialog is
+       * shown (which makes good UX sense anyway.) I have discovered a truly
+       * non-marvellous proof of this, which this comment cannot contain:
+       * https://goo.gl/CCzijE */
+      paper-header-panel[main] paper-toolbar {
+        z-index: 2;
+      }
+
+      paper-header-panel[main] {
+        --paper-header-panel-shadow: {
+          z-index: 2;
+        };
+      }
+
+      /* The paper-drawer-panel implementation gives the drawer a stacking
+       * context, so its z-index should at least equal the main panel's. */
+      paper-drawer-panel[narrow] {
+        --paper-drawer-panel-drawer-container: {
+          z-index: 2;
+        };
+      }
+
       paper-toolbar {
         --paper-toolbar-height: 56px;
         --paper-toolbar-sm-height: 56px;
