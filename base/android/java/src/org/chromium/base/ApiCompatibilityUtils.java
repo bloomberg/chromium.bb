@@ -288,6 +288,17 @@ public class ApiCompatibilityUtils {
         }
     }
 
+    /**
+     * Set elevation if supported.
+     */
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public static boolean setElevation(View view, float elevationValue) {
+        if (!isElevationSupported()) return false;
+
+        view.setElevation(elevationValue);
+        return true;
+    }
+
     private static class FinishAndRemoveTaskWithRetry implements Runnable {
         private static final long RETRY_DELAY_MS = 500;
         private static final long MAX_TRY_COUNT = 3;

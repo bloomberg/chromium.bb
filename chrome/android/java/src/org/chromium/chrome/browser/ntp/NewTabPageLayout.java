@@ -175,12 +175,10 @@ public class NewTabPageLayout extends LinearLayout {
     private void setSearchBoxStyle() {
         if ((ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS)
                     || ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_MATERIAL_DESIGN))
-                && ApiCompatibilityUtils.isElevationSupported()) {
+                && ApiCompatibilityUtils.setElevation(mSearchBoxView,
+                           getResources().getDimensionPixelSize(R.dimen.toolbar_elevation))) {
             // Replace drawable with one that does not contain a border.
             mSearchBoxView.setBackgroundResource(R.drawable.bg_ntp_search_box_material);
-            // Add an elevation to the search box.
-            mSearchBoxView.setElevation(
-                    getResources().getDimensionPixelSize(R.dimen.toolbar_elevation));
         }
     }
 
