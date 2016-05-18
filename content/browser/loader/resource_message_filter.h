@@ -14,8 +14,6 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/common/resource_type.h"
 
-struct ResourceHostMsg_Request;
-
 namespace storage {
 class FileSystemContext;
 }  // namespace storage

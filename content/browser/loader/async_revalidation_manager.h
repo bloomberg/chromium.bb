@@ -12,7 +12,6 @@
 #include "base/macros.h"
 
 class GURL;
-struct ResourceHostMsg_Request;
 
 namespace net {
 class URLRequest;
@@ -24,6 +23,7 @@ namespace content {
 class AsyncRevalidationDriver;
 class ResourceContext;
 class ResourceScheduler;
+struct ResourceRequest;
 
 // One instance of this class manages all active AsyncRevalidationDriver objects
 // for all profiles. It is created by and owned by
@@ -44,8 +44,7 @@ class AsyncRevalidationManager {
   void CancelAsyncRevalidationsForResourceContext(
       ResourceContext* resource_context);
 
-  static bool QualifiesForAsyncRevalidation(
-      const ResourceHostMsg_Request& request);
+  static bool QualifiesForAsyncRevalidation(const ResourceRequest& request);
 
  private:
   // The key of the map of pending async revalidations. This key has a distinct

@@ -20,7 +20,7 @@
 namespace content {
 
 // Can be used by callers to store extra data on every ResourceRequest
-// which will be incorporated into the ResourceHostMsg_Request message
+// which will be incorporated into the ResourceHostMsg_RequestResource message
 // sent by ResourceDispatcher.
 class CONTENT_EXPORT RequestExtraData
     : public NON_EXPORTED_BASE(blink::WebURLRequest::ExtraData) {

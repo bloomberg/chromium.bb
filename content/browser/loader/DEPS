@@ -29,6 +29,7 @@ specific_include_rules = {
 
     # TODO: To be replaced by mojo.
     "+content/common/resource_messages.h",
+    "+content/common/resource_request_completion_status.h",
     "+content/common/view_messages.h",
   ],
   "async_revalidation_driver\.(cc|h)": [
@@ -61,6 +62,7 @@ specific_include_rules = {
 
     # TODO: To be replaced by mojo.
     "+content/common/resource_messages.h",
+    "+content/common/resource_request.h",
   ],
   "resource_buffer.*\.(cc|h)": [
     "-content",
@@ -175,6 +177,8 @@ specific_include_rules = {
 
     # TODO: To be replaced by mojo.
     "+content/common/resource_messages.h",
+    "+content/common/resource_request.h",
+    "+content/common/resource_request_completion_status.h",
     "+content/common/view_messages.h",
   ],
   "resource_handler\.(cc|h)": [

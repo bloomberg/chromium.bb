@@ -28,9 +28,6 @@
 #include "net/base/request_priority.h"
 #include "url/gurl.h"
 
-struct ResourceHostMsg_Request;
-struct ResourceMsg_RequestCompleteData;
-
 namespace net {
 struct RedirectInfo;
 }
@@ -42,6 +39,8 @@ class ResourceRequestBody;
 class ResourceSchedulingFilter;
 struct ResourceResponseInfo;
 struct RequestInfo;
+struct ResourceRequest;
+struct ResourceRequestCompletionStatus;
 struct ResourceResponseHead;
 class SharedMemoryReceivedDataFactory;
 struct SiteIsolationResponseMetaData;
@@ -187,7 +186,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   void OnDownloadedData(int request_id, int data_len, int encoded_data_length);
   void OnRequestComplete(
       int request_id,
-      const ResourceMsg_RequestCompleteData& request_complete_data);
+      const ResourceRequestCompletionStatus& request_complete_data);
 
   // Dispatch the message to one of the message response handlers.
   void DispatchMessage(const IPC::Message& message);
@@ -223,7 +222,7 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
   // for use on deferred message queues that are no longer needed.
   static void ReleaseResourcesInMessageQueue(MessageQueue* queue);
 
-  std::unique_ptr<ResourceHostMsg_Request> CreateRequest(
+  std::unique_ptr<ResourceRequest> CreateRequest(
       const RequestInfo& request_info,
       ResourceRequestBody* request_body,
       GURL* frame_origin);

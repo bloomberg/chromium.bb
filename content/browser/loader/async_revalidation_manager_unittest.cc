@@ -21,6 +21,7 @@
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/resource_messages.h"
+#include "content/common/resource_request.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/process_type.h"
@@ -240,10 +241,10 @@ class BlackholeFilter : public ResourceMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(BlackholeFilter);
 };
 
-ResourceHostMsg_Request CreateResourceRequest(const char* method,
-                                              ResourceType type,
-                                              const GURL& url) {
-  ResourceHostMsg_Request request;
+ResourceRequest CreateResourceRequest(const char* method,
+                                      ResourceType type,
+                                      const GURL& url) {
+  ResourceRequest request;
   request.method = std::string(method);
   request.url = url;
   request.first_party_for_cookies = url;  // Bypass third-party cookie blocking.
@@ -301,7 +302,7 @@ class AsyncRevalidationManagerTest : public ::testing::Test {
   // Creates a request using the current test object as the filter and
   // SubResource as the resource type.
   void MakeTestRequest(int render_view_id, int request_id, const GURL& url) {
-    ResourceHostMsg_Request request =
+    ResourceRequest request =
         CreateResourceRequest("GET", RESOURCE_TYPE_SUB_RESOURCE, url);
     ResourceHostMsg_RequestResource msg(render_view_id, request_id, request);
     host_.OnMessageReceived(msg, filter_.get());
@@ -337,7 +338,7 @@ TEST_F(AsyncRevalidationManagerTest, SupportsAsyncRevalidation) {
 TEST_F(AsyncRevalidationManagerTest, AsyncRevalidationNotSupportedForPOST) {
   SetResponse(net::URLRequestTestJob::test_headers(), "delay complete");
   // Create POST request.
-  ResourceHostMsg_Request request = CreateResourceRequest(
+  ResourceRequest request = CreateResourceRequest(
       "POST", RESOURCE_TYPE_SUB_RESOURCE, GURL("http://example.com/baz.php"));
   ResourceHostMsg_RequestResource msg(0, 1, request);
   host_.OnMessageReceived(msg, filter_.get());

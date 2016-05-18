@@ -13,6 +13,7 @@
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/loader/resource_scheduler.h"
 #include "content/common/resource_messages.h"
+#include "content/common/resource_request.h"
 #include "content/public/browser/resource_throttle.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_transaction_factory.h"
@@ -164,7 +165,7 @@ void AsyncRevalidationManager::CancelAsyncRevalidationsForResourceContext(
 }
 
 bool AsyncRevalidationManager::QualifiesForAsyncRevalidation(
-    const ResourceHostMsg_Request& request) {
+    const ResourceRequest& request) {
   if (request.load_flags &
       (net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
        net::LOAD_VALIDATE_CACHE | net::LOAD_PREFERRING_CACHE |

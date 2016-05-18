@@ -47,7 +47,6 @@
 #include "net/url_request/url_request.h"
 
 class ResourceHandler;
-struct ResourceHostMsg_Request;
 
 namespace base {
 class FilePath;
@@ -80,6 +79,7 @@ struct CommonNavigationParams;
 struct DownloadSaveInfo;
 struct NavigationRequestInfo;
 struct Referrer;
+struct ResourceRequest;
 
 // This class is responsible for notifying the IO thread (specifically, the
 // ResourceDispatcherHostImpl) of frame events. It has an interace for callers
@@ -465,9 +465,9 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   void OnRequestResource(int routing_id,
                          int request_id,
-                         const ResourceHostMsg_Request& request_data);
+                         const ResourceRequest& request_data);
   void OnSyncLoad(int request_id,
-                  const ResourceHostMsg_Request& request_data,
+                  const ResourceRequest& request_data,
                   IPC::Message* sync_result);
 
   bool IsRequestIDInUse(const GlobalRequestID& id) const;
@@ -477,19 +477,19 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void UpdateRequestForTransfer(int child_id,
                                 int route_id,
                                 int request_id,
-                                const ResourceHostMsg_Request& request_data,
+                                const ResourceRequest& request_data,
                                 LoaderMap::iterator iter);
 
   void BeginRequest(int request_id,
-                    const ResourceHostMsg_Request& request_data,
+                    const ResourceRequest& request_data,
                     IPC::Message* sync_result,  // only valid for sync
-                    int route_id);  // only valid for async
+                    int route_id);              // only valid for async
 
   // Creates a ResourceHandler to be used by BeginRequest() for normal resource
   // loading.
   std::unique_ptr<ResourceHandler> CreateResourceHandler(
       net::URLRequest* request,
-      const ResourceHostMsg_Request& request_data,
+      const ResourceRequest& request_data,
       IPC::Message* sync_result,
       int route_id,
       int process_type,
@@ -553,7 +553,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void UnregisterResourceMessageDelegate(const GlobalRequestID& id,
                                          ResourceMessageDelegate* delegate);
 
-  int BuildLoadFlagsForRequest(const ResourceHostMsg_Request& request_data,
+  int BuildLoadFlagsForRequest(const ResourceRequest& request_data,
                                int child_id,
                                bool is_sync_load);
 

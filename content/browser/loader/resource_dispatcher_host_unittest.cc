@@ -37,6 +37,7 @@
 #include "content/common/child_process_host_impl.h"
 #include "content/common/navigation_params.h"
 #include "content/common/resource_messages.h"
+#include "content/common/resource_request.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/global_request_id.h"
@@ -149,10 +150,10 @@ static int RequestIDForMessage(const IPC::Message& msg) {
   return request_id;
 }
 
-static ResourceHostMsg_Request CreateResourceRequest(const char* method,
-                                                     ResourceType type,
-                                                     const GURL& url) {
-  ResourceHostMsg_Request request;
+static ResourceRequest CreateResourceRequest(const char* method,
+                                             ResourceType type,
+                                             const GURL& url) {
+  ResourceRequest request;
   request.method = std::string(method);
   request.url = url;
   request.first_party_for_cookies = url;  // bypass third-party cookie blocking
@@ -1214,7 +1215,7 @@ void ResourceDispatcherHostTest::MakeTestRequestWithRenderFrame(
     int request_id,
     const GURL& url,
     ResourceType type) {
-  ResourceHostMsg_Request request = CreateResourceRequest("GET", type, url);
+  ResourceRequest request = CreateResourceRequest("GET", type, url);
   request.render_frame_id = render_frame_id;
   ResourceHostMsg_RequestResource msg(render_view_id, request_id, request);
   host_.OnMessageReceived(msg, filter_.get());
@@ -1227,8 +1228,7 @@ void ResourceDispatcherHostTest::MakeTestRequestWithResourceType(
     int request_id,
     const GURL& url,
     ResourceType type) {
-  ResourceHostMsg_Request request =
-      CreateResourceRequest("GET", type, url);
+  ResourceRequest request = CreateResourceRequest("GET", type, url);
   ResourceHostMsg_RequestResource msg(render_view_id, request_id, request);
   host_.OnMessageReceived(msg, filter);
   KickOffRequest();
@@ -1245,7 +1245,7 @@ void ResourceDispatcherHostTest::
     MakeWebContentsAssociatedTestRequestWithResourceType(int request_id,
                                                          const GURL& url,
                                                          ResourceType type) {
-  ResourceHostMsg_Request request = CreateResourceRequest("GET", type, url);
+  ResourceRequest request = CreateResourceRequest("GET", type, url);
   request.origin_pid = web_contents_->GetRenderProcessHost()->GetID();
   request.render_frame_id = web_contents_->GetMainFrame()->GetRoutingID();
   ResourceHostMsg_RequestResource msg(web_contents_->GetRoutingID(), request_id,
@@ -1267,7 +1267,7 @@ void ResourceDispatcherHostTest::MakeTestRequestWithPriorityAndRenderFrame(
     int render_frame_id,
     int request_id,
     net::RequestPriority priority) {
-  ResourceHostMsg_Request request = CreateResourceRequest(
+  ResourceRequest request = CreateResourceRequest(
       "GET", RESOURCE_TYPE_SUB_RESOURCE, GURL("http://example.com/priority"));
   request.render_frame_id = render_frame_id;
   request.priority = priority;
@@ -1578,9 +1578,9 @@ TEST_P(ResourceDispatcherHostTest, DetachedResourceTimesOut) {
 // load.
 TEST_P(ResourceDispatcherHostTest, DeletedFilterDetached) {
   // test_url_1's data is available synchronously, so use 2 and 3.
-  ResourceHostMsg_Request request_prefetch = CreateResourceRequest(
+  ResourceRequest request_prefetch = CreateResourceRequest(
       "GET", RESOURCE_TYPE_PREFETCH, net::URLRequestTestJob::test_url_2());
-  ResourceHostMsg_Request request_ping = CreateResourceRequest(
+  ResourceRequest request_ping = CreateResourceRequest(
       "GET", RESOURCE_TYPE_PING, net::URLRequestTestJob::test_url_3());
 
   ResourceHostMsg_RequestResource msg_prefetch(0, 1, request_prefetch);
@@ -1629,7 +1629,7 @@ TEST_P(ResourceDispatcherHostTest, DeletedFilterDetached) {
 // If the filter has disappeared (original process dies) then detachable
 // resources should continue to load, even when redirected.
 TEST_P(ResourceDispatcherHostTest, DeletedFilterDetachedRedirect) {
-  ResourceHostMsg_Request request = CreateResourceRequest(
+  ResourceRequest request = CreateResourceRequest(
       "GET", RESOURCE_TYPE_PREFETCH,
       net::URLRequestTestJob::test_url_redirect_to_url_2());
 
@@ -2785,9 +2785,8 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationHtml) {
   int new_render_view_id = 1;
   int new_request_id = 2;
 
-  ResourceHostMsg_Request request =
-      CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME,
-                            GURL("http://other.com/blech"));
+  ResourceRequest request = CreateResourceRequest(
+      "GET", RESOURCE_TYPE_MAIN_FRAME, GURL("http://other.com/blech"));
   request.transferred_request_child_id = filter_->child_id();
   request.transferred_request_request_id = request_id;
 
@@ -2865,7 +2864,7 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationCertificateUpdate) {
   int new_render_view_id = 1;
   int new_request_id = 2;
 
-  ResourceHostMsg_Request request = CreateResourceRequest(
+  ResourceRequest request = CreateResourceRequest(
       "GET", RESOURCE_TYPE_MAIN_FRAME, GURL("https://example.com/blech"));
   request.transferred_request_child_id = filter_->child_id();
   request.transferred_request_request_id = request_id;
@@ -2953,9 +2952,8 @@ TEST_P(ResourceDispatcherHostTest, TransferTwoNavigationsHtml) {
   // Transfer the first request.
   int new_render_view_id = 1;
   int new_request_id = 5;
-  ResourceHostMsg_Request request =
-      CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME,
-                            GURL("http://example.com/blah"));
+  ResourceRequest request = CreateResourceRequest(
+      "GET", RESOURCE_TYPE_MAIN_FRAME, GURL("http://example.com/blah"));
   request.transferred_request_child_id = filter_->child_id();
   request.transferred_request_request_id = request_id;
 
@@ -2966,9 +2964,8 @@ TEST_P(ResourceDispatcherHostTest, TransferTwoNavigationsHtml) {
 
   // Transfer the second request.
   int new_second_request_id = 6;
-  ResourceHostMsg_Request second_request =
-      CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME,
-                            GURL("http://example.com/foo"));
+  ResourceRequest second_request = CreateResourceRequest(
+      "GET", RESOURCE_TYPE_MAIN_FRAME, GURL("http://example.com/foo"));
   request.transferred_request_child_id = filter_->child_id();
   request.transferred_request_request_id = second_request_id;
 
@@ -3042,9 +3039,8 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationText) {
   int new_render_view_id = 1;
   int new_request_id = 2;
 
-  ResourceHostMsg_Request request =
-      CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME,
-                            GURL("http://other.com/blech"));
+  ResourceRequest request = CreateResourceRequest(
+      "GET", RESOURCE_TYPE_MAIN_FRAME, GURL("http://other.com/blech"));
   request.transferred_request_child_id = filter_->child_id();
   request.transferred_request_request_id = request_id;
 
@@ -3094,9 +3090,8 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationWithProcessCrash) {
     scoped_refptr<ForwardingFilter> first_filter = MakeForwardingFilter();
     first_child_id = first_filter->child_id();
 
-    ResourceHostMsg_Request first_request =
-        CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME,
-                              GURL("http://example.com/blah"));
+    ResourceRequest first_request = CreateResourceRequest(
+        "GET", RESOURCE_TYPE_MAIN_FRAME, GURL("http://example.com/blah"));
 
     ResourceHostMsg_RequestResource first_request_msg(
         render_view_id, request_id, first_request);
@@ -3130,9 +3125,8 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationWithProcessCrash) {
   int new_render_view_id = 1;
   int new_request_id = 2;
 
-  ResourceHostMsg_Request request =
-      CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME,
-                            GURL("http://other.com/blech"));
+  ResourceRequest request = CreateResourceRequest(
+      "GET", RESOURCE_TYPE_MAIN_FRAME, GURL("http://other.com/blech"));
   request.transferred_request_child_id = first_child_id;
   request.transferred_request_request_id = request_id;
 
@@ -3213,9 +3207,8 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationWithTwoRedirects) {
   int new_render_view_id = 1;
   int new_request_id = 2;
 
-  ResourceHostMsg_Request request =
-      CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME,
-                            GURL("http://other.com/blech"));
+  ResourceRequest request = CreateResourceRequest(
+      "GET", RESOURCE_TYPE_MAIN_FRAME, GURL("http://other.com/blech"));
   request.transferred_request_child_id = filter_->child_id();
   request.transferred_request_request_id = request_id;
 
@@ -3520,7 +3513,7 @@ TEST_P(ResourceDispatcherHostTest, ReleaseTemporiesOnProcessExit) {
 
 TEST_P(ResourceDispatcherHostTest, DownloadToFile) {
   // Make a request which downloads to file.
-  ResourceHostMsg_Request request = CreateResourceRequest(
+  ResourceRequest request = CreateResourceRequest(
       "GET", RESOURCE_TYPE_SUB_RESOURCE, net::URLRequestTestJob::test_url_1());
   request.download_to_file = true;
   ResourceHostMsg_RequestResource request_msg(0, 1, request);

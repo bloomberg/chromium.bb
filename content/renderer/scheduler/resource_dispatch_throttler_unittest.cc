@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "content/common/resource_messages.h"
+#include "content/common/resource_request.h"
 #include "content/test/fake_renderer_scheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -126,7 +127,7 @@ class ResourceDispatchThrottlerTest : public testing::Test, public IPC::Sender {
   bool FlushScheduled() { return throttler_->flush_scheduled(); }
 
   bool RequestResource() {
-    ResourceHostMsg_Request request;
+    ResourceRequest request;
     request.download_to_file = true;
     return throttler_->Send(new ResourceHostMsg_RequestResource(
         kRoutingId, ++last_request_id_, request));
@@ -135,7 +136,7 @@ class ResourceDispatchThrottlerTest : public testing::Test, public IPC::Sender {
   bool RequestResourceSync() {
     SyncLoadResult result;
     return throttler_->Send(new ResourceHostMsg_SyncLoad(
-        kRoutingId, ++last_request_id_, ResourceHostMsg_Request(), &result));
+        kRoutingId, ++last_request_id_, ResourceRequest(), &result));
   }
 
   void RequestResourcesUntilThrottled() {

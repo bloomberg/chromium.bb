@@ -31,6 +31,8 @@
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_params.h"
 #include "content/common/resource_messages.h"
+#include "content/common/resource_request.h"
+#include "content/common/resource_request_completion_status.h"
 #include "content/public/child/fixed_received_data.h"
 #include "content/public/child/request_peer.h"
 #include "content/public/child/resource_dispatcher_delegate.h"
@@ -341,7 +343,7 @@ void ResourceDispatcher::FollowPendingRedirect(
 
 void ResourceDispatcher::OnRequestComplete(
     int request_id,
-    const ResourceMsg_RequestCompleteData& request_complete_data) {
+    const ResourceRequestCompletionStatus& request_complete_data) {
   TRACE_EVENT0("loader", "ResourceDispatcher::OnRequestComplete");
 
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
@@ -542,7 +544,7 @@ void ResourceDispatcher::FlushDeferredMessages(int request_id) {
 void ResourceDispatcher::StartSync(const RequestInfo& request_info,
                                    ResourceRequestBody* request_body,
                                    SyncLoadResponse* response) {
-  std::unique_ptr<ResourceHostMsg_Request> request =
+  std::unique_ptr<ResourceRequest> request =
       CreateRequest(request_info, request_body, NULL);
 
   SyncLoadResult result;
@@ -574,7 +576,7 @@ int ResourceDispatcher::StartAsync(const RequestInfo& request_info,
                                    ResourceRequestBody* request_body,
                                    std::unique_ptr<RequestPeer> peer) {
   GURL frame_origin;
-  std::unique_ptr<ResourceHostMsg_Request> request =
+  std::unique_ptr<ResourceRequest> request =
       CreateRequest(request_info, request_body, &frame_origin);
 
   // Compute a unique request_id for this renderer process.
@@ -730,11 +732,11 @@ void ResourceDispatcher::ReleaseResourcesInMessageQueue(MessageQueue* queue) {
   }
 }
 
-std::unique_ptr<ResourceHostMsg_Request> ResourceDispatcher::CreateRequest(
+std::unique_ptr<ResourceRequest> ResourceDispatcher::CreateRequest(
     const RequestInfo& request_info,
     ResourceRequestBody* request_body,
     GURL* frame_origin) {
-  std::unique_ptr<ResourceHostMsg_Request> request(new ResourceHostMsg_Request);
+  std::unique_ptr<ResourceRequest> request(new ResourceRequest);
   request->method = request_info.method;
   request->url = request_info.url;
   request->first_party_for_cookies = request_info.first_party_for_cookies;

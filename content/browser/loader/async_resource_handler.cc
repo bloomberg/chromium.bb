@@ -25,6 +25,7 @@
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/common/resource_messages.h"
+#include "content/common/resource_request_completion_status.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/common/content_features.h"
@@ -523,7 +524,7 @@ void AsyncResourceHandler::OnResponseCompleted(
     error_code = net::ERR_FAILED;
   }
 
-  ResourceMsg_RequestCompleteData request_complete_data;
+  ResourceRequestCompletionStatus request_complete_data;
   request_complete_data.error_code = error_code;
   request_complete_data.was_ignored_by_handler = was_ignored_by_handler;
   request_complete_data.exists_in_cache = request()->response_info().was_cached;

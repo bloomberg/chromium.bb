@@ -75,6 +75,8 @@
 #include "content/common/navigation_params.h"
 #include "content/common/net/url_request_service_worker_data.h"
 #include "content/common/resource_messages.h"
+#include "content/common/resource_request.h"
+#include "content/common/resource_request_completion_status.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
@@ -235,7 +237,7 @@ void AbortRequestBeforeItStarts(ResourceMessageFilter* filter,
     filter->Send(sync_result);
   } else {
     // Tell the renderer that this request was disallowed.
-    ResourceMsg_RequestCompleteData request_complete_data;
+    ResourceRequestCompletionStatus request_complete_data;
     request_complete_data.error_code = net::ERR_ABORTED;
     request_complete_data.was_ignored_by_handler = false;
     request_complete_data.exists_in_cache = false;
@@ -294,7 +296,7 @@ void SetReferrerForRequest(net::URLRequest* request, const Referrer& referrer) {
 // if the renderer is attempting to upload an unauthorized file.
 bool ShouldServiceRequest(int process_type,
                           int child_id,
-                          const ResourceHostMsg_Request& request_data,
+                          const ResourceRequest& request_data,
                           const net::HttpRequestHeaders& headers,
                           ResourceMessageFilter* filter,
                           ResourceContext* resource_context) {
@@ -1215,7 +1217,7 @@ bool ResourceDispatcherHostImpl::OnMessageReceived(
 void ResourceDispatcherHostImpl::OnRequestResource(
     int routing_id,
     int request_id,
-    const ResourceHostMsg_Request& request_data) {
+    const ResourceRequest& request_data) {
   // TODO(pkasting): Remove ScopedTracker below once crbug.com/477117 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
@@ -1247,10 +1249,9 @@ void ResourceDispatcherHostImpl::OnRequestResource(
 //
 // If sync_result is non-null, then a SyncLoad reply will be generated, else
 // a normal asynchronous set of response messages will be generated.
-void ResourceDispatcherHostImpl::OnSyncLoad(
-    int request_id,
-    const ResourceHostMsg_Request& request_data,
-    IPC::Message* sync_result) {
+void ResourceDispatcherHostImpl::OnSyncLoad(int request_id,
+                                            const ResourceRequest& request_data,
+                                            IPC::Message* sync_result) {
   BeginRequest(request_id, request_data, sync_result,
                sync_result->routing_id());
 }
@@ -1273,7 +1274,7 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
     int child_id,
     int route_id,
     int request_id,
-    const ResourceHostMsg_Request& request_data,
+    const ResourceRequest& request_data,
     LoaderMap::iterator iter) {
   ResourceRequestInfoImpl* info = iter->second->GetRequestInfo();
   GlobalFrameRoutingId old_routing_id(request_data.transferred_request_child_id,
@@ -1365,7 +1366,7 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
 
 void ResourceDispatcherHostImpl::BeginRequest(
     int request_id,
-    const ResourceHostMsg_Request& request_data,
+    const ResourceRequest& request_data,
     IPC::Message* sync_result,  // only valid for sync
     int route_id) {
   int process_type = filter_->process_type();
@@ -1635,7 +1636,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
 std::unique_ptr<ResourceHandler>
 ResourceDispatcherHostImpl::CreateResourceHandler(
     net::URLRequest* request,
-    const ResourceHostMsg_Request& request_data,
+    const ResourceRequest& request_data,
     IPC::Message* sync_result,
     int route_id,
     int process_type,
@@ -2647,7 +2648,7 @@ void ResourceDispatcherHostImpl::UnregisterResourceMessageDelegate(
 }
 
 int ResourceDispatcherHostImpl::BuildLoadFlagsForRequest(
-    const ResourceHostMsg_Request& request_data,
+    const ResourceRequest& request_data,
     int child_id,
     bool is_sync_load) {
   int load_flags = request_data.load_flags;

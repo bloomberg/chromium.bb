@@ -23,6 +23,8 @@
 #include "content/child/request_info.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/resource_messages.h"
+#include "content/common/resource_request.h"
+#include "content/common/resource_request_completion_status.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/child/fixed_received_data.h"
 #include "content/public/child/request_peer.h"
@@ -172,7 +174,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
       ADD_FAILURE() << "Expected ResourceHostMsg_RequestResource message";
       return -1;
     }
-    ResourceHostMsg_Request request = base::get<2>(params);
+    ResourceRequest request = base::get<2>(params);
     EXPECT_EQ(kTestPageUrl, request.url.spec());
     message_queue_.erase(message_queue_.begin());
     return base::get<1>(params);
@@ -283,7 +285,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
   }
 
   void NotifyRequestComplete(int request_id, size_t total_size) {
-    ResourceMsg_RequestCompleteData request_complete_data;
+    ResourceRequestCompletionStatus request_complete_data;
     request_complete_data.error_code = net::OK;
     request_complete_data.was_ignored_by_handler = false;
     request_complete_data.exists_in_cache = false;
