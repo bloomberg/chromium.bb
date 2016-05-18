@@ -3284,8 +3284,18 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     internal_data->set_must_reset_scroll_and_scale_state(false);
   }
 
+  const RequestNavigationParams& request_params =
+      navigation_state->request_params();
   bool is_new_navigation = commit_type == blink::WebStandardCommit;
-  if (is_new_navigation) {
+
+  // Ensure that we allocate a page ID if this is the first navigation for the
+  // page in this process.  This can happen even when is_new_navigation
+  // is false, such as after a cross-process location.replace navigation.
+  bool should_init_page_id = render_view_->page_id_ == -1 &&
+                             request_params.page_id == -1 &&
+                             request_params.nav_entry_id != 0 &&
+                             !navigation_state->IsContentInitiated();
+  if (is_new_navigation || should_init_page_id) {
     // We bump our Page ID to correspond with the new session history entry.
     render_view_->page_id_ = render_view_->next_page_id_++;
 
@@ -3301,8 +3311,6 @@ void RenderFrameImpl::didCommitProvisionalLoad(
           render_view_->history_list_offset_ + 1;
     }
   } else {
-    const RequestNavigationParams& request_params =
-        navigation_state->request_params();
     if (request_params.nav_entry_id != 0 &&
         !request_params.intended_as_new_entry) {
       // This is a successful session history navigation!

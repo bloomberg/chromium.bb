@@ -640,6 +640,51 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   EXPECT_EQ(0, memcmp(raw_data, element.data.data(), length));
 }
 
+// Check that page ID will be initialized in case of navigation
+// that replaces current entry.
+TEST_F(RenderViewImplTest, OnBrowserNavigationUpdatePageID) {
+  // An http url will trigger a resource load so cannot be used here.
+  CommonNavigationParams common_params;
+  StartNavigationParams start_params;
+  RequestNavigationParams request_params;
+  common_params.url = GURL("data:text/html,<div>Page</div>");
+  common_params.navigation_type = FrameMsg_Navigate_Type::NORMAL;
+  common_params.transition = ui::PAGE_TRANSITION_TYPED;
+
+  // Set up params to emulate a browser side navigation
+  // that should replace current entry.
+  common_params.should_replace_current_entry = true;
+  request_params.page_id = -1;
+  request_params.nav_entry_id = 1;
+  request_params.current_history_list_length = 1;
+
+  frame()->Navigate(common_params, start_params, request_params);
+  ProcessPendingMessages();
+
+  // Page ID should be initialized.
+  EXPECT_NE(view_page_id(), -1);
+
+  const IPC::Message* frame_navigate_msg =
+      render_thread_->sink().GetUniqueMessageMatching(
+          FrameHostMsg_DidCommitProvisionalLoad::ID);
+  EXPECT_TRUE(frame_navigate_msg);
+
+  FrameHostMsg_DidCommitProvisionalLoad::Param host_nav_params;
+  FrameHostMsg_DidCommitProvisionalLoad::Read(frame_navigate_msg,
+                                              &host_nav_params);
+  EXPECT_TRUE(base::get<0>(host_nav_params).page_state.IsValid());
+
+  const IPC::Message* frame_page_id_msg =
+      render_thread_->sink().GetUniqueMessageMatching(
+          FrameHostMsg_DidAssignPageId::ID);
+  EXPECT_TRUE(frame_page_id_msg);
+
+  FrameHostMsg_DidAssignPageId::Param host_page_id_params;
+  FrameHostMsg_DidAssignPageId::Read(frame_page_id_msg, &host_page_id_params);
+
+  EXPECT_EQ(base::get<0>(host_page_id_params), view_page_id());
+}
+
 #if defined(OS_ANDROID)
 TEST_F(RenderViewImplTest, OnNavigationLoadDataWithBaseURL) {
   CommonNavigationParams common_params;

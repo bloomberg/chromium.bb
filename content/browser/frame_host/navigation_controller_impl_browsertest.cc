@@ -453,6 +453,38 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // will have to suffice.
 }
 
+// Check that we will not trigger a DCHECK in renderer for cross-process
+// replacement navigations.
+// See https://crbug.com/611679.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       PageIDUpdatedOnPageReplacement) {
+  NavigationController& controller = shell()->web_contents()->GetController();
+  const GURL page_url = embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html");
+
+  // Use data scheme first so that the next page will be loaded
+  // in a separate site instance.
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("data:text/html,page1")));
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_NE(-1, shell()->web_contents()->GetMaxPageID());
+
+  // Now navigate and replace the current entry.
+  NavigateToURLAndReplace(shell(), page_url);
+  EXPECT_EQ(1, controller.GetEntryCount());
+
+  // Page ID should be updated.
+  EXPECT_NE(-1, shell()->web_contents()->GetMaxPageID());
+
+  // Reload the page and verify that we don't hit
+  // a DCHECK in |RenderFrameImpl::NavigateInternal|.
+  controller.Reload(false);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // DCHECK shouldn't be triggered and we should have a valid page ID.
+  EXPECT_NE(-1, shell()->web_contents()->GetMaxPageID());
+  EXPECT_TRUE(shell()->web_contents()->GetMainFrame()->IsRenderFrameLive());
+}
+
 namespace {
 
 class NoNavigationsObserver : public WebContentsObserver {
