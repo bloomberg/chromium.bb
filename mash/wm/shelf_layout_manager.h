@@ -18,15 +18,23 @@ class ShelfLayoutManager : public LayoutManager {
   explicit ShelfLayoutManager(mus::Window* owner);
   ~ShelfLayoutManager() override;
 
-  void SetAlignment(mash::shelf::mojom::Alignment alignment);
-  void SetAutoHideBehavior(mash::shelf::mojom::AutoHideBehavior auto_hide);
+  // Returns the shelf, which may be null.
+  mus::Window* GetShelfWindow();
+
+  void SetAlignment(shelf::mojom::Alignment alignment);
+  void SetAutoHideBehavior(shelf::mojom::AutoHideBehavior auto_hide);
+
+  shelf::mojom::Alignment alignment() const { return alignment_; }
+  shelf::mojom::AutoHideBehavior auto_hide_behavior() const {
+    return auto_hide_behavior_;
+  }
 
  private:
   // Overridden from LayoutManager:
   void LayoutWindow(mus::Window* window) override;
 
-  mash::shelf::mojom::Alignment alignment_;
-  mash::shelf::mojom::AutoHideBehavior auto_hide_behavior_;
+  shelf::mojom::Alignment alignment_;
+  shelf::mojom::AutoHideBehavior auto_hide_behavior_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };

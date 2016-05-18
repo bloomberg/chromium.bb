@@ -14,12 +14,20 @@ namespace wm {
 
 ShelfLayoutManager::ShelfLayoutManager(mus::Window* owner)
     : LayoutManager(owner),
-      alignment_(mash::shelf::mojom::Alignment::BOTTOM),
-      auto_hide_behavior_(mash::shelf::mojom::AutoHideBehavior::NEVER) {
+      alignment_(shelf::mojom::Alignment::BOTTOM),
+      auto_hide_behavior_(shelf::mojom::AutoHideBehavior::NEVER) {
   AddLayoutProperty(mus::mojom::WindowManager::kPreferredSize_Property);
 }
 
 ShelfLayoutManager::~ShelfLayoutManager() {}
+
+mus::Window* ShelfLayoutManager::GetShelfWindow() {
+  for (mus::Window* child : owner()->children()) {
+    if (GetAshWindowType(child) == mojom::AshWindowType::SHELF)
+      return child;
+  }
+  return nullptr;
+}
 
 // We explicitly don't make assertions about the number of children in this
 // layout as the number of children can vary when the application providing the
@@ -32,12 +40,12 @@ void ShelfLayoutManager::LayoutWindow(mus::Window* window) {
   }
   gfx::Size size = GetWindowPreferredSize(window);
 
-  if (alignment_ == mash::shelf::mojom::Alignment::BOTTOM) {
+  if (alignment_ == shelf::mojom::Alignment::BOTTOM) {
     const int y = owner()->bounds().height() - size.height();
     size.set_width(owner()->bounds().width());
     window->SetBounds(gfx::Rect(0, y, size.width(), size.height()));
   } else {
-    const int x = (alignment_ == mash::shelf::mojom::Alignment::LEFT)
+    const int x = (alignment_ == shelf::mojom::Alignment::LEFT)
                       ? 0
                       : (owner()->bounds().width() - size.width());
     size.set_height(owner()->bounds().height());
@@ -45,7 +53,7 @@ void ShelfLayoutManager::LayoutWindow(mus::Window* window) {
   }
 }
 
-void ShelfLayoutManager::SetAlignment(mash::shelf::mojom::Alignment alignment) {
+void ShelfLayoutManager::SetAlignment(shelf::mojom::Alignment alignment) {
   if (alignment_ == alignment)
     return;
 
@@ -55,7 +63,7 @@ void ShelfLayoutManager::SetAlignment(mash::shelf::mojom::Alignment alignment) {
 }
 
 void ShelfLayoutManager::SetAutoHideBehavior(
-    mash::shelf::mojom::AutoHideBehavior auto_hide) {
+    shelf::mojom::AutoHideBehavior auto_hide) {
   if (auto_hide_behavior_ == auto_hide)
     return;
 
