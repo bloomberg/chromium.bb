@@ -11096,9 +11096,16 @@ The following application will be launched if you accept this request:
         Use a web service to help resolve navigation errors
       </message>
 
-      <message name="IDS_OPTIONS_SUGGEST_PREF" desc="The documentation string of the 'Use Suggest' preference">
-        Use a prediction service to help complete searches and URLs typed in the address bar or the app launcher search box
-      </message>
+      <if expr="chromeos">
+        <message name="IDS_OPTIONS_SUGGEST_PREF" desc="The documentation string of the 'Use Suggest' preference">
+          Use a prediction service to help complete searches and URLs typed in the address bar or the app launcher search box
+        </message>
+      </if>
+      <if expr="not chromeos">
+        <message name="IDS_OPTIONS_SUGGEST_PREF" desc="The documentation string of the 'Use Suggest' preference">
+          Use a prediction service to help complete searches and URLs typed in the address bar
+        </message>
+      </if>
       <message name="IDS_OPTIONS_SPELLING_PREF" desc="The documentation string of the 'Use Spelling' preference">
         Use a web service to help resolve spelling errors
       </message>
