@@ -9,9 +9,24 @@
 <link rel="import" href="user_list.html">
 
 <dom-module id="settings-users-page">
-  <link rel="import" type="css" href="users_page.css">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      #addUserInput {
+        width: 100%;
+      }
+
+      .add-user-button {
+        padding-top: 25px;
+      }
+
+      .users {
+        -webkit-margin-start: 50px;
+      }
+
+      paper-input {
+        width: 300px;
+      }
+    </style>
     <div class="settings-box"
         hidden$="{{computeHideOwnerLabel_(isOwner, isWhitelistManaged)}}">
       $i18n{usersModifiedByOwnerLabel}
@@ -20,7 +35,7 @@
         hidden$="{{computeHideManagedLabel_(isOwner, isWhitelistManaged)}}">
       $i18n{settingsManagedLabel}
     </div>
-    <div class="settings-box">
+    <div class="settings-box block">
       <settings-checkbox
           pref="{{prefs.cros.accounts.allowBWSI}}"
           label="$i18n{guestBrowsingLabel}"
@@ -36,8 +51,6 @@
           label="$i18n{showOnSigninLabel}"
           disabled="{{editingDisabled}}">
       </settings-checkbox>
-    </div>
-    <div class="settings-box">
       <settings-checkbox
           pref="{{prefs.cros.accounts.allowGuest}}"
           id="restrictSignIn"
