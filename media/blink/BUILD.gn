@@ -140,6 +140,7 @@ test("media_blink_unittests") {
     "mock_weburlloader.h",
     "multibuffer_data_source_unittest.cc",
     "multibuffer_unittest.cc",
+    "resource_multibuffer_data_provider_unittest.cc",
     "run_all_unittests.cc",
     "test_response_generator.cc",
     "test_response_generator.h",
