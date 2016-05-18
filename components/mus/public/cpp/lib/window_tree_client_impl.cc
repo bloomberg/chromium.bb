@@ -1032,7 +1032,8 @@ void WindowTreeClientImpl::WmSetBounds(uint32_t change_id,
       window->SetBounds(bounds);
     }
   }
-  window_manager_internal_client_->WmResponse(change_id, result);
+  if (window_manager_internal_client_)
+    window_manager_internal_client_->WmResponse(change_id, result);
 }
 
 void WindowTreeClientImpl::WmSetProperty(uint32_t change_id,
@@ -1055,7 +1056,8 @@ void WindowTreeClientImpl::WmSetProperty(uint32_t change_id,
       window->SetSharedPropertyInternal(name, data.get());
     }
   }
-  window_manager_internal_client_->WmResponse(change_id, result);
+  if (window_manager_internal_client_)
+    window_manager_internal_client_->WmResponse(change_id, result);
 }
 
 void WindowTreeClientImpl::WmCreateTopLevelWindow(
@@ -1065,8 +1067,10 @@ void WindowTreeClientImpl::WmCreateTopLevelWindow(
       transport_properties.To<std::map<std::string, std::vector<uint8_t>>>();
   Window* window =
       window_manager_delegate_->OnWmCreateTopLevelWindow(&properties);
-  window_manager_internal_client_->OnWmCreatedTopLevelWindow(change_id,
-                                                             server_id(window));
+  if (window_manager_internal_client_) {
+    window_manager_internal_client_->OnWmCreatedTopLevelWindow(
+        change_id, server_id(window));
+  }
 }
 
 void WindowTreeClientImpl::OnAccelerator(uint32_t id, mojom::EventPtr event) {
@@ -1076,8 +1080,10 @@ void WindowTreeClientImpl::OnAccelerator(uint32_t id, mojom::EventPtr event) {
 
 void WindowTreeClientImpl::SetFrameDecorationValues(
     mojom::FrameDecorationValuesPtr values) {
-  window_manager_internal_client_->WmSetFrameDecorationValues(
-      std::move(values));
+  if (window_manager_internal_client_) {
+    window_manager_internal_client_->WmSetFrameDecorationValues(
+        std::move(values));
+  }
 }
 
 void WindowTreeClientImpl::SetNonClientCursor(Window* window,
@@ -1090,32 +1096,42 @@ void WindowTreeClientImpl::AddAccelerator(
     uint32_t id,
     mojom::EventMatcherPtr event_matcher,
     const base::Callback<void(bool)>& callback) {
-  window_manager_internal_client_->AddAccelerator(id, std::move(event_matcher),
-                                                  callback);
+  if (window_manager_internal_client_) {
+    window_manager_internal_client_->AddAccelerator(
+        id, std::move(event_matcher), callback);
+  }
 }
 
 void WindowTreeClientImpl::RemoveAccelerator(uint32_t id) {
-  window_manager_internal_client_->RemoveAccelerator(id);
+  if (window_manager_internal_client_) {
+    window_manager_internal_client_->RemoveAccelerator(id);
+  }
 }
 
 void WindowTreeClientImpl::AddActivationParent(Window* window) {
-  window_manager_internal_client_->AddActivationParent(server_id(window));
+  if (window_manager_internal_client_)
+    window_manager_internal_client_->AddActivationParent(server_id(window));
 }
 
 void WindowTreeClientImpl::RemoveActivationParent(Window* window) {
-  window_manager_internal_client_->RemoveActivationParent(server_id(window));
+  if (window_manager_internal_client_)
+    window_manager_internal_client_->RemoveActivationParent(server_id(window));
 }
 
 void WindowTreeClientImpl::ActivateNextWindow() {
-  window_manager_internal_client_->ActivateNextWindow();
+  if (window_manager_internal_client_)
+    window_manager_internal_client_->ActivateNextWindow();
 }
 
 void WindowTreeClientImpl::SetUnderlaySurfaceOffsetAndExtendedHitArea(
     Window* window,
     const gfx::Vector2d& offset,
     const gfx::Insets& hit_area) {
-  window_manager_internal_client_->SetUnderlaySurfaceOffsetAndExtendedHitArea(
-      server_id(window), offset.x(), offset.y(), mojo::Insets::From(hit_area));
+  if (window_manager_internal_client_) {
+    window_manager_internal_client_->SetUnderlaySurfaceOffsetAndExtendedHitArea(
+        server_id(window), offset.x(), offset.y(),
+        mojo::Insets::From(hit_area));
+  }
 }
 
 }  // namespace mus

@@ -14,6 +14,7 @@
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/tests/test_window.h"
 #include "components/mus/public/cpp/tests/test_window_tree.h"
+#include "components/mus/public/cpp/tests/window_tree_client_impl_private.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_property.h"
@@ -70,39 +71,10 @@ class TestWindowTreeDelegate : public WindowTreeDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestWindowTreeDelegate);
 };
 
-class WindowTreeClientImplPrivate {
- public:
-  WindowTreeClientImplPrivate(WindowTreeClientImpl* tree_client_impl)
-      : tree_client_impl_(tree_client_impl) {}
-  ~WindowTreeClientImplPrivate() {}
-
-  void Init(mojom::WindowTree* window_tree) {
-    mojom::WindowDataPtr root_data(mojom::WindowData::New());
-    root_data->parent_id = 0;
-    root_data->window_id = 1;
-    root_data->bounds = mojo::Rect::From(gfx::Rect());
-    root_data->properties.SetToEmpty();
-    root_data->visible = true;
-    root_data->viewport_metrics = mojom::ViewportMetrics::New();
-    root_data->viewport_metrics->size_in_pixels =
-        mojo::Size::From(gfx::Size(1000, 1000));
-    root_data->viewport_metrics->device_pixel_ratio = 1;
-    tree_client_impl_->OnEmbedImpl(window_tree, 1, std::move(root_data), 0,
-                                   true);
-  }
-
-  uint32_t event_observer_id() { return tree_client_impl_->event_observer_id_; }
-
- private:
-  WindowTreeClientImpl* tree_client_impl_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowTreeClientImplPrivate);
-};
-
 class WindowTreeSetup {
  public:
   WindowTreeSetup() : tree_client_(&window_tree_delegate_, nullptr, nullptr) {
-    WindowTreeClientImplPrivate(&tree_client_).Init(&window_tree_);
+    WindowTreeClientImplPrivate(&tree_client_).OnEmbed(&window_tree_);
     window_tree_.GetAndClearChangeId(nullptr);
   }
 
