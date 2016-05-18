@@ -224,6 +224,7 @@ public class UploadDataProvidersTest extends CronetTestBase {
         System.arraycopy(uploadData, 0, uploadDataWithPadding, offset, uploadData.length);
         UploadDataProvider dataProvider =
                 UploadDataProviders.create(uploadDataWithPadding, offset, uploadData.length);
+        assertEquals(uploadData.length, dataProvider.getLength());
         builder.setUploadDataProvider(dataProvider, callback.getExecutor());
         UrlRequest urlRequest = builder.build();
         urlRequest.start();
