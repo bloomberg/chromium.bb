@@ -97,9 +97,7 @@ void SyncBackendHostImpl::Initialize(
   frontend_ = frontend;
   DCHECK(frontend);
 
-  syncer::ModelSafeRoutingInfo routing_info;
   std::vector<scoped_refptr<syncer::ModelSafeWorker> > workers;
-  registrar_->GetModelSafeRoutingInfo(&routing_info);
   registrar_->GetWorkers(&workers);
 
   InternalComponentsFactory::Switches factory_switches = {
@@ -125,11 +123,10 @@ void SyncBackendHostImpl::Initialize(
   sync_prefs_->GetInvalidationVersions(&invalidation_versions);
 
   std::unique_ptr<DoInitializeOptions> init_opts(new DoInitializeOptions(
-      registrar_->sync_thread()->message_loop(), registrar_.get(), routing_info,
-      workers, sync_client_->GetExtensionsActivity(), event_handler,
-      sync_service_url, sync_user_agent,
-      http_post_provider_factory_getter.Run(
-          core_->GetRequestContextCancelationSignal()),
+      registrar_->sync_thread()->message_loop(), registrar_.get(), workers,
+      sync_client_->GetExtensionsActivity(), event_handler, sync_service_url,
+      sync_user_agent, http_post_provider_factory_getter.Run(
+                           core_->GetRequestContextCancelationSignal()),
       credentials, invalidator_ ? invalidator_->GetInvalidatorClientId() : "",
       std::move(sync_manager_factory), delete_sync_data_folder,
       sync_prefs_->GetEncryptionBootstrapToken(),
@@ -443,6 +440,8 @@ void SyncBackendHostImpl::ActivateNonBlockingDataType(
     syncer::ModelType type,
     std::unique_ptr<syncer_v2::ActivationContext> activation_context) {
   registrar_->RegisterNonBlockingType(type);
+  if (activation_context->data_type_state.initial_sync_done())
+    registrar_->AddRestoredNonBlockingType(type);
   model_type_connector_->ConnectType(type, std::move(activation_context));
 }
 

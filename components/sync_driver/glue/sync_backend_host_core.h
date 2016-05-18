@@ -7,6 +7,10 @@
 
 #include <stdint.h>
 
+#include <map>
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
@@ -28,7 +32,6 @@ struct DoInitializeOptions {
   DoInitializeOptions(
       base::MessageLoop* sync_loop,
       SyncBackendRegistrar* registrar,
-      const syncer::ModelSafeRoutingInfo& routing_info,
       const std::vector<scoped_refptr<syncer::ModelSafeWorker>>& workers,
       const scoped_refptr<syncer::ExtensionsActivity>& extensions_activity,
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
@@ -54,7 +57,6 @@ struct DoInitializeOptions {
 
   base::MessageLoop* sync_loop;
   SyncBackendRegistrar* registrar;
-  syncer::ModelSafeRoutingInfo routing_info;
   std::vector<scoped_refptr<syncer::ModelSafeWorker> > workers;
   scoped_refptr<syncer::ExtensionsActivity> extensions_activity;
   syncer::WeakHandle<syncer::JsEventHandler> event_handler;

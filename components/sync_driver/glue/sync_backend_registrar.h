@@ -80,6 +80,11 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
   // called exactly once during startup.
   void SetInitialTypes(syncer::ModelTypeSet initial_types);
 
+  // Informs SyncBackendRegistrar about non-blocking type loaded from local
+  // storage. Initial sync was already performed for this type, therefore its
+  // data shouldn't be downloaded as part of configuration.
+  void AddRestoredNonBlockingType(syncer::ModelType type);
+
   // Returns whether or not we are currently syncing encryption keys.
   // Must be called on the UI thread.
   bool IsNigoriEnabled() const;

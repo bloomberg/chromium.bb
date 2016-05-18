@@ -1806,9 +1806,7 @@ void ProfileSyncService::ConfigureDataTypeManager() {
   syncer::ModelTypeSet types;
   syncer::ConfigureReason reason = syncer::CONFIGURE_REASON_UNKNOWN;
   types = GetPreferredDataTypes();
-  if (!IsFirstSetupComplete()) {
-    reason = syncer::CONFIGURE_REASON_NEW_CLIENT;
-  } else if (restart) {
+  if (restart) {
     // Datatype downloads on restart are generally due to newly supported
     // datatypes (although it's also possible we're picking up where a failed
     // previous configuration left off).

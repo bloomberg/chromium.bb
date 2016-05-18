@@ -4,10 +4,7 @@
 
 #include "components/sync_driver/glue/sync_backend_host_core.h"
 
-#include <map>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -71,7 +68,6 @@ namespace browser_sync {
 DoInitializeOptions::DoInitializeOptions(
     base::MessageLoop* sync_loop,
     SyncBackendRegistrar* registrar,
-    const syncer::ModelSafeRoutingInfo& routing_info,
     const std::vector<scoped_refptr<syncer::ModelSafeWorker>>& workers,
     const scoped_refptr<syncer::ExtensionsActivity>& extensions_activity,
     const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
@@ -95,7 +91,6 @@ DoInitializeOptions::DoInitializeOptions(
     const std::map<syncer::ModelType, int64_t>& invalidation_versions)
     : sync_loop(sync_loop),
       registrar(registrar),
-      routing_info(routing_info),
       workers(workers),
       extensions_activity(extensions_activity),
       event_handler(event_handler),

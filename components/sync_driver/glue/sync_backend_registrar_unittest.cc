@@ -310,6 +310,39 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateNonUIDataType) {
   TriggerChanges(registrar_.get(), AUTOFILL);
 }
 
+// Tests that registration and configuration of non-blocking data types is
+// handled correctly in SyncBackendRegistrar.
+TEST_F(SyncBackendRegistrarTest, ConfigureNonBlockingDataType) {
+  registrar_->RegisterNonBlockingType(AUTOFILL);
+  registrar_->RegisterNonBlockingType(BOOKMARKS);
+
+  ExpectRoutingInfo(registrar_.get(), syncer::ModelSafeRoutingInfo());
+  // Simulate that initial sync was already done for AUTOFILL.
+  registrar_->AddRestoredNonBlockingType(AUTOFILL);
+  // It should be added to routing info and set of configured types.
+  EXPECT_TRUE(
+      registrar_->GetLastConfiguredTypes().Equals(ModelTypeSet(AUTOFILL)));
+  {
+    syncer::ModelSafeRoutingInfo expected_routing_info;
+    expected_routing_info[AUTOFILL] = syncer::GROUP_NON_BLOCKING;
+    ExpectRoutingInfo(registrar_.get(), expected_routing_info);
+  }
+
+  // Configure two non-blocking types. Initial sync wasn't done for BOOKMARKS so
+  // it should be included in types to be downloaded.
+  ModelTypeSet types_to_add(AUTOFILL, BOOKMARKS);
+  ModelTypeSet newly_added_types =
+      registrar_->ConfigureDataTypes(types_to_add, ModelTypeSet());
+  EXPECT_TRUE(newly_added_types.Equals(ModelTypeSet(BOOKMARKS)));
+  EXPECT_TRUE(registrar_->GetLastConfiguredTypes().Equals(types_to_add));
+  {
+    syncer::ModelSafeRoutingInfo expected_routing_info;
+    expected_routing_info[AUTOFILL] = syncer::GROUP_NON_BLOCKING;
+    expected_routing_info[BOOKMARKS] = syncer::GROUP_NON_BLOCKING;
+    ExpectRoutingInfo(registrar_.get(), expected_routing_info);
+  }
+}
+
 class SyncBackendRegistrarShutdownTest : public testing::Test {
  public:
   void BlockDBThread() {
