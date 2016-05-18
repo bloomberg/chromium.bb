@@ -26,6 +26,15 @@
 
 #include "third_party/webrtc_overrides/webrtc/base/diagnostic_logging.h"
 
+// If WebRTC code is built inside Chromium but run standalone,
+// Chromium logging will be used but not initialised. This is usually
+// OK, but in certain cases we do want that initialisation, so we
+// expose it here. For example, you must call this if you want to
+// decrease the log level below -1, as done by the libfuzzer fuzzers.
+namespace rtc {
+  void InitChromiumLoggingAndCommandLine();
+}
+
 //////////////////////////////////////////////////////////////////////
 // WebRTC macros which in DiagnosticLogMessage are mapped over to
 // their VLOG equivalent in base/logging.h.
