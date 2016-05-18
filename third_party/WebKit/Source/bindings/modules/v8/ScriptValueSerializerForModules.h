@@ -76,7 +76,7 @@ public:
     ScriptValueSerializerForModules(SerializedScriptValueWriter&, const Transferables*, WebBlobInfoArray*, BlobDataHandleMap&, v8::TryCatch&, ScriptState*);
 
 private:
-    ScriptValueSerializer::StateBase* doSerializeValue(v8::Local<v8::Value>, ScriptValueSerializer::StateBase* next) override;
+    ScriptValueSerializer::StateBase* doSerializeObject(v8::Local<v8::Object>, ScriptValueSerializer::StateBase* next) override;
 
     ScriptValueSerializer::StateBase* writeDOMFileSystem(v8::Local<v8::Value>, ScriptValueSerializer::StateBase* next);
     bool writeCryptoKey(v8::Local<v8::Value>);

@@ -312,29 +312,26 @@ void SerializedScriptValueWriterForModules::doWriteKeyUsages(const WebCryptoKeyU
     doWriteUint32(value);
 }
 
-ScriptValueSerializer::StateBase* ScriptValueSerializerForModules::doSerializeValue(v8::Local<v8::Value> value, ScriptValueSerializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializerForModules::doSerializeObject(v8::Local<v8::Object> jsObject, ScriptValueSerializer::StateBase* next)
 {
-    bool isDOMFileSystem = V8DOMFileSystem::hasInstance(value, isolate());
-    bool isCryptoKey = V8CryptoKey::hasInstance(value, isolate());
-    bool isRTCCertificate = V8RTCCertificate::hasInstance(value, isolate());
-    if (isDOMFileSystem || isCryptoKey || isRTCCertificate) {
-        v8::Local<v8::Object> jsObject = value.As<v8::Object>();
-        if (jsObject.IsEmpty())
-            return handleError(DataCloneError, "An object could not be cloned.", next);
-        greyObject(jsObject);
+    DCHECK(!jsObject.IsEmpty());
 
-        if (isDOMFileSystem)
-            return writeDOMFileSystem(value, next);
-        if (isCryptoKey) {
-            if (!writeCryptoKey(value))
-                return handleError(DataCloneError, "Couldn't serialize key data", next);
-            return nullptr;
-        }
-        if (isRTCCertificate)
-            return writeRTCCertificate(value, next);
-        ASSERT_NOT_REACHED();
+    if (V8DOMFileSystem::hasInstance(jsObject, isolate())) {
+        greyObject(jsObject);
+        return writeDOMFileSystem(jsObject, next);
     }
-    return ScriptValueSerializer::doSerializeValue(value, next);
+    if (V8CryptoKey::hasInstance(jsObject, isolate())) {
+        greyObject(jsObject);
+        if (!writeCryptoKey(jsObject))
+            return handleError(DataCloneError, "Couldn't serialize key data", next);
+        return nullptr;
+    }
+    if (V8RTCCertificate::hasInstance(jsObject, isolate())) {
+        greyObject(jsObject);
+        return writeRTCCertificate(jsObject, next);
+    }
+
+    return ScriptValueSerializer::doSerializeObject(jsObject, next);
 }
 
 bool SerializedScriptValueReaderForModules::read(v8::Local<v8::Value>* value, ScriptValueCompositeCreator& creator)

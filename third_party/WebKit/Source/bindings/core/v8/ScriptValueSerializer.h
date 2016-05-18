@@ -366,7 +366,7 @@ protected:
     typedef CollectionState<v8::Set> SetState;
 
     // Functions used by serialization states.
-    virtual StateBase* doSerializeValue(v8::Local<v8::Value>, StateBase* next);
+    virtual StateBase* doSerializeObject(v8::Local<v8::Object>, StateBase* next);
 
 private:
     StateBase* doSerialize(v8::Local<v8::Value>, StateBase* next);
