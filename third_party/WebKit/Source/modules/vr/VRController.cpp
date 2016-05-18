@@ -47,7 +47,7 @@ void VRController::getDevices(std::unique_ptr<VRGetDevicesCallback> callback)
     }
 
     m_pendingGetDevicesCallbacks.append(std::move(callback));
-    m_service->GetDevices(sameThreadBindForMojo(&VRController::OnGetDevices, this));
+    m_service->GetDevices(createBaseCallback(bind<mojo::WTFArray<mojom::blink::VRDeviceInfoPtr>>(&VRController::OnGetDevices, this)));
 }
 
 mojom::blink::VRSensorStatePtr VRController::getSensorState(unsigned index)

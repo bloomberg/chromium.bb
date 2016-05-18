@@ -125,7 +125,7 @@ void VibrationController::doVibrate(Timer<VibrationController>* timer)
 
     if (m_service) {
         m_isCallingVibrate = true;
-        m_service->Vibrate(m_pattern[0], sameThreadBindForMojo(&VibrationController::didVibrate, this));
+        m_service->Vibrate(m_pattern[0], createBaseCallback(bind(&VibrationController::didVibrate, this)));
     }
 }
 
@@ -160,7 +160,7 @@ void VibrationController::cancel()
 
     if (m_isRunning && !m_isCallingCancel && m_service) {
         m_isCallingCancel = true;
-        m_service->Cancel(sameThreadBindForMojo(&VibrationController::didCancel, this));
+        m_service->Cancel(createBaseCallback(bind(&VibrationController::didCancel, this)));
     }
 
     m_isRunning = false;

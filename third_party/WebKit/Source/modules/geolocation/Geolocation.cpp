@@ -421,13 +421,13 @@ void Geolocation::requestPermission()
     m_geolocationPermission = PermissionRequested;
     frame->serviceRegistry()->connectToRemoteService(
         mojo::GetProxy(&m_permissionService));
-    m_permissionService.set_connection_error_handler(sameThreadBindForMojo(&Geolocation::onPermissionConnectionError, this));
+    m_permissionService.set_connection_error_handler(createBaseCallback(bind(&Geolocation::onPermissionConnectionError, WeakPersistentThisPointer<Geolocation>(this))));
 
     // Ask the embedder: it maintains the geolocation challenge policy itself.
     m_permissionService->RequestPermission(
         mojom::blink::PermissionName::GEOLOCATION,
         getExecutionContext()->getSecurityOrigin()->toString(),
-        sameThreadBindForMojo(&Geolocation::onGeolocationPermissionUpdated, this));
+        createBaseCallback(bind<mojom::blink::PermissionStatus>(&Geolocation::onGeolocationPermissionUpdated, this)));
 }
 
 void Geolocation::makeSuccessCallbacks()
@@ -492,7 +492,7 @@ void Geolocation::updateGeolocationServiceConnection()
         return;
 
     frame()->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_geolocationService));
-    m_geolocationService.set_connection_error_handler(sameThreadBindForMojo(&Geolocation::onGeolocationConnectionError, this));
+    m_geolocationService.set_connection_error_handler(createBaseCallback(bind(&Geolocation::onGeolocationConnectionError, WeakPersistentThisPointer<Geolocation>(this))));
     if (m_enableHighAccuracy)
         m_geolocationService->SetHighAccuracy(true);
     queryNextPosition();
@@ -500,8 +500,7 @@ void Geolocation::updateGeolocationServiceConnection()
 
 void Geolocation::queryNextPosition()
 {
-    m_geolocationService->QueryNextPosition(
-        sameThreadBindForMojo(&Geolocation::onPositionUpdated, this));
+    m_geolocationService->QueryNextPosition(createBaseCallback(bind<mojom::blink::GeopositionPtr>(&Geolocation::onPositionUpdated, this)));
 }
 
 void Geolocation::onPositionUpdated(mojom::blink::GeopositionPtr position)

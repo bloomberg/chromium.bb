@@ -23,17 +23,6 @@ R CallWTFFunction(Function<R(Args...)>* functor, Args... args)
 
 }
 
-// Binds an instance of a class to its member function. Does not bind anything
-// else. Provides limited access to base::Bind() function. base::Bind() could
-// be dangerous if it's used across threads, so we don't want to allow general
-// use of base::Bind(). See also "platform/ThreadSafeFunctional.h".
-template <typename Class, typename ReturnType, typename... Args>
-mojo::Callback<ReturnType(Args...)>
-sameThreadBindForMojo(ReturnType (Class::*method)(Args...), Class* instance)
-{
-    return base::Bind(method, base::Unretained(instance));
-}
-
 template <typename R, typename... Args>
 base::Callback<R(Args...)> createBaseCallback(PassOwnPtr<Function<R(Args...)>> functor)
 {

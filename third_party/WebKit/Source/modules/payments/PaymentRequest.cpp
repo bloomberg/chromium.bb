@@ -198,7 +198,7 @@ ScriptPromise PaymentRequest::show(ScriptState* scriptState)
 
     DCHECK(!m_paymentProvider.is_bound());
     scriptState->domWindow()->frame()->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_paymentProvider));
-    m_paymentProvider.set_connection_error_handler(sameThreadBindForMojo(&PaymentRequest::OnError, this));
+    m_paymentProvider.set_connection_error_handler(createBaseCallback(bind(&PaymentRequest::OnError, WeakPersistentThisPointer<PaymentRequest>(this))));
     m_paymentProvider->SetClient(m_clientBinding.CreateInterfacePtrAndBind());
     m_paymentProvider->Show(std::move(m_supportedMethods), mojom::blink::PaymentDetails::From(m_details), mojom::blink::PaymentOptions::From(m_options), m_stringifiedData.isNull() ? "" : m_stringifiedData);
 
