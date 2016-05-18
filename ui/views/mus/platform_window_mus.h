@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/mus/public/cpp/input_event_handler.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/views/mus/mus_export.h"
@@ -25,7 +24,6 @@ class Connector;
 }
 
 namespace ui {
-class Event;
 class ViewProp;
 }
 
@@ -34,8 +32,7 @@ namespace views {
 // This class has been marked for deletion. Its implementation is being rolled
 // into views::NativeWidgetMus. See crbug.com/609555 for details.
 class VIEWS_MUS_EXPORT PlatformWindowMus
-    : public NON_EXPORTED_BASE(ui::PlatformWindow),
-      public NON_EXPORTED_BASE(mus::InputEventHandler) {
+    : public NON_EXPORTED_BASE(ui::PlatformWindow) {
  public:
   PlatformWindowMus(ui::PlatformWindowDelegate* delegate,
                     shell::Connector* connector,
@@ -62,13 +59,6 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
 
  private:
   friend class PlatformWindowMusTest;
-
-  // mus::InputEventHandler:
-  void OnWindowInputEvent(
-      mus::Window* view,
-      const ui::Event& event,
-      std::unique_ptr<base::Callback<void(mus::mojom::EventResult)>>*
-          ack_callback) override;
 
   ui::PlatformWindowDelegate* delegate_;
   mus::Window* mus_window_;

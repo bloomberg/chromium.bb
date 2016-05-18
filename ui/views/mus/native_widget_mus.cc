@@ -4,7 +4,9 @@
 
 #include "ui/views/mus/native_widget_mus.h"
 
+#include "base/callback.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
@@ -14,6 +16,7 @@
 #include "components/mus/public/interfaces/cursor.mojom.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
+#include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/window_tree_client.h"
@@ -23,6 +26,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/hit_test.h"
+#include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -42,6 +46,8 @@
 #include "ui/wm/core/native_cursor_manager.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(mus::Window*);
+
+using mus::mojom::EventResult;
 
 namespace views {
 namespace {
@@ -296,6 +302,44 @@ SkBitmap AppIconFromDelegate(WidgetDelegate* delegate) {
     return SkBitmap();
   return app_icon.GetRepresentation(1.f).sk_bitmap();
 }
+
+// Handles acknowledgement of an input event, either immediately when a nested
+// message loop starts, or upon destruction.
+class EventAckHandler : public base::MessageLoop::NestingObserver {
+ public:
+  explicit EventAckHandler(
+      std::unique_ptr<base::Callback<void(EventResult)>> ack_callback)
+      : ack_callback_(std::move(ack_callback)) {
+    DCHECK(ack_callback_);
+    base::MessageLoop::current()->AddNestingObserver(this);
+  }
+
+  ~EventAckHandler() override {
+    base::MessageLoop::current()->RemoveNestingObserver(this);
+    if (ack_callback_) {
+      ack_callback_->Run(handled_ ? EventResult::HANDLED
+                                  : EventResult::UNHANDLED);
+    }
+  }
+
+  void set_handled(bool handled) { handled_ = handled; }
+
+  // base::MessageLoop::NestingObserver:
+  void OnBeginNestedMessageLoop() override {
+    // Acknowledge the event immediately if a nested message loop starts.
+    // Otherwise we appear unresponsive for the life of the nested message loop.
+    if (ack_callback_) {
+      ack_callback_->Run(EventResult::HANDLED);
+      ack_callback_.reset();
+    }
+  }
+
+ private:
+  std::unique_ptr<base::Callback<void(EventResult)>> ack_callback_;
+  bool handled_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(EventAckHandler);
+};
 
 }  // namespace
 
@@ -1217,6 +1261,23 @@ void NativeWidgetMus::OnGestureEvent(ui::GestureEvent* event) {
 
 void NativeWidgetMus::OnHostCloseRequested(const aura::WindowTreeHost* host) {
   GetWidget()->Close();
+}
+
+void NativeWidgetMus::OnWindowInputEvent(
+    mus::Window* view,
+    const ui::Event& event_in,
+    std::unique_ptr<base::Callback<void(EventResult)>>* ack_callback) {
+  // Take ownership of the callback, indicating that we will handle it.
+  EventAckHandler ack_handler(std::move(*ack_callback));
+
+  std::unique_ptr<ui::Event> event = ui::Event::Clone(event_in);
+  // TODO(markdittmer): This should be this->OnEvent(event.get()), but that
+  // can't happen until IME is refactored out of in WindowTreeHostMus.
+  platform_window_delegate()->DispatchEvent(event.get());
+  // NOTE: |this| may be deleted.
+
+  ack_handler.set_handled(event->handled());
+  // |ack_handler| acks the event on destruction if necessary.
 }
 
 void NativeWidgetMus::OnMusWindowVisibilityChanging(mus::Window* window) {

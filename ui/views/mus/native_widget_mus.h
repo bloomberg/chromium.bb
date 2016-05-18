@@ -11,13 +11,16 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/mus/public/cpp/input_event_handler.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_tree_host_observer.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/views/mus/mus_export.h"
+#include "ui/views/mus/window_tree_host_mus.h"
 #include "ui/views/widget/native_widget_private.h"
 
 namespace aura {
@@ -34,11 +37,16 @@ class Window;
 class WindowTreeConnection;
 namespace mojom {
 enum class Cursor;
+enum class EventResult;
 }
 }
 
 namespace shell {
 class Connector;
+}
+
+namespace ui {
+class Event;
 }
 
 namespace wm {
@@ -49,7 +57,6 @@ class FocusController;
 namespace views {
 class SurfaceContextFactory;
 class WidgetDelegate;
-class WindowTreeHostMus;
 
 // An implementation of NativeWidget that binds to a mus::Window. Because Aura
 // is used extensively within Views code, this code uses aura and binds to the
@@ -57,9 +64,11 @@ class WindowTreeHostMus;
 // aura::Window in a hierarchy is created without a delegate by the
 // aura::WindowTreeHost, we must create a child aura::Window in this class
 // (content_) and attach it to the root.
-class VIEWS_MUS_EXPORT NativeWidgetMus : public internal::NativeWidgetPrivate,
-                                         public aura::WindowDelegate,
-                                         public aura::WindowTreeHostObserver {
+class VIEWS_MUS_EXPORT NativeWidgetMus
+    : public internal::NativeWidgetPrivate,
+      public aura::WindowDelegate,
+      public aura::WindowTreeHostObserver,
+      public NON_EXPORTED_BASE(mus::InputEventHandler) {
  public:
   NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
                   shell::Connector* connector,
@@ -208,8 +217,20 @@ class VIEWS_MUS_EXPORT NativeWidgetMus : public internal::NativeWidgetPrivate,
   // Overridden from aura::WindowTreeHostObserver:
   void OnHostCloseRequested(const aura::WindowTreeHost* host) override;
 
- private:
+  // Overridden from mus::InputEventHandler:
+  void OnWindowInputEvent(
+      mus::Window* view,
+      const ui::Event& event,
+      std::unique_ptr<base::Callback<void(mus::mojom::EventResult)>>*
+          ack_callback) override;
+
+private:
+  friend class NativeWidgetMusTest;
   class MusWindowObserver;
+
+  ui::PlatformWindowDelegate* platform_window_delegate() {
+    return window_tree_host();
+  }
 
   void set_last_cursor(mus::mojom::Cursor cursor) { last_cursor_ = cursor; }
   void SetShowState(mus::mojom::ShowState show_state);

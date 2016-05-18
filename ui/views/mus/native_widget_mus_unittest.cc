@@ -4,16 +4,19 @@
 
 #include "ui/views/mus/native_widget_mus.h"
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
+#include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
+#include "ui/events/event.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
@@ -25,8 +28,41 @@
 #include "ui/views/widget/widget_observer.h"
 #include "ui/wm/public/activation_client.h"
 
+using mus::mojom::EventResult;
+
 namespace views {
 namespace {
+
+// A view that reports any mouse press as handled.
+class HandleMousePressView : public View {
+ public:
+  HandleMousePressView() {}
+  ~HandleMousePressView() override {}
+
+  // View:
+  bool OnMousePressed(const ui::MouseEvent& event) override { return true; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HandleMousePressView);
+};
+
+// A view that deletes a widget on mouse press.
+class DeleteWidgetView : public View {
+ public:
+  explicit DeleteWidgetView(std::unique_ptr<Widget>* widget_ptr)
+      : widget_ptr_(widget_ptr) {}
+  ~DeleteWidgetView() override {}
+
+  // View:
+  bool OnMousePressed(const ui::MouseEvent& event) override {
+    widget_ptr_->reset();
+    return true;
+  }
+
+ private:
+  std::unique_ptr<Widget>* widget_ptr_;
+  DISALLOW_COPY_AND_ASSIGN(DeleteWidgetView);
+};
 
 // Returns a small colored bitmap.
 SkBitmap MakeBitmap(SkColor color) {
@@ -83,6 +119,8 @@ class TestWidgetDelegate : public WidgetDelegateView {
   DISALLOW_COPY_AND_ASSIGN(TestWidgetDelegate);
 };
 
+}  // namespace
+
 class NativeWidgetMusTest : public ViewsTestBase {
  public:
   NativeWidgetMusTest() {}
@@ -99,7 +137,35 @@ class NativeWidgetMusTest : public ViewsTestBase {
     return widget;
   }
 
+  int ack_callback_count() { return ack_callback_count_; }
+
+  void AckCallback(mus::mojom::EventResult result) {
+    ack_callback_count_++;
+    EXPECT_EQ(mus::mojom::EventResult::HANDLED, result);
+  }
+
+  // Returns a mouse pressed event inside the widget. Tests that place views
+  // within the widget that respond to the event must be constructed within the
+  // widget coordinate space such that they respond correctly.
+  std::unique_ptr<ui::MouseEvent> CreateMouseEvent() {
+    return base::WrapUnique(new ui::MouseEvent(
+        ui::ET_MOUSE_PRESSED, gfx::Point(50, 50), gfx::Point(50, 50),
+        base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  }
+
+  // Simulates an input event to the NativeWidget.
+  void OnWindowInputEvent(
+      NativeWidgetMus* native_widget,
+      const ui::Event& event,
+      std::unique_ptr<base::Callback<void(mus::mojom::EventResult)>>*
+      ack_callback) {
+    native_widget->OnWindowInputEvent(native_widget->window(), event,
+                                      ack_callback);
+  }
+
  private:
+  int ack_callback_count_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetMusTest);
 };
 
@@ -297,5 +363,56 @@ TEST_F(NativeWidgetMusTest, FocusChildAuraWindow) {
   EXPECT_EQ(widget.GetNativeView(), active_window);
 }
 
-}  // namespace
+// Tests that an incoming UI event is acked with the handled status.
+TEST_F(NativeWidgetMusTest, EventAcked) {
+  std::unique_ptr<Widget> widget(CreateWidget(nullptr));
+  widget->Show();
+
+  View* content = new HandleMousePressView;
+  content->SetBounds(10, 20, 90, 180);
+  widget->GetContentsView()->AddChildView(content);
+
+  // Dispatch an input event to the window and view.
+  std::unique_ptr<ui::MouseEvent> event = CreateMouseEvent();
+  std::unique_ptr<base::Callback<void(EventResult)>> ack_callback(
+      new base::Callback<void(EventResult)>(base::Bind(
+          &NativeWidgetMusTest::AckCallback, base::Unretained(this))));
+  OnWindowInputEvent(
+      static_cast<NativeWidgetMus*>(widget->native_widget_private()),
+      *event,
+      &ack_callback);
+
+  // The test took ownership of the callback and called it.
+  EXPECT_FALSE(ack_callback);
+  EXPECT_EQ(1, ack_callback_count());
+}
+
+// Tests that a window that is deleted during event handling properly acks the
+// event.
+TEST_F(NativeWidgetMusTest, EventAckedWithWindowDestruction) {
+  std::unique_ptr<Widget> widget(CreateWidget(nullptr));
+  widget->Show();
+
+  View* content = new DeleteWidgetView(&widget);
+  content->SetBounds(10, 20, 90, 180);
+  widget->GetContentsView()->AddChildView(content);
+
+  // Dispatch an input event to the window and view.
+  std::unique_ptr<ui::MouseEvent> event = CreateMouseEvent();
+  std::unique_ptr<base::Callback<void(EventResult)>> ack_callback(
+      new base::Callback<void(EventResult)>(base::Bind(
+          &NativeWidgetMusTest::AckCallback, base::Unretained(this))));
+  OnWindowInputEvent(
+      static_cast<NativeWidgetMus*>(widget->native_widget_private()),
+      *event,
+      &ack_callback);
+
+  // The widget was deleted.
+  EXPECT_FALSE(widget.get());
+
+  // The test took ownership of the callback and called it.
+  EXPECT_FALSE(ack_callback);
+  EXPECT_EQ(1, ack_callback_count());
+}
+
 }  // namespace views
