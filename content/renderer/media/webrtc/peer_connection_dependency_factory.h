@@ -124,11 +124,6 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcSignalingThread()
       const;
 
-  // Called by ProcessedLocalAudioSource to have the PeerConnection factory
-  // create the corresponding WebRtc-internal instance.
-  virtual scoped_refptr<webrtc::AudioSourceInterface> CreateLocalAudioSource(
-      const cricket::AudioOptions& options);
-
  protected:
   // Asks the PeerConnection factory to create a Local VideoTrack object with
   // the video source using |capturer|.

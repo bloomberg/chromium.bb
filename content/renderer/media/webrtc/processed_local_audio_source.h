@@ -66,7 +66,6 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
 
   // The following accessors are not valid until after the source is started
   // (when the first track is connected).
-  webrtc::AudioSourceInterface* rtc_source() const { return rtc_source_.get(); }
   const scoped_refptr<MediaStreamAudioProcessor>& audio_processor() const {
     return audio_processor_;
   }
@@ -126,10 +125,6 @@ class CONTENT_EXPORT ProcessedLocalAudioSource final
 
   // Lock used to ensure thread-safe access to |source_| by SetVolume().
   mutable base::Lock source_lock_;
-
-  // Holder for WebRTC audio pipeline objects. Created in
-  // EnsureSourceIsStarted().
-  scoped_refptr<webrtc::AudioSourceInterface> rtc_source_;
 
   // Stores latest microphone volume received in a CaptureData() callback.
   // Range is [0, 255].

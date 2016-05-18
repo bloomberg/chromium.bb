@@ -19,24 +19,6 @@ namespace content {
 
 typedef std::set<webrtc::ObserverInterface*> ObserverSet;
 
-class MockAudioSource : public webrtc::AudioSourceInterface {
- public:
-  explicit MockAudioSource(const cricket::AudioOptions& options, bool remote);
-
-  void RegisterObserver(webrtc::ObserverInterface* observer) override;
-  void UnregisterObserver(webrtc::ObserverInterface* observer) override;
-  MediaSourceInterface::SourceState state() const override;
-  bool remote() const override;
-
- protected:
-  ~MockAudioSource() override;
-
- private:
-  bool remote_;
-  ObserverSet observers_;
-  MediaSourceInterface::SourceState state_;
-};
-
 class MockWebRtcAudioTrack : public webrtc::AudioTrackInterface {
  public:
   static scoped_refptr<MockWebRtcAudioTrack> Create(const std::string& id);
@@ -144,8 +126,6 @@ class MockPeerConnectionDependencyFactory
       const webrtc::PeerConnectionInterface::RTCConfiguration& config,
       blink::WebFrame* frame,
       webrtc::PeerConnectionObserver* observer) override;
-  scoped_refptr<webrtc::AudioSourceInterface> CreateLocalAudioSource(
-      const cricket::AudioOptions& options) override;
   WebRtcVideoCapturerAdapter* CreateVideoCapturer(
       bool is_screen_capture) override;
   scoped_refptr<webrtc::VideoTrackSourceInterface> CreateVideoSource(
@@ -167,13 +147,10 @@ class MockPeerConnectionDependencyFactory
       int sdp_mline_index,
       const std::string& sdp) override;
 
-  MockAudioSource* last_audio_source() { return last_audio_source_.get(); }
-
   scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcSignalingThread()
       const override;
 
  private:
-  scoped_refptr<MockAudioSource> last_audio_source_;
   base::Thread signaling_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPeerConnectionDependencyFactory);

@@ -152,30 +152,6 @@ class MockRtcVideoCapturer : public WebRtcVideoCapturerAdapter {
   int height_;
 };
 
-MockAudioSource::MockAudioSource(const cricket::AudioOptions& options,
-                                 bool remote)
-    : remote_(remote), state_(MediaSourceInterface::kLive) {}
-
-MockAudioSource::~MockAudioSource() {}
-
-void MockAudioSource::RegisterObserver(webrtc::ObserverInterface* observer) {
-  DCHECK(observers_.find(observer) == observers_.end());
-  observers_.insert(observer);
-}
-
-void MockAudioSource::UnregisterObserver(webrtc::ObserverInterface* observer) {
-  DCHECK(observers_.find(observer) != observers_.end());
-  observers_.erase(observer);
-}
-
-webrtc::MediaSourceInterface::SourceState MockAudioSource::state() const {
-  return state_;
-}
-
-bool MockAudioSource::remote() const {
-  return remote_;
-}
-
 scoped_refptr<MockWebRtcAudioTrack> MockWebRtcAudioTrack::Create(
     const std::string& id) {
   return new rtc::RefCountedObject<MockWebRtcAudioTrack>(id);
@@ -389,14 +365,6 @@ MockPeerConnectionDependencyFactory::CreatePeerConnection(
     blink::WebFrame* frame,
     webrtc::PeerConnectionObserver* observer) {
   return new rtc::RefCountedObject<MockPeerConnectionImpl>(this, observer);
-}
-
-scoped_refptr<webrtc::AudioSourceInterface>
-MockPeerConnectionDependencyFactory::CreateLocalAudioSource(
-    const cricket::AudioOptions& options) {
-  last_audio_source_ =
-      new rtc::RefCountedObject<MockAudioSource>(options, false);
-  return last_audio_source_;
 }
 
 WebRtcVideoCapturerAdapter*

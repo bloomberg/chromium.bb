@@ -108,12 +108,16 @@ void WebRtcMediaStreamAdapter::AddAudioSinkToTrack(
     return;
   }
 
-  WebRtcAudioSink* audio_sink;
+  // Non-WebRtc remote sources and local sources do not provide an instance of
+  // the webrtc::AudioSourceInterface, and also do not need references to the
+  // audio level calculator or audio processor passed to the sink.
+  webrtc::AudioSourceInterface* source_interface = nullptr;
+  WebRtcAudioSink* audio_sink = new WebRtcAudioSink(
+      track.id().utf8(), source_interface,
+      factory_->GetWebRtcSignalingThread());
+
   if (auto* media_stream_source = ProcessedLocalAudioSource::From(
           MediaStreamAudioSource::From(track.source()))) {
-    audio_sink = new WebRtcAudioSink(
-        track.id().utf8(), media_stream_source->rtc_source(),
-        factory_->GetWebRtcSignalingThread());
     audio_sink->SetLevel(media_stream_source->audio_level());
     // The sink only grabs stats from the audio processor. Stats are only
     // available if audio processing is turned on. Therefore, only provide the
@@ -122,15 +126,6 @@ void WebRtcMediaStreamAdapter::AddAudioSinkToTrack(
       if (processor && processor->has_audio_processing())
         audio_sink->SetAudioProcessor(processor);
     }
-  } else {
-    // Remote sources and other non-WebRtc local sources do not provide an
-    // instance of the webrtc::AudioSourceInterface, and also do not need
-    // references to the audio level calculator or audio processor passed to the
-    // sink.
-    webrtc::AudioSourceInterface* source_interface = nullptr;
-    audio_sink = new WebRtcAudioSink(
-        track.id().utf8(), source_interface,
-        factory_->GetWebRtcSignalingThread());
   }
 
   audio_sinks_.push_back(std::unique_ptr<WebRtcAudioSink>(audio_sink));

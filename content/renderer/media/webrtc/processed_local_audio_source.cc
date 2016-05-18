@@ -105,31 +105,6 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
     return false;
   }
 
-  // Build an AudioOptions by applying relevant constraints to it, and then use
-  // it to create a webrtc::AudioSourceInterface instance.
-  cricket::AudioOptions rtc_options;
-  rtc_options.echo_cancellation = ConstraintToOptional(
-      constraints_, &blink::WebMediaTrackConstraintSet::echoCancellation);
-  rtc_options.delay_agnostic_aec = ConstraintToOptional(
-      constraints_, &blink::WebMediaTrackConstraintSet::googDAEchoCancellation);
-  rtc_options.auto_gain_control = ConstraintToOptional(
-      constraints_, &blink::WebMediaTrackConstraintSet::googAutoGainControl);
-  rtc_options.experimental_agc = ConstraintToOptional(
-      constraints_,
-      &blink::WebMediaTrackConstraintSet::googExperimentalAutoGainControl);
-  rtc_options.noise_suppression = ConstraintToOptional(
-      constraints_, &blink::WebMediaTrackConstraintSet::googNoiseSuppression);
-  rtc_options.experimental_ns = ConstraintToOptional(
-      constraints_,
-      &blink::WebMediaTrackConstraintSet::googExperimentalNoiseSuppression);
-  rtc_options.highpass_filter = ConstraintToOptional(
-      constraints_, &blink::WebMediaTrackConstraintSet::googHighpassFilter);
-  rtc_options.typing_detection = ConstraintToOptional(
-      constraints_,
-      &blink::WebMediaTrackConstraintSet::googTypingNoiseDetection);
-  rtc_options.stereo_swapping = ConstraintToOptional(
-      constraints_, &blink::WebMediaTrackConstraintSet::googAudioMirroring);
-  MediaAudioConstraints::ApplyFixedAudioConstraints(&rtc_options);
   if (device_info().device.input.effects &
       media::AudioParameters::ECHO_CANCELLER) {
     // TODO(hta): Figure out if we should be looking at echoCancellation.
@@ -142,13 +117,6 @@ bool ProcessedLocalAudioSource::EnsureSourceIsStarted() {
           ~media::AudioParameters::ECHO_CANCELLER;
       SetDeviceInfo(modified_device_info);
     }
-    rtc_options.echo_cancellation = rtc::Optional<bool>(false);
-  }
-  rtc_source_ = pc_factory_->CreateLocalAudioSource(rtc_options);
-  if (rtc_source_->state() != webrtc::MediaSourceInterface::kLive) {
-    WebRtcLogMessage("ProcessedLocalAudioSource::EnsureSourceIsStarted() fails "
-                     " because the rtc LocalAudioSource is not live.");
-    return false;
   }
 
   // Create the MediaStreamAudioProcessor, bound to the WebRTC audio device

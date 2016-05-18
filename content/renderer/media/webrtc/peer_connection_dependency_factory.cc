@@ -181,6 +181,8 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
   jingle_glue::JingleThreadWrapper::current()->set_send_allowed(true);
 
+  EnsureWebRtcAudioDeviceImpl();
+
   CHECK(chrome_signaling_thread_.Start());
   CHECK(chrome_worker_thread_.Start());
 
@@ -231,8 +233,6 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
   jingle_glue::JingleThreadWrapper::current()->set_send_allowed(true);
   signaling_thread_ = jingle_glue::JingleThreadWrapper::current();
-
-  EnsureWebRtcAudioDeviceImpl();
 
   socket_factory_.reset(
       new IpcPacketSocketFactory(p2p_socket_dispatcher_.get()));
@@ -423,14 +423,6 @@ PeerConnectionDependencyFactory::CreateLocalMediaStream(
   return GetPcFactory()->CreateLocalMediaStream(label).get();
 }
 
-scoped_refptr<webrtc::AudioSourceInterface>
-PeerConnectionDependencyFactory::CreateLocalAudioSource(
-    const cricket::AudioOptions& options) {
-  scoped_refptr<webrtc::AudioSourceInterface> source =
-      GetPcFactory()->CreateAudioSource(options).get();
-  return source;
-}
-
 scoped_refptr<webrtc::VideoTrackInterface>
 PeerConnectionDependencyFactory::CreateLocalVideoTrack(
     const std::string& id,
@@ -481,6 +473,8 @@ void PeerConnectionDependencyFactory::StopRtcEventLog() {
 
 WebRtcAudioDeviceImpl*
 PeerConnectionDependencyFactory::GetWebRtcAudioDevice() {
+  DCHECK(CalledOnValidThread());
+  EnsureWebRtcAudioDeviceImpl();
   return audio_device_.get();
 }
 
@@ -590,6 +584,7 @@ PeerConnectionDependencyFactory::GetWebRtcSignalingThread() const {
 }
 
 void PeerConnectionDependencyFactory::EnsureWebRtcAudioDeviceImpl() {
+  DCHECK(CalledOnValidThread());
   if (audio_device_.get())
     return;
 
