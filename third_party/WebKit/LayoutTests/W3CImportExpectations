@@ -285,7 +285,7 @@ imported/web-platform-tests/subresource-integrity [ Skip ]
 imported/web-platform-tests/svg [ Skip ]
 imported/web-platform-tests/tools [ Skip ]
 ## Owners: chongz@chromium.org
-# imported/web-platform-tests/touch-events [ Pass ]
+# imported/wpt/touch-events [ Pass ]
 imported/web-platform-tests/typedarrays [ Skip ]
 ## Owners: dtapuska@chromium.org
 # imported/web-platform-tests/uievents [ Pass ]
@@ -323,7 +323,7 @@ imported/web-platform-tests/hr-time/OWNERS [ Skip ]
 imported/web-platform-tests/pointerevents/OWNERS [ Skip ]
 imported/web-platform-tests/webstorage/OWNERS [ Skip ]
 imported/web-platform-tests/mediacapture-streams/OWNERS [ Skip ]
-imported/web-platform-tests/touch-events/OWNERS [ Skip ]
+imported/wpt/touch-events/OWNERS [ Skip ]
 imported/web-platform-tests/uievents/OWNERS [ Skip ]
 imported/web-platform-tests/web-animations/OWNERS [ Skip ]
 
@@ -664,7 +664,7 @@ imported/web-platform-tests/html/semantics/scripting-1/the-script-element/async_
 imported/web-platform-tests/pointerevents/pointerevent_pointermove-on-chorded-mouse-button.html [ Skip ]
 
 # Uses TAB character for indentation
-imported/web-platform-tests/touch-events/multi-touch-interactions.js [ Skip ]
+imported/wpt/touch-events/multi-touch-interactions.js [ Skip ]
 
 # CSS Writing Modes Level 3: Following tests require writing-mode: sideways-*, which we do not plan to support today.
 imported/csswg-test/css-writing-modes-3/block-flow-direction-slr-043.xht [ Skip ]
