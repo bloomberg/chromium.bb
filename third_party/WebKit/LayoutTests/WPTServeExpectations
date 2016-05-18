@@ -32,7 +32,7 @@ crbug.com/508728 imported/web-platform-tests/html/semantics/selectors/pseudo-cla
 crbug.com/508728 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/compile-error-cross-origin.html [ Failure ]
 crbug.com/508728 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/runtime-error-cross-origin.html [ Failure ]
 crbug.com/508728 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/runtime-error-data-url.html [ Failure ]
-crbug.com/508728 imported/web-platform-tests/webstorage/document-domain.html [ Failure ]
+crbug.com/508728 imported/wpt/webstorage/document-domain.html [ Failure ]
 
 # Pass when run with --enable-wptserve ([Failure] since expectations do not match): (crbug.com/508725)
 crbug.com/508725 imported/web-platform-tests/html/browsers/history/the-history-interface/history_pushstate_err.html [ Failure ]
