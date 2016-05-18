@@ -94,6 +94,8 @@ public:
     PositionWithAffinityTemplate<Strategy> toPositionWithAffinity() const { return m_positionWithAffinity; }
     TextAffinity affinity() const { return m_positionWithAffinity.affinity(); }
 
+    static VisiblePositionTemplate<Strategy> firstPositionInNode(Node*);
+
     DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_positionWithAffinity);

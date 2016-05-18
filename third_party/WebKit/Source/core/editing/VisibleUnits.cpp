@@ -1341,7 +1341,7 @@ VisiblePosition previousLinePosition(const VisiblePosition& visiblePosition, Lay
     Element* rootElement = node->hasEditableStyle(editableType) ? node->rootEditableElement(editableType) : node->document().documentElement();
     if (!rootElement)
         return VisiblePosition();
-    return createVisiblePosition(Position::firstPositionInNode(rootElement));
+    return VisiblePosition::firstPositionInNode(rootElement);
 }
 
 VisiblePosition nextLinePosition(const VisiblePosition& visiblePosition, LayoutUnit lineDirectionPoint, EditableType editableType)
@@ -1730,7 +1730,7 @@ VisiblePosition startOfBlock(const VisiblePosition& visiblePosition, EditingBoun
 {
     Position position = visiblePosition.deepEquivalent();
     Element* startBlock = position.computeContainerNode() ? enclosingBlock(position.computeContainerNode(), rule) : 0;
-    return startBlock ? createVisiblePosition(Position::firstPositionInNode(startBlock)) : VisiblePosition();
+    return startBlock ? VisiblePosition::firstPositionInNode(startBlock) : VisiblePosition();
 }
 
 VisiblePosition endOfBlock(const VisiblePosition& visiblePosition, EditingBoundaryCrossingRule rule)
@@ -1816,7 +1816,7 @@ VisiblePosition startOfEditableContent(const VisiblePosition& visiblePosition)
     if (!highestRoot)
         return VisiblePosition();
 
-    return createVisiblePosition(Position::firstPositionInNode(highestRoot));
+    return VisiblePosition::firstPositionInNode(highestRoot);
 }
 
 VisiblePosition endOfEditableContent(const VisiblePosition& visiblePosition)

@@ -522,7 +522,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing,
 
         // If we have a caret selection at the beginning of a cell, we have nothing to do.
         Node* enclosingTableCell = enclosingNodeOfType(visibleStart.deepEquivalent(), &isTableCell);
-        if (enclosingTableCell && visibleStart.deepEquivalent() == createVisiblePosition(Position::firstPositionInNode(enclosingTableCell)).deepEquivalent())
+        if (enclosingTableCell && visibleStart.deepEquivalent() == VisiblePosition::firstPositionInNode(enclosingTableCell).deepEquivalent())
             return;
 
         // If the caret is at the start of a paragraph after a table, move content into the last table cell.

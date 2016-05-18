@@ -1021,7 +1021,7 @@ HTMLElement* CompositeEditCommand::moveParagraphContentsToNewBlockIfNecessary(co
     visiblePos = createVisiblePosition(pos, VP_DEFAULT_AFFINITY);
     visibleParagraphStart = startOfParagraph(visiblePos);
     visibleParagraphEnd = endOfParagraph(visiblePos);
-    moveParagraphs(visibleParagraphStart, visibleParagraphEnd, createVisiblePosition(Position::firstPositionInNode(newBlock)), editingState);
+    moveParagraphs(visibleParagraphStart, visibleParagraphEnd, VisiblePosition::firstPositionInNode(newBlock), editingState);
     if (editingState->isAborted())
         return nullptr;
 
@@ -1540,7 +1540,7 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(const Posi
 
     // Don't avoid block level anchors, because that would insert content into the wrong paragraph.
     if (enclosingAnchor && !isEnclosingBlock(enclosingAnchor)) {
-        VisiblePosition firstInAnchor = createVisiblePosition(Position::firstPositionInNode(enclosingAnchor));
+        VisiblePosition firstInAnchor = VisiblePosition::firstPositionInNode(enclosingAnchor);
         VisiblePosition lastInAnchor = createVisiblePosition(lastPositionInNode(enclosingAnchor));
         // If visually just after the anchor, insert *inside* the anchor unless it's the last
         // VisiblePosition in the document, to match NSTextView.
@@ -1607,7 +1607,7 @@ Node* CompositeEditCommand::splitTreeToNode(Node* start, Node* end, bool shouldS
         if (!parentElement)
             break;
         // Do not split a node when doing so introduces an empty node.
-        VisiblePosition positionInParent = createVisiblePosition(Position::firstPositionInNode(parentElement));
+        VisiblePosition positionInParent = VisiblePosition::firstPositionInNode(parentElement);
         VisiblePosition positionInNode = createVisiblePosition(firstPositionInOrBeforeNode(node));
         if (positionInParent.deepEquivalent() != positionInNode.deepEquivalent())
             splitElement(parentElement, node);

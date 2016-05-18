@@ -177,7 +177,7 @@ void IndentOutdentCommand::outdentParagraph(EditingState* editingState)
     }
 
     // The selection is inside a blockquote i.e. enclosingNode is a blockquote
-    VisiblePosition positionInEnclosingBlock = createVisiblePosition(Position::firstPositionInNode(enclosingElement));
+    VisiblePosition positionInEnclosingBlock = VisiblePosition::firstPositionInNode(enclosingElement);
     // If the blockquote is inline, the start of the enclosing block coincides with
     // positionInEnclosingBlock.
     VisiblePosition startOfEnclosingBlock = (enclosingElement->layoutObject() && enclosingElement->layoutObject()->isInline()) ? positionInEnclosingBlock : startOfBlock(positionInEnclosingBlock);

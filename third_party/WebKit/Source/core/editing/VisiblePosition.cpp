@@ -77,6 +77,12 @@ VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::create(cons
     return VisiblePositionTemplate<Strategy>(upstreamPosition);
 }
 
+template <typename Strategy>
+VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::firstPositionInNode(Node* node)
+{
+    return create(PositionWithAffinityTemplate<Strategy>(PositionTemplate<Strategy>::firstPositionInNode(node)));
+}
+
 VisiblePosition createVisiblePosition(const Position& position, TextAffinity affinity)
 {
     return createVisiblePosition(PositionWithAffinity(position, affinity));

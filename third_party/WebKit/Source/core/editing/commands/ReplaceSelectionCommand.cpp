@@ -571,7 +571,7 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
 
         // FIXME: Tolerate differences in id, class, and style attributes.
         if (element->parentNode() && isNonTableCellHTMLBlockElement(element) && areIdenticalElements(*element, *element->parentNode())
-            && createVisiblePosition(Position::firstPositionInNode(element->parentNode())).deepEquivalent() == createVisiblePosition(Position::firstPositionInNode(element)).deepEquivalent()
+            && VisiblePosition::firstPositionInNode(element->parentNode()).deepEquivalent() == VisiblePosition::firstPositionInNode(element).deepEquivalent()
             && createVisiblePosition(lastPositionInNode(element->parentNode())).deepEquivalent() == createVisiblePosition(lastPositionInNode(element)).deepEquivalent()) {
             insertedNodes.willRemoveNodePreservingChildren(*element);
             removeNodePreservingChildren(element, editingState);
@@ -1351,7 +1351,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
                     insertNodeAfter(newListItem, enclosingBlockElement, editingState);
                     if (editingState->isAborted())
                         return;
-                    setEndingSelection(createVisiblePosition(Position::firstPositionInNode(newListItem)));
+                    setEndingSelection(VisiblePosition::firstPositionInNode(newListItem));
                 } else {
                     // Use a default paragraph element (a plain div) for the empty paragraph, using the last paragraph
                     // block's style seems to annoy users.
