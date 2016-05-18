@@ -139,11 +139,11 @@ void ArrayBufferContents::DataHolder::allocateNew(unsigned sizeInBytes, SharingT
 {
     ASSERT(!m_data);
     void* data = nullptr;
-    if (s_adjustAmountOfExternalAllocatedMemoryFunction)
-        s_adjustAmountOfExternalAllocatedMemoryFunction(static_cast<int>(sizeInBytes));
     allocateMemory(sizeInBytes, policy, data);
     m_data = data;
     m_sizeInBytes = data ? sizeInBytes : 0;
+    if (s_adjustAmountOfExternalAllocatedMemoryFunction)
+        s_adjustAmountOfExternalAllocatedMemoryFunction(static_cast<int>(m_sizeInBytes));
     m_isShared = isShared;
 }
 
