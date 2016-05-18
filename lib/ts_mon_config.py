@@ -18,8 +18,12 @@ except (ImportError, RuntimeError) as e:
   logging.warning('Failed to import ts_mon, monitoring is disabled: %s', e)
 
 
-def SetupTsMonGlobalState():
-  """Uses a dummy argument parser to get the default behavior from ts-mon."""
+def SetupTsMonGlobalState(service_name):
+  """Uses a dummy argument parser to get the default behavior from ts-mon.
+
+  Args:
+    service_name: the name of the task we are sending metrics from.
+  """
   if not config:
     return
 
@@ -28,7 +32,11 @@ def SetupTsMonGlobalState():
   parser = argparse.ArgumentParser()
   config.add_argparse_options(parser)
   try:
-    config.process_argparse_options(parser.parse_args(args=[]))
+    config.process_argparse_options(parser.parse_args(args=[
+        '--ts-mon-target-type', 'task',
+        '--ts-mon-task-service-name', service_name,
+        '--ts-mon-task-job-name', service_name,
+    ]))
   except Exception as e:
     logging.warning('Failed to configure ts_mon, monitoring is disabled: %s', e,
                     exc_info=True)

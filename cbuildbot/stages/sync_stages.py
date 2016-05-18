@@ -1546,27 +1546,12 @@ class PreCQLauncherStage(SyncStage):
     can_submit = set(c for c in (verified.intersection(to_process)) if
                      c.IsMergeable() and self.CanSubmitChangeInPreCQ(c))
 
+    self.SendChangeCountStats(status_map)
+
     # Changes that will be submitted.
     will_submit = set()
     # Changes that will be passed.
     will_pass = set()
-
-    # Separately count and log the number of mergable and speculative changes in
-    # each of the possible pre-cq statuses (or in status None).
-    POSSIBLE_STATUSES = clactions.PRE_CQ_CL_STATUSES | {None}
-    status_counts = {}
-    for count_bin in itertools.product((True, False), POSSIBLE_STATUSES):
-      status_counts[count_bin] = 0
-    for c, status in status_map.iteritems():
-      count_bin = (c.IsMergeable(), status)
-      status_counts[count_bin] = status_counts[count_bin] + 1
-    for count_bin, count in sorted(status_counts.items()):
-      subtype = 'mergeable' if count_bin[0] else 'speculative'
-      status = count_bin[1]
-      name = '.'.join(['pre-cq-status', status if status else 'None'])
-      logging.info('Sending stat (name, subtype, count): (%s, %s, %s)',
-                   name, subtype, count)
-      graphite.StatsFactory.GetInstance().Gauge(name).send(subtype, count)
 
     for change in inflight:
       if status_map[change] != constants.CL_STATUS_INFLIGHT:
@@ -1665,6 +1650,32 @@ class PreCQLauncherStage(SyncStage):
     # Tell ValidationPool to keep waiting for more changes until we hit
     # its internal timeout.
     return [], []
+
+  def SendChangeCountStats(self, status_map):
+    """Sends metrics of the CL counts to Monarch and statsd.
+
+    Args:
+      status_map: A map from CLs to statuses.
+    """
+    # Separately count and log the number of mergable and speculative changes in
+    # each of the possible pre-cq statuses (or in status None).
+    POSSIBLE_STATUSES = clactions.PRE_CQ_CL_STATUSES | {None}
+    status_counts = {}
+    for count_bin in itertools.product((True, False), POSSIBLE_STATUSES):
+      status_counts[count_bin] = 0
+    for c, status in status_map.iteritems():
+      count_bin = (c.IsMergeable(), status)
+      status_counts[count_bin] += 1
+    for (is_mergable, status), count in sorted(status_counts.items()):
+      subtype = 'mergeable' if is_mergable else 'speculative'
+      name = '.'.join(['pre-cq-status', status if status else 'None'])
+      logging.info('Sending stat (name, subtype, count): (%s, %s, %s)',
+                   name, subtype, count)
+      graphite.StatsFactory.GetInstance().Gauge(name).send(subtype, count)
+      metrics.GaugeMetric('chromeos/pre-cq/cl-count').set(
+          count,
+          {'status': str(status),
+           'subtype': subtype})
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):

@@ -1007,7 +1007,7 @@ def _SetupConnections(options, build_config):
 
   if run_type == _ENVIRONMENT_PROD:
     cidb.CIDBConnectionFactory.SetupProdCidb()
-    ts_mon_config.SetupTsMonGlobalState()
+    ts_mon_config.SetupTsMonGlobalState('cbuildbot')
   elif run_type == _ENVIRONMENT_DEBUG:
     cidb.CIDBConnectionFactory.SetupDebugCidb()
   else:
