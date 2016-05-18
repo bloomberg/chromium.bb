@@ -18,13 +18,14 @@ class LoadingReportTestCase(unittest.TestCase):
   _SIGNIFICANT_PAINT = 50
   _DURATION = 400
   _REQUEST_OFFSET = 5
+  _LOAD_END_TIME = 1280
   _MAIN_FRAME_ID = 1
 
   def setUp(self):
     self.trace_creator = test_utils.TraceCreator()
     self.requests = [self.trace_creator.RequestAt(self._FIRST_REQUEST_TIME),
                      self.trace_creator.RequestAt(
-                         self._FIRST_REQUEST_TIME + self._REQUEST_OFFSET,
+                         self._NAVIGATION_START_TIME + self._REQUEST_OFFSET,
                          self._DURATION)]
     self.requests[0].timing.receive_headers_end = 0
     self.requests[1].timing.receive_headers_end = 0
@@ -36,6 +37,10 @@ class LoadingReportTestCase(unittest.TestCase):
          'cat': 'blink.user_timing',
          'name': 'navigationStart',
          'args': {'frame': 1}},
+        {'ts': self._LOAD_END_TIME * self.MILLI_TO_MICRO, 'ph': 'I',
+         'cat': 'devtools.timeline',
+         'name': 'MarkLoad',
+         'args': {'data': {'isMainFrame': True}}},
         {'ts': self._CONTENTFUL_PAINT * self.MILLI_TO_MICRO, 'ph': 'I',
          'cat': 'blink.user_timing',
          'name': 'firstContentfulPaint',
@@ -68,11 +73,10 @@ class LoadingReportTestCase(unittest.TestCase):
                      loading_report['significant_paint_ms'])
     self.assertEqual(self._CONTENTFUL_PAINT - self._NAVIGATION_START_TIME,
                      loading_report['contentful_paint_ms'])
-    self.assertEqual(self._FIRST_REQUEST_TIME - self._NAVIGATION_START_TIME +
-                     self._REQUEST_OFFSET + self._DURATION,
-                     loading_report['plt_ms'])
-    self.assertAlmostEqual(0.333, loading_report['contentful_byte_frac'], 2)
-    self.assertAlmostEqual(0.178, loading_report['significant_byte_frac'], 2)
+    self.assertAlmostEqual(self._LOAD_END_TIME - self._NAVIGATION_START_TIME,
+                           loading_report['plt_ms'])
+    self.assertAlmostEqual(0.34, loading_report['contentful_byte_frac'], 2)
+    self.assertAlmostEqual(0.1844, loading_report['significant_byte_frac'], 2)
     self.assertEqual(None, loading_report['contentful_inversion'])
     self.assertEqual(None, loading_report['significant_inversion'])
 
@@ -91,6 +95,16 @@ class LoadingReportTestCase(unittest.TestCase):
     self.assertEqual(self.requests[0].url,
                      loading_report['contentful_inversion'])
     self.assertEqual(None, loading_report['significant_inversion'])
+
+  def testPltNoLoadEvents(self):
+    trace = self._MakeTrace()
+    # Change the MarkLoad events.
+    for e in trace.tracing_track.GetEvents():
+      if e.name == 'MarkLoad':
+        e.tracing_event['name'] = 'dummy'
+    loading_report = report.LoadingReport(trace).GenerateReport()
+    self.assertAlmostEqual(self._REQUEST_OFFSET + self._DURATION,
+                           loading_report['plt_ms'])
 
 
 if __name__ == '__main__':

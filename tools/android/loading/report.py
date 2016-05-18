@@ -32,11 +32,7 @@ class LoadingReport(object):
         'blink.user_timing', 'navigationStart')
     self._navigation_start_msec = min(
         e.start_msec for e in navigation_start_events)
-    # TODO(lizeb): This is not PLT. Should correlate with
-    # RenderFrameImpl::didStopLoading.
-    self._max_msec = max(
-        r.end_msec or -1 for r in self.trace.request_track.GetEvents())
-
+    self._load_end_msec = self._ComputePlt(trace)
     network_lens = NetworkActivityLens(self.trace)
     if network_lens.total_download_bytes > 0:
       self._contentful_byte_frac = (
@@ -64,7 +60,7 @@ class LoadingReport(object):
                                 - self._navigation_start_msec),
         'significant_paint_ms': (self._significant_paint_msec
                                  - self._navigation_start_msec),
-        'plt_ms': self._max_msec - self._navigation_start_msec,
+        'plt_ms': self._load_end_msec - self._navigation_start_msec,
         'contentful_byte_frac': self._contentful_byte_frac,
         'significant_byte_frac': self._significant_byte_frac,
 
@@ -82,6 +78,19 @@ class LoadingReport(object):
     """Returns a LoadingReport from a trace filename."""
     trace = loading_trace.LoadingTrace.FromJsonFile(filename)
     return LoadingReport(trace)
+
+  @classmethod
+  def _ComputePlt(cls, trace):
+    mark_load_events = trace.tracing_track.GetMatchingEvents(
+        'devtools.timeline', 'MarkLoad')
+    # Some traces contain several load events for the main frame.
+    main_frame_load_events = filter(
+        lambda e: e.args['data']['isMainFrame'], mark_load_events)
+    if main_frame_load_events:
+      return max(e.start_msec for e in main_frame_load_events)
+    # Main frame onLoad() didn't finish. Take the end of the last completed
+    # request.
+    return max(r.end_msec or -1 for r in trace.request_track.GetEvents())
 
 
 if __name__ == '__main__':
