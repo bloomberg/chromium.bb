@@ -30,6 +30,7 @@
 #include "wtf/VectorTraits.h"
 #include "wtf/allocator/PartitionAllocator.h"
 #include <algorithm>
+#include <initializer_list>
 #include <iterator>
 #include <string.h>
 #include <utility>
@@ -831,6 +832,9 @@ public:
     Vector(Vector&&);
     Vector& operator=(Vector&&);
 
+    Vector(std::initializer_list<T> elements);
+    Vector& operator=(std::initializer_list<T> elements);
+
     size_t size() const { return m_size; }
     size_t capacity() const { return Base::capacity(); }
     bool isEmpty() const { return !size(); }
@@ -1046,6 +1050,34 @@ template <typename T, size_t inlineCapacity, typename Allocator>
 Vector<T, inlineCapacity, Allocator>& Vector<T, inlineCapacity, Allocator>::operator=(Vector<T, inlineCapacity, Allocator>&& other)
 {
     swap(other);
+    return *this;
+}
+
+template <typename T, size_t inlineCapacity, typename Allocator>
+Vector<T, inlineCapacity, Allocator>::Vector(std::initializer_list<T> elements)
+    : Base(elements.size())
+{
+    ANNOTATE_NEW_BUFFER(begin(), capacity(), elements.size());
+    m_size = elements.size();
+    TypeOperations::uninitializedCopy(elements.begin(), elements.end(), begin());
+}
+
+template <typename T, size_t inlineCapacity, typename Allocator>
+Vector<T, inlineCapacity, Allocator>& Vector<T, inlineCapacity, Allocator>::operator=(std::initializer_list<T> elements)
+{
+    if (size() > elements.size()) {
+        shrink(elements.size());
+    } else if (elements.size() > capacity()) {
+        clear();
+        reserveCapacity(elements.size());
+        DCHECK(begin());
+    }
+
+    ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, elements.size());
+    std::copy(elements.begin(), elements.begin() + m_size, begin());
+    TypeOperations::uninitializedCopy(elements.begin() + m_size, elements.end(), end());
+    m_size = elements.size();
+
     return *this;
 }
 

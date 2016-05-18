@@ -615,6 +615,80 @@ TEST(VectorTest, UniquePtr)
     EXPECT_EQ(-1, *vector[0]);
 }
 
+bool isOneTwoThree(const Vector<int>& vector)
+{
+    return vector.size() == 3 && vector[0] == 1 && vector[1] == 2 && vector[2] == 3;
+}
+
+Vector<int> returnOneTwoThree()
+{
+    return {1, 2, 3};
+}
+
+TEST(VectorTest, InitializerList)
+{
+    Vector<int> empty({});
+    EXPECT_TRUE(empty.isEmpty());
+
+    Vector<int> one({1});
+    ASSERT_EQ(1u, one.size());
+    EXPECT_EQ(1, one[0]);
+
+    Vector<int> oneTwoThree({1, 2, 3});
+    ASSERT_EQ(3u, oneTwoThree.size());
+    EXPECT_EQ(1, oneTwoThree[0]);
+    EXPECT_EQ(2, oneTwoThree[1]);
+    EXPECT_EQ(3, oneTwoThree[2]);
+
+    // Put some jank so we can check if the assignments later can clear them.
+    empty.append(9999);
+    one.append(9999);
+    oneTwoThree.append(9999);
+
+    empty = {};
+    EXPECT_TRUE(empty.isEmpty());
+
+    one = {1};
+    ASSERT_EQ(1u, one.size());
+    EXPECT_EQ(1, one[0]);
+
+    oneTwoThree = {1, 2, 3};
+    ASSERT_EQ(3u, oneTwoThree.size());
+    EXPECT_EQ(1, oneTwoThree[0]);
+    EXPECT_EQ(2, oneTwoThree[1]);
+    EXPECT_EQ(3, oneTwoThree[2]);
+
+    // Other ways of construction: as a function parameter and in a return statement.
+    EXPECT_TRUE(isOneTwoThree({1, 2, 3}));
+    EXPECT_TRUE(isOneTwoThree(returnOneTwoThree()));
+
+    // The tests below correspond to the cases in the "if" branch in operator=(std::initializer_list<T>).
+
+    // Shrinking.
+    Vector<int, 1> vector1(3); // capacity = 3.
+    vector1 = {1, 2};
+    ASSERT_EQ(2u, vector1.size());
+    EXPECT_EQ(1, vector1[0]);
+    EXPECT_EQ(2, vector1[1]);
+
+    // Expanding.
+    Vector<int, 1> vector2(3);
+    vector2 = {1, 2, 3, 4};
+    ASSERT_EQ(4u, vector2.size());
+    EXPECT_EQ(1, vector2[0]);
+    EXPECT_EQ(2, vector2[1]);
+    EXPECT_EQ(3, vector2[2]);
+    EXPECT_EQ(4, vector2[3]);
+
+    // Exact match.
+    Vector<int, 1> vector3(3);
+    vector3 = {1, 2, 3};
+    ASSERT_EQ(3u, vector3.size());
+    EXPECT_EQ(1, vector3[0]);
+    EXPECT_EQ(2, vector3[1]);
+    EXPECT_EQ(3, vector3[2]);
+}
+
 } // anonymous namespace
 
 } // namespace WTF
