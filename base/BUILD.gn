@@ -1972,7 +1972,7 @@ test("base_unittests") {
 
   # Allow more direct string conversions on platforms with native utf8
   # strings
-  if (is_mac || is_ios || is_chromeos) {
+  if (is_mac || is_ios || is_chromeos || is_chromecast) {
     defines = [ "SYSTEM_NATIVE_UTF8" ]
   }
 
