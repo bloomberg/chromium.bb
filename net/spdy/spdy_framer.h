@@ -542,9 +542,9 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   bool probable_http_response() const { return probable_http_response_; }
 
-  SpdyPriority GetLowestPriority() const { return 7; }
+  SpdyPriority GetLowestPriority() const { return kV3LowestPriority; }
 
-  SpdyPriority GetHighestPriority() const { return 0; }
+  SpdyPriority GetHighestPriority() const { return kV3HighestPriority; }
 
   // Interpolates SpdyPriority values into SPDY4/HTTP2 priority weights, and
   // vice versa. Note that these methods accept/return weight values in their
