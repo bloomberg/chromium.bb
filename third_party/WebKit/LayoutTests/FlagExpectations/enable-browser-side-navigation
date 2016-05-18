@@ -96,7 +96,7 @@
   http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_with_timing_allow_origin.html [ Timeout ]
   http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect.html [ Timeout ]
   http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_same_origin_redirect.html [ Timeout ]
-  imported/web-platform-tests/web-animations/animation-timeline/document-timeline.html [ Failure ]
+  imported/wpt/web-animations/animation-timeline/document-timeline.html [ Failure ]
 
 # https://crbug.com/555418: Move `X-Frame-Options` and CSP's `frame-ancestor`
 # checks up out of the renderer.

@@ -294,7 +294,7 @@ imported/web-platform-tests/url [ Skip ]
 # imported/wpt/user-timing [ Pass ]
 imported/web-platform-tests/vibration [ Skip ]
 ## Owners: suzyh@chromium.org
-# imported/web-platform-tests/web-animations [ Pass ]
+# imported/wpt/web-animations [ Pass ]
 imported/web-platform-tests/webaudio [ Skip ]
 imported/web-platform-tests/webdriver [ Skip ]
 imported/web-platform-tests/webgl [ Skip ]
@@ -325,7 +325,7 @@ imported/web-platform-tests/webstorage/OWNERS [ Skip ]
 imported/web-platform-tests/mediacapture-streams/OWNERS [ Skip ]
 imported/wpt/touch-events/OWNERS [ Skip ]
 imported/web-platform-tests/uievents/OWNERS [ Skip ]
-imported/web-platform-tests/web-animations/OWNERS [ Skip ]
+imported/wpt/web-animations/OWNERS [ Skip ]
 
 # Exceptions for individual files that fail due to bugs in the
 # upstream tests that we shouldn't bother importing until they are
