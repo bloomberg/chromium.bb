@@ -38,6 +38,7 @@ class BluetoothPairingBlueZ;
 // thread.
 class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
     : public device::BluetoothDevice,
+      public bluez::BluetoothDeviceClient::Observer,
       public bluez::BluetoothGattServiceClient::Observer {
  public:
   // BluetoothDevice override
@@ -124,9 +125,18 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
       scoped_refptr<device::BluetoothSocketThread> socket_thread);
   ~BluetoothDeviceBlueZ() override;
 
-  // bluez::BluetoothGattServiceClient::Observer overrides.
+  // bluez::BluetoothDeviceClient::Observer overrides
+  void DevicePropertyChanged(const dbus::ObjectPath& object_path,
+                             const std::string& property_name) override;
+
+  // bluez::BluetoothGattServiceClient::Observer overrides
   void GattServiceAdded(const dbus::ObjectPath& object_path) override;
   void GattServiceRemoved(const dbus::ObjectPath& object_path) override;
+
+  // Called by the constructor to initialize the map of GATT services associated
+  // with this device and to invoke NotifyGattDiscoveryComplete() with each
+  // cached service.
+  void InitializeGattServiceMap();
 
   // Called by dbus:: on completion of the D-Bus method call to get the
   // connection attributes of the current connection to the device.
@@ -205,6 +215,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   // UI thread task runner and socket thread object used to create sockets.
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
   scoped_refptr<device::BluetoothSocketThread> socket_thread_;
+
+  // This vector temporarily caches the newly added services for later
+  // notification of discovery complete. Once DevicePropertyChange is invoked
+  // with a toggle of ServicesResolved property, the
+  // NotifyGattDiscoveryComplete() will be called with each service once.
+  std::vector<device::BluetoothRemoteGattService*>
+      newly_discovered_gatt_services_;
 
   // During pairing this is set to an object that we don't own, but on which
   // we can make method calls to request, display or confirm PIN Codes and

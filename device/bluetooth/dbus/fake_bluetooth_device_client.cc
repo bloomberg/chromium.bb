@@ -218,6 +218,15 @@ const char FakeBluetoothDeviceClient::kConnectedTrustedNotPairedDeviceName[] =
 const uint32_t
     FakeBluetoothDeviceClient::kConnectedTrustedNotPairedDeviceClass = 0x7a020c;
 
+const char FakeBluetoothDeviceClient::kCachedLowEnergyPath[] =
+    "/fake/hci0/devF";
+const char FakeBluetoothDeviceClient::kCachedLowEnergyAddress[] =
+    "02:A5:11:0D:15:40";
+const char FakeBluetoothDeviceClient::kCachedLowEnergyName[] =
+    "Bluetooth 4.0 Heart Rate Monitor";
+const uint32_t FakeBluetoothDeviceClient::kCachedLowEnergyClass =
+    0x000918;  // Major class "Health", Minor class "Heart/Pulse Rate Monitor."
+
 FakeBluetoothDeviceClient::Properties::Properties(
     const PropertyChangedCallback& callback)
     : BluetoothDeviceClient::Properties(
@@ -698,12 +707,32 @@ void FakeBluetoothDeviceClient::CreateDevice(
     properties->paired.ReplaceValue(false);
     properties->name.ReplaceValue("Connected Pairable Device");
     properties->alias.ReplaceValue(kConnectedTrustedNotPairedDeviceName);
+  } else if (device_path == dbus::ObjectPath(kCachedLowEnergyPath)) {
+    properties->address.ReplaceValue(kLowEnergyAddress);
+    properties->bluetooth_class.ReplaceValue(kLowEnergyClass);
+    properties->name.ReplaceValue("Heart Rate Monitor");
+    properties->alias.ReplaceValue(kLowEnergyName);
+    properties->alias.ReplaceValue(kLowEnergyName);
+    properties->services_resolved.ReplaceValue(false);
+
+    std::vector<std::string> uuids;
+    uuids.push_back(FakeBluetoothGattServiceClient::kHeartRateServiceUUID);
+    properties->uuids.ReplaceValue(uuids);
   } else {
     NOTREACHED();
   }
 
   properties_map_.insert(std::make_pair(device_path, std::move(properties)));
   device_list_.push_back(device_path);
+
+  // After the new properties| is added to the map, expose the heart rate
+  // service to emulate the device with cached GATT services.
+  if (device_path == dbus::ObjectPath(kCachedLowEnergyPath)) {
+    static_cast<FakeBluetoothGattServiceClient*>(
+        bluez::BluezDBusManager::Get()->GetBluetoothGattServiceClient())
+        ->ExposeHeartRateServiceWithoutDelay(device_path);
+  }
+
   FOR_EACH_OBSERVER(BluetoothDeviceClient::Observer, observers_,
                     DeviceAdded(device_path));
 }

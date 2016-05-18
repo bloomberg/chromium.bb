@@ -22,7 +22,6 @@ BluetoothRemoteGattServiceBlueZ::BluetoothRemoteGattServiceBlueZ(
     const dbus::ObjectPath& object_path)
     : BluetoothGattServiceBlueZ(adapter, object_path),
       device_(device),
-      discovery_complete_(false),
       weak_ptr_factory_(this) {
   VLOG(1) << "Creating remote GATT service with identifier: "
           << object_path.value();
@@ -118,7 +117,7 @@ void BluetoothRemoteGattServiceBlueZ::NotifyServiceChanged() {
   // Don't send service changed unless we know that all characteristics have
   // already been discovered. This is to prevent spammy events before sending
   // out the first Gatt
-  if (!discovery_complete_)
+  if (!device_->IsGattServicesDiscoveryComplete())
     return;
 
   DCHECK(GetAdapter());

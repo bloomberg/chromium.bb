@@ -155,16 +155,9 @@ BluetoothDeviceBlueZ::BluetoothDeviceBlueZ(
       weak_ptr_factory_(this) {
   bluez::BluezDBusManager::Get()->GetBluetoothGattServiceClient()->AddObserver(
       this);
+  bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->AddObserver(this);
 
-  // Add all known GATT services.
-  const std::vector<dbus::ObjectPath> gatt_services =
-      bluez::BluezDBusManager::Get()
-          ->GetBluetoothGattServiceClient()
-          ->GetServices();
-  for (std::vector<dbus::ObjectPath>::const_iterator it = gatt_services.begin();
-       it != gatt_services.end(); ++it) {
-    GattServiceAdded(*it);
-  }
+  InitializeGattServiceMap();
 }
 
 BluetoothDeviceBlueZ::~BluetoothDeviceBlueZ() {
@@ -172,12 +165,14 @@ BluetoothDeviceBlueZ::~BluetoothDeviceBlueZ() {
       ->GetBluetoothGattServiceClient()
       ->RemoveObserver(this);
 
+  bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->RemoveObserver(
+      this);
   // Copy the GATT services list here and clear the original so that when we
   // send GattServiceRemoved(), GetGattServices() returns no services.
   GattServiceMap gatt_services_swapped;
   gatt_services_swapped.swap(gatt_services_);
   for (const auto& iter : gatt_services_swapped) {
-    DCHECK(adapter_);
+    DCHECK(adapter());
     adapter()->NotifyGattServiceRemoved(
         static_cast<BluetoothRemoteGattServiceBlueZ*>(iter.second));
   }
@@ -553,6 +548,30 @@ BluetoothAdapterBlueZ* BluetoothDeviceBlueZ::adapter() const {
   return static_cast<BluetoothAdapterBlueZ*>(adapter_);
 }
 
+void BluetoothDeviceBlueZ::DevicePropertyChanged(
+    const dbus::ObjectPath& object_path,
+    const std::string& property_name) {
+  if (object_path != object_path_)
+    return;
+
+  bluez::BluetoothDeviceClient::Properties* properties =
+      bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
+          object_path);
+  DCHECK(properties);
+
+  if (property_name == properties->services_resolved.name() &&
+      properties->services_resolved.value()) {
+    VLOG(3) << "All services were discovered for device: "
+            << object_path.value();
+
+    for (const auto iter : newly_discovered_gatt_services_) {
+      adapter()->NotifyGattDiscoveryComplete(
+          static_cast<BluetoothRemoteGattService*>(iter));
+    }
+    newly_discovered_gatt_services_.clear();
+  }
+}
+
 void BluetoothDeviceBlueZ::GattServiceAdded(
     const dbus::ObjectPath& object_path) {
   if (GetGattService(object_path.value())) {
@@ -575,12 +594,15 @@ void BluetoothDeviceBlueZ::GattServiceAdded(
   BluetoothRemoteGattServiceBlueZ* service =
       new BluetoothRemoteGattServiceBlueZ(adapter(), this, object_path);
 
+  newly_discovered_gatt_services_.push_back(
+      static_cast<BluetoothRemoteGattServiceBlueZ*>(service));
+
   gatt_services_.set(service->GetIdentifier(),
                      std::unique_ptr<BluetoothRemoteGattService>(service));
   DCHECK(service->object_path() == object_path);
   DCHECK(service->GetUUID().IsValid());
 
-  DCHECK(adapter_);
+  DCHECK(adapter());
   adapter()->NotifyGattServiceAdded(service);
 }
 
@@ -604,8 +626,35 @@ void BluetoothDeviceBlueZ::GattServiceRemoved(
   std::unique_ptr<BluetoothRemoteGattService> scoped_service =
       gatt_services_.take_and_erase(iter->first);
 
-  DCHECK(adapter_);
+  DCHECK(adapter());
   adapter()->NotifyGattServiceRemoved(service);
+}
+
+void BluetoothDeviceBlueZ::InitializeGattServiceMap() {
+  DCHECK(gatt_services_.empty());
+
+  if (!IsGattServicesDiscoveryComplete()) {
+    VLOG(2) << "Gatt services have not been fully resolved for device "
+            << object_path_.value();
+    return;
+  }
+
+  VLOG(3) << "Initializing the list of GATT services associated with device "
+          << object_path_.value();
+
+  // Add all known GATT services associated with the device.
+  const std::vector<dbus::ObjectPath> gatt_services =
+      bluez::BluezDBusManager::Get()
+          ->GetBluetoothGattServiceClient()
+          ->GetServices();
+  for (const auto& it : gatt_services)
+    GattServiceAdded(it);
+
+  // Notify on the discovery complete for each service which is found in the
+  // first discovery.
+  DCHECK(adapter());
+  for (const auto& iter : gatt_services_)
+    adapter()->NotifyGattDiscoveryComplete(iter.second);
 }
 
 void BluetoothDeviceBlueZ::OnGetConnInfo(const ConnectionInfoCallback& callback,

@@ -10,16 +10,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
+#include "device/bluetooth/dbus/fake_bluetooth_device_client.h"
 #include "device/bluetooth/dbus/fake_bluetooth_gatt_characteristic_client.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace bluez {
-
-namespace {
-
-const int kExposeCharacteristicsDelayIntervalMs = 100;
-
-}  // namespace
 
 // static
 const char FakeBluetoothGattServiceClient::kHeartRateServicePathComponent[] =
@@ -105,12 +100,17 @@ void FakeBluetoothGattServiceClient::ExposeHeartRateService(
 
   NotifyServiceAdded(dbus::ObjectPath(heart_rate_service_path_));
 
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(
           &FakeBluetoothGattServiceClient::ExposeHeartRateCharacteristics,
-          weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(kExposeCharacteristicsDelayIntervalMs));
+          weak_ptr_factory_.GetWeakPtr()));
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &FakeBluetoothGattServiceClient::ToggleServicesResolvedProperty,
+          weak_ptr_factory_.GetWeakPtr(), device_path, true));
 }
 
 void FakeBluetoothGattServiceClient::HideHeartRateService() {
@@ -132,6 +132,33 @@ void FakeBluetoothGattServiceClient::HideHeartRateService() {
 
   heart_rate_service_properties_.reset();
   heart_rate_service_path_.clear();
+}
+
+void FakeBluetoothGattServiceClient::ExposeHeartRateServiceWithoutDelay(
+    const dbus::ObjectPath& device_path) {
+  if (IsHeartRateVisible()) {
+    DCHECK(!heart_rate_service_path_.empty());
+    VLOG(1) << "Fake Heart Rate Service already exposed.";
+    return;
+  }
+  VLOG(2) << "Exposing fake Heart Rate Service.";
+  heart_rate_service_path_ =
+      device_path.value() + "/" + kHeartRateServicePathComponent;
+  heart_rate_service_properties_.reset(new Properties(base::Bind(
+      &FakeBluetoothGattServiceClient::OnPropertyChanged,
+      base::Unretained(this), dbus::ObjectPath(heart_rate_service_path_))));
+  heart_rate_service_properties_->uuid.ReplaceValue(kHeartRateServiceUUID);
+  heart_rate_service_properties_->device.ReplaceValue(device_path);
+  heart_rate_service_properties_->primary.ReplaceValue(true);
+
+  NotifyServiceAdded(dbus::ObjectPath(heart_rate_service_path_));
+
+  static_cast<FakeBluetoothGattCharacteristicClient*>(
+      bluez::BluezDBusManager::Get()->GetBluetoothGattCharacteristicClient())
+      ->ExposeHeartRateCharacteristics(
+          dbus::ObjectPath(heart_rate_service_path_));
+
+  ToggleServicesResolvedProperty(device_path, true);
 }
 
 bool FakeBluetoothGattServiceClient::IsHeartRateVisible() const {
@@ -177,6 +204,19 @@ void FakeBluetoothGattServiceClient::ExposeHeartRateCharacteristics() {
               ->GetBluetoothGattCharacteristicClient());
   char_client->ExposeHeartRateCharacteristics(
       dbus::ObjectPath(heart_rate_service_path_));
+}
+
+void FakeBluetoothGattServiceClient::ToggleServicesResolvedProperty(
+    const dbus::ObjectPath& object_path,
+    bool resolved) {
+  DCHECK(object_path.IsValid());
+
+  VLOG(2) << "Toggle the ServicesResolved property to " << resolved
+          << " of device " << object_path.value();
+  FakeBluetoothDeviceClient* device = static_cast<FakeBluetoothDeviceClient*>(
+      bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient());
+  // Notify on service discovery complete.
+  device->GetProperties(object_path)->services_resolved.ReplaceValue(true);
 }
 
 }  // namespace bluez

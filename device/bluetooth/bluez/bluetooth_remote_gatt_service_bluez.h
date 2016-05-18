@@ -6,6 +6,7 @@
 #define DEVICE_BLUETOOTH_BLUEZ_BLUETOOTH_REMOTE_GATT_SERVICE_BLUEZ_H_
 
 #include <stdint.h>
+
 #include <map>
 #include <string>
 #include <vector>
@@ -110,10 +111,6 @@ class BluetoothRemoteGattServiceBlueZ
   // paths as unique identifiers, we also use this mapping to return
   // characteristics by identifier.
   CharacteristicMap characteristics_;
-
-  // Indicates whether or not the characteristics of this service are known to
-  // have been discovered.
-  bool discovery_complete_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
