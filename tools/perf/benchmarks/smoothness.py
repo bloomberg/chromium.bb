@@ -94,6 +94,7 @@ class SmoothnessToughCanvasCases(_Smoothness):
 
 
 @benchmark.Disabled('android')  # crbug.com/373812
+@benchmark.Disabled('win-reference')  # crbug.com/612810
 class SmoothnessToughWebGLCases(_Smoothness):
   page_set = page_sets.ToughWebglCasesPageSet
 
