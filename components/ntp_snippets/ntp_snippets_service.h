@@ -46,8 +46,6 @@ class NTPSnippetsServiceObserver;
 // Stores and vends fresh content data for the NTP.
 class NTPSnippetsService : public KeyedService {
  public:
-  using NTPSnippetStorage = NTPSnippet::PtrVector;
-
   using ImageFetchedCallback =
       base::Callback<void(const std::string& snippet_id, const SkBitmap*)>;
 
@@ -79,11 +77,11 @@ class NTPSnippetsService : public KeyedService {
   void FetchSnippetsFromHosts(const std::set<std::string>& hosts);
 
   // Available snippets.
-  const NTPSnippetStorage& snippets() const { return snippets_; }
+  const NTPSnippet::PtrVector& snippets() const { return snippets_; }
 
   // Returns the list of snippets previously discarded by the user (that are
   // not expired yet).
-  const NTPSnippetStorage& discarded_snippets() const {
+  const NTPSnippet::PtrVector& discarded_snippets() const {
     return discarded_snippets_;
   }
 
@@ -131,12 +129,8 @@ class NTPSnippetsService : public KeyedService {
   void OnSuggestionsChanged(const suggestions::SuggestionsProfile& suggestions);
   void OnFetchFinished(NTPSnippetsFetcher::OptionalSnippets snippets);
 
-  // Expects a top-level dictionary containing a "recos" list, each element of
-  // which will be parsed as a snippet.
-  bool LoadFromFetchedValue(const base::Value& value);
-
   // Merges newly available snippets with the previously available list.
-  void MergeSnippets(NTPSnippetStorage new_snippets);
+  void MergeSnippets(NTPSnippet::PtrVector new_snippets);
   // TODO(treib): Investigate a better storage, maybe LevelDB or SQLite?
   void LoadSnippetsFromPrefs();
   void StoreSnippetsToPrefs();
@@ -149,6 +143,12 @@ class NTPSnippetsService : public KeyedService {
 
   void LoadingSnippetsFinished();
 
+  enum class State {
+    NOT_INITED,
+    INITED,
+    SHUT_DOWN
+  } state_;
+
   bool enabled_;
 
   PrefService* pref_service_;
@@ -159,11 +159,11 @@ class NTPSnippetsService : public KeyedService {
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   // All current suggestions (i.e. not discarded ones).
-  NTPSnippetStorage snippets_;
+  NTPSnippet::PtrVector snippets_;
 
   // Suggestions that the user discarded. We keep these around until they expire
   // so we won't re-add them on the next fetch.
-  NTPSnippetStorage discarded_snippets_;
+  NTPSnippet::PtrVector discarded_snippets_;
 
   // The ISO 639-1 code of the language used by the application.
   const std::string application_language_code_;

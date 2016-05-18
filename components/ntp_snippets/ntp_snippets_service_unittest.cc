@@ -222,7 +222,10 @@ class NTPSnippetsServiceTest : public testing::Test {
         switches::kDontRestrict);
   }
 
-  ~NTPSnippetsServiceTest() override {}
+  ~NTPSnippetsServiceTest() override {
+    if (service_)
+      service_->Shutdown();
+  }
 
   void SetUp() override {
     EXPECT_CALL(mock_scheduler(), Schedule(_, _, _, _)).Times(1);
@@ -230,6 +233,9 @@ class NTPSnippetsServiceTest : public testing::Test {
   }
 
   void CreateSnippetsService(bool enabled) {
+    if (service_)
+      service_->Shutdown();
+
     scoped_refptr<base::SingleThreadTaskRunner> task_runner(
         base::ThreadTaskRunnerHandle::Get());
     scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =
@@ -474,8 +480,7 @@ TEST_F(NTPSnippetsServiceTest, GetDiscarded) {
 
   // For the test, we need the snippet to get discarded.
   ASSERT_TRUE(service()->DiscardSnippet("http://localhost/foobar"));
-  const NTPSnippetsService::NTPSnippetStorage& snippets =
-      service()->discarded_snippets();
+  const NTPSnippet::PtrVector& snippets = service()->discarded_snippets();
   EXPECT_EQ(1u, snippets.size());
   for (auto& snippet : snippets) {
     EXPECT_EQ("http://localhost/foobar", snippet->id());

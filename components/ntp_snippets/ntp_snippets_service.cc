@@ -126,7 +126,7 @@ std::set<std::string> GetSuggestionsHostsImpl(
 }
 
 std::unique_ptr<base::ListValue> SnippetsToListValue(
-    const NTPSnippetsService::NTPSnippetStorage& snippets) {
+    const NTPSnippet::PtrVector& snippets) {
   std::unique_ptr<base::ListValue> list(new base::ListValue);
   for (const auto& snippet : snippets) {
     std::unique_ptr<base::DictionaryValue> dict = snippet->ToDictionary();
@@ -135,7 +135,7 @@ std::unique_ptr<base::ListValue> SnippetsToListValue(
   return list;
 }
 
-bool ContainsSnippet(const NTPSnippetsService::NTPSnippetStorage& haystack,
+bool ContainsSnippet(const NTPSnippet::PtrVector& haystack,
                      const std::unique_ptr<NTPSnippet>& needle) {
   const std::string& id = needle->id();
   return std::find_if(haystack.begin(), haystack.end(),
@@ -161,7 +161,8 @@ NTPSnippetsService::NTPSnippetsService(
     NTPSnippetsScheduler* scheduler,
     std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
     std::unique_ptr<ImageFetcher> image_fetcher)
-    : enabled_(false),
+    : state_(State::NOT_INITED),
+      enabled_(false),
       pref_service_(pref_service),
       suggestions_service_(suggestions_service),
       file_task_runner_(file_task_runner),
@@ -173,7 +174,9 @@ NTPSnippetsService::NTPSnippetsService(
       &NTPSnippetsService::OnFetchFinished, base::Unretained(this)));
 }
 
-NTPSnippetsService::~NTPSnippetsService() {}
+NTPSnippetsService::~NTPSnippetsService() {
+  DCHECK(state_ == State::NOT_INITED || state_ == State::SHUT_DOWN);
+}
 
 // static
 void NTPSnippetsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
@@ -183,6 +186,9 @@ void NTPSnippetsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 }
 
 void NTPSnippetsService::Init(bool enabled) {
+  DCHECK(state_ == State::NOT_INITED);
+  state_ = State::INITED;
+
   enabled_ = enabled;
   if (enabled_) {
     // |suggestions_service_| can be null in tests.
@@ -205,8 +211,12 @@ void NTPSnippetsService::Init(bool enabled) {
 }
 
 void NTPSnippetsService::Shutdown() {
+  DCHECK(state_ == State::INITED);
+  state_ = State::SHUT_DOWN;
+
   FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
                     NTPSnippetsServiceShutdown());
+  suggestions_service_subscription_.reset();
   enabled_ = false;
 }
 
@@ -355,7 +365,7 @@ void NTPSnippetsService::OnFetchFinished(
   LoadingSnippetsFinished();
 }
 
-void NTPSnippetsService::MergeSnippets(NTPSnippetStorage new_snippets) {
+void NTPSnippetsService::MergeSnippets(NTPSnippet::PtrVector new_snippets) {
   // Remove new snippets that we already have, or that have been discarded.
   new_snippets.erase(
       std::remove_if(new_snippets.begin(), new_snippets.end(),
@@ -405,7 +415,7 @@ void NTPSnippetsService::MergeSnippets(NTPSnippetStorage new_snippets) {
 }
 
 void NTPSnippetsService::LoadSnippetsFromPrefs() {
-  NTPSnippetStorage prefs_snippets;
+  NTPSnippet::PtrVector prefs_snippets;
   bool success = NTPSnippet::AddFromListValue(
       *pref_service_->GetList(prefs::kSnippets), &prefs_snippets);
   DCHECK(success) << "Failed to parse snippets from prefs";
