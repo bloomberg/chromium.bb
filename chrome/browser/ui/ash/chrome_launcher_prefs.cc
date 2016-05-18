@@ -12,6 +12,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -366,6 +368,11 @@ std::vector<std::string> GetPinnedAppsFromPrefs(
          !pinned_by_policy)) {
       apps.push_back(app_id);
     }
+  }
+
+  if (arc::ArcAuthService::IsAllowedForProfile(helper->profile()) &&
+      helper->IsValidIDForCurrentUser(ArcSupportHost::kHostAppId)) {
+    apps.push_back(ArcSupportHost::kHostAppId);
   }
 
   // If not added yet, the chrome item will be the last item in the list.

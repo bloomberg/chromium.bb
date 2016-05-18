@@ -32,6 +32,12 @@ const char kActionShowPage[] = "showPage";
 const char ArcSupportHost::kHostName[] = "com.google.arc_support";
 
 // static
+const char ArcSupportHost::kHostAppId[] = "cnbgggchhmkkdmeppjobngjoejnihlei";
+
+// static
+const char ArcSupportHost::kStorageId[] = "arc_support";
+
+// static
 const char* const ArcSupportHost::kHostOrigin[] = {
     "chrome-extension://cnbgggchhmkkdmeppjobngjoejnihlei/"};
 

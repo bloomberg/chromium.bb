@@ -8,7 +8,10 @@
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"
+#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "components/arc/arc_bridge_service.h"
@@ -270,10 +273,14 @@ void ArcAppWindowLauncherController::OnTaskCreated(
     DCHECK_EQ(controller->app_id(), app_id);
     shelf_id = controller->shelf_id();
   } else {
-    controller = new ArcAppWindowLauncherItemController(app_id, owner());
-    shelf_id = owner()->GetShelfIDForAppID(app_id);
+    const std::string shelf_app_id =
+        app_id == arc::kPlayStoreAppId ? ArcSupportHost::kHostAppId : app_id;
+    controller =
+        new ArcAppWindowLauncherItemController(shelf_app_id, app_id, owner());
+    shelf_id = owner()->GetShelfIDForAppID(shelf_app_id);
     if (shelf_id == 0) {
-      shelf_id = owner()->CreateAppLauncherItem(controller, app_id,
+      // Map Play Store shelf icon to Arc Support host, to share one entry.
+      shelf_id = owner()->CreateAppLauncherItem(controller, shelf_app_id,
                                                 ash::STATUS_RUNNING);
     } else {
       owner()->SetItemController(shelf_id, controller);

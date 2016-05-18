@@ -7,7 +7,10 @@
 #include <stddef.h>
 
 #include "ash/wm/window_util.h"
+#include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/extensions/launch_util.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/ash/launcher/arc_playstore_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item_tab.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -57,6 +60,15 @@ bool CanBrowserBeUsedForDirectActivation(Browser* browser,
 }
 
 }  // namespace
+
+// static
+AppShortcutLauncherItemController* AppShortcutLauncherItemController::Create(
+    const std::string& app_id,
+    ChromeLauncherController* controller) {
+  if (app_id == ArcSupportHost::kHostAppId || app_id == arc::kPlayStoreAppId)
+    return new ArcPlaystoreShortcutLauncherItemController(controller);
+  return new AppShortcutLauncherItemController(app_id, controller);
+}
 
 // Item controller for an app shortcut. Shortcuts track app and launcher ids,
 // but do not have any associated windows (opening a shortcut will replace the

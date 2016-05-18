@@ -14,6 +14,8 @@ class ArcSupportHost : public extensions::NativeMessageHost,
                        public arc::ArcAuthService::Observer {
  public:
   static const char kHostName[];
+  static const char kHostAppId[];
+  static const char kStorageId[];
   static const char* const kHostOrigin[];
 
   static std::unique_ptr<NativeMessageHost> Create();

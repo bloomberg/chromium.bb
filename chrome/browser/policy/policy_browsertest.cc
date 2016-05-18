@@ -3823,6 +3823,10 @@ class ArcPolicyTest : public PolicyTest {
 
  protected:
   void SetUpTest() {
+    // ArcAuthService functionality is available only when Arc is enabled. Use
+    // kEnableArc switch that activates it.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        chromeos::switches::kEnableArc);
     arc::ArcAuthService::DisableUIForTesting();
 
     browser()->profile()->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);

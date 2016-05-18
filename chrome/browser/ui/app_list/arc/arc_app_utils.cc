@@ -109,6 +109,8 @@ class LaunchAppWithoutSize {
 
 }  // namespace
 
+const char kPlayStoreAppId[] = "gpkmicpkkebkmabiaedjognfppcchdfa";
+
 bool LaunchAppWithRect(content::BrowserContext* context,
                        const std::string& app_id,
                        const gfx::Rect& target_rect) {

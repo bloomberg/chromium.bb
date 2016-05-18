@@ -15,7 +15,8 @@ class ChromeLauncherController;
 class ArcAppWindowLauncherItemController
     : public AppWindowLauncherItemController {
  public:
-  ArcAppWindowLauncherItemController(const std::string& app_id,
+  ArcAppWindowLauncherItemController(const std::string& shelf_app_id,
+                                     const std::string& arc_app_id,
                                      ChromeLauncherController* controller);
 
   ~ArcAppWindowLauncherItemController() override;

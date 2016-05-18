@@ -16,6 +16,8 @@ class BrowserContext;
 
 namespace arc {
 
+extern const char kPlayStoreAppId[];
+
 using CanHandleResolutionCallback = base::Callback<void(bool)>;
 
 // Launch an app and let the system decides how big and where to place it.

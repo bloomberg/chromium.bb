@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/arc/arc_auth_notification.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
+#include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_launcher.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/pref_names.h"
@@ -59,10 +61,6 @@ ArcAuthService* arc_auth_service = nullptr;
 
 base::LazyInstance<base::ThreadChecker> thread_checker =
     LAZY_INSTANCE_INITIALIZER;
-
-const char kPlayStoreAppId[] = "gpkmicpkkebkmabiaedjognfppcchdfa";
-const char kArcSupportExtensionId[] = "cnbgggchhmkkdmeppjobngjoejnihlei";
-const char kArcSupportStorageId[] = "arc_support";
 
 // Skip creating UI in unit tests
 bool disable_ui_for_testing = false;
@@ -126,6 +124,33 @@ bool ArcAuthService::IsOptInVerificationDisabled() {
 // static
 void ArcAuthService::EnableCheckAndroidManagementForTesting() {
   enable_check_android_management_for_testing = true;
+}
+
+bool ArcAuthService::IsAllowedForProfile(const Profile* profile) {
+  if (!arc::ArcBridgeService::GetEnabled(
+          base::CommandLine::ForCurrentProcess())) {
+    VLOG(1) << "Arc is not enabled.";
+    return false;
+  }
+
+  user_manager::User const* const user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  if (profile->IsLegacySupervised()) {
+    VLOG(1) << "Supervised users are not supported in ARC.";
+    return false;
+  }
+  if (!user->HasGaiaAccount()) {
+    VLOG(1) << "Users without GAIA accounts are not supported in ARC.";
+    return false;
+  }
+
+  if (user_manager::UserManager::Get()
+          ->IsCurrentUserCryptohomeDataEphemeral()) {
+    VLOG(2) << "Users with ephemeral data are not supported in Arc.";
+    return false;
+  }
+
+  return true;
 }
 
 void ArcAuthService::OnAuthInstanceReady() {
@@ -234,37 +259,28 @@ void ArcAuthService::SetState(State state) {
   FOR_EACH_OBSERVER(Observer, observer_list_, OnOptInChanged(state_));
 }
 
+bool ArcAuthService::IsAllowed() const {
+  DCHECK(thread_checker.Get().CalledOnValidThread());
+  return profile_ != nullptr;
+}
+
 void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
   DCHECK(profile && profile != profile_);
   DCHECK(thread_checker.Get().CalledOnValidThread());
 
   Shutdown();
 
-  user_manager::User const* const user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
-  if (profile->IsLegacySupervised()) {
-    VLOG(1) << "Supervised users are not supported in ARC.";
+  if (!IsAllowedForProfile(profile))
     return;
-  }
-  if (!user->HasGaiaAccount()) {
-    VLOG(1) << "Users without GAIA accounts are not supported in ARC.";
-    return;
-  }
-
-  if (user_manager::UserManager::Get()
-          ->IsCurrentUserCryptohomeDataEphemeral()) {
-    VLOG(2) << "Users with ephemeral data are not supported in Arc.";
-    return;
-  }
 
   profile_ = profile;
   PrefServiceSyncableFromProfile(profile_)->AddSyncedPrefObserver(
       prefs::kArcEnabled, this);
 
   // Reuse storage used in ARC OptIn platform app.
-  const std::string site_url =
-      base::StringPrintf("%s://%s/persist?%s", content::kGuestScheme,
-                         kArcSupportExtensionId, kArcSupportStorageId);
+  const std::string site_url = base::StringPrintf(
+      "%s://%s/persist?%s", content::kGuestScheme, ArcSupportHost::kHostAppId,
+      ArcSupportHost::kStorageId);
   storage_partition_ = content::BrowserContext::GetStoragePartitionForSite(
       profile_, GURL(site_url));
   CHECK(storage_partition_);
@@ -335,14 +351,16 @@ void ArcAuthService::ShowUI(UIPage page, const base::string16& status) {
   const extensions::AppWindowRegistry* const app_window_registry =
       extensions::AppWindowRegistry::Get(profile_);
   DCHECK(app_window_registry);
-  if (app_window_registry->GetCurrentAppWindowForApp(kArcSupportExtensionId))
+  if (app_window_registry->GetCurrentAppWindowForApp(
+          ArcSupportHost::kHostAppId)) {
     return;
+  }
 
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
-          kArcSupportExtensionId);
-  CHECK(extension &&
-        extensions::util::IsAppLaunchable(kArcSupportExtensionId, profile_));
+          ArcSupportHost::kHostAppId);
+  CHECK(extension && extensions::util::IsAppLaunchable(
+                         ArcSupportHost::kHostAppId, profile_));
 
   OpenApplication(CreateAppLaunchParamsUserContainer(
       profile_, extension, NEW_WINDOW, extensions::SOURCE_CHROME_INTERNAL));
@@ -523,13 +541,21 @@ void ArcAuthService::CancelAuthCode() {
   DisableArc();
 }
 
+bool ArcAuthService::IsArcEnabled() {
+  DCHECK(thread_checker.Get().CalledOnValidThread());
+  DCHECK(profile_);
+  return profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled);
+}
+
 void ArcAuthService::EnableArc() {
   DCHECK(thread_checker.Get().CalledOnValidThread());
+  DCHECK(profile_);
   profile_->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
 }
 
 void ArcAuthService::DisableArc() {
   DCHECK(thread_checker.Get().CalledOnValidThread());
+  DCHECK(profile_);
   profile_->GetPrefs()->SetBoolean(prefs::kArcEnabled, false);
 }
 

@@ -539,6 +539,8 @@
       'browser/ui/ash/launcher/app_window_launcher_controller.h',
       'browser/ui/ash/launcher/app_window_launcher_item_controller.cc',
       'browser/ui/ash/launcher/app_window_launcher_item_controller.h',
+      'browser/ui/ash/launcher/arc_playstore_shortcut_launcher_item_controller.cc',
+      'browser/ui/ash/launcher/arc_playstore_shortcut_launcher_item_controller.h',
       'browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.cc',
       'browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h',
       'browser/ui/ash/launcher/browser_status_monitor.cc',

@@ -98,6 +98,12 @@ class ArcAuthService : public ArcService,
 
   static void EnableCheckAndroidManagementForTesting();
 
+  // Returns true if Arc is allowed to run for the given profile.
+  static bool IsAllowedForProfile(const Profile* profile);
+
+  // Returns true if Arc is allowed to run for the current session.
+  bool IsAllowed() const;
+
   void OnPrimaryUserProfilePrepared(Profile* profile);
   void Shutdown();
 
@@ -134,6 +140,7 @@ class ArcAuthService : public ArcService,
   // Called from Arc support platform app when user cancels signing.
   void CancelAuthCode();
 
+  bool IsArcEnabled();
   void EnableArc();
   void DisableArc();
 

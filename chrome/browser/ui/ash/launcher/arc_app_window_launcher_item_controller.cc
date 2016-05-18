@@ -11,9 +11,13 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
 ArcAppWindowLauncherItemController::ArcAppWindowLauncherItemController(
-    const std::string& app_id,
+    const std::string& shelf_app_id,
+    const std::string& arc_app_id,
     ChromeLauncherController* controller)
-    : AppWindowLauncherItemController(TYPE_APP, app_id, app_id, controller) {}
+    : AppWindowLauncherItemController(TYPE_APP,
+                                      shelf_app_id,
+                                      arc_app_id,
+                                      controller) {}
 
 ArcAppWindowLauncherItemController::~ArcAppWindowLauncherItemController() {}
 

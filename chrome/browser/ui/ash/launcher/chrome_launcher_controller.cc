@@ -27,6 +27,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_app_icon_loader.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -37,6 +38,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
@@ -181,7 +183,7 @@ bool IsAppForUserPinned(const std::string& app_id,
 }
 
 const char* const kPinProhibitedExtensionIds[] = {
-    "cnbgggchhmkkdmeppjobngjoejnihlei",  // Arc Support
+    ArcSupportHost::kHostAppId, arc::kPlayStoreAppId,
 };
 
 const size_t kPinProhibitedExtensionIdsLength =
@@ -445,7 +447,7 @@ void ChromeLauncherController::CloseLauncherItem(ash::ShelfID id) {
     CHECK(iter != id_to_item_controller_map_.end());
     SetItemStatus(id, ash::STATUS_CLOSED);
     std::string app_id = iter->second->app_id();
-    iter->second = new AppShortcutLauncherItemController(app_id, this);
+    iter->second = AppShortcutLauncherItemController::Create(app_id, this);
     iter->second->set_shelf_id(id);
     // Existing controller is destroyed and replaced by registering again.
     SetShelfItemDelegate(id, iter->second);
@@ -633,7 +635,7 @@ void ChromeLauncherController::ActivateApp(const std::string& app_id,
   // Create a temporary application launcher item and use it to see if there are
   // running instances.
   std::unique_ptr<AppShortcutLauncherItemController> app_controller(
-      new AppShortcutLauncherItemController(app_id, this));
+      AppShortcutLauncherItemController::Create(app_id, this));
   if (!app_controller->GetRunningApplications().empty())
     app_controller->Activate(source);
   else
@@ -803,7 +805,11 @@ void ChromeLauncherController::PersistPinnedState() {
       if (model_->items()[i].type == ash::TYPE_APP_SHORTCUT) {
         ash::ShelfID id = model_->items()[i].id;
         LauncherItemController* controller = GetLauncherItemController(id);
-        if (controller && IsPinned(id)) {
+        // Don't persist pinning state for apps that are handled internally and
+        // have pinnable state AppListControllerDelegate::NO_PIN.
+        if (controller && IsPinned(id) &&
+            GetPinnable(controller->app_id()) !=
+                AppListControllerDelegate::NO_PIN) {
           base::DictionaryValue* app_value = ash::CreateAppDict(
               controller->app_id());
           if (app_value) {
@@ -1298,7 +1304,7 @@ ash::ShelfID ChromeLauncherController::CreateAppShortcutLauncherItemWithType(
     int index,
     ash::ShelfItemType shelf_item_type) {
   AppShortcutLauncherItemController* controller =
-      new AppShortcutLauncherItemController(app_id, this);
+      AppShortcutLauncherItemController::Create(app_id, this);
   ash::ShelfID shelf_id = InsertAppLauncherItem(
       controller, app_id, ash::STATUS_CLOSED, index, shelf_item_type);
   return shelf_id;

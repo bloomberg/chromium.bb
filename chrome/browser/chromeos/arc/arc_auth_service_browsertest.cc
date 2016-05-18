@@ -25,6 +25,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -129,6 +130,7 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
                                     url);
 
     // Enable ARC.
+    command_line->AppendSwitch(chromeos::switches::kEnableArc);
     chromeos::FakeSessionManagerClient* const fake_session_manager_client =
         new chromeos::FakeSessionManagerClient;
     fake_session_manager_client->set_arc_available(true);
