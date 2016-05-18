@@ -344,6 +344,8 @@ class Desktop:
     self.xorg_conf = None
     self.pulseaudio_pipe = None
     self.server_supports_exact_resize = False
+    self.server_supports_randr = False
+    self.randr_add_sizes = False
     self.host_ready = False
     self.ssh_auth_sockname = None
     g_desktops.append(self)
@@ -467,9 +469,12 @@ class Desktop:
     xvfb = locate_xvfb_randr()
     if xvfb:
       self.server_supports_exact_resize = True
+      self.server_supports_randr = True
+      self.randr_add_sizes = True
     else:
       xvfb = "Xvfb"
       self.server_supports_exact_resize = False
+      self.server_supports_randr = False
 
     logging.info("Starting %s on display :%d" % (xvfb, display))
     screen_option = "%dx%dx24" % (max_width, max_height)
@@ -489,8 +494,10 @@ class Desktop:
         suffix=".conf", delete=False) as config_file:
       config_file.write(gen_xorg_config(self.sizes))
 
-    # For now, we don't support exact resize with Xorg+dummy
+    # We can't support exact resize with the current Xorg dummy driver.
     self.server_supports_exact_resize = False
+    # But dummy does support RandR 1.0.
+    self.server_supports_randr = True
     self.xorg_conf = config_file.name
 
     logging.info("Starting Xorg on display :%d" % display)
@@ -574,19 +581,22 @@ class Desktop:
     if retcode != 0:
       logging.error("Failed to set XKB to 'evdev'")
 
-    if not self.server_supports_exact_resize:
+    if not self.server_supports_randr:
       return
 
-    # Register the screen sizes if the X server's RANDR extension supports it.
-    # Errors here are non-fatal; the X server will continue to run with the
-    # dimensions from the "-screen" option.
-    for width, height in self.sizes:
-      label = "%dx%d" % (width, height)
-      args = ["xrandr", "--newmode", label, "0", str(width), "0", "0", "0",
-              str(height), "0", "0", "0"]
-      subprocess.call(args, env=self.child_env, stdout=devnull, stderr=devnull)
-      args = ["xrandr", "--addmode", "screen", label]
-      subprocess.call(args, env=self.child_env, stdout=devnull, stderr=devnull)
+    # Register the screen sizes with RandR, if needed.  Errors here are
+    # non-fatal; the X server will continue to run with the dimensions from the
+    # "-screen" option.
+    if self.randr_add_sizes:
+      for width, height in self.sizes:
+        label = "%dx%d" % (width, height)
+        args = ["xrandr", "--newmode", label, "0", str(width), "0", "0", "0",
+                str(height), "0", "0", "0"]
+        subprocess.call(args, env=self.child_env, stdout=devnull,
+                        stderr=devnull)
+        args = ["xrandr", "--addmode", "screen", label]
+        subprocess.call(args, env=self.child_env, stdout=devnull,
+                        stderr=devnull)
 
     # Set the initial mode to the first size specified, otherwise the X server
     # would default to (max_width, max_height), which might not even be in the
