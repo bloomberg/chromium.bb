@@ -7,6 +7,23 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 
+#if defined(TOOLKIT_VIEWS)
+#include "base/command_line.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/user_manager.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
+#include "components/signin/core/common/profile_management_switches.h"
+#include "ui/base/page_transition_types.h"
+#endif
+
 namespace {
 
 class AppListServiceDisabled : public AppListService {
@@ -57,6 +74,21 @@ class AppListServiceDisabled : public AppListService {
   DISALLOW_COPY_AND_ASSIGN(AppListServiceDisabled);
 };
 
+#if defined(TOOLKIT_VIEWS)
+bool IsProfileSignedOut(Profile* profile) {
+  // The signed out status only makes sense at the moment in the context of the
+  // --new-profile-management flag.
+  if (!switches::IsNewProfileManagement())
+    return false;
+  ProfileAttributesEntry* entry;
+  bool has_entry =
+      g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(profile->GetPath(), &entry);
+  return has_entry && entry->IsSigninRequired();
+}
+#endif
+
 }  // namespace
 
 // static
@@ -75,5 +107,26 @@ void AppListService::RegisterPrefs(PrefRegistrySimple* registry) {}
 bool AppListService::HandleLaunchCommandLine(
     const base::CommandLine& command_line,
     Profile* launch_profile) {
+#if defined(TOOLKIT_VIEWS)
+  if (!command_line.HasSwitch(switches::kShowAppList))
+    return false;
+
+  Browser* browser = chrome::FindLastActive();
+  Profile* app_list_profile = browser ? browser->profile() : launch_profile;
+
+  if (IsProfileSignedOut(app_list_profile) ||
+      app_list_profile->IsSystemProfile()) {
+    UserManager::Show(base::FilePath(), profiles::USER_MANAGER_NO_TUTORIAL,
+                      profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
+    return true;
+  }
+
+  chrome::NavigateParams params(app_list_profile,
+                                GURL(chrome::kChromeUIAppsURL),
+                                ui::PAGE_TRANSITION_AUTO_BOOKMARK);
+  chrome::Navigate(&params);
+  return true;
+#else
   return false;
+#endif
 }
