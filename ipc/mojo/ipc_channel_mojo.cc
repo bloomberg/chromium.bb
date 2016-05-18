@@ -346,7 +346,7 @@ bool ChannelMojo::Send(Message* message) {
 }
 
 bool ChannelMojo::IsSendThreadSafe() const {
-  return true;
+  return false;
 }
 
 base::ProcessId ChannelMojo::GetPeerPID() const {
