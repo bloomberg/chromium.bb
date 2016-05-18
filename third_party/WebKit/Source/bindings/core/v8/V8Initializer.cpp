@@ -98,11 +98,9 @@ static void reportFatalErrorInMainThread(const char* location, const char* messa
 static PassRefPtr<ScriptCallStack> extractCallStack(v8::Isolate* isolate, v8::Local<v8::Message> message, int* const scriptId)
 {
     v8::Local<v8::StackTrace> stackTrace = message->GetStackTrace();
-    RefPtr<ScriptCallStack> callStack = nullptr;
+    RefPtr<ScriptCallStack> callStack = ScriptCallStack::create(isolate, stackTrace);
     *scriptId = message->GetScriptOrigin().ScriptID()->Value();
-    // Currently stack trace is only collected when inspector is open.
     if (!stackTrace.IsEmpty() && stackTrace->GetFrameCount() > 0) {
-        callStack = ScriptCallStack::create(isolate, stackTrace);
         int topScriptId = stackTrace->GetFrame(0)->GetScriptId();
         if (topScriptId == *scriptId)
             *scriptId = 0;
