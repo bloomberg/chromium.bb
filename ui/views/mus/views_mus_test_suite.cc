@@ -42,7 +42,12 @@ class DefaultShellClient : public shell::ShellClient {
 
 class PlatformTestHelperMus : public PlatformTestHelper {
  public:
-  PlatformTestHelperMus() {}
+  PlatformTestHelperMus() {
+    ViewsDelegate::GetInstance()->set_native_widget_factory(base::Bind(
+        &WindowManagerConnection::CreateNativeWidgetMus,
+        base::Unretained(WindowManagerConnection::Get()),
+        std::map<std::string, std::vector<uint8_t>>()));
+  }
   ~PlatformTestHelperMus() override {}
 
  private:
