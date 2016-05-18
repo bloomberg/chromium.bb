@@ -241,19 +241,19 @@ void ShapeResult::applySpacing(ShapeResultSpacing& spacing, const TextRun& textR
                     offset = spacing.letterSpacing();
                     glyphData.offset.expand(offsetX, offsetY);
                 }
-                continue;
+            } else {
+                offsetX = offsetY = 0;
+                float space = spacing.computeSpacing(textRun,
+                    run->m_startIndex + glyphData.characterIndex, offset);
+                glyphData.advance += space;
+                totalSpaceForRun += space;
+                if (textRun.rtl()) {
+                    // In RTL, spacing should be added to left side of glyphs.
+                    offset += space;
+                }
+                glyphData.offset.expand(offsetX, offsetY);
             }
-
-            offsetX = offsetY = 0;
-            float space = spacing.computeSpacing(textRun,
-                run->m_startIndex + glyphData.characterIndex, offset);
-            glyphData.advance += space;
-            totalSpaceForRun += space;
-            if (textRun.rtl()) {
-                // In RTL, spacing should be added to left side of glyphs.
-                offset += space;
-            }
-            glyphData.offset.expand(offsetX, offsetY);
+            m_hasVerticalOffsets |= (glyphData.offset.height() != 0);
         }
         run->m_width += totalSpaceForRun;
         totalSpace += totalSpaceForRun;
