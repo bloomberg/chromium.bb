@@ -137,6 +137,10 @@ class TestBucketSearches(gs_unittest.AbstractGSContextTest):
                 'gs://chromeos-image-archive/trybot-foo-firmware/'),
             self.mockResult(
                 'gs://chromeos-image-archive/bar-firmware/'),
+            self.mockResult(
+                'gs://chromeos-image-archive/trybot-whirlwind-test-ap/'),
+            self.mockResult(
+                'gs://chromeos-image-archive/trybot-stumpy-test-ap/'),
         ],
         'gs://chromeos-image-archive/foo-paladin/': [
             self.mockResult(
@@ -268,12 +272,17 @@ class TestBucketSearches(gs_unittest.AbstractGSContextTest):
     self.assertEqual(result, [
         'gs://chromeos-image-archive/foo-firmware/',
         'gs://chromeos-image-archive/bar-firmware/',
+        'gs://chromeos-image-archive/trybot-whirlwind-test-ap/',
+        'gs://chromeos-image-archive/trybot-stumpy-test-ap/',
+
     ])
 
   def testProduceFilteredCandidatesArchive(self):
     protected_prefixes = (
         'gs://chromeos-image-archive/foo-firmware',
         'gs://chromeos-image-archive/bar-firmware',
+        'gs://chromeos-image-archive/trybot-whirlwind-test-ap/',
+        'gs://chromeos-image-archive/trybot-stumpy-test-ap/',
     )
 
     self.patchSafeList()
