@@ -20,11 +20,13 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/image_fetcher/image_fetcher.h"
+#include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/switches.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/suggestions/proto/suggestions.pb.h"
+#include "components/variations/variations_associated_data.h"
 
 using image_fetcher::ImageFetcher;
 using suggestions::ChromeSuggestion;
@@ -39,9 +41,18 @@ namespace {
 // histograms with COUNTS() if this number increases beyond 50.
 const int kMaxSnippetCount = 10;
 
-const int kFetchingIntervalWifiChargingSeconds = 30 * 60;
-const int kFetchingIntervalWifiSeconds = 2 * 60 * 60;
-const int kFetchingIntervalFallbackSeconds = 24 * 60 * 60;
+// Default values for snippets fetching intervals.
+const int kDefaultFetchingIntervalWifiChargingSeconds = 30 * 60;
+const int kDefaultFetchingIntervalWifiSeconds = 2 * 60 * 60;
+const int kDefaultFetchingIntervalFallbackSeconds = 24 * 60 * 60;
+
+// Variation parameters than can override the default fetching intervals.
+const char kFetchingIntervalWifiChargingParamName[] =
+    "fetching_interval_wifi_charging_seconds";
+const char kFetchingIntervalWifiParamName[] =
+    "fetching_interval_wifi_seconds";
+const char kFetchingIntervalFallbackParamName[] =
+    "fetching_interval_fallback_seconds";
 
 // These define the times of day during which we will fetch via Wifi (without
 // charging) - 6 AM to 10 PM.
@@ -51,8 +62,20 @@ const int kWifiFetchingHourMax = 22;
 const int kDefaultExpiryTimeMins = 24 * 60;
 
 base::TimeDelta GetFetchingInterval(const char* switch_name,
+                                    const char* param_name,
                                     int default_value_seconds) {
   int value_seconds = default_value_seconds;
+
+  // The default value can be overridden by a variation parameter.
+  std::string param_value_str = variations::GetVariationParamValue(
+        ntp_snippets::kStudyName, param_name);
+  int param_value_seconds = 0;
+  if (base::StringToInt(param_value_str, &param_value_seconds))
+    value_seconds = param_value_seconds;
+  else
+    LOG(WARNING) << "Invalid value for variation parameter " << param_name;
+
+  // A value from the command line parameter overrides anything else.
   const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
   if (cmdline.HasSwitch(switch_name)) {
     std::string str = cmdline.GetSwitchValueASCII(switch_name);
@@ -67,7 +90,8 @@ base::TimeDelta GetFetchingInterval(const char* switch_name,
 
 base::TimeDelta GetFetchingIntervalWifiCharging() {
   return GetFetchingInterval(switches::kFetchingIntervalWifiChargingSeconds,
-                             kFetchingIntervalWifiChargingSeconds);
+                             kFetchingIntervalWifiChargingParamName,
+                             kDefaultFetchingIntervalWifiChargingSeconds);
 }
 
 base::TimeDelta GetFetchingIntervalWifi(const base::Time& now) {
@@ -77,14 +101,16 @@ base::TimeDelta GetFetchingIntervalWifi(const base::Time& now) {
   if (kWifiFetchingHourMin <= exploded.hour &&
       exploded.hour < kWifiFetchingHourMax) {
     return GetFetchingInterval(switches::kFetchingIntervalWifiSeconds,
-                               kFetchingIntervalWifiSeconds);
+                               kFetchingIntervalWifiParamName,
+                               kDefaultFetchingIntervalWifiSeconds);
   }
   return base::TimeDelta();
 }
 
 base::TimeDelta GetFetchingIntervalFallback() {
   return GetFetchingInterval(switches::kFetchingIntervalFallbackSeconds,
-                             kFetchingIntervalFallbackSeconds);
+                             kFetchingIntervalFallbackParamName,
+                             kDefaultFetchingIntervalFallbackSeconds);
 }
 
 base::Time GetRescheduleTime(const base::Time& now) {
