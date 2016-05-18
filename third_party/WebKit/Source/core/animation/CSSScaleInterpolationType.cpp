@@ -122,7 +122,7 @@ InterpolationValue CSSScaleInterpolationType::maybeConvertNeutral(const Interpol
     return InterpolationValue(Scale(1, 1, 1).createInterpolableValue());
 }
 
-InterpolationValue CSSScaleInterpolationType::maybeConvertInitial(const StyleResolverState&) const
+InterpolationValue CSSScaleInterpolationType::maybeConvertInitial(const StyleResolverState&, ConversionCheckers&) const
 {
     return InterpolationValue(Scale(1, 1, 1).createInterpolableValue());
 }

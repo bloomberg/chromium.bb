@@ -109,7 +109,7 @@ InterpolationValue CSSVisibilityInterpolationType::maybeConvertNeutral(const Int
     return createVisibilityValue(underlyingVisibility);
 }
 
-InterpolationValue CSSVisibilityInterpolationType::maybeConvertInitial(const StyleResolverState&) const
+InterpolationValue CSSVisibilityInterpolationType::maybeConvertInitial(const StyleResolverState&, ConversionCheckers&) const
 {
     return createVisibilityValue(VISIBLE);
 }

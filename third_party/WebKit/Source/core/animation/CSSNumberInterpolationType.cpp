@@ -45,7 +45,7 @@ InterpolationValue CSSNumberInterpolationType::maybeConvertNeutral(const Interpo
     return createNumberValue(0);
 }
 
-InterpolationValue CSSNumberInterpolationType::maybeConvertInitial(const StyleResolverState&) const
+InterpolationValue CSSNumberInterpolationType::maybeConvertInitial(const StyleResolverState&, ConversionCheckers& conversionCheckers) const
 {
     double initialNumber;
     if (!NumberPropertyFunctions::getInitialNumber(cssProperty(), initialNumber))

@@ -117,7 +117,7 @@ InterpolationValue CSSTextIndentInterpolationType::maybeConvertNeutral(const Int
     return createValue(Length(0, Fixed), mode, 1);
 }
 
-InterpolationValue CSSTextIndentInterpolationType::maybeConvertInitial(const StyleResolverState&) const
+InterpolationValue CSSTextIndentInterpolationType::maybeConvertInitial(const StyleResolverState&, ConversionCheckers&) const
 {
     IndentMode mode(ComputedStyle::initialTextIndentLine(), ComputedStyle::initialTextIndentType());
     return createValue(ComputedStyle::initialTextIndent(), mode, 1);

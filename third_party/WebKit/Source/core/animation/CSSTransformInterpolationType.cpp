@@ -131,7 +131,7 @@ InterpolationValue CSSTransformInterpolationType::maybeConvertNeutral(const Inte
     return convertTransform(EmptyTransformOperations());
 }
 
-InterpolationValue CSSTransformInterpolationType::maybeConvertInitial(const StyleResolverState&) const
+InterpolationValue CSSTransformInterpolationType::maybeConvertInitial(const StyleResolverState&, ConversionCheckers&) const
 {
     return convertTransform(ComputedStyle::initialStyle().transform());
 }

@@ -174,7 +174,7 @@ InterpolationValue CSSLengthInterpolationType::maybeConvertNeutral(const Interpo
     return InterpolationValue(createNeutralInterpolableValue());
 }
 
-InterpolationValue CSSLengthInterpolationType::maybeConvertInitial(const StyleResolverState&) const
+InterpolationValue CSSLengthInterpolationType::maybeConvertInitial(const StyleResolverState&, ConversionCheckers& conversionCheckers) const
 {
     Length initialLength;
     if (!LengthPropertyFunctions::getInitialLength(cssProperty(), initialLength))

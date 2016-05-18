@@ -89,7 +89,7 @@ InterpolationValue CSSFilterListInterpolationType::maybeConvertNeutral(const Int
     return InterpolationValue(underlying.interpolableValue->cloneAndZero(), &nonInterpolableList);
 }
 
-InterpolationValue CSSFilterListInterpolationType::maybeConvertInitial(const StyleResolverState&) const
+InterpolationValue CSSFilterListInterpolationType::maybeConvertInitial(const StyleResolverState&, ConversionCheckers& conversionCheckers) const
 {
     return convertFilterList(FilterListPropertyFunctions::getInitialFilterList(cssProperty()), 1);
 }

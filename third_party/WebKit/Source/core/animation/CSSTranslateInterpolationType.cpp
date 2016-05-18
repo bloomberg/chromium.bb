@@ -75,7 +75,7 @@ InterpolationValue CSSTranslateInterpolationType::maybeConvertNeutral(const Inte
     return createNeutralValue();
 }
 
-InterpolationValue CSSTranslateInterpolationType::maybeConvertInitial(const StyleResolverState&) const
+InterpolationValue CSSTranslateInterpolationType::maybeConvertInitial(const StyleResolverState&, ConversionCheckers&) const
 {
     return createNeutralValue();
 }

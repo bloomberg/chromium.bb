@@ -54,7 +54,7 @@ InterpolationValue CSSInterpolationType::maybeConvertSingle(const PropertySpecif
     }
 
     if (value->isInitialValue() || (value->isUnsetValue() && !CSSPropertyMetadata::isInheritedProperty(cssProperty())))
-        return maybeConvertInitial(environment.state());
+        return maybeConvertInitial(environment.state(), conversionCheckers);
 
     if (value->isInheritedValue() || (value->isUnsetValue() && CSSPropertyMetadata::isInheritedProperty(cssProperty())))
         return maybeConvertInherit(environment.state(), conversionCheckers);

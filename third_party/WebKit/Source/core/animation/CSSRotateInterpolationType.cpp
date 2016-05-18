@@ -116,7 +116,7 @@ InterpolationValue CSSRotateInterpolationType::maybeConvertNeutral(const Interpo
     return convertRotation(Rotation());
 }
 
-InterpolationValue CSSRotateInterpolationType::maybeConvertInitial(const StyleResolverState&) const
+InterpolationValue CSSRotateInterpolationType::maybeConvertInitial(const StyleResolverState&, ConversionCheckers&) const
 {
     return convertRotation(getRotation(ComputedStyle::initialStyle()));
 }

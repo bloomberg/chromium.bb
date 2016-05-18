@@ -175,7 +175,7 @@ InterpolationValue CSSClipInterpolationType::maybeConvertNeutral(const Interpola
     return createClipValue(neutralBox, 1);
 }
 
-InterpolationValue CSSClipInterpolationType::maybeConvertInitial(const StyleResolverState&) const
+InterpolationValue CSSClipInterpolationType::maybeConvertInitial(const StyleResolverState&, ConversionCheckers&) const
 {
     return nullptr;
 }

@@ -21,7 +21,7 @@ protected:
 
     InterpolationValue maybeConvertSingle(const PropertySpecificKeyframe&, const InterpolationEnvironment&, const InterpolationValue& underlying, ConversionCheckers&) const override;
     virtual InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const = 0;
-    virtual InterpolationValue maybeConvertInitial(const StyleResolverState&) const = 0;
+    virtual InterpolationValue maybeConvertInitial(const StyleResolverState&, ConversionCheckers&) const = 0;
     virtual InterpolationValue maybeConvertInherit(const StyleResolverState&, ConversionCheckers&) const = 0;
     virtual InterpolationValue maybeConvertValue(const CSSValue&, const StyleResolverState&, ConversionCheckers&) const = 0;
 };

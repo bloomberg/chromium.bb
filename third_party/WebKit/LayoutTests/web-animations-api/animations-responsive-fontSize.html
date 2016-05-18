@@ -39,4 +39,34 @@ test(function() {
     assert_not_equals(getComputedStyle(element).fontSize, fontSize);
 }, 'Relative font size smaller responsive to style changes');
 
+test(function() {
+    var keyframes = [
+        {fontSize: 'medium'},
+        {fontSize: 'medium'}
+    ];
+
+    container.style.fontFamily = 'cursive';
+    var player = element.animate(keyframes, 10);
+    player.pause();
+    player.currentTime = 5;
+    fontSize = getComputedStyle(element).fontSize;
+    container.style.fontFamily = 'monospace';
+    assert_not_equals(getComputedStyle(element).fontSize, fontSize);
+}, 'Font size medium responsive to style changes');
+
+test(function() {
+    var keyframes = [
+        {fontSize: 'initial'},
+        {fontSize: 'initial'}
+    ];
+
+    container.style.fontFamily = 'monospace';
+    var player = element.animate(keyframes, 10);
+    player.pause();
+    player.currentTime = 5;
+    fontSize = getComputedStyle(element).fontSize;
+    container.style.fontFamily = 'serif';
+    assert_not_equals(getComputedStyle(element).fontSize, fontSize);
+}, 'Font size initial responsive to style changes');
+
 </script>

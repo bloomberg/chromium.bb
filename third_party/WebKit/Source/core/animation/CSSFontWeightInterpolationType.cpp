@@ -85,7 +85,7 @@ InterpolationValue CSSFontWeightInterpolationType::maybeConvertNeutral(const Int
     return InterpolationValue(InterpolableNumber::create(0));
 }
 
-InterpolationValue CSSFontWeightInterpolationType::maybeConvertInitial(const StyleResolverState&) const
+InterpolationValue CSSFontWeightInterpolationType::maybeConvertInitial(const StyleResolverState&, ConversionCheckers& conversionCheckers) const
 {
     return createFontWeightValue(FontWeightNormal);
 }

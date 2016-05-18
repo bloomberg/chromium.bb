@@ -34,7 +34,7 @@ InterpolationValue CSSShadowListInterpolationType::maybeConvertNeutral(const Int
     return createNeutralValue();
 }
 
-InterpolationValue CSSShadowListInterpolationType::maybeConvertInitial(const StyleResolverState&) const
+InterpolationValue CSSShadowListInterpolationType::maybeConvertInitial(const StyleResolverState&, ConversionCheckers&) const
 {
     return convertShadowList(ShadowListPropertyFunctions::getInitialShadowList(cssProperty()), 1);
 }

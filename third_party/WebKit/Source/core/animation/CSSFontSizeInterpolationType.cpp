@@ -14,6 +14,25 @@ namespace blink {
 
 namespace {
 
+class IsMonospaceChecker : public InterpolationType::ConversionChecker {
+public:
+    static PassOwnPtr<IsMonospaceChecker> create(bool isMonospace)
+    {
+        return adoptPtr(new IsMonospaceChecker(isMonospace));
+    }
+private:
+    IsMonospaceChecker(bool isMonospace)
+        : m_isMonospace(isMonospace)
+    { }
+
+    bool isValid(const InterpolationEnvironment& environment, const InterpolationValue&) const final
+    {
+        return m_isMonospace == environment.state().style()->getFontDescription().isMonospace();
+    }
+
+    const bool m_isMonospace;
+};
+
 class InheritedFontSizeChecker : public InterpolationType::ConversionChecker {
 public:
     static PassOwnPtr<InheritedFontSizeChecker> create(const FontDescription::Size& inheritedFontSize)
@@ -39,18 +58,19 @@ InterpolationValue convertFontSize(float size)
     return InterpolationValue(CSSLengthInterpolationType::createInterpolablePixels(size));
 }
 
-InterpolationValue maybeConvertKeyword(CSSValueID valueID, const StyleResolverState& state, InterpolationType::ConversionCheckers* conversionCheckers)
+InterpolationValue maybeConvertKeyword(CSSValueID valueID, const StyleResolverState& state, InterpolationType::ConversionCheckers& conversionCheckers)
 {
     if (FontSize::isValidValueID(valueID)) {
-        // TODO(alancutter): Be responsive to changes in isMonospace().
-        return convertFontSize(state.fontBuilder().fontSizeForKeyword(FontSize::keywordSize(valueID), state.style()->getFontDescription().isMonospace()));
+        bool isMonospace = state.style()->getFontDescription().isMonospace();
+        conversionCheckers.append(IsMonospaceChecker::create(isMonospace));
+        return convertFontSize(state.fontBuilder().fontSizeForKeyword(FontSize::keywordSize(valueID), isMonospace));
     }
 
     if (valueID != CSSValueSmaller && valueID != CSSValueLarger)
         return nullptr;
 
     const FontDescription::Size& inheritedFontSize = state.parentFontDescription().getSize();
-    conversionCheckers->append(InheritedFontSizeChecker::create(inheritedFontSize));
+    conversionCheckers.append(InheritedFontSizeChecker::create(inheritedFontSize));
     if (valueID == CSSValueSmaller)
         return convertFontSize(FontDescription::smallerSize(inheritedFontSize).value);
     return convertFontSize(FontDescription::largerSize(inheritedFontSize).value);
@@ -63,9 +83,9 @@ InterpolationValue CSSFontSizeInterpolationType::maybeConvertNeutral(const Inter
     return InterpolationValue(CSSLengthInterpolationType::createNeutralInterpolableValue());
 }
 
-InterpolationValue CSSFontSizeInterpolationType::maybeConvertInitial(const StyleResolverState& state) const
+InterpolationValue CSSFontSizeInterpolationType::maybeConvertInitial(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
 {
-    return maybeConvertKeyword(FontSize::initialValueID(), state, nullptr);
+    return maybeConvertKeyword(FontSize::initialValueID(), state, conversionCheckers);
 }
 
 InterpolationValue CSSFontSizeInterpolationType::maybeConvertInherit(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
@@ -84,7 +104,7 @@ InterpolationValue CSSFontSizeInterpolationType::maybeConvertValue(const CSSValu
     if (!value.isPrimitiveValue() || !toCSSPrimitiveValue(value).isValueID())
         return nullptr;
 
-    return maybeConvertKeyword(toCSSPrimitiveValue(value).getValueID(), state, &conversionCheckers);
+    return maybeConvertKeyword(toCSSPrimitiveValue(value).getValueID(), state, conversionCheckers);
 }
 
 InterpolationValue CSSFontSizeInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const

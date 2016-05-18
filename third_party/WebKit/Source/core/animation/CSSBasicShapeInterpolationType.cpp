@@ -67,7 +67,7 @@ InterpolationValue CSSBasicShapeInterpolationType::maybeConvertNeutral(const Int
     return InterpolationValue(BasicShapeInterpolationFunctions::createNeutralValue(*underlying.nonInterpolableValue), nonInterpolableValue);
 }
 
-InterpolationValue CSSBasicShapeInterpolationType::maybeConvertInitial(const StyleResolverState&) const
+InterpolationValue CSSBasicShapeInterpolationType::maybeConvertInitial(const StyleResolverState&, ConversionCheckers&) const
 {
     return BasicShapeInterpolationFunctions::maybeConvertBasicShape(
         BasicShapePropertyFunctions::getInitialBasicShape(cssProperty()), 1);

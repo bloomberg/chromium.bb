@@ -158,7 +158,7 @@ InterpolationValue CSSImageSliceInterpolationType::maybeConvertNeutral(const Int
     return convertImageSlice(ImageSlice(zeroBox, underlyingTypes.fill), 1);
 }
 
-InterpolationValue CSSImageSliceInterpolationType::maybeConvertInitial(const StyleResolverState&) const
+InterpolationValue CSSImageSliceInterpolationType::maybeConvertInitial(const StyleResolverState&, ConversionCheckers& conversionCheckers) const
 {
     return convertImageSlice(ImageSlicePropertyFunctions::getInitialImageSlice(cssProperty()), 1);
 }
