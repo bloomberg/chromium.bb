@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 /**
- * UI Pages. Note the order must be in sync with the
- * ArcAuthService::UIPage enum.
+ * UI Pages. Note the order must be in sync with the ArcAuthService::UIPage
+ * enum.
  * @type {Array<string>}
  */
 var UI_PAGES = ['none',
@@ -24,7 +24,13 @@ var appWindow = null;
  * Contains Web content provided by Google authorization server.
  * @type {WebView}
  */
-var webview = null;
+var lsoView = null;
+
+/**
+ * Contains Play Store terms, loaded externally.
+ * @type {WebView}
+ */
+var termsView = null;
 
 /**
  * Used for bidirectional communication with native code.
@@ -38,6 +44,12 @@ var port = null;
  * @type {boolean}
  */
 var windowClosedInternally = false;
+
+/**
+ * Timer for terms reload.
+ * @type {Object}
+ */
+var termsReloadTimeout = null;
 
 /**
  * Closes current window in response to request from native code. This does not
@@ -60,15 +72,79 @@ function sendNativeMessage(code, opt_Props) {
 }
 
 /**
- * Applies localization for html content.
+ * Applies localization for html content and sets terms webview.
  * @param {!Object} data Localized strings and relevant information.
  */
-function setLocalization(data) {
+function initialize(data) {
   var doc = appWindow.contentWindow.document;
   var loadTimeData = appWindow.contentWindow.loadTimeData;
   loadTimeData.data = data;
   appWindow.contentWindow.i18nTemplate.process(doc, loadTimeData);
-  doc.getElementById('legacy-text').innerHTML = data.greetingLegacy;
+  var countryCode = data.countryCode.toLowerCase();
+
+  var scriptSetCountryCode = 'document.countryCode = \'' + countryCode + '\';';
+  termsView.addContentScripts([
+      { name: 'preProcess',
+        matches: ['https://play.google.com/*'],
+        js: { code: scriptSetCountryCode },
+        run_at: 'document_start'
+      },
+      { name: 'postProcess',
+        matches: ['https://play.google.com/*'],
+        css: { files: ['playstore.css'] },
+        js: { files: ['playstore.js'] },
+        run_at: 'document_end'
+      }]);
+
+  // Applying localization changes page layout, update terms height.
+  updateTermsHeight();
+}
+
+/**
+ * Sets current metrics mode.
+ * @param {string} text Describes current metrics state.
+ * @param {boolean} canEnable Defines if user is allowed to change this metrics
+ *                            option.
+ * @param {boolean} on Defines if metrics are active currently.
+ */
+function setMetricsMode(text, canEnable, on) {
+  var doc = appWindow.contentWindow.document;
+  var enableMetrics = doc.getElementById('enable-metrics');
+  enableMetrics.hidden = !canEnable;
+  enableMetrics.checked = on;
+
+  var onSettings = function(event) {
+    chrome.browser.openTab({'url': 'chrome://settings'}, function() {});
+    event.preventDefault();
+  };
+
+  var onLearnMore = function(event) {
+    var url = 'https://support.google.com/chrome/answer/96817';
+    chrome.browser.openTab({'url': url}, function() {});
+    event.preventDefault();
+  };
+
+  doc.getElementById('text-metrics').innerHTML = text;
+  doc.getElementById('settings-link').addEventListener('click', onSettings);
+  doc.getElementById('learn-more-link').addEventListener('click', onLearnMore);
+
+  // Applying metrics mode changes page layout, update terms height.
+  updateTermsHeight();
+}
+
+/**
+ * Updates terms view height manually because webview is not automatically
+ * resized in case parent div element gets resized.
+ */
+function updateTermsHeight() {
+  var setTermsHeight = function() {
+    var doc = appWindow.contentWindow.document;
+    var termsContainer = doc.getElementById('terms-container');
+    var style = window.getComputedStyle(termsContainer, null);
+    var height = style.getPropertyValue('height');
+    termsView.style.height = height;
+  };
+  setTimeout(setTermsHeight, 0);
 }
 
 /**
@@ -85,8 +161,10 @@ function onNativeMessage(message) {
     return;
   }
 
-  if (message.action == 'setLocalization') {
-    setLocalization(message.data);
+  if (message.action == 'initialize') {
+    initialize(message.data);
+  } else if (message.action == 'setMetricsMode') {
+    setMetricsMode(message.text, message.canEnable, message.on);
   } else if (message.action == 'closeUI') {
     closeWindowInternally();
   } else if (message.action == 'showPage') {
@@ -125,11 +203,12 @@ function showPage(pageDivId) {
   }
 
   if (pageDivId == 'lso-loading') {
-    webview.src = 'https://accounts.google.com/o/oauth2/v2/auth?client_id=' +
+    lsoView.src = 'https://accounts.google.com/o/oauth2/v2/auth?client_id=' +
                   '1070009224336-sdh77n7uot3oc99ais00jmuft6sk2fg9.apps.' +
                   'googleusercontent.com&response_type=code&redirect_uri=oob&' +
                   'scope=https://www.google.com/accounts/OAuthLogin&' +
-                  'device_type=arc_plus_plus&device_id=0';
+                  'device_type=arc_plus_plus&device_id=0&hl=' +
+                  navigator.language;
   }
   appWindow.show();
 }
@@ -159,42 +238,51 @@ function showPageWithStatus(pageId, status) {
     return;
   }
 
-  if (UI_PAGES[pageId] == 'error') {
+  if (UI_PAGES[pageId] == 'start') {
+    loadInitialTerms();
+  } else if (UI_PAGES[pageId] == 'error') {
     setErrorMessage(status);
   }
   showPage(UI_PAGES[pageId]);
 }
 
+/**
+ * Loads initial Play Store terms.
+ */
+function loadInitialTerms() {
+  termsView.src = 'https://play.google.com/about/play-terms.html';
+}
+
 chrome.app.runtime.onLaunched.addListener(function() {
   var onAppContentLoad = function() {
     var doc = appWindow.contentWindow.document;
-    webview = doc.getElementById('arc-support');
+    lsoView = doc.getElementById('arc-support');
     // Apply absolute dimension to webview tag in order to avoid UI glitch
     // when embedded content layout is visible for user, even if 100% width and
     // height are set in css file.
     // TODO(khmel): Investigate why relative layout is not enough.
-    webview.style.width = appWindow.innerBounds.width + 'px';
-    webview.style.height = appWindow.innerBounds.height + 'px';
+    lsoView.style.width = appWindow.innerBounds.width + 'px';
+    lsoView.style.height = appWindow.innerBounds.height + 'px';
 
     var isApprovalResponse = function(url) {
       var resultUrlPrefix = 'https://accounts.google.com/o/oauth2/approval?';
       return url.substring(0, resultUrlPrefix.length) == resultUrlPrefix;
     };
 
-    var onWebviewRequestResponseStarted = function(details) {
+    var onLsoViewRequestResponseStarted = function(details) {
       if (isApprovalResponse(details.url)) {
         showPage('arc-loading');
       }
     };
 
-    var onWebviewContentLoad = function() {
-      if (!isApprovalResponse(webview.src)) {
+    var onLsoViewContentLoad = function() {
+      if (!isApprovalResponse(lsoView.src)) {
         // Show LSO page when its content is ready.
         showPage('lso');
         return;
       }
 
-      webview.executeScript({code: 'document.title;'}, function(results) {
+      lsoView.executeScript({code: 'document.title;'}, function(results) {
         var authCodePrefix = 'Success code=';
         if (results[0].substring(0, authCodePrefix.length) ==
             authCodePrefix) {
@@ -213,20 +301,64 @@ chrome.app.runtime.onLaunched.addListener(function() {
       types: ['main_frame']
     };
 
-    webview.request.onResponseStarted.addListener(
-        onWebviewRequestResponseStarted, requestFilter);
-    webview.addEventListener('contentload', onWebviewContentLoad);
+    lsoView.request.onResponseStarted.addListener(
+        onLsoViewRequestResponseStarted, requestFilter);
+    lsoView.addEventListener('contentload', onLsoViewContentLoad);
 
-    var onGetStarted = function() {
+    termsView = doc.getElementById('terms');
+
+    // Handle terms view completed event. Enable button 'Agree' in case terms
+    // were loaded successfully and try to reload its content on error.
+    var termsReloadRetryTimeMs = 1000;  // 1 second
+    function onTermsViewRequestCompleted(details) {
+      if (termsReloadTimeout) {
+        clearTimeout(termsReloadTimeout);
+        termsReloadTimeout = null;
+      }
+      if (details.statusCode == 200) {
+        doc.getElementById('button-agree').disabled = false;
+      } else {
+        termsReloadTimeout = setTimeout(loadInitialTerms,
+                                        termsReloadRetryTimeMs);
+        termsReloadRetryTimeMs = termsReloadRetryTimeMs * 2;
+        if (termsReloadRetryTimeMs > 30000) {
+          termsReloadRetryTimeMs = 30000;
+        }
+      }
+    }
+    termsView.request.onCompleted.addListener(onTermsViewRequestCompleted,
+                                              requestFilter);
+
+    // webview is not allowed to open links in the new window. Hook these events
+    // and open links in context of main page.
+    termsView.addEventListener('newwindow', function(event) {
+      event.preventDefault();
+      chrome.browser.openTab({'url': event.targetUrl}, function() {});
+    });
+
+    var onAgree = function() {
+      var enableMetrics = doc.getElementById('enable-metrics');
+      if (!enableMetrics.hidden && enableMetrics.checked) {
+        sendNativeMessage('enableMetrics');
+      }
       sendNativeMessage('startLso');
+    };
+
+    var onCancel = function() {
+      if (appWindow) {
+        windowClosedInternally = false;
+        appWindow.close();
+        appWindow = null;
+      }
     };
 
     var onRetry = function() {
       sendNativeMessage('startLso');
     };
 
-    doc.getElementById('get-started').addEventListener('click', onGetStarted);
-    doc.getElementById('retry').addEventListener('click', onRetry);
+    doc.getElementById('button-agree').addEventListener('click', onAgree);
+    doc.getElementById('button-cancel').addEventListener('click', onCancel);
+    doc.getElementById('button-retry').addEventListener('click', onRetry);
 
     connectPort();
   };
@@ -238,6 +370,11 @@ chrome.app.runtime.onLaunched.addListener(function() {
   };
 
   var onWindowClosed = function() {
+    if (termsReloadTimeout) {
+      clearTimeout(termsReloadTimeout);
+      termsReloadTimeout = null;
+    }
+
     if (windowClosedInternally) {
       return;
     }
@@ -246,16 +383,16 @@ chrome.app.runtime.onLaunched.addListener(function() {
 
   windowClosedInternally = false;
   var options = {
-    'id': 'arc_support_wnd',
+    'id': 'play_store_wnd',
     'resizable': false,
     'hidden': true,
     'frame': {
       type: 'chrome',
-      color: '#67a030'
+      color: '#ffffff'
     },
     'innerBounds': {
-      'width': 800,
-      'height': 600
+      'width': 960,
+      'height': 688
     }
   };
   chrome.app.window.create('main.html', options, onWindowCreated);

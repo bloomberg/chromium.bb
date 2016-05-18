@@ -14,6 +14,9 @@
   "icons": {
     "48": "icon/48.png"
   },
-  "permissions": [ "webview", "nativeMessaging", "chrome://resources/" ],
-  "version": "0.1.1.0"
+  "permissions": [ "webview",
+                   "browser",
+                   "nativeMessaging",
+                   "chrome://resources/" ],
+  "version": "0.2.0.0"
 }

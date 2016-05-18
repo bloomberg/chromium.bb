@@ -107,6 +107,8 @@ class ArcAuthService : public ArcService,
   void OnPrimaryUserProfilePrepared(Profile* profile);
   void Shutdown();
 
+  Profile* profile() { return profile_; }
+
   State state() const { return state_; }
 
   std::string GetAndResetAuthCode();

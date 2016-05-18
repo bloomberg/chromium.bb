@@ -74,6 +74,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
  private:
   friend class ::CrashesDOMHandler;
   friend class ::FlashDOMHandler;
+  friend class ArcSupportHost;
   friend class BrowserProcessImpl;
   friend void chrome_browser::SetupPreReadFieldTrial();
   friend class ChromeMetricsServicesManagerClient;

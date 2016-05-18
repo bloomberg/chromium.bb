@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
 
 // Supports communication with Arc support dialog.
@@ -35,10 +36,16 @@ class ArcSupportHost : public extensions::NativeMessageHost,
  private:
   ArcSupportHost();
 
-  void SendLocalization();
+  void OnMetricsPreferenceChanged();
+  void Initialize();
+  void SendMetricsMode();
+  void EnableMetrics();
 
   // Unowned pointer.
   Client* client_ = nullptr;
+
+  // Used to track metrics preference.
+  PrefChangeRegistrar pref_change_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcSupportHost);
 };
