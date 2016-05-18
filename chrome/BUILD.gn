@@ -813,6 +813,10 @@ if (is_win) {
       "//chrome/app/nibs:chrome_xibs",
     ]
 
+    if (is_chrome_branded) {
+      deps += [ ":default_apps" ]
+    }
+
     ldflags = [
       "-Wl,-install_name,@executable_path/../Versions/$chrome_version_full/$chrome_framework_name.framework/$chrome_framework_name",
       "-compatibility_version",
@@ -1019,8 +1023,21 @@ group("extra_resources") {
 }
 
 if (is_chrome_branded) {
-  copy("default_apps") {
+  if (!is_mac) {
+    _default_apps_target_type = "copy"
+  } else {
+    _default_apps_target_type = "bundle_data"
+  }
+
+  target(_default_apps_target_type, "default_apps") {
     visibility = [ ":packed_resources" ]
+    if (is_mac) {
+      visibility += [
+        ":chrome_framework",
+        ":chrome_framework_shared_library",
+      ]
+    }
+
     sources = [
       "browser/resources/default_apps/docs.crx",
       "browser/resources/default_apps/drive.crx",
@@ -1028,9 +1045,16 @@ if (is_chrome_branded) {
       "browser/resources/default_apps/gmail.crx",
       "browser/resources/default_apps/youtube.crx",
     ]
-    outputs = [
-      "$root_out_dir/default_apps/{{source_file_part}}",
-    ]
+
+    if (!is_mac) {
+      outputs = [
+        "$root_out_dir/default_apps/{{source_file_part}}",
+      ]
+    } else {
+      outputs = [
+        "{{bundle_root_dir}}/Deafult Apps/{{source_file_part}}",
+      ]
+    }
 
     # Force anybody that depends on this to get the default apps as data files.
     data = process_file_template(sources, outputs)
@@ -1044,7 +1068,7 @@ group("packed_resources") {
     ":repack_pseudo_locales_pack",
   ]
 
-  if (is_chrome_branded) {
+  if (is_chrome_branded && !is_mac) {
     public_deps += [ ":default_apps" ]
   }
 
