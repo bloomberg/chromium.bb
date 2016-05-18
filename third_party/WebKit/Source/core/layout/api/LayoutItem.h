@@ -13,6 +13,7 @@
 namespace blink {
 
 class FrameView;
+class Node;
 
 class LayoutItem {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -138,6 +139,11 @@ public:
     LayoutItem container() const
     {
         return LayoutItem(m_layoutObject->container());
+    }
+
+    Node* node() const
+    {
+        return m_layoutObject->node();
     }
 
     const ComputedStyle& styleRef() const

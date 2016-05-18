@@ -706,8 +706,8 @@ bool EventHandler::logicalScroll(ScrollDirection direction, ScrollGranularity gr
     if (!node)
         node = m_mousePressNode.get();
 
-    if ((!node || !node->layoutObject()) && m_frame->view() && m_frame->view()->layoutView())
-        node = m_frame->view()->layoutView()->node();
+    if ((!node || !node->layoutObject()) && m_frame->view() && !m_frame->view()->layoutViewItem().isNull())
+        node = m_frame->view()->layoutViewItem().node();
 
     if (!node)
         return false;
@@ -837,15 +837,15 @@ void EventHandler::updateCursor()
     if (!view || !view->shouldSetCursor())
         return;
 
-    LayoutView* layoutView = view->layoutView();
-    if (!layoutView)
+    LayoutViewItem layoutViewItem = view->layoutViewItem();
+    if (layoutViewItem.isNull())
         return;
 
     m_frame->document()->updateLayout();
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent);
     HitTestResult result(request, view->rootFrameToContents(m_lastKnownMousePosition));
-    layoutView->hitTest(result);
+    layoutViewItem.hitTest(result);
 
     if (LocalFrame* frame = result.innerNodeFrame()) {
         OptionalCursor optionalCursor = frame->eventHandler().selectCursor(result);
