@@ -535,7 +535,7 @@ bool ParseWebUsbUrlDescriptor(const std::vector<uint8_t>& bytes, GURL* output) {
 
   // Validate that the length is consistent and fits within the buffer.
   uint8_t length = bytes[0];
-  if (length < kDescriptorMinLength || length < bytes.size() ||
+  if (length < kDescriptorMinLength || length > bytes.size() ||
       bytes[1] != kDescriptorType) {
     return false;
   }
