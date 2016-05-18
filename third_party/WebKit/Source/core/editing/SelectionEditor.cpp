@@ -28,6 +28,7 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/SelectionAdjuster.h"
+#include "core/editing/SelectionModifier.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -37,11 +38,6 @@
 
 namespace blink {
 
-static inline LayoutUnit NoXPosForVerticalArrowNavigation()
-{
-    return LayoutUnit::min();
-}
-
 static inline bool shouldAlwaysUseDirectionalSelection(LocalFrame* frame)
 {
     return !frame || frame->editor().behavior().shouldConsiderSelectionAsDirectional();
@@ -49,7 +45,6 @@ static inline bool shouldAlwaysUseDirectionalSelection(LocalFrame* frame)
 
 SelectionEditor::SelectionEditor(FrameSelection& frameSelection)
     : m_frameSelection(frameSelection)
-    , m_xPosForVerticalArrowNavigation(NoXPosForVerticalArrowNavigation())
     , m_observingVisibleSelection(false)
 {
 }
@@ -102,11 +97,6 @@ void SelectionEditor::setVisibleSelection(const VisibleSelectionInFlatTree& newS
     SelectionAdjuster::adjustSelectionInDOMTree(&m_selection, m_selectionInFlatTree);
 }
 
-void SelectionEditor::resetXPosForVerticalArrowNavigation()
-{
-    m_xPosForVerticalArrowNavigation = NoXPosForVerticalArrowNavigation();
-}
-
 void SelectionEditor::setIsDirectional(bool isDirectional)
 {
     m_selection.setIsDirectional(isDirectional);
@@ -119,12 +109,14 @@ void SelectionEditor::setWithoutValidation(const Position& base, const Position&
     m_selectionInFlatTree.setWithoutValidation(toPositionInFlatTree(base), toPositionInFlatTree(extent));
 }
 
-TextDirection SelectionEditor::directionOfEnclosingBlock()
+// TODO(yosin): We should move this function to "SelectionModifier.cpp".
+TextDirection SelectionModifier::directionOfEnclosingBlock() const
 {
     return blink::directionOfEnclosingBlock(m_selection.extent());
 }
 
-TextDirection SelectionEditor::directionOfSelection()
+// TODO(yosin): We should move this function to "SelectionModifier.cpp".
+TextDirection SelectionModifier::directionOfSelection() const
 {
     InlineBox* startBox = nullptr;
     InlineBox* endBox = nullptr;
@@ -142,7 +134,8 @@ TextDirection SelectionEditor::directionOfSelection()
     return directionOfEnclosingBlock();
 }
 
-void SelectionEditor::willBeModified(EAlteration alter, SelectionDirection direction)
+// TODO(yosin): We should move this function to "SelectionModifier.cpp".
+void SelectionModifier::willBeModified(EAlteration alter, SelectionDirection direction)
 {
     if (alter != FrameSelection::AlterationExtend)
         return;
@@ -189,10 +182,10 @@ void SelectionEditor::willBeModified(EAlteration alter, SelectionDirection direc
         m_selection.setBase(end);
         m_selection.setExtent(start);
     }
-    SelectionAdjuster::adjustSelectionInFlatTree(&m_selectionInFlatTree, m_selection);
 }
 
-VisiblePosition SelectionEditor::positionForPlatform(bool isGetStart) const
+// TODO(yosin): We should move this function to "SelectionModifier.cpp".
+VisiblePosition SelectionModifier::positionForPlatform(bool isGetStart) const
 {
     Settings* settings = frame() ? frame()->settings() : nullptr;
     if (settings && settings->editingBehaviorType() == EditingMacBehavior)
@@ -205,17 +198,20 @@ VisiblePosition SelectionEditor::positionForPlatform(bool isGetStart) const
     return m_selection.isBaseFirst() ? m_selection.visibleEnd() : m_selection.visibleStart();
 }
 
-VisiblePosition SelectionEditor::startForPlatform() const
+// TODO(yosin): We should move this function to "SelectionModifier.cpp".
+VisiblePosition SelectionModifier::startForPlatform() const
 {
     return positionForPlatform(true);
 }
 
-VisiblePosition SelectionEditor::endForPlatform() const
+// TODO(yosin): We should move this function to "SelectionModifier.cpp".
+VisiblePosition SelectionModifier::endForPlatform() const
 {
     return positionForPlatform(false);
 }
 
-VisiblePosition SelectionEditor::nextWordPositionForPlatform(const VisiblePosition &originalPosition)
+// TODO(yosin): We should move this function to "SelectionModifier.cpp".
+VisiblePosition SelectionModifier::nextWordPositionForPlatform(const VisiblePosition &originalPosition)
 {
     VisiblePosition positionAfterCurrentWord = nextWordPosition(originalPosition);
 
@@ -235,13 +231,15 @@ VisiblePosition SelectionEditor::nextWordPositionForPlatform(const VisiblePositi
     return positionAfterCurrentWord;
 }
 
+// TODO(yosin): We should move this function to "SelectionModifier.cpp".
 static void adjustPositionForUserSelectAll(VisiblePosition& pos, bool isForward)
 {
     if (Node* rootUserSelectAll = EditingStrategy::rootUserSelectAllForNode(pos.deepEquivalent().anchorNode()))
         pos = createVisiblePosition(isForward ? mostForwardCaretPosition(positionAfterNode(rootUserSelectAll), CanCrossEditingBoundary) : mostBackwardCaretPosition(positionBeforeNode(rootUserSelectAll), CanCrossEditingBoundary));
 }
 
-VisiblePosition SelectionEditor::modifyExtendingRight(TextGranularity granularity)
+// TODO(yosin): We should move this function to "SelectionModifier.cpp".
+VisiblePosition SelectionModifier::modifyExtendingRight(TextGranularity granularity)
 {
     VisiblePosition pos = createVisiblePosition(m_selection.extent(), m_selection.affinity());
 
@@ -283,7 +281,8 @@ VisiblePosition SelectionEditor::modifyExtendingRight(TextGranularity granularit
     return pos;
 }
 
-VisiblePosition SelectionEditor::modifyExtendingForward(TextGranularity granularity)
+// TODO(yosin): We should move this function to "SelectionModifier.cpp".
+VisiblePosition SelectionModifier::modifyExtendingForward(TextGranularity granularity)
 {
     VisiblePosition pos = createVisiblePosition(m_selection.extent(), m_selection.affinity());
     switch (granularity) {
@@ -323,7 +322,8 @@ VisiblePosition SelectionEditor::modifyExtendingForward(TextGranularity granular
     return pos;
 }
 
-VisiblePosition SelectionEditor::modifyMovingRight(TextGranularity granularity)
+// TODO(yosin): We should move this function to "SelectionModifier.cpp".
+VisiblePosition SelectionModifier::modifyMovingRight(TextGranularity granularity)
 {
     VisiblePosition pos;
     switch (granularity) {
@@ -358,7 +358,8 @@ VisiblePosition SelectionEditor::modifyMovingRight(TextGranularity granularity)
     return pos;
 }
 
-VisiblePosition SelectionEditor::modifyMovingForward(TextGranularity granularity)
+// TODO(yosin): We should move this function to "SelectionModifier.cpp".
+VisiblePosition SelectionModifier::modifyMovingForward(TextGranularity granularity)
 {
     VisiblePosition pos;
     // FIXME: Stay in editable content for the less common granularities.
@@ -406,7 +407,8 @@ VisiblePosition SelectionEditor::modifyMovingForward(TextGranularity granularity
     return pos;
 }
 
-VisiblePosition SelectionEditor::modifyExtendingLeft(TextGranularity granularity)
+// TODO(yosin): We should move this function to "SelectionModifier.cpp".
+VisiblePosition SelectionModifier::modifyExtendingLeft(TextGranularity granularity)
 {
     VisiblePosition pos = createVisiblePosition(m_selection.extent(), m_selection.affinity());
 
@@ -447,7 +449,8 @@ VisiblePosition SelectionEditor::modifyExtendingLeft(TextGranularity granularity
     return pos;
 }
 
-VisiblePosition SelectionEditor::modifyExtendingBackward(TextGranularity granularity)
+// TODO(yosin): We should move this function to "SelectionModifier.cpp".
+VisiblePosition SelectionModifier::modifyExtendingBackward(TextGranularity granularity)
 {
     VisiblePosition pos = createVisiblePosition(m_selection.extent(), m_selection.affinity());
 
@@ -492,7 +495,8 @@ VisiblePosition SelectionEditor::modifyExtendingBackward(TextGranularity granula
     return pos;
 }
 
-VisiblePosition SelectionEditor::modifyMovingLeft(TextGranularity granularity)
+// TODO(yosin): We should move this function to "SelectionModifier.cpp".
+VisiblePosition SelectionModifier::modifyMovingLeft(TextGranularity granularity)
 {
     VisiblePosition pos;
     switch (granularity) {
@@ -527,7 +531,8 @@ VisiblePosition SelectionEditor::modifyMovingLeft(TextGranularity granularity)
     return pos;
 }
 
-VisiblePosition SelectionEditor::modifyMovingBackward(TextGranularity granularity)
+// TODO(yosin): We should move this function to "SelectionModifier.cpp".
+VisiblePosition SelectionModifier::modifyMovingBackward(TextGranularity granularity)
 {
     VisiblePosition pos;
     switch (granularity) {
@@ -569,22 +574,35 @@ VisiblePosition SelectionEditor::modifyMovingBackward(TextGranularity granularit
     return pos;
 }
 
+// TODO(yosin): We should move this function to "SelectionModifier.cpp".
 static bool isBoundary(TextGranularity granularity)
 {
     return granularity == LineBoundary || granularity == ParagraphBoundary || granularity == DocumentBoundary;
 }
 
-bool SelectionEditor::modify(EAlteration alter, SelectionDirection direction, TextGranularity granularity, EUserTriggered userTriggered)
+// TODO(yosin): We should move this function to "SelectionModifier.cpp".
+static void setSelectionEnd(VisibleSelection* selection, const VisiblePosition& newEnd)
 {
-    if (userTriggered == UserTriggered) {
-        FrameSelection* trialFrameSelection = FrameSelection::create();
-        trialFrameSelection->setSelection(m_selection);
-        trialFrameSelection->modify(alter, direction, granularity, NotUserTriggered);
-
-        if (trialFrameSelection->selection().isRange() && m_selection.isCaret() && dispatchSelectStart() != DispatchEventResult::NotCanceled)
-            return false;
+    if (selection->isBaseFirst()) {
+        selection->setExtent(newEnd);
+        return;
     }
+    selection->setBase(newEnd);
+}
 
+// TODO(yosin): We should move this function to "SelectionModifier.cpp".
+static void setSelectionStart(VisibleSelection* selection, const VisiblePosition& newStart)
+{
+    if (selection->isBaseFirst()) {
+        selection->setBase(newStart);
+        return;
+    }
+    selection->setExtent(newStart);
+}
+
+// TODO(yosin): We should move this function to "SelectionModifier.cpp".
+bool SelectionModifier::modify(EAlteration alter, SelectionDirection direction, TextGranularity granularity)
+{
     willBeModified(alter, direction);
 
     bool wasRange = m_selection.isRange();
@@ -634,7 +652,7 @@ bool SelectionEditor::modify(EAlteration alter, SelectionDirection direction, Te
 
     switch (alter) {
     case FrameSelection::AlterationMove:
-        m_frameSelection->moveTo(position, userTriggered);
+        m_selection = VisibleSelection(position, m_selection.isDirectional());
         break;
     case FrameSelection::AlterationExtend:
 
@@ -657,13 +675,13 @@ bool SelectionEditor::modify(EAlteration alter, SelectionDirection direction, Te
         if (!frame() || !frame()->editor().behavior().shouldAlwaysGrowSelectionWhenExtendingToBoundary()
             || m_selection.isCaret()
             || !isBoundary(granularity)) {
-            m_frameSelection->setExtent(position, userTriggered);
+            m_selection.setExtent(position);
         } else {
             TextDirection textDirection = directionOfEnclosingBlock();
             if (direction == DirectionForward || (textDirection == LTR && direction == DirectionRight) || (textDirection == RTL && direction == DirectionLeft))
-                m_frameSelection->setEnd(position, userTriggered);
+                setSelectionEnd(&m_selection, position);
             else
-                m_frameSelection->setStart(position, userTriggered);
+                setSelectionStart(&m_selection, position);
         }
         break;
     }
@@ -674,7 +692,8 @@ bool SelectionEditor::modify(EAlteration alter, SelectionDirection direction, Te
     return true;
 }
 
-// FIXME: Maybe baseline would be better?
+// TODO(yosin): We should move this function to "SelectionModifier.cpp".
+// TODO(yosin): Maybe baseline would be better?
 static bool absoluteCaretY(const VisiblePosition &c, int &y)
 {
     IntRect rect = absoluteCaretBoundsOf(c);
@@ -684,7 +703,8 @@ static bool absoluteCaretY(const VisiblePosition &c, int &y)
     return true;
 }
 
-bool SelectionEditor::modify(EAlteration alter, unsigned verticalDistance, VerticalDirection direction, EUserTriggered userTriggered, CursorAlignOnScroll align)
+// TODO(yosin): We should move this function to "SelectionModifier.cpp".
+bool SelectionModifier::modifyWithPageGranularity(EAlteration alter, unsigned verticalDistance, VerticalDirection direction)
 {
     if (!verticalDistance)
         return false;
@@ -741,10 +761,10 @@ bool SelectionEditor::modify(EAlteration alter, unsigned verticalDistance, Verti
 
     switch (alter) {
     case FrameSelection::AlterationMove:
-        m_frameSelection->moveTo(result, userTriggered, align);
+        m_selection = VisibleSelection(result, m_selection.isDirectional());
         break;
     case FrameSelection::AlterationExtend:
-        m_frameSelection->setExtent(result, userTriggered);
+        m_selection.setExtent(result);
         break;
     }
 
@@ -753,6 +773,7 @@ bool SelectionEditor::modify(EAlteration alter, unsigned verticalDistance, Verti
     return true;
 }
 
+// TODO(yosin): We should move this function to "SelectionModifier.cpp".
 // Abs x/y position of the caret ignoring transforms.
 // TODO(yosin) navigation with transforms should be smarter.
 static LayoutUnit lineDirectionPointForBlockDirectionNavigationOf(const VisiblePosition& visiblePosition)
@@ -775,7 +796,8 @@ static LayoutUnit lineDirectionPointForBlockDirectionNavigationOf(const VisibleP
     return LayoutUnit(containingBlock->isHorizontalWritingMode() ? caretPoint.x() : caretPoint.y());
 }
 
-LayoutUnit SelectionEditor::lineDirectionPointForBlockDirectionNavigation(EPositionType type)
+// TODO(yosin): We should move this function to "SelectionModifier.cpp".
+LayoutUnit SelectionModifier::lineDirectionPointForBlockDirectionNavigation(EPositionType type)
 {
     LayoutUnit x;
 
@@ -844,15 +866,6 @@ Range* SelectionEditor::firstRange() const
     if (m_logicalRange)
         return m_logicalRange->cloneRange();
     return firstRangeOf(m_selection);
-}
-
-DispatchEventResult SelectionEditor::dispatchSelectStart()
-{
-    Node* selectStartTarget = m_selection.extent().computeContainerNode();
-    if (!selectStartTarget)
-        return DispatchEventResult::NotCanceled;
-
-    return selectStartTarget->dispatchEvent(Event::createCancelableBubble(EventTypeNames::selectstart));
 }
 
 void SelectionEditor::didChangeVisibleSelection()

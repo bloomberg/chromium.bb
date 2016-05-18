@@ -45,6 +45,7 @@
 #include "core/editing/RenderedPosition.h"
 #include "core/editing/SelectionController.h"
 #include "core/editing/SelectionEditor.h"
+#include "core/editing/SelectionModifier.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/commands/TypingCommand.h"
@@ -96,6 +97,7 @@ FrameSelection::FrameSelection(LocalFrame* frame)
     , m_pendingSelection(PendingSelection::create(*this))
     , m_selectionEditor(SelectionEditor::create(*this))
     , m_granularity(CharacterGranularity)
+    , m_xPosForVerticalArrowNavigation(NoXPosForVerticalArrowNavigation())
     , m_previousCaretVisibility(CaretVisibility::Hidden)
     , m_caretBlinkTimer(this, &FrameSelection::caretBlinkTimerFired)
     , m_caretRectDirty(true)
@@ -340,7 +342,7 @@ void FrameSelection::setSelectionAlgorithm(const VisibleSelectionTemplate<Strate
 
     // Always clear the x position used for vertical arrow navigation.
     // It will be restored by the vertical arrow navigation code if necessary.
-    m_selectionEditor->resetXPosForVerticalArrowNavigation();
+    m_xPosForVerticalArrowNavigation = NoXPosForVerticalArrowNavigation();
     // This may dispatch a synchronous focus-related events.
     selectFrameElementInParentIfFullySelected();
     notifyLayoutObjectOfSelectionChange(userTriggered);
@@ -598,10 +600,33 @@ void FrameSelection::didChangeFocus()
     updateAppearance();
 }
 
+static DispatchEventResult dispatchSelectStart(const VisibleSelection& selection)
+{
+    Node* selectStartTarget = selection.extent().computeContainerNode();
+    if (!selectStartTarget)
+        return DispatchEventResult::NotCanceled;
+
+    return selectStartTarget->dispatchEvent(Event::createCancelableBubble(EventTypeNames::selectstart));
+}
+
 bool FrameSelection::modify(EAlteration alter, SelectionDirection direction, TextGranularity granularity, EUserTriggered userTriggered)
 {
-    if (!m_selectionEditor->modify(alter, direction, granularity, userTriggered))
+    SelectionModifier selectionModifier(*frame(), selection(), m_xPosForVerticalArrowNavigation);
+    const bool modified = selectionModifier.modify(alter, direction, granularity);
+    if (userTriggered == UserTriggered
+        && selectionModifier.selection().isRange()
+        && selection().isCaret()
+        && dispatchSelectStart(selection()) != DispatchEventResult::NotCanceled) {
         return false;
+    }
+    if (!modified)
+        return false;
+
+    const SetSelectionOptions options = CloseTyping | ClearTypingStyle | userTriggered;
+    setSelection(selectionModifier.selection(), options);
+
+    if (granularity == LineGranularity || granularity == ParagraphGranularity)
+        m_xPosForVerticalArrowNavigation = selectionModifier.xPosForVerticalArrowNavigation();
 
     if (userTriggered == UserTriggered)
         m_granularity = CharacterGranularity;
@@ -613,8 +638,15 @@ bool FrameSelection::modify(EAlteration alter, SelectionDirection direction, Tex
 
 bool FrameSelection::modify(EAlteration alter, unsigned verticalDistance, VerticalDirection direction, EUserTriggered userTriggered, CursorAlignOnScroll align)
 {
-    if (!m_selectionEditor->modify(alter, verticalDistance, direction, userTriggered, align))
+    SelectionModifier selectionModifier(*frame(), selection());
+    if (!selectionModifier.modifyWithPageGranularity(alter, verticalDistance, direction))
         return false;
+
+    const SetSelectionOptions options = CloseTyping | ClearTypingStyle | userTriggered;
+    if (alter == AlterationMove)
+        setSelection(selectionModifier.selection(), options, align);
+    else
+        setSelection(selectionModifier.selection(), options);
 
     if (userTriggered == UserTriggered)
         m_granularity = CharacterGranularity;
@@ -643,22 +675,6 @@ void FrameSelection::prepareForDestruction()
     setSelection(VisibleSelection(), CloseTyping | ClearTypingStyle | DoNotUpdateAppearance);
     m_selectionEditor->dispose();
     m_previousCaretNode.clear();
-}
-
-void FrameSelection::setStart(const VisiblePosition &pos, EUserTriggered trigger)
-{
-    if (selection().isBaseFirst())
-        setBase(pos, trigger);
-    else
-        setExtent(pos, trigger);
-}
-
-void FrameSelection::setEnd(const VisiblePosition &pos, EUserTriggered trigger)
-{
-    if (selection().isBaseFirst())
-        setExtent(pos, trigger);
-    else
-        setBase(pos, trigger);
 }
 
 void FrameSelection::setBase(const VisiblePosition &pos, EUserTriggered userTriggered)

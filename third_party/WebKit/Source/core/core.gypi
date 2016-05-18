@@ -1490,6 +1490,8 @@
             'editing/SelectionController.h',
             'editing/SelectionEditor.cpp',
             'editing/SelectionEditor.h',
+            'editing/SelectionModifier.cpp',
+            'editing/SelectionModifier.h',
             'editing/SelectionType.h',
             'editing/SurroundingText.cpp',
             'editing/SurroundingText.h',

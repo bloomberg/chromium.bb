@@ -31,15 +31,13 @@
 
 namespace blink {
 
+// TODO(yosin): We will rename |SelectionEditor| to appropriate name since
+// it is no longer have a changing selection functionality, it was moved to
+// |SelectionModifier| class.
 class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>, public VisibleSelectionChangeObserver {
     WTF_MAKE_NONCOPYABLE(SelectionEditor);
     USING_GARBAGE_COLLECTED_MIXIN(SelectionEditor);
 public:
-    // TODO(yosin) We should move |EAlteration| and |VerticalDirection| out
-    // from |FrameSelection| class like |EUserTriggered|.
-    typedef FrameSelection::EAlteration EAlteration;
-    typedef FrameSelection::VerticalDirection VerticalDirection;
-
     static SelectionEditor* create(FrameSelection& frameSelection)
     {
         return new SelectionEditor(frameSelection);
@@ -53,9 +51,6 @@ public:
 
     bool setSelectedRange(const EphemeralRange&, TextAffinity, SelectionDirectionalMode, FrameSelection::SetSelectionOptions);
 
-    bool modify(EAlteration, SelectionDirection, TextGranularity, EUserTriggered);
-    bool modify(EAlteration, unsigned verticalDistance, VerticalDirection, EUserTriggered, CursorAlignOnScroll);
-
     template <typename Strategy>
     const VisibleSelectionTemplate<Strategy>& visibleSelection() const;
     void setVisibleSelection(const VisibleSelection&, FrameSelection::SetSelectionOptions);
@@ -63,10 +58,6 @@ public:
 
     void setIsDirectional(bool);
     void setWithoutValidation(const Position& base, const Position& extent);
-
-    void resetXPosForVerticalArrowNavigation();
-
-    void willBeModified(EAlteration, SelectionDirection);
 
     // If this FrameSelection has a logical range which is still valid, this
     // function return its clone. Otherwise, the return value from underlying
@@ -85,37 +76,12 @@ public:
 private:
     explicit SelectionEditor(FrameSelection&);
 
-    // TODO(yosin) We should use capitalized name for |EPositionType|.
-    enum EPositionType { START, END, BASE, EXTENT }; // NOLINT
-
     LocalFrame* frame() const;
-
-    TextDirection directionOfEnclosingBlock();
-    TextDirection directionOfSelection();
-
-    VisiblePosition positionForPlatform(bool isGetStart) const;
-    VisiblePosition startForPlatform() const;
-    VisiblePosition endForPlatform() const;
-    VisiblePosition nextWordPositionForPlatform(const VisiblePosition&);
-
-    VisiblePosition modifyExtendingRight(TextGranularity);
-    VisiblePosition modifyExtendingForward(TextGranularity);
-    VisiblePosition modifyMovingRight(TextGranularity);
-    VisiblePosition modifyMovingForward(TextGranularity);
-    VisiblePosition modifyExtendingLeft(TextGranularity);
-    VisiblePosition modifyExtendingBackward(TextGranularity);
-    VisiblePosition modifyMovingLeft(TextGranularity);
-    VisiblePosition modifyMovingBackward(TextGranularity);
-
     void startObservingVisibleSelectionChange();
     void stopObservingVisibleSelectionChangeIfNecessary();
 
-    LayoutUnit lineDirectionPointForBlockDirectionNavigation(EPositionType);
-    DispatchEventResult dispatchSelectStart();
-
     Member<FrameSelection> m_frameSelection;
 
-    LayoutUnit m_xPosForVerticalArrowNavigation;
     VisibleSelection m_selection;
     VisibleSelectionInFlatTree m_selectionInFlatTree;
     bool m_observingVisibleSelection;
