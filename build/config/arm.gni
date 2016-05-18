@@ -90,5 +90,4 @@ if (target_cpu == "arm" || current_cpu == "arm") {
   # arm64 supports only "hard".
   arm_float_abi = "hard"
   arm_use_neon = true
-  arm_fpu = "cortex-a57+simd+crypto+fp+crc"
 }
