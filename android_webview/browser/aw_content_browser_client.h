@@ -120,6 +120,8 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       const GURL& url,
       bool private_api,
       const content::SocketPermissionRequest* params) override;
+  bool IsPepperVpnProviderAPIAllowed(content::BrowserContext* browser_context,
+                                     const GURL& url) override;
   void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,

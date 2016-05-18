@@ -338,6 +338,12 @@ bool ContentBrowserClient::AllowPepperSocketAPI(
   return false;
 }
 
+bool ContentBrowserClient::IsPepperVpnProviderAPIAllowed(
+    BrowserContext* browser_context,
+    const GURL& url) {
+  return false;
+}
+
 ui::SelectFilePolicy* ContentBrowserClient::CreateSelectFilePolicy(
     WebContents* web_contents) {
   return nullptr;

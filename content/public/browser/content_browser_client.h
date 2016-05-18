@@ -587,6 +587,11 @@ class CONTENT_EXPORT ContentBrowserClient {
                                     bool private_api,
                                     const SocketPermissionRequest* params);
 
+  // Returns true if the "vpnProvider" permission is allowed from the given
+  // |browser_context| and |url|.
+  virtual bool IsPepperVpnProviderAPIAllowed(BrowserContext* browser_context,
+                                             const GURL& url);
+
   // Returns an implementation of a file selecition policy. Can return nullptr.
   virtual ui::SelectFilePolicy* CreateSelectFilePolicy(
       WebContents* web_contents);

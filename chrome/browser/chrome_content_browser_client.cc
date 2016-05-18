@@ -2540,6 +2540,17 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
 #endif
 }
 
+bool ChromeContentBrowserClient::IsPepperVpnProviderAPIAllowed(
+    content::BrowserContext* browser_context,
+    const GURL& url) {
+#if defined(ENABLE_PLUGINS) && defined(ENABLE_EXTENSIONS)
+  return ChromeContentBrowserClientPluginsPart::IsPepperVpnProviderAPIAllowed(
+      browser_context, url);
+#else
+  return false;
+#endif
+}
+
 ui::SelectFilePolicy* ChromeContentBrowserClient::CreateSelectFilePolicy(
     WebContents* web_contents) {
   return new ChromeSelectFilePolicy(web_contents);

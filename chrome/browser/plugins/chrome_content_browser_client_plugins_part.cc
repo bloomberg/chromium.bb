@@ -113,6 +113,34 @@ bool ChromeContentBrowserClientPluginsPart::AllowPepperSocketAPI(
 #endif
 }
 
+bool ChromeContentBrowserClientPluginsPart::IsPepperVpnProviderAPIAllowed(
+    content::BrowserContext* browser_context,
+    const GURL& url) {
+#if defined(ENABLE_EXTENSIONS)
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  if (!profile)
+    return false;
+
+  const extensions::ExtensionSet* extension_set =
+      &extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
+  if (!extension_set)
+    return false;
+
+  // Access to the vpnProvider API is controlled by extension permissions.
+  if (url.is_valid() && url.SchemeIs(extensions::kExtensionScheme)) {
+    const extensions::Extension* extension = extension_set->GetByID(url.host());
+    if (extension) {
+      if (extension->permissions_data()->HasAPIPermission(
+              extensions::APIPermission::kVpnProvider)) {
+        return true;
+      }
+    }
+  }
+#endif
+
+  return false;
+}
+
 bool ChromeContentBrowserClientPluginsPart::IsPluginAllowedToUseDevChannelAPIs(
     content::BrowserContext* browser_context,
     const GURL& url,

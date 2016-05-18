@@ -32,6 +32,10 @@ class ChromeContentBrowserClientPluginsPart
       const content::SocketPermissionRequest* params,
       const std::set<std::string>& allowed_socket_origin);
 
+  static bool IsPepperVpnProviderAPIAllowed(
+      content::BrowserContext* browser_context,
+      const GURL& url);
+
   static bool IsPluginAllowedToCallRequestOSFileHandle(
       content::BrowserContext* browser_context,
       const GURL& url,

@@ -481,6 +481,13 @@ bool AwContentBrowserClient::AllowPepperSocketAPI(
   return false;
 }
 
+bool AwContentBrowserClient::IsPepperVpnProviderAPIAllowed(
+    content::BrowserContext* browser_context,
+    const GURL& url) {
+  NOTREACHED() << "Android WebView does not support plugins";
+  return false;
+}
+
 void AwContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
       int child_process_id,
