@@ -56,8 +56,7 @@ public:
     virtual bool isCandidateForAnimationOnCompositor(const Timing&, const Element&, const Animation*, const EffectModel&, double animationPlaybackRate);
     virtual void cancelIncompatibleAnimationsOnCompositor(const Element&, const Animation&, const EffectModel&);
     virtual bool canStartAnimationOnCompositor(const Element&);
-    // FIXME: This should return void. We should know ahead of time whether these animations can be started.
-    virtual bool startAnimationOnCompositor(const Element&, int group, double startTime, double timeOffset, const Timing&, const Animation&, const EffectModel&, Vector<int>& startedAnimationIds, double animationPlaybackRate);
+    virtual void startAnimationOnCompositor(const Element&, int group, double startTime, double timeOffset, const Timing&, const Animation&, const EffectModel&, Vector<int>& startedAnimationIds, double animationPlaybackRate);
     virtual void cancelAnimationOnCompositor(const Element&, const Animation&, int id);
     virtual void pauseAnimationForTestingOnCompositor(const Element&, const Animation&, int id, double pauseTime);
 

@@ -295,8 +295,7 @@ bool KeyframeEffect::maybeStartAnimationOnCompositor(int group, double startTime
         return false;
     if (!CompositorAnimations::instance()->canStartAnimationOnCompositor(*m_target))
         return false;
-    if (!CompositorAnimations::instance()->startAnimationOnCompositor(*m_target, group, startTime, currentTime, specifiedTiming(), *animation(), *model(), m_compositorAnimationIds, animationPlaybackRate))
-        return false;
+    CompositorAnimations::instance()->startAnimationOnCompositor(*m_target, group, startTime, currentTime, specifiedTiming(), *animation(), *model(), m_compositorAnimationIds, animationPlaybackRate);
     ASSERT(!m_compositorAnimationIds.isEmpty());
     return true;
 }

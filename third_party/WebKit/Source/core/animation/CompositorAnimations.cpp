@@ -339,7 +339,7 @@ bool CompositorAnimations::canStartAnimationOnCompositor(const Element& element)
     return element.layoutObject() && element.layoutObject()->compositingState() == PaintsIntoOwnBacking;
 }
 
-bool CompositorAnimations::startAnimationOnCompositor(const Element& element, int group, double startTime, double timeOffset, const Timing& timing, const Animation& animation, const EffectModel& effect, Vector<int>& startedAnimationIds, double animationPlaybackRate)
+void CompositorAnimations::startAnimationOnCompositor(const Element& element, int group, double startTime, double timeOffset, const Timing& timing, const Animation& animation, const EffectModel& effect, Vector<int>& startedAnimationIds, double animationPlaybackRate)
 {
     ASSERT(startedAnimationIds.isEmpty());
     ASSERT(isCandidateForAnimationOnCompositor(timing, element, &animation, effect, animationPlaybackRate));
@@ -358,7 +358,6 @@ bool CompositorAnimations::startAnimationOnCompositor(const Element& element, in
         startedAnimationIds.append(id);
     }
     ASSERT(!startedAnimationIds.isEmpty());
-    return true;
 }
 
 void CompositorAnimations::cancelAnimationOnCompositor(const Element& element, const Animation& animation, int id)
