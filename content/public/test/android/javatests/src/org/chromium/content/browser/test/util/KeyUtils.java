@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser.test.util;
 
+import android.app.Activity;
 import android.app.Instrumentation;
 import android.os.SystemClock;
 import android.view.KeyCharacterMap;
@@ -37,13 +38,39 @@ public class KeyUtils {
 
         final KeyEvent downEvent =
                 new KeyEvent(downTime, eventTime, KeyEvent.ACTION_DOWN, keyCode, 0);
-        dispatchKeyEvent(i, v, downEvent);
+        dispatchKeyEventToView(i, v, downEvent);
 
         downTime = SystemClock.uptimeMillis();
         eventTime = SystemClock.uptimeMillis();
         final KeyEvent upEvent =
                 new KeyEvent(downTime, eventTime, KeyEvent.ACTION_UP, keyCode, 0);
-        dispatchKeyEvent(i, v, upEvent);
+        dispatchKeyEventToView(i, v, upEvent);
+    }
+
+    /**
+     * Sends (synchronously) a single key down/up pair of events to the specified activity.
+     * <p>
+     * Similiar to {@link #singleKeyEventView(Instrumentation, View, int)}, this does not rely on
+     * the event injecting framework, but instead dispatches directly to an Activity via
+     * {@link Activity#dispatchKeyEvent(KeyEvent)}.
+     *
+     * @param i The application being instrumented.
+     * @param a The activity to receive the key event.
+     * @param keyCode The keycode for the event to be issued.
+     */
+    public static void singleKeyEventActivity(Instrumentation i, Activity a, int keyCode) {
+        long downTime = SystemClock.uptimeMillis();
+        long eventTime = SystemClock.uptimeMillis();
+
+        final KeyEvent downEvent =
+                new KeyEvent(downTime, eventTime, KeyEvent.ACTION_DOWN, keyCode, 0);
+        dispatchKeyEventToActivity(i, a, downEvent);
+
+        downTime = SystemClock.uptimeMillis();
+        eventTime = SystemClock.uptimeMillis();
+        final KeyEvent upEvent =
+                new KeyEvent(downTime, eventTime, KeyEvent.ACTION_UP, keyCode, 0);
+        dispatchKeyEventToActivity(i, a, upEvent);
     }
 
     /**
@@ -57,11 +84,11 @@ public class KeyUtils {
         KeyCharacterMap characterMap = KeyCharacterMap.load(KeyCharacterMap.VIRTUAL_KEYBOARD);
         KeyEvent[] events = characterMap.getEvents(text.toCharArray());
         for (KeyEvent event : events) {
-            dispatchKeyEvent(i, v, event);
+            dispatchKeyEventToView(i, v, event);
         }
     }
 
-    private static void dispatchKeyEvent(final Instrumentation i, final View v,
+    private static void dispatchKeyEventToView(final Instrumentation i, final View v,
             final KeyEvent event) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -69,6 +96,17 @@ public class KeyUtils {
                 if (!v.dispatchKeyEventPreIme(event)) {
                     v.dispatchKeyEvent(event);
                 }
+            }
+        });
+        i.waitForIdleSync();
+    }
+
+    private static void dispatchKeyEventToActivity(final Instrumentation i, final Activity a,
+            final KeyEvent event) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                a.dispatchKeyEvent(event);
             }
         });
         i.waitForIdleSync();

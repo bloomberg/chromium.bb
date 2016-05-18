@@ -58,6 +58,7 @@ import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
+import org.chromium.content.browser.test.util.KeyUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
@@ -483,8 +484,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * @param keycode The key's code.
      */
     private void pressKey(int keycode) {
-        getInstrumentation().sendKeyDownUpSync(keycode);
-        getInstrumentation().waitForIdleSync();
+        KeyUtils.singleKeyEventActivity(getInstrumentation(), getActivity(), keycode);
     }
 
     /**
