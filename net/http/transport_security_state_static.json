@@ -3512,7 +3512,6 @@
     { "name": "vivendi.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "vsean.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "wesleycabus.be", "include_subdomains": true, "mode": "force-https" },
-    { "name": "wover.me", "include_subdomains": true, "mode": "force-https" },
     { "name": "wpserp.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "z0rro.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "zhihua-lai.com", "include_subdomains": true, "mode": "force-https" },
@@ -4469,7 +4468,6 @@
     { "name": "allcarepharmacy.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "amdouglas.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "aniplus.gq", "include_subdomains": true, "mode": "force-https" },
-    { "name": "apiomat.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "arnor.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "arrakis.se", "include_subdomains": true, "mode": "force-https" },
     { "name": "artofwhere.com", "include_subdomains": true, "mode": "force-https" },
@@ -4645,7 +4643,6 @@
     { "name": "management-companie.ro", "include_subdomains": true, "mode": "force-https" },
     { "name": "masa.li", "include_subdomains": true, "mode": "force-https" },
     { "name": "mathiasgarbe.de", "include_subdomains": true, "mode": "force-https" },
-    { "name": "matspar.se", "include_subdomains": true, "mode": "force-https" },
     { "name": "mavensecurity.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "maximeferon.fr", "include_subdomains": true, "mode": "force-https" },
     { "name": "mchristopher.com", "include_subdomains": true, "mode": "force-https" },
@@ -5389,7 +5386,6 @@
     { "name": "touhou.cc", "include_subdomains": true, "mode": "force-https" },
     { "name": "treebaglia.xyz", "include_subdomains": true, "mode": "force-https" },
     { "name": "trophee-discount.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "truweight.in", "include_subdomains": true, "mode": "force-https" },
     { "name": "tryoneday.co", "include_subdomains": true, "mode": "force-https" },
     { "name": "trywesayyes.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "typecodes.com", "include_subdomains": true, "mode": "force-https" },
@@ -5446,7 +5442,6 @@
     { "name": "abury.me", "include_subdomains": true, "mode": "force-https" },
     { "name": "adam-kostecki.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "adjagu.org", "include_subdomains": true, "mode": "force-https" },
-    { "name": "aiflab.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "akostecki.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "alaricfavier.eu", "include_subdomains": true, "mode": "force-https" },
     { "name": "alexvetter.de", "include_subdomains": true, "mode": "force-https" },
@@ -5550,7 +5545,6 @@
     { "name": "mctherealm.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "memo-linux.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "mobilemedics.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "mobocasino.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "myvpl.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "nedcdata.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "nowak.ninja", "include_subdomains": true, "mode": "force-https" },
@@ -5660,7 +5654,6 @@
     { "name": "hd-offensive.at", "include_subdomains": true, "mode": "force-https" },
     { "name": "heartsucker.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "helloanselm.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "hiphop.ren", "include_subdomains": true, "mode": "force-https" },
     { "name": "hmm.nyc", "include_subdomains": true, "mode": "force-https" },
     { "name": "homecareassociatespa.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "i95.me", "include_subdomains": true, "mode": "force-https" },
@@ -5723,7 +5716,6 @@
     { "name": "rolemaster.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "room208.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "ruanmi.de", "include_subdomains": true, "mode": "force-https" },
-    { "name": "rushball.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "saikarra.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "sailormoonevents.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "saltstack.cz", "include_subdomains": true, "mode": "force-https" },
@@ -6142,7 +6134,6 @@
     { "name": "emnitech.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "encredible.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "encredible.org", "include_subdomains": true, "mode": "force-https" },
-    { "name": "end.io", "include_subdomains": true, "mode": "force-https" },
     { "name": "endlessdark.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "enterprisey.enterprises", "include_subdomains": true, "mode": "force-https" },
     { "name": "eoldb.org", "include_subdomains": true, "mode": "force-https" },
@@ -6193,7 +6184,6 @@
     { "name": "fischers.cc", "include_subdomains": true, "mode": "force-https" },
     { "name": "fizz.buzz", "include_subdomains": true, "mode": "force-https" },
     { "name": "flamingkeys.com.au", "include_subdomains": true, "mode": "force-https" },
-    { "name": "fless.co.uk", "include_subdomains": true, "mode": "force-https" },
     { "name": "flocktofedora.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "floridafieros.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "flouartistique.ch", "include_subdomains": true, "mode": "force-https" },
@@ -7060,7 +7050,6 @@
     { "name": "cambridgeanalytica.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "canadiangamblingchoice.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "canyoupwn.me", "include_subdomains": true, "mode": "force-https" },
-    { "name": "carthage.edu", "include_subdomains": true, "mode": "force-https" },
     { "name": "catinmay.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "cerebelo.info", "include_subdomains": true, "mode": "force-https" },
     { "name": "chaulootz.com", "include_subdomains": true, "mode": "force-https" },
@@ -7814,7 +7803,6 @@
     { "name": "markri.nl", "include_subdomains": true, "mode": "force-https" },
     { "name": "marsble.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "martinkus.eu", "include_subdomains": true, "mode": "force-https" },
-    { "name": "matspar.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "michaeltroger.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "michalkral.tk", "include_subdomains": true, "mode": "force-https" },
     { "name": "mikadoe.nl", "include_subdomains": true, "mode": "force-https" },
@@ -8035,7 +8023,6 @@
     { "name": "ahd.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "airsoft.ch", "include_subdomains": true, "mode": "force-https" },
     { "name": "akelius.de", "include_subdomains": true, "mode": "force-https" },
-    { "name": "alastyr.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "aldes.co.za", "include_subdomains": true, "mode": "force-https" },
     { "name": "alexandra-schulze.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "all-subtitles.com", "include_subdomains": true, "mode": "force-https" },
@@ -8103,7 +8090,6 @@
     { "name": "centralstatecu.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "centrobill.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "cerfrance.fr", "include_subdomains": true, "mode": "force-https" },
-    { "name": "ceu.edu", "include_subdomains": true, "mode": "force-https" },
     { "name": "cgbilling.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "chamilo.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "chargejuice.com", "include_subdomains": true, "mode": "force-https" },
@@ -8125,7 +8111,6 @@
     { "name": "comparamejor.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "compareandrecycle.co.uk", "include_subdomains": true, "mode": "force-https" },
     { "name": "comparetravelinsurance.com.au", "include_subdomains": true, "mode": "force-https" },
-    { "name": "compuscan.co.za", "include_subdomains": true, "mode": "force-https" },
     { "name": "connectingconcepts.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "constructdigital.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "contarkos.xyz", "include_subdomains": true, "mode": "force-https" },
@@ -8209,7 +8194,6 @@
     { "name": "firecore.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "firexarxa.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "flaemig42.de", "include_subdomains": true, "mode": "force-https" },
-    { "name": "flanco.ro", "include_subdomains": true, "mode": "force-https" },
     { "name": "flexport.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "fly.moe", "include_subdomains": true, "mode": "force-https" },
     { "name": "fnb-griffinonline.com", "include_subdomains": true, "mode": "force-https" },
@@ -8360,7 +8344,6 @@
     { "name": "morganino.eu", "include_subdomains": true, "mode": "force-https" },
     { "name": "moveek.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "movember.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "mpac.ca", "include_subdomains": true, "mode": "force-https" },
     { "name": "mtg-tutor.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "mtnz.co.za", "include_subdomains": true, "mode": "force-https" },
     { "name": "multibit.org", "include_subdomains": true, "mode": "force-https" },
@@ -8392,7 +8375,6 @@
     { "name": "oaic.gov.au", "include_subdomains": true, "mode": "force-https" },
     { "name": "olafnorge.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "onmarketbookbuilds.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "ono.es", "include_subdomains": true, "mode": "force-https" },
     { "name": "ononpay.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "oost.io", "include_subdomains": true, "mode": "force-https" },
     { "name": "openvz.org", "include_subdomains": true, "mode": "force-https" },
@@ -8476,11 +8458,6 @@
     { "name": "shoplandia.co", "include_subdomains": true, "mode": "force-https" },
     { "name": "siriuspup.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "sitsy.ru", "include_subdomains": true, "mode": "force-https" },
-    { "name": "sixt.ch", "include_subdomains": true, "mode": "force-https" },
-    { "name": "sixt.co.uk", "include_subdomains": true, "mode": "force-https" },
-    { "name": "sixt.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "sixt.com.br", "include_subdomains": true, "mode": "force-https" },
-    { "name": "sixt.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "skyway.capital", "include_subdomains": true, "mode": "force-https" },
     { "name": "slotboss.co.uk", "include_subdomains": true, "mode": "force-https" },
     { "name": "smartsparrow.com", "include_subdomains": true, "mode": "force-https" },
@@ -8624,7 +8601,6 @@
     { "name": "zoznamrealit.sk", "include_subdomains": true, "mode": "force-https" },
     { "name": "10seos.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "126ium.moe", "include_subdomains": true, "mode": "force-https" },
-    { "name": "2e-systems.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "a2nutrition.com.au", "include_subdomains": true, "mode": "force-https" },
     { "name": "aanmpc.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "ac-town.com", "include_subdomains": true, "mode": "force-https" },
@@ -8726,7 +8702,6 @@
     { "name": "kwidz.fr", "include_subdomains": true, "mode": "force-https" },
     { "name": "kwikmed.eu", "include_subdomains": true, "mode": "force-https" },
     { "name": "lesharris.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "lightspeed.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "linkages.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "loveto.at", "include_subdomains": true, "mode": "force-https" },
     { "name": "ls-a.org", "include_subdomains": true, "mode": "force-https" },
@@ -8815,9 +8790,8 @@
     { "name": "webmail.xalqbank.az", "include_subdomains": true, "mode": "force-https" },
     { "name": "winebid.com", "include_subdomains": true, "mode": "force-https" },
 
-    // Manual additions in Chrome 51 or later that do not belong in a
-    // special section above.
-    // START OF MANUAL ADDITIONS
+    // Entries submitted through hstspreload.appspot.com in Chrome 51 or later.
+    // START OF BULK ADDITIONS
     { "name": "050media.nl", "include_subdomains": true, "mode": "force-https" },
     { "name": "0x.sk", "include_subdomains": true, "mode": "force-https" },
     { "name": "0x44.net", "include_subdomains": true, "mode": "force-https" },
@@ -10268,7 +10242,6 @@
     { "name": "lynero.dk", "include_subdomains": true, "mode": "force-https" },
     { "name": "lynthium.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "m-edmondson.co.uk", "include_subdomains": true, "mode": "force-https" },
-    { "name": "macaque.io", "include_subdomains": true, "mode": "force-https" },
     { "name": "machon.biz", "include_subdomains": true, "mode": "force-https" },
     { "name": "macnemo.de", "include_subdomains": true, "mode": "force-https" },
     { "name": "maddi.biz", "include_subdomains": true, "mode": "force-https" },
@@ -11587,10 +11560,11 @@
     { "name": "zuram.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "zvncloud.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "zyf.pw", "include_subdomains": true, "mode": "force-https" },
-    // END OF MANUAL ADDITIONS
+    // END OF BULK ADDITIONS
 
-    // Entries submitted through hstspreload.appspot.com in Chrome 51 or later.
-    // START OF BULK ADDITIONS
+    // Manual additions in Chrome 51 or later that do not belong in a
+    // special section above.
+    // START OF MANUAL ADDITIONS
     { "name": "bodhi.fedoraproject.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "communityblog.fedoraproject.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "keys.fedoraproject.org", "include_subdomains": true, "mode": "force-https" },
@@ -11599,7 +11573,7 @@
     { "name": "spins.fedoraproject.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "src.fedoraproject.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "torrent.fedoraproject.org", "include_subdomains": true, "mode": "force-https" },
-    // END OF BULK ADDITIONS
+    // END OF MANUAL ADDITIONS
 
     // To avoid trailing comma changes from showing up in diffs, we place a
     // single entry at the end.
