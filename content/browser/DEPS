@@ -110,3 +110,21 @@ include_rules = [
   # See https://sites.google.com/a/chromium.org/dev/developers/content-module
   # for more information.
 ]
+
+specific_include_rules = {
+  # See https://crbug.com/612337.
+  "power_save_blocker.*\.(cc|h)": [
+    "-content",
+
+    # These will move to //device/power_save_blocker.
+    "+content/browser/power_save_blocker_impl.h",
+    "+content/public/browser/power_save_blocker.h",
+
+    # These dependencies need to be removed.
+    "!content/browser/android/content_view_core_impl.h",
+    "!content/browser/web_contents/web_contents_impl.h",
+    "!content/public/browser/android/content_view_core.h",
+    "!content/public/browser/browser_thread.h",
+    "!content/public/browser/web_contents_observer.h",
+  ]
+}
