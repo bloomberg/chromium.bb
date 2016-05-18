@@ -226,7 +226,7 @@ imported/web-platform-tests/fonts [ Skip ]
 imported/web-platform-tests/generic-sensor [ Skip ]
 imported/web-platform-tests/geolocation-API [ Skip ]
 ## Owners: jsbell@chromium.org
-# imported/web-platform-tests/hr-time [ Pass ]
+# imported/wpt/hr-time [ Pass ]
 ## Owners: tkent@chromium.org
 # imported/web-platform-tests/html [ Pass ]
 ## Owners: TBD
@@ -319,7 +319,7 @@ imported/web-platform-tests/IndexedDB/OWNERS [ Skip ]
 imported/wpt/dom/OWNERS [ Skip ]
 imported/web-platform-tests/shadow-dom/OWNERS [ Skip ]
 imported/wpt/encoding/OWNERS [ Skip ]
-imported/web-platform-tests/hr-time/OWNERS [ Skip ]
+imported/wpt/hr-time/OWNERS [ Skip ]
 imported/web-platform-tests/pointerevents/OWNERS [ Skip ]
 imported/wpt/webstorage/OWNERS [ Skip ]
 imported/web-platform-tests/mediacapture-streams/OWNERS [ Skip ]
