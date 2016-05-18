@@ -269,9 +269,9 @@ void HTMLCanvasElement::didDraw(const FloatRect& rect)
     clearCopiedImage();
     if (layoutObject())
         layoutObject()->setMayNeedPaintInvalidation();
+    m_dirtyRect.unite(rect);
     if (m_context && m_context->is2d() && m_context->shouldAntialias() && page() && page()->deviceScaleFactor() > 1.0f)
         m_dirtyRect.inflate(1);
-    m_dirtyRect.unite(rect);
     if (m_context && m_context->is2d() && hasImageBuffer())
         buffer()->didDraw(rect);
 }
