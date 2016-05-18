@@ -99,7 +99,7 @@ public:
 
     void computeOverflow(LayoutUnit oldClientAfterEdge, bool recomputeFloats = false) override;
 
-    void deleteLineBoxTree() final;
+    void deleteLineBoxTree();
 
     LayoutUnit availableLogicalWidthForLine(LayoutUnit position, IndentTextOrNot indentText, LayoutUnit logicalHeight = LayoutUnit()) const
     {

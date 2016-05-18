@@ -437,19 +437,19 @@ void LayoutInline::splitInlines(LayoutBlock* fromBlock, LayoutBlock* toBlock,
 void LayoutInline::splitFlow(LayoutObject* beforeChild, LayoutBlock* newBlockBox,
     LayoutObject* newChild, LayoutBoxModelObject* oldCont)
 {
+    LayoutBlockFlow* containingBlockFlow = toLayoutBlockFlow(containingBlock());
     LayoutBlock* pre = nullptr;
-    LayoutBlock* block = containingBlock();
+    LayoutBlock* block = containingBlockFlow;
 
     // Delete our line boxes before we do the inline split into continuations.
-    block->deleteLineBoxTree();
+    containingBlockFlow->deleteLineBoxTree();
 
     bool madeNewBeforeBlock = false;
     if (block->isAnonymousBlock() && (!block->parent() || !block->parent()->createsAnonymousWrapper())) {
         // We can reuse this block and make it the preBlock of the next continuation.
-        pre = block;
-        pre->removePositionedObjects(nullptr);
-        if (pre->isLayoutBlockFlow())
-            toLayoutBlockFlow(pre)->removeFloatingObjects();
+        containingBlockFlow->removePositionedObjects(nullptr);
+        containingBlockFlow->removeFloatingObjects();
+        pre = containingBlockFlow;
         block = block->containingBlock();
     } else {
         // No anonymous block available for use.  Make one.

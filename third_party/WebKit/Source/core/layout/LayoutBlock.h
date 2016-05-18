@@ -151,9 +151,6 @@ protected:
     void addChildBeforeDescendant(LayoutObject* newChild, LayoutObject* beforeDescendant);
 
 public:
-    // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to LayoutBlockFlow
-    virtual void deleteLineBoxTree();
-
     void addChild(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) override;
 
     virtual void layoutBlock(bool relayoutChildren);

@@ -170,7 +170,7 @@ void LayoutRubyRun::removeChild(LayoutObject* child)
 
     if (!beingDestroyed() && !documentBeingDestroyed()) {
         // Check if our base (if any) is now empty. If so, destroy it.
-        LayoutBlock* base = rubyBase();
+        LayoutBlockFlow* base = rubyBase();
         if (base && !base->firstChild()) {
             LayoutBlockFlow::removeChild(base);
             base->deleteLineBoxTree();

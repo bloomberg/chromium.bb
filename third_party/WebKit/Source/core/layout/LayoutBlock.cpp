@@ -336,11 +336,6 @@ void LayoutBlock::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
     LayoutBox::addChild(newChild, beforeChild);
 }
 
-void LayoutBlock::deleteLineBoxTree()
-{
-    ASSERT(!m_lineBoxes.firstLineBox());
-}
-
 void LayoutBlock::removeLeftoverAnonymousBlock(LayoutBlock* child)
 {
     ASSERT(child->isAnonymousBlock());

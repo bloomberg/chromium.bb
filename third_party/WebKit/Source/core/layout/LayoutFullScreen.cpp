@@ -137,7 +137,8 @@ LayoutObject* LayoutFullScreen::wrapLayoutObject(LayoutObject* object, LayoutObj
             ASSERT(containingBlock);
             // Since we are moving the |object| to a new parent |fullscreenLayoutObject|,
             // the line box tree underneath our |containingBlock| is not longer valid.
-            containingBlock->deleteLineBoxTree();
+            if (containingBlock->isLayoutBlockFlow())
+                toLayoutBlockFlow(containingBlock)->deleteLineBoxTree();
 
             parent->addChildWithWritingModeOfParent(fullscreenLayoutObject, object);
             object->remove();
