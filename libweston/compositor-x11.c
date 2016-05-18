@@ -1060,13 +1060,14 @@ update_xkb_state_from_core(struct x11_backend *b, uint16_t x11_mask)
 
 static void
 x11_backend_deliver_button_event(struct x11_backend *b,
-				 xcb_generic_event_t *event, int state)
+				 xcb_generic_event_t *event)
 {
 	xcb_button_press_event_t *button_event =
 		(xcb_button_press_event_t *) event;
 	uint32_t button;
 	struct x11_output *output;
 	struct weston_pointer_axis_event weston_event;
+	bool is_button_pressed = event->response_type == XCB_BUTTON_PRESS;
 
 	assert(event->response_type == XCB_BUTTON_PRESS ||
 	       event->response_type == XCB_BUTTON_RELEASE);
@@ -1075,7 +1076,7 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 	if (!output)
 		return;
 
-	if (state)
+	if (is_button_pressed)
 		xcb_grab_pointer(b->conn, 0, output->window,
 				 XCB_EVENT_MASK_BUTTON_PRESS |
 				 XCB_EVENT_MASK_BUTTON_RELEASE |
@@ -1105,7 +1106,7 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 	case 4:
 		/* Axis are measured in pixels, but the xcb events are discrete
 		 * steps. Therefore move the axis by some pixels every step. */
-		if (state) {
+		if (is_button_pressed) {
 			weston_event.value = -DEFAULT_AXIS_STEP_DISTANCE;
 			weston_event.discrete = -1;
 			weston_event.has_discrete = true;
@@ -1118,7 +1119,7 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 		}
 		return;
 	case 5:
-		if (state) {
+		if (is_button_pressed) {
 			weston_event.value = DEFAULT_AXIS_STEP_DISTANCE;
 			weston_event.discrete = 1;
 			weston_event.has_discrete = true;
@@ -1131,7 +1132,7 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 		}
 		return;
 	case 6:
-		if (state) {
+		if (is_button_pressed) {
 			weston_event.value = -DEFAULT_AXIS_STEP_DISTANCE;
 			weston_event.discrete = -1;
 			weston_event.has_discrete = true;
@@ -1144,7 +1145,7 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 		}
 		return;
 	case 7:
-		if (state) {
+		if (is_button_pressed) {
 			weston_event.value = DEFAULT_AXIS_STEP_DISTANCE;
 			weston_event.discrete = 1;
 			weston_event.has_discrete = true;
@@ -1163,8 +1164,8 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 
 	notify_button(&b->core_seat,
 		      weston_compositor_get_time(), button,
-		      state ? WL_POINTER_BUTTON_STATE_PRESSED :
-			      WL_POINTER_BUTTON_STATE_RELEASED);
+		      is_button_pressed ? WL_POINTER_BUTTON_STATE_PRESSED :
+					  WL_POINTER_BUTTON_STATE_RELEASED);
 	notify_pointer_frame(&b->core_seat);
 }
 
@@ -1357,10 +1358,8 @@ x11_backend_handle_event(int fd, uint32_t mask, void *data)
 				   STATE_UPDATE_NONE);
 			break;
 		case XCB_BUTTON_PRESS:
-			x11_backend_deliver_button_event(b, event, 1);
-			break;
 		case XCB_BUTTON_RELEASE:
-			x11_backend_deliver_button_event(b, event, 0);
+			x11_backend_deliver_button_event(b, event);
 			break;
 		case XCB_MOTION_NOTIFY:
 			x11_backend_deliver_motion_event(b, event);
