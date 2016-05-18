@@ -174,7 +174,7 @@ translator-all() {
   if ${SBTC_PRODUCTION}; then
     # Build each architecture separately.
     local arch
-    for arch in ${SBTC_ARCHES_LLVM} ; do
+    for arch in ${SBTC_ARCHES_ALL} ; do
       llvm-sb ${arch}
     done
     for arch in ${SBTC_ARCHES_ALL} ; do
@@ -306,11 +306,7 @@ llvm-sb-configure() {
   case ${arch} in
     i686)
       targets=x86
-      # Since LLVM is built only once to cover both x86-32 and x86-64, and
-      # Subzero is built as part of that, we need to enable both targets in the
-      # pnacl-sz.nexe build.  TODO(stichnot): Fix this and make smaller Subzero
-      # translator binaries.
-      subzero_targets=X8632,X8664
+      subzero_targets=X8632
       ;;
     x86_64)
       targets=x86
@@ -410,7 +406,8 @@ llvm-sb-install() {
   local objdir="${LLVM_SB_OBJDIR}"
 
   local tools="pnacl-llc"
-  if [[ "${arch}" == "i686" ]] || [[ "${arch}" == "armv7" ]]; then
+  if [[ "${arch}" == "i686" || "${arch}" == "x86_64" || \
+        "${arch}" == "armv7" ]]; then
     tools+=" pnacl-sz"
   fi
   for toolname in ${tools}; do
@@ -419,10 +416,6 @@ llvm-sb-install() {
     local arches=${arch}
     if [[ "${arch}" == "universal" ]]; then
       arches="${SBTC_ARCHES_ALL}"
-    elif [[ "${arch}" == "i686" ]]; then
-      # LLVM does not separate the i686 and x86_64 backends.
-      # Translate twice to get both nexes.
-      arches="i686 x86_64"
     fi
     if [[ "${arch}" == "i686" ]]; then
       arches+=" x86-32-nonsfi"
