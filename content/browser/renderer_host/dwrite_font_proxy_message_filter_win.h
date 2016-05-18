@@ -60,8 +60,7 @@ class CONTENT_EXPORT DWriteFontProxyMessageFilter
   bool AddFilesForFont(std::set<base::string16>* path_set, IDWriteFont* font);
   bool AddLocalFile(std::set<base::string16>* path_set,
                     IDWriteLocalFontFileLoader* local_loader,
-                    IDWriteFontFile* font_file,
-                    IDWriteFont* font);
+                    IDWriteFontFile* font_file);
 
  private:
   bool direct_write_initialized_ = false;

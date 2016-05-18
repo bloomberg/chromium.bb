@@ -13,10 +13,8 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
-#include "base/debug/crash_logging.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -75,48 +73,6 @@ base::string16 GetWindowsFontsPath() {
                                        FALSE /* fCreate */);
   DCHECK(result);
   return base::i18n::FoldCase(font_path_chars.data());
-}
-
-// These are the fonts that Blink tries to load in getLastResortFallbackFont,
-// and will crash if none can be loaded.
-const wchar_t* kLastResortFallbackFonts[] = {L"Sans", L"Arial", L"MS UI Gothic",
-                                             L"Microsoft Sans Serif"};
-
-// Temporary code to help track down crbug.com/561873
-bool IsLastResortFallbackfont(const wchar_t* font_name) {
-  for (size_t font_index = 0; font_index < arraysize(kLastResortFallbackFonts);
-       font_index++) {
-    if (base::EqualsCaseInsensitiveASCII(
-            font_name, kLastResortFallbackFonts[font_index])) {
-      return true;
-    }
-  }
-  return false;
-}
-
-const char kFontKeyName[] = "font_key_name";
-
-// Temporary code to help track down crbug.com/561873
-void CrashIfLastResortFallbackfont(IDWriteFont* font) {
-  mswr::ComPtr<IDWriteFontFamily> font_family;
-  if (FAILED(font->GetFontFamily(&font_family)))
-    return;
-  mswr::ComPtr<IDWriteLocalizedStrings> family_names;
-  if (FAILED(font_family->GetFamilyNames(&family_names)))
-    return;
-  std::vector<base::char16> family_name;
-  for (size_t name_index = 0; name_index < family_names->GetCount();
-       name_index++) {
-    uint32_t family_name_length = 0;
-    if (FAILED(family_names->GetStringLength(name_index, &family_name_length)))
-      continue;
-    ++family_name_length;  // Reserve space for the null terminator
-    family_name.resize(family_name_length);
-    if (FAILED(family_names->GetString(name_index, family_name.data(),
-                                       family_name.size())))
-      continue;
-    CHECK(!IsLastResortFallbackfont(family_name.data()));
-  }
 }
 
 }  // namespace
@@ -443,7 +399,7 @@ bool DWriteFontProxyMessageFilter::AddFilesForFont(
     }
 
     if (!AddLocalFile(path_set, local_loader.Get(),
-                      font_files[file_index].Get(), font)) {
+                      font_files[file_index].Get())) {
       return false;
     }
   }
@@ -453,8 +409,7 @@ bool DWriteFontProxyMessageFilter::AddFilesForFont(
 bool DWriteFontProxyMessageFilter::AddLocalFile(
     std::set<base::string16>* path_set,
     IDWriteLocalFontFileLoader* local_loader,
-    IDWriteFontFile* font_file,
-    IDWriteFont* font) {
+    IDWriteFontFile* font_file) {
   HRESULT hr;
   const void* key;
   UINT32 key_size;
@@ -492,13 +447,6 @@ bool DWriteFontProxyMessageFilter::AddLocalFile(
     // could be a problem if it's common fonts.
 
     LogLoaderType(FILE_OUTSIDE_SANDBOX);
-
-    // Temporary code to track down crbug.com/561873. Remove the |font| param
-    // when this is removed.
-    base::debug::ScopedCrashKey crash_key(kFontKeyName,
-                                          base::WideToUTF8(file_path));
-    CrashIfLastResortFallbackfont(font);
-
     NOTREACHED();  // Not yet implemented.
     return false;
   }
