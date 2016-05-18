@@ -129,6 +129,11 @@ base::LazyInstance<std::map<std::string, std::string>>::Leaky g_seen_states =
 // TODO(asvitkine): Remove when crbug.com/359406 is resolved.
 int32_t g_debug_token = -1;
 
+// Whether to append the debug token to the child process --force-fieldtrials
+// command line. Used to diagnose crbug.com/359406.
+// TODO(asvitkine): Remove when crbug.com/359406 is resolved.
+bool g_append_debug_token_to_trial_string = false;
+
 // Tracks whether |g_seen_states| is used. Defaults to false, because unit tests
 // will create multiple FieldTrialList instances. Also controls whether
 // |g_debug_token| is included in the field trial state string.
@@ -237,7 +242,9 @@ void FieldTrial::SetForced() {
 
 // static
 void FieldTrial::EnableBenchmarking() {
-  DCHECK_EQ(0u, FieldTrialList::GetFieldTrialCount());
+  // TODO(asvitkine): Change this back to 0u after the trial in FieldTrialList
+  // constructor is removed.
+  DCHECK_EQ(1u, FieldTrialList::GetFieldTrialCount());
   enable_benchmarking_ = true;
 }
 
@@ -346,6 +353,30 @@ FieldTrialList::FieldTrialList(
   Time::Exploded exploded;
   two_years_from_build_time.LocalExplode(&exploded);
   kNoExpirationYear = exploded.year;
+
+  // Run a 50/50 experiment that enables |g_use_global_check_states| only for
+  // half the users, to investigate if this instrumentation is causing the
+  // crashes to disappear for http://crbug.com/359406. Done here instead of a
+  // server-side trial because this needs to be done early during FieldTrialList
+  // initialization.
+  //
+  // Note: |g_use_global_check_states| is set via EnableGlobalStateChecks()
+  // prior to the FieldTrialList being created. We only want to do the trial
+  // check once the first time FieldTrialList is created, so use a static
+  // |first_time| variable to track this.
+  //
+  // TODO(asvitkine): Remove after http://crbug.com/359406 is fixed.
+  static bool first_time = true;
+  if (first_time && g_use_global_check_states) {
+    first_time = false;
+    base::FieldTrial* trial =
+        FactoryGetFieldTrial("UMA_CheckStates", 100, "NoChecks",
+                             kNoExpirationYear, 1, 1,
+                             FieldTrial::SESSION_RANDOMIZED, nullptr);
+    trial->AppendGroup("Checks", 50);
+    if (trial->group_name() == "NoChecks")
+      g_use_global_check_states = false;
+  }
 }
 
 FieldTrialList::~FieldTrialList() {
@@ -363,6 +394,7 @@ FieldTrialList::~FieldTrialList() {
 void FieldTrialList::EnableGlobalStateChecks() {
   CHECK(!g_use_global_check_states);
   g_use_global_check_states = true;
+  g_append_debug_token_to_trial_string = true;
 }
 
 // static
@@ -502,7 +534,7 @@ void FieldTrialList::StatesToString(std::string* output) {
     output->append(it->group_name);
     output->append(1, kPersistentStringSeparator);
   }
-  if (g_use_global_check_states) {
+  if (g_append_debug_token_to_trial_string) {
     output->append("DebugToken");
     output->append(1, kPersistentStringSeparator);
     output->append(IntToString(g_debug_token));
