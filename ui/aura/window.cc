@@ -577,7 +577,7 @@ void Window::SetCapture() {
   client::CaptureClient* capture_client = client::GetCaptureClient(root_window);
   if (!capture_client)
     return;
-  client::GetCaptureClient(root_window)->SetCapture(this);
+  capture_client->SetCapture(this);
 }
 
 void Window::ReleaseCapture() {
@@ -587,7 +587,7 @@ void Window::ReleaseCapture() {
   client::CaptureClient* capture_client = client::GetCaptureClient(root_window);
   if (!capture_client)
     return;
-  client::GetCaptureClient(root_window)->ReleaseCapture(this);
+  capture_client->ReleaseCapture(this);
 }
 
 bool Window::HasCapture() {
