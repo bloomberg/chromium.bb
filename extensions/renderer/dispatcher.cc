@@ -1558,20 +1558,24 @@ v8::Local<v8::Object> Dispatcher::GetOrCreateBindObjectIfAvailable(
 void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
   Feature::Context context_type = context->context_type();
   ModuleSystem* module_system = context->module_system();
+  bool requires_guest_view_module = false;
 
   // Require AppView.
   if (context->GetAvailability("appViewEmbedderInternal").is_available()) {
+    requires_guest_view_module = true;
     module_system->Require("appView");
   }
 
   // Require ExtensionOptions.
   if (context->GetAvailability("extensionOptionsInternal").is_available()) {
+    requires_guest_view_module = true;
     module_system->Require("extensionOptions");
     module_system->Require("extensionOptionsAttributes");
   }
 
   // Require ExtensionView.
   if (context->GetAvailability("extensionViewInternal").is_available()) {
+    requires_guest_view_module = true;
     module_system->Require("extensionView");
     module_system->Require("extensionViewApiMethods");
     module_system->Require("extensionViewAttributes");
@@ -1579,6 +1583,7 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
 
   // Require WebView.
   if (context->GetAvailability("webViewInternal").is_available()) {
+    requires_guest_view_module = true;
     module_system->Require("webView");
     module_system->Require("webViewApiMethods");
     module_system->Require("webViewAttributes");
@@ -1588,7 +1593,8 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
     }
   }
 
-  if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
+  if (requires_guest_view_module &&
+      content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
     module_system->Require("guestViewIframe");
     module_system->Require("guestViewIframeContainer");
   }
