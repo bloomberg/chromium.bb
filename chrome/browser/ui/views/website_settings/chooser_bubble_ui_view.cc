@@ -25,6 +25,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
+#include "components/url_formatter/elide_url.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -193,7 +194,9 @@ bool ChooserBubbleUiViewDelegate::ShouldShowWindowTitle() const {
 base::string16 ChooserBubbleUiViewDelegate::GetWindowTitle() const {
   return l10n_util::GetStringFUTF16(
       IDS_CHOOSER_BUBBLE_PROMPT,
-      base::ASCIIToUTF16(controller_->GetOrigin().Serialize()));
+      url_formatter::FormatOriginForSecurityDisplay(
+          controller_->GetOrigin(),
+          url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
 }
 
 base::string16 ChooserBubbleUiViewDelegate::GetDialogButtonLabel(
