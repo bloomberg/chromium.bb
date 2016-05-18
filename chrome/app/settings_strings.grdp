@@ -15,12 +15,30 @@
     <message name="IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL" desc="The message about current channel.">
       Currently on <ph name="CHANNEL_NAME">$1<ex>stable</ex></ph>
     </message>
+    <message name="IDS_SETTINGS_UPGRADE_UPDATING" desc="Status label: Updating ChromiumOS or ChromeOS">
+      Updating your device
+    </message>
+    <message name="IDS_SETTINGS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated ChromiumOS/ChromeOS">
+      Nearly up-to-date! Restart your device to finish updating.
+    </message>
+    <message name="IDS_SETTINGS_UPGRADE_UPDATING_CHANNEL_SWITCH" desc="Status label: Updating ChromiumOS/ChromeOS to a specified channel">
+      Updating your device to <ph name="CHANNEL_NAME">$1<ex>stable</ex></ph> channel
+    </message>
+    <message name="IDS_SETTINGS_UPGRADE_SUCCESSFUL_CHANNEL_SWITCH" desc="Status label: Channel was successfully switched on ChromiumOS/ChromeOS">
+      Channel changed. Restart your device to apply changes.
+    </message>
+    <message name="IDS_SETTINGS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date (ChromiumOS/ChromeOS)">
+      Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is up to date.
+    </message>
   </if>
   <if expr="_google_chrome">
     <message name="IDS_SETTINGS_ABOUT_PAGE_REPORT_AN_ISSUE" desc="Text of the button which allows the user to report an issue with Chrome.">
       Report an issue
     </message>
   </if>
+  <message name="IDS_SETTINGS_ABOUT_UPGRADE_CHECK_STARTED" desc="Status label: About to start checking for updates">
+    Checking for updates
+  </message>
 
   <!-- Policy Indicators -->
   <message name="IDS_SETTINGS_CONTROLLED_SETTING_EXTENSION" desc="Text displayed in the controlled settings indicator tooltip when a setting's value is enforced by an extension.">

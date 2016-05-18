@@ -139,16 +139,32 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
       {"aboutReportAnIssue", IDS_SETTINGS_ABOUT_PAGE_REPORT_AN_ISSUE},
 #endif
 
+      {"aboutUpgradeCheckStarted", IDS_SETTINGS_ABOUT_UPGRADE_CHECK_STARTED},
+      {"aboutUpgradeRelaunch", IDS_SETTINGS_UPGRADE_SUCCESSFUL_RELAUNCH},
+      {"aboutUpgradeUpdating", IDS_SETTINGS_UPGRADE_UPDATING},
+
 #if defined(OS_CHROMEOS)
       {"aboutChannelStable", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_STABLE},
       {"aboutChannelBeta", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_BETA},
       {"aboutChannelDev", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_DEV},
       {"aboutCurrentlyOnChannel", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL},
+      {"aboutUpgradeUpdatingChannelSwitch",
+        IDS_SETTINGS_UPGRADE_UPDATING_CHANNEL_SWITCH},
+      {"aboutUpgradeSuccessChannelSwitch",
+        IDS_SETTINGS_UPGRADE_SUCCESSFUL_CHANNEL_SWITCH},
 #endif
 
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
+
+  html_source->AddString(
+      "aboutUpgradeUpToDate",
+#if defined(OS_CHROMEOS)
+      ash::SubstituteChromeOSDeviceType(IDS_SETTINGS_UPGRADE_UP_TO_DATE));
+#else
+      l10n_util::GetStringUTF16(IDS_SETTINGS_UPGRADE_UP_TO_DATE));
+#endif
 }
 
 #if defined(OS_CHROMEOS)
