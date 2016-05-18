@@ -158,7 +158,6 @@ class SYNC_EXPORT ServerConnectionManager : public CancelationObserver {
     ServerConnectionManager* scm_;
 
    private:
-    int ReadResponse(void* buffer, int length);
     int ReadResponse(std::string* buffer, int length);
   };
 
@@ -184,13 +183,6 @@ class SYNC_EXPORT ServerConnectionManager : public CancelationObserver {
   }
 
   const std::string client_id() const { return client_id_; }
-
-  // Returns the current server parameters in server_url, port and use_ssl.
-  void GetServerParameters(std::string* server_url,
-                           int* port,
-                           bool* use_ssl) const;
-
-  std::string GetServerHost() const;
 
   // Factory method to create an Connection object we can use for
   // communication with the server.
@@ -288,8 +280,6 @@ class SYNC_EXPORT ServerConnectionManager : public CancelationObserver {
   Connection* active_connection_;
 
  private:
-  friend class Connection;
-
   // A class to help deal with cleaning up active Connection objects when (for
   // ex) multiple early-exits are present in some scope. ScopedConnectionHelper
   // informs the ServerConnectionManager before the Connection object it takes

@@ -299,33 +299,6 @@ bool ServerConnectionManager::PostBufferToPath(PostBufferParams* params,
   return false;
 }
 
-// Returns the current server parameters in server_url and port.
-void ServerConnectionManager::GetServerParameters(string* server_url,
-                                                  int* port,
-                                                  bool* use_ssl) const {
-  if (server_url != NULL)
-    *server_url = sync_server_;
-  if (port != NULL)
-    *port = sync_server_port_;
-  if (use_ssl != NULL)
-    *use_ssl = use_ssl_;
-}
-
-std::string ServerConnectionManager::GetServerHost() const {
-  string server_url;
-  int port;
-  bool use_ssl;
-  GetServerParameters(&server_url, &port, &use_ssl);
-  // For unit tests.
-  if (server_url.empty())
-    return std::string();
-  // We just want the hostname, so we don't need to switch on use_ssl.
-  server_url = "http://" + server_url;
-  GURL gurl(server_url);
-  DCHECK(gurl.is_valid()) << gurl;
-  return gurl.host();
-}
-
 void ServerConnectionManager::AddListener(
     ServerConnectionEventListener* listener) {
   DCHECK(thread_checker_.CalledOnValidThread());
