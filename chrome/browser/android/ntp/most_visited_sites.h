@@ -159,8 +159,8 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   void BuildCurrentSuggestions();
 
-  // Initialize the query to Top Sites. Called if the SuggestionsService is not
-  // enabled, or if it returns no data.
+  // Initialize the query to Top Sites. Called if the SuggestionsService
+  // returned no data.
   void InitiateTopSitesQuery();
 
   // If there's a whitelist entry point for the URL, return the large icon path.
@@ -187,42 +187,20 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   // Takes the personal suggestions, creates and merges in whitelist and popular
   // suggestions if appropriate, and saves the new suggestions.
-  void SaveNewNTPSuggestions(SuggestionsPtrVector* personal_suggestions);
+  void SaveNewSuggestions(SuggestionsPtrVector* personal_suggestions);
 
-  // Workhorse for SaveNewNTPSuggestions above. Implemented as a separate static
+  // Workhorse for SaveNewSuggestions above. Implemented as a separate static
   // method for ease of testing.
   static SuggestionsPtrVector MergeSuggestions(
       SuggestionsPtrVector* personal_suggestions,
       SuggestionsPtrVector* whitelist_suggestions,
-      SuggestionsPtrVector* popular_suggestions,
-      const std::vector<std::string>& old_sites_url,
-      const std::vector<bool>& old_sites_is_personal);
+      SuggestionsPtrVector* popular_suggestions);
 
-  void GetPreviousNTPSites(size_t num_tiles,
-                           std::vector<std::string>* old_sites_url,
-                           std::vector<bool>* old_sites_source) const;
+  // Appends suggestions from |src| to |dst|.
+  static void AppendSuggestions(SuggestionsPtrVector* src,
+                                SuggestionsPtrVector* dst);
 
-  void SaveCurrentNTPSites();
-
-  // Takes suggestions from |src_suggestions| and moves them to
-  // |dst_suggestions| if the suggestion's url/host matches
-  // |match_urls|/|match_hosts| respectively. Unmatched suggestion indices from
-  // |src_suggestions| are returned for ease of insertion later.
-  static std::vector<size_t> InsertMatchingSuggestions(
-      SuggestionsPtrVector* src_suggestions,
-      SuggestionsPtrVector* dst_suggestions,
-      const std::vector<std::string>& match_urls,
-      const std::vector<std::string>& match_hosts);
-
-  // Inserts suggestions from |src_suggestions| at positions |insert_positions|
-  // into |dst_suggestions| where ever empty starting from |start_position|.
-  // Returns the last filled position so that future insertions can start from
-  // there.
-  static size_t InsertAllSuggestions(
-      size_t start_position,
-      const std::vector<size_t>& insert_positions,
-      SuggestionsPtrVector* src_suggestions,
-      SuggestionsPtrVector* dst_suggestions);
+  void SaveCurrentSuggestionsToPrefs();
 
   // Notifies the observer about the availability of suggestions.
   // Also records impressions UMA if not done already.

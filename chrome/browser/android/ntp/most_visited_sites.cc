@@ -200,8 +200,8 @@ MostVisitedSites::~MostVisitedSites() {
   supervisor_->SetObserver(nullptr);
 }
 
-void MostVisitedSites::SetMostVisitedURLsObserver(
-      MostVisitedSites::Observer* observer, int num_sites) {
+void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
+                                                  int num_sites) {
   DCHECK(observer);
   observer_ = observer;
   num_sites_ = num_sites;
@@ -218,6 +218,7 @@ void MostVisitedSites::SetMostVisitedURLsObserver(
     received_popular_sites_ = true;
   }
 
+  // TODO(treib): Can |top_sites_| ever be null? If not, remove these checks.
   if (top_sites_) {
     // TopSites updates itself after a delay. To ensure up-to-date results,
     // force an update now.
@@ -239,11 +240,11 @@ void MostVisitedSites::SetMostVisitedURLsObserver(
   suggestions_service_->FetchSuggestionsData();
 }
 
-void MostVisitedSites::GetURLThumbnail(
-    const GURL& url,
-    const ThumbnailCallback& callback) {
+void MostVisitedSites::GetURLThumbnail(const GURL& url,
+                                       const ThumbnailCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  // TODO(treib): Move this to the blocking pool? Doesn't seem related to DB.
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::DB, FROM_HERE,
       base::Bind(&MaybeFetchLocalThumbnail, url, top_sites_),
@@ -284,17 +285,16 @@ void MostVisitedSites::OnLocalThumbnailFetched(
   OnObtainedThumbnail(true, callback, url, bitmap.get());
 }
 
-void MostVisitedSites::OnObtainedThumbnail(
-    bool is_local_thumbnail,
-    const ThumbnailCallback& callback,
-    const GURL& url,
-    const SkBitmap* bitmap) {
+void MostVisitedSites::OnObtainedThumbnail(bool is_local_thumbnail,
+                                           const ThumbnailCallback& callback,
+                                           const GURL& url,
+                                           const SkBitmap* bitmap) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   callback.Run(is_local_thumbnail, bitmap);
 }
 
-void MostVisitedSites::AddOrRemoveBlacklistedUrl(
-    const GURL& url, bool add_url) {
+void MostVisitedSites::AddOrRemoveBlacklistedUrl(const GURL& url,
+                                                 bool add_url) {
   // Always blacklist in the local TopSites.
   if (top_sites_) {
     if (add_url)
@@ -354,7 +354,12 @@ void MostVisitedSites::OnBlockedSitesChanged() {
 // static
 void MostVisitedSites::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  // TODO(treib): Remove this, it's unused. Do we need migration code to clean
+  // up existing entries?
   registry->RegisterListPref(ntp_tiles::prefs::kNTPSuggestionsURL);
+  // TODO(treib): Remove this. It's only used to determine if we need
+  // PopularSites at all. Find a way to do that without prefs, or failing that,
+  // replace this list pref by a simple bool.
   registry->RegisterListPref(ntp_tiles::prefs::kNTPSuggestionsIsPersonal);
 }
 
@@ -385,7 +390,7 @@ base::FilePath MostVisitedSites::GetWhitelistLargeIconPath(const GURL& url) {
 
 void MostVisitedSites::OnMostVisitedURLsAvailable(
     const history::MostVisitedURLList& visited_list) {
-  MostVisitedSites::SuggestionsPtrVector suggestions;
+  SuggestionsPtrVector suggestions;
   size_t num_tiles =
       std::min(visited_list.size(), static_cast<size_t>(num_sites_));
   for (size_t i = 0; i < num_tiles; ++i) {
@@ -408,7 +413,7 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
 
   received_most_visited_sites_ = true;
   mv_source_ = TOP_SITES;
-  SaveNewNTPSuggestions(&suggestions);
+  SaveNewSuggestions(&suggestions);
   NotifyMostVisitedURLsObserver();
 }
 
@@ -423,7 +428,7 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
   if (num_sites_ < num_tiles)
     num_tiles = num_sites_;
 
-  MostVisitedSites::SuggestionsPtrVector suggestions;
+  SuggestionsPtrVector suggestions;
   for (int i = 0; i < num_tiles; ++i) {
     const ChromeSuggestion& suggestion = suggestions_profile.suggestions(i);
     if (supervisor_->IsBlocked(GURL(suggestion.url())))
@@ -443,18 +448,18 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
 
   received_most_visited_sites_ = true;
   mv_source_ = SUGGESTIONS_SERVICE;
-  SaveNewNTPSuggestions(&suggestions);
+  SaveNewSuggestions(&suggestions);
   NotifyMostVisitedURLsObserver();
 }
 
 MostVisitedSites::SuggestionsPtrVector
 MostVisitedSites::CreateWhitelistEntryPointSuggestions(
-    const MostVisitedSites::SuggestionsPtrVector& personal_suggestions) {
+    const SuggestionsPtrVector& personal_suggestions) {
   size_t num_personal_suggestions = personal_suggestions.size();
   DCHECK_LE(num_personal_suggestions, static_cast<size_t>(num_sites_));
 
   size_t num_whitelist_suggestions = num_sites_ - num_personal_suggestions;
-  MostVisitedSites::SuggestionsPtrVector whitelist_suggestions;
+  SuggestionsPtrVector whitelist_suggestions;
 
   std::set<std::string> personal_hosts;
   for (const auto& suggestion : personal_suggestions)
@@ -490,11 +495,11 @@ MostVisitedSites::CreateWhitelistEntryPointSuggestions(
 
 MostVisitedSites::SuggestionsPtrVector
 MostVisitedSites::CreatePopularSitesSuggestions(
-    const MostVisitedSites::SuggestionsPtrVector& personal_suggestions,
-    const MostVisitedSites::SuggestionsPtrVector& whitelist_suggestions) {
+    const SuggestionsPtrVector& personal_suggestions,
+    const SuggestionsPtrVector& whitelist_suggestions) {
   // For child accounts popular sites suggestions will not be added.
   if (supervisor_->IsChildProfile())
-    return MostVisitedSites::SuggestionsPtrVector();
+    return SuggestionsPtrVector();
 
   size_t num_suggestions =
       personal_suggestions.size() + whitelist_suggestions.size();
@@ -503,7 +508,7 @@ MostVisitedSites::CreatePopularSitesSuggestions(
   // Collect non-blacklisted popular suggestions, skipping those already present
   // in the personal suggestions.
   size_t num_popular_sites_suggestions = num_sites_ - num_suggestions;
-  MostVisitedSites::SuggestionsPtrVector popular_sites_suggestions;
+  SuggestionsPtrVector popular_sites_suggestions;
 
   if (num_popular_sites_suggestions > 0 && popular_sites_) {
     std::set<std::string> hosts;
@@ -533,185 +538,77 @@ MostVisitedSites::CreatePopularSitesSuggestions(
   return popular_sites_suggestions;
 }
 
-void MostVisitedSites::SaveNewNTPSuggestions(
-    MostVisitedSites::SuggestionsPtrVector* personal_suggestions) {
-  MostVisitedSites::SuggestionsPtrVector whitelist_suggestions =
+void MostVisitedSites::SaveNewSuggestions(
+    SuggestionsPtrVector* personal_suggestions) {
+  SuggestionsPtrVector whitelist_suggestions =
       CreateWhitelistEntryPointSuggestions(*personal_suggestions);
-  MostVisitedSites::SuggestionsPtrVector popular_sites_suggestions =
+  SuggestionsPtrVector popular_sites_suggestions =
       CreatePopularSitesSuggestions(*personal_suggestions,
                                     whitelist_suggestions);
+
   size_t num_actual_tiles = personal_suggestions->size() +
                             whitelist_suggestions.size() +
                             popular_sites_suggestions.size();
-  std::vector<std::string> old_sites_url;
-  std::vector<bool> old_sites_is_personal;
-  // TODO(treib): We used to call |GetPreviousNTPSites| here to populate
-  // |old_sites_url| and |old_sites_is_personal|, but that caused problems
-  // (crbug.com/585391). Either figure out a way to fix them and re-enable,
-  // or properly remove the order-persisting code. crbug.com/601734
-  MostVisitedSites::SuggestionsPtrVector merged_suggestions = MergeSuggestions(
-      personal_suggestions, &whitelist_suggestions, &popular_sites_suggestions,
-      old_sites_url, old_sites_is_personal);
+  DCHECK_LE(num_actual_tiles, static_cast<size_t>(num_sites_));
+
+  SuggestionsPtrVector merged_suggestions = MergeSuggestions(
+      personal_suggestions, &whitelist_suggestions, &popular_sites_suggestions);
   DCHECK_EQ(num_actual_tiles, merged_suggestions.size());
+
   current_suggestions_.resize(merged_suggestions.size());
   for (size_t i = 0; i < merged_suggestions.size(); ++i)
     std::swap(*merged_suggestions[i], current_suggestions_[i]);
+
   if (received_popular_sites_)
-    SaveCurrentNTPSites();
+    SaveCurrentSuggestionsToPrefs();
 }
 
 // static
 MostVisitedSites::SuggestionsPtrVector MostVisitedSites::MergeSuggestions(
-    MostVisitedSites::SuggestionsPtrVector* personal_suggestions,
-    MostVisitedSites::SuggestionsPtrVector* whitelist_suggestions,
-    MostVisitedSites::SuggestionsPtrVector* popular_suggestions,
-    const std::vector<std::string>& old_sites_url,
-    const std::vector<bool>& old_sites_is_personal) {
+    SuggestionsPtrVector* personal_suggestions,
+    SuggestionsPtrVector* whitelist_suggestions,
+    SuggestionsPtrVector* popular_suggestions) {
   size_t num_personal_suggestions = personal_suggestions->size();
   size_t num_whitelist_suggestions = whitelist_suggestions->size();
   size_t num_popular_suggestions = popular_suggestions->size();
   size_t num_tiles = num_popular_suggestions + num_whitelist_suggestions +
                      num_personal_suggestions;
-  MostVisitedSites::SuggestionsPtrVector merged_suggestions;
-  merged_suggestions.resize(num_tiles);
+  SuggestionsPtrVector merged_suggestions;
+  AppendSuggestions(personal_suggestions, &merged_suggestions);
+  AppendSuggestions(whitelist_suggestions, &merged_suggestions);
+  AppendSuggestions(popular_suggestions, &merged_suggestions);
+  DCHECK_EQ(num_tiles, merged_suggestions.size());
 
-  size_t num_old_tiles = old_sites_url.size();
-  DCHECK_LE(num_old_tiles, num_tiles);
-  DCHECK_EQ(num_old_tiles, old_sites_is_personal.size());
-  std::vector<std::string> old_sites_host;
-  old_sites_host.reserve(num_old_tiles);
-  // Only populate the hosts for popular suggestions as only they can be
-  // replaced by host. Personal suggestions require an exact url match to be
-  // replaced.
-  for (size_t i = 0; i < num_old_tiles; ++i) {
-    old_sites_host.push_back(old_sites_is_personal[i]
-                                 ? std::string()
-                                 : GURL(old_sites_url[i]).host());
-  }
-
-  // Insert personal suggestions if they existed previously.
-  std::vector<size_t> new_personal_suggestions = InsertMatchingSuggestions(
-      personal_suggestions, &merged_suggestions, old_sites_url, old_sites_host);
-  // Insert whitelist suggestions if they existed previously.
-  std::vector<size_t> new_whitelist_suggestions =
-      InsertMatchingSuggestions(whitelist_suggestions, &merged_suggestions,
-                                old_sites_url, old_sites_host);
-  // Insert popular suggestions if they existed previously.
-  std::vector<size_t> new_popular_suggestions = InsertMatchingSuggestions(
-      popular_suggestions, &merged_suggestions, old_sites_url, old_sites_host);
-  // Insert leftover personal suggestions.
-  size_t filled_so_far = InsertAllSuggestions(
-      0, new_personal_suggestions, personal_suggestions, &merged_suggestions);
-  // Insert leftover whitelist suggestions.
-  filled_so_far =
-      InsertAllSuggestions(filled_so_far, new_whitelist_suggestions,
-                           whitelist_suggestions, &merged_suggestions);
-  // Insert leftover popular suggestions.
-  InsertAllSuggestions(filled_so_far, new_popular_suggestions,
-                       popular_suggestions, &merged_suggestions);
   return merged_suggestions;
 }
 
-void MostVisitedSites::GetPreviousNTPSites(
-    size_t num_tiles,
-    std::vector<std::string>* old_sites_url,
-    std::vector<bool>* old_sites_is_personal) const {
-  const base::ListValue* url_list = prefs_->GetList(
-      ntp_tiles::prefs::kNTPSuggestionsURL);
-  const base::ListValue* source_list =
-      prefs_->GetList(ntp_tiles::prefs::kNTPSuggestionsIsPersonal);
-  DCHECK_EQ(url_list->GetSize(), source_list->GetSize());
-  if (url_list->GetSize() < num_tiles)
-    num_tiles = url_list->GetSize();
-  if (num_tiles == 0) {
-    // No fallback required as Personal suggestions take precedence anyway.
-    return;
-  }
-  old_sites_url->reserve(num_tiles);
-  old_sites_is_personal->reserve(num_tiles);
-  for (size_t i = 0; i < num_tiles; ++i) {
-    std::string url_string;
-    bool success = url_list->GetString(i, &url_string);
-    DCHECK(success);
-    old_sites_url->push_back(url_string);
-    bool is_personal;
-    success = source_list->GetBoolean(i, &is_personal);
-    DCHECK(success);
-    old_sites_is_personal->push_back(is_personal);
-  }
+// TODO(treib): Once we use SuggestionsVector (non-Ptr) everywhere, move this
+// into an anonymous namespace.
+// static
+void MostVisitedSites::AppendSuggestions(SuggestionsPtrVector* src,
+                                         SuggestionsPtrVector* dst) {
+  dst->insert(dst->end(),
+              std::make_move_iterator(src->begin()),
+              std::make_move_iterator(src->end()));
 }
 
-void MostVisitedSites::SaveCurrentNTPSites() {
+void MostVisitedSites::SaveCurrentSuggestionsToPrefs() {
   base::ListValue url_list;
   base::ListValue source_list;
   for (const auto& suggestion : current_suggestions_) {
     url_list.AppendString(suggestion.url.spec());
-    source_list.AppendBoolean(suggestion.source != MostVisitedSites::POPULAR);
+    source_list.AppendBoolean(suggestion.source != POPULAR);
   }
   prefs_->Set(ntp_tiles::prefs::kNTPSuggestionsIsPersonal, source_list);
   prefs_->Set(ntp_tiles::prefs::kNTPSuggestionsURL, url_list);
 }
 
-// static
-std::vector<size_t> MostVisitedSites::InsertMatchingSuggestions(
-    MostVisitedSites::SuggestionsPtrVector* src_suggestions,
-    MostVisitedSites::SuggestionsPtrVector* dst_suggestions,
-    const std::vector<std::string>& match_urls,
-    const std::vector<std::string>& match_hosts) {
-  std::vector<size_t> unmatched_suggestions;
-  size_t num_src_suggestions = src_suggestions->size();
-  size_t num_matchers = match_urls.size();
-  for (size_t i = 0; i < num_src_suggestions; ++i) {
-    size_t position;
-    for (position = 0; position < num_matchers; ++position) {
-      if ((*dst_suggestions)[position] != nullptr)
-        continue;
-      if (match_urls[position] == (*src_suggestions)[i]->url.spec())
-        break;
-      // match_hosts is only populated for suggestions which can be replaced by
-      // host matching like popular suggestions.
-      if (match_hosts[position] == (*src_suggestions)[i]->url.host())
-        break;
-    }
-    if (position == num_matchers) {
-      unmatched_suggestions.push_back(i);
-    } else {
-      // A move is required as the source and destination containers own the
-      // elements.
-      std::swap((*dst_suggestions)[position], (*src_suggestions)[i]);
-    }
-  }
-  return unmatched_suggestions;
-}
-
-// static
-size_t MostVisitedSites::InsertAllSuggestions(
-    size_t start_position,
-    const std::vector<size_t>& insert_positions,
-    std::vector<std::unique_ptr<Suggestion>>* src_suggestions,
-    std::vector<std::unique_ptr<Suggestion>>* dst_suggestions) {
-  size_t num_inserts = insert_positions.size();
-  size_t num_dests = dst_suggestions->size();
-
-  size_t src_pos = 0;
-  size_t i = start_position;
-  for (; i < num_dests && src_pos < num_inserts; ++i) {
-    if ((*dst_suggestions)[i] != nullptr)
-      continue;
-    size_t src = insert_positions[src_pos++];
-    std::swap((*dst_suggestions)[i], (*src_suggestions)[src]);
-  }
-  // Return destination positions filled so far which becomes the start_position
-  // for future runs.
-  return i;
-}
-
 void MostVisitedSites::NotifyMostVisitedURLsObserver() {
-  size_t num_suggestions = current_suggestions_.size();
   if (received_most_visited_sites_ && received_popular_sites_ &&
       !recorded_uma_) {
     RecordImpressionUMAMetrics();
-    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.NumberOfTiles", num_suggestions);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.NumberOfTiles",
+                                current_suggestions_.size());
     recorded_uma_ = true;
   }
 
