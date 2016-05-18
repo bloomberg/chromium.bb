@@ -522,6 +522,8 @@ Window::Window(WindowTreeConnection* connection, Id id)
       stacking_target_(nullptr),
       transient_parent_(nullptr),
       is_modal_(false),
+      // Matches aura, see aura::Window for details.
+      observers_(base::ObserverList<WindowObserver>::NOTIFY_EXISTING_ONLY),
       input_event_handler_(nullptr),
       viewport_metrics_(CreateEmptyViewportMetrics()),
       visible_(false),

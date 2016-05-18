@@ -91,7 +91,11 @@ mus::mojom::ShowState MojomWindowShowStateFromUI(ui::WindowShowState state) {
 
 }  // namespace
 
-WmWindowMus::WmWindowMus(mus::Window* window) : window_(window) {
+WmWindowMus::WmWindowMus(mus::Window* window)
+    : window_(window),
+      // Matches aura, see aura::Window for details.
+      observers_(
+          base::ObserverList<ash::wm::WmWindowObserver>::NOTIFY_EXISTING_ONLY) {
   window_->AddObserver(this);
   window_->SetLocalProperty(kWmWindowKey, this);
   window_state_.reset(new WindowStateMus(this));
