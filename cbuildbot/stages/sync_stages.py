@@ -1674,7 +1674,7 @@ class PreCQLauncherStage(SyncStage):
       logging.info('Sending stat (name, subtype, count): (%s, %s, %s)',
                    name, subtype, count)
       graphite.StatsFactory.GetInstance().Gauge(name).send(subtype, count)
-      metrics.GaugeMetric('chromeos/pre-cq/cl-count').set(
+      metrics.GaugeMetric('chromeos/cbuildbot/pre-cq/cl-count').set(
           count,
           {'status': str(status),
            'subtype': subtype})
