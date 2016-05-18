@@ -32,6 +32,7 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/events/WindowEventContext.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/UseCounter.h"
@@ -227,20 +228,20 @@ inline void EventDispatcher::dispatchEventPostProcess(EventDispatchHandlingState
         m_node->willCallDefaultEventHandler(*m_event);
         m_node->defaultEventHandler(m_event.get());
         ASSERT(!m_event->defaultPrevented());
-        if (m_event->defaultHandled())
-            return;
         // For bubbling events, call default event handlers on the same targets in the
         // same order as the bubbling phase.
-        if (m_event->bubbles()) {
+        if (!m_event->defaultHandled() && m_event->bubbles()) {
             size_t size = m_event->eventPath().size();
             for (size_t i = 1; i < size; ++i) {
                 m_event->eventPath()[i].node()->willCallDefaultEventHandler(*m_event);
                 m_event->eventPath()[i].node()->defaultEventHandler(m_event.get());
                 ASSERT(!m_event->defaultPrevented());
                 if (m_event->defaultHandled())
-                    return;
+                    break;
             }
         }
+        if (m_event->defaultHandled() && !m_event->isTrusted() && !isClick)
+            Deprecation::countDeprecation(m_node->document(), UseCounter::UntrustedEventDefaultHandled);
     }
 }
 

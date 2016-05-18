@@ -1185,6 +1185,7 @@ public:
         DurableStoragePersist = 1369,
         DurableStoragePersisted = 1370,
         DurableStorageEstimate = 1371,
+        UntrustedEventDefaultHandled = 1372,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
