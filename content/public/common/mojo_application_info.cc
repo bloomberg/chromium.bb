@@ -5,6 +5,7 @@
 #include "content/public/common/mojo_application_info.h"
 
 #include "base/callback.h"
+#include "services/shell/public/cpp/shell_client.h"
 
 namespace content {
 

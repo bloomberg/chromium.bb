@@ -7,14 +7,14 @@
 
 #include <memory>
 
-#include "base/callback_forward.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
-#include "services/shell/public/cpp/shell_client.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
+namespace shell {
+class ShellClient;
+}
 
 namespace content {
 
