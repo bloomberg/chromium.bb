@@ -658,6 +658,25 @@ if (is_win) {
     }
   }
 
+  if (is_chrome_branded) {
+    bundle_data("flash_player_plugin") {
+      sources = [
+        "$root_out_dir/PepperFlash/PepperFlashPlayer.plugin",
+      ]
+
+      outputs = [
+        "{{bundle_root_dir}}/Internet Plug-Ins/PepperFlash/{{source_file_part}}",
+      ]
+
+      public_deps = [
+        "//third_party/adobe/flash:flapper_binaries",
+      ]
+    }
+  } else {
+    group("flash_player_plugin") {
+    }
+  }
+
   tweak_info_plist("chrome_framework_plist") {
     info_plist = "app/framework-Info.plist"
     args = [
@@ -749,6 +768,7 @@ if (is_win) {
       ":chrome_framework_locales",
       ":chrome_framework_plugins",
       ":chrome_framework_resources",
+      ":flash_player_plugin",
       "//build/config/sanitizers:deps",
       "//chrome/app/nibs:chrome_xibs",
     ]
