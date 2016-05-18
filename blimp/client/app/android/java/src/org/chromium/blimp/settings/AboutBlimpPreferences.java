@@ -31,7 +31,6 @@ public class AboutBlimpPreferences extends PreferenceFragment {
     private static final String TAG = "AboutBlimp";
     public static final String EXTRA_ENGINE_IP = "engine_ip";
     public static final String EXTRA_ENGINE_VERSION = "engine_version";
-    public static final String EXTRA_ASSIGNER_URL = "assigner_url";
 
     private static final String PREF_APPLICATION_VERSION = "application_version";
     private static final String PREF_OS_VERSION = "os_version";

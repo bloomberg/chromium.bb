@@ -228,9 +228,10 @@ public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver, View
     private void showVersionInfo() {
         Intent intent = new Intent();
         intent.setClass(mContext, Preferences.class);
-        intent.putExtra(AboutBlimpPreferences.EXTRA_ASSIGNER_URL, mEngineInfo.assignerUrl);
-        intent.putExtra(AboutBlimpPreferences.EXTRA_ENGINE_IP, mEngineInfo.ipAddress);
-        intent.putExtra(AboutBlimpPreferences.EXTRA_ENGINE_VERSION, mEngineInfo.engineVersion);
+        if (mEngineInfo != null) {
+            intent.putExtra(AboutBlimpPreferences.EXTRA_ENGINE_IP, mEngineInfo.ipAddress);
+            intent.putExtra(AboutBlimpPreferences.EXTRA_ENGINE_VERSION, mEngineInfo.engineVersion);
+        }
         mContext.startActivity(intent);
     }
 
