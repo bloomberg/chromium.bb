@@ -69,6 +69,12 @@ bool NavigateToURLAndExpectNoCommit(Shell* window, const GURL& url);
 void ReloadBlockUntilNavigationsComplete(Shell* window,
                                          int number_of_navigations);
 
+// Reloads |window| with bypassing cache flag, and blocks until the given number
+// of navigations finishes.
+void ReloadBypassingCacheBlockUntilNavigationsComplete(
+    Shell* window,
+    int number_of_navigations);
+
 // Wait until an application modal dialog is requested.
 void WaitForAppModalDialog(Shell* window);
 

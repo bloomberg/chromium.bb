@@ -170,6 +170,9 @@ void EmbeddedTestServer::HandleRequest(HttpConnection* connection,
                                        std::unique_ptr<HttpRequest> request) {
   DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
 
+  for (const auto& monitor : request_monitors_)
+    monitor.Run(*request);
+
   std::unique_ptr<HttpResponse> response;
 
   for (const auto& handler : request_handlers_) {
@@ -284,15 +287,22 @@ void EmbeddedTestServer::AddDefaultHandlers(const base::FilePath& directory) {
 
 void EmbeddedTestServer::RegisterRequestHandler(
     const HandleRequestCallback& callback) {
-  // TODO(svaldez): Add check to prevent RegisterHandler from being called
-  // after the server has started. https://crbug.com/546060
+  // TODO(svaldez): Add check to prevent RegisterRequestHandler from being
+  // called after the server has started. https://crbug.com/546060
   request_handlers_.push_back(callback);
+}
+
+void EmbeddedTestServer::RegisterRequestMonitor(
+    const MonitorRequestCallback& callback) {
+  // TODO(svaldez): Add check to prevent RegisterRequestMonitor from being
+  // called after the server has started. https://crbug.com/546060
+  request_monitors_.push_back(callback);
 }
 
 void EmbeddedTestServer::RegisterDefaultHandler(
     const HandleRequestCallback& callback) {
-  // TODO(svaldez): Add check to prevent RegisterHandler from being called
-  // after the server has started. https://crbug.com/546060
+  // TODO(svaldez): Add check to prevent RegisterDefaultHandler from being
+  // called after the server has started. https://crbug.com/546060
   default_request_handlers_.push_back(callback);
 }
 

@@ -53,6 +53,17 @@ void ReloadBlockUntilNavigationsComplete(Shell* window,
   same_tab_observer.Wait();
 }
 
+void ReloadBypassingCacheBlockUntilNavigationsComplete(
+    Shell* window,
+    int number_of_navigations) {
+  WaitForLoadStop(window->web_contents());
+  TestNavigationObserver same_tab_observer(window->web_contents(),
+                                           number_of_navigations);
+
+  window->ReloadBypassingCache();
+  same_tab_observer.Wait();
+}
+
 void LoadDataWithBaseURL(Shell* window,
                          const GURL& url,
                          const std::string& data,

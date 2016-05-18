@@ -71,6 +71,7 @@ class Shell : public WebContentsDelegate,
 #endif
   void GoBackOrForward(int offset);
   void Reload();
+  void ReloadBypassingCache();
   void Stop();
   void UpdateNavigationControls(bool to_different_document);
   void Close();

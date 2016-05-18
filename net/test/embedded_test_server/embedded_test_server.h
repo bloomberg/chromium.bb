@@ -117,6 +117,8 @@ class EmbeddedTestServer {
   typedef base::Callback<std::unique_ptr<HttpResponse>(
       const HttpRequest& request)>
       HandleRequestCallback;
+  typedef base::Callback<void(const HttpRequest& request)>
+      MonitorRequestCallback;
 
   // Creates a http test server. Start() must be called to start the server.
   // |type| indicates the protocol type of the server (HTTP/HTTPS).
@@ -207,6 +209,11 @@ class EmbeddedTestServer {
   // on UI thread.
   void RegisterRequestHandler(const HandleRequestCallback& callback);
 
+  // Adds request monitors. The |callback| is called before any handlers are
+  // called, but can not respond it. This is useful to monitor requests that
+  // will be handled by other request handlers.
+  void RegisterRequestMonitor(const MonitorRequestCallback& callback);
+
   // Adds default handlers, including those added by AddDefaultHandlers, to be
   // tried after all other user-specified handlers have been tried.
   void RegisterDefaultHandler(const HandleRequestCallback& callback);
@@ -274,8 +281,9 @@ class EmbeddedTestServer {
   // Owns the HttpConnection objects.
   std::map<StreamSocket*, HttpConnection*> connections_;
 
-  // Vector of registered and default request handlers.
+  // Vector of registered and default request handlers and monitors.
   std::vector<HandleRequestCallback> request_handlers_;
+  std::vector<MonitorRequestCallback> request_monitors_;
   std::vector<HandleRequestCallback> default_request_handlers_;
 
   base::ThreadChecker thread_checker_;

@@ -264,6 +264,11 @@ void Shell::Reload() {
   web_contents_->Focus();
 }
 
+void Shell::ReloadBypassingCache() {
+  web_contents_->GetController().ReloadBypassingCache(false);
+  web_contents_->Focus();
+}
+
 void Shell::Stop() {
   web_contents_->Stop();
   web_contents_->Focus();

@@ -234,6 +234,7 @@
       'browser/loader/async_resource_handler_browsertest.cc',
       'browser/loader/async_revalidation_manager_browsertest.cc',
       'browser/loader/cross_site_resource_handler_browsertest.cc',
+      'browser/loader/reload_cache_control_browsertest.cc',
       'browser/loader/resource_dispatcher_host_browsertest.cc',
       'browser/manifest/manifest_browsertest.cc',
       'browser/media/encrypted_media_browsertest.cc',
