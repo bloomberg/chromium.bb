@@ -91,6 +91,7 @@ class CC_EXPORT GpuImageDecodeController
   }
   size_t GetBytesUsedForTesting() const { return bytes_used_; }
   void SetImageDecodingFailedForTesting(const DrawImage& image);
+  bool DiscardableIsLockedForTesting(const DrawImage& image);
 
  private:
   enum class DecodedDataMode { GPU, CPU };

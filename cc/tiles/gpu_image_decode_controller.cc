@@ -542,6 +542,15 @@ void GpuImageDecodeController::RefCountChanged(ImageData* image_data) {
 
   bool has_any_refs =
       image_data->upload.ref_count > 0 || image_data->decode.ref_count > 0;
+
+  // Don't keep CPU images if they are unused, these images can be recreated by
+  // re-locking discardable (rather than requiring a full upload like GPU
+  // images).
+  if (image_data->mode == DecodedDataMode::CPU && !has_any_refs) {
+    images_pending_deletion_.push_back(std::move(image_data->upload.image));
+    image_data->upload.image = nullptr;
+  }
+
   if (image_data->is_at_raster && !has_any_refs) {
     // We have an at-raster image which has reached zero refs. If it won't fit
     // in our cache, delete the image to allow it to fit.
@@ -580,12 +589,27 @@ void GpuImageDecodeController::RefCountChanged(ImageData* image_data) {
     image_data->upload.budgeted = false;
   }
 
-  // If we have no decode refs on an image, we should unlock any locked
-  // discardable memory.
-  if (image_data->decode.ref_count == 0 && image_data->decode.is_locked) {
+  // We should unlock the discardable memory for the image in two cases:
+  // 1) The image is no longer being used (no decode or upload refs).
+  // 2) This is a GPU backed image that has already been uploaded (no decode
+  //    refs).
+  bool should_unlock_discardable =
+      !has_any_refs || (image_data->mode == DecodedDataMode::GPU &&
+                        !image_data->decode.ref_count);
+
+  if (should_unlock_discardable && image_data->decode.is_locked) {
     DCHECK(image_data->decode.data);
     image_data->decode.data->Unlock();
     image_data->decode.is_locked = false;
+  }
+
+  // Sanity check the above logic.
+  if (image_data->upload.image) {
+    DCHECK(image_data->is_at_raster || image_data->upload.budgeted);
+    if (image_data->mode == DecodedDataMode::CPU)
+      DCHECK(image_data->decode.is_locked);
+  } else {
+    DCHECK(!image_data->upload.budgeted || image_data->upload.ref_count > 0);
   }
 }
 
@@ -828,6 +852,15 @@ void GpuImageDecodeController::SetImageDecodingFailedForTesting(
   DCHECK(found != image_data_.end());
   ImageData* image_data = found->second.get();
   image_data->decode.decode_failure = true;
+}
+
+bool GpuImageDecodeController::DiscardableIsLockedForTesting(
+    const DrawImage& image) {
+  base::AutoLock lock(lock_);
+  auto found = image_data_.Peek(image.image()->uniqueID());
+  DCHECK(found != image_data_.end());
+  ImageData* image_data = found->second.get();
+  return image_data->decode.is_locked;
 }
 
 }  // namespace cc

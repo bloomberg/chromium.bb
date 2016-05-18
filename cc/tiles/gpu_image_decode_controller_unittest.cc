@@ -420,6 +420,7 @@ TEST(GpuImageDecodeControllerTest, GetDecodedImageForDraw) {
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
   EXPECT_FALSE(decoded_draw_image.is_at_raster_decode());
+  EXPECT_FALSE(controller.DiscardableIsLockedForTesting(draw_image));
 
   controller.DrawWithImageFinished(draw_image, decoded_draw_image);
   controller.UnrefImage(draw_image);
@@ -454,9 +455,11 @@ TEST(GpuImageDecodeControllerTest, GetLargeDecodedImageForDraw) {
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_FALSE(decoded_draw_image.image()->isTextureBacked());
   EXPECT_FALSE(decoded_draw_image.is_at_raster_decode());
+  EXPECT_TRUE(controller.DiscardableIsLockedForTesting(draw_image));
 
   controller.DrawWithImageFinished(draw_image, decoded_draw_image);
   controller.UnrefImage(draw_image);
+  EXPECT_FALSE(controller.DiscardableIsLockedForTesting(draw_image));
 }
 
 TEST(GpuImageDecodeControllerTest, GetDecodedImageForDrawAtRasterDecode) {
@@ -489,6 +492,7 @@ TEST(GpuImageDecodeControllerTest, GetDecodedImageForDrawAtRasterDecode) {
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
   EXPECT_TRUE(decoded_draw_image.is_at_raster_decode());
+  EXPECT_FALSE(controller.DiscardableIsLockedForTesting(draw_image));
 
   controller.DrawWithImageFinished(draw_image, decoded_draw_image);
 }
@@ -523,6 +527,7 @@ TEST(GpuImageDecodeControllerTest, AtRasterUsedDirectlyIfSpaceAllows) {
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
   EXPECT_TRUE(decoded_draw_image.is_at_raster_decode());
+  EXPECT_FALSE(controller.DiscardableIsLockedForTesting(draw_image));
 
   controller.SetCachedItemLimitForTesting(1000);
   controller.SetCachedBytesLimitForTesting(96 * 1024 * 1024);
@@ -564,6 +569,7 @@ TEST(GpuImageDecodeControllerTest,
   EXPECT_TRUE(decoded_draw_image.image());
   EXPECT_TRUE(decoded_draw_image.image()->isTextureBacked());
   EXPECT_TRUE(decoded_draw_image.is_at_raster_decode());
+  EXPECT_FALSE(controller.DiscardableIsLockedForTesting(draw_image));
 
   DecodedDrawImage another_decoded_draw_image =
       controller.GetDecodedImageForDraw(draw_image);
@@ -572,6 +578,44 @@ TEST(GpuImageDecodeControllerTest,
 
   controller.DrawWithImageFinished(draw_image, decoded_draw_image);
   controller.DrawWithImageFinished(draw_image, another_decoded_draw_image);
+}
+
+TEST(GpuImageDecodeControllerTest,
+     GetLargeDecodedImageForDrawAtRasterDecodeMultipleTimes) {
+  auto context_provider = TestContextProvider::Create();
+  context_provider->BindToCurrentThread();
+  GpuImageDecodeController controller(context_provider.get(),
+                                      ResourceFormat::RGBA_8888);
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  sk_sp<SkImage> image = CreateImage(1, 24000);
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
+
+  // Must hold context lock before calling GetDecodedImageForDraw /
+  // DrawWithImageFinished.
+  ContextProvider::ScopedContextLock context_lock(context_provider.get());
+  DecodedDrawImage decoded_draw_image =
+      controller.GetDecodedImageForDraw(draw_image);
+  EXPECT_TRUE(decoded_draw_image.image());
+  EXPECT_FALSE(decoded_draw_image.image()->isTextureBacked());
+  EXPECT_TRUE(decoded_draw_image.is_at_raster_decode());
+  EXPECT_TRUE(controller.DiscardableIsLockedForTesting(draw_image));
+
+  controller.DrawWithImageFinished(draw_image, decoded_draw_image);
+  EXPECT_FALSE(controller.DiscardableIsLockedForTesting(draw_image));
+
+  DecodedDrawImage second_decoded_draw_image =
+      controller.GetDecodedImageForDraw(draw_image);
+  EXPECT_TRUE(second_decoded_draw_image.image());
+  EXPECT_FALSE(second_decoded_draw_image.image()->isTextureBacked());
+  EXPECT_TRUE(second_decoded_draw_image.is_at_raster_decode());
+  EXPECT_TRUE(controller.DiscardableIsLockedForTesting(draw_image));
+
+  controller.DrawWithImageFinished(draw_image, second_decoded_draw_image);
+  EXPECT_FALSE(controller.DiscardableIsLockedForTesting(draw_image));
 }
 
 TEST(GpuImageDecodeControllerTest, ZeroSizedImagesAreSkipped) {
