@@ -136,8 +136,7 @@ bool V4L2ImageProcessor::Initialize(media::VideoPixelFormat input_format,
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYCAP, &caps);
   if ((caps.capabilities & kCapsRequired) != kCapsRequired) {
     LOG(ERROR) << "Initialize(): ioctl() failed: VIDIOC_QUERYCAP: "
-                  "caps check failed: 0x"
-               << std::hex << caps.capabilities;
+               << "caps check failed: 0x" << std::hex << caps.capabilities;
     return false;
   }
 

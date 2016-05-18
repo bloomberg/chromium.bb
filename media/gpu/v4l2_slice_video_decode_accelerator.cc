@@ -513,8 +513,7 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYCAP, &caps);
   if ((caps.capabilities & kCapsRequired) != kCapsRequired) {
     LOG(ERROR) << "Initialize(): ioctl() failed: VIDIOC_QUERYCAP"
-                  ", caps check failed: 0x"
-               << std::hex << caps.capabilities;
+               << ", caps check failed: 0x" << std::hex << caps.capabilities;
     return false;
   }
 
@@ -698,8 +697,10 @@ bool V4L2SliceVideoDecodeAccelerator::CreateInputBuffers() {
     buffer.m.planes = planes;
     buffer.length = input_planes_count_;
     IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYBUF, &buffer);
-    void* address = device_->Mmap(nullptr, buffer.m.planes[0].length,
-                                  PROT_READ | PROT_WRITE, MAP_SHARED,
+    void* address = device_->Mmap(nullptr,
+                                  buffer.m.planes[0].length,
+                                  PROT_READ | PROT_WRITE,
+                                  MAP_SHARED,
                                   buffer.m.planes[0].m.mem_offset);
     if (address == MAP_FAILED) {
       PLOG(ERROR) << "CreateInputBuffers(): mmap() failed";
@@ -858,11 +859,13 @@ void V4L2SliceVideoDecodeAccelerator::SchedulePollIfNeeded() {
 
   DVLOGF(2) << "buffer counts: "
             << "INPUT[" << decoder_input_queue_.size() << "]"
-            << " => DEVICE[" << free_input_buffers_.size() << "+"
-            << input_buffer_queued_count_ << "/" << input_buffer_map_.size()
-            << "]->[" << free_output_buffers_.size() << "+"
-            << output_buffer_queued_count_ << "/" << output_buffer_map_.size()
-            << "]"
+            << " => DEVICE["
+            << free_input_buffers_.size() << "+"
+            << input_buffer_queued_count_ << "/"
+            << input_buffer_map_.size() << "]->["
+            << free_output_buffers_.size() << "+"
+            << output_buffer_queued_count_ << "/"
+            << output_buffer_map_.size() << "]"
             << " => DISPLAYQ[" << decoder_display_queue_.size() << "]"
             << " => CLIENT[" << surfaces_at_display_.size() << "]";
 }
@@ -952,8 +955,8 @@ void V4L2SliceVideoDecodeAccelerator::Dequeue() {
     DCHECK(output_record.at_device);
     output_record.at_device = false;
     output_buffer_queued_count_--;
-    DVLOGF(3) << "Dequeued output=" << dqbuf.index << " count "
-              << output_buffer_queued_count_;
+    DVLOGF(3) << "Dequeued output=" << dqbuf.index
+              << " count " << output_buffer_queued_count_;
 
     V4L2DecodeSurfaceByOutputId::iterator it =
         surfaces_at_device_.find(dqbuf.index);
@@ -1504,8 +1507,8 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
 
   if (buffers.size() < req_buffer_count) {
     DLOG(ERROR) << "Failed to provide requested picture buffers. "
-                << "(Got " << buffers.size() << ", requested "
-                << req_buffer_count << ")";
+                << "(Got " << buffers.size()
+                << ", requested " << req_buffer_count << ")";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
@@ -2060,19 +2063,12 @@ bool V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::SubmitFrameMetadata(
   struct v4l2_ctrl_h264_sps v4l2_sps;
   memset(&v4l2_sps, 0, sizeof(v4l2_sps));
   v4l2_sps.constraint_set_flags =
-      sps->constraint_set0_flag
-          ? V4L2_H264_SPS_CONSTRAINT_SET0_FLAG
-          : 0 | sps->constraint_set1_flag
-                ? V4L2_H264_SPS_CONSTRAINT_SET1_FLAG
-                : 0 | sps->constraint_set2_flag
-                      ? V4L2_H264_SPS_CONSTRAINT_SET2_FLAG
-                      : 0 | sps->constraint_set3_flag
-                            ? V4L2_H264_SPS_CONSTRAINT_SET3_FLAG
-                            : 0 | sps->constraint_set4_flag
-                                  ? V4L2_H264_SPS_CONSTRAINT_SET4_FLAG
-                                  : 0 | sps->constraint_set5_flag
-                                        ? V4L2_H264_SPS_CONSTRAINT_SET5_FLAG
-                                        : 0;
+      (sps->constraint_set0_flag ? V4L2_H264_SPS_CONSTRAINT_SET0_FLAG : 0) |
+      (sps->constraint_set1_flag ? V4L2_H264_SPS_CONSTRAINT_SET1_FLAG : 0) |
+      (sps->constraint_set2_flag ? V4L2_H264_SPS_CONSTRAINT_SET2_FLAG : 0) |
+      (sps->constraint_set3_flag ? V4L2_H264_SPS_CONSTRAINT_SET3_FLAG : 0) |
+      (sps->constraint_set4_flag ? V4L2_H264_SPS_CONSTRAINT_SET4_FLAG : 0) |
+      (sps->constraint_set5_flag ? V4L2_H264_SPS_CONSTRAINT_SET5_FLAG : 0);
 #define SPS_TO_V4L2SPS(a) v4l2_sps.a = sps->a
   SPS_TO_V4L2SPS(profile_idc);
   SPS_TO_V4L2SPS(level_idc);

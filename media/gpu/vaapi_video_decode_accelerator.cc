@@ -412,8 +412,8 @@ void VaapiVideoDecodeAccelerator::OutputPicture(
   // Notify the client a picture is ready to be displayed.
   ++num_frames_at_client_;
   TRACE_COUNTER1("Video Decoder", "Textures at client", num_frames_at_client_);
-  DVLOG(4) << "Notifying output picture id " << output_id << " for input "
-           << input_id << " is ready";
+  DVLOG(4) << "Notifying output picture id " << output_id
+           << " for input " << input_id << " is ready";
   // TODO(posciak): Use visible size from decoder here instead
   // (crbug.com/402760). Passing (0, 0) results in the client using the
   // visible size extracted from the container instead.
@@ -503,7 +503,7 @@ bool VaapiVideoDecodeAccelerator::GetInputBuffer_Locked() {
       // already queued up. Otherwise will stop decoding.
       if (input_buffers_.empty())
         return false;
-    // else fallthrough
+      // else fallthrough
     case kDecoding:
     case kIdle:
       DCHECK(!input_buffers_.empty());
@@ -710,7 +710,7 @@ void VaapiVideoDecodeAccelerator::Decode(
       break;
 
     case kDecoding:
-    // Decoder already running, fallthrough.
+      // Decoder already running, fallthrough.
     case kResetting:
       // When resetting, allow accumulating bitstream buffers, so that
       // the client can queue after-seek-buffers while we are finishing with
@@ -744,11 +744,10 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
   while (!output_buffers_.empty())
     output_buffers_.pop();
 
-  RETURN_AND_NOTIFY_ON_FAILURE(buffers.size() >= requested_num_pics_,
-                               "Got an invalid number of picture buffers. (Got "
-                                   << buffers.size() << ", requested "
-                                   << requested_num_pics_ << ")",
-                               INVALID_ARGUMENT, );
+  RETURN_AND_NOTIFY_ON_FAILURE(
+      buffers.size() >= requested_num_pics_,
+      "Got an invalid number of picture buffers. (Got " << buffers.size()
+      << ", requested " << requested_num_pics_ << ")", INVALID_ARGUMENT, );
   DCHECK(requested_pic_size_ == buffers[0].size());
 
   std::vector<VASurfaceID> va_surface_ids;

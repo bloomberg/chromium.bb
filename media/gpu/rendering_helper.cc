@@ -212,10 +212,14 @@ RenderingHelper::~RenderingHelper() {
 
 void RenderingHelper::Setup() {
 #if defined(OS_WIN)
-  window_ = CreateWindowEx(
-      0, L"Static", L"VideoDecodeAcceleratorTest",
-      WS_OVERLAPPEDWINDOW | WS_VISIBLE, 0, 0, GetSystemMetrics(SM_CXSCREEN),
-      GetSystemMetrics(SM_CYSCREEN), NULL, NULL, NULL, NULL);
+  window_ = CreateWindowEx(0,
+                           L"Static",
+                           L"VideoDecodeAcceleratorTest",
+                           WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+                           0, 0,
+                           GetSystemMetrics(SM_CXSCREEN),
+                           GetSystemMetrics(SM_CYSCREEN),
+                           NULL, NULL, NULL, NULL);
 #elif defined(USE_X11)
   Display* display = gfx::GetXDisplay();
   Screen* screen = DefaultScreenOfDisplay(display);
@@ -229,11 +233,17 @@ void RenderingHelper::Setup() {
   window_attributes.override_redirect = true;
   int depth = DefaultDepth(display, DefaultScreen(display));
 
-  window_ = XCreateWindow(
-      display, DefaultRootWindow(display), 0, 0, XWidthOfScreen(screen),
-      XHeightOfScreen(screen), 0 /* border width */, depth,
-      CopyFromParent /* class */, CopyFromParent /* visual */,
-      (CWBackPixel | CWOverrideRedirect), &window_attributes);
+  window_ = XCreateWindow(display,
+                          DefaultRootWindow(display),
+                          0, 0,
+                          XWidthOfScreen(screen),
+                          XHeightOfScreen(screen),
+                          0 /* border width */,
+                          depth,
+                          CopyFromParent /* class */,
+                          CopyFromParent /* visual */,
+                          (CWBackPixel | CWOverrideRedirect),
+                          &window_attributes);
   XStoreName(display, window_, "VideoDecodeAcceleratorTest");
   XSelectInput(display, window_, ExposureMask);
   XMapWindow(display, window_);
@@ -358,9 +368,14 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
     glGenFramebuffersEXT(1, &thumbnails_fbo_id_);
     glGenTextures(1, &thumbnails_texture_id_);
     glBindTexture(GL_TEXTURE_2D, thumbnails_texture_id_);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, thumbnails_fbo_size_.width(),
-                 thumbnails_fbo_size_.height(), 0, GL_RGB,
-                 GL_UNSIGNED_SHORT_5_6_5, NULL);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGB,
+                 thumbnails_fbo_size_.width(), thumbnails_fbo_size_.height(),
+                 0,
+                 GL_RGB,
+                 GL_UNSIGNED_SHORT_5_6_5,
+                 NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -419,8 +434,11 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
       "}\n";
 #else
   static const char kFragmentShader[] =
-      STRINGIZE(varying vec2 interp_tc; uniform sampler2D tex;
-                void main() { gl_FragColor = texture2D(tex, interp_tc); });
+      STRINGIZE(varying vec2 interp_tc;
+                uniform sampler2D tex;
+                void main() {
+                  gl_FragColor = texture2D(tex, interp_tc);
+                });
 #endif
   program_ = glCreateProgram();
   CreateShader(program_, GL_VERTEX_SHADER, kVertexShader,
@@ -491,8 +509,13 @@ void RenderingHelper::WarmUpRendering(int warm_up_iterations) {
       new GLubyte[screen_size_.GetArea() * 2]());
   glGenTextures(1, &texture_id);
   glBindTexture(GL_TEXTURE_2D, texture_id);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, screen_size_.width(),
-               screen_size_.height(), 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5,
+  glTexImage2D(GL_TEXTURE_2D,
+               0,
+               GL_RGB,
+               screen_size_.width(), screen_size_.height(),
+               0,
+               GL_RGB,
+               GL_UNSIGNED_SHORT_5_6_5,
                emptyData.get());
   for (int i = 0; i < warm_up_iterations; ++i) {
     RenderTexture(GL_TEXTURE_2D, texture_id);
@@ -541,8 +564,14 @@ void RenderingHelper::CreateTexture(uint32_t texture_target,
   glGenTextures(1, texture_id);
   glBindTexture(texture_target, *texture_id);
   if (texture_target == GL_TEXTURE_2D) {
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.width(), size.height(), 0,
-                 GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGBA,
+                 size.width(), size.height(),
+                 0,
+                 GL_RGBA,
+                 GL_UNSIGNED_BYTE,
+                 NULL);
   }
   glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -657,8 +686,10 @@ void RenderingHelper::GetThumbnailsAsRGB(std::vector<unsigned char>* rgb,
   glBindFramebufferEXT(GL_FRAMEBUFFER, thumbnails_fbo_id_);
   glPixelStorei(GL_PACK_ALIGNMENT, 1);
   // We can only count on GL_RGBA/GL_UNSIGNED_BYTE support.
-  glReadPixels(0, 0, thumbnails_fbo_size_.width(),
-               thumbnails_fbo_size_.height(), GL_RGBA, GL_UNSIGNED_BYTE,
+  glReadPixels(0, 0,
+               thumbnails_fbo_size_.width(), thumbnails_fbo_size_.height(),
+               GL_RGBA,
+               GL_UNSIGNED_BYTE,
                &rgba[0]);
   glBindFramebufferEXT(GL_FRAMEBUFFER,
                        gl_surface_->GetBackingFrameBufferObject());

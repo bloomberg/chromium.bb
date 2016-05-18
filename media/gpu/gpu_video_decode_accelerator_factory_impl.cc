@@ -69,13 +69,13 @@ GpuVideoDecodeAcceleratorFactoryImpl::GetDecoderCapabilities(
   if (gpu_preferences.disable_accelerated_video_decode)
     return gpu::VideoDecodeAcceleratorCapabilities();
 
-// Query VDAs for their capabilities and construct a set of supported
-// profiles for current platform. This must be done in the same order as in
-// CreateVDA(), as we currently preserve additional capabilities (such as
-// resolutions supported) only for the first VDA supporting the given codec
-// profile (instead of calculating a superset).
-// TODO(posciak,henryhsu): improve this so that we choose a superset of
-// resolutions and other supported profile parameters.
+  // Query VDAs for their capabilities and construct a set of supported
+  // profiles for current platform. This must be done in the same order as in
+  // CreateVDA(), as we currently preserve additional capabilities (such as
+  // resolutions supported) only for the first VDA supporting the given codec
+  // profile (instead of calculating a superset).
+  // TODO(posciak,henryhsu): improve this so that we choose a superset of
+  // resolutions and other supported profile parameters.
 #if defined(OS_WIN)
   capabilities.supported_profiles =
       DXVAVideoDecodeAccelerator::GetSupportedProfiles();

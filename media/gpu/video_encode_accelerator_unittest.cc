@@ -1527,8 +1527,8 @@ void VEAClient::VerifyStreamProperties() {
   unsigned int bitrate = encoded_stream_size_since_last_check_ * 8 *
                          current_framerate_ / num_frames_since_last_check_;
   DVLOG(1) << "Current chunk's bitrate: " << bitrate
-           << " (expected: " << current_requested_bitrate_ << " @ "
-           << current_framerate_ << " FPS,"
+           << " (expected: " << current_requested_bitrate_
+           << " @ " << current_framerate_ << " FPS,"
            << " num frames in chunk: " << num_frames_since_last_check_;
 
   num_frames_since_last_check_ = 0;

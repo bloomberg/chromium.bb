@@ -242,14 +242,14 @@ void V4L2Device::GetSupportedResolution(uint32_t pixelformat,
   if (max_resolution->IsEmpty()) {
     max_resolution->SetSize(1920, 1088);
     LOG(ERROR) << "GetSupportedResolution failed to get maximum resolution for "
-               << "fourcc " << std::hex << pixelformat << ", fall back to "
-               << max_resolution->ToString();
+               << "fourcc " << std::hex << pixelformat
+               << ", fall back to " << max_resolution->ToString();
   }
   if (min_resolution->IsEmpty()) {
     min_resolution->SetSize(16, 16);
     LOG(ERROR) << "GetSupportedResolution failed to get minimum resolution for "
-               << "fourcc " << std::hex << pixelformat << ", fall back to "
-               << min_resolution->ToString();
+               << "fourcc " << std::hex << pixelformat
+               << ", fall back to " << min_resolution->ToString();
   }
 }
 

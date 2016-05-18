@@ -568,10 +568,12 @@ void V4L2JpegDecodeAccelerator::ServiceDeviceTask(bool event_pending) {
                               base::Unretained(this)));
   }
 
-  DVLOG(2) << __func__ << ": buffer counts: INPUT[" << input_jobs_.size()
-           << "] => DEVICE[" << free_input_buffers_.size() << "/"
-           << input_buffer_map_.size() << "->" << free_output_buffers_.size()
-           << "/" << output_buffer_map_.size() << "]";
+  DVLOG(2) << __func__ << ": buffer counts: INPUT["
+           << input_jobs_.size() << "] => DEVICE["
+           << free_input_buffers_.size() << "/"
+           << input_buffer_map_.size() << "->"
+           << free_output_buffers_.size() << "/"
+           << output_buffer_map_.size() << "]";
 }
 
 void V4L2JpegDecodeAccelerator::EnqueueInput() {
@@ -626,12 +628,18 @@ static bool CopyOutputImage(const uint32_t src_pixelformat,
   size_t dst_v_stride = dst_frame->stride(media::VideoFrame::kVPlane);
 
   // If the source format is I420, ConvertToI420 will simply copy the frame.
-  if (libyuv::ConvertToI420(
-          static_cast<uint8_t*>(const_cast<void*>(src_addr)), src_size, dst_y,
-          dst_y_stride, dst_u, dst_u_stride, dst_v, dst_v_stride, 0, 0,
-          src_coded_size.width(), src_coded_size.height(),
-          dst_frame->coded_size().width(), dst_frame->coded_size().height(),
-          libyuv::kRotate0, src_pixelformat)) {
+  if (libyuv::ConvertToI420(static_cast<uint8_t*>(const_cast<void*>(src_addr)),
+                            src_size,
+                            dst_y, dst_y_stride,
+                            dst_u, dst_u_stride,
+                            dst_v, dst_v_stride,
+                            0, 0,
+                            src_coded_size.width(),
+                            src_coded_size.height(),
+                            dst_frame->coded_size().width(),
+                            dst_frame->coded_size().height(),
+                            libyuv::kRotate0,
+                            src_pixelformat)) {
     LOG(ERROR) << "ConvertToI420 failed. Source format: " << src_pixelformat;
     return false;
   }

@@ -177,8 +177,7 @@ void JpegClient::VideoFrameReady(int32_t bitstream_buffer_id) {
     SetState(CS_DECODE_PASS);
   } else {
     LOG(ERROR) << "The mean absolute difference between software and hardware "
-                  "decode is "
-               << difference;
+               << "decode is " << difference;
     SetState(CS_ERROR);
   }
 }
@@ -255,10 +254,15 @@ void JpegClient::StartDecode(int32_t bitstream_buffer_id) {
                                           image_file->data_str.size());
   scoped_refptr<media::VideoFrame> out_frame_ =
       media::VideoFrame::WrapExternalSharedMemory(
-          media::PIXEL_FORMAT_I420, image_file->visible_size,
-          gfx::Rect(image_file->visible_size), image_file->visible_size,
-          static_cast<uint8_t*>(hw_out_shm_->memory()), image_file->output_size,
-          hw_out_shm_->handle(), 0, base::TimeDelta());
+          media::PIXEL_FORMAT_I420,
+          image_file->visible_size,
+          gfx::Rect(image_file->visible_size),
+          image_file->visible_size,
+          static_cast<uint8_t*>(hw_out_shm_->memory()),
+          image_file->output_size,
+          hw_out_shm_->handle(),
+          0,
+          base::TimeDelta());
   LOG_ASSERT(out_frame_.get());
   decoder_->Decode(bitstream_buffer, out_frame_);
 }
@@ -282,11 +286,21 @@ bool JpegClient::GetSoftwareDecodeResult(int32_t bitstream_buffer_id) {
   int uv_plane_stride = yplane_stride / 2;
 
   if (libyuv::ConvertToI420(
-          static_cast<uint8_t*>(in_shm_->memory()), image_file->data_str.size(),
-          yplane, yplane_stride, uplane, uv_plane_stride, vplane,
-          uv_plane_stride, 0, 0, image_file->visible_size.width(),
-          image_file->visible_size.height(), image_file->visible_size.width(),
-          image_file->visible_size.height(), libyuv::kRotate0,
+          static_cast<uint8_t*>(in_shm_->memory()),
+          image_file->data_str.size(),
+          yplane,
+          yplane_stride,
+          uplane,
+          uv_plane_stride,
+          vplane,
+          uv_plane_stride,
+          0,
+          0,
+          image_file->visible_size.width(),
+          image_file->visible_size.height(),
+          image_file->visible_size.width(),
+          image_file->visible_size.height(),
+          libyuv::kRotate0,
           libyuv::FOURCC_MJPG) != 0) {
     LOG(ERROR) << "Software decode " << image_file->filename << " failed.";
     return false;

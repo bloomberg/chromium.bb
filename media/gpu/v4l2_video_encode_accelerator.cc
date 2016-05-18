@@ -132,8 +132,7 @@ bool V4L2VideoEncodeAccelerator::Initialize(
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYCAP, &caps);
   if ((caps.capabilities & kCapsRequired) != kCapsRequired) {
     LOG(ERROR) << "Initialize(): ioctl() failed: VIDIOC_QUERYCAP: "
-                  "caps check failed: 0x"
-               << std::hex << caps.capabilities;
+               << "caps check failed: 0x" << std::hex << caps.capabilities;
     return false;
   }
 
@@ -514,12 +513,15 @@ void V4L2VideoEncodeAccelerator::ServiceDeviceTask() {
       FROM_HERE, base::Bind(&V4L2VideoEncodeAccelerator::DevicePollTask,
                             base::Unretained(this), poll_device));
 
-  DVLOG(2) << __func__ << ": buffer counts: ENC[" << encoder_input_queue_.size()
-           << "] => DEVICE[" << free_input_buffers_.size() << "+"
-           << input_buffer_queued_count_ << "/" << input_buffer_map_.size()
-           << "->" << free_output_buffers_.size() << "+"
-           << output_buffer_queued_count_ << "/" << output_buffer_map_.size()
-           << "] => OUT[" << encoder_output_queue_.size() << "]";
+  DVLOG(2) << __func__ << ": buffer counts: ENC["
+           << encoder_input_queue_.size() << "] => DEVICE["
+           << free_input_buffers_.size() << "+"
+           << input_buffer_queued_count_ << "/"
+           << input_buffer_map_.size() << "->"
+           << free_output_buffers_.size() << "+"
+           << output_buffer_queued_count_ << "/"
+           << output_buffer_map_.size() << "] => OUT["
+           << encoder_output_queue_.size() << "]";
 }
 
 void V4L2VideoEncodeAccelerator::Enqueue() {
@@ -658,8 +660,8 @@ void V4L2VideoEncodeAccelerator::Dequeue() {
     }
 
     DVLOG(3) << "Dequeue(): returning "
-                "bitstream_buffer_id="
-             << output_record.buffer_ref->id << ", size=" << output_size
+             << "bitstream_buffer_id=" << output_record.buffer_ref->id
+             << ", size=" << output_size
              << ", key_frame=" << key_frame;
     child_task_runner_->PostTask(
         FROM_HERE,
@@ -1197,9 +1199,11 @@ bool V4L2VideoEncodeAccelerator::CreateOutputBuffers() {
     buffer.m.planes = planes;
     buffer.length = arraysize(planes);
     IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYBUF, &buffer);
-    void* address =
-        device_->Mmap(NULL, buffer.m.planes[0].length, PROT_READ | PROT_WRITE,
-                      MAP_SHARED, buffer.m.planes[0].m.mem_offset);
+    void* address = device_->Mmap(NULL,
+                                  buffer.m.planes[0].length,
+                                  PROT_READ | PROT_WRITE,
+                                  MAP_SHARED,
+                                  buffer.m.planes[0].m.mem_offset);
     if (address == MAP_FAILED) {
       PLOG(ERROR) << "CreateOutputBuffers(): mmap() failed";
       return false;

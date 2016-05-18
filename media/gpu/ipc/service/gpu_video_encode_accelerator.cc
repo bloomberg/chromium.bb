@@ -79,8 +79,7 @@ bool GpuVideoEncodeAccelerator::Initialize(
     media::VideoCodecProfile output_profile,
     uint32_t initial_bitrate) {
   DVLOG(2) << "GpuVideoEncodeAccelerator::Initialize(): "
-              "input_format="
-           << input_format
+           << "input_format=" << input_format
            << ", input_visible_size=" << input_visible_size.ToString()
            << ", output_profile=" << output_profile
            << ", initial_bitrate=" << initial_bitrate;
@@ -96,8 +95,8 @@ bool GpuVideoEncodeAccelerator::Initialize(
       input_visible_size.height() > media::limits::kMaxDimension ||
       input_visible_size.GetArea() > media::limits::kMaxCanvas) {
     DLOG(ERROR) << "GpuVideoEncodeAccelerator::Initialize(): "
-                   "input_visible_size "
-                << input_visible_size.ToString() << " too large";
+                << "input_visible_size " << input_visible_size.ToString()
+                << " too large";
     return false;
   }
 
@@ -270,8 +269,7 @@ void GpuVideoEncodeAccelerator::OnEncode(
 
   if (params.frame_id < 0) {
     DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnEncode(): invalid "
-                   "frame_id="
-                << params.frame_id;
+                << "frame_id=" << params.frame_id;
     NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
@@ -318,8 +316,9 @@ void GpuVideoEncodeAccelerator::OnEncode(
 
 void GpuVideoEncodeAccelerator::OnEncode2(
     const AcceleratedVideoEncoderMsg_Encode_Params2& params) {
-  DVLOG(3) << "GpuVideoEncodeAccelerator::OnEncode2: frame_id = "
-           << params.frame_id << ", size=" << params.size.ToString()
+  DVLOG(3) << "GpuVideoEncodeAccelerator::OnEncode2: "
+           << "frame_id = " << params.frame_id
+           << ", size=" << params.size.ToString()
            << ", force_keyframe=" << params.force_keyframe
            << ", handle type=" << params.gpu_memory_buffer_handles[0].type;
   // Encoding GpuMemoryBuffer backed frames is not supported.
@@ -331,21 +330,18 @@ void GpuVideoEncodeAccelerator::OnUseOutputBitstreamBuffer(
     base::SharedMemoryHandle buffer_handle,
     uint32_t buffer_size) {
   DVLOG(3) << "GpuVideoEncodeAccelerator::OnUseOutputBitstreamBuffer(): "
-              "buffer_id="
-           << buffer_id << ", buffer_size=" << buffer_size;
+           << "buffer_id=" << buffer_id << ", buffer_size=" << buffer_size;
   if (!encoder_)
     return;
   if (buffer_id < 0) {
     DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnUseOutputBitstreamBuffer(): "
-                   "invalid buffer_id="
-                << buffer_id;
+                << "invalid buffer_id=" << buffer_id;
     NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
   if (buffer_size < output_buffer_size_) {
     DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnUseOutputBitstreamBuffer(): "
-                   "buffer too small for buffer_id="
-                << buffer_id;
+                << "buffer too small for buffer_id=" << buffer_id;
     NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
@@ -362,8 +358,7 @@ void GpuVideoEncodeAccelerator::OnRequestEncodingParametersChange(
     uint32_t bitrate,
     uint32_t framerate) {
   DVLOG(2) << "GpuVideoEncodeAccelerator::OnRequestEncodingParametersChange(): "
-              "bitrate="
-           << bitrate << ", framerate=" << framerate;
+           << "bitrate=" << bitrate << ", framerate=" << framerate;
   if (!encoder_)
     return;
   encoder_->RequestEncodingParametersChange(bitrate, framerate);

@@ -1257,8 +1257,8 @@ static void AssertWaitForStateOrDeleted(
   if (state == expected_state)
     return;
   ASSERT_TRUE(client->decoder_deleted())
-      << "Decoder not deleted but Wait() returned " << state << ", instead of "
-      << expected_state;
+      << "Decoder not deleted but Wait() returned " << state
+      << ", instead of " << expected_state;
 }
 
 // We assert a minimal number of concurrent decoders we expect to succeed.
@@ -1318,13 +1318,23 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
       delay_after_frame_num = video_file->num_frames - kMaxFramesToDelayReuse;
     }
 
-    GLRenderingVDAClient* client = new GLRenderingVDAClient(
-        index, &rendering_helper_, note, video_file->data_str,
-        num_in_flight_decodes, num_play_throughs,
-        video_file->reset_after_frame_num, delete_decoder_state,
-        video_file->width, video_file->height, video_file->profile,
-        g_fake_decoder, suppress_rendering, delay_after_frame_num, 0,
-        render_as_thumbnails);
+    GLRenderingVDAClient* client =
+        new GLRenderingVDAClient(index,
+                                 &rendering_helper_,
+                                 note,
+                                 video_file->data_str,
+                                 num_in_flight_decodes,
+                                 num_play_throughs,
+                                 video_file->reset_after_frame_num,
+                                 delete_decoder_state,
+                                 video_file->width,
+                                 video_file->height,
+                                 video_file->profile,
+                                 g_fake_decoder,
+                                 suppress_rendering,
+                                 delay_after_frame_num,
+                                 0,
+                                 render_as_thumbnails);
 
     clients[index] = client;
     helper_params.window_sizes.push_back(
@@ -1430,10 +1440,13 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
     if (match == golden_md5s.end()) {
       // Convert raw RGB into PNG for export.
       std::vector<unsigned char> png;
-      gfx::PNGCodec::Encode(&rgb[0], gfx::PNGCodec::FORMAT_RGB,
+      gfx::PNGCodec::Encode(&rgb[0],
+                            gfx::PNGCodec::FORMAT_RGB,
                             kThumbnailsPageSize,
-                            kThumbnailsPageSize.width() * 3, true,
-                            std::vector<gfx::PNGCodec::Comment>(), &png);
+                            kThumbnailsPageSize.width() * 3,
+                            true,
+                            std::vector<gfx::PNGCodec::Comment>(),
+                            &png);
 
       LOG(ERROR) << "Unknown thumbnails MD5: " << md5_string;
 
@@ -1596,13 +1609,23 @@ TEST_F(VideoDecodeAcceleratorTest, TestDecodeTimeMedian) {
 
   ClientStateNotification<ClientState>* note =
       new ClientStateNotification<ClientState>();
-  GLRenderingVDAClient* client = new GLRenderingVDAClient(
-      0, &rendering_helper_, note, test_video_files_[0]->data_str, 1, 1,
-      test_video_files_[0]->reset_after_frame_num, CS_RESET,
-      test_video_files_[0]->width, test_video_files_[0]->height,
-      test_video_files_[0]->profile, g_fake_decoder, true,
-      std::numeric_limits<int>::max(), kWebRtcDecodeCallsPerSecond,
-      false /* render_as_thumbnail */);
+  GLRenderingVDAClient* client =
+    new GLRenderingVDAClient(0,
+                             &rendering_helper_,
+                             note,
+                             test_video_files_[0]->data_str,
+                             1,
+                             1,
+                             test_video_files_[0]->reset_after_frame_num,
+                             CS_RESET,
+                             test_video_files_[0]->width,
+                             test_video_files_[0]->height,
+                             test_video_files_[0]->profile,
+                             g_fake_decoder,
+                             true,
+                             std::numeric_limits<int>::max(),
+                             kWebRtcDecodeCallsPerSecond,
+                             false /* render_as_thumbnail */);
   helper_params.window_sizes.push_back(
       gfx::Size(test_video_files_[0]->width, test_video_files_[0]->height));
   InitializeRenderingHelper(helper_params);

@@ -258,8 +258,7 @@ bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYCAP, &caps);
   if ((caps.capabilities & kCapsRequired) != kCapsRequired) {
     LOG(ERROR) << "Initialize(): ioctl() failed: VIDIOC_QUERYCAP"
-                  ", caps check failed: 0x"
-               << std::hex << caps.capabilities;
+               << ", caps check failed: 0x" << std::hex << caps.capabilities;
     return false;
   }
 
@@ -326,8 +325,8 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffers(
 
   if (buffers.size() < req_buffer_count) {
     LOG(ERROR) << "AssignPictureBuffers(): Failed to provide requested picture"
-                  " buffers. (Got "
-               << buffers.size() << ", requested " << req_buffer_count << ")";
+               << " buffers. (Got " << buffers.size()
+               << ", requested " << req_buffer_count << ")";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
@@ -1011,13 +1010,16 @@ void V4L2VideoDecodeAccelerator::ServiceDeviceTask(bool event_pending) {
                             base::Unretained(this), poll_device));
 
   DVLOG(1) << "ServiceDeviceTask(): buffer counts: DEC["
-           << decoder_input_queue_.size() << "->" << input_ready_queue_.size()
-           << "] => DEVICE[" << free_input_buffers_.size() << "+"
-           << input_buffer_queued_count_ << "/" << input_buffer_map_.size()
-           << "->" << free_output_buffers_.size() << "+"
-           << output_buffer_queued_count_ << "/" << output_buffer_map_.size()
-           << "] => PROCESSOR[" << image_processor_bitstream_buffer_ids_.size()
-           << "] => CLIENT[" << decoder_frames_at_client_ << "]";
+           << decoder_input_queue_.size() << "->"
+           << input_ready_queue_.size() << "] => DEVICE["
+           << free_input_buffers_.size() << "+"
+           << input_buffer_queued_count_ << "/"
+           << input_buffer_map_.size() << "->"
+           << free_output_buffers_.size() << "+"
+           << output_buffer_queued_count_ << "/"
+           << output_buffer_map_.size() << "] => PROCESSOR["
+           << image_processor_bitstream_buffer_ids_.size() << "] => CLIENT["
+           << decoder_frames_at_client_ << "]";
 
   ScheduleDecodeBufferTaskIfNeeded();
   if (resolution_change_pending)
@@ -1869,9 +1871,11 @@ bool V4L2VideoDecodeAccelerator::CreateInputBuffers() {
     buffer.m.planes = planes;
     buffer.length = 1;
     IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYBUF, &buffer);
-    void* address =
-        device_->Mmap(NULL, buffer.m.planes[0].length, PROT_READ | PROT_WRITE,
-                      MAP_SHARED, buffer.m.planes[0].m.mem_offset);
+    void* address = device_->Mmap(NULL,
+                                  buffer.m.planes[0].length,
+                                  PROT_READ | PROT_WRITE,
+                                  MAP_SHARED,
+                                  buffer.m.planes[0].m.mem_offset);
     if (address == MAP_FAILED) {
       PLOG(ERROR) << "CreateInputBuffers(): mmap() failed";
       return false;

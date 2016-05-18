@@ -844,9 +844,12 @@ bool VaapiWrapper::PutSurfaceIntoPixmap(VASurfaceID va_surface_id,
   VA_SUCCESS_OR_RETURN(va_res, "Failed syncing surface", false);
 
   // Put the data into an X Pixmap.
-  va_res = vaPutSurface(va_display_, va_surface_id, x_pixmap, 0, 0,
-                        dest_size.width(), dest_size.height(), 0, 0,
-                        dest_size.width(), dest_size.height(), NULL, 0, 0);
+  va_res = vaPutSurface(va_display_,
+                        va_surface_id,
+                        x_pixmap,
+                        0, 0, dest_size.width(), dest_size.height(),
+                        0, 0, dest_size.width(), dest_size.height(),
+                        NULL, 0, 0);
   VA_SUCCESS_OR_RETURN(va_res, "Failed putting surface to pixmap", false);
   return true;
 }

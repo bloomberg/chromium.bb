@@ -643,8 +643,8 @@ bool H264Decoder::ModifyReferencePicList(
       default:
         // May be recoverable.
         DVLOG(1) << "Invalid modification_of_pic_nums_idc="
-                 << list_mod->modification_of_pic_nums_idc << " in position "
-                 << i;
+                 << list_mod->modification_of_pic_nums_idc
+                 << " in position " << i;
         break;
     }
 
@@ -669,8 +669,8 @@ void H264Decoder::OutputPic(scoped_refptr<H264Picture> pic) {
   }
 
   DVLOG_IF(1, pic->pic_order_cnt < last_output_poc_)
-      << "Outputting out of order, likely a broken stream: " << last_output_poc_
-      << " -> " << pic->pic_order_cnt;
+      << "Outputting out of order, likely a broken stream: "
+      << last_output_poc_ << " -> " << pic->pic_order_cnt;
   last_output_poc_ = pic->pic_order_cnt;
 
   DVLOG(4) << "Posting output task for POC: " << pic->pic_order_cnt;
@@ -1319,7 +1319,7 @@ H264Decoder::DecodeResult H264Decoder::Decode() {
         // We can't resume from a non-IDR slice.
         if (state_ != kDecoding)
           break;
-      // else fallthrough
+        // else fallthrough
       case media::H264NALU::kIDRSlice: {
         // TODO(posciak): the IDR may require an SPS that we don't have
         // available. For now we'd fail if that happens, but ideally we'd like
