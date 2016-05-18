@@ -210,6 +210,18 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
     DISALLOW_COPY_AND_ASSIGN(CodecConfig);
   };
 
+  // Callback that is called when the SurfaceView becomes available, if it's
+  // not during Initialize.  |success| is true if it is now available, false
+  // if initialization should stop.
+  void OnSurfaceAvailable(bool success);
+
+  // Finish initialization of the strategy.  This is to be called when the
+  // SurfaceView in |surface_id_|, if any, is no longer busy.  It will return
+  // false on failure, and true if initialization was successful.  This includes
+  // synchronous and asynchronous init; the AVDA might not yet have a codec on
+  // success, but async init will at least be in progress.
+  bool InitializeStrategy();
+
   // A part of destruction process that is sometimes postponed after the drain.
   void ActualDestroy();
 
@@ -263,7 +275,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   void DecodeBuffer(const media::BitstreamBuffer& bitstream_buffer);
 
   // Called during Initialize() for encrypted streams to set up the CDM.
-  void InitializeCdm(int cdm_id);
+  void InitializeCdm();
 
   // Called after the CDM obtains a MediaCrypto object.
   void OnMediaCryptoReady(
@@ -345,9 +357,6 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // Callback to get the GLES2Decoder instance.
   GetGLES2DecoderCallback get_gles2_decoder_cb_;
 
-  // Whether the stream is encrypted.
-  bool is_encrypted_;
-
   // The current state of this class. For now, this is used only for setting
   // error state.
   State state_;
@@ -425,7 +434,8 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // called NotifyInitializationComplete.
   bool deferred_initialization_pending_;
 
-  int surface_id_;
+  // Copy of the VDA::Config we were given.
+  Config config_;
 
   OnDestroyingSurfaceCallback on_destroying_surface_cb_;
 

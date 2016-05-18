@@ -249,6 +249,64 @@ class AVDATimerManager {
     return construction_thread_.task_runner();
   }
 
+  // |avda| would like to use |surface_id|.  If it is not busy, then mark it
+  // as busy and return true.  If it is busy, then replace any existing waiter,
+  // make |avda| the current waiter, and return false.  Any existing waiter
+  // is assumed to be on the way out, so we fail its allocation request.
+  bool AllocateSurface(int surface_id, AndroidVideoDecodeAccelerator* avda) {
+    // Nobody has to wait for no surface.
+    if (surface_id == AndroidVideoDecodeAccelerator::Config::kNoSurfaceID)
+      return true;
+
+    auto iter = surface_waiter_map_.find(surface_id);
+    if (iter == surface_waiter_map_.end()) {
+      // SurfaceView isn't allocated.  Succeed.
+      surface_waiter_map_[surface_id].owner = avda;
+      return true;
+    }
+
+    // SurfaceView is already allocated.
+    if (iter->second.waiter) {
+      // Some other AVDA is waiting.  |avda| will replace it, so notify it
+      // that it will fail.
+      iter->second.waiter->OnSurfaceAvailable(false);
+      iter->second.waiter = nullptr;
+    }
+
+    // |avda| is now waiting.
+    iter->second.waiter = avda;
+    return false;
+  }
+
+  // Clear any waiting request for |surface_id| by |avda|.  It is okay if
+  // |waiter| is not waiting and/or isn't the owner of |surface_id|.
+  void DeallocateSurface(int surface_id, AndroidVideoDecodeAccelerator* avda) {
+    SurfaceWaiterMap::iterator iter = surface_waiter_map_.find(surface_id);
+    if (iter == surface_waiter_map_.end())
+      return;
+
+    // If |avda| was waiting, then remove it without OnSurfaceAvailable.
+    if (iter->second.waiter == avda)
+      iter->second.waiter = nullptr;
+
+    // If |avda| is the owner, then let the waiter have it.
+    if (iter->second.owner != avda)
+      return;
+
+    AndroidVideoDecodeAccelerator* waiter = iter->second.waiter;
+    if (!waiter) {
+      // No waiter -- remove the record and return explicitly since |iter| is
+      // no longer valid.
+      surface_waiter_map_.erase(iter);
+      return;
+    }
+
+    // Promote |waiter| to be the owner.
+    iter->second.owner = waiter;
+    iter->second.waiter = nullptr;
+    waiter->OnSurfaceAvailable(true);
+  }
+
  private:
   friend struct base::DefaultLazyInstanceTraits<AVDATimerManager>;
 
@@ -280,6 +338,14 @@ class AVDATimerManager {
   // All AVDA instances that might like to use the construction thread.
   std::set<AndroidVideoDecodeAccelerator*> thread_avda_instances_;
 
+  struct OwnerRecord {
+    AndroidVideoDecodeAccelerator* owner = nullptr;
+    AndroidVideoDecodeAccelerator* waiter = nullptr;
+  };
+  // [surface id] = OwnerRecord for that surface.
+  using SurfaceWaiterMap = std::map<int, OwnerRecord>;
+  SurfaceWaiterMap surface_waiter_map_;
+
   // Since we can't delete while iterating when using a set, defer erasure until
   // after iteration complete.
   bool timer_running_ = false;
@@ -308,7 +374,6 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
     : client_(NULL),
       make_context_current_cb_(make_context_current_cb),
       get_gles2_decoder_cb_(get_gles2_decoder_cb),
-      is_encrypted_(false),
       state_(NO_ERROR),
       picturebuffers_requested_(false),
       drain_type_(DRAIN_TYPE_NONE),
@@ -318,7 +383,6 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       error_sequence_token_(0),
       defer_errors_(false),
       deferred_initialization_pending_(false),
-      surface_id_(media::VideoDecodeAccelerator::Config::kNoSurfaceID),
       weak_this_factory_(this) {}
 
 AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {
@@ -354,17 +418,17 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
 
   DCHECK(client);
   client_ = client;
+  config_ = config;
   codec_config_ = new CodecConfig();
   codec_config_->codec_ = VideoCodecProfileToVideoCodec(config.profile);
   codec_config_->initial_expected_coded_size_ =
       config.initial_expected_coded_size;
-  is_encrypted_ = config.is_encrypted;
 
   // We signalled that we support deferred initialization, so see if the client
   // does also.
   deferred_initialization_pending_ = config.is_deferred_initialization_allowed;
 
-  if (is_encrypted_ && !deferred_initialization_pending_) {
+  if (config_.is_encrypted && !deferred_initialization_pending_) {
     DLOG(ERROR) << "Deferred initialization must be used for encrypted streams";
     return false;
   }
@@ -380,7 +444,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
   // or if the stream is encrypted.
   if ((codec_config_->codec_ == media::kCodecVP8 ||
        codec_config_->codec_ == media::kCodecVP9) &&
-      !is_encrypted_ &&
+      !config_.is_encrypted &&
       media::VideoCodecBridge::IsKnownUnaccelerated(
           codec_config_->codec_, media::MEDIA_CODEC_DECODER)) {
     DVLOG(1) << "Initialization failed: "
@@ -414,8 +478,27 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
-  surface_id_ = config.surface_id;
-  codec_config_->surface_ = strategy_->Initialize(surface_id_);
+  if (g_avda_timer.Pointer()->AllocateSurface(config_.surface_id, this)) {
+    // We have succesfully owned the surface, so finish initialization now.
+    return InitializeStrategy();
+  }
+
+  // We have to wait for some other AVDA instance to free up the surface.
+  // OnSurfaceAvailable will be called when it's available.
+  return true;
+}
+
+void AndroidVideoDecodeAccelerator::OnSurfaceAvailable(bool success) {
+  DCHECK(deferred_initialization_pending_);
+
+  if (!success || !InitializeStrategy()) {
+    NotifyInitializationComplete(false);
+    deferred_initialization_pending_ = false;
+  }
+}
+
+bool AndroidVideoDecodeAccelerator::InitializeStrategy() {
+  codec_config_->surface_ = strategy_->Initialize(config_.surface_id);
   if (codec_config_->surface_.IsEmpty()) {
     LOG(ERROR) << "Failed to initialize the backing strategy. The returned "
                   "Java surface is empty.";
@@ -444,8 +527,8 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
   }
 
   // If we are encrypted, then we aren't able to create the codec yet.
-  if (is_encrypted_) {
-    InitializeCdm(config.cdm_id);
+  if (config_.is_encrypted) {
+    InitializeCdm();
     return true;
   }
 
@@ -455,7 +538,11 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
   }
 
   // If the client doesn't support deferred initialization (WebRTC), then we
-  // should complete it now and return a meaningful result.
+  // should complete it now and return a meaningful result.  Note that it would
+  // be nice if we didn't have to worry about starting codec configuration at
+  // all (::Initialize or the wrapper can do it), but then they have to remember
+  // not to start codec config if we have to wait for the cdm.  It's somewhat
+  // clearer for us to handle both cases.
   return ConfigureMediaCodecSynchronously();
 }
 
@@ -1204,6 +1291,10 @@ void AndroidVideoDecodeAccelerator::ActualDestroy() {
         on_destroying_surface_cb_);
   }
 
+  // We no longer care about |surface_id|, in case we did before.  It's okay
+  // if we have no surface and/or weren't the owner or a waiter.
+  g_avda_timer.Pointer()->DeallocateSurface(config_.surface_id, this);
+
   // Note that async codec construction might still be in progress.  In that
   // case, the codec will be deleted when it completes once we invalidate all
   // our weak refs.
@@ -1262,7 +1353,7 @@ void AndroidVideoDecodeAccelerator::OnDestroyingSurface(int surface_id) {
   TRACE_EVENT0("media", "AVDA::OnDestroyingSurface");
   DVLOG(1) << __FUNCTION__ << " surface_id: " << surface_id;
 
-  if (surface_id != surface_id_)
+  if (surface_id != config_.surface_id)
     return;
 
   // If we're currently asynchronously configuring a codec, it will be destroyed
@@ -1296,15 +1387,16 @@ void AndroidVideoDecodeAccelerator::PostError(
   state_ = ERROR;
 }
 
-void AndroidVideoDecodeAccelerator::InitializeCdm(int cdm_id) {
-  DVLOG(2) << __FUNCTION__ << ": " << cdm_id;
+void AndroidVideoDecodeAccelerator::InitializeCdm() {
+  DVLOG(2) << __FUNCTION__ << ": " << config_.cdm_id;
 
 #if !defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
   NOTIMPLEMENTED();
   NotifyInitializationComplete(false);
 #else
   // Store the CDM to hold a reference to it.
-  cdm_for_reference_holding_only_ = media::MojoCdmService::LegacyGetCdm(cdm_id);
+  cdm_for_reference_holding_only_ =
+      media::MojoCdmService::LegacyGetCdm(config_.cdm_id);
   DCHECK(cdm_for_reference_holding_only_);
 
   // On Android platform the CdmContext must be a MediaDrmBridgeCdmContext.
