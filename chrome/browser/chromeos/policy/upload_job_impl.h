@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/policy/upload_job.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_fetcher.h"
@@ -49,12 +50,15 @@ class UploadJobImpl : public UploadJob,
     std::string GenerateBoundary() const override;  // MimeBoundaryGenerator
   };
 
+  // |task_runner| must belong to the same thread from which the constructor and
+  // all the public methods are called.
   UploadJobImpl(const GURL& upload_url,
                 const std::string& account_id,
                 OAuth2TokenService* token_service,
                 scoped_refptr<net::URLRequestContextGetter> url_context_getter,
                 Delegate* delegate,
-                std::unique_ptr<MimeBoundaryGenerator> boundary_generator);
+                std::unique_ptr<MimeBoundaryGenerator> boundary_generator,
+                const scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~UploadJobImpl() override;
 
   // UploadJob:
@@ -64,8 +68,20 @@ class UploadJobImpl : public UploadJob,
                       std::unique_ptr<std::string> data) override;
   void Start() override;
 
+  // Sets the retry delay to a shorter time to prevent browser tests from
+  // timing out.
+  static void SetRetryDelayForTesting(long retryDelayMs);
+
  private:
   // Indicates the current state of the UploadJobImpl.
+  // State transitions for successful upload:
+  //   IDLE -> ACQUIRING_TOKEN -> PREPARING_CONTENT -> UPLOADING -> SUCCESS
+  // If error happens, state goes back to ACQUIRING_TOKEN.
+  // State transitions when error occurs once:
+  //   IDLE -> ACQUIRING_TOKEN -> PREPARING_CONTENT -> UPLOADING ->
+  //     -> ACQUIRING_TOKEN -> PREPARING_CONTENT -> UPLOADING -> SUCCESS
+  // State transitions when tried unsuccessfully kMaxRetries times:
+  //   ... -> PREPARING_CONTENT -> UPLOADING -> ERROR
   enum State {
     IDLE,               // Start() has not been called.
     ACQUIRING_TOKEN,    // Trying to acquire the access token.
@@ -85,11 +101,13 @@ class UploadJobImpl : public UploadJob,
   // net::URLFetcherDelegate:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
+  void HandleError(ErrorCode errorCode);
+
   // Requests an access token for the upload scope.
   void RequestAccessToken();
 
   // Dispatches POST request to URLFetcher.
-  void StartUpload(const std::string& access_token);
+  void StartUpload();
 
   // Constructs the body of the POST request by concatenating the
   // |data_segments_|, separated by appropriate content-disposition headers and
@@ -146,6 +164,15 @@ class UploadJobImpl : public UploadJob,
 
   // The data chunks to be uploaded.
   ScopedVector<DataSegment> data_segments_;
+
+  // TaskRunner used for scheduling retry attempts.
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  base::ThreadChecker thread_checker_;
+
+  // Should remain the last member so it will be destroyed first and
+  // invalidate all weak pointers.
+  base::WeakPtrFactory<UploadJobImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(UploadJobImpl);
 };

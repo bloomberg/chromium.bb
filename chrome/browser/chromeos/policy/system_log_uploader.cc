@@ -64,7 +64,8 @@ std::unique_ptr<policy::SystemLogUploader::SystemLogs> ReadFiles() {
 // create an upload job and load system logs from the disk.
 class SystemLogDelegate : public policy::SystemLogUploader::Delegate {
  public:
-  SystemLogDelegate();
+  explicit SystemLogDelegate(
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
   ~SystemLogDelegate() override;
 
   // SystemLogUploader::Delegate:
@@ -75,10 +76,15 @@ class SystemLogDelegate : public policy::SystemLogUploader::Delegate {
       policy::UploadJob::Delegate* delegate) override;
 
  private:
+  // TaskRunner used for scheduling upload the upload task.
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
   DISALLOW_COPY_AND_ASSIGN(SystemLogDelegate);
 };
 
-SystemLogDelegate::SystemLogDelegate() {}
+SystemLogDelegate::SystemLogDelegate(
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : task_runner_(task_runner) {}
 
 SystemLogDelegate::~SystemLogDelegate() {}
 
@@ -104,8 +110,8 @@ std::unique_ptr<policy::UploadJob> SystemLogDelegate::CreateUploadJob(
   return std::unique_ptr<policy::UploadJob>(new policy::UploadJobImpl(
       upload_url, robot_account_id, device_oauth2_token_service,
       system_request_context, delegate,
-      base::WrapUnique(
-          new policy::UploadJobImpl::RandomMimeBoundaryGenerator)));
+      base::WrapUnique(new policy::UploadJobImpl::RandomMimeBoundaryGenerator),
+      task_runner_));
 }
 
 // Returns the system log upload frequency.
@@ -165,7 +171,7 @@ SystemLogUploader::SystemLogUploader(
       upload_enabled_(false),
       weak_factory_(this) {
   if (!syslog_delegate_)
-    syslog_delegate_.reset(new SystemLogDelegate());
+    syslog_delegate_.reset(new SystemLogDelegate(task_runner));
   DCHECK(syslog_delegate_);
 
   // Watch for policy changes.

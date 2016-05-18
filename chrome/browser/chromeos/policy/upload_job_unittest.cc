@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/upload_job_impl.h"
@@ -184,6 +183,8 @@ class UploadJobTestBase : public testing::Test, public UploadJob::Delegate {
         base::ThreadTaskRunnerHandle::Get());
     oauth2_service_.AddAccount("robot@gmail.com");
     ASSERT_TRUE(test_server_.Start());
+    // Set retry delay to prevent timeouts
+    policy::UploadJobImpl::SetRetryDelayForTesting(0);
   }
 
   // testing::Test:
@@ -195,10 +196,10 @@ class UploadJobTestBase : public testing::Test, public UploadJob::Delegate {
   std::unique_ptr<UploadJob> PrepareUploadJob(
       std::unique_ptr<UploadJobImpl::MimeBoundaryGenerator>
           mime_boundary_generator) {
-    std::unique_ptr<UploadJob> upload_job(
-        new UploadJobImpl(GetServerURL(), kRobotAccountId, &oauth2_service_,
-                          request_context_getter_.get(), this,
-                          std::move(mime_boundary_generator)));
+    std::unique_ptr<UploadJob> upload_job(new UploadJobImpl(
+        GetServerURL(), kRobotAccountId, &oauth2_service_,
+        request_context_getter_.get(), this, std::move(mime_boundary_generator),
+        base::ThreadTaskRunnerHandle::Get()));
 
     std::map<std::string, std::string> header_entries;
     header_entries.insert(std::make_pair(kCustomField1, "CUSTOM1"));
@@ -230,10 +231,18 @@ class UploadFlowTest : public UploadJobTestBase {
     UploadJobTestBase::SetUp();
     test_server_.RegisterRequestHandler(
         base::Bind(&UploadFlowTest::HandlePostRequest, base::Unretained(this)));
+    upload_attempt_count_ = 0;
+  }
+
+  // Sets the response code which will be returned when no other problems occur.
+  // Default is |net::HTTP_OK|
+  void SetResponseDefaultStatusCode(net::HttpStatusCode code) {
+    default_status_code_ = code;
   }
 
   std::unique_ptr<net::test_server::HttpResponse> HandlePostRequest(
       const net::test_server::HttpRequest& request) {
+    upload_attempt_count_++;
     EXPECT_TRUE(request.headers.find("Authorization") != request.headers.end());
     const std::string authorization_header =
         request.headers.at("Authorization");
@@ -247,10 +256,14 @@ class UploadFlowTest : public UploadJobTestBase {
 
     const std::string token = authorization_header.substr(pos + 1);
     response->set_code(oauth2_service_.IsTokenValid(token)
-                           ? net::HTTP_OK
+                           ? default_status_code_
                            : net::HTTP_UNAUTHORIZED);
     return std::move(response);
   }
+
+ protected:
+  int upload_attempt_count_;
+  net::HttpStatusCode default_status_code_ = net::HTTP_OK;
 };
 
 TEST_F(UploadFlowTest, SuccessfulUpload) {
@@ -260,6 +273,7 @@ TEST_F(UploadFlowTest, SuccessfulUpload) {
       base::WrapUnique(new UploadJobImpl::RandomMimeBoundaryGenerator));
   upload_job->Start();
   run_loop_.Run();
+  ASSERT_EQ(1, upload_attempt_count_);
 }
 
 TEST_F(UploadFlowTest, TokenExpired) {
@@ -270,9 +284,12 @@ TEST_F(UploadFlowTest, TokenExpired) {
       base::WrapUnique(new UploadJobImpl::RandomMimeBoundaryGenerator));
   upload_job->Start();
   run_loop_.Run();
+  ASSERT_EQ(2, upload_attempt_count_);
 }
 
 TEST_F(UploadFlowTest, TokenInvalid) {
+  oauth2_service_.AddTokenToQueue(kTokenInvalid);
+  oauth2_service_.AddTokenToQueue(kTokenInvalid);
   oauth2_service_.AddTokenToQueue(kTokenInvalid);
   oauth2_service_.AddTokenToQueue(kTokenInvalid);
   SetExpectedError(std::unique_ptr<UploadJob::ErrorCode>(
@@ -282,6 +299,20 @@ TEST_F(UploadFlowTest, TokenInvalid) {
       base::WrapUnique(new UploadJobImpl::RandomMimeBoundaryGenerator));
   upload_job->Start();
   run_loop_.Run();
+  ASSERT_EQ(4, upload_attempt_count_);
+}
+
+TEST_F(UploadFlowTest, TokenMultipleTries) {
+  oauth2_service_.SetTokenValid(kTokenValid);
+  oauth2_service_.AddTokenToQueue(kTokenInvalid);
+  oauth2_service_.AddTokenToQueue(kTokenInvalid);
+  oauth2_service_.AddTokenToQueue(kTokenValid);
+
+  std::unique_ptr<UploadJob> upload_job = PrepareUploadJob(
+      base::WrapUnique(new UploadJobImpl::RandomMimeBoundaryGenerator));
+  upload_job->Start();
+  run_loop_.Run();
+  ASSERT_EQ(3, upload_attempt_count_);
 }
 
 TEST_F(UploadFlowTest, TokenFetchFailure) {
@@ -292,6 +323,24 @@ TEST_F(UploadFlowTest, TokenFetchFailure) {
       base::WrapUnique(new UploadJobImpl::RandomMimeBoundaryGenerator));
   upload_job->Start();
   run_loop_.Run();
+  // Without a token we don't try to upload
+  ASSERT_EQ(0, upload_attempt_count_);
+}
+
+TEST_F(UploadFlowTest, InternalServerError) {
+  SetResponseDefaultStatusCode(net::HTTP_INTERNAL_SERVER_ERROR);
+  oauth2_service_.SetTokenValid(kTokenValid);
+  oauth2_service_.AddTokenToQueue(kTokenValid);
+
+  SetExpectedError(std::unique_ptr<UploadJob::ErrorCode>(
+      new UploadJob::ErrorCode(UploadJob::SERVER_ERROR)));
+
+  std::unique_ptr<UploadJob> upload_job = PrepareUploadJob(
+      base::WrapUnique(new UploadJobImpl::RandomMimeBoundaryGenerator));
+  upload_job->Start();
+  run_loop_.Run();
+  // kMaxAttempts
+  ASSERT_EQ(4, upload_attempt_count_);
 }
 
 class UploadRequestTest : public UploadJobTestBase {

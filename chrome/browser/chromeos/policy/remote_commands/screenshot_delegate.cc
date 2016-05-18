@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/policy/remote_commands/screenshot_delegate.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
@@ -59,7 +60,8 @@ std::unique_ptr<UploadJob> ScreenshotDelegate::CreateUploadJob(
   return std::unique_ptr<UploadJob>(new UploadJobImpl(
       upload_url, robot_account_id, device_oauth2_token_service,
       system_request_context, delegate,
-      base::WrapUnique(new UploadJobImpl::RandomMimeBoundaryGenerator)));
+      base::WrapUnique(new UploadJobImpl::RandomMimeBoundaryGenerator),
+      base::ThreadTaskRunnerHandle::Get()));
 }
 
 void ScreenshotDelegate::StoreScreenshot(
