@@ -16,6 +16,7 @@
         ],
         'files': [
           '../testing/test_env.py',
+          'public/interfaces/bindings/tests/data/validation/',
         ],
       },
     }],

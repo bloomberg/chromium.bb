@@ -165,6 +165,7 @@ void RunValidationTests(const std::string& prefix,
   std::vector<std::string> names =
       EnumerateSourceRootRelativeDirectory(GetPath("", ""));
   std::vector<std::string> tests = GetMatchingTests(names, prefix);
+  ASSERT_FALSE(tests.empty());
 
   for (size_t i = 0; i < tests.size(); ++i) {
     Message message;

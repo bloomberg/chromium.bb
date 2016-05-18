@@ -57,6 +57,10 @@ source_set("tests") {
     "//testing/gtest",
   ]
 
+  data = [
+    "//mojo/public/interfaces/bindings/tests/data/validation/",
+  ]
+
   if (is_ios) {
     assert_no_deps = [ "//third_party/WebKit/*" ]
   } else {
