@@ -93,6 +93,8 @@ class OfflinePageModel : public KeyedService,
       offline_pages::CheckPagesExistOfflineResult;
   using MultipleOfflinePageItemResult =
       offline_pages::MultipleOfflinePageItemResult;
+  using SingleOfflinePageItemResult =
+      offline_pages::SingleOfflinePageItemResult;
 
   //using DeletePageCallback = offline_pages::DeletePageCallback;
   using DeletePageResult = offline_pages::DeletePageResult;

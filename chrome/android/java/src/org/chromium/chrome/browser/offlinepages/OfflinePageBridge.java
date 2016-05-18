@@ -24,6 +24,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 /**
  * Access gate to C++ side offline pages functionalities.
  */
@@ -94,6 +96,16 @@ public class OfflinePageBridge {
     public interface MultipleOfflinePageItemCallback {
         @CalledByNative("MultipleOfflinePageItemCallback")
         void onResult(List<OfflinePageItem> items);
+    }
+
+    /**
+     * Callback that delivers information about one offline page entry.
+     *
+     * The returned item will be null if no items are found.
+     */
+    public interface SingleOfflinePageItemCallback {
+        @CalledByNative("SingleOfflinePageItemCallback")
+        void onResult(@Nullable OfflinePageItem item);
     }
 
     /**
@@ -335,44 +347,14 @@ public class OfflinePageBridge {
     }
 
     /**
-     * Gets the offline pages associated with the provided offline URL.
+     * Get the offline page associated with the provided offline URL.
      *
      * @param string URL pointing to the offline copy of the web page.
-     * @return An {@link OfflinePageItem} matching the offline URL or
-     * <code>null</code> if not found.
-     * found.
+     * @param SingleOfflinePageItemCallback callback to pass back the
+     * matching {@link OfflinePageItem} if found. Will pass back <code>null</code> if not.
      */
-    @VisibleForTesting
-    public void getPagesByOfflineUrl(
-            final String offlineUrl, final MultipleOfflinePageItemCallback callback) {
-        runWhenLoaded(new Runnable() {
-            @Override
-            public void run() {
-                List<OfflinePageItem> result = new ArrayList<>();
-
-                // TODO(http://crbug.com/589526) This native API returns only one item, but in the
-                // future will return a list.
-                OfflinePageItem item =
-                        nativeGetPageByOfflineUrl(mNativeOfflinePageBridge, offlineUrl);
-                if (item != null) {
-                    result.add(item);
-                }
-
-                callback.onResult(result);
-            }
-        });
-    }
-
-    /**
-     * Gets an offline page associated with a provided offline URL.
-     * This method is deprecated. Use OfflinePageBridge#getPagesByOnlineUrl.
-     *
-     * @param string URL pointing to the offline copy of the web page.
-     * @return An {@link OfflinePageItem} matching the offline URL or
-     * <code>null</code> if not found.
-     */
-    public OfflinePageItem getPageByOfflineUrl(String offlineUrl) {
-        return nativeGetPageByOfflineUrl(mNativeOfflinePageBridge, offlineUrl);
+    public void getPageByOfflineUrl(String offlineUrl, SingleOfflinePageItemCallback callback) {
+        nativeGetPageByOfflineUrl(mNativeOfflinePageBridge, offlineUrl, callback);
     }
 
     /**
@@ -620,8 +602,8 @@ public class OfflinePageBridge {
     native OfflinePageItem nativeGetPageByOfflineId(long nativeOfflinePageBridge, long offlineId);
     private native OfflinePageItem nativeGetBestPageForOnlineURL(
             long nativeOfflinePageBridge, String onlineURL);
-    private native OfflinePageItem nativeGetPageByOfflineUrl(
-            long nativeOfflinePageBridge, String offlineUrl);
+    private native void nativeGetPageByOfflineUrl(long nativeOfflinePageBridge, String offlineUrl,
+            SingleOfflinePageItemCallback callback);
     private native void nativeSavePage(long nativeOfflinePageBridge, SavePageCallback callback,
             WebContents webContents, String clientNamespace, String clientId);
     private native void nativeSavePageLater(

@@ -45,6 +45,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SingleOfflinePageItemCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
@@ -901,27 +902,34 @@ public class WebsiteSettingsPopup implements OnClickListener {
      *            information is retrieved for the visible entry.
      * @param contentPublisher The name of the publisher of the content.
      */
-    public static void show(Activity activity, Tab tab, String contentPublisher) {
-        WebContents webContents = tab.getWebContents();
-        String offlinePageOriginalUrl = null;
-        String offlinePageCreationDate = null;
-
-        if (tab.isOfflinePage()) {
-            OfflinePageBridge offlinePageBridge = OfflinePageBridge.getForProfile(tab.getProfile());
-            OfflinePageItem item =
-                    offlinePageBridge.getPageByOfflineUrl(webContents.getVisibleUrl());
-            if (item != null) {
-                // Get formatted creation date and original URL of the offline copy.
-                Date creationDate = new Date(item.getCreationTimeMs());
-                DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM);
-                offlinePageCreationDate = df.format(creationDate);
-                offlinePageOriginalUrl = OfflinePageUtils.stripSchemeFromOnlineUrl(
-                        tab.getOfflinePageOriginalUrl());
-            }
+    public static void show(final Activity activity, final Tab tab, final String contentPublisher) {
+        OfflinePageBridge offlinePageBridge = OfflinePageBridge.getForProfile(tab.getProfile());
+        if (offlinePageBridge == null) {
+            new WebsiteSettingsPopup(
+                    activity, tab.getProfile(), tab.getWebContents(), null, null, contentPublisher);
+            return;
         }
 
-        new WebsiteSettingsPopup(activity, tab.getProfile(), webContents, offlinePageOriginalUrl,
-                offlinePageCreationDate, contentPublisher);
+        SingleOfflinePageItemCallback callback = new SingleOfflinePageItemCallback() {
+            @Override
+            public void onResult(OfflinePageItem item) {
+                String offlinePageOriginalUrl = null;
+                String offlinePageCreationDate = null;
+
+                if (item != null) {
+                    // Get formatted creation date and original URL of the offline copy.
+                    Date creationDate = new Date(item.getCreationTimeMs());
+                    DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM);
+                    offlinePageCreationDate = df.format(creationDate);
+                    offlinePageOriginalUrl =
+                            OfflinePageUtils.stripSchemeFromOnlineUrl(item.getUrl());
+                }
+                new WebsiteSettingsPopup(activity, tab.getProfile(), tab.getWebContents(),
+                        offlinePageOriginalUrl, offlinePageCreationDate, contentPublisher);
+            }
+        };
+
+        offlinePageBridge.getPageByOfflineUrl(tab.getWebContents().getVisibleUrl(), callback);
     }
 
     private static native long nativeInit(WebsiteSettingsPopup popup, WebContents webContents);

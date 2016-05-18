@@ -54,6 +54,19 @@ void ToJavaOfflinePageList(JNIEnv* env,
   }
 }
 
+ScopedJavaLocalRef<jobject> ToJavaOfflinePageItem(
+    JNIEnv* env,
+    const OfflinePageItem& offline_page) {
+  return Java_OfflinePageBridge_createOfflinePageItem(
+      env, ConvertUTF8ToJavaString(env, offline_page.url.spec()).obj(),
+      offline_page.offline_id,
+      ConvertUTF8ToJavaString(env, offline_page.client_id.name_space).obj(),
+      ConvertUTF8ToJavaString(env, offline_page.client_id.id).obj(),
+      ConvertUTF8ToJavaString(env, offline_page.GetOfflineURL().spec()).obj(),
+      offline_page.file_size, offline_page.creation_time.ToJavaTime(),
+      offline_page.access_count, offline_page.last_access_time.ToJavaTime());
+}
+
 void CheckPagesExistOfflineCallback(
     const ScopedJavaGlobalRef<jobject>& j_callback_obj,
     const OfflinePageModel::CheckPagesExistOfflineResult& offline_pages) {
@@ -107,6 +120,17 @@ void DeletePageCallback(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
       env, j_callback_obj.obj(), static_cast<int>(result));
 }
 
+void SingleOfflinePageItemCallback(
+    const ScopedJavaGlobalRef<jobject>& j_callback_obj,
+    const OfflinePageModel::SingleOfflinePageItemResult& result) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_result;
+
+  if (result)
+    j_result = ToJavaOfflinePageItem(env, *result);
+  Java_SingleOfflinePageItemCallback_onResult(env, j_callback_obj.obj(),
+                                              j_result.obj());
+}
 
 }  // namespace
 
@@ -263,7 +287,7 @@ ScopedJavaLocalRef<jobject> OfflinePageBridge::GetPageByOfflineId(
       offline_page_model_->MaybeGetPageByOfflineId(offline_id);
   if (!offline_page)
     return ScopedJavaLocalRef<jobject>();
-  return CreateOfflinePageItem(env, *offline_page);
+  return ToJavaOfflinePageItem(env, *offline_page);
 }
 
 ScopedJavaLocalRef<jobject> OfflinePageBridge::GetBestPageForOnlineURL(
@@ -275,19 +299,22 @@ ScopedJavaLocalRef<jobject> OfflinePageBridge::GetBestPageForOnlineURL(
           GURL(ConvertJavaStringToUTF8(env, online_url)));
   if (!offline_page)
     return ScopedJavaLocalRef<jobject>();
-  return CreateOfflinePageItem(env, *offline_page);
+  return ToJavaOfflinePageItem(env, *offline_page);
 }
 
-ScopedJavaLocalRef<jobject> OfflinePageBridge::GetPageByOfflineUrl(
+void OfflinePageBridge::GetPageByOfflineUrl(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& j_offline_url) {
-  const OfflinePageItem* offline_page =
-      offline_page_model_->MaybeGetPageByOfflineURL(
-          GURL(ConvertJavaStringToUTF8(env, j_offline_url)));
-  if (!offline_page)
-    return ScopedJavaLocalRef<jobject>();
-  return CreateOfflinePageItem(env, *offline_page);
+    const JavaParamRef<jstring>& j_offline_url,
+    const JavaParamRef<jobject>& j_callback_obj) {
+  DCHECK(j_callback_obj);
+
+  ScopedJavaGlobalRef<jobject> j_callback_ref;
+  j_callback_ref.Reset(env, j_callback_obj);
+
+  offline_page_model_->GetPageByOfflineURL(
+      GURL(ConvertJavaStringToUTF8(env, j_offline_url)),
+      base::Bind(&SingleOfflinePageItemCallback, j_callback_ref));
 }
 
 void OfflinePageBridge::SavePage(
@@ -381,18 +408,6 @@ void OfflinePageBridge::NotifyIfDoneLoading() const {
   Java_OfflinePageBridge_offlinePageModelLoaded(env, java_ref_.obj());
 }
 
-ScopedJavaLocalRef<jobject> OfflinePageBridge::CreateOfflinePageItem(
-    JNIEnv* env,
-    const OfflinePageItem& offline_page) const {
-  return Java_OfflinePageBridge_createOfflinePageItem(
-      env, ConvertUTF8ToJavaString(env, offline_page.url.spec()).obj(),
-      offline_page.offline_id,
-      ConvertUTF8ToJavaString(env, offline_page.client_id.name_space).obj(),
-      ConvertUTF8ToJavaString(env, offline_page.client_id.id).obj(),
-      ConvertUTF8ToJavaString(env, offline_page.GetOfflineURL().spec()).obj(),
-      offline_page.file_size, offline_page.creation_time.ToJavaTime(),
-      offline_page.access_count, offline_page.last_access_time.ToJavaTime());
-}
 
 ScopedJavaLocalRef<jobject> OfflinePageBridge::CreateClientId(
     JNIEnv* env,
