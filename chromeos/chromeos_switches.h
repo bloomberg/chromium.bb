@@ -73,6 +73,7 @@ CHROMEOS_EXPORT extern const char kEnableRequestTabletSite[];
 CHROMEOS_EXPORT extern const char kEnableScreenshotTestingWithMode[];
 CHROMEOS_EXPORT extern const char kEnableTouchpadThreeFingerClick[];
 CHROMEOS_EXPORT extern const char kEnableVideoPlayerChromecastSupport[];
+CHROMEOS_EXPORT extern const char kEnterpriseDisableArc[];
 CHROMEOS_EXPORT extern const char kEnterpriseEnableForcedReEnrollment[];
 CHROMEOS_EXPORT extern const char kEnterpriseEnrollmentInitialModulus[];
 CHROMEOS_EXPORT extern const char kEnterpriseEnrollmentModulusLimit[];

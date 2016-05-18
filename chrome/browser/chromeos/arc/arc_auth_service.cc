@@ -73,6 +73,16 @@ const char kStateStopped[] = "STOPPED";
 const char kStateFetchingCode[] = "FETCHING_CODE";
 const char kStateActive[] = "ACTIVE";
 
+bool IsAccountManaged(Profile* profile) {
+  return policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile)
+      ->IsManaged();
+}
+
+bool IsArcDisabledForEnterprise() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kEnterpriseDisableArc);
+}
+
 }  // namespace
 
 ArcAuthService::ArcAuthService(ArcBridgeService* bridge_service)
@@ -242,13 +252,7 @@ void ArcAuthService::GetIsAccountManaged(
     const GetIsAccountManagedCallback& callback) {
   DCHECK(thread_checker.Get().CalledOnValidThread());
 
-  const user_manager::User* const primary_user =
-      user_manager::UserManager::Get()->GetPrimaryUser();
-  Profile* const profile =
-      chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
-  const policy::ProfilePolicyConnector* const profile_policy_connector =
-      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
-  callback.Run(profile_policy_connector->IsManaged());
+  callback.Run(IsAccountManaged(profile_));
 }
 
 void ArcAuthService::SetState(State state) {
@@ -272,6 +276,11 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
 
   if (!IsAllowedForProfile(profile))
     return;
+
+  if (IsArcDisabledForEnterprise() && IsAccountManaged(profile)) {
+    VLOG(2) << "Enterprise users are not supported in ARC.";
+    return;
+  }
 
   profile_ = profile;
   PrefServiceSyncableFromProfile(profile_)->AddSyncedPrefObserver(
@@ -605,8 +614,7 @@ void ArcAuthService::StartAndroidManagementClient() {
 
 void ArcAuthService::CheckAndroidManagement() {
   // Do not send requests for Chrome OS managed users.
-  if (policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile_)
-          ->IsManaged()) {
+  if (IsAccountManaged(profile_)) {
     StartArcIfSignedIn();
     return;
   }

@@ -181,6 +181,9 @@ const char kEnableKioskMode[] = "enable-kiosk-mode";
 // Enables request of tablet site (via user agent override).
 const char kEnableRequestTabletSite[] = "enable-request-tablet-site";
 
+// Disables ARC for managed accounts.
+const char kEnterpriseDisableArc[] = "enterprise-disable-arc";
+
 // Whether to enable forced enterprise re-enrollment.
 const char kEnterpriseEnableForcedReEnrollment[] =
     "enterprise-enable-forced-re-enrollment";
