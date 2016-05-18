@@ -44,14 +44,11 @@ namespace {
 
 #if !defined(OS_ANDROID)
 bool EnableOutOfProcessV8Pac(const base::CommandLine& command_line) {
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("OutOfProcessPac");
-
   if (command_line.HasSwitch(switches::kDisableOutOfProcessPac))
     return false;
   if (command_line.HasSwitch(switches::kV8PacMojoOutOfProcess))
     return true;
-  return group_name == "Enabled";
+  return true;
 }
 #endif  // !defined(OS_ANDROID)
 
