@@ -107,6 +107,10 @@ class ReportTaskHandler(object):
         self._failure_database.AddFailure('big_query_insert_error',
                                           str(insert_error.get('errors')))
 
+  def Finalize(self):
+    """Called once before the handler is destroyed."""
+    pass
+
   def Run(self, clovis_task):
     """Runs a 'report' clovis_task.
 

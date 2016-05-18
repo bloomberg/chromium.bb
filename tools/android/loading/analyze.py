@@ -35,6 +35,7 @@ import loading_trace
 import options
 import request_dependencies_lens
 import request_track
+import xvfb_helper
 
 # TODO(mattcary): logging.info isn't that useful, as the whole (tools) world
 # uses logging info; we need to introduce logging modules to get finer-grained
@@ -99,9 +100,12 @@ def _LogRequests(url, clear_cache_override=None):
   Returns:
     JSON dict of logged information (ie, a dict that describes JSON).
   """
+  xvfb_process = None
   if OPTIONS.local:
     chrome_ctl = controller.LocalChromeController()
-    chrome_ctl.SetHeadless(OPTIONS.headless)
+    if OPTIONS.headless:
+      xvfb_process =  xvfb_helper.LaunchXvfb()
+      chrome_ctl.SetChromeEnvOverride(xvfb_helper.GetChromeEnvironment())
   else:
     chrome_ctl = controller.RemoteChromeController(
         device_setup.GetFirstDevice())
@@ -117,6 +121,10 @@ def _LogRequests(url, clear_cache_override=None):
       connection.ClearCache()
     trace = loading_trace.LoadingTrace.RecordUrlNavigation(
         url, connection, chrome_ctl.ChromeMetadata())
+
+  if xvfb_process:
+    xvfb_process.terminate()
+
   return trace.ToJsonDict()
 
 

@@ -46,3 +46,8 @@ class ClovisTaskHandler(object):
                                         clovis_task.Action())
       return
     handler.Run(clovis_task)
+
+  def Finalize(self):
+    """Called once before the handler is destroyed."""
+    for handler in self._handlers.values():
+      handler.Finalize()

@@ -86,8 +86,8 @@ class ChromeControllerError(Exception):
 
     Args:
       log: String containing the log of the running Chrome instance that was
-          running. It will be interleaved with xvfb with headless desktop or
-          interleaved with any other running Android package.
+          running. It will be interleaved with any other running Android
+          package.
     """
     self.error_type, self.error_value, self.error_traceback = sys.exc_info()
     super(ChromeControllerError, self).__init__(repr(self.error_value))
@@ -410,7 +410,7 @@ class LocalChromeController(ChromeControllerBase):
     self._using_temp_profile_dir = self._profile_dir is None
     if self._using_temp_profile_dir:
       self._profile_dir = tempfile.mkdtemp(suffix='.profile')
-    self._headless = False
+    self._chrome_env_override = None
     self._metadata['platform'] = {
         'os': platform.system()[0] + '-' + platform.release(),
         'product_model': 'unknown'
@@ -420,13 +420,13 @@ class LocalChromeController(ChromeControllerBase):
     if self._using_temp_profile_dir:
       shutil.rmtree(self._profile_dir)
 
-  def SetHeadless(self, headless=True):
-    """Set a headless run.
+  def SetChromeEnvOverride(self, env):
+    """Set the environment for Chrome.
 
     Args:
-      headless: true if the chrome instance should be headless.
+      env: (dict) Environment.
     """
-    self._headless = headless
+    self._chrome_env_override = env
 
   @contextlib.contextmanager
   def Open(self):
@@ -445,18 +445,9 @@ class LocalChromeController(ChromeControllerBase):
         tempfile.NamedTemporaryFile(prefix="chrome_controller_", suffix='.log')
     chrome_process = None
     try:
-      chrome_env_override = {}
+      chrome_env_override = self._chrome_env_override or {}
       if self._wpr_attributes:
         chrome_env_override.update(self._wpr_attributes.chrome_env_override)
-
-      if self._headless:
-        assert 'DISPLAY' not in chrome_env_override, \
-            'DISPLAY environment variable is reserved for headless.'
-        chrome_env_override['DISPLAY'] = 'localhost:99'
-        xvfb_cmd = ['Xvfb', ':99', '-screen', '0', '1600x1200x24']
-        logging.info(common_util.GetCommandLineForLogging(xvfb_cmd))
-        xvfb_process = \
-            subprocess.Popen(xvfb_cmd, stdout=tmp_log.file, stderr=tmp_log.file)
 
       chrome_env = os.environ.copy()
       chrome_env.update(chrome_env_override)
@@ -500,8 +491,6 @@ class LocalChromeController(ChromeControllerBase):
       del tmp_log
       if chrome_process:
         chrome_process.kill()
-      if self._headless:
-        xvfb_process.kill()
 
   def ResetBrowserState(self):
     """Override for chrome state reseting."""

@@ -174,6 +174,7 @@ class Worker(object):
   def _Finalize(self):
     """Called before exiting."""
     self._logger.info('Done')
+    self._clovis_task_handler.Finalize()
     # Upload the worker log.
     if self._worker_log_path:
       self._logger.info('Uploading worker log.')

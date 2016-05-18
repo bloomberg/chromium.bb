@@ -6,6 +6,7 @@ import json
 import os
 import re
 import sys
+import traceback
 
 import common.clovis_paths
 from common.clovis_task import ClovisTask
@@ -14,6 +15,7 @@ import controller
 from failure_database import FailureDatabase
 import loading_trace
 import options
+import xvfb_helper
 
 
 class TraceTaskHandler(object):
@@ -33,6 +35,7 @@ class TraceTaskHandler(object):
     self._base_path = base_path
     self._is_initialized = False
     self._trace_database = None
+    self._xvfb_process = None
     trace_database_filename = common.clovis_paths.TRACE_DATABASE_PREFIX
     if instance_name:
       trace_database_filename += '_%s.json' % instance_name
@@ -48,6 +51,8 @@ class TraceTaskHandler(object):
     if self._is_initialized:
       return
     self._is_initialized = True
+
+    self._xvfb_process = xvfb_helper.LaunchXvfb()
 
     # Recover any existing traces in case the worker died.
     self._DownloadTraceDatabase()
@@ -107,7 +112,7 @@ class TraceTaskHandler(object):
 
         # Set up the controller.
         chrome_ctl = controller.LocalChromeController()
-        chrome_ctl.SetHeadless(True)
+        chrome_ctl.SetChromeEnvOverride(xvfb_helper.GetChromeEnvironment())
         if emulate_device:
           chrome_ctl.SetDeviceEmulation(emulate_device)
         if emulate_network:
@@ -123,7 +128,8 @@ class TraceTaskHandler(object):
       except controller.ChromeControllerError as e:
         e.Dump(sys.stderr)
       except Exception as e:
-        sys.stderr.write(str(e))
+        sys.stderr.write('Unknown exception:\n' + str(e))
+        traceback.print_exc(file=sys.stderr)
 
       if trace:
         with open(filename, 'w') as f:
@@ -173,6 +179,14 @@ class TraceTaskHandler(object):
     self._logger.debug('Uploading analyze log')
     remote_log_location = remote_trace_location + '.log'
     self._google_storage_accessor.UploadFile(log_filename, remote_log_location)
+
+  def Finalize(self):
+    """Called once before the handler is destroyed."""
+    if self._xvfb_process:
+      try:
+        self._xvfb_process.terminate()
+      except OSError:
+        self._logger.error('Could not terminate Xvfb.')
 
   def Run(self, clovis_task):
     """Runs a 'trace' clovis_task.
