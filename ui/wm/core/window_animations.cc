@@ -103,6 +103,11 @@ class HidingWindowAnimationObserverBase : public aura::WindowObserver {
             layer_owner_->root(), topmost_transient_child->layer());
       }
     }
+    // Reset the transform for the |window_|. Because the animation may have
+    // changed the transform, when recreating the layers we need to reset the
+    // transform otherwise the recreated layer has the transform installed
+    // for the animation.
+    window_->layer()->SetTransform(gfx::Transform());
   }
 
  protected:
