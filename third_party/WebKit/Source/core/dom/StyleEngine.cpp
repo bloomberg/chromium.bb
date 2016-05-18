@@ -133,7 +133,7 @@ void StyleEngine::injectAuthorSheet(StyleSheetContents* authorSheet)
 
 void StyleEngine::addPendingSheet(StyleEngineContext &context)
 {
-    m_pendingStylesheets++;
+    m_pendingScriptBlockingStylesheets++;
 
     context.addingPendingSheet(document());
     if (context.addedPendingSheetBeforeBody())
@@ -154,10 +154,10 @@ void StyleEngine::removePendingSheet(Node* styleSheetCandidateNode, const StyleE
     }
 
     // Make sure we knew this sheet was pending, and that our count isn't out of sync.
-    DCHECK_GT(m_pendingStylesheets, 0);
+    DCHECK_GT(m_pendingScriptBlockingStylesheets, 0);
 
-    m_pendingStylesheets--;
-    if (m_pendingStylesheets)
+    m_pendingScriptBlockingStylesheets--;
+    if (m_pendingScriptBlockingStylesheets)
         return;
 
     document().didRemoveAllPendingStylesheet();
@@ -427,7 +427,7 @@ void StyleEngine::didDetach()
 
 bool StyleEngine::shouldClearResolver() const
 {
-    return !m_didCalculateResolver && !haveStylesheetsLoaded();
+    return !m_didCalculateResolver && !haveScriptBlockingStylesheetsLoaded();
 }
 
 void StyleEngine::resolverChanged(StyleResolverUpdateMode mode)

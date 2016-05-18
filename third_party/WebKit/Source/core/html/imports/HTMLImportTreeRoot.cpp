@@ -44,7 +44,7 @@ Document* HTMLImportTreeRoot::document() const
 
 bool HTMLImportTreeRoot::hasFinishedLoading() const
 {
-    return !m_document->parsing() && m_document->styleEngine().haveStylesheetsLoaded();
+    return !m_document->parsing() && m_document->styleEngine().haveScriptBlockingStylesheetsLoaded();
 }
 
 void HTMLImportTreeRoot::stateWillChange()

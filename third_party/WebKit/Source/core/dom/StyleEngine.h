@@ -102,9 +102,9 @@ public:
     void addPendingSheet(StyleEngineContext&);
     void removePendingSheet(Node* styleSheetCandidateNode, const StyleEngineContext&);
 
-    bool hasPendingSheets() const { return m_pendingStylesheets > 0; }
+    bool hasPendingScriptBlockingSheets() const { return m_pendingScriptBlockingStylesheets > 0; }
     bool hasPendingRenderBlockingSheets() const { return m_pendingRenderBlockingStylesheets > 0; }
-    bool haveStylesheetsLoaded() const { return !hasPendingSheets() || m_ignorePendingStylesheets; }
+    bool haveScriptBlockingStylesheetsLoaded() const { return !hasPendingScriptBlockingSheets() || m_ignorePendingStylesheets; }
     bool haveRenderBlockingStylesheetsLoaded() const { return !hasPendingRenderBlockingSheets() || m_ignorePendingStylesheets; }
     bool ignoringPendingStylesheets() const { return m_ignorePendingStylesheets; }
 
@@ -225,7 +225,7 @@ private:
     // Sheets loaded using the @import directive are not included in this count.
     // We use this count of pending sheets to detect when we can begin attaching
     // elements and when it is safe to execute scripts.
-    int m_pendingStylesheets = 0;
+    int m_pendingScriptBlockingStylesheets = 0;
     int m_pendingRenderBlockingStylesheets = 0;
 
     HeapVector<Member<CSSStyleSheet>> m_injectedAuthorStyleSheets;

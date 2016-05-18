@@ -169,7 +169,7 @@ void HTMLImportLoader::didRemoveAllPendingStylesheet()
 
 bool HTMLImportLoader::hasPendingResources() const
 {
-    return m_document && m_document->styleEngine().hasPendingSheets();
+    return m_document && m_document->styleEngine().hasPendingScriptBlockingSheets();
 }
 
 void HTMLImportLoader::didFinishLoading()
