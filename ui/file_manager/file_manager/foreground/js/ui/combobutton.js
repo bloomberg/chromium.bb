@@ -82,7 +82,7 @@ cr.define('cr.ui', function() {
       buttonLayer.appendChild(this.actionNode_);
 
       var triggerIcon = this.ownerDocument.createElement('iron-icon');
-      triggerIcon.setAttribute('icon', 'arrow-drop-down');
+      triggerIcon.setAttribute('icon', 'files:arrow-drop-down');
       this.trigger_ = this.ownerDocument.createElement('div');
       this.trigger_.classList.add('trigger');
       this.trigger_.appendChild(triggerIcon);

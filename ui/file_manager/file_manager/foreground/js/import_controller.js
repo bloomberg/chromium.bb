@@ -755,8 +755,8 @@ importer.RuntimeCommandWidget.prototype.update =
 
       this.comboButton_.hidden = true;
 
-      this.toolbarIcon_.setAttribute('icon', 'cloud-off');
-      this.statusIcon_.setAttribute('icon', 'cloud-off');
+      this.toolbarIcon_.setAttribute('icon', 'files:cloud-off');
+      this.statusIcon_.setAttribute('icon', 'files:cloud-off');
 
       break;
 
@@ -776,8 +776,8 @@ importer.RuntimeCommandWidget.prototype.update =
       this.cancelButton_.hidden = false;
       this.progressContainer_.hidden = true;
 
-      this.toolbarIcon_.setAttribute('icon', 'autorenew');
-      this.statusIcon_.setAttribute('icon', 'autorenew');
+      this.toolbarIcon_.setAttribute('icon', 'files:autorenew');
+      this.statusIcon_.setAttribute('icon', 'files:autorenew');
 
       break;
 
@@ -795,8 +795,8 @@ importer.RuntimeCommandWidget.prototype.update =
       this.cancelButton_.hidden = true;
       this.progressContainer_.hidden = true;
 
-      this.toolbarIcon_.setAttribute('icon', 'cloud-off');
-      this.statusIcon_.setAttribute('icon', 'image:photo');
+      this.toolbarIcon_.setAttribute('icon', 'files:cloud-off');
+      this.statusIcon_.setAttribute('icon', 'files:photo');
       break;
 
     case importer.ActivityState.NO_MEDIA:
@@ -810,8 +810,8 @@ importer.RuntimeCommandWidget.prototype.update =
       this.cancelButton_.hidden = true;
       this.progressContainer_.hidden = true;
 
-      this.toolbarIcon_.setAttribute('icon', 'cloud-done');
-      this.statusIcon_.setAttribute('icon', 'cloud-done');
+      this.toolbarIcon_.setAttribute('icon', 'files:cloud-done');
+      this.statusIcon_.setAttribute('icon', 'files:cloud-done');
       break;
 
     case importer.ActivityState.READY:
@@ -829,8 +829,8 @@ importer.RuntimeCommandWidget.prototype.update =
       this.cancelButton_.hidden = true;
       this.progressContainer_.hidden = true;
 
-      this.toolbarIcon_.setAttribute('icon', 'cloud-upload');
-      this.statusIcon_.setAttribute('icon', 'image:photo');
+      this.toolbarIcon_.setAttribute('icon', 'files:cloud-upload');
+      this.statusIcon_.setAttribute('icon', 'files:photo');
       break;
 
     case importer.ActivityState.SCANNING:
@@ -851,8 +851,8 @@ importer.RuntimeCommandWidget.prototype.update =
       var stats = opt_scan.getStatistics();
       this.progressBar_.style.width = stats.progress + '%';
 
-      this.toolbarIcon_.setAttribute('icon', 'autorenew');
-      this.statusIcon_.setAttribute('icon', 'autorenew');
+      this.toolbarIcon_.setAttribute('icon', 'files:autorenew');
+      this.statusIcon_.setAttribute('icon', 'files:autorenew');
       break;
 
     default:

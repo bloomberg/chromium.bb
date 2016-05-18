@@ -62,6 +62,7 @@
       <include name="IDR_FILE_MANAGER_ELEMENTS_FILES_TOGGLE_RIPPLE_JS" file="file_manager/foreground/elements/files_toggle_ripple.js" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_ELEMENTS_FILES_TOOLTIP_HTML" file="file_manager/foreground/elements/files_tooltip.html" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_ELEMENTS_FILES_TOOLTIP_JS" file="file_manager/foreground/elements/files_tooltip.js" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_ELEMENTS_ICONS_HTML" file="file_manager/foreground/elements/icons.html" type="BINDATA" />
 
       <!-- Scripts referred by the gallery app. -->
       <include name="IDR_FILE_MANAGER_FILE_TYPE_JS" file="file_manager/common/js/file_type.js" flattenhtml="false" type="BINDATA" />
