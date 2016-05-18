@@ -59,10 +59,11 @@ scoped_refptr<AudioOutputController> AudioOutputController::Create(
     const AudioParameters& params,
     const std::string& output_device_id,
     SyncReader* sync_reader) {
-  DCHECK(audio_manager);
+  CHECK(audio_manager);
+  CHECK_EQ(AudioManager::Get(), audio_manager);
   DCHECK(sync_reader);
 
-  if (!params.IsValid() || !audio_manager)
+  if (!params.IsValid())
     return NULL;
 
   scoped_refptr<AudioOutputController> controller(new AudioOutputController(
@@ -73,28 +74,33 @@ scoped_refptr<AudioOutputController> AudioOutputController::Create(
 }
 
 void AudioOutputController::Play() {
+  CHECK_EQ(AudioManager::Get(), audio_manager_);
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &AudioOutputController::DoPlay, this));
 }
 
 void AudioOutputController::Pause() {
+  CHECK_EQ(AudioManager::Get(), audio_manager_);
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &AudioOutputController::DoPause, this));
 }
 
 void AudioOutputController::Close(const base::Closure& closed_task) {
+  CHECK_EQ(AudioManager::Get(), audio_manager_);
   DCHECK(!closed_task.is_null());
   message_loop_->PostTaskAndReply(FROM_HERE, base::Bind(
       &AudioOutputController::DoClose, this), closed_task);
 }
 
 void AudioOutputController::SetVolume(double volume) {
+  CHECK_EQ(AudioManager::Get(), audio_manager_);
   message_loop_->PostTask(FROM_HERE, base::Bind(
       &AudioOutputController::DoSetVolume, this, volume));
 }
 
 void AudioOutputController::GetOutputDeviceId(
     base::Callback<void(const std::string&)> callback) const {
+  CHECK_EQ(AudioManager::Get(), audio_manager_);
   base::PostTaskAndReplyWithResult(
       message_loop_.get(),
       FROM_HERE,
@@ -104,6 +110,7 @@ void AudioOutputController::GetOutputDeviceId(
 
 void AudioOutputController::SwitchOutputDevice(
     const std::string& output_device_id, const base::Closure& callback) {
+  CHECK_EQ(AudioManager::Get(), audio_manager_);
   message_loop_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&AudioOutputController::DoSwitchOutputDevice, this,

@@ -242,6 +242,7 @@ void AudioRendererHost::GetOutputControllers(
 }
 
 void AudioRendererHost::OnChannelClosing() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Since the IPC sender is gone, close all requested audio streams.
   while (!audio_entries_.empty()) {
     // Note: OnCloseStream() removes the entries from audio_entries_.
