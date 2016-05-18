@@ -1351,11 +1351,6 @@ if (!is_android) {
               "//chrome")
     }
     if (enable_pepper_cdms) {
-      sources += [
-        "../browser/media/pepper_cdm_test_helper.cc",
-        "../browser/media/pepper_cdm_test_helper.h",
-      ]
-
       # Runtime dependencies.
       data_deps += [
         "//media/cdm/ppapi:clearkeycdmadapter",
