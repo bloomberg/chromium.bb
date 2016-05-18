@@ -908,7 +908,7 @@ CGFloat BookmarkRightMargin() {
 }
 
 - (NSImage*)offTheSideButtonImage:(BOOL)forDarkMode {
-  const int kIconSize = 16;
+  const int kIconSize = 8;
   SkColor vectorIconColor = forDarkMode ? SkColorSetA(SK_ColorWHITE, 0xCC)
                                         : gfx::kChromeIconGrey;
   return NSImageFromImageSkia(
