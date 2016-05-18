@@ -1243,6 +1243,9 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
         switches::kEnableGpuMemoryBufferCompositorResources);
   }
 
+  if (IsMainFrameBeforeActivationEnabled())
+    command_line->AppendSwitch(cc::switches::kEnableMainFrameBeforeActivation);
+
   // Persistent buffers may come at a performance hit (not all platform specific
   // buffers support it), so only enable them if partial raster is enabled and
   // we are actually going to use them.
@@ -1470,12 +1473,10 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     // also be added to chrome/browser/chromeos/login/chrome_restart_request.cc.
     cc::switches::kDisableCachedPictureRaster,
     cc::switches::kDisableCompositedAntialiasing,
-    cc::switches::kDisableMainFrameBeforeActivation,
     cc::switches::kDisableThreadedAnimation,
     cc::switches::kEnableBeginFrameScheduling,
     cc::switches::kEnableGpuBenchmarking,
     cc::switches::kEnableLayerLists,
-    cc::switches::kEnableMainFrameBeforeActivation,
     cc::switches::kEnableTileCompression,
     cc::switches::kShowCompositedLayerBorders,
     cc::switches::kShowFPSCounter,

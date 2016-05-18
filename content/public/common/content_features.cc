@@ -35,10 +35,11 @@ const base::Feature kDownloadResumption{"DownloadResumption",
 const base::Feature kDocumentWriteEvaluator{"DocumentWriteEvaluator",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable the material design playback UI for media elements.  This is always
-// on for OS_ANDROID, but may be enabled by experiment for other platforms.
-const base::Feature kNewMediaPlaybackUi{"NewMediaPlaybackUi",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
+// Can main thread be pipelined with activation. Always disabled for devices
+// with fewer than 4 cores irrespective of this flag. Can also be overridden by
+// --enable(disable)-main-frame-before-activation command line flag.
+const base::Feature kMainFrameBeforeActivation{
+    "MainFrameBeforeActivation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // FeatureList definition for trials to enable the download button on
 // MediaDocument.
@@ -46,6 +47,11 @@ const base::Feature kMediaDocumentDownloadButton{
     "MediaDocumentDownloadButton",
     base::FEATURE_DISABLED_BY_DEFAULT
 };
+
+// Enable the material design playback UI for media elements.  This is always
+// on for OS_ANDROID, but may be enabled by experiment for other platforms.
+const base::Feature kNewMediaPlaybackUi{"NewMediaPlaybackUi",
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Non-validating reload on reload-to-refresh-content (e.g. pull-to-refresh).
 // See https://crbug.com/558829

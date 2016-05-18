@@ -283,6 +283,22 @@ int GpuRasterizationMSAASampleCount() {
   }
 }
 
+bool IsMainFrameBeforeActivationEnabled() {
+  if (base::SysInfo::NumberOfProcessors() < 4)
+    return false;
+
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+
+  if (command_line.HasSwitch(cc::switches::kDisableMainFrameBeforeActivation))
+    return false;
+
+  if (command_line.HasSwitch(cc::switches::kEnableMainFrameBeforeActivation))
+    return true;
+
+  return base::FeatureList::IsEnabled(features::kMainFrameBeforeActivation);
+}
+
 base::DictionaryValue* GetFeatureStatus() {
   GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
   std::string gpu_access_blocked_reason;
