@@ -112,7 +112,6 @@ INCLUDE_PATHS = [
   'third_party/WebKit/Source/public',
   'third_party/WebKit/Source/web',
   'third_party/WebKit/Source/wtf',
-  'third_party/cld',
   'third_party/google_toolbox_for_mac/src',
   'third_party/icu/public/common',
   'third_party/icu/public/i18n',
