@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -110,6 +111,13 @@ void OobeBaseTest::SetUpOnMainThread() {
   session_manager_test_api.SetShouldObtainTokenHandleInTests(false);
 
   LoginDisplayHostImpl::DisableRestrictiveProxyCheckForTest();
+
+  // Wait for OobeUI to finish loading.
+  base::RunLoop run_loop;
+  if (!LoginDisplayHost::default_host()->GetOobeUI()->IsJSReady(
+          run_loop.QuitClosure())) {
+    run_loop.Run();
+  }
 
   ExtensionApiTest::SetUpOnMainThread();
 }
