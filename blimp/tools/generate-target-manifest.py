@@ -3,13 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-'''Generates a list of runtime Blimp Engine runtime dependencies.'''
-
+'''Generates a list of Blimp target runtime dependencies.'''
 
 import argparse
 import fnmatch
-import os
-
 
 # Returns True if |entry| matches any of the patterns in |blacklist|.
 def IsBlacklisted(entry, blacklist):
@@ -28,22 +25,24 @@ def main():
                             '(required)'),
                       required=True,
                       metavar='FILE')
+  parser.add_argument('--blacklist',
+                      help=('name and path of the blacklist file to use'),
+                      required=True)
   args = parser.parse_args()
 
   with open(args.runtime_deps_file) as f:
     deps = f.read().splitlines()
 
   header = [
-      '# Runtime dependencies for the Blimp Engine',
+      '# Runtime dependencies for: ' + args.runtime_deps_file,
       '#',
       '# Note: Any unnecessary dependencies should be added to',
-      '#       manifest-blacklist.txt and this file should be regenerated.',
+      '#       the appropriate blacklist and this file should be regenerated.',
       '',
   ]
 
   blacklist_patterns = []
-  with open(os.path.join(os.sys.path[0], 'manifest-blacklist.txt'), 'r') \
-      as blacklist_file:
+  with open(args.blacklist, 'r') as blacklist_file:
     blacklist_patterns = \
         [entry.partition('#')[0].strip() for entry \
          in blacklist_file.readlines()]

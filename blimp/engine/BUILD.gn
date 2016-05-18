@@ -494,10 +494,14 @@ if (is_linux) {
 
   _manifest = "$root_gen_dir/engine-manifest.txt"
   _rebased_manifest = rebase_path(_manifest, root_out_dir)
+  _rebased_blacklist =
+      rebase_path("//blimp/tools/engine-manifest-blacklist.txt")
 
   action("generate_manifest") {
-    script = "//blimp/tools/generate-engine-manifest.py"
+    script = "//blimp/tools/generate-target-manifest.py"
     args = [
+      "--blacklist",
+      _rebased_blacklist,
       "--runtime-deps-file",
       _rebased_runtime_deps,
       "--output",

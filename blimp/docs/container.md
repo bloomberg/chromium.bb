@@ -35,26 +35,23 @@ The `blimp/engine:blimp_engine_bundle` build target will bundle the engine and
 its dependencies into a tarfile, which can be used to build a Docker image.
 This target is always built as part of the top-level `blimp/blimp` meta-target.
 
-### Update Engine Dependencies
+### Manually checking dependencies
 
-`blimp/engine/engine-manifest.txt` is a list of the engine's runtime
-dependencies. From time to time, this list may need to be updated. Use
-`blimp/tools/generate-engine-manifest.py` to (re)generate the manifest:
+`gen/engine-manifest.txt` is a list of the engine's runtime
+dependencies. This list is automatatically generated in the build, but can
+be manually replicated for debugging and investigation. Use
+`blimp/tools/generate-target-manifest.py` to manually generate the manifest
+after building blimp target to generate the runtime deps file:
 
 ```bash
-./blimp/tools/generate-engine-manifest.py \
-    --build-dir out-linux/Debug \
-    --target //blimp/engine \
-    --output blimp/engine/engine-manifest.txt
+./blimp/tools/generate-target-manifest.py \
+    --blacklist blimp/tools/engine-manifest-blacklist.txt \
+    --output out-linux/Debug/engine-manifest.txt \
+    --runtime-deps-file out-linux/Debug/gen/blimp-engine.runtime_deps
 ```
 
-Be sure to review the generated manifest and remove any false runtime
-dependencies.
-
-For all entries listed in the manifest that are not from
-`//third_party/blimp_fonts`, ensure that the target that generate that artifact
-is manually listed as a dependency of `//blimp/engine:blimp_engine_bundle` to
-ensure that it is built before the bundle step happens.
+You can compare the output at `out-linux/Debug/engine-manifest.txt` with the
+generated target `out-linux/Debug/gen/engine-manifest.txt`.
 
 ## Build Docker Image
 
