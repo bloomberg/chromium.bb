@@ -11,8 +11,9 @@
 namespace translate {
 
 enum TranslateBubbleUiEvent {
+  // Start with 1 to match existing UMA values: see http://crbug.com/612558
   // The user clicked the advanced option.
-  SET_STATE_OPTIONS,
+  SET_STATE_OPTIONS = 1,
 
   // The user clicked "Done" and went back from the advanced option.
   LEAVE_STATE_OPTIONS,
