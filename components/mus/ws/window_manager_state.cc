@@ -95,20 +95,16 @@ WindowManagerState::QueuedEvent::QueuedEvent() {}
 WindowManagerState::QueuedEvent::~QueuedEvent() {}
 
 WindowManagerState::WindowManagerState(Display* display,
-                                       PlatformDisplay* platform_display,
-                                       cc::SurfaceId surface_id)
+                                       PlatformDisplay* platform_display)
     : WindowManagerState(display,
                          platform_display,
-                         surface_id,
                          false,
                          shell::mojom::kRootUserID) {}
 
 WindowManagerState::WindowManagerState(Display* display,
                                        PlatformDisplay* platform_display,
-                                       cc::SurfaceId surface_id,
                                        const UserId& user_id)
-    : WindowManagerState(display, platform_display, surface_id, true, user_id) {
-}
+    : WindowManagerState(display, platform_display, true, user_id) {}
 
 WindowManagerState::~WindowManagerState() {}
 
@@ -167,7 +163,6 @@ void WindowManagerState::OnWillDestroyTree(WindowTree* tree) {
 
 WindowManagerState::WindowManagerState(Display* display,
                                        PlatformDisplay* platform_display,
-                                       cc::SurfaceId surface_id,
                                        bool is_user_id_valid,
                                        const UserId& user_id)
     : display_(display),
@@ -191,7 +186,6 @@ WindowManagerState::WindowManagerState(Display* display,
   display->root_window()->Add(root_.get());
 
   event_dispatcher_.set_root(root_.get());
-  event_dispatcher_.set_surface_id(surface_id);
 
   AddDebugAccelerators();
 }

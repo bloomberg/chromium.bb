@@ -34,19 +34,16 @@ TEST(WindowFinderTest, FindDeepestVisibleWindow) {
   child2.SetBounds(gfx::Rect(15, 15, 20, 20));
 
   gfx::Point local_point(16, 16);
-  EXPECT_EQ(&child2, FindDeepestVisibleWindowForEvents(&root, cc::SurfaceId(),
-                                                       &local_point));
+  EXPECT_EQ(&child2, FindDeepestVisibleWindowForEvents(&root, &local_point));
   EXPECT_EQ(gfx::Point(1, 1), local_point);
 
   local_point.SetPoint(13, 14);
-  EXPECT_EQ(&child1, FindDeepestVisibleWindowForEvents(&root, cc::SurfaceId(),
-                                                       &local_point));
+  EXPECT_EQ(&child1, FindDeepestVisibleWindowForEvents(&root, &local_point));
   EXPECT_EQ(gfx::Point(3, 4), local_point);
 
   child2.set_extended_hit_test_region(gfx::Insets(10, 10, 10, 10));
   local_point.SetPoint(13, 14);
-  EXPECT_EQ(&child2, FindDeepestVisibleWindowForEvents(&root, cc::SurfaceId(),
-                                                       &local_point));
+  EXPECT_EQ(&child2, FindDeepestVisibleWindowForEvents(&root, &local_point));
   EXPECT_EQ(gfx::Point(-2, -1), local_point);
 }
 

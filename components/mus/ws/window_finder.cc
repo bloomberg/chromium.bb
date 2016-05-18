@@ -4,7 +4,6 @@
 
 #include "components/mus/ws/window_finder.h"
 
-#include "cc/surfaces/surface_id.h"
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_delegate.h"
@@ -17,7 +16,6 @@
 
 namespace mus {
 namespace ws {
-namespace {
 
 bool IsValidWindowForEvents(ServerWindow* window) {
   ServerWindowSurfaceManager* surface_manager = window->surface_manager();
@@ -25,8 +23,8 @@ bool IsValidWindowForEvents(ServerWindow* window) {
          surface_manager->HasSurfaceOfType(mojom::SurfaceType::DEFAULT);
 }
 
-ServerWindow* FindDeepestVisibleWindowNonSurface(ServerWindow* window,
-                                                 gfx::Point* location) {
+ServerWindow* FindDeepestVisibleWindowForEvents(ServerWindow* window,
+                                                gfx::Point* location) {
   const ServerWindow::Windows children(window->GetChildren());
   for (auto iter = children.rbegin(); iter != children.rend(); ++iter) {
     ServerWindow* child = *iter;
@@ -43,8 +41,7 @@ ServerWindow* FindDeepestVisibleWindowNonSurface(ServerWindow* window,
                        -child->extended_hit_test_region().bottom());
     if (child_bounds.Contains(child_location)) {
       *location = child_location;
-      ServerWindow* result =
-          FindDeepestVisibleWindowNonSurface(child, location);
+      ServerWindow* result = FindDeepestVisibleWindowForEvents(child, location);
       if (IsValidWindowForEvents(result))
         return result;
     }
@@ -52,7 +49,7 @@ ServerWindow* FindDeepestVisibleWindowNonSurface(ServerWindow* window,
   return window;
 }
 
-gfx::Transform GetTransformToWindowNonSurface(ServerWindow* window) {
+gfx::Transform GetTransformToWindow(ServerWindow* window) {
   gfx::Transform transform;
   ServerWindow* current = window;
   while (current->parent()) {
@@ -60,68 +57,6 @@ gfx::Transform GetTransformToWindowNonSurface(ServerWindow* window) {
     current = current->parent();
   }
   return transform;
-}
-
-bool HitTestSurfaceOfType(cc::SurfaceId display_surface_id,
-                          ServerWindow* window,
-                          mus::mojom::SurfaceType surface_type,
-                          gfx::Transform* transform) {
-  *transform = gfx::Transform();
-  ServerWindowSurface* surface =
-      window->GetOrCreateSurfaceManager()->GetSurfaceByType(surface_type);
-  return surface &&
-         window->delegate()
-             ->GetSurfacesState()
-             ->hit_tester()
-             ->GetTransformToTargetSurface(display_surface_id, surface->id(),
-                                           transform);
-}
-
-}  // namespace
-
-ServerWindow* FindDeepestVisibleWindowForEvents(
-    ServerWindow* root_window,
-    cc::SurfaceId display_surface_id,
-    gfx::Point* location) {
-  // TODO(sky): remove this when insets can be set on surface.
-  display_surface_id = cc::SurfaceId();
-
-  if (display_surface_id.is_null()) {
-    // Surface-based hit-testing will not return a valid target if no
-    // CompositorFrame has been submitted (e.g. in unit-tests).
-    return FindDeepestVisibleWindowNonSurface(root_window, location);
-  }
-
-  gfx::Transform transform;
-  cc::SurfaceId target_surface =
-      root_window->delegate()
-          ->GetSurfacesState()
-          ->hit_tester()
-          ->GetTargetSurfaceAtPoint(display_surface_id, *location, &transform);
-  WindowId id = WindowIdFromTransportId(
-      cc::SurfaceIdAllocator::NamespaceForId(target_surface));
-  // TODO(fsamuel): This should be a DCHECK but currently we use stale
-  // information to decide where to route input events. This should be fixed
-  // once we implement a UI scheduler.
-  ServerWindow* target = root_window->GetChildWindow(id);
-  if (target)
-    transform.TransformPoint(location);
-  return target;
-}
-
-gfx::Transform GetTransformToWindow(cc::SurfaceId display_surface_id,
-                                    ServerWindow* window) {
-  if (!display_surface_id.is_null()) {
-    gfx::Transform transform;
-    if (HitTestSurfaceOfType(display_surface_id, window,
-                             mus::mojom::SurfaceType::DEFAULT, &transform) ||
-        HitTestSurfaceOfType(display_surface_id, window,
-                             mus::mojom::SurfaceType::UNDERLAY, &transform)) {
-      return transform;
-    }
-  }
-
-  return GetTransformToWindowNonSurface(window);
 }
 
 }  // namespace ws

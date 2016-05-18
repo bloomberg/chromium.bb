@@ -8,10 +8,6 @@
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/ids.h"
 
-namespace cc {
-struct SurfaceId;
-}
-
 namespace ui {
 class Event;
 }
@@ -43,8 +39,6 @@ class PlatformDisplayDelegate {
   virtual void OnViewportMetricsChanged(
       const mojom::ViewportMetrics& old_metrics,
       const mojom::ViewportMetrics& new_metrics) = 0;
-
-  virtual void OnTopLevelSurfaceChanged(cc::SurfaceId surface_id) = 0;
 
   // Called when a compositor frame is finished drawing.
   virtual void OnCompositorFrameDrawn() = 0;

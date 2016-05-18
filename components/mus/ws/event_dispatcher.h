@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "cc/surfaces/surface_id.h"
 #include "components/mus/public/interfaces/event_matcher.mojom.h"
 #include "components/mus/ws/modal_window_controller.h"
 #include "components/mus/ws/server_window_observer.h"
@@ -42,8 +41,6 @@ class EventDispatcher : public ServerWindowObserver {
   ~EventDispatcher() override;
 
   void set_root(ServerWindow* root) { root_ = root; }
-
-  void set_surface_id(cc::SurfaceId surface_id) { surface_id_ = surface_id; }
 
   // Cancels capture and stops tracking any pointer events. This does not send
   // any events to the delegate.
@@ -206,8 +203,6 @@ class EventDispatcher : public ServerWindowObserver {
   // The on screen location of the mouse pointer. This can be outside the
   // bounds of |mouse_cursor_source_window_|, which can capture the cursor.
   gfx::Point mouse_pointer_last_location_;
-
-  cc::SurfaceId surface_id_;
 
   using Entry = std::pair<uint32_t, std::unique_ptr<Accelerator>>;
   std::map<uint32_t, std::unique_ptr<Accelerator>> accelerators_;

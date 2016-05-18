@@ -7,8 +7,6 @@
 #include <algorithm>
 
 #include "base/time/time.h"
-#include "cc/surfaces/surface_hittest.h"
-#include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/accelerator.h"
 #include "components/mus/ws/display.h"
 #include "components/mus/ws/event_dispatcher_delegate.h"
@@ -208,8 +206,7 @@ void EventDispatcher::ReleaseCaptureBlockedByAnyModalWindow() {
 void EventDispatcher::UpdateNonClientAreaForCurrentWindow() {
   if (mouse_cursor_source_window_) {
     gfx::Point location = mouse_pointer_last_location_;
-    ServerWindow* target =
-        FindDeepestVisibleWindowForEvents(root_, surface_id_, &location);
+    ServerWindow* target = FindDeepestVisibleWindowForEvents(root_, &location);
     if (target == mouse_cursor_source_window_) {
       mouse_cursor_in_non_client_area_ =
           mouse_cursor_source_window_
@@ -223,7 +220,7 @@ void EventDispatcher::UpdateCursorProviderByLastKnownLocation() {
   if (!mouse_button_down_) {
     gfx::Point location = mouse_pointer_last_location_;
     mouse_cursor_source_window_ =
-        FindDeepestVisibleWindowForEvents(root_, surface_id_, &location);
+        FindDeepestVisibleWindowForEvents(root_, &location);
 
     mouse_cursor_in_non_client_area_ =
         mouse_cursor_source_window_
@@ -419,7 +416,7 @@ EventDispatcher::PointerTarget EventDispatcher::PointerTargetForEvent(
   PointerTarget pointer_target;
   gfx::Point location(event.location());
   ServerWindow* target_window =
-      FindDeepestVisibleWindowForEvents(root_, surface_id_, &location);
+      FindDeepestVisibleWindowForEvents(root_, &location);
   pointer_target.window =
       modal_window_controller_.GetTargetForWindow(target_window);
   pointer_target.is_mouse_event = event.IsMousePointerEvent();
@@ -449,7 +446,7 @@ void EventDispatcher::DispatchToPointerTarget(const PointerTarget& target,
     mouse_cursor_in_non_client_area_ = target.in_nonclient_area;
 
   gfx::Point location(event.location());
-  gfx::Transform transform(GetTransformToWindow(surface_id_, target.window));
+  gfx::Transform transform(GetTransformToWindow(target.window));
   transform.TransformPoint(&location);
   std::unique_ptr<ui::Event> clone = ui::Event::Clone(event);
   clone->AsLocatedEvent()->set_location(location);

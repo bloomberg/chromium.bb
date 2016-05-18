@@ -236,8 +236,8 @@ void Display::InitWindowManagersIfNecessary() {
 
   display_manager()->OnDisplayAcceleratedWidgetAvailable(this);
   if (binding_) {
-    std::unique_ptr<WindowManagerState> wms_ptr(new WindowManagerState(
-        this, platform_display_.get(), top_level_surface_id_));
+    std::unique_ptr<WindowManagerState> wms_ptr(
+        new WindowManagerState(this, platform_display_.get()));
     WindowManagerState* wms = wms_ptr.get();
     // For this case we never create additional WindowManagerStates, so any
     // id works.
@@ -259,9 +259,8 @@ void Display::CreateWindowManagerStatesFromRegistry() {
 
 void Display::CreateWindowManagerStateFromService(
     WindowManagerFactoryService* service) {
-  std::unique_ptr<WindowManagerState> wms_ptr(
-      new WindowManagerState(this, platform_display_.get(),
-                             top_level_surface_id_, service->user_id()));
+  std::unique_ptr<WindowManagerState> wms_ptr(new WindowManagerState(
+      this, platform_display_.get(), service->user_id()));
   WindowManagerState* wms = wms_ptr.get();
   window_manager_state_map_[service->user_id()] = std::move(wms_ptr);
   wms->tree_ = window_server_->CreateTreeForWindowManager(
@@ -314,12 +313,6 @@ void Display::OnViewportMetricsChanged(
   // TODO(sky): if bounds changed, then need to update
   // Display/WindowManagerState appropriately (e.g. notify observers).
   window_server_->ProcessViewportMetricsChanged(this, old_metrics, new_metrics);
-}
-
-void Display::OnTopLevelSurfaceChanged(cc::SurfaceId surface_id) {
-  DCHECK(!root_);
-  // This should only be called once, and before we've created root_.
-  top_level_surface_id_ = surface_id;
 }
 
 void Display::OnCompositorFrameDrawn() {

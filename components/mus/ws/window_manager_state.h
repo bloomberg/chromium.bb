@@ -17,10 +17,6 @@
 #include "components/mus/ws/user_id.h"
 #include "components/mus/ws/window_server.h"
 
-namespace cc {
-struct SurfaceId;
-}
-
 namespace mus {
 namespace ws {
 
@@ -39,12 +35,9 @@ class WindowManagerStateTestApi;
 class WindowManagerState : public EventDispatcherDelegate {
  public:
   // Creates a WindowManagerState that can host content from any user.
+  WindowManagerState(Display* display, PlatformDisplay* platform_display);
   WindowManagerState(Display* display,
                      PlatformDisplay* platform_display,
-                     cc::SurfaceId surface_id);
-  WindowManagerState(Display* display,
-                     PlatformDisplay* platform_display,
-                     cc::SurfaceId surface_id,
                      const UserId& user_id);
   ~WindowManagerState() override;
 
@@ -127,7 +120,6 @@ class WindowManagerState : public EventDispatcherDelegate {
 
   WindowManagerState(Display* display,
                      PlatformDisplay* platform_display,
-                     cc::SurfaceId surface_id,
                      bool is_user_id_valid,
                      const UserId& user_id);
 

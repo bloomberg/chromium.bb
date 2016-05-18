@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "cc/surfaces/surface_hittest.h"
 #include "cc/surfaces/surface_manager.h"
 
 namespace cc {
@@ -32,8 +31,6 @@ class SurfacesState : public base::RefCounted<SurfacesState> {
 
   cc::SurfaceManager* manager() { return &manager_; }
 
-  cc::SurfaceHittest* hit_tester() { return &hit_tester_; }
-
  private:
   friend class base::RefCounted<SurfacesState>;
   ~SurfacesState();
@@ -43,7 +40,6 @@ class SurfacesState : public base::RefCounted<SurfacesState> {
   // that requested the Surface.
   uint32_t next_id_namespace_;
   cc::SurfaceManager manager_;
-  cc::SurfaceHittest hit_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfacesState);
 };

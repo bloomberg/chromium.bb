@@ -423,7 +423,6 @@ void DefaultPlatformDisplay::OnAcceleratedWidgetAvailable(
     display_compositor_.reset(
         new DisplayCompositor(base::ThreadTaskRunnerHandle::Get(), widget,
                               gpu_state_, surfaces_state_));
-    delegate_->OnTopLevelSurfaceChanged(display_compositor_->surface_id());
   }
   UpdateMetrics(metrics_.size_in_pixels.To<gfx::Size>(), device_pixel_ratio);
 }

@@ -165,7 +165,6 @@ class Display : public PlatformDisplayDelegate,
   void OnViewportMetricsChanged(
       const mojom::ViewportMetrics& old_metrics,
       const mojom::ViewportMetrics& new_metrics) override;
-  void OnTopLevelSurfaceChanged(cc::SurfaceId surface_id) override;
   void OnCompositorFrameDrawn() override;
 
   // FocusControllerDelegate:
@@ -209,8 +208,6 @@ class Display : public PlatformDisplayDelegate,
   std::set<ServerWindow*> windows_needing_frame_destruction_;
 
   WindowManagerStateMap window_manager_state_map_;
-
-  cc::SurfaceId top_level_surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(Display);
 };
