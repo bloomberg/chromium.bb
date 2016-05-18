@@ -34,7 +34,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "courgette/third_party/bsdiff.h"
+#include "courgette/third_party/bsdiff/bsdiff.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -46,10 +46,14 @@
 namespace courgette {
 
 BSDiffStatus MBS_ReadHeader(SourceStream* stream, MBSPatchHeader* header) {
-  if (!stream->Read(header->tag, sizeof(header->tag))) return READ_ERROR;
-  if (!stream->ReadVarint32(&header->slen)) return READ_ERROR;
-  if (!stream->ReadVarint32(&header->scrc32)) return READ_ERROR;
-  if (!stream->ReadVarint32(&header->dlen)) return READ_ERROR;
+  if (!stream->Read(header->tag, sizeof(header->tag)))
+    return READ_ERROR;
+  if (!stream->ReadVarint32(&header->slen))
+    return READ_ERROR;
+  if (!stream->ReadVarint32(&header->scrc32))
+    return READ_ERROR;
+  if (!stream->ReadVarint32(&header->dlen))
+    return READ_ERROR;
 
   // The string will have a NUL terminator that we don't use, hence '-1'.
   static_assert(sizeof(MBS_PATCH_HEADER_TAG) - 1 == sizeof(header->tag),
@@ -102,8 +106,8 @@ BSDiffStatus MBS_ApplyPatch(const MBSPatchHeader* header,
       return UNEXPECTED_ERROR;
 
 #ifdef DEBUG_bsmedberg
-    printf("Applying block:  copy: %-8u extra: %-8u seek: %+i\n",
-           copy_count, extra_count, seek_adjustment);
+    printf("Applying block:  copy: %-8u extra: %-8u seek: %+i\n", copy_count,
+           extra_count, seek_adjustment);
 #endif
     // Byte-wise arithmetically add bytes from old file to bytes from the diff
     // block.
@@ -111,7 +115,7 @@ BSDiffStatus MBS_ApplyPatch(const MBSPatchHeader* header,
       return UNEXPECTED_ERROR;
 
     // Add together bytes from the 'old' file and the 'diff' stream.
-    for (size_t i = 0;  i < copy_count;  ++i) {
+    for (size_t i = 0; i < copy_count; ++i) {
       uint8_t diff_byte = 0;
       if (pending_diff_zeros) {
         --pending_diff_zeros;
@@ -145,11 +149,8 @@ BSDiffStatus MBS_ApplyPatch(const MBSPatchHeader* header,
   }
 
   if (!control_stream_copy_counts->Empty() ||
-      !control_stream_extra_counts->Empty() ||
-      !control_stream_seeks->Empty() ||
-      !diff_skips->Empty() ||
-      !diff_bytes->Empty() ||
-      !extra_bytes->Empty())
+      !control_stream_extra_counts->Empty() || !control_stream_seeks->Empty() ||
+      !diff_skips->Empty() || !diff_bytes->Empty() || !extra_bytes->Empty())
     return UNEXPECTED_ERROR;
 
   return OK;
@@ -160,12 +161,14 @@ BSDiffStatus ApplyBinaryPatch(SourceStream* old_stream,
                               SinkStream* new_stream) {
   MBSPatchHeader header;
   BSDiffStatus ret = MBS_ReadHeader(patch_stream, &header);
-  if (ret != OK) return ret;
+  if (ret != OK)
+    return ret;
 
   const uint8_t* old_start = old_stream->Buffer();
   size_t old_size = old_stream->Remaining();
 
-  if (old_size != header.slen) return UNEXPECTED_ERROR;
+  if (old_size != header.slen)
+    return UNEXPECTED_ERROR;
 
   if (CalculateCrc(old_start, old_size) != header.scrc32)
     return CRC_ERROR;
@@ -196,17 +199,15 @@ BSDiffStatus ApplyBinaryPatch(const base::FilePath& old_file_path,
 
   // Set up the new stream and apply the patch.
   SinkStream new_sink_stream;
-  BSDiffStatus status = ApplyBinaryPatch(&old_file_stream,
-                                         &patch_file_stream,
-                                         &new_sink_stream);
+  BSDiffStatus status =
+      ApplyBinaryPatch(&old_file_stream, &patch_file_stream, &new_sink_stream);
   if (status != OK) {
     return status;
   }
 
   // Write the stream to disk.
   int written = base::WriteFile(
-      new_file_path,
-      reinterpret_cast<const char*>(new_sink_stream.Buffer()),
+      new_file_path, reinterpret_cast<const char*>(new_sink_stream.Buffer()),
       static_cast<int>(new_sink_stream.Length()));
   if (written != static_cast<int>(new_sink_stream.Length()))
     return WRITE_ERROR;

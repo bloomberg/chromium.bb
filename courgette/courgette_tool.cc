@@ -22,8 +22,7 @@
 #include "courgette/encoded_program.h"
 #include "courgette/program_detector.h"
 #include "courgette/streams.h"
-#include "courgette/third_party/bsdiff.h"
-
+#include "courgette/third_party/bsdiff/bsdiff.h"
 
 void PrintHelp() {
   fprintf(stderr,

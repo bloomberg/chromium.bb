@@ -36,7 +36,7 @@
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
 #include "courgette/courgette.h"
-#include "courgette/third_party/bsdiff.h"
+#include "courgette/third_party/bsdiff/bsdiff.h"
 #include "third_party/bspatch/mbspatch.h"
 
 namespace installer {

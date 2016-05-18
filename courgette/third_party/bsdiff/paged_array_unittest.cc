@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "courgette/third_party/paged_array.h"
+#include "courgette/third_party/bsdiff/paged_array.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

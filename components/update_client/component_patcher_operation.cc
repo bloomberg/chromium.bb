@@ -16,7 +16,7 @@
 #include "components/update_client/update_client.h"
 #include "components/update_client/utils.h"
 #include "courgette/courgette.h"
-#include "courgette/third_party/bsdiff.h"
+#include "courgette/third_party/bsdiff/bsdiff.h"
 
 namespace update_client {
 

@@ -145,10 +145,10 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'chrome/common/extensions/docs/server2/third_party': [
         'UNKNOWN',
     ],
-    'courgette/third_party/bsdiff_create.cc': [  # http://crbug.com/98095
+    'courgette/third_party/bsdiff/bsdiff_create.cc': [  # http://crbug.com/98095
         'UNKNOWN',
     ],
-    'courgette/third_party/qsufsort.h': [  # http://crbug.com/98095
+    'courgette/third_party/bsdiff/qsufsort.h': [  # http://crbug.com/98095
         'UNKNOWN',
     ],
     'native_client': [  # http://crbug.com/98099

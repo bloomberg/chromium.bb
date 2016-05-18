@@ -19,7 +19,7 @@
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "courgette/courgette.h"
-#include "courgette/third_party/bsdiff.h"
+#include "courgette/third_party/bsdiff/bsdiff.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/base/l10n/l10n_util.h"
 

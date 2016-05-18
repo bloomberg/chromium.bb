@@ -23,6 +23,9 @@
                  --Samuel Huang <huangs@chromium.org>
 */
 
+#ifndef COURGETTE_THIRD_PARTY_BSDIFF_QSUFSORT_H_
+#define COURGETTE_THIRD_PARTY_BSDIFF_QSUFSORT_H_
+
 #include <algorithm>
 #include <cstring>
 
@@ -34,7 +37,7 @@ namespace qsuf {
 // The following code is taken verbatim from 'bsdiff.c'. Please keep all the
 // code formatting and variable names.  The changes from the original are:
 // (1) replacing tabs with spaces,
-// (2) indentation,
+// (2) indentation and spacing,
 // (3) using 'const',
 // (4) changing the V and I parameters from int* to template <typename T>.
 // (5) optimizing split() and search(); fix styles.
@@ -45,7 +48,8 @@ namespace qsuf {
 
 namespace {
 
-template <typename T> T median3(const T& a, const T& b, const T& c) {
+template <typename T>
+T median3(const T& a, const T& b, const T& c) {
   if (a < b)
     return b < c ? b : (a < c ? c : a);
   return b > c ? b : (a > c ? c : a);
@@ -53,10 +57,11 @@ template <typename T> T median3(const T& a, const T& b, const T& c) {
 
 }  // namespace
 
-template <typename T> void split(T I, T V, int start, int end, int h) {
+template <typename T>
+void split(T I, T V, int start, int end, int h) {
   // For small interval, apply selection sort.
   if (end - start < 16) {
-    for (int i = start; i < end; ) {
+    for (int i = start; i < end;) {
       int skip = 1;
       int best = V[I[i] + h];
       for (int j = i + 1; j < end; j++) {
@@ -106,7 +111,7 @@ template <typename T> void split(T I, T V, int start, int end, int h) {
   //   [k, end) with secondary keys > pivot.
   int j = start;
   int k = end;
-  for (int i = start; i < k; ) {
+  for (int i = start; i < k;) {
     int cur = V[I[i] + h];
     if (cur < pivot) {
       if (i != j) {
@@ -145,64 +150,79 @@ template <typename T> void split(T I, T V, int start, int end, int h) {
 }
 
 template <class T>
-static void
-qsufsort(T I, T V,const unsigned char *old,int oldsize)
-{
+static void qsufsort(T I, T V, const unsigned char* old, int oldsize) {
   int buckets[256];
-  int i,h,len;
+  int i, h, len;
 
-  for(i=0;i<256;i++) buckets[i]=0;
-  for(i=0;i<oldsize;i++) buckets[old[i]]++;
-  for(i=1;i<256;i++) buckets[i]+=buckets[i-1];
-  for(i=255;i>0;i--) buckets[i]=buckets[i-1];
-  buckets[0]=0;
+  for (i = 0; i < 256; i++)
+    buckets[i] = 0;
+  for (i = 0; i < oldsize; i++)
+    buckets[old[i]]++;
+  for (i = 1; i < 256; i++)
+    buckets[i] += buckets[i - 1];
+  for (i = 255; i > 0; i--)
+    buckets[i] = buckets[i - 1];
+  buckets[0] = 0;
 
-  for(i=0;i<oldsize;i++) I[++buckets[old[i]]]=i;
-  I[0]=oldsize;
-  for(i=0;i<oldsize;i++) V[i]=buckets[old[i]];
-  V[oldsize]=0;
-  for(i=1;i<256;i++) if(buckets[i]==buckets[i-1]+1) I[buckets[i]]=-1;
-  I[0]=-1;
+  for (i = 0; i < oldsize; i++)
+    I[++buckets[old[i]]] = i;
+  I[0] = oldsize;
+  for (i = 0; i < oldsize; i++)
+    V[i] = buckets[old[i]];
+  V[oldsize] = 0;
+  for (i = 1; i < 256; i++)
+    if (buckets[i] == buckets[i - 1] + 1)
+      I[buckets[i]] = -1;
+  I[0] = -1;
 
-  for(h=1;I[0]!=-(oldsize+1);h+=h) {
-    len=0;
-    for(i=0;i<oldsize+1;) {
-      if(I[i]<0) {
-        len-=I[i];
-        i-=I[i];
+  for (h = 1; I[0] != -(oldsize + 1); h += h) {
+    len = 0;
+    for (i = 0; i < oldsize + 1;) {
+      if (I[i] < 0) {
+        len -= I[i];
+        i -= I[i];
       } else {
-        if(len) I[i-len]=-len;
-        len=V[I[i]]+1-i;
-        split<T>(I,V,i,i+len,h);
-        i+=len;
-        len=0;
+        if (len)
+          I[i - len] = -len;
+        len = V[I[i]] + 1 - i;
+        split<T>(I, V, i, i + len, h);
+        i += len;
+        len = 0;
       };
     };
-    if(len) I[i-len]=-len;
+    if (len)
+      I[i - len] = -len;
   };
 
-  for(i=0;i<oldsize+1;i++) I[V[i]]=i;
+  for (i = 0; i < oldsize + 1; i++)
+    I[V[i]] = i;
 }
 
-static int
-matchlen(const unsigned char *old,int oldsize,const unsigned char *newbuf,int newsize)
-{
+static int matchlen(const unsigned char* old,
+                    int oldsize,
+                    const unsigned char* newbuf,
+                    int newsize) {
   int i;
 
-  for(i=0;(i<oldsize)&&(i<newsize);i++)
-    if(old[i]!=newbuf[i]) break;
+  for (i = 0; (i < oldsize) && (i < newsize); i++)
+    if (old[i] != newbuf[i])
+      break;
 
   return i;
 }
 
 template <class T>
-static int search(T I, const unsigned char *old, int oldsize,
-                  const unsigned char *newbuf, int newsize, int *pos) {
+static int search(T I,
+                  const unsigned char* old,
+                  int oldsize,
+                  const unsigned char* newbuf,
+                  int newsize,
+                  int* pos) {
   int lo = 0;
   int hi = oldsize;
   while (hi - lo >= 2) {
     int mid = (lo + hi) / 2;
-    if(memcmp(old+I[mid],newbuf,std::min(oldsize-I[mid],newsize))<0) {
+    if (memcmp(old + I[mid], newbuf, std::min(oldsize - I[mid], newsize)) < 0) {
       lo = mid;
     } else {
       hi = mid;
@@ -211,7 +231,7 @@ static int search(T I, const unsigned char *old, int oldsize,
 
   int x = matchlen(old + I[lo], oldsize - I[lo], newbuf, newsize);
   int y = matchlen(old + I[hi], oldsize - I[hi], newbuf, newsize);
-  if(x > y) {
+  if (x > y) {
     *pos = I[lo];
     return x;
   }
@@ -224,3 +244,4 @@ static int search(T I, const unsigned char *old, int oldsize,
 
 }  // namespace qsuf
 }  // namespace courgette
+#endif  // COURGETTE_THIRD_PARTY_BSDIFF_QSUFSORT_H_

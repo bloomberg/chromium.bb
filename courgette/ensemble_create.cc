@@ -24,13 +24,12 @@
 
 #include "courgette/crc.h"
 #include "courgette/difference_estimator.h"
+#include "courgette/patch_generator_x86_32.h"
+#include "courgette/patcher_x86_32.h"
 #include "courgette/region.h"
 #include "courgette/simple_delta.h"
 #include "courgette/streams.h"
-#include "courgette/third_party/bsdiff.h"
-
-#include "courgette/patcher_x86_32.h"
-#include "courgette/patch_generator_x86_32.h"
+#include "courgette/third_party/bsdiff/bsdiff.h"
 
 namespace courgette {
 

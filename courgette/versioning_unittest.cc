@@ -10,7 +10,7 @@
 
 #include "courgette/courgette.h"
 #include "courgette/streams.h"
-#include "courgette/third_party/bsdiff.h"
+#include "courgette/third_party/bsdiff/bsdiff.h"
 
 class VersioningTest : public BaseTest {
  public:

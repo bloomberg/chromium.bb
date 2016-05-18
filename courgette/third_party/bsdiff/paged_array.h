@@ -6,10 +6,10 @@
 //
 // PagedArray is a work-around to allow large arrays to be allocated when there
 // is too much address space fragmentation for allocating the large arrays as
-// contigous arrays.
+// contiguous arrays.
 
-#ifndef COURGETTE_BSDIFF_PAGED_ARRAY_H_
-#define COURGETTE_BSDIFF_PAGED_ARRAY_H_
+#ifndef COURGETTE_THIRD_PARTY_BSDIFF_PAGED_ARRAY_H_
+#define COURGETTE_THIRD_PARTY_BSDIFF_PAGED_ARRAY_H_
 
 #include <stddef.h>
 
@@ -19,7 +19,7 @@
 namespace courgette {
 
 // PagedArray implements an array stored using many fixed-size pages.
-template<typename T>
+template <typename T>
 class PagedArray {
   enum {
     // Page size in elements.  Page size of 2^18 * sizeof(T) is 1MB for T = int.
@@ -80,5 +80,6 @@ class PagedArray {
 
   DISALLOW_COPY_AND_ASSIGN(PagedArray);
 };
-}  // namespace
-#endif  // COURGETTE_BSDIFF_PAGED_ARRAY_H_
+
+}  // namespace courgette
+#endif  // COURGETTE_THIRD_PARTY_BSDIFF_PAGED_ARRAY_H_

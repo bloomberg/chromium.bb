@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "courgette/third_party/qsufsort.h"
+#include "courgette/third_party/bsdiff/qsufsort.h"
 
 #include <stddef.h>
 
@@ -16,18 +16,18 @@
 
 TEST(QSufSortTest, Sort) {
   const char* test_cases[] = {
-    "",
-    "a",
-    "za",
-    "CACAO",
-    "banana",
-    "tobeornottobe",
-    "The quick brown fox jumps over the lazy dog.",
-    "elephantelephantelephantelephantelephant",
-    "-------------------------",
-    "011010011001011010010110011010010",
-    "3141592653589793238462643383279502884197169399375105",
-    "\xFF\xFE\xFF\xFE\xFD\x80\x30\x31\x32\x80\x30\xFF\x01\xAB\xCD",
+      "",
+      "a",
+      "za",
+      "CACAO",
+      "banana",
+      "tobeornottobe",
+      "The quick brown fox jumps over the lazy dog.",
+      "elephantelephantelephantelephantelephant",
+      "-------------------------",
+      "011010011001011010010110011010010",
+      "3141592653589793238462643383279502884197169399375105",
+      "\xFF\xFE\xFF\xFE\xFD\x80\x30\x31\x32\x80\x30\xFF\x01\xAB\xCD",
   };
 
   for (size_t idx = 0; idx < arraysize(test_cases); ++idx) {
@@ -68,7 +68,7 @@ TEST(QSufSortTest, Search) {
   const char* old_str = "the quick brown fox jumps over the lazy dog.";
   int old_size = static_cast<int>(::strlen(old_str));
   const unsigned char* old_buf =
-        reinterpret_cast<const unsigned char*>(old_str);
+      reinterpret_cast<const unsigned char*>(old_str);
   std::vector<int> I(old_size + 1);
   std::vector<int> V(old_size + 1);
   courgette::qsuf::qsufsort<int*>(&I[0], &V[0], old_buf, old_size);
@@ -79,33 +79,34 @@ TEST(QSufSortTest, Search) {
     int exp_match_len;
     const char* query_str;
   } test_cases[] = {
-    // Entire string.
-    {0, 44, "the quick brown fox jumps over the lazy dog."},
-    // Empty string.
-    {-1, 0, ""},  // Current algorithm does not enforce |pos| == 0.
-    // Exact and unique suffix match.
-    {43, 1, "."},
-    {31, 13, "the lazy dog."},
-    // Exact and unique non-suffix match.
-    {4, 5, "quick"},
-    {0, 9, "the quick"},  // Unique prefix.
-    // Entire word match with mutiple results: take lexicographical first.
-    {31, 3, "the"},  // Non-unique prefix: "the l"... < "the q"...
-    {9, 1, " "},  // " brown"... wins.
-    // Partial and unique match of query prefix.
-    {16, 10, "fox jumps with the hosps"},
-    // Partial and multiple match of query prefix: no guarantees on |pos|.
-    // Take lexicographical first for matching portion *only*, so same results:
-    {-1, 4, "the apple"},  // query      < "the l"... < "the q"...
-    {-1, 4, "the opera"},  // "the l"... < query      < "the q"...
-    {-1, 4, "the zebra"},  // "the l"... < "the q"... < query
-    // Prefix match dominates suffix match.
-    {26, 5, "over quick brown fox"},
-    // No match.
-    {-1, 0, ","},
-    {-1, 0, "1234"},
-    {-1, 0, "THE QUICK BROWN FOX"},
-    {-1, 0, "(the"},
+      // Entire string.
+      {0, 44, "the quick brown fox jumps over the lazy dog."},
+      // Empty string.
+      {-1, 0, ""},  // Current algorithm does not enforce |pos| == 0.
+      // Exact and unique suffix match.
+      {43, 1, "."},
+      {31, 13, "the lazy dog."},
+      // Exact and unique non-suffix match.
+      {4, 5, "quick"},
+      {0, 9, "the quick"},  // Unique prefix.
+      // Entire word match with mutiple results: take lexicographical first.
+      {31, 3, "the"},  // Non-unique prefix: "the l"... < "the q"...
+      {9, 1, " "},     // " brown"... wins.
+      // Partial and unique match of query prefix.
+      {16, 10, "fox jumps with the hosps"},
+      // Partial and multiple match of query prefix: no guarantees on |pos|.
+      // Take lexicographical first for matching portion *only*, so same
+      // results:
+      {-1, 4, "the apple"},  // query      < "the l"... < "the q"...
+      {-1, 4, "the opera"},  // "the l"... < query      < "the q"...
+      {-1, 4, "the zebra"},  // "the l"... < "the q"... < query
+      // Prefix match dominates suffix match.
+      {26, 5, "over quick brown fox"},
+      // No match.
+      {-1, 0, ","},
+      {-1, 0, "1234"},
+      {-1, 0, "THE QUICK BROWN FOX"},
+      {-1, 0, "(the"},
   };
 
   for (size_t idx = 0; idx < arraysize(test_cases); ++idx) {
@@ -116,8 +117,8 @@ TEST(QSufSortTest, Search) {
 
     // Perform the search.
     int pos = 0;
-    int match_len = courgette::qsuf::search(
-        &I[0], old_buf, old_size, new_buf, new_size, &pos);
+    int match_len = courgette::qsuf::search(&I[0], old_buf, old_size, new_buf,
+                                            new_size, &pos);
 
     // Check basic properties and match with expected values.
     EXPECT_GE(match_len, 0) << "test_case[" << idx << "]";
@@ -125,8 +126,8 @@ TEST(QSufSortTest, Search) {
     if (match_len > 0) {
       EXPECT_GE(pos, 0) << "test_case[" << idx << "]";
       EXPECT_LE(pos, old_size - match_len) << "test_case[" << idx << "]";
-      EXPECT_EQ(0, ::memcmp(old_buf + pos, new_buf, match_len))
-          << "test_case[" << idx << "]";
+      EXPECT_EQ(0, ::memcmp(old_buf + pos, new_buf, match_len)) << "test_case["
+                                                                << idx << "]";
     }
     if (test_case.exp_pos >= 0) {
       EXPECT_EQ(test_case.exp_pos, pos) << "test_case[" << idx << "]";

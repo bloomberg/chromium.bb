@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 
-#include "courgette/third_party/bsdiff.h"
+#include "courgette/third_party/bsdiff/bsdiff.h"
 
 namespace courgette {
 

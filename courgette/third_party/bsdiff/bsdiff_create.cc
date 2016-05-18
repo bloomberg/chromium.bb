@@ -26,7 +26,7 @@
                  --Samuel Huang <huangs@chromium.org>
 */
 
-#include "courgette/third_party/bsdiff.h"
+#include "courgette/third_party/bsdiff/bsdiff.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -39,8 +39,8 @@
 
 #include "courgette/crc.h"
 #include "courgette/streams.h"
-#include "courgette/third_party/paged_array.h"
-#include "courgette/third_party/qsufsort.h"
+#include "courgette/third_party/bsdiff/paged_array.h"
+#include "courgette/third_party/bsdiff/qsufsort.h"
 
 namespace courgette {
 
@@ -54,8 +54,7 @@ static CheckBool WriteHeader(SinkStream* stream, MBSPatchHeader* header) {
 
 BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
                                SourceStream* new_stream,
-                               SinkStream* patch_stream)
-{
+                               SinkStream* patch_stream) {
   base::Time start_bsdiff_time = base::Time::Now();
   VLOG(1) << "Start bsdiff";
   size_t initial_patch_stream_length = patch_stream->Length();
@@ -140,7 +139,6 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
   //                     ssssssssssss   |lastscan = scan - lenb| is new seed.
   //                                 x  Cases (1) and (3) ....
 
-
   int lastscan = 0, lastpos = 0, lastoffset = 0;
 
   int scan = 0;
@@ -152,11 +150,11 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
                        // extend the match at |lastscan|.
 
     scan += match_length;
-    for (int scsc = scan;  scan < newsize;  ++scan) {
+    for (int scsc = scan; scan < newsize; ++scan) {
       match_length = qsuf::search<PagedArray<int>&>(
           I, old, oldsize, newbuf + scan, newsize - scan, &pos);
 
-      for ( ; scsc < scan + match_length ; scsc++)
+      for (; scsc < scan + match_length; scsc++)
         if ((scsc + lastoffset < oldsize) &&
             (old[scsc + lastoffset] == newbuf[scsc]))
           oldscore++;
@@ -185,9 +183,13 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
       int lenb = 0;
       if (scan < newsize) {  // i.e. not case (4); there is a match to extend.
         int score = 0, Sb = 0;
-        for (int i = 1;  (scan >= lastscan + i) && (pos >= i);  i++) {
-          if (old[pos - i] == newbuf[scan - i]) score++;
-          if (score*2 - i > Sb*2 - lenb) { Sb = score; lenb = i; }
+        for (int i = 1; (scan >= lastscan + i) && (pos >= i); i++) {
+          if (old[pos - i] == newbuf[scan - i])
+            score++;
+          if (score * 2 - i > Sb * 2 - lenb) {
+            Sb = score;
+            lenb = i;
+          }
         }
       }
 
@@ -200,10 +202,14 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
       int lenf = 0;
       {
         int score = 0, Sf = 0;
-        for (int i = 0;  (lastscan + i < scan) && (lastpos + i < oldsize);  ) {
-          if (old[lastpos + i] == newbuf[lastscan + i]) score++;
+        for (int i = 0; (lastscan + i < scan) && (lastpos + i < oldsize);) {
+          if (old[lastpos + i] == newbuf[lastscan + i])
+            score++;
           i++;
-          if (score*2 - i > Sf*2 - lenf) { Sf = score; lenf = i; }
+          if (score * 2 - i > Sf * 2 - lenf) {
+            Sf = score;
+            lenf = i;
+          }
         }
       }
 
@@ -213,18 +219,25 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
         int overlap = (lastscan + lenf) - (scan - lenb);
         int score = 0;
         int Ss = 0, lens = 0;
-        for (int i = 0;  i < overlap;  i++) {
+        for (int i = 0; i < overlap; i++) {
           if (newbuf[lastscan + lenf - overlap + i] ==
-              old[lastpos + lenf - overlap + i]) score++;
-          if (newbuf[scan - lenb + i] ==  old[pos - lenb + i]) score--;
-          if (score > Ss) { Ss = score; lens = i + 1; }
+              old[lastpos + lenf - overlap + i]) {
+            score++;
+          }
+          if (newbuf[scan - lenb + i] == old[pos - lenb + i]) {
+            score--;
+          }
+          if (score > Ss) {
+            Ss = score;
+            lens = i + 1;
+          }
         }
 
         lenf += lens - overlap;
         lenb -= lens;
       };
 
-      for (int i = 0;  i < lenf;  i++) {
+      for (int i = 0; i < lenf; i++) {
         uint8_t diff_byte = newbuf[lastscan + i] - old[lastpos + i];
         if (diff_byte) {
           ++diff_bytes_nonzero;
@@ -238,7 +251,7 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
         }
       }
       int gap = (scan - lenb) - (lastscan + lenf);
-      for (int i = 0;  i < gap;  i++) {
+      for (int i = 0; i < gap; i++) {
         if (!extra_bytes->Write(&newbuf[lastscan + lenf + i], 1))
           return MEM_ERROR;
       }
@@ -258,13 +271,13 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
 
       ++control_length;
 #ifdef DEBUG_bsmedberg
-      VLOG(1) << StringPrintf("Writing a block:  copy: %-8u extra: %-8u seek: "
-                              "%+-9d", copy_count, extra_count,
-                              seek_adjustment);
+      VLOG(1) << StringPrintf(
+          "Writing a block:  copy: %-8u extra: %-8u seek: %+-9d", copy_count,
+          extra_count, seek_adjustment);
 #endif
 
-      lastscan = scan - lenb;   // Include the backward extension in seed.
-      lastpos = pos - lenb;     //  ditto.
+      lastscan = scan - lenb;  // Include the backward extension in seed.
+      lastpos = pos - lenb;    //  ditto.
       lastoffset = lastpos - lastscan;
     }
   }
@@ -279,9 +292,9 @@ BSDiffStatus CreateBinaryPatch(SourceStream* old_stream,
   static_assert(sizeof(MBS_PATCH_HEADER_TAG) - 1 == sizeof(header.tag),
                 "MBS_PATCH_HEADER_TAG must match header field size");
   memcpy(header.tag, MBS_PATCH_HEADER_TAG, sizeof(header.tag));
-  header.slen     = oldsize;
-  header.scrc32   = CalculateCrc(old, oldsize);
-  header.dlen     = newsize;
+  header.slen = oldsize;
+  header.scrc32 = CalculateCrc(old, oldsize);
+  header.dlen = newsize;
 
   if (!WriteHeader(patch_stream, &header))
     return MEM_ERROR;

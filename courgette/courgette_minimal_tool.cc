@@ -8,9 +8,9 @@
 
 #include <string>
 
-#include "courgette/third_party/bsdiff.h"
 #include "courgette/courgette.h"
 #include "courgette/streams.h"
+#include "courgette/third_party/bsdiff/bsdiff.h"
 
 void PrintHelp() {
   fprintf(stderr,

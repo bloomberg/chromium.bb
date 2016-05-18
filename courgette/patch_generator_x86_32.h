@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "courgette/assembly_program.h"
 #include "courgette/ensemble.h"
+#include "courgette/patcher_x86_32.h"
 #include "courgette/program_detector.h"
 
 namespace courgette {

@@ -24,7 +24,7 @@
 #include "content/public/common/service_registry.h"
 #include "content/public/utility/utility_thread.h"
 #include "courgette/courgette.h"
-#include "courgette/third_party/bsdiff.h"
+#include "courgette/third_party/bsdiff/bsdiff.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/zlib/google/zip.h"
 #include "ui/gfx/geometry/size.h"

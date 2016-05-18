@@ -17,7 +17,7 @@
 #include "components/update_client/component_patcher_unittest.h"
 #include "components/update_client/test_installer.h"
 #include "courgette/courgette.h"
-#include "courgette/third_party/bsdiff.h"
+#include "courgette/third_party/bsdiff/bsdiff.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

@@ -45,7 +45,7 @@ int CourgettePatchFiles(const base::FilePath& src,
 // Applies a patch file to source file using bsdiff. This function uses
 // Courgette's flavor of bsdiff. Returns 0 in case of success, or
 // kBsdiffErrorOffset + a bsdiff status code in case of errors.
-// See courgette/third_party/bsdiff.h for details.
+// See courgette/third_party/bsdiff/bsdiff.h for details.
 int BsdiffPatchFiles(const base::FilePath& src,
                      const base::FilePath& patch,
                      const base::FilePath& dest);

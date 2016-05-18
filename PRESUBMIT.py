@@ -1132,6 +1132,7 @@ def _CheckSpamLogging(input_api, output_api):
                      r"notification_event_dispatcher_impl\.cc$",
                  r"^content[\\\/]common[\\\/]gpu[\\\/]client[\\\/]"
                      r"gl_helper_benchmark\.cc$",
+                 r"^courgette[\\\/]courgette_minimal_tool\.cc$",
                  r"^courgette[\\\/]courgette_tool\.cc$",
                  r"^extensions[\\\/]renderer[\\\/]logging_native_handler\.cc$",
                  r"^ipc[\\\/]ipc_logging\.cc$",
