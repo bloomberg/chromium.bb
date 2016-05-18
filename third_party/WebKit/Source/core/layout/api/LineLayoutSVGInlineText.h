@@ -68,6 +68,7 @@ class SVGInlineTextMetricsIterator {
     DISALLOW_NEW();
 public:
     SVGInlineTextMetricsIterator() { reset(LineLayoutSVGInlineText()); }
+    explicit SVGInlineTextMetricsIterator(LineLayoutSVGInlineText textLineLayout) { reset(textLineLayout); }
 
     void advanceToTextStart(LineLayoutSVGInlineText textLineLayout, unsigned startCharacterOffset)
     {
