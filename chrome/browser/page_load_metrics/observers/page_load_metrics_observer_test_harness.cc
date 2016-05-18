@@ -76,6 +76,14 @@ void PageLoadMetricsObserverTestHarness::PopulateRequiredTimingFields(
       inout_timing->dom_loading.is_zero()) {
     inout_timing->dom_loading = inout_timing->dom_content_loaded_event_start;
   }
+  if (!inout_timing->parse_stop.is_zero() &&
+      inout_timing->parse_start.is_zero()) {
+    inout_timing->parse_start = inout_timing->parse_stop;
+  }
+  if (!inout_timing->parse_start.is_zero() &&
+      inout_timing->response_start.is_zero()) {
+    inout_timing->response_start = inout_timing->parse_start;
+  }
   if (!inout_timing->dom_loading.is_zero() &&
       inout_timing->response_start.is_zero()) {
     inout_timing->response_start = inout_timing->dom_loading;

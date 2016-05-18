@@ -104,7 +104,15 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
 TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl1) {
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.first_text_paint = base::TimeDelta::FromMilliseconds(1);
+  timing.parse_start = base::TimeDelta::FromMilliseconds(10);
+  timing.first_paint = base::TimeDelta::FromMilliseconds(20);
+  timing.first_contentful_paint = base::TimeDelta::FromMilliseconds(40);
+  timing.first_text_paint = base::TimeDelta::FromMilliseconds(80);
+  timing.first_image_paint = base::TimeDelta::FromMilliseconds(160);
+  timing.parse_stop = base::TimeDelta::FromMilliseconds(320);
+  timing.dom_content_loaded_event_start =
+      base::TimeDelta::FromMilliseconds(640);
+  timing.load_event_start = base::TimeDelta::FromMilliseconds(1280);
   PopulateRequiredTimingFields(&timing);
   NavigateAndCommit(GURL("https://www.google.com/webhp?q=test"));
   NavigateAndCommit(GURL(kExampleUrl));
@@ -113,11 +121,55 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl1) {
 
   // Navigate again to force logging.
   NavigateAndCommit(GURL("http://www.final.com"));
+
+  histogram_tester().ExpectTotalCount(internal::kHistogramFromGWSParseStart, 1);
+  histogram_tester().ExpectBucketCount(internal::kHistogramFromGWSParseStart,
+                                       timing.parse_start.InMilliseconds(), 1);
+
+  histogram_tester().ExpectTotalCount(internal::kHistogramFromGWSFirstPaint, 1);
+  histogram_tester().ExpectBucketCount(internal::kHistogramFromGWSFirstPaint,
+                                       timing.first_paint.InMilliseconds(), 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSFirstContentfulPaint, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramFromGWSFirstContentfulPaint,
+      timing.first_contentful_paint.InMilliseconds(), 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSParseStartToFirstContentfulPaint, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramFromGWSParseStartToFirstContentfulPaint,
+      (timing.first_contentful_paint - timing.parse_start).InMilliseconds(), 1);
+
   histogram_tester().ExpectTotalCount(internal::kHistogramFromGWSFirstTextPaint,
                                       1);
   histogram_tester().ExpectBucketCount(
       internal::kHistogramFromGWSFirstTextPaint,
       timing.first_text_paint.InMilliseconds(), 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSFirstImagePaint, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramFromGWSFirstImagePaint,
+      timing.first_image_paint.InMilliseconds(), 1);
+
+  histogram_tester().ExpectTotalCount(internal::kHistogramFromGWSParseDuration,
+                                      1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramFromGWSParseDuration,
+      (timing.parse_stop - timing.parse_start).InMilliseconds(), 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSDomContentLoaded, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramFromGWSDomContentLoaded,
+      timing.dom_content_loaded_event_start.InMilliseconds(), 1);
+
+  histogram_tester().ExpectTotalCount(internal::kHistogramFromGWSLoad, 1);
+  histogram_tester().ExpectBucketCount(internal::kHistogramFromGWSLoad,
+                                       timing.load_event_start.InMilliseconds(),
+                                       1);
 }
 
 TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl2) {

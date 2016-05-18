@@ -15,43 +15,53 @@ using page_load_metrics::UserAbortType;
 
 namespace internal {
 
-const char kHistogramFromGWSFirstPaint[] =
-    "PageLoad.Clients.FromGWS2.Timing2.NavigationToFirstPaint";
-const char kHistogramFromGWSFirstTextPaint[] =
-    "PageLoad.Clients.FromGWS2.Timing2.NavigationToFirstTextPaint";
-const char kHistogramFromGWSFirstImagePaint[] =
-    "PageLoad.Clients.FromGWS2.Timing2.NavigationToFirstImagePaint";
-const char kHistogramFromGWSFirstContentfulPaint[] =
-    "PageLoad.Clients.FromGWS2.Timing2.NavigationToFirstContentfulPaint";
-const char kHistogramFromGWSParseStartToFirstContentfulPaint[] =
-    "PageLoad.Clients.FromGWS2.Timing2.ParseStartToFirstContentfulPaint";
 const char kHistogramFromGWSDomContentLoaded[] =
-    "PageLoad.Clients.FromGWS2.Timing2.NavigationToDOMContentLoadedEventFired";
-const char kHistogramFromGWSParseDuration[] =
-    "PageLoad.Clients.FromGWS2.Timing2.ParseDuration";
+    "PageLoad.Clients.FromGoogleSearch.DocumentTiming."
+    "NavigationToDOMContentLoadedEventFired";
 const char kHistogramFromGWSLoad[] =
-    "PageLoad.Clients.FromGWS2.Timing2.NavigationToLoadEventFired";
+    "PageLoad.Clients.FromGoogleSearch.DocumentTiming."
+    "NavigationToLoadEventFired";
+const char kHistogramFromGWSFirstPaint[] =
+    "PageLoad.Clients.FromGoogleSearch.PaintTiming.NavigationToFirstPaint";
+const char kHistogramFromGWSFirstTextPaint[] =
+    "PageLoad.Clients.FromGoogleSearch.PaintTiming.NavigationToFirstTextPaint";
+const char kHistogramFromGWSFirstImagePaint[] =
+    "PageLoad.Clients.FromGoogleSearch.PaintTiming.NavigationToFirstImagePaint";
+const char kHistogramFromGWSFirstContentfulPaint[] =
+    "PageLoad.Clients.FromGoogleSearch.PaintTiming."
+    "NavigationToFirstContentfulPaint";
+const char kHistogramFromGWSParseStartToFirstContentfulPaint[] =
+    "PageLoad.Clients.FromGoogleSearch.PaintTiming."
+    "ParseStartToFirstContentfulPaint";
+const char kHistogramFromGWSParseDuration[] =
+    "PageLoad.Clients.FromGoogleSearch.ParseTiming.ParseDuration";
+const char kHistogramFromGWSParseStart[] =
+    "PageLoad.Clients.FromGoogleSearch.ParseTiming.NavigationToParseStart";
 
 const char kHistogramFromGWSAbortUnknownNavigationBeforeCommit[] =
-    "PageLoad.Clients.FromGWS2.AbortTiming.UnknownNavigation.BeforeCommit";
+    "PageLoad.Clients.FromGoogleSearch.AbortTiming.UnknownNavigation."
+    "BeforeCommit";
 const char kHistogramFromGWSAbortNewNavigationBeforePaint[] =
-    "PageLoad.Clients.FromGWS2.AbortTiming.NewNavigation.AfterCommit."
+    "PageLoad.Clients.FromGoogleSearch.AbortTiming.NewNavigation.AfterCommit."
     "BeforePaint";
 const char kHistogramFromGWSAbortStopBeforeCommit[] =
-    "PageLoad.Clients.FromGWS2.AbortTiming.Stop.BeforeCommit";
+    "PageLoad.Clients.FromGoogleSearch.AbortTiming.Stop.BeforeCommit";
 const char kHistogramFromGWSAbortStopBeforePaint[] =
-    "PageLoad.Clients.FromGWS2.AbortTiming.Stop.AfterCommit.BeforePaint";
+    "PageLoad.Clients.FromGoogleSearch.AbortTiming.Stop.AfterCommit."
+    "BeforePaint";
 const char kHistogramFromGWSAbortCloseBeforeCommit[] =
-    "PageLoad.Clients.FromGWS2.AbortTiming.Close.BeforeCommit";
+    "PageLoad.Clients.FromGoogleSearch.AbortTiming.Close.BeforeCommit";
 const char kHistogramFromGWSAbortCloseBeforePaint[] =
-    "PageLoad.Clients.FromGWS2.AbortTiming.Close.AfterCommit.BeforePaint";
+    "PageLoad.Clients.FromGoogleSearch.AbortTiming.Close.AfterCommit."
+    "BeforePaint";
 
 const char kHistogramFromGWSAbortOtherBeforeCommit[] =
-    "PageLoad.Clients.FromGWS2.AbortTiming.Other.BeforeCommit";
+    "PageLoad.Clients.FromGoogleSearch.AbortTiming.Other.BeforeCommit";
 const char kHistogramFromGWSAbortReloadBeforePaint[] =
-    "PageLoad.Clients.FromGWS2.AbortTiming.Reload.AfterCommit.BeforePaint";
+    "PageLoad.Clients.FromGoogleSearch.AbortTiming.Reload.AfterCommit."
+    "BeforePaint";
 const char kHistogramFromGWSAbortForwardBackBeforePaint[] =
-    "PageLoad.Clients.FromGWS2.AbortTiming.ForwardBackNavigation."
+    "PageLoad.Clients.FromGoogleSearch.AbortTiming.ForwardBackNavigation."
     "AfterCommit.BeforePaint";
 
 }  // namespace internal
@@ -117,52 +127,6 @@ void LogProvisionalAborts(UserAbortType abort_type,
       // TODO(csharrison): Once transitions can be acquired before commit, log
       // the Reload/NewNavigation/ForwardBack variants here.
       break;
-  }
-}
-
-void LogPerformanceMetrics(
-    const page_load_metrics::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  if (WasStartedInForegroundEventInForeground(
-          timing.dom_content_loaded_event_start, extra_info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSDomContentLoaded,
-                        timing.dom_content_loaded_event_start);
-  }
-  if (WasStartedInForegroundEventInForeground(timing.parse_stop, extra_info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSParseDuration,
-                        timing.parse_stop - timing.parse_start);
-  }
-  if (WasStartedInForegroundEventInForeground(timing.load_event_start,
-                                              extra_info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSLoad,
-                        timing.load_event_start);
-  }
-  if (WasStartedInForegroundEventInForeground(timing.first_text_paint,
-                                              extra_info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstTextPaint,
-                        timing.first_text_paint);
-  }
-  if (WasStartedInForegroundEventInForeground(timing.first_image_paint,
-                                              extra_info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstImagePaint,
-                        timing.first_image_paint);
-  }
-  if (WasStartedInForegroundEventInForeground(timing.first_paint, extra_info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstPaint,
-                        timing.first_paint);
-  }
-  if (WasStartedInForegroundEventInForeground(timing.first_contentful_paint,
-                                              extra_info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstContentfulPaint,
-                        timing.first_contentful_paint);
-
-    // If we have a foreground paint, we should have a foreground parse start,
-    // since paints can't happen until after parsing starts.
-    DCHECK(WasStartedInForegroundEventInForeground(timing.parse_start,
-                                                   extra_info));
-    PAGE_LOAD_HISTOGRAM(
-        internal::kHistogramFromGWSParseStartToFirstContentfulPaint,
-        timing.first_contentful_paint - timing.parse_start);
   }
 }
 
@@ -366,6 +330,54 @@ void FromGWSPageLoadMetricsObserver::OnCommit(
           navigation_handle->GetPageTransition()));
 }
 
+void FromGWSPageLoadMetricsObserver::OnDomContentLoadedEventStart(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  logger_.OnDomContentLoadedEventStart(timing, extra_info);
+}
+
+void FromGWSPageLoadMetricsObserver::OnLoadEventStart(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  logger_.OnLoadEventStart(timing, extra_info);
+}
+
+void FromGWSPageLoadMetricsObserver::OnFirstPaint(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  logger_.OnFirstPaint(timing, extra_info);
+}
+
+void FromGWSPageLoadMetricsObserver::OnFirstTextPaint(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  logger_.OnFirstTextPaint(timing, extra_info);
+}
+
+void FromGWSPageLoadMetricsObserver::OnFirstImagePaint(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  logger_.OnFirstImagePaint(timing, extra_info);
+}
+
+void FromGWSPageLoadMetricsObserver::OnFirstContentfulPaint(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  logger_.OnFirstContentfulPaint(timing, extra_info);
+}
+
+void FromGWSPageLoadMetricsObserver::OnParseStart(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  logger_.OnParseStart(timing, extra_info);
+}
+
+void FromGWSPageLoadMetricsObserver::OnParseStop(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  logger_.OnParseStop(timing, extra_info);
+}
+
 void FromGWSPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
@@ -381,7 +393,7 @@ void FromGWSPageLoadMetricsLogger::OnComplete(
   // If we have a committed load but |timing.IsEmpty()|, then this load was not
   // tracked by the renderer. In this case, it is not possible to know whether
   // the abort signals came before the page painted. Additionally, for
-  // consistency with PageLoad.Timing2 metrics, we ignore non-render-tracked
+  // consistency with core PageLoad metrics, we ignore non-render-tracked
   // loads when tracking aborts after commit.
   UserAbortType abort_type = extra_info.abort_type;
   base::TimeDelta time_to_abort = extra_info.time_to_abort;
@@ -389,7 +401,6 @@ void FromGWSPageLoadMetricsLogger::OnComplete(
       WasAbortedInForeground(abort_type, time_to_abort, extra_info);
 
   if (!extra_info.committed_url.is_empty()) {
-    LogPerformanceMetrics(timing, extra_info);
     bool aborted_before_paint =
         aborted_in_foreground && !timing.IsEmpty() &&
         (timing.first_paint.is_zero() || timing.first_paint >= time_to_abort);
@@ -437,4 +448,98 @@ bool FromGWSPageLoadMetricsLogger::ShouldLogMetrics(const GURL& committed_url) {
   // navigation to the redirector, and not included in the redirected
   // navigation. Therefore, do not require link navigation this case.
   return previously_committed_url_is_search_redirector_;
+}
+
+bool FromGWSPageLoadMetricsLogger::ShouldLogForegroundEventAfterCommit(
+    base::TimeDelta event,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  DCHECK(!info.committed_url.is_empty())
+      << "ShouldLogForegroundEventAfterCommit called without committed URL.";
+  return ShouldLogMetrics(info.committed_url) &&
+         WasStartedInForegroundEventInForeground(event, info);
+}
+
+void FromGWSPageLoadMetricsLogger::OnDomContentLoadedEventStart(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  if (ShouldLogForegroundEventAfterCommit(timing.dom_content_loaded_event_start,
+                                          extra_info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSDomContentLoaded,
+                        timing.dom_content_loaded_event_start);
+  }
+}
+
+void FromGWSPageLoadMetricsLogger::OnLoadEventStart(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  if (ShouldLogForegroundEventAfterCommit(timing.load_event_start,
+                                          extra_info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSLoad,
+                        timing.load_event_start);
+  }
+}
+
+void FromGWSPageLoadMetricsLogger::OnFirstPaint(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  if (ShouldLogForegroundEventAfterCommit(timing.first_paint, extra_info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstPaint,
+                        timing.first_paint);
+  }
+}
+
+void FromGWSPageLoadMetricsLogger::OnFirstTextPaint(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  if (ShouldLogForegroundEventAfterCommit(timing.first_text_paint,
+                                          extra_info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstTextPaint,
+                        timing.first_text_paint);
+  }
+}
+
+void FromGWSPageLoadMetricsLogger::OnFirstImagePaint(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  if (ShouldLogForegroundEventAfterCommit(timing.first_image_paint,
+                                          extra_info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstImagePaint,
+                        timing.first_image_paint);
+  }
+}
+
+void FromGWSPageLoadMetricsLogger::OnFirstContentfulPaint(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  if (ShouldLogForegroundEventAfterCommit(timing.first_contentful_paint,
+                                          extra_info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstContentfulPaint,
+                        timing.first_contentful_paint);
+
+    // If we have a foreground paint, we should have a foreground parse start,
+    // since paints can't happen until after parsing starts.
+    DCHECK(WasStartedInForegroundEventInForeground(timing.parse_start,
+                                                   extra_info));
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramFromGWSParseStartToFirstContentfulPaint,
+        timing.first_contentful_paint - timing.parse_start);
+  }
+}
+
+void FromGWSPageLoadMetricsLogger::OnParseStart(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  if (ShouldLogForegroundEventAfterCommit(timing.parse_start, extra_info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSParseStart,
+                        timing.parse_start);
+  }
+}
+
+void FromGWSPageLoadMetricsLogger::OnParseStop(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+  if (ShouldLogForegroundEventAfterCommit(timing.parse_stop, extra_info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSParseDuration,
+                        timing.parse_stop - timing.parse_start);
+  }
 }
