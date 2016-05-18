@@ -49,10 +49,6 @@ class SetRegValueWorkItem : public WorkItem {
 
   ~SetRegValueWorkItem() override;
 
-  bool Do() override;
-
-  void Rollback() override;
-
  private:
   enum SettingStatus {
     // The status before Do is called.
@@ -69,6 +65,10 @@ class SetRegValueWorkItem : public WorkItem {
     // The status after Do and Rollback is called.
     VALUE_ROLL_BACK
   };
+
+  // WorkItem:
+  bool DoImpl() override;
+  void RollbackImpl() override;
 
   // Root key of the target key under which the value is set. The root key can
   // only be one of the predefined keys on Windows.

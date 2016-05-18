@@ -29,7 +29,7 @@ void CreateDirWorkItem::GetTopDirToCreate() {
   return;
 }
 
-bool CreateDirWorkItem::Do() {
+bool CreateDirWorkItem::DoImpl() {
   VLOG(1) << "creating directory " << path_.value();
   GetTopDirToCreate();
   if (top_path_.empty())
@@ -44,7 +44,7 @@ bool CreateDirWorkItem::Do() {
   return result;
 }
 
-void CreateDirWorkItem::Rollback() {
+void CreateDirWorkItem::RollbackImpl() {
   if (!rollback_needed_)
     return;
 

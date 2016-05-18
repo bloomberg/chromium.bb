@@ -43,11 +43,11 @@ class UpdateActiveSetupVersionWorkItem : public WorkItem {
   UpdateActiveSetupVersionWorkItem(const base::string16& active_setup_path,
                                    Operation operation);
 
-  // Overriden from WorkItem.
-  bool Do() override;
-  void Rollback() override;
-
  private:
+  // WorkItem:
+  bool DoImpl() override;
+  void RollbackImpl() override;
+
   // Returns the updated Active Setup version to be used based on the
   // |existing_version|.
   base::string16 GetUpdatedActiveSetupVersion(

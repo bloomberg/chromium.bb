@@ -27,7 +27,7 @@ MoveTreeWorkItem::MoveTreeWorkItem(const base::FilePath& source_path,
       duplicate_option_(duplicate_option) {
 }
 
-bool MoveTreeWorkItem::Do() {
+bool MoveTreeWorkItem::DoImpl() {
   if (!base::PathExists(source_path_)) {
     LOG(ERROR) << source_path_.value() << " does not exist";
     return false;
@@ -99,7 +99,7 @@ bool MoveTreeWorkItem::Do() {
   return true;
 }
 
-void MoveTreeWorkItem::Rollback() {
+void MoveTreeWorkItem::RollbackImpl() {
   if (moved_to_dest_path_ && !base::Move(dest_path_, source_path_)) {
     PLOG(ERROR) << "Can not move " << dest_path_.value()
                 << " to " << source_path_.value();

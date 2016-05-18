@@ -17,7 +17,7 @@ CallbackWorkItem::CallbackWorkItem(
 CallbackWorkItem::~CallbackWorkItem() {
 }
 
-bool CallbackWorkItem::Do() {
+bool CallbackWorkItem::DoImpl() {
   DCHECK_EQ(roll_state_, RS_UNDEFINED);
 
   roll_state_ = RS_FORWARD;
@@ -27,7 +27,7 @@ bool CallbackWorkItem::Do() {
   return result;
 }
 
-void CallbackWorkItem::Rollback() {
+void CallbackWorkItem::RollbackImpl() {
   DCHECK_EQ(roll_state_, RS_UNDEFINED);
 
   roll_state_ = RS_BACKWARD;

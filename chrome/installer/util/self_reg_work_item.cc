@@ -90,15 +90,10 @@ bool SelfRegWorkItem::RegisterDll(bool do_register) {
   return success;
 }
 
-bool SelfRegWorkItem::Do() {
-  bool success = RegisterDll(do_register_);
-  if (ignore_failure_)
-    success = true;
-  return success;
+bool SelfRegWorkItem::DoImpl() {
+  return RegisterDll(do_register_);
 }
 
-void SelfRegWorkItem::Rollback() {
-  if (!ignore_failure_) {
-    RegisterDll(!do_register_);
-  }
+void SelfRegWorkItem::RollbackImpl() {
+  RegisterDll(!do_register_);
 }

@@ -29,34 +29,32 @@ DeleteRegKeyWorkItem::DeleteRegKeyWorkItem(HKEY predefined_root,
          wow64_access == KEY_WOW64_64KEY);
 }
 
-bool DeleteRegKeyWorkItem::Do() {
+bool DeleteRegKeyWorkItem::DoImpl() {
+  DCHECK(!backup_initialized_);
+
   if (path_.empty())
     return false;
 
-  RegistryKeyBackup backup;
-
-  // Only try to make a backup if we're not configured to ignore failures.
-  if (!ignore_failure_) {
-    if (!backup.Initialize(predefined_root_, path_.c_str(), wow64_access_)) {
+  // Only try to make a backup if rollback is enabled.
+  if (rollback_enabled()) {
+    if (!backup_.Initialize(predefined_root_, path_.c_str(), wow64_access_)) {
       LOG(ERROR) << "Failed to backup destination for registry key copy.";
       return false;
     }
+    backup_initialized_ = true;
   }
 
   // Delete the key.
   if (!InstallUtil::DeleteRegistryKey(
           predefined_root_, path_.c_str(), wow64_access_)) {
-    return ignore_failure_;
+    return false;
   }
-
-  // We've succeeded, so remember any backup we may have made.
-  backup_.swap(backup);
 
   return true;
 }
 
-void DeleteRegKeyWorkItem::Rollback() {
-  if (ignore_failure_)
+void DeleteRegKeyWorkItem::RollbackImpl() {
+  if (!backup_initialized_)
     return;
 
   // Delete anything in the key before restoring the backup in case someone else

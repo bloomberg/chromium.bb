@@ -38,11 +38,13 @@ UpdateActiveSetupVersionWorkItem::UpdateActiveSetupVersionWorkItem(
       operation_(operation) {
 }
 
-bool UpdateActiveSetupVersionWorkItem::Do() {
+bool UpdateActiveSetupVersionWorkItem::DoImpl() {
+  set_reg_value_work_item_.set_best_effort(best_effort());
+  set_reg_value_work_item_.set_rollback_enabled(rollback_enabled());
   return set_reg_value_work_item_.Do();
 }
 
-void UpdateActiveSetupVersionWorkItem::Rollback() {
+void UpdateActiveSetupVersionWorkItem::RollbackImpl() {
   set_reg_value_work_item_.Rollback();
 }
 

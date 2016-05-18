@@ -29,12 +29,8 @@ DeleteRegValueWorkItem::DeleteRegValueWorkItem(HKEY predefined_root,
 DeleteRegValueWorkItem::~DeleteRegValueWorkItem() {
 }
 
-bool DeleteRegValueWorkItem::Do() {
-  if (status_ != DELETE_VALUE) {
-    // we already did something.
-    LOG(ERROR) << "multiple calls to Do()";
-    return false;
-  }
+bool DeleteRegValueWorkItem::DoImpl() {
+  DCHECK_EQ(DELETE_VALUE, status_);
 
   status_ = VALUE_UNCHANGED;
 
@@ -48,8 +44,8 @@ bool DeleteRegValueWorkItem::Do() {
     result = key.ReadValue(value_name_.c_str(), NULL, &size, &type);
 
   if (result == ERROR_FILE_NOT_FOUND) {
-    LOG(INFO) << "(delete value) Key: " << key_path_ << " or Value: "
-              << value_name_ << " does not exist.";
+    VLOG(1) << "(delete value) Key: " << key_path_
+            << " or Value: " << value_name_ << " does not exist.";
     status_ = VALUE_NOT_FOUND;
     return true;
   }
@@ -78,9 +74,10 @@ bool DeleteRegValueWorkItem::Do() {
   return true;
 }
 
-void DeleteRegValueWorkItem::Rollback() {
-  if (status_ == DELETE_VALUE || status_ == VALUE_ROLLED_BACK)
-    return;
+void DeleteRegValueWorkItem::RollbackImpl() {
+  DCHECK_NE(DELETE_VALUE, status_);
+  DCHECK_NE(VALUE_ROLLED_BACK, status_);
+
   if (status_ == VALUE_UNCHANGED || status_ == VALUE_NOT_FOUND) {
     status_ = VALUE_ROLLED_BACK;
     VLOG(1) << "rollback: setting unchanged, nothing to do";
@@ -88,6 +85,8 @@ void DeleteRegValueWorkItem::Rollback() {
   }
 
   // At this point only possible state is VALUE_DELETED.
+  DCHECK_EQ(VALUE_DELETED, status_);
+
   RegKey key;
   LONG result = key.Open(predefined_root_,
                          key_path_.c_str(),

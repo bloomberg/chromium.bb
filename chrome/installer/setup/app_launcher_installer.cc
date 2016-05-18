@@ -45,11 +45,11 @@ void AddLegacyAppCommandRemovalItem(const InstallerState& installer_state,
                                     WorkItemList* list) {
   // Ignore failures since this is a clean-up operation and shouldn't block
   // install or update.
-  list->AddDeleteRegKeyWorkItem(
-                      installer_state.root_key(),
-                      GetRegistrationDataCommandKey(reg_data, name),
-                      KEY_WOW64_32KEY)
-      ->set_ignore_failure(true);
+  auto* delete_reg_key_work_item = list->AddDeleteRegKeyWorkItem(
+      installer_state.root_key(), GetRegistrationDataCommandKey(reg_data, name),
+      KEY_WOW64_32KEY);
+  delete_reg_key_work_item->set_best_effort(true);
+  delete_reg_key_work_item->set_rollback_enabled(false);
 }
 
 }  // namespace
@@ -79,9 +79,10 @@ void AddRemoveLegacyAppHostExeWorkItems(const base::FilePath& target_path,
                                         const base::FilePath& temp_path,
                                         WorkItemList* list) {
   DCHECK(!InstallUtil::IsChromeSxSProcess());
-  list->AddDeleteTreeWorkItem(
-      target_path.Append(kLegacyChromeAppHostExe),
-      temp_path)->set_ignore_failure(true);
+  auto* delete_tree_work_item = list->AddDeleteTreeWorkItem(
+      target_path.Append(kLegacyChromeAppHostExe), temp_path);
+  delete_tree_work_item->set_best_effort(true);
+  delete_tree_work_item->set_rollback_enabled(false);
 }
 
 void AddRemoveLegacyAppCommandsWorkItems(const InstallerState& installer_state,

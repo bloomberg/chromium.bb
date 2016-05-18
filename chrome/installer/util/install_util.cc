@@ -285,6 +285,9 @@ void InstallUtil::AddInstallerResultItems(
     const base::string16* const launch_cmd,
     WorkItemList* install_list) {
   DCHECK(install_list);
+  DCHECK(install_list->best_effort());
+  DCHECK(!install_list->rollback_enabled());
+
   const HKEY root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   DWORD installer_result = (GetInstallReturnCode(status) == 0) ? 0 : 1;
   install_list->AddCreateRegKeyWorkItem(root, state_key, KEY_WOW64_32KEY);

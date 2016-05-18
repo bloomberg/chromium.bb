@@ -18,16 +18,16 @@ class CreateRegKeyWorkItem : public WorkItem {
  public:
   ~CreateRegKeyWorkItem() override;
 
-  bool Do() override;
-
-  void Rollback() override;
-
  private:
   friend class WorkItem;
 
   CreateRegKeyWorkItem(HKEY predefined_root,
                        const std::wstring& path,
                        REGSAM wow64_access);
+
+  // WorkItem:
+  bool DoImpl() override;
+  void RollbackImpl() override;
 
   // Initialize key_list_ by adding all paths of keys from predefined_root_
   // to path_. Returns true if key_list_ is non empty.

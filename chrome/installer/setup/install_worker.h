@@ -119,14 +119,13 @@ void AddInstallWorkItems(const InstallationState& original_state,
 // |system_level| specifies whether to call the system or user level DLL
 // registration entry points.
 // |do_register| says whether to register or unregister.
-// |may_fail| states whether this is best effort or not. If |may_fail| is true
-// then |work_item_list| will still succeed if the registration fails and
-// no registration rollback will be performed.
+// If |best_effort| is true, registration or unregistration failure doesn't
+// cause failure of |work_item_list|.
 void AddRegisterComDllWorkItems(const base::FilePath& dll_folder,
                                 const std::vector<base::FilePath>& dll_files,
                                 bool system_level,
                                 bool do_register,
-                                bool ignore_failures,
+                                bool best_effort,
                                 WorkItemList* work_item_list);
 
 void AddSetMsiMarkerWorkItem(const InstallerState& installer_state,

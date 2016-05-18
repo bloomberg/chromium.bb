@@ -756,9 +756,12 @@ void HandleActiveSetupForBrowser(const base::FilePath& installation_root,
                                  bool force) {
   DCHECK(chrome.is_chrome());
 
-  NoRollbackWorkItemList cleanup_list;
-  AddCleanupDeprecatedPerUserRegistrationsWorkItems(chrome, &cleanup_list);
-  cleanup_list.Do();
+  std::unique_ptr<WorkItemList> cleanup_list(WorkItem::CreateWorkItemList());
+  cleanup_list->set_log_message("Cleanup deprecated per-user registrations");
+  cleanup_list->set_rollback_enabled(false);
+  cleanup_list->set_best_effort(true);
+  AddCleanupDeprecatedPerUserRegistrationsWorkItems(chrome, cleanup_list.get());
+  cleanup_list->Do();
 
   // Only create shortcuts on Active Setup if the first run sentinel is not
   // present for this user (as some shortcuts used to be installed on first
