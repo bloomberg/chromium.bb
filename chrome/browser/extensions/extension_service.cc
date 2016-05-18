@@ -1600,6 +1600,13 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
             *granted_permissions,
             extension->permissions_data()->active_permissions(),
             extension->GetType());
+
+    // If there was no privilege increase, the extension might still have new
+    // permissions (which either don't generate a warning message, or whose
+    // warning messages are suppressed by existing permissions). Grant the new
+    // permissions.
+    if (!is_privilege_increase)
+      GrantPermissions(extension);
   }
 
   if (is_extension_installed) {
