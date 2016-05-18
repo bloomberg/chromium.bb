@@ -36,33 +36,14 @@ const char TranslatePrefs::kPrefTranslateLastDeniedTimeForLanguage[] =
 const char TranslatePrefs::kPrefTranslateTooOftenDeniedForLanguage[] =
     "translate_too_often_denied_for_language";
 
-// This property is deprecated but there is still some usages. Don't use this
-// for new code.
-static const char kPrefTranslateLanguageBlacklist[] =
-    "translate_language_blacklist";
-
 // The below properties used to be used but now are deprecated. Don't use them
 // since an old profile might have some values there.
 //
 // * translate_last_denied_time
 // * translate_too_often_denied
+// * translate_language_blacklist
 
 namespace {
-
-void GetBlacklistedLanguages(const PrefService* prefs,
-                             std::vector<std::string>* languages) {
-  DCHECK(languages);
-  DCHECK(languages->empty());
-
-  const char* key = kPrefTranslateLanguageBlacklist;
-  const base::ListValue* list = prefs->GetList(key);
-  for (base::ListValue::const_iterator it = list->begin(); it != list->end();
-       ++it) {
-    std::string lang;
-    (*it)->GetAsString(&lang);
-    languages->push_back(lang);
-  }
-}
 
 // Expands language codes to make these more suitable for Accept-Language.
 // Example: ['en-US', 'ja', 'en-CA'] => ['en-US', 'en', 'ja', 'en-CA'].
@@ -216,11 +197,6 @@ void TranslatePrefs::BlockLanguage(const std::string& original_language) {
 
 void TranslatePrefs::UnblockLanguage(const std::string& original_language) {
   RemoveValueFromBlacklist(kPrefTranslateBlockedLanguages, original_language);
-}
-
-void TranslatePrefs::RemoveLanguageFromLegacyBlacklist(
-    const std::string& original_language) {
-  RemoveValueFromBlacklist(kPrefTranslateLanguageBlacklist, original_language);
 }
 
 bool TranslatePrefs::IsSiteBlacklisted(const std::string& site) const {
@@ -475,8 +451,6 @@ bool TranslatePrefs::ShouldAutoTranslate(const std::string& original_language,
 // static
 void TranslatePrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterListPref(kPrefTranslateLanguageBlacklist,
-                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterListPref(kPrefTranslateSiteBlacklist,
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterDictionaryPref(
@@ -539,99 +513,6 @@ void TranslatePrefs::MigrateUserPrefs(PrefService* user_prefs,
       }
     }
   }
-
-  // Get the union of the blacklist and the Accept languages, and set this to
-  // the new language set 'translate_blocked_languages'. This is used for the
-  // settings UI for Translate and configration to determine which langauage
-  // should be translated instead of the blacklist. The blacklist is no longer
-  // used after launching the settings UI.
-  // After that, Set 'translate_languages_not_translate' to Accept languages to
-  // enable settings for users.
-  bool merged = user_prefs->HasPrefPath(kPrefTranslateBlockedLanguages);
-
-  if (!merged) {
-    std::vector<std::string> blacklisted_languages;
-    GetBlacklistedLanguages(user_prefs, &blacklisted_languages);
-
-    std::vector<std::string> accept_languages =
-        base::SplitString(user_prefs->GetString(accept_languages_pref), ",",
-                          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-
-    std::vector<std::string> blocked_languages;
-    CreateBlockedLanguages(&blocked_languages, blacklisted_languages,
-                           accept_languages);
-
-    // Create the new preference kPrefTranslateBlockedLanguages.
-    {
-      base::ListValue blocked_languages_list;
-      for (std::vector<std::string>::const_iterator it =
-               blocked_languages.begin();
-           it != blocked_languages.end(); ++it) {
-        blocked_languages_list.Append(new base::StringValue(*it));
-      }
-      ListPrefUpdate update(user_prefs, kPrefTranslateBlockedLanguages);
-      base::ListValue* list = update.Get();
-      DCHECK(list != NULL);
-      list->Swap(&blocked_languages_list);
-    }
-
-    // Update kAcceptLanguages
-    for (std::vector<std::string>::const_iterator it =
-             blocked_languages.begin();
-         it != blocked_languages.end(); ++it) {
-      std::string lang = *it;
-      translate::ToChromeLanguageSynonym(&lang);
-      bool not_found =
-          std::find(accept_languages.begin(), accept_languages.end(), lang) ==
-          accept_languages.end();
-      if (not_found)
-        accept_languages.push_back(lang);
-    }
-
-    std::string new_accept_languages_str =
-        base::JoinString(accept_languages, ",");
-    user_prefs->SetString(accept_languages_pref, new_accept_languages_str);
-  }
-}
-
-// static
-void TranslatePrefs::CreateBlockedLanguages(
-    std::vector<std::string>* blocked_languages,
-    const std::vector<std::string>& blacklisted_languages,
-    const std::vector<std::string>& accept_languages) {
-  DCHECK(blocked_languages);
-  DCHECK(blocked_languages->empty());
-
-  std::set<std::string> result;
-
-  for (std::vector<std::string>::const_iterator it =
-           blacklisted_languages.begin();
-       it != blacklisted_languages.end(); ++it) {
-    result.insert(*it);
-  }
-
-  const std::string& app_locale =
-      TranslateDownloadManager::GetInstance()->application_locale();
-  std::string ui_lang = TranslateDownloadManager::GetLanguageCode(app_locale);
-  bool is_ui_english =
-      ui_lang == "en" ||
-      base::StartsWith(ui_lang, "en-", base::CompareCase::INSENSITIVE_ASCII);
-
-  for (std::vector<std::string>::const_iterator it = accept_languages.begin();
-       it != accept_languages.end(); ++it) {
-    std::string lang = *it;
-    translate::ToTranslateLanguageSynonym(&lang);
-
-    // Regarding http://crbug.com/36182, even though English exists in Accept
-    // language list, English could be translated on non-English locale.
-    if (lang == "en" && !is_ui_english)
-      continue;
-
-    result.insert(lang);
-  }
-
-  blocked_languages->insert(blocked_languages->begin(), result.begin(),
-                            result.end());
 }
 
 bool TranslatePrefs::IsValueInList(const base::ListValue* list,

@@ -145,11 +145,6 @@ void TranslateInternalsHandler::OnRemovePrefItem(const base::ListValue* args) {
     if (!args->GetString(1, &language))
       return;
     translate_prefs->UnblockLanguage(language);
-  } else if (pref_name == "language_blacklist") {
-    std::string language;
-    if (!args->GetString(1, &language))
-      return;
-    translate_prefs->RemoveLanguageFromLegacyBlacklist(language);
   } else if (pref_name == "site_blacklist") {
     std::string site;
     if (!args->GetString(1, &site))

@@ -99,10 +99,6 @@ class TranslatePrefs {
   void BlockLanguage(const std::string& original_language);
   void UnblockLanguage(const std::string& original_language);
 
-  // Removes a language from the old blacklist. Only used internally for
-  // diagnostics. Don't use this if there is no special reason.
-  void RemoveLanguageFromLegacyBlacklist(const std::string& original_language);
-
   bool IsSiteBlacklisted(const std::string& site) const;
   void BlacklistSite(const std::string& site);
   void RemoveSiteFromBlacklist(const std::string& site);
@@ -167,9 +163,6 @@ class TranslatePrefs {
 
  private:
   friend class TranslatePrefsTest;
-  FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, CreateBlockedLanguages);
-  FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest,
-                           CreateBlockedLanguagesNonEnglishUI);
 
   // Merges two language sets to migrate to the language setting UI.
   static void CreateBlockedLanguages(
