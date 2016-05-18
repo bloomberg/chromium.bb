@@ -2352,6 +2352,7 @@ wayland_backend_create(struct weston_compositor *compositor,
 		if (gl_renderer->display_create(compositor,
 						EGL_PLATFORM_WAYLAND_KHR,
 						b->parent.wl_display,
+						NULL,
 						gl_renderer->alpha_attribs,
 						NULL,
 						0) < 0) {

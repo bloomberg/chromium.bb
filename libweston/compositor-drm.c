@@ -1572,6 +1572,7 @@ drm_backend_create_gl_renderer(struct drm_backend *b)
 	if (gl_renderer->display_create(b->compositor,
 					EGL_PLATFORM_GBM_KHR,
 					(void *)b->gbm,
+					NULL,
 					gl_renderer->opaque_attribs,
 					format,
 					n_formats) < 0) {
