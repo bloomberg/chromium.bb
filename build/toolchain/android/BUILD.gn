@@ -110,5 +110,5 @@ android_gcc_toolchains_helper("mips64el") {
   android_ndk_sysroot = "$android_ndk_root/$mips64_android_sysroot_subdir"
   android_ndk_lib_dir = "usr/lib64"
 
-  toolchain_cpu = "mipsel64el"
+  toolchain_cpu = "mips64el"
 }

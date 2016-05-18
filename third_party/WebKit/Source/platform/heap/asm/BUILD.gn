@@ -42,6 +42,10 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       sources = [
         "SaveRegisters_mips.S",
       ]
+    } else if (current_cpu == "mips64el") {
+      sources = [
+        "SaveRegisters_mips64.S",
+      ]
     }
 
     if (current_cpu == "arm") {

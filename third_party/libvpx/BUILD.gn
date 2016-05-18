@@ -272,7 +272,7 @@ static_library("libvpx") {
     } else {
       sources = libvpx_srcs_x86_64
     }
-  } else if (current_cpu == "mipsel") {
+  } else if (current_cpu == "mipsel" || current_cpu == "mips64el") {
     sources = libvpx_srcs_mips
   } else if (current_cpu == "arm") {
     if (arm_use_neon) {
