@@ -310,10 +310,10 @@ void AwContents::SetAwGLFunctor(AwGLFunctor* functor) {
   }
   functor_ = functor;
   if (functor_) {
-    browser_view_renderer_.SetCompositorFrameConsumer(
+    browser_view_renderer_.SetCurrentCompositorFrameConsumer(
         functor_->GetCompositorFrameConsumer());
   } else {
-    browser_view_renderer_.SetCompositorFrameConsumer(nullptr);
+    browser_view_renderer_.SetCurrentCompositorFrameConsumer(nullptr);
   }
 }
 

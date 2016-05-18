@@ -38,7 +38,6 @@ struct ParentCompositorDrawConstraints;
 
 class RenderingTest : public testing::Test,
                       public BrowserViewRendererClient,
-                      public RenderThreadManagerClient,
                       public WindowHooks {
  public:
   // BrowserViewRendererClient overrides.
@@ -54,13 +53,10 @@ class RenderingTest : public testing::Test,
   void DidOverscroll(const gfx::Vector2d& overscroll_delta,
                      const gfx::Vector2dF& overscroll_velocity) override {}
 
-  // RenderThreadManagerClient overrides.
-  bool RequestInvokeGL(bool wait_for_completion) override;
-  void DetachFunctorFromView() override;
-
   // WindowHooks overrides.
   void WillOnDraw() override;
   void DidOnDraw(bool success) override {}
+  FakeFunctor* GetFunctor() override;
   void WillSyncOnRT() override {}
   void DidSyncOnRT() override {}
   void WillProcessOnRT() override {}
@@ -83,14 +79,13 @@ class RenderingTest : public testing::Test,
 
   void RunTest();
   void InitializeCompositor();
-  void Attach();
   void EndTest();
   std::unique_ptr<cc::CompositorFrame> ConstructEmptyFrame();
   std::unique_ptr<cc::CompositorFrame> ConstructFrame(
       cc::ResourceId resource_id);
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   std::unique_ptr<FakeWindow> window_;
-  std::unique_ptr<RenderThreadManager> render_thread_manager_;
+  std::unique_ptr<FakeFunctor> functor_;
   std::unique_ptr<BrowserViewRenderer> browser_view_renderer_;
   std::unique_ptr<content::TestSynchronousCompositor> compositor_;
 

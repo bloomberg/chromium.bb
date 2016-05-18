@@ -57,6 +57,8 @@ public class AwTestContainerView extends FrameLayout {
         private int mLastScrollX = 0;
         private int mLastScrollY = 0;
 
+        // Only used by drawGL on render thread to store the value of scroll offsets at most recent
+        // sync for subsequent draws.
         private int mCommittedScrollX = 0;
         private int mCommittedScrollY = 0;
 
@@ -146,7 +148,6 @@ public class AwTestContainerView extends FrameLayout {
         public void requestRender(long viewContext, Canvas canvas, boolean waitForCompletion) {
             synchronized (mSyncLock) {
                 assert viewContext != 0;
-                assert mViewContext == 0 || mViewContext == viewContext;
                 mViewContext = viewContext;
                 super.requestRender();
                 mFunctorAttached = true;
@@ -183,6 +184,7 @@ public class AwTestContainerView extends FrameLayout {
             final boolean draw;
             final boolean process;
             final boolean waitForCompletion;
+            final long viewContext;
 
             synchronized (mSyncLock) {
                 if (!mFunctorAttached) {
@@ -193,9 +195,9 @@ public class AwTestContainerView extends FrameLayout {
                 draw = mNeedsDrawGL;
                 process = mNeedsProcessGL;
                 waitForCompletion = mWaitForCompletion;
-
+                viewContext = mViewContext;
                 if (draw) {
-                    DrawGL.drawGL(mDrawGL, mViewContext, width, height, 0, 0, MODE_SYNC);
+                    DrawGL.drawGL(mDrawGL, viewContext, width, height, 0, 0, MODE_SYNC);
                     mCommittedScrollX = mLastScrollX;
                     mCommittedScrollY = mLastScrollY;
                 }
@@ -206,11 +208,11 @@ public class AwTestContainerView extends FrameLayout {
                 }
             }
             if (process) {
-                DrawGL.drawGL(mDrawGL, mViewContext, width, height, 0, 0, MODE_PROCESS);
+                DrawGL.drawGL(mDrawGL, viewContext, width, height, 0, 0, MODE_PROCESS);
             }
             if (process || draw) {
-                DrawGL.drawGL(mDrawGL, mViewContext, width, height,
-                        mCommittedScrollX, mCommittedScrollY, MODE_DRAW);
+                DrawGL.drawGL(mDrawGL, viewContext, width, height, mCommittedScrollX,
+                        mCommittedScrollY, MODE_DRAW);
             }
 
             if (waitForCompletion) {

@@ -27,6 +27,13 @@ class CompositorFrameConsumer {
   };
   using ReturnedResourcesMap = std::map<uint32_t, ReturnedResources>;
 
+  // A CompositorFrameConsumer may be registered with at most one
+  // CompositorFrameProducer.
+  // The producer is responsible for managing the relationship with its
+  // consumers. The only exception to this is when a consumer is explicitly
+  // destroyed, at which point it needs to inform its producer.
+  // In order to register a consumer with a new producer, the current producer
+  // must unregister the consumer, and call SetCompositorProducer(nullptr).
   virtual void SetCompositorFrameProducer(
       CompositorFrameProducer* compositor_frame_producer) = 0;
   virtual void SetScrollOffsetOnUI(gfx::Vector2d scroll_offset) = 0;

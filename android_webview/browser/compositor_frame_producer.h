@@ -11,8 +11,10 @@ class CompositorFrameConsumer;
 
 class CompositorFrameProducer {
  public:
-  virtual void OnParentDrawConstraintsUpdated() = 0;
-  virtual void OnCompositorFrameConsumerWillDestroy() = 0;
+  virtual void OnParentDrawConstraintsUpdated(
+      CompositorFrameConsumer* compositor_frame_consumer) = 0;
+  virtual void RemoveCompositorFrameConsumer(
+      CompositorFrameConsumer* compositor_frame_consumer) = 0;
 
  protected:
   virtual ~CompositorFrameProducer() {}

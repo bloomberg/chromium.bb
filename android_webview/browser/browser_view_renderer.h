@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <set>
 
 #include "android_webview/browser/compositor_frame_producer.h"
 #include "android_webview/browser/parent_compositor_draw_constraints.h"
@@ -52,9 +53,11 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
 
   void RegisterWithWebContents(content::WebContents* web_contents);
 
-  // The BrowserViewRenderer client is responsible for ensuring that the
-  // CompositorFrameConsumer has been set correctly via this method.
-  void SetCompositorFrameConsumer(
+  // The BrowserViewRenderer client is responsible for ensuring that
+  // the current compositor frame consumer has been set correctly via
+  // this method.  The consumer is added to the set of registered
+  // consumers if it is not already registered.
+  void SetCurrentCompositorFrameConsumer(
       CompositorFrameConsumer* compositor_frame_consumer);
 
   // Called before either OnDrawHardware or OnDrawSoftware to set the view
@@ -123,8 +126,10 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
                      const gfx::Vector2dF& current_fling_velocity) override;
 
   // CompositorFrameProducer overrides
-  void OnParentDrawConstraintsUpdated() override;
-  void OnCompositorFrameConsumerWillDestroy() override;
+  void OnParentDrawConstraintsUpdated(
+      CompositorFrameConsumer* compositor_frame_consumer) override;
+  void RemoveCompositorFrameConsumer(
+      CompositorFrameConsumer* compositor_frame_consumer) override;
 
  private:
   void SetTotalRootLayerScrollOffset(const gfx::Vector2dF& new_value_dip);
@@ -151,7 +156,8 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
 
   BrowserViewRendererClient* const client_;
   const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
-  CompositorFrameConsumer* compositor_frame_consumer_;
+  CompositorFrameConsumer* current_compositor_frame_consumer_;
+  std::set<CompositorFrameConsumer*> compositor_frame_consumers_;
 
   // The current compositor that's owned by the current RVH.
   content::SynchronousCompositor* compositor_;

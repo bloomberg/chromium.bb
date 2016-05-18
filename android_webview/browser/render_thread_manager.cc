@@ -106,7 +106,7 @@ RenderThreadManager::RenderThreadManager(
 RenderThreadManager::~RenderThreadManager() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   if (compositor_frame_producer_) {
-    compositor_frame_producer_->OnCompositorFrameConsumerWillDestroy();
+    compositor_frame_producer_->RemoveCompositorFrameConsumer(this);
   }
   DCHECK(!hardware_renderer_.get());
 }
@@ -158,7 +158,7 @@ void RenderThreadManager::ClientRequestInvokeGLOnUI() {
 void RenderThreadManager::UpdateParentDrawConstraintsOnUI() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   if (compositor_frame_producer_) {
-    compositor_frame_producer_->OnParentDrawConstraintsUpdated();
+    compositor_frame_producer_->OnParentDrawConstraintsUpdated(this);
   }
 }
 
@@ -362,6 +362,9 @@ void RenderThreadManager::DeleteHardwareRendererOnUI() {
 
 void RenderThreadManager::SetCompositorFrameProducer(
     CompositorFrameProducer* compositor_frame_producer) {
+  DCHECK(compositor_frame_producer == compositor_frame_producer_ ||
+         compositor_frame_producer_ == nullptr ||
+         compositor_frame_producer == nullptr);
   compositor_frame_producer_ = compositor_frame_producer;
 }
 

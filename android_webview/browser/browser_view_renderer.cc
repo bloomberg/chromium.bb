@@ -92,7 +92,7 @@ BrowserViewRenderer::BrowserViewRenderer(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
     : client_(client),
       ui_task_runner_(ui_task_runner),
-      compositor_frame_consumer_(nullptr),
+      current_compositor_frame_consumer_(nullptr),
       compositor_(NULL),
       is_paused_(false),
       view_visible_(false),
@@ -110,24 +110,22 @@ BrowserViewRenderer::BrowserViewRenderer(
 
 BrowserViewRenderer::~BrowserViewRenderer() {
   DCHECK(compositor_map_.empty());
-  SetCompositorFrameConsumer(nullptr);
+  SetCurrentCompositorFrameConsumer(nullptr);
+  while (compositor_frame_consumers_.size()) {
+    RemoveCompositorFrameConsumer(*compositor_frame_consumers_.begin());
+  }
 }
 
-void BrowserViewRenderer::SetCompositorFrameConsumer(
+void BrowserViewRenderer::SetCurrentCompositorFrameConsumer(
     CompositorFrameConsumer* compositor_frame_consumer) {
-  if (compositor_frame_consumer == compositor_frame_consumer_) {
+  if (compositor_frame_consumer == current_compositor_frame_consumer_) {
     return;
   }
-  if (compositor_frame_consumer_) {
-    compositor_frame_consumer_->DeleteHardwareRendererOnUI();
-    ReturnUnusedResource(
-        compositor_frame_consumer_->PassUncommittedFrameOnUI());
-    ReturnResourceFromParent(compositor_frame_consumer_);
-    compositor_frame_consumer_->SetCompositorFrameProducer(nullptr);
-  }
-  compositor_frame_consumer_ = compositor_frame_consumer;
-  if (compositor_frame_consumer_) {
-    compositor_frame_consumer_->SetCompositorFrameProducer(this);
+  current_compositor_frame_consumer_ = compositor_frame_consumer;
+  if (current_compositor_frame_consumer_) {
+    compositor_frame_consumers_.insert(current_compositor_frame_consumer_);
+    current_compositor_frame_consumer_->SetCompositorFrameProducer(this);
+    OnParentDrawConstraintsUpdated(current_compositor_frame_consumer_);
   }
 }
 
@@ -200,22 +198,23 @@ bool BrowserViewRenderer::CanOnDraw() {
 }
 
 bool BrowserViewRenderer::OnDrawHardware() {
-  DCHECK(compositor_frame_consumer_);
+  DCHECK(current_compositor_frame_consumer_);
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::OnDrawHardware");
 
-  compositor_frame_consumer_->InitializeHardwareDrawIfNeededOnUI();
+  current_compositor_frame_consumer_->InitializeHardwareDrawIfNeededOnUI();
 
   if (!CanOnDraw()) {
     return false;
   }
 
-  compositor_frame_consumer_->SetScrollOffsetOnUI(last_on_draw_scroll_offset_);
+  current_compositor_frame_consumer_->SetScrollOffsetOnUI(
+      last_on_draw_scroll_offset_);
   hardware_enabled_ = true;
 
   external_draw_constraints_ =
-      compositor_frame_consumer_->GetParentDrawConstraintsOnUI();
+      current_compositor_frame_consumer_->GetParentDrawConstraintsOnUI();
 
-  ReturnResourceFromParent(compositor_frame_consumer_);
+  ReturnResourceFromParent(current_compositor_frame_consumer_);
   UpdateMemoryPolicy();
 
   gfx::Size surface_size(size_);
@@ -244,7 +243,7 @@ bool BrowserViewRenderer::OnDrawHardware() {
   if (!frame.frame.get()) {
     TRACE_EVENT_INSTANT0("android_webview", "NoNewFrame",
                          TRACE_EVENT_SCOPE_THREAD);
-    return compositor_frame_consumer_->HasFrameOnUI();
+    return current_compositor_frame_consumer_->HasFrameOnUI();
   }
 
   std::unique_ptr<ChildFrame> child_frame = base::WrapUnique(new ChildFrame(
@@ -253,22 +252,37 @@ bool BrowserViewRenderer::OnDrawHardware() {
       transform_for_tile_priority, offscreen_pre_raster_,
       external_draw_constraints_.is_layer));
 
-  ReturnUnusedResource(compositor_frame_consumer_->PassUncommittedFrameOnUI());
-  compositor_frame_consumer_->SetFrameOnUI(std::move(child_frame));
+  ReturnUnusedResource(
+      current_compositor_frame_consumer_->PassUncommittedFrameOnUI());
+  current_compositor_frame_consumer_->SetFrameOnUI(std::move(child_frame));
   return true;
 }
 
-void BrowserViewRenderer::OnParentDrawConstraintsUpdated() {
-  DCHECK(compositor_frame_consumer_);
+void BrowserViewRenderer::OnParentDrawConstraintsUpdated(
+    CompositorFrameConsumer* compositor_frame_consumer) {
+  DCHECK(compositor_frame_consumer);
+  if (compositor_frame_consumer != current_compositor_frame_consumer_)
+    return;
   PostInvalidate();
   external_draw_constraints_ =
-      compositor_frame_consumer_->GetParentDrawConstraintsOnUI();
+      current_compositor_frame_consumer_->GetParentDrawConstraintsOnUI();
   UpdateMemoryPolicy();
 }
 
-void BrowserViewRenderer::OnCompositorFrameConsumerWillDestroy() {
-  DCHECK(compositor_frame_consumer_);
-  SetCompositorFrameConsumer(nullptr);
+void BrowserViewRenderer::RemoveCompositorFrameConsumer(
+    CompositorFrameConsumer* compositor_frame_consumer) {
+  DCHECK(compositor_frame_consumers_.count(compositor_frame_consumer));
+  compositor_frame_consumers_.erase(compositor_frame_consumer);
+  if (current_compositor_frame_consumer_ == compositor_frame_consumer) {
+    SetCurrentCompositorFrameConsumer(nullptr);
+  }
+
+  // At this point the compositor frame consumer has to hand back all resources
+  // to the child compositor.
+  compositor_frame_consumer->DeleteHardwareRendererOnUI();
+  ReturnUnusedResource(compositor_frame_consumer->PassUncommittedFrameOnUI());
+  ReturnResourceFromParent(compositor_frame_consumer);
+  compositor_frame_consumer->SetCompositorFrameProducer(nullptr);
 }
 
 void BrowserViewRenderer::ReturnUnusedResource(
@@ -435,11 +449,10 @@ void BrowserViewRenderer::OnComputeScroll(base::TimeTicks animation_time) {
 }
 
 void BrowserViewRenderer::ReleaseHardware() {
-  if (compositor_frame_consumer_) {
-    ReturnUnusedResource(
-        compositor_frame_consumer_->PassUncommittedFrameOnUI());
-    ReturnResourceFromParent(compositor_frame_consumer_);
-    DCHECK(compositor_frame_consumer_->ReturnedResourcesEmptyOnUI());
+  for (auto compositor_frame_consumer : compositor_frame_consumers_) {
+    ReturnUnusedResource(compositor_frame_consumer->PassUncommittedFrameOnUI());
+    ReturnResourceFromParent(compositor_frame_consumer);
+    DCHECK(compositor_frame_consumer->ReturnedResourcesEmptyOnUI());
   }
   hardware_enabled_ = false;
   UpdateMemoryPolicy();

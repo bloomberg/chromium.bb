@@ -29,8 +29,10 @@ class TestBrowserViewRenderer : public BrowserViewRenderer {
 
   ~TestBrowserViewRenderer() override {}
 
-  void OnParentDrawConstraintsUpdated() override {
-    BrowserViewRenderer::OnParentDrawConstraintsUpdated();
+  void OnParentDrawConstraintsUpdated(
+      CompositorFrameConsumer* compositor_frame_consumer) override {
+    BrowserViewRenderer::OnParentDrawConstraintsUpdated(
+        compositor_frame_consumer);
     rendering_test_->OnParentDrawConstraintsUpdated();
   }
 
@@ -51,19 +53,23 @@ RenderingTest::~RenderingTest() {
 
 void RenderingTest::SetUpTestHarness() {
   DCHECK(!browser_view_renderer_.get());
-  DCHECK(!render_thread_manager_.get());
-  render_thread_manager_.reset(
-      new RenderThreadManager(this, base::ThreadTaskRunnerHandle::Get()));
-  browser_view_renderer_.reset(new TestBrowserViewRenderer(
-      this, base::ThreadTaskRunnerHandle::Get()));
-  browser_view_renderer_->SetCompositorFrameConsumer(
-      render_thread_manager_.get());
+  DCHECK(!functor_.get());
+  browser_view_renderer_.reset(
+      new TestBrowserViewRenderer(this, base::ThreadTaskRunnerHandle::Get()));
   InitializeCompositor();
-  Attach();
+  std::unique_ptr<FakeWindow> window(
+      new FakeWindow(browser_view_renderer_.get(), this, gfx::Rect(100, 100)));
+  functor_.reset(new FakeFunctor);
+  functor_->Init(window.get(),
+                 base::WrapUnique(new RenderThreadManager(
+                     functor_.get(), base::ThreadTaskRunnerHandle::Get())));
+  browser_view_renderer_->SetCurrentCompositorFrameConsumer(
+      functor_->GetCompositorFrameConsumer());
+  window_ = std::move(window);
 }
 
 CompositorFrameConsumer* RenderingTest::GetCompositorFrameConsumer() {
-  return render_thread_manager_.get();
+  return functor_->GetCompositorFrameConsumer();
 }
 
 CompositorFrameProducer* RenderingTest::GetCompositorFrameProducer() {
@@ -75,14 +81,6 @@ void RenderingTest::InitializeCompositor() {
   DCHECK(browser_view_renderer_.get());
   compositor_.reset(new content::TestSynchronousCompositor);
   compositor_->SetClient(browser_view_renderer_.get());
-}
-
-void RenderingTest::Attach() {
-  window_.reset(
-      new FakeWindow(browser_view_renderer_.get(),
-                     base::Bind(&RenderThreadManager::DrawGL,
-                                base::Unretained(render_thread_manager_.get())),
-                     this, gfx::Rect(100, 100)));
 }
 
 void RenderingTest::RunTest() {
@@ -130,14 +128,13 @@ std::unique_ptr<cc::CompositorFrame> RenderingTest::ConstructFrame(
   return compositor_frame;
 }
 
+FakeFunctor* RenderingTest::GetFunctor() {
+  return functor_.get();
+}
+
 void RenderingTest::WillOnDraw() {
   DCHECK(compositor_);
   compositor_->SetHardwareFrame(0u, ConstructEmptyFrame());
-}
-
-bool RenderingTest::RequestInvokeGL(bool wait_for_completion) {
-  window_->RequestInvokeGL(wait_for_completion);
-  return true;
 }
 
 bool RenderingTest::WillDrawOnRT(AwDrawGLInfo* draw_info) {
@@ -155,8 +152,6 @@ void RenderingTest::PostInvalidate() {
   if (window_)
     window_->PostInvalidate();
 }
-
-void RenderingTest::DetachFunctorFromView() {}
 
 gfx::Point RenderingTest::GetLocationOnScreen() {
   return gfx::Point();

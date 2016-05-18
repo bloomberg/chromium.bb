@@ -44,6 +44,8 @@ public class AwGLFunctor {
     private final AwContents.NativeDrawGLFunctor mNativeDrawGLFunctor;
     private final ViewGroup mContainerView;
     private final Runnable mFunctorReleasedCallback;
+    // Counts outstanding requestDrawGL calls as well as window attach count.
+    private int mRefCount;
 
     public AwGLFunctor(AwContents.NativeDrawGLFunctorFactory nativeDrawGLFunctorFactory,
             ViewGroup containerView) {
@@ -57,13 +59,20 @@ public class AwGLFunctor {
             mFunctorReleasedCallback = new Runnable() {
                 @Override
                 public void run() {
-                    // Deliberate no-op. This Runnable is holding a strong reference back to the
-                    // AwGLFunctor, which serves its purpose for now.
+                    removeReference();
                 }
             };
         } else {
             mFunctorReleasedCallback = null;
         }
+    }
+
+    public void onAttachedToWindow() {
+        addReference();
+    }
+
+    public void onDetachedFromWindow() {
+        removeReference();
     }
 
     public static long getAwDrawGLFunction() {
@@ -74,12 +83,25 @@ public class AwGLFunctor {
         return mNativeAwGLFunctor;
     }
 
-    public Object getNativeLifetimeObject() {
-        return mLifetimeObject;
+    public boolean requestDrawGL(Canvas canvas) {
+        boolean success = mNativeDrawGLFunctor.requestDrawGL(canvas, mFunctorReleasedCallback);
+        if (success && mFunctorReleasedCallback != null) {
+            addReference();
+        }
+        return success;
     }
 
-    public boolean requestDrawGLForCanvas(Canvas canvas) {
-        return mNativeDrawGLFunctor.requestDrawGL(canvas, mFunctorReleasedCallback);
+    private void addReference() {
+        ++mRefCount;
+    }
+
+    private void removeReference() {
+        if (--mRefCount == 0) {
+            // When |mRefCount| decreases to zero, the functor is neither attached to a view, nor
+            // referenced from the render tree, and so it is safe to delete the HardwareRenderer
+            // instance to free up resources because the current state will not be drawn again.
+            deleteHardwareRenderer();
+        }
     }
 
     @CalledByNative
