@@ -1030,7 +1030,10 @@
     Clear and Disconnect
   </message>
 
-  <message name="IDS_SETTINGS_SYNC" desc="Name of the settings page which manages syncing data between multiple browser instances with the same Google profile.">
+  <message name="IDS_SETTINGS_SYNC" desc="Name of the sync service.">
+    Sync
+  </message>
+  <message name="IDS_SETTINGS_SYNC_PAGE_TITLE" desc="Name of the settings page which manages syncing data between multiple browser instances with the same Google profile.">
     Advanced sync settings
   </message>
   <message name="IDS_SETTINGS_SYNC_LOADING" desc="The message shown when waiting for the sync backend to start up.">

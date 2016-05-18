@@ -145,14 +145,11 @@ Polymer({
 
   /**
    * Handler for when the sync state is pushed from the browser.
+   * @param {?settings.SyncStatus} syncStatus
    * @private
    */
   handleSyncStatus_: function(syncStatus) {
     this.syncStatus = syncStatus;
-
-    // TODO(tommycli): Remove once we figure out how to refactor the sync
-    // code to not include HTML in the status messages.
-    this.$.syncStatusText.innerHTML = syncStatus.statusText;
   },
 
 <if expr="chromeos">
@@ -207,6 +204,12 @@ Polymer({
 
   /** @private */
   onSyncTap_: function() {
+    assert(this.syncStatus.signedIn);
+    assert(this.syncStatus.syncSystemEnabled);
+
+    if (this.syncStatus.managed)
+      return;
+
     this.$.pages.setSubpageChain(['sync']);
   },
 
@@ -234,18 +237,27 @@ Polymer({
 
   /**
    * @private
+   * @param {?settings.SyncStatus} syncStatus
    * @return {boolean}
    */
-  isStatusTextSet_: function(syncStatus) {
-    return syncStatus && syncStatus.statusText.length > 0;
+  isAdvancedSyncSettingsVisible_: function(syncStatus) {
+    return !!syncStatus && !!syncStatus.signedIn &&
+        !!syncStatus.syncSystemEnabled;
   },
 
   /**
    * @private
-   * @return {boolean}
+   * @param {?settings.SyncStatus} syncStatus
+   * @return {string}
    */
-  isAdvancedSyncSettingsVisible_: function(syncStatus) {
-    return syncStatus && syncStatus.signedIn && !syncStatus.managed &&
-           syncStatus.syncSystemEnabled;
+  getSyncIcon_: function(syncStatus) {
+    if (!syncStatus)
+      return '';
+    if (syncStatus.hasError)
+      return 'settings:sync-problem';
+    if (syncStatus.managed)
+      return 'settings:sync-disabled';
+
+    return 'settings:done';
   },
 });

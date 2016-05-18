@@ -26,8 +26,12 @@
 <dom-module id="settings-people-page">
   <template>
     <style include="settings-shared">
+      setting-box.middle {
+        /* Per spec, middle text is indented 20px in this section. */
+        -webkit-margin-start: 20px;
+      }
+
       #profile-icon {
-        -webkit-margin-end: 4px;
         border-radius: 20px;
         height: 40px;
         object-fit: cover;
@@ -45,8 +49,20 @@
         cursor: pointer;
       }
 </if>
+
+      #sync-icon {
+        margin: 0 10px;
+      }
+
+      iron-icon[icon="settings:sync-problem"] {
+       --iron-icon-fill-color: var(--settings-error-color);
+      }
+
+      .settings-box .sync-error {
+        color: var(--settings-error-color);
+      }
+
       #googleg-logo-container {
-        -webkit-margin-end: 4px;
         display: flex;
         justify-content: center;
         width: 40px;
@@ -98,19 +114,21 @@
           $i18n{syncOverview}
         </div>
 
-        <div class="settings-box" hidden="[[!isStatusTextSet_(syncStatus)]]">
-          <span id="syncStatusText"></span>
-          <paper-button on-tap="onSyncTap_">
-            [[syncStatus.actionLinkText]]
-          </paper-button>
-        </div>
-
         <template is="dom-if"
             if="[[isAdvancedSyncSettingsVisible_(syncStatus)]]">
-          <div class="settings-box">
-            <paper-button on-tap="onSyncTap_" class="primary-button">
-              $i18n{syncPageTitle}
-            </paper-button>
+          <div class="settings-box two-line" on-tap="onSyncTap_">
+            <iron-icon id="sync-icon" icon$="[[getSyncIcon_(syncStatus)]]">
+            </iron-icon>
+            <div class="middle">
+              <div>$i18n{sync}</div>
+              <div class="secondary" hidden="[[syncStatus.hasError]]">
+                [[syncStatus.statusText]]
+              </div>
+              <div class="secondary sync-error"
+                  hidden="[[!syncStatus.hasError]]">
+                [[syncStatus.statusText]]
+              </div>
+            </div>
           </div>
         </template>
 

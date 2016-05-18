@@ -737,7 +737,7 @@ PeopleHandler::GetSyncStatusDictionary() {
   base::string16 link_label;
   bool status_has_error =
       sync_ui_util::GetStatusLabels(profile_, service, *signin,
-                                    sync_ui_util::WITH_HTML, &status_label,
+                                    sync_ui_util::PLAIN_TEXT, &status_label,
                                     &link_label) == sync_ui_util::SYNC_ERROR;
   sync_status->SetString("statusText", status_label);
   sync_status->SetString("actionLinkText", link_label);
