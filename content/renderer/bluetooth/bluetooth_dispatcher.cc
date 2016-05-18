@@ -16,12 +16,12 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/bluetooth/bluetooth_messages.h"
 #include "device/bluetooth/bluetooth_uuid.h"
-#include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothDevice.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothDeviceInit.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothError.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothRemoteGATTService.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebRequestDeviceOptions.h"
 
-using blink::WebBluetoothDevice;
+using blink::WebBluetoothDeviceInit;
 using blink::WebBluetoothError;
 using blink::WebBluetoothRemoteGATTService;
 using blink::WebBluetoothReadValueCallbacks;
@@ -129,7 +129,7 @@ void BluetoothDispatcher::OnRequestDeviceSuccess(
     uuids[i] = WebString::fromUTF8(device.uuids[i].c_str());
 
   pending_requests_.Lookup(request_id)
-      ->onSuccess(base::WrapUnique(new WebBluetoothDevice(
+      ->onSuccess(base::WrapUnique(new WebBluetoothDeviceInit(
           WebString::fromUTF8(device.id), WebString(device.name), uuids)));
   pending_requests_.Remove(request_id);
 }

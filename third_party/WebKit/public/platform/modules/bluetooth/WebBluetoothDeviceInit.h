@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebBluetoothDevice_h
-#define WebBluetoothDevice_h
+#ifndef WebBluetoothDeviceInit_h
+#define WebBluetoothDeviceInit_h
 
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 
 namespace blink {
 
-// Information describing a Bluetooth device provided by the platform.
-struct WebBluetoothDevice {
-    WebBluetoothDevice(const WebString& id,
+// Information provided by the platform to initialize BluetoothDevice objects
+// with attributes as specified in BluetoothDevice.idl.
+struct WebBluetoothDeviceInit {
+    WebBluetoothDeviceInit(const WebString& id,
         const WebString& name,
         const WebVector<WebString>& uuids)
         : id(id)
@@ -29,4 +30,4 @@ struct WebBluetoothDevice {
 
 } // namespace blink
 
-#endif // WebBluetoothDevice_h
+#endif // WebBluetoothDeviceInit_h

@@ -10,7 +10,7 @@
 #include "modules/EventTargetModules.h"
 #include "modules/bluetooth/BluetoothRemoteGATTServer.h"
 #include "platform/heap/Heap.h"
-#include "public/platform/modules/bluetooth/WebBluetoothDevice.h"
+#include "public/platform/modules/bluetooth/WebBluetoothDeviceInit.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
@@ -35,11 +35,11 @@ class BluetoothDevice final
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(BluetoothDevice);
 public:
-    BluetoothDevice(ExecutionContext*, PassOwnPtr<WebBluetoothDevice>);
+    BluetoothDevice(ExecutionContext*, PassOwnPtr<WebBluetoothDeviceInit>);
 
     // Interface required by CallbackPromiseAdapter:
-    using WebType = OwnPtr<WebBluetoothDevice>;
-    static BluetoothDevice* take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothDevice>);
+    using WebType = OwnPtr<WebBluetoothDeviceInit>;
+    static BluetoothDevice* take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothDeviceInit>);
 
     // We should disconnect from the device in all of the following cases:
     // 1. When the object gets GarbageCollected e.g. it went out of scope.
@@ -80,7 +80,7 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(gattserverdisconnected);
 
 private:
-    OwnPtr<WebBluetoothDevice> m_webDevice;
+    OwnPtr<WebBluetoothDeviceInit> m_webDevice;
     Member<BluetoothRemoteGATTServer> m_gatt;
 };
 

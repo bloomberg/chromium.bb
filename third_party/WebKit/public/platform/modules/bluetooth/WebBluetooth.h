@@ -17,13 +17,13 @@ namespace blink {
 
 class WebBluetoothRemoteGATTCharacteristic;
 
-struct WebBluetoothDevice;
+struct WebBluetoothDeviceInit;
 struct WebBluetoothRemoteGATTCharacteristicInit;
 struct WebBluetoothRemoteGATTService;
 struct WebRequestDeviceOptions;
 
 // Success and failure callbacks for requestDevice.
-using WebBluetoothRequestDeviceCallbacks = WebCallbacks<std::unique_ptr<WebBluetoothDevice>, const WebBluetoothError&>;
+using WebBluetoothRequestDeviceCallbacks = WebCallbacks<std::unique_ptr<WebBluetoothDeviceInit>, const WebBluetoothError&>;
 
 // Success and failure callbacks for connectGATT.
 using WebBluetoothRemoteGATTServerConnectCallbacks = WebCallbacks<void, const WebBluetoothError&>;

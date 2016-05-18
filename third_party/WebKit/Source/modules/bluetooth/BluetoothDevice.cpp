@@ -16,7 +16,7 @@
 
 namespace blink {
 
-BluetoothDevice::BluetoothDevice(ExecutionContext* context, PassOwnPtr<WebBluetoothDevice> webDevice)
+BluetoothDevice::BluetoothDevice(ExecutionContext* context, PassOwnPtr<WebBluetoothDeviceInit> webDevice)
     : ActiveDOMObject(context)
     , m_webDevice(std::move(webDevice))
     , m_gatt(BluetoothRemoteGATTServer::create(this))
@@ -25,7 +25,7 @@ BluetoothDevice::BluetoothDevice(ExecutionContext* context, PassOwnPtr<WebBlueto
     ThreadState::current()->registerPreFinalizer(this);
 }
 
-BluetoothDevice* BluetoothDevice::take(ScriptPromiseResolver* resolver, PassOwnPtr<WebBluetoothDevice> webDevice)
+BluetoothDevice* BluetoothDevice::take(ScriptPromiseResolver* resolver, PassOwnPtr<WebBluetoothDeviceInit> webDevice)
 {
     ASSERT(webDevice);
     BluetoothDevice* device = new BluetoothDevice(resolver->getExecutionContext(), std::move(webDevice));
