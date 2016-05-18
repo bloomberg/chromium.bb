@@ -24,9 +24,10 @@ public:
 
     // The LayoutObject we are currently anchored to. Lazily computed during
     // save() and cached until the next call to clear().
-    LayoutObject* anchorObject() const { return m_anchorObject; }
+    LayoutObject* anchorObject() const { return m_current.m_anchorObject; }
 
-    // Invalidates the anchor.
+    // Indicates that the next save() should compute a new anchor. (In certain
+    // cases the previous anchor will be reused; see comments in restore.)
     void clear();
 
     // Records the anchor's location in relation to the scroller. Should be
@@ -44,7 +45,13 @@ public:
     };
     // Which corner of the anchor object we are currently anchored to.
     // Only meaningful if anchorObject() is non-null.
-    Corner corner() const { return m_corner; }
+    Corner corner() const { return m_current.m_corner; }
+
+    // Checks if we hold any references to the specified object.
+    bool refersTo(const LayoutObject*) const;
+
+    // Notifies us that an object will be removed from the layout tree.
+    void notifyRemoved(LayoutObject*);
 
     DEFINE_INLINE_TRACE() { visitor->trace(m_scroller); }
 
@@ -74,17 +81,46 @@ private:
     };
     ExamineResult examine(const LayoutObject*) const;
 
+    struct AnchorPoint {
+        AnchorPoint()
+            : m_anchorObject(nullptr)
+            , m_corner(Corner::TopLeft) {}
+
+        AnchorPoint(LayoutObject* anchorObject, Corner corner)
+            : m_anchorObject(anchorObject)
+            , m_corner(corner) {}
+
+        explicit operator bool() const { return m_anchorObject; }
+
+        void clear();
+
+        // The LayoutObject we should anchor to.
+        LayoutObject* m_anchorObject;
+
+        // Which corner of m_anchorObject's bounding box to anchor to.
+        Corner m_corner;
+
+        // Location of m_layoutObject relative to scroller at time of save().
+        LayoutPoint m_savedRelativeOffset;
+    };
+    IntSize computeAdjustment(const AnchorPoint&) const;
+    void adjust(IntSize);
+
     // The scroller that owns and is adjusted by this ScrollAnchor.
     Member<ScrollableArea> m_scroller;
 
-    // The LayoutObject we should anchor to. Lazily computed.
-    LayoutObject* m_anchorObject;
+    // The current anchor point. Lazily computed.
+    AnchorPoint m_current;
 
-    // Which corner of m_anchorObject's bounding box to anchor to.
-    Corner m_corner;
+    // The anchor point that was used for the most recent non-zero adjustment.
+    AnchorPoint m_lastAdjusted;
 
-    // Location of m_layoutObject relative to scroller at time of save().
-    LayoutPoint m_savedRelativeOffset;
+    // The size of the most recent non-zero adjustment.
+    IntSize m_lastAdjustment;
+
+    // True iff the last adjustment was the exact opposite of the one before it.
+    // A bounce suggests a circular interaction with a scroll event handler.
+    bool m_hasBounced;
 };
 
 } // namespace blink

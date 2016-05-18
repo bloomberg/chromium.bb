@@ -17,8 +17,7 @@ using Corner = ScrollAnchor::Corner;
 
 ScrollAnchor::ScrollAnchor(ScrollableArea* scroller)
     : m_scroller(scroller)
-    , m_anchorObject(nullptr)
-    , m_corner(Corner::TopLeft)
+    , m_hasBounced(false)
 {
     ASSERT(m_scroller);
     ASSERT(m_scroller->isFrameView() || m_scroller->isPaintLayerScrollableArea());
@@ -150,8 +149,8 @@ void ScrollAnchor::findAnchor()
     while (candidate) {
         ExamineResult result = examine(candidate);
         if (result.viable) {
-            m_anchorObject = candidate;
-            m_corner = result.corner;
+            m_current.m_anchorObject = candidate;
+            m_current.m_corner = result.corner;
         }
         switch (result.status) {
         case Skip:
@@ -175,22 +174,35 @@ void ScrollAnchor::save()
         clear();
         return;
     }
-    if (m_anchorObject)
+    if (m_current)
         return;
 
     findAnchor();
-    if (!m_anchorObject)
+    if (!m_current)
         return;
 
-    m_anchorObject->setIsScrollAnchorObject();
-    m_savedRelativeOffset = computeRelativeOffset(m_anchorObject, m_scroller, m_corner);
+    m_current.m_anchorObject->setIsScrollAnchorObject();
+    m_current.m_savedRelativeOffset = computeRelativeOffset(
+        m_current.m_anchorObject, m_scroller, m_current.m_corner);
+
+    if (m_lastAdjusted) {
+        // We need to update m_lastAdjusted.m_savedRelativeOffset, since it is
+        // relative to the visible rect and the user may have scrolled since the
+        // last adjustment.
+        if (!candidateMovesWithScroller(m_lastAdjusted.m_anchorObject, m_scroller)) {
+            m_lastAdjusted.clear();
+        } else if (m_lastAdjusted.m_anchorObject == m_current.m_anchorObject
+            && m_lastAdjusted.m_corner == m_current.m_corner) {
+            m_lastAdjusted.m_savedRelativeOffset = m_current.m_savedRelativeOffset;
+        } else {
+            m_lastAdjusted.m_savedRelativeOffset = computeRelativeOffset(
+                m_lastAdjusted.m_anchorObject, m_scroller, m_lastAdjusted.m_corner);
+        }
+    }
 }
 
-void ScrollAnchor::restore()
+IntSize ScrollAnchor::computeAdjustment(const AnchorPoint& anchorPoint) const
 {
-    if (!m_anchorObject)
-        return;
-
     // The anchor node can report fractional positions, but it is DIP-snapped when
     // painting (crbug.com/610805), so we must round the offsets to determine the
     // visual delta. If we scroll by the delta in LayoutUnits, the snapping of the
@@ -198,37 +210,94 @@ void ScrollAnchor::restore()
     // (For example, anchor moving from 2.4px -> 2.6px is really 2px -> 3px, so we
     // should scroll by 1px instead of 0.2px.) This is true regardless of whether
     // the ScrollableArea actually uses fractional scroll positions.
-    IntSize adjustment =
-        roundedIntSize(computeRelativeOffset(m_anchorObject, m_scroller, m_corner)) -
-        roundedIntSize(m_savedRelativeOffset);
-    if (!adjustment.isZero()) {
-        DoublePoint desiredPos = m_scroller->scrollPositionDouble() + adjustment;
-        ScrollAnimatorBase* animator = m_scroller->existingScrollAnimator();
-        if (!animator || !animator->hasRunningAnimation()) {
-            m_scroller->setScrollPosition(desiredPos, AnchoringScroll);
-        } else {
-            // If in the middle of a scroll animation, stop the animation, make
-            // the adjustment, and continue the animation on the pending delta.
-            FloatSize pendingDelta = animator->desiredTargetPosition() - FloatPoint(m_scroller->scrollPositionDouble());
-            animator->cancelAnimation();
-            m_scroller->setScrollPosition(desiredPos, AnchoringScroll);
-            animator->userScroll(ScrollByPixel, pendingDelta);
-        }
-        // Update UMA metric.
-        DEFINE_STATIC_LOCAL(EnumerationHistogram, adjustedOffsetHistogram,
-            ("Layout.ScrollAnchor.AdjustedScrollOffset", 2));
-        adjustedOffsetHistogram.count(1);
-        UseCounter::count(scrollerLayoutBox(m_scroller)->document(), UseCounter::ScrollAnchored);
+    return roundedIntSize(computeRelativeOffset(
+        anchorPoint.m_anchorObject, m_scroller, anchorPoint.m_corner)) -
+        roundedIntSize(anchorPoint.m_savedRelativeOffset);
+}
+
+void ScrollAnchor::restore()
+{
+    if (m_lastAdjusted && m_lastAdjusted.m_anchorObject != m_current.m_anchorObject
+        && !m_hasBounced && computeAdjustment(m_lastAdjusted) == -m_lastAdjustment) {
+        // If previous anchor point has bounced, follow the bounce.
+        clear();
+        adjust(-m_lastAdjustment);
+        return;
     }
+    if (!m_current)
+        return;
+    IntSize adjustment = computeAdjustment(m_current);
+    if (adjustment.isZero())
+        return;
+    if (adjustment == -m_lastAdjustment && m_hasBounced) {
+        // Don't bounce more than once.
+        clear();
+        m_hasBounced = false;
+        m_lastAdjustment = IntSize();
+        m_lastAdjusted.clear();
+        return;
+    }
+    adjust(adjustment);
+}
+
+void ScrollAnchor::adjust(IntSize adjustment)
+{
+    DoublePoint desiredPos = m_scroller->scrollPositionDouble() + adjustment;
+    ScrollAnimatorBase* animator = m_scroller->existingScrollAnimator();
+    if (!animator || !animator->hasRunningAnimation()) {
+        m_scroller->setScrollPosition(desiredPos, AnchoringScroll);
+    } else {
+        // If in the middle of a scroll animation, stop the animation, make
+        // the adjustment, and continue the animation on the pending delta.
+        // TODO(skobes): This is not quite right, we are starting a new curve without
+        // saving our progress on the existing curve.
+        FloatSize pendingDelta = animator->desiredTargetPosition() -
+            FloatPoint(m_scroller->scrollPositionDouble());
+        animator->cancelAnimation();
+        m_scroller->setScrollPosition(desiredPos, AnchoringScroll);
+        animator->userScroll(ScrollByPixel, pendingDelta);
+    }
+
+    if (m_current && m_lastAdjusted.m_anchorObject != m_current.m_anchorObject) {
+        m_lastAdjusted.clear();
+        m_lastAdjusted = m_current;
+    }
+    m_hasBounced = (m_lastAdjustment == -adjustment);
+    m_lastAdjustment = adjustment;
+
+    // Update UMA metric.
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, adjustedOffsetHistogram,
+        ("Layout.ScrollAnchor.AdjustedScrollOffset", 2));
+    adjustedOffsetHistogram.count(1);
+    UseCounter::count(scrollerLayoutBox(m_scroller)->document(), UseCounter::ScrollAnchored);
 }
 
 void ScrollAnchor::clear()
+{
+    m_current.clear();
+}
+
+void ScrollAnchor::AnchorPoint::clear()
 {
     LayoutObject* anchorObject = m_anchorObject;
     m_anchorObject = nullptr;
 
     if (anchorObject)
         anchorObject->maybeClearIsScrollAnchorObject();
+}
+
+bool ScrollAnchor::refersTo(const LayoutObject* layoutObject) const
+{
+    return m_current.m_anchorObject == layoutObject
+        || m_lastAdjusted.m_anchorObject == layoutObject;
+}
+
+void ScrollAnchor::notifyRemoved(LayoutObject* layoutObject)
+{
+    if (m_current.m_anchorObject == layoutObject)
+        m_current.clear();
+    if (m_lastAdjusted.m_anchorObject == layoutObject)
+        m_lastAdjusted.clear();
 }
 
 } // namespace blink

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<style>
+
+body { margin: 80px 0; height: 5000px; }
+#a, #b { height: 200px; width: 200px; }
+#c { height: 400px; }
+#left, #c { display: inline-block; width: 200px; vertical-align: top; }
+#a.f { position: fixed; top: 30px; left: 150px; }
+#a { background-color: #fcc; }
+#b { background-color: #cfc; }
+#c { background-color: #ccf; }
+
+</style>
+<div id="left">
+    <div id="a"></div>
+    <div id="b"></div>
+</div><div id="c"></div>
+<script>
+
+internals.runtimeFlags.scrollAnchoringEnabled = true;
+
+// The scroll handler marks #a as position: fixed when scroll offset > 300px.
+// This triggers layout during which we anchor to #b, which has moved up 200px.
+// After our anchoring adjustment, the scroll offset is < 300px again, so the
+// scroll handler removes position: fixed from #a, triggering a second layout,
+// during which #b "bounces" back to its original location.
+//
+// The desired behavior here is for ScrollAnchor to follow #b back the first
+// time it bounces, but not follow a second bounce.
+//
+// There are two failure modes we are concerned about:
+//
+// - If ScrollAnchor doesn't follow #b back to its original position during the
+//   FIRST bounce, we've "trapped" the user above 300px.  Every time they try to
+//   scroll past this point we will push them back up.
+//
+// - If ScrollAnchor follows #b religiously, we get stuck in an infinite cycle
+//   of continuous bouncing, which looks hilariously broken.
+
+var a = document.querySelector('#a');
+var fixed = false;
+onscroll = function() {
+    var y = scrollY;
+    if (fixed == (y > 300))
+        return;
+    if (y < 130) {
+        // Clear the scroll anchor.
+        scrollBy(0, 10);
+        scrollBy(0, -10);
+    }
+    a.className = (fixed = !fixed) ? "f" : "";
+};
+
+var frame = () => new Promise((resolve) => { requestAnimationFrame(resolve); });
+
+var waitFor = function(condition, failmsg, deadline) {
+    if (!deadline) deadline = Date.now() + 1000;
+    if (condition()) return Promise.resolve();
+    else if (Date.now() > deadline) return Promise.reject(failmsg);
+    else return frame().then(() => waitFor(condition, failmsg, deadline));
+};
+
+var waitFrames = function(n, condition, failmsg) {
+    var p = Promise.resolve();
+    var check = () => (!condition || condition() ?
+        Promise.resolve() : Promise.reject(failmsg));
+    while (n--)
+        p = p.then(check).then(frame);
+    return p.then(check);
+};
+
+var scrollSettlesAt = function(expectedY) {
+    return waitFor(() => (scrollY == expectedY),
+            "scroll did not reach " + expectedY)
+        .then(() => waitFrames(3))
+        .then(() => waitFrames(3, () => (scrollY == expectedY),
+            "scroll did not stay at " + expectedY));
+};
+
+promise_test(function() {
+    return Promise.resolve()
+
+        // The 320px offset tests for the first failure mode.
+        .then(() => { eventSender.continuousMouseScrollBy(0, -320); })
+        .then(() => scrollSettlesAt(320))
+
+        .then(() => { scrollTo(0, 0); })
+        .then(() => frame())
+
+        // The 360px offset tests for the second failure mode.
+        .then(() => { eventSender.continuousMouseScrollBy(0, -360); })
+        .then(() => scrollSettlesAt(360));
+
+}, "Scroll anchoring with scroll event handlers");
+
+</script>

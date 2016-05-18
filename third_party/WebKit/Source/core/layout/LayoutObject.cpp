@@ -2757,10 +2757,10 @@ static bool findReferencingScrollAnchors(LayoutObject* layoutObject, FindReferen
     while (layer) {
         if (PaintLayerScrollableArea* scrollableArea = layer->getScrollableArea()) {
             ScrollAnchor& anchor = scrollableArea->scrollAnchor();
-            if (anchor.anchorObject() == layoutObject) {
+            if (anchor.refersTo(layoutObject)) {
                 found = true;
                 if (behavior == Clear)
-                    anchor.clear();
+                    anchor.notifyRemoved(layoutObject);
                 else
                     return true;
             }
@@ -2769,10 +2769,10 @@ static bool findReferencingScrollAnchors(LayoutObject* layoutObject, FindReferen
     }
     if (FrameView* view = layoutObject->frameView()) {
         ScrollAnchor& anchor = view->scrollAnchor();
-        if (anchor.anchorObject() == layoutObject) {
+        if (anchor.refersTo(layoutObject)) {
             found = true;
             if (behavior == Clear)
-                anchor.clear();
+                anchor.notifyRemoved(layoutObject);
         }
     }
     return found;
