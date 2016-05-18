@@ -114,12 +114,12 @@ class DataFetcherSharedMemory::SensorEventSinkOrientation
     double alpha, beta, gamma;
     bool has_alpha, has_beta, has_gamma;
 
-    GetSensorValue(SENSOR_DATA_TYPE_TILT_X_DEGREES, new_data, &alpha,
-        &has_alpha);
-    GetSensorValue(SENSOR_DATA_TYPE_TILT_Y_DEGREES, new_data, &beta,
+    GetSensorValue(SENSOR_DATA_TYPE_TILT_X_DEGREES, new_data, &beta,
         &has_beta);
-    GetSensorValue(SENSOR_DATA_TYPE_TILT_Z_DEGREES, new_data, &gamma,
+    GetSensorValue(SENSOR_DATA_TYPE_TILT_Y_DEGREES, new_data, &gamma,
         &has_gamma);
+    GetSensorValue(SENSOR_DATA_TYPE_TILT_Z_DEGREES, new_data, &alpha,
+        &has_alpha);
 
     if (buffer_) {
       buffer_->seqlock.WriteBegin();
