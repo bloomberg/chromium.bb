@@ -6,31 +6,22 @@ Polymer({
   is: 'history-list',
 
   properties: {
-    // An array of history entries in reverse chronological order.
-    historyData: {
-      type: Array
-    },
-
-    // The time of access of the last history item in historyData.
-    lastVisitedTime: {
-      type: Number,
-      value: 0
-    },
-
-    searchTerm: {
+    // The search term for the current query. Set when the query returns.
+    searchedTerm: {
       type: String,
-      value: ''
+      value: '',
     },
 
-    // True if there is a pending request to the backend.
-    loading_: {
-      type: Boolean,
-      value: true
-    },
+    lastSearchedTerm_: String,
+
+    querying: Boolean,
+
+    // An array of history entries in reverse chronological order.
+    historyData: Array,
 
     resultLoadingDisabled_: {
       type: Boolean,
-      value: false
+      value: false,
     },
   },
 
@@ -49,13 +40,6 @@ Polymer({
   },
 
   /**
-   * Mark the page as currently loading new data from the back-end.
-   */
-  setLoading: function() {
-    this.loading_ = true;
-  },
-
-  /**
    * Opens the overflow menu unless the menu is already open and the same button
    * is pressed.
    * @param {{detail: {item: !HistoryEntry, target: !HTMLElement}}} e
@@ -70,7 +54,7 @@ Polymer({
   /** @private */
   onMoreFromSiteTap_: function() {
     var menu = /** @type {CrSharedMenuElement} */(this.$.sharedMenu);
-    this.fire('search-changed', {search: menu.itemData.domain});
+    this.fire('search-domain', {domain: menu.itemData.domain});
     menu.closeMenu();
   },
 
@@ -100,18 +84,16 @@ Polymer({
    * Adds the newly updated history results into historyData. Adds new fields
    * for each result.
    * @param {!Array<!HistoryEntry>} historyResults The new history results.
-   * @param {string} searchTerm Search query used to find these results.
    */
-  addNewResults: function(historyResults, searchTerm) {
-    this.loading_ = false;
+  addNewResults: function(historyResults) {
     /** @type {IronScrollThresholdElement} */(this.$['scroll-threshold'])
         .clearTriggers();
 
-    if (this.searchTerm != searchTerm) {
+    if (this.lastSearchedTerm_ != this.searchedTerm) {
       this.resultLoadingDisabled_ = false;
       if (this.historyData)
         this.splice('historyData', 0, this.historyData.length);
-      this.searchTerm = searchTerm;
+      this.lastSearchedTerm_ = this.searchedTerm;
     }
 
     if (historyResults.length == 0)
@@ -127,7 +109,8 @@ Polymer({
       // Sets the default values for these fields to prevent undefined types.
       results[i].selected = false;
       results[i].readableTimestamp =
-          searchTerm == '' ? results[i].dateTimeOfDay : results[i].dateShort;
+          this.searchedTerm == '' ?
+              results[i].dateTimeOfDay : results[i].dateShort;
 
       if (results[i].dateRelativeDay != currentDate) {
         currentDate = results[i].dateRelativeDay;
@@ -144,8 +127,6 @@ Polymer({
       // initialized correctly.
       this.set('historyData', results);
     }
-
-    this.lastVisitedTime = this.historyData[this.historyData.length - 1].time;
   },
 
   /**
@@ -220,12 +201,10 @@ Polymer({
    * @private
    */
   loadMoreData_: function() {
-    if (this.resultLoadingDisabled_ || this.loading_)
+    if (this.resultLoadingDisabled_ || this.querying)
       return;
 
-    this.loading_ = true;
-    chrome.send('queryHistory',
-        [this.searchTerm, 0, 0, this.lastVisitedTime, RESULTS_PER_PAGE]);
+    this.fire('load-more-history');
   },
 
   /**
@@ -244,7 +223,7 @@ Polymer({
     var currentItem = this.historyData[index];
     var nextItem = this.historyData[index + 1];
 
-    if (this.searchTerm)
+    if (this.searchedTerm)
       return currentItem.dateShort != nextItem.dateShort;
 
     return currentItem.time - nextItem.time > BROWSING_GAP_TIME &&
@@ -255,10 +234,10 @@ Polymer({
     return historyDataLength > 0;
   },
 
-  noResultsMessage_: function(searchTerm, isLoading) {
+  noResultsMessage_: function(searchedTerm, isLoading) {
     if (isLoading)
       return '';
-    var messageId = searchTerm !== '' ? 'noSearchResults' : 'noResults';
+    var messageId = searchedTerm !== '' ? 'noSearchResults' : 'noResults';
     return loadTimeData.getString(messageId);
   },
 

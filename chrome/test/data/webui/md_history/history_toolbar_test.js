@@ -17,7 +17,7 @@ cr.define('md_history.history_toolbar_test', function() {
       });
 
       test('selecting checkbox causes toolbar to change', function(done) {
-        element.addNewResults(TEST_HISTORY_RESULTS, '');
+        element.addNewResults(TEST_HISTORY_RESULTS);
 
         flush(function() {
           var item = element.$$('history-item');
@@ -53,7 +53,7 @@ cr.define('md_history.history_toolbar_test', function() {
 
       test('more from this site sends and sets correct data', function(done) {
         registerMessageCallback('queryHistory', this, function (info) {
-          assertEquals(info[0], 'example.com');
+          assertEquals('example.com', info[0]);
           flush(function() {
             assertEquals(toolbar.$$('#search-input').$$('#search-input').value,
                 'example.com');
@@ -67,6 +67,7 @@ cr.define('md_history.history_toolbar_test', function() {
 
       teardown(function() {
         element.historyData = [];
+        element.searchedTerm = '';
         registerMessageCallback('queryHistory', this, undefined);
         toolbar.count = 0;
       });

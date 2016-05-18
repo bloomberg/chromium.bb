@@ -40,7 +40,7 @@ Polymer({
     // as the user types.
     searchTerm: {
       type: String,
-      value: ''
+      notify: true,
     },
 
     // True if waiting on the search backend.
@@ -86,6 +86,7 @@ Polymer({
   setSearchTerm: function(search) {
     if (this.searchTerm == search)
       return;
+
     this.searchTerm = search;
     var searchField = /** @type {SearchField} */(this.$['search-input']);
     searchField.showAndFocus().then(function(showing) {
@@ -97,10 +98,8 @@ Polymer({
    * If the search term has changed reload for the new search.
    */
   onSearch: function(searchTerm) {
-    if (searchTerm != this.searchTerm) {
+    if (searchTerm != this.searchTerm)
       this.searchTerm = searchTerm;
-      this.fire('search-changed', {search: searchTerm});
-    }
   },
 
   attached: function() {

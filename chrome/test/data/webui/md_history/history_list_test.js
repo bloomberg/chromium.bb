@@ -30,7 +30,7 @@ cr.define('md_history.history_list_test', function() {
       });
 
       test('cancelling selection of multiple items', function(done) {
-        element.addNewResults(TEST_HISTORY_RESULTS, '');
+        element.addNewResults(TEST_HISTORY_RESULTS);
         flush(function() {
           var items = Polymer.dom(element.root)
               .querySelectorAll('history-item');
@@ -62,7 +62,7 @@ cr.define('md_history.history_list_test', function() {
       });
 
       test('setting first and last items', function(done) {
-        element.addNewResults(TEST_HISTORY_RESULTS, '');
+        element.addNewResults(TEST_HISTORY_RESULTS);
 
         flush(function() {
           var items =
@@ -80,8 +80,8 @@ cr.define('md_history.history_list_test', function() {
       });
 
       test('updating history results', function(done) {
-        element.addNewResults(TEST_HISTORY_RESULTS, '');
-        element.addNewResults(ADDITIONAL_RESULTS, '');
+        element.addNewResults(TEST_HISTORY_RESULTS);
+        element.addNewResults(ADDITIONAL_RESULTS);
 
         flush(function() {
           var items =
@@ -100,8 +100,8 @@ cr.define('md_history.history_list_test', function() {
       });
 
       test('deleting multiple items from view', function(done) {
-        element.addNewResults(TEST_HISTORY_RESULTS, '');
-        element.addNewResults(ADDITIONAL_RESULTS, '');
+        element.addNewResults(TEST_HISTORY_RESULTS);
+        element.addNewResults(ADDITIONAL_RESULTS);
         flush(function() {
           items = Polymer.dom(element.root).querySelectorAll('history-item');
 
@@ -134,8 +134,8 @@ cr.define('md_history.history_list_test', function() {
 
       test('search results display with correct item title', function(done) {
         element.addNewResults(
-            [createHistoryEntry('2016-03-15', 'https://www.google.com')],
-            'Google');
+            [createHistoryEntry('2016-03-15', 'https://www.google.com')]);
+        element.searchedTerm = 'Google';
 
         flush(function() {
           var item = element.$$('history-item');
@@ -154,13 +154,13 @@ cr.define('md_history.history_list_test', function() {
       });
 
       test('correct display message when no history available', function(done) {
-        element.addNewResults([], '');
+        element.addNewResults([]);
 
         flush(function() {
           assertFalse(element.$['no-results'].hidden);
           assertTrue(element.$['infinite-list'].hidden);
 
-          element.addNewResults(TEST_HISTORY_RESULTS, '');
+          element.addNewResults(TEST_HISTORY_RESULTS);
 
           flush(function() {
             assertTrue(element.$['no-results'].hidden);
@@ -172,6 +172,7 @@ cr.define('md_history.history_list_test', function() {
 
       teardown(function() {
         element.historyData = [];
+        element.searchedTerm = '';
         registerMessageCallback('removeVisits', this, undefined);
       });
     });

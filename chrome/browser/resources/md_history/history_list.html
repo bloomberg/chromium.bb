@@ -34,7 +34,7 @@
     </style>
     <div id="no-results" class="centered-message"
         hidden$="{{hasResults(historyData.length)}}">
-      {{noResultsMessage_(searchTerm, loading_)}}
+      {{noResultsMessage_(searchedTerm, querying)}}
     </div>
     <iron-list items="{{historyData}}" as="item" id="infinite-list"
         hidden$="{{!hasResults(historyData.length)}}">
@@ -45,7 +45,7 @@
             is-card-start="[[isCardStart_(item, index, historyData.length)]]"
             is-card-end="[[isCardEnd_(item, index, historyData.length)]]"
             has-time-gap="[[needsTimeGap_(item, index, historyData.length)]]"
-            search-term="[[searchTerm]]"
+            search-term="[[searchedTerm]]"
             number-of-items="[[historyData.length]]">
         </history-item>
       </template>

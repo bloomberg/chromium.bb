@@ -17,7 +17,7 @@ cr.define('md_history.history_supervised_user_test', function() {
       });
 
       setup(function() {
-        element.addNewResults(TEST_HISTORY_RESULTS, '');
+        element.addNewResults(TEST_HISTORY_RESULTS);
       });
 
       test('checkboxes disabled for supervised user', function(done) {
@@ -45,6 +45,7 @@ cr.define('md_history.history_supervised_user_test', function() {
 
       teardown(function() {
         element.historyData = [];
+        element.searchedTerm = '';
       });
     });
   }

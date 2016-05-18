@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * @typedef {{querying: boolean,
+ *            searchTerm: string,
+ *            results: ?Array<!HistoryEntry>,
+ *            info: ?HistoryQuery}}
+ */
+var QueryState;
+
 Polymer({
   is: 'history-app',
 
@@ -10,15 +18,34 @@ Polymer({
     selectedPage: {
       type: String,
       value: 'history-list'
-    }
+    },
+
+    /** @type {!QueryState} */
+    queryState_: {
+      type: Object,
+      value: function() {
+        return {
+          // A query is initiated by page load.
+          querying: true,
+          searchTerm: '',
+          results: null,
+          info: null,
+        };
+      }
+    },
   },
+
+  observers: [
+    'searchTermChanged_(queryState_.searchTerm)',
+  ],
 
   // TODO(calamity): Replace these event listeners with data bound properties.
   listeners: {
     'history-checkbox-select': 'checkboxSelected',
     'unselect-all': 'unselectAll',
     'delete-selected': 'deleteSelected',
-    'search-changed': 'searchChanged',
+    'search-domain': 'searchDomain_',
+    'load-more-history': 'loadMoreHistory_',
   },
 
   ready: function() {
@@ -60,16 +87,8 @@ Polymer({
     /** @type {HistoryListElement} */(this.$['history-list']).deleteSelected();
   },
 
-  /**
-   * When the search is changed refresh the results from the backend.
-   * Ensures that the search bar is updated with the new search term.
-   * @param {{detail: {search: string}}} e
-   */
-  searchChanged: function(e) {
-    this.$.toolbar.setSearchTerm(e.detail.search);
-    /** @type {HistoryListElement} */(this.$['history-list']).setLoading();
-    /** @type {HistoryToolbarElement} */(this.$.toolbar).searching = true;
-    chrome.send('queryHistory', [e.detail.search, 0, 0, 0, RESULTS_PER_PAGE]);
+  loadMoreHistory_: function() {
+    this.queryHistory(true);
   },
 
   /**
@@ -78,15 +97,39 @@ Polymer({
    * @param {!Array<HistoryEntry>} results A list of results.
    */
   historyResult: function(info, results) {
+    this.set('queryState_.querying', false);
+    this.set('queryState_.results', results);
+    this.set('queryState_.info', info);
+
     var list = /** @type {HistoryListElement} */(this.$['history-list']);
-    list.addNewResults(results, info.term);
-    /** @type {HistoryToolbarElement} */(this.$.toolbar).searching = false;
+    list.addNewResults(results);
     if (info.finished)
       list.disableResultLoading();
+  },
 
-    var toolbar = /** @type {HistoryToolbarElement} */(this.$.toolbar);
-    toolbar.queryStartTime = info.queryStartTime;
-    toolbar.queryEndTime = info.queryEndTime;
+  /**
+   * Fired when the user presses 'More from this site'.
+   * @param {{detail: {domain: string}}} e
+   */
+  searchDomain_: function(e) {
+    this.$.toolbar.setSearchTerm(e.detail.domain);
+  },
+
+  searchTermChanged_: function() {
+    this.queryHistory(false);
+  },
+
+  queryHistory: function(incremental) {
+    var lastVisitTime = 0;
+    if (incremental) {
+      var lastVisit = this.queryState_.results.slice(-1)[0];
+      lastVisitTime = lastVisit ? lastVisit.time : 0;
+    }
+
+    this.set('queryState_.querying', true);
+    chrome.send(
+        'queryHistory',
+        [this.queryState_.searchTerm, 0, 0, lastVisitTime, RESULTS_PER_PAGE]);
   },
 
   /**

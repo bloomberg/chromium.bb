@@ -22,13 +22,13 @@ cr.define('md_history.history_item_test', function() {
 
         SEARCH_HISTORY_RESULTS = [
           createSearchEntry('2016-03-16', "http://www.google.com"),
-          createSearchEntry('2016-03-14', "http://calendar.google.com"),
-          createSearchEntry('2016-03-14', "http://mail.google.com")
+          createSearchEntry('2016-03-14 11:00', "http://calendar.google.com"),
+          createSearchEntry('2016-03-14 10:00', "http://mail.google.com")
         ];
       });
 
       test('basic separator insertion', function(done) {
-        element.addNewResults(TEST_HISTORY_RESULTS, '');
+        element.addNewResults(TEST_HISTORY_RESULTS);
         flush(function() {
           // Check that the correct number of time gaps are inserted.
           var items =
@@ -46,7 +46,8 @@ cr.define('md_history.history_item_test', function() {
       });
 
       test('separator insertion for search', function(done) {
-        element.addNewResults(SEARCH_HISTORY_RESULTS, 'search');
+        element.addNewResults(SEARCH_HISTORY_RESULTS);
+        element.searchedTerm = 'search';
         flush(function() {
           var items =
               Polymer.dom(element.root).querySelectorAll('history-item');
@@ -60,7 +61,7 @@ cr.define('md_history.history_item_test', function() {
       });
 
       test('separator insertion after deletion', function(done) {
-        element.addNewResults(TEST_HISTORY_RESULTS, '');
+        element.addNewResults(TEST_HISTORY_RESULTS);
         flush(function() {
           var items =
               Polymer.dom(element.root).querySelectorAll('history-item');
@@ -81,6 +82,7 @@ cr.define('md_history.history_item_test', function() {
 
       teardown(function() {
         element.historyData = [];
+        element.searchedTerm = '';
       });
     });
   }
