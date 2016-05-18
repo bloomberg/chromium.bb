@@ -1,8 +1,8 @@
 function dispatchWheelEvent(element, deltaX, deltaY)
 {
-    var eventInit = { deltaX: -deltaX, deltaY: -deltaY };
-    var event = new WheelEvent('mousewheel', eventInit);
-    element.dispatchEvent(event);
+    var rect = element.getClientRects()[0]
+    eventSender.mouseMoveTo(rect.left, rect.top);
+    eventSender.mouseScrollBy(deltaX, deltaY);
 }
 
 var input;

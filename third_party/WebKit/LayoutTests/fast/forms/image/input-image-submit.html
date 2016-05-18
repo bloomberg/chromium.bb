@@ -55,8 +55,6 @@ function startTests() {
     var y = image.offsetTop + 11;
     var clickEvent = document.createEvent('MouseEvent');
     clickEvent.initMouseEvent('click', true, false, document.defaultView, 1, x, y, x, y, false, false, false, false, 0, document);
-    var enterEvent = document.createEvent('TextEvent');
-    enterEvent.initTextEvent("textInput", true, true, document.defaultView, "\n");
     var query = window.location.search;
 
     if (query.indexOf('state=') == -1) {
@@ -108,7 +106,7 @@ function startTests() {
         state.value = 'to-image-on-submit';
         image.type = 'text';
         image.focus();
-        image.dispatchEvent(enterEvent);
+        eventSender.keyDown('\n');
     } else if (query.indexOf('state=to-image-on-submit') != -1) {
         // Should have image.x and image.y, but their values are 0.
         if (query.indexOf('image.x=0&image.y=0&image=value') == -1) {

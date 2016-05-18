@@ -2,14 +2,6 @@
 <head>
     <script>
 
-        function dispatchTabPress(element, shiftKey)
-        {
-            var event = document.createEvent('KeyboardEvents');
-            var tabKeyIdentifier = 'U+0009';
-            event.initKeyboardEvent('keydown', true, true, document.defaultView, tabKeyIdentifier, 0, false, true, shiftKey, false, false);
-            element.dispatchEvent(event);
-        }
-
         function test()
         {
             if (window.testRunner) {
@@ -19,7 +11,7 @@
             document.getElementById("link1").focus();
 
             for (var i = 0; i < 40; ++i) {
-                dispatchTabPress(document, false);
+                eventSender.keyDown('\u0009');
             }
          }
     </script>

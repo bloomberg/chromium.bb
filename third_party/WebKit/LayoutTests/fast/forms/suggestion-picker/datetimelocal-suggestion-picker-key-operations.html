@@ -153,7 +153,7 @@ function test2AfterClosing() {
     shouldBeNull('document.getElementById("mock-page-popup")');
     shouldBeEqualToString('document.getElementById("datetime-local").value', '2012-11-22T02:07');
 
-    sendKey(document.getElementById('datetime-local'), 'F4');
+    eventSender.keyDown('F4');
     if (document.getElementById('mock-page-popup'))
         testPassed('F4 opened picker.');
 

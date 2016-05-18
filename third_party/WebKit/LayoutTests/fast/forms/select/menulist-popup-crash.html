@@ -40,9 +40,8 @@
     function mouseDownOnSelect(selId)
     {
         var sl = document.getElementById(selId);
-        var event = document.createEvent("MouseEvent");
-        event.initMouseEvent("mousedown", true, true, document.defaultView, 1, sl.offsetLeft, sl.offsetTop, sl.offsetLeft, sl.offsetTop, false, false, false, false, 0, document);
-        sl.dispatchEvent(event);
+        eventSender.mouseMoveTo(sl.offsetLeft, sl.offsetTop);
+        eventSender.mouseDown(1);
     }
 
     mouseDownOnSelect("sl1");

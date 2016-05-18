@@ -18,11 +18,9 @@ debug('Press F4 key.');
 sendKey(document.getElementById('test'), 'F4');
 shouldBeNonNull('internals.pagePopupWindow');
 
-function sendKey(input, keyName, ctrlKey, altKey) {
-    var event = document.createEvent('KeyboardEvent');
-    event.initKeyboardEvent('keydown', true, true, document.defaultView, keyName, 0, ctrlKey, altKey);
+function sendKey(input, keyName) {
     input.focus();
-    input.dispatchEvent(event);
+    eventSender.keyDown(keyName);
 }
 </script>
 </body>

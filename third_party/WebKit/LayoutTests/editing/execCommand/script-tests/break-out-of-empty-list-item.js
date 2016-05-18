@@ -6,16 +6,7 @@ document.body.appendChild(testContainer);
 
 function pressKey(key)
 {
-    if (window.KeyEvent) {
-        var ev = document.createEvent("KeyboardEvent");
-        ev.initKeyEvent("keypress", true, true, window,  0,0,0,0, 0, key.charCodeAt(0));
-        document.body.dispatchEvent(ev);
-    }
-    else {
-        var ev = document.createEvent("TextEvent");
-        ev.initTextEvent('textInput', true, true, null, key.charAt(0));
-        document.body.dispatchEvent(ev);
-    }
+    eventSender.keyDown(key);
 }
 
 function enterAtTarget(initialContent)

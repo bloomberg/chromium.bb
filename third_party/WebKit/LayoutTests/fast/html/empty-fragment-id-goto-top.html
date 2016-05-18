@@ -7,9 +7,7 @@
 
                 window.scrollTo(0, 1000);
 
-                var clickEvent = document.createEvent("HTMLEvents");
-                clickEvent.initEvent("click", "true", "true");
-
+                var clickEvent = new MouseEvent('click');
                 var gotoTop = document.getElementById("gotoTop");
                 gotoTop.dispatchEvent(clickEvent);
                               

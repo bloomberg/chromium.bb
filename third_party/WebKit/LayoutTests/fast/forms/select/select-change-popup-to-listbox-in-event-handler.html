@@ -9,13 +9,9 @@
     function sendClick()
     {
       var select = document.getElementById("select");
-      var rect = select.getBoundingClientRect();
 
-      var evt = document.createEvent("MouseEvents");
-      evt.initMouseEvent("mousedown", true, true, window,
-        0, 0, 0, rect.top + 4, rect.left + 4, false, false, false, false, 0, null);
-
-      select.dispatchEvent(evt);
+      eventSender.mouseMoveTo(select.offsetLeft + 4, select.offsetTop + 4);
+      eventSender.mouseDown(1);
     }
     
     window.addEventListener('load', sendClick, false);

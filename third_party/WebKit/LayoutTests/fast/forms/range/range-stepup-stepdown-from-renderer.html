@@ -4,18 +4,19 @@
 <script src="../../../resources/js-test.js"></script>
 </head>
 <body>
+<input id="test"></input>
 <p id="description"></p>
 <div id="console"></div>
 <script>
 description('Check stepping-up and -down for range input from renderer.');
 
-var input = document.createElement('input');
+var input = document.getElementById('test');
 var invalidStateErr = '"InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable."';
 
+input.focus();
+
 function sendKey(keyName) {
-    var event = document.createEvent('KeyboardEvent');
-    event.initKeyboardEvent('keydown', true, true, document.defaultView, keyName);
-    input.dispatchEvent(event);
+    eventSender.keyDown(keyName);
 }
 
 function setInputAttributes(min, max, step, value) {
@@ -30,12 +31,12 @@ function stepUp(value, step, max, optionalStepCount) {
     if (typeof optionalStepCount != "undefined")
         if (optionalStepCount < 0)
             for (var i = 0; i < -optionalStepCount; i++)
-                sendKey('Down');
+                sendKey('downArrow');
         else
             for (var i = 0; i < optionalStepCount; i++)
-                sendKey('Up');
+                sendKey('upArrow');
     else
-        sendKey('Up');
+        sendKey('upArrow');
     return input.value;
 }
 
@@ -44,12 +45,12 @@ function stepDown(value, step, min, optionalStepCount) {
     if (typeof optionalStepCount != "undefined")
         if (optionalStepCount < 0)
             for (var i = 0; i < -optionalStepCount; i++)
-                sendKey('Up');
+                sendKey('upArrow');
         else
             for (var i = 0; i < optionalStepCount; i++)
-                sendKey('Down');
+                sendKey('downArrow');
     else
-        sendKey('Down');
+        sendKey('downArrow');
     return input.value;
 }
 
@@ -61,13 +62,13 @@ function stepUpExplicitBounds(min, max, step, value, stepCount) {
     if (typeof stepCount !== 'undefined')
         if (stepCount < 0) {
             for (var i = 0; i < -stepCount; i++)
-                sendKey('Down');
+                sendKey('downArrow');
         } else {
             for (var i = 0; i < stepCount; i++)
-                sendKey('Up');
+                sendKey('upArrow');
         }
     else
-        sendKey('Up');
+        sendKey('upArrow');
     return input.value;
 }
 
@@ -76,13 +77,13 @@ function stepDownExplicitBounds(min, max, step, value, stepCount) {
     if (typeof stepCount !== 'undefined')
         if (stepCount < 0) {
             for (var i = 0; i < -stepCount; i++)
-                sendKey('Up');
+                sendKey('upArrow');
         } else {
             for (var i = 0; i < stepCount; i++)
-                sendKey('Down');
+                sendKey('downArrow');
         }
     else
-        sendKey('Down');
+        sendKey('downArrow');
     return input.value;
 }
 

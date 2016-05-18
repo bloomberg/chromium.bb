@@ -15,12 +15,9 @@
             }
         }
 
-        function dispatchTabPress(element, shiftKey)
+        function dispatchTabPress(element, modifiers)
         {
-            var event = document.createEvent('KeyboardEvents');
-            var tabKeyIdentifier = 'U+0009';
-            event.initKeyboardEvent('keydown', true, true, document.defaultView, tabKeyIdentifier, 0, false, false, shiftKey, false, false);
-            element.dispatchEvent(event);
+            eventSender.keyDown('\u0009', modifiers);
         }
 
         var lastFocusedElement = null;
@@ -54,7 +51,7 @@
             log('Tabbing forward....\n');
             for (var i = 0; i < rects.length; ++i) {
                 if (rects[i].tabIndex >= 0)
-                    dispatchTabPress(document, false);
+                    dispatchTabPress(document, []);
             }
 
             lastFocusedElement.blur();
@@ -62,7 +59,7 @@
             log('\nTabbing backward....\n');
             for (var i = 0; i < rects.length; ++i) {
                 if (rects[i].tabIndex >= 0)
-                    dispatchTabPress(document, true);
+                    dispatchTabPress(document, ['shiftKey']);
             }
 
             log('\nTest finished\n');

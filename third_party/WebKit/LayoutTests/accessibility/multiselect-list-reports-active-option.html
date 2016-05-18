@@ -29,9 +29,7 @@
             shouldBe("accessibleThree.isSelectedOptionActive", "false");
 
             // Change the selected index by simulating a down arrow keydown event.
-            var event = document.createEvent('KeyboardEvents');
-            event.initKeyboardEvent('keydown', true, true, document.defaultView, 'Down', 0, false, false, false, false, false);
-            menulist.dispatchEvent(event);
+            eventSender.keyDown('downArrow', []);
 
             shouldBe("accessibleOne.isSelected", "false");
             shouldBe("accessibleOne.isSelectedOptionActive", "false");
@@ -41,9 +39,7 @@
             shouldBe("accessibleThree.isSelectedOptionActive", "false");
 
             // Extend the selection by simulating a Shift + Down Arrow keydown event.
-            var event = document.createEvent('KeyboardEvents');
-            event.initKeyboardEvent('keydown', true, true, document.defaultView, 'Down', 0, false, false, true, false, false);
-            menulist.dispatchEvent(event);
+            eventSender.keyDown('downArrow', ['shiftKey']);
 
             shouldBe("accessibleOne.isSelected", "false");
             shouldBe("accessibleOne.isSelectedOptionActive", "false");

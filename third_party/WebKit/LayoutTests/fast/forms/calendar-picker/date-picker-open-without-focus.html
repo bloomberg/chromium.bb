@@ -10,7 +10,7 @@ var input = document.getElementById('input');
 input.focus();
 input.remove();
 input.offsetTop;
-sendKey(input, "Down", false, true);
+eventSender.keyDown("downArrow", ["altKey"]);
 if (window.internals.pagePopupWindow) {
     testFailed('Popup was opened.');
     finishJSTest();

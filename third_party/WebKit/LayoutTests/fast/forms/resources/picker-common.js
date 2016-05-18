@@ -15,12 +15,6 @@ function waitUntilClosing(callback) {
     setTimeout(callback, 1);
 }
 
-function sendKey(input, keyName, ctrlKey, altKey) {
-    var event = document.createEvent('KeyboardEvent');
-    event.initKeyboardEvent('keydown', true, true, document.defaultView, keyName, 0, ctrlKey, altKey);
-    input.dispatchEvent(event);
-}
-
 function rootWindow() {
     var currentWindow = window;
     while (currentWindow !== currentWindow.parent) {
@@ -44,13 +38,12 @@ function openPicker(element, callback, errorCallback) {
     element.offsetTop; // Force to lay out
     element.focus();
     if (element.tagName === "SELECT") {
-        sendKey(element, "Down", false, true);
+        eventSender.keyDown("downArrow", ["altKey"]);
     } else if (element.tagName === "INPUT") {
         if (element.type === "color") {
-            element.focus();
             eventSender.keyDown(" ");
         } else {
-            sendKey(element, "Down", false, true);
+            eventSender.keyDown("downArrow", ["altKey"]);
         }
     }
     popupWindow = window.internals.pagePopupWindow;

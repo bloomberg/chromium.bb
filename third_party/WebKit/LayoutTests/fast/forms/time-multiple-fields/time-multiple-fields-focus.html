@@ -3,12 +3,6 @@
 <script src="../../../resources/js-test.js"></script>
 <input id="timeInput" type="time" value="01:01" style="font-size:20px">
 <script>
-function dispatchKeyEventTo(type, key, target) {
-    var event = document.createEvent('KeyboardEvent');
-    event.initKeyboardEvent(type, true, true, document.defaultView, key);
-    target.dispatchEvent(event);
-}
-
 function shadowPseudoIdOfFocused() {
     return internals.shadowPseudoId(internals.youngestShadowRoot(timeInput).activeElement);
 }
@@ -19,7 +13,7 @@ debug('Move focus to the second sub-field:');
 var timeInput = document.getElementById('timeInput');
 timeInput.focus();
 shouldBe('document.activeElement', 'timeInput');
-dispatchKeyEventTo('keydown', 'Right', timeInput);
+eventSender.keyDown('rightArrow');
 shouldBeEqualToString('shadowPseudoIdOfFocused(timeInput)', '-webkit-datetime-edit-minute-field');
 shouldBeEqualToString('timeInput.focus(); shadowPseudoIdOfFocused(timeInput)', '-webkit-datetime-edit-minute-field');
 

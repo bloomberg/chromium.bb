@@ -27,9 +27,7 @@ num.addEventListener('blur', handleBlur);
 num.focus();
 document.execCommand('InsertText', false, '123');
 document.execCommand('InsertText', false, 'a');
-var tabEvent = document.createEvent('KeyboardEvent');
-tabEvent.initKeyboardEvent('keydown', true, true, document.defaultView, 'U+0009');
-num.dispatchEvent(tabEvent);
+eventSender.keyDown('\u0009');
 
 shouldBe('numOfFocus', '1');
 shouldBe('numOfBlur', '1');

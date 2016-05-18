@@ -14,9 +14,9 @@
 description('F4 or Alt+Down should not open the calendar picker.');
 
 var input = document.getElementById('time');
-sendKey(input, 'F4', false, false);
+eventSender.keyDown('F4');
 shouldBeNull('document.getElementById("mock-page-popup")');
-sendKey(input, 'Down', false, true);
+eventSender.keyDown('F4', ['altKey']);
 shouldBeNull('document.getElementById("mock-page-popup")');
 
 finishJSTest();

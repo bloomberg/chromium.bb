@@ -18,9 +18,7 @@ a.addEventListener("change", function() {
 });
 
 a.addEventListener("keyup", function() {
-    var e = document.createEvent("KeyboardEvent");
-    e.initKeyboardEvent('keydown', true, true, document.defaultView, 'U+0009', 0, false, false, false, false, false);
-    a.dispatchEvent(e);
+    eventSender.keyDown('\u0009');
 })
 
 document.body.offsetTop;

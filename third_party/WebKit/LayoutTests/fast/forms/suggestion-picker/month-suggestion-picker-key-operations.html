@@ -174,7 +174,7 @@ function test3AfterClosing() {
     shouldBeNull('document.getElementById("mock-page-popup")');
     shouldBeEqualToString('document.getElementById("month").value', '2016-12');
 
-    sendKey(document.getElementById('month'), "F4");
+    eventSender.keyDown('F4');
     if (document.getElementById('mock-page-popup'))
         testPassed("F4 opened picker.");
 

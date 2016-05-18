@@ -70,7 +70,7 @@ function testFormAssociation()
    for (var i = 0; i < elements.length; ++i) {
         // <label/> won't handle 'error', use 'click'.
         var eventType = (elements[i] instanceof HTMLLabelElement) ? "click" : "error";
-        elements[i].dispatchEvent(new Event(eventType));
+        elements[i].dispatchEvent(new MouseEvent(eventType));
    }
 }
 testFormAssociation();

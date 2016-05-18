@@ -5,9 +5,7 @@
 <input type="number" onchange="handleChange(this);">
 <script>
 function sendKey(keyName) {
-    var event = document.createEvent('KeyboardEvent');
-    event.initKeyboardEvent('keydown', true, true, document.defaultView, keyName);
-    document.activeElement.dispatchEvent(event);
+    eventSender.keyDown(keyName);
 }
 
 function handleChange(element) {
@@ -18,7 +16,7 @@ function handleChange(element) {
 var changeEventCounter = 0;
 var numberInput = document.getElementsByTagName('input')[0];
 numberInput.focus();
-sendKey('Up');
+sendKey('upArrow');
 
 testPassed('if not crashed in ASAN build.');
 shouldBe('changeEventCounter', '1');

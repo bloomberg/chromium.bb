@@ -4,8 +4,7 @@
 var clickcount = 0;
 function dispatchClickEvent(target) {
     // Create a click event and dispatch it
-    var event = document.createEvent('UIEvents');
-    event.initUIEvent('click', true, true, window, 1)
+    var event = new MouseEvent('click');
     target.dispatchEvent(event);                
 }
 

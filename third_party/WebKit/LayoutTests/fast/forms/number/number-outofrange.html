@@ -17,27 +17,25 @@ var higher = document.getElementById('higher');
 function sendKeyEvent(element, key)
 {
     element.focus();
-    var event = document.createEvent('KeyboardEvents');
-    event.initKeyboardEvent('keydown', true, true, document.defaultView, key, 0, false, false, false, false, false);
-    element.dispatchEvent(event);
+    eventSender.keyDown(key);
 }
 
 debug('Pressing the down arrow key on an input field of which value is lower than the minimum:');
-sendKeyEvent(lower, 'Down');
+sendKeyEvent(lower, 'downArrow');
 var unchanged = "-10";
 shouldBe('lower.value', 'unchanged');
 
 debug('Pressing the up arrow key on the input:');
-sendKeyEvent(lower, 'Up');
+sendKeyEvent(lower, 'upArrow');
 shouldBe('lower.value', 'lower.min');
 
 debug('Pressing the up arrow key on an input field of which value is higher than the maximum:');
-sendKeyEvent(higher, 'Up');
+sendKeyEvent(higher, 'upArrow');
 unchanged = "200";
 shouldBe('higher.value', 'unchanged');
 
 debug('Pressing the down arrow key on the input:');
-sendKeyEvent(higher, 'Down');
+sendKeyEvent(higher, 'downArrow');
 shouldBe('higher.value', 'higher.max');
 
 parent.innerHTML = '';
