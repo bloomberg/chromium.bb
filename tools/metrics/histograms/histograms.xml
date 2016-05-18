@@ -59862,10 +59862,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WebCore.PreloadDelayMs" units="ms">
-  <obsolete>
-    Removed in April 2016, due to lack of use.
-  </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>csharrison@chromium.org</owner>
   <summary>
     The delay between when the preload scanner discovers a resource on the
     parser thread and when the preload request is issued on the main thread.
