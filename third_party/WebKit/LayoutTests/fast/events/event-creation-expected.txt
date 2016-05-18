@@ -1,4 +1,4 @@
-CONSOLE WARNING: 'SVGZoomEvent' is deprecated and will be removed in M52, around July 2016. See https://www.chromestatus.com/features/5760883808534528 for more details.
+CONSOLE WARNING: line 1: 'SVGZoomEvent' is deprecated and will be removed in M52, around July 2016. See https://www.chromestatus.com/features/5760883808534528 for more details.
 This tests that document.createEvent is hooked up for all Event interfaces (and alternatives) and creates the right instance.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

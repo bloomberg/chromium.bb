@@ -1,4 +1,4 @@
-CONSOLE WARNING: 'getMatchedCSSRules()' is deprecated. For more help, check https://code.google.com/p/chromium/issues/detail?id=437569#c2
+CONSOLE WARNING: line 1: 'getMatchedCSSRules()' is deprecated. For more help, check https://code.google.com/p/chromium/issues/detail?id=437569#c2
 
 ----- tests for calling methods of another frame using Function.call -----
 

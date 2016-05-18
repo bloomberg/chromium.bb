@@ -98,7 +98,9 @@ void Deprecation::warnOnDeprecatedProperties(const LocalFrame* frame, CSSPropert
     String message = deprecationMessage(unresolvedProperty);
     if (!message.isEmpty()) {
         host->deprecation().suppress(unresolvedProperty);
-        frame->console().addMessage(ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel, message));
+        ConsoleMessage* consoleMessage = ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel, message);
+        consoleMessage->collectCallStack();
+        frame->console().addMessage(consoleMessage);
     }
 }
 
@@ -120,7 +122,9 @@ void Deprecation::countDeprecation(const LocalFrame* frame, UseCounter::Feature 
     if (!host->useCounter().hasRecordedMeasurement(feature)) {
         host->useCounter().recordMeasurement(feature);
         ASSERT(!deprecationMessage(feature).isEmpty());
-        frame->console().addMessage(ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel, deprecationMessage(feature)));
+        ConsoleMessage* consoleMessage = ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel, deprecationMessage(feature));
+        consoleMessage->collectCallStack();
+        frame->console().addMessage(consoleMessage);
     }
 }
 

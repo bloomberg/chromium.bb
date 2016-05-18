@@ -1,4 +1,4 @@
-CONSOLE WARNING: Hyphenated property names in Web Animations keyframes are invalid and therefore ignored. Please use camelCase instead.
+CONSOLE WARNING: line 14: Hyphenated property names in Web Animations keyframes are invalid and therefore ignored. Please use camelCase instead.
 This is a testharness.js-based test.
 PASS Calling element.animate() with hyphenated property is use counted. 
 Harness: the test ran to completion.

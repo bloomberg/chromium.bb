@@ -1,4 +1,4 @@
-CONSOLE WARNING: 'SVGZoomEvent' is deprecated and will be removed in M52, around July 2016. See https://www.chromestatus.com/features/5760883808534528 for more details.
+CONSOLE WARNING: line 13: 'SVGZoomEvent' is deprecated and will be removed in M52, around July 2016. See https://www.chromestatus.com/features/5760883808534528 for more details.
 This is a testharness.js-based test.
 PASS AnimationEvent should be an alias for AnimationEvent. 
 PASS createEvent('AnimationEvent') should be initialized correctly. 

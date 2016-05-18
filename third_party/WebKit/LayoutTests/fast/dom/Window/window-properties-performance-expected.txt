@@ -1,4 +1,4 @@
-CONSOLE WARNING: 'Performance.onwebkitresourcetimingbufferfull' is deprecated. Please use 'Performance.onresourcetimingbufferfull' instead.
+CONSOLE WARNING: line 1: 'Performance.onwebkitresourcetimingbufferfull' is deprecated. Please use 'Performance.onresourcetimingbufferfull' instead.
 This test dumps all of the properties that are reachable from the window.performance object, along with their types.
 
 window.performance [object Performance]

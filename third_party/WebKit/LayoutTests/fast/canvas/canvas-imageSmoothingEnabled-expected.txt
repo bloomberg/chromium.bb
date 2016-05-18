@@ -1,4 +1,4 @@
-CONSOLE WARNING: 'CanvasRenderingContext2D.webkitImageSmoothingEnabled' is deprecated. Please use 'CanvasRenderingContext2D.imageSmoothingEnabled' instead.
+CONSOLE WARNING: line 1: 'CanvasRenderingContext2D.webkitImageSmoothingEnabled' is deprecated. Please use 'CanvasRenderingContext2D.imageSmoothingEnabled' instead.
 Tests for the imageSmoothingEnabled attribute.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

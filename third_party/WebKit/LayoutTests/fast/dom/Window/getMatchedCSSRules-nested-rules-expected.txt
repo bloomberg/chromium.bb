@@ -1,4 +1,4 @@
-CONSOLE WARNING: 'getMatchedCSSRules()' is deprecated. For more help, check https://code.google.com/p/chromium/issues/detail?id=437569#c2
+CONSOLE WARNING: line 1: 'getMatchedCSSRules()' is deprecated. For more help, check https://code.google.com/p/chromium/issues/detail?id=437569#c2
 getMatchedCSSRules with nested CSS rules
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

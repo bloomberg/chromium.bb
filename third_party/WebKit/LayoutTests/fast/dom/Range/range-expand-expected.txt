@@ -1,4 +1,4 @@
-CONSOLE WARNING: 'Range.expand()' is deprecated. Please use 'Selection.modify()' instead.
+CONSOLE WARNING: line 57: 'Range.expand()' is deprecated. Please use 'Selection.modify()' instead.
 This is the begin of a block. A block is a collection of sentences. Each sentence begins with capital letter and ends with a punctuation.
 
 Now, a sentence is divided into multiple lines.

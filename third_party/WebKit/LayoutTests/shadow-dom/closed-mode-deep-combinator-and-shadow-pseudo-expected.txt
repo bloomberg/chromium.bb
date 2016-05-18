@@ -1,4 +1,4 @@
-CONSOLE WARNING: /deep/ combinator is deprecated. See https://www.chromestatus.com/features/6750456638341120 for more details.
+CONSOLE WARNING: line 311: /deep/ combinator is deprecated. See https://www.chromestatus.com/features/6750456638341120 for more details.
 (1/6) /deep/ style rule on top-level document.
 PASS backgroundColorOf('host_open_open') is "rgba(0, 0, 0, 0)"
 PASS backgroundColorOf('host_open_open/div1') is "rgba(0, 0, 0, 0)"
