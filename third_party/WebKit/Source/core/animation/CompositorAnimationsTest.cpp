@@ -676,7 +676,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimation)
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(1));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(0.0));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(CompositorAnimation::DirectionNormal));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(CompositorAnimation::Direction::NORMAL));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setPlaybackRate(1));
 
     EXPECT_CALL(*mockAnimationPtr, delete_())
@@ -721,7 +721,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationDuration)
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(1));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(0.0));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(CompositorAnimation::DirectionNormal));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(CompositorAnimation::Direction::NORMAL));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setPlaybackRate(1));
 
     EXPECT_CALL(*mockAnimationPtr, delete_())
@@ -773,7 +773,7 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(5));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(0.0));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(CompositorAnimation::DirectionAlternate));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(CompositorAnimation::Direction::ALTERNATE_NORMAL));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setPlaybackRate(2.0));
 
     EXPECT_CALL(*mockAnimationPtr, delete_())
@@ -820,7 +820,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationStartDelay
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(5));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(-3.25));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(CompositorAnimation::DirectionNormal));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(CompositorAnimation::Direction::NORMAL));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setPlaybackRate(1));
 
     EXPECT_CALL(*mockAnimationPtr, delete_())
@@ -877,7 +877,7 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(10));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(0.0));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(CompositorAnimation::DirectionAlternate));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(CompositorAnimation::Direction::ALTERNATE_NORMAL));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setPlaybackRate(1));
 
     EXPECT_CALL(*mockAnimationPtr, delete_())
@@ -935,7 +935,7 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation)
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(10));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(0.0));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(CompositorAnimation::DirectionAlternateReverse));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(CompositorAnimation::Direction::ALTERNATE_REVERSE));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setPlaybackRate(1));
 
     EXPECT_CALL(*mockAnimationPtr, delete_())
@@ -983,7 +983,7 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimationNegative
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(5));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(3.0));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(CompositorAnimation::DirectionAlternateReverse));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(CompositorAnimation::Direction::ALTERNATE_REVERSE));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setPlaybackRate(1));
 
     EXPECT_CALL(*mockAnimationPtr, delete_())
@@ -1028,7 +1028,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationPlaybackRa
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(1));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(0.0));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(CompositorAnimation::DirectionNormal));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(CompositorAnimation::Direction::NORMAL));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setPlaybackRate(-3));
 
     EXPECT_CALL(*mockAnimationPtr, delete_())
@@ -1073,9 +1073,9 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationFillModeNo
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(1));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(0.0));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(CompositorAnimation::DirectionNormal));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(CompositorAnimation::Direction::NORMAL));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setPlaybackRate(1));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setFillMode(CompositorAnimation::FillModeNone));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setFillMode(CompositorAnimation::FillMode::NONE));
 
     EXPECT_CALL(*mockAnimationPtr, delete_())
         .Times(1)
@@ -1118,9 +1118,9 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationFillModeAu
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(1));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(0.0));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(CompositorAnimation::DirectionNormal));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(CompositorAnimation::Direction::NORMAL));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setPlaybackRate(1));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setFillMode(CompositorAnimation::FillModeNone));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setFillMode(CompositorAnimation::FillMode::NONE));
 
     EXPECT_CALL(*mockAnimationPtr, delete_())
         .Times(1)
@@ -1164,7 +1164,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationWithTiming
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(1));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(0.0));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(CompositorAnimation::DirectionNormal));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setDirection(CompositorAnimation::Direction::NORMAL));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setPlaybackRate(1));
 
     EXPECT_CALL(*mockAnimationPtr, delete_())

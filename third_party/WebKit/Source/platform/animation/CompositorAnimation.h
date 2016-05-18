@@ -5,6 +5,7 @@
 #ifndef CompositorAnimation_h
 #define CompositorAnimation_h
 
+#include "cc/animation/animation.h"
 #include "platform/PlatformExport.h"
 #include "platform/animation/CompositorTargetProperty.h"
 #include "wtf/Noncopyable.h"
@@ -23,19 +24,8 @@ class CompositorAnimationCurve;
 class PLATFORM_EXPORT CompositorAnimation {
     WTF_MAKE_NONCOPYABLE(CompositorAnimation);
 public:
-    enum Direction {
-        DirectionNormal,
-        DirectionReverse,
-        DirectionAlternate,
-        DirectionAlternateReverse
-    };
-
-    enum FillMode {
-        FillModeNone,
-        FillModeForwards,
-        FillModeBackwards,
-        FillModeBoth
-    };
+    using Direction = cc::Animation::Direction;
+    using FillMode = cc::Animation::FillMode;
 
     CompositorAnimation(const CompositorAnimationCurve&, CompositorTargetProperty::Type, int animationId, int groupId);
     virtual ~CompositorAnimation();

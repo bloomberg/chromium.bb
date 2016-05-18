@@ -92,7 +92,7 @@ TEST(AnimationTest, TrimTimeInfiniteIterations) {
 
 TEST(AnimationTest, TrimTimeReverse) {
   std::unique_ptr<Animation> anim(CreateAnimation(-1));
-  anim->set_direction(Animation::DIRECTION_REVERSE);
+  anim->set_direction(Animation::Direction::REVERSE);
   EXPECT_EQ(
       1.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0)).InSecondsF());
   EXPECT_EQ(0.75, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.25))
@@ -109,7 +109,7 @@ TEST(AnimationTest, TrimTimeReverse) {
 
 TEST(AnimationTest, TrimTimeAlternateInfiniteIterations) {
   std::unique_ptr<Animation> anim(CreateAnimation(-1));
-  anim->set_direction(Animation::DIRECTION_ALTERNATE);
+  anim->set_direction(Animation::Direction::ALTERNATE_NORMAL);
   EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0))
                      .InSecondsF());
   EXPECT_EQ(0.25, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.25))
@@ -126,7 +126,7 @@ TEST(AnimationTest, TrimTimeAlternateInfiniteIterations) {
 
 TEST(AnimationTest, TrimTimeAlternateOneIteration) {
   std::unique_ptr<Animation> anim(CreateAnimation(1));
-  anim->set_direction(Animation::DIRECTION_ALTERNATE);
+  anim->set_direction(Animation::Direction::ALTERNATE_NORMAL);
   EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0))
                      .InSecondsF());
   EXPECT_EQ(0.25, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.25))
@@ -143,7 +143,7 @@ TEST(AnimationTest, TrimTimeAlternateOneIteration) {
 
 TEST(AnimationTest, TrimTimeAlternateTwoIterations) {
   std::unique_ptr<Animation> anim(CreateAnimation(2));
-  anim->set_direction(Animation::DIRECTION_ALTERNATE);
+  anim->set_direction(Animation::Direction::ALTERNATE_NORMAL);
   EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0))
                      .InSecondsF());
   EXPECT_EQ(0.25, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.25))
@@ -166,7 +166,7 @@ TEST(AnimationTest, TrimTimeAlternateTwoIterations) {
 
 TEST(AnimationTest, TrimTimeAlternateTwoHalfIterations) {
   std::unique_ptr<Animation> anim(CreateAnimation(2.5));
-  anim->set_direction(Animation::DIRECTION_ALTERNATE);
+  anim->set_direction(Animation::Direction::ALTERNATE_NORMAL);
   EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0))
                      .InSecondsF());
   EXPECT_EQ(0.25, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.25))
@@ -193,7 +193,7 @@ TEST(AnimationTest, TrimTimeAlternateTwoHalfIterations) {
 
 TEST(AnimationTest, TrimTimeAlternateReverseInfiniteIterations) {
   std::unique_ptr<Animation> anim(CreateAnimation(-1));
-  anim->set_direction(Animation::DIRECTION_ALTERNATE_REVERSE);
+  anim->set_direction(Animation::Direction::ALTERNATE_REVERSE);
   EXPECT_EQ(1.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0))
                      .InSecondsF());
   EXPECT_EQ(0.75, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.25))
@@ -210,7 +210,7 @@ TEST(AnimationTest, TrimTimeAlternateReverseInfiniteIterations) {
 
 TEST(AnimationTest, TrimTimeAlternateReverseOneIteration) {
   std::unique_ptr<Animation> anim(CreateAnimation(1));
-  anim->set_direction(Animation::DIRECTION_ALTERNATE_REVERSE);
+  anim->set_direction(Animation::Direction::ALTERNATE_REVERSE);
   EXPECT_EQ(1.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0))
                      .InSecondsF());
   EXPECT_EQ(0.75, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.25))
@@ -227,7 +227,7 @@ TEST(AnimationTest, TrimTimeAlternateReverseOneIteration) {
 
 TEST(AnimationTest, TrimTimeAlternateReverseTwoIterations) {
   std::unique_ptr<Animation> anim(CreateAnimation(2));
-  anim->set_direction(Animation::DIRECTION_ALTERNATE_REVERSE);
+  anim->set_direction(Animation::Direction::ALTERNATE_REVERSE);
   EXPECT_EQ(1.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0))
                      .InSecondsF());
   EXPECT_EQ(0.75, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.25))
@@ -266,7 +266,7 @@ TEST(AnimationTest, TrimTimeStartTime) {
 TEST(AnimationTest, TrimTimeStartTimeReverse) {
   std::unique_ptr<Animation> anim(CreateAnimation(1));
   anim->set_start_time(TicksFromSecondsF(4));
-  anim->set_direction(Animation::DIRECTION_REVERSE);
+  anim->set_direction(Animation::Direction::REVERSE);
   EXPECT_EQ(
       0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0)).InSecondsF());
   EXPECT_EQ(1.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(4.0))
@@ -297,7 +297,7 @@ TEST(AnimationTest, TrimTimeTimeOffsetReverse) {
   std::unique_ptr<Animation> anim(CreateAnimation(1));
   anim->set_time_offset(TimeDelta::FromMilliseconds(4000));
   anim->set_start_time(TicksFromSecondsF(4));
-  anim->set_direction(Animation::DIRECTION_REVERSE);
+  anim->set_direction(Animation::Direction::REVERSE);
   EXPECT_EQ(1.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0))
                      .InSecondsF());
   EXPECT_EQ(0.5, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.5))
@@ -325,7 +325,7 @@ TEST(AnimationTest, TrimTimeNegativeTimeOffset) {
 TEST(AnimationTest, TrimTimeNegativeTimeOffsetReverse) {
   std::unique_ptr<Animation> anim(CreateAnimation(1));
   anim->set_time_offset(TimeDelta::FromMilliseconds(-4000));
-  anim->set_direction(Animation::DIRECTION_REVERSE);
+  anim->set_direction(Animation::Direction::REVERSE);
 
   EXPECT_EQ(
       0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0)).InSecondsF());
@@ -356,7 +356,7 @@ TEST(AnimationTest, TrimTimePauseResume) {
 
 TEST(AnimationTest, TrimTimePauseResumeReverse) {
   std::unique_ptr<Animation> anim(CreateAnimation(1));
-  anim->set_direction(Animation::DIRECTION_REVERSE);
+  anim->set_direction(Animation::Direction::REVERSE);
   anim->SetRunState(Animation::RUNNING, TicksFromSecondsF(0.0));
   EXPECT_EQ(1.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0))
                      .InSecondsF());
@@ -391,7 +391,7 @@ TEST(AnimationTest, TrimTimeSuspendResume) {
 
 TEST(AnimationTest, TrimTimeSuspendResumeReverse) {
   std::unique_ptr<Animation> anim(CreateAnimation(1));
-  anim->set_direction(Animation::DIRECTION_REVERSE);
+  anim->set_direction(Animation::Direction::REVERSE);
   anim->SetRunState(Animation::RUNNING, TicksFromSecondsF(0.0));
   EXPECT_EQ(1.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0))
                      .InSecondsF());
@@ -707,7 +707,7 @@ TEST(AnimationTest, TrimTimePlaybackFastInfiniteIterations) {
 
 TEST(AnimationTest, TrimTimePlaybackNormalDoubleReverse) {
   std::unique_ptr<Animation> anim(CreateAnimation(1, 1, -1));
-  anim->set_direction(Animation::DIRECTION_REVERSE);
+  anim->set_direction(Animation::Direction::REVERSE);
   EXPECT_EQ(0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(-1.0))
                    .InSecondsF());
   EXPECT_EQ(
@@ -722,7 +722,7 @@ TEST(AnimationTest, TrimTimePlaybackNormalDoubleReverse) {
 
 TEST(AnimationTest, TrimTimePlaybackFastDoubleReverse) {
   std::unique_ptr<Animation> anim(CreateAnimation(1, 4, -2));
-  anim->set_direction(Animation::DIRECTION_REVERSE);
+  anim->set_direction(Animation::Direction::REVERSE);
   EXPECT_EQ(0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(-1.0))
                    .InSecondsF());
   EXPECT_EQ(
@@ -741,7 +741,7 @@ TEST(AnimationTest, TrimTimePlaybackFastDoubleReverse) {
 
 TEST(AnimationTest, TrimTimeAlternateTwoIterationsPlaybackFast) {
   std::unique_ptr<Animation> anim(CreateAnimation(2, 2, 2));
-  anim->set_direction(Animation::DIRECTION_ALTERNATE);
+  anim->set_direction(Animation::Direction::ALTERNATE_NORMAL);
   EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0))
                      .InSecondsF());
   EXPECT_EQ(0.5, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.25))
@@ -766,7 +766,7 @@ TEST(AnimationTest, TrimTimeAlternateTwoIterationsPlaybackFast) {
 
 TEST(AnimationTest, TrimTimeAlternateTwoIterationsPlaybackFastReverse) {
   std::unique_ptr<Animation> anim(CreateAnimation(2, 2, 2));
-  anim->set_direction(Animation::DIRECTION_ALTERNATE_REVERSE);
+  anim->set_direction(Animation::Direction::ALTERNATE_REVERSE);
   EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(-1.0))
                      .InSecondsF());
   EXPECT_EQ(2.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0))
@@ -793,7 +793,7 @@ TEST(AnimationTest, TrimTimeAlternateTwoIterationsPlaybackFastReverse) {
 
 TEST(AnimationTest, TrimTimeAlternateTwoIterationsPlaybackFastDoubleReverse) {
   std::unique_ptr<Animation> anim(CreateAnimation(2, 2, -2));
-  anim->set_direction(Animation::DIRECTION_ALTERNATE_REVERSE);
+  anim->set_direction(Animation::Direction::ALTERNATE_REVERSE);
   EXPECT_EQ(2.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0))
                      .InSecondsF());
   EXPECT_EQ(1.5, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.25))
@@ -819,7 +819,7 @@ TEST(AnimationTest, TrimTimeAlternateTwoIterationsPlaybackFastDoubleReverse) {
 TEST(AnimationTest,
      TrimTimeAlternateReverseThreeIterationsPlaybackFastAlternateReverse) {
   std::unique_ptr<Animation> anim(CreateAnimation(3, 2, -2));
-  anim->set_direction(Animation::DIRECTION_ALTERNATE_REVERSE);
+  anim->set_direction(Animation::Direction::ALTERNATE_REVERSE);
   EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0))
                      .InSecondsF());
   EXPECT_EQ(0.5, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.25))
@@ -853,7 +853,7 @@ TEST(AnimationTest,
 TEST(AnimationTest,
      TrimTimeAlternateReverseTwoIterationsPlaybackNormalAlternate) {
   std::unique_ptr<Animation> anim(CreateAnimation(2, 2, -1));
-  anim->set_direction(Animation::DIRECTION_ALTERNATE);
+  anim->set_direction(Animation::Direction::ALTERNATE_NORMAL);
   EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0))
                      .InSecondsF());
   EXPECT_EQ(0.5, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.5))
@@ -897,7 +897,7 @@ TEST(AnimationTest, TrimTimeIterationStart) {
 
 TEST(AnimationTest, TrimTimeIterationStartAlternate) {
   std::unique_ptr<Animation> anim(CreateAnimation(2, 1, 1));
-  anim->set_direction(Animation::DIRECTION_ALTERNATE);
+  anim->set_direction(Animation::Direction::ALTERNATE_NORMAL);
   anim->set_iteration_start(0.3);
   EXPECT_EQ(0.3, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(-1.0))
                      .InSecondsF());
@@ -917,7 +917,7 @@ TEST(AnimationTest, TrimTimeIterationStartAlternate) {
 
 TEST(AnimationTest, TrimTimeIterationStartAlternateThreeIterations) {
   std::unique_ptr<Animation> anim(CreateAnimation(3, 1, 1));
-  anim->set_direction(Animation::DIRECTION_ALTERNATE);
+  anim->set_direction(Animation::Direction::ALTERNATE_NORMAL);
   anim->set_iteration_start(1);
   EXPECT_EQ(1.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(-1.0))
                      .InSecondsF());
@@ -942,7 +942,7 @@ TEST(AnimationTest, TrimTimeIterationStartAlternateThreeIterations) {
 TEST(AnimationTest,
      TrimTimeIterationStartAlternateThreeIterationsPlaybackReverse) {
   std::unique_ptr<Animation> anim(CreateAnimation(3, 1, -1));
-  anim->set_direction(Animation::DIRECTION_ALTERNATE);
+  anim->set_direction(Animation::Direction::ALTERNATE_NORMAL);
   anim->set_iteration_start(1);
   EXPECT_EQ(0.0, anim->TrimTimeToCurrentIteration(TicksFromSecondsF(0.0))
                      .InSecondsF());
@@ -958,22 +958,22 @@ TEST(AnimationTest,
 
 TEST(AnimationTest, InEffectFillMode) {
   std::unique_ptr<Animation> anim(CreateAnimation(1));
-  anim->set_fill_mode(Animation::FILL_MODE_NONE);
+  anim->set_fill_mode(Animation::FillMode::NONE);
   EXPECT_FALSE(anim->InEffect(TicksFromSecondsF(-1.0)));
   EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(0.0)));
   EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(1.0)));
 
-  anim->set_fill_mode(Animation::FILL_MODE_FORWARDS);
+  anim->set_fill_mode(Animation::FillMode::FORWARDS);
   EXPECT_FALSE(anim->InEffect(TicksFromSecondsF(-1.0)));
   EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(0.0)));
   EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(1.0)));
 
-  anim->set_fill_mode(Animation::FILL_MODE_BACKWARDS);
+  anim->set_fill_mode(Animation::FillMode::BACKWARDS);
   EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(-1.0)));
   EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(0.0)));
   EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(1.0)));
 
-  anim->set_fill_mode(Animation::FILL_MODE_BOTH);
+  anim->set_fill_mode(Animation::FillMode::BOTH);
   EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(-1.0)));
   EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(0.0)));
   EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(1.0)));
@@ -981,22 +981,22 @@ TEST(AnimationTest, InEffectFillMode) {
 
 TEST(AnimationTest, InEffectFillModePlayback) {
   std::unique_ptr<Animation> anim(CreateAnimation(1, 1, -1));
-  anim->set_fill_mode(Animation::FILL_MODE_NONE);
+  anim->set_fill_mode(Animation::FillMode::NONE);
   EXPECT_FALSE(anim->InEffect(TicksFromSecondsF(-1.0)));
   EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(0.0)));
   EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(1.0)));
 
-  anim->set_fill_mode(Animation::FILL_MODE_FORWARDS);
+  anim->set_fill_mode(Animation::FillMode::FORWARDS);
   EXPECT_FALSE(anim->InEffect(TicksFromSecondsF(-1.0)));
   EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(0.0)));
   EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(1.0)));
 
-  anim->set_fill_mode(Animation::FILL_MODE_BACKWARDS);
+  anim->set_fill_mode(Animation::FillMode::BACKWARDS);
   EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(-1.0)));
   EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(0.0)));
   EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(1.0)));
 
-  anim->set_fill_mode(Animation::FILL_MODE_BOTH);
+  anim->set_fill_mode(Animation::FillMode::BOTH);
   EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(-1.0)));
   EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(0.0)));
   EXPECT_TRUE(anim->InEffect(TicksFromSecondsF(1.0)));

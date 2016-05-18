@@ -512,12 +512,12 @@ bool ElementAnimations::AnimationStartScale(ElementListType list_type,
 
     bool forward_direction = true;
     switch (animations_[i]->direction()) {
-      case Animation::DIRECTION_NORMAL:
-      case Animation::DIRECTION_ALTERNATE:
+      case Animation::Direction::NORMAL:
+      case Animation::Direction::ALTERNATE_NORMAL:
         forward_direction = animations_[i]->playback_rate() >= 0.0;
         break;
-      case Animation::DIRECTION_REVERSE:
-      case Animation::DIRECTION_ALTERNATE_REVERSE:
+      case Animation::Direction::REVERSE:
+      case Animation::Direction::ALTERNATE_REVERSE:
         forward_direction = animations_[i]->playback_rate() < 0.0;
         break;
     }
@@ -549,12 +549,12 @@ bool ElementAnimations::MaximumTargetScale(ElementListType list_type,
 
     bool forward_direction = true;
     switch (animations_[i]->direction()) {
-      case Animation::DIRECTION_NORMAL:
-      case Animation::DIRECTION_ALTERNATE:
+      case Animation::Direction::NORMAL:
+      case Animation::Direction::ALTERNATE_NORMAL:
         forward_direction = animations_[i]->playback_rate() >= 0.0;
         break;
-      case Animation::DIRECTION_REVERSE:
-      case Animation::DIRECTION_ALTERNATE_REVERSE:
+      case Animation::Direction::REVERSE:
+      case Animation::Direction::ALTERNATE_REVERSE:
         forward_direction = animations_[i]->playback_rate() < 0.0;
         break;
     }

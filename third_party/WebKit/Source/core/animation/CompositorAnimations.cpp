@@ -711,16 +711,16 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, in
 
         switch (compositorTiming.direction) {
         case Timing::PlaybackDirectionNormal:
-            animation->setDirection(CompositorAnimation::DirectionNormal);
+            animation->setDirection(CompositorAnimation::Direction::NORMAL);
             break;
         case Timing::PlaybackDirectionReverse:
-            animation->setDirection(CompositorAnimation::DirectionReverse);
+            animation->setDirection(CompositorAnimation::Direction::REVERSE);
             break;
         case Timing::PlaybackDirectionAlternate:
-            animation->setDirection(CompositorAnimation::DirectionAlternate);
+            animation->setDirection(CompositorAnimation::Direction::ALTERNATE_NORMAL);
             break;
         case Timing::PlaybackDirectionAlternateReverse:
-            animation->setDirection(CompositorAnimation::DirectionAlternateReverse);
+            animation->setDirection(CompositorAnimation::Direction::ALTERNATE_REVERSE);
             break;
         default:
             ASSERT_NOT_REACHED();
@@ -729,16 +729,16 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, in
 
         switch (compositorTiming.fillMode) {
         case Timing::FillModeNone:
-            animation->setFillMode(CompositorAnimation::FillModeNone);
+            animation->setFillMode(CompositorAnimation::FillMode::NONE);
             break;
         case Timing::FillModeForwards:
-            animation->setFillMode(CompositorAnimation::FillModeForwards);
+            animation->setFillMode(CompositorAnimation::FillMode::FORWARDS);
             break;
         case Timing::FillModeBackwards:
-            animation->setFillMode(CompositorAnimation::FillModeBackwards);
+            animation->setFillMode(CompositorAnimation::FillMode::BACKWARDS);
             break;
         case Timing::FillModeBoth:
-            animation->setFillMode(CompositorAnimation::FillModeBoth);
+            animation->setFillMode(CompositorAnimation::FillMode::BOTH);
             break;
         default:
             ASSERT_NOT_REACHED();

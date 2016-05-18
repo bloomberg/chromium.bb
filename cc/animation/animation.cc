@@ -53,9 +53,9 @@ Animation::Animation(std::unique_ptr<AnimationCurve> curve,
       run_state_(WAITING_FOR_TARGET_AVAILABILITY),
       iterations_(1),
       iteration_start_(0),
-      direction_(DIRECTION_NORMAL),
+      direction_(Direction::NORMAL),
       playback_rate_(1),
-      fill_mode_(FILL_MODE_BOTH),
+      fill_mode_(FillMode::BOTH),
       needs_synchronized_start_time_(false),
       received_finished_event_(false),
       suspended_(false),
@@ -141,7 +141,7 @@ bool Animation::IsFinishedAt(base::TimeTicks monotonic_time) const {
 
 bool Animation::InEffect(base::TimeTicks monotonic_time) const {
   return ConvertToActiveTime(monotonic_time) >= base::TimeDelta() ||
-         (fill_mode_ == FILL_MODE_BOTH || fill_mode_ == FILL_MODE_BACKWARDS);
+         (fill_mode_ == FillMode::BOTH || fill_mode_ == FillMode::BACKWARDS);
 }
 
 base::TimeDelta Animation::ConvertToActiveTime(
@@ -225,9 +225,9 @@ base::TimeDelta Animation::TrimTimeToCurrentIteration(
   // Check if we are running the animation in reverse direction for the current
   // iteration
   bool reverse =
-      (direction_ == DIRECTION_REVERSE) ||
-      (direction_ == DIRECTION_ALTERNATE && iteration % 2 == 1) ||
-      (direction_ == DIRECTION_ALTERNATE_REVERSE && iteration % 2 == 0);
+      (direction_ == Direction::REVERSE) ||
+      (direction_ == Direction::ALTERNATE_NORMAL && iteration % 2 == 1) ||
+      (direction_ == Direction::ALTERNATE_REVERSE && iteration % 2 == 0);
 
   // If we are running the animation in reverse direction, reverse the result
   if (reverse)

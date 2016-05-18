@@ -45,19 +45,9 @@ class CC_EXPORT Animation {
     LAST_RUN_STATE = ABORTED_BUT_NEEDS_COMPLETION
   };
 
-  enum Direction {
-    DIRECTION_NORMAL,
-    DIRECTION_REVERSE,
-    DIRECTION_ALTERNATE,
-    DIRECTION_ALTERNATE_REVERSE
-  };
+  enum class Direction { NORMAL, REVERSE, ALTERNATE_NORMAL, ALTERNATE_REVERSE };
 
-  enum FillMode {
-    FILL_MODE_NONE,
-    FILL_MODE_FORWARDS,
-    FILL_MODE_BACKWARDS,
-    FILL_MODE_BOTH
-  };
+  enum class FillMode { NONE, FORWARDS, BACKWARDS, BOTH };
 
   static std::unique_ptr<Animation> Create(
       std::unique_ptr<AnimationCurve> curve,

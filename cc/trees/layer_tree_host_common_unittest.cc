@@ -2694,7 +2694,7 @@ TEST_F(LayerTreeHostCommonTest,
   std::unique_ptr<Animation> animation = Animation::Create(
       std::unique_ptr<AnimationCurve>(new FakeTransformTransition(1.0)), 0, 1,
       TargetProperty::TRANSFORM);
-  animation->set_fill_mode(Animation::FILL_MODE_NONE);
+  animation->set_fill_mode(Animation::FillMode::NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
   AddAnimationToLayerWithPlayer(grand_child->id(), timeline_impl(),
                                 std::move(animation));
@@ -8147,7 +8147,7 @@ TEST_F(LayerTreeHostCommonTest, DelayedFilterAnimationCreatesRenderSurface) {
       base::TimeDelta::FromMilliseconds(100), end_filters, nullptr));
   std::unique_ptr<Animation> animation =
       Animation::Create(std::move(curve), 0, 1, TargetProperty::FILTER);
-  animation->set_fill_mode(Animation::FILL_MODE_NONE);
+  animation->set_fill_mode(Animation::FillMode::NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
 
   AddAnimationToLayerWithPlayer(child->id(), timeline_impl(),
@@ -8545,7 +8545,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   std::unique_ptr<Animation> animation = Animation::Create(
       std::unique_ptr<AnimationCurve>(new FakeTransformTransition(1.0)),
       animation_id, 1, TargetProperty::TRANSFORM);
-  animation->set_fill_mode(Animation::FILL_MODE_NONE);
+  animation->set_fill_mode(Animation::FillMode::NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
   AddAnimationToLayerWithPlayer(child->id(), timeline(), std::move(animation));
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
@@ -8573,7 +8573,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeMain) {
   animation = Animation::Create(
       std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
       animation_id, 1, TargetProperty::OPACITY);
-  animation->set_fill_mode(Animation::FILL_MODE_NONE);
+  animation->set_fill_mode(Animation::FillMode::NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
   AddAnimationToLayerWithExistingPlayer(child->id(), timeline(),
                                         std::move(animation));
@@ -9724,7 +9724,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimationsTrackingTest) {
   std::unique_ptr<Animation> animation = Animation::Create(
       std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
       animation_id, 1, TargetProperty::OPACITY);
-  animation->set_fill_mode(Animation::FILL_MODE_NONE);
+  animation->set_fill_mode(Animation::FillMode::NONE);
   animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
   Animation* animation_ptr = animation.get();
   AddAnimationToLayerWithExistingPlayer(animated->id(), timeline(),

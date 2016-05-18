@@ -2396,7 +2396,7 @@ TEST_F(ElementAnimationsTest, AnimationStartScale) {
       Animation::Create(std::move(curve2), 2, 2, TargetProperty::TRANSFORM);
 
   // Reverse Direction
-  animation->set_direction(Animation::DIRECTION_REVERSE);
+  animation->set_direction(Animation::Direction::REVERSE);
   animation->set_affects_active_elements(false);
   animations_impl->AddAnimation(std::move(animation));
 
@@ -2589,7 +2589,7 @@ TEST_F(ElementAnimationsTest, MaximumTargetScaleWithDirection) {
   EXPECT_GT(animation->playback_rate(), 0.0);
 
   // NORMAL direction with positive playback rate.
-  animation->set_direction(Animation::DIRECTION_NORMAL);
+  animation->set_direction(Animation::Direction::NORMAL);
   EXPECT_TRUE(animations_impl->MaximumTargetScale(ElementListType::PENDING,
                                                   &max_scale));
   EXPECT_EQ(6.f, max_scale);
@@ -2598,7 +2598,7 @@ TEST_F(ElementAnimationsTest, MaximumTargetScaleWithDirection) {
   EXPECT_EQ(6.f, max_scale);
 
   // ALTERNATE direction with positive playback rate.
-  animation->set_direction(Animation::DIRECTION_ALTERNATE);
+  animation->set_direction(Animation::Direction::ALTERNATE_NORMAL);
   EXPECT_TRUE(animations_impl->MaximumTargetScale(ElementListType::PENDING,
                                                   &max_scale));
   EXPECT_EQ(6.f, max_scale);
@@ -2607,7 +2607,7 @@ TEST_F(ElementAnimationsTest, MaximumTargetScaleWithDirection) {
   EXPECT_EQ(6.f, max_scale);
 
   // REVERSE direction with positive playback rate.
-  animation->set_direction(Animation::DIRECTION_REVERSE);
+  animation->set_direction(Animation::Direction::REVERSE);
   EXPECT_TRUE(animations_impl->MaximumTargetScale(ElementListType::PENDING,
                                                   &max_scale));
   EXPECT_EQ(3.f, max_scale);
@@ -2616,7 +2616,7 @@ TEST_F(ElementAnimationsTest, MaximumTargetScaleWithDirection) {
   EXPECT_EQ(3.f, max_scale);
 
   // ALTERNATE reverse direction.
-  animation->set_direction(Animation::DIRECTION_REVERSE);
+  animation->set_direction(Animation::Direction::REVERSE);
   EXPECT_TRUE(animations_impl->MaximumTargetScale(ElementListType::PENDING,
                                                   &max_scale));
   EXPECT_EQ(3.f, max_scale);
@@ -2627,7 +2627,7 @@ TEST_F(ElementAnimationsTest, MaximumTargetScaleWithDirection) {
   animation->set_playback_rate(-1.0);
 
   // NORMAL direction with negative playback rate.
-  animation->set_direction(Animation::DIRECTION_NORMAL);
+  animation->set_direction(Animation::Direction::NORMAL);
   EXPECT_TRUE(animations_impl->MaximumTargetScale(ElementListType::PENDING,
                                                   &max_scale));
   EXPECT_EQ(3.f, max_scale);
@@ -2636,7 +2636,7 @@ TEST_F(ElementAnimationsTest, MaximumTargetScaleWithDirection) {
   EXPECT_EQ(3.f, max_scale);
 
   // ALTERNATE direction with negative playback rate.
-  animation->set_direction(Animation::DIRECTION_ALTERNATE);
+  animation->set_direction(Animation::Direction::ALTERNATE_NORMAL);
   EXPECT_TRUE(animations_impl->MaximumTargetScale(ElementListType::PENDING,
                                                   &max_scale));
   EXPECT_EQ(3.f, max_scale);
@@ -2645,7 +2645,7 @@ TEST_F(ElementAnimationsTest, MaximumTargetScaleWithDirection) {
   EXPECT_EQ(3.f, max_scale);
 
   // REVERSE direction with negative playback rate.
-  animation->set_direction(Animation::DIRECTION_REVERSE);
+  animation->set_direction(Animation::Direction::REVERSE);
   EXPECT_TRUE(animations_impl->MaximumTargetScale(ElementListType::PENDING,
                                                   &max_scale));
   EXPECT_EQ(6.f, max_scale);
@@ -2654,7 +2654,7 @@ TEST_F(ElementAnimationsTest, MaximumTargetScaleWithDirection) {
   EXPECT_EQ(6.f, max_scale);
 
   // ALTERNATE reverse direction with negative playback rate.
-  animation->set_direction(Animation::DIRECTION_REVERSE);
+  animation->set_direction(Animation::Direction::REVERSE);
   EXPECT_TRUE(animations_impl->MaximumTargetScale(ElementListType::PENDING,
                                                   &max_scale));
   EXPECT_EQ(6.f, max_scale);
@@ -3124,7 +3124,7 @@ TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {
   animations->GetAnimationById(animation_id)
       ->set_time_offset(base::TimeDelta::FromMilliseconds(-10000));
   animations->GetAnimationById(animation_id)
-      ->set_fill_mode(Animation::FILL_MODE_NONE);
+      ->set_fill_mode(Animation::FillMode::NONE);
 
   animations->PushPropertiesTo(animations_impl.get());
   EXPECT_TRUE(client_impl_.GetHasPotentialOpacityAnimation(
@@ -3393,7 +3393,7 @@ TEST_F(ElementAnimationsTest, TestIsAnimatingPropertyTimeOffsetFillMode) {
   std::unique_ptr<Animation> animation(CreateAnimation(
       std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
       1, TargetProperty::OPACITY));
-  animation->set_fill_mode(Animation::FILL_MODE_NONE);
+  animation->set_fill_mode(Animation::FillMode::NONE);
   animation->set_time_offset(TimeDelta::FromMilliseconds(-2000));
   animation->set_affects_active_elements(false);
 

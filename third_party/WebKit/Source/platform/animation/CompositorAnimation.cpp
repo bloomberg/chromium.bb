@@ -4,7 +4,6 @@
 
 #include "platform/animation/CompositorAnimation.h"
 
-#include "cc/animation/animation.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_id_provider.h"
 #include "platform/animation/CompositorAnimationCurve.h"
@@ -117,37 +116,12 @@ void CompositorAnimation::setTimeOffset(double monotonicTime)
 
 blink::CompositorAnimation::Direction CompositorAnimation::getDirection() const
 {
-    switch (m_animation->direction()) {
-    case cc::Animation::DIRECTION_NORMAL:
-        return DirectionNormal;
-    case cc::Animation::DIRECTION_REVERSE:
-        return DirectionReverse;
-    case cc::Animation::DIRECTION_ALTERNATE:
-        return DirectionAlternate;
-    case cc::Animation::DIRECTION_ALTERNATE_REVERSE:
-        return DirectionAlternateReverse;
-    default:
-        NOTREACHED();
-    }
-    return DirectionNormal;
+    return m_animation->direction();
 }
 
 void CompositorAnimation::setDirection(Direction direction)
 {
-    switch (direction) {
-    case DirectionNormal:
-        m_animation->set_direction(cc::Animation::DIRECTION_NORMAL);
-        break;
-    case DirectionReverse:
-        m_animation->set_direction(cc::Animation::DIRECTION_REVERSE);
-        break;
-    case DirectionAlternate:
-        m_animation->set_direction(cc::Animation::DIRECTION_ALTERNATE);
-        break;
-    case DirectionAlternateReverse:
-        m_animation->set_direction(cc::Animation::DIRECTION_ALTERNATE_REVERSE);
-        break;
-    }
+    m_animation->set_direction(direction);
 }
 
 double CompositorAnimation::playbackRate() const
@@ -162,37 +136,12 @@ void CompositorAnimation::setPlaybackRate(double playbackRate)
 
 blink::CompositorAnimation::FillMode CompositorAnimation::getFillMode() const
 {
-    switch (m_animation->fill_mode()) {
-    case cc::Animation::FILL_MODE_NONE:
-        return FillModeNone;
-    case cc::Animation::FILL_MODE_FORWARDS:
-        return FillModeForwards;
-    case cc::Animation::FILL_MODE_BACKWARDS:
-        return FillModeBackwards;
-    case cc::Animation::FILL_MODE_BOTH:
-        return FillModeBoth;
-    default:
-        NOTREACHED();
-    }
-    return FillModeNone;
+    return m_animation->fill_mode();
 }
 
 void CompositorAnimation::setFillMode(FillMode fillMode)
 {
-    switch (fillMode) {
-    case FillModeNone:
-        m_animation->set_fill_mode(cc::Animation::FILL_MODE_NONE);
-        break;
-    case FillModeForwards:
-        m_animation->set_fill_mode(cc::Animation::FILL_MODE_FORWARDS);
-        break;
-    case FillModeBackwards:
-        m_animation->set_fill_mode(cc::Animation::FILL_MODE_BACKWARDS);
-        break;
-    case FillModeBoth:
-        m_animation->set_fill_mode(cc::Animation::FILL_MODE_BOTH);
-        break;
-    }
+    m_animation->set_fill_mode(fillMode);
 }
 
 std::unique_ptr<cc::Animation> CompositorAnimation::passAnimation()
