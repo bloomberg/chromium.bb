@@ -41,8 +41,7 @@ public:
     String getPropertyValue(CSSPropertyID) const;
 private:
     String getCommonValue(const StylePropertyShorthand&) const;
-    enum CommonValueMode { OmitUncommonValues, ReturnNullOnUncommonValues };
-    String borderPropertyValue(CommonValueMode) const;
+    String borderPropertyValue() const;
     String getLayeredShorthandValue(const StylePropertyShorthand&) const;
     String get4Values(const StylePropertyShorthand&) const;
     String borderSpacingValue(const StylePropertyShorthand&) const;

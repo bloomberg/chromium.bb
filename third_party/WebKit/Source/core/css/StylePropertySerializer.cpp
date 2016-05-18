@@ -278,7 +278,7 @@ String StylePropertySerializer::asText() const
 
             // FIXME: Deal with cases where only some of border-(top|right|bottom|left) are specified.
             if (!shorthandPropertyAppeared.test(CSSPropertyBorder - firstCSSProperty)) {
-                value = borderPropertyValue(ReturnNullOnUncommonValues);
+                value = borderPropertyValue();
                 if (value.isNull())
                     shorthandPropertyAppeared.set(CSSPropertyBorder - firstCSSProperty);
                 else
@@ -435,7 +435,7 @@ String StylePropertySerializer::getPropertyValue(CSSPropertyID propertyID) const
     case CSSPropertyBackground:
         return getLayeredShorthandValue(backgroundShorthand());
     case CSSPropertyBorder:
-        return borderPropertyValue(OmitUncommonValues);
+        return borderPropertyValue();
     case CSSPropertyBorderTop:
         return getShorthandValue(borderTopShorthand());
     case CSSPropertyBorderRight:
@@ -893,19 +893,15 @@ String StylePropertySerializer::getCommonValue(const StylePropertyShorthand& sho
     return res;
 }
 
-String StylePropertySerializer::borderPropertyValue(CommonValueMode valueMode) const
+String StylePropertySerializer::borderPropertyValue() const
 {
     const StylePropertyShorthand properties[3] = { borderWidthShorthand(), borderStyleShorthand(), borderColorShorthand() };
     String commonValue;
     StringBuilder result;
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(properties); ++i) {
         String value = getCommonValue(properties[i]);
-        if (value.isNull()) {
-            if (valueMode == ReturnNullOnUncommonValues)
-                return String();
-            ASSERT(valueMode == OmitUncommonValues);
-            continue;
-        }
+        if (value.isNull())
+            return String();
         if (!i)
             commonValue = value;
         else if (!commonValue.isNull() && commonValue != value)

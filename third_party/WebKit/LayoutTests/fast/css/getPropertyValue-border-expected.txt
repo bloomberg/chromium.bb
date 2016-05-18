@@ -4,15 +4,13 @@ Bug 15823: getPropertyValue for border returns null, should compute the shorthan
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS div1.style.getPropertyValue("border") is '5px solid green'
-PASS div2.style.getPropertyValue("border") is '5px solid'
-PASS div3.style.getPropertyValue("border") is '5px green'
-    NOTE: '5px green' is an illegal CSS value for 'border'.
-PASS div4.style.getPropertyValue("border") is 'solid green'
-PASS div5.style.getPropertyValue("border") is 'green'
-    NOTE: 'green' is an illegal CSS value for 'border'.
-PASS div6.style.getPropertyValue("border") is '5px'
-PASS div7.style.getPropertyValue("border") is 'solid'
+PASS div1.style.getPropertyValue("border") is "5px solid green"
+PASS div2.style.getPropertyValue("border") is ""
+PASS div3.style.getPropertyValue("border") is ""
+PASS div4.style.getPropertyValue("border") is ""
+PASS div5.style.getPropertyValue("border") is ""
+PASS div6.style.getPropertyValue("border") is ""
+PASS div7.style.getPropertyValue("border") is ""
 PASS div8.style.getPropertyValue("border") is ""
 PASS div9.style.getPropertyValue("border") is ""
 PASS successfullyParsed is true

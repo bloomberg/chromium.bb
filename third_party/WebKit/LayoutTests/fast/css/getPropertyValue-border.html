@@ -33,27 +33,25 @@
     description("<a href=\"https://bugs.webkit.org/show_bug.cgi?id=15823\">Bug 15823: getPropertyValue for border returns null, should compute the shorthand value</a>");
 
     var div1 = document.getElementById("border1");
-    shouldBe('div1.style.getPropertyValue("border")', "'5px solid green'");
+    shouldBeEqualToString('div1.style.getPropertyValue("border")', "5px solid green");
 
     var div2 = document.getElementById("border2");
-    shouldBe('div2.style.getPropertyValue("border")', "'5px solid'");
+    shouldBeEqualToString('div2.style.getPropertyValue("border")', "");
 
     var div3 = document.getElementById("border3");
-    shouldBe('div3.style.getPropertyValue("border")', "'5px green'");
-    debug("    NOTE: '5px green' is an illegal CSS value for 'border'.");
+    shouldBeEqualToString('div3.style.getPropertyValue("border")', "");
 
     var div4 = document.getElementById("border4");
-    shouldBe('div4.style.getPropertyValue("border")', "'solid green'");
+    shouldBeEqualToString('div4.style.getPropertyValue("border")', "");
 
     var div5 = document.getElementById("border5");
-    shouldBe('div5.style.getPropertyValue("border")', "'green'");
-    debug("    NOTE: 'green' is an illegal CSS value for 'border'.");
+    shouldBeEqualToString('div5.style.getPropertyValue("border")', "");
 
     var div6 = document.getElementById("border6");
-    shouldBe('div6.style.getPropertyValue("border")', "'5px'");
+    shouldBeEqualToString('div6.style.getPropertyValue("border")', "");
 
     var div7 = document.getElementById("border7");
-    shouldBe('div7.style.getPropertyValue("border")', "'solid'");
+    shouldBeEqualToString('div7.style.getPropertyValue("border")', "");
 
     var div8 = document.getElementById("border8");
     shouldBeEqualToString('div8.style.getPropertyValue("border")', "");
