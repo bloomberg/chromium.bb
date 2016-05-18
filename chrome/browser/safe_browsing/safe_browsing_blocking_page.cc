@@ -542,10 +542,21 @@ std::string SafeBrowsingBlockingPage::GetMetricPrefix() const {
     case SB_REASON_HARMFUL:
       return primary_subresource ? "harmful_subresource" : "harmful";
     case SB_REASON_PHISHING:
-      return primary_subresource ? "phishing_subresource" : "phishing";
+      ThreatPatternType threat_pattern_type =
+          unsafe_resources_[0].threat_metadata.threat_pattern_type;
+      if (threat_pattern_type == ThreatPatternType::PHISHING ||
+          threat_pattern_type == ThreatPatternType::NONE)
+        return primary_subresource ? "phishing_subresource" : "phishing";
+      else if (threat_pattern_type == ThreatPatternType::SOCIAL_ENGINEERING_ADS)
+        return primary_subresource ? "social_engineering_ads_subresource"
+                                   : "social_engineering_ads";
+      else if (threat_pattern_type ==
+               ThreatPatternType::SOCIAL_ENGINEERING_LANDING)
+        return primary_subresource ? "social_engineering_landing_subresource"
+                                   : "social_engineering_landing";
   }
   NOTREACHED();
-  return std::string();
+  return "unkown_metric_prefix";
 }
 
 // We populate a parallel set of metrics to differentiate some threat sources.
