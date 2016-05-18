@@ -113,6 +113,7 @@ public:
         virtual bool muted() const = 0;
         virtual void setMuted(bool) = 0;
         virtual void playInternal() = 0;
+        virtual void pauseInternal() = 0;
         virtual bool isLockedPendingUserGesture() const = 0;
         virtual void unlockUserGesture() = 0;
         virtual void recordAutoplayMetric(AutoplayMetrics) = 0;
@@ -147,6 +148,7 @@ public:
     void playMethodCalled();
     void pauseMethodCalled();
     void loadMethodCalled();
+    void mutedChanged();
     void positionChanged(const IntRect&);
     void updatePositionNotificationRegistration();
     void recordSandboxFailure();
@@ -205,9 +207,13 @@ public:
         // Restrict gestureless autoplay to sites which are from the same origin
         // as the top-level frame.
         IfSameOrigin      = 1 << 7,
+        // Extend IfSameOrigin to allow autoplay of cross-origin elements if
+        // they're muted.  This has no effect on same-origin or if IfSameOrigin
+        // isn't enabled.
+        OrMuted           = 1 << 8,
         // If gestureless autoplay is allowed, then mute the media before
         // starting to play.
-        PlayMuted         = 1 << 8,
+        PlayMuted         = 1 << 9,
     };
 
     DEFINE_INLINE_TRACE() { visitor->trace(m_client); }

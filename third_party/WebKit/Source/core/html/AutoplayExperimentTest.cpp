@@ -83,6 +83,7 @@ public:
     MOCK_CONST_METHOD0(muted, bool());
     MOCK_METHOD1(setMuted, void(bool));
     MOCK_METHOD0(playInternal, void());
+    MOCK_METHOD0(pauseInternal, void());
     MOCK_CONST_METHOD0(isLockedPendingUserGesture, bool());
     MOCK_METHOD0(unlockUserGesture, void());
     MOCK_METHOD1(recordAutoplayMetric, void(AutoplayMetrics));
@@ -472,6 +473,34 @@ TEST_F(AutoplayExperimentTest, PlayTwiceIsIgnored)
     m_helper->playMethodCalled();
     ON_CALL(*m_client, paused()).WillByDefault(Return(false));
     m_helper->playMethodCalled();
+}
+
+TEST_F(AutoplayExperimentTest, CrossOriginMutedTests)
+{
+    setInterface(new NiceMock<MockAutoplayClient>("enabled-forvideo-ifsameorigin-ormuted", MockAutoplayClient::Video));
+    ON_CALL(*m_client, isCrossOrigin()).WillByDefault(Return(true));
+
+    // Cross-orgin unmuted content should be eligible.
+    setIsMuted(true);
+    EXPECT_TRUE(isEligible());
+
+    // Cross-origin muted content should not be eligible.
+    setIsMuted(false);
+    EXPECT_FALSE(isEligible());
+
+    // Start playback.
+    EXPECT_CALL(*m_client, recordAutoplayMetric(AutoplayMediaFound))
+        .Times(1);
+    m_helper->becameReadyToPlay();
+    ON_CALL(*m_client, paused()).WillByDefault(Return(false));
+    setIsMuted(true);
+    m_helper->mutedChanged();
+
+    // Verify that unmuting pauses playback.
+    setIsMuted(false);
+    EXPECT_CALL(*m_client, pauseInternal())
+        .Times(1);
+    m_helper->mutedChanged();
 }
 
 }

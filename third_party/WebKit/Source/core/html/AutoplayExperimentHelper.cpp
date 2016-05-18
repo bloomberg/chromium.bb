@@ -130,6 +130,34 @@ void AutoplayExperimentHelper::loadMethodCalled()
     }
 }
 
+void AutoplayExperimentHelper::mutedChanged()
+{
+    // Mute changes are always allowed if this is unlocked.
+    if (!client().isLockedPendingUserGesture())
+        return;
+
+    // Changes with a user gesture are okay.
+    if (UserGestureIndicator::utilizeUserGesture())
+        return;
+
+    // If the mute state has changed to 'muted', then it's okay.
+    if (client().muted())
+        return;
+
+    // If nothing is playing, then changes are okay too.
+    if (client().paused())
+        return;
+
+    // Trying to unmute without a user gesture.
+
+    // If we don't care about muted state, then it's okay.
+    if (!enabled(IfMuted) && !(client().isCrossOrigin() && enabled(OrMuted)))
+        return;
+
+    // Unmuting isn't allowed, so pause.
+    client().pauseInternal();
+}
+
 void AutoplayExperimentHelper::registerForPositionUpdatesIfNeeded()
 {
     // If we don't require that the player is in the viewport, then we don't
@@ -327,8 +355,14 @@ bool AutoplayExperimentHelper::isEligible(EligibilityMode mode) const
         return false;
 
     // If we require same-origin, then check the origin.
-    if (enabled(IfSameOrigin) && client().isCrossOrigin())
-        return false;
+    if (enabled(IfSameOrigin) && client().isCrossOrigin()) {
+        // We're cross-origin, so block unless it's muted content and OrMuted
+        // is enabled.  For good measure, we also block all audio elements.
+        if (client().isHTMLAudioElement() || !client().muted()
+            || !enabled(OrMuted)) {
+            return false;
+        }
+    }
 
     // If we require muted media and this is muted, then it is eligible.
     if (enabled(IfMuted))
@@ -407,6 +441,8 @@ AutoplayExperimentHelper::Mode AutoplayExperimentHelper::fromString(const String
         value |= IfMobile;
     if (mode.contains("-ifsameorigin"))
         value |= IfSameOrigin;
+    if (mode.contains("-ormuted"))
+        value |= OrMuted;
     if (mode.contains("-playmuted"))
         value |= PlayMuted;
 

@@ -303,6 +303,7 @@ public:
     bool muted() const override { return m_element->muted(); }
     void setMuted(bool muted) override { m_element->setMuted(muted); }
     void playInternal() override { m_element->playInternal(); }
+    void pauseInternal() override { m_element->pauseInternal(); }
     bool isLockedPendingUserGesture() const override { return m_element->isLockedPendingUserGesture(); }
     void unlockUserGesture() override { m_element->unlockUserGesture(); }
     void recordAutoplayMetric(AutoplayMetrics metric) override { m_element->recordAutoplayMetric(metric); }
@@ -2252,6 +2253,7 @@ void HTMLMediaElement::setMuted(bool muted)
         return;
 
     m_muted = muted;
+    m_autoplayHelper->mutedChanged();
 
     updateVolume();
 
