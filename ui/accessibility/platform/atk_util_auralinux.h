@@ -31,6 +31,7 @@ class AtkUtilAuraLinux {
   friend struct base::DefaultSingletonTraits<AtkUtilAuraLinux>;
 
   void CheckIfAccessibilityIsEnabledOnFileThread();
+  bool CheckPlatformAccessibilitySupportOnFileThread();
   void FinishAccessibilityInitOnUIThread();
 
 #if defined(USE_GCONF)
