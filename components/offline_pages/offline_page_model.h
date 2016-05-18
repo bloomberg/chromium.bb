@@ -42,9 +42,10 @@ static const char* const kBookmarkNamespace = "bookmark";
 static const int64_t kInvalidOfflineId = 0;
 
 struct ClientId;
-
-class ClientPolicyController;
 struct OfflinePageItem;
+
+class ArchiveManager;
+class ClientPolicyController;
 class OfflinePageMetadataStore;
 class OfflinePageStorageManager;
 
@@ -302,7 +303,7 @@ class OfflinePageModel : public KeyedService,
   // Steps for deleting files and data for an offline page.
   void OnDeleteArchiveFilesDone(const std::vector<int64_t>& offline_ids,
                                 const DeletePageCallback& callback,
-                                const bool* success);
+                                bool success);
   void OnRemoveOfflinePagesDone(const std::vector<int64_t>& offline_ids,
                                 const DeletePageCallback& callback,
                                 bool success);
@@ -313,8 +314,8 @@ class OfflinePageModel : public KeyedService,
                              bool success);
 
   // Callbacks for checking if offline pages are missing archive files.
-  void OnFindPagesMissingArchiveFile(
-      const std::vector<int64_t>* ids_of_pages_missing_archive_file);
+  void ScanForMissingArchiveFiles(
+      const std::set<base::FilePath>& archive_paths);
   void OnRemoveOfflinePagesMissingArchiveFileDone(
       const std::vector<std::pair<int64_t, ClientId>>& offline_client_id_pairs,
       DeletePageResult result);
@@ -355,8 +356,6 @@ class OfflinePageModel : public KeyedService,
   // In memory copy of the offline page metadata, keyed by bookmark IDs.
   std::map<int64_t, OfflinePageItem> offline_pages_;
 
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-
   // Pending archivers owned by this model.
   PendingArchivers pending_archivers_;
 
@@ -369,6 +368,9 @@ class OfflinePageModel : public KeyedService,
   // Manager for the storage consumed by archives and responsible for
   // automatic page clearing.
   std::unique_ptr<OfflinePageStorageManager> storage_manager_;
+
+  // Manager for the offline archive files and directory.
+  std::unique_ptr<ArchiveManager> archive_manager_;
 
   base::WeakPtrFactory<OfflinePageModel> weak_ptr_factory_;
 

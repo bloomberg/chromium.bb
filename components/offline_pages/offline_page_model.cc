@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/offline_pages/archive_manager.h"
 #include "components/offline_pages/client_policy_controller.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_storage_manager.h"
@@ -78,32 +79,6 @@ SavePageResult ToSavePageResult(ArchiverResult archiver_result) {
   return result;
 }
 
-void DeleteArchiveFiles(const std::vector<base::FilePath>& paths_to_delete,
-                        bool* success) {
-  DCHECK(success);
-  for (const auto& file_path : paths_to_delete) {
-    // Make sure delete happens on the left of || so that it is always executed.
-    *success = base::DeleteFile(file_path, false) || *success;
-  }
-}
-
-void FindPagesMissingArchiveFile(
-    const std::vector<std::pair<int64_t, base::FilePath>>& id_path_pairs,
-    std::vector<int64_t>* ids_of_pages_missing_archive_file) {
-  DCHECK(ids_of_pages_missing_archive_file);
-
-  for (const auto& id_path : id_path_pairs) {
-    if (!base::PathExists(id_path.second) ||
-        base::DirectoryExists(id_path.second)) {
-      ids_of_pages_missing_archive_file->push_back(id_path.first);
-    }
-  }
-}
-
-void EnsureArchivesDirCreated(const base::FilePath& archives_dir) {
-  CHECK(base::CreateDirectory(archives_dir));
-}
-
 std::string AddHistogramSuffix(const ClientId& client_id,
                                const char* histogram_name) {
   if (client_id.name_space.empty()) {
@@ -134,11 +109,10 @@ OfflinePageModel::OfflinePageModel(
     : store_(std::move(store)),
       archives_dir_(archives_dir),
       is_loaded_(false),
-      task_runner_(task_runner),
       policy_controller_(new ClientPolicyController()),
+      archive_manager_(new ArchiveManager(archives_dir, task_runner)),
       weak_ptr_factory_(this) {
-  task_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(EnsureArchivesDirCreated, archives_dir_),
+  archive_manager_->EnsureArchivesDirCreated(
       base::Bind(&OfflinePageModel::OnEnsureArchivesDirCreatedDone,
                  weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now()));
 }
@@ -251,12 +225,10 @@ void OfflinePageModel::DoDeletePagesByOfflineId(
     return;
   }
 
-  bool* success = new bool(false);
-  task_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(&DeleteArchiveFiles, paths_to_delete, success),
+  archive_manager_->DeleteMultipleArchives(
+      paths_to_delete,
       base::Bind(&OfflinePageModel::OnDeleteArchiveFilesDone,
-                 weak_ptr_factory_.GetWeakPtr(), offline_ids, callback,
-                 base::Owned(success)));
+                 weak_ptr_factory_.GetWeakPtr(), offline_ids, callback));
 }
 
 void OfflinePageModel::ClearAll(const base::Closure& callback) {
@@ -373,7 +345,6 @@ void OfflinePageModel::GetOfflineIdsForClientIdWhenLoadDone(
   callback.Run(MaybeGetOfflineIdsForClientId(client_id));
 }
 
-// TODO(fgorski): Remove include_deleted, as it no longer makes sense.
 const std::vector<int64_t> OfflinePageModel::MaybeGetOfflineIdsForClientId(
     const ClientId& client_id) const {
   DCHECK(is_loaded_);
@@ -500,20 +471,9 @@ const OfflinePageItem* OfflinePageModel::MaybeGetBestPageForOnlineURL(
 void OfflinePageModel::CheckForExternalFileDeletion() {
   DCHECK(is_loaded_);
 
-  std::vector<std::pair<int64_t, base::FilePath>> id_path_pairs;
-  for (const auto& id_page_pair : offline_pages_) {
-    id_path_pairs.push_back(
-        std::make_pair(id_page_pair.first, id_page_pair.second.file_path));
-  }
-
-  std::vector<int64_t>* ids_of_pages_missing_archive_file =
-      new std::vector<int64_t>();
-  task_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(&FindPagesMissingArchiveFile, id_path_pairs,
-                            ids_of_pages_missing_archive_file),
-      base::Bind(&OfflinePageModel::OnFindPagesMissingArchiveFile,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Owned(ids_of_pages_missing_archive_file)));
+  archive_manager_->GetAllArchives(
+      base::Bind(&OfflinePageModel::ScanForMissingArchiveFiles,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void OfflinePageModel::RecordStorageHistograms(int64_t total_space_bytes,
@@ -690,10 +650,8 @@ void OfflinePageModel::DeletePendingArchiver(OfflinePageArchiver* archiver) {
 void OfflinePageModel::OnDeleteArchiveFilesDone(
     const std::vector<int64_t>& offline_ids,
     const DeletePageCallback& callback,
-    const bool* success) {
-  DCHECK(success);
-
-  if (!*success) {
+    bool success) {
+  if (!success) {
     InformDeletePageDone(callback, DeletePageResult::DEVICE_FAILURE);
     return;
   }
@@ -773,33 +731,32 @@ void OfflinePageModel::InformDeletePageDone(const DeletePageCallback& callback,
     callback.Run(result);
 }
 
-void OfflinePageModel::OnFindPagesMissingArchiveFile(
-    const std::vector<int64_t>* ids_of_pages_missing_archive_file) {
-  DCHECK(ids_of_pages_missing_archive_file);
-  if (ids_of_pages_missing_archive_file->empty())
-    return;
-
+void OfflinePageModel::ScanForMissingArchiveFiles(
+    const std::set<base::FilePath>& archive_paths) {
+  std::vector<int64_t> ids_of_pages_missing_archive_file;
   std::vector<std::pair<int64_t, ClientId>> offline_client_id_pairs;
-  for (auto offline_id : *ids_of_pages_missing_archive_file) {
-    // Since we might have deleted pages in between so we have to purge
-    // the list to make sure we still care about them.
-    auto iter = offline_pages_.find(offline_id);
-    if (iter != offline_pages_.end()) {
+  for (const auto& id_page_pair : offline_pages_) {
+    if (archive_paths.count(id_page_pair.second.file_path) == 0UL) {
+      ids_of_pages_missing_archive_file.push_back(id_page_pair.first);
       offline_client_id_pairs.push_back(
-          std::make_pair(offline_id, iter->second.client_id));
+          std::make_pair(id_page_pair.first, id_page_pair.second.client_id));
     }
   }
 
-  DeletePageCallback done_callback(
+  // No offline pages missing archive files, we can bail out.
+  if (ids_of_pages_missing_archive_file.empty())
+    return;
+
+  DeletePageCallback remove_pages_done_callback(
       base::Bind(&OfflinePageModel::OnRemoveOfflinePagesMissingArchiveFileDone,
                  weak_ptr_factory_.GetWeakPtr(), offline_client_id_pairs));
 
   store_->RemoveOfflinePages(
-      *ids_of_pages_missing_archive_file,
+      ids_of_pages_missing_archive_file,
       base::Bind(&OfflinePageModel::OnRemoveOfflinePagesDone,
                  weak_ptr_factory_.GetWeakPtr(),
-                 *ids_of_pages_missing_archive_file,
-                 done_callback));
+                 ids_of_pages_missing_archive_file,
+                 remove_pages_done_callback));
 }
 
 void OfflinePageModel::OnRemoveOfflinePagesMissingArchiveFileDone(

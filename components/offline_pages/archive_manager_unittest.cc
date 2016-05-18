@@ -4,7 +4,10 @@
 
 #include "components/offline_pages/archive_manager.h"
 
+#include <algorithm>
 #include <memory>
+#include <set>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -37,10 +40,14 @@ class ArchiveManagerTest : public testing::Test {
 
   void ResetManager(const base::FilePath& file_path);
   void Callback(bool result);
+  void GetAllArchivesCallback(const std::set<base::FilePath>& archive_paths);
 
   ArchiveManager* manager() { return manager_.get(); }
   const base::FilePath& temp_path() const { return temp_dir_.path(); }
   CallbackStatus callback_status() const { return callback_status_; }
+  const std::set<base::FilePath>& last_archive_paths() const {
+    return last_archvie_paths_;
+  }
 
  private:
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
@@ -49,6 +56,7 @@ class ArchiveManagerTest : public testing::Test {
 
   std::unique_ptr<ArchiveManager> manager_;
   CallbackStatus callback_status_;
+  std::set<base::FilePath> last_archvie_paths_;
 };
 
 ArchiveManagerTest::ArchiveManagerTest()
@@ -67,6 +75,7 @@ void ArchiveManagerTest::PumpLoop() {
 
 void ArchiveManagerTest::ResetResults() {
   callback_status_ = CallbackStatus::NOT_CALLED;
+  last_archvie_paths_.clear();
 }
 
 void ArchiveManagerTest::ResetManager(const base::FilePath& file_path) {
@@ -77,6 +86,11 @@ void ArchiveManagerTest::ResetManager(const base::FilePath& file_path) {
 void ArchiveManagerTest::Callback(bool result) {
   callback_status_ =
       result ? CallbackStatus::CALLED_TRUE : CallbackStatus::CALLED_FALSE;
+}
+
+void ArchiveManagerTest::GetAllArchivesCallback(
+    const std::set<base::FilePath>& archive_paths) {
+  last_archvie_paths_ = archive_paths;
 }
 
 TEST_F(ArchiveManagerTest, EnsureArchivesDirCreated) {
@@ -204,6 +218,31 @@ TEST_F(ArchiveManagerTest, DeleteArchiveThatDoesNotExist) {
   PumpLoop();
   EXPECT_EQ(CallbackStatus::CALLED_TRUE, callback_status());
   EXPECT_FALSE(base::PathExists(archive_path));
+}
+
+TEST_F(ArchiveManagerTest, GetAllArchives) {
+  base::FilePath archive_path_1;
+  EXPECT_TRUE(base::CreateTemporaryFileInDir(temp_path(), &archive_path_1));
+  base::FilePath archive_path_2;
+  EXPECT_TRUE(base::CreateTemporaryFileInDir(temp_path(), &archive_path_2));
+  base::FilePath archive_path_3;
+  EXPECT_TRUE(base::CreateTemporaryFileInDir(temp_path(), &archive_path_3));
+  std::vector<base::FilePath> expected_paths{archive_path_1, archive_path_2,
+                                             archive_path_3};
+  std::sort(expected_paths.begin(), expected_paths.end());
+
+  manager()->GetAllArchives(base::Bind(
+      &ArchiveManagerTest::GetAllArchivesCallback, base::Unretained(this)));
+  PumpLoop();
+  ASSERT_EQ(3UL, last_archive_paths().size());
+  std::vector<base::FilePath> actual_paths(last_archive_paths().begin(),
+                                           last_archive_paths().end());
+  // Comparing one to one works because last_archive_paths set is sorted.
+  // Because some windows bots provide abbreviated path (e.g. chrome-bot becomes
+  // CHROME~2), this test only focuses on file name.
+  EXPECT_EQ(expected_paths[0].BaseName(), actual_paths[0].BaseName());
+  EXPECT_EQ(expected_paths[1].BaseName(), actual_paths[1].BaseName());
+  EXPECT_EQ(expected_paths[2].BaseName(), actual_paths[2].BaseName());
 }
 
 }  // namespace offline_pages

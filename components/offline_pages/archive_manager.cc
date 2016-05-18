@@ -4,9 +4,13 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/archive_manager.h"
 
 namespace offline_pages {
@@ -17,24 +21,38 @@ void EnsureArchivesDirCreatedImpl(const base::FilePath& archives_dir) {
   CHECK(base::CreateDirectory(archives_dir));
 }
 
-void ExistsArchiveImpl(const base::FilePath& file_path, bool* exists) {
-  DCHECK(exists);
-  *exists = base::PathExists(file_path);
+void ExistsArchiveImpl(const base::FilePath& file_path,
+                       scoped_refptr<base::SequencedTaskRunner> task_runner,
+                       const base::Callback<void(bool)>& callback) {
+  task_runner->PostTask(FROM_HERE,
+                        base::Bind(callback, base::PathExists(file_path)));
 }
 
 void DeleteArchivesImpl(const std::vector<base::FilePath>& file_paths,
-                        bool* result) {
-  DCHECK(result);
+                        scoped_refptr<base::SequencedTaskRunner> task_runner,
+                        const base::Callback<void(bool)>& callback) {
+  bool result = false;
   for (const auto& file_path : file_paths) {
     // Make sure delete happens on the left of || so that it is always executed.
-    *result = base::DeleteFile(file_path, false) || *result;
+    result = base::DeleteFile(file_path, false) || result;
   }
+  task_runner->PostTask(FROM_HERE, base::Bind(callback, result));
 }
 
-void CompleteBooleanCallback(const base::Callback<void(bool)>& callback,
-                             bool* exists) {
-  callback.Run(*exists);
+void GetAllArchivesImpl(
+    const base::FilePath& archive_dir,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    const base::Callback<void(const std::set<base::FilePath>&)>& callback) {
+  std::set<base::FilePath> archive_paths;
+  base::FileEnumerator file_enumerator(archive_dir, false,
+                                       base::FileEnumerator::FILES);
+  for (base::FilePath archive_path = file_enumerator.Next();
+       !archive_path.empty(); archive_path = file_enumerator.Next()) {
+    archive_paths.insert(archive_path);
+  }
+  task_runner->PostTask(FROM_HERE, base::Bind(callback, archive_paths));
 }
+
 }  // namespace
 
 ArchiveManager::ArchiveManager(
@@ -52,10 +70,9 @@ void ArchiveManager::EnsureArchivesDirCreated(const base::Closure& callback) {
 
 void ArchiveManager::ExistsArchive(const base::FilePath& archive_path,
                                    const base::Callback<void(bool)>& callback) {
-  bool* result = new bool(false);
-  task_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(ExistsArchiveImpl, archive_path, result),
-      base::Bind(CompleteBooleanCallback, callback, base::Owned(result)));
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(ExistsArchiveImpl, archive_path,
+                            base::ThreadTaskRunnerHandle::Get(), callback));
 }
 
 void ArchiveManager::DeleteArchive(const base::FilePath& archive_path,
@@ -67,10 +84,17 @@ void ArchiveManager::DeleteArchive(const base::FilePath& archive_path,
 void ArchiveManager::DeleteMultipleArchives(
     const std::vector<base::FilePath>& archive_paths,
     const base::Callback<void(bool)>& callback) {
-  bool* result = new bool(false);
-  task_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(DeleteArchivesImpl, archive_paths, result),
-      base::Bind(CompleteBooleanCallback, callback, base::Owned(result)));
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(DeleteArchivesImpl, archive_paths,
+                            base::ThreadTaskRunnerHandle::Get(), callback));
+}
+
+void ArchiveManager::GetAllArchives(
+    const base::Callback<void(const std::set<base::FilePath>&)>& callback)
+    const {
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(GetAllArchivesImpl, archives_dir_,
+                            base::ThreadTaskRunnerHandle::Get(), callback));
 }
 
 }  // namespace offline_pages

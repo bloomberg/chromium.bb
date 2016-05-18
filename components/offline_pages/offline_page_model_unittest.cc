@@ -87,7 +87,6 @@ class OfflinePageModelTest
   void OnGetMultipleOfflinePageItemsResult(
       MultipleOfflinePageItemResult* storage,
       const MultipleOfflinePageItemResult& result);
-  void OnClearPageByStorageManager(int pages_cleared, DeletePageResult result);
 
   // OfflinePageMetadataStore callbacks.
   void OnStoreUpdateDone(bool /* success */);
@@ -386,13 +385,6 @@ void OfflinePageModelTest::OnGetMultipleOfflinePageItemsResult(
     MultipleOfflinePageItemResult* storage,
     const MultipleOfflinePageItemResult& result) {
   *storage = result;
-}
-
-void OfflinePageModelTest::OnClearPageByStorageManager(
-    int pages_cleared,
-    DeletePageResult result) {
-  last_cleared_pages_count_ = pages_cleared;
-  last_clear_page_result_ = result;
 }
 
 base::Optional<OfflinePageItem> OfflinePageModelTest::GetPagesByOnlineURL(
@@ -941,40 +933,6 @@ TEST_F(OfflinePageModelTest, SaveRetrieveMultipleClientIds) {
 
   EXPECT_TRUE(id_set.find(offline1) != id_set.end());
   EXPECT_TRUE(id_set.find(offline2) != id_set.end());
-}
-
-TEST_F(OfflinePageModelTest, ClearPagesFromOneSource) {
-  base::Time now = base::Time::Now();
-  base::TimeDelta expiration_period = model()
-                                          ->GetPolicyController()
-                                          ->GetPolicy(kTestClientNamespace)
-                                          .lifetime_policy.expiration_period;
-
-  SavePage(kTestUrl, kTestClientId1);
-  GetStore()->UpdateLastAccessTime(
-      last_save_offline_id(),
-      now - base::TimeDelta::FromDays(10) - expiration_period);
-  SavePage(kTestUrl2, kTestClientId2);
-  GetStore()->UpdateLastAccessTime(
-      last_save_offline_id(),
-      now - base::TimeDelta::FromDays(1) - expiration_period);
-  SavePage(kTestUrl3, kTestClientId3);
-  GetStore()->UpdateLastAccessTime(last_save_offline_id(), now);
-
-  ResetModel();
-
-  // Only first two pages are expired.
-  model()->GetStorageManager()->ClearPagesIfNeeded(base::Bind(
-      &OfflinePageModelTest::OnClearPageByStorageManager, AsWeakPtr()));
-
-  PumpLoop();
-
-  std::vector<OfflinePageItem> offline_pages = GetAllPages();
-
-  EXPECT_EQ(1UL, offline_pages.size());
-  EXPECT_EQ(1UL, GetStore()->GetAllPages().size());
-  EXPECT_EQ(2, last_cleared_pages_count());
-  EXPECT_EQ(DeletePageResult::SUCCESS, last_clear_page_result());
 }
 
 TEST_F(OfflinePageModelTest, GetBestPage) {

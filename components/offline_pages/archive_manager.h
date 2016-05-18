@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_ARCHIVE_MANAGER_H_
 #define COMPONENTS_OFFLINE_PAGES_ARCHIVE_MANAGER_H_
 
+#include <set>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -45,6 +46,11 @@ class ArchiveManager {
   virtual void DeleteMultipleArchives(
       const std::vector<base::FilePath>& archive_paths,
       const base::Callback<void(bool)>& callback);
+
+  // Lists all archive files in the archive directory.
+  virtual void GetAllArchives(
+      const base::Callback<void(const std::set<base::FilePath>&)>& callback)
+      const;
 
  private:
   // Path under which all of the managed archives should be stored.
