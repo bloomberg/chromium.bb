@@ -2671,6 +2671,10 @@
           'sources': [ '<@(chrome_browser_tests_supervised_user_sources)' ],
         }],
         ['enable_pepper_cdms==1', {
+          'sources' : [
+            'browser/media/pepper_cdm_test_helper.cc',
+            'browser/media/pepper_cdm_test_helper.h',
+          ],
           'dependencies': [
             # Runtime dependencies.
             '../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',
