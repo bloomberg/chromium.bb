@@ -108,7 +108,7 @@ crbug.com/506529 virtual/pointerevent/fast/events/constructors/media-stream-even
 # The leak detector's result for ActiveDOMObject (especially IndexedDB) is
 # flaky and we need to fix the leak detector (crbug.com/507224). Until then,
 # the tests for IndexedDB are skipped.
-crbug.com/506752 imported/web-platform-tests/IndexedDB/ [ Skip ]
+crbug.com/506752 imported/wpt/IndexedDB/ [ Skip ]
 crbug.com/506752 storage/indexeddb/ [ Skip ]
 
 # -----------------------------------------------------------------

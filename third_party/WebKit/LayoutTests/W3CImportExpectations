@@ -184,7 +184,7 @@ imported/web-platform-tests/2dcontext [ Skip ]
 ## Owners: jsbell@chromium.org
 # imported/web-platform-tests/FileAPI [ Pass ]
 ## Owners: jsbell@chromium.org
-# imported/web-platform-tests/IndexedDB [ Pass ]
+# imported/wpt/IndexedDB [ Pass ]
 imported/web-platform-tests/WebCryptoAPI [ Skip ]
 ## Owners: jsbell@chromium.org
 # imported/wpt/WebIDL [ Pass ]
@@ -315,7 +315,7 @@ imported/web-platform-tests/FileAPI/OWNERS [ Skip ]
 imported/web-platform-tests/html/OWNERS [ Skip ]
 imported/wpt/webrtc/OWNERS [ Skip ]
 imported/web-platform-tests/html-imports/OWNERS [ Skip ]
-imported/web-platform-tests/IndexedDB/OWNERS [ Skip ]
+imported/wpt/IndexedDB/OWNERS [ Skip ]
 imported/wpt/dom/OWNERS [ Skip ]
 imported/web-platform-tests/shadow-dom/OWNERS [ Skip ]
 imported/wpt/encoding/OWNERS [ Skip ]
