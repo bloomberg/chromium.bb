@@ -255,7 +255,7 @@ CGFloat BookmarkHorizontalPadding() {
   if (!ui::MaterialDesignController::IsModeMaterial()) {
     return 1.0;
   }
-  return 16.0;
+  return 10.0;
 }
 
 CGFloat BookmarkVerticalPadding() {
