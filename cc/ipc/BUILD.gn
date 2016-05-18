@@ -14,8 +14,6 @@ component("ipc") {
     "cc_param_traits_macros.h",
   ]
 
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
   public_deps = [
     "//cc",
     "//cc/surfaces",

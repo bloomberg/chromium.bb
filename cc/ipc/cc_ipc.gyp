@@ -33,8 +33,6 @@
         'cc_param_traits.h',
         'cc_param_traits_macros.h',
       ],
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      'msvs_disabled_warnings': [ 4267, ],
     },
   ],
 }

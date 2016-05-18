@@ -278,7 +278,7 @@ void ParamTraits<sk_sp<SkImageFilter>>::GetSize(base::PickleSizer* s,
   SkImageFilter* filter = p.get();
   if (filter) {
     sk_sp<SkData> data(SkValidatingSerializeFlattenable(filter));
-    s->AddData(data->size());
+    s->AddData(base::checked_cast<int>(data->size()));
   } else {
     s->AddData(0);
   }
@@ -289,7 +289,8 @@ void ParamTraits<sk_sp<SkImageFilter>>::Write(base::Pickle* m,
   SkImageFilter* filter = p.get();
   if (filter) {
     sk_sp<SkData> data(SkValidatingSerializeFlattenable(filter));
-    m->WriteData(static_cast<const char*>(data->data()), data->size());
+    m->WriteData(static_cast<const char*>(data->data()),
+                 base::checked_cast<int>(data->size()));
   } else {
     m->WriteData(0, 0);
   }
