@@ -50,17 +50,19 @@ DEFINE_WINDOW_PROPERTY_KEY(mus::Window*, kMusWindow, nullptr);
 
 MUS_DEFINE_WINDOW_PROPERTY_KEY(NativeWidgetMus*, kNativeWidgetMusKey, nullptr);
 
-// TODO: figure out what this should be.
+// This ensures that only the top-level aura Window can be activated.
 class FocusRulesImpl : public wm::BaseFocusRules {
  public:
-  FocusRulesImpl() {}
+  explicit FocusRulesImpl(aura::Window* root) : root_(root) {}
   ~FocusRulesImpl() override {}
 
   bool SupportsChildActivation(aura::Window* window) const override {
-    return true;
+    return root_ == window;
   }
 
  private:
+  aura::Window* root_;
+
   DISALLOW_COPY_AND_ASSIGN(FocusRulesImpl);
 };
 
@@ -565,7 +567,8 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   window_tree_host_->InitHost();
   window_tree_host_->window()->SetProperty(kMusWindow, window_);
 
-  focus_client_.reset(new wm::FocusController(new FocusRulesImpl));
+  focus_client_.reset(
+      new wm::FocusController(new FocusRulesImpl(window_tree_host_->window())));
 
   aura::client::SetFocusClient(window_tree_host_->window(),
                                focus_client_.get());
@@ -1019,6 +1022,10 @@ void NativeWidgetMus::ClearNativeFocus() {
       window_ ? window_->connection()->GetFocusedWindow() : nullptr;
   if (focused && window_->Contains(focused) && focused != window_)
     window_->SetFocus();
+  // Move aura-focus back to |content_|, so that the Widget still receives
+  // events correctly.
+  aura::client::GetFocusClient(content_)->ResetFocusWithinActiveWindow(
+      content_);
 }
 
 gfx::Rect NativeWidgetMus::GetWorkAreaBoundsInScreen() const {

@@ -16,11 +16,13 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/test/focus_manager_test.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace views {
 namespace {
@@ -224,6 +226,51 @@ TEST_F(NativeWidgetMusTest, GetName) {
   mus::Window* window =
       static_cast<NativeWidgetMus*>(widget.native_widget_private())->window();
   EXPECT_EQ("MyWidget", window->GetName());
+}
+
+// Tests that child aura::Windows cannot be activated.
+TEST_F(NativeWidgetMusTest, FocusChildAuraWindow) {
+  Widget widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget.Init(params);
+
+  View* focusable = new View;
+  focusable->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  widget.GetContentsView()->AddChildView(focusable);
+
+  NativeViewHost* native_host = new NativeViewHost;
+  widget.GetContentsView()->AddChildView(native_host);
+
+  std::unique_ptr<aura::Window> window(new aura::Window(nullptr));
+  window->Init(ui::LayerType::LAYER_SOLID_COLOR);
+  native_host->SetBounds(5, 10, 20, 30);
+  native_host->Attach(window.get());
+  widget.Show();
+  window->Show();
+  widget.SetBounds(gfx::Rect(10, 20, 30, 40));
+
+  // Sanity check that the |window| is a descendent of the Widget's window.
+  ASSERT_TRUE(widget.GetNativeView()->Contains(window->parent()));
+
+  // Focusing the child window should not activate it.
+  window->Focus();
+  EXPECT_TRUE(window->HasFocus());
+  aura::Window* active_window =
+      aura::client::GetActivationClient(window.get()->GetRootWindow())
+          ->GetActiveWindow();
+  EXPECT_NE(window.get(), active_window);
+  EXPECT_EQ(widget.GetNativeView(), active_window);
+
+  // Moving focus to a child View should move focus away from |window|, and to
+  // the Widget's window instead.
+  focusable->RequestFocus();
+  EXPECT_FALSE(window->HasFocus());
+  EXPECT_TRUE(widget.GetNativeView()->HasFocus());
+  active_window =
+      aura::client::GetActivationClient(window.get()->GetRootWindow())
+          ->GetActiveWindow();
+  EXPECT_EQ(widget.GetNativeView(), active_window);
 }
 
 }  // namespace
