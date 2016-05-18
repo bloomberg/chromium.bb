@@ -121,8 +121,6 @@ public class NewTabPageView extends FrameLayout
     private int mSnapshotHeight;
     private int mSnapshotScrollY;
 
-    private int mPeekingCardVerticalScrollStart;
-
     /**
      * Manages the view interaction with the rest of the system.
      */
@@ -419,7 +417,6 @@ public class NewTabPageView extends FrameLayout
             });
             initializeSearchBoxRecyclerViewScrollHandling();
             mRecyclerView.addItemDecoration(new SnippetItemDecoration(getContext()));
-            updatePeekingCard();
             updateSnippetsHeaderDisplay();
         } else {
             initializeSearchBoxScrollHandling();
@@ -466,7 +463,7 @@ public class NewTabPageView extends FrameLayout
     }
 
     /**
-     * Calculate the peeking card/first snippet bleed and padding when scrolling if it is visible.
+     * Change the peeking card's width, padding and children's opacity to give a smooth transition.
      */
     private void updatePeekingCard() {
         // Get the first snippet that could display to make the peeking card transition.
@@ -475,36 +472,33 @@ public class NewTabPageView extends FrameLayout
 
         if (firstSnippet == null || !firstSnippet.isShown()) return;
 
-        // If first snippet exists change the parameters from peeking card with bleed to full page
-        // card when scrolling.
+        // If first snippet exists change the peeking card margin and padding to change its
+        // width when scrolling.
         // Value used for max peeking card height and padding.
         int maxPadding = getResources().getDimensionPixelSize(
                 R.dimen.snippets_padding_and_peeking_card_height);
 
-        // As the user scrolls, the bleed increases or decreases.
-        int bleed = maxPadding - (getVerticalScroll() - mPeekingCardVerticalScrollStart);
+        // The peeking card's resting position is |maxPadding| from the bottom of the screen hence
+        // |getHeight() - maxPadding|, and it grows the further it gets from this.
+        int padding = getHeight() - maxPadding - firstSnippet.getTop();
 
-        // Never let the bleed go into negative digits.
-        bleed = Math.max(bleed, 0);
-        // Never let the bleed be greater than the maxPadding.
-        bleed = Math.min(bleed, maxPadding);
+        // Make sure the |padding| is between 0 and |maxPadding|.
+        padding = Math.min(Math.max(padding, 0), maxPadding);
 
-        // Modify the padding so as the margin increases, the padding decreases so the cards
-        // content does not shift. Top and bottom remain the same.
-        firstSnippet.setPadding(
-                maxPadding - bleed, maxPadding, maxPadding - bleed, maxPadding);
+        // Modify the padding so as the margin increases, the padding decreases, keeping the card's
+        // contents in the same position. The top and bottom remain the same.
+        firstSnippet.setPadding(padding, maxPadding, padding, maxPadding);
 
-        // Modify the margin to grow the card from bleed to full width.
         RecyclerView.LayoutParams params =
                 (RecyclerView.LayoutParams) firstSnippet.getLayoutParams();
-        params.leftMargin = bleed;
-        params.rightMargin = bleed;
+        params.leftMargin = maxPadding - padding;
+        params.rightMargin = maxPadding - padding;
 
         // Set the opacity of the card content to be 0 when peeking and 1 when full width.
         int firstSnippetChildCount = firstSnippet.getChildCount();
         for (int i = 0; i < firstSnippetChildCount; ++i) {
             View snippetChild = firstSnippet.getChildAt(i);
-            snippetChild.setAlpha((maxPadding - bleed) / (float) maxPadding);
+            snippetChild.setAlpha(padding / (float) maxPadding);
         }
     }
 
@@ -603,8 +597,6 @@ public class NewTabPageView extends FrameLayout
                         mRecyclerView.getHeight() < mMostVisitedLayout.getBottom();
 
                 int targetScroll;
-                // Set peeking card vertical scroll to be vertical scroll.
-                mPeekingCardVerticalScrollStart = 0;
                 NewTabPageUma.SnapState snapState = NewTabPageUma.SnapState.ABOVE_THE_FOLD;
                 if (currentScroll < mNewTabPageLayout.getHeight() / 3) {
                     // In either case, if in the top 1/3 of the original NTP, snap to the top.
@@ -613,8 +605,6 @@ public class NewTabPageView extends FrameLayout
                         && currentScroll < mNewTabPageLayout.getHeight() * 2 / 3) {
                     // If in the middle 1/3 and we are snapping to Most Likely, snap to it.
                     targetScroll = topOfMostLikelyScroll;
-                    // Set the peeking card vertical scroll start for the snapped view.
-                    mPeekingCardVerticalScrollStart = targetScroll;
                 } else {
                     // Otherwise, snap to the Articles.
                     targetScroll = topOfSnippetsScroll;
@@ -971,6 +961,10 @@ public class NewTabPageView extends FrameLayout
         // placed with their new layout configurations.
         setUrlFocusChangeAnimationPercent(mUrlFocusChangePercent);
         updateSearchBoxOnScroll();
+
+        if (mUseCardsUi) {
+            updatePeekingCard();
+        }
     }
 
     // MostVisitedURLsObserver implementation
@@ -1231,6 +1225,10 @@ public class NewTabPageView extends FrameLayout
             mNewTabPageLayout.setParentViewportHeight(MeasureSpec.getSize(heightMeasureSpec));
         }
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+        if (mUseCardsUi) {
+            updatePeekingCard();
+        }
     }
 
     private int getVerticalScroll() {
