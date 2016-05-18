@@ -455,7 +455,10 @@ void WebUILoginView::RequestMediaAccessPermission(
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
   MediaStreamDevicesController controller(web_contents, request, callback);
-  if (controller.IsAskingForAudio() || !controller.IsAskingForVideo()) {
+  if (!controller.IsAskingForAudio() && !controller.IsAskingForVideo())
+    return;
+
+  if (controller.IsAskingForAudio()) {
     controller.PermissionDenied();
     return;
   }
