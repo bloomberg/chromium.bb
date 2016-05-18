@@ -48,7 +48,7 @@ CSSApplyAtRules status=experimental, depends_on=CSSVariables
 CSSAdditiveAnimations status=experimental, depends_on=StackedCSSPropertyAnimations
 CSSBackdropFilter status=experimental
 CSSBoxReflectFilter
-CSSContainment status=experimental
+CSSContainment status=stable
 CSSFontDisplay status=experimental
 CSSFontSizeAdjust status=experimental
 CSSGridLayout status=experimental
