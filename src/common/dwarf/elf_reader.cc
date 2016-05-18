@@ -35,7 +35,6 @@
 #include <sys/mman.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <elf.h>
 #include <string.h>
 
 #include <algorithm>
@@ -44,6 +43,7 @@
 #include <vector>
 #include "zlib.h"
 
+#include "common/android/include/elf.h"
 #include "elf_reader.h"
 //#include "using_std_string.h"
 // EM_AARCH64 is not defined by elf.h of GRTE v3 on x86.
