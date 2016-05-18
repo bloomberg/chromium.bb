@@ -81,10 +81,12 @@ void LayoutTableRow::styleDidChange(StyleDifference diff, const ComputedStyle* o
             // If the border width changes on a row, we need to make sure the cells in the row know to lay out again.
             // This only happens when borders are collapsed, since they end up affecting the border sides of the cell
             // itself.
+            table->setPreferredLogicalWidthsDirty(MarkOnlyThis);
             for (LayoutBox* childBox = firstChildBox(); childBox; childBox = childBox->nextSiblingBox()) {
                 if (!childBox->isTableCell())
                     continue;
                 childBox->setChildNeedsLayout();
+                childBox->setPreferredLogicalWidthsDirty(MarkOnlyThis);
             }
         }
     }

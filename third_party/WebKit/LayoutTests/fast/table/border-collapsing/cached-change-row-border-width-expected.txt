@@ -8,23 +8,38 @@
       "paintInvalidations": [
         {
           "object": "LayoutTableCell TD",
-          "rect": [8, 8, 56, 54],
+          "rect": [8, 8, 60, 54],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [8, 58, 56, 53],
+          "rect": [8, 58, 60, 53],
           "reason": "location change"
         },
         {
           "object": "LayoutTable TABLE",
-          "rect": [8, 109, 56, 2],
+          "rect": [8, 109, 60, 2],
           "reason": "incremental"
         },
         {
           "object": "LayoutTable TABLE",
-          "rect": [8, 110, 56, 1],
+          "rect": [8, 110, 60, 1],
           "reason": "incremental"
+        },
+        {
+          "object": "LayoutTableSection TBODY",
+          "rect": [10, 10, 56, 100],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTableRow TR",
+          "rect": [10, 60, 56, 50],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTableRow TR id='row'",
+          "rect": [10, 10, 56, 50],
+          "reason": "style change"
         },
         {
           "object": "LayoutTableSection TBODY",
@@ -42,19 +57,14 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutTableSection TBODY",
-          "rect": [10, 10, 52, 100],
-          "reason": "bounds change"
+          "object": "LayoutTable TABLE",
+          "rect": [62, 8, 6, 103],
+          "reason": "incremental"
         },
         {
-          "object": "LayoutTableRow TR",
-          "rect": [10, 60, 52, 50],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTableRow TR id='row'",
-          "rect": [10, 10, 52, 50],
-          "reason": "style change"
+          "object": "LayoutTable TABLE",
+          "rect": [64, 8, 4, 103],
+          "reason": "incremental"
         },
         {
           "object": "LayoutTableCell TD",
