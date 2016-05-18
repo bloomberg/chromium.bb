@@ -518,8 +518,11 @@ if (is_win) {
       "{{bundle_root_dir}}/Versions/$chrome_version_full/{{source_file_part}}",
     ]
     public_deps = [
-      ":chrome_framework",
       ":chrome_helper_app",
+
+      # verify_chrome_framework_order depends on :chrome_framework and, for
+      # non-component builds, will ensure the export symbol table is correct.
+      ":verify_chrome_framework_order",
     ]
   }
 
@@ -756,6 +759,7 @@ if (is_win) {
       chrome_dylib_version,
       "-current_version",
       chrome_dylib_version,
+      "-Wl,-order_file," + rebase_path("app/framework.order", root_build_dir),
     ]
 
     if (is_component_build) {
@@ -763,6 +767,37 @@ if (is_win) {
         "-rpath",
         "@loader_path/../../../../..",
         "-Wl,-reexport_library,libchrome_dll.dylib",
+      ]
+    }
+  }
+
+  if (!is_asan && !is_component_build) {
+    action("verify_chrome_framework_order") {
+      script = "//chrome/tools/build/mac/run_verify_order.py"
+      stamp_file = "$target_out_dir/run_$target_name.stamp"
+      inputs = [
+        script,
+        "//chrome/tools/build/mac/verify_order",
+      ]
+      args = [
+        "--stamp",
+        rebase_path(stamp_file, root_out_dir),
+        "_ChromeMain",
+        rebase_path(
+            "$root_out_dir/$chrome_framework_name.framework/$chrome_framework_name",
+            root_out_dir),
+      ]
+      outputs = [
+        stamp_file,
+      ]
+      public_deps = [
+        ":chrome_framework",
+      ]
+    }
+  } else {
+    group("verify_chrome_framework_order") {
+      public_deps = [
+        ":chrome_framework",
       ]
     }
   }
