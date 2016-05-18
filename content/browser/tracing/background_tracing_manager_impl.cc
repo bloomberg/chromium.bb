@@ -304,7 +304,7 @@ void BackgroundTracingManagerImpl::OnRuleTriggered(
     return;
   }
 
-  int trace_timeout = triggered_rule->GetTraceTimeout();
+  int trace_delay = triggered_rule->GetTraceDelay();
 
   if (config_->tracing_mode() == BackgroundTracingConfigImpl::REACTIVE) {
     // In reactive mode, a trigger starts tracing, or finalizes tracing
@@ -314,12 +314,12 @@ void BackgroundTracingManagerImpl::OnRuleTriggered(
     if (!is_tracing_) {
       // It was not already tracing, start a new trace.
       StartTracing(GetCategoryFilterStringForCategoryPreset(
-                          triggered_rule->GetCategoryPreset()),
-                      base::trace_event::RECORD_UNTIL_FULL);
+                       triggered_rule->category_preset()),
+                   base::trace_event::RECORD_UNTIL_FULL);
     } else {
       // Reactive configs that trigger again while tracing should just
       // end right away (to not capture multiple navigations, for example).
-      trace_timeout = -1;
+      trace_delay = -1;
     }
   } else {
     // In preemptive mode, a trigger starts finalizing a trace if one is
@@ -334,11 +334,11 @@ void BackgroundTracingManagerImpl::OnRuleTriggered(
     RecordBackgroundTracingMetric(PREEMPTIVE_TRIGGERED);
   }
 
-  if (trace_timeout < 0) {
+  if (trace_delay < 0) {
     BeginFinalizing(callback);
   } else {
     tracing_timer_.reset(new TracingTimer(callback));
-    tracing_timer_->StartTimer(trace_timeout);
+    tracing_timer_->StartTimer(trace_delay);
   }
 
   if (!rule_triggered_callback_for_testing_.is_null())
@@ -523,6 +523,8 @@ BackgroundTracingManagerImpl::GetCategoryFilterStringForCategoryPreset(
       return "blink.console,v8";
     case BackgroundTracingConfigImpl::CategoryPreset::BLINK_STYLE:
       return "blink_style";
+    case BackgroundTracingConfigImpl::CategoryPreset::CATEGORY_PRESET_UNSET:
+      NOTREACHED();
   }
   NOTREACHED();
   return "";

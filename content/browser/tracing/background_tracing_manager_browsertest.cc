@@ -830,6 +830,51 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   }
 }
 
+// This tests that histogram triggers for reactive mode configs.
+IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
+                       ReceiveReactiveTraceSucceedsOnHigherHistogramSample) {
+  {
+    SetupBackgroundTracingManager();
+
+    base::RunLoop run_loop;
+
+    BackgroundTracingManagerUploadConfigWrapper upload_config_wrapper(
+        run_loop.QuitClosure());
+
+    base::DictionaryValue dict;
+    dict.SetString("mode", "REACTIVE_TRACING_MODE");
+
+    std::unique_ptr<base::ListValue> rules_list(new base::ListValue());
+    {
+      std::unique_ptr<base::DictionaryValue> rules_dict(
+          new base::DictionaryValue());
+      rules_dict->SetString(
+          "rule", "MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE");
+      rules_dict->SetString("histogram_name", "fake");
+      rules_dict->SetInteger("histogram_value", 1);
+      rules_dict->SetString("category", "BENCHMARK");
+      rules_list->Append(std::move(rules_dict));
+    }
+
+    dict.Set("configs", std::move(rules_list));
+
+    std::unique_ptr<BackgroundTracingConfig> config(
+        BackgroundTracingConfigImpl::FromDict(&dict));
+    EXPECT_TRUE(config);
+
+    BackgroundTracingManager::GetInstance()->SetActiveScenario(
+        std::move(config), upload_config_wrapper.get_receive_callback(),
+        BackgroundTracingManager::NO_DATA_FILTERING);
+
+    // Our reference value is "1", so a value of "2" should trigger a trace.
+    LOCAL_HISTOGRAM_COUNTS("fake", 2);
+
+    run_loop.Run();
+
+    EXPECT_TRUE(upload_config_wrapper.get_receive_count() == 1);
+  }
+}
+
 // This tests that histogram values < reference value don't trigger.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
                        ReceiveTraceFailsOnLowerHistogramSample) {

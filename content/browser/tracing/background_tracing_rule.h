@@ -18,32 +18,39 @@ namespace content {
 class CONTENT_EXPORT BackgroundTracingRule {
  public:
   BackgroundTracingRule();
+  explicit BackgroundTracingRule(int trigger_delay);
+
   virtual ~BackgroundTracingRule();
+
+  void Setup(const base::DictionaryValue* dict);
+  BackgroundTracingConfigImpl::CategoryPreset category_preset() const {
+    return category_preset_;
+  }
+  void set_category_preset(
+      BackgroundTracingConfigImpl::CategoryPreset category_preset) {
+    category_preset_ = category_preset;
+  }
 
   virtual void Install() {}
   virtual void IntoDict(base::DictionaryValue* dict) const;
-  void Setup(const base::DictionaryValue* dict);
   virtual bool ShouldTriggerNamedEvent(const std::string& named_event) const;
-  virtual BackgroundTracingConfigImpl::CategoryPreset GetCategoryPreset() const;
   virtual void OnHistogramTrigger(const std::string& histogram_name) const {}
 
   // Seconds from the rule is triggered to finalization should start.
-  virtual int GetTraceTimeout() const;
+  virtual int GetTraceDelay() const;
 
   // Probability that we should allow a tigger to  happen.
   double trigger_chance() const { return trigger_chance_; }
 
-  static std::unique_ptr<BackgroundTracingRule> PreemptiveRuleFromDict(
+  static std::unique_ptr<BackgroundTracingRule> CreateRuleFromDict(
       const base::DictionaryValue* dict);
-
-  static std::unique_ptr<BackgroundTracingRule> ReactiveRuleFromDict(
-      const base::DictionaryValue* dict,
-      BackgroundTracingConfigImpl::CategoryPreset category_preset);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BackgroundTracingRule);
 
   double trigger_chance_;
+  int trigger_delay_;
+  BackgroundTracingConfigImpl::CategoryPreset category_preset_;
 };
 
 }  // namespace content

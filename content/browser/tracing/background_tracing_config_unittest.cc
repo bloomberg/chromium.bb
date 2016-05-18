@@ -319,31 +319,34 @@ TEST_F(BackgroundTracingConfigTest, ReactiveConfigFromValidString) {
   config = ReadFromJSONString(
       "{\"mode\":\"REACTIVE_TRACING_MODE\",\"configs\": [{\"rule\": "
       "\"TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL\", "
-      "\"category\": \"BENCHMARK\", \"trigger_name\": \"foo\"}]}");
+      "\"category\": \"BENCHMARK\",\"trigger_delay\":30,"
+      "\"trigger_name\": \"foo\"}]}");
   EXPECT_TRUE(config);
   EXPECT_EQ(config->tracing_mode(), BackgroundTracingConfig::REACTIVE);
   EXPECT_EQ(config->rules().size(), 1u);
   EXPECT_EQ(RuleToString(config->rules()[0]),
             "{\"category\":\"BENCHMARK\","
             "\"rule\":\"TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL\","
-            "\"trigger_name\":\"foo\"}");
+            "\"trigger_delay\":30,\"trigger_name\":\"foo\"}");
 
   config = ReadFromJSONString(
       "{\"mode\":\"REACTIVE_TRACING_MODE\",\"configs\": [{\"rule\": "
       "\"TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL\", "
-      "\"category\": \"BENCHMARK_DEEP\", \"trigger_name\": \"foo\"}]}");
+      "\"category\": \"BENCHMARK_DEEP\", \"trigger_delay\":30, "
+      "\"trigger_name\": \"foo\"}]}");
   EXPECT_TRUE(config);
   EXPECT_EQ(config->tracing_mode(), BackgroundTracingConfig::REACTIVE);
   EXPECT_EQ(config->rules().size(), 1u);
   EXPECT_EQ(RuleToString(config->rules()[0]),
             "{\"category\":\"BENCHMARK_DEEP\","
             "\"rule\":\"TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL\","
-            "\"trigger_name\":\"foo\"}");
+            "\"trigger_delay\":30,\"trigger_name\":\"foo\"}");
 
   config = ReadFromJSONString(
       "{\"mode\":\"REACTIVE_TRACING_MODE\",\"configs\": [{\"rule\": "
       "\"TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL\", "
-      "\"category\": \"BENCHMARK_DEEP\", \"trigger_name\": \"foo\", "
+      "\"category\": \"BENCHMARK_DEEP\",\"trigger_delay\":30,"
+      "\"trigger_name\": \"foo\",\"trigger_delay\":30,"
       "\"trigger_chance\": 0.5}]}");
   EXPECT_TRUE(config);
   EXPECT_EQ(config->tracing_mode(), BackgroundTracingConfig::REACTIVE);
@@ -351,7 +354,8 @@ TEST_F(BackgroundTracingConfigTest, ReactiveConfigFromValidString) {
   EXPECT_EQ(RuleToString(config->rules()[0]),
             "{\"category\":\"BENCHMARK_DEEP\","
             "\"rule\":\"TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL\","
-            "\"trigger_chance\":0.5,\"trigger_name\":\"foo\"}");
+            "\"trigger_chance\":0.5,\"trigger_delay\":30,"
+            "\"trigger_name\":\"foo\"}");
 
   config = ReadFromJSONString(
       "{\"mode\":\"REACTIVE_TRACING_MODE\",\"configs\": [{\"rule\": "
@@ -366,11 +370,11 @@ TEST_F(BackgroundTracingConfigTest, ReactiveConfigFromValidString) {
   EXPECT_EQ(RuleToString(config->rules()[0]),
             "{\"category\":\"BENCHMARK_DEEP\","
             "\"rule\":\"TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL\","
-            "\"trigger_name\":\"foo1\"}");
+            "\"trigger_delay\":30,\"trigger_name\":\"foo1\"}");
   EXPECT_EQ(RuleToString(config->rules()[1]),
             "{\"category\":\"BENCHMARK_DEEP\","
             "\"rule\":\"TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL\","
-            "\"trigger_name\":\"foo2\"}");
+            "\"trigger_delay\":30,\"trigger_name\":\"foo2\"}");
   config = ReadFromJSONString(
       "{\"mode\":\"REACTIVE_TRACING_MODE\",\"configs\": [{\"rule\": "
       "\"TRACE_AT_RANDOM_INTERVALS\",\"category\": \"BENCHMARK_DEEP\","
@@ -590,8 +594,8 @@ TEST_F(BackgroundTracingConfigTest, ValidReactiveConfigToString) {
 
     EXPECT_EQ(ConfigToString(config.get()),
               "{\"configs\":[{\"category\":\"BENCHMARK_DEEP\",\"rule\":\"TRACE_"
-              "ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL\",\"trigger_name\":\"foo\"}]"
-              ",\"mode\":\"REACTIVE_TRACING_MODE\"}");
+              "ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL\",\"trigger_delay\":30,"
+              "\"trigger_name\":\"foo\"}],\"mode\":\"REACTIVE_TRACING_MODE\"}");
   }
 
   {
@@ -611,10 +615,10 @@ TEST_F(BackgroundTracingConfigTest, ValidReactiveConfigToString) {
     EXPECT_EQ(
         ConfigToString(config.get()),
         "{\"configs\":[{\"category\":\"BENCHMARK_DEEP\",\"rule\":\"TRACE_"
-        "ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL\",\"trigger_name\":\"foo1\"},{"
-        "\"category\":\"BENCHMARK_DEEP\",\"rule\":"
-        "\"TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL\",\"trigger_name\":"
-        "\"foo2\"}],\"mode\":\"REACTIVE_TRACING_MODE\"}");
+        "ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL\",\"trigger_delay\":30,"
+        "\"trigger_name\":\"foo1\"},{\"category\":\"BENCHMARK_DEEP\",\"rule\":"
+        "\"TRACE_ON_NAVIGATION_UNTIL_TRIGGER_OR_FULL\",\"trigger_delay\":30,"
+        "\"trigger_name\":\"foo2\"}],\"mode\":\"REACTIVE_TRACING_MODE\"}");
   }
 }
 

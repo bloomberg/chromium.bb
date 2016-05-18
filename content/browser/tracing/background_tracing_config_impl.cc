@@ -63,6 +63,8 @@ std::string BackgroundTracingConfigImpl::CategoryPresetToString(
       return kConfigCategoryBenchmarkExecutionMetric;
     case BackgroundTracingConfigImpl::BLINK_STYLE:
       return kConfigCategoryBlinkStyle;
+    case BackgroundTracingConfigImpl::CATEGORY_PRESET_UNSET:
+      NOTREACHED();
   }
   NOTREACHED();
   return "";
@@ -148,7 +150,7 @@ void BackgroundTracingConfigImpl::IntoDict(base::DictionaryValue* dict) const {
 void BackgroundTracingConfigImpl::AddPreemptiveRule(
     const base::DictionaryValue* dict) {
   std::unique_ptr<BackgroundTracingRule> rule =
-      BackgroundTracingRule::PreemptiveRuleFromDict(dict);
+      BackgroundTracingRule::CreateRuleFromDict(dict);
   if (rule)
     rules_.push_back(std::move(rule));
 }
@@ -157,9 +159,11 @@ void BackgroundTracingConfigImpl::AddReactiveRule(
     const base::DictionaryValue* dict,
     BackgroundTracingConfigImpl::CategoryPreset category_preset) {
   std::unique_ptr<BackgroundTracingRule> rule =
-      BackgroundTracingRule::ReactiveRuleFromDict(dict, category_preset);
-  if (rule)
+      BackgroundTracingRule::CreateRuleFromDict(dict);
+  if (rule) {
+    rule->set_category_preset(category_preset);
     rules_.push_back(std::move(rule));
+  }
 }
 
 std::unique_ptr<BackgroundTracingConfigImpl>
