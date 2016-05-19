@@ -285,7 +285,12 @@ void NavigationControllerImpl::Restore(
 }
 
 void NavigationControllerImpl::Reload(bool check_for_repost) {
-  ReloadInternal(check_for_repost, RELOAD);
+  ReloadType type = RELOAD;
+  if (base::FeatureList::IsEnabled(
+        features::kNonValidatingReloadOnNormalReload)) {
+    type = RELOAD_MAIN_RESOURCE;
+  }
+  ReloadInternal(check_for_repost, type);
 }
 void NavigationControllerImpl::ReloadToRefreshContent(bool check_for_repost) {
   ReloadType type = RELOAD;

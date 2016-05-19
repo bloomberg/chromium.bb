@@ -53,8 +53,14 @@ const base::Feature kMediaDocumentDownloadButton{
 const base::Feature kNewMediaPlaybackUi{"NewMediaPlaybackUi",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Non-validating reload for desktop.
+// See https://crbug.com/591245
+const base::Feature kNonValidatingReloadOnNormalReload{
+    "NonValidatingReloadOnNormalReload",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Non-validating reload on reload-to-refresh-content (e.g. pull-to-refresh).
-// See https://crbug.com/558829
+// See https://crbug.com/591245
 const base::Feature kNonValidatingReloadOnRefreshContent{
     "NonValidatingReloadOnRefreshContentV2",
     base::FEATURE_DISABLED_BY_DEFAULT};
