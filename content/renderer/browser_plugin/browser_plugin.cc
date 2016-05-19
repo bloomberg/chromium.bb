@@ -376,13 +376,15 @@ void BrowserPlugin::updateGeometry(const WebRect& plugin_rect_in_viewport,
     ready_ = true;
   }
 
-  if (delegate_ && (view_rect_.size() != old_view_rect.size()))
+  bool rect_size_changed = view_rect_.size() != old_view_rect.size();
+  if (delegate_ && rect_size_changed)
     delegate_->DidResizeElement(view_rect_.size());
 
   if (!attached())
     return;
 
-  if (old_view_rect.size() == view_rect_.size()) {
+  if ((!delegate_ && rect_size_changed) ||
+      view_rect_.origin() != old_view_rect.origin()) {
     // Let the browser know about the updated view rect.
     BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_UpdateGeometry(
         browser_plugin_instance_id_, view_rect_));

@@ -392,8 +392,8 @@ class WebViewInteractiveTestBase : public extensions::PlatformAppBrowserTest {
     LOG(INFO) << "DIFF: x = " << diff.x() << ", y = " << diff.y();
 
     const int left_spacing = 40 + padding.x();  // div.style.paddingLeft = 40px.
-    // div.style.paddingTop = 50px + (input box height = 26px).
-    const int top_spacing = 50 + 26 + padding.y();
+    // div.style.paddingTop = 60px + (input box height = 26px).
+    const int top_spacing = 60 + 26 + padding.y();
 
     // If the popup is placed within |threshold_px| of the expected position,
     // then we consider the test as a pass.
