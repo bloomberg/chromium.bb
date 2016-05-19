@@ -99,7 +99,7 @@ bool IndentOutdentCommand::tryIndentingAsListItem(const Position& start, const P
     if (end.anchorNode() == selectedListItem || end.anchorNode()->isDescendantOf(selectedListItem->lastChild())) {
         moveParagraphWithClones(createVisiblePosition(start), createVisiblePosition(end), newList, selectedListItem, editingState);
     } else {
-        moveParagraphWithClones(createVisiblePosition(start), createVisiblePosition(positionAfterNode(selectedListItem->lastChild())), newList, selectedListItem, editingState);
+        moveParagraphWithClones(createVisiblePosition(start), createVisiblePosition(Position::afterNode(selectedListItem->lastChild())), newList, selectedListItem, editingState);
         if (editingState->isAborted())
             return false;
         removeNode(selectedListItem, editingState);

@@ -618,7 +618,7 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
             downstreamEnd = mostForwardCaretPosition(nextPositionOf(visibleEnd, CannotCrossEditingBoundary).deepEquivalent());
         // When deleting tables: Select the table first, then perform the deletion
         if (isDisplayInsideTable(downstreamEnd.computeContainerNode()) && downstreamEnd.computeOffsetInContainerNode() <= caretMinOffset(downstreamEnd.computeContainerNode())) {
-            setEndingSelection(VisibleSelection(endingSelection().end(), positionAfterNode(downstreamEnd.computeContainerNode()), TextAffinity::Downstream, endingSelection().isDirectional()));
+            setEndingSelection(VisibleSelection(endingSelection().end(), Position::afterNode(downstreamEnd.computeContainerNode()), TextAffinity::Downstream, endingSelection().isDirectional()));
             typingAddedToOpenCommand(ForwardDeleteKey);
             return;
         }

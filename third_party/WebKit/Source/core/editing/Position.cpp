@@ -469,7 +469,7 @@ Position toPositionInDOMTree(const PositionInFlatTree& position)
         // FIXME: When anchorNode is <img>, assertion fails in the constructor.
         return Position(anchorNode, PositionAnchorType::AfterChildren);
     case PositionAnchorType::AfterAnchor:
-        return positionAfterNode(anchorNode);
+        return Position::afterNode(anchorNode);
     case PositionAnchorType::BeforeChildren:
         return Position(anchorNode, PositionAnchorType::BeforeChildren);
     case PositionAnchorType::BeforeAnchor:

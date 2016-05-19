@@ -97,7 +97,7 @@ void FormatBlockCommand::formatRange(const Position& start, const Position& end,
             return;
     }
 
-    Position lastParagraphInBlockNode = blockElement->lastChild() ? positionAfterNode(blockElement->lastChild()) : Position();
+    Position lastParagraphInBlockNode = blockElement->lastChild() ? Position::afterNode(blockElement->lastChild()) : Position();
     bool wasEndOfParagraph = isEndOfParagraph(createVisiblePosition(lastParagraphInBlockNode));
 
     moveParagraphWithClones(createVisiblePosition(start), createVisiblePosition(end), blockElement, outerBlock, editingState);

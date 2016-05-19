@@ -352,7 +352,7 @@ DocumentFragment* createFragmentFromMarkupWithContext(Document& document, const 
     taggedDocument->appendChild(root);
 
     Range* range = Range::create(*taggedDocument,
-        positionAfterNode(nodeBeforeContext).parentAnchoredEquivalent(),
+        Position::afterNode(nodeBeforeContext).parentAnchoredEquivalent(),
         positionBeforeNode(nodeAfterContext).parentAnchoredEquivalent());
 
     Node* commonAncestor = range->commonAncestorContainer();

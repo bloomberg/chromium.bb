@@ -112,7 +112,7 @@ void DeleteSelectionCommand::initializeStartEnd(Position& start, Position& end)
     if (isHTMLHRElement(*start.anchorNode()))
         start = positionBeforeNode(start.anchorNode());
     else if (isHTMLHRElement(*end.anchorNode()))
-        end = positionAfterNode(end.anchorNode());
+        end = Position::afterNode(end.anchorNode());
 
     // FIXME: This is only used so that moveParagraphs can avoid the bugs in special element expansion.
     if (!m_expandForSpecialElements)
@@ -324,7 +324,7 @@ bool DeleteSelectionCommand::handleSpecialCaseBRDelete(EditingState* editingStat
 
     // FIXME: This code doesn't belong in here.
     // We detect the case where the start is an empty line consisting of BR not wrapped in a block element.
-    if (upstreamStartIsBR && downstreamStartIsBR && !(isStartOfBlock(createVisiblePosition(positionBeforeNode(nodeAfterUpstreamStart))) && isEndOfBlock(createVisiblePosition(positionAfterNode(nodeAfterUpstreamStart))))) {
+    if (upstreamStartIsBR && downstreamStartIsBR && !(isStartOfBlock(createVisiblePosition(positionBeforeNode(nodeAfterUpstreamStart))) && isEndOfBlock(createVisiblePosition(Position::afterNode(nodeAfterUpstreamStart))))) {
         m_startsAtEmptyLine = true;
         m_endingPosition = m_downstreamEnd;
     }

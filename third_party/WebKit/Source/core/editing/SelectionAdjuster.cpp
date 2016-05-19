@@ -105,12 +105,12 @@ Position adjustPositionForEnd(const Position& currentPosition, Node* startContai
 
     if (Node* ancestor = treeScope.ancestorInThisScope(currentPosition.computeContainerNode())) {
         if (ancestor->contains(startContainerNode))
-            return positionAfterNode(ancestor);
+            return Position::afterNode(ancestor);
         return positionBeforeNode(ancestor);
     }
 
     if (Node* lastChild = treeScope.rootNode().lastChild())
-        return positionAfterNode(lastChild);
+        return Position::afterNode(lastChild);
 
     return Position();
 }
@@ -140,7 +140,7 @@ Position adjustPositionForStart(const Position& currentPosition, Node* endContai
     if (Node* ancestor = treeScope.ancestorInThisScope(currentPosition.computeContainerNode())) {
         if (ancestor->contains(endContainerNode))
             return positionBeforeNode(ancestor);
-        return positionAfterNode(ancestor);
+        return Position::afterNode(ancestor);
     }
 
     if (Node* firstChild = treeScope.rootNode().firstChild())

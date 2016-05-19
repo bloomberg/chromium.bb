@@ -1362,7 +1362,7 @@ void ApplyStyleCommand::splitTextElementAtEnd(const Position& start, const Posit
         return;
 
     Position newStart = shouldUpdateStart ? Position(toText(firstTextNode), start.offsetInContainerNode()) : start;
-    updateStartEnd(newStart, positionAfterNode(firstTextNode));
+    updateStartEnd(newStart, Position::afterNode(firstTextNode));
 }
 
 bool ApplyStyleCommand::shouldSplitTextElement(Element* element, EditingStyle* style)

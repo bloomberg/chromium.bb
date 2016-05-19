@@ -235,7 +235,7 @@ VisiblePosition SelectionModifier::nextWordPositionForPlatform(const VisiblePosi
 static void adjustPositionForUserSelectAll(VisiblePosition& pos, bool isForward)
 {
     if (Node* rootUserSelectAll = EditingStrategy::rootUserSelectAllForNode(pos.deepEquivalent().anchorNode()))
-        pos = createVisiblePosition(isForward ? mostForwardCaretPosition(positionAfterNode(rootUserSelectAll), CanCrossEditingBoundary) : mostBackwardCaretPosition(positionBeforeNode(rootUserSelectAll), CanCrossEditingBoundary));
+        pos = createVisiblePosition(isForward ? mostForwardCaretPosition(Position::afterNode(rootUserSelectAll), CanCrossEditingBoundary) : mostBackwardCaretPosition(positionBeforeNode(rootUserSelectAll), CanCrossEditingBoundary));
 }
 
 // TODO(yosin): We should move this function to "SelectionModifier.cpp".
