@@ -847,7 +847,6 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailersWithOffset) {
   EXPECT_EQ(trailers, decompressed_trailers);
   // Consuming the trailers erases them from the stream.
   stream_->MarkTrailersConsumed(decompressed_trailers.size());
-  stream_->MarkTrailersDelivered();
   EXPECT_EQ("", stream_->decompressed_trailers());
 
   EXPECT_FALSE(stream_->IsDoneReading());

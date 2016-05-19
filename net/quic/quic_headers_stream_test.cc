@@ -23,7 +23,6 @@ using std::vector;
 using testing::ElementsAre;
 using testing::InSequence;
 using testing::Invoke;
-using testing::Return;
 using testing::StrictMock;
 using testing::WithArgs;
 using testing::_;
@@ -163,29 +162,6 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
     saved_header_data_.append(data.data(), data.length());
   }
 
-  void SavePromiseHeaderList(QuicStreamId /* stream_id */,
-                             QuicStreamId /* promised_stream_id */,
-                             size_t size,
-                             const QuicHeaderList& header_list) {
-    SaveToHandler(size, header_list);
-  }
-
-  void SaveHeaderList(QuicStreamId /* stream_id */,
-                      bool /* fin */,
-                      size_t size,
-                      const QuicHeaderList& header_list) {
-    SaveToHandler(size, header_list);
-  }
-
-  void SaveToHandler(size_t size, const QuicHeaderList& header_list) {
-    headers_handler_.reset(new TestHeadersHandler);
-    headers_handler_->OnHeaderBlockStart();
-    for (const auto& p : header_list) {
-      headers_handler_->OnHeader(p.first, p.second);
-    }
-    headers_handler_->OnHeaderBlockEnd(size);
-  }
-
   void WriteHeadersAndExpectSynStream(QuicStreamId stream_id,
                                       bool fin,
                                       SpdyPriority priority) {
@@ -219,10 +195,9 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
                             /*parent_stream_id=*/0,
                             /*exclusive=*/false, fin, kFrameComplete));
     }
-    headers_handler_.reset(new TestHeadersHandler);
-    EXPECT_CALL(visitor_, OnHeaderFrameStart(stream_id))
-        .WillOnce(Return(headers_handler_.get()));
-    EXPECT_CALL(visitor_, OnHeaderFrameEnd(stream_id, true)).Times(1);
+    EXPECT_CALL(visitor_, OnControlFrameHeaderData(stream_id, _, _))
+        .WillRepeatedly(WithArgs<1, 2>(
+            Invoke(this, &QuicHeadersStreamTest::SaveHeaderData)));
     if (fin) {
       EXPECT_CALL(visitor_, OnStreamEnd(stream_id));
     }
@@ -235,8 +210,11 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
   }
 
   void CheckHeaders() {
-    EXPECT_EQ(headers_, headers_handler_->decoded_block());
-    headers_handler_.reset();
+    SpdyHeaderBlock headers;
+    EXPECT_TRUE(framer_->ParseHeaderBlockInBuffer(
+        saved_header_data_.data(), saved_header_data_.length(), &headers));
+    EXPECT_EQ(headers_, headers);
+    saved_header_data_.clear();
   }
 
   Perspective perspective() { return GetParam().perspective; }
@@ -264,7 +242,6 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
   StrictMock<MockQuicSpdySession> session_;
   QuicHeadersStream* headers_stream_;
   SpdyHeaderBlock headers_;
-  std::unique_ptr<TestHeadersHandler> headers_handler_;
   string body_;
   string saved_data_;
   string saved_header_data_;
@@ -313,10 +290,9 @@ TEST_P(QuicHeadersStreamTest, WritePushPromises) {
       // Parse the outgoing data and check that it matches was was written.
       EXPECT_CALL(visitor_,
                   OnPushPromise(stream_id, promised_stream_id, kFrameComplete));
-      headers_handler_.reset(new TestHeadersHandler);
-      EXPECT_CALL(visitor_, OnHeaderFrameStart(stream_id))
-          .WillOnce(Return(headers_handler_.get()));
-      EXPECT_CALL(visitor_, OnHeaderFrameEnd(stream_id, true)).Times(1);
+      EXPECT_CALL(visitor_, OnControlFrameHeaderData(stream_id, _, _))
+          .WillRepeatedly(WithArgs<1, 2>(
+              Invoke(this, &QuicHeadersStreamTest::SaveHeaderData)));
       framer_->ProcessInput(saved_data_.data(), saved_data_.length());
       EXPECT_FALSE(framer_->HasError())
           << SpdyFramer::ErrorCodeToString(framer_->error_code());
@@ -350,9 +326,11 @@ TEST_P(QuicHeadersStreamTest, ProcessRawData) {
           headers_frame.set_fin(fin);
           frame = framer_->SerializeFrame(headers_frame);
         }
+        EXPECT_CALL(session_, OnStreamHeaders(stream_id, _))
+            .WillRepeatedly(WithArgs<1>(Invoke(
+                this, &QuicHeadersStreamTest::SaveHeaderDataStringPiece)));
         EXPECT_CALL(session_,
-                    OnStreamHeaderList(stream_id, fin, frame.size(), _))
-            .WillOnce(Invoke(this, &QuicHeadersStreamTest::SaveHeaderList));
+                    OnStreamHeadersComplete(stream_id, fin, frame.size()));
         stream_frame_.data_buffer = frame.data();
         stream_frame_.data_length = frame.size();
         headers_stream_->OnStreamFrame(stream_frame_);
@@ -379,10 +357,11 @@ TEST_P(QuicHeadersStreamTest, ProcessPushPromise) {
           .WillRepeatedly(InvokeWithoutArgs(
               this, &QuicHeadersStreamTest::TearDownLocalConnectionState));
     } else {
-      EXPECT_CALL(session_, OnPromiseHeaderList(stream_id, promised_stream_id,
-                                                frame.size(), _))
-          .WillOnce(
-              Invoke(this, &QuicHeadersStreamTest::SavePromiseHeaderList));
+      EXPECT_CALL(session_, OnPromiseHeaders(stream_id, _))
+          .WillRepeatedly(WithArgs<1>(
+              Invoke(this, &QuicHeadersStreamTest::SaveHeaderDataStringPiece)));
+      EXPECT_CALL(session_, OnPromiseHeadersComplete(
+                                stream_id, promised_stream_id, frame.size()));
     }
     stream_frame_.data_buffer = frame.data();
     stream_frame_.data_length = frame.size();
@@ -418,8 +397,9 @@ TEST_P(QuicHeadersStreamTest, EmptyHeaderHOLBlockedTime) {
       headers_frame.set_fin(fin);
       frame = framer_->SerializeFrame(headers_frame);
     }
-    EXPECT_CALL(session_, OnStreamHeaderList(stream_id, fin, frame.size(), _))
-        .Times(1);
+    EXPECT_CALL(session_, OnStreamHeaders(stream_id, _));
+    EXPECT_CALL(session_,
+                OnStreamHeadersComplete(stream_id, fin, frame.size()));
     stream_frame_.data_buffer = frame.data();
     stream_frame_.data_length = frame.size();
     headers_stream_->OnStreamFrame(stream_frame_);
@@ -461,7 +441,9 @@ TEST_P(QuicHeadersStreamTest, NonEmptyHeaderHOLBlockedTime) {
       DVLOG(1) << "make frame for stream " << stream_num << " offset "
                << stream_frames[stream_num].offset;
       stream_frame_.offset += frames[stream_num].size();
-      EXPECT_CALL(session_, OnStreamHeaderList(stream_id, fin, _, _)).Times(1);
+      EXPECT_CALL(session_, OnStreamHeaders(stream_id, _)).Times(1);
+      EXPECT_CALL(session_, OnStreamHeadersComplete(stream_id, fin, _))
+          .Times(1);
     }
   }
 
@@ -502,9 +484,11 @@ TEST_P(QuicHeadersStreamTest, ProcessLargeRawData) {
           headers_frame.set_fin(fin);
           frame = framer_->SerializeFrame(headers_frame);
         }
+        EXPECT_CALL(session_, OnStreamHeaders(stream_id, _))
+            .WillRepeatedly(WithArgs<1>(Invoke(
+                this, &QuicHeadersStreamTest::SaveHeaderDataStringPiece)));
         EXPECT_CALL(session_,
-                    OnStreamHeaderList(stream_id, fin, frame.size(), _))
-            .WillOnce(Invoke(this, &QuicHeadersStreamTest::SaveHeaderList));
+                    OnStreamHeadersComplete(stream_id, fin, frame.size()));
         stream_frame_.data_buffer = frame.data();
         stream_frame_.data_length = frame.size();
         headers_stream_->OnStreamFrame(stream_frame_);

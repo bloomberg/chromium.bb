@@ -5,7 +5,6 @@
 #include "net/spdy/buffered_spdy_framer.h"
 
 #include "base/logging.h"
-#include "base/strings/string_util.h"
 
 namespace net {
 
@@ -211,50 +210,12 @@ void BufferedSpdyFramer::OnStreamPadding(SpdyStreamId stream_id, size_t len) {
 
 SpdyHeadersHandlerInterface* BufferedSpdyFramer::OnHeaderFrameStart(
     SpdyStreamId stream_id) {
-  coalescer_.reset(new HeaderCoalescer());
-  return coalescer_.get();
+  return visitor_->OnHeaderFrameStart(stream_id);
 }
 
 void BufferedSpdyFramer::OnHeaderFrameEnd(SpdyStreamId stream_id,
                                           bool end_headers) {
-  if (coalescer_->error_seen()) {
-    visitor_->OnStreamError(stream_id,
-                            "Could not parse Spdy Control Frame Header.");
-    return;
-  }
-  DCHECK(control_frame_fields_.get());
-  switch (control_frame_fields_->type) {
-    case SYN_STREAM:
-      visitor_->OnSynStream(
-          control_frame_fields_->stream_id,
-          control_frame_fields_->associated_stream_id,
-          control_frame_fields_->priority, control_frame_fields_->fin,
-          control_frame_fields_->unidirectional, coalescer_->headers());
-      break;
-    case SYN_REPLY:
-      visitor_->OnSynReply(control_frame_fields_->stream_id,
-                           control_frame_fields_->fin, coalescer_->headers());
-      break;
-    case HEADERS:
-      visitor_->OnHeaders(control_frame_fields_->stream_id,
-                          control_frame_fields_->has_priority,
-                          control_frame_fields_->priority,
-                          control_frame_fields_->parent_stream_id,
-                          control_frame_fields_->exclusive,
-                          control_frame_fields_->fin, coalescer_->headers());
-      break;
-    case PUSH_PROMISE:
-      DCHECK_LT(SPDY3, protocol_version());
-      visitor_->OnPushPromise(control_frame_fields_->stream_id,
-                              control_frame_fields_->promised_stream_id,
-                              coalescer_->headers());
-      break;
-    default:
-      DCHECK(false) << "Unexpect control frame type: "
-                    << control_frame_fields_->type;
-      break;
-  }
-  control_frame_fields_.reset(NULL);
+  visitor_->OnHeaderFrameEnd(stream_id, end_headers);
 }
 
 void BufferedSpdyFramer::OnSettings(bool clear_persisted) {

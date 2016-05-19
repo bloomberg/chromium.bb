@@ -20,7 +20,6 @@
 #include "net/spdy/hpack/hpack_encoder.h"
 #include "net/spdy/spdy_alt_svc_wire_format.h"
 #include "net/spdy/spdy_header_block.h"
-#include "net/spdy/spdy_headers_block_parser.h"
 #include "net/spdy/spdy_protocol.h"
 
 typedef struct z_stream_s z_stream;  // Forward declaration for zlib.
@@ -128,9 +127,9 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   // Called just before processing the payload of a frame containing header
   // data. Should return an implementation of SpdyHeadersHandlerInterface that
   // will receive headers for stream |stream_id|. The caller will not take
-  // ownership of the headers handler. The same instance should remain live
-  // and be returned for all header frames comprising a logical header block
-  // (i.e. until OnHeaderFrameEnd() is called with end_headers == true).
+  // ownership of the headers handler. The same instance should be returned
+  // for all header frames comprising a logical header block (i.e. until
+  // OnHeaderFrameEnd() is called with end_headers == true).
   virtual SpdyHeadersHandlerInterface* OnHeaderFrameStart(
       SpdyStreamId stream_id) = 0;
 
@@ -339,7 +338,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
     SPDY_INVALID_DATA_FRAME_FLAGS,     // Data frame has invalid flags.
     SPDY_INVALID_CONTROL_FRAME_FLAGS,  // Control frame has invalid flags.
     SPDY_UNEXPECTED_FRAME,             // Frame received out of order.
-    SPDY_INTERNAL_FRAMER_ERROR,        // SpdyFramer was used incorrectly.
     SPDY_INVALID_CONTROL_FRAME_SIZE,   // Control frame not sized to spec
 
     LAST_ERROR,  // Must be the last entry in the enum.
@@ -570,7 +568,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   size_t header_encoder_table_size() const;
 
  protected:
-  friend class BufferedSpdyFramer;
   friend class HttpNetworkLayer;  // This is temporary for the server.
   friend class HttpNetworkTransactionTest;
   friend class HttpProxyClientSocketPoolTest;
@@ -769,9 +766,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   SpdyFramerVisitorInterface* visitor_;
   SpdyFramerDebugVisitorInterface* debug_visitor_;
-
-  std::unique_ptr<SpdyHeadersBlockParser> header_parser_;
-  SpdyHeadersHandlerInterface* header_handler_;
 
   std::string display_protocol_;
 

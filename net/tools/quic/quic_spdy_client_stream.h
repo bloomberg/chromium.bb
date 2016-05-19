@@ -40,9 +40,7 @@ class QuicSpdyClientStream : public QuicSpdyStream {
                                 const QuicHeaderList& header_list) override;
 
   // Override the base class to parse and store trailers.
-  void OnTrailingHeadersComplete(bool fin,
-                                 size_t frame_len,
-                                 const QuicHeaderList& header_list) override;
+  void OnTrailingHeadersComplete(bool fin, size_t frame_len) override;
 
   // Override the base class to handle creation of the push stream.
   void OnPromiseHeadersComplete(QuicStreamId promised_stream_id,
