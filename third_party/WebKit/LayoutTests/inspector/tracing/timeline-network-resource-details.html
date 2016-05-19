@@ -31,9 +31,10 @@ function test()
 
     function finish()
     {
+        var linkifier = new WebInspector.Linkifier();
         function printRequestDetails(request)
         {
-            return WebInspector.TimelineUIUtils.buildNetworkRequestDetails(request, model, null).then(printElement);
+            return WebInspector.TimelineUIUtils.buildNetworkRequestDetails(request, model, linkifier).then(printElement);
         }
         function printElement(element)
         {
@@ -43,7 +44,7 @@ function test()
                 var value = rows[i].lastChild.firstChild.textContent;
                 if (title === "Duration" || title === "Mime Type")
                     value = typeof value;
-                if (title === "URL")
+                if (/^file:\/\//.test(value))
                     value = /[^/]*$/.exec(value)[0];
                 InspectorTest.addResult(title + ": " + value);
             }
