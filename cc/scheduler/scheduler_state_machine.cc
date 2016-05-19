@@ -563,6 +563,7 @@ void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
          (settings_.main_frame_before_activation_enabled &&
           commit_has_no_updates));
   commit_count_++;
+  last_commit_had_no_updates_ = commit_has_no_updates;
 
   if (commit_has_no_updates || settings_.main_frame_before_activation_enabled) {
     begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_IDLE;
@@ -570,12 +571,12 @@ void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
     begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_WAITING_FOR_ACTIVATION;
   }
 
-  // Pending tree only exists if commit had updates.
-  if (!commit_has_no_updates)
+  if (!commit_has_no_updates) {
+    // Pending tree only exists if commit had updates.
     has_pending_tree_ = true;
-
-  wait_for_ready_to_draw_ =
-      !commit_has_no_updates && settings_.commit_to_active_tree;
+    pending_tree_is_ready_for_activation_ = false;
+    wait_for_ready_to_draw_ = settings_.commit_to_active_tree;
+  }
 
   // Update state related to forced draws.
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_COMMIT) {
@@ -585,27 +586,11 @@ void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
   }
 
   // Update the output surface state.
-  DCHECK_NE(output_surface_state_, OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION);
   if (output_surface_state_ == OUTPUT_SURFACE_WAITING_FOR_FIRST_COMMIT) {
-    if (has_pending_tree_) {
-      output_surface_state_ = OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION;
-    } else {
-      output_surface_state_ = OUTPUT_SURFACE_ACTIVE;
-    }
+    output_surface_state_ = has_pending_tree_
+                                ? OUTPUT_SURFACE_WAITING_FOR_FIRST_ACTIVATION
+                                : OUTPUT_SURFACE_ACTIVE;
   }
-
-  // Update state if there's no updates heading for the active tree, but we need
-  // to do a forced draw.
-  if (commit_has_no_updates &&
-      forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW) {
-    DCHECK(!has_pending_tree_);
-    needs_redraw_ = true;
-  }
-
-  // This post-commit work is common to both completed and aborted commits.
-  pending_tree_is_ready_for_activation_ = false;
-
-  last_commit_had_no_updates_ = commit_has_no_updates;
 }
 
 void SchedulerStateMachine::WillActivate() {
