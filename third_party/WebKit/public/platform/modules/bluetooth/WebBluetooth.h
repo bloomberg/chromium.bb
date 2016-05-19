@@ -15,6 +15,7 @@
 
 namespace blink {
 
+class WebBluetoothDevice;
 class WebBluetoothRemoteGATTCharacteristic;
 
 struct WebBluetoothDeviceInit;
@@ -58,7 +59,8 @@ public:
     // BluetoothRemoteGATTServer methods:
     // See https://webbluetoothchrome.github.io/web-bluetooth/#idl-def-bluetoothgattremoteserver
     virtual void connect(const WebString& deviceId,
-        WebBluetoothRemoteGATTServerConnectCallbacks*) { }
+        WebBluetoothDevice* device,
+        WebBluetoothRemoteGATTServerConnectCallbacks*) {}
     virtual void disconnect(const WebString& deviceId) = 0;
     virtual void getPrimaryService(const WebString& deviceId,
         const WebString& serviceUUID,

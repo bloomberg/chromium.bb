@@ -15,6 +15,7 @@
 #include "content/renderer/bluetooth/bluetooth_dispatcher.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/array.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothDevice.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothRemoteGATTCharacteristic.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothRemoteGATTCharacteristicInit.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothRemoteGATTService.h"
@@ -40,7 +41,12 @@ void WebBluetoothImpl::requestDevice(
 
 void WebBluetoothImpl::connect(
     const blink::WebString& device_id,
+    blink::WebBluetoothDevice* device,
     blink::WebBluetoothRemoteGATTServerConnectCallbacks* callbacks) {
+  // TODO(crbug.com/495270): After the Bluetooth Tree is implemented, there will
+  // only be one object per device. But for now we replace the previous object.
+  connected_devices_[device_id.utf8()] = device;
+
   GetWebBluetoothService().RemoteServerConnect(
       mojo::String::From(device_id),
       base::Bind(&WebBluetoothImpl::OnConnectComplete, base::Unretained(this),
@@ -48,6 +54,8 @@ void WebBluetoothImpl::connect(
 }
 
 void WebBluetoothImpl::disconnect(const blink::WebString& device_id) {
+  connected_devices_.erase(device_id.utf8());
+
   GetWebBluetoothService().RemoteServerDisconnect(
       mojo::String::From(device_id));
 }
@@ -144,6 +152,14 @@ void WebBluetoothImpl::RemoteCharacteristicValueChanged(
       base::Bind(&WebBluetoothImpl::DispatchCharacteristicValueChanged,
                  base::Unretained(this), characteristic_instance_id,
                  value.PassStorage()));
+}
+
+void WebBluetoothImpl::GattServerDisconnected(const mojo::String& device_id) {
+  auto device_iter = connected_devices_.find(device_id);
+  if (device_iter != connected_devices_.end()) {
+    device_iter->second->dispatchGattServerDisconnected();
+    connected_devices_.erase(device_iter);
+  }
 }
 
 void WebBluetoothImpl::OnConnectComplete(

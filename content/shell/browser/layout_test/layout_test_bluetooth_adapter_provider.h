@@ -182,6 +182,24 @@ class LayoutTestBluetoothAdapterProvider {
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetHeartRateAdapter();
 
+  // |DisconnectingHeartRateAdapter|
+  // Inherits from |HeartRateAdapter|
+  // Internal Structure:
+  //   - Heart Rate Device
+  //      - UUIDs:
+  //         - Generic Access UUID (0x1800)
+  //         - Heart Rate UUID (0x180d)
+  //      - Services:
+  //         - Generic Access Service - Characteristics as described in
+  //           GetGenericAccessService.
+  //         - Heart Rate Service - Characteristics as described in
+  //           GetHeartRateService.
+  //         - Request Disconnection Service:
+  //           - Request Disconnection Characteristic - A write will cause the
+  //             device to disconnect.
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetDisconnectingHeartRateAdapter();
+
   // |BlacklistTestAdapter|
   // Inherits from |EmptyAdapter|
   // Internal Structure:

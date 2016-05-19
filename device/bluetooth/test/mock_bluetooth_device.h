@@ -111,11 +111,14 @@ class MockBluetoothDevice : public BluetoothDevice {
   BluetoothRemoteGattService* GetMockService(
       const std::string& identifier) const;
 
+  void SetConnected(bool connected) { connected_ = connected; }
+
  private:
   uint32_t bluetooth_class_;
   std::string name_;
   std::string address_;
   BluetoothDevice::UUIDList uuids_;
+  bool connected_;
 
   ScopedVector<MockBluetoothGattService> mock_services_;
 };

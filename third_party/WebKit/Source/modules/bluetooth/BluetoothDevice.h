@@ -10,6 +10,7 @@
 #include "modules/EventTargetModules.h"
 #include "modules/bluetooth/BluetoothRemoteGATTServer.h"
 #include "platform/heap/Heap.h"
+#include "public/platform/modules/bluetooth/WebBluetoothDevice.h"
 #include "public/platform/modules/bluetooth/WebBluetoothDeviceInit.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -30,7 +31,8 @@ class ScriptState;
 // CallbackPromiseAdapter class comments.
 class BluetoothDevice final
     : public EventTargetWithInlineData
-    , public ActiveDOMObject {
+    , public ActiveDOMObject
+    , public WebBluetoothDevice {
     USING_PRE_FINALIZER(BluetoothDevice, dispose);
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(BluetoothDevice);
@@ -64,6 +66,9 @@ public:
     // EventTarget methods:
     const AtomicString& interfaceName() const override;
     ExecutionContext* getExecutionContext() const override;
+
+    // WebBluetoothDevice interface:
+    void dispatchGattServerDisconnected() override;
 
     // Interface required by Garbage Collection:
     DECLARE_VIRTUAL_TRACE();

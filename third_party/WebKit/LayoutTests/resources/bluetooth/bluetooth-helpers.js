@@ -3,9 +3,12 @@
 // Bluetooth UUID constants:
 // Services:
 var blacklist_test_service_uuid = "611c954a-263b-4f4a-aab6-01ddb953f985";
+var request_disconnection_service_uuid = "01d7d889-7451-419f-aeb8-d65e7b9277af";
 // Characteristics:
 var blacklist_exclude_reads_characteristic_uuid =
   "bad1c9a2-9a5b-4015-8b60-1579bbbf2135";
+var request_disconnection_characteristic_uuid =
+  "01d7d88a-7451-419f-aeb8-d65e7b9277af";
 
 // Sometimes we need to test that using either the name, alias, or UUID
 // produces the same result. The following objects help us do that.
@@ -214,6 +217,16 @@ function runGarbageCollection()
         GCController.collect();
         setTimeout(resolve, 0);
       });
+}
+
+function eventPromise(target, type, options) {
+  return new Promise(resolve => {
+    let wrapper = function(event) {
+      target.removeEventListener(type, wrapper);
+      resolve(event);
+    };
+    target.addEventListener(type, wrapper, options);
+  });
 }
 
 // Creates |num_listeners| promises. Each adds an event listener

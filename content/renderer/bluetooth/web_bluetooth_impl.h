@@ -48,6 +48,7 @@ class CONTENT_EXPORT WebBluetoothImpl
       blink::WebBluetoothRequestDeviceCallbacks* callbacks) override;
   void connect(
       const blink::WebString& device_id,
+      blink::WebBluetoothDevice* device,
       blink::WebBluetoothRemoteGATTServerConnectCallbacks* callbacks) override;
   void disconnect(const blink::WebString& device_id) override;
   void getPrimaryService(
@@ -83,6 +84,7 @@ class CONTENT_EXPORT WebBluetoothImpl
   void RemoteCharacteristicValueChanged(
       const mojo::String& characteristic_instance_id,
       mojo::Array<uint8_t> value) override;
+  void GattServerDisconnected(const mojo::String& device_id) override;
 
   // Callbacks for WebBluetoothService calls:
   void OnConnectComplete(
@@ -130,6 +132,12 @@ class CONTENT_EXPORT WebBluetoothImpl
   // Keeps track of what characteristics have listeners.
   std::unordered_map<std::string, blink::WebBluetoothRemoteGATTCharacteristic*>
       active_characteristics_;
+
+  // Map of device_ids to WebBluetoothDevices. Added in connect() and removed in
+  // disconnect(). This means a device may not actually be connected while in
+  // this map, but that it will definitely be removed when the page navigates.
+  std::unordered_map<std::string, blink::WebBluetoothDevice*>
+      connected_devices_;
 
   // Binding associated with |web_bluetooth_service_|.
   mojo::AssociatedBinding<blink::mojom::WebBluetoothServiceClient> binding_;

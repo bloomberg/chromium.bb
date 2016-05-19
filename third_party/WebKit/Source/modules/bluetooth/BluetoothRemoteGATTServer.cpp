@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/events/Event.h"
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothRemoteGATTService.h"
 #include "modules/bluetooth/BluetoothSupplement.h"
@@ -67,15 +68,18 @@ ScriptPromise BluetoothRemoteGATTServer::connect(ScriptState* scriptState)
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    webbluetooth->connect(device()->id(), new ConnectCallback(device(), resolver));
+    webbluetooth->connect(device()->id(), device(), new ConnectCallback(device(), resolver));
     return promise;
 }
 
 void BluetoothRemoteGATTServer::disconnect(ScriptState* scriptState)
 {
+    if (!m_connected)
+        return;
     m_connected = false;
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
     webbluetooth->disconnect(device()->id());
+    device()->dispatchEvent(Event::createBubble(EventTypeNames::gattserverdisconnected));
 }
 
 ScriptPromise BluetoothRemoteGATTServer::getPrimaryService(ScriptState* scriptState, const StringOrUnsignedLong& service, ExceptionState& exceptionState)

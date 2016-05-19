@@ -1320,6 +1320,10 @@ crbug.com/606649 fast/dom/gc-dom-tree-lifetime.html [ Pass Timeout ]
 
 # TODO(jlebel): Remove when methods are implemented.
 crbug.com/609065 [ Mac ] bluetooth/characteristicProperties.html [ Skip ]
+crbug.com/609064 [ Mac ] bluetooth/connect/connect-disconnected-connect.html [ Skip ]
+crbug.com/609064 [ Mac ] bluetooth/gattserverdisconnected-event/disconnected.html [ Skip ]
+crbug.com/609064 [ Mac ] bluetooth/gattserverdisconnected-event/disconnected_gc.html [ Skip ]
+crbug.com/609064 [ Mac ] bluetooth/gattserverdisconnected-event/one-event-per-disconnection.html [ Skip ]
 crbug.com/609064 [ Mac ] bluetooth/getCharacteristic/blacklisted-characteristic.html [ Skip ]
 crbug.com/609064 [ Mac ] bluetooth/getCharacteristic/characteristic-found.html [ Skip ]
 crbug.com/609064 [ Mac ] bluetooth/getCharacteristic/characteristic-not-found.html [ Skip ]

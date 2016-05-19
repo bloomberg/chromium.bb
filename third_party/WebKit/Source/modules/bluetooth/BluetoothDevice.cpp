@@ -63,6 +63,14 @@ ExecutionContext* BluetoothDevice::getExecutionContext() const
     return ActiveDOMObject::getExecutionContext();
 }
 
+void BluetoothDevice::dispatchGattServerDisconnected()
+{
+    if (m_gatt->connected()) {
+        m_gatt->setConnected(false);
+        dispatchEvent(Event::createBubble(EventTypeNames::gattserverdisconnected));
+    }
+}
+
 DEFINE_TRACE(BluetoothDevice)
 {
     EventTargetWithInlineData::trace(visitor);

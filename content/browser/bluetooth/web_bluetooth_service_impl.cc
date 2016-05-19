@@ -209,8 +209,9 @@ void WebBluetoothServiceImpl::DeviceChanged(device::BluetoothAdapter* adapter,
         connected_devices_->CloseConnectionToDeviceWithAddress(
             device->GetAddress());
     if (!device_id.empty()) {
-      // TODO(ortuno): Send event to client.
-      // http://crbug.com/581855
+      if (client_) {
+        client_->GattServerDisconnected(device_id);
+      }
     }
   }
 }

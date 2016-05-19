@@ -22,7 +22,8 @@ MockBluetoothDevice::MockBluetoothDevice(MockBluetoothAdapter* adapter,
     : BluetoothDevice(adapter),
       bluetooth_class_(bluetooth_class),
       name_(name),
-      address_(address) {
+      address_(address),
+      connected_(connected) {
   ON_CALL(*this, GetBluetoothClass())
       .WillByDefault(testing::Return(bluetooth_class_));
   ON_CALL(*this, GetDeviceName())
@@ -44,7 +45,7 @@ MockBluetoothDevice::MockBluetoothDevice(MockBluetoothAdapter* adapter,
   ON_CALL(*this, IsPaired())
       .WillByDefault(testing::Return(paired));
   ON_CALL(*this, IsConnected())
-      .WillByDefault(testing::Return(connected));
+      .WillByDefault(testing::ReturnPointee(&connected_));
   ON_CALL(*this, IsConnectable())
       .WillByDefault(testing::Return(false));
   ON_CALL(*this, IsConnecting())

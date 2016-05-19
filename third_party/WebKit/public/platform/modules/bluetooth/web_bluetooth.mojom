@@ -160,4 +160,5 @@ interface WebBluetoothService {
 interface WebBluetoothServiceClient {
   RemoteCharacteristicValueChanged(string characteristic_instance_id,
                                    array<uint8> value);
+  GattServerDisconnected(string device_id);
 };
