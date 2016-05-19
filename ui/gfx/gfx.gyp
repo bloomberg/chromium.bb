@@ -130,7 +130,6 @@
         'android/gfx_jni_registrar.h',
         'android/java_bitmap.cc',
         'android/java_bitmap.h',
-        'android/screen_android.cc',
         'android/shared_device_display_info.cc',
         'android/shared_device_display_info.h',
         'android/view_configuration.cc',
