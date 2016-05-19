@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/bindings/lib/string_serialization.h"
 #include "mojo/public/cpp/bindings/string_traits_standard.h"
 #include "mojo/public/cpp/bindings/string_traits_stl.h"
+#include "mojo/public/cpp/bindings/string_traits_string16.h"
 #include "mojo/public/cpp/bindings/string_traits_string_piece.h"
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_LIB_SERIALIZATION_H_
