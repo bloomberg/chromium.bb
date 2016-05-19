@@ -11,9 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/threading/thread_checker.h"
-#include "base/trace_event/memory_allocator_dump.h"
-#include "base/trace_event/memory_dump_provider.h"
 #include "cc/base/cc_export.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/playback/recording_source.h"
@@ -25,8 +22,7 @@ class DisplayItemList;
 class DrawImage;
 class ImageDecodeController;
 
-class CC_EXPORT RasterSource : public base::trace_event::MemoryDumpProvider,
-                               public base::RefCountedThreadSafe<RasterSource> {
+class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
  public:
   struct CC_EXPORT PlaybackSettings {
     PlaybackSettings();
@@ -120,16 +116,12 @@ class CC_EXPORT RasterSource : public base::trace_event::MemoryDumpProvider,
   // of the raster source, since the raster source will access it during raster.
   void SetImageDecodeController(ImageDecodeController* image_decode_controller);
 
-  // base::trace_event::MemoryDumpProvider implementation
-  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
-                    base::trace_event::ProcessMemoryDump* pmd) override;
-
  protected:
   friend class base::RefCountedThreadSafe<RasterSource>;
 
   RasterSource(const RecordingSource* other, bool can_use_lcd_text);
   RasterSource(const RasterSource* other, bool can_use_lcd_text);
-  ~RasterSource() override;
+  virtual ~RasterSource();
 
   // These members are const as this raster source may be in use on another
   // thread and so should not be touched after construction.
@@ -163,9 +155,6 @@ class CC_EXPORT RasterSource : public base::trace_event::MemoryDumpProvider,
                                   const gfx::Rect& canvas_bitmap_rect,
                                   const gfx::Rect& canvas_playback_rect,
                                   float contents_scale) const;
-
-  // Used to ensure that memory dump logic always happens on the same thread.
-  base::ThreadChecker memory_dump_thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterSource);
 };
