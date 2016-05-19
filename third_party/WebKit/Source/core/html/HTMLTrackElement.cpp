@@ -34,11 +34,12 @@
 #include "core/html/track/LoadableTextTrack.h"
 #include "platform/Logging.h"
 
+#define TRACK_LOG_LEVEL 3
+
 namespace blink {
 
 using namespace HTMLNames;
 
-#if !LOG_DISABLED
 static String urlForLoggingTrack(const KURL& url)
 {
     static const unsigned maximumURLLengthForLogging = 128;
@@ -47,13 +48,12 @@ static String urlForLoggingTrack(const KURL& url)
         return url.getString();
     return url.getString().substring(0, maximumURLLengthForLogging) + "...";
 }
-#endif
 
 inline HTMLTrackElement::HTMLTrackElement(Document& document)
     : HTMLElement(trackTag, document)
     , m_loadTimer(this, &HTMLTrackElement::loadTimerFired)
 {
-    WTF_LOG(Media, "HTMLTrackElement::HTMLTrackElement - %p", this);
+    DVLOG(TRACK_LOG_LEVEL) << "HTMLTrackElement - " << (void*)this;
 }
 
 DEFINE_NODE_FACTORY(HTMLTrackElement)
@@ -64,7 +64,7 @@ HTMLTrackElement::~HTMLTrackElement()
 
 Node::InsertionNotificationRequest HTMLTrackElement::insertedInto(ContainerNode* insertionPoint)
 {
-    WTF_LOG(Media, "HTMLTrackElement::insertedInto");
+    DVLOG(TRACK_LOG_LEVEL) << "insertedInto";
 
     // Since we've moved to a new parent, we may now be able to load.
     scheduleLoad();
@@ -145,7 +145,7 @@ bool HTMLTrackElement::isURLAttribute(const Attribute& attribute) const
 
 void HTMLTrackElement::scheduleLoad()
 {
-    WTF_LOG(Media, "HTMLTrackElement::scheduleLoad");
+    DVLOG(TRACK_LOG_LEVEL) << "scheduleLoad";
 
     // 1. If another occurrence of this algorithm is already running for this text track and its track element,
     // abort these steps, letting that other algorithm take care of this element.
@@ -170,7 +170,7 @@ void HTMLTrackElement::scheduleLoad()
 
 void HTMLTrackElement::loadTimerFired(Timer<HTMLTrackElement>*)
 {
-    WTF_LOG(Media, "HTMLTrackElement::loadTimerFired");
+    DVLOG(TRACK_LOG_LEVEL) << "loadTimerFired";
 
     // 6. [X] Set the text track readiness state to loading.
     setReadyState(LOADING);
@@ -231,7 +231,7 @@ bool HTMLTrackElement::canLoadUrl(const KURL& url)
         return false;
 
     if (!document().contentSecurityPolicy()->allowMediaFromSource(url)) {
-        WTF_LOG(Media, "HTMLTrackElement::canLoadUrl(%s) -> rejected by Content Security Policy", urlForLoggingTrack(url).utf8().data());
+        DVLOG(TRACK_LOG_LEVEL) << "canLoadUrl(" << urlForLoggingTrack(url) << ") -> rejected by Content Security Policy";
         return false;
     }
 

@@ -138,8 +138,6 @@ void TextTrackLoader::newRegionsParsed()
 
 void TextTrackLoader::fileFailedToParse()
 {
-    WTF_LOG(Media, "TextTrackLoader::fileFailedToParse");
-
     m_state = Failed;
 
     if (!m_cueLoadTimer.isActive())

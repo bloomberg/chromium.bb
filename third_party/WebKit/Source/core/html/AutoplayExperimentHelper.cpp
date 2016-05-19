@@ -39,10 +39,7 @@ AutoplayExperimentHelper::AutoplayExperimentHelper(Client* client)
 {
     m_mode = fromString(this->client().autoplayExperimentMode());
 
-    if (isExperimentEnabled()) {
-        WTF_LOG(Media, "HTMLMediaElement: autoplay experiment set to %d",
-            m_mode);
-    }
+    DVLOG_IF(3, isExperimentEnabled()) << "autoplay experiment set to " << m_mode;
 }
 
 AutoplayExperimentHelper::~AutoplayExperimentHelper()

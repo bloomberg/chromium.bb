@@ -44,6 +44,8 @@
 #include "wtf/MathExtras.h"
 #include "wtf/text/StringBuilder.h"
 
+#define VTT_LOG_LEVEL 3
+
 namespace blink {
 
 // The following values default values are defined within the WebVTT Regions Spec.
@@ -254,7 +256,7 @@ void VTTRegion::parseSettingValue(RegionSetting setting, VTTScanner& input)
         if (VTTParser::parseFloatPercentageValue(input, floatWidth) && parsedEntireRun(input, valueRun))
             m_width = floatWidth;
         else
-            WTF_LOG(Media, "VTTRegion::parseSettingValue, invalid Width");
+            DVLOG(VTT_LOG_LEVEL) << "parseSettingValue, invalid Width";
         break;
     }
     case Height: {
@@ -262,7 +264,7 @@ void VTTRegion::parseSettingValue(RegionSetting setting, VTTScanner& input)
         if (input.scanDigits(number) && parsedEntireRun(input, valueRun))
             m_heightInLines = number;
         else
-            WTF_LOG(Media, "VTTRegion::parseSettingValue, invalid Height");
+            DVLOG(VTT_LOG_LEVEL) << "parseSettingValue, invalid Height";
         break;
     }
     case RegionAnchor: {
@@ -270,7 +272,7 @@ void VTTRegion::parseSettingValue(RegionSetting setting, VTTScanner& input)
         if (VTTParser::parseFloatPercentageValuePair(input, ',', anchor) && parsedEntireRun(input, valueRun))
             m_regionAnchor = anchor;
         else
-            WTF_LOG(Media, "VTTRegion::parseSettingValue, invalid RegionAnchor");
+            DVLOG(VTT_LOG_LEVEL) << "parseSettingValue, invalid RegionAnchor";
         break;
     }
     case ViewportAnchor: {
@@ -278,14 +280,14 @@ void VTTRegion::parseSettingValue(RegionSetting setting, VTTScanner& input)
         if (VTTParser::parseFloatPercentageValuePair(input, ',', anchor) && parsedEntireRun(input, valueRun))
             m_viewportAnchor = anchor;
         else
-            WTF_LOG(Media, "VTTRegion::parseSettingValue, invalid ViewportAnchor");
+            DVLOG(VTT_LOG_LEVEL) << "parseSettingValue, invalid ViewportAnchor";
         break;
     }
     case Scroll:
         if (input.scanRun(valueRun, scrollUpValueKeyword))
             m_scroll = true;
         else
-            WTF_LOG(Media, "VTTRegion::parseSettingValue, invalid Scroll");
+            DVLOG(VTT_LOG_LEVEL) << "parseSettingValue, invalid Scroll";
         break;
     case None:
         break;
@@ -330,7 +332,7 @@ HTMLDivElement* VTTRegion::getDisplayTree(Document& document)
 
 void VTTRegion::willRemoveVTTCueBox(VTTCueBox* box)
 {
-    WTF_LOG(Media, "VTTRegion::willRemoveVTTCueBox");
+    DVLOG(VTT_LOG_LEVEL) << "willRemoveVTTCueBox";
     ASSERT(m_cueContainer->contains(box));
 
     double boxHeight = box->getBoundingClientRect()->bottom() - box->getBoundingClientRect()->top();
@@ -354,7 +356,7 @@ void VTTRegion::appendVTTCueBox(VTTCueBox* displayBox)
 
 void VTTRegion::displayLastVTTCueBox()
 {
-    WTF_LOG(Media, "VTTRegion::displayLastVTTCueBox");
+    DVLOG(VTT_LOG_LEVEL) << "displayLastVTTCueBox";
     ASSERT(m_cueContainer);
 
     // FIXME: This should not be causing recalc styles in a loop to set the "top" css
@@ -443,7 +445,7 @@ void VTTRegion::prepareRegionDisplayTree()
 
 void VTTRegion::startTimer()
 {
-    WTF_LOG(Media, "VTTRegion::startTimer");
+    DVLOG(VTT_LOG_LEVEL) << "startTimer";
 
     if (m_scrollTimer.isActive())
         return;
@@ -454,7 +456,7 @@ void VTTRegion::startTimer()
 
 void VTTRegion::stopTimer()
 {
-    WTF_LOG(Media, "VTTRegion::stopTimer");
+    DVLOG(VTT_LOG_LEVEL) << "stopTimer";
 
     if (m_scrollTimer.isActive())
         m_scrollTimer.stop();
@@ -462,7 +464,7 @@ void VTTRegion::stopTimer()
 
 void VTTRegion::scrollTimerFired(Timer<VTTRegion>*)
 {
-    WTF_LOG(Media, "VTTRegion::scrollTimerFired");
+    DVLOG(VTT_LOG_LEVEL) << "scrollTimerFired";
 
     stopTimer();
     displayLastVTTCueBox();
