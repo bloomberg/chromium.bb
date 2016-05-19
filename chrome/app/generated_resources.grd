@@ -14904,6 +14904,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         Enable App Link.
       </message>
     </if>
+    <message name="IDS_FLAGS_OPTIMIZE_LOADING_IPC_FOR_SMALL_RESOURCES_NAME" desc="Title for the flag to enable a loading IPC optimization for small resources.">
+      Enable loading IPC optimization for small resources.
+    </message>
+    <message name="IDS_FLAGS_OPTIMIZE_LOADING_IPC_FOR_SMALL_RESOURCES_DESCRIPTION" desc="Description for the flag to enable improved IPC">
+      Enable loading IPC optimization for small resources.
+    </message>
     </messages>
   </release>
 </grit>

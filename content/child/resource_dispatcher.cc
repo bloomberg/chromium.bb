@@ -229,7 +229,8 @@ void ResourceDispatcher::OnReceivedInlinedDataChunk(
     int encoded_data_length) {
   TRACE_EVENT0("loader", "ResourceDispatcher::OnReceivedInlinedDataChunk");
   DCHECK(!data.empty());
-  DCHECK(base::FeatureList::IsEnabled(features::kOptimizeIPCForSmallResource));
+  DCHECK(base::FeatureList::IsEnabled(
+      features::kOptimizeLoadingIPCForSmallResources));
 
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info || data.empty())

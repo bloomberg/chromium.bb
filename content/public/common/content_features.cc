@@ -61,8 +61,8 @@ const base::Feature kNonValidatingReloadOnRefreshContent{
 
 // An experiment to optimize resource loading IPC for small resources.
 // http://crbug.com/580928
-const base::Feature kOptimizeIPCForSmallResource{
-    "OptimizeForSmallResource",
+const base::Feature kOptimizeLoadingIPCForSmallResources{
+    "OptimizeLoadingIPCForSmallResources",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Origin Trials for controlling access to feature/API experiments.

@@ -77680,6 +77680,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1870961970" label="enable-filemanager-mtp"/>
   <int value="-1869845022" label="force-show-update-menu-item"/>
   <int value="-1847835522" label="disable-touch-adjustment"/>
+  <int value="-1847776781"
+      label="enable-loading-ipc-optimization-for-small-resources"/>
   <int value="-1838482444" label="disable-settings-window"/>
   <int value="-1835975804" label="disable-offline-auto-reload"/>
   <int value="-1833149810" label="enable-accessibility-tab-switcher"/>

@@ -46,7 +46,7 @@ static int kMaxAllocationSize = 1024 * 32;
 // The interval for calls to ReportUploadProgress.
 static int kUploadProgressIntervalMsec = 10;
 
-// Used when kOptimizeIPCForSmallResource is enabled.
+// Used when kOptimizeLoadingIPCForSmallResources is enabled.
 // Small resource typically issues two Read call: one for the content itself
 // and another for getting zero response to detect EOF.
 // Inline these two into the IPC message to avoid allocating an expensive
@@ -74,7 +74,7 @@ void InitializeResourceBufferConstants() {
 
 }  // namespace
 
-// Used when kOptimizeIPCForSmallResource is enabled.
+// Used when kOptimizeLoadingIPCForSmallResources is enabled.
 // The instance hooks the buffer allocation of AsyncResourceHandler, and
 // determine if we should use SharedMemory or should inline the data into
 // the IPC message.
@@ -103,7 +103,8 @@ class AsyncResourceHandler::InliningHelper {
     // fall back to the regular resource loading path in that case.
     if (!inlining_applicable_ ||
         num_allocation_ > kNumLeadingChunk ||
-        !base::FeatureList::IsEnabled(features::kOptimizeIPCForSmallResource)) {
+        !base::FeatureList::IsEnabled(
+            features::kOptimizeLoadingIPCForSmallResources)) {
       return false;
     }
 

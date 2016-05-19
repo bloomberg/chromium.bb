@@ -969,10 +969,10 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
       case TestConfig::kOptimizeIPCForSmallResourceEnabled: {
         std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
         feature_list->InitializeFromCommandLine(
-            features::kOptimizeIPCForSmallResource.name, std::string());
+            features::kOptimizeLoadingIPCForSmallResources.name, std::string());
         base::FeatureList::SetInstance(std::move(feature_list));
         ASSERT_TRUE(base::FeatureList::IsEnabled(
-            features::kOptimizeIPCForSmallResource));
+            features::kOptimizeLoadingIPCForSmallResources));
         break;
       }
     }
@@ -1363,7 +1363,8 @@ void CheckSuccessfulRequestWithErrorCode(
     const std::string& reference_data,
     int expected_error) {
   ASSERT_LT(2U, messages.size());
-  if (base::FeatureList::IsEnabled(features::kOptimizeIPCForSmallResource) &&
+  if (base::FeatureList::IsEnabled(
+          features::kOptimizeLoadingIPCForSmallResources) &&
       messages[1].type() == ResourceMsg_InlinedDataChunkReceived::ID) {
     CheckSuccessfulRequestWithErrorCodeForInlinedCase(
         messages, reference_data, expected_error);
