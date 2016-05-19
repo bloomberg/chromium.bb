@@ -19,6 +19,7 @@
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
@@ -48,7 +49,7 @@ class MockImageFetcher : public ImageFetcher {
   virtual ~MockImageFetcher() {}
   MOCK_METHOD3(StartOrQueueNetworkRequest,
                void(const GURL&, const GURL&,
-                    base::Callback<void(const GURL&, const SkBitmap*)>));
+                    base::Callback<void(const GURL&, const gfx::Image&)>));
   MOCK_METHOD1(SetImageFetcherDelegate, void(ImageFetcherDelegate*));
 };
 

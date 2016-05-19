@@ -13,8 +13,11 @@
 #include "base/macros.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "components/image_fetcher/image_fetcher.h"
-#include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
+
+namespace gfx {
+class Image;
+}
 
 namespace net {
 class URLRequestContextGetter;
@@ -22,8 +25,7 @@ class URLRequestContextGetter;
 
 namespace suggestions {
 
-// A class used to fetch server images. It can be called from any thread and the
-// callback will be called on the thread which initiated the fetch.
+// image_fetcher::ImageFetcher implementation.
 class ImageFetcherImpl : public image_fetcher::ImageFetcher,
                          public chrome::BitmapFetcherDelegate {
  public:
@@ -36,13 +38,13 @@ class ImageFetcherImpl : public image_fetcher::ImageFetcher,
   void StartOrQueueNetworkRequest(
       const GURL& url,
       const GURL& image_url,
-      base::Callback<void(const GURL&, const SkBitmap*)> callback) override;
+      base::Callback<void(const GURL&, const gfx::Image&)> callback) override;
 
  private:
   // Inherited from BitmapFetcherDelegate.
   void OnFetchComplete(const GURL& image_url, const SkBitmap* bitmap) override;
 
-  typedef std::vector<base::Callback<void(const GURL&, const SkBitmap*)> >
+  typedef std::vector<base::Callback<void(const GURL&, const gfx::Image&)> >
       CallbackVector;
 
   // State related to an image fetch (associated website url, image_url,

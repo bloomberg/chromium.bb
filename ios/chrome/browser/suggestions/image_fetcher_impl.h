@@ -13,14 +13,17 @@
 
 class GURL;
 class ImageFetcher;
-class SkBitmap;
-
-namespace image_fetcher {
-class ImageFetcherDelegate;
-}
 
 namespace base {
 class SequencedWorkerPool;
+}
+
+namespace gfx {
+class Image;
+}
+
+namespace image_fetcher {
+class ImageFetcherDelegate;
 }
 
 namespace net {
@@ -42,7 +45,7 @@ class ImageFetcherImpl : public image_fetcher::ImageFetcher {
   void StartOrQueueNetworkRequest(
       const GURL& url,
       const GURL& image_url,
-      base::Callback<void(const GURL&, const SkBitmap*)> callback) override;
+      base::Callback<void(const GURL&, const gfx::Image&)> callback) override;
 
  private:
   std::unique_ptr<::ImageFetcher> imageFetcher_;

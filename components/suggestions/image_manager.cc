@@ -12,6 +12,7 @@
 #include "base/task_runner_util.h"
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/suggestions/image_encoder.h"
+#include "ui/gfx/image/image.h"
 
 using leveldb_proto::ProtoDatabase;
 
@@ -27,6 +28,19 @@ std::unique_ptr<SkBitmap> DecodeImage(
     scoped_refptr<base::RefCountedMemory> encoded_data) {
   return suggestions::DecodeJPEGToSkBitmap(encoded_data->front(),
                                            encoded_data->size());
+}
+
+// Wraps an ImageManager callback so that it can be used with the ImageFetcher.
+// ImageManager callbacks expect SkBitmaps while ImageFetcher callbacks expect
+// gfx::Images. The image can be empty. In this case it is mapped to nullptr.
+void WrapImageManagerCallback(
+    const base::Callback<void(const GURL&, const SkBitmap*)>& wrapped_callback,
+    const GURL& url,
+    const gfx::Image& image) {
+  const SkBitmap* bitmap = nullptr;
+  if (!image.IsEmpty())
+    bitmap = image.ToSkBitmap();
+  wrapped_callback.Run(url, bitmap);
 }
 
 }  // namespace
@@ -83,7 +97,7 @@ void ImageManager::GetImageForURL(
   // NULL since there is no associated image for this |url|.
   GURL image_url;
   if (!GetImageURL(url, &image_url)) {
-    callback.Run(url, NULL);
+    callback.Run(url, nullptr);
     return;
   }
 
@@ -98,9 +112,10 @@ void ImageManager::GetImageForURL(
   ServeFromCacheOrNetwork(url, image_url, callback);
 }
 
-void ImageManager::OnImageFetched(const GURL& url, const SkBitmap* bitmap) {
-  if (bitmap)  // |bitmap| can be nullptr if image fetch was unsuccessful.
-    SaveImage(url, *bitmap);
+void ImageManager::OnImageFetched(const GURL& url, const gfx::Image& image) {
+  // |image| can be empty if image fetch was unsuccessful.
+  if (!image.IsEmpty())
+    SaveImage(url, *image.ToSkBitmap());
 }
 
 bool ImageManager::GetImageURL(const GURL& url, GURL* image_url) {
@@ -136,7 +151,8 @@ void ImageManager::OnCacheImageDecoded(
   if (bitmap.get()) {
     callback.Run(url, bitmap.get());
   } else {
-    image_fetcher_->StartOrQueueNetworkRequest(url, image_url, callback);
+    image_fetcher_->StartOrQueueNetworkRequest(
+        url, image_url, base::Bind(&WrapImageManagerCallback, callback));
   }
 }
 
@@ -162,7 +178,8 @@ void ImageManager::ServeFromCacheOrNetwork(
         base::Bind(&ImageManager::OnCacheImageDecoded,
                    weak_ptr_factory_.GetWeakPtr(), url, image_url, callback));
   } else {
-    image_fetcher_->StartOrQueueNetworkRequest(url, image_url, callback);
+    image_fetcher_->StartOrQueueNetworkRequest(
+        url, image_url, base::Bind(&WrapImageManagerCallback, callback));
   }
 }
 

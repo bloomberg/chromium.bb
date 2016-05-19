@@ -19,8 +19,8 @@
 #include "components/ntp_snippets/ntp_snippet.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
 #include "jni/SnippetsBridge_jni.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/image/image.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
@@ -177,12 +177,12 @@ void NTPSnippetsBridge::NTPSnippetsServiceCleared() {
 
 void NTPSnippetsBridge::OnImageFetched(ScopedJavaGlobalRef<jobject> callback,
                                        const std::string& snippet_id,
-                                       const SkBitmap* bitmap) {
+                                       const gfx::Image& image) {
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jobject> j_bitmap;
-  if (bitmap && !bitmap->isNull())
-    j_bitmap = gfx::ConvertToJavaBitmap(bitmap);
+  if (!image.IsEmpty())
+    j_bitmap = gfx::ConvertToJavaBitmap(image.ToSkBitmap());
 
   Java_FetchSnippetImageCallback_onSnippetImageAvailable(env, callback.obj(),
                                                          j_bitmap.obj());

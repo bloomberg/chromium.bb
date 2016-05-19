@@ -27,6 +27,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "components/variations/variations_associated_data.h"
+#include "ui/gfx/image/image.h"
 
 using image_fetcher::ImageFetcher;
 using suggestions::ChromeSuggestion;
@@ -173,8 +174,8 @@ void InsertAllIDs(const NTPSnippet::PtrVector& snippets,
 void WrapImageFetchedCallback(
     const NTPSnippetsService::ImageFetchedCallback& callback,
     const GURL& snippet_id_url,
-    const SkBitmap* bitmap) {
-  callback.Run(snippet_id_url.spec(), bitmap);
+    const gfx::Image& image) {
+  callback.Run(snippet_id_url.spec(), image);
 }
 
 }  // namespace
@@ -280,7 +281,8 @@ void NTPSnippetsService::FetchSnippetImage(
                      return snippet->id() == snippet_id;
                    });
   if (it == snippets_.end()) {
-    callback.Run(snippet_id, nullptr);
+    gfx::Image empty_image;
+    callback.Run(snippet_id, empty_image);
     return;
   }
 

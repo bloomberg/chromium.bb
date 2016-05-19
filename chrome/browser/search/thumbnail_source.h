@@ -21,6 +21,10 @@ namespace base {
 class RefCountedMemory;
 }
 
+namespace gfx {
+class Image;
+}
+
 namespace image_fetcher {
 class ImageFetcher;
 }
@@ -61,7 +65,7 @@ class ThumbnailSource : public content::URLDataSource {
   void SendFetchedUrlImage(
       const content::URLDataSource::GotDataCallback& callback,
       const GURL& url,
-      const SkBitmap* bitmap);
+      const gfx::Image& image);
 
   // Raw PNG representation of the thumbnail to show when the thumbnail
   // database doesn't have a thumbnail for a webpage.

@@ -11,6 +11,7 @@
 #include "ios/chrome/browser/net/image_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "skia/ext/skia_utils_ios.h"
+#include "ui/gfx/image/image.h"
 
 namespace suggestions {
 
@@ -33,11 +34,12 @@ void ImageFetcherImpl::SetImageFetcherDelegate(
 void ImageFetcherImpl::StartOrQueueNetworkRequest(
     const GURL& url,
     const GURL& image_url,
-    base::Callback<void(const GURL&, const SkBitmap*)> callback) {
+    base::Callback<void(const GURL&, const gfx::Image&)> callback) {
   if (image_url.is_empty()) {
-    callback.Run(url, nullptr);
+    gfx::Image empty_image;
+    callback.Run(url, empty_image);
     if (delegate_) {
-      delegate_->OnImageFetched(url, nullptr);
+      delegate_->OnImageFetched(url, empty_image);
     }
     return;
   }
@@ -47,20 +49,20 @@ void ImageFetcherImpl::StartOrQueueNetworkRequest(
       ^(const GURL& original_url, int response_code, NSData* data) {
       if (data) {
         // Most likely always returns 1x images.
-        UIImage* image = [UIImage imageWithData:data scale:1];
-        if (image) {
-          SkBitmap bitmap =
-              skia::CGImageToSkBitmap(image.CGImage, [image size], YES);
-          callback.Run(page_url, &bitmap);
+        UIImage* ui_image = [UIImage imageWithData:data scale:1];
+        if (ui_image) {
+          gfx::Image gfx_image(ui_image);
+          callback.Run(page_url, gfx_image);
           if (delegate_) {
-            delegate_->OnImageFetched(page_url, &bitmap);
+            delegate_->OnImageFetched(page_url, gfx_image);
           }
           return;
         }
       }
-      callback.Run(page_url, nullptr);
+      gfx::Image empty_image;
+      callback.Run(page_url, empty_image);
       if (delegate_) {
-        delegate_->OnImageFetched(page_url, nullptr);
+        delegate_->OnImageFetched(page_url, empty_image);
       }
   };
   imageFetcher_->StartDownload(image_url, fetcher_callback);

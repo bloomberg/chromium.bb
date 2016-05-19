@@ -14,7 +14,9 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
 
-class SkBitmap;
+namespace gfx {
+class Image;
+}
 
 // The C++ counterpart to SnippetsBridge.java. Enables Java code to access
 // the list of snippets to show on the NTP
@@ -56,7 +58,7 @@ class NTPSnippetsBridge : public ntp_snippets::NTPSnippetsServiceObserver {
 
   void OnImageFetched(base::android::ScopedJavaGlobalRef<jobject> callback,
                       const std::string& snippet_id,
-                      const SkBitmap* bitmap);
+                      const gfx::Image& image);
 
   ntp_snippets::NTPSnippetsService* ntp_snippets_service_;
   history::HistoryService* history_service_;

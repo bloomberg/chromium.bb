@@ -61,8 +61,10 @@ class ImageManager : public image_fetcher::ImageFetcherDelegate {
       base::Callback<void(const GURL&, const SkBitmap*)> callback);
 
  protected:
+  // Methods inherited from image_fetcher::ImageFetcherDelegate
+
   // Perform additional tasks when an image has been fetched.
-  void OnImageFetched(const GURL& url, const SkBitmap* bitmap) override;
+  void OnImageFetched(const GURL& url, const gfx::Image& image) override;
 
  private:
   friend class MockImageManager;

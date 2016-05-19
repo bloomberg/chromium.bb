@@ -10,7 +10,9 @@
 #include "components/image_fetcher/image_fetcher_delegate.h"
 #include "url/gurl.h"
 
-class SkBitmap;
+namespace gfx {
+class Image;
+}
 
 namespace image_fetcher {
 
@@ -23,10 +25,12 @@ class ImageFetcher {
 
   virtual void SetImageFetcherDelegate(ImageFetcherDelegate* delegate) = 0;
 
+  // An empty gfx::Image will be returned to the callback in case the image
+  // could not be fetched.
   virtual void StartOrQueueNetworkRequest(
       const GURL& url,
       const GURL& image_url,
-      base::Callback<void(const GURL&, const SkBitmap*)> callback) = 0;
+      base::Callback<void(const GURL&, const gfx::Image&)> callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImageFetcher);

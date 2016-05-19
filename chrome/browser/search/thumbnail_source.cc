@@ -17,6 +17,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/suggestions/image_encoder.h"
 #include "net/url_request/url_request.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 
 // The delimiter between the first url and the fallback url passed to
@@ -80,7 +81,7 @@ base::MessageLoop* ThumbnailSource::MessageLoopForRequestPath(
   // TopSites can be accessed from the IO thread. Otherwise, the URLs should be
   // accessed on the UI thread.
   return thumbnail_service_.get()
-             ? NULL
+             ? nullptr
              : content::URLDataSource::MessageLoopForRequestPath(path);
 }
 
@@ -111,12 +112,14 @@ void ThumbnailSource::ExtractPageAndThumbnailUrls(
 void ThumbnailSource::SendFetchedUrlImage(
     const content::URLDataSource::GotDataCallback& callback,
     const GURL& url,
-    const SkBitmap* bitmap) {
-  if (!bitmap) {
+    const gfx::Image& image) {
+  // In case the image could not be retrieved an empty image is returned.
+  if (image.IsEmpty()) {
     callback.Run(default_thumbnail_.get());
     return;
   }
 
+  const SkBitmap* bitmap = image.ToSkBitmap();
   scoped_refptr<base::RefCountedBytes> encoded_data(
       new base::RefCountedBytes());
   if (!suggestions::EncodeSkBitmapToJPEG(*bitmap, &encoded_data->data())) {

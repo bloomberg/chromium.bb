@@ -25,10 +25,13 @@
 
 class PrefRegistrySimple;
 class PrefService;
-class SkBitmap;
 
 namespace base {
 class Value;
+}
+
+namespace gfx {
+class Image;
 }
 
 namespace image_fetcher {
@@ -47,7 +50,7 @@ class NTPSnippetsServiceObserver;
 class NTPSnippetsService : public KeyedService {
  public:
   using ImageFetchedCallback =
-      base::Callback<void(const std::string& snippet_id, const SkBitmap*)>;
+      base::Callback<void(const std::string& snippet_id, const gfx::Image&)>;
 
   // |application_language_code| should be a ISO 639-1 compliant string, e.g.
   // 'en' or 'en-US'. Note that this code should only specify the language, not

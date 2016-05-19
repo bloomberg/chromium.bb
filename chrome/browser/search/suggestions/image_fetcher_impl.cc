@@ -9,6 +9,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ui/gfx/image/image.h"
 
 namespace suggestions {
 
@@ -36,7 +37,7 @@ void ImageFetcherImpl::SetImageFetcherDelegate(
 
 void ImageFetcherImpl::StartOrQueueNetworkRequest(
     const GURL& url, const GURL& image_url,
-    base::Callback<void(const GURL&, const SkBitmap*)> callback) {
+    base::Callback<void(const GURL&, const gfx::Image&)> callback) {
   // Before starting to fetch the image. Look for a request in progress for
   // |image_url|, and queue if appropriate.
   ImageRequestMap::iterator it = pending_net_requests_.find(image_url);
@@ -65,17 +66,22 @@ void ImageFetcherImpl::OnFetchComplete(const GURL& image_url,
 
   ImageRequest* request = &image_iter->second;
 
-  // Here |bitmap| could be NULL or a pointer to a bitmap which is owned by the
-  // BitmapFetcher and which ceases to exist after this function. Pass the
-  // un-owned pointer to the registered callbacks.
-  for (CallbackVector::iterator callback_iter = request->callbacks.begin();
-       callback_iter != request->callbacks.end(); ++callback_iter) {
-    callback_iter->Run(request->url, bitmap);
+  // Here |bitmap| could be NULL. In this case an empty image is passed to the
+  // callbacks and delegate. The pointer to the bitmap which is owned by the
+  // BitmapFetcher ceases to exist after this function. The created gfx::Image
+  // shares the pixels with the |bitmap|. The image is passed to the callbacks
+  // and delegate that are run synchronously.
+  gfx::Image image;
+  if (bitmap != nullptr)
+    image = gfx::Image::CreateFrom1xBitmap(*bitmap);
+
+  for (const auto& callback : request->callbacks) {
+    callback.Run(request->url, image);
   }
 
   // Inform the ImageFetcherDelegate.
   if (delegate_) {
-    delegate_->OnImageFetched(request->url, bitmap);
+    delegate_->OnImageFetched(request->url, image);
   }
 
   // Erase the completed ImageRequest.

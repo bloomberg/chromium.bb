@@ -16,6 +16,7 @@
 #include "components/image_fetcher/image_fetcher_delegate.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
 class SkBitmap;
@@ -42,8 +43,8 @@ class TestImageFetcherDelegate : public ImageFetcherDelegate {
   ~TestImageFetcherDelegate() override{};
 
   // Perform additional tasks when an image has been fetched.
-  void OnImageFetched(const GURL& url, const SkBitmap* bitmap) override {
-    if (bitmap) {
+  void OnImageFetched(const GURL& url, const gfx::Image& image) override {
+    if (!image.IsEmpty()) {
       num_delegate_valid_called_++;
     } else {
       num_delegate_null_called_++;
@@ -58,7 +59,7 @@ class TestImageFetcherDelegate : public ImageFetcherDelegate {
   int num_delegate_null_called_;
 };
 
-}  // end namespace
+}  // namespace
 
 class ImageFetcherImplBrowserTest : public InProcessBrowserTest {
  protected:
@@ -81,8 +82,8 @@ class ImageFetcherImplBrowserTest : public InProcessBrowserTest {
 
   void OnImageAvailable(base::RunLoop* loop,
                         const GURL& url,
-                        const SkBitmap* bitmap) {
-    if (bitmap) {
+                        const gfx::Image& image) {
+    if (!image.IsEmpty()) {
       num_callback_valid_called_++;
     } else {
       num_callback_null_called_++;

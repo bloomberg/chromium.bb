@@ -8,7 +8,10 @@
 #include "base/macros.h"
 
 class GURL;
-class SkBitmap;
+
+namespace gfx {
+class Image;
+}
 
 namespace image_fetcher {
 
@@ -17,9 +20,9 @@ class ImageFetcherDelegate {
   ImageFetcherDelegate() {}
 
   // Called when an image was fetched. |url| represents the website for which
-  // the image was fetched. |bitmap| stores image data owned by the caller, and
-  // can be nullptr.
-  virtual void OnImageFetched(const GURL& url, const SkBitmap* bitmap) = 0;
+  // the image was fetched. |image| stores image data owned by the caller, and
+  // can be an empty gfx::Image.
+  virtual void OnImageFetched(const GURL& url, const gfx::Image& image) = 0;
 
  protected:
   virtual ~ImageFetcherDelegate() {}
