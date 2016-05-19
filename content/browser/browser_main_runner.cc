@@ -61,16 +61,6 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
   }
 
   int Initialize(const MainFunctionParams& parameters) override {
-    // Create persistent/shared memory and allow histograms to be stored in it.
-    // Memory that is not actualy used won't be physically mapped by the system.
-    // BrowserMetrics usage, as reported in UMA, peaked around 1.9MiB as of
-    // 2016-02-20.
-    base::GlobalHistogramAllocator::CreateWithLocalMemory(
-        3 << 20,     // 3 MiB
-        0x935DDD43,  // SHA1(BrowserMetrics)
-        "BrowserMetrics");
-    base::GlobalHistogramAllocator::Disable();  // Enabled by experiment only.
-
     SCOPED_UMA_HISTOGRAM_LONG_TIMER(
         "Startup.BrowserMainRunnerImplInitializeLongTime");
 
@@ -91,6 +81,16 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
       initialization_started_ = true;
 
       const base::TimeTicks start_time_step1 = base::TimeTicks::Now();
+
+      // Create persistent/shared memory and allow histograms to be stored in
+      // it. Memory that is not actualy used won't be physically mapped by the
+      // system. BrowserMetrics usage, as reported in UMA, peaked around 1.9MiB
+      // as of 2016-02-20.
+      base::GlobalHistogramAllocator::CreateWithLocalMemory(
+          3 << 20,     // 3 MiB
+          0x935DDD43,  // SHA1(BrowserMetrics)
+          "BrowserMetrics");
+      base::GlobalHistogramAllocator::Disable();  // Enabled by experiment only.
 
       SkGraphics::Init();
 
