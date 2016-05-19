@@ -1285,8 +1285,6 @@ crbug.com/599115 http/tests/preload/document-write/document_write_no_preload.htm
 
 crbug.com/601669 [ Win ] svg/as-image/svg-nested.html [ Crash ]
 
-Bug(eae) virtual/stable/webexposed/css-properties-as-js-properties.html [ NeedsRebaseline ]
-
 crbug.com/603507 [ Mac Win ] fast/table/split-table-section-before-anonymous-block-2.html [ NeedsManualRebaseline ]
 crbug.com/603507 [ Mac Win ] fast/table/split-table-section-before-anonymous-block-4.html [ NeedsManualRebaseline ]
 

@@ -89,6 +89,7 @@ columnRuleWidth
 columnSpan
 columnWidth
 columns
+contain
 content
 counterIncrement
 counterReset
