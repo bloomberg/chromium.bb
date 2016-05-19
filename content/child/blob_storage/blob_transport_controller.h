@@ -110,10 +110,9 @@ class CONTENT_EXPORT BlobTransportController {
   };
   friend struct base::DefaultLazyInstanceTraits<BlobTransportController>;
 
-  void StoreBlobDataAndStart(
+  void StoreBlobDataForRequests(
       const std::string& uuid,
       std::unique_ptr<BlobConsolidation> consolidation,
-      scoped_refptr<ThreadSafeSender> sender,
       scoped_refptr<base::SingleThreadTaskRunner> main_runner);
 
   ResponsesStatus GetResponses(
