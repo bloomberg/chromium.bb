@@ -21,12 +21,14 @@ import android.os.Bundle;
 import android.provider.Browser;
 import android.util.SparseArray;
 
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnKeyListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 
 import android.webkit.GeolocationPermissions;
@@ -37,6 +39,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
@@ -88,6 +91,7 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
 
     private EditText mUrlBar;
     private WebView mWebView;
+    private View mFullscreenView;
     private String mWebViewVersion;
 
     // Each time we make a request, store it here with an int key. onRequestPermissionsResult will
@@ -246,6 +250,28 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
             @Override
             public void onPermissionRequest(PermissionRequest request) {
                 WebViewBrowserActivity.this.requestPermissionsForPage(request);
+            }
+
+            @Override
+            public void onShowCustomView(View view, WebChromeClient.CustomViewCallback callback) {
+                if (mFullscreenView != null) {
+                    ((ViewGroup) mFullscreenView.getParent()).removeView(mFullscreenView);
+                }
+                mFullscreenView = view;
+                getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                getWindow().addContentView(mFullscreenView,
+                        new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER));
+            }
+
+            @Override
+            public void onHideCustomView() {
+                if (mFullscreenView == null) {
+                    return;
+                }
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                ((ViewGroup) mFullscreenView.getParent()).removeView(mFullscreenView);
+                mFullscreenView = null;
             }
         });
 
