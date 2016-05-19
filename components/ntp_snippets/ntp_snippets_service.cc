@@ -68,13 +68,17 @@ base::TimeDelta GetFetchingInterval(const char* switch_name,
   int value_seconds = default_value_seconds;
 
   // The default value can be overridden by a variation parameter.
+  // TODO(treib,jkrcal): Use GetVariationParamValueByFeature and get rid of
+  // kStudyName, also in NTPSnippetsFetcher.
   std::string param_value_str = variations::GetVariationParamValue(
         ntp_snippets::kStudyName, param_name);
-  int param_value_seconds = 0;
-  if (base::StringToInt(param_value_str, &param_value_seconds))
-    value_seconds = param_value_seconds;
-  else
-    LOG(WARNING) << "Invalid value for variation parameter " << param_name;
+  if (!param_value_str.empty()) {
+    int param_value_seconds = 0;
+    if (base::StringToInt(param_value_str, &param_value_seconds))
+      value_seconds = param_value_seconds;
+    else
+      LOG(WARNING) << "Invalid value for variation parameter " << param_name;
+  }
 
   // A value from the command line parameter overrides anything else.
   const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
