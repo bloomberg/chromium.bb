@@ -360,7 +360,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
         insertNodeAt(br, insertionPosition, editingState);
         if (editingState->isAborted())
             return;
-        insertionPosition = positionInParentAfterNode(*br);
+        insertionPosition = Position::inParentAfterNode(*br);
         // If the insertion point is a break element, there is nothing else
         // we need to do.
         if (visiblePos.deepEquivalent().anchorNode()->layoutObject()->isBR()) {

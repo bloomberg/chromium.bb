@@ -129,14 +129,14 @@ void InsertLineBreakCommand::doApply(EditingState* editingState)
                 return;
         }
 
-        setEndingSelection(VisibleSelection(positionInParentAfterNode(*nodeToInsert), TextAffinity::Downstream, endingSelection().isDirectional()));
+        setEndingSelection(VisibleSelection(Position::inParentAfterNode(*nodeToInsert), TextAffinity::Downstream, endingSelection().isDirectional()));
     // If we're inserting after all of the rendered text in a text node, or into a non-text node,
     // a simple insertion is sufficient.
     } else if (!pos.anchorNode()->isTextNode() || pos.computeOffsetInContainerNode() >= caretMaxOffset(pos.anchorNode())) {
         insertNodeAt(nodeToInsert, pos, editingState);
         if (editingState->isAborted())
             return;
-        setEndingSelection(VisibleSelection(positionInParentAfterNode(*nodeToInsert), TextAffinity::Downstream, endingSelection().isDirectional()));
+        setEndingSelection(VisibleSelection(Position::inParentAfterNode(*nodeToInsert), TextAffinity::Downstream, endingSelection().isDirectional()));
     } else if (pos.anchorNode()->isTextNode()) {
         // Split a text node
         Text* textNode = toText(pos.anchorNode());

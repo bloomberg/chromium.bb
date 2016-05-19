@@ -588,7 +588,7 @@ Position CompositeEditCommand::positionOutsideTabSpan(const Position& pos)
     case PositionAnchorType::BeforeAnchor:
         return positionInParentBeforeNode(*pos.anchorNode());
     case PositionAnchorType::AfterAnchor:
-        return positionInParentAfterNode(*pos.anchorNode());
+        return Position::inParentAfterNode(*pos.anchorNode());
     }
 
     HTMLSpanElement* tabSpan = tabSpanElement(pos.computeContainerNode());
@@ -598,7 +598,7 @@ Position CompositeEditCommand::positionOutsideTabSpan(const Position& pos)
         return positionInParentBeforeNode(*tabSpan);
 
     if (pos.offsetInContainerNode() >= caretMaxOffset(pos.computeContainerNode()))
-        return positionInParentAfterNode(*tabSpan);
+        return Position::inParentAfterNode(*tabSpan);
 
     splitTextNodeContainingElement(toText(pos.computeContainerNode()), pos.offsetInContainerNode());
     return positionInParentBeforeNode(*tabSpan);
@@ -1561,7 +1561,7 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(const Posi
             if (lineBreakExistsAtVisiblePosition(visiblePos) && downstream.anchorNode()->isDescendantOf(enclosingAnchor))
                 return original;
 
-            result = positionInParentAfterNode(*enclosingAnchor);
+            result = Position::inParentAfterNode(*enclosingAnchor);
         }
         // If visually just before an anchor, insert *outside* the anchor unless it's the first
         // VisiblePosition in a paragraph, to match NSTextView.

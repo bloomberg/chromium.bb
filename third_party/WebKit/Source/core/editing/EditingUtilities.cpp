@@ -939,7 +939,7 @@ Position positionAfterContainingSpecialElement(const Position& pos, HTMLElement*
     HTMLElement* n = lastInSpecialElement(pos);
     if (!n)
         return pos;
-    Position result = positionInParentAfterNode(*n);
+    Position result = Position::inParentAfterNode(*n);
     if (result.isNull() || result.anchorNode()->rootEditableElement() != pos.anchorNode()->rootEditableElement())
         return pos;
     if (containingSpecialElement)
@@ -1040,7 +1040,7 @@ VisiblePosition visiblePositionAfterNode(Node& node)
         return createVisiblePosition(lastPositionInOrAfterNode(&node));
     DCHECK(node.parentNode()) << node.parentNode();
     DCHECK(!node.parentNode()->isShadowRoot()) << node.parentNode();
-    return createVisiblePosition(positionInParentAfterNode(node));
+    return createVisiblePosition(Position::inParentAfterNode(node));
 }
 
 bool isHTMLListElement(Node* n)
@@ -1258,7 +1258,7 @@ bool canMergeLists(Element* firstList, Element* secondList)
     return firstList->hasTagName(secondList->tagQName()) // make sure the list types match (ol vs. ul)
     && firstList->hasEditableStyle() && secondList->hasEditableStyle() // both lists are editable
     && firstList->rootEditableElement() == secondList->rootEditableElement() // don't cross editing boundaries
-    && isVisiblyAdjacent(positionInParentAfterNode(*firstList), positionInParentBeforeNode(*secondList));
+    && isVisiblyAdjacent(Position::inParentAfterNode(*firstList), positionInParentBeforeNode(*secondList));
     // Make sure there is no visible content between this li and the previous list
 }
 
@@ -1479,7 +1479,7 @@ void updatePositionForNodeRemoval(Position& position, Node& node)
         break;
     case PositionAnchorType::AfterChildren:
         if (node.isShadowIncludingInclusiveAncestorOf(position.computeContainerNode()))
-            position = positionInParentAfterNode(node);
+            position = Position::inParentAfterNode(node);
         break;
     case PositionAnchorType::OffsetInAnchor:
         if (position.computeContainerNode() == node.parentNode() && static_cast<unsigned>(position.offsetInContainerNode()) > node.nodeIndex())
@@ -1489,7 +1489,7 @@ void updatePositionForNodeRemoval(Position& position, Node& node)
         break;
     case PositionAnchorType::AfterAnchor:
         if (node.isShadowIncludingInclusiveAncestorOf(position.anchorNode()))
-            position = positionInParentAfterNode(node);
+            position = Position::inParentAfterNode(node);
         break;
     case PositionAnchorType::BeforeAnchor:
         if (node.isShadowIncludingInclusiveAncestorOf(position.anchorNode()))
@@ -1647,7 +1647,7 @@ bool isNodeVisiblyContainedWithin(Node& node, const Range& selectedRange)
         return true;
 
     bool startIsVisuallySame = visiblePositionBeforeNode(node).deepEquivalent() == createVisiblePosition(selectedRange.startPosition()).deepEquivalent();
-    if (startIsVisuallySame && comparePositions(positionInParentAfterNode(node), selectedRange.endPosition()) < 0)
+    if (startIsVisuallySame && comparePositions(Position::inParentAfterNode(node), selectedRange.endPosition()) < 0)
         return true;
 
     bool endIsVisuallySame = visiblePositionAfterNode(node).deepEquivalent() == createVisiblePosition(selectedRange.endPosition()).deepEquivalent();

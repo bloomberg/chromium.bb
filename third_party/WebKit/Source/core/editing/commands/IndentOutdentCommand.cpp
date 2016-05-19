@@ -148,7 +148,7 @@ void IndentOutdentCommand::indentIntoBlockquote(const Position& start, const Pos
             insertNodeBefore(targetBlockquote, outerBlock, editingState);
         if (editingState->isAborted())
             return;
-        startOfContents = createVisiblePosition(positionInParentAfterNode(*targetBlockquote));
+        startOfContents = createVisiblePosition(Position::inParentAfterNode(*targetBlockquote));
     }
 
     VisiblePosition endOfContents = createVisiblePosition(end);

@@ -135,7 +135,7 @@ static Position positionAvoidingPrecedingNodes(Position pos)
             break;
 
         if (pos.computeContainerNode()->nonShadowBoundaryParentNode())
-            nextPosition = positionInParentAfterNode(*pos.computeContainerNode());
+            nextPosition = Position::inParentAfterNode(*pos.computeContainerNode());
 
         if (nextPosition == pos
             || enclosingBlock(nextPosition.computeContainerNode()) != enclosingBlockElement
@@ -1113,7 +1113,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
         DCHECK_NE(enclosingBlockOfInsertionPos, currentRoot);
         VisiblePosition visibleInsertionPos = createVisiblePosition(insertionPos);
         if (isEndOfBlock(visibleInsertionPos) && !(isStartOfBlock(visibleInsertionPos) && fragment.hasInterchangeNewlineAtEnd()))
-            insertionPos = positionInParentAfterNode(*enclosingBlockOfInsertionPos);
+            insertionPos = Position::inParentAfterNode(*enclosingBlockOfInsertionPos);
         else if (isStartOfBlock(visibleInsertionPos))
             insertionPos = positionInParentBeforeNode(*enclosingBlockOfInsertionPos);
     }

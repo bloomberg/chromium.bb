@@ -659,7 +659,7 @@ void ApplyStyleCommand::applyInlineStyle(EditingStyle* style, EditingState* edit
         // Avoid removing the dir attribute and the unicode-bidi and direction properties from the unsplit ancestors.
         Position embeddingRemoveStart = removeStart;
         if (startUnsplitAncestor && elementFullySelected(*startUnsplitAncestor, removeStart, end))
-            embeddingRemoveStart = positionInParentAfterNode(*startUnsplitAncestor);
+            embeddingRemoveStart = Position::inParentAfterNode(*startUnsplitAncestor);
 
         Position embeddingRemoveEnd = end;
         if (endUnsplitAncestor && elementFullySelected(*endUnsplitAncestor, removeStart, end))
@@ -715,7 +715,7 @@ void ApplyStyleCommand::applyInlineStyle(EditingStyle* style, EditingState* edit
         HTMLElement* embeddingEndElement = highestEmbeddingAncestor(end.anchorNode(), enclosingBlock(end.anchorNode()));
 
         if (embeddingStartElement || embeddingEndElement) {
-            Position embeddingApplyStart = embeddingStartElement ? positionInParentAfterNode(*embeddingStartElement) : start;
+            Position embeddingApplyStart = embeddingStartElement ? Position::inParentAfterNode(*embeddingStartElement) : start;
             Position embeddingApplyEnd = embeddingEndElement ? positionInParentBeforeNode(*embeddingEndElement) : end;
             DCHECK(embeddingApplyStart.isNotNull());
             DCHECK(embeddingApplyEnd.isNotNull());
