@@ -149,10 +149,6 @@ class AVDACodecImage : public gpu::gles2::GLStreamTextureImage {
   // SurfaceView.
   const scoped_refptr<gfx::SurfaceTexture> surface_texture_;
 
-  // Should we detach |surface_texture_| from its GL context when we are
-  // deleted?  This happens when it's using our Texture's texture handle.
-  bool detach_surface_texture_on_destruction_;
-
   // The texture that we're attached to.
   gpu::gles2::Texture* texture_;
 

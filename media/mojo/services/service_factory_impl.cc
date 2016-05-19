@@ -32,10 +32,15 @@ ServiceFactoryImpl::ServiceFactoryImpl(
     std::unique_ptr<shell::ShellConnectionRef> connection_ref,
     MojoMediaClient* mojo_media_client)
     : binding_(this, std::move(request)),
+#if defined(ENABLE_MOJO_CDM)
       interfaces_(interfaces),
+#endif
+#if defined(ENABLE_MOJO_AUDIO_DECODER) || defined(ENABLE_MOJO_CDM) || \
+    defined(ENABLE_MOJO_RENDERER)
+      mojo_media_client_(mojo_media_client),
+#endif
       media_log_(media_log),
-      connection_ref_(std::move(connection_ref)),
-      mojo_media_client_(mojo_media_client) {
+      connection_ref_(std::move(connection_ref)) {
   DVLOG(1) << __FUNCTION__;
 }
 

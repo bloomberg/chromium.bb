@@ -363,8 +363,7 @@ class AudioEncoder::AppleAacImpl : public AudioEncoder::ImplBase {
         output_buffer_(nullptr),
         converter_(nullptr),
         file_(nullptr),
-        num_access_units_(0),
-        can_resume_(true) {
+        num_access_units_(0) {
     if (ImplBase::operational_status_ != STATUS_UNINITIALIZED) {
       return;
     }
@@ -454,23 +453,6 @@ class AudioEncoder::AppleAacImpl : public AudioEncoder::ImplBase {
         return false;
       }
     }
-
-#if defined(OS_IOS)
-    // See the comment next to |can_resume_| for details on resumption. Some
-    // converters can return kAudioConverterErr_PropertyNotSupported, in which
-    // case resumption is implicitly supported. This is the only location where
-    // the implementation modifies |can_resume_|.
-    uint32_t can_resume;
-    prop_size = sizeof(can_resume);
-    OSStatus oserr = AudioConverterGetProperty(
-        converter_,
-        kAudioConverterPropertyCanResumeFromInterruption,
-        &prop_size,
-        &can_resume);
-    if (oserr == noErr) {
-      const_cast<bool&>(can_resume_) = can_resume != 0;
-    }
-#endif
 
     // Figure out the maximum size of an access unit that the encoder can
     // produce. |mBytesPerPacket| will be 0 for variable size configurations,
@@ -723,16 +705,6 @@ class AudioEncoder::AppleAacImpl : public AudioEncoder::ImplBase {
 
   // The number of access units emitted so far by the encoder.
   uint64_t num_access_units_;
-
-  // On iOS, audio codecs can be interrupted by other services (such as an
-  // audio alert or phone call). Depending on the underlying hardware and
-  // configuration, the codec may have to be thrown away and re-initialized
-  // after such an interruption. This flag tracks if we can resume or not from
-  // such an interruption. It is initialized to true, which is the only possible
-  // value on OS X and on most modern iOS hardware.
-  // TODO(jfroy): Implement encoder re-initialization after interruption.
-  //              https://crbug.com/424787
-  const bool can_resume_;
 
   DISALLOW_COPY_AND_ASSIGN(AppleAacImpl);
 };

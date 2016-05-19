@@ -55,7 +55,6 @@ class AVFoundationInternal {
 
  private:
   NSBundle* bundle_;
-  void* library_handle_;
   // The following members are replicas of the respectives in AVFoundation.
   NSString* AVCaptureDeviceWasConnectedNotification_ =
       ::AVCaptureDeviceWasConnectedNotification;

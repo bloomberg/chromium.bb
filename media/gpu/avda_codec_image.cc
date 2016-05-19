@@ -30,7 +30,6 @@ AVDACodecImage::AVDACodecImage(
       media_codec_(codec),
       decoder_(decoder),
       surface_texture_(surface_texture),
-      detach_surface_texture_on_destruction_(false),
       texture_(0),
       picture_buffer_id_(picture_buffer_id) {
   // Default to a sane guess of "flip Y", just in case we can't get
