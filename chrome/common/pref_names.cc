@@ -864,6 +864,10 @@ const char kUnifiedDesktopEnabledByDefault[] =
 
 // Whether the Chrome OS lock screen is allowed.
 const char kAllowScreenLock[] = "allow_screen_lock";
+
+// An int64 pref. This is a timestamp of the most recent time the profile took
+// or dismissed HaTS (happiness-tracking) survey.
+const char kHatsLastInteractionTimestamp[] = "hats_last_interaction_timestamp";
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be

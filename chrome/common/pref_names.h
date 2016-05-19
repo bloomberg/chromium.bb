@@ -288,6 +288,7 @@ extern const char kForceMaximizeOnFirstRun[];
 extern const char kPlatformKeys[];
 extern const char kUnifiedDesktopEnabledByDefault[];
 extern const char kAllowScreenLock[];
+extern const char kHatsLastInteractionTimestamp[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kShowHomeButton[];
 extern const char kRecentlySelectedEncoding[];
