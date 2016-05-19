@@ -25,12 +25,13 @@ const double kRelativeIntervalDifferenceThreshold = 0.05;
 
 namespace gfx {
 
-SyncControlVSyncProvider::SyncControlVSyncProvider()
-    : VSyncProvider(), last_media_stream_counter_(0), invalid_msc_(false) {
+SyncControlVSyncProvider::SyncControlVSyncProvider() : VSyncProvider() {
+#if defined(OS_LINUX)
   // On platforms where we can't get an accurate reading on the refresh
   // rate we fall back to the assumption that we're displaying 60 frames
   // per second.
   last_good_interval_ = base::TimeDelta::FromSeconds(1) / 60;
+#endif
 }
 
 SyncControlVSyncProvider::~SyncControlVSyncProvider() {}

@@ -33,7 +33,6 @@ class TestPlatformDesktopNativeWidget : public PlatformDesktopNativeWidget {
   ~TestPlatformDesktopNativeWidget() override;
 
  private:
-  bool mouse_capture_;
   bool* destroyed_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPlatformDesktopNativeWidget);

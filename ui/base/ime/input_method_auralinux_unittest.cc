@@ -57,10 +57,9 @@ class TestResult {
 
 class LinuxInputMethodContextForTesting : public LinuxInputMethodContext {
  public:
-  LinuxInputMethodContextForTesting(LinuxInputMethodContextDelegate* delegate,
-                                    bool is_simple)
+  explicit LinuxInputMethodContextForTesting(
+      LinuxInputMethodContextDelegate* delegate)
       : delegate_(delegate),
-        is_simple_(is_simple),
         is_sync_mode_(false),
         eat_key_(false),
         focused_(false) {}
@@ -129,7 +128,6 @@ class LinuxInputMethodContextForTesting : public LinuxInputMethodContext {
  private:
   LinuxInputMethodContextDelegate* delegate_;
   std::vector<base::string16> actions_;
-  bool is_simple_;
   bool is_sync_mode_;
   bool eat_key_;
   bool focused_;
@@ -147,7 +145,7 @@ class LinuxInputMethodContextFactoryForTesting
       LinuxInputMethodContextDelegate* delegate,
       bool is_simple) const override {
     return std::unique_ptr<ui::LinuxInputMethodContext>(
-        new LinuxInputMethodContextForTesting(delegate, is_simple));
+        new LinuxInputMethodContextForTesting(delegate));
   };
 
  private:

@@ -30,8 +30,6 @@ class TestCompositorHostOzone : public TestCompositorHost {
 
   gfx::Rect bounds_;
 
-  ui::ContextFactory* context_factory_;
-
   ui::Compositor compositor_;
 
   DISALLOW_COPY_AND_ASSIGN(TestCompositorHostOzone);
@@ -41,7 +39,6 @@ TestCompositorHostOzone::TestCompositorHostOzone(
     const gfx::Rect& bounds,
     ui::ContextFactory* context_factory)
     : bounds_(bounds),
-      context_factory_(context_factory),
       compositor_(context_factory, base::ThreadTaskRunnerHandle::Get()) {}
 
 TestCompositorHostOzone::~TestCompositorHostOzone() {}

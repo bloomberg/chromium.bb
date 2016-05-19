@@ -94,8 +94,6 @@ class TestCompositorHostMac : public TestCompositorHost,
 
   gfx::Rect bounds_;
 
-  ui::ContextFactory* context_factory_;
-
   ui::Compositor compositor_;
 
   // Owned.  Released when window is closed.
@@ -108,7 +106,6 @@ TestCompositorHostMac::TestCompositorHostMac(
     const gfx::Rect& bounds,
     ui::ContextFactory* context_factory)
     : bounds_(bounds),
-      context_factory_(context_factory),
       compositor_(context_factory, base::ThreadTaskRunnerHandle::Get()),
       window_(nil) {
 }

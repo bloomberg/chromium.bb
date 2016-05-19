@@ -31,16 +31,18 @@ class SyncControlVSyncProvider : public VSyncProvider {
   virtual bool GetMscRate(int32_t* numerator, int32_t* denominator) = 0;
 
  private:
+#if defined(OS_LINUX)
   base::TimeTicks last_timebase_;
-  uint64_t last_media_stream_counter_;
+  uint64_t last_media_stream_counter_ = 0;
   base::TimeDelta last_good_interval_;
-  bool invalid_msc_;
+  bool invalid_msc_ = false;
 
   // A short history of the last few computed intervals.
   // We use this to filter out the noise in the computation resulting
   // from configuration change (monitor reconfiguration, moving windows
   // between monitors, suspend and resume, etc.).
   std::queue<base::TimeDelta> last_computed_intervals_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(SyncControlVSyncProvider);
 };

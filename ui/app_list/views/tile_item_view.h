@@ -71,7 +71,6 @@ class APP_LIST_EXPORT TileItemView : public views::CustomButton,
                       base::string16* tooltip) const override;
 
   SkColor parent_background_color_;
-  HoverStyle hover_style_;
   std::unique_ptr<ImageShadowAnimator> image_shadow_animator_;
 
   views::ImageView* icon_;  // Owned by views hierarchy.
