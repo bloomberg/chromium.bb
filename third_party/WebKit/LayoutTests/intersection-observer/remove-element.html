@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <script src="../resources/js-test.js"></script>
-<script src="helper-functions.js"></script>
+<script src="../resources/intersection-observer-helper-functions.js"></script>
 <div id="root" style="display: inline-block; overflow-y: scroll; height: 200px; border: 3px solid black">
   <div style="width:100px; height: 300px;"></div>
   <div id="target" style="background-color: green; width:100px; height:100px"></div>
@@ -23,11 +23,10 @@ onload = function() {
   entries = entries.concat(observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 0);
   root.scrollTop = 150;
-  requestAnimationFrame(() => { requestAnimationFrame(step1) });
+  waitForNotification(step1);
 }
 
 function step1() {
-  entries = entries.concat(observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 1);
   if (entries.length > 0) {
     shouldBeEqualToNumber("entries[0].boundingClientRect.left", 11);
@@ -45,11 +44,10 @@ function step1() {
     shouldEvaluateToSameObject("entries[0].target", target);
   }
   root.removeChild(target);
-  requestAnimationFrame(step2);
+  waitForNotification(step2);
 }
 
 function step2() {
-  entries = entries.concat(observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 2);
   if (entries.length > 1) {
     shouldBeEqualToNumber("entries[1].boundingClientRect.left", 0);
@@ -68,18 +66,16 @@ function step2() {
   }
   root.scrollTop = 0;
   root.insertBefore(target, afterTarget);
-  requestAnimationFrame(step3);
+  waitForNotification(step3);
 }
 
 function step3() {
-  entries = entries.concat(observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 2);
   root.scrollTop = 150;
-  requestAnimationFrame(step4);
+  waitForNotification(step4);
 }
 
 function step4() {
-  entries = entries.concat(observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 3);
   if (entries.length > 2) {
     shouldBeEqualToNumber("entries[2].boundingClientRect.left", 11);

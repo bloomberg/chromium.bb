@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <script src="../resources/js-test.js"></script>
-<script src="helper-functions.js"></script>
+<script src="../resources/intersection-observer-helper-functions.js"></script>
 <style>
 #root {
   width: 200px;
@@ -29,18 +29,16 @@ onload = function() {
   observer.observe(target);
   entries.push(...observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 0);
-  requestAnimationFrame(() => { requestAnimationFrame(step0) });
+  waitForNotification(step0);
 };
 
 function step0() {
-  entries.push(...observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 0);
+  waitForNotification(step1);
   target.style.transform = "translateY(200px)";
-  requestAnimationFrame(step1);
 }
 
 function step1() {
-  entries.push(...observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 1);
   if (entries.length > 0) {
     shouldBeEqualToNumber("entries[0].boundingClientRect.left", 8);
@@ -57,21 +55,19 @@ function step1() {
     shouldBeEqualToNumber("entries[0].rootBounds.bottom", 208);
     shouldEvaluateToSameObject("entries[0].target", target);
   }
+  waitForNotification(step2);
   target.style.transform = "translateY(201px)";
-  requestAnimationFrame(step2);
 }
 
 function step2() {
-  entries.push(...observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 2);
+  waitForNotification(step3);
   target.style.height = "0px";
   target.style.width = "300px";
   target.style.transform = "translateY(185px)";
-  requestAnimationFrame(step3);
 }
 
 function step3() {
-  entries.push(...observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 3);
   if (entries.length > 2) {
     shouldBeEqualToNumber("entries[2].boundingClientRect.left", 8);

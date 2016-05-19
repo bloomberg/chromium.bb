@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <script src="../resources/js-test.js"></script>
 <script src="../resources/gc.js"></script>
+<script src="../resources/intersection-observer-helper-functions.js"></script>
 <div style="width:100%; height:700px;"></div>
 <div id="target" style="background-color: green; width:100px; height:100px"></div>
 <div style="width:100%; height:700px;"></div>
 
 <script>
-jsTestIsAsync = true;
 description("IntersectionObserver continues to produce notifications when it has no javascript references.");
 var target = document.getElementById("target");
 var entries = [];
@@ -15,19 +15,8 @@ new IntersectionObserver(function(changes) {
 }).observe(target);
 gc();
 document.scrollingElement.scrollTop = 300;
-// See README for explanation of double RAF.
-requestAnimationFrame(() => { requestAnimationFrame(() => {
-  // In other IntersectionObserver tests, observer.takeRecords() is used to ensure that
-  // all pending notifications are taken.  Because this test specifically tests the
-  // case where the observer object has no js references, it can't use takeRecords().
-  // However, the IntersectionObserver spec mandates that all notifications must be
-  // sent within 100ms of being generated, so this timeout effectively tests conformance
-  // with that requirement.
-  // TODO(szager): Switch setTimeout to testRunner.runIdleTasks after this patch lands:
-  //   https://codereview.chromium.org/1806133002/
-  setTimeout(() => {
-    shouldBeEqualToNumber("entries.length", 1);
-    finishJSTest();
-  }, 100)
-}) });
+waitForNotification(() => {
+  shouldBeEqualToNumber("entries.length", 1);
+  finishJSTest();
+});
 </script>

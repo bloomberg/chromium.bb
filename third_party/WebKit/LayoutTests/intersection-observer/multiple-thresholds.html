@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <script src="../resources/js-test.js"></script>
-<script src="helper-functions.js"></script>
+<script src="../resources/intersection-observer-helper-functions.js"></script>
 <div style="width:100%; height:700px;"></div>
 <div id="target" style="background-color: green; width:100px; height:100px"></div>
 <div style="width:100%; height:700px;"></div>
@@ -18,19 +18,16 @@ onload = function() {
   observer.observe(target);
   entries = entries.concat(observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 0);
-  // See README for explanation of double RAF.
-  requestAnimationFrame(() => { requestAnimationFrame(step0) });
+  waitForNotification(step0);
 }
 
 function step0() {
-  entries = entries.concat(observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 0);
   document.scrollingElement.scrollTop = 120;
-  requestAnimationFrame(step1);
+  waitForNotification(step1);
 }
 
 function step1() {
-  entries = entries.concat(observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 1);
   if (entries.length > 0) {
     shouldBeEqualToNumber("entries[0].boundingClientRect.left", 8);
@@ -49,11 +46,10 @@ function step1() {
     shouldEvaluateToSameObject("entries[0].target", target);
   }
   document.scrollingElement.scrollTop = 160;
-  requestAnimationFrame(step2);
+  waitForNotification(step2);
 }
 
 function step2() {
-  entries = entries.concat(observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 2);
   if (entries.length > 1) {
     shouldBeEqualToNumber("entries[1].boundingClientRect.left", 8);
@@ -72,11 +68,10 @@ function step2() {
     shouldEvaluateToSameObject("entries[1].target", target);
   }
   document.scrollingElement.scrollTop = 200;
-  requestAnimationFrame(step3);
+  waitForNotification(step3);
 }
 
 function step3() {
-  entries = entries.concat(observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 3);
   if (entries.length > 2) {
     shouldBeEqualToNumber("entries[2].boundingClientRect.left", 8);
@@ -95,11 +90,10 @@ function step3() {
     shouldEvaluateToSameObject("entries[2].target", target);
   }
   document.scrollingElement.scrollTop = 240;
-  requestAnimationFrame(step4);
+  waitForNotification(step4);
 }
 
 function step4() {
-  entries = entries.concat(observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 4);
   if (entries.length > 3) {
     shouldBeEqualToNumber("entries[3].boundingClientRect.left", 8);
@@ -118,11 +112,10 @@ function step4() {
     shouldEvaluateToSameObject("entries[3].target", target);
   }
   document.scrollingElement.scrollTop = 740;
-  requestAnimationFrame(step5);
+  waitForNotification(step5);
 }
 
 function step5() {
-  entries = entries.concat(observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 5);
   if (entries.length > 4) {
     shouldBeEqualToNumber("entries[4].boundingClientRect.left", 8);
@@ -141,11 +134,10 @@ function step5() {
     shouldEvaluateToSameObject("entries[4].target", target);
   }
   document.scrollingElement.scrollTop = 760;
-  requestAnimationFrame(step6);
+  waitForNotification(step6);
 }
 
 function step6() {
-  entries = entries.concat(observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 6);
   if (entries.length > 5) {
     shouldBeEqualToNumber("entries[5].boundingClientRect.left", 8);
@@ -164,11 +156,10 @@ function step6() {
     shouldEvaluateToSameObject("entries[5].target", target);
   }
   document.scrollingElement.scrollTop = 800;
-  requestAnimationFrame(step7);
+  waitForNotification(step7);
 }
 
 function step7() {
-  entries = entries.concat(observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 7);
   if (entries.length > 6) {
     shouldBeEqualToNumber("entries[6].boundingClientRect.left", 8);
@@ -187,11 +178,10 @@ function step7() {
     shouldEvaluateToSameObject("entries[6].target", target);
   }
   document.scrollingElement.scrollTop = 820;
-  requestAnimationFrame(step8);
+  waitForNotification(step8);
 }
 
 function step8() {
-  entries = entries.concat(observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 8);
   if (entries.length > 7) {
     shouldBeEqualToNumber("entries[7].boundingClientRect.left", 8);

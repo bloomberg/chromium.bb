@@ -7,9 +7,9 @@ PASS topWindowTime - iframeWindowTime is > 2.5 * timestampTolerance
 PASS topWindowEntries.length is 0
 PASS iframeWindowEntries.length is 0
 PASS topWindowEntries.length is 1
-PASS topWindowEntries[0].time is within 124 of topWindowTime
+PASS topWindowEntries[0].time is within 24 of topWindowTime
 PASS iframeWindowEntries.length is 1
-PASS iframeWindowEntries[0].time is within 124 of iframeWindowTime
+PASS iframeWindowEntries[0].time is within 24 of iframeWindowTime
 PASS successfullyParsed is true
 
 TEST COMPLETE

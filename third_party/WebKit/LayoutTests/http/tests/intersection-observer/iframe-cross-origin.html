@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <script src="/js-test-resources/js-test.js"></script>
+<script src="/js-test-resources/intersection-observer-helper-functions.js"></script>
 <div style="width:100%; height:700px;"></div>
 <iframe id="target-iframe" src="http://localhost:8080/intersection-observer/resources/cross-origin-subframe.html" style="height: 100px; overflow-y: scroll"></iframe>
 <div style="width:100%; height:700px;"></div>
 
 <script>
-setPrintTestResultsLazily();
-self.jsTestIsAsync = true;
-
 description("Simple intersection observer test with no explicit root and target in a cross-origin iframe.");
 
 var iframe = document.getElementById("target-iframe");
@@ -49,23 +47,20 @@ function checkData(actualData, expected) {
 function handleMessage(event) {
   if (event.data.hasOwnProperty('scrollTo')) {
     document.scrollingElement.scrollTop = event.data.scrollTo;
-    requestAnimationFrame(function () { iframe.contentWindow.postMessage("", "*") });
+    waitForNotification(() => { iframe.contentWindow.postMessage("", "*") });
   } else if (event.data.hasOwnProperty('actual')) {
     checkData(event.data.actual, event.data.expected);
   } else if (event.data.hasOwnProperty('DONE')) {
     finishJSTest();
     document.scrollingElement.scrollTop = 0;
   } else {
-    requestAnimationFrame(function () { iframe.contentWindow.postMessage("", "*") });
+    waitForNotification(() => { iframe.contentWindow.postMessage("", "*") });
   }
 }
 
 window.addEventListener("message", handleMessage);
 
-iframe.onload = function() {
-  // See LayoutTests/intersection-observer/README for explanation of double RAF.
-  requestAnimationFrame(() => {
-      requestAnimationFrame(() => { iframe.contentWindow.postMessage("", "*") })
-  });
-}
+iframe.onload = (() => {
+  waitForNotification(() => { iframe.contentWindow.postMessage("", "*") });
+});
 </script>

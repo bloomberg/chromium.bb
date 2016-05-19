@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <script src="../resources/js-test.js"></script>
-<script src="helper-functions.js"></script>
+<script src="../resources/intersection-observer-helper-functions.js"></script>
 <style>
 #root {
   width: 200px;
@@ -25,7 +25,7 @@ var target = document.getElementById("target");
 var entries = [];
 
 var observer = new IntersectionObserver(
-    changes => { entries = entries.concat(changes) },
+    changes => { entries.push(...changes) },
     { root: root }
 );
 
@@ -33,12 +33,10 @@ onload = function() {
   observer.observe(target);
   shouldBeEqualToNumber("entries.length", 0);
   target.style.top = "10px";
-  // See README for explanation of double RAF.
-  requestAnimationFrame(() => { requestAnimationFrame(step1) });
+  waitForNotification(step1);
 };
 
 function step1() {
-  entries = entries.concat(observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 1);
   if (entries.length > 0) {
     shouldBeEqualToNumber("entries[0].boundingClientRect.left", 58);
@@ -56,11 +54,10 @@ function step1() {
     shouldEvaluateToSameObject("entries[0].target", target);
   }
   target.style.top = "250px";
-  requestAnimationFrame(step2);
+  waitForNotification(step2);
 }
 
 function step2() {
-  entries = entries.concat(observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 2);
   if (entries.length > 1) {
     shouldBeEqualToNumber("entries[1].boundingClientRect.left", 58);
@@ -79,18 +76,16 @@ function step2() {
   }
   root.style.position = "static";
   target.style.top = "10px";
-  requestAnimationFrame(step3);
+  waitForNotification(step3);
 }
 
 function step3() {
-  entries = entries.concat(observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 2);
   target.style.top = "250px";
-  requestAnimationFrame(step4);
+  waitForNotification(step4);
 }
 
 function step4() {
-  entries = entries.concat(observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 2);
   finishJSTest();
 }

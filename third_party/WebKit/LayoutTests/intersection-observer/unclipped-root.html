@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <script src="../resources/js-test.js"></script>
-<script src="helper-functions.js"></script>
+<script src="../resources/intersection-observer-helper-functions.js"></script>
 <style>
 #root {
   overflow: visible;
@@ -32,19 +32,16 @@ onload = function() {
   observer.observe(target);
   entries.push(...observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 0);
-  // See README for explanation of double RAF.
-  requestAnimationFrame(() => { requestAnimationFrame(step0) });
+  waitForNotification(step0);
 }
 
 function step0() {
-  entries.push(...observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 0);
   target.style.transform = "translateY(195px)";
-  requestAnimationFrame(step1);
+  waitForNotification(step1);
 }
 
 function step1() {
-  entries.push(...observer.takeRecords());
   shouldBeEqualToNumber("entries.length", 1);
   if (entries.length > 0) {
     shouldBeEqualToNumber("entries[0].boundingClientRect.left", 15);

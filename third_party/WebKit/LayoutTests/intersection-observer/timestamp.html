@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <script src="../resources/js-test.js"></script>
-<script src="helper-functions.js"></script>
+<script src="../resources/intersection-observer-helper-functions.js"></script>
 <div id="beforeFrame" style="width:100%; height:700px;"></div>
 <div id="afterFrame" style="width:100%; height:700px;"></div>
 
@@ -14,10 +14,7 @@ var targetIframe;
 var iframeScroller;
 var topWindowTime;
 var iframeWindowTime;
-// TODO(szager): We should be able to use a much smaller value for timestampTolerance
-// by using testRunner.runIdleTasks after this patch lands:
-//   https://codereview.chromium.org/1806133002/
-var timestampTolerance = 124;  // ~= 100ms idle callback timeout + 1.5 * frame time
+var timestampTolerance = 24;
 
 function step0() {
   // Test results are only significant if there's a sufficient gap between
@@ -26,18 +23,14 @@ function step0() {
   iframeWindowTime = targetIframe.contentWindow.performance.now();
   shouldBeGreaterThan("topWindowTime - iframeWindowTime", "2.5 * timestampTolerance");
 
-  topWindowEntries = topWindowEntries.concat(topWindowObserver.takeRecords());
-  iframeWindowEntries = iframeWindowEntries.concat(iframeWindowObserver.takeRecords());
   shouldBeEqualToNumber("topWindowEntries.length", 0);
   shouldBeEqualToNumber("iframeWindowEntries.length", 0);
   document.scrollingElement.scrollTop = 200;
   iframeScroller.scrollTop = 250;
-  requestAnimationFrame(step1);
+  waitForNotification(step1);
 }
 
 function step1() {
-  topWindowEntries = topWindowEntries.concat(topWindowObserver.takeRecords());
-  iframeWindowEntries = iframeWindowEntries.concat(iframeWindowObserver.takeRecords());
   topWindowTime = performance.now();
   iframeWindowTime = targetIframe.contentWindow.performance.now();
   shouldBeEqualToNumber("topWindowEntries.length", 1);
@@ -48,7 +41,7 @@ function step1() {
   if (iframeWindowEntries.length) {
     shouldBeCloseTo("iframeWindowEntries[0].time", "iframeWindowTime", timestampTolerance);
   }
-  finishJSTest();
+  waitForNotification(finishJSTest);
   document.scrollingElement.scrollTop = 0;
 }
 
@@ -69,8 +62,7 @@ function runTest() {
   });
   iframeWindowObserver.observe(target);
 
-  // See README for explanation of double RAF.
-  requestAnimationFrame(() => { requestAnimationFrame(step0) });
+  waitForNotification(step0);
 }
 
 onload = function() {
