@@ -224,25 +224,6 @@ public:
 
     SelectionController& selectionController() const { return *m_selectionController; }
 
-    class TouchInfo {
-        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    public:
-        DEFINE_INLINE_TRACE()
-        {
-            visitor->trace(touchTarget);
-            visitor->trace(targetFrame);
-        }
-
-        PlatformTouchPoint point;
-        Member<EventTarget> touchTarget;
-        Member<LocalFrame> targetFrame;
-        FloatPoint adjustedPagePoint;
-        FloatSize adjustedRadius;
-        bool knownTarget;
-        bool consumed;
-        String region;
-    };
-
 private:
     static DragState& dragState();
 
@@ -485,7 +466,5 @@ private:
 };
 
 } // namespace blink
-
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::EventHandler::TouchInfo);
 
 #endif // EventHandler_h

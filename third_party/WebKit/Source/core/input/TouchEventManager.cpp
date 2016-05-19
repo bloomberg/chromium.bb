@@ -169,9 +169,6 @@ WebInputEventResult TouchEventManager::dispatchTouchEvents(
         const PlatformTouchPoint& point = touchInfo.point;
         PlatformTouchPoint::TouchState pointState = point.state();
 
-        if (touchInfo.consumed)
-            continue;
-
         Touch* touch = Touch::create(
             touchInfo.targetFrame.get(),
             touchInfo.touchNode.get(),
@@ -287,31 +284,38 @@ void TouchEventManager::updateTargetAndRegionMapsForTouchStarts(
         // the corresponding pointer event target.
         if (touchInfo.point.state() == PlatformTouchPoint::TouchPressed) {
             HitTestRequest::HitTestRequestType hitType = HitTestRequest::TouchEvent | HitTestRequest::ReadOnly | HitTestRequest::Active;
-            LayoutPoint pagePoint = roundedLayoutPoint(m_frame->view()->rootFrameToContents(touchInfo.point.pos()));
             HitTestResult result;
-            if (!m_touchSequenceDocument) {
-                result = m_frame->eventHandler().hitTestResultAtPoint(pagePoint, hitType);
-            } else if (m_touchSequenceDocument->frame()) {
-                LayoutPoint framePoint = roundedLayoutPoint(m_touchSequenceDocument->frame()->view()->rootFrameToContents(touchInfo.point.pos()));
-                result = EventHandler::hitTestResultInFrame(m_touchSequenceDocument->frame(), framePoint, hitType);
-            } else {
-                continue;
+            // For the touchPressed points hit-testing is done in
+            // PointerEventManager. If it was the second touch there is a
+            // capturing documents for the touch and |m_touchSequenceDocument|
+            // is not null. So if PointerEventManager should hit-test again
+            // against |m_touchSequenceDocument| if the target set by
+            // PointerEventManager was either null or not in
+            // |m_touchSequenceDocument|.
+            if (m_touchSequenceDocument && (!touchInfo.touchNode
+                || &touchInfo.touchNode->document() != m_touchSequenceDocument)) {
+                if (m_touchSequenceDocument->frame()) {
+                    LayoutPoint framePoint = roundedLayoutPoint(m_touchSequenceDocument->frame()->view()->rootFrameToContents(touchInfo.point.pos()));
+                    result = EventHandler::hitTestResultInFrame(m_touchSequenceDocument->frame(), framePoint, hitType);
+                    Node* node = result.innerNode();
+                    if (!node)
+                        continue;
+                    if (isHTMLCanvasElement(node)) {
+                        std::pair<Element*, String> regionInfo = toHTMLCanvasElement(node)->getControlAndIdIfHitRegionExists(result.pointInInnerNodeFrame());
+                        if (regionInfo.first)
+                            node = regionInfo.first;
+                        touchInfo.region = regionInfo.second;
+                    }
+                    // Touch events should not go to text nodes.
+                    if (node->isTextNode())
+                        node = FlatTreeTraversal::parent(*node);
+                    touchInfo.touchNode = node;
+                } else {
+                    continue;
+                }
             }
-
-            Node* node = result.innerNode();
-            if (!node)
+            if (!touchInfo.touchNode)
                 continue;
-            if (isHTMLCanvasElement(node)) {
-                std::pair<Element*, String> regionInfo = toHTMLCanvasElement(node)->getControlAndIdIfHitRegionExists(result.pointInInnerNodeFrame());
-                if (regionInfo.first)
-                    node = regionInfo.first;
-                touchInfo.region = regionInfo.second;
-            }
-            // Touch events should not go to text nodes.
-            if (node->isTextNode())
-                node = FlatTreeTraversal::parent(*node);
-            touchInfo.touchNode = node;
-
             if (!m_touchSequenceDocument) {
                 // Keep track of which document should receive all touch events
                 // in the active sequence. This must be a single document to
@@ -402,12 +406,11 @@ void TouchEventManager::setAllPropertiesOfTouchInfos(
         touchInfo.contentPoint = pagePoint.scaledBy(scaleFactor);
         touchInfo.adjustedRadius = touchInfo.point.radius().scaledBy(scaleFactor);
         touchInfo.knownTarget = knownTarget;
-        touchInfo.consumed = false;
         touchInfo.region = regionID;
     }
 }
 
-bool TouchEventManager::generateTouchInfosAfterHittest(
+bool TouchEventManager::reHitTestTouchPointsIfNeeded(
     const PlatformTouchEvent& event,
     HeapVector<TouchInfo>& touchInfos)
 {
@@ -437,12 +440,6 @@ bool TouchEventManager::generateTouchInfosAfterHittest(
         return false;
     }
 
-    for (const auto& point : event.touchPoints()) {
-        TouchEventManager::TouchInfo touchInfo;
-        touchInfo.point = point;
-        touchInfos.append(touchInfo);
-    }
-
     updateTargetAndRegionMapsForTouchStarts(touchInfos);
 
     m_touchPressed = !allTouchesReleased;
@@ -465,8 +462,11 @@ bool TouchEventManager::generateTouchInfosAfterHittest(
 
 WebInputEventResult TouchEventManager::handleTouchEvent(
     const PlatformTouchEvent& event,
-    const HeapVector<TouchInfo>& touchInfos)
+    HeapVector<TouchInfo>& touchInfos)
 {
+    if (!reHitTestTouchPointsIfNeeded(event, touchInfos))
+        return WebInputEventResult::NotHandled;
+
     // Note that the disposition of any pointer events affects only the generation of touch
     // events. If all pointer events were handled (and hence no touch events were fired), that
     // is still equivalent to the touch events going unhandled because pointer event handler

@@ -10,6 +10,9 @@
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/input/EventHandler.h"
+#include "core/input/TouchActionUtil.h"
+#include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
 #include "platform/PlatformTouchEvent.h"
 
 namespace blink {
@@ -397,11 +400,6 @@ WebInputEventResult PointerEventManager::handleTouchEvents(
         unblockTouchPointers();
     HeapVector<TouchEventManager::TouchInfo> touchInfos;
 
-    // TODO(crbug.com/606822): This will be moved after pointer events so
-    // pointer event operations will get the first shot to fill up this array.
-    if (!m_touchEventManager.generateTouchInfosAfterHittest(event, touchInfos))
-        return WebInputEventResult::NotHandled;
-
     dispatchTouchPointerEvents(event, touchInfos);
 
     return m_touchEventManager.handleTouchEvent(event, touchInfos);
@@ -411,34 +409,79 @@ void PointerEventManager::dispatchTouchPointerEvents(
     const PlatformTouchEvent& event,
     HeapVector<TouchEventManager::TouchInfo>& touchInfos)
 {
-    if (!RuntimeEnabledFeatures::pointerEventEnabled())
-        return;
-
-    if (m_inCanceledStateForPointerTypeTouch)
-        return;
-
     // Iterate through the touch points, sending PointerEvents to the targets as required.
-    for (auto& touchInfo: touchInfos) {
-        const PlatformTouchPoint &touchPoint = touchInfo.point;
+    for (const auto& touchPoint : event.touchPoints()) {
+        TouchEventManager::TouchInfo touchInfo;
+        touchInfo.point = touchPoint;
+
+        int pointerId = m_pointerEventFactory.getPointerEventId(
+            touchPoint.pointerProperties());
+        // Do the hit test either when the touch first starts or when the touch
+        // is not captured. |m_pendingPointerCaptureTarget| indicates the target
+        // that will be capturing this event. |m_pointerCaptureTarget| may not
+        // have this target yet since the processing of that will be done right
+        // before firing the event.
+        if (touchInfo.point.state() == PlatformTouchPoint::TouchPressed
+            || !m_pendingPointerCaptureTarget.contains(pointerId)) {
+            HitTestRequest::HitTestRequestType hitType = HitTestRequest::TouchEvent | HitTestRequest::ReadOnly | HitTestRequest::Active;
+            LayoutPoint pagePoint = roundedLayoutPoint(m_frame->view()->rootFrameToContents(touchInfo.point.pos()));
+            HitTestResult hitTestTesult = m_frame->eventHandler().hitTestResultAtPoint(pagePoint, hitType);
+            Node* node = hitTestTesult.innerNode();
+            if (node) {
+                touchInfo.targetFrame = node->document().frame();
+                if (isHTMLCanvasElement(node)) {
+                    std::pair<Element*, String> regionInfo = toHTMLCanvasElement(node)->getControlAndIdIfHitRegionExists(hitTestTesult.pointInInnerNodeFrame());
+                    if (regionInfo.first)
+                        node = regionInfo.first;
+                    touchInfo.region = regionInfo.second;
+                }
+                // TODO(crbug.com/612456): We need to investigate whether pointer
+                // events should go to text nodes or not. If so we need to
+                // update the mouse code as well. Also this logic looks similar
+                // to the one in TouchEventManager. We should be able to
+                // refactor it better after this investigation.
+                if (node->isTextNode())
+                    node = FlatTreeTraversal::parent(*node);
+                touchInfo.touchNode = node;
+
+            }
+        } else {
+            // Set the target of pointer event to the captured node as this
+            // pointer is captured otherwise it would have gone to the if block
+            // and perform a hit-test.
+            touchInfo.touchNode = m_pendingPointerCaptureTarget
+                .get(pointerId)->toNode();
+            touchInfo.targetFrame = touchInfo.touchNode->document().frame();
+        }
+
         WebInputEventResult result = WebInputEventResult::NotHandled;
-        // Do not send pointer events for stationary touches.
-        if (touchPoint.state() != PlatformTouchPoint::TouchStationary) {
+
+        // Do not send pointer events for stationary touches or null targetFrame
+        if (touchInfo.touchNode
+            && touchPoint.state() != PlatformTouchPoint::TouchStationary
+            && !m_inCanceledStateForPointerTypeTouch) {
+            FloatPoint pagePoint = touchInfo.targetFrame->view()
+                ->rootFrameToContents(touchInfo.point.pos());
             float scaleFactor = 1.0f / touchInfo.targetFrame->pageZoomFactor();
             FloatPoint scrollPosition = touchInfo.targetFrame->view()->scrollPosition();
-            FloatPoint framePoint = touchInfo.contentPoint;
+            FloatPoint framePoint = pagePoint.scaledBy(scaleFactor);
             framePoint.moveBy(scrollPosition.scaledBy(-scaleFactor));
             PointerEvent* pointerEvent = m_pointerEventFactory.create(
                 pointerEventNameForTouchPointState(touchPoint.state()),
                 touchPoint, event.getModifiers(),
-                touchInfo.adjustedRadius,
+                touchPoint.radius().scaledBy(scaleFactor),
                 framePoint,
                 touchInfo.touchNode ?
                     touchInfo.touchNode->document().domWindow() : nullptr);
 
-            // Consume the touch point if its pointer event is anything but NotHandled
-            // (e.g. preventDefault is called in the listener for the pointer event).
             result = sendTouchPointerEvent(touchInfo.touchNode, pointerEvent);
-            touchInfo.consumed = result != WebInputEventResult::NotHandled;
+        }
+        // TODO(crbug.com/507408): Right now we add the touch point only if
+        // its pointer event is NotHandled (e.g. preventDefault is called in
+        // the pointer event listener). This behavior needs to change as it
+        // may create some inconsistent touch event sequence.
+        if (result == WebInputEventResult::NotHandled) {
+            touchInfos.append(touchInfo);
         }
     }
 }

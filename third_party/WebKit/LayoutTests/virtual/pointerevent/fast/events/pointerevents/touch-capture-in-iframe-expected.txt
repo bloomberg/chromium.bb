@@ -1,0 +1,158 @@
+
+This test verifies touch and corresponding pointerevent targets inside and outside the iframe.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+==== Finger1 in innerFrame and Finger2 in outerFrame ====
+*** Put first finger down in innerFrame and move ***
+innerFrame recieved pointerdown with id=2
+touchstart is recieved with changedTouches.length=1:
+  Touch with id=0 with target = innerFrame
+innerFrame recieved gotpointercapture with id=2
+innerFrame recieved pointermove with id=2
+touchmove is recieved with changedTouches.length=1:
+  Touch with id=0 with target = innerFrame
+
+*** Put second finger in outerFrame and move ***
+outerFrame recieved pointerdown with id=3
+outerFrame recieved gotpointercapture with id=3
+outerFrame recieved pointermove with id=3
+
+*** Move first finger to outerFrame ***
+innerFrame recieved pointermove with id=2
+touchmove is recieved with changedTouches.length=1:
+  Touch with id=0 with target = innerFrame
+
+*** Move second finger to innerFrame ***
+outerFrame recieved pointermove with id=3
+
+*** Releasing fingers ***
+innerFrame recieved pointerup with id=2
+innerFrame recieved lostpointercapture with id=2
+outerFrame recieved pointerup with id=3
+outerFrame recieved lostpointercapture with id=3
+touchend is recieved with changedTouches.length=1:
+  Touch with id=0 with target = innerFrame
+
+==== Finger1 in outerFrame and Finger2 in innerFrame ====
+*** Put first finger down in outerFrame and move ***
+outerFrame recieved pointerdown with id=4
+touchstart is recieved with changedTouches.length=1:
+  Touch with id=0 with target = outerFrame
+outerFrame recieved gotpointercapture with id=4
+outerFrame recieved pointermove with id=4
+touchmove is recieved with changedTouches.length=1:
+  Touch with id=0 with target = outerFrame
+
+*** Put second finger in innerFrame and move ***
+innerFrame recieved pointerdown with id=5
+touchstart is recieved with changedTouches.length=1:
+  Touch with id=1 with target = innerFrameElement
+innerFrame recieved gotpointercapture with id=5
+innerFrame recieved pointermove with id=5
+touchmove is recieved with changedTouches.length=1:
+  Touch with id=1 with target = innerFrameElement
+
+*** Move first finger to innerFrame ***
+outerFrame recieved pointermove with id=4
+touchmove is recieved with changedTouches.length=1:
+  Touch with id=0 with target = outerFrame
+
+*** Move second finger to outerFrame ***
+innerFrame recieved pointermove with id=5
+touchmove is recieved with changedTouches.length=1:
+  Touch with id=1 with target = innerFrameElement
+
+*** Releasing fingers ***
+outerFrame recieved pointerup with id=4
+outerFrame recieved lostpointercapture with id=4
+innerFrame recieved pointerup with id=5
+innerFrame recieved lostpointercapture with id=5
+touchend is recieved with changedTouches.length=2:
+  Touch with id=0 with target = outerFrame
+  Touch with id=1 with target = innerFrameElement
+touchend is recieved with changedTouches.length=2:
+  Touch with id=0 with target = outerFrame
+  Touch with id=1 with target = innerFrameElement
+
+==== Finger1 in innerFrame and Finger2 in innerFrame ====
+*** Put first finger down in innerFrame and move ***
+innerFrame recieved pointerdown with id=6
+touchstart is recieved with changedTouches.length=1:
+  Touch with id=0 with target = innerFrame
+innerFrame recieved gotpointercapture with id=6
+innerFrame recieved pointermove with id=6
+touchmove is recieved with changedTouches.length=1:
+  Touch with id=0 with target = innerFrame
+
+*** Put second finger in innerFrame and move ***
+innerFrame recieved pointerdown with id=7
+touchstart is recieved with changedTouches.length=1:
+  Touch with id=1 with target = innerFrame
+innerFrame recieved gotpointercapture with id=7
+innerFrame recieved pointermove with id=7
+touchmove is recieved with changedTouches.length=1:
+  Touch with id=1 with target = innerFrame
+
+*** Move first finger to outerFrame ***
+innerFrame recieved pointermove with id=6
+touchmove is recieved with changedTouches.length=1:
+  Touch with id=0 with target = innerFrame
+
+*** Move second finger to outerFrame ***
+innerFrame recieved pointermove with id=7
+touchmove is recieved with changedTouches.length=1:
+  Touch with id=1 with target = innerFrame
+
+*** Releasing fingers ***
+innerFrame recieved pointerup with id=6
+innerFrame recieved lostpointercapture with id=6
+innerFrame recieved pointerup with id=7
+innerFrame recieved lostpointercapture with id=7
+touchend is recieved with changedTouches.length=2:
+  Touch with id=0 with target = innerFrame
+  Touch with id=1 with target = innerFrame
+
+==== Finger1 in outerFrame and Finger2 in outerFrame ====
+*** Put first finger down in outerFrame and move ***
+outerFrame recieved pointerdown with id=8
+touchstart is recieved with changedTouches.length=1:
+  Touch with id=0 with target = outerFrame
+outerFrame recieved gotpointercapture with id=8
+outerFrame recieved pointermove with id=8
+touchmove is recieved with changedTouches.length=1:
+  Touch with id=0 with target = outerFrame
+
+*** Put second finger in outerFrame and move ***
+outerFrame recieved pointerdown with id=9
+touchstart is recieved with changedTouches.length=1:
+  Touch with id=1 with target = outerFrame
+outerFrame recieved gotpointercapture with id=9
+outerFrame recieved pointermove with id=9
+touchmove is recieved with changedTouches.length=1:
+  Touch with id=1 with target = outerFrame
+
+*** Move first finger to innerFrame ***
+outerFrame recieved pointermove with id=8
+touchmove is recieved with changedTouches.length=1:
+  Touch with id=0 with target = outerFrame
+
+*** Move second finger to innerFrame ***
+outerFrame recieved pointermove with id=9
+touchmove is recieved with changedTouches.length=1:
+  Touch with id=1 with target = outerFrame
+
+*** Releasing fingers ***
+outerFrame recieved pointerup with id=8
+outerFrame recieved lostpointercapture with id=8
+outerFrame recieved pointerup with id=9
+outerFrame recieved lostpointercapture with id=9
+touchend is recieved with changedTouches.length=2:
+  Touch with id=0 with target = outerFrame
+  Touch with id=1 with target = outerFrame
+
+

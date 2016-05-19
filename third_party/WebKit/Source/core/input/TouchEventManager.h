@@ -40,7 +40,6 @@ public:
         FloatPoint contentPoint;
         FloatSize adjustedRadius;
         bool knownTarget;
-        bool consumed;
         String region;
     };
 
@@ -48,14 +47,19 @@ public:
     ~TouchEventManager();
     DECLARE_TRACE();
 
-    // Returns true if it succesfully generates touchInfos.
-    bool generateTouchInfosAfterHittest(
+    // Does the hit-testing again if the original hit test result was not inside
+    // capturing frame for touch events. Returns true if touch events could be
+    // dispatched and otherwise returns false.
+    bool reHitTestTouchPointsIfNeeded(
         const PlatformTouchEvent&,
         HeapVector<TouchInfo>&);
 
+    // The TouchInfo array is reference just to prevent the copy. However, it
+    // cannot be const as this function might change some of the properties in
+    // TouchInfo objects.
     WebInputEventResult handleTouchEvent(
         const PlatformTouchEvent&,
-        const HeapVector<TouchInfo>&);
+        HeapVector<TouchInfo>&);
 
     // Resets the internal state of this object.
     void clear();
