@@ -39,6 +39,9 @@
 #include "core/CoreExport.h"
 #include "core/layout/FloatingObjects.h"
 #include "core/layout/LayoutBlock.h"
+#include "core/layout/api/LineLayoutItem.h"
+#include "core/layout/line/LineBoxList.h"
+#include "core/layout/line/RootInlineBox.h"
 #include "core/layout/line/TrailingObjects.h"
 #include "core/style/ComputedStyleConstants.h"
 
@@ -124,13 +127,12 @@ public:
             : logicalWidth() - logicalRightOffsetForLine(position, indentText, logicalHeight);
     }
 
-    // FIXME-BLOCKFLOW: Move this into LayoutBlockFlow once there are no calls
-    // in LayoutBlock. http://crbug.com/393945, http://crbug.com/302024
-    using LayoutBlock::lineBoxes;
-    using LayoutBlock::firstLineBox;
-    using LayoutBlock::lastLineBox;
-    using LayoutBlock::firstRootBox;
-    using LayoutBlock::lastRootBox;
+    const LineBoxList& lineBoxes() const { return m_lineBoxes; }
+    LineBoxList* lineBoxes() { return &m_lineBoxes; }
+    InlineFlowBox* firstLineBox() const { return m_lineBoxes.firstLineBox(); }
+    InlineFlowBox* lastLineBox() const { return m_lineBoxes.lastLineBox(); }
+    RootInlineBox* firstRootBox() const { return static_cast<RootInlineBox*>(firstLineBox()); }
+    RootInlineBox* lastRootBox() const { return static_cast<RootInlineBox*>(lastLineBox()); }
 
     LayoutUnit logicalLeftSelectionOffset(const LayoutBlock* rootBlock, LayoutUnit position) const override;
     LayoutUnit logicalRightSelectionOffset(const LayoutBlock* rootBlock, LayoutUnit position) const override;
@@ -608,6 +610,8 @@ private:
 
     // Used to store state between styleWillChange and styleDidChange
     static bool s_canPropagateFloatIntoSibling;
+
+    LineBoxList m_lineBoxes; // All of the root line boxes created for this block flow.  For example, <div>Hello<br>world.</div> will have two total lines for the <div>.
 
     LayoutBlockFlowRareData& ensureRareData();
 

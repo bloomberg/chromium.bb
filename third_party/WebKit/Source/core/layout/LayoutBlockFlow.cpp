@@ -63,6 +63,14 @@ namespace blink {
 
 bool LayoutBlockFlow::s_canPropagateFloatIntoSibling = false;
 
+struct SameSizeAsLayoutBlockFlow : public LayoutBlock {
+    LineBoxList lineBoxes;
+    LayoutUnit m_paintInvalidationLogicalTopAndBottom[2];
+    void* pointers[2];
+};
+
+static_assert(sizeof(LayoutBlockFlow) == sizeof(SameSizeAsLayoutBlockFlow), "LayoutBlockFlow should stay small");
+
 struct SameSizeAsMarginInfo {
     uint16_t bitfields;
     LayoutUnit margins[2];

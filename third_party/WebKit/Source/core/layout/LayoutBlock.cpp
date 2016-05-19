@@ -79,7 +79,6 @@ using namespace HTMLNames;
 
 struct SameSizeAsLayoutBlock : public LayoutBox {
     LayoutObjectChildList children;
-    LineBoxList lineBoxes;
     uint32_t bitfields;
 };
 

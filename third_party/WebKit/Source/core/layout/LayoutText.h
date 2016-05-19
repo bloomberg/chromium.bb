@@ -46,7 +46,7 @@ class InlineTextBox;
 // was a natural choice.
 //
 // The actual layout of text is handled by the containing inline
-// (LayoutInline) or block (LayoutBlock). They will invoke the Unicode
+// (LayoutInline) or block (LayoutBlockFlow). They will invoke the Unicode
 // Bidirectional Algorithm to break the text into actual lines.
 // The result of layout is the line box tree, which represents lines
 // on the screen. It is stored into m_firstTextBox and m_lastTextBox.
@@ -57,7 +57,7 @@ class InlineTextBox;
 // ***** LINE BOXES OWNERSHIP *****
 // m_firstTextBox and m_lastTextBox are not owned by LayoutText
 // but are pointers into the enclosing inline / block (see LayoutInline's
-// and LayoutBlock's m_lineBoxes).
+// and LayoutBlockFlow's m_lineBoxes).
 //
 //
 // This class implements the preferred logical widths computation

@@ -27,9 +27,6 @@
 #include "core/layout/FloatingObjects.h"
 #include "core/layout/GapRects.h"
 #include "core/layout/LayoutBox.h"
-#include "core/layout/api/LineLayoutItem.h"
-#include "core/layout/line/LineBoxList.h"
-#include "core/layout/line/RootInlineBox.h"
 #include "core/style/ShapeValue.h"
 #include "platform/text/TextBreakIterator.h"
 #include "wtf/ListHashSet.h"
@@ -132,18 +129,9 @@ public:
 
     bool createsNewFormattingContext() const;
 
-    const LineBoxList& lineBoxes() const { return m_lineBoxes; }
-    LineBoxList* lineBoxes() { return &m_lineBoxes; }
-
     const char* name() const override;
 
 protected:
-    InlineFlowBox* firstLineBox() const { return m_lineBoxes.firstLineBox(); }
-    InlineFlowBox* lastLineBox() const { return m_lineBoxes.lastLineBox(); }
-
-    RootInlineBox* firstRootBox() const { return static_cast<RootInlineBox*>(firstLineBox()); }
-    RootInlineBox* lastRootBox() const { return static_cast<RootInlineBox*>(lastLineBox()); }
-
     // Insert a child correctly into the tree when |beforeDescendant| isn't a direct child of
     // |this|. This happens e.g. when there's an anonymous block child of |this| and
     // |beforeDescendant| has been reparented into that one. Such things are invisible to the DOM,
@@ -441,7 +429,6 @@ protected:
     virtual bool updateLogicalWidthAndColumnWidth();
 
     LayoutObjectChildList m_children;
-    LineBoxList m_lineBoxes; // All of the root line boxes created for this block flow.  For example, <div>Hello<br>world.</div> will have two total lines for the <div>.
 
     unsigned m_hasMarginBeforeQuirk : 1; // Note these quirk values can't be put in LayoutBlockRareData since they are set too frequently.
     unsigned m_hasMarginAfterQuirk : 1;
