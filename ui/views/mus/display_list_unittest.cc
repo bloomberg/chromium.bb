@@ -71,8 +71,7 @@ class DisplayObserverImpl : public display::DisplayObserver {
   DISALLOW_COPY_AND_ASSIGN(DisplayObserverImpl);
 };
 
-// Test fails on linux_chromium_rel_ng, http://crbug.com/613018
-TEST(DisplayListTest, DISABLED_AddUpdateRemove) {
+TEST(DisplayListTest, AddUpdateRemove) {
   DisplayList display_list;
   DisplayObserverImpl observer;
   display_list.AddObserver(&observer);

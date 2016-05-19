@@ -85,7 +85,8 @@ class ShellConnection {
   }
 
   ~ShellConnection() {
-    views::WindowManagerConnection::Reset();
+    if (views::WindowManagerConnection::Exists())
+      views::WindowManagerConnection::Reset();
     base::WaitableEvent wait(false, false);
     thread_.task_runner()->PostTask(
         FROM_HERE, base::Bind(&ShellConnection::TearDownConnections,
