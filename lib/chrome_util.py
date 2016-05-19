@@ -162,11 +162,17 @@ class Copier(object):
 
     Args:
       src: The path of the file/directory to copy.
-      dest: The exact path of the destination.  Should not already exist.
+      dest: The exact path of the destination. Does nothing if it already
+            exists.
       path: The Path instance containing copy operation modifiers (such as
             Path.exe, Path.strip, etc.)
     """
     assert not os.path.isdir(src), '%s: Not expecting a directory!' % src
+
+    # This file has already been copied by an earlier Path.
+    if os.path.exists(dest):
+      return
+
     osutils.SafeMakedirs(os.path.dirname(dest), mode=self.dir_mode)
     is_bin = path.exe or src.endswith('.mojo')
     if is_bin and self.strip_bin and path.strip and os.path.getsize(src) > 0:
@@ -311,6 +317,9 @@ STAGING_FLAGS = (
 _CHROME_SANDBOX_DEST = 'chrome-sandbox'
 C = Conditions
 
+# In the below Path lists, if two Paths both match a file, the earlier Path
+# takes precedence.
+
 # Files shared between all deployment types.
 _COPY_PATHS_COMMON = (
     Path('chrome_sandbox', mode=0o4755, dest=_CHROME_SANDBOX_DEST),
@@ -358,14 +367,6 @@ _COPY_PATHS_CHROME = (
          optional=True,
          cond=C.StagingFlagSet(_HIGHDPI_FLAG)),
     Path('keyboard_resources.pak'),
-    Path('lib/*.so',
-         exe=True,
-         cond=[C.StagingFlagNotSet('gn'),
-               C.GypSet('component', value='shared_library')]),
-    Path('*.so',
-         exe=True,
-         cond=[C.StagingFlagSet('gn'),
-               C.GypSet('component', value='shared_library')]),
     # Set as optional for backwards compatibility.
     Path('libexif.so', exe=True, optional=True),
     # Widevine binaries are already pre-stripped.  In addition, they don't
@@ -378,6 +379,14 @@ _COPY_PATHS_CHROME = (
          exe=True,
          strip=False,
          cond=C.StagingFlagSet(_CHROME_INTERNAL_FLAG)),
+    Path('lib/*.so',
+         exe=True,
+         cond=[C.StagingFlagNotSet('gn'),
+               C.GypSet('component', value='shared_library')]),
+    Path('*.so',
+         exe=True,
+         cond=[C.StagingFlagSet('gn'),
+               C.GypSet('component', value='shared_library')]),
     Path('locales/'),
     Path('resources/'),
     Path('resources.pak'),
