@@ -415,9 +415,9 @@ bool LayoutTable::recalcChildOverflowAfterStyleChange()
     ASSERT(childNeedsOverflowRecalcAfterStyleChange());
     clearChildNeedsOverflowRecalcAfterStyleChange();
 
-    // If the table needs layout the sections we keep pointers to may have gone away and
+    // If the table sections we keep pointers to have gone away then the table will be rebuilt and
     // overflow will get recalculated anyway so return early.
-    if (needsLayout())
+    if (needsSectionRecalc())
         return false;
 
     bool childrenOverflowChanged = false;

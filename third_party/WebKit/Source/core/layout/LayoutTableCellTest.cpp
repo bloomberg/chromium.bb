@@ -120,6 +120,30 @@ TEST_F(LayoutTableCellTest, BackgroundIsKnownToBeOpaqueWithLayerAndCollapsedBord
     EXPECT_FALSE(cell->backgroundIsKnownToBeOpaqueInRect(LayoutRect(0, 0, 1, 1)));
 }
 
+TEST_F(LayoutTableCellTest, RepaintContentInTableCell)
+{
+    const char* bodyContent = "<table id='table' style='position: absolute; left: 1px;'>"
+        "<tr>"
+        "<td id='cell'>"
+        "<div style='display: inline-block; height: 20px; width: 20px'>"
+        "</td>"
+        "</tr>"
+        "</table>";
+    setBodyInnerHTML(bodyContent);
+
+    // Create an overflow recalc.
+    Element* cell = document().getElementById(AtomicString("cell"));
+    cell->setAttribute(HTMLNames::styleAttr, "outline: 1px solid black;");
+    // Trigger a layout on the table that doesn't require cell layout.
+    Element* table = document().getElementById(AtomicString("table"));
+    table->setAttribute(HTMLNames::styleAttr, "position: absolute; left: 2px;");
+    document().view()->updateAllLifecyclePhases();
+
+    // Check that overflow was calculated on the cell.
+    LayoutBlock* inputBlock = toLayoutBlock(getLayoutObjectByElementId("cell"));
+    LayoutRect rect = inputBlock->localOverflowRectForPaintInvalidation();
+    EXPECT_EQ(rect, LayoutRect(-1, -1, 24, 24));
+}
 } // namespace
 
 } // namespace blink
