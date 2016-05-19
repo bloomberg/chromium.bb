@@ -159,8 +159,7 @@ void FrameLoaderClientImpl::dispatchDidClearWindowObjectInMainWorld()
         if (document) {
             DeviceMotionController::from(*document);
             DeviceOrientationController::from(*document);
-            if (RuntimeEnabledFeatures::deviceOrientationAbsoluteEnabled())
-                DeviceOrientationAbsoluteController::from(*document);
+            DeviceOrientationAbsoluteController::from(*document);
             if (RuntimeEnabledFeatures::deviceLightEnabled())
                 DeviceLightController::from(*document);
             NavigatorGamepad::from(*document);

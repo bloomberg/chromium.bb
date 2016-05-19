@@ -71,7 +71,6 @@ CustomSchemeHandler depends_on=NavigatorContentUtils, status=experimental
 Database status=stable
 DecodeToYUV status=experimental
 DeviceLight status=experimental
-DeviceOrientationAbsolute status=stable
 DisableBlockingMethodsDuringMicrotasks status=test
 DisplayList2dCanvas status=stable
 DocumentWriteEvaluator
