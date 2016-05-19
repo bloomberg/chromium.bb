@@ -126,14 +126,6 @@ NSButton* BiggerDialogButton(NSString* title) {
   [_turnOffButton setAction:@selector(onTurnOffClicked:)];
   [view addSubview:_turnOffButton];
 
-  // Invisible button to handle ESC.
-  base::scoped_nsobject<NSButton> cancel_button(
-      [[NSButton alloc] initWithFrame:NSZeroRect]);
-  [cancel_button setTarget:self];
-  [cancel_button setAction:@selector(onEscClicked:)];
-  [cancel_button setKeyEquivalent:kKeyEquivalentEscape];
-  [view addSubview:cancel_button];
-
   // Layout.
   // Compute the bubble width using the title and the buttons.
   const CGFloat contentWidth = kDesiredBubbleWidth;
