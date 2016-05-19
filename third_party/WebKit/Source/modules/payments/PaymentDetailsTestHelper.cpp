@@ -17,9 +17,9 @@ void setValues(PaymentItemOrShippingOption& original, PaymentTestDataToChange da
     CurrencyAmount itemAmount;
     if (data == PaymentTestDataCurrencyCode) {
         if (modificationType == PaymentTestOverwriteValue)
-            itemAmount.setCurrencyCode(valueToUse);
+            itemAmount.setCurrency(valueToUse);
     } else {
-        itemAmount.setCurrencyCode("USD");
+        itemAmount.setCurrency("USD");
     }
     if (data == PaymentTestDataValue) {
         if (modificationType == PaymentTestOverwriteValue)

@@ -13,7 +13,7 @@ function substitute(originalObject, substituteKeyValuePair) {
 }
 
 function buildItem(optionalSubstituteKeyValuePair) {
-    var item = {'id': 'item_id', 'label': 'Item Description', 'amount': {'currencyCode': 'USD', 'value': '10.00'}};
+    var item = {'id': 'item_id', 'label': 'Item Description', 'amount': {'currency': 'USD', 'value': '10.00'}};
 
     if (optionalSubstituteKeyValuePair) {
         substitute(item, optionalSubstituteKeyValuePair);
@@ -173,25 +173,25 @@ for (var i in detailNames) {
     generate_tests(assert_throws, [
         // Invalid currency code formats.
         ['Invalid currency code US1 should throw', null, function() {
-            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'currencyCode': 'US1'}))
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'currency': 'US1'}))
         }],
         ['Invalid currency code US should throw', null, function() {
-            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'currencyCode': 'US'}))
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'currency': 'US'}))
         }],
         ['Invalid currency code USDO should throw', null, function() {
-            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'currencyCode': 'USDO'}))
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'currency': 'USDO'}))
         }],
         ['Invalid currency code usd should throw', null, function() {
-            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'currencyCode': 'usd'}))
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'currency': 'usd'}))
         }],
         ['Empty currency code should throw', null, function() {
-            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'currencyCode': ''}))
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'currency': ''}))
         }],
         ['Null currency code should throw', null, function() {
-            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'currencyCode': null}))
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'currency': null}))
         }],
         ['Undefined currency code should throw', null, function() {
-            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'currencyCode': undefined}))
+            new PaymentRequest(['foo'], buildDetails(detailNames[i], {'currency': undefined}))
         }],
 
         // Invalid amount formats.

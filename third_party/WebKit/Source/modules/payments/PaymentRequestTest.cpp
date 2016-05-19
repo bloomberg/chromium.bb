@@ -420,12 +420,12 @@ TEST_F(PaymentRequestTest, ClearShippingOptionOnPaymentDetailsUpdateWithoutShipp
     EXPECT_FALSE(getExceptionState().hadException());
     EXPECT_TRUE(request->shippingOption().isNull());
     request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectNoCall(getScriptState()));
-    String detailWithShippingOptions = "{\"items\": [{\"id\": \"total\", \"label\": \"Total\", \"amount\": {\"currencyCode\": \"USD\", \"value\": \"5.00\"}}],"
-        "\"shippingOptions\": [{\"id\": \"standardShippingOption\", \"label\": \"Standard shipping\", \"amount\": {\"currencyCode\": \"USD\", \"value\": \"5.00\"}}]}";
+    String detailWithShippingOptions = "{\"items\": [{\"id\": \"total\", \"label\": \"Total\", \"amount\": {\"currency\": \"USD\", \"value\": \"5.00\"}}],"
+        "\"shippingOptions\": [{\"id\": \"standardShippingOption\", \"label\": \"Standard shipping\", \"amount\": {\"currency\": \"USD\", \"value\": \"5.00\"}}]}";
     request->onUpdatePaymentDetails(ScriptValue::from(getScriptState(), fromJSONString(getScriptState(), detailWithShippingOptions, getExceptionState())));
     EXPECT_FALSE(getExceptionState().hadException());
     EXPECT_EQ("standardShippingOption", request->shippingOption());
-    String detailWithoutShippingOptions = "{\"items\": [{\"id\": \"total\", \"label\": \"Total\", \"amount\": {\"currencyCode\": \"USD\", \"value\": \"5.00\"}}]}";
+    String detailWithoutShippingOptions = "{\"items\": [{\"id\": \"total\", \"label\": \"Total\", \"amount\": {\"currency\": \"USD\", \"value\": \"5.00\"}}]}";
 
     request->onUpdatePaymentDetails(ScriptValue::from(getScriptState(), fromJSONString(getScriptState(), detailWithoutShippingOptions, getExceptionState())));
 
@@ -441,9 +441,9 @@ TEST_F(PaymentRequestTest, ClearShippingOptionOnPaymentDetailsUpdateWithMultiple
     PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), options, getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
     request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectNoCall(getScriptState()));
-    String detail = "{\"items\": [{\"id\": \"total\", \"label\": \"Total\", \"amount\": {\"currencyCode\": \"USD\", \"value\": \"5.00\"}}],"
-        "\"shippingOptions\": [{\"id\": \"slow\", \"label\": \"Slow\", \"amount\": {\"currencyCode\": \"USD\", \"value\": \"5.00\"}},"
-        "{\"id\": \"fast\", \"label\": \"Fast\", \"amount\": {\"currencyCode\": \"USD\", \"value\": \"50.00\"}}]}";
+    String detail = "{\"items\": [{\"id\": \"total\", \"label\": \"Total\", \"amount\": {\"currency\": \"USD\", \"value\": \"5.00\"}}],"
+        "\"shippingOptions\": [{\"id\": \"slow\", \"label\": \"Slow\", \"amount\": {\"currency\": \"USD\", \"value\": \"5.00\"}},"
+        "{\"id\": \"fast\", \"label\": \"Fast\", \"amount\": {\"currency\": \"USD\", \"value\": \"50.00\"}}]}";
 
     request->onUpdatePaymentDetails(ScriptValue::from(getScriptState(), fromJSONString(getScriptState(), detail, getExceptionState())));
     EXPECT_FALSE(getExceptionState().hadException());
@@ -459,8 +459,8 @@ TEST_F(PaymentRequestTest, UseTheSingleShippingOptionFromPaymentDetailsUpdate)
     PaymentRequest* request = PaymentRequest::create(getScriptState(), Vector<String>(1, "foo"), buildPaymentDetailsForTest(), options, getExceptionState());
     EXPECT_FALSE(getExceptionState().hadException());
     request->show(getScriptState()).then(MockFunction::expectNoCall(getScriptState()), MockFunction::expectNoCall(getScriptState()));
-    String detail = "{\"items\": [{\"id\": \"total\", \"label\": \"Total\", \"amount\": {\"currencyCode\": \"USD\", \"value\": \"5.00\"}}],"
-        "\"shippingOptions\": [{\"id\": \"standardShippingOption\", \"label\": \"Standard shipping\", \"amount\": {\"currencyCode\": \"USD\", \"value\": \"5.00\"}}]}";
+    String detail = "{\"items\": [{\"id\": \"total\", \"label\": \"Total\", \"amount\": {\"currency\": \"USD\", \"value\": \"5.00\"}}],"
+        "\"shippingOptions\": [{\"id\": \"standardShippingOption\", \"label\": \"Standard shipping\", \"amount\": {\"currency\": \"USD\", \"value\": \"5.00\"}}]}";
 
     request->onUpdatePaymentDetails(ScriptValue::from(getScriptState(), fromJSONString(getScriptState(), detail, getExceptionState())));
     EXPECT_FALSE(getExceptionState().hadException());

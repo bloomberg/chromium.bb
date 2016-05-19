@@ -45,7 +45,7 @@ struct TypeConverter<CurrencyAmountPtr, blink::CurrencyAmount> {
     static CurrencyAmountPtr Convert(const blink::CurrencyAmount& input)
     {
         CurrencyAmountPtr output = CurrencyAmount::New();
-        output->currency_code = input.currencyCode();
+        output->currency_code = input.currency();
         output->value = input.value();
         return output;
     }
@@ -125,7 +125,7 @@ void validateShippingOptionsOrPaymentItems(HeapVector<T> items, ExceptionState& 
             return;
         }
 
-        if (!item.amount().hasCurrencyCode()) {
+        if (!item.amount().hasCurrency()) {
             exceptionState.throwTypeError("Currency code required");
             return;
         }
@@ -135,7 +135,7 @@ void validateShippingOptionsOrPaymentItems(HeapVector<T> items, ExceptionState& 
             return;
         }
 
-        if (!PaymentsValidators::isValidCurrencyCodeFormat(item.amount().currencyCode(), &errorMessage)) {
+        if (!PaymentsValidators::isValidCurrencyCodeFormat(item.amount().currency(), &errorMessage)) {
             exceptionState.throwTypeError(errorMessage);
             return;
         }
