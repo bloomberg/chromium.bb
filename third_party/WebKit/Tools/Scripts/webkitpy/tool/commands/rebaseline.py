@@ -220,16 +220,19 @@ class RebaselineTest(BaseInternalRebaselineCommand):
                             target_baseline, baseline_directory, test_name, suffix)
 
     def _rebaseline_test_and_update_expectations(self, options):
+        self._baseline_suffix_list = options.suffixes.split(',')
+
         port = self._tool.port_factory.get_from_builder_name(options.builder)
-        if (port.reference_files(options.test)):
-            _log.warning("Cannot rebaseline reftest: %s", options.test)
-            return
+        if port.reference_files(options.test):
+            if 'png' in self._baseline_suffix_list:
+                _log.warning("Cannot rebaseline image result for reftest: %s", options.test)
+                return
+            assert self._baseline_suffix_list == ['txt']
 
         if options.results_directory:
             results_url = 'file://' + options.results_directory
         else:
             results_url = self._results_url(options.builder)
-        self._baseline_suffix_list = options.suffixes.split(',')
 
         for suffix in self._baseline_suffix_list:
             self._rebaseline_test(options.builder, options.test, suffix, results_url)

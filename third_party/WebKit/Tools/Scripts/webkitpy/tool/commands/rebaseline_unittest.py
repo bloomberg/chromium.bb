@@ -296,8 +296,9 @@ Bug(A) [ Debug ] : fast/css/large-list-of-rules-crash.html [ Failure ]
     def test_rebaseline_reftest(self):
         self._write("userscripts/another-test.html", "test data")
         self._write("userscripts/another-test-expected.html", "generic result")
+        self.options.suffixes = 'png'
         OutputCapture().assert_outputs(self, self.command._rebaseline_test_and_update_expectations, args=[self.options],
-                                       expected_logs="Cannot rebaseline reftest: userscripts/another-test.html\n")
+                                       expected_logs="Cannot rebaseline image result for reftest: userscripts/another-test.html\n")
         self.assertDictEqual(self.command._scm_changes, {'add': [], 'remove-lines': [], "delete": []})
 
     def test_rebaseline_test_and_print_scm_changes(self):
@@ -705,6 +706,67 @@ class TestRebaselineExpectations(_BaseTestCase):
                     '--builder', 'MOCK Mac10.10', '--test', 'userscripts/images.svg'],
                 ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'png',
                     '--builder', 'MOCK Mac10.11', '--test', 'userscripts/images.svg'],
+            ],
+        ])
+
+    def test_rebaseline_expectations_reftests(self):
+        self._zero_out_test_expectations()
+
+        self.tool.executive = MockExecutive2()
+
+        def builder_data():
+            self.command._builder_data['MOCK Mac10.10'] = self.command._builder_data['MOCK Mac10.11'] = LayoutTestResults.results_from_string("""ADD_RESULTS({
+    "tests": {
+        "userscripts": {
+            "reftest-text.html": {
+                "expected": "PASS",
+                "actual": "TEXT"
+            },
+            "reftest-image.html": {
+                "expected": "FAIL",
+                "actual": "IMAGE"
+            },
+            "reftest-image-text.html": {
+                "expected": "FAIL",
+                "actual": "IMAGE+TEXT"
+            }
+        }
+    }
+});""")
+            return self.command._builder_data
+
+        self.command.builder_data = builder_data
+
+        self._write("userscripts/reftest-text.html", "Dummy test contents")
+        self._write("userscripts/reftest-text-expected.html", "Dummy test contents")
+        self._write("userscripts/reftest-text-expected.html", "Dummy test contents")
+        self.command._tests_to_rebaseline = lambda port: {
+            'userscripts/reftest-text.html': set(['txt']),
+            'userscripts/reftest-image.html': set(['png']),
+            'userscripts/reftest-image-text.html': set(['png', 'txt']),
+        }
+
+        self.tool.builders = FakeBuilders({
+            "MOCK Mac10.10": {"port_name": "test-mac-mac10.10", "specifiers": set(["mock-specifier"])},
+            "MOCK Mac10.11": {"port_name": "test-mac-mac10.11", "specifiers": set(["mock-specifier"])},
+        })
+        self.command.execute(self.options, [], self.tool)
+
+        # FIXME: change this to use the test- ports.
+        calls = filter(lambda x: x != ['qmake', '-v'], self.tool.executive.calls)
+
+        self.assertEqual(self.tool.executive.calls, [
+            [
+                ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt',
+                    '--builder', 'MOCK Mac10.10', '--test', 'userscripts/reftest-text.html'],
+                ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt',
+                    '--builder', 'MOCK Mac10.11', '--test', 'userscripts/reftest-text.html'],
+            ],
+            [
+                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt',
+                    '--builder', 'MOCK Mac10.10', '--test', 'userscripts/reftest-text.html'],
+                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt',
+                    '--builder', 'MOCK Mac10.11', '--test', 'userscripts/reftest-text.html'],
             ],
         ])
 

@@ -44,6 +44,8 @@ from webkitpy.common.host_mock import MockHost
 
 from webkitpy.layout_tests import port
 from webkitpy.layout_tests import run_webkit_tests
+from webkitpy.layout_tests.models import test_expectations
+from webkitpy.layout_tests.models import test_failures
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port import test
 from webkitpy.layout_tests.port.base import Port
@@ -825,6 +827,53 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # reference_args should be empty since we are using the default flags.
         self.assertTrue(re.search('reference_args:\s*ref:', err.getvalue()))
 
+    def test_reftest_matching_text_expectation(self):
+        test_name = 'passes/reftest.html'
+        host = MockHost()
+        host.filesystem.write_text_file(test.LAYOUT_TEST_DIR + '/passes/reftest-expected.txt', 'reftest')
+        run_details, err, _ = logging_run([test_name], tests_included=True, host=host)
+        self.assertEqual(run_details.exit_code, 0)
+        self.assertEqual(run_details.initial_results.total, 1)
+        test_result = run_details.initial_results.all_results[0]
+        self.assertEqual(test_result.test_name, test_name)
+        self.assertEqual(len(test_result.failures), 0)
+
+    def test_reftest_mismatching_text_expectation(self):
+        test_name = 'passes/reftest.html'
+        host = MockHost()
+        host.filesystem.write_text_file(test.LAYOUT_TEST_DIR + '/passes/reftest-expected.txt', 'mismatch')
+        run_details, err, _ = logging_run([test_name], tests_included=True, host=host)
+        self.assertNotEqual(run_details.exit_code, 0)
+        self.assertEqual(run_details.initial_results.total, 1)
+        test_result = run_details.initial_results.all_results[0]
+        self.assertEqual(test_result.test_name, test_name)
+        self.assertEqual(len(test_result.failures), 1)
+        self.assertEqual(test_failures.determine_result_type(test_result.failures), test_expectations.TEXT)
+
+    def test_reftest_mismatching_pixel_matching_text(self):
+        test_name = 'failures/unexpected/reftest.html'
+        host = MockHost()
+        host.filesystem.write_text_file(test.LAYOUT_TEST_DIR + '/failures/unexpected/reftest-expected.txt', 'reftest')
+        run_details, err, _ = logging_run([test_name], tests_included=True, host=host)
+        self.assertNotEqual(run_details.exit_code, 0)
+        self.assertEqual(run_details.initial_results.total, 1)
+        test_result = run_details.initial_results.all_results[0]
+        self.assertEqual(test_result.test_name, test_name)
+        self.assertEqual(len(test_result.failures), 1)
+        self.assertEqual(test_failures.determine_result_type(test_result.failures), test_expectations.IMAGE)
+
+    def test_reftest_mismatching_both_text_and_pixel(self):
+        test_name = 'failures/unexpected/reftest.html'
+        host = MockHost()
+        host.filesystem.write_text_file(test.LAYOUT_TEST_DIR + '/failures/unexpected/reftest-expected.txt', 'mismatch')
+        run_details, err, _ = logging_run([test_name], tests_included=True, host=host)
+        self.assertNotEqual(run_details.exit_code, 0)
+        self.assertEqual(run_details.initial_results.total, 1)
+        test_result = run_details.initial_results.all_results[0]
+        self.assertEqual(test_result.test_name, test_name)
+        self.assertEqual(len(test_result.failures), 2)
+        self.assertEqual(test_failures.determine_result_type(test_result.failures), test_expectations.IMAGE_PLUS_TEXT)
+
     def test_additional_platform_directory(self):
         self.assertTrue(passing_run(['--additional-platform-directory', '/tmp/foo']))
         self.assertTrue(passing_run(['--additional-platform-directory', '/tmp/../foo']))
@@ -1066,6 +1115,42 @@ Bug(foo) failures/unexpected/missing_render_tree_dump.html [ Missing ]
                              "platform/test-mac-mac10.10/passes/image", [".txt", ".png"], err)
         self.assertBaselines(file_list,
                              "platform/test-mac-mac10.10/failures/expected/missing_image", [".txt", ".png"], err)
+
+    def test_reftest_reset_results(self):
+        # Test rebaseline of reftests.
+        # Should ignore reftests without text expectations.
+        host = MockHost()
+        details, err, _ = logging_run(['--reset-results', 'passes/reftest.html'], tests_included=True, host=host)
+        file_list = host.filesystem.written_files.keys()
+        self.assertEqual(details.exit_code, 0)
+        self.assertEqual(len(file_list), 5)
+        self.assertBaselines(file_list, '', [], err)
+
+        host.filesystem.write_text_file(test.LAYOUT_TEST_DIR + '/passes/reftest-expected.txt', '')
+        host.filesystem.clear_written_files()
+        details, err, _ = logging_run(['--reset-results', 'passes/reftest.html'], tests_included=True, host=host)
+        file_list = host.filesystem.written_files.keys()
+        self.assertEqual(details.exit_code, 0)
+        self.assertEqual(len(file_list), 6)
+        self.assertBaselines(file_list, 'passes/reftest', ['.txt'], err)
+
+    def test_reftest_new_baseline(self):
+        # Test rebaseline of reftests.
+        # Should ignore reftests without text expectations.
+        host = MockHost()
+        details, err, _ = logging_run(['--new-baseline', 'passes/reftest.html'], tests_included=True, host=host)
+        file_list = host.filesystem.written_files.keys()
+        self.assertEqual(details.exit_code, 0)
+        self.assertEqual(len(file_list), 5)
+        self.assertBaselines(file_list, '', [], err)
+
+        host.filesystem.write_text_file(test.LAYOUT_TEST_DIR + '/passes/reftest-expected.txt', '')
+        host.filesystem.clear_written_files()
+        details, err, _ = logging_run(['--new-baseline', 'passes/reftest.html'], tests_included=True, host=host)
+        file_list = host.filesystem.written_files.keys()
+        self.assertEqual(details.exit_code, 0)
+        self.assertEqual(len(file_list), 6)
+        self.assertBaselines(file_list, 'platform/test-mac-mac10.10/passes/reftest', ['.txt'], err)
 
 
 class PortTest(unittest.TestCase):

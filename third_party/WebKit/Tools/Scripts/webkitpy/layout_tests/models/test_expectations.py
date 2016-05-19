@@ -173,7 +173,9 @@ class TestExpectationParser(object):
         if self.NEEDS_REBASELINE_MODIFIER in expectations or self.NEEDS_MANUAL_REBASELINE_MODIFIER in expectations:
             for test in expectation_line.matching_tests:
                 if self._port.reference_files(test):
-                    expectation_line.warnings.append('A reftest cannot be marked as NeedsRebaseline/NeedsManualRebaseline')
+                    text_expected_filename = self._port.expected_filename(test, '.txt')
+                    if not self._port.host.filesystem.exists(text_expected_filename):
+                        expectation_line.warnings.append('A reftest without text expectation cannot be marked as NeedsRebaseline/NeedsManualRebaseline')
 
         specifiers = [specifier.lower() for specifier in expectation_line.specifiers]
         if (self.REBASELINE_MODIFIER in expectations or self.NEEDS_REBASELINE_MODIFIER in expectations) and ('debug' in specifiers or 'release' in specifiers):

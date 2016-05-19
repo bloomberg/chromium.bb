@@ -60,7 +60,12 @@ class Base(unittest.TestCase):
                 'failures/expected/missing_text.html',
                 'failures/expected/image.html',
                 'failures/expected/timeout.html',
-                'passes/text.html']
+                'passes/text.html',
+                'reftests/failures/expected/needsrebaseline.html',
+                'reftests/failures/expected/needsrebaseline_with_txt.html',
+                'reftests/failures/expected/needsmanualrebaseline.html',
+                'reftests/failures/expected/needsmanualrebaseline_with_txt.html',
+                'reftests/failures/expected/has_unused_expectation.html']
 
     def get_basic_expectations(self):
         return """
@@ -192,20 +197,26 @@ class MiscTests(Base):
     def test_needs_rebaseline_reftest(self):
         try:
             filesystem = self._port.host.filesystem
-            filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(),
-                                                       'failures/expected/needsrebaseline.html'), 'content')
-            filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(),
-                                                       'failures/expected/needsrebaseline-expected.html'), 'content')
-            filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(),
-                                                       'failures/expected/needsmanualrebaseline.html'), 'content')
-            filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(),
-                                                       'failures/expected/needsmanualrebaseline-expected.html'), 'content')
-            self.parse_exp("""Bug(user) failures/expected/needsrebaseline.html [ NeedsRebaseline ]
-Bug(user) failures/expected/needsmanualrebaseline.html [ NeedsManualRebaseline ]""", is_lint_mode=True)
+            filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'reftests/failures/expected/needsrebaseline.html'), 'content')
+            filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'reftests/failures/expected/needsrebaseline-expected.html'), 'content')
+            filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'reftests/failures/expected/needsrebaseline_with_txt.html'), 'content')
+            filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'reftests/failures/expected/needsrebaseline_with_txt-expected.html'), 'content')
+            filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'reftests/failures/expected/needsrebaseline_with_txt-expected.txt'), 'content')
+            filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'reftests/failures/expected/needsmanualrebaseline.html'), 'content')
+            filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'reftests/failures/expected/needsmanualrebaseline-expected.html'), 'content')
+            filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'reftests/failures/expected/needsmanualrebaseline_with_txt.html'), 'content')
+            filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'reftests/failures/expected/needsmanualrebaseline_with_txt.html'), 'content')
+            filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'reftests/failures/expected/needsmanualrebaseline_with_txt-expected.html'), 'content')
+            filesystem.write_text_file(filesystem.join(self._port.layout_tests_dir(), 'reftests/failures/expected/needsmanualrebaseline_with_txt-expected.txt'), 'content')
+            self.parse_exp("""Bug(user) reftests/failures/expected/needsrebaseline.html [ NeedsRebaseline ]
+Bug(user) reftests/failures/expected/needsrebaseline_with_txt.html [ NeedsRebaseline ]
+Bug(user) reftests/failures/expected/needsmanualrebaseline.html [ NeedsManualRebaseline ]
+Bug(user) reftests/failures/expected/needsmanualrebaseline_with_txt.html [ NeedsManualRebaseline ]
+""", is_lint_mode=True)
             self.assertFalse(True, "ParseError wasn't raised")
         except ParseError, e:
-            warnings = """expectations:1 A reftest cannot be marked as NeedsRebaseline/NeedsManualRebaseline failures/expected/needsrebaseline.html
-expectations:2 A reftest cannot be marked as NeedsRebaseline/NeedsManualRebaseline failures/expected/needsmanualrebaseline.html"""
+            warnings = """expectations:1 A reftest without text expectation cannot be marked as NeedsRebaseline/NeedsManualRebaseline reftests/failures/expected/needsrebaseline.html
+expectations:3 A reftest without text expectation cannot be marked as NeedsRebaseline/NeedsManualRebaseline reftests/failures/expected/needsmanualrebaseline.html"""
             self.assertEqual(str(e), warnings)
 
     def test_parse_warning(self):
