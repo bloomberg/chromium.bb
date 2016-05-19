@@ -2317,7 +2317,7 @@ public class AwContents implements SmartClipProvider,
         // So set the readonly flag for M.
         // TODO(hush): remove the part about VERSION.CODENAME equality with N, after N release.
         // crbug.com/543272
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M && !"N".equals(Build.VERSION.CODENAME)) {
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M && !Build.VERSION.CODENAME.equals("N")) {
             intent.putExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, true);
         }
 

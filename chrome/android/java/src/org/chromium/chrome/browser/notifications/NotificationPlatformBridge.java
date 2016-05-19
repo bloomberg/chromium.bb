@@ -608,7 +608,7 @@ public class NotificationPlatformBridge {
         if (commandLine.hasSwitch(ChromeSwitches.DISABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS)) {
             return false;
         }
-        if (Build.VERSION.CODENAME.equals("N")) {
+        if (Build.VERSION.CODENAME.equals("N") || Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
             return false;
         }
         return true;

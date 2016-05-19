@@ -75,11 +75,11 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(newBase);
 
-        // On N, Chrome should always retain the tab strip layout on tablets. Normally in
+        // On N+, Chrome should always retain the tab strip layout on tablets. Normally in
         // multi-window, if Chrome is launched into a smaller screen Android will load the tab
         // switcher resources. Overriding the smallestScreenWidthDp in the Configuration ensures
         // Android will load the tab strip resources. See crbug.com/588838.
-        if (Build.VERSION.CODENAME.equals("N")) {
+        if (Build.VERSION.CODENAME.equals("N") || Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
             int smallestDeviceWidthDp = DeviceFormFactor.getSmallestDeviceWidthDp(this);
 
             if (smallestDeviceWidthDp >= DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP) {
