@@ -99,7 +99,8 @@ AccountChooserDialogView::AccountChooserDialogView(
     PasswordDialogController* controller,
     content::WebContents* web_contents)
     : controller_(controller),
-      web_contents_(web_contents) {
+      web_contents_(web_contents),
+      show_signin_button_(false) {
   DCHECK(controller);
   DCHECK(web_contents);
 }
@@ -107,6 +108,7 @@ AccountChooserDialogView::AccountChooserDialogView(
 AccountChooserDialogView::~AccountChooserDialogView() = default;
 
 void AccountChooserDialogView::ShowAccountChooser() {
+  show_signin_button_ = controller_->ShouldShowSignInButton();
   InitWindow();
   constrained_window::ShowWebModalDialogViews(this, web_contents_);
 }
@@ -138,13 +140,34 @@ void AccountChooserDialogView::WindowClosing() {
     controller_->OnCloseDialog();
 }
 
+bool AccountChooserDialogView::Accept() {
+  DCHECK(show_signin_button_);
+  DCHECK(controller_);
+  controller_->OnSignInClicked();
+  // The dialog is closed by the controller.
+  return false;
+}
+
 int AccountChooserDialogView::GetDialogButtons() const {
+  if (show_signin_button_)
+    return ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
   return ui::DIALOG_BUTTON_CANCEL;
+}
+
+bool AccountChooserDialogView::ShouldDefaultButtonBeBlue() const {
+  return show_signin_button_;
 }
 
 base::string16 AccountChooserDialogView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
+  int message_id = 0;
+  if (button == ui::DIALOG_BUTTON_OK)
+    message_id = IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_SIGN_IN;
+  else if (button == ui::DIALOG_BUTTON_CANCEL)
+    message_id = IDS_APP_CANCEL;
+  else
+    NOTREACHED();
+  return l10n_util::GetStringUTF16(message_id);
 }
 
 gfx::Size AccountChooserDialogView::GetPreferredSize() const {
