@@ -142,8 +142,9 @@ public:
 
     void removeSheetFromCache(Document*);
 
-    bool isReferencedFromResource() const { return m_isReferencedFromResource; }
-    void setReferencedFromResource(bool);
+    bool isReferencedFromResource() const { return m_referencedFromResource; }
+    void setReferencedFromResource(CSSStyleSheetResource*);
+    void clearReferencedFromResource();
 
     void setHasMediaQueries();
     bool hasMediaQueries() const { return m_hasMediaQueries; }
@@ -177,11 +178,11 @@ private:
     using PrefixNamespaceURIMap = HashMap<AtomicString, AtomicString>;
     PrefixNamespaceURIMap m_namespaces;
     AtomicString m_defaultNamespace;
+    WeakMember<CSSStyleSheetResource> m_referencedFromResource;
 
     bool m_hasSyntacticallyValidCSSHeader : 1;
     bool m_didLoadErrorOccur : 1;
     bool m_isMutable : 1;
-    bool m_isReferencedFromResource : 1;
     bool m_hasFontFaceRule : 1;
     bool m_hasMediaQueries : 1;
     bool m_hasSingleOwnerDocument : 1;

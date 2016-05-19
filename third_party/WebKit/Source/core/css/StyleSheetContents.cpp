@@ -62,7 +62,6 @@ StyleSheetContents::StyleSheetContents(StyleRuleImport* ownerRule, const String&
     , m_hasSyntacticallyValidCSSHeader(true)
     , m_didLoadErrorOccur(false)
     , m_isMutable(false)
-    , m_isReferencedFromResource(false)
     , m_hasFontFaceRule(false)
     , m_hasMediaQueries(false)
     , m_hasSingleOwnerDocument(true)
@@ -81,7 +80,6 @@ StyleSheetContents::StyleSheetContents(const StyleSheetContents& o)
     , m_hasSyntacticallyValidCSSHeader(o.m_hasSyntacticallyValidCSSHeader)
     , m_didLoadErrorOccur(false)
     , m_isMutable(false)
-    , m_isReferencedFromResource(false)
     , m_hasFontFaceRule(o.m_hasFontFaceRule)
     , m_hasMediaQueries(o.m_hasMediaQueries)
     , m_hasSingleOwnerDocument(true)
@@ -586,11 +584,19 @@ void StyleSheetContents::removeSheetFromCache(Document* document)
     document->styleEngine().removeSheet(this);
 }
 
-void StyleSheetContents::setReferencedFromResource(bool referenced)
+void StyleSheetContents::setReferencedFromResource(CSSStyleSheetResource* resource)
 {
-    ASSERT(referenced != m_isReferencedFromResource);
-    ASSERT(isCacheableForResource());
-    m_isReferencedFromResource = referenced;
+    DCHECK(resource);
+    DCHECK(!isReferencedFromResource());
+    DCHECK(isCacheableForResource());
+    m_referencedFromResource = resource;
+}
+
+void StyleSheetContents::clearReferencedFromResource()
+{
+    DCHECK(isReferencedFromResource());
+    DCHECK(isCacheableForResource());
+    m_referencedFromResource = nullptr;
 }
 
 RuleSet& StyleSheetContents::ensureRuleSet(const MediaQueryEvaluator& medium, AddRuleFlags addRuleFlags)
@@ -679,6 +685,7 @@ DEFINE_TRACE(StyleSheetContents)
     visitor->trace(m_loadingClients);
     visitor->trace(m_completedClients);
     visitor->trace(m_ruleSet);
+    visitor->trace(m_referencedFromResource);
 }
 
 } // namespace blink

@@ -310,8 +310,6 @@ Resource::Resource(const ResourceRequest& request, Type type, const ResourceLoad
     , m_needsSynchronousCacheHit(false)
     , m_linkPreload(false)
 {
-    ThreadState::current()->registerPreFinalizer(this);
-
     ASSERT(m_type == unsigned(type)); // m_type is a bitfield, so this tests careless updates of the enum.
     InstanceCounters::incrementCounter(InstanceCounters::ResourceCounter);
 
@@ -323,11 +321,6 @@ Resource::Resource(const ResourceRequest& request, Type type, const ResourceLoad
 Resource::~Resource()
 {
     InstanceCounters::decrementCounter(InstanceCounters::ResourceCounter);
-}
-
-void Resource::willDestroyResource()
-{
-    willDestroyResourceInternal();
 }
 
 DEFINE_TRACE(Resource)

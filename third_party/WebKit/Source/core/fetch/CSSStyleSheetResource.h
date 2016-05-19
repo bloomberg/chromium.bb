@@ -75,7 +75,6 @@ private:
 
     bool canUseSheet(MIMETypeCheck) const;
     void checkNotify() override;
-    void willDestroyResourceInternal() override;
 
     void setParsedStyleSheetCache(StyleSheetContents*);
 

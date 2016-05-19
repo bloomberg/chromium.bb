@@ -58,18 +58,13 @@ CSSStyleSheetResource::~CSSStyleSheetResource()
 {
 }
 
-void CSSStyleSheetResource::willDestroyResourceInternal()
-{
-    setParsedStyleSheetCache(nullptr);
-}
-
 void CSSStyleSheetResource::setParsedStyleSheetCache(StyleSheetContents* newSheet)
 {
     if (m_parsedStyleSheetCache)
-        m_parsedStyleSheetCache->setReferencedFromResource(false);
+        m_parsedStyleSheetCache->clearReferencedFromResource();
     m_parsedStyleSheetCache = newSheet;
     if (m_parsedStyleSheetCache)
-        m_parsedStyleSheetCache->setReferencedFromResource(true);
+        m_parsedStyleSheetCache->setReferencedFromResource(this);
 }
 
 DEFINE_TRACE(CSSStyleSheetResource)

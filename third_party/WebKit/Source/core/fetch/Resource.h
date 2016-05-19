@@ -57,7 +57,6 @@ class SharedBuffer;
 // This class also does the actual communication with the loader to obtain the resource from the network.
 class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource> {
     WTF_MAKE_NONCOPYABLE(Resource);
-    USING_PRE_FINALIZER(Resource, willDestroyResource);
 public:
     enum Type {
         MainResource,
@@ -91,7 +90,6 @@ public:
     }
     virtual ~Resource();
 
-    void willDestroyResource();
     DECLARE_VIRTUAL_TRACE();
 
     void load(ResourceFetcher*);
@@ -261,8 +259,6 @@ protected:
     // |this| object may be dead after didRemoveClientOrObserver().
     void didRemoveClientOrObserver();
     virtual void allClientsAndObserversRemoved();
-
-    virtual void willDestroyResourceInternal() { }
 
     HashCountedSet<ResourceClient*> m_clients;
     HashCountedSet<ResourceClient*> m_clientsAwaitingCallback;
