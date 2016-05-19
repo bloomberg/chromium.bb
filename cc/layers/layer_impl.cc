@@ -679,8 +679,8 @@ void LayerImpl::UpdatePropertyTreeTransformIsAnimated(bool is_animated) {
     // node).
     if (node->owner_id != id())
       return;
-    if (node->data.is_animated != is_animated) {
-      node->data.is_animated = is_animated;
+    if (node->data.has_potential_animation != is_animated) {
+      node->data.has_potential_animation = is_animated;
       if (is_animated) {
         float maximum_target_scale = 0.f;
         node->data.local_maximum_animation_target_scale =
@@ -786,8 +786,22 @@ void LayerImpl::OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) {
   layer_tree_impl_->DidAnimateScrollOffset();
 }
 
-void LayerImpl::OnTransformIsPotentiallyAnimatingChanged(bool is_animating) {
-  UpdatePropertyTreeTransformIsAnimated(is_animating);
+void LayerImpl::OnTransformIsCurrentlyAnimatingChanged(
+    bool is_currently_animating) {
+  DCHECK(layer_tree_impl_);
+  TransformTree& transform_tree =
+      layer_tree_impl_->property_trees()->transform_tree;
+  TransformNode* node = transform_tree.Node(transform_tree_index());
+  if (!node)
+    return;
+
+  if (node->owner_id == id())
+    node->data.is_currently_animating = is_currently_animating;
+}
+
+void LayerImpl::OnTransformIsPotentiallyAnimatingChanged(
+    bool has_potential_animation) {
+  UpdatePropertyTreeTransformIsAnimated(has_potential_animation);
   was_ever_ready_since_last_transform_animation_ = false;
 }
 

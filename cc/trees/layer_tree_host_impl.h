@@ -252,9 +252,6 @@ class CC_EXPORT LayerTreeHostImpl
   void SetTreeLayerScrollOffsetMutated(int layer_id,
                                        LayerTreeImpl* tree,
                                        const gfx::ScrollOffset& scroll_offset);
-  void TreeLayerTransformIsPotentiallyAnimatingChanged(int layer_id,
-                                                       LayerTreeImpl* tree,
-                                                       bool is_animating);
   bool AnimationsPreserveAxisAlignment(const LayerImpl* layer) const;
 
   // MutatorHostClient implementation.
@@ -275,10 +272,10 @@ class CC_EXPORT LayerTreeHostImpl
       ElementId element_id,
       ElementListType list_type,
       const gfx::ScrollOffset& scroll_offset) override;
-  void ElementTransformIsPotentiallyAnimatingChanged(
-      ElementId element_id,
-      ElementListType list_type,
-      bool is_animating) override;
+  void ElementTransformIsAnimatingChanged(ElementId element_id,
+                                          ElementListType list_type,
+                                          AnimationChangeType change_type,
+                                          bool is_animating) override;
   void ElementOpacityIsAnimatingChanged(ElementId element_id,
                                         ElementListType list_type,
                                         AnimationChangeType change_type,

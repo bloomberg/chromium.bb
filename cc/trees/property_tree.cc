@@ -164,7 +164,8 @@ TransformNodeData::TransformNodeData()
       node_and_ancestors_are_animated_or_invertible(true),
       is_invertible(true),
       ancestors_are_invertible(true),
-      is_animated(false),
+      has_potential_animation(false),
+      is_currently_animating(false),
       to_screen_is_potentially_animated(false),
       has_only_translation_animations(true),
       to_screen_has_scale_animation(false),
@@ -204,7 +205,8 @@ bool TransformNodeData::operator==(const TransformNodeData& other) const {
              other.node_and_ancestors_are_animated_or_invertible &&
          is_invertible == other.is_invertible &&
          ancestors_are_invertible == other.ancestors_are_invertible &&
-         is_animated == other.is_animated &&
+         has_potential_animation == other.has_potential_animation &&
+         is_currently_animating == other.is_currently_animating &&
          to_screen_is_potentially_animated ==
              other.to_screen_is_potentially_animated &&
          has_only_translation_animations ==
@@ -290,7 +292,8 @@ void TransformNodeData::ToProtobuf(proto::TreeNode* proto) const {
   data->set_is_invertible(is_invertible);
   data->set_ancestors_are_invertible(ancestors_are_invertible);
 
-  data->set_is_animated(is_animated);
+  data->set_has_potential_animation(has_potential_animation);
+  data->set_is_currently_animating(is_currently_animating);
   data->set_to_screen_is_potentially_animated(
       to_screen_is_potentially_animated);
   data->set_has_only_translation_animations(has_only_translation_animations);
@@ -360,7 +363,8 @@ void TransformNodeData::FromProtobuf(const proto::TreeNode& proto) {
   is_invertible = data.is_invertible();
   ancestors_are_invertible = data.ancestors_are_invertible();
 
-  is_animated = data.is_animated();
+  has_potential_animation = data.has_potential_animation();
+  is_currently_animating = data.is_currently_animating();
   to_screen_is_potentially_animated = data.to_screen_is_potentially_animated();
   has_only_translation_animations = data.has_only_translation_animations();
   to_screen_has_scale_animation = data.to_screen_has_scale_animation();
@@ -1025,7 +1029,7 @@ void TransformTree::UpdateAnimationProperties(TransformNode* node,
         parent_node->data.combined_starting_animation_scale;
   }
   node->data.to_screen_is_potentially_animated =
-      node->data.is_animated || ancestor_is_animating;
+      node->data.has_potential_animation || ancestor_is_animating;
   node->data.to_screen_has_scale_animation =
       !node->data.has_only_translation_animations ||
       ancestor_is_animating_scale;
@@ -1160,7 +1164,7 @@ void TransformTree::UpdateNodeAndAncestorsAreAnimatedOrInvertible(
     TransformNode* parent_node) {
   if (!parent_node) {
     node->data.node_and_ancestors_are_animated_or_invertible =
-        node->data.is_animated || node->data.is_invertible;
+        node->data.has_potential_animation || node->data.is_invertible;
     return;
   }
   if (!parent_node->data.node_and_ancestors_are_animated_or_invertible) {
@@ -1175,7 +1179,7 @@ void TransformTree::UpdateNodeAndAncestorsAreAnimatedOrInvertible(
       parent_node->data.ancestors_are_invertible)
     is_invertible = false;
   node->data.node_and_ancestors_are_animated_or_invertible =
-      node->data.is_animated || is_invertible;
+      node->data.has_potential_animation || is_invertible;
 }
 
 void TransformTree::SetDeviceTransform(const gfx::Transform& transform,

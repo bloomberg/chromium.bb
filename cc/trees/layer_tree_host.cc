@@ -1352,13 +1352,26 @@ void LayerTreeHost::SetElementScrollOffsetMutated(
   layer->OnScrollOffsetAnimated(scroll_offset);
 }
 
-void LayerTreeHost::ElementTransformIsPotentiallyAnimatingChanged(
+void LayerTreeHost::ElementTransformIsAnimatingChanged(
     ElementId element_id,
     ElementListType list_type,
+    AnimationChangeType change_type,
     bool is_animating) {
   Layer* layer = LayerById(element_id);
-  DCHECK(layer);
-  layer->OnTransformIsPotentiallyAnimatingChanged(is_animating);
+  if (layer) {
+    switch (change_type) {
+      case AnimationChangeType::POTENTIAL:
+        layer->OnTransformIsPotentiallyAnimatingChanged(is_animating);
+        break;
+      case AnimationChangeType::RUNNING:
+        layer->OnTransformIsCurrentlyAnimatingChanged(is_animating);
+        break;
+      case AnimationChangeType::BOTH:
+        layer->OnTransformIsPotentiallyAnimatingChanged(is_animating);
+        layer->OnTransformIsCurrentlyAnimatingChanged(is_animating);
+        break;
+    }
+  }
 }
 
 void LayerTreeHost::ElementOpacityIsAnimatingChanged(

@@ -29,7 +29,8 @@ void TestLayer::ClearMutatedProperties() {
   opacity_ = 0;
   filters_ = FilterOperations();
   scroll_offset_ = gfx::ScrollOffset();
-  transform_is_animating_ = false;
+  has_potential_transform_animation_ = false;
+  transform_is_currently_animating_ = false;
   has_potential_opacity_animation_ = false;
   opacity_is_currently_animating_ = false;
 
@@ -123,13 +124,26 @@ void TestHostClient::SetElementScrollOffsetMutated(
     layer->set_scroll_offset(scroll_offset);
 }
 
-void TestHostClient::ElementTransformIsPotentiallyAnimatingChanged(
+void TestHostClient::ElementTransformIsAnimatingChanged(
     ElementId element_id,
     ElementListType list_type,
+    AnimationChangeType change_type,
     bool is_animating) {
   TestLayer* layer = FindTestLayer(element_id, list_type);
-  if (layer)
-    layer->set_transform_is_animating(is_animating);
+  if (layer) {
+    switch (change_type) {
+      case AnimationChangeType::POTENTIAL:
+        layer->set_has_potential_transform_animation(is_animating);
+        break;
+      case AnimationChangeType::RUNNING:
+        layer->set_transform_is_currently_animating(is_animating);
+        break;
+      case AnimationChangeType::BOTH:
+        layer->set_has_potential_transform_animation(is_animating);
+        layer->set_transform_is_currently_animating(is_animating);
+        break;
+    }
+  }
 }
 
 void TestHostClient::ElementOpacityIsAnimatingChanged(
@@ -226,11 +240,20 @@ gfx::ScrollOffset TestHostClient::GetScrollOffset(
   return layer->scroll_offset();
 }
 
-bool TestHostClient::GetTransformIsAnimating(ElementId element_id,
-                                             ElementListType list_type) const {
+bool TestHostClient::GetTransformIsCurrentlyAnimating(
+    ElementId element_id,
+    ElementListType list_type) const {
   TestLayer* layer = FindTestLayer(element_id, list_type);
   EXPECT_TRUE(layer);
-  return layer->transform_is_animating();
+  return layer->transform_is_currently_animating();
+}
+
+bool TestHostClient::GetHasPotentialTransformAnimation(
+    ElementId element_id,
+    ElementListType list_type) const {
+  TestLayer* layer = FindTestLayer(element_id, list_type);
+  EXPECT_TRUE(layer);
+  return layer->has_potential_transform_animation();
 }
 
 bool TestHostClient::GetOpacityIsCurrentlyAnimating(

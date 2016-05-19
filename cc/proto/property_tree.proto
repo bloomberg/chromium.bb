@@ -19,7 +19,7 @@ package cc.proto;
 // cc/trees/property_tree.h
 
 // Proto for struct TransformNodeData.
-// NEXT ID: 42
+// NEXT ID: 43
 message TranformNodeData {
   optional Transform pre_local = 1;
   optional Transform local = 2;
@@ -37,7 +37,8 @@ message TranformNodeData {
   optional bool node_and_ancestors_are_animated_or_invertible = 41;
   optional bool is_invertible = 13;
   optional bool ancestors_are_invertible = 14;
-  optional bool is_animated = 15;
+  optional bool has_potential_animation = 15;
+  optional bool is_currently_animating = 42;
   optional bool to_screen_is_potentially_animated = 16;
   optional bool has_only_translation_animations = 17;
   optional bool to_screen_has_scale_animation = 18;

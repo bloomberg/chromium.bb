@@ -3866,18 +3866,6 @@ void LayerTreeHostImpl::SetTreeLayerScrollOffsetMutated(
     layer->OnScrollOffsetAnimated(scroll_offset);
 }
 
-void LayerTreeHostImpl::TreeLayerTransformIsPotentiallyAnimatingChanged(
-    int layer_id,
-    LayerTreeImpl* tree,
-    bool is_animating) {
-  if (!tree)
-    return;
-
-  LayerImpl* layer = tree->LayerById(layer_id);
-  if (layer)
-    layer->OnTransformIsPotentiallyAnimatingChanged(is_animating);
-}
-
 bool LayerTreeHostImpl::AnimationsPreserveAxisAlignment(
     const LayerImpl* layer) const {
   return animation_host_->AnimationsPreserveAxisAlignment(layer->id());
@@ -3930,18 +3918,32 @@ void LayerTreeHostImpl::SetElementScrollOffsetMutated(
   }
 }
 
-void LayerTreeHostImpl::ElementTransformIsPotentiallyAnimatingChanged(
+void LayerTreeHostImpl::ElementTransformIsAnimatingChanged(
     ElementId element_id,
     ElementListType list_type,
+    AnimationChangeType change_type,
     bool is_animating) {
-  if (list_type == ElementListType::ACTIVE) {
-    TreeLayerTransformIsPotentiallyAnimatingChanged(element_id, active_tree(),
-                                                    is_animating);
-  } else {
-    TreeLayerTransformIsPotentiallyAnimatingChanged(element_id, pending_tree(),
-                                                    is_animating);
+  LayerTreeImpl* tree =
+      list_type == ElementListType::ACTIVE ? active_tree() : pending_tree();
+  if (!tree)
+    return;
+  LayerImpl* layer = tree->LayerById(element_id);
+  if (layer) {
+    switch (change_type) {
+      case AnimationChangeType::POTENTIAL:
+        layer->OnTransformIsPotentiallyAnimatingChanged(is_animating);
+        break;
+      case AnimationChangeType::RUNNING:
+        layer->OnTransformIsCurrentlyAnimatingChanged(is_animating);
+        break;
+      case AnimationChangeType::BOTH:
+        layer->OnTransformIsPotentiallyAnimatingChanged(is_animating);
+        layer->OnTransformIsCurrentlyAnimatingChanged(is_animating);
+        break;
+    }
   }
 }
+
 void LayerTreeHostImpl::ElementOpacityIsAnimatingChanged(
     ElementId element_id,
     ElementListType list_type,

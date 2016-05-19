@@ -514,7 +514,7 @@ bool AddTransformNodeIfNeeded(
                                      ->data.transform_id;
   DCHECK_NE(node->data.target_id, kInvalidPropertyTreeNodeId);
 
-  node->data.is_animated = has_potentially_animated_transform;
+  node->data.has_potential_animation = has_potentially_animated_transform;
   if (has_potentially_animated_transform) {
     float maximum_animation_target_scale = 0.f;
     if (layer->MaximumTargetScale(&maximum_animation_target_scale)) {

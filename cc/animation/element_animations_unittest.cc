@@ -2778,8 +2778,7 @@ TEST_F(ElementAnimationsTest, ActivationBetweenAnimateAndUpdateState) {
             client_impl_.GetOpacity(element_id_, ElementListType::ACTIVE));
 }
 
-TEST_F(ElementAnimationsTest,
-       ObserverNotifiedWhenTransformIsPotentiallyAnimatingChanges) {
+TEST_F(ElementAnimationsTest, ObserverNotifiedWhenTransformAnimationChanges) {
   CreateTestLayer(true, true);
   AttachTimelinePlayerLayer();
   CreateImplTimelineAndPlayer();
@@ -2789,29 +2788,45 @@ TEST_F(ElementAnimationsTest,
 
   auto events = host_impl_->CreateEvents();
 
-  EXPECT_FALSE(
-      client_.GetTransformIsAnimating(element_id_, ElementListType::ACTIVE));
-  EXPECT_FALSE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                    ElementListType::PENDING));
-  EXPECT_FALSE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                    ElementListType::ACTIVE));
+  EXPECT_FALSE(client_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
 
   // Case 1: An animation that's allowed to run until its finish point.
   AddAnimatedTransformToElementAnimations(animations.get(), 1.0, 1, 1);
-  EXPECT_TRUE(
-      client_.GetTransformIsAnimating(element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
 
   animations->PushPropertiesTo(animations_impl.get());
-  EXPECT_TRUE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                   ElementListType::PENDING));
-  EXPECT_FALSE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                    ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
 
   animations_impl->ActivateAnimations();
-  EXPECT_TRUE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                   ElementListType::PENDING));
-  EXPECT_TRUE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                   ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
 
   animations_impl->Animate(kInitialTickTime);
   animations_impl->UpdateState(true, events.get());
@@ -2822,45 +2837,58 @@ TEST_F(ElementAnimationsTest,
   // Finish the animation.
   animations->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
   animations->UpdateState(true, nullptr);
-  EXPECT_FALSE(
-      client_.GetTransformIsAnimating(element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
 
   animations->PushPropertiesTo(animations_impl.get());
 
   // animations_impl hasn't yet ticked at/past the end of the animation.
-  EXPECT_TRUE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                   ElementListType::PENDING));
-  EXPECT_TRUE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                   ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
 
   animations_impl->Animate(kInitialTickTime +
                            TimeDelta::FromMilliseconds(1000));
   animations_impl->UpdateState(true, events.get());
-  EXPECT_FALSE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                    ElementListType::PENDING));
-  EXPECT_FALSE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                    ElementListType::ACTIVE));
-
-  animations->NotifyAnimationFinished(events->events_[0]);
-  events->events_.clear();
+  EXPECT_FALSE(client_impl_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
 
   // Case 2: An animation that's removed before it finishes.
   int animation_id =
       AddAnimatedTransformToElementAnimations(animations.get(), 10.0, 2, 2);
-  EXPECT_TRUE(
-      client_.GetTransformIsAnimating(element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
 
   animations->PushPropertiesTo(animations_impl.get());
-  EXPECT_TRUE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                   ElementListType::PENDING));
-  EXPECT_FALSE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                    ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
 
   animations_impl->ActivateAnimations();
-  EXPECT_TRUE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                   ElementListType::PENDING));
-  EXPECT_TRUE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                   ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
 
   animations_impl->Animate(kInitialTickTime +
                            TimeDelta::FromMilliseconds(2000));
@@ -2870,59 +2898,101 @@ TEST_F(ElementAnimationsTest,
   events->events_.clear();
 
   animations->RemoveAnimation(animation_id);
-  EXPECT_FALSE(
-      client_.GetTransformIsAnimating(element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
 
   animations->PushPropertiesTo(animations_impl.get());
-  EXPECT_FALSE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                    ElementListType::PENDING));
-  EXPECT_TRUE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                   ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
 
   animations_impl->ActivateAnimations();
-  EXPECT_FALSE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                    ElementListType::PENDING));
-  EXPECT_FALSE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                    ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
 
   // Case 3: An animation that's aborted before it finishes.
   animation_id =
       AddAnimatedTransformToElementAnimations(animations.get(), 10.0, 3, 3);
-  EXPECT_TRUE(
-      client_.GetTransformIsAnimating(element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
 
   animations->PushPropertiesTo(animations_impl.get());
-  EXPECT_TRUE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                   ElementListType::PENDING));
-  EXPECT_FALSE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                    ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_TRUE(client_impl_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
 
   animations_impl->ActivateAnimations();
-  EXPECT_TRUE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                   ElementListType::PENDING));
-  EXPECT_TRUE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                   ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_TRUE(client_impl_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
 
   animations_impl->Animate(kInitialTickTime +
-                           TimeDelta::FromMilliseconds(3000));
+                           TimeDelta::FromMilliseconds(2000));
   animations_impl->UpdateState(true, events.get());
 
   animations->NotifyAnimationStarted(events->events_[0]);
   events->events_.clear();
 
   animations_impl->AbortAnimations(TargetProperty::TRANSFORM);
-  EXPECT_FALSE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                    ElementListType::PENDING));
-  EXPECT_FALSE(client_impl_.GetTransformIsAnimating(element_id_,
-                                                    ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
 
   animations_impl->Animate(kInitialTickTime +
                            TimeDelta::FromMilliseconds(4000));
   animations_impl->UpdateState(true, events.get());
 
   animations->NotifyAnimationAborted(events->events_[0]);
-  EXPECT_FALSE(
-      client_.GetTransformIsAnimating(element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  // Case 4 : An animation that's not in effect.
+  animation_id =
+      AddAnimatedTransformToElementAnimations(animations.get(), 1.0, 1, 6);
+  animations->GetAnimationById(animation_id)
+      ->set_time_offset(base::TimeDelta::FromMilliseconds(-10000));
+  animations->GetAnimationById(animation_id)
+      ->set_fill_mode(Animation::FillMode::NONE);
+
+  animations->PushPropertiesTo(animations_impl.get());
+  EXPECT_TRUE(client_impl_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::PENDING));
+  EXPECT_FALSE(client_impl_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
+
+  animations_impl->ActivateAnimations();
+  EXPECT_TRUE(client_impl_.GetHasPotentialTransformAnimation(
+      element_id_, ElementListType::ACTIVE));
+  EXPECT_FALSE(client_impl_.GetTransformIsCurrentlyAnimating(
+      element_id_, ElementListType::ACTIVE));
 }
 
 TEST_F(ElementAnimationsTest, ObserverNotifiedWhenOpacityAnimationChanges) {

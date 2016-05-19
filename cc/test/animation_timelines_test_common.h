@@ -51,9 +51,18 @@ class TestLayer {
     mutated_properties_[TargetProperty::SCROLL_OFFSET] = true;
   }
 
-  bool transform_is_animating() const { return transform_is_animating_; }
-  void set_transform_is_animating(bool is_animating) {
-    transform_is_animating_ = is_animating;
+  bool transform_is_currently_animating() const {
+    return transform_is_currently_animating_;
+  }
+  void set_transform_is_currently_animating(bool is_animating) {
+    transform_is_currently_animating_ = is_animating;
+  }
+
+  bool has_potential_transform_animation() const {
+    return has_potential_transform_animation_;
+  }
+  void set_has_potential_transform_animation(bool is_animating) {
+    has_potential_transform_animation_ = is_animating;
   }
 
   bool opacity_is_currently_animating() const {
@@ -81,7 +90,8 @@ class TestLayer {
   float opacity_;
   FilterOperations filters_;
   gfx::ScrollOffset scroll_offset_;
-  bool transform_is_animating_;
+  bool has_potential_transform_animation_;
+  bool transform_is_currently_animating_;
   bool has_potential_opacity_animation_;
   bool opacity_is_currently_animating_;
 
@@ -118,10 +128,10 @@ class TestHostClient : public MutatorHostClient {
       ElementListType list_type,
       const gfx::ScrollOffset& scroll_offset) override;
 
-  void ElementTransformIsPotentiallyAnimatingChanged(
-      ElementId element_id,
-      ElementListType list_type,
-      bool is_animating) override;
+  void ElementTransformIsAnimatingChanged(ElementId element_id,
+                                          ElementListType list_type,
+                                          AnimationChangeType change_type,
+                                          bool is_animating) override;
 
   void ElementOpacityIsAnimatingChanged(ElementId element_id,
                                         ElementListType list_type,
@@ -156,8 +166,10 @@ class TestHostClient : public MutatorHostClient {
                               ElementListType list_type) const;
   gfx::ScrollOffset GetScrollOffset(ElementId element_id,
                                     ElementListType list_type) const;
-  bool GetTransformIsAnimating(ElementId element_id,
-                               ElementListType list_type) const;
+  bool GetHasPotentialTransformAnimation(ElementId element_id,
+                                         ElementListType list_type) const;
+  bool GetTransformIsCurrentlyAnimating(ElementId element_id,
+                                        ElementListType list_type) const;
   bool GetOpacityIsCurrentlyAnimating(ElementId element_id,
                                       ElementListType list_type) const;
   bool GetHasPotentialOpacityAnimation(ElementId element_id,

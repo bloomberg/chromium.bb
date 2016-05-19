@@ -224,19 +224,13 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
 
   void NotifyClientAnimationWaitingForDeletion();
 
-  void NotifyClientTransformIsPotentiallyAnimatingChanged(
-      bool notify_active_elements,
-      bool notify_pending_elements);
+  void NotifyClientAnimationChanged(
+      TargetProperty::Type property,
+      ElementListType list_type,
+      bool notify_elements_about_potential_animation,
+      bool notify_elements_about_running_animation);
 
-  void UpdatePotentiallyAnimatingTransform();
-
-  void NotifyClientOpacityAnimationChanged(
-      bool notify_active_elements_about_potential_animation,
-      bool notify_active_elements_about_running_animation,
-      bool notify_pending_elements_about_potential_aniamtion,
-      bool notify_pending_elements_about_running_animation);
-
-  void UpdateAnimatingOpacity();
+  void UpdateClientAnimationState(TargetProperty::Type property);
 
   void OnFilterAnimated(ElementListType list_type,
                         const FilterOperations& filters);
@@ -246,11 +240,10 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
   void OnScrollOffsetAnimated(ElementListType list_type,
                               const gfx::ScrollOffset& scroll_offset);
   void OnAnimationWaitingForDeletion();
-  void OnTransformIsPotentiallyAnimatingChanged(ElementListType list_type,
-                                                bool is_animating);
-  void OnOpacityIsAnimatingChanged(ElementListType list_type,
-                                   AnimationChangeType change_type,
-                                   bool is_animating);
+  void IsAnimatingChanged(ElementListType list_type,
+                          TargetProperty::Type property,
+                          AnimationChangeType change_type,
+                          bool is_animating);
   gfx::ScrollOffset ScrollOffsetForAnimation() const;
 
   void NotifyPlayersAnimationStarted(base::TimeTicks monotonic_time,
@@ -287,13 +280,21 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
 
   bool scroll_offset_animation_was_interrupted_;
 
-  bool potentially_animating_transform_for_active_elements_;
-  bool potentially_animating_transform_for_pending_elements_;
+  struct PropertyAnimationState {
+    bool currently_running_for_active_elements = false;
+    bool currently_running_for_pending_elements = false;
+    bool potentially_animating_for_active_elements = false;
+    bool potentially_animating_for_pending_elements = false;
+    void Clear() {
+      currently_running_for_active_elements = false;
+      currently_running_for_pending_elements = false;
+      potentially_animating_for_active_elements = false;
+      potentially_animating_for_pending_elements = false;
+    }
+  };
 
-  bool currently_running_opacity_animation_for_active_elements_;
-  bool currently_running_opacity_animation_for_pending_elements_;
-  bool potentially_animating_opacity_for_active_elements_;
-  bool potentially_animating_opacity_for_pending_elements_;
+  struct PropertyAnimationState opacity_animation_state_;
+  struct PropertyAnimationState transform_animation_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ElementAnimations);
 };

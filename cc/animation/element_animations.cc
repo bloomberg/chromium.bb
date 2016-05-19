@@ -33,13 +33,7 @@ ElementAnimations::ElementAnimations()
       has_element_in_active_list_(false),
       has_element_in_pending_list_(false),
       needs_to_start_animations_(false),
-      scroll_offset_animation_was_interrupted_(false),
-      potentially_animating_transform_for_active_elements_(false),
-      potentially_animating_transform_for_pending_elements_(false),
-      currently_running_opacity_animation_for_active_elements_(false),
-      currently_running_opacity_animation_for_pending_elements_(false),
-      potentially_animating_opacity_for_active_elements_(false),
-      potentially_animating_opacity_for_pending_elements_(false) {}
+      scroll_offset_animation_was_interrupted_(false) {}
 
 ElementAnimations::~ElementAnimations() {}
 
@@ -72,16 +66,18 @@ void ElementAnimations::ClearAffectedElementTypes() {
   DCHECK(animation_host_);
 
   if (has_element_in_active_list()) {
-    OnTransformIsPotentiallyAnimatingChanged(ElementListType::ACTIVE, false);
-    OnOpacityIsAnimatingChanged(ElementListType::ACTIVE,
-                                AnimationChangeType::BOTH, false);
+    IsAnimatingChanged(ElementListType::ACTIVE, TargetProperty::TRANSFORM,
+                       AnimationChangeType::BOTH, false);
+    IsAnimatingChanged(ElementListType::ACTIVE, TargetProperty::OPACITY,
+                       AnimationChangeType::BOTH, false);
   }
   set_has_element_in_active_list(false);
 
   if (has_element_in_pending_list()) {
-    OnTransformIsPotentiallyAnimatingChanged(ElementListType::PENDING, false);
-    OnOpacityIsAnimatingChanged(ElementListType::PENDING,
-                                AnimationChangeType::BOTH, false);
+    IsAnimatingChanged(ElementListType::PENDING, TargetProperty::TRANSFORM,
+                       AnimationChangeType::BOTH, false);
+    IsAnimatingChanged(ElementListType::PENDING, TargetProperty::OPACITY,
+                       AnimationChangeType::BOTH, false);
   }
   set_has_element_in_pending_list(false);
 
@@ -154,9 +150,9 @@ void ElementAnimations::AddAnimation(std::unique_ptr<Animation> animation) {
   needs_to_start_animations_ = true;
   UpdateActivation(NORMAL_ACTIVATION);
   if (added_transform_animation)
-    UpdatePotentiallyAnimatingTransform();
+    UpdateClientAnimationState(TargetProperty::TRANSFORM);
   if (added_opacity_animation)
-    UpdateAnimatingOpacity();
+    UpdateClientAnimationState(TargetProperty::OPACITY);
 }
 
 void ElementAnimations::Animate(base::TimeTicks monotonic_time) {
@@ -168,7 +164,8 @@ void ElementAnimations::Animate(base::TimeTicks monotonic_time) {
     StartAnimations(monotonic_time);
   TickAnimations(monotonic_time);
   last_tick_time_ = monotonic_time;
-  UpdateAnimatingOpacity();
+  UpdateClientAnimationState(TargetProperty::OPACITY);
+  UpdateClientAnimationState(TargetProperty::TRANSFORM);
 }
 
 void ElementAnimations::AccumulatePropertyUpdates(
@@ -288,9 +285,9 @@ void ElementAnimations::ActivateAnimations() {
   scroll_offset_animation_was_interrupted_ = false;
   UpdateActivation(NORMAL_ACTIVATION);
   if (changed_transform_animation)
-    UpdatePotentiallyAnimatingTransform();
+    UpdateClientAnimationState(TargetProperty::TRANSFORM);
   if (changed_opacity_animation)
-    UpdateAnimatingOpacity();
+    UpdateClientAnimationState(TargetProperty::OPACITY);
 }
 
 void ElementAnimations::NotifyAnimationStarted(const AnimationEvent& event) {
@@ -363,9 +360,9 @@ void ElementAnimations::NotifyAnimationAborted(const AnimationEvent& event) {
     }
   }
   if (aborted_transform_animation)
-    UpdatePotentiallyAnimatingTransform();
+    UpdateClientAnimationState(TargetProperty::TRANSFORM);
   if (aborted_opacity_animation)
-    UpdateAnimatingOpacity();
+    UpdateClientAnimationState(TargetProperty::OPACITY);
 }
 
 void ElementAnimations::NotifyAnimationPropertyUpdate(
@@ -649,9 +646,11 @@ void ElementAnimations::RemoveAnimationsCompletedOnMainThread(
       animations.end());
 
   if (removed_transform_animation)
-    element_animations_impl->UpdatePotentiallyAnimatingTransform();
+    element_animations_impl->UpdateClientAnimationState(
+        TargetProperty::TRANSFORM);
   if (removed_opacity_animation)
-    element_animations_impl->UpdateAnimatingOpacity();
+    element_animations_impl->UpdateClientAnimationState(
+        TargetProperty::OPACITY);
 }
 
 void ElementAnimations::PushPropertiesToImplThread(
@@ -806,9 +805,9 @@ void ElementAnimations::MarkFinishedAnimations(base::TimeTicks monotonic_time) {
     }
   }
   if (finished_transform_animation)
-    UpdatePotentiallyAnimatingTransform();
+    UpdateClientAnimationState(TargetProperty::TRANSFORM);
   if (finished_opacity_animation)
-    UpdateAnimatingOpacity();
+    UpdateClientAnimationState(TargetProperty::OPACITY);
 }
 
 void ElementAnimations::MarkAnimationsForDeletion(
@@ -960,9 +959,11 @@ void ElementAnimations::MarkAbortedAnimationsForDeletion(
   }
 
   if (aborted_transform_animation)
-    element_animations_impl->UpdatePotentiallyAnimatingTransform();
+    element_animations_impl->UpdateClientAnimationState(
+        TargetProperty::TRANSFORM);
   if (aborted_opacity_animation)
-    element_animations_impl->UpdateAnimatingOpacity();
+    element_animations_impl->UpdateClientAnimationState(
+        TargetProperty::OPACITY);
 }
 
 void ElementAnimations::PurgeAnimationsMarkedForDeletion() {
@@ -1103,156 +1104,124 @@ void ElementAnimations::NotifyClientAnimationWaitingForDeletion() {
   OnAnimationWaitingForDeletion();
 }
 
-void ElementAnimations::NotifyClientTransformIsPotentiallyAnimatingChanged(
-    bool notify_active_elements,
-    bool notify_pending_elements) {
-  if (notify_active_elements && has_element_in_active_list())
-    OnTransformIsPotentiallyAnimatingChanged(
-        ElementListType::ACTIVE,
-        potentially_animating_transform_for_active_elements_);
-  if (notify_pending_elements && has_element_in_pending_list())
-    OnTransformIsPotentiallyAnimatingChanged(
-        ElementListType::PENDING,
-        potentially_animating_transform_for_pending_elements_);
-}
-
-void ElementAnimations::NotifyClientOpacityAnimationChanged(
-    bool notify_active_elements_about_potential_animation,
-    bool notify_pending_elements_about_potential_animation,
-    bool notify_active_elements_about_running_animation,
-    bool notify_pending_elements_about_running_animation) {
-  bool notify_active_elements_about_potential_and_running_animation =
-      notify_active_elements_about_potential_animation &&
-      notify_active_elements_about_running_animation;
-  bool notify_pending_elements_about_potential_and_running_animation =
-      notify_pending_elements_about_potential_animation &&
-      notify_pending_elements_about_running_animation;
-  if (has_element_in_active_list()) {
-    if (notify_active_elements_about_potential_and_running_animation) {
-      DCHECK_EQ(potentially_animating_opacity_for_active_elements_,
-                currently_running_opacity_animation_for_active_elements_);
-      OnOpacityIsAnimatingChanged(
-          ElementListType::ACTIVE, AnimationChangeType::BOTH,
-          potentially_animating_opacity_for_active_elements_);
-    } else if (notify_active_elements_about_potential_animation) {
-      OnOpacityIsAnimatingChanged(
-          ElementListType::ACTIVE, AnimationChangeType::POTENTIAL,
-          potentially_animating_opacity_for_active_elements_);
-    } else if (notify_active_elements_about_running_animation) {
-      OnOpacityIsAnimatingChanged(
-          ElementListType::ACTIVE, AnimationChangeType::RUNNING,
-          currently_running_opacity_animation_for_active_elements_);
-    }
+void ElementAnimations::NotifyClientAnimationChanged(
+    TargetProperty::Type property,
+    ElementListType list_type,
+    bool notify_elements_about_potential_animation,
+    bool notify_elements_about_running_animation) {
+  struct PropertyAnimationState* animation_state = nullptr;
+  switch (property) {
+    case TargetProperty::OPACITY:
+      animation_state = &opacity_animation_state_;
+      break;
+    case TargetProperty::TRANSFORM:
+      animation_state = &transform_animation_state_;
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
-  if (has_element_in_pending_list()) {
-    if (notify_pending_elements_about_potential_and_running_animation) {
-      DCHECK_EQ(potentially_animating_opacity_for_pending_elements_,
-                currently_running_opacity_animation_for_pending_elements_);
-      OnOpacityIsAnimatingChanged(
-          ElementListType::PENDING, AnimationChangeType::BOTH,
-          potentially_animating_opacity_for_pending_elements_);
-    } else if (notify_pending_elements_about_potential_animation) {
-      OnOpacityIsAnimatingChanged(
-          ElementListType::PENDING, AnimationChangeType::POTENTIAL,
-          potentially_animating_opacity_for_pending_elements_);
-    } else if (notify_pending_elements_about_running_animation) {
-      OnOpacityIsAnimatingChanged(
-          ElementListType::PENDING, AnimationChangeType::RUNNING,
-          currently_running_opacity_animation_for_pending_elements_);
-    }
+
+  bool notify_elements_about_potential_and_running_animation =
+      notify_elements_about_potential_animation &&
+      notify_elements_about_running_animation;
+  bool active = list_type == ElementListType::ACTIVE;
+  if (notify_elements_about_potential_and_running_animation) {
+    bool potentially_animating =
+        active ? animation_state->potentially_animating_for_active_elements
+               : animation_state->potentially_animating_for_pending_elements;
+    bool currently_animating =
+        active ? animation_state->currently_running_for_active_elements
+               : animation_state->currently_running_for_pending_elements;
+    DCHECK_EQ(potentially_animating, currently_animating);
+    IsAnimatingChanged(list_type, property, AnimationChangeType::BOTH,
+                       potentially_animating);
+  } else if (notify_elements_about_potential_animation) {
+    bool potentially_animating =
+        active ? animation_state->potentially_animating_for_active_elements
+               : animation_state->potentially_animating_for_pending_elements;
+    IsAnimatingChanged(list_type, property, AnimationChangeType::POTENTIAL,
+                       potentially_animating);
+  } else if (notify_elements_about_running_animation) {
+    bool currently_animating =
+        active ? animation_state->currently_running_for_active_elements
+               : animation_state->currently_running_for_pending_elements;
+    IsAnimatingChanged(list_type, property, AnimationChangeType::RUNNING,
+                       currently_animating);
   }
 }
 
-void ElementAnimations::UpdatePotentiallyAnimatingTransform() {
-  bool was_potentially_animating_transform_for_active_elements =
-      potentially_animating_transform_for_active_elements_;
-  bool was_potentially_animating_transform_for_pending_elements =
-      potentially_animating_transform_for_pending_elements_;
+void ElementAnimations::UpdateClientAnimationState(
+    TargetProperty::Type property) {
+  struct PropertyAnimationState* animation_state = nullptr;
+  switch (property) {
+    case TargetProperty::OPACITY:
+      animation_state = &opacity_animation_state_;
+      break;
+    case TargetProperty::TRANSFORM:
+      animation_state = &transform_animation_state_;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  bool was_currently_running_animation_for_active_elements =
+      animation_state->currently_running_for_active_elements;
+  bool was_currently_running_animation_for_pending_elements =
+      animation_state->currently_running_for_pending_elements;
+  bool was_potentially_animating_for_active_elements =
+      animation_state->potentially_animating_for_active_elements;
+  bool was_potentially_animating_for_pending_elements =
+      animation_state->potentially_animating_for_pending_elements;
 
-  potentially_animating_transform_for_active_elements_ = false;
-  potentially_animating_transform_for_pending_elements_ = false;
+  animation_state->Clear();
+  DCHECK(was_potentially_animating_for_active_elements ||
+         !was_currently_running_animation_for_active_elements);
+  DCHECK(was_potentially_animating_for_pending_elements ||
+         !was_currently_running_animation_for_pending_elements);
 
   for (const auto& animation : animations_) {
-    if (!animation->is_finished() &&
-        animation->target_property() == TargetProperty::TRANSFORM) {
-      potentially_animating_transform_for_active_elements_ |=
+    if (!animation->is_finished() && animation->target_property() == property) {
+      animation_state->potentially_animating_for_active_elements |=
           animation->affects_active_elements();
-      potentially_animating_transform_for_pending_elements_ |=
+      animation_state->potentially_animating_for_pending_elements |=
           animation->affects_pending_elements();
-    }
-  }
-
-  bool changed_for_active_elements =
-      was_potentially_animating_transform_for_active_elements !=
-      potentially_animating_transform_for_active_elements_;
-  bool changed_for_pending_elements =
-      was_potentially_animating_transform_for_pending_elements !=
-      potentially_animating_transform_for_pending_elements_;
-
-  if (!changed_for_active_elements && !changed_for_pending_elements)
-    return;
-
-  NotifyClientTransformIsPotentiallyAnimatingChanged(
-      changed_for_active_elements, changed_for_pending_elements);
-}
-
-void ElementAnimations::UpdateAnimatingOpacity() {
-  bool was_currently_running_opacity_animation_for_active_elements =
-      currently_running_opacity_animation_for_active_elements_;
-  bool was_currently_running_opacity_animation_for_pending_elements =
-      currently_running_opacity_animation_for_pending_elements_;
-  bool was_potentially_animating_opacity_for_active_elements =
-      potentially_animating_opacity_for_active_elements_;
-  bool was_potentially_animating_opacity_for_pending_elements =
-      potentially_animating_opacity_for_pending_elements_;
-
-  DCHECK(was_potentially_animating_opacity_for_active_elements ||
-         !was_currently_running_opacity_animation_for_active_elements);
-  DCHECK(was_potentially_animating_opacity_for_pending_elements ||
-         !was_currently_running_opacity_animation_for_pending_elements);
-  currently_running_opacity_animation_for_active_elements_ = false;
-  currently_running_opacity_animation_for_pending_elements_ = false;
-  potentially_animating_opacity_for_active_elements_ = false;
-  potentially_animating_opacity_for_pending_elements_ = false;
-
-  for (const auto& animation : animations_) {
-    if (!animation->is_finished() &&
-        animation->target_property() == TargetProperty::OPACITY) {
-      potentially_animating_opacity_for_active_elements_ |=
-          animation->affects_active_elements();
-      potentially_animating_opacity_for_pending_elements_ |=
-          animation->affects_pending_elements();
-      currently_running_opacity_animation_for_active_elements_ =
-          potentially_animating_opacity_for_active_elements_ &&
+      animation_state->currently_running_for_active_elements =
+          animation_state->potentially_animating_for_active_elements &&
           animation->InEffect(last_tick_time_);
-      currently_running_opacity_animation_for_pending_elements_ =
-          potentially_animating_opacity_for_pending_elements_ &&
+      animation_state->currently_running_for_pending_elements =
+          animation_state->potentially_animating_for_pending_elements &&
           animation->InEffect(last_tick_time_);
     }
   }
 
   bool potentially_animating_changed_for_active_elements =
-      was_potentially_animating_opacity_for_active_elements !=
-      potentially_animating_opacity_for_active_elements_;
+      was_potentially_animating_for_active_elements !=
+      animation_state->potentially_animating_for_active_elements;
   bool potentially_animating_changed_for_pending_elements =
-      was_potentially_animating_opacity_for_pending_elements !=
-      potentially_animating_opacity_for_pending_elements_;
+      was_potentially_animating_for_pending_elements !=
+      animation_state->potentially_animating_for_pending_elements;
   bool currently_running_animation_changed_for_active_elements =
-      was_currently_running_opacity_animation_for_active_elements !=
-      currently_running_opacity_animation_for_active_elements_;
+      was_currently_running_animation_for_active_elements !=
+      animation_state->currently_running_for_active_elements;
   bool currently_running_animation_changed_for_pending_elements =
-      was_currently_running_opacity_animation_for_pending_elements !=
-      currently_running_opacity_animation_for_pending_elements_;
+      was_currently_running_animation_for_pending_elements !=
+      animation_state->currently_running_for_pending_elements;
   if (!potentially_animating_changed_for_active_elements &&
       !potentially_animating_changed_for_pending_elements &&
       !currently_running_animation_changed_for_active_elements &&
       !currently_running_animation_changed_for_pending_elements)
     return;
-  NotifyClientOpacityAnimationChanged(
-      potentially_animating_changed_for_active_elements,
-      potentially_animating_changed_for_pending_elements,
-      currently_running_animation_changed_for_active_elements,
-      currently_running_animation_changed_for_pending_elements);
+  if (has_element_in_active_list())
+    NotifyClientAnimationChanged(
+        property, ElementListType::ACTIVE,
+        potentially_animating_changed_for_active_elements,
+        currently_running_animation_changed_for_active_elements);
+  if (has_element_in_pending_list())
+    NotifyClientAnimationChanged(
+        property, ElementListType::PENDING,
+        potentially_animating_changed_for_pending_elements,
+        currently_running_animation_changed_for_pending_elements);
 }
 
 bool ElementAnimations::HasActiveAnimation() const {
@@ -1333,9 +1302,9 @@ void ElementAnimations::RemoveAnimation(int animation_id) {
   animations_.erase(animations_to_remove, animations_.end());
   UpdateActivation(NORMAL_ACTIVATION);
   if (removed_transform_animation)
-    UpdatePotentiallyAnimatingTransform();
+    UpdateClientAnimationState(TargetProperty::TRANSFORM);
   if (removed_opacity_animation)
-    UpdateAnimatingOpacity();
+    UpdateClientAnimationState(TargetProperty::OPACITY);
 }
 
 void ElementAnimations::AbortAnimation(int animation_id) {
@@ -1351,9 +1320,9 @@ void ElementAnimations::AbortAnimation(int animation_id) {
     }
   }
   if (aborted_transform_animation)
-    UpdatePotentiallyAnimatingTransform();
+    UpdateClientAnimationState(TargetProperty::TRANSFORM);
   if (aborted_opacity_animation)
-    UpdateAnimatingOpacity();
+    UpdateClientAnimationState(TargetProperty::OPACITY);
 }
 
 void ElementAnimations::AbortAnimations(TargetProperty::Type target_property,
@@ -1381,9 +1350,9 @@ void ElementAnimations::AbortAnimations(TargetProperty::Type target_property,
     }
   }
   if (aborted_transform_animation)
-    UpdatePotentiallyAnimatingTransform();
+    UpdateClientAnimationState(TargetProperty::TRANSFORM);
   if (aborted_opacity_animation)
-    UpdateAnimatingOpacity();
+    UpdateClientAnimationState(TargetProperty::OPACITY);
 }
 
 Animation* ElementAnimations::GetAnimation(
@@ -1447,28 +1416,31 @@ void ElementAnimations::OnAnimationWaitingForDeletion() {
   animation_host()->OnAnimationWaitingForDeletion();
 }
 
-void ElementAnimations::OnTransformIsPotentiallyAnimatingChanged(
-    ElementListType list_type,
-    bool is_animating) {
-  DCHECK(element_id());
-  DCHECK(animation_host());
-  DCHECK(animation_host()->mutator_host_client());
-  animation_host()
-      ->mutator_host_client()
-      ->ElementTransformIsPotentiallyAnimatingChanged(element_id(), list_type,
-                                                      is_animating);
-}
-
-void ElementAnimations::OnOpacityIsAnimatingChanged(
-    ElementListType list_type,
-    AnimationChangeType change_type,
-    bool is_animating) {
+void ElementAnimations::IsAnimatingChanged(ElementListType list_type,
+                                           TargetProperty::Type property,
+                                           AnimationChangeType change_type,
+                                           bool is_animating) {
   if (!element_id())
     return;
   DCHECK(animation_host());
   if (animation_host()->mutator_host_client()) {
-    animation_host()->mutator_host_client()->ElementOpacityIsAnimatingChanged(
-        element_id(), list_type, change_type, is_animating);
+    switch (property) {
+      case TargetProperty::OPACITY:
+        animation_host()
+            ->mutator_host_client()
+            ->ElementOpacityIsAnimatingChanged(element_id(), list_type,
+                                               change_type, is_animating);
+        break;
+      case TargetProperty::TRANSFORM:
+        animation_host()
+            ->mutator_host_client()
+            ->ElementTransformIsAnimatingChanged(element_id(), list_type,
+                                                 change_type, is_animating);
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
   }
 }
 

@@ -1632,7 +1632,7 @@ void Layer::OnTransformAnimated(const gfx::Transform& transform) {
       if (node->owner_id == id()) {
         node->data.local = transform;
         node->data.needs_local_transform_update = true;
-        node->data.is_animated = true;
+        node->data.has_potential_animation = true;
         layer_tree_host_->property_trees()->transform_tree.set_needs_update(
             true);
       }
@@ -1646,7 +1646,21 @@ void Layer::OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) {
   // compositor-driven scrolling.
 }
 
-void Layer::OnTransformIsPotentiallyAnimatingChanged(bool is_animating) {
+void Layer::OnTransformIsCurrentlyAnimatingChanged(
+    bool is_currently_animating) {
+  DCHECK(layer_tree_host_);
+  TransformTree& transform_tree =
+      layer_tree_host_->property_trees()->transform_tree;
+  TransformNode* node = transform_tree.Node(transform_tree_index());
+  if (!node)
+    return;
+
+  if (node->owner_id == id())
+    node->data.is_currently_animating = is_currently_animating;
+}
+
+void Layer::OnTransformIsPotentiallyAnimatingChanged(
+    bool has_potential_animation) {
   if (!layer_tree_host_)
     return;
   TransformTree& transform_tree =
@@ -1656,8 +1670,8 @@ void Layer::OnTransformIsPotentiallyAnimatingChanged(bool is_animating) {
     return;
 
   if (node->owner_id == id()) {
-    node->data.is_animated = is_animating;
-    if (is_animating) {
+    node->data.has_potential_animation = has_potential_animation;
+    if (has_potential_animation) {
       float maximum_target_scale = 0.f;
       node->data.local_maximum_animation_target_scale =
           MaximumTargetScale(&maximum_target_scale) ? maximum_target_scale

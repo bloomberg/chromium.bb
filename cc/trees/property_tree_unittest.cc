@@ -29,7 +29,7 @@ TEST(PropertyTreeSerializationTest, TransformNodeDataSerialization) {
   original.needs_local_transform_update = false;
   original.is_invertible = false;
   original.ancestors_are_invertible = false;
-  original.is_animated = false;
+  original.has_potential_animation = false;
   original.to_screen_is_potentially_animated = false;
   original.has_only_translation_animations = false;
   original.to_screen_has_scale_animation = false;

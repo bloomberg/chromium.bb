@@ -373,10 +373,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
       ElementId element_id,
       ElementListType list_type,
       const gfx::ScrollOffset& scroll_offset) override;
-  void ElementTransformIsPotentiallyAnimatingChanged(
-      ElementId element_id,
-      ElementListType list_type,
-      bool is_animating) override;
+  void ElementTransformIsAnimatingChanged(ElementId element_id,
+                                          ElementListType list_type,
+                                          AnimationChangeType change_type,
+                                          bool is_animating) override;
   void ElementOpacityIsAnimatingChanged(ElementId element_id,
                                         ElementListType list_type,
                                         AnimationChangeType change_type,

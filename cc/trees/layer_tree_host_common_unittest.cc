@@ -9750,6 +9750,69 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimationsTrackingTest) {
   EXPECT_FALSE(node->data.has_potential_opacity_animation);
 }
 
+TEST_F(LayerTreeHostCommonTest, TransformAnimationsTrackingTest) {
+  const gfx::Transform identity_matrix;
+  scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<LayerWithForcedDrawsContent> animated =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
+  root->AddChild(animated);
+
+  host()->SetRootLayer(root);
+
+  SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false);
+  SetLayerPropertiesForTesting(animated.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(20, 20), true, false);
+
+  root->SetForceRenderSurfaceForTesting(true);
+
+  scoped_refptr<AnimationPlayer> player =
+      AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
+  timeline()->AttachPlayer(player);
+  player->AttachElement(animated->id());
+
+  std::unique_ptr<KeyframedTransformAnimationCurve> curve(
+      KeyframedTransformAnimationCurve::Create());
+  TransformOperations start;
+  start.AppendTranslate(1.f, 2.f, 3.f);
+  gfx::Transform transform;
+  transform.Scale3d(1.0, 2.0, 3.0);
+  TransformOperations operation;
+  operation.AppendMatrix(transform);
+  curve->AddKeyframe(
+      TransformKeyframe::Create(base::TimeDelta(), start, nullptr));
+  curve->AddKeyframe(TransformKeyframe::Create(
+      base::TimeDelta::FromSecondsD(1.0), operation, nullptr));
+  std::unique_ptr<Animation> animation(
+      Animation::Create(std::move(curve), 3, 3, TargetProperty::TRANSFORM));
+  animation->set_fill_mode(Animation::FillMode::NONE);
+  animation->set_time_offset(base::TimeDelta::FromMilliseconds(-1000));
+  Animation* animation_ptr = animation.get();
+  AddAnimationToLayerWithExistingPlayer(animated->id(), timeline(),
+                                        std::move(animation));
+
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+
+  TransformTree& tree =
+      root->layer_tree_host()->property_trees()->transform_tree;
+  TransformNode* node = tree.Node(animated->transform_tree_index());
+  EXPECT_FALSE(node->data.is_currently_animating);
+  EXPECT_TRUE(node->data.has_potential_animation);
+
+  animation_ptr->set_time_offset(base::TimeDelta::FromMilliseconds(0));
+  root->layer_tree_host()->AnimateLayers(
+      base::TimeTicks::FromInternalValue(std::numeric_limits<int64_t>::max()));
+  node = tree.Node(animated->transform_tree_index());
+  EXPECT_TRUE(node->data.is_currently_animating);
+  EXPECT_TRUE(node->data.has_potential_animation);
+
+  player->AbortAnimations(TargetProperty::TRANSFORM,
+                          false /*needs_completion*/);
+  node = tree.Node(animated->transform_tree_index());
+  EXPECT_FALSE(node->data.is_currently_animating);
+  EXPECT_FALSE(node->data.has_potential_animation);
+}
+
 TEST_F(LayerTreeHostCommonTest, SerializeScrollUpdateInfo) {
   LayerTreeHostCommon::ScrollUpdateInfo scroll;
   scroll.layer_id = 2;

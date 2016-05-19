@@ -42,9 +42,10 @@ class MutatorHostClient {
       ElementListType list_type,
       const gfx::ScrollOffset& scroll_offset) = 0;
 
-  virtual void ElementTransformIsPotentiallyAnimatingChanged(
+  virtual void ElementTransformIsAnimatingChanged(
       ElementId element_id,
       ElementListType list_type,
+      AnimationChangeType change_type,
       bool is_animating) = 0;
 
   virtual void ElementOpacityIsAnimatingChanged(ElementId element_id,
