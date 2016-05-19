@@ -47,14 +47,6 @@
           "reason": "scroll"
         },
         {
-          "object": "LayoutTableCell TD",
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "reason": "full"
-        },
-        {
           "object": "VerticalScrollbar",
           "reason": "scroll"
         }

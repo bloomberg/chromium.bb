@@ -18,10 +18,6 @@
         {
           "object": "LayoutTableCell TD",
           "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "reason": "full"
         }
       ]
     }

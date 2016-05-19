@@ -1421,30 +1421,46 @@ void LayoutTable::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState
     // Table cells paint background from the containing column group, column, section and row.
     // If background of any of them changed, we need to invalidate all affected cells.
     // Here use shouldDoFullPaintInvalidation() as a broader condition of background change.
-    for (LayoutObject* section = firstChild(); section; section = section->nextSibling()) {
-        if (!section->isTableSection())
+
+    // If any col changed background, we'll check all cells for background changes.
+    bool hasColChangedBackground = false;
+    for (LayoutTableCol* col = firstColumn(); col; col = col->nextColumn()) {
+        if (col->backgroundChangedSinceLastPaintInvalidation()) {
+            hasColChangedBackground = true;
+            break;
+        }
+    }
+    for (LayoutObject* child = firstChild(); child; child = child->nextSibling()) {
+        if (!child->isTableSection())
             continue;
-        for (LayoutTableRow* row = toLayoutTableSection(section)->firstRow(); row; row = row->nextRow()) {
+        LayoutTableSection* section = toLayoutTableSection(child);
+        if (!hasColChangedBackground && !section->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState())
+            continue;
+        for (LayoutTableRow* row = section->firstRow(); row; row = row->nextRow()) {
+            if (!hasColChangedBackground && !section->backgroundChangedSinceLastPaintInvalidation() && !row->backgroundChangedSinceLastPaintInvalidation())
+                continue;
             for (LayoutTableCell* cell = row->firstCell(); cell; cell = cell->nextCell()) {
-                ColAndColGroup colAndColGroup = colElementAtAbsoluteColumn(cell->absoluteColumnIndex());
-                LayoutTableCol* column = colAndColGroup.col;
-                LayoutTableCol* columnGroup = colAndColGroup.colgroup;
+                bool invalidated = false;
                 // Table cells paint container's background on the container's backing instead of its own (if any),
                 // so we must invalidate it by the containers.
-                bool invalidated = false;
-                if (childPaintInvalidationState.forcedSubtreeFullInvalidationWithinContainer()
-                    || (columnGroup && columnGroup->shouldDoFullPaintInvalidation())
-                    || (column && column->shouldDoFullPaintInvalidation())
-                    || section->shouldDoFullPaintInvalidation()) {
+                if (section->backgroundChangedSinceLastPaintInvalidation()) {
                     section->invalidateDisplayItemClient(*cell);
                     invalidated = true;
+                } else if (hasColChangedBackground) {
+                    ColAndColGroup colAndColGroup = colElementAtAbsoluteColumn(cell->absoluteColumnIndex());
+                    LayoutTableCol* column = colAndColGroup.col;
+                    LayoutTableCol* columnGroup = colAndColGroup.colgroup;
+                    if ((columnGroup && columnGroup->backgroundChangedSinceLastPaintInvalidation())
+                        || (column && column->backgroundChangedSinceLastPaintInvalidation())) {
+                        section->invalidateDisplayItemClient(*cell);
+                        invalidated = true;
+                    }
                 }
-                if ((!invalidated || row->isPaintInvalidationContainer()) && row->shouldDoFullPaintInvalidation())
+                if ((!invalidated || row->hasSelfPaintingLayer()) && row->backgroundChangedSinceLastPaintInvalidation())
                     row->invalidateDisplayItemClient(*cell);
             }
         }
     }
-
     LayoutBlock::invalidatePaintOfSubtreesIfNeeded(childPaintInvalidationState);
 }
 

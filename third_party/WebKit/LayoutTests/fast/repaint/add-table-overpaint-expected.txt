@@ -30,10 +30,6 @@
           "object": "LayoutTableCell TD",
           "rect": [2, 314, 152, 152],
           "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "reason": "full"
         }
       ]
     }
