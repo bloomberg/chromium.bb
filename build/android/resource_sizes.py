@@ -88,7 +88,9 @@ _BASE_CHART = {
 }
 _DUMP_STATIC_INITIALIZERS_PATH = os.path.join(
     host_paths.DIR_SOURCE_ROOT, 'tools', 'linux', 'dump-static-initializers.py')
-_RC_HEADER_RE = re.compile(r'^#define (?P<name>\w+) (?P<id>\d+)$')
+# Pragma exists when enable_resource_whitelist_generation=true.
+_RC_HEADER_RE = re.compile(
+    r'^#define (?P<name>\w+) (?:_Pragma\(.*?\) )?(?P<id>\d+)$')
 
 
 def CountStaticInitializers(so_path):
