@@ -571,9 +571,9 @@ void OfflinePageModel::OnAddOfflinePageDone(OfflinePageArchiver* archiver,
         AddHistogramSuffix(
             offline_page.client_id, "OfflinePages.SavePageTime").c_str(),
         base::Time::Now() - offline_page.creation_time);
-    UMA_HISTOGRAM_MEMORY_KB(
-        AddHistogramSuffix(
-            offline_page.client_id, "OfflinePages.PageSize").c_str(),
+    // 50 buckets capped between 1Kb and 10Mb.
+    UMA_HISTOGRAM_COUNTS_10000(AddHistogramSuffix(
+        offline_page.client_id, "OfflinePages.PageSize").c_str(),
         offline_page.file_size / 1024);
   } else {
     result = SavePageResult::STORE_FAILURE;
