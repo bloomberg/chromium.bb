@@ -43,10 +43,10 @@ class CONTENT_EXPORT PushMessagingService {
 
   virtual ~PushMessagingService() {}
 
-  // Returns the absolute URL exposed by the push server where the webapp server
-  // can send push messages. This is currently assumed to be the same for all
-  // origins and push registrations.
-  virtual GURL GetPushEndpoint() = 0;
+  // Returns the absolute URL to the endpoint of the push service where messages
+  // should be posted to. Should return an endpoint compatible with the Web Push
+  // Protocol when |standard_protocol| is true.
+  virtual GURL GetEndpoint(bool standard_protocol) const = 0;
 
   // Subscribe the given |options.sender_info| with the push messaging service
   // in a document context. The frame is known and a permission UI may be

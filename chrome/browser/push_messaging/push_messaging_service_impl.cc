@@ -349,10 +349,11 @@ void PushMessagingServiceImpl::OnSendAcknowledged(
   NOTREACHED() << "The Push API shouldn't have sent messages upstream";
 }
 
-// GetPushEndpoint method ------------------------------------------------------
+// GetEndpoint method ----------------------------------------------------------
 
-GURL PushMessagingServiceImpl::GetPushEndpoint() {
-  return GURL(std::string(kPushMessagingEndpoint));
+GURL PushMessagingServiceImpl::GetEndpoint(bool standard_protocol) const {
+  return GURL(standard_protocol ? kPushMessagingPushProtocolEndpoint
+                                : kPushMessagingGcmEndpoint);
 }
 
 // Subscribe and GetPermissionStatus methods -----------------------------------

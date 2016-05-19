@@ -18,8 +18,6 @@
 #include "content/public/common/push_messaging_status.h"
 #include "url/gurl.h"
 
-class GURL;
-
 namespace content {
 
 class PushMessagingService;
@@ -123,8 +121,14 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   void OnGetSubscription(int request_id,
                          int64_t service_worker_registration_id);
 
+  void DidGetSenderInfo(int request_id,
+                        int64_t service_worker_registration_id,
+                        const std::vector<std::string>& sender_info,
+                        ServiceWorkerStatusCode status);
+
   void DidGetSubscription(int request_id,
                           int64_t service_worker_registration_id,
+                          bool uses_standard_protocol,
                           const std::vector<std::string>& push_subscription_id,
                           ServiceWorkerStatusCode status);
 
@@ -145,13 +149,23 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   // Called via PostTask from UI thread.
   void SendIPC(std::unique_ptr<IPC::Message> message);
 
+  // Helper methods on either thread -------------------------------------------
+
+  // Creates an endpoint for |subscription_id| with either the default protocol,
+  // or the standardized Web Push Protocol, depending on |standard_protocol|.
+  GURL CreateEndpoint(bool standard_protocol,
+                      const std::string& subscription_id) const;
+
   // Inner core of this message filter which lives on the UI thread.
   std::unique_ptr<Core, BrowserThread::DeleteOnUIThread> ui_core_;
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
-  // Empty if no PushMessagingService was available when constructed.
-  GURL push_endpoint_base_;
+  // Whether the PushMessagingService was available when constructed.
+  bool service_available_;
+
+  GURL default_endpoint_;
+  GURL web_push_protocol_endpoint_;
 
   base::WeakPtrFactory<PushMessagingMessageFilter> weak_factory_io_to_io_;
 

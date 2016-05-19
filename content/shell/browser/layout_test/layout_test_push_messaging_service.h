@@ -25,7 +25,7 @@ class LayoutTestPushMessagingService : public PushMessagingService {
   ~LayoutTestPushMessagingService() override;
 
   // PushMessagingService implementation:
-  GURL GetPushEndpoint() override;
+  GURL GetEndpoint(bool standard_protocol) const override;
   void SubscribeFromDocument(
       const GURL& requesting_origin,
       int64_t service_worker_registration_id,

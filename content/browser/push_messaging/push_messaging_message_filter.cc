@@ -83,11 +83,10 @@ void ForwardEncryptionInfoToIOThreadProxy(
                           base::Bind(callback, success, p256dh, auth));
 }
 
-// Concatenates the subscription id with the endpoint base to create a new
-// GURL object containing the endpoint unique to the subscription.
-GURL CreatePushEndpoint(const GURL& push_endpoint_base,
-                        const std::string& push_subscription_id) {
-  return GURL(push_endpoint_base.spec() + "/" + push_subscription_id);
+// Returns whether |sender_info| contains a valid application server key, that
+// is, a NIST P-256 public key in uncompressed format.
+bool IsApplicationServerKey(const std::string& sender_info) {
+  return sender_info.size() == 65 && sender_info[0] == 0x04;
 }
 
 }  // namespace
@@ -220,9 +219,15 @@ PushMessagingMessageFilter::PushMessagingMessageFilter(
   // constructor finishes.
   ui_core_.reset(
       new Core(weak_factory_io_to_io_.GetWeakPtr(), render_process_id));
-  PushMessagingService* push_service = ui_core_->service();
-  if (push_service)
-    push_endpoint_base_ = push_service->GetPushEndpoint();
+
+  PushMessagingService* service = ui_core_->service();
+  service_available_ = !!service;
+
+  if (service_available_) {
+    default_endpoint_ = service->GetEndpoint(false /* standard_protocol */);
+    web_push_protocol_endpoint_ =
+        service->GetEndpoint(true /* standard_protocol */);
+  }
 }
 
 PushMessagingMessageFilter::~PushMessagingMessageFilter() {}
@@ -501,23 +506,23 @@ void PushMessagingMessageFilter::SendSubscriptionSuccess(
     const std::vector<uint8_t>& auth) {
   // Only called from IO thread, but would be safe to call from UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (push_endpoint_base_.is_empty()) {
+  if (!service_available_) {
     // This shouldn't be possible in incognito mode, since we've already checked
     // that we have an existing registration. Hence it's ok to throw an error.
     DCHECK(!ui_core_->is_incognito());
     SendSubscriptionError(data, PUSH_REGISTRATION_STATUS_SERVICE_NOT_AVAILABLE);
     return;
   }
+
+  const GURL endpoint = CreateEndpoint(
+      IsApplicationServerKey(data.options.sender_info), push_subscription_id);
+
   if (data.FromDocument()) {
     Send(new PushMessagingMsg_SubscribeFromDocumentSuccess(
-        data.render_frame_id, data.request_id,
-        CreatePushEndpoint(push_endpoint_base_, push_subscription_id), p256dh,
-        auth));
+        data.render_frame_id, data.request_id, endpoint, p256dh, auth));
   } else {
     Send(new PushMessagingMsg_SubscribeFromWorkerSuccess(
-        data.request_id,
-        CreatePushEndpoint(push_endpoint_base_, push_subscription_id), p256dh,
-        auth));
+        data.request_id, endpoint, p256dh, auth));
   }
   RecordRegistrationStatus(status);
 }
@@ -719,15 +724,38 @@ void PushMessagingMessageFilter::OnGetSubscription(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(johnme): Validate arguments?
   service_worker_context_->GetRegistrationUserData(
+      service_worker_registration_id, {kPushSenderIdServiceWorkerKey},
+      base::Bind(&PushMessagingMessageFilter::DidGetSenderInfo,
+                 weak_factory_io_to_io_.GetWeakPtr(), request_id,
+                 service_worker_registration_id));
+}
+
+void PushMessagingMessageFilter::DidGetSenderInfo(
+    int request_id,
+    int64_t service_worker_registration_id,
+    const std::vector<std::string>& sender_info,
+    ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (status != SERVICE_WORKER_OK || sender_info.size() != 1) {
+    DidGetSubscription(request_id, service_worker_registration_id,
+                       false /* uses_standard_protocol */,
+                       std::vector<std::string>() /* push_subscription_id */,
+                       status);
+    return;
+  }
+
+  const bool uses_standard_protocol = IsApplicationServerKey(sender_info[0]);
+  service_worker_context_->GetRegistrationUserData(
       service_worker_registration_id, {kPushRegistrationIdServiceWorkerKey},
       base::Bind(&PushMessagingMessageFilter::DidGetSubscription,
                  weak_factory_io_to_io_.GetWeakPtr(), request_id,
-                 service_worker_registration_id));
+                 service_worker_registration_id, uses_standard_protocol));
 }
 
 void PushMessagingMessageFilter::DidGetSubscription(
     int request_id,
     int64_t service_worker_registration_id,
+    bool uses_standard_protocol,
     const std::vector<std::string>& push_subscription_id,
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -735,7 +763,7 @@ void PushMessagingMessageFilter::DidGetSubscription(
       PUSH_GETREGISTRATION_STATUS_STORAGE_ERROR;
   switch (service_worker_status) {
     case SERVICE_WORKER_OK: {
-      if (push_endpoint_base_.is_empty()) {
+      if (!service_available_) {
         // Return not found in incognito mode, so websites can't detect it.
         get_status =
             ui_core_->is_incognito()
@@ -751,7 +779,7 @@ void PushMessagingMessageFilter::DidGetSubscription(
       const GURL origin = registration->pattern().GetOrigin();
       DCHECK_EQ(1u, push_subscription_id.size());
       const GURL endpoint =
-          CreatePushEndpoint(push_endpoint_base_, push_subscription_id[0]);
+          CreateEndpoint(uses_standard_protocol, push_subscription_id[0]);
 
       auto callback =
           base::Bind(&PushMessagingMessageFilter::DidGetSubscriptionKeys,
@@ -907,6 +935,15 @@ void PushMessagingMessageFilter::Core::Send(IPC::Message* message) {
 void PushMessagingMessageFilter::SendIPC(
     std::unique_ptr<IPC::Message> message) {
   Send(message.release());
+}
+
+GURL PushMessagingMessageFilter::CreateEndpoint(
+    bool standard_protocol,
+    const std::string& subscription_id) const {
+  const GURL& base =
+      standard_protocol ? web_push_protocol_endpoint_ : default_endpoint_;
+
+  return GURL(base.spec() + subscription_id);
 }
 
 PushMessagingService* PushMessagingMessageFilter::Core::service() {

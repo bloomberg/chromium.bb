@@ -218,8 +218,10 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
       const std::string& expected_push_subscription_info,
       bool use_key = true);
 
-  std::string GetEndpointForSubscriptionId(const std::string& subscription_id) {
-    return std::string(kPushMessagingEndpoint) + "/" + subscription_id;
+  std::string GetEndpointForSubscriptionId(const std::string& subscription_id,
+                                           bool standard_protocol = true) {
+    return push_service()->GetEndpoint(standard_protocol).spec() +
+           subscription_id;
   }
 
   PushMessagingAppIdentifier GetAppIdentifierForServiceWorkerRegistration(
@@ -324,8 +326,9 @@ void PushMessagingBrowserTest::TryToSubscribeSuccessfully(
     EXPECT_TRUE(RunScript("documentSubscribePushWithoutKey()", &script_result));
   }
 
-  EXPECT_EQ(GetEndpointForSubscriptionId(expected_push_subscription_info),
-            script_result);
+  EXPECT_EQ(
+      GetEndpointForSubscriptionId(expected_push_subscription_info, use_key),
+      script_result);
 }
 
 PushMessagingAppIdentifier
@@ -525,7 +528,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribeWorkerUsingManifest) {
   // the code to read sender id from the manifest and will write it to the
   // datastore.
   ASSERT_TRUE(RunScript("documentSubscribePushWithoutKey()", &script_result));
-  EXPECT_EQ(GetEndpointForSubscriptionId("1-0"), script_result);
+  EXPECT_EQ(GetEndpointForSubscriptionId("1-0", false), script_result);
 
   ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
   EXPECT_EQ("unsubscribe result: true", script_result);
@@ -534,7 +537,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribeWorkerUsingManifest) {
   // Now run the subscribe from the service worker without a key.
   // In this case, the sender id will be read from the datastore.
   ASSERT_TRUE(RunScript("workerSubscribePushNoKey()", &script_result));
-  EXPECT_EQ(GetEndpointForSubscriptionId("1-1"), script_result);
+  EXPECT_EQ(GetEndpointForSubscriptionId("1-1", false), script_result);
 
   ASSERT_TRUE(RunScript("unsubscribePush()", &script_result));
   EXPECT_EQ("unsubscribe result: true", script_result);

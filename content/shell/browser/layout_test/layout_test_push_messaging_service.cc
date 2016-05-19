@@ -61,8 +61,9 @@ LayoutTestPushMessagingService::LayoutTestPushMessagingService() {
 LayoutTestPushMessagingService::~LayoutTestPushMessagingService() {
 }
 
-GURL LayoutTestPushMessagingService::GetPushEndpoint() {
-  return GURL("https://example.com/LayoutTestEndpoint");
+GURL LayoutTestPushMessagingService::GetEndpoint(bool standard_protocol) const {
+  return GURL(standard_protocol ? "https://example.com/StandardizedEndpoint/"
+                                : "https://example.com/LayoutTestEndpoint/");
 }
 
 void LayoutTestPushMessagingService::SubscribeFromDocument(

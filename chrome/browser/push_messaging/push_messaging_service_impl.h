@@ -73,7 +73,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   bool CanHandle(const std::string& app_id) const override;
 
   // content::PushMessagingService implementation:
-  GURL GetPushEndpoint() override;
+  GURL GetEndpoint(bool standard_protocol) const override;
   void SubscribeFromDocument(
       const GURL& requesting_origin,
       int64_t service_worker_registration_id,
