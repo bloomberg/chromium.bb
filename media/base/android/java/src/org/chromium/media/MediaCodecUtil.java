@@ -37,6 +37,16 @@ class MediaCodecUtil {
         public boolean supportsAdaptivePlayback = false;
     }
 
+    @MainDex
+    public static final class MimeTypes {
+        public static final String VIDEO_MP4 = "video/mp4";
+        public static final String VIDEO_WEBM = "video/webm";
+        public static final String VIDEO_H264 = "video/avc";
+        public static final String VIDEO_H265 = "video/hevc";
+        public static final String VIDEO_VP8 = "video/x-vnd.on2.vp8";
+        public static final String VIDEO_VP9 = "video/x-vnd.on2.vp9";
+    }
+
     /**
      * Class to abstract platform version API differences for interacting with
      * the MediaCodecList.
