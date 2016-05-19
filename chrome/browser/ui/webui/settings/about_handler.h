@@ -66,6 +66,10 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   void OnDeviceAutoUpdatePolicyChanged(const base::Value* previous_policy,
                                        const base::Value* current_policy);
 
+  // Called once the JS page is ready to be called, serves as a signal to the
+  // handler to register C++ observers.
+  void HandlePageReady(const base::ListValue* args);
+
   // Called once when the page has loaded. On ChromeOS, this gets the current
   // update status. On other platforms, it will request and perform an update
   // (if one is available).

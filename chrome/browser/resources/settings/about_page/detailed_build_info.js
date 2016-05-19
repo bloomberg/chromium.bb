@@ -39,7 +39,7 @@ Polymer({
   /** @override */
   ready: function() {
     var browserProxy = settings.AboutPageBrowserProxyImpl.getInstance();
-    browserProxy.refreshUpdateStatus();
+    browserProxy.pageReady();
 
     browserProxy.getVersionInfo().then(function(versionInfo) {
       this.versionInfo_ = versionInfo;

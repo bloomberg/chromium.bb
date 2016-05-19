@@ -10,6 +10,7 @@ cr.define('settings_about_page', function() {
    */
   var TestAboutPageBrowserProxy = function() {
     settings.TestBrowserProxy.call(this, [
+      'pageReady',
       'refreshUpdateStatus',
       'openHelpPage',
       'openFeedbackDialog',
@@ -31,6 +32,11 @@ cr.define('settings_about_page', function() {
     /** @param {!VersionInfo} */
     setVersionInfo: function(versionInfo) {
       this.versionInfo_ = versionInfo;
+    },
+
+    /** @override */
+    pageReady: function() {
+      this.methodCalled('pageReady');
     },
 
     /** @override */
@@ -129,7 +135,7 @@ cr.define('settings_about_page', function() {
           document.body.appendChild(page);
 
           return Promise.all([
-            browserProxy.whenCalled('refreshUpdateStatus'),
+            browserProxy.whenCalled('pageReady'),
             browserProxy.whenCalled('getVersionInfo'),
             browserProxy.whenCalled('getCurrentChannel'),
           ]).then(function() {

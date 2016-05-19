@@ -311,6 +311,9 @@ AboutHandler* AboutHandler::Create(content::WebUIDataSource* html_source,
 
 void AboutHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
+      "aboutPageReady",
+      base::Bind(&AboutHandler::HandlePageReady, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "refreshUpdateStatus",
       base::Bind(&AboutHandler::HandleRefreshUpdateStatus,
                  base::Unretained(this)));
@@ -424,8 +427,11 @@ void AboutHandler::OnDeviceAutoUpdatePolicyChanged(
   }
 }
 
-void AboutHandler::HandleRefreshUpdateStatus(const base::ListValue* args) {
+void AboutHandler::HandlePageReady(const base::ListValue* args) {
   AllowJavascript();
+}
+
+void AboutHandler::HandleRefreshUpdateStatus(const base::ListValue* args) {
   RefreshUpdateStatus();
 }
 

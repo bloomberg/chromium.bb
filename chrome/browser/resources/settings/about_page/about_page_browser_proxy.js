@@ -42,7 +42,12 @@ cr.define('settings', function() {
 
   AboutPageBrowserProxy.prototype = {
     /**
-     * Called once the page is ready. It results in one or more
+     * Indicates to the browser that the page is ready.
+     */
+    pageReady: function() {},
+
+    /**
+     * Request update status from the browser. It results in one or more
      * 'update-status-changed' WebUI events.
      */
     refreshUpdateStatus: function() {},
@@ -96,6 +101,11 @@ cr.define('settings', function() {
   cr.addSingletonGetter(AboutPageBrowserProxyImpl);
 
   AboutPageBrowserProxyImpl.prototype = {
+    /** @override */
+    pageReady: function() {
+      chrome.send('aboutPageReady');
+    },
+
     /** @override */
     refreshUpdateStatus: function() {
       chrome.send('refreshUpdateStatus');
