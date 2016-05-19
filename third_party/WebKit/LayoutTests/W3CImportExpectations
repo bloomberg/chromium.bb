@@ -253,7 +253,7 @@ imported/web-platform-tests/old-tests [ Skip ]
 imported/web-platform-tests/page-visibility [ Skip ]
 imported/web-platform-tests/performance-timeline [ Skip ]
 ## Owners: mustaq@chromium.org
-# imported/web-platform-tests/pointerevents [ Pass ]
+# imported/wpt/pointerevents [ Pass ]
 imported/web-platform-tests/pointerlock [ Skip ]
 imported/web-platform-tests/presentation-api [ Skip ]
 imported/web-platform-tests/progress-events [ Skip ]
@@ -320,7 +320,7 @@ imported/wpt/dom/OWNERS [ Skip ]
 imported/web-platform-tests/shadow-dom/OWNERS [ Skip ]
 imported/wpt/encoding/OWNERS [ Skip ]
 imported/wpt/hr-time/OWNERS [ Skip ]
-imported/web-platform-tests/pointerevents/OWNERS [ Skip ]
+imported/wpt/pointerevents/OWNERS [ Skip ]
 imported/wpt/webstorage/OWNERS [ Skip ]
 imported/wpt/mediacapture-streams/OWNERS [ Skip ]
 imported/wpt/touch-events/OWNERS [ Skip ]
@@ -661,7 +661,7 @@ imported/web-platform-tests/html/semantics/scripting-1/the-script-element/async_
 imported/web-platform-tests/html/semantics/scripting-1/the-script-element/async_010.htm [ Skip ]
 
 # This test requires manual interventions.
-imported/web-platform-tests/pointerevents/pointerevent_pointermove-on-chorded-mouse-button.html [ Skip ]
+imported/wpt/pointerevents/pointerevent_pointermove-on-chorded-mouse-button.html [ Skip ]
 
 # Uses TAB character for indentation
 imported/wpt/touch-events/multi-touch-interactions.js [ Skip ]

@@ -928,9 +928,9 @@ crbug.com/459305 [ Mac ] svg/custom/foreign-object-skew.svg [ Failure ]
 
 crbug.com/482229 compositing/layer-creation/fixed-position-under-transform.html [ Failure ]
 
-crbug.com/471824 imported/web-platform-tests/pointerevents/ [ Skip ]
-crbug.com/471824 virtual/pointerevent/imported/web-platform-tests/pointerevents/pointerevent_touch-action-illegal.html [ Skip ]
-crbug.com/471824 virtual/pointerevent/imported/web-platform-tests/pointerevents/pointerevent_touch-action-verification.html [ Skip ]
+crbug.com/471824 imported/wpt/pointerevents/ [ Skip ]
+crbug.com/471824 virtual/pointerevent/imported/wpt/pointerevents/pointerevent_touch-action-illegal.html [ Skip ]
+crbug.com/471824 virtual/pointerevent/imported/wpt/pointerevents/pointerevent_touch-action-verification.html [ Skip ]
 
 # These testcases are incorrect, mark them as failing until they're fixed in the testsuite.
 # https://lists.w3.org/Archives/Public/www-style/2016Jan/0275.html
