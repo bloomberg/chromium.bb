@@ -372,11 +372,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   // showing.
   InterstitialPageImpl* interstitial_page() const { return interstitial_page_; }
 
-  // Returns whether the given RenderFrameHost (or its associated
-  // RenderViewHost) is on the list of swapped out RenderFrameHosts.
-  bool IsRVHOnSwappedOutList(RenderViewHostImpl* rvh) const;
-  bool IsOnSwappedOutList(RenderFrameHostImpl* rfh) const;
-
   // Returns the swapped out RenderViewHost for the given SiteInstance, if any.
   // This method is *deprecated* and GetRenderFrameProxyHost should be used.
   RenderViewHostImpl* GetSwappedOutRenderViewHost(SiteInstance* instance) const;

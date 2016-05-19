@@ -10,12 +10,12 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
 
+struct FrameHostMsg_OpenURL_Params;
 struct FrameMsg_PostMessage_Params;
 
 namespace content {
@@ -85,11 +85,6 @@ class RenderFrameProxyHost
 
   void SetChildRWHView(RenderWidgetHostView* view);
 
-  // TODO(nasko): The following methods should be removed once we don't have a
-  // swapped out state on RenderFrameHosts. See https://crbug.com/357747.
-  RenderFrameHostImpl* render_frame_host() {
-    return render_frame_host_.get();
-  }
   RenderViewHostImpl* GetRenderViewHost();
   RenderWidgetHostView* GetRenderWidgetHostView();
 
@@ -152,10 +147,6 @@ class RenderFrameProxyHost
   // to this RenderFrameProxyHost, which corresponds to the same frame in the
   // parent's renderer process.
   std::unique_ptr<CrossProcessFrameConnector> cross_process_frame_connector_;
-
-  // TODO(nasko): This can be removed once we don't have a swapped out state on
-  // RenderFrameHosts. See https://crbug.com/357747.
-  std::unique_ptr<RenderFrameHostImpl> render_frame_host_;
 
   // The RenderViewHost that this RenderFrameProxyHost is associated with. It is
   // kept alive as long as any RenderFrameHosts or RenderFrameProxyHosts

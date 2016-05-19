@@ -2330,30 +2330,6 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(
   return old_render_frame_host;
 }
 
-bool RenderFrameHostManager::IsRVHOnSwappedOutList(
-    RenderViewHostImpl* rvh) const {
-  RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(rvh->GetSiteInstance());
-  if (!proxy)
-    return false;
-  // If there is a proxy without RFH, it is for a subframe in the SiteInstance
-  // of |rvh|. Subframes should be ignored in this case.
-  if (!proxy->render_frame_host())
-    return false;
-  return IsOnSwappedOutList(proxy->render_frame_host());
-}
-
-bool RenderFrameHostManager::IsOnSwappedOutList(
-    RenderFrameHostImpl* rfh) const {
-  if (!rfh->GetSiteInstance())
-    return false;
-
-  RenderFrameProxyHost* host = GetRenderFrameProxyHost(rfh->GetSiteInstance());
-  if (!host)
-    return false;
-
-  return host->render_frame_host() == rfh;
-}
-
 RenderViewHostImpl* RenderFrameHostManager::GetSwappedOutRenderViewHost(
    SiteInstance* instance) const {
   RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(instance);

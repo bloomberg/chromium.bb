@@ -1338,22 +1338,18 @@ TEST_F(RenderFrameHostManagerTest, CreateSwappedOutOpenerRFHs) {
   EXPECT_EQ(rvh1,
             manager->GetSwappedOutRenderViewHost(rvh1->GetSiteInstance()));
 
-  // Ensure a swapped out RFH and RFH is created in the first opener tab.
-  RenderFrameProxyHost* opener1_proxy =
-      opener1_manager->GetRenderFrameProxyHost(rfh2->GetSiteInstance());
-  RenderFrameHostImpl* opener1_rfh = opener1_proxy->render_frame_host();
+  // Ensure a proxy and swapped out RVH are created in the first opener tab.
+  EXPECT_TRUE(
+      opener1_manager->GetRenderFrameProxyHost(rfh2->GetSiteInstance()));
   TestRenderViewHost* opener1_rvh = static_cast<TestRenderViewHost*>(
       opener1_manager->GetSwappedOutRenderViewHost(rvh2->GetSiteInstance()));
-  EXPECT_FALSE(opener1_rfh);
   EXPECT_FALSE(opener1_rvh->is_active());
 
-  // Ensure a swapped out RFH and RVH is created in the second opener tab.
-  RenderFrameProxyHost* opener2_proxy =
-      opener2_manager->GetRenderFrameProxyHost(rfh2->GetSiteInstance());
-  RenderFrameHostImpl* opener2_rfh = opener2_proxy->render_frame_host();
+  // Ensure a proxy and swapped out RVH are created in the second opener tab.
+  EXPECT_TRUE(
+      opener2_manager->GetRenderFrameProxyHost(rfh2->GetSiteInstance()));
   TestRenderViewHost* opener2_rvh = static_cast<TestRenderViewHost*>(
       opener2_manager->GetSwappedOutRenderViewHost(rvh2->GetSiteInstance()));
-  EXPECT_FALSE(opener2_rfh);
   EXPECT_FALSE(opener2_rvh->is_active());
 
   // Navigate to a cross-BrowsingInstance URL.
@@ -1594,13 +1590,11 @@ TEST_F(RenderFrameHostManagerTest, EnableWebUIWithSwappedOutOpener) {
   EXPECT_TRUE(rvh1->GetSiteInstance()->IsRelatedSiteInstance(
                   rvh2->GetSiteInstance()));
 
-  // Ensure a swapped out RFH and RVH is created in the first opener tab.
-  RenderFrameProxyHost* opener1_proxy =
-      opener1_manager->GetRenderFrameProxyHost(rvh2->GetSiteInstance());
-  RenderFrameHostImpl* opener1_rfh = opener1_proxy->render_frame_host();
+  // Ensure a proxy and swapped out RVH are created in the first opener tab.
+  EXPECT_TRUE(
+      opener1_manager->GetRenderFrameProxyHost(rvh2->GetSiteInstance()));
   TestRenderViewHost* opener1_rvh = static_cast<TestRenderViewHost*>(
       opener1_manager->GetSwappedOutRenderViewHost(rvh2->GetSiteInstance()));
-  EXPECT_FALSE(opener1_rfh);
   EXPECT_FALSE(opener1_rvh->is_active());
 
   // Ensure the new RVH has WebUI bindings.
