@@ -64,6 +64,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/chromeos_switches.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
@@ -369,8 +370,10 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
                                     Extension::NO_FLAGS,
                                     "ffffffffffffffffffffffffffffffff",
                                     &error);
+
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        chromeos::switches::kEnableArc);
     arc_test_.SetUp(profile());
-    arc_test_.bridge_service()->SetReady();
   }
 
   // Creates a running V2 app (not pinned) of type |app_id|.
@@ -427,6 +430,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   }
 
   void TearDown() override {
+    arc_test_.TearDown();
     launcher_controller_->SetShelfItemDelegateManagerForTest(nullptr);
     model_->RemoveObserver(model_observer_.get());
     model_observer_.reset();
@@ -649,6 +653,12 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     arc_test_.app_instance()->RefreshAppList();
     arc_test_.app_instance()->SendRefreshAppList(
         std::vector<arc::mojom::AppInfo>());
+  }
+
+  void EnableArc(bool enable) {
+    enable ? arc_test_.arc_auth_service()->EnableArc()
+           : arc_test_.arc_auth_service()->DisableArc();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Creates app window and set optional Arc application id.
@@ -1421,9 +1431,36 @@ TEST_F(ChromeLauncherControllerTest, CheckRunningAppOrder) {
   EXPECT_EQ("AppList, Chrome", GetPinnedAppStatus());
 }
 
+TEST_F(ChromeLauncherControllerTest, ArcRunningApp) {
+  arc_test_.CreateUserAndLogin();
+  InitLauncherController();
+
+  const std::string arc_app_id = ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
+  InstallArcApps();
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
+
+  // Normal flow, create/destroy tasks.
+  arc_test_.app_instance()->SendTaskCreated(1, arc_test_.fake_apps()[0]);
+  EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
+  arc_test_.app_instance()->SendTaskCreated(2, arc_test_.fake_apps()[0]);
+  EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
+  arc_test_.app_instance()->SendTaskDestroyed(1);
+  EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
+  arc_test_.app_instance()->SendTaskDestroyed(2);
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
+
+  // Stopping bridge removes apps.
+  arc_test_.app_instance()->SendTaskCreated(3, arc_test_.fake_apps()[0]);
+  EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
+  arc_test_.bridge_service()->SetStopped();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
+}
+
 // Validate that Arc app is pinned correctly and pin is removed automatically
 // once app is uninstalled.
 TEST_F(ChromeLauncherControllerTest, ArcAppPin) {
+  arc_test_.CreateUserAndLogin();
   InitLauncherController();
 
   const std::string arc_app_id = ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
@@ -1446,6 +1483,22 @@ TEST_F(ChromeLauncherControllerTest, ArcAppPin) {
 
   EXPECT_EQ("AppList, Chrome, App1, Fake App 0, App2", GetPinnedAppStatus());
   UninstallArcApps();
+  EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
+  InstallArcApps();
+  EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
+
+  // Disable/Enable Arc should persist pin state.
+  launcher_controller_->PinAppWithID(arc_app_id);
+  EXPECT_EQ("AppList, Chrome, App1, App2, Fake App 0", GetPinnedAppStatus());
+  arc::ArcAuthService::Get()->Shutdown();
+  EXPECT_EQ("AppList, Chrome, App1, App2, Fake App 0", GetPinnedAppStatus());
+  arc::ArcAuthService::Get()->OnPrimaryUserProfilePrepared(profile());
+  EXPECT_EQ("AppList, Chrome, App1, App2, Fake App 0", GetPinnedAppStatus());
+
+  // Opt-Out/Opt-In remove item from the shelf.
+  EnableArc(false);
+  EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
+  EnableArc(true);
   EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
   InstallArcApps();
   EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
@@ -2920,6 +2973,7 @@ TEST_F(ChromeLauncherControllerTest, MultipleAppIconLoaders) {
 }
 
 TEST_F(ChromeLauncherControllerTest, ArcAppPinPolicy) {
+  arc_test_.CreateUserAndLogin();
   InitLauncherControllerWithBrowser();
 
   arc::mojom::AppInfo appinfo;

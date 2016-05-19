@@ -69,6 +69,7 @@ bool disable_ui_for_testing = false;
 // testing.
 bool enable_check_android_management_for_testing = false;
 
+const char kStateNotInitialized[] = "NOT_INITIALIZED";
 const char kStateStopped[] = "STOPPED";
 const char kStateFetchingCode[] = "FETCHING_CODE";
 const char kStateActive[] = "ACTIVE";
@@ -136,6 +137,7 @@ void ArcAuthService::EnableCheckAndroidManagementForTesting() {
   enable_check_android_management_for_testing = true;
 }
 
+// static
 bool ArcAuthService::IsAllowedForProfile(const Profile* profile) {
   if (!arc::ArcBridgeService::GetEnabled(
           base::CommandLine::ForCurrentProcess())) {
@@ -143,13 +145,19 @@ bool ArcAuthService::IsAllowedForProfile(const Profile* profile) {
     return false;
   }
 
-  user_manager::User const* const user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  if (!profile) {
+    VLOG(1) << "ARC is not supported for systems without profile.";
+    return false;
+  }
+
   if (profile->IsLegacySupervised()) {
     VLOG(1) << "Supervised users are not supported in ARC.";
     return false;
   }
-  if (!user->HasGaiaAccount()) {
+
+  user_manager::User const* const user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  if (!user || !user->HasGaiaAccount()) {
     VLOG(1) << "Users without GAIA accounts are not supported in ARC.";
     return false;
   }
@@ -274,15 +282,18 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
 
   Shutdown();
 
+  profile_ = profile;
+  SetState(State::STOPPED);
+
   if (!IsAllowedForProfile(profile))
     return;
 
+  // TODO (khmel): Move this to IsAllowedForProfile.
   if (IsArcDisabledForEnterprise() && IsAccountManaged(profile)) {
     VLOG(2) << "Enterprise users are not supported in ARC.";
     return;
   }
 
-  profile_ = profile;
   PrefServiceSyncableFromProfile(profile_)->AddSyncedPrefObserver(
       prefs::kArcEnabled, this);
 
@@ -331,7 +342,7 @@ void ArcAuthService::OnIsSyncingChanged() {
 
   pref_service_syncable->RemoveObserver(this);
 
-  if (profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled))
+  if (IsArcEnabled())
     OnOptInPreferenceChanged();
 
   if (!disable_ui_for_testing && profile_->IsNewProfile() &&
@@ -350,6 +361,7 @@ void ArcAuthService::Shutdown() {
   }
   pref_change_registrar_.RemoveAll();
   profile_ = nullptr;
+  SetState(State::NOT_INITIALIZED);
 }
 
 void ArcAuthService::ShowUI(UIPage page, const base::string16& status) {
@@ -420,7 +432,10 @@ void ArcAuthService::OnOptInPreferenceChanged() {
   DCHECK(thread_checker.Get().CalledOnValidThread());
   DCHECK(profile_);
 
-  if (!profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled)) {
+  const bool arc_enabled = IsArcEnabled();
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnOptInEnabled(arc_enabled));
+
+  if (!arc_enabled) {
     if (state_ != State::STOPPED)
       UpdateEnabledStateUMA(false);
     ShutdownBridgeAndCloseUI();
@@ -457,7 +472,8 @@ void ArcAuthService::ShutdownBridge() {
   token_service_ = nullptr;
   account_id_ = "";
   arc_bridge_service()->Shutdown();
-  SetState(State::STOPPED);
+  if (state_ != State::NOT_INITIALIZED)
+    SetState(State::STOPPED);
   FOR_EACH_OBSERVER(Observer, observer_list_, OnShutdownBridge());
 }
 
@@ -550,7 +566,7 @@ void ArcAuthService::CancelAuthCode() {
   DisableArc();
 }
 
-bool ArcAuthService::IsArcEnabled() {
+bool ArcAuthService::IsArcEnabled() const {
   DCHECK(thread_checker.Get().CalledOnValidThread());
   DCHECK(profile_);
   return profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled);
@@ -665,6 +681,8 @@ void ArcAuthService::StartArcIfSignedIn() {
 
 std::ostream& operator<<(std::ostream& os, const ArcAuthService::State& state) {
   switch (state) {
+    case ArcAuthService::State::NOT_INITIALIZED:
+      return os << kStateNotInitialized;
     case ArcAuthService::State::STOPPED:
       return os << kStateStopped;
     case ArcAuthService::State::FETCHING_CODE:

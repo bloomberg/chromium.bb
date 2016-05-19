@@ -254,6 +254,32 @@ void ArcAppWindowLauncherController::CheckForAppWindowWidget(
   window->SetProperty(aura::client::kAnimationsDisabledKey, true);
 }
 
+void ArcAppWindowLauncherController::OnAppReadyChanged(
+    const std::string& app_id,
+    bool ready) {
+  if (!ready)
+    OnAppRemoved(app_id);
+}
+
+void ArcAppWindowLauncherController::OnAppRemoved(const std::string& app_id) {
+  AppControllerMap::const_iterator it = app_controller_map_.find(app_id);
+  if (it == app_controller_map_.end())
+    return;
+
+  const ArcAppWindowLauncherItemController* controller = it->second;
+
+  std::vector<int> task_ids_to_remove;
+  for (const auto window : controller->windows()) {
+    AppWindow* app_window = static_cast<AppWindow*>(window);
+    task_ids_to_remove.push_back(app_window->task_id());
+  }
+
+  for (const auto task_id : task_ids_to_remove)
+    OnTaskDestroyed(task_id);
+
+  DCHECK(app_controller_map_.find(app_id) == app_controller_map_.end());
+}
+
 void ArcAppWindowLauncherController::OnTaskCreated(
     int task_id,
     const std::string& package_name,

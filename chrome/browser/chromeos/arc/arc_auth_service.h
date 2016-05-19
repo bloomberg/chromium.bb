@@ -52,9 +52,10 @@ class ArcAuthService : public ArcService,
                        public syncable_prefs::SyncedPrefObserver {
  public:
   enum class State {
-    STOPPED,        // ARC is not running.
-    FETCHING_CODE,  // ARC may be running or not. Auth code is fetching.
-    ACTIVE,         // ARC is running.
+    NOT_INITIALIZED,  // Service is not initialized.
+    STOPPED,          // ARC is not running.
+    FETCHING_CODE,    // ARC may be running or not. Auth code is fetching.
+    ACTIVE,           // ARC is running.
   };
 
   enum class UIPage {
@@ -81,6 +82,9 @@ class ArcAuthService : public ArcService,
 
     // Called to notify that ARC bridge is shut down.
     virtual void OnShutdownBridge() {}
+
+    // Called to notify that ARC enabled state has been updated.
+    virtual void OnOptInEnabled(bool enabled) {}
   };
 
   explicit ArcAuthService(ArcBridgeService* bridge_service);
@@ -142,7 +146,7 @@ class ArcAuthService : public ArcService,
   // Called from Arc support platform app when user cancels signing.
   void CancelAuthCode();
 
-  bool IsArcEnabled();
+  bool IsArcEnabled() const;
   void EnableArc();
   void DisableArc();
 
@@ -194,7 +198,7 @@ class ArcAuthService : public ArcService,
   PrefChangeRegistrar pref_change_registrar_;
 
   mojo::Binding<AuthHost> binding_;
-  State state_ = State::STOPPED;
+  State state_ = State::NOT_INITIALIZED;
   base::ObserverList<Observer> observer_list_;
   std::unique_ptr<GaiaAuthFetcher> merger_fetcher_;
   std::unique_ptr<UbertokenFetcher> ubertoken_fethcher_;

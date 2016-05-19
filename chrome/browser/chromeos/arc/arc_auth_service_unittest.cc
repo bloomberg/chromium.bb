@@ -84,7 +84,7 @@ class ArcAuthServiceTest : public testing::Test {
     chromeos::WallpaperManager::Initialize();
   }
 
-  void TearDown() override {}
+  void TearDown() override { chromeos::WallpaperManager::Shutdown(); }
 
   chromeos::FakeChromeUserManager* GetFakeUserManager() const {
     return static_cast<chromeos::FakeChromeUserManager*>(
@@ -118,7 +118,7 @@ class ArcAuthServiceTest : public testing::Test {
 };
 
 TEST_F(ArcAuthServiceTest, PrefChangeTriggersService) {
-  ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
+  ASSERT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
 
   PrefService* const pref = profile()->GetPrefs();
   DCHECK_EQ(false, pref->GetBoolean(prefs::kArcEnabled));
@@ -151,6 +151,7 @@ TEST_F(ArcAuthServiceTest, DisabledForEphemeralDataUsers) {
 
   fake_user_manager->AddUser(chromeos::login::DemoAccountId());
   fake_user_manager->SwitchActiveUser(chromeos::login::DemoAccountId());
+  auth_service()->Shutdown();
   auth_service()->OnPrimaryUserProfilePrepared(profile());
   ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
 
@@ -158,6 +159,7 @@ TEST_F(ArcAuthServiceTest, DisabledForEphemeralDataUsers) {
       AccountId::FromUserEmail("public_user@gmail.com"));
   fake_user_manager->AddPublicAccountUser(public_account_id);
   fake_user_manager->SwitchActiveUser(public_account_id);
+  auth_service()->Shutdown();
   auth_service()->OnPrimaryUserProfilePrepared(profile());
   ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
 
@@ -166,6 +168,7 @@ TEST_F(ArcAuthServiceTest, DisabledForEphemeralDataUsers) {
   fake_user_manager->AddUser(not_in_list_account_id);
   fake_user_manager->SwitchActiveUser(not_in_list_account_id);
   fake_user_manager->RemoveUserFromList(not_in_list_account_id);
+  auth_service()->Shutdown();
   auth_service()->OnPrimaryUserProfilePrepared(profile());
   ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
 
@@ -175,7 +178,7 @@ TEST_F(ArcAuthServiceTest, DisabledForEphemeralDataUsers) {
 
 TEST_F(ArcAuthServiceTest, BaseWorkflow) {
   ASSERT_EQ(ArcBridgeService::State::STOPPED, bridge_service()->state());
-  ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
+  ASSERT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
   ASSERT_EQ(std::string(), auth_service()->GetAndResetAuthCode());
 
   auth_service()->OnPrimaryUserProfilePrepared(profile());
@@ -197,7 +200,7 @@ TEST_F(ArcAuthServiceTest, BaseWorkflow) {
   ASSERT_EQ(std::string(), auth_service()->GetAndResetAuthCode());
 
   auth_service()->Shutdown();
-  ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
+  ASSERT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
   ASSERT_EQ(ArcBridgeService::State::STOPPED, bridge_service()->state());
   ASSERT_EQ(std::string(), auth_service()->GetAndResetAuthCode());
 
@@ -283,7 +286,7 @@ TEST_F(ArcAuthServiceTest, SignInStatus) {
 
   // Second start, no fetching code is expected.
   auth_service()->Shutdown();
-  EXPECT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
+  EXPECT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
   EXPECT_EQ(ArcBridgeService::State::STOPPED, bridge_service()->state());
   auth_service()->OnPrimaryUserProfilePrepared(profile());
   EXPECT_TRUE(prefs->GetBoolean(prefs::kArcSignedIn));

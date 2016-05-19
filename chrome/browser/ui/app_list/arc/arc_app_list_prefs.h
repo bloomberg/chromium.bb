@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -43,7 +44,8 @@ class PrefRegistrySyncable;
 // service is not ready to provide information about available ARC apps.
 class ArcAppListPrefs : public KeyedService,
                         public arc::mojom::AppHost,
-                        public arc::ArcBridgeService::Observer {
+                        public arc::ArcBridgeService::Observer,
+                        public arc::ArcAuthService::Observer {
  public:
   struct AppInfo {
     AppInfo(const std::string& name,
@@ -136,6 +138,9 @@ class ArcAppListPrefs : public KeyedService,
   void RemoveObserver(Observer* observer);
   bool HasObserver(Observer* observer);
 
+  // arc::ArcAuthService::Observer:
+  void OnOptInEnabled(bool enabled) override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeLauncherControllerTest, ArcAppPinPolicy);
 
@@ -164,6 +169,12 @@ class ArcAppListPrefs : public KeyedService,
   void AddApp(const arc::mojom::AppInfo& app);
   void RemoveApp(const std::string& app_id);
   void DisableAllApps();
+  void RemoveAllApps();
+  std::vector<std::string> GetAppIdsNoArcEnabledCheck() const;
+  // Enumerates apps from preferences and notifies listeners about available
+  // apps while Arc is not started yet. All apps in this case have disabled
+  // state.
+  void NotifyRegisteredApps();
 
   // Installs an icon to file system in the special folder of the profile
   // directory.
@@ -190,6 +201,8 @@ class ArcAppListPrefs : public KeyedService,
   std::map<std::string, uint32_t> request_icon_deferred_;
   // True if this preference has been initialized once.
   bool is_initialized_ = false;
+  // True if apps were restored.
+  bool apps_restored_ = false;
 
   mojo::Binding<arc::mojom::AppHost> binding_;
 

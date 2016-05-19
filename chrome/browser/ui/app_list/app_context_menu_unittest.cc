@@ -355,7 +355,7 @@ TEST_F(AppContextMenuTest, NonExistingExtensionApp) {
 TEST_F(AppContextMenuTest, ArcMenu) {
   ArcAppTest arc_test;
   arc_test.SetUp(profile());
-  arc_test.bridge_service()->SetReady();
+  arc_test.CreateUserAndLogin();
 
   const arc::mojom::AppInfo& app_info = arc_test.fake_apps()[0];
   const std::string app_id = ArcAppTest::GetAppId(app_info);
@@ -418,7 +418,7 @@ TEST_F(AppContextMenuTest, ArcMenu) {
 TEST_F(AppContextMenuTest, ArcMenuStickyItem) {
   ArcAppTest arc_test;
   arc_test.SetUp(profile());
-  arc_test.bridge_service()->SetReady();
+  arc_test.CreateUserAndLogin();
 
   arc_test.app_instance()->RefreshAppList();
   arc_test.app_instance()->SendRefreshAppList(arc_test.fake_apps());

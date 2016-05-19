@@ -86,6 +86,13 @@ void DeleteAppFolderFromFileThread(const base::FilePath& path) {
   DCHECK(deleted);
 }
 
+bool IsArcEnabled() {
+  arc::ArcAuthService* auth_service = arc::ArcAuthService::Get();
+  return auth_service &&
+         auth_service->state() != arc::ArcAuthService::State::NOT_INITIALIZED &&
+         auth_service->IsArcEnabled();
+}
+
 }  // namespace
 
 // static
@@ -117,9 +124,16 @@ ArcAppListPrefs::ArcAppListPrefs(const base::FilePath& base_path,
     : prefs_(prefs), binding_(this), weak_ptr_factory_(this) {
   base_path_ = base_path.AppendASCII(prefs::kArcApps);
 
-  arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
-  if (!bridge_service)
+  arc::ArcAuthService* auth_service = arc::ArcAuthService::Get();
+  if (!auth_service)
     return;
+
+  if (auth_service->state() != arc::ArcAuthService::State::NOT_INITIALIZED)
+    OnOptInEnabled(auth_service->IsArcEnabled());
+  auth_service->AddObserver(this);
+
+  arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
+  DCHECK(bridge_service);
 
   bridge_service->AddObserver(this);
   OnStateChanged(bridge_service->state());
@@ -127,9 +141,12 @@ ArcAppListPrefs::ArcAppListPrefs(const base::FilePath& base_path,
 
 ArcAppListPrefs::~ArcAppListPrefs() {
   arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
-  if (!bridge_service)
-    return;
-  bridge_service->RemoveObserver(this);
+  if (bridge_service)
+    bridge_service->RemoveObserver(this);
+
+  arc::ArcAuthService* auth_service = arc::ArcAuthService::Get();
+  if (auth_service)
+    auth_service->RemoveObserver(this);
 }
 
 base::FilePath ArcAppListPrefs::GetAppPath(const std::string& app_id) const {
@@ -216,6 +233,12 @@ bool ArcAppListPrefs::HasObserver(Observer* observer) {
 }
 
 std::vector<std::string> ArcAppListPrefs::GetAppIds() const {
+  if (!IsArcEnabled())
+    return std::vector<std::string>();
+  return GetAppIdsNoArcEnabledCheck();
+}
+
+std::vector<std::string> ArcAppListPrefs::GetAppIdsNoArcEnabledCheck() const {
   std::vector<std::string> ids;
 
   // crx_file::id_util is de-facto utility for id generation.
@@ -233,6 +256,9 @@ std::vector<std::string> ArcAppListPrefs::GetAppIds() const {
 
 std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
     const std::string& app_id) const {
+  if (!IsArcEnabled())
+    return std::unique_ptr<AppInfo>();
+
   const base::DictionaryValue* app = nullptr;
   const base::DictionaryValue* apps = prefs_->GetDictionary(prefs::kArcApps);
   if (!apps || !apps->GetDictionaryWithoutPathExpansion(app_id, &app))
@@ -265,6 +291,9 @@ std::unique_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
 }
 
 bool ArcAppListPrefs::IsRegistered(const std::string& app_id) const {
+  if (!IsArcEnabled())
+    return false;
+
   const base::DictionaryValue* app = nullptr;
   const base::DictionaryValue* apps = prefs_->GetDictionary(prefs::kArcApps);
   if (!apps || !apps->GetDictionary(app_id, &app))
@@ -294,6 +323,39 @@ void ArcAppListPrefs::DisableAllApps() {
                       observer_list_,
                       OnAppReadyChanged(app_id, false));
   }
+}
+
+void ArcAppListPrefs::NotifyRegisteredApps() {
+  if (apps_restored_)
+    return;
+
+  DCHECK(ready_apps_.empty());
+  std::vector<std::string> app_ids = GetAppIdsNoArcEnabledCheck();
+  for (const auto& app_id : app_ids) {
+    std::unique_ptr<AppInfo> app_info = GetApp(app_id);
+    if (!app_info) {
+      NOTREACHED();
+      continue;
+    }
+    FOR_EACH_OBSERVER(Observer,
+                      observer_list_,
+                      OnAppRegistered(app_id, *app_info));
+  }
+
+  apps_restored_ = true;
+}
+
+void ArcAppListPrefs::RemoveAllApps() {
+  std::vector<std::string> app_ids = GetAppIdsNoArcEnabledCheck();
+  for (const auto& app_id : app_ids)
+    RemoveApp(app_id);
+}
+
+void ArcAppListPrefs::OnOptInEnabled(bool enabled) {
+  if (enabled)
+    NotifyRegisteredApps();
+  else
+    RemoveAllApps();
 }
 
 void ArcAppListPrefs::OnStateChanged(arc::ArcBridgeService::State state) {
@@ -396,6 +458,7 @@ void ArcAppListPrefs::RemoveApp(const std::string& app_id) {
 
 void ArcAppListPrefs::OnAppListRefreshed(
     mojo::Array<arc::mojom::AppInfoPtr> apps) {
+  DCHECK(IsArcEnabled());
   std::vector<std::string> old_apps = GetAppIds();
 
   ready_apps_.clear();

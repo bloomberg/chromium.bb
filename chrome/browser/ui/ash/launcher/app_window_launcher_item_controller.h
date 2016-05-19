@@ -32,6 +32,8 @@ class ChromeLauncherController;
 class AppWindowLauncherItemController : public LauncherItemController,
                                         public aura::WindowObserver {
  public:
+  using WindowList = std::list<ui::BaseWindow*>;
+
   ~AppWindowLauncherItemController() override;
 
   void AddWindow(ui::BaseWindow* window);
@@ -68,9 +70,9 @@ class AppWindowLauncherItemController : public LauncherItemController,
   // Activates the window at position |index|.
   void ActivateIndexedApp(size_t index);
 
- protected:
-  using WindowList = std::list<ui::BaseWindow*>;
+  const WindowList& windows() const { return windows_; }
 
+ protected:
   AppWindowLauncherItemController(Type type,
                                   const std::string& app_shelf_id,
                                   const std::string& app_id,
@@ -90,8 +92,6 @@ class AppWindowLauncherItemController : public LauncherItemController,
   // kExistingWindowActivated, or kExistingWindowMinimized.
   ash::ShelfItemDelegate::PerformedAction ActivateOrAdvanceToNextAppWindow(
       ui::BaseWindow* window_to_show);
-
-  const WindowList& windows() { return windows_; }
 
  private:
   WindowList::iterator GetFromNativeWindow(aura::Window* window);

@@ -78,11 +78,15 @@ class ArcAppModelBuilderTest : public AppListTestBase {
     AppListTestBase::SetUp();
 
     arc_test_.SetUp(profile_.get());
+    arc_test_.CreateUserAndLogin();
 
     CreateBuilder();
   }
 
-  void TearDown() override { ResetBuilder(); }
+  void TearDown() override {
+    arc_test_.TearDown();
+    ResetBuilder();
+  }
 
  protected:
   // Creates a new builder, destroying any existing one.

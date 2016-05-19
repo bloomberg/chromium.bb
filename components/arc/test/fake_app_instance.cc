@@ -59,6 +59,10 @@ void FakeAppInstance::SendTaskCreated(int32_t taskId,
   app_host_->OnTaskCreated(taskId, app.package_name, app.activity);
 }
 
+void FakeAppInstance::SendTaskDestroyed(int32_t taskId) {
+  app_host_->OnTaskDestroyed(taskId);
+}
+
 bool FakeAppInstance::GenerateAndSendIcon(const mojom::AppInfo& app,
                                           mojom::ScaleFactor scale_factor,
                                           std::string* png_data_as_string) {

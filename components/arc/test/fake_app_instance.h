@@ -88,6 +88,7 @@ class FakeAppInstance : public mojom::AppInstance {
   // Methods to reply messages.
   void SendRefreshAppList(const std::vector<mojom::AppInfo>& apps);
   void SendTaskCreated(int32_t taskId, const mojom::AppInfo& app);
+  void SendTaskDestroyed(int32_t taskId);
   bool GenerateAndSendIcon(const mojom::AppInfo& app,
                            mojom::ScaleFactor scale_factor,
                            std::string* png_data_as_string);

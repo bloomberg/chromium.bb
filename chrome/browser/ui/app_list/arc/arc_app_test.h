@@ -15,15 +15,18 @@ namespace arc {
 namespace mojom {
 class AppInfo;
 }
+class ArcAuthService;
 class FakeArcBridgeService;
 class FakeAppInstance;
 }
 
-namespace content {
-class BrowserContext;
+namespace chromeos {
+class FakeChromeUserManager;
+class ScopedUserManagerEnabler;
 }
 
 class ArcAppListPrefs;
+class Profile;
 
 // Helper class to initialize arc bridge to work with arc apps in unit tests.
 class ArcAppTest {
@@ -31,7 +34,9 @@ class ArcAppTest {
   ArcAppTest();
   virtual ~ArcAppTest();
 
-  void SetUp(content::BrowserContext* browser_context);
+  void SetUp(Profile* profile);
+  void CreateUserAndLogin();
+  void TearDown();
 
   static std::string GetAppId(const arc::mojom::AppInfo& app_info);
 
@@ -40,20 +45,26 @@ class ArcAppTest {
     return fake_apps_;
   }
 
+  chromeos::FakeChromeUserManager* GetUserManager();
+
   arc::FakeArcBridgeService* bridge_service() { return bridge_service_.get(); }
 
   arc::FakeAppInstance* app_instance() { return app_instance_.get(); }
 
   ArcAppListPrefs* arc_app_list_prefs() { return arc_app_list_pref_; }
 
+  arc::ArcAuthService* arc_auth_service() { return auth_service_.get(); }
+
  private:
   // Unowned pointer.
-  content::BrowserContext* browser_context_ = nullptr;
+  Profile* profile_ = nullptr;
 
   ArcAppListPrefs* arc_app_list_pref_ = nullptr;
 
   std::unique_ptr<arc::FakeArcBridgeService> bridge_service_;
   std::unique_ptr<arc::FakeAppInstance> app_instance_;
+  std::unique_ptr<arc::ArcAuthService> auth_service_;
+  std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
   std::vector<arc::mojom::AppInfo> fake_apps_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppTest);
