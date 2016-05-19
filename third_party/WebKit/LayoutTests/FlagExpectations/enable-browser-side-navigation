@@ -194,7 +194,7 @@
   http/tests/misc/window-dot-stop.html [ Failure ]
   http/tests/misc/window-open-then-write.html [ Timeout ]
   imported/web-platform-tests/html/semantics/embedded-content/the-object-element/object-attributes.html [ Failure ]
-  imported/web-platform-tests/shadow-dom/untriaged/html-elements-in-shadow-trees/html-forms/test-003.html [ Failure ]
+  imported/wpt/shadow-dom/untriaged/html-elements-in-shadow-trees/html-forms/test-003.html [ Failure ]
   mhtml/multi_frames_contentid.mht [ Timeout Failure ]
   plugins/object-onfocus-mutation-crash.html [ Timeout ]
   svg/custom/anchor-on-use.svg [ Failure ]
