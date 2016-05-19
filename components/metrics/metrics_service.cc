@@ -139,7 +139,6 @@
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
-#include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -149,7 +148,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
-#include "base/values.h"
 #include "build/build_config.h"
 #include "components/metrics/data_use_tracker.h"
 #include "components/metrics/metrics_log.h"
@@ -162,7 +160,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/entropy_provider.h"
-#include "components/variations/variations_associated_data.h"
 
 namespace metrics {
 
@@ -231,21 +228,6 @@ void MarkAppCleanShutdownAndCommit(CleanExitBeacon* clean_exit_beacon,
   local_state->CommitPendingWrite();
 }
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
-
-// Determines if current log should be sent based on sampling rate. Returns true
-// if the sampling rate is not set.
-bool ShouldUploadLog() {
-  std::string probability_str = variations::GetVariationParamValue(
-      "UMA_EnableCellularLogUpload", "Sample_Probability");
-  if (probability_str.empty())
-    return true;
-
-  int probability;
-  // In case specified sampling rate is invalid.
-  if (!base::StringToInt(probability_str, &probability))
-    return true;
-  return base::RandInt(1, 100) <= probability;
-}
 
 }  // namespace
 
@@ -984,11 +966,6 @@ void MetricsService::SendStagedLog() {
 
   DCHECK(!log_upload_in_progress_);
   log_upload_in_progress_ = true;
-
-  if (!ShouldUploadLog()) {
-    SkipAndDiscardUpload();
-    return;
-  }
 
   if (!log_uploader_) {
     log_uploader_ = client_->CreateUploader(

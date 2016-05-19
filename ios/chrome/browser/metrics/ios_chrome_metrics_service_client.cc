@@ -25,6 +25,7 @@
 #include "components/metrics/drive_metrics_provider.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
+#include "components/metrics/net/cellular_logic_helper.h"
 #include "components/metrics/net/net_metrics_log_uploader.h"
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/metrics/net/version_utils.h"
@@ -51,28 +52,6 @@
 #include "ios/chrome/browser/ui/browser_otr_state.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_thread.h"
-
-namespace {
-
-// Standard interval between log uploads, in seconds.
-const int kStandardUploadIntervalSeconds = 5 * 60;           // Five minutes.
-const int kStandardUploadIntervalCellularSeconds = 15 * 60;  // Fifteen minutes.
-
-// Returns true if current connection type is cellular and user is assigned to
-// experimental group for enabled cellular uploads.
-bool IsCellularLogicEnabled() {
-  if (variations::GetVariationParamValue("UMA_EnableCellularLogUpload",
-                                         "Enabled") != "true" ||
-      variations::GetVariationParamValue("UMA_EnableCellularLogUpload",
-                                         "Optimize") == "false") {
-    return false;
-  }
-
-  return net::NetworkChangeNotifier::IsConnectionCellular(
-      net::NetworkChangeNotifier::GetConnectionType());
-}
-
-}  // namespace
 
 IOSChromeMetricsServiceClient::IOSChromeMetricsServiceClient(
     metrics::MetricsStateManager* state_manager)
@@ -187,9 +166,7 @@ IOSChromeMetricsServiceClient::CreateUploader(
 }
 
 base::TimeDelta IOSChromeMetricsServiceClient::GetStandardUploadInterval() {
-  if (IsCellularLogicEnabled())
-    return base::TimeDelta::FromSeconds(kStandardUploadIntervalCellularSeconds);
-  return base::TimeDelta::FromSeconds(kStandardUploadIntervalSeconds);
+  return metrics::GetUploadInterval();
 }
 
 base::string16 IOSChromeMetricsServiceClient::GetRegistryBackupKey() {
@@ -242,8 +219,8 @@ void IOSChromeMetricsServiceClient::Initialize() {
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(drive_metrics_provider_));
 
-  profiler_metrics_provider_ =
-      new metrics::ProfilerMetricsProvider(base::Bind(&IsCellularLogicEnabled));
+  profiler_metrics_provider_ = new metrics::ProfilerMetricsProvider(
+      base::Bind(&metrics::IsCellularLogicEnabled));
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(profiler_metrics_provider_));
 

@@ -153,6 +153,8 @@ if (is_chromeos) {
 # GYP version: components/metrics.gypi:metrics_net
 static_library("net") {
   sources = [
+    "net/cellular_logic_helper.cc",
+    "net/cellular_logic_helper.h",
     "net/net_metrics_log_uploader.cc",
     "net/net_metrics_log_uploader.h",
     "net/network_metrics_provider.cc",
@@ -171,6 +173,7 @@ static_library("net") {
   deps = [
     "//base",
     "//components/data_use_measurement/core",
+    "//components/variations",
     "//components/version_info",
     "//net",
     "//url",
@@ -367,8 +370,6 @@ source_set("unit_tests") {
   # These are only used by the blimp team, which has entirely migrated to gn,
   # so this logic is not replicated in the gyp file.
   if (metrics_use_blimp) {
-    defines = [
-      "OVERRIDE_OS_NAME_TO_BLIMP",
-    ]
+    defines = [ "OVERRIDE_OS_NAME_TO_BLIMP" ]
   }
 }

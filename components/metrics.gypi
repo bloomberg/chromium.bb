@@ -123,6 +123,8 @@
         'version_info',
       ],
       'sources': [
+        'metrics/net/cellular_logic_helper.cc',
+        'metrics/net/cellular_logic_helper.h',
         'metrics/net/net_metrics_log_uploader.cc',
         'metrics/net/net_metrics_log_uploader.h',
         'metrics/net/network_metrics_provider.cc',

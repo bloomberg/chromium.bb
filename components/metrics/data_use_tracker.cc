@@ -16,6 +16,12 @@ namespace metrics {
 
 namespace {
 
+// Default weekly quota and allowed UMA ratio for UMA log uploads for Android.
+// These defaults will not be used for non-Android as |DataUseTracker| will not
+// be initialized. Default values can be overridden by variation params.
+const int kDefaultUMAWeeklyQuotaBytes = 204800;
+const double kDefaultUMARatio = 0.05;
+
 // This function is for forwarding metrics usage pref changes to the appropriate
 // callback on the appropriate thread.
 // TODO(gayane): Reduce the frequency of posting tasks from IO to UI thread.
@@ -41,12 +47,9 @@ DataUseTracker::~DataUseTracker() {}
 std::unique_ptr<DataUseTracker> DataUseTracker::Create(
     PrefService* local_state) {
   std::unique_ptr<DataUseTracker> data_use_tracker;
-  if (variations::GetVariationParamValue("UMA_EnableCellularLogUpload",
-                                         "Uma_Quota") != "" &&
-      variations::GetVariationParamValue("UMA_EnableCellularLogUpload",
-                                         "Uma_Ratio") != "") {
-    data_use_tracker.reset(new DataUseTracker(local_state));
-  }
+#if defined(OS_ANDROID)
+  data_use_tracker.reset(new DataUseTracker(local_state));
+#endif
   return data_use_tracker;
 }
 
@@ -173,9 +176,9 @@ bool DataUseTracker::GetUmaWeeklyQuota(int* uma_weekly_quota_bytes) const {
   std::string param_value_str = variations::GetVariationParamValue(
       "UMA_EnableCellularLogUpload", "Uma_Quota");
   if (param_value_str.empty())
-    return false;
-
-  base::StringToInt(param_value_str, uma_weekly_quota_bytes);
+    *uma_weekly_quota_bytes = kDefaultUMAWeeklyQuotaBytes;
+  else
+    base::StringToInt(param_value_str, uma_weekly_quota_bytes);
   return true;
 }
 
@@ -185,8 +188,9 @@ bool DataUseTracker::GetUmaRatio(double* ratio) const {
   std::string param_value_str = variations::GetVariationParamValue(
       "UMA_EnableCellularLogUpload", "Uma_Ratio");
   if (param_value_str.empty())
-    return false;
-  base::StringToDouble(param_value_str, ratio);
+    *ratio = kDefaultUMARatio;
+  else
+    base::StringToDouble(param_value_str, ratio);
   return true;
 }
 

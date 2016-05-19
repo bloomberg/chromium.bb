@@ -46,6 +46,7 @@
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/metrics_state_manager.h"
+#include "components/metrics/net/cellular_logic_helper.h"
 #include "components/metrics/net/net_metrics_log_uploader.h"
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/metrics/net/version_utils.h"
@@ -58,7 +59,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_driver/device_count_metrics_provider.h"
-#include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/histogram_fetcher.h"
@@ -103,30 +103,7 @@ namespace {
 // This specifies the amount of time to wait for all renderers to send their
 // data.
 const int kMaxHistogramGatheringWaitDuration = 60000;  // 60 seconds.
-
-// Standard interval between log uploads, in seconds.
-#if defined(OS_ANDROID)
-const int kStandardUploadIntervalSeconds = 5 * 60;  // Five minutes.
-const int kStandardUploadIntervalCellularSeconds = 15 * 60;  // Fifteen minutes.
-#else
-const int kStandardUploadIntervalSeconds = 30 * 60;  // Thirty minutes.
-#endif
-
 const char kBrowserMetricsFileName[] = "SavedMetrics";
-
-// Returns true if current connection type is cellular and user is assigned to
-// experimental group for enabled cellular uploads.
-bool IsCellularLogicEnabled() {
-  if (variations::GetVariationParamValue("UMA_EnableCellularLogUpload",
-                                         "Enabled") != "true" ||
-      variations::GetVariationParamValue("UMA_EnableCellularLogUpload",
-                                         "Optimize") == "false") {
-    return false;
-  }
-
-  return net::NetworkChangeNotifier::IsConnectionCellular(
-      net::NetworkChangeNotifier::GetConnectionType());
-}
 
 // Checks whether it is the first time that cellular uploads logic should be
 // enabled based on whether the the preference for that logic is initialized.
@@ -136,8 +113,7 @@ bool ShouldClearSavedMetrics() {
 #if BUILDFLAG(ANDROID_JAVA_UI)
   PrefService* local_state = g_browser_process->local_state();
   return !local_state->HasPrefPath(metrics::prefs::kMetricsReportingEnabled) &&
-         variations::GetVariationParamValue("UMA_EnableCellularLogUpload",
-                                            "Enabled") == "true";
+         metrics::IsCellularLogicEnabled();
 #else
   return false;
 #endif
@@ -373,11 +349,7 @@ ChromeMetricsServiceClient::CreateUploader(
 }
 
 base::TimeDelta ChromeMetricsServiceClient::GetStandardUploadInterval() {
-#if defined(OS_ANDROID)
-  if (IsCellularLogicEnabled())
-    return base::TimeDelta::FromSeconds(kStandardUploadIntervalCellularSeconds);
-#endif
-  return base::TimeDelta::FromSeconds(kStandardUploadIntervalSeconds);
+  return metrics::GetUploadInterval();
 }
 
 base::string16 ChromeMetricsServiceClient::GetRegistryBackupKey() {
@@ -464,8 +436,8 @@ void ChromeMetricsServiceClient::Initialize() {
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(drive_metrics_provider_));
 
-  profiler_metrics_provider_ =
-      new metrics::ProfilerMetricsProvider(base::Bind(&IsCellularLogicEnabled));
+  profiler_metrics_provider_ = new metrics::ProfilerMetricsProvider(
+      base::Bind(&metrics::IsCellularLogicEnabled));
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(profiler_metrics_provider_));
 
@@ -760,5 +732,5 @@ void ChromeMetricsServiceClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
 }
 
 bool ChromeMetricsServiceClient::IsUMACellularUploadLogicEnabled() {
-  return IsCellularLogicEnabled();
+  return metrics::IsCellularLogicEnabled();
 }
