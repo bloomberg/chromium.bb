@@ -83,18 +83,16 @@ source_set("unit_tests") {
     "translate_manager_unittest.cc",
     "translate_prefs_unittest.cc",
     "translate_script_unittest.cc",
+    "translate_ui_delegate_unittest.cc",
   ]
   deps = [
     ":browser",
     "//base",
+    "//components/infobars/core",
     "//components/pref_registry:test_support",
     "//components/prefs",
     "//components/translate/core/common",
     "//net:test_support",
     "//testing/gtest",
   ]
-  if (!use_aura) {
-    sources += [ "translate_ui_delegate_unittest.cc" ]
-    deps += [ "//components/infobars/core" ]
-  }
 }
