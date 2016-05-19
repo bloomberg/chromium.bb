@@ -294,6 +294,7 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
 
   NSImage* normalIcon = nil;
   NSImage* disabledIcon = nil;
+  BOOL isDarkTheme = NO;
 
   gfx::VectorIconId iconId = [self vectorIconId];
   if (iconId == gfx::VectorIconId::VECTOR_ICON_NONE) {
@@ -309,7 +310,7 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
     normalIcon = disabledIcon = defaultImage;
   } else {
     // Compute the normal and disabled vector icon colors.
-    BOOL isDarkTheme = [[self window] hasDarkTheme];
+    isDarkTheme = [[self window] hasDarkTheme];
     const SkColor vectorIconColor = [self vectorIconColor:isDarkTheme];
     CGFloat normalAlpha = isDarkTheme ? 0xCC : 0xFF;
     const SkColor normalColor = SkColorSetA(vectorIconColor, normalAlpha);
@@ -350,8 +351,7 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
   // Use the themed style for custom themes and Incognito mode.
   const ui::ThemeProvider* themeProvider = [[self window] themeProvider];
   bool incongitoMode = themeProvider && themeProvider->InIncognitoMode();
-  bool usingACustomTheme = themeProvider && !themeProvider->UsingSystemTheme();
-  if (usingACustomTheme || incongitoMode) {
+  if (isDarkTheme || incongitoMode) {
     hoverStyle = ToolbarButtonImageBackgroundStyle::HOVER_THEMED;
     pressedStyle = ToolbarButtonImageBackgroundStyle::PRESSED_THEMED;
   }
