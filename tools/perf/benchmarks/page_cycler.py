@@ -115,18 +115,6 @@ class PageCyclerIntlKoThVi(_PageCycler):
               possible_browser.platform.GetOSVersionName() == 'snowleopard'))
 
 
-# This is an old page set, we intend to remove it after more modern benchmarks
-# work on CrOS.
-@benchmark.Enabled('chromeos')
-class PageCyclerMoz(_PageCycler):
-  """Page load for mozilla's original page set. Recorded in December 2000."""
-  page_set = page_sets.MozPageSet
-
-  @classmethod
-  def Name(cls):
-    return 'page_cycler.moz'
-
-
 @benchmark.Enabled('android')
 class PageCyclerTop10Mobile(_PageCycler):
   """Page load time benchmark for the top 10 mobile web pages.
