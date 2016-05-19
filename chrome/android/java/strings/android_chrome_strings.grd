@@ -612,6 +612,9 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ALLOWED_EXCEPT_THIRD_PARTY" desc="Summary text for when only third-party cookies are blocked.">
         Allowed, except third-party
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ALWAYS_ALLOWED" desc="Summary text explaining that a permission is allowed, and cannot be changed by the user, e.g. JavaScript: always allowed.">
+        Always allowed
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ASK" desc="Summary text explaining that Chrome will ask the user before allowing a site to use a certain permission, e.g. JavaScript: ask first.">
         Ask first
       </message>
