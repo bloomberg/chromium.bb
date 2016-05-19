@@ -66,11 +66,11 @@ void FrameViewAutoSizeInfo::autoSizeIfNeeded()
         // Update various sizes including contentsSize, scrollHeight, etc.
         document->updateStyleAndLayoutIgnorePendingStylesheets();
 
-        LayoutView* layoutView = document->layoutView();
-        if (!layoutView)
+        LayoutViewItem layoutViewItem = document->layoutViewItem();
+        if (layoutViewItem.isNull())
             return;
 
-        int width = layoutView->minPreferredLogicalWidth();
+        int width = layoutViewItem.minPreferredLogicalWidth();
 
         LayoutBox* documentLayoutBox = documentElement->layoutBox();
         if (!documentLayoutBox)
