@@ -483,7 +483,7 @@ class CC_EXPORT LayerTreeImpl {
         event_properties;
   }
 
-  void ResetAllChangeTracking(PropertyTrees::ResetFlags flag);
+  void ResetAllChangeTracking();
 
  protected:
   explicit LayerTreeImpl(

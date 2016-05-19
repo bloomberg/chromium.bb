@@ -2093,18 +2093,9 @@ void PropertyTrees::PushChangeTrackingTo(PropertyTrees* tree) {
   tree->full_tree_damaged = full_tree_damaged;
 }
 
-void PropertyTrees::ResetAllChangeTracking(ResetFlags flag) {
-  switch (flag) {
-    case EFFECT_TREE:
-      effect_tree.ResetChangeTracking();
-      break;
-    case TRANSFORM_TREE:
-      transform_tree.ResetChangeTracking();
-      break;
-    case ALL_TREES:
-      transform_tree.ResetChangeTracking();
-      effect_tree.ResetChangeTracking();
-  }
+void PropertyTrees::ResetAllChangeTracking() {
+  transform_tree.ResetChangeTracking();
+  effect_tree.ResetChangeTracking();
   changed = false;
   full_tree_damaged = false;
 }

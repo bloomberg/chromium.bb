@@ -72,8 +72,7 @@ void EmulateDrawingOneFrame(LayerImpl* root) {
         render_surface_layer_list[index]->filters());
   }
 
-  root->layer_tree_impl()->ResetAllChangeTracking(
-      PropertyTrees::ResetFlags::ALL_TREES);
+  root->layer_tree_impl()->ResetAllChangeTracking();
 }
 
 class DamageTrackerTest : public testing::Test {
@@ -882,8 +881,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForNewUnchangedLayer) {
     child2->SetBounds(gfx::Size(6, 8));
     child2->SetDrawsContent(true);
     root->AddChild(std::move(child2));
-    host_impl_.active_tree()->ResetAllChangeTracking(
-        PropertyTrees::ResetFlags::ALL_TREES);
+    host_impl_.active_tree()->ResetAllChangeTracking();
     LayerImpl* child2_ptr = host_impl_.active_tree()->LayerById(3);
     // Sanity check the initial conditions of the test, if these asserts
     // trigger, it means the test no longer actually covers the intended

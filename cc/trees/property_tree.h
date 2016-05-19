@@ -698,7 +698,6 @@ class CC_EXPORT PropertyTrees final {
   int sequence_number;
   bool is_main_thread;
   bool is_active;
-  enum ResetFlags { EFFECT_TREE, TRANSFORM_TREE, ALL_TREES };
 
   void SetInnerViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
   void SetOuterViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
@@ -706,7 +705,7 @@ class CC_EXPORT PropertyTrees final {
   void PushOpacityIfNeeded(PropertyTrees* target_tree);
   void UpdateChangeTracking();
   void PushChangeTrackingTo(PropertyTrees* tree);
-  void ResetAllChangeTracking(ResetFlags flag);
+  void ResetAllChangeTracking();
 
   gfx::Vector2dF inner_viewport_container_bounds_delta() const {
     return inner_viewport_container_bounds_delta_;

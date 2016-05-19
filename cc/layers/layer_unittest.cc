@@ -1118,8 +1118,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
       child->PushPropertiesTo(child_impl.get());
       child2->PushPropertiesTo(child2_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get());
-      layer_tree_host_->property_trees()->ResetAllChangeTracking(
-          PropertyTrees::ResetFlags::ALL_TREES));
+      layer_tree_host_->property_trees()->ResetAllChangeTracking());
   EXPECT_FALSE(node->data.transform_changed);
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
@@ -1137,8 +1136,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       child->PushPropertiesTo(child_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get());
-      layer_tree_host_->property_trees()->ResetAllChangeTracking(
-          PropertyTrees::ResetFlags::ALL_TREES));
+      layer_tree_host_->property_trees()->ResetAllChangeTracking());
   node = layer_tree_host_->property_trees()->transform_tree.Node(
       child->transform_tree_index());
   EXPECT_FALSE(node->data.transform_changed);
@@ -1154,8 +1152,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
       child->PushPropertiesTo(child_impl.get());
       child2->PushPropertiesTo(child2_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get());
-      layer_tree_host_->property_trees()->ResetAllChangeTracking(
-          PropertyTrees::ResetFlags::ALL_TREES));
+      layer_tree_host_->property_trees()->ResetAllChangeTracking());
 
   gfx::Transform arbitrary_transform;
   arbitrary_transform.Scale3d(0.1f, 0.2f, 0.3f);
@@ -1727,8 +1724,7 @@ TEST_F(LayerTest, PushPropertiesAccumulatesUpdateRect) {
 
   // If we do clear the LayerImpl side, then the next update_rect() should be
   // fresh without accumulation.
-  host_impl_.active_tree()->ResetAllChangeTracking(
-      PropertyTrees::ResetFlags::ALL_TREES);
+  host_impl_.active_tree()->ResetAllChangeTracking();
   test_layer->SetNeedsDisplayRect(gfx::Rect(10, 10, 5, 5));
   test_layer->PushPropertiesTo(impl_layer_ptr);
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(10.f, 10.f, 5.f, 5.f),

@@ -536,7 +536,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   sync_tree->UpdatePropertyTreeScrollOffset(&property_trees_);
 
   micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);
-  property_trees_.ResetAllChangeTracking(PropertyTrees::ResetFlags::ALL_TREES);
+  property_trees_.ResetAllChangeTracking();
 }
 
 void LayerTreeHost::WillCommit() {

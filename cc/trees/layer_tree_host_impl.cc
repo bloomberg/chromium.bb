@@ -1692,7 +1692,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
     (*frame->render_surface_layer_list)[i]->render_surface()->damage_tracker()->
         DidDrawDamagedArea();
   }
-  active_tree_->ResetAllChangeTracking(PropertyTrees::ResetFlags::ALL_TREES);
+  active_tree_->ResetAllChangeTracking();
 
   active_tree_->set_has_ever_been_drawn(true);
   devtools_instrumentation::DidDrawFrame(id_);
@@ -1993,8 +1993,7 @@ void LayerTreeHostImpl::ActivateSyncTree() {
     TreeSynchronizer::PushLayerProperties(pending_tree(), active_tree());
     pending_tree_->PushPropertiesTo(active_tree_.get());
     if (pending_tree_->root_layer())
-      pending_tree_->property_trees()->ResetAllChangeTracking(
-          PropertyTrees::ResetFlags::ALL_TREES);
+      pending_tree_->property_trees()->ResetAllChangeTracking();
 
     // Now that we've synced everything from the pending tree to the active
     // tree, rename the pending tree the recycle tree so we can reuse it on the

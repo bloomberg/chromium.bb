@@ -2093,11 +2093,11 @@ void LayerTreeImpl::ScrollAnimationAbort(bool needs_completion) {
       needs_completion);
 }
 
-void LayerTreeImpl::ResetAllChangeTracking(PropertyTrees::ResetFlags flag) {
+void LayerTreeImpl::ResetAllChangeTracking() {
   layers_that_should_push_properties_.clear();
   for (auto* layer : *this)
     layer->ResetChangeTracking();
-  property_trees_.ResetAllChangeTracking(flag);
+  property_trees_.ResetAllChangeTracking();
 }
 
 }  // namespace cc

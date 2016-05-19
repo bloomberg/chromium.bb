@@ -254,8 +254,7 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeAndTrackStackingOrderChange) {
   TreeSynchronizer::PushLayerProperties(layer_tree_root->layer_tree_host(),
                                         host_->active_tree());
 
-  host_->active_tree()->ResetAllChangeTracking(
-      PropertyTrees::ResetFlags::ALL_TREES);
+  host_->active_tree()->ResetAllChangeTracking();
 
   // re-insert the layer and sync again.
   child2->RemoveFromParent();

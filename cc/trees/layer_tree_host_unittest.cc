@@ -837,8 +837,7 @@ class LayerTreeHostTestDamageWithReplica : public LayerTreeHostTest {
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     switch (index_) {
       case 0:
-        impl->sync_tree()->ResetAllChangeTracking(
-            PropertyTrees::ResetFlags::ALL_TREES);
+        impl->sync_tree()->ResetAllChangeTracking();
         EXPECT_FALSE(impl->sync_tree()->root_layer()->LayerPropertyChanged());
         PostSetNeedsCommitToMainThread();
         index_++;
@@ -900,8 +899,7 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
     switch (static_cast<Animations>(index_)) {
       case OPACITY:
         index_++;
-        impl->active_tree()->ResetAllChangeTracking(
-            PropertyTrees::ResetFlags::ALL_TREES);
+        impl->active_tree()->ResetAllChangeTracking();
         impl->active_tree()->root_layer()->OnOpacityAnimated(0.5f);
         PostSetNeedsCommitToMainThread();
         break;
@@ -910,8 +908,7 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
         EXPECT_TRUE(impl->active_tree()
                         ->LayerById(root_->id())
                         ->LayerPropertyChanged());
-        impl->active_tree()->ResetAllChangeTracking(
-            PropertyTrees::ResetFlags::EFFECT_TREE);
+        impl->active_tree()->ResetAllChangeTracking();
         EXPECT_FALSE(impl->active_tree()
                          ->LayerById(root_->id())
                          ->LayerPropertyChanged());
@@ -928,8 +925,7 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
         EXPECT_TRUE(impl->active_tree()
                         ->LayerById(child_->id())
                         ->LayerPropertyChanged());
-        impl->active_tree()->ResetAllChangeTracking(
-            PropertyTrees::ResetFlags::TRANSFORM_TREE);
+        impl->active_tree()->ResetAllChangeTracking();
         EXPECT_FALSE(impl->active_tree()->root_layer()->LayerPropertyChanged());
         EXPECT_FALSE(impl->active_tree()
                          ->LayerById(child_->id())

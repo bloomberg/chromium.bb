@@ -48,8 +48,7 @@ TEST(RenderSurfaceTest, VerifySurfaceChangesAreTrackedProperly) {
   ASSERT_TRUE(owning_layer->render_surface());
   RenderSurfaceImpl* render_surface = owning_layer->render_surface();
   gfx::Rect test_rect(3, 4, 5, 6);
-  host_impl.active_tree()->ResetAllChangeTracking(
-      PropertyTrees::ResetFlags::ALL_TREES);
+  host_impl.active_tree()->ResetAllChangeTracking();
 
   // Currently, the content_rect, clip_rect, and
   // owning_layer->layerPropertyChanged() are the only sources of change.
@@ -59,8 +58,7 @@ TEST(RenderSurfaceTest, VerifySurfaceChangesAreTrackedProperly) {
 
   owning_layer->SetOpacity(0.5f);
   EXPECT_TRUE(render_surface->SurfacePropertyChanged());
-  host_impl.active_tree()->ResetAllChangeTracking(
-      PropertyTrees::ResetFlags::ALL_TREES);
+  host_impl.active_tree()->ResetAllChangeTracking();
 
   // Setting the surface properties to the same values again should not be
   // considered "change".
