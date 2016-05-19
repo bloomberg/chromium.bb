@@ -6391,6 +6391,56 @@ TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleLayers) {
   EXPECT_FALSE(grand_child->use_local_transform_for_backface_visibility());
 }
 
+TEST_F(LayerTreeHostCommonTest, TransformAnimationUpdatesBackfaceVisibility) {
+  LayerImpl* root = root_layer();
+  LayerImpl* back_facing = AddChild<LayerImpl>(root);
+  LayerImpl* render_surface1 = AddChild<LayerImpl>(back_facing);
+  LayerImpl* render_surface2 = AddChild<LayerImpl>(back_facing);
+
+  gfx::Transform identity_transform;
+  gfx::Transform rotate_about_y;
+  rotate_about_y.RotateAboutYAxis(180.0);
+  SetLayerPropertiesForTesting(root, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), false, true,
+                               true);
+  SetLayerPropertiesForTesting(back_facing, rotate_about_y, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), false, true,
+                               false);
+  SetLayerPropertiesForTesting(render_surface1, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(30, 30),
+                               false, true, true);
+  SetLayerPropertiesForTesting(render_surface2, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(30, 30),
+                               false, true, true);
+
+  render_surface1->test_properties()->double_sided = false;
+  render_surface2->test_properties()->double_sided = false;
+
+  ExecuteCalculateDrawProperties(root);
+
+  const EffectTree& tree =
+      root->layer_tree_impl()->property_trees()->effect_tree;
+  EXPECT_TRUE(tree.Node(render_surface1->effect_tree_index())
+                  ->data.hidden_by_backface_visibility);
+  EXPECT_TRUE(tree.Node(render_surface2->effect_tree_index())
+                  ->data.hidden_by_backface_visibility);
+
+  back_facing->OnTransformAnimated(identity_transform);
+  render_surface2->OnTransformAnimated(rotate_about_y);
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_FALSE(tree.Node(render_surface1->effect_tree_index())
+                   ->data.hidden_by_backface_visibility);
+  EXPECT_TRUE(tree.Node(render_surface2->effect_tree_index())
+                  ->data.hidden_by_backface_visibility);
+
+  render_surface1->OnTransformAnimated(rotate_about_y);
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_TRUE(tree.Node(render_surface1->effect_tree_index())
+                  ->data.hidden_by_backface_visibility);
+  EXPECT_TRUE(tree.Node(render_surface2->effect_tree_index())
+                  ->data.hidden_by_backface_visibility);
+}
+
 TEST_F(LayerTreeHostCommonTest, ClippedByScrollParent) {
   // Checks that the simple case (being clipped by a scroll parent that would
   // have been processed before you anyhow) results in the right clips.

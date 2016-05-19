@@ -764,8 +764,10 @@ static void ComputeVisibleRectsInternal(
     property_trees->non_root_surfaces_enabled = can_render_to_separate_surface;
     property_trees->transform_tree.set_needs_update(true);
   }
-  if (property_trees->transform_tree.needs_update())
+  if (property_trees->transform_tree.needs_update()) {
     property_trees->clip_tree.set_needs_update(true);
+    property_trees->effect_tree.set_needs_update(true);
+  }
   UpdateRenderTarget(&property_trees->effect_tree,
                      property_trees->non_root_surfaces_enabled);
   ComputeTransforms(&property_trees->transform_tree);
@@ -788,8 +790,10 @@ void UpdatePropertyTrees(PropertyTrees* property_trees,
     property_trees->non_root_surfaces_enabled = can_render_to_separate_surface;
     property_trees->transform_tree.set_needs_update(true);
   }
-  if (property_trees->transform_tree.needs_update())
+  if (property_trees->transform_tree.needs_update()) {
     property_trees->clip_tree.set_needs_update(true);
+    property_trees->effect_tree.set_needs_update(true);
+  }
   ComputeTransforms(&property_trees->transform_tree);
   ComputeClips(&property_trees->clip_tree, property_trees->transform_tree,
                can_render_to_separate_surface);
