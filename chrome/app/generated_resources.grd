@@ -539,9 +539,6 @@ are declared in build/common.gypi.
           <message name="IDS_CONTENT_CONTEXT_OPENLINKWITH_CONFIGURE" desc="In Title Case: The name of the command to configure what handlers are available for the Open Link With... command">
             Configure...
           </message>
-          <message name="IDS_CONTENT_CONTEXT_VIEWPAGEINFO" desc="The name of the View Page Info command in the content area context menu">
-            View page &amp;info
-          </message>
           <message name="IDS_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE" desc="The name of the Inspect Background Page command in the packaged app content area context menu">
             Inspect &amp;background page
           </message>
@@ -569,9 +566,6 @@ are declared in build/common.gypi.
           </message>
           <message name="IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE" desc="The name of the View Frame Source command in the content area context menu">
             &amp;View frame source
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_VIEWFRAMEINFO" desc="The name of the View Frame Info command in the content area context menu">
-            View frame &amp;info
           </message>
 
           <message name="IDS_CONTENT_CONTEXT_OPENLINKNEWTAB" desc="The name of the Open Link in New Tab command in the content area context menu">
@@ -758,9 +752,6 @@ are declared in build/common.gypi.
           <message name="IDS_CONTENT_CONTEXT_OPENLINKWITH_CONFIGURE" desc="In Title Case: The name of the command to configure what handlers are available for the Open Link With... command">
             Configure...
           </message>
-          <message name="IDS_CONTENT_CONTEXT_VIEWPAGEINFO" desc="In Title Case: The name of the View Page Info command in the content area context menu">
-            View Page &amp;Info
-          </message>
           <message name="IDS_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE" desc="In Title Case: The name of the Inspect Background Page command in the packaged app content area context menu">
             Inspect &amp;Background Page
           </message>
@@ -788,9 +779,6 @@ are declared in build/common.gypi.
           </message>
           <message name="IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE" desc="In Title Case: The name of the View Frame Source command in the content area context menu">
             &amp;View Frame Source
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_VIEWFRAMEINFO" desc="In Title Case: The name of the View Frame Info command in the content area context menu">
-            View Frame &amp;Info
           </message>
 
           <message name="IDS_CONTENT_CONTEXT_OPENLINKNEWTAB" desc="In Title Case: The name of the Open Link in New Tab command in the content area context menu">

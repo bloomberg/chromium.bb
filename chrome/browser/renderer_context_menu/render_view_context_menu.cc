@@ -53,7 +53,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_host_metrics.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
-#include "chrome/browser/ssl/chrome_security_state_model_client.h"
 #include "chrome/browser/tab_contents/retargeting_details.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
@@ -163,7 +162,6 @@ using content::BrowserContext;
 using content::ChildProcessSecurityPolicy;
 using content::DownloadManager;
 using content::DownloadUrlParameters;
-using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
 using content::RenderFrameHost;
@@ -1466,14 +1464,6 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_RESTART_PACKAGED_APP:
       return IsDevCommandEnabled(id);
 
-    case IDC_CONTENT_CONTEXT_VIEWPAGEINFO:
-      if (embedder_web_contents_->GetController().GetVisibleEntry() == NULL)
-        return false;
-      // Disabled if no browser is associated (e.g. desktop notifications).
-      if (chrome::FindBrowserWithWebContents(embedder_web_contents_) == NULL)
-        return false;
-      return true;
-
     case IDC_CONTENT_CONTEXT_TRANSLATE: {
       ChromeTranslateClient* chrome_translate_client =
           ChromeTranslateClient::FromWebContents(embedder_web_contents_);
@@ -2065,26 +2055,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
       extensions::devtools_util::InspectBackgroundPage(platform_app,
                                                        GetProfile());
-      break;
-    }
-
-    case IDC_CONTENT_CONTEXT_VIEWPAGEINFO: {
-      NavigationController* controller =
-          &embedder_web_contents_->GetController();
-      // Important to use GetVisibleEntry to match what's showing in the
-      // omnibox.  This may return null.
-      NavigationEntry* nav_entry = controller->GetVisibleEntry();
-      if (!nav_entry)
-        return;
-      Browser* browser =
-          chrome::FindBrowserWithWebContents(embedder_web_contents_);
-      ChromeSecurityStateModelClient* security_model_client =
-          ChromeSecurityStateModelClient::FromWebContents(
-              embedder_web_contents_);
-      DCHECK(security_model_client);
-      chrome::ShowWebsiteSettings(browser, embedder_web_contents_,
-                                  nav_entry->GetURL(),
-                                  security_model_client->GetSecurityInfo());
       break;
     }
 

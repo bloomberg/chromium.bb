@@ -28,7 +28,6 @@ bool PrintPreviewContextMenuObserver::IsCommandIdSupported(int command_id) {
     case IDC_PRINT:
     case IDC_VIEW_SOURCE:
     case IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE:
-    case IDC_CONTENT_CONTEXT_VIEWPAGEINFO:
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
       return IsPrintPreviewDialog();
 
@@ -42,7 +41,6 @@ bool PrintPreviewContextMenuObserver::IsCommandIdEnabled(int command_id) {
     case IDC_PRINT:
     case IDC_VIEW_SOURCE:
     case IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE:
-    case IDC_CONTENT_CONTEXT_VIEWPAGEINFO:
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR:
       return false;
 
