@@ -53,10 +53,12 @@
                     document.body.style.zoom = zoomLevel;
                     var windowWidth = "'" + (window.innerWidth / 10) + "px'";
                     var windowHeight = "'" + (window.innerHeight / 10) + "px'";
+                    var windowMinusWidth = "'-" + (window.innerWidth / 10) + "px'";
+                    var windowMinusHeight = "'-" + (window.innerHeight / 10) + "px'";
                     
                     shouldBe("window.getComputedStyle(fixedElement).top", "'100px'");
-                    shouldBe("window.getComputedStyle(fixedElement).right", "'100px'");
-                    shouldBe("window.getComputedStyle(fixedElement).bottom", "'100px'");
+                    shouldBe("window.getComputedStyle(fixedElement).right", "'-100px'");
+                    shouldBe("window.getComputedStyle(fixedElement).bottom", "'-100px'");
                     shouldBe("window.getComputedStyle(fixedElement).left", "'100px'");
                     
                     shouldBe("window.getComputedStyle(percentageElement).top", "'50px'");
@@ -65,8 +67,8 @@
                     shouldBe("window.getComputedStyle(percentageElement).left", "'100px'");
                     
                     shouldBe("window.getComputedStyle(viewportElement).top", windowHeight);
-                    shouldBe("window.getComputedStyle(viewportElement).right", windowWidth);
-                    shouldBe("window.getComputedStyle(viewportElement).bottom", windowHeight);
+                    shouldBe("window.getComputedStyle(viewportElement).right", windowMinusWidth);
+                    shouldBe("window.getComputedStyle(viewportElement).bottom", windowMinusHeight);
                     shouldBe("window.getComputedStyle(viewportElement).left", windowWidth);
             }
             test(0.5);

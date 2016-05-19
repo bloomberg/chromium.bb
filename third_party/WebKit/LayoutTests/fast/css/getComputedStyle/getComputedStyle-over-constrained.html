@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<style>
+  #container {
+    width: 500px;
+  }
+  #container > div {
+    background-color: red;
+    position: relative;
+    left: 5px;
+    right: 5px;
+    top: 5px;
+    bottom: 5px;
+  }
+</style>
+<script src="../../../resources/js-test.js"></script>
+<p>
+  getComputedStyle should handle over-constrained properties.
+</p>
+<div id="container">
+  <div id=ltr>
+    If direction of containing block is ltr, bottom and right should be negative
+  </div>
+  bottom and right should be negative
+</div>
+<div id="container" dir="rtl">
+  <div id=rtl>
+    If direction of containing block is rtl, bottom and left should be negative
+  </div>
+  bottom and left should be negative
+</div>
+<script>
+  var ltrElement = document.getElementById("ltr");
+  var rtlElement = document.getElementById("rtl");
+
+  shouldBe("window.getComputedStyle(ltrElement).top", "'5px'");
+  shouldBe("window.getComputedStyle(ltrElement).right", "'-5px'");
+  shouldBe("window.getComputedStyle(ltrElement).bottom", "'-5px'");
+  shouldBe("window.getComputedStyle(ltrElement).left", "'5px'");
+
+  shouldBe("window.getComputedStyle(rtlElement).top", "'5px'");
+  shouldBe("window.getComputedStyle(rtlElement).right", "'5px'");
+  shouldBe("window.getComputedStyle(rtlElement).bottom", "'-5px'");
+  shouldBe("window.getComputedStyle(rtlElement).left", "'-5px'");
+</script>

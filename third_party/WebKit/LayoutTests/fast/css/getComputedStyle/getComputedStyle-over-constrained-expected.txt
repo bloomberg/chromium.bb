@@ -1,0 +1,17 @@
+PASS window.getComputedStyle(ltrElement).top is '5px'
+PASS window.getComputedStyle(ltrElement).right is '-5px'
+PASS window.getComputedStyle(ltrElement).bottom is '-5px'
+PASS window.getComputedStyle(ltrElement).left is '5px'
+PASS window.getComputedStyle(rtlElement).top is '5px'
+PASS window.getComputedStyle(rtlElement).right is '5px'
+PASS window.getComputedStyle(rtlElement).bottom is '-5px'
+PASS window.getComputedStyle(rtlElement).left is '-5px'
+PASS successfullyParsed is true
+
+TEST COMPLETE
+getComputedStyle should handle over-constrained properties.
+
+If direction of containing block is ltr, bottom and right should be negative
+bottom and right should be negative
+If direction of containing block is rtl, bottom and left should be negative
+bottom and left should be negative

@@ -247,6 +247,14 @@ static CSSValue* valueForPositionOffset(const ComputedStyle& style, CSSPropertyI
     if (offset.isAuto())
         return cssValuePool().createIdentifierValue(CSSValueAuto);
 
+    if (layoutObject) {
+        if (!opposite.isAuto() && layoutObject->isInFlowPositioned()) {
+            LayoutBlock* container = layoutObject->containingBlock();
+            bool ltr = container->style()->isLeftToRightDirection();
+            if ((propertyID == CSSPropertyLeft && !ltr) || (propertyID == CSSPropertyRight && ltr) || (propertyID == CSSPropertyBottom))
+                return zoomAdjustedPixelValue(-opposite.pixels(), style);
+        }
+    }
     return zoomAdjustedPixelValueForLength(offset, style);
 }
 
