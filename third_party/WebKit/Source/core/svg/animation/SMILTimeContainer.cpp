@@ -481,9 +481,11 @@ SMILTime SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
             if (!resultElement)
                 resultElement = animation;
 
-            // This will calculate the contribution from the animation and add it to the resultsElement.
-            if (!animation->progress(elapsed, resultElement, seekToTime) && resultElement == animation)
+            // This will calculate the contribution from the animation and add it to the resultElement.
+            if (!animation->progress(elapsed, resultElement, seekToTime) && resultElement == animation) {
+                resultElement->clearAnimatedType();
                 resultElement = nullptr;
+            }
 
             SMILTime nextFireTime = animation->nextProgressTime();
             if (nextFireTime.isFinite())

@@ -1193,8 +1193,6 @@ bool SVGSMILElement::progress(SMILTime elapsed, SVGSMILElement* resultElement, b
     if ((oldActiveState == Active && m_activeState != Active) || restartedInterval == DidRestartInterval) {
         smilEndEventSender().dispatchEventSoon(this);
         endedActiveInterval();
-        if (!animationIsContributing && this == resultElement)
-            clearAnimatedType();
     }
 
     // Triggering all the pending events if the animation timeline is changed.
