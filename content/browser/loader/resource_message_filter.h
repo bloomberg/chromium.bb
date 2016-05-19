@@ -26,8 +26,6 @@ class URLRequestContext;
 namespace content {
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
-class HostZoomLevelContext;
-class HostZoomMap;
 class ResourceContext;
 class ServiceWorkerContextWrapper;
 
