@@ -232,8 +232,9 @@ void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(PaintLayer* root, LayerIdT
     if (!root->layoutObject()->isLayoutIFrame())
         return;
     FrameView* childFrameView = toFrameView(toLayoutPart(root->layoutObject())->widget());
-    if (LayoutView* childLayoutView = childFrameView->layoutView()) {
-        if (PaintLayerCompositor* childCompositor = childLayoutView->compositor())
+    LayoutViewItem childLayoutViewItem = childFrameView->layoutViewItem();
+    if (!childLayoutViewItem.isNull()) {
+        if (PaintLayerCompositor* childCompositor = childLayoutViewItem.compositor())
             buildLayerIdToNodeIdMap(childCompositor->rootLayer(), layerIdToNodeIdMap);
     }
 }
