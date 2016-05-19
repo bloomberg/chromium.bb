@@ -32,6 +32,8 @@ namespace file_tasks {
 namespace {
 
 constexpr int kArcInstanceHelperVersionWithUrlListSupport = 4;
+constexpr int kArcInstanceHelperVersionWithFullActivityName = 5;
+
 constexpr base::FilePath::CharType kArcDownloadPath[] =
     FILE_PATH_LITERAL("/sdcard/Download");
 constexpr char kAppIdSeparator = '/';
@@ -213,9 +215,16 @@ bool ExecuteArcTask(Profile* profile,
     urls.push_back(std::move(url_with_type));
   }
 
-  arc_intent_helper->HandleUrlList(
-      std::move(urls), AppIdToActivityName(task.app_id)->package_name,
-      StringToArcAction(task.action_id));
+  if (GetArcIntentHelper(profile,
+                         kArcInstanceHelperVersionWithFullActivityName)) {
+    arc_intent_helper->HandleUrlList(std::move(urls),
+                                     AppIdToActivityName(task.app_id),
+                                     StringToArcAction(task.action_id));
+  } else {
+    arc_intent_helper->HandleUrlListDeprecated(
+        std::move(urls), AppIdToActivityName(task.app_id)->package_name,
+        StringToArcAction(task.action_id));
+  }
   return true;
 }
 

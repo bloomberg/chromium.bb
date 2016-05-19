@@ -59,10 +59,15 @@ interface IntentHelperInstance {
   // most suitable activity for the URL within the package will be started.
   [MinVersion=2] HandleUrl@2(string url, string package_name);
 
-  // Handles the list of URLs by sending a specified intent to the package.
-  [MinVersion=4] HandleUrlList@5(array<UrlWithMimeType> urls,
-                                 string package_name,
+  // Handles the list of URLs by sending a specified intent to the handler.
+  [MinVersion=5] HandleUrlList@7(array<UrlWithMimeType> urls,
+                                 ActivityName activity,
                                  ActionType action);
+
+  // Deprecated. Use HandleUrlList.
+  [MinVersion=4] HandleUrlListDeprecated@5(array<UrlWithMimeType> urls,
+                                           string package_name,
+                                           ActionType action);
 
   // Establishes full-duplex communication with the host.
   Init@0(IntentHelperHost host_ptr);
