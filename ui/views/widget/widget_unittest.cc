@@ -3621,5 +3621,99 @@ TEST_F(WidgetTest, WidgetRemovalsObserverCalledWhenMovingBetweenWidgets) {
   widget->RemoveRemovalsObserver(&removals_observer);
 }
 
+#if defined(OS_WIN)
+
+// Provides functionality to create a window modal dialog.
+class ModalDialogDelegate : public DialogDelegateView {
+public:
+  explicit ModalDialogDelegate(ui::ModalType type) : type_(type) {}
+  ~ModalDialogDelegate() override {}
+
+  // WidgetDelegate overrides.
+  ui::ModalType GetModalType() const override { return type_; }
+
+private:
+  const ui::ModalType type_;
+
+  DISALLOW_COPY_AND_ASSIGN(ModalDialogDelegate);
+};
+
+// Tests the case where an intervening owner popup window is destroyed out from
+// under the currently active modal top-level window. In this instance, the
+// remaining top-level windows should be re-enabled.
+TEST_F(WidgetTest, WindowModalOwnerDestroyedEnabledTest) {
+  // top_level_widget owns owner_dialog_widget which owns owned_dialog_widget.
+  Widget top_level_widget;
+  Widget owner_dialog_widget;
+  Widget owned_dialog_widget;
+  // Create the top level widget.
+  Widget::InitParams init_params =
+    CreateParams(Widget::InitParams::TYPE_WINDOW);
+  init_params.show_state = ui::SHOW_STATE_NORMAL;
+  gfx::Rect initial_bounds(0, 0, 500, 500);
+  init_params.bounds = initial_bounds;
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.native_widget = CreatePlatformDesktopNativeWidgetImpl(
+    init_params, &top_level_widget, nullptr);
+  top_level_widget.Init(init_params);
+  top_level_widget.Show();
+
+  // Create the owner modal dialog.
+  // owner_dialog_delegate instance will be destroyed when the dialog
+  // is destroyed.
+  ModalDialogDelegate* owner_dialog_delegate =
+    new ModalDialogDelegate(ui::MODAL_TYPE_WINDOW);
+
+  init_params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  init_params.show_state = ui::SHOW_STATE_NORMAL;
+  init_params.bounds = gfx::Rect(100, 100, 200, 200);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.delegate = owner_dialog_delegate;
+  init_params.parent = top_level_widget.GetNativeView();
+  init_params.native_widget = CreatePlatformDesktopNativeWidgetImpl(
+    init_params, &owner_dialog_widget, nullptr);
+  owner_dialog_widget.Init(init_params);
+
+  HWND owner_hwnd = HWNDForWidget(&owner_dialog_widget);
+
+  owner_dialog_widget.Show();
+
+  // Create the owned modal dialog.
+  // As above, the owned_dialog_instance instance will be destroyed
+  // when the dialog is destroyed.
+  ModalDialogDelegate* owned_dialog_delegate =
+    new ModalDialogDelegate(ui::MODAL_TYPE_WINDOW);
+
+  init_params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  init_params.show_state = ui::SHOW_STATE_NORMAL;
+  init_params.bounds = gfx::Rect(150, 150, 250, 250);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.delegate = owned_dialog_delegate;
+  init_params.parent = owner_dialog_widget.GetNativeView();
+  init_params.native_widget = CreatePlatformDesktopNativeWidgetImpl(
+    init_params, &owned_dialog_widget, nullptr);
+  owned_dialog_widget.Init(init_params);
+
+  HWND owned_hwnd = HWNDForWidget(&owned_dialog_widget);
+
+  owned_dialog_widget.Show();
+
+  HWND top_hwnd = HWNDForWidget(&top_level_widget);
+
+  EXPECT_FALSE(!!IsWindowEnabled(owner_hwnd));
+  EXPECT_FALSE(!!IsWindowEnabled(top_hwnd));
+  EXPECT_TRUE(!!IsWindowEnabled(owned_hwnd));
+
+  owner_dialog_widget.CloseNow();
+
+  EXPECT_FALSE(!!IsWindow(owner_hwnd));
+  EXPECT_FALSE(!!IsWindow(owned_hwnd));
+  EXPECT_TRUE(!!IsWindowEnabled(top_hwnd));
+
+  top_level_widget.CloseNow();
+}
+
+#endif  // defined(OS_WIN)
+
 }  // namespace test
 }  // namespace views

@@ -911,8 +911,10 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
 
   if (delegate_) {
     delegate_->PostHandleMSG(message, w_param, l_param);
-    if (message == WM_NCDESTROY)
+    if (message == WM_NCDESTROY) {
+      RestoreEnabledIfNecessary();
       delegate_->HandleDestroyed();
+    }
   }
 
   if (message == WM_ACTIVATE && IsTopLevelWindow(window))
