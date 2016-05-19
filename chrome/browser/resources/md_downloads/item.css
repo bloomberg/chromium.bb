@@ -89,7 +89,7 @@
   width: 32px;
 }
 
-#danger-icon[icon='downloads:warning'] {
+#danger-icon[icon='cr:warning'] {
   color: rgb(255, 193, 7);
 }
 

@@ -131,7 +131,7 @@ cr.define('downloads', function() {
         case downloads.DangerType.UNCOMMON_CONTENT:
           return 'downloads:remove-circle';
         default:
-          return 'downloads:warning';
+          return 'cr:warning';
       }
     },
 
