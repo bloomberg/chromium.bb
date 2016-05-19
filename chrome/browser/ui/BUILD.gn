@@ -357,6 +357,7 @@ source_set("ui") {
     deps += [
       # aura uses some of ash resources.
       "//ash/resources",
+      "//ash/wm/common/resources",
       "//ui/aura",
       "//ui/keyboard",
       "//ui/keyboard:keyboard_with_content",

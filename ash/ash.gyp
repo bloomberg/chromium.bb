@@ -973,6 +973,7 @@
         'ash_resources.gyp:ash_resources',
         'ash_strings.gyp:ash_strings',
         'wm/common/ash_wm_common.gyp:ash_wm_common',
+        'wm/common/ash_wm_common_resources.gyp:ash_wm_common_resources',
       ],
       'defines': [
         'ASH_IMPLEMENTATION',

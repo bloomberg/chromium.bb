@@ -27,6 +27,7 @@ template("ash_test_resources") {
 
     sources = [
       "$root_gen_dir/ash/resources/ash_resources_${percent}_percent.pak",
+      "$root_gen_dir/ash/wm/common/resources/ash_wm_common_resources_${percent}_percent.pak",
       "$root_gen_dir/ui/resources/ui_resources_${percent}_percent.pak",
     ]
 
@@ -38,7 +39,8 @@ template("ash_test_resources") {
     }
 
     deps = [
-      "//ash/resources",
+      ":resources",
+      "//ash/wm/common/resources",
       "//content:resources",
       "//ui/resources",
     ]

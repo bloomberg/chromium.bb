@@ -2406,6 +2406,7 @@
             '../ash/ash.gyp:ash_test_support',
             '../ash/ash_resources.gyp:ash_resources',
             '../ash/ash_strings.gyp:ash_strings',
+            '../ash/wm/common/ash_wm_common_resources.gyp:ash_wm_common_resources',
           ],
           # We eventually want to compile both in Win Aura builds, see
           # http://crbug.com/155545.

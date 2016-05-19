@@ -9,7 +9,7 @@
 #include "ash/wm/common/wm_shell_window_ids.h"
 #include "ash/wm/common/wm_window.h"
 #include "ash/wm/common/workspace/workspace_window_resizer.h"
-#include "grit/ash_resources.h"
+#include "grit/ash_wm_common_resources.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -67,8 +67,9 @@ class MultiWindowResizeController::ResizeView : public views::View {
                       Direction direction)
       : controller_(controller), direction_(direction), image_(NULL) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    int image_id = direction == TOP_BOTTOM ? IDR_AURA_MULTI_WINDOW_RESIZE_H
-                                           : IDR_AURA_MULTI_WINDOW_RESIZE_V;
+    int image_id = direction == TOP_BOTTOM
+                       ? IDR_ASH_WM_COMMON_MULTI_WINDOW_RESIZE_H
+                       : IDR_ASH_WM_COMMON_MULTI_WINDOW_RESIZE_V;
     image_ = rb.GetImageNamed(image_id).ToImageSkia();
   }
 

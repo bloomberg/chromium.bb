@@ -470,6 +470,7 @@ if (!is_android) {
 
       deps += [
         "//ash/resources",
+        "//ash/wm/common/resources",
         "//chromeos",
       ]
 
@@ -1881,6 +1882,7 @@ test("unit_tests") {
       "//ash:test_support",
       "//ash/resources",
       "//ash/strings",
+      "//ash/wm/common/resources",
     ]
 
     # We eventually want to compile both in Win Aura builds, see

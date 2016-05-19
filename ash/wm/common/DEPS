@@ -1,6 +1,8 @@
 include_rules = [
   "-ash",
   "+ash/wm/common",
+  "-grit/ash_resources.h",
+  "+grit/ash_wm_common_resources.h",
   "+ui",
   "-ui/aura",
 ]

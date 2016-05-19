@@ -11,7 +11,7 @@
 #include "ash/wm/common/wm_root_window_controller.h"
 #include "ash/wm/common/wm_shell_window_ids.h"
 #include "ash/wm/common/wm_window.h"
-#include "grit/ash_resources.h"
+#include "grit/ash_wm_common_resources.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/background.h"
@@ -34,7 +34,8 @@ const float kStartBoundsRatio = 0.85f;
 const int kShadowThickness = 15;
 
 // The minimum size of a phantom window including the shadow. The minimum size
-// is derived from the size of the IDR_AURA_PHANTOM_WINDOW image assets.
+// is derived from the size of the IDR_ASH_WM_COMMON_PHANTOM_WINDOW image
+// assets.
 const int kMinSizeWithShadow = 100;
 
 // Adjusts the phantom window's bounds so that the bounds:
@@ -132,7 +133,7 @@ std::unique_ptr<views::Widget> PhantomWindowController::CreatePhantomWidget(
                                                         window_);
   }
 
-  const int kImages[] = IMAGE_GRID(IDR_AURA_PHANTOM_WINDOW);
+  const int kImages[] = IMAGE_GRID(IDR_ASH_WM_COMMON_PHANTOM_WINDOW);
   views::Painter* background_painter =
       views::Painter::CreateImageGridPainter(kImages);
   views::View* content_view = new views::View;

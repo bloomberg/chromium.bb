@@ -1273,6 +1273,7 @@
             '../ash/ash_resources.gyp:ash_resources',
             '../ash/ash_strings.gyp:ash_strings',
             '../ash/wm/common/ash_wm_common.gyp:ash_wm_common',
+            '../ash/wm/common/ash_wm_common_resources.gyp:ash_wm_common_resources',
             '../components/components.gyp:session_manager_component',
             '../components/components.gyp:user_manager',
             '../ui/app_list/app_list.gyp:app_list',

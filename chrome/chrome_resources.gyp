@@ -571,6 +571,7 @@
           'dependencies': [  # Update duplicate logic in repack_locales.py
              '<(DEPTH)/ash/ash_resources.gyp:ash_resources',
              '<(DEPTH)/ash/ash_strings.gyp:ash_strings',
+            '../ash/wm/common/ash_wm_common_resources.gyp:ash_wm_common_resources',
           ],
         }],
         ['toolkit_views==1', {

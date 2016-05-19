@@ -136,6 +136,7 @@ mojo_application_manifest("manifest") {
 
 repack("resources") {
   sources = [
+    "$root_gen_dir/ash/wm/common/resources/ash_wm_common_resources_100_percent.pak",
     "$root_gen_dir/mash/wm/resources/mash_wm_resources_100_percent.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
@@ -144,6 +145,7 @@ repack("resources") {
   ]
   output = "$root_out_dir/mash_wm_resources.pak"
   deps = [
+    "//ash/wm/common/resources",
     "//mash/wm/resources",
     "//ui/resources",
     "//ui/strings",
