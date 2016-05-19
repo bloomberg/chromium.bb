@@ -92,7 +92,7 @@ typedef struct {
   PREDICTION_MODE uv_mode;
 
   // Only for INTER blocks
-  INTERP_FILTER interp_filter;
+  InterpFilter interp_filter;
   MV_REFERENCE_FRAME ref_frame[2];
   TX_TYPE tx_type;
 

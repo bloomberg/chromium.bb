@@ -483,11 +483,11 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   }
 }
 
-static INLINE INTERP_FILTER read_switchable_interp_filter(AV1_COMMON *const cm,
-                                                          MACROBLOCKD *const xd,
-                                                          aom_reader *r) {
+static INLINE InterpFilter read_switchable_interp_filter(AV1_COMMON *const cm,
+                                                         MACROBLOCKD *const xd,
+                                                         aom_reader *r) {
   const int ctx = av1_get_pred_context_switchable_interp(xd);
-  const INTERP_FILTER type = (INTERP_FILTER)aom_read_tree(
+  const InterpFilter type = (InterpFilter)aom_read_tree(
       r, av1_switchable_interp_tree, cm->fc->switchable_interp_prob[ctx]);
   FRAME_COUNTS *counts = xd->counts;
   if (counts) ++counts->switchable_interp[ctx][type];

@@ -2730,7 +2730,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 #endif
 }
 
-static INTERP_FILTER get_interp_filter(
+static InterpFilter get_interp_filter(
     const int64_t threshes[SWITCHABLE_FILTER_CONTEXTS], int is_alt_ref) {
   if (!is_alt_ref && threshes[EIGHTTAP_SMOOTH] > threshes[EIGHTTAP] &&
       threshes[EIGHTTAP_SMOOTH] > threshes[EIGHTTAP_SHARP] &&

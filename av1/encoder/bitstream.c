@@ -1146,7 +1146,7 @@ static void update_txfm_probs(AV1_COMMON *cm, aom_writer *w,
   }
 }
 
-static void write_interp_filter(INTERP_FILTER filter,
+static void write_interp_filter(InterpFilter filter,
                                 struct aom_write_bit_buffer *wb) {
   aom_wb_write_bit(wb, filter == SWITCHABLE);
   if (filter != SWITCHABLE) aom_wb_write_literal(wb, filter, 2);

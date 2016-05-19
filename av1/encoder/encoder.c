@@ -3102,7 +3102,7 @@ static void set_arf_sign_bias(AV1_COMP *cpi) {
 }
 
 static int setup_interp_filter_search_mask(AV1_COMP *cpi) {
-  INTERP_FILTER ifilter;
+  InterpFilter ifilter;
   int ref_total[MAX_REF_FRAMES] = { 0 };
   MV_REFERENCE_FRAME ref;
   int mask = 0;

@@ -62,7 +62,7 @@ typedef struct {
   // motion vector cache for adaptive motion search control in partition
   // search loop
   MV pred_mv[MAX_REF_FRAMES];
-  INTERP_FILTER pred_interp_filter;
+  InterpFilter pred_interp_filter;
 } PICK_MODE_CONTEXT;
 
 typedef struct PC_TREE {

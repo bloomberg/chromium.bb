@@ -31,7 +31,7 @@ extern "C" {
 #define SWITCHABLE_FILTER_CONTEXTS (SWITCHABLE_FILTERS + 1)
 #define SWITCHABLE 4 /* should be the last one */
 
-typedef uint8_t INTERP_FILTER;
+typedef uint8_t InterpFilter;
 
 extern const InterpKernel *av1_filter_kernels[4];
 

@@ -2348,7 +2348,7 @@ static int64_t handle_inter_mode(
     int64_t *distortion, int *skippable, int *rate_y, int *rate_uv,
     int *disable_skip, int_mv (*mode_mv)[MAX_REF_FRAMES], int mi_row,
     int mi_col, int_mv single_newmv[MAX_REF_FRAMES],
-    INTERP_FILTER (*single_filter)[MAX_REF_FRAMES],
+    InterpFilter (*single_filter)[MAX_REF_FRAMES],
     int (*single_skippable)[MAX_REF_FRAMES], int64_t *psse,
     const int64_t ref_best_rd, int64_t *mask_filter, int64_t filter_cache[]) {
   AV1_COMMON *cm = &cpi->common;
@@ -2375,7 +2375,7 @@ static int64_t handle_inter_mode(
   uint8_t *orig_dst[MAX_MB_PLANE];
   int orig_dst_stride[MAX_MB_PLANE];
   int rs = 0;
-  INTERP_FILTER best_filter = SWITCHABLE;
+  InterpFilter best_filter = SWITCHABLE;
   uint8_t skip_txfm[MAX_MB_PLANE << 2] = { 0 };
   int64_t bsse[MAX_MB_PLANE << 2] = { 0 };
 
@@ -2406,7 +2406,7 @@ static int64_t handle_inter_mode(
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
   if (pred_filter_search) {
-    INTERP_FILTER af = SWITCHABLE, lf = SWITCHABLE;
+    InterpFilter af = SWITCHABLE, lf = SWITCHABLE;
     if (xd->up_available) af = xd->mi[-xd->mi_stride]->mbmi.interp_filter;
     if (xd->left_available) lf = xd->mi[-1]->mbmi.interp_filter;
 
@@ -2927,7 +2927,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   int_mv frame_mv[MB_MODE_COUNT][MAX_REF_FRAMES];
   struct buf_2d yv12_mb[4][MAX_MB_PLANE];
   int_mv single_newmv[MAX_REF_FRAMES] = { { 0 } };
-  INTERP_FILTER single_inter_filter[MB_MODE_COUNT][MAX_REF_FRAMES];
+  InterpFilter single_inter_filter[MB_MODE_COUNT][MAX_REF_FRAMES];
   int single_skippable[MB_MODE_COUNT][MAX_REF_FRAMES];
   static const int flag_list[4] = { 0, AOM_LAST_FLAG, AOM_GOLD_FLAG,
                                     AOM_ALT_FLAG };
@@ -3357,7 +3357,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
           if (!mv_check_bounds(x, &cur_mv.as_mv)) {
             int64_t dummy_filter_cache[SWITCHABLE_FILTER_CONTEXTS];
-            INTERP_FILTER
+            InterpFilter
                 dummy_single_inter_filter[MB_MODE_COUNT][MAX_REF_FRAMES];
             int dummy_single_skippable[MB_MODE_COUNT][MAX_REF_FRAMES];
             int64_t dummy_mask_filter = 0;
@@ -3808,7 +3808,7 @@ void av1_rd_pick_inter_mode_sb_seg_skip(AV1_COMP *cpi, TileDataEnc *tile_data,
   int64_t best_filter_diff[SWITCHABLE_FILTER_CONTEXTS];
   unsigned int ref_costs_single[MAX_REF_FRAMES], ref_costs_comp[MAX_REF_FRAMES];
   aom_prob comp_mode_p;
-  INTERP_FILTER best_filter = SWITCHABLE;
+  InterpFilter best_filter = SWITCHABLE;
   int64_t this_rd = INT64_MAX;
   int rate2 = 0;
   const int64_t distortion2 = 0;
@@ -3913,7 +3913,7 @@ void av1_rd_pick_inter_mode_sub8x8(AV1_COMP *cpi, TileDataEnc *tile_data,
   int ref_index, best_ref_index = 0;
   unsigned int ref_costs_single[MAX_REF_FRAMES], ref_costs_comp[MAX_REF_FRAMES];
   aom_prob comp_mode_p;
-  INTERP_FILTER tmp_best_filter = SWITCHABLE;
+  InterpFilter tmp_best_filter = SWITCHABLE;
   int rate_uv_intra, rate_uv_tokenonly;
   int64_t dist_uv;
   int skip_uv;
