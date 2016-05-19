@@ -468,16 +468,15 @@ template("gcc_toolchain") {
         use_sysroot = invoker.use_sysroot
       }
 
-      if (defined(invoker.clear_sanitizers) && invoker.clear_sanitizers) {
-        is_asan = false
-        is_cfi = false
-        is_lsan = false
-        is_msan = false
-        is_syzyasan = false
-        is_tsan = false
-        is_ubsan = false
-        is_ubsan_vptr = false
-      }
+      # Disable sanitizers for non-default toolchains.
+      is_asan = false
+      is_cfi = false
+      is_lsan = false
+      is_msan = false
+      is_syzyasan = false
+      is_tsan = false
+      is_ubsan = false
+      is_ubsan_vptr = false
     }
 
     forward_variables_from(invoker, [ "deps" ])

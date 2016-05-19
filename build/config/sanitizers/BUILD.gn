@@ -11,7 +11,7 @@ import("//build/toolchain/toolchain.gni")
 # shared_libraries. Unconditionally depend upon this target as it is empty if
 # |is_asan|, |is_lsan|, |is_tsan|, |is_msan| and |use_custom_libcxx| are false.
 group("deps") {
-  deps = [
+  public_deps = [
     ":deps_no_options",
   ]
   if (using_sanitizer) {
@@ -23,7 +23,9 @@ group("deps") {
       # to add the ldflags here as well as in default_sanitizer_flags.
       ":default_sanitizer_ldflags",
     ]
-    deps += [ ":options_sources" ]
+    deps = [
+      ":options_sources",
+    ]
   }
 }
 
@@ -40,7 +42,9 @@ group("deps_no_options") {
       deps += [ "//third_party/instrumented_libraries:deps" ]
     }
     if (use_custom_libcxx) {
-      deps += [ "//buildtools/third_party/libc++:libcxx_proxy" ]
+      public_deps = [
+        "//buildtools/third_party/libc++:libcxx_proxy",
+      ]
     }
     if (is_mac) {
       data_deps = [
