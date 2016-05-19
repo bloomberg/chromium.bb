@@ -1,28 +1,16 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests that an empty file is not recognized as a WebVTT file.</title>
+<video>
+    <track src="captions-webvtt/tc000-empty.vtt" default>
+</video>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+async_test(function(t) {
+    var track = document.querySelector("track");
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
-
-            function trackLoaded()
-            {
-                findMediaElement();
-                testExpected("video.textTracks[0].cues.length", "0");
-
-                endTest();
-            }
-
-        </script>
-    </head>
-    <body>
-        <p>Tests that an empty file is not recognized as a WebVTT file.</p>
-        <video>
-            <track src="captions-webvtt/tc000-empty.vtt" onload="trackLoaded()" default>
-        </video>
-    </body>
-</html>
+    track.onload = t.step_func_done(function() {
+        assert_equals(track.track.cues.length, 0);
+    });
+});
+</script>
