@@ -4608,10 +4608,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="CertificateType2">
-  <obsolete>
-    Deprecated 04/2016 as doesn't have data nor owner.
-  </obsolete>
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rsleevi@chromium.org</owner>
   <summary>
     Information about the certificate algorithms and sizes in use on the web, to
     examine compliance with the CA/Browser Forum requirements and security best
