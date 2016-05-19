@@ -116,7 +116,7 @@ class FakeSyncManager : public SyncManager {
       syncer::TypeDebugInfoObserver* observer) override;
   void RequestEmitDebugInfo() override;
   void ClearServerData(const ClearServerDataCallback& callback) override;
-  void OnCookieJarChanged(bool account_mismatch) override;
+  void OnCookieJarChanged(bool account_mismatch, bool empty_jar) override;
 
  private:
   scoped_refptr<base::SequencedTaskRunner> sync_task_runner_;

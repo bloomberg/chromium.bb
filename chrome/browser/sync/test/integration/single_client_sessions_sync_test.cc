@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/test/histogram_tester.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
@@ -160,6 +161,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
   ASSERT_TRUE(CheckInitialState(0));
 
   // Add a new session to client 0 and wait for it to sync.
+  base::HistogramTester histogram_tester;
   ScopedWindowMap old_windows;
   GURL url = GURL("http://127.0.0.1/bubba");
   ASSERT_TRUE(OpenTabAndGetLocalWindows(0, url, old_windows.GetMutable()));
@@ -172,6 +174,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
   sync_pb::ClientToServerMessage message;
   ASSERT_TRUE(GetFakeServer()->GetLastCommitMessage(&message));
   ASSERT_TRUE(message.commit().config_params().cookie_jar_mismatch());
+  histogram_tester.ExpectUniqueSample("Sync.CookieJarMatchOnNavigation", false,
+                                      1);
+  histogram_tester.ExpectUniqueSample("Sync.CookieJarEmptyOnMismatch", true, 1);
 
   // Trigger a cookie jar change (user signing in to content area).
   gaia::ListedAccount signed_in_account;
@@ -191,4 +196,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
   // Verify the cookie jar mismatch bool is set to false.
   ASSERT_TRUE(GetFakeServer()->GetLastCommitMessage(&message));
   ASSERT_FALSE(message.commit().config_params().cookie_jar_mismatch());
+
+  // Verify the histograms were recorded properly.
+  histogram_tester.ExpectTotalCount("Sync.CookieJarMatchOnNavigation", 2);
+  histogram_tester.ExpectBucketCount("Sync.CookieJarMatchOnNavigation", true,
+                                     1);
+  histogram_tester.ExpectUniqueSample("Sync.CookieJarEmptyOnMismatch", true, 1);
 }

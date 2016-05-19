@@ -45,8 +45,12 @@ class SYNC_EXPORT CommitProcessor {
   // map, gather any entries queued for commit into CommitContributions.  The
   // total number of entries in all the returned CommitContributions shall not
   // exceed |max_entries|.
+  // Note: |cookie_jar_mismatch| and |cookie_jar_empty| are used only for
+  // metrics recording purposes specific to the SESSIONS type.
   void GatherCommitContributions(ModelTypeSet commit_types,
                                  size_t max_entries,
+                                 bool cookie_jar_mismatch,
+                                 bool cookie_jar_empty,
                                  Commit::ContributionMap* contributions);
 
  private:

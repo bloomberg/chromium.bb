@@ -1026,9 +1026,11 @@ void SyncManagerImpl::ClearServerData(const ClearServerDataCallback& callback) {
   scheduler_->ScheduleClearServerData(params);
 }
 
-void SyncManagerImpl::OnCookieJarChanged(bool account_mismatch) {
+void SyncManagerImpl::OnCookieJarChanged(bool account_mismatch,
+                                         bool empty_jar) {
   DCHECK(thread_checker_.CalledOnValidThread());
   session_context_->set_cookie_jar_mismatch(account_mismatch);
+  session_context_->set_cookie_jar_empty(empty_jar);
 }
 
 }  // namespace syncer

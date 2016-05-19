@@ -53857,6 +53857,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Sync.CookieJarEmptyOnMismatch" enum="BooleanEmpty">
+  <owner>zea@chromium.org</owner>
+  <summary>
+    Whether the gaia cookie jar was empty. Recorded on every SESSIONS commit
+    where the gaia cookie jar does not include the signed in user (
+    CookieJarMatchOnNavigation == false).
+  </summary>
+</histogram>
+
+<histogram name="Sync.CookieJarMatchOnNavigation" enum="BooleanMatched">
+  <owner>zea@chromium.org</owner>
+  <summary>
+    Whether the gaia cookie jar included the signed in user (matched) or not.
+    Recorded on every SESSIONS commit.
+  </summary>
+</histogram>
+
 <histogram name="Sync.CredentialsLost" enum="BooleanCredentialsLost">
   <owner>zea@chromium.org</owner>
   <summary>

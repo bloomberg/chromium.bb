@@ -134,6 +134,10 @@ class SYNC_EXPORT SyncSessionContext {
     cookie_jar_mismatch_ = cookie_jar_mismatch;
   }
 
+  bool cookie_jar_empty() const { return cookie_jar_empty_; }
+
+  void set_cookie_jar_empty(bool empty_jar) { cookie_jar_empty_ = empty_jar; }
+
  private:
   // Rather than force clients to set and null-out various context members, we
   // extend our encapsulation boundary to scoped helpers that take care of this
@@ -192,6 +196,9 @@ class SYNC_EXPORT SyncSessionContext {
    // chrome account. If multiple accounts are present in the cookie jar, a
    // mismatch implies all of them are different from the chrome account.
   bool cookie_jar_mismatch_;
+
+  // If there's a cookie jar mismatch, whether the cookie jar was empty or not.
+  bool cookie_jar_empty_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSessionContext);
 };

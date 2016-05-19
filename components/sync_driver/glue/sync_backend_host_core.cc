@@ -783,9 +783,10 @@ void SyncBackendHostCore::DoClearServerData(
   sync_manager_->ClearServerData(callback);
 }
 
-void SyncBackendHostCore::DoOnCookieJarChanged(bool account_mismatch) {
+void SyncBackendHostCore::DoOnCookieJarChanged(bool account_mismatch,
+                                               bool empty_jar) {
   DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
-  sync_manager_->OnCookieJarChanged(account_mismatch);
+  sync_manager_->OnCookieJarChanged(account_mismatch, empty_jar);
 }
 
 void SyncBackendHostCore::ClearServerDataDone(

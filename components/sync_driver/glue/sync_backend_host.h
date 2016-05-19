@@ -231,7 +231,7 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
 
   // Notify the syncer that the cookie jar has changed.
   // See SyncManager::OnCookieJarChanged.
-  virtual void OnCookieJarChanged(bool account_mismatch) = 0;
+  virtual void OnCookieJarChanged(bool account_mismatch, bool empty_jar) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncBackendHost);

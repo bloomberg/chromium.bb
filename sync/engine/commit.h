@@ -51,15 +51,15 @@ class SYNC_EXPORT Commit {
   // This destructor will DCHECK if CleanUp() has not been called.
   ~Commit();
 
-  static Commit* Init(
-      ModelTypeSet requested_types,
-      ModelTypeSet enabled_types,
-      size_t max_entries,
-      const std::string& account_name,
-      const std::string& cache_guid,
-      bool cookie_jar_mismatch,
-      CommitProcessor* commit_processor,
-      ExtensionsActivity* extensions_activity);
+  static Commit* Init(ModelTypeSet requested_types,
+                      ModelTypeSet enabled_types,
+                      size_t max_entries,
+                      const std::string& account_name,
+                      const std::string& cache_guid,
+                      bool cookie_jar_mismatch,
+                      bool cookie_jar_empty,
+                      CommitProcessor* commit_processor,
+                      ExtensionsActivity* extensions_activity);
 
   SyncerError PostAndProcessResponse(sessions::NudgeTracker* nudge_tracker,
                                      sessions::SyncSession* session,

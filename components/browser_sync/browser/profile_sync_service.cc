@@ -2125,19 +2125,21 @@ void ProfileSyncService::OnGaiaAccountsInCookieUpdated(
   if (!IsBackendInitialized())
     return;
 
-  bool cookie_mismatch = true;
+  bool cookie_jar_mismatch = true;
+  bool cookie_jar_empty = accounts.size() == 0;
   std::string account_id = signin_->GetAccountIdToUse();
 
   // Iterate through list of accounts, looking for current sync account.
   for (const auto& account : accounts) {
     if (account.gaia_id == account_id) {
-      cookie_mismatch = false;
+      cookie_jar_mismatch = false;
       break;
     }
   }
 
-  DVLOG(1) << "Cookie jar mismatch: " << cookie_mismatch;
-  backend_->OnCookieJarChanged(cookie_mismatch);
+  DVLOG(1) << "Cookie jar mismatch: " << cookie_jar_mismatch;
+  DVLOG(1) << "Cookie jar empty: " << cookie_jar_empty;
+  backend_->OnCookieJarChanged(cookie_jar_mismatch, cookie_jar_empty);
 }
 
 void ProfileSyncService::AddObserver(
