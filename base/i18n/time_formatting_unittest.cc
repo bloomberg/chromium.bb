@@ -216,5 +216,49 @@ TEST(TimeFormattingTest, MAYBE_TimeFormatDateGB) {
             TimeFormatFriendlyDate(time));
 }
 
+TEST(TimeFormattingTest, TimeDurationFormat) {
+  test::ScopedRestoreICUDefaultLocale restore_locale;
+  TimeDelta delta = TimeDelta::FromMinutes(15 * 60 + 42);
+
+  // US English.
+  i18n::SetICUDefaultLocale("en_US");
+  EXPECT_EQ(ASCIIToUTF16("15 hours, 42 minutes"),
+            TimeDurationFormat(delta, DURATION_WIDTH_WIDE));
+  EXPECT_EQ(ASCIIToUTF16("15 hr, 42 min"),
+            TimeDurationFormat(delta, DURATION_WIDTH_SHORT));
+  EXPECT_EQ(ASCIIToUTF16("15h 42m"),
+            TimeDurationFormat(delta, DURATION_WIDTH_NARROW));
+  EXPECT_EQ(ASCIIToUTF16("15:42"),
+            TimeDurationFormat(delta, DURATION_WIDTH_NUMERIC));
+
+  // Danish, with Latin alphabet but different abbreviations and punctuation.
+  i18n::SetICUDefaultLocale("da");
+  EXPECT_EQ(ASCIIToUTF16("15 timer og 42 minutter"),
+            TimeDurationFormat(delta, DURATION_WIDTH_WIDE));
+  EXPECT_EQ(ASCIIToUTF16("15 t og 42 min."),
+            TimeDurationFormat(delta, DURATION_WIDTH_SHORT));
+  EXPECT_EQ(ASCIIToUTF16("15 t og 42 min"),
+            TimeDurationFormat(delta, DURATION_WIDTH_NARROW));
+  EXPECT_EQ(ASCIIToUTF16("15.42"),
+            TimeDurationFormat(delta, DURATION_WIDTH_NUMERIC));
+
+  // Persian, with non-Arabic numbers.
+  i18n::SetICUDefaultLocale("fa");
+  string16 fa_wide = WideToUTF16(
+      L"\x6f1\x6f5\x20\x633\x627\x639\x62a\x20\x648\x20\x6f4\x6f2\x20\x62f\x642"
+      L"\x6cc\x642\x647");
+  string16 fa_short = WideToUTF16(
+      L"\x6f1\x6f5\x20\x633\x627\x639\x62a\x60c\x200f\x20\x6f4\x6f2\x20\x62f"
+      L"\x642\x6cc\x642\x647");
+  string16 fa_narrow = WideToUTF16(
+      L"\x6f1\x6f5\x20\x633\x627\x639\x62a\x20\x6f4\x6f2\x20\x62f\x642\x6cc"
+      L"\x642\x647");
+  string16 fa_numeric = WideToUTF16(L"\x6f1\x6f5\x3a\x6f4\x6f2");
+  EXPECT_EQ(fa_wide, TimeDurationFormat(delta, DURATION_WIDTH_WIDE));
+  EXPECT_EQ(fa_short, TimeDurationFormat(delta, DURATION_WIDTH_SHORT));
+  EXPECT_EQ(fa_narrow, TimeDurationFormat(delta, DURATION_WIDTH_NARROW));
+  EXPECT_EQ(fa_numeric, TimeDurationFormat(delta, DURATION_WIDTH_NUMERIC));
+}
+
 }  // namespace
 }  // namespace base

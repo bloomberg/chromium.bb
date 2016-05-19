@@ -14,6 +14,7 @@
 namespace base {
 
 class Time;
+class TimeDelta;
 
 // Argument type used to specify the hour clock type.
 enum HourClockType {
@@ -25,6 +26,15 @@ enum HourClockType {
 enum AmPmClockType {
   kDropAmPm,  // Drops AM/PM sign. e.g., "3:07"
   kKeepAmPm,  // Keeps AM/PM sign. e.g., "3:07 PM"
+};
+
+// Should match UMeasureFormatWidth in measfmt.h; replicated here to avoid
+// requiring third_party/icu dependencies with this file.
+enum DurationFormatWidth {
+  DURATION_WIDTH_WIDE,    // "3 hours, 7 minutes"
+  DURATION_WIDTH_SHORT,   // "3 hr, 7 min"
+  DURATION_WIDTH_NARROW,  // "3h 7m"
+  DURATION_WIDTH_NUMERIC  // "3:07"
 };
 
 // Returns the time of day, e.g., "3:07 PM".
@@ -64,6 +74,11 @@ BASE_I18N_EXPORT string16 TimeFormatFriendlyDateAndTime(const Time& time);
 // Formats a time in a friendly sentence format, e.g.
 // "Monday, March 6, 2008".
 BASE_I18N_EXPORT string16 TimeFormatFriendlyDate(const Time& time);
+
+// Formats a time duration of hours and minutes into various formats, e.g.,
+// "3:07" or "3 hours, 7 minutes".  See DurationFormatWidth for details.
+BASE_I18N_EXPORT string16 TimeDurationFormat(const TimeDelta& time,
+                                             const DurationFormatWidth width);
 
 // Gets the hour clock type of the current locale. e.g.
 // k12HourClock (en-US).

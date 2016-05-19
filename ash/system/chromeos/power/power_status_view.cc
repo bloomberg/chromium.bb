@@ -10,12 +10,11 @@
 #include "ash/system/chromeos/power/tray_power.h"
 #include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/tray_constants.h"
-#include "base/strings/string_number_conversions.h"
+#include "base/i18n/message_formatter.h"
+#include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/l10n/time_format.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -87,40 +86,32 @@ void PowerStatusView::LayoutView() {
 
 void PowerStatusView::UpdateText() {
   const PowerStatus& status = *PowerStatus::Get();
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   base::string16 battery_percentage;
   base::string16 battery_time_status;
 
   if (status.IsBatteryFull()) {
     battery_time_status =
-        rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BATTERY_FULL);
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BATTERY_FULL);
   } else {
-    battery_percentage = l10n_util::GetStringFUTF16(
-        IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_ONLY,
-        base::IntToString16(status.GetRoundedBatteryPercent()));
+    battery_percentage = base::i18n::MessageFormatter::FormatWithNumberedArgs(
+        base::ASCIIToUTF16("{0,number,percent}"),
+        static_cast<double>(status.GetRoundedBatteryPercent()) / 100.0);
     if (status.IsUsbChargerConnected()) {
-      battery_time_status = rb.GetLocalizedString(
+      battery_time_status = l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE);
     } else if (status.IsBatteryTimeBeingCalculated()) {
       battery_time_status =
-          rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING);
+          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING);
     } else {
       base::TimeDelta time = status.IsBatteryCharging() ?
           status.GetBatteryTimeToFull() : status.GetBatteryTimeToEmpty();
       if (PowerStatus::ShouldDisplayBatteryTime(time) &&
           !status.IsBatteryDischargingOnLinePower()) {
-        int hour = 0, min = 0;
-        PowerStatus::SplitTimeIntoHoursAndMinutes(time, &hour, &min);
-        base::string16 minute = min < 10 ?
-            base::ASCIIToUTF16("0") + base::IntToString16(min) :
-            base::IntToString16(min);
-        battery_time_status =
-            l10n_util::GetStringFUTF16(
-                status.IsBatteryCharging() ?
-                IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_SHORT :
-                IDS_ASH_STATUS_TRAY_BATTERY_TIME_LEFT_SHORT,
-                base::IntToString16(hour),
-                minute);
+        battery_time_status = l10n_util::GetStringFUTF16(
+            status.IsBatteryCharging()
+                ? IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_SHORT
+                : IDS_ASH_STATUS_TRAY_BATTERY_TIME_LEFT_SHORT,
+            TimeDurationFormat(time, base::DURATION_WIDTH_NUMERIC));
       }
     }
   }

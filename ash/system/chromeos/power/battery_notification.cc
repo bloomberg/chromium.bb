@@ -6,7 +6,8 @@
 
 #include "ash/system/chromeos/power/power_status.h"
 #include "ash/system/system_notifier.h"
-#include "base/strings/string_number_conversions.h"
+#include "base/i18n/message_formatter.h"
+#include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "grit/ash_resources.h"
@@ -47,9 +48,9 @@ std::unique_ptr<Notification> CreateNotification(
     TrayPower::NotificationState notification_state) {
   const PowerStatus& status = *PowerStatus::Get();
 
-  base::string16 message = l10n_util::GetStringFUTF16(
-      IDS_ASH_STATUS_TRAY_BATTERY_PERCENT,
-      base::IntToString16(status.GetRoundedBatteryPercent()));
+  base::string16 message = base::i18n::MessageFormatter::FormatWithNumberedArgs(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_BATTERY_PERCENT),
+      static_cast<double>(status.GetRoundedBatteryPercent()) / 100.0);
 
   const base::TimeDelta time = status.IsBatteryCharging()
                                    ? status.GetBatteryTimeToFull()
@@ -60,17 +61,14 @@ std::unique_ptr<Notification> CreateNotification(
         IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE);
   } else if (PowerStatus::ShouldDisplayBatteryTime(time) &&
              !status.IsBatteryDischargingOnLinePower()) {
-    int hour = 0, min = 0;
-    PowerStatus::SplitTimeIntoHoursAndMinutes(time, &hour, &min);
     if (status.IsBatteryCharging()) {
       time_message = l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL,
-          base::IntToString16(hour), base::IntToString16(min));
+          TimeDurationFormat(time, base::DURATION_WIDTH_NARROW));
     } else {
       // This is a low battery warning prompting the user in minutes.
-      time_message = ui::TimeFormat::Simple(
-          ui::TimeFormat::FORMAT_REMAINING, ui::TimeFormat::LENGTH_LONG,
-          base::TimeDelta::FromMinutes(hour * 60 + min));
+      time_message = ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_REMAINING,
+                                            ui::TimeFormat::LENGTH_LONG, time);
     }
   }
 

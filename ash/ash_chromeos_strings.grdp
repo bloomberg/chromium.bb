@@ -362,22 +362,19 @@ Press Shift + Alt to switch.
     Battery full
   </message>
   <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT" desc="The label in the tray dialog to show the remaining battery power as a percent.">
-    <ph name="percentage">$1<ex>56</ex></ph>% remaining
-  </message>
-  <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_ONLY" desc="The label in the tray bubble setting row to show the remaining battery power as a percent.">
-    <ph name="percentage">$1<ex>56</ex></ph>%
+    <ph name="percentage">{0,number,percent}<ex>56%</ex></ph> remaining
   </message>
   <message name="IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL" desc="The label in the tray dialog to show a time estimate until the battery is fully charged.">
-    <ph name="hour">$1<ex>2</ex></ph>h <ph name="minute">$2<ex>53</ex></ph>m until full
+    <ph name="time">$1<ex>2h 53m</ex></ph> until full
   </message>
   <message name="IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING" desc="The label in the tray dialog indicating that the time to charge or discharge the battery is being calculated.">
     Calculating...
   </message>
   <message name="IDS_ASH_STATUS_TRAY_BATTERY_TIME_LEFT_SHORT" desc="The label in the tray bubble settings row to show a time estimate until the battery is empty.">
-    <ph name="hour">$1<ex>2</ex></ph>:<ph name="minute">$2<ex>53</ex></ph> left
+    <ph name="time">$1<ex>2:53</ex></ph> left
   </message>
   <message name="IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_SHORT" desc="The label in the tray bubble settings row to show a time estimate until the battery is fully charged.">
-    <ph name="hour">$1<ex>2</ex></ph>:<ph name="minute">$2<ex>53</ex></ph> until full
+    <ph name="time">$1<ex>2:53</ex></ph> until full
   </message>
   <message name="IDS_ASH_STATUS_TRAY_BATTERY_CHARGING_UNRELIABLE" desc="The label in the tray dialog to indicate that battery charging is unreliable.">
     Low-power charger
