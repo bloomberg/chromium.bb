@@ -111,7 +111,7 @@ public abstract class InfoBar implements InfoBarView {
         if (mView == null) return "";
         TextView messageView = (TextView) mView.findViewById(R.id.infobar_message);
         if (messageView == null) return "";
-        return messageView.getText() + mContext.getString(R.string.infobar_screen_position);
+        return messageView.getText() + mContext.getString(R.string.bottom_bar_screen_position);
     }
 
     /**
