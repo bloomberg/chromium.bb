@@ -43,6 +43,7 @@ class StubContextFactory : public ui::ContextFactory {
                      const gfx::Size& size) override;
   void SetAuthoritativeVSyncInterval(ui::Compositor* compositor,
                                      base::TimeDelta interval) override {}
+  void SetOutputIsSecure(ui::Compositor* compositor, bool secure) override {}
 
   uint32_t next_surface_id_namespace_;
   std::unique_ptr<cc::SingleThreadTaskGraphRunner> task_graph_runner_;

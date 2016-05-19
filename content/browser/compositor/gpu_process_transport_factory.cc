@@ -153,6 +153,7 @@ struct GpuProcessTransportFactory::PerCompositorData {
   BrowserCompositorOutputSurface* surface;
   ReflectorImpl* reflector;
   std::unique_ptr<cc::OnscreenDisplayClient> display_client;
+  bool output_is_secure = false;
 
   PerCompositorData()
       : surface_handle(gpu::kNullSurfaceHandle),
@@ -511,6 +512,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   display_client->set_surface_output_surface(output_surface.get());
   output_surface->set_display_client(display_client.get());
   display_client->display()->Resize(compositor->size());
+  display_client->display()->SetOutputIsSecure(data->output_is_secure);
   data->display_client = std::move(display_client);
   compositor->SetOutputSurface(std::move(output_surface));
 }
@@ -631,6 +633,18 @@ void GpuProcessTransportFactory::SetAuthoritativeVSyncInterval(
     data->surface->begin_frame_source()->SetAuthoritativeVSyncInterval(
         interval);
   }
+}
+
+void GpuProcessTransportFactory::SetOutputIsSecure(ui::Compositor* compositor,
+                                                   bool secure) {
+  PerCompositorDataMap::iterator it = per_compositor_data_.find(compositor);
+  if (it == per_compositor_data_.end())
+    return;
+  PerCompositorData* data = it->second;
+  DCHECK(data);
+  data->output_is_secure = secure;
+  if (data->display_client)
+    data->display_client->display()->SetOutputIsSecure(secure);
 }
 
 cc::SurfaceManager* GpuProcessTransportFactory::GetSurfaceManager() {

@@ -169,25 +169,18 @@ void TextureLayerImpl::AppendQuads(RenderPass* render_pass,
       !vertex_opacity_[3])
     return;
 
-  if (!texture_mailbox_.secure_output_only() ||
-      (layer_tree_impl()->OutputIsSecure() && !InsideCopyRequest())) {
-    TextureDrawQuad* quad =
-        render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-    ResourceId id =
-        valid_texture_copy_ ? texture_copy_->id() : external_texture_resource_;
-    quad->SetNew(shared_quad_state, quad_rect, opaque_rect, visible_quad_rect,
-                 id, premultiplied_alpha_, uv_top_left_, uv_bottom_right_,
-                 bg_color, vertex_opacity_, flipped_, nearest_neighbor_);
-    if (!valid_texture_copy_) {
-      quad->set_resource_size_in_pixels(texture_mailbox_.size_in_pixels());
-    }
-    ValidateQuadResources(quad);
-  } else {
-    SolidColorDrawQuad* quad =
-        render_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
-    quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect, SK_ColorBLACK,
-                 false);
+  TextureDrawQuad* quad =
+      render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
+  ResourceId id =
+      valid_texture_copy_ ? texture_copy_->id() : external_texture_resource_;
+  quad->SetNew(shared_quad_state, quad_rect, opaque_rect, visible_quad_rect, id,
+               premultiplied_alpha_, uv_top_left_, uv_bottom_right_, bg_color,
+               vertex_opacity_, flipped_, nearest_neighbor_,
+               texture_mailbox_.secure_output_only());
+  if (!valid_texture_copy_) {
+    quad->set_resource_size_in_pixels(texture_mailbox_.size_in_pixels());
   }
+  ValidateQuadResources(quad);
 }
 
 SimpleEnclosedRegion TextureLayerImpl::VisibleOpaqueRegion() const {

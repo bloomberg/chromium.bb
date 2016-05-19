@@ -233,18 +233,10 @@ TextureDrawQuad* CreateCandidateQuadAt(ResourceProvider* resource_provider,
 
   TextureDrawQuad* overlay_quad =
       render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-  overlay_quad->SetNew(shared_quad_state,
-                       rect,
-                       rect,
-                       rect,
-                       resource_id,
-                       premultiplied_alpha,
-                       kUVTopLeft,
-                       kUVBottomRight,
-                       SK_ColorTRANSPARENT,
-                       vertex_opacity,
-                       flipped,
-                       nearest_neighbor);
+  overlay_quad->SetNew(shared_quad_state, rect, rect, rect, resource_id,
+                       premultiplied_alpha, kUVTopLeft, kUVBottomRight,
+                       SK_ColorTRANSPARENT, vertex_opacity, flipped,
+                       nearest_neighbor, false);
   overlay_quad->set_resource_size_in_pixels(resource_size_in_pixels);
 
   return overlay_quad;

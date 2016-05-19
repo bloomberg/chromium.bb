@@ -42,7 +42,6 @@ class FakeProxy : public Proxy {
   void UpdateTopControlsState(TopControlsState constraints,
                               TopControlsState current,
                               bool animate) override {}
-  void SetOutputIsSecure(bool output_is_secure) override {}
 
   virtual RendererCapabilities& GetRendererCapabilities();
 

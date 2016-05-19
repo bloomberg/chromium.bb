@@ -1876,6 +1876,7 @@ class SurfaceAggregatorWithResourcesTest : public testing::Test {
 
     aggregator_.reset(
         new SurfaceAggregator(&manager_, resource_provider_.get(), false));
+    aggregator_->set_output_is_secure(true);
   }
 
  protected:
@@ -1944,10 +1945,11 @@ void SubmitCompositorFrameWithResources(ResourceId* resource_ids,
     const float vertex_opacity[4] = {0.f, 0.f, 1.f, 1.f};
     bool flipped = false;
     bool nearest_neighbor = false;
+    bool secure_output_only = true;
     quad->SetAll(sqs, rect, opaque_rect, visible_rect, needs_blending,
                  resource_ids[i], gfx::Size(), premultiplied_alpha, uv_top_left,
                  uv_bottom_right, background_color, vertex_opacity, flipped,
-                 nearest_neighbor);
+                 nearest_neighbor, secure_output_only);
   }
   frame_data->render_pass_list.push_back(std::move(pass));
   std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
@@ -2108,6 +2110,72 @@ TEST_F(SurfaceAggregatorWithResourcesTest, InvalidChildSurface) {
   factory.Destroy(root_surface_id);
   factory.Destroy(child_surface_id);
   factory.Destroy(middle_surface_id);
+}
+
+TEST_F(SurfaceAggregatorWithResourcesTest, SecureOutputTexture) {
+  ResourceTrackingSurfaceFactoryClient client;
+  SurfaceFactory factory(&manager_, &client);
+  SurfaceId surface1_id(7u);
+  factory.Create(surface1_id);
+
+  SurfaceId surface2_id(8u);
+  factory.Create(surface2_id);
+
+  ResourceId ids[] = {11, 12, 13};
+  SubmitCompositorFrameWithResources(ids, arraysize(ids), true, SurfaceId(),
+                                     &factory, surface1_id);
+
+  std::unique_ptr<CompositorFrame> frame = aggregator_->Aggregate(surface1_id);
+
+  RenderPass* render_pass =
+      frame->delegated_frame_data->render_pass_list.back().get();
+
+  EXPECT_EQ(DrawQuad::TEXTURE_CONTENT, render_pass->quad_list.back()->material);
+
+  {
+    std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
+    std::unique_ptr<RenderPass> pass = RenderPass::Create();
+    pass->id = RenderPassId(1, 1);
+    SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
+    sqs->opacity = 1.f;
+    SurfaceDrawQuad* surface_quad =
+        pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
+    surface_quad->SetNew(sqs, gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1),
+                         surface1_id);
+    pass->copy_requests.push_back(CopyOutputRequest::CreateEmptyRequest());
+
+    frame_data->render_pass_list.push_back(std::move(pass));
+    std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
+    frame->delegated_frame_data = std::move(frame_data);
+    factory.SubmitCompositorFrame(surface2_id, std::move(frame),
+                                  SurfaceFactory::DrawCallback());
+  }
+
+  frame = aggregator_->Aggregate(surface2_id);
+  EXPECT_EQ(1u, frame->delegated_frame_data->render_pass_list.size());
+  render_pass = frame->delegated_frame_data->render_pass_list.front().get();
+
+  // Parent has copy request, so texture should not be drawn.
+  EXPECT_EQ(DrawQuad::SOLID_COLOR, render_pass->quad_list.back()->material);
+
+  frame = aggregator_->Aggregate(surface2_id);
+  EXPECT_EQ(1u, frame->delegated_frame_data->render_pass_list.size());
+  render_pass = frame->delegated_frame_data->render_pass_list.front().get();
+
+  // Copy request has been executed earlier, so texture should be drawn.
+  EXPECT_EQ(DrawQuad::TEXTURE_CONTENT,
+            render_pass->quad_list.front()->material);
+
+  aggregator_->set_output_is_secure(false);
+
+  frame = aggregator_->Aggregate(surface2_id);
+  render_pass = frame->delegated_frame_data->render_pass_list.back().get();
+
+  // Output is insecure, so texture should be drawn.
+  EXPECT_EQ(DrawQuad::SOLID_COLOR, render_pass->quad_list.back()->material);
+
+  factory.Destroy(surface1_id);
+  factory.Destroy(surface2_id);
 }
 
 }  // namespace

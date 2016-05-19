@@ -257,17 +257,6 @@ void LayerImpl::TakeCopyRequestsAndTransformToTarget(
   layer_tree_impl()->set_needs_update_draw_properties();
 }
 
-bool LayerImpl::InsideCopyRequest() const {
-  EffectTree& effect_tree = layer_tree_impl()->property_trees()->effect_tree;
-  EffectNode* node = effect_tree.Node(effect_tree_index_);
-
-  for (; node; node = effect_tree.parent(node)) {
-    if (node->data.has_copy_request)
-      return true;
-  }
-  return false;
-}
-
 void LayerImpl::ClearRenderSurfaceLayerList() {
   if (render_surface_)
     render_surface_->ClearLayerLists();

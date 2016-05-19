@@ -462,8 +462,7 @@ void Compositor::DidAbortSwapBuffers() {
 }
 
 void Compositor::SetOutputIsSecure(bool output_is_secure) {
-  host_->SetOutputIsSecure(output_is_secure);
-  host_->SetNeedsRedraw();
+  context_factory_->SetOutputIsSecure(this, output_is_secure);
 }
 
 const cc::LayerTreeDebugState& Compositor::GetLayerTreeDebugState() const {

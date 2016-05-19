@@ -21,7 +21,9 @@
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
+#include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
+#include "cc/quads/texture_draw_quad.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_manager.h"
@@ -434,6 +436,20 @@ void SurfaceAggregator::CopyQuadsToPass(
 
         dest_quad = dest_pass->CopyFromAndAppendRenderPassDrawQuad(
             pass_quad, dest_shared_quad_state, remapped_pass_id);
+      } else if (quad->material == DrawQuad::TEXTURE_CONTENT) {
+        const TextureDrawQuad* texture_quad =
+            TextureDrawQuad::MaterialCast(quad);
+        if (texture_quad->secure_output_only &&
+            (!output_is_secure_ || copy_request_passes_.count(dest_pass->id))) {
+          SolidColorDrawQuad* solid_color_quad =
+              dest_pass->CreateAndAppendDrawQuad<SolidColorDrawQuad>();
+          solid_color_quad->SetNew(dest_shared_quad_state, quad->rect,
+                                   quad->visible_rect, SK_ColorBLACK, false);
+          dest_quad = solid_color_quad;
+        } else {
+          dest_quad = dest_pass->CopyFromAndAppendDrawQuad(
+              quad, dest_shared_quad_state);
+        }
       } else {
         dest_quad =
             dest_pass->CopyFromAndAppendDrawQuad(quad, dest_shared_quad_state);

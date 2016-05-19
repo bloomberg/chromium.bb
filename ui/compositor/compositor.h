@@ -126,6 +126,8 @@ class COMPOSITOR_EXPORT ContextFactory {
 
   virtual void SetAuthoritativeVSyncInterval(ui::Compositor* compositor,
                                              base::TimeDelta interval) = 0;
+
+  virtual void SetOutputIsSecure(Compositor* compositor, bool secure) = 0;
 };
 
 // This class represents a lock on the compositor, that can be used to prevent

@@ -200,7 +200,8 @@ bool ConvertDrawQuad(const QuadPtr& input,
           texture_quad_state->uv_bottom_right.To<gfx::PointF>(),
           texture_quad_state->background_color.To<SkColor>(),
           &texture_quad_state->vertex_opacity.storage()[0],
-          texture_quad_state->y_flipped, texture_quad_state->nearest_neighbor);
+          texture_quad_state->y_flipped, texture_quad_state->nearest_neighbor,
+          texture_quad_state->secure_output_only);
       break;
     }
     case mus::mojom::Material::TILED_CONTENT: {
@@ -376,6 +377,7 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
       }
       texture_state->vertex_opacity = std::move(vertex_opacity);
       texture_state->y_flipped = texture_quad->y_flipped;
+      texture_state->secure_output_only = texture_quad->secure_output_only;
       quad->texture_quad_state = std::move(texture_state);
       break;
     }

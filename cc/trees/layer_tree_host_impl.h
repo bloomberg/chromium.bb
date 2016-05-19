@@ -588,12 +588,6 @@ class CC_EXPORT LayerTreeHostImpl
                                   bool is_direct_manipulation,
                                   ScrollTree* scroll_tree);
 
-  void set_output_is_secure(bool output_is_secure) {
-    output_is_secure_ = output_is_secure;
-  }
-
-  bool output_is_secure() const { return output_is_secure_; }
-
   base::SingleThreadTaskRunner* GetTaskRunner() const {
     DCHECK(task_runner_provider_);
     return task_runner_provider_->HasImplThread()
@@ -822,8 +816,6 @@ class CC_EXPORT LayerTreeHostImpl
   gfx::Rect external_clip_;
   gfx::Rect viewport_rect_for_tile_priority_;
   bool resourceless_software_draw_;
-
-  bool output_is_secure_;
 
   gfx::Rect viewport_damage_rect_;
 

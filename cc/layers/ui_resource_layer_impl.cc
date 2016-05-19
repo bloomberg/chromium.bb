@@ -129,18 +129,10 @@ void UIResourceLayerImpl::AppendQuads(
 
   TextureDrawQuad* quad =
       render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-  quad->SetNew(shared_quad_state,
-               quad_rect,
-               opaque_rect,
-               visible_quad_rect,
-               resource,
-               premultiplied_alpha,
-               uv_top_left_,
-               uv_bottom_right_,
-               SK_ColorTRANSPARENT,
-               vertex_opacity_,
-               flipped,
-               nearest_neighbor);
+  quad->SetNew(shared_quad_state, quad_rect, opaque_rect, visible_quad_rect,
+               resource, premultiplied_alpha, uv_top_left_, uv_bottom_right_,
+               SK_ColorTRANSPARENT, vertex_opacity_, flipped, nearest_neighbor,
+               false);
   ValidateQuadResources(quad);
 }
 

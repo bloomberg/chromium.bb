@@ -9,6 +9,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/quads/draw_quad.h"
+#include "cc/quads/texture_draw_quad.h"
 #include "cc/test/layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -133,29 +134,11 @@ TEST(TextureLayerImplTest, OutputIsSecure) {
     impl.AppendQuadsWithOcclusion(texture_layer_impl, occluded);
 
     EXPECT_EQ(1u, impl.quad_list().size());
-    EXPECT_EQ(DrawQuad::Material::SOLID_COLOR,
+    ASSERT_EQ(DrawQuad::Material::TEXTURE_CONTENT,
               impl.quad_list().front()->material);
-  }
-
-  {
-    impl.SetOutputIsSecure(true);
-    gfx::Rect occluded;
-    impl.AppendQuadsWithOcclusion(texture_layer_impl, occluded);
-
-    EXPECT_EQ(1u, impl.quad_list().size());
-    EXPECT_NE(DrawQuad::Material::SOLID_COLOR,
-              impl.quad_list().front()->material);
-  }
-
-  {
-    impl.SetOutputIsSecure(false);
-    impl.RequestCopyOfOutput();
-    gfx::Rect occluded;
-    impl.AppendQuadsWithOcclusion(texture_layer_impl, occluded);
-
-    EXPECT_EQ(1u, impl.quad_list().size());
-    EXPECT_EQ(DrawQuad::Material::SOLID_COLOR,
-              impl.quad_list().front()->material);
+    const TextureDrawQuad* quad =
+        TextureDrawQuad::MaterialCast(impl.quad_list().front());
+    EXPECT_TRUE(quad->secure_output_only);
   }
 }
 

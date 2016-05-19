@@ -148,7 +148,8 @@ void CreateTestTwoColoredTextureDrawQuad(const gfx::Rect& rect,
       render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
   quad->SetNew(shared_state, rect, gfx::Rect(), rect, resource,
                premultiplied_alpha, uv_top_left, uv_bottom_right,
-               background_color, vertex_opacity, flipped, nearest_neighbor);
+               background_color, vertex_opacity, flipped, nearest_neighbor,
+               false);
 }
 
 void CreateTestTextureDrawQuad(const gfx::Rect& rect,
@@ -182,7 +183,8 @@ void CreateTestTextureDrawQuad(const gfx::Rect& rect,
       render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
   quad->SetNew(shared_state, rect, gfx::Rect(), rect, resource,
                premultiplied_alpha, uv_top_left, uv_bottom_right,
-               background_color, vertex_opacity, flipped, nearest_neighbor);
+               background_color, vertex_opacity, flipped, nearest_neighbor,
+               false);
 }
 
 void CreateTestYUVVideoDrawQuad_FromVideoFrame(
@@ -2735,7 +2737,7 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadNearestNeighbor) {
   TextureDrawQuad* quad = pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
   quad->SetNew(shared_state, viewport, gfx::Rect(), viewport, resource, false,
                gfx::PointF(0, 0), gfx::PointF(1, 1), SK_ColorBLACK,
-               vertex_opacity, false, nearest_neighbor);
+               vertex_opacity, false, nearest_neighbor, false);
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
@@ -2786,7 +2788,7 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadLinear) {
   TextureDrawQuad* quad = pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
   quad->SetNew(shared_state, viewport, gfx::Rect(), viewport, resource, false,
                gfx::PointF(0, 0), gfx::PointF(1, 1), SK_ColorBLACK,
-               vertex_opacity, false, nearest_neighbor);
+               vertex_opacity, false, nearest_neighbor, false);
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
@@ -3165,7 +3167,7 @@ TEST_F(GLRendererPixelTest, TextureQuadBatching) {
       texture_quad->SetNew(shared_state, layer_rect, layer_rect, layer_rect,
                            resource, true, uv_rect.origin(),
                            uv_rect.bottom_right(), SK_ColorWHITE,
-                           vertex_opacity, false, false);
+                           vertex_opacity, false, false, false);
     }
   }
 

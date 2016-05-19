@@ -78,6 +78,7 @@ struct TextureQuadState {
   array<float, 4> vertex_opacity;
   bool y_flipped;
   bool nearest_neighbor;
+  bool secure_output_only;
 };
 
 struct TileQuadState {

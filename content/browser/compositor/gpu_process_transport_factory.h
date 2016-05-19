@@ -66,6 +66,7 @@ class GpuProcessTransportFactory
                      const gfx::Size& size) override;
   void SetAuthoritativeVSyncInterval(ui::Compositor* compositor,
                                      base::TimeDelta interval) override;
+  void SetOutputIsSecure(ui::Compositor* compositor, bool secure) override;
 
   // ImageTransportFactory implementation.
   ui::ContextFactory* GetContextFactory() override;

@@ -67,6 +67,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   void SetSurfaceId(SurfaceId id, float device_scale_factor);
   void Resize(const gfx::Size& new_size);
   void SetExternalClip(const gfx::Rect& clip);
+  void SetOutputIsSecure(bool secure);
 
   SurfaceId CurrentSurfaceId();
 
@@ -116,6 +117,8 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   float device_scale_factor_;
   bool swapped_since_resize_;
   gfx::Rect external_clip_;
+  bool output_is_secure_ = false;
+
   std::unique_ptr<OutputSurface> output_surface_;
   // An internal synthetic BFS. May be null when not used.
   std::unique_ptr<BeginFrameSource> internal_begin_frame_source_;

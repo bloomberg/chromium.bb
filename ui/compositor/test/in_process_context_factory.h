@@ -61,6 +61,7 @@ class InProcessContextFactory : public ContextFactory {
                      const gfx::Size& size) override;
   void SetAuthoritativeVSyncInterval(ui::Compositor* compositor,
                                      base::TimeDelta interval) override {}
+  void SetOutputIsSecure(ui::Compositor* compositor, bool secure) override {}
 
  private:
   scoped_refptr<InProcessContextProvider> shared_main_thread_contexts_;

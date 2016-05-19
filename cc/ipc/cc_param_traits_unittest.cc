@@ -169,6 +169,7 @@ class CCParamTraitsTest : public testing::Test {
     EXPECT_EQ(a->vertex_opacity[3], b->vertex_opacity[3]);
     EXPECT_EQ(a->y_flipped, b->y_flipped);
     EXPECT_EQ(a->nearest_neighbor, b->nearest_neighbor);
+    EXPECT_EQ(a->secure_output_only, b->secure_output_only);
   }
 
   void Compare(const TileDrawQuad* a, const TileDrawQuad* b) {
@@ -245,6 +246,7 @@ TEST_F(CCParamTraitsTest, AllQuads) {
   bool arbitrary_bool3 = true;
   bool arbitrary_bool4 = true;
   bool arbitrary_bool5 = false;
+  bool arbitrary_bool6 = true;
   int arbitrary_context_id1 = 12;
   int arbitrary_context_id2 = 57;
   int arbitrary_context_id3 = -503;
@@ -364,11 +366,12 @@ TEST_F(CCParamTraitsTest, AllQuads) {
 
   TextureDrawQuad* texture_in =
       pass_in->CreateAndAppendDrawQuad<TextureDrawQuad>();
-  texture_in->SetAll(
-      shared_state3_in, arbitrary_rect2, arbitrary_rect2_inside_rect2,
-      arbitrary_rect1_inside_rect2, arbitrary_bool1, arbitrary_resourceid1,
-      arbitrary_size1, arbitrary_bool2, arbitrary_pointf1, arbitrary_pointf2,
-      arbitrary_color, arbitrary_float_array, arbitrary_bool4, arbitrary_bool5);
+  texture_in->SetAll(shared_state3_in, arbitrary_rect2,
+                     arbitrary_rect2_inside_rect2, arbitrary_rect1_inside_rect2,
+                     arbitrary_bool1, arbitrary_resourceid1, arbitrary_size1,
+                     arbitrary_bool2, arbitrary_pointf1, arbitrary_pointf2,
+                     arbitrary_color, arbitrary_float_array, arbitrary_bool4,
+                     arbitrary_bool5, arbitrary_bool6);
   pass_cmp->CopyFromAndAppendDrawQuad(texture_in,
                                       texture_in->shared_quad_state);
 

@@ -78,7 +78,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
         quad->SetAll(sqs, rect, opaque_rect, visible_rect, needs_blending, j,
                      gfx::Size(), premultiplied_alpha, uv_top_left,
                      uv_bottom_right, background_color, vertex_opacity, flipped,
-                     nearest_neighbor);
+                     nearest_neighbor, false);
       }
       sqs = pass->CreateAndAppendSharedQuadState();
       sqs->opacity = opacity;

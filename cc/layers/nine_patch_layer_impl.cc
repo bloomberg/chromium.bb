@@ -225,7 +225,7 @@ void NinePatchLayerImpl::AppendQuads(
     quad->SetNew(shared_quad_state, layer_top_left, opaque_rect, visible_rect,
                  resource, premultiplied_alpha, uv_top_left.origin(),
                  uv_top_left.bottom_right(), SK_ColorTRANSPARENT,
-                 vertex_opacity, flipped, nearest_neighbor_);
+                 vertex_opacity, flipped, nearest_neighbor_, false);
     ValidateQuadResources(quad);
   }
 
@@ -239,7 +239,7 @@ void NinePatchLayerImpl::AppendQuads(
     quad->SetNew(shared_quad_state, layer_top_right, opaque_rect, visible_rect,
                  resource, premultiplied_alpha, uv_top_right.origin(),
                  uv_top_right.bottom_right(), SK_ColorTRANSPARENT,
-                 vertex_opacity, flipped, nearest_neighbor_);
+                 vertex_opacity, flipped, nearest_neighbor_, false);
     ValidateQuadResources(quad);
   }
 
@@ -254,7 +254,7 @@ void NinePatchLayerImpl::AppendQuads(
                  visible_rect, resource, premultiplied_alpha,
                  uv_bottom_left.origin(), uv_bottom_left.bottom_right(),
                  SK_ColorTRANSPARENT, vertex_opacity, flipped,
-                 nearest_neighbor_);
+                 nearest_neighbor_, false);
     ValidateQuadResources(quad);
   }
 
@@ -269,7 +269,7 @@ void NinePatchLayerImpl::AppendQuads(
                  visible_rect, resource, premultiplied_alpha,
                  uv_bottom_right.origin(), uv_bottom_right.bottom_right(),
                  SK_ColorTRANSPARENT, vertex_opacity, flipped,
-                 nearest_neighbor_);
+                 nearest_neighbor_, false);
     ValidateQuadResources(quad);
   }
 
@@ -283,7 +283,7 @@ void NinePatchLayerImpl::AppendQuads(
     quad->SetNew(shared_quad_state, layer_top, opaque_rect, visible_rect,
                  resource, premultiplied_alpha, uv_top.origin(),
                  uv_top.bottom_right(), SK_ColorTRANSPARENT, vertex_opacity,
-                 flipped, nearest_neighbor_);
+                 flipped, nearest_neighbor_, false);
     ValidateQuadResources(quad);
   }
 
@@ -297,7 +297,7 @@ void NinePatchLayerImpl::AppendQuads(
     quad->SetNew(shared_quad_state, layer_left, opaque_rect, visible_rect,
                  resource, premultiplied_alpha, uv_left.origin(),
                  uv_left.bottom_right(), SK_ColorTRANSPARENT, vertex_opacity,
-                 flipped, nearest_neighbor_);
+                 flipped, nearest_neighbor_, false);
     ValidateQuadResources(quad);
   }
 
@@ -311,7 +311,7 @@ void NinePatchLayerImpl::AppendQuads(
     quad->SetNew(shared_quad_state, layer_right, opaque_rect, layer_right,
                  resource, premultiplied_alpha, uv_right.origin(),
                  uv_right.bottom_right(), SK_ColorTRANSPARENT, vertex_opacity,
-                 flipped, nearest_neighbor_);
+                 flipped, nearest_neighbor_, false);
     ValidateQuadResources(quad);
   }
 
@@ -325,7 +325,7 @@ void NinePatchLayerImpl::AppendQuads(
     quad->SetNew(shared_quad_state, layer_bottom, opaque_rect, visible_rect,
                  resource, premultiplied_alpha, uv_bottom.origin(),
                  uv_bottom.bottom_right(), SK_ColorTRANSPARENT, vertex_opacity,
-                 flipped, nearest_neighbor_);
+                 flipped, nearest_neighbor_, false);
     ValidateQuadResources(quad);
   }
 
@@ -340,7 +340,7 @@ void NinePatchLayerImpl::AppendQuads(
       quad->SetNew(shared_quad_state, layer_center, opaque_rect, visible_rect,
                    resource, premultiplied_alpha, uv_center.origin(),
                    uv_center.bottom_right(), SK_ColorTRANSPARENT,
-                   vertex_opacity, flipped, nearest_neighbor_);
+                   vertex_opacity, flipped, nearest_neighbor_, false);
       ValidateQuadResources(quad);
     }
   }

@@ -240,14 +240,15 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
       to_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
   texture_quad->SetNew(shared_state, rect, opaque_rect, visible_rect, resource1,
                        false, gfx::PointF(0.f, 0.f), gfx::PointF(1.f, 1.f),
-                       SK_ColorTRANSPARENT, vertex_opacity, false, false);
+                       SK_ColorTRANSPARENT, vertex_opacity, false, false,
+                       false);
 
   TextureDrawQuad* mailbox_texture_quad =
       to_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
   mailbox_texture_quad->SetNew(shared_state, rect, opaque_rect, visible_rect,
                                resource8, false, gfx::PointF(0.f, 0.f),
                                gfx::PointF(1.f, 1.f), SK_ColorTRANSPARENT,
-                               vertex_opacity, false, false);
+                               vertex_opacity, false, false, false);
 
   TileDrawQuad* scaled_tile_quad =
       to_pass->CreateAndAppendDrawQuad<TileDrawQuad>();

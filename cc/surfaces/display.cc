@@ -149,6 +149,19 @@ void Display::SetExternalClip(const gfx::Rect& clip) {
   external_clip_ = clip;
 }
 
+void Display::SetOutputIsSecure(bool secure) {
+  if (secure == output_is_secure_)
+    return;
+  output_is_secure_ = secure;
+
+  if (aggregator_) {
+    aggregator_->set_output_is_secure(secure);
+    // Force a redraw.
+    if (!current_surface_id_.is_null())
+      aggregator_->SetFullDamageForSurface(current_surface_id_);
+  }
+}
+
 void Display::InitializeRenderer() {
   if (resource_provider_)
     return;
@@ -197,6 +210,7 @@ void Display::InitializeRenderer() {
                              !output_surface_->GetOverlayCandidateValidator();
   aggregator_.reset(new SurfaceAggregator(
       surface_manager_, resource_provider_.get(), output_partial_list));
+  aggregator_->set_output_is_secure(output_is_secure_);
 }
 
 void Display::DidLoseOutputSurface() {

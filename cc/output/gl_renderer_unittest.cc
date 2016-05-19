@@ -1978,7 +1978,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
                        viewport_rect, viewport_rect, viewport_rect, resource_id,
                        premultiplied_alpha, gfx::PointF(0, 0),
                        gfx::PointF(1, 1), SK_ColorTRANSPARENT, vertex_opacity,
-                       flipped, nearest_neighbor);
+                       flipped, nearest_neighbor, false);
 
   // DirectRenderer::DrawFrame calls into OverlayProcessor::ProcessForOverlays.
   // Attempt will be called for each strategy in OverlayProcessor. We have
@@ -2002,7 +2002,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
                        viewport_rect, viewport_rect, viewport_rect, resource_id,
                        premultiplied_alpha, gfx::PointF(0, 0),
                        gfx::PointF(1, 1), SK_ColorTRANSPARENT, vertex_opacity,
-                       flipped, nearest_neighbor);
+                       flipped, nearest_neighbor, false);
   EXPECT_CALL(*validator, AllowCALayerOverlays())
       .Times(1)
       .WillOnce(::testing::Return(false));
@@ -2021,7 +2021,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
                        viewport_rect, viewport_rect, viewport_rect, resource_id,
                        premultiplied_alpha, gfx::PointF(0, 0),
                        gfx::PointF(1, 1), SK_ColorTRANSPARENT, vertex_opacity,
-                       flipped, nearest_neighbor);
+                       flipped, nearest_neighbor, false);
   EXPECT_CALL(*validator, AllowCALayerOverlays())
       .Times(1)
       .WillOnce(::testing::Return(true));
@@ -2140,7 +2140,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   overlay_quad->SetNew(shared_state, viewport_rect, viewport_rect,
                        viewport_rect, resource_id, premultiplied_alpha,
                        uv_top_left, uv_bottom_right, SK_ColorTRANSPARENT,
-                       vertex_opacity, flipped, nearest_neighbor);
+                       vertex_opacity, flipped, nearest_neighbor, false);
 
   // Verify that overlay_quad actually gets turned into an overlay, and even
   // though it's not drawn, that its sync point is waited on.

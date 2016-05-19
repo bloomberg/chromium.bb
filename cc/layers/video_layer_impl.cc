@@ -216,18 +216,11 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       bool nearest_neighbor = false;
       TextureDrawQuad* texture_quad =
           render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-      texture_quad->SetNew(shared_quad_state,
-                           quad_rect,
-                           opaque_rect,
-                           visible_quad_rect,
-                           software_resources_[0],
-                           premultiplied_alpha,
-                           uv_top_left,
-                           uv_bottom_right,
-                           SK_ColorTRANSPARENT,
-                           opacity,
-                           flipped,
-                           nearest_neighbor);
+      texture_quad->SetNew(shared_quad_state, quad_rect, opaque_rect,
+                           visible_quad_rect, software_resources_[0],
+                           premultiplied_alpha, uv_top_left, uv_bottom_right,
+                           SK_ColorTRANSPARENT, opacity, flipped,
+                           nearest_neighbor, false);
       ValidateQuadResources(texture_quad);
       break;
     }
@@ -312,7 +305,7 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
                            visible_quad_rect, frame_resources_[0].id,
                            premultiplied_alpha, uv_top_left, uv_bottom_right,
                            SK_ColorTRANSPARENT, opacity, flipped,
-                           nearest_neighbor);
+                           nearest_neighbor, false);
       ValidateQuadResources(texture_quad);
       break;
     }

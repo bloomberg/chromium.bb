@@ -42,6 +42,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
     return previous_contained_surfaces_;
   }
   void SetFullDamageForSurface(SurfaceId surface_id);
+  void set_output_is_secure(bool secure) { output_is_secure_ = secure; }
 
  private:
   struct ClipData {
@@ -115,6 +116,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   RenderPassIdAllocatorMap render_pass_allocator_map_;
   int next_render_pass_id_;
   const bool aggregate_only_damaged_;
+  bool output_is_secure_;
 
   using SurfaceToResourceChildIdMap =
       std::unordered_map<SurfaceId, int, SurfaceIdHash>;

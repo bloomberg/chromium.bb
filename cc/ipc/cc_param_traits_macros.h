@@ -112,6 +112,7 @@ IPC_STRUCT_TRAITS_BEGIN(cc::TextureDrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(vertex_opacity[3])
   IPC_STRUCT_TRAITS_MEMBER(y_flipped)
   IPC_STRUCT_TRAITS_MEMBER(nearest_neighbor)
+  IPC_STRUCT_TRAITS_MEMBER(secure_output_only)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::TileDrawQuad)

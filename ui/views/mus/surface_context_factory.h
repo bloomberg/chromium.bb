@@ -53,6 +53,7 @@ class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {
                      const gfx::Size& size) override;
   void SetAuthoritativeVSyncInterval(ui::Compositor* compositor,
                                      base::TimeDelta interval) override {}
+  void SetOutputIsSecure(ui::Compositor* compositor, bool secure) override {}
 
   SurfaceBinding surface_binding_;
   uint32_t next_surface_id_namespace_;

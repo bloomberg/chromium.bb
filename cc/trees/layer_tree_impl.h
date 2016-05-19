@@ -379,8 +379,6 @@ class CC_EXPORT LayerTreeImpl {
 
   bool IsUIResourceOpaque(UIResourceId uid) const;
 
-  bool OutputIsSecure() const;
-
   void RegisterPictureLayerImpl(PictureLayerImpl* layer);
   void UnregisterPictureLayerImpl(PictureLayerImpl* layer);
   const std::vector<PictureLayerImpl*>& picture_layers() const {

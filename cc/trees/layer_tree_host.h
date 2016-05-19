@@ -179,8 +179,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   void SetNeedsDisplayOnAllLayers();
 
-  void SetOutputIsSecure(bool output_is_secure);
-
   void CollectRenderingStats(RenderingStats* stats) const;
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation() const {

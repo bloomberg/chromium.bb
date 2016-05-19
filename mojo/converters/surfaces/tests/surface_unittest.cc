@@ -154,10 +154,12 @@ TEST_F(SurfaceLibQuadTest, TextureQuad) {
   float vertex_opacity[4] = {0.1f, 0.5f, 0.4f, 0.8f};
   bool y_flipped = false;
   bool nearest_neighbor = false;
+  bool secure_output_only = true;
   texture_quad->SetAll(sqs, rect, opaque_rect, visible_rect, needs_blending,
                        resource_id, gfx::Size(), premultiplied_alpha,
                        uv_top_left, uv_bottom_right, background_color,
-                       vertex_opacity, y_flipped, nearest_neighbor);
+                       vertex_opacity, y_flipped, nearest_neighbor,
+                       secure_output_only);
 
   QuadPtr mus_quad = Quad::From<cc::DrawQuad>(*texture_quad);
   ASSERT_FALSE(mus_quad.is_null());
@@ -175,6 +177,7 @@ TEST_F(SurfaceLibQuadTest, TextureQuad) {
     EXPECT_EQ(vertex_opacity[i], mus_texture_state->vertex_opacity[i]) << i;
   }
   EXPECT_EQ(y_flipped, mus_texture_state->y_flipped);
+  EXPECT_EQ(secure_output_only, mus_texture_state->secure_output_only);
 }
 
 TEST_F(SurfaceLibQuadTest, TextureQuadEmptyVertexOpacity) {
@@ -306,10 +309,12 @@ TEST(SurfaceLibTest, RenderPass) {
   float vertex_opacity[4] = {0.1f, 0.5f, 0.4f, 0.8f};
   bool y_flipped = false;
   bool nearest_neighbor = false;
+  bool secure_output_only = false;
   texture_quad->SetAll(sqs, rect, opaque_rect, visible_rect, needs_blending,
                        resource_id, gfx::Size(), premultiplied_alpha,
                        uv_top_left, uv_bottom_right, background_color,
-                       vertex_opacity, y_flipped, nearest_neighbor);
+                       vertex_opacity, y_flipped, nearest_neighbor,
+                       secure_output_only);
 
   PassPtr mus_pass = Pass::From(*pass);
   ASSERT_FALSE(mus_pass.is_null());
@@ -382,6 +387,7 @@ TEST(SurfaceLibTest, RenderPass) {
         << i;
   }
   EXPECT_EQ(y_flipped, round_trip_texture_quad->y_flipped);
+  EXPECT_EQ(secure_output_only, round_trip_texture_quad->secure_output_only);
 }
 
 TEST(SurfaceLibTest, TransferableResource) {

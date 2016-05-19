@@ -162,7 +162,6 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
   void UpdateTopControlsState(TopControlsState constraints,
                               TopControlsState current,
                               bool animate) override;
-  void SetOutputIsSecure(bool output_is_secure) override;
   bool MainFrameWillHappenForTesting() override;
 
   // Called on impl thread.

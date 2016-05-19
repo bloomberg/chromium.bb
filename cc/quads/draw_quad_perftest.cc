@@ -73,7 +73,7 @@ class DrawQuadPerfTest : public testing::Test {
       quad->SetNew(shared_state_, rect, rect, rect, resource_id,
                    premultiplied_alpha, uv_top_left, uv_bottom_right,
                    background_color, vertex_opacity, y_flipped,
-                   nearest_neighbor);
+                   nearest_neighbor, false);
       quads->push_back(quad);
     }
   }

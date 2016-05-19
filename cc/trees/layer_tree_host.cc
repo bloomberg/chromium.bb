@@ -650,10 +650,6 @@ void LayerTreeHost::SetNeedsDisplayOnAllLayers() {
     layer->SetNeedsDisplay();
 }
 
-void LayerTreeHost::SetOutputIsSecure(bool output_is_secure) {
-  proxy_->SetOutputIsSecure(output_is_secure);
-}
-
 const RendererCapabilities& LayerTreeHost::GetRendererCapabilities() const {
   return proxy_->GetRendererCapabilities();
 }

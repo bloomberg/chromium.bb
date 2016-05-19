@@ -159,7 +159,6 @@ class CC_EXPORT LayerImpl {
   void TakeCopyRequestsAndTransformToTarget(
       std::vector<std::unique_ptr<CopyOutputRequest>>* request);
   bool HasCopyRequest() const { return !copy_requests_.empty(); }
-  bool InsideCopyRequest() const;
 
   void SetMaskLayer(std::unique_ptr<LayerImpl> mask_layer);
   LayerImpl* mask_layer() { return mask_layer_; }

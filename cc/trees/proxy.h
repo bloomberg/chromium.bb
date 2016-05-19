@@ -78,8 +78,6 @@ class CC_EXPORT Proxy {
                                       TopControlsState current,
                                       bool animate) = 0;
 
-  virtual void SetOutputIsSecure(bool output_is_secure) = 0;
-
   // Testing hooks
   virtual bool MainFrameWillHappenForTesting() = 0;
 };
