@@ -70,7 +70,7 @@ class NewTaskManagerView
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   void WindowClosing() override;
-  bool UseNewStyleForThisDialog() const override;
+  bool ShouldUseCustomFrame() const override;
 
   // views::TableGrouper:
   void GetGroupRange(int model_index, views::GroupRange* range) override;

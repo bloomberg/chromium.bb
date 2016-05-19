@@ -72,7 +72,7 @@ class ReauthDelegate : public views::DialogDelegateView,
   bool CanResize() const override;
   bool CanMaximize() const override;
   bool CanMinimize() const override;
-  bool UseNewStyleForThisDialog() const override;
+  bool ShouldUseCustomFrame() const override;
   ui::ModalType GetModalType() const override;
   void DeleteDelegate() override;
   base::string16 GetWindowTitle() const override;
@@ -123,7 +123,7 @@ bool ReauthDelegate::CanMinimize() const  {
   return true;
 }
 
-bool ReauthDelegate::UseNewStyleForThisDialog() const {
+bool ReauthDelegate::ShouldUseCustomFrame() const {
   return false;
 }
 
@@ -396,6 +396,6 @@ void UserManagerView::WindowClosing() {
     instance_ = NULL;
 }
 
-bool UserManagerView::UseNewStyleForThisDialog() const {
+bool UserManagerView::ShouldUseCustomFrame() const {
   return false;
 }

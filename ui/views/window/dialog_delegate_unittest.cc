@@ -70,7 +70,7 @@ class TestDialog : public DialogDelegateView, public ButtonListener {
   }
   base::string16 GetWindowTitle() const override { return title_; }
   View* GetInitiallyFocusedView() override { return input_; }
-  bool UseNewStyleForThisDialog() const override { return true; }
+  bool ShouldUseCustomFrame() const override { return true; }
 
   // ButtonListener override:
   void ButtonPressed(Button* sender, const ui::Event& event) override {

@@ -29,7 +29,7 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // DialogDelegate:
 
-DialogDelegate::DialogDelegate() : supports_new_style_(true) {}
+DialogDelegate::DialogDelegate() : supports_custom_frame_(true) {}
 
 DialogDelegate::~DialogDelegate() {}
 
@@ -54,14 +54,14 @@ Widget* DialogDelegate::CreateDialogWidgetWithBounds(WidgetDelegate* delegate,
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // The new style doesn't support unparented dialogs on Linux desktop.
   if (dialog)
-    dialog->supports_new_style_ &= parent != NULL;
+    dialog->supports_custom_frame_ &= parent != NULL;
 #elif defined(OS_WIN)
   // The new style doesn't support unparented dialogs on Windows Classic themes.
   if (dialog && !ui::win::IsAeroGlassEnabled())
-    dialog->supports_new_style_ &= parent != NULL;
+    dialog->supports_custom_frame_ &= parent != NULL;
 #endif
 
-  if (!dialog || dialog->UseNewStyleForThisDialog()) {
+  if (!dialog || dialog->ShouldUseCustomFrame()) {
     params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
     params.remove_standard_frame = true;
 #if !defined(OS_MACOSX)
@@ -181,7 +181,7 @@ ClientView* DialogDelegate::CreateClientView(Widget* widget) {
 }
 
 NonClientFrameView* DialogDelegate::CreateNonClientFrameView(Widget* widget) {
-  if (UseNewStyleForThisDialog())
+  if (ShouldUseCustomFrame())
     return CreateDialogFrameView(widget);
   return WidgetDelegate::CreateNonClientFrameView(widget);
 }
@@ -203,8 +203,8 @@ NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
   return frame;
 }
 
-bool DialogDelegate::UseNewStyleForThisDialog() const {
-  return supports_new_style_;
+bool DialogDelegate::ShouldUseCustomFrame() const {
+  return supports_custom_frame_;
 }
 
 const DialogClientView* DialogDelegate::GetDialogClientView() const {

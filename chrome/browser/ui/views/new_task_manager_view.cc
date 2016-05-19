@@ -225,7 +225,7 @@ void NewTaskManagerView::WindowClosing() {
   table_model_->StoreColumnsSettings();
 }
 
-bool NewTaskManagerView::UseNewStyleForThisDialog() const {
+bool NewTaskManagerView::ShouldUseCustomFrame() const {
   return false;
 }
 

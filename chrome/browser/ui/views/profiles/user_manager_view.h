@@ -59,7 +59,7 @@ class UserManagerView : public views::DialogDelegateView {
   base::string16 GetWindowTitle() const override;
   int GetDialogButtons() const override;
   void WindowClosing() override;
-  bool UseNewStyleForThisDialog() const override;
+  bool ShouldUseCustomFrame() const override;
 
   views::WebView* web_view_;
 

@@ -177,7 +177,7 @@ class TaskManagerView : public views::ButtonListener,
   std::string GetWindowName() const override;
   int GetDialogButtons() const override;
   void WindowClosing() override;
-  bool UseNewStyleForThisDialog() const override;
+  bool ShouldUseCustomFrame() const override;
 
   // views::TableViewObserver:
   void OnSelectionChanged() override;
@@ -522,7 +522,7 @@ void TaskManagerView::WindowClosing() {
   task_manager_->OnWindowClosed();
 }
 
-bool TaskManagerView::UseNewStyleForThisDialog() const {
+bool TaskManagerView::ShouldUseCustomFrame() const {
   return false;
 }
 

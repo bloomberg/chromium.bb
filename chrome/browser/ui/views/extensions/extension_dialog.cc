@@ -193,7 +193,7 @@ views::View* ExtensionDialog::GetContentsView() {
   return GetExtensionView(host_.get());
 }
 
-bool ExtensionDialog::UseNewStyleForThisDialog() const {
+bool ExtensionDialog::ShouldUseCustomFrame() const {
   return false;
 }
 

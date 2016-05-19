@@ -123,7 +123,7 @@ class HungRendererDialogView : public views::DialogDelegateView,
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   views::View* CreateExtraView() override;
   bool Cancel() override;
-  bool UseNewStyleForThisDialog() const override;
+  bool ShouldUseCustomFrame() const override;
 
   // views::ButtonListener overrides:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

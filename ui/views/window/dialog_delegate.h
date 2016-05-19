@@ -102,8 +102,10 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   // Create a frame view using the new dialog style.
   static NonClientFrameView* CreateDialogFrameView(Widget* widget);
 
-  // Returns whether this particular dialog should use the new dialog style.
-  virtual bool UseNewStyleForThisDialog() const;
+  // Returns true if this particular dialog should use a Chrome-styled frame
+  // like the one used for bubbles. The alternative is a more platform-native
+  // frame.
+  virtual bool ShouldUseCustomFrame() const;
 
   // A helper for accessing the DialogClientView object contained by this
   // delegate's Window.
@@ -115,8 +117,9 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
   ui::AXRole GetAccessibleWindowRole() const override;
 
  private:
-  // A flag indicating whether this dialog supports the new style.
-  bool supports_new_style_;
+  // A flag indicating whether this dialog is able to use the custom frame
+  // style for dialogs.
+  bool supports_custom_frame_;
 };
 
 // A DialogDelegate implementation that is-a View. Used to override GetWidget()

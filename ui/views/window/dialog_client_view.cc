@@ -60,9 +60,9 @@ DialogClientView::DialogClientView(Widget* owner, View* contents_view)
                          kButtonHEdgeMarginNew,
                          kButtonVEdgeMarginNew,
                          kButtonHEdgeMarginNew),
-      ok_button_(NULL),
-      cancel_button_(NULL),
-      extra_view_(NULL),
+      ok_button_(nullptr),
+      cancel_button_(nullptr),
+      extra_view_(nullptr),
       delegate_allowed_close_(false) {
   // Doing this now ensures this accelerator will have lower priority than
   // one set by the contents view.
@@ -100,7 +100,7 @@ void DialogClientView::UpdateDialogButtons() {
     GetDialogDelegate()->UpdateButton(ok_button_, ui::DIALOG_BUTTON_OK);
   } else if (ok_button_) {
     delete ok_button_;
-    ok_button_ = NULL;
+    ok_button_ = nullptr;
   }
 
   if (buttons & ui::DIALOG_BUTTON_CANCEL) {
@@ -112,7 +112,7 @@ void DialogClientView::UpdateDialogButtons() {
     GetDialogDelegate()->UpdateButton(cancel_button_, ui::DIALOG_BUTTON_CANCEL);
   } else if (cancel_button_) {
     delete cancel_button_;
-    cancel_button_ = NULL;
+    cancel_button_ = nullptr;
   }
 
   SetupFocusChain();
@@ -240,7 +240,7 @@ void DialogClientView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   // dialog style simply inherits the bubble's frame view color.
   const DialogDelegate* dialog = GetDialogDelegate();
 
-  if (dialog && !dialog->UseNewStyleForThisDialog()) {
+  if (dialog && !dialog->ShouldUseCustomFrame()) {
     set_background(views::Background::CreateSolidBackground(GetNativeTheme()->
         GetSystemColor(ui::NativeTheme::kColorId_DialogBackground)));
   }
@@ -266,10 +266,10 @@ void DialogClientView::ButtonPressed(Button* sender, const ui::Event& event) {
 // DialogClientView, protected:
 
 DialogClientView::DialogClientView(View* contents_view)
-    : ClientView(NULL, contents_view),
-      ok_button_(NULL),
-      cancel_button_(NULL),
-      extra_view_(NULL),
+    : ClientView(nullptr, contents_view),
+      ok_button_(nullptr),
+      cancel_button_(nullptr),
+      extra_view_(nullptr),
       delegate_allowed_close_(false) {}
 
 DialogDelegate* DialogClientView::GetDialogDelegate() const {
@@ -302,9 +302,8 @@ void DialogClientView::ChildVisibilityChanged(View* child) {
 
 LabelButton* DialogClientView::CreateDialogButton(ui::DialogButton type) {
   const base::string16 title = GetDialogDelegate()->GetDialogButtonLabel(type);
-  LabelButton* button = NULL;
-  if (GetDialogDelegate()->UseNewStyleForThisDialog() &&
-      GetDialogDelegate()->GetDefaultDialogButton() == type &&
+  LabelButton* button = nullptr;
+  if (GetDialogDelegate()->GetDefaultDialogButton() == type &&
       GetDialogDelegate()->ShouldDefaultButtonBeBlue()) {
     return MdTextButton::CreateSecondaryUiBlueButton(this, title);
   } else {

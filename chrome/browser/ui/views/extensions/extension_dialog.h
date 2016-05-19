@@ -74,7 +74,7 @@ class ExtensionDialog : public views::DialogDelegate,
   views::Widget* GetWidget() override;
   const views::Widget* GetWidget() const override;
   views::View* GetContentsView() override;
-  bool UseNewStyleForThisDialog() const override;
+  bool ShouldUseCustomFrame() const override;
 
   // content::NotificationObserver overrides.
   void Observe(int type,
