@@ -428,7 +428,7 @@ PassOwnPtr<FetchDataConsumerHandle> BodyStreamBuffer::releaseHandle()
     // We need to call these before calling closeAndLockAndDisturb.
     const bool isClosed = isStreamClosed();
     const bool isErrored = isStreamErrored();
-    OwnPtr<FetchDataConsumerHandle> handle = m_handle.release();
+    OwnPtr<FetchDataConsumerHandle> handle = std::move(m_handle);
 
     closeAndLockAndDisturb();
 

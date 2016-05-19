@@ -508,7 +508,7 @@ PassOwnPtr<TracedValue> InspectorTimerRemoveEvent::data(ExecutionContext* contex
 {
     OwnPtr<TracedValue> value = genericTimerData(context, timerId);
     setCallStack(value.get());
-    return value.release();
+    return value;
 }
 
 PassOwnPtr<TracedValue> InspectorTimerFireEvent::data(ExecutionContext* context, int timerId)

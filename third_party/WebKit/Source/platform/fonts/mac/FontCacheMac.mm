@@ -236,7 +236,7 @@ PassOwnPtr<FontPlatformData> FontCache::createFontPlatformData(const FontDescrip
     if (!platformData->typeface()) {
         return nullptr;
     }
-    return platformData.release();
+    return platformData;
 }
 
 } // namespace blink

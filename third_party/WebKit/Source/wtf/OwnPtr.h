@@ -60,7 +60,6 @@ public:
     PtrType get() const { return m_ptr; }
 
     void clear();
-    PassOwnPtr<T> release();
     PtrType leakPtr() WARN_UNUSED_RETURN;
 
     ValueType& operator*() const { ASSERT(m_ptr); return *m_ptr; }
@@ -108,13 +107,6 @@ template <typename T> inline void OwnPtr<T>::clear()
     PtrType ptr = m_ptr;
     m_ptr = nullptr;
     OwnedPtrDeleter<T>::deletePtr(ptr);
-}
-
-template <typename T> inline PassOwnPtr<T> OwnPtr<T>::release()
-{
-    PtrType ptr = m_ptr;
-    m_ptr = nullptr;
-    return PassOwnPtr<T>(ptr);
 }
 
 template <typename T> inline typename OwnPtr<T>::PtrType OwnPtr<T>::leakPtr()

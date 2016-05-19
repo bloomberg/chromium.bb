@@ -27,7 +27,7 @@ PassOwnPtr<const {{namespace}}QualifiedName*[]> get{{namespace}}Tags()
     OwnPtr<const {{namespace}}QualifiedName*[]> tags = adoptArrayPtr(new const {{namespace}}QualifiedName*[{{namespace}}TagsCount]);
     for (size_t i = 0; i < {{namespace}}TagsCount; i++)
         tags[i] = reinterpret_cast<{{namespace}}QualifiedName*>(&{{suffix}}TagStorage) + i;
-    return tags.release();
+    return tags;
 }
 
 {% endif %}
@@ -45,7 +45,7 @@ PassOwnPtr<const QualifiedName*[]> get{{namespace}}Attrs()
     OwnPtr<const QualifiedName*[]> attrs = adoptArrayPtr(new const QualifiedName*[{{namespace}}AttrsCount]);
     for (size_t i = 0; i < {{namespace}}AttrsCount; i++)
         attrs[i] = reinterpret_cast<QualifiedName*>(&{{suffix}}AttrStorage) + i;
-    return attrs.release();
+    return attrs;
 }
 {% endif %}
 
