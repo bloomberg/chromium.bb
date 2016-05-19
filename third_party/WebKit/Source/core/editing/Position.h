@@ -329,11 +329,6 @@ int PositionTemplate<Strategy>::minOffsetForNode(Node* anchorNode, int offset)
     return newOffset;
 }
 
-inline int minOffsetForNode(Node* anchorNode, int offset)
-{
-    return Position::minOffsetForNode(anchorNode, offset);
-}
-
 template <typename Strategy>
 PositionTemplate<Strategy> PositionTemplate<Strategy>::firstPositionInOrBeforeNode(Node* node)
 {
