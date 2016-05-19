@@ -87,6 +87,7 @@ check_targets = [
 
   #"//sandbox/*",  # Medium-hard.
   "//sdch/*",
+  "//services/*",
   "//skia/*",
   "//sql/*",
   "//storage/*",

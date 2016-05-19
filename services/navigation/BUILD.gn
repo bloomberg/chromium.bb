@@ -60,9 +60,15 @@ static_library("lib") {
 
   deps = [
     "//base",
+    "//components/mus/public/cpp",
+    "//content/public/browser",
+    "//mojo/converters/geometry",
     "//services/navigation/public/interfaces",
     "//services/shell/public/cpp",
     "//skia",
+    "//ui/views",
+    "//ui/views/controls/webview",
+    "//ui/views/mus",
   ]
 }
 
