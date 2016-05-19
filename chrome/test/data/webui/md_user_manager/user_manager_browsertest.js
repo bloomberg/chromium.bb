@@ -37,7 +37,8 @@ UserManagerBrowserTest.prototype = {
   runAccessibilityChecks: false,
 };
 
-TEST_F('UserManagerBrowserTest', 'UserManagerTest', function() {
+// Flaky timeout failures on all platforms; see https://crbug.com/613191.
+TEST_F('UserManagerBrowserTest', 'DISABLED_UserManagerTest', function() {
   // Disable 'pod-row' so it won't handle click events after we clear the body.
   $('pod-row').disabled = true;
 
