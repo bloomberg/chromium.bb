@@ -8,20 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutText #text",
-          "rect": [-8, 8, 48, 33],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'xx'",
-          "reason": "bounds change"
+          "rect": [-8, 8, 48, 32],
+          "reason": "selection"
         },
         {
           "object": "InlineTextBox 'xx'",
           "reason": "selection"
-        },
-        {
-          "object": "InlineTextBox 'y'",
-          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox 'y'",
@@ -37,10 +29,6 @@
         },
         {
           "object": "LayoutBlockFlow HTML",
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutText #text",
           "reason": "selection"
         }
       ]

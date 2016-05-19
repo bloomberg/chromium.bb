@@ -25,8 +25,21 @@ lorem ipsumlorem ipsumlorem ipsum
                   "reason": "selection"
                 },
                 {
+                  "object": "LayoutText #text",
+                  "rect": [36, 80, 2, 39],
+                  "reason": "incremental"
+                },
+                {
+                  "object": "InlineTextBox 'ipsum'",
+                  "reason": "incremental"
+                },
+                {
                   "object": "InlineTextBox 'ipsum'",
                   "reason": "selection"
+                },
+                {
+                  "object": "InlineTextBox 'lorem'",
+                  "reason": "incremental"
                 },
                 {
                   "object": "InlineTextBox 'lorem'",
@@ -79,12 +92,38 @@ lorem ipsumlorem ipsumlorem ipsum
                   "reason": "selection"
                 },
                 {
+                  "object": "LayoutText #text",
+                  "rect": [36, 80, 3, 39],
+                  "reason": "incremental"
+                },
+                {
+                  "object": "LayoutText #text",
+                  "rect": [36, 160, 2, 39],
+                  "reason": "incremental"
+                },
+                {
+                  "object": "InlineTextBox 'ipsum'",
+                  "reason": "incremental"
+                },
+                {
+                  "object": "InlineTextBox 'ipsum'",
+                  "reason": "incremental"
+                },
+                {
                   "object": "InlineTextBox 'ipsum'",
                   "reason": "selection"
                 },
                 {
                   "object": "InlineTextBox 'ipsum'",
                   "reason": "selection"
+                },
+                {
+                  "object": "InlineTextBox 'lorem'",
+                  "reason": "incremental"
+                },
+                {
+                  "object": "InlineTextBox 'lorem'",
+                  "reason": "incremental"
                 },
                 {
                   "object": "InlineTextBox 'lorem'",

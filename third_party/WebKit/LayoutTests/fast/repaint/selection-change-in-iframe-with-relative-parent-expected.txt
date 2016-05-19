@@ -24,27 +24,47 @@
         {
           "object": "LayoutBR BR",
           "rect": [58, 238, 10, 10],
-          "reason": "selection"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBR BR",
           "rect": [48, 218, 10, 10],
-          "reason": "selection"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBR BR",
           "rect": [48, 198, 10, 10],
-          "reason": "selection"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBR BR",
           "rect": [18, 228, 10, 10],
-          "reason": "selection"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBR BR",
           "rect": [18, 208, 10, 10],
-          "reason": "selection"
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "bounds change"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "bounds change"
         },
         {
           "object": "InlineTextBox '\n'",
@@ -76,6 +96,26 @@
         },
         {
           "object": "InlineTextBox 'Foo'",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBR BR",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBR BR",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBR BR",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBR BR",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBR BR",
           "reason": "selection"
         },
         {

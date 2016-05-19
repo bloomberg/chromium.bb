@@ -17,8 +17,26 @@
           "reason": "selection"
         },
         {
+          "object": "LayoutText #text",
+          "rect": [82, 35, 3, 19],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [63, 11, 3, 19],
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'First cell'",
+          "reason": "incremental"
+        },
+        {
           "object": "InlineTextBox 'First cell'",
           "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox 'Second cell'",
+          "reason": "incremental"
         },
         {
           "object": "InlineTextBox 'Second cell'",

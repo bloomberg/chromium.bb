@@ -7,24 +7,30 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutText #text",
-          "rect": [-8, 8, 48, 33],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'xx'",
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineTextBox 'xx'",
+          "object": "LayoutBR BR",
+          "rect": [24, 8, 16, 16],
           "reason": "selection"
         },
         {
-          "object": "InlineTextBox 'y'",
-          "reason": "bounds change"
+          "object": "LayoutText #text",
+          "rect": [8, 24, 16, 16],
+          "reason": "selection"
         },
         {
-          "object": "InlineTextBox 'y'",
+          "object": "LayoutText #text",
+          "rect": [8, 8, 16, 16],
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox 'a'",
+          "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox 'b'",
           "reason": "selection"
         },
         {
@@ -37,10 +43,6 @@
         },
         {
           "object": "LayoutBlockFlow HTML",
-          "reason": "selection"
-        },
-        {
-          "object": "LayoutText #text",
           "reason": "selection"
         }
       ]

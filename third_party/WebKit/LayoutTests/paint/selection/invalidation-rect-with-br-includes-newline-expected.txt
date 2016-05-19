@@ -9,7 +9,7 @@
         {
           "object": "LayoutBR BR",
           "rect": [24, 8, 16, 16],
-          "reason": "selection"
+          "reason": "became visible"
         },
         {
           "object": "LayoutText #text",
@@ -23,6 +23,10 @@
         },
         {
           "object": "InlineTextBox '\n'",
+          "reason": "became visible"
+        },
+        {
+          "object": "InlineTextBox '\n'",
           "reason": "selection"
         },
         {
@@ -31,6 +35,10 @@
         },
         {
           "object": "InlineTextBox 'b'",
+          "reason": "selection"
+        },
+        {
+          "object": "LayoutBR BR",
           "reason": "selection"
         },
         {

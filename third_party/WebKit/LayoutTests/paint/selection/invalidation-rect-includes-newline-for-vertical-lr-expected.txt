@@ -8,12 +8,25 @@
       "paintInvalidations": [
         {
           "object": "LayoutText #text",
+          "rect": [7, 40, 33, 16],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutText #text",
           "rect": [8, 8, 32, 48],
           "reason": "selection"
         },
         {
           "object": "InlineTextBox 'xx'",
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'xx'",
           "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox 'y'",
+          "reason": "incremental"
         },
         {
           "object": "InlineTextBox 'y'",

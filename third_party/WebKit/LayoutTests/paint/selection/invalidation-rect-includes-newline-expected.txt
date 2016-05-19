@@ -12,8 +12,21 @@
           "reason": "selection"
         },
         {
+          "object": "LayoutText #text",
+          "rect": [40, 8, 16, 33],
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'xx'",
+          "reason": "incremental"
+        },
+        {
           "object": "InlineTextBox 'xx'",
           "reason": "selection"
+        },
+        {
+          "object": "InlineTextBox 'y'",
+          "reason": "incremental"
         },
         {
           "object": "InlineTextBox 'y'",
