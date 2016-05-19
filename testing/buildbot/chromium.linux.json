@@ -213,6 +213,9 @@
         "test": "base_unittests"
       },
       {
+        "test": "blimp_unittests"
+      },
+      {
         "test": "blink_heap_unittests"
       },
       {
@@ -324,6 +327,9 @@
         "test": "android_webview_test_apk"
       },
       {
+        "test": "blimp_test_apk"
+      },
+      {
         "test": "chrome_sync_shell_test_apk"
       },
       {
@@ -380,6 +386,9 @@
       },
       {
         "test": "base_unittests"
+      },
+      {
+        "test": "blimp_unittests"
       },
       {
         "test": "blink_heap_unittests"
@@ -460,6 +469,9 @@
     "instrumentation_tests": [
       {
         "test": "android_webview_test_apk"
+      },
+      {
+        "test": "blimp_test_apk"
       },
       {
         "test": "chrome_public_test_apk"
