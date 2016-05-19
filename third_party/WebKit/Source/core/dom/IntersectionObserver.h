@@ -35,6 +35,7 @@ public:
     HeapVector<Member<IntersectionObserverEntry>> takeRecords();
     Element* root() const;
     String rootMargin() const;
+    const Vector<float>& thresholds() const { return m_thresholds; }
 
     Node* rootNode() const { return m_root.get(); }
     LayoutObject* rootLayoutObject() const;

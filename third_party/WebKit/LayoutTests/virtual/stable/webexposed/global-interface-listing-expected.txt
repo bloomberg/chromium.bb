@@ -2980,6 +2980,7 @@ interface IntersectionObserver
     attribute @@toStringTag
     getter root
     getter rootMargin
+    getter thresholds
     method constructor
     method disconnect
     method observe

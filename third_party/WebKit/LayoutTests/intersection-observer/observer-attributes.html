@@ -7,6 +7,7 @@
 
   var observer = new IntersectionObserver(function(e) {}, {});
   shouldBeNull("observer.root");
+  shouldBe("observer.thresholds", "[0]");
   shouldBeEqualToString("observer.rootMargin", "0px 0px 0px 0px");
 
   observer = new IntersectionObserver(function(e) {}, {
@@ -15,5 +16,6 @@
     rootMargin: "10% 20px"
   });
   shouldBe("observer.root", "rootDiv");
+  shouldBe("observer.thresholds", "[0, 0.25, 0.5, 1.0]");
   shouldBeEqualToString("observer.rootMargin", "10% 20px 10% 20px");
 </script>
