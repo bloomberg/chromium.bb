@@ -82,6 +82,7 @@ FrameTreeNode::FrameTreeNode(
     RenderFrameHostDelegate* render_frame_delegate,
     RenderWidgetHostDelegate* render_widget_delegate,
     RenderFrameHostManager::Delegate* manager_delegate,
+    FrameTreeNode* parent,
     blink::WebTreeScopeType scope,
     const std::string& name,
     const std::string& unique_name,
@@ -93,7 +94,7 @@ FrameTreeNode::FrameTreeNode(
                       render_widget_delegate,
                       manager_delegate),
       frame_tree_node_id_(next_frame_tree_node_id_++),
-      parent_(NULL),
+      parent_(parent),
       opener_(nullptr),
       opener_observer_(nullptr),
       has_committed_real_load_(false),
@@ -152,7 +153,6 @@ FrameTreeNode* FrameTreeNode::AddChild(std::unique_ptr<FrameTreeNode> child,
                                        int frame_routing_id) {
   // Child frame must always be created in the same process as the parent.
   CHECK_EQ(process_id, render_manager_.current_host()->GetProcess()->GetID());
-  child->set_parent(this);
 
   // Initialize the RenderFrameHost for the new node.  We always create child
   // frames in the same SiteInstance as the current frame, and they can swap to

@@ -59,6 +59,7 @@ class CONTENT_EXPORT FrameTreeNode {
                 RenderFrameHostDelegate* render_frame_delegate,
                 RenderWidgetHostDelegate* render_widget_delegate,
                 RenderFrameHostManager::Delegate* manager_delegate,
+                FrameTreeNode* parent,
                 blink::WebTreeScopeType scope,
                 const std::string& name,
                 const std::string& unique_name,
@@ -285,8 +286,6 @@ class CONTENT_EXPORT FrameTreeNode {
  private:
   class OpenerDestroyedObserver;
 
-  void set_parent(FrameTreeNode* parent) { parent_ = parent; }
-
   void TraceSnapshot() const;
 
   FrameTreeNode* GetSibling(int relative_offset) const;
@@ -311,8 +310,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // even if the frame does a cross-process navigation.
   const int frame_tree_node_id_;
 
-  // The parent node of this frame. NULL if this node is the root or if it has
-  // not yet been attached to the frame tree.
+  // The parent node of this frame. |nullptr| if this node is the root.
   FrameTreeNode* parent_;
 
   // The frame that opened this frame, if any.  Will be set to null if the

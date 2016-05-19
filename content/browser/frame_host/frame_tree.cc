@@ -98,6 +98,7 @@ FrameTree::FrameTree(Navigator* navigator,
                               render_frame_delegate,
                               render_widget_delegate,
                               manager_delegate,
+                              nullptr,
                               // The top-level frame must always be in a
                               // document scope.
                               blink::WebTreeScopeType::Document,
@@ -186,7 +187,7 @@ bool FrameTree::AddFrame(
   FrameTreeNode* added_node = parent->AddChild(
       base::WrapUnique(new FrameTreeNode(
           this, parent->navigator(), render_frame_delegate_,
-          render_widget_delegate_, manager_delegate_, scope, frame_name,
+          render_widget_delegate_, manager_delegate_, parent, scope, frame_name,
           frame_unique_name, frame_owner_properties)),
       process_id, new_routing_id);
 
