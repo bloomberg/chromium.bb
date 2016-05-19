@@ -30,6 +30,7 @@ class _SystemHealthBenchmark(perf_benchmark.PerfBenchmark):
     return browser.platform.GetDeviceTypeName() == galaxy_s5_type_name
 
 
+@benchmark.Disabled('all')  # crbug.com/613050
 class SystemHealthTop25(_SystemHealthBenchmark):
   page_set = page_sets.Top25PageSet
 
@@ -37,8 +38,8 @@ class SystemHealthTop25(_SystemHealthBenchmark):
   def Name(cls):
     return 'system_health.top25'
 
-# crbug.com/601953
-@benchmark.Disabled('android')
+@benchmark.Disabled('android')  # crbug.com/601953
+@benchmark.Disabled('all')  # crbug.com/613050
 class SystemHealthKeyMobileSites(_SystemHealthBenchmark):
   page_set = page_sets.KeyMobileSitesPageSet
 
