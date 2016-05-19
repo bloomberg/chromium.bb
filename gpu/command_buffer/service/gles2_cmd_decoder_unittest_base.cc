@@ -31,6 +31,7 @@
 using ::gfx::MockGLInterface;
 using ::testing::_;
 using ::testing::AnyNumber;
+using ::testing::AtMost;
 using ::testing::DoAll;
 using ::testing::InSequence;
 using ::testing::Invoke;
@@ -1148,6 +1149,11 @@ void GLES2DecoderTestBase::DoBindTexture(
   EXPECT_CALL(*gl_, BindTexture(target, service_id))
       .Times(1)
       .RetiresOnSaturation();
+  if (!group_->feature_info()->gl_version_info().BehavesLikeGLES() &&
+      group_->feature_info()->gl_version_info().IsAtLeastGL(3, 2)) {
+    EXPECT_CALL(*gl_, TexParameteri(target, GL_DEPTH_TEXTURE_MODE, GL_RED))
+        .Times(AtMost(1));
+  }
   cmds::BindTexture cmd;
   cmd.Init(target, client_id);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));

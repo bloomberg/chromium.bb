@@ -3760,6 +3760,57 @@ TEST_P(GLES2DecoderWithShaderTest, CHROMIUMImageEmulatingRGB) {
   }
 }
 
+TEST_P(GLES2DecoderTest, BindTextureValidArgs) {
+  EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, kServiceTextureId))
+      .Times(1)
+      .RetiresOnSaturation();
+  if (!feature_info()->gl_version_info().BehavesLikeGLES() &&
+      feature_info()->gl_version_info().IsAtLeastGL(3, 2)) {
+    EXPECT_CALL(*gl_, TexParameteri(GL_TEXTURE_2D,
+                                    GL_DEPTH_TEXTURE_MODE,
+                                    GL_RED))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+  cmds::BindTexture cmd;
+  cmd.Init(GL_TEXTURE_2D, client_texture_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderTest, BindTextureValidArgsNewId) {
+  EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, kNewServiceId))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GenTextures(1, _))
+      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
+  if (!feature_info()->gl_version_info().BehavesLikeGLES() &&
+      feature_info()->gl_version_info().IsAtLeastGL(3, 2)) {
+    EXPECT_CALL(*gl_, TexParameteri(GL_TEXTURE_2D,
+                                    GL_DEPTH_TEXTURE_MODE,
+                                    GL_RED))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+  cmds::BindTexture cmd;
+  cmd.Init(GL_TEXTURE_2D, kNewClientId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_TRUE(GetTexture(kNewClientId) != NULL);
+}
+
+TEST_P(GLES2DecoderTest, BindTextureInvalidArgs) {
+  EXPECT_CALL(*gl_, BindTexture(_, _)).Times(0);
+  cmds::BindTexture cmd;
+  cmd.Init(GL_TEXTURE_1D, client_texture_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+
+  cmd.Init(GL_TEXTURE_3D, client_texture_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
 // TODO(gman): Complete this test.
 // TEST_P(GLES2DecoderTest, CompressedTexImage2DGLError) {
 // }

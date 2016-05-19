@@ -2444,6 +2444,7 @@ _FUNCTION_INFO = {
     'gen_func': 'GenTextures',
     # TODO: remove this once client side caching works.
     'client_test': False,
+    'unit_test': False,
     'trace_level': 2,
   },
   'BindTransformFeedback': {

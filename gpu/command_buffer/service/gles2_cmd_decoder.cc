@@ -5236,10 +5236,20 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
       return;
     }
     LogClientServiceForInfo(texture, client_id, "glBindTexture");
+    glBindTexture(target, texture->service_id());
     if (texture->target() == 0) {
       texture_manager()->SetTarget(texture_ref, target);
+      if (!feature_info_->gl_version_info().BehavesLikeGLES() &&
+          feature_info_->gl_version_info().IsAtLeastGL(3, 2)) {
+        // In Desktop GL core profile and GL ES, depth textures are always
+        // sampled to the RED channel, whereas on Desktop GL compatibility
+        // proifle, they are sampled to RED, LUMINANCE, INTENSITY, or ALPHA
+        // channel, depending on the DEPTH_TEXTURE_MODE value.
+        // In theory we only need to apply this for depth textures, but it is
+        // simpler to apply to all textures.
+        glTexParameteri(target, GL_DEPTH_TEXTURE_MODE, GL_RED);
+      }
     }
-    glBindTexture(target, texture->service_id());
   } else {
     glBindTexture(target, 0);
   }

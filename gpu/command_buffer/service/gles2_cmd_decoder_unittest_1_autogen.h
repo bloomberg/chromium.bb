@@ -124,45 +124,6 @@ TEST_P(GLES2DecoderTest1, BindSamplerValidArgs) {
   EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
 }
 
-TEST_P(GLES2DecoderTest1, BindTextureValidArgs) {
-  EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, kServiceTextureId));
-  SpecializedSetup<cmds::BindTexture, 0>(true);
-  cmds::BindTexture cmd;
-  cmd.Init(GL_TEXTURE_2D, client_texture_id_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest1, BindTextureValidArgsNewId) {
-  EXPECT_CALL(*gl_, BindTexture(GL_TEXTURE_2D, kNewServiceId));
-  EXPECT_CALL(*gl_, GenTextures(1, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
-  SpecializedSetup<cmds::BindTexture, 0>(true);
-  cmds::BindTexture cmd;
-  cmd.Init(GL_TEXTURE_2D, kNewClientId);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(GetTexture(kNewClientId) != NULL);
-}
-
-TEST_P(GLES2DecoderTest1, BindTextureInvalidArgs0_0) {
-  EXPECT_CALL(*gl_, BindTexture(_, _)).Times(0);
-  SpecializedSetup<cmds::BindTexture, 0>(false);
-  cmds::BindTexture cmd;
-  cmd.Init(GL_TEXTURE_1D, client_texture_id_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest1, BindTextureInvalidArgs0_1) {
-  EXPECT_CALL(*gl_, BindTexture(_, _)).Times(0);
-  SpecializedSetup<cmds::BindTexture, 0>(false);
-  cmds::BindTexture cmd;
-  cmd.Init(GL_TEXTURE_3D, client_texture_id_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
-}
-
 TEST_P(GLES2DecoderTest1, BlendColorValidArgs) {
   EXPECT_CALL(*gl_, BlendColor(1, 2, 3, 4));
   SpecializedSetup<cmds::BlendColor, 0>(true);
