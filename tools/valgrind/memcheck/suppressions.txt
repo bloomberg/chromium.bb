@@ -2420,20 +2420,6 @@
    fun:_ZN2v88internal27Runtime_CreateObjectLiteralEiPPNS0_6ObjectEPNS0_7IsolateE
 }
 {
-   bug_399853_a
-   Memcheck:Uninitialized
-   fun:_ZNK8SkStroke10strokePathERK6SkPathPS0_
-   fun:_ZNK11SkStrokeRec11applyToPathEP6SkPathRKS0_
-   fun:_ZNK7SkPaint11getFillPathERK6SkPathPS0_PK6SkRect
-}
-{
-   bug_399853_b
-   Memcheck:Uninitialized
-   fun:_ZNK8SkStroke10strokePathERK6SkPathPS0_
-   fun:_ZNK11SkStrokeRec11applyToPathEP6SkPathRKS0_
-   fun:_ZN15SkScalerContext15internalGetPathERK7SkGlyphP6SkPathS4_P8SkMatrix
-}
-{
    bug_417119
    Memcheck:Leak
    fun:_Znw*
