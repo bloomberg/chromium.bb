@@ -140,8 +140,4 @@ int DrawingDisplayItem::ApproximateOpCount() const {
   return picture_->approximateOpCount();
 }
 
-bool DrawingDisplayItem::IsSuitableForGpuRasterization() const {
-  return picture_->suitableForGpuRasterization(NULL);
-}
-
 }  // namespace cc

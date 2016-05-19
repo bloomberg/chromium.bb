@@ -37,7 +37,6 @@ class CC_EXPORT FloatClipDisplayItem : public DisplayItem {
   size_t ExternalMemoryUsage() const override;
 
   int ApproximateOpCount() const { return 1; }
-  bool IsSuitableForGpuRasterization() const { return true; }
 
  private:
   void SetNew(const gfx::RectF& clip_rect);

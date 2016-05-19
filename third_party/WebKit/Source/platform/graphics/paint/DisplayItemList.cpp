@@ -4,7 +4,9 @@
 
 #include "platform/graphics/paint/DisplayItemList.h"
 
+#include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/PaintChunk.h"
+#include "third_party/skia/include/core/SkPictureAnalyzer.h"
 
 #ifndef NDEBUG
 #include "wtf/text/WTFString.h"
@@ -12,8 +14,11 @@
 
 namespace blink {
 
-DisplayItem& DisplayItemList::appendByMoving(DisplayItem& item, const IntRect& visualRect)
+DisplayItem& DisplayItemList::appendByMoving(DisplayItem& item, const IntRect& visualRect, SkPictureGpuAnalyzer& gpuAnalyzer)
 {
+    if (item.isDrawing())
+        gpuAnalyzer.analyze(static_cast<const DrawingDisplayItem&>(item).picture());
+
 #ifndef NDEBUG
     String originalDebugString = item.asDebugString();
 #endif

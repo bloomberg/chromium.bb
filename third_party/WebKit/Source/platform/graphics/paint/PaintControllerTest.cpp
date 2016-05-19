@@ -794,4 +794,115 @@ TEST_F(PaintControllerTest, PaintArtifactWithVisualRects)
     EXPECT_RECT_EQ(IntRect(-20, -30, 200, 100), visualRect(paintArtifact, 0));
 }
 
+void drawPath(GraphicsContext& context, DisplayItemClient& client, DisplayItem::Type type, unsigned count)
+{
+    if (DrawingRecorder::useCachedDrawingIfPossible(context, client, type))
+        return;
+
+    DrawingRecorder drawingRecorder(context, client, type, FloatRect(0, 0, 100, 100));
+    SkPath path;
+    path.moveTo(0, 0);
+    path.lineTo(0, 100);
+    path.lineTo(50, 50);
+    path.lineTo(100, 100);
+    path.lineTo(100, 0);
+    path.close();
+    SkPaint paint;
+    paint.setAntiAlias(true);
+    for (unsigned i = 0; i < count; i++)
+        context.drawPath(path, paint);
+}
+
+TEST_F(PaintControllerTest, IsSuitableForGpuRasterizationSinglePath)
+{
+    FakeDisplayItemClient client("test client", LayoutRect(0, 0, 200, 100));
+    GraphicsContext context(getPaintController());
+    drawPath(context, client, backgroundDrawingType, 1);
+    getPaintController().commitNewDisplayItems(LayoutSize());
+    EXPECT_TRUE(getPaintController().paintArtifact().isSuitableForGpuRasterization());
+}
+
+TEST_F(PaintControllerTest, IsNotSuitableForGpuRasterizationSinglePictureManyPaths)
+{
+    FakeDisplayItemClient client("test client", LayoutRect(0, 0, 200, 100));
+    GraphicsContext context(getPaintController());
+
+    drawPath(context, client, backgroundDrawingType, 50);
+    getPaintController().commitNewDisplayItems(LayoutSize());
+    EXPECT_FALSE(getPaintController().paintArtifact().isSuitableForGpuRasterization());
+}
+
+TEST_F(PaintControllerTest, IsNotSuitableForGpuRasterizationMultiplePicturesSinglePathEach)
+{
+    FakeDisplayItemClient client("test client", LayoutRect(0, 0, 200, 100));
+    GraphicsContext context(getPaintController());
+
+    for (int i = 0; i < 50; ++i) {
+        getPaintController().beginScope();
+        drawPath(context, client, backgroundDrawingType, 50);
+        getPaintController().endScope();
+    }
+
+    getPaintController().commitNewDisplayItems(LayoutSize());
+    EXPECT_FALSE(getPaintController().paintArtifact().isSuitableForGpuRasterization());
+}
+
+TEST_F(PaintControllerTest, IsNotSuitableForGpuRasterizationSinglePictureManyPathsTwoPaints)
+{
+    FakeDisplayItemClient client("test client", LayoutRect(0, 0, 200, 100));
+
+    {
+        GraphicsContext context(getPaintController());
+        drawPath(context, client, backgroundDrawingType, 50);
+        getPaintController().commitNewDisplayItems(LayoutSize());
+        EXPECT_FALSE(getPaintController().paintArtifact().isSuitableForGpuRasterization());
+    }
+
+    getPaintController().invalidate(client);
+
+    {
+        GraphicsContext context(getPaintController());
+        drawPath(context, client, backgroundDrawingType, 50);
+        getPaintController().commitNewDisplayItems(LayoutSize());
+        EXPECT_FALSE(getPaintController().paintArtifact().isSuitableForGpuRasterization());
+    }
+}
+
+TEST_F(PaintControllerTest, IsNotSuitableForGpuRasterizationSinglePictureManyPathsCached)
+{
+    FakeDisplayItemClient client("test client", LayoutRect(0, 0, 200, 100));
+
+    {
+        GraphicsContext context(getPaintController());
+        drawPath(context, client, backgroundDrawingType, 50);
+        getPaintController().commitNewDisplayItems(LayoutSize());
+        EXPECT_FALSE(getPaintController().paintArtifact().isSuitableForGpuRasterization());
+    }
+
+    {
+        GraphicsContext context(getPaintController());
+        drawPath(context, client, backgroundDrawingType, 50);
+        getPaintController().commitNewDisplayItems(LayoutSize());
+        EXPECT_FALSE(getPaintController().paintArtifact().isSuitableForGpuRasterization());
+    }
+}
+
+TEST_F(PaintControllerTest, IsNotSuitableForGpuRasterizationSinglePictureManyPathsCachedSubsequence)
+{
+    FakeDisplayItemClient client("test client", LayoutRect(0, 0, 200, 100));
+    FakeDisplayItemClient container("container", LayoutRect(0, 0, 200, 100));
+
+    GraphicsContext context(getPaintController());
+    {
+        SubsequenceRecorder subsequenceRecorder(context, container);
+        drawPath(context, client, backgroundDrawingType, 50);
+    }
+    getPaintController().commitNewDisplayItems(LayoutSize());
+    EXPECT_FALSE(getPaintController().paintArtifact().isSuitableForGpuRasterization());
+
+    EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container));
+    getPaintController().commitNewDisplayItems(LayoutSize());
+    EXPECT_FALSE(getPaintController().paintArtifact().isSuitableForGpuRasterization());
+}
+
 } // namespace blink

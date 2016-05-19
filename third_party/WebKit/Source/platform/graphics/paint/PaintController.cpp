@@ -7,6 +7,7 @@
 #include "platform/TraceEvent.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
+#include "third_party/skia/include/core/SkPictureAnalyzer.h"
 
 #ifndef NDEBUG
 #include "platform/graphics/LoggingCanvas.h"
@@ -246,7 +247,7 @@ DisplayItemList::iterator PaintController::findOutOfOrderCachedItemForward(const
     return currentEnd;
 }
 
-void PaintController::copyCachedSubsequence(const DisplayItemList& currentList, DisplayItemList::iterator& currentIt, DisplayItemList& updatedList)
+void PaintController::copyCachedSubsequence(const DisplayItemList& currentList, DisplayItemList::iterator& currentIt, DisplayItemList& updatedList, SkPictureGpuAnalyzer& gpuAnalyzer)
 {
     ASSERT(currentIt->getType() == DisplayItem::Subsequence);
     ASSERT(!currentIt->scope());
@@ -255,7 +256,7 @@ void PaintController::copyCachedSubsequence(const DisplayItemList& currentList, 
         // We should always find the EndSubsequence display item.
         ASSERT(currentIt != m_currentPaintArtifact.getDisplayItemList().end());
         ASSERT(currentIt->hasValidClient());
-        updatedList.appendByMoving(*currentIt, currentList.visualRect(currentIt - m_currentPaintArtifact.getDisplayItemList().begin()));
+        updatedList.appendByMoving(*currentIt, currentList.visualRect(currentIt - m_currentPaintArtifact.getDisplayItemList().begin()), gpuAnalyzer);
         ++currentIt;
     } while (!endSubsequenceId.matches(updatedList.last()));
 }
@@ -310,15 +311,20 @@ void PaintController::commitNewDisplayItemsInternal(const LayoutSize& offsetFrom
     m_invalidations.clear();
 #endif
 
+    SkPictureGpuAnalyzer gpuAnalyzer;
+
     if (m_currentPaintArtifact.isEmpty()) {
 #if ENABLE(ASSERT)
         for (const auto& item : m_newDisplayItemList)
             ASSERT(!item.isCached());
 #endif
-        for (const auto& item : m_newDisplayItemList)
-            m_newDisplayItemList.appendVisualRect(visualRectForDisplayItem(item, offsetFromLayoutObject));
 
-        m_currentPaintArtifact = PaintArtifact(std::move(m_newDisplayItemList), m_newPaintChunks.releasePaintChunks());
+        for (const auto& item : m_newDisplayItemList) {
+            m_newDisplayItemList.appendVisualRect(visualRectForDisplayItem(item, offsetFromLayoutObject));
+            if (item.isDrawing())
+                gpuAnalyzer.analyze(static_cast<const DrawingDisplayItem&>(item).picture());
+        }
+        m_currentPaintArtifact = PaintArtifact(std::move(m_newDisplayItemList), m_newPaintChunks.releasePaintChunks(), gpuAnalyzer.suitableForGpuRasterization());
         m_newDisplayItemList = DisplayItemList(kInitialDisplayItemListCapacityBytes);
         m_validlyCachedClientsDirty = true;
         return;
@@ -370,11 +376,12 @@ void PaintController::commitNewDisplayItemsInternal(const LayoutSize& offsetFrom
             }
 #endif
             if (newDisplayItem.isCachedDrawing()) {
-                updatedList.appendByMoving(*currentIt, m_currentPaintArtifact.getDisplayItemList().visualRect(currentIt - m_currentPaintArtifact.getDisplayItemList().begin()));
+                updatedList.appendByMoving(*currentIt, m_currentPaintArtifact.getDisplayItemList().visualRect(currentIt - m_currentPaintArtifact.getDisplayItemList().begin()),
+                    gpuAnalyzer);
                 ++currentIt;
             } else {
                 ASSERT(newDisplayItem.getType() == DisplayItem::CachedSubsequence);
-                copyCachedSubsequence(m_currentPaintArtifact.getDisplayItemList(), currentIt, updatedList);
+                copyCachedSubsequence(m_currentPaintArtifact.getDisplayItemList(), currentIt, updatedList, gpuAnalyzer);
                 ASSERT(updatedList.last().getType() == DisplayItem::EndSubsequence);
             }
         } else {
@@ -383,7 +390,7 @@ void PaintController::commitNewDisplayItemsInternal(const LayoutSize& offsetFrom
                 || !clientCacheIsValid(newDisplayItem.client())
                 || (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() && paintOffsetWasInvalidated(newDisplayItem.client())));
 
-            updatedList.appendByMoving(*newIt, visualRectForDisplayItem(*newIt, offsetFromLayoutObject));
+            updatedList.appendByMoving(*newIt, visualRectForDisplayItem(*newIt, offsetFromLayoutObject), gpuAnalyzer);
 
             if (isSynchronized)
                 ++currentIt;
@@ -400,7 +407,7 @@ void PaintController::commitNewDisplayItemsInternal(const LayoutSize& offsetFrom
 
     // TODO(jbroman): When subsequence caching applies to SPv2, we'll need to
     // merge the paint chunks as well.
-    m_currentPaintArtifact = PaintArtifact(std::move(updatedList), m_newPaintChunks.releasePaintChunks());
+    m_currentPaintArtifact = PaintArtifact(std::move(updatedList), m_newPaintChunks.releasePaintChunks(), gpuAnalyzer.suitableForGpuRasterization());
 
     m_newDisplayItemList = DisplayItemList(kInitialDisplayItemListCapacityBytes);
     m_validlyCachedClientsDirty = true;

@@ -66,7 +66,7 @@ class CC_EXPORT DisplayItemList
 
   // This is a fast path for use only if canvas_ is set and
   // retain_individual_display_items_ is false. This method also updates
-  // is_suitable_for_gpu_rasterization_ and approximate_op_count_.
+  // approximate_op_count_.
   void RasterIntoCanvas(const DisplayItem& display_item);
 
   // Because processing happens in this function, all the set up for
@@ -79,10 +79,6 @@ class CC_EXPORT DisplayItemList
     auto* item = &items_.AllocateAndConstruct<DisplayItemType>(
         std::forward<Args>(args)...);
     approximate_op_count_ += item->ApproximateOpCount();
-    // TODO(crbug.com/513016): None of the items might individually trigger a
-    // veto even though they collectively have enough "bad" operations that a
-    // corresponding flattened Picture would get vetoed.
-    is_suitable_for_gpu_rasterization_ &= item->IsSuitableForGpuRasterization();
     ProcessAppendedItem(item);
     return *item;
   }
@@ -91,6 +87,9 @@ class CC_EXPORT DisplayItemList
   // applicable, create an internally cached SkPicture.
   void Finalize();
 
+  void SetIsSuitableForGpuRasterization(bool is_suitable) {
+    is_suitable_for_gpu_rasterization_ = is_suitable;
+  }
   bool IsSuitableForGpuRasterization() const;
   int ApproximateOpCount() const;
   size_t ApproximateMemoryUsage() const;

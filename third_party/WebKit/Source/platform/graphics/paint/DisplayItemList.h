@@ -11,6 +11,8 @@
 #include "wtf/Alignment.h"
 #include "wtf/Assertions.h"
 
+class SkPictureGpuAnalyzer;
+
 namespace blink {
 
 struct PaintChunk;
@@ -41,7 +43,7 @@ public:
         return *this;
     }
 
-    DisplayItem& appendByMoving(DisplayItem&, const IntRect& visualRect);
+    DisplayItem& appendByMoving(DisplayItem&, const IntRect& visualRect, SkPictureGpuAnalyzer&);
 
     IntRect visualRect(unsigned index) const
     {

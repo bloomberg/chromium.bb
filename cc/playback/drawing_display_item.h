@@ -41,7 +41,6 @@ class CC_EXPORT DrawingDisplayItem : public DisplayItem {
   size_t ExternalMemoryUsage() const override;
 
   int ApproximateOpCount() const;
-  bool IsSuitableForGpuRasterization() const;
 
   void CloneTo(DrawingDisplayItem* item) const;
 

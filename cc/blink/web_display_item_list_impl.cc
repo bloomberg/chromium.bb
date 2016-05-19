@@ -229,6 +229,10 @@ void WebDisplayItemListImpl::appendEndScrollItem(
   appendEndTransformItem(visual_rect);
 }
 
+void WebDisplayItemListImpl::setIsSuitableForGpuRasterization(bool isSuitable) {
+  display_item_list_->SetIsSuitableForGpuRasterization(isSuitable);
+}
+
 WebDisplayItemListImpl::~WebDisplayItemListImpl() {
 }
 

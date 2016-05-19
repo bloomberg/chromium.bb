@@ -59,6 +59,8 @@ public:
     using ScrollContainerId = const void*;
     virtual void appendScrollItem(const WebRect& visualRect, const WebSize& scrollOffset, ScrollContainerId) { }
     virtual void appendEndScrollItem(const WebRect& visualRect) { }
+
+    virtual void setIsSuitableForGpuRasterization(bool isSuitable) { }
 };
 
 } // namespace blink

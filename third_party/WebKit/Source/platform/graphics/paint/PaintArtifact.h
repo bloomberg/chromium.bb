@@ -35,7 +35,7 @@ class PLATFORM_EXPORT PaintArtifact final {
     WTF_MAKE_NONCOPYABLE(PaintArtifact);
 public:
     PaintArtifact();
-    PaintArtifact(DisplayItemList, Vector<PaintChunk>);
+    PaintArtifact(DisplayItemList, Vector<PaintChunk>, bool isSuitableForGpuRasterization);
     PaintArtifact(PaintArtifact&&);
     ~PaintArtifact();
 
@@ -48,6 +48,8 @@ public:
 
     Vector<PaintChunk>& paintChunks() { return m_paintChunks; }
     const Vector<PaintChunk>& paintChunks() const { return m_paintChunks; }
+
+    bool isSuitableForGpuRasterization() const { return m_isSuitableForGpuRasterization; }
 
     // Resets to an empty paint artifact.
     void reset();
@@ -65,6 +67,7 @@ public:
 private:
     DisplayItemList m_displayItemList;
     Vector<PaintChunk> m_paintChunks;
+    bool m_isSuitableForGpuRasterization;
 
     friend class PaintControllerTest;
 };

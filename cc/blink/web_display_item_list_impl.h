@@ -75,6 +75,8 @@ class WebDisplayItemListImpl : public blink::WebDisplayItemList {
                         ScrollContainerId) override;
   void appendEndScrollItem(const blink::WebRect& visual_rect) override;
 
+  void setIsSuitableForGpuRasterization(bool isSuitable) override;
+
  private:
   scoped_refptr<cc::DisplayItemList> display_item_list_;
 
