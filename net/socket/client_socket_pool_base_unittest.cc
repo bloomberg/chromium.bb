@@ -664,15 +664,11 @@ class ClientSocketPoolBaseTest : public testing::Test {
     connect_backup_jobs_enabled_ =
         internal::ClientSocketPoolBaseHelper::connect_backup_jobs_enabled();
     internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(true);
-    cleanup_timer_enabled_ =
-        internal::ClientSocketPoolBaseHelper::cleanup_timer_enabled();
   }
 
   ~ClientSocketPoolBaseTest() override {
     internal::ClientSocketPoolBaseHelper::set_connect_backup_jobs_enabled(
         connect_backup_jobs_enabled_);
-    internal::ClientSocketPoolBaseHelper::set_cleanup_timer_enabled(
-        cleanup_timer_enabled_);
   }
 
   void CreatePool(int max_sockets, int max_sockets_per_group) {
@@ -731,7 +727,6 @@ class ClientSocketPoolBaseTest : public testing::Test {
 
   TestNetLog net_log_;
   bool connect_backup_jobs_enabled_;
-  bool cleanup_timer_enabled_;
   MockClientSocketFactory client_socket_factory_;
   TestConnectJobFactory* connect_job_factory_;
   scoped_refptr<TestSocketParams> params_;
@@ -2062,11 +2057,8 @@ TEST_F(ClientSocketPoolBaseTest, AdditionalErrorStateAsynchronous) {
   EXPECT_FALSE(handle.ssl_error_response_info().headers.get() == NULL);
 }
 
-// Make sure we can reuse sockets when the cleanup timer is disabled.
-TEST_F(ClientSocketPoolBaseTest, DisableCleanupTimerReuse) {
-  // Disable cleanup timer.
-  internal::ClientSocketPoolBaseHelper::set_cleanup_timer_enabled(false);
-
+// Make sure we can reuse sockets.
+TEST_F(ClientSocketPoolBaseTest, CleanupTimedOutIdleSocketsReuse) {
   CreatePoolWithIdleTimeouts(
       kDefaultMaxSockets, kDefaultMaxSocketsPerGroup,
       base::TimeDelta(),  // Time out unused sockets immediately.
@@ -2113,15 +2105,14 @@ TEST_F(ClientSocketPoolBaseTest, DisableCleanupTimerReuse) {
 
 #if defined(OS_IOS)
 // TODO(droger): Enable this test (crbug.com/512595).
-#define MAYBE_DisableCleanupTimerNoReuse DISABLED_DisableCleanupTimerNoReuse
+#define MAYBE_CleanupTimedOutIdleSocketsNoReuse \
+  DISABLED_CleanupTimedOutIdleSocketsNoReuse
 #else
-#define MAYBE_DisableCleanupTimerNoReuse DisableCleanupTimerNoReuse
+#define MAYBE_CleanupTimedOutIdleSocketsNoReuse \
+  CleanupTimedOutIdleSocketsNoReuse
 #endif
-// Make sure we cleanup old unused sockets when the cleanup timer is disabled.
-TEST_F(ClientSocketPoolBaseTest, MAYBE_DisableCleanupTimerNoReuse) {
-  // Disable cleanup timer.
-  internal::ClientSocketPoolBaseHelper::set_cleanup_timer_enabled(false);
-
+// Make sure we cleanup old unused sockets.
+TEST_F(ClientSocketPoolBaseTest, MAYBE_CleanupTimedOutIdleSocketsNoReuse) {
   CreatePoolWithIdleTimeouts(
       kDefaultMaxSockets, kDefaultMaxSocketsPerGroup,
       base::TimeDelta(),  // Time out unused sockets immediately
@@ -2187,69 +2178,6 @@ TEST_F(ClientSocketPoolBaseTest, MAYBE_DisableCleanupTimerNoReuse) {
   TestNetLogEntry::List entries;
   log.GetEntries(&entries);
   EXPECT_FALSE(LogContainsEntryWithType(
-      entries, 1, NetLog::TYPE_SOCKET_POOL_REUSED_AN_EXISTING_SOCKET));
-}
-
-TEST_F(ClientSocketPoolBaseTest, CleanupTimedOutIdleSockets) {
-  CreatePoolWithIdleTimeouts(
-      kDefaultMaxSockets, kDefaultMaxSocketsPerGroup,
-      base::TimeDelta(),  // Time out unused sockets immediately.
-      base::TimeDelta::FromDays(1));  // Don't time out used sockets.
-
-  connect_job_factory_->set_job_type(TestConnectJob::kMockPendingJob);
-
-  // Startup two mock pending connect jobs, which will sit in the MessageLoop.
-
-  ClientSocketHandle handle;
-  TestCompletionCallback callback;
-  int rv = handle.Init("a", params_, LOWEST,
-                       ClientSocketPool::RespectLimits::ENABLED,
-                       callback.callback(), pool_.get(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(LOAD_STATE_CONNECTING, pool_->GetLoadState("a", &handle));
-
-  ClientSocketHandle handle2;
-  TestCompletionCallback callback2;
-  rv = handle2.Init("a", params_, LOWEST,
-                    ClientSocketPool::RespectLimits::ENABLED,
-                    callback2.callback(), pool_.get(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-  EXPECT_EQ(LOAD_STATE_CONNECTING, pool_->GetLoadState("a", &handle2));
-
-  // Cancel one of the requests.  Wait for the other, which will get the first
-  // job.  Release the socket.  Run the loop again to make sure the second
-  // socket is sitting idle and the first one is released (since ReleaseSocket()
-  // just posts a DoReleaseSocket() task).
-
-  handle.Reset();
-  EXPECT_EQ(OK, callback2.WaitForResult());
-  // Use the socket.
-  EXPECT_EQ(1, handle2.socket()->Write(NULL, 1, CompletionCallback()));
-  handle2.Reset();
-
-  // We post all of our delayed tasks with a 2ms delay. I.e. they don't
-  // actually become pending until 2ms after they have been created. In order
-  // to flush all tasks, we need to wait so that we know there are no
-  // soon-to-be-pending tasks waiting.
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
-  base::MessageLoop::current()->RunUntilIdle();
-
-  ASSERT_EQ(2, pool_->IdleSocketCount());
-
-  // Invoke the idle socket cleanup check.  Only one socket should be left, the
-  // used socket.  Request it to make sure that it's used.
-
-  pool_->CleanupTimedOutIdleSockets();
-  BoundTestNetLog log;
-  rv = handle.Init("a", params_, LOWEST,
-                   ClientSocketPool::RespectLimits::ENABLED,
-                   callback.callback(), pool_.get(), log.bound());
-  EXPECT_EQ(OK, rv);
-  EXPECT_TRUE(handle.is_reused());
-
-  TestNetLogEntry::List entries;
-  log.GetEntries(&entries);
-  EXPECT_TRUE(LogContainsEntryWithType(
       entries, 1, NetLog::TYPE_SOCKET_POOL_REUSED_AN_EXISTING_SOCKET));
 }
 
