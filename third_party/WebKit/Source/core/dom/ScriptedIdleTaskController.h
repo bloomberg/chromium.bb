@@ -43,6 +43,14 @@ public:
 private:
     explicit ScriptedIdleTaskController(ExecutionContext*);
 
+    int nextCallbackId();
+
+    bool isValidCallbackId(int id)
+    {
+        using Traits = HashTraits<CallbackId>;
+        return !Traits::isDeletedValue(id) && !WTF::isHashTraitsEmptyValue<Traits, CallbackId>(id);
+    }
+
     void runCallback(CallbackId, double deadlineSeconds, IdleDeadline::CallbackType);
 
     WebScheduler* m_scheduler; // Not owned.

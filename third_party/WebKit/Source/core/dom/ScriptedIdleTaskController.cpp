@@ -87,9 +87,22 @@ DEFINE_TRACE(ScriptedIdleTaskController)
     ActiveDOMObject::trace(visitor);
 }
 
+int ScriptedIdleTaskController::nextCallbackId()
+{
+    while (true) {
+        ++m_nextCallbackId;
+
+        if (!isValidCallbackId(m_nextCallbackId))
+            m_nextCallbackId = 1;
+
+        if (!m_callbacks.contains(m_nextCallbackId))
+            return m_nextCallbackId;
+    }
+}
+
 ScriptedIdleTaskController::CallbackId ScriptedIdleTaskController::registerCallback(IdleRequestCallback* callback, const IdleRequestOptions& options)
 {
-    CallbackId id = ++m_nextCallbackId;
+    CallbackId id = nextCallbackId();
     m_callbacks.set(id, callback);
     long long timeoutMillis = options.timeout();
 
@@ -104,6 +117,9 @@ ScriptedIdleTaskController::CallbackId ScriptedIdleTaskController::registerCallb
 void ScriptedIdleTaskController::cancelCallback(CallbackId id)
 {
     TRACE_EVENT_INSTANT1("devtools.timeline", "CancelIdleCallback", TRACE_EVENT_SCOPE_THREAD, "data", InspectorIdleCallbackCancelEvent::data(getExecutionContext(), id));
+    if (!isValidCallbackId(id))
+        return;
+
     m_callbacks.remove(id);
 }
 

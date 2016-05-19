@@ -22,6 +22,11 @@ test(function() {
   assert_equals(typeof window.cancelIdleCallback(1), "undefined");
 }, "window.cancelIdleCallback() returns undefined", {assert: "The cancelIdleCallback method MUST return void"});
 
+test(function() {
+  assert_equals(typeof window.cancelIdleCallback(-1), "undefined");
+  assert_equals(typeof window.cancelIdleCallback(0), "undefined");
+}, "window.cancelIdleCallback() returns undefined for unmapped IDs", {assert: "The cancelIdleCallback method MUST return void"});
+
 async_test(function() {
   // Check whether requestIdleCallback schedules a callback which gets executed
   // and the deadline argument is passed correctly.
