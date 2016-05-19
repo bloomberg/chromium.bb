@@ -1086,6 +1086,8 @@ config("no_chromium_code") {
 config("rtti") {
   if (is_win) {
     cflags_cc = [ "/GR" ]
+  } else {
+    cflags_cc = [ "-frtti" ]
   }
 }
 config("no_rtti") {
