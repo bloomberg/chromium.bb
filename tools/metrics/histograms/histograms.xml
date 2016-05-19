@@ -4862,6 +4862,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Chrome.MessageLoopProblem" enum="MessageLoopProblems">
+  <owner>gab@chromium.org</owner>
+  <summary>
+    Track set of Windows errors inside the meessage loop/pump system, where
+    system calls fail, and we try to gracefully recover.  These errors should
+    really never happen, so we should be sure to look closer if they do.
+  </summary>
+</histogram>
+
 <histogram name="Chrome.SearchSelectExempt" enum="SearchEngine">
   <obsolete>
     Deprecated 8/2013. No longer tracked.
@@ -79506,6 +79515,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Critical pressure to moderate pressure"/>
   <int value="4" label="Critical pressure to no pressure"/>
   <int value="5" label="Moderate pressure to no pressure"/>
+</enum>
+
+<enum name="MessageLoopProblems" type="int">
+  <int value="0" label="Message Post"/>
+  <int value="1" label="Completion Post"/>
+  <int value="2" label="Set Timer"/>
 </enum>
 
 <enum name="MetadataReadResult" type="int">
