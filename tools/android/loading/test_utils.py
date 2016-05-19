@@ -231,21 +231,25 @@ class TraceCreator(object):
   def __init__(self):
     self._request_index = 1
 
-  def RequestAt(self, timestamp_msec, duration=1):
+  def RequestAt(self, timestamp_msec, duration=1, frame_id=None):
     timestamp_sec = float(timestamp_msec) / 1000
     rq = request_track.Request.FromJsonDict({
         'url': 'http://bla-%s-.com' % timestamp_msec,
+        'document_url': 'http://bla.com',
         'request_id': '0.%s' % self._request_index,
-        'frame_id': '123.%s' % timestamp_msec,
+        'frame_id': frame_id or '123.%s' % timestamp_msec,
         'initiator': {'type': 'other'},
         'timestamp': timestamp_sec,
         'timing': {'request_time': timestamp_sec,
-                   'loading_finished': duration}
-        })
+                   'loading_finished': duration},
+        'status': 200})
     self._request_index += 1
     return rq
 
   def CreateTrace(self, requests, events, main_frame_id):
-    trace = LoadingTraceFromEvents(requests, trace_events=events)
+    page_event = {'method': 'Page.frameStartedLoading',
+                  'frame_id': main_frame_id}
+    trace = LoadingTraceFromEvents(
+        requests, trace_events=events, page_events=[page_event])
     trace.tracing_track.SetMainFrameID(main_frame_id)
     return trace

@@ -23,10 +23,10 @@ class LoadingReportTestCase(unittest.TestCase):
 
   def setUp(self):
     self.trace_creator = test_utils.TraceCreator()
-    self.requests = [self.trace_creator.RequestAt(self._FIRST_REQUEST_TIME),
-                     self.trace_creator.RequestAt(
-                         self._NAVIGATION_START_TIME + self._REQUEST_OFFSET,
-                         self._DURATION)]
+    self.requests = [
+        self.trace_creator.RequestAt(self._FIRST_REQUEST_TIME, frame_id=1),
+        self.trace_creator.RequestAt(
+            self._NAVIGATION_START_TIME + self._REQUEST_OFFSET, self._DURATION)]
     self.requests[0].timing.receive_headers_end = 0
     self.requests[1].timing.receive_headers_end = 0
     self.requests[0].encoded_data_length = 128
@@ -77,8 +77,11 @@ class LoadingReportTestCase(unittest.TestCase):
                            loading_report['plt_ms'])
     self.assertAlmostEqual(0.34, loading_report['contentful_byte_frac'], 2)
     self.assertAlmostEqual(0.1844, loading_report['significant_byte_frac'], 2)
-    self.assertEqual(None, loading_report['contentful_inversion'])
-    self.assertEqual(None, loading_report['significant_inversion'])
+    self.assertIsNone(loading_report['contentful_inversion'])
+    self.assertIsNone(loading_report['significant_inversion'])
+    self.assertIsNone(loading_report['ad_requests'])
+    self.assertIsNone(loading_report['ad_or_tracking_requests'])
+    self.assertIsNone(loading_report['ad_or_tracking_initiated_requests'])
 
   def testInversion(self):
     self.requests[0].timing.loading_finished = 4 * (
@@ -105,6 +108,17 @@ class LoadingReportTestCase(unittest.TestCase):
     loading_report = report.LoadingReport(trace).GenerateReport()
     self.assertAlmostEqual(self._REQUEST_OFFSET + self._DURATION,
                            loading_report['plt_ms'])
+
+  def testAdTrackingRules(self):
+    ad_domain = 'i-ve-got-the-best-ads.com'
+    self.requests[0].url = 'http://www.' + ad_domain
+    trace = self._MakeTrace()
+    loading_report = report.LoadingReport(
+        trace, [ad_domain], []).GenerateReport()
+    self.assertEqual(1, loading_report['ad_requests'])
+    self.assertEqual(1, loading_report['ad_or_tracking_requests'])
+    self.assertEqual(1, loading_report['ad_or_tracking_initiated_requests'])
+    self.assertIsNone(loading_report['tracking_requests'])
 
 
 if __name__ == '__main__':
