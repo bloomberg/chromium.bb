@@ -697,7 +697,13 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest,
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerPushMessagingTest, OnPush) {
+// Flaky on ChromiumOS bots. http://crbug.com/612673
+#if defined(OS_CHROMEOS)
+#define MAYBE_OnPush DISABLED_OnPush
+#else
+#define MAYBE_OnPush OnPush
+#endif
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPushMessagingTest, MAYBE_OnPush) {
   const Extension* extension = LoadExtensionWithFlags(
       test_data_dir_.AppendASCII("service_worker/push_messaging"), kFlagNone);
   ASSERT_TRUE(extension);
