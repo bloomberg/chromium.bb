@@ -96,6 +96,7 @@
     <!-- NTP Colors. Used on the bookmarks and recent tabs pages. -->
     <color name="ntp_bg">#fff</color>
     <color name="ntp_bg_incognito">#222</color>
+    <color name="ntp_search_box_hint">#969696</color>
     <color name="ntp_list_item_text">#333</color>
     <color name="ntp_list_header_text">#333</color>
     <color name="ntp_list_header_subtext">#969696</color>

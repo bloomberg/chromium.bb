@@ -231,7 +231,7 @@
     <dimen name="location_bar_margin_bottom">5dp</dimen>
 
     <dimen name="toolbar_edge_padding">8dp</dimen>
-    <dimen name="location_bar_url_text_size">17sp</dimen>
+    <dimen name="location_bar_url_text_size">16sp</dimen>
     <dimen name="location_bar_incognito_badge_padding">7dp</dimen>
     <dimen name="omnibox_suggestion_height">60dp</dimen>
     <dimen name="omnibox_suggestion_answer_height">72dp</dimen>
