@@ -58,10 +58,6 @@
 #include "net/ssl/token_binding.h"
 #include "net/udp/udp_client_socket.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 using std::min;
 using NetworkHandle = net::NetworkChangeNotifier::NetworkHandle;
 
@@ -102,15 +98,6 @@ void HistogramCreateSessionFailure(enum CreateSessionFailure error) {
 void HistogramMigrationStatus(enum QuicConnectionMigrationStatus status) {
   UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.ConnectionMigration", status,
                             MIGRATION_STATUS_MAX);
-}
-
-bool IsEcdsaSupported() {
-#if defined(OS_WIN)
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
-    return false;
-#endif
-
-  return true;
 }
 
 QuicConfig InitializeQuicConfig(const QuicTagVector& connection_options,
@@ -676,8 +663,6 @@ QuicStreamFactory::QuicStreamFactory(
                         has_aes_hardware_support);
   if (has_aes_hardware_support || prefer_aes_)
     crypto_config_.PreferAesGcm();
-  if (!IsEcdsaSupported())
-    crypto_config_.DisableEcdsa();
   // When disk cache is used to store the server configs, HttpCache code calls
   // |set_quic_server_info_factory| if |quic_server_info_factory_| wasn't
   // created.
