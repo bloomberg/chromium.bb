@@ -78,6 +78,7 @@ ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
     case __NR_getpriority:
     case __NR_ioctl:
     case __NR_mremap:
+    case __NR_msync:
     // File system access cannot be restricted with seccomp-bpf on Android,
     // since the JVM classloader and other Framework features require file
     // access. It may be possible to restrict the filesystem with SELinux.
