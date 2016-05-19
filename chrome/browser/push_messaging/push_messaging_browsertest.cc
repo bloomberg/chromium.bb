@@ -840,6 +840,77 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
+                       PushEventAllowSilentPushCommandLineFlag) {
+  std::string script_result;
+
+  TryToSubscribeSuccessfully("1-0" /* expected_push_subscription_id */);
+
+  PushMessagingAppIdentifier app_identifier =
+      GetAppIdentifierForServiceWorkerRegistration(0LL);
+  EXPECT_EQ(app_identifier.app_id(), gcm_service()->last_registered_app_id());
+  EXPECT_EQ(kEncodedApplicationServerKey,
+            gcm_service()->last_registered_sender_ids()[0]);
+
+  ASSERT_TRUE(RunScript("isControlled()", &script_result));
+  ASSERT_EQ("false - is not controlled", script_result);
+
+  LoadTestPage();  // Reload to become controlled.
+
+  ASSERT_TRUE(RunScript("isControlled()", &script_result));
+  ASSERT_EQ("true - is controlled", script_result);
+
+  notification_manager()->CancelAll();
+  ASSERT_EQ(0u, notification_manager()->GetNotificationCount());
+
+  // We'll need to specify the web_contents in which to eval script, since we're
+  // going to run script in a background tab.
+  content::WebContents* web_contents =
+      GetBrowser()->tab_strip_model()->GetActiveWebContents();
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      GetBrowser(), GURL("about:blank"), NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
+
+  SetSiteEngagementScore(web_contents->GetURL(), 0.0);
+
+  // If the Service Worker push event handler does not show a notification, we
+  // should show a forced one providing there is no foreground tab and the
+  // origin ran out of budget.
+  gcm::IncomingMessage message;
+  message.sender_id = GetTestApplicationServerKey();
+  message.raw_data = "testdata";
+  message.decrypted = true;
+
+  SendMessageAndWaitUntilHandled(app_identifier, message);
+  ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
+  EXPECT_EQ("testdata", script_result);
+
+  // Because the --allow-silent-push command line flag has not been passed,
+  // this should have shown a default notification.
+  ASSERT_EQ(1u, notification_manager()->GetNotificationCount());
+  {
+    const Notification& forced_notification =
+        notification_manager()->GetNotificationAt(0);
+
+    EXPECT_EQ(kPushMessagingForcedNotificationTag, forced_notification.tag());
+    EXPECT_TRUE(forced_notification.silent());
+  }
+
+  notification_manager()->CancelAll();
+
+  // Send the message again, but this time with the -allow-silent-push command
+  // line flag set. The default notification should *not* be shown.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAllowSilentPush);
+
+  SendMessageAndWaitUntilHandled(app_identifier, message);
+  ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
+  EXPECT_EQ("testdata", script_result);
+
+  ASSERT_EQ(0u, notification_manager()->GetNotificationCount());
+}
+
+IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
                        PushEventEnforcesUserVisibleNotificationAfterQueue) {
   std::string script_result;
 
