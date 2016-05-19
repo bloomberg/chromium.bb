@@ -8,7 +8,6 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -18,18 +17,16 @@
 #include "chrome/browser/ui/views/exclusive_access_bubble_views_context.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
+#include "chrome/browser/ui/views/subtle_notification_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/notification_service.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/link.h"
-#include "ui/views/controls/link_listener.h"
-#include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
@@ -37,233 +34,6 @@
 #if defined(OS_WIN)
 #include "ui/base/l10n/l10n_util_win.h"
 #endif
-
-// ExclusiveAccessView ---------------------------------------------------------
-
-namespace {
-
-// Space between the site info label and the link.
-const int kMiddlePaddingPx = 30;
-
-const int kOuterPaddingHorizPx = 40;
-const int kOuterPaddingVertPx = 8;
-
-// Partially-transparent background color.
-const SkColor kBackgroundColor = SkColorSetARGB(0xcc, 0x28, 0x2c, 0x32);
-
-// Class containing the exit instruction text. Contains fancy styling on the
-// keyboard key (not just a simple label).
-class InstructionView : public views::View {
- public:
-  // Creates an InstructionView with specific text. |text| may contain a single
-  // segment delimited by a pair of pipes ('|'); this segment will be displayed
-  // as a keyboard key. e.g., "Press |Esc| to exit" will have "Esc" rendered as
-  // a key.
-  InstructionView(const base::string16& text,
-                  const gfx::FontList& font_list,
-                  SkColor foreground_color,
-                  SkColor background_color);
-
-  void SetText(const base::string16& text);
-
- private:
-  views::Label* before_key_;
-  views::Label* key_name_label_;
-  views::View* key_name_;
-  views::Label* after_key_;
-
-  DISALLOW_COPY_AND_ASSIGN(InstructionView);
-};
-
-InstructionView::InstructionView(const base::string16& text,
-                                 const gfx::FontList& font_list,
-                                 SkColor foreground_color,
-                                 SkColor background_color) {
-  // Spacing around the escape key name.
-  const int kKeyNameMarginHorizPx = 7;
-  const int kKeyNameBorderPx = 1;
-  const int kKeyNameCornerRadius = 2;
-  const int kKeyNamePaddingPx = 5;
-
-  // The |between_child_spacing| is the horizontal margin of the key name.
-  views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                                  0, 0, kKeyNameMarginHorizPx);
-  SetLayoutManager(layout);
-
-  before_key_ = new views::Label(base::string16(), font_list);
-  before_key_->SetEnabledColor(foreground_color);
-  before_key_->SetBackgroundColor(background_color);
-  AddChildView(before_key_);
-
-  key_name_label_ = new views::Label(base::string16(), font_list);
-  key_name_label_->SetEnabledColor(foreground_color);
-  key_name_label_->SetBackgroundColor(background_color);
-
-  key_name_ = new views::View;
-  views::BoxLayout* key_name_layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, kKeyNamePaddingPx, 0, 0);
-  key_name_layout->set_minimum_cross_axis_size(
-      key_name_label_->GetPreferredSize().height() + kKeyNamePaddingPx * 2);
-  key_name_->SetLayoutManager(key_name_layout);
-  key_name_->AddChildView(key_name_label_);
-  // The key name has a border around it.
-  std::unique_ptr<views::Border> border(views::Border::CreateRoundedRectBorder(
-      kKeyNameBorderPx, kKeyNameCornerRadius, foreground_color));
-  key_name_->SetBorder(std::move(border));
-  AddChildView(key_name_);
-
-  after_key_ = new views::Label(base::string16(), font_list);
-  after_key_->SetEnabledColor(foreground_color);
-  after_key_->SetBackgroundColor(background_color);
-  AddChildView(after_key_);
-
-  SetText(text);
-}
-
-void InstructionView::SetText(const base::string16& text) {
-  // Parse |text|, looking for pipe-delimited segment.
-  std::vector<base::string16> segments =
-      base::SplitString(text, base::ASCIIToUTF16("|"), base::TRIM_WHITESPACE,
-                        base::SPLIT_WANT_ALL);
-  // Expect 1 or 3 pieces (either no pipe-delimited segments, or one).
-  DCHECK(segments.size() <= 1 || segments.size() == 3);
-
-  before_key_->SetText(segments.size() ? segments[0] : base::string16());
-
-  if (segments.size() < 3) {
-    key_name_->SetVisible(false);
-    after_key_->SetVisible(false);
-    return;
-  }
-
-  before_key_->SetText(segments[0]);
-  key_name_label_->SetText(segments[1]);
-  key_name_->SetVisible(true);
-  after_key_->SetVisible(true);
-  after_key_->SetText(segments[2]);
-}
-
-}  // namespace
-
-class ExclusiveAccessBubbleViews::ExclusiveAccessView
-    : public views::View,
-      public views::LinkListener {
- public:
-  ExclusiveAccessView(ExclusiveAccessBubbleViews* bubble,
-                      const base::string16& accelerator,
-                      ExclusiveAccessBubbleType bubble_type);
-  ~ExclusiveAccessView() override;
-
-  // views::LinkListener
-  void LinkClicked(views::Link* source, int event_flags) override;
-
-  void UpdateContent(ExclusiveAccessBubbleType bubble_type);
-
- private:
-  ExclusiveAccessBubbleViews* bubble_;
-
-  // Clickable hint text for exiting fullscreen mode. (Non-simplified mode
-  // only.)
-  views::Link* link_;
-  // Instruction for exiting fullscreen / mouse lock. Only present if there is
-  // no link (always present in simplified mode).
-  InstructionView* exit_instruction_;
-  const base::string16 browser_fullscreen_exit_accelerator_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExclusiveAccessView);
-};
-
-ExclusiveAccessBubbleViews::ExclusiveAccessView::ExclusiveAccessView(
-    ExclusiveAccessBubbleViews* bubble,
-    const base::string16& accelerator,
-    ExclusiveAccessBubbleType bubble_type)
-    : bubble_(bubble),
-      link_(nullptr),
-      exit_instruction_(nullptr),
-      browser_fullscreen_exit_accelerator_(accelerator) {
-  const SkColor kForegroundColor = SK_ColorWHITE;
-
-  std::unique_ptr<views::BubbleBorder> bubble_border(new views::BubbleBorder(
-      views::BubbleBorder::NONE, views::BubbleBorder::NO_ASSETS,
-      kBackgroundColor));
-  set_background(new views::BubbleBackground(bubble_border.get()));
-  SetBorder(std::move(bubble_border));
-
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const gfx::FontList& font_list =
-      rb.GetFontList(ui::ResourceBundle::MediumFont);
-
-  exit_instruction_ = new InstructionView(base::string16(), font_list,
-                                          kForegroundColor, kBackgroundColor);
-
-  link_ = new views::Link();
-  link_->SetFocusBehavior(FocusBehavior::NEVER);
-#if defined(OS_CHROMEOS)
-  // On CrOS, the link text doesn't change, since it doesn't show the shortcut.
-  link_->SetText(l10n_util::GetStringUTF16(IDS_EXIT_FULLSCREEN_MODE));
-#endif
-  link_->set_listener(this);
-  link_->SetFontList(font_list);
-  link_->SetPressedColor(kForegroundColor);
-  link_->SetEnabledColor(kForegroundColor);
-  link_->SetBackgroundColor(kBackgroundColor);
-  link_->SetVisible(false);
-
-  int outer_padding_horiz = kOuterPaddingHorizPx;
-  int outer_padding_vert = kOuterPaddingVertPx;
-  AddChildView(exit_instruction_);
-  AddChildView(link_);
-
-  views::BoxLayout* layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, outer_padding_horiz,
-                           outer_padding_vert, kMiddlePaddingPx);
-  SetLayoutManager(layout);
-
-  UpdateContent(bubble_type);
-}
-
-ExclusiveAccessBubbleViews::ExclusiveAccessView::~ExclusiveAccessView() {
-}
-
-void ExclusiveAccessBubbleViews::ExclusiveAccessView::LinkClicked(
-    views::Link* link,
-    int event_flags) {
-  bubble_->ExitExclusiveAccess();
-}
-
-void ExclusiveAccessBubbleViews::ExclusiveAccessView::UpdateContent(
-    ExclusiveAccessBubbleType bubble_type) {
-  DCHECK_NE(EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE, bubble_type);
-
-  bool link_visible =
-      !ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled();
-  base::string16 accelerator;
-  if (bubble_type ==
-          EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION ||
-      bubble_type ==
-          EXCLUSIVE_ACCESS_BUBBLE_TYPE_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION) {
-    accelerator = browser_fullscreen_exit_accelerator_;
-  } else {
-    accelerator = l10n_util::GetStringUTF16(IDS_APP_ESC_KEY);
-    if (bubble_type !=
-        EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION) {
-      link_visible = false;
-    }
-  }
-#if !defined(OS_CHROMEOS)
-  if (link_visible) {
-    link_->SetText(l10n_util::GetStringUTF16(IDS_EXIT_FULLSCREEN_MODE) +
-                   base::UTF8ToUTF16(" ") +
-                   l10n_util::GetStringFUTF16(
-                       IDS_EXIT_FULLSCREEN_MODE_ACCELERATOR, accelerator));
-  }
-#endif
-  link_->SetVisible(link_visible);
-  exit_instruction_->SetText(bubble_->GetInstructionText(accelerator));
-  exit_instruction_->SetVisible(!link_visible);
-}
-
-// ExclusiveAccessBubbleViews --------------------------------------------------
 
 ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
     ExclusiveAccessBubbleViewsContext* context,
@@ -287,32 +57,20 @@ ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
       bubble_view_context_->GetAcceleratorProvider()
           ->GetAcceleratorForCommandId(IDC_FULLSCREEN, &accelerator);
   DCHECK(got_accelerator);
-  view_ = new ExclusiveAccessView(this, accelerator.GetShortcutText(),
-                                  bubble_type_);
+  view_ = new SubtleNotificationView(this);
+  browser_fullscreen_exit_accelerator_ = accelerator.GetShortcutText();
+  UpdateViewContent(bubble_type_);
 
-  // TODO(yzshen): Change to use the new views bubble, BubbleDelegateView.
-  // TODO(pkotwicz): When this becomes a views bubble, make sure that this
-  // bubble is ignored by ImmersiveModeControllerAsh::BubbleManager.
-  // Initialize the popup.
-  popup_ = new views::Widget;
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.parent = bubble_view_context_->GetBubbleParentView();
   // The simplified UI just shows a notice; clicks should go through to the
   // underlying window.
-  params.accept_events =
+  bool accept_events =
       !ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled();
-  popup_->Init(params);
-  popup_->SetContentsView(view_);
+  // Initialize the popup.
+  popup_ = SubtleNotificationView::CreatePopupWidget(
+      bubble_view_context_->GetBubbleParentView(), view_, accept_events);
   gfx::Size size = GetPopupRect(true).size();
   // Bounds are in screen coordinates.
   popup_->SetBounds(GetPopupRect(false));
-  // We set layout manager to nullptr to prevent the widget from sizing its
-  // contents to the same size as itself. This prevents the widget contents from
-  // shrinking while we animate the height of the popup to give the impression
-  // that it is sliding off the top of the screen.
-  popup_->GetRootView()->SetLayoutManager(nullptr);
   view_->SetBounds(0, 0, size.width(), size.height());
   if (!ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled())
     popup_->ShowInactive();  // This does not activate the popup.
@@ -352,7 +110,7 @@ void ExclusiveAccessBubbleViews::UpdateContent(
 
   url_ = url;
   bubble_type_ = bubble_type;
-  view_->UpdateContent(bubble_type_);
+  UpdateViewContent(bubble_type_);
 
   gfx::Size size = GetPopupRect(true).size();
   view_->SetSize(size);
@@ -394,6 +152,40 @@ void ExclusiveAccessBubbleViews::UpdateBounds() {
     popup_->SetBounds(popup_rect);
     view_->SetY(popup_rect.height() - view_->height());
   }
+}
+
+void ExclusiveAccessBubbleViews::UpdateViewContent(
+    ExclusiveAccessBubbleType bubble_type) {
+  DCHECK_NE(EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE, bubble_type);
+
+  bool link_visible =
+      !ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled();
+  base::string16 accelerator;
+  if (bubble_type ==
+          EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION ||
+      bubble_type ==
+          EXCLUSIVE_ACCESS_BUBBLE_TYPE_EXTENSION_FULLSCREEN_EXIT_INSTRUCTION) {
+    accelerator = browser_fullscreen_exit_accelerator_;
+  } else {
+    accelerator = l10n_util::GetStringUTF16(IDS_APP_ESC_KEY);
+    if (bubble_type !=
+        EXCLUSIVE_ACCESS_BUBBLE_TYPE_FULLSCREEN_EXIT_INSTRUCTION) {
+      link_visible = false;
+    }
+  }
+  base::string16 link_text;
+  base::string16 exit_instruction_text;
+  if (link_visible) {
+    link_text = l10n_util::GetStringUTF16(IDS_EXIT_FULLSCREEN_MODE);
+#if !defined(OS_CHROMEOS)
+    link_text += base::UTF8ToUTF16(" ") +
+                 l10n_util::GetStringFUTF16(
+                     IDS_EXIT_FULLSCREEN_MODE_ACCELERATOR, accelerator);
+#endif
+  } else {
+    exit_instruction_text = GetInstructionText(accelerator);
+  }
+  view_->UpdateContent(exit_instruction_text, link_text);
 }
 
 views::View* ExclusiveAccessBubbleViews::GetBrowserRootView() const {
@@ -485,4 +277,9 @@ void ExclusiveAccessBubbleViews::OnWidgetVisibilityChanged(
     views::Widget* widget,
     bool visible) {
   UpdateMouseWatcher();
+}
+
+void ExclusiveAccessBubbleViews::LinkClicked(views::Link* link,
+                                             int event_flags) {
+  ExitExclusiveAccess();
 }

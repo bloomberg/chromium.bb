@@ -2135,6 +2135,8 @@
       'browser/ui/views/login_view.h',
       'browser/ui/views/new_task_manager_view.cc',
       'browser/ui/views/new_task_manager_view.h',
+      'browser/ui/views/subtle_notification_view.cc',
+      'browser/ui/views/subtle_notification_view.h',
       'browser/ui/views/sync/bubble_sync_promo_view.cc',
       'browser/ui/views/sync/bubble_sync_promo_view.h',
       'browser/ui/views/website_settings/chosen_object_view.cc',
