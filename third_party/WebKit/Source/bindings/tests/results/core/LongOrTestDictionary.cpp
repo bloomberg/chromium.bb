@@ -74,7 +74,7 @@ void V8LongOrTestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v
     if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
         return;
 
-    if (isUndefinedOrNull(v8Value) || v8Value->IsObject()) {
+    if (isUndefinedOrNull(v8Value) || (v8Value->IsObject() && !v8Value->IsArray())) {
         TestDictionary cppValue;
         V8TestDictionary::toImpl(isolate, v8Value, cppValue, exceptionState);
         if (exceptionState.hadException())

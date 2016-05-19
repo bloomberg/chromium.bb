@@ -93,7 +93,10 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
     {# 12. Dictionaries #}
     {# FIXME: This should also check "object but not Date or RegExp". Add checks
        when we implement conversions for Date and RegExp. #}
-    if (isUndefinedOrNull(v8Value) || v8Value->IsObject()) {
+    {# TODO(bashi): The spec doesn't say we should check !IsArray() but otherwise
+       we can't distinguish a sequence<T> and a dictionary.
+       https://github.com/heycam/webidl/issues/123 #}
+    if (isUndefinedOrNull(v8Value) || (v8Value->IsObject() && !v8Value->IsArray())) {
         {{v8_value_to_local_cpp_value(dictionary_type) | indent(8)}}
         impl.set{{dictionary_type.type_name}}(cppValue);
         return;
