@@ -332,7 +332,7 @@ component("gpu") {
       "//build/config/compiler:no_size_t_to_int_warning",
       "//third_party/khronos:khronos_headers",
     ]
-    deps += [ "//ui/gl" ]
+    deps += [ "//third_party/angle:includes" ]
     libs += [
       "d3d9.lib",
       "d3d11.lib",
@@ -399,6 +399,14 @@ if (is_win || is_android || is_chromeos) {
         "rendering_helper.h",
         "video_decode_accelerator_unittest.cc",
       ]
+      deps += [
+        "//ui/display",
+        "//ui/display/types",
+        "//ui/platform_window",
+      ]
+      if (use_ozone) {
+        deps += [ "//ui/ozone" ]
+      }
     }
 
     if (is_win) {
@@ -410,12 +418,6 @@ if (is_win || is_android || is_chromeos) {
       ]
     }
 
-    if (is_chromeos && use_ozone) {
-      deps += [
-        "//ui/display",  # Used by rendering_helper.cc
-        "//ui/ozone",  # Used by rendering_helper.cc
-      ]
-    }
     if (use_x11) {
       configs += [ "//build/config/linux:x11" ]
       deps += [ "//ui/gfx/x" ]
