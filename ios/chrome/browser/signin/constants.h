@@ -7,10 +7,6 @@
 
 #include <Foundation/Foundation.h>
 
-namespace ios {
-class ChromeBrowserState;
-}
-
 // Error domain for authentication error.
 extern NSString* kAuthenticationErrorDomain;
 
@@ -77,12 +73,8 @@ typedef enum {
 namespace signin_ui {
 
 // Completion callback for a sign-in operation.
-// |signedIn| is true if the operation was successful and the user is now
-// signed in.
-// |signedInBrowserState| is the browser state that was signed in.
-typedef void (^CompletionCallback)(
-    BOOL signedIn,
-    ios::ChromeBrowserState* signedInBrowserState);
+// |success| is YES if the operation was successful.
+typedef void (^CompletionCallback)(BOOL success);
 
 }  // namespace signin_ui
 
