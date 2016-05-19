@@ -1411,7 +1411,7 @@ def GetChromiteTrackingBranch():
       raise
 
   # Not a manifest checkout.
-  logging.warning(
+  logging.notice(
       "Chromite checkout at %s isn't controlled by repo, nor is it on a "
       'branch (or if it is, the tracking configuration is missing or broken).  '
       'Falling back to assuming the chromite checkout is derived from '
