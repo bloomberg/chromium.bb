@@ -48,7 +48,6 @@ enum Status {
   C_DISASSEMBLY_FAILED = 25,      //
   C_ASSEMBLY_FAILED = 26,         //
   C_ADJUSTMENT_FAILED = 27,       //
-  C_TRIM_FAILED = 28,             // TrimLabels failed
 };
 
 // What type of executable is something

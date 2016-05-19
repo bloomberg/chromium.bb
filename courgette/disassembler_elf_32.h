@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -51,9 +52,9 @@ class DisassemblerElf32 : public Disassembler {
     // Computes the relative jump's offset from the op in p.
     virtual CheckBool ComputeRelativeTarget(const uint8_t* op_pointer) = 0;
 
-    // Emits the courgette instruction corresponding to the RVA type.
+    // Emits the assembly instruction corresponding to |label|.
     virtual CheckBool EmitInstruction(AssemblyProgram* program,
-                                      RVA target_rva) = 0;
+                                      Label* label) = 0;
 
     // Returns the size of the instruction containing the RVA.
     virtual uint16_t op_size() const = 0;
@@ -76,6 +77,22 @@ class DisassemblerElf32 : public Disassembler {
     FileOffset file_offset_ = kNoFileOffset;
   };
 
+  // Visitor/adaptor to translate RVA to target RVA. This is the ELF
+  // counterpart to RvaVisitor_Rel32 that uses TypedRVA.
+  class Elf32RvaVisitor_Rel32 :
+  public VectorRvaVisitor<std::unique_ptr<TypedRVA>> {
+   public:
+    Elf32RvaVisitor_Rel32(
+        const std::vector<std::unique_ptr<TypedRVA>>& rva_locations);
+    ~Elf32RvaVisitor_Rel32() override { }
+
+    // VectorRvaVisitor<TypedRVA*> interfaces.
+    RVA Get() const override;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Elf32RvaVisitor_Rel32);
+  };
+
  public:
   DisassemblerElf32(const void* start, size_t length);
 
@@ -90,6 +107,12 @@ class DisassemblerElf32 : public Disassembler {
   bool Disassemble(AssemblyProgram* target) override;
 
   virtual e_machine_values ElfEM() const = 0;
+
+  CheckBool IsValidTargetRVA(RVA rva) const WARN_UNUSED_RESULT;
+
+  // Converts an ELF relocation instruction into an RVA.
+  virtual CheckBool RelToRVA(Elf32_Rel rel, RVA* result)
+    const WARN_UNUSED_RESULT = 0;
 
   // Public for unittests only
   std::vector<RVA>& Abs32Locations() { return abs32_locations_; }
@@ -132,12 +155,6 @@ class DisassemblerElf32 : public Disassembler {
 
   // Misc address space helpers
 
-  CheckBool IsValidTargetRVA(RVA rva) const WARN_UNUSED_RESULT;
-
-  // Converts an ELF relocation instruction into an RVA.
-  virtual CheckBool RelToRVA(Elf32_Rel rel, RVA* result)
-    const WARN_UNUSED_RESULT = 0;
-
   CheckBool RVAsToFileOffsets(const std::vector<RVA>& rvas,
                               std::vector<FileOffset>* file_offsets);
 
@@ -152,6 +169,11 @@ class DisassemblerElf32 : public Disassembler {
 
   virtual CheckBool ParseRel32RelocsFromSection(const Elf32_Shdr* section)
       WARN_UNUSED_RESULT = 0;
+
+  // Disassembler interfaces.
+  RvaVisitor* CreateAbs32TargetRvaVisitor() override;
+  RvaVisitor* CreateRel32TargetRvaVisitor() override;
+  void RemoveUnusedRel32Locations(AssemblyProgram* program) override;
 
   CheckBool ParseFile(AssemblyProgram* target) WARN_UNUSED_RESULT;
 

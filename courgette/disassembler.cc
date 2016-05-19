@@ -4,9 +4,34 @@
 
 #include "courgette/disassembler.h"
 
+#include <memory>
+
 #include "base/logging.h"
+#include "courgette/assembly_program.h"
 
 namespace courgette {
+
+Disassembler::RvaVisitor_Abs32::RvaVisitor_Abs32(
+    const std::vector<RVA>& rva_locations,
+    const AddressTranslator& translator)
+    : VectorRvaVisitor<RVA>(rva_locations), translator_(translator) {
+}
+
+RVA Disassembler::RvaVisitor_Abs32::Get() const {
+  // For Abs32 targets, get target RVA from architecture-dependent functions.
+  return translator_.PointerToTargetRVA(translator_.RVAToPointer(*it_));
+}
+
+Disassembler::RvaVisitor_Rel32::RvaVisitor_Rel32(
+    const std::vector<RVA>& rva_locations,
+    const AddressTranslator& translator)
+    : VectorRvaVisitor<RVA>(rva_locations), translator_(translator) {
+}
+
+RVA Disassembler::RvaVisitor_Rel32::Get() const {
+  // For Rel32 targets, only handle 32-bit offsets.
+  return *it_ + 4 + Read32LittleEndian(translator_.RVAToPointer(*it_));
+}
 
 Disassembler::Disassembler(const void* start, size_t length)
     : failure_reason_("uninitialized") {
@@ -38,6 +63,12 @@ bool Disassembler::Good() {
 bool Disassembler::Bad(const char* reason) {
   failure_reason_ = reason;
   return false;
+}
+
+void Disassembler::PrecomputeLabels(AssemblyProgram* program) {
+  std::unique_ptr<RvaVisitor> abs32_visitor(CreateAbs32TargetRvaVisitor());
+  std::unique_ptr<RvaVisitor> rel32_visitor(CreateRel32TargetRvaVisitor());
+  program->PrecomputeLabels(abs32_visitor.get(), rel32_visitor.get());
 }
 
 void Disassembler::ReduceLength(size_t reduced_length) {

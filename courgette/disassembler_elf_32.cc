@@ -5,6 +5,7 @@
 #include "courgette/disassembler_elf_32.h"
 
 #include <algorithm>
+#include <iterator>
 #include <utility>
 
 #include "base/logging.h"
@@ -32,6 +33,15 @@ std::vector<Elf32_Half> GetSectionHeaderFileOffsetOrder(
 }
 
 }  // namespace
+
+DisassemblerElf32::Elf32RvaVisitor_Rel32::Elf32RvaVisitor_Rel32(
+    const std::vector<std::unique_ptr<TypedRVA>>& rva_locations)
+    : VectorRvaVisitor<std::unique_ptr<TypedRVA>>(rva_locations) {
+}
+
+RVA DisassemblerElf32::Elf32RvaVisitor_Rel32::Get() const {
+  return (*it_)->rva() + (*it_)->relative_target();
+}
 
 DisassemblerElf32::DisassemblerElf32(const void* start, size_t length)
     : Disassembler(start, length),
@@ -164,12 +174,16 @@ bool DisassemblerElf32::Disassemble(AssemblyProgram* target) {
   if (!ParseAbs32Relocs())
     return false;
 
-  if (!ParseRel32RelocsFromSections())
+  if (!ParseRel32RelocsFromSections())  // Does not sort rel32 locations.
     return false;
+
+  PrecomputeLabels(target);
+  RemoveUnusedRel32Locations(target);
 
   if (!ParseFile(target))
     return false;
 
+  // Finally sort rel32 locations.
   std::sort(rel32_locations_.begin(),
             rel32_locations_.end(),
             TypedRVA::IsLessThanByRVA);
@@ -178,6 +192,28 @@ bool DisassemblerElf32::Disassemble(AssemblyProgram* target) {
 
   target->DefaultAssignIndexes();
   return true;
+}
+
+CheckBool DisassemblerElf32::IsValidTargetRVA(RVA rva) const {
+  if (rva == kUnassignedRVA)
+    return false;
+
+  // |rva| is valid if it's contained in any program segment.
+  for (Elf32_Half segment_id = 0; segment_id < ProgramSegmentHeaderCount();
+       ++segment_id) {
+    const Elf32_Phdr* segment_header = ProgramSegmentHeader(segment_id);
+
+    if (segment_header->p_type != PT_LOAD)
+      continue;
+
+    Elf32_Addr begin = segment_header->p_vaddr;
+    Elf32_Addr end = segment_header->p_vaddr + segment_header->p_memsz;
+
+    if (rva >= begin && rva < end)
+      return true;
+  }
+
+  return false;
 }
 
 bool DisassemblerElf32::UpdateLength() {
@@ -238,32 +274,11 @@ CheckBool DisassemblerElf32::SectionName(const Elf32_Shdr& shdr,
   return true;
 }
 
-CheckBool DisassemblerElf32::IsValidTargetRVA(RVA rva) const {
-  if (rva == kUnassignedRVA)
-    return false;
-
-  // It's valid if it's contained in any program segment
-  for (Elf32_Half segment_id = 0; segment_id < ProgramSegmentHeaderCount();
-       ++segment_id) {
-    const Elf32_Phdr* segment_header = ProgramSegmentHeader(segment_id);
-
-    if (segment_header->p_type != PT_LOAD)
-      continue;
-
-    Elf32_Addr begin = segment_header->p_vaddr;
-    Elf32_Addr end = segment_header->p_vaddr + segment_header->p_memsz;
-
-    if (rva >= begin && rva < end)
-      return true;
-  }
-
-  return false;
-}
-
 CheckBool DisassemblerElf32::RVAsToFileOffsets(
     const std::vector<RVA>& rvas,
     std::vector<FileOffset>* file_offsets) {
   file_offsets->clear();
+  file_offsets->reserve(rvas.size());
   for (RVA rva : rvas) {
     FileOffset file_offset = RVAToFileOffset(rva);
     if (file_offset == kNoFileOffset)
@@ -282,6 +297,32 @@ CheckBool DisassemblerElf32::RVAsToFileOffsets(
     typed_rva->set_file_offset(file_offset);
   }
   return true;
+}
+
+RvaVisitor* DisassemblerElf32::CreateAbs32TargetRvaVisitor() {
+  return new RvaVisitor_Abs32(abs32_locations_, *this);
+}
+
+RvaVisitor* DisassemblerElf32::CreateRel32TargetRvaVisitor() {
+  return new Elf32RvaVisitor_Rel32(rel32_locations_);
+}
+
+void DisassemblerElf32::RemoveUnusedRel32Locations(AssemblyProgram* program) {
+  auto tail_it = rel32_locations_.begin();
+  for (auto head_it = rel32_locations_.begin();
+       head_it != rel32_locations_.end(); ++head_it) {
+    RVA target_rva = (*head_it)->rva() + (*head_it)->relative_target();
+    if (program->FindRel32Label(target_rva) == nullptr) {
+      // If address does not match a Label (because it was removed), deallocate.
+      (*head_it).reset(nullptr);
+    } else {
+      // Else squeeze nullptr to end to compactify.
+      if (tail_it != head_it)
+        (*tail_it).swap(*head_it);
+      ++tail_it;
+    }
+  }
+  rel32_locations_.resize(std::distance(rel32_locations_.begin(), tail_it));
 }
 
 CheckBool DisassemblerElf32::ParseFile(AssemblyProgram* program) {
@@ -425,7 +466,9 @@ CheckBool DisassemblerElf32::ParseProgbitsSection(
       RVA target_rva = PointerToTargetRVA(FileOffsetToPointer(file_offset));
       DCHECK_NE(kNoRVA, target_rva);
 
-      if (!program->EmitAbs32(program->FindOrMakeAbs32Label(target_rva)))
+      Label* label = program->FindAbs32Label(target_rva);
+      CHECK(label);
+      if (!program->EmitAbs32(label))
         return false;
       file_offset += sizeof(RVA);
       ++(*current_abs_offset);
@@ -435,12 +478,17 @@ CheckBool DisassemblerElf32::ParseProgbitsSection(
     if (*current_rel != end_rel &&
         file_offset == (**current_rel)->file_offset()) {
       uint32_t relative_target = (**current_rel)->relative_target();
+      CHECK_EQ(RVA(origin + (file_offset - origin_offset)),
+               (**current_rel)->rva());
       // This cast is for 64 bit systems, and is only safe because we
       // are working on 32 bit executables.
       RVA target_rva = (RVA)(origin + (file_offset - origin_offset) +
                              relative_target);
 
-      if (!(**current_rel)->EmitInstruction(program, target_rva))
+      Label* label = program->FindRel32Label(target_rva);
+      CHECK(label);
+
+      if (!(**current_rel)->EmitInstruction(program, label))
         return false;
       file_offset += (**current_rel)->op_size();
       ++(*current_rel);

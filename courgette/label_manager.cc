@@ -96,17 +96,6 @@ LabelManager::LabelManager() {}
 LabelManager::~LabelManager() {}
 
 // static
-int LabelManager::GetIndexBound(const RVAToLabel& labels_map) {
-  int max_index = -1;
-  for (const auto& rva_and_label : labels_map) {
-    const Label& label = *rva_and_label.second;
-    if (label.index_ != Label::kNoIndex)
-      max_index = std::max(max_index, label.index_);
-  }
-  return max_index + 1;
-}
-
-// static
 int LabelManager::GetLabelIndexBound(const LabelVector& labels) {
   int max_index = -1;
   for (const Label& label : labels) {

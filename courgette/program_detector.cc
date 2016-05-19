@@ -78,9 +78,6 @@ Status ParseDetectedExecutable(const void* buffer,
   if (!disassembler->Disassemble(program.get()))
     return C_DISASSEMBLY_FAILED;
 
-  if (!program->TrimLabels())
-    return C_TRIM_FAILED;
-
   *output = std::move(program);
   return C_OK;
 }

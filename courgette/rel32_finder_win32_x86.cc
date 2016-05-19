@@ -87,12 +87,13 @@ void Rel32FinderWin32X86_Basic::Find(const uint8_t* start_pointer,
       if (abs32_pos != abs32_locations.end()) {
         if (*abs32_pos < rel32_rva + 4) {
           // Beginning of abs32 reloc is before end of rel32 reloc so they
-          // overlap.  Skip four bytes past the abs32 reloc.
+          // overlap. Skip four bytes past the abs32 reloc.
           p += (*abs32_pos + 4) - current_rva;
           continue;
         }
       }
 
+      // + 4 since offset is relative to start of next instruction.
       RVA target_rva = rel32_rva + 4 + Read32LittleEndian(rel32);
       // Valid, rel32 target must be within image, and within this section.
       // Subsumes |target_rva| != |kUnassignedRVA|.

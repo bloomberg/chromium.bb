@@ -22,8 +22,8 @@ CheckBool DisassemblerElf32X86::TypedRVAX86::ComputeRelativeTarget(
 
 CheckBool DisassemblerElf32X86::TypedRVAX86::EmitInstruction(
     AssemblyProgram* program,
-    RVA target_rva) {
-  return program->EmitRel32(program->FindOrMakeRel32Label(target_rva));
+    Label* label) {
+  return program->EmitRel32(label);
 }
 
 uint16_t DisassemblerElf32X86::TypedRVAX86::op_size() const {

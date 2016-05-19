@@ -252,6 +252,9 @@ bool DisassemblerWin32X86::Disassemble(AssemblyProgram* target) {
 
   ParseRel32RelocsFromSections();
 
+  PrecomputeLabels(target);
+  RemoveUnusedRel32Locations(target);
+
   if (!ParseFile(target))
     return false;
 
@@ -360,6 +363,26 @@ std::string DisassemblerWin32X86::SectionName(const Section* section) {
   memcpy(name, section->name, 8);
   name[8] = '\0';  // Ensure termination.
   return name;
+}
+
+RvaVisitor* DisassemblerWin32X86::CreateAbs32TargetRvaVisitor() {
+  return new RvaVisitor_Abs32(abs32_locations_, *this);
+}
+
+RvaVisitor* DisassemblerWin32X86::CreateRel32TargetRvaVisitor() {
+  return new RvaVisitor_Rel32(rel32_locations_, *this);
+}
+
+void DisassemblerWin32X86::RemoveUnusedRel32Locations(
+    AssemblyProgram* program) {
+  auto cond = [this, program](RVA rva) -> bool {
+    // + 4 since offset is relative to start of next instruction.
+    RVA target_rva = rva + 4 + Read32LittleEndian(RVAToPointer(rva));
+    return program->FindRel32Label(target_rva) == nullptr;
+  };
+  rel32_locations_.erase(
+      std::remove_if(rel32_locations_.begin(), rel32_locations_.end(), cond),
+      rel32_locations_.end());
 }
 
 CheckBool DisassemblerWin32X86::ParseFile(AssemblyProgram* program) {
@@ -543,7 +566,9 @@ CheckBool DisassemblerWin32X86::ParseFileRegion(const Section* section,
       DCHECK_NE(kNoRVA, target_rva);
       // TODO(sra): target could be Label+offset.  It is not clear how to guess
       // which it might be.  We assume offset==0.
-      if (!program->EmitAbs32(program->FindOrMakeAbs32Label(target_rva)))
+      Label* label = program->FindAbs32Label(target_rva);
+      DCHECK(label);
+      if (!program->EmitAbs32(label))
         return false;
       p += 4;
       continue;
@@ -553,8 +578,11 @@ CheckBool DisassemblerWin32X86::ParseFileRegion(const Section* section,
       ++rel32_pos;
 
     if (rel32_pos != rel32_locations_.end() && *rel32_pos == current_rva) {
+      // + 4 since offset is relative to start of next instruction.
       RVA target_rva = current_rva + 4 + Read32LittleEndian(p);
-      if (!program->EmitRel32(program->FindOrMakeRel32Label(target_rva)))
+      Label* label = program->FindRel32Label(target_rva);
+      DCHECK(label);
+      if (!program->EmitRel32(label))
         return false;
       p += 4;
       continue;

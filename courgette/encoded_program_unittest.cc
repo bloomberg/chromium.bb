@@ -21,55 +21,32 @@ namespace courgette {
 namespace {
 
 // Helper class to instantiate RVAToLabel while managing allocation.
-class RVAToLabelMaker {
+class TestLabelManager : public LabelManager {
  public:
-  RVAToLabelMaker() {}
-  ~RVAToLabelMaker() {}
-
-  // Adds a Label for storage. Must be called before Make(), since |labels_map_|
-  // has pointers into |labels_|, and |labels_.push_back()| can invalidate them.
-  void Add(int index, RVA rva) {
-    DCHECK(label_map_.empty());
+  void RawAddLabel(int index, RVA rva) {
     labels_.push_back(Label(rva, index));  // Don't care about |count_|.
   }
-
-  // Initializes |label_map_| and returns a pointer to it.
-  RVAToLabel* Make() {
-    for (size_t i = 0; i < labels_.size(); ++i) {
-      DCHECK_EQ(0U, label_map_.count(labels_[i].rva_));
-      label_map_[labels_[i].rva_] = &labels_[i];
-    }
-    return &label_map_;
-  }
-
-  const std::vector<Label>& GetLabels() const { return labels_; }
-
- private:
-  std::vector<Label> labels_;  // Stores all Labels.
-  RVAToLabel label_map_;  // Has pointers to |labels_| elements.
 };
 
 // Creates a simple new program with given addresses. The orders of elements
 // in |abs32_specs| and |rel32_specs| are important.
 std::unique_ptr<EncodedProgram> CreateTestProgram(
-    RVAToLabelMaker* abs32_maker,
-    RVAToLabelMaker* rel32_maker) {
-  RVAToLabel* abs32_labels = abs32_maker->Make();
-  RVAToLabel* rel32_labels = rel32_maker->Make();
-
+    const TestLabelManager& abs32_label_manager,
+    const TestLabelManager& rel32_label_manager) {
   std::unique_ptr<EncodedProgram> program(new EncodedProgram());
 
   uint32_t base = 0x00900000;
   program->set_image_base(base);
 
-  EXPECT_TRUE(program->DefineLabels(*abs32_labels, *rel32_labels));
+  EXPECT_TRUE(program->ImportLabels(abs32_label_manager, rel32_label_manager));
 
   EXPECT_TRUE(program->AddOrigin(0));  // Start at base.
 
-  // Arbitrary: Add instructions in the order they're defined in |*_maker|.
-  for (const Label& label : abs32_maker->GetLabels())
+  // Add instructions. Since we're using TestLabelManager, Labels are sorted in
+  // the order they're added via Add().
+  for (const Label& label : abs32_label_manager.Labels())
     EXPECT_TRUE(program->AddAbs32(label.index_));
-  for (const Label& label : rel32_maker->GetLabels())
+  for (const Label& label : rel32_label_manager.Labels())
     EXPECT_TRUE(program->AddRel32(label.index_));
 
   return program;
@@ -91,14 +68,14 @@ bool CompareSink(const uint8_t expected[],
 // check that the bits produced are as expected.
 TEST(EncodedProgramTest, Test) {
   // ABS32 index 7 <-- base + 4.
-  RVAToLabelMaker abs32_label_maker;
-  abs32_label_maker.Add(7, 4);
+  TestLabelManager abs32_label_manager;
+  abs32_label_manager.RawAddLabel(7, 4);
   // REL32 index 5 <-- base + 0.
-  RVAToLabelMaker rel32_label_maker;
-  rel32_label_maker.Add(5, 0);
+  TestLabelManager rel32_label_manager;
+  rel32_label_manager.RawAddLabel(5, 0);
 
   std::unique_ptr<EncodedProgram> program(
-      CreateTestProgram(&abs32_label_maker, &rel32_label_maker));
+      CreateTestProgram(abs32_label_manager, rel32_label_manager));
 
   // Serialize and deserialize.
   SinkStreamSet sinks;
@@ -139,18 +116,18 @@ TEST(EncodedProgramTest, Test) {
 // contents of the address streams.
 TEST(EncodedProgramTest, TestWriteAddress) {
   // Absolute addresses by index: [_, _, _, 2, _, 23, _, 11].
-  RVAToLabelMaker abs32_label_maker;
-  abs32_label_maker.Add(7, 11);
-  abs32_label_maker.Add(3, 2);
-  abs32_label_maker.Add(5, 23);
+  TestLabelManager abs32_label_manager;
+  abs32_label_manager.RawAddLabel(7, 11);
+  abs32_label_manager.RawAddLabel(3, 2);
+  abs32_label_manager.RawAddLabel(5, 23);
   // Relative addresses by index: [16, 7, _, 32].
-  RVAToLabelMaker rel32_label_maker;
-  rel32_label_maker.Add(0, 16);
-  rel32_label_maker.Add(3, 32);
-  rel32_label_maker.Add(1, 7);
+  TestLabelManager rel32_label_manager;
+  rel32_label_manager.RawAddLabel(0, 16);
+  rel32_label_manager.RawAddLabel(3, 32);
+  rel32_label_manager.RawAddLabel(1, 7);
 
   std::unique_ptr<EncodedProgram> program(
-      CreateTestProgram(&abs32_label_maker, &rel32_label_maker));
+      CreateTestProgram(abs32_label_manager, rel32_label_manager));
 
   SinkStreamSet sinks;
   EXPECT_TRUE(program->WriteTo(&sinks));

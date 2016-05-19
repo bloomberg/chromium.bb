@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/macros.h"
 #include "courgette/courgette.h"
 #include "courgette/image_utils.h"
@@ -18,6 +20,38 @@ class AssemblyProgram;
 
 class Disassembler : public AddressTranslator {
  public:
+  // Visitor/adaptor to translate RVA to target RVA for abs32.
+  class RvaVisitor_Abs32 : public VectorRvaVisitor<RVA> {
+   public:
+    RvaVisitor_Abs32(const std::vector<RVA>& rva_locations,
+                     const AddressTranslator& translator);
+    ~RvaVisitor_Abs32() override { }
+
+    // VectorRvaVisitor<RVA> interfaces.
+    RVA Get() const override;
+
+   private:
+    const AddressTranslator& translator_;
+
+    DISALLOW_COPY_AND_ASSIGN(RvaVisitor_Abs32);
+  };
+
+  // Visitor/adaptor to translate RVA to target RVA for rel32.
+  class RvaVisitor_Rel32 : public VectorRvaVisitor<RVA> {
+   public:
+    RvaVisitor_Rel32(const std::vector<RVA>& rva_locations,
+                     const AddressTranslator& translator);
+    ~RvaVisitor_Rel32() override { }
+
+    // VectorRvaVisitor<RVA> interfaces.
+    RVA Get() const override;
+
+   private:
+    const AddressTranslator& translator_;
+
+    DISALLOW_COPY_AND_ASSIGN(RvaVisitor_Rel32);
+  };
+
   virtual ~Disassembler();
 
   // AddressTranslator interfaces.
@@ -28,6 +62,17 @@ class Disassembler : public AddressTranslator {
   RVA PointerToTargetRVA(const uint8_t* p) const = 0;
 
   virtual ExecutableType kind() const = 0;
+
+  // Returns a caller-owned new RvaVisitor to iterate through abs32 target RVAs.
+  virtual RvaVisitor* CreateAbs32TargetRvaVisitor() = 0;
+
+  // Returns a caller-owned new RvaVisitor to iterate through rel32 target RVAs.
+  virtual RvaVisitor* CreateRel32TargetRvaVisitor() = 0;
+
+  // Removes unused rel32 locations (architecture-specific). This is needed
+  // because we may remove rel32 Labels along the way. As a result the matching
+  // matching rel32 addresses become unused. Removing them saves space.
+  virtual void RemoveUnusedRel32Locations(AssemblyProgram* program) = 0;
 
   // Returns true if the buffer appears to be a valid executable of the expected
   // type, and false otherwise. This needs not be called before Disassemble().
@@ -56,6 +101,9 @@ class Disassembler : public AddressTranslator {
   bool IsArrayInBounds(size_t offset, size_t elements, size_t element_size) {
     return offset <= length() && elements <= (length() - offset) / element_size;
   }
+
+  // Computes and stores all Labels before scanning program bytes.
+  void PrecomputeLabels(AssemblyProgram* program);
 
   // Reduce the length of the image in memory. Does not actually free
   // (or realloc) any memory. Usually only called via ParseHeader().

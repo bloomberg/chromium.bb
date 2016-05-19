@@ -137,38 +137,15 @@ bool ReadVectorU8(V* items, SourceStream* buffer) {
 EncodedProgram::EncodedProgram() {}
 EncodedProgram::~EncodedProgram() {}
 
-CheckBool EncodedProgram::DefineLabels(const RVAToLabel& abs32_labels,
-                                       const RVAToLabel& rel32_labels) {
-  // which == 0 => abs32; which == 1 => rel32.
-  for (int which = 0; which < 2; ++which) {
-    const RVAToLabel& labels = which == 0 ? abs32_labels : rel32_labels;
-    RvaVector& rvas = which == 0 ? abs32_rva_ : rel32_rva_;
-
-    if (!rvas.resize(LabelManager::GetIndexBound(labels), kUnassignedRVA))
-      return false;
-
-    // For each Label, write its RVA to assigned index.
-    for (const auto& rva_and_label : labels) {
-      const Label& label = *rva_and_label.second;
-      DCHECK_EQ(rva_and_label.first, label.rva_);
-      DCHECK_NE(label.index_, Label::kNoIndex);
-      DCHECK_EQ(rvas[label.index_], kUnassignedRVA)
-          << "DefineLabels() double assigned " << label.index_;
-      rvas[label.index_] = label.rva_;
-    }
-
-    // Replace all unassigned slots with the value at the previous index so they
-    // delta-encode to zero. (There might be better values than zero. The way to
-    // get that is have the higher level assembly program assign the unassigned
-    // slots.)
-    RVA previous = 0;
-    for (RVA& rva : rvas) {
-      if (rva == kUnassignedRVA)
-        rva = previous;
-      else
-        previous = rva;
-    }
+CheckBool EncodedProgram::ImportLabels(
+    const LabelManager& abs32_label_manager,
+    const LabelManager& rel32_label_manager) {
+  if (!WriteRvasToList(abs32_label_manager, &abs32_rva_) ||
+      !WriteRvasToList(rel32_label_manager, &rel32_rva_)) {
+    return false;
   }
+  FillUnassignedRvaSlots(&abs32_rva_);
+  FillUnassignedRvaSlots(&rel32_rva_);
   return true;
 }
 
@@ -732,6 +709,43 @@ class RelocBlock {
   }
   RelocBlockPOD pod;
 };
+
+// static
+// Updates |rvas| so |rvas[label.index_] == label.rva_| for each |label| in
+// |label_manager|, assuming |label.index_| is properly assigned. Takes care of
+// |rvas| resizing. Unused slots in |rvas| are assigned |kUnassignedRVA|.
+// Returns true on success, and false otherwise.
+CheckBool EncodedProgram::WriteRvasToList(const LabelManager& label_manager,
+                                          RvaVector* rvas) {
+  rvas->clear();
+  int index_bound = LabelManager::GetLabelIndexBound(label_manager.Labels());
+  if (!rvas->resize(index_bound, kUnassignedRVA))
+    return false;
+
+  // For each Label, write its RVA to assigned index.
+  for (const Label& label : label_manager.Labels()) {
+    DCHECK_NE(label.index_, Label::kNoIndex);
+    DCHECK_EQ((*rvas)[label.index_], kUnassignedRVA)
+        << "ExportToList() double assigned " << label.index_;
+    (*rvas)[label.index_] = label.rva_;
+  }
+  return true;
+}
+
+// static
+// Replaces all unassigned slots in |rvas| with the value at the previous index
+// so they delta-encode to zero. (There might be better values than zero. The
+// way to get that is have the higher level assembly program assign the
+// unassigned slots.)
+void EncodedProgram::FillUnassignedRvaSlots(RvaVector* rvas) {
+  RVA previous = 0;
+  for (RVA& rva : *rvas) {
+    if (rva == kUnassignedRVA)
+      rva = previous;
+    else
+      previous = rva;
+  }
+}
 
 CheckBool EncodedProgram::GeneratePeRelocations(SinkStream* buffer,
                                                 uint8_t type) {

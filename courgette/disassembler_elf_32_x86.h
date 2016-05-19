@@ -28,7 +28,7 @@ class DisassemblerElf32X86 : public DisassemblerElf32 {
     // TypedRVA interfaces.
     CheckBool ComputeRelativeTarget(const uint8_t* op_pointer) override;
     CheckBool EmitInstruction(AssemblyProgram* program,
-                              RVA target_rva) override;
+                              Label* label) override;
     uint16_t op_size() const override;
   };
 

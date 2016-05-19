@@ -123,15 +123,22 @@ class AssemblyProgram {
   // Generates 8-byte absolute reference to address of 'label'.
   CheckBool EmitAbs64(Label* label) WARN_UNUSED_RESULT;
 
-  // Looks up a label or creates a new one.  Might return NULL.
-  Label* FindOrMakeAbs32Label(RVA rva);
+  // Traverses RVAs in |abs32_visitor| and |rel32_visitor| to precompute Labels.
+  void PrecomputeLabels(RvaVisitor* abs32_visitor, RvaVisitor* rel32_visitor);
 
-  // Looks up a label or creates a new one.  Might return NULL.
-  Label* FindOrMakeRel32Label(RVA rva);
+  // Removes underused Labels. Thresholds used (0 = no trimming) is
+  // architecture-dependent.
+  void TrimLabels();
 
-  void DefaultAssignIndexes();
   void UnassignIndexes();
+  void DefaultAssignIndexes();
   void AssignRemainingIndexes();
+
+  // Looks up abs32 label. Returns null if none found.
+  Label* FindAbs32Label(RVA rva);
+
+  // Looks up rel32 label. Returns null if none found.
+  Label* FindRel32Label(RVA rva);
 
   std::unique_ptr<EncodedProgram> Encode() const;
 
@@ -151,10 +158,6 @@ class AssemblyProgram {
   // Returns the label if the instruction contains a rel32 offset,
   // otherwise returns NULL.
   Label* InstructionRel32Label(const Instruction* instruction) const;
-
-  // Removes underused Labels. Thresholds used (may be 0, i.e., no trimming) is
-  // dependent on architecture. Returns true on success, and false otherwise.
-  CheckBool TrimLabels();
 
  private:
   using ScopedInstruction =
@@ -183,11 +186,10 @@ class AssemblyProgram {
 
   InstructionVector instructions_;  // All the instructions in program.
 
-  // These are lookup maps to find the label associated with a given address.
-  // We have separate label spaces for addresses referenced by rel32 labels and
-  // abs32 labels.  This is somewhat arbitrary.
-  RVAToLabel rel32_labels_;
-  RVAToLabel abs32_labels_;
+  // Storage and lookup of Labels associated with target addresses. We use
+  // separate abs32 and rel32 labels.
+  LabelManager abs32_label_manager_;
+  LabelManager rel32_label_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AssemblyProgram);
 };

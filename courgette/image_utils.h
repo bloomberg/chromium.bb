@@ -101,6 +101,8 @@ class Label {
 // to the matching RVA target on demand without extra storage.
 class RvaVisitor {
  public:
+  virtual ~RvaVisitor() { }
+
   // Returns the number of remaining RVAs to visit.
   virtual size_t Remaining() const = 0;
 
@@ -118,7 +120,8 @@ class VectorRvaVisitor : public RvaVisitor {
  public:
   // Assumes |v| does not change for the lifetime of this instance.
   explicit VectorRvaVisitor(const std::vector<T>& v)
-      : it_(v.begin()), end_(v.end()) {}
+      : it_(v.begin()), end_(v.end()) { }
+  ~VectorRvaVisitor() override { }
 
   // RvaVisitor interfaces.
   size_t Remaining() const override { return std::distance(it_, end_); }
@@ -134,7 +137,8 @@ class VectorRvaVisitor : public RvaVisitor {
 class TrivialRvaVisitor : public VectorRvaVisitor<RVA> {
  public:
   explicit TrivialRvaVisitor(const std::vector<RVA>& rvas)
-      : VectorRvaVisitor<RVA>(rvas) {}
+      : VectorRvaVisitor<RVA>(rvas) { }
+  ~TrivialRvaVisitor() override { }
 
   // VectorRvaVisitor<RVA> interfaces.
   RVA Get() const override { return *it_; }

@@ -54,6 +54,11 @@ class DisassemblerWin32X64 : public Disassembler {
   static std::string SectionName(const Section* section);
 
  protected:
+  // Disassembler interfaces.
+  RvaVisitor* CreateAbs32TargetRvaVisitor() override;
+  RvaVisitor* CreateRel32TargetRvaVisitor() override;
+  void RemoveUnusedRel32Locations(AssemblyProgram* program) override;
+
   CheckBool ParseFile(AssemblyProgram* target) WARN_UNUSED_RESULT;
   bool ParseAbs32Relocs();
   void ParseRel32RelocsFromSections();

@@ -300,11 +300,8 @@ CheckBool DisassemblerElf32ARM::TypedRVAARM::ComputeRelativeTarget(
 
 CheckBool DisassemblerElf32ARM::TypedRVAARM::EmitInstruction(
     AssemblyProgram* program,
-    RVA target_rva) {
-  return program->EmitRel32ARM(c_op(),
-                               program->FindOrMakeRel32Label(target_rva),
-                               arm_op_,
-                               op_size());
+    Label* label) {
+  return program->EmitRel32ARM(c_op(), label, arm_op_, op_size());
 }
 
 DisassemblerElf32ARM::DisassemblerElf32ARM(const void* start, size_t length)

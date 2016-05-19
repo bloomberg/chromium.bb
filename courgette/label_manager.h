@@ -80,10 +80,6 @@ class LabelManager {
   LabelManager();
   ~LabelManager();
 
-  // Returns an exclusive upper bound for all existing indexes in |labels_map|.
-  // TODO(huangs): Remove once all callers are gone.
-  static int GetIndexBound(const RVAToLabel& labels_map);
-
   // Returns an exclusive upper bound for all assigned indexes in |labels|.
   static int GetLabelIndexBound(const LabelVector& labels);
 
