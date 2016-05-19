@@ -527,7 +527,7 @@ Range* HTMLTextFormControlElement::selection() const
     for (Node& node : NodeTraversal::descendantsOf(*innerText)) {
         ASSERT(!node.hasChildren());
         ASSERT(node.isTextNode() || isHTMLBRElement(node));
-        int length = node.isTextNode() ? lastOffsetInNode(&node) : 1;
+        int length = node.isTextNode() ? Position::lastOffsetInNode(&node) : 1;
 
         if (offset <= start && start <= offset + length)
             setContainerAndOffsetForRange(&node, start - offset, startNode, start);

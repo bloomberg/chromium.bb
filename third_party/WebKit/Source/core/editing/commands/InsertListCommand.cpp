@@ -303,7 +303,7 @@ bool InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
             if (rangeStartIsInList && newList)
                 currentSelection.setStart(newList, 0, IGNORE_EXCEPTION);
             if (rangeEndIsInList && newList)
-                currentSelection.setEnd(newList, lastOffsetInNode(newList), IGNORE_EXCEPTION);
+                currentSelection.setEnd(newList, Position::lastOffsetInNode(newList), IGNORE_EXCEPTION);
 
             setEndingSelection(VisiblePosition::firstPositionInNode(newList));
 
