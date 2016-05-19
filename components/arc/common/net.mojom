@@ -39,6 +39,60 @@ union NetworkDetails {
   ConfiguredNetworkDetails configured;
 };
 
+[Extensible]
+enum IPAddressType {
+  IPV4,
+  IPV6,
+};
+
+struct IPConfiguration {
+  string gateway;
+  string ip_address;
+  array<string> name_servers;
+  int32 routing_prefix;
+  IPAddressType type;
+  string web_proxy_auto_discovery_url;
+};
+
+[Extensible]
+enum SecurityType {
+  NONE,
+  WEP_PSK,
+  WEP_8021X,
+  WPA_PSK,
+  WPA_EAP,
+};
+
+struct WiFi {
+  string bssid;
+  int32 frequency;
+  string hex_ssid;
+  bool hidden_ssid;
+  SecurityType security;
+  int32 signal_strength;
+};
+
+[Extensible]
+enum NetworkType {
+  CELLULAR,
+  ETHERNET,
+  VPN,
+  WIFI,
+  WIMAX,
+};
+
+struct NetworkConfiguration {
+  // These correspond to ONC properties returned by
+  // chrome.networkingPrivate.getProperties().
+  // See components/onc/docs/onc_spec.html
+  ConnectionStateType connection_state;
+  string guid;
+  array<IPConfiguration>? ip_configs;
+  string? mac_address;
+  NetworkType type;
+  WiFi? wifi;
+};
+
 struct WifiConfiguration {
   // These correspond to ONC properties returned by
   // chrome.networkingPrivate.getNetworks() and createNetwork().
@@ -102,6 +156,11 @@ interface NetHost {
 
   // Disconnects from network |guid|.
   [MinVersion=4] StartDisconnect@8(string guid) => (NetworkResult status);
+
+  // Retrieve details (IP, SSID, etc.) about the current network connection.
+  [MinVersion=5] GetDefaultNetwork@9() => (
+      NetworkConfiguration? logical_default,
+      NetworkConfiguration? physical_default);
 };
 
 interface NetInstance {
@@ -110,4 +169,8 @@ interface NetInstance {
 
   // Notifies the instance of a WiFI AP scan being completed.
   [MinVersion=1] ScanCompleted@1();
+
+  [MinVersion=2] DefaultNetworkChanged@2(
+      NetworkConfiguration? logical_default,
+      NetworkConfiguration? physical_default);
 };

@@ -11,12 +11,19 @@
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/net.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+
+namespace base {
+
+class DictionaryValue;
+
+}  // namespace base
 
 namespace arc {
 
@@ -66,13 +73,18 @@ class ArcNetHostImpl : public ArcService,
   // Overriden from chromeos::NetworkStateHandlerObserver.
   void ScanCompleted(const chromeos::DeviceState* /*unused*/) override;
   void OnShuttingDown() override;
+  void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
+  void GetDefaultNetwork(const GetDefaultNetworkCallback& callback) override;
 
   // Overridden from ArcBridgeService::Observer:
   void OnNetInstanceReady() override;
 
  private:
+  void DefaultNetworkSuccessCallback(const std::string& service_path,
+                                     const base::DictionaryValue& dictionary);
   base::ThreadChecker thread_checker_;
   mojo::Binding<arc::mojom::NetHost> binding_;
+  base::WeakPtrFactory<ArcNetHostImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcNetHostImpl);
 };
