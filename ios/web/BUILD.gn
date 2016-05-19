@@ -2,13 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//testing/test.gni")
 import("//ios/web/js_compile.gni")
+import("//testing/test.gni")
+import("//tools/grit/grit_rule.gni")
 
 source_set("web") {
   deps = [
     ":core",
     ":js_resources",
+    ":resources",
     ":user_agent",
     "//base",
     "//components/url_formatter",
@@ -520,5 +522,18 @@ js_compile_checked("js_resources") {
     "web_state/js/resources/plugin_placeholder.js",
     "web_state/js/resources/post_request.js",
     "web_state/js/resources/window_id.js",
+  ]
+}
+
+grit("resources") {
+  source = "ios_web_resources.grd"
+  use_qualified_include = true
+  outputs = [
+    "grit/ios_web_resources.h",
+    "ios_web_resources.pak",
+  ]
+  grit_flags = [
+    "-E",
+    "root_out_dir=" + rebase_path(root_out_dir, root_build_dir),
   ]
 }

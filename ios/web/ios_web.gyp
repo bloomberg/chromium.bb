@@ -44,6 +44,7 @@
       ],
       'dependencies': [
         'ios_web_core',
+        'ios_web_resources.gyp:ios_web_resources',
         'js_resources',
         'user_agent',
         '../../base/base.gyp:base',

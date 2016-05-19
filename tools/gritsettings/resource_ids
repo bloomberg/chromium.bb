@@ -178,6 +178,11 @@
   "content/content_resources.grd": {
     "includes": [23950],
   },
+  # ios_web strings and content strings must start at the same id.
+  # App only use one file depending on whether it is iOS or other platform.
+  "ios/web/ios_web_resources.grd": {
+    "includes": [23950],
+  },
   "content/shell/shell_resources.grd": {
     "includes": [24450],
   },
