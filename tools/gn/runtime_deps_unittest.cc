@@ -258,6 +258,83 @@ TEST(RuntimeDeps, ActionOutputs) {
   EXPECT_TRUE(MakePair("../../dep.data", &dep) == result[0]);
 }
 
+// Tests that the search for dependencies terminates at a bundle target,
+// ignoring any shared libraries or loadable modules that get copied into the
+// bundle.
+TEST(RuntimeDeps, CreateBundle) {
+  TestWithScope setup;
+  Err err;
+
+  // Dependency hierarchy:
+  // main(exe) -> dep(bundle) -> dep(shared_library) -> dep(source set)
+  //                          -> dep(bundle_data) -> dep(loadable_module)
+
+  const SourceDir source_dir("//");
+  const std::string& build_dir = setup.build_settings()->build_dir().value();
+
+  Target loadable_module(setup.settings(),
+                         Label(source_dir, "loadable_module"));
+  InitTargetWithType(setup, &loadable_module, Target::LOADABLE_MODULE);
+  ASSERT_TRUE(loadable_module.OnResolved(&err));
+
+  Target module_data(setup.settings(), Label(source_dir, "module_data"));
+  InitTargetWithType(setup, &module_data, Target::BUNDLE_DATA);
+  module_data.private_deps().push_back(LabelTargetPair(&loadable_module));
+  module_data.bundle_data().file_rules().push_back(BundleFileRule(
+      std::vector<SourceFile>{SourceFile(build_dir + "loadable_module.so")},
+      SubstitutionPattern::MakeForTest("{{bundle_resources_dir}}")));
+  ASSERT_TRUE(module_data.OnResolved(&err));
+
+  Target source_set(setup.settings(), Label(source_dir, "sources"));
+  InitTargetWithType(setup, &source_set, Target::SOURCE_SET);
+  source_set.sources().push_back(SourceFile(source_dir.value() + "foo.cc"));
+  ASSERT_TRUE(source_set.OnResolved(&err));
+
+  Target dylib(setup.settings(), Label(source_dir, "dylib"));
+  dylib.set_output_prefix_override(true);
+  dylib.set_output_extension("");
+  dylib.set_output_name("Bundle");
+  InitTargetWithType(setup, &dylib, Target::SHARED_LIBRARY);
+  dylib.private_deps().push_back(LabelTargetPair(&source_set));
+  ASSERT_TRUE(dylib.OnResolved(&err));
+
+  Target dylib_data(setup.settings(), Label(source_dir, "dylib_data"));
+  InitTargetWithType(setup, &dylib_data, Target::BUNDLE_DATA);
+  dylib_data.private_deps().push_back(LabelTargetPair(&dylib));
+  dylib_data.bundle_data().file_rules().push_back(BundleFileRule(
+      std::vector<SourceFile>{SourceFile(build_dir + "dylib")},
+      SubstitutionPattern::MakeForTest("{{bundle_executable_dir}}")));
+  ASSERT_TRUE(dylib_data.OnResolved(&err));
+
+  Target bundle(setup.settings(), Label(source_dir, "bundle"));
+  InitTargetWithType(setup, &bundle, Target::CREATE_BUNDLE);
+  const std::string root_dir(build_dir + "Bundle.framework/Versions/A/");
+  bundle.bundle_data().root_dir() = SourceDir(root_dir);
+  bundle.bundle_data().resources_dir() = SourceDir(root_dir + "Resources");
+  bundle.bundle_data().executable_dir() = SourceDir(root_dir + "MacOS");
+  bundle.private_deps().push_back(LabelTargetPair(&dylib_data));
+  bundle.private_deps().push_back(LabelTargetPair(&module_data));
+  ASSERT_TRUE(bundle.OnResolved(&err));
+
+  Target main(setup.settings(), Label(source_dir, "main"));
+  InitTargetWithType(setup, &main, Target::EXECUTABLE);
+  main.data_deps().push_back(LabelTargetPair(&bundle));
+  ASSERT_TRUE(main.OnResolved(&err));
+
+  std::vector<std::pair<OutputFile, const Target*>> result =
+      ComputeRuntimeDeps(&main);
+
+  // The result should have deps of main, datadep, final_in.dat
+  ASSERT_EQ(2u, result.size()) << GetVectorDescription(result);
+
+  // The first one should always be the main exe.
+  EXPECT_EQ(MakePair("./main", &main), result[0]);
+
+  // The second one should be the framework bundle, not its included
+  // loadable_module or its intermediate shared_library.
+  EXPECT_EQ(MakePair("Bundle.framework/", &bundle), result[1]);
+}
+
 // Tests that a dependency duplicated in regular and data deps is processed
 // as a data dep.
 TEST(RuntimeDeps, Dupe) {

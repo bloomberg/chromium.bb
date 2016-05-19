@@ -104,6 +104,15 @@ void RecursiveCollectRuntimeDeps(const Target* target,
       AddIfNew(output_file.value(), target, deps, found_files);
   }
 
+  // Do not recurse into bundle targets. A bundle's dependencies should be
+  // copied into the bundle itself for run-time access.
+  if (target->output_type() == Target::CREATE_BUNDLE) {
+    SourceDir bundle_root_dir =
+        target->bundle_data().GetBundleRootDirOutputAsDir(target->settings());
+    AddIfNew(bundle_root_dir.value(), target, deps, found_files);
+    return;
+  }
+
   // Non-data dependencies (both public and private).
   for (const auto& dep_pair : target->GetDeps(Target::DEPS_LINKED)) {
     if (dep_pair.ptr->output_type() == Target::EXECUTABLE)

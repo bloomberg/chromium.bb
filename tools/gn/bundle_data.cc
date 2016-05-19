@@ -129,3 +129,8 @@ SourceFile BundleData::GetBundleRootDirOutput(const Settings* settings) const {
   }
   return SourceFile(root_dir().value());
 }
+
+SourceDir BundleData::GetBundleRootDirOutputAsDir(
+    const Settings* settings) const {
+  return SourceDir(GetBundleRootDirOutput(settings).value());
+}
