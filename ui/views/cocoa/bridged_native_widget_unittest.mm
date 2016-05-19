@@ -13,6 +13,7 @@
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "testing/gtest_mac.h"
@@ -212,12 +213,14 @@ class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase {
 
   // Install a textfield with input type |text_input_type| in the view hierarchy
   // and make it the text input client. Also initializes |dummy_text_view_|.
-  void InstallTextField(const std::string& text,
+  void InstallTextField(const base::string16& text,
                         ui::TextInputType text_input_type);
 
   // Install a textfield with input type ui::TEXT_INPUT_TYPE_TEXT in the view
   // hierarchy and make it the text input client. Also initializes
   // |dummy_text_view_|.
+  void InstallTextField(const base::string16& text);
+
   void InstallTextField(const std::string& text);
 
   // Returns the actual current text for |ns_view_|.
@@ -238,6 +241,11 @@ class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase {
   // Perform command |sel| on |ns_view_| and |dummy_text_view_|.
   void PerformCommand(SEL sel);
 
+  // Make selection from |start| to |end| on installed views::Textfield and
+  // |dummy_text_view_|. If |start| > |end|, extend selection to left from
+  // |start|.
+  void MakeSelection(int start, int end);
+
   // testing::Test:
   void SetUp() override;
   void TearDown() override;
@@ -250,6 +258,14 @@ class BridgedNativeWidgetTest : public BridgedNativeWidgetTestBase {
   // Test delete to end of line or paragraph based on |sel|. |sel| can be
   // either deleteToEndOfLine: or deleteToEndOfParagraph:.
   void TestDeleteEnd(SEL sel);
+
+  // Test editing commands in |selectors| against the expectations set by
+  // |dummy_text_view_|. This is done by selecting every substring within a set
+  // of test strings (both RTL and non-RTL) and performing every selector on
+  // both the NSTextView and the BridgedContentView hosting a focused
+  // views::TextField to ensure the resulting text and selection ranges match.
+  // |selectors| is an NSArray of NSStrings.
+  void TestEditingCommands(NSArray* selectors);
 
   std::unique_ptr<views::View> view_;
 
@@ -272,10 +288,10 @@ BridgedNativeWidgetTest::~BridgedNativeWidgetTest() {
 }
 
 void BridgedNativeWidgetTest::InstallTextField(
-    const std::string& text,
+    const base::string16& text,
     ui::TextInputType text_input_type) {
   Textfield* textfield = new Textfield();
-  textfield->SetText(ASCIIToUTF16(text));
+  textfield->SetText(text);
   textfield->SetTextInputType(text_input_type);
   view_->RemoveAllChildViews(true);
   view_->AddChildView(textfield);
@@ -290,11 +306,15 @@ void BridgedNativeWidgetTest::InstallTextField(
 
   // Initialize the dummy text view.
   dummy_text_view_.reset([[NSTextView alloc] initWithFrame:NSZeroRect]);
-  [dummy_text_view_ setString:SysUTF8ToNSString(text)];
+  [dummy_text_view_ setString:SysUTF16ToNSString(text)];
+}
+
+void BridgedNativeWidgetTest::InstallTextField(const base::string16& text) {
+  InstallTextField(text, ui::TEXT_INPUT_TYPE_TEXT);
 }
 
 void BridgedNativeWidgetTest::InstallTextField(const std::string& text) {
-  InstallTextField(text, ui::TEXT_INPUT_TYPE_TEXT);
+  InstallTextField(base::ASCIIToUTF16(text), ui::TEXT_INPUT_TYPE_TEXT);
 }
 
 NSString* BridgedNativeWidgetTest::GetActualText() {
@@ -328,6 +348,22 @@ void BridgedNativeWidgetTest::SetSelectionRange(NSRange range) {
 void BridgedNativeWidgetTest::PerformCommand(SEL sel) {
   [ns_view_ doCommandBySelector:sel];
   [dummy_text_view_ doCommandBySelector:sel];
+}
+
+void BridgedNativeWidgetTest::MakeSelection(int start, int end) {
+  ui::TextInputClient* client = [ns_view_ textInputClient];
+  client->SetSelectionRange(gfx::Range(start, end));
+
+  // Though NSTextView has a selectionAffinity property, it does not seem to
+  // correspond to the selection direction. Hence we extend the selection from
+  //|start| to |end|.
+  [dummy_text_view_ setSelectedRange:NSMakeRange(start, 0)];
+  SEL sel = start > end ? @selector(moveBackwardAndModifySelection:)
+                        : @selector(moveForwardAndModifySelection:);
+  size_t delta = std::abs(end - start);
+
+  for (size_t i = 0; i < delta; i++)
+    [dummy_text_view_ doCommandBySelector:sel];
 }
 
 void BridgedNativeWidgetTest::SetUp() {
@@ -415,6 +451,39 @@ void BridgedNativeWidgetTest::TestDeleteEnd(SEL sel) {
   EXPECT_NSEQ_3(@"bar", GetExpectedText(), GetActualText());
   EXPECT_EQ_RANGE_3(NSMakeRange(0, 0), GetExpectedSelectionRange(),
                     GetActualSelectionRange());
+}
+
+void BridgedNativeWidgetTest::TestEditingCommands(NSArray* selectors) {
+  const base::string16 test_strings[] = {
+      base::WideToUTF16(L"ab c"),
+      base::WideToUTF16(L"\x0634\x0632 \x064A")  // RTL string.
+  };
+
+  for (const base::string16& test_string : test_strings) {
+    for (NSString* selector_string in selectors) {
+      SEL sel = NSSelectorFromString(selector_string);
+      const int len = test_string.length();
+      for (int i = 0; i <= len; i++) {
+        for (int j = 0; j <= len; j++) {
+          SCOPED_TRACE(base::StringPrintf(
+              "Testing range [%d-%d] for case %s and selector %s\n", i, j,
+              base::UTF16ToUTF8(test_string).c_str(),
+              base::SysNSStringToUTF8(selector_string).c_str()));
+
+          InstallTextField(test_string);
+          MakeSelection(i, j);
+          EXPECT_EQ_RANGE_3(NSMakeRange(std::min(i, j), std::abs(i - j)),
+                            GetExpectedSelectionRange(),
+                            GetActualSelectionRange());
+
+          PerformCommand(sel);
+          EXPECT_NSEQ(GetExpectedText(), GetActualText());
+          EXPECT_EQ_RANGE(GetExpectedSelectionRange(),
+                          GetActualSelectionRange());
+        }
+      }
+    }
+  }
 }
 
 // The TEST_VIEW macro expects the view it's testing to have a superview. In
@@ -550,7 +619,7 @@ TEST_F(BridgedNativeWidgetInitTest, ShadowType) {
 // Ensure a nil NSTextInputContext is returned when the ui::TextInputClient is
 // not editable, a password field, or unset.
 TEST_F(BridgedNativeWidgetTest, InputContext) {
-  const std::string test_string = "test_str";
+  const base::string16 test_string = base::ASCIIToUTF16("test_str");
   InstallTextField(test_string, ui::TEXT_INPUT_TYPE_PASSWORD);
   EXPECT_FALSE([ns_view_ inputContext]);
   InstallTextField(test_string, ui::TEXT_INPUT_TYPE_TEXT);
@@ -871,6 +940,75 @@ TEST_F(BridgedNativeWidgetTest, TextInput_DeleteToBeginningOfParagraph) {
 
 TEST_F(BridgedNativeWidgetTest, TextInput_DeleteToEndOfParagraph) {
   TestDeleteEnd(@selector(deleteToEndOfParagraph:));
+}
+
+// Test move commands against expectations set by |dummy_text_view_|.
+TEST_F(BridgedNativeWidgetTest, TextInput_MoveEditingCommands) {
+  NSArray* selectors = @[
+    @"moveForward:",
+    @"moveRight:",
+    @"moveBackward:",
+    @"moveLeft:",
+    @"moveUp:",
+    @"moveDown:",
+    @"moveWordForward:",
+    @"moveWordBackward:",
+    @"moveToBeginningOfLine:",
+    @"moveToEndOfLine:",
+    @"moveToBeginningOfParagraph:",
+    @"moveToEndOfParagraph:",
+    @"moveToEndOfDocument:",
+    @"moveToBeginningOfDocument:",
+    @"pageDown:",
+    @"pageUp:",
+    @"moveWordRight:",
+    @"moveWordLeft:",
+    @"moveToLeftEndOfLine:",
+    @"moveToRightEndOfLine:"
+  ];
+  TestEditingCommands(selectors);
+}
+
+// Todo(karandeepb): Enable this test once the behavior of all move and select
+// commands are fixed.
+// Test move and select commands against expectations set by |dummy_text_view_|.
+TEST_F(BridgedNativeWidgetTest,
+       TextInput_MoveAndSelectEditingCommands_DISABLED) {
+  NSArray* selectors = @[
+    @"moveBackwardAndModifySelection:",
+    @"moveForwardAndModifySelection:",
+    @"moveWordForwardAndModifySelection:",
+    @"moveWordBackwardAndModifySelection:",
+    @"moveUpAndModifySelection:",
+    @"moveDownAndModifySelection:",
+    @"moveToBeginningOfLineAndModifySelection:",
+    @"moveToEndOfLineAndModifySelection:",
+    @"moveToBeginningOfParagraphAndModifySelection:",
+    @"moveToEndOfParagraphAndModifySelection:",
+    @"moveToEndOfDocumentAndModifySelection:",
+    @"moveToBeginningOfDocumentAndModifySelection:",
+    @"pageDownAndModifySelection:",
+    @"pageUpAndModifySelection:",
+    @"moveParagraphForwardAndModifySelection:",
+    @"moveParagraphBackwardAndModifySelection:",
+    @"moveRightAndModifySelection:",
+    @"moveLeftAndModifySelection:",
+    @"moveWordRightAndModifySelection:",
+    @"moveWordLeftAndModifySelection:",
+    @"moveToLeftEndOfLineAndModifySelection:",
+    @"moveToRightEndOfLineAndModifySelection:"
+  ];
+  TestEditingCommands(selectors);
+}
+
+// Test delete commands against expectations set by |dummy_text_view_|.
+TEST_F(BridgedNativeWidgetTest, TextInput_DeleteCommands) {
+  NSArray* selectors = @[
+    @"deleteForward:", @"deleteBackward:", @"deleteWordForward:",
+    @"deleteWordBackward:", @"deleteToBeginningOfLine:", @"deleteToEndOfLine:",
+    @"deleteToBeginningOfParagraph:", @"deleteToEndOfParagraph:"
+  ];
+  TestEditingCommands(selectors);
 }
 
 // Test firstRectForCharacterRange:actualRange for cases where query range is

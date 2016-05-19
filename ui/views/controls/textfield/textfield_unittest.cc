@@ -992,7 +992,7 @@ TEST_F(TextfieldTest, OnKeyPress) {
   EXPECT_TRUE(textfield_->key_handled());
   textfield_->clear();
 
-  // F20, up/down key won't be handled.
+  // F20 key won't be handled.
   SendKeyEvent(ui::VKEY_F20);
 #if defined(OS_MACOSX)
   // On Mac, key combinations that don't map to editing commands are forwarded
@@ -1004,14 +1004,24 @@ TEST_F(TextfieldTest, OnKeyPress) {
   EXPECT_FALSE(textfield_->key_handled());
   textfield_->clear();
 
+  // Up/Down keys won't be handled except on Mac where they map to move
+  // commands.
   SendKeyEvent(ui::VKEY_UP);
   EXPECT_TRUE(textfield_->key_received());
+#if defined(OS_MACOSX)
+  EXPECT_TRUE(textfield_->key_handled());
+#else
   EXPECT_FALSE(textfield_->key_handled());
+#endif
   textfield_->clear();
 
   SendKeyEvent(ui::VKEY_DOWN);
   EXPECT_TRUE(textfield_->key_received());
+#if defined(OS_MACOSX)
+  EXPECT_TRUE(textfield_->key_handled());
+#else
   EXPECT_FALSE(textfield_->key_handled());
+#endif
   textfield_->clear();
 }
 

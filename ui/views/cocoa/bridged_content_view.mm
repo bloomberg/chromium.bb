@@ -636,7 +636,7 @@ base::string16 AttributedSubstringForRangeHelper(
 // dispatched as regular key events in doCommandBySelector:.
 
 // views::Textfields are single-line only, map Paragraph and Document commands
-// to Line.
+// to Line. Also, Up/Down commands correspond to beginning/end of line.
 
 // The insertText action message forwards to the TextInputClient unless a menu
 // is active. Note that NSResponder's interpretKeyEvents: implementation doesn't
@@ -649,11 +649,21 @@ base::string16 AttributedSubstringForRangeHelper(
 
 // Selection movement and scrolling.
 
+- (void)moveForward:(id)sender {
+  IsTextRTL(textInputClient_) ? [self moveLeft:sender]
+                              : [self moveRight:sender];
+}
+
 - (void)moveRight:(id)sender {
   [self handleAction:IDS_MOVE_RIGHT
              keyCode:ui::VKEY_RIGHT
              domCode:ui::DomCode::ARROW_RIGHT
           eventFlags:0];
+}
+
+- (void)moveBackward:(id)sender {
+  IsTextRTL(textInputClient_) ? [self moveRight:sender]
+                              : [self moveLeft:sender];
 }
 
 - (void)moveLeft:(id)sender {
@@ -664,17 +674,175 @@ base::string16 AttributedSubstringForRangeHelper(
 }
 
 - (void)moveUp:(id)sender {
-  [self handleAction:0
+  [self handleAction:IDS_MOVE_TO_BEGINNING_OF_LINE
              keyCode:ui::VKEY_UP
              domCode:ui::DomCode::ARROW_UP
           eventFlags:0];
 }
 
 - (void)moveDown:(id)sender {
-  [self handleAction:0
+  [self handleAction:IDS_MOVE_TO_END_OF_LINE
              keyCode:ui::VKEY_DOWN
              domCode:ui::DomCode::ARROW_DOWN
           eventFlags:0];
+}
+
+- (void)moveWordForward:(id)sender {
+  IsTextRTL(textInputClient_) ? [self moveWordLeft:sender]
+                              : [self moveWordRight:sender];
+}
+
+- (void)moveWordBackward:(id)sender {
+  IsTextRTL(textInputClient_) ? [self moveWordRight:sender]
+                              : [self moveWordLeft:sender];
+}
+
+- (void)moveToBeginningOfLine:(id)sender {
+  [self handleAction:IDS_MOVE_TO_BEGINNING_OF_LINE
+             keyCode:ui::VKEY_HOME
+             domCode:ui::DomCode::HOME
+          eventFlags:0];
+}
+
+- (void)moveToEndOfLine:(id)sender {
+  [self handleAction:IDS_MOVE_TO_END_OF_LINE
+             keyCode:ui::VKEY_END
+             domCode:ui::DomCode::END
+          eventFlags:0];
+}
+
+- (void)moveToBeginningOfParagraph:(id)sender {
+  [self moveToBeginningOfLine:sender];
+}
+
+- (void)moveToEndOfParagraph:(id)sender {
+  [self moveToEndOfLine:sender];
+}
+
+- (void)moveToEndOfDocument:(id)sender {
+  [self handleAction:IDS_MOVE_TO_END_OF_LINE
+             keyCode:ui::VKEY_END
+             domCode:ui::DomCode::END
+          eventFlags:ui::EF_CONTROL_DOWN];
+}
+
+- (void)moveToBeginningOfDocument:(id)sender {
+  [self handleAction:IDS_MOVE_TO_BEGINNING_OF_LINE
+             keyCode:ui::VKEY_HOME
+             domCode:ui::DomCode::HOME
+          eventFlags:ui::EF_CONTROL_DOWN];
+}
+
+- (void)pageDown:(id)sender {
+  [self handleAction:IDS_MOVE_TO_END_OF_LINE
+             keyCode:ui::VKEY_NEXT
+             domCode:ui::DomCode::PAGE_DOWN
+          eventFlags:0];
+}
+
+- (void)pageUp:(id)sender {
+  [self handleAction:IDS_MOVE_TO_BEGINNING_OF_LINE
+             keyCode:ui::VKEY_PRIOR
+             domCode:ui::DomCode::PAGE_UP
+          eventFlags:0];
+}
+
+- (void)moveBackwardAndModifySelection:(id)sender {
+  IsTextRTL(textInputClient_) ? [self moveRightAndModifySelection:sender]
+                              : [self moveLeftAndModifySelection:sender];
+}
+
+- (void)moveForwardAndModifySelection:(id)sender {
+  IsTextRTL(textInputClient_) ? [self moveLeftAndModifySelection:sender]
+                              : [self moveRightAndModifySelection:sender];
+}
+
+- (void)moveWordForwardAndModifySelection:(id)sender {
+  IsTextRTL(textInputClient_) ? [self moveWordLeftAndModifySelection:sender]
+                              : [self moveWordRightAndModifySelection:sender];
+}
+
+- (void)moveWordBackwardAndModifySelection:(id)sender {
+  IsTextRTL(textInputClient_) ? [self moveWordRightAndModifySelection:sender]
+                              : [self moveWordLeftAndModifySelection:sender];
+}
+
+- (void)moveUpAndModifySelection:(id)sender {
+  [self handleAction:IDS_MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_UP
+             domCode:ui::DomCode::ARROW_UP
+          eventFlags:ui::EF_SHIFT_DOWN];
+}
+
+- (void)moveDownAndModifySelection:(id)sender {
+  [self handleAction:IDS_MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_DOWN
+             domCode:ui::DomCode::ARROW_DOWN
+          eventFlags:ui::EF_SHIFT_DOWN];
+}
+
+- (void)moveToBeginningOfLineAndModifySelection:(id)sender {
+  [self handleAction:IDS_MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_HOME
+             domCode:ui::DomCode::HOME
+          eventFlags:ui::EF_SHIFT_DOWN];
+}
+
+- (void)moveToEndOfLineAndModifySelection:(id)sender {
+  [self handleAction:IDS_MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_END
+             domCode:ui::DomCode::END
+          eventFlags:ui::EF_SHIFT_DOWN];
+}
+
+- (void)moveToBeginningOfParagraphAndModifySelection:(id)sender {
+  [self moveToBeginningOfLineAndModifySelection:sender];
+}
+
+- (void)moveToEndOfParagraphAndModifySelection:(id)sender {
+  [self moveToEndOfLineAndModifySelection:sender];
+}
+
+- (void)moveToEndOfDocumentAndModifySelection:(id)sender {
+  [self handleAction:IDS_MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_END
+             domCode:ui::DomCode::END
+          eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
+}
+
+- (void)moveToBeginningOfDocumentAndModifySelection:(id)sender {
+  [self handleAction:IDS_MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_HOME
+             domCode:ui::DomCode::HOME
+          eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
+}
+
+- (void)pageDownAndModifySelection:(id)sender {
+  [self handleAction:IDS_MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_NEXT
+             domCode:ui::DomCode::PAGE_DOWN
+          eventFlags:ui::EF_SHIFT_DOWN];
+}
+
+- (void)pageUpAndModifySelection:(id)sender {
+  [self handleAction:IDS_MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_PRIOR
+             domCode:ui::DomCode::PAGE_UP
+          eventFlags:ui::EF_SHIFT_DOWN];
+}
+
+- (void)moveParagraphForwardAndModifySelection:(id)sender {
+  [self handleAction:IDS_MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_DOWN
+             domCode:ui::DomCode::ARROW_DOWN
+          eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
+}
+
+- (void)moveParagraphBackwardAndModifySelection:(id)sender {
+  [self handleAction:IDS_MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_UP
+             domCode:ui::DomCode::ARROW_UP
+          eventFlags:ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN];
 }
 
 - (void)moveWordRight:(id)sender {
@@ -691,17 +859,17 @@ base::string16 AttributedSubstringForRangeHelper(
           eventFlags:ui::EF_CONTROL_DOWN];
 }
 
-- (void)moveLeftAndModifySelection:(id)sender {
-  [self handleAction:IDS_MOVE_LEFT_AND_MODIFY_SELECTION
-             keyCode:ui::VKEY_LEFT
-             domCode:ui::DomCode::ARROW_LEFT
-          eventFlags:ui::EF_SHIFT_DOWN];
-}
-
 - (void)moveRightAndModifySelection:(id)sender {
   [self handleAction:IDS_MOVE_RIGHT_AND_MODIFY_SELECTION
              keyCode:ui::VKEY_RIGHT
              domCode:ui::DomCode::ARROW_RIGHT
+          eventFlags:ui::EF_SHIFT_DOWN];
+}
+
+- (void)moveLeftAndModifySelection:(id)sender {
+  [self handleAction:IDS_MOVE_LEFT_AND_MODIFY_SELECTION
+             keyCode:ui::VKEY_LEFT
+             domCode:ui::DomCode::ARROW_LEFT
           eventFlags:ui::EF_SHIFT_DOWN];
 }
 
@@ -720,31 +888,25 @@ base::string16 AttributedSubstringForRangeHelper(
 }
 
 - (void)moveToLeftEndOfLine:(id)sender {
-  [self handleAction:IDS_MOVE_TO_BEGINNING_OF_LINE
-             keyCode:ui::VKEY_HOME
-             domCode:ui::DomCode::HOME
-          eventFlags:0];
+  IsTextRTL(textInputClient_) ? [self moveToEndOfLine:sender]
+                              : [self moveToBeginningOfLine:sender];
 }
 
 - (void)moveToRightEndOfLine:(id)sender {
-  [self handleAction:IDS_MOVE_TO_END_OF_LINE
-             keyCode:ui::VKEY_END
-             domCode:ui::DomCode::END
-          eventFlags:0];
+  IsTextRTL(textInputClient_) ? [self moveToBeginningOfLine:sender]
+                              : [self moveToEndOfLine:sender];
 }
 
 - (void)moveToLeftEndOfLineAndModifySelection:(id)sender {
-  [self handleAction:IDS_MOVE_TO_BEGINNING_OF_LINE_AND_MODIFY_SELECTION
-             keyCode:ui::VKEY_HOME
-             domCode:ui::DomCode::HOME
-          eventFlags:ui::EF_SHIFT_DOWN];
+  IsTextRTL(textInputClient_)
+      ? [self moveToEndOfLineAndModifySelection:sender]
+      : [self moveToBeginningOfLineAndModifySelection:sender];
 }
 
 - (void)moveToRightEndOfLineAndModifySelection:(id)sender {
-  [self handleAction:IDS_MOVE_TO_END_OF_LINE_AND_MODIFY_SELECTION
-             keyCode:ui::VKEY_END
-             domCode:ui::DomCode::END
-          eventFlags:ui::EF_SHIFT_DOWN];
+  IsTextRTL(textInputClient_)
+      ? [self moveToBeginningOfLineAndModifySelection:sender]
+      : [self moveToEndOfLineAndModifySelection:sender];
 }
 
 // Deletions.
