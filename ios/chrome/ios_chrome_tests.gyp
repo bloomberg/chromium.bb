@@ -42,6 +42,7 @@
         'browser/ui/native_content_controller_test.xib'
       ],
       'sources': [
+        'app/application_delegate/memory_warning_helper_unittest.mm',
         'app/safe_mode_util_unittest.cc',
         'browser/chrome_url_util_unittest.mm',
         'browser/crash_loop_detection_util_unittest.mm',

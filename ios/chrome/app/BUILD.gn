@@ -6,6 +6,8 @@ source_set("app") {
   sources = [
     "UIApplication+ExitsOnSuspend.h",
     "UIApplication+ExitsOnSuspend.mm",
+    "application_delegate/memory_warning_helper.h",
+    "application_delegate/memory_warning_helper.mm",
     "deferred_initialization_runner.h",
     "deferred_initialization_runner.mm",
     "safe_mode_crashing_modules_config.h",
