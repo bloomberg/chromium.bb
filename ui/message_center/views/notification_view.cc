@@ -50,10 +50,6 @@
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
-#if defined(OS_WIN)
-#include "ui/base/win/shell.h"
-#endif
-
 namespace {
 
 // Dimensions.
@@ -145,49 +141,6 @@ void ItemView::SetVisible(bool visible) {
 namespace message_center {
 
 // NotificationView ////////////////////////////////////////////////////////////
-
-// static
-MessageView* NotificationView::Create(MessageCenterController* controller,
-                                      const Notification& notification,
-                                      bool top_level) {
-  switch (notification.type()) {
-    case NOTIFICATION_TYPE_BASE_FORMAT:
-    case NOTIFICATION_TYPE_IMAGE:
-    case NOTIFICATION_TYPE_MULTIPLE:
-    case NOTIFICATION_TYPE_SIMPLE:
-    case NOTIFICATION_TYPE_PROGRESS:
-      break;
-    default:
-      // If the caller asks for an unrecognized kind of view (entirely possible
-      // if an application is running on an older version of this code that
-      // doesn't have the requested kind of notification template), we'll fall
-      // back to a notification instance that will provide at least basic
-      // functionality.
-      LOG(WARNING) << "Unable to fulfill request for unrecognized "
-                   << "notification type " << notification.type() << ". "
-                   << "Falling back to simple notification type.";
-  }
-
-  // Currently all roads lead to the generic NotificationView.
-  NotificationView* notification_view =
-      new NotificationView(controller, notification);
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // Don't create shadows for notification toasts on linux wih aura.
-  if (top_level)
-    return notification_view;
-#endif
-
-#if defined(OS_WIN)
-  // Don't create shadows for notifications on Windows under classic theme.
-  if (top_level && !ui::win::IsAeroGlassEnabled()) {
-    return notification_view;
-  }
-#endif  // OS_WIN
-
-  notification_view->CreateShadowBorder();
-  return notification_view;
-}
 
 views::View* NotificationView::TargetForRect(views::View* root,
                                              const gfx::Rect& rect) {

@@ -25,6 +25,7 @@
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/views/constants.h"
 #include "ui/message_center/views/message_center_controller.h"
+#include "ui/message_center/views/message_view_factory.h"
 #include "ui/message_center/views/notification_button.h"
 #include "ui/message_center/views/proportional_image_view.h"
 #include "ui/views/controls/button/image_button.h"
@@ -228,7 +229,7 @@ void NotificationViewTest::SetUp() {
 
   // Then create a new NotificationView with that single notification.
   notification_view_.reset(static_cast<NotificationView*>(
-      NotificationView::Create(this, *notification_, true)));
+      MessageViewFactory::Create(this, *notification_, true)));
   notification_view_->set_owned_by_client();
 
   views::Widget::InitParams init_params(

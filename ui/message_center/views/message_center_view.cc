@@ -26,7 +26,7 @@
 #include "ui/message_center/views/message_list_view.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/message_view_context_menu_controller.h"
-#include "ui/message_center/views/notification_view.h"
+#include "ui/message_center/views/message_view_factory.h"
 #include "ui/message_center/views/notifier_settings_view.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -480,7 +480,7 @@ void MessageCenterView::AnimationCanceled(const gfx::Animation* animation) {
 void MessageCenterView::AddNotificationAt(const Notification& notification,
                                           int index) {
   MessageView* view =
-      NotificationView::Create(this, notification, false);  // Not top-level.
+      MessageViewFactory::Create(this, notification, false);  // Not top-level.
   view->set_context_menu_controller(context_menu_controller_.get());
   notification_views_[notification.id()] = view;
   view->set_scroller(scroller_);

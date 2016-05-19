@@ -25,28 +25,19 @@ class BoundedLabel;
 class MessageCenter;
 class NotificationButton;
 class NotificationProgressBarBase;
-class NotificationView;
 class PaddedButton;
 class ProportionalImageView;
 
 // View that displays all current types of notification (web, basic, image, and
-// list). Future notification types may be handled by other classes, in which
-// case instances of those classes would be returned by the Create() factory
-// method below.
+// list) except the custom notification. Future notification types may be
+// handled by other classes, in which case instances of those classes would be
+// returned by the Create() factory method below.
 class MESSAGE_CENTER_EXPORT NotificationView
     : public MessageView,
       public views::ViewTargeterDelegate {
  public:
-  // Creates appropriate MessageViews for notifications. Those currently are
-  // always NotificationView instances but in the future
-  // may be instances of other classes, with the class depending on the
-  // notification type. A notification is top level if it needs to be rendered
-  // outside the browser window. No custom shadows are created for top level
-  // notifications on Linux with Aura.
-  // |controller| may be NULL, but has to be set before the view is shown.
-  static MessageView* Create(MessageCenterController* controller,
-                             const Notification& notification,
-                             bool top_level);
+  NotificationView(MessageCenterController* controller,
+                   const Notification& notification);
   ~NotificationView() override;
 
   // Overridden from views::View:
@@ -60,10 +51,6 @@ class MESSAGE_CENTER_EXPORT NotificationView
   // Overridden from MessageView:
   void UpdateWithNotification(const Notification& notification) override;
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
- protected:
-  NotificationView(MessageCenterController* controller,
-                   const Notification& notification);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NotificationViewTest, CreateOrUpdateTest);

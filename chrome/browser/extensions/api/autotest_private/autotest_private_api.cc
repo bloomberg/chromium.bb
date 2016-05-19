@@ -339,6 +339,8 @@ std::string AutotestPrivateGetVisibleNotificationsFunction::ConvertToString(
       return "multiple";
     case message_center::NOTIFICATION_TYPE_PROGRESS:
       return "progress";
+    case message_center::NOTIFICATION_TYPE_CUSTOM:
+      return "custom";
   }
 #endif
   return "unknown";

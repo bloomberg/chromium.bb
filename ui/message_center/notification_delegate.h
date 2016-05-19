@@ -5,6 +5,7 @@
 #ifndef UI_MESSAGE_CENTER_NOTIFICATION_DELEGATE_H_
 #define UI_MESSAGE_CENTER_NOTIFICATION_DELEGATE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -15,6 +16,12 @@
 namespace content {
 class RenderViewHost;
 }
+
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
+namespace views {
+class View;
+}
+#endif
 
 namespace message_center {
 
@@ -45,6 +52,12 @@ class MESSAGE_CENTER_EXPORT NotificationDelegate
 
   // To be called in order to detect if a settings button should be displayed.
   virtual bool ShouldDisplaySettingsButton();
+
+#if defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
+  // To be called to construct the contents view of a popup for notifications
+  // whose type is NOTIFICATION_TYPE_CUSTOM.
+  virtual std::unique_ptr<views::View> CreateCustomContent();
+#endif
 
  protected:
   virtual ~NotificationDelegate() {}

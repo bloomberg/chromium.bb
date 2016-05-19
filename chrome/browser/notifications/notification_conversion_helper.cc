@@ -202,6 +202,8 @@ std::string NotificationConversionHelper::MapTypeToString(
       return "list";
     case message_center::NOTIFICATION_TYPE_PROGRESS:
       return "progress";
+    case message_center::NOTIFICATION_TYPE_CUSTOM:
+      return "custom";
     default:
       NOTREACHED();
       return "";

@@ -33,6 +33,7 @@ enum NotificationType {
   NOTIFICATION_TYPE_IMAGE = 2,
   NOTIFICATION_TYPE_MULTIPLE = 3,
   NOTIFICATION_TYPE_PROGRESS = 4,  // Notification with progress bar.
+  NOTIFICATION_TYPE_CUSTOM = 5,
 
   // Add new values before this line.
   NOTIFICATION_TYPE_LAST = NOTIFICATION_TYPE_PROGRESS

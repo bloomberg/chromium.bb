@@ -100,16 +100,17 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   // it is on top of other views.
   void CreateOrUpdateCloseButtonView(const Notification& notification);
 
+  // Changes the background color being used by |background_view_| and schedules
+  // a paint.
+  virtual void SetDrawBackgroundAsActive(bool active);
+
+  views::View* background_view() { return background_view_; }
   views::ImageView* small_image() { return small_image_view_.get(); }
   views::ImageButton* close_button() { return close_button_.get(); }
   views::ScrollView* scroller() { return scroller_; }
   MessageCenterController* controller() { return controller_; }
 
  private:
-  // Changes the background color being used by |background_view_| and schedules
-  // a paint.
-  void SetDrawBackgroundAsActive(bool active);
-
   MessageCenterController* controller_;  // Weak, lives longer then views.
   std::string notification_id_;
   NotifierId notifier_id_;
