@@ -47,6 +47,10 @@ NSSecureTextField* PasswordLabel(const base::string16& text);
 // Returns a button of the standard style for the bubble.
 NSButton* DialogButton(NSString* title);
 
+// Returns a NSRegularControlSize button. It's used for improving the contrast
+// due to Accessabilty standards.
+NSButton* BiggerDialogButton(NSString* title);
+
 // Returns a title label with |text| for a bubble. Nonempty |range| may specify
 // a link range.
 HyperlinkTextView* TitleBubbleLabelWithLink(const base::string16& text,

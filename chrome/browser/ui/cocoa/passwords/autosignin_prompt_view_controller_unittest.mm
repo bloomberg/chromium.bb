@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/passwords/autosignin_prompt_view_controller.h"
-#include "chrome/browser/ui/passwords/password_dialog_controller.h"
+#include "chrome/browser/ui/passwords/password_dialog_controller_mock.h"
 #include "components/autofill/core/common/password_form.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,24 +21,6 @@ namespace {
 
 constexpr char kDialogTitle[] = "Auto signin";
 constexpr char kDialogText[] = "bla bla";
-
-class PasswordDialogControllerMock : public PasswordDialogController {
- public:
-  MOCK_CONST_METHOD0(GetLocalForms, const FormsVector&());
-  MOCK_CONST_METHOD0(GetFederationsForms, const FormsVector&());
-  MOCK_CONST_METHOD0(GetAccoutChooserTitle,
-                     std::pair<base::string16, gfx::Range>());
-  MOCK_CONST_METHOD0(GetAutoSigninPromoTitle, base::string16());
-  MOCK_CONST_METHOD0(GetAutoSigninText,
-                     std::pair<base::string16, gfx::Range>());
-  MOCK_METHOD0(OnSmartLockLinkClicked, void());
-  MOCK_METHOD2(OnChooseCredentials, void(
-      const autofill::PasswordForm& password_form,
-      password_manager::CredentialType credential_type));
-  MOCK_METHOD0(OnAutoSigninOK, void());
-  MOCK_METHOD0(OnAutoSigninTurnOff, void());
-  MOCK_METHOD0(OnCloseDialog, void());
-};
 
 // Tests for the autosignin dialog view.
 class AutoSigninPromptViewControllerTest : public PasswordPromptBridgeInterface,

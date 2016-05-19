@@ -107,6 +107,18 @@ NSButton* DialogButton(NSString* title) {
   return button.autorelease();
 }
 
+NSButton* BiggerDialogButton(NSString* title) {
+  base::scoped_nsobject<NSButton> button(
+      [[NSButton alloc] initWithFrame:NSZeroRect]);
+  CGFloat fontSize = [NSFont systemFontSizeForControlSize:NSRegularControlSize];
+  [button setFont:[NSFont systemFontOfSize:fontSize]];
+  [button setTitle:title];
+  [button setBezelStyle:NSRoundedBezelStyle];
+  [[button cell] setControlSize:NSRegularControlSize];
+  [button sizeToFit];
+  return button.autorelease();
+}
+
 HyperlinkTextView* TitleBubbleLabelWithLink(const base::string16& text,
                                             gfx::Range range,
                                             id<NSTextViewDelegate> delegate) {

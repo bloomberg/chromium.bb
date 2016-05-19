@@ -20,12 +20,15 @@ class PasswordPromptBridgeInterface;
 // Initializes a new account chooser and populates it with the credentials
 // stored in |bridge->controller()|.
 - (instancetype)initWithBridge:(PasswordPromptBridgeInterface*)bridge;
+
+- (NSButton*)defaultButton;
 @end
 
 @interface AccountChooserViewController(Testing)
 - (instancetype)initWithBridge:(PasswordPromptBridgeInterface*)bridge
                  avatarManager:(AccountAvatarFetcherManager*)avatarManager;
 @property(nonatomic, readonly) NSButton* cancelButton;
+@property(nonatomic, readonly) NSButton* signInButton;
 @property(nonatomic, readonly) NSArray* credentialButtons;
 @property(nonatomic, readonly) NSTextView* titleView;
 @end

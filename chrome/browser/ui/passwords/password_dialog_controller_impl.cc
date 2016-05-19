@@ -84,6 +84,10 @@ PasswordDialogControllerImpl::GetAccoutChooserTitle() const {
   return result;
 }
 
+bool PasswordDialogControllerImpl::ShouldShowSignInButton() const {
+  return local_credentials_.size() == 1;
+}
+
 base::string16 PasswordDialogControllerImpl::GetAutoSigninPromoTitle() const {
   int message_id = IsSyncingAutosignSetting(profile_)
                        ? IDS_AUTO_SIGNIN_FIRST_RUN_TITLE_MANY_DEVICES
@@ -112,6 +116,16 @@ void PasswordDialogControllerImpl::OnChooseCredentials(
       password_manager::metrics_util::ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN);
   ResetDialog();
   delegate_->ChooseCredential(password_form, credential_type);
+}
+
+void PasswordDialogControllerImpl::OnSignInClicked() {
+  DCHECK_EQ(1u, local_credentials_.size());
+  password_manager::metrics_util::LogAccountChooserUserAction(
+      password_manager::metrics_util::ACCOUNT_CHOOSER_SIGN_IN);
+  ResetDialog();
+  delegate_->ChooseCredential(
+      *local_credentials_[0],
+      password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
 }
 
 void PasswordDialogControllerImpl::OnAutoSigninOK() {

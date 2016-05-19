@@ -62470,6 +62470,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="AccountChooserDismissalReason" type="int">
   <int value="0" label="Canceled"/>
   <int value="1" label="Credential chosen"/>
+  <int value="2" label="Sign in clicked"/>
 </enum>
 
 <enum name="ActionAfterDoubleTap" type="int">

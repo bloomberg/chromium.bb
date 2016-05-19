@@ -34,6 +34,9 @@ class PasswordDialogController {
   virtual std::pair<base::string16, gfx::Range> GetAccoutChooserTitle() const
       = 0;
 
+  // Whether the account chooser should display the "Sign in" button.
+  virtual bool ShouldShowSignInButton() const = 0;
+
   // Returns the title for the autosignin first run dialog.
   virtual base::string16 GetAutoSigninPromoTitle() const = 0;
 
@@ -48,6 +51,9 @@ class PasswordDialogController {
   virtual void OnChooseCredentials(
       const autofill::PasswordForm& password_form,
       password_manager::CredentialType credential_type) = 0;
+
+  // Called when the user clicks "Sign in" in the account chooser.
+  virtual void OnSignInClicked() = 0;
 
   // Called when user clicks OK in the auto signin first run promo.
   virtual void OnAutoSigninOK() = 0;

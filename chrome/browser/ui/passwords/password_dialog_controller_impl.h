@@ -37,12 +37,14 @@ class PasswordDialogControllerImpl : public PasswordDialogController {
   const FormsVector& GetLocalForms() const override;
   const FormsVector& GetFederationsForms() const override;
   std::pair<base::string16, gfx::Range> GetAccoutChooserTitle() const override;
+  bool ShouldShowSignInButton() const override;
   base::string16 GetAutoSigninPromoTitle() const override;
   std::pair<base::string16, gfx::Range> GetAutoSigninText() const override;
   void OnSmartLockLinkClicked() override;
   void OnChooseCredentials(
       const autofill::PasswordForm& password_form,
       password_manager::CredentialType credential_type) override;
+  void OnSignInClicked() override;
   void OnAutoSigninOK() override;
   void OnAutoSigninTurnOff() override;
   void OnCloseDialog() override;

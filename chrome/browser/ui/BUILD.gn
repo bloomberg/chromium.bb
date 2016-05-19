@@ -644,8 +644,6 @@ source_set("test_support") {
     "find_bar/find_bar_host_unittest_util.h",
     "login/login_handler_test_utils.cc",
     "login/login_handler_test_utils.h",
-    "passwords/manage_passwords_ui_controller_mock.cc",
-    "passwords/manage_passwords_ui_controller_mock.h",
     "test/test_confirm_bubble_model.cc",
     "test/test_confirm_bubble_model.h",
     "toolbar/test_toolbar_action_view_controller.cc",
@@ -654,6 +652,10 @@ source_set("test_support") {
 
   if (!is_ios && !is_android) {
     sources += [
+      "passwords/manage_passwords_ui_controller_mock.cc",
+      "passwords/manage_passwords_ui_controller_mock.h",
+      "passwords/password_dialog_controller_mock.cc",
+      "passwords/password_dialog_controller_mock.h",
       "website_settings/mock_permission_bubble_request.cc",
       "website_settings/mock_permission_bubble_request.h",
     ]

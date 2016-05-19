@@ -38,12 +38,14 @@ constexpr CGFloat kMaxHeightAccounts = 3.5;
 
 @interface AccountChooserViewController () {
   NSButton* cancelButton_;  // Weak.
+  NSButton* signInButton_;  // Weak.
   NSTextView* titleView_;   //  Weak.
   base::scoped_nsobject<NSArray> credentialButtons_;
   base::scoped_nsobject<AccountAvatarFetcherManager> avatarManager_;
 }
 - (void)onCancelClicked:(id)sender;
 - (void)onCredentialClicked:(id)sender;
+- (void)onSignInClicked:(id)sender;
 - (void)loadCredentialItems;
 @end
 
@@ -55,6 +57,10 @@ constexpr CGFloat kMaxHeightAccounts = 3.5;
       [[AccountAvatarFetcherManager alloc]
            initWithRequestContext:bridge->GetRequestContext()]);
   return [self initWithBridge:bridge avatarManager:avatarManager];
+}
+
+- (NSButton*)defaultButton {
+  return signInButton_;
 }
 
 - (void)loadView {
@@ -70,13 +76,14 @@ constexpr CGFloat kMaxHeightAccounts = 3.5;
   // | |  |  credential view            |
   // | ----                             |
   // |                                  |
-  // |                      [ Cancel ]  |
+  // |             [ Cancel ] [Sign In] |
   // ------------------------------------
 
   // Create the views.
   // Title.
+  PasswordDialogController* controller = bridge_->GetDialogController();
   std::pair<base::string16, gfx::Range> title_text =
-      bridge_->GetDialogController()->GetAccoutChooserTitle();
+      controller->GetAccoutChooserTitle();
   titleView_ =
       TitleDialogLabelWithLink(title_text.first, title_text.second, self);
   // Force the text to wrap to fit in the bubble size.
@@ -91,15 +98,30 @@ constexpr CGFloat kMaxHeightAccounts = 3.5;
   [self loadCredentialItems];
 
   // "Cancel" button.
-  cancelButton_ = DialogButton(l10n_util::GetNSString(IDS_APP_CANCEL));
+  cancelButton_ = BiggerDialogButton(l10n_util::GetNSString(IDS_APP_CANCEL));
   [cancelButton_ setTarget:self];
   [cancelButton_ setAction:@selector(onCancelClicked:)];
   [cancelButton_ setKeyEquivalent:kKeyEquivalentEscape];
   [view addSubview:cancelButton_];
 
+  // "Sign In" button.
+  if (controller->ShouldShowSignInButton()) {
+    signInButton_ = BiggerDialogButton(
+        l10n_util::GetNSString(IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_SIGN_IN));
+    [signInButton_ setTarget:self];
+    [signInButton_ setAction:@selector(onSignInClicked:)];
+    [signInButton_ setKeyEquivalent:kKeyEquivalentReturn];
+    [view addSubview:signInButton_];
+  }
+
   // Lay out the views.
+  CGFloat curX = kFramePadding + width;
+  if (signInButton_) {
+    curX -= NSWidth([signInButton_ frame]);
+    [signInButton_ setFrameOrigin:NSMakePoint(curX, kFramePadding)];
+  }
   [cancelButton_ setFrameOrigin:NSMakePoint(
-      kFramePadding + width - NSWidth([cancelButton_ frame]),
+      curX - NSWidth([cancelButton_ frame]),
       kFramePadding)];
 
   NSSize buttonsSize = NSMakeSize(
@@ -157,6 +179,11 @@ constexpr CGFloat kMaxHeightAccounts = 3.5;
     bridge_->GetDialogController()->OnChooseCredentials(*button.passwordForm,
                                                         button.credentialType);
   }
+}
+
+- (void)onSignInClicked:(id)sender {
+  if (bridge_ && bridge_->GetDialogController())
+    bridge_->GetDialogController()->OnSignInClicked();
 }
 
 - (void)loadCredentialItems {
@@ -223,6 +250,10 @@ constexpr CGFloat kMaxHeightAccounts = 3.5;
 
 - (NSButton*)cancelButton {
   return cancelButton_;
+}
+
+- (NSButton*)signInButton {
+  return signInButton_;
 }
 
 - (NSArray*)credentialButtons {
