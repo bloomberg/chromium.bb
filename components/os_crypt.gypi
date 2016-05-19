@@ -50,8 +50,8 @@
             },
           },
         }],
-        ['OS=="linux" and chromeos!=1', {
-          'sources': [ 
+        ['OS=="linux" and chromeos!=1 and use_glib==1', {
+          'sources': [
             'os_crypt/libsecret_util_posix.cc',
             'os_crypt/libsecret_util_posix.h',
           ],

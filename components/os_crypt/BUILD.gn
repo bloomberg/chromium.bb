@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
+
 source_set("os_crypt") {
   sources = [
     "ie7_password_win.cc",
@@ -41,7 +43,7 @@ source_set("os_crypt") {
     libs = [ "crypt32.lib" ]
   }
 
-  if (is_desktop_linux) {
+  if (is_desktop_linux && use_glib) {
     sources += [
       "libsecret_util_posix.cc",
       "libsecret_util_posix.h",
