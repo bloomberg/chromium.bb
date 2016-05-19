@@ -453,6 +453,7 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       content_(new aura::Window(this)),
       close_widget_factory_(this) {
+  window_->set_input_event_handler(this);
   mus_window_observer_.reset(new MusWindowObserver(this));
 
   // TODO(fsamuel): Figure out lifetime of |window_|.
@@ -477,10 +478,14 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
 }
 
 NativeWidgetMus::~NativeWidgetMus() {
-  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET)
+  if (ownership_ == Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET) {
+    DCHECK(!window_);
     delete native_widget_delegate_;
-  else
+  } else {
+    if (window_)
+      window_->set_input_event_handler(nullptr);
     CloseNow();
+  }
 }
 
 // static
