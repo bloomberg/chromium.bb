@@ -66,13 +66,13 @@ cr.define('md_history.history_item_test', function() {
           var items =
               Polymer.dom(element.root).querySelectorAll('history-item');
 
-          element.removeDeletedHistory_([element.historyData[3]]);
-          assertEquals(5, element.historyData.length);
+          element.removeDeletedHistory_([element.historyData_[3]]);
+          assertEquals(5, element.historyData_.length);
 
           // Checks that a new time gap separator has been inserted.
           assertTrue(items[2].hasTimeGap);
 
-          element.removeDeletedHistory_([element.historyData[3]]);
+          element.removeDeletedHistory_([element.historyData_[3]]);
 
           // Checks time gap separator is removed.
           assertFalse(items[2].hasTimeGap);
@@ -81,7 +81,7 @@ cr.define('md_history.history_item_test', function() {
       });
 
       teardown(function() {
-        element.historyData = [];
+        element.historyData_ = [];
         element.searchedTerm = '';
       });
     });

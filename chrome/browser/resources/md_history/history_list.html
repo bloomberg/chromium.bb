@@ -33,20 +33,20 @@
       }
     </style>
     <div id="no-results" class="centered-message"
-        hidden$="{{hasResults(historyData.length)}}">
+        hidden$="{{hasResults(historyData_.length)}}">
       {{noResultsMessage_(searchedTerm, querying)}}
     </div>
-    <iron-list items="{{historyData}}" as="item" id="infinite-list"
-        hidden$="{{!hasResults(historyData.length)}}">
+    <iron-list items="{{historyData_}}" as="item" id="infinite-list"
+        hidden$="{{!hasResults(historyData_.length)}}">
       <template>
         <history-item item="[[item]]"
             starred="[[item.starred]]"
             selected="{{item.selected}}"
-            is-card-start="[[isCardStart_(item, index, historyData.length)]]"
-            is-card-end="[[isCardEnd_(item, index, historyData.length)]]"
-            has-time-gap="[[needsTimeGap_(item, index, historyData.length)]]"
+            is-card-start="[[isCardStart_(item, index, historyData_.length)]]"
+            is-card-end="[[isCardEnd_(item, index, historyData_.length)]]"
+            has-time-gap="[[needsTimeGap_(item, index, historyData_.length)]]"
             search-term="[[searchedTerm]]"
-            number-of-items="[[historyData.length]]">
+            number-of-items="[[historyData_.length]]">
         </history-item>
       </template>
     </iron-list>

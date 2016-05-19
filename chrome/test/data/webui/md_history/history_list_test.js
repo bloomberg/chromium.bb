@@ -40,19 +40,19 @@ cr.define('md_history.history_list_test', function() {
 
           // Make sure that the array of data that determines whether or not an
           // item is selected is what we expect after selecting the two items.
-          assertFalse(element.historyData[0].selected);
-          assertFalse(element.historyData[1].selected);
-          assertTrue(element.historyData[2].selected);
-          assertTrue(element.historyData[3].selected);
+          assertFalse(element.historyData_[0].selected);
+          assertFalse(element.historyData_[1].selected);
+          assertTrue(element.historyData_[2].selected);
+          assertTrue(element.historyData_[3].selected);
 
           toolbar.onClearSelectionTap_();
 
           // Make sure that clearing the selection updates both the array and
           // the actual history-items affected.
-          assertFalse(element.historyData[0].selected);
-          assertFalse(element.historyData[1].selected);
-          assertFalse(element.historyData[2].selected);
-          assertFalse(element.historyData[3].selected);
+          assertFalse(element.historyData_[0].selected);
+          assertFalse(element.historyData_[1].selected);
+          assertFalse(element.historyData_[2].selected);
+          assertFalse(element.historyData_[3].selected);
 
           assertFalse(items[2].$.checkbox.checked);
           assertFalse(items[3].$.checkbox.checked);
@@ -106,19 +106,19 @@ cr.define('md_history.history_list_test', function() {
           items = Polymer.dom(element.root).querySelectorAll('history-item');
 
           element.removeDeletedHistory_([
-            element.historyData[2], element.historyData[5],
-            element.historyData[7]
+            element.historyData_[2], element.historyData_[5],
+            element.historyData_[7]
           ]);
 
           flush(function() {
             items = Polymer.dom(element.root).querySelectorAll('history-item');
 
-            assertEquals(element.historyData.length, 5);
-            assertEquals(element.historyData[0].dateRelativeDay,
+            assertEquals(element.historyData_.length, 5);
+            assertEquals(element.historyData_[0].dateRelativeDay,
                          '2016-03-15');
-            assertEquals(element.historyData[2].dateRelativeDay,
+            assertEquals(element.historyData_[2].dateRelativeDay,
                          '2016-03-13');
-            assertEquals(element.historyData[4].dateRelativeDay,
+            assertEquals(element.historyData_[4].dateRelativeDay,
                          '2016-03-11');
 
             // Checks that the first and last items have been reset correctly.
@@ -171,7 +171,7 @@ cr.define('md_history.history_list_test', function() {
       });
 
       teardown(function() {
-        element.historyData = [];
+        element.historyData_ = [];
         element.searchedTerm = '';
         registerMessageCallback('removeVisits', this, undefined);
       });

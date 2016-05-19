@@ -66,7 +66,7 @@ cr.define('md_history.history_toolbar_test', function() {
       });
 
       teardown(function() {
-        element.historyData = [];
+        element.historyData_ = [];
         element.searchedTerm = '';
         registerMessageCallback('queryHistory', this, undefined);
         toolbar.count = 0;

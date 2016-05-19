@@ -17,7 +17,7 @@ Polymer({
     querying: Boolean,
 
     // An array of history entries in reverse chronological order.
-    historyData: Array,
+    historyData_: Array,
 
     resultLoadingDisabled_: {
       type: Boolean,
@@ -81,7 +81,7 @@ Polymer({
   },
 
   /**
-   * Adds the newly updated history results into historyData. Adds new fields
+   * Adds the newly updated history results into historyData_. Adds new fields
    * for each result.
    * @param {!Array<!HistoryEntry>} historyResults The new history results.
    */
@@ -91,8 +91,8 @@ Polymer({
 
     if (this.lastSearchedTerm_ != this.searchedTerm) {
       this.resultLoadingDisabled_ = false;
-      if (this.historyData)
-        this.splice('historyData', 0, this.historyData.length);
+      if (this.historyData_)
+        this.splice('historyData_', 0, this.historyData_.length);
       this.lastSearchedTerm_ = this.searchedTerm;
     }
 
@@ -117,30 +117,30 @@ Polymer({
       }
     }
 
-    if (this.historyData) {
+    if (this.historyData_) {
       // If we have previously received data, push the new items onto the
       // existing array.
-      results.unshift('historyData');
+      results.unshift('historyData_');
       this.push.apply(this, results);
     } else {
       // The first time we receive data, use set() to ensure the iron-list is
       // initialized correctly.
-      this.set('historyData', results);
+      this.set('historyData_', results);
     }
   },
 
   /**
-   * Cycle through each entry in historyData and set all items to be
+   * Cycle through each entry in historyData_ and set all items to be
    * unselected.
    * @param {number} overallItemCount The number of checkboxes selected.
    */
   unselectAllItems: function(overallItemCount) {
-    if (this.historyData === undefined)
+    if (this.historyData_ === undefined)
       return;
 
-    for (var i = 0; i < this.historyData.length; i++) {
-      if (this.historyData[i].selected) {
-        this.set('historyData.' + i + '.selected', false);
+    for (var i = 0; i < this.historyData_.length; i++) {
+      if (this.historyData_[i].selected) {
+        this.set('historyData_.' + i + '.selected', false);
         overallItemCount--;
         if (overallItemCount == 0)
           break;
@@ -160,24 +160,24 @@ Polymer({
     var deletedItems = new Set(removalList);
     var splices = [];
 
-    for (var i = this.historyData.length - 1; i >= 0; i--) {
-      var item = this.historyData[i];
+    for (var i = this.historyData_.length - 1; i >= 0; i--) {
+      var item = this.historyData_[i];
       if (deletedItems.has(item)) {
-        // Removes the selected item from historyData. Use unshift so
+        // Removes the selected item from historyData_. Use unshift so
         // |splices| ends up in index order.
         splices.unshift({
           index: i,
           removed: [item],
           addedCount: 0,
-          object: this.historyData,
+          object: this.historyData_,
           type: 'splice'
         });
-        this.historyData.splice(i, 1);
+        this.historyData_.splice(i, 1);
       }
     }
     // notifySplices gives better performance than individually splicing as it
     // batches all of the updates together.
-    this.notifySplices('historyData', splices);
+    this.notifySplices('historyData_', splices);
   },
 
   /**
@@ -185,7 +185,7 @@ Polymer({
    * successful, removes them from the view.
    */
   deleteSelected: function() {
-    var toBeRemoved = this.historyData.filter(function(item) {
+    var toBeRemoved = this.historyData_.filter(function(item) {
       return item.selected;
     });
     md_history.BrowserService.getInstance()
@@ -211,8 +211,8 @@ Polymer({
    * Check whether the time difference between the given history item and the
    * next one is large enough for a spacer to be required.
    * @param {HistoryEntry} item
-   * @param {number} index The index of |item| in |historyData|.
-   * @param {number} length The length of |historyData|.
+   * @param {number} index The index of |item| in |historyData_|.
+   * @param {number} length The length of |historyData_|.
    * @return {boolean} Whether or not time gap separator is required.
    * @private
    */
@@ -220,8 +220,8 @@ Polymer({
     if (index >= length - 1 || length == 0)
       return false;
 
-    var currentItem = this.historyData[index];
-    var nextItem = this.historyData[index + 1];
+    var currentItem = this.historyData_[index];
+    var nextItem = this.historyData_[index + 1];
 
     if (this.searchedTerm)
       return currentItem.dateShort != nextItem.dateShort;
@@ -244,7 +244,7 @@ Polymer({
   /**
    * True if the given item is the beginning of a new card.
    * @param {HistoryEntry} item
-   * @param {number} i Index of |item| within |historyData|.
+   * @param {number} i Index of |item| within |historyData_|.
    * @param {number} length
    * @return {boolean}
    * @private
@@ -253,14 +253,14 @@ Polymer({
     if (length == 0 || i > length - 1)
       return false;
     return i == 0 ||
-        this.historyData[i].dateRelativeDay !=
-        this.historyData[i - 1].dateRelativeDay;
+        this.historyData_[i].dateRelativeDay !=
+        this.historyData_[i - 1].dateRelativeDay;
   },
 
   /**
    * True if the given item is the end of a card.
    * @param {HistoryEntry} item
-   * @param {number} i Index of |item| within |historyData|.
+   * @param {number} i Index of |item| within |historyData_|.
    * @param {number} length
    * @return {boolean}
    * @private
@@ -269,7 +269,7 @@ Polymer({
     if (length == 0 || i > length - 1)
       return false;
     return i == length - 1 ||
-        this.historyData[i].dateRelativeDay !=
-        this.historyData[i + 1].dateRelativeDay;
+        this.historyData_[i].dateRelativeDay !=
+        this.historyData_[i + 1].dateRelativeDay;
   },
 });

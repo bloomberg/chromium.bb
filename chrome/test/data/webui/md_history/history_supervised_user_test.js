@@ -39,12 +39,12 @@ cr.define('md_history.history_supervised_user_test', function() {
           assertTrue(false);
         });
 
-        element.historyData[0].selected = true;
+        element.historyData_[0].selected = true;
         toolbar.onDeleteTap_();
       });
 
       teardown(function() {
-        element.historyData = [];
+        element.historyData_ = [];
         element.searchedTerm = '';
       });
     });
