@@ -42,7 +42,8 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
         observed_committed_urls_(observed_committed_urls) {}
 
   void OnStart(content::NavigationHandle* navigation_handle,
-               const GURL& currently_committed_url) override {
+               const GURL& currently_committed_url,
+               bool started_in_foreground) override {
     observed_committed_urls_->push_back(currently_committed_url);
   }
 

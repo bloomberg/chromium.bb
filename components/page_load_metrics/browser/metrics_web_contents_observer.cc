@@ -253,7 +253,8 @@ PageLoadTracker::PageLoadTracker(
   DCHECK(!navigation_handle->HasCommitted());
   embedder_interface_->RegisterObservers(this);
   for (const auto& observer : observers_) {
-    observer->OnStart(navigation_handle, currently_committed_url);
+    observer->OnStart(navigation_handle, currently_committed_url,
+                      started_in_foreground_);
   }
 }
 
@@ -328,6 +329,9 @@ void PageLoadTracker::WebContentsHidden() {
     DCHECK_EQ(started_in_foreground_, foreground_time_.is_null());
     background_time_ = base::TimeTicks::Now();
   }
+
+  for (const auto& observer : observers_)
+    observer->OnHidden();
 }
 
 void PageLoadTracker::WebContentsShown() {
@@ -339,6 +343,9 @@ void PageLoadTracker::WebContentsShown() {
     DCHECK_NE(started_in_foreground_, background_time_.is_null());
     foreground_time_ = base::TimeTicks::Now();
   }
+
+  for (const auto& observer : observers_)
+    observer->OnShown();
 }
 
 void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {

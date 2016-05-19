@@ -24212,6 +24212,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Navigation.EngagementTime.HTTP" units="ms">
+  <owner>felt@chromium.org</owner>
+  <summary>
+    The amount of time that an HTTP page was in the foreground. Recorded on
+    every page close/transition.
+  </summary>
+</histogram>
+
+<histogram name="Navigation.EngagementTime.HTTPS" units="ms">
+  <owner>felt@chromium.org</owner>
+  <summary>
+    The amount of time that an HTTPS page was in the foreground. Recorded on
+    every page close/transition.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.FrameHasEmbeddedCredentials" enum="Boolean">
   <owner>palmer@chromium.org</owner>
   <owner>cbentzel@chromium.org</owner>

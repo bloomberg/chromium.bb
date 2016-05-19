@@ -105,7 +105,8 @@ class PageLoadMetricsObserver {
   // initiated, or the empty URL if there was no committed page load at the time
   // the navigation was initiated.
   virtual void OnStart(content::NavigationHandle* navigation_handle,
-                       const GURL& currently_committed_url) {}
+                       const GURL& currently_committed_url,
+                       bool started_in_foreground) {}
 
   // OnRedirect is triggered when a page load redirects to another URL.
   // The navigation handle holds relevant data for the navigation, but will
@@ -133,6 +134,15 @@ class PageLoadMetricsObserver {
   // to override this method.
   virtual void OnTimingUpdate(const PageLoadTiming& timing,
                               const PageLoadExtraInfo& extra_info) {}
+
+  // OnHidden is triggered when a page leaves the foreground. It does not fire
+  // when a foreground page is permanently closed; for that, listen to
+  // OnComplete instead.
+  virtual void OnHidden() {}
+
+  // OnShown is triggered when a page is brought to the foreground. It does not
+  // fire when the page first loads; for that, listen for OnStart instead.
+  virtual void OnShown() {}
 
   // OnComplete is triggered when we are ready to record metrics for this page
   // load. This will happen some time after commit. The PageLoadTiming struct

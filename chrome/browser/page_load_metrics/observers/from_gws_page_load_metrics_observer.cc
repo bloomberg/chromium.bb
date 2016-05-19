@@ -310,7 +310,8 @@ FromGWSPageLoadMetricsObserver::FromGWSPageLoadMetricsObserver() {}
 
 void FromGWSPageLoadMetricsObserver::OnStart(
     content::NavigationHandle* navigation_handle,
-    const GURL& currently_committed_url) {
+    const GURL& currently_committed_url,
+    bool started_in_foreground) {
   logger_.SetPreviouslyCommittedUrl(currently_committed_url);
   logger_.SetProvisionalUrl(navigation_handle->GetURL());
 }
