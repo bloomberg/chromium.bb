@@ -2609,7 +2609,8 @@ void PaintLayer::styleDidChange(StyleDifference diff, const ComputedStyle* oldSt
     updateSelfPaintingLayer();
 
     if (!oldStyle || !layoutObject()->style()->reflectionDataEquivalent(oldStyle)) {
-        ASSERT(!oldStyle || diff.needsFullLayout());
+        // A full layout is required for non-filter-based reflections.
+        DCHECK(!oldStyle || diff.needsFullLayout() || RuntimeEnabledFeatures::cssBoxReflectFilterEnabled());
         updateReflectionInfo(oldStyle);
     }
 
