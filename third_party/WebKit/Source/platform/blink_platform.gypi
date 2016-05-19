@@ -1261,6 +1261,7 @@
       'graphics/test/MockImageDecoder.h',
     ],
     'platform_test_support_files': [
+      'scroll/ScrollbarTestSuite.h',
       'testing/CompositorTest.cpp',
       'testing/CompositorTest.h',
       'testing/FakeDisplayItemClient.h',
@@ -1321,6 +1322,13 @@
         {
           'platform_test_files': [
             'scroll/ScrollAnimatorTest.cpp',
+          ],
+        }
+      ],
+      ['use_default_render_theme==1',
+        {
+          'platform_test_files': [
+            'scroll/ScrollbarThemeAuraTest.cpp',
           ],
         }
       ],

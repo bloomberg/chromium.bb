@@ -358,50 +358,51 @@ void NativeThemeBase::PaintArrow(SkCanvas* gc,
                                  const gfx::Rect& rect,
                                  Part direction,
                                  SkColor color) const {
-  int width_middle, length_middle;
-  if (direction == kScrollbarUpArrow || direction == kScrollbarDownArrow) {
-    width_middle = rect.width() / 2 + 1;
-    length_middle = rect.height() / 2 + 1;
-  } else {
-    length_middle = rect.width() / 2 + 1;
-    width_middle = rect.height() / 2 + 1;
-  }
-
   SkPaint paint;
   paint.setColor(color);
-  paint.setAntiAlias(false);
-  paint.setStyle(SkPaint::kFill_Style);
 
-  SkPath path;
-  // The constants in this block of code are hand-tailored to produce good
-  // looking arrows without anti-aliasing.
-  switch (direction) {
-    case kScrollbarUpArrow:
-      path.moveTo(rect.x() + width_middle - 4, rect.y() + length_middle + 2);
-      path.rLineTo(7, 0);
-      path.rLineTo(-4, -4);
-      break;
-    case kScrollbarDownArrow:
-      path.moveTo(rect.x() + width_middle - 4, rect.y() + length_middle - 3);
-      path.rLineTo(7, 0);
-      path.rLineTo(-4, 4);
-      break;
-    case kScrollbarRightArrow:
-      path.moveTo(rect.x() + length_middle - 3, rect.y() + width_middle - 4);
-      path.rLineTo(0, 7);
-      path.rLineTo(4, -4);
-      break;
-    case kScrollbarLeftArrow:
-      path.moveTo(rect.x() + length_middle + 1, rect.y() + width_middle - 5);
-      path.rLineTo(0, 9);
-      path.rLineTo(-4, -4);
-      break;
-    default:
-      break;
-  }
-  path.close();
+  SkPath path = PathForArrow(rect, direction);
 
   gc->drawPath(path, paint);
+}
+
+SkPath NativeThemeBase::PathForArrow(const gfx::Rect& rect,
+                                     Part direction) const {
+  gfx::Rect bounding_rect(rect);
+  const int padding_width = ceil(rect.width() / 4.f);
+  const int padding_height = ceil(rect.height() / 4.f);
+  bounding_rect.Inset(padding_width, padding_height);
+  const gfx::Point center = bounding_rect.CenterPoint();
+
+  SkPath path;
+  SkMatrix transform;
+  transform.setIdentity();
+  if (direction == kScrollbarUpArrow || direction == kScrollbarDownArrow) {
+    int arrow_altitude = bounding_rect.height() / 2 + 1;
+    path.moveTo(bounding_rect.x(), bounding_rect.bottom());
+    path.rLineTo(bounding_rect.width(), 0);
+    path.rLineTo(-bounding_rect.width() / 2.0f, -arrow_altitude);
+    path.close();
+    path.offset(0, -arrow_altitude / 2 + 1);
+    if (direction == kScrollbarDownArrow) {
+      path.offset(0, -1);
+      transform.setScale(1, -1, center.x(), center.y());
+    }
+  } else {
+    int arrow_altitude = bounding_rect.width() / 2 + 1;
+    path.moveTo(bounding_rect.x(), bounding_rect.y());
+    path.rLineTo(0, bounding_rect.height());
+    path.rLineTo(arrow_altitude, -bounding_rect.height() / 2.0f);
+    path.close();
+    path.offset(arrow_altitude / 2, 0);
+    if (direction == kScrollbarLeftArrow) {
+      path.offset(-1, 0);
+      transform.setScale(-1, 1, center.x(), center.y());
+    }
+  }
+  path.transform(transform);
+
+  return path;
 }
 
 void NativeThemeBase::PaintScrollbarTrack(SkCanvas* canvas,

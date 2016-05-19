@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/native_theme/native_theme.h"
@@ -169,6 +170,11 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
   SkColor GetArrowColor(State state) const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(NativeThemeAuraTest, VerticalArrows);
+  FRIEND_TEST_ALL_PREFIXES(NativeThemeAuraTest, HorizontalArrows);
+
+  SkPath PathForArrow(const gfx::Rect& rect, Part direction) const;
+
   void DrawVertLine(SkCanvas* canvas,
                     int x,
                     int y1,

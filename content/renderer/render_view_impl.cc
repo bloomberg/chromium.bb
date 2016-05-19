@@ -2586,7 +2586,6 @@ void RenderViewImpl::OnSetRendererPrefs(
   renderer_preferences_ = renderer_prefs;
 
   UpdateFontRenderingFromRendererPrefs();
-  UpdateThemePrefs();
 
 #if defined(USE_DEFAULT_RENDER_THEME)
   if (renderer_prefs.use_custom_colors) {

@@ -27,14 +27,6 @@ class WebThemeEngineImpl : public blink::WebThemeEngine {
                                     blink::WebThemeEngine::State endState,
                                     double progress,
                                     const blink::WebRect& rect);
-
-#if defined(OS_WIN)
-  // Caches the scrollbar metrics.
-  static void cacheScrollBarMetrics(int32_t vertical_scroll_bar_width,
-                                    int32_t horizontal_scroll_bar_height,
-                                    int32_t vertical_arrow_bitmap_height,
-                                    int32_t horizontal_arrow_bitmap_width);
-#endif
 };
 
 }  // namespace content

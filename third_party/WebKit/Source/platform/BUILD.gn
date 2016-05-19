@@ -544,6 +544,10 @@ test("blink_platform_unittests") {
     sources += [ "scroll/ScrollAnimatorTest.cpp" ]
   }
 
+  if (use_default_render_theme) {
+    sources += [ "scroll/ScrollbarThemeAuraTest.cpp" ]
+  }
+
   sources += [ "testing/RunAllTests.cpp" ]
 
   configs += [

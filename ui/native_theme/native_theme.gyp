@@ -58,10 +58,12 @@
         '../../base/base.gyp:test_support_base',
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
+        '../gfx/gfx.gyp:gfx_geometry',
         'native_theme',
       ],
       'sources': [
         '../../base/test/run_all_unittests.cc',
+        'native_theme_aura_unittest.cc',
         'native_theme_mac_unittest.cc',
       ],
     },

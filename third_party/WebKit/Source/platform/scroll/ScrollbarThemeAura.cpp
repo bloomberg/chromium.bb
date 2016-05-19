@@ -326,13 +326,13 @@ ScrollbarPart ScrollbarThemeAura::invalidateOnThumbPositionChange(const Scrollba
 IntSize ScrollbarThemeAura::buttonSize(const ScrollbarThemeClient& scrollbar)
 {
     if (scrollbar.orientation() == VerticalScrollbar) {
-        IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartScrollbarUpArrow);
-        return IntSize(size.width(), scrollbar.height() < 2 * size.height() ? scrollbar.height() / 2 : size.height());
+        int squareSize = scrollbar.width();
+        return IntSize(squareSize, scrollbar.height() < 2 * squareSize ? scrollbar.height() / 2 : squareSize);
     }
 
     // HorizontalScrollbar
-    IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartScrollbarLeftArrow);
-    return IntSize(scrollbar.width() < 2 * size.width() ? scrollbar.width() / 2 : size.width(), size.height());
+    int squareSize = scrollbar.height();
+    return IntSize(scrollbar.width() < 2 * squareSize ? scrollbar.width() / 2 : squareSize, squareSize);
 }
 
 } // namespace blink

@@ -31,6 +31,7 @@
 #ifndef ScrollbarThemeAura_h
 #define ScrollbarThemeAura_h
 
+#include "base/gtest_prod_util.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
 namespace blink {
@@ -58,6 +59,9 @@ protected:
     ScrollbarPart invalidateOnThumbPositionChange(const ScrollbarThemeClient&, float oldPosition, float newPosition) const override;
 
 private:
+    FRIEND_TEST_ALL_PREFIXES(ScrollbarThemeAuraTest, ButtonSizeHorizontal);
+    FRIEND_TEST_ALL_PREFIXES(ScrollbarThemeAuraTest, ButtonSizeVertical);
+
     IntSize buttonSize(const ScrollbarThemeClient&);
 };
 
