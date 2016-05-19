@@ -146,6 +146,11 @@ public:
         return m_layoutObject->node();
     }
 
+    void updateStyleAndLayout()
+    {
+        return m_layoutObject->document().updateStyleAndLayout();
+    }
+
     const ComputedStyle& styleRef() const
     {
         return m_layoutObject->styleRef();

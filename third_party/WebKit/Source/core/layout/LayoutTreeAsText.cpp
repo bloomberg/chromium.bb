@@ -539,10 +539,10 @@ void write(TextStream& ts, const LayoutObject& o, int indent, LayoutAsTextBehavi
         Widget* widget = toLayoutPart(o).widget();
         if (widget && widget->isFrameView()) {
             FrameView* view = toFrameView(widget);
-            LayoutView* root = view->layoutView();
-            if (root) {
-                root->document().updateStyleAndLayout();
-                PaintLayer* layer = root->layer();
+            LayoutViewItem rootItem = view->layoutViewItem();
+            if (!rootItem.isNull()) {
+                rootItem.updateStyleAndLayout();
+                PaintLayer* layer = rootItem.layer();
                 if (layer)
                     LayoutTreeAsText::writeLayers(ts, layer, layer, layer->rect(), indent + 1, behavior);
             }
