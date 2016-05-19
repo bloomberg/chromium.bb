@@ -33,8 +33,7 @@ ArcGpuVideoDecodeAccelerator::InputBufferInfo::InputBufferInfo(
 ArcGpuVideoDecodeAccelerator::InputBufferInfo::~InputBufferInfo() {}
 
 ArcGpuVideoDecodeAccelerator::ArcGpuVideoDecodeAccelerator()
-    : pending_eos_output_buffer_(false),
-      arc_client_(nullptr),
+    : arc_client_(nullptr),
       next_bitstream_buffer_id_(0),
       output_buffer_size_(0) {}
 
@@ -208,13 +207,21 @@ void ArcGpuVideoDecodeAccelerator::UseBuffer(PortType port,
       vda_->Decode(media::BitstreamBuffer(
           bitstream_buffer_id, base::SharedMemoryHandle(dup_fd, true),
           metadata.bytes_used, input_info->offset));
-      if (metadata.flags & BUFFER_FLAG_EOS) {
-        vda_->Flush();
-      }
       break;
     }
     case PORT_OUTPUT: {
-      SendEosIfNeededOrReusePicture(index);
+      // is_valid() is true for the first time the buffer is passed to the VDA.
+      // In that case, VDA needs to import the buffer first.
+      if (buffers_pending_import_[index].is_valid()) {
+        gfx::GpuMemoryBufferHandle handle;
+#if defined(USE_OZONE)
+        handle.native_pixmap_handle.fd = base::FileDescriptor(
+            buffers_pending_import_[index].release(), true);
+#endif
+        vda_->ImportBufferForPicture(index, {handle});
+      } else {
+        vda_->ReusePictureBuffer(index);
+      }
       break;
     }
     default:
@@ -229,6 +236,15 @@ void ArcGpuVideoDecodeAccelerator::Reset() {
     return;
   }
   vda_->Reset();
+}
+
+void ArcGpuVideoDecodeAccelerator::Flush() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!vda_) {
+    DLOG(ERROR) << "VDA not initialized";
+    return;
+  }
+  vda_->Flush();
 }
 
 void ArcGpuVideoDecodeAccelerator::ProvidePictureBuffers(
@@ -286,11 +302,6 @@ void ArcGpuVideoDecodeAccelerator::PictureReady(const media::Picture& picture) {
            << ", bitstream_buffer_id=" << picture.bitstream_buffer_id();
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // Empty buffer, returned in Flushing.
-  if (picture.bitstream_buffer_id() == -1) {
-    buffers_pending_eos_.push(picture.picture_buffer_id());
-    return;
-  }
   InputRecord* input_record = FindInputRecord(picture.bitstream_buffer_id());
   if (input_record == nullptr) {
     DLOG(ERROR) << "Cannot find for bitstream buffer id: "
@@ -320,11 +331,7 @@ void ArcGpuVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer(
 
 void ArcGpuVideoDecodeAccelerator::NotifyFlushDone() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  pending_eos_output_buffer_ = true;
-  while (!buffers_pending_eos_.empty()) {
-    SendEosIfNeededOrReusePicture(buffers_pending_eos_.front());
-    buffers_pending_eos_.pop();
-  }
+  arc_client_->OnFlushDone();
 }
 
 void ArcGpuVideoDecodeAccelerator::NotifyResetDone() {
@@ -354,28 +361,6 @@ void ArcGpuVideoDecodeAccelerator::NotifyError(
   DCHECK(thread_checker_.CalledOnValidThread());
   DLOG(ERROR) << "Error notified: " << error;
   arc_client_->OnError(ConvertErrorCode(error));
-}
-
-void ArcGpuVideoDecodeAccelerator::SendEosIfNeededOrReusePicture(
-    uint32_t index) {
-  if (pending_eos_output_buffer_) {
-    BufferMetadata metadata;
-    metadata.flags = BUFFER_FLAG_EOS;
-    arc_client_->OnBufferDone(PORT_OUTPUT, index, metadata);
-    pending_eos_output_buffer_ = false;
-  } else {
-    if (buffers_pending_import_[index].is_valid()) {
-      std::vector<gfx::GpuMemoryBufferHandle> buffers;
-      buffers.push_back(gfx::GpuMemoryBufferHandle());
-#if defined(USE_OZONE)
-      buffers.back().native_pixmap_handle.fd =
-          base::FileDescriptor(buffers_pending_import_[index].release(), true);
-#endif
-      vda_->ImportBufferForPicture(index, buffers);
-    } else {
-      vda_->ReusePictureBuffer(index);
-    }
-  }
 }
 
 void ArcGpuVideoDecodeAccelerator::CreateInputRecord(

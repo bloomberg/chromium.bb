@@ -19,14 +19,8 @@ enum PortType {
   PORT_OUTPUT = 1,
 };
 
-[Extensible]
-enum BufferFlag {
-  BUFFER_FLAG_EOS = 1,
-};
-
 struct BufferMetadata {
   int64 timestamp;  // in microseconds
-  uint32 flags;
   uint32 bytes_used;
 };
 
@@ -68,6 +62,8 @@ interface VideoAcceleratorService {
   SetNumberOfOutputBuffers@4(uint32 number);
 
   Reset@5();
+
+  Flush@6();
 };
 
 interface VideoAcceleratorServiceClient {
@@ -88,4 +84,6 @@ interface VideoAcceleratorServiceClient {
   OnResetDone@3();
 
   OnOutputFormatChanged@4(VideoFormat format);
+
+  OnFlushDone@5();
 };

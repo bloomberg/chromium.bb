@@ -28,13 +28,8 @@ enum PortType {
   PORT_COUNT = 2,
 };
 
-enum BufferFlag {
-  BUFFER_FLAG_EOS = 1 << 0,
-};
-
 struct BufferMetadata {
   int64_t timestamp = 0;  // in microseconds
-  uint32_t flags = 0;     // Flags defined in BufferFlag.
   uint32_t bytes_used = 0;
 };
 
@@ -102,6 +97,9 @@ class ArcVideoAccelerator {
 
     // Called as a completion notification for Reset().
     virtual void OnResetDone() = 0;
+
+    // Called as a completion notification for Flush().
+    virtual void OnFlushDone() = 0;
   };
 
   // Initializes the ArcVideoAccelerator with specific configuration. This
@@ -142,6 +140,11 @@ class ArcVideoAccelerator {
   // be called. Afterwards, all buffers won't be accessed by the accelerator
   // and there won't be more callbacks.
   virtual void Reset() = 0;
+
+  // Flushes the accelerator. After all the output buffers pending decode have
+  // been returned to client by OnBufferDone(), Client::OnFlushDone() will be
+  // called.
+  virtual void Flush() = 0;
 
   virtual ~ArcVideoAccelerator() {}
 };

@@ -27,7 +27,6 @@ struct TypeConverter<arc::mojom::BufferMetadataPtr,
       const chromeos::arc::BufferMetadata& input) {
     arc::mojom::BufferMetadataPtr result = arc::mojom::BufferMetadata::New();
     result->timestamp = input.timestamp;
-    result->flags = input.flags;
     result->bytes_used = input.bytes_used;
     return result;
   }
@@ -40,7 +39,6 @@ struct TypeConverter<chromeos::arc::BufferMetadata,
       const arc::mojom::BufferMetadataPtr& input) {
     chromeos::arc::BufferMetadata result;
     result.timestamp = input->timestamp;
-    result.flags = input->flags;
     result.bytes_used = input->bytes_used;
     return result;
   }
@@ -152,6 +150,11 @@ class GpuArcVideoService::AcceleratorStub
     client_->OnResetDone();
   }
 
+  void OnFlushDone() override {
+    DVLOG(2) << "OnFlushDone";
+    client_->OnFlushDone();
+  }
+
   void OnOutputFormatChanged(const VideoFormat& format) override {
     DVLOG(2) << "OnOutputFormatChanged";
     client_->OnOutputFormatChanged(::arc::mojom::VideoFormat::From(format));
@@ -212,6 +215,8 @@ class GpuArcVideoService::AcceleratorStub
   }
 
   void Reset() override { accelerator_->Reset(); }
+
+  void Flush() override { accelerator_->Flush(); }
 
  private:
   base::ThreadChecker thread_checker_;

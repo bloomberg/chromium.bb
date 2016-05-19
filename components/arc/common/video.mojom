@@ -9,6 +9,7 @@ interface VideoHost {
   // Replies with |channel_handle| of mojo initial message pipe and |token| for
   // creating the client end of VideoAcceleratorService message pipe.
   // Replys invalid handle and empty token if any failure.
+  [MinVersion=1]
   OnRequestArcVideoAcceleratorChannel() => (handle channel_handle,
                                             string token);
 };

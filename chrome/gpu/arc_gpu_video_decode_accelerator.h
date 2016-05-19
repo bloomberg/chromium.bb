@@ -47,6 +47,7 @@ class ArcGpuVideoDecodeAccelerator
                  uint32_t index,
                  const BufferMetadata& metadata) override;
   void Reset() override;
+  void Flush() override;
 
   // Implementation of the VideoDecodeAccelerator::Client interface.
   void ProvidePictureBuffers(uint32_t requested_num_of_buffers,
@@ -86,10 +87,6 @@ class ArcGpuVideoDecodeAccelerator
     ~InputBufferInfo();
   };
 
-  // Helper function to Send the end-of-stream output buffer if
-  // |pending_eos_output_buffer_| is true, or reuse the picture in ArcVDA.
-  void SendEosIfNeededOrReusePicture(uint32_t index);
-
   // Helper function to validate |port| and |index|.
   bool ValidatePortAndIndex(PortType port, uint32_t index);
 
@@ -104,10 +101,6 @@ class ArcGpuVideoDecodeAccelerator
   // Returns |nullptr| if it cannot be found.
   InputRecord* FindInputRecord(int32_t bitstream_buffer_id);
 
-  // When true, an EOS output buffer need to be sent to |arc_client_| once an
-  // output buffer is available.
-  bool pending_eos_output_buffer_;
-
   std::unique_ptr<media::VideoDecodeAccelerator> vda_;
 
   // It's safe to use the pointer here, the life cycle of the |arc_client_|
@@ -118,13 +111,6 @@ class ArcGpuVideoDecodeAccelerator
   int32_t next_bitstream_buffer_id_;
 
   gfx::Size coded_size_;
-
-  // The |picture_buffer_id|s for Pictures that were returned to us from VDA
-  // via PictureReady() while flushing. We keep them until NotifyFlushDone();
-  // once it's called, we send one of the pending buffers from this queue (if
-  // not empty), marked with an EOS flag, to |arc_client_|, and return the rest
-  // to VDA for reuse.
-  std::queue<int32_t> buffers_pending_eos_;
 
   // A list of most recent |kMaxNumberOfInputRecord| InputRecords.
   // |kMaxNumberOfInputRecord| is defined in the cc file.
