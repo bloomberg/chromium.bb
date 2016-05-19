@@ -2212,7 +2212,7 @@ def GetConfig():
   )
 
   _grouped_toolchain_llvm = config_lib.BuildConfig(
-      build_packages_in_background=True,
+      build_packages_in_background=False,
       chrome_sdk=False,
       chrome_sdk_build_chrome=False,
       chroot_replace=False,
@@ -2257,7 +2257,7 @@ def GetConfig():
   )
 
   _grouped_toolchain_gcc = config_lib.BuildConfig(
-      build_packages_in_background=True,
+      build_packages_in_background=False,
       chrome_sdk=False,
       chrome_sdk_build_chrome=False,
       chroot_replace=False,

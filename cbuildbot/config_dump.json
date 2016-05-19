@@ -6202,7 +6202,6 @@
         "boards": [
             "daisy"
         ],
-        "build_packages_in_background": true,
         "chrome_sdk": false,
         "chrome_sdk_build_chrome": false,
         "chroot_replace": false
@@ -6212,7 +6211,6 @@
         "boards": [
             "daisy"
         ],
-        "build_packages_in_background": true,
         "chrome_sdk": false,
         "chrome_sdk_build_chrome": false,
         "chroot_replace": false
@@ -8238,7 +8236,6 @@
                 "boards": [
                     "daisy"
                 ],
-                "build_packages_in_background": true,
                 "chrome_sdk": false,
                 "chrome_sdk_build_chrome": false,
                 "chroot_replace": false,
@@ -8250,7 +8247,6 @@
                 "boards": [
                     "x86-alex"
                 ],
-                "build_packages_in_background": true,
                 "chrome_sdk": false,
                 "chrome_sdk_build_chrome": false,
                 "chroot_replace": false,
@@ -11811,7 +11807,6 @@
                 "boards": [
                     "daisy"
                 ],
-                "build_packages_in_background": true,
                 "chrome_sdk": false,
                 "chrome_sdk_build_chrome": false,
                 "chroot_replace": false,
@@ -11823,7 +11818,6 @@
                 "boards": [
                     "x86-alex"
                 ],
-                "build_packages_in_background": true,
                 "chrome_sdk": false,
                 "chrome_sdk_build_chrome": false,
                 "chroot_replace": false,
@@ -24502,7 +24496,6 @@
         "boards": [
             "x86-alex"
         ],
-        "build_packages_in_background": true,
         "chrome_sdk": false,
         "chrome_sdk_build_chrome": false,
         "chroot_replace": false
@@ -24512,7 +24505,6 @@
         "boards": [
             "x86-alex"
         ],
-        "build_packages_in_background": true,
         "chrome_sdk": false,
         "chrome_sdk_build_chrome": false,
         "chroot_replace": false
