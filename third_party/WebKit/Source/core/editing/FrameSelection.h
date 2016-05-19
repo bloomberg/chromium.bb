@@ -70,7 +70,7 @@ enum class CaretVisibility;
 class CORE_EXPORT FrameSelection final : public GarbageCollectedFinalized<FrameSelection> {
     WTF_MAKE_NONCOPYABLE(FrameSelection);
 public:
-    static FrameSelection* create(LocalFrame* frame = nullptr)
+    static FrameSelection* create(LocalFrame* frame)
     {
         return new FrameSelection(frame);
     }

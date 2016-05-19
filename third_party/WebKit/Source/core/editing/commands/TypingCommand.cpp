@@ -31,7 +31,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
-#include "core/editing/FrameSelection.h"
+#include "core/editing/SelectionModifier.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/commands/BreakBlockquoteCommand.h"
@@ -495,11 +495,10 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing,
 
         m_smartDelete = false;
 
-        FrameSelection* selection = FrameSelection::create();
-        selection->setSelection(endingSelection());
-        selection->modify(FrameSelection::AlterationExtend, DirectionBackward, granularity);
-        if (killRing && selection->isCaret() && granularity != CharacterGranularity)
-            selection->modify(FrameSelection::AlterationExtend, DirectionBackward, CharacterGranularity);
+        SelectionModifier selectionModifier(*frame, endingSelection());
+        selectionModifier.modify(FrameSelection::AlterationExtend, DirectionBackward, granularity);
+        if (killRing && selectionModifier.selection().isCaret() && granularity != CharacterGranularity)
+            selectionModifier.modify(FrameSelection::AlterationExtend, DirectionBackward, CharacterGranularity);
 
         VisiblePosition visibleStart(endingSelection().visibleStart());
         if (previousPositionOf(visibleStart, CannotCrossEditingBoundary).isNull()) {
@@ -531,7 +530,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing,
             if (tableElementJustAfter(visibleStart))
                 return;
             // Extend the selection backward into the last cell, then deletion will handle the move.
-            selection->modify(FrameSelection::AlterationExtend, DirectionBackward, granularity);
+            selectionModifier.modify(FrameSelection::AlterationExtend, DirectionBackward, granularity);
         // If the caret is just after a table, select the table and don't delete anything.
         } else if (Element* table = tableElementJustBefore(visibleStart)) {
             setEndingSelection(VisibleSelection(positionBeforeNode(table), endingSelection().start(), TextAffinity::Downstream, endingSelection().isDirectional()));
@@ -539,7 +538,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing,
             return;
         }
 
-        selectionToDelete = selection->selection();
+        selectionToDelete = selectionModifier.selection();
 
         if (granularity == CharacterGranularity && selectionToDelete.end().computeContainerNode() == selectionToDelete.start().computeContainerNode()
             && selectionToDelete.end().computeOffsetInContainerNode() - selectionToDelete.start().computeOffsetInContainerNode() > 1) {
@@ -605,11 +604,10 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
         // Handle delete at beginning-of-block case.
         // Do nothing in the case that the caret is at the start of a
         // root editable element or at the start of a document.
-        FrameSelection* selection = FrameSelection::create();
-        selection->setSelection(endingSelection());
-        selection->modify(FrameSelection::AlterationExtend, DirectionForward, granularity);
-        if (killRing && selection->isCaret() && granularity != CharacterGranularity)
-            selection->modify(FrameSelection::AlterationExtend, DirectionForward, CharacterGranularity);
+        SelectionModifier selectionModifier(*frame, endingSelection());
+        selectionModifier.modify(FrameSelection::AlterationExtend, DirectionForward, granularity);
+        if (killRing && selectionModifier.selection().isCaret() && granularity != CharacterGranularity)
+            selectionModifier.modify(FrameSelection::AlterationExtend, DirectionForward, CharacterGranularity);
 
         Position downstreamEnd = mostForwardCaretPosition(endingSelection().end());
         VisiblePosition visibleEnd = endingSelection().visibleEnd();
@@ -626,10 +624,10 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
         }
 
         // deleting to end of paragraph when at end of paragraph needs to merge the next paragraph (if any)
-        if (granularity == ParagraphBoundary && selection->selection().isCaret() && isEndOfParagraph(selection->selection().visibleEnd()))
-            selection->modify(FrameSelection::AlterationExtend, DirectionForward, CharacterGranularity);
+        if (granularity == ParagraphBoundary && selectionModifier.selection().isCaret() && isEndOfParagraph(selectionModifier.selection().visibleEnd()))
+            selectionModifier.modify(FrameSelection::AlterationExtend, DirectionForward, CharacterGranularity);
 
-        selectionToDelete = selection->selection();
+        selectionToDelete = selectionModifier.selection();
         if (!startingSelection().isRange() || selectionToDelete.base() != startingSelection().start()) {
             selectionAfterUndo = selectionToDelete;
         } else {

@@ -107,6 +107,9 @@ FrameSelection::FrameSelection(LocalFrame* frame)
     , m_shouldShowBlockCursor(false)
     , m_caretBase(adoptPtr(new CaretBase))
 {
+    // TODO(yosin): We should remove null check for |m_frame| in
+    // "FrameSelection.cpp", since it never be null.
+    DCHECK(frame);
     if (shouldAlwaysUseDirectionalSelection(m_frame))
         m_selectionEditor->setIsDirectional(true);
 }
