@@ -18,7 +18,7 @@ namespace base {
 // Convenience function that returns true if the supplied value is in range
 // for the destination type.
 template <typename Dst, typename Src>
-inline constexpr bool IsValueInRangeForNumericType(Src value) {
+constexpr bool IsValueInRangeForNumericType(Src value) {
   return internal::DstRangeRelationToSrcRange<Dst>(value) ==
          internal::RANGE_VALID;
 }
@@ -71,8 +71,8 @@ namespace internal {
 // This wrapper is used for C++11 constexpr support by avoiding the declaration
 // of local variables in the saturated_cast template function.
 template <typename Dst, class NaNHandler, typename Src>
-inline constexpr Dst saturated_cast_impl(const Src value,
-                                         const RangeConstraint constraint) {
+constexpr Dst saturated_cast_impl(const Src value,
+                                  const RangeConstraint constraint) {
   return constraint == RANGE_VALID
              ? static_cast<Dst>(value)
              : (constraint == RANGE_UNDERFLOW
@@ -92,7 +92,7 @@ inline constexpr Dst saturated_cast_impl(const Src value,
 template <typename Dst,
           class NaNHandler = SaturatedCastNaNBehaviorReturnZero,
           typename Src>
-inline constexpr Dst saturated_cast(Src value) {
+constexpr Dst saturated_cast(Src value) {
   return std::numeric_limits<Dst>::is_iec559
              ? static_cast<Dst>(value)  // Floating point optimization.
              : internal::saturated_cast_impl<Dst, NaNHandler>(
@@ -103,7 +103,7 @@ inline constexpr Dst saturated_cast(Src value) {
 // it will cause a compile failure if the destination type is not large enough
 // to contain any value in the source type. It performs no runtime checking.
 template <typename Dst, typename Src>
-inline constexpr Dst strict_cast(Src value) {
+constexpr Dst strict_cast(Src value) {
   static_assert(std::numeric_limits<Src>::is_specialized,
                 "Argument must be numeric.");
   static_assert(std::numeric_limits<Dst>::is_specialized,

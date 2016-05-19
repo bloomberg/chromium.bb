@@ -115,7 +115,7 @@ struct UnsignedOrFloatForSize<Numeric, false, true> {
 // Helper templates for integer manipulations.
 
 template <typename T>
-bool HasSignBit(T x) {
+constexpr bool HasSignBit(T x) {
   // Cast to unsigned since right shift on signed is undefined.
   return !!(static_cast<typename UnsignedIntegerForSize<T>::type>(x) >>
             PositionOfSignBit<T>::value);
@@ -123,7 +123,7 @@ bool HasSignBit(T x) {
 
 // This wrapper undoes the standard integer promotions.
 template <typename T>
-T BinaryComplement(T x) {
+constexpr T BinaryComplement(T x) {
   return static_cast<T>(~x);
 }
 
