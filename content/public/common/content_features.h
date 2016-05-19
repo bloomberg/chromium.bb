@@ -27,6 +27,7 @@ CONTENT_EXPORT extern const base::Feature kNewMediaPlaybackUi;
 CONTENT_EXPORT extern const base::Feature kNonValidatingReloadOnRefreshContent;
 CONTENT_EXPORT extern const base::Feature kOptimizeLoadingIPCForSmallResources;
 CONTENT_EXPORT extern const base::Feature kOriginTrials;
+CONTENT_EXPORT extern const base::Feature kPaintOptimizations;
 CONTENT_EXPORT extern const base::Feature kPointerEvents;
 CONTENT_EXPORT extern const base::Feature kScrollAnchoring;
 CONTENT_EXPORT extern const base::Feature kStaleWhileRevalidate;

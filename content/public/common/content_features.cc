@@ -69,6 +69,10 @@ const base::Feature kOptimizeLoadingIPCForSmallResources{
 const base::Feature kOriginTrials{"OriginTrials",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Paint optimizations including subsequence caching and empty phase skipping.
+const base::Feature kPaintOptimizations{"PaintOptimizations",
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Partial support for pointer event feature.
 const base::Feature kPointerEvents{"PointerEvent",
                                    base::FEATURE_DISABLED_BY_DEFAULT};

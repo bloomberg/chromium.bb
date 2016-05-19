@@ -149,6 +149,7 @@ OriginTrialsSampleAPI origin_trial_feature_name=Frobulate
 ForceOverlayFullscreenVideo
 OverlayScrollbars
 PagePopup status=stable
+PaintOptimizations status=stable
 PassiveEventListeners status=stable
 PassPaintVisualRectToCompositor
 PathOpsSVGClipping status=stable

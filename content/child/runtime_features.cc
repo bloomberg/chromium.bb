@@ -200,6 +200,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
         std::string("PointerEvent"), true);
   }
 
+  if (!base::FeatureList::IsEnabled(features::kPaintOptimizations))
+    WebRuntimeFeatures::enableFeatureFromString("PaintOptimizations", false);
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   if (command_line.HasSwitch(switches::kEnableBlinkFeatures)) {
