@@ -12,6 +12,8 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/interfaces/window_manager_factory.mojom.h"
 #include "mash/wm/accelerator_registrar_impl.h"
+#include "mash/wm/bridge/wm_globals_mus.h"
+#include "mash/wm/bridge/wm_lookup_mus.h"
 #include "mash/wm/root_window_controller.h"
 #include "mash/wm/root_windows_observer.h"
 #include "mash/wm/shelf_layout_impl.h"
@@ -55,13 +57,23 @@ std::set<RootWindowController*> WindowManagerApplication::GetRootControllers() {
 
 void WindowManagerApplication::OnRootWindowControllerGotRoot(
     RootWindowController* root_controller) {
-  aura_init_.reset(new views::AuraInit(connector_, "mash_wm_resources.pak"));
+  if (globals_)
+    return;  // |root_controller| is the > 1 root, nothing to do.
+
+  if (connector_)
+    aura_init_.reset(new views::AuraInit(connector_, "mash_wm_resources.pak"));
+
+  globals_.reset(new WmGlobalsMus(root_controller->root()->connection()));
+  lookup_.reset(new WmLookupMus);
 }
 
 void WindowManagerApplication::OnRootWindowControllerDoneInit(
     RootWindowController* root_controller) {
-  screen_.reset(new views::ScreenMus(nullptr));
-  screen_->Init(connector_);
+  if (!screen_) {
+    std::unique_ptr<views::ScreenMus> screen(new views::ScreenMus(nullptr));
+    screen->Init(connector_);
+    screen_ = std::move(screen);
+  }
 
   // TODO(msw): figure out if this should be per display, or global.
   user_window_controller_->Initialize(root_controller);
@@ -111,16 +123,23 @@ void WindowManagerApplication::OnAcceleratorRegistrarDestroyed(
   accelerator_registrars_.erase(registrar);
 }
 
+void WindowManagerApplication::AddRootWindowController(
+    RootWindowController* root_window_controller) {
+  root_controllers_.insert(root_window_controller);
+}
+
 void WindowManagerApplication::Initialize(shell::Connector* connector,
                                           const shell::Identity& identity,
                                           uint32_t id) {
   connector_ = connector;
-  tracing_.Initialize(connector, identity.name());
+  if (connector) {
+    tracing_.Initialize(connector, identity.name());
 
-  mus::mojom::WindowManagerFactoryServicePtr wm_factory_service;
-  connector_->ConnectToInterface("mojo:mus", &wm_factory_service);
-  wm_factory_service->SetWindowManagerFactory(
-      window_manager_factory_binding_.CreateInterfacePtrAndBind());
+    mus::mojom::WindowManagerFactoryServicePtr wm_factory_service;
+    connector_->ConnectToInterface("mojo:mus", &wm_factory_service);
+    wm_factory_service->SetWindowManagerFactory(
+        window_manager_factory_binding_.CreateInterfacePtrAndBind());
+  }
 
   shelf_layout_.reset(new ShelfLayoutImpl);
   user_window_controller_.reset(new UserWindowControllerImpl());
@@ -181,7 +200,7 @@ void WindowManagerApplication::Create(
 void WindowManagerApplication::CreateWindowManager(
     mus::mojom::DisplayPtr display,
     mojo::InterfaceRequest<mus::mojom::WindowTreeClient> client_request) {
-  root_controllers_.insert(RootWindowController::CreateFromDisplay(
+  AddRootWindowController(RootWindowController::CreateFromDisplay(
       this, std::move(display), std::move(client_request)));
 }
 

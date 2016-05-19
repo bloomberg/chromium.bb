@@ -9,8 +9,13 @@
 #include <map>
 #include <sstream>
 
+#include "ash/wm/common/always_on_top_controller.h"
+#include "ash/wm/common/wm_shell_window_ids.h"
+#include "ash/wm/common/workspace/workspace_layout_manager.h"
+#include "ash/wm/common/workspace/workspace_layout_manager_delegate.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "components/mus/common/event_matcher_util.h"
 #include "components/mus/common/switches.h"
 #include "components/mus/common/util.h"
@@ -21,15 +26,19 @@
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "mash/session/public/interfaces/session.mojom.h"
 #include "mash/wm/background_layout.h"
+#include "mash/wm/bridge/wm_globals_mus.h"
+#include "mash/wm/bridge/wm_root_window_controller_mus.h"
+#include "mash/wm/bridge/wm_shelf_mus.h"
+#include "mash/wm/bridge/wm_window_mus.h"
 #include "mash/wm/container_ids.h"
 #include "mash/wm/fill_layout.h"
 #include "mash/wm/screenlock_layout.h"
 #include "mash/wm/shadow_controller.h"
 #include "mash/wm/shelf_layout_manager.h"
 #include "mash/wm/status_layout_manager.h"
-#include "mash/wm/window_layout.h"
 #include "mash/wm/window_manager.h"
 #include "mash/wm/window_manager_application.h"
+#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "services/shell/public/cpp/connector.h"
 #include "ui/mojo/display/display_type_converters.h"
@@ -47,6 +56,29 @@ void AssertTrue(bool success) {
 int ContainerToLocalId(mojom::Container container) {
   return static_cast<int>(container);
 }
+
+class WorkspaceLayoutManagerDelegateImpl
+    : public ash::wm::WorkspaceLayoutManagerDelegate {
+ public:
+  explicit WorkspaceLayoutManagerDelegateImpl(
+      WmRootWindowControllerMus* root_window_controller)
+      : root_window_controller_(root_window_controller) {}
+  ~WorkspaceLayoutManagerDelegateImpl() override = default;
+
+  // WorkspaceLayoutManagerDelegate:
+  void UpdateShelfVisibility() override { NOTIMPLEMENTED(); }
+  void OnFullscreenStateChanged(bool is_fullscreen) override {
+    // TODO(sky): this should only do something if there is a shelf, see
+    // implementation in ash/shell.cc.
+    NOTIMPLEMENTED();
+    root_window_controller_->NotifyFullscreenStateChange(is_fullscreen);
+  }
+
+ private:
+  WmRootWindowControllerMus* root_window_controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManagerDelegateImpl);
+};
 
 }  // namespace
 
@@ -139,12 +171,21 @@ void RootWindowController::OnEmbed(mus::Window* root) {
 
   app_->OnRootWindowControllerGotRoot(this);
 
+  wm_root_window_controller_.reset(
+      new WmRootWindowControllerMus(app_->globals(), this));
+
   CreateContainers();
 
   for (size_t i = 0; i < kNumActivationContainers; ++i) {
     window_manager_client()->AddActivationParent(
         GetWindowForContainer(kActivationContainers[i]));
   }
+
+  ash::wm::WmWindow* always_on_top_container =
+      wm::WmWindowMus::Get(root)->GetChildByShellWindowId(
+          ash::kShellWindowId_AlwaysOnTopContainer);
+  always_on_top_controller_.reset(
+      new ash::AlwaysOnTopController(always_on_top_container));
 
   AddAccelerators();
 
@@ -190,6 +231,8 @@ void RootWindowController::CreateContainer(
   mus::Window* window = root_->connection()->NewWindow(&properties);
   window->set_local_id(ContainerToLocalId(container));
   layout_managers_[window].reset(new FillLayout(window));
+  WmWindowMus::Get(window)->SetShellWindowId(
+      MashContainerToAshContainer(container));
 
   // User private windows are hidden by default until the window manager learns
   // the lock state, so their contents are never accidentally revealed. Tests,
@@ -248,15 +291,26 @@ void RootWindowController::CreateContainers() {
 
   mus::Window* user_shelf =
       GetWindowForContainer(mojom::Container::USER_PRIVATE_SHELF);
-  layout_managers_[user_shelf].reset(new ShelfLayoutManager(user_shelf));
+  ShelfLayoutManager* shelf_layout_manager = new ShelfLayoutManager(user_shelf);
+  layout_managers_[user_shelf].reset(shelf_layout_manager);
+
+  wm_shelf_.reset(new WmShelfMus(shelf_layout_manager));
 
   mus::Window* status = GetWindowForContainer(mojom::Container::STATUS);
   layout_managers_[status].reset(new StatusLayoutManager(status));
 
   mus::Window* user_private_windows =
       GetWindowForContainer(mojom::Container::USER_PRIVATE_WINDOWS);
-  layout_managers_[user_private_windows].reset(
-      new WindowLayout(user_private_windows));
+  // WorkspaceLayoutManager is not a mash::wm::LayoutManager (it's an
+  // ash::wm::LayoutManager), so it can't be in |layout_managers_|.
+  layout_managers_.erase(user_private_windows);
+  std::unique_ptr<WorkspaceLayoutManagerDelegateImpl>
+      workspace_layout_manager_delegate(new WorkspaceLayoutManagerDelegateImpl(
+          wm_root_window_controller_.get()));
+  WmWindowMus::Get(user_private_windows)
+      ->SetLayoutManager(base::WrapUnique(new ash::WorkspaceLayoutManager(
+          WmWindowMus::Get(user_private_windows),
+          std::move(workspace_layout_manager_delegate))));
 }
 
 }  // namespace wm

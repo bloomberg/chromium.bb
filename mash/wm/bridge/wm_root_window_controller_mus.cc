@@ -9,7 +9,9 @@
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "mash/wm/bridge/wm_globals_mus.h"
+#include "mash/wm/bridge/wm_shelf_mus.h"
 #include "mash/wm/bridge/wm_window_mus.h"
+#include "mash/wm/container_ids.h"
 #include "mash/wm/root_window_controller.h"
 #include "ui/display/display.h"
 #include "ui/views/mus/native_widget_mus.h"
@@ -74,8 +76,7 @@ const display::Display& WmRootWindowControllerMus::GetDisplay() const {
 }
 
 bool WmRootWindowControllerMus::HasShelf() {
-  NOTIMPLEMENTED();
-  return false;
+  return GetShelf() != nullptr;
 }
 
 ash::wm::WmGlobals* WmRootWindowControllerMus::GetGlobals() {
@@ -90,13 +91,11 @@ WmRootWindowControllerMus::GetWorkspaceWindowState() {
 
 ash::AlwaysOnTopController*
 WmRootWindowControllerMus::GetAlwaysOnTopController() {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return root_window_controller_->always_on_top_controller();
 }
 
 ash::wm::WmShelf* WmRootWindowControllerMus::GetShelf() {
-  NOTIMPLEMENTED();
-  return nullptr;
+  return root_window_controller_->wm_shelf();
 }
 
 ash::wm::WmWindow* WmRootWindowControllerMus::GetWindow() {

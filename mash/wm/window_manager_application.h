@@ -25,9 +25,12 @@
 #include "services/shell/public/cpp/shell_client.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
 
+namespace display {
+class Screen;
+}
+
 namespace views {
 class AuraInit;
-class ScreenMus;
 }
 
 namespace ui {
@@ -42,6 +45,9 @@ class RootWindowController;
 class RootWindowsObserver;
 class ShelfLayoutImpl;
 class UserWindowControllerImpl;
+class WmGlobalsMus;
+class WmLookupMus;
+class WmScreen;
 
 class WindowManagerApplication
     : public shell::ShellClient,
@@ -60,6 +66,8 @@ class WindowManagerApplication
   // NOTE: this does not return |controllers_| as most clients want a
   // RootWindowController that has a valid root window.
   std::set<RootWindowController*> GetRootControllers();
+
+  WmGlobalsMus* globals() { return globals_.get(); }
 
   // Called when the root window of |root_controller| is obtained.
   void OnRootWindowControllerGotRoot(RootWindowController* root_controller);
@@ -82,7 +90,13 @@ class WindowManagerApplication
   }
 
  private:
+  friend class WmTestBase;
+  friend class WmTestHelper;
+
   void OnAcceleratorRegistrarDestroyed(AcceleratorRegistrarImpl* registrar);
+
+  // Adds |root_window_controller| to the set of known roots.
+  void AddRootWindowController(RootWindowController* root_window_controller);
 
   // shell::ShellClient:
   void Initialize(shell::Connector* connector,
@@ -113,8 +127,11 @@ class WindowManagerApplication
 
   mojo::TracingImpl tracing_;
 
-  std::unique_ptr<views::ScreenMus> screen_;
+  std::unique_ptr<display::Screen> screen_;
   std::unique_ptr<views::AuraInit> aura_init_;
+
+  std::unique_ptr<WmGlobalsMus> globals_;
+  std::unique_ptr<WmLookupMus> lookup_;
 
   // The |shelf_layout_| object is created once OnEmbed() is called. Until that
   // time |shelf_layout_requests_| stores pending interface requests.

@@ -8,13 +8,16 @@
 
 #include <utility>
 
+#include "ash/wm/common/container_finder.h"
 #include "components/mus/common/types.h"
+#include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/interfaces/input_events.mojom.h"
 #include "components/mus/public/interfaces/mus_constants.mojom.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
+#include "mash/wm/bridge/wm_window_mus.h"
 #include "mash/wm/non_client_frame_controller.h"
 #include "mash/wm/property_util.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
@@ -75,7 +78,53 @@ void WindowManager::Initialize(RootWindowController* root_controller,
     session->AddScreenlockStateListener(binding_.CreateInterfacePtrAndBind());
 }
 
+mus::Window* WindowManager::NewTopLevelWindow(
+    std::map<std::string, std::vector<uint8_t>>* properties) {
+  DCHECK(root_controller_);
+  mus::Window* root = root_controller_->root();
+  DCHECK(root);
+
+  const bool provide_non_client_frame =
+      GetWindowType(*properties) == mus::mojom::WindowType::WINDOW;
+  if (provide_non_client_frame)
+    (*properties)[mus::mojom::kWaitForUnderlay_Property].clear();
+
+  // TODO(sky): constrain and validate properties before passing to server.
+  mus::Window* window = root->connection()->NewWindow(properties);
+  window->SetBounds(CalculateDefaultBounds(window));
+
+  mus::Window* container_window = nullptr;
+  if (window->HasSharedProperty(mojom::kWindowContainer_Property)) {
+    container_window =
+        root_controller_->GetWindowForContainer(GetRequestedContainer(window));
+  } else {
+    // TODO(sky): window->bounds() isn't quite right.
+    container_window = WmWindowMus::GetMusWindow(
+        ash::wm::GetDefaultParent(WmWindowMus::Get(root_controller_->root()),
+                                  WmWindowMus::Get(window), window->bounds()));
+  }
+  DCHECK(root_controller_->WindowIsContainer(container_window));
+
+  if (provide_non_client_frame) {
+    NonClientFrameController::Create(root_controller_->GetConnector(),
+                                     container_window, window,
+                                     root_controller_->window_manager_client());
+  } else {
+    container_window->AddChild(window);
+  }
+
+  root_controller_->IncrementWindowCount();
+
+  return window;
+}
+
 gfx::Rect WindowManager::CalculateDefaultBounds(mus::Window* window) const {
+  if (window->HasSharedProperty(
+          mus::mojom::WindowManager::kInitialBounds_Property)) {
+    return window->GetSharedProperty<gfx::Rect>(
+        mus::mojom::WindowManager::kInitialBounds_Property);
+  }
+
   DCHECK(root_controller_);
   int width, height;
   const gfx::Size pref = GetWindowPreferredSize(window);
@@ -99,37 +148,6 @@ gfx::Rect WindowManager::GetMaximizedWindowBounds() const {
   return gfx::Rect(root_controller_->root()->bounds().size());
 }
 
-mus::Window* WindowManager::NewTopLevelWindow(
-    std::map<std::string, std::vector<uint8_t>>* properties) {
-  DCHECK(root_controller_);
-  mus::Window* root = root_controller_->root();
-  DCHECK(root);
-
-  const bool provide_non_client_frame =
-      GetWindowType(*properties) == mus::mojom::WindowType::WINDOW;
-  if (provide_non_client_frame)
-    (*properties)[mus::mojom::kWaitForUnderlay_Property].clear();
-
-  // TODO(sky): constrain and validate properties before passing to server.
-  mus::Window* window = root->connection()->NewWindow(properties);
-  window->SetBounds(CalculateDefaultBounds(window));
-
-  mojom::Container container = GetRequestedContainer(window);
-  mus::Window* container_window =
-      root_controller_->GetWindowForContainer(container);
-  DCHECK(root_controller_->WindowIsContainer(container_window));
-  container_window->AddChild(window);
-
-  if (provide_non_client_frame) {
-    NonClientFrameController::Create(root_controller_->GetConnector(), window,
-                                     root_controller_->window_manager_client());
-  }
-
-  root_controller_->IncrementWindowCount();
-
-  return window;
-}
-
 void WindowManager::OnTreeChanging(const TreeChangeParams& params) {
   DCHECK(root_controller_);
   if (params.old_parent == params.receiver &&
@@ -148,7 +166,10 @@ void WindowManager::SetWindowManagerClient(mus::WindowManagerClient* client) {
 }
 
 bool WindowManager::OnWmSetBounds(mus::Window* window, gfx::Rect* bounds) {
-  // By returning true the bounds of |window| is updated.
+  // TODO(sky): this indirectly sets bounds, which is against what
+  // OnWmSetBounds() recommends doing. Remove that restriction, or fix this.
+  WmWindowMus::Get(window)->SetBounds(*bounds);
+  *bounds = window->bounds();
   return true;
 }
 

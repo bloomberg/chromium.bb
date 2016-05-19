@@ -46,11 +46,14 @@ PlatformWindowMus::PlatformWindowMus(ui::PlatformWindowDelegate* delegate,
   delegate_->OnAcceleratedWidgetAvailable(
       accelerated_widget, mus_window_->viewport_metrics().device_pixel_ratio);
 
-  bitmap_uploader_.reset(new bitmap_uploader::BitmapUploader(mus_window_));
-  bitmap_uploader_->Init(connector);
-  prop_.reset(new ui::ViewProp(
-      accelerated_widget, bitmap_uploader::kBitmapUploaderForAcceleratedWidget,
-      bitmap_uploader_.get()));
+  if (connector) {
+    bitmap_uploader_.reset(new bitmap_uploader::BitmapUploader(mus_window_));
+    bitmap_uploader_->Init(connector);
+    prop_.reset(
+        new ui::ViewProp(accelerated_widget,
+                         bitmap_uploader::kBitmapUploaderForAcceleratedWidget,
+                         bitmap_uploader_.get()));
+  }
 }
 
 PlatformWindowMus::~PlatformWindowMus() {}

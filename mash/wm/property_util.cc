@@ -204,5 +204,17 @@ bool GetWindowIgnoredByShelf(mus::Window* window) {
              mus::mojom::WindowManager::kWindowIgnoredByShelf_Property);
 }
 
+void SetAlwaysOnTop(mus::Window* window, bool value) {
+  window->SetSharedProperty<bool>(
+      mus::mojom::WindowManager::kAlwaysOnTop_Property, value);
+}
+
+bool IsAlwaysOnTop(mus::Window* window) {
+  return window->HasSharedProperty(
+             mus::mojom::WindowManager::kAlwaysOnTop_Property) &&
+         window->GetSharedProperty<bool>(
+             mus::mojom::WindowManager::kAlwaysOnTop_Property);
+}
+
 }  // namespace wm
 }  // namespace mash

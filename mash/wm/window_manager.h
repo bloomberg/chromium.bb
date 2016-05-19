@@ -38,12 +38,13 @@ class WindowManager : public mus::WindowTracker,
     return window_manager_client_;
   }
 
+  // Creates a new top level window.
+  mus::Window* NewTopLevelWindow(
+      std::map<std::string, std::vector<uint8_t>>* properties);
+
  private:
   gfx::Rect CalculateDefaultBounds(mus::Window* window) const;
   gfx::Rect GetMaximizedWindowBounds() const;
-
-  mus::Window* NewTopLevelWindow(
-      std::map<std::string, std::vector<uint8_t>>* properties);
 
   // mus::WindowObserver:
   void OnTreeChanging(const TreeChangeParams& params) override;

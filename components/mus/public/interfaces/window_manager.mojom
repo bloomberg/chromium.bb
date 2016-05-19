@@ -21,6 +21,11 @@ import "ui/mojo/geometry/geometry.mojom";
 // with WindowTreeClient, further WindowTree requests this interface from
 // WindowTreeClient supplied at the time the WindowTreeHost is created.
 interface WindowManager {
+  // Whether the window is always on top. Type: bool.
+  const string kAlwaysOnTop_Property = "prop:always_on_top";
+  // Initial bounds to create the window at. If empty the WindowManager decides
+  // the initial bounds.
+  const string kInitialBounds_Property = "prop:initial_bounds";
   // Internal window name. Useful for debugging. Type: mojom::String
   const string kName_Property = "prop:name";
   // The window's preferred size as defined by its content. Type: gfx::Size.

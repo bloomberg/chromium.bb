@@ -66,6 +66,9 @@ base::string16 GetAppID(const mus::Window* window);
 
 bool GetWindowIgnoredByShelf(mus::Window* window);
 
+void SetAlwaysOnTop(mus::Window* window, bool value);
+bool IsAlwaysOnTop(mus::Window* window);
+
 }  // namespace wm
 }  // namespace mash
 

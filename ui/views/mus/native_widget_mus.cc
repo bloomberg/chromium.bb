@@ -581,6 +581,8 @@ void NativeWidgetMus::ConfigurePropertiesForNewWindow(
     (*properties)[mus::mojom::WindowManager::kName_Property] =
         mojo::ConvertTo<std::vector<uint8_t>>(init_params.name);
   }
+  (*properties)[mus::mojom::WindowManager::kAlwaysOnTop_Property] =
+      mojo::ConvertTo<std::vector<uint8_t>>(init_params.keep_on_top);
 
   if (!Widget::RequiresNonClientView(init_params.type))
     return;
@@ -956,16 +958,22 @@ bool NativeWidgetMus::IsActive() const {
 }
 
 void NativeWidgetMus::SetAlwaysOnTop(bool always_on_top) {
-  // NOTIMPLEMENTED();
+  if (window_) {
+    window_->SetSharedProperty<bool>(
+        mus::mojom::WindowManager::kAlwaysOnTop_Property, always_on_top);
+  }
 }
 
 bool NativeWidgetMus::IsAlwaysOnTop() const {
-  // NOTIMPLEMENTED();
-  return false;
+  return window_ &&
+         window_->HasSharedProperty(
+             mus::mojom::WindowManager::kAlwaysOnTop_Property) &&
+         window_->GetSharedProperty<bool>(
+             mus::mojom::WindowManager::kAlwaysOnTop_Property);
 }
 
 void NativeWidgetMus::SetVisibleOnAllWorkspaces(bool always_visible) {
-  // NOTIMPLEMENTED();
+  // Not needed for chromeos.
 }
 
 void NativeWidgetMus::Maximize() {

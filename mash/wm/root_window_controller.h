@@ -15,6 +15,10 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/display/display.h"
 
+namespace ash {
+class AlwaysOnTopController;
+}
+
 namespace mus {
 class WindowManagerClient;
 }
@@ -36,6 +40,10 @@ class ShelfLayoutManager;
 class StatusLayoutManager;
 class WindowManager;
 class WindowManagerApplication;
+class WmRootWindowControllerMus;
+class WmShelfMus;
+class WmTestBase;
+class WmTestHelper;
 
 // RootWindowController manages the windows and state for a single display.
 //
@@ -73,7 +81,16 @@ class RootWindowController : public mus::WindowObserver,
   ShelfLayoutManager* GetShelfLayoutManager();
   StatusLayoutManager* GetStatusLayoutManager();
 
+  ash::AlwaysOnTopController* always_on_top_controller() {
+    return always_on_top_controller_.get();
+  }
+
+  WmShelfMus* wm_shelf() { return wm_shelf_.get(); }
+
  private:
+  friend class WmTestBase;
+  friend class WmTestHelper;
+
   explicit RootWindowController(WindowManagerApplication* app);
   ~RootWindowController() override;
 
@@ -96,6 +113,9 @@ class RootWindowController : public mus::WindowObserver,
   mus::Window* root_;
   int window_count_;
 
+  std::unique_ptr<WmRootWindowControllerMus> wm_root_window_controller_;
+  std::unique_ptr<WmShelfMus> wm_shelf_;
+
   std::unique_ptr<WindowManager> window_manager_;
 
   std::map<mus::Window*, std::unique_ptr<LayoutManager>> layout_managers_;
@@ -103,6 +123,8 @@ class RootWindowController : public mus::WindowObserver,
   std::unique_ptr<ShadowController> shadow_controller_;
 
   display::Display display_;
+
+  std::unique_ptr<ash::AlwaysOnTopController> always_on_top_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowController);
 };

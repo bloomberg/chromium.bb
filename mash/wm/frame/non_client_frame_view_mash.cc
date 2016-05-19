@@ -260,6 +260,12 @@ const char* NonClientFrameViewMash::GetClassName() const {
 }
 
 gfx::Size NonClientFrameViewMash::GetMinimumSize() const {
+  // If the client area is empty we assume the client is rendering everything
+  // and the window can be resized to anything.
+  // TODO(sky): we need a minimum-size property.
+  if (window_->client_area().IsEmpty())
+    return gfx::Size();
+
   gfx::Size min_client_view_size(frame_->client_view()->GetMinimumSize());
   return gfx::Size(
       std::max(header_view_->GetMinimumWidth(), min_client_view_size.width()),

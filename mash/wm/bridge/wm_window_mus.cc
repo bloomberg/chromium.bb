@@ -24,6 +24,10 @@
 
 MUS_DECLARE_WINDOW_PROPERTY_TYPE(mash::wm::WmWindowMus*);
 
+// TODO(sky): fully implement this. Making DVLOG as too spammy to be useful.
+#undef NOTIMPLEMENTED
+#define NOTIMPLEMENTED() DVLOG(1) << "notimplemented"
+
 namespace mash {
 namespace wm {
 
@@ -250,13 +254,13 @@ bool WmWindowMus::IsSystemModal() const {
 }
 
 bool WmWindowMus::GetBoolProperty(ash::wm::WmWindowProperty key) {
-  NOTIMPLEMENTED();
   switch (key) {
     case ash::wm::WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUDARY:
+      NOTIMPLEMENTED();
       return true;
 
     case ash::wm::WmWindowProperty::ALWAYS_ON_TOP:
-      return false;
+      return IsAlwaysOnTop();
 
     default:
       NOTREACHED();
@@ -268,9 +272,10 @@ bool WmWindowMus::GetBoolProperty(ash::wm::WmWindowProperty key) {
 }
 
 int WmWindowMus::GetIntProperty(ash::wm::WmWindowProperty key) {
-  NOTIMPLEMENTED();
-  if (key == ash::wm::WmWindowProperty::SHELF_ID)
+  if (key == ash::wm::WmWindowProperty::SHELF_ID) {
+    NOTIMPLEMENTED();
     return 0;
+  }
 
   NOTREACHED();
   return 0;
@@ -476,14 +481,11 @@ void WmWindowMus::StackChildBelow(WmWindow* child, WmWindow* target) {
 }
 
 void WmWindowMus::SetAlwaysOnTop(bool value) {
-  // TODO(sky): need to set property on window.
-  NOTIMPLEMENTED();
+  mash::wm::SetAlwaysOnTop(window_, value);
 }
 
 bool WmWindowMus::IsAlwaysOnTop() const {
-  // TODO(sky): need to set property on window.
-  NOTIMPLEMENTED();
-  return false;
+  return mash::wm::IsAlwaysOnTop(window_);
 }
 
 void WmWindowMus::Hide() {
@@ -583,10 +585,17 @@ void WmWindowMus::OnWindowSharedPropertyChanged(
     const std::string& name,
     const std::vector<uint8_t>* old_data,
     const std::vector<uint8_t>* new_data) {
-  if (name == mus::mojom::WindowManager::kShowState_Property)
+  if (name == mus::mojom::WindowManager::kShowState_Property) {
     GetWindowState()->OnWindowShowStateChanged();
+  }
+  if (name == mus::mojom::WindowManager::kAlwaysOnTop_Property) {
+    FOR_EACH_OBSERVER(ash::wm::WmWindowObserver, observers_,
+                      OnWindowPropertyChanged(
+                          this, ash::wm::WmWindowProperty::ALWAYS_ON_TOP, 0u));
+    return;
+  }
 
-  // Deal with always on top and snap.
+  // Deal with snap to pixel.
   NOTIMPLEMENTED();
 }
 

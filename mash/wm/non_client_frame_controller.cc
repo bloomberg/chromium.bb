@@ -17,6 +17,7 @@
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
+#include "mash/wm/bridge/wm_window_mus.h"
 #include "mash/wm/frame/frame_border_hit_test_controller.h"
 #include "mash/wm/frame/move_event_handler.h"
 #include "mash/wm/frame/non_client_frame_view_mash.h"
@@ -187,9 +188,11 @@ class ClientViewMus : public views::ClientView {
 // static
 void NonClientFrameController::Create(
     shell::Connector* connector,
+    mus::Window* parent,
     mus::Window* window,
     mus::WindowManagerClient* window_manager_client) {
-  new NonClientFrameController(connector, window, window_manager_client);
+  new NonClientFrameController(connector, parent, window,
+                               window_manager_client);
 }
 
 // static
@@ -204,9 +207,11 @@ int NonClientFrameController::GetMaxTitleBarButtonWidth() {
 
 NonClientFrameController::NonClientFrameController(
     shell::Connector* connector,
+    mus::Window* parent,
     mus::Window* window,
     mus::WindowManagerClient* window_manager_client)
     : widget_(new views::Widget), window_(window) {
+  WmWindowMus::Get(window)->set_widget(widget_);
   window_->AddObserver(this);
 
   // To simplify things this code creates a Widget. While a Widget is created
@@ -220,6 +225,9 @@ NonClientFrameController::NonClientFrameController(
   params.native_widget =
       new WmNativeWidgetMus(widget_, connector, window, window_manager_client);
   widget_->Init(params);
+
+  parent->AddChild(window);
+
   widget_->ShowInactive();
 
   const int shadow_inset =

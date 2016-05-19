@@ -34,6 +34,7 @@ class NonClientFrameController : public views::WidgetDelegateView,
  public:
   // NonClientFrameController deletes itself when |window| is destroyed.
   static void Create(shell::Connector* connector,
+                     mus::Window* parent,
                      mus::Window* window,
                      mus::WindowManagerClient* window_manager_client);
 
@@ -48,6 +49,7 @@ class NonClientFrameController : public views::WidgetDelegateView,
 
  private:
   NonClientFrameController(shell::Connector* connector,
+                           mus::Window* parent,
                            mus::Window* window,
                            mus::WindowManagerClient* window_manager_client);
   ~NonClientFrameController() override;
