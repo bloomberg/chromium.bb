@@ -698,7 +698,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest,
 }
 
 // Flaky on ChromiumOS bots. http://crbug.com/612673
-#if defined(OS_CHROMEOS)
+// Flaky on Windows bots. http://crbug.com/612840
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_OnPush DISABLED_OnPush
 #else
 #define MAYBE_OnPush OnPush
