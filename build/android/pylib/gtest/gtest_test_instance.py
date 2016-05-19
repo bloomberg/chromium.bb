@@ -177,7 +177,7 @@ class GtestTestInstance(test_instance.TestInstance):
       if self._suite in BROWSER_TEST_SUITES:
         self._extras[_EXTRA_SHARD_SIZE_LIMIT] = 1
         self._extras[EXTRA_SHARD_NANO_TIMEOUT] = int(1e9 * self._shard_timeout)
-        self._shard_timeout = 900
+        self._shard_timeout = 10 * self._shard_timeout
 
     if not self._apk_helper and not self._exe_dist_dir:
       error_func('Could not find apk or executable for %s' % self._suite)
