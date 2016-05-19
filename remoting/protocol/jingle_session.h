@@ -116,7 +116,7 @@ class JingleSession : public Session {
   base::ThreadChecker thread_checker_;
 
   JingleSessionManager* session_manager_;
-  std::string peer_jid_;
+  SignalingAddress peer_address_;
   Session::EventHandler* event_handler_;
 
   std::string session_id_;

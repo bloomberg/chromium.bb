@@ -33,6 +33,11 @@ const char kXmlNamespace[] = "http://www.w3.org/XML/1998/namespace";
 const int kPortMin = 1000;
 const int kPortMax = 65535;
 
+const NameMapElement<SignalingAddress::Channel> kChannelTypes[] = {
+    {SignalingAddress::Channel::LCS, "lcs"},
+    {SignalingAddress::Channel::XMPP, "xmpp"},
+};
+
 const NameMapElement<JingleMessage::ActionType> kActionTypes[] = {
   { JingleMessage::SESSION_INITIATE, "session-initiate" },
   { JingleMessage::SESSION_ACCEPT, "session-accept" },
@@ -143,6 +148,73 @@ XmlElement* FormatIceCandidate(
   return result;
 }
 
+// Represents the XML attrbute names for the various address fields in the
+// iq stanza.
+enum class Field { JID, CHANNEL, ENDPOINT_ID };
+
+buzz::QName GetQNameByField(Field attr, bool from) {
+  std::string attribute_name;
+  switch (attr) {
+    case Field::JID:
+      attribute_name = (from) ? "from" : "to";
+      break;
+    case Field::ENDPOINT_ID:
+      attribute_name = (from) ? "from-endpoint-id" : "to-endpoint-id";
+      break;
+    case Field::CHANNEL:
+      attribute_name = (from) ? "from-channel" : "to-channel";
+      break;
+    default:
+      NOTREACHED();
+  }
+  return QName(kEmptyNamespace, attribute_name);
+}
+
+SignalingAddress ParseAddress(
+    const buzz::XmlElement* stanza, bool from, std::string* error) {
+  SignalingAddress empty_instance;
+
+  std::string jid(stanza->Attr(GetQNameByField(Field::JID, from)));
+  std::string endpoint_id(
+      stanza->Attr(GetQNameByField(Field::ENDPOINT_ID, from)));
+  std::string channel_str(stanza->Attr(GetQNameByField(Field::CHANNEL, from)));
+  SignalingAddress::Channel channel;
+
+  if (channel_str.empty()) {
+    channel = SignalingAddress::Channel::XMPP;
+  } else if (!NameToValue(kChannelTypes, channel_str, &channel)) {
+    *error = "Unknown channel: " + channel_str;
+    return empty_instance;
+  }
+
+  bool isLcs = (channel == SignalingAddress::Channel::LCS);
+
+  if (isLcs == endpoint_id.empty()) {
+    *error = (isLcs ? "Missing |endpoint-id| for LCS channel"
+                    : "|endpoint_id| should be empty for XMPP channel");
+    return empty_instance;
+  }
+
+  return SignalingAddress(jid, endpoint_id, channel);
+}
+
+void SetAddress(buzz::XmlElement* iqElement,
+                const SignalingAddress& address,
+                bool from) {
+  if (address.empty()) {
+    return;
+  }
+
+  iqElement->AddAttr(GetQNameByField(Field::JID, from), address.jid);
+
+  if (address.channel == SignalingAddress::Channel::LCS) {
+    iqElement->AddAttr(GetQNameByField(Field::ENDPOINT_ID, from),
+                       address.endpoint_id);
+    const char* channel_str = ValueToName(kChannelTypes, address.channel);
+    iqElement->AddAttr(GetQNameByField(Field::CHANNEL, from), channel_str);
+  }
+}
+
 }  // namespace
 
 IceTransportInfo::NamedCandidate::NamedCandidate(
@@ -156,6 +228,26 @@ IceTransportInfo::IceCredentials::IceCredentials(std::string channel,
                                               std::string ufrag,
                                               std::string password)
     : channel(channel), ufrag(ufrag), password(password) {
+}
+
+SignalingAddress::SignalingAddress()
+    : channel(SignalingAddress::Channel::XMPP) {}
+
+SignalingAddress::SignalingAddress(const std::string& jid)
+    : jid(jid), channel(SignalingAddress::Channel::XMPP) {}
+
+SignalingAddress::SignalingAddress(const std::string& jid,
+                                   const std::string& endpoint_id,
+                                   Channel channel)
+    : jid(jid), endpoint_id(endpoint_id), channel(channel) {}
+
+bool SignalingAddress::operator==(const SignalingAddress& other) {
+  return (other.endpoint_id == endpoint_id) && (other.jid == jid) &&
+         (other.channel == channel);
+}
+
+bool SignalingAddress::operator!=(const SignalingAddress& other) {
+  return !(*this == other);
 }
 
 // static
@@ -172,7 +264,7 @@ std::string JingleMessage::GetActionName(ActionType action) {
 
 JingleMessage::JingleMessage() {}
 
-JingleMessage::JingleMessage(const std::string& to,
+JingleMessage::JingleMessage(const SignalingAddress& to,
                              ActionType action,
                              const std::string& sid)
     : to(to), action(action), sid(sid) {}
@@ -193,8 +285,16 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
     return false;
   }
 
-  from = stanza->Attr(QName(kEmptyNamespace, "from"));
-  to = stanza->Attr(QName(kEmptyNamespace, "to"));
+  from = ParseAddress(stanza, true, error);
+  if (!error->empty()) {
+    return false;
+  }
+
+  to = ParseAddress(stanza, false, error);
+  if (!error->empty()) {
+    return false;
+  }
+
   initiator = jingle_tag->Attr(QName(kEmptyNamespace, "initiator"));
 
   std::string action_str = jingle_tag->Attr(QName(kEmptyNamespace, "action"));
@@ -290,9 +390,8 @@ std::unique_ptr<buzz::XmlElement> JingleMessage::ToXml() const {
       new XmlElement(QName("jabber:client", "iq"), true));
 
   DCHECK(!to.empty());
-  root->AddAttr(QName(kEmptyNamespace, "to"), to);
-  if (!from.empty())
-    root->AddAttr(QName(kEmptyNamespace, "from"), from);
+  SetAddress(root.get(), to, false);
+  SetAddress(root.get(), from, true);
   root->SetAttr(QName(kEmptyNamespace, "type"), "set");
 
   XmlElement* jingle_tag =
@@ -371,8 +470,13 @@ std::unique_ptr<buzz::XmlElement> JingleMessageReply::ToXml(
     const buzz::XmlElement* request_stanza) const {
   std::unique_ptr<XmlElement> iq(
       new XmlElement(QName(kJabberNamespace, "iq"), true));
-  iq->SetAttr(QName(kEmptyNamespace, "to"),
-              request_stanza->Attr(QName(kEmptyNamespace, "from")));
+
+  SignalingAddress original_from;
+  std::string error_message;
+  original_from = ParseAddress(request_stanza, true, &error_message);
+  DCHECK(error_message.empty());
+  SetAddress(iq.get(), original_from, false);
+
   iq->SetAttr(QName(kEmptyNamespace, "id"),
               request_stanza->Attr(QName(kEmptyNamespace, "id")));
 

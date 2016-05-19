@@ -96,7 +96,7 @@ void JingleSession::StartConnection(
   DCHECK(authenticator.get());
   DCHECK_EQ(authenticator->state(), Authenticator::MESSAGE_READY);
 
-  peer_jid_ = peer_jid;
+  peer_address_ = SignalingAddress(peer_jid);
   authenticator_ = std::move(authenticator);
 
   // Generate random session ID. There are usually not more than 1
@@ -107,7 +107,7 @@ void JingleSession::StartConnection(
       base::RandGenerator(std::numeric_limits<uint64_t>::max()));
 
   // Send session-initiate message.
-  JingleMessage message(peer_jid_, JingleMessage::SESSION_INITIATE,
+  JingleMessage message(peer_address_, JingleMessage::SESSION_INITIATE,
                         session_id_);
   message.initiator = session_manager_->signal_strategy_->GetLocalJid();
   message.description.reset(new ContentDescription(
@@ -126,7 +126,7 @@ void JingleSession::InitializeIncomingConnection(
   DCHECK(authenticator.get());
   DCHECK_EQ(authenticator->state(), Authenticator::WAITING_MESSAGE);
 
-  peer_jid_ = initiate_message.from;
+  peer_address_ = initiate_message.from;
   authenticator_ = std::move(authenticator);
   session_id_ = initiate_message.sid;
 
@@ -136,7 +136,7 @@ void JingleSession::InitializeIncomingConnection(
       SessionConfig::SelectCommon(initiate_message.description->config(),
                                   session_manager_->protocol_config_.get());
   if (!config_) {
-    LOG(WARNING) << "Rejecting connection from " << peer_jid_
+    LOG(WARNING) << "Rejecting connection from " << peer_address_.id()
                  << " because no compatible configuration has been found.";
     Close(INCOMPATIBLE_PROTOCOL);
     return;
@@ -171,7 +171,7 @@ void JingleSession::ContinueAcceptIncomingConnection() {
   }
 
   // Send the session-accept message.
-  JingleMessage message(peer_jid_, JingleMessage::SESSION_ACCEPT,
+  JingleMessage message(peer_address_, JingleMessage::SESSION_ACCEPT,
                         session_id_);
 
   std::unique_ptr<buzz::XmlElement> auth_message;
@@ -197,7 +197,7 @@ void JingleSession::ContinueAcceptIncomingConnection() {
 
 const std::string& JingleSession::jid() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return peer_jid_;
+  return peer_address_.id();
 }
 
 const SessionConfig& JingleSession::config() {
@@ -217,7 +217,8 @@ void JingleSession::SendTransportInfo(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(state_, AUTHENTICATED);
 
-  JingleMessage message(peer_jid_, JingleMessage::TRANSPORT_INFO, session_id_);
+  JingleMessage message(peer_address_, JingleMessage::TRANSPORT_INFO,
+                        session_id_);
   message.transport_info = std::move(transport_info);
 
   std::unique_ptr<IqRequest> request = session_manager_->iq_sender()->SendIq(
@@ -261,7 +262,7 @@ void JingleSession::Close(protocol::ErrorCode error) {
         reason = JingleMessage::GENERAL_ERROR;
     }
 
-    JingleMessage message(peer_jid_, JingleMessage::SESSION_TERMINATE,
+    JingleMessage message(peer_address_, JingleMessage::SESSION_TERMINATE,
                           session_id_);
     message.reason = reason;
     SendMessage(message);
@@ -370,7 +371,7 @@ void JingleSession::OnIncomingMessage(const JingleMessage& message,
                                       const ReplyCallback& reply_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (message.from != peer_jid_) {
+  if (peer_address_ != message.from) {
     // Ignore messages received from a different Jid.
     reply_callback.Run(JingleMessageReply::INVALID_SID);
     return;
@@ -538,7 +539,8 @@ void JingleSession::ProcessAuthenticationStep() {
   }
 
   if (authenticator_->state() == Authenticator::MESSAGE_READY) {
-    JingleMessage message(peer_jid_, JingleMessage::SESSION_INFO, session_id_);
+    JingleMessage message(peer_address_, JingleMessage::SESSION_INFO,
+                          session_id_);
     message.info = authenticator_->GetNextMessage();
     DCHECK(message.info.get());
     SendMessage(message);

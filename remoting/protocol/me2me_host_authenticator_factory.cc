@@ -95,7 +95,7 @@ Me2MeHostAuthenticatorFactory::CreateAuthenticator(
       !base::StartsWith(remote_jid, remote_jid_prefix + '/',
                         base::CompareCase::INSENSITIVE_ASCII)) {
     LOG(ERROR) << "Rejecting incoming connection from " << remote_jid
-               << ": Prefix mismatch.";
+               << ": Prefix mismatch.  Expected: " << remote_jid_prefix;
     return base::WrapUnique(
         new RejectingAuthenticator(Authenticator::INVALID_CREDENTIALS));
   }
