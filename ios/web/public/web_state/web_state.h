@@ -35,6 +35,10 @@ class DictionaryValue;
 class Value;
 }
 
+namespace shell {
+class InterfaceRegistry;
+}
+
 namespace web {
 
 class BrowserState;
@@ -229,6 +233,9 @@ class WebState : public base::SupportsUserData {
                             uint32_t max_bitmap_size,
                             bool bypass_cache,
                             const ImageDownloadCallback& callback) = 0;
+
+  // Returns Mojo interface registry for this WebState.
+  virtual shell::InterfaceRegistry* GetMojoInterfaceRegistry() = 0;
 
  protected:
   friend class WebStateObserver;

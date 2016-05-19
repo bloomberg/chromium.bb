@@ -131,6 +131,10 @@ int TestWebState::DownloadImage(const GURL& url,
   return 0;
 }
 
+shell::InterfaceRegistry* TestWebState::GetMojoInterfaceRegistry() {
+  return nullptr;
+}
+
 base::WeakPtr<WebState> TestWebState::AsWeakPtr() {
   NOTREACHED();
   return base::WeakPtr<WebState>();

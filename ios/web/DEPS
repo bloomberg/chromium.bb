@@ -5,6 +5,7 @@ include_rules = [
   "+ios/net",
   "+ios/web",
   "+net",
+  "+services/shell/public",
   "+ui",
 
   # For tests.

@@ -30,6 +30,7 @@
 #import "ios/web/webui/web_ui_ios_controller_factory_registry.h"
 #import "ios/web/webui/web_ui_ios_impl.h"
 #include "net/http/http_response_headers.h"
+#include "services/shell/public/cpp/interface_registry.h"
 
 namespace web {
 
@@ -515,6 +516,13 @@ int WebStateImpl::DownloadImage(
   return [[web_controller_ delegate] downloadImageAtUrl:url
                                           maxBitmapSize:max_bitmap_size
                                               callback:callback];
+}
+
+shell::InterfaceRegistry* WebStateImpl::GetMojoInterfaceRegistry() {
+  if (!mojo_interface_registry_) {
+    mojo_interface_registry_.reset(new shell::InterfaceRegistry(nullptr));
+  }
+  return mojo_interface_registry_.get();
 }
 
 base::WeakPtr<WebState> WebStateImpl::AsWeakPtr() {
