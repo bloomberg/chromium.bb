@@ -2423,7 +2423,7 @@ def check_braces(clean_lines, line_number, error):
         # 'if|for|while|switch|else' without a beginning '{'.
         # We also allow '#' for #endif and '=' for array initialization.
         previous_line = get_previous_non_blank_line(clean_lines, line_number)[0]
-        if ((not search(r'[;:}{)=]\s*$|\)\s*((const|override|final)\s*)*\s*$', previous_line)
+        if ((not search(r'[;:}{)=]\s*$|\)\s*((const|override|final)\s*)*\s*(->\s*.+)?$', previous_line)
              or search(r'^\s*\b(if|for|foreach|while|switch|else)\b.*[^{]\s*$', previous_line))
             and previous_line.find('#') < 0):
             error(line_number, 'whitespace/braces', 4,
