@@ -4,13 +4,14 @@
      found in the LICENSE file. -->
 
 <!-- Processing dialog. -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<org.chromium.chrome.browser.widget.BoundedLinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:chrome="http://schemas.android.com/apk/res-auto"
     android:id="@+id/waiting_container"
-    android:maxWidth="@dimen/payments_ui_max_dialog_width"
+    android:orientation="vertical"
     android:background="@drawable/menu_bg"
-    android:clickable="true"
     android:gravity="center"
-    android:orientation="vertical" >
+    chrome:maxWidth="@dimen/payments_ui_max_dialog_width" >
 
     <!-- Header containing information about the site. -->
     <FrameLayout
@@ -95,4 +96,4 @@
         android:layout_marginBottom="@dimen/payments_section_small_spacing"
         android:textColor="@color/light_active_color"
         android:visibility="gone" />
-</LinearLayout>
+</org.chromium.chrome.browser.widget.BoundedLinearLayout>

@@ -34,6 +34,7 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
@@ -222,9 +223,13 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 R.dimen.payments_ui_translation);
 
         // Inflate the layout.
-        mFullContainer =
-                (ViewGroup) LayoutInflater.from(mContext).inflate(R.layout.payment_request, null);
-        mBottomSheetContainer = (ViewGroup) mFullContainer.findViewById(R.id.dialogContainer);
+        mFullContainer = new FrameLayout(mContext);
+        mFullContainer.setBackgroundColor(
+                ApiCompatibilityUtils.getColor(mContext.getResources(), R.color.payments_ui_scrim));
+        LayoutInflater.from(mContext).inflate(R.layout.payment_request, mFullContainer);
+
+        mBottomSheetContainer =
+                (ViewGroup) mFullContainer.findViewById(R.id.payment_request_layout);
         mResultUI = new PaymentResultUI(mContext, title, origin);
 
         mPaymentContainer = (ScrollView) mBottomSheetContainer.findViewById(R.id.paymentContainer);
@@ -396,7 +401,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         }
     }
 
-    public void updateShippingAddressSection(SectionInformation section) {
+    private void updateShippingAddressSection(SectionInformation section) {
         mShippingAddressSectionInformation = section;
         mShippingAddressSection.update(section);
     }

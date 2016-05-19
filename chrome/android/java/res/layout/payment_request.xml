@@ -3,16 +3,15 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<FrameLayout
+<!-- Payments fields dialog.
+     TODO(dfalcantara): Figure out if it makes sense to recombine this and the PaymentResult
+                        dialog box once redlines stabilize. -->
+<merge
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:chrome="http://schemas.android.com/apk/res-auto"
-    android:background="@color/payments_ui_scrim" >
+    xmlns:chrome="http://schemas.android.com/apk/res-auto" >
 
-    <!-- Payments fields dialog.
-         TODO(dfalcantara): Figure out if it makes sense to recombine this and the PaymentResult
-                            dialog box once redlines stabilize. -->
     <org.chromium.chrome.browser.widget.BoundedLinearLayout
-        android:id="@+id/dialogContainer"
+        android:id="@+id/payment_request_layout"
         android:orientation="vertical"
         android:background="@android:color/white"
         android:layout_height="wrap_content"
@@ -25,6 +24,7 @@
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
             android:minHeight="64dp" >
+
             <ImageView
                 android:id="@+id/pageFavIcon"
                 android:layout_height="24dp"
@@ -63,6 +63,7 @@
                     android:singleLine="true"
                     android:textColor="@color/descriptive_text_color"
                     android:textSize="14sp" />
+
             </LinearLayout>
 
             <ImageView
@@ -124,5 +125,6 @@
             android:padding="@dimen/payments_section_large_spacing"
             android:background="@android:color/white"
             android:visibility="gone" />
+
     </org.chromium.chrome.browser.widget.BoundedLinearLayout>
-</FrameLayout>
+</merge>
