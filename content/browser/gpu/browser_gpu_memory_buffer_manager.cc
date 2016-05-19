@@ -84,9 +84,13 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
 
   if (BrowserGpuMemoryBufferManager::IsNativeGpuMemoryBuffersEnabled()) {
     const gfx::BufferFormat kNativeFormats[] = {
-        gfx::BufferFormat::R_8,       gfx::BufferFormat::RGBA_4444,
-        gfx::BufferFormat::RGBA_8888, gfx::BufferFormat::BGRA_8888,
-        gfx::BufferFormat::UYVY_422,  gfx::BufferFormat::YUV_420_BIPLANAR};
+        gfx::BufferFormat::R_8,
+        gfx::BufferFormat::BGR_565,
+        gfx::BufferFormat::RGBA_4444,
+        gfx::BufferFormat::RGBA_8888,
+        gfx::BufferFormat::BGRA_8888,
+        gfx::BufferFormat::UYVY_422,
+        gfx::BufferFormat::YUV_420_BIPLANAR};
     const gfx::BufferUsage kNativeUsages[] = {
         gfx::BufferUsage::GPU_READ, gfx::BufferUsage::SCANOUT,
         gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
@@ -109,9 +113,10 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
 #endif
   if (force_native_gpu_read_write_formats) {
     const gfx::BufferFormat kGPUReadWriteFormats[] = {
-        gfx::BufferFormat::RGBA_8888, gfx::BufferFormat::RGBX_8888,
-        gfx::BufferFormat::BGRA_8888, gfx::BufferFormat::BGRX_8888,
-        gfx::BufferFormat::UYVY_422,  gfx::BufferFormat::YUV_420_BIPLANAR};
+        gfx::BufferFormat::BGR_565,         gfx::BufferFormat::RGBA_8888,
+        gfx::BufferFormat::RGBX_8888,       gfx::BufferFormat::BGRA_8888,
+        gfx::BufferFormat::BGRX_8888,       gfx::BufferFormat::UYVY_422,
+        gfx::BufferFormat::YUV_420_BIPLANAR};
     const gfx::BufferUsage kGPUReadWriteUsages[] = {
         gfx::BufferUsage::GPU_READ, gfx::BufferUsage::SCANOUT};
     for (auto& format : kGPUReadWriteFormats) {

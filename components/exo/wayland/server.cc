@@ -428,6 +428,7 @@ const struct drm_supported_format {
   uint32_t drm_format;
   gfx::BufferFormat buffer_format;
 } drm_supported_formats[] = {
+    {WL_DRM_FORMAT_RGB565, gfx::BufferFormat::BGR_565},
     {WL_DRM_FORMAT_XBGR8888, gfx::BufferFormat::RGBX_8888},
     {WL_DRM_FORMAT_ABGR8888, gfx::BufferFormat::RGBA_8888},
     {WL_DRM_FORMAT_XRGB8888, gfx::BufferFormat::BGRX_8888},
@@ -536,6 +537,7 @@ const struct dmabuf_supported_format {
   uint32_t dmabuf_format;
   gfx::BufferFormat buffer_format;
 } dmabuf_supported_formats[] = {
+    {DRM_FORMAT_RGB565, gfx::BufferFormat::BGR_565},
     {DRM_FORMAT_XBGR8888, gfx::BufferFormat::RGBX_8888},
     {DRM_FORMAT_ABGR8888, gfx::BufferFormat::RGBA_8888},
     {DRM_FORMAT_XRGB8888, gfx::BufferFormat::BGRX_8888},
