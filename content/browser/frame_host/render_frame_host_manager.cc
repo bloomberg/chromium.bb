@@ -457,15 +457,20 @@ void RenderFrameHostManager::OnCrossSiteResponse(
   // the FrameTreeNode that the load stop if the transfer fails.
   bool frame_tree_node_was_loading = frame_tree_node_->IsLoading();
 
-  // Store the transferring request so that we can release it if the transfer
-  // navigation matches.
-  cross_site_transferring_request_ = std::move(cross_site_transferring_request);
-
   // Store the NavigationHandle to give it to the appropriate RenderFrameHost
   // after it started navigating.
   transfer_navigation_handle_ =
       transferring_render_frame_host->PassNavigationHandleOwnership();
-  DCHECK(transfer_navigation_handle_);
+
+  // If something caused the cancellation of this navigation on the UI thread
+  // (possibly for security reasons) the navigation should not be allowed to
+  // proceed.
+  if (!transfer_navigation_handle_)
+    return;
+
+  // Store the transferring request so that we can release it if the transfer
+  // navigation matches.
+  cross_site_transferring_request_ = std::move(cross_site_transferring_request);
 
   // Set the transferring RenderFrameHost as not loading, so that it does not
   // emit a DidStopLoading notification if it is destroyed when creating the

@@ -1213,7 +1213,8 @@ void RenderFrameHostImpl::SetNavigationHandle(
 std::unique_ptr<NavigationHandleImpl>
 RenderFrameHostImpl::PassNavigationHandleOwnership() {
   DCHECK(!IsBrowserSideNavigationEnabled());
-  navigation_handle_->set_is_transferring(true);
+  if (navigation_handle_)
+    navigation_handle_->set_is_transferring(true);
   return std::move(navigation_handle_);
 }
 
