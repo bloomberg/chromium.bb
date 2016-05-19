@@ -93,6 +93,8 @@
       'Android Asan Builder Tests (dbg)':
           'android_asan_gn_clang_shared_debug_minimal_symbols',
       'Android Builder (dbg)': 'android_gn_debug_static_bot',
+      'Blimp Linux (dbg)':
+        '//build/args/bots/chromium.fyi/blimp_linux_dbg.gn',
       'Browser Side Navigation Linux': 'gn_release_bot',
       'CFI Linux CF': 'gn_cfi_diag_release_static',
       'CFI Linux ToT': 'gn_cfi_release_static',

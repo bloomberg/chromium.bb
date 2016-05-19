@@ -344,6 +344,13 @@
       }
     ]
   },
+  "Blimp Linux (dbg)": {
+    "gtest_tests": [
+      {
+        "test": "blimp_browsertests"
+      }
+    ]
+  },
   "Browser Side Navigation Linux": {
     "gtest_tests": [
       {
