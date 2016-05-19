@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "ios/web/test/test_url_constants.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
 namespace web {
@@ -23,6 +24,11 @@ void TestWebClient::AddAdditionalSchemes(
 
 bool TestWebClient::IsAppSpecificURL(const GURL& url) const {
   return url.SchemeIs(kTestWebUIScheme);
+}
+
+base::RefCountedStaticMemory* TestWebClient::GetDataResourceBytes(
+    int resource_id) const {
+  return ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id);
 }
 
 NSString* TestWebClient::GetEarlyPageScript() const {

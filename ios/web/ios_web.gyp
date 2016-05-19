@@ -456,6 +456,7 @@
         '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
         '../../third_party/ocmock/ocmock.gyp:ocmock',
+        '../../ui/base/ui_base.gyp:ui_base',
         'ios_web',
         'test_mojo_bindings',
       ],

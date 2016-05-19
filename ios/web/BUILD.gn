@@ -314,6 +314,7 @@ source_set("test_support") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/ocmock",
+    "//ui/base:base",
   ]
 
   sources = [
