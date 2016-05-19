@@ -73,7 +73,7 @@ int MinimizeButtonMetrics::GetButtonBoundsPositionOffset(
     const RECT& button_bounds,
     const RECT& window_bounds) const {
   if (button_bounds_position_offset_ == kInvalidOffset) {
-    if (!was_activated_)
+    if (!was_activated_ || !IsWindowVisible(hwnd_))
       return GetDefaultButtonBoundsOffset();
     TITLEBARINFOEX info = {0};
     info.cbSize = sizeof(info);
