@@ -45,7 +45,6 @@ class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
       AtkCoordType coord_type);
 
   // AXPlatformNode overrides.
-  void Destroy() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   void NotifyAccessibilityEvent(ui::AXEvent event_type) override;
 

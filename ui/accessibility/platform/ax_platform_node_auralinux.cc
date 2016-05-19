@@ -477,11 +477,6 @@ void AXPlatformNodeAuraLinux::Init(AXPlatformNodeDelegate* delegate) {
   atk_object_ = ATK_OBJECT(ax_platform_node_auralinux_new(this));
 }
 
-void AXPlatformNodeAuraLinux::Destroy() {
-  delegate_ = nullptr;
-  delete this;
-}
-
 gfx::NativeViewAccessible AXPlatformNodeAuraLinux::GetNativeViewAccessible() {
   return atk_object_;
 }

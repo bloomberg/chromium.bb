@@ -46,6 +46,10 @@ gfx::NativeViewAccessible AXPlatformNodeBase::ChildAtIndex(int index) {
 void AXPlatformNodeBase::Destroy() {
   AXPlatformNode::Destroy();
   delegate_ = nullptr;
+  Dispose();
+}
+
+void AXPlatformNodeBase::Dispose() {
   delete this;
 }
 
@@ -189,6 +193,7 @@ AXPlatformNodeBase::AXPlatformNodeBase() {
 }
 
 AXPlatformNodeBase::~AXPlatformNodeBase() {
+  CHECK(!delegate_);
 }
 
 // static

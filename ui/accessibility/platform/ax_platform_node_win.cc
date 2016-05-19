@@ -138,22 +138,24 @@ AXPlatformNodeWin::AXPlatformNodeWin() {
 }
 
 AXPlatformNodeWin::~AXPlatformNodeWin() {
-  CHECK(!delegate_);
+}
+
+//
+// AXPlatformNodeBase implementation.
+//
+
+void AXPlatformNodeWin::Dispose() {
+  Release();
+}
+
+void AXPlatformNodeWin::Destroy() {
+  RemoveAlertTarget();
+  AXPlatformNodeBase::Destroy();
 }
 
 //
 // AXPlatformNode implementation.
 //
-
-void AXPlatformNodeWin::Destroy() {
-  AXPlatformNode::Destroy();
-  // Do not call base class AXPlatformNodeBase::Destroy method because it
-  // would delete this object. Call base's base class AXPlatformNode::Destroy
-  // instead to remove the unique ID from the map like base class does.
-  delegate_ = nullptr;
-  RemoveAlertTarget();
-  Release();
-}
 
 gfx::NativeViewAccessible AXPlatformNodeWin::GetNativeViewAccessible() {
   return this;

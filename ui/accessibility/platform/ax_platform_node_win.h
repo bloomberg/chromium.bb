@@ -54,11 +54,11 @@ AXPlatformNodeWin
   ~AXPlatformNodeWin() override;
 
   // AXPlatformNode overrides.
-  void Destroy() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   void NotifyAccessibilityEvent(ui::AXEvent event_type) override;
 
   // AXPlatformNodeBase overrides.
+  void Destroy() override;
   int GetIndexInParent() override;
 
   //
@@ -266,6 +266,9 @@ AXPlatformNodeWin
 
  protected:
   AXPlatformNodeWin();
+
+  // AXPlatformNodeBase overrides.
+  void Dispose() override;
 
  private:
   bool IsValidId(const VARIANT& child) const;

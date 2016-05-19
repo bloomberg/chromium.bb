@@ -73,7 +73,7 @@ class AXPlatformNodeBase : public AXPlatformNode {
   static AXPlatformNodeBase* FromNativeViewAccessible(
       gfx::NativeViewAccessible accessible);
 
-
+  virtual void Dispose();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeBase);

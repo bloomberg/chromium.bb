@@ -21,11 +21,11 @@ class AXPlatformNodeMac : public AXPlatformNodeBase {
   AXPlatformNodeMac();
 
   // AXPlatformNode.
-  void Destroy() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   void NotifyAccessibilityEvent(ui::AXEvent event_type) override;
 
   // AXPlatformNodeBase.
+  void Destroy() override;
   int GetIndexInParent() override;
 
  private:

@@ -325,8 +325,7 @@ AXPlatformNodeMac::~AXPlatformNodeMac() {
 void AXPlatformNodeMac::Destroy() {
   if (native_node_)
     [native_node_ detach];
-  delegate_ = nullptr;
-  delete this;
+  AXPlatformNodeBase::Destroy();
 }
 
 gfx::NativeViewAccessible AXPlatformNodeMac::GetNativeViewAccessible() {
