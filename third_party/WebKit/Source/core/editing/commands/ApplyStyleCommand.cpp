@@ -663,7 +663,7 @@ void ApplyStyleCommand::applyInlineStyle(EditingStyle* style, EditingState* edit
 
         Position embeddingRemoveEnd = end;
         if (endUnsplitAncestor && elementFullySelected(*endUnsplitAncestor, removeStart, end))
-            embeddingRemoveEnd = mostForwardCaretPosition(positionInParentBeforeNode(*endUnsplitAncestor));
+            embeddingRemoveEnd = mostForwardCaretPosition(Position::inParentBeforeNode(*endUnsplitAncestor));
 
         if (embeddingRemoveEnd != removeStart || embeddingRemoveEnd != end) {
             styleWithoutEmbedding = style->copy();
@@ -716,7 +716,7 @@ void ApplyStyleCommand::applyInlineStyle(EditingStyle* style, EditingState* edit
 
         if (embeddingStartElement || embeddingEndElement) {
             Position embeddingApplyStart = embeddingStartElement ? Position::inParentAfterNode(*embeddingStartElement) : start;
-            Position embeddingApplyEnd = embeddingEndElement ? positionInParentBeforeNode(*embeddingEndElement) : end;
+            Position embeddingApplyEnd = embeddingEndElement ? Position::inParentBeforeNode(*embeddingEndElement) : end;
             DCHECK(embeddingApplyStart.isNotNull());
             DCHECK(embeddingApplyEnd.isNotNull());
 

@@ -246,11 +246,6 @@ PositionTemplate<Strategy> PositionTemplate<Strategy>::inParentBeforeNode(const 
     return PositionTemplate<Strategy>(Strategy::parent(node), Strategy::index(node));
 }
 
-inline Position positionInParentBeforeNode(const Node& node)
-{
-    return Position::inParentBeforeNode(node);
-}
-
 template <typename Strategy>
 PositionTemplate<Strategy> PositionTemplate<Strategy>::inParentAfterNode(const Node& node)
 {

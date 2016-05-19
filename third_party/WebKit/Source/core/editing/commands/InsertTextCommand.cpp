@@ -178,7 +178,7 @@ void InsertTextCommand::doApply(EditingState* editingState)
     // It is possible for the node that contains startPosition to contain only unrendered whitespace,
     // and so deleteInsignificantText could remove it.  Save the position before the node in case that happens.
     DCHECK(startPosition.computeContainerNode()) << startPosition;
-    Position positionBeforeStartNode(positionInParentBeforeNode(*startPosition.computeContainerNode()));
+    Position positionBeforeStartNode(Position::inParentBeforeNode(*startPosition.computeContainerNode()));
     deleteInsignificantText(startPosition, mostForwardCaretPosition(startPosition));
     if (!startPosition.inShadowIncludingDocument())
         startPosition = positionBeforeStartNode;

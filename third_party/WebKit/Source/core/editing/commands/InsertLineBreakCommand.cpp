@@ -151,7 +151,7 @@ void InsertLineBreakCommand::doApply(EditingState* editingState)
         // TODO(yosin) |isRenderedCharacter()| should be removed, and we should
         // use |VisiblePosition::characterAfter()|.
         if (!isRenderedCharacter(endingPosition)) {
-            Position positionBeforeTextNode(positionInParentBeforeNode(*textNode));
+            Position positionBeforeTextNode(Position::inParentBeforeNode(*textNode));
             // Clear out all whitespace and insert one non-breaking space
             deleteInsignificantTextDownstream(endingPosition);
             DCHECK(!textNode->layoutObject() || textNode->layoutObject()->style()->collapseWhiteSpace());

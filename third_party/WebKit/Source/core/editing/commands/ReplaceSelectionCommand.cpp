@@ -682,7 +682,7 @@ void ReplaceSelectionCommand::makeInsertedContentRoundTrippableWithHTMLTreeBuild
 
         HTMLElement& element = toHTMLElement(*node);
         if (isProhibitedParagraphChild(element.localName())) {
-            if (HTMLElement* paragraphElement = toHTMLElement(enclosingElementWithTag(positionInParentBeforeNode(element), pTag))) {
+            if (HTMLElement* paragraphElement = toHTMLElement(enclosingElementWithTag(Position::inParentBeforeNode(element), pTag))) {
                 moveElementOutOfAncestor(&element, paragraphElement, editingState);
                 if (editingState->isAborted())
                     return;
@@ -690,7 +690,7 @@ void ReplaceSelectionCommand::makeInsertedContentRoundTrippableWithHTMLTreeBuild
         }
 
         if (isHTMLHeaderElement(&element)) {
-            if (HTMLElement* headerElement = toHTMLElement(highestEnclosingNodeOfType(positionInParentBeforeNode(element), isHTMLHeaderElement))) {
+            if (HTMLElement* headerElement = toHTMLElement(highestEnclosingNodeOfType(Position::inParentBeforeNode(element), isHTMLHeaderElement))) {
                 moveElementOutOfAncestor(&element, headerElement, editingState);
                 if (editingState->isAborted())
                     return;
@@ -1084,7 +1084,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
         Node* br = endingSelection().start().anchorNode();
         DCHECK(isHTMLBRElement(br)) << br;
         // Insert content between the two blockquotes, but remove the br (since it was just a placeholder).
-        insertionPos = positionInParentBeforeNode(*br);
+        insertionPos = Position::inParentBeforeNode(*br);
         removeNode(br, editingState);
         if (editingState->isAborted())
             return;
@@ -1115,7 +1115,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
         if (isEndOfBlock(visibleInsertionPos) && !(isStartOfBlock(visibleInsertionPos) && fragment.hasInterchangeNewlineAtEnd()))
             insertionPos = Position::inParentAfterNode(*enclosingBlockOfInsertionPos);
         else if (isStartOfBlock(visibleInsertionPos))
-            insertionPos = positionInParentBeforeNode(*enclosingBlockOfInsertionPos);
+            insertionPos = Position::inParentBeforeNode(*enclosingBlockOfInsertionPos);
     }
 
     // Paste at start or end of link goes outside of link.
@@ -1162,7 +1162,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
                 if (!splitStart)
                     splitStart = insertionPos.computeContainerNode();
                 Node* nodeToSplitTo = splitTreeToNode(splitStart, elementToSplitTo->parentNode());
-                insertionPos = positionInParentBeforeNode(*nodeToSplitTo);
+                insertionPos = Position::inParentBeforeNode(*nodeToSplitTo);
             }
         }
     }

@@ -458,7 +458,7 @@ void InsertListCommand::listifyParagraph(const VisiblePosition& originalStart, c
     // Also avoid the containing list item.
     Node* const listChild = enclosingListChild(insertionPos.anchorNode());
     if (isHTMLLIElement(listChild))
-        insertionPos = positionInParentBeforeNode(*listChild);
+        insertionPos = Position::inParentBeforeNode(*listChild);
 
     HTMLElement* listElement = createHTMLElement(document(), listTag);
     insertNodeAt(listElement, insertionPos, editingState);

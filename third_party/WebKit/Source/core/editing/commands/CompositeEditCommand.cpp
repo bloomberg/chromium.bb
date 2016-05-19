@@ -586,7 +586,7 @@ Position CompositeEditCommand::positionOutsideTabSpan(const Position& pos)
     case PositionAnchorType::OffsetInAnchor:
         break;
     case PositionAnchorType::BeforeAnchor:
-        return positionInParentBeforeNode(*pos.anchorNode());
+        return Position::inParentBeforeNode(*pos.anchorNode());
     case PositionAnchorType::AfterAnchor:
         return Position::inParentAfterNode(*pos.anchorNode());
     }
@@ -595,13 +595,13 @@ Position CompositeEditCommand::positionOutsideTabSpan(const Position& pos)
     DCHECK(tabSpan);
 
     if (pos.offsetInContainerNode() <= caretMinOffset(pos.computeContainerNode()))
-        return positionInParentBeforeNode(*tabSpan);
+        return Position::inParentBeforeNode(*tabSpan);
 
     if (pos.offsetInContainerNode() >= caretMaxOffset(pos.computeContainerNode()))
         return Position::inParentAfterNode(*tabSpan);
 
     splitTextNodeContainingElement(toText(pos.computeContainerNode()), pos.offsetInContainerNode());
-    return positionInParentBeforeNode(*tabSpan);
+    return Position::inParentBeforeNode(*tabSpan);
 }
 
 void CompositeEditCommand::insertNodeAtTabSpanPosition(Node* node, const Position& pos, EditingState* editingState)
@@ -1577,7 +1577,7 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(const Posi
             if (!enclosingAnchor)
                 return original;
 
-            result = positionInParentBeforeNode(*enclosingAnchor);
+            result = Position::inParentBeforeNode(*enclosingAnchor);
         }
     }
 

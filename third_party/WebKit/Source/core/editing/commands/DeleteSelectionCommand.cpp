@@ -136,7 +136,7 @@ void DeleteSelectionCommand::initializeStartEnd(Position& start, Position& end)
             break;
 
         // If we're going to expand to include the endSpecialContainer, it must be fully selected.
-        if (endSpecialContainer && !startSpecialContainer && comparePositions(start, positionInParentBeforeNode(*endSpecialContainer)) > -1)
+        if (endSpecialContainer && !startSpecialContainer && comparePositions(start, Position::inParentBeforeNode(*endSpecialContainer)) > -1)
             break;
 
         if (startSpecialContainer && startSpecialContainer->isDescendantOf(endSpecialContainer)) {
