@@ -85,10 +85,10 @@ bool ProfileAllowsScenario(const content::BackgroundTracingConfig& config,
   PrefService* local_state = g_browser_process->local_state();
   DCHECK(local_state);
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD)
   if (!local_state->GetBoolean(metrics::prefs::kMetricsReportingEnabled))
     return false;
-#endif // OS_CHROMEOS
+#endif // !OS_CHROMEOS && OFFICIAL_BUILD
 
   if (config.tracing_mode() == content::BackgroundTracingConfig::PREEMPTIVE) {
     const base::Time last_upload_time = base::Time::FromInternalValue(

@@ -238,14 +238,14 @@ class ChromeTracingDelegateBrowserTestOnStartup
   }
 };
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD)
 IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTestOnStartup,
                        PRE_ScenarioSetFromFieldtrial) {
   // At this point the metrics pref is not set.
   EXPECT_FALSE(
       content::BackgroundTracingManager::GetInstance()->HasActiveScenario());
 }
-#endif // OS_CHROMEOS
+#endif // !OS_CHROMEOS && !OFFICIAL_BUILD
 
 IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTestOnStartup,
                        ScenarioSetFromFieldtrial) {
@@ -254,14 +254,14 @@ IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTestOnStartup,
       content::BackgroundTracingManager::GetInstance()->HasActiveScenario());
 }
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD)
 IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTestOnStartup,
                        PRE_PRE_StartupTracingThrottle) {
   // At this point the metrics pref is not set.
   EXPECT_FALSE(
       content::BackgroundTracingManager::GetInstance()->HasActiveScenario());
 }
-#endif // OS_CHROMEOS
+#endif // !OS_CHROMEOS && !OFFICIAL_BUILD
 
 IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTestOnStartup,
                        PRE_StartupTracingThrottle) {
