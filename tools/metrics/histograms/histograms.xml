@@ -94019,7 +94019,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram
       name="PageLoad.Clients.DocWrite.Evaluator.Timing2.ParseDuration"/>
   <affected-histogram
-      name="PageLoad.Clients.ServiceWorker.Timing2.NavigationToFirstContentfulPaint"/>
+      name="PageLoad.Clients.ServiceWorker.PaintTiming.NavigationToFirstContentfulPaint"/>
+  <affected-histogram
+      name="PageLoad.Clients.ServiceWorker.Timing2.NavigationToFirstContentfulPaint">
+    <obsolete>
+      Deprecated in favor of PaintTiming equivalent.
+    </obsolete>
+  </affected-histogram>
   <affected-histogram
       name="PageLoad.DocumentTiming.NavigationToDOMContentLoadedEventFired"/>
   <affected-histogram name="PageLoad.DocumentTiming.NavigationToFirstLayout"/>

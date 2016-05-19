@@ -13,15 +13,17 @@ class ServiceWorkerPageLoadMetricsObserver
  public:
   ServiceWorkerPageLoadMetricsObserver();
   // page_load_metrics::PageLoadMetricsObserver implementation:
-  void OnComplete(
+  void OnFirstContentfulPaint(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  void OnDomContentLoadedEventStart(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
+  void OnLoadEventStart(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
  private:
-  void LogServiceWorkerHistograms(
-      const page_load_metrics::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info);
-
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerPageLoadMetricsObserver);
 };
 

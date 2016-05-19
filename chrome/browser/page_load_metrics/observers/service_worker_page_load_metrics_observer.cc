@@ -10,56 +10,71 @@
 namespace internal {
 
 const char kHistogramServiceWorkerFirstContentfulPaint[] =
-    "PageLoad.Clients.ServiceWorker.Timing2.NavigationToFirstContentfulPaint";
+    "PageLoad.Clients.ServiceWorker.PaintTiming."
+    "NavigationToFirstContentfulPaint";
 const char kBackgroundHistogramServiceWorkerFirstContentfulPaint[] =
-    "PageLoad.Clients.ServiceWorker.Timing2.NavigationToFirstContentfulPaint."
-    "Background";
+    "PageLoad.Clients.ServiceWorker.PaintTiming."
+    "NavigationToFirstContentfulPaint.Background";
 const char kHistogramServiceWorkerParseStartToFirstContentfulPaint[] =
-    "PageLoad.Clients.ServiceWorker.Timing2.ParseStartToFirstContentfulPaint";
+    "PageLoad.Clients.ServiceWorker.PaintTiming."
+    "ParseStartToFirstContentfulPaint";
 const char kHistogramServiceWorkerDomContentLoaded[] =
-    "PageLoad.Clients.ServiceWorker.Timing2."
+    "PageLoad.Clients.ServiceWorker.DocumentTiming."
     "NavigationToDOMContentLoadedEventFired";
 const char kHistogramServiceWorkerLoad[] =
-    "PageLoad.Clients.ServiceWorker.Timing2.NavigationToLoadEventFired";
+    "PageLoad.Clients.ServiceWorker.DocumentTiming.NavigationToLoadEventFired";
 
 }  // namespace internal
 
+namespace {
+
+bool IsServiceWorkerControlled(
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  return (info.metadata.behavior_flags &
+          blink::WebLoadingBehaviorFlag::
+              WebLoadingBehaviorServiceWorkerControlled) != 0;
+}
+
+}  // namespace
+
 ServiceWorkerPageLoadMetricsObserver::ServiceWorkerPageLoadMetricsObserver() {}
 
-void ServiceWorkerPageLoadMetricsObserver::OnComplete(
+void ServiceWorkerPageLoadMetricsObserver::OnFirstContentfulPaint(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (info.metadata.behavior_flags &
-      blink::WebLoadingBehaviorFlag::
-          WebLoadingBehaviorServiceWorkerControlled) {
-    LogServiceWorkerHistograms(timing, info);
+  if (!IsServiceWorkerControlled(info))
+    return;
+  if (WasStartedInForegroundEventInForeground(timing.first_contentful_paint,
+                                              info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerFirstContentfulPaint,
+                        timing.first_contentful_paint);
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramServiceWorkerParseStartToFirstContentfulPaint,
+        timing.first_contentful_paint - timing.parse_start);
+  } else {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kBackgroundHistogramServiceWorkerFirstContentfulPaint,
+        timing.first_contentful_paint);
   }
 }
 
-void ServiceWorkerPageLoadMetricsObserver::LogServiceWorkerHistograms(
+void ServiceWorkerPageLoadMetricsObserver::OnDomContentLoadedEventStart(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (!timing.first_contentful_paint.is_zero()) {
-    bool foreground_paint = WasStartedInForegroundEventInForeground(
-        timing.first_contentful_paint, info);
-    if (foreground_paint) {
-      PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerFirstContentfulPaint,
-                          timing.first_contentful_paint);
-      PAGE_LOAD_HISTOGRAM(
-          internal::kHistogramServiceWorkerParseStartToFirstContentfulPaint,
-          timing.first_contentful_paint - timing.parse_start);
-    } else {
-      PAGE_LOAD_HISTOGRAM(
-          internal::kBackgroundHistogramServiceWorkerFirstContentfulPaint,
-          timing.first_contentful_paint);
-    }
-  }
-
+  if (!IsServiceWorkerControlled(info))
+    return;
   if (WasStartedInForegroundEventInForeground(
           timing.dom_content_loaded_event_start, info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerDomContentLoaded,
                         timing.dom_content_loaded_event_start);
   }
+}
+
+void ServiceWorkerPageLoadMetricsObserver::OnLoadEventStart(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  if (!IsServiceWorkerControlled(info))
+    return;
   if (WasStartedInForegroundEventInForeground(timing.load_event_start, info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerLoad,
                         timing.load_event_start);
