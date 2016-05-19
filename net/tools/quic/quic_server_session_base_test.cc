@@ -417,7 +417,7 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
       QuicSentPacketManagerPeer::GetBandwidthRecorder(sent_packet_manager);
   // Seed an rtt measurement equal to the initial default rtt.
   RttStats* rtt_stats =
-      QuicSentPacketManagerPeer::GetRttStats(sent_packet_manager);
+      const_cast<RttStats*>(sent_packet_manager->GetRttStats());
   rtt_stats->UpdateRtt(
       QuicTime::Delta::FromMicroseconds(rtt_stats->initial_rtt_us()),
       QuicTime::Delta::Zero(), QuicTime::Zero());

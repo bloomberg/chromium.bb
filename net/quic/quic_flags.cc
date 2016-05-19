@@ -102,9 +102,6 @@ bool FLAGS_quic_sslr_limit_reduction = true;
 // Simplify QUIC's loss detection by combining time and nack based portions.
 bool FLAGS_quic_simplify_loss_detection = true;
 
-// If true, do not check HasUnackedPackets on retransmission timeout.
-bool FLAGS_quic_always_has_unacked_packets_on_timeout = true;
-
 // If true, respect any configured max pacing rate.
 bool FLAGS_quic_max_pacing_rate = true;
 
@@ -129,3 +126,15 @@ bool FLAGS_quic_loss_recovery_use_largest_acked = true;
 // Only set one alarm for sending at once, either the send alarm or
 // retransmission alarm.
 bool FLAGS_quic_only_one_sending_alarm = true;
+
+// If true, the hash of the CHLO message will be used in the proof generated for
+// an SCUP message.
+bool FLAGS_quic_use_hash_in_scup = true;
+
+// If true, consider receiving crypto frame on non crypto stream as memory
+// corruption.
+bool FLAGS_quic_detect_memory_corrpution = true;
+
+// If true, QUIC public reset packets will have the \"pre-v33\" public header
+// flags.
+bool FLAGS_quic_use_old_public_reset_packets = true;

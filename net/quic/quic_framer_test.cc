@@ -6315,7 +6315,54 @@ TEST_P(QuicFramerTest, BuildMtuDiscoveryPacket) {
                                            : arraysize(packet_34));
 }
 
+TEST_P(QuicFramerTest, BuildPublicResetPacketOld) {
+  FLAGS_quic_use_old_public_reset_packets = true;
+  QuicPublicResetPacket reset_packet;
+  reset_packet.public_header.connection_id = kConnectionId;
+  reset_packet.public_header.reset_flag = true;
+  reset_packet.public_header.version_flag = false;
+  reset_packet.rejected_packet_number = kPacketNumber;
+  reset_packet.nonce_proof = kNonceProof;
+
+  // clang-format off
+  unsigned char packet[] = {
+    // public flags (public reset, 8 byte ConnectionId)
+    0x0E,
+    // connection_id
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+    // message tag (kPRST)
+    'P', 'R', 'S', 'T',
+    // num_entries (2) + padding
+    0x02, 0x00, 0x00, 0x00,
+    // tag kRNON
+    'R', 'N', 'O', 'N',
+    // end offset 8
+    0x08, 0x00, 0x00, 0x00,
+    // tag kRSEQ
+    'R', 'S', 'E', 'Q',
+    // end offset 16
+    0x10, 0x00, 0x00, 0x00,
+    // nonce proof
+    0x89, 0x67, 0x45, 0x23,
+    0x01, 0xEF, 0xCD, 0xAB,
+    // rejected packet number
+    0xBC, 0x9A, 0x78, 0x56,
+    0x34, 0x12, 0x00, 0x00,
+  };
+  // clang-format on
+
+  std::unique_ptr<QuicEncryptedPacket> data(
+      framer_.BuildPublicResetPacket(reset_packet));
+  ASSERT_TRUE(data != nullptr);
+
+  test::CompareCharArraysWithHexError("constructed packet", data->data(),
+                                      data->length(), AsChars(packet),
+                                      arraysize(packet));
+}
+
 TEST_P(QuicFramerTest, BuildPublicResetPacket) {
+  FLAGS_quic_use_old_public_reset_packets = false;
   QuicPublicResetPacket reset_packet;
   reset_packet.public_header.connection_id = kConnectionId;
   reset_packet.public_header.reset_flag = true;
@@ -6361,6 +6408,7 @@ TEST_P(QuicFramerTest, BuildPublicResetPacket) {
 }
 
 TEST_P(QuicFramerTest, BuildPublicResetPacketWithClientAddress) {
+  FLAGS_quic_use_old_public_reset_packets = false;
   QuicPublicResetPacket reset_packet;
   reset_packet.public_header.connection_id = kConnectionId;
   reset_packet.public_header.reset_flag = true;

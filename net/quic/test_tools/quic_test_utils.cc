@@ -346,7 +346,7 @@ MockQuicSession::MockQuicSession(QuicConnection* connection)
     : QuicSession(connection, DefaultQuicConfig()) {
   crypto_stream_.reset(new QuicCryptoStream(this));
   Initialize();
-  ON_CALL(*this, WritevData(_, _, _, _, _))
+  ON_CALL(*this, WritevData(_, _, _, _, _, _))
       .WillByDefault(testing::Return(QuicConsumedData(0, false)));
 }
 
@@ -354,6 +354,7 @@ MockQuicSession::~MockQuicSession() {}
 
 // static
 QuicConsumedData MockQuicSession::ConsumeAllData(
+    ReliableQuicStream* /*stream*/,
     QuicStreamId /*id*/,
     const QuicIOVector& data,
     QuicStreamOffset /*offset*/,
@@ -366,7 +367,7 @@ MockQuicSpdySession::MockQuicSpdySession(QuicConnection* connection)
     : QuicSpdySession(connection, DefaultQuicConfig()) {
   crypto_stream_.reset(new QuicCryptoStream(this));
   Initialize();
-  ON_CALL(*this, WritevData(_, _, _, _, _))
+  ON_CALL(*this, WritevData(_, _, _, _, _, _))
       .WillByDefault(testing::Return(QuicConsumedData(0, false)));
 }
 

@@ -99,6 +99,7 @@ QuicSentPacketManager::QuicSentPacketManager(
       enable_half_rtt_tail_loss_probe_(false),
       using_pacing_(false),
       use_new_rto_(false),
+      undo_pending_retransmits_(false),
       largest_newly_acked_(0),
       handshake_confirmed_(false) {}
 
@@ -169,6 +170,10 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
       config.HasReceivedConnectionOptions() &&
       ContainsQuicTag(config.ReceivedConnectionOptions(), kATIM)) {
     loss_algorithm_.reset(new GeneralLossAlgorithm(kAdaptiveTime));
+  }
+  if (FLAGS_quic_loss_recovery_use_largest_acked &&
+      config.HasClientSentConnectionOption(kUNDO, perspective_)) {
+    undo_pending_retransmits_ = true;
   }
   if (config.HasReceivedSocketReceiveBuffer()) {
     receive_buffer_bytes_ =
@@ -258,6 +263,17 @@ void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
     consecutive_tlp_count_ = 0;
     consecutive_crypto_retransmission_count_ = 0;
   }
+  // TODO(ianswett): Consider replacing the pending_retransmissions_ with a
+  // fast way to retrieve the next pending retransmission, if there are any.
+  // A single packet number indicating all packets below that are lost should
+  // be all the state that is necessary.
+  while (undo_pending_retransmits_ && !pending_retransmissions_.empty() &&
+         pending_retransmissions_.front().first > largest_newly_acked_ &&
+         pending_retransmissions_.front().second == LOSS_RETRANSMISSION) {
+    // Cancel any pending retransmissions larger than largest_newly_acked_.
+    unacked_packets_.RestoreToInFlight(pending_retransmissions_.front().first);
+    pending_retransmissions_.erase(pending_retransmissions_.begin());
+  }
 
   if (debug_delegate_ != nullptr) {
     debug_delegate_->OnIncomingAck(ack_frame, ack_receive_time,
@@ -328,6 +344,9 @@ void QuicSentPacketManager::HandleAckForSentPackets(
     // packet, then inform the caller.
     if (it->in_flight) {
       packets_acked_.push_back(std::make_pair(packet_number, it->bytes_sent));
+    } else if (FLAGS_quic_loss_recovery_use_largest_acked &&
+               !it->is_unackable) {
+      largest_newly_acked_ = packet_number;
     }
     MarkPacketHandled(packet_number, &(*it), ack_delay_time);
   }
@@ -535,6 +554,9 @@ void QuicSentPacketManager::MarkPacketHandled(QuicPacketNumber packet_number,
 
   unacked_packets_.RemoveFromInFlight(info);
   unacked_packets_.RemoveRetransmittability(info);
+  if (FLAGS_quic_loss_recovery_use_largest_acked) {
+    info->is_unackable = true;
+  }
 }
 
 bool QuicSentPacketManager::IsUnacked(QuicPacketNumber packet_number) const {

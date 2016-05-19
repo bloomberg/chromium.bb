@@ -201,8 +201,9 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
                                 SpdyPriority priority,
                                 SpdyFrameType type) {
     // Write the headers and capture the outgoing data
-    EXPECT_CALL(session_, WritevData(kHeadersStreamId, _, _, false, nullptr))
-        .WillOnce(WithArgs<1>(Invoke(this, &QuicHeadersStreamTest::SaveIov)));
+    EXPECT_CALL(session_, WritevData(headers_stream_, kHeadersStreamId, _, _,
+                                     false, nullptr))
+        .WillOnce(WithArgs<2>(Invoke(this, &QuicHeadersStreamTest::SaveIov)));
     headers_stream_->WriteHeaders(stream_id, headers_, fin, priority, nullptr);
 
     // Parse the outgoing data and check that it matches was was written.
@@ -303,8 +304,9 @@ TEST_P(QuicHeadersStreamTest, WritePushPromises) {
     QuicStreamId promised_stream_id = NextPromisedStreamId();
     if (perspective() == Perspective::IS_SERVER) {
       // Write the headers and capture the outgoing data
-      EXPECT_CALL(session_, WritevData(kHeadersStreamId, _, _, false, nullptr))
-          .WillOnce(WithArgs<1>(Invoke(this, &QuicHeadersStreamTest::SaveIov)));
+      EXPECT_CALL(session_, WritevData(headers_stream_, kHeadersStreamId, _, _,
+                                       false, nullptr))
+          .WillOnce(WithArgs<2>(Invoke(this, &QuicHeadersStreamTest::SaveIov)));
       headers_stream_->WritePushPromise(stream_id, promised_stream_id, headers_,
                                         nullptr);
 

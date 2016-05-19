@@ -1157,6 +1157,17 @@
             'tools/quic/quic_packet_printer_bin.cc',
           ],
         },
+	{
+          'target_name': 'crypto_message_printer',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'net',
+          ],
+          'sources': [
+            'tools/quic/crypto_message_printer_bin.cc',
+          ],
+        },
         {
           'target_name': 'quic_server',
           'type': 'executable',

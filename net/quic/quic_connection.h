@@ -675,6 +675,10 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   EncryptionLevel encryption_level() const { return encryption_level_; }
 
+  const IPEndPoint& last_packet_source_address() const {
+    return last_packet_source_address_;
+  }
+
  protected:
   // Send a packet to the peer, and takes ownership of the packet if the packet
   // cannot be written immediately.
@@ -691,10 +695,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // version from |available_versions| which is also supported. Returns true if
   // such a version exists, false otherwise.
   bool SelectMutualVersion(const QuicVersionVector& available_versions);
-
-  const IPEndPoint& last_packet_source_address() const {
-    return last_packet_source_address_;
-  }
 
   // Returns the current per-packet options for the connection.
   PerPacketOptions* per_packet_options() { return per_packet_options_; }
@@ -837,6 +837,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   // safely done until the packet is validated. Returns true if packet can be
   // handled, false otherwise.
   bool ProcessValidatedPacket(const QuicPacketHeader& header);
+
+  // Consider receiving crypto frame on non crypto stream as memory corruption.
+  bool MaybeConsiderAsMemoryCorruption(const QuicStreamFrame& frame);
 
   QuicFramer framer_;
   QuicConnectionHelperInterface* helper_;  // Not owned.

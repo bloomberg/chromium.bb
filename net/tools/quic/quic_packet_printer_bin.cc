@@ -9,7 +9,7 @@
 // Otherwise it will dump the public header, and fail with an error that the
 // packet is undecryptable.
 //
-// Usage: quic_packet_printer [server|client] [hex dump of packet]
+// Usage: quic_packet_printer server|client <hex dump of packet>
 //
 // Example input:
 // quic_packet_printer server 0c6b810308320f24c004a939a38a2e3fd6ca589917f200400
@@ -162,8 +162,9 @@ int main(int argc, char* argv[]) {
   base::CommandLine* line = base::CommandLine::ForCurrentProcess();
   const base::CommandLine::StringVector& args = line->GetArgs();
 
-  if (args.size() != 2) {
-    cerr << "Usage: " << argv[0] << " client|server <hex>\n";
+  if (args.size() != 3) {
+    cerr << "Missing argument " << argc << ". (Usage: " << argv[0]
+         << " client|server <hex>\n";
     return 1;
   }
 

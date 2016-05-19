@@ -123,7 +123,7 @@ void QuicUnackedPacketMap::TransferRetransmissionInfo(
   // encryption changes.
   if (transmission_type == ALL_INITIAL_RETRANSMISSION ||
       transmission_type == ALL_UNACKED_RETRANSMISSION) {
-    RemoveAckability(transmission_info);
+    transmission_info->is_unackable = true;
   } else {
     transmission_info->retransmission = new_packet_number;
   }
@@ -163,12 +163,6 @@ void QuicUnackedPacketMap::RemoveRetransmittability(
   DCHECK_LT(packet_number, least_unacked_ + unacked_packets_.size());
   TransmissionInfo* info = &unacked_packets_[packet_number - least_unacked_];
   RemoveRetransmittability(info);
-}
-
-void QuicUnackedPacketMap::RemoveAckability(TransmissionInfo* info) {
-  DCHECK(info->retransmittable_frames.empty());
-  DCHECK_EQ(0u, info->retransmission);
-  info->is_unackable = true;
 }
 
 void QuicUnackedPacketMap::MaybeRemoveRetransmittableFrames(
@@ -258,6 +252,15 @@ void QuicUnackedPacketMap::RemoveFromInFlight(QuicPacketNumber packet_number) {
   DCHECK_LT(packet_number, least_unacked_ + unacked_packets_.size());
   TransmissionInfo* info = &unacked_packets_[packet_number - least_unacked_];
   RemoveFromInFlight(info);
+}
+
+void QuicUnackedPacketMap::RestoreToInFlight(QuicPacketNumber packet_number) {
+  DCHECK_GE(packet_number, least_unacked_);
+  DCHECK_LT(packet_number, least_unacked_ + unacked_packets_.size());
+  TransmissionInfo* info = &unacked_packets_[packet_number - least_unacked_];
+  DCHECK(!info->is_unackable);
+  bytes_in_flight_ += info->bytes_sent;
+  info->in_flight = true;
 }
 
 void QuicUnackedPacketMap::CancelRetransmissionsForStream(

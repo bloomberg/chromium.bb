@@ -27,6 +27,7 @@ namespace test {
 // an initial CWND of 10. They have carefully calculated values which should be
 // updated to be based on kInitialCongestionWindow.
 const uint32_t kInitialCongestionWindowPackets = 10;
+const uint32_t kMaxCongestionWindowPackets = 200;
 const uint32_t kDefaultWindowTCP =
     kInitialCongestionWindowPackets * kDefaultTCPMSS;
 const float kRenoBeta = 0.7f;  // Reno backoff factor.
@@ -38,7 +39,7 @@ class TcpCubicSenderBytesPeer : public TcpCubicSenderBytes {
                             &rtt_stats_,
                             reno,
                             kInitialCongestionWindowPackets,
-                            kMaxCongestionWindow,
+                            kMaxCongestionWindowPackets,
                             &stats_) {}
 
   const HybridSlowStart& hybrid_slow_start() const {
@@ -732,9 +733,9 @@ TEST_F(TcpCubicSenderBytesTest, BandwidthResumption) {
 
   // Resumed CWND is limited to be in a sensible range.
   cached_network_params.set_bandwidth_estimate_bytes_per_second(
-      (kMaxCongestionWindow + 1) * kDefaultTCPMSS);
+      (kMaxCongestionWindowPackets + 1) * kDefaultTCPMSS);
   sender_->ResumeConnectionState(cached_network_params, false);
-  EXPECT_EQ(kMaxCongestionWindow * kDefaultTCPMSS,
+  EXPECT_EQ(kMaxCongestionWindowPackets * kDefaultTCPMSS,
             sender_->GetCongestionWindow());
 
   if (FLAGS_quic_no_lower_bw_resumption_limit) {
@@ -752,9 +753,9 @@ TEST_F(TcpCubicSenderBytesTest, BandwidthResumption) {
 
   // Resume to the max value.
   cached_network_params.set_max_bandwidth_estimate_bytes_per_second(
-      kMaxCongestionWindow * kDefaultTCPMSS);
+      kMaxCongestionWindowPackets * kDefaultTCPMSS);
   sender_->ResumeConnectionState(cached_network_params, true);
-  EXPECT_EQ(kMaxCongestionWindow * kDefaultTCPMSS,
+  EXPECT_EQ(kMaxCongestionWindowPackets * kDefaultTCPMSS,
             sender_->GetCongestionWindow());
 }
 
@@ -805,7 +806,7 @@ TEST_F(TcpCubicSenderBytesTest, ResetAfterConnectionMigration) {
   // Resets cwnd and slow start threshold on connection migrations.
   sender_->OnConnectionMigration();
   EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
-  EXPECT_EQ(kMaxCongestionWindow * kDefaultTCPMSS,
+  EXPECT_EQ(kMaxCongestionWindowPackets * kDefaultTCPMSS,
             sender_->GetSlowStartThreshold());
   EXPECT_FALSE(sender_->hybrid_slow_start().started());
 }

@@ -32,6 +32,8 @@ const struct QuicErrorMapping {
   // Attempt to send unencrypted STREAM frame.
   { net::QUIC_ATTEMPT_TO_SEND_UNENCRYPTED_STREAM_DATA,
     "quic.attempt.to.unencrypted.stream.data" },
+  // Received a frame which is likely the result of memory corruption.
+  { net::QUIC_MAYBE_CORRUPTED_MEMORY, "quic.maybe.corrupted.momery" },
   // FEC frame data is not encrypted.
   { net::QUIC_UNENCRYPTED_FEC_DATA, "quic.unencrypted.fec.data" },
   // RST_STREAM frame data is malformed.

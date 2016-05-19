@@ -40,6 +40,12 @@ bool QuicSentPacketManagerPeer::GetUseNewRto(
 }
 
 // static
+bool QuicSentPacketManagerPeer::GetUndoRetransmits(
+    QuicSentPacketManager* sent_packet_manager) {
+  return sent_packet_manager->undo_pending_retransmits_;
+}
+
+// static
 QuicByteCount QuicSentPacketManagerPeer::GetReceiveWindow(
     QuicSentPacketManager* sent_packet_manager) {
   return sent_packet_manager->receive_buffer_bytes_;
@@ -76,12 +82,6 @@ void QuicSentPacketManagerPeer::SetLossAlgorithm(
     QuicSentPacketManager* sent_packet_manager,
     LossDetectionInterface* loss_detector) {
   sent_packet_manager->loss_algorithm_.reset(loss_detector);
-}
-
-// static
-RttStats* QuicSentPacketManagerPeer::GetRttStats(
-    QuicSentPacketManager* sent_packet_manager) {
-  return &sent_packet_manager->rtt_stats_;
 }
 
 // static

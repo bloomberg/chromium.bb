@@ -512,8 +512,9 @@ class MockQuicSession : public QuicSession {
                ReliableQuicStream*(SpdyPriority priority));
   MOCK_METHOD1(ShouldCreateIncomingDynamicStream, bool(QuicStreamId id));
   MOCK_METHOD0(ShouldCreateOutgoingDynamicStream, bool());
-  MOCK_METHOD5(WritevData,
-               QuicConsumedData(QuicStreamId id,
+  MOCK_METHOD6(WritevData,
+               QuicConsumedData(ReliableQuicStream* stream,
+                                QuicStreamId id,
                                 QuicIOVector data,
                                 QuicStreamOffset offset,
                                 bool fin,
@@ -530,11 +531,6 @@ class MockQuicSession : public QuicSession {
                void(QuicStreamId stream_id, SpdyPriority priority));
   MOCK_METHOD3(OnStreamHeadersComplete,
                void(QuicStreamId stream_id, bool fin, size_t frame_len));
-  MOCK_METHOD4(OnStreamHeaderList,
-               void(QuicStreamId stream_id,
-                    bool fin,
-                    size_t frame_len,
-                    const QuicHeaderList& header_list));
   MOCK_METHOD0(IsCryptoHandshakeConfirmed, bool());
 
   using QuicSession::ActivateStream;
@@ -542,6 +538,7 @@ class MockQuicSession : public QuicSession {
   // Returns a QuicConsumedData that indicates all of |data| (and |fin| if set)
   // has been consumed.
   static QuicConsumedData ConsumeAllData(
+      ReliableQuicStream* stream,
       QuicStreamId id,
       const QuicIOVector& data,
       QuicStreamOffset offset,
@@ -571,8 +568,9 @@ class MockQuicSpdySession : public QuicSpdySession {
                QuicSpdyStream*(SpdyPriority priority));
   MOCK_METHOD1(ShouldCreateIncomingDynamicStream, bool(QuicStreamId id));
   MOCK_METHOD0(ShouldCreateOutgoingDynamicStream, bool());
-  MOCK_METHOD5(WritevData,
-               QuicConsumedData(QuicStreamId id,
+  MOCK_METHOD6(WritevData,
+               QuicConsumedData(ReliableQuicStream* stream,
+                                QuicStreamId id,
                                 QuicIOVector data,
                                 QuicStreamOffset offset,
                                 bool fin,

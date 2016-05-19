@@ -158,6 +158,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   bool HasRetransmittableFrames(QuicPacketNumber packet_number) const;
 
   // Returns true if there are pending retransmissions.
+  // Not const because retransmissions may be cancelled before returning.
   bool HasPendingRetransmissions() const;
 
   // Retrieves the next pending retransmission.  You must ensure that
@@ -434,6 +435,9 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // If true, use the new RTO with loss based CWND reduction instead of the send
   // algorithms's OnRetransmissionTimeout to reduce the congestion window.
   bool use_new_rto_;
+  // If true, cancel pending retransmissions if they're larger than
+  // largest_newly_acked.
+  bool undo_pending_retransmits_;
 
   // Vectors packets acked and lost as a result of the last congestion event.
   SendAlgorithmInterface::CongestionVector packets_acked_;

@@ -55,10 +55,12 @@ void TcpCubicSenderBytes::SetCongestionWindowFromBandwidthAndRtt(
     // Limit new CWND if needed.
     congestion_window_ =
         max(min_congestion_window_,
-            min(new_congestion_window, kMaxCongestionWindow * kDefaultTCPMSS));
+            min(new_congestion_window,
+                kMaxResumptionCongestionWindow * kDefaultTCPMSS));
   } else {
     congestion_window_ =
-        max(min(new_congestion_window, kMaxCongestionWindow * kDefaultTCPMSS),
+        max(min(new_congestion_window,
+                kMaxResumptionCongestionWindow * kDefaultTCPMSS),
             kMinCongestionWindowForBandwidthResumption * kDefaultTCPMSS);
   }
 }

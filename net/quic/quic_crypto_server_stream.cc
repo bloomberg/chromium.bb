@@ -114,6 +114,8 @@ void QuicCryptoServerStream::OnHandshakeMessage(
     return;
   }
 
+  CryptoUtils::HashHandshakeMessage(message, &chlo_hash_);
+
   validate_client_hello_cb_ = new ValidateCallback(this);
   crypto_config_->ValidateClientHello(
       message, session()->connection()->peer_address().address(),
@@ -234,7 +236,8 @@ void QuicCryptoServerStream::SendServerConfigUpdate(
 
   CryptoHandshakeMessage server_config_update_message;
   if (!crypto_config_->BuildServerConfigUpdateMessage(
-          session()->connection()->version(), previous_source_address_tokens_,
+          session()->connection()->version(), chlo_hash_,
+          previous_source_address_tokens_,
           session()->connection()->self_address().address(),
           session()->connection()->peer_address().address(),
           session()->connection()->clock(),

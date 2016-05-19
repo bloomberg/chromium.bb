@@ -384,11 +384,13 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
       std::move(new_socket), std::move(new_reader), std::move(new_writer)));
 
   // Write data to session.
+  QuicChromiumClientStream* stream =
+      session_->CreateOutgoingDynamicStream(kDefaultPriority);
   struct iovec iov[1];
   iov[0].iov_base = data;
   iov[0].iov_len = 4;
-  session_->WritevData(5, QuicIOVector(iov, arraysize(iov), 4), 0, false,
-                       nullptr);
+  session_->WritevData(stream, stream->id(),
+                       QuicIOVector(iov, arraysize(iov), 4), 0, false, nullptr);
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());

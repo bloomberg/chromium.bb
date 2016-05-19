@@ -176,6 +176,10 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream
   // by ProofSource::GetProof.
   QuicCryptoProof crypto_proof_;
 
+  // Hash of the last received CHLO message which can be used for generating
+  // server config update messages.
+  std::string chlo_hash_;
+
   // Pointer to the active callback that will receive the result of
   // the client hello validation request and forward it to
   // FinishProcessingHandshakeMessage for processing.  nullptr if no

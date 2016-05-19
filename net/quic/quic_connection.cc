@@ -691,6 +691,14 @@ bool QuicConnection::OnStreamFrame(const QuicStreamFrame& frame) {
   }
   if (frame.stream_id != kCryptoStreamId &&
       last_decrypted_packet_level_ == ENCRYPTION_NONE) {
+    if (FLAGS_quic_detect_memory_corrpution &&
+        MaybeConsiderAsMemoryCorruption(frame)) {
+      CloseConnection(QUIC_MAYBE_CORRUPTED_MEMORY,
+                      "Received crypto frame on non crypto stream.",
+                      ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+      return false;
+    }
+
     QUIC_BUG << ENDPOINT
              << "Received an unencrypted data frame: closing connection"
              << " packet_number:" << last_header_.packet_number
@@ -1841,13 +1849,7 @@ void QuicConnection::SendAck() {
 }
 
 void QuicConnection::OnRetransmissionTimeout() {
-  if (FLAGS_quic_always_has_unacked_packets_on_timeout) {
-    DCHECK(sent_packet_manager_.HasUnackedPackets());
-  } else {
-    if (!sent_packet_manager_.HasUnackedPackets()) {
-      return;
-    }
-  }
+  DCHECK(sent_packet_manager_.HasUnackedPackets());
 
   if (close_connection_after_five_rtos_ &&
       sent_packet_manager_.consecutive_rto_count() >= 4) {
@@ -2438,6 +2440,30 @@ StringPiece QuicConnection::GetCurrentPacket() {
     return StringPiece();
   }
   return StringPiece(current_packet_data_, last_size_);
+}
+
+bool QuicConnection::MaybeConsiderAsMemoryCorruption(
+    const QuicStreamFrame& frame) {
+  if (frame.stream_id == kCryptoStreamId ||
+      last_decrypted_packet_level_ != ENCRYPTION_NONE) {
+    return false;
+  }
+
+  if (perspective_ == Perspective::IS_SERVER &&
+      frame.data_length >= sizeof(kCHLO) &&
+      strncmp(frame.data_buffer, reinterpret_cast<const char*>(&kCHLO),
+              sizeof(kCHLO)) == 0) {
+    return true;
+  }
+
+  if (perspective_ == Perspective::IS_CLIENT &&
+      frame.data_length >= sizeof(kREJ) &&
+      strncmp(frame.data_buffer, reinterpret_cast<const char*>(&kREJ),
+              sizeof(kREJ)) == 0) {
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace net

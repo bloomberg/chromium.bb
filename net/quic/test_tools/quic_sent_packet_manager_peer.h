@@ -30,6 +30,8 @@ class QuicSentPacketManagerPeer {
 
   static bool GetUseNewRto(QuicSentPacketManager* sent_packet_manager);
 
+  static bool GetUndoRetransmits(QuicSentPacketManager* sent_packet_manager);
+
   static QuicByteCount GetReceiveWindow(
       QuicSentPacketManager* sent_packet_manager);
 
@@ -47,8 +49,6 @@ class QuicSentPacketManagerPeer {
 
   static void SetLossAlgorithm(QuicSentPacketManager* sent_packet_manager,
                                LossDetectionInterface* loss_detector);
-
-  static RttStats* GetRttStats(QuicSentPacketManager* sent_packet_manager);
 
   static bool HasPendingPackets(
       const QuicSentPacketManager* sent_packet_manager);

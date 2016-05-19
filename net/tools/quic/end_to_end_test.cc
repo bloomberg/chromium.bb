@@ -1771,6 +1771,36 @@ TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
   server_thread_->Resume();
 }
 
+// Send a public reset from the server.
+TEST_P(EndToEndTest, ServerSendPublicReset) {
+  ASSERT_TRUE(Initialize());
+
+  // Send the public reset.
+  QuicConnectionId connection_id =
+      client_->client()->session()->connection()->connection_id();
+  QuicPublicResetPacket header;
+  header.public_header.connection_id = connection_id;
+  header.public_header.reset_flag = true;
+  header.public_header.version_flag = false;
+  header.rejected_packet_number = 10101;
+  QuicFramer framer(server_supported_versions_, QuicTime::Zero(),
+                    Perspective::IS_SERVER);
+  std::unique_ptr<QuicEncryptedPacket> packet(
+      framer.BuildPublicResetPacket(header));
+  // We must pause the server's thread in order to call WritePacket without
+  // race conditions.
+  server_thread_->Pause();
+  server_writer_->WritePacket(
+      packet->data(), packet->length(), server_address_.address(),
+      client_->client()->GetLatestClientAddress(), nullptr);
+  server_thread_->Resume();
+
+  // The request should fail.
+  EXPECT_EQ("", client_->SendSynchronousRequest("/foo"));
+  EXPECT_EQ(0u, client_->response_headers()->parsed_response_code());
+  EXPECT_EQ(QUIC_PUBLIC_RESET, client_->connection_error());
+}
+
 // Send a public reset from the server for a different connection ID.
 // It should be ignored.
 TEST_P(EndToEndTest, ServerSendPublicResetWithDifferentConnectionId) {

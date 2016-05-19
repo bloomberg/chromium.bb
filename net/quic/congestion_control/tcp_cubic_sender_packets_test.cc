@@ -28,6 +28,7 @@ namespace test {
 // an initial CWND of 10. They have carefully calculated values which should be
 // updated to be based on kInitialCongestionWindow.
 const uint32_t kInitialCongestionWindowPackets = 10;
+const uint32_t kMaxCongestionWindowPackets = 200;
 const uint32_t kDefaultWindowTCP =
     kInitialCongestionWindowPackets * kDefaultTCPMSS;
 const float kRenoBeta = 0.7f;  // Reno backoff factor.
@@ -62,8 +63,9 @@ class TcpCubicSenderPacketsTest : public ::testing::Test {
  protected:
   TcpCubicSenderPacketsTest()
       : one_ms_(QuicTime::Delta::FromMilliseconds(1)),
-        sender_(
-            new TcpCubicSenderPacketsPeer(&clock_, true, kMaxCongestionWindow)),
+        sender_(new TcpCubicSenderPacketsPeer(&clock_,
+                                              true,
+                                              kMaxCongestionWindowPackets)),
         packet_number_(1),
         acked_packet_number_(0),
         bytes_in_flight_(0) {}
@@ -487,7 +489,7 @@ TEST_F(TcpCubicSenderPacketsTest, SlowStartBurstPacketLossPRR) {
 
 TEST_F(TcpCubicSenderPacketsTest, RTOCongestionWindow) {
   EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
-  EXPECT_EQ(kMaxCongestionWindow, sender_->slowstart_threshold());
+  EXPECT_EQ(kMaxCongestionWindowPackets, sender_->slowstart_threshold());
 
   // Expect the window to decrease to the minimum once the RTO fires
   // and slow start threshold to be set to 1/2 of the CWND.
@@ -879,9 +881,9 @@ TEST_F(TcpCubicSenderPacketsTest, BandwidthResumption) {
 
   // Resumed CWND is limited to be in a sensible range.
   cached_network_params.set_bandwidth_estimate_bytes_per_second(
-      (kMaxCongestionWindow + 1) * kDefaultTCPMSS);
+      (kMaxCongestionWindowPackets + 1) * kDefaultTCPMSS);
   sender_->ResumeConnectionState(cached_network_params, false);
-  EXPECT_EQ(kMaxCongestionWindow, sender_->congestion_window());
+  EXPECT_EQ(kMaxCongestionWindowPackets, sender_->congestion_window());
 
   if (FLAGS_quic_no_lower_bw_resumption_limit) {
     // Resume with an illegal value of 0 and verify the server uses 1 instead.
@@ -898,9 +900,9 @@ TEST_F(TcpCubicSenderPacketsTest, BandwidthResumption) {
 
   // Resume to the max value.
   cached_network_params.set_max_bandwidth_estimate_bytes_per_second(
-      kMaxCongestionWindow * kDefaultTCPMSS);
+      kMaxCongestionWindowPackets * kDefaultTCPMSS);
   sender_->ResumeConnectionState(cached_network_params, true);
-  EXPECT_EQ(kMaxCongestionWindow * kDefaultTCPMSS,
+  EXPECT_EQ(kMaxCongestionWindowPackets * kDefaultTCPMSS,
             sender_->GetCongestionWindow());
 }
 
@@ -927,7 +929,7 @@ TEST_F(TcpCubicSenderPacketsTest, PaceBelowCWND) {
 
 TEST_F(TcpCubicSenderPacketsTest, ResetAfterConnectionMigration) {
   EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
-  EXPECT_EQ(kMaxCongestionWindow, sender_->slowstart_threshold());
+  EXPECT_EQ(kMaxCongestionWindowPackets, sender_->slowstart_threshold());
 
   // Starts with slow start.
   sender_->SetNumEmulatedConnections(1);
@@ -955,7 +957,7 @@ TEST_F(TcpCubicSenderPacketsTest, ResetAfterConnectionMigration) {
   // Resets cwnd and slow start threshold on connection migrations.
   sender_->OnConnectionMigration();
   EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
-  EXPECT_EQ(kMaxCongestionWindow, sender_->slowstart_threshold());
+  EXPECT_EQ(kMaxCongestionWindowPackets, sender_->slowstart_threshold());
   EXPECT_FALSE(sender_->hybrid_slow_start().started());
 }
 

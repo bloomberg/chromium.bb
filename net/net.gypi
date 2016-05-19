@@ -1826,6 +1826,7 @@
       'tools/quic/quic_server_session_base_test.cc',
       'tools/quic/quic_server_test.cc',
       'tools/quic/quic_simple_server_session_test.cc',
+      'tools/quic/quic_simple_server_stream_test.cc',
       'tools/quic/quic_simple_server_test.cc',
       'tools/quic/quic_spdy_client_stream_test.cc',
       'tools/quic/quic_time_wait_list_manager_test.cc',

@@ -59,7 +59,9 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
     QuicStreamOffset offset,
     bool fin,
     QuicAckListenerInterface* listener) {
-  bool has_handshake = id == kCryptoStreamId;
+  bool has_handshake = (id == kCryptoStreamId);
+  QUIC_BUG_IF(has_handshake && fin)
+      << "Handshake packets should never send a fin";
   // To make reasoning about crypto frames easier, we don't combine them with
   // other retransmittable frames in a single packet.
   const bool flush =

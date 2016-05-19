@@ -58,8 +58,10 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   void RemoveFromInFlight(TransmissionInfo* info);
 
   // Marks |packet_number| as no longer in flight.
-  // TODO(ianswett): Remove this test-only method.
   void RemoveFromInFlight(QuicPacketNumber packet_number);
+
+  // Marks |packet_number| as in flight.  Must not be unackable.
+  void RestoreToInFlight(QuicPacketNumber packet_number);
 
   // No longer retransmit data for |stream_id|.
   void CancelRetransmissionsForStream(QuicStreamId stream_id);
@@ -133,9 +135,6 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // Looks up the TransmissionInfo by |packet_number| and calls
   // RemoveRetransmittability.
   void RemoveRetransmittability(QuicPacketNumber packet_number);
-
-  // Removes any other retransmissions and marks all transmissions unackable.
-  void RemoveAckability(TransmissionInfo* info);
 
   // Increases the largest observed.  Any packets less or equal to
   // |largest_acked_packet| are discarded if they are only for the RTT purposes.

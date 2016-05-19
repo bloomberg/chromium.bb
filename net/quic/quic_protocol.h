@@ -78,9 +78,6 @@ const QuicByteCount kSessionReceiveWindowLimit = 24 * 1024 * 1024;  // 24 MB
 // Minimum size of the CWND, in packets, when doing bandwidth resumption.
 const QuicPacketCount kMinCongestionWindowForBandwidthResumption = 10;
 
-// Maximum size of the CWND, in packets.
-const QuicPacketCount kMaxCongestionWindow = 200;
-
 // Maximum number of tracked packets.
 const QuicPacketCount kMaxTrackedPackets = 5000;
 
@@ -532,6 +529,8 @@ enum QuicErrorCode {
   QUIC_UNENCRYPTED_STREAM_DATA = 61,
   // Attempt to send unencrypted STREAM frame.
   QUIC_ATTEMPT_TO_SEND_UNENCRYPTED_STREAM_DATA = 88,
+  // Received a frame which is likely the result of memory corruption.
+  QUIC_MAYBE_CORRUPTED_MEMORY = 89,
   // FEC frame data is not encrypted.
   QUIC_UNENCRYPTED_FEC_DATA = 77,
   // RST_STREAM frame data is malformed.
@@ -698,7 +697,7 @@ enum QuicErrorCode {
   QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM = 84,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 89,
+  QUIC_LAST_ERROR = 90,
 };
 
 // Must be updated any time a QuicErrorCode is deprecated.
@@ -1442,7 +1441,9 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
   TransmissionType transmission_type;
   // In flight packets have not been abandoned or lost.
   bool in_flight;
-  // True if the packet can never be acked, so it can be removed.
+  // True if the packet can never be acked, so it can be removed.  Occurs when
+  // a packet is never sent, after it is acknowledged once, or if it's a crypto
+  // packet we never expect to receive an ack for.
   bool is_unackable;
   // True if the packet contains stream data from the crypto stream.
   bool has_crypto_handshake;
