@@ -243,28 +243,26 @@ if package_exists apache2-bin; then
 else
   dev_list="${dev_list} apache2.2-bin"
 fi
-if package_exists fonts-stix; then
-  dev_list="${dev_list} fonts-stix"
-else
+if package_exists xfonts-mathml; then
   dev_list="${dev_list} xfonts-mathml"
 fi
 if package_exists fonts-indic; then
-    dev_list="${dev_list} fonts-indic"
+  dev_list="${dev_list} fonts-indic"
 else
-    dev_list="${dev_list} ttf-indic-fonts"
+  dev_list="${dev_list} ttf-indic-fonts"
 fi
 if package_exists php7.0-cgi; then
-    dev_list="${dev_list} php7.0-cgi libapache2-mod-php7.0"
+  dev_list="${dev_list} php7.0-cgi libapache2-mod-php7.0"
 else
-    dev_list="${dev_list} php5-cgi libapache2-mod-php5"
+  dev_list="${dev_list} php5-cgi libapache2-mod-php5"
 fi
 # Ubuntu 16.04 has this package deleted.
 if package_exists ttf-kochi-gothic; then
-    dev_list="${dev_list} ttf-kochi-gothic"
+  dev_list="${dev_list} ttf-kochi-gothic"
 fi
 # Ubuntu 16.04 has this package deleted.
 if package_exists ttf-kochi-mincho; then
-    dev_list="${dev_list} ttf-kochi-mincho"
+  dev_list="${dev_list} ttf-kochi-mincho"
 fi
 
 # Some packages are only needed if the distribution actually supports

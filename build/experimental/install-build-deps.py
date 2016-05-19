@@ -361,9 +361,7 @@ def compute_dynamic_package_lists():
   else:
     _packages_dev += ('apache2.2-bin',)
 
-  if package_exists('fonts-stix'):
-    _packages_dev += ('fonts-stix',)
-  else:
+  if package_exists('xfonts-mathml'):
     _packages_dev += ('xfonts-mathml',)
 
   # Some packages are only needed if the distribution actually supports
