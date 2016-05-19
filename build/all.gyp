@@ -243,6 +243,7 @@
         ['use_aura==1', {
           'dependencies': [
             '../ash/ash.gyp:*',
+            '../ui/app_list/app_list.gyp:*',
             '../ui/aura/aura.gyp:*',
             '../ui/aura_extra/aura_extra.gyp:*',
           ],
@@ -255,11 +256,6 @@
         ['OS!="ios"', {
           'dependencies': [
             '../third_party/boringssl/boringssl_tests.gyp:*',
-          ],
-        }],
-        ['enable_app_list==1', {
-          'dependencies': [
-            '../ui/app_list/app_list.gyp:*',
           ],
         }],
         ['OS!="android" and OS!="ios"', {
@@ -460,19 +456,11 @@
             '../printing/printing.gyp:printing_unittests',
           ],
         }],
-        ['enable_app_list==1', {
-          'dependencies': [
-            '../ui/app_list/app_list.gyp:app_list_unittests',
-          ],
-        }],
-        ['enable_app_list==1 and use_aura==1', {
-          'dependencies': [
-            '../ui/app_list/presenter/app_list_presenter.gyp:app_list_presenter_unittests',
-          ],
-        }],
         ['use_aura==1', {
           'dependencies': [
             '../ash/ash.gyp:ash_unittests',
+            '../ui/app_list/app_list.gyp:app_list_unittests',
+            '../ui/app_list/presenter/app_list_presenter.gyp:app_list_presenter_unittests',
             '../ui/aura/aura.gyp:aura_unittests',
             '../ui/compositor/compositor.gyp:compositor_unittests',
           ],
@@ -1237,6 +1225,7 @@
             '../ppapi/ppapi_internal.gyp:ppapi_unittests',
             '../remoting/remoting.gyp:remoting_unittests',
             '../skia/skia_tests.gyp:skia_unittests',
+            '../ui/app_list/app_list.gyp:*',
             '../ui/aura/aura.gyp:*',
             '../ui/aura_extra/aura_extra.gyp:*',
             '../ui/base/ui_base_tests.gyp:ui_base_unittests',
@@ -1271,11 +1260,6 @@
               'dependencies': [
                 '../ui/ozone/ozone.gyp:*',
                 '../ui/ozone/demo/ozone_demos.gyp:*',
-              ],
-            }],
-            ['enable_app_list==1', {
-              'dependencies': [
-                '../ui/app_list/app_list.gyp:*',
               ],
             }],
             ['chromecast==0', {

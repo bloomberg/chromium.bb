@@ -258,8 +258,8 @@
             'enable_topchrome_md%': 1,
           }],
 
-          # Enable App Launcher everywhere but mobile.
-          ['OS!="ios" and OS!="android" and chromecast==0', {
+          # Enable App Launcher on ChromeOS only.
+          ['chromeos==1', {
             'enable_app_list%': 1,
           }, {
             'enable_app_list%': 0,

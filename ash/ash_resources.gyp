@@ -53,12 +53,8 @@
                 'pak_inputs': [
                   # TODO(msw): This seems bad, but follows repack_ui_test_pack's example.
                   '<(SHARED_INTERMEDIATE_DIR)/blink/public/resources/blink_resources.pak',
-                  '<(SHARED_INTERMEDIATE_DIR)/ui/views/resources/views_resources_100_percent.pak',
-                ],
-              }],
-              ['enable_app_list==1', {
-                'pak_inputs': [
                   '<(SHARED_INTERMEDIATE_DIR)/ui/app_list/resources/app_list_resources_100_percent.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/ui/views/resources/views_resources_100_percent.pak',
                 ],
               }],
             ],
@@ -107,12 +103,8 @@
               }],
               ['toolkit_views==1', {
                 'pak_inputs': [
-                  '<(SHARED_INTERMEDIATE_DIR)/ui/views/resources/views_resources_200_percent.pak',
-                ],
-              }],
-              ['enable_app_list==1', {
-                'pak_inputs': [
                   '<(SHARED_INTERMEDIATE_DIR)/ui/app_list/resources/app_list_resources_200_percent.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/ui/views/resources/views_resources_200_percent.pak',
                 ],
               }],
             ],

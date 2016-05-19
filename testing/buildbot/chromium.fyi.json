@@ -1158,9 +1158,6 @@
         "test": "accessibility_unittests"
       },
       {
-        "test": "app_list_unittests"
-      },
-      {
         "test": "base_unittests"
       },
       {
@@ -1301,9 +1298,6 @@
     "gtest_tests": [
       {
         "test": "accessibility_unittests"
-      },
-      {
-        "test": "app_list_unittests"
       },
       {
         "test": "base_unittests"
@@ -1481,9 +1475,6 @@
     "gtest_tests": [
       {
         "test": "accessibility_unittests"
-      },
-      {
-        "test": "app_list_unittests"
       },
       {
         "test": "base_unittests"

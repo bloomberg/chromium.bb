@@ -71,7 +71,7 @@
                   '<(SHARED_INTERMEDIATE_DIR)/ui/views/resources/views_resources_100_percent.pak',
                 ],
               }],
-              ['enable_app_list==1', {
+              ['use_aura==1 and toolkit_views==1', {
                 'pak_inputs': [
                   '<(SHARED_INTERMEDIATE_DIR)/ui/app_list/resources/app_list_resources_100_percent.pak',
                 ],

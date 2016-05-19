@@ -57,7 +57,7 @@ declare_args() {
 
   enable_plugin_installation = is_win || is_mac
 
-  enable_app_list = !is_ios && !is_android && !is_chromecast
+  enable_app_list = is_chromeos
 
   enable_supervised_users = !is_ios
 
