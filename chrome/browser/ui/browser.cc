@@ -689,6 +689,20 @@ bool Browser::IsAttemptingToCloseBrowser() const {
   return unload_controller_->is_attempting_to_close_browser();
 }
 
+bool Browser::ShouldRunUnloadListenerBeforeClosing(
+    content::WebContents* web_contents) {
+  if (IsFastTabUnloadEnabled())
+    return fast_unload_controller_->ShouldRunUnloadEventsHelper(web_contents);
+  return unload_controller_->ShouldRunUnloadEventsHelper(web_contents);
+}
+
+bool Browser::RunUnloadListenerBeforeClosing(
+    content::WebContents* web_contents) {
+  if (IsFastTabUnloadEnabled())
+    return fast_unload_controller_->RunUnloadEventsHelper(web_contents);
+  return unload_controller_->RunUnloadEventsHelper(web_contents);
+}
+
 void Browser::OnWindowClosing() {
   if (!ShouldCloseWindow())
     return;

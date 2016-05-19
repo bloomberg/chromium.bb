@@ -38,11 +38,11 @@ class UnloadController : public content::NotificationObserver,
   bool CanCloseContents(content::WebContents* contents);
 
   // Returns true if we need to run unload events for the |contents|.
-  static bool ShouldRunUnloadEventsHelper(content::WebContents* contents);
+  bool ShouldRunUnloadEventsHelper(content::WebContents* contents);
 
   // Helper function to run beforeunload listeners on a WebContents.
   // Returns true if |contents| beforeunload listeners were invoked.
-  static bool RunUnloadEventsHelper(content::WebContents* contents);
+  bool RunUnloadEventsHelper(content::WebContents* contents);
 
   // Called when a BeforeUnload handler is fired for |contents|. |proceed|
   // indicates the user's response to the Y/N BeforeUnload handler dialog. If

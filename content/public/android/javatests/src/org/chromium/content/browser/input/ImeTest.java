@@ -1168,6 +1168,24 @@ public class ImeTest extends ContentShellTestBase {
         }
     }
 
+    // https://crbug.com/604675
+    @MediumTest
+    @Feature({"TextInput"})
+    @CommandLineFlags.Add("enable-features=ImeThread")
+    public void testAlertInKeyUpListenerDoesNotCrash() throws Exception {
+        // Call 'alert()' when 'keyup' event occurs. Since we are in contentshell,
+        // this does not actually pops up the alert window.
+        String code = "(function() { "
+                + "var editor = document.getElementById('input_text');"
+                + "editor.addEventListener('keyup', function(e) { alert('keyup') });"
+                + "})();";
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                getContentViewCore().getWebContents(), code);
+        setComposingText("ab", 1);
+        finishComposingText();
+        assertEquals("ab", getTextBeforeCursor(10, 0));
+    }
+
     private void performGo(TestCallbackHelperContainer testCallbackHelperContainer)
             throws Throwable {
         final InputConnection inputConnection = mConnection;

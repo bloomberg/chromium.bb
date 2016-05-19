@@ -622,7 +622,6 @@ void RenderThreadImpl::Init(
   InitializeWebKit(resource_task_queue);
 
   // In single process the single process is all there is.
-  notify_webkit_of_modal_loop_ = true;
   webkit_shared_timer_suspended_ = false;
   widget_count_ = 0;
   hidden_widget_count_ = 0;
@@ -957,15 +956,11 @@ void RenderThreadImpl::Shutdown() {
 }
 
 bool RenderThreadImpl::Send(IPC::Message* msg) {
-  // Certain synchronous messages cannot always be processed synchronously by
-  // the browser, e.g., putting up UI and waiting for the user. This could cause
-  // a complete hang of Chrome if a windowed plugin is trying to communicate
-  // with the renderer thread since the browser's UI thread could be stuck
-  // (within a Windows API call) trying to synchronously communicate with the
-  // plugin.  The remedy is to pump messages on this thread while the browser
-  // is processing this request. This creates an opportunity for re-entrancy
-  // into WebKit, so we need to take care to disable callbacks, timers, and
-  // pending network loads that could trigger such callbacks.
+  // There are cases where we want to pump asynchronous messages while waiting
+  // synchronously for the replies to the message to be sent here. However, this
+  // may create an opportunity for re-entrancy into WebKit and other subsystems,
+  // so we need to take care to disable callbacks, timers, and pending network
+  // loads that could trigger such callbacks.
   bool pumping_events = false;
   if (msg->is_sync()) {
     if (msg->is_caller_pumping_messages()) {
@@ -973,22 +968,15 @@ bool RenderThreadImpl::Send(IPC::Message* msg) {
     }
   }
 
-  bool notify_webkit_of_modal_loop = true;  // default value
-  std::swap(notify_webkit_of_modal_loop, notify_webkit_of_modal_loop_);
-
   if (pumping_events) {
     renderer_scheduler_->SuspendTimerQueue();
-
-    if (notify_webkit_of_modal_loop)
-      WebView::willEnterModalLoop();
+    WebView::willEnterModalLoop();
   }
 
   bool rv = ChildThreadImpl::Send(msg);
 
   if (pumping_events) {
-    if (notify_webkit_of_modal_loop)
-      WebView::didExitModalLoop();
-
+    WebView::didExitModalLoop();
     renderer_scheduler_->ResumeTimerQueue();
   }
 
@@ -1650,10 +1638,6 @@ RenderThreadImpl::GetIOThreadTaskRunner() {
 std::unique_ptr<base::SharedMemory> RenderThreadImpl::AllocateSharedMemory(
     size_t size) {
   return HostAllocateSharedMemoryBuffer(size);
-}
-
-void RenderThreadImpl::DoNotNotifyWebKitOfModalLoop() {
-  notify_webkit_of_modal_loop_ = false;
 }
 
 void RenderThreadImpl::OnChannelError() {

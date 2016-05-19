@@ -873,9 +873,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // selection handles in sync with the webpage.
   void SyncSelectionIfRequired();
 
-  // Sends a message and runs a nested message loop.
-  bool SendAndRunNestedMessageLoop(IPC::SyncMessage* message);
-
   bool RunJavaScriptMessage(JavaScriptMessageType type,
                             const base::string16& message,
                             const base::string16& default_value,

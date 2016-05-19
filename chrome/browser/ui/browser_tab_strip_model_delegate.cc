@@ -126,20 +126,12 @@ void BrowserTabStripModelDelegate::CreateHistoricalTab(
 
 bool BrowserTabStripModelDelegate::RunUnloadListenerBeforeClosing(
     content::WebContents* contents) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableFastUnload)) {
-    return chrome::FastUnloadController::RunUnloadEventsHelper(contents);
-  }
-  return chrome::UnloadController::RunUnloadEventsHelper(contents);
+  return browser_->RunUnloadListenerBeforeClosing(contents);
 }
 
 bool BrowserTabStripModelDelegate::ShouldRunUnloadListenerBeforeClosing(
     content::WebContents* contents) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableFastUnload)) {
-    return chrome::FastUnloadController::ShouldRunUnloadEventsHelper(contents);
-  }
-  return chrome::UnloadController::ShouldRunUnloadEventsHelper(contents);
+  return browser_->ShouldRunUnloadListenerBeforeClosing(contents);
 }
 
 bool BrowserTabStripModelDelegate::CanBookmarkAllTabs() const {

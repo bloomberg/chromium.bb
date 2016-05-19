@@ -511,6 +511,9 @@ class Browser : public TabStripModelObserver,
     return extension_window_controller_.get();
   }
 
+  bool ShouldRunUnloadListenerBeforeClosing(content::WebContents* web_contents);
+  bool RunUnloadListenerBeforeClosing(content::WebContents* web_contents);
+
  private:
   friend class BrowserTest;
   friend class FullscreenControllerInteractiveTest;

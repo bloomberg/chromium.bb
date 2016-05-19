@@ -224,13 +224,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // time this routine returns.
   scoped_refptr<gpu::GpuChannelHost> EstablishGpuChannelSync(CauseForGpuLaunch);
 
-  // This method modifies how the next message is sent.  Normally, when sending
-  // a synchronous message that runs a nested message loop, we need to suspend
-  // callbacks into WebKit.  This involves disabling timers and deferring
-  // resource loads.  However, there are exceptions when we need to customize
-  // the behavior.
-  void DoNotNotifyWebKitOfModalLoop();
-
   // True if we are running layout tests. This currently disables forwarding
   // various status messages to the console, skips network error pages, and
   // short circuits size update and focus events.
@@ -581,7 +574,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // The number of idle handler calls that skip sending idle notifications.
   int idle_notifications_to_skip_;
 
-  bool notify_webkit_of_modal_loop_;
   bool webkit_shared_timer_suspended_;
 
   // The following flag is used to control layout test specific behavior.

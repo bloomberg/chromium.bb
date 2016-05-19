@@ -43,7 +43,6 @@ bool UnloadController::CanCloseContents(content::WebContents* contents) {
       is_calling_before_unload_handlers();
 }
 
-// static
 bool UnloadController::ShouldRunUnloadEventsHelper(
     content::WebContents* contents) {
   // If |contents| is being inspected, devtools needs to intercept beforeunload
@@ -51,8 +50,14 @@ bool UnloadController::ShouldRunUnloadEventsHelper(
   return DevToolsWindow::GetInstanceForInspectedWebContents(contents) != NULL;
 }
 
-// static
 bool UnloadController::RunUnloadEventsHelper(content::WebContents* contents) {
+  // Special case for when we quit an application. The devtools window can
+  // close if it's beforeunload event has already fired which will happen due
+  // to the interception of it's content's beforeunload.
+  if (browser_->is_devtools() &&
+      DevToolsWindow::HasFiredBeforeUnloadEventForDevToolsBrowser(browser_))
+    return false;
+
   // If there's a devtools window attached to |contents|,
   // we would like devtools to call its own beforeunload handlers first,
   // and then call beforeunload handlers for |contents|.
