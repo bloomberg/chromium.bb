@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import json
+import multiprocessing
 import os
 import re
 import sys
@@ -16,6 +17,68 @@ from failure_database import FailureDatabase
 import loading_trace
 import options
 import xvfb_helper
+
+
+def GenerateTrace(url, emulate_device, emulate_network, filename, log_filename):
+  """ Generates a trace.
+
+  Args:
+    url: URL as a string.
+    emulate_device: Name of the device to emulate. Empty for no emulation.
+    emulate_network: Type of network emulation. Empty for no emulation.
+    filename: Name of the file where the trace is saved.
+    log_filename: Name of the file where standard output and errors are
+                  logged.
+
+  Returns:
+    A dictionary of metadata about the trace, including a 'succeeded' field
+    indicating whether the trace was successfully generated.
+  """
+  try:
+    os.remove(filename)  # Remove any existing trace for this URL.
+  except OSError:
+    pass  # Nothing to remove.
+
+  old_stdout = sys.stdout
+  old_stderr = sys.stderr
+
+  trace_metadata = { 'succeeded' : False, 'url' : url }
+  trace = None
+  if not url.startswith('http') and not url.startswith('file'):
+    url = 'http://' + url
+  with open(log_filename, 'w') as sys.stdout:
+    try:
+      sys.stderr = sys.stdout
+
+      # Set up the controller.
+      chrome_ctl = controller.LocalChromeController()
+      chrome_ctl.SetChromeEnvOverride(xvfb_helper.GetChromeEnvironment())
+      if emulate_device:
+        chrome_ctl.SetDeviceEmulation(emulate_device)
+      if emulate_network:
+        chrome_ctl.SetNetworkEmulation(emulate_network)
+
+      # Record and write the trace.
+      with chrome_ctl.Open() as connection:
+        connection.ClearCache()
+        trace = loading_trace.LoadingTrace.RecordUrlNavigation(
+            url, connection, chrome_ctl.ChromeMetadata())
+        trace_metadata['succeeded'] = True
+        trace_metadata.update(trace.ToJsonDict()[trace._METADATA_KEY])
+    except controller.ChromeControllerError as e:
+      e.Dump(sys.stderr)
+    except Exception as e:
+      sys.stderr.write('Unknown exception:\n' + str(e))
+      traceback.print_exc(file=sys.stderr)
+
+    if trace:
+      with open(filename, 'w') as f:
+        json.dump(trace.ToJsonDict(), f, sort_keys=True, indent=2)
+
+  sys.stdout = old_stdout
+  sys.stderr = old_stderr
+
+  return trace_metadata
 
 
 class TraceTaskHandler(object):
@@ -78,67 +141,37 @@ class TraceTaskHandler(object):
         self._trace_database.ToJsonString(),
         self._trace_database_path)
 
-  def _GenerateTrace(self, url, emulate_device, emulate_network, filename,
-                     log_filename):
-    """ Generates a trace.
+  def _GenerateTraceOutOfProcess(self, url, emulate_device, emulate_network,
+                                 filename, log_filename):
+    """ Generates a trace in a separate process by calling GenerateTrace().
 
-    Args:
-      url: URL as a string.
-      emulate_device: Name of the device to emulate. Empty for no emulation.
-      emulate_network: Type of network emulation. Empty for no emulation.
-      filename: Name of the file where the trace is saved.
-      log_filename: Name of the file where standard output and errors are
-                    logged.
+    The generation is done out of process to avoid issues where the system would
+    run out of memory when the trace is very large. This ensures that the system
+    can reclaim all the memory when the trace generation is done.
 
-    Returns:
-      A dictionary of metadata about the trace, including a 'succeeded' field
-      indicating whether the trace was successfully generated.
+    See the GenerateTrace() documentation for a description of the parameters
+    and return values.
     """
-    try:
-      os.remove(filename)  # Remove any existing trace for this URL.
-    except OSError:
-      pass  # Nothing to remove.
+    self._logger.info('Starting external process for trace generation')
+    failed_metadata = {'succeeded':False, 'url':url}
+    pool = multiprocessing.Pool(1)
 
-    old_stdout = sys.stdout
-    old_stderr = sys.stderr
+    apply_result = pool.apply_async(
+        GenerateTrace,
+        (url, emulate_device, emulate_network, filename, log_filename))
+    apply_result.wait(timeout=300)
 
-    trace_metadata = { 'succeeded' : False, 'url' : url }
-    trace = None
-    if not url.startswith('http') and not url.startswith('file'):
-      url = 'http://' + url
-    with open(log_filename, 'w') as sys.stdout:
-      try:
-        sys.stderr = sys.stdout
+    if not apply_result.ready():
+      self._logger.error('Process timeout for trace generation of URL: ' + url)
+      self._failure_database.AddFailure('trace_process_timeout', url)
+      return failed_metadata
 
-        # Set up the controller.
-        chrome_ctl = controller.LocalChromeController()
-        chrome_ctl.SetChromeEnvOverride(xvfb_helper.GetChromeEnvironment())
-        if emulate_device:
-          chrome_ctl.SetDeviceEmulation(emulate_device)
-        if emulate_network:
-          chrome_ctl.SetNetworkEmulation(emulate_network)
+    if not apply_result.successful():
+      self._logger.error('Process failure for trace generation of URL: ' + url)
+      self._failure_database.AddFailure('trace_process_error', url)
+      return failed_metadata
 
-        # Record and write the trace.
-        with chrome_ctl.Open() as connection:
-          connection.ClearCache()
-          trace = loading_trace.LoadingTrace.RecordUrlNavigation(
-              url, connection, chrome_ctl.ChromeMetadata())
-          trace_metadata['succeeded'] = True
-          trace_metadata.update(trace.ToJsonDict()[trace._METADATA_KEY])
-      except controller.ChromeControllerError as e:
-        e.Dump(sys.stderr)
-      except Exception as e:
-        sys.stderr.write('Unknown exception:\n' + str(e))
-        traceback.print_exc(file=sys.stderr)
-
-      if trace:
-        with open(filename, 'w') as f:
-          json.dump(trace.ToJsonDict(), f, sort_keys=True, indent=2)
-
-    sys.stdout = old_stdout
-    sys.stderr = old_stderr
-
-    return trace_metadata
+    return apply_result.get()
 
   def _HandleTraceGenerationResults(self, local_filename, log_filename,
                                     remote_filename, trace_metadata):
@@ -220,7 +253,7 @@ class TraceTaskHandler(object):
       local_filename = pattern.sub('_', url)
       for repeat in range(repeat_count):
         self._logger.debug('Generating trace for URL: %s' % url)
-        trace_metadata = self._GenerateTrace(
+        trace_metadata = self._GenerateTraceOutOfProcess(
             url, emulate_device, emulate_network, local_filename, log_filename)
         if trace_metadata['succeeded']:
           success_happened = True
