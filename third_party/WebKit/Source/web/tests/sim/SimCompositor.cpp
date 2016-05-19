@@ -5,7 +5,7 @@
 #include "web/tests/sim/SimCompositor.h"
 
 #include "core/frame/FrameView.h"
-#include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/graphics/ContentLayerDelegate.h"
@@ -37,7 +37,7 @@ static void paintFrames(LocalFrame& root, SimDisplayItemList& displayList)
     for (Frame* frame = &root; frame; frame = frame->tree().traverseNext(&root)) {
         if (!frame->isLocalFrame())
             continue;
-        PaintLayer* layer = toLocalFrame(frame)->view()->layoutView()->layer();
+        PaintLayer* layer = toLocalFrame(frame)->view()->layoutViewItem().layer();
         paintLayers(*layer, displayList);
     }
 }
