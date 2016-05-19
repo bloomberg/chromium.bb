@@ -114,6 +114,10 @@ typedef enum {
 // be overriden by objects that inherit this class for placement of text.
 - (int)verticalTextOffset;
 
+// The amount by which the gradient button cell should nudge the path used to
+// draw the hover (and pressed) state background path.
+- (CGFloat)hoverBackgroundVerticalOffsetInControlView:(NSView*)controlView;
+
 @property(assign, nonatomic) CGFloat hoverAlpha;
 
 // An image that will be drawn after the normal content of the button cell,

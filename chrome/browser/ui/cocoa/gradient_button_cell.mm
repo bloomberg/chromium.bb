@@ -546,11 +546,8 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
     *returnInnerFrame = innerFrame;
   if (returnInnerPath) {
     DCHECK(*returnInnerPath == nil);
-    // In Material Design on Retina, nudge the hover background by 1px.
-    if ([self tag] == kMaterialStandardButtonTypeWithLimitedClickFeedback &&
-        kLineWidth < 1) {
-      drawFrame.origin.y -= kLineWidth;
-    }
+    drawFrame.origin.y +=
+        [self hoverBackgroundVerticalOffsetInControlView:controlView];
 
     *returnInnerPath = [NSBezierPath bezierPathWithRoundedRect:drawFrame
                                                        xRadius:cornerRadius
@@ -690,6 +687,10 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
 
 - (int)verticalTextOffset {
   return 1;
+}
+
+- (CGFloat)hoverBackgroundVerticalOffsetInControlView:(NSView*)controlView {
+  return 0.0;
 }
 
 // Overriden from NSButtonCell so we can display a nice fadeout effect for

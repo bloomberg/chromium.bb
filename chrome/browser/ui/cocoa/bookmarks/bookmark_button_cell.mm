@@ -12,6 +12,7 @@
 #include "chrome/grit/generated_resources.h"
 #import "components/bookmarks/browser/bookmark_model.h"
 #include "content/public/browser/user_metrics.h"
+#import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -392,5 +393,17 @@ const int kDefaultFontSize = 12;
   }
   return -1;
 }
+
+- (CGFloat)hoverBackgroundVerticalOffsetInControlView:(NSView*)controlView {
+  // In Material Design on Retina, and not in a folder menu, nudge the hover
+  // background by 1px.
+  const CGFloat kLineWidth = [controlView cr_lineWidth];
+  if ([self tag] == kMaterialStandardButtonTypeWithLimitedClickFeedback &&
+      ![self isFolderButtonCell] && kLineWidth < 1) {
+    return -kLineWidth;
+  }
+  return 0.0;
+}
+
 
 @end

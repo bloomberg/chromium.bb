@@ -27,6 +27,7 @@
 #include "grit/ui_resources.h"
 #include "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 
@@ -375,7 +376,11 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
                                                 text:nil
                                                image:image
                                       menuController:menuController];
-  [cell setTag:kStandardButtonTypeWithLimitedClickFeedback];
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    [cell setTag:kMaterialStandardButtonTypeWithLimitedClickFeedback];
+  } else {
+    [cell setTag:kStandardButtonTypeWithLimitedClickFeedback];
+  }
   return cell;
 }
 
