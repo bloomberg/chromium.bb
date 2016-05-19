@@ -166,8 +166,7 @@ PlatformDisplay* PlatformDisplay::Create(
 
 DefaultPlatformDisplay::DefaultPlatformDisplay(
     const PlatformDisplayInitParams& init_params)
-    : connector_(init_params.connector),
-      gpu_state_(init_params.gpu_state),
+    : gpu_state_(init_params.gpu_state),
       surfaces_state_(init_params.surfaces_state),
       delegate_(nullptr),
       draw_timer_(false, false),

@@ -26,7 +26,6 @@ struct PlatformDisplayInitParams {
   PlatformDisplayInitParams(const PlatformDisplayInitParams& other);
   ~PlatformDisplayInitParams();
 
-  shell::Connector* connector = nullptr;
   scoped_refptr<GpuState> gpu_state;
   scoped_refptr<SurfacesState> surfaces_state;
 

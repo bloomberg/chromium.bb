@@ -46,9 +46,8 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
     virtual void ReleaseCapture() = 0;
   };
 
-  TestEventDispatcherDelegate(Delegate* delegate, ServerWindow* root)
+  explicit TestEventDispatcherDelegate(Delegate* delegate)
       : delegate_(delegate),
-        root_(root),
         focused_window_(nullptr),
         lost_capture_window_(nullptr),
         last_accelerator_(0) {}
@@ -124,7 +123,6 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
   }
 
   Delegate* delegate_;
-  ServerWindow* root_;
   ServerWindow* focused_window_;
   ServerWindow* lost_capture_window_;
   uint32_t last_accelerator_;
@@ -300,8 +298,7 @@ void EventDispatcherTest::SetUp() {
   window_delegate_->set_root_window(root_window_.get());
   root_window_->SetVisible(true);
 
-  test_event_dispatcher_delegate_.reset(
-      new TestEventDispatcherDelegate(this, root_window_.get()));
+  test_event_dispatcher_delegate_.reset(new TestEventDispatcherDelegate(this));
   event_dispatcher_.reset(
       new EventDispatcher(test_event_dispatcher_delegate_.get()));
   event_dispatcher_->set_root(root_window_.get());
@@ -352,7 +349,7 @@ TEST_F(EventDispatcherTest, ProcessEventNoTarget) {
 
 TEST_F(EventDispatcherTest, AcceleratorBasic) {
   ClearSetup();
-  TestEventDispatcherDelegate event_dispatcher_delegate(nullptr, nullptr);
+  TestEventDispatcherDelegate event_dispatcher_delegate(nullptr);
   EventDispatcher dispatcher(&event_dispatcher_delegate);
 
   uint32_t accelerator_1 = 1;

@@ -158,7 +158,6 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   void OnAcceleratedWidgetDestroyed() override;
   void OnActivationChanged(bool active) override;
 
-  shell::Connector* connector_;
   scoped_refptr<GpuState> gpu_state_;
   scoped_refptr<SurfacesState> surfaces_state_;
   PlatformDisplayDelegate* delegate_;

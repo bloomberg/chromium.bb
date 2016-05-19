@@ -46,7 +46,6 @@ class DefaultWindowTreeBinding : public WindowTreeBinding {
                            mojom::WindowTreeRequest service_request,
                            mojom::WindowTreeClientPtr client);
   DefaultWindowTreeBinding(WindowTree* tree,
-                           WindowServer* window_server,
                            mojom::WindowTreeClientPtr client);
   ~DefaultWindowTreeBinding() override;
 
@@ -59,7 +58,6 @@ class DefaultWindowTreeBinding : public WindowTreeBinding {
   void SetIncomingMethodCallProcessingPaused(bool paused) override;
 
  private:
-  WindowServer* window_server_;
   mojo::Binding<mojom::WindowTree> binding_;
   mojom::WindowTreeClientPtr client_;
   mojom::WindowManagerAssociatedPtr window_manager_internal_;

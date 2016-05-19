@@ -26,11 +26,9 @@ void CallCallback(const mojo::Closure& callback, cc::SurfaceDrawStatus status) {
 
 ServerWindowSurface::ServerWindowSurface(
     ServerWindowSurfaceManager* manager,
-    mojom::SurfaceType surface_type,
     mojo::InterfaceRequest<Surface> request,
     mojom::SurfaceClientPtr client)
     : manager_(manager),
-      surface_type_(surface_type),
       surface_id_(manager->GenerateId()),
       surface_factory_(manager_->GetSurfaceManager(), this),
       client_(std::move(client)),

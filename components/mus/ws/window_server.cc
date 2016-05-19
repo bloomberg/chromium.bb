@@ -124,8 +124,8 @@ WindowTree* WindowServer::CreateTreeForWindowManager(
           WindowServerDelegate::BindingType::WINDOW_MANAGER, this, tree,
           &tree_request, &tree_client);
   if (!binding) {
-    DefaultWindowTreeBinding* default_binding = new DefaultWindowTreeBinding(
-        tree_ptr.get(), this, std::move(tree_client));
+    DefaultWindowTreeBinding* default_binding =
+        new DefaultWindowTreeBinding(tree_ptr.get(), std::move(tree_client));
     binding.reset(default_binding);
     window_tree_ptr = default_binding->CreateInterfacePtrAndBind();
   }

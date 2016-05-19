@@ -33,7 +33,6 @@ class ServerWindowSurface : public mojom::Surface,
                             public mojo::CustomSurfaceConverter {
  public:
   ServerWindowSurface(ServerWindowSurfaceManager* manager,
-                      mojom::SurfaceType surface_type,
                       mojo::InterfaceRequest<mojom::Surface> request,
                       mojom::SurfaceClientPtr client);
 
@@ -84,8 +83,6 @@ class ServerWindowSurface : public mojom::Surface,
   void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
 
   ServerWindowSurfaceManager* manager_;  // Owns this.
-
-  const mojom::SurfaceType surface_type_;
 
   // The set of Windows referenced in the last submitted CompositorFrame.
   std::set<WindowId> referenced_window_ids_;

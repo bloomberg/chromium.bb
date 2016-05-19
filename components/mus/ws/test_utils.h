@@ -174,15 +174,14 @@ class WindowManagerStateTestApi {
 // Factory that always embeds the new WindowTree as the root user id.
 class TestDisplayBinding : public DisplayBinding {
  public:
-  TestDisplayBinding(Display* display, WindowServer* window_server)
-      : display_(display), window_server_(window_server) {}
+  explicit TestDisplayBinding(WindowServer* window_server)
+      : window_server_(window_server) {}
   ~TestDisplayBinding() override {}
 
  private:
   // DisplayBinding:
   WindowTree* CreateWindowTree(ServerWindow* root) override;
 
-  Display* display_;
   WindowServer* window_server_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDisplayBinding);
@@ -403,7 +402,6 @@ class TestWindowServerDelegate : public WindowServerDelegate {
   // If CreateDefaultDisplays() this is the number of Displays that are
   // created. The default is 0, which results in a DCHECK.
   int num_displays_to_create_ = 0;
-  Display* display_ = nullptr;
   WindowServer* window_server_ = nullptr;
   bool got_on_no_more_displays_ = false;
   // All TestWindowTreeBinding objects created via CreateWindowTreeBinding.

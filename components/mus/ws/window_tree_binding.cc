@@ -22,7 +22,6 @@ DefaultWindowTreeBinding::DefaultWindowTreeBinding(
     mojom::WindowTreeRequest service_request,
     mojom::WindowTreeClientPtr client)
     : WindowTreeBinding(client.get()),
-      window_server_(window_server),
       binding_(tree, std::move(service_request)),
       client_(std::move(client)) {
   // Both |window_server| and |tree| outlive us.
@@ -33,10 +32,8 @@ DefaultWindowTreeBinding::DefaultWindowTreeBinding(
 
 DefaultWindowTreeBinding::DefaultWindowTreeBinding(
     WindowTree* tree,
-    WindowServer* window_server,
     mojom::WindowTreeClientPtr client)
     : WindowTreeBinding(client.get()),
-      window_server_(window_server),
       binding_(tree),
       client_(std::move(client)) {}
 

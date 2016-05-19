@@ -374,7 +374,7 @@ WindowEventTargetingHelper::WindowEventTargetingHelper()
   PlatformDisplayInitParams display_init_params;
   display_init_params.surfaces_state = surfaces_state_;
   display_ = new Display(window_server_.get(), display_init_params);
-  display_binding_ = new TestDisplayBinding(display_, window_server_.get());
+  display_binding_ = new TestDisplayBinding(window_server_.get());
   display_->Init(base::WrapUnique(display_binding_));
   wm_client_ = window_server_delegate_.last_client();
   wm_client_->tracker()->changes()->clear();

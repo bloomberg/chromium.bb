@@ -131,7 +131,6 @@ void MusApp::AddUserIfNecessary(shell::Connection* connection) {
 void MusApp::Initialize(shell::Connector* connector,
                         const shell::Identity& identity,
                         uint32_t id) {
-  platform_display_init_params_.connector = connector;
   platform_display_init_params_.surfaces_state = new SurfacesState;
 
   base::PlatformThread::SetName("mus");
