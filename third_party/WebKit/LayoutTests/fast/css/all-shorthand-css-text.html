@@ -82,13 +82,13 @@ shouldBeTrue('contains(cssRules[14].cssText, "font-family: initial;")');
 shouldBeFalse('contains(cssRules[15].cssText, "all: initial;")');
 shouldBeFalse('contains(cssRules[15].cssText, "-internal-")');
 shouldBeFalse('contains(cssRules[14].cssText, "font: initial;")');
-shouldBeFalse('contains(cssRules[14].cssText, "marker: initial;")');
+shouldBeTrue('contains(cssRules[14].cssText, "marker: initial;")');
 shouldBeTrue('contains(cssRules[15].cssText, "width: inherit;")');
 shouldBeTrue('contains(cssRules[15].cssText, "min-width: initial;")');
 shouldBeTrue('contains(cssRules[15].cssText, "max-width: initial;")');
-shouldBeTrue('contains(cssRules[15].cssText, "marker-start: initial;")');
-shouldBeTrue('contains(cssRules[15].cssText, "marker-mid: initial;")');
-shouldBeTrue('contains(cssRules[15].cssText, "marker-end: initial;")');
+shouldBeFalse('contains(cssRules[15].cssText, "marker-start: initial;")');
+shouldBeFalse('contains(cssRules[15].cssText, "marker-mid: initial;")');
+shouldBeFalse('contains(cssRules[15].cssText, "marker-end: initial;")');
 
 shouldBe('cssRules[16].cssText', '"div { all: unset; }"');
 shouldBeFalse('contains(cssRules[17].cssText, "all: unset;")');

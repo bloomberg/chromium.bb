@@ -224,8 +224,10 @@ String StylePropertySerializer::asText() const
 {
     StringBuilder result;
 
-    std::bitset<numCSSProperties> shorthandPropertyUsed;
-    std::bitset<numCSSProperties> shorthandPropertyAppeared;
+    std::bitset<numCSSProperties> longhandSerialized;
+    std::bitset<numCSSProperties> shorthandAppeared;
+
+    bool backgroundLonghandSeen = false;
 
     unsigned size = m_propertySet.propertyCount();
     unsigned numDecls = 0;
@@ -237,144 +239,11 @@ String StylePropertySerializer::asText() const
         CSSPropertyID propertyID = property.id();
         // Only enabled properties should be part of the style.
         ASSERT(CSSPropertyMetadata::isEnabledProperty(propertyID));
-        CSSPropertyID shorthandPropertyID = CSSPropertyInvalid;
-        CSSPropertyID borderFallbackShorthandProperty = CSSPropertyInvalid;
-        String value;
         // Shorthands with variable references are not expanded at parse time
         // and hence may still be observed during serialization.
         ASSERT(!isShorthandProperty(propertyID) || property.value()->isVariableReferenceValue());
 
         switch (propertyID) {
-        case CSSPropertyBackgroundAttachment:
-        case CSSPropertyBackgroundClip:
-        case CSSPropertyBackgroundColor:
-        case CSSPropertyBackgroundImage:
-        case CSSPropertyBackgroundOrigin:
-        case CSSPropertyBackgroundPositionX:
-        case CSSPropertyBackgroundPositionY:
-        case CSSPropertyBackgroundSize:
-        case CSSPropertyBackgroundRepeatX:
-        case CSSPropertyBackgroundRepeatY:
-            shorthandPropertyAppeared.set(CSSPropertyBackground - firstCSSProperty);
-            continue;
-        case CSSPropertyBorderTopWidth:
-        case CSSPropertyBorderRightWidth:
-        case CSSPropertyBorderBottomWidth:
-        case CSSPropertyBorderLeftWidth:
-            if (!borderFallbackShorthandProperty)
-                borderFallbackShorthandProperty = CSSPropertyBorderWidth;
-        case CSSPropertyBorderTopStyle:
-        case CSSPropertyBorderRightStyle:
-        case CSSPropertyBorderBottomStyle:
-        case CSSPropertyBorderLeftStyle:
-            if (!borderFallbackShorthandProperty)
-                borderFallbackShorthandProperty = CSSPropertyBorderStyle;
-        case CSSPropertyBorderTopColor:
-        case CSSPropertyBorderRightColor:
-        case CSSPropertyBorderBottomColor:
-        case CSSPropertyBorderLeftColor:
-            if (!borderFallbackShorthandProperty)
-                borderFallbackShorthandProperty = CSSPropertyBorderColor;
-
-            // FIXME: Deal with cases where only some of border-(top|right|bottom|left) are specified.
-            if (!shorthandPropertyAppeared.test(CSSPropertyBorder - firstCSSProperty)) {
-                value = borderPropertyValue();
-                if (value.isNull())
-                    shorthandPropertyAppeared.set(CSSPropertyBorder - firstCSSProperty);
-                else
-                    shorthandPropertyID = CSSPropertyBorder;
-            } else if (shorthandPropertyUsed.test(CSSPropertyBorder - firstCSSProperty)) {
-                shorthandPropertyID = CSSPropertyBorder;
-            }
-            if (!shorthandPropertyID)
-                shorthandPropertyID = borderFallbackShorthandProperty;
-            break;
-        case CSSPropertyBorderTopLeftRadius:
-        case CSSPropertyBorderTopRightRadius:
-        case CSSPropertyBorderBottomLeftRadius:
-        case CSSPropertyBorderBottomRightRadius:
-            shorthandPropertyID = CSSPropertyBorderRadius;
-            break;
-        case CSSPropertyWebkitBorderHorizontalSpacing:
-        case CSSPropertyWebkitBorderVerticalSpacing:
-            shorthandPropertyID = CSSPropertyBorderSpacing;
-            break;
-        case CSSPropertyFontFamily:
-        case CSSPropertyLineHeight:
-        case CSSPropertyFontSize:
-        case CSSPropertyFontStretch:
-        case CSSPropertyFontStyle:
-        case CSSPropertyFontVariant:
-        case CSSPropertyFontWeight:
-            // Don't use CSSPropertyFont because old UAs can't recognize them but are important for editing.
-            break;
-        case CSSPropertyListStyleType:
-        case CSSPropertyListStylePosition:
-        case CSSPropertyListStyleImage:
-            shorthandPropertyID = CSSPropertyListStyle;
-            break;
-        case CSSPropertyMarginTop:
-        case CSSPropertyMarginRight:
-        case CSSPropertyMarginBottom:
-        case CSSPropertyMarginLeft:
-            shorthandPropertyID = CSSPropertyMargin;
-            break;
-        case CSSPropertyMotionPath:
-        case CSSPropertyMotionOffset:
-        case CSSPropertyMotionRotation:
-            shorthandPropertyID = CSSPropertyMotion;
-            break;
-        case CSSPropertyOutlineWidth:
-        case CSSPropertyOutlineStyle:
-        case CSSPropertyOutlineColor:
-            shorthandPropertyID = CSSPropertyOutline;
-            break;
-        case CSSPropertyOverflowX:
-        case CSSPropertyOverflowY:
-            shorthandPropertyID = CSSPropertyOverflow;
-            break;
-        case CSSPropertyPaddingTop:
-        case CSSPropertyPaddingRight:
-        case CSSPropertyPaddingBottom:
-        case CSSPropertyPaddingLeft:
-            shorthandPropertyID = CSSPropertyPadding;
-            break;
-        case CSSPropertyTransitionProperty:
-        case CSSPropertyTransitionDuration:
-        case CSSPropertyTransitionTimingFunction:
-        case CSSPropertyTransitionDelay:
-            shorthandPropertyID = CSSPropertyTransition;
-            break;
-        case CSSPropertyAnimationName:
-        case CSSPropertyAnimationDuration:
-        case CSSPropertyAnimationTimingFunction:
-        case CSSPropertyAnimationDelay:
-        case CSSPropertyAnimationIterationCount:
-        case CSSPropertyAnimationDirection:
-        case CSSPropertyAnimationFillMode:
-        case CSSPropertyAnimationPlayState:
-            shorthandPropertyID = CSSPropertyAnimation;
-            break;
-        case CSSPropertyFlexDirection:
-        case CSSPropertyFlexWrap:
-            shorthandPropertyID = CSSPropertyFlexFlow;
-            break;
-        case CSSPropertyFlexBasis:
-        case CSSPropertyFlexGrow:
-        case CSSPropertyFlexShrink:
-            shorthandPropertyID = CSSPropertyFlex;
-            break;
-        case CSSPropertyWebkitMaskPositionX:
-        case CSSPropertyWebkitMaskPositionY:
-        case CSSPropertyWebkitMaskRepeatX:
-        case CSSPropertyWebkitMaskRepeatY:
-        case CSSPropertyWebkitMaskImage:
-        case CSSPropertyWebkitMaskRepeat:
-        case CSSPropertyWebkitMaskPosition:
-        case CSSPropertyWebkitMaskClip:
-        case CSSPropertyWebkitMaskOrigin:
-            shorthandPropertyID = CSSPropertyWebkitMask;
-            break;
         case CSSPropertyVariable:
             result.append(getCustomPropertyText(property, numDecls++));
             continue;
@@ -387,33 +256,68 @@ String StylePropertySerializer::asText() const
         default:
             break;
         }
+        if (longhandSerialized.test(propertyID - firstCSSProperty))
+            continue;
 
-        unsigned shortPropertyIndex = shorthandPropertyID - firstCSSProperty;
-        if (shorthandPropertyID) {
-            if (shorthandPropertyUsed.test(shortPropertyIndex))
+        Vector<StylePropertyShorthand, 4> shorthands;
+        getMatchingShorthandsForLonghand(propertyID, &shorthands);
+        bool serializedAsShorthand = false;
+        for (const StylePropertyShorthand& shorthand : shorthands) {
+            // Some aliases are implemented as a shorthand, in which case
+            // we prefer to not use the shorthand.
+            if (shorthand.length() == 1)
                 continue;
-            if (!shorthandPropertyAppeared.test(shortPropertyIndex) && value.isNull())
-                value = m_propertySet.getPropertyValue(shorthandPropertyID);
-            shorthandPropertyAppeared.set(shortPropertyIndex);
-        }
 
-        if (!value.isNull()) {
-            if (shorthandPropertyID) {
-                propertyID = shorthandPropertyID;
-                shorthandPropertyUsed.set(shortPropertyIndex);
+            CSSPropertyID shorthandProperty = shorthand.id();
+            int shorthandPropertyIndex = shorthandProperty - firstCSSProperty;
+            // TODO(timloh): Do we actually need this check? A previous comment
+            // said "old UAs can't recognize them but are important for editing"
+            // but Firefox doesn't do this.
+            if (shorthandProperty == CSSPropertyFont)
+                continue;
+            // TODO(timloh): Why is background special?
+            if (shorthandProperty == CSSPropertyBackground) {
+                serializedAsShorthand = true;
+                backgroundLonghandSeen = true;
+                break;
             }
-        } else {
-            // We should not show "initial" when the "initial" is implicit.
-            // If explicit "initial", we need to show.
-            if (property.value()->isImplicitInitialValue())
+            // We already tried serializing as this shorthand
+            if (shorthandAppeared.test(shorthandPropertyIndex))
                 continue;
-            value = property.value()->cssText();
+
+            shorthandAppeared.set(shorthandPropertyIndex);
+            bool serializedOtherLonghand = false;
+            for (unsigned i = 0; i < shorthand.length(); i++) {
+                if (longhandSerialized.test(shorthand.properties()[i] - firstCSSProperty)) {
+                    serializedOtherLonghand = true;
+                    break;
+                }
+            }
+            if (serializedOtherLonghand)
+                continue;
+
+            String shorthandResult = StylePropertySerializer::getPropertyValue(shorthandProperty);
+            if (shorthandResult.isEmpty())
+                continue;
+
+            result.append(getPropertyText(shorthandProperty, shorthandResult, property.isImportant(), numDecls++));
+            serializedAsShorthand = true;
+            for (unsigned i = 0; i < shorthand.length(); i++)
+                longhandSerialized.set(shorthand.properties()[i] - firstCSSProperty);
+            break;
         }
 
-        result.append(getPropertyText(propertyID, value, property.isImportant(), numDecls++));
+        if (serializedAsShorthand)
+            continue;
+
+        // TODO(timloh): This is wrong and makes declarations not round-trip.
+        if (property.value()->isImplicitInitialValue())
+            continue;
+
+        result.append(getPropertyText(propertyID, property.value()->cssText(), property.isImportant(), numDecls++));
     }
 
-    if (shorthandPropertyAppeared.test(CSSPropertyBackground - firstCSSProperty))
+    if (backgroundLonghandSeen)
         appendBackgroundPropertyAsText(result, numDecls);
 
     ASSERT(!numDecls ^ !result.isEmpty());

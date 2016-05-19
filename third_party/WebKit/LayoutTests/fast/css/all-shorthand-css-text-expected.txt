@@ -43,13 +43,13 @@ PASS contains(cssRules[14].cssText, "font-family: initial;") is true
 PASS contains(cssRules[15].cssText, "all: initial;") is false
 PASS contains(cssRules[15].cssText, "-internal-") is false
 PASS contains(cssRules[14].cssText, "font: initial;") is false
-PASS contains(cssRules[14].cssText, "marker: initial;") is false
+PASS contains(cssRules[14].cssText, "marker: initial;") is true
 PASS contains(cssRules[15].cssText, "width: inherit;") is true
 PASS contains(cssRules[15].cssText, "min-width: initial;") is true
 PASS contains(cssRules[15].cssText, "max-width: initial;") is true
-PASS contains(cssRules[15].cssText, "marker-start: initial;") is true
-PASS contains(cssRules[15].cssText, "marker-mid: initial;") is true
-PASS contains(cssRules[15].cssText, "marker-end: initial;") is true
+PASS contains(cssRules[15].cssText, "marker-start: initial;") is false
+PASS contains(cssRules[15].cssText, "marker-mid: initial;") is false
+PASS contains(cssRules[15].cssText, "marker-end: initial;") is false
 PASS cssRules[16].cssText is "div { all: unset; }"
 PASS contains(cssRules[17].cssText, "all: unset;") is false
 PASS contains(cssRules[17].cssText, "color: red;") is true

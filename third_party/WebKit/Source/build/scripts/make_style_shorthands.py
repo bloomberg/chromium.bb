@@ -54,6 +54,11 @@ class StylePropertyShorthandWriter(css_properties.CSSProperties):
             property['longhand_property_ids'] = map(enum_for_css_property, property['longhands'].split(';'))
             for longhand in property['longhand_property_ids']:
                 self._longhand_dictionary[longhand].append(property)
+        for longhands in self._longhand_dictionary.values():
+            # Sort first by number of longhands in decreasing order, then alphabetically
+            longhands.sort(
+                key=lambda property: (-len(property['longhand_property_ids']), property['name'])
+            )
 
     @template_expander.use_jinja('StylePropertyShorthand.cpp.tmpl')
     def generate_style_property_shorthand_cpp(self):
