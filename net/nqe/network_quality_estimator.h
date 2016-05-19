@@ -140,13 +140,17 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // testing.
   virtual EffectiveConnectionType GetEffectiveConnectionType() const;
 
-  // Returns true if RTT is available and sets |rtt| to estimated RTT at the
-  // HTTP layer. Virtualized for testing. |rtt| should not be null. The RTT at
-  // the HTTP layer measures the time from when the request was sent (this
+  // Returns true if the RTT is available and sets |rtt| to the RTT estimated at
+  // the HTTP layer. Virtualized for testing. |rtt| should not be null. The RTT
+  // at the HTTP layer measures the time from when the request was sent (this
   // happens after the connection is established) to the time when the response
   // headers were received.
   virtual bool GetURLRequestRTTEstimate(base::TimeDelta* rtt) const
       WARN_UNUSED_RESULT;
+
+  // Returns true if the RTT is available and sets |rtt| to the RTT estimated at
+  // the transport layer. |rtt| should not be null.
+  bool GetTransportRTTEstimate(base::TimeDelta* rtt) const WARN_UNUSED_RESULT;
 
   // Returns true if downlink throughput is available and sets |kbps| to
   // estimated downlink throughput (in kilobits per second).
@@ -162,21 +166,28 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   void NotifyRequestCompleted(const URLRequest& request);
 
   // Returns true if median RTT at the HTTP layer is available and sets |rtt|
-  // to the median of RTT observations since |begin_timestamp|.
+  // to the median of RTT observations since |start_time|.
   // Virtualized for testing. |rtt| should not be null. The RTT at the HTTP
   // layer measures the time from when the request was sent (this happens after
   // the connection is established) to the time when the response headers were
   // received.
-  virtual bool GetRecentURLRequestRTTMedian(
-      const base::TimeTicks& begin_timestamp,
-      base::TimeDelta* rtt) const WARN_UNUSED_RESULT;
+  virtual bool GetRecentURLRequestRTTMedian(const base::TimeTicks& start_time,
+                                            base::TimeDelta* rtt) const
+      WARN_UNUSED_RESULT;
+
+  // Returns true if the median RTT at the transport layer is available and sets
+  // |rtt| to the median of transport layer RTT observations since
+  // |start_time|. |rtt| should not be null.
+  bool GetRecentTransportRTTMedian(const base::TimeTicks& start_time,
+                                   base::TimeDelta* rtt) const
+      WARN_UNUSED_RESULT;
 
   // Returns true if median downstream throughput is available and sets |kbps|
   // to the median of downstream throughput (in kilobits per second)
-  // observations since |begin_timestamp|. Virtualized for testing. |kbps|
+  // observations since |start_time|. Virtualized for testing. |kbps|
   // should not be null.
   virtual bool GetRecentMedianDownlinkThroughputKbps(
-      const base::TimeTicks& begin_timestamp,
+      const base::TimeTicks& start_time,
       int32_t* kbps) const WARN_UNUSED_RESULT;
 
   // Adds |rtt_observer| to the list of round trip time observers. Must be
@@ -310,6 +321,9 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // should discard RTT if it is set to the value returned by |InvalidRTT()|.
   static const base::TimeDelta InvalidRTT();
 
+  // Records UMA when there is a change in connection type.
+  void RecordMetricsOnConnectionTypeChanged();
+
   // Notifies |this| of a new transport layer RTT.
   void OnUpdatedRTTAvailable(SocketPerformanceWatcherFactory::Protocol protocol,
                              const base::TimeDelta& rtt);
@@ -336,7 +350,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Returns an estimate of network quality at the specified |percentile|.
   // |disallowed_observation_sources| is the list of observation sources that
   // should be excluded when computing the percentile.
-  // Only the observations later than |begin_timestamp| are taken into account.
+  // Only the observations later than |start_time| are taken into account.
   // |percentile| must be between 0 and 100 (both inclusive) with higher
   // percentiles indicating less performant networks. For example, if
   // |percentile| is 90, then the network is expected to be faster than the
@@ -345,10 +359,10 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   base::TimeDelta GetRTTEstimateInternal(
       const std::vector<NetworkQualityObservationSource>&
           disallowed_observation_sources,
-      const base::TimeTicks& begin_timestamp,
+      const base::TimeTicks& start_time,
       int percentile) const;
   int32_t GetDownlinkThroughputKbpsEstimateInternal(
-      const base::TimeTicks& begin_timestamp,
+      const base::TimeTicks& start_time,
       int percentile) const;
 
   // Returns the current network ID checking by calling the platform APIs.
@@ -362,9 +376,9 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
   void NotifyObserversOfThroughput(const ThroughputObservation& observation);
 
-  // Records the UMA related to RTT.
-  void RecordRTTUMA(int32_t estimated_value_msec,
-                    int32_t actual_value_msec) const;
+  // Records the UMA related to the RTT at the URLRequest layer.
+  void RecordURLRequestRTTUMA(int32_t estimated_value_msec,
+                              int32_t actual_value_msec) const;
 
   // Returns true only if |request| can be used for network quality estimation.
   // Only the requests that go over network are considered to provide useful

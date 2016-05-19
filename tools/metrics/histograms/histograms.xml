@@ -34199,12 +34199,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
-    Rough estimate of the computed round-trip-time at different percentiles,
-    before a connectivity change is detected.
+    Rough estimate of the computed round trip time at the URLRequest layer at
+    different percentiles.
 
-    This metric is recorded when a connectivity change is detected. This will
-    miss data from users whose connection type never changes and will be biased
-    to users whose connection type changes frequently.
+    This metric is recorded immediately after a connectivity change is detected.
+    The metric name is suffixed with the connection type before the connectivity
+    change was detected. This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -34212,8 +34214,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
-    RTT observations made by network quality estimator, recorded on every
-    request.
+    RTT observations at the URLRequest layer made by network quality estimator,
+    recorded on every request.
+  </summary>
+</histogram>
+
+<histogram name="NQE.TransportRTT" units="ms">
+  <owner>bengr@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Rough estimate of the computed round trip time at the transport layer at
+    different percentiles.
+
+    This metric is recorded immediately after a connectivity change is detected.
+    The metric name is suffixed with the connection type before the connectivity
+    change was detected. This will miss data from users whose connection type
+    never changes and will be biased to users whose connection type changes
+    frequently.
   </summary>
 </histogram>
 
@@ -93890,6 +93907,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Percentile90" label="90th percentile"/>
   <suffix name="Percentile100" label="100th percentile"/>
   <affected-histogram name="NQE.RTT"/>
+  <affected-histogram name="NQE.TransportRTT"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="NQE.NetworkTypes" separator=".">
@@ -93912,6 +93930,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="NQE.RTT.Percentile50"/>
   <affected-histogram name="NQE.RTT.Percentile90"/>
   <affected-histogram name="NQE.RTTObservations"/>
+  <affected-histogram name="NQE.TransportRTT.Percentile0"/>
+  <affected-histogram name="NQE.TransportRTT.Percentile10"/>
+  <affected-histogram name="NQE.TransportRTT.Percentile100"/>
+  <affected-histogram name="NQE.TransportRTT.Percentile50"/>
+  <affected-histogram name="NQE.TransportRTT.Percentile90"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="OffDomainInclusionAbortReason" separator=".">
