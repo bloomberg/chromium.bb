@@ -34,4 +34,18 @@ void Hyphenation::clearForTesting()
     getHyphenationMap().clear();
 }
 
+Vector<size_t, 8> Hyphenation::hyphenLocations(const StringView& text) const
+{
+    Vector<size_t, 8> hyphenLocations;
+    size_t hyphenLocation = text.length();
+    if (hyphenLocation <= minimumSuffixLength)
+        return hyphenLocations;
+    hyphenLocation -= minimumSuffixLength;
+
+    while ((hyphenLocation = lastHyphenLocation(text, hyphenLocation)) >= minimumPrefixLength)
+        hyphenLocations.append(hyphenLocation);
+
+    return hyphenLocations;
+}
+
 } // namespace blink

@@ -41,10 +41,12 @@
 #include "core/layout/line/InlineTextBox.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/LayoutTestSupport.h"
+#include "platform/fonts/CharacterRange.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/text/BidiResolver.h"
 #include "platform/text/Character.h"
+#include "platform/text/Hyphenation.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextRunIterator.h"
 #include "wtf/text/CharacterNames.h"
@@ -863,6 +865,37 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth)
     computePreferredLogicalWidths(leadWidth, fallbackFonts, glyphBounds);
 }
 
+static float maxWordFragmentWidth(LayoutText* layoutText,
+    const ComputedStyle& style, const Font& font, TextDirection textDirection,
+    Hyphenation& hyphenation, unsigned wordOffset, unsigned wordLength,
+    int& suffixStart)
+{
+    suffixStart = 0;
+    if (wordLength <= Hyphenation::minimumSuffixLength)
+        return 0;
+
+    Vector<size_t, 8> hyphenLocations = hyphenation.hyphenLocations(
+        layoutText->text().createView(wordOffset, wordLength));
+    if (hyphenLocations.isEmpty())
+        return 0;
+
+    float minimumFragmentWidthToConsider = Hyphenation::minimumPrefixWidth(font);
+    float maxFragmentWidth = 0;
+    TextRun run = constructTextRun(font, layoutText, wordOffset, wordLength, style, textDirection);
+    size_t end = wordLength;
+    for (size_t start : hyphenLocations) {
+        float fragmentWidth = font.getCharacterRange(run, start, end).width();
+
+        if (fragmentWidth <= minimumFragmentWidthToConsider)
+            continue;
+
+        maxFragmentWidth = std::max(maxFragmentWidth, fragmentWidth);
+        end = start;
+    }
+    suffixStart = hyphenLocations.first();
+    return maxFragmentWidth + layoutText->hyphenWidth(font, textDirection);
+}
+
 void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const SimpleFontData*>& fallbackFonts, FloatRect& glyphBounds)
 {
     ASSERT(m_hasTab || preferredLogicalWidthsDirty() || !m_knownToHaveNoOverflowAndNoFallbackFonts);
@@ -900,6 +933,13 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
 
     bool breakAll = (styleToUse.wordBreak() == BreakAllWordBreak || styleToUse.wordBreak() == BreakWordBreak) && styleToUse.autoWrap();
     bool keepAll = styleToUse.wordBreak() == KeepAllWordBreak && styleToUse.autoWrap();
+
+    Hyphenation* hyphenation = styleToUse.getHyphens() == HyphensAuto
+        ? Hyphenation::get(f.getFontDescription().locale()) : nullptr;
+    bool disableSoftHyphen = styleToUse.getHyphens() == HyphensNone;
+    float maxWordWidth = 0;
+    if (!hyphenation)
+        maxWordWidth = std::numeric_limits<float>::max();
 
     BidiResolver<TextRunIterator, BidiCharacterRun> bidiResolver;
     BidiCharacterRun* run;
@@ -974,7 +1014,7 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
             lastWordBoundary++;
             continue;
         }
-        if (c == softHyphenCharacter) {
+        if (c == softHyphenCharacter && !disableSoftHyphen) {
             currMaxWidth += widthFromFont(f, lastWordBoundary, i - lastWordBoundary, leadWidth, currMaxWidth, textDirection, &fallbackFonts, &glyphBounds);
             lastWordBoundary = i + 1;
             continue;
@@ -983,7 +1023,7 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
         bool hasBreak = breakIterator.isBreakable(i, nextBreakable, breakAll ? LineBreakType::BreakAll : keepAll ? LineBreakType::KeepAll : LineBreakType::Normal);
         bool betweenWords = true;
         int j = i;
-        while (c != newlineCharacter && c != spaceCharacter && c != tabulationCharacter && (c != softHyphenCharacter)) {
+        while (c != newlineCharacter && c != spaceCharacter && c != tabulationCharacter && (c != softHyphenCharacter || disableSoftHyphen)) {
             j++;
             if (j == len)
                 break;
@@ -1018,8 +1058,25 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
                 w = widthFromFont(f, i, wordLen + 1, leadWidth, currMaxWidth, textDirection, &fallbackFonts, &glyphBounds) - wordTrailingSpaceWidth;
             } else {
                 w = widthFromFont(f, i, wordLen, leadWidth, currMaxWidth, textDirection, &fallbackFonts, &glyphBounds);
-                if (c == softHyphenCharacter)
+                if (c == softHyphenCharacter && !disableSoftHyphen)
                     currMinWidth += hyphenWidth(f, textDirection);
+            }
+
+            if (w > maxWordWidth) {
+                int suffixStart;
+                float maxFragmentWidth = maxWordFragmentWidth(this, styleToUse, f, textDirection, *hyphenation, i, wordLen, suffixStart);
+                if (suffixStart) {
+                    float suffixWidth;
+                    if (wordTrailingSpaceWidth && isSpace)
+                        suffixWidth = widthFromFont(f, i + suffixStart, wordLen - suffixStart + 1, leadWidth, currMaxWidth, textDirection, &fallbackFonts, &glyphBounds) - wordTrailingSpaceWidth;
+                    else
+                        suffixWidth = widthFromFont(f, i + suffixStart, wordLen - suffixStart, leadWidth, currMaxWidth, textDirection, &fallbackFonts, &glyphBounds);
+                    maxFragmentWidth = std::max(maxFragmentWidth, suffixWidth);
+                    currMinWidth += maxFragmentWidth - w;
+                    maxWordWidth = std::max(maxWordWidth, maxFragmentWidth);
+                } else {
+                    maxWordWidth = w;
+                }
             }
 
             currMinWidth += w;

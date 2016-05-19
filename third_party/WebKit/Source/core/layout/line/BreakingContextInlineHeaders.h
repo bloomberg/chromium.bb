@@ -630,40 +630,36 @@ ALWAYS_INLINE bool BreakingContext::hyphenate(LineLayoutText text,
     const Hyphenation& hyphenation, float lastSpaceWordSpacing,
     WordMeasurement& wordMeasurement)
 {
-    const unsigned minimumPrefixLength = 2;
-    const unsigned minimumSuffixLength = 2;
     unsigned start = wordMeasurement.startOffset;
     unsigned len = wordMeasurement.endOffset - start;
-    if (len <= minimumSuffixLength)
+    if (len <= Hyphenation::minimumSuffixLength)
         return false;
 
     float hyphenWidth = text.hyphenWidth(font, textDirectionFromUnicode(m_resolver.position().direction()));
     float maxPrefixWidth = m_width.availableWidth()
         - m_width.currentWidth() - hyphenWidth - lastSpaceWordSpacing;
 
-    // If the maximum width available for the prefix before the hyphen is small, then it is very unlikely
-    // that an hyphenation opportunity exists, so do not bother to look for it.
-    // These are heuristic numbers for performance added in http://wkb.ug/45606 .
-    const int minPrefixWidthNumerator = 5;
-    const int minPrefixWidthDenominator = 4;
-    if (maxPrefixWidth <= font.getFontDescription().computedSize() * minPrefixWidthNumerator / minPrefixWidthDenominator)
+    if (maxPrefixWidth <= Hyphenation::minimumPrefixWidth(font))
         return false;
 
     TextRun run = constructTextRun(font, text, start, len, style);
     run.setTabSize(!m_collapseWhiteSpace, style.getTabSize());
     run.setXPos(m_width.currentWidth());
     unsigned maxPrefixLength = font.offsetForPosition(run, maxPrefixWidth, false);
-    if (maxPrefixLength < minimumPrefixLength)
+    if (maxPrefixLength < Hyphenation::minimumPrefixLength)
         return false;
 
     unsigned prefixLength = hyphenation.lastHyphenLocation(
         text.text().createView(start, len),
-        std::min(maxPrefixLength, len - minimumSuffixLength) + 1);
-    if (!prefixLength || prefixLength < minimumPrefixLength)
+        std::min(maxPrefixLength, len - Hyphenation::minimumSuffixLength) + 1);
+    if (!prefixLength || prefixLength < Hyphenation::minimumPrefixLength)
         return false;
 
-    CharacterRange range = font.getCharacterRange(run, 0, prefixLength);
-    return rewindToMidWordBreak(wordMeasurement, start + prefixLength, range.width());
+    // TODO(kojii): getCharacterRange() measures as if the word were not broken
+    // as defined in the spec, and is faster than measuring each fragment, but
+    // ignores the kerning between the last letter and the hyphen.
+    return rewindToMidWordBreak(wordMeasurement, start + prefixLength,
+        font.getCharacterRange(run, 0, prefixLength).width() + hyphenWidth);
 }
 
 inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool& hyphenated)
