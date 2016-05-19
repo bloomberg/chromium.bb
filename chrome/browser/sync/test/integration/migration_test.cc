@@ -110,7 +110,7 @@ class MigrationTest : public SyncTest  {
     for (int i = 1; i < num_clients(); ++i) {
       const syncer::ModelTypeSet other_preferred_data_types =
           GetSyncService((i))->GetPreferredDataTypes();
-      EXPECT_TRUE(preferred_data_types.Equals(other_preferred_data_types));
+      EXPECT_EQ(other_preferred_data_types, preferred_data_types);
     }
     return preferred_data_types;
   }
@@ -409,7 +409,7 @@ IN_PROC_BROWSER_TEST_F(MigrationTwoClientTest,
   // Pop off one so that we don't migrate all data types; the syncer
   // freaks out if we do that (see http://crbug.com/94882).
   ASSERT_GE(migration_list.size(), 2u);
-  ASSERT_FALSE(migration_list.back().Equals(MakeSet(syncer::NIGORI)));
+  ASSERT_NE(MakeSet(syncer::NIGORI), migration_list.back());
   migration_list.back() = MakeSet(syncer::NIGORI);
   RunTwoClientMigrationTest(migration_list, MODIFY_BOOKMARK);
 }

@@ -91,30 +91,30 @@ TEST_F(EnumSetTest, All) {
 TEST_F(EnumSetTest, Put) {
   TestEnumSet enums(TEST_3);
   enums.Put(TEST_2);
-  EXPECT_TRUE(enums.Equals(TestEnumSet(TEST_2, TEST_3)));
+  EXPECT_EQ(TestEnumSet(TEST_2, TEST_3), enums);
   enums.Put(TEST_4);
-  EXPECT_TRUE(enums.Equals(TestEnumSet(TEST_2, TEST_3, TEST_4)));
+  EXPECT_EQ(TestEnumSet(TEST_2, TEST_3, TEST_4), enums);
 }
 
 TEST_F(EnumSetTest, PutAll) {
   TestEnumSet enums(TEST_3, TEST_4);
   enums.PutAll(TestEnumSet(TEST_2, TEST_3));
-  EXPECT_TRUE(enums.Equals(TestEnumSet(TEST_2, TEST_3, TEST_4)));
+  EXPECT_EQ(TestEnumSet(TEST_2, TEST_3, TEST_4), enums);
 }
 
 TEST_F(EnumSetTest, RetainAll) {
   TestEnumSet enums(TEST_3, TEST_4);
   enums.RetainAll(TestEnumSet(TEST_2, TEST_3));
-  EXPECT_TRUE(enums.Equals(TestEnumSet(TEST_3)));
+  EXPECT_EQ(TestEnumSet(TEST_3), enums);
 }
 
 TEST_F(EnumSetTest, Remove) {
   TestEnumSet enums(TEST_3, TEST_4);
   enums.Remove(TEST_0);
   enums.Remove(TEST_2);
-  EXPECT_TRUE(enums.Equals(TestEnumSet(TEST_3, TEST_4)));
+  EXPECT_EQ(TestEnumSet(TEST_3, TEST_4), enums);
   enums.Remove(TEST_3);
-  EXPECT_TRUE(enums.Equals(TestEnumSet(TEST_4)));
+  EXPECT_EQ(TestEnumSet(TEST_4), enums);
   enums.Remove(TEST_4);
   enums.Remove(TEST_5);
   EXPECT_TRUE(enums.Empty());
@@ -123,7 +123,7 @@ TEST_F(EnumSetTest, Remove) {
 TEST_F(EnumSetTest, RemoveAll) {
   TestEnumSet enums(TEST_3, TEST_4);
   enums.RemoveAll(TestEnumSet(TEST_2, TEST_3));
-  EXPECT_TRUE(enums.Equals(TestEnumSet(TEST_4)));
+  EXPECT_EQ(TestEnumSet(TEST_4), enums);
 }
 
 TEST_F(EnumSetTest, Clear) {
@@ -165,7 +165,7 @@ TEST_F(EnumSetTest, Iterators) {
   for (TestEnumSet::Iterator it = enums1.First(); it.Good(); it.Inc()) {
     enums2.Put(it.Get());
   }
-  EXPECT_TRUE(enums1.Equals(enums2));
+  EXPECT_EQ(enums2, enums1);
 }
 
 TEST_F(EnumSetTest, Union) {
@@ -173,7 +173,7 @@ TEST_F(EnumSetTest, Union) {
   const TestEnumSet enums2(TEST_2, TEST_3);
   const TestEnumSet enums3 = Union(enums1, enums2);
 
-  EXPECT_TRUE(enums3.Equals(TestEnumSet(TEST_2, TEST_3, TEST_4)));
+  EXPECT_EQ(TestEnumSet(TEST_2, TEST_3, TEST_4), enums3);
 }
 
 TEST_F(EnumSetTest, Intersection) {
@@ -181,7 +181,7 @@ TEST_F(EnumSetTest, Intersection) {
   const TestEnumSet enums2(TEST_2, TEST_3);
   const TestEnumSet enums3 = Intersection(enums1, enums2);
 
-  EXPECT_TRUE(enums3.Equals(TestEnumSet(TEST_3)));
+  EXPECT_EQ(TestEnumSet(TEST_3), enums3);
 }
 
 TEST_F(EnumSetTest, Difference) {
@@ -189,7 +189,7 @@ TEST_F(EnumSetTest, Difference) {
   const TestEnumSet enums2(TEST_2, TEST_3);
   const TestEnumSet enums3 = Difference(enums1, enums2);
 
-  EXPECT_TRUE(enums3.Equals(TestEnumSet(TEST_4)));
+  EXPECT_EQ(TestEnumSet(TEST_4), enums3);
 }
 
 }  // namespace

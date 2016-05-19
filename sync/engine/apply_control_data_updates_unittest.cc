@@ -77,8 +77,8 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriUpdate) {
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
-    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
-        .Equals(encrypted_types));
+    EXPECT_EQ(encrypted_types,
+              directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
   }
 
   // Nigori node updates should update the Cryptographer.
@@ -100,8 +100,8 @@ TEST_F(ApplyControlDataUpdatesTest, NigoriUpdate) {
   EXPECT_TRUE(cryptographer->has_pending_keys());
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
-        .Equals(ModelTypeSet::All()));
+    EXPECT_EQ(ModelTypeSet::All(),
+              directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
   }
 }
 
@@ -119,8 +119,8 @@ TEST_F(ApplyControlDataUpdatesTest, EncryptUnsyncedChanges) {
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
-    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
-        .Equals(encrypted_types));
+    EXPECT_EQ(encrypted_types,
+              directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
 
     // With default encrypted_types, this should be true.
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
@@ -182,8 +182,8 @@ TEST_F(ApplyControlDataUpdatesTest, EncryptUnsyncedChanges) {
 
     // If ProcessUnsyncedChangesForEncryption worked, all our unsynced changes
     // should be encrypted now.
-    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
-        .Equals(ModelTypeSet::All()));
+    EXPECT_EQ(ModelTypeSet::All(),
+              directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
 
     Syncer::UnsyncedMetaHandles handles;
@@ -208,8 +208,8 @@ TEST_F(ApplyControlDataUpdatesTest, EncryptUnsyncedChanges) {
     syncable::ReadTransaction trans(FROM_HERE, directory());
 
     // All our changes should still be encrypted.
-    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
-        .Equals(ModelTypeSet::All()));
+    EXPECT_EQ(ModelTypeSet::All(),
+              directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
 
     Syncer::UnsyncedMetaHandles handles;
@@ -231,8 +231,8 @@ TEST_F(ApplyControlDataUpdatesTest, CannotEncryptUnsyncedChanges) {
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
-    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
-        .Equals(encrypted_types));
+    EXPECT_EQ(encrypted_types,
+              directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
 
     // With default encrypted_types, this should be true.
     EXPECT_TRUE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
@@ -297,8 +297,8 @@ TEST_F(ApplyControlDataUpdatesTest, CannotEncryptUnsyncedChanges) {
     // Since we have pending keys, we would have failed to encrypt, but the
     // cryptographer should be updated.
     EXPECT_FALSE(VerifyUnsyncedChangesAreEncrypted(&trans, encrypted_types));
-    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
-        .Equals(ModelTypeSet::All()));
+    EXPECT_EQ(ModelTypeSet::All(),
+              directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
     EXPECT_FALSE(cryptographer->is_ready());
     EXPECT_TRUE(cryptographer->has_pending_keys());
 
@@ -320,8 +320,8 @@ TEST_F(ApplyControlDataUpdatesTest,
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
-    EXPECT_TRUE(encrypted_types.Equals(
-            directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)));
+    EXPECT_EQ(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans),
+              encrypted_types);
   }
 
   // Set up a temporary cryptographer to generate new keys with.
@@ -379,8 +379,8 @@ TEST_F(ApplyControlDataUpdatesTest,
       nigori().encrypt_everything());
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
-        .Equals(ModelTypeSet::All()));
+    EXPECT_EQ(ModelTypeSet::All(),
+              directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
   }
 }
 
@@ -396,8 +396,8 @@ TEST_F(ApplyControlDataUpdatesTest,
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
-    EXPECT_TRUE(encrypted_types.Equals(
-            directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)));
+    EXPECT_EQ(encrypted_types,
+              directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
   }
 
   // Set up a temporary cryptographer to generate new keys with.
@@ -455,8 +455,8 @@ TEST_F(ApplyControlDataUpdatesTest,
       nigori().encrypt_everything());
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
-        .Equals(ModelTypeSet::All()));
+    EXPECT_EQ(ModelTypeSet::All(),
+              directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
   }
 }
 
@@ -472,8 +472,8 @@ TEST_F(ApplyControlDataUpdatesTest,
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
-    EXPECT_TRUE(encrypted_types.Equals(
-            directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)));
+    EXPECT_EQ(encrypted_types,
+              directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
   }
 
   // Set up the cryptographer with old keys
@@ -524,8 +524,8 @@ TEST_F(ApplyControlDataUpdatesTest,
       nigori().encrypt_everything());
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
-        .Equals(ModelTypeSet::All()));
+    EXPECT_EQ(ModelTypeSet::All(),
+              directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
   }
 }
 
@@ -540,8 +540,8 @@ TEST_F(ApplyControlDataUpdatesTest,
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
-    EXPECT_TRUE(encrypted_types.Equals(
-            directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)));
+    EXPECT_EQ(encrypted_types,
+              directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
   }
 
   // Set up the cryptographer with new keys
@@ -604,8 +604,8 @@ TEST_F(ApplyControlDataUpdatesTest,
                 nigori().passphrase_type());
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
-        .Equals(ModelTypeSet::All()));
+    EXPECT_EQ(ModelTypeSet::All(),
+              directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
   }
 }
 
@@ -620,8 +620,8 @@ TEST_F(ApplyControlDataUpdatesTest,
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
-    EXPECT_TRUE(encrypted_types.Equals(
-            directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)));
+    EXPECT_EQ(encrypted_types,
+              directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
   }
 
   // Set up the cryptographer with both new keys and old keys.
@@ -685,8 +685,8 @@ TEST_F(ApplyControlDataUpdatesTest,
                 nigori().passphrase_type());
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
-        .Equals(ModelTypeSet::All()));
+    EXPECT_EQ(ModelTypeSet::All(),
+              directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
   }
 }
 
@@ -701,8 +701,8 @@ TEST_F(ApplyControlDataUpdatesTest,
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
-    EXPECT_TRUE(encrypted_types.Equals(
-            directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)));
+    EXPECT_EQ(encrypted_types,
+              directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
   }
 
   // Set up the cryptographer with both new keys and old keys.
@@ -762,8 +762,8 @@ TEST_F(ApplyControlDataUpdatesTest,
                 nigori().passphrase_type());
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
-    EXPECT_TRUE(directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)
-        .Equals(ModelTypeSet::All()));
+    EXPECT_EQ(ModelTypeSet::All(),
+              directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
   }
 }
 
@@ -778,8 +778,8 @@ TEST_F(ApplyControlDataUpdatesTest,
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     cryptographer = directory()->GetCryptographer(&trans);
-    EXPECT_TRUE(encrypted_types.Equals(
-            directory()->GetNigoriHandler()->GetEncryptedTypes(&trans)));
+    EXPECT_EQ(encrypted_types,
+              directory()->GetNigoriHandler()->GetEncryptedTypes(&trans));
   }
 
   // Set up the cryptographer with both new keys and old keys.

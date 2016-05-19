@@ -188,20 +188,18 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypes) {
       MakeActivationContext(
           MakeInitialDataTypeState(THEMES),
           base::WrapUnique(new syncer_v2::FakeModelTypeProcessor())));
-  EXPECT_TRUE(registry()->GetEnabledTypes().Equals(
-      ModelTypeSet(syncer::THEMES)));
+  EXPECT_EQ(ModelTypeSet(syncer::THEMES), registry()->GetEnabledTypes());
 
   registry()->ConnectType(
       syncer::SESSIONS,
       MakeActivationContext(
           MakeInitialDataTypeState(SESSIONS),
           base::WrapUnique(new syncer_v2::FakeModelTypeProcessor())));
-  EXPECT_TRUE(registry()->GetEnabledTypes().Equals(
-      ModelTypeSet(syncer::THEMES, syncer::SESSIONS)));
+  EXPECT_EQ(ModelTypeSet(syncer::THEMES, syncer::SESSIONS),
+            registry()->GetEnabledTypes());
 
   registry()->DisconnectType(syncer::THEMES);
-  EXPECT_TRUE(registry()->GetEnabledTypes().Equals(
-      ModelTypeSet(syncer::SESSIONS)));
+  EXPECT_EQ(ModelTypeSet(syncer::SESSIONS), registry()->GetEnabledTypes());
 
   // Allow ModelTypeRegistry destruction to delete the
   // Sessions' ModelTypeSyncWorker.
@@ -227,12 +225,12 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
           MakeInitialDataTypeState(THEMES),
           base::WrapUnique(new syncer_v2::FakeModelTypeProcessor())));
   current_types.Put(syncer::THEMES);
-  EXPECT_TRUE(registry()->GetEnabledTypes().Equals(current_types));
+  EXPECT_EQ(current_types, registry()->GetEnabledTypes());
 
   // Add some directory types.
   registry()->SetEnabledDirectoryTypes(routing_info1);
   current_types.PutAll(directory_types);
-  EXPECT_TRUE(registry()->GetEnabledTypes().Equals(current_types));
+  EXPECT_EQ(current_types, registry()->GetEnabledTypes());
 
   // Add sessions non-blocking type.
   registry()->ConnectType(
@@ -241,18 +239,18 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
           MakeInitialDataTypeState(SESSIONS),
           base::WrapUnique(new syncer_v2::FakeModelTypeProcessor())));
   current_types.Put(syncer::SESSIONS);
-  EXPECT_TRUE(registry()->GetEnabledTypes().Equals(current_types));
+  EXPECT_EQ(current_types, registry()->GetEnabledTypes());
 
   // Remove themes non-blocking type.
   registry()->DisconnectType(syncer::THEMES);
   current_types.Remove(syncer::THEMES);
-  EXPECT_TRUE(registry()->GetEnabledTypes().Equals(current_types));
+  EXPECT_EQ(current_types, registry()->GetEnabledTypes());
 
   // Clear all directory types.
   ModelSafeRoutingInfo routing_info2;
   registry()->SetEnabledDirectoryTypes(routing_info2);
   current_types.RemoveAll(directory_types);
-  EXPECT_TRUE(registry()->GetEnabledTypes().Equals(current_types));
+  EXPECT_EQ(current_types, registry()->GetEnabledTypes());
 }
 
 // Tests correct result returned from GetInitialSyncEndedTypes.
@@ -276,8 +274,8 @@ TEST_F(ModelTypeRegistryTest, GetInitialSyncEndedTypes) {
           data_type_state,
           base::WrapUnique(new syncer_v2::FakeModelTypeProcessor())));
 
-  EXPECT_TRUE(registry()->GetInitialSyncEndedTypes().Equals(
-      ModelTypeSet(AUTOFILL, THEMES)));
+  EXPECT_EQ(ModelTypeSet(AUTOFILL, THEMES),
+            registry()->GetInitialSyncEndedTypes());
 }
 
 }  // namespace syncer

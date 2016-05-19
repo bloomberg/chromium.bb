@@ -635,6 +635,10 @@ std::string ModelTypeSetToString(ModelTypeSet model_types) {
   return result;
 }
 
+std::ostream& operator<<(std::ostream& out, ModelTypeSet model_type_set) {
+  return out << ModelTypeSetToString(model_type_set);
+}
+
 ModelTypeSet ModelTypeSetFromString(const std::string& model_types_string) {
   std::string working_copy = model_types_string;
   ModelTypeSet model_types;

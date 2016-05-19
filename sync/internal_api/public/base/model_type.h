@@ -11,6 +11,7 @@
 
 #include <map>
 #include <memory>
+#include <ostream>
 #include <set>
 #include <string>
 
@@ -295,6 +296,10 @@ SYNC_EXPORT ModelType ModelTypeFromString(
 
 // Returns the comma-separated string representation of |model_types|.
 SYNC_EXPORT std::string ModelTypeSetToString(ModelTypeSet model_types);
+
+// Necessary for compatibility with EXPECT_EQ and the like.
+SYNC_EXPORT std::ostream& operator<<(std::ostream& out,
+                                     ModelTypeSet model_type_set);
 
 // Returns the set of comma-separated model types from |model_type_string|.
 SYNC_EXPORT ModelTypeSet ModelTypeSetFromString(

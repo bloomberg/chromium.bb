@@ -42,7 +42,7 @@ FakeDataTypeController* GetController(
 
 ACTION_P(VerifyResult, expected_result) {
   EXPECT_EQ(arg0.status, expected_result.status);
-  EXPECT_TRUE(arg0.requested_types.Equals(expected_result.requested_types));
+  EXPECT_EQ(expected_result.requested_types, arg0.requested_types);
 }
 
 class SyncModelAssociationManagerTest : public testing::Test {

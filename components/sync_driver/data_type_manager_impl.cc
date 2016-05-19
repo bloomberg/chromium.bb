@@ -599,7 +599,7 @@ void DataTypeManagerImpl::OnModelAssociationDone(
   // If this model association was for the full set of types, then this priority
   // set is done. Otherwise it was just the ready types and the unready types
   // still need to be associated.
-  if (result.requested_types.Equals(association_types_queue_.front().types)) {
+  if (result.requested_types == association_types_queue_.front().types) {
     association_types_queue_.pop();
     if (!association_types_queue_.empty()) {
       StartNextAssociation(READY_AT_CONFIG);
@@ -608,8 +608,8 @@ void DataTypeManagerImpl::OnModelAssociationDone(
       NotifyDone(result);
     }
   } else {
-    DCHECK(result.requested_types.Equals(
-        association_types_queue_.front().ready_types));
+    DCHECK_EQ(association_types_queue_.front().ready_types,
+              result.requested_types);
     // Will do nothing if the types are still downloading.
     StartNextAssociation(UNREADY_AT_CONFIG);
   }

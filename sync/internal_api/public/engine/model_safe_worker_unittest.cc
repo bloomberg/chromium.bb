@@ -49,7 +49,7 @@ TEST_F(ModelSafeWorkerTest, GetRoutingInfoTypes) {
   routing_info[NIGORI] = GROUP_UI;
   routing_info[PREFERENCES] = GROUP_DB;
   const ModelTypeSet expected_types(BOOKMARKS, NIGORI, PREFERENCES);
-  EXPECT_TRUE(GetRoutingInfoTypes(routing_info).Equals(expected_types));
+  EXPECT_EQ(expected_types, GetRoutingInfoTypes(routing_info));
 }
 
 }  // namespace

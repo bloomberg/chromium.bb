@@ -53,13 +53,13 @@ TEST_F(ModelTypeTest, ModelTypeSetFromValue) {
   // Try empty set first.
   ModelTypeSet model_types;
   std::unique_ptr<base::ListValue> value(ModelTypeSetToValue(model_types));
-  EXPECT_TRUE(model_types.Equals(ModelTypeSetFromValue(*value)));
+  EXPECT_EQ(model_types, ModelTypeSetFromValue(*value));
 
   // Now try with a few random types.
   model_types.Put(BOOKMARKS);
   model_types.Put(APPS);
   value = ModelTypeSetToValue(model_types);
-  EXPECT_TRUE(model_types.Equals(ModelTypeSetFromValue(*value)));
+  EXPECT_EQ(model_types, ModelTypeSetFromValue(*value));
 }
 
 TEST_F(ModelTypeTest, IsRealDataType) {
@@ -116,12 +116,9 @@ TEST_F(ModelTypeTest, ModelTypeSetFromString) {
   syncer::ModelTypeSet one(BOOKMARKS);
   syncer::ModelTypeSet two(BOOKMARKS, TYPED_URLS);
 
-  EXPECT_TRUE(
-      empty.Equals(ModelTypeSetFromString(ModelTypeSetToString(empty))));
-  EXPECT_TRUE(
-      one.Equals(ModelTypeSetFromString(ModelTypeSetToString(one))));
-  EXPECT_TRUE(
-      two.Equals(ModelTypeSetFromString(ModelTypeSetToString(two))));
+  EXPECT_EQ(empty, ModelTypeSetFromString(ModelTypeSetToString(empty)));
+  EXPECT_EQ(one, ModelTypeSetFromString(ModelTypeSetToString(one)));
+  EXPECT_EQ(two, ModelTypeSetFromString(ModelTypeSetToString(two)));
 }
 
 TEST_F(ModelTypeTest, DefaultFieldValues) {

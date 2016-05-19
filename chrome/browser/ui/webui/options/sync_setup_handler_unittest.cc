@@ -47,7 +47,9 @@ typedef GoogleServiceAuthError AuthError;
 
 namespace {
 
-MATCHER_P(ModelTypeSetMatches, value, "") { return arg.Equals(value); }
+MATCHER_P(ModelTypeSetMatches, value, "") {
+  return arg == value;
+}
 
 const char kTestUser[] = "chrome.p13n.test@gmail.com";
 

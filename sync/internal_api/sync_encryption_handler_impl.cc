@@ -1100,10 +1100,10 @@ bool SyncEncryptionHandlerImpl::UpdateEncryptedTypesFromNigori(
   ModelTypeSet* encrypted_types = &UnlockVaultMutable(trans)->encrypted_types;
   if (nigori.encrypt_everything()) {
     EnableEncryptEverythingImpl(trans);
-    DCHECK(encrypted_types->Equals(EncryptableUserTypes()));
+    DCHECK(*encrypted_types == EncryptableUserTypes());
     return true;
   } else if (encrypt_everything_) {
-    DCHECK(encrypted_types->Equals(EncryptableUserTypes()));
+    DCHECK(*encrypted_types == EncryptableUserTypes());
     return false;
   }
 
@@ -1123,12 +1123,12 @@ bool SyncEncryptionHandlerImpl::UpdateEncryptedTypesFromNigori(
           Observer, observers_,
           OnEncryptedTypesChanged(*encrypted_types, encrypt_everything_));
     }
-    DCHECK(encrypted_types->Equals(EncryptableUserTypes()));
+    DCHECK(*encrypted_types == EncryptableUserTypes());
     return false;
   }
 
   MergeEncryptedTypes(nigori_encrypted_types, trans);
-  return encrypted_types->Equals(nigori_encrypted_types);
+  return *encrypted_types == nigori_encrypted_types;
 }
 
 void SyncEncryptionHandlerImpl::SetCustomPassphrase(
@@ -1606,7 +1606,7 @@ void SyncEncryptionHandlerImpl::EnableEncryptEverythingImpl(
     syncable::BaseTransaction* const trans) {
   ModelTypeSet* encrypted_types = &UnlockVaultMutable(trans)->encrypted_types;
   if (encrypt_everything_) {
-    DCHECK(encrypted_types->Equals(EncryptableUserTypes()));
+    DCHECK_EQ(EncryptableUserTypes(), *encrypted_types);
     return;
   }
   encrypt_everything_ = true;

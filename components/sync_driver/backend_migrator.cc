@@ -50,7 +50,7 @@ void BackendMigrator::MigrateTypes(syncer::ModelTypeSet types) {
   SDVLOG(1) << "MigrateTypes called with " << ModelTypeSetToString(types)
            << ", old_to_migrate = " << ModelTypeSetToString(old_to_migrate)
           << ", to_migrate_ = " << ModelTypeSetToString(to_migrate_);
-  if (old_to_migrate.Equals(to_migrate_)) {
+  if (old_to_migrate == to_migrate_) {
     SDVLOG(1) << "MigrateTypes called with no new types; ignoring";
     return;
   }

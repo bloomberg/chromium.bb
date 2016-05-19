@@ -397,10 +397,8 @@ TEST_F(SyncEncryptionHandlerImplTest, NigoriEncryptionTypes) {
         trans.GetWrappedTrans());
     handler2.UpdateEncryptedTypesFromNigori(nigori, trans.GetWrappedTrans());
   }
-  EXPECT_TRUE(encrypted_types.Equals(
-      encryption_handler()->GetEncryptedTypesUnsafe()));
-  EXPECT_TRUE(encrypted_types.Equals(
-      handler2.GetEncryptedTypesUnsafe()));
+  EXPECT_EQ(encrypted_types, encryption_handler()->GetEncryptedTypesUnsafe());
+  EXPECT_EQ(encrypted_types, handler2.GetEncryptedTypesUnsafe());
 
   Mock::VerifyAndClearExpectations(observer());
   Mock::VerifyAndClearExpectations(&observer2);
@@ -426,9 +424,8 @@ TEST_F(SyncEncryptionHandlerImplTest, NigoriEncryptionTypes) {
         trans.GetWrappedTrans());
     handler2.UpdateEncryptedTypesFromNigori(nigori, trans.GetWrappedTrans());
   }
-  EXPECT_TRUE(encrypted_types.Equals(
-      encryption_handler()->GetEncryptedTypesUnsafe()));
-  EXPECT_TRUE(encrypted_types.Equals(handler2.GetEncryptedTypesUnsafe()));
+  EXPECT_EQ(encrypted_types, encryption_handler()->GetEncryptedTypesUnsafe());
+  EXPECT_EQ(encrypted_types, handler2.GetEncryptedTypesUnsafe());
 
   // Receiving an empty nigori should not reset any encrypted types or trigger
   // an observer notification.
@@ -439,8 +436,7 @@ TEST_F(SyncEncryptionHandlerImplTest, NigoriEncryptionTypes) {
     WriteTransaction trans(FROM_HERE, user_share());
     handler2.UpdateEncryptedTypesFromNigori(nigori, trans.GetWrappedTrans());
   }
-  EXPECT_TRUE(encrypted_types.Equals(
-      encryption_handler()->GetEncryptedTypesUnsafe()));
+  EXPECT_EQ(encrypted_types, encryption_handler()->GetEncryptedTypesUnsafe());
 }
 
 // Verify the encryption handler processes the encrypt everything field
@@ -456,8 +452,7 @@ TEST_F(SyncEncryptionHandlerImplTest, EncryptEverythingExplicit) {
   EXPECT_FALSE(encryption_handler()->IsEncryptEverythingEnabled());
   ModelTypeSet encrypted_types =
       encryption_handler()->GetEncryptedTypesUnsafe();
-  EXPECT_TRUE(encrypted_types.Equals(
-      ModelTypeSet(PASSWORDS, WIFI_CREDENTIALS)));
+  EXPECT_EQ(ModelTypeSet(PASSWORDS, WIFI_CREDENTIALS), encrypted_types);
 
   {
     WriteTransaction trans(FROM_HERE, user_share());
@@ -493,8 +488,7 @@ TEST_F(SyncEncryptionHandlerImplTest, EncryptEverythingImplicit) {
   EXPECT_FALSE(encryption_handler()->IsEncryptEverythingEnabled());
   ModelTypeSet encrypted_types =
       encryption_handler()->GetEncryptedTypesUnsafe();
-  EXPECT_TRUE(encrypted_types.Equals(
-      ModelTypeSet(PASSWORDS, WIFI_CREDENTIALS)));
+  EXPECT_EQ(ModelTypeSet(PASSWORDS, WIFI_CREDENTIALS), encrypted_types);
 
   {
     WriteTransaction trans(FROM_HERE, user_share());
@@ -538,8 +532,7 @@ TEST_F(SyncEncryptionHandlerImplTest, UnknownSensitiveTypes) {
   EXPECT_FALSE(encryption_handler()->IsEncryptEverythingEnabled());
   ModelTypeSet encrypted_types =
       encryption_handler()->GetEncryptedTypesUnsafe();
-  EXPECT_TRUE(encrypted_types.Equals(
-      ModelTypeSet(PASSWORDS, WIFI_CREDENTIALS)));
+  EXPECT_EQ(ModelTypeSet(PASSWORDS, WIFI_CREDENTIALS), encrypted_types);
 
   {
     WriteTransaction trans(FROM_HERE, user_share());
@@ -550,8 +543,8 @@ TEST_F(SyncEncryptionHandlerImplTest, UnknownSensitiveTypes) {
 
   EXPECT_FALSE(encryption_handler()->IsEncryptEverythingEnabled());
   encrypted_types = encryption_handler()->GetEncryptedTypesUnsafe();
-  EXPECT_TRUE(encrypted_types.Equals(
-      ModelTypeSet(BOOKMARKS, PASSWORDS, WIFI_CREDENTIALS)));
+  EXPECT_EQ(ModelTypeSet(BOOKMARKS, PASSWORDS, WIFI_CREDENTIALS),
+            encrypted_types);
 }
 
 // Receive an old nigori with old encryption keys and encrypted types. We should

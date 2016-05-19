@@ -23,7 +23,7 @@ namespace syncer {
 namespace {
 
 testing::AssertionResult ModelTypeSetEquals(ModelTypeSet a, ModelTypeSet b) {
-  if (a.Equals(b)) {
+  if (a == b) {
     return testing::AssertionSuccess();
   } else {
     return testing::AssertionFailure()

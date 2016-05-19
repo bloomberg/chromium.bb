@@ -1349,8 +1349,8 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
 
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    EXPECT_TRUE(GetEncryptedTypesWithTrans(&trans).Equals(
-        SyncEncryptionHandler::SensitiveTypes()));
+    EXPECT_EQ(SyncEncryptionHandler::SensitiveTypes(),
+              GetEncryptedTypesWithTrans(&trans));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
         trans.GetWrappedTrans(),
         BOOKMARKS,
@@ -1373,8 +1373,7 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   EXPECT_TRUE(IsEncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    EXPECT_TRUE(GetEncryptedTypesWithTrans(&trans).Equals(
-        EncryptableUserTypes()));
+    EXPECT_EQ(EncryptableUserTypes(), GetEncryptedTypesWithTrans(&trans));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
         trans.GetWrappedTrans(),
         BOOKMARKS,
@@ -1398,8 +1397,7 @@ TEST_F(SyncManagerTest, EncryptDataTypesWithData) {
   EXPECT_TRUE(IsEncryptEverythingEnabledForTest());
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    EXPECT_TRUE(GetEncryptedTypesWithTrans(&trans).Equals(
-        EncryptableUserTypes()));
+    EXPECT_EQ(EncryptableUserTypes(), GetEncryptedTypesWithTrans(&trans));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
         trans.GetWrappedTrans(),
         BOOKMARKS,
@@ -1839,8 +1837,7 @@ TEST_F(SyncManagerTest, EncryptBookmarksWithLegacyData) {
 
   {
     ReadTransaction trans(FROM_HERE, sync_manager_.GetUserShare());
-    EXPECT_TRUE(GetEncryptedTypesWithTrans(&trans).Equals(
-        EncryptableUserTypes()));
+    EXPECT_EQ(EncryptableUserTypes(), GetEncryptedTypesWithTrans(&trans));
     EXPECT_TRUE(syncable::VerifyDataTypeEncryptionForTest(
         trans.GetWrappedTrans(),
         BOOKMARKS,
@@ -2703,15 +2700,14 @@ TEST_F(SyncManagerTestWithMockScheduler, BasicConfiguration) {
   EXPECT_EQ(0, retry_task_counter.times_called());
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::RECONFIGURATION,
             params.source);
-  EXPECT_TRUE(types_to_download.Equals(params.types_to_download));
+  EXPECT_EQ(types_to_download, params.types_to_download);
   EXPECT_EQ(new_routing_info, params.routing_info);
 
   // Verify all the disabled types were purged.
-  EXPECT_TRUE(
-      sync_manager_.GetUserShare()->directory->InitialSyncEndedTypes().Equals(
-          enabled_types));
-  EXPECT_TRUE(sync_manager_.GetTypesWithEmptyProgressMarkerToken(
-      ModelTypeSet::All()).Equals(disabled_types));
+  EXPECT_EQ(enabled_types,
+            sync_manager_.GetUserShare()->directory->InitialSyncEndedTypes());
+  EXPECT_EQ(disabled_types, sync_manager_.GetTypesWithEmptyProgressMarkerToken(
+                                ModelTypeSet::All()));
 }
 
 // Test that on a reconfiguration (configuration where the session context
@@ -2764,12 +2760,12 @@ TEST_F(SyncManagerTestWithMockScheduler, ReConfiguration) {
   EXPECT_EQ(0, retry_task_counter.times_called());
   EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::RECONFIGURATION,
             params.source);
-  EXPECT_TRUE(types_to_download.Equals(params.types_to_download));
+  EXPECT_EQ(types_to_download, params.types_to_download);
   EXPECT_EQ(new_routing_info, params.routing_info);
 
   // Verify only the recently disabled types were purged.
-  EXPECT_TRUE(sync_manager_.GetTypesWithEmptyProgressMarkerToken(
-      ProtocolTypes()).Equals(disabled_types));
+  EXPECT_EQ(disabled_types, sync_manager_.GetTypesWithEmptyProgressMarkerToken(
+                                ProtocolTypes()));
 }
 
 // Test that SyncManager::ClearServerData invokes the scheduler.
@@ -2869,8 +2865,8 @@ TEST_F(SyncManagerTest, PurgeDisabledTypes) {
   ModelTypeSet disabled_types = Difference(ModelTypeSet::All(), enabled_types);
 
   // The harness should have initialized the enabled_types for us.
-  EXPECT_TRUE(enabled_types.Equals(
-      sync_manager_.GetUserShare()->directory->InitialSyncEndedTypes()));
+  EXPECT_EQ(enabled_types,
+            sync_manager_.GetUserShare()->directory->InitialSyncEndedTypes());
 
   // Set progress markers for all types.
   ModelTypeSet protocol_types = ProtocolTypes();
@@ -2884,10 +2880,10 @@ TEST_F(SyncManagerTest, PurgeDisabledTypes) {
   sync_manager_.PurgeDisabledTypes(disabled_types,
                                    ModelTypeSet(),
                                    ModelTypeSet());
-  EXPECT_TRUE(enabled_types.Equals(
-      sync_manager_.GetUserShare()->directory->InitialSyncEndedTypes()));
-  EXPECT_TRUE(disabled_types.Equals(
-      sync_manager_.GetTypesWithEmptyProgressMarkerToken(ModelTypeSet::All())));
+  EXPECT_EQ(enabled_types,
+            sync_manager_.GetUserShare()->directory->InitialSyncEndedTypes());
+  EXPECT_EQ(disabled_types, sync_manager_.GetTypesWithEmptyProgressMarkerToken(
+                                ModelTypeSet::All()));
 
   // Disable some more types.
   disabled_types.Put(BOOKMARKS);
@@ -2899,10 +2895,10 @@ TEST_F(SyncManagerTest, PurgeDisabledTypes) {
   sync_manager_.PurgeDisabledTypes(disabled_types,
                                    ModelTypeSet(),
                                    ModelTypeSet());
-  EXPECT_TRUE(new_enabled_types.Equals(
-      sync_manager_.GetUserShare()->directory->InitialSyncEndedTypes()));
-  EXPECT_TRUE(disabled_types.Equals(
-      sync_manager_.GetTypesWithEmptyProgressMarkerToken(ModelTypeSet::All())));
+  EXPECT_EQ(new_enabled_types,
+            sync_manager_.GetUserShare()->directory->InitialSyncEndedTypes());
+  EXPECT_EQ(disabled_types, sync_manager_.GetTypesWithEmptyProgressMarkerToken(
+                                ModelTypeSet::All()));
 }
 
 // Test PurgeDisabledTypes properly unapplies types by deleting their local data
@@ -2915,8 +2911,8 @@ TEST_F(SyncManagerTest, PurgeUnappliedTypes) {
   ModelTypeSet disabled_types = Difference(ModelTypeSet::All(), enabled_types);
 
   // The harness should have initialized the enabled_types for us.
-  EXPECT_TRUE(enabled_types.Equals(
-      sync_manager_.GetUserShare()->directory->InitialSyncEndedTypes()));
+  EXPECT_EQ(enabled_types,
+            sync_manager_.GetUserShare()->directory->InitialSyncEndedTypes());
 
   // Set progress markers for all types.
   ModelTypeSet protocol_types = ProtocolTypes();

@@ -26,7 +26,7 @@ class HasModelTypesMatcher
       ModelTypeSet model_types,
       ::testing::MatchResultListener* listener) const {
     // No need to annotate listener since we already define PrintTo().
-    return model_types.Equals(expected_types_);
+    return model_types == expected_types_;
   }
 
   virtual void DescribeTo(::std::ostream* os) const {

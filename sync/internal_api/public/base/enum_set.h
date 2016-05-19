@@ -188,8 +188,7 @@ class EnumSet {
     enums_.reset();
   }
 
-  // Returns true iff the given value is in range and a member of our
-  // set.
+  // Returns true iff the given value is in range and a member of our set.
   bool Has(E value) const {
     return InRange(value) && enums_.test(ToIndex(value));
   }
@@ -197,12 +196,6 @@ class EnumSet {
   // Returns true iff the given set is a subset of our set.
   bool HasAll(EnumSet other) const {
     return (enums_ & other.enums_) == other.enums_;
-  }
-
-  // Returns true iff our set and the given set contain exactly the
-  // same values.
-  bool Equals(const EnumSet& other) const {
-    return enums_ == other.enums_;
   }
 
   // Returns true iff our set is empty.
@@ -219,6 +212,13 @@ class EnumSet {
   Iterator First() const {
     return Iterator(enums_);
   }
+
+  // Returns true iff our set and the given set contain exactly the same values.
+  bool operator==(const EnumSet& other) const { return enums_ == other.enums_; }
+
+  // Returns true iff our set and the given set do not contain exactly the same
+  // values.
+  bool operator!=(const EnumSet& other) const { return enums_ != other.enums_; }
 
  private:
   friend EnumSet Union<E, MinEnumValue, MaxEnumValue>(

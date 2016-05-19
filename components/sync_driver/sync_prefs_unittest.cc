@@ -76,7 +76,7 @@ TEST_F(SyncPrefsTest, DefaultTypes) {
   syncer::ModelTypeSet expected(syncer::BOOKMARKS, syncer::DEVICE_INFO);
   syncer::ModelTypeSet preferred_types =
       sync_prefs.GetPreferredDataTypes(syncer::UserTypes());
-  EXPECT_TRUE(preferred_types.Equals(expected));
+  EXPECT_EQ(expected, preferred_types);
 
   // Simulate an upgrade to delete directives + proxy tabs support. None of the
   // new types or their pref group types should be registering, ensuring they
@@ -115,7 +115,7 @@ TEST_F(SyncPrefsTest, PreferredTypesKeepEverythingSynced) {
   EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
 
   const syncer::ModelTypeSet user_types = syncer::UserTypes();
-  EXPECT_TRUE(user_types.Equals(sync_prefs.GetPreferredDataTypes(user_types)));
+  EXPECT_EQ(user_types, sync_prefs.GetPreferredDataTypes(user_types));
   const syncer::ModelTypeSet user_visible_types = syncer::UserSelectableTypes();
   for (syncer::ModelTypeSet::Iterator it = user_visible_types.First();
        it.Good();
@@ -123,8 +123,7 @@ TEST_F(SyncPrefsTest, PreferredTypesKeepEverythingSynced) {
     syncer::ModelTypeSet preferred_types;
     preferred_types.Put(it.Get());
     sync_prefs.SetPreferredDataTypes(user_types, preferred_types);
-    EXPECT_TRUE(
-        user_types.Equals(sync_prefs.GetPreferredDataTypes(user_types)));
+    EXPECT_EQ(user_types, sync_prefs.GetPreferredDataTypes(user_types));
   }
 }
 
@@ -134,7 +133,7 @@ TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
   sync_prefs.SetKeepEverythingSynced(false);
 
   const syncer::ModelTypeSet user_types = syncer::UserTypes();
-  EXPECT_FALSE(user_types.Equals(sync_prefs.GetPreferredDataTypes(user_types)));
+  EXPECT_NE(user_types, sync_prefs.GetPreferredDataTypes(user_types));
   const syncer::ModelTypeSet user_visible_types = syncer::UserSelectableTypes();
   for (syncer::ModelTypeSet::Iterator it = user_visible_types.First();
        it.Good();
@@ -176,8 +175,8 @@ TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
     expected_preferred_types.Put(syncer::DEVICE_INFO);
 
     sync_prefs.SetPreferredDataTypes(user_types, preferred_types);
-    EXPECT_TRUE(expected_preferred_types.Equals(
-        sync_prefs.GetPreferredDataTypes(user_types)));
+    EXPECT_EQ(expected_preferred_types,
+              sync_prefs.GetPreferredDataTypes(user_types));
   }
 }
 

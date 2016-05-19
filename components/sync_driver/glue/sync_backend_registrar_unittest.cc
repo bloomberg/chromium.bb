@@ -201,8 +201,7 @@ TEST_F(SyncBackendRegistrarTest, ConfigureDataTypes) {
 
   // Add.
   const ModelTypeSet types1(BOOKMARKS, NIGORI, AUTOFILL);
-  EXPECT_TRUE(
-      registrar_->ConfigureDataTypes(types1, ModelTypeSet()).Equals(types1));
+  EXPECT_EQ(types1, registrar_->ConfigureDataTypes(types1, ModelTypeSet()));
   {
     syncer::ModelSafeRoutingInfo expected_routing_info;
     expected_routing_info[BOOKMARKS] = syncer::GROUP_NON_BLOCKING;
@@ -211,11 +210,11 @@ TEST_F(SyncBackendRegistrarTest, ConfigureDataTypes) {
     ExpectRoutingInfo(registrar_.get(), expected_routing_info);
   }
   ExpectHasProcessorsForTypes(*registrar_, ModelTypeSet());
-  EXPECT_TRUE(types1.Equals(registrar_->GetLastConfiguredTypes()));
+  EXPECT_EQ(types1, registrar_->GetLastConfiguredTypes());
 
   // Add and remove.
   const ModelTypeSet types2(PREFERENCES, THEMES);
-  EXPECT_TRUE(registrar_->ConfigureDataTypes(types2, types1).Equals(types2));
+  EXPECT_EQ(types2, registrar_->ConfigureDataTypes(types2, types1));
   {
     syncer::ModelSafeRoutingInfo expected_routing_info;
     expected_routing_info[PREFERENCES] = syncer::GROUP_PASSIVE;
@@ -223,13 +222,13 @@ TEST_F(SyncBackendRegistrarTest, ConfigureDataTypes) {
     ExpectRoutingInfo(registrar_.get(), expected_routing_info);
   }
   ExpectHasProcessorsForTypes(*registrar_, ModelTypeSet());
-  EXPECT_TRUE(types2.Equals(registrar_->GetLastConfiguredTypes()));
+  EXPECT_EQ(types2, registrar_->GetLastConfiguredTypes());
 
   // Remove.
   EXPECT_TRUE(registrar_->ConfigureDataTypes(ModelTypeSet(), types2).Empty());
   ExpectRoutingInfo(registrar_.get(), syncer::ModelSafeRoutingInfo());
   ExpectHasProcessorsForTypes(*registrar_, ModelTypeSet());
-  EXPECT_TRUE(ModelTypeSet().Equals(registrar_->GetLastConfiguredTypes()));
+  EXPECT_EQ(ModelTypeSet(), registrar_->GetLastConfiguredTypes());
 }
 
 TEST_F(SyncBackendRegistrarTest, ActivateDeactivateUIDataType) {
@@ -251,8 +250,7 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateUIDataType) {
       .WillRepeatedly(Return(false));
 
   const ModelTypeSet types(BOOKMARKS);
-  EXPECT_TRUE(
-      registrar_->ConfigureDataTypes(types, ModelTypeSet()).Equals(types));
+  EXPECT_EQ(types, registrar_->ConfigureDataTypes(types, ModelTypeSet()));
   registrar_->ActivateDataType(BOOKMARKS, syncer::GROUP_UI,
                              &change_processor_mock,
                              test_user_share_.user_share());
@@ -292,8 +290,7 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateNonUIDataType) {
       .WillRepeatedly(Return(false));
 
   const ModelTypeSet types(AUTOFILL);
-  EXPECT_TRUE(
-      registrar_->ConfigureDataTypes(types, ModelTypeSet()).Equals(types));
+  EXPECT_EQ(types, registrar_->ConfigureDataTypes(types, ModelTypeSet()));
 
   base::WaitableEvent done(false, false);
   db_task_runner()->PostTask(
@@ -320,8 +317,7 @@ TEST_F(SyncBackendRegistrarTest, ConfigureNonBlockingDataType) {
   // Simulate that initial sync was already done for AUTOFILL.
   registrar_->AddRestoredNonBlockingType(AUTOFILL);
   // It should be added to routing info and set of configured types.
-  EXPECT_TRUE(
-      registrar_->GetLastConfiguredTypes().Equals(ModelTypeSet(AUTOFILL)));
+  EXPECT_EQ(ModelTypeSet(AUTOFILL), registrar_->GetLastConfiguredTypes());
   {
     syncer::ModelSafeRoutingInfo expected_routing_info;
     expected_routing_info[AUTOFILL] = syncer::GROUP_NON_BLOCKING;
@@ -333,8 +329,8 @@ TEST_F(SyncBackendRegistrarTest, ConfigureNonBlockingDataType) {
   ModelTypeSet types_to_add(AUTOFILL, BOOKMARKS);
   ModelTypeSet newly_added_types =
       registrar_->ConfigureDataTypes(types_to_add, ModelTypeSet());
-  EXPECT_TRUE(newly_added_types.Equals(ModelTypeSet(BOOKMARKS)));
-  EXPECT_TRUE(registrar_->GetLastConfiguredTypes().Equals(types_to_add));
+  EXPECT_EQ(ModelTypeSet(BOOKMARKS), newly_added_types);
+  EXPECT_EQ(types_to_add, registrar_->GetLastConfiguredTypes());
   {
     syncer::ModelSafeRoutingInfo expected_routing_info;
     expected_routing_info[AUTOFILL] = syncer::GROUP_NON_BLOCKING;
