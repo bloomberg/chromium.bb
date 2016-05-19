@@ -599,9 +599,6 @@ class ProfileIOData {
 
   mutable DevToolsNetworkControllerHandle network_controller_handle_;
 
-  // TODO(jhawkins): Remove once crbug.com/102004 is fixed.
-  bool initialized_on_UI_thread_;
-
   const Profile::ProfileType profile_type_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileIOData);

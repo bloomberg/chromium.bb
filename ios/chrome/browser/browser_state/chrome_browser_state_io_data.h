@@ -307,9 +307,6 @@ class ChromeBrowserStateIOData {
   mutable std::unique_ptr<IOSChromeHttpUserAgentSettings>
       chrome_http_user_agent_settings_;
 
-  // TODO(jhawkins): Remove once crbug.com/102004 is fixed.
-  bool initialized_on_UI_thread_;
-
   const ios::ChromeBrowserStateType browser_state_type_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserStateIOData);

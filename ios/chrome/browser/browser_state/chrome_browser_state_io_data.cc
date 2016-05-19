@@ -128,8 +128,6 @@ void ChromeBrowserStateIOData::InitializeOnUIThread(
     signin_allowed_.Init(prefs::kSigninAllowed, pref_service);
     signin_allowed_.MoveToThread(io_task_runner);
   }
-
-  initialized_on_UI_thread_ = true;
 }
 
 ChromeBrowserStateIOData::AppRequestContext::AppRequestContext() {}
@@ -175,7 +173,6 @@ ChromeBrowserStateIOData::ProfileParams::~ProfileParams() {}
 ChromeBrowserStateIOData::ChromeBrowserStateIOData(
     ios::ChromeBrowserStateType browser_state_type)
     : initialized_(false),
-      initialized_on_UI_thread_(false),
       browser_state_type_(browser_state_type) {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
 }
@@ -338,12 +335,7 @@ void ChromeBrowserStateIOData::Init(
   // functions have been provided to assist in common operations.
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
   DCHECK(!initialized_);
-
-  // TODO(jhawkins): Remove once crbug.com/102004 is fixed.
-  CHECK(initialized_on_UI_thread_);
-
-  // TODO(jhawkins): Return to DCHECK once crbug.com/102004 is fixed.
-  CHECK(profile_params_.get());
+  DCHECK(profile_params_.get());
 
   IOSChromeIOThread* const io_thread = profile_params_->io_thread;
   IOSChromeIOThread::Globals* const io_thread_globals = io_thread->globals();

@@ -543,8 +543,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       prefs::kIncognitoModeAvailability, pref_service);
   incognito_availibility_pref_.MoveToThread(io_task_runner);
 
-  initialized_on_UI_thread_ = true;
-
   // We need to make sure that content initializes its own data structures that
   // are associated with each ResourceContext because we might post this
   // object to the IO thread after this function.
@@ -617,7 +615,6 @@ ProfileIOData::ProfileIOData(Profile::ProfileType profile_type)
       use_system_key_slot_(false),
 #endif
       resource_context_(new ResourceContext(this)),
-      initialized_on_UI_thread_(false),
       profile_type_(profile_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
@@ -1017,12 +1014,7 @@ void ProfileIOData::Init(
   // functions have been provided to assist in common operations.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!initialized_);
-
-  // TODO(jhawkins): Remove once crbug.com/102004 is fixed.
-  CHECK(initialized_on_UI_thread_);
-
-  // TODO(jhawkins): Return to DCHECK once crbug.com/102004 is fixed.
-  CHECK(profile_params_.get());
+  DCHECK(profile_params_.get());
 
   IOThread* const io_thread = profile_params_->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
