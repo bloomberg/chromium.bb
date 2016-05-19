@@ -249,7 +249,7 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const
                 else
                     m_endOfLastParagraph = Position(endContainer, m_endOfLastParagraph.offsetInContainerNode() - end.offsetInContainerNode());
             }
-            end = lastPositionInNode(endContainer->previousSibling());
+            end = Position::lastPositionInNode(endContainer->previousSibling());
         }
     }
 }

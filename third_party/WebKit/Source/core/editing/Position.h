@@ -280,7 +280,6 @@ int PositionTemplate<Strategy>::lastOffsetInNode(Node* node)
     return node->offsetInCharacters() ? node->maxCharacterOffset() : static_cast<int>(Strategy::countChildren(*node));
 }
 
-// firstPositionInNode and lastPositionInNode return parent-anchored positions, lastPositionInNode construction is O(n) due to countChildren()
 template <typename Strategy>
 PositionTemplate<Strategy> PositionTemplate<Strategy>::firstPositionInNode(Node* anchorNode)
 {
@@ -295,11 +294,6 @@ PositionTemplate<Strategy> PositionTemplate<Strategy>::lastPositionInNode(Node* 
     if (anchorNode->isTextNode())
         return PositionTemplate<Strategy>(anchorNode, lastOffsetInNode(anchorNode));
     return PositionTemplate<Strategy>(anchorNode, PositionAnchorType::AfterChildren);
-}
-
-inline Position lastPositionInNode(Node* anchorNode)
-{
-    return Position::lastPositionInNode(anchorNode);
 }
 
 template <typename Strategy>

@@ -518,7 +518,7 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(Node* node, const Ep
     TRACE_EVENT0("blink", "SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar");
     if (!node)
         return;
-    EphemeralRange paragraphRange(Position::firstPositionInNode(node), lastPositionInNode(node));
+    EphemeralRange paragraphRange(Position::firstPositionInNode(node), Position::lastPositionInNode(node));
     TextCheckingParagraph textToCheck(insertedRange, paragraphRange);
     chunkAndMarkAllMisspellingsAndBadGrammar(resolveTextCheckingTypeMask(TextCheckingTypeSpelling | TextCheckingTypeGrammar), textToCheck);
 }

@@ -1397,7 +1397,7 @@ VisiblePosition nextLinePosition(const VisiblePosition& visiblePosition, LayoutU
     Element* rootElement = node->hasEditableStyle(editableType) ? node->rootEditableElement(editableType) : node->document().documentElement();
     if (!rootElement)
         return VisiblePosition();
-    return createVisiblePosition(lastPositionInNode(rootElement));
+    return createVisiblePosition(Position::lastPositionInNode(rootElement));
 }
 
 // ---------
@@ -1737,7 +1737,7 @@ VisiblePosition endOfBlock(const VisiblePosition& visiblePosition, EditingBounda
 {
     Position position = visiblePosition.deepEquivalent();
     Element* endBlock = position.computeContainerNode() ? enclosingBlock(position.computeContainerNode(), rule) : 0;
-    return endBlock ? createVisiblePosition(lastPositionInNode(endBlock)) : VisiblePosition();
+    return endBlock ? createVisiblePosition(Position::lastPositionInNode(endBlock)) : VisiblePosition();
 }
 
 bool inSameBlock(const VisiblePosition& a, const VisiblePosition& b)
@@ -1825,7 +1825,7 @@ VisiblePosition endOfEditableContent(const VisiblePosition& visiblePosition)
     if (!highestRoot)
         return VisiblePosition();
 
-    return createVisiblePosition(lastPositionInNode(highestRoot));
+    return createVisiblePosition(Position::lastPositionInNode(highestRoot));
 }
 
 bool isEndOfEditableOrNonEditableContent(const VisiblePosition& position)

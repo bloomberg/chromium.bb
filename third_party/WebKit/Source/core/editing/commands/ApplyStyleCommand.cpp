@@ -1330,7 +1330,7 @@ void ApplyStyleCommand::splitTextAtEnd(const Position& start, const Position& en
         return;
 
     Position newStart = shouldUpdateStart ? Position(toText(prevNode), start.offsetInContainerNode()) : start;
-    updateStartEnd(newStart, lastPositionInNode(prevNode));
+    updateStartEnd(newStart, Position::lastPositionInNode(prevNode));
 }
 
 void ApplyStyleCommand::splitTextElementAtStart(const Position& start, const Position& end)

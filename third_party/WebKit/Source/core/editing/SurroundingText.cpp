@@ -67,7 +67,7 @@ void SurroundingText::initialize(const Position& startPosition, const Position& 
     // The forward range starts at the selection end and ends at the document's
     // end. It will then be updated to only contain the text in the text in the
     // right range around the selection.
-    CharacterIterator forwardIterator(endPosition, lastPositionInNode(document->documentElement()).parentAnchoredEquivalent(), TextIteratorStopsOnFormControls);
+    CharacterIterator forwardIterator(endPosition, Position::lastPositionInNode(document->documentElement()).parentAnchoredEquivalent(), TextIteratorStopsOnFormControls);
     // FIXME: why do we stop going trough the text if we were not able to select something on the right?
     if (!forwardIterator.atEnd())
         forwardIterator.advance(maxLength - halfMaxLength);
