@@ -31,6 +31,8 @@ fuzzer_test("icu_unicode_string_codepage_create_fuzzer") {
     "//base",
     "//third_party/icu",
   ]
+  seed_corpus = "//third_party/icu/source/test/testdata"
+  libfuzzer_options = [ "max_len=10240" ]
 }
 
 fuzzer_test("icu_number_format_fuzzer") {
@@ -42,6 +44,8 @@ fuzzer_test("icu_number_format_fuzzer") {
     "//base:i18n",
     "//third_party/icu",
   ]
+  seed_corpus = "//third_party/icu/source/test/testdata"
+  libfuzzer_options = [ "max_len=10240" ]
 }
 
 fuzzer_test("icu_break_iterator_fuzzer") {
@@ -53,6 +57,8 @@ fuzzer_test("icu_break_iterator_fuzzer") {
     "//base:i18n",
     "//third_party/icu",
   ]
+  seed_corpus = "//third_party/icu/source/test/testdata"
+  libfuzzer_options = [ "max_len=10240" ]
 }
 
 fuzzer_test("icu_ucasemap_fuzzer") {
@@ -64,5 +70,7 @@ fuzzer_test("icu_ucasemap_fuzzer") {
     "//base:i18n",
     "//third_party/icu",
   ]
+  seed_corpus = "//third_party/icu/source/test/testdata"
+  libfuzzer_options = [ "max_len=10240" ]
 }
 
