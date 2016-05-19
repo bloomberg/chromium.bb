@@ -17,7 +17,6 @@ class ListValue;
 }
 
 namespace extensions {
-class Dispatcher;
 class ScriptContext;
 
 struct PendingRequest;
@@ -57,7 +56,7 @@ class RequestSender {
     DISALLOW_COPY_AND_ASSIGN(ScopedTabID);
   };
 
-  explicit RequestSender(Dispatcher* dispatcher);
+  RequestSender();
   ~RequestSender();
 
   // In order to avoid collision, all |request_id|s passed into StartRequest()
@@ -94,7 +93,6 @@ class RequestSender {
   void InsertRequest(int request_id, PendingRequest* pending_request);
   linked_ptr<PendingRequest> RemoveRequest(int request_id);
 
-  Dispatcher* dispatcher_;
   PendingRequestMap pending_requests_;
 
   int source_tab_id_;  // Id of the tab sending the request, or -1 if no tab.

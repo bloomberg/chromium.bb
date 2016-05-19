@@ -7,7 +7,6 @@
 #include "base/values.h"
 #include "content/public/renderer/render_frame.h"
 #include "extensions/common/extension_messages.h"
-#include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -43,8 +42,7 @@ RequestSender::ScopedTabID::~ScopedTabID() {
   request_sender_->source_tab_id_ = previous_tab_id_;
 }
 
-RequestSender::RequestSender(Dispatcher* dispatcher)
-    : dispatcher_(dispatcher), source_tab_id_(-1) {}
+RequestSender::RequestSender() : source_tab_id_(-1) {}
 
 RequestSender::~RequestSender() {}
 

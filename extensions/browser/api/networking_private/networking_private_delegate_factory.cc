@@ -79,8 +79,7 @@ KeyedService* NetworkingPrivateDelegateFactory::BuildServiceInstanceFor(
   delegate = new NetworkingPrivateChromeOS(browser_context,
                                            std::move(verify_delegate));
 #elif defined(OS_LINUX)
-  delegate =
-      new NetworkingPrivateLinux(browser_context, std::move(verify_delegate));
+  delegate = new NetworkingPrivateLinux(std::move(verify_delegate));
 #elif defined(OS_WIN) || defined(OS_MACOSX)
   std::unique_ptr<wifi::WiFiService> wifi_service(wifi::WiFiService::Create());
   delegate = new NetworkingPrivateServiceClient(std::move(wifi_service),

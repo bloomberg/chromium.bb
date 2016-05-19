@@ -17,10 +17,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/api/networking_private/networking_private_delegate.h"
 
-namespace content {
-class BrowserContext;
-}
-
 namespace dbus {
 class Bus;
 class ObjectPath;
@@ -38,8 +34,8 @@ class NetworkingPrivateLinux : public NetworkingPrivateDelegate {
 
   typedef std::vector<std::string> GuidList;
 
-  NetworkingPrivateLinux(content::BrowserContext* browser_context,
-                         std::unique_ptr<VerifyDelegate> verify_delegate);
+  explicit NetworkingPrivateLinux(
+      std::unique_ptr<VerifyDelegate> verify_delegate);
 
   // NetworkingPrivateDelegate
   void GetProperties(const std::string& guid,
@@ -260,8 +256,6 @@ class NetworkingPrivateLinux : public NetworkingPrivateDelegate {
 
   void OnNetworkListChangedEventOnUIThread(const GuidList& network_guids);
 
-  // Browser context.
-  content::BrowserContext* browser_context_;
   // Thread used for DBus actions.
   base::Thread dbus_thread_;
   // DBus instance. Only access on |dbus_thread_|.

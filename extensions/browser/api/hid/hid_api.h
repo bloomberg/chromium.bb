@@ -65,7 +65,6 @@ class HidGetUserSelectedDevicesFunction : public UIThreadExtensionFunction {
   void OnDevicesChosen(
       const std::vector<scoped_refptr<device::HidDeviceInfo>>& devices);
 
-  HidDeviceManager* device_manager_;
   std::unique_ptr<DevicePermissionsPrompt> prompt_;
 
   DISALLOW_COPY_AND_ASSIGN(HidGetUserSelectedDevicesFunction);

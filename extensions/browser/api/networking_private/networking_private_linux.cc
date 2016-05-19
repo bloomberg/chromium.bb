@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/onc/onc_constants.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -136,10 +135,8 @@ void GetCachedNetworkPropertiesCallback(
 }  // namespace
 
 NetworkingPrivateLinux::NetworkingPrivateLinux(
-    content::BrowserContext* browser_context,
     std::unique_ptr<VerifyDelegate> verify_delegate)
     : NetworkingPrivateDelegate(std::move(verify_delegate)),
-      browser_context_(browser_context),
       dbus_thread_("Networking Private DBus"),
       network_manager_proxy_(NULL) {
   base::Thread::Options thread_options(base::MessageLoop::Type::TYPE_IO, 0);
