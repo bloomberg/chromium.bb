@@ -129,8 +129,9 @@ bool LayoutPart::requiresAcceleratedCompositing() const
         return true;
 
     if (Document* contentDocument = element->contentDocument()) {
-        if (LayoutView* view = contentDocument->layoutView())
-            return view->usesCompositing();
+        LayoutViewItem viewItem = contentDocument->layoutViewItem();
+        if (!viewItem.isNull())
+            return viewItem.usesCompositing();
     }
 
     return false;
@@ -168,9 +169,9 @@ bool LayoutPart::nodeAtPoint(HitTestResult& result, const HitTestLocation& locat
 
     if (action == HitTestForeground) {
         FrameView* childFrameView = toFrameView(widget());
-        LayoutView* childRoot = childFrameView->layoutView();
+        LayoutViewItem childRootItem = childFrameView->layoutViewItem();
 
-        if (visibleToHitTestRequest(result.hitTestRequest()) && childRoot) {
+        if (visibleToHitTestRequest(result.hitTestRequest()) && !childRootItem.isNull()) {
             LayoutPoint adjustedLocation = accumulatedOffset + location();
             LayoutPoint contentOffset = LayoutPoint(borderLeft() + paddingLeft(), borderTop() + paddingTop()) - LayoutSize(childFrameView->scrollOffset());
             HitTestLocation newHitTestLocation(locationInContainer, -adjustedLocation - contentOffset);
@@ -178,7 +179,7 @@ bool LayoutPart::nodeAtPoint(HitTestResult& result, const HitTestLocation& locat
             HitTestResult childFrameResult(newHitTestRequest, newHitTestLocation);
 
             // The frame's layout and style must be up-to-date if we reach here.
-            bool isInsideChildFrame = childRoot->hitTestNoLifecycleUpdate(childFrameResult);
+            bool isInsideChildFrame = childRootItem.hitTestNoLifecycleUpdate(childFrameResult);
 
             if (result.hitTestRequest().listBased()) {
                 result.append(childFrameResult);

@@ -75,6 +75,11 @@ public:
         return toView()->hitTest(result);
     }
 
+    bool hitTestNoLifecycleUpdate(HitTestResult& result)
+    {
+        return toView()->hitTestNoLifecycleUpdate(result);
+    }
+
     IntRect selectionBounds()
     {
         return toView()->selectionBounds();
