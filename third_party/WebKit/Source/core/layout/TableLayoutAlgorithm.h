@@ -21,12 +21,12 @@
 #ifndef TableLayoutAlgorithm_h
 #define TableLayoutAlgorithm_h
 
+#include "platform/LayoutUnit.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
 
-class LayoutUnit;
 class LayoutTable;
 
 class TableLayoutAlgorithm {
@@ -40,6 +40,10 @@ public:
     virtual ~TableLayoutAlgorithm() { }
 
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) = 0;
+    virtual LayoutUnit scaledWidthFromPercentColumns()
+    {
+        return LayoutUnit(0);
+    }
     virtual void applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, LayoutUnit& maxWidth) const = 0;
     virtual void layout() = 0;
     virtual void willChangeTableLayout() = 0;

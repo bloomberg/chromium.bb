@@ -282,7 +282,13 @@ void LayoutTable::updateLogicalWidth()
             availableContentLogicalWidth = shrinkLogicalWidthToAvoidFloats(marginStart, marginEnd, toLayoutBlockFlow(cb));
 
         // Ensure we aren't bigger than our available width.
-        setLogicalWidth(LayoutUnit(std::min(availableContentLogicalWidth, maxPreferredLogicalWidth()).floor()));
+        LayoutUnit maxWidth = maxPreferredLogicalWidth();
+        // scaledWidthFromPercentColumns depends on m_layoutStruct in TableLayoutAlgorithmAuto, which
+        // maxPreferredLogicalWidth fills in. So scaledWidthFromPercentColumns has to be called after
+        // maxPreferredLogicalWidth.
+        LayoutUnit scaledWidth = m_tableLayout->scaledWidthFromPercentColumns() + bordersPaddingAndSpacingInRowDirection();
+        maxWidth = std::max(scaledWidth, maxWidth);
+        setLogicalWidth(LayoutUnit(std::min(availableContentLogicalWidth, maxWidth).floor()));
     }
 
     // Ensure we aren't bigger than our max-width style.

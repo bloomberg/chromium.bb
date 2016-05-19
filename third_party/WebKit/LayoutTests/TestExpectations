@@ -1287,6 +1287,8 @@ crbug.com/601669 [ Win ] svg/as-image/svg-nested.html [ Crash ]
 crbug.com/603507 [ Mac Win ] fast/table/split-table-section-before-anonymous-block-2.html [ NeedsManualRebaseline ]
 crbug.com/603507 [ Mac Win ] fast/table/split-table-section-before-anonymous-block-4.html [ NeedsManualRebaseline ]
 
+crbug.com/178369 fast/table/max-width-integer-overflow.html [ NeedsManualRebaseline ]
+
 crbug.com/600261 imported/wpt/mediacapture-streams/GUM-deny.html [ Failure ]
 crbug.com/600261 imported/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.html [ Failure ]
 

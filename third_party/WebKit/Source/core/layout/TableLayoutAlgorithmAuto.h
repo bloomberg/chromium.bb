@@ -54,6 +54,10 @@ public:
     ~TableLayoutAlgorithmAuto() override;
 
     void computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) override;
+    LayoutUnit scaledWidthFromPercentColumns() override
+    {
+        return m_scaledWidthFromPercentColumns;
+    }
     void applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, LayoutUnit& maxWidth) const override;
     void layout() override;
     void willChangeTableLayout() override { }
@@ -96,6 +100,7 @@ private:
     Vector<LayoutTableCell*, 4> m_spanCells;
     bool m_hasPercent : 1;
     mutable bool m_effectiveLogicalWidthDirty : 1;
+    LayoutUnit m_scaledWidthFromPercentColumns;
 };
 
 } // namespace blink
