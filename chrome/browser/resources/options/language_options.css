@@ -44,7 +44,7 @@
 #language-options-languages,
 #language-options-details {
   border: 1px solid #ccc;
-  height: 400px;
+  height: 380px;
   padding: 0;
   vertical-align: top;
 }
@@ -89,13 +89,6 @@
   /* Same margin as .settings-row. */
   margin-bottom: 0.65em;
   margin-top: 0.65em;
-}
-
-.language-options-ime-menu-desc {
-  -webkit-margin-start: 22px;
-  font-size: 80%;
-  margin-top: -6px;
-  padding-bottom: 2px;
 }
 
 #language-options-list {

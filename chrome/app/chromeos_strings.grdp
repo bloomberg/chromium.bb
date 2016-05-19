@@ -3678,11 +3678,7 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_ACTIVATE_IME_MENU"
            desc="The label for showing expanded IME menu in the shelf.">
-    Show expanded input options in the shelf.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_ACTIVATE_IME_MENU_DESCRIPTION"
-           desc="The label for the description of showing input method menu.">
-    For easier switching of input methods and access to more input features: voice input, handwriting and emoji.
+    Show input options in the shelf
   </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_THIRD_PARTY_WARNING_TITLE"
            desc="The title showing in the warning dialog when enabling a 3rd party Input Method">
