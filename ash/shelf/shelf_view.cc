@@ -542,7 +542,7 @@ bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
 
 base::string16 ShelfView::GetTitleForView(const views::View* view) const {
   const ShelfItem* item = ShelfItemForView(view);
-  if (!item)
+  if (!item || !item_manager_->GetShelfItemDelegate(item->id))
     return base::string16();
   return item_manager_->GetShelfItemDelegate(item->id)->GetTitle();
 }
