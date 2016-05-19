@@ -75,7 +75,7 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   // Overrides the current network type and id.
   // Notifies network quality estimator of change in connection.
   void SimulateNetworkChangeTo(NetworkChangeNotifier::ConnectionType type,
-                               const std::string& network_id) {
+                               std::string network_id) {
     current_network_type_ = type;
     current_network_id_ = network_id;
     OnConnectionTypeChanged(type);
@@ -428,32 +428,6 @@ TEST(NetworkQualityEstimatorTest, ObtainThresholdsNone) {
   for (const auto& test : tests) {
     estimator.set_url_rtt(base::TimeDelta::FromMilliseconds(test.rtt_msec));
     EXPECT_EQ(test.expected_conn_type, estimator.GetEffectiveConnectionType());
-  }
-}
-
-// Tests that |GetEffectiveConnectionType| returns
-// EFFECTIVE_CONNECTION_TYPE_OFFLINE when the device is currently offline.
-TEST(NetworkQualityEstimatorTest, Offline) {
-  std::map<std::string, std::string> variation_params;
-
-  TestNetworkQualityEstimator estimator(variation_params);
-
-  const struct {
-    NetworkChangeNotifier::ConnectionType connection_type;
-    NetworkQualityEstimator::EffectiveConnectionType expected_connection_type;
-  } tests[] = {
-      {NetworkChangeNotifier::CONNECTION_2G,
-       NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_UNKNOWN},
-      {NetworkChangeNotifier::CONNECTION_NONE,
-       NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_OFFLINE},
-      {NetworkChangeNotifier::CONNECTION_3G,
-       NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_UNKNOWN},
-  };
-
-  for (const auto& test : tests) {
-    estimator.SimulateNetworkChangeTo(test.connection_type, "test");
-    EXPECT_EQ(test.expected_connection_type,
-              estimator.GetEffectiveConnectionType());
   }
 }
 
