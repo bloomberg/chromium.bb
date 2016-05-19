@@ -14,7 +14,7 @@ Its previewer type: SearchableView > widget vbox json-view
 Running: testSimpleXML
 Creating a NetworkRequest with mimeType: text/xml
 Content: <bar><foo/></bar>
-Its previewer type: widget shadow-xml-view source-code
+Its previewer type: SearchableView > widget shadow-xml-view source-code
 
 Running: testXMLMimeButJSON
 Creating a NetworkRequest with mimeType: text/xml
@@ -29,7 +29,7 @@ Its previewer type: SearchableView > widget vbox
 Running: testXMLWithError500
 Creating a NetworkRequest with mimeType: text/xml
 Content: <bar><foo/></bar>
-Its previewer type: widget shadow-xml-view source-code
+Its previewer type: SearchableView > widget shadow-xml-view source-code
 
 Running: testUnknownMimeTextWithError500
 Creating a NetworkRequest with mimeType: text/foobar

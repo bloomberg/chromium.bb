@@ -38,20 +38,64 @@ CodeMirror search found 0 results in dom.
 
 
 Running: xmlMultipleSearchTest
-Is Searchable: false
+Is Searchable: true
 Type: XMLView
+Should have found and highlighted all: bar
+Normal search found 2 results in dom.
+CodeMirror search found 0 results in dom.
+
+Should have found and highlighted all: foo
+Normal search found 1 results in dom.
+CodeMirror search found 0 results in dom.
+
+Should have found and highlighted all: bar
+Normal search found 2 results in dom.
+CodeMirror search found 0 results in dom.
+
+Should have found and highlighted all: test
+Normal search found 1 results in dom.
+CodeMirror search found 0 results in dom.
+
 
 Running: xmlSingleSearchTest
-Is Searchable: false
+Is Searchable: true
 Type: XMLView
+Should have found and highlighted all: bar
+Normal search found 1 results in dom.
+CodeMirror search found 0 results in dom.
+
 
 Running: xmlCommentSearchTest
-Is Searchable: false
+Is Searchable: true
 Type: XMLView
+Should have found and highlighted all: TEST
+Normal search found 0 results in dom.
+CodeMirror search found 0 results in dom.
+
+Should have found and highlighted all: /bar
+Normal search found 0 results in dom.
+CodeMirror search found 0 results in dom.
+
+Should have found and highlighted all: bar
+Normal search found 1 results in dom.
+CodeMirror search found 0 results in dom.
+
 
 Running: xmlCDATASearchTest
-Is Searchable: false
+Is Searchable: true
 Type: XMLView
+Should have found and highlighted all: GGG
+Normal search found 1 results in dom.
+CodeMirror search found 0 results in dom.
+
+Should have found and highlighted all: tee
+Normal search found 2 results in dom.
+CodeMirror search found 0 results in dom.
+
+Should have found and highlighted all: CDATA
+Normal search found 1 results in dom.
+CodeMirror search found 0 results in dom.
+
 
 Running: xmlMimeTypeJsonTest
 Is Searchable: true

@@ -94,7 +94,7 @@ function test()
         },
         function xmlMultipleSearchTest(next)
         {
-            testType("text/xml", "<bar><foo/></bar>", ["bar", "foo", "bar"],  next);
+            testType("text/xml", "<bar><foo/>test</bar>", ["bar", "foo", "bar", "test"],  next);
         },
         function xmlSingleSearchTest(next)
         {
