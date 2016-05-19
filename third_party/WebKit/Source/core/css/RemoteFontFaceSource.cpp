@@ -34,6 +34,7 @@ RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font, CSSFontSelector* 
     if (RuntimeEnabledFeatures::webFontsInterventionTriggerEnabled() || (triggered && display == FontDisplayAuto)) {
         m_isInterventionTriggered = true;
         m_period = SwapPeriod;
+        m_fontSelector->document()->addConsoleMessage(ConsoleMessage::create(OtherMessageSource, InfoMessageLevel, "Slow network is detected. Fallback font will be used while loading: " + m_font->url().elidedString()));
     }
 }
 
