@@ -60579,6 +60579,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Audio.AecDelayAdjustmentMsAgnosticValue" units="ms">
+  <owner>hlundin@chromium.org</owner>
+  <summary>
+    The AEC in WebRTC will sometimes realign the far- and near-end signal
+    buffers to keep in sync with delay changes in the echo path. This metric
+    logs each such realignment, storing the delay change in ms, when the change
+    is triggered by a shift in the signal based delay estimation (a.k.a
+    delay-agnostic).
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Audio.AecDelayAdjustmentMsSystemValue" units="ms">
+  <owner>hlundin@chromium.org</owner>
+  <summary>
+    The AEC in WebRTC will sometimes realign the far- and near-end signal
+    buffers to keep in sync with delay changes in the echo path. This metric
+    logs each such realignment, storing the delay change in ms, when the change
+    is triggered by a shift in system reported delay.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Audio.AecSystemDelayJump" units="ms">
   <owner>bjornv@chromium.org</owner>
   <summary>
