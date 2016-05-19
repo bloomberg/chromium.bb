@@ -1214,6 +1214,10 @@ gfx::Size WebMediaPlayerImpl::GetCanvasSize() const {
 void WebMediaPlayerImpl::SetDeviceScaleFactor(float scale_factor) {
   cast_impl_.SetDeviceScaleFactor(scale_factor);
 }
+
+void WebMediaPlayerImpl::setPoster(const blink::WebURL& poster) {
+  cast_impl_.setPoster(poster);
+}
 #endif  // defined(OS_ANDROID)  // WMPI_CAST
 
 void WebMediaPlayerImpl::DataSourceInitialized(bool success) {

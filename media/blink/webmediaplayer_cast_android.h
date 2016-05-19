@@ -16,6 +16,7 @@
 namespace blink {
 class WebLocalFrame;
 class WebMediaPlayerClient;
+class WebURL;
 }
 
 namespace media {
@@ -106,6 +107,7 @@ class WebMediaPlayerCast : public RendererMediaPlayerInterface {
 
   void SetDeviceScaleFactor(float scale_factor);
   scoped_refptr<VideoFrame> GetCastingBanner();
+  void setPoster(const blink::WebURL& poster);
 
  private:
   WebMediaPlayerImpl* webmediaplayer_;

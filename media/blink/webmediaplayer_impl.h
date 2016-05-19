@@ -196,6 +196,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
                                     PipelineStatus status);
   gfx::Size GetCanvasSize() const;
   void SetDeviceScaleFactor(float scale_factor);
+  void setPoster(const blink::WebURL& poster) override;
 #endif
 
   // Called from WebMediaPlayerCast.

@@ -381,4 +381,8 @@ scoped_refptr<VideoFrame> WebMediaPlayerCast::GetCastingBanner() {
                               base::Bind(&GLCBShim, context_3d_cb_));
 }
 
+void WebMediaPlayerCast::setPoster(const blink::WebURL& poster) {
+  player_manager_->SetPoster(player_id_, poster);
+}
+
 }  // namespace media
