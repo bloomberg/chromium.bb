@@ -35,11 +35,13 @@ InitializeBase(const uint8_t* icu_data) {
   base::SysInfo::MaxSharedMemorySize();
 #endif
 
+#if ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
   // Initialize core ICU. We must perform the full initialization before we
   // initialize icu::TimeZone subsystem because otherwise ICU gets in a state
   // where the timezone data is disconnected from the locale data which can
   // cause crashes.
   CHECK(base::i18n::InitializeICUFromRawMemory(icu_data));
+#endif  // ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
 
 #if !defined(OS_ANDROID)
   // ICU DateFormat class (used in base/time_format.cc) needs to get the
