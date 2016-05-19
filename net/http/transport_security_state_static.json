@@ -12838,6 +12838,7 @@
     { "name": "wordpress.com", "include_subdomains": false, "mode": "force-https" },
     { "name": "www.wordpress.com", "include_subdomains": false, "mode": "force-https" },
     { "name": "rugk.dedyn.io", "include_subdomains": true, "mode": "force-https" },
+    { "name": "login.gov", "include_subdomains": true, "mode": "force-https" },
     // END OF MANUAL ADDITIONS
 
     // To avoid trailing comma changes from showing up in diffs, we place a
