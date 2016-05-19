@@ -2242,10 +2242,9 @@ Polymer({
           sinkList ? this.computeElementVerticalPadding_(sinkList) : 0;
       var searchPadding = this.computeElementVerticalPadding_(search);
 
-      var sinkListMaxHeight = this.dialogHeight_ - headerHeight -
+      this.sinkListMaxHeight_ = this.dialogHeight_ - headerHeight -
           firstRunFlowHeight - issueHeight - searchHeight + searchPadding -
           sinkListPadding;
-      this.sinkListMaxHeight_ = sinkListMaxHeight;
       if (sinkList) {
         sinkList.style.maxHeight = this.sinkListMaxHeight_ + 'px';
         var searchResults = this.$$('#search-results');
