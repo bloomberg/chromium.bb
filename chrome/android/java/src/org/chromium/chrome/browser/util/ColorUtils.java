@@ -10,6 +10,7 @@ import android.graphics.Color;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.ntp.NtpColorUtils;
 import org.chromium.chrome.browser.tab.Tab;
 
 /**
@@ -53,8 +54,16 @@ public class ColorUtils {
     /**
      * @return The base color for the textbox given a toolbar background color.
      */
-    public static int getTextBoxColorForToolbarBackground(int color) {
-        if (shouldUseOpaqueTextboxBackground(color)) return Color.WHITE;
+    public static int getTextBoxColorForToolbarBackground(Resources res, Tab tab, int color) {
+        if (shouldUseOpaqueTextboxBackground(color)) {
+            // NTP should have no visible textbox in the toolbar, so just return the toolbar's
+            // background color.
+            if (tab.getNativePage() instanceof NewTabPage) {
+                return NtpColorUtils.getToolbarBackgroundColorResource(res);
+            }
+
+            return Color.WHITE;
+        }
         return getColorWithOverlay(Color.WHITE, color, LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA);
     }
 

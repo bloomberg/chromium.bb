@@ -71,6 +71,8 @@ public class LayoutManagerDocument extends LayoutManager
     /** A delegate for interacting with the Contextual Search manager. */
     protected ContextualSearchManagementDelegate mContextualSearchDelegate;
 
+    private final Context mContext;
+
     @SuppressWarnings("unused") private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
 
     /**
@@ -79,7 +81,7 @@ public class LayoutManagerDocument extends LayoutManager
      */
     public LayoutManagerDocument(LayoutManagerHost host) {
         super(host);
-        Context context = host.getContext();
+        mContext = host.getContext();
         LayoutRenderHost renderHost = host.getLayoutRenderHost();
 
         // Build Event Filter Handlers
@@ -88,20 +90,20 @@ public class LayoutManagerDocument extends LayoutManager
 
         // Build Event Filters
         mStaticEdgeEventFilter =
-                new EdgeSwipeEventFilter(context, this, new StaticEdgeSwipeHandler());
+                new EdgeSwipeEventFilter(mContext, this, new StaticEdgeSwipeHandler());
 
         mOverlayPanelManager = new OverlayPanelManager();
 
         // Build Layouts
         mStaticLayout = new StaticLayout(
-                context, this, renderHost, mStaticEdgeEventFilter, mOverlayPanelManager);
+                mContext, this, renderHost, mStaticEdgeEventFilter, mOverlayPanelManager);
 
         // Contextual Search scene overlay.
-        mContextualSearchPanel = new ContextualSearchPanel(context, this, this,
-                mOverlayPanelManager);
+        mContextualSearchPanel =
+                new ContextualSearchPanel(mContext, this, this, mOverlayPanelManager);
 
         // Reader Mode scene overlay.
-        mReaderModePanel = new ReaderModePanel(context, this, this, mOverlayPanelManager, this);
+        mReaderModePanel = new ReaderModePanel(mContext, this, this, mOverlayPanelManager, this);
 
         // Set up layout parameters
         mStaticLayout.setLayoutHandlesTabLifecycles(true);
@@ -253,8 +255,8 @@ public class LayoutManagerDocument extends LayoutManager
         boolean canUseLiveTexture =
                 tab.getContentViewCore() != null && !tab.isShowingSadTab() && !isNativePage;
         layoutTab.initFromHost(tab.getBackgroundColor(), tab.shouldStall(), canUseLiveTexture,
-                themeColor,
-                ColorUtils.getTextBoxColorForToolbarBackground(themeColor),
+                themeColor, ColorUtils.getTextBoxColorForToolbarBackground(
+                                    mContext.getResources(), tab, themeColor),
                 ColorUtils.getTextBoxAlphaForToolbarBackground(tab));
 
         mHost.requestRender();
