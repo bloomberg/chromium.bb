@@ -1738,6 +1738,7 @@
                                  'dongseong.hwang@intel.com',
                                  'drott+blinkwatch@chromium.org',
                                  'junov@chromium.org',
+                                 'ajuma+watch@chromium.org',
                                  'blink-reviews-platform-graphics@chromium.org' ],
     'blink_modules': [ 'haraken@chromium.org' ],
     'blink_heap': [ 'ager@chromium.org',
