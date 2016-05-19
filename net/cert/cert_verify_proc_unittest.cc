@@ -29,9 +29,7 @@
 #include "net/test/test_certificate_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID)
 #include "base/android/build_info.h"
 #endif
 
@@ -357,14 +355,7 @@ TEST_F(CertVerifyProcTest, RejectWeakKeys) {
   key_types.push_back("768-rsa");
   key_types.push_back("1024-rsa");
   key_types.push_back("2048-rsa");
-
-  bool use_ecdsa = true;
-#if defined(OS_WIN)
-  use_ecdsa = base::win::GetVersion() > base::win::VERSION_XP;
-#endif
-
-  if (use_ecdsa)
-    key_types.push_back("prime256v1-ecdsa");
+  key_types.push_back("prime256v1-ecdsa");
 
   // Add the root that signed the intermediates for this test.
   scoped_refptr<X509Certificate> root_cert =
