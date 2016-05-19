@@ -110,7 +110,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
     }
 
     @Override
-    protected void markTabStateInitialized() {
+    public void markTabStateInitialized() {
         super.markTabStateInitialized();
         if (!mSessionRestoreInProgress.getAndSet(false)) return;
 

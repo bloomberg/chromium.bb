@@ -348,6 +348,9 @@ public class CustomTabActivity extends ChromeActivity {
             loadUrlInTab(mMainTab, new LoadUrlParams(url),
                     IntentHandler.getTimestampFromIntent(getIntent()));
         }
+
+        // Put Sync in the correct state by calling tab state initialized. crbug.com/581811.
+        getTabModelSelector().markTabStateInitialized();
         super.finishNativeInitialization();
     }
 
