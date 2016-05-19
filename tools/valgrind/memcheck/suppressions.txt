@@ -625,17 +625,6 @@
    fun:_ZN4base6Thread10ThreadMainEv
 }
 {
-   # also bug 17979.  It's a nest of leaks.
-   bug_17385
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN3IPC12ChannelProxy7Context13CreateChannel*Channel4ModeE
-   fun:_ZN3IPC12ChannelProxy4Init*
-   ...
-   fun:_ZN3IPC11SyncChannel*Channel4Mode*Listener*
-}
-{
    bug_17540_16661
    Memcheck:Leak
    fun:_Znw*
@@ -927,15 +916,6 @@
    fun:_Znw*
    fun:_ZN16ChildProcessHost13CreateChannelEv
    fun:_ZN14GpuProcessHost4InitEv
-}
-{
-   bug_67261a
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN3sql10Connection18GetUniqueStatementEPKc
-   fun:_ZN3sql10Connection18GetCachedStatementERKNS_11StatementIDEPKc
-   fun:_ZN8appcache16AppCacheDatabase22PrepareCachedStatementERKN3sql11StatementIDEPKcPNS1_9StatementE
 }
 {
    bug_67261b
@@ -2001,17 +1981,6 @@
    fun:_ZN5blink24DocumentThreadableLoader11loadRequestERKNS_15ResourceRequestENS_19SecurityCheckPolicyE
 }
 {
-   bug_340952
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5blink15DOMWrapperWorldC2Eii
-   fun:_ZN5blink15DOMWrapperWorldC1Eii
-   fun:_ZN5blink15DOMWrapperWorld6createEii
-   fun:_ZN5blink15DOMWrapperWorld9mainWorldEv
-   ...
-   fun:_ZN7content22BufferedDataSourceTestC2Ev
-}
-{
    bug_340752
    Memcheck:Uninitialized
    ...
@@ -2221,19 +2190,6 @@
    fun:_ZN3net24URLRequestJobFactoryImpl18SetProtocolHandlerERKSsPNS_20URLRequestJobFactory15ProtocolHandlerE
    ...
    fun:_ZN7content28ShellURLRequestContextGetter20GetURLRequestContextEv
-}
-{
-   bug_381065
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN5blink18ModulesInitializer4initEv
-   fun:_ZN5blink19initializeWithoutV8EPNS_8PlatformE
-   fun:_ZN5blink10initializeEPNS_8PlatformE
-   fun:_ZN7content27TestBlinkWebUnitTestSupportC2Ev
-   fun:_ZN7content27TestBlinkWebUnitTestSupportC1Ev
-   fun:_ZN7content17UnitTestTestSuiteC2EPN4base9TestSuiteE
-   fun:_ZN7content17UnitTestTestSuiteC1EPN4base9TestSuiteE
 }
 {
    bug_385381
