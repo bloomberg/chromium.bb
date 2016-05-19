@@ -4,14 +4,13 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import android.content.Intent;
 import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
-import org.chromium.content_public.common.ScreenOrientationValues;
 
 /**
  * Tests whether the URL bar updates itself properly.
@@ -21,15 +20,16 @@ public class WebappUrlBarTest extends WebappActivityTestBase {
     private WebappUrlBar mUrlBar;
 
     @Override
+    protected Intent createIntent() {
+        Intent intent = super.createIntent();
+        intent.putExtra(ShortcutHelper.EXTRA_URL, WEBAPP_URL);
+        return intent;
+    }
+
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         startWebappActivity();
-
-        WebappInfo mockInfo = WebappInfo.create(WEBAPP_ID, WEBAPP_URL, null, null, null,
-                ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
-        getActivity().getWebappInfo().copy(mockInfo);
         mUrlBar = getActivity().getUrlBarForTests();
     }
 

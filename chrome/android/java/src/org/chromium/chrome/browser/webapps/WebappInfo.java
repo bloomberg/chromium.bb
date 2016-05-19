@@ -125,25 +125,6 @@ public class WebappInfo {
     private WebappInfo() {
     }
 
-    /**
-     * Copies all the fields from the given WebappInfo into this instance.
-     * @param newInfo Information about the new webapp.
-     */
-    void copy(WebappInfo newInfo) {
-        mIsInitialized = newInfo.mIsInitialized;
-        mEncodedIcon = newInfo.mEncodedIcon;
-        mDecodedIcon = newInfo.mDecodedIcon;
-        mId = newInfo.mId;
-        mUri = newInfo.mUri;
-        mName = newInfo.mName;
-        mShortName = newInfo.mShortName;
-        mOrientation = newInfo.mOrientation;
-        mSource = newInfo.mSource;
-        mThemeColor = newInfo.mThemeColor;
-        mBackgroundColor = newInfo.mBackgroundColor;
-        mIsIconGenerated = newInfo.mIsIconGenerated;
-    }
-
     public boolean isInitialized() {
         return mIsInitialized;
     }
