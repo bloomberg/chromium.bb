@@ -138,37 +138,17 @@ class FullscreenButton : public ImageButton {
 class InMenuButtonBackground : public views::Background {
  public:
   enum ButtonType {
-    // A rectangular button with no neighbor on the left.
-    LEFT_BUTTON,
+    // A rectangular button with no drawn border.
+    NO_BORDER,
 
-    // A rectangular button with neighbors on both sides.
-    CENTER_BUTTON,
+    // A rectangular button with a border drawn along the leading (left) side.
+    LEADING_BORDER,
 
-    // A rectangular button with no neighbor on the right.
-    RIGHT_BUTTON,
-
-    // A rectangular button that is not a member in a group.
-    SINGLE_BUTTON,
-
-    // A button with no group neighbors and a rounded background.
+    // A button with no drawn border and a rounded background.
     ROUNDED_BUTTON,
   };
 
-  explicit InMenuButtonBackground(ButtonType type)
-      : type_(type), left_button_(NULL), right_button_(NULL) {}
-
-  // Used when the type is CENTER_BUTTON to determine if the left/right edge
-  // needs to be rendered selected.
-  void SetOtherButtons(const CustomButton* left_button,
-                       const CustomButton* right_button) {
-    if (base::i18n::IsRTL()) {
-      left_button_ = right_button;
-      right_button_ = left_button;
-    } else {
-      left_button_ = left_button;
-      right_button_ = right_button;
-    }
-  }
+  explicit InMenuButtonBackground(ButtonType type) : type_(type) {}
 
   // Overridden from views::Background.
   void Paint(gfx::Canvas* canvas, View* view) const override {
@@ -177,16 +157,18 @@ class InMenuButtonBackground : public views::Background {
         button ? button->state() : views::Button::STATE_NORMAL;
     int h = view->height();
 
-    // Normal buttons get a border drawn on the right side and the rest gets
-    // filled in. The left or rounded buttons however do not get a line to
-    // combine buttons.
+    // Draw leading border where needed. This is along the left edge unless the
+    // layout is RTL and the button isn't mirroring itself.
     gfx::Rect bounds(view->GetLocalBounds());
-    if (type_ != RIGHT_BUTTON && type_ != ROUNDED_BUTTON) {
-      canvas->FillRect(gfx::Rect(0, 0, 1, h),
-                       BorderColor(view, views::Button::STATE_NORMAL));
+    if (type_ == LEADING_BORDER) {
+      gfx::Rect rect = view->FlipCanvasOnPaintForRTLUI()
+          ? gfx::Rect(0, 0, 1, h)
+          : gfx::Rect(view->GetMirroredXWithWidthInView(0, 1), 0, 1, h);
+      canvas->FillRect(rect, BorderColor(view, views::Button::STATE_NORMAL));
       bounds.Inset(gfx::Insets(0, 1, 0, 0));
     }
 
+    // Fill in background for state.
     bounds.set_x(view->GetMirroredXForRect(bounds));
     DrawBackground(canvas, view, bounds, state);
   }
@@ -243,23 +225,7 @@ class InMenuButtonBackground : public views::Background {
     }
   }
 
-  ButtonType TypeAdjustedForRTL() const {
-    if (!base::i18n::IsRTL())
-      return type_;
-
-    switch (type_) {
-      case LEFT_BUTTON:   return RIGHT_BUTTON;
-      case RIGHT_BUTTON:  return LEFT_BUTTON;
-      default:            break;
-    }
-    return type_;
-  }
-
   const ButtonType type_;
-
-  // See description above setter for details.
-  const CustomButton* left_button_;
-  const CustomButton* right_button_;
 
   DISALLOW_COPY_AND_ASSIGN(InMenuButtonBackground);
 };
@@ -300,10 +266,6 @@ class InMenuButton : public LabelButton {
     SetBorder(views::Border::CreateEmptyBorder(0, kHorizontalPadding, 0,
                                                kHorizontalPadding));
     SetFontList(MenuConfig::instance().font_list);
-  }
-
-  void SetOtherButtons(const InMenuButton* left, const InMenuButton* right) {
-    in_menu_background_->SetOtherButtons(left, right);
   }
 
   void GetAccessibleState(ui::AXViewState* state) override {
@@ -466,13 +428,12 @@ class AppMenu::CutCopyPasteView : public AppMenuView {
                    int copy_index,
                    int paste_index)
       : AppMenuView(menu, menu_model) {
-    InMenuButton* cut = CreateAndConfigureButton(
-        IDS_CUT, InMenuButtonBackground::LEFT_BUTTON, cut_index);
-    InMenuButton* copy = CreateAndConfigureButton(
-        IDS_COPY, InMenuButtonBackground::CENTER_BUTTON, copy_index);
-    InMenuButton* paste = CreateAndConfigureButton(
-        IDS_PASTE, InMenuButtonBackground::CENTER_BUTTON, paste_index);
-    copy->SetOtherButtons(cut, paste);
+    CreateAndConfigureButton(IDS_CUT, InMenuButtonBackground::LEADING_BORDER,
+                             cut_index);
+    CreateAndConfigureButton(IDS_COPY, InMenuButtonBackground::LEADING_BORDER,
+                             copy_index);
+    CreateAndConfigureButton(IDS_PASTE, InMenuButtonBackground::LEADING_BORDER,
+                             paste_index);
   }
 
   // Overridden from View.
@@ -535,7 +496,7 @@ class AppMenu::ZoomView : public AppMenuView {
                            base::Unretained(this)));
 
     decrement_button_ = CreateButtonWithAccName(
-        IDS_ZOOM_MINUS2, InMenuButtonBackground::LEFT_BUTTON,
+        IDS_ZOOM_MINUS2, InMenuButtonBackground::LEADING_BORDER,
         decrement_index, IDS_ACCNAME_ZOOM_MINUS2);
 
     zoom_label_ = new Label(
@@ -544,21 +505,19 @@ class AppMenu::ZoomView : public AppMenuView {
     zoom_label_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
 
     InMenuButtonBackground* center_bg =
-        new InMenuButtonBackground(InMenuButtonBackground::RIGHT_BUTTON);
+        new InMenuButtonBackground(InMenuButtonBackground::NO_BORDER);
     zoom_label_->set_background(center_bg);
 
     AddChildView(zoom_label_);
     zoom_label_max_width_valid_ = false;
 
     increment_button_ = CreateButtonWithAccName(
-        IDS_ZOOM_PLUS2, InMenuButtonBackground::RIGHT_BUTTON,
-        increment_index, IDS_ACCNAME_ZOOM_PLUS2);
-
-    center_bg->SetOtherButtons(decrement_button_, increment_button_);
+        IDS_ZOOM_PLUS2, InMenuButtonBackground::NO_BORDER, increment_index,
+        IDS_ACCNAME_ZOOM_PLUS2);
 
     fullscreen_button_ = new FullscreenButton(this);
     // all buttons on menu should must be a custom button in order for
-    // the keyboard nativigation work.
+    // the keyboard navigation work.
     DCHECK(CustomButton::AsCustomButton(fullscreen_button_));
     gfx::ImageSkia* full_screen_image =
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
@@ -572,7 +531,7 @@ class AppMenu::ZoomView : public AppMenuView {
     fullscreen_button_->SetImageAlignment(
         ImageButton::ALIGN_CENTER, ImageButton::ALIGN_MIDDLE);
     fullscreen_button_->set_background(
-        new InMenuButtonBackground(InMenuButtonBackground::SINGLE_BUTTON));
+        new InMenuButtonBackground(InMenuButtonBackground::LEADING_BORDER));
     fullscreen_button_->SetAccessibleName(GetAccessibleNameForAppMenuItem(
         menu_model, fullscreen_index, IDS_ACCNAME_FULLSCREEN));
     AddChildView(fullscreen_button_);
