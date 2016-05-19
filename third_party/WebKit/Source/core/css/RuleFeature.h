@@ -50,6 +50,14 @@ public:
     bool hasDocumentSecurityOrigin;
 };
 
+} // namespace blink
+
+// Declare the VectorTraits specialization before RuleFeatureSet
+// declares its vector members below.
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::RuleFeature);
+
+namespace blink {
+
 class CORE_EXPORT RuleFeatureSet {
     DISALLOW_NEW();
 public:
@@ -170,7 +178,5 @@ private:
 };
 
 } // namespace blink
-
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::RuleFeature);
 
 #endif // RuleFeature_h
