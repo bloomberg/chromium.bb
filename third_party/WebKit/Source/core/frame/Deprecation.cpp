@@ -369,7 +369,7 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
         return replacedWillBeRemoved("'window.postMessage(message, transferables, targetOrigin)'", "'window.postMessage(message, targetOrigin, transferables)'", 54, "5719033043222528");
 
     case UseCounter::EncryptedMediaAllSelectedContentTypesMissingCodecs:
-        return "contentType strings without codecs will not be supported by requestMediaKeySystemAccess() in the future. Please specify the desired codec(s) as part of the contentType.";
+        return String::format("EME requires that contentType strings accepted by requestMediaKeySystemAccess() include codecs. Non-standard support for contentType strings without codecs will be removed in %s. Please specify the desired codec(s) as part of the contentType.", milestoneString(54));
 
     case UseCounter::V8KeyboardEvent_KeyIdentifier_AttributeGetter:
         return willBeRemoved("'KeyboardEvent.keyIdentifier'", 53, "5316065118650368");
