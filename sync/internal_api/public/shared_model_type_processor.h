@@ -63,6 +63,9 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   void OnSyncStarting(syncer::DataTypeErrorHandler* error_handler,
                       const StartCallback& callback) override;
   void DisableSync() override;
+  syncer::SyncError CreateAndUploadError(
+      const tracked_objects::Location& location,
+      const std::string& message) override;
 
   // ModelTypeProcessor implementation.
   void ConnectSync(std::unique_ptr<CommitQueue> worker) override;
@@ -132,7 +135,7 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   // Version of the above that generates a tag for |data|.
   ProcessorEntityTracker* CreateEntity(const EntityData& data);
 
-  syncer::ModelType type_;
+  const syncer::ModelType type_;
   sync_pb::DataTypeState data_type_state_;
 
   // Stores the start callback in between OnSyncStarting() and ReadyToConnect().

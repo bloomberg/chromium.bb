@@ -36,6 +36,9 @@ class FakeModelTypeChangeProcessor : public ModelTypeChangeProcessor {
   void OnSyncStarting(syncer::DataTypeErrorHandler* error_handler,
                       const StartCallback& callback) override;
   void DisableSync() override;
+  syncer::SyncError CreateAndUploadError(
+      const tracked_objects::Location& location,
+      const std::string& message) override;
 };
 
 }  // namespace syncer_v2

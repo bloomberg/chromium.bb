@@ -9,6 +9,7 @@
 #include <string>
 
 #include "sync/api/entity_data.h"
+#include "sync/api/sync_error_factory.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/activation_context.h"
 
@@ -24,14 +25,14 @@ class MetadataChangeList;
 
 // Interface used by the ModelTypeService to inform sync of local
 // changes.
-class SYNC_EXPORT ModelTypeChangeProcessor {
+class SYNC_EXPORT ModelTypeChangeProcessor : public syncer::SyncErrorFactory {
  public:
   typedef base::Callback<void(syncer::SyncError,
                               std::unique_ptr<ActivationContext>)>
       StartCallback;
 
   ModelTypeChangeProcessor();
-  virtual ~ModelTypeChangeProcessor();
+  ~ModelTypeChangeProcessor() override;
 
   // Inform the processor of a new or updated entity. The |entity_data| param
   // does not need to be fully set, but it should at least have specifics and

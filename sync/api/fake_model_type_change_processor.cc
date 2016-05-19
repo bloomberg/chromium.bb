@@ -49,4 +49,10 @@ void FakeModelTypeChangeProcessor::OnSyncStarting(
 
 void FakeModelTypeChangeProcessor::DisableSync() {}
 
+syncer::SyncError FakeModelTypeChangeProcessor::CreateAndUploadError(
+    const tracked_objects::Location& location,
+    const std::string& message) {
+  return syncer::SyncError();
+}
+
 }  // namespace syncer_v2

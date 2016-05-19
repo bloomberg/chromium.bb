@@ -60,6 +60,12 @@ using WriteBatch = ModelTypeStore::WriteBatch;
 
 namespace {
 
+std::unique_ptr<DeviceInfo> CreateDeviceInfo() {
+  return base::MakeUnique<DeviceInfo>(
+      "guid_1", "client_1", "Chromium 10k", "Chrome 10k",
+      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id");
+}
+
 void AssertResultIsSuccess(Result result) {
   ASSERT_EQ(Result::SUCCESS, result);
 }
@@ -84,11 +90,6 @@ void AssertEqual(const DeviceInfoSpecifics& specifics,
             model.signin_scoped_device_id());
 }
 
-void AssertErrorFromDataBatch(SyncError error,
-                              std::unique_ptr<DataBatch> batch) {
-  ASSERT_TRUE(error.IsSet());
-}
-
 void AssertExpectedFromDataBatch(
     std::map<std::string, DeviceInfoSpecifics> expected,
     SyncError error,
@@ -107,7 +108,7 @@ void AssertExpectedFromDataBatch(
   ASSERT_TRUE(expected.empty());
 }
 
-// Creats an EntityData/EntityDataPtr around a copy of the given specifics.
+// Creates an EntityData/EntityDataPtr around a copy of the given specifics.
 EntityDataPtr SpecificsToEntity(const DeviceInfoSpecifics& specifics) {
   EntityData data;
   // These tests do not care about the tag hash, but EntityData and friends
@@ -169,13 +170,9 @@ class DeviceInfoServiceTest : public testing::Test,
   DeviceInfoServiceTest()
       : change_count_(0),
         store_(ModelTypeStoreTestUtil::CreateInMemoryStoreForTest()),
-        local_device_(new LocalDeviceInfoProviderMock(
-            "guid_1",
-            "client_1",
-            "Chromium 10k",
-            "Chrome 10k",
-            sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-            "device_id")) {}
+        local_device_(new LocalDeviceInfoProviderMock()) {
+    local_device_->Initialize(CreateDeviceInfo());
+  }
 
   ~DeviceInfoServiceTest() override {
     // Some tests may never initialize the service.
@@ -370,14 +367,34 @@ TEST_F(DeviceInfoServiceTest, EmptyDataReconciliationSlowLoad) {
 TEST_F(DeviceInfoServiceTest, LocalProviderSubscription) {
   set_local_device(base::WrapUnique(new LocalDeviceInfoProviderMock()));
   InitializeAndPumpAndStart();
+
   ASSERT_EQ(0u, service()->GetAllDeviceInfo().size());
-  local_device()->Initialize(base::WrapUnique(
-      new DeviceInfo("guid_1", "client_1", "Chromium 10k", "Chrome 10k",
-                     sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id")));
+  local_device()->Initialize(CreateDeviceInfo());
+  base::RunLoop().RunUntilIdle();
+
   ScopedVector<DeviceInfo> all_device_info(service()->GetAllDeviceInfo());
   ASSERT_EQ(1u, all_device_info.size());
   ASSERT_TRUE(
       local_device()->GetLocalDeviceInfo()->Equals(*all_device_info[0]));
+}
+
+// Metadata shouldn't be loaded before the provider is initialized.
+TEST_F(DeviceInfoServiceTest, LocalProviderInitRace) {
+  set_local_device(base::WrapUnique(new LocalDeviceInfoProviderMock()));
+  InitializeAndPump();
+  OnSyncStarting();
+  EXPECT_FALSE(processor()->metadata());
+
+  ASSERT_EQ(0u, service()->GetAllDeviceInfo().size());
+  local_device()->Initialize(CreateDeviceInfo());
+  base::RunLoop().RunUntilIdle();
+
+  ScopedVector<DeviceInfo> all_device_info(service()->GetAllDeviceInfo());
+  ASSERT_EQ(1u, all_device_info.size());
+  ASSERT_TRUE(
+      local_device()->GetLocalDeviceInfo()->Equals(*all_device_info[0]));
+
+  EXPECT_TRUE(processor()->metadata());
 }
 
 TEST_F(DeviceInfoServiceTest, GetClientTagNormal) {
@@ -488,12 +505,6 @@ TEST_F(DeviceInfoServiceTest, GetDataMissing) {
                      base::Bind(&AssertExpectedFromDataBatch, expected));
 }
 
-TEST_F(DeviceInfoServiceTest, GetDataNotInitialized) {
-  InitializeService();
-  ClientTagList client_tags;
-  service()->GetData(client_tags, base::Bind(&AssertErrorFromDataBatch));
-}
-
 TEST_F(DeviceInfoServiceTest, GetAllData) {
   std::unique_ptr<WriteBatch> batch = store()->CreateWriteBatch();
   DeviceInfoSpecifics specifics1(GenerateTestSpecifics());
@@ -517,19 +528,6 @@ TEST_F(DeviceInfoServiceTest, GetAllData) {
   client_tags.push_back(tag2);
   service()->GetData(client_tags,
                      base::Bind(&AssertExpectedFromDataBatch, expected));
-}
-
-TEST_F(DeviceInfoServiceTest, GetAllDataNotInitialized) {
-  InitializeService();
-  service()->GetAllData(base::Bind(&AssertErrorFromDataBatch));
-}
-
-TEST_F(DeviceInfoServiceTest, ApplySyncChangesBeforeInit) {
-  InitializeService();
-  const SyncError error = service()->ApplySyncChanges(
-      service()->CreateMetadataChangeList(), EntityChangeList());
-  EXPECT_TRUE(error.IsSet());
-  EXPECT_EQ(0, change_count());
 }
 
 TEST_F(DeviceInfoServiceTest, ApplySyncChangesEmpty) {
@@ -644,14 +642,6 @@ TEST_F(DeviceInfoServiceTest, ApplyDeleteNonexistent) {
       service()->CreateMetadataChangeList(), delete_changes);
   EXPECT_FALSE(error.IsSet());
   EXPECT_EQ(1, change_count());
-}
-
-TEST_F(DeviceInfoServiceTest, MergeWithoutProcessor) {
-  InitializeService();
-  const SyncError error = service()->MergeSyncData(
-      service()->CreateMetadataChangeList(), EntityDataMap());
-  EXPECT_TRUE(error.IsSet());
-  EXPECT_EQ(0, change_count());
 }
 
 TEST_F(DeviceInfoServiceTest, MergeEmpty) {

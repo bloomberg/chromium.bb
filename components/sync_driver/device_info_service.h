@@ -119,11 +119,13 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
       const std::string& global_metadata);
   void OnCommit(syncer_v2::ModelTypeStore::Result result);
 
-  // Checks if conditions have been met to perform reconciliation between the
-  // locally provide device info and the stored device info data. If conditions
-  // are met and the sets of data differ, than we condier this a local change
-  // and we send it to the processor.
-  void TryReconcileLocalAndStored();
+  // Load metadata if the data is loaded and the provider is initialized.
+  void LoadMetadataIfReady();
+
+  // Performs reconciliation between the locally provided device info and the
+  // stored device info data. If the sets of data differ, then we consider this
+  // a local change and we send it to the processor.
+  void ReconcileLocalAndStored();
 
   // Stores the updated version of the local copy of device info in durable
   // storage, in memory, and informs sync of the change. Should not be called
@@ -142,6 +144,10 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
   // comparing it against the current time. |now| is passed into this method to
   // allow unit tests to control expected results.
   int CountActiveDevices(const base::Time now) const;
+
+  // Report an error starting up to sync if it tries to connect to this
+  // datatype, since these errors prevent us from knowing if sync is enabled.
+  void ReportStartupErrorToSync(const std::string& msg);
 
   // Find the timestamp for the last time this |device_info| was edited.
   static base::Time GetLastUpdateTime(
@@ -165,6 +171,8 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
 
   // If |local_device_info_provider_| has initialized.
   bool has_provider_initialized_ = false;
+  // If data has been loaded from the store.
+  bool has_data_loaded_ = false;
   // if |change_processor()| has been given metadata.
   bool has_metadata_loaded_ = false;
 

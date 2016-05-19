@@ -200,6 +200,17 @@ void SharedModelTypeProcessor::DisableSync() {
   service_->ApplySyncChanges(std::move(change_list), EntityChangeList());
 }
 
+syncer::SyncError SharedModelTypeProcessor::CreateAndUploadError(
+    const tracked_objects::Location& location,
+    const std::string& message) {
+  if (error_handler_) {
+    return error_handler_->CreateAndUploadError(location, message, type_);
+  } else {
+    return syncer::SyncError(location, syncer::SyncError::DATATYPE_ERROR,
+                             message, type_);
+  }
+}
+
 void SharedModelTypeProcessor::ConnectSync(
     std::unique_ptr<CommitQueue> worker) {
   DCHECK(CalledOnValidThread());
