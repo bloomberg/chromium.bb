@@ -263,6 +263,7 @@ class DataFetcherSharedMemory::SensorEventSinkLight
 DataFetcherSharedMemory::DataFetcherSharedMemory()
     : motion_buffer_(nullptr),
       orientation_buffer_(nullptr),
+      orientation_absolute_buffer_(nullptr),
       light_buffer_(nullptr) {
 }
 
@@ -294,7 +295,22 @@ bool DataFetcherSharedMemory::Start(ConsumerType consumer_type, void* buffer) {
       }
       break;
     case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
-      NOTIMPLEMENTED();
+      {
+        orientation_absolute_buffer_ =
+            static_cast<DeviceOrientationHardwareBuffer*>(buffer);
+        scoped_refptr<SensorEventSink> sink(
+            new SensorEventSinkOrientation(orientation_absolute_buffer_));
+        // Currently we use the same sensor as for orientation which provides
+        // absolute angles.
+        bool inclinometer_available = RegisterForSensor(
+            SENSOR_TYPE_INCLINOMETER_3D,
+            sensor_inclinometer_absolute_.Receive(), sink);
+        // TODO(timvolodine): consider adding UMA.
+        if (inclinometer_available)
+          return true;
+        // if no sensors are available set buffer to ready, to fire null-events.
+        SetBufferAvailableState(consumer_type, true);
+      }
       break;
     case CONSUMER_TYPE_MOTION:
       {
@@ -350,8 +366,9 @@ bool DataFetcherSharedMemory::Stop(ConsumerType consumer_type) {
       orientation_buffer_ = nullptr;
       return true;
     case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
-      NOTIMPLEMENTED();
-      break;
+      SetBufferAvailableState(consumer_type, false);
+      orientation_absolute_buffer_ = nullptr;
+      return true;
     case CONSUMER_TYPE_MOTION:
       SetBufferAvailableState(consumer_type, false);
       motion_buffer_ = nullptr;
@@ -426,7 +443,10 @@ void DataFetcherSharedMemory::DisableSensors(ConsumerType consumer_type) {
       }
       break;
     case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
-      NOTIMPLEMENTED();
+      if (sensor_inclinometer_absolute_.get()) {
+        sensor_inclinometer_absolute_->SetEventSink(nullptr);
+        sensor_inclinometer_absolute_.Release();
+      }
       break;
     case CONSUMER_TYPE_MOTION:
       if (sensor_accelerometer_.get()) {
@@ -457,6 +477,14 @@ void DataFetcherSharedMemory::SetBufferAvailableState(
         orientation_buffer_->seqlock.WriteBegin();
         orientation_buffer_->data.allAvailableSensorsAreActive = enabled;
         orientation_buffer_->seqlock.WriteEnd();
+      }
+      break;
+    case CONSUMER_TYPE_ORIENTATION_ABSOLUTE:
+      if (orientation_absolute_buffer_) {
+        orientation_absolute_buffer_->seqlock.WriteBegin();
+        orientation_absolute_buffer_->data.allAvailableSensorsAreActive =
+            enabled;
+        orientation_absolute_buffer_->seqlock.WriteEnd();
       }
       break;
     case CONSUMER_TYPE_MOTION:

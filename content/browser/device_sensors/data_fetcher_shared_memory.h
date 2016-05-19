@@ -74,6 +74,7 @@ class CONTENT_EXPORT DataFetcherSharedMemory
   void SetBufferAvailableState(ConsumerType consumer_type, bool enabled);
 
   base::win::ScopedComPtr<ISensor> sensor_inclinometer_;
+  base::win::ScopedComPtr<ISensor> sensor_inclinometer_absolute_;
   base::win::ScopedComPtr<ISensor> sensor_accelerometer_;
   base::win::ScopedComPtr<ISensor> sensor_gyrometer_;
   base::win::ScopedComPtr<ISensor> sensor_light_;
