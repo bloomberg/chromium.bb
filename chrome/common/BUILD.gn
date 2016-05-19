@@ -280,10 +280,18 @@ static_library("common") {
     sources -= [ "media/webrtc_logging_messages.h" ]
   }
 
-  if (safe_browsing_mode == 1) {
-    sources += rebase_path(gypi_values.chrome_common_full_safe_browsing_sources,
-                           ".",
-                           "//chrome")
+  if (safe_browsing_mode != 0) {
+    sources +=
+        rebase_path(gypi_values.chrome_common_shared_safe_browsing_sources,
+                    ".",
+                    "//chrome")
+
+    if (safe_browsing_mode == 1) {
+      sources +=
+          rebase_path(gypi_values.chrome_common_full_safe_browsing_sources,
+                      ".",
+                      "//chrome")
+    }
   }
 
   if (enable_ipc_fuzzer) {

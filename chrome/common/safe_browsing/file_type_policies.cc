@@ -2,16 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/common/safe_browsing/file_type_policies.h"
+
 #include "base/logging.h"
+#include "base/memory/singleton.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_util.h"
-#include "chrome/common/safe_browsing/download_protection_util.h"
-#include "chrome/common/safe_browsing/file_type_policies.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace safe_browsing {
+
+using base::AutoLock;
+
+// Our Singleton needs to populate itself when first constructed.
+// This is left out of the constructor to make testing simpler.
+struct FileTypePoliciesSingletonTrait
+    : public base::DefaultSingletonTraits<FileTypePolicies> {
+  static FileTypePolicies* New() {
+    FileTypePolicies* instance = new FileTypePolicies();
+    instance->PopulateFromResourceBundle();
+    return instance;
+  }
+};
+
+// --- FileTypePolicies methods ---
+
+// static
+FileTypePolicies* FileTypePolicies::GetInstance() {
+  return base::Singleton<FileTypePolicies,
+                         FileTypePoliciesSingletonTrait>::get();
+}
 
 FileTypePolicies::FileTypePolicies() {
   // Setup a file-type policy to use if the ResourceBundle is unreadable.
@@ -23,7 +45,9 @@ FileTypePolicies::FileTypePolicies() {
   settings->set_auto_open_hint(DownloadFileType::DISALLOW_AUTO_OPEN);
 }
 
-FileTypePolicies::~FileTypePolicies() {}
+FileTypePolicies::~FileTypePolicies() {
+  AutoLock lock(lock_);  // DCHECK fail if the lock is held.
+}
 
 void FileTypePolicies::ReadResourceBundle(std::string* binary_pb) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
@@ -32,6 +56,7 @@ void FileTypePolicies::ReadResourceBundle(std::string* binary_pb) {
 
 void FileTypePolicies::RecordUpdateMetrics(UpdateResult result,
                                            const std::string& src_name) {
+  lock_.AssertAcquired();
   // src_name should be "ResourceBundle" or "DynamicUpdate".
   UMA_HISTOGRAM_SPARSE_SLOWLY(
       "SafeBrowsing.FileTypeUpdate." + src_name + "Result",
@@ -48,6 +73,7 @@ void FileTypePolicies::RecordUpdateMetrics(UpdateResult result,
 }
 
 void FileTypePolicies::PopulateFromResourceBundle() {
+  AutoLock lock(lock_);
   std::string binary_pb;
   ReadResourceBundle(&binary_pb);
   UpdateResult result = PopulateFromBinaryPb(binary_pb);
@@ -55,12 +81,15 @@ void FileTypePolicies::PopulateFromResourceBundle() {
 }
 
 void FileTypePolicies::PopulateFromDynamicUpdate(const std::string& binary_pb) {
+  AutoLock lock(lock_);
   UpdateResult result = PopulateFromBinaryPb(binary_pb);
   RecordUpdateMetrics(result, "DynamicUpdate");
 }
 
 FileTypePolicies::UpdateResult FileTypePolicies::PopulateFromBinaryPb(
     const std::string& binary_pb) {
+  lock_.AssertAcquired();
+
   // Parse the proto and do some validation on it.
   if (binary_pb.empty())
     return UpdateResult::FAILED_EMPTY;
@@ -106,15 +135,25 @@ FileTypePolicies::UpdateResult FileTypePolicies::PopulateFromBinaryPb(
 }
 
 float FileTypePolicies::SampledPingProbability() const {
+  AutoLock lock(lock_);
   return config_ ? config_->sampled_ping_probability() : 0.0;
+}
+
+// static
+base::FilePath::StringType FileTypePolicies::GetFileExtension(
+    const base::FilePath& file) {
+  // Remove trailing space and period characters from the extension.
+  base::FilePath::StringType file_basename = file.BaseName().value();
+  base::FilePath::StringPieceType trimmed_filename = base::TrimString(
+      file_basename, FILE_PATH_LITERAL(". "), base::TRIM_TRAILING);
+  return base::FilePath(trimmed_filename).FinalExtension();
 }
 
 // static
 std::string FileTypePolicies::CanonicalizedExtension(
     const base::FilePath& file) {
   // The policy list is all ASCII, so a non-ASCII extension won't be in it.
-  const base::FilePath::StringType ext =
-      download_protection_util::GetFileExtension(file);
+  const base::FilePath::StringType ext = GetFileExtension(file);
   std::string ascii_ext =
       base::ToLowerASCII(base::FilePath(ext).MaybeAsASCII());
   if (ascii_ext[0] == '.')
@@ -122,15 +161,14 @@ std::string FileTypePolicies::CanonicalizedExtension(
   return ascii_ext;
 }
 
-const DownloadFileType& FileTypePolicies::PolicyForFile(
-    const base::FilePath& file) {
+const DownloadFileType& FileTypePolicies::PolicyForExtension(
+    const std::string& ascii_ext) const {
+  lock_.AssertAcquired();
   // This could happen if the ResourceBundle is corrupted.
   if (!config_) {
     DCHECK(false);
     return last_resort_default_;
   }
-
-  std::string ascii_ext = CanonicalizedExtension(file);
   auto itr = file_type_by_ext_.find(ascii_ext);
   if (itr != file_type_by_ext_.end())
     return *itr->second;
@@ -138,18 +176,37 @@ const DownloadFileType& FileTypePolicies::PolicyForFile(
     return config_->default_file_type();
 }
 
-const DownloadFileType::PlatformSettings& FileTypePolicies::SettingsForFile(
-    const base::FilePath& file) {
-  DCHECK_EQ(1, PolicyForFile(file).platform_settings().size());
-  return PolicyForFile(file).platform_settings(0);
+DownloadFileType FileTypePolicies::PolicyForFile(
+    const base::FilePath& file) const {
+  const std::string ext = CanonicalizedExtension(file);
+  AutoLock lock(lock_);
+  return PolicyForExtension(ext);
 }
 
-int64_t FileTypePolicies::UmaValueForFile(const base::FilePath& file) {
-  return PolicyForFile(file).uma_value();
+DownloadFileType::PlatformSettings FileTypePolicies::SettingsForFile(
+    const base::FilePath& file) const {
+  const std::string ext = CanonicalizedExtension(file);
+  AutoLock lock(lock_);
+  DCHECK_EQ(1, PolicyForExtension(ext).platform_settings().size());
+  return PolicyForExtension(ext).platform_settings(0);
 }
 
-bool FileTypePolicies::IsFileAnArchive(const base::FilePath& file) {
-  return PolicyForFile(file).is_archive();
+int64_t FileTypePolicies::UmaValueForFile(const base::FilePath& file) const {
+  const std::string ext = CanonicalizedExtension(file);
+  AutoLock lock(lock_);
+  return PolicyForExtension(ext).uma_value();
+}
+
+bool FileTypePolicies::IsArchiveFile(const base::FilePath& file) const {
+  const std::string ext = CanonicalizedExtension(file);
+  AutoLock lock(lock_);
+  return PolicyForExtension(ext).is_archive();
+}
+
+bool FileTypePolicies::IsCheckedBinaryFile(const base::FilePath& file) const {
+  const std::string ext = CanonicalizedExtension(file);
+  AutoLock lock(lock_);
+  return PolicyForExtension(ext).ping_setting() == DownloadFileType::FULL_PING;
 }
 
 }  // namespace safe_browsing

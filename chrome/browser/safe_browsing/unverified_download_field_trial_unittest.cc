@@ -9,6 +9,7 @@
 #include "base/metrics/field_trial.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/safe_browsing/download_protection_util.h"
+#include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/variations/variations_associated_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,10 +57,9 @@ class ScopedFieldTrialState {
 // Verify some test assumptions. Namely, that kSafeFilename is not a supported
 // binary file and that kHandledFilename is.
 TEST(UnverifiedDownloadFieldTrialTest, Assumptions) {
-  EXPECT_TRUE(download_protection_util::IsSupportedBinaryFile(
-      base::FilePath(kHandledFilename)));
-  EXPECT_FALSE(download_protection_util::IsSupportedBinaryFile(
-      base::FilePath(kSafeFilename)));
+  FileTypePolicies* policies = FileTypePolicies::GetInstance();
+  EXPECT_TRUE(policies->IsCheckedBinaryFile(base::FilePath(kHandledFilename)));
+  EXPECT_FALSE(policies->IsCheckedBinaryFile(base::FilePath(kSafeFilename)));
 }
 
 // Verify that disallow-unchecked-dangerous-downloads command line switch causes

@@ -11,24 +11,9 @@
 namespace safe_browsing {
 namespace download_protection_util {
 
-// Returns true if the given file is a supported binary file type.
-bool IsSupportedBinaryFile(const base::FilePath& file);
-
-// Returns true if the given file is a supported archive file type.
-bool IsArchiveFile(const base::FilePath& file);
-
 // Returns the DownloadType of the file at |path|. This function is only valid
 // for paths that satisfy IsSupportedBinaryFile() above.
 ClientDownloadRequest::DownloadType GetDownloadType(const base::FilePath& file);
-
-// Returns the extension of the file at |path|.
-const base::FilePath::StringType GetFileExtension(const base::FilePath& file);
-
-// The maximum value returned by GetSBClientDownloadExtensionValueForUMA() + 1.
-extern const int kSBClientDownloadExtensionsMax;
-
-// SBClientDownloadExtensions UMA enum value corresponding to |file|.
-int GetSBClientDownloadExtensionValueForUMA(const base::FilePath& file);
 
 }  // namespace download_protection_util
 }  // namespace safe_browsing

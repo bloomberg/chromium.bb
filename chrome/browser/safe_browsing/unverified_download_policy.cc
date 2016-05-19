@@ -13,7 +13,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/unverified_download_field_trial.h"
-#include "chrome/common/safe_browsing/download_protection_util.h"
+#include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/rappor/rappor_service.h"
 #include "components/rappor/rappor_utils.h"
 #include "components/safe_browsing_db/database_manager.h"
@@ -52,8 +52,8 @@ void RespondWithPolicy(
     const UnverifiedDownloadCheckCompletionCallback& callback,
     const GURL& requestor,
     UnverifiedDownloadPolicy policy) {
-  int uma_file_type =
-      download_protection_util::GetSBClientDownloadExtensionValueForUMA(file);
+  int64_t uma_file_type =
+      FileTypePolicies::GetInstance()->UmaValueForFile(file);
   if (policy == UnverifiedDownloadPolicy::ALLOWED) {
     RecordPolicyMetric("SafeBrowsing.UnverifiedDownloads.Allowed",
                        uma_file_type, requestor);
@@ -96,8 +96,8 @@ void CheckWhitelistOnIOThread(
     const std::vector<base::FilePath::StringType>& alternate_extensions,
     const UnverifiedDownloadCheckCompletionCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  int uma_file_type =
-      download_protection_util::GetSBClientDownloadExtensionValueForUMA(file);
+  int64_t uma_file_type =
+      FileTypePolicies::GetInstance()->UmaValueForFile(file);
 
   if (!service || !service->enabled()) {
     // If the SafeBrowsing service was disabled, don't try to check against the

@@ -16,6 +16,7 @@
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/download_protection_util.h"
+#include "chrome/common/safe_browsing/file_type_policies.h"
 #include "chrome/common/safe_browsing/zip_analyzer_results.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
@@ -116,11 +117,11 @@ void AnalyzeZipFile(base::File zip_file,
       continue;
     }
     const base::FilePath& file = reader.current_entry_info()->file_path();
-    if (download_protection_util::IsArchiveFile(file)) {
+    if (FileTypePolicies::GetInstance()->IsArchiveFile(file)) {
       DVLOG(2) << "Downloaded a zipped archive: " << file.value();
       results->has_archive = true;
       archived_archive_filenames.insert(file.BaseName());
-    } else if (download_protection_util::IsSupportedBinaryFile(file)) {
+    } else if (FileTypePolicies::GetInstance()->IsCheckedBinaryFile(file)) {
       DVLOG(2) << "Downloaded a zipped executable: " << file.value();
       results->has_executable = true;
       AnalyzeContainedFile(binary_feature_extractor, file, &reader, &temp_file,

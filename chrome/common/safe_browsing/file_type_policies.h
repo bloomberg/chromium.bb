@@ -10,9 +10,12 @@
 
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/synchronization/lock.h"
 #include "chrome/common/safe_browsing/download_file_types.pb.h"
 
 namespace safe_browsing {
+
+struct FileTypePoliciesSingletonTrait;
 
 // This holds a list of file types (aka file extensions) that we know about,
 // with policies related to how Safe Browsing and the download UI should treat
@@ -21,44 +24,51 @@ namespace safe_browsing {
 // The data to populate it is read from a ResourceBundle and then also
 // fetched periodically from Google to get the most up-to-date policies.
 //
-// It should be setup and accessed on IO thread.
-
-// TODO(nparker): Replace the following methods' contents with calls to
-//   g_browser_process->safe_browsing_service()->file_type_policies()->***.
-//
-//   bool IsSupportedBinaryFile(const base::FilePath& file);
-//   bool IsArchiveFile(const base::FilePath& file);
-//   ClientDownloadRequest::DownloadType GetDownloadType(
-//       const base::FilePath& file);
-//   int GetSBClientDownloadTypeValueForUMA(const base::FilePath& file);
-//   bool IsAllowedToOpenAutomatically(const base::FilePath& path);
-//   DownloadDangerLevel GetFileDangerLevel(const base::FilePath& path);
+// This is thread safe. We assume it is updated at most every few hours.
 
 class FileTypePolicies {
  public:
-  // Creator must call one of Populate* before calling other methods.
-  FileTypePolicies();
   virtual ~FileTypePolicies();
 
-  // Read data from the main ResourceBundle. This updates the internal list
-  // only if the data passes integrity checks. This is normally called once
-  // after construction.
-  void PopulateFromResourceBundle();
+  static FileTypePolicies* GetInstance();  // Singleton
 
   // Update the internal list from a binary proto fetched from the network.
   // Same integrity checks apply. This can be called multiple times with new
   // protos.
   void PopulateFromDynamicUpdate(const std::string& binary_pb);
 
-  // Accessors
-  const DownloadFileType& PolicyForFile(const base::FilePath& file);
-  const DownloadFileType::PlatformSettings& SettingsForFile(
+  //
+  // Static Utils
+  //
+
+  // Returns the final extension with the leading dot, after stripping
+  // trailing dots and spaces.  It is difference from FilePath::Extension()
+  // and FilePath::FinalExtension().
+  // TODO(nparker): Consolidate. Maybe add this code to FinalExtension().
+  static base::FilePath::StringType GetFileExtension(
       const base::FilePath& file);
-  int64_t UmaValueForFile(const base::FilePath& file);
-  bool IsFileAnArchive(const base::FilePath& file);
+
+  //
+  // Accessors
+  //
+  DownloadFileType PolicyForFile(const base::FilePath& file) const;
+  DownloadFileType::PlatformSettings SettingsForFile(
+      const base::FilePath& file) const;
+  bool IsArchiveFile(const base::FilePath& file) const;
+
+  // SBClientDownloadExtensions UMA histogram bucket for this file's type.
+  int64_t UmaValueForFile(const base::FilePath& file) const;
+
+  // True if download protection should send a ping to check
+  // this type of file.
+  bool IsCheckedBinaryFile(const base::FilePath& file) const;
+
   float SampledPingProbability() const;
 
  protected:
+  // Creator must call one of Populate* before calling other methods.
+  FileTypePolicies();
+
   // Used in metrics, do not reorder.
   enum class UpdateResult {
     SUCCESS = 1,
@@ -84,19 +94,35 @@ class FileTypePolicies {
   // Return the ASCII lowercase extension w/o leading dot, or empty.
   static std::string CanonicalizedExtension(const base::FilePath& file);
 
+  // Look up the policy for a given ASCII ext.
+  virtual const DownloadFileType& PolicyForExtension(
+      const std::string& ext) const;
+
  private:
+  // Read data from the main ResourceBundle. This updates the internal list
+  // only if the data passes integrity checks. This is normally called once
+  // after construction.
+  void PopulateFromResourceBundle();
+
   // The latest config we've committed. Starts out null.
+  // Protected by lock_.
   std::unique_ptr<DownloadFileTypeConfig> config_;
 
   // This references entries in config_.
+  // Protected by lock_.
   std::map<std::string, const DownloadFileType*> file_type_by_ext_;
 
   // Type used if we can't load from disk.
+  // Written only in the constructor.
   DownloadFileType last_resort_default_;
+
+  mutable base::Lock lock_;
 
   FRIEND_TEST_ALL_PREFIXES(FileTypePoliciesTest, UnpackResourceBundle);
   FRIEND_TEST_ALL_PREFIXES(FileTypePoliciesTest, BadProto);
   FRIEND_TEST_ALL_PREFIXES(FileTypePoliciesTest, BadUpdateFromExisting);
+
+  friend struct FileTypePoliciesSingletonTrait;
 };
 
 }  // namespace safe_browsing

@@ -10,14 +10,12 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
-#include "chrome/common/safe_browsing/download_protection_util.h"
+#include "chrome/common/safe_browsing/file_type_policies.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_item.h"
 
 using safe_browsing::ClientDownloadResponse;
 using safe_browsing::ClientSafeBrowsingReportRequest;
-using safe_browsing::download_protection_util::
-    GetSBClientDownloadExtensionValueForUMA;
 
 namespace {
 
@@ -88,18 +86,19 @@ void DownloadDangerPrompt::SendSafeBrowsingDownloadRecoveryReport(
 void DownloadDangerPrompt::RecordDownloadDangerPrompt(
     bool did_proceed,
     const content::DownloadItem& download) {
-  int dangerous_file_type =
-      GetSBClientDownloadExtensionValueForUMA(download.GetTargetFilePath());
+  int64_t file_type_uma_value =
+      safe_browsing::FileTypePolicies::GetInstance()->UmaValueForFile(
+          download.GetTargetFilePath());
   content::DownloadDangerType danger_type = download.GetDangerType();
 
   UMA_HISTOGRAM_SPARSE_SLOWLY(
       base::StringPrintf("%s.%s.Shown", kDownloadDangerPromptPrefix,
                          GetDangerTypeString(danger_type)),
-      dangerous_file_type);
+      file_type_uma_value);
   if (did_proceed) {
     UMA_HISTOGRAM_SPARSE_SLOWLY(
         base::StringPrintf("%s.%s.Proceed", kDownloadDangerPromptPrefix,
                            GetDangerTypeString(danger_type)),
-        dangerous_file_type);
+        file_type_uma_value);
   }
 }

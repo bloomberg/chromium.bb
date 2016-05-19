@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/safe_browsing/download_protection_util.h"
+#include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace safe_browsing {
@@ -70,7 +70,7 @@ bool IsUnverifiedDownloadAllowedByFieldTrial(const base::FilePath& file) {
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisallowUncheckedDangerousDownloads) &&
-      download_protection_util::IsSupportedBinaryFile(file))
+      FileTypePolicies::GetInstance()->IsCheckedBinaryFile(file))
     return false;
 
   if (base::StartsWith(group_name,
@@ -92,7 +92,7 @@ bool IsUnverifiedDownloadAllowedByFieldTrial(const base::FilePath& file) {
 
     if (parameters.count(kUnverifiedDownloadFieldTrialBlockSBTypesParam) &&
         !parameters[kUnverifiedDownloadFieldTrialBlockSBTypesParam].empty() &&
-        download_protection_util::IsSupportedBinaryFile(file))
+        FileTypePolicies::GetInstance()->IsCheckedBinaryFile(file))
       return false;
   }
 

@@ -210,6 +210,10 @@
       'common/extensions/api/input_ime/input_components_handler.cc',
       'common/extensions/api/input_ime/input_components_handler.h',
     ],
+    'chrome_common_shared_safe_browsing_sources': [
+      'common/safe_browsing/file_type_policies.cc',
+      'common/safe_browsing/file_type_policies.h',
+    ],
     'chrome_common_full_safe_browsing_sources': [
       'common/safe_browsing/binary_feature_extractor.cc',
       'common/safe_browsing/binary_feature_extractor.h',
@@ -218,8 +222,6 @@
       'common/safe_browsing/binary_feature_extractor_win.cc',
       'common/safe_browsing/download_protection_util.cc',
       'common/safe_browsing/download_protection_util.h',
-      'common/safe_browsing/file_type_policies.cc',
-      'common/safe_browsing/file_type_policies.h',
       'common/safe_browsing/ipc_protobuf_message_macros.h',
       'common/safe_browsing/ipc_protobuf_message_null_macros.h',
       'common/safe_browsing/mach_o_image_reader_mac.cc',
@@ -541,8 +543,16 @@
             'common/media/webrtc_logging_messages.h',
           ]
         }],
+        # Desktop uses full safe-browsing, including download protection
         ['safe_browsing==1', {
-          'sources': [ '<@(chrome_common_full_safe_browsing_sources)', ],
+          'sources': [
+            '<@(chrome_common_shared_safe_browsing_sources)',
+            '<@(chrome_common_full_safe_browsing_sources)',
+          ],
+        }],
+        # Android uses only the file_type_policies code.
+        ['safe_browsing==2', {
+          'sources': ['<@(chrome_common_shared_safe_browsing_sources)', ],
         }],
       ],
       'target_conditions': [

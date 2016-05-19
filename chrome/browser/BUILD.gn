@@ -516,7 +516,6 @@ source_set("browser") {
           rebase_path(gypi_values.chrome_browser_safe_browsing_full_sources,
                       ".",
                       "//chrome")
-      deps += [ "//chrome/common/safe_browsing:proto" ]
       if (is_win) {
         deps += [ "//chrome/browser/safe_browsing/incident_reporting:state_store_data_proto" ]
       }

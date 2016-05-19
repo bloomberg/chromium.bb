@@ -43,6 +43,7 @@
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/download_protection_util.h"
+#include "chrome/common/safe_browsing/file_type_policies.h"
 #include "chrome/common/safe_browsing/zip_analyzer_results.h"
 #include "chrome/common/url_constants.h"
 #include "components/google/core/browser/google_util.h"
@@ -84,14 +85,13 @@ namespace {
 void RecordFileExtensionType(const base::FilePath& file) {
   UMA_HISTOGRAM_SPARSE_SLOWLY(
       "SBClientDownload.DownloadExtensions",
-      download_protection_util::GetSBClientDownloadExtensionValueForUMA(file));
+      FileTypePolicies::GetInstance()->UmaValueForFile(file));
 }
 
-void RecordArchivedArchiveFileExtensionType(const base::FilePath& file_name) {
+void RecordArchivedArchiveFileExtensionType(const base::FilePath& file) {
   UMA_HISTOGRAM_SPARSE_SLOWLY(
       "SBClientDownload.ArchivedArchiveExtensions",
-      download_protection_util::GetSBClientDownloadExtensionValueForUMA(
-          file_name));
+      FileTypePolicies::GetInstance()->UmaValueForFile(file));
 }
 
 // Enumerate for histogramming purposes.
@@ -516,7 +516,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
       *reason = REASON_INVALID_URL;
       return false;
     }
-    if (!download_protection_util::IsSupportedBinaryFile(target_path)) {
+    if (!FileTypePolicies::GetInstance()->IsCheckedBinaryFile(target_path)) {
       *reason = REASON_NOT_BINARY_FILE;
       return false;
     }
@@ -699,9 +699,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
              << ", has_executable=" << results.has_executable
              << ", success=" << results.success;
 
-    int uma_file_type =
-        download_protection_util::GetSBClientDownloadExtensionValueForUMA(
-            item_->GetTargetFilePath());
+    int64_t uma_file_type = FileTypePolicies::GetInstance()->UmaValueForFile(
+        item_->GetTargetFilePath());
 
     if (results.success) {
       UMA_HISTOGRAM_SPARSE_SLOWLY("SBClientDownload.DmgFileSuccessByType",

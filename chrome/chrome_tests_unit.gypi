@@ -768,6 +768,7 @@
       'browser/safe_browsing/safe_browsing_blocking_page_unittest.cc',
       'browser/safe_browsing/threat_details_unittest.cc',
       'browser/safe_browsing/ui_manager_unittest.cc',
+      'common/safe_browsing/file_type_policies_unittest.cc',
      ],
     'chrome_unit_tests_full_safe_browsing_sources': [
       'browser/safe_browsing/browser_feature_extractor_unittest.cc',
@@ -822,7 +823,6 @@
       'common/safe_browsing/binary_feature_extractor_unittest.cc',
       'common/safe_browsing/binary_feature_extractor_win_unittest.cc',
       'common/safe_browsing/download_protection_util_unittest.cc',
-      'common/safe_browsing/file_type_policies_unittest.cc',
       'common/safe_browsing/ipc_protobuf_message_test_messages.h',
       'common/safe_browsing/ipc_protobuf_message_unittest.cc',
       'common/safe_browsing/mach_o_image_reader_mac_unittest.cc',

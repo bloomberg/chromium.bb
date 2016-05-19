@@ -54,7 +54,7 @@ TEST_F(FileTypePoliciesTest, UnpackResourceBundle) {
   DownloadFileType file_type = policies_.PolicyForFile(exe_file);
   EXPECT_EQ("exe", file_type.extension());
   EXPECT_EQ(0l, file_type.uma_value());
-  EXPECT_EQ(false, file_type.is_archive());
+  EXPECT_FALSE(file_type.is_archive());
   EXPECT_EQ(DownloadFileType::FULL_PING, file_type.ping_setting());
 #if defined(OS_WIN)
   EXPECT_EQ(DownloadFileType::ALLOW_ON_USER_GESTURE,
@@ -74,7 +74,7 @@ TEST_F(FileTypePoliciesTest, UnpackResourceBundle) {
   file_type = policies_.PolicyForFile(class_file);
   EXPECT_EQ("class", file_type.extension());
   EXPECT_EQ(13l, file_type.uma_value());
-  EXPECT_EQ(false, file_type.is_archive());
+  EXPECT_FALSE(file_type.is_archive());
   EXPECT_EQ(DownloadFileType::FULL_PING, file_type.ping_setting());
 #if defined(OS_CHROMEOS)
   EXPECT_EQ(DownloadFileType::NOT_DANGEROUS,
@@ -93,7 +93,7 @@ TEST_F(FileTypePoliciesTest, UnpackResourceBundle) {
   file_type = policies_.PolicyForFile(dmg_file);
   EXPECT_EQ("dmg", file_type.extension());
   EXPECT_EQ(21, file_type.uma_value());
-  EXPECT_EQ(false, file_type.is_archive());
+  EXPECT_FALSE(file_type.is_archive());
   EXPECT_EQ(DownloadFileType::FULL_PING, file_type.ping_setting());
 #if defined(OS_MACOSX)
   EXPECT_EQ(DownloadFileType::ALLOW_ON_USER_GESTURE,
@@ -112,7 +112,7 @@ TEST_F(FileTypePoliciesTest, UnpackResourceBundle) {
   file_type = policies_.PolicyForFile(dex_file);
   EXPECT_EQ("dex", file_type.extension());
   EXPECT_EQ(143, file_type.uma_value());
-  EXPECT_EQ(false, file_type.is_archive());
+  EXPECT_FALSE(file_type.is_archive());
   EXPECT_EQ(DownloadFileType::FULL_PING, file_type.ping_setting());
 #if defined(OS_ANDROID)
   EXPECT_EQ(DownloadFileType::ALLOW_ON_USER_GESTURE,
@@ -131,7 +131,7 @@ TEST_F(FileTypePoliciesTest, UnpackResourceBundle) {
   file_type = policies_.PolicyForFile(rpm_file);
   EXPECT_EQ("rpm", file_type.extension());
   EXPECT_EQ(142, file_type.uma_value());
-  EXPECT_EQ(false, file_type.is_archive());
+  EXPECT_FALSE(file_type.is_archive());
   EXPECT_EQ(DownloadFileType::FULL_PING, file_type.ping_setting());
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   EXPECT_EQ(DownloadFileType::ALLOW_ON_USER_GESTURE,
@@ -150,21 +150,22 @@ TEST_F(FileTypePoliciesTest, UnpackResourceBundle) {
   file_type = policies_.PolicyForFile(zip_file);
   EXPECT_EQ("zip", file_type.extension());
   EXPECT_EQ(7l, file_type.uma_value());
-  EXPECT_EQ(true, file_type.is_archive());
+  EXPECT_TRUE(file_type.is_archive());
   EXPECT_EQ(DownloadFileType::FULL_PING, file_type.ping_setting());
   EXPECT_EQ(DownloadFileType::NOT_DANGEROUS,
             file_type.platform_settings(0).danger_level());
 
   // Check other accessors
   EXPECT_EQ(7l, policies_.UmaValueForFile(zip_file));
-  EXPECT_EQ(true, policies_.IsFileAnArchive(zip_file));
+  EXPECT_TRUE(policies_.IsArchiveFile(zip_file));
+  EXPECT_FALSE(policies_.IsArchiveFile(exe_file));
 
   // Verify settings on the default type.
   file_type = policies_.PolicyForFile(
       base::FilePath(FILE_PATH_LITERAL("a/foo.fooobar")));
   EXPECT_EQ("", file_type.extension());
   EXPECT_EQ(18l, file_type.uma_value());
-  EXPECT_EQ(false, file_type.is_archive());
+  EXPECT_FALSE(file_type.is_archive());
   EXPECT_EQ(DownloadFileType::SAMPLED_PING, file_type.ping_setting());
   EXPECT_EQ(DownloadFileType::NOT_DANGEROUS,
             file_type.platform_settings(0).danger_level());
@@ -173,6 +174,7 @@ TEST_F(FileTypePoliciesTest, UnpackResourceBundle) {
 }
 
 TEST_F(FileTypePoliciesTest, BadProto) {
+  base::AutoLock lock(policies_.lock_);
   EXPECT_EQ(FileTypePolicies::UpdateResult::FAILED_EMPTY,
             policies_.PopulateFromBinaryPb(std::string()));
 
@@ -195,6 +197,7 @@ TEST_F(FileTypePoliciesTest, BadProto) {
 }
 
 TEST_F(FileTypePoliciesTest, BadUpdateFromExisting) {
+  base::AutoLock lock(policies_.lock_);
   // Make a minimum viable config
   DownloadFileTypeConfig cfg;
   cfg.mutable_default_file_type()->add_platform_settings();

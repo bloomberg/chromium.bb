@@ -34,6 +34,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/safe_browsing/file_type_policies.h"
 #include "chrome/common/url_constants.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -293,6 +294,10 @@ SafeBrowsingService::~SafeBrowsingService() {
 }
 
 void SafeBrowsingService::Initialize() {
+  // Ensure FileTypePolicies's Singleton is instantiated during startup.
+  // This guarantees we'll log UMA metrics about its state.
+  FileTypePolicies::GetInstance();
+
   url_request_context_getter_ = new SafeBrowsingURLRequestContextGetter(
       g_browser_process->system_request_context());
 
