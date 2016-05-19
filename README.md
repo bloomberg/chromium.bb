@@ -33,9 +33,8 @@ The SPIR-V XML registry file is updated by the Khronos registrar whenever
 a new enum range is allocated.
 
 In particular, pull requests that update header files will not be accepted.
-Issues with the header files should be filed in the
-[Khronos public bugzilla database](https://www.khronos.org/bugzilla/),
-against the Specification component of the SPIR-V product.
+Issues with the header files should be filed in the [issue
+tracker](https://github.com/KhronosGroup/SPIRV-Headers/issues).
 
 ## How to install the headers
 
