@@ -552,8 +552,10 @@ instrumentation_test_apk("chrome_public_test_apk") {
   deps = [
     ":chrome_public_test_apk_manifest",
     ":chrome_test_java",
+    "//chrome/android/webapk/shell_apk:shell_apk_javatests",
   ]
   additional_apks = [
+    "//chrome/android/webapk/shell_apk/javatests/dex_optimizer:dex_optimizer_apk",
     "//chrome/test/android/chrome_public_test_support:chrome_public_test_support_apk",
     "//net/android:net_test_support_apk",
   ]

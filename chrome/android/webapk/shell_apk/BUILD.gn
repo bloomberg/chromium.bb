@@ -49,6 +49,10 @@ android_resources("shell_apk_resources") {
   custom_package = "org.chromium.webapk.shell_apk"
 }
 
+android_library("dex_loader_lib") {
+  java_files = [ "src/org/chromium/webapk/shell_apk/DexLoader.java" ]
+}
+
 # Template for WebAPK. When a WebAPK is generated:
 # - Android manifest is customized to the website.
 # - App icon is extracted from the website and added to the APK's resources.
@@ -61,4 +65,17 @@ android_apk("webapk") {
     ":shell_apk_resources",
     "//chrome/android/webapk/libs/common",
   ]
+}
+
+android_library("shell_apk_javatests") {
+  testonly = true
+  java_files =
+      [ "javatests/src/org/chromium/webapk/shell_apk/DexLoaderTest.java" ]
+  deps = [
+    ":dex_loader_lib",
+    "//base:base_java",
+    "//chrome/android/webapk/libs/common",
+    "//content/public/test/android:content_java_test_support",
+  ]
+  srcjar_deps = [ "javatests/dex_optimizer:dex_optimizer_service_aidl" ]
 }
