@@ -73,10 +73,10 @@ class PushMessagingNotificationManager {
                     content::WebContents* active_web_contents,
                     const GURL& origin);
 
-  void DidGetBudget(const GURL& origin,
-                    int64_t service_worker_registration_id,
-                    const base::Closure& message_handled_closure,
-                    const double budget);
+  void CheckForMissedNotification(const GURL& origin,
+                                  int64_t service_worker_registration_id,
+                                  const base::Closure& message_handled_closure,
+                                  const double budget);
 
   static void DidWriteNotificationDataIOProxy(
       const base::WeakPtr<PushMessagingNotificationManager>& ui_weak_ptr,

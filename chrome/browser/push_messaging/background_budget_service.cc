@@ -8,12 +8,14 @@
 
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
+#include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -24,7 +26,8 @@
 namespace {
 
 constexpr char kSeparator = '#';
-// We calculate the ratio of the different components of a budget with respect
+
+// Calculate the ratio of the different components of a budget with respect
 // to a maximum time period of 10 days = 864000.0 seconds.
 constexpr double kSecondsToAccumulate = 864000.0;
 
@@ -95,6 +98,17 @@ void BackgroundBudgetService::RegisterProfilePrefs(
   registry->RegisterDictionaryPref(prefs::kBackgroundBudgetMap);
 }
 
+// static
+double BackgroundBudgetService::GetCost(CostType type) {
+  switch (type) {
+    case CostType::SILENT_PUSH:
+      return 2.0;
+      // No default case.
+  }
+  NOTREACHED();
+  return SiteEngagementScore::kMaxPoints + 1.0;
+}
+
 double BackgroundBudgetService::GetBudget(const GURL& origin) {
   DCHECK_EQ(origin, origin.GetOrigin());
 
@@ -136,6 +150,7 @@ double BackgroundBudgetService::GetBudget(const GURL& origin) {
   // component, which gives extra budget to sites that have a high ses score.
   double budget = budget_carryover + ses_component;
   DCHECK_GE(budget, 0.0);
+
   return budget;
 }
 

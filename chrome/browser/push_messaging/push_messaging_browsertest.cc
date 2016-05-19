@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -270,10 +271,13 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 
   virtual Browser* GetBrowser() const { return browser(); }
 
+  base::HistogramTester* GetHistogramTester() { return &histogram_tester_; }
+
  private:
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   gcm::FakeGCMProfileService* gcm_service_;
   PushMessagingServiceImpl* push_service_;
+  base::HistogramTester histogram_tester_;
 
 #if defined(ENABLE_NOTIFICATIONS)
   std::unique_ptr<StubNotificationUIManager> notification_manager_;
@@ -763,6 +767,10 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   content::WebContents* web_contents =
       GetBrowser()->tab_strip_model()->GetActiveWebContents();
 
+  // Set the site engagement score for the site. Setting it to 4 means it should
+  // have enough budget for two non-shown notification, which cost 2 each.
+  SetSiteEngagementScore(web_contents->GetURL(), 4.0);
+
   // If the site is visible in an active tab, we should not force a notification
   // to be shown. Try it twice, since we allow one mistake per 10 push events.
   gcm::IncomingMessage message;
@@ -780,10 +788,6 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ui_test_utils::NavigateToURLWithDisposition(
       GetBrowser(), GURL("about:blank"), NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
-
-  // Set the site engagement score for the site. Setting it to 2 means we should
-  // have enough budget for two non-shown notification.
-  SetSiteEngagementScore(web_contents->GetURL(), 2.0);
 
   // If the Service Worker push event handler shows a notification, we
   // should not show a forced one.
@@ -837,6 +841,37 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
     EXPECT_NE(kPushMessagingForcedNotificationTag, first_notification.tag());
   }
+
+  // Check that the UMA has been recorded correctly.
+  // There should be a total of 7 budget samples, spread across 3 buckets. The
+  // first four notifications (before any budget is consumed) have budget of 4,
+  // which is the starting SES. The next one has 2 (one hidden notification) and
+  // the final two have 0 (two hidden notifications.
+  std::vector<base::Bucket> buckets =
+      GetHistogramTester()->GetAllSamples("PushMessaging.BackgroundBudget");
+  ASSERT_EQ(3.0, buckets.size());
+  // First bucket is for 0 budget, which has 2 samples.
+  EXPECT_EQ(0, buckets[0].min);
+  EXPECT_EQ(2, buckets[0].count);
+  // Second bucket is for 2 budget, which has 1 sample.
+  EXPECT_EQ(2, buckets[1].min);
+  EXPECT_EQ(1, buckets[1].count);
+  // Final bucket is for 4 budget, which has 4 samples.
+  EXPECT_EQ(4, buckets[2].min);
+  EXPECT_EQ(4, buckets[2].count);
+
+  std::vector<base::Bucket> no_budget_buckets =
+      GetHistogramTester()->GetAllSamples("PushMessaging.SESForNoBudgetOrigin");
+  ASSERT_EQ(1.0, no_budget_buckets.size());
+  EXPECT_EQ(4, no_budget_buckets[0].min);
+  EXPECT_EQ(2, no_budget_buckets[0].count);
+
+  std::vector<base::Bucket> low_budget_buckets =
+      GetHistogramTester()->GetAllSamples(
+          "PushMessaging.SESForLowBudgetOrigin");
+  ASSERT_EQ(1.0, low_budget_buckets.size());
+  EXPECT_EQ(4, low_budget_buckets[0].min);
+  EXPECT_EQ(1, low_budget_buckets[0].count);
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,

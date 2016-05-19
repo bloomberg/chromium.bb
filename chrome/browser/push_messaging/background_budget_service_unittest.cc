@@ -21,7 +21,7 @@ namespace {
 
 const char kTestOrigin[] = "https://example.com";
 const double kTestBudget = 10.0;
-const double kTestSES = 24.0;
+const double kTestSES = 48.0;
 const double kLowSES = 1.0;
 const double kMaxSES = 100.0;
 // Mirrors definition in BackgroundBudgetService, this is 10 days of seconds.
@@ -184,11 +184,13 @@ TEST_F(BackgroundBudgetServiceTest, GetBudgetConsumedOverTime) {
     budget = service->GetBudget(origin);
 
     if (i % 10 == 0) {
-      service->StoreBudget(origin, budget - 1.0);
+      double cost = BackgroundBudgetService::GetCost(
+          BackgroundBudgetService::CostType::SILENT_PUSH);
+      service->StoreBudget(origin, budget - cost);
     }
   }
 
-  // With a SES of 24.0, the origin will get a budget of 2.4 per day, but the
+  // With a SES of 48.0, the origin will get a budget of 2.4 per day, but the
   // old budget will also decay. At the end, we expect the budget to be lower
   // than the starting budget.
   EXPECT_GT(budget, 0.0);

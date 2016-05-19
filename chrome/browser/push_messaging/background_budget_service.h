@@ -33,6 +33,14 @@ class BackgroundBudgetService : public KeyedService {
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  enum class CostType {
+    // The cost of silencing a push message.
+    SILENT_PUSH = 0,
+  };
+
+  // Query for the base cost for any background processing.
+  static double GetCost(CostType type);
+
   // Get the budget associated with the origin. This is returned as the double
   // budget. Budget will be a value between 0.0 and
   // SiteEngagementScore::kMaxPoints.

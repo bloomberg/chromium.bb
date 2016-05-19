@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/background_budget_service.h"
@@ -52,10 +53,6 @@ using content::ServiceWorkerContext;
 using content::WebContents;
 
 namespace {
-// Currently this just costs 1.0, but we may expand the cost to
-// include things like whether wifi is available in the mobile case.
-const double kBackgroundProcessingCost = 1.0;
-
 void RecordUserVisibleStatus(content::PushUserVisibleStatus status) {
   UMA_HISTOGRAM_ENUMERATION("PushMessaging.UserVisibleStatus", status,
                             content::PUSH_USER_VISIBLE_STATUS_LAST + 1);
@@ -189,14 +186,33 @@ void PushMessagingNotificationManager::DidGetNotificationsFromDatabase(
     }
   }
 
+  // Get the budget for the service worker. This will internally record UMA
+  // for budget development work in the future.
+  BackgroundBudgetService* service =
+      BackgroundBudgetServiceFactory::GetForProfile(profile_);
+  double budget = service->GetBudget(origin);
+
+  // Record the budget available any time the budget is queried.
+  UMA_HISTOGRAM_COUNTS_100("PushMessaging.BackgroundBudget", budget);
+
+  // Get the site engagement score. Only used for UMA recording.
+  SiteEngagementService* ses_service = SiteEngagementService::Get(profile_);
+  double ses_score = ses_service->GetScore(origin);
+
+  // Generate histograms for the GetBudget calls which would return "no budget"
+  // or "low budget" if an API was available to app developers.
+  double cost = BackgroundBudgetService::GetCost(
+      BackgroundBudgetService::CostType::SILENT_PUSH);
+  if (budget < cost)
+    UMA_HISTOGRAM_COUNTS_100("PushMessaging.SESForNoBudgetOrigin", ses_score);
+  else if (budget < 2.0 * cost)
+    UMA_HISTOGRAM_COUNTS_100("PushMessaging.SESForLowBudgetOrigin", ses_score);
+
   if (notification_needed && !notification_shown) {
-    // Only track budget for messages that needed to show a notification but
-    // did not.
-    BackgroundBudgetService* service =
-        BackgroundBudgetServiceFactory::GetForProfile(profile_);
-    double budget = service->GetBudget(origin);
-    DidGetBudget(origin, service_worker_registration_id,
-                 message_handled_closure, budget);
+    // If the worker needed to show a notification and didn't, check the budget
+    // and take appropriate action.
+    CheckForMissedNotification(origin, service_worker_registration_id,
+                               message_handled_closure, budget);
     return;
   }
 
@@ -247,7 +263,7 @@ bool PushMessagingNotificationManager::IsTabVisible(
   return visible_url.GetOrigin() == origin;
 }
 
-void PushMessagingNotificationManager::DidGetBudget(
+void PushMessagingNotificationManager::CheckForMissedNotification(
     const GURL& origin,
     int64_t service_worker_registration_id,
     const base::Closure& message_handled_closure,
@@ -256,11 +272,13 @@ void PushMessagingNotificationManager::DidGetBudget(
 
   // If the service needed to show a notification but did not, update the
   // budget.
-  if (budget >= kBackgroundProcessingCost) {
+  double cost = BackgroundBudgetService::GetCost(
+      BackgroundBudgetService::CostType::SILENT_PUSH);
+  if (budget >= cost) {
     // Update the stored budget.
     BackgroundBudgetService* service =
         BackgroundBudgetServiceFactory::GetForProfile(profile_);
-    service->StoreBudget(origin, budget - kBackgroundProcessingCost);
+    service->StoreBudget(origin, budget - cost);
 
     RecordUserVisibleStatus(
         content::PUSH_USER_VISIBLE_STATUS_REQUIRED_BUT_NOT_SHOWN_USED_GRACE);
@@ -274,9 +292,9 @@ void PushMessagingNotificationManager::DidGetBudget(
       g_browser_process->rappor_service(),
       "PushMessaging.GenericNotificationShown.Origin", origin);
 
-  // The site failed to show a notification when one was needed, and they have
-  // already failed once in the previous 10 push messages, so we will show a
-  // generic notification. See https://crbug.com/437277.
+  // The site failed to show a notification when one was needed, and they don't
+  // have enough budget to cover the cost of suppressing, so we will show a
+  // generic notification.
   NotificationDatabaseData database_data =
       CreateDatabaseData(origin, service_worker_registration_id);
   scoped_refptr<PlatformNotificationContext> notification_context =
