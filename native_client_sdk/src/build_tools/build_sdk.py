@@ -402,11 +402,13 @@ def GnNinjaBuildAll(rel_out_dir):
   def MakeNinjaRelPath(suffix):
     return os.path.join(os.path.relpath(OUT_DIR, SRC_DIR), rel_out_dir + suffix)
 
+  platform = getos.GetPlatform()
+
   GnNinjaBuild('x64', MakeNinjaRelPath('-x64'),
       ['nacl_sdk_untrusted=true'])
-  GnNinjaBuild('x86', MakeNinjaRelPath('-x86'))
+  if platform != 'mac' and platform != 'linux':
+    GnNinjaBuild('x86', MakeNinjaRelPath('-x86'))
 
-  platform = getos.GetPlatform()
   if platform == 'linux':
     GnNinjaBuild('arm', MakeNinjaRelPath('-arm'))
 
