@@ -23,6 +23,7 @@
 
 #include "wtf/HashTable.h"
 #include "wtf/allocator/PartitionAllocator.h"
+#include <initializer_list>
 
 namespace WTF {
 
@@ -54,6 +55,15 @@ public:
     typedef HashTableConstIteratorAdapter<HashTableType, ValueTraits> iterator;
     typedef HashTableConstIteratorAdapter<HashTableType, ValueTraits> const_iterator;
     typedef typename HashTableType::AddResult AddResult;
+
+    HashSet() = default;
+    HashSet(const HashSet&) = default;
+    HashSet& operator=(const HashSet&) = default;
+    HashSet(HashSet&&) = default;
+    HashSet& operator=(HashSet&&) = default;
+
+    HashSet(std::initializer_list<ValueType> elements);
+    HashSet& operator=(std::initializer_list<ValueType> elements);
 
     void swap(HashSet& ref)
     {
@@ -130,6 +140,22 @@ struct HashSetTranslatorAdapter {
         Translator::translate(location, std::forward<U>(key), hashCode);
     }
 };
+
+template <typename Value, typename HashFunctions, typename Traits, typename Allocator>
+HashSet<Value, HashFunctions, Traits, Allocator>::HashSet(std::initializer_list<ValueType> elements)
+{
+    if (elements.size())
+        m_impl.reserveCapacityForSize(elements.size());
+    for (const ValueType& element : elements)
+        add(element);
+}
+
+template <typename Value, typename HashFunctions, typename Traits, typename Allocator>
+auto HashSet<Value, HashFunctions, Traits, Allocator>::operator=(std::initializer_list<ValueType> elements) -> HashSet&
+{
+    *this = HashSet(std::move(elements));
+    return *this;
+}
 
 template <typename T, typename U, typename V, typename W>
 inline unsigned HashSet<T, U, V, W>::size() const

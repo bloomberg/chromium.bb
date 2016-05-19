@@ -447,6 +447,60 @@ TEST(HashSetTest, UniquePtr)
     }
 }
 
+bool isOneTwoThree(const HashSet<int>& set)
+{
+    return set.size() == 3 && set.contains(1) && set.contains(2) && set.contains(3);
+}
+
+HashSet<int> returnOneTwoThree()
+{
+    return {1, 2, 3};
+}
+
+TEST(HashSetTest, InitializerList)
+{
+    HashSet<int> empty({});
+    EXPECT_TRUE(empty.isEmpty());
+
+    HashSet<int> one({1});
+    EXPECT_EQ(1u, one.size());
+    EXPECT_TRUE(one.contains(1));
+
+    HashSet<int> oneTwoThree({1, 2, 3});
+    EXPECT_EQ(3u, oneTwoThree.size());
+    EXPECT_TRUE(oneTwoThree.contains(1));
+    EXPECT_TRUE(oneTwoThree.contains(2));
+    EXPECT_TRUE(oneTwoThree.contains(3));
+
+    // Put some jank so we can check if the assignments later can clear them.
+    empty.add(9999);
+    one.add(9999);
+    oneTwoThree.add(9999);
+
+    empty = {};
+    EXPECT_TRUE(empty.isEmpty());
+
+    one = {1};
+    EXPECT_EQ(1u, one.size());
+    EXPECT_TRUE(one.contains(1));
+
+    oneTwoThree = {1, 2, 3};
+    EXPECT_EQ(3u, oneTwoThree.size());
+    EXPECT_TRUE(oneTwoThree.contains(1));
+    EXPECT_TRUE(oneTwoThree.contains(2));
+    EXPECT_TRUE(oneTwoThree.contains(3));
+
+    oneTwoThree = {3, 1, 1, 2, 1, 1, 3};
+    EXPECT_EQ(3u, oneTwoThree.size());
+    EXPECT_TRUE(oneTwoThree.contains(1));
+    EXPECT_TRUE(oneTwoThree.contains(2));
+    EXPECT_TRUE(oneTwoThree.contains(3));
+
+    // Other ways of construction: as a function parameter and in a return statement.
+    EXPECT_TRUE(isOneTwoThree({1, 2, 3}));
+    EXPECT_TRUE(isOneTwoThree(returnOneTwoThree()));
+}
+
 } // anonymous namespace
 
 } // namespace WTF
