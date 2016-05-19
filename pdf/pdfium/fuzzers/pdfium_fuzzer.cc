@@ -55,33 +55,31 @@ static bool RenderPage(const FPDF_DOCUMENT& doc,
                        const FPDF_FORMHANDLE& form,
                        const int page_index) {
   FPDF_PAGE page = FPDF_LoadPage(doc, page_index);
-  if (!page) {
+  if (!page)
     return false;
-  }
+
   FPDF_TEXTPAGE text_page = FPDFText_LoadPage(page);
   FORM_OnAfterLoadPage(page, form);
   FORM_DoPageAAction(page, form, FPDFPAGE_AACTION_OPEN);
 
-  double scale = 1.0;
+  const double scale = 1.0;
   int width = static_cast<int>(FPDF_GetPageWidth(page) * scale);
   int height = static_cast<int>(FPDF_GetPageHeight(page) * scale);
 
   FPDF_BITMAP bitmap = FPDFBitmap_Create(width, height, 0);
-  if (!bitmap) {
-    return false;
+  if (bitmap) {
+    FPDFBitmap_FillRect(bitmap, 0, 0, width, height, 0xFFFFFFFF);
+    FPDF_RenderPageBitmap(bitmap, page, 0, 0, width, height, 0, 0);
+
+    FPDF_FFLDraw(form, bitmap, page, 0, 0, width, height, 0, 0);
+
+    FPDFBitmap_Destroy(bitmap);
   }
-
-  FPDFBitmap_FillRect(bitmap, 0, 0, width, height, 0xFFFFFFFF);
-  FPDF_RenderPageBitmap(bitmap, page, 0, 0, width, height, 0, 0);
-
-  FPDF_FFLDraw(form, bitmap, page, 0, 0, width, height, 0, 0);
-
-  FPDFBitmap_Destroy(bitmap);
   FORM_DoPageAAction(page, form, FPDFPAGE_AACTION_CLOSE);
   FORM_OnBeforeClosePage(page, form);
   FPDFText_ClosePage(text_page);
   FPDF_ClosePage(page);
-  return true;
+  return !!bitmap;
 }
 
 static void RenderPdf(const char* pBuf, size_t len) {
