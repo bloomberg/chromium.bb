@@ -7,7 +7,7 @@
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutTestHelper.h"
-#include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/paint/PaintLayer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -119,7 +119,7 @@ TEST_F(CompositedLayerMappingTest, VerticalRightLeftWritingModeDocument)
     document().view()->setScrollPosition(DoublePoint(-5000, 0), ProgrammaticScroll);
     document().view()->updateAllLifecyclePhases();
 
-    PaintLayer* paintLayer = document().layoutView()->layer();
+    PaintLayer* paintLayer = document().layoutViewItem().layer();
     ASSERT_TRUE(paintLayer->graphicsLayerBacking());
     ASSERT_TRUE(paintLayer->compositedLayerMapping());
     // A scroll by -5000px is equivalent to a scroll by (10000 - 5000 - 800)px = 4200px in non-RTL mode. Expanding
@@ -390,7 +390,7 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll)
         "<div id='div' style='width: 100px; height: 10000px'>Text</div>");
 
     document().view()->updateAllLifecyclePhases();
-    GraphicsLayer* rootScrollingLayer = document().layoutView()->layer()->graphicsLayerBackingForScrolling();
+    GraphicsLayer* rootScrollingLayer = document().layoutViewItem().layer()->graphicsLayerBackingForScrolling();
     EXPECT_RECT_EQ(IntRect(0, 0, 800, 4600), previousInterestRect(rootScrollingLayer));
 
     document().view()->setScrollPosition(IntPoint(0, 300), ProgrammaticScroll);
@@ -574,8 +574,8 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfScrolledIframe)
     frameDocument.view()->setScrollPosition(DoublePoint(0.0, 7500.0), ProgrammaticScroll);
     document().view()->updateAllLifecyclePhases();
 
-    ASSERT_TRUE(frameDocument.view()->layoutView()->hasLayer());
-    EXPECT_RECT_EQ(IntRect(0, 3500, 500, 4500), recomputeInterestRect(frameDocument.view()->layoutView()->enclosingLayer()->graphicsLayerBacking()));
+    ASSERT_TRUE(frameDocument.view()->layoutViewItem().hasLayer());
+    EXPECT_RECT_EQ(IntRect(0, 3500, 500, 4500), recomputeInterestRect(frameDocument.view()->layoutViewItem().enclosingLayer()->graphicsLayerBacking()));
 }
 
 TEST_F(CompositedLayerMappingTest, InterestRectOfIframeWithContentBoxOffset)
@@ -596,9 +596,9 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfIframeWithContentBoxOffset)
     frameDocument.view()->setScrollPosition(DoublePoint(0.0, 3000.0), ProgrammaticScroll);
     document().view()->updateAllLifecyclePhases();
 
-    ASSERT_TRUE(frameDocument.view()->layoutView()->hasLayer());
+    ASSERT_TRUE(frameDocument.view()->layoutViewItem().hasLayer());
     // The width is 485 pixels due to the size of the scrollbar.
-    EXPECT_RECT_EQ(IntRect(0, 0, 500, 7500), recomputeInterestRect(frameDocument.view()->layoutView()->enclosingLayer()->graphicsLayerBacking()));
+    EXPECT_RECT_EQ(IntRect(0, 0, 500, 7500), recomputeInterestRect(frameDocument.view()->layoutViewItem().enclosingLayer()->graphicsLayerBacking()));
 }
 
 TEST_F(CompositedLayerMappingTest, ScrollingContentsAndForegroundLayerPaintingPhase)

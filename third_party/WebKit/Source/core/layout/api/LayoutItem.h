@@ -171,6 +171,11 @@ public:
         return m_layoutObject->style();
     }
 
+    PaintLayer* enclosingLayer() const
+    {
+        return m_layoutObject->enclosingLayer();
+    }
+
     bool hasLayer() const
     {
         return m_layoutObject->hasLayer();
