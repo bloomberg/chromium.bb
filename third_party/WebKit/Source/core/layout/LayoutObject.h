@@ -2138,12 +2138,6 @@ inline int adjustForAbsoluteZoom(int value, LayoutObject* layoutObject)
     return adjustForAbsoluteZoom(value, layoutObject->style());
 }
 
-inline double adjustDoubleForAbsoluteZoom(double value, LayoutObject& layoutObject)
-{
-    ASSERT(layoutObject.style());
-    return adjustDoubleForAbsoluteZoom(value, *layoutObject.style());
-}
-
 inline LayoutUnit adjustLayoutUnitForAbsoluteZoom(LayoutUnit value, LayoutObject& layoutObject)
 {
     ASSERT(layoutObject.style());

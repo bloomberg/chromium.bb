@@ -35,14 +35,14 @@ double MediaValues::calculateViewportWidth(LocalFrame* frame)
 {
     ASSERT(frame && frame->view() && frame->document());
     int viewportWidth = frame->view()->layoutSize(IncludeScrollbars).width();
-    return adjustDoubleForAbsoluteZoom(viewportWidth, *frame->document()->layoutView());
+    return adjustDoubleForAbsoluteZoom(viewportWidth, frame->document()->layoutViewItem().styleRef());
 }
 
 double MediaValues::calculateViewportHeight(LocalFrame* frame)
 {
     ASSERT(frame && frame->view() && frame->document());
     int viewportHeight = frame->view()->layoutSize(IncludeScrollbars).height();
-    return adjustDoubleForAbsoluteZoom(viewportHeight, *frame->document()->layoutView());
+    return adjustDoubleForAbsoluteZoom(viewportHeight, frame->document()->layoutViewItem().styleRef());
 }
 
 int MediaValues::calculateDeviceWidth(LocalFrame* frame)
