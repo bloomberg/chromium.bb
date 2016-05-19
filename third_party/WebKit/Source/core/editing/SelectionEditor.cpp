@@ -55,11 +55,7 @@ SelectionEditor::~SelectionEditor()
 
 void SelectionEditor::dispose()
 {
-    stopObservingVisibleSelectionChangeIfNecessary();
-    if (m_logicalRange) {
-        m_logicalRange->dispose();
-        m_logicalRange = nullptr;
-    }
+    resetLogicalRange();
 }
 
 LocalFrame* SelectionEditor::frame() const
@@ -837,17 +833,15 @@ LayoutUnit SelectionModifier::lineDirectionPointForBlockDirectionNavigation(EPos
     return x;
 }
 
-// TODO(yosin) We should utilize |resetLogicalRange()| in other places where
-// reset |m_logicalRange|.
 void SelectionEditor::resetLogicalRange()
 {
-    // Non-collapsed ranges are not allowed to start at the end of a line that is wrapped,
-    // they start at the beginning of the next line instead
-    if (m_logicalRange) {
-        m_logicalRange->dispose();
-        m_logicalRange = nullptr;
-    }
     stopObservingVisibleSelectionChangeIfNecessary();
+    // Non-collapsed ranges are not allowed to start at the end of a line that
+    // is wrapped, they start at the beginning of the next line instead
+    if (!m_logicalRange)
+        return;
+    m_logicalRange->dispose();
+    m_logicalRange = nullptr;
 }
 
 void SelectionEditor::setLogicalRange(Range* range)
@@ -867,13 +861,7 @@ Range* SelectionEditor::firstRange() const
 void SelectionEditor::didChangeVisibleSelection()
 {
     DCHECK(m_observingVisibleSelection);
-    // Invalidate the logical range when the underlying VisibleSelection has changed.
-    if (m_logicalRange) {
-        m_logicalRange->dispose();
-        m_logicalRange = nullptr;
-    }
-    m_selection.clearChangeObserver();
-    m_observingVisibleSelection = false;
+    resetLogicalRange();
 }
 
 void SelectionEditor::startObservingVisibleSelectionChange()
