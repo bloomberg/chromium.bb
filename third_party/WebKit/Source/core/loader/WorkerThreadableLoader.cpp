@@ -303,7 +303,7 @@ WorkerThreadableLoader::MainThreadSyncBridge::MainThreadSyncBridge(
 
 void WorkerThreadableLoader::MainThreadSyncBridge::start(const ResourceRequest& request, const WorkerGlobalScope& workerGlobalScope)
 {
-    WaitableEvent* shutdownEvent = workerGlobalScope.thread()->shutdownEvent();
+    WaitableEvent* terminationEvent = workerGlobalScope.thread()->terminationEvent();
     m_loaderDoneEvent = adoptPtr(new WaitableEvent());
 
     startInMainThread(request, workerGlobalScope);
@@ -312,13 +312,13 @@ void WorkerThreadableLoader::MainThreadSyncBridge::start(const ResourceRequest& 
     {
         Vector<WaitableEvent*> events;
         // Order is important; indicies are used later.
-        events.append(shutdownEvent);
+        events.append(terminationEvent);
         events.append(m_loaderDoneEvent.get());
 
         SafePointScope scope(BlinkGC::HeapPointersOnStack);
         signaledIndex = WaitableEvent::waitMultiple(events);
     }
-    // |signaledIndex| is 0; which is shutdownEvent.
+    // |signaledIndex| is 0; which is terminationEvent.
     if (signaledIndex == 0) {
         cancel();
         return;

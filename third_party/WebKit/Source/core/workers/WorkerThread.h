@@ -54,7 +54,10 @@ enum WorkerThreadStartMode {
     PauseWorkerGlobalScopeOnStart
 };
 
-// TODO(sadrul): Rename to WorkerScript.
+// WorkerThread is a kind of WorkerBackingThread client. Each worker mechanism
+// can access the lower thread infrastructure via an implementation of this
+// abstract class. Multiple WorkerThreads can share one WorkerBackingThread.
+// See WorkerBackingThread.h for more details.
 class CORE_EXPORT WorkerThread {
 public:
     virtual ~WorkerThread();
@@ -76,10 +79,10 @@ public:
     virtual bool shouldAttachThreadDebugger() const { return true; }
     v8::Isolate* isolate();
 
-    // Can be used to wait for this worker thread to shut down.
+    // Can be used to wait for this worker thread to terminate.
     // (This is signaled on the main thread, so it's assumed to be waited on
     // the worker context thread)
-    WaitableEvent* shutdownEvent() { return m_shutdownEvent.get(); }
+    WaitableEvent* terminationEvent() { return m_terminationEvent.get(); }
 
     bool isCurrentThread();
     WorkerLoaderProxy* workerLoaderProxy() const
@@ -155,11 +158,11 @@ private:
 
     Persistent<WorkerGlobalScope> m_workerGlobalScope;
 
-    // Used to signal thread shutdown.
-    OwnPtr<WaitableEvent> m_shutdownEvent;
-
-    // Used to signal thread termination.
+    // Signaled when the thread starts termination on the main thread.
     OwnPtr<WaitableEvent> m_terminationEvent;
+
+    // Signaled when the thread completes termination on the worker thread.
+    OwnPtr<WaitableEvent> m_shutdownEvent;
 };
 
 } // namespace blink

@@ -139,10 +139,10 @@ WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, Work
     , m_workerLoaderProxy(workerLoaderProxy)
     , m_workerReportingProxy(workerReportingProxy)
     , m_webScheduler(nullptr)
-    , m_shutdownEvent(adoptPtr(new WaitableEvent(
+    , m_terminationEvent(adoptPtr(new WaitableEvent(
         WaitableEvent::ResetPolicy::Manual,
         WaitableEvent::InitialState::NonSignaled)))
-    , m_terminationEvent(adoptPtr(new WaitableEvent(
+    , m_shutdownEvent(adoptPtr(new WaitableEvent(
         WaitableEvent::ResetPolicy::Manual,
         WaitableEvent::InitialState::NonSignaled)))
 {
@@ -190,10 +190,13 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
         // The worker was terminated before the thread had a chance to run.
         if (m_terminated) {
             // Notify the proxy that the WorkerGlobalScope has been disposed of.
-            // This can free this thread object, hence it must not be touched afterwards.
+            // This can free this thread object, hence it must not be touched
+            // afterwards.
             m_workerReportingProxy.workerThreadTerminated();
-            // Notify the main thread that it is safe to deallocate our resources.
-            m_terminationEvent->signal();
+
+            // Notify the main thread that it is safe to deallocate our
+            // resources.
+            m_shutdownEvent->signal();
             return;
         }
 
@@ -274,7 +277,7 @@ void WorkerThread::performShutdownTask()
     // This can free this thread object, hence it must not be touched afterwards.
     workerReportingProxy().workerThreadTerminated();
 
-    m_terminationEvent->signal();
+    m_shutdownEvent->signal();
 }
 
 void WorkerThread::terminate()
@@ -290,7 +293,7 @@ void WorkerThread::terminateAndWait()
 {
     DCHECK(isMainThread());
     terminate();
-    m_terminationEvent->wait();
+    m_shutdownEvent->wait();
 }
 
 void WorkerThread::terminateAndWaitForAllWorkers()
@@ -304,7 +307,7 @@ void WorkerThread::terminateAndWaitForAllWorkers()
         thread->terminateInternal();
 
     for (WorkerThread* thread : threads)
-        thread->m_terminationEvent->wait();
+        thread->m_shutdownEvent->wait();
 }
 
 void WorkerThread::terminateFromWorkerThread()
@@ -339,16 +342,16 @@ void WorkerThread::terminateInternal()
     m_terminated = true;
 
     // Signal the thread to notify that the thread's stopping.
-    if (m_shutdownEvent)
-        m_shutdownEvent->signal();
+    if (m_terminationEvent)
+        m_terminationEvent->signal();
 
-    // If the thread has already initiated shut down, just return.
+    // If the thread has already initiated shutdown, just return.
     if (m_shutdown)
         return;
 
     // If the worker thread was never initialized, don't start another
-    // shutdown, but still wait for the thread to signal when termination has
-    // completed.
+    // shutdown, but still wait for the thread to signal when shutdown has
+    // completed on initialize().
     if (!m_workerGlobalScope)
         return;
 
