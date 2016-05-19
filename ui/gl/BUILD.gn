@@ -363,6 +363,10 @@ test("gl_unittests") {
     libs = [ "IOSurface.framework" ]
   }
 
+  if (is_win) {
+    sources += [ "wgl_api_unittest.cc" ]
+  }
+
   include_dirs = [ "//third_party/khronos" ]
 
   deps = [
