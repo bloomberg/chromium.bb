@@ -26,6 +26,13 @@
 #include "wayland-client-protocol-core.h"
 #include "wayland-server-protocol-core.h"
 
+#ifndef WAYLAND_CLIENT_CORE_H
+#error including wayland-client-protocol-core.h did not include wayland-client-core.h!
+#endif
+#ifndef WAYLAND_SERVER_CORE_H
+#error including wayland-server-protocol-core.h did not include wayland-server-core.h!
+#endif
+
 #ifdef WAYLAND_CLIENT_H
 #error including wayland-client-protocol-core.h included wayland-client.h!
 #endif
