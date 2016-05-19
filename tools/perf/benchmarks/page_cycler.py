@@ -135,16 +135,6 @@ class PageCyclerTop10Mobile(_PageCycler):
     return stories
 
 
-@benchmark.Disabled('all')
-class PageCyclerKeyMobileSites(_PageCycler):
-  """Page load time benchmark for key mobile sites."""
-  page_set = page_sets.KeyMobileSitesPageSet
-
-  @classmethod
-  def Name(cls):
-    return 'page_cycler.key_mobile_sites_smooth'
-
-
 @benchmark.Disabled('android')  # crbug.com/357326
 class PageCyclerToughLayoutCases(_PageCycler):
   """Page loading for the slowest layouts observed in the Alexa top 1 million.
@@ -204,12 +194,3 @@ class PageCyclerBasicOopif(_PageCycler):
   @classmethod
   def ShouldDisable(cls, possible_browser):
     return cls.IsSvelte(possible_browser)  # http://crbug.com/607657
-
-
-@benchmark.Disabled('all')  # crbug.com/443730
-class PageCyclerBigJs(_PageCycler):
-  page_set = page_sets.BigJsPageSet
-
-  @classmethod
-  def Name(cls):
-    return 'page_cycler.big_js'
