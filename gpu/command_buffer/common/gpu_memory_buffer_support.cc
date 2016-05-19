@@ -73,12 +73,12 @@ bool IsImageFormatCompatibleWithGpuMemoryBufferFormat(
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::R_8:
     case gfx::BufferFormat::RGBA_8888:
-    case gfx::BufferFormat::RGBX_8888:
     case gfx::BufferFormat::YUV_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::UYVY_422:
       return format == BufferFormatForInternalFormat(internalformat);
     case gfx::BufferFormat::BGR_565:
+    case gfx::BufferFormat::RGBX_8888:
       return internalformat == GL_RGB;
     case gfx::BufferFormat::RGBA_4444:
       return internalformat == GL_RGBA;
