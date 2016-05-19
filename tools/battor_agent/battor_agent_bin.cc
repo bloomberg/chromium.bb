@@ -191,7 +191,7 @@ class BattOrAgentBin : public BattOrAgent::Listener {
       }
 
       RecordClockSyncMarker(tokens[1]);
-    } else if (cmd == "Exit") {
+    } else if (cmd == "Exit" || std::cin.eof()) {
       ui_thread_message_loop_.task_runner()->PostTask(
           FROM_HERE, ui_thread_run_loop_.QuitClosure());
     } else {
