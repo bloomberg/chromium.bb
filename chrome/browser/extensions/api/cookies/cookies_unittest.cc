@@ -33,6 +33,7 @@ namespace {
 
 struct DomainMatchCase {
   const char* filter;
+  const char* url;
   const char* domain;
   const bool matches;
 };
@@ -83,15 +84,18 @@ TEST_F(ExtensionCookiesTest, StoreIdProfileConversion) {
 }
 
 TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
-  net::CanonicalCookie canonical_cookie1(
-      GURL(), "ABC", "DEF", "www.foobar.com", "/", base::Time(), base::Time(),
-      base::Time(), false, false, net::CookieSameSite::DEFAULT_MODE,
-      net::COOKIE_PRIORITY_DEFAULT);
+  std::unique_ptr<net::CanonicalCookie> canonical_cookie1(
+      net::CanonicalCookie::Create(GURL("http://www.example.com"), "ABC", "DEF",
+                                   std::string(), "/", base::Time(),
+                                   base::Time(), false, false,
+                                   net::CookieSameSite::DEFAULT_MODE, false,
+                                   net::COOKIE_PRIORITY_DEFAULT));
+  ASSERT_NE(nullptr, canonical_cookie1.get());
   Cookie cookie1 =
-      cookies_helpers::CreateCookie(canonical_cookie1, "some cookie store");
+      cookies_helpers::CreateCookie(*canonical_cookie1, "some cookie store");
   EXPECT_EQ("ABC", cookie1.name);
   EXPECT_EQ("DEF", cookie1.value);
-  EXPECT_EQ("www.foobar.com", cookie1.domain);
+  EXPECT_EQ("www.example.com", cookie1.domain);
   EXPECT_TRUE(cookie1.host_only);
   EXPECT_EQ("/", cookie1.path);
   EXPECT_FALSE(cookie1.secure);
@@ -101,12 +105,15 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
   EXPECT_FALSE(cookie1.expiration_date.get());
   EXPECT_EQ("some cookie store", cookie1.store_id);
 
-  net::CanonicalCookie canonical_cookie2(
-      GURL(), "ABC", "DEF", ".foobar.com", "/", base::Time(),
-      base::Time::FromDoubleT(10000), base::Time(), false, false,
-      net::CookieSameSite::STRICT_MODE, net::COOKIE_PRIORITY_DEFAULT);
+  std::unique_ptr<net::CanonicalCookie> canonical_cookie2(
+      net::CanonicalCookie::Create(GURL("http://example.com"), "ABC", "DEF",
+                                   ".example.com", "/", base::Time(),
+                                   base::Time::FromDoubleT(10000), false, false,
+                                   net::CookieSameSite::STRICT_MODE, false,
+                                   net::COOKIE_PRIORITY_DEFAULT));
+  ASSERT_NE(nullptr, canonical_cookie2.get());
   Cookie cookie2 =
-      cookies_helpers::CreateCookie(canonical_cookie2, "some cookie store");
+      cookies_helpers::CreateCookie(*canonical_cookie2, "some cookie store");
   EXPECT_FALSE(cookie2.host_only);
   EXPECT_FALSE(cookie2.session);
   EXPECT_EQ(api::cookies::SAME_SITE_STATUS_STRICT, cookie2.same_site);
@@ -123,21 +130,21 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
 }
 
 TEST_F(ExtensionCookiesTest, GetURLFromCanonicalCookie) {
-  net::CanonicalCookie cookie1(GURL(), "ABC", "DEF", "www.foobar.com", "/",
-                               base::Time(), base::Time(), base::Time(), false,
-                               false, net::CookieSameSite::DEFAULT_MODE,
-                               net::COOKIE_PRIORITY_DEFAULT);
-  EXPECT_EQ("http://www.foobar.com/",
-            cookies_helpers::GetURLFromCanonicalCookie(
-                cookie1).spec());
+  std::unique_ptr<net::CanonicalCookie> cookie1(net::CanonicalCookie::Create(
+      GURL("http://example.com"), "ABC", "DEF", "example.com", "/",
+      base::Time(), base::Time(), false, false,
+      net::CookieSameSite::DEFAULT_MODE, false, net::COOKIE_PRIORITY_DEFAULT));
+  ASSERT_NE(nullptr, cookie1.get());
+  EXPECT_EQ("http://example.com/",
+            cookies_helpers::GetURLFromCanonicalCookie(*cookie1).spec());
 
-  net::CanonicalCookie cookie2(GURL(), "ABC", "DEF", ".helloworld.com", "/",
-                               base::Time(), base::Time(), base::Time(), true,
-                               false, net::CookieSameSite::DEFAULT_MODE,
-                               net::COOKIE_PRIORITY_DEFAULT);
+  std::unique_ptr<net::CanonicalCookie> cookie2(net::CanonicalCookie::Create(
+      GURL("http://helloworld.com"), "ABC", "DEF", ".helloworld.com", "/",
+      base::Time(), base::Time(), true, false,
+      net::CookieSameSite::DEFAULT_MODE, false, net::COOKIE_PRIORITY_DEFAULT));
+  ASSERT_NE(nullptr, cookie2.get());
   EXPECT_EQ("https://helloworld.com/",
-            cookies_helpers::GetURLFromCanonicalCookie(
-                cookie2).spec());
+            cookies_helpers::GetURLFromCanonicalCookie(*cookie2).spec());
 }
 
 TEST_F(ExtensionCookiesTest, EmptyDictionary) {
@@ -152,14 +159,13 @@ TEST_F(ExtensionCookiesTest, EmptyDictionary) {
 
 TEST_F(ExtensionCookiesTest, DomainMatching) {
   const DomainMatchCase tests[] = {
-    { "bar.com", "bar.com", true },
-    { ".bar.com", "bar.com", true },
-    { "bar.com", "foo.bar.com", true },
-    { "bar.com", "bar.foo.com", false },
-    { ".bar.com", ".foo.bar.com", true },
-    { ".bar.com", "baz.foo.bar.com", true },
-    { "foo.bar.com", ".bar.com", false }
-  };
+      {"bar.com", "http://bar.com", "", true},
+      {".bar.com", "http://bar.com", "bar.com", true},
+      {"bar.com", "http://foo.bar.com", "", true},
+      {"bar.com", "http://bar.foo.com", "", false},
+      {".bar.com", "http://foo.bar.com", ".foo.bar.com", true},
+      {".bar.com", "http://baz.foo.bar.com", "", true},
+      {"foo.bar.com", "http://bar.com", ".bar.com", false}};
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     // Build up the Params struct.
@@ -170,21 +176,24 @@ TEST_F(ExtensionCookiesTest, DomainMatching) {
     std::unique_ptr<GetAll::Params> params(GetAll::Params::Create(args));
 
     cookies_helpers::MatchFilter filter(&params->details);
-    net::CanonicalCookie cookie(
-        GURL(), std::string(), std::string(), tests[i].domain, std::string(),
-        base::Time(), base::Time(), base::Time(), false, false,
-        net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT);
-    EXPECT_EQ(tests[i].matches, filter.MatchesCookie(cookie));
+    std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
+        GURL(tests[i].url), std::string(), std::string(), tests[i].domain,
+        std::string(), base::Time(), base::Time(), false, false,
+        net::CookieSameSite::DEFAULT_MODE, false,
+        net::COOKIE_PRIORITY_DEFAULT));
+    ASSERT_NE(nullptr, cookie.get());
+    EXPECT_EQ(tests[i].matches, filter.MatchesCookie(*cookie));
   }
 }
 
 TEST_F(ExtensionCookiesTest, DecodeUTF8WithErrorHandling) {
-  net::CanonicalCookie canonical_cookie(
-      GURL(), std::string(), "011Q255bNX_1!yd\203e+", "test.com", "/path\203",
-      base::Time(), base::Time(), base::Time(), false, false,
-      net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT);
+  std::unique_ptr<net::CanonicalCookie> canonical_cookie(
+      net::CanonicalCookie::Create(GURL("http://test.com"),
+                                   "=011Q255bNX_1!yd\203e+;path=/path\203",
+                                   base::Time(), net::CookieOptions()));
+  ASSERT_NE(nullptr, canonical_cookie.get());
   Cookie cookie =
-      cookies_helpers::CreateCookie(canonical_cookie, "some cookie store");
+      cookies_helpers::CreateCookie(*canonical_cookie, "some cookie store");
   EXPECT_EQ(std::string("011Q255bNX_1!yd\xEF\xBF\xBD"
                         "e+"),
             cookie.value);
