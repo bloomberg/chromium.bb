@@ -13,10 +13,8 @@
 
 #include <algorithm>
 #include <iomanip>
-#include <string>
 
 #include "base/atomicops.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
@@ -51,16 +49,6 @@ static_assert(sizeof(base::subtle::Atomic32) == sizeof(base::PlatformThreadId),
 base::subtle::Atomic32 g_init_logging_delegate_thread_id = 0;
 #endif
 
-void InitChromiumLoggingAndCommandLine() {
-  // 0 means no arguments, so the null argv is never touched
-  base::CommandLine::Init(0, nullptr);
-
-  // Chromium checks for the presence of --v when deciding log level.
-  // Note that the *value* of --v doesn't matter for this check.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII("v", "");
-  logging::InitLogging(logging::LoggingSettings());
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // Constant Labels
 /////////////////////////////////////////////////////////////////////////////
@@ -92,10 +80,6 @@ std::string ErrorName(int err, const ConstantLabel* err_table) {
 
 inline int WebRtcSevToChromeSev(LoggingSeverity sev) {
   switch (sev) {
-    case LS_NONE:
-      // Used to set the log level for "no logging", so must be less
-      // than LOG_ERROR.
-      return ::logging::LOG_FATAL;
     case LS_ERROR:
       return ::logging::LOG_ERROR;
     case LS_WARNING:
@@ -217,8 +201,8 @@ DiagnosticLogMessage::~DiagnosticLogMessage() {
 }
 
 // static
-void LogMessage::LogToDebug(LoggingSeverity min_sev) {
-  logging::SetMinLogLevel(WebRtcSevToChromeSev(min_sev));
+void LogMessage::LogToDebug(int min_sev) {
+  logging::SetMinLogLevel(min_sev);
 }
 
 // Note: this function is a copy from the overriden libjingle implementation.

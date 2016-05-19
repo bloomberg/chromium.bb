@@ -49,21 +49,15 @@ std::string ErrorName(int err, const ConstantLabel* err_table);
 //   in debug builds.
 //  LS_WARNING: Something that may warrant investigation.
 //  LS_ERROR: Something that should not have occurred.
-//  LS_NONE: A level < LS_ERROR, used to disable logging.
 // Note that LoggingSeverity is mapped over to chromiums verbosity levels where
 // anything lower than or equal to the current verbosity level is written to
 // file which is the opposite of logging severity in libjingle where higher
 // severity numbers than or equal to the current severity level are written to
 // file. Also, note that the values are explicitly defined here for convenience
 // since the command line flag must be set using numerical values.
-//
-// LS_NONE is present so we can LogToDebug(LS_NONE) i.e. for ordinal
-// comparisons with other log levels.
-//
 // TODO(tommi): To keep things simple, we should just use the same values for
 // these constants as Chrome does.
-enum LoggingSeverity { LS_NONE = 0,
-                       LS_ERROR = 1,
+enum LoggingSeverity { LS_ERROR = 1,
                        LS_WARNING = 2,
                        LS_INFO = 3,
                        LS_VERBOSE = 4,
@@ -136,7 +130,7 @@ class LogMultilineState {
 
 class LogMessage {
  public:
-  static void LogToDebug(LoggingSeverity min_sev);
+  static void LogToDebug(int min_sev);
 };
 
 // When possible, pass optional state variable to track various data across
