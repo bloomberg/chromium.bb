@@ -2885,13 +2885,6 @@
    fun:_ZN5blink9FrameView6layoutEv
 }
 {
-   bug_571272
-   Memcheck:Overlap
-   fun:memcpy*
-   fun:_ZN3net10QuicFramer14EncryptPayloadENS_15EncryptionLevel*
-   fun:_ZN3net17QuicPacketCreator15SerializePacketEPcm
-}
-{
    bug_571543
    Memcheck:Leak
    ...
