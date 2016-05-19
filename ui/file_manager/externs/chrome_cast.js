@@ -574,7 +574,13 @@ chrome.cast.ReceiverActionListener;
 /**
  * @type {boolean}
  */
-chrome.cast.isAvailable = false;
+chrome.cast.isAvailable;
+
+
+/**
+ * @type {boolean}
+ */
+chrome.cast.usingPresentationApi;
 
 
 /**

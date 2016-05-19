@@ -861,7 +861,7 @@ function VideoControls(
   this.initVolumeControls();
   this.initSubtitlesButton();
 
-  // Create the cast button.
+  // Create the cast menu button.
   // We need to use <button> since cr.ui.MenuButton.decorate modifies prototype
   // chain, by which <files-icon-button> will not work correctly.
   // TODO(fukino): Find a way to use files-icon-button consistently.
@@ -872,6 +872,10 @@ function VideoControls(
   this.castButton_.setAttribute('state', MediaControls.ButtonStateType.DEFAULT);
   this.castButton_.appendChild(document.createElement('files-ripple'));
   cr.ui.decorate(this.castButton_, cr.ui.MenuButton);
+
+  // Create the cast button, which is a normal button and is used when we cast
+  // videos usign Media Router.
+  this.createButton('cast-button');
 
   if (opt_fullScreenToggle) {
     this.fullscreenButton_ =

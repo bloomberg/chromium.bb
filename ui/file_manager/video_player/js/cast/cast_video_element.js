@@ -349,8 +349,10 @@ CastVideoElement.prototype = /** @struct */ {
           function() {},
           function(error) {
             // Ignores session error, since session may already be closed.
-            if (error.code !== chrome.cast.ErrorCode.SESSION_ERROR)
+            if (error.code !== chrome.cast.ErrorCode.SESSION_ERROR &&
+                error.code !== chrome.cast.ErrorCode.INVALID_PARAMETER) {
               this.onCastCommandError_(error);
+            }
           }.wrap(this));
 
       this.castMedia_.removeUpdateListener(this.onCastMediaUpdatedBound_);

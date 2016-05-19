@@ -15,11 +15,12 @@ function CastExtensionDiscoverer() {}
  * @const
  */
 CastExtensionDiscoverer.CAST_EXTENSION_IDS = [
+  'pkedcjkdefgpdelpbcmbmeomcjbeemfm', // MR official
   'boadgeojelhgndaghljhdicfkmllpafd', // release
   'dliochdbjfkdbacpmhlcpmleaejidimm', // beta
-  'hfaagokkkhdbgiakmmlclaapfelnkoah',
-  'fmfcbgogabcbclcofgocippekhfcmgfj',
-  'enhhojjnijigcajfphajepfemndkmdlo'
+  'enhhojjnijigcajfphajepfemndkmdlo', // dev
+  'fmfcbgogabcbclcofgocippekhfcmgfj', // staging
+  'fjhoaacokmgbjemoflkofnenfaiekifl'  // stable used during MR development.
 ];
 
 /**

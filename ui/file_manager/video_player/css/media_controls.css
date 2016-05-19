@@ -131,7 +131,8 @@ paper-slider.volume {
 
 /* Cast button. */
 
-.media-button.cast {
+.media-button.cast,
+.media-button.cast-button {
   background-image: -webkit-image-set(
     url(../images/media/media_chromecast.png) 1x,
     url(../images/media/2x/media_chromecast.png) 2x);
@@ -147,11 +148,13 @@ paper-slider.volume {
   outline: none;
 }
 
-#video-player[cast-available][castable] .media-button.cast {
+#video-player[cast-available][castable] .media-button.cast,
+#video-player[mr-cast-available][castable] .media-button.cast-button {
   display: block;
 }
 
-#video-player[casting] .media-button.cast {
+#video-player[casting] .media-button.cast,
+#video-player[casting] .media-button.cast-button {
   background-image: -webkit-image-set(
     url(../images/media/media_chromecast_casting.png) 1x,
     url(../images/media/2x/media_chromecast_casting.png) 2x);

@@ -132,6 +132,12 @@ function initializeApi() {
  * @param {Array<Object>} receivers List of casts.
  */
 function onReceiver(availability, receivers) {
+  if (chrome.cast.usingPresentationApi) {
+    player.setCastAvailability(
+        availability === chrome.cast.ReceiverAvailability.AVAILABLE);
+    return;
+  }
+
   if (availability === chrome.cast.ReceiverAvailability.AVAILABLE) {
     if (!receivers) {
       console.error('Receiver list is empty.');

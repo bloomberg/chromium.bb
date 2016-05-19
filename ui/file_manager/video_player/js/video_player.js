@@ -277,6 +277,10 @@ VideoPlayer.prototype.prepare = function(videos) {
   else
     videoPlayerElement.removeAttribute('multiple');
 
+  var castButton = queryRequiredElement('.cast-button');
+  castButton.addEventListener('click',
+      this.onCastButtonClicked_.wrap(this));
+
   document.addEventListener('keydown', reloadVideo);
   document.addEventListener('click', reloadVideo);
 };
@@ -359,8 +363,6 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
     if (this.currentCast_) {
       metrics.recordPlayType(metrics.PLAY_TYPE.CAST);
 
-      videoPlayerElement.setAttribute('casting', true);
-
       getRequiredElement('cast-name').textContent =
           this.currentCast_.friendlyName;
 
@@ -372,9 +374,14 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
               return Promise.reject('No casts are available.');
 
             return new Promise(function(fulfill, reject) {
-              chrome.cast.requestSession(
-                  fulfill, reject, undefined, this.currentCast_.label);
+              if (this.currentSession_) {
+                fulfill(this.currentSession_);
+              } else {
+                chrome.cast.requestSession(
+                    fulfill, reject, undefined, this.currentCast_.label);
+              }
             }.bind(this)).then(function(session) {
+              videoPlayerElement.setAttribute('casting', true);
               session.addUpdateListener(this.onCastSessionUpdateBound_);
 
               this.currentSession_ = session;
@@ -503,7 +510,12 @@ VideoPlayer.prototype.unloadVideo = function(opt_keepSession) {
     this.videoElement_ = null;
 
     if (!opt_keepSession && this.currentSession_) {
-      this.currentSession_.stop(callback, callback);
+      // We should not request stop() if the current session is not connected to
+      // the receiver.
+      if (this.currentSession_.status === chrome.cast.SessionStatus.CONNECTED)
+        this.currentSession_.stop(callback, callback);
+      else
+        setTimeout(callback);
       this.currentSession_.removeUpdateListener(this.onCastSessionUpdateBound_);
       this.currentSession_ = null;
     } else {
@@ -653,6 +665,50 @@ VideoPlayer.prototype.setCastList = function(casts) {
 };
 
 /**
+ * Tells the availability of cast receivers to VideoPlayeru topdate the
+ * visibility of the cast button..
+ * @param {boolean} available Whether at least one cast receiver is available.
+ */
+VideoPlayer.prototype.setCastAvailability = function(available) {
+  var videoPlayerElement = getRequiredElement('video-player');
+  if (available) {
+    videoPlayerElement.setAttribute('mr-cast-available', true);
+  } else {
+    videoPlayerElement.removeAttribute('mr-cast-available');
+    if (this.currentCast_)
+      this.onCurrentCastDisappear_();
+  }
+};
+
+/**
+ * Handles click event on cast button to request a session.
+ * @private
+ */
+VideoPlayer.prototype.onCastButtonClicked_ = function() {
+  // This method is called only when Media Router is enabled.
+  // In this case, requestSession() will open a built-in dialog (not a dropdown
+  // menu) to choose the receiver, and callback is called with the session
+  // object after user's operation..
+  chrome.cast.requestSession(
+      function(session) {
+        this.unloadVideo(true);
+        this.loadQueue_.run(function(callback) {
+          this.currentCast_ = {
+            label: session.receiver.label,
+            friendlyName: session.receiver.friendlyName
+          };
+          this.currentSession_ = session;
+          this.reloadCurrentVideo();
+          callback();
+        }.bind(this));
+      }.bind(this),
+      function(error) {
+        if (error.code !== chrome.cast.ErrorCode.CANCEL)
+          console.error('requestSession from cast button failed', error);
+      });
+};
+
+/**
  * Updates the check status of the cast menu items.
  * @private
  */
@@ -696,8 +752,20 @@ VideoPlayer.prototype.onCurrentCastDisappear_ = function() {
  * @private
  */
 VideoPlayer.prototype.onCastSessionUpdate_ = function(alive) {
-  if (!alive)
+  if (!alive) {
+    var videoPlayerElement = getRequiredElement('video-player');
+    videoPlayerElement.removeAttribute('casting');
+
+    // Loads the current video in local player.
     this.unloadVideo();
+    this.loadQueue_.run(function(callback) {
+      this.currentCast_ = null;
+      if (!chrome.cast.usingPresentationApi)
+        this.updateCheckOnCastMenu_();
+      this.reloadCurrentVideo();
+      callback();
+    }.wrap(this));
+  }
 };
 
 /**
