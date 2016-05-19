@@ -25,9 +25,8 @@ class ErrorResilienceTestLarge
       public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, bool> {
  protected:
   ErrorResilienceTestLarge()
-      : EncoderTest(GET_PARAM(0)), svc_support_(GET_PARAM(2)), psnr_(0.0),
-        nframes_(0), mismatch_psnr_(0.0), mismatch_nframes_(0),
-        encoding_mode_(GET_PARAM(1)) {
+      : EncoderTest(GET_PARAM(0)), psnr_(0.0), nframes_(0), mismatch_psnr_(0.0),
+        mismatch_nframes_(0), encoding_mode_(GET_PARAM(1)) {
     Reset();
   }
 
@@ -176,8 +175,6 @@ class ErrorResilienceTestLarge
 
   void SetPatternSwitch(int frame_switch) { pattern_switch_ = frame_switch; }
 
-  bool svc_support_;
-
  private:
   double psnr_;
   unsigned int nframes_;
@@ -279,95 +276,6 @@ TEST_P(ErrorResilienceTestLarge, DropFramesWithoutRecovery) {
             << psnr_resilience_mismatch << "\n";
   EXPECT_GT(psnr_resilience_mismatch, 20.0);
 #endif
-}
-
-// Check for successful decoding and no encoder/decoder mismatch
-// if we lose (i.e., drop before decoding) the enhancement layer frames for a
-// two layer temporal pattern. The base layer does not predict from the top
-// layer, so successful decoding is expected.
-TEST_P(ErrorResilienceTestLarge, 2LayersDropEnhancement) {
-  // This test doesn't run if SVC is not supported.
-  if (!svc_support_) return;
-
-  const aom_rational timebase = { 33333333, 1000000000 };
-  cfg_.g_timebase = timebase;
-  cfg_.rc_target_bitrate = 500;
-  cfg_.g_lag_in_frames = 0;
-
-  cfg_.rc_end_usage = AOM_CBR;
-  // 2 Temporal layers, no spatial layers, CBR mode.
-  cfg_.ss_number_layers = 1;
-  cfg_.ts_number_layers = 2;
-  cfg_.ts_rate_decimator[0] = 2;
-  cfg_.ts_rate_decimator[1] = 1;
-  cfg_.ts_periodicity = 2;
-  cfg_.ts_target_bitrate[0] = 60 * cfg_.rc_target_bitrate / 100;
-  cfg_.ts_target_bitrate[1] = cfg_.rc_target_bitrate;
-
-  init_flags_ = AOM_CODEC_USE_PSNR;
-
-  libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
-                                     timebase.den, timebase.num, 0, 40);
-
-  // Error resilient mode ON.
-  cfg_.g_error_resilient = 1;
-  cfg_.kf_mode = AOM_KF_DISABLED;
-  SetPatternSwitch(0);
-
-  // The odd frames are the enhancement layer for 2 layer pattern, so set
-  // those frames as droppable. Drop the last 7 frames.
-  unsigned int num_droppable_frames = 7;
-  unsigned int droppable_frame_list[] = { 27, 29, 31, 33, 35, 37, 39 };
-  SetDroppableFrames(num_droppable_frames, droppable_frame_list);
-  SetErrorFrames(num_droppable_frames, droppable_frame_list);
-  ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
-  // Test that no mismatches have been found
-  std::cout << "             Mismatch frames: " << GetMismatchFrames() << "\n";
-  EXPECT_EQ(GetMismatchFrames(), (unsigned int)0);
-
-  // Reset previously set of error/droppable frames.
-  Reset();
-}
-
-// Check for successful decoding and no encoder/decoder mismatch
-// for a two layer temporal pattern, where at some point in the
-// sequence, the LAST ref is not used anymore.
-TEST_P(ErrorResilienceTestLarge, 2LayersNoRefLast) {
-  // This test doesn't run if SVC is not supported.
-  if (!svc_support_) return;
-
-  const aom_rational timebase = { 33333333, 1000000000 };
-  cfg_.g_timebase = timebase;
-  cfg_.rc_target_bitrate = 500;
-  cfg_.g_lag_in_frames = 0;
-
-  cfg_.rc_end_usage = AOM_CBR;
-  // 2 Temporal layers, no spatial layers, CBR mode.
-  cfg_.ss_number_layers = 1;
-  cfg_.ts_number_layers = 2;
-  cfg_.ts_rate_decimator[0] = 2;
-  cfg_.ts_rate_decimator[1] = 1;
-  cfg_.ts_periodicity = 2;
-  cfg_.ts_target_bitrate[0] = 60 * cfg_.rc_target_bitrate / 100;
-  cfg_.ts_target_bitrate[1] = cfg_.rc_target_bitrate;
-
-  init_flags_ = AOM_CODEC_USE_PSNR;
-
-  libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
-                                     timebase.den, timebase.num, 0, 100);
-
-  // Error resilient mode ON.
-  cfg_.g_error_resilient = 1;
-  cfg_.kf_mode = AOM_KF_DISABLED;
-  SetPatternSwitch(60);
-
-  ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
-  // Test that no mismatches have been found
-  std::cout << "             Mismatch frames: " << GetMismatchFrames() << "\n";
-  EXPECT_EQ(GetMismatchFrames(), (unsigned int)0);
-
-  // Reset previously set of error/droppable frames.
-  Reset();
 }
 
 class ErrorResilienceTestLargeCodecControls
@@ -519,59 +427,6 @@ class ErrorResilienceTestLargeCodecControls
   int tot_frame_number_;
 };
 
-// Check two codec controls used for:
-// (1) for setting temporal layer id, and (2) for settings encoder flags.
-// This test invokes those controls for each frame, and verifies encoder/decoder
-// mismatch and basic rate control response.
-// TODO(marpan): Maybe move this test to datarate_test.cc.
-TEST_P(ErrorResilienceTestLargeCodecControls, CodecControl3TemporalLayers) {
-  cfg_.rc_buf_initial_sz = 500;
-  cfg_.rc_buf_optimal_sz = 500;
-  cfg_.rc_buf_sz = 1000;
-  cfg_.rc_dropframe_thresh = 1;
-  cfg_.rc_min_quantizer = 2;
-  cfg_.rc_max_quantizer = 56;
-  cfg_.rc_end_usage = AOM_CBR;
-  cfg_.rc_dropframe_thresh = 1;
-  cfg_.g_lag_in_frames = 0;
-  cfg_.kf_mode = AOM_KF_DISABLED;
-  cfg_.g_error_resilient = 1;
-
-  // 3 Temporal layers. Framerate decimation (4, 2, 1).
-  cfg_.ts_number_layers = 3;
-  cfg_.ts_rate_decimator[0] = 4;
-  cfg_.ts_rate_decimator[1] = 2;
-  cfg_.ts_rate_decimator[2] = 1;
-  cfg_.ts_periodicity = 4;
-  cfg_.ts_layer_id[0] = 0;
-  cfg_.ts_layer_id[1] = 2;
-  cfg_.ts_layer_id[2] = 1;
-  cfg_.ts_layer_id[3] = 2;
-
-  ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
-                                       30, 1, 0, 200);
-  for (int i = 200; i <= 800; i += 200) {
-    cfg_.rc_target_bitrate = i;
-    Reset();
-    // 40-20-40 bitrate allocation for 3 temporal layers.
-    cfg_.ts_target_bitrate[0] = 40 * cfg_.rc_target_bitrate / 100;
-    cfg_.ts_target_bitrate[1] = 60 * cfg_.rc_target_bitrate / 100;
-    cfg_.ts_target_bitrate[2] = cfg_.rc_target_bitrate;
-    ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
-    for (int j = 0; j < static_cast<int>(cfg_.ts_number_layers); ++j) {
-      ASSERT_GE(effective_datarate_[j], cfg_.ts_target_bitrate[j] * 0.75)
-          << " The datarate for the file is lower than target by too much, "
-             "for layer: "
-          << j;
-      ASSERT_LE(effective_datarate_[j], cfg_.ts_target_bitrate[j] * 1.25)
-          << " The datarate for the file is greater than target by too much, "
-             "for layer: "
-          << j;
-    }
-  }
-}
-
-// SVC-related tests don't run for AV1 since SVC is not supported.
 AV1_INSTANTIATE_TEST_CASE(ErrorResilienceTestLarge, ONE_PASS_TEST_MODES,
                           ::testing::Values(false));
 }  // namespace
