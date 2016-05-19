@@ -204,6 +204,16 @@ TEST(RefCountedUnitTest, Equality) {
   EXPECT_NE(p2, p1);
 }
 
+TEST(RefCountedUnitTest, NullptrEquality) {
+  scoped_refptr<SelfAssign> ptr_to_an_instance(new SelfAssign);
+  scoped_refptr<SelfAssign> ptr_to_nullptr;
+
+  EXPECT_NE(nullptr, ptr_to_an_instance);
+  EXPECT_NE(ptr_to_an_instance, nullptr);
+  EXPECT_EQ(nullptr, ptr_to_nullptr);
+  EXPECT_EQ(ptr_to_nullptr, nullptr);
+}
+
 TEST(RefCountedUnitTest, ConvertibleEquality) {
   scoped_refptr<Derived> p1(new Derived);
   scoped_refptr<SelfAssign> p2;
