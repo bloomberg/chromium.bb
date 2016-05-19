@@ -42,6 +42,9 @@ class CHROMEOS_EXPORT CrasAudioClient : public DBusClient {
     // Called when active audio input node changed to new node with |node_id|.
     virtual void ActiveInputNodeChanged(uint64_t node_id);
 
+    // Called when output node's volume changed.
+    virtual void OutputNodeVolumeChanged(uint64_t node_id, int volume);
+
    protected:
     virtual ~Observer();
   };

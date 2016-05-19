@@ -592,6 +592,28 @@ void CrasAudioHandler::NodesChanged() {
     GetNodes();
 }
 
+void CrasAudioHandler::OutputNodeVolumeChanged(uint64_t node_id, int volume) {
+  const AudioDevice* device = this->GetDeviceFromId(node_id);
+  int old_volume;
+
+  // If this is not an active output node, ignore this event. Because when this
+  // node set to active, it will be applied with the volume value stored in
+  // preference.
+  if (!device || !device->active || device->is_input)
+    return;
+
+  // If this callback is triggered by a response to previous set volume command,
+  // do nothing.
+  old_volume =
+      static_cast<int>(audio_pref_handler_->GetOutputVolumeValue(device));
+  if (old_volume == volume)
+    return;
+
+  // Otherwise another app or the hardware itself just changed volume, update
+  // the new volume value to all active output nodes.
+  SetOutputVolumePercent(volume);
+}
+
 void CrasAudioHandler::ActiveOutputNodeChanged(uint64_t node_id) {
   if (active_output_node_id_ == node_id)
     return;

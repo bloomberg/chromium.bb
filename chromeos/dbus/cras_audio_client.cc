@@ -257,6 +257,15 @@ class CrasAudioClientImpl : public CrasAudioClient {
                    weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&CrasAudioClientImpl::SignalConnected,
                    weak_ptr_factory_.GetWeakPtr()));
+
+    // Monitor the D-Bus signal for output node volume change.
+    cras_proxy_->ConnectToSignal(
+        cras::kCrasControlInterface,
+        cras::kOutputNodeVolumeChanged,
+        base::Bind(&CrasAudioClientImpl::OutputNodeVolumeChangedReceived,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&CrasAudioClientImpl::SignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -319,6 +328,21 @@ class CrasAudioClientImpl : public CrasAudioClient {
                  << signal->ToString();
     }
     FOR_EACH_OBSERVER(Observer, observers_, ActiveInputNodeChanged(node_id));
+  }
+
+  void OutputNodeVolumeChangedReceived(dbus::Signal* signal) {
+    dbus::MessageReader reader(signal);
+    uint64_t node_id;
+    int volume;
+
+    if (!reader.PopUint64(&node_id)) {
+      LOG(ERROR) << "Error eading signal from cras:" << signal->ToString();
+    }
+    if (!reader.PopInt32(&volume)) {
+      LOG(ERROR) << "Error eading signal from cras:" << signal->ToString();
+    }
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OutputNodeVolumeChanged(node_id, volume));
   }
 
   void OnGetVolumeState(const GetVolumeStateCallback& callback,
@@ -468,6 +492,10 @@ void CrasAudioClient::Observer::NodesChanged() {
 void CrasAudioClient::Observer::ActiveOutputNodeChanged(uint64_t node_id) {}
 
 void CrasAudioClient::Observer::ActiveInputNodeChanged(uint64_t node_id) {}
+
+void CrasAudioClient::Observer::OutputNodeVolumeChanged(uint64_t node_id,
+                                                        int volume) {
+}
 
 CrasAudioClient::CrasAudioClient() {
 }
