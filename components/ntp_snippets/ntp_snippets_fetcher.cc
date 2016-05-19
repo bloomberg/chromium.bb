@@ -201,7 +201,7 @@ void NTPSnippetsFetcher::FetchSnippetsFromHosts(
   hosts_ = hosts;
   fetch_start_time_ = tick_clock_->NowTicks();
 
-  if (UseHostRestriction() && hosts_.empty()) {
+  if (UsesHostRestrictions() && hosts_.empty()) {
     FetchFinished(OptionalSnippets(), FetchResult::EMPTY_HOSTS,
                   /*extra_message=*/std::string());
     return;
@@ -218,7 +218,7 @@ void NTPSnippetsFetcher::FetchSnippetsFromHosts(
 
   count_to_fetch_ = count;
 
-  bool use_authentication = UseAuthentication();
+  bool use_authentication = UsesAuthentication();
 
   if (use_authentication && signin_manager_->IsAuthenticated()) {
     // Signed-in: get OAuth token --> fetch snippets.
@@ -264,7 +264,7 @@ void NTPSnippetsFetcher::FetchSnippetsImpl(const GURL& url,
 
 std::string NTPSnippetsFetcher::GetHostRestricts() const {
   std::string host_restricts;
-  if (UseHostRestriction()) {
+  if (UsesHostRestrictions()) {
     for (const std::string& host : hosts_) {
       if (!host_restricts.empty())
         host_restricts.push_back(',');
@@ -274,13 +274,13 @@ std::string NTPSnippetsFetcher::GetHostRestricts() const {
   return host_restricts;
 }
 
-bool NTPSnippetsFetcher::UseHostRestriction() const {
+bool NTPSnippetsFetcher::UsesHostRestrictions() const {
   return use_host_restriction_ &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kDontRestrict);
 }
 
-bool NTPSnippetsFetcher::UseAuthentication() const {
+bool NTPSnippetsFetcher::UsesAuthentication() const {
   return (personalization_ == Personalization::kPersonal ||
           personalization_ == Personalization::kBoth);
 }

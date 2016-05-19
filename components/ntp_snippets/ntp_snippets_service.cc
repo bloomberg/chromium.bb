@@ -223,7 +223,7 @@ void NTPSnippetsService::Init(bool enabled) {
   enabled_ = enabled;
   if (enabled_) {
     // |suggestions_service_| can be null in tests.
-    if (snippets_fetcher_->UseHostRestriction() && suggestions_service_) {
+    if (snippets_fetcher_->UsesHostRestrictions() && suggestions_service_) {
       suggestions_service_subscription_ = suggestions_service_->AddCallback(
           base::Bind(&NTPSnippetsService::OnSuggestionsChanged,
                      base::Unretained(this)));

@@ -38,6 +38,13 @@ cr.define('chrome.SnippetsInternals', function() {
     chrome.send('loaded');
   }
 
+  function setHostRestricted(restricted) {
+    receiveProperty('switch-restrict-to-hosts', restricted ? 'True' : 'False');
+    if (!restricted) {
+      $('hosts-restrict').classList.add('hidden');
+    }
+  }
+
   function receiveProperty(propertyId, value) {
     $(propertyId).textContent = value;
   }
@@ -59,8 +66,11 @@ cr.define('chrome.SnippetsInternals', function() {
   }
 
   function receiveJson(json) {
-    receiveProperty('last-json-text', json);
-    if (json) {
+    var trimmed = json.trim();
+    var hasContent = (trimmed && trimmed != '{}');
+
+    if (hasContent) {
+      receiveProperty('last-json-text', trimmed);
       $('last-json').classList.remove('hidden');
     } else {
       $('last-json').classList.add('hidden');
@@ -106,6 +116,7 @@ cr.define('chrome.SnippetsInternals', function() {
   // Return an object with all of the exports.
   return {
     initialize: initialize,
+    setHostRestricted: setHostRestricted,
     receiveProperty: receiveProperty,
     receiveHosts: receiveHosts,
     receiveSnippets: receiveSnippets,

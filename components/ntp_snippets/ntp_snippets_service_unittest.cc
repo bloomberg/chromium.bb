@@ -411,24 +411,27 @@ TEST_F(NTPSnippetsServiceTest, LimitNumSnippets) {
 
 TEST_F(NTPSnippetsServiceTest, LoadInvalidJson) {
   LoadFromJSONString(GetInvalidJson());
-  EXPECT_THAT(service()->last_status(), StartsWith("Received invalid JSON"));
+  EXPECT_THAT(service()->snippets_fetcher()->last_status(),
+              StartsWith("Received invalid JSON"));
   EXPECT_THAT(service()->snippets(), IsEmpty());
 }
 
 TEST_F(NTPSnippetsServiceTest, LoadInvalidJsonWithExistingSnippets) {
   LoadFromJSONString(GetTestJson());
   ASSERT_THAT(service()->snippets(), SizeIs(1));
-  ASSERT_EQ("OK", service()->last_status());
+  ASSERT_EQ("OK", service()->snippets_fetcher()->last_status());
 
   LoadFromJSONString(GetInvalidJson());
-  EXPECT_THAT(service()->last_status(), StartsWith("Received invalid JSON"));
+  EXPECT_THAT(service()->snippets_fetcher()->last_status(),
+              StartsWith("Received invalid JSON"));
   // This should not have changed the existing snippets.
   EXPECT_THAT(service()->snippets(), SizeIs(1));
 }
 
 TEST_F(NTPSnippetsServiceTest, LoadIncompleteJson) {
   LoadFromJSONString(GetIncompleteJson());
-  EXPECT_EQ("Invalid / empty list.", service()->last_status());
+  EXPECT_EQ("Invalid / empty list.",
+            service()->snippets_fetcher()->last_status());
   EXPECT_THAT(service()->snippets(), IsEmpty());
 }
 
@@ -437,7 +440,8 @@ TEST_F(NTPSnippetsServiceTest, LoadIncompleteJsonWithExistingSnippets) {
   ASSERT_THAT(service()->snippets(), SizeIs(1));
 
   LoadFromJSONString(GetIncompleteJson());
-  EXPECT_EQ("Invalid / empty list.", service()->last_status());
+  EXPECT_EQ("Invalid / empty list.",
+            service()->snippets_fetcher()->last_status());
   // This should not have changed the existing snippets.
   EXPECT_THAT(service()->snippets(), SizeIs(1));
 }

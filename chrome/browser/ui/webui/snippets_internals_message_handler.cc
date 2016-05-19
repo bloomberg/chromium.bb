@@ -71,11 +71,11 @@ void SnippetsInternalsMessageHandler::NTPSnippetsServiceLoaded() {
   if (!dom_loaded_) return;
 
   SendSnippets();
-  SendDiscardedSnippets();
 
   web_ui()->CallJavascriptFunction(
       "chrome.SnippetsInternals.receiveJson",
-      base::StringValue(ntp_snippets_service_->last_json()));
+      base::StringValue(
+          ntp_snippets_service_->snippets_fetcher()->last_json()));
 }
 
 void SnippetsInternalsMessageHandler::NTPSnippetsServiceCleared() {}
@@ -166,12 +166,23 @@ void SnippetsInternalsMessageHandler::SendInitialData() {
   SendBoolean("flag-snippets", base::FeatureList::IsEnabled(
                                    chrome::android::kNTPSnippetsFeature));
 
-  bool restricted = !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ntp_snippets::switches::kDontRestrict);
-  SendBoolean("switch-restrict-to-hosts", restricted);
-  const std::string help(restricted ? "(specify at least one host)" :
-      "(unrestricted if no host is given)");
-  SendString("hosts-help", help);
+  web_ui()->CallJavascriptFunction(
+      "chrome.SnippetsInternals.setHostRestricted",
+      base::FundamentalValue(
+          ntp_snippets_service_->snippets_fetcher()->UsesHostRestrictions()));
+
+  switch (ntp_snippets_service_->snippets_fetcher()->personalization()) {
+    case ntp_snippets::NTPSnippetsFetcher::Personalization::kPersonal:
+      SendString("switch-personalized", "Only personalized");
+      break;
+    case ntp_snippets::NTPSnippetsFetcher::Personalization::kBoth:
+      SendString("switch-personalized",
+                 "Both personalized and non-personalized");
+      break;
+    case ntp_snippets::NTPSnippetsFetcher::Personalization::kNonPersonal:
+      SendString("switch-personalized", "Only non-personalized");
+      break;
+  }
 
   SendSnippets();
   SendDiscardedSnippets();
@@ -190,7 +201,8 @@ void SnippetsInternalsMessageHandler::SendSnippets() {
   web_ui()->CallJavascriptFunction("chrome.SnippetsInternals.receiveSnippets",
                                    result);
 
-  const std::string& status = ntp_snippets_service_->last_status();
+  const std::string& status =
+      ntp_snippets_service_->snippets_fetcher()->last_status();
   if (!status.empty())
     SendString("hosts-status", "Finished: " + status);
 }

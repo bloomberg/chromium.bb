@@ -88,14 +88,8 @@ class NTPSnippetsService : public KeyedService {
     return discarded_snippets_;
   }
 
-  // Returns the last status message from the snippets fetcher.
-  const std::string& last_status() const {
-    return snippets_fetcher_->last_status();
-  }
-
-  // Returns the last json from the snippets fetcher.
-  const std::string& last_json() const {
-    return snippets_fetcher_->last_json();
+  const NTPSnippetsFetcher* snippets_fetcher() const {
+    return snippets_fetcher_.get();
   }
 
   // (Re)schedules the periodic fetching of snippets. This is necessary because

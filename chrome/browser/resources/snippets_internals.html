@@ -27,6 +27,9 @@ found in the LICENSE file.
       <tr>
         <td class="name">Snippets restricted to hosts
         <td id="switch-restrict-to-hosts" class="value">
+      <tr>
+        <td class="name">Snippets type
+        <td id="switch-personalized" class="value">
     </table>
   </div>
 
@@ -77,9 +80,11 @@ found in the LICENSE file.
     </div>
     <div class="forms">
       <input id="submit-download" type="submit" value="Add snippets">
-          from hosts <span id="hosts-help" class="detail"></span>:
-      <textarea id="hosts-input" placeholder="www.wired.com www.bbc.co.uk" 
-          rows="5" autocapitalize="none"></textarea>
+      <span id="hosts-restrict">from hosts <span class="detail">(specify at 
+          least one host)</span>:
+        <textarea id="hosts-input" placeholder="www.wired.com www.bbc.co.uk" 
+            rows="5" autocapitalize="none"></textarea>
+      </span>
       <span id="hosts-status" class="detail"></span>
     </div>
   </div>

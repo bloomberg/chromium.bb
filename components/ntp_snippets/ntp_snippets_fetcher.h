@@ -65,8 +65,12 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
     RESULT_MAX
   };
 
-  // Enum listing all possible variants of dealing with personalization.
-  enum class Personalization { kPersonal, kNonPersonal, kBoth };
+  // Enumeration listing all possible variants of dealing with personalization.
+  enum class Personalization {
+    kPersonal,
+    kNonPersonal,
+    kBoth
+  };
 
   NTPSnippetsFetcher(
       SigninManagerBase* signin_manager,
@@ -93,7 +97,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   // Debug string representing the status/result of the last fetch attempt.
   const std::string& last_status() const { return last_status_; }
 
-  // Returns the last json fetched from the server.
+  // Returns the last JSON fetched from the server.
   const std::string& last_json() const {
     return last_fetch_json_;
   }
@@ -101,10 +105,10 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   // Returns the personalization setting of the fetcher.
   Personalization personalization() const { return personalization_; }
 
-  // Does the fetcher use host restriction?
-  bool UseHostRestriction() const;
+  // Does the fetcher use host restrictions?
+  bool UsesHostRestrictions() const;
   // Does the fetcher use authentication to get personalized results?
-  bool UseAuthentication() const;
+  bool UsesAuthentication() const;
 
   // Overrides internal clock for testing purposes.
   void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock) {
