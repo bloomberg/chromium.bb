@@ -56,6 +56,13 @@ bool SpokenFeedbackEventRewriterDelegate::DispatchKeyEventToChromeVox(
   // Always capture the Search key.
   capture |= key_event.IsCommandDown();
 
+  // Don't capture tab as it gets consumed by Blink so never comes back
+  // unhandled. In third_party/WebKit/Source/core/input/EventHandler.cpp, a
+  // default tab handler consumes tab even when no focusable nodes are found; it
+  // sets focus to Chrome and eats the event.
+  if (key_event.GetDomKey() == ui::DomKey::TAB)
+    capture = false;
+
   // Listen for any unhandled keyboard events from ChromeVox's background page
   // when capturing keys to reinject.
   if (capture)
@@ -85,23 +92,8 @@ void SpokenFeedbackEventRewriterDelegate::HandleKeyboardEvent(
 
   ui::EventProcessor* processor =
       ash::Shell::GetPrimaryRootWindow()->GetHost()->event_processor();
-  bool dispatcher_destroyed = false;
 
-  // Tab always comes back as ui::ET_KEY_RELEASED. Unfortunately, this is
-  // explicitly skipped by FocusManager, which handles tab traversal. Change the
-  // event here.
-  if (key_event.key_code() == ui::VKEY_TAB) {
-    ui::KeyEvent tab_press(ui::ET_KEY_PRESSED, key_event.key_code(),
-                           key_event.code(), key_event.flags(),
-                           key_event.GetDomKey(), key_event.time_stamp());
-    dispatcher_destroyed =
-        processor->OnEventFromSource(&tab_press).dispatcher_destroyed;
-  } else {
-    dispatcher_destroyed =
-        processor->OnEventFromSource(&key_event).dispatcher_destroyed;
-  }
-
-  if (dispatcher_destroyed) {
+  if (processor->OnEventFromSource(&key_event).dispatcher_destroyed) {
     VLOG(0) << "Undispatched key " << key_event.key_code()
             << " due to destroyed dispatcher.";
   }
