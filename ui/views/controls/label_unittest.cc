@@ -53,7 +53,13 @@ void SetRTL(bool rtl) {
   EXPECT_EQ(rtl, base::i18n::IsRTL());
 }
 
-TEST_F(LabelTest, FontPropertySymbol) {
+// Crashes on Linux only. http://crbug.com/612406
+#if defined(OS_LINUX)
+#define MAYBE_FontPropertySymbol DISABLED_FontPropertySymbol
+#else
+#define MAYBE_FontPropertySymbol FontPropertySymbol
+#endif
+TEST_F(LabelTest, MAYBE_FontPropertySymbol) {
   Label label;
   std::string font_name("symbol");
   gfx::Font font(font_name, 26);
