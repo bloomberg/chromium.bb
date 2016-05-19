@@ -926,8 +926,17 @@ IN_PROC_BROWSER_TEST_F(WebViewContextMenuInteractiveTest,
 // it tests that events forwarded from the embedder are properly transformed,
 // and in oopif-mode the events are sent directly to the child process without
 // the forwarding code path (relying on surface-based hittesting).
+
+// Flaky on ChromeOS.  http://crbug.com/613258
+#if defined(OS_CHROMEOS)
+#define MAYBE_ContextMenuParamsAfterCSSTransforms \
+  DISABLED_ContextMenuParamsAfterCSSTransforms
+#else
+#define MAYBE_ContextMenuParamsAfterCSSTransforms \
+  ContextMenuParamsAfterCSSTransforms
+#endif
 IN_PROC_BROWSER_TEST_F(WebViewContextMenuInteractiveTest,
-                       ContextMenuParamsAfterCSSTransforms) {
+                       MAYBE_ContextMenuParamsAfterCSSTransforms) {
   LoadAndLaunchPlatformApp("web_view/context_menus/coordinates_with_transforms",
                            "Launched");
 
