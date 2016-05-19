@@ -239,13 +239,24 @@ private:
     }
 };
 
-void createBoundFunctionProperty(v8::Local<v8::Context> context, v8::Local<v8::Object> console, const char* name, v8::FunctionCallback callback)
+void returnDataCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    info.GetReturnValue().Set(info.Data());
+}
+
+void createBoundFunctionProperty(v8::Local<v8::Context> context, v8::Local<v8::Object> console, const char* name, v8::FunctionCallback callback, const char* description = nullptr)
 {
     v8::Local<v8::String> funcName = toV8StringInternalized(context->GetIsolate(), name);
     v8::Local<v8::Function> func;
     if (!v8::Function::New(context, callback, console).ToLocal(&func))
         return;
     func->SetName(funcName);
+    if (description) {
+        v8::Local<v8::String> returnValue = toV8String(context->GetIsolate(), description);
+        v8::Local<v8::Function> toStringFunction;
+        if (v8::Function::New(context, returnDataCallback, returnValue).ToLocal(&toStringFunction))
+            func->Set(toV8StringInternalized(context->GetIsolate(), "toString"), toStringFunction);
+    }
     if (!console->Set(context, funcName, func).FromMaybe(false))
         return;
 }
@@ -659,21 +670,21 @@ v8::Local<v8::Object> V8Console::createCommandLineAPI(InspectedContext* inspecte
 
     v8::Local<v8::Object> commandLineAPI = v8::Object::New(isolate);
 
-    createBoundFunctionProperty(context, commandLineAPI, "dir", V8Console::dirCallback);
-    createBoundFunctionProperty(context, commandLineAPI, "dirxml", V8Console::dirxmlCallback);
-    createBoundFunctionProperty(context, commandLineAPI, "profile", V8Console::profileCallback);
-    createBoundFunctionProperty(context, commandLineAPI, "profileEnd", V8Console::profileEndCallback);
-    createBoundFunctionProperty(context, commandLineAPI, "clear", V8Console::clearCallback);
-    createBoundFunctionProperty(context, commandLineAPI, "table", V8Console::tableCallback);
+    createBoundFunctionProperty(context, commandLineAPI, "dir", V8Console::dirCallback, "function dir(value) { [Command Line API] }");
+    createBoundFunctionProperty(context, commandLineAPI, "dirxml", V8Console::dirxmlCallback, "function dirxml(value) { [Command Line API] }");
+    createBoundFunctionProperty(context, commandLineAPI, "profile", V8Console::profileCallback, "function profile(title) { [Command Line API] }");
+    createBoundFunctionProperty(context, commandLineAPI, "profileEnd", V8Console::profileEndCallback, "function profileEnd(title) { [Command Line API] }");
+    createBoundFunctionProperty(context, commandLineAPI, "clear", V8Console::clearCallback, "function clear() { [Command Line API] }");
+    createBoundFunctionProperty(context, commandLineAPI, "table", V8Console::tableCallback, "function table(data, [columns]) { [Command Line API] }");
 
-    createBoundFunctionProperty(context, commandLineAPI, "keys", V8Console::keysCallback);
-    createBoundFunctionProperty(context, commandLineAPI, "values", V8Console::valuesCallback);
-    createBoundFunctionProperty(context, commandLineAPI, "debug", V8Console::debugFunctionCallback);
-    createBoundFunctionProperty(context, commandLineAPI, "undebug", V8Console::undebugFunctionCallback);
-    createBoundFunctionProperty(context, commandLineAPI, "monitor", V8Console::monitorFunctionCallback);
-    createBoundFunctionProperty(context, commandLineAPI, "unmonitor", V8Console::unmonitorFunctionCallback);
-    createBoundFunctionProperty(context, commandLineAPI, "inspect", V8Console::inspectCallback);
-    createBoundFunctionProperty(context, commandLineAPI, "copy", V8Console::copyCallback);
+    createBoundFunctionProperty(context, commandLineAPI, "keys", V8Console::keysCallback, "function keys(object) { [Command Line API] }");
+    createBoundFunctionProperty(context, commandLineAPI, "values", V8Console::valuesCallback, "function values(object) { [Command Line API] }");
+    createBoundFunctionProperty(context, commandLineAPI, "debug", V8Console::debugFunctionCallback, "function debug(function) { [Command Line API] }");
+    createBoundFunctionProperty(context, commandLineAPI, "undebug", V8Console::undebugFunctionCallback, "function undebug(function) { [Command Line API] }");
+    createBoundFunctionProperty(context, commandLineAPI, "monitor", V8Console::monitorFunctionCallback, "function monitor(function) { [Command Line API] }");
+    createBoundFunctionProperty(context, commandLineAPI, "unmonitor", V8Console::unmonitorFunctionCallback, "function unmonitor(function) { [Command Line API] }");
+    createBoundFunctionProperty(context, commandLineAPI, "inspect", V8Console::inspectCallback, "function inspect(object) { [Command Line API] }");
+    createBoundFunctionProperty(context, commandLineAPI, "copy", V8Console::copyCallback, "function copy(value) { [Command Line API] }");
     createBoundFunctionProperty(context, commandLineAPI, "$_", V8Console::lastEvaluationResultCallback);
     createBoundFunctionProperty(context, commandLineAPI, "$0", V8Console::inspectedObject0);
     createBoundFunctionProperty(context, commandLineAPI, "$1", V8Console::inspectedObject1);
