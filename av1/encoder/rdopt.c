@@ -1035,11 +1035,10 @@ static int64_t rd_pick_intra_sub_8x8_y_mode(AV1_COMP *cpi, MACROBLOCK *mb,
         bmode_costs = cpi->y_mode_costs[A][L];
       }
 
-      this_rd = rd_pick_intra4x4block(cpi, mb, idy, idx, &best_mode,
-                                      bmode_costs,
-                                      xd->plane[0].above_context + idx,
-                                      xd->plane[0].left_context + idy,
-                                      &r, &ry, &d, bsize, best_rd - total_rd);
+      this_rd = rd_pick_intra4x4block(
+          cpi, mb, idy, idx, &best_mode, bmode_costs,
+          xd->plane[0].above_context + idx, xd->plane[0].left_context + idy, &r,
+          &ry, &d, bsize, best_rd - total_rd);
       if (this_rd >= best_rd - total_rd) return INT64_MAX;
 
       total_rd += this_rd;

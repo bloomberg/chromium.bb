@@ -197,8 +197,7 @@ aom_codec_err_t av1_set_reference_dec(AV1_COMMON *cm,
   } else if (ref_frame_flag == AOM_ALT_FLAG) {
     idx = cm->ref_frame_map[2];
   } else {
-    aom_internal_error(&cm->error, AOM_CODEC_ERROR,
-                       "Invalid reference frame");
+    aom_internal_error(&cm->error, AOM_CODEC_ERROR, "Invalid reference frame");
     return cm->error.error_code;
   }
 
