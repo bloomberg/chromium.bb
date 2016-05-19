@@ -487,9 +487,11 @@ class BuilderStage(object):
       # If WaitUntilReady returns false, mark stage as failed in CIDB
       self._PrintLoudly('Stage %s precondition failed while waiting to start.'
                         % self.name)
-      # TODO(nxia):we might want to record a failure. The catch block
-      # for PerformStage can use a refactor actually
-      # (see crbug.com/425249 also, which would be a similar concern)
+      # TODO(nxia):The catch block for PerformStage can use a refactor actually
+      # (see crbug.com/425249, which would be a similar concern)
+      self._RecordResult(self.name,
+                         failures_lib.StepFailure("Failed in WaitUntilReady"),
+                         prefix=self._prefix)
       self._FinishBuildStageInCIDB(constants.BUILDER_STATUS_FAILED)
       return
 

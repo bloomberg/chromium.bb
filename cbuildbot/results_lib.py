@@ -11,6 +11,7 @@ import datetime
 import math
 import os
 
+from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -92,13 +93,48 @@ class _Results(object):
     """
     return self._previous.get(name)
 
-  def BuildSucceededSoFar(self):
+  def BuildSucceededSoFar(self, db=None, build_id=None, name=None):
     """Return true if all stages so far have passing states.
 
-    This method returns true if all was successful or forgiven.
+    This method returns true if all was successful or forgiven or skipped.
+
+    Args:
+      db: cidb connection isinstance.
+      build_id: build_id of the build to check.
+      name: stage name of current stage.
     """
-    return all(entry.result in self.NON_FAILURE_TYPES
-               for entry in self._results_log)
+    build_succeess = all(entry.result in self.NON_FAILURE_TYPES
+                         for entry in self._results_log)
+
+    # When timeout happens and background tasks are killed, the statuses
+    # of the background stage tasks may get lost. BuildSucceededSoFar may
+    # still return build_succeess = True when the killed stage tasks were
+    # failed. Add one more verification step in _BuildSucceededFromCIDB to
+    # check the stage status in CIDB.
+    return (build_succeess and
+            self._BuildSucceededFromCIDB(db=db, build_id=build_id, name=name))
+
+  def _BuildSucceededFromCIDB(self, db=None, build_id=None, name=None):
+    """Return True if all stages recorded in CIDB have passing states.
+
+    Args:
+      db: cidb connection isinstance.
+      build_id: build_id of the build to check.
+      name: stage name of current stage.
+    """
+    if db is not None and build_id is not None:
+      stages = db.GetBuildStages(build_id)
+      for stage in stages:
+        if name is not None and stage['name'] == name:
+          logging.info("Ignore status of %s as it's the current stage.",
+                       stage['name'])
+          continue
+        if stage['status'] not in constants.BUILDER_NON_FAILURE_STATUSES:
+          logging.warning('Failure in previous stage %s with status %s.',
+                          stage['name'], stage['status'])
+          return False
+
+    return True
 
   def StageHasResults(self, name):
     """Return true if stage has posted results."""

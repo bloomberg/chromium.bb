@@ -118,6 +118,8 @@ class Builder(object):
       parallel.RunParallelSteps(steps)
 
     except BaseException as ex:
+      logging.error('BaseException in _RunParallelStages %s' % ex,
+                    exc_info=True)
       # If a stage threw an exception, it might not have correctly reported
       # results (e.g. because it was killed before it could report the
       # results.) In this case, attribute the exception to any stages that
@@ -319,7 +321,8 @@ class Builder(object):
         raise
 
       exception_thrown = True
-      if results_lib.Results.BuildSucceededSoFar():
+      build_id, db = self._run.GetCIDBHandle()
+      if results_lib.Results.BuildSucceededSoFar(db, build_id):
         # If the build is marked as successful, but threw exceptions, that's a
         # problem. Print the traceback for debugging.
         if isinstance(ex, failures_lib.CompoundFailure):
@@ -338,7 +341,8 @@ class Builder(object):
         results_lib.WriteCheckpoint(self._run.options.buildroot)
         completion_instance = self.GetCompletionInstance()
         self._RunStage(report_stages.ReportStage, completion_instance)
-        success = results_lib.Results.BuildSucceededSoFar()
+        build_id, db = self._run.GetCIDBHandle()
+        success = results_lib.Results.BuildSucceededSoFar(db, build_id)
         if exception_thrown and success:
           success = False
           logging.PrintBuildbotStepWarnings()

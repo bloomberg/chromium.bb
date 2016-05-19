@@ -138,6 +138,10 @@ BUILDER_ALL_STATUSES = (BUILDER_STATUS_FAILED,
                         BUILDER_STATUS_PLANNED,
                         BUILDER_STATUS_SKIPPED,
                         BUILDER_STATUS_FORGIVEN)
+BUILDER_NON_FAILURE_STATUSES = (BUILDER_STATUS_PLANNED,
+                                BUILDER_STATUS_PASSED,
+                                BUILDER_STATUS_SKIPPED,
+                                BUILDER_STATUS_FORGIVEN)
 
 # CL status strings
 CL_STATUS_FAILED = BUILDER_STATUS_FAILED

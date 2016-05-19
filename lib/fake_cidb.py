@@ -227,6 +227,12 @@ class FakeCIDBConnection(object):
     return [self._TrimStatus(b) for b in self.buildTable
             if b['master_build_id'] == master_build_id]
 
+  def GetBuildStages(self, build_id):
+    """Gets build stages given the build_id"""
+    return [self.buildStageTable[_id]
+            for _id in self.buildStageTable
+            if self.buildStageTable[_id]['build_id'] == build_id]
+
   def GetBuildHistory(self, build_config, num_results,
                       ignore_build_id=None, start_date=None, end_date=None,
                       starting_build_number=None, milestone_version=None):

@@ -468,7 +468,9 @@ class DistributedBuilder(SimpleBuilder):
     build_finished = False
     try:
       super(DistributedBuilder, self).RunStages()
-      was_build_successful = results_lib.Results.BuildSucceededSoFar()
+      build_id, db = self._run.GetCIDBHandle()
+      was_build_successful = results_lib.Results.BuildSucceededSoFar(
+          db, build_id)
       build_finished = True
     except failures_lib.ExitEarlyException as ex:
       # If a stage throws ExitEarlyException, it's exiting with success,

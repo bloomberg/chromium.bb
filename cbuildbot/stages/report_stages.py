@@ -707,7 +707,8 @@ class ReportStage(generic_stages.BuilderStage,
     This includes final metadata archival, and update CIDB with our final status
     as well as producting a logged build result summary.
     """
-    if results_lib.Results.BuildSucceededSoFar():
+    build_id, db = self._run.GetCIDBHandle()
+    if results_lib.Results.BuildSucceededSoFar(db, build_id, self.name):
       final_status = constants.FINAL_STATUS_PASSED
     else:
       final_status = constants.FINAL_STATUS_FAILED
@@ -738,7 +739,6 @@ class ReportStage(generic_stages.BuilderStage,
         sys.stdout, archive_urls=archive_urls,
         current_version=(self._run.attrs.release_tag or ''))
 
-    build_id, db = self._run.GetCIDBHandle()
     if db:
       # TODO(akeshet): Eliminate this status string translate once
       # these differing status strings are merged, crbug.com/318930

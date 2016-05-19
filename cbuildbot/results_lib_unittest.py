@@ -12,6 +12,7 @@ import signal
 import StringIO
 import time
 
+from chromite.cbuildbot import constants
 from chromite.cbuildbot import config_lib_unittest
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
@@ -19,9 +20,11 @@ from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot.builders import simple_builders
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
+from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import cros_test_lib
+from chromite.lib import fake_cidb
 from chromite.lib import parallel
 
 
@@ -124,6 +127,9 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     # logging.
     logging.EnableBuildbotMarkers()
 
+    self.db = fake_cidb.FakeCIDBConnection()
+    cidb.CIDBConnectionFactory.SetupMockCidb(self.db)
+
     # Create a class to hold
     class Options(object):
       """Dummy class to hold option values."""
@@ -155,6 +161,8 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     # Mimic exiting with statement for self._manager.
     if hasattr(self, '_manager') and self._manager is not None:
       self._manager.__exit__(None, None, None)
+
+    cidb.CIDBConnectionFactory.SetupMockCidb()
 
   def _runStages(self):
     """Run a couple of stages so we can capture the results"""
@@ -218,6 +226,37 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
     results_lib.Results.Record('Pass2', results_lib.Results.SUCCESS)
 
     self.assertFalse(results_lib.Results.BuildSucceededSoFar())
+
+  def testSuccessTestWithDB(self):
+    """Test BuildSucceededSoFar with DB instance"""
+    build_id = 'dummy_build_id'
+
+    results_lib.Results.Record('stage1', results_lib.Results.SUCCESS)
+    results_lib.Results.Record('stage2', results_lib.Results.SKIPPED)
+
+    self.db.InsertBuildStage(build_id, 'stage1',
+                             status=constants.BUILDER_STATUS_PASSED)
+    self.db.InsertBuildStage(build_id, 'stage2',
+                             status=constants.BUILDER_STATUS_SKIPPED)
+    self.db.InsertBuildStage(build_id, 'stage3',
+                             status=constants.BUILDER_STATUS_FORGIVEN)
+    self.db.InsertBuildStage(build_id, 'stage4',
+                             status=constants.BUILDER_STATUS_PLANNED)
+
+    self.assertTrue(results_lib.Results.BuildSucceededSoFar(
+        self.db, build_id))
+
+    self.db.InsertBuildStage(build_id, 'stage5',
+                             status=constants.BUILDER_STATUS_INFLIGHT)
+
+    self.assertTrue(results_lib.Results.BuildSucceededSoFar(
+        self.db, build_id, 'stage5'))
+
+    self.db.InsertBuildStage(build_id, 'stage6',
+                             status=constants.BUILDER_STATUS_FAILED)
+
+    self.assertFalse(results_lib.Results.BuildSucceededSoFar(
+        self.db, build_id, 'stage5'))
 
   def _TestParallelStages(self, stage_objs):
     builder = simple_builders.SimpleBuilder(self._run)
