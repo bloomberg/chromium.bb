@@ -17,7 +17,10 @@
 #include "components/signin/core/common/profile_management_switches.h"
 
 LoginUIService::LoginUIService(Profile* profile)
-    : ui_(NULL), profile_(profile) {
+#if !defined(OS_CHROMEOS)
+    : profile_(profile)
+#endif
+{
 }
 
 LoginUIService::~LoginUIService() {}

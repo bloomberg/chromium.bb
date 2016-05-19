@@ -65,21 +65,6 @@ const CGFloat kTitlePaddingX = 50.0f;
 const CGFloat kBubbleMinWidth = 315.0f;
 const NSSize kPermissionIconSize = {18, 18};
 
-class MenuDelegate : public ui::SimpleMenuModel::Delegate {
- public:
-  explicit MenuDelegate(PermissionBubbleController* bubble)
-      : bubble_controller_(bubble) {}
-  bool IsCommandIdChecked(int command_id) const override { return false; }
-  bool IsCommandIdEnabled(int command_id) const override { return true; }
-  bool GetAcceleratorForCommandId(int command_id,
-                                  ui::Accelerator* accelerator) override {
-    return false;
-  }
- private:
-  PermissionBubbleController* bubble_controller_;  // Weak, owns us.
-  DISALLOW_COPY_AND_ASSIGN(MenuDelegate);
-};
-
 }  // namespace
 
 // NSPopUpButton with a menu containing two items: allow and block.

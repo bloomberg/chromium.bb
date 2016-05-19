@@ -86,7 +86,7 @@ views::NonClientFrameView*
 ChromeNativeAppWindowViewsWin::CreateStandardDesktopAppFrame() {
   glass_frame_view_ = NULL;
   if (ui::win::IsAeroGlassEnabled()) {
-    glass_frame_view_ = new GlassAppWindowFrameViewWin(this, widget());
+    glass_frame_view_ = new GlassAppWindowFrameViewWin(widget());
     return glass_frame_view_;
   }
   return ChromeNativeAppWindowViewsAura::CreateStandardDesktopAppFrame();

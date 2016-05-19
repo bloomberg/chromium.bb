@@ -180,8 +180,10 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   // information (identity, connection status, etc.).
   WebsiteSettingsUI* ui_;
 
+#if !defined(OS_ANDROID)
   // The WebContents of the active tab.
   content::WebContents* web_contents_;
+#endif
 
   // The flag that controls whether an infobar is displayed after the website
   // settings UI is closed or not.

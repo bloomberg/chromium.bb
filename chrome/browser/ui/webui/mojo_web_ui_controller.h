@@ -19,10 +19,6 @@
 
 class MojoWebUIHandler;
 
-namespace content {
-class WebUIDataSource;
-}
-
 class MojoWebUIControllerBase : public content::WebUIController {
  public:
   explicit MojoWebUIControllerBase(content::WebUI* contents);
@@ -32,9 +28,6 @@ class MojoWebUIControllerBase : public content::WebUIController {
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
  private:
-  // Bindings files are registered here.
-  content::WebUIDataSource* mojo_data_source_;
-
   DISALLOW_COPY_AND_ASSIGN(MojoWebUIControllerBase);
 };
 

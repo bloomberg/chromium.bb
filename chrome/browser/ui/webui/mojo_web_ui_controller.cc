@@ -12,8 +12,7 @@
 #include "mojo/public/cpp/system/core.h"
 
 MojoWebUIControllerBase::MojoWebUIControllerBase(content::WebUI* contents)
-    : WebUIController(contents), mojo_data_source_(NULL) {
-}
+    : WebUIController(contents) {}
 
 MojoWebUIControllerBase::~MojoWebUIControllerBase() {
 }

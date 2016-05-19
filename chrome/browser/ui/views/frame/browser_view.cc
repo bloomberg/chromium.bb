@@ -398,8 +398,7 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
 class BookmarkBarViewBackground : public views::Background {
  public:
   BookmarkBarViewBackground(BrowserView* browser_view,
-                            BookmarkBarView* bookmark_bar_view,
-                            Browser* browser);
+                            BookmarkBarView* bookmark_bar_view);
 
   // views:Background:
   void Paint(gfx::Canvas* canvas, views::View* view) const override;
@@ -410,19 +409,13 @@ class BookmarkBarViewBackground : public views::Background {
   // The view hosting this background.
   BookmarkBarView* bookmark_bar_view_;
 
-  Browser* browser_;
-
   DISALLOW_COPY_AND_ASSIGN(BookmarkBarViewBackground);
 };
 
 BookmarkBarViewBackground::BookmarkBarViewBackground(
     BrowserView* browser_view,
-    BookmarkBarView* bookmark_bar_view,
-    Browser* browser)
-    : browser_view_(browser_view),
-      bookmark_bar_view_(bookmark_bar_view),
-      browser_(browser) {
-}
+    BookmarkBarView* bookmark_bar_view)
+    : browser_view_(browser_view), bookmark_bar_view_(bookmark_bar_view) {}
 
 void BookmarkBarViewBackground::Paint(gfx::Canvas* canvas,
                                       views::View* view) const {
@@ -2156,8 +2149,8 @@ bool BrowserView::MaybeShowBookmarkBar(WebContents* contents) {
   if (!bookmark_bar_view_.get()) {
     bookmark_bar_view_.reset(new BookmarkBarView(browser_.get(), this));
     bookmark_bar_view_->set_owned_by_client();
-    bookmark_bar_view_->set_background(new BookmarkBarViewBackground(
-        this, bookmark_bar_view_.get(), browser_.get()));
+    bookmark_bar_view_->set_background(
+        new BookmarkBarViewBackground(this, bookmark_bar_view_.get()));
     bookmark_bar_view_->SetBookmarkBarState(
         browser_->bookmark_bar_state(),
         BookmarkBar::DONT_ANIMATE_STATE_CHANGE);

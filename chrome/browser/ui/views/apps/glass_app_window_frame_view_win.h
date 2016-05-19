@@ -9,17 +9,12 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/window/non_client_view.h"
 
-namespace extensions {
-class NativeAppWindow;
-}
-
 // A glass style app window frame view.
 class GlassAppWindowFrameViewWin : public views::NonClientFrameView {
  public:
   static const char kViewClassName[];
 
-  explicit GlassAppWindowFrameViewWin(extensions::NativeAppWindow* window,
-                                      views::Widget* widget);
+  explicit GlassAppWindowFrameViewWin(views::Widget* widget);
   ~GlassAppWindowFrameViewWin() override;
 
   // The insets to the client area due to the glass frame.
@@ -46,7 +41,6 @@ class GlassAppWindowFrameViewWin : public views::NonClientFrameView {
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
 
-  extensions::NativeAppWindow* window_;
   views::Widget* widget_;
 
   DISALLOW_COPY_AND_ASSIGN(GlassAppWindowFrameViewWin);

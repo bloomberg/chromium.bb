@@ -216,7 +216,9 @@ WebsiteSettings::WebsiteSettings(
     : TabSpecificContentSettings::SiteDataObserver(
           tab_specific_content_settings),
       ui_(ui),
+#if !defined(OS_ANDROID)
       web_contents_(web_contents),
+#endif
       show_info_bar_(false),
       site_url_(url),
       site_identity_status_(SITE_IDENTITY_STATUS_UNKNOWN),

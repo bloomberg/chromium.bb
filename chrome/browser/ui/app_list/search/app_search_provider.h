@@ -54,7 +54,6 @@ class AppSearchProvider : public SearchProvider {
   void RefreshApps();
   void UpdateResults();
 
-  Profile* profile_;
   AppListControllerDelegate* list_controller_;
   base::string16 query_;
   Apps apps_;

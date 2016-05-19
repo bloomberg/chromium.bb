@@ -97,8 +97,6 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
   gfx::Size GetIconSize() const;
 
   ExtensionInstalledBubble* controller_;
-  ExtensionInstalledBubble::BubbleType type_;
-  ExtensionInstalledBubble::AnchorPosition anchor_position_;
 
   // The shortcut to open the manage shortcuts page.
   views::Link* manage_shortcut_;

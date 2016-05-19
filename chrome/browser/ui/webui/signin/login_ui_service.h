@@ -105,8 +105,10 @@ class LoginUIService : public KeyedService {
 
  private:
   // Weak pointer to the currently active login UI, or null if none.
-  LoginUI* ui_;
+  LoginUI* ui_ = nullptr;
+#if !defined(OS_CHROMEOS)
   Profile* profile_;
+#endif
 
   // List of observers.
   base::ObserverList<Observer> observer_list_;

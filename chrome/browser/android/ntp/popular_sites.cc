@@ -196,7 +196,6 @@ PopularSites::PopularSites(PrefService* prefs,
                            bool force_download,
                            const FinishedCallback& callback)
     : PopularSites(prefs,
-                   template_url_service,
                    download_context,
                    directory,
                    GetCountryToUse(prefs,
@@ -209,13 +208,11 @@ PopularSites::PopularSites(PrefService* prefs,
                    callback) {}
 
 PopularSites::PopularSites(PrefService* prefs,
-                           const TemplateURLService* template_url_service,
                            net::URLRequestContextGetter* download_context,
                            const base::FilePath& directory,
                            const GURL& url,
                            const FinishedCallback& callback)
     : PopularSites(prefs,
-                   template_url_service,
                    download_context,
                    directory,
                    std::string(),
@@ -248,8 +245,7 @@ void PopularSites::RegisterProfilePrefs(
 }
 
 PopularSites::PopularSites(PrefService* prefs,
-                           const TemplateURLService* template_url_service,
-                           net::URLRequestContextGetter* download_context,
+                          net::URLRequestContextGetter* download_context,
                            const base::FilePath& directory,
                            const std::string& country,
                            const std::string& version,
@@ -264,7 +260,6 @@ PopularSites::PopularSites(PrefService* prefs,
                       ? base::FilePath()
                       : directory.AppendASCII(kPopularSitesLocalFilename)),
       prefs_(prefs),
-      template_url_service_(template_url_service),
       download_context_(download_context),
       runner_(
           BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(

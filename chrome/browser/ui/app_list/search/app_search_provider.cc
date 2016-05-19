@@ -239,8 +239,7 @@ AppSearchProvider::AppSearchProvider(Profile* profile,
                                      AppListControllerDelegate* list_controller,
                                      std::unique_ptr<base::Clock> clock,
                                      AppListItemList* top_level_item_list)
-    : profile_(profile),
-      list_controller_(list_controller),
+    : list_controller_(list_controller),
       top_level_item_list_(top_level_item_list),
       clock_(std::move(clock)),
       update_results_factory_(this) {

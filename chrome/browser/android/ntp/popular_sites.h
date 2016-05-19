@@ -86,7 +86,6 @@ class PopularSites : public net::URLFetcherDelegate {
   // This fetches the popular sites from a given url and is only used for
   // debugging through the popular-sites-internals page.
   PopularSites(PrefService* prefs,
-               const TemplateURLService* template_url_service,
                net::URLRequestContextGetter* download_context,
                const base::FilePath& directory,
                const GURL& url,
@@ -108,7 +107,6 @@ class PopularSites : public net::URLFetcherDelegate {
 
  private:
   PopularSites(PrefService* prefs,
-               const TemplateURLService* template_url_service,
                net::URLRequestContextGetter* download_context,
                const base::FilePath& directory,
                const std::string& country,
@@ -147,7 +145,6 @@ class PopularSites : public net::URLFetcherDelegate {
   base::FilePath local_path_;
 
   PrefService* prefs_;
-  const TemplateURLService* template_url_service_;
   net::URLRequestContextGetter* download_context_;
 
   scoped_refptr<base::TaskRunner> runner_;

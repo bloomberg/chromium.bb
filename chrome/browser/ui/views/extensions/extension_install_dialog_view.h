@@ -126,9 +126,7 @@ class ExpandableContainerView : public views::View,
                                 public views::LinkListener,
                                 public gfx::AnimationDelegate {
  public:
-  ExpandableContainerView(ExtensionInstallDialogView* owner,
-                          const base::string16& description,
-                          const PermissionDetails& details,
+  ExpandableContainerView(const PermissionDetails& details,
                           int horizontal_space,
                           bool parent_bulleted);
   ~ExpandableContainerView() override;
@@ -173,9 +171,6 @@ class ExpandableContainerView : public views::View,
 
   // Updates |arrow_toggle_| according to the given state.
   void UpdateArrowToggle(bool expanded);
-
-  // The dialog that owns |this|. It's also an ancestor in the View hierarchy.
-  ExtensionInstallDialogView* owner_;
 
   // A view for showing |issue_advice.details|.
   DetailsView* details_view_;

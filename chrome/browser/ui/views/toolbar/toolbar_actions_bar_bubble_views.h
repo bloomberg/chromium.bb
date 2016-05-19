@@ -50,10 +50,7 @@ class ToolbarActionsBarBubbleViews : public views::BubbleDialogDelegateView,
   void LinkClicked(views::Link* source, int event_flags) override;
 
   std::unique_ptr<ToolbarActionsBarBubbleDelegate> delegate_;
-
-  views::Label* content_label_;
   views::Label* item_list_;
-
   views::Link* learn_more_button_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionsBarBubbleViews);

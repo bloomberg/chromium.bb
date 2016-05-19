@@ -20,11 +20,8 @@ const int kResizeAreaCornerSize = 16;
 const char GlassAppWindowFrameViewWin::kViewClassName[] =
     "ui/views/apps/GlassAppWindowFrameViewWin";
 
-GlassAppWindowFrameViewWin::GlassAppWindowFrameViewWin(
-    extensions::NativeAppWindow* window,
-    views::Widget* widget)
-    : window_(window), widget_(widget) {
-}
+GlassAppWindowFrameViewWin::GlassAppWindowFrameViewWin(views::Widget* widget)
+    : widget_(widget) {}
 
 GlassAppWindowFrameViewWin::~GlassAppWindowFrameViewWin() {
 }

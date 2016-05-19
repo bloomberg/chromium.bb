@@ -97,8 +97,7 @@ void PopularSitesInternalsMessageHandler::HandleUpdate(
   args->GetString(0, &url);
   if (!url.empty()) {
     popular_sites_.reset(new PopularSites(
-        prefs, TemplateURLServiceFactory::GetForProfile(profile),
-        profile->GetRequestContext(), ChromePopularSites::GetDirectory(),
+        prefs, profile->GetRequestContext(), ChromePopularSites::GetDirectory(),
         url_formatter::FixupURL(url, std::string()), callback));
     return;
   }

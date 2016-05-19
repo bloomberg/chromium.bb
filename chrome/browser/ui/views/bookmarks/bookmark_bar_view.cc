@@ -278,9 +278,8 @@ class BookmarkButton : public BookmarkButtonBase {
 
   BookmarkButton(views::ButtonListener* listener,
                  const GURL& url,
-                 const base::string16& title,
-                 Profile* profile)
-      : BookmarkButtonBase(listener, title), url_(url), profile_(profile) {}
+                 const base::string16& title)
+      : BookmarkButtonBase(listener, title), url_(url) {}
 
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override {
@@ -295,7 +294,6 @@ class BookmarkButton : public BookmarkButtonBase {
 
  private:
   const GURL& url_;
-  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkButton);
 };
@@ -1745,8 +1743,8 @@ MenuButton* BookmarkBarView::CreateOverflowButton() {
 
 views::View* BookmarkBarView::CreateBookmarkButton(const BookmarkNode* node) {
   if (node->is_url()) {
-    BookmarkButton* button = new BookmarkButton(
-        this, node->url(), node->GetTitle(), browser_->profile());
+    BookmarkButton* button =
+        new BookmarkButton(this, node->url(), node->GetTitle());
     ConfigureButton(node, button);
     return button;
   }
