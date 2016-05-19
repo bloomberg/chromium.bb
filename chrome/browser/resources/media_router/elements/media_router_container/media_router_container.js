@@ -380,6 +380,7 @@ Polymer({
      */
     sinksToShow_: {
       type: Array,
+      observer: 'updateElementPositioning_',
     },
 
     /**
