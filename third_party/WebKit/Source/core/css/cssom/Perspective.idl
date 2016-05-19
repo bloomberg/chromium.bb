@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 [
-    Constructor(LengthValue length),
+    Constructor(CSSLengthValue length),
     ImplementedAs=PerspectiveTransformComponent,
     RuntimeEnabled=CSSTypedOM,
     RaisesException=Constructor
 ] interface Perspective : TransformComponent {
-    readonly attribute LengthValue length;
+    readonly attribute CSSLengthValue length;
 };

@@ -10,10 +10,10 @@
 
 namespace blink {
 
-CSSTranslation* CSSTranslation::create(LengthValue* x, LengthValue* y, LengthValue* z, ExceptionState& exceptionState)
+CSSTranslation* CSSTranslation::create(CSSLengthValue* x, CSSLengthValue* y, CSSLengthValue* z, ExceptionState& exceptionState)
 {
     if (z->containsPercent()) {
-        exceptionState.throwTypeError("CSSTranslation does not support z LengthValue with percent units");
+        exceptionState.throwTypeError("CSSTranslation does not support z CSSLengthValue with percent units");
         return nullptr;
     }
     return new CSSTranslation(x, y, z);

@@ -1,10 +1,10 @@
 [
-    Constructor(LengthValue length),
+    Constructor(CSSLengthValue length),
     Constructor(CalcDictionary calcDictionary),
     ImplementedAs=StyleCalcLength,
     RaisesException=Constructor,
     RuntimeEnabled=CSSTypedOM
-] interface CalcLength : LengthValue {
+] interface CalcLength : CSSLengthValue {
     readonly attribute double? px;
     readonly attribute double? percent;
     readonly attribute double? em;

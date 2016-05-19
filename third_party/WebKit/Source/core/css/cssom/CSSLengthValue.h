@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LengthValue_h
-#define LengthValue_h
+#ifndef CSSLengthValue_h
+#define CSSLengthValue_h
 
 #include "core/css/cssom/StyleValue.h"
 
@@ -12,30 +12,30 @@ namespace blink {
 class CalcDictionary;
 class ExceptionState;
 
-class CORE_EXPORT LengthValue : public StyleValue {
-    WTF_MAKE_NONCOPYABLE(LengthValue);
+class CORE_EXPORT CSSLengthValue : public StyleValue {
+    WTF_MAKE_NONCOPYABLE(CSSLengthValue);
     DEFINE_WRAPPERTYPEINFO();
 public:
     static CSSPrimitiveValue::UnitType unitFromName(const String& name);
 
-    LengthValue* add(const LengthValue* other, ExceptionState&);
-    LengthValue* subtract(const LengthValue* other, ExceptionState&);
-    LengthValue* multiply(double, ExceptionState&);
-    LengthValue* divide(double, ExceptionState&);
+    CSSLengthValue* add(const CSSLengthValue* other, ExceptionState&);
+    CSSLengthValue* subtract(const CSSLengthValue* other, ExceptionState&);
+    CSSLengthValue* multiply(double, ExceptionState&);
+    CSSLengthValue* divide(double, ExceptionState&);
 
     virtual bool containsPercent() const = 0;
 
-    static LengthValue* from(const String& cssString, ExceptionState&);
-    static LengthValue* from(double value, const String& typeStr, ExceptionState&);
-    static LengthValue* from(const CalcDictionary&, ExceptionState&);
+    static CSSLengthValue* from(const String& cssString, ExceptionState&);
+    static CSSLengthValue* from(double value, const String& typeStr, ExceptionState&);
+    static CSSLengthValue* from(const CalcDictionary&, ExceptionState&);
 
 protected:
-    LengthValue() {}
+    CSSLengthValue() {}
 
-    virtual LengthValue* addInternal(const LengthValue* other, ExceptionState&);
-    virtual LengthValue* subtractInternal(const LengthValue* other, ExceptionState&);
-    virtual LengthValue* multiplyInternal(double, ExceptionState&);
-    virtual LengthValue* divideInternal(double, ExceptionState&);
+    virtual CSSLengthValue* addInternal(const CSSLengthValue* other, ExceptionState&);
+    virtual CSSLengthValue* subtractInternal(const CSSLengthValue* other, ExceptionState&);
+    virtual CSSLengthValue* multiplyInternal(double, ExceptionState&);
+    virtual CSSLengthValue* divideInternal(double, ExceptionState&);
 
     static bool isSupportedLengthUnit(CSSPrimitiveValue::UnitType unit)
     {
@@ -47,7 +47,7 @@ protected:
     static const int kNumSupportedUnits = 15;
 };
 
-DEFINE_TYPE_CASTS(LengthValue, StyleValue, value,
+DEFINE_TYPE_CASTS(CSSLengthValue, StyleValue, value,
     (value->type() == StyleValue::SimpleLengthType
         || value->type() == StyleValue::CalcLengthType),
     (value.type() == StyleValue::SimpleLengthType

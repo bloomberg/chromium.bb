@@ -6,13 +6,13 @@
 #define SimpleLength_h
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/css/cssom/LengthValue.h"
+#include "core/css/cssom/CSSLengthValue.h"
 
 namespace blink {
 
 class CSSPrimitiveValue;
 
-class CORE_EXPORT SimpleLength final : public LengthValue {
+class CORE_EXPORT SimpleLength final : public CSSLengthValue {
     WTF_MAKE_NONCOPYABLE(SimpleLength);
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -44,13 +44,13 @@ public:
     CSSValue* toCSSValue() const override;
 
 protected:
-    virtual LengthValue* addInternal(const LengthValue* other, ExceptionState&);
-    virtual LengthValue* subtractInternal(const LengthValue* other, ExceptionState&);
-    virtual LengthValue* multiplyInternal(double, ExceptionState&);
-    virtual LengthValue* divideInternal(double, ExceptionState&);
+    virtual CSSLengthValue* addInternal(const CSSLengthValue* other, ExceptionState&);
+    virtual CSSLengthValue* subtractInternal(const CSSLengthValue* other, ExceptionState&);
+    virtual CSSLengthValue* multiplyInternal(double, ExceptionState&);
+    virtual CSSLengthValue* divideInternal(double, ExceptionState&);
 
 private:
-    SimpleLength(double value, CSSPrimitiveValue::UnitType unit) : LengthValue(), m_unit(unit), m_value(value) {}
+    SimpleLength(double value, CSSPrimitiveValue::UnitType unit) : CSSLengthValue(), m_unit(unit), m_value(value) {}
 
     CSSPrimitiveValue::UnitType m_unit;
     double m_value;
@@ -58,10 +58,10 @@ private:
 
 #define DEFINE_SIMPLE_LENGTH_TYPE_CASTS(argumentType) \
     DEFINE_TYPE_CASTS(SimpleLength, argumentType, value, \
-        value->type() == LengthValue::StyleValueType::SimpleLengthType, \
-        value.type() == LengthValue::StyleValueType::SimpleLengthType)
+        value->type() == CSSLengthValue::StyleValueType::SimpleLengthType, \
+        value.type() == CSSLengthValue::StyleValueType::SimpleLengthType)
 
-DEFINE_SIMPLE_LENGTH_TYPE_CASTS(LengthValue);
+DEFINE_SIMPLE_LENGTH_TYPE_CASTS(CSSLengthValue);
 DEFINE_SIMPLE_LENGTH_TYPE_CASTS(StyleValue);
 
 } // namespace blink

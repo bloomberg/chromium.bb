@@ -6,7 +6,7 @@
     Constructor(double value, DOMString type),
     RaisesException=Constructor,
     RuntimeEnabled=CSSTypedOM
-] interface SimpleLength : LengthValue {
+] interface SimpleLength : CSSLengthValue {
     [EnforceRange] attribute double value;
     [ImplementedAs=unit] readonly attribute LengthType type;
 };

@@ -5,7 +5,7 @@
 #ifndef StyleCalcLength_h
 #define StyleCalcLength_h
 
-#include "core/css/cssom/LengthValue.h"
+#include "core/css/cssom/CSSLengthValue.h"
 #include "wtf/BitVector.h"
 
 namespace blink {
@@ -13,12 +13,12 @@ namespace blink {
 class CalcDictionary;
 class SimpleLength;
 
-class CORE_EXPORT StyleCalcLength final : public LengthValue {
+class CORE_EXPORT StyleCalcLength final : public CSSLengthValue {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static StyleCalcLength* create(const LengthValue*);
+    static StyleCalcLength* create(const CSSLengthValue*);
     static StyleCalcLength* create(const CalcDictionary&, ExceptionState&);
-    static StyleCalcLength* create(const LengthValue* length, ExceptionState&)
+    static StyleCalcLength* create(const CSSLengthValue* length, ExceptionState&)
     {
         return create(length);
     }
@@ -54,10 +54,10 @@ public:
 
     StyleValueType type() const override { return CalcLengthType; }
 protected:
-    LengthValue* addInternal(const LengthValue* other, ExceptionState&) override;
-    LengthValue* subtractInternal(const LengthValue* other, ExceptionState&) override;
-    LengthValue* multiplyInternal(double, ExceptionState&) override;
-    LengthValue* divideInternal(double, ExceptionState&) override;
+    CSSLengthValue* addInternal(const CSSLengthValue* other, ExceptionState&) override;
+    CSSLengthValue* subtractInternal(const CSSLengthValue* other, ExceptionState&) override;
+    CSSLengthValue* multiplyInternal(double, ExceptionState&) override;
+    CSSLengthValue* divideInternal(double, ExceptionState&) override;
 
 private:
     StyleCalcLength();
@@ -67,39 +67,39 @@ private:
     static int indexForUnit(CSSPrimitiveValue::UnitType);
     static CSSPrimitiveValue::UnitType unitFromIndex(int index)
     {
-        ASSERT(index < LengthValue::kNumSupportedUnits);
+        DCHECK(index < CSSLengthValue::kNumSupportedUnits);
         int lowestValue = static_cast<int>(CSSPrimitiveValue::UnitType::Percentage);
         return static_cast<CSSPrimitiveValue::UnitType>(index + lowestValue);
     }
 
     bool hasAtIndex(int index) const
     {
-        ASSERT(index < LengthValue::kNumSupportedUnits);
+        DCHECK(index < CSSLengthValue::kNumSupportedUnits);
         return m_hasValues.quickGet(index);
     }
     bool has(CSSPrimitiveValue::UnitType unit) const { return hasAtIndex(indexForUnit(unit)); }
     void setAtIndex(double value, int index)
     {
-        ASSERT(index < LengthValue::kNumSupportedUnits);
+        DCHECK(index < CSSLengthValue::kNumSupportedUnits);
         m_hasValues.quickSet(index);
         m_values[index] = value;
     }
     void set(double value, CSSPrimitiveValue::UnitType unit) { setAtIndex(value, indexForUnit(unit)); }
     double getAtIndex(int index) const
     {
-        ASSERT(index < LengthValue::kNumSupportedUnits);
+        DCHECK(index < CSSLengthValue::kNumSupportedUnits);
         return m_values[index];
     }
     double get(CSSPrimitiveValue::UnitType unit) const { return getAtIndex(indexForUnit(unit)); }
 
-    Vector<double, LengthValue::kNumSupportedUnits> m_values;
+    Vector<double, CSSLengthValue::kNumSupportedUnits> m_values;
     BitVector m_hasValues;
 };
 
 #define DEFINE_CALC_LENGTH_TYPE_CASTS(argumentType) \
     DEFINE_TYPE_CASTS(StyleCalcLength, argumentType, value, \
-        value->type() == LengthValue::StyleValueType::CalcLengthType, \
-        value.type() == LengthValue::StyleValueType::CalcLengthType)
+        value->type() == CSSLengthValue::StyleValueType::CalcLengthType, \
+        value.type() == CSSLengthValue::StyleValueType::CalcLengthType)
 
 DEFINE_CALC_LENGTH_TYPE_CASTS(StyleValue);
 

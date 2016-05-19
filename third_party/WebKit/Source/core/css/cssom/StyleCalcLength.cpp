@@ -12,7 +12,7 @@
 
 namespace blink {
 
-StyleCalcLength::StyleCalcLength() : m_values(LengthValue::kNumSupportedUnits), m_hasValues(LengthValue::kNumSupportedUnits) {}
+StyleCalcLength::StyleCalcLength() : m_values(CSSLengthValue::kNumSupportedUnits), m_hasValues(CSSLengthValue::kNumSupportedUnits) {}
 
 StyleCalcLength::StyleCalcLength(const StyleCalcLength& other) :
     m_values(other.m_values),
@@ -20,12 +20,12 @@ StyleCalcLength::StyleCalcLength(const StyleCalcLength& other) :
 {}
 
 StyleCalcLength::StyleCalcLength(const SimpleLength& other) :
-    m_values(LengthValue::kNumSupportedUnits), m_hasValues(LengthValue::kNumSupportedUnits)
+    m_values(CSSLengthValue::kNumSupportedUnits), m_hasValues(CSSLengthValue::kNumSupportedUnits)
 {
     set(other.value(), other.lengthUnit());
 }
 
-StyleCalcLength* StyleCalcLength::create(const LengthValue* length)
+StyleCalcLength* StyleCalcLength::create(const CSSLengthValue* length)
 {
     if (length->type() == SimpleLengthType) {
         const SimpleLength* simpleLength = toSimpleLength(length);
@@ -73,10 +73,10 @@ bool StyleCalcLength::containsPercent() const
     return has(CSSPrimitiveValue::UnitType::Percentage);
 }
 
-LengthValue* StyleCalcLength::addInternal(const LengthValue* other, ExceptionState& exceptionState)
+CSSLengthValue* StyleCalcLength::addInternal(const CSSLengthValue* other, ExceptionState& exceptionState)
 {
     StyleCalcLength* result = StyleCalcLength::create(other, exceptionState);
-    for (int i = 0; i < LengthValue::kNumSupportedUnits; ++i) {
+    for (int i = 0; i < CSSLengthValue::kNumSupportedUnits; ++i) {
         if (hasAtIndex(i)) {
             result->setAtIndex(getAtIndex(i) + result->getAtIndex(i), i);
         }
@@ -84,12 +84,12 @@ LengthValue* StyleCalcLength::addInternal(const LengthValue* other, ExceptionSta
     return result;
 }
 
-LengthValue* StyleCalcLength::subtractInternal(const LengthValue* other, ExceptionState& exceptionState)
+CSSLengthValue* StyleCalcLength::subtractInternal(const CSSLengthValue* other, ExceptionState& exceptionState)
 {
     StyleCalcLength* result = StyleCalcLength::create(this, exceptionState);
     if (other->type() == CalcLengthType) {
         const StyleCalcLength* o = toStyleCalcLength(other);
-        for (unsigned i = 0; i < LengthValue::kNumSupportedUnits; ++i) {
+        for (unsigned i = 0; i < CSSLengthValue::kNumSupportedUnits; ++i) {
             if (o->hasAtIndex(i)) {
                 result->setAtIndex(getAtIndex(i) - o->getAtIndex(i), i);
             }
@@ -101,10 +101,10 @@ LengthValue* StyleCalcLength::subtractInternal(const LengthValue* other, Excepti
     return result;
 }
 
-LengthValue* StyleCalcLength::multiplyInternal(double x, ExceptionState& exceptionState)
+CSSLengthValue* StyleCalcLength::multiplyInternal(double x, ExceptionState& exceptionState)
 {
     StyleCalcLength* result = StyleCalcLength::create(this, exceptionState);
-    for (unsigned i = 0; i < LengthValue::kNumSupportedUnits; ++i) {
+    for (unsigned i = 0; i < CSSLengthValue::kNumSupportedUnits; ++i) {
         if (hasAtIndex(i)) {
             result->setAtIndex(getAtIndex(i) * x, i);
         }
@@ -112,10 +112,10 @@ LengthValue* StyleCalcLength::multiplyInternal(double x, ExceptionState& excepti
     return result;
 }
 
-LengthValue* StyleCalcLength::divideInternal(double x, ExceptionState& exceptionState)
+CSSLengthValue* StyleCalcLength::divideInternal(double x, ExceptionState& exceptionState)
 {
     StyleCalcLength* result = StyleCalcLength::create(this, exceptionState);
-    for (unsigned i = 0; i < LengthValue::kNumSupportedUnits; ++i) {
+    for (unsigned i = 0; i < CSSLengthValue::kNumSupportedUnits; ++i) {
         if (hasAtIndex(i)) {
             result->setAtIndex(getAtIndex(i) / x, i);
         }
@@ -127,7 +127,7 @@ CSSValue* StyleCalcLength::toCSSValue() const
 {
     // Create a CSS Calc Value, then put it into a CSSPrimitiveValue
     CSSCalcExpressionNode* node = nullptr;
-    for (unsigned i = 0; i < LengthValue::kNumSupportedUnits; ++i) {
+    for (unsigned i = 0; i < CSSLengthValue::kNumSupportedUnits; ++i) {
         if (!hasAtIndex(i))
             continue;
         double value = getAtIndex(i);

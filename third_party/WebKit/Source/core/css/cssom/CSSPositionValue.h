@@ -11,20 +11,20 @@
 
 namespace blink {
 
-class LengthValue;
+class CSSLengthValue;
 
 class CORE_EXPORT CSSPositionValue final : public StyleValue {
     WTF_MAKE_NONCOPYABLE(CSSPositionValue);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static CSSPositionValue* create(const LengthValue* x, const LengthValue* y)
+    static CSSPositionValue* create(const CSSLengthValue* x, const CSSLengthValue* y)
     {
         return new CSSPositionValue(x, y);
     }
 
     // Bindings require a non const return value.
-    LengthValue* x() const { return const_cast<LengthValue*>(m_x.get()); }
-    LengthValue* y() const { return const_cast<LengthValue*>(m_y.get()); }
+    CSSLengthValue* x() const { return const_cast<CSSLengthValue*>(m_x.get()); }
+    CSSLengthValue* y() const { return const_cast<CSSLengthValue*>(m_y.get()); }
 
     StyleValueType type() const override { return PositionType; }
 
@@ -38,14 +38,14 @@ public:
     }
 
 protected:
-    CSSPositionValue(const LengthValue* x, const LengthValue* y)
+    CSSPositionValue(const CSSLengthValue* x, const CSSLengthValue* y)
         : m_x(x)
         , m_y(y)
     {
     }
 
-    Member<const LengthValue> m_x;
-    Member<const LengthValue> m_y;
+    Member<const CSSLengthValue> m_x;
+    Member<const CSSLengthValue> m_y;
 
 };
 

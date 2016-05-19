@@ -8,10 +8,10 @@
 
 namespace blink {
 
-PerspectiveTransformComponent* PerspectiveTransformComponent::create(const LengthValue* length, ExceptionState& exceptionState)
+PerspectiveTransformComponent* PerspectiveTransformComponent::create(const CSSLengthValue* length, ExceptionState& exceptionState)
 {
     if (length->containsPercent()) {
-        exceptionState.throwTypeError("PerspectiveTransformComponent does not support LengthValues with percent units");
+        exceptionState.throwTypeError("PerspectiveTransformComponent does not support CSSLengthValues with percent units");
         return nullptr;
     }
     return new PerspectiveTransformComponent(length);

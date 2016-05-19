@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/LengthValue.h"
+#include "core/css/cssom/CSSLengthValue.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/cssom/CalcDictionary.h"
@@ -12,7 +12,7 @@
 
 namespace blink {
 
-CSSPrimitiveValue::UnitType LengthValue::unitFromName(const String& name)
+CSSPrimitiveValue::UnitType CSSLengthValue::unitFromName(const String& name)
 {
     if (equalIgnoringASCIICase(name, "percent") || name == "%") {
         return CSSPrimitiveValue::UnitType::Percentage;
@@ -20,23 +20,23 @@ CSSPrimitiveValue::UnitType LengthValue::unitFromName(const String& name)
     return CSSPrimitiveValue::fromName(name);
 }
 
-LengthValue* LengthValue::from(const String& cssString, ExceptionState& exceptionState)
+CSSLengthValue* CSSLengthValue::from(const String& cssString, ExceptionState& exceptionState)
 {
     // TODO: Implement
     return nullptr;
 }
 
-LengthValue* LengthValue::from(double value, const String& type, ExceptionState&)
+CSSLengthValue* CSSLengthValue::from(double value, const String& type, ExceptionState&)
 {
     return SimpleLength::create(value, unitFromName(type));
 }
 
-LengthValue* LengthValue::from(const CalcDictionary& dictionary, ExceptionState& exceptionState)
+CSSLengthValue* CSSLengthValue::from(const CalcDictionary& dictionary, ExceptionState& exceptionState)
 {
     return StyleCalcLength::create(dictionary, exceptionState);
 }
 
-LengthValue* LengthValue::add(const LengthValue* other, ExceptionState& exceptionState)
+CSSLengthValue* CSSLengthValue::add(const CSSLengthValue* other, ExceptionState& exceptionState)
 {
     if (type() == other->type() || type() == CalcLengthType)
         return addInternal(other, exceptionState);
@@ -45,7 +45,7 @@ LengthValue* LengthValue::add(const LengthValue* other, ExceptionState& exceptio
     return result->add(other, exceptionState);
 }
 
-LengthValue* LengthValue::subtract(const LengthValue* other, ExceptionState& exceptionState)
+CSSLengthValue* CSSLengthValue::subtract(const CSSLengthValue* other, ExceptionState& exceptionState)
 {
     if (type() == other->type() || type() == CalcLengthType)
         return subtractInternal(other, exceptionState);
@@ -54,37 +54,37 @@ LengthValue* LengthValue::subtract(const LengthValue* other, ExceptionState& exc
     return result->subtract(other, exceptionState);
 }
 
-LengthValue* LengthValue::multiply(double x, ExceptionState& exceptionState)
+CSSLengthValue* CSSLengthValue::multiply(double x, ExceptionState& exceptionState)
 {
     return multiplyInternal(x, exceptionState);
 }
 
-LengthValue* LengthValue::divide(double x, ExceptionState& exceptionState)
+CSSLengthValue* CSSLengthValue::divide(double x, ExceptionState& exceptionState)
 {
     return divideInternal(x, exceptionState);
 }
 
-LengthValue* LengthValue::addInternal(const LengthValue*, ExceptionState&)
+CSSLengthValue* CSSLengthValue::addInternal(const CSSLengthValue*, ExceptionState&)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
 }
 
-LengthValue* LengthValue::subtractInternal(const LengthValue*, ExceptionState&)
+CSSLengthValue* CSSLengthValue::subtractInternal(const CSSLengthValue*, ExceptionState&)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
 }
 
-LengthValue* LengthValue::multiplyInternal(double, ExceptionState&)
+CSSLengthValue* CSSLengthValue::multiplyInternal(double, ExceptionState&)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
 }
 
-LengthValue* LengthValue::divideInternal(double, ExceptionState&)
+CSSLengthValue* CSSLengthValue::divideInternal(double, ExceptionState&)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
 }
 

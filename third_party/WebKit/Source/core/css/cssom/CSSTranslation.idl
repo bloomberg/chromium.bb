@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 [
-    Constructor(LengthValue x, LengthValue y),
-    Constructor(LengthValue x, LengthValue y, LengthValue z),
+    Constructor(CSSLengthValue x, CSSLengthValue y),
+    Constructor(CSSLengthValue x, CSSLengthValue y, CSSLengthValue z),
     RaisesException=Constructor,
     RuntimeEnabled=CSSTypedOM
 ] interface CSSTranslation : TransformComponent {
-    readonly attribute LengthValue x;
-    readonly attribute LengthValue y;
-    readonly attribute LengthValue z;
+    readonly attribute CSSLengthValue x;
+    readonly attribute CSSLengthValue y;
+    readonly attribute CSSLengthValue z;
 };

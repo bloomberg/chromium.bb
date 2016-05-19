@@ -438,6 +438,14 @@ interface CSSKeywordValue : StyleValue
     attribute @@toStringTag
     getter keywordValue
     method constructor
+interface CSSLengthValue : StyleValue
+    static method from
+    attribute @@toStringTag
+    method add
+    method constructor
+    method divide
+    method multiply
+    method subtract
 interface CSSMediaRule : CSSGroupingRule
     attribute @@toStringTag
     getter media
@@ -563,7 +571,7 @@ interface CacheStorage
     method keys
     method match
     method open
-interface CalcLength : LengthValue
+interface CalcLength : CSSLengthValue
     attribute @@toStringTag
     getter ch
     getter cm
@@ -3472,14 +3480,6 @@ interface KeyboardEvent : UIEvent
 interface KeyframeEffect : AnimationEffectReadOnly
     attribute @@toStringTag
     method constructor
-interface LengthValue : StyleValue
-    static method from
-    attribute @@toStringTag
-    method add
-    method constructor
-    method divide
-    method multiply
-    method subtract
 interface Location
     attribute @@toStringTag
     method constructor
@@ -5797,7 +5797,7 @@ interface ShippingAddress
     getter regionCode
     getter sortingCode
     method constructor
-interface SimpleLength : LengthValue
+interface SimpleLength : CSSLengthValue
     attribute @@toStringTag
     getter type
     getter value

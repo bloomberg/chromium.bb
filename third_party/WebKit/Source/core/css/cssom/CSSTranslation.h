@@ -5,7 +5,7 @@
 #ifndef CSSTranslation_h
 #define CSSTranslation_h
 
-#include "core/css/cssom/LengthValue.h"
+#include "core/css/cssom/CSSLengthValue.h"
 #include "core/css/cssom/TransformComponent.h"
 
 namespace blink {
@@ -16,15 +16,15 @@ class CORE_EXPORT CSSTranslation final : public TransformComponent {
     WTF_MAKE_NONCOPYABLE(CSSTranslation);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static CSSTranslation* create(LengthValue* x, LengthValue* y, ExceptionState&)
+    static CSSTranslation* create(CSSLengthValue* x, CSSLengthValue* y, ExceptionState&)
     {
         return new CSSTranslation(x, y, nullptr);
     }
-    static CSSTranslation* create(LengthValue* x, LengthValue* y, LengthValue* z, ExceptionState&);
+    static CSSTranslation* create(CSSLengthValue* x, CSSLengthValue* y, CSSLengthValue* z, ExceptionState&);
 
-    LengthValue* x() const { return m_x; }
-    LengthValue* y() const { return m_y; }
-    LengthValue* z() const { return m_z; }
+    CSSLengthValue* x() const { return m_x; }
+    CSSLengthValue* y() const { return m_y; }
+    CSSLengthValue* z() const { return m_z; }
 
     TransformComponentType type() const override { return is2D() ? TranslationType : Translation3DType; }
 
@@ -42,7 +42,7 @@ public:
     }
 
 private:
-    CSSTranslation(LengthValue* x, LengthValue* y, LengthValue* z)
+    CSSTranslation(CSSLengthValue* x, CSSLengthValue* y, CSSLengthValue* z)
         : TransformComponent()
         , m_x(x)
         , m_y(y)
@@ -51,9 +51,9 @@ private:
 
     bool is2D() const { return !m_z; }
 
-    Member<LengthValue> m_x;
-    Member<LengthValue> m_y;
-    Member<LengthValue> m_z;
+    Member<CSSLengthValue> m_x;
+    Member<CSSLengthValue> m_y;
+    Member<CSSLengthValue> m_z;
 };
 
 } // namespace blink

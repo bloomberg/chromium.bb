@@ -20,7 +20,7 @@ bool SimpleLength::containsPercent() const
     return lengthUnit() == CSSPrimitiveValue::UnitType::Percentage;
 }
 
-LengthValue* SimpleLength::addInternal(const LengthValue* other, ExceptionState& exceptionState)
+CSSLengthValue* SimpleLength::addInternal(const CSSLengthValue* other, ExceptionState& exceptionState)
 {
     const SimpleLength* o = toSimpleLength(other);
     if (m_unit == o->m_unit)
@@ -31,7 +31,7 @@ LengthValue* SimpleLength::addInternal(const LengthValue* other, ExceptionState&
     return result->add(other, exceptionState);
 }
 
-LengthValue* SimpleLength::subtractInternal(const LengthValue* other, ExceptionState& exceptionState)
+CSSLengthValue* SimpleLength::subtractInternal(const CSSLengthValue* other, ExceptionState& exceptionState)
 {
     const SimpleLength* o = toSimpleLength(other);
     if (m_unit == o->m_unit)
@@ -42,12 +42,12 @@ LengthValue* SimpleLength::subtractInternal(const LengthValue* other, ExceptionS
     return result->subtract(other, exceptionState);
 }
 
-LengthValue* SimpleLength::multiplyInternal(double x, ExceptionState& exceptionState)
+CSSLengthValue* SimpleLength::multiplyInternal(double x, ExceptionState& exceptionState)
 {
     return create(m_value * x, m_unit);
 }
 
-LengthValue* SimpleLength::divideInternal(double x, ExceptionState& exceptionState)
+CSSLengthValue* SimpleLength::divideInternal(double x, ExceptionState& exceptionState)
 {
     return create(m_value / x, m_unit);
 }
