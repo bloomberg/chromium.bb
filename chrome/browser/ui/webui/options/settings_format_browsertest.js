@@ -148,7 +148,8 @@ TEST_F('SettingsFormatWebUITest', 'RadioCheckboxStyleCheck', function() {
 /**
  * Each checkbox requires an id or pref property.
  */
-TEST_F('SettingsFormatWebUITest', 'CheckboxIdOrPrefCheck', function() {
+// Flaky crashes on all platforms; http://crbug.com/613034.
+TEST_F('SettingsFormatWebUITest', 'DISABLED_CheckboxIdOrPrefCheck', function() {
   var query =
       'input[type=checkbox]:not([pref]):not([id]):not(.spacer-checkbox)';
   var elements = document.querySelectorAll(query);
