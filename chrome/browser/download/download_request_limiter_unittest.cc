@@ -19,6 +19,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_ANDROID)
@@ -237,6 +238,12 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
     testing_delegate_.UpdateExpectations(action);
   }
 
+  void NavigateAndCommitWithParams(
+      content::NavigationController::LoadURLParams& params) {
+    controller().LoadURLWithParams(params);
+    content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
+  }
+
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
 
   // Number of times ContinueDownload was invoked.
@@ -322,7 +329,8 @@ TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_ResetOnNavigation) {
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 
-  // Do two downloads, allowing the second so that we end up with allow all.
+  // Do two downloads, blocking the second so that we end up with downloads not
+  // allowed.
   CanDownload();
   ExpectAndResetCounts(1, 0, 0, __LINE__);
   ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
@@ -341,6 +349,132 @@ TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_ResetOnNavigation) {
   CanDownload();
   ExpectAndResetCounts(0, 1, 0, __LINE__);
   ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+}
+
+TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_RendererInitiated) {
+  NavigateAndCommit(GURL("http://foo.com/bar"));
+  LoadCompleted();
+
+  // Do one download so we end up in PROMPT.
+  CanDownload();
+  ExpectAndResetCounts(1, 0, 0, __LINE__);
+  ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  // Set up a renderer-initiated navigation to the same host.
+  content::NavigationController::LoadURLParams load_params(
+      GURL("http://foo.com/bar2"));
+  load_params.is_renderer_initiated = true;
+  load_params.transition_type = ui::PAGE_TRANSITION_GENERATED;
+  load_params.referrer = content::Referrer();
+  NavigateAndCommitWithParams(load_params);
+  LoadCompleted();
+
+  // The state should not be reset.
+  ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  // Renderer-initiated nav to a different host shouldn't reset the state.
+  load_params.url = GURL("http://fooey.com/bar");
+  NavigateAndCommitWithParams(load_params);
+  LoadCompleted();
+  ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  // Set up a subframe. Navigations in the subframe shouldn't reset the state.
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(web_contents()->GetMainFrame());
+  content::RenderFrameHost* subframe = rfh_tester->AppendChild("subframe");
+  content::RenderFrameHostTester* subframe_tester =
+      content::RenderFrameHostTester::For(subframe);
+  subframe_tester->SimulateNavigationCommit(GURL("http://foo.com"));
+  ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  subframe_tester->SimulateNavigationCommit(GURL("http://foobargoo.com"));
+  ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  // Set up a blocked state.
+  UpdateExpectations(CANCEL);
+  CanDownload();
+  ExpectAndResetCounts(0, 1, 1, __LINE__);
+  ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  // The state should not be reset on a renderer-initiated load to either the
+  // same host or a different host, in either the main frame or the subframe.
+  load_params.url = GURL("http://fooeybar.com/bar");
+  NavigateAndCommitWithParams(load_params);
+  LoadCompleted();
+  ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  load_params.url = GURL("http://foo.com/bar");
+  NavigateAndCommitWithParams(load_params);
+  LoadCompleted();
+  ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  rfh_tester =
+      content::RenderFrameHostTester::For(web_contents()->GetMainFrame());
+  subframe = rfh_tester->AppendChild("subframe");
+  subframe_tester = content::RenderFrameHostTester::For(subframe);
+  subframe_tester->SimulateNavigationCommit(GURL("http://foo.com"));
+  ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  subframe_tester->SimulateNavigationCommit(GURL("http://foobarfoo.com"));
+  ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  // Browser-initiated navigation to a different host, which should reset the
+  // state.
+  NavigateAndCommit(GURL("http://foobar.com"));
+  LoadCompleted();
+  ASSERT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  // Set up an allow all state.
+  CanDownload();
+  ExpectAndResetCounts(1, 0, 0, __LINE__);
+  ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  UpdateExpectations(ACCEPT);
+  CanDownload();
+  ExpectAndResetCounts(1, 0, 1, __LINE__);
+  ASSERT_EQ(DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  // The state should not be reset on a pending renderer-initiated load to
+  // the same host.
+  load_params.url = GURL("http://foobar.com/bar");
+  NavigateAndCommitWithParams(load_params);
+  LoadCompleted();
+  ASSERT_EQ(DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  // The state should not be reset for a subframe nav to the same host.
+  rfh_tester =
+      content::RenderFrameHostTester::For(web_contents()->GetMainFrame());
+  subframe = rfh_tester->AppendChild("subframe");
+  subframe_tester = content::RenderFrameHostTester::For(subframe);
+  subframe_tester->SimulateNavigationCommit(GURL("http://foobar.com/bar"));
+  ASSERT_EQ(DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  subframe_tester->SimulateNavigationCommit(GURL("http://foobarfoo.com/"));
+  ASSERT_EQ(DownloadRequestLimiter::ALLOW_ALL_DOWNLOADS,
+            download_request_limiter_->GetDownloadStatus(web_contents()));
+
+  // But a pending load to a different host in the main frame should reset the
+  // state.
+  load_params.url = GURL("http://foo.com");
+  NavigateAndCommitWithParams(load_params);
+  LoadCompleted();
+  ASSERT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 }
 

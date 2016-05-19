@@ -48,6 +48,14 @@ class CONTENT_EXPORT NavigationHandle {
   // of the main frame. This remains constant over the navigation lifetime.
   virtual bool IsParentMainFrame() = 0;
 
+  // Whether the navigation was initated by the renderer process. Examples of
+  // renderer-initiated navigations include:
+  //  * <a> link click
+  //  * changing window.location.href
+  //  * redirect via the <meta http-equiv="refresh"> tag
+  //  * using window.history.pushState
+  virtual bool IsRendererInitiated() = 0;
+
   // Whether the navigation is synchronous or not. Examples of synchronous
   // navigations are:
   // * reference fragment navigations

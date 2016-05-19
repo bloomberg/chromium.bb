@@ -33,18 +33,21 @@ void UpdateThrottleCheckResult(
 std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
     const GURL& url,
     FrameTreeNode* frame_tree_node,
+    bool is_renderer_initiated,
     bool is_synchronous,
     bool is_srcdoc,
     const base::TimeTicks& navigation_start,
     int pending_nav_entry_id) {
   return std::unique_ptr<NavigationHandleImpl>(
-      new NavigationHandleImpl(url, frame_tree_node, is_synchronous, is_srcdoc,
-                               navigation_start, pending_nav_entry_id));
+      new NavigationHandleImpl(url, frame_tree_node, is_renderer_initiated,
+                               is_synchronous, is_srcdoc, navigation_start,
+                               pending_nav_entry_id));
 }
 
 NavigationHandleImpl::NavigationHandleImpl(
     const GURL& url,
     FrameTreeNode* frame_tree_node,
+    bool is_renderer_initiated,
     bool is_synchronous,
     bool is_srcdoc,
     const base::TimeTicks& navigation_start,
@@ -55,6 +58,7 @@ NavigationHandleImpl::NavigationHandleImpl(
       is_external_protocol_(false),
       net_error_code_(net::OK),
       render_frame_host_(nullptr),
+      is_renderer_initiated_(is_renderer_initiated),
       is_same_page_(false),
       is_synchronous_(is_synchronous),
       is_srcdoc_(is_srcdoc),
@@ -107,6 +111,10 @@ bool NavigationHandleImpl::IsParentMainFrame() {
     return frame_tree_node_->parent()->IsMainFrame();
 
   return false;
+}
+
+bool NavigationHandleImpl::IsRendererInitiated() {
+  return is_renderer_initiated_;
 }
 
 bool NavigationHandleImpl::IsSynchronousNavigation() {

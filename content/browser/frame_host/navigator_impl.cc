@@ -177,12 +177,22 @@ void NavigatorImpl::DidStartProvisionalLoad(
         std::unique_ptr<NavigationHandleImpl>());
   }
 
-  NavigationEntry* pending_entry = controller_->GetPendingEntry();
+  // It is safer to assume navigations are renderer-initiated unless shown
+  // otherwise. Browser navigations generally have more privileges, and they
+  // should always have a pending NavigationEntry to distinguish them.
+  bool is_renderer_initiated = true;
+  int pending_nav_entry_id = 0;
+  NavigationEntryImpl* pending_entry = controller_->GetPendingEntry();
+  if (pending_entry) {
+    is_renderer_initiated = pending_entry->is_renderer_initiated();
+    pending_nav_entry_id = pending_entry->GetUniqueID();
+  }
   render_frame_host->SetNavigationHandle(NavigationHandleImpl::Create(
       validated_url, render_frame_host->frame_tree_node(),
+      is_renderer_initiated,
       false,             // is_synchronous
       is_iframe_srcdoc,  // is_srcdoc
-      navigation_start, pending_entry ? pending_entry->GetUniqueID() : 0));
+      navigation_start, pending_nav_entry_id));
 }
 
 void NavigatorImpl::DidFailProvisionalLoadWithError(

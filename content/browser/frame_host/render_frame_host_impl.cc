@@ -29,6 +29,7 @@
 #include "content/browser/frame_host/frame_mojo_shell.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
@@ -1093,12 +1094,14 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   // for these navigations should go away when this is properly handled. See
   // crbug.com/588317.
   int entry_id_for_data_nav = 0;
+  bool is_renderer_initiated = true;
   if (navigation_handle_ &&
       (navigation_handle_->GetURL() != validated_params.url)) {
     // Make sure that the pending entry was really loaded via
     // LoadDataWithBaseURL and that it matches this handle.
-    NavigationEntry* pending_entry =
-        frame_tree_node()->navigator()->GetController()->GetPendingEntry();
+    NavigationEntryImpl* pending_entry =
+        NavigationEntryImpl::FromNavigationEntry(
+            frame_tree_node()->navigator()->GetController()->GetPendingEntry());
     bool pending_entry_matches_handle =
         pending_entry &&
         pending_entry->GetUniqueID() ==
@@ -1110,6 +1113,7 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
         pending_entry_matches_handle &&
         !pending_entry->GetBaseURLForDataURL().is_empty()) {
       entry_id_for_data_nav = navigation_handle_->pending_nav_entry_id();
+      is_renderer_initiated = pending_entry->is_renderer_initiated();
     }
     navigation_handle_.reset();
   }
@@ -1123,6 +1127,7 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
     // loaded via LoadDataWithBaseURL, propogate the entry id.
     navigation_handle_ = NavigationHandleImpl::Create(
         validated_params.url, frame_tree_node_,
+        is_renderer_initiated,
         true,  // is_synchronous
         validated_params.is_srcdoc, base::TimeTicks::Now(),
         entry_id_for_data_nav);

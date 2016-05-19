@@ -29,6 +29,7 @@ class NavigationHandleObserver : public WebContentsObserver {
         is_error_(false),
         is_main_frame_(false),
         is_parent_main_frame_(false),
+        is_renderer_initiated_(true),
         is_synchronous_(false),
         is_srcdoc_(false),
         was_redirected_(false),
@@ -48,6 +49,7 @@ class NavigationHandleObserver : public WebContentsObserver {
 
     is_main_frame_ = navigation_handle->IsInMainFrame();
     is_parent_main_frame_ = navigation_handle->IsParentMainFrame();
+    is_renderer_initiated_ = navigation_handle->IsRendererInitiated();
     is_synchronous_ = navigation_handle->IsSynchronousNavigation();
     is_srcdoc_ = navigation_handle->IsSrcdoc();
     was_redirected_ = navigation_handle->WasServerRedirect();
@@ -61,6 +63,7 @@ class NavigationHandleObserver : public WebContentsObserver {
     DCHECK_EQ(is_main_frame_, navigation_handle->IsInMainFrame());
     DCHECK_EQ(is_parent_main_frame_, navigation_handle->IsParentMainFrame());
     DCHECK_EQ(is_synchronous_, navigation_handle->IsSynchronousNavigation());
+    DCHECK_EQ(is_renderer_initiated_, navigation_handle->IsRendererInitiated());
     DCHECK_EQ(is_srcdoc_, navigation_handle->IsSrcdoc());
     DCHECK_EQ(frame_tree_node_id_, navigation_handle->GetFrameTreeNodeId());
 
@@ -86,6 +89,7 @@ class NavigationHandleObserver : public WebContentsObserver {
   bool is_error() { return is_error_; }
   bool is_main_frame() { return is_main_frame_; }
   bool is_parent_main_frame() { return is_parent_main_frame_; }
+  bool is_renderer_initiated() { return is_renderer_initiated_; }
   bool is_synchronous() { return is_synchronous_; }
   bool is_srcdoc() { return is_srcdoc_; }
   bool was_redirected() { return was_redirected_; }
@@ -104,6 +108,7 @@ class NavigationHandleObserver : public WebContentsObserver {
   bool is_error_;
   bool is_main_frame_;
   bool is_parent_main_frame_;
+  bool is_renderer_initiated_;
   bool is_synchronous_;
   bool is_srcdoc_;
   bool was_redirected_;
@@ -384,6 +389,73 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifyRedirect) {
     EXPECT_TRUE(observer.has_committed());
     EXPECT_FALSE(observer.is_error());
     EXPECT_TRUE(observer.was_redirected());
+  }
+}
+
+// Ensure that the IsRendererInitiated() method on NavigationHandle behaves
+// correctly.
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+                       VerifyRendererInitiated) {
+  {
+    // Test browser initiated navigation.
+    GURL url(embedded_test_server()->GetURL("/title1.html"));
+    NavigationHandleObserver observer(shell()->web_contents(), url);
+
+    EXPECT_TRUE(NavigateToURL(shell(), url));
+
+    EXPECT_TRUE(observer.has_committed());
+    EXPECT_FALSE(observer.is_error());
+    EXPECT_FALSE(observer.is_renderer_initiated());
+  }
+
+  {
+    // Test a main frame + subframes navigation.
+    GURL main_url(embedded_test_server()->GetURL(
+        "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
+    GURL b_url(embedded_test_server()->GetURL(
+        "b.com", "/cross_site_iframe_factory.html?b(c())"));
+    GURL c_url(embedded_test_server()->GetURL(
+        "c.com", "/cross_site_iframe_factory.html?c()"));
+
+    NavigationHandleObserver main_observer(shell()->web_contents(), main_url);
+    NavigationHandleObserver b_observer(shell()->web_contents(), b_url);
+    NavigationHandleObserver c_observer(shell()->web_contents(), c_url);
+
+    EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+    // Verify that the main frame navigation is not renderer initiated.
+    EXPECT_TRUE(main_observer.has_committed());
+    EXPECT_FALSE(main_observer.is_error());
+    EXPECT_FALSE(main_observer.is_renderer_initiated());
+
+    // Verify that the subframe navigations are renderer initiated.
+    EXPECT_TRUE(b_observer.has_committed());
+    EXPECT_FALSE(b_observer.is_error());
+    EXPECT_TRUE(b_observer.is_renderer_initiated());
+    EXPECT_TRUE(c_observer.has_committed());
+    EXPECT_FALSE(c_observer.is_error());
+    EXPECT_TRUE(c_observer.is_renderer_initiated());
+  }
+
+  {
+    // Test a pushState navigation.
+    GURL url(embedded_test_server()->GetURL(
+        "a.com", "/cross_site_iframe_factory.html?a(a())"));
+    EXPECT_TRUE(NavigateToURL(shell(), url));
+
+    FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                              ->GetFrameTree()
+                              ->root();
+
+    NavigationHandleObserver observer(
+        shell()->web_contents(),
+        embedded_test_server()->GetURL("a.com", "/bar"));
+    EXPECT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(),
+                              "window.history.pushState({}, '', 'bar');"));
+
+    EXPECT_TRUE(observer.has_committed());
+    EXPECT_FALSE(observer.is_error());
+    EXPECT_TRUE(observer.is_renderer_initiated());
   }
 }
 

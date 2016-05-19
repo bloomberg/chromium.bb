@@ -244,6 +244,7 @@ void NavigationRequest::CreateNavigationHandle(int pending_nav_entry_id) {
   // proper values are specified for is_synchronous and is_srcdoc.
   navigation_handle_ = NavigationHandleImpl::Create(
       common_params_.url, frame_tree_node_,
+      !browser_initiated_,
       false,  // is_synchronous
       false,  // is_srcdoc
       common_params_.navigation_start, pending_nav_entry_id);
