@@ -439,7 +439,7 @@ BookmarkButton* gDraggedButton = nil; // Weak
 }
 
 - (void)updateIconToMatchTheme {
-  if (!ui::MaterialDesignController::IsModeMaterial() || ![self isFolder]) {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
     return;
   }
 

@@ -315,9 +315,21 @@ CGFloat BookmarkRightMargin() {
     if (ui::MaterialDesignController::IsModeMaterial()) {
       folderImageWhite_.reset(
           rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_FOLDER_WHITE).CopyNSImage());
+
+      const int kIconSize = 16;
+      defaultImage_.reset([NSImageFromImageSkia(
+          gfx::CreateVectorIcon(gfx::VectorIconId::LOCATION_BAR_HTTP,
+                                kIconSize,
+                                gfx::kChromeIconGrey)) retain]);
+      defaultImageIncognito_.reset([NSImageFromImageSkia(
+          gfx::CreateVectorIcon(gfx::VectorIconId::LOCATION_BAR_HTTP,
+                                kIconSize,
+                                SkColorSetA(SK_ColorWHITE, 0xCC))) retain]);
+    } else {
+      defaultImage_.reset(
+          rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).CopyNSImage());
+      defaultImageIncognito_.reset([defaultImage_.get() retain]);
     }
-    defaultImage_.reset(
-        rb.GetNativeImageNamed(IDR_DEFAULT_FAVICON).CopyNSImage());
 
     innerContentAnimationsEnabled_ = YES;
     stateAnimationsEnabled_ = YES;
@@ -702,7 +714,7 @@ CGFloat BookmarkRightMargin() {
 - (NSImage*)faviconForNode:(const BookmarkNode*)node
              forADarkTheme:(BOOL)forADarkTheme {
   if (!node)
-    return defaultImage_;
+    return forADarkTheme ? defaultImageIncognito_ : defaultImage_;
 
   if (forADarkTheme && ui::MaterialDesignController::IsModeMaterial()) {
     if (node == managedBookmarkService_->managed_node()) {
@@ -742,7 +754,7 @@ CGFloat BookmarkRightMargin() {
   if (!favicon.IsEmpty())
     return favicon.ToNSImage();
 
-  return defaultImage_;
+  return forADarkTheme ? defaultImageIncognito_ : defaultImage_;
 }
 
 - (void)closeFolderAndStopTrackingMenus {

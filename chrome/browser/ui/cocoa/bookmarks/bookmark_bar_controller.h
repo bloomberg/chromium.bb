@@ -203,6 +203,9 @@ willAnimateFromState:(BookmarkBar::State)oldState
   // The default image, so we can use one copy for all buttons.
   base::scoped_nsobject<NSImage> defaultImage_;
 
+  // The Incognito version of the default image.
+  base::scoped_nsobject<NSImage> defaultImageIncognito_;
+
   // If the bar is disabled, we hide it and ignore show/hide commands.
   // Set when using fullscreen mode.
   BOOL barIsEnabled_;
