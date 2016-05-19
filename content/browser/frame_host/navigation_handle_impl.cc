@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "content/browser/frame_host/ancestor_throttle.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_delegate.h"
@@ -172,9 +171,9 @@ net::Error NavigationHandleImpl::GetNetErrorCode() {
 }
 
 RenderFrameHostImpl* NavigationHandleImpl::GetRenderFrameHost() {
-  CHECK_GE(state_, WILL_PROCESS_RESPONSE)
+  CHECK(state_ >= READY_TO_COMMIT)
       << "This accessor should only be called "
-         "after a response has been received.";
+         "after the navigation is ready to commit.";
   return render_frame_host_;
 }
 
@@ -297,13 +296,10 @@ void NavigationHandleImpl::WillStartRequest(
   state_ = WILL_SEND_REQUEST;
   complete_callback_ = callback;
 
-  // Register the platform's navigation throttles.
-  std::unique_ptr<content::NavigationThrottle> ancestor_throttle =
-      content::AncestorThrottle::MaybeCreateThrottleFor(this);
-  if (ancestor_throttle)
-    throttles_.push_back(std::move(ancestor_throttle));
-
-  // Register the embedder's navigation throttles.
+  // Register the navigation throttles. The ScopedVector returned by
+  // GetNavigationThrottles is not assigned to throttles_ directly because it
+  // would overwrite any throttle previously added with
+  // RegisterThrottleForTesting.
   ScopedVector<NavigationThrottle> throttles_to_register =
       GetContentClient()->browser()->CreateThrottlesForNavigation(this);
   if (throttles_to_register.size() > 0) {
@@ -420,7 +416,7 @@ NavigationHandleImpl::CheckWillStartRequest() {
         next_index_ = i + 1;
         return result;
 
-      case NavigationThrottle::BLOCK_RESPONSE:
+      default:
         NOTREACHED();
     }
   }
@@ -451,7 +447,7 @@ NavigationHandleImpl::CheckWillRedirectRequest() {
         next_index_ = i + 1;
         return result;
 
-      case NavigationThrottle::BLOCK_RESPONSE:
+      default:
         NOTREACHED();
     }
   }
@@ -477,7 +473,6 @@ NavigationHandleImpl::CheckWillProcessResponse() {
       case NavigationThrottle::PROCEED:
         continue;
 
-      case NavigationThrottle::BLOCK_RESPONSE:
       case NavigationThrottle::CANCEL:
       case NavigationThrottle::CANCEL_AND_IGNORE:
         state_ = CANCELING;

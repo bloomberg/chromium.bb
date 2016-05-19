@@ -136,8 +136,8 @@ public:
     };
     InitialScrollState& initialScrollState() { return m_initialScrollState; }
 
-    void setWasBlockedAfterCSP() { m_wasBlockedAfterCSP = true; }
-    bool wasBlockedAfterCSP() { return m_wasBlockedAfterCSP; }
+    void setWasBlockedAfterXFrameOptionsOrCSP() { m_wasBlockedAfterXFrameOptionsOrCSP = true; }
+    bool wasBlockedAfterXFrameOptionsOrCSP() { return m_wasBlockedAfterXFrameOptionsOrCSP; }
 
     Resource* startPreload(Resource::Type, FetchRequest&);
 
@@ -164,7 +164,7 @@ private:
     bool maybeCreateArchive();
 
     void finishedLoading(double finishTime);
-    void cancelLoadAfterCSPDenied(const ResourceResponse&);
+    void cancelLoadAfterXFrameOptionsOrCSPDenied(const ResourceResponse&);
     void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) final;
     void responseReceived(Resource*, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) final;
     void dataReceived(Resource*, const char* data, size_t length) final;
@@ -214,7 +214,7 @@ private:
     ClientHintsPreferences m_clientHintsPreferences;
     InitialScrollState m_initialScrollState;
 
-    bool m_wasBlockedAfterCSP;
+    bool m_wasBlockedAfterXFrameOptionsOrCSP;
 
     enum State {
         NotStarted,
