@@ -802,7 +802,7 @@ TEST_F(FrameThrottlingTest, SkipPaintingLayersInThrottledFrames)
 
     // Simulate the paint for a graphics layer being externally invalidated
     // (e.g., by video playback).
-    frameDocument->view()->layoutView()->invalidatePaintForViewAndCompositedLayers();
+    frameDocument->view()->layoutViewItem().invalidatePaintForViewAndCompositedLayers();
 
     // The layer inside the throttled frame should not get painted.
     auto displayItems2 = compositeFrame();
