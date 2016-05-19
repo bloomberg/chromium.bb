@@ -2303,6 +2303,55 @@ bool Node::isUserActionElementFocused() const
     return document().userActionElements().isFocused(this);
 }
 
+std::ostream& operator<<(std::ostream& os, CustomElementState state)
+{
+    switch (state) {
+    case CustomElementState::Uncustomized: return os << "Uncustomized";
+    case CustomElementState::Undefined: return os << "Undefined";
+    case CustomElementState::Custom: return os << "Custom";
+    default: NOTREACHED();
+    }
+    return os;
+}
+
+CustomElementState Node::getCustomElementState() const
+{
+    return !isCustomElement()
+        ? CustomElementState::Uncustomized
+        : (getFlag(CustomElementCustomFlag) ? CustomElementState::Custom : CustomElementState::Undefined);
+}
+
+void Node::setCustomElementState(CustomElementState newState)
+{
+    CustomElementState oldState = getCustomElementState();
+
+    switch (newState) {
+    case CustomElementState::Uncustomized:
+        NOTREACHED(); // Everything starts in this state
+        return;
+
+    case CustomElementState::Undefined:
+        DCHECK_EQ(CustomElementState::Uncustomized, oldState);
+        break;
+
+    case CustomElementState::Custom:
+        DCHECK_EQ(CustomElementState::Undefined, oldState);
+        break;
+    }
+
+    DCHECK(isHTMLElement());
+    DCHECK_NE(V0Upgraded, getV0CustomElementState());
+
+    setFlag(CustomElementFlag);
+    if (newState == CustomElementState::Custom)
+        setFlag(CustomElementCustomFlag);
+    DCHECK(newState == getCustomElementState());
+
+    // TODO(kojii): Should fire pseudoStateChanged() when :defined selector is
+    // ready.
+    // toElement(this)->pseudoStateChanged(CSSSelector::PseudoDefined);
+}
+
 void Node::setV0CustomElementState(V0CustomElementState newState)
 {
     V0CustomElementState oldState = getV0CustomElementState();
@@ -2322,6 +2371,7 @@ void Node::setV0CustomElementState(V0CustomElementState newState)
     }
 
     DCHECK(isHTMLElement() || isSVGElement());
+    DCHECK(CustomElementState::Custom != getCustomElementState());
     setFlag(V0CustomElementFlag);
     setFlag(newState == V0Upgraded, V0CustomElementUpgradedFlag);
 

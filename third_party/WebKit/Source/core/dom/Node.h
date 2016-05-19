@@ -99,6 +99,14 @@ enum StyleChangeType {
     NeedsReattachStyleChange = 3 << nodeStyleChangeShift,
 };
 
+enum class CustomElementState {
+    Uncustomized = 0,
+    Custom = 1,
+    Undefined = 2,
+};
+
+CORE_EXPORT std::ostream& operator<<(std::ostream&, CustomElementState);
+
 class NodeRareDataBase {
 public:
     LayoutObject* layoutObject() const { return m_layoutObject; }
@@ -244,6 +252,9 @@ public:
     bool isFirstLetterPseudoElement() const { return getPseudoId() == PseudoIdFirstLetter; }
     virtual PseudoId getPseudoId() const { return PseudoIdNone; }
 
+    bool isCustomElement() const { return getFlag(CustomElementFlag); }
+    CustomElementState getCustomElementState() const;
+    void setCustomElementState(CustomElementState);
     bool isV0CustomElement() const { return getFlag(V0CustomElementFlag); }
     enum V0CustomElementState {
         V0NotCustomElement  = 0,
@@ -713,14 +724,17 @@ private:
         ChildNeedsStyleRecalcFlag = 1 << 18,
         StyleChangeMask = 1 << nodeStyleChangeShift | 1 << (nodeStyleChangeShift + 1),
 
-        V0CustomElementFlag = 1 << 21,
-        V0CustomElementUpgradedFlag = 1 << 22,
+        CustomElementFlag = 1 << 21,
+        CustomElementCustomFlag = 1 << 22,
 
         HasNameOrIsEditingTextFlag = 1 << 23,
         HasWeakReferencesFlag = 1 << 24,
         V8CollectableDuringMinorGCFlag = 1 << 25,
         HasEventTargetDataFlag = 1 << 26,
         AlreadySpellCheckedFlag = 1 << 27,
+
+        V0CustomElementFlag = 1 << 28,
+        V0CustomElementUpgradedFlag = 1 << 29,
 
         DefaultNodeFlags = IsFinishedParsingChildrenFlag | NeedsReattachStyleChange
     };
