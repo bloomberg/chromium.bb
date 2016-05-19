@@ -191,7 +191,7 @@ void TraceTrait<T>::trace(Visitor* visitor, void* self)
     static_assert(WTF::NeedsTracing<T>::value || WTF::IsWeak<T>::value, "T should be traced");
     if (visitor->getMarkingMode() == Visitor::GlobalMarking) {
         // Switch to inlined global marking dispatch.
-        static_cast<T*>(self)->trace(InlinedGlobalMarkingVisitor());
+        static_cast<T*>(self)->trace(InlinedGlobalMarkingVisitor(visitor->state()));
     } else {
         static_cast<T*>(self)->trace(visitor);
     }

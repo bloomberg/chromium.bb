@@ -29,19 +29,19 @@ PassOwnPtr<Visitor> Visitor::create(ThreadState* state, BlinkGC::GCType gcType)
 }
 
 Visitor::Visitor(ThreadState* state, MarkingMode markingMode)
-    : m_state(state)
+    : VisitorHelper(state)
     , m_markingMode(markingMode)
 {
     // See ThreadState::runScheduledGC() why we need to already be in a
     // GCForbiddenScope before any safe point is entered.
-    m_state->enterGCForbiddenScope();
+    state->enterGCForbiddenScope();
 
-    ASSERT(m_state->checkThread());
+    ASSERT(state->checkThread());
 }
 
 Visitor::~Visitor()
 {
-    m_state->leaveGCForbiddenScope();
+    state()->leaveGCForbiddenScope();
 }
 
 } // namespace blink

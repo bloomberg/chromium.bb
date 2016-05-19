@@ -16,7 +16,7 @@ public:
     friend class MarkingVisitorImpl<InlinedGlobalMarkingVisitor>;
     using Impl = MarkingVisitorImpl<InlinedGlobalMarkingVisitor>;
 
-    InlinedGlobalMarkingVisitor() { }
+    explicit InlinedGlobalMarkingVisitor(ThreadState* state) : VisitorHelper(state) { }
 
     // Hack to unify interface to visitor->trace().
     // Without this hack, we need to use visitor.trace() for
