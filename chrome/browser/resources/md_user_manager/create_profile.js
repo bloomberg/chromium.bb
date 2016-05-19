@@ -137,6 +137,11 @@ Polymer({
     this.browserProxy_.getSignedInUsers();
   },
 
+  /** @override */
+  attached: function() {
+    this.$.nameInput.focus();
+  },
+
   /**
    * Handles tap events from:
    * - links within dynamic warning/error messages pushed from the browser.
