@@ -198,7 +198,6 @@ crbug.com/248938 virtual/threaded/animations/animation-iteration-event-destroy-r
 crbug.com/248938 virtual/threaded/animations/transition-and-animation-3.html [ Pass Timeout ]
 crbug.com/446385 [ Linux Mac ] http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Pass Timeout ]
 crbug.com/446385 [ Win7 Debug ] http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Crash Pass Timeout ]
-crbug.com/441705 fast/media/media-svg-crash.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/interrupt-transform-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/dynamic-stylesheet-loading.html [ Pass Failure Timeout ]
 crbug.com/248938 virtual/threaded/transitions/change-duration-during-transition.html [ Pass Failure ]
