@@ -28,6 +28,7 @@
 enum nv_mem_kind
 {
 	NV_MEM_KIND_PITCH = 0,
+	NV_MEM_KIND_C32_2CRA = 0xdb,
 	NV_MEM_KIND_GENERIC_16Bx2 = 0xfe,
 };
 
@@ -73,7 +74,7 @@ static void compute_layout_blocklinear(int width, int height, int format,
 	 */
 	bytes = ALIGN(bytes, NV_PREFERRED_PAGE_SIZE);
 
-	*kind = NV_MEM_KIND_GENERIC_16Bx2;
+	*kind = NV_MEM_KIND_C32_2CRA;
 	*stride = pitch;
 	*size = bytes;
 }
