@@ -133,7 +133,7 @@ column-rule-style: none
 column-rule-width: 0px
 column-span: none
 column-width: auto
-content: normal
+content: 
 cursor: auto
 cx: 0px
 cy: 0px

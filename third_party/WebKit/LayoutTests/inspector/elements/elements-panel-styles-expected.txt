@@ -14,7 +14,7 @@ color: rgb(0, 0, 255);
     OVERLOADED black - .foo elements-panel-styles.css:21 -> elements-panel-styles.css:21:1
     OVERLOADED red - #container elements-panel-styles.css:10 -> elements-panel-styles.css:10:1
     OVERLOADED magenta !important - html elements-panel-styles.css:61 -> elements-panel-styles.css:61:1
-content: normal;
+content: "[before Foo]";
     "[before Foo]" - .foo, .foo::before elements-panel-styles.css:34 -> elements-panel-styles.css:34:1
 display: block;
     OVERLOADED none - element.style
