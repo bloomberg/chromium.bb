@@ -52,15 +52,8 @@ PulseAudioInputStream::~PulseAudioInputStream() {
 bool PulseAudioInputStream::Open() {
   DCHECK(thread_checker_.CalledOnValidThread());
   AutoPulseLock auto_lock(pa_mainloop_);
-  std::string device_name_to_use = device_name_;
-  if (device_name_ == AudioDeviceDescription::kDefaultDeviceId) {
-    GetSystemDefaultInputDevice();
-    device_name_to_use = default_system_device_name_;
-  }
-
   if (!pulse::CreateInputStream(pa_mainloop_, pa_context_, &handle_, params_,
-                                device_name_to_use, &StreamNotifyCallback,
-                                this)) {
+                                device_name_, &StreamNotifyCallback, this)) {
     return false;
   }
 
@@ -274,26 +267,6 @@ void PulseAudioInputStream::StreamNotifyCallback(pa_stream* s,
   }
 
   pa_threaded_mainloop_signal(stream->pa_mainloop_, 0);
-}
-
-// static, used by pa_context_get_server_info.
-void PulseAudioInputStream::GetSystemDefaultInputDeviceCallback(
-    pa_context* context,
-    const pa_server_info* info,
-    void* user_data) {
-  media::PulseAudioInputStream* stream =
-      static_cast<media::PulseAudioInputStream*>(user_data);
-  stream->default_system_device_name_ = info->default_source_name;
-  pa_threaded_mainloop_signal(stream->pa_mainloop_, 0);
-}
-
-void PulseAudioInputStream::GetSystemDefaultInputDevice() {
-  DCHECK(pa_mainloop_);
-  DCHECK(pa_context_);
-  pa_operation* operation = pa_context_get_server_info(
-      pa_context_, PulseAudioInputStream::GetSystemDefaultInputDeviceCallback,
-      this);
-  WaitForOperationCompletion(pa_mainloop_, operation);
 }
 
 void PulseAudioInputStream::ReadData() {

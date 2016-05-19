@@ -52,16 +52,6 @@ class PulseAudioInputStream : public AgcAudioStream<AudioInputStream> {
                            int error,
                            void* user_data);
 
-  // pa_context_get_server_info callback. It's used by
-  // GetSystemDefaultInputDevice to set |default_system_device_name_| to the
-  // default system input device.
-  static void GetSystemDefaultInputDeviceCallback(pa_context* context,
-                                                  const pa_server_info* info,
-                                                  void* user_data);
-
-  // Get default system input device for the input stream.
-  void GetSystemDefaultInputDevice();
-
   // Helper for the ReadCallback.
   void ReadData();
 
@@ -70,12 +60,7 @@ class PulseAudioInputStream : public AgcAudioStream<AudioInputStream> {
 
   AudioManagerPulse* audio_manager_;
   AudioInputCallback* callback_;
-  const std::string device_name_;
-  // The name of the system default device. Set by
-  // GetSystemDefaultInputDeviceCallback if |device_name_| is set to be the
-  // default device.
-  std::string default_system_device_name_;
-
+  std::string device_name_;
   AudioParameters params_;
   int channels_;
   double volume_;

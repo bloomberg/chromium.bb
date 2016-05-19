@@ -20,7 +20,6 @@
 #ifndef MEDIA_AUDIO_PULSE_PULSE_OUTPUT_H_
 #define MEDIA_AUDIO_PULSE_PULSE_OUTPUT_H_
 
-#include <pulse/pulseaudio.h>
 #include <stddef.h>
 
 #include <memory>
@@ -64,20 +63,6 @@ class PulseAudioOutputStream : public AudioOutputStream {
   // Called by PulseAudio when it needs more audio data.
   static void StreamRequestCallback(pa_stream* s, size_t len, void* p_this);
 
-  // pa_context_get_server_info callback. It's used by
-  // GetSystemDefaultOutputDevice to set |default_system_device_name_| to the
-  // default system output device.
-  static void GetSystemDefaultOutputDeviceCallback(pa_context* context,
-                                                   const pa_server_info* info,
-                                                   void* user_data);
-
-  // Initialize |pa_mainloop_| and |pa_context_| and prepare them for creating
-  // an output stream.
-  bool InitializeMainloopAndContext();
-
-  // Get default system output device for the output stream.
-  void GetSystemDefaultOutputDevice();
-
   // Fulfill a write request from the write request callback.  Outputs silence
   // if the request could not be fulfilled.
   void FulfillWriteRequest(size_t requested_bytes);
@@ -90,10 +75,6 @@ class PulseAudioOutputStream : public AudioOutputStream {
 
   // The device ID for the device to open.
   const std::string device_id_;
-  // The name of the system default device. Set by
-  // GetSystemDefaultOutputDeviceCallback if |device_id_| is set to be the
-  // default device.
-  std::string default_system_device_name_;
 
   // Audio manager that created us.  Used to report that we've closed.
   AudioManagerBase* manager_;

@@ -170,7 +170,6 @@ bool CreateInputStream(pa_threaded_mainloop* mainloop,
                        void* user_data) {
   DCHECK(mainloop);
   DCHECK(context);
-  DCHECK_NE(device_id, AudioDeviceDescription::kDefaultDeviceId);
 
   // Set sample specifications.
   pa_sample_spec sample_specifications;
@@ -212,8 +211,11 @@ bool CreateInputStream(pa_threaded_mainloop* mainloop,
               PA_STREAM_ADJUST_LATENCY |
               PA_STREAM_START_CORKED;
   RETURN_ON_FAILURE(
-      pa_stream_connect_record(*stream, device_id.c_str(), &buffer_attributes,
-                               static_cast<pa_stream_flags_t>(flags)) == 0,
+      pa_stream_connect_record(
+          *stream, device_id == AudioDeviceDescription::kDefaultDeviceId
+                       ? NULL
+                       : device_id.c_str(),
+          &buffer_attributes, static_cast<pa_stream_flags_t>(flags)) == 0,
       "pa_stream_connect_record FAILED ");
 
   // Wait for the stream to be ready.
@@ -229,8 +231,8 @@ bool CreateInputStream(pa_threaded_mainloop* mainloop,
   return true;
 }
 
-bool CreateOutputStream(pa_threaded_mainloop* mainloop,
-                        pa_context* context,
+bool CreateOutputStream(pa_threaded_mainloop** mainloop,
+                        pa_context** context,
                         pa_stream** stream,
                         const AudioParameters& params,
                         const std::string& device_id,
@@ -238,9 +240,42 @@ bool CreateOutputStream(pa_threaded_mainloop* mainloop,
                         pa_stream_notify_cb_t stream_callback,
                         pa_stream_request_cb_t write_callback,
                         void* user_data) {
-  DCHECK(mainloop);
-  DCHECK(context);
-  DCHECK(device_id != AudioDeviceDescription::kDefaultDeviceId);
+  DCHECK(!*mainloop);
+  DCHECK(!*context);
+
+  *mainloop = pa_threaded_mainloop_new();
+  RETURN_ON_FAILURE(*mainloop, "Failed to create PulseAudio main loop.");
+
+  pa_mainloop_api* pa_mainloop_api = pa_threaded_mainloop_get_api(*mainloop);
+  *context = pa_context_new(pa_mainloop_api,
+                            app_name.empty() ? "Chromium" : app_name.c_str());
+  RETURN_ON_FAILURE(*context, "Failed to create PulseAudio context.");
+
+  // A state callback must be set before calling pa_threaded_mainloop_lock() or
+  // pa_threaded_mainloop_wait() calls may lead to dead lock.
+  pa_context_set_state_callback(*context, &ContextStateCallback, *mainloop);
+
+  // Lock the main loop while setting up the context.  Failure to do so may lead
+  // to crashes as the PulseAudio thread tries to run before things are ready.
+  AutoPulseLock auto_lock(*mainloop);
+
+  RETURN_ON_FAILURE(pa_threaded_mainloop_start(*mainloop) == 0,
+                    "Failed to start PulseAudio main loop.");
+  RETURN_ON_FAILURE(
+      pa_context_connect(*context, NULL, PA_CONTEXT_NOAUTOSPAWN, NULL) == 0,
+      "Failed to connect PulseAudio context.");
+
+  // Wait until |pa_context_| is ready.  pa_threaded_mainloop_wait() must be
+  // called after pa_context_get_state() in case the context is already ready,
+  // otherwise pa_threaded_mainloop_wait() will hang indefinitely.
+  while (true) {
+    pa_context_state_t context_state = pa_context_get_state(*context);
+    RETURN_ON_FAILURE(PA_CONTEXT_IS_GOOD(context_state),
+                      "Invalid PulseAudio context state.");
+    if (context_state == PA_CONTEXT_READY)
+      break;
+    pa_threaded_mainloop_wait(*mainloop);
+  }
 
   // Set sample specifications.
   pa_sample_spec sample_specifications;
@@ -265,7 +300,7 @@ bool CreateOutputStream(pa_threaded_mainloop* mainloop,
   pa_proplist_sets(property_list.get(), PA_PROP_APPLICATION_ICON_NAME,
                    kBrowserDisplayName);
   *stream = pa_stream_new_with_proplist(
-      context, "Playback", &sample_specifications, map, property_list.get());
+      *context, "Playback", &sample_specifications, map, property_list.get());
   RETURN_ON_FAILURE(*stream, "failed to create PA playback stream");
 
   pa_stream_set_state_callback(*stream, stream_callback, user_data);
@@ -296,7 +331,10 @@ bool CreateOutputStream(pa_threaded_mainloop* mainloop,
   // and error.
   RETURN_ON_FAILURE(
       pa_stream_connect_playback(
-          *stream, device_id.c_str(), &pa_buffer_attributes,
+          *stream, device_id == AudioDeviceDescription::kDefaultDeviceId
+                       ? NULL
+                       : device_id.c_str(),
+          &pa_buffer_attributes,
           static_cast<pa_stream_flags_t>(
               PA_STREAM_INTERPOLATE_TIMING | PA_STREAM_ADJUST_LATENCY |
               PA_STREAM_AUTO_TIMING_UPDATE | PA_STREAM_NOT_MONOTONIC |
@@ -311,7 +349,7 @@ bool CreateOutputStream(pa_threaded_mainloop* mainloop,
         PA_STREAM_IS_GOOD(stream_state), "Invalid PulseAudio stream state");
     if (stream_state == PA_STREAM_READY)
       break;
-    pa_threaded_mainloop_wait(mainloop);
+    pa_threaded_mainloop_wait(*mainloop);
   }
 
   return true;

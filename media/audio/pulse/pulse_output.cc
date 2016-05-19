@@ -62,102 +62,10 @@ PulseAudioOutputStream::~PulseAudioOutputStream() {
   DCHECK(!pa_mainloop_);
 }
 
-bool PulseAudioOutputStream::InitializeMainloopAndContext() {
-  DCHECK(!pa_mainloop_);
-  DCHECK(!pa_context_);
-  DCHECK(thread_checker_.CalledOnValidThread());
-  pa_mainloop_ = pa_threaded_mainloop_new();
-  if (!pa_mainloop_) {
-    DLOG(ERROR) << "Failed to create PulseAudio main loop.";
-    return false;
-  }
-
-  pa_mainloop_api* pa_mainloop_api = pa_threaded_mainloop_get_api(pa_mainloop_);
-  std::string app_name = AudioManager::GetGlobalAppName();
-  pa_context_ = pa_context_new(
-      pa_mainloop_api, app_name.empty() ? "Chromium" : app_name.c_str());
-  if (!pa_context_) {
-    DLOG(ERROR) << "Failed to create PulseAudio context.";
-    return false;
-  }
-
-  // A state callback must be set before calling pa_threaded_mainloop_lock() or
-  // pa_threaded_mainloop_wait() calls may lead to dead lock.
-  pa_context_set_state_callback(pa_context_, &pulse::ContextStateCallback,
-                                pa_mainloop_);
-  {
-    // Lock the main loop while setting up the context.  Failure to do so may
-    // lead to crashes as the PulseAudio thread tries to run before things are
-    // ready.
-    AutoPulseLock auto_lock(pa_mainloop_);
-
-    if (pa_threaded_mainloop_start(pa_mainloop_) != 0) {
-      DLOG(ERROR) << "Failed to start PulseAudio main loop.";
-      return false;
-    }
-
-    if (pa_context_connect(pa_context_, NULL, PA_CONTEXT_NOAUTOSPAWN, NULL) !=
-        0) {
-      DLOG(ERROR) << "Failed to connect PulseAudio context.";
-      return false;
-    }
-
-    // Wait until |pa_context_| is ready.  pa_threaded_mainloop_wait() must be
-    // called after pa_context_get_state() in case the context is already ready,
-    // otherwise pa_threaded_mainloop_wait() will hang indefinitely.
-    while (true) {
-      pa_context_state_t context_state = pa_context_get_state(pa_context_);
-      if (!PA_CONTEXT_IS_GOOD(context_state)) {
-        DLOG(ERROR) << "Invalid PulseAudio context state.";
-        return false;
-      }
-
-      if (context_state == PA_CONTEXT_READY)
-        break;
-      pa_threaded_mainloop_wait(pa_mainloop_);
-    }
-  }
-
-  return true;
-}
-
-// static, used by pa_context_get_server_info.
-void PulseAudioOutputStream::GetSystemDefaultOutputDeviceCallback(
-    pa_context* context,
-    const pa_server_info* info,
-    void* user_data) {
-  media::PulseAudioOutputStream* stream =
-      static_cast<media::PulseAudioOutputStream*>(user_data);
-  stream->default_system_device_name_ = info->default_sink_name;
-  pa_threaded_mainloop_signal(stream->pa_mainloop_, 0);
-}
-
-void PulseAudioOutputStream::GetSystemDefaultOutputDevice() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(pa_mainloop_);
-  DCHECK(pa_context_);
-  pa_operation* operation = pa_context_get_server_info(
-      pa_context_, PulseAudioOutputStream::GetSystemDefaultOutputDeviceCallback,
-      this);
-  WaitForOperationCompletion(pa_mainloop_, operation);
-}
-
 bool PulseAudioOutputStream::Open() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!InitializeMainloopAndContext()) {
-    return false;
-  }
-
-  AutoPulseLock auto_lock(pa_mainloop_);
-
-  std::string device_name_to_use = device_id_;
-  if (device_id_ == AudioDeviceDescription::kDefaultDeviceId) {
-    GetSystemDefaultOutputDevice();
-    device_name_to_use = default_system_device_name_;
-  }
-
   return pulse::CreateOutputStream(
-      pa_mainloop_, pa_context_, &pa_stream_, params_, device_name_to_use,
+      &pa_mainloop_, &pa_context_, &pa_stream_, params_, device_id_,
       AudioManager::GetGlobalAppName(), &StreamNotifyCallback,
       &StreamRequestCallback, this);
 }
