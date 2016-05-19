@@ -23,8 +23,11 @@
 namespace content {
 
 TextInputClientObserver::TextInputClientObserver(RenderViewImpl* render_view)
-    : RenderViewObserver(render_view),
-      render_view_impl_(render_view) {
+#if defined(ENABLE_PLUGINS)
+    : RenderViewObserver(render_view), render_view_impl_(render_view) {
+#else
+    : RenderViewObserver(render_view) {
+#endif
 }
 
 TextInputClientObserver::~TextInputClientObserver() {

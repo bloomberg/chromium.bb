@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/media/webrtc/track_observer.h"
 #include "media/base/bind_to_current_loop.h"
@@ -45,9 +44,6 @@ class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
       const scoped_refptr<media::VideoFrame>& video_frame);
 
  private:
-  // Bound to the render thread.
-  base::ThreadChecker thread_checker_;
-
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   // |frame_callback_| is accessed on the IO thread.

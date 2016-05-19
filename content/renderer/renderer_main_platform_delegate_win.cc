@@ -32,9 +32,7 @@ namespace content {
 
 RendererMainPlatformDelegate::RendererMainPlatformDelegate(
     const MainFunctionParams& parameters)
-        : parameters_(parameters),
-          sandbox_test_module_(NULL) {
-}
+    : parameters_(parameters) {}
 
 RendererMainPlatformDelegate::~RendererMainPlatformDelegate() {
 }

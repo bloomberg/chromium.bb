@@ -93,8 +93,7 @@ ShellJavaScriptDialog::ShellJavaScriptDialog(
     const base::string16& message_text,
     const base::string16& default_prompt_text,
     const JavaScriptDialogManager::DialogClosedCallback& callback)
-    : manager_(manager),
-      callback_(callback) {
+    : callback_(callback) {
   bool text_field = message_type == JAVASCRIPT_MESSAGE_TYPE_PROMPT;
   bool one_button = message_type == JAVASCRIPT_MESSAGE_TYPE_ALERT;
 

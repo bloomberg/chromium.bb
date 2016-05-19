@@ -9,10 +9,7 @@
 
 namespace content {
 
-MockKeyboard::MockKeyboard()
-    : keyboard_layout_(LAYOUT_NULL),
-      keyboard_modifiers_(INVALID) {
-}
+MockKeyboard::MockKeyboard() {}
 
 MockKeyboard::~MockKeyboard() {
 }

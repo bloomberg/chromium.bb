@@ -21,7 +21,9 @@ class CrosArmGpuProcessPolicy : public GpuProcessPolicy {
   bool PreSandboxHook() override;
 
  private:
+#if defined(__arm__) || defined(__aarch64__)
   const bool allow_shmat_;  // Allow shmat(2).
+#endif
   DISALLOW_COPY_AND_ASSIGN(CrosArmGpuProcessPolicy);
 };
 

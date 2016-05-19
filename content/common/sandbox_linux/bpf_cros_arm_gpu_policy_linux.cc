@@ -118,7 +118,11 @@ ResultExpr CrosArmGpuBrokerProcessPolicy::EvaluateSyscall(int sysno) const {
 }  // namespace
 
 CrosArmGpuProcessPolicy::CrosArmGpuProcessPolicy(bool allow_shmat)
-    : allow_shmat_(allow_shmat) {}
+#if defined(__arm__) || defined(__aarch64__)
+    : allow_shmat_(allow_shmat)
+#endif
+{
+}
 
 CrosArmGpuProcessPolicy::~CrosArmGpuProcessPolicy() {}
 

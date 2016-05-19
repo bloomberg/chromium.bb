@@ -15,12 +15,6 @@
 #include "content/common/content_export.h"
 #include "content/public/common/main_function_params.h"
 
-#ifdef __OBJC__
-@class NSBundle;
-#else
-class NSBundle;
-#endif  // __OBJC__
-
 namespace content {
 
 class CONTENT_EXPORT RendererMainPlatformDelegate {
@@ -40,9 +34,6 @@ class CONTENT_EXPORT RendererMainPlatformDelegate {
  private:
 #if defined(OS_WIN)
   const MainFunctionParams& parameters_;
-  HMODULE sandbox_test_module_;
-#elif defined(OS_MACOSX)
-  NSBundle* sandbox_tests_bundle_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(RendererMainPlatformDelegate);

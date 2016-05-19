@@ -164,13 +164,9 @@ void RunSandboxSanityChecks(const std::string& process_type) {
 std::unique_ptr<SandboxBPFBasePolicy> GetGpuProcessSandbox() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  bool allow_sysv_shm = false;
-  if (command_line.HasSwitch(switches::kGpuSandboxAllowSysVShm)) {
-    DCHECK(IsArchitectureArm());
-    allow_sysv_shm = true;
-  }
-
   if (IsChromeOS() && IsArchitectureArm()) {
+    bool allow_sysv_shm =
+        command_line.HasSwitch(switches::kGpuSandboxAllowSysVShm);
     return std::unique_ptr<SandboxBPFBasePolicy>(
         new CrosArmGpuProcessPolicy(allow_sysv_shm));
   } else {

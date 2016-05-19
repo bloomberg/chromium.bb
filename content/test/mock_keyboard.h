@@ -96,10 +96,9 @@ class MockKeyboard {
                     std::wstring* output);
 
  private:
-  Layout keyboard_layout_;
-  Modifiers keyboard_modifiers_;
-
 #if defined(OS_WIN)
+  Layout keyboard_layout_ = LAYOUT_NULL;
+  Modifiers keyboard_modifiers_ = INVALID;
   MockKeyboardDriverWin driver_;
 #endif
 

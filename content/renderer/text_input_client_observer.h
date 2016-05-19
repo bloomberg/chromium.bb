@@ -40,7 +40,9 @@ class TextInputClientObserver : public RenderViewObserver {
   void OnFirstRectForCharacterRange(gfx::Range range);
   void OnStringForRange(gfx::Range range);
 
+#if defined(ENABLE_PLUGINS)
   RenderViewImpl* const render_view_impl_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(TextInputClientObserver);
 };
