@@ -124,6 +124,9 @@ void BrowserAccessibilityEvent::VerboseLog(Result result) {
     case FromWindowFocusChange:
       source_str = "FromWindowFocusChange";
       break;
+    case FromPendingLoadComplete:
+      source_str = "FromPendingLoadComplete";
+      break;
   }
 
   std::string original_target_str;

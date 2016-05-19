@@ -80,6 +80,12 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // TODO(dmazzoni): remove once http://crbug.com/113483 is fixed.
   BrowserAccessibilityWin* tracked_scroll_object_;
 
+  // Keep track of if we got a "load complete" event but were unable to fire
+  // it because of no HWND, because otherwise JAWS can get very confused.
+  // TODO(dmazzoni): a better fix would be to always have an HWND.
+  // http://crbug.com/521877
+  bool load_complete_pending_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManagerWin);
 };
 

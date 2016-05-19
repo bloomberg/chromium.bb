@@ -39,7 +39,8 @@ BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(delegate, factory),
-      tracked_scroll_object_(NULL) {
+      tracked_scroll_object_(NULL),
+      load_complete_pending_(false) {
   ui::win::CreateATLModuleIfNeeded();
   Initialize(initial_tree);
   ui::GetIAccessible2UsageObserverList().AddObserver(this);
@@ -107,6 +108,28 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     BrowserAccessibilityEvent::Source source,
     ui::AXEvent event_type,
     BrowserAccessibility* node) {
+  bool can_fire_events = CanFireEvents();
+
+  // TODO(dmazzoni): A better fix would be to always have a HWND.
+  // http://crbug.com/521877
+  if (event_type == ui::AX_EVENT_LOAD_COMPLETE && can_fire_events)
+    load_complete_pending_ = false;
+
+  if (load_complete_pending_ && can_fire_events) {
+    load_complete_pending_ = false;
+    NotifyAccessibilityEvent(BrowserAccessibilityEvent::FromPendingLoadComplete,
+                             ui::AX_EVENT_LOAD_COMPLETE,
+                             GetRoot());
+  }
+
+  if (!can_fire_events &&
+      !load_complete_pending_ &&
+      event_type == ui::AX_EVENT_LOAD_COMPLETE &&
+      !GetRoot()->HasState(ui::AX_STATE_OFFSCREEN) &&
+      GetRoot()->PlatformChildCount() > 0) {
+    load_complete_pending_ = true;
+  }
+
   if (event_type == ui::AX_EVENT_BLUR) {
     // Equivalent to focus on the root.
     event_type = ui::AX_EVENT_FOCUS;

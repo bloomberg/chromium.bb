@@ -25,6 +25,7 @@ class CONTENT_EXPORT BrowserAccessibilityEvent {
     FromScroll,
     FromTreeChange,
     FromWindowFocusChange,
+    FromPendingLoadComplete,
   };
 
   enum Result {
