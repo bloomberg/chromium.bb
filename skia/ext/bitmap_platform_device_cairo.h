@@ -81,28 +81,19 @@ class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque,
                                       uint8_t* data);
 
-  // Overridden from SkBaseDevice:
-  void setMatrixClip(const SkMatrix& transform,
-                     const SkRegion& region,
-                     const SkClipStack&) override;
-
  protected:
   SkBaseDevice* onCreateDevice(const CreateInfo&, const SkPaint*) override;
 
  private:
   // Overridden from PlatformDevice:
-  cairo_t* BeginPlatformPaint() override;
+  cairo_t* BeginPlatformPaint(const SkMatrix& transform,
+                              const SkIRect& clip_bounds) override;
 
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque,
                                       cairo_surface_t* surface);
 
-  // Sets the transform and clip operations. This will not update the Cairo
-  // context, but will mark the config as dirty. The next call of LoadConfig
-  // will pick up these changes.
-  void SetMatrixClip(const SkMatrix& transform, const SkRegion& region);
-
   // Loads the current transform and clip into the context.
-  void LoadConfig();
+  void LoadConfig(const SkMatrix& transform, const SkIRect& clip_bounds);
 
   // Graphics context used to draw into the surface.
   cairo_t* cairo_;
@@ -112,13 +103,6 @@ class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
   // transform and clip do not change as much. We can save time by not loading
   // the clip and transform for every one.
   bool config_dirty_;
-
-  // Translation assigned to the context: we need to keep track of this
-  // separately so it can be updated even if the context isn't created yet.
-  SkMatrix transform_;
-
-  // The current clipping
-  SkRegion clip_region_;
 
   DISALLOW_COPY_AND_ASSIGN(BitmapPlatformDevice);
   friend class ScopedPlatformPaint;

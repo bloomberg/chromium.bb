@@ -14,7 +14,6 @@
 #include "base/mac/scoped_nsobject.h"
 #include "skia/ext/bitmap_platform_device_mac.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
 
 namespace {
@@ -192,10 +191,12 @@ SkBitmap CGImageToSkBitmap(CGImageRef image) {
   int width = CGImageGetWidth(image);
   int height = CGImageGetHeight(image);
 
-  std::unique_ptr<skia::BitmapPlatformDevice> device(
+  sk_sp<skia::BitmapPlatformDevice> device(
       skia::BitmapPlatformDevice::Create(NULL, width, height, false));
 
-  CGContextRef context = device->GetBitmapContext();
+  sk_sp<SkCanvas> canvas(skia::CreateCanvas(device, RETURN_NULL_ON_FAILURE));
+  ScopedPlatformPaint p(canvas.get());
+  CGContextRef context = p.GetPlatformSurface();
 
   // We need to invert the y-axis of the canvas so that Core Graphics drawing
   // happens right-side up. Skia has an upper-left origin and CG has a lower-

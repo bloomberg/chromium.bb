@@ -18,7 +18,6 @@
 
 class SkMatrix;
 class SkPath;
-class SkRegion;
 
 namespace skia {
 
@@ -59,7 +58,8 @@ class SK_API PlatformDevice {
   // The CGContext that corresponds to the bitmap, used for CoreGraphics
   // operations drawing into the bitmap. This is possibly heavyweight, so it
   // should exist only during one pass of rendering.
-  virtual CGContextRef GetBitmapContext() = 0;
+  virtual CGContextRef GetBitmapContext(const SkMatrix& transform,
+                                        const SkIRect& clip_bounds) = 0;
 #endif
 
 #if defined(OS_WIN)
@@ -68,14 +68,16 @@ class SK_API PlatformDevice {
   // be more efficient if you don't free it until after this call so it doesn't
   // have to be created twice.  If src_rect is null, then the entirety of the
   // source device will be copied.
-  virtual void DrawToHDC(HDC, int x, int y, const RECT* src_rect);
+  virtual void DrawToHDC(HDC source_dc, HDC destination_dc, int x, int y,
+                         const RECT* src_rect, const SkMatrix& transform);
 #endif
 
  private:
   // The DC that corresponds to the bitmap, used for GDI operations drawing
   // into the bitmap. This is possibly heavyweight, so it should be existant
   // only during one pass of rendering.
-  virtual PlatformSurface BeginPlatformPaint();
+  virtual PlatformSurface BeginPlatformPaint(const SkMatrix& transform,
+                                             const SkIRect& clip_bounds);
 
   friend class ScopedPlatformPaint;
 };

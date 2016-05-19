@@ -39,13 +39,8 @@ class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice
 
   ~BitmapPlatformDevice() override;
 
-  // Loads (lazily) the given transform and clipping region into the HDC. This
-  // is overridden from SkBaseDevice, where it is deprecated.
-  void setMatrixClip(const SkMatrix& transform,
-                     const SkRegion& region,
-                     const SkClipStack&) override;
-
-  void DrawToHDC(HDC dc, int x, int y, const RECT* src_rect) override;
+  void DrawToHDC(HDC source_dc, HDC destination_dc, int x, int y,
+                 const RECT* src_rect, const SkMatrix& transform) override;
 
  protected:
   // Flushes the Windows device context so that the pixel data can be accessed
@@ -59,7 +54,8 @@ class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice
   // PlatformDevice override
   // Retrieves the bitmap DC, which is the memory DC for our bitmap data. The
   // bitmap DC may be lazily created.
-  PlatformSurface BeginPlatformPaint() override;
+  PlatformSurface BeginPlatformPaint(const SkMatrix& transform,
+                                     const SkIRect& clip_bounds) override;
 
   // Private constructor.
   BitmapPlatformDevice(HBITMAP hbitmap, const SkBitmap& bitmap);
@@ -76,32 +72,14 @@ class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice
   // Lazily-created DC used to draw into the bitmap; see GetBitmapDC().
   HDC hdc_;
 
-  // True when there is a transform or clip that has not been set to the
-  // context.  The context is retrieved for every text operation, and the
-  // transform and clip do not change as much. We can save time by not loading
-  // the clip and transform for every one.
-  bool config_dirty_;
-
-  // Translation assigned to the context: we need to keep track of this
-  // separately so it can be updated even if the context isn't created yet.
-  SkMatrix transform_;
-
-  // The current clipping region.
-  SkRegion clip_region_;
-
   // Create/destroy hdc_, which is the memory DC for our bitmap data.
-  HDC GetBitmapDC();
+  HDC GetBitmapDC(const SkMatrix& transform, const SkIRect& clip_bounds);
   void ReleaseBitmapDC();
   bool IsBitmapDCCreated() const;
 
-  // Sets the transform and clip operations. This will not update the DC,
-  // but will mark the config as dirty. The next call of LoadConfig will
-  // pick up these changes.
-  void SetMatrixClip(const SkMatrix& transform, const SkRegion& region);
-
   // Loads the current transform and clip into the context. Can be called even
   // when |hbitmap_| is NULL (will be a NOP).
-  void LoadConfig();
+  void LoadConfig(const SkMatrix& transform, const SkIRect& clip_bounds);
 
   DISALLOW_COPY_AND_ASSIGN(BitmapPlatformDevice);
   friend class ScopedPlatformPaint;

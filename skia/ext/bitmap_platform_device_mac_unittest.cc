@@ -6,11 +6,12 @@
 
 #include <memory>
 
+#include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkClipStack.h"
 #include "third_party/skia/include/core/SkMatrix.h"
-#include "third_party/skia/include/core/SkRegion.h"
+#include "third_party/skia/include/core/SkRect.h"
 
 namespace skia {
 
@@ -24,21 +25,19 @@ class BitmapPlatformDeviceMacTest : public testing::Test {
         NULL, kWidth, kHeight, /*is_opaque=*/true));
   }
 
-  std::unique_ptr<BitmapPlatformDevice> bitmap_;
+  sk_sp<BitmapPlatformDevice> bitmap_;
 };
 
 TEST_F(BitmapPlatformDeviceMacTest, ClipRectTransformWithTranslate) {
   SkMatrix transform;
   transform.setTranslate(50, 140);
 
-  SkClipStack ignore;
-  SkRegion clip_region;
-  SkIRect rect;
-  rect.set(0, 0, kWidth, kHeight);
-  clip_region.setRect(rect);
-  bitmap_->setMatrixClip(transform, clip_region, ignore);
+  sk_sp<SkCanvas> canvas(skia::CreateCanvas(bitmap_, CRASH_ON_FAILURE));
+  canvas->setMatrix(transform);
 
-  CGContextRef context = bitmap_->GetBitmapContext();
+  ScopedPlatformPaint p(canvas.get());
+  CGContextRef context = p.GetPlatformSurface();
+
   SkRect clip_rect = skia::CGRectToSkRect(CGContextGetClipBoundingBox(context));
   transform.mapRect(&clip_rect);
   EXPECT_EQ(0, clip_rect.fLeft);
@@ -51,14 +50,12 @@ TEST_F(BitmapPlatformDeviceMacTest, ClipRectTransformWithScale) {
   SkMatrix transform;
   transform.setScale(0.5, 0.5);
 
-  SkClipStack unused;
-  SkRegion clip_region;
-  SkIRect rect;
-  rect.set(0, 0, kWidth, kHeight);
-  clip_region.setRect(rect);
-  bitmap_->setMatrixClip(transform, clip_region, unused);
+  sk_sp<SkCanvas> canvas(skia::CreateCanvas(bitmap_, CRASH_ON_FAILURE));
+  canvas->setMatrix(transform);
 
-  CGContextRef context = bitmap_->GetBitmapContext();
+  ScopedPlatformPaint p(canvas.get());
+  CGContextRef context = p.GetPlatformSurface();
+
   SkRect clip_rect = skia::CGRectToSkRect(CGContextGetClipBoundingBox(context));
   transform.mapRect(&clip_rect);
   EXPECT_EQ(0, clip_rect.fLeft);

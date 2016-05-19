@@ -15,7 +15,7 @@
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "third_party/skia/include/core/SkRegion.h"
+#include "third_party/skia/include/core/SkRect.h"
 
 namespace {
 
@@ -66,20 +66,9 @@ void LoadTransformToDC(HDC dc, const SkMatrix& matrix) {
 }
 
 void LoadClippingRegionToDC(HDC context,
-                            const SkRegion& region,
+                            const SkIRect& clip_bounds,
                             const SkMatrix& transformation) {
-  HRGN hrgn;
-  if (region.isEmpty()) {
-    // region can be empty, in which case everything will be clipped.
-    hrgn = CreateRectRgn(0, 0, 0, 0);
-  } else if (region.isRect()) {
-    // We don't apply transformation, because the translation is already applied
-    // to the region.
-    hrgn = CreateRectRgnIndirect(&skia::SkIRectToRECT(region.getBounds()));
-  } else {
-    hrgn = CreateRectRgnIndirect(&skia::SkIRectToRECT(region.getBounds()));
-    SkASSERT(!"Region clipping is being deprecated; this shouldn't fire.");
-  }
+  HRGN hrgn = CreateRectRgnIndirect(&skia::SkIRectToRECT(clip_bounds));
   int result = SelectClipRgn(context, hrgn);
   SkASSERT(result != ERROR);
   result = DeleteObject(hrgn);
@@ -90,23 +79,28 @@ void LoadClippingRegionToDC(HDC context,
 
 namespace skia {
 
-void DrawToNativeContext(SkCanvas* canvas, HDC hdc, int x, int y,
+void DrawToNativeContext(SkCanvas* canvas, HDC destination_hdc, int x, int y,
                          const RECT* src_rect) {
+  ScopedPlatformPaint p(canvas);
   PlatformDevice* platform_device = GetPlatformDevice(GetTopDevice(*canvas));
   if (platform_device)
-    platform_device->DrawToHDC(hdc, x, y, src_rect);
+    platform_device->DrawToHDC(p.GetPlatformSurface(), destination_hdc, x, y,
+                               src_rect, canvas->getTotalMatrix());
+
 }
 
-void PlatformDevice::DrawToHDC(HDC, int x, int y, const RECT* src_rect) {}
+void PlatformDevice::DrawToHDC(HDC, HDC, int x, int y, const RECT* src_rect,
+                               const SkMatrix& transform) {}
 
-HDC BitmapPlatformDevice::GetBitmapDC() {
+HDC BitmapPlatformDevice::GetBitmapDC(const SkMatrix& transform,
+                                      const SkIRect& clip_bounds) {
   if (!hdc_) {
     hdc_ = CreateCompatibleDC(NULL);
     InitializeDC(hdc_);
     old_hbitmap_ = static_cast<HBITMAP>(SelectObject(hdc_, hbitmap_));
   }
 
-  LoadConfig();
+  LoadConfig(transform, clip_bounds);
   return hdc_;
 }
 
@@ -123,23 +117,14 @@ bool BitmapPlatformDevice::IsBitmapDCCreated()
   return hdc_ != NULL;
 }
 
-
-void BitmapPlatformDevice::SetMatrixClip(
-    const SkMatrix& transform,
-    const SkRegion& region) {
-  transform_ = transform;
-  clip_region_ = region;
-  config_dirty_ = true;
-}
-
-void BitmapPlatformDevice::LoadConfig() {
-  if (!config_dirty_ || !hdc_)
+void BitmapPlatformDevice::LoadConfig(const SkMatrix& transform,
+                                      const SkIRect& clip_bounds) {
+  if (!hdc_)
     return;  // Nothing to do.
-  config_dirty_ = false;
 
   // Transform.
-  LoadTransformToDC(hdc_, transform_);
-  LoadClippingRegionToDC(hdc_, clip_region_, transform_);
+  LoadTransformToDC(hdc_, transform);
+  LoadClippingRegionToDC(hdc_, clip_bounds, transform);
 }
 
 static void DeleteHBitmapCallback(void* addr, void* context) {
@@ -229,19 +214,12 @@ BitmapPlatformDevice::BitmapPlatformDevice(
     : SkBitmapDevice(bitmap),
       hbitmap_(hbitmap),
       old_hbitmap_(NULL),
-      hdc_(NULL),
-      config_dirty_(true),  // Want to load the config next time.
-      transform_(SkMatrix::I()) {
+      hdc_(NULL) {
   // The data object is already ref'ed for us by create().
   if (hbitmap) {
     SetPlatformDevice(this, this);
-    // Initialize the clip region to the entire bitmap.
     BITMAP bitmap_data;
-    if (GetObject(hbitmap_, sizeof(BITMAP), &bitmap_data)) {
-      SkIRect rect;
-      rect.set(0, 0, bitmap_data.bmWidth, bitmap_data.bmHeight);
-      clip_region_ = SkRegion(rect);
-    }
+    GetObject(hbitmap_, sizeof(BITMAP), &bitmap_data);
   }
 }
 
@@ -250,20 +228,16 @@ BitmapPlatformDevice::~BitmapPlatformDevice() {
     ReleaseBitmapDC();
 }
 
-HDC BitmapPlatformDevice::BeginPlatformPaint() {
-  return GetBitmapDC();
+HDC BitmapPlatformDevice::BeginPlatformPaint(const SkMatrix& transform,
+                                             const SkIRect& clip_bounds) {
+  return GetBitmapDC(transform, clip_bounds);
 }
 
-void BitmapPlatformDevice::setMatrixClip(const SkMatrix& transform,
-                                         const SkRegion& region,
-                                         const SkClipStack&) {
-  SetMatrixClip(transform, region);
-}
-
-void BitmapPlatformDevice::DrawToHDC(HDC dc, int x, int y,
-                                     const RECT* src_rect) {
+void BitmapPlatformDevice::DrawToHDC(HDC source_dc, HDC destination_dc,
+                                     int x, int y,
+                                     const RECT* src_rect,
+                                     const SkMatrix& transform) {
   bool created_dc = !IsBitmapDCCreated();
-  HDC source_dc = BeginPlatformPaint();
 
   RECT temp_rect;
   if (!src_rect) {
@@ -284,7 +258,7 @@ void BitmapPlatformDevice::DrawToHDC(HDC dc, int x, int y,
 
   LoadTransformToDC(source_dc, identity);
   if (isOpaque()) {
-    BitBlt(dc,
+    BitBlt(destination_dc,
            x,
            y,
            copy_width,
@@ -296,7 +270,7 @@ void BitmapPlatformDevice::DrawToHDC(HDC dc, int x, int y,
   } else {
     SkASSERT(copy_width != 0 && copy_height != 0);
     BLENDFUNCTION blend_function = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
-    GdiAlphaBlend(dc,
+    GdiAlphaBlend(destination_dc,
                   x,
                   y,
                   copy_width,
@@ -308,7 +282,7 @@ void BitmapPlatformDevice::DrawToHDC(HDC dc, int x, int y,
                   copy_height,
                   blend_function);
   }
-  LoadTransformToDC(source_dc, transform_);
+  LoadTransformToDC(source_dc, transform);
 
   if (created_dc)
     ReleaseBitmapDC();

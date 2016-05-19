@@ -47,12 +47,8 @@ class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice
   ~BitmapPlatformDevice() override;
 
   // PlatformDevice overrides
-  CGContextRef GetBitmapContext() override;
-
-  // SkBaseDevice overrides
-  void setMatrixClip(const SkMatrix& transform,
-                     const SkRegion& region,
-                     const SkClipStack&) override;
+  CGContextRef GetBitmapContext(const SkMatrix& transform,
+                                const SkIRect& clip_bounds) override;
 
  protected:
   BitmapPlatformDevice(CGContextRef context,
@@ -63,30 +59,13 @@ class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice
  private:
   void ReleaseBitmapContext();
 
-  // Sets the transform and clip operations. This will not update the CGContext,
-  // but will mark the config as dirty. The next call of LoadConfig will
-  // pick up these changes.
-  void SetMatrixClip(const SkMatrix& transform, const SkRegion& region);
-
   // Loads the current transform and clip into the context. Can be called even
   // when |bitmap_context_| is NULL (will be a NOP).
-  void LoadConfig();
+  void LoadConfig(const SkMatrix& transform, const SkIRect& clip_bounds);
 
   // Lazily-created graphics context used to draw into the bitmap.
   CGContextRef bitmap_context_;
 
-  // True when there is a transform or clip that has not been set to the
-  // context.  The context is retrieved for every text operation, and the
-  // transform and clip do not change as much. We can save time by not loading
-  // the clip and transform for every one.
-  bool config_dirty_;
-
-  // Translation assigned to the context: we need to keep track of this
-  // separately so it can be updated even if the context isn't created yet.
-  SkMatrix transform_;
-
-  // The current clipping
-  SkRegion clip_region_;
   DISALLOW_COPY_AND_ASSIGN(BitmapPlatformDevice);
 };
 

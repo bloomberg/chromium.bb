@@ -6,8 +6,9 @@
 
 namespace skia {
 
-CGContextRef PlatformDevice::BeginPlatformPaint() {
-  return GetBitmapContext();
+CGContextRef PlatformDevice::BeginPlatformPaint(const SkMatrix& transform,
+                                                const SkIRect& clip_bounds) {
+  return GetBitmapContext(transform, clip_bounds);
 }
 
 }  // namespace skia

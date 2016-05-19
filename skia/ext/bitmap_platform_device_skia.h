@@ -46,7 +46,8 @@ class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
   SkBaseDevice* onCreateDevice(const CreateInfo&, const SkPaint*) override;
 
  private:
-  PlatformSurface BeginPlatformPaint() override;
+  PlatformSurface BeginPlatformPaint(const SkMatrix& transform,
+                                     const SkIRect& clip_bounds) override;
 
   DISALLOW_COPY_AND_ASSIGN(BitmapPlatformDevice);
 

@@ -140,8 +140,8 @@ SK_API SkBitmap ReadPixels(SkCanvas* canvas);
 SK_API bool GetWritablePixels(SkCanvas* canvas, SkPixmap* pixmap);
 
 // Returns true if native platform routines can be used to draw on the
-// given canvas. If this function returns false, BeginPlatformPaint will
-// return NULL PlatformSurface.
+// given canvas. If this function returns false,
+// ScopedPlatformPaint::GetPlatformSurface() should return NULL.
 SK_API bool SupportsPlatformPaint(const SkCanvas* canvas);
 
 // This object guards calls to platform drawing routines. The surface

@@ -6,7 +6,8 @@
 
 namespace skia {
 
-PlatformSurface PlatformDevice::BeginPlatformPaint() {
+PlatformSurface PlatformDevice::BeginPlatformPaint(const SkMatrix& transform,
+                                                   const SkIRect& clip_bounds) {
   return NULL;
 }
 

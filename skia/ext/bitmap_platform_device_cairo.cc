@@ -60,39 +60,23 @@ void LoadMatrixToContext(cairo_t* context, const SkMatrix& matrix) {
   cairo_set_matrix(context, &cairo_matrix);
 }
 
-void LoadClipToContext(cairo_t* context, const SkRegion& clip) {
+void LoadClipToContext(cairo_t* context, const SkIRect& clip_bounds) {
   cairo_reset_clip(context);
 
-  // TODO(brettw) support non-rect clips.
-  SkIRect bounding = clip.getBounds();
-  cairo_rectangle(context, bounding.fLeft, bounding.fTop,
-                  bounding.fRight - bounding.fLeft,
-                  bounding.fBottom - bounding.fTop);
+  cairo_rectangle(context, clip_bounds.fLeft, clip_bounds.fTop,
+                  clip_bounds.width(), clip_bounds.height());
   cairo_clip(context);
 }
 
 }  // namespace
 
-void BitmapPlatformDevice::SetMatrixClip(
-    const SkMatrix& transform,
-    const SkRegion& region) {
-  transform_ = transform;
-  clip_region_ = region;
-  config_dirty_ = true;
-}
-
-void BitmapPlatformDevice::LoadConfig() {
-  if (!config_dirty_ || !cairo_)
+void BitmapPlatformDevice::LoadConfig(const SkMatrix& transform,
+                                      const SkIRect& clip_bounds) {
+  if (!cairo_)
     return;  // Nothing to do.
-  config_dirty_ = false;
 
-  // Load the identity matrix since this is what our clip is relative to.
-  cairo_matrix_t cairo_matrix;
-  cairo_matrix_init_identity(&cairo_matrix);
-  cairo_set_matrix(cairo_, &cairo_matrix);
-
-  LoadClipToContext(cairo_, clip_region_);
-  LoadMatrixToContext(cairo_, transform_);
+  LoadClipToContext(cairo_, clip_bounds);
+  LoadMatrixToContext(cairo_, transform);
 }
 
 // We use this static factory function instead of the regular constructor so
@@ -152,9 +136,7 @@ BitmapPlatformDevice::BitmapPlatformDevice(
     const SkBitmap& bitmap,
     cairo_t* cairo)
     : SkBitmapDevice(bitmap),
-      cairo_(cairo),
-      config_dirty_(true),
-      transform_(SkMatrix::I()) {  // Want to load the config next time.
+      cairo_(cairo) {
   SetPlatformDevice(this, this);
 }
 
@@ -169,8 +151,10 @@ SkBaseDevice* BitmapPlatformDevice::onCreateDevice(const CreateInfo& info,
                                       info.fInfo.isOpaque());
 }
 
-cairo_t* BitmapPlatformDevice::BeginPlatformPaint() {
-  LoadConfig();
+cairo_t* BitmapPlatformDevice::BeginPlatformPaint(
+      const SkMatrix& transform,
+      const SkIRect& clip_bounds) {
+  LoadConfig(transform, clip_bounds);
   cairo_surface_t* surface = cairo_get_target(cairo_);
   // Tell cairo to flush anything it has pending.
   cairo_surface_flush(surface);
@@ -178,12 +162,6 @@ cairo_t* BitmapPlatformDevice::BeginPlatformPaint() {
   // buffer directly.
   cairo_surface_mark_dirty(surface);
   return cairo_;
-}
-
-void BitmapPlatformDevice::setMatrixClip(const SkMatrix& transform,
-                                         const SkRegion& region,
-                                         const SkClipStack&) {
-  SetMatrixClip(transform, region);
 }
 
 // PlatformCanvas impl

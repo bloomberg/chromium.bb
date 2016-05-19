@@ -49,7 +49,9 @@ SkBaseDevice* BitmapPlatformDevice::onCreateDevice(const CreateInfo& info,
                                       info.fInfo.isOpaque());
 }
 
-PlatformSurface BitmapPlatformDevice::BeginPlatformPaint() {
+PlatformSurface BitmapPlatformDevice::BeginPlatformPaint(const SkMatrix& transform,
+                                                         const SkIRect& clip_bounds) {
+  // TODO(tomhudson): propagate transform and clip
   // TODO(zhenghao): What should we return? The ptr to the address of the
   // pixels? Maybe this won't be called at all.
   return accessBitmap(true).getPixels();
