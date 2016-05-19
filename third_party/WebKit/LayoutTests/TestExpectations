@@ -1190,8 +1190,7 @@ crbug.com/548765 http/tests/inspector/console-fetch-logging.html [ Failure Pass 
 
 crbug.com/564109 [ Win7 ]  http/tests/webfont/font-display.html [ Pass Timeout Failure ]
 
-crbug.com/606984 transforms/3d/point-mapping/3d-point-mapping-deep.html [ NeedsRebaseline ]
-crbug.com/606984 transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ NeedsRebaseline ]
+crbug.com/568867 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
 
 crbug.com/571376 http/tests/webfont/font-display-intervention.html [ Pass Failure ]
 
@@ -1316,6 +1315,8 @@ crbug.com/611658 [ Win7 ] fast/text/emphasis.html [ Failure ]
 crbug.com/611658 [ Win7 ] fast/writing-mode/english-lr-text.html [ Failure ]
 
 crbug.com/605059 [ Retina ] fast/text/international/rtl-negative-letter-spacing.html [ Failure ]
+
+crbug.com/606302 [ Win7 ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure Pass ]
 
 crbug.com/610464 [ Win7 Debug ] inspector/components/throttler.html [ Failure Pass ]
 

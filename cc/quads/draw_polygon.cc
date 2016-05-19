@@ -183,43 +183,32 @@ static bool LineIntersectPlane(const gfx::Point3F& line_start,
                                const gfx::Vector3dF& plane_normal,
                                gfx::Point3F* intersection,
                                float distance_threshold) {
-  const gfx::Vector3dF line_start_vec(line_start.x(), line_start.y(),
-                                      line_start.z());
-  const gfx::Vector3dF line_end_vec(line_end.x(), line_end.y(), line_end.z());
-  const gfx::Vector3dF plane_origin_vec(plane_origin.x(), plane_origin.y(),
-                                        plane_origin.z());
+  gfx::Vector3dF start_to_origin_vector = plane_origin - line_start;
+  gfx::Vector3dF end_to_origin_vector = plane_origin - line_end;
 
-  double plane_d = -gfx::DotProduct(plane_origin_vec, plane_normal);
+  double start_distance = gfx::DotProduct(start_to_origin_vector, plane_normal);
+  double end_distance = gfx::DotProduct(end_to_origin_vector, plane_normal);
 
-  double end_distance = gfx::DotProduct(line_end_vec, plane_normal) + plane_d;
-  if (std::abs(end_distance) <= distance_threshold) {
-    // No intersection if |line_end| is within |distance_threshold| of plane.
-    return false;
-  }
-
-  double start_distance =
-      gfx::DotProduct(line_start_vec, plane_normal) + plane_d;
-  if (std::abs(start_distance) <= distance_threshold) {
-    // Intersection at |line_start| if |line_start| is within
-    // |distance_threshold| of plane.
+  // The case where one vertex lies on the thick-plane and the other
+  // is outside of it.
+  if (std::abs(start_distance) <= distance_threshold &&
+      std::abs(end_distance) > distance_threshold) {
     intersection->SetPoint(line_start.x(), line_start.y(), line_start.z());
     return true;
   }
 
-  // If signs differ, we cross the plane.
-  if (start_distance * end_distance < 0.0) {
-    // Plane: P . N + d = 0   [ d = -(plane_normal . plane_origin) ]
-    // Ray:   P = P0 + Pd * t [ P0 = line_start, Pd = line_end - line_start ]
-    // Substituting:
-    //   (P0 + Pd * t) . N + d = 0
-    //   P0 . N + t * Pd . N + d = 0
-    //   t = -(P0 . N + d)  / Pd . N
+  // This is the case where we clearly cross the thick-plane.
+  if ((start_distance > distance_threshold &&
+       end_distance < -distance_threshold) ||
+      (start_distance < -distance_threshold &&
+       end_distance > distance_threshold)) {
+    gfx::Vector3dF v = line_end - line_start;
+    float total_distance = std::abs(start_distance) + std::abs(end_distance);
+    float lerp_factor = std::abs(start_distance) / total_distance;
 
-    gfx::Vector3dF line_delta = line_end - line_start;
-    double t = -start_distance / gfx::DotProduct(plane_normal, line_delta);
-    intersection->SetPoint(line_start.x() + line_delta.x() * t,
-                           line_start.y() + line_delta.y() * t,
-                           line_start.z() + line_delta.z() * t);
+    intersection->SetPoint(line_start.x() + (v.x() * lerp_factor),
+                           line_start.y() + (v.y() * lerp_factor),
+                           line_start.z() + (v.z() * lerp_factor));
 
     return true;
   }
