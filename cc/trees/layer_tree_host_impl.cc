@@ -1988,6 +1988,8 @@ void LayerTreeHostImpl::ActivateSyncTree() {
       else
         active_tree_->MoveChangeTrackingToLayers();
     }
+    active_tree_->property_trees()->PushOpacityIfNeeded(
+        pending_tree_->property_trees());
 
     TreeSynchronizer::PushLayerProperties(pending_tree(), active_tree());
     pending_tree_->PushPropertiesTo(active_tree_.get());

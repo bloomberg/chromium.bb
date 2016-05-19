@@ -673,6 +673,14 @@ static inline bool HideLayerAndSubtree(LayerImpl* layer) {
   return layer->test_properties()->hide_layer_and_subtree;
 }
 
+static inline bool AlwaysUseActiveTreeOpacity(Layer* layer) {
+  return layer->AlwaysUseActiveTreeOpacity();
+}
+
+static inline bool AlwaysUseActiveTreeOpacity(LayerImpl* layer) {
+  return false;
+}
+
 template <typename LayerType>
 bool ShouldCreateRenderSurface(LayerType* layer,
                                gfx::Transform current_transform,
@@ -810,6 +818,11 @@ bool AddEffectNodeIfNeeded(
 
   EffectNode node;
   node.owner_id = layer->id();
+  if (AlwaysUseActiveTreeOpacity(layer)) {
+    data_for_children->property_trees->always_use_active_tree_opacity_effect_ids
+        .push_back(node.owner_id);
+  }
+
   node.data.opacity = layer->opacity();
   node.data.has_render_surface = should_create_render_surface;
   node.data.has_copy_request = layer->HasCopyRequest();

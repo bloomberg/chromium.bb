@@ -676,6 +676,8 @@ class CC_EXPORT PropertyTrees final {
   std::unordered_map<int, int> effect_id_to_index_map;
   std::unordered_map<int, int> clip_id_to_index_map;
   std::unordered_map<int, int> scroll_id_to_index_map;
+
+  std::vector<int> always_use_active_tree_opacity_effect_ids;
   TransformTree transform_tree;
   EffectTree effect_tree;
   ClipTree clip_tree;
@@ -701,6 +703,7 @@ class CC_EXPORT PropertyTrees final {
   void SetInnerViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
   void SetOuterViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
   void SetInnerViewportScrollBoundsDelta(gfx::Vector2dF bounds_delta);
+  void PushOpacityIfNeeded(PropertyTrees* target_tree);
   void UpdateChangeTracking();
   void PushChangeTrackingTo(PropertyTrees* tree);
   void ResetAllChangeTracking(ResetFlags flag);

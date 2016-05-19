@@ -188,7 +188,7 @@ message TransformTreeData {
 }
 
 // Proto for class PropertyTrees.
-// NEXT ID: 14
+// NEXT ID: 16
 message PropertyTrees {
   optional PropertyTree transform_tree = 1;
   optional PropertyTree effect_tree = 2;
@@ -206,4 +206,5 @@ message PropertyTrees {
   optional Vector2dF inner_viewport_container_bounds_delta = 8;
   optional Vector2dF outer_viewport_container_bounds_delta = 9;
   optional Vector2dF inner_viewport_scroll_bounds_delta = 10;
+  repeated int64 always_use_active_tree_opacity_effect_ids = 15 [packed = true];
 }

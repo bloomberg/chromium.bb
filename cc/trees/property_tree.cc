@@ -1931,6 +1931,8 @@ bool PropertyTrees::operator==(const PropertyTrees& other) const {
          effect_id_to_index_map == other.effect_id_to_index_map &&
          clip_id_to_index_map == other.clip_id_to_index_map &&
          scroll_id_to_index_map == other.scroll_id_to_index_map &&
+         always_use_active_tree_opacity_effect_ids ==
+             other.always_use_active_tree_opacity_effect_ids &&
          needs_rebuild == other.needs_rebuild && changed == other.changed &&
          full_tree_damaged == other.full_tree_damaged &&
          is_main_thread == other.is_main_thread &&
@@ -1946,6 +1948,8 @@ PropertyTrees& PropertyTrees::operator=(const PropertyTrees& from) {
   scroll_tree = from.scroll_tree;
   transform_id_to_index_map = from.transform_id_to_index_map;
   effect_id_to_index_map = from.effect_id_to_index_map;
+  always_use_active_tree_opacity_effect_ids =
+      from.always_use_active_tree_opacity_effect_ids;
   clip_id_to_index_map = from.clip_id_to_index_map;
   scroll_id_to_index_map = from.scroll_id_to_index_map;
   needs_rebuild = from.needs_rebuild;
@@ -1985,6 +1989,9 @@ void PropertyTrees::ToProtobuf(proto::PropertyTrees* proto) const {
   // TODO(khushalsagar): Consider using the sequence number to decide if
   // property trees need to be serialized again for a commit. See crbug/555370.
   proto->set_sequence_number(sequence_number);
+
+  for (auto i : always_use_active_tree_opacity_effect_ids)
+    proto->add_always_use_active_tree_opacity_effect_ids(i);
 }
 
 // static
@@ -2007,6 +2014,8 @@ void PropertyTrees::FromProtobuf(const proto::PropertyTrees& proto) {
   effect_tree.SetPropertyTrees(this);
   clip_tree.SetPropertyTrees(this);
   scroll_tree.SetPropertyTrees(this);
+  for (auto i : proto.always_use_active_tree_opacity_effect_ids())
+    always_use_active_tree_opacity_effect_ids.push_back(i);
 }
 
 void PropertyTrees::SetInnerViewportContainerBoundsDelta(
@@ -2030,6 +2039,23 @@ void PropertyTrees::SetOuterViewportContainerBoundsDelta(
 void PropertyTrees::SetInnerViewportScrollBoundsDelta(
     gfx::Vector2dF bounds_delta) {
   inner_viewport_scroll_bounds_delta_ = bounds_delta;
+}
+
+void PropertyTrees::PushOpacityIfNeeded(PropertyTrees* target_tree) {
+  for (int id : target_tree->always_use_active_tree_opacity_effect_ids) {
+    if (effect_id_to_index_map.find(id) == effect_id_to_index_map.end())
+      continue;
+    EffectNode* source_effect_node =
+        effect_tree.Node(effect_id_to_index_map[id]);
+    EffectNode* target_effect_node =
+        target_tree->effect_tree.Node(target_tree->effect_id_to_index_map[id]);
+    float source_opacity = source_effect_node->data.opacity;
+    float target_opacity = target_effect_node->data.opacity;
+    if (source_opacity == target_opacity)
+      continue;
+    target_effect_node->data.opacity = source_opacity;
+    target_tree->effect_tree.set_needs_update(true);
+  }
 }
 
 void PropertyTrees::UpdateChangeTracking() {

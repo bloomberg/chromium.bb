@@ -506,6 +506,10 @@ bool Layer::OpacityCanAnimateOnImplThread() const {
   return false;
 }
 
+bool Layer::AlwaysUseActiveTreeOpacity() const {
+  return false;
+}
+
 void Layer::SetBlendMode(SkXfermode::Mode blend_mode) {
   DCHECK(IsPropertyChangeAllowed());
   if (blend_mode_ == blend_mode)

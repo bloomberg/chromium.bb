@@ -497,6 +497,59 @@ TEST_F(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
   }
 }
 
+TEST_F(ScrollbarLayerTest, ScrollbarLayerOpacity) {
+  const int kThumbThickness = 3;
+  const int kTrackStart = 0;
+
+  std::unique_ptr<Scrollbar> scrollbar(new FakeScrollbar(false, true, true));
+
+  scoped_refptr<Layer> layer_tree_root = Layer::Create();
+  scoped_refptr<Layer> scroll_layer = Layer::Create();
+  scroll_layer->SetScrollClipLayerId(layer_tree_root->id());
+  scoped_refptr<Layer> child1 = Layer::Create();
+  scoped_refptr<Layer> scrollbar_layer;
+  const bool kIsLeftSideVerticalScrollbar = false;
+  scrollbar_layer = SolidColorScrollbarLayer::Create(
+      scrollbar->Orientation(), kThumbThickness, kTrackStart,
+      kIsLeftSideVerticalScrollbar, child1->id());
+  scrollbar_layer->ToScrollbarLayer()->SetScrollLayer(scroll_layer->id());
+  scroll_layer->AddChild(child1);
+  scroll_layer->InsertChild(scrollbar_layer, 1);
+  layer_tree_root->AddChild(scroll_layer);
+  layer_tree_host_->SetRootLayer(layer_tree_root);
+
+  // Choose layer bounds to give max_scroll_offset = (8, 8).
+  layer_tree_root->SetBounds(gfx::Size(2, 2));
+  scroll_layer->SetBounds(gfx::Size(10, 10));
+
+  layer_tree_host_->UpdateLayers();
+
+  LayerImpl* layer_impl_tree_root =
+      layer_tree_host_->CommitAndCreateLayerImplTree();
+
+  scrollbar_layer->SetOpacity(0.5f);
+  layer_tree_host_->UpdateLayers();
+  EffectNode* node = layer_tree_host_->property_trees()->effect_tree.Node(
+      scrollbar_layer->effect_tree_index());
+  EXPECT_EQ(node->data.opacity, 0.5f);
+
+  LayerTreeHostImpl* host_impl = layer_tree_host_->host_impl();
+  host_impl->CreatePendingTree();
+  layer_impl_tree_root = layer_tree_host_->CommitAndCreatePendingTree();
+  LayerTreeImpl* layer_tree_impl = layer_impl_tree_root->layer_tree_impl();
+  EXPECT_TRUE(layer_tree_impl->IsPendingTree());
+  layer_tree_impl->property_trees()->effect_tree.Node(
+      scrollbar_layer->effect_tree_index());
+  EXPECT_EQ(node->data.opacity, 0.5f);
+  // The active tree opacity should not change with activation for scrollbar
+  // layer.
+  host_impl->ActivateSyncTree();
+  layer_tree_impl = host_impl->active_tree();
+  node = layer_tree_impl->property_trees()->effect_tree.Node(
+      scrollbar_layer->effect_tree_index());
+  EXPECT_EQ(node->data.opacity, 1.f);
+}
+
 class ScrollbarLayerSolidColorThumbTest : public testing::Test {
  public:
   ScrollbarLayerSolidColorThumbTest() {

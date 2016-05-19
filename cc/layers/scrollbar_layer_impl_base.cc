@@ -40,11 +40,6 @@ void ScrollbarLayerImplBase::PushPropertiesTo(LayerImpl* layer) {
   layer->ToScrollbarLayer()->SetScrollLayerId(ScrollLayerId());
 }
 
-void ScrollbarLayerImplBase::DidBecomeActive() {
-  LayerImpl::DidBecomeActive();
-  UpdatePropertyTreeOpacity();
-}
-
 ScrollbarLayerImplBase* ScrollbarLayerImplBase::ToScrollbarLayer() {
   return this;
 }

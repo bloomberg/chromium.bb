@@ -135,6 +135,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool HasPotentiallyRunningOpacityAnimation() const;
   virtual bool OpacityCanAnimateOnImplThread() const;
 
+  virtual bool AlwaysUseActiveTreeOpacity() const;
+
   void SetBlendMode(SkXfermode::Mode blend_mode);
   SkXfermode::Mode blend_mode() const { return blend_mode_; }
 

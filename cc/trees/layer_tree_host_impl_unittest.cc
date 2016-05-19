@@ -2887,6 +2887,9 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
     EffectNode* pending_tree_node =
         host_impl_->pending_tree()->property_trees()->effect_tree.Node(
             scrollbar_layer->effect_tree_index());
+    host_impl_->pending_tree()
+        ->property_trees()
+        ->always_use_active_tree_opacity_effect_ids.push_back(400);
     EXPECT_FLOAT_EQ(1.f, active_tree_node->data.opacity);
     EXPECT_FLOAT_EQ(1.f, scrollbar_layer->opacity());
     EXPECT_FLOAT_EQ(0.f, pending_tree_node->data.opacity);
