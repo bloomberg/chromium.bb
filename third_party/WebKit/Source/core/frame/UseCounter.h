@@ -1188,6 +1188,7 @@ public:
         UntrustedEventDefaultHandled = 1372,
         FixedRasterScaleBlurryContent = 1373,
         FixedRasterScalePotentialPerformanceRegression = 1374,
+        CSSDeepCombinatorAndShadow = 1375,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

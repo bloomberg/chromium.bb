@@ -375,17 +375,23 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
                     return SelectorFailsCompletely;
             }
 
+
             if (context.selector->relationIsAffectedByPseudoContent()) {
                 // TODO(kochi): closed mode tree should be handled as well for ::content.
                 for (Element* element = context.element; element; element = element->parentOrShadowHostElement()) {
-                    if (matchForPseudoContent(nextContext, *element, result) == SelectorMatches)
+                    if (matchForPseudoContent(nextContext, *element, result) == SelectorMatches) {
+                        if (context.element->isInShadowTree())
+                            UseCounter::count(context.element->document(), UseCounter::CSSDeepCombinatorAndShadow);
                         return SelectorMatches;
+                    }
                 }
                 return SelectorFailsCompletely;
             }
 
             for (nextContext.element = parentOrV0ShadowHostElement(*context.element); nextContext.element; nextContext.element = parentOrV0ShadowHostElement(*nextContext.element)) {
                 Match match = matchSelector(nextContext, result);
+                if (match == SelectorMatches && context.element->isInShadowTree())
+                    UseCounter::count(context.element->document(), UseCounter::CSSDeepCombinatorAndShadow);
                 if (match == SelectorMatches || match == SelectorFailsCompletely)
                     return match;
                 if (nextSelectorExceedsScope(nextContext))
