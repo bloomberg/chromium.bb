@@ -43,6 +43,7 @@ mojo_native_application("app_driver") {
 
   data_deps = [
     ":manifest",
+    "//mash/task_viewer",
   ]
 }
 

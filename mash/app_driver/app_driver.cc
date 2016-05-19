@@ -21,9 +21,10 @@ namespace app_driver {
 namespace {
 
 enum class Accelerator : uint32_t {
-  NewWindow,
-  NewTab,
-  NewIncognitoWindow,
+  NewChromeWindow,
+  NewChromeTab,
+  NewChromeIncognitoWindow,
+  ShowTaskManager,
 };
 
 struct AcceleratorSpec {
@@ -35,12 +36,14 @@ struct AcceleratorSpec {
 };
 
 AcceleratorSpec g_spec[] = {
-    {Accelerator::NewWindow, mus::mojom::KeyboardCode::N,
+    {Accelerator::NewChromeWindow, mus::mojom::KeyboardCode::N,
      mus::mojom::kEventFlagControlDown},
-    {Accelerator::NewTab, mus::mojom::KeyboardCode::T,
+    {Accelerator::NewChromeTab, mus::mojom::KeyboardCode::T,
      mus::mojom::kEventFlagControlDown},
-    {Accelerator::NewIncognitoWindow, mus::mojom::KeyboardCode::N,
+    {Accelerator::NewChromeIncognitoWindow, mus::mojom::KeyboardCode::N,
      mus::mojom::kEventFlagControlDown | mus::mojom::kEventFlagShiftDown},
+    {Accelerator::ShowTaskManager, mus::mojom::KeyboardCode::ESCAPE,
+     mus::mojom::kEventFlagShiftDown},
 };
 
 void AssertTrue(bool success) {
@@ -100,24 +103,29 @@ bool AppDriver::ShellConnectionLost() {
 }
 
 void AppDriver::OnAccelerator(uint32_t id, mus::mojom::EventPtr event) {
-  uint32_t option = mojom::kWindow;
-  switch (static_cast<Accelerator>(id)) {
-    case Accelerator::NewWindow:
-      option = mojom::kWindow;
-      break;
-    case Accelerator::NewTab:
-      option = mojom::kDocument;
-      break;
-    case Accelerator::NewIncognitoWindow:
-      option = mojom::kIncognitoWindow;
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
+  struct LaunchOptions {
+    uint32_t option;
+    const char* app;
+    LaunchMode mode;
+  };
+
+  std::map<Accelerator, LaunchOptions> options{
+      {Accelerator::NewChromeWindow,
+       {mojom::kWindow, "exe:chrome", LaunchMode::MAKE_NEW}},
+      {Accelerator::NewChromeTab,
+       {mojom::kDocument, "exe:chrome", LaunchMode::MAKE_NEW}},
+      {Accelerator::NewChromeIncognitoWindow,
+       {mojom::kIncognitoWindow, "exe:chrome", LaunchMode::MAKE_NEW}},
+      {Accelerator::ShowTaskManager,
+       {mojom::kWindow, "mojo:task_viewer", LaunchMode::DEFAULT}},
+  };
+
+  const auto iter = options.find(static_cast<Accelerator>(id));
+  DCHECK(iter != options.end());
+  const LaunchOptions& entry = iter->second;
   LaunchablePtr launchable;
-  connector_->ConnectToInterface("exe:chrome", &launchable);
-  launchable->Launch(option, LaunchMode::MAKE_NEW);
+  connector_->ConnectToInterface(entry.app, &launchable);
+  launchable->Launch(entry.option, entry.mode);
 }
 
 void AppDriver::AddAccelerators() {

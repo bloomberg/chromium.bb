@@ -5,10 +5,7 @@
   "capabilities": {
     "required": {
       "*": {
-        "classes": [ "mus:window_manager" ]
-      },
-      "exe:chrome": {
-        "classes": [ "mash:launchable" ]
+        "classes": [ "mash:launchable", "mus:window_manager" ]
       },
       "mojo:catalog": {
         "interfaces": [ "catalog::mojom::Catalog" ]
