@@ -14,6 +14,7 @@ namespace switches {
 GFX_EXPORT extern const char kEnableTransparentVisuals[];
 GFX_EXPORT extern const char kWindowDepth[];
 GFX_EXPORT extern const char kX11Display[];
+GFX_EXPORT extern const char kX11VisualID[];
 #endif
 
 }  // namespace switches

@@ -154,6 +154,8 @@ int GpuMain(const MainFunctionParams& parameters) {
 #if !defined(OS_CHROMEOS)
   DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kWindowDepth));
+  DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kX11VisualID));
 #endif
 
 #endif

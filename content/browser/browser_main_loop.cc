@@ -1410,11 +1410,14 @@ bool BrowserMainLoop::InitializeToolkit() {
 #if !defined(OS_CHROMEOS)
   // InitializeToolkit is called before CreateStartupTasks which one starts the
   // gpu process.
+  Visual* visual = NULL;
   int depth = 0;
-  ui::ChooseVisualForWindow(NULL, &depth);
+  ui::ChooseVisualForWindow(&visual, &depth);
   DCHECK(depth > 0);
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kWindowDepth, base::IntToString(depth));
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kX11VisualID, base::UintToString(visual->visualid));
 #endif
 
 #endif

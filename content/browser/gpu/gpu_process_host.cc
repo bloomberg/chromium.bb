@@ -139,6 +139,7 @@ static const char* const kSwitchNames[] = {
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
   switches::kWindowDepth,
   switches::kX11Display,
+  switches::kX11VisualID,
 #endif
   switches::kGpuTestingGLVendor,
   switches::kGpuTestingGLRenderer,

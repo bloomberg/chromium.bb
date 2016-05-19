@@ -176,10 +176,14 @@ EGLDisplay GetPlatformANGLEDisplay(EGLNativeDisplayType native_display,
   }
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
-  Visual* visual;
-  ui::ChooseVisualForWindow(&visual, nullptr);
+  std::string visualid_str =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kX11VisualID);
+  unsigned int visualid = 0;
+  bool succeed = base::StringToUint(visualid_str, &visualid);
+  DCHECK(succeed);
   display_attribs.push_back(EGL_X11_VISUAL_ID_ANGLE);
-  display_attribs.push_back((EGLint)visual->visualid);
+  display_attribs.push_back((EGLint)visualid);
 #endif
 
   display_attribs.push_back(EGL_NONE);

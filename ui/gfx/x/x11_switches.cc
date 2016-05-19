@@ -22,6 +22,9 @@ const char kWindowDepth[] = "window-depth";
 // Which X11 display to connect to. Emulates the GTK+ "--display=" command line
 // argument.
 const char kX11Display[] = "display";
+
+// A VisualID that supports the requested window depth.
+const char kX11VisualID[] = "x11-visual-id";
 #endif
 
 }  // namespace switches
