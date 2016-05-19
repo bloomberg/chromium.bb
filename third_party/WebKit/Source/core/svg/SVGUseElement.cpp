@@ -671,7 +671,7 @@ bool SVGUseElement::selfHasRelativeLengths() const
 
 FloatRect SVGUseElement::getBBox()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     if (!layoutObject())
         return FloatRect();

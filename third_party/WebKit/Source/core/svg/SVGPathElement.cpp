@@ -103,20 +103,20 @@ Path SVGPathElement::asPath() const
 
 float SVGPathElement::getTotalLength()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
     return SVGPathQuery(pathByteStream()).getTotalLength();
 }
 
 SVGPointTearOff* SVGPathElement::getPointAtLength(float length)
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
     FloatPoint point = SVGPathQuery(pathByteStream()).getPointAtLength(length);
     return SVGPointTearOff::create(SVGPoint::create(point), 0, PropertyIsNotAnimVal);
 }
 
 unsigned SVGPathElement::getPathSegAtLength(float length)
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
     return SVGPathQuery(pathByteStream()).getPathSegIndexAtLength(length);
 }
 

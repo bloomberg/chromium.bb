@@ -801,7 +801,7 @@ void LocalDOMWindow::alert(ScriptState* scriptState, const String& message)
         }
     }
 
-    frame()->document()->updateLayoutTree();
+    frame()->document()->updateStyleAndLayoutTree();
 
     FrameHost* host = frame()->host();
     if (!host)
@@ -831,7 +831,7 @@ bool LocalDOMWindow::confirm(ScriptState* scriptState, const String& message)
         }
     }
 
-    frame()->document()->updateLayoutTree();
+    frame()->document()->updateStyleAndLayoutTree();
 
     FrameHost* host = frame()->host();
     if (!host)
@@ -861,7 +861,7 @@ String LocalDOMWindow::prompt(ScriptState* scriptState, const String& message, c
         }
     }
 
-    frame()->document()->updateLayoutTree();
+    frame()->document()->updateStyleAndLayoutTree();
 
     FrameHost* host = frame()->host();
     if (!host)
@@ -932,12 +932,12 @@ static FloatSize getViewportSize(LocalFrame* frame)
     // layout, perform one now so queries during page load will use the up to
     // date viewport.
     if (host->settings().viewportEnabled() && frame->isMainFrame())
-        frame->document()->updateLayoutIgnorePendingStylesheets();
+        frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     // FIXME: This is potentially too much work. We really only need to know the dimensions of the parent frame's layoutObject.
     if (Frame* parent = frame->tree().parent()) {
         if (parent && parent->isLocalFrame())
-            toLocalFrame(parent)->document()->updateLayoutIgnorePendingStylesheets();
+            toLocalFrame(parent)->document()->updateStyleAndLayoutIgnorePendingStylesheets();
     }
 
     return frame->isMainFrame() && !host->settings().inertVisualViewport()
@@ -1004,7 +1004,7 @@ double LocalDOMWindow::scrollX() const
     if (!host)
         return 0;
 
-    frame()->document()->updateLayoutIgnorePendingStylesheets();
+    frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     ScrollableArea* viewport = host->settings().inertVisualViewport() ? view->layoutViewportScrollableArea() : view->getScrollableArea();
     double viewportX = viewport->scrollPositionDouble().x();
@@ -1024,7 +1024,7 @@ double LocalDOMWindow::scrollY() const
     if (!host)
         return 0;
 
-    frame()->document()->updateLayoutIgnorePendingStylesheets();
+    frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     ScrollableArea* viewport = host->settings().inertVisualViewport() ? view->layoutViewportScrollableArea() : view->getScrollableArea();
     double viewportY = viewport->scrollPositionDouble().y();
@@ -1112,7 +1112,7 @@ CSSRuleList* LocalDOMWindow::getMatchedCSSRules(Element* element, const String& 
 
     unsigned rulesToInclude = StyleResolver::AuthorCSSRules;
     PseudoId pseudoId = CSSSelector::pseudoId(pseudoType);
-    element->document().updateLayoutTree();
+    element->document().updateStyleAndLayoutTree();
     return frame()->document()->ensureStyleResolver().pseudoCSSRulesForElement(element, pseudoId, rulesToInclude);
 }
 
@@ -1129,7 +1129,7 @@ void LocalDOMWindow::scrollBy(double x, double y, ScrollBehavior scrollBehavior)
     if (!isCurrentlyDisplayedInFrame())
         return;
 
-    document()->updateLayoutIgnorePendingStylesheets();
+    document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     FrameView* view = frame()->view();
     if (!view)
@@ -1182,7 +1182,7 @@ void LocalDOMWindow::scrollTo(double x, double y) const
     // It is only necessary to have an up-to-date layout if the position may be clamped,
     // which is never the case for (0, 0).
     if (x || y)
-        document()->updateLayoutIgnorePendingStylesheets();
+        document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     DoublePoint layoutPos(x * frame()->pageZoomFactor(), y * frame()->pageZoomFactor());
     ScrollableArea* viewport = host->settings().inertVisualViewport() ? view->layoutViewportScrollableArea() : view->getScrollableArea();
@@ -1208,7 +1208,7 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scrollToOptions) const
         || !scrollToOptions.hasTop()
         || scrollToOptions.left()
         || scrollToOptions.top()) {
-        document()->updateLayoutIgnorePendingStylesheets();
+        document()->updateStyleAndLayoutIgnorePendingStylesheets();
     }
 
     double scaledX = 0.0;

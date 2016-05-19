@@ -105,7 +105,7 @@ static SelectionType computeSelectionType(const PositionTemplate<Strategy>& star
     }
     if (start == end)
         return CaretSelection;
-    // TODO(yosin) We should call |Document::updateLayout()| here for
+    // TODO(yosin) We should call |Document::updateStyleAndLayout()| here for
     // |mostBackwardCaretPosition()|. However, we are here during
     // |Node::removeChild()|.
     start.anchorNode()->updateDistribution();
@@ -221,7 +221,7 @@ EphemeralRangeTemplate<Strategy> VisibleSelectionTemplate<Strategy>::toNormalize
     // in the course of running edit commands which modify the DOM.
     // Failing to call this can result in equivalentXXXPosition calls returning
     // incorrect results.
-    m_start.document()->updateLayout();
+    m_start.document()->updateStyleAndLayout();
 
     // Check again, because updating layout can clear the selection.
     if (isNone())
@@ -290,9 +290,9 @@ void VisibleSelectionTemplate<Strategy>::appendTrailingWhitespace()
     if (searchRange.isNull())
         return;
 
-    // TODO(dglazkov): The use of updateLayoutIgnorePendingStylesheets needs to be audited.
+    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
     // see http://crbug.com/590369 for more details.
-    searchRange.startPosition().document()->updateLayoutIgnorePendingStylesheets();
+    searchRange.startPosition().document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     CharacterIteratorAlgorithm<Strategy> charIt(searchRange.startPosition(), searchRange.endPosition(), TextIteratorEmitsCharactersBetweenAllVisiblePositions);
     bool changed = false;
@@ -843,7 +843,7 @@ void VisibleSelectionTemplate<Strategy>::updateIfNeeded()
     Document* document = m_base.document();
     if (!document)
         return;
-    document->updateLayoutIgnorePendingStylesheets();
+    document->updateStyleAndLayoutIgnorePendingStylesheets();
     const bool hasTrailingWhitespace = m_hasTrailingWhitespace;
     validate(m_granularity);
     if (!hasTrailingWhitespace)

@@ -105,7 +105,7 @@ static PositionType canonicalPosition(const PositionType& passedPosition)
         return PositionType();
 
     DCHECK(position.document());
-    position.document()->updateLayoutIgnorePendingStylesheets();
+    position.document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     Node* node = position.computeContainerNode();
 
@@ -819,9 +819,9 @@ static VisiblePositionTemplate<Strategy> nextBoundary(const VisiblePositionTempl
     if (it.atEnd() && next == string.size()) {
         pos = it.startPositionInCurrentContainer();
     } else if (next != invalidOffset && next != prefixLength) {
-        // TODO(dglazkov): The use of updateLayoutIgnorePendingStylesheets needs to be audited.
+        // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
         // see http://crbug.com/590369 for more details.
-        searchStart.document()->updateLayoutIgnorePendingStylesheets();
+        searchStart.document()->updateStyleAndLayoutIgnorePendingStylesheets();
         // Use the character iterator to translate the next value into a DOM
         // position.
         CharacterIteratorAlgorithm<Strategy> charIt(searchStart, searchEnd, TextIteratorEmitsCharactersBetweenAllVisiblePositions);
@@ -1299,7 +1299,7 @@ VisiblePosition previousLinePosition(const VisiblePosition& visiblePosition, Lay
     if (!node)
         return VisiblePosition();
 
-    node->document().updateLayoutIgnorePendingStylesheets();
+    node->document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     LayoutObject* layoutObject = node->layoutObject();
     if (!layoutObject)
@@ -1352,7 +1352,7 @@ VisiblePosition nextLinePosition(const VisiblePosition& visiblePosition, LayoutU
     if (!node)
         return VisiblePosition();
 
-    node->document().updateLayoutIgnorePendingStylesheets();
+    node->document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     LayoutObject* layoutObject = node->layoutObject();
     if (!layoutObject)

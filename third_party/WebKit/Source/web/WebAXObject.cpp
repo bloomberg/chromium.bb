@@ -1127,7 +1127,7 @@ bool WebAXObject::hasComputedStyle() const
 
     Document* document = m_private->getDocument();
     if (document)
-        document->updateLayoutTree();
+        document->updateStyleAndLayoutTree();
 
     Node* node = m_private->getNode();
     if (!node)
@@ -1143,7 +1143,7 @@ WebString WebAXObject::computedStyleDisplay() const
 
     Document* document = m_private->getDocument();
     if (document)
-        document->updateLayoutTree();
+        document->updateStyleAndLayoutTree();
 
     Node* node = m_private->getNode();
     if (!node)

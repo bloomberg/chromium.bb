@@ -492,7 +492,7 @@ void InsertListCommand::moveParagraphOverPositionIntoEmptyListItem(const Visible
         return;
     // Inserting list element and list item list may change start of pargraph
     // to move. We calculate start of paragraph again.
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
     const VisiblePosition& start = startOfParagraph(pos, CanSkipOverEditingBoundary);
     const VisiblePosition& end = endOfParagraph(pos, CanSkipOverEditingBoundary);
     moveParagraph(start, end, createVisiblePosition(positionBeforeNode(placeholder)), editingState, true);

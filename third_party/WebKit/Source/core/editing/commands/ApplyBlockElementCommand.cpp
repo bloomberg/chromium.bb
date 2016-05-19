@@ -94,7 +94,7 @@ void ApplyBlockElementCommand::doApply(EditingState* editingState)
     if (editingState->isAborted())
         return;
 
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     DCHECK_EQ(startScope, endScope);
     DCHECK_GE(startIndex, 0);
@@ -192,7 +192,7 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const
     start = startOfParagraph(endOfCurrentParagraph).deepEquivalent();
     end = endOfCurrentParagraph.deepEquivalent();
 
-    document().updateLayoutTree();
+    document().updateStyleAndLayoutTree();
 
     bool isStartAndEndOnSameNode = false;
     if (const ComputedStyle* startStyle = computedStyleOfEnclosingTextNode(start)) {
@@ -222,7 +222,7 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const
         }
     }
 
-    document().updateLayoutTree();
+    document().updateStyleAndLayoutTree();
 
     if (const ComputedStyle* endStyle = computedStyleOfEnclosingTextNode(end)) {
         bool isEndAndEndOfLastParagraphOnSameNode = computedStyleOfEnclosingTextNode(m_endOfLastParagraph) && end.anchorNode() == m_endOfLastParagraph.anchorNode();

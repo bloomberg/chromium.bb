@@ -289,7 +289,7 @@ HTMLElement* ReplacementFragment::insertFragmentForTestRendering(Element* rootEd
 
     holder->appendChild(m_fragment);
     rootEditableElement->appendChild(holder);
-    m_document->updateLayoutIgnorePendingStylesheets();
+    m_document->updateStyleAndLayoutIgnorePendingStylesheets();
 
     return holder;
 }
@@ -736,7 +736,7 @@ static inline bool nodeHasVisibleLayoutText(Text& text)
 
 void ReplaceSelectionCommand::removeUnrenderedTextNodesAtEnds(InsertedNodes& insertedNodes)
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     Node* lastLeafInserted = insertedNodes.lastLeafInserted();
     if (lastLeafInserted && lastLeafInserted->isTextNode() && !nodeHasVisibleLayoutText(toText(*lastLeafInserted))
@@ -1458,7 +1458,7 @@ void ReplaceSelectionCommand::addSpacesForSmartReplace(EditingState* editingStat
         }
     }
 
-    document().updateLayout();
+    document().updateStyleAndLayout();
 
     Position startDownstream = mostForwardCaretPosition(startOfInsertedContent.deepEquivalent());
     Node* startNode = startDownstream.computeNodeAfterPosition();

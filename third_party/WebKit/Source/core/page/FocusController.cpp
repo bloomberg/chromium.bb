@@ -625,7 +625,7 @@ Element* findFocusableElementDescendingDownIntoFrameDocument(WebFocusType type, 
         HTMLFrameOwnerElement& owner = toHTMLFrameOwnerElement(*element);
         if (!owner.contentFrame() || !owner.contentFrame()->isLocalFrame())
             break;
-        toLocalFrame(owner.contentFrame())->document()->updateLayoutIgnorePendingStylesheets();
+        toLocalFrame(owner.contentFrame())->document()->updateStyleAndLayoutIgnorePendingStylesheets();
         ScopedFocusNavigation scope = ScopedFocusNavigation::ownedByIFrame(owner);
         Element* foundElement = findFocusableElementRecursively(type, scope);
         if (!foundElement)
@@ -921,7 +921,7 @@ bool FocusController::advanceFocusInDocumentOrder(LocalFrame* frame, Element* st
     if (caretBrowsing && !current)
         current = adjustToElement(frame->selection().start().anchorNode(), type);
 
-    document->updateLayoutIgnorePendingStylesheets();
+    document->updateStyleAndLayoutIgnorePendingStylesheets();
     ScopedFocusNavigation scope = current ? ScopedFocusNavigation::createFor(*current) : ScopedFocusNavigation::createForDocument(*document);
     Element* element = findFocusableElementAcrossFocusScopes(type, scope);
     if (!element) {
@@ -1229,7 +1229,7 @@ bool FocusController::advanceFocusDirectionallyInContainer(Node* container, cons
         Element* focusedElement = toLocalFrame(focusedOrMainFrame())->document()->focusedElement();
         if (focusedElement && !hasOffscreenRect(focusedElement))
             rect = nodeRectInAbsoluteCoordinates(focusedElement, true /* ignore border */);
-        toLocalFrame(frameElement->contentFrame())->document()->updateLayoutIgnorePendingStylesheets();
+        toLocalFrame(frameElement->contentFrame())->document()->updateStyleAndLayoutIgnorePendingStylesheets();
         if (!advanceFocusDirectionallyInContainer(toLocalFrame(frameElement->contentFrame())->document(), rect, type)) {
             // The new frame had nothing interesting, need to find another candidate.
             return advanceFocusDirectionallyInContainer(container, nodeRectInAbsoluteCoordinates(focusCandidate.visibleNode, true), type);
@@ -1279,7 +1279,7 @@ bool FocusController::advanceFocusDirectionally(WebFocusType type)
     Node* container = focusedDocument;
 
     if (container->isDocumentNode())
-        toDocument(container)->updateLayoutIgnorePendingStylesheets();
+        toDocument(container)->updateStyleAndLayoutIgnorePendingStylesheets();
 
     // Figure out the starting rect.
     LayoutRect startingRect;
@@ -1300,7 +1300,7 @@ bool FocusController::advanceFocusDirectionally(WebFocusType type)
         startingRect = nodeRectInAbsoluteCoordinates(container, true /* ignore border */);
         container = scrollableEnclosingBoxOrParentFrameForNodeInDirection(type, container);
         if (container && container->isDocumentNode())
-            toDocument(container)->updateLayoutIgnorePendingStylesheets();
+            toDocument(container)->updateStyleAndLayoutIgnorePendingStylesheets();
     } while (!consumed && container);
 
     return consumed;

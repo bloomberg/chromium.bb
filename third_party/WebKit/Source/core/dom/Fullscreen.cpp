@@ -448,8 +448,8 @@ void Fullscreen::didEnterFullScreenForElement(Element* element)
     document()->styleEngine().ensureFullscreenUAStyle();
     m_fullScreenElement->pseudoStateChanged(CSSSelector::PseudoFullScreen);
 
-    // FIXME: This should not call updateLayoutTree.
-    document()->updateLayoutTree();
+    // FIXME: This should not call updateStyleAndLayoutTree.
+    document()->updateStyleAndLayoutTree();
 
     m_fullScreenElement->didBecomeFullscreenElement();
 

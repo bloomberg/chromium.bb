@@ -43,7 +43,7 @@ Element* InputMethodControllerTest::insertHTMLElement(
     const char* elementCode, const char* elementId)
 {
     document().write(elementCode);
-    document().updateLayout();
+    document().updateStyleAndLayout();
     Element* element = document().getElementById(elementId);
     element->focus();
     return element;

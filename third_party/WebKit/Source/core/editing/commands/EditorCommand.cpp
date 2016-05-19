@@ -1791,7 +1791,7 @@ bool Editor::Command::execute(const String& parameter, Event* triggeringEvent) c
     if (!m_frame || !frame().document())
         return false;
 
-    frame().document()->updateLayoutIgnorePendingStylesheets();
+    frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
     DEFINE_STATIC_LOCAL(SparseHistogram, commandHistogram, ("WebCore.Editing.Commands"));
     commandHistogram.sample(static_cast<int>(m_command->commandType));
     return m_command->execute(*m_frame, triggeringEvent, m_source, parameter);

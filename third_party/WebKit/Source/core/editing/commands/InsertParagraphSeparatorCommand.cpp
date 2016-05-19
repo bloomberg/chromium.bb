@@ -431,7 +431,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
     if (editingState->isAborted())
         return;
 
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     // If the paragraph separator was inserted at the end of a paragraph, an empty line must be
     // created.  All of the nodes, starting at visiblePos, are about to be added to the new paragraph
@@ -468,7 +468,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
 
     // Handle whitespace that occurs after the split
     if (positionAfterSplit.isNotNull()) {
-        document().updateLayoutIgnorePendingStylesheets();
+        document().updateStyleAndLayoutIgnorePendingStylesheets();
         // TODO(yosin) |isRenderedCharacter()| should be removed, and we should
         // use |VisiblePosition::characterAfter()|.
         if (!isRenderedCharacter(positionAfterSplit)) {

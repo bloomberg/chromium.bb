@@ -194,7 +194,7 @@ void HTMLLabelElement::defaultEventHandler(Event* evt)
 
         m_processingClick = true;
 
-        document().updateLayoutIgnorePendingStylesheets();
+        document().updateStyleAndLayoutIgnorePendingStylesheets();
         if (element->isMouseFocusable()) {
             // If the label is *not* selected, or if the click happened on
             // selection of label, only then focus the control element.
@@ -225,7 +225,7 @@ bool HTMLLabelElement::willRespondToMouseClickEvents()
 
 void HTMLLabelElement::focus(const FocusParams& params)
 {
-    document().updateLayoutTreeForNode(this);
+    document().updateStyleAndLayoutTreeForNode(this);
     if (isFocusable()) {
         HTMLElement::focus(params);
         return;

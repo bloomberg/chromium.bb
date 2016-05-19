@@ -129,7 +129,7 @@ void HTMLDialogElement::closeDialog(const String& returnValue)
 void HTMLDialogElement::forceLayoutForCentering()
 {
     m_centeringMode = NeedsCentering;
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
     if (m_centeringMode == NeedsCentering)
         setNotCentered();
 }
@@ -142,7 +142,7 @@ void HTMLDialogElement::show()
 
     // The layout must be updated here because setFocusForDialog calls
     // Element::isFocusable, which requires an up-to-date layout.
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     setFocusForDialog(this);
 }

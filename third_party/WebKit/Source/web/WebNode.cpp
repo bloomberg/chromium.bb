@@ -164,7 +164,7 @@ bool WebNode::isFocusable() const
 {
     if (!m_private->isElementNode())
         return false;
-    m_private->document().updateLayoutIgnorePendingStylesheets();
+    m_private->document().updateStyleAndLayoutIgnorePendingStylesheets();
     return toElement(m_private.get())->isFocusable();
 }
 

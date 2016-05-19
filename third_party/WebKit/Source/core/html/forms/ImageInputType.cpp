@@ -200,7 +200,7 @@ unsigned ImageInputType::height() const
             return imageLoader->image()->imageSize(LayoutObject::shouldRespectImageOrientation(nullptr), 1).height();
     }
 
-    element().document().updateLayout();
+    element().document().updateStyleAndLayout();
 
     LayoutBox* box = element().layoutBox();
     return box ? adjustForAbsoluteZoom(box->contentHeight(), box) : 0;
@@ -220,7 +220,7 @@ unsigned ImageInputType::width() const
             return imageLoader->image()->imageSize(LayoutObject::shouldRespectImageOrientation(nullptr), 1).width();
     }
 
-    element().document().updateLayout();
+    element().document().updateStyleAndLayout();
 
     LayoutBox* box = element().layoutBox();
     return box ? adjustForAbsoluteZoom(box->contentWidth(), box) : 0;

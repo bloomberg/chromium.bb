@@ -1056,7 +1056,7 @@ FloatRect LayoutObject::absoluteBoundingBoxRectForRange(const Range* range)
     if (!range || !range->startContainer())
         return FloatRect();
 
-    range->ownerDocument().updateLayout();
+    range->ownerDocument().updateStyleAndLayout();
 
     Vector<FloatQuad> quads;
     range->textQuads(quads);

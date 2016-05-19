@@ -143,7 +143,7 @@ void MouseRelatedEvent::computeRelativePosition()
     m_offsetLocation = m_pageLocation;
 
     // Must have an updated layout tree for this math to work correctly.
-    targetNode->document().updateLayoutIgnorePendingStylesheets();
+    targetNode->document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     // Adjust offsetLocation to be relative to the target's padding box.
     if (LayoutObject* r = targetNode->layoutObject()) {

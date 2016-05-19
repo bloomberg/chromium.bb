@@ -426,7 +426,7 @@ void Editor::writeSelectionToPasteboard()
 
 static PassRefPtr<Image> imageFromNode(const Node& node)
 {
-    node.document().updateLayoutIgnorePendingStylesheets();
+    node.document().updateStyleAndLayoutIgnorePendingStylesheets();
     LayoutObject* layoutObject = node.layoutObject();
     if (!layoutObject)
         return nullptr;
@@ -691,7 +691,7 @@ void Editor::requestSpellcheckingAfterApplyingCommand(CompositeEditCommand* cmd)
 void Editor::appliedEditing(CompositeEditCommand* cmd)
 {
     EventQueueScope scope;
-    frame().document()->updateLayout();
+    frame().document()->updateStyleAndLayout();
 
     // Request spell checking after pasting before any further DOM change.
     requestSpellcheckingAfterApplyingCommand(cmd);
@@ -724,7 +724,7 @@ void Editor::appliedEditing(CompositeEditCommand* cmd)
 void Editor::unappliedEditing(EditCommandComposition* cmd)
 {
     EventQueueScope scope;
-    frame().document()->updateLayout();
+    frame().document()->updateStyleAndLayout();
 
     dispatchEditableContentChangedEvents(cmd->startingRootEditableElement(), cmd->endingRootEditableElement());
 
@@ -742,7 +742,7 @@ void Editor::unappliedEditing(EditCommandComposition* cmd)
 void Editor::reappliedEditing(EditCommandComposition* cmd)
 {
     EventQueueScope scope;
-    frame().document()->updateLayout();
+    frame().document()->updateStyleAndLayout();
 
     dispatchEditableContentChangedEvents(cmd->startingRootEditableElement(), cmd->endingRootEditableElement());
 
@@ -1028,7 +1028,7 @@ void Editor::setBaseWritingDirection(WritingDirection direction)
             return;
         focusedElement->setAttribute(dirAttr, direction == LeftToRightWritingDirection ? "ltr" : "rtl");
         focusedElement->dispatchInputEvent();
-        frame().document()->updateLayoutTree();
+        frame().document()->updateStyleAndLayoutTree();
         return;
     }
 
@@ -1326,7 +1326,7 @@ void Editor::toggleOverwriteModeEnabled()
 void Editor::tidyUpHTMLStructure(Document& document)
 {
     // hasEditableStyle() needs up-to-date ComputedStyle.
-    document.updateLayoutTree();
+    document.updateStyleAndLayoutTree();
     bool needsValidStructure = document.hasEditableStyle() || (document.documentElement() && document.documentElement()->hasEditableStyle());
     if (!needsValidStructure)
         return;

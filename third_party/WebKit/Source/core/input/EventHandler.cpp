@@ -388,7 +388,7 @@ WebInputEventResult EventHandler::handleMousePressEvent(const MouseEventWithHitT
 
     cancelFakeMouseMoveEvent();
 
-    m_frame->document()->updateLayoutIgnorePendingStylesheets();
+    m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     if (FrameView* frameView = m_frame->view()) {
         if (frameView->isPointInScrollbarCorner(event.event().position()))
@@ -656,7 +656,7 @@ ScrollResult EventHandler::physicalScroll(ScrollGranularity granularity,
     Node* node = startNode;
     ASSERT(node && node->layoutObject());
 
-    m_frame->document()->updateLayoutIgnorePendingStylesheets();
+    m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     ScrollResult result;
 
@@ -712,7 +712,7 @@ bool EventHandler::logicalScroll(ScrollDirection direction, ScrollGranularity gr
     if (!node)
         return false;
 
-    m_frame->document()->updateLayoutIgnorePendingStylesheets();
+    m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     LayoutBox* curBox = node->layoutObject()->enclosingBox();
     while (curBox) {
@@ -738,7 +738,7 @@ void EventHandler::customizedScroll(const Node& startNode, ScrollState& scrollSt
         return;
 
     if (scrollState.deltaX() || scrollState.deltaY())
-        m_frame->document()->updateLayoutIgnorePendingStylesheets();
+        m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     if (m_currentScrollChain.empty())
         recomputeScrollChain(*m_frame, startNode, m_currentScrollChain);
@@ -753,7 +753,7 @@ bool EventHandler::bubblingScroll(ScrollDirection direction, ScrollGranularity g
 {
     // The layout needs to be up to date to determine if we can scroll. We may be
     // here because of an onLoad event, in which case the final layout hasn't been performed yet.
-    m_frame->document()->updateLayoutIgnorePendingStylesheets();
+    m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
     // FIXME: enable scroll customization in this case. See crbug.com/410974.
     if (logicalScroll(direction, granularity, startingNode))
         return true;
@@ -841,7 +841,7 @@ void EventHandler::updateCursor()
     if (layoutViewItem.isNull())
         return;
 
-    m_frame->document()->updateLayout();
+    m_frame->document()->updateStyleAndLayout();
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent);
     HitTestResult result(request, view->rootFrameToContents(m_lastKnownMousePosition));
@@ -1786,7 +1786,7 @@ WebInputEventResult EventHandler::handleMouseFocus(const MouseEventWithHitTestRe
     }
 
     // The layout needs to be up to date to determine if an element is focusable.
-    m_frame->document()->updateLayoutIgnorePendingStylesheets();
+    m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     Element* element = nullptr;
     if (m_nodeUnderMouse)

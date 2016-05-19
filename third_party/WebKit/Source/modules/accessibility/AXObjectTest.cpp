@@ -42,7 +42,7 @@ TEST_F(AXObjectTest, IsARIAWidget)
         "</body>";
 
     document().documentElement()->setInnerHTML(testContent, ASSERT_NO_EXCEPTION);
-    document().updateLayout();
+    document().updateStyleAndLayout();
     Element* root(document().documentElement());
     EXPECT_FALSE(AXObject::isInsideFocusableElementOrARIAWidget(*root->getElementById("plain")));
     EXPECT_TRUE(AXObject::isInsideFocusableElementOrARIAWidget(*root->getElementById("button")));

@@ -222,13 +222,13 @@ bool LayoutEditor::growInside(String propertyName, CSSPrimitiveValue* value)
 
     TrackExceptionState exceptionState;
     elementStyle->setProperty(propertyName, newValue, "important", exceptionState);
-    m_element->ownerDocument()->updateLayout();
+    m_element->ownerDocument()->updateStyleAndLayout();
 
     FloatQuad content2, padding2, border2, margin2;
     InspectorHighlight::buildNodeQuads(m_element.get(), &content2, &padding2, &border2, &margin2);
 
     elementStyle->setProperty(propertyName, initialValue, initialPriority, exceptionState);
-    m_element->ownerDocument()->updateLayout();
+    m_element->ownerDocument()->updateStyleAndLayout();
 
     float eps = 0.0001;
     FloatRect boundingBox1, boundingBox2;

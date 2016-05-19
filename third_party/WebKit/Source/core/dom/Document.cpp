@@ -642,7 +642,7 @@ Element* Document::rootScroller()
     RootScroller* rootScroller = host->rootScroller();
     DCHECK(rootScroller);
 
-    updateLayoutIgnorePendingStylesheets();
+    updateStyleAndLayoutIgnorePendingStylesheets();
 
     return rootScroller->get();
 }
@@ -1167,7 +1167,7 @@ Element* Document::scrollingElement()
 {
     if (RuntimeEnabledFeatures::scrollTopLeftInteropEnabled()) {
         if (inQuirksMode()) {
-            updateLayoutTree();
+            updateStyleAndLayoutTree();
             HTMLBodyElement* body = firstBodyElement();
             if (body && body->layoutObject() && body->layoutObject()->hasOverflowClip())
                 return nullptr;
@@ -1694,7 +1694,7 @@ static void assertLayoutTreeUpdated(Node& root)
 }
 #endif
 
-void Document::updateLayoutTree()
+void Document::updateStyleAndLayoutTree()
 {
     DCHECK(isMainThread());
 
@@ -1873,23 +1873,23 @@ bool Document::needsLayoutTreeUpdateForNode(const Node& node) const
     return false;
 }
 
-void Document::updateLayoutTreeForNode(const Node* node)
+void Document::updateStyleAndLayoutTreeForNode(const Node* node)
 {
     DCHECK(node);
     if (!needsLayoutTreeUpdateForNode(*node))
         return;
-    updateLayoutTree();
+    updateStyleAndLayoutTree();
 }
 
-void Document::updateLayoutIgnorePendingStylesheetsForNode(Node* node)
+void Document::updateStyleAndLayoutIgnorePendingStylesheetsForNode(Node* node)
 {
     DCHECK(node);
     if (!node->inActiveDocument())
         return;
-    updateLayoutIgnorePendingStylesheets();
+    updateStyleAndLayoutIgnorePendingStylesheets();
 }
 
-void Document::updateLayout()
+void Document::updateStyleAndLayout()
 {
     DCHECK(isMainThread());
 
@@ -1903,9 +1903,9 @@ void Document::updateLayout()
     }
 
     if (HTMLFrameOwnerElement* owner = localOwner())
-        owner->document().updateLayout();
+        owner->document().updateStyleAndLayout();
 
-    updateLayoutTree();
+    updateStyleAndLayoutTree();
 
     if (!isActive())
         return;
@@ -1960,7 +1960,7 @@ void Document::clearFocusedElementSoon()
 
 void Document::clearFocusedElementTimerFired(Timer<Document>*)
 {
-    updateLayoutTree();
+    updateStyleAndLayoutTree();
     m_clearFocusedElementTimer.stop();
 
     if (m_focusedElement && !m_focusedElement->isFocusable())
@@ -1973,7 +1973,7 @@ void Document::clearFocusedElementTimerFired(Timer<Document>*)
 // stylesheets are loaded. Doing a layout ignoring the pending stylesheets
 // lets us get reasonable answers. The long term solution to this problem is
 // to instead suspend JavaScript execution.
-void Document::updateLayoutTreeIgnorePendingStylesheets()
+void Document::updateStyleAndLayoutTreeIgnorePendingStylesheets()
 {
     StyleEngine::IgnoringPendingStylesheet ignoring(styleEngine());
 
@@ -1996,13 +1996,13 @@ void Document::updateLayoutTreeIgnorePendingStylesheets()
             setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::CleanupPlaceholderStyles));
         }
     }
-    updateLayoutTree();
+    updateStyleAndLayoutTree();
 }
 
-void Document::updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasks runPostLayoutTasks)
+void Document::updateStyleAndLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasks runPostLayoutTasks)
 {
-    updateLayoutTreeIgnorePendingStylesheets();
-    updateLayout();
+    updateStyleAndLayoutTreeIgnorePendingStylesheets();
+    updateStyleAndLayout();
 
     if (runPostLayoutTasks == RunPostLayoutTasksSynchronously && view())
         view()->flushAnyPendingPostLayoutTasks();
@@ -2665,7 +2665,7 @@ void Document::implicitClose()
     // necessary and can in fact be actively harmful if pages are loading at a rate of > 60fps
     // (if your platform is syncing flushes and limiting them to 60fps).
     if (!localOwner() || (localOwner()->layoutObject() && !localOwner()->layoutObject()->needsLayout())) {
-        updateLayoutTree();
+        updateStyleAndLayoutTree();
 
         // Always do a layout after loading if needed.
         if (view() && layoutView() && (!layoutView()->firstChild() || layoutView()->needsLayout()))
@@ -3600,7 +3600,7 @@ bool Document::setFocusedElement(Element* prpNewFocusedElement, const FocusParam
     }
 
     if (newFocusedElement)
-        updateLayoutTreeForNode(newFocusedElement);
+        updateStyleAndLayoutTreeForNode(newFocusedElement);
     if (newFocusedElement && newFocusedElement->isFocusable()) {
         if (newFocusedElement->isRootEditableElement() && !acceptsEditingFocus(*newFocusedElement)) {
             // delegate blocks focus change
@@ -3661,7 +3661,7 @@ bool Document::setFocusedElement(Element* prpNewFocusedElement, const FocusParam
                 // Make sure a widget has the right size before giving it focus.
                 // Otherwise, we are testing edge cases of the Widget code.
                 // Specifically, in WebCore this does not work well for text fields.
-                updateLayout();
+                updateStyleAndLayout();
                 // Re-get the widget in case updating the layout changed things.
                 focusWidget = widgetForElement(*m_focusedElement);
             }
@@ -3682,7 +3682,7 @@ bool Document::setFocusedElement(Element* prpNewFocusedElement, const FocusParam
         frameHost()->chromeClient().focusedNodeChanged(oldFocusedElement, m_focusedElement.get());
 
 SetFocusedElementDone:
-    updateLayoutTree();
+    updateStyleAndLayoutTree();
     if (LocalFrame* frame = this->frame())
         frame->selection().didChangeFocus();
     return !focusChangeBlocked;
@@ -4470,7 +4470,7 @@ static Editor::Command command(Document* document, const String& commandName)
     if (!frame || frame->document() != document)
         return Editor::Command();
 
-    document->updateLayoutTree();
+    document->updateStyleAndLayoutTree();
     return frame->editor().createCommand(commandName, CommandFromDOM);
 }
 
@@ -4794,7 +4794,7 @@ void Document::finishedParsing()
         // we force the styles to be up to date before calling FrameLoader::finishedParsing().
         // See https://bugs.webkit.org/show_bug.cgi?id=36864 starting around comment 35.
         if (mainResourceWasAlreadyRequested)
-            updateLayoutTree();
+            updateStyleAndLayoutTree();
 
         beginLifecycleUpdatesIfRenderingReady();
 
@@ -5131,7 +5131,7 @@ void Document::updateFocusAppearanceTimerFired(Timer<Document>*)
     Element* element = focusedElement();
     if (!element)
         return;
-    updateLayout();
+    updateStyleAndLayout();
     if (element->isFocusable())
         element->updateFocusAppearance(m_updateFocusAppearanceSelectionBahavior);
 }
@@ -5380,7 +5380,7 @@ void Document::loadPluginsSoon()
 
 void Document::pluginLoadingTimerFired(Timer<Document>*)
 {
-    updateLayout();
+    updateStyleAndLayout();
 }
 
 ScriptedAnimationController& Document::ensureScriptedAnimationController()

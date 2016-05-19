@@ -405,7 +405,7 @@ CSSValue* CSSComputedStyleDeclaration::getFontSizeCSSValuePreferringKeyword() co
     if (!m_node)
         return nullptr;
 
-    m_node->document().updateLayoutIgnorePendingStylesheets();
+    m_node->document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     const ComputedStyle* style = m_node->ensureComputedStyle(m_pseudoElementSpecifier);
     if (!style)
@@ -519,7 +519,7 @@ CSSValue* CSSComputedStyleDeclaration::getPropertyCSSValue(AtomicString customPr
     if (!styledNode)
         return nullptr;
 
-    styledNode->document().updateLayoutTreeForNode(styledNode);
+    styledNode->document().updateStyleAndLayoutTreeForNode(styledNode);
 
     const ComputedStyle* style = computeComputedStyle();
     if (!style)
@@ -542,7 +542,7 @@ CSSValue* CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropertyID propert
         return nullptr;
 
     Document& document = styledNode->document();
-    document.updateLayoutTreeForNode(styledNode);
+    document.updateStyleAndLayoutTreeForNode(styledNode);
 
     // The style recalc could have caused the styled node to be discarded or replaced
     // if it was a PseudoElement so we need to update it.
@@ -556,7 +556,7 @@ CSSValue* CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropertyID propert
         || (document.localOwner() && document.ensureStyleResolver().hasViewportDependentMediaQueries());
 
     if (forceFullLayout) {
-        document.updateLayoutIgnorePendingStylesheetsForNode(styledNode);
+        document.updateStyleAndLayoutIgnorePendingStylesheetsForNode(styledNode);
         styledNode = this->styledNode();
         style = computeComputedStyle();
         layoutObject = styledNode->layoutObject();
@@ -600,7 +600,7 @@ String CSSComputedStyleDeclaration::item(unsigned i) const
 bool CSSComputedStyleDeclaration::cssPropertyMatches(CSSPropertyID propertyID, const CSSValue* propertyValue) const
 {
     if (propertyID == CSSPropertyFontSize && propertyValue->isPrimitiveValue() && m_node) {
-        m_node->document().updateLayoutIgnorePendingStylesheets();
+        m_node->document().updateStyleAndLayoutIgnorePendingStylesheets();
         const ComputedStyle* style = m_node->ensureComputedStyle(m_pseudoElementSpecifier);
         if (style && style->getFontDescription().keywordSize()) {
             CSSValueID sizeValue = cssIdentifierForFontSizeKeyword(style->getFontDescription().keywordSize());

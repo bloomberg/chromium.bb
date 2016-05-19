@@ -72,7 +72,7 @@ void DocumentMarkerControllerTest::markNodeContents(Node* node)
 {
     // Force layoutObjects to be created; TextIterator, which is used in
     // DocumentMarkerControllerTest::addMarker(), needs them.
-    document().updateLayout();
+    document().updateStyleAndLayout();
     auto range = EphemeralRange::rangeOfContents(*node);
     markerController().addMarker(range.startPosition(), range.endPosition(), DocumentMarker::Spelling);
 }
@@ -81,7 +81,7 @@ void DocumentMarkerControllerTest::markNodeContentsWithComposition(Node* node)
 {
     // Force layoutObjects to be created; TextIterator, which is used in
     // DocumentMarkerControllerTest::addMarker(), needs them.
-    document().updateLayout();
+    document().updateStyleAndLayout();
     auto range = EphemeralRange::rangeOfContents(*node);
     markerController().addCompositionMarker(range.startPosition(), range.endPosition(), Color::black, false, Color::black);
 }
@@ -215,7 +215,7 @@ TEST_F(DocumentMarkerControllerTest, UpdateRenderedRects)
     EXPECT_NE(invalidRect, renderedRects[0]);
 
     div->setAttribute(HTMLNames::styleAttr, "margin: 200px");
-    document().updateLayout();
+    document().updateStyleAndLayout();
     Vector<IntRect> newRenderedRects = markerController().renderedRectsForMarkers(DocumentMarker::Spelling);
     EXPECT_EQ(1u, newRenderedRects.size());
     EXPECT_NE(renderedRects[0], newRenderedRects[0]);
@@ -233,7 +233,7 @@ TEST_F(DocumentMarkerControllerTest, UpdateRenderedRectsForComposition)
     EXPECT_NE(invalidRect, renderedRects[0]);
 
     div->setAttribute(HTMLNames::styleAttr, "margin: 200px");
-    document().updateLayout();
+    document().updateStyleAndLayout();
     Vector<IntRect> newRenderedRects = markerController().renderedRectsForMarkers(DocumentMarker::Composition);
     EXPECT_EQ(1u, newRenderedRects.size());
     EXPECT_NE(renderedRects[0], newRenderedRects[0]);
@@ -245,7 +245,7 @@ TEST_F(DocumentMarkerControllerTest, CompositionMarkersNotMerged)
 
     setBodyInnerHTML("<div style='margin: 100px'>foo</div>");
     Node* text = document().body()->firstChild()->firstChild();
-    document().updateLayout();
+    document().updateStyleAndLayout();
     markerController().addCompositionMarker(Position(text, 0), Position(text, 1), Color::black, false, Color::black);
     markerController().addCompositionMarker(Position(text, 1), Position(text, 3), Color::black, true, Color::black);
 

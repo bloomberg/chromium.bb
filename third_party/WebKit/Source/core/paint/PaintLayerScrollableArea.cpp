@@ -1343,7 +1343,7 @@ void PaintLayerScrollableArea::resize(const PlatformEvent& evt, const LayoutSize
         element->setInlineStyleProperty(CSSPropertyHeight, roundToInt(baseHeight + difference.height()), CSSPrimitiveValue::UnitType::Pixels);
     }
 
-    document.updateLayout();
+    document.updateStyleAndLayout();
 
     // FIXME (Radar 4118564): We should also autoscroll the window as necessary to keep the point under the cursor in view.
 }

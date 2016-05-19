@@ -123,7 +123,7 @@ bool SelectionController::handleMousePressEventSingleClick(const MouseEventWithH
 {
     TRACE_EVENT0("blink", "SelectionController::handleMousePressEventSingleClick");
 
-    m_frame->document()->updateLayoutIgnorePendingStylesheets();
+    m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
     Node* innerNode = event.innerNode();
     if (!(innerNode && innerNode->layoutObject() && m_mouseDownMayStartSelect))
         return false;

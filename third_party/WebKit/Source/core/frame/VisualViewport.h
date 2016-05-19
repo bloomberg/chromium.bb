@@ -226,7 +226,7 @@ private:
 
     bool visualViewportSuppliesScrollbars() const;
 
-    void updateLayoutIgnorePendingStylesheets();
+    void updateStyleAndLayoutIgnorePendingStylesheets();
 
     void enqueueChangedEvent();
 

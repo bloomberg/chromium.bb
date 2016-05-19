@@ -255,7 +255,7 @@ String CreateMarkupAlgorithm<Strategy>::createMarkup(const PositionTemplate<Stra
         return emptyString();
 
     Document* document = startPosition.document();
-    document->updateLayoutIgnorePendingStylesheets();
+    document->updateStyleAndLayoutIgnorePendingStylesheets();
 
     HTMLElement* specialCommonAncestor = highestAncestorToWrapMarkup<Strategy>(startPosition, endPosition, shouldAnnotate, constrainingAncestor);
     StyledMarkupSerializer<Strategy> serializer(shouldResolveURLs, shouldAnnotate, startPosition, endPosition, specialCommonAncestor, convertBlocksToInlines);

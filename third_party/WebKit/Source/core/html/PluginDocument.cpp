@@ -117,7 +117,7 @@ void PluginDocumentParser::createDocumentStructure()
 
     toPluginDocument(document())->setPluginNode(m_embedElement.get());
 
-    document()->updateLayout();
+    document()->updateStyleAndLayout();
 
     // We need the plugin to load synchronously so we can get the PluginView
     // below so flush the layout tasks now instead of waiting on the timer.

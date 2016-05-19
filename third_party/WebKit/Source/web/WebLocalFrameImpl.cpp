@@ -1641,7 +1641,7 @@ void WebLocalFrameImpl::setFindEndstateFocusAndSelection()
             return;
 
         // Need to clean out style and layout state before querying Element::isFocusable().
-        frame()->document()->updateLayoutIgnorePendingStylesheets();
+        frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
         // Try to find the first focusable node up the chain, which will, for
         // example, focus links if we have found text within the link.

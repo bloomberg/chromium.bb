@@ -480,7 +480,7 @@ void PopupMenuImpl::update()
 {
     if (!m_popup || !m_ownerElement)
         return;
-    ownerElement().document().updateLayoutTree();
+    ownerElement().document().updateStyleAndLayoutTree();
     // disconnectClient() might have been called.
     if (!m_ownerElement)
         return;

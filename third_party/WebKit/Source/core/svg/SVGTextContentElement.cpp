@@ -91,19 +91,19 @@ DEFINE_TRACE(SVGTextContentElement)
 
 unsigned SVGTextContentElement::getNumberOfChars()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
     return SVGTextQuery(layoutObject()).numberOfCharacters();
 }
 
 float SVGTextContentElement::getComputedTextLength()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
     return SVGTextQuery(layoutObject()).textLength();
 }
 
 float SVGTextContentElement::getSubStringLength(unsigned charnum, unsigned nchars, ExceptionState& exceptionState)
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     unsigned numberOfChars = getNumberOfChars();
     if (charnum >= numberOfChars) {
@@ -119,7 +119,7 @@ float SVGTextContentElement::getSubStringLength(unsigned charnum, unsigned nchar
 
 SVGPointTearOff* SVGTextContentElement::getStartPositionOfChar(unsigned charnum, ExceptionState& exceptionState)
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     if (charnum >= getNumberOfChars()) {
         exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("charnum", charnum, getNumberOfChars()));
@@ -132,7 +132,7 @@ SVGPointTearOff* SVGTextContentElement::getStartPositionOfChar(unsigned charnum,
 
 SVGPointTearOff* SVGTextContentElement::getEndPositionOfChar(unsigned charnum, ExceptionState& exceptionState)
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     if (charnum >= getNumberOfChars()) {
         exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("charnum", charnum, getNumberOfChars()));
@@ -145,7 +145,7 @@ SVGPointTearOff* SVGTextContentElement::getEndPositionOfChar(unsigned charnum, E
 
 SVGRectTearOff* SVGTextContentElement::getExtentOfChar(unsigned charnum, ExceptionState& exceptionState)
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     if (charnum >= getNumberOfChars()) {
         exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("charnum", charnum, getNumberOfChars()));
@@ -158,7 +158,7 @@ SVGRectTearOff* SVGTextContentElement::getExtentOfChar(unsigned charnum, Excepti
 
 float SVGTextContentElement::getRotationOfChar(unsigned charnum, ExceptionState& exceptionState)
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     if (charnum >= getNumberOfChars()) {
         exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::indexExceedsMaximumBound("charnum", charnum, getNumberOfChars()));
@@ -170,7 +170,7 @@ float SVGTextContentElement::getRotationOfChar(unsigned charnum, ExceptionState&
 
 int SVGTextContentElement::getCharNumAtPosition(SVGPointTearOff* point, ExceptionState& exceptionState)
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
     return SVGTextQuery(layoutObject()).characterNumberAtPosition(point->target()->value());
 }
 

@@ -64,7 +64,7 @@ void DragCaretController::setCaretPosition(const PositionWithAffinity& position)
     if (m_position.isNull() || m_position.isOrphan()) {
         m_caretBase->clearCaretRect();
     } else {
-        document->updateLayoutTree();
+        document->updateStyleAndLayoutTree();
         m_caretBase->updateCaretRect(m_position);
     }
 }

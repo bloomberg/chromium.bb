@@ -109,7 +109,7 @@ void EditCommandComposition::unapply()
     // Changes to the document may have been made since the last editing operation that require a layout, as in <rdar://problem/5658603>.
     // Low level operations, like RemoveNodeCommand, don't require a layout because the high level operations that use them perform one
     // if one is necessary (like for the creation of VisiblePositions).
-    m_document->updateLayoutIgnorePendingStylesheets();
+    m_document->updateStyleAndLayoutIgnorePendingStylesheets();
 
     {
         size_t size = m_commands.size();
@@ -129,7 +129,7 @@ void EditCommandComposition::reapply()
     // Changes to the document may have been made since the last editing operation that require a layout, as in <rdar://problem/5658603>.
     // Low level operations, like RemoveNodeCommand, don't require a layout because the high level operations that use them perform one
     // if one is necessary (like for the creation of VisiblePositions).
-    m_document->updateLayoutIgnorePendingStylesheets();
+    m_document->updateStyleAndLayoutIgnorePendingStylesheets();
 
     {
         for (const auto& command : m_commands)
@@ -198,7 +198,7 @@ bool CompositeEditCommand::apply()
     // Changes to the document may have been made since the last editing operation that require a layout, as in <rdar://problem/5658603>.
     // Low level operations, like RemoveNodeCommand, don't require a layout because the high level operations that use them perform one
     // if one is necessary (like for the creation of VisiblePositions).
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     LocalFrame* frame = document().frame();
     DCHECK(frame);
@@ -776,7 +776,7 @@ void CompositeEditCommand::deleteInsignificantText(Text* textNode, unsigned star
     if (!textNode || start >= end)
         return;
 
-    document().updateLayout();
+    document().updateStyleAndLayout();
 
     LayoutText* textLayoutObject = textNode->layoutObject();
     if (!textLayoutObject)
@@ -888,7 +888,7 @@ HTMLBRElement* CompositeEditCommand::appendBlockPlaceholder(Element* container, 
     if (!container)
         return nullptr;
 
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     // Should assert isLayoutBlockFlow || isInlineFlow when deletion improves. See 4244964.
     DCHECK(container->layoutObject()) << container;
@@ -920,7 +920,7 @@ HTMLBRElement* CompositeEditCommand::addBlockPlaceholderIfNeeded(Element* contai
     if (!container)
         return nullptr;
 
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     LayoutObject* layoutObject = container->layoutObject();
     if (!layoutObject || !layoutObject->isLayoutBlockFlow())
@@ -1334,7 +1334,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
         if (editingState->isAborted())
             return;
         // Need an updateLayout here in case inserting the br has split a text node.
-        document().updateLayoutIgnorePendingStylesheets();
+        document().updateStyleAndLayoutIgnorePendingStylesheets();
     }
 
     destinationIndex = TextIterator::rangeLength(Position::firstPositionInNode(document().documentElement()), destination.toParentAnchoredPosition(), true);

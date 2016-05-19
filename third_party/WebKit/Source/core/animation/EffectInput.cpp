@@ -102,7 +102,7 @@ EffectModel* createEffectModelFromKeyframes(Element& element, const StringKeyfra
 {
     // TODO(alancutter): Remove this once composited animations no longer depend on AnimatableValues.
     if (encounteredCompositableProperty && element.inActiveDocument())
-        element.document().updateLayoutTreeForNode(&element);
+        element.document().updateStyleAndLayoutTreeForNode(&element);
 
     StringKeyframeEffectModel* keyframeEffectModel = StringKeyframeEffectModel::create(keyframes, LinearTimingFunction::shared());
     if (!RuntimeEnabledFeatures::cssAdditiveAnimationsEnabled()) {

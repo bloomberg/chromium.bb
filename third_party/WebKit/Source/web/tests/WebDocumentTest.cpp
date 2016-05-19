@@ -84,7 +84,7 @@ TEST_F(WebDocumentTest, InsertStyleSheet)
     ASSERT_EQ(Color(0, 0, 0), styleBeforeInsertion.visitedDependentColor(CSSPropertyColor));
 
     // Apply inserted stylesheet.
-    coreDoc->updateLayoutTree();
+    coreDoc->updateStyleAndLayoutTree();
 
     const ComputedStyle& styleAfterInsertion = bodyElement->computedStyleRef();
 

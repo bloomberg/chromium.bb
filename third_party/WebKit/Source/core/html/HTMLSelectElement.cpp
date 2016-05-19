@@ -953,7 +953,7 @@ void HTMLSelectElement::scrollToOptionTask()
     // optionRemoved() makes sure m_optionToScrollTo doesn't have an option with
     // another owner.
     ASSERT(option->ownerSelectElement() == this);
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
     if (!layoutObject() || !layoutObject()->isListBox())
         return;
     LayoutRect bounds = option->boundingBox();

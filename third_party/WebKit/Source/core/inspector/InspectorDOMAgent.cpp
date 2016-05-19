@@ -1313,7 +1313,7 @@ void InspectorDOMAgent::focus(ErrorString* errorString, int nodeId)
     if (!element)
         return;
 
-    element->document().updateLayoutIgnorePendingStylesheets();
+    element->document().updateStyleAndLayoutIgnorePendingStylesheets();
     if (!element->isFocusable()) {
         *errorString = "Element is not focusable";
         return;

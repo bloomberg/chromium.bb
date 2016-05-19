@@ -235,7 +235,7 @@ void HTMLMeterElement::updateValueAppearance(double percentage)
 
 bool HTMLMeterElement::canContainRangeEndPoint() const
 {
-    document().updateLayoutTreeForNode(this);
+    document().updateStyleAndLayoutTreeForNode(this);
     return computedStyle() && !computedStyle()->hasAppearance();
 }
 

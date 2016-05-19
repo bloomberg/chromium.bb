@@ -364,7 +364,7 @@ LayoutPart* HTMLPlugInElement::layoutPartForJSBindings() const
     // Needs to load the plugin immediatedly because this function is called
     // when JavaScript code accesses the plugin.
     // FIXME: Check if dispatching events here is safe.
-    document().updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasksSynchronously);
+    document().updateStyleAndLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasksSynchronously);
     return existingLayoutPart();
 }
 

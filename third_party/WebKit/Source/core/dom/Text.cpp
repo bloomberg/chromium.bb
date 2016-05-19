@@ -426,7 +426,7 @@ void Text::updateTextLayoutObject(unsigned offsetOfReplacedData, unsigned length
         lazyReattachIfAttached();
         // FIXME: Editing should be updated so this is not neccesary.
         if (recalcStyleBehavior == DeprecatedRecalcStyleImmediatlelyForEditing)
-            document().updateLayoutTree();
+            document().updateStyleAndLayoutTree();
         return;
     }
     textLayoutObject->setTextWithOffset(dataImpl(), offsetOfReplacedData, lengthOfReplacedData);

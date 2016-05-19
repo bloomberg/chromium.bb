@@ -293,7 +293,7 @@ void ImageDocument::imageClicked(int x, int y)
     } else {
         restoreImageSize(ScaleZoomedDocument);
 
-        updateLayout();
+        updateStyleAndLayout();
 
         double scale = this->scale();
 
@@ -311,7 +311,7 @@ void ImageDocument::imageUpdated()
     if (m_imageSizeIsKnown)
         return;
 
-    updateLayoutTree();
+    updateStyleAndLayoutTree();
     if (!m_imageElement->cachedImage() || m_imageElement->cachedImage()->imageSize(LayoutObject::shouldRespectImageOrientation(m_imageElement->layoutObject()), pageZoomFactor(this)).isEmpty())
         return;
 

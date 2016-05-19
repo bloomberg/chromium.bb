@@ -706,7 +706,7 @@ IntRect FrameSelection::absoluteCaretBounds()
 {
     DCHECK(selection().isValidFor(*m_frame->document()));
     DCHECK_NE(m_frame->document()->lifecycle().state(), DocumentLifecycle::InPaintInvalidation);
-    m_frame->document()->updateLayoutIgnorePendingStylesheets();
+    m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
     if (!isCaret()) {
         m_caretBase->clearCaretRect();
     } else {
@@ -963,7 +963,7 @@ void FrameSelection::focusedOrActiveStateChanged()
     if (Element* element = document->focusedElement())
         element->focusStateChanged();
 
-    document->updateLayoutTree();
+    document->updateStyleAndLayoutTree();
 
     // Because LayoutObject::selectionBackgroundColor() and
     // LayoutObject::selectionForegroundColor() check if the frame is active,
@@ -1144,7 +1144,7 @@ void FrameSelection::setFocusedNodeIfNeeded()
 
     if (Element* target = rootEditableElement()) {
         // Walk up the DOM tree to search for a node to focus.
-        m_frame->document()->updateLayoutTreeIgnorePendingStylesheets();
+        m_frame->document()->updateStyleAndLayoutTreeIgnorePendingStylesheets();
         while (target) {
             // We don't want to set focus on a subframe when selecting in a parent frame,
             // so add the !isFrameElement check here. There's probably a better way to make this
@@ -1304,7 +1304,7 @@ void FrameSelection::setShouldShowBlockCursor(bool shouldShowBlockCursor)
 {
     m_shouldShowBlockCursor = shouldShowBlockCursor;
 
-    m_frame->document()->updateLayoutIgnorePendingStylesheets();
+    m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     updateAppearance();
 }

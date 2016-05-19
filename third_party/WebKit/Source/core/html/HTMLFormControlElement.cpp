@@ -560,7 +560,7 @@ bool HTMLFormControlElement::reportValidity()
     ASSERT(unhandledInvalidControls[0].get() == this);
     // Update layout now before calling isFocusable(), which has
     // !layoutObject()->needsLayout() assertion.
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
     if (isFocusable()) {
         showValidationMessage();
         return false;

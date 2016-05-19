@@ -264,7 +264,7 @@ TEST_F(DocumentLoadingRenderingTest, ShouldNotPaintIframeContentWithPendingSheet
     // this by doing offsetTop in a setTimeout, or by a parent frame executing
     // script that touched offsetTop in the child frame.
     auto* childFrame = toHTMLIFrameElement(document().getElementById("frame"));
-    childFrame->contentDocument()->updateLayoutIgnorePendingStylesheets();
+    childFrame->contentDocument()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     auto frame2 = compositor().beginFrame();
 

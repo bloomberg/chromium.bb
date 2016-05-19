@@ -327,7 +327,7 @@ void CanvasRenderingContext2D::scrollPathIntoViewInternal(const Path& path)
     if (!state().isTransformInvertible() || path.isEmpty())
         return;
 
-    canvas()->document().updateLayoutIgnorePendingStylesheets();
+    canvas()->document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     LayoutObject* renderer = canvas()->layoutObject();
     LayoutBox* layoutBox = canvas()->layoutBox();
@@ -460,7 +460,7 @@ void CanvasRenderingContext2D::setFont(const String& newFont)
     if (!canvas()->document().frame())
         return;
 
-    canvas()->document().updateLayoutTreeForNode(canvas());
+    canvas()->document().updateStyleAndLayoutTreeForNode(canvas());
 
     // The following early exit is dependent on the cache not being empty
     // because an empty cache may indicate that a style change has occured
@@ -673,7 +673,7 @@ static inline TextDirection toTextDirection(CanvasRenderingContext2DState::Direc
 String CanvasRenderingContext2D::direction() const
 {
     if (state().getDirection() == CanvasRenderingContext2DState::DirectionInherit)
-        canvas()->document().updateLayoutTreeForNode(canvas());
+        canvas()->document().updateStyleAndLayoutTreeForNode(canvas());
     return toTextDirection(state().getDirection(), canvas()) == RTL ? rtl : ltr;
 }
 
@@ -723,7 +723,7 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text)
     if (!canvas()->document().frame())
         return metrics;
 
-    canvas()->document().updateLayoutTreeForNode(canvas());
+    canvas()->document().updateStyleAndLayoutTreeForNode(canvas());
     const Font& font = accessFont();
 
     TextDirection direction;
@@ -771,7 +771,7 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, double x, do
     // accessFont needs the style to be up to date, but updating style can cause script to run,
     // (e.g. due to autofocus) which can free the canvas (set size to 0, for example), so update
     // style before grabbing the drawingCanvas.
-    canvas()->document().updateLayoutTreeForNode(canvas());
+    canvas()->document().updateStyleAndLayoutTreeForNode(canvas());
 
     SkCanvas* c = drawingCanvas();
     if (!c)
@@ -975,7 +975,7 @@ void CanvasRenderingContext2D::drawFocusRing(const Path& path)
 
 void CanvasRenderingContext2D::updateElementAccessibility(const Path& path, Element* element)
 {
-    element->document().updateLayoutIgnorePendingStylesheets();
+    element->document().updateStyleAndLayoutIgnorePendingStylesheets();
     AXObjectCache* axObjectCache = element->document().existingAXObjectCache();
     LayoutBoxModelObject* lbmo = canvas()->layoutBoxModelObject();
     LayoutObject* renderer = canvas()->layoutObject();

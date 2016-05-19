@@ -189,7 +189,7 @@ void HTMLTextFormControlElement::setSelectionDirection(const String& direction)
 
 void HTMLTextFormControlElement::select(NeedToDispatchSelectEvent eventBehaviour)
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
     setSelectionRange(0, std::numeric_limits<int>::max(), SelectionHasNoDirection, eventBehaviour, isFocusable() ? ChangeSelectionAndFocus : NotChangeSelection);
 }
 

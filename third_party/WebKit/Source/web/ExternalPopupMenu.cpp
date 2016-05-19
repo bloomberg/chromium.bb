@@ -162,7 +162,7 @@ void ExternalPopupMenu::update()
 {
     if (!m_webExternalPopupMenu || !m_ownerElement)
         return;
-    m_ownerElement->document().updateLayoutTree();
+    m_ownerElement->document().updateStyleAndLayoutTree();
     // disconnectClient() might have been called.
     if (!m_ownerElement)
         return;

@@ -83,9 +83,9 @@ EphemeralRange PlainTextRange::createRangeFor(const ContainerNode& scope, GetRan
         behaviorFlags |= TextIteratorEmitsCharactersBetweenAllVisiblePositions;
     auto range = EphemeralRange::rangeOfContents(scope);
 
-    // TODO(dglazkov): The use of updateLayoutIgnorePendingStylesheets needs to be audited.
+    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
     // see http://crbug.com/590369 for more details.
-    scope.document().updateLayoutIgnorePendingStylesheets();
+    scope.document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     TextIterator it(range.startPosition(), range.endPosition(), behaviorFlags);
 

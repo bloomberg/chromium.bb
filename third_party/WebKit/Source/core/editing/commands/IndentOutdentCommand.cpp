@@ -201,7 +201,7 @@ void IndentOutdentCommand::outdentParagraph(EditingState* editingState)
             }
         }
 
-        document().updateLayoutIgnorePendingStylesheets();
+        document().updateStyleAndLayoutIgnorePendingStylesheets();
         visibleStartOfParagraph = createVisiblePosition(visibleStartOfParagraph.deepEquivalent());
         visibleEndOfParagraph = createVisiblePosition(visibleEndOfParagraph.deepEquivalent());
         if (visibleStartOfParagraph.isNotNull() && !isStartOfParagraph(visibleStartOfParagraph)) {

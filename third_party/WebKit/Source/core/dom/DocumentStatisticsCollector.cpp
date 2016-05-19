@@ -235,7 +235,7 @@ WebDistillabilityFeatures DocumentStatisticsCollector::collectStatistics(Documen
     double startTime = monotonicallyIncreasingTime();
 
     // This should be cheap since collectStatistics is only called right after layout.
-    document.updateLayoutTree();
+    document.updateStyleAndLayoutTree();
 
     // Traverse the DOM tree and collect statistics.
     collectFeatures(*body, features);

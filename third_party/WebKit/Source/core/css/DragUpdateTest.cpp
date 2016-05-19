@@ -54,11 +54,11 @@ TEST(DragUpdateTest, ChildAffectedByDragUpdate)
         "<span></span>"
         "</div>", ASSERT_NO_EXCEPTION);
 
-    document.updateLayout();
+    document.updateStyleAndLayout();
     unsigned startCount = document.styleEngine().styleForElementCount();
 
     document.documentElement()->layoutObject()->updateDragState(true);
-    document.updateLayout();
+    document.updateStyleAndLayout();
 
     unsigned elementCount = document.styleEngine().styleForElementCount() - startCount;
 
@@ -81,11 +81,11 @@ TEST(DragUpdateTest, SiblingAffectedByDragUpdate)
         "</div>"
         "<span class='drag'></span>", ASSERT_NO_EXCEPTION);
 
-    document.updateLayout();
+    document.updateStyleAndLayout();
     unsigned startCount = document.styleEngine().styleForElementCount();
 
     document.documentElement()->layoutObject()->updateDragState(true);
-    document.updateLayout();
+    document.updateStyleAndLayout();
 
     unsigned elementCount = document.styleEngine().styleForElementCount() - startCount;
 

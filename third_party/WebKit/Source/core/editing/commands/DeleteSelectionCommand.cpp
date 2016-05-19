@@ -383,7 +383,7 @@ void DeleteSelectionCommand::removeNode(Node* node, EditingState* editingState, 
         }
 
         // Make sure empty cell has some height, if a placeholder can be inserted.
-        document().updateLayoutIgnorePendingStylesheets();
+        document().updateStyleAndLayoutIgnorePendingStylesheets();
         LayoutObject* r = node->layoutObject();
         if (r && r->isTableCell() && toLayoutTableCell(r)->contentHeight() <= 0) {
             Position firstEditablePosition = firstEditablePositionInNode(node);
@@ -596,7 +596,7 @@ void DeleteSelectionCommand::handleGeneralDelete(EditingState* editingState)
 
 void DeleteSelectionCommand::fixupWhitespace()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
     // TODO(yosin) |isRenderedCharacter()| should be removed, and we should use
     // |VisiblePosition::characterAfter()| and
     // |VisiblePosition::characterBefore()|

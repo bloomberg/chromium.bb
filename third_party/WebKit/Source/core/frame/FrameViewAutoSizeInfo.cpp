@@ -64,7 +64,7 @@ void FrameViewAutoSizeInfo::autoSizeIfNeeded()
     // which may result in a height change during the second iteration.
     for (int i = 0; i < 2; i++) {
         // Update various sizes including contentsSize, scrollHeight, etc.
-        document->updateLayoutIgnorePendingStylesheets();
+        document->updateStyleAndLayoutIgnorePendingStylesheets();
 
         LayoutView* layoutView = document->layoutView();
         if (!layoutView)

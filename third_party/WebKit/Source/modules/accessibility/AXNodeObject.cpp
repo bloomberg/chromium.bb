@@ -537,7 +537,7 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
     if (getNode()->isElementNode()) {
         Element* element = toElement(getNode());
         if (element->isInCanvasSubtree()) {
-            getDocument()->updateLayoutTreeForNode(element);
+            getDocument()->updateStyleAndLayoutTreeForNode(element);
             if (element->isFocusable())
                 return GroupRole;
         }

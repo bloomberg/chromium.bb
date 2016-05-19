@@ -268,7 +268,7 @@ bool isEditablePosition(const Position& p, EditableType editableType, EUpdateSty
     if (!node)
         return false;
     if (updateStyle == UpdateStyle)
-        node->document().updateLayoutIgnorePendingStylesheets();
+        node->document().updateStyleAndLayoutIgnorePendingStylesheets();
     else
         DCHECK_EQ(updateStyle, DoNotUpdateStyle);
 
@@ -1603,7 +1603,7 @@ template <typename Strategy>
 static EphemeralRangeTemplate<Strategy> normalizeRangeAlgorithm(const EphemeralRangeTemplate<Strategy>& range)
 {
     DCHECK(range.isNotNull());
-    range.document().updateLayoutIgnorePendingStylesheets();
+    range.document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     // TODO(yosin) We should not call |parentAnchoredEquivalent()|, it is
     // redundant.

@@ -406,7 +406,7 @@ void HTMLImageElement::removedFrom(ContainerNode* insertionPoint)
 int HTMLImageElement::width()
 {
     if (inActiveDocument())
-        document().updateLayoutIgnorePendingStylesheets();
+        document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     if (!layoutObject()) {
         // check the attribute first for an explicit pixel value
@@ -427,7 +427,7 @@ int HTMLImageElement::width()
 int HTMLImageElement::height()
 {
     if (inActiveDocument())
-        document().updateLayoutIgnorePendingStylesheets();
+        document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     if (!layoutObject()) {
         // check the attribute first for an explicit pixel value
@@ -520,7 +520,7 @@ void HTMLImageElement::setWidth(int value)
 
 int HTMLImageElement::x() const
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
     LayoutObject* r = layoutObject();
     if (!r)
         return 0;
@@ -532,7 +532,7 @@ int HTMLImageElement::x() const
 
 int HTMLImageElement::y() const
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
     LayoutObject* r = layoutObject();
     if (!r)
         return 0;

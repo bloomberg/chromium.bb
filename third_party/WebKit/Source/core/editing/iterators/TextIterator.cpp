@@ -1095,9 +1095,9 @@ PositionTemplate<Strategy> TextIteratorAlgorithm<Strategy>::endPositionInCurrent
 template<typename Strategy>
 int TextIteratorAlgorithm<Strategy>::rangeLength(const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, bool forSelectionPreservation)
 {
-    // TODO(dglazkov): The use of updateLayoutIgnorePendingStylesheets needs to be audited.
+    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
     // see http://crbug.com/590369 for more details.
-    start.document()->updateLayoutIgnorePendingStylesheets();
+    start.document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     int length = 0;
     TextIteratorBehaviorFlags behaviorFlags = TextIteratorEmitsObjectReplacementCharacter;
@@ -1154,9 +1154,9 @@ static String createPlainText(const EphemeralRangeTemplate<Strategy>& range, Tex
         return emptyString();
 
 
-    // TODO(dglazkov): The use of updateLayoutIgnorePendingStylesheets needs to be audited.
+    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
     // see http://crbug.com/590369 for more details.
-    range.startPosition().document()->updateLayoutIgnorePendingStylesheets();
+    range.startPosition().document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     TextIteratorAlgorithm<Strategy> it(range.startPosition(), range.endPosition(), behavior);
 

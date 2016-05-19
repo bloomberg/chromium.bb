@@ -2958,7 +2958,7 @@ bool WebViewImpl::scrollFocusedNodeIntoRect(const WebRect& rectInViewport)
     if (!frame || !frame->view() || !element)
         return false;
 
-    element->document().updateLayoutIgnorePendingStylesheets();
+    element->document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     bool zoomInToLegibleScale = m_webSettings->autoZoomFocusedNodeToLegibleScale()
         && !page()->frameHost().visualViewport().shouldDisableDesktopWorkarounds();

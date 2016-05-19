@@ -263,7 +263,7 @@ bool HTMLFormElement::validateInteractively()
 
     // Needs to update layout now because we'd like to call isFocusable(), which
     // has !layoutObject()->needsLayout() assertion.
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     // Focus on the first focusable control and show a validation message.
     for (unsigned i = 0; i < unhandledInvalidControls.size(); ++i) {

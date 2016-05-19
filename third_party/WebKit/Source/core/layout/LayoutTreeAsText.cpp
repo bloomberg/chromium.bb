@@ -541,7 +541,7 @@ void write(TextStream& ts, const LayoutObject& o, int indent, LayoutAsTextBehavi
             FrameView* view = toFrameView(widget);
             LayoutView* root = view->layoutView();
             if (root) {
-                root->document().updateLayout();
+                root->document().updateStyleAndLayout();
                 PaintLayer* layer = root->layer();
                 if (layer)
                     LayoutTreeAsText::writeLayers(ts, layer, layer, layer->rect(), indent + 1, behavior);
@@ -786,7 +786,7 @@ static String externalRepresentation(LayoutBox* layoutObject, LayoutAsTextBehavi
 String externalRepresentation(LocalFrame* frame, LayoutAsTextBehavior behavior, const PaintLayer* markedLayer)
 {
     if (!(behavior & LayoutAsTextDontUpdateLayout))
-        frame->document()->updateLayout();
+        frame->document()->updateStyleAndLayout();
 
     LayoutObject* layoutObject = frame->contentLayoutObject();
     if (!layoutObject || !layoutObject->isBox())
@@ -806,7 +806,7 @@ String externalRepresentation(Element* element, LayoutAsTextBehavior behavior)
     // Doesn't support printing mode.
     ASSERT(!(behavior & LayoutAsTextPrintingMode));
     if (!(behavior & LayoutAsTextDontUpdateLayout))
-        element->document().updateLayout();
+        element->document().updateStyleAndLayout();
 
     LayoutObject* layoutObject = element->layoutObject();
     if (!layoutObject || !layoutObject->isBox())
@@ -830,7 +830,7 @@ static void writeCounterValuesFromChildren(TextStream& stream, LayoutObject* par
 
 String counterValueForElement(Element* element)
 {
-    element->document().updateLayout();
+    element->document().updateStyleAndLayout();
     TextStream stream;
     bool isFirstCounter = true;
     // The counter layoutObjects should be children of :before or :after pseudo-elements.
@@ -843,7 +843,7 @@ String counterValueForElement(Element* element)
 
 String markerTextForListItem(Element* element)
 {
-    element->document().updateLayout();
+    element->document().updateStyleAndLayout();
 
     LayoutObject* layoutObject = element->layoutObject();
     if (!layoutObject || !layoutObject->isListItem())

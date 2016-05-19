@@ -245,7 +245,7 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle *style, EditingState* editi
     // update document layout once before removing styles
     // so that we avoid the expense of updating before each and every call
     // to check a computed style
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     // get positions we want to use for applying style
     Position start = startPosition();
@@ -592,7 +592,7 @@ void ApplyStyleCommand::applyInlineStyle(EditingStyle* style, EditingState* edit
     // update document layout once before removing styles
     // so that we avoid the expense of updating before each and every call
     // to check a computed style
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     // adjust to the positions we want to use for applying style
     Position start = startPosition();
@@ -706,7 +706,7 @@ void ApplyStyleCommand::applyInlineStyle(EditingStyle* style, EditingState* edit
     // update document layout once before running the rest of the function
     // so that we avoid the expense of updating before each and every call
     // to check a computed style
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     EditingStyle* styleToApply = style;
     if (hasTextDirection) {
@@ -835,7 +835,7 @@ void ApplyStyleCommand::applyInlineStyleToNodeRange(EditingStyle* style, Node* s
     if (m_removeOnly)
         return;
 
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     HeapVector<InlineRunToApplyStyle> runs;
     Node* node = startNode;
@@ -904,7 +904,7 @@ void ApplyStyleCommand::applyInlineStyleToNodeRange(EditingStyle* style, Node* s
         }
     }
 
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     for (auto& run : runs) {
         if (run.positionForStyleComputation.isNotNull())
@@ -1103,7 +1103,7 @@ void ApplyStyleCommand::applyInlineStyleToPushDown(Node* node, EditingStyle* sty
 {
     DCHECK(node);
 
-    node->document().updateLayoutTree();
+    node->document().updateStyleAndLayoutTree();
 
     if (!style || style->isEmpty() || !node->layoutObject() || isHTMLIFrameElement(*node))
         return;
@@ -1296,7 +1296,7 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style, const Position &s
 bool ApplyStyleCommand::elementFullySelected(HTMLElement& element, const Position& start, const Position& end) const
 {
     // The tree may have changed and Position::upstream() relies on an up-to-date layout.
-    element.document().updateLayoutIgnorePendingStylesheets();
+    element.document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     return comparePositions(firstPositionInOrBeforeNode(&element), start) >= 0
         && comparePositions(mostBackwardCaretPosition(lastPositionInOrAfterNode(&element)), end) <= 0;

@@ -188,7 +188,7 @@ static LayoutBoxModelObject* enclosingBoxModelObject(LayoutObject* object)
 
 int PrintContext::pageNumberForElement(Element* element, const FloatSize& pageSizeInPixels)
 {
-    element->document().updateLayout();
+    element->document().updateStyleAndLayout();
 
     LocalFrame* frame = element->document().frame();
     FloatRect pageRect(FloatPoint(0, 0), pageSizeInPixels);
@@ -303,7 +303,7 @@ String PrintContext::pageSizeAndMarginsInPixels(LocalFrame* frame, int pageNumbe
 
 int PrintContext::numberOfPages(LocalFrame* frame, const FloatSize& pageSizeInPixels)
 {
-    frame->document()->updateLayout();
+    frame->document()->updateStyleAndLayout();
 
     FloatRect pageRect(FloatPoint(0, 0), pageSizeInPixels);
     PrintContext printContext(frame);

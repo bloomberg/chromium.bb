@@ -535,13 +535,13 @@ void Node::normalize()
 
 bool Node::isContentEditable(UserSelectAllTreatment treatment) const
 {
-    document().updateLayoutTree();
+    document().updateStyleAndLayoutTree();
     return hasEditableStyle(Editable, treatment);
 }
 
 bool Node::isContentRichlyEditable() const
 {
-    document().updateLayoutTree();
+    document().updateStyleAndLayoutTree();
     return hasEditableStyle(RichlyEditable, UserSelectAllIsAlwaysNonEditable);
 }
 
@@ -2159,7 +2159,7 @@ void Node::defaultEventHandler(Event* event)
             // FIXME: We should avoid synchronous layout if possible. We can
             // remove this synchronous layout if we avoid synchronous layout in
             // LayoutTextControlSingleLine::scrollHeight
-            document().updateLayoutIgnorePendingStylesheets();
+            document().updateStyleAndLayoutIgnorePendingStylesheets();
             LayoutObject* layoutObject = this->layoutObject();
             while (layoutObject && (!layoutObject->isBox() || !toLayoutBox(layoutObject)->canBeScrolledAndHasScrollableArea()))
                 layoutObject = layoutObject->parent();

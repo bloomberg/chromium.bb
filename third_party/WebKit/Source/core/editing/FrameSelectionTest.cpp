@@ -101,7 +101,7 @@ TEST_F(FrameSelectionTest, InvalidateCaretRect)
     EXPECT_FALSE(selection().isCaretBoundsDirty());
 
     document().body()->removeChild(text);
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
     selection().setCaretRectNeedsUpdate();
     EXPECT_TRUE(selection().isCaretBoundsDirty());
     selection().invalidateCaretRect();
@@ -178,7 +178,7 @@ TEST_F(FrameSelectionTest, InvalidatePreviousCaretAfterRemovingLastCharacter)
     // This line is the objective of this test.
     // As removing the last character, early previousCaret invalidation is executed.
     EXPECT_FALSE(isPreviousCaretDirtyForTesting());
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
     selection().setCaretRectNeedsUpdate();
     EXPECT_TRUE(selection().isCaretBoundsDirty());
     EXPECT_FALSE(isPreviousCaretDirtyForTesting());

@@ -420,18 +420,18 @@ public:
     bool needsLayoutTreeUpdateForNode(const Node&) const;
     // Update ComputedStyles and attach LayoutObjects if necessary, but don't
     // lay out.
-    void updateLayoutTree();
-    // Same as updateLayoutTree() except ignoring pending stylesheets.
-    void updateLayoutTreeIgnorePendingStylesheets();
-    void updateLayoutTreeForNode(const Node*);
-    void updateLayout();
+    void updateStyleAndLayoutTree();
+    // Same as updateStyleAndLayoutTree() except ignoring pending stylesheets.
+    void updateStyleAndLayoutTreeIgnorePendingStylesheets();
+    void updateStyleAndLayoutTreeForNode(const Node*);
+    void updateStyleAndLayout();
     void layoutUpdated();
     enum RunPostLayoutTasks {
         RunPostLayoutTasksAsyhnchronously,
         RunPostLayoutTasksSynchronously,
     };
-    void updateLayoutIgnorePendingStylesheets(RunPostLayoutTasks = RunPostLayoutTasksAsyhnchronously);
-    void updateLayoutIgnorePendingStylesheetsForNode(Node*);
+    void updateStyleAndLayoutIgnorePendingStylesheets(RunPostLayoutTasks = RunPostLayoutTasksAsyhnchronously);
+    void updateStyleAndLayoutIgnorePendingStylesheetsForNode(Node*);
     PassRefPtr<ComputedStyle> styleForElementIgnoringPendingStylesheets(Element*);
     PassRefPtr<ComputedStyle> styleForPage(int pageIndex);
 

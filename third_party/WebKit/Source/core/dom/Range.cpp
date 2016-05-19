@@ -1523,7 +1523,7 @@ void Range::expand(const String& unit, ExceptionState& exceptionState)
 
 ClientRectList* Range::getClientRects() const
 {
-    m_ownerDocument->updateLayoutIgnorePendingStylesheets();
+    m_ownerDocument->updateStyleAndLayoutIgnorePendingStylesheets();
 
     Vector<FloatQuad> quads;
     getBorderAndTextQuads(quads);
@@ -1576,7 +1576,7 @@ void Range::getBorderAndTextQuads(Vector<FloatQuad>& quads) const
 
 FloatRect Range::boundingRect() const
 {
-    m_ownerDocument->updateLayoutIgnorePendingStylesheets();
+    m_ownerDocument->updateStyleAndLayoutIgnorePendingStylesheets();
 
     Vector<FloatQuad> quads;
     getBorderAndTextQuads(quads);

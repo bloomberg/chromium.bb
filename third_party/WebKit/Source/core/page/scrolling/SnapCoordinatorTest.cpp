@@ -49,7 +49,7 @@ protected:
             "    <div style='width:2000px; height:2000px;'></div>"
             "  </div>"
             "</body>");
-        document().updateLayout();
+        document().updateStyleAndLayout();
     }
 
     void TearDown() override
@@ -92,7 +92,7 @@ INSTANTIATE_TEST_CASE_P(All, SnapCoordinatorTest, ::testing::Values(
 TEST_P(SnapCoordinatorTest, ValidRepeat)
 {
     snapContainer().setAttribute(styleAttr, "scroll-snap-points-x: repeat(20%); scroll-snap-points-y: repeat(400px);");
-    document().updateLayout();
+    document().updateStyleAndLayout();
     {
         const int expectedStepSize = snapContainer().clientWidth() * 0.2;
         Vector<double> actual = snapOffsets(snapContainer(), HorizontalScrollbar);
@@ -111,7 +111,7 @@ TEST_P(SnapCoordinatorTest, ValidRepeat)
 TEST_P(SnapCoordinatorTest, EmptyRepeat)
 {
     snapContainer().setAttribute(styleAttr, "scroll-snap-points-x: none; scroll-snap-points-y: none;");
-    document().updateLayout();
+    document().updateStyleAndLayout();
 
     EXPECT_EQ(0U, snapOffsets(snapContainer(), HorizontalScrollbar).size());
     EXPECT_EQ(0U, snapOffsets(snapContainer(), VerticalScrollbar).size());
@@ -121,14 +121,14 @@ TEST_P(SnapCoordinatorTest, ZeroAndNegativeRepeat)
 {
     // These be rejected as an invalid repeat values thus no snap offset is created
     snapContainer().setAttribute(styleAttr, "scroll-snap-points-x: repeat(-1px); scroll-snap-points-y: repeat(0px);");
-    document().updateLayout();
+    document().updateStyleAndLayout();
 
     EXPECT_EQ(0U, snapOffsets(snapContainer(), HorizontalScrollbar).size());
     EXPECT_EQ(0U, snapOffsets(snapContainer(), VerticalScrollbar).size());
 
     // Calc values are not be rejected outright but instead clamped to 1px min repeat value
     snapContainer().setAttribute(styleAttr, "scroll-snap-points-x: repeat(calc(10px - 100%)); scroll-snap-points-y: repeat(calc(0px));");
-    document().updateLayout();
+    document().updateStyleAndLayout();
 
     // A repeat value of 1px should give us |(scroll size - client size) / 1| snap offsets
     unsigned expectedHorizontalSnapOffsets = snapContainer().scrollWidth() - snapContainer().clientWidth();
@@ -141,14 +141,14 @@ TEST_P(SnapCoordinatorTest, SimpleSnapElement)
 {
     Element& snapElement = *document().getElementById("snap-element");
     snapElement.setAttribute(styleAttr, "scroll-snap-coordinate: 10px 11px;");
-    document().updateLayout();
+    document().updateStyleAndLayout();
 
     EXPECT_EQ(10, snapOffsets(snapContainer(), HorizontalScrollbar)[0]);
     EXPECT_EQ(11, snapOffsets(snapContainer(), VerticalScrollbar)[0]);
 
     // Multiple coordinate and translates
     snapElement.setAttribute(styleAttr, "scroll-snap-coordinate: 20px 21px, 40px 41px; transform: translate(10px, 10px);");
-    document().updateLayout();
+    document().updateStyleAndLayout();
 
 
     Vector<double> result = snapOffsets(snapContainer(), HorizontalScrollbar);
@@ -163,7 +163,7 @@ TEST_P(SnapCoordinatorTest, NestedSnapElement)
 {
     Element& snapElement = *document().getElementById("nested-snap-element");
     snapElement.setAttribute(styleAttr, "scroll-snap-coordinate: 20px 25px;");
-    document().updateLayout();
+    document().updateStyleAndLayout();
 
     EXPECT_EQ(20, snapOffsets(snapContainer(), HorizontalScrollbar)[0]);
     EXPECT_EQ(25, snapOffsets(snapContainer(), VerticalScrollbar)[0]);
@@ -177,7 +177,7 @@ TEST_P(SnapCoordinatorTest, NestedSnapElementCaptured)
     Element* intermediate = document().getElementById("intermediate");
     intermediate->setAttribute(styleAttr, "overflow: scroll;");
 
-    document().updateLayout();
+    document().updateStyleAndLayout();
 
     // Intermediate scroller captures nested snap elements first so ancestor
     // does not get them.
@@ -189,7 +189,7 @@ TEST_P(SnapCoordinatorTest, PositionFixedSnapElement)
 {
     Element& snapElement = *document().getElementById("snap-element-fixed-position");
     snapElement.setAttribute(styleAttr, "scroll-snap-coordinate: 1px 1px;");
-    document().updateLayout();
+    document().updateStyleAndLayout();
 
     // Position fixed elements are contained in document and not its immediate
     // ancestor scroller. They cannot be a valid snap destination so they should
@@ -209,7 +209,7 @@ TEST_P(SnapCoordinatorTest, RepeatAndSnapElementTogether)
     document().getElementById("nested-snap-element")->setAttribute(styleAttr, "scroll-snap-coordinate: 250px 450px;");
 
     snapContainer().setAttribute(styleAttr, "scroll-snap-points-x: repeat(200px); scroll-snap-points-y: repeat(400px);");
-    document().updateLayout();
+    document().updateStyleAndLayout();
 
     {
         Vector<double> result = snapOffsets(snapContainer(), HorizontalScrollbar);
@@ -232,7 +232,7 @@ TEST_P(SnapCoordinatorTest, SnapPointsAreScrollOffsetIndependent)
     Element& snapElement = *document().getElementById("snap-element");
     snapElement.setAttribute(styleAttr, "scroll-snap-coordinate: 10px 11px;");
     snapContainer().scrollBy(100, 100);
-    document().updateLayout();
+    document().updateStyleAndLayout();
 
     EXPECT_EQ(snapContainer().scrollLeft(), 100);
     EXPECT_EQ(snapContainer().scrollTop(), 100);
@@ -244,14 +244,14 @@ TEST_P(SnapCoordinatorTest, UpdateStyleForSnapElement)
 {
     Element& snapElement = *document().getElementById("snap-element");
     snapElement.setAttribute(styleAttr, "scroll-snap-coordinate: 10px 11px;");
-    document().updateLayout();
+    document().updateStyleAndLayout();
 
 
     EXPECT_EQ(10, snapOffsets(snapContainer(), HorizontalScrollbar)[0]);
     EXPECT_EQ(11, snapOffsets(snapContainer(), VerticalScrollbar)[0]);
 
     snapElement.remove();
-    document().updateLayout();
+    document().updateStyleAndLayout();
 
     EXPECT_EQ(0U, snapOffsets(snapContainer(), HorizontalScrollbar).size());
     EXPECT_EQ(0U, snapOffsets(snapContainer(), VerticalScrollbar).size());
@@ -259,7 +259,7 @@ TEST_P(SnapCoordinatorTest, UpdateStyleForSnapElement)
     // Add a new snap element
     Element& container = *document().getElementById("snap-container");
     container.setInnerHTML("<div style='scroll-snap-coordinate: 20px 22px;'><div style='width:2000px; height:2000px;'></div></div>", ASSERT_NO_EXCEPTION);
-    document().updateLayout();
+    document().updateStyleAndLayout();
 
     EXPECT_EQ(20, snapOffsets(snapContainer(), HorizontalScrollbar)[0]);
     EXPECT_EQ(22, snapOffsets(snapContainer(), VerticalScrollbar)[0]);
@@ -285,7 +285,7 @@ TEST_P(SnapCoordinatorTest, LayoutViewCapturesWhenBodyElementViewportDefining)
         "    <div style='width:2000px; height:2000px;'></div>"
         "</body>");
 
-    document().updateLayout();
+    document().updateStyleAndLayout();
 
     // Sanity check that body is the viewport defining element
     EXPECT_EQ(document().body(), document().viewportDefiningElement());
@@ -324,7 +324,7 @@ TEST_P(SnapCoordinatorTest, LayoutViewCapturesWhenDocumentElementViewportDefinin
         "   </body>"
         "</html>");
 
-    document().updateLayout();
+    document().updateStyleAndLayout();
 
     // Sanity check that document element is the viewport defining element
     EXPECT_EQ(document().documentElement(), document().viewportDefiningElement());
@@ -368,7 +368,7 @@ TEST_P(SnapCoordinatorTest, BodyCapturesWhenBodyOverflowAndDocumentElementViewpo
         "   </body>"
         "</html>");
 
-    document().updateLayout();
+    document().updateStyleAndLayout();
 
     // Sanity check that document element is the viewport defining element
     EXPECT_EQ(document().documentElement(), document().viewportDefiningElement());

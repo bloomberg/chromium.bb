@@ -60,7 +60,7 @@ AffineTransform SVGGraphicsElement::computeCTM(SVGElement::CTMScope mode,
     SVGGraphicsElement::StyleUpdateStrategy styleUpdateStrategy, const SVGGraphicsElement* ancestor) const
 {
     if (styleUpdateStrategy == AllowStyleUpdate)
-        document().updateLayoutIgnorePendingStylesheets();
+        document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     AffineTransform ctm;
     bool done = false;
@@ -213,7 +213,7 @@ SVGElement* SVGGraphicsElement::farthestViewportElement() const
 
 FloatRect SVGGraphicsElement::getBBox()
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     // FIXME: Eventually we should support getBBox for detached elements.
     if (!layoutObject())

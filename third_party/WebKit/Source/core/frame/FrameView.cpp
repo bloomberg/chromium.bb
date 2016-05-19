@@ -802,7 +802,7 @@ void FrameView::performPreLayoutTasks()
         document->evaluateMediaQueryList();
     }
 
-    document->updateLayoutTree();
+    document->updateStyleAndLayoutTree();
     lifecycle().advanceTo(DocumentLifecycle::StyleClean);
 
     if (m_frame->isMainFrame() && !m_viewportScrollableArea) {
@@ -1517,7 +1517,7 @@ bool FrameView::processUrlFragmentHelper(const String& name, UrlFragmentBehavior
     // If anchorNode is not focusable or fragment scrolling is not allowed,
     // clear focus, which matches the behavior of other browsers.
     if (anchorNode) {
-        m_frame->document()->updateLayoutIgnorePendingStylesheets();
+        m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
         if (behavior == UrlFragmentScroll && anchorNode->isFocusable()) {
             anchorNode->focus();
         } else {
@@ -1535,7 +1535,7 @@ void FrameView::setFragmentAnchor(Node* anchorNode)
     m_fragmentAnchor = anchorNode;
 
     // We need to update the layout tree before scrolling.
-    m_frame->document()->updateLayoutTree();
+    m_frame->document()->updateStyleAndLayoutTree();
 
     // If layout is needed, we will scroll in performPostLayoutTasks. Otherwise, scroll immediately.
     LayoutView* layoutView = this->layoutView();
@@ -2585,7 +2585,7 @@ void FrameView::updateStyleAndLayoutIfNeededRecursiveInternal()
     // region but then become included later by the second frame adding rects to the dirty region
     // when it lays out.
 
-    m_frame->document()->updateLayoutTree();
+    m_frame->document()->updateStyleAndLayoutTree();
 
     if (needsLayout())
         layout();
@@ -2623,7 +2623,7 @@ void FrameView::updateStyleAndLayoutIfNeededRecursiveInternal()
     // When SVG filters are invalidated using Document::scheduleSVGFilterLayerUpdateHack() they may trigger an
     // extra style recalc. See PaintLayer::filterNeedsPaintInvalidation().
     if (m_frame->document()->hasSVGFilterElementsRequiringLayerUpdate()) {
-        m_frame->document()->updateLayoutTree();
+        m_frame->document()->updateStyleAndLayoutTree();
 
         if (needsLayout())
             layout();

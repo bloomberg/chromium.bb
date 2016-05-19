@@ -210,7 +210,7 @@ void HTMLTextAreaElement::appendToFormData(FormData& formData)
     if (name().isEmpty())
         return;
 
-    document().updateLayout();
+    document().updateStyleAndLayout();
 
     const String& text = (m_wrap == HardWrap) ? valueWithHardLineBreaks() : value();
     formData.append(name(), text);

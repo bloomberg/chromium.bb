@@ -147,7 +147,7 @@ void InsertLineBreakCommand::doApply(EditingState* editingState)
         Position endingPosition = Position::firstPositionInNode(textNode);
 
         // Handle whitespace that occurs after the split
-        document().updateLayoutIgnorePendingStylesheets();
+        document().updateStyleAndLayoutIgnorePendingStylesheets();
         // TODO(yosin) |isRenderedCharacter()| should be removed, and we should
         // use |VisiblePosition::characterAfter()|.
         if (!isRenderedCharacter(endingPosition)) {

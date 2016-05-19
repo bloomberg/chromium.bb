@@ -312,7 +312,7 @@ unsigned Internals::updateStyleAndReturnAffectedElementCount(ExceptionState& exc
     }
 
     unsigned beforeCount = document->styleEngine().styleForElementCount();
-    document->updateLayoutTree();
+    document->updateStyleAndLayoutTree();
     return document->styleEngine().styleForElementCount() - beforeCount;
 }
 
@@ -822,7 +822,7 @@ ClientRect* Internals::boundingBox(Element* element)
 {
     ASSERT(element);
 
-    element->document().updateLayoutIgnorePendingStylesheets();
+    element->document().updateStyleAndLayoutIgnorePendingStylesheets();
     LayoutObject* layoutObject = element->layoutObject();
     if (!layoutObject)
         return ClientRect::create();
@@ -893,7 +893,7 @@ String Internals::markerDescriptionForNode(Node* node, const String& markerType,
 void Internals::addTextMatchMarker(const Range* range, bool isActive)
 {
     ASSERT(range);
-    range->ownerDocument().updateLayoutIgnorePendingStylesheets();
+    range->ownerDocument().updateStyleAndLayoutIgnorePendingStylesheets();
     range->ownerDocument().markers().addTextMatchMarker(range, isActive);
 }
 
@@ -935,7 +935,7 @@ String Internals::viewportAsText(Document* document, float, int availableWidth, 
         return String();
     }
 
-    document->updateLayoutIgnorePendingStylesheets();
+    document->updateStyleAndLayoutIgnorePendingStylesheets();
 
     Page* page = document->page();
 
@@ -1044,7 +1044,7 @@ Range* Internals::rangeFromLocationAndLength(Element* scope, int rangeLocation, 
     ASSERT(scope);
 
     // TextIterator depends on Layout information, make sure layout it up to date.
-    scope->document().updateLayoutIgnorePendingStylesheets();
+    scope->document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     return createRange(PlainTextRange(rangeLocation, rangeLocation + rangeLength).createRange(*scope));
 }
@@ -1053,7 +1053,7 @@ unsigned Internals::locationFromRange(Element* scope, const Range* range)
 {
     ASSERT(scope && range);
     // PlainTextRange depends on Layout information, make sure layout it up to date.
-    scope->document().updateLayoutIgnorePendingStylesheets();
+    scope->document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     return PlainTextRange::create(*scope, *range).start();
 }
@@ -1062,7 +1062,7 @@ unsigned Internals::lengthFromRange(Element* scope, const Range* range)
 {
     ASSERT(scope && range);
     // PlainTextRange depends on Layout information, make sure layout it up to date.
-    scope->document().updateLayoutIgnorePendingStylesheets();
+    scope->document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     return PlainTextRange::create(*scope, *range).length();
 }
@@ -1084,7 +1084,7 @@ DOMPoint* Internals::touchPositionAdjustedToBestClickableNode(long x, long y, lo
         return 0;
     }
 
-    document->updateLayout();
+    document->updateStyleAndLayout();
 
     IntSize radius(width / 2, height / 2);
     IntPoint point(x + radius.width(), y + radius.height());
@@ -1111,7 +1111,7 @@ Node* Internals::touchNodeAdjustedToBestClickableNode(long x, long y, long width
         return 0;
     }
 
-    document->updateLayout();
+    document->updateStyleAndLayout();
 
     IntSize radius(width / 2, height / 2);
     IntPoint point(x + radius.width(), y + radius.height());
@@ -1134,7 +1134,7 @@ DOMPoint* Internals::touchPositionAdjustedToBestContextMenuNode(long x, long y, 
         return 0;
     }
 
-    document->updateLayout();
+    document->updateStyleAndLayout();
 
     IntSize radius(width / 2, height / 2);
     IntPoint point(x + radius.width(), y + radius.height());
@@ -1161,7 +1161,7 @@ Node* Internals::touchNodeAdjustedToBestContextMenuNode(long x, long y, long wid
         return 0;
     }
 
-    document->updateLayout();
+    document->updateStyleAndLayout();
 
     IntSize radius(width / 2, height / 2);
     IntPoint point(x + radius.width(), y + radius.height());
@@ -1184,7 +1184,7 @@ ClientRect* Internals::bestZoomableAreaForTouchPoint(long x, long y, long width,
         return nullptr;
     }
 
-    document->updateLayout();
+    document->updateStyleAndLayout();
 
     IntSize radius(width / 2, height / 2);
     IntPoint point(x + radius.width(), y + radius.height());
@@ -1700,7 +1700,7 @@ String Internals::layerTreeAsText(Document* document, unsigned flags, ExceptionS
 String Internals::elementLayerTreeAsText(Element* element, unsigned flags, ExceptionState& exceptionState) const
 {
     ASSERT(element);
-    element->document().updateLayout();
+    element->document().updateStyleAndLayout();
 
     LayoutObject* layoutObject = element->layoutObject();
     if (!layoutObject || !layoutObject->isBox()) {
@@ -1994,7 +1994,7 @@ void Internals::updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(Node* 
         exceptionState.throwTypeError("The node provided is neither a document nor an IFrame.");
         return;
     }
-    document->updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasksSynchronously);
+    document->updateStyleAndLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasksSynchronously);
 }
 
 void Internals::forceFullRepaint(Document* document, ExceptionState& exceptionState)
@@ -2053,7 +2053,7 @@ ClientRectList* Internals::annotatedRegions(Document* document, bool draggable, 
         return ClientRectList::create();
     }
 
-    document->updateLayout();
+    document->updateStyleAndLayout();
     document->view()->updateDocumentAnnotatedRegions();
     Vector<AnnotatedRegionValue> regions = document->annotatedRegions();
 
