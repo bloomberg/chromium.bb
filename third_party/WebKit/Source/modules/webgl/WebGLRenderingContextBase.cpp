@@ -531,63 +531,58 @@ static String extractWebGLContextCreationError(const Platform::GraphicsInfo& inf
     return statusMessage;
 }
 
-class WebGLRenderingContextBase::ContextProviderCreationInfo {
-public:
-    ContextProviderCreationInfo(Platform::ContextAttributes contextAttributes, Platform::GraphicsInfo glInfo, ScriptState* scriptState)
-    {
-        m_contextAttributes = contextAttributes;
-        m_glInfo = glInfo;
-        m_scriptState = scriptState;
-    }
-    Platform::ContextAttributes contextAttributes() { return m_contextAttributes; }
-    Platform::GraphicsInfo glInfo() { return m_glInfo; }
-    ScriptState* scriptState() { return m_scriptState; }
-    void setContextProvider(PassOwnPtr<WebGraphicsContext3DProvider> provider) { m_provider = std::move(provider); }
-    PassOwnPtr<WebGraphicsContext3DProvider> releaseContextProvider() { return std::move(m_provider); }
-private:
-    Platform::ContextAttributes m_contextAttributes;
-    Platform::GraphicsInfo m_glInfo;
-    ScriptState* m_scriptState;
-    OwnPtr<WebGraphicsContext3DProvider> m_provider;
+struct ContextProviderCreationInfo {
+    // Inputs.
+    Platform::ContextAttributes contextAttributes;
+    Platform::GraphicsInfo* glInfo;
+    ScriptState* scriptState;
+    // Outputs.
+    OwnPtr<WebGraphicsContext3DProvider> createdContextProvider;
 };
 
-void WebGLRenderingContextBase::createContextProviderOnMainThread(ContextProviderCreationInfo* creationInfo, WaitableEvent* waitableEvent)
+static void createContextProviderOnMainThread(ContextProviderCreationInfo* creationInfo, WaitableEvent* waitableEvent)
 {
     ASSERT(isMainThread());
-    Platform::GraphicsInfo glInfo = creationInfo->glInfo();
-    OwnPtr<WebGraphicsContext3DProvider> provider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(
-        creationInfo->contextAttributes(), creationInfo->scriptState()->getExecutionContext()->url(), 0, &glInfo, Platform::DoNotBindToCurrentThread));
-    creationInfo->setContextProvider(std::move(provider));
+    creationInfo->createdContextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(
+        creationInfo->contextAttributes, creationInfo->scriptState->getExecutionContext()->url(), 0, creationInfo->glInfo));
     waitableEvent->signal();
 }
 
-PassOwnPtr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createContextProviderOnWorkerThread(Platform::ContextAttributes contextAttributes, Platform::GraphicsInfo glInfo, ScriptState* scriptState)
+static PassOwnPtr<WebGraphicsContext3DProvider> createContextProviderOnWorkerThread(Platform::ContextAttributes contextAttributes, Platform::GraphicsInfo* glInfo, ScriptState* scriptState)
 {
     WaitableEvent waitableEvent;
-    OwnPtr<ContextProviderCreationInfo> creationInfo = adoptPtr(new ContextProviderCreationInfo(contextAttributes, glInfo, scriptState));
+    ContextProviderCreationInfo creationInfo;
+    creationInfo.contextAttributes = contextAttributes;
+    creationInfo.glInfo = glInfo;
+    creationInfo.scriptState = scriptState;
     WebTaskRunner* taskRunner = Platform::current()->mainThread()->getWebTaskRunner();
-    taskRunner->postTask(BLINK_FROM_HERE, threadSafeBind(&createContextProviderOnMainThread, AllowCrossThreadAccess(creationInfo.get()), AllowCrossThreadAccess(&waitableEvent)));
+    taskRunner->postTask(BLINK_FROM_HERE, threadSafeBind(&createContextProviderOnMainThread, AllowCrossThreadAccess(&creationInfo), AllowCrossThreadAccess(&waitableEvent)));
     waitableEvent.wait();
-    return creationInfo->releaseContextProvider();
+    return std::move(creationInfo.createdContextProvider);
 }
 
 PassOwnPtr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createContextProviderInternal(HTMLCanvasElement* canvas, ScriptState* scriptState, WebGLContextAttributes attributes, unsigned webGLVersion)
 {
+    // Exactly one of these must be provided.
+    DCHECK_EQ(!canvas, !!scriptState);
+    // The canvas is only given on the main thread.
+    DCHECK(!canvas || isMainThread());
+
     Platform::ContextAttributes contextAttributes = toPlatformContextAttributes(attributes, webGLVersion);
     Platform::GraphicsInfo glInfo;
     OwnPtr<WebGraphicsContext3DProvider> contextProvider;
-    if (canvas) {
+    if (isMainThread()) {
+        const auto& url = canvas ? canvas->document().topDocument().url() : scriptState->getExecutionContext()->url();
         contextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(
-            contextAttributes, canvas->document().topDocument().url(), 0, &glInfo, Platform::BindToCurrentThread));
+            contextAttributes, url, 0, &glInfo));
     } else {
-        if (isMainThread()) {
-            contextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(
-                contextAttributes, scriptState->getExecutionContext()->url(), 0, &glInfo, Platform::BindToCurrentThread));
-        } else {
-            contextProvider = createContextProviderOnWorkerThread(contextAttributes, glInfo, scriptState);
-            if (!contextProvider->bindToCurrentThread())
-                return nullptr;
-        }
+        contextProvider = createContextProviderOnWorkerThread(contextAttributes, &glInfo, scriptState);
+    }
+    if (contextProvider && !contextProvider->bindToCurrentThread()) {
+        contextProvider = nullptr;
+        String errorString(glInfo.errorMessage.utf8().data());
+        errorString.insert("bindToCurrentThread failed: ", 0);
+        glInfo.errorMessage = errorString;
     }
     if (!contextProvider || shouldFailContextCreationForTesting) {
         shouldFailContextCreationForTesting = false;
@@ -6051,9 +6046,9 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
     Platform::ContextAttributes attributes = toPlatformContextAttributes(m_requestedAttributes, version());
     Platform::GraphicsInfo glInfo;
     OwnPtr<WebGraphicsContext3DProvider> contextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(
-        attributes, canvas()->document().topDocument().url(), 0, &glInfo, Platform::BindToCurrentThread));
+        attributes, canvas()->document().topDocument().url(), 0, &glInfo));
     RefPtr<DrawingBuffer> buffer;
-    if (contextProvider) {
+    if (contextProvider->bindToCurrentThread()) {
         // Construct a new drawing buffer with the new GL context.
         buffer = createDrawingBuffer(std::move(contextProvider));
         // If DrawingBuffer::create() fails to allocate a fbo, |drawingBuffer| is set to null.

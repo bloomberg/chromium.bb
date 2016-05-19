@@ -460,10 +460,6 @@ public:
         WebString driverVersion;
         WebString errorMessage;
     };
-    enum WillBindToCurrentThread {
-        BindToCurrentThread,
-        DoNotBindToCurrentThread
-    };
     // Returns a newly allocated and initialized offscreen context provider,
     // backed by an independent context. Returns null if the context cannot be
     // created or initialized.
@@ -473,8 +469,7 @@ public:
         const ContextAttributes&,
         const WebURL& topDocumentURL,
         WebGraphicsContext3DProvider* shareContext,
-        GraphicsInfo*,
-        WillBindToCurrentThread) { return nullptr; }
+        GraphicsInfo*) { return nullptr; }
 
     // Returns a newly allocated and initialized offscreen context provider,
     // backed by the process-wide shared main thread context. Returns null if

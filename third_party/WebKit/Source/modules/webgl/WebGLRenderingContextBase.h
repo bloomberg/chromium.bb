@@ -1089,9 +1089,6 @@ protected:
 private:
     WebGLRenderingContextBase(HTMLCanvasElement*, OffscreenCanvas*, PassOwnPtr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&);
     static PassOwnPtr<WebGraphicsContext3DProvider> createContextProviderInternal(HTMLCanvasElement*, ScriptState*, WebGLContextAttributes, unsigned);
-    class ContextProviderCreationInfo;
-    static void createContextProviderOnMainThread(ContextProviderCreationInfo*, WaitableEvent*);
-    static PassOwnPtr<WebGraphicsContext3DProvider> createContextProviderOnWorkerThread(Platform::ContextAttributes, Platform::GraphicsInfo, ScriptState*);
 };
 
 DEFINE_TYPE_CASTS(WebGLRenderingContextBase, CanvasRenderingContext, context, context->is3d(), context.is3d());

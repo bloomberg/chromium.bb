@@ -185,7 +185,9 @@ bool TestPlugin::initialize(blink::WebPluginContainer* container) {
   blink::Platform::GraphicsInfo gl_info;
   context_provider_ = base::WrapUnique(
       blink::Platform::current()->createOffscreenGraphicsContext3DProvider(
-          attrs, url, nullptr, &gl_info, blink::Platform::BindToCurrentThread));
+          attrs, url, nullptr, &gl_info));
+  if (!context_provider_->bindToCurrentThread())
+    context_provider_ = nullptr;
   gl_ = context_provider_ ? context_provider_->contextGL() : nullptr;
 
   if (!InitScene())

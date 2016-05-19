@@ -1028,8 +1028,7 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
     const blink::Platform::ContextAttributes& web_attributes,
     const blink::WebURL& top_document_web_url,
     blink::WebGraphicsContext3DProvider* share_provider,
-    blink::Platform::GraphicsInfo* gl_info,
-    blink::Platform::WillBindToCurrentThread will_bind_to_current_thread) {
+    blink::Platform::GraphicsInfo* gl_info) {
   DCHECK(gl_info);
   if (!RenderThreadImpl::current()) {
     std::string error_message("Failed to run in Current RenderThreadImpl");
@@ -1051,9 +1050,6 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
   content::WebGraphicsContext3DProviderImpl* share_provider_impl =
       static_cast<content::WebGraphicsContext3DProviderImpl*>(share_provider);
   ContextProviderCommandBuffer* share_context = nullptr;
-
-  if (will_bind_to_current_thread == blink::Platform::DoNotBindToCurrentThread)
-    DCHECK(!share_provider_impl);
 
   // WebGL contexts must fail creation if the share group is lost.
   if (share_provider_impl) {
@@ -1098,15 +1094,6 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
           GURL(top_document_web_url), gpu_preference, automatic_flushes,
           support_locking, gpu::SharedMemoryLimits(), attributes, share_context,
           command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_WEBGL));
-  if (will_bind_to_current_thread == blink::Platform::BindToCurrentThread) {
-    if (!provider->BindToCurrentThread()) {
-      std::string error_message(
-          "ContextProviderCommandBuffer::BindToCurrentThread failed: ");
-      error_message.append(gl_info->errorMessage.utf8());
-      gl_info->errorMessage = WebString::fromUTF8(error_message);
-      return nullptr;
-    }
-  }
   return new WebGraphicsContext3DProviderImpl(std::move(provider));
 }
 

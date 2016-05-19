@@ -27,6 +27,7 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   ~WebGraphicsContext3DProviderImpl() override;
 
   // WebGraphicsContext3DProvider implementation.
+  bool bindToCurrentThread() override;
   gpu::gles2::GLES2Interface* contextGL() override;
   GrContext* grContext() override;
   gpu::Capabilities getCapabilities() override;
@@ -37,8 +38,6 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   ContextProviderCommandBuffer* context_provider() const {
     return provider_.get();
   }
-
-  bool bindToCurrentThread() override;
 
  private:
   scoped_refptr<ContextProviderCommandBuffer> provider_;

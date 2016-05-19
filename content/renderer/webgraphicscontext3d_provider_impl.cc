@@ -16,12 +16,12 @@ WebGraphicsContext3DProviderImpl::WebGraphicsContext3DProviderImpl(
 
 WebGraphicsContext3DProviderImpl::~WebGraphicsContext3DProviderImpl() {}
 
-gpu::gles2::GLES2Interface* WebGraphicsContext3DProviderImpl::contextGL() {
-  return provider_->ContextGL();
-}
-
 bool WebGraphicsContext3DProviderImpl::bindToCurrentThread() {
   return provider_->BindToCurrentThread();
+}
+
+gpu::gles2::GLES2Interface* WebGraphicsContext3DProviderImpl::contextGL() {
+  return provider_->ContextGL();
 }
 
 GrContext* WebGraphicsContext3DProviderImpl::grContext() {
