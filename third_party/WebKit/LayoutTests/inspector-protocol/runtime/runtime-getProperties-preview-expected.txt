@@ -3,7 +3,6 @@ p2 : Object
 p1 : {
     "type": "object",
     "description": "Object",
-    "lossless": true,
     "overflow": false,
     "properties": [
         {
@@ -16,7 +15,6 @@ p1 : {
 p2 : {
     "type": "object",
     "description": "Object",
-    "lossless": true,
     "overflow": false,
     "properties": [
         {

@@ -140,10 +140,16 @@ globals[1]
 /foo\\bar\sbaz/i
 console-format.html:7 test
 console-format.html:8 ["test"]
+    0: "test"
+    length: 1
+    __proto__: Array[0]
 globals[2]
 "test"
 console-format.html:7 test named "test"
 console-format.html:8 ["test named "test""]
+    0: "test named "test""
+    length: 1
+    __proto__: Array[0]
 globals[3]
 "test named "test""
 console-format.html:7 Error
@@ -202,18 +208,30 @@ globals[9]
     }
 console-format.html:7 0.12
 console-format.html:8 [0.12]
+    0: 0.12
+    length: 1
+    __proto__: Array[0]
 globals[10]
 0.12
 console-format.html:7 http://webkit.org/
 console-format.html:8 ["http://webkit.org/"]
+    0: "http://webkit.org/"
+    length: 1
+    __proto__: Array[0]
 globals[11]
 "http://webkit.org/"
 console-format.html:7 null
 console-format.html:8 [null]
+    0: null
+    length: 1
+    __proto__: Array[0]
 globals[12]
 null
 console-format.html:7 undefined
 console-format.html:8 [undefined]
+    0: undefined
+    length: 1
+    __proto__: Array[0]
 globals[13]
 undefined
 console-format.html:7 
@@ -255,14 +273,23 @@ Object {}
     __proto__: Object
 console-format.html:7 NaN
 console-format.html:8 [NaN]
+    0: NaN
+    length: 1
+    __proto__: Array[0]
 globals[18]
 NaN
 console-format.html:7 Infinity
 console-format.html:8 [Infinity]
+    0: Infinity
+    length: 1
+    __proto__: Array[0]
 globals[19]
 Infinity
 console-format.html:7 -Infinity
 console-format.html:8 [-Infinity]
+    0: -Infinity
+    length: 1
+    __proto__: Array[0]
 globals[20]
 -Infinity
 console-format.html:7 ["test", "test2", 4: "test4", foo: Object]
@@ -279,12 +306,14 @@ console-format.html:8 [Array[10]]
 globals[21]
 ["test", "test2", undefined × 2, "test4", undefined × 5]
 console-format.html:7 Object {}
+    __proto__: Object
 console-format.html:8 [Object]
     0: Object
     length: 1
     __proto__: Array[0]
 globals[22]
 Object {}
+    __proto__: Object
 console-format.html:7 [function]
     0: ()
     length: 1
@@ -333,15 +362,20 @@ Object {}
     __proto__: Object
 console-format.html:7 -0
 console-format.html:8 [-0]
+    0: -0
+    length: 1
+    __proto__: Array[0]
 globals[27]
 -0
 console-format.html:7 Object {}
+    No Properties
 console-format.html:8 [Object]
     0: Object
     length: 1
     __proto__: Array[0]
 globals[28]
 Object {}
+    No Properties
 console-format.html:7 Object() { [native code] }
 console-format.html:8 [function]
     0: Object()
@@ -392,20 +426,45 @@ globals[31]
 ( /**/ foo/**/, /*/**/bar,
     /**/baz) {}
 console-format.html:7 Number {[[PrimitiveValue]]: 42}
+    __proto__: Number
+    [[PrimitiveValue]]: 42
 console-format.html:8 [Number]
     0: Number
     length: 1
     __proto__: Array[0]
 globals[32]
 Number {[[PrimitiveValue]]: 42}
+    __proto__: Number
+    [[PrimitiveValue]]: 42
 console-format.html:7 String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValue]]: "abc"}
+    0: "a"
+    1: "b"
+    2: "c"
+    length: 3
+    __proto__: String
+    [[PrimitiveValue]]: "abc"
 console-format.html:8 [String]
     0: String
     length: 1
     __proto__: Array[0]
 globals[33]
 String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValue]]: "abc"}
+    0: "a"
+    1: "b"
+    2: "c"
+    length: 3
+    __proto__: String
+    [[PrimitiveValue]]: "abc"
 console-format.html:7 [1, 2, 3]
+    0: 1
+    1: 2
+    2: 3
+    buffer: (...)
+    byteLength: (...)
+    byteOffset: (...)
+    length: (...)
+    Symbol(Symbol.toStringTag): (...)
+    __proto__: TypedArray
 console-format.html:8 [Uint16Array[3]]
     0: Uint16Array[3]
     length: 1

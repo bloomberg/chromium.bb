@@ -757,12 +757,10 @@ InjectedScript.RemoteObject = function(object, objectGroupName, doNotBind, force
     this.description = injectedScript._describe(object);
 
     if (generatePreview && this.type === "object") {
-        if (this.subtype === "proxy") {
+        if (this.subtype === "proxy")
             this.preview = this._generatePreview(InjectedScriptHost.proxyTargetValue(object), undefined, columnNames, isTable, skipEntriesPreview);
-            this.preview.lossless = false;
-        } else if (this.subtype !== "node") {
+        else if (this.subtype !== "node")
             this.preview = this._generatePreview(object, undefined, columnNames, isTable, skipEntriesPreview);
-        }
     }
 
     if (injectedScript._customObjectFormatterEnabled) {
@@ -838,7 +836,6 @@ InjectedScript.RemoteObject.prototype = {
         var preview = {
             type: /** @type {!RuntimeAgent.ObjectPreviewType.<string>} */ (this.type),
             description: this.description || toStringDescription(this.value),
-            lossless: true,
             overflow: false,
             properties: [],
             __proto__: null
@@ -891,9 +888,7 @@ InjectedScript.RemoteObject.prototype = {
             if (this.subtype === "map" || this.subtype === "set" || this.subtype === "iterator")
                 this._appendEntriesPreview(object, preview, skipEntriesPreview);
 
-        } catch (e) {
-            preview.lossless = false;
-        }
+        } catch (e) {}
 
         return preview;
     },
@@ -910,51 +905,37 @@ InjectedScript.RemoteObject.prototype = {
         for (var descriptor of descriptors) {
             if (propertiesThreshold.indexes < 0 || propertiesThreshold.properties < 0)
                 break;
-            if (!descriptor)
+            if (!descriptor || descriptor.wasThrown)
                 continue;
-            if (descriptor.wasThrown) {
-                preview.lossless = false;
-                continue;
-            }
 
             var name = descriptor.name;
 
-            // Ignore __proto__ property, stay lossless.
+            // Ignore __proto__ property.
             if (name === "__proto__")
                 continue;
 
-            // Ignore non-enumerable members on prototype, stay lossless.
-            if (!descriptor.isOwn && !descriptor.enumerable)
-                continue;
-
-            // Ignore length property of array, stay lossless.
+            // Ignore length property of array.
             if (this.subtype === "array" && name === "length")
                 continue;
 
-            // Ignore size property of map, set, stay lossless.
+            // Ignore size property of map, set.
             if ((this.subtype === "map" || this.subtype === "set") && name === "size")
                 continue;
 
-            // Never preview prototype properties, turn lossy.
-            if (!descriptor.isOwn) {
-                preview.lossless = false;
+            // Never preview prototype properties.
+            if (!descriptor.isOwn)
                 continue;
-            }
 
-            // Ignore computed properties, turn lossy.
-            if (!("value" in descriptor)) {
-                preview.lossless = false;
+            // Ignore computed properties.
+            if (!("value" in descriptor))
                 continue;
-            }
 
             var value = descriptor.value;
             var type = typeof value;
 
-            // Never render functions in object preview, turn lossy
-            if (type === "function" && (this.subtype !== "array" || !isUInt32(name))) {
-                preview.lossless = false;
+            // Never render functions in object preview.
+            if (type === "function" && (this.subtype !== "array" || !isUInt32(name)))
                 continue;
-            }
 
             // Special-case HTMLAll.
             if (type === "undefined" && injectedScript._isHTMLAllCollection(value))
@@ -968,10 +949,8 @@ InjectedScript.RemoteObject.prototype = {
 
             var maxLength = 100;
             if (InjectedScript.primitiveTypes[type]) {
-                if (type === "string" && value.length > maxLength) {
+                if (type === "string" && value.length > maxLength)
                     value = this._abbreviateString(value, maxLength, true);
-                    preview.lossless = false;
-                }
                 this._appendPropertyPreview(preview, { name: name, type: type, value: toStringDescription(value), __proto__: null }, propertiesThreshold);
                 continue;
             }
@@ -984,8 +963,6 @@ InjectedScript.RemoteObject.prototype = {
             if (secondLevelKeys === null || secondLevelKeys) {
                 var subPreview = this._generatePreview(value, secondLevelKeys || undefined, undefined, isTable);
                 property.valuePreview = subPreview;
-                if (!subPreview.lossless)
-                    preview.lossless = false;
                 if (subPreview.overflow)
                     preview.overflow = true;
             } else {
@@ -993,7 +970,6 @@ InjectedScript.RemoteObject.prototype = {
                 if (type !== "function")
                     description = this._abbreviateString(/** @type {string} */ (injectedScript._describe(value)), maxLength, subtype === "regexp");
                 property.value = description;
-                preview.lossless = false;
             }
             this._appendPropertyPreview(preview, property, propertiesThreshold);
         }
@@ -1012,7 +988,6 @@ InjectedScript.RemoteObject.prototype = {
             propertiesThreshold.properties--;
         if (propertiesThreshold.indexes < 0 || propertiesThreshold.properties < 0) {
             preview.overflow = true;
-            preview.lossless = false;
         } else {
             push(preview.properties, property);
         }
@@ -1029,10 +1004,8 @@ InjectedScript.RemoteObject.prototype = {
         if (!entries)
             return;
         if (skipEntriesPreview) {
-            if (entries.length) {
+            if (entries.length)
                 preview.overflow = true;
-                preview.lossless = false;
-            }
             return;
         }
         preview.entries = [];
@@ -1040,7 +1013,6 @@ InjectedScript.RemoteObject.prototype = {
         for (var i = 0; i < entries.length; ++i) {
             if (preview.entries.length >= entriesThreshold) {
                 preview.overflow = true;
-                preview.lossless = false;
                 break;
             }
             var entry = nullifyObjectProto(entries[i]);
@@ -1061,8 +1033,6 @@ InjectedScript.RemoteObject.prototype = {
         {
             var remoteObject = new InjectedScript.RemoteObject(value, undefined, true, undefined, true, undefined, undefined, true);
             var valuePreview = remoteObject.preview || remoteObject._createEmptyPreview();
-            if (!valuePreview.lossless)
-                preview.lossless = false;
             return valuePreview;
         }
     },
