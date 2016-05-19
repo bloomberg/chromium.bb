@@ -1506,11 +1506,14 @@ TEST_F(CookieMonsterTest,
   EXPECT_EQ(0, DeleteAll(cm.get()));
 }
 
-static const int kAccessDelayMs = kLastAccessThresholdMilliseconds + 20;
+static const base::TimeDelta kLastAccessThreshold =
+    base::TimeDelta::FromMilliseconds(200);
+static const base::TimeDelta kAccessDelay =
+    kLastAccessThreshold + base::TimeDelta::FromMilliseconds(20);
 
 TEST_F(CookieMonsterTest, TestLastAccess) {
   std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(nullptr, nullptr, kLastAccessThresholdMilliseconds));
+      new CookieMonster(nullptr, nullptr, kLastAccessThreshold));
 
   EXPECT_TRUE(SetCookie(cm.get(), http_www_google_.url(), "A=B"));
   const Time last_access_date(GetFirstCookieAccessDate(cm.get()));
@@ -1523,8 +1526,7 @@ TEST_F(CookieMonsterTest, TestLastAccess) {
   // Reading after a short wait will update the access date, if the cookie
   // is requested with options that would update the access date. First, test
   // that the flag's behavior is respected.
-  base::PlatformThread::Sleep(
-      base::TimeDelta::FromMilliseconds(kAccessDelayMs));
+  base::PlatformThread::Sleep(kAccessDelay);
   CookieOptions options;
   options.set_do_not_update_access_time();
   EXPECT_EQ("A=B",
@@ -1584,7 +1586,7 @@ TEST_F(CookieMonsterTest, SetCookieableSchemes) {
 
 TEST_F(CookieMonsterTest, GetAllCookiesForURL) {
   std::unique_ptr<CookieMonster> cm(
-      new CookieMonster(nullptr, nullptr, kLastAccessThresholdMilliseconds));
+      new CookieMonster(nullptr, nullptr, kLastAccessThreshold));
 
   // Create an httponly cookie.
   CookieOptions options;
@@ -1601,8 +1603,7 @@ TEST_F(CookieMonsterTest, GetAllCookiesForURL) {
 
   const Time last_access_date(GetFirstCookieAccessDate(cm.get()));
 
-  base::PlatformThread::Sleep(
-      base::TimeDelta::FromMilliseconds(kAccessDelayMs));
+  base::PlatformThread::Sleep(kAccessDelay);
 
   // Check cookies for url.
   CookieList cookies = GetAllCookiesForURL(cm.get(), http_www_google_.url());

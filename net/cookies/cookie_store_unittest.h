@@ -1125,8 +1125,6 @@ TYPED_TEST_P(CookieStoreTest, TestSecure) {
                          this->GetCookies(cs, this->https_www_google_.url()));
 }
 
-static const int kLastAccessThresholdMilliseconds = 200;
-
 // Formerly NetUtilTest.CookieTest back when we used wininet's cookie handling.
 TYPED_TEST_P(CookieStoreTest, NetUtilCookieTest) {
   const GURL test_url("http://mojo.jojo.google.izzle/");

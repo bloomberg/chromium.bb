@@ -34,15 +34,12 @@
 #include "url/gurl.h"
 
 namespace base {
-class Histogram;
 class HistogramBase;
-class TimeTicks;
 }  // namespace base
 
 namespace net {
 
 class CookieMonsterDelegate;
-class ParsedCookie;
 
 // The cookie monster is the system for storing and retrieving cookies. It has
 // an in-memory list of all cookies, and synchronizes non-session cookies to an
@@ -140,7 +137,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // Only used during unit testing.
   CookieMonster(PersistentCookieStore* store,
                 CookieMonsterDelegate* delegate,
-                int last_access_threshold_milliseconds);
+                base::TimeDelta last_access_threshold);
 
   ~CookieMonster() override;
 

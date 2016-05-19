@@ -362,20 +362,21 @@ bool IsCookieEligibleForEviction(CookiePriority current_priority_level,
 
 CookieMonster::CookieMonster(PersistentCookieStore* store,
                              CookieMonsterDelegate* delegate)
-    : CookieMonster(store, delegate, kDefaultAccessUpdateThresholdSeconds) {
-}
+    : CookieMonster(
+          store,
+          delegate,
+          base::TimeDelta::FromSeconds(kDefaultAccessUpdateThresholdSeconds)) {}
 
 CookieMonster::CookieMonster(PersistentCookieStore* store,
                              CookieMonsterDelegate* delegate,
-                             int last_access_threshold_milliseconds)
+                             base::TimeDelta last_access_threshold)
     : initialized_(false),
       started_fetching_all_cookies_(false),
       finished_fetching_all_cookies_(false),
       fetch_strategy_(kUnknownFetch),
       seen_global_task_(false),
       store_(store),
-      last_access_threshold_(base::TimeDelta::FromMilliseconds(
-          last_access_threshold_milliseconds)),
+      last_access_threshold_(last_access_threshold),
       delegate_(delegate),
       last_statistic_record_time_(base::Time::Now()),
       persist_session_cookies_(false),
