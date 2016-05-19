@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MASH_BROWSER_DRIVER_BROWSER_DRIVER_APPLICATION_DELEGATE_H_
-#define MASH_BROWSER_DRIVER_BROWSER_DRIVER_APPLICATION_DELEGATE_H_
+#ifndef MASH_APP_DRIVER_APP_DRIVER_H_
+#define MASH_APP_DRIVER_APP_DRIVER_H_
 
 #include <stdint.h>
 
@@ -18,13 +18,13 @@
 #include "services/shell/public/cpp/shell_client.h"
 
 namespace mash {
-namespace browser_driver {
+namespace app_driver {
 
-class BrowserDriverApplicationDelegate : public shell::ShellClient,
-                                         public mus::mojom::AcceleratorHandler {
+class AppDriver : public shell::ShellClient,
+                  public mus::mojom::AcceleratorHandler {
  public:
-  BrowserDriverApplicationDelegate();
-  ~BrowserDriverApplicationDelegate() override;
+  AppDriver();
+  ~AppDriver() override;
 
  private:
   void OnAvailableCatalogEntries(
@@ -45,12 +45,12 @@ class BrowserDriverApplicationDelegate : public shell::ShellClient,
   shell::Connector* connector_;
   catalog::mojom::CatalogPtr catalog_;
   mojo::Binding<mus::mojom::AcceleratorHandler> binding_;
-  base::WeakPtrFactory<BrowserDriverApplicationDelegate> weak_factory_;
+  base::WeakPtrFactory<AppDriver> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserDriverApplicationDelegate);
+  DISALLOW_COPY_AND_ASSIGN(AppDriver);
 };
 
-}  // namespace browser_driver
+}  // namespace app_driver
 }  // namespace mash
 
-#endif  // MASH_BROWSER_DRIVER_BROWSER_DRIVER_APPLICATION_DELEGATE_H_
+#endif  // MASH_APP_DRIVER_APP_DRIVER_H_

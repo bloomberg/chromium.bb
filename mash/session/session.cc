@@ -31,7 +31,7 @@ void Session::Initialize(shell::Connector* connector,
                          const shell::Identity& identity,
                          uint32_t id) {
   connector_ = connector;
-  StartBrowserDriver();
+  StartAppDriver();
   StartWindowManager();
   StartSystemUI();
   StartQuickLaunch();
@@ -103,11 +103,10 @@ void Session::StartSystemUI() {
                                      base::Unretained(this)));
 }
 
-void Session::StartBrowserDriver() {
+void Session::StartAppDriver() {
   StartRestartableService(
-      "mojo:browser_driver",
-      base::Bind(&Session::StartBrowserDriver,
-                 base::Unretained(this)));
+      "mojo:app_driver",
+      base::Bind(&Session::StartAppDriver, base::Unretained(this)));
 }
 
 void Session::StartQuickLaunch() {

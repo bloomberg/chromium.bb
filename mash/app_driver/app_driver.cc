@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mash/browser_driver/browser_driver_application_delegate.h"
+#include "mash/app_driver/app_driver.h"
 
 #include <stdint.h>
 
@@ -17,7 +17,7 @@ using mash::mojom::LaunchablePtr;
 using mash::mojom::LaunchMode;
 
 namespace mash {
-namespace browser_driver {
+namespace app_driver {
 namespace {
 
 enum class Accelerator : uint32_t {
@@ -51,14 +51,12 @@ void DoNothing() {}
 
 }  // namespace
 
-BrowserDriverApplicationDelegate::BrowserDriverApplicationDelegate()
-    : connector_(nullptr),
-      binding_(this),
-      weak_factory_(this) {}
+AppDriver::AppDriver()
+    : connector_(nullptr), binding_(this), weak_factory_(this) {}
 
-BrowserDriverApplicationDelegate::~BrowserDriverApplicationDelegate() {}
+AppDriver::~AppDriver() {}
 
-void BrowserDriverApplicationDelegate::OnAvailableCatalogEntries(
+void AppDriver::OnAvailableCatalogEntries(
     const mojo::Array<catalog::mojom::EntryPtr>& entries) {
   if (entries.empty()) {
     LOG(ERROR) << "Unable to install accelerators for launching chrome.";
@@ -74,8 +72,7 @@ void BrowserDriverApplicationDelegate::OnAvailableCatalogEntries(
   // If the window manager restarts, the handler pipe will close and we'll need
   // to re-add our accelerators when the window manager comes back up.
   binding_.set_connection_error_handler(
-      base::Bind(&BrowserDriverApplicationDelegate::AddAccelerators,
-                 weak_factory_.GetWeakPtr()));
+      base::Bind(&AppDriver::AddAccelerators, weak_factory_.GetWeakPtr()));
 
   for (const AcceleratorSpec& spec : g_spec) {
     registrar->AddAccelerator(
@@ -85,27 +82,24 @@ void BrowserDriverApplicationDelegate::OnAvailableCatalogEntries(
   }
 }
 
-void BrowserDriverApplicationDelegate::Initialize(
-    shell::Connector* connector,
-    const shell::Identity& identity,
-    uint32_t id) {
+void AppDriver::Initialize(shell::Connector* connector,
+                           const shell::Identity& identity,
+                           uint32_t id) {
   connector_ = connector;
   AddAccelerators();
 }
 
-bool BrowserDriverApplicationDelegate::AcceptConnection(
-    shell::Connection* connection) {
+bool AppDriver::AcceptConnection(shell::Connection* connection) {
   return true;
 }
 
-bool BrowserDriverApplicationDelegate::ShellConnectionLost() {
+bool AppDriver::ShellConnectionLost() {
   // Prevent the code in AddAccelerators() from keeping this app alive.
   binding_.set_connection_error_handler(base::Bind(&DoNothing));
   return true;
 }
 
-void BrowserDriverApplicationDelegate::OnAccelerator(
-    uint32_t id, mus::mojom::EventPtr event) {
+void AppDriver::OnAccelerator(uint32_t id, mus::mojom::EventPtr event) {
   uint32_t option = mojom::kWindow;
   switch (static_cast<Accelerator>(id)) {
     case Accelerator::NewWindow:
@@ -126,13 +120,12 @@ void BrowserDriverApplicationDelegate::OnAccelerator(
   launchable->Launch(option, LaunchMode::MAKE_NEW);
 }
 
-void BrowserDriverApplicationDelegate::AddAccelerators() {
+void AppDriver::AddAccelerators() {
   connector_->ConnectToInterface("mojo:catalog", &catalog_);
   catalog_->GetEntriesProvidingClass(
-      "mus:window_manager",
-      base::Bind(&BrowserDriverApplicationDelegate::OnAvailableCatalogEntries,
-                 weak_factory_.GetWeakPtr()));
+      "mus:window_manager", base::Bind(&AppDriver::OnAvailableCatalogEntries,
+                                       weak_factory_.GetWeakPtr()));
 }
 
-}  // namespace browser_driver
+}  // namespace app_driver
 }  // namespace mash

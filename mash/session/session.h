@@ -51,7 +51,7 @@ class Session : public shell::ShellClient,
 
   void StartWindowManager();
   void StartSystemUI();
-  void StartBrowserDriver();
+  void StartAppDriver();
   void StartQuickLaunch();
 
   void StartScreenlock();

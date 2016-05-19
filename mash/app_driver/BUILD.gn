@@ -10,8 +10,8 @@ import("//tools/grit/repack.gni")
 
 source_set("lib") {
   sources = [
-    "browser_driver_application_delegate.cc",
-    "browser_driver_application_delegate.h",
+    "app_driver.cc",
+    "app_driver.h",
   ]
 
   deps = [
@@ -28,7 +28,7 @@ source_set("lib") {
   ]
 }
 
-mojo_native_application("browser_driver") {
+mojo_native_application("app_driver") {
   sources = [
     "main.cc",
   ]
@@ -47,6 +47,6 @@ mojo_native_application("browser_driver") {
 }
 
 mojo_application_manifest("manifest") {
-  application_name = "browser_driver"
+  application_name = "app_driver"
   source = "manifest.json"
 }

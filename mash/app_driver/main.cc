@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mash/browser_driver/browser_driver_application_delegate.h"
+#include "mash/app_driver/app_driver.h"
 #include "mojo/public/c/system/main.h"
 #include "services/shell/public/cpp/application_runner.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  shell::ApplicationRunner runner(
-      new mash::browser_driver::BrowserDriverApplicationDelegate);
+  shell::ApplicationRunner runner(new mash::app_driver::AppDriver);
   return runner.Run(shell_handle);
 }

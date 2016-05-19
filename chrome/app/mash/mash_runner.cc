@@ -16,7 +16,7 @@
 #include "base/process/launch.h"
 #include "components/mus/mus_app.h"
 #include "content/public/common/content_switches.h"
-#include "mash/browser_driver/browser_driver_application_delegate.h"
+#include "mash/app_driver/app_driver.h"
 #include "mash/quick_launch/quick_launch_application.h"
 #include "mash/session/session.h"
 #include "mash/task_viewer/task_viewer.h"
@@ -100,9 +100,8 @@ class DefaultShellClient : public shell::ShellClient,
     if (name == "mojo:font_service")
       return base::WrapUnique(new font_service::FontServiceApp);
 #endif
-    if (name == "mojo:browser_driver") {
-      return base::WrapUnique(
-          new mash::browser_driver::BrowserDriverApplicationDelegate());
+    if (name == "mojo:app_driver") {
+      return base::WrapUnique(new mash::app_driver::AppDriver());
     }
     return nullptr;
   }

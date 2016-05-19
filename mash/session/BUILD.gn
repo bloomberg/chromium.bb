@@ -26,7 +26,7 @@ source_set("lib") {
 
   data_deps = [
     "//ash/mus",
-    "//mash/browser_driver",
+    "//mash/app_driver",
     "//mash/quick_launch",
     "//mash/wm",
   ]
