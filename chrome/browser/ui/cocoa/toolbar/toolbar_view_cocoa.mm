@@ -6,6 +6,7 @@
 
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #import "ui/base/cocoa/nsview_additions.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 @implementation ToolbarView
 
@@ -22,7 +23,11 @@
 
 // Override of |-[BackgroundGradientView strokeColor]|; make it respect opacity.
 - (NSColor*)strokeColor {
-  return [[super strokeColor] colorWithAlphaComponent:[self dividerOpacity]];
+  // Only return a transparent color if not Material Design.
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    return [[super strokeColor] colorWithAlphaComponent:[self dividerOpacity]];
+  }
+  return [super strokeColor];
 }
 
 - (BOOL)accessibilityIsIgnored {

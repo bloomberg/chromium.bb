@@ -9,6 +9,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #import "ui/base/cocoa/nsview_additions.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 @implementation DownloadShelfView
 
@@ -29,12 +30,18 @@
 }
 
 - (NSColor*)strokeColor {
-  BOOL isActive = [[self window] isMainWindow];
   const ui::ThemeProvider* themeProvider = [[self window] themeProvider];
-  return themeProvider ? themeProvider->GetNSColor(
-      isActive ? ThemeProperties::COLOR_TOOLBAR_STROKE :
-                 ThemeProperties::COLOR_TOOLBAR_STROKE_INACTIVE) :
-      [NSColor blackColor];
+  if (!themeProvider) {
+    return [NSColor blackColor];
+  }
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    BOOL isActive = [[self window] isMainWindow];
+    return themeProvider->GetNSColor(
+        isActive ? ThemeProperties::COLOR_TOOLBAR_STROKE :
+                   ThemeProperties::COLOR_TOOLBAR_STROKE_INACTIVE);
+  }
+  return themeProvider->GetNSColor(
+             ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR);
 }
 
 - (NSPoint)patternPhase {

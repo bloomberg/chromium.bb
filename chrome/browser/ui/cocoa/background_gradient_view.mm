@@ -10,6 +10,7 @@
 #include "grit/theme_resources.h"
 #import "ui/base/cocoa/nsgraphics_context_additions.h"
 #import "ui/base/cocoa/nsview_additions.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 @interface BackgroundGradientView (Private)
 - (void)commonInit;
@@ -94,9 +95,13 @@
   const ui::ThemeProvider* themeProvider = [window themeProvider];
   if (!themeProvider)
     return [NSColor blackColor];
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    return themeProvider->GetNSColor(
+        isActive ? ThemeProperties::COLOR_TOOLBAR_STROKE :
+                   ThemeProperties::COLOR_TOOLBAR_STROKE_INACTIVE);
+  }
   return themeProvider->GetNSColor(
-      isActive ? ThemeProperties::COLOR_TOOLBAR_STROKE :
-                 ThemeProperties::COLOR_TOOLBAR_STROKE_INACTIVE);
+             ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR);
 }
 
 - (NSColor*)backgroundImageColor {

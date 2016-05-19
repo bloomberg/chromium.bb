@@ -52,10 +52,14 @@
   if (!themeProvider)
     return [NSColor blackColor];
 
-  BOOL active = [[self window] isMainWindow];
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    BOOL active = [[self window] isMainWindow];
+    return themeProvider->GetNSColor(
+        active ? ThemeProperties::COLOR_TOOLBAR_STROKE :
+                 ThemeProperties::COLOR_TOOLBAR_STROKE_INACTIVE);
+  }
   return themeProvider->GetNSColor(
-      active ? ThemeProperties::COLOR_TOOLBAR_STROKE :
-               ThemeProperties::COLOR_TOOLBAR_STROKE_INACTIVE);
+             ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR);
 }
 
 - (void)drawRect:(NSRect)rect {
