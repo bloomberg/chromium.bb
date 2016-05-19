@@ -286,6 +286,11 @@ void SVGAnimateElement::clearAnimatedType()
     if (!m_animatedProperty)
         return;
 
+    // The animated property lock is held for the "result animation" (see SMILTimeContainer::updateAnimations())
+    // while we're processing an animation group. We will very likely crash later if we clear the animated type
+    // while the lock is held. See crbug.com/581546.
+    RELEASE_ASSERT(!animatedTypeIsLocked());
+
     SVGElement* targetElement = this->targetElement();
     if (!targetElement) {
         m_animatedProperty.clear();

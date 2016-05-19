@@ -112,6 +112,10 @@ public:
     virtual void clearAnimatedType() = 0;
     virtual void applyResultsToTarget() = 0;
 
+    bool animatedTypeIsLocked() const { return m_animatedPropertyLocked; }
+    void lockAnimatedType() { DCHECK(!m_animatedPropertyLocked); m_animatedPropertyLocked = true; }
+    void unlockAnimatedType() { DCHECK(m_animatedPropertyLocked); m_animatedPropertyLocked = false; }
+
     void connectSyncBaseConditions();
     void connectEventBaseConditions();
 
@@ -276,6 +280,8 @@ private:
     mutable SMILTime m_cachedRepeatCount;
     mutable SMILTime m_cachedMin;
     mutable SMILTime m_cachedMax;
+
+    bool m_animatedPropertyLocked;
 
     friend class ConditionEventListener;
 };

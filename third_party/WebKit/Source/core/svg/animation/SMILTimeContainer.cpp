@@ -478,11 +478,14 @@ SMILTime SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
             ASSERT(animation->hasValidAttributeType());
 
             // Results are accumulated to the first animation that animates and contributes to a particular element/attribute pair.
-            if (!resultElement)
+            if (!resultElement) {
                 resultElement = animation;
+                resultElement->lockAnimatedType();
+            }
 
             // This will calculate the contribution from the animation and add it to the resultElement.
             if (!animation->progress(elapsed, resultElement, seekToTime) && resultElement == animation) {
+                resultElement->unlockAnimatedType();
                 resultElement->clearAnimatedType();
                 resultElement = nullptr;
             }
@@ -492,8 +495,10 @@ SMILTime SMILTimeContainer::updateAnimations(SMILTime elapsed, bool seekToTime)
                 earliestFireTime = std::min(nextFireTime, earliestFireTime);
         }
 
-        if (resultElement)
+        if (resultElement) {
             animationsToApply.append(resultElement);
+            resultElement->unlockAnimatedType();
+        }
     }
     m_scheduledAnimations.removeAll(invalidKeys);
 
