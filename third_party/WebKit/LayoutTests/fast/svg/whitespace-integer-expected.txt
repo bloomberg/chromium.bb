@@ -1,608 +1,608 @@
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "NaN".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "Infinity".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "-Infinity".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "fnord".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "E".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "e".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "e+".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "E-".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "-".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "+".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "-.".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, ".-".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, ".".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "+.".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, ".E0".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "e1".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "+17E-1".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "17e+2".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "0.35".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "1e-10".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, ".1".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "NaN ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "Infinity ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "-Infinity ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "fnord ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "E ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "e ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "e+ ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "E- ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "- ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "+ ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "-. ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, ".- ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, ". ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "+. ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, ".E0 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "e1 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "+17E-1 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "17e+2 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "0.35 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "1e-10 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, ".1 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "NaN   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "Infinity   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "-Infinity   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "fnord   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "E   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "e   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "e+   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "E-   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "-   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "+   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "-.   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, ".-   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, ".   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "+.   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, ".E0   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "e1   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "+17E-1   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "17e+2   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "0.35   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "1e-10   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, ".1   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "NaN\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "Infinity\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "-Infinity\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "fnord\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "E\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "e\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "e+\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "E-\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "-\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "+\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "-.\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, ".-\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, ".\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "+.\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, ".E0\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "e1\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "+17E-1\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "17e+2\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "0.35\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "1e-10\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, ".1\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "NaN\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "Infinity\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "-Infinity\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "fnord\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "E\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "e\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "e+\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "E-\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "-\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "+\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "-.\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, ".-\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, ".\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "+.\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, ".E0\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "e1\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "+17E-1\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "17e+2\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "0.35\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "1e-10\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, ".1\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "-47a".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "0a".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "+32a".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "1241245a".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "-47e".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "0e".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "+32e".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "1241245e".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "-47foo".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "0foo".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "+32foo".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "1241245foo".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "-47)90".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "0)90".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "+32)90".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "1241245)90".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " NaN".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " Infinity".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " -Infinity".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " fnord".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " E".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " e".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " e+".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " E-".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " -".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " +".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " -.".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " .-".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " .".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " +.".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " .E0".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " e1".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " +17E-1".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " 17e+2".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " 0.35".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " 1e-10".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " .1".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " NaN ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " Infinity ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " -Infinity ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " fnord ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " E ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " e ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " e+ ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " E- ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " - ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " + ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " -. ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " .- ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " . ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " +. ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " .E0 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " e1 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " +17E-1 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " 17e+2 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " 0.35 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " 1e-10 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " .1 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " NaN   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " Infinity   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " -Infinity   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " fnord   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " E   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " e   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " e+   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " E-   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " -   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " +   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " -.   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " .-   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " .   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " +.   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " .E0   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " e1   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " +17E-1   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " 17e+2   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " 0.35   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " 1e-10   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " .1   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " NaN\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " Infinity\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " -Infinity\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " fnord\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " E\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " e\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " e+\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " E-\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " -\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " +\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " -.\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " .-\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " .\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " +.\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " .E0\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " e1\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " +17E-1\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " 17e+2\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " 0.35\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " 1e-10\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " .1\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " NaN\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " Infinity\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " -Infinity\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " fnord\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " E\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " e\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " e+\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " E-\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " -\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " +\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " -.\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " .-\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " .\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " +.\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " .E0\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " e1\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " +17E-1\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " 17e+2\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " 0.35\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " 1e-10\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " .1\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " -47a".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " 0a".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " +32a".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " 1241245a".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " -47e".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " 0e".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " +32e".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " 1241245e".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " -47foo".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " 0foo".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " +32foo".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " 1241245foo".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " -47)90".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " 0)90".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " +32)90".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, " 1241245)90".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   NaN".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   Infinity".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -Infinity".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   fnord".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   E".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e+".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   E-".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -.".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .-".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +.".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .E0".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e1".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +17E-1".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   17e+2".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   0.35".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   1e-10".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .1".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   NaN ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   Infinity ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -Infinity ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   fnord ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   E ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e+ ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   E- ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   - ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   + ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -. ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .- ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   . ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +. ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .E0 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e1 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +17E-1 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   17e+2 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   0.35 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   1e-10 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .1 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   NaN   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   Infinity   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -Infinity   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   fnord   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   E   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e+   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   E-   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -.   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .-   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +.   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .E0   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e1   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +17E-1   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   17e+2   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   0.35   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   1e-10   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .1   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   NaN\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   Infinity\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -Infinity\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   fnord\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   E\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e+\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   E-\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -.\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .-\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +.\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .E0\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e1\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +17E-1\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   17e+2\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   0.35\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   1e-10\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .1\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   NaN\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   Infinity\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -Infinity\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   fnord\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   E\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e+\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   E-\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -.\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .-\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +.\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .E0\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e1\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +17E-1\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   17e+2\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   0.35\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   1e-10\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .1\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -47a".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   0a".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +32a".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   1241245a".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -47e".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   0e".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +32e".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   1241245e".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -47foo".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   0foo".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +32foo".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   1241245foo".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -47)90".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   0)90".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +32)90".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "   1241245)90".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t NaN".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t Infinity".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -Infinity".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t fnord".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t E".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e+".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t E-".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -.".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .-".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +.".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .E0".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e1".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +17E-1".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 17e+2".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 0.35".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 1e-10".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .1".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t NaN ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t Infinity ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -Infinity ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t fnord ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t E ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e+ ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t E- ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t - ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t + ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -. ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .- ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t . ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +. ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .E0 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e1 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +17E-1 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 17e+2 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 0.35 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 1e-10 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .1 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t NaN   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t Infinity   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -Infinity   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t fnord   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t E   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e+   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t E-   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -.   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .-   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +.   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .E0   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e1   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +17E-1   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 17e+2   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 0.35   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 1e-10   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .1   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t NaN\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t Infinity\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -Infinity\r\n\t…".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t fnord\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t E\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e+\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t E-\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -.\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .-\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +.\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .E0\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e1\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +17E-1\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 17e+2\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 0.35\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 1e-10\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .1\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t NaN\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t Infinity\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -Infinity\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t fnord\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t E\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e+\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t E-\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -.\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .-\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +.\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .E0\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e1\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +17E-1\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 17e+2\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 0.35\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 1e-10\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .1\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -47a".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 0a".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +32a".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 1241245a".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -47e".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 0e".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +32e".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 1241245e".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -47foo".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 0foo".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +32foo".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 1241245foo".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -47)90".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 0)90".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +32)90".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 1241245)90".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fNaN".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fInfinity".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-Infinity".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\ffnord".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fE".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe+".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fE-".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-.".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.-".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+.".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.E0".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe1".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+17E-1".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f17e+2".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f0.35".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f1e-10".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.1".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fNaN ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fInfinity ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-Infinity ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\ffnord ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fE ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe+ ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fE- ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f- ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+ ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-. ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.- ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f. ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+. ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.E0 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe1 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+17E-1 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f17e+2 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f0.35 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f1e-10 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.1 ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fNaN   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fInfinity   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-Infinity   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\ffnord   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fE   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe+   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fE-   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-.   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.-   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+.   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.E0   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe1   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+17E-1   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f17e+2   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f0.35   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f1e-10   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.1   ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fNaN\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fInfinity\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-Infinity\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\ffnord\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fE\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe+\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fE-\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-.\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.-\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+.\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.E0\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe1\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+17E-1\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f17e+2\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f0.35\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f1e-10\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.1\r\n\t ".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fNaN\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fInfinity\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-Infinity\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\ffnord\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fE\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe+\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fE-\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-.\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.-\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+.\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.E0\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe1\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+17E-1\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f17e+2\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f0.35\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f1e-10\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.1\f".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-47a".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f0a".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+32a".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f1241245a".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-47e".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f0e".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+32e".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f1241245e".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-47foo".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f0foo".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+32foo".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f1241245foo".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-47)90".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f0)90".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+32)90".
-CONSOLE ERROR: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f1241245)90".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "NaN".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "Infinity".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "-Infinity".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "fnord".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "E".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "e".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "e+".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "E-".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "-".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "+".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "-.".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, ".-".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, ".".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "+.".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, ".E0".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "e1".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "+17E-1".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "17e+2".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "0.35".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "1e-10".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, ".1".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "NaN ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "Infinity ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "-Infinity ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "fnord ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "E ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "e ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "e+ ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "E- ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "- ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "+ ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "-. ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, ".- ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, ". ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "+. ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, ".E0 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "e1 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "+17E-1 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "17e+2 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "0.35 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "1e-10 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, ".1 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "NaN   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "Infinity   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "-Infinity   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "fnord   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "E   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "e   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "e+   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "E-   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "-   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "+   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "-.   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, ".-   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, ".   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "+.   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, ".E0   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "e1   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "+17E-1   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "17e+2   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "0.35   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "1e-10   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, ".1   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "NaN\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "Infinity\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "-Infinity\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "fnord\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "E\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "e\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "e+\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "E-\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "-\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "+\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "-.\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, ".-\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, ".\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "+.\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, ".E0\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "e1\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "+17E-1\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "17e+2\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "0.35\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "1e-10\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, ".1\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "NaN\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "Infinity\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "-Infinity\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "fnord\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "E\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "e\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "e+\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "E-\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "-\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "+\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "-.\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, ".-\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, ".\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "+.\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, ".E0\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "e1\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "+17E-1\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "17e+2\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "0.35\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "1e-10\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, ".1\f".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "-47a".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "0a".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "+32a".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "1241245a".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "-47e".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "0e".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "+32e".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "1241245e".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "-47foo".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "0foo".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "+32foo".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "1241245foo".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "-47)90".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "0)90".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "+32)90".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "1241245)90".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " NaN".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " Infinity".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " -Infinity".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " fnord".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " E".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " e".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " e+".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " E-".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " -".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " +".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " -.".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " .-".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " .".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " +.".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " .E0".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " e1".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " +17E-1".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " 17e+2".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " 0.35".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " 1e-10".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " .1".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " NaN ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " Infinity ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " -Infinity ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " fnord ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " E ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " e ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " e+ ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " E- ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " - ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " + ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " -. ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " .- ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " . ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " +. ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " .E0 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " e1 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " +17E-1 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " 17e+2 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " 0.35 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " 1e-10 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " .1 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " NaN   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " Infinity   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " -Infinity   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " fnord   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " E   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " e   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " e+   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " E-   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " -   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " +   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " -.   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " .-   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " .   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " +.   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " .E0   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " e1   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " +17E-1   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " 17e+2   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " 0.35   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " 1e-10   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " .1   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " NaN\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " Infinity\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " -Infinity\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " fnord\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " E\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " e\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " e+\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " E-\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " -\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " +\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " -.\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " .-\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " .\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " +.\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " .E0\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " e1\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " +17E-1\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " 17e+2\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " 0.35\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " 1e-10\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " .1\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " NaN\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " Infinity\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " -Infinity\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " fnord\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " E\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " e\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " e+\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " E-\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " -\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " +\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " -.\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " .-\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " .\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " +.\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " .E0\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " e1\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " +17E-1\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " 17e+2\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " 0.35\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " 1e-10\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, " .1\f".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, " -47a".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, " 0a".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, " +32a".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, " 1241245a".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, " -47e".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, " 0e".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, " +32e".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, " 1241245e".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, " -47foo".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, " 0foo".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, " +32foo".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, " 1241245foo".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, " -47)90".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, " 0)90".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, " +32)90".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, " 1241245)90".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   NaN".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   Infinity".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -Infinity".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   fnord".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   E".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e+".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   E-".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -.".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .-".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +.".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .E0".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e1".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +17E-1".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   17e+2".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   0.35".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   1e-10".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .1".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   NaN ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   Infinity ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -Infinity ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   fnord ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   E ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e+ ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   E- ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   - ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   + ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -. ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .- ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   . ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +. ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .E0 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e1 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +17E-1 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   17e+2 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   0.35 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   1e-10 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .1 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   NaN   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   Infinity   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -Infinity   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   fnord   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   E   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e+   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   E-   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -.   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .-   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +.   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .E0   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e1   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +17E-1   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   17e+2   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   0.35   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   1e-10   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .1   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   NaN\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   Infinity\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -Infinity\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   fnord\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   E\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e+\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   E-\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -.\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .-\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +.\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .E0\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e1\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +17E-1\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   17e+2\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   0.35\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   1e-10\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .1\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   NaN\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   Infinity\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -Infinity\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   fnord\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   E\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e+\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   E-\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -.\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .-\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +.\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .E0\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   e1\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +17E-1\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   17e+2\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   0.35\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   1e-10\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "   .1\f".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -47a".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "   0a".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +32a".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "   1241245a".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -47e".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "   0e".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +32e".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "   1241245e".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -47foo".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "   0foo".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +32foo".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "   1241245foo".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "   -47)90".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "   0)90".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "   +32)90".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "   1241245)90".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t NaN".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t Infinity".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -Infinity".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t fnord".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t E".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e+".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t E-".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -.".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .-".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +.".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .E0".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e1".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +17E-1".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 17e+2".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 0.35".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 1e-10".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .1".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t NaN ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t Infinity ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -Infinity ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t fnord ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t E ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e+ ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t E- ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t - ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t + ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -. ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .- ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t . ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +. ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .E0 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e1 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +17E-1 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 17e+2 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 0.35 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 1e-10 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .1 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t NaN   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t Infinity   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -Infinity   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t fnord   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t E   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e+   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t E-   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -.   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .-   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +.   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .E0   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e1   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +17E-1   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 17e+2   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 0.35   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 1e-10   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .1   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t NaN\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t Infinity\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -Infinity\r\n\t…".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t fnord\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t E\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e+\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t E-\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -.\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .-\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +.\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .E0\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e1\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +17E-1\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 17e+2\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 0.35\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 1e-10\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .1\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t NaN\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t Infinity\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -Infinity\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t fnord\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t E\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e+\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t E-\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -.\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .-\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +.\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .E0\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t e1\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +17E-1\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 17e+2\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 0.35\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 1e-10\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t .1\f".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -47a".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 0a".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +32a".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 1241245a".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -47e".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 0e".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +32e".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 1241245e".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -47foo".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 0foo".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +32foo".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 1241245foo".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t -47)90".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 0)90".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t +32)90".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\r\n\t 1241245)90".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fNaN".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fInfinity".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-Infinity".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\ffnord".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fE".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe+".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fE-".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-.".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.-".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+.".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.E0".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe1".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+17E-1".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f17e+2".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f0.35".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f1e-10".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.1".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fNaN ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fInfinity ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-Infinity ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\ffnord ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fE ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe+ ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fE- ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f- ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+ ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-. ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.- ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f. ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+. ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.E0 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe1 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+17E-1 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f17e+2 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f0.35 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f1e-10 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.1 ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fNaN   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fInfinity   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-Infinity   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\ffnord   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fE   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe+   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fE-   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-.   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.-   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+.   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.E0   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe1   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+17E-1   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f17e+2   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f0.35   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f1e-10   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.1   ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fNaN\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fInfinity\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-Infinity\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\ffnord\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fE\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe+\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fE-\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-.\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.-\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+.\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.E0\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe1\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+17E-1\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f17e+2\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f0.35\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f1e-10\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.1\r\n\t ".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fNaN\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fInfinity\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-Infinity\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\ffnord\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fE\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe+\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fE-\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-.\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.-\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+.\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.E0\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\fe1\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+17E-1\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f17e+2\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f0.35\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f1e-10\f".
+CONSOLE ERROR: line 42: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f.1\f".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-47a".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f0a".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+32a".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f1241245a".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-47e".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f0e".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+32e".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f1241245e".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-47foo".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f0foo".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+32foo".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f1241245foo".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f-47)90".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f0)90".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f+32)90".
+CONSOLE ERROR: line 81: Error: <feTurbulence> attribute numOctaves: Expected integer, "\f1241245)90".
 This is a testharness.js-based test.
 PASS Test <integer> valid value: -47 
 PASS Test <integer> valid value: 0 
