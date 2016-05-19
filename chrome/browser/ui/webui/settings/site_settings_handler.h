@@ -30,6 +30,8 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
 
   // SettingsPageUIHandler:
   void RegisterMessages() override;
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
 
   void OnGetUsageInfo(const storage::UsageInfoEntries& entries);
   void OnUsageInfoCleared(storage::QuotaStatusCode code);
@@ -40,6 +42,7 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
                                ContentSettingsType content_type,
                                std::string resource_identifier) override;
  private:
+  friend class SiteSettingsHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, GetAndSetDefault);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Origins);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest, Patterns);

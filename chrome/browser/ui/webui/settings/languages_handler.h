@@ -28,6 +28,8 @@ class LanguagesHandler : public SettingsPageUIHandler {
 
   // SettingsPageUIHandler implementation.
   void RegisterMessages() override;
+  void OnJavascriptAllowed() override {}
+  void OnJavascriptDisallowed() override {}
 
  private:
   // Changes the UI language, provided the user is allowed to do so.

@@ -486,6 +486,8 @@ void CertificatesHandler::AssignWebUICallbackId(const base::ListValue* args) {
 }
 
 void CertificatesHandler::HandleGetCATrust(const base::ListValue* args) {
+  AllowJavascript();
+
   CHECK_EQ(2U, args->GetSize());
   AssignWebUICallbackId(args);
   std::string node_id;

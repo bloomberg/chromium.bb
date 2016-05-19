@@ -42,6 +42,8 @@ class ResetSettingsHandler : public SettingsPageUIHandler {
 
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
+  void OnJavascriptAllowed() override {}
+  void OnJavascriptDisallowed() override {}
 
  protected:
   ResetSettingsHandler(Profile* profile, bool allow_powerwash);

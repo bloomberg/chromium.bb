@@ -30,6 +30,8 @@ class ManageProfileHandler : public settings::SettingsPageUIHandler,
 
   // settings::SettingsPageUIHandler:
   void RegisterMessages() override;
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
 
   // ProfileAttributesStorage::Observer:
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;

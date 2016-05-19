@@ -24,6 +24,7 @@ class TestManageProfileHandler : public ManageProfileHandler {
       : ManageProfileHandler(profile) {}
 
   using ManageProfileHandler::set_web_ui;
+  using ManageProfileHandler::AllowJavascript;
 };
 
 }  // namespace
@@ -40,6 +41,8 @@ class ManageProfileHandlerTest : public testing::Test {
 
     handler_.reset(new TestManageProfileHandler(profile_));
     handler_->set_web_ui(&web_ui_);
+    handler()->AllowJavascript();
+    web_ui()->ClearTrackedCalls();
   }
 
   void VerifyIconList(const base::Value* value) {

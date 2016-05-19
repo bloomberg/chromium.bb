@@ -17,6 +17,8 @@ class NativeCertificatesHandler : public SettingsPageUIHandler {
 
   // SettingsPageUIHandler implementation.
   void RegisterMessages() override;
+  void OnJavascriptAllowed() override {}
+  void OnJavascriptDisallowed() override {}
 
   // Callback for the "showManageSSLCertificates" message. This will invoke
   // an appropriate certificate management action based on the platform.

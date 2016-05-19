@@ -25,10 +25,17 @@ namespace settings {
 
 class SiteSettingsHandlerTest : public testing::Test {
  public:
-  SiteSettingsHandlerTest() {}
+  SiteSettingsHandlerTest() : handler_(&profile_) {}
+
+  void SetUp() override {
+    handler()->set_web_ui(web_ui());
+    handler()->AllowJavascript();
+    web_ui()->ClearTrackedCalls();
+  }
 
   Profile* profile() { return &profile_; }
   content::TestWebUI* web_ui() { return &web_ui_; }
+  SiteSettingsHandler* handler() { return &handler_; }
 
   void ValidateDefault(bool expected_default, size_t expected_total_calls) {
     EXPECT_EQ(expected_total_calls, web_ui()->call_data().size());
@@ -126,38 +133,33 @@ class SiteSettingsHandlerTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   content::TestWebUI web_ui_;
+  SiteSettingsHandler handler_;
 };
 
 TEST_F(SiteSettingsHandlerTest, GetAndSetDefault) {
-  SiteSettingsHandler handler(profile());
-  handler.set_web_ui(web_ui());
-
   ContentSettingsType type = CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
 
   // Test the JS -> C++ -> JS callback path for getting and setting defaults.
   base::ListValue getArgs;
   getArgs.Append(new base::StringValue(kCallbackId));
   getArgs.Append(new base::FundamentalValue(type));
-  handler.HandleGetDefaultValueForContentType(&getArgs);
+  handler()->HandleGetDefaultValueForContentType(&getArgs);
   ValidateDefault(true, 1U);
 
   // Set the default to 'Blocked'.
   base::ListValue setArgs;
   setArgs.Append(new base::FundamentalValue(type));
   setArgs.Append(new base::StringValue("block"));
-  handler.HandleSetDefaultValueForContentType(&setArgs);
+  handler()->HandleSetDefaultValueForContentType(&setArgs);
 
   EXPECT_EQ(2U, web_ui()->call_data().size());
 
   // Verify that the default has been set to 'Blocked'.
-  handler.HandleGetDefaultValueForContentType(&getArgs);
+  handler()->HandleGetDefaultValueForContentType(&getArgs);
   ValidateDefault(false, 3U);
 }
 
 TEST_F(SiteSettingsHandlerTest, Origins) {
-  SiteSettingsHandler handler(profile());
-  handler.set_web_ui(web_ui());
-
   ContentSettingsType type = CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
 
   // Test the JS -> C++ -> JS callback path for configuring origins, by setting
@@ -168,14 +170,14 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
   setArgs.Append(new base::StringValue(google));  // Secondary pattern.
   setArgs.Append(new base::FundamentalValue(type));
   setArgs.Append(new base::StringValue("block"));
-  handler.HandleSetCategoryPermissionForOrigin(&setArgs);
+  handler()->HandleSetCategoryPermissionForOrigin(&setArgs);
   EXPECT_EQ(1U, web_ui()->call_data().size());
 
   // Verify the change was successful.
   base::ListValue listArgs;
   listArgs.Append(new base::StringValue(kCallbackId));
   listArgs.Append(new base::FundamentalValue(type));
-  handler.HandleGetExceptionList(&listArgs);
+  handler()->HandleGetExceptionList(&listArgs);
   ValidateOrigin(google, google, "block", "preference", 2U);
 
   // Reset things back to how they were.
@@ -183,30 +185,27 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
   resetArgs.Append(new base::StringValue(google));
   resetArgs.Append(new base::StringValue(google));
   resetArgs.Append(new base::FundamentalValue(type));
-  handler.HandleResetCategoryPermissionForOrigin(&resetArgs);
+  handler()->HandleResetCategoryPermissionForOrigin(&resetArgs);
   EXPECT_EQ(3U, web_ui()->call_data().size());
 
   // Verify the reset was successful.
-  handler.HandleGetExceptionList(&listArgs);
+  handler()->HandleGetExceptionList(&listArgs);
   ValidateNoOrigin(4U);
 }
 
 TEST_F(SiteSettingsHandlerTest, Patterns) {
-  SiteSettingsHandler handler(profile());
-  handler.set_web_ui(web_ui());
-
   base::ListValue args;
   std::string pattern("[*.]google.com");
   args.Append(new base::StringValue(kCallbackId));
   args.Append(new base::StringValue(pattern));
-  handler.HandleIsPatternValid(&args);
+  handler()->HandleIsPatternValid(&args);
   ValidatePattern(true, 1U);
 
   base::ListValue invalid;
   std::string bad_pattern(";");
   invalid.Append(new base::StringValue(kCallbackId));
   invalid.Append(new base::StringValue(bad_pattern));
-  handler.HandleIsPatternValid(&invalid);
+  handler()->HandleIsPatternValid(&invalid);
   ValidatePattern(false, 2U);
 }
 

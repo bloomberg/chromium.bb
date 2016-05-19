@@ -32,6 +32,8 @@ class DefaultBrowserHandler : public SettingsPageUIHandler {
 
   // SettingsPageUIHandler implementation.
   void RegisterMessages() override;
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
 
  private:
   // Called from WebUI to request the current state.

@@ -114,6 +114,8 @@ void ResetSettingsHandler::RegisterMessages() {
 
 void ResetSettingsHandler::HandleResetProfileSettings(
     const base::ListValue* args) {
+  AllowJavascript();
+
   CHECK_EQ(2U, args->GetSize());
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));
@@ -153,6 +155,8 @@ void ResetSettingsHandler::OnResetProfileSettingsDone(
 
 void ResetSettingsHandler::HandleGetReportedSettings(
     const base::ListValue* args) {
+  AllowJavascript();
+
   CHECK_EQ(1U, args->GetSize());
   std::string callback_id;
   CHECK(args->GetString(0, &callback_id));

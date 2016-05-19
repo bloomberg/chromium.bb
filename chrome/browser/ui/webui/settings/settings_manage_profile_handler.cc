@@ -69,22 +69,26 @@ void ManageProfileHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
+void ManageProfileHandler::OnJavascriptAllowed() {
+  observer_.Add(
+      &g_browser_process->profile_manager()->GetProfileAttributesStorage());
+}
+
+void ManageProfileHandler::OnJavascriptDisallowed() {
+  observer_.RemoveAll();
+}
+
 void ManageProfileHandler::OnProfileAvatarChanged(
     const base::FilePath& profile_path) {
   // This is necessary to send the potentially updated GAIA photo.
-  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
-                                   base::StringValue("available-icons-changed"),
-                                   *GetAvailableIcons());
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::StringValue("available-icons-changed"),
+                         *GetAvailableIcons());
 }
 
 void ManageProfileHandler::HandleGetAvailableIcons(
     const base::ListValue* args) {
-  // This is also used as a signal that the page has loaded and is ready to
-  // observe profile avatar changes.
-  if (!observer_.IsObservingSources()) {
-    observer_.Add(
-        &g_browser_process->profile_manager()->GetProfileAttributesStorage());
-  }
+  AllowJavascript();
 
   profiles::UpdateGaiaProfileInfoIfNeeded(profile_);
 
@@ -193,9 +197,8 @@ void ManageProfileHandler::OnHasProfileShortcuts(bool has_shortcuts) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   const base::FundamentalValue has_shortcuts_value(has_shortcuts);
-  web_ui()->CallJavascriptFunction(
-      "settings.SyncPrivateApi.receiveHasProfileShortcuts",
-      has_shortcuts_value);
+  CallJavascriptFunction("settings.SyncPrivateApi.receiveHasProfileShortcuts",
+                         has_shortcuts_value);
 }
 
 void ManageProfileHandler::HandleAddProfileShortcut(

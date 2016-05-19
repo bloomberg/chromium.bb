@@ -28,6 +28,8 @@ class SystemHandler : public SettingsPageUIHandler {
 
   // SettingsPageUIHandler:
   void RegisterMessages() override;
+  void OnJavascriptAllowed() override {}
+  void OnJavascriptDisallowed() override {}
 
  private:
   // Handler for the "changeProxySettings" message. No args.

@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
-#include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/search_engines/template_url_table_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -40,15 +39,12 @@ const int kNewSearchEngineIndex = -1;
 namespace settings {
 
 SearchEnginesHandler::SearchEnginesHandler(Profile* profile)
-    : profile_(profile) {
-  list_controller_.reset(new KeywordEditorController(profile));
-  DCHECK(list_controller_);
-  list_controller_->table_model()->SetObserver(this);
-}
+    : profile_(profile), list_controller_(profile) {}
 
 SearchEnginesHandler::~SearchEnginesHandler() {
-  if (list_controller_.get() && list_controller_->table_model())
-    list_controller_->table_model()->SetObserver(nullptr);
+  // TODO(tommycli): Refactor KeywordEditorController to be compatible with
+  // ScopedObserver so this is no longer necessary.
+  list_controller_.table_model()->SetObserver(nullptr);
 }
 
 void SearchEnginesHandler::RegisterMessages() {
@@ -86,20 +82,29 @@ void SearchEnginesHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
+void SearchEnginesHandler::OnJavascriptAllowed() {
+  list_controller_.table_model()->SetObserver(this);
+}
+
+void SearchEnginesHandler::OnJavascriptDisallowed() {
+  list_controller_.table_model()->SetObserver(nullptr);
+}
+
 std::unique_ptr<base::DictionaryValue>
 SearchEnginesHandler::GetSearchEnginesList() {
-  DCHECK(list_controller_.get());
+  AllowJavascript();
+
   // Find the default engine.
   const TemplateURL* default_engine =
-      list_controller_->GetDefaultSearchProvider();
+      list_controller_.GetDefaultSearchProvider();
   int default_index =
-      list_controller_->table_model()->IndexOfTemplateURL(default_engine);
+      list_controller_.table_model()->IndexOfTemplateURL(default_engine);
 
   // Build the first list (default search engines).
   std::unique_ptr<base::ListValue> defaults =
       base::WrapUnique(new base::ListValue());
   int last_default_engine_index =
-      list_controller_->table_model()->last_search_engine_index();
+      list_controller_.table_model()->last_search_engine_index();
   for (int i = 0; i < last_default_engine_index; ++i) {
     // Third argument is false, as the engine is not from an extension.
     defaults->Append(CreateDictionaryForEngine(i, i == default_index));
@@ -109,7 +114,7 @@ SearchEnginesHandler::GetSearchEnginesList() {
   std::unique_ptr<base::ListValue> others =
       base::WrapUnique(new base::ListValue());
   int last_other_engine_index =
-      list_controller_->table_model()->last_other_engine_index();
+      list_controller_.table_model()->last_other_engine_index();
   for (int i = std::max(last_default_engine_index, 0);
        i < last_other_engine_index; ++i) {
     others->Append(CreateDictionaryForEngine(i, i == default_index));
@@ -118,7 +123,7 @@ SearchEnginesHandler::GetSearchEnginesList() {
   // Build the third list (omnibox extensions).
   std::unique_ptr<base::ListValue> extensions =
       base::WrapUnique(new base::ListValue());
-  int engine_count = list_controller_->table_model()->RowCount();
+  int engine_count = list_controller_.table_model()->RowCount();
   for (int i = std::max(last_other_engine_index, 0); i < engine_count; ++i) {
     extensions->Append(CreateDictionaryForEngine(i, i == default_index));
   }
@@ -133,9 +138,9 @@ SearchEnginesHandler::GetSearchEnginesList() {
 }
 
 void SearchEnginesHandler::OnModelChanged() {
-  web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",
-                                   base::StringValue("search-engines-changed"),
-                                   *GetSearchEnginesList());
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::StringValue("search-engines-changed"),
+                         *GetSearchEnginesList());
 }
 
 void SearchEnginesHandler::OnItemsChanged(int start, int length) {
@@ -153,8 +158,8 @@ void SearchEnginesHandler::OnItemsRemoved(int start, int length) {
 base::DictionaryValue* SearchEnginesHandler::CreateDictionaryForEngine(
     int index,
     bool is_default) {
-  TemplateURLTableModel* table_model = list_controller_->table_model();
-  const TemplateURL* template_url = list_controller_->GetTemplateURL(index);
+  TemplateURLTableModel* table_model = list_controller_.table_model();
+  const TemplateURL* template_url = list_controller_.GetTemplateURL(index);
 
   // The items which are to be written into |dict| are also described in
   // chrome/browser/resources/settings/search_engines_page/
@@ -177,11 +182,11 @@ base::DictionaryValue* SearchEnginesHandler::CreateDictionaryForEngine(
     dict->SetString("iconURL", icon_url.spec());
   dict->SetInteger("modelIndex", index);
 
-  dict->SetBoolean("canBeRemoved", list_controller_->CanRemove(template_url));
+  dict->SetBoolean("canBeRemoved", list_controller_.CanRemove(template_url));
   dict->SetBoolean("canBeDefault",
-                   list_controller_->CanMakeDefault(template_url));
+                   list_controller_.CanMakeDefault(template_url));
   dict->SetBoolean("default", is_default);
-  dict->SetBoolean("canBeEdited", list_controller_->CanEdit(template_url));
+  dict->SetBoolean("canBeEdited", list_controller_.CanEdit(template_url));
   TemplateURL::Type type = template_url->GetType();
   dict->SetBoolean("isOmniboxExtension",
                    type == TemplateURL::OMNIBOX_API_EXTENSION);
@@ -214,10 +219,10 @@ void SearchEnginesHandler::HandleSetDefaultSearchEngine(
     NOTREACHED();
     return;
   }
-  if (index < 0 || index >= list_controller_->table_model()->RowCount())
+  if (index < 0 || index >= list_controller_.table_model()->RowCount())
     return;
 
-  list_controller_->MakeDefaultTemplateURL(index);
+  list_controller_.MakeDefaultTemplateURL(index);
 
   content::RecordAction(
       base::UserMetricsAction("Options_SearchEngineSetDefault"));
@@ -230,11 +235,11 @@ void SearchEnginesHandler::HandleRemoveSearchEngine(
     NOTREACHED();
     return;
   }
-  if (index < 0 || index >= list_controller_->table_model()->RowCount())
+  if (index < 0 || index >= list_controller_.table_model()->RowCount())
     return;
 
-  if (list_controller_->CanRemove(list_controller_->GetTemplateURL(index))) {
-    list_controller_->RemoveTemplateURL(index);
+  if (list_controller_.CanRemove(list_controller_.GetTemplateURL(index))) {
+    list_controller_.RemoveTemplateURL(index);
     content::RecordAction(
         base::UserMetricsAction("Options_SearchEngineRemoved"));
   }
@@ -250,13 +255,13 @@ void SearchEnginesHandler::HandleSearchEngineEditStarted(
 
   // Allow -1, which means we are adding a new engine.
   if (index < kNewSearchEngineIndex ||
-      index >= list_controller_->table_model()->RowCount()) {
+      index >= list_controller_.table_model()->RowCount()) {
     return;
   }
 
   edit_controller_.reset(new EditSearchEngineController(
       index == kNewSearchEngineIndex ? nullptr
-                                     : list_controller_->GetTemplateURL(index),
+                                     : list_controller_.GetTemplateURL(index),
       this, Profile::FromWebUI(web_ui())));
 }
 
@@ -266,9 +271,9 @@ void SearchEnginesHandler::OnEditedKeyword(TemplateURL* template_url,
                                            const std::string& url) {
   DCHECK(!url.empty());
   if (template_url)
-    list_controller_->ModifyTemplateURL(template_url, title, keyword, url);
+    list_controller_.ModifyTemplateURL(template_url, title, keyword, url);
   else
-    list_controller_->AddTemplateURL(title, keyword, url);
+    list_controller_.AddTemplateURL(title, keyword, url);
 
   edit_controller_.reset();
 }

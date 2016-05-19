@@ -21,13 +21,6 @@ namespace settings {
 
 SiteSettingsHandler::SiteSettingsHandler(Profile* profile)
     : profile_(profile), observer_(this) {
-  observer_.Add(HostContentSettingsMapFactory::GetForProfile(profile));
-  if (profile->HasOffTheRecordProfile()) {
-    auto map = HostContentSettingsMapFactory::GetForProfile(
-        profile->GetOffTheRecordProfile());
-    if (!observer_.IsObserving(map))
-      observer_.Add(map);
-  }
 }
 
 SiteSettingsHandler::~SiteSettingsHandler() {
@@ -68,6 +61,20 @@ void SiteSettingsHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
+void SiteSettingsHandler::OnJavascriptAllowed() {
+  observer_.Add(HostContentSettingsMapFactory::GetForProfile(profile_));
+  if (profile_->HasOffTheRecordProfile()) {
+    auto map = HostContentSettingsMapFactory::GetForProfile(
+        profile_->GetOffTheRecordProfile());
+    if (!observer_.IsObserving(map))
+      observer_.Add(map);
+  }
+}
+
+void SiteSettingsHandler::OnJavascriptDisallowed() {
+  observer_.RemoveAll();
+}
+
 void SiteSettingsHandler::OnGetUsageInfo(
     const storage::UsageInfoEntries& entries) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -75,11 +82,10 @@ void SiteSettingsHandler::OnGetUsageInfo(
   for (const auto& entry : entries) {
     if (entry.usage <= 0) continue;
     if (entry.host == usage_host_) {
-      web_ui()->CallJavascriptFunction(
-         "settings.WebsiteUsagePrivateApi.returnUsageTotal",
-         base::StringValue(entry.host),
-         base::StringValue(ui::FormatBytes(entry.usage)),
-         base::FundamentalValue(entry.type));
+      CallJavascriptFunction("settings.WebsiteUsagePrivateApi.returnUsageTotal",
+                             base::StringValue(entry.host),
+                             base::StringValue(ui::FormatBytes(entry.usage)),
+                             base::FundamentalValue(entry.type));
       return;
     }
   }
@@ -87,9 +93,8 @@ void SiteSettingsHandler::OnGetUsageInfo(
 
 void SiteSettingsHandler::OnUsageInfoCleared(storage::QuotaStatusCode code) {
   if (code == storage::kQuotaStatusOk) {
-    web_ui()->CallJavascriptFunction(
-        "settings.WebsiteUsagePrivateApi.onUsageCleared",
-        base::StringValue(clearing_origin_));
+    CallJavascriptFunction("settings.WebsiteUsagePrivateApi.onUsageCleared",
+                           base::StringValue(clearing_origin_));
   }
 }
 
@@ -99,12 +104,11 @@ void SiteSettingsHandler::OnContentSettingChanged(
     ContentSettingsType content_type,
     std::string resource_identifier) {
   if (primary_pattern.ToString().empty()) {
-    web_ui()->CallJavascriptFunction(
-        "cr.webUIListenerCallback",
-        base::StringValue("contentSettingCategoryChanged"),
-        base::FundamentalValue(content_type));
+    CallJavascriptFunction("cr.webUIListenerCallback",
+                           base::StringValue("contentSettingCategoryChanged"),
+                           base::FundamentalValue(content_type));
   } else {
-    web_ui()->CallJavascriptFunction(
+    CallJavascriptFunction(
         "cr.webUIListenerCallback",
         base::StringValue("contentSettingSitePermissionChanged"),
         base::FundamentalValue(content_type),
@@ -114,6 +118,8 @@ void SiteSettingsHandler::OnContentSettingChanged(
 
 void SiteSettingsHandler::HandleFetchUsageTotal(
     const base::ListValue* args) {
+  AllowJavascript();
+
   CHECK_EQ(1U, args->GetSize());
   std::string host;
   CHECK(args->GetString(0, &host));
@@ -172,6 +178,8 @@ void SiteSettingsHandler::HandleSetDefaultValueForContentType(
 
 void SiteSettingsHandler::HandleGetDefaultValueForContentType(
     const base::ListValue* args) {
+  AllowJavascript();
+
   CHECK_EQ(2U, args->GetSize());
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
@@ -195,6 +203,8 @@ void SiteSettingsHandler::HandleGetDefaultValueForContentType(
 }
 
 void SiteSettingsHandler::HandleGetExceptionList(const base::ListValue* args) {
+  AllowJavascript();
+
   CHECK_EQ(2U, args->GetSize());
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));

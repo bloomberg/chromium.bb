@@ -98,10 +98,9 @@ void ProfileInfoHandler::HandleGetProfileInfo(const base::ListValue* args) {
 }
 
 void ProfileInfoHandler::PushProfileInfo() {
-  web_ui()->CallJavascriptFunction(
-      "cr.webUIListenerCallback",
-      base::StringValue(kProfileInfoChangedEventName),
-      *GetAccountNameAndIcon());
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::StringValue(kProfileInfoChangedEventName),
+                         *GetAccountNameAndIcon());
 }
 
 std::unique_ptr<base::DictionaryValue>

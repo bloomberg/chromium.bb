@@ -28,10 +28,6 @@ DefaultBrowserHandler::DefaultBrowserHandler(content::WebUI* webui)
   default_browser_worker_ = new shell_integration::DefaultBrowserWorker(
       base::Bind(&DefaultBrowserHandler::OnDefaultBrowserWorkerFinished,
                  weak_ptr_factory_.GetWeakPtr()));
-  default_browser_policy_.Init(
-      prefs::kDefaultBrowserSettingEnabled, g_browser_process->local_state(),
-      base::Bind(&DefaultBrowserHandler::RequestDefaultBrowserState,
-                 base::Unretained(this), nullptr));
 }
 
 DefaultBrowserHandler::~DefaultBrowserHandler() {}
@@ -47,8 +43,21 @@ void DefaultBrowserHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
+void DefaultBrowserHandler::OnJavascriptAllowed() {
+  default_browser_policy_.Init(
+      prefs::kDefaultBrowserSettingEnabled, g_browser_process->local_state(),
+      base::Bind(&DefaultBrowserHandler::RequestDefaultBrowserState,
+                 base::Unretained(this), nullptr));
+}
+
+void DefaultBrowserHandler::OnJavascriptDisallowed() {
+  default_browser_policy_.Destroy();
+}
+
 void DefaultBrowserHandler::RequestDefaultBrowserState(
     const base::ListValue* /*args*/) {
+  AllowJavascript();
+
   default_browser_worker_->StartCheckIsDefault();
 }
 
@@ -79,8 +88,8 @@ void DefaultBrowserHandler::OnDefaultBrowserWorkerFinished(
       !IsDisabledByPolicy(default_browser_policy_) &&
       shell_integration::CanSetAsDefaultBrowser());
 
-  web_ui()->CallJavascriptFunction("Settings.updateDefaultBrowserState",
-                                   is_default, can_be_default);
+  CallJavascriptFunction("Settings.updateDefaultBrowserState", is_default,
+                         can_be_default);
 }
 
 }  // namespace settings

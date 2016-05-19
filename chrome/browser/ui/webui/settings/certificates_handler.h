@@ -33,6 +33,8 @@ class CertificatesHandler
 
   // SettingsPageUIHandler implementation.
   void RegisterMessages() override;
+  void OnJavascriptAllowed() override {}
+  void OnJavascriptDisallowed() override {}
 
   // CertificateManagerModel::Observer implementation.
   void CertificatesRefreshed() override;

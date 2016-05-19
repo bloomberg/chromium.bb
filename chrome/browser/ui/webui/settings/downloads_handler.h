@@ -27,6 +27,8 @@ class DownloadsHandler : public SettingsPageUIHandler,
 
   // SettingsPageUIHandler implementation.
   void RegisterMessages() override;
+  void OnJavascriptAllowed() override {}
+  void OnJavascriptDisallowed() override {}
 
  private:
   // SelectFileDialog::Listener implementation.

@@ -31,6 +31,10 @@ class SettingsPageUIHandler : public content::WebUIMessageHandler {
                                 const base::Value& response);
 
  private:
+  // SettingsPageUIHandler subclasses must be JavaScript-lifecycle safe.
+  void OnJavascriptAllowed() override = 0;
+  void OnJavascriptDisallowed() override = 0;
+
   DISALLOW_COPY_AND_ASSIGN(SettingsPageUIHandler);
 };
 
