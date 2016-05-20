@@ -22,8 +22,7 @@ namespace extensions {
 ComponentMigrationHelper::ComponentMigrationHelper(
     Profile* profile,
     ComponentActionDelegate* delegate)
-    : profile_(profile),
-      delegate_(delegate),
+    : delegate_(delegate),
       extension_registry_(ExtensionRegistry::Get(profile)),
       pref_service_(profile->GetPrefs()),
       extension_system_(ExtensionSystem::Get(profile)),

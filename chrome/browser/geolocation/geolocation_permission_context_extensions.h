@@ -39,7 +39,9 @@ class GeolocationPermissionContextExtensions {
                                int bridge_id);
 
  private:
+#if defined(ENABLE_EXTENSIONS)
   Profile* profile_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationPermissionContextExtensions);
 };

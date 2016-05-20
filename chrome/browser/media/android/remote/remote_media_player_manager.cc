@@ -136,7 +136,7 @@ void RemoteMediaPlayerManager::DidDownloadPoster(
 RemoteMediaPlayerBridge* RemoteMediaPlayerManager::CreateRemoteMediaPlayer(
     int player_id) {
   RemoteMediaPlayerBridge* player =
-      new RemoteMediaPlayerBridge(player_id, GetUserAgent(), false, this);
+      new RemoteMediaPlayerBridge(player_id, GetUserAgent(), this);
   alternative_players_.push_back(player);
   player->Initialize();
   return player;

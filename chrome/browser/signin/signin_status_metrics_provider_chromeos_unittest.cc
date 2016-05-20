@@ -10,8 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(SigninStatusMetricsProviderChromeOS, ComputeSigninStatusToUpload) {
-  SigninStatusMetricsProviderChromeOS metrics_provider =
-      SigninStatusMetricsProviderChromeOS();
+  SigninStatusMetricsProviderChromeOS metrics_provider;
 
   SigninStatusMetricsProviderBase::SigninStatus status_to_upload =
       metrics_provider.ComputeSigninStatusToUpload(

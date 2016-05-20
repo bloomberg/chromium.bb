@@ -19,10 +19,6 @@ namespace content {
 class WebContents;
 }
 
-namespace password_manager {
-enum class CredentialSourceType;
-}
-
 // After a successful *new* login attempt, we take the PasswordFormManager in
 // provisional_save_manager_ and move it to a SavePasswordInfoBarDelegate while
 // the user makes up their mind with the "save password" infobar. Note if the
@@ -68,10 +64,6 @@ class SavePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
   // Measures the "Save password?" prompt lifetime. Used to report an UMA
   // signal.
   base::ElapsedTimer timer_;
-
-  // Records source from where infobar was triggered.
-  // Infobar appearance (message, buttons) depends on value of this parameter.
-  password_manager::CredentialSourceType source_type_;
 
   bool should_show_first_run_experience_;
 

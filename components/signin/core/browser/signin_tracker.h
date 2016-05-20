@@ -13,7 +13,6 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 
 class ProfileOAuth2TokenService;
-class SigninClient;
 
 // The signin flow logic is spread across several classes with varying
 // responsibilities:
@@ -77,7 +76,6 @@ class SigninTracker : public SigninManagerBase::Observer,
   SigninTracker(ProfileOAuth2TokenService* token_service,
                 SigninManagerBase* signin_manager,
                 GaiaCookieManagerService* cookie_manager_service,
-                SigninClient* client,
                 Observer* observer);
   ~SigninTracker() override;
 
@@ -101,9 +99,6 @@ class SigninTracker : public SigninManagerBase::Observer,
   ProfileOAuth2TokenService* token_service_;
   SigninManagerBase* signin_manager_;
   GaiaCookieManagerService* cookie_manager_service_;
-
-  // The client associated with this instance.
-  SigninClient* client_;
 
   // Weak pointer to the observer we call when the signin state changes.
   Observer* observer_;

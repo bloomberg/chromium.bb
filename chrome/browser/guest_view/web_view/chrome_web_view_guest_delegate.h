@@ -59,14 +59,14 @@ class ChromeWebViewGuestDelegate : public WebViewGuestDelegate {
   // We only need the ids to be unique for a given WebViewGuest.
   int pending_context_menu_request_id_;
 
-  // Set to |true| if ChromeVox was already injected in main frame.
-  bool chromevox_injected_;
-
   // Holds the RenderViewContextMenuBase that has been built but yet to be
   // shown. This is .reset() after ShowContextMenu().
   std::unique_ptr<RenderViewContextMenuBase> pending_menu_;
 
 #if defined(OS_CHROMEOS)
+  // Set to |true| if ChromeVox was already injected in main frame.
+  bool chromevox_injected_ = false;
+
   // Subscription to receive notifications on changes to a11y settings.
   std::unique_ptr<chromeos::AccessibilityStatusSubscription>
       accessibility_subscription_;

@@ -77,7 +77,6 @@ class OriginFilterBuilder : public BrowsingDataFilterBuilder {
   // The list of origins and whether they should be interpreted as a whitelist
   // or blacklist.
   std::set<url::Origin> origin_list_;
-  Mode mode_;
 
   DISALLOW_COPY_AND_ASSIGN(OriginFilterBuilder);
 };

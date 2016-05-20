@@ -22,19 +22,22 @@ using extensions::ExtensionRegistry;
 
 namespace {
 
-#if ENABLE_EXTENSIONS
+#if defined(ENABLE_EXTENSIONS)
 void CallbackContentSettingWrapper(
     const base::Callback<void(ContentSetting)>& callback,
     bool allowed) {
   callback.Run(allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
 }
-#endif // ENABLE_EXTENSIONS
+#endif  // defined(ENABLE_EXTENSIONS)
 
 }  // anonymous namespace
 
-GeolocationPermissionContextExtensions::
-GeolocationPermissionContextExtensions(Profile* profile)
-    : profile_(profile) {
+GeolocationPermissionContextExtensions::GeolocationPermissionContextExtensions(
+    Profile* profile)
+#if defined(ENABLE_EXTENSIONS)
+    : profile_(profile)
+#endif
+{
 }
 
 GeolocationPermissionContextExtensions::

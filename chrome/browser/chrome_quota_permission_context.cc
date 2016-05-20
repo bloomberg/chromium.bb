@@ -49,7 +49,6 @@ class QuotaPermissionRequest : public PermissionBubbleRequest {
   QuotaPermissionRequest(
       ChromeQuotaPermissionContext* context,
       const GURL& origin_url,
-      int64_t requested_quota,
       const content::QuotaPermissionContext::PermissionCallback& callback);
 
   ~QuotaPermissionRequest() override;
@@ -67,7 +66,6 @@ class QuotaPermissionRequest : public PermissionBubbleRequest {
 
   scoped_refptr<ChromeQuotaPermissionContext> context_;
   GURL origin_url_;
-  int64_t requested_quota_;
   content::QuotaPermissionContext::PermissionCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaPermissionRequest);
@@ -76,11 +74,9 @@ class QuotaPermissionRequest : public PermissionBubbleRequest {
 QuotaPermissionRequest::QuotaPermissionRequest(
     ChromeQuotaPermissionContext* context,
     const GURL& origin_url,
-    int64_t requested_quota,
     const content::QuotaPermissionContext::PermissionCallback& callback)
     : context_(context),
       origin_url_(origin_url),
-      requested_quota_(requested_quota),
       callback_(callback) {}
 
 QuotaPermissionRequest::~QuotaPermissionRequest() {}
@@ -277,8 +273,8 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
   PermissionBubbleManager* bubble_manager =
       PermissionBubbleManager::FromWebContents(web_contents);
   if (bubble_manager) {
-    bubble_manager->AddRequest(new QuotaPermissionRequest(
-        this, params.origin_url, params.requested_size, callback));
+    bubble_manager->AddRequest(
+        new QuotaPermissionRequest(this, params.origin_url, callback));
     return;
   }
 #endif

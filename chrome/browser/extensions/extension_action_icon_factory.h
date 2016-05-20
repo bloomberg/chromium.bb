@@ -55,7 +55,6 @@ class ExtensionActionIconFactory : public extensions::IconImage::Observer {
   gfx::Image GetIcon(int tab_id);
 
  private:
-  const extensions::Extension* extension_;
   const ExtensionAction* action_;
   Observer* observer_;
 

@@ -9,7 +9,6 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/consumer_unenrollment_handler.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace policy {
@@ -43,7 +42,6 @@ KeyedService* ConsumerUnenrollmentHandlerFactory::BuildServiceInstanceFor(
   BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   return new ConsumerUnenrollmentHandler(
-      chromeos::DeviceSettingsService::Get(),
       connector->GetConsumerManagementService(),
       connector->GetDeviceCloudPolicyManager(),
       chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(

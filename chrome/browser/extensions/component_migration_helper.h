@@ -124,7 +124,6 @@ class ComponentMigrationHelper : public ExtensionRegistryObserver {
       const std::string& component_action_id) const;
   std::string GetActionIdForExtensionId(const ExtensionId& extension_id) const;
 
-  Profile* const profile_;
   ComponentActionDelegate* const delegate_;
   // The ExtensionRegistry, PrefService, and ExtensionSystem, cached for
   // convenience.

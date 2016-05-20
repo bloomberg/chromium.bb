@@ -166,6 +166,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   std::unique_ptr<BrowserProcessImpl> browser_process_;
   scoped_refptr<metrics::TrackingSynchronizer> tracking_synchronizer_;
+
 #if !defined(OS_ANDROID)
   // Browser creation happens on the Java side in Android.
   std::unique_ptr<StartupBrowserCreator> browser_creator_;
@@ -176,10 +177,16 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 
   // Android's first run is done in Java instead of native.
   std::unique_ptr<first_run::MasterPrefs> master_prefs_;
+
+  ProcessSingleton::NotifyResult notify_result_ =
+      ProcessSingleton::PROCESS_NONE;
+
+  // Members needed across shutdown methods.
+  bool restart_last_session_ = false;
 #endif
+
   Profile* profile_;
   bool run_message_loop_;
-  ProcessSingleton::NotifyResult notify_result_;
   std::unique_ptr<ThreeDAPIObserver> three_d_observer_;
 
   // Initialized in SetupMetricsAndFieldTrials.
@@ -189,9 +196,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // PreMainMessageLoopRunThreadsCreated.
   PrefService* local_state_;
   base::FilePath user_data_dir_;
-
-  // Members needed across shutdown methods.
-  bool restart_last_session_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainParts);
 };

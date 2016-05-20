@@ -11,7 +11,6 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "cc/resources/scoped_ui_resource.h"
-#include "chrome/browser/android/compositor/layer_title_cache.h"
 #include "content/public/browser/android/compositor.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/base/l10n/l10n_util_android.h"
@@ -21,8 +20,7 @@
 namespace chrome {
 namespace android {
 
-DecorationTitle::DecorationTitle(LayerTitleCache* layer_title_cache,
-                                 ui::ResourceManager* resource_manager,
+DecorationTitle::DecorationTitle(ui::ResourceManager* resource_manager,
                                  int title_resource_id,
                                  int favicon_resource_id,
                                  int spinner_resource_id,
@@ -48,8 +46,7 @@ DecorationTitle::DecorationTitle(LayerTitleCache* layer_title_cache,
       is_rtl_(is_rtl),
       is_loading_(false),
       transform_(new gfx::Transform()),
-      resource_manager_(resource_manager),
-      layer_title_cache_(layer_title_cache) {
+      resource_manager_(resource_manager) {
   layer_->AddChild(layer_favicon_);
   layer_->AddChild(layer_opaque_);
   layer_->AddChild(layer_fade_);

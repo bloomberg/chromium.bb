@@ -205,10 +205,6 @@ class DefaultWebClientWorker
   // lifetime of the worker.
   const char* worker_name_;
 
-  // Wait until Chrome has been confirmed as the default browser before
-  // reporting a successful attempt.
-  bool check_default_should_report_success_ = false;
-
   DISALLOW_COPY_AND_ASSIGN(DefaultWebClientWorker);
 };
 

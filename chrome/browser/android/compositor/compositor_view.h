@@ -57,10 +57,8 @@ class CompositorView : public content::CompositorClient,
  public:
   CompositorView(JNIEnv* env,
                  jobject obj,
-                 jint empty_background_color,
                  jboolean low_mem_device,
                  ui::WindowAndroid* window_android,
-                 LayerTitleCache* layer_title_cache,
                  TabContentManager* tab_content_manager);
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& object);
@@ -118,7 +116,6 @@ class CompositorView : public content::CompositorClient,
 
   base::android::ScopedJavaGlobalRef<jobject> obj_;
   std::unique_ptr<content::Compositor> compositor_;
-  LayerTitleCache* layer_title_cache_;
   TabContentManager* tab_content_manager_;
 
   scoped_refptr<cc::SolidColorLayer> root_layer_;
@@ -129,7 +126,6 @@ class CompositorView : public content::CompositorClient,
   int content_width_;
   int content_height_;
   bool overlay_video_mode_;
-  SkColor empty_background_color_;
 
   base::WeakPtrFactory<CompositorView> weak_factory_;
 

@@ -65,16 +65,20 @@ class SigninNotificationDelegate : public NotificationDelegate {
   // Unique id of the notification.
   const std::string id_;
 
+#if !defined(OS_CHROMEOS)
   Profile* profile_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(SigninNotificationDelegate);
 };
 
-SigninNotificationDelegate::SigninNotificationDelegate(
-    const std::string& id,
-    Profile* profile)
-    : id_(id),
-      profile_(profile) {
+SigninNotificationDelegate::SigninNotificationDelegate(const std::string& id,
+                                                       Profile* profile)
+#if defined(OS_CHROMEOS)
+    : id_(id) {
+#else
+    : id_(id), profile_(profile) {
+#endif
 }
 
 SigninNotificationDelegate::~SigninNotificationDelegate() {

@@ -76,10 +76,6 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
   content::DownloadItem* download_item_;
   std::unique_ptr<DownloadCommands> download_commands_;
 
-#if defined(OS_WIN)
-  bool is_adobe_pdf_reader_up_to_date_;
-#endif
-
   DISALLOW_COPY_AND_ASSIGN(DownloadShelfContextMenu);
 };
 

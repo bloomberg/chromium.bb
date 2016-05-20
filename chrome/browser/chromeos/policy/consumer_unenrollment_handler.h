@@ -10,7 +10,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace chromeos {
-class DeviceSettingsService;
 class OwnerSettingsServiceChromeOS;
 }
 
@@ -24,7 +23,6 @@ class DeviceCloudPolicyManagerChromeOS;
 class ConsumerUnenrollmentHandler : public KeyedService {
  public:
   ConsumerUnenrollmentHandler(
-      chromeos::DeviceSettingsService* device_settings_service,
       ConsumerManagementService* consumer_management_service,
       DeviceCloudPolicyManagerChromeOS* device_cloud_policy_manager,
       chromeos::OwnerSettingsServiceChromeOS* owner_settings_service);
@@ -37,7 +35,6 @@ class ConsumerUnenrollmentHandler : public KeyedService {
   void OnUnregistered(bool success);
   void OnManagementSettingsSet(bool success);
 
-  chromeos::DeviceSettingsService* device_settings_service_;
   ConsumerManagementService* consumer_management_service_;
   DeviceCloudPolicyManagerChromeOS* device_cloud_policy_manager_;
   chromeos::OwnerSettingsServiceChromeOS* owner_settings_service_;

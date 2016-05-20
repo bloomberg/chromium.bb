@@ -46,7 +46,9 @@ class ChromeMetricsHelper : public security_interstitials::MetricsHelper {
   void RecordExtraShutdownMetrics() override;
 
  private:
+#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION) || defined(ENABLE_EXTENSIONS)
   content::WebContents* web_contents_;
+#endif
   const GURL request_url_;
   const std::string sampling_event_name_;
 #if defined(ENABLE_EXTENSIONS)

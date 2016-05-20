@@ -15,7 +15,6 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
@@ -178,7 +177,6 @@ public class CompositorView
         mTabContentManager = tabContentManager;
 
         mNativeCompositorView = nativeInit(lowMemDevice,
-                ApiCompatibilityUtils.getColor(getResources(), R.color.tab_switcher_background),
                 windowAndroid.getNativePointer(), layerTitleCache, tabContentManager);
 
         assert !getHolder().getSurface().isValid()
@@ -370,7 +368,7 @@ public class CompositorView
     }
 
     // Implemented in native
-    private native long nativeInit(boolean lowMemDevice, int emptyColor, long nativeWindowAndroid,
+    private native long nativeInit(boolean lowMemDevice, long nativeWindowAndroid,
             LayerTitleCache layerTitleCache, TabContentManager tabContentManager);
     private native void nativeDestroy(long nativeCompositorView);
     private native ResourceManager nativeGetResourceManager(long nativeCompositorView);

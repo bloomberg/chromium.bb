@@ -17,10 +17,7 @@ ExtensionActionIconFactory::ExtensionActionIconFactory(
     const Extension* extension,
     ExtensionAction* action,
     Observer* observer)
-    : extension_(extension),
-      action_(action),
-      observer_(observer),
-      icon_image_observer_(this) {
+    : action_(action), observer_(observer), icon_image_observer_(this) {
   extensions::IconImage* default_icon_image =
       action->LoadDefaultIconImage(*extension, profile);
   if (default_icon_image)

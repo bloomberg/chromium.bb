@@ -78,9 +78,7 @@ class ConsumerUnenrollmentHandlerTest
 
   void RunUnenrollment() {
     handler_.reset(new ConsumerUnenrollmentHandler(
-        &device_settings_service_,
-        fake_service_.get(),
-        fake_manager_.get(),
+        fake_service_.get(), fake_manager_.get(),
         fake_owner_settings_service_.get()));
     handler_->Start();
     FlushDeviceSettings();

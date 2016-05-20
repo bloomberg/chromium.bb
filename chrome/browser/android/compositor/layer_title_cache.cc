@@ -60,7 +60,7 @@ void LayerTitleCache::UpdateLayer(JNIEnv* env,
   if (title_layer == NULL) {
     layer_cache_.AddWithID(
         new DecorationTitle(
-            this, resource_manager_, title_resource_id, favicon_resource_id,
+            resource_manager_, title_resource_id, favicon_resource_id,
             spinner_resource_id_, spinner_incognito_resource_id_, fade_width_,
             favicon_start_padding_, favicon_end_padding_, is_incognito, is_rtl),
         tab_id);

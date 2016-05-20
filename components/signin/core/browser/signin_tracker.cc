@@ -6,18 +6,15 @@
 
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_client.h"
 #include "google_apis/gaia/gaia_constants.h"
 
 SigninTracker::SigninTracker(ProfileOAuth2TokenService* token_service,
                              SigninManagerBase* signin_manager,
                              GaiaCookieManagerService* cookie_manager_service,
-                             SigninClient* client,
                              Observer* observer)
     : token_service_(token_service),
       signin_manager_(signin_manager),
       cookie_manager_service_(cookie_manager_service),
-      client_(client),
       observer_(observer) {
   Initialize();
 }

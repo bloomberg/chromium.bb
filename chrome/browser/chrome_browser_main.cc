@@ -638,9 +638,7 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
                   false))),
       profile_(NULL),
       run_message_loop_(true),
-      notify_result_(ProcessSingleton::PROCESS_NONE),
-      local_state_(NULL),
-      restart_last_session_(false) {
+      local_state_(NULL) {
   if (sampling_profiler_config_.IsProfilerEnabled())
     sampling_profiler_.Start();
 

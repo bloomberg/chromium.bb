@@ -77,11 +77,6 @@ class FirstWebContentsProfiler : public content::WebContentsObserver {
   // Whether an attempt was made to collect the "MainNavigationFinished" metric.
   bool collected_main_navigation_finished_metric_;
 
-  // Whether core metric collection is complete. Used to keep reporting old
-  // stats post abandon to give us an intra-milestone comparison basis initially
-  // between the old and new stats. TODO(gab): Remove this in M49.
-  bool finished_;
-
   DISALLOW_COPY_AND_ASSIGN(FirstWebContentsProfiler);
 };
 

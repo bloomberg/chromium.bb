@@ -10,7 +10,6 @@
 #include "chrome/browser/chromeos/policy/consumer_management_service.h"
 #include "chrome/browser/chromeos/policy/consumer_management_stage.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "policy/proto/device_management_backend.pb.h"
 
@@ -19,16 +18,13 @@ namespace em = enterprise_management;
 namespace policy {
 
 ConsumerUnenrollmentHandler::ConsumerUnenrollmentHandler(
-    chromeos::DeviceSettingsService* device_settings_service,
     ConsumerManagementService* consumer_management_service,
     DeviceCloudPolicyManagerChromeOS* device_cloud_policy_manager,
     chromeos::OwnerSettingsServiceChromeOS* owner_settings_service)
-    : device_settings_service_(device_settings_service),
-      consumer_management_service_(consumer_management_service),
+    : consumer_management_service_(consumer_management_service),
       device_cloud_policy_manager_(device_cloud_policy_manager),
       owner_settings_service_(owner_settings_service),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 ConsumerUnenrollmentHandler::~ConsumerUnenrollmentHandler() {
 }

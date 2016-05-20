@@ -43,7 +43,6 @@ namespace android {
 jlong Init(JNIEnv* env,
            const JavaParamRef<jobject>& obj,
            jboolean low_mem_device,
-           jint empty_background_color,
            jlong native_window_android,
            const JavaParamRef<jobject>& jlayer_title_cache,
            const JavaParamRef<jobject>& jtab_content_manager) {
@@ -58,8 +57,7 @@ jlong Init(JNIEnv* env,
   DCHECK(tab_content_manager);
 
   // TODO(clholgat): Remove the compositor tabstrip flag.
-  view = new CompositorView(env, obj, empty_background_color, low_mem_device,
-                            window_android, layer_title_cache,
+  view = new CompositorView(env, obj, low_mem_device, window_android,
                             tab_content_manager);
 
   ui::UIResourceProvider* ui_resource_provider = view->GetUIResourceProvider();
@@ -75,20 +73,16 @@ jlong Init(JNIEnv* env,
 
 CompositorView::CompositorView(JNIEnv* env,
                                jobject obj,
-                               jint empty_background_color,
                                jboolean low_mem_device,
                                ui::WindowAndroid* window_android,
-                               LayerTitleCache* layer_title_cache,
                                TabContentManager* tab_content_manager)
-    : layer_title_cache_(layer_title_cache),
-      tab_content_manager_(tab_content_manager),
+    : tab_content_manager_(tab_content_manager),
       root_layer_(cc::SolidColorLayer::Create()),
       scene_layer_(nullptr),
       current_surface_format_(0),
       content_width_(0),
       content_height_(0),
       overlay_video_mode_(false),
-      empty_background_color_(empty_background_color),
       weak_factory_(this) {
   content::BrowserChildProcessObserver::Add(this);
   obj_.Reset(env, obj);
