@@ -103,7 +103,12 @@ public class IncognitoNotificationService extends IntentService {
                 if (incognitoCount == 0) {
                     IncognitoNotificationManager.dismissIncognitoNotification();
                 }
+            }
+        });
 
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
                 // Now ensure that the snapshots in recents are all cleared for Tabbed activities
                 // to remove any trace of incognito mode.
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
@@ -209,7 +214,8 @@ public class IncognitoNotificationService extends IntentService {
                             ChromeTabbedActivity tabbedActivity = (ChromeTabbedActivity) activity;
                             if (tabbedActivity.isActivityDestroyed()) continue;
 
-                            tabbedActivity.getTabModelSelector().getModel(true).closeAllTabs();
+                            tabbedActivity.getTabModelSelector().getModel(true).closeAllTabs(
+                                    false, false);
                             selectorIndexes.add(TabWindowManager.getInstance().getIndexForWindow(
                                     tabbedActivity));
                         }
