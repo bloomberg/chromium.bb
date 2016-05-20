@@ -162,34 +162,6 @@ void GetMatchingHostsByScopeMap(
   }
 }
 
-GURL GetBestMatchingScope(const ScopeAgentsMap& scope_agents_map,
-                          const GURL& url) {
-  GURL best_scope;
-  bool best_scope_matched = false;
-  int best_scope_length = 0;
-
-  for (const auto& it : scope_agents_map) {
-    if (it.first.host_piece() != url.host_piece())
-      continue;
-    const bool scope_matched = ServiceWorkerUtils::ScopeMatches(it.first, url);
-    const int scope_length = it.first.spec().length();
-    bool replace = false;
-    if (!best_scope.is_empty())
-      replace = true;
-    else if (best_scope_matched)
-      replace = scope_matched && scope_length >= best_scope_length;
-    else
-      replace = scope_matched || scope_length >= best_scope_length;
-
-    if (replace) {
-      best_scope = it.first;
-      best_scope_matched = scope_matched;
-      best_scope_length = scope_length;
-    }
-  }
-  return best_scope;
-}
-
 void AddEligibleHosts(const ServiceWorkerDevToolsAgentHost::List& list,
                       ServiceWorkerDevToolsAgentHost::Map* result) {
   base::Time last_installed_time;
@@ -225,15 +197,9 @@ ServiceWorkerDevToolsAgentHost::Map GetMatchingServiceWorkers(
   ScopeAgentsMap scope_agents_map;
   GetMatchingHostsByScopeMap(agent_hosts, urls, &scope_agents_map);
 
-  std::set<GURL> matching_scopes;
-  for (const GURL& url : urls)
-    matching_scopes.insert(GetBestMatchingScope(scope_agents_map, url));
-
-  for (const auto& it : scope_agents_map) {
-    if (matching_scopes.find(it.first) == matching_scopes.end())
-      continue;
+  for (const auto& it : scope_agents_map)
     AddEligibleHosts(*it.second.get(), &result);
-  }
+
   return result;
 }
 
