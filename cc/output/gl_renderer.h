@@ -254,10 +254,19 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void ScheduleCALayers(DrawingFrame* frame);
   void ScheduleOverlays(DrawingFrame* frame);
 
-  using OverlayResourceLockList =
-      std::vector<std::unique_ptr<ResourceProvider::ScopedReadLockGL>>;
+  using OverlayResourceLock =
+      std::unique_ptr<ResourceProvider::ScopedReadLockGpuMemoryBuffer>;
+  using OverlayResourceLockList = std::vector<OverlayResourceLock>;
+
+  // Resources that have been sent to the GPU process, but not yet swapped.
   OverlayResourceLockList pending_overlay_resources_;
-  std::deque<OverlayResourceLockList> swapped_overlay_resources_;
+
+  // Resources that should be shortly swapped by the GPU process.
+  std::deque<OverlayResourceLockList> swapping_overlay_resources_;
+
+  // Resources that the GPU process has finished swapping.
+  std::map<ResourceId, OverlayResourceLock>
+      swapped_and_acked_overlay_resources_;
 
   RendererCapabilitiesImpl capabilities_;
 
