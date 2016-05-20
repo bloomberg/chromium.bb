@@ -342,6 +342,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/glsl/misc/' +
               'shader-with-257-character-identifier.frag.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
+    self.Fail('conformance/glsl/misc/shader-with-_webgl-identifier.vert.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
 
     # Nexus 9
     self.Fail('WebglExtension.WEBGL_compressed_texture_atc',
