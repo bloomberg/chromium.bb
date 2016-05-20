@@ -9,12 +9,12 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV id='chip'",
           "rect": [408, 8, 50, 50],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='chip'",
           "rect": [8, 8, 50, 50],
-          "reason": "location change"
+          "reason": "bounds change"
         }
       ]
     }

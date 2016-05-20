@@ -9,17 +9,17 @@
         {
           "object": "LayoutBlockFlow DIV id='innerDiv'",
           "rect": [8, 8, 769, 300],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 8, 300, 300],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 8, 300, 300],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow DIV id='innerDiv'",

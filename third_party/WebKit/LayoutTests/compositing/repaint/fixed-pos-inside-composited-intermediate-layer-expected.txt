@@ -24,12 +24,12 @@
                 {
                   "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
                   "rect": [25, 125, 50, 50],
-                  "reason": "full"
+                  "reason": "subtree"
                 },
                 {
                   "object": "LayoutBlockFlow (positioned) DIV class='fixed'",
                   "rect": [25, 25, 50, 50],
-                  "reason": "full"
+                  "reason": "subtree"
                 }
               ]
             }

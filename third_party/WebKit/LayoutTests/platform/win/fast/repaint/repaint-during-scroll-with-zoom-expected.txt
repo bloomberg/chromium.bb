@@ -15,12 +15,12 @@
         {
           "object": "LayoutBlockFlow BODY",
           "rect": [2, 65, 235, 235],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutView #document",
           "rect": [2, 65, 235, 235],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutView #document",
@@ -35,12 +35,12 @@
         {
           "object": "LayoutBlockFlow HTML",
           "rect": [2, 65, 225, 235],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
           "rect": [2, 65, 58, 15],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutView #document",
@@ -68,7 +68,7 @@
         },
         {
           "object": "InlineTextBox 'scroll me'",
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "RootInlineBox",

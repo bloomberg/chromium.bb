@@ -9,17 +9,17 @@
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute green'",
           "rect": [100, 1150, 100, 100],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV class='absolute red'",
           "rect": [100, 1150, 100, 100],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='moveMe' class='fixed clipped'",
           "rect": [100, 1150, 100, 100],
-          "reason": "full"
+          "reason": "subtree"
         }
       ]
     }

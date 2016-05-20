@@ -9,12 +9,12 @@
         {
           "object": "LayoutImage (positioned) IMG id='img'",
           "rect": [0, 1050, 100, 100],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutImage (positioned) IMG id='img'",
           "rect": [0, 50, 100, 100],
-          "reason": "full"
+          "reason": "subtree"
         }
       ]
     }
