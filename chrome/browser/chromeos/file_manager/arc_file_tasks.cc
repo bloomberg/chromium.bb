@@ -31,8 +31,8 @@ namespace file_tasks {
 
 namespace {
 
-constexpr int kArcInstanceHelperVersionWithUrlListSupport = 4;
-constexpr int kArcInstanceHelperVersionWithFullActivityName = 5;
+constexpr int kArcIntentHelperVersionWithUrlListSupport = 4;
+constexpr int kArcIntentHelperVersionWithFullActivityName = 5;
 
 constexpr base::FilePath::CharType kArcDownloadPath[] =
     FILE_PATH_LITERAL("/sdcard/Download");
@@ -165,7 +165,7 @@ void FindArcTasks(Profile* profile,
                   std::unique_ptr<std::vector<FullTaskDescriptor>> result_list,
                   const FindTasksCallback& callback) {
   arc::mojom::IntentHelperInstance* arc_intent_helper =
-      GetArcIntentHelper(profile, kArcInstanceHelperVersionWithUrlListSupport);
+      GetArcIntentHelper(profile, kArcIntentHelperVersionWithUrlListSupport);
   if (!arc_intent_helper) {
     callback.Run(std::move(result_list));
     return;
@@ -196,7 +196,7 @@ bool ExecuteArcTask(Profile* profile,
                     const std::vector<std::string>& mime_types) {
   DCHECK_EQ(file_urls.size(), mime_types.size());
   arc::mojom::IntentHelperInstance* const arc_intent_helper =
-      GetArcIntentHelper(profile, kArcInstanceHelperVersionWithUrlListSupport);
+      GetArcIntentHelper(profile, kArcIntentHelperVersionWithUrlListSupport);
   if (!arc_intent_helper)
     return false;
 
@@ -216,7 +216,7 @@ bool ExecuteArcTask(Profile* profile,
   }
 
   if (GetArcIntentHelper(profile,
-                         kArcInstanceHelperVersionWithFullActivityName)) {
+                         kArcIntentHelperVersionWithFullActivityName)) {
     arc_intent_helper->HandleUrlList(std::move(urls),
                                      AppIdToActivityName(task.app_id),
                                      StringToArcAction(task.action_id));
