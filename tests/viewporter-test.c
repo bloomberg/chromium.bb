@@ -301,7 +301,7 @@ setup_source_vs_buffer(struct client *client,
 
 	wl_surface_set_buffer_scale(surf, args->buffer_scale);
 	wl_surface_set_buffer_transform(surf, args->buffer_transform);
-	wl_surface_attach(surf, client->surface->wl_buffer, 0, 0);
+	wl_surface_attach(surf, client->surface->buffer->proxy, 0, 0);
 	wp_viewport_set_source(vp, args->x, args->y, args->w, args->h);
 	wp_viewport_set_destination(vp, 99, 99);
 	wl_surface_commit(surf);
@@ -496,7 +496,7 @@ TEST(test_viewporter_outside_null_buffer)
 	client_roundtrip(client);
 
 	/* When buffer comes back, source rect matters again. */
-	wl_surface_attach(surf, client->surface->wl_buffer, 0, 0);
+	wl_surface_attach(surf, client->surface->buffer->proxy, 0, 0);
 	wl_surface_commit(surf);
 	expect_protocol_error(client, &wp_viewport_interface,
 			      WP_VIEWPORT_ERROR_OUT_OF_BUFFER);

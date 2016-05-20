@@ -115,7 +115,7 @@ TEST(internal_screenshot)
 	match = check_surfaces_equal(screenshot, reference_bad);
 	printf("Screenshot %s reference image\n", match? "equal to" : "different from");
 	assert(!match);
-	free(reference_bad->data);
+	buffer_destroy(reference_bad->buffer);
 	free(reference_bad);
 
 	/* Test check_surfaces_match_in_clip()
@@ -130,7 +130,7 @@ TEST(internal_screenshot)
 	match = check_surfaces_match_in_clip(screenshot, reference_good,
 					     &clip);
 	printf("Screenshot %s reference image in clipped area\n", match? "matches" : "doesn't match");
-	free(reference_good->data);
+	buffer_destroy(reference_good->buffer);
 	free(reference_good);
 
 	/* Test dumping of non-matching images */

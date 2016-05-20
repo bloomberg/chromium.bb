@@ -322,7 +322,7 @@ AM_CONDITIONAL(ENABLE_VAAPI_RECORDER, test "x$have_libva" = xyes)
 
 PKG_CHECK_MODULES(CAIRO, [cairo])
 
-PKG_CHECK_MODULES(TEST_CLIENT, [wayland-client >= $WAYLAND_PREREQ_VERSION])
+PKG_CHECK_MODULES(TEST_CLIENT, [wayland-client >= $WAYLAND_PREREQ_VERSION pixman-1])
 
 AC_ARG_ENABLE(simple-clients,
               AS_HELP_STRING([--disable-simple-clients],

@@ -103,7 +103,7 @@ move_client(struct client *client, int x, int y)
 	/* The attach here is necessary because commit() will call configure
 	 * only on surfaces newly attached, and the one that sets the surface
 	 * position is the configure. */
-	wl_surface_attach(surface->wl_surface, surface->wl_buffer, 0, 0);
+	wl_surface_attach(surface->wl_surface, surface->buffer->proxy, 0, 0);
 	wl_surface_damage(surface->wl_surface, 0, 0, surface->width,
 			  surface->height);
 
@@ -445,6 +445,41 @@ create_shm_buffer(struct client *client, int width, int height, void **pixels)
 		*pixels = data;
 
 	return buffer;
+}
+
+struct buffer *
+create_shm_buffer_a8r8g8b8(struct client *client, int width, int height)
+{
+	struct buffer *buf;
+	void *pixels;
+
+	buf = xzalloc(sizeof *buf);
+	buf->proxy = create_shm_buffer(client, width, height, &pixels);
+	buf->image = pixman_image_create_bits(PIXMAN_a8r8g8b8, width, height,
+					      pixels, width * 4);
+	buf->len = width * height * 4;
+
+	assert(buf->proxy);
+	assert(buf->image);
+
+	return buf;
+}
+
+void
+buffer_destroy(struct buffer *buf)
+{
+	void *pixels;
+
+	pixels = pixman_image_get_data(buf->image);
+
+	if (buf->proxy) {
+		wl_buffer_destroy(buf->proxy);
+		assert(munmap(pixels, buf->len) == 0);
+	}
+
+	assert(pixman_image_unref(buf->image));
+
+	free(buf);
 }
 
 static void
@@ -845,6 +880,8 @@ create_client_and_test_surface(int x, int y, int width, int height)
 {
 	struct client *client;
 	struct surface *surface;
+	pixman_color_t color = { 16384, 16384, 16384, 16384 }; /* uint16_t */
+	pixman_image_t *solid;
 
 	client = create_client();
 
@@ -862,10 +899,18 @@ create_client_and_test_surface(int x, int y, int width, int height)
 
 	surface->width = width;
 	surface->height = height;
-	surface->wl_buffer = create_shm_buffer(client, width, height,
-					       &surface->data);
+	surface->buffer = create_shm_buffer_a8r8g8b8(client, width, height);
 
-	memset(surface->data, 64, width * height * 4);
+	solid = pixman_image_create_solid_fill(&color);
+	pixman_image_composite32(PIXMAN_OP_SRC,
+				 solid, /* src */
+				 NULL, /* mask */
+				 surface->buffer->image, /* dst */
+				 0, 0, /* src x,y */
+				 0, 0, /* mask x,y */
+				 0, 0, /* dst x,y */
+				 width, height);
+	pixman_image_unref(solid);
 
 	move_client(client, x, y);
 
@@ -927,7 +972,7 @@ check_surfaces_geometry(const struct surface *a, const struct surface *b)
 		printf("Undefined surfaces\n");
 		return false;
 	}
-	else if (a->data == NULL || b->data == NULL) {
+	else if (a->buffer == NULL || b->buffer == NULL) {
 		printf("Undefined data\n");
 		return false;
 	}
@@ -950,11 +995,16 @@ bool
 check_surfaces_equal(const struct surface *a, const struct surface *b)
 {
 	int bpp = 4;  /* Assumes ARGB */
+	void *data_a;
+	void *data_b;
 
 	if (!check_surfaces_geometry(a, b))
 		return false;
 
-	return (memcmp(a->data, b->data, bpp * a->width * a->height) == 0);
+	data_a = pixman_image_get_data(a->buffer->image);
+	data_b = pixman_image_get_data(b->buffer->image);
+
+	return (memcmp(data_a, data_b, bpp * a->width * a->height) == 0);
 }
 
 /**
@@ -972,6 +1022,8 @@ check_surfaces_match_in_clip(const struct surface *a, const struct surface *b, c
 	int x0, y0, x1, y1;
 	void *p, *q;
 	int bpp = 4;  /* Assumes ARGB */
+	void *data_a;
+	void *data_b;
 
 	if (!check_surfaces_geometry(a, b) || clip_rect == NULL)
 		return false;
@@ -991,10 +1043,13 @@ check_surfaces_match_in_clip(const struct surface *a, const struct surface *b, c
 		return true;
 	}
 
+	data_a = pixman_image_get_data(a->buffer->image);
+	data_b = pixman_image_get_data(b->buffer->image);
+
 	printf("Bytewise comparison inside clip\n");
 	for (i=y0; i<y1; i++) {
-		p = a->data + i * a->width * bpp + x0 * bpp;
-		q = b->data + i * b->width * bpp + x0 * bpp;
+		p = data_a + i * a->width * bpp + x0 * bpp;
+		q = data_b + i * b->width * bpp + x0 * bpp;
 		if (memcmp(p, q, (x1-x0)*bpp) != 0) {
 			/* Dump the bad row */
 			printf("Mismatched image on row %d\n", i);
@@ -1025,8 +1080,10 @@ write_surface_as_png(const struct surface *weston_surface, const char *fname)
 	cairo_status_t status;
 	int bpp = 4; /* Assume ARGB */
 	int stride = bpp * weston_surface->width;
+	void *pixels;
 
-	cairo_surface = cairo_image_surface_create_for_data(weston_surface->data,
+	pixels = pixman_image_get_data(weston_surface->buffer->image);
+	cairo_surface = cairo_image_surface_create_for_data(pixels,
 							    CAIRO_FORMAT_ARGB32,
 							    weston_surface->width,
 							    weston_surface->height,
@@ -1091,14 +1148,15 @@ load_surface_from_png(const char *fname)
 
 	/* Allocate new buffer for our weston reference, and copy the data from
 	   the cairo surface so we can destroy it */
-	reference->data = zalloc(source_data_size);
-	if (reference->data == NULL) {
-		perror("zalloc reference data");
-		cairo_surface_destroy(reference_cairo_surface);
-		free(reference);
-		return NULL;
-	}
-	memcpy(reference->data,
+
+	reference->buffer = xzalloc(sizeof *reference->buffer);
+	reference->buffer->image = pixman_image_create_bits(PIXMAN_a8r8g8b8,
+							    reference->width,
+							    reference->height,
+							    NULL, 0);
+	assert(reference->buffer->image);
+
+	memcpy(pixman_image_get_data(reference->buffer->image),
 	       cairo_image_surface_get_data(reference_cairo_surface),
 	       source_data_size);
 
@@ -1123,10 +1181,10 @@ create_screenshot_surface(struct client *client)
 	screenshot = zalloc(sizeof *screenshot);
 	if (screenshot == NULL)
 		return NULL;
-	screenshot->wl_buffer = create_shm_buffer(client,
-						  client->output->width,
-						  client->output->height,
-						  &screenshot->data);
+
+	screenshot->buffer = create_shm_buffer_a8r8g8b8(client,
+							client->output->width,
+							client->output->height);
 	screenshot->height = client->output->height;
 	screenshot->width = client->output->width;
 
@@ -1153,7 +1211,7 @@ capture_screenshot_of_output(struct client *client)
 	client->test->buffer_copy_done = 0;
 	weston_test_capture_screenshot(client->test->weston_test,
 				       client->output->wl_output,
-				       screenshot->wl_buffer);
+				       screenshot->buffer->proxy);
 	while (client->test->buffer_copy_done == 0)
 		if (wl_display_dispatch(client->wl_display) < 0)
 			break;

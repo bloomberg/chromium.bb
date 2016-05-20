@@ -30,6 +30,7 @@
 
 #include <assert.h>
 #include <stdbool.h>
+#include <pixman.h>
 
 #include <wayland-client-protocol.h>
 #include "weston-test-runner.h"
@@ -127,15 +128,20 @@ struct output {
 	int initialized;
 };
 
+struct buffer {
+	struct wl_buffer *proxy;
+	size_t len;
+	pixman_image_t *image;
+};
+
 struct surface {
 	struct wl_surface *wl_surface;
-	struct wl_buffer *wl_buffer;
 	struct output *output;
 	int x;
 	int y;
 	int width;
 	int height;
-	void *data;
+	struct buffer *buffer;
 };
 
 struct rectangle {
@@ -153,6 +159,12 @@ create_client_and_test_surface(int x, int y, int width, int height);
 
 struct wl_buffer *
 create_shm_buffer(struct client *client, int width, int height, void **pixels);
+
+struct buffer *
+create_shm_buffer_a8r8g8b8(struct client *client, int width, int height);
+
+void
+buffer_destroy(struct buffer *buf);
 
 int
 surface_contains(struct surface *surface, int x, int y);
