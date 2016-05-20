@@ -165,8 +165,8 @@ size_t NetworkResourcesData::ResourceData::decodeDataToContent()
 {
     ASSERT(!hasContent());
     size_t dataLength = m_dataBuffer->size();
-    m_content = m_decoder->decode(m_dataBuffer->data(), m_dataBuffer->size());
-    m_content = m_content + m_decoder->flush();
+    bool success = InspectorPageAgent::sharedBufferContent(m_dataBuffer, m_mimeType, m_textEncodingName, &m_content, &m_base64Encoded);
+    DCHECK(success);
     m_dataBuffer = nullptr;
     return contentSizeInBytes(m_content) - dataLength;
 }
@@ -202,7 +202,7 @@ void NetworkResourcesData::responseReceived(const String& requestId, const Strin
     resourceData->setFrameId(frameId);
     resourceData->setMimeType(response.mimeType());
     resourceData->setTextEncodingName(response.textEncodingName());
-    resourceData->setDecoder(InspectorPageAgent::createResourceTextDecoder(response.mimeType(), response.textEncodingName()));
+    resourceData->setCanBeDecoded(InspectorPageAgent::canTextResourceBeDecoded(response.mimeType(), response.textEncodingName()));
     resourceData->setHTTPStatusCode(response.httpStatusCode());
 
     String filePath = response.downloadedFilePath();
@@ -262,7 +262,7 @@ void NetworkResourcesData::maybeAddResourceData(const String& requestId, const c
     ResourceData* resourceData = resourceDataForRequestId(requestId);
     if (!resourceData)
         return;
-    if (!resourceData->decoder())
+    if (!resourceData->canBeDecoded())
         return;
     if (resourceData->dataLength() + dataLength > m_maximumSingleResourceContentSize)
         m_contentSize -= resourceData->evictContent();

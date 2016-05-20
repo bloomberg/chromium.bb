@@ -26,7 +26,8 @@ function test()
 
     function step2()
     {
-        InspectorTest.addResult("Resource.content: " + cssResource.content);
+        var content = cssResource.contentEncoded ? window.atob(cssResource.content) : cssResource.content;
+        InspectorTest.addResult("Resource.content: " + content);
         InspectorTest.completeTest();
     }
 }

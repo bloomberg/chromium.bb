@@ -129,9 +129,10 @@ static PassOwnPtr<protocol::Network::Headers> buildObjectForHeaders(const HTTPHe
 class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
     WTF_MAKE_NONCOPYABLE(InspectorFileReaderLoaderClient);
 public:
-    InspectorFileReaderLoaderClient(PassRefPtr<BlobDataHandle> blob, PassOwnPtr<TextResourceDecoder> decoder, PassOwnPtr<GetResponseBodyCallback> callback)
+    InspectorFileReaderLoaderClient(PassRefPtr<BlobDataHandle> blob, const String& mimeType, const String& textEncodingName, PassOwnPtr<GetResponseBodyCallback> callback)
         : m_blob(blob)
-        , m_decoder(std::move(decoder))
+        , m_mimeType(mimeType)
+        , m_textEncodingName(textEncodingName)
         , m_callback(std::move(callback))
     {
         m_loader = FileReaderLoader::create(FileReaderLoader::ReadByClient, this);
@@ -141,11 +142,7 @@ public:
 
     void start(ExecutionContext* executionContext)
     {
-        m_rawData = adoptPtr(new ArrayBufferBuilder());
-        if (!m_rawData || !m_rawData->isValid()) {
-            m_callback->sendFailure("Couldn't allocate buffer");
-            dispose();
-        }
+        m_rawData = SharedBuffer::create();
         m_loader->start(executionContext, m_blob);
     }
 
@@ -155,23 +152,17 @@ public:
     {
         if (!dataLength)
             return;
-        if (!m_rawData->append(data, dataLength)) {
-            m_callback->sendFailure("Couldn't extend buffer");
-            dispose();
-        }
+        m_rawData->append(data, dataLength);
     }
 
     virtual void didFinishLoading()
     {
-        const char* data = static_cast<const char*>(m_rawData->data());
-        unsigned dataLength = m_rawData->byteLength();
-        if (m_decoder) {
-            String text = m_decoder->decode(data, dataLength);
-            text = text + m_decoder->flush();
-            m_callback->sendSuccess(text, false);
-        } else {
-            m_callback->sendSuccess(base64Encode(data, dataLength), true);
-        }
+        String result;
+        bool base64Encoded;
+        if (InspectorPageAgent::sharedBufferContent(m_rawData, m_mimeType, m_textEncodingName, &result, &base64Encoded))
+            m_callback->sendSuccess(result, base64Encoded);
+        else
+            m_callback->sendFailure("Couldn't encode data");
         dispose();
     }
 
@@ -189,10 +180,11 @@ private:
     }
 
     RefPtr<BlobDataHandle> m_blob;
-    OwnPtr<TextResourceDecoder> m_decoder;
+    String m_mimeType;
+    String m_textEncodingName;
     OwnPtr<GetResponseBodyCallback> m_callback;
     OwnPtr<FileReaderLoader> m_loader;
-    OwnPtr<ArrayBufferBuilder> m_rawData;
+    RefPtr<SharedBuffer> m_rawData;
 };
 
 KURL urlWithoutFragment(const KURL& url)
@@ -937,7 +929,7 @@ void InspectorResourceAgent::getResponseBodyBlob(const String& requestId, PassOw
     BlobDataHandle* blob = resourceData->downloadedFileBlob();
     LocalFrame* frame = IdentifiersFactory::frameById(m_inspectedFrames, resourceData->frameId());
     Document* document = frame->document();
-    InspectorFileReaderLoaderClient* client = new InspectorFileReaderLoaderClient(blob, InspectorPageAgent::createResourceTextDecoder(resourceData->mimeType(), resourceData->textEncodingName()), std::move(callback));
+    InspectorFileReaderLoaderClient* client = new InspectorFileReaderLoaderClient(blob, resourceData->mimeType(), resourceData->textEncodingName(), std::move(callback));
     client->start(document);
 }
 
@@ -967,11 +959,12 @@ void InspectorResourceAgent::getResponseBody(ErrorString* errorString, const Str
     }
 
     if (resourceData->buffer() && !resourceData->textEncodingName().isNull()) {
-        String content;
-        if (InspectorPageAgent::sharedBufferContent(resourceData->buffer(), resourceData->textEncodingName(), false, &content)) {
-            callback->sendSuccess(content, false);
-            return;
-        }
+        String result;
+        bool base64Encoded;
+        bool success = InspectorPageAgent::sharedBufferContent(resourceData->buffer(), resourceData->mimeType(), resourceData->textEncodingName(), &result, &base64Encoded);
+        DCHECK(success);
+        callback->sendSuccess(result, base64Encoded);
+        return;
     }
 
     if (resourceData->cachedResource()) {

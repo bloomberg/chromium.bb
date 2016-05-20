@@ -113,21 +113,8 @@ String dialogTypeToProtocol(ChromeClient::DialogType dialogType)
 
 } // namespace
 
-static bool decodeBuffer(const char* buffer, unsigned size, const String& textEncodingName, String* result)
-{
-    if (buffer) {
-        WTF::TextEncoding encoding(textEncodingName);
-        if (!encoding.isValid())
-            encoding = WindowsLatin1Encoding();
-        *result = encoding.decode(buffer, size);
-        return true;
-    }
-    return false;
-}
-
 static bool prepareResourceBuffer(Resource* cachedResource, bool* hasZeroSize)
 {
-    *hasZeroSize = false;
     if (!cachedResource)
         return false;
 
@@ -151,6 +138,7 @@ static bool prepareResourceBuffer(Resource* cachedResource, bool* hasZeroSize)
             return false;
     }
 
+    *hasZeroSize = false;
     return true;
 }
 
@@ -160,7 +148,19 @@ static bool hasTextContent(Resource* cachedResource)
     return type == Resource::CSSStyleSheet || type == Resource::XSLStyleSheet || type == Resource::Script || type == Resource::Raw || type == Resource::ImportResource || type == Resource::MainResource;
 }
 
-PassOwnPtr<TextResourceDecoder> InspectorPageAgent::createResourceTextDecoder(const String& mimeType, const String& textEncodingName)
+// static
+bool InspectorPageAgent::canTextResourceBeDecoded(const String& mimeType, const String& textEncodingName)
+{
+    if (!textEncodingName.isEmpty())
+        return true;
+    return DOMImplementation::isXMLMIMEType(mimeType)
+        || equalIgnoringCase(mimeType, "text/html")
+        || MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType)
+        || DOMImplementation::isJSONMIMEType(mimeType)
+        || DOMImplementation::isTextMIMEType(mimeType);
+}
+
+static PassOwnPtr<TextResourceDecoder> createResourceTextDecoder(const String& mimeType, const String& textEncodingName)
 {
     if (!textEncodingName.isEmpty())
         return TextResourceDecoder::create("text/plain", textEncodingName);
@@ -178,83 +178,78 @@ PassOwnPtr<TextResourceDecoder> InspectorPageAgent::createResourceTextDecoder(co
     return PassOwnPtr<TextResourceDecoder>();
 }
 
-static void resourceContent(ErrorString* errorString, LocalFrame* frame, const KURL& url, String* result, bool* base64Encoded)
+static void maybeEncodeTextContent(const String& textContent, PassRefPtr<SharedBuffer> buffer, String* result, bool* base64Encoded)
 {
-    if (!InspectorPageAgent::cachedResourceContent(InspectorPageAgent::cachedResource(frame, url), result, base64Encoded))
-        *errorString = "No resource with given URL found";
-}
-
-static bool encodeCachedResourceContent(Resource* cachedResource, bool hasZeroSize, String* result, bool* base64Encoded)
-{
-    *base64Encoded = true;
-    RefPtr<SharedBuffer> buffer = hasZeroSize ? SharedBuffer::create() : cachedResource->resourceBuffer();
-
-    if (!buffer)
-        return false;
-
-    *result = base64Encode(buffer->data(), buffer->size());
-    return true;
-}
-
-bool InspectorPageAgent::cachedResourceContent(Resource* cachedResource, String* result, bool* base64Encoded)
-{
-    bool hasZeroSize;
-    bool prepared = prepareResourceBuffer(cachedResource, &hasZeroSize);
-    if (!prepared)
-        return false;
-
-    if (!hasTextContent(cachedResource))
-        return encodeCachedResourceContent(cachedResource, hasZeroSize, result, base64Encoded);
-    *base64Encoded = false;
-
-    if (hasZeroSize) {
-        *result = "";
-        return true;
+    if (!textContent.isNull() && !textContent.utf8(WTF::StrictUTF8Conversion).isNull()) {
+        *result = textContent;
+        *base64Encoded = false;
+    } else if (buffer) {
+        *result = base64Encode(buffer->data(), buffer->size());
+        *base64Encoded = true;
+    } else {
+        DCHECK(!textContent.is8Bit());
+        *result = base64Encode(textContent.utf8(WTF::LenientUTF8Conversion));
+        *base64Encoded = true;
     }
-
-    if (cachedResource) {
-        switch (cachedResource->getType()) {
-        case Resource::CSSStyleSheet:
-            *result = toCSSStyleSheetResource(cachedResource)->sheetText();
-            return true;
-        case Resource::Script:
-            *result = cachedResource->resourceBuffer() ? toScriptResource(cachedResource)->decodedText() : toScriptResource(cachedResource)->script().toString();
-            return true;
-        case Resource::ImportResource: // Fall through.
-        case Resource::XSLStyleSheet:
-        case Resource::Raw: {
-            SharedBuffer* buffer = cachedResource->resourceBuffer();
-            if (!buffer)
-                return false;
-            OwnPtr<TextResourceDecoder> decoder = InspectorPageAgent::createResourceTextDecoder(cachedResource->response().mimeType(), cachedResource->response().textEncodingName());
-            if (!decoder)
-                return encodeCachedResourceContent(cachedResource, hasZeroSize, result, base64Encoded);
-            String content = decoder->decode(buffer->data(), buffer->size());
-            *result = content + decoder->flush();
-            return true;
-        }
-        default:
-            SharedBuffer* buffer = cachedResource->resourceBuffer();
-            return decodeBuffer(buffer ? buffer->data() : nullptr, buffer ? buffer->size() : 0, cachedResource->response().textEncodingName(), result);
-        }
-    }
-    return false;
 }
 
 // static
-bool InspectorPageAgent::sharedBufferContent(PassRefPtr<SharedBuffer> buffer, const String& textEncodingName, bool withBase64Encode, String* result)
+bool InspectorPageAgent::sharedBufferContent(PassRefPtr<SharedBuffer> buffer, const String& mimeType, const String& textEncodingName, String* result, bool* base64Encoded)
 {
-    return dataContent(buffer ? buffer->data() : nullptr, buffer ? buffer->size() : 0, textEncodingName, withBase64Encode, result);
+    if (!buffer)
+        return false;
+
+    String textContent;
+    OwnPtr<TextResourceDecoder> decoder = createResourceTextDecoder(mimeType, textEncodingName);
+    WTF::TextEncoding encoding(textEncodingName);
+
+    if (decoder) {
+        textContent = decoder->decode(buffer->data(), buffer->size());
+        textContent = textContent + decoder->flush();
+    } else if (encoding.isValid()) {
+        textContent = encoding.decode(buffer->data(), buffer->size());
+    }
+
+    maybeEncodeTextContent(textContent, buffer, result, base64Encoded);
+    return true;
 }
 
-bool InspectorPageAgent::dataContent(const char* data, unsigned size, const String& textEncodingName, bool withBase64Encode, String* result)
+// static
+bool InspectorPageAgent::cachedResourceContent(Resource* cachedResource, String* result, bool* base64Encoded)
 {
-    if (withBase64Encode) {
-        *result = base64Encode(data, size);
+    bool hasZeroSize;
+    if (!prepareResourceBuffer(cachedResource, &hasZeroSize))
+        return false;
+
+    if (!hasTextContent(cachedResource)) {
+        RefPtr<SharedBuffer> buffer = hasZeroSize ? SharedBuffer::create() : cachedResource->resourceBuffer();
+        if (!buffer)
+            return false;
+        *result = base64Encode(buffer->data(), buffer->size());
+        *base64Encoded = true;
         return true;
     }
 
-    return decodeBuffer(data, size, textEncodingName, result);
+    if (hasZeroSize) {
+        *result = "";
+        *base64Encoded = false;
+        return true;
+    }
+
+    DCHECK(cachedResource);
+    switch (cachedResource->getType()) {
+    case Resource::CSSStyleSheet:
+        maybeEncodeTextContent(toCSSStyleSheetResource(cachedResource)->sheetText(), cachedResource->resourceBuffer(), result, base64Encoded);
+        return true;
+    case Resource::Script:
+        maybeEncodeTextContent(cachedResource->resourceBuffer() ? toScriptResource(cachedResource)->decodedText() : toScriptResource(cachedResource)->script().toString(), cachedResource->resourceBuffer(), result, base64Encoded);
+        return true;
+    default:
+        String textEncodingName = cachedResource->response().textEncodingName();
+        if (textEncodingName.isEmpty() && cachedResource->getType() != Resource::Raw)
+            textEncodingName = "WinLatin1";
+        return InspectorPageAgent::sharedBufferContent(cachedResource->resourceBuffer(), cachedResource->response().mimeType(), textEncodingName, result, base64Encoded);
+    }
 }
 
 InspectorPageAgent* InspectorPageAgent::create(InspectedFrames* inspectedFrames, Client* client, InspectorResourceContentLoader* resourceContentLoader, V8InspectorSession* v8Session)
@@ -502,15 +497,12 @@ void InspectorPageAgent::getResourceContentAfterResourcesContentLoaded(const Str
         callback->sendFailure("No frame for given id found");
         return;
     }
-    ErrorString errorString;
     String content;
     bool base64Encoded;
-    resourceContent(&errorString, frame, KURL(ParsedURLString, url), &content, &base64Encoded);
-    if (!errorString.isEmpty()) {
-        callback->sendFailure(errorString);
-        return;
-    }
-    callback->sendSuccess(content, base64Encoded);
+    if (InspectorPageAgent::cachedResourceContent(InspectorPageAgent::cachedResource(frame, KURL(ParsedURLString, url)), &content, &base64Encoded))
+        callback->sendSuccess(content, base64Encoded);
+    else
+        callback->sendFailure("No resource with given URL found");
 }
 
 void InspectorPageAgent::getResourceContent(ErrorString* errorString, const String& frameId, const String& url, PassOwnPtr<GetResourceContentCallback> callback)
@@ -529,12 +521,10 @@ void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& 
         callback->sendFailure("No frame for given id found");
         return;
     }
-    ErrorString errorString;
     String content;
     bool base64Encoded;
-    resourceContent(&errorString, frame, KURL(ParsedURLString, url), &content, &base64Encoded);
-    if (!errorString.isEmpty()) {
-        callback->sendFailure(errorString);
+    if (!InspectorPageAgent::cachedResourceContent(InspectorPageAgent::cachedResource(frame, KURL(ParsedURLString, url)), &content, &base64Encoded)) {
+        callback->sendFailure("No resource with given URL found");
         return;
     }
 

@@ -85,14 +85,14 @@ public:
 
     static HeapVector<Member<Document>> importsForFrame(LocalFrame*);
     static bool cachedResourceContent(Resource*, String* result, bool* base64Encoded);
-    static bool sharedBufferContent(PassRefPtr<SharedBuffer>, const String& textEncodingName, bool withBase64Encode, String* result);
+    static bool sharedBufferContent(PassRefPtr<SharedBuffer>, const String& mimeType, const String& textEncodingName, String* result, bool* base64Encoded);
+    static bool canTextResourceBeDecoded(const String& mimeType, const String& textEncodingName);
 
     static PassRefPtr<SharedBuffer> resourceData(LocalFrame*, const KURL&, String* textEncodingName);
     static Resource* cachedResource(LocalFrame*, const KURL&);
     static String resourceTypeJson(ResourceType);
     static ResourceType cachedResourceType(const Resource&);
     static String cachedResourceTypeJson(const Resource&);
-    static PassOwnPtr<TextResourceDecoder> createResourceTextDecoder(const String& mimeType, const String& textEncodingName);
 
     // Page API for InspectorFrontend
     void enable(ErrorString*) override;
