@@ -13929,8 +13929,7 @@ error::Error GLES2DecoderImpl::HandleSetDisjointValueSyncCHROMIUM(
   int32_t sync_shm_id = static_cast<int32_t>(c.sync_data_shm_id);
   uint32_t sync_shm_offset = static_cast<uint32_t>(c.sync_data_shm_offset);
 
-  query_manager_->SetDisjointSync(sync_shm_id, sync_shm_offset);
-  return error::kNoError;
+  return query_manager_->SetDisjointSync(sync_shm_id, sync_shm_offset);
 }
 
 bool GLES2DecoderImpl::GenVertexArraysOESHelper(

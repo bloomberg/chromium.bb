@@ -211,7 +211,7 @@ class GPU_EXPORT QueryManager {
   void Destroy(bool have_context);
 
   // Sets up a location to be incremented whenever a disjoint is detected.
-  void SetDisjointSync(int32_t shm_id, uint32_t shm_offset);
+  error::Error SetDisjointSync(int32_t shm_id, uint32_t shm_offset);
 
   // Creates a Query for the given query.
   Query* CreateQuery(GLenum target,

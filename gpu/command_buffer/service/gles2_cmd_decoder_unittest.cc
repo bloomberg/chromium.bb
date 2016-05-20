@@ -884,6 +884,25 @@ TEST_P(GLES2DecoderTest, BeginEndQueryEXTGetErrorQueryCHROMIUM) {
             static_cast<GLenum>(sync->result));
 }
 
+TEST_P(GLES2DecoderTest, SetDisjointValueSync) {
+  SetDisjointValueSyncCHROMIUM cmd;
+
+  cmd.Init(static_cast<uint32_t>(-1), 0u);
+  EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
+
+  cmd.Init(kInvalidSharedMemoryId, 0u);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+
+  cmd.Init(kSharedMemoryId, kSharedBufferSize);
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
+
+  cmd.Init(kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+
+  cmd.Init(kSharedMemoryId, kSharedMemoryOffset);
+  EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
+}
+
 TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
   InitState init;
   init.extensions = "GL_EXT_occlusion_query_boolean GL_ARB_sync";

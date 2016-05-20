@@ -750,18 +750,22 @@ void QueryManager::Destroy(bool have_context) {
   }
 }
 
-void QueryManager::SetDisjointSync(int32_t shm_id, uint32_t shm_offset) {
-  DCHECK(disjoint_notify_shm_id_ == -1);
-  DCHECK(shm_id != -1);
+error::Error QueryManager::SetDisjointSync(int32_t shm_id,
+                                           uint32_t shm_offset) {
+  if (disjoint_notify_shm_id_ != -1 || shm_id == -1)
+    return error::kInvalidArguments;
 
   DisjointValueSync* sync = decoder_->GetSharedMemoryAs<DisjointValueSync*>(
       shm_id, shm_offset, sizeof(*sync));
-  DCHECK(sync);
+  if (!sync)
+    return error::kOutOfBounds;
+
   sync->Reset();
   disjoints_notified_ = 0;
 
   disjoint_notify_shm_id_ = shm_id;
   disjoint_notify_shm_offset_ = shm_offset;
+  return error::kNoError;
 }
 
 QueryManager::Query* QueryManager::CreateQuery(GLenum target,
