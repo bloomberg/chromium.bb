@@ -20684,6 +20684,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.AVDA.VirtualContext" enum="BooleanVirtualContext">
+  <owner>liberato@chromium.org</owner>
+  <summary>
+    Number of times that AVDA's deferred rendering encountered a virtual GL
+    context.  True counts indicate virtual, false counts indicate not.
+  </summary>
+</histogram>
+
 <histogram name="Media.AvdaCodecImage.WaitTimeForFrame" units="ms">
   <owner>liberato@chromium.org</owner>
   <summary>
@@ -64723,6 +64731,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanValidKeyExists" type="int">
   <int value="0" label="No Valid Cached Key Found"/>
   <int value="1" label="Valid Cached Key Found"/>
+</enum>
+
+<enum name="BooleanVirtualContext" type="int">
+  <int value="0" label="Real context encountered"/>
+  <int value="1" label="Virtual context encountered"/>
 </enum>
 
 <enum name="BooleanWiped" type="int">

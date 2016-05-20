@@ -53,26 +53,20 @@ gfx::ScopedJavaSurface AndroidDeferredRenderingBackingStrategy::Initialize(
     surface = gpu::GpuSurfaceLookup::GetInstance()->AcquireJavaSurface(
         surface_view_id);
   } else {
-    bool using_virtualized_context = false;
+    bool using_virtual_context = false;
     if (gfx::GLContext* context = gfx::GLContext::GetCurrent()) {
       if (gfx::GLShareGroup* share_group = context->share_group())
-        using_virtualized_context = !!share_group->GetSharedContext();
+        using_virtual_context = !!share_group->GetSharedContext();
     }
-
-    // If we're using a virtualized context, then detaching the surface texture
-    // won't buy us much, since there's no real context switch anyway.  Since
-    // detaching is a little flaky, we skip it if possible.
-    if (!using_virtualized_context && DoesSurfaceTextureDetachWork()) {
-      // Create a detached SurfaceTexture. Detaching it will silently fail to
-      // delete texture 0.
-      surface_texture_ = gfx::SurfaceTexture::Create(0);
-      surface_texture_->DetachFromGLContext();
-    } else {
-      // Detach doesn't work so well on all platforms.  Just attach the
-      // SurfaceTexture here, and probably context switch later.
-      surface_texture_ = gfx::SurfaceTexture::Create(service_id);
-      shared_state_->DidAttachSurfaceTexture();
-    }
+    UMA_HISTOGRAM_BOOLEAN("Media.AVDA.VirtualContext", using_virtual_context);
+    // Detach doesn't work so well on all platforms.  Just attach the
+    // SurfaceTexture here, and probably context switch later.
+    // Detaching might save us a context switch, since AVDACodecImage will
+    // attach when needed.  However, given that it also fails a lot, we just
+    // don't do it at all.  If virtual contexts are in use, then it doesn't
+    // even save us a context switch.
+    surface_texture_ = gfx::SurfaceTexture::Create(service_id);
+    shared_state_->DidAttachSurfaceTexture();
     surface = gfx::ScopedJavaSurface(surface_texture_.get());
   }
 
@@ -407,36 +401,6 @@ void AndroidDeferredRenderingBackingStrategy::CopySurfaceTextureToPictures(
   if (result == EGL_FALSE) {
     DLOG(ERROR) << "Error destroying EGLImage: " << ui::GetLastEGLErrorString();
   }
-}
-
-bool AndroidDeferredRenderingBackingStrategy::DoesSurfaceTextureDetachWork()
-    const {
-  bool surface_texture_detach_works = true;
-  if (gpu::gles2::GLES2Decoder* gl_decoder =
-          state_provider_->GetGlDecoder().get()) {
-    if (gpu::gles2::ContextGroup* group = gl_decoder->GetContextGroup()) {
-      if (gpu::gles2::FeatureInfo* feature_info = group->feature_info()) {
-        surface_texture_detach_works =
-            !feature_info->workarounds().surface_texture_cant_detach;
-      }
-    }
-  }
-
-  // As a special case, the MicroMax A114 doesn't get the workaround, even
-  // though it should.  Hardcode it here until we get a device and figure out
-  // why.  crbug.com/591600
-  if (base::android::BuildInfo::GetInstance()->sdk_int() <= 18) {  // JB
-    const std::string brand(
-        base::ToLowerASCII(base::android::BuildInfo::GetInstance()->brand()));
-    if (brand == "micromax") {
-      const std::string model(
-          base::ToLowerASCII(base::android::BuildInfo::GetInstance()->model()));
-      if (model.find("a114") != std::string::npos)
-        surface_texture_detach_works = false;
-    }
-  }
-
-  return surface_texture_detach_works;
 }
 
 bool AndroidDeferredRenderingBackingStrategy::ShouldCopyPictures() const {

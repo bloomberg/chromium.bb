@@ -81,10 +81,6 @@ class MEDIA_GPU_EXPORT AndroidDeferredRenderingBackingStrategy
   void CopySurfaceTextureToPictures(
       const AndroidVideoDecodeAccelerator::OutputBufferMap& buffers);
 
-  // Return true if and only if the surface_texture_cant_detach workaround is
-  // not set.
-  bool DoesSurfaceTextureDetachWork() const;
-
   // Return true if and only if CopySurfaceTextureToPictures is expected to work
   // on this device.
   bool ShouldCopyPictures() const;
