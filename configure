@@ -258,6 +258,7 @@ EXPERIMENT_LIST="
     ext_refs
     ext_compound
     supertx
+    ans
 "
 CONFIG_LIST="
     dependency_tracking
