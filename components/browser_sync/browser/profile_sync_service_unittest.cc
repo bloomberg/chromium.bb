@@ -904,6 +904,37 @@ TEST_F(ProfileSyncServiceTest, ResetSyncData) {
   service()->OnActionableError(client_cmd);
 }
 
+// Test that when ProfileSyncService receives actionable error
+// DISABLE_SYNC_ON_CLIENT it disables sync and signs out.
+TEST_F(ProfileSyncServiceTest, DisableSyncOnClient) {
+  IssueTestTokens();
+  CreateService(ProfileSyncService::AUTO_START);
+  ExpectDataTypeManagerCreation(1, GetDefaultConfigureCalledCallback());
+  ExpectSyncBackendHostCreation(1);
+  InitializeForNthSync();
+
+  EXPECT_TRUE(service()->IsSyncActive());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_SYNC_TIME_JUST_NOW),
+            service()->GetLastSyncedTimeString());
+  EXPECT_TRUE(service()->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo());
+
+  syncer::SyncProtocolError client_cmd;
+  client_cmd.action = syncer::DISABLE_SYNC_ON_CLIENT;
+  service()->OnActionableError(client_cmd);
+
+// CrOS does not support signout.
+#if !defined(OS_CHROMEOS)
+  EXPECT_TRUE(signin_manager()->GetAuthenticatedAccountId().empty());
+#else
+  EXPECT_FALSE(signin_manager()->GetAuthenticatedAccountId().empty());
+#endif
+
+  EXPECT_FALSE(service()->IsSyncActive());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_SYNC_TIME_NEVER),
+            service()->GetLastSyncedTimeString());
+  EXPECT_FALSE(service()->GetLocalDeviceInfoProvider()->GetLocalDeviceInfo());
+}
+
 // Regression test for crbug/555434. The issue is that check for sessions DTC in
 // OnSessionRestoreComplete was creating map entry with nullptr which later was
 // dereferenced in OnSyncCycleCompleted. The fix is to use find() to check if

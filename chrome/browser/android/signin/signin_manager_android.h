@@ -13,7 +13,9 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 
 class Profile;
 
@@ -29,7 +31,7 @@ class CloudPolicyClient;
 //
 // This class implements parts of the sign-in flow, to make sure that policy
 // is available before sign-in completes.
-class SigninManagerAndroid {
+class SigninManagerAndroid : public SigninManagerBase::Observer {
  public:
   SigninManagerAndroid(JNIEnv* env, jobject obj);
 
@@ -76,8 +78,16 @@ class SigninManagerAndroid {
   jboolean IsSignedInOnNative(JNIEnv* env,
                               const base::android::JavaParamRef<jobject>& obj);
 
+  // SigninManagerBase::Observer implementation.
+  void GoogleSigninFailed(const GoogleServiceAuthError& error) override;
+  void GoogleSigninSucceeded(const std::string& account_id,
+                             const std::string& username,
+                             const std::string& password) override;
+  void GoogleSignedOut(const std::string& account_id,
+                       const std::string& username) override;
+
  private:
-  ~SigninManagerAndroid();
+  ~SigninManagerAndroid() override;
 
   void OnPolicyRegisterDone(const std::string& dm_token,
                             const std::string& client_id);
@@ -105,6 +115,8 @@ class SigninManagerAndroid {
   std::string username_;
 
   PrefChangeRegistrar pref_change_registrar_;
+
+  base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<SigninManagerAndroid> weak_factory_;
 

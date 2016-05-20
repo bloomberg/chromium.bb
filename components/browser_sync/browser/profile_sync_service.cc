@@ -1283,8 +1283,9 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
                                   syncer::STOP_SOURCE_LIMIT);
       }
       RequestStop(CLEAR_DATA);
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-      // On desktop and iOS, sign out the user after a dashboard clear.
+#if !defined(OS_CHROMEOS)
+      // On every platform except ChromeOS, sign out the user after a dashboard
+      // clear.
       static_cast<SigninManager*>(signin_->GetOriginal())
           ->SignOut(signin_metrics::SERVER_FORCED_DISABLE,
                     signin_metrics::SignoutDelete::IGNORE_METRIC);
