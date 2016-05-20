@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/throb_animation.h"
@@ -62,8 +63,13 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   // Sets whether |RequestFocus| should be invoked on a mouse press. The default
   // is false.
   void set_request_focus_on_press(bool value) {
+// On Mac, buttons should not request focus on a mouse press. Hence keep the
+// default value i.e. false.
+#if !defined(OS_MACOSX)
     request_focus_on_press_ = value;
+#endif
   }
+
   bool request_focus_on_press() const { return request_focus_on_press_; }
 
   // See description above field.
