@@ -18,5 +18,7 @@ Local Modifications:
   build errors that appeared on Windows.
 - BUILD.gn: Added.
 - brotli.gyp: Added.
+- brotli.gni: Added.
+- bro.gypi: Added.
 - enc/static_dict_lut.h: split up into two files (enc/static_dict_lut.h,
   enc/static_dict_lut2.h) to allow upload to codereview.
