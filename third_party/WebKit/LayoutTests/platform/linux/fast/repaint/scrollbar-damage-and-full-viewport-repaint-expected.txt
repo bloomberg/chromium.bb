@@ -1,8 +1,8 @@
 {
-  "bounds": [1000, 600],
+  "bounds": [202, 539],
   "children": [
     {
-      "bounds": [1000, 600],
+      "bounds": [202, 539],
       "contentsOpaque": true,
       "drawsContent": true,
       "paintInvalidations": [

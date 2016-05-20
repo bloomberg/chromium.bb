@@ -1,0 +1,54 @@
+{
+  "bounds": [785, 2016],
+  "children": [
+    {
+      "bounds": [785, 2016],
+      "contentsOpaque": true,
+      "children": [
+        {
+          "bounds": [785, 2016],
+          "drawsContent": true,
+          "paintInvalidations": [
+            {
+              "object": "LayoutBlockFlow (positioned) DIV",
+              "rect": [0, 250, 100, 100],
+              "reason": "subtree"
+            },
+            {
+              "object": "LayoutBlockFlow (positioned) DIV",
+              "rect": [0, 50, 100, 100],
+              "reason": "subtree"
+            }
+          ],
+          "children": [
+            {
+              "position": [0, 250],
+              "bounds": [100, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backfaceVisibility": "hidden",
+              "backgroundColor": "#FF0000"
+            },
+            {
+              "bounds": [785, 2016],
+              "drawsContent": true,
+              "paintInvalidations": [
+                {
+                  "object": "LayoutBlockFlow (positioned) DIV",
+                  "rect": [0, 250, 100, 100],
+                  "reason": "subtree"
+                },
+                {
+                  "object": "LayoutBlockFlow (positioned) DIV",
+                  "rect": [0, 50, 100, 100],
+                  "reason": "subtree"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

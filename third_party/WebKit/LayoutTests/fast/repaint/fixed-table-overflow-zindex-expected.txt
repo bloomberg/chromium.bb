@@ -19,17 +19,33 @@
         {
           "object": "LayoutBlockFlow (positioned) TD id='moveMe' class='fixed'",
           "rect": [100, 100, 100, 100],
-          "reason": "layoutObject insertion"
+          "reason": "location change"
         },
         {
           "object": "LayoutTableCell (anonymous)",
           "rect": [0, 100, 100, 100],
-          "reason": "layoutObject insertion"
+          "reason": "location change"
         },
         {
           "object": "LayoutTableCell TD id='moveMe' class='fixed'",
           "rect": [0, 100, 100, 100],
           "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutTableCell (anonymous)",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD class='red'",
+          "reason": "full"
         }
       ]
     }

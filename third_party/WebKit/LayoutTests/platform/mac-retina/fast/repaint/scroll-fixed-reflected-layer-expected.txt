@@ -1,0 +1,18 @@
+{
+  "bounds": [800, 2016],
+  "children": [
+    {
+      "bounds": [800, 2016],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='hideMe' class='absolute red'",
+          "rect": [250, 280, 100, 100],
+          "reason": "subtree"
+        }
+      ]
+    }
+  ]
+}
+
