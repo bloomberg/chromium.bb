@@ -21,6 +21,7 @@ class LocalFrame;
 // This class takes care of dispatching all pointer events and keeps track of
 // properties of active pointer events.
 class CORE_EXPORT PointerEventManager {
+    WTF_MAKE_NONCOPYABLE(PointerEventManager);
     DISALLOW_NEW();
 public:
     explicit PointerEventManager(LocalFrame*);

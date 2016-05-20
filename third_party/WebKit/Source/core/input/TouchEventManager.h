@@ -23,6 +23,7 @@ class PointerEventWithTarget;
 // This class takes care of dispatching all touch events and
 // maintaining related states.
 class CORE_EXPORT TouchEventManager {
+    WTF_MAKE_NONCOPYABLE(TouchEventManager);
     DISALLOW_NEW();
 public:
     class TouchInfo {
