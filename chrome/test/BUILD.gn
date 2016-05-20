@@ -974,6 +974,7 @@ if (!is_android) {
 
     # Runtime dependencies
     data_deps = [
+      "//chrome",
       "//ppapi:ppapi_tests",
       "//ppapi:power_saver_test_plugin",
       "//remoting/webapp:browser_test_resources",
