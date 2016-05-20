@@ -4,22 +4,31 @@
 
 #include "content/child/blob_storage/blob_message_filter.h"
 
+#include "base/bind.h"
+#include "base/task_runner.h"
 #include "content/child/blob_storage/blob_transport_controller.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/fileapi/webblob_messages.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
 #include "storage/common/blob_storage/blob_item_bytes_request.h"
+#include "storage/common/blob_storage/blob_item_bytes_response.h"
 
 namespace content {
 
-BlobMessageFilter::BlobMessageFilter()
-    : IPC::MessageFilter(), sender_(nullptr) {}
+BlobMessageFilter::BlobMessageFilter(
+    scoped_refptr<base::TaskRunner> file_runner)
+    : sender_(nullptr), file_runner_(std::move(file_runner)) {}
 
 BlobMessageFilter::~BlobMessageFilter() {}
 
 void BlobMessageFilter::OnFilterAdded(IPC::Sender* sender) {
   sender_ = sender;
+}
+
+void BlobMessageFilter::OnChannelClosing() {
+  BlobTransportController::GetInstance()->CancelAllBlobTransfers();
+  sender_ = nullptr;
 }
 
 bool BlobMessageFilter::OnMessageReceived(const IPC::Message& message) {
@@ -45,7 +54,8 @@ void BlobMessageFilter::OnRequestMemoryItem(
     std::vector<base::SharedMemoryHandle> memory_handles,
     const std::vector<IPC::PlatformFileForTransit>& file_handles) {
   BlobTransportController::GetInstance()->OnMemoryRequest(
-      uuid, requests, &memory_handles, file_handles, sender_);
+      uuid, requests, &memory_handles, file_handles, file_runner_.get(),
+      sender_);
 }
 
 void BlobMessageFilter::OnCancelBuildingBlob(

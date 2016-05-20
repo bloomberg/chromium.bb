@@ -7,14 +7,20 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "ipc/ipc_platform_file.h"
 #include "ipc/message_filter.h"
 #include "storage/common/blob_storage/blob_storage_constants.h"
+
+namespace base {
+class TaskRunner;
+}
 
 namespace IPC {
 class Sender;
@@ -23,6 +29,7 @@ class Message;
 
 namespace storage {
 struct BlobItemBytesRequest;
+struct BlobItemBytesResponse;
 }
 
 namespace content {
@@ -32,8 +39,9 @@ namespace content {
 // operated on by the IO thread.
 class BlobMessageFilter : public IPC::MessageFilter {
  public:
-  BlobMessageFilter();
+  BlobMessageFilter(scoped_refptr<base::TaskRunner> file_runner);
 
+  void OnChannelClosing() override;
   void OnFilterAdded(IPC::Sender* sender) override;
   bool OnMessageReceived(const IPC::Message& message) override;
   bool GetSupportedMessageClasses(
@@ -55,6 +63,7 @@ class BlobMessageFilter : public IPC::MessageFilter {
   void OnDoneBuildingBlob(const std::string& uuid);
 
   IPC::Sender* sender_;
+  scoped_refptr<base::TaskRunner> file_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(BlobMessageFilter);
 };

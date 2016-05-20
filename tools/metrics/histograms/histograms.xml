@@ -53381,6 +53381,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Storage.Blob.RendererFileSeekFailed" enum="Boolean">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    Whether seeking within a file (in order to write a part of a blob) failed in
+    the renderer.
+  </summary>
+</histogram>
+
+<histogram name="Storage.Blob.RendererFileWriteFailed" enum="Boolean">
+  <owner>dmurph@chromium.org</owner>
+  <summary>
+    Whether writing part of a blob to a file failed in the renderer.
+  </summary>
+</histogram>
+
 <histogram name="Storage.Blob.ReusedItem" enum="BooleanReused">
   <owner>dmurph@chromium.org</owner>
   <summary>

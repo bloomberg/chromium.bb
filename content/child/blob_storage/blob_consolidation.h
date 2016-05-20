@@ -13,8 +13,10 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "storage/common/data_element.h"
 #include "third_party/WebKit/public/platform/WebThreadSafeData.h"
@@ -33,14 +35,17 @@ namespace content {
 //
 // NOTE: this class does not do memory accounting or garbage collecting. The
 // memory for the blob sticks around until this class is destructed.
-class CONTENT_EXPORT BlobConsolidation {
+class CONTENT_EXPORT BlobConsolidation
+    : public base::RefCountedThreadSafe<BlobConsolidation> {
  public:
   enum class ReadStatus {
     ERROR_UNKNOWN,
     ERROR_WRONG_TYPE,
     ERROR_OUT_OF_BOUNDS,
+    CANCELLED_BY_VISITOR,
     OK
   };
+
   struct ConsolidatedItem {
     ConsolidatedItem();
     ConsolidatedItem(storage::DataElement::Type type,
@@ -63,8 +68,10 @@ class CONTENT_EXPORT BlobConsolidation {
     std::vector<blink::WebThreadSafeData> data;  // For TYPE_BYTES.
   };
 
+  using MemoryVisitor =
+      base::Callback<bool(const char* memory, size_t memory_size)>;
+
   BlobConsolidation();
-  ~BlobConsolidation();
 
   void AddDataItem(const blink::WebThreadSafeData& data);
   void AddFileItem(const base::FilePath& path,
@@ -91,19 +98,38 @@ class CONTENT_EXPORT BlobConsolidation {
 
   size_t total_memory() const { return total_memory_; }
 
-  // Reads memory from the given item into the given buffer. Returns:
-  // * ReadStatus::ERROR if the state or arguments are invalid (see error log),
+  // This method calls the |visitor| callback with the given memory item,
+  // offset, and size. Since items are consolidated, |visitor| can be called
+  // multiple times. The return value of |visitor| determines if we should
+  // continue reading memory, where 'false' triggers an early return and we
+  // return EARLY_ABORT. |visitor| is guaranteed to be called only during this
+  // method call.
+  // Returns:
+  // * ReadStatus::ERROR_UNKNOWN if the state or arguments are invalid,
   // * ReadStatus::ERROR_WRONG_TYPE if the item at the index isn't memory,
   // * ReadStatus::ERROR_OUT_OF_BOUNDS if index, offset, or size are invalid,
-  // * ReadStatus::DONE if the memory has been successfully read.
+  // * ReadStatus::CANCELLED_BY_VISITOR if the visitor returns false before
+  //   completion, and
+  // * ReadStatus::DONE if the memory has been successfully visited.
+  ReadStatus VisitMemory(size_t consolidated_item_index,
+                         size_t consolidated_offset,
+                         size_t consolidated_size,
+                         const MemoryVisitor& visitor) const;
+
+  // Reads memory from the given item into the given buffer. This is a simple
+  // wrapper of VisitMemory. Returns the same values as VisitMemory, except we
+  // don't return CANCELLED_BY_VISITOR.
   // Precondition: memory_out must be a valid pointer to memory with a size of
   //               at least consolidated_size.
   ReadStatus ReadMemory(size_t consolidated_item_index,
                         size_t consolidated_offset,
                         size_t consolidated_size,
-                        void* memory_out);
+                        void* memory_out) const;
 
  private:
+  friend class base::RefCountedThreadSafe<BlobConsolidation>;
+  ~BlobConsolidation();
+
   size_t total_memory_;
   std::set<std::string> referenced_blobs_;
   std::vector<ConsolidatedItem> consolidated_items_;

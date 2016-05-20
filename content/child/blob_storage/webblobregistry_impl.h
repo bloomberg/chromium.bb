@@ -92,7 +92,7 @@ class WebBlobRegistryImpl : public blink::WebBlobRegistry {
    private:
     const std::string uuid_;
     const std::string content_type_;
-    std::unique_ptr<BlobConsolidation> consolidation_;
+    scoped_refptr<BlobConsolidation> consolidation_;
     scoped_refptr<ThreadSafeSender> sender_;
     scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
     scoped_refptr<base::SingleThreadTaskRunner> main_runner_;

@@ -648,7 +648,7 @@ void RenderThreadImpl::Init(
 
   media_stream_center_ = NULL;
 
-  blob_message_filter_ = new BlobMessageFilter();
+  blob_message_filter_ = new BlobMessageFilter(GetFileThreadMessageLoopProxy());
   AddFilter(blob_message_filter_.get());
   db_message_filter_ = new DBMessageFilter();
   AddFilter(db_message_filter_.get());

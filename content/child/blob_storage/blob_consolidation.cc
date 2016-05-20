@@ -4,16 +4,27 @@
 
 #include "content/child/blob_storage/blob_consolidation.h"
 
-#include <stdint.h>
-
 #include <algorithm>
 #include <limits>
 #include <string>
+
+#include "base/bind.h"
+#include "base/callback.h"
 
 using storage::DataElement;
 using blink::WebThreadSafeData;
 
 namespace content {
+namespace {
+bool WriteMemory(void* memory_out,
+                 size_t* total_read,
+                 const char* memory,
+                 size_t size) {
+  memcpy(static_cast<char*>(memory_out) + *total_read, memory, size);
+  *total_read += size;
+  return true;
+}
+}  // namespace
 
 using ReadStatus = BlobConsolidation::ReadStatus;
 
@@ -99,11 +110,10 @@ void BlobConsolidation::AddFileSystemItem(const GURL& url,
   item.expected_modification_time = expected_modification_time;
 }
 
-ReadStatus BlobConsolidation::ReadMemory(size_t consolidated_item_index,
-                                         size_t consolidated_offset,
-                                         size_t consolidated_size,
-                                         void* memory_out) {
-  CHECK(memory_out);
+ReadStatus BlobConsolidation::VisitMemory(size_t consolidated_item_index,
+                                          size_t consolidated_offset,
+                                          size_t consolidated_size,
+                                          const MemoryVisitor& visitor) const {
   if (consolidated_item_index >= consolidated_items_.size())
     return ReadStatus::ERROR_OUT_OF_BOUNDS;
 
@@ -112,9 +122,6 @@ ReadStatus BlobConsolidation::ReadMemory(size_t consolidated_item_index,
     return ReadStatus::ERROR_WRONG_TYPE;
 
   if (consolidated_size + consolidated_offset > item.length) {
-    LOG(ERROR) << "Invalid consolidated size " << consolidated_size
-               << " and offset " << consolidated_offset << " vs item length of "
-               << item.length;
     return ReadStatus::ERROR_OUT_OF_BOUNDS;
   }
 
@@ -155,12 +162,24 @@ ReadStatus BlobConsolidation::ReadMemory(size_t consolidated_item_index,
        mid < num_items && memory_read < consolidated_size; mid++) {
     size_t read_size = std::min(item.data[mid].size() - offset_from_mid,
                                 consolidated_size - memory_read);
-    memcpy(static_cast<char*>(memory_out) + memory_read,
-           item.data[mid].data() + offset_from_mid, read_size);
+    bool continu =
+        visitor.Run(item.data[mid].data() + offset_from_mid, read_size);
+    if (!continu)
+      return ReadStatus::CANCELLED_BY_VISITOR;
     offset_from_mid = 0;
     memory_read += read_size;
   }
   return ReadStatus::OK;
+}
+
+ReadStatus BlobConsolidation::ReadMemory(size_t consolidated_item_index,
+                                         size_t consolidated_offset,
+                                         size_t consolidated_size,
+                                         void* memory_out) const {
+  size_t total_read = 0;
+  return VisitMemory(consolidated_item_index, consolidated_offset,
+                     consolidated_size,
+                     base::Bind(&WriteMemory, memory_out, &total_read));
 }
 
 }  // namespace content
