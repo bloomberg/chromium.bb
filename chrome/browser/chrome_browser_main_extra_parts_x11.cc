@@ -99,14 +99,18 @@ void ChromeBrowserMainExtraPartsX11::PostMainMessageLoopStart() {
   ui::SetX11ErrorHandlers(BrowserX11ErrorHandler, BrowserX11IOErrorHandler);
 
 #if !defined(OS_CHROMEOS)
-  // Get a timestamp from the X server.  This makes our requests to the server
-  // less likely to be thrown away by the window manager.  Put the timestamp in
-  // a command line flag so we can forward it to an existing browser process if
-  // necessary.
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kWmUserTimeMs,
-      base::Uint64ToString(
-          ui::X11EventSource::GetInstance()->UpdateLastSeenServerTime()));
+  // It is possible for X11EventSource to not have been created (e.g. when
+  // running as a mus client).
+  if (ui::X11EventSource::GetInstance()) {
+    // Get a timestamp from the X server.  This makes our requests to the server
+    // less likely to be thrown away by the window manager.  Put the timestamp
+    // in a command line flag so we can forward it to an existing browser
+    // process if necessary.
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kWmUserTimeMs,
+        base::Uint64ToString(
+            ui::X11EventSource::GetInstance()->UpdateLastSeenServerTime()));
+  }
 #endif
 }
 
