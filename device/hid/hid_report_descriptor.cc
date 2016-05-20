@@ -18,7 +18,8 @@ HidReportDescriptor::HidReportDescriptor(const std::vector<uint8_t>& bytes) {
   size_t header_index = 0;
   HidReportDescriptorItem* item = NULL;
   while (header_index < bytes.size()) {
-    item = new HidReportDescriptorItem(&bytes[header_index], item);
+    item = new HidReportDescriptorItem(&bytes[header_index],
+                                       bytes.size() - header_index, item);
     items_.push_back(linked_ptr<HidReportDescriptorItem>(item));
     header_index += item->GetSize();
   }

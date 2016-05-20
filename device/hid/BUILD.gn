@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
 source_set("hid") {
   sources = [
@@ -81,4 +82,15 @@ source_set("mocks") {
     ":hid",
     "//testing/gmock",
   ]
+}
+
+fuzzer_test("hid_report_descriptor_fuzzer") {
+  sources = [
+    "hid_report_descriptor_fuzzer.cc",
+  ]
+  deps = [
+    ":hid",
+  ]
+  seed_corpus = "fuzz_corpus"
+  libfuzzer_options = [ "max_len=2048" ]
 }

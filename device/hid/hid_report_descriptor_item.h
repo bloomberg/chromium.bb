@@ -131,6 +131,7 @@ class HidReportDescriptorItem {
 
  private:
   HidReportDescriptorItem(const uint8_t* bytes,
+                          size_t size,
                           HidReportDescriptorItem* previous);
 
  public:

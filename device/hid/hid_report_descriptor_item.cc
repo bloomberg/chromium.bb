@@ -23,18 +23,25 @@ struct Header {
 
 HidReportDescriptorItem::HidReportDescriptorItem(
     const uint8_t* bytes,
+    size_t size,
     HidReportDescriptorItem* previous)
-    : previous_(previous), next_(NULL), parent_(NULL), shortData_(0) {
+    : previous_(previous),
+      next_(NULL),
+      parent_(NULL),
+      shortData_(0),
+      payload_size_(0) {
   Header* header = (Header*)&bytes[0];
   tag_ = (Tag)(header->tag << 2 | header->type);
 
   if (IsLong()) {
     // In a long item, payload size is the second byte.
-    payload_size_ = bytes[1];
+    if (size >= 2)
+      payload_size_ = bytes[1];
   } else {
     payload_size_ = header->size;
     DCHECK(payload_size_ <= sizeof(shortData_));
-    memcpy(&shortData_, &bytes[GetHeaderSize()], payload_size());
+    if (GetHeaderSize() + payload_size() <= size)
+      memcpy(&shortData_, &bytes[GetHeaderSize()], payload_size());
   }
 
   if (previous) {
