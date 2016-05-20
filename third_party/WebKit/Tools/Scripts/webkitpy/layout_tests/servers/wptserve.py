@@ -30,7 +30,7 @@ class WPTServe(server_base.ServerBase):
         path_to_wpt_support = self._port_obj.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'thirdparty', 'wpt')
         path_to_wpt_root = fs.join(path_to_wpt_support, 'wpt')
         path_to_wpt_config = fs.join(path_to_wpt_support, 'wpt.config.json')
-        path_to_wpt_tests = fs.abspath(fs.join(self._port_obj.layout_tests_dir(), 'imported', 'web-platform-tests'))
+        path_to_wpt_tests = fs.abspath(fs.join(self._port_obj.layout_tests_dir(), 'imported', 'wpt'))
         path_to_ws_handlers = fs.join(path_to_wpt_tests, 'websockets', 'handlers')
         serve_script = fs.join(path_to_wpt_root, 'serve')
         start_cmd = [self._port_obj.host.executable,

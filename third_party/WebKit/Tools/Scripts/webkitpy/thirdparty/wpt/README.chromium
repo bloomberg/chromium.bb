@@ -91,13 +91,13 @@ content_shell is invoked with flags to map all *.test domains to 127.0.0.1.
 Running web-platform-tests with enabled WPTServe on a local machine
 
 Starting run-webkit-tests with the --enable-wptserve flag will start WPTServe
-for tests which live in LayoutTests/imported/web-platform-tests.
+for tests which live in LayoutTests/imported/wpt.
 
 WPTServe starts HTTP/S and WS/S servers as separate processes.
 
 The content_shell used to run the tests will receive the URL of each test
 (instead of a filename). The document root http://web-platform.test/ maps to
-LayoutTests/imported/web-platform-tests. HTTPS tests are enabled by default.
+LayoutTests/imported/wpt. HTTPS tests are enabled by default.
 
 Example run:
 
@@ -105,4 +105,4 @@ Example run:
     --debug \
     --enable-wptserve \
     --no-new-test-results \
-    imported/web-platform-tests
+    imported/wpt
