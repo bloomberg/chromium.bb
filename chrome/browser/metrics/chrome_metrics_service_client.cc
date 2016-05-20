@@ -103,7 +103,6 @@ namespace {
 // This specifies the amount of time to wait for all renderers to send their
 // data.
 const int kMaxHistogramGatheringWaitDuration = 60000;  // 60 seconds.
-const char kBrowserMetricsFileName[] = "SavedMetrics";
 
 // Checks whether it is the first time that cellular uploads logic should be
 // enabled based on whether the the preference for that logic is initialized.
@@ -120,21 +119,13 @@ bool ShouldClearSavedMetrics() {
 }
 
 void RegisterInstallerFileMetricsPreferences(PrefRegistrySimple* registry) {
-  base::GlobalHistogramAllocator* allocator =
-      base::GlobalHistogramAllocator::GetEvenIfDisabled();
-  if (allocator)
-    metrics::FileMetricsProvider::RegisterPrefs(registry, allocator->Name());
+  metrics::FileMetricsProvider::RegisterPrefs(
+      registry, ChromeMetricsServiceClient::kBrowserMetricsName);
 
 #if defined(OS_WIN)
   metrics::FileMetricsProvider::RegisterPrefs(
       registry, installer::kSetupHistogramAllocatorName);
 #endif
-}
-
-// A wrapper around base::DeleteFile that has no return value and thus can be
-// used as a callback.
-void LocalDeleteFile(const base::FilePath& path) {
-  base::DeleteFile(path, /*recursive=*/false);
 }
 
 std::unique_ptr<metrics::FileMetricsProvider>
@@ -151,37 +142,27 @@ CreateInstallerFileMetricsProvider(bool metrics_reporting_enabled) {
       new metrics::FileMetricsProvider(task_runner,
                                        g_browser_process->local_state()));
 
-  // Build the pathname for browser's persistent metrics file. Set it as the
-  // destination for the GlobalHistogramAllocator during process exit and add
-  // it to the file-metrics-provider so one written from a previous run will
-  // be loaded.
-  // TODO(bcwhite): Actually create those files.
+  // Create the full pathname of the file holding browser metrics.
   base::FilePath metrics_file;
   if (base::PathService::Get(chrome::DIR_USER_DATA, &metrics_file)) {
     metrics_file =
-        metrics_file.AppendASCII(kBrowserMetricsFileName)
+        metrics_file
+            .AppendASCII(ChromeMetricsServiceClient::kBrowserMetricsName)
             .AddExtension(base::PersistentMemoryAllocator::kFileExtension);
+
     if (metrics_reporting_enabled) {
-      // Metrics get persisted to disk when the process exits. Store the path
-      // to that file in the global allocator for use at exit time and tell
-      // the FileMetricsProvider about that file so it can read one created
-      // by the previous run.
-      base::GlobalHistogramAllocator* allocator =
-          base::GlobalHistogramAllocator::GetEvenIfDisabled();
-      if (allocator) {
-        const char* allocator_name = allocator->Name();
-        allocator->SetPersistentLocation(metrics_file);
-        file_metrics_provider->RegisterSource(
-            metrics_file,
-            metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_FILE,
-            metrics::FileMetricsProvider::ASSOCIATE_PREVIOUS_RUN,
-            allocator_name);
-      }
+      // Enable reading any existing saved metrics.
+      file_metrics_provider->RegisterSource(
+          metrics_file,
+          metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_FILE,
+          metrics::FileMetricsProvider::ASSOCIATE_PREVIOUS_RUN,
+          ChromeMetricsServiceClient::kBrowserMetricsName);
     } else {
       // When metrics reporting is not enabled, any existing file should be
       // deleted in order to preserve user privacy.
       task_runner->PostTask(FROM_HERE,
-                            base::Bind(&LocalDeleteFile, metrics_file));
+                            base::Bind(base::IgnoreResult(&base::DeleteFile),
+                                       metrics_file, /*recursive=*/false));
     }
   }
 
@@ -201,6 +182,8 @@ CreateInstallerFileMetricsProvider(bool metrics_reporting_enabled) {
 
 }  // namespace
 
+
+const char ChromeMetricsServiceClient::kBrowserMetricsName[] = "BrowserMetrics";
 
 ChromeMetricsServiceClient::ChromeMetricsServiceClient(
     metrics::MetricsStateManager* state_manager)

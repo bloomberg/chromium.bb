@@ -79,6 +79,12 @@ class ChromeMetricsServiceClient
   EnableMetricsDefault GetDefaultOptIn() override;
   bool IsUMACellularUploadLogicEnabled() override;
 
+  // Persistent browser metrics need to be persisted somewhere. This constant
+  // provides a known string to be used for both the allocator's internal name
+  // and for a file on disk (relative to chrome::DIR_USER_DATA) to which they
+  // can be saved.
+  static const char kBrowserMetricsName[];
+
  private:
   explicit ChromeMetricsServiceClient(
       metrics::MetricsStateManager* state_manager);

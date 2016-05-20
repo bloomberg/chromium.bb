@@ -47,7 +47,6 @@ enum : uint32_t {
 // anything essential at exit anyway due to the fact that they depend on data
 // managed elsewhere and which could be destructed first.
 GlobalHistogramAllocator* g_allocator = nullptr;
-bool g_allocator_enabled = false;
 
 // Take an array of range boundaries and create a proper BucketRanges object
 // which is returned to the caller. A return of nullptr indicates that the
@@ -657,18 +656,6 @@ void GlobalHistogramAllocator::CreateWithSharedMemoryHandle(
 }
 
 // static
-void GlobalHistogramAllocator::Enable() {
-  DCHECK(g_allocator);
-  g_allocator_enabled = true;
-}
-
-// static
-void GlobalHistogramAllocator::Disable() {
-  DCHECK(g_allocator);
-  g_allocator_enabled = false;
-}
-
-// static
 void GlobalHistogramAllocator::Set(
     std::unique_ptr<GlobalHistogramAllocator> allocator) {
   // Releasing or changing an allocator is extremely dangerous because it
@@ -676,7 +663,6 @@ void GlobalHistogramAllocator::Set(
   // also released, future accesses to those histograms will seg-fault.
   CHECK(!g_allocator);
   g_allocator = allocator.release();
-  g_allocator_enabled = true;
   size_t existing = StatisticsRecorder::GetHistogramCount();
 
   DVLOG_IF(1, existing)
@@ -685,11 +671,6 @@ void GlobalHistogramAllocator::Set(
 
 // static
 GlobalHistogramAllocator* GlobalHistogramAllocator::Get() {
-  return g_allocator_enabled ? g_allocator : nullptr;
-}
-
-// static
-GlobalHistogramAllocator* GlobalHistogramAllocator::GetEvenIfDisabled() {
   return g_allocator;
 }
 
@@ -733,8 +714,6 @@ void GlobalHistogramAllocator::SetPersistentLocation(const FilePath& location) {
 }
 
 bool GlobalHistogramAllocator::WriteToPersistentLocation() {
-  DCHECK(g_allocator_enabled);
-
 #if defined(OS_NACL)
   // NACL doesn't support file operations, including ImportantFileWriter.
   NOTREACHED();
