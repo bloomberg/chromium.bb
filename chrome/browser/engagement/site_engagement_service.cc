@@ -505,7 +505,11 @@ void SiteEngagementService::GetCountsAndLastVisitForOriginsComplete(
 
 void SiteEngagementService::ResetScoreAndAccessTimesForURL(
     const GURL& url, double score, const base::Time* updated_time) {
-  DCHECK(url.is_valid());
+  // It appears that the history service occassionally sends bad URLs to us.
+  // See crbug.com/612881.
+  if (!url.is_valid())
+    return;
+
   DCHECK_GE(score, 0);
   DCHECK_LE(score, SiteEngagementScore::kMaxPoints);
 
