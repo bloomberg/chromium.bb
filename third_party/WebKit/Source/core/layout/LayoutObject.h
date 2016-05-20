@@ -1480,7 +1480,11 @@ protected:
     // Overrides should call the superclass at the start. |oldStyle| will be 0 the first
     // time this function is called.
     virtual void styleDidChange(StyleDifference, const ComputedStyle* oldStyle);
-    void propagateStyleToAnonymousChildren(bool blockChildrenOnly = false);
+    void propagateStyleToAnonymousChildren();
+    // Return true for objects that don't want style changes automatically propagated via
+    // propagateStyleToAnonymousChildren(), but rather rely on other custom mechanisms (if they
+    // need to be notified of parent style changes at all).
+    virtual bool anonymousHasStylePropagationOverride() { return false; }
 
 protected:
     // This function is called before calling the destructor so that some clean-up

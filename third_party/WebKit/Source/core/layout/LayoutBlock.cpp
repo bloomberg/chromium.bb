@@ -229,7 +229,7 @@ void LayoutBlock::styleDidChange(StyleDifference diff, const ComputedStyle* oldS
     if (TextAutosizer* textAutosizer = document().textAutosizer())
         textAutosizer->record(this);
 
-    propagateStyleToAnonymousChildren(true);
+    propagateStyleToAnonymousChildren();
 
     // It's possible for our border/padding to change, but for the overall logical width or height of the block to
     // end up being the same. We keep track of this change so in layoutBlock, we can know to set relayoutChildren=true.

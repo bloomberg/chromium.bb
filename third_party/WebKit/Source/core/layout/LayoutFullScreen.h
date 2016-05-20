@@ -49,6 +49,7 @@ public:
     void unwrapLayoutObject();
 
     void updateStyle();
+    bool anonymousHasStylePropagationOverride() override { return true; }
 
     // Must call setStyleWithWritingModeOfParent() instead.
     void setStyle(PassRefPtr<ComputedStyle>) = delete;

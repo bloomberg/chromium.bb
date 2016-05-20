@@ -196,7 +196,7 @@ void LayoutInline::styleDidChange(StyleDifference diff, const ComputedStyle* old
         setAlwaysCreateLineBoxes(alwaysCreateLineBoxesNew);
     }
 
-    propagateStyleToAnonymousChildren(true);
+    propagateStyleToAnonymousChildren();
 }
 
 void LayoutInline::updateAlwaysCreateLineBoxes(bool fullLayout)

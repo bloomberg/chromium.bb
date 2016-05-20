@@ -48,6 +48,8 @@ public:
 
 private:
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectLayoutFullScreenPlaceholder || LayoutBlockFlow::isOfType(type); }
+    bool anonymousHasStylePropagationOverride() override { return true; }
+
     void willBeDestroyed() override;
     LayoutFullScreen* m_owner;
 };

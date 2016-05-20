@@ -96,6 +96,7 @@ private:
 
     void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
+    bool anonymousHasStylePropagationOverride() override { return true; }
 
     String m_text;
     Persistent<StyleImage> m_image;

@@ -2122,24 +2122,21 @@ void LayoutObject::styleDidChange(StyleDifference diff, const ComputedStyle* old
     }
 }
 
-void LayoutObject::propagateStyleToAnonymousChildren(bool blockChildrenOnly)
+void LayoutObject::propagateStyleToAnonymousChildren()
 {
     // FIXME: We could save this call when the change only affected non-inherited properties.
     for (LayoutObject* child = slowFirstChild(); child; child = child->nextSibling()) {
         if (!child->isAnonymous() || child->style()->styleType() != PseudoIdNone)
             continue;
 
-        if (blockChildrenOnly && !child->isLayoutBlock())
-            continue;
-
-        if (child->isLayoutFullScreen() || child->isLayoutFullScreenPlaceholder())
+        if (child->anonymousHasStylePropagationOverride())
             continue;
 
         RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(styleRef(), child->style()->display());
 
         // Preserve the position style of anonymous block continuations as they can have relative position when
         // they contain block descendants of relative positioned inlines.
-        if (child->isInFlowPositioned() && toLayoutBlock(child)->isAnonymousBlockContinuation())
+        if (child->isInFlowPositioned() && child->isLayoutBlock() && toLayoutBlock(child)->isAnonymousBlockContinuation())
             newStyle->setPosition(child->style()->position());
 
         updateAnonymousChildStyle(*child, *newStyle);
