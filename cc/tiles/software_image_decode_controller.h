@@ -103,8 +103,8 @@ class CC_EXPORT SoftwareImageDecodeController
   using ImageKey = ImageDecodeControllerKey;
   using ImageKeyHash = ImageDecodeControllerKeyHash;
 
-  explicit SoftwareImageDecodeController(ResourceFormat format);
-  SoftwareImageDecodeController();
+  SoftwareImageDecodeController(ResourceFormat format,
+                                size_t locked_memory_limit_bytes);
   ~SoftwareImageDecodeController() override;
 
   // ImageDecodeController overrides.
@@ -177,6 +177,7 @@ class CC_EXPORT SoftwareImageDecodeController
     void AddUsage(size_t usage);
     void SubtractUsage(size_t usage);
     void ResetUsage();
+    size_t total_limit_bytes() const { return limit_bytes_; }
 
    private:
     size_t GetCurrentUsageSafe() const;

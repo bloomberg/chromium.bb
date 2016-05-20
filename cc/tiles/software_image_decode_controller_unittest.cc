@@ -6,11 +6,20 @@
 
 #include "cc/playback/draw_image.h"
 #include "cc/raster/tile_task.h"
+#include "cc/resources/resource_format.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace cc {
 namespace {
+
+size_t kLockedMemoryLimitBytes = 128 * 1024 * 1024;
+class TestSoftwareImageDecodeController : public SoftwareImageDecodeController {
+ public:
+  TestSoftwareImageDecodeController()
+      : SoftwareImageDecodeController(ResourceFormat::RGBA_8888,
+                                      kLockedMemoryLimitBytes) {}
+};
 
 sk_sp<SkImage> CreateImage(int width, int height) {
   SkBitmap bitmap;
@@ -477,7 +486,7 @@ TEST(SoftwareImageDecodeControllerTest,
 }
 
 TEST(SoftwareImageDecodeControllerTest, GetTaskForImageSameImage) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   sk_sp<SkImage> image = CreateImage(100, 100);
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
@@ -506,7 +515,7 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageSameImage) {
 
 TEST(SoftwareImageDecodeControllerTest,
      GetTaskForImageSameImageDifferentQuality) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   sk_sp<SkImage> image = CreateImage(100, 100);
   bool is_decomposable = true;
 
@@ -552,7 +561,7 @@ TEST(SoftwareImageDecodeControllerTest,
 }
 
 TEST(SoftwareImageDecodeControllerTest, GetTaskForImageSameImageDifferentSize) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   sk_sp<SkImage> image = CreateImage(100, 100);
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
@@ -583,7 +592,7 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageSameImageDifferentSize) {
 }
 
 TEST(SoftwareImageDecodeControllerTest, GetTaskForImageDifferentImage) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -614,7 +623,7 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageDifferentImage) {
 }
 
 TEST(SoftwareImageDecodeControllerTest, GetTaskForImageAlreadyDecoded) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -648,7 +657,7 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageAlreadyDecoded) {
 }
 
 TEST(SoftwareImageDecodeControllerTest, GetTaskForImageAlreadyPrerolled) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kLow_SkFilterQuality;
 
@@ -689,7 +698,7 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageAlreadyPrerolled) {
 }
 
 TEST(SoftwareImageDecodeControllerTest, GetTaskForImageCanceledGetsNewTask) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -735,7 +744,7 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageCanceledGetsNewTask) {
 
 TEST(SoftwareImageDecodeControllerTest,
      GetTaskForImageCanceledWhileReffedGetsNewTask) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -780,7 +789,7 @@ TEST(SoftwareImageDecodeControllerTest,
 }
 
 TEST(SoftwareImageDecodeControllerTest, GetDecodedImageForDraw) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -821,7 +830,7 @@ TEST(SoftwareImageDecodeControllerTest, GetDecodedImageForDraw) {
 
 TEST(SoftwareImageDecodeControllerTest,
      GetDecodedImageForDrawWithNonContainedSrcRect) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -861,7 +870,7 @@ TEST(SoftwareImageDecodeControllerTest,
 }
 
 TEST(SoftwareImageDecodeControllerTest, GetDecodedImageForDrawAtRasterDecode) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -886,7 +895,7 @@ TEST(SoftwareImageDecodeControllerTest, GetDecodedImageForDrawAtRasterDecode) {
 
 TEST(SoftwareImageDecodeControllerTest,
      GetDecodedImageForDrawAtRasterDecodeMultipleTimes) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -917,7 +926,7 @@ TEST(SoftwareImageDecodeControllerTest,
 
 TEST(SoftwareImageDecodeControllerTest,
      GetDecodedImageForDrawAtRasterDecodeDoesNotPreventTasks) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -970,7 +979,7 @@ TEST(SoftwareImageDecodeControllerTest,
 
 TEST(SoftwareImageDecodeControllerTest,
      GetDecodedImageForDrawAtRasterDecodeIsUsedForLockedCache) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -1023,7 +1032,7 @@ TEST(SoftwareImageDecodeControllerTest,
 }
 
 TEST(SoftwareImageDecodeControllerTest, ZeroSizedImagesAreSkipped) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -1046,7 +1055,7 @@ TEST(SoftwareImageDecodeControllerTest, ZeroSizedImagesAreSkipped) {
 }
 
 TEST(SoftwareImageDecodeControllerTest, NonOverlappingSrcRectImagesAreSkipped) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -1069,7 +1078,7 @@ TEST(SoftwareImageDecodeControllerTest, NonOverlappingSrcRectImagesAreSkipped) {
 }
 
 TEST(SoftwareImageDecodeControllerTest, LowQualityFilterIsHandled) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kLow_SkFilterQuality;
 
@@ -1096,7 +1105,7 @@ TEST(SoftwareImageDecodeControllerTest, LowQualityFilterIsHandled) {
 }
 
 TEST(SoftwareImageDecodeControllerTest, LowQualityScaledSubrectIsHandled) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kLow_SkFilterQuality;
 
@@ -1124,7 +1133,7 @@ TEST(SoftwareImageDecodeControllerTest, LowQualityScaledSubrectIsHandled) {
 }
 
 TEST(SoftwareImageDecodeControllerTest, NoneQualityScaledSubrectIsHandled) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kNone_SkFilterQuality;
 
@@ -1152,7 +1161,7 @@ TEST(SoftwareImageDecodeControllerTest, NoneQualityScaledSubrectIsHandled) {
 }
 
 TEST(SoftwareImageDecodeControllerTest, MediumQualityAt01_5ScaleIsHandled) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kMedium_SkFilterQuality;
 
@@ -1182,7 +1191,7 @@ TEST(SoftwareImageDecodeControllerTest, MediumQualityAt01_5ScaleIsHandled) {
 }
 
 TEST(SoftwareImageDecodeControllerTest, MediumQualityAt1_0ScaleIsHandled) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kMedium_SkFilterQuality;
 
@@ -1212,7 +1221,7 @@ TEST(SoftwareImageDecodeControllerTest, MediumQualityAt1_0ScaleIsHandled) {
 }
 
 TEST(SoftwareImageDecodeControllerTest, MediumQualityAt0_75ScaleIsHandled) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kMedium_SkFilterQuality;
 
@@ -1242,7 +1251,7 @@ TEST(SoftwareImageDecodeControllerTest, MediumQualityAt0_75ScaleIsHandled) {
 }
 
 TEST(SoftwareImageDecodeControllerTest, MediumQualityAt0_5ScaleIsHandled) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kMedium_SkFilterQuality;
 
@@ -1272,7 +1281,7 @@ TEST(SoftwareImageDecodeControllerTest, MediumQualityAt0_5ScaleIsHandled) {
 }
 
 TEST(SoftwareImageDecodeControllerTest, MediumQualityAt0_49ScaleIsHandled) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kMedium_SkFilterQuality;
 
@@ -1302,7 +1311,7 @@ TEST(SoftwareImageDecodeControllerTest, MediumQualityAt0_49ScaleIsHandled) {
 }
 
 TEST(SoftwareImageDecodeControllerTest, MediumQualityAt0_1ScaleIsHandled) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kMedium_SkFilterQuality;
 
@@ -1332,7 +1341,7 @@ TEST(SoftwareImageDecodeControllerTest, MediumQualityAt0_1ScaleIsHandled) {
 }
 
 TEST(SoftwareImageDecodeControllerTest, MediumQualityAt0_01ScaleIsHandled) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kMedium_SkFilterQuality;
 
@@ -1362,7 +1371,7 @@ TEST(SoftwareImageDecodeControllerTest, MediumQualityAt0_01ScaleIsHandled) {
 }
 
 TEST(SoftwareImageDecodeControllerTest, MediumQualityAt0_001ScaleIsHandled) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kMedium_SkFilterQuality;
 
@@ -1386,7 +1395,7 @@ TEST(SoftwareImageDecodeControllerTest, MediumQualityAt0_001ScaleIsHandled) {
 
 TEST(SoftwareImageDecodeControllerTest,
      MediumQualityImagesAreTheSameAt0_5And0_49Scale) {
-  SoftwareImageDecodeController controller;
+  TestSoftwareImageDecodeController controller;
   bool is_decomposable = true;
   SkFilterQuality quality = kMedium_SkFilterQuality;
 

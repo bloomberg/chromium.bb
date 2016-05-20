@@ -27,7 +27,6 @@
 namespace cc {
 namespace {
 
-static const int kMaxGpuImageBytes = 1024 * 1024 * 96;
 static const int kMaxDiscardableItems = 2000;
 
 // Returns true if an image would not be drawn and should therefore be
@@ -153,13 +152,15 @@ GpuImageDecodeController::ImageData::ImageData(DecodedDataMode mode,
 GpuImageDecodeController::ImageData::~ImageData() = default;
 
 GpuImageDecodeController::GpuImageDecodeController(ContextProvider* context,
-                                                   ResourceFormat decode_format)
+                                                   ResourceFormat decode_format,
+                                                   size_t max_gpu_image_bytes)
     : format_(decode_format),
       context_(context),
       image_data_(ImageDataMRUCache::NO_AUTO_EVICT),
       cached_items_limit_(kMaxDiscardableItems),
-      cached_bytes_limit_(kMaxGpuImageBytes),
-      bytes_used_(0) {
+      cached_bytes_limit_(max_gpu_image_bytes),
+      bytes_used_(0),
+      max_gpu_image_bytes_(max_gpu_image_bytes) {
   // Acquire the context_lock so that we can safely retrieve the
   // GrContextThreadSafeProxy. This proxy can then be used with no lock held.
   {
@@ -363,7 +364,7 @@ void GpuImageDecodeController::SetShouldAggressivelyFreeResources(
     DeletePendingImages();
   } else {
     base::AutoLock lock(lock_);
-    cached_bytes_limit_ = kMaxGpuImageBytes;
+    cached_bytes_limit_ = max_gpu_image_bytes_;
   }
 }
 

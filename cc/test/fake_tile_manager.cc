@@ -14,6 +14,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/raster/raster_buffer.h"
 #include "cc/test/fake_tile_task_manager.h"
+#include "cc/trees/layer_tree_settings.h"
 
 namespace cc {
 
@@ -28,7 +29,10 @@ FakeTileManager::FakeTileManager(TileManagerClient* client)
     : TileManager(client,
                   base::ThreadTaskRunnerHandle::Get(),
                   std::numeric_limits<size_t>::max(),
-                  false /* use_partial_raster */) {
+                  false /* use_partial_raster */),
+      image_decode_controller_(
+          ResourceFormat::RGBA_8888,
+          LayerTreeSettings().software_decoded_image_budget_bytes) {
   SetResources(
       nullptr, &image_decode_controller_, g_fake_tile_task_manager.Pointer(),
       std::numeric_limits<size_t>::max(), false /* use_gpu_rasterization */);
@@ -39,7 +43,10 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
     : TileManager(client,
                   base::ThreadTaskRunnerHandle::Get(),
                   std::numeric_limits<size_t>::max(),
-                  false /* use_partial_raster */) {
+                  false /* use_partial_raster */),
+      image_decode_controller_(
+          ResourceFormat::RGBA_8888,
+          LayerTreeSettings().software_decoded_image_budget_bytes) {
   SetResources(resource_pool, &image_decode_controller_,
                g_fake_tile_task_manager.Pointer(),
                std::numeric_limits<size_t>::max(),

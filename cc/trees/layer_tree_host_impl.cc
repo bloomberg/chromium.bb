@@ -2156,11 +2156,13 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
   if (use_gpu_rasterization_) {
     image_decode_controller_ = base::WrapUnique(new GpuImageDecodeController(
         output_surface_->worker_context_provider(),
-        settings_.renderer_settings.preferred_tile_format));
+        settings_.renderer_settings.preferred_tile_format,
+        settings_.gpu_decoded_image_budget_bytes));
   } else {
     image_decode_controller_ =
         base::WrapUnique(new SoftwareImageDecodeController(
-            settings_.renderer_settings.preferred_tile_format));
+            settings_.renderer_settings.preferred_tile_format,
+            settings_.software_decoded_image_budget_bytes));
   }
 
   // Pass the single-threaded synchronous task graph runner to the worker pool

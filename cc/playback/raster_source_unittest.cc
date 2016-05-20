@@ -572,7 +572,9 @@ TEST(RasterSourceTest, ImageHijackCanvasRespectsSharedCanvasTransform) {
   bool can_use_lcd = true;
   scoped_refptr<RasterSource> raster_source =
       recording_source->CreateRasterSource(can_use_lcd);
-  SoftwareImageDecodeController controller;
+  SoftwareImageDecodeController controller(
+      ResourceFormat::RGBA_8888,
+      LayerTreeSettings().software_decoded_image_budget_bytes);
   raster_source->SetImageDecodeController(&controller);
 
   SkBitmap bitmap;

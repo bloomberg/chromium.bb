@@ -108,6 +108,8 @@ LayerTreeSettings::LayerTreeSettings()
       memory_policy_(64 * 1024 * 1024,
                      gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
                      ManagedMemoryPolicy::kDefaultNumResourcesLimit),
+      gpu_decoded_image_budget_bytes(96 * 1024 * 1024),
+      software_decoded_image_budget_bytes(128 * 1024 * 1024),
       use_cached_picture_raster(true) {}
 
 LayerTreeSettings::LayerTreeSettings(const LayerTreeSettings& other) = default;

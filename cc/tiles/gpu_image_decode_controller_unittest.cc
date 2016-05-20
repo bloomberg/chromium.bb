@@ -13,6 +13,15 @@
 namespace cc {
 namespace {
 
+size_t kGpuMemoryLimitBytes = 96 * 1024 * 1024;
+class TestGpuImageDecodeController : public GpuImageDecodeController {
+ public:
+  explicit TestGpuImageDecodeController(ContextProvider* context)
+      : GpuImageDecodeController(context,
+                                 ResourceFormat::RGBA_8888,
+                                 kGpuMemoryLimitBytes) {}
+};
+
 sk_sp<SkImage> CreateImage(int width, int height) {
   SkBitmap bitmap;
   bitmap.allocPixels(SkImageInfo::MakeN32Premul(width, height));
@@ -62,8 +71,7 @@ void ProcessTask(TileTask* task) {
 TEST(GpuImageDecodeControllerTest, GetTaskForImageSameImage) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
-  GpuImageDecodeController controller(context_provider.get(),
-                                      ResourceFormat::RGBA_8888);
+  TestGpuImageDecodeController controller(context_provider.get());
   sk_sp<SkImage> image = CreateImage(100, 100);
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
@@ -96,8 +104,7 @@ TEST(GpuImageDecodeControllerTest, GetTaskForImageSameImage) {
 TEST(GpuImageDecodeControllerTest, GetTaskForImageDifferentImage) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
-  GpuImageDecodeController controller(context_provider.get(),
-                                      ResourceFormat::RGBA_8888);
+  TestGpuImageDecodeController controller(context_provider.get());
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -135,8 +142,7 @@ TEST(GpuImageDecodeControllerTest, GetTaskForImageDifferentImage) {
 TEST(GpuImageDecodeControllerTest, GetTaskForImageAlreadyDecodedAndLocked) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
-  GpuImageDecodeController controller(context_provider.get(),
-                                      ResourceFormat::RGBA_8888);
+  TestGpuImageDecodeController controller(context_provider.get());
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -181,8 +187,7 @@ TEST(GpuImageDecodeControllerTest, GetTaskForImageAlreadyDecodedAndLocked) {
 TEST(GpuImageDecodeControllerTest, GetTaskForImageAlreadyDecodedNotLocked) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
-  GpuImageDecodeController controller(context_provider.get(),
-                                      ResourceFormat::RGBA_8888);
+  TestGpuImageDecodeController controller(context_provider.get());
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -227,8 +232,7 @@ TEST(GpuImageDecodeControllerTest, GetTaskForImageAlreadyDecodedNotLocked) {
 TEST(GpuImageDecodeControllerTest, GetTaskForImageAlreadyUploaded) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
-  GpuImageDecodeController controller(context_provider.get(),
-                                      ResourceFormat::RGBA_8888);
+  TestGpuImageDecodeController controller(context_provider.get());
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -263,8 +267,7 @@ TEST(GpuImageDecodeControllerTest, GetTaskForImageAlreadyUploaded) {
 TEST(GpuImageDecodeControllerTest, GetTaskForImageCanceledGetsNewTask) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
-  GpuImageDecodeController controller(context_provider.get(),
-                                      ResourceFormat::RGBA_8888);
+  TestGpuImageDecodeController controller(context_provider.get());
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -312,8 +315,7 @@ TEST(GpuImageDecodeControllerTest,
      GetTaskForImageCanceledWhileReffedGetsNewTask) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
-  GpuImageDecodeController controller(context_provider.get(),
-                                      ResourceFormat::RGBA_8888);
+  TestGpuImageDecodeController controller(context_provider.get());
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -360,8 +362,7 @@ TEST(GpuImageDecodeControllerTest,
 TEST(GpuImageDecodeControllerTest, NoTaskForImageAlreadyFailedDecoding) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
-  GpuImageDecodeController controller(context_provider.get(),
-                                      ResourceFormat::RGBA_8888);
+  TestGpuImageDecodeController controller(context_provider.get());
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -394,8 +395,7 @@ TEST(GpuImageDecodeControllerTest, NoTaskForImageAlreadyFailedDecoding) {
 TEST(GpuImageDecodeControllerTest, GetDecodedImageForDraw) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
-  GpuImageDecodeController controller(context_provider.get(),
-                                      ResourceFormat::RGBA_8888);
+  TestGpuImageDecodeController controller(context_provider.get());
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -429,8 +429,7 @@ TEST(GpuImageDecodeControllerTest, GetDecodedImageForDraw) {
 TEST(GpuImageDecodeControllerTest, GetLargeDecodedImageForDraw) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
-  GpuImageDecodeController controller(context_provider.get(),
-                                      ResourceFormat::RGBA_8888);
+  TestGpuImageDecodeController controller(context_provider.get());
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -465,8 +464,7 @@ TEST(GpuImageDecodeControllerTest, GetLargeDecodedImageForDraw) {
 TEST(GpuImageDecodeControllerTest, GetDecodedImageForDrawAtRasterDecode) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
-  GpuImageDecodeController controller(context_provider.get(),
-                                      ResourceFormat::RGBA_8888);
+  TestGpuImageDecodeController controller(context_provider.get());
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -500,8 +498,7 @@ TEST(GpuImageDecodeControllerTest, GetDecodedImageForDrawAtRasterDecode) {
 TEST(GpuImageDecodeControllerTest, AtRasterUsedDirectlyIfSpaceAllows) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
-  GpuImageDecodeController controller(context_provider.get(),
-                                      ResourceFormat::RGBA_8888);
+  TestGpuImageDecodeController controller(context_provider.get());
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -548,8 +545,7 @@ TEST(GpuImageDecodeControllerTest,
      GetDecodedImageForDrawAtRasterDecodeMultipleTimes) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
-  GpuImageDecodeController controller(context_provider.get(),
-                                      ResourceFormat::RGBA_8888);
+  TestGpuImageDecodeController controller(context_provider.get());
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -584,8 +580,7 @@ TEST(GpuImageDecodeControllerTest,
      GetLargeDecodedImageForDrawAtRasterDecodeMultipleTimes) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
-  GpuImageDecodeController controller(context_provider.get(),
-                                      ResourceFormat::RGBA_8888);
+  TestGpuImageDecodeController controller(context_provider.get());
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -621,8 +616,7 @@ TEST(GpuImageDecodeControllerTest,
 TEST(GpuImageDecodeControllerTest, ZeroSizedImagesAreSkipped) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
-  GpuImageDecodeController controller(context_provider.get(),
-                                      ResourceFormat::RGBA_8888);
+  TestGpuImageDecodeController controller(context_provider.get());
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -650,8 +644,7 @@ TEST(GpuImageDecodeControllerTest, ZeroSizedImagesAreSkipped) {
 TEST(GpuImageDecodeControllerTest, NonOverlappingSrcRectImagesAreSkipped) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
-  GpuImageDecodeController controller(context_provider.get(),
-                                      ResourceFormat::RGBA_8888);
+  TestGpuImageDecodeController controller(context_provider.get());
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -679,8 +672,7 @@ TEST(GpuImageDecodeControllerTest, NonOverlappingSrcRectImagesAreSkipped) {
 TEST(GpuImageDecodeControllerTest, CanceledTasksDoNotCountAgainstBudget) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
-  GpuImageDecodeController controller(context_provider.get(),
-                                      ResourceFormat::RGBA_8888);
+  TestGpuImageDecodeController controller(context_provider.get());
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
@@ -708,8 +700,7 @@ TEST(GpuImageDecodeControllerTest, CanceledTasksDoNotCountAgainstBudget) {
 TEST(GpuImageDecodeControllerTest, ShouldAggressivelyFreeResources) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
-  GpuImageDecodeController controller(context_provider.get(),
-                                      ResourceFormat::RGBA_8888);
+  TestGpuImageDecodeController controller(context_provider.get());
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 

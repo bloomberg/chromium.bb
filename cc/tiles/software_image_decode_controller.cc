@@ -27,11 +27,6 @@
 namespace cc {
 namespace {
 
-// The amount of memory we can lock ahead of time (128MB). This limit is only
-// used to inform the caller of the amount of space available in the cache. The
-// caller can still request tasks which can cause this limit to be breached.
-const size_t kLockedMemoryLimitBytes = 128 * 1024 * 1024;
-
 // The largest single high quality image to try and process. Images above this
 // size will drop down to medium quality.
 const size_t kMaxHighQualityImageSizeBytes = 64 * 1024 * 1024;
@@ -185,10 +180,11 @@ void RecordLockExistingCachedImageHistogram(TilePriority::PriorityBin bin,
 }  // namespace
 
 SoftwareImageDecodeController::SoftwareImageDecodeController(
-    ResourceFormat format)
+    ResourceFormat format,
+    size_t locked_memory_limit_bytes)
     : decoded_images_(ImageMRUCache::NO_AUTO_EVICT),
       at_raster_decoded_images_(ImageMRUCache::NO_AUTO_EVICT),
-      locked_images_budget_(kLockedMemoryLimitBytes),
+      locked_images_budget_(locked_memory_limit_bytes),
       format_(format) {
   // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
   // Don't register a dump provider in these cases.
@@ -198,9 +194,6 @@ SoftwareImageDecodeController::SoftwareImageDecodeController(
         base::ThreadTaskRunnerHandle::Get());
   }
 }
-
-SoftwareImageDecodeController::SoftwareImageDecodeController()
-    : SoftwareImageDecodeController(RGBA_8888) {}
 
 SoftwareImageDecodeController::~SoftwareImageDecodeController() {
   DCHECK_EQ(0u, decoded_images_ref_counts_.size());
@@ -775,7 +768,7 @@ void SoftwareImageDecodeController::SanityCheckState(int line,
     return;
   }
 
-  MemoryBudget budget(kLockedMemoryLimitBytes);
+  MemoryBudget budget(locked_images_budget_.total_limit_bytes());
   for (const auto& image_pair : decoded_images_) {
     const auto& key = image_pair.first;
     const auto& image = image_pair.second;

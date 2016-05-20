@@ -54,7 +54,8 @@ class CC_EXPORT GpuImageDecodeController
       public base::trace_event::MemoryDumpProvider {
  public:
   explicit GpuImageDecodeController(ContextProvider* context,
-                                    ResourceFormat decode_format);
+                                    ResourceFormat decode_format,
+                                    size_t max_gpu_image_bytes);
   ~GpuImageDecodeController() override;
 
   // ImageDecodeController overrides.
@@ -188,6 +189,7 @@ class CC_EXPORT GpuImageDecodeController
   size_t cached_items_limit_;
   size_t cached_bytes_limit_;
   size_t bytes_used_;
+  const size_t max_gpu_image_bytes_;
 
   // We can't release GPU backed SkImages without holding the context lock,
   // so we add them to this list and defer deletion until the next time the lock

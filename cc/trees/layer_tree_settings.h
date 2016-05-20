@@ -94,6 +94,8 @@ class CC_EXPORT LayerTreeSettings {
   bool use_layer_lists;
   int max_staging_buffer_usage_in_bytes;
   ManagedMemoryPolicy memory_policy_;
+  size_t gpu_decoded_image_budget_bytes;
+  size_t software_decoded_image_budget_bytes;
 
   // If set to true, the display item list will internally cache a SkPicture for
   // raster rather than directly using the display items.
