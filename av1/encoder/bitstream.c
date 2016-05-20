@@ -42,24 +42,21 @@
 #include "av1/encoder/subexp.h"
 #include "av1/encoder/tokenize.h"
 
-static const struct av1_token intra_mode_encodings[INTRA_MODES] = {
-  { 0, 1 },  { 6, 3 },   { 28, 5 },  { 30, 5 }, { 58, 6 },
-  { 59, 6 }, { 126, 7 }, { 127, 7 }, { 62, 6 }, { 2, 2 }
-};
-static const struct av1_token switchable_interp_encodings[SWITCHABLE_FILTERS] =
-    { { 0, 1 }, { 2, 2 }, { 3, 2 } };
-static const struct av1_token partition_encodings[PARTITION_TYPES] = {
-  { 0, 1 }, { 2, 2 }, { 6, 3 }, { 7, 3 }
-};
+static struct av1_token intra_mode_encodings[INTRA_MODES];
+static struct av1_token switchable_interp_encodings[SWITCHABLE_FILTERS];
+static struct av1_token partition_encodings[PARTITION_TYPES];
 #if !CONFIG_REF_MV
-static const struct av1_token inter_mode_encodings[INTER_MODES] = {
-  { 2, 2 }, { 6, 3 }, { 0, 1 }, { 7, 3 }
-};
+static struct av1_token inter_mode_encodings[INTER_MODES];
 #endif
-
 static struct av1_token ext_tx_encodings[TX_TYPES];
 
 void av1_encode_token_init() {
+  av1_tokens_from_tree(intra_mode_encodings, av1_intra_mode_tree);
+  av1_tokens_from_tree(switchable_interp_encodings, av1_switchable_interp_tree);
+  av1_tokens_from_tree(partition_encodings, av1_partition_tree);
+#if !CONFIG_REF_MV
+  av1_tokens_from_tree(inter_mode_encodings, av1_inter_mode_tree);
+#endif
   av1_tokens_from_tree(ext_tx_encodings, av1_ext_tx_tree);
 }
 
