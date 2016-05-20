@@ -9,8 +9,6 @@ import android.util.Pair;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.AppLinkHandler;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
@@ -127,6 +125,29 @@ public class LaunchMetrics {
         }
     }
 
+    /** Caches a set of times histogram samples. */
+    public static class TimesHistogramSample extends CachedHistogram {
+        private final List<Long> mSamples = new ArrayList<Long>();
+        private final TimeUnit mTimeUnit;
+
+        public TimesHistogramSample(String histogramName, TimeUnit timeUnit) {
+            super(histogramName);
+            mTimeUnit = timeUnit;
+        }
+
+        public void record(long sample) {
+            mSamples.add(sample);
+        }
+
+        @Override
+        protected void commitAndClear() {
+            for (Long sample : mSamples) {
+                RecordHistogram.recordTimesHistogram(mHistogramName, sample, mTimeUnit);
+            }
+            mSamples.clear();
+        }
+    }
+
     // Each list item is a pair of the url and where it was added from e.g. from the add to
     // homescreen menu item, an app banner, or unknown. The mapping of int source values to
     // their string names is found in the C++ ShortcutInfo struct.
@@ -171,7 +192,7 @@ public class LaunchMetrics {
      * @param webContents WebContents for the current Tab.
      * @param application The ChromeApplication object.
      */
-    public static void commitLaunchMetrics(WebContents webContents, ChromeApplication application) {
+    public static void commitLaunchMetrics(WebContents webContents) {
         for (Pair<String, Integer> item : sActivityUrls) {
             nativeRecordLaunch(true, item.first, item.second, webContents);
         }
@@ -181,14 +202,6 @@ public class LaunchMetrics {
             nativeRecordLaunch(false, item.first, item.second, webContents);
         }
         sTabUrls.clear();
-
-        for (Long time : sWebappHistogramTimes) {
-            RecordHistogram.recordTimesHistogram("Android.StrictMode.WebappAuthenticatorMac", time,
-                    TimeUnit.MILLISECONDS);
-        }
-        sWebappHistogramTimes.clear();
-
-        AppLinkHandler.getInstance(application).commitMetrics();
 
         // Record generic cached events.
         for (CachedHistogram event : CachedHistogram.sEvents) event.commitAndClear();

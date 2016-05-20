@@ -40,7 +40,11 @@ public class AppLinkHandler {
         return false;
     }
 
-    /** Commit metrics. */
+    /**
+     * Commit metrics.
+     * TODO(mariakhomenko): remove
+     */
+    @Deprecated
     public void commitMetrics() {
     }
 
