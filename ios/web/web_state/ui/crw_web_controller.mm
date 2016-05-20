@@ -790,7 +790,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Returns YES if the url was succesfully opened in the native app.
 - (BOOL)urlTriggersNativeAppLaunch:(const GURL&)URL
                          sourceURL:(const GURL&)sourceURL
-                       linkClicked:(BOOL)linkClicked;
+           linkActivatedNavigation:(BOOL)linkActivatedNavigation;
 // Called when a JavaScript dialog, HTTP authentication dialog or window.open
 // call has been suppressed.
 - (void)didSuppressDialog;
@@ -1522,6 +1522,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     case WKNavigationTypeLinkActivated:
       return YES;
     case WKNavigationTypeOther:
+      // Sometimes link navigation is not detected by navigation type, so
+      // check last user interaction with the page in the recent time.
       return [self userClickedRecently];
     default:
       return NO;
@@ -3235,7 +3237,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (BOOL)shouldAllowLoadWithNavigationAction:(WKNavigationAction*)action {
   NSURLRequest* request = action.request;
   GURL requestURL = net::GURLWithNSURL(request.URL);
-  BOOL isLinkClick = [self isLinkNavigation:action.navigationType];
+
+  // External application launcher needs |isNavigationTypeLinkActivated| to
+  // decide if the user intended to open the application by clicking on a link.
+  BOOL isNavigationTypeLinkActivated =
+      action.navigationType == WKNavigationTypeLinkActivated;
 
   // Check if the request should be delayed.
   if (_externalRequest && _externalRequest->url == requestURL) {
@@ -3246,7 +3252,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // also because there would be nothing shown in that new tab; it would
     // remain on about:blank (see crbug.com/240178)
     if ([CRWWebController webControllerCanShow:requestURL] ||
-        ![_delegate openExternalURL:requestURL linkClicked:isLinkClick]) {
+        ![_delegate openExternalURL:requestURL
+                        linkClicked:isNavigationTypeLinkActivated]) {
       web::NewWindowInfo windowInfo = *_externalRequest;
       dispatch_async(dispatch_get_main_queue(), ^{
         [self openPopupWithInfo:windowInfo];
@@ -3261,11 +3268,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // and move it to externalAppLauncher.
   BOOL isOpenInNewTabNavigation =
       !_webStateImpl->GetNavigationManager()->GetItemCount();
-  if (isLinkClick || isOpenInNewTabNavigation) {
+  BOOL isPossibleLinkClick = [self isLinkNavigation:action.navigationType];
+  if (isPossibleLinkClick || isOpenInNewTabNavigation) {
     // Check If the URL is handled by a native app.
     if ([self urlTriggersNativeAppLaunch:requestURL
                                sourceURL:[self currentNavigationURL]
-                             linkClicked:isLinkClick]) {
+                 linkActivatedNavigation:isNavigationTypeLinkActivated]) {
       // External app has been launched successfully. Stop the current page
       // load operation (e.g. notifying all observers) and record the URL so
       // that errors reported following the 'NO' reply can be safely ignored.
@@ -3283,7 +3291,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   DCHECK(_webView);
   if (![self shouldOpenURL:requestURL
            mainDocumentURL:mainDocumentURL
-               linkClicked:isLinkClick]) {
+               linkClicked:isPossibleLinkClick]) {
     return NO;
   }
 
@@ -3300,7 +3308,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     if ([self isMainFrameNavigationAction:action])
       [self stopLoading];
 
-    if ([_delegate openExternalURL:requestURL linkClicked:isLinkClick]) {
+    if ([_delegate openExternalURL:requestURL
+                       linkClicked:isNavigationTypeLinkActivated]) {
       // Record the URL so that errors reported following the 'NO' reply can be
       // safely ignored.
       [_openedApplicationURL addObject:request.URL];
@@ -4367,7 +4376,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (BOOL)urlTriggersNativeAppLaunch:(const GURL&)URL
                          sourceURL:(const GURL&)sourceURL
-                       linkClicked:(BOOL)linkClicked {
+           linkActivatedNavigation:(BOOL)linkActivatedNavigation {
   if (![_delegate respondsToSelector:@selector(urlTriggersNativeAppLaunch:
                                                                 sourceURL:
                                                               linkClicked:)]) {
@@ -4375,7 +4384,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
   return [_delegate urlTriggersNativeAppLaunch:URL
                                      sourceURL:sourceURL
-                                   linkClicked:linkClicked];
+                                   linkClicked:linkActivatedNavigation];
 }
 
 - (CGFloat)headerHeight {
