@@ -51,15 +51,17 @@ public:
             EXPECT_FALSE(m_preloadRequest);
             return;
         }
-        ASSERT(m_preloadRequest.get());
-        EXPECT_FALSE(m_preloadRequest->isPreconnect());
-        EXPECT_EQ(type, m_preloadRequest->resourceType());
-        EXPECT_STREQ(url, m_preloadRequest->resourceURL().ascii().data());
-        EXPECT_STREQ(baseURL, m_preloadRequest->baseURL().getString().ascii().data());
-        EXPECT_EQ(width, m_preloadRequest->resourceWidth());
-        EXPECT_EQ(preferences.shouldSendDPR(), m_preloadRequest->preferences().shouldSendDPR());
-        EXPECT_EQ(preferences.shouldSendResourceWidth(), m_preloadRequest->preferences().shouldSendResourceWidth());
-        EXPECT_EQ(preferences.shouldSendViewportWidth(), m_preloadRequest->preferences().shouldSendViewportWidth());
+        EXPECT_NE(nullptr, m_preloadRequest.get());
+        if (m_preloadRequest) {
+            EXPECT_FALSE(m_preloadRequest->isPreconnect());
+            EXPECT_EQ(type, m_preloadRequest->resourceType());
+            EXPECT_STREQ(url, m_preloadRequest->resourceURL().ascii().data());
+            EXPECT_STREQ(baseURL, m_preloadRequest->baseURL().getString().ascii().data());
+            EXPECT_EQ(width, m_preloadRequest->resourceWidth());
+            EXPECT_EQ(preferences.shouldSendDPR(), m_preloadRequest->preferences().shouldSendDPR());
+            EXPECT_EQ(preferences.shouldSendResourceWidth(), m_preloadRequest->preferences().shouldSendResourceWidth());
+            EXPECT_EQ(preferences.shouldSendViewportWidth(), m_preloadRequest->preferences().shouldSendViewportWidth());
+        }
     }
 
     void preloadRequestVerification(Resource::Type type, const char* url, const char* baseURL, int width, ReferrerPolicy referrerPolicy)
@@ -395,6 +397,8 @@ TEST_F(HTMLPreloadScannerTest, testLinkRelPreload)
         {"http://example.test", "<link rel=preload href=bla as=font>", "bla", "http://example.test/", Resource::Font, 0},
         {"http://example.test", "<link rel=preload href=bla as=media>", "bla", "http://example.test/", Resource::Media, 0},
         {"http://example.test", "<link rel=preload href=bla as=track>", "bla", "http://example.test/", Resource::TextTrack, 0},
+        {"http://example.test", "<link rel=preload href=bla as=image media=\"(max-width: 800px)\">", "bla", "http://example.test/", Resource::Image, 0},
+        {"http://example.test", "<link rel=preload href=bla as=image media=\"(max-width: 400px)\">", nullptr, "http://example.test/", Resource::Image, 0},
     };
 
     for (const auto& testCase : testCases)

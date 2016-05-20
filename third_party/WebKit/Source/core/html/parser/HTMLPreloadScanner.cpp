@@ -205,12 +205,17 @@ public:
     PassOwnPtr<PreloadRequest> createPreloadRequest(const KURL& predictedBaseURL, const SegmentedString& source, const ClientHintsPreferences& clientHintsPreferences, const PictureData& pictureData, const ReferrerPolicy documentReferrerPolicy)
     {
         PreloadRequest::RequestType requestType = PreloadRequest::RequestTypePreload;
-        if (shouldPreconnect())
+        if (shouldPreconnect()) {
             requestType = PreloadRequest::RequestTypePreconnect;
-        else if (isLinkRelPreload())
-            requestType = PreloadRequest::RequestTypeLinkRelPreload;
-        else if (!shouldPreload() || !m_matchedMediaAttribute)
-            return nullptr;
+        } else {
+            if (isLinkRelPreload()) {
+                requestType = PreloadRequest::RequestTypeLinkRelPreload;
+            }
+            if (!shouldPreload() || !m_matchedMediaAttribute) {
+                return nullptr;
+            }
+        }
+
 
         TextPosition position = TextPosition(source.currentLine(), source.currentColumn());
         FetchRequest::ResourceWidth resourceWidth;
