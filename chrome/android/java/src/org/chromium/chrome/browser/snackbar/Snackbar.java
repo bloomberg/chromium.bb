@@ -80,6 +80,7 @@ public class Snackbar {
         s.mText = text;
         s.mController = controller;
         s.mType = type;
+        s.mIdentifier = identifier;
         return s;
     }
 
