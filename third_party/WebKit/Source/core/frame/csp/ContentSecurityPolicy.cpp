@@ -394,10 +394,20 @@ bool isAllowedByAllWithContextAndContent(const CSPDirectiveListVector& policies,
 template<bool (CSPDirectiveList::*allowed)(const String&) const>
 bool isAllowedByAllWithNonce(const CSPDirectiveListVector& policies, const String& nonce)
 {
-    bool isAllowed = true;
-    for (const auto& policy : policies)
-        isAllowed &= (policy.get()->*allowed)(nonce);
-    return isAllowed;
+    bool isExplicitlyAllowed = false;
+    for (const auto& policy : policies) {
+        // TODO(mkwst): We skip report-only policies here, because the result is used more or
+        // less as a bypass in ScriptLoader. If we return true, we don't apply policy, but
+        // we only return true if all policies match. This is a temporary workaround; a
+        // better fix would be to delay the nonce processing until such time as the whitelist
+        // processing fails. https://crbug.com/611652
+        if (policy.get()->headerType() == ContentSecurityPolicyHeaderTypeEnforce) {
+            if (!(policy.get()->*allowed)(nonce))
+                return false;
+            isExplicitlyAllowed = true;
+        }
+    }
+    return isExplicitlyAllowed;
 }
 
 template<bool (CSPDirectiveList::*allowed)(const CSPHashValue&, ContentSecurityPolicy::InlineType) const>

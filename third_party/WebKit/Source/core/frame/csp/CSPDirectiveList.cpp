@@ -122,7 +122,7 @@ bool CSPDirectiveList::checkInline(SourceListDirective* directive) const
 
 bool CSPDirectiveList::checkNonce(SourceListDirective* directive, const String& nonce) const
 {
-    return !directive || directive->allowNonce(nonce);
+    return directive && directive->allowNonce(nonce);
 }
 
 bool CSPDirectiveList::checkHash(SourceListDirective* directive, const CSPHashValue& hashValue) const
