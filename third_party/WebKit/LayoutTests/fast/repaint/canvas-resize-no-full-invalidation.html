@@ -21,7 +21,7 @@ Tests paint invalidation of canvas when it's resized which doesn't affect its co
 function repaintTest() {
   document.getElementById('canvas').style.width = '500px';
 }
-onload = runRepaintTest;
+onload = runRepaintAndPixelTest;
 
 var ctx = document.getElementById('canvas').getContext('2d');
 ctx.beginPath();

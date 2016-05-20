@@ -9,7 +9,7 @@ onload = function() {
   getSelection().selectAllChildren(document.getElementById('div'));
   runAfterLayoutAndPaint(function() {
     document.getElementById('div').style.top = '300px';
-    runRepaintTest();
+    runRepaintAndPixelTest();
   });
 };
 </script>

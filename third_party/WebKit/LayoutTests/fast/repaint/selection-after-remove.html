@@ -5,7 +5,7 @@ function repaintTest() {
     e.parentNode.removeChild(e);
 }
 </script>
-<body onload="runRepaintTest();" contenteditable="true">
+<body onload="runRepaintAndPixelTest();" contenteditable="true">
 <p>This tests to see if selection gaps are invalidated properly when content inside the selection is removed.  Only 'hello world' should have a selecton tint behind it.</p>
 <div id="test" style="width: 150px; border: 1px solid red; margin: 30px;">hello <span id="removeme"> world hello world hello world hello world hello world hello world hello world hello world hello</span> world<br></div>
 <script>

@@ -4,7 +4,7 @@ function repaintTest() {
     document.execCommand("InsertParagraph");
 }
 </script>
-<body onload="runRepaintTest();">
+<body onload="runRepaintAndPixelTest();">
 <p>This tests for a repaint bug.  The old caret position should be invalidated when a paragraph separator is inserted.</p>
 <div contenteditable="true">
 <div><br></div>

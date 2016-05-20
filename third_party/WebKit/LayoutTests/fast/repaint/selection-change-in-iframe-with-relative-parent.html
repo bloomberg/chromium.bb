@@ -23,5 +23,5 @@ function repaintTest()
     var iframe = document.getElementsByTagName("iframe")[0];
     iframe.contentWindow.getSelection().selectAllChildren(iframe.contentDocument.body);
 }
-window.addEventListener("load", runRepaintTest, false);
+window.addEventListener("load", runRepaintAndPixelTest, false);
 </script>

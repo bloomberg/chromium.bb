@@ -13,9 +13,6 @@
 }
 </style>
 <script>
-if (window.testRunner)
-    testRunner.dumpAsTextWithPixelResults();
-
 function repaintTest() {
     var testElement = document.getElementById("test");
     var selection = window.getSelection();
@@ -23,7 +20,7 @@ function repaintTest() {
     selection.modify("Extend", "Forward", "Line");
 }
 </script>
-<body onload="runRepaintTest()">
+<body onload="runRepaintAndPixelTest()">
 <div id="test" contenteditable="true">
 <div>Some text in vertical mode</div>
 </div>
