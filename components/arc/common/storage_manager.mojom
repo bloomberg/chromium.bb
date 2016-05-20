@@ -1,0 +1,75 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module arc.mojom;
+
+// Optional flags for mounting a volume.
+[Extensible]
+enum ArcVolumeMountFlags {
+  // Provides primary external storage.
+  PRIMARY = 0x1,
+  // Volume is visible to third-party apps.
+  VISIBLE = 0x2
+};
+
+// Type of volume.
+[Extensible]
+enum ArcVolumeType {
+  // Shared and public.
+  PUBLIC = 0,
+  // Private and may be encrypted.
+  PRIVATE,
+  // Shared on top of private volume.
+  EMULATED,
+  // Encrypted on top of public volume.
+  ASEC,
+  // Volume for OBB.
+  OBB,
+};
+
+// State of volume.
+[Extensible]
+enum ArcVolumeState {
+  UNMOUNTED = 0,
+  CHECKING,
+  MOUNTED,
+  MOUNTED_READ_ONLY,
+  FORMATTING,
+  EJECTING,
+  UNMOUNTABLE,
+  REMOVED,
+  BAD_REMOVAL
+};
+
+// Information for mounted volume.
+struct ArcVolumeInfo {
+  // Unique ID of the volume.
+  string id;
+  // Set of bit flags for mount, defined in ArcVolumeMountFlags.
+  uint32 mount_flags;
+  // Type of the volume.
+  ArcVolumeType type;
+  // Current state of the volume.
+  ArcVolumeState state;
+  // UUID of the volume.
+  string fs_uuid;
+  // The volume label.
+  string fs_label;
+  // Path to the mounted point of the volume.
+  string path;
+  // Total space of the volume, in byte.
+  uint64 total_bytes;
+  // Available free space of the volume, in byte.
+  uint64 free_bytes;
+};
+
+// Next MinVersion: 1
+// Next method ID: 3
+interface StorageManagerInstance {
+  // Gets mounted private volume info.
+  GetPrivateVolumes@1() => (array<ArcVolumeInfo> volumes);
+
+  // Opens private volume details settings.
+  OpenPrivateVolumeSettings@2();
+};

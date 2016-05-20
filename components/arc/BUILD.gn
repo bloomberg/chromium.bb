@@ -51,6 +51,8 @@ static_library("arc") {
     "net/arc_net_host_impl.h",
     "power/arc_power_bridge.cc",
     "power/arc_power_bridge.h",
+    "storage_manager/arc_storage_manager.cc",
+    "storage_manager/arc_storage_manager.h",
     "window_manager/arc_window_manager_bridge.cc",
     "window_manager/arc_window_manager_bridge.h",
   ]
@@ -105,6 +107,7 @@ mojom("arc_bindings") {
     "common/power.mojom",
     "common/process.mojom",
     "common/scale_factor.mojom",
+    "common/storage_manager.mojom",
     "common/video.mojom",
     "common/video_accelerator.mojom",
     "common/window_manager.mojom",

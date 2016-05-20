@@ -128,6 +128,10 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
     virtual void OnProcessInstanceReady() {}
     virtual void OnProcessInstanceClosed() {}
 
+    // Called whenever the ARC storage manager interface state changes.
+    virtual void OnStorageManagerInstanceReady() {}
+    virtual void OnStorageManagerInstanceClosed() {}
+
     // Called whenever the ARC video interface state changes.
     virtual void OnVideoInstanceReady() {}
     virtual void OnVideoInstanceClosed() {}
@@ -197,6 +201,9 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   mojom::PolicyInstance* policy_instance() { return policy_ptr_.get(); }
   mojom::PowerInstance* power_instance() { return power_ptr_.get(); }
   mojom::ProcessInstance* process_instance() { return process_ptr_.get(); }
+  mojom::StorageManagerInstance* storage_manager_instance() {
+    return storage_manager_ptr_.get();
+  }
   mojom::VideoInstance* video_instance() { return video_ptr_.get(); }
   mojom::WindowManagerInstance* window_manager_instance() {
     return window_manager_ptr_.get();
@@ -218,6 +225,9 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   int32_t policy_version() const { return policy_ptr_.version(); }
   int32_t power_version() const { return power_ptr_.version(); }
   int32_t process_version() const { return process_ptr_.version(); }
+  int32_t storage_manager_version() const {
+    return storage_manager_ptr_.version();
+  }
   int32_t video_version() const { return video_ptr_.version(); }
   int32_t window_manager_version() const {
     return window_manager_ptr_.version();
@@ -243,6 +253,8 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   void OnPolicyInstanceReady(mojom::PolicyInstancePtr policy_ptr) override;
   void OnPowerInstanceReady(mojom::PowerInstancePtr power_ptr) override;
   void OnProcessInstanceReady(mojom::ProcessInstancePtr process_ptr) override;
+  void OnStorageManagerInstanceReady(
+      mojom::StorageManagerInstancePtr storage_manager_ptr) override;
   void OnVideoInstanceReady(mojom::VideoInstancePtr video_ptr) override;
   void OnWindowManagerInstanceReady(
       mojom::WindowManagerInstancePtr window_manager_ptr) override;
@@ -291,6 +303,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   void ClosePolicyChannel();
   void ClosePowerChannel();
   void CloseProcessChannel();
+  void CloseStorageManagerChannel();
   void CloseVideoChannel();
   void CloseWindowManagerChannel();
 
@@ -309,6 +322,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   void OnPolicyVersionReady(int32_t version);
   void OnPowerVersionReady(int32_t version);
   void OnProcessVersionReady(int32_t version);
+  void OnStorageManagerVersionReady(int32_t version);
   void OnVideoVersionReady(int32_t version);
   void OnWindowManagerVersionReady(int32_t version);
 
@@ -327,6 +341,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   mojom::PolicyInstancePtr policy_ptr_;
   mojom::PowerInstancePtr power_ptr_;
   mojom::ProcessInstancePtr process_ptr_;
+  mojom::StorageManagerInstancePtr storage_manager_ptr_;
   mojom::VideoInstancePtr video_ptr_;
   mojom::WindowManagerInstancePtr window_manager_ptr_;
 
@@ -350,6 +365,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   mojom::PolicyInstancePtr temporary_policy_ptr_;
   mojom::PowerInstancePtr temporary_power_ptr_;
   mojom::ProcessInstancePtr temporary_process_ptr_;
+  mojom::StorageManagerInstancePtr temporary_storage_manager_ptr_;
   mojom::VideoInstancePtr temporary_video_ptr_;
   mojom::WindowManagerInstancePtr temporary_window_manager_ptr_;
 

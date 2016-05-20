@@ -84,6 +84,8 @@ void ArcBridgeService::AddObserver(Observer* observer) {
     observer->OnPowerInstanceReady();
   if (process_instance())
     observer->OnProcessInstanceReady();
+  if (storage_manager_instance())
+    observer->OnStorageManagerInstanceReady();
   if (video_instance())
     observer->OnVideoInstanceReady();
   if (window_manager_instance())
@@ -444,6 +446,35 @@ void ArcBridgeService::CloseProcessChannel() {
   FOR_EACH_OBSERVER(Observer, observer_list(), OnProcessInstanceClosed());
 }
 
+void ArcBridgeService::OnStorageManagerInstanceReady(
+    mojom::StorageManagerInstancePtr storage_manager_ptr) {
+  DCHECK(CalledOnValidThread());
+  temporary_storage_manager_ptr_ = std::move(storage_manager_ptr);
+  temporary_storage_manager_ptr_.QueryVersion(base::Bind(
+      &ArcBridgeService::OnStorageManagerVersionReady,
+      weak_factory_.GetWeakPtr()));
+}
+
+void ArcBridgeService::OnStorageManagerVersionReady(int32_t version) {
+  DCHECK(CalledOnValidThread());
+  storage_manager_ptr_ = std::move(temporary_storage_manager_ptr_);
+  storage_manager_ptr_.set_connection_error_handler(base::Bind(
+      &ArcBridgeService::CloseStorageManagerChannel,
+      weak_factory_.GetWeakPtr()));
+  FOR_EACH_OBSERVER(
+      Observer, observer_list(), OnStorageManagerInstanceReady());
+}
+
+void ArcBridgeService::CloseStorageManagerChannel() {
+  DCHECK(CalledOnValidThread());
+  if (!storage_manager_ptr_)
+    return;
+
+  storage_manager_ptr_.reset();
+  FOR_EACH_OBSERVER(
+      Observer, observer_list(), OnStorageManagerInstanceClosed());
+}
+
 void ArcBridgeService::OnVideoInstanceReady(mojom::VideoInstancePtr video_ptr) {
   DCHECK(CalledOnValidThread());
   temporary_video_ptr_ = std::move(video_ptr);
@@ -531,6 +562,7 @@ void ArcBridgeService::CloseAllChannels() {
   ClosePolicyChannel();
   ClosePowerChannel();
   CloseProcessChannel();
+  CloseStorageManagerChannel();
   CloseVideoChannel();
   CloseWindowManagerChannel();
 }
