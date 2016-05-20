@@ -269,7 +269,7 @@ Standard: [NewObject](https://heycam.github.io/webidl/#NewObject)
 
 Summary: Signals that a method that returns an object type always returns a new object.
 
-This attribute has no effect on code generation and should simply be used in Blink IDL files if the specification uses it.
+Generates a test in debug mode to ensure that no wrapper object for the returned DOM object exists yet. Also see `[DoNotTestNewObject]`.
 
 ### [NoInterfaceObject] _(i)_
 
@@ -418,7 +418,7 @@ Standard: [SameObject](http://heycam.github.io/webidl/#SameObject)
 
 Summary: Signals that a `readonly` attribute that returns an object type always returns the same object.
 
-This attribute has no effect on code generation and should simply be used in Blink IDL files if the specification uses it.
+The resulting object is cached in the binding layer and re-used in later calls in order to guarantee that the attribute always returns the same object.
 
 ### [TreatNullAs] _(a,p)_, [TreatUndefinedAs] _(a,p)_
 
@@ -922,6 +922,12 @@ Usage: `[DeprecateAs]` can be specified on methods, attributes, and constants.
 ```
 
 The deprecation message show on the console can be specified via the [UseCounter::deprecationMessage](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/WebKit/Source/core/frame/UseCounter.cpp&q=UseCounter::deprecationMessage&l=615) method.
+
+### [DoNotTestNewObject] _(m)_
+
+Summary: Does not generate a test for `[NewObject]` in the binding layer.
+
+When specified, does not generate a test for `[NewObject]`. Some implementation creates a new DOM object and its wrapper before passing through the binding layer. In that case, the generated test doesn't make sense. See Text.splitText() for example.
 
 ### [Iterable] _(i)_
 

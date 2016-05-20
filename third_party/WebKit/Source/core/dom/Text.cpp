@@ -21,6 +21,7 @@
 
 #include "core/dom/Text.h"
 
+#include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/SVGNames.h"
@@ -128,6 +129,10 @@ Text* Text::splitText(unsigned offset, ExceptionState& exceptionState)
 
     if (parentNode())
         document().didSplitTextNode(*this);
+
+    // [NewObject] must always create a new wrapper.  Check that a wrapper
+    // does not exist yet.
+    DCHECK(DOMDataStore::getWrapper(newText, v8::Isolate::GetCurrent()).IsEmpty());
 
     return newText;
 }

@@ -55,6 +55,7 @@ def use_local_result(method):
     idl_type = method.idl_type
     return (has_extended_attribute_value(method, 'CallWith', 'ScriptState') or
             'ImplementedInPrivateScript' in extended_attributes or
+            'NewObject' in extended_attributes or
             'RaisesException' in extended_attributes or
             idl_type.is_union_type or
             idl_type.is_explicit_nullable)
@@ -132,6 +133,7 @@ def method_context(interface, method, is_visible=True):
             CUSTOM_REGISTRATION_EXTENDED_ATTRIBUTES.intersection(
                 extended_attributes.iterkeys()),
         'deprecate_as': v8_utilities.deprecate_as(method),  # [DeprecateAs]
+        'do_not_test_new_object': 'DoNotTestNewObject' in extended_attributes,
         'exposed_test': v8_utilities.exposed(method, interface),  # [Exposed]
         # TODO(yukishiino): Retire has_custom_registration flag.  Should be
         # replaced with V8DOMConfiguration::PropertyLocationConfiguration.
@@ -162,6 +164,7 @@ def method_context(interface, method, is_visible=True):
         'is_do_not_check_security': is_do_not_check_security,
         'is_explicit_nullable': idl_type.is_explicit_nullable,
         'is_implemented_in_private_script': is_implemented_in_private_script,
+        'is_new_object': 'NewObject' in extended_attributes,
         'is_partial_interface_member':
             'PartialInterfaceImplementedAs' in extended_attributes,
         'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,

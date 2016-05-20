@@ -7,5 +7,5 @@
 ] interface TransformComponent {
     readonly attribute DOMString cssString;
     boolean is2DComponent();
-    [NewObject] Matrix asMatrix();
+    Matrix asMatrix();
 };

@@ -10867,7 +10867,11 @@ static void voidMethodTestInterfaceGarbageCollectedArrayArgMethodCallback(const 
 static void newObjectTestInterfaceMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    v8SetReturnValue(info, impl->newObjectTestInterfaceMethod());
+    TestInterfaceImplementation* result = impl->newObjectTestInterfaceMethod();
+    // [NewObject] must always create a new wrapper.  Check that a wrapper
+    // does not exist yet.
+    DCHECK(!result || DOMDataStore::getWrapper(result, info.GetIsolate()).IsEmpty());
+    v8SetReturnValue(info, result);
 }
 
 static void newObjectTestInterfaceMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

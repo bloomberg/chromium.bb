@@ -48,6 +48,7 @@ DependentLifetime
 DeprecateAs=*
 DoNotCheckConstants
 DoNotCheckSecurity=|Setter
+DoNotTestNewObject
 EnforceRange
 Exposed=*
 FlexibleArrayBufferView

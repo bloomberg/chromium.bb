@@ -268,6 +268,11 @@ if (exceptionState.hadException()) {
 }
 {% endif %}
 {# Set return value #}
+{% if method.is_new_object and not method.do_not_test_new_object %}
+// [NewObject] must always create a new wrapper.  Check that a wrapper
+// does not exist yet.
+DCHECK(!result || DOMDataStore::getWrapper(result, info.GetIsolate()).IsEmpty());
+{% endif %}
 {% if method.is_constructor %}
 {{generate_constructor_wrapper(method)}}
 {%- elif v8_set_return_value %}
