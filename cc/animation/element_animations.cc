@@ -142,6 +142,8 @@ void ElementAnimations::PushPropertiesTo(
 }
 
 void ElementAnimations::AddAnimation(std::unique_ptr<Animation> animation) {
+  DCHECK(!animation->is_impl_only() ||
+         animation->target_property() == TargetProperty::SCROLL_OFFSET);
   bool added_transform_animation =
       animation->target_property() == TargetProperty::TRANSFORM;
   bool added_opacity_animation =
@@ -168,73 +170,6 @@ void ElementAnimations::Animate(base::TimeTicks monotonic_time) {
   UpdateClientAnimationState(TargetProperty::TRANSFORM);
 }
 
-void ElementAnimations::AccumulatePropertyUpdates(
-    base::TimeTicks monotonic_time,
-    AnimationEvents* events) {
-  if (!events)
-    return;
-
-  for (size_t i = 0; i < animations_.size(); ++i) {
-    Animation* animation = animations_[i].get();
-    if (!animation->is_impl_only())
-      continue;
-
-    if (!animation->InEffect(monotonic_time))
-      continue;
-
-    base::TimeDelta trimmed =
-        animation->TrimTimeToCurrentIteration(monotonic_time);
-    switch (animation->target_property()) {
-      case TargetProperty::OPACITY: {
-        AnimationEvent event(AnimationEvent::PROPERTY_UPDATE, element_id_,
-                             animation->group(), TargetProperty::OPACITY,
-                             monotonic_time);
-        const FloatAnimationCurve* float_animation_curve =
-            animation->curve()->ToFloatAnimationCurve();
-        event.opacity = float_animation_curve->GetValue(trimmed);
-        event.is_impl_only = true;
-        events->events_.push_back(event);
-        break;
-      }
-
-      case TargetProperty::TRANSFORM: {
-        AnimationEvent event(AnimationEvent::PROPERTY_UPDATE, element_id_,
-                             animation->group(), TargetProperty::TRANSFORM,
-                             monotonic_time);
-        const TransformAnimationCurve* transform_animation_curve =
-            animation->curve()->ToTransformAnimationCurve();
-        event.transform = transform_animation_curve->GetValue(trimmed);
-        event.is_impl_only = true;
-        events->events_.push_back(event);
-        break;
-      }
-
-      case TargetProperty::FILTER: {
-        AnimationEvent event(AnimationEvent::PROPERTY_UPDATE, element_id_,
-                             animation->group(), TargetProperty::FILTER,
-                             monotonic_time);
-        const FilterAnimationCurve* filter_animation_curve =
-            animation->curve()->ToFilterAnimationCurve();
-        event.filters = filter_animation_curve->GetValue(trimmed);
-        event.is_impl_only = true;
-        events->events_.push_back(event);
-        break;
-      }
-
-      case TargetProperty::BACKGROUND_COLOR: {
-        break;
-      }
-
-      case TargetProperty::SCROLL_OFFSET: {
-        // Impl-side changes to scroll offset are already sent back to the
-        // main thread (e.g. for user-driven scrolling), so a PROPERTY_UPDATE
-        // isn't needed.
-        break;
-      }
-    }
-  }
-}
-
 void ElementAnimations::UpdateState(bool start_ready_animations,
                                     AnimationEvents* events) {
   if (!has_element_in_active_list())
@@ -255,8 +190,6 @@ void ElementAnimations::UpdateState(bool start_ready_animations,
     StartAnimations(last_tick_time_);
     PromoteStartedAnimations(last_tick_time_, events);
   }
-
-  AccumulatePropertyUpdates(last_tick_time_, events);
 
   UpdateActivation(NORMAL_ACTIVATION);
 }

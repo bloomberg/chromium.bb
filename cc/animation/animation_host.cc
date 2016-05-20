@@ -384,26 +384,6 @@ bool AnimationHost::HasAnyAnimationTargetingProperty(
   return !!element_animations->GetAnimation(property);
 }
 
-bool AnimationHost::FilterIsAnimatingOnImplOnly(ElementId element_id) const {
-  auto element_animations = GetElementAnimationsForElementId(element_id);
-  if (!element_animations)
-    return false;
-
-  Animation* animation =
-      element_animations->GetAnimation(TargetProperty::FILTER);
-  return animation && animation->is_impl_only();
-}
-
-bool AnimationHost::OpacityIsAnimatingOnImplOnly(ElementId element_id) const {
-  auto element_animations = GetElementAnimationsForElementId(element_id);
-  if (!element_animations)
-    return false;
-
-  Animation* animation =
-      element_animations->GetAnimation(TargetProperty::OPACITY);
-  return animation && animation->is_impl_only();
-}
-
 bool AnimationHost::ScrollOffsetIsAnimatingOnImplOnly(
     ElementId element_id) const {
   auto element_animations = GetElementAnimationsForElementId(element_id);
@@ -412,16 +392,6 @@ bool AnimationHost::ScrollOffsetIsAnimatingOnImplOnly(
 
   Animation* animation =
       element_animations->GetAnimation(TargetProperty::SCROLL_OFFSET);
-  return animation && animation->is_impl_only();
-}
-
-bool AnimationHost::TransformIsAnimatingOnImplOnly(ElementId element_id) const {
-  auto element_animations = GetElementAnimationsForElementId(element_id);
-  if (!element_animations)
-    return false;
-
-  Animation* animation =
-      element_animations->GetAnimation(TargetProperty::TRANSFORM);
   return animation && animation->is_impl_only();
 }
 

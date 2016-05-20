@@ -80,8 +80,6 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
                        bool needs_completion = false);
 
   void Animate(base::TimeTicks monotonic_time);
-  void AccumulatePropertyUpdates(base::TimeTicks monotonic_time,
-                                 AnimationEvents* events);
 
   void UpdateState(bool start_ready_animations, AnimationEvents* events);
 

@@ -698,100 +698,6 @@ TEST_F(ElementAnimationsTest, TrivialTransition) {
   EXPECT_FALSE(event);
 }
 
-TEST_F(ElementAnimationsTest, TrivialTransitionOnImpl) {
-  CreateTestLayer(true, false);
-  AttachTimelinePlayerLayer();
-  CreateImplTimelineAndPlayer();
-
-  scoped_refptr<ElementAnimations> animations_impl = element_animations_impl();
-
-  auto events = host_impl_->CreateEvents();
-
-  std::unique_ptr<Animation> to_add(CreateAnimation(
-      std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
-      1, TargetProperty::OPACITY));
-  to_add->set_is_impl_only(true);
-
-  animations_impl->AddAnimation(std::move(to_add));
-  animations_impl->Animate(kInitialTickTime);
-  animations_impl->UpdateState(true, events.get());
-  EXPECT_TRUE(animations_impl->HasActiveAnimation());
-  EXPECT_EQ(0.f, client_impl_.GetOpacity(element_id_, ElementListType::ACTIVE));
-  EXPECT_EQ(1u, events->events_.size());
-  const AnimationEvent* start_opacity_event =
-      GetMostRecentPropertyUpdateEvent(events.get());
-  EXPECT_EQ(0.f, start_opacity_event->opacity);
-
-  animations_impl->Animate(kInitialTickTime +
-                           TimeDelta::FromMilliseconds(1000));
-  animations_impl->UpdateState(true, events.get());
-  EXPECT_EQ(1.f, client_impl_.GetOpacity(element_id_, ElementListType::ACTIVE));
-  EXPECT_FALSE(animations_impl->HasActiveAnimation());
-  EXPECT_EQ(2u, events->events_.size());
-  const AnimationEvent* end_opacity_event =
-      GetMostRecentPropertyUpdateEvent(events.get());
-  EXPECT_EQ(1.f, end_opacity_event->opacity);
-}
-
-TEST_F(ElementAnimationsTest, TrivialTransformOnImpl) {
-  CreateTestLayer(true, false);
-  AttachTimelinePlayerLayer();
-  CreateImplTimelineAndPlayer();
-
-  scoped_refptr<ElementAnimations> animations_impl = element_animations_impl();
-
-  auto events = host_impl_->CreateEvents();
-
-  // Choose different values for x and y to avoid coincidental values in the
-  // observed transforms.
-  const float delta_x = 3;
-  const float delta_y = 4;
-
-  std::unique_ptr<KeyframedTransformAnimationCurve> curve(
-      KeyframedTransformAnimationCurve::Create());
-
-  // Create simple TRANSFORM animation.
-  TransformOperations operations;
-  curve->AddKeyframe(
-      TransformKeyframe::Create(base::TimeDelta(), operations, nullptr));
-  operations.AppendTranslate(delta_x, delta_y, 0);
-  curve->AddKeyframe(TransformKeyframe::Create(
-      base::TimeDelta::FromSecondsD(1.0), operations, nullptr));
-
-  std::unique_ptr<Animation> animation(
-      Animation::Create(std::move(curve), 1, 0, TargetProperty::TRANSFORM));
-  animation->set_is_impl_only(true);
-  animations_impl->AddAnimation(std::move(animation));
-
-  // Run animation.
-  animations_impl->Animate(kInitialTickTime);
-  animations_impl->UpdateState(true, events.get());
-  EXPECT_TRUE(animations_impl->HasActiveAnimation());
-  EXPECT_EQ(gfx::Transform(),
-            client_impl_.GetTransform(element_id_, ElementListType::ACTIVE));
-  EXPECT_EQ(1u, events->events_.size());
-  const AnimationEvent* start_transform_event =
-      GetMostRecentPropertyUpdateEvent(events.get());
-  ASSERT_TRUE(start_transform_event);
-  EXPECT_EQ(gfx::Transform(), start_transform_event->transform);
-  EXPECT_TRUE(start_transform_event->is_impl_only);
-
-  gfx::Transform expected_transform;
-  expected_transform.Translate(delta_x, delta_y);
-
-  animations_impl->Animate(kInitialTickTime +
-                           TimeDelta::FromMilliseconds(1000));
-  animations_impl->UpdateState(true, events.get());
-  EXPECT_EQ(expected_transform,
-            client_impl_.GetTransform(element_id_, ElementListType::ACTIVE));
-  EXPECT_FALSE(animations_impl->HasActiveAnimation());
-  EXPECT_EQ(2u, events->events_.size());
-  const AnimationEvent* end_transform_event =
-      GetMostRecentPropertyUpdateEvent(events.get());
-  EXPECT_EQ(expected_transform, end_transform_event->transform);
-  EXPECT_TRUE(end_transform_event->is_impl_only);
-}
-
 TEST_F(ElementAnimationsTest, FilterTransition) {
   CreateTestLayer(true, false);
   AttachTimelinePlayerLayer();
@@ -841,60 +747,6 @@ TEST_F(ElementAnimationsTest, FilterTransition) {
   EXPECT_FALSE(animations->HasActiveAnimation());
   event = GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_FALSE(event);
-}
-
-TEST_F(ElementAnimationsTest, FilterTransitionOnImplOnly) {
-  CreateTestLayer(true, false);
-  AttachTimelinePlayerLayer();
-  CreateImplTimelineAndPlayer();
-
-  scoped_refptr<ElementAnimations> animations_impl = element_animations_impl();
-
-  auto events = host_impl_->CreateEvents();
-
-  std::unique_ptr<KeyframedFilterAnimationCurve> curve(
-      KeyframedFilterAnimationCurve::Create());
-
-  // Create simple FILTER animation.
-  FilterOperations start_filters;
-  start_filters.Append(FilterOperation::CreateBrightnessFilter(1.f));
-  curve->AddKeyframe(
-      FilterKeyframe::Create(base::TimeDelta(), start_filters, nullptr));
-  FilterOperations end_filters;
-  end_filters.Append(FilterOperation::CreateBrightnessFilter(2.f));
-  curve->AddKeyframe(FilterKeyframe::Create(base::TimeDelta::FromSecondsD(1.0),
-                                            end_filters, nullptr));
-
-  std::unique_ptr<Animation> animation(
-      Animation::Create(std::move(curve), 1, 0, TargetProperty::FILTER));
-  animation->set_is_impl_only(true);
-  animations_impl->AddAnimation(std::move(animation));
-
-  // Run animation.
-  animations_impl->Animate(kInitialTickTime);
-  animations_impl->UpdateState(true, events.get());
-  EXPECT_TRUE(animations_impl->HasActiveAnimation());
-  EXPECT_EQ(start_filters,
-            client_impl_.GetFilters(element_id_, ElementListType::ACTIVE));
-  EXPECT_EQ(1u, events->events_.size());
-  const AnimationEvent* start_filter_event =
-      GetMostRecentPropertyUpdateEvent(events.get());
-  EXPECT_TRUE(start_filter_event);
-  EXPECT_EQ(start_filters, start_filter_event->filters);
-  EXPECT_TRUE(start_filter_event->is_impl_only);
-
-  animations_impl->Animate(kInitialTickTime +
-                           TimeDelta::FromMilliseconds(1000));
-  animations_impl->UpdateState(true, events.get());
-  EXPECT_EQ(end_filters,
-            client_impl_.GetFilters(element_id_, ElementListType::ACTIVE));
-  EXPECT_FALSE(animations_impl->HasActiveAnimation());
-  EXPECT_EQ(2u, events->events_.size());
-  const AnimationEvent* end_filter_event =
-      GetMostRecentPropertyUpdateEvent(events.get());
-  EXPECT_TRUE(end_filter_event);
-  EXPECT_EQ(end_filters, end_filter_event->filters);
-  EXPECT_TRUE(end_filter_event->is_impl_only);
 }
 
 TEST_F(ElementAnimationsTest, ScrollOffsetTransition) {
@@ -1233,9 +1085,15 @@ TEST_F(ElementAnimationsTest,
   TestAnimationDelegate delegate;
   player_impl_->set_animation_delegate(&delegate);
 
-  std::unique_ptr<Animation> to_add(CreateAnimation(
-      std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
-      1, TargetProperty::OPACITY));
+  gfx::ScrollOffset initial_value(100.f, 300.f);
+  gfx::ScrollOffset target_value(300.f, 200.f);
+  std::unique_ptr<ScrollOffsetAnimationCurve> curve(
+      ScrollOffsetAnimationCurve::Create(target_value,
+                                         EaseInOutTimingFunction::Create()));
+  curve->SetInitialValue(initial_value);
+  TimeDelta duration = curve->Duration();
+  std::unique_ptr<Animation> to_add(
+      Animation::Create(std::move(curve), 1, 0, TargetProperty::SCROLL_OFFSET));
   to_add->set_is_impl_only(true);
   animations_impl->AddAnimation(std::move(to_add));
 
@@ -1249,8 +1107,11 @@ TEST_F(ElementAnimationsTest,
   EXPECT_FALSE(delegate.finished());
 
   events = host_impl_->CreateEvents();
-  animations_impl->Animate(kInitialTickTime +
-                           TimeDelta::FromMilliseconds(1000));
+  animations_impl->Animate(kInitialTickTime + duration);
+  EXPECT_EQ(duration,
+            animations_impl->GetAnimation(TargetProperty::SCROLL_OFFSET)
+                ->curve()
+                ->Duration());
   animations_impl->UpdateState(true, events.get());
 
   EXPECT_TRUE(delegate.started());
