@@ -267,6 +267,7 @@ bool ScrollAnimator::sendAnimationToCompositor()
 
 void ScrollAnimator::updateCompositorAnimations()
 {
+    ScrollAnimatorCompositorCoordinator::updateCompositorAnimations();
     if (m_runState == RunState::PostAnimationCleanup) {
         postAnimationCleanupAndReset();
         return;

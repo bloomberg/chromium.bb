@@ -58,6 +58,8 @@
         'animation/scroll_offset_animation_curve.h',
         'animation/scroll_offset_animations_impl.cc',
         'animation/scroll_offset_animations_impl.h',
+        'animation/scroll_offset_animations.cc',
+        'animation/scroll_offset_animations.h',
         'animation/target_property.cc',
         'animation/target_property.h',
         'animation/timing_function.cc',

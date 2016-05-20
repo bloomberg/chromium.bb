@@ -6,6 +6,7 @@
 
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/animation/CompositorAnimationHost.h"
 #include "platform/animation/CompositorAnimationPlayer.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
 #include "platform/graphics/CompositorFactory.h"
@@ -47,6 +48,9 @@ void ScrollAnimatorCompositorCoordinator::resetAnimationState()
 
 bool ScrollAnimatorCompositorCoordinator::hasAnimationThatRequiresService() const
 {
+    if (!m_implOnlyAnimationAdjustment.isZero())
+        return true;
+
     switch (m_runState) {
     case RunState::Idle:
     case RunState::RunningOnCompositor:
@@ -236,6 +240,33 @@ FloatPoint ScrollAnimatorCompositorCoordinator::blinkOffsetFromCompositorOffset(
 {
     offset.moveBy(-getScrollableArea()->scrollOrigin());
     return offset;
+}
+
+void ScrollAnimatorCompositorCoordinator::updateCompositorAnimations()
+{
+    if (!getScrollableArea()->scrollAnimatorEnabled() || m_implOnlyAnimationAdjustment.isZero())
+        return;
+
+    GraphicsLayer* layer = getScrollableArea()->layerForScrolling();
+    CompositorAnimationTimeline* timeline = getScrollableArea()->compositorAnimationTimeline();
+    if (layer && timeline && !timeline->compositorAnimationHost().isNull()) {
+        CompositorAnimationHost host = timeline->compositorAnimationHost();
+        host.updateImplOnlyScrollOffsetAnimation(
+            gfx::Vector2dF(m_implOnlyAnimationAdjustment.width(), m_implOnlyAnimationAdjustment.height()),
+            layer->platformLayer()->id());
+    }
+    m_implOnlyAnimationAdjustment = FloatSize();
+}
+
+void ScrollAnimatorCompositorCoordinator::updateImplOnlyScrollOffsetAnimation(
+    const FloatSize& adjustment)
+{
+    if (!getScrollableArea()->scrollAnimatorEnabled())
+        return;
+
+    m_implOnlyAnimationAdjustment.expand(adjustment.width(), adjustment.height());
+
+    getScrollableArea()->registerForAnimation();
 }
 
 String ScrollAnimatorCompositorCoordinator::runStateAsText() const

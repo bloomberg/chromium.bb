@@ -108,6 +108,12 @@ bool ScrollOffsetAnimationCurve::HasSetInitialValue() const {
   return has_set_initial_value_;
 }
 
+void ScrollOffsetAnimationCurve::ApplyAdjustment(
+    const gfx::Vector2dF& adjustment) {
+  initial_value_ = ScrollOffsetWithDelta(initial_value_, adjustment);
+  target_value_ = ScrollOffsetWithDelta(target_value_, adjustment);
+}
+
 gfx::ScrollOffset ScrollOffsetAnimationCurve::GetValue(
     base::TimeDelta t) const {
   base::TimeDelta duration = total_animation_duration_ - last_retarget_;

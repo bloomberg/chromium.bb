@@ -7,6 +7,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "cc/animation/animation_curve.h"
+#include "cc/animation/scroll_offset_animations.h"
 #include "platform/PlatformExport.h"
 #include "platform/animation/CompositorAnimationDelegate.h"
 #include "platform/animation/CompositorAnimationPlayerClient.h"
@@ -33,6 +34,8 @@ public:
     void dispose();
     String runStateAsText() const;
 
+    void updateImplOnlyScrollOffsetAnimation(const FloatSize& adjustment);
+
     virtual bool hasRunningAnimation() const { return false; }
 
     virtual void resetAnimationState();
@@ -41,10 +44,10 @@ public:
     // and continues it on the main thread. This should only be called when in
     // DocumentLifecycle::LifecycleState::CompositingClean state.
     virtual void takeoverCompositorAnimation();
+    virtual void updateCompositorAnimations();
 
     virtual ScrollableArea* getScrollableArea() const = 0;
     virtual void tickAnimation(double monotonicTime) = 0;
-    virtual void updateCompositorAnimations() = 0;
     virtual void notifyCompositorAnimationFinished(int groupId) = 0;
     virtual void notifyCompositorAnimationAborted(int groupId) = 0;
     virtual void layerForCompositedScrollingDidChange(CompositorAnimationTimeline*) = 0;
@@ -53,6 +56,8 @@ public:
 
 protected:
     explicit ScrollAnimatorCompositorCoordinator();
+
+    FloatSize implOnlyAnimationAdjustmentForTesting() { return m_implOnlyAnimationAdjustment; }
 
     bool addAnimation(PassOwnPtr<CompositorAnimation>);
     void removeAnimation();
@@ -78,10 +83,13 @@ protected:
     CompositorAnimationPlayer* compositorPlayer() const override;
 
     friend class Internals;
+    // TODO(ymalik): Tests are added as friends to access m_RunState. Expose
+    // it using ForTesting accessor or find a better way to test this.
     FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, MainThreadStates);
     FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, AnimatedScrollTakeover);
     FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, CancellingAnimationResetsState);
     FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, CancellingCompositorAnimation);
+    FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, ImplOnlyAnimationUpdatesCleared);
 
     enum class RunState {
         // No animation.
@@ -127,6 +135,10 @@ protected:
     RunState m_runState;
     int m_compositorAnimationId;
     int m_compositorAnimationGroupId;
+
+    // An adjustment to the scroll offset on the main thread that may affect
+    // impl-only scroll offset animations.
+    FloatSize m_implOnlyAnimationAdjustment;
 };
 
 } // namespace blink

@@ -92,6 +92,42 @@ bool ScrollOffsetAnimationsImpl::ScrollAnimationUpdateTarget(
   return true;
 }
 
+void ScrollOffsetAnimationsImpl::ScrollAnimationApplyAdjustment(
+    ElementId element_id,
+    const gfx::Vector2dF& adjustment) {
+  DCHECK(scroll_offset_animation_player_);
+  if (element_id != scroll_offset_animation_player_->element_id())
+    return;
+
+  if (!scroll_offset_animation_player_->element_animations())
+    return;
+
+  Animation* animation =
+      scroll_offset_animation_player_->element_animations()->GetAnimation(
+          TargetProperty::SCROLL_OFFSET);
+  if (!animation)
+    return;
+
+  std::unique_ptr<ScrollOffsetAnimationCurve> new_curve =
+      animation->curve()
+          ->ToScrollOffsetAnimationCurve()
+          ->CloneToScrollOffsetAnimationCurve();
+  new_curve->ApplyAdjustment(adjustment);
+
+  std::unique_ptr<Animation> new_animation = Animation::Create(
+      std::move(new_curve), AnimationIdProvider::NextAnimationId(),
+      AnimationIdProvider::NextGroupId(), TargetProperty::SCROLL_OFFSET);
+  new_animation->set_start_time(animation->start_time());
+  new_animation->set_is_impl_only(true);
+  new_animation->set_affects_active_elements(false);
+
+  // Abort the old animation.
+  ScrollAnimationAbort(/* needs_completion */ false);
+
+  // Start a new one with the adjusment.
+  scroll_offset_animation_player_->AddAnimation(std::move(new_animation));
+}
+
 void ScrollOffsetAnimationsImpl::ScrollAnimationAbort(bool needs_completion) {
   DCHECK(scroll_offset_animation_player_);
   scroll_offset_animation_player_->AbortAnimations(

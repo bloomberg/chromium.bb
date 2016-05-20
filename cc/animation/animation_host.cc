@@ -17,6 +17,8 @@
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
+#include "cc/animation/scroll_offset_animations.h"
+#include "cc/animation/scroll_offset_animations_impl.h"
 #include "cc/animation/timing_function.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
@@ -33,9 +35,13 @@ AnimationHost::AnimationHost(ThreadInstance thread_instance)
       thread_instance_(thread_instance),
       supports_scroll_animations_(false),
       animation_waiting_for_deletion_(false) {
-  if (thread_instance_ == ThreadInstance::IMPL)
+  if (thread_instance_ == ThreadInstance::IMPL) {
     scroll_offset_animations_impl_ =
         base::WrapUnique(new ScrollOffsetAnimationsImpl(this));
+  } else {
+    scroll_offset_animations_ =
+        base::WrapUnique(new ScrollOffsetAnimations(this));
+  }
 }
 
 AnimationHost::~AnimationHost() {
@@ -185,7 +191,8 @@ void AnimationHost::RemoveTimelinesFromImplThread(
 }
 
 void AnimationHost::PushPropertiesToImplThread(AnimationHost* host_impl) {
-  // Firstly, sync all players with impl thread to create ElementAnimations.
+  // Sync all players with impl thread to create ElementAnimations. This needs
+  // to happen before the element animations are synced below.
   for (auto& kv : id_to_timeline_map_) {
     AnimationTimeline* timeline = kv.second.get();
     AnimationTimeline* timeline_impl =
@@ -194,7 +201,7 @@ void AnimationHost::PushPropertiesToImplThread(AnimationHost* host_impl) {
       timeline->PushPropertiesTo(timeline_impl);
   }
 
-  // Secondly, sync properties for created ElementAnimations.
+  // Sync properties for created ElementAnimations.
   for (auto& kv : element_to_animations_map_) {
     const auto& element_animations = kv.second;
     auto element_animations_impl =
@@ -202,6 +209,10 @@ void AnimationHost::PushPropertiesToImplThread(AnimationHost* host_impl) {
     if (element_animations_impl)
       element_animations->PushPropertiesTo(std::move(element_animations_impl));
   }
+
+  // Update the impl-only scroll offset animations.
+  scroll_offset_animations_->PushPropertiesTo(
+      host_impl->scroll_offset_animations_impl_.get());
 }
 
 scoped_refptr<ElementAnimations>
@@ -501,6 +512,11 @@ bool AnimationHost::ImplOnlyScrollAnimationUpdateTarget(
   DCHECK(scroll_offset_animations_impl_);
   return scroll_offset_animations_impl_->ScrollAnimationUpdateTarget(
       element_id, scroll_delta, max_scroll_offset, frame_monotonic_time);
+}
+
+ScrollOffsetAnimations& AnimationHost::scroll_offset_animations() const {
+  DCHECK(scroll_offset_animations_);
+  return *scroll_offset_animations_.get();
 }
 
 void AnimationHost::ScrollAnimationAbort(bool needs_completion) {

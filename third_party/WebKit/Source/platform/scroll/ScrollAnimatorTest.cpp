@@ -519,4 +519,33 @@ TEST(ScrollAnimatorTest, CancellingCompositorAnimation)
     ThreadHeap::collectAllGarbage();
 }
 
+// This test verifies that ImplOnlyAnimationUpdate gets cleared once its
+// pushed to compositor animation host.
+TEST(ScrollAnimatorTest, ImplOnlyAnimationUpdatesCleared)
+{
+    MockScrollableArea* scrollableArea = MockScrollableArea::create(true);
+    TestScrollAnimator* animator = new TestScrollAnimator(scrollableArea, getMockedTime);
+
+    EXPECT_CALL(*scrollableArea, registerForAnimation()).Times(2);
+
+    EXPECT_EQ(animator->m_runState, ScrollAnimatorCompositorCoordinator::RunState::Idle);
+    EXPECT_FALSE(animator->hasAnimationThatRequiresService());
+    EXPECT_TRUE(animator->implOnlyAnimationAdjustmentForTesting().isZero());
+
+    animator->updateImplOnlyScrollOffsetAnimation(FloatSize(100.f, 100.f));
+    animator->updateImplOnlyScrollOffsetAnimation(FloatSize(10.f, -10.f));
+
+    EXPECT_TRUE(animator->hasAnimationThatRequiresService());
+    EXPECT_EQ(FloatSize(110.f, 90.f), animator->implOnlyAnimationAdjustmentForTesting());
+
+    animator->updateCompositorAnimations();
+
+    EXPECT_EQ(animator->m_runState, ScrollAnimatorCompositorCoordinator::RunState::Idle);
+    EXPECT_FALSE(animator->hasAnimationThatRequiresService());
+    EXPECT_TRUE(animator->implOnlyAnimationAdjustmentForTesting().isZero());
+
+    // Forced GC in order to finalize objects depending on the mock object.
+    ThreadHeap::collectAllGarbage();
+}
+
 } // namespace blink

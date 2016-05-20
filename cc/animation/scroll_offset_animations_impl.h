@@ -40,6 +40,11 @@ class CC_EXPORT ScrollOffsetAnimationsImpl : public AnimationDelegate {
                                    const gfx::ScrollOffset& max_scroll_offset,
                                    base::TimeTicks frame_monotonic_time);
 
+  // Aborts the currently running scroll offset animation on an element and
+  // starts a new one offsetted by adjustment.
+  void ScrollAnimationApplyAdjustment(ElementId element_id,
+                                      const gfx::Vector2dF& adjustment);
+
   void ScrollAnimationAbort(bool needs_completion);
 
   // AnimationDelegate implementation.

@@ -13,6 +13,7 @@
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
+#include "cc/animation/scroll_offset_animations.h"
 #include "cc/animation/timing_function.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/base/completion_event.h"
@@ -809,6 +810,109 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationTakeover
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestScrollOffsetAnimationTakeover);
+
+// Verifies that an impl-only scroll offset animation gets updated when the
+// scroll offset is adjusted on the main thread.
+class LayerTreeHostAnimationTestScrollOffsetAnimationAdjusted
+    : public LayerTreeHostAnimationTest {
+ public:
+  LayerTreeHostAnimationTestScrollOffsetAnimationAdjusted() {}
+
+  void SetupTree() override {
+    LayerTreeHostAnimationTest::SetupTree();
+
+    scroll_layer_ = FakePictureLayer::Create(&client_);
+    scroll_layer_->SetBounds(gfx::Size(10000, 10000));
+    client_.set_bounds(scroll_layer_->bounds());
+    scroll_layer_->SetScrollOffset(gfx::ScrollOffset(10, 20));
+    layer_tree_host()->root_layer()->AddChild(scroll_layer_);
+
+    AttachPlayersToTimeline();
+    player_child_->AttachElement(scroll_layer_->id());
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DidCommit() override {
+    if (layer_tree_host()->source_frame_number() == 1) {
+      // Add an update after the first commit to trigger the animation update
+      // path.
+      ScrollOffsetAnimationUpdate update(
+          ScrollOffsetAnimationUpdate::Type::SCROLL_OFFSET_CHANGED,
+          scroll_layer_->id());
+      update.adjustment_ = gfx::Vector2dF(100.f, 100.f);
+      layer_tree_host()->animation_host()->scroll_offset_animations().AddUpdate(
+          update);
+      EXPECT_TRUE(layer_tree_host()
+                      ->animation_host()
+                      ->scroll_offset_animations()
+                      .HasUpdatesForTesting());
+    } else if (layer_tree_host()->source_frame_number() == 2) {
+      // Verify that the update queue is cleared after the update is applied.
+      EXPECT_FALSE(layer_tree_host()
+                       ->animation_host()
+                       ->scroll_offset_animations()
+                       .HasUpdatesForTesting());
+    }
+  }
+
+  void BeginCommitOnThread(LayerTreeHostImpl* host_impl) override {
+    // Note that the frame number gets incremented after BeginCommitOnThread but
+    // before WillCommitCompleteOnThread and CommitCompleteOnThread.
+    if (host_impl->sync_tree()->source_frame_number() == 0) {
+      // This happens after the impl-only animation is added in
+      // WillCommitCompleteOnThread.
+      Animation* animation =
+          host_impl->animation_host()
+              ->GetElementAnimationsForElementId(scroll_layer_->id())
+              ->GetAnimation(TargetProperty::SCROLL_OFFSET);
+      ScrollOffsetAnimationCurve* curve =
+          animation->curve()->ToScrollOffsetAnimationCurve();
+
+      // Verifiy the initial and target position before the scroll offset
+      // update from MT.
+      EXPECT_EQ(Animation::RunState::RUNNING, animation->run_state());
+      EXPECT_EQ(gfx::ScrollOffset(10.f, 20.f),
+                curve->GetValue(base::TimeDelta()));
+      EXPECT_EQ(gfx::ScrollOffset(650.f, 750.f), curve->target_value());
+    }
+  }
+
+  void WillCommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    if (host_impl->sync_tree()->source_frame_number() == 0) {
+      host_impl->animation_host()->ImplOnlyScrollAnimationCreate(
+          scroll_layer_->id(), gfx::ScrollOffset(650.f, 750.f),
+          gfx::ScrollOffset(10, 20));
+    }
+  }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    if (host_impl->sync_tree()->source_frame_number() == 1) {
+      Animation* animation =
+          host_impl->animation_host()
+              ->GetElementAnimationsForElementId(scroll_layer_->id())
+              ->GetAnimation(TargetProperty::SCROLL_OFFSET);
+      ScrollOffsetAnimationCurve* curve =
+          animation->curve()->ToScrollOffsetAnimationCurve();
+      // Verifiy the initial and target position after the scroll offset
+      // update from MT
+      EXPECT_EQ(Animation::RunState::STARTING, animation->run_state());
+      EXPECT_EQ(gfx::ScrollOffset(110.f, 120.f),
+                curve->GetValue(base::TimeDelta()));
+      EXPECT_EQ(gfx::ScrollOffset(750.f, 850.f), curve->target_value());
+
+      EndTest();
+    }
+  }
+
+  void AfterTest() override {}
+
+ private:
+  FakeContentLayerClient client_;
+  scoped_refptr<FakePictureLayer> scroll_layer_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestScrollOffsetAnimationAdjusted);
 
 // Verifies that when the main thread removes a scroll animation and sets a new
 // scroll position, the active tree takes on exactly this new scroll position
