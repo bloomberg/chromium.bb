@@ -77,6 +77,22 @@ source_set("cdm_api") {
   ]
 }
 
+# TODO(jrummell): This should be in media/filters/BUILD.gn (which doesn't
+# currently exist). http://crbug.com/613033
+source_set("filters_common") {
+  sources = [
+    "filters/file_data_source.h",
+  ]
+  if (media_use_ffmpeg) {
+    sources += [
+      "filters/blocking_url_protocol.h",
+      "filters/ffmpeg_glue.h",
+    ]
+  }
+}
+
+# TODO(jrummell): Each subdirectory should have it's own BUILD.gn, and then
+# this component can depend on them.  http://crbug.com/613033
 component("media") {
   sources = [
     "cdm/aes_decryptor.cc",
@@ -120,7 +136,6 @@ component("media") {
     "filters/default_media_permission.cc",
     "filters/default_media_permission.h",
     "filters/file_data_source.cc",
-    "filters/file_data_source.h",
     "filters/frame_processor.cc",
     "filters/frame_processor.h",
     "filters/gpu_video_decoder.cc",
@@ -241,7 +256,9 @@ component("media") {
   ]
 
   public_configs = [ "//third_party/libwebm:libwebm_config" ]
-  public_deps = []
+  public_deps = [
+    ":filters_common",
+  ]
 
   include_dirs = [ "." ]
   if (media_use_ffmpeg) {
@@ -251,14 +268,12 @@ component("media") {
       "filters/audio_file_reader.cc",
       "filters/audio_file_reader.h",
       "filters/blocking_url_protocol.cc",
-      "filters/blocking_url_protocol.h",
       "filters/ffmpeg_audio_decoder.cc",
       "filters/ffmpeg_audio_decoder.h",
       "filters/ffmpeg_bitstream_converter.h",
       "filters/ffmpeg_demuxer.cc",
       "filters/ffmpeg_demuxer.h",
       "filters/ffmpeg_glue.cc",
-      "filters/ffmpeg_glue.h",
       "filters/ffmpeg_video_decoder.cc",
       "filters/ffmpeg_video_decoder.h",
       "filters/in_memory_url_protocol.cc",
