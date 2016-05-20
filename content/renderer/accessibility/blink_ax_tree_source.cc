@@ -200,7 +200,9 @@ void BlinkAXTreeSource::GetChildren(
   if (parent.role() == blink::WebAXRoleStaticText) {
     blink::WebAXObject ancestor = parent;
     while (!ancestor.isDetached()) {
-      if (ancestor.axID() == accessibility_focus_id_) {
+      int32_t focus_id = GetMainDocument().focusedAccessibilityObject().axID();
+      if (ancestor.axID() == accessibility_focus_id_ ||
+          (ancestor.axID() == focus_id && ancestor.isEditable())) {
         parent.loadInlineTextBoxes();
         break;
       }

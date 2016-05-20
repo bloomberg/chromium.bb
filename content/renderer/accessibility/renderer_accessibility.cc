@@ -199,6 +199,13 @@ void RendererAccessibility::HandleAXEvent(
     }
   }
 
+#if defined(OS_ANDROID)
+  // Force the newly focused node to be re-serialized so we include its
+  // inline text boxes.
+  if (event == ui::AX_EVENT_FOCUS)
+    serializer_.DeleteClientSubtree(obj);
+#endif
+
   // Add the accessibility object to our cache and ensure it's valid.
   AccessibilityHostMsg_EventParams acc_event;
   acc_event.id = obj.axID();
