@@ -414,55 +414,63 @@ static const struct wl_surface_listener surface_listener = {
 	surface_leave
 };
 
-static struct wl_buffer *
-create_shm_buffer(struct client *client, int width, int height, void **pixels)
+static struct buffer *
+create_shm_buffer(struct client *client, int width, int height,
+		  pixman_format_code_t format, uint32_t wlfmt)
 {
 	struct wl_shm *shm = client->wl_shm;
-	int stride = width * 4;
-	int size = stride * height;
+	struct buffer *buf;
+	size_t stride_bytes;
 	struct wl_shm_pool *pool;
-	struct wl_buffer *buffer;
 	int fd;
 	void *data;
+	size_t bytes_pp;
 
-	fd = os_create_anonymous_file(size);
+	assert(width > 0);
+	assert(height > 0);
+
+	buf = xzalloc(sizeof *buf);
+
+	bytes_pp = PIXMAN_FORMAT_BPP(format) / 8;
+	stride_bytes = width * bytes_pp;
+	/* round up to multiple of 4 bytes for Pixman */
+	stride_bytes = (stride_bytes + 3) & ~3u;
+	assert(stride_bytes / bytes_pp >= (unsigned)width);
+
+	buf->len = stride_bytes * height;
+	assert(buf->len / stride_bytes == (unsigned)height);
+
+	fd = os_create_anonymous_file(buf->len);
 	assert(fd >= 0);
 
-	data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+	data = mmap(NULL, buf->len, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 	if (data == MAP_FAILED) {
 		close(fd);
 		assert(data != MAP_FAILED);
 	}
 
-	pool = wl_shm_create_pool(shm, fd, size);
-	buffer = wl_shm_pool_create_buffer(pool, 0, width, height, stride,
-					   WL_SHM_FORMAT_ARGB8888);
+	pool = wl_shm_create_pool(shm, fd, buf->len);
+	buf->proxy = wl_shm_pool_create_buffer(pool, 0, width, height,
+					       stride_bytes, wlfmt);
 	wl_shm_pool_destroy(pool);
-
 	close(fd);
 
-	if (pixels)
-		*pixels = data;
-
-	return buffer;
-}
-
-struct buffer *
-create_shm_buffer_a8r8g8b8(struct client *client, int width, int height)
-{
-	struct buffer *buf;
-	void *pixels;
-
-	buf = xzalloc(sizeof *buf);
-	buf->proxy = create_shm_buffer(client, width, height, &pixels);
-	buf->image = pixman_image_create_bits(PIXMAN_a8r8g8b8, width, height,
-					      pixels, width * 4);
-	buf->len = width * height * 4;
+	buf->image = pixman_image_create_bits(format, width, height,
+					      data, stride_bytes);
 
 	assert(buf->proxy);
 	assert(buf->image);
 
 	return buf;
+}
+
+struct buffer *
+create_shm_buffer_a8r8g8b8(struct client *client, int width, int height)
+{
+	assert(client->has_argb);
+
+	return create_shm_buffer(client, width, height,
+				 PIXMAN_a8r8g8b8, WL_SHM_FORMAT_ARGB8888);
 }
 
 void
