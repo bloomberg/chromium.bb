@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "content/common/resource_request_body.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
@@ -747,6 +748,18 @@ bool EncodePageState(const ExplodedPageState& exploded, std::string* encoded) {
   obj.version = kCurrentVersion;
   WritePageState(exploded, &obj);
   *encoded = obj.GetAsString();
+  return true;
+}
+
+bool GeneratePostData(const ExplodedHttpBody& exploded,
+                      ResourceRequestBody* http_body) {
+  if (exploded.is_null)
+    return false;
+
+  http_body->set_identifier(exploded.identifier);
+  for (auto element : exploded.elements)
+    http_body->AppendExplodedHTTPBodyElement(element);
+
   return true;
 }
 

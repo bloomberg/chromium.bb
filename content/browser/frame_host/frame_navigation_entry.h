@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/site_instance_impl.h"
+#include "content/common/resource_request_body.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/referrer.h"
 
@@ -120,6 +121,10 @@ class CONTENT_EXPORT FrameNavigationEntry
   // navigation was not a POST.
   int64_t post_id() const { return post_id_; }
   void set_post_id(int64_t post_id) { post_id_ = post_id; }
+
+  // The data sent during a POST navigation. Returns nullptr if the navigation
+  // is not a POST.
+  scoped_refptr<ResourceRequestBody> GetPostData() const;
 
  private:
   friend class base::RefCounted<FrameNavigationEntry>;

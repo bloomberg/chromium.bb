@@ -387,9 +387,9 @@ bool NavigatorImpl::NavigateToEntry(
       FrameMsg_Navigate_Type::Value navigation_type = GetNavigationType(
           controller_->GetBrowserContext(), entry, reload_type);
       dest_render_frame_host->Navigate(
-          entry.ConstructCommonNavigationParams(dest_url, dest_referrer,
-                                                navigation_type, lofi_state,
-                                                navigation_start),
+          entry.ConstructCommonNavigationParams(frame_entry, dest_url,
+                                                dest_referrer, navigation_type,
+                                                lofi_state, navigation_start),
           entry.ConstructStartNavigationParams(),
           entry.ConstructRequestNavigationParams(
               frame_entry, is_same_document_history_load,

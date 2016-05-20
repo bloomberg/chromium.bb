@@ -20,19 +20,11 @@
   fast/forms/submit-to-url-fragment.html [ Failure ]
   fast/forms/xss-auditor-doesnt-crash-on-post-submit.html [ Timeout ]
   fast/loader/form-state-restore-with-frames.html [ Failure ]
-  http/tests/cache/subresource-failover-to-network.html [ Crash ]
   http/tests/history/back-to-post.html [ Timeout ]
   http/tests/history/post-replace-state-reload.html [ Crash Failure ]
   http/tests/navigation/location-reload-after-post.php [ Crash Failure ]
-  http/tests/navigation/post-frames-goback1.html [ Failure ]
   http/tests/navigation/post-goback-same-url.html [ Failure ]
-  http/tests/navigation/post-goback1.html [ Crash Failure ]
-  http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]
-  http/tests/security/xssAuditor/full-block-post-from-iframe.html [ Failure ]
-  http/tests/security/xssAuditor/post-from-iframe.html [ Failure ]
-  http/tests/security/xssAuditor/script-tag-post-control-char.html [ Failure ]
-  http/tests/security/xssAuditor/script-tag-post-null-char.html [ Failure ]
-  http/tests/security/xssAuditor/script-tag-post.html [ Failure ]
+  http/tests/security/xssAuditor/script-tag-post-redirect.html [ Failure ]
 
 # Failing due to error page supression in layout tests
   fast/xmlhttprequest/null-document-xmlhttprequest-open.html [ Crash Timeout ]
@@ -175,8 +167,6 @@
 # Untriaged security
   http/tests/security/frame-loading-via-document-write.html [ Failure ]
   http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Failure ]
-  http/tests/security/xssAuditor/xss-filter-bypass-long-string.html [ Failure ]
-  http/tests/security/xssAuditor/xss-protection-parsing-01.html [ Failure ]
 
 # Untriaged other
   css3/fonts/font-style-matching-7.html [ Failure ]

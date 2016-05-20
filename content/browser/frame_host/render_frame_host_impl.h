@@ -502,7 +502,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                         std::unique_ptr<StreamHandle> body,
                         const CommonNavigationParams& common_params,
                         const RequestNavigationParams& request_params,
-                        bool is_view_source);
+                        bool is_view_source,
+                        scoped_refptr<ResourceRequestBody> post_data);
 
   // PlzNavigate
   // Indicates that a navigation failed and that this RenderFrame should display

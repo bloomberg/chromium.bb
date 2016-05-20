@@ -151,6 +151,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_util.h"
+#include "storage/common/data_element.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebCachePolicy.h"
 #include "third_party/WebKit/public/platform/WebData.h"
@@ -538,6 +539,47 @@ WebURLRequest CreateURLRequestForNavigation(
       static_cast<WebURLRequest::InputToLoadPerfMetricReportPolicy>(
           common_params.report_type));
   return request;
+}
+
+// Converts the HTTP body data stored in ResourceRequestBody format to a
+// WebHTTPBody, which is then added to the WebURLRequest.
+// PlzNavigate: used to add the POST data sent by the renderer at commit time
+// to the WebURLRequest used to commit the navigation. This ensures that the
+// POST data will be in the PageState sent to the browser on commit.
+void AddHTTPBodyToRequest(WebURLRequest* request,
+                          scoped_refptr<ResourceRequestBody> body) {
+  WebHTTPBody http_body;
+  http_body.initialize();
+  http_body.setIdentifier(body->identifier());
+  for (const ResourceRequestBody::Element& element : *(body->elements())) {
+    long long length = -1;
+    switch (element.type()) {
+      case storage::DataElement::TYPE_BYTES:
+        http_body.appendData(WebData(element.bytes(), element.length()));
+        break;
+      case storage::DataElement::TYPE_FILE:
+        if (element.length() != std::numeric_limits<uint64_t>::max())
+          length = element.length();
+        http_body.appendFileRange(
+            element.path().AsUTF16Unsafe(), element.offset(), length,
+            element.expected_modification_time().ToDoubleT());
+        break;
+      case storage::DataElement::TYPE_FILE_FILESYSTEM:
+        http_body.appendFileSystemURLRange(
+            element.filesystem_url(), element.offset(), element.length(),
+            element.expected_modification_time().ToDoubleT());
+        break;
+      case storage::DataElement::TYPE_BLOB:
+        http_body.appendBlob(WebString::fromUTF8(element.blob_uuid()));
+        break;
+      default:
+        // TYPE_BYTES_DESCRIPTION and TYPE_DISK_CACHE_ENTRY should not be
+        // encountered.
+        NOTREACHED();
+        break;
+    }
+  }
+  request->setHTTPBody(http_body);
 }
 
 // Sanitizes the navigation_start timestamp for browser-initiated navigations,
@@ -1546,7 +1588,7 @@ void RenderFrameImpl::OnNavigate(
   TRACE_EVENT2("navigation", "RenderFrameImpl::OnNavigate", "id", routing_id_,
                "url", common_params.url.possibly_invalid_spec());
   NavigateInternal(common_params, start_params, request_params,
-                   std::unique_ptr<StreamOverrideParameters>());
+                   std::unique_ptr<StreamOverrideParameters>(), nullptr);
 }
 
 void RenderFrameImpl::BindServiceRegistry(
@@ -4684,7 +4726,8 @@ void RenderFrameImpl::OnCommitNavigation(
     const ResourceResponseHead& response,
     const GURL& stream_url,
     const CommonNavigationParams& common_params,
-    const RequestNavigationParams& request_params) {
+    const RequestNavigationParams& request_params,
+    scoped_refptr<ResourceRequestBody> post_data) {
   CHECK(IsBrowserSideNavigationEnabled());
   // This will override the url requested by the WebURLLoader, as well as
   // provide it with the response to the request.
@@ -4694,7 +4737,7 @@ void RenderFrameImpl::OnCommitNavigation(
   stream_override->response = response;
 
   NavigateInternal(common_params, StartNavigationParams(), request_params,
-                   std::move(stream_override));
+                   std::move(stream_override), post_data);
 }
 
 // PlzNavigate
@@ -5290,7 +5333,8 @@ void RenderFrameImpl::NavigateInternal(
     const CommonNavigationParams& common_params,
     const StartNavigationParams& start_params,
     const RequestNavigationParams& request_params,
-    std::unique_ptr<StreamOverrideParameters> stream_params) {
+    std::unique_ptr<StreamOverrideParameters> stream_params,
+    scoped_refptr<ResourceRequestBody> post_data) {
   bool browser_side_navigation = IsBrowserSideNavigationEnabled();
 
   // Lower bound for browser initiated navigation start time.
@@ -5350,6 +5394,9 @@ void RenderFrameImpl::NavigateInternal(
   WebURLRequest request =
       CreateURLRequestForNavigation(common_params, std::move(stream_params),
                                     frame_->isViewSourceModeEnabled());
+
+  if (IsBrowserSideNavigationEnabled() && post_data)
+    AddHTTPBodyToRequest(&request, post_data);
 
   // Used to determine whether this frame is actually loading a request as part
   // of a history navigation.

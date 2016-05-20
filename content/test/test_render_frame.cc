@@ -5,6 +5,7 @@
 #include "content/test/test_render_frame.h"
 
 #include "content/common/navigation_params.h"
+#include "content/common/resource_request_body.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/resource_response.h"
 
@@ -29,7 +30,7 @@ void TestRenderFrame::Navigate(const CommonNavigationParams& common_params,
   // PlzNavigate
   if (IsBrowserSideNavigationEnabled()) {
     OnCommitNavigation(ResourceResponseHead(), GURL(), common_params,
-                       request_params);
+                       request_params, nullptr);
   } else {
     OnNavigate(common_params, start_params, request_params);
   }

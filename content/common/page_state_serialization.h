@@ -21,6 +21,8 @@
 
 namespace content {
 
+class ResourceRequestBody;
+
 struct CONTENT_EXPORT ExplodedHttpBodyElement {
   blink::WebHTTPBody::Element::Type type;
   std::string data;
@@ -87,6 +89,15 @@ CONTENT_EXPORT bool DecodePageState(const std::string& encoded,
                                     ExplodedPageState* exploded);
 CONTENT_EXPORT bool EncodePageState(const ExplodedPageState& exploded,
                                     std::string* encoded);
+
+// This method converts the ExplodedHttpBody into a ResourceRequestBody format.
+// If |exploded| is not null, initializes |http_body| with the data from
+// |exploded|. Returns false otherwise.
+// PlzNavigate: This is used in the browser process when converting the POST
+// data stored in a PageState into a ResourceRequestBody that can be used by
+// the network stack.
+bool GeneratePostData(const ExplodedHttpBody& exploded,
+                      ResourceRequestBody* http_body);
 
 #if defined(OS_ANDROID)
 CONTENT_EXPORT bool DecodePageStateWithDeviceScaleFactorForTesting(

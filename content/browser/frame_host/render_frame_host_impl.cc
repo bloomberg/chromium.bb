@@ -2117,7 +2117,7 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
       base::TimeTicks::Now(), "GET");
   if (IsBrowserSideNavigationEnabled()) {
     CommitNavigation(nullptr, nullptr, common_params, RequestNavigationParams(),
-                     false);
+                     false, nullptr);
   } else {
     Navigate(common_params, StartNavigationParams(), RequestNavigationParams());
   }
@@ -2248,7 +2248,8 @@ void RenderFrameHostImpl::CommitNavigation(
     std::unique_ptr<StreamHandle> body,
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
-    bool is_view_source) {
+    bool is_view_source,
+    scoped_refptr<ResourceRequestBody> post_data) {
   DCHECK((response && body.get()) ||
           !ShouldMakeNetworkRequestForURL(common_params.url));
   UpdatePermissionsForNavigation(common_params, request_params);
@@ -2269,7 +2270,7 @@ void RenderFrameHostImpl::CommitNavigation(
   const ResourceResponseHead head = response ?
       response->head : ResourceResponseHead();
   Send(new FrameMsg_CommitNavigation(routing_id_, head, body_url, common_params,
-                                     request_params));
+                                     request_params, post_data));
 
   // If a network request was made, update the LoFi state.
   if (ShouldMakeNetworkRequestForURL(common_params.url))

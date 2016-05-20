@@ -19,6 +19,7 @@
 #include "content/common/navigation_params.h"
 #include "content/common/page_state_serialization.h"
 #include "content/common/site_isolation_policy.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
 #include "ui/gfx/text_elider.h"
@@ -569,6 +570,7 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
 }
 
 CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
+    const FrameNavigationEntry& frame_entry,
     const GURL& dest_url,
     const Referrer& dest_referrer,
     FrameMsg_Navigate_Type::Value navigation_type,
@@ -583,11 +585,20 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
   ui_timestamp = intent_received_timestamp();
 #endif
 
+  std::string method;
+
+  // TODO(clamy): Consult the FrameNavigationEntry in all modes that use
+  // subframe navigation entries.
+  if (IsBrowserSideNavigationEnabled())
+    method = frame_entry.method();
+  else
+    method = GetHasPostData() ? "POST" : "GET";
+
   return CommonNavigationParams(
       dest_url, dest_referrer, GetTransitionType(), navigation_type,
       !IsViewSourceMode(), should_replace_entry(), ui_timestamp, report_type,
       GetBaseURLForDataURL(), GetHistoryURLForDataURL(), lofi_state,
-      navigation_start, GetHasPostData() ? "POST" : "GET");
+      navigation_start, method);
 }
 
 StartNavigationParams NavigationEntryImpl::ConstructStartNavigationParams()

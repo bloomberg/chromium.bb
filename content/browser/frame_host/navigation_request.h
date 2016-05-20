@@ -230,6 +230,9 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   bool is_view_source_;
   int bindings_;
 
+  // This is kept to be sent to the renderer on commit.
+  scoped_refptr<ResourceRequestBody> post_data_;
+
   // The type of SiteInstance associated with this navigation.
   AssociatedSiteInstanceType associated_site_instance_type_;
 
