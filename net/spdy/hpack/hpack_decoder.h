@@ -73,6 +73,11 @@ class NET_EXPORT_PRIVATE HpackDecoder {
   // a SpdyHeadersHandlerInterface.
   const SpdyHeaderBlock& decoded_block() { return decoded_block_; }
 
+  void SetHeaderTableDebugVisitor(
+      std::unique_ptr<HpackHeaderTable::DebugVisitorInterface> visitor) {
+    header_table_.set_debug_visitor(std::move(visitor));
+  }
+
  private:
   // Adds the header representation to |decoded_block_|, applying the
   // following rules:

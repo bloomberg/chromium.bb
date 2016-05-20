@@ -26,6 +26,21 @@ class QuicSpdySession;
 // to send and receive headers.
 class NET_EXPORT_PRIVATE QuicHeadersStream : public ReliableQuicStream {
  public:
+  class NET_EXPORT_PRIVATE HpackDebugVisitor {
+   public:
+    HpackDebugVisitor();
+
+    virtual ~HpackDebugVisitor();
+
+    // For each HPACK indexed representation processed, |elapsed| is
+    // the time since the corresponding entry was added to the dynamic
+    // table.
+    virtual void OnUseEntry(QuicTime::Delta elapsed) = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(HpackDebugVisitor);
+  };
+
   explicit QuicHeadersStream(QuicSpdySession* session);
   ~QuicHeadersStream() override;
 
@@ -55,6 +70,10 @@ class NET_EXPORT_PRIVATE QuicHeadersStream : public ReliableQuicStream {
   // only.  Part of exploring improvements related to headers stream
   // induced HOL blocking in QUIC.
   void DisableHpackDynamicTable();
+
+  // Optional, enables instrumentation related to go/quic-hpack.
+  void SetHpackEncoderDebugVisitor(std::unique_ptr<HpackDebugVisitor> visitor);
+  void SetHpackDecoderDebugVisitor(std::unique_ptr<HpackDebugVisitor> visitor);
 
  private:
   class SpdyFramerVisitor;

@@ -29,6 +29,17 @@ using testing::_;
 
 namespace net {
 namespace test {
+
+class MockHpackDebugVisitor : public QuicHeadersStream::HpackDebugVisitor {
+ public:
+  explicit MockHpackDebugVisitor() : HpackDebugVisitor() {}
+
+  MOCK_METHOD1(OnUseEntry, void(QuicTime::Delta elapsed));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockHpackDebugVisitor);
+};
+
 namespace {
 
 // TODO(ckrasic):  this workaround is due to absence of std::initializer_list
@@ -130,6 +141,8 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
         session_(connection_),
         headers_stream_(QuicSpdySessionPeer::GetHeadersStream(&session_)),
         body_("hello world"),
+        hpack_encoder_visitor_(new StrictMock<MockHpackDebugVisitor>),
+        hpack_decoder_visitor_(new StrictMock<MockHpackDebugVisitor>),
         stream_frame_(kHeadersStreamId, /*fin=*/false, /*offset=*/0, ""),
         next_promised_stream_id_(2) {
     FLAGS_quic_always_log_bugs_for_tests = true;
@@ -247,6 +260,8 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
   string saved_header_data_;
   std::unique_ptr<SpdyFramer> framer_;
   StrictMock<MockVisitor> visitor_;
+  std::unique_ptr<StrictMock<MockHpackDebugVisitor>> hpack_encoder_visitor_;
+  std::unique_ptr<StrictMock<MockHpackDebugVisitor>> hpack_decoder_visitor_;
   QuicStreamFrame stream_frame_;
   QuicStreamId next_promised_stream_id_;
 };
@@ -587,6 +602,97 @@ TEST_P(QuicHeadersStreamTest, ProcessSpdyWindowUpdateFrame) {
 TEST_P(QuicHeadersStreamTest, NoConnectionLevelFlowControl) {
   EXPECT_FALSE(ReliableQuicStreamPeer::StreamContributesToConnectionFlowControl(
       headers_stream_));
+}
+
+TEST_P(QuicHeadersStreamTest, HpackDecoderDebugVisitor) {
+  StrictMock<MockHpackDebugVisitor>* hpack_decoder_visitor =
+      hpack_decoder_visitor_.get();
+  headers_stream_->SetHpackDecoderDebugVisitor(
+      std::move(hpack_decoder_visitor_));
+
+  // Create some headers we expect to generate entries in HPACK's
+  // dynamic table, in addition to content-length.
+  headers_["key0"] = string(1 << 1, '.');
+  headers_["key1"] = string(1 << 2, '.');
+  headers_["key2"] = string(1 << 3, '.');
+  {
+    testing::InSequence seq;
+    // Number of indexed representations generated in headers below.
+    for (int i = 1; i < 28; i++) {
+      EXPECT_CALL(*hpack_decoder_visitor,
+                  OnUseEntry(QuicTime::Delta::FromMilliseconds(i)))
+          .Times(4);
+    }
+  }
+  for (QuicStreamId stream_id = kClientDataStreamId1;
+       stream_id < kClientDataStreamId3; stream_id += 2) {
+    for (bool fin : {false, true}) {
+      for (SpdyPriority priority = 0; priority < 7; ++priority) {
+        // Replace with "WriteHeadersAndSaveData"
+        SpdySerializedFrame frame;
+        if (perspective() == Perspective::IS_SERVER) {
+          SpdyHeadersIR headers_frame(stream_id);
+          headers_frame.set_header_block(headers_);
+          headers_frame.set_fin(fin);
+          headers_frame.set_has_priority(true);
+          frame = framer_->SerializeFrame(headers_frame);
+          EXPECT_CALL(session_, OnStreamHeadersPriority(stream_id, 0));
+        } else {
+          SpdyHeadersIR headers_frame(stream_id);
+          headers_frame.set_header_block(headers_);
+          headers_frame.set_fin(fin);
+          frame = framer_->SerializeFrame(headers_frame);
+        }
+        EXPECT_CALL(session_, OnStreamHeaders(stream_id, _))
+            .WillRepeatedly(WithArgs<1>(Invoke(
+                this, &QuicHeadersStreamTest::SaveHeaderDataStringPiece)));
+        EXPECT_CALL(session_,
+                    OnStreamHeadersComplete(stream_id, fin, frame.size()));
+        stream_frame_.data_buffer = frame.data();
+        stream_frame_.data_length = frame.size();
+        connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
+        headers_stream_->OnStreamFrame(stream_frame_);
+        stream_frame_.offset += frame.size();
+        CheckHeaders();
+      }
+    }
+  }
+}
+
+TEST_P(QuicHeadersStreamTest, HpackEncoderDebugVisitor) {
+  StrictMock<MockHpackDebugVisitor>* hpack_encoder_visitor =
+      hpack_encoder_visitor_.get();
+  headers_stream_->SetHpackEncoderDebugVisitor(
+      std::move(hpack_encoder_visitor_));
+
+  if (perspective() == Perspective::IS_SERVER) {
+    testing::InSequence seq;
+    for (int i = 1; i < 4; i++) {
+      EXPECT_CALL(*hpack_encoder_visitor,
+                  OnUseEntry(QuicTime::Delta::FromMilliseconds(i)));
+    }
+  } else {
+    testing::InSequence seq;
+    for (int i = 1; i < 28; i++) {
+      EXPECT_CALL(*hpack_encoder_visitor,
+                  OnUseEntry(QuicTime::Delta::FromMilliseconds(i)));
+    }
+  }
+  for (QuicStreamId stream_id = kClientDataStreamId1;
+       stream_id < kClientDataStreamId3; stream_id += 2) {
+    for (bool fin : {false, true}) {
+      if (perspective() == Perspective::IS_SERVER) {
+        WriteHeadersAndExpectSynReply(stream_id, fin);
+        connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
+      } else {
+        for (SpdyPriority priority = 0; priority < 7; ++priority) {
+          // TODO(rch): implement priorities correctly.
+          WriteHeadersAndExpectSynStream(stream_id, fin, 0);
+          connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
+        }
+      }
+    }
+  }
 }
 
 }  // namespace

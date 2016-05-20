@@ -3123,6 +3123,16 @@ bool SpdyFramer::IncrementallyDeliverControlFrameHeaderData(
   return read_successfully;
 }
 
+void SpdyFramer::SetDecoderHeaderTableDebugVisitor(
+    std::unique_ptr<HpackHeaderTable::DebugVisitorInterface> visitor) {
+  GetHpackDecoder()->SetHeaderTableDebugVisitor(std::move(visitor));
+}
+
+void SpdyFramer::SetEncoderHeaderTableDebugVisitor(
+    std::unique_ptr<HpackHeaderTable::DebugVisitorInterface> visitor) {
+  GetHpackEncoder()->SetHeaderTableDebugVisitor(std::move(visitor));
+}
+
 void SpdyFramer::UpdateHeaderEncoderTableSize(uint32_t value) {
   GetHpackEncoder()->ApplyHeaderTableSizeSetting(value);
 }

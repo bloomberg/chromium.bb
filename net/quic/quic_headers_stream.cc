@@ -21,6 +21,44 @@ using std::string;
 
 namespace net {
 
+namespace {
+
+class HeaderTableDebugVisitor : public HpackHeaderTable::DebugVisitorInterface {
+ public:
+  HeaderTableDebugVisitor(
+      const QuicClock* clock,
+      std::unique_ptr<QuicHeadersStream::HpackDebugVisitor> visitor)
+      : clock_(clock), headers_stream_hpack_visitor_(std::move(visitor)) {}
+
+  int64_t OnNewEntry(const HpackEntry& entry) override {
+    DVLOG(1) << entry.GetDebugString();
+    return clock_->ApproximateNow().Subtract(QuicTime::Zero()).ToMicroseconds();
+  }
+
+  void OnUseEntry(const HpackEntry& entry) override {
+    const QuicTime::Delta elapsed(
+        clock_->ApproximateNow()
+            .Subtract(QuicTime::Delta::FromMicroseconds(entry.time_added()))
+            .Subtract(QuicTime::Zero()));
+    DVLOG(1) << entry.GetDebugString() << " " << elapsed.ToMilliseconds()
+             << " ms";
+    headers_stream_hpack_visitor_->OnUseEntry(elapsed);
+  }
+
+ private:
+  const QuicClock* clock_;
+  std::unique_ptr<QuicHeadersStream::HpackDebugVisitor>
+      headers_stream_hpack_visitor_;
+
+  DISALLOW_COPY_AND_ASSIGN(HeaderTableDebugVisitor);
+};
+
+}  // namespace
+
+QuicHeadersStream::HpackDebugVisitor::HpackDebugVisitor() {}
+
+QuicHeadersStream::HpackDebugVisitor::~HpackDebugVisitor() {}
+
 // A SpdyFramer visitor which passed SYN_STREAM and SYN_REPLY frames to
 // the QuicSpdyStream, and closes the connection if any unexpected frames
 // are received.
@@ -415,6 +453,20 @@ bool QuicHeadersStream::IsConnected() {
 
 void QuicHeadersStream::DisableHpackDynamicTable() {
   spdy_framer_.UpdateHeaderEncoderTableSize(0);
+}
+
+void QuicHeadersStream::SetHpackEncoderDebugVisitor(
+    std::unique_ptr<HpackDebugVisitor> visitor) {
+  spdy_framer_.SetEncoderHeaderTableDebugVisitor(
+      std::unique_ptr<HeaderTableDebugVisitor>(new HeaderTableDebugVisitor(
+          session()->connection()->helper()->GetClock(), std::move(visitor))));
+}
+
+void QuicHeadersStream::SetHpackDecoderDebugVisitor(
+    std::unique_ptr<HpackDebugVisitor> visitor) {
+  spdy_framer_.SetDecoderHeaderTableDebugVisitor(
+      std::unique_ptr<HeaderTableDebugVisitor>(new HeaderTableDebugVisitor(
+          session()->connection()->helper()->GetClock(), std::move(visitor))));
 }
 
 }  // namespace net
