@@ -4130,6 +4130,7 @@
             'testing/PrivateScriptTestTest.cpp',
             'timing/MemoryInfoTest.cpp',
             'timing/PerformanceBaseTest.cpp',
+            'timing/PerformanceObserverTest.cpp',
             'workers/WorkerThreadTest.cpp',
             'workers/WorkerThreadTestHelper.h',
             'xml/parser/SharedBufferReaderTest.cpp',

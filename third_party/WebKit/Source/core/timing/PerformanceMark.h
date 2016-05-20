@@ -32,7 +32,7 @@
 
 namespace blink {
 
-class PerformanceMark final : public PerformanceEntry {
+class CORE_EXPORT PerformanceMark final : public PerformanceEntry {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PerformanceMark* create(const String& name, double startTime)

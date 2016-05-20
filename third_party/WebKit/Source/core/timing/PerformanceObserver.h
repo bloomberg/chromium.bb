@@ -24,6 +24,7 @@ using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
 class CORE_EXPORT PerformanceObserver final : public GarbageCollected<PerformanceObserver>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     friend class PerformanceBase;
+    friend class PerformanceObserverTest;
 public:
     static PerformanceObserver* create(PerformanceBase*, PerformanceObserverCallback*);
     static void resumeSuspendedObservers();
