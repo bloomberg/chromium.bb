@@ -126,7 +126,17 @@
         --paper-item-selected: {
           font-weight: normal;
         };
+        --paper-item-focused: {
+          background: rgba(0, 0, 0, .12);
+        };
+        --paper-item-focused-before: {
+          background: none;
+        };
       }
+
+      #supervised-user-container paper-listbox paper-item:hover {
+        background: rgba(0, 0, 0, .12);
+      };
 
       #supervised-user-container #import-user {
         -webkit-margin-start: 16px;
