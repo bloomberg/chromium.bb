@@ -3259,24 +3259,15 @@ static CSSValue* consumeGridLine(CSSParserTokenRange& range)
     return values;
 }
 
-static bool allTracksAreFixedSized(CSSValueList& valueList)
+static bool isGridTrackFixedSized(const CSSValue& value)
 {
-    for (CSSValue* value : valueList) {
-        if (value->isGridLineNamesValue())
-            continue;
-        // The auto-repeat value holds a <fixed-size> = <fixed-breadth> | minmax( <fixed-breadth>, <track-breadth> )
-        if (value->isGridAutoRepeatValue()) {
-            if (!allTracksAreFixedSized(toCSSValueList(*value)))
-                return false;
-            continue;
-        }
-        const CSSPrimitiveValue& primitiveValue = value->isPrimitiveValue()
-            ? toCSSPrimitiveValue(*value)
-            : toCSSPrimitiveValue(*toCSSFunctionValue(*value).item(0));
-        CSSValueID valueID = primitiveValue.getValueID();
-        if (valueID == CSSValueMinContent || valueID == CSSValueMaxContent || valueID == CSSValueAuto || primitiveValue.isFlex())
-            return false;
-    }
+    const CSSPrimitiveValue& primitiveValue = value.isPrimitiveValue()
+        ? toCSSPrimitiveValue(value)
+        : toCSSPrimitiveValue(*toCSSFunctionValue(value).item(0));
+    CSSValueID valueID = primitiveValue.getValueID();
+    if (valueID == CSSValueMinContent || valueID == CSSValueMaxContent || valueID == CSSValueAuto || primitiveValue.isFlex())
+        return false;
+
     return true;
 }
 
@@ -3374,36 +3365,31 @@ static bool parseGridTemplateAreasRow(const String& gridRowNames, NamedGridAreaM
     return true;
 }
 
-enum TrackSizeRestriction { FixedSizeOnly, InflexibleSizeOnly, AllowAll };
-
-static CSSPrimitiveValue* consumeGridBreadth(CSSParserTokenRange& range, CSSParserMode cssParserMode, TrackSizeRestriction restriction = AllowAll)
+static CSSPrimitiveValue* consumeGridBreadth(CSSParserTokenRange& range, CSSParserMode cssParserMode)
 {
-    if (restriction != FixedSizeOnly) {
-        const CSSParserToken& token = range.peek();
-        if (identMatches<CSSValueMinContent, CSSValueMaxContent, CSSValueAuto>(token.id()))
-            return consumeIdent(range);
-        if (token.type() == DimensionToken && token.unitType() == CSSPrimitiveValue::UnitType::Fraction) {
-            if (restriction == InflexibleSizeOnly || range.peek().numericValue() < 0)
-                return nullptr;
-            return cssValuePool().createValue(range.consumeIncludingWhitespace().numericValue(), CSSPrimitiveValue::UnitType::Fraction);
-        }
+    const CSSParserToken& token = range.peek();
+    if (identMatches<CSSValueMinContent, CSSValueMaxContent, CSSValueAuto>(token.id()))
+        return consumeIdent(range);
+    if (token.type() == DimensionToken && token.unitType() == CSSPrimitiveValue::UnitType::Fraction) {
+        if (range.peek().numericValue() < 0)
+            return nullptr;
+        return cssValuePool().createValue(range.consumeIncludingWhitespace().numericValue(), CSSPrimitiveValue::UnitType::Fraction);
     }
     return consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative, UnitlessQuirk::Allow);
 }
 
 // TODO(rob.buis): This needs a bool parameter so we can disallow <auto-track-list> for the grid shorthand.
-static CSSValue* consumeGridTrackSize(CSSParserTokenRange& range, CSSParserMode cssParserMode, TrackSizeRestriction restriction = AllowAll)
+static CSSValue* consumeGridTrackSize(CSSParserTokenRange& range, CSSParserMode cssParserMode)
 {
     const CSSParserToken& token = range.peek();
-    if (restriction == AllowAll && identMatches<CSSValueAuto>(token.id()))
+    if (identMatches<CSSValueAuto>(token.id()))
         return consumeIdent(range);
 
     if (token.functionId() == CSSValueMinmax) {
         CSSParserTokenRange rangeCopy = range;
         CSSParserTokenRange args = consumeFunction(rangeCopy);
-        TrackSizeRestriction minTrackBreadthRestriction = restriction == AllowAll ? InflexibleSizeOnly : restriction;
-        CSSPrimitiveValue* minTrackBreadth = consumeGridBreadth(args, cssParserMode, minTrackBreadthRestriction);
-        if (!minTrackBreadth || !consumeCommaIncludingWhitespace(args))
+        CSSPrimitiveValue* minTrackBreadth = consumeGridBreadth(args, cssParserMode);
+        if (!minTrackBreadth || minTrackBreadth->isFlex() || !consumeCommaIncludingWhitespace(args))
             return nullptr;
         CSSPrimitiveValue* maxTrackBreadth = consumeGridBreadth(args, cssParserMode);
         if (!maxTrackBreadth || !args.atEnd())
@@ -3414,7 +3400,7 @@ static CSSValue* consumeGridTrackSize(CSSParserTokenRange& range, CSSParserMode 
         result->append(maxTrackBreadth);
         return result;
     }
-    return consumeGridBreadth(range, cssParserMode, restriction);
+    return consumeGridBreadth(range, cssParserMode);
 }
 
 // Appends to the passed in CSSGridLineNamesValue if any, otherwise creates a new one.
@@ -3433,7 +3419,7 @@ static CSSGridLineNamesValue* consumeGridLineNames(CSSParserTokenRange& range, C
     return lineNames;
 }
 
-static bool consumeGridTrackRepeatFunction(CSSParserTokenRange& range, CSSParserMode cssParserMode, CSSValueList& list, bool& isAutoRepeat)
+static bool consumeGridTrackRepeatFunction(CSSParserTokenRange& range, CSSParserMode cssParserMode, CSSValueList& list, bool& isAutoRepeat, bool& allTracksAreFixedSized)
 {
     CSSParserTokenRange args = consumeFunction(range);
     // The number of repetitions for <auto-repeat> is not important at parsing level
@@ -3458,13 +3444,14 @@ static bool consumeGridTrackRepeatFunction(CSSParserTokenRange& range, CSSParser
         repeatedValues->append(lineNames);
 
     size_t numberOfTracks = 0;
-    TrackSizeRestriction restriction = isAutoRepeat ? FixedSizeOnly : AllowAll;
     while (!args.atEnd()) {
         if (isAutoRepeat && numberOfTracks)
             return false;
-        CSSValue* trackSize = consumeGridTrackSize(args, cssParserMode, restriction);
+        CSSValue* trackSize = consumeGridTrackSize(args, cssParserMode);
         if (!trackSize)
             return false;
+        if (allTracksAreFixedSized)
+            allTracksAreFixedSized = isGridTrackFixedSized(*trackSize);
         repeatedValues->append(trackSize);
         ++numberOfTracks;
         lineNames = consumeGridLineNames(args);
@@ -3496,28 +3483,29 @@ static CSSValue* consumeGridTrackList(CSSParserTokenRange& range, CSSParserMode 
         values->append(lineNames);
 
     bool seenAutoRepeat = false;
+    bool allTracksAreFixedSized = true;
     // TODO(rob.buis): <line-names> should not be able to directly precede <auto-repeat>.
     do {
         bool isAutoRepeat;
         if (range.peek().functionId() == CSSValueRepeat) {
-            if (!consumeGridTrackRepeatFunction(range, cssParserMode, *values, isAutoRepeat))
+            if (!consumeGridTrackRepeatFunction(range, cssParserMode, *values, isAutoRepeat, allTracksAreFixedSized))
                 return nullptr;
             if (isAutoRepeat && seenAutoRepeat)
                 return nullptr;
             seenAutoRepeat = seenAutoRepeat || isAutoRepeat;
-        } else if (CSSValue* value = consumeGridTrackSize(range, cssParserMode, seenAutoRepeat ? FixedSizeOnly : AllowAll)) {
+        } else if (CSSValue* value = consumeGridTrackSize(range, cssParserMode)) {
+            if (allTracksAreFixedSized)
+                allTracksAreFixedSized = isGridTrackFixedSized(*value);
             values->append(value);
         } else {
             return nullptr;
         }
+        if (seenAutoRepeat && !allTracksAreFixedSized)
+            return nullptr;
         lineNames = consumeGridLineNames(range);
         if (lineNames)
             values->append(lineNames);
     } while (!range.atEnd() && range.peek().type() != DelimiterToken);
-    // <auto-repeat> requires definite minimum track sizes in order to compute the number of repetitions.
-    // The above while loop detects those appearances after the <auto-repeat> but not the ones before.
-    if (seenAutoRepeat && !allTracksAreFixedSized(*values))
-        return nullptr;
     return values;
 }
 
