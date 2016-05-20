@@ -462,6 +462,22 @@ public class NewTabPageView extends FrameLayout
     }
 
     /**
+     * Get the number of listed items (visible or not) for the given type.
+     * @param newTabPageListItemViewType the item type to count.
+     */
+    public int getViewCountMatchingViewType(
+            @NewTabPageListItem.ViewType int newTabPageListItemViewType) {
+        int viewCount = 0;
+        int adapterSize = mNewTabPageAdapter.getItemCount();
+        for (int i = 0; i < adapterSize; i++) {
+            if (mNewTabPageAdapter.getItemViewType(i) == newTabPageListItemViewType) {
+                viewCount++;
+            }
+        }
+        return viewCount;
+    }
+
+    /**
      * Change the peeking card's width, padding and children's opacity to give a smooth transition.
      */
     private void updatePeekingCard() {
@@ -564,7 +580,7 @@ public class NewTabPageView extends FrameLayout
             public void run() {
                 assert mPendingSnapScroll;
                 NewTabPageUma.SnapState currentSnapState = updateSnapScroll();
-                snapStateObserver.updateSnapState(currentSnapState);
+                snapStateObserver.updateSnapState(NewTabPageView.this, currentSnapState);
             }
 
             private NewTabPageUma.SnapState updateSnapScroll() {

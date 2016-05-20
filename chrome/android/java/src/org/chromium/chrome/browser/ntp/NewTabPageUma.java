@@ -8,6 +8,7 @@ import android.support.annotation.IntDef;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.ui.base.PageTransition;
@@ -182,7 +183,7 @@ public class NewTabPageUma {
         private SnapState mSnapState = SnapState.ABOVE_THE_FOLD;
         private boolean mEverBelowTheFold = false;
 
-        public void updateSnapState(SnapState state) {
+        public void updateSnapState(NewTabPageView newTabPageView, SnapState state) {
             if (state == mSnapState) return;
             mSnapState = state;
 
@@ -195,6 +196,10 @@ public class NewTabPageUma {
                     if (!mEverBelowTheFold) {
                         mEverBelowTheFold = true;
                         recordSnippetAction(SNIPPETS_ACTION_SCROLLED_BELOW_THE_FOLD_ONCE);
+                        RecordHistogram.recordSparseSlowlyHistogram(
+                                "NewTabPage.Snippets.NumArticlesOnScrolledBelowTheFoldOnce",
+                                newTabPageView.getViewCountMatchingViewType(
+                                        NewTabPageListItem.VIEW_TYPE_SNIPPET));
                     }
                     break;
             }

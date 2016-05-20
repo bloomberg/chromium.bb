@@ -33746,6 +33746,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.Snippets.NumArticlesOnScrolledBelowTheFoldOnce"
+    units="articles">
+  <owner>mastiz@chromium.org</owner>
+  <summary>
+    Android: The number of snippet articles available to the user in the UI,
+    logged when the user scrolls below the fold (at max once per NTP load).
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.Snippets.NumArticlesZeroDueToDiscarded"
     units="articles">
   <owner>mastiz@chromium.org</owner>
