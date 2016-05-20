@@ -1466,8 +1466,6 @@ template("java_prebuilt_impl") {
 #
 # Variables
 #   java_files: List of .java files to compile.
-#   java_deps: List of java dependencies. These should all have a .jar output
-#     at "${target_gen_dir}/${target_name}.jar.
 #   chromium_code: If true, enable extra warnings.
 #   srcjar_deps: List of srcjar dependencies. The .java files contained in the
 #     dependencies srcjar outputs will be compiled and added to the output jar.
@@ -1663,6 +1661,10 @@ template("compile_java") {
 template("java_library_impl") {
   set_sources_assignment_filter([])
   forward_variables_from(invoker, [ "testonly" ])
+  _accumulated_deps = []
+  if (defined(invoker.deps)) {
+    _accumulated_deps = invoker.deps
+  }
 
   assert(defined(invoker.java_files) || defined(invoker.srcjars) ||
          defined(invoker.srcjar_deps))
@@ -1726,21 +1728,12 @@ template("java_library_impl") {
   # build the _build_config.
   if (defined(invoker.override_build_config)) {
     _build_config = invoker.override_build_config
-
-    # When a custom build config file is specified, we need to use the deps
-    # supplied by the invoker any time we reference the build config file.
-    assert(defined(invoker.deps),
-           "If you specify a build config file for " +
-               "java_library_impl($target_name), you should " +
-               "also specify the target that made it in the deps")
-    build_config_deps = invoker.deps
   } else {
     _build_config = _base_path + ".build_config"
     build_config_target_name = "${_template_name}__build_config"
-    build_config_deps = [ ":$build_config_target_name" ]
 
     write_build_config(build_config_target_name) {
-      forward_variables_from(invoker, [ "deps" ])
+      deps = _accumulated_deps
       if (defined(invoker.is_java_binary) && invoker.is_java_binary) {
         type = "java_binary"
       } else {
@@ -1757,6 +1750,7 @@ template("java_library_impl") {
         dex_path = _dex_path
       }
     }
+    _accumulated_deps += [ ":$build_config_target_name" ]
   }
 
   _srcjar_deps = []
@@ -1798,8 +1792,10 @@ template("java_library_impl") {
     chromium_code = _chromium_code
     supports_android = _supports_android
     emma_instrument = _emma_instrument
-    deps = build_config_deps
+    deps = _accumulated_deps
   }
+  _accumulated_deps += [ ":$_compile_java_target" ]
+  assert(_accumulated_deps != [])  # Mark used.
 
   if (defined(invoker.main_class)) {
     # Targets might use the generated script while building, so make it a dep
@@ -1818,7 +1814,7 @@ template("java_library_impl") {
       if (defined(invoker.wrapper_script_name)) {
         script_name = invoker.wrapper_script_name
       }
-      deps = build_config_deps
+      deps = _accumulated_deps
     }
   }
 
@@ -1831,17 +1827,14 @@ template("java_library_impl") {
         build_config = _build_config
         jar_path = _jar_path
         java_files = _java_files
-        deps = build_config_deps + [ ":$_compile_java_target" ]
-        if (defined(invoker.deps)) {
-          deps += invoker.deps
-        }
+        deps = _accumulated_deps
       }
 
       if (_run_findbugs) {
         findbugs("${_template_name}__findbugs") {
           build_config = _build_config
           jar_path = _jar_path
-          deps = build_config_deps + [ ":$_compile_java_target" ]
+          deps = _accumulated_deps
         }
       }
 
