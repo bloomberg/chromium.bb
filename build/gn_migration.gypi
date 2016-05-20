@@ -665,7 +665,7 @@
                 '../ui/app_list/app_list.gyp:app_list_unittests_run',
               ],
             }],
-            ['enable_app_list==1 and use_aura==1', {
+            ['use_aura==1', {
               'dependencies': [
                 '../ui/app_list/presenter/app_list_presenter.gyp:app_list_presenter_unittests_run',
               ],
