@@ -1064,10 +1064,6 @@ void InspectorResourceAgent::setBypassServiceWorker(ErrorString*, bool bypass)
     m_state->setBoolean(ResourceAgentState::bypassServiceWorker, bypass);
 }
 
-void InspectorResourceAgent::emulateNetworkConditions(ErrorString*, bool, double, double, double)
-{
-}
-
 void InspectorResourceAgent::setDataSizeLimitsForTest(ErrorString*, int maxTotal, int maxResource)
 {
     m_resourcesData->setResourcesDataSizeLimits(maxTotal, maxResource);

@@ -293,7 +293,7 @@ Response NetworkHandler::EmulateNetworkConditions(bool offline,
                                                   double latency,
                                                   double download_throughput,
                                                   double upload_throughput) {
-  return Response::FallThrough();
+  return Response::InternalError("EmulateNetworkConditions is not supported");
 }
 
 Response NetworkHandler::GetCertificateDetails(
