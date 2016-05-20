@@ -18,10 +18,6 @@
 Polymer({
   is: 'settings-users-page',
 
-  behaviors: [
-    Polymer.IronA11yKeysBehavior
-  ],
-
   properties: {
     /**
      * Preferences state.
@@ -31,34 +27,17 @@ Polymer({
       notify: true,
     },
 
-    /** @override */
-    keyEventTarget: {
-      type: Object,
-      value: function() {
-        return this.$.addUserInput;
-      }
+    /** @private */
+    isOwner_: {
+      type: Boolean,
+      value: true
     },
 
-    isOwner: {
+    /** @private */
+    isWhitelistManaged_: {
       type: Boolean,
       value: false
     },
-
-    isWhitelistManaged: {
-      type: Boolean,
-      value: false
-    },
-
-    editingDisabled: {
-      type: Boolean,
-      computed: 'computeEditingDisabled_(isOwner, isWhitelistManaged)'
-    },
-
-    editingUsersDisabled: {
-      type: Boolean,
-      computed: 'computeEditingUsersDisabled_(isOwner, isWhitelistManaged, ' +
-          'prefs.cros.accounts.allowGuest.value)'
-    }
   },
 
   keyBindings: {
@@ -68,67 +47,26 @@ Polymer({
   /** @override */
   created: function() {
     chrome.usersPrivate.isCurrentUserOwner(function(isOwner) {
-      this.isOwner = isOwner;
+      this.isOwner_ = isOwner;
     }.bind(this));
 
     chrome.usersPrivate.isWhitelistManaged(function(isWhitelistManaged) {
-      this.isWhitelistManaged = isWhitelistManaged;
+      this.isWhitelistManaged_ = isWhitelistManaged;
     }.bind(this));
   },
 
-  /**
-   * Regular expression for adding a user where the string provided is just the
-   * part before the "@".
-   * Email alias only, assuming it's a gmail address.
-   *     e.g. 'john'
-   * @const
-   * @private {string}
-   */
-  nameOnlyString_: '^\\s*([\\w\\.!#\\$%&\'\\*\\+-\\/=\\?\\^`\\{\\|\\}~]+)\\s*$',
-
-  /**
-   * Regular expression for adding a user where the string provided is a full
-   * email address.
-   *     e.g. 'john@chromium.org'
-   * @const
-   * @private {string}
-   */
-  emailString_:
-      '^\\s*([\\w\\.!#\\$%&\'\\*\\+-\\/=\\?\\^`\\{\\|\\}~]+)@' +
-      '([A-Za-z0-9\-]{2,63}\\..+)\\s*$',
-
   /** @private */
-  addUser_: function() {
-    /** @const */ var nameOnlyRegex = new RegExp(this.nameOnlyString_);
-    /** @const */ var emailRegex = new RegExp(this.emailString_);
-
-    var userStr = this.$.addUserInput.value;
-
-    var matches = nameOnlyRegex.exec(userStr);
-    var userEmail;
-    if (matches) {
-      userEmail = matches[1] + '@gmail.com';
-    }
-
-    matches = emailRegex.exec(userStr);
-    if (matches) {
-      userEmail = matches[1] + '@' + matches[2];
-    }
-
-    if (userEmail) {
-      chrome.usersPrivate.addWhitelistedUser(
-          userEmail,
-          /* callback */ function(success) {});
-      this.$.addUserInput.value = '';
-    }
+  openAddUserDialog_: function() {
+    this.$.addUserDialog.open();
   },
 
   /**
    * @param {boolean} isOwner
    * @param {boolean} isWhitelistManaged
    * @private
+   * @return {boolean}
    */
-  computeHideOwnerLabel_: function(isOwner, isWhitelistManaged) {
+  isOwnerLabelHidden_: function(isOwner, isWhitelistManaged) {
     return isOwner || isWhitelistManaged;
   },
 
@@ -136,17 +74,9 @@ Polymer({
    * @param {boolean} isOwner
    * @param {boolean} isWhitelistManaged
    * @private
+   * @return {boolean}
    */
-  computeHideManagedLabel_: function(isOwner, isWhitelistManaged) {
-    return !isWhitelistManaged;
-  },
-
-  /**
-   * @param {boolean} isOwner
-   * @param {boolean} isWhitelistManaged
-   * @private
-   */
-  computeEditingDisabled_: function(isOwner, isWhitelistManaged) {
+  isEditingDisabled_: function(isOwner, isWhitelistManaged) {
     return !isOwner || isWhitelistManaged;
   },
 
@@ -155,8 +85,9 @@ Polymer({
    * @param {boolean} isWhitelistManaged
    * @param {boolean} allowGuest
    * @private
+   * @return {boolean}
    */
-  computeEditingUsersDisabled_: function(
+  isEditingUsersDisabled_: function(
       isOwner, isWhitelistManaged, allowGuest) {
     return !isOwner || isWhitelistManaged || allowGuest;
   }

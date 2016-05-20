@@ -54,7 +54,10 @@ Polymer({
     }.bind(this));
   },
 
-  /** @private */
+  /**
+   * @private
+   * @param {!{model: !{item: !User}}} e
+   */
   removeUser_: function(e) {
     chrome.usersPrivate.removeWhitelistedUser(
         e.model.item.email, /* callback */ function() {});
@@ -65,4 +68,3 @@ Polymer({
     return disabled || isUserOwner;
   }
 });
-

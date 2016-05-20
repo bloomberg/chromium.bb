@@ -1119,27 +1119,32 @@
   <message name="IDS_SETTINGS_USERS" desc="Name of the settings page which manages users on the device.">
     Manage other users
   </message>
-  <message name="IDS_SETTINGS_USERS_MODIFIED_BY_OWNER_LABEL" desc="Label saying settings may only be modified by the device owner.">
-    These settings may only be modified by the owner:
-  </message>
-  <message name="IDS_SETTINGS_USERS_MANAGED_LABEL" desc="Label saying settings is managed by enterprise and thus can't be modified.">
-    These settings are controlled by enterprise policy. Please contact your administrator for more information.
-  </message>
-  <message name="IDS_SETTINGS_USERS_GUEST_BROWSING_LABEL" desc="Label for the guest browsing setting.">
-    Enable Guest browsing
-  </message>
-  <message name="IDS_SETTINGS_USERS_SUPERVISED_USERS_LABEL" desc="Label for the supervised users setting.">
-    Enable supervised users
-  </message>
-  <message name="IDS_SETTINGS_USERS_SHOW_ON_SIGNIN_LABEL" desc="Label for the 'show users on sign-in screen' setting.">
-    Show usernames and photos on the sign-in screen
-  </message>
-  <message name="IDS_SETTINGS_USERS_RESTRICT_SIGNIN_LABEL" desc="Label for the setting for restricting sign in to specific users.">
-    Restrict sign-in to the following users:
-  </message>
-  <message name="IDS_SETTINGS_USERS_ADD_USERS_LABEL" desc="Label for the input field for adding users.">
-    Add users
-  </message>
+  <if expr="chromeos">
+    <message name="IDS_SETTINGS_USERS_MODIFIED_BY_OWNER_LABEL" desc="Label saying settings may only be modified by the device owner.">
+      These settings may only be modified by the owner:
+    </message>
+    <message name="IDS_SETTINGS_USERS_MANAGED_LABEL" desc="Label saying settings is managed by enterprise and thus can't be modified.">
+      These settings are controlled by enterprise policy. Please contact your administrator for more information.
+    </message>
+    <message name="IDS_SETTINGS_USERS_GUEST_BROWSING_LABEL" desc="Label for the guest browsing setting.">
+      Enable Guest browsing
+    </message>
+    <message name="IDS_SETTINGS_USERS_SUPERVISED_USERS_LABEL" desc="Label for the supervised users setting.">
+      Enable supervised users
+    </message>
+    <message name="IDS_SETTINGS_USERS_SHOW_ON_SIGNIN_LABEL" desc="Label for the 'show users on sign-in screen' setting.">
+      Show usernames and photos on the sign-in screen
+    </message>
+    <message name="IDS_SETTINGS_USERS_RESTRICT_SIGNIN_LABEL" desc="Label for the setting for restricting sign in to specific users.">
+      Restrict sign-in to the following users:
+    </message>
+    <message name="IDS_SETTINGS_USERS_ADD_USERS" desc="Label the dialog for adding users.">
+      Add person
+    </message>
+    <message name="IDS_SETTINGS_USERS_ADD_USERS_EMAIL" desc="Label for the email input field for adding users.">
+      Email address
+    </message>
+  </if>
 
   <!-- Web Content -->
   <message name="IDS_SETTINGS_WEB_CONTENT" desc="Title for the web content settings.">
