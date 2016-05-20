@@ -68,9 +68,7 @@ static void AbsoluteFromDeltaMS(struct timespec* timeout, int ms_timeout) {
 EventListenerLock::EventListenerLock(EventEmitter* emitter)
     : EventListener(),
       emitter_(emitter),
-      lock_(new sdk_util::AutoLock(emitter->GetLock())),
-      events_(0) {
-}
+      lock_(new sdk_util::AutoLock(emitter->GetLock())) {}
 
 EventListenerLock::~EventListenerLock() {
   delete lock_;

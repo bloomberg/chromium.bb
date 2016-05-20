@@ -130,7 +130,6 @@ class EventListenerLock : public EventListener {
  private:
   EventEmitter* emitter_;
   sdk_util::AutoLock* lock_;
-  uint32_t events_;
   DISALLOW_COPY_AND_ASSIGN(EventListenerLock);
 };
 
