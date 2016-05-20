@@ -6,9 +6,9 @@
 
 #include <algorithm>
 
+#include "base/i18n/number_formatting.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -236,9 +236,9 @@ void FindBarView::UpdateForResult(const FindNotificationDetails& result,
     return;
   }
 
-  match_count_text_->SetText(l10n_util::GetStringFUTF16(IDS_FIND_IN_PAGE_COUNT,
-      base::IntToString16(result.active_match_ordinal()),
-      base::IntToString16(result.number_of_matches())));
+  match_count_text_->SetText(l10n_util::GetStringFUTF16(
+      IDS_FIND_IN_PAGE_COUNT, base::FormatNumber(result.active_match_ordinal()),
+      base::FormatNumber(result.number_of_matches())));
 
   UpdateMatchCountAppearance(result.number_of_matches() == 0 &&
                              result.final_update());
