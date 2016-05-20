@@ -260,12 +260,7 @@ class DataFetcherSharedMemory::SensorEventSinkLight
   DISALLOW_COPY_AND_ASSIGN(SensorEventSinkLight);
 };
 
-DataFetcherSharedMemory::DataFetcherSharedMemory()
-    : motion_buffer_(nullptr),
-      orientation_buffer_(nullptr),
-      orientation_absolute_buffer_(nullptr),
-      light_buffer_(nullptr) {
-}
+DataFetcherSharedMemory::DataFetcherSharedMemory() {}
 
 DataFetcherSharedMemory::~DataFetcherSharedMemory() {
 }

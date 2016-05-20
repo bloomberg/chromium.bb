@@ -120,7 +120,9 @@ class CONTENT_EXPORT MimeTypeResourceHandler
 
   scoped_refptr<ResourceResponse> response_;
   ResourceDispatcherHostImpl* host_;
+#if defined(ENABLE_PLUGINS)
   PluginService* plugin_service_;
+#endif
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_;
   int bytes_read_;

@@ -49,7 +49,6 @@ class CONTENT_EXPORT WindowActivityTrackerMac : public WindowActivityTracker {
  private:
   void OnMouseActivity();
 
-  NSView* const view_;
   base::scoped_nsobject<MouseTracker> mouse_tracker_;
 
   base::WeakPtrFactory<WindowActivityTrackerMac> weak_factory_;

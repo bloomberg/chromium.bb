@@ -327,8 +327,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // The model object.
   RenderWidgetHostImpl* host_;
 
-  bool use_surfaces_;
-
   // Used to control action dispatch at the next |OnVSync()| call.
   uint32_t outstanding_vsync_requests_;
 

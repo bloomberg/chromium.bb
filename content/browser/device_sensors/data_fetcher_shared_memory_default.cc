@@ -43,12 +43,7 @@ bool SetLightBuffer(content::DeviceLightHardwareBuffer* buffer,
 
 namespace content {
 
-DataFetcherSharedMemory::DataFetcherSharedMemory()
-    : motion_buffer_(nullptr),
-      orientation_buffer_(nullptr),
-      orientation_absolute_buffer_(nullptr),
-      light_buffer_(nullptr) {
-}
+DataFetcherSharedMemory::DataFetcherSharedMemory() {}
 
 DataFetcherSharedMemory::~DataFetcherSharedMemory() {
 }

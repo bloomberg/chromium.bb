@@ -45,11 +45,13 @@ class CONTENT_EXPORT DataFetcherSharedMemory
   bool Start(ConsumerType consumer_type, void* buffer) override;
   bool Stop(ConsumerType consumer_type) override;
 
-#if !defined(OS_ANDROID)
-  DeviceMotionHardwareBuffer* motion_buffer_;
-  DeviceOrientationHardwareBuffer* orientation_buffer_;
-  DeviceOrientationHardwareBuffer* orientation_absolute_buffer_;
-  DeviceLightHardwareBuffer* light_buffer_;
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+#if !defined(OS_CHROMEOS)
+  DeviceMotionHardwareBuffer* motion_buffer_ = nullptr;
+  DeviceOrientationHardwareBuffer* orientation_buffer_ = nullptr;
+  DeviceLightHardwareBuffer* light_buffer_ = nullptr;
+#endif
+  DeviceOrientationHardwareBuffer* orientation_absolute_buffer_ = nullptr;
 #endif
 
 #if defined(OS_CHROMEOS)

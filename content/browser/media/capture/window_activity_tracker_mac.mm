@@ -60,7 +60,7 @@ std::unique_ptr<WindowActivityTracker> WindowActivityTracker::Create(
 }
 
 WindowActivityTrackerMac::WindowActivityTrackerMac(NSView* view)
-    : view_(view), weak_factory_(this) {
+    : weak_factory_(this) {
   mouse_tracker_.reset([[MouseTracker alloc] initWithView:view]);
   [mouse_tracker_ registerMouseInteractionObserver:
                       base::Bind(&WindowActivityTrackerMac::OnMouseActivity,

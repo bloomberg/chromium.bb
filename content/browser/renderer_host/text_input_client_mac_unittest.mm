@@ -155,7 +155,7 @@ TEST_F(TextInputClientMacTest, NotFoundCharacterIndex) {
                       base::Unretained(service()), kPreviousValue));
 
   scoped_refptr<TextInputClientMessageFilter> filter(
-      new TextInputClientMessageFilter(widget()->GetProcess()->GetID()));
+      new TextInputClientMessageFilter());
   std::unique_ptr<IPC::Message> message(
       new TextInputClientReplyMsg_GotCharacterIndexForPoint(
           widget()->GetRoutingID(), UINT32_MAX));

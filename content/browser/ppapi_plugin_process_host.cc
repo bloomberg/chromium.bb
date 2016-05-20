@@ -60,14 +60,16 @@ class PpapiPluginSandboxedProcessLauncherDelegate
   PpapiPluginSandboxedProcessLauncherDelegate(bool is_broker,
                                               const PepperPluginInfo& info,
                                               ChildProcessHost* host)
-      :
 #if defined(OS_WIN)
-        info_(info),
-#endif // OS_WIN
-#if defined(OS_POSIX)
-        ipc_fd_(host->TakeClientFileDescriptor()),
-#endif  // OS_POSIX
-        is_broker_(is_broker) {}
+      : info_(info), is_broker_(is_broker) {
+#elif defined(OS_MACOSX) || defined(OS_ANDROID)
+      : ipc_fd_(host->TakeClientFileDescriptor()) {
+#elif defined(OS_POSIX)
+      : ipc_fd_(host->TakeClientFileDescriptor()), is_broker_(is_broker) {
+#else
+  {
+#endif
+  }
 
   ~PpapiPluginSandboxedProcessLauncherDelegate() override {}
 
@@ -140,7 +142,10 @@ class PpapiPluginSandboxedProcessLauncherDelegate
 #if defined(OS_POSIX)
   base::ScopedFD ipc_fd_;
 #endif  // OS_POSIX
+#if (defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)) || \
+    defined(OS_WIN)
   bool is_broker_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(PpapiPluginSandboxedProcessLauncherDelegate);
 };

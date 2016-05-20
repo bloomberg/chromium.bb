@@ -916,7 +916,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(
       new DatabaseMessageFilter(storage_partition_impl_->GetDatabaseTracker()));
 #if defined(OS_MACOSX)
-  AddFilter(new TextInputClientMessageFilter(GetID()));
+  AddFilter(new TextInputClientMessageFilter());
 #elif defined(OS_WIN)
   AddFilter(new DWriteFontProxyMessageFilter());
 

@@ -73,12 +73,15 @@ MimeTypeResourceHandler::MimeTypeResourceHandler(
     : LayeredResourceHandler(request, std::move(next_handler)),
       state_(STATE_STARTING),
       host_(host),
+#if defined(ENABLE_PLUGINS)
       plugin_service_(plugin_service),
+#endif
       read_buffer_size_(0),
       bytes_read_(0),
       must_download_(false),
       must_download_is_set_(false),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+}
 
 MimeTypeResourceHandler::~MimeTypeResourceHandler() {
 }
