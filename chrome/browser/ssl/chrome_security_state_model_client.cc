@@ -7,16 +7,22 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/security_style_explanation.h"
+#include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/ssl_status.h"
+#include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
+#include "ui/base/l10n/l10n_util.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromeSecurityStateModelClient);
 
@@ -49,6 +55,28 @@ SecurityStateModel::SecurityLevel GetSecurityLevelForSecurityStyle(
   return SecurityStateModel::NONE;
 }
 
+// Note: This is a lossy operation. Not all of the policies that can be
+// expressed by a SecurityLevel (a //chrome concept) can be expressed by
+// a content::SecurityStyle.
+content::SecurityStyle SecurityLevelToSecurityStyle(
+    SecurityStateModel::SecurityLevel security_level) {
+  switch (security_level) {
+    case SecurityStateModel::NONE:
+      return content::SECURITY_STYLE_UNAUTHENTICATED;
+    case SecurityStateModel::SECURITY_WARNING:
+    case SecurityStateModel::SECURITY_POLICY_WARNING:
+      return content::SECURITY_STYLE_WARNING;
+    case SecurityStateModel::EV_SECURE:
+    case SecurityStateModel::SECURE:
+      return content::SECURITY_STYLE_AUTHENTICATED;
+    case SecurityStateModel::SECURITY_ERROR:
+      return content::SECURITY_STYLE_AUTHENTICATION_BROKEN;
+  }
+
+  NOTREACHED();
+  return content::SECURITY_STYLE_UNKNOWN;
+}
+
 }  // namespace
 
 ChromeSecurityStateModelClient::ChromeSecurityStateModelClient(
@@ -59,6 +87,101 @@ ChromeSecurityStateModelClient::ChromeSecurityStateModelClient(
 }
 
 ChromeSecurityStateModelClient::~ChromeSecurityStateModelClient() {}
+
+// static
+content::SecurityStyle ChromeSecurityStateModelClient::GetSecurityStyle(
+    const security_state::SecurityStateModel::SecurityInfo& security_info,
+    content::SecurityStyleExplanations* security_style_explanations) {
+  const content::SecurityStyle security_style =
+      SecurityLevelToSecurityStyle(security_info.security_level);
+
+  security_style_explanations->ran_insecure_content_style =
+      SecurityLevelToSecurityStyle(
+          SecurityStateModel::kRanInsecureContentLevel);
+  security_style_explanations->displayed_insecure_content_style =
+      SecurityLevelToSecurityStyle(
+          SecurityStateModel::kDisplayedInsecureContentLevel);
+
+  // Check if the page is HTTP; if so, no explanations are needed. Note
+  // that SECURITY_STYLE_UNAUTHENTICATED does not necessarily mean that
+  // the page is loaded over HTTP, because the security style merely
+  // represents how the embedder wishes to display the security state of
+  // the page, and the embedder can choose to display HTTPS page as HTTP
+  // if it wants to (for example, displaying deprecated crypto
+  // algorithms with the same UI treatment as HTTP pages).
+  security_style_explanations->scheme_is_cryptographic =
+      security_info.scheme_is_cryptographic;
+  if (!security_info.scheme_is_cryptographic) {
+    return security_style;
+  }
+
+  if (security_info.sha1_deprecation_status ==
+      SecurityStateModel::DEPRECATED_SHA1_MAJOR) {
+    security_style_explanations->broken_explanations.push_back(
+        content::SecurityStyleExplanation(
+            l10n_util::GetStringUTF8(IDS_MAJOR_SHA1),
+            l10n_util::GetStringUTF8(IDS_MAJOR_SHA1_DESCRIPTION),
+            security_info.cert_id));
+  } else if (security_info.sha1_deprecation_status ==
+             SecurityStateModel::DEPRECATED_SHA1_MINOR) {
+    security_style_explanations->unauthenticated_explanations.push_back(
+        content::SecurityStyleExplanation(
+            l10n_util::GetStringUTF8(IDS_MINOR_SHA1),
+            l10n_util::GetStringUTF8(IDS_MINOR_SHA1_DESCRIPTION),
+            security_info.cert_id));
+  }
+
+  security_style_explanations->ran_insecure_content =
+      security_info.mixed_content_status ==
+          SecurityStateModel::RAN_MIXED_CONTENT ||
+      security_info.mixed_content_status ==
+          SecurityStateModel::RAN_AND_DISPLAYED_MIXED_CONTENT;
+  security_style_explanations->displayed_insecure_content =
+      security_info.mixed_content_status ==
+          SecurityStateModel::DISPLAYED_MIXED_CONTENT ||
+      security_info.mixed_content_status ==
+          SecurityStateModel::RAN_AND_DISPLAYED_MIXED_CONTENT;
+
+  if (net::IsCertStatusError(security_info.cert_status)) {
+    base::string16 error_string = base::UTF8ToUTF16(net::ErrorToString(
+        net::MapCertStatusToNetError(security_info.cert_status)));
+
+    content::SecurityStyleExplanation explanation(
+        l10n_util::GetStringUTF8(IDS_CERTIFICATE_CHAIN_ERROR),
+        l10n_util::GetStringFUTF8(
+            IDS_CERTIFICATE_CHAIN_ERROR_DESCRIPTION_FORMAT, error_string),
+        security_info.cert_id);
+
+    if (net::IsCertStatusMinorError(security_info.cert_status))
+      security_style_explanations->unauthenticated_explanations.push_back(
+          explanation);
+    else
+      security_style_explanations->broken_explanations.push_back(explanation);
+  } else {
+    // If the certificate does not have errors and is not using
+    // deprecated SHA1, then add an explanation that the certificate is
+    // valid.
+    if (security_info.sha1_deprecation_status ==
+        SecurityStateModel::NO_DEPRECATED_SHA1) {
+      security_style_explanations->secure_explanations.push_back(
+          content::SecurityStyleExplanation(
+              l10n_util::GetStringUTF8(IDS_VALID_SERVER_CERTIFICATE),
+              l10n_util::GetStringUTF8(
+                  IDS_VALID_SERVER_CERTIFICATE_DESCRIPTION),
+              security_info.cert_id));
+    }
+  }
+
+  if (security_info.is_secure_protocol_and_ciphersuite) {
+    security_style_explanations->secure_explanations.push_back(
+        content::SecurityStyleExplanation(
+            l10n_util::GetStringUTF8(IDS_SECURE_PROTOCOL_AND_CIPHERSUITE),
+            l10n_util::GetStringUTF8(
+                IDS_SECURE_PROTOCOL_AND_CIPHERSUITE_DESCRIPTION)));
+  }
+
+  return security_style;
+}
 
 const SecurityStateModel::SecurityInfo&
 ChromeSecurityStateModelClient::GetSecurityInfo() const {

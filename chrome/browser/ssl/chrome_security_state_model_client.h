@@ -11,8 +11,10 @@
 #include "components/security_state/security_state_model.h"
 #include "components/security_state/security_state_model_client.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "content/public/common/security_style.h"
 
 namespace content {
+struct SecurityStyleExplanations;
 class WebContents;
 }  // namespace content
 
@@ -26,6 +28,14 @@ class ChromeSecurityStateModelClient
 
   const security_state::SecurityStateModel::SecurityInfo& GetSecurityInfo()
       const;
+
+  // Returns the SecurityStyle that should be applied to a WebContents
+  // with the given |security_info|. Populates
+  // |security_style_explanations| to explain why the returned
+  // SecurityStyle was chosen.
+  static content::SecurityStyle GetSecurityStyle(
+      const security_state::SecurityStateModel::SecurityInfo& security_info,
+      content::SecurityStyleExplanations* security_style_explanations);
 
   // SecurityStateModelClient:
   void GetVisibleSecurityState(
