@@ -203,6 +203,48 @@ class MockAudioCapturerSource : public media::AudioCapturerSource {
   ~MockAudioCapturerSource() override {}
 };
 
+// Tests in web-platform-tests use absolute path links such as
+//   <script src="/resources/testharness.js">.
+// Because we load the tests as local files, such links don't work.
+// This function fixes this issue by rewriting file: URLs which were produced
+// from such links so that they point actual files in wpt/.
+WebURL RewriteAbsolutePathInWPT(const std::string& utf8_url) {
+  const char kFileScheme[] = "file:///";
+  const int kFileSchemeLen = arraysize(kFileScheme) - 1;
+  if (utf8_url.compare(0, kFileSchemeLen, kFileScheme, kFileSchemeLen) != 0)
+    return WebURL();
+#if defined(OS_WIN)
+  // +3 for a drive letter, :, and /.
+  const int kFileSchemeAndDriveLen = kFileSchemeLen + 3;
+  if (utf8_url.size() <= kFileSchemeAndDriveLen)
+    return WebURL();
+  std::string path = utf8_url.substr(kFileSchemeAndDriveLen);
+#else
+  std::string path = utf8_url.substr(kFileSchemeLen);
+#endif
+  // LayoutTests use file: URLs in various ways.
+  //  - The magic URL prefix "file:///tmp/LayoutTests/" to access file:
+  //    resources from http resources.
+  //  - $TMP to download a blob URL
+  //  - out/$CONFIG/gen/ and third_party/WebKit/Source/devtools to load
+  //    DevTools code.
+  // We rewite only a few patterns used in web-platform-tests to avoid to
+  // rewrite non-WPT URLs. We can remove this hack if we run all WPT tests
+  // with wptserve.
+  if (base::StartsWith(path, "common/", base::CompareCase::SENSITIVE) ||
+      base::StartsWith(path, "images/", base::CompareCase::SENSITIVE) ||
+      base::StartsWith(path, "media/", base::CompareCase::SENSITIVE) ||
+      base::StartsWith(path, "resources/", base::CompareCase::SENSITIVE)) {
+    base::FilePath new_path =
+        LayoutTestRenderThreadObserver::GetInstance()
+            ->webkit_source_dir()
+            .Append(FILE_PATH_LITERAL("LayoutTests/imported/wpt/"))
+            .AppendASCII(path);
+    return WebURL(net::FilePathToFileURL(new_path));
+  }
+  return WebURL();
+}
+
 }  // namespace
 
 BlinkTestRunner::BlinkTestRunner(RenderView* render_view)
@@ -308,6 +350,10 @@ WebURL BlinkTestRunner::LocalFileToDataURL(const WebURL& file_url) {
 }
 
 WebURL BlinkTestRunner::RewriteLayoutTestsURL(const std::string& utf8_url) {
+  WebURL rewritten_url = RewriteAbsolutePathInWPT(utf8_url);
+  if (!rewritten_url.isEmpty())
+    return rewritten_url;
+
   const char kPrefix[] = "file:///tmp/LayoutTests/";
   const int kPrefixLen = arraysize(kPrefix) - 1;
 
