@@ -2653,7 +2653,10 @@
         "boards": [
             "auron"
         ],
-        "important": true
+        "buildslave_type": "gce_beefy",
+        "chrome_sdk_build_chrome": false,
+        "important": true,
+        "vm_tests": []
     },
     "auron-release-afdo": {
         "_template": "release-afdo-generate",
@@ -2809,10 +2812,7 @@
         "boards": [
             "auron_paine"
         ],
-        "buildslave_type": "gce_beefy",
-        "chrome_sdk_build_chrome": false,
-        "important": true,
-        "vm_tests": []
+        "important": true
     },
     "auron_paine-release-afdo": {
         "_template": "release-afdo-generate",
@@ -3914,6 +3914,7 @@
         ],
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
+        "important": true,
         "vm_tests": []
     },
     "buddy-release-afdo": {
@@ -8283,6 +8284,7 @@
         ],
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
+        "important": true,
         "vm_tests": []
     },
     "gandof-release-afdo": {
@@ -12244,6 +12246,7 @@
         ],
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
+        "important": true,
         "vm_tests": []
     },
     "lulu-release-afdo": {

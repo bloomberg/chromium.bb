@@ -642,9 +642,6 @@ _waterfall_config_map = {
 
         # Experimental Canaries
         # auron
-        'lulu-release',
-        'gandof-release',
-        'buddy-release',
         'lulu-cheets-release',
         # glados
         'glados-release',
@@ -2902,9 +2899,12 @@ def GetConfig():
 
   # auron-based boards
   _AdjustLeaderFollowerReleaseConfigs(
-      'auron', (
+      'auron_paine', (
+          'auron',
           'auron_yuna',
-          'auron_paine',
+          'buddy',
+          'gandof',
+          'lulu',
           'samus-cheets',
       ),
   )
@@ -2912,9 +2912,6 @@ def GetConfig():
   # auron-based boards that are not important.
   _AdjustLeaderFollowerReleaseConfigs(
        [], (
-          'lulu',
-          'gandof',
-          'buddy',
           'lulu-cheets',
       ),
       important=False,
