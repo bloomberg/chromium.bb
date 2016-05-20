@@ -29,7 +29,7 @@ VREye stringToVREye(const String& whichEye)
     return VREyeNone;
 }
 
-} // namepspace
+} // namespace
 
 VRDisplay::VRDisplay(NavigatorVR* navigatorVR)
     : m_navigatorVR(navigatorVR)
@@ -52,25 +52,28 @@ VRController* VRDisplay::controller()
     return m_navigatorVR->controller();
 }
 
-void VRDisplay::update(const mojom::blink::VRDeviceInfoPtr& device)
+void VRDisplay::update(const mojom::blink::VRDisplayPtr& display)
 {
-    m_displayId = device->index;
-    m_displayName = device->deviceName;
+    m_displayId = display->index;
+    m_displayName = display->displayName;
     m_isConnected = true;
 
-    // Defaults until the VR service has been update to query these.
-    m_capabilities->setHasOrientation(true);
-    m_capabilities->setHasPosition(false);
-    m_capabilities->setHasExternalDisplay(false);
-    m_capabilities->setCanPresent(false);
-    m_capabilities->setMaxLayers(0);
+    m_capabilities->setHasOrientation(display->capabilities->hasOrientation);
+    m_capabilities->setHasPosition(display->capabilities->hasPosition);
+    m_capabilities->setHasExternalDisplay(display->capabilities->hasExternalDisplay);
+    m_capabilities->setCanPresent(display->capabilities->canPresent);
+    m_capabilities->setMaxLayers(display->capabilities->canPresent ? 1 : 0);
 
-    if (!device->hmdInfo.is_null()) {
-        m_eyeParametersLeft->update(device->hmdInfo->leftEye);
-        m_eyeParametersRight->update(device->hmdInfo->rightEye);
+    m_eyeParametersLeft->update(display->leftEye);
+    m_eyeParametersRight->update(display->rightEye);
+
+    if (!display->stageParameters.is_null()) {
+        if (!m_stageParameters)
+            m_stageParameters = new VRStageParameters();
+        m_stageParameters->update(display->stageParameters);
+    } else {
+        m_stageParameters = nullptr;
     }
-
-    m_stageParameters = nullptr;
 }
 
 VRPose* VRDisplay::getPose()
@@ -87,13 +90,13 @@ VRPose* VRDisplay::getPose()
 VRPose* VRDisplay::getImmediatePose()
 {
     VRPose* pose = VRPose::create();
-    pose->setPose(controller()->getSensorState(m_displayId));
+    pose->setPose(controller()->getPose(m_displayId));
     return pose;
 }
 
 void VRDisplay::resetPose()
 {
-    controller()->resetSensor(m_displayId);
+    controller()->resetPose(m_displayId);
 }
 
 VREyeParameters* VRDisplay::getEyeParameters(const String& whichEye)

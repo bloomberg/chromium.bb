@@ -15,15 +15,15 @@ namespace blink {
 class VRDisplayCollection;
 class ScriptPromiseResolver;
 
-// Success and failure callbacks for getDevices.
-using WebVRGetDevicesCallback = WebCallbacks<mojo::WTFArray<mojom::blink::VRDeviceInfoPtr>, void>;
-class VRGetDevicesCallback final : public WebVRGetDevicesCallback {
+// Success and failure callbacks for getDisplays.
+using WebVRGetDisplaysCallback = WebCallbacks<mojo::WTFArray<mojom::blink::VRDisplayPtr>, void>;
+class VRGetDevicesCallback final : public WebVRGetDisplaysCallback {
     USING_FAST_MALLOC(VRGetDevicesCallback);
 public:
     VRGetDevicesCallback(ScriptPromiseResolver*, VRDisplayCollection*);
     ~VRGetDevicesCallback() override;
 
-    void onSuccess(mojo::WTFArray<mojom::blink::VRDeviceInfoPtr>) override;
+    void onSuccess(mojo::WTFArray<mojom::blink::VRDisplayPtr>) override;
     void onError() override;
 
 private:

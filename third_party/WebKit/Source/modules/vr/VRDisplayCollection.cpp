@@ -13,22 +13,22 @@ VRDisplayCollection::VRDisplayCollection(NavigatorVR* navigatorVR)
 {
 }
 
-VRDisplayVector VRDisplayCollection::updateDisplays(mojo::WTFArray<mojom::blink::VRDeviceInfoPtr> devices)
+VRDisplayVector VRDisplayCollection::updateDisplays(mojo::WTFArray<mojom::blink::VRDisplayPtr> displays)
 {
-    VRDisplayVector vrDevices;
+    VRDisplayVector vrDisplays;
 
-    for (const auto& device : devices.PassStorage()) {
-        VRDisplay* display = getDisplayForIndex(device->index);
-        if (!display) {
-            display = new VRDisplay(m_navigatorVR);
-            m_displays.append(display);
+    for (const auto& display : displays.PassStorage()) {
+        VRDisplay* vrDisplay = getDisplayForIndex(display->index);
+        if (!vrDisplay) {
+            vrDisplay = new VRDisplay(m_navigatorVR);
+            m_displays.append(vrDisplay);
         }
 
-        display->update(device);
-        vrDevices.append(display);
+        vrDisplay->update(display);
+        vrDisplays.append(vrDisplay);
     }
 
-    return vrDevices;
+    return vrDisplays;
 }
 
 VRDisplay* VRDisplayCollection::getDisplayForIndex(unsigned index)

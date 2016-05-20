@@ -30,9 +30,9 @@ class VRDevice {
   VRDeviceProvider* provider() const { return provider_; }
   unsigned int id() const { return id_; }
 
-  virtual blink::mojom::VRDeviceInfoPtr GetVRDevice() = 0;
-  virtual blink::mojom::VRSensorStatePtr GetSensorState() = 0;
-  virtual void ResetSensor() = 0;
+  virtual blink::mojom::VRDisplayPtr GetVRDevice() = 0;
+  virtual blink::mojom::VRPosePtr GetPose() = 0;
+  virtual void ResetPose() = 0;
 
  private:
   VRDeviceProvider* provider_;

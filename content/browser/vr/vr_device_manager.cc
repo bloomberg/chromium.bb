@@ -77,7 +77,7 @@ bool VRDeviceManager::HasInstance() {
   return !!g_vr_device_manager;
 }
 
-mojo::Array<blink::mojom::VRDeviceInfoPtr> VRDeviceManager::GetVRDevices() {
+mojo::Array<blink::mojom::VRDisplayPtr> VRDeviceManager::GetVRDevices() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   InitializeProviders();
@@ -86,7 +86,7 @@ mojo::Array<blink::mojom::VRDeviceInfoPtr> VRDeviceManager::GetVRDevices() {
   for (const auto& provider : providers_)
     provider->GetDevices(&devices);
 
-  mojo::Array<blink::mojom::VRDeviceInfoPtr> out_devices;
+  mojo::Array<blink::mojom::VRDisplayPtr> out_devices;
   for (const auto& device : devices) {
     if (device->id() == VR_DEVICE_LAST_ID)
       continue;
@@ -94,7 +94,7 @@ mojo::Array<blink::mojom::VRDeviceInfoPtr> VRDeviceManager::GetVRDevices() {
     if (devices_.find(device->id()) == devices_.end())
       devices_[device->id()] = device;
 
-    blink::mojom::VRDeviceInfoPtr vr_device_info = device->GetVRDevice();
+    blink::mojom::VRDisplayPtr vr_device_info = device->GetVRDevice();
     if (vr_device_info.is_null())
       continue;
 
@@ -107,6 +107,10 @@ mojo::Array<blink::mojom::VRDeviceInfoPtr> VRDeviceManager::GetVRDevices() {
 
 VRDevice* VRDeviceManager::GetDevice(unsigned int index) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (index == 0) {
+    return NULL;
+  }
 
   DeviceMap::iterator iter = devices_.find(index);
   if (iter == devices_.end()) {
@@ -131,24 +135,24 @@ void VRDeviceManager::RegisterProvider(
   providers_.push_back(make_linked_ptr(provider.release()));
 }
 
-void VRDeviceManager::GetDevices(const GetDevicesCallback& callback) {
+void VRDeviceManager::GetDisplays(const GetDisplaysCallback& callback) {
   callback.Run(GetVRDevices());
 }
 
-void VRDeviceManager::GetSensorState(uint32_t index,
-                                     const GetSensorStateCallback& callback) {
+void VRDeviceManager::GetPose(uint32_t index,
+                              const GetPoseCallback& callback) {
   VRDevice* device = GetDevice(index);
   if (device) {
-    callback.Run(device->GetSensorState());
+    callback.Run(device->GetPose());
   } else {
     callback.Run(nullptr);
   }
 }
 
-void VRDeviceManager::ResetSensor(uint32_t index) {
+void VRDeviceManager::ResetPose(uint32_t index) {
   VRDevice* device = GetDevice(index);
   if (device)
-    device->ResetSensor();
+    device->ResetPose();
 }
 
 }  // namespace content

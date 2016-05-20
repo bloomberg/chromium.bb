@@ -16,17 +16,17 @@ VREyeParameters::VREyeParameters()
 
 void VREyeParameters::update(const mojom::blink::VREyeParametersPtr& eyeParameters)
 {
-    m_offset->data()[0] = eyeParameters->eyeTranslation->x;
-    m_offset->data()[1] = eyeParameters->eyeTranslation->y;
-    m_offset->data()[2] = eyeParameters->eyeTranslation->z;
+    m_offset->data()[0] = eyeParameters->offset[0];
+    m_offset->data()[1] = eyeParameters->offset[1];
+    m_offset->data()[2] = eyeParameters->offset[2];
 
-    m_fieldOfView->setUpDegrees(eyeParameters->recommendedFieldOfView->upDegrees);
-    m_fieldOfView->setDownDegrees(eyeParameters->recommendedFieldOfView->downDegrees);
-    m_fieldOfView->setLeftDegrees(eyeParameters->recommendedFieldOfView->leftDegrees);
-    m_fieldOfView->setRightDegrees(eyeParameters->recommendedFieldOfView->rightDegrees);
+    m_fieldOfView->setUpDegrees(eyeParameters->fieldOfView->upDegrees);
+    m_fieldOfView->setDownDegrees(eyeParameters->fieldOfView->downDegrees);
+    m_fieldOfView->setLeftDegrees(eyeParameters->fieldOfView->leftDegrees);
+    m_fieldOfView->setRightDegrees(eyeParameters->fieldOfView->rightDegrees);
 
-    m_renderWidth = eyeParameters->renderRect->width;
-    m_renderHeight = eyeParameters->renderRect->height;
+    m_renderWidth = eyeParameters->renderWidth;
+    m_renderHeight = eyeParameters->renderHeight;
 }
 
 DEFINE_TRACE(VREyeParameters)

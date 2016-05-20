@@ -29,7 +29,7 @@ public:
     DOMFloat32Array* angularAcceleration() const { return m_angularAcceleration; }
     DOMFloat32Array* linearAcceleration() const { return m_linearAcceleration; }
 
-    void setPose(const mojom::blink::VRSensorStatePtr&);
+    void setPose(const mojom::blink::VRPosePtr&);
 
     DECLARE_VIRTUAL_TRACE();
 

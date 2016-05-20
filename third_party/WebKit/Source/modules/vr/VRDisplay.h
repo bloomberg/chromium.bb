@@ -76,7 +76,7 @@ protected:
 
     VRDisplay(NavigatorVR*);
 
-    void update(const mojom::blink::VRDeviceInfoPtr&);
+    void update(const mojom::blink::VRDisplayPtr&);
 
     VRController* controller();
 

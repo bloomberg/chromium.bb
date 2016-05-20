@@ -5,7 +5,6 @@
 #ifndef VRController_h
 #define VRController_h
 
-
 #include "core/frame/LocalFrameLifecycleObserver.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
@@ -28,11 +27,11 @@ class MODULES_EXPORT VRController final
 public:
     virtual ~VRController();
 
-    void getDevices(std::unique_ptr<VRGetDevicesCallback>);
+    void getDisplays(std::unique_ptr<VRGetDevicesCallback>);
 
-    mojom::blink::VRSensorStatePtr getSensorState(unsigned index);
+    mojom::blink::VRPosePtr getPose(unsigned index);
 
-    void resetSensor(unsigned index);
+    void resetPose(unsigned index);
 
     static void provideTo(LocalFrame&, ServiceRegistry*);
     static VRController* from(LocalFrame&);
@@ -47,7 +46,7 @@ private:
     void willDetachFrameHost() override;
 
     // Binding callbacks.
-    void OnGetDevices(mojo::WTFArray<mojom::blink::VRDeviceInfoPtr>);
+    void onGetDisplays(mojo::WTFArray<mojom::blink::VRDisplayPtr>);
 
     Deque<std::unique_ptr<VRGetDevicesCallback>> m_pendingGetDevicesCallbacks;
     mojom::blink::VRServicePtr m_service;

@@ -19,9 +19,9 @@ VRGetDevicesCallback::~VRGetDevicesCallback()
 {
 }
 
-void VRGetDevicesCallback::onSuccess(mojo::WTFArray<mojom::blink::VRDeviceInfoPtr> devices)
+void VRGetDevicesCallback::onSuccess(mojo::WTFArray<mojom::blink::VRDisplayPtr> displays)
 {
-    m_resolver->resolve(m_displays->updateDisplays(std::move(devices)));
+    m_resolver->resolve(m_displays->updateDisplays(std::move(displays)));
 }
 
 void VRGetDevicesCallback::onError()

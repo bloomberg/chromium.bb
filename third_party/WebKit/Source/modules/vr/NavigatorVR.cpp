@@ -57,7 +57,7 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* scriptState)
         return promise;
     }
 
-    controller()->getDevices(WTF::wrapUnique(new VRGetDevicesCallback(resolver, m_displays.get())));
+    controller()->getDisplays(WTF::wrapUnique(new VRGetDevicesCallback(resolver, m_displays.get())));
 
     return promise;
 }

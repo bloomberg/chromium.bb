@@ -32,7 +32,7 @@ class VRDeviceManager : public blink::mojom::VRService {
   // Returns the VRDeviceManager singleton.
   static VRDeviceManager* GetInstance();
 
-  mojo::Array<blink::mojom::VRDeviceInfoPtr> GetVRDevices();
+  mojo::Array<blink::mojom::VRDisplayPtr> GetVRDevices();
   VRDevice* GetDevice(unsigned int index);
 
  private:
@@ -49,10 +49,10 @@ class VRDeviceManager : public blink::mojom::VRService {
   void RegisterProvider(std::unique_ptr<VRDeviceProvider> provider);
 
   // mojom::VRService implementation
-  void GetDevices(const GetDevicesCallback& callback) override;
-  void GetSensorState(uint32_t index,
-                      const GetSensorStateCallback& callback) override;
-  void ResetSensor(uint32_t index) override;
+  void GetDisplays(const GetDisplaysCallback& callback) override;
+  void GetPose(uint32_t index,
+               const GetPoseCallback& callback) override;
+  void ResetPose(uint32_t index) override;
 
   // Mojo connection error handler.
   void OnConnectionError();

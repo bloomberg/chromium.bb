@@ -4,26 +4,6 @@
 
 module blink.mojom;
 
-struct VRVector3 {
-  float x;
-  float y;
-  float z;
-};
-
-struct VRVector4 {
-  float x;
-  float y;
-  float z;
-  float w;
-};
-
-struct VRRect {
-  int32 x;
-  int32 y;
-  int32 width;
-  int32 height;
-};
-
 // A field of view, given by 4 degrees describing the view from a center point.
 struct VRFieldOfView {
   float upDegrees;
@@ -32,43 +12,51 @@ struct VRFieldOfView {
   float rightDegrees;
 };
 
-// A sensor's position, orientation, velocity, and acceleration state at the
+// A display's position, orientation, velocity, and acceleration state at the
 // given timestamp.
-struct VRSensorState {
+struct VRPose {
   double timestamp;
-  uint32 frameIndex;
-  VRVector4? orientation;
-  VRVector3? position;
-  VRVector3? angularVelocity;
-  VRVector3? linearVelocity;
-  VRVector3? angularAcceleration;
-  VRVector3? linearAcceleration;
+  array<float, 4>? orientation;
+  array<float, 3>? position;
+  array<float, 3>? angularVelocity;
+  array<float, 3>? linearVelocity;
+  array<float, 3>? angularAcceleration;
+  array<float, 3>? linearAcceleration;
 };
 
-// Information about the optical properties for an eye in an HMD.
+struct VRDisplayCapabilities {
+  bool hasOrientation;
+  bool hasPosition;
+  bool hasExternalDisplay;
+  bool canPresent;
+};
+
+// Information about the optical properties for an eye in a VRDisplay.
 struct VREyeParameters {
-  VRFieldOfView minimumFieldOfView;
-  VRFieldOfView maximumFieldOfView;
-  VRFieldOfView recommendedFieldOfView;
-  VRVector3 eyeTranslation;
-  VRRect renderRect;
+  VRFieldOfView fieldOfView;
+  array<float, 3> offset;
+  uint32 renderWidth;
+  uint32 renderHeight;
 };
 
-// Information pertaining to Head Mounted Displays.
-struct VRHMDInfo {
-  VREyeParameters leftEye;
-  VREyeParameters rightEye;
+struct VRStageParameters {
+  array<float, 16> standingTransform;
+  float sizeX;
+  float sizeZ;
 };
 
-struct VRDeviceInfo {
+struct VRDisplay {
    uint32 index;
-   string deviceName;
-   VRHMDInfo? hmdInfo;
+   string displayName;
+   VRDisplayCapabilities capabilities;
+   VRStageParameters? stageParameters;
+   VREyeParameters leftEye;
+   VREyeParameters rightEye;
 };
 
 interface VRService {
-  GetDevices() => (array<VRDeviceInfo> devices);
+  GetDisplays() => (array<VRDisplay> displays);
   [Sync]
-  GetSensorState(uint32 index) => (VRSensorState state);
-  ResetSensor(uint32 index);
+  GetPose(uint32 index) => (VRPose pose);
+  ResetPose(uint32 index);
 };

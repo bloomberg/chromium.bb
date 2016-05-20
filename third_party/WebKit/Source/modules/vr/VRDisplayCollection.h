@@ -17,7 +17,7 @@ class VRDisplayCollection final : public GarbageCollected<VRDisplayCollection> {
 public:
     explicit VRDisplayCollection(NavigatorVR*);
 
-    VRDisplayVector updateDisplays(mojo::WTFArray<mojom::blink::VRDeviceInfoPtr>);
+    VRDisplayVector updateDisplays(mojo::WTFArray<mojom::blink::VRDisplayPtr>);
     VRDisplay* getDisplayForIndex(unsigned index);
 
     DECLARE_VIRTUAL_TRACE();
