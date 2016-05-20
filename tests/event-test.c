@@ -370,9 +370,9 @@ TEST(buffer_release)
 {
 	struct client *client;
 	struct wl_surface *surface;
-	struct wl_buffer *buf1;
-	struct wl_buffer *buf2;
-	struct wl_buffer *buf3;
+	struct buffer *buf1;
+	struct buffer *buf2;
+	struct buffer *buf3;
 	int buf1_released = 0;
 	int buf2_released = 0;
 	int buf3_released = 0;
@@ -382,22 +382,22 @@ TEST(buffer_release)
 	assert(client);
 	surface = client->surface->wl_surface;
 
-	buf1 = create_shm_buffer(client, 100, 100, NULL);
-	wl_buffer_add_listener(buf1, &buffer_listener, &buf1_released);
+	buf1 = create_shm_buffer_a8r8g8b8(client, 100, 100);
+	wl_buffer_add_listener(buf1->proxy, &buffer_listener, &buf1_released);
 
-	buf2 = create_shm_buffer(client, 100, 100, NULL);
-	wl_buffer_add_listener(buf2, &buffer_listener, &buf2_released);
+	buf2 = create_shm_buffer_a8r8g8b8(client, 100, 100);
+	wl_buffer_add_listener(buf2->proxy, &buffer_listener, &buf2_released);
 
-	buf3 = create_shm_buffer(client, 100, 100, NULL);
-	wl_buffer_add_listener(buf3, &buffer_listener, &buf3_released);
+	buf3 = create_shm_buffer_a8r8g8b8(client, 100, 100);
+	wl_buffer_add_listener(buf3->proxy, &buffer_listener, &buf3_released);
 
 	/*
 	 * buf1 must never be released, since it is replaced before
 	 * it is committed, therefore it never becomes busy.
 	 */
 
-	wl_surface_attach(surface, buf1, 0, 0);
-	wl_surface_attach(surface, buf2, 0, 0);
+	wl_surface_attach(surface, buf1->proxy, 0, 0);
+	wl_surface_attach(surface, buf2->proxy, 0, 0);
 	frame_callback_set(surface, &frame);
 	wl_surface_commit(surface);
 	frame_callback_wait(client, &frame);
@@ -405,7 +405,7 @@ TEST(buffer_release)
 	/* buf2 may or may not be released */
 	assert(buf3_released == 0);
 
-	wl_surface_attach(surface, buf3, 0, 0);
+	wl_surface_attach(surface, buf3->proxy, 0, 0);
 	frame_callback_set(surface, &frame);
 	wl_surface_commit(surface);
 	frame_callback_wait(client, &frame);
