@@ -12,7 +12,17 @@
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/paint_vector_icon.h"
 
+namespace {
+
+// Color values for the Material bubble decoration divider.
+const CGFloat kMaterialDividerAlpha = 38.0;
+const CGFloat kMaterialDividerGrayScale = 0.0;
+const CGFloat kMaterialDividerIncognitoGrayScale = 1.0;
+
+}  // namespace
+
 const CGFloat LocationBarDecoration::kOmittedWidth = 0.0;
+const SkColor LocationBarDecoration::kMaterialDarkModeTextColor = 0xCCFFFFFF;
 
 bool LocationBarDecoration::IsVisible() const {
   return visible_;
@@ -126,8 +136,16 @@ NSSize LocationBarDecoration::GetLabelSize(NSString* label,
 
 SkColor LocationBarDecoration::GetMaterialIconColor(
     bool location_bar_is_dark) const {
-  return location_bar_is_dark ? SkColorSetA(SK_ColorWHITE, 0xCC)
+  return location_bar_is_dark ? kMaterialDarkModeTextColor
                               : gfx::kChromeIconGrey;
+}
+
+NSColor* LocationBarDecoration::GetDividerColor(
+    bool location_bar_is_dark) const {
+  CGFloat gray_scale = location_bar_is_dark ? kMaterialDividerIncognitoGrayScale
+                                            : kMaterialDividerGrayScale;
+  return [NSColor colorWithCalibratedWhite:gray_scale
+                                     alpha:kMaterialDividerAlpha / 255.0];
 }
 
 gfx::VectorIconId LocationBarDecoration::GetMaterialVectorIconId() const {

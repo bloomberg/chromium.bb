@@ -53,20 +53,11 @@ NSColor* ColorWithRGBBytes(int rr, int gg, int bb) {
                                    alpha:1.0];
 }
 
-const int kMaterialFontSize = 11;
-const int kMaterialCornerRadius = 2;
-
 }  // namespace
 
 EVBubbleDecoration::EVBubbleDecoration(LocationIconDecoration* location_icon)
     : location_icon_(location_icon) {
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    SetTextColor(GetBackgroundBorderColor());
-    // The EV chip text in Material Design uses a slightly smaller font than the
-    // default, and has to be moved down slightly.
-    SetFont([NSFont systemFontOfSize:kMaterialFontSize]);
-    SetBaselineOffset(1);
-  } else {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
     // Color tuples stolen from location_bar_view_gtk.cc.
     SetTextColor(ColorWithRGBBytes(0x07, 0x95, 0x00));
   }
@@ -101,23 +92,6 @@ void EVBubbleDecoration::DrawWithBackgroundInFrame(NSRect background_frame,
   // stroked (so that the stroke lines fall along pixel lines).
   if (!in_dark_mode) {
     rect = NSInsetRect(rect, line_width / 2., line_width / 2.);
-  }
-  NSBezierPath* path =
-      [NSBezierPath bezierPathWithRoundedRect:rect
-                                      xRadius:kMaterialCornerRadius
-                                      yRadius:kMaterialCornerRadius];
-  [path setLineWidth:line_width];
-  if (in_dark_mode) {
-    [[NSColor whiteColor] set];
-    [path fill];
-  } else {
-    [[NSColor colorWithSRGBRed:46 / 255.
-                         green:135 / 255.
-                          blue:50 / 255.
-                         alpha:0.05] set];
-    [path fill];
-    [GetBackgroundBorderColor() set];
-    [path stroke];
   }
 
   DrawInFrame(frame, control_view);

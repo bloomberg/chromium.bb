@@ -85,7 +85,11 @@ namespace {
 const static int kFirstRunBubbleYOffset = 1;
 
 const int kDefaultIconSize = 16;
-const int kMaterialSmallIconSize = 12;
+const int kMaterialIconSize = 18;
+
+// Color of the vector graphic icons when the location bar is dark.
+// SkColorSetARGB(0xCC, 0xFF, 0xFF 0xFF);
+const SkColor kMaterialDarkVectorIconColor = 0xCCFFFFFF;
 
 }  // namespace
 
@@ -567,8 +571,10 @@ void LocationBarViewMac::UpdateLocationIcon() {
   int icon_size = kDefaultIconSize;
   if (ShouldShowEVBubble()) {
     vector_icon_id = gfx::VectorIconId::LOCATION_BAR_HTTPS_VALID_IN_CHIP;
-    vector_icon_color = gfx::kGoogleGreen700;
-    icon_size = kMaterialSmallIconSize;
+    vector_icon_color = in_dark_mode
+                            ? LocationBarDecoration::kMaterialDarkModeTextColor
+                            : gfx::kGoogleGreen700;
+    icon_size = kMaterialIconSize;
   } else {
     vector_icon_id = omnibox_view_->GetVectorIcon(in_dark_mode);
     if (in_dark_mode) {
@@ -666,14 +672,16 @@ NSImage* LocationBarViewMac::GetKeywordImage(const base::string16& keyword) {
         GetOmniboxIcon(template_url->GetExtensionId()).AsNSImage();
   }
 
-  return ui::MaterialDesignController::IsModeMaterial()
-      ? NSImageFromImageSkiaWithColorSpace(
-            gfx::CreateVectorIcon(
-                gfx::VectorIconId::OMNIBOX_SEARCH,
-                kDefaultIconSize,
-                gfx::kGoogleBlue700),
-            base::mac::GetSRGBColorSpace())
-      : OmniboxViewMac::ImageForResource(IDR_OMNIBOX_SEARCH);
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    SkColor icon_color = IsLocationBarDark() ? kMaterialDarkVectorIconColor
+                                             : gfx::kGoogleBlue700;
+    return NSImageFromImageSkiaWithColorSpace(
+        gfx::CreateVectorIcon(gfx::VectorIconId::OMNIBOX_SEARCH,
+                              kDefaultIconSize, icon_color),
+        base::mac::GetSRGBColorSpace());
+  }
+
+  return OmniboxViewMac::ImageForResource(IDR_OMNIBOX_SEARCH);
 }
 
 void LocationBarViewMac::PostNotification(NSString* notification) {

@@ -62,6 +62,17 @@ const CGFloat kTextMarginPadding = 4;
 const CGFloat kIconMarginPadding = 2;
 const CGFloat kBorderPadding = 3;
 
+// Padding between the divider between the omnibox text and the divider. The
+// desired value for each side is 8px. We get 5px on the left side by
+// subtracting kBorderPadding from 8px.
+const CGFloat kRightDividerPadding = 8.0;
+const CGFloat kLeftDividerPadding = 5.0;
+CGFloat DividerPadding() {
+  return ui::MaterialDesignController::IsModeMaterial()
+             ? kLeftDividerPadding + kRightDividerPadding
+             : 0.0;
+}
+
 // Color of the vector graphic icons. Used when the location is not dark.
 // SkColorSetARGB(0xCC, 0xFF, 0xFF 0xFF);
 const SkColor kVectorIconColor = 0xCCFFFFFF;
@@ -242,8 +253,16 @@ ContentSettingDecoration::CreateAnimatedText() {
   // Set line break mode to clip the text, otherwise drawInRect: won't draw a
   // word if it doesn't fit in the bounding box.
   [style setLineBreakMode:NSLineBreakByClipping];
-  NSDictionary* attributes = @{ NSFontAttributeName : GetFont(),
-                                NSParagraphStyleAttributeName : style };
+
+  SkColor text_color = owner_->IsLocationBarDark() ? kMaterialDarkModeTextColor
+                                                   : gfx::kChromeIconGrey;
+  NSDictionary* attributes = @{
+    NSFontAttributeName : GetFont(),
+    NSParagraphStyleAttributeName : style,
+    NSForegroundColorAttributeName :
+        skia::SkColorToCalibratedNSColor(text_color)
+  };
+
   return base::scoped_nsobject<NSAttributedString>(
       [[NSAttributedString alloc] initWithString:text attributes:attributes]);
 }
@@ -322,16 +341,18 @@ CGFloat ContentSettingDecoration::GetWidthForSpace(CGFloat width) {
       CGFloat progress = [animation_ progress];
       // Add the margins, fixed for all animation states.
       preferred_width += kIconMarginPadding + kTextMarginPadding;
+
       // Add the width of the text based on the state of the animation.
+      CGFloat text_width = text_width_ + DividerPadding();
       switch (state) {
         case kOpening:
-          preferred_width += text_width_ * kInMotionMultiplier * progress;
+          preferred_width += text_width * kInMotionMultiplier * progress;
           break;
         case kOpen:
-          preferred_width += text_width_;
+          preferred_width += text_width;
           break;
         case kClosing:
-          preferred_width += text_width_ * kInMotionMultiplier * (1 - progress);
+          preferred_width += text_width * kInMotionMultiplier * (1 - progress);
           break;
         default:
           // Do nothing.
@@ -354,23 +375,7 @@ void ContentSettingDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
     // this ContentSettingDecoration's DrawInFrame() also draws the background.
     // In short, moving this code upstream to a common parent requires a non-
     // trivial bit of refactoring.
-    if (ui::MaterialDesignController::IsModeMaterial()) {
-      CGFloat lineWidth = [control_view cr_lineWidth];
-      NSRect rect =
-          NSInsetRect(background_rect, lineWidth / 2., lineWidth / 2.);
-      NSBezierPath* path = [NSBezierPath bezierPathWithRoundedRect:rect
-                                                           xRadius:3
-                                                           yRadius:3];
-      [path setLineWidth:lineWidth];
-      bool inDarkMode = [[control_view window] inIncognitoModeWithSystemTheme];
-      if (inDarkMode) {
-        [[NSColor whiteColor] set];
-        [path fill];
-      } else {
-        [skia::SkColorToCalibratedNSColor(gfx::kGoogleYellow700) set];
-        [path stroke];
-      }
-    } else {
+    if (!ui::MaterialDesignController::IsModeMaterial()) {
       const ui::NinePartImageIds image_ids =
           IMAGE_GRID(IDR_OMNIBOX_CONTENT_SETTING_BUBBLE);
       ui::DrawNinePartImage(
@@ -386,8 +391,21 @@ void ContentSettingDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
       ImageDecoration::DrawInFrame(icon_rect, control_view);
     }
 
+    if (ui::MaterialDesignController::IsModeMaterial()) {
+      NSBezierPath* line = [NSBezierPath bezierPath];
+      [line setLineWidth:1];
+      [line
+          moveToPoint:NSMakePoint(NSMaxX(background_rect) - kLeftDividerPadding,
+                                  NSMinY(background_rect))];
+      [line
+          lineToPoint:NSMakePoint(NSMaxX(background_rect) - kLeftDividerPadding,
+                                  NSMaxY(background_rect))];
+      [GetDividerColor(owner_->IsLocationBarDark()) set];
+      [line stroke];
+    }
+
     NSRect remainder = frame;
-    remainder.origin.x = NSMaxX(icon_rect);
+    remainder.origin.x = NSMaxX(icon_rect) + kTextMarginPadding;
     remainder.size.width = NSMaxX(background_rect) - NSMinX(remainder);
     DrawAttributedString(animated_text_, remainder);
   } else {

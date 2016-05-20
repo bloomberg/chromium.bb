@@ -105,6 +105,9 @@ class LocationBarDecoration {
   // omitted for this width;
   static const CGFloat kOmittedWidth;
 
+  // Material text color if the location bar is dark.
+  static const SkColor kMaterialDarkModeTextColor;
+
  protected:
   // Gets the color used to draw the Material Design icon. The default
   // implementation satisfies most cases - few subclasses should need to
@@ -115,6 +118,9 @@ class LocationBarDecoration {
   // should override to return the correct id. Not an abstract method because
   // some decorations are assigned their icon (vs. creating it themselves).
   virtual gfx::VectorIconId GetMaterialVectorIconId() const;
+
+  // Gets the color used for the divider. Only used in Material design.
+  NSColor* GetDividerColor(bool location_bar_is_dark) const;
 
  private:
   bool visible_;
