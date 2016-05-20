@@ -1324,6 +1324,9 @@ crbug.com/602933 fast/canvas/canvas-incremental-repaint.html [ NeedsManualRebase
 
 crbug.com/599975 [ Android ] media/video-autoplay.html [ Crash Timeout ]
 
+crbug.com/612874 [ Win ] tables/mozilla/marvin/backgr_simple-table-column-group.html [ Failure Pass ]
+crbug.com/612874 [ Win ] svg/wicd/test-scalable-background-image1.xhtml [ Failure Pass ]
+
 # DocumentWriteEvaluator is still experimental
 crbug.com/599115 http/tests/preload/document-write [ Failure ]
 crbug.com/599115 http/tests/preload/document-write/document_write_no_preload.html [ Pass ]
