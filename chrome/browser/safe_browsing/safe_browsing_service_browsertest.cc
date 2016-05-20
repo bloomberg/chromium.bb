@@ -37,6 +37,7 @@
 #include "chrome/browser/safe_browsing/local_database_manager.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
+#include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -51,6 +52,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/metadata.pb.h"
+#include "components/safe_browsing_db/test_database_manager.h"
 #include "components/safe_browsing_db/util.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
@@ -121,11 +123,23 @@ void InvokeFullHashCallback(
   callback.Run(result, base::TimeDelta::FromMinutes(45));
 }
 
-class FakeSafeBrowsingUIManager : public SafeBrowsingUIManager {
- public:
-  explicit FakeSafeBrowsingUIManager(SafeBrowsingService* service)
-      : SafeBrowsingUIManager(service) {}
+// Helper function to set up protocol config. It is used to redirects safe
+// browsing queries to embeded test server. It needs to be called before
+// SafeBrowsingService being created, therefore it is preferred to call this
+// function before InProcessBrowserTest::SetUp().
+void SetProtocolConfigURLPrefix(const std::string& url_prefix,
+                                TestSafeBrowsingServiceFactory* factory) {
+  SafeBrowsingProtocolConfig config;
+  config.url_prefix = url_prefix;
+  // Makes sure the auto update is not triggered. The tests will force the
+  // update when needed.
+  config.disable_auto_update = true;
+  config.client_name = "browser_tests";
+  factory->SetTestProtocolConfig(config);
+}
 
+class FakeSafeBrowsingUIManager : public TestSafeBrowsingUIManager {
+ public:
   void MaybeReportSafeBrowsingHit(
       const safe_browsing::HitReport& hit_report) override {
     EXPECT_FALSE(got_hit_report_);
@@ -139,48 +153,6 @@ class FakeSafeBrowsingUIManager : public SafeBrowsingUIManager {
 
  private:
   ~FakeSafeBrowsingUIManager() override {}
-};
-
-class FakeSafeBrowsingService : public SafeBrowsingService {
- public:
-  explicit FakeSafeBrowsingService(const std::string& url_prefix)
-      : url_prefix_(url_prefix) {}
-
-  SafeBrowsingProtocolConfig GetProtocolConfig() const override {
-    SafeBrowsingProtocolConfig config;
-    config.url_prefix = url_prefix_;
-    // Makes sure the auto update is not triggered. The tests will force the
-    // update when needed.
-    config.disable_auto_update = true;
-    config.client_name = "browser_tests";
-    return config;
-  }
-
- protected:
-  SafeBrowsingUIManager* CreateUIManager() override {
-    return new FakeSafeBrowsingUIManager(this);
-  }
-
- private:
-  ~FakeSafeBrowsingService() override {}
-
-  std::string url_prefix_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingService);
-};
-
-// Factory that creates FakeSafeBrowsingService instances.
-class TestSafeBrowsingServiceFactory : public SafeBrowsingServiceFactory {
- public:
-  explicit TestSafeBrowsingServiceFactory(const std::string& url_prefix)
-      : url_prefix_(url_prefix) {}
-
-  SafeBrowsingService* CreateSafeBrowsingService() override {
-    return new FakeSafeBrowsingService(url_prefix_);
-  }
-
- private:
-  std::string url_prefix_;
 };
 
 // A SafeBrowingDatabase class that allows us to inject the malicious URLs.
@@ -517,10 +489,13 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   }
 
   void SetUp() override {
-    // InProcessBrowserTest::SetUp() instantiates SafebrowsingService and
-    // RegisterFactory has to be called before SafeBrowsingService is created.
-    sb_factory_.reset(new TestSafeBrowsingServiceFactory(
-        "https://definatelynotarealdomain/safebrowsing"));
+    // InProcessBrowserTest::SetUp() instantiates SafebrowsingService.
+    // RegisterFactory and plugging test UI manager / protocol config have to
+    // be called before SafeBrowsingService is created.
+    sb_factory_.reset(new TestSafeBrowsingServiceFactory());
+    sb_factory_->SetTestUIManager(new FakeSafeBrowsingUIManager());
+    SetProtocolConfigURLPrefix("https://definatelynotarealdomain/safebrowsing",
+                               sb_factory_.get());
     SafeBrowsingService::RegisterFactory(sb_factory_.get());
     SafeBrowsingDatabase::RegisterFactory(&db_factory_);
     SafeBrowsingProtocolManager::RegisterFactory(&pm_factory_);
@@ -1580,9 +1555,9 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&SafeBrowsingDatabaseManagerCookieTest::HandleRequest));
 
-    // Point to the testing server for all SafeBrowsing requests.
-    GURL url_prefix = embedded_test_server()->GetURL("/testpath");
-    sb_factory_.reset(new TestSafeBrowsingServiceFactory(url_prefix.spec()));
+    sb_factory_.reset(new TestSafeBrowsingServiceFactory());
+    SetProtocolConfigURLPrefix(
+        embedded_test_server()->GetURL("/testpath").spec(), sb_factory_.get());
     SafeBrowsingService::RegisterFactory(sb_factory_.get());
 
     InProcessBrowserTest::SetUp();
@@ -1636,7 +1611,6 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
       EXPECT_TRUE(false);
       return false;
     }
-
     return InProcessBrowserTest::SetUpUserDataDirectory();
   }
 
@@ -1651,7 +1625,6 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
     sql::Statement smt(
         db.GetUniqueStatement("SELECT name, value FROM cookies ORDER BY name"));
     ASSERT_TRUE(smt.is_valid());
-
     ASSERT_TRUE(smt.Step());
     ASSERT_EQ("a", smt.ColumnString(0));
     ASSERT_EQ("b", smt.ColumnString(1));
@@ -1661,21 +1634,15 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
     EXPECT_FALSE(smt.Step());
   }
 
-  void SetUpOnMainThread() override {
-    sb_service_ = g_browser_process->safe_browsing_service();
-    ASSERT_TRUE(sb_service_.get() != NULL);
-  }
-
-  void TearDownOnMainThread() override { sb_service_ = NULL; }
-
   void ForceUpdate() {
-    sb_service_->protocol_manager()->ForceScheduleNextUpdate(
-        base::TimeDelta::FromSeconds(0));
+    sb_factory_->test_safe_browsing_service()
+        ->protocol_manager()
+        ->ForceScheduleNextUpdate(base::TimeDelta::FromSeconds(0));
   }
 
-  scoped_refptr<SafeBrowsingService> sb_service_;
+  std::unique_ptr<TestSafeBrowsingServiceFactory> sb_factory_;
 
- private:
+ protected:
   static std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
       const net::test_server::HttpRequest& request) {
     if (!base::StartsWith(request.relative_url, "/testpath/",
@@ -1713,8 +1680,6 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
     return std::move(http_response);
   }
 
-  std::unique_ptr<TestSafeBrowsingServiceFactory> sb_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingDatabaseManagerCookieTest);
 };
 
@@ -1725,7 +1690,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingDatabaseManagerCookieTest,
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE,
       content::Source<SafeBrowsingDatabaseManager>(
-          sb_service_->database_manager().get()));
+          sb_factory_->test_safe_browsing_service()->database_manager().get()));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&SafeBrowsingDatabaseManagerCookieTest::ForceUpdate, this));

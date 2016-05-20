@@ -190,6 +190,8 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   friend class SafeBrowsingServerTest;
   friend class SafeBrowsingServiceTest;
   friend class SafeBrowsingURLRequestContextGetter;
+  friend class TestSafeBrowsingService;
+  friend class TestSafeBrowsingServiceFactory;
 
   // Called to initialize objects that are used on the io_thread.  This may be
   // called multiple times during the life of the SafeBrowsingService.

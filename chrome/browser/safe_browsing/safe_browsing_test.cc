@@ -38,7 +38,7 @@
 #include "chrome/browser/safe_browsing/local_database_manager.h"
 #include "chrome/browser/safe_browsing/local_safebrowsing_test_server.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -115,64 +115,26 @@ bool ParsePhishingUrls(const std::string& data,
   return true;
 }
 
-class FakeSafeBrowsingService : public SafeBrowsingService {
- public:
-  explicit FakeSafeBrowsingService(const std::string& url_prefix)
-      : url_prefix_(url_prefix) {}
-
-  SafeBrowsingProtocolConfig GetProtocolConfig() const override {
-    SafeBrowsingProtocolConfig config;
-    config.url_prefix = url_prefix_;
-    // Makes sure the auto update is not triggered. The tests will force the
-    // update when needed.
-    config.disable_auto_update = true;
-    config.client_name = "browser_tests";
-    return config;
-  }
-
- private:
-  ~FakeSafeBrowsingService() override {}
-
-  std::string url_prefix_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingService);
-};
-
-// Factory that creates FakeSafeBrowsingService instances.
-class TestSafeBrowsingServiceFactory : public SafeBrowsingServiceFactory {
- public:
-  explicit TestSafeBrowsingServiceFactory(const std::string& url_prefix)
-      : url_prefix_(url_prefix) {}
-
-  SafeBrowsingService* CreateSafeBrowsingService() override {
-    return new FakeSafeBrowsingService(url_prefix_);
-  }
-
- private:
-  std::string url_prefix_;
-};
-
 }  // namespace
 
 // This starts the browser and keeps status of states related to SafeBrowsing.
 class SafeBrowsingServerTest : public InProcessBrowserTest {
  public:
   SafeBrowsingServerTest()
-    : safe_browsing_service_(NULL),
-      is_database_ready_(true),
-      is_update_scheduled_(false),
-      is_checked_url_in_db_(false),
-      is_checked_url_safe_(false) {
-  }
+      : is_database_ready_(true),
+        is_update_scheduled_(false),
+        is_checked_url_in_db_(false),
+        is_checked_url_safe_(false) {}
 
   ~SafeBrowsingServerTest() override {}
 
   void UpdateSafeBrowsingStatus() {
-    ASSERT_TRUE(safe_browsing_service_);
+    ASSERT_TRUE(sb_factory_->test_safe_browsing_service());
     base::AutoLock lock(update_status_mutex_);
-    last_update_ = safe_browsing_service_->protocol_manager_->last_update();
-    is_update_scheduled_ =
-        safe_browsing_service_->protocol_manager_->update_timer_.IsRunning();
+    last_update_ = sb_factory_->test_safe_browsing_service()
+                       ->protocol_manager_->last_update();
+    is_update_scheduled_ = sb_factory_->test_safe_browsing_service()
+                               ->protocol_manager_->update_timer_.IsRunning();
   }
 
   void ForceUpdate() {
@@ -187,9 +149,10 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
 
   void ForceUpdateOnIOThread() {
     EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    ASSERT_TRUE(safe_browsing_service_);
-    safe_browsing_service_->protocol_manager_->ForceScheduleNextUpdate(
-        base::TimeDelta::FromSeconds(0));
+    ASSERT_TRUE(sb_factory_->test_safe_browsing_service());
+    sb_factory_->test_safe_browsing_service()
+        ->protocol_manager_->ForceScheduleNextUpdate(
+            base::TimeDelta::FromSeconds(0));
   }
 
 
@@ -200,7 +163,7 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
   }
 
   void CheckUrl(SafeBrowsingDatabaseManager::Client* helper, const GURL& url) {
-    ASSERT_TRUE(safe_browsing_service_);
+    ASSERT_TRUE(sb_factory_->test_safe_browsing_service());
     base::AutoLock lock(update_status_mutex_);
     if (database_manager()->CheckBrowseUrl(url, helper)) {
       is_checked_url_in_db_ = false;
@@ -214,7 +177,7 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
   }
 
   SafeBrowsingDatabaseManager* database_manager() {
-    return safe_browsing_service_->database_manager().get();
+    return sb_factory_->test_safe_browsing_service()->database_manager().get();
   }
 
   // TODO(nparker): Remove the need for this by wiring in our own
@@ -263,9 +226,14 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
   }
 
  protected:
-  bool InitSafeBrowsingService() {
-    safe_browsing_service_ = g_browser_process->safe_browsing_service();
-    return safe_browsing_service_ != NULL;
+  void SetProtocolConfigURLPrefix(const std::string& url_prefix) {
+    SafeBrowsingProtocolConfig config;
+    config.url_prefix = url_prefix;
+    // Makes sure the auto update is not triggered. The tests will force the
+    // update when needed.
+    config.disable_auto_update = true;
+    config.client_name = "browser_tests";
+    sb_factory_->SetTestProtocolConfig(config);
   }
 
   void SetUp() override {
@@ -280,9 +248,9 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
     ASSERT_TRUE(test_server_->Start());
     LOG(INFO) << "server is " << test_server_->host_port_pair().ToString();
 
+    sb_factory_.reset(new TestSafeBrowsingServiceFactory());
     // Point to the testing server for all SafeBrowsing requests.
-    std::string url_prefix = test_server_->GetURL("safebrowsing").spec();
-    sb_factory_.reset(new TestSafeBrowsingServiceFactory(url_prefix));
+    SetProtocolConfigURLPrefix(test_server_->GetURL("safebrowsing").spec());
     SafeBrowsingService::RegisterFactory(sb_factory_.get());
 
     InProcessBrowserTest::SetUp();
@@ -311,14 +279,13 @@ class SafeBrowsingServerTest : public InProcessBrowserTest {
 
   void SetTestStep(int step) {
     std::string test_step = base::StringPrintf("test_step=%d", step);
-    safe_browsing_service_->protocol_manager_->set_additional_query(test_step);
+    sb_factory_->test_safe_browsing_service()
+        ->protocol_manager_->set_additional_query(test_step);
   }
 
- private:
   std::unique_ptr<TestSafeBrowsingServiceFactory> sb_factory_;
 
-  SafeBrowsingService* safe_browsing_service_;
-
+ private:
   std::unique_ptr<net::SpawnedTestServer> test_server_;
 
   // Protects all variables below since they are read on UI thread
@@ -501,8 +468,7 @@ class SafeBrowsingServerTestHelper
 // TODO(shess): Disabled pending new data for third_party/safe_browsing/testing/
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServerTest,
                        DISABLED_SafeBrowsingServerTest) {
-  LOG(INFO) << "Start test";
-  ASSERT_TRUE(InitSafeBrowsingService());
+  ASSERT_TRUE(sb_factory_->test_safe_browsing_service() != NULL);
 
   net::URLRequestContextGetter* request_context =
       browser()->profile()->GetRequestContext();
@@ -512,7 +478,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServerTest,
 
   // Waits and makes sure safebrowsing update is not happening.
   // The wait will stop once OnWaitForStatusUpdateDone in
-  // safe_browsing_helper is called and status from safe_browsing_service_
+  // safe_browsing_helper is called and status from test_safe_browsing_service
   // is checked.
   safe_browsing_helper->UpdateStatus();
   EXPECT_TRUE(is_database_ready());

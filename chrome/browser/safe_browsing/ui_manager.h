@@ -158,6 +158,7 @@ class SafeBrowsingUIManager
  private:
   friend class base::RefCountedThreadSafe<SafeBrowsingUIManager>;
   friend class SafeBrowsingUIManagerTest;
+  friend class TestSafeBrowsingUIManager;
 
   // Call protocol manager on IO thread to report hits of unsafe contents.
   void ReportSafeBrowsingHitOnIOThread(

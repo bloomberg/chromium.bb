@@ -70,8 +70,8 @@ void DownloadDangerPrompt::SendSafeBrowsingDownloadRecoveryReport(
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
       report.set_download_verdict(ClientDownloadResponse::DANGEROUS_HOST);
       break;
-    default:
-      break;
+    default:  // Don't send report for any other danger types.
+      return;
   }
   report.set_url(download.GetURL().spec());
   report.set_did_proceed(did_proceed);

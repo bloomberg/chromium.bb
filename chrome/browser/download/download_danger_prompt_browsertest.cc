@@ -8,7 +8,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/download/download_danger_prompt.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -34,53 +34,14 @@ using safe_browsing::SafeBrowsingService;
 
 const char kTestDownloadUrl[] = "http://evildownload.com";
 
-class FakeSafeBrowsingService : public SafeBrowsingService {
- public:
-  FakeSafeBrowsingService() {}
-
-  void SendSerializedDownloadReport(const std::string& report) override {
-    report_ = report;
-  }
-
-  std::string GetDownloadRecoveryReport() const { return report_; }
-
- protected:
-  ~FakeSafeBrowsingService() override {}
-
- private:
-  std::string report_;
-};
-
-// Factory that creates FakeSafeBrowsingService instances.
-class TestSafeBrowsingServiceFactory
-    : public safe_browsing::SafeBrowsingServiceFactory {
- public:
-  TestSafeBrowsingServiceFactory() : fake_safe_browsing_service_(nullptr) {}
-  ~TestSafeBrowsingServiceFactory() override {}
-
-  SafeBrowsingService* CreateSafeBrowsingService() override {
-    if (!fake_safe_browsing_service_) {
-      fake_safe_browsing_service_ = new FakeSafeBrowsingService();
-    }
-    return fake_safe_browsing_service_.get();
-  }
-
-  scoped_refptr<FakeSafeBrowsingService> fake_safe_browsing_service() {
-    return fake_safe_browsing_service_;
-  }
-
- private:
-  scoped_refptr<FakeSafeBrowsingService> fake_safe_browsing_service_;
-};
-
 class DownloadDangerPromptTest : public InProcessBrowserTest {
  public:
   DownloadDangerPromptTest()
       : prompt_(nullptr),
         expected_action_(DownloadDangerPrompt::CANCEL),
         did_receive_callback_(false),
-        test_safe_browsing_factory_(new TestSafeBrowsingServiceFactory()),
-        report_sent_(false) {}
+        test_safe_browsing_factory_(
+            new safe_browsing::TestSafeBrowsingServiceFactory()) {}
 
   ~DownloadDangerPromptTest() override {}
 
@@ -115,26 +76,31 @@ class DownloadDangerPromptTest : public InProcessBrowserTest {
     SetUpSafeBrowsingReportExpectations(
         expected_action == DownloadDangerPrompt::ACCEPT, download_verdict);
     CreatePrompt();
-    report_sent_ = false;
   }
 
-  void VerifyExpectations() {
+  void VerifyExpectations(bool should_send_report) {
     content::RunAllPendingInMessageLoop();
     // At the end of each test, we expect no more activity from the prompt. The
     // prompt shouldn't exist anymore either.
     EXPECT_TRUE(did_receive_callback_);
     EXPECT_FALSE(prompt_);
-    testing::Mock::VerifyAndClearExpectations(&download_);
-    if (report_sent_) {
+
+    if (should_send_report) {
       EXPECT_EQ(expected_serialized_report_,
-                test_safe_browsing_factory_->fake_safe_browsing_service()
-                    ->GetDownloadRecoveryReport());
+                test_safe_browsing_factory_->test_safe_browsing_service()
+                    ->serilized_download_report());
+    } else {
+      EXPECT_TRUE(test_safe_browsing_factory_->test_safe_browsing_service()
+                      ->serilized_download_report()
+                      .empty());
     }
+    testing::Mock::VerifyAndClearExpectations(&download_);
+    test_safe_browsing_factory_->test_safe_browsing_service()
+        ->ClearDownloadReport();
   }
 
   void SimulatePromptAction(DownloadDangerPrompt::Action action) {
     prompt_->InvokeActionForTesting(action);
-    report_sent_ = true;
   }
 
   content::MockDownloadItem& download() { return download_; }
@@ -181,9 +147,9 @@ class DownloadDangerPromptTest : public InProcessBrowserTest {
   DownloadDangerPrompt* prompt_;
   DownloadDangerPrompt::Action expected_action_;
   bool did_receive_callback_;
-  std::unique_ptr<TestSafeBrowsingServiceFactory> test_safe_browsing_factory_;
+  std::unique_ptr<safe_browsing::TestSafeBrowsingServiceFactory>
+      test_safe_browsing_factory_;
   std::string expected_serialized_report_;
-  bool report_sent_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadDangerPromptTest);
 };
@@ -212,45 +178,55 @@ IN_PROC_BROWSER_TEST_F(DownloadDangerPromptTest, MAYBE_TestAll) {
   SetUpExpectations(DownloadDangerPrompt::ACCEPT,
                     content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL,
                     ClientDownloadResponse::DANGEROUS);
+  EXPECT_CALL(download(), IsDangerous()).WillRepeatedly(Return(true));
   SimulatePromptAction(DownloadDangerPrompt::ACCEPT);
-  VerifyExpectations();
+  VerifyExpectations(true);
 
   // Clicking the Cancel button should invoke the CANCEL action.
   SetUpExpectations(DownloadDangerPrompt::CANCEL,
                     content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT,
                     ClientDownloadResponse::UNCOMMON);
+  EXPECT_CALL(download(), IsDangerous()).WillRepeatedly(Return(true));
   SimulatePromptAction(DownloadDangerPrompt::CANCEL);
-  VerifyExpectations();
+  VerifyExpectations(true);
 
   // If the download is no longer dangerous (because it was accepted), the
   // dialog should DISMISS itself.
   SetUpExpectations(DownloadDangerPrompt::DISMISS,
                     content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED,
                     ClientDownloadResponse::POTENTIALLY_UNWANTED);
-  EXPECT_CALL(download(), IsDangerous()).WillOnce(Return(false));
+  EXPECT_CALL(download(), IsDangerous()).WillRepeatedly(Return(false));
   download().NotifyObserversDownloadUpdated();
-  VerifyExpectations();
+  VerifyExpectations(false);
 
   // If the download is in a terminal state then the dialog should DISMISS
   // itself.
   SetUpExpectations(DownloadDangerPrompt::DISMISS,
                     content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST,
                     ClientDownloadResponse::DANGEROUS_HOST);
-  EXPECT_CALL(download(), IsDangerous()).WillOnce(Return(true));
-  EXPECT_CALL(download(), IsDone()).WillOnce(Return(true));
+  EXPECT_CALL(download(), IsDangerous()).WillRepeatedly(Return(true));
+  EXPECT_CALL(download(), IsDone()).WillRepeatedly(Return(true));
   download().NotifyObserversDownloadUpdated();
-  VerifyExpectations();
+  VerifyExpectations(false);
 
   // If the download is dangerous and is not in a terminal state, don't dismiss
   // the dialog.
   SetUpExpectations(DownloadDangerPrompt::ACCEPT,
                     content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT,
                     ClientDownloadResponse::DANGEROUS);
-  EXPECT_CALL(download(), IsDangerous()).WillOnce(Return(true));
-  EXPECT_CALL(download(), IsDone()).WillOnce(Return(false));
+  EXPECT_CALL(download(), IsDangerous()).WillRepeatedly(Return(true));
+  EXPECT_CALL(download(), IsDone()).WillRepeatedly(Return(false));
   download().NotifyObserversDownloadUpdated();
+  EXPECT_TRUE(prompt());
   SimulatePromptAction(DownloadDangerPrompt::ACCEPT);
-  VerifyExpectations();
+  VerifyExpectations(true);
+
+  // If the download is not dangerous, no report will be sent.
+  SetUpExpectations(DownloadDangerPrompt::ACCEPT,
+                    content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                    ClientDownloadResponse::SAFE);
+  SimulatePromptAction(DownloadDangerPrompt::ACCEPT);
+  VerifyExpectations(false);
 
   // If the containing tab is closed, the dialog should DISMISS itself.
   OpenNewTab();
@@ -258,5 +234,5 @@ IN_PROC_BROWSER_TEST_F(DownloadDangerPromptTest, MAYBE_TestAll) {
                     content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL,
                     ClientDownloadResponse::DANGEROUS);
   chrome::CloseTab(browser());
-  VerifyExpectations();
+  VerifyExpectations(false);
 }

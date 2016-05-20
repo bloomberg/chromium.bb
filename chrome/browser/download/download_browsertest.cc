@@ -111,8 +111,7 @@
 #if defined(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection_service.h"
-#include "chrome/browser/safe_browsing/safe_browsing_database.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #endif
 
 using content::BrowserContext;
@@ -1090,15 +1089,13 @@ class FakeDownloadProtectionService
 };
 
 class FakeSafeBrowsingService
-    : public safe_browsing::SafeBrowsingService,
+    : public safe_browsing::TestSafeBrowsingService,
       public safe_browsing::ServicesDelegate::ServicesCreator {
  public:
   FakeSafeBrowsingService() {
     services_delegate_ =
         safe_browsing::ServicesDelegate::CreateForTest(this, this);
   }
-
-  std::string GetDownloadReport() const { return report_; }
 
  protected:
   ~FakeSafeBrowsingService() override {}
@@ -1121,13 +1118,6 @@ class FakeSafeBrowsingService
     NOTREACHED();
     return nullptr;
   }
-
-  // SafeBrowsingService:
-  void SendSerializedDownloadReport(const std::string& report) override {
-    report_ = report;
-  }
-
-  std::string report_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSafeBrowsingService);
 };
@@ -3385,7 +3375,7 @@ IN_PROC_BROWSER_TEST_F(
   safe_browsing::ClientSafeBrowsingReportRequest actual_report;
   actual_report.ParseFromString(
       test_safe_browsing_factory_->fake_safe_browsing_service()
-          ->GetDownloadReport());
+          ->serilized_download_report());
   EXPECT_EQ(safe_browsing::ClientSafeBrowsingReportRequest::
                 DANGEROUS_DOWNLOAD_WARNING,
             actual_report.type());
@@ -3418,9 +3408,9 @@ IN_PROC_BROWSER_TEST_F(
   DownloadItem* download = downloads[0];
   DownloadCommands(download).ExecuteCommand(DownloadCommands::DISCARD);
 
-  EXPECT_TRUE(
-      test_safe_browsing_factory_->fake_safe_browsing_service()
-          ->GetDownloadReport().empty());
+  EXPECT_TRUE(test_safe_browsing_factory_->fake_safe_browsing_service()
+                  ->serilized_download_report()
+                  .empty());
 }
 #endif  // FULL_SAFE_BROWSING
 

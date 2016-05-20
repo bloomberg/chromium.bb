@@ -7,7 +7,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/threat_details.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/common/pref_names.h"
@@ -51,26 +51,6 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
     threat_details_proceed_delay_ms_ = 0;
     DontCreateViewForTesting();
   }
-};
-
-class TestSafeBrowsingUIManager: public SafeBrowsingUIManager {
- public:
-  explicit TestSafeBrowsingUIManager(SafeBrowsingService* service)
-      : SafeBrowsingUIManager(service) {
-  }
-
-  void SendSerializedThreatDetails(const std::string& serialized) override {
-    details_.push_back(serialized);
-  }
-
-  std::list<std::string>* GetDetails() {
-    return &details_;
-  }
-
- private:
-  ~TestSafeBrowsingUIManager() override {}
-
-  std::list<std::string> details_;
 };
 
 class TestSafeBrowsingBlockingPageFactory
@@ -280,8 +260,8 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageDontProceed) {
   EXPECT_FALSE(controller().GetPendingEntry());
 
   // A report should have been sent.
-  EXPECT_EQ(1u, ui_manager_->GetDetails()->size());
-  ui_manager_->GetDetails()->clear();
+  EXPECT_EQ(1u, ui_manager_->GetThreatDetails()->size());
+  ui_manager_->GetThreatDetails()->clear();
 }
 
 // Tests showing a blocking page for a malware page and then proceeding.
@@ -313,8 +293,8 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwarePageProceed) {
   ASSERT_FALSE(InterstitialPage::GetInterstitialPage(web_contents()));
 
   // A report should have been sent.
-  EXPECT_EQ(1u, ui_manager_->GetDetails()->size());
-  ui_manager_->GetDetails()->clear();
+  EXPECT_EQ(1u, ui_manager_->GetThreatDetails()->size());
+  ui_manager_->GetThreatDetails()->clear();
 }
 
 // Tests showing a blocking page for a page that contains malware subresources
@@ -349,8 +329,8 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceDontProceed) {
   EXPECT_EQ(kGoogleURL, controller().GetActiveEntry()->GetURL().spec());
 
   // A report should have been sent.
-  EXPECT_EQ(1u, ui_manager_->GetDetails()->size());
-  ui_manager_->GetDetails()->clear();
+  EXPECT_EQ(1u, ui_manager_->GetThreatDetails()->size());
+  ui_manager_->GetThreatDetails()->clear();
 }
 
 // Tests showing a blocking page for a page that contains malware subresources
@@ -381,8 +361,8 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMalwareResourceProceed) {
   EXPECT_EQ(kGoodURL, controller().GetActiveEntry()->GetURL().spec());
 
   // A report should have been sent.
-  EXPECT_EQ(1u, ui_manager_->GetDetails()->size());
-  ui_manager_->GetDetails()->clear();
+  EXPECT_EQ(1u, ui_manager_->GetThreatDetails()->size());
+  ui_manager_->GetThreatDetails()->clear();
 }
 
 // Tests showing a blocking page for a page that contains multiple malware
@@ -424,8 +404,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
   EXPECT_EQ(kGoogleURL, controller().GetActiveEntry()->GetURL().spec());
 
   // A report should have been sent.
-  EXPECT_EQ(1u, ui_manager_->GetDetails()->size());
-  ui_manager_->GetDetails()->clear();
+  EXPECT_EQ(1u, ui_manager_->GetThreatDetails()->size());
+  ui_manager_->GetThreatDetails()->clear();
 }
 
 // Tests showing a blocking page for a page that contains multiple malware
@@ -460,8 +440,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
   EXPECT_EQ(OK, user_response());
 
   // A report should have been sent.
-  EXPECT_EQ(1u, ui_manager_->GetDetails()->size());
-  ui_manager_->GetDetails()->clear();
+  EXPECT_EQ(1u, ui_manager_->GetThreatDetails()->size());
+  ui_manager_->GetThreatDetails()->clear();
 
   ResetUserResponse();
 
@@ -482,8 +462,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
 
   // No report should have been sent -- we don't create a report the
   // second time.
-  EXPECT_EQ(0u, ui_manager_->GetDetails()->size());
-  ui_manager_->GetDetails()->clear();
+  EXPECT_EQ(0u, ui_manager_->GetThreatDetails()->size());
+  ui_manager_->GetThreatDetails()->clear();
 }
 
 // Tests showing a blocking page for a page that contains multiple malware
@@ -514,8 +494,8 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMultipleMalwareResourceProceed) {
   EXPECT_EQ(OK, user_response());
 
   // A report should have been sent.
-  EXPECT_EQ(1u, ui_manager_->GetDetails()->size());
-  ui_manager_->GetDetails()->clear();
+  EXPECT_EQ(1u, ui_manager_->GetThreatDetails()->size());
+  ui_manager_->GetThreatDetails()->clear();
 
   ResetUserResponse();
 
@@ -534,8 +514,8 @@ TEST_F(SafeBrowsingBlockingPageTest, PageWithMultipleMalwareResourceProceed) {
 
   // No report should have been sent -- we don't create a report the
   // second time.
-  EXPECT_EQ(0u, ui_manager_->GetDetails()->size());
-  ui_manager_->GetDetails()->clear();
+  EXPECT_EQ(0u, ui_manager_->GetThreatDetails()->size());
+  ui_manager_->GetThreatDetails()->clear();
 }
 
 // Tests showing a blocking page then navigating back and forth to make sure the
@@ -586,8 +566,8 @@ TEST_F(SafeBrowsingBlockingPageTest, NavigatingBackAndForth) {
   EXPECT_EQ(kBadURL, controller().GetActiveEntry()->GetURL().spec());
 
   // Two reports should have been sent.
-  EXPECT_EQ(2u, ui_manager_->GetDetails()->size());
-  ui_manager_->GetDetails()->clear();
+  EXPECT_EQ(2u, ui_manager_->GetThreatDetails()->size());
+  ui_manager_->GetThreatDetails()->clear();
 }
 
 // Tests that calling "don't proceed" after "proceed" has been called doesn't
@@ -623,8 +603,8 @@ TEST_F(SafeBrowsingBlockingPageTest, ProceedThenDontProceed) {
   EXPECT_FALSE(GetSafeBrowsingBlockingPage());
 
   // Only one report should have been sent.
-  EXPECT_EQ(1u, ui_manager_->GetDetails()->size());
-  ui_manager_->GetDetails()->clear();
+  EXPECT_EQ(1u, ui_manager_->GetThreatDetails()->size());
+  ui_manager_->GetThreatDetails()->clear();
 }
 
 // Tests showing a blocking page for a malware page with reports disabled.
@@ -658,8 +638,8 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsDisabled) {
   EXPECT_FALSE(controller().GetPendingEntry());
 
   // No report should have been sent.
-  EXPECT_EQ(0u, ui_manager_->GetDetails()->size());
-  ui_manager_->GetDetails()->clear();
+  EXPECT_EQ(0u, ui_manager_->GetThreatDetails()->size());
+  ui_manager_->GetThreatDetails()->clear();
 }
 
 // Test that toggling the checkbox has the anticipated effects.
@@ -727,8 +707,8 @@ TEST_F(SafeBrowsingBlockingPageTest, ExtendedReportingNotShownOnSecurePage) {
   EXPECT_FALSE(GetSafeBrowsingBlockingPage());
 
   // No report should have been sent.
-  EXPECT_EQ(0u, ui_manager_->GetDetails()->size());
-  ui_manager_->GetDetails()->clear();
+  EXPECT_EQ(0u, ui_manager_->GetThreatDetails()->size());
+  ui_manager_->GetThreatDetails()->clear();
 }
 
 // Test that extended reporting option is not shown on blocking an HTTPS
@@ -762,8 +742,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
   EXPECT_FALSE(GetSafeBrowsingBlockingPage());
 
   // No report should have been sent.
-  EXPECT_EQ(0u, ui_manager_->GetDetails()->size());
-  ui_manager_->GetDetails()->clear();
+  EXPECT_EQ(0u, ui_manager_->GetThreatDetails()->size());
+  ui_manager_->GetThreatDetails()->clear();
 }
 
 // Test that extended reporting option is not shown on blocking an HTTP
@@ -797,8 +777,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
   EXPECT_FALSE(GetSafeBrowsingBlockingPage());
 
   // No report should have been sent.
-  EXPECT_EQ(0u, ui_manager_->GetDetails()->size());
-  ui_manager_->GetDetails()->clear();
+  EXPECT_EQ(0u, ui_manager_->GetThreatDetails()->size());
+  ui_manager_->GetThreatDetails()->clear();
 }
 
 // Test that extended reporting option is shown on blocking an HTTPS
@@ -832,8 +812,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
   EXPECT_FALSE(GetSafeBrowsingBlockingPage());
 
   // A report should have been sent.
-  EXPECT_EQ(1u, ui_manager_->GetDetails()->size());
-  ui_manager_->GetDetails()->clear();
+  EXPECT_EQ(1u, ui_manager_->GetThreatDetails()->size());
+  ui_manager_->GetThreatDetails()->clear();
 }
 
 // Test that extended reporting option is not shown on blocking an HTTPS
@@ -875,8 +855,8 @@ TEST_F(SafeBrowsingBlockingPageTest,
   EXPECT_FALSE(GetSafeBrowsingBlockingPage());
 
   // No report should have been sent.
-  EXPECT_EQ(0u, ui_manager_->GetDetails()->size());
-  ui_manager_->GetDetails()->clear();
+  EXPECT_EQ(0u, ui_manager_->GetThreatDetails()->size());
+  ui_manager_->GetThreatDetails()->clear();
 }
 
 // TODO(mattm): Add test for extended reporting not shown or sent in incognito

@@ -2554,6 +2554,8 @@
       'browser/safe_browsing/safe_browsing_service.cc',
       'browser/safe_browsing/safe_browsing_service.h',
       'browser/safe_browsing/services_delegate.h',
+      'browser/safe_browsing/test_safe_browsing_service.cc',
+      'browser/safe_browsing/test_safe_browsing_service.h',
       'browser/safe_browsing/threat_details.cc',
       'browser/safe_browsing/threat_details.h',
       'browser/safe_browsing/threat_details_cache.cc',
