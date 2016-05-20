@@ -17,6 +17,11 @@ The main files for the backend are:
 -   `startup-script.sh`: initializes an instance (installs the dependencies,
     downloads the code and the configuration).
 -   `worker.py`: the main worker script.
+-   Task handlers have a `Run()` method taking a `ClovisTask` parameter.
+    -   `clovis_task_handler.py`: Main entry point, dispatches the tasks to the
+        more specialized handlers below.
+    -   `trace_task_handler.py`: Handles `trace` tasks.
+    -   `report_task_handler.py`: Handles `report` tasks.
 
 [TOC]
 
