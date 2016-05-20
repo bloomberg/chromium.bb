@@ -12663,6 +12663,14 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Deny
       </message>
 
+      <!-- Backspace shortcut notification strings -->
+      <message name="IDS_PRESS_ALT_LEFT_TO_GO_BACK" desc="Text displayed in the bubble to explain the keyboard shortcut to go back to the previous web page in history. The accelerators are names of keyboard keys. Please surround the names of the keys (e.g. 'Alt' and '←') in pipe characters so they can be rendered correctly.">
+        Press |<ph name="ACCELERATOR1">$1<ex>Alt</ex></ph>|+|<ph name="ACCELERATOR2">$2<ex>←</ex></ph>| to go back
+      </message>
+      <message name="IDS_PRESS_ALT_RIGHT_TO_GO_FORWARD" desc="Text displayed in the bubble to explain the keyboard shortcut to go forward to the next web page in history. The accelerators are names of keyboard keys. Please surround the names of the keys (e.g. 'Alt' and '→') in pipe characters so they can be rendered correctly.">
+        Press |<ph name="ACCELERATOR1">$1<ex>Alt</ex></ph>|+|<ph name="ACCELERATOR2">$2<ex>→</ex></ph>| to go forward
+      </message>
+
       <!-- Register Protocol Handler Strings -->
       <message name="IDS_REGISTER_PROTOCOL_HANDLER_MAILTO_NAME" desc="A more user friendly way of describing mailto: links.">
         email
