@@ -12,7 +12,9 @@
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
@@ -54,6 +56,7 @@ NTPSnippetsServiceFactory::NTPSnippetsServiceFactory()
           "NTPSnippetsService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
+  DependsOn(ProfileSyncServiceFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(SuggestionsServiceFactory::GetInstance());
 }
@@ -70,6 +73,8 @@ KeyedService* NTPSnippetsServiceFactory::BuildServiceInstanceFor(
   scoped_refptr<net::URLRequestContextGetter> request_context =
       content::BrowserContext::GetDefaultStoragePartition(context)->
             GetURLRequestContext();
+  ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile);
   SuggestionsService* suggestions_service =
       SuggestionsServiceFactory::GetForProfile(profile);
 
@@ -85,7 +90,7 @@ KeyedService* NTPSnippetsServiceFactory::BuildServiceInstanceFor(
               base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 
   return new ntp_snippets::NTPSnippetsService(
-      profile->GetPrefs(), suggestions_service, task_runner,
+      profile->GetPrefs(), sync_service, suggestions_service, task_runner,
       g_browser_process->GetApplicationLocale(), scheduler,
       base::WrapUnique(new ntp_snippets::NTPSnippetsFetcher(
           signin_manager, token_service, request_context,

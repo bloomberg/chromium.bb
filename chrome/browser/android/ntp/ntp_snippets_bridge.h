@@ -54,7 +54,7 @@ class NTPSnippetsBridge : public ntp_snippets::NTPSnippetsServiceObserver {
   // NTPSnippetsServiceObserver overrides
   void NTPSnippetsServiceLoaded() override;
   void NTPSnippetsServiceShutdown() override;
-  void NTPSnippetsServiceCleared() override;
+  void NTPSnippetsServiceDisabled() override;
 
   void OnImageFetched(base::android::ScopedJavaGlobalRef<jobject> callback,
                       const std::string& snippet_id,

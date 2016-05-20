@@ -23,6 +23,7 @@
         'prefs/prefs.gyp:prefs',
         'signin_core_browser',
         'suggestions',
+        'sync_driver',
         'variations',
       ],
       'sources': [

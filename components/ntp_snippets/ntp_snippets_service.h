@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "base/sequenced_task_runner.h"
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -22,6 +23,7 @@
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_scheduler.h"
 #include "components/suggestions/suggestions_service.h"
+#include "components/sync_driver/sync_service_observer.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -42,12 +44,17 @@ namespace suggestions {
 class SuggestionsProfile;
 }
 
+namespace sync_driver {
+class SyncService;
+}
+
 namespace ntp_snippets {
 
 class NTPSnippetsServiceObserver;
 
 // Stores and vends fresh content data for the NTP.
-class NTPSnippetsService : public KeyedService {
+class NTPSnippetsService : public KeyedService,
+                           public sync_driver::SyncServiceObserver {
  public:
   using ImageFetchedCallback =
       base::Callback<void(const std::string& snippet_id, const gfx::Image&)>;
@@ -58,6 +65,7 @@ class NTPSnippetsService : public KeyedService {
   // (British English person in the US) are not language codes.
   NTPSnippetsService(
       PrefService* pref_service,
+      sync_driver::SyncService* sync_service,
       suggestions::SuggestionsService* suggestions_service,
       scoped_refptr<base::SequencedTaskRunner> file_task_runner,
       const std::string& application_language_code,
@@ -123,6 +131,14 @@ class NTPSnippetsService : public KeyedService {
   static int GetMaxSnippetCountForTesting();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceWithSyncTest,
+                           SyncStateCompatibility);
+  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceWithSyncTest,
+                           HistorySyncStateChanges);
+
+  // sync_driver::SyncServiceObserver implementation.
+  void OnStateChanged() override;
+
   void OnSuggestionsChanged(const suggestions::SuggestionsProfile& suggestions);
   void OnFetchFinished(NTPSnippetsFetcher::OptionalSnippets snippets);
 
@@ -140,6 +156,12 @@ class NTPSnippetsService : public KeyedService {
 
   void LoadingSnippetsFinished();
 
+  // Checks whether the state of the sync service is incompatible with showing
+  // snippets. We need history sync to be active.
+  // Note: The state is considered compatible if the service is still
+  // initializing and the sync state is not known.
+  bool IsSyncStateIncompatible();
+
   enum class State {
     NOT_INITED,
     INITED,
@@ -149,6 +171,14 @@ class NTPSnippetsService : public KeyedService {
   bool enabled_;
 
   PrefService* pref_service_;
+
+  sync_driver::SyncService* sync_service_;
+
+  // The observer for the SyncService. When the sync state changes,
+  // SyncService will call |OnStateChanged|, which is propagated to the
+  // snippet observers.
+  ScopedObserver<sync_driver::SyncService, sync_driver::SyncServiceObserver>
+      sync_service_observer_;
 
   suggestions::SuggestionsService* suggestions_service_;
 
@@ -195,11 +225,9 @@ class NTPSnippetsServiceObserver {
   virtual void NTPSnippetsServiceLoaded() = 0;
   // Sent when the service is shutting down.
   virtual void NTPSnippetsServiceShutdown() = 0;
-  // Sent every time the service has its data sources cleared.
-  // Note: we use it as signal that the user signed out or disabled sync, but it
-  // can be triggered in other cases, when the suggestions service returns no
-  // hosts. (e.g. the user manually removed all MostLikely tiles.)
-  virtual void NTPSnippetsServiceCleared() = 0;
+  // Sent when the service has been disabled. Can be from explicit user action
+  // or because a requirement (e.g. History Sync) is not fulfilled anymore.
+  virtual void NTPSnippetsServiceDisabled() = 0;
 
  protected:
   virtual ~NTPSnippetsServiceObserver() {}

@@ -34,8 +34,8 @@ class SnippetsInternalsMessageHandler
   void NTPSnippetsServiceLoaded() override;
   // Send when the service is shutting down.
   void NTPSnippetsServiceShutdown() override;
-  // Sent every time the service has its data sources cleared.
-  void NTPSnippetsServiceCleared() override;
+  // Sent when the service is disabled.
+  void NTPSnippetsServiceDisabled() override;
 
   void HandleLoaded(const base::ListValue* args);
   void HandleClear(const base::ListValue* args);

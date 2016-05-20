@@ -140,7 +140,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     }
 
     @Override
-    public void onSnippetsCleared() {
+    public void onSnippetsDisabled() {
+        // Clear the snippets, wait for new updates in case the service is reenabled later.
         loadSnippets(new ArrayList<SnippetArticle>());
         mWantsSnippets = true;
     }

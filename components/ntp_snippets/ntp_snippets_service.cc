@@ -26,6 +26,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/suggestions/proto/suggestions.pb.h"
+#include "components/sync_driver/sync_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "ui/gfx/image/image.h"
 
@@ -186,6 +187,7 @@ void WrapImageFetchedCallback(
 
 NTPSnippetsService::NTPSnippetsService(
     PrefService* pref_service,
+    sync_driver::SyncService* sync_service,
     SuggestionsService* suggestions_service,
     scoped_refptr<base::SequencedTaskRunner> file_task_runner,
     const std::string& application_language_code,
@@ -195,6 +197,8 @@ NTPSnippetsService::NTPSnippetsService(
     : state_(State::NOT_INITED),
       enabled_(false),
       pref_service_(pref_service),
+      sync_service_(sync_service),
+      sync_service_observer_(this),
       suggestions_service_(suggestions_service),
       file_task_runner_(file_task_runner),
       application_language_code_(application_language_code),
@@ -203,6 +207,10 @@ NTPSnippetsService::NTPSnippetsService(
       image_fetcher_(std::move(image_fetcher)) {
   snippets_fetcher_->SetCallback(base::Bind(
       &NTPSnippetsService::OnFetchFinished, base::Unretained(this)));
+
+  // |sync_service_| can be null in tests or if sync is disabled.
+  if (sync_service_)
+    sync_service_observer_.Add(sync_service_);
 }
 
 NTPSnippetsService::~NTPSnippetsService() {
@@ -354,6 +362,24 @@ int NTPSnippetsService::GetMaxSnippetCountForTesting() {
   return kMaxSnippetCount;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Private methods
+
+// sync_driver::SyncServiceObserver implementation.
+void NTPSnippetsService::OnStateChanged() {
+  if (IsSyncStateIncompatible()) {
+    ClearSnippets();
+    FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
+                      NTPSnippetsServiceDisabled());
+    return;
+  }
+
+  // TODO(dgn): When the data sources change, we may want to not fetch here,
+  // as we will get notified of changes from the snippet sources as well, and
+  // start multiple fetches.
+  FetchSnippets();
+}
+
 void NTPSnippetsService::OnSuggestionsChanged(
     const SuggestionsProfile& suggestions) {
   std::set<std::string> hosts = GetSuggestionsHostsImpl(suggestions);
@@ -372,11 +398,6 @@ void NTPSnippetsService::OnSuggestionsChanged(
 
   StoreSnippetsToPrefs();
   StoreSnippetHostsToPrefs(hosts);
-
-  if (hosts.empty()) {
-    FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
-                      NTPSnippetsServiceCleared());
-  }
 
   FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
                     NTPSnippetsServiceLoaded());
@@ -552,6 +573,15 @@ void NTPSnippetsService::LoadingSnippetsFinished() {
   expiry_timer_.Start(FROM_HERE, next_expiry - expiry,
                       base::Bind(&NTPSnippetsService::LoadingSnippetsFinished,
                                  base::Unretained(this)));
+}
+
+bool NTPSnippetsService::IsSyncStateIncompatible() {
+  if (!sync_service_ || !sync_service_->CanSyncStart())
+    return true;
+  if (!sync_service_->IsSyncActive() || !sync_service_->ConfigurationDone())
+    return false;  // Sync service is not initialized, yet not disabled.
+  return !sync_service_->GetActiveDataTypes().Has(
+      syncer::HISTORY_DELETE_DIRECTIVES);
 }
 
 }  // namespace ntp_snippets

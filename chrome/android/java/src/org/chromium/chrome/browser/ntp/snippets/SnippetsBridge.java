@@ -31,13 +31,13 @@ public class SnippetsBridge {
     }
 
     /**
-     * An observer for notifying when new snippets are loaded.
+     * An observer for events in the snippets service.
      */
     public interface SnippetsObserver {
         void onSnippetsReceived(List<SnippetArticle> snippets);
 
-        /** Called when the service wants to force clear the displayed snippets. */
-        void onSnippetsCleared();
+        /** Called when the service has been disabled. */
+        void onSnippetsDisabled();
     }
 
     /**
@@ -142,8 +142,8 @@ public class SnippetsBridge {
     }
 
     @CalledByNative
-    private void onSnippetsCleared() {
-        if (mObserver != null) mObserver.onSnippetsCleared();
+    private void onSnippetsDisabled() {
+        if (mObserver != null) mObserver.onSnippetsDisabled();
     }
 
     private native long nativeInit(Profile profile);

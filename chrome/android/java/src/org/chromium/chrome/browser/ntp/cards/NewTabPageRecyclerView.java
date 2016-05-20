@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
+import org.chromium.base.Log;
 import org.chromium.chrome.R;
 
 /**
@@ -22,6 +23,8 @@ import org.chromium.chrome.R;
  * New Tab page receives focus when clicked.
  */
 public class NewTabPageRecyclerView extends RecyclerView {
+    private static final String TAG = "NtpCards";
+
     /**
      * Minimum height of the bottom spacing item.
      */
@@ -131,9 +134,18 @@ public class NewTabPageRecyclerView extends RecyclerView {
 
         // The spacing item is the last item, the last content item is directly above that.
         int lastContentItemPosition = getAdapter().getItemCount() - 2;
-        int contentHeight =
-                findViewHolderForAdapterPosition(lastContentItemPosition).itemView.getBottom()
-                - findViewHolderForAdapterPosition(SNAP_ITEM_ADAPTER_POSITION).itemView.getTop();
+
+        ViewHolder lastContentItem = findViewHolderForAdapterPosition(lastContentItemPosition);
+        ViewHolder snapItem = findViewHolderForAdapterPosition(SNAP_ITEM_ADAPTER_POSITION);
+        if (lastContentItem == null || snapItem == null) {
+            // Can happen when the list is refreshed while the NTP is not shown, for example when
+            // changing settings.
+            Log.w(TAG, "The RecyclerView items are not attached, can't determine the content "
+                            + "height: snap=%s, last=%s ", snapItem, lastContentItem);
+            return MIN_BOTTOM_SPACING;
+        }
+
+        int contentHeight = lastContentItem.itemView.getBottom() - snapItem.itemView.getTop();
         int bottomSpacing = getHeight() - mToolbarHeight - contentHeight + mCompensationHeight;
 
         return Math.max(MIN_BOTTOM_SPACING, bottomSpacing);

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -28,6 +29,7 @@
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
+#include "components/sync_driver/fake_sync_service.h"
 #include "google_apis/google_api_keys.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
@@ -36,6 +38,7 @@
 
 using testing::ElementsAre;
 using testing::Eq;
+using testing::Return;
 using testing::IsEmpty;
 using testing::SizeIs;
 using testing::StartsWith;
@@ -216,6 +219,23 @@ class MockScheduler : public NTPSnippetsScheduler {
   MOCK_METHOD0(Unschedule, bool());
 };
 
+class MockSyncService : public sync_driver::FakeSyncService {
+ public:
+  MockSyncService() {}
+  virtual ~MockSyncService() {}
+  MOCK_CONST_METHOD0(CanSyncStart, bool());
+  MOCK_CONST_METHOD0(IsSyncActive, bool());
+  MOCK_CONST_METHOD0(ConfigurationDone, bool());
+  MOCK_CONST_METHOD0(GetActiveDataTypes, syncer::ModelTypeSet());
+};
+
+class MockServiceObserver : public NTPSnippetsServiceObserver {
+ public:
+  MOCK_METHOD0(NTPSnippetsServiceLoaded, void());
+  MOCK_METHOD0(NTPSnippetsServiceShutdown, void());
+  MOCK_METHOD0(NTPSnippetsServiceDisabled, void());
+};
+
 }  // namespace
 
 class NTPSnippetsServiceTest : public testing::Test {
@@ -258,8 +278,8 @@ class NTPSnippetsServiceTest : public testing::Test {
         new net::TestURLRequestContextGetter(task_runner.get());
 
     service_.reset(new NTPSnippetsService(
-        pref_service_.get(), nullptr, task_runner, std::string("fr"),
-        &scheduler_,
+        pref_service_.get(), mock_sync_service_.get(), nullptr, task_runner,
+        std::string("fr"), &scheduler_,
         base::WrapUnique(new NTPSnippetsFetcher(
             fake_signin_manager_.get(), fake_token_service_.get(),
             std::move(request_context_getter), base::Bind(&ParseJson),
@@ -272,12 +292,35 @@ class NTPSnippetsServiceTest : public testing::Test {
   const GURL& test_url() { return test_url_; }
   NTPSnippetsService* service() { return service_.get(); }
   MockScheduler& mock_scheduler() {  return scheduler_; }
+  MockSyncService* mock_sync_service() { return mock_sync_service_.get(); }
 
-  void LoadFromJSONString(const std::string& json) {
+  // Provide the json to be returned by the fake fetcher.
+  void SetUpFetchResponse(const std::string& json) {
     fake_url_fetcher_factory_.SetFakeResponse(test_url_, json, net::HTTP_OK,
                                               net::URLRequestStatus::SUCCESS);
-    service_->FetchSnippets();
-    message_loop_.RunUntilIdle();
+  }
+
+  void LoadFromJSONString(const std::string& json) {
+    SetUpFetchResponse(json);
+    service()->FetchSnippets();
+    base::RunLoop().RunUntilIdle();
+  }
+
+  // Call before the service is set up to initialize a sync service.
+  // Subsequent calls reset the return values of the mocked methods.
+  void ResetSyncServiceMock() {
+    if (!mock_sync_service_) {
+      // Use a NiceMock to avoid the "uninteresting call" warnings.
+      mock_sync_service_.reset(new testing::NiceMock<MockSyncService>);
+    }
+
+    ON_CALL(*mock_sync_service_, CanSyncStart()).WillByDefault(Return(true));
+    ON_CALL(*mock_sync_service_, IsSyncActive()).WillByDefault(Return(true));
+    ON_CALL(*mock_sync_service_, ConfigurationDone())
+        .WillByDefault(Return(true));
+    ON_CALL(*mock_sync_service_, GetActiveDataTypes())
+        .WillByDefault(
+            Return(syncer::ModelTypeSet(syncer::HISTORY_DELETE_DIRECTIVES)));
   }
 
  private:
@@ -289,12 +332,22 @@ class NTPSnippetsServiceTest : public testing::Test {
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::unique_ptr<TestSigninClient> signin_client_;
   std::unique_ptr<AccountTrackerService> account_tracker_;
-  std::unique_ptr<NTPSnippetsService> service_;
+  std::unique_ptr<MockSyncService> mock_sync_service_;  // Null by default.
   std::unique_ptr<SigninManagerBase> fake_signin_manager_;
   std::unique_ptr<OAuth2TokenService> fake_token_service_;
   MockScheduler scheduler_;
+  // Last so that the dependencies are deleted after the service.
+  std::unique_ptr<NTPSnippetsService> service_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsServiceTest);
+};
+
+class NTPSnippetsServiceWithSyncTest : public NTPSnippetsServiceTest {
+ public:
+  void SetUp() override {
+    ResetSyncServiceMock();
+    NTPSnippetsServiceTest::SetUp();
+  }
 };
 
 class NTPSnippetsServiceDisabledTest : public NTPSnippetsServiceTest {
@@ -780,6 +833,59 @@ TEST_F(NTPSnippetsServiceTest, DiscardShouldRespectAllKnownUrls) {
   LoadFromJSONString(GetTestJson({GetSnippetWithUrlAndTimesAndSources(
       source_urls[1], creation, expiry, source_urls, publishers, amp_urls)}));
   ASSERT_THAT(service()->snippets(), IsEmpty());
+}
+
+TEST_F(NTPSnippetsServiceWithSyncTest, SyncStateCompatibility) {
+  // The default test setup has a compatible sync state.
+  EXPECT_FALSE(service()->IsSyncStateIncompatible());
+
+  // History sync disabled.
+  ON_CALL(*mock_sync_service(), GetActiveDataTypes())
+      .WillByDefault(Return(syncer::ModelTypeSet()));
+  EXPECT_TRUE(service()->IsSyncStateIncompatible());
+  ResetSyncServiceMock();
+
+  // Not done loading.
+  ON_CALL(*mock_sync_service(), ConfigurationDone())
+      .WillByDefault(Return(false));
+  ON_CALL(*mock_sync_service(), GetActiveDataTypes())
+      .WillByDefault(Return(syncer::ModelTypeSet()));
+  EXPECT_FALSE(service()->IsSyncStateIncompatible());
+  ResetSyncServiceMock();
+
+  // Sync disabled.
+  ON_CALL(*mock_sync_service(), CanSyncStart()).WillByDefault(Return(false));
+  EXPECT_TRUE(service()->IsSyncStateIncompatible());
+  ResetSyncServiceMock();
+
+  // No service.
+  service()->sync_service_ = nullptr;
+  EXPECT_TRUE(service()->IsSyncStateIncompatible());
+}
+
+TEST_F(NTPSnippetsServiceWithSyncTest, HistorySyncStateChanges) {
+  MockServiceObserver mock_observer;
+  service()->AddObserver(&mock_observer);
+
+  // Simulate user disabled sync.
+  ON_CALL(*mock_sync_service(), CanSyncStart()).WillByDefault(Return(false));
+  // The service should notify observers it's been disabled and clear the
+  // snippets instead of pulling new ones.
+  EXPECT_CALL(mock_observer, NTPSnippetsServiceDisabled());
+  SetUpFetchResponse(GetTestJson({GetSnippet()}));
+  service()->OnStateChanged();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(service()->snippets(), IsEmpty()); // No fetch should be made.
+
+  // Simulate user sign in.
+  ResetSyncServiceMock();
+  // The service should be ready again and load snippets.
+  SetUpFetchResponse(GetTestJson({GetSnippet()}));
+  service()->OnStateChanged();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(service()->snippets().empty());
+
+  service()->RemoveObserver(&mock_observer);
 }
 
 }  // namespace ntp_snippets

@@ -6,6 +6,7 @@ include_rules = [
   "+components/prefs",
   "+components/signin",
   "+components/suggestions",
+  "+components/sync_driver",
   "+components/variations",
   "+net/base",
   "+net/http",

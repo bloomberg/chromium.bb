@@ -125,7 +125,7 @@ public class NewTabPageAdapterTest {
         assertEquals(3 + snippets.size(), ntpa.getItemCount());
 
         // When we clear the snippets, we should only have the header and above-the-fold left.
-        mSnippetsObserver.onSnippetsCleared();
+        mSnippetsObserver.onSnippetsDisabled();
         assertEquals(3, ntpa.getItemCount());
 
         // The adapter should now be waiting for new snippets.
