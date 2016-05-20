@@ -1477,13 +1477,13 @@ emit_header(struct protocol *protocol, enum side side)
 	       "#include \"%s\"\n\n"
 	       "#ifdef  __cplusplus\n"
 	       "extern \"C\" {\n"
-	       "#endif\n"
-	       "\n"
-	       "struct wl_client;\n"
-	       "struct wl_resource;\n\n",
+	       "#endif\n\n",
 	       protocol->uppercase_name, s,
 	       protocol->uppercase_name, s,
 	       get_include_name(protocol->core_headers, side));
+	if (side == SERVER)
+		printf("struct wl_client;\n"
+		       "struct wl_resource;\n\n");
 
 	emit_mainpage_blurb(protocol, side);
 
