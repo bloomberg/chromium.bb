@@ -102,6 +102,8 @@ public class WebappActivity extends FullScreenActivity {
             mWebappInfo = newWebappInfo;
             resetSavedInstanceState();
             if (mIsInitialized) initializeUI(null);
+            // TODO(dominickn): send the web app into fullscreen if mDisplayMode is
+            // WebDisplayMode.Fullscreen. See crbug.com/581522
         }
     }
 
@@ -119,6 +121,8 @@ public class WebappActivity extends FullScreenActivity {
         getActivityTab().addObserver(createTabObserver());
         getActivityTab().getTabWebContentsDelegateAndroid().setDisplayMode(
                 WebDisplayMode.Standalone);
+        // TODO(dominickn): send the web app into fullscreen if mDisplayMode is
+        // WebDisplayMode.Fullscreen. See crbug.com/581522
     }
 
     @Override

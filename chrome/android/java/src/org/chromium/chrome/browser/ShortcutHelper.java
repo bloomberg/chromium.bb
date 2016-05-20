@@ -33,6 +33,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.webapps.WebappAuthenticator;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
@@ -60,6 +61,8 @@ public class ShortcutHelper {
     public static final String EXTRA_SHORT_NAME = "org.chromium.chrome.browser.webapp_short_name";
     public static final String EXTRA_URL = "org.chromium.chrome.browser.webapp_url";
     public static final String EXTRA_SCOPE = "org.chromium.chrome.browser.webapp_scope";
+    public static final String EXTRA_DISPLAY_MODE =
+            "org.chromium.chrome.browser.webapp_display_mode";
     public static final String EXTRA_ORIENTATION = ScreenOrientationConstants.EXTRA_ORIENTATION;
     public static final String EXTRA_SOURCE = "org.chromium.chrome.browser.webapp_source";
     public static final String EXTRA_THEME_COLOR = "org.chromium.chrome.browser.theme_color";
@@ -74,7 +77,7 @@ public class ShortcutHelper {
 
     // When a new field is added to the intent, this version should be incremented so that it will
     // be correctly populated into the WebappRegistry/WebappDataStorage.
-    public static final int WEBAPP_SHORTCUT_VERSION = 1;
+    public static final int WEBAPP_SHORTCUT_VERSION = 2;
 
     // This value is equal to kInvalidOrMissingColor in the C++ content::Manifest struct.
     public static final long MANIFEST_COLOR_INVALID_OR_MISSING = ((long) Integer.MAX_VALUE) + 1;
@@ -133,15 +136,17 @@ public class ShortcutHelper {
     @SuppressWarnings("unused")
     @CalledByNative
     private static void addShortcut(Context context, String id, String url, final String userTitle,
-            String name, String shortName, Bitmap icon, boolean isWebappCapable, int orientation,
+            String name, String shortName, Bitmap icon, int displayMode, int orientation,
             int source, long themeColor, long backgroundColor, boolean isIconGenerated,
             final long callbackPointer) {
         assert !ThreadUtils.runningOnUiThread();
         final Intent shortcutIntent;
+        boolean isWebappCapable = (displayMode == WebDisplayMode.Standalone
+                                || displayMode == WebDisplayMode.Fullscreen);
         if (isWebappCapable) {
             shortcutIntent = createWebappShortcutIntent(id, sDelegate.getFullscreenAction(), url,
                     getScopeFromUrl(url), name, shortName, icon, WEBAPP_SHORTCUT_VERSION,
-                    orientation, themeColor, backgroundColor, isIconGenerated);
+                    displayMode, orientation, themeColor, backgroundColor, isIconGenerated);
             shortcutIntent.putExtra(EXTRA_MAC, getEncodedMac(context, url));
         } else {
             // Add the shortcut as a launcher icon to open in the browser Activity.
@@ -246,6 +251,7 @@ public class ShortcutHelper {
      * @param shortName       Short name of the web app.
      * @param icon            Icon of the web app.
      * @param version         Version number of the shortcut.
+     * @param displayMode     Display mode of the web app.
      * @param orientation     Orientation of the web app.
      * @param themeColor      Theme color of the web app.
      * @param backgroundColor Background color of the web app.
@@ -253,8 +259,8 @@ public class ShortcutHelper {
      * @return Intent for onclick action of the shortcut.
      */
     public static Intent createWebappShortcutIntent(String id, String action, String url,
-            String scope, String name, String shortName, Bitmap icon, int version, int orientation,
-            long themeColor, long backgroundColor, boolean isIconGenerated) {
+            String scope, String name, String shortName, Bitmap icon, int version, int displayMode,
+            int orientation, long themeColor, long backgroundColor, boolean isIconGenerated) {
         // Encode the icon as a base64 string (Launcher drops Bitmaps in the Intent).
         String encodedIcon = encodeBitmapAsString(icon);
 
@@ -268,6 +274,7 @@ public class ShortcutHelper {
                 .putExtra(EXTRA_SHORT_NAME, shortName)
                 .putExtra(EXTRA_ICON, encodedIcon)
                 .putExtra(EXTRA_VERSION, version)
+                .putExtra(EXTRA_DISPLAY_MODE, displayMode)
                 .putExtra(EXTRA_ORIENTATION, orientation)
                 .putExtra(EXTRA_THEME_COLOR, themeColor)
                 .putExtra(EXTRA_BACKGROUND_COLOR, backgroundColor)

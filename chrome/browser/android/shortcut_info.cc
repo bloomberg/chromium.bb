@@ -40,10 +40,8 @@ void ShortcutInfo::UpdateFromManifest(const content::Manifest& manifest) {
   if (manifest.display != blink::WebDisplayModeUndefined)
     display = manifest.display;
 
-  // 'fullscreen' and 'minimal-ui' are not yet supported, fallback to the right
-  // mode in those cases.
-  if (manifest.display == blink::WebDisplayModeFullscreen)
-    display = blink::WebDisplayModeStandalone;
+  // 'minimal-ui' is not yet supported, so fallback in this case.
+  // See crbug.com/604390.
   if (manifest.display == blink::WebDisplayModeMinimalUi)
     display = blink::WebDisplayModeBrowser;
 

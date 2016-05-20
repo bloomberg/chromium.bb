@@ -13,6 +13,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.testing.local.BackgroundShadowAsyncTask;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -245,13 +246,14 @@ public class WebappDataStorageTest {
         final String name = "name";
         final String shortName = "shortName";
         final Bitmap icon = createBitmap();
+        final int displayMode = WebDisplayMode.Standalone;
         final int orientation = 1;
         final long themeColor = 2;
         final long backgroundColor = 3;
         final boolean isIconGenerated = false;
         Intent shortcutIntent = ShortcutHelper.createWebappShortcutIntent(id, action, url, scope,
-                name, shortName, icon, ShortcutHelper.WEBAPP_SHORTCUT_VERSION, orientation,
-                themeColor, backgroundColor, isIconGenerated);
+                name, shortName, icon, ShortcutHelper.WEBAPP_SHORTCUT_VERSION, displayMode,
+                orientation, themeColor, backgroundColor, isIconGenerated);
 
         WebappDataStorage storage = WebappDataStorage.open(Robolectric.application, "test");
         storage.updateFromShortcutIntent(shortcutIntent);

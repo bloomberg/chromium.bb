@@ -126,7 +126,7 @@ public class ClearBrowsingDataPreferencesTest
                     public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
                         storage.updateFromShortcutIntent(ShortcutHelper.createWebappShortcutIntent(
                                     "id", "action", "url", "scope", "name", "shortName", null,
-                                    ShortcutHelper.WEBAPP_SHORTCUT_VERSION, 0, 0, 0, false));
+                                    ShortcutHelper.WEBAPP_SHORTCUT_VERSION, 0, 0, 0, 0, false));
                         mCallbackCalled = true;
                     }
                 }

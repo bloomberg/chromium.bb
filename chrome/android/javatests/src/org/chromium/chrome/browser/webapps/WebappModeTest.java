@@ -20,6 +20,7 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -79,7 +80,7 @@ public class WebappModeTest extends MultiActivityTestBase {
         }
 
         WebappInfo webappInfo = WebappInfo.create(id, url, icon, title, null,
-                ScreenOrientationValues.PORTRAIT, ShortcutSource.UNKNOWN,
+                WebDisplayMode.Standalone, ScreenOrientationValues.PORTRAIT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
         webappInfo.setWebappIntentExtras(intent);

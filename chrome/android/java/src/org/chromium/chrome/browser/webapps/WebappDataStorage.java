@@ -12,6 +12,7 @@ import android.os.AsyncTask;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -35,6 +36,7 @@ public class WebappDataStorage {
     static final String KEY_ICON = "icon";
     static final String KEY_NAME = "name";
     static final String KEY_SHORT_NAME = "short_name";
+    static final String KEY_DISPLAY_MODE = "display_mode";
     static final String KEY_ORIENTATION = "orientation";
     static final String KEY_THEME_COLOR = "theme_color";
     static final String KEY_BACKGROUND_COLOR = "background_color";
@@ -257,6 +259,8 @@ public class WebappDataStorage {
         int version = mPreferences.getInt(KEY_VERSION, VERSION_INVALID);
         if (version == VERSION_INVALID) return null;
 
+        // Use "standalone" as the default display mode as this was the original assumed default for
+        // all web apps.
         return ShortcutHelper.createWebappShortcutIntent(mId,
                 mPreferences.getString(KEY_ACTION, null),
                 mPreferences.getString(KEY_URL, null),
@@ -265,6 +269,7 @@ public class WebappDataStorage {
                 mPreferences.getString(KEY_SHORT_NAME, null),
                 ShortcutHelper.decodeBitmapFromString(
                         mPreferences.getString(KEY_ICON, null)), version,
+                mPreferences.getInt(KEY_DISPLAY_MODE, WebDisplayMode.Standalone),
                 mPreferences.getInt(KEY_ORIENTATION, ScreenOrientationValues.DEFAULT),
                 mPreferences.getLong(KEY_THEME_COLOR,
                         ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING),
@@ -315,6 +320,11 @@ public class WebappDataStorage {
             editor.putString(KEY_ICON, IntentUtils.safeGetStringExtra(
                         shortcutIntent, ShortcutHelper.EXTRA_ICON));
             editor.putInt(KEY_VERSION, ShortcutHelper.WEBAPP_SHORTCUT_VERSION);
+
+            // "Standalone" was the original assumed default for all web apps.
+            editor.putInt(KEY_DISPLAY_MODE, IntentUtils.safeGetIntExtra(
+                        shortcutIntent, ShortcutHelper.EXTRA_DISPLAY_MODE,
+                        WebDisplayMode.Standalone));
             editor.putInt(KEY_ORIENTATION, IntentUtils.safeGetIntExtra(
                         shortcutIntent, ShortcutHelper.EXTRA_ORIENTATION,
                         ScreenOrientationValues.DEFAULT));

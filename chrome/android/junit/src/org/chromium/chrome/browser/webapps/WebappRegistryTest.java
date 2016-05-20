@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.testing.local.BackgroundShadowAsyncTask;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -603,6 +604,6 @@ public class WebappRegistryTest {
     private Intent createShortcutIntent(String url) {
         return ShortcutHelper.createWebappShortcutIntent("id", "action", url,
                 ShortcutHelper.getScopeFromUrl(url), "name", "shortName", null,
-                ShortcutHelper.WEBAPP_SHORTCUT_VERSION, 0, 0, 0, false);
+                ShortcutHelper.WEBAPP_SHORTCUT_VERSION, WebDisplayMode.Standalone, 0, 0, 0, false);
     }
 }

@@ -9,6 +9,7 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.content_public.common.ScreenOrientationValues;
@@ -26,7 +27,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
         String url = "about:blank";
 
         WebappInfo info = WebappInfo.create(id, url, null, name, shortName,
-                ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
+                WebDisplayMode.Standalone, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
         assertNotNull(info);
@@ -41,7 +42,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
         String url = "http://google.com";
 
         WebappInfo info = WebappInfo.create(id, url, null, name, shortName,
-                ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
+                WebDisplayMode.Standalone, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
         assertNotNull(info);
@@ -139,16 +140,17 @@ public class WebappInfoTest extends InstrumentationTestCase {
 
     @SmallTest
     @Feature({"Webapps"})
-    public void testOrientationAndSource() {
+    public void testDisplayModeAndOrientationAndSource() {
         String id = "webapp id";
         String name = "longName";
         String shortName = "name";
         String url = "http://money.cnn.com";
 
         WebappInfo info = WebappInfo.create(id, url, null, name, shortName,
-                ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
+                WebDisplayMode.Fullscreen, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
+        assertEquals(WebDisplayMode.Fullscreen, info.displayMode());
         assertEquals(ScreenOrientationValues.DEFAULT, info.orientation());
         assertEquals(ShortcutSource.UNKNOWN, info.source());
     }
@@ -164,8 +166,8 @@ public class WebappInfoTest extends InstrumentationTestCase {
         long backgroundColor = 0xFF0000FFL;
 
         WebappInfo info = WebappInfo.create(id, url, null, name, shortName,
-                ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
-                themeColor, backgroundColor, false);
+                WebDisplayMode.Standalone, ScreenOrientationValues.DEFAULT,
+                ShortcutSource.UNKNOWN, themeColor, backgroundColor, false);
         assertEquals(info.themeColor(), themeColor);
         assertEquals(info.backgroundColor(), backgroundColor);
     }
@@ -179,7 +181,7 @@ public class WebappInfoTest extends InstrumentationTestCase {
         String url = "http://money.cnn.com";
 
         WebappInfo info = WebappInfo.create(id, url, null, name, shortName,
-                ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
+                WebDisplayMode.Standalone, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
         assertEquals(info.themeColor(), ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING);

@@ -85,9 +85,8 @@ void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
     java_bitmap = gfx::ConvertToJavaBitmap(&icon_bitmap);
 
   uintptr_t callback_pointer = 0;
-  bool is_webapp_capable = info.display == blink::WebDisplayModeStandalone;
-
-  if (is_webapp_capable) {
+  if (info.display == blink::WebDisplayModeStandalone ||
+      info.display == blink::WebDisplayModeFullscreen) {
     // The callback will need to be run after shortcut creation completes in
     // order to download the splash image and save it to the WebappDataStorage.
     // Create a copy of the callback here and send the pointer to Java, which
@@ -106,7 +105,7 @@ void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
       java_name.obj(),
       java_short_name.obj(),
       java_bitmap.obj(),
-      is_webapp_capable,
+      info.display,
       info.orientation,
       info.source,
       info.theme_color,
