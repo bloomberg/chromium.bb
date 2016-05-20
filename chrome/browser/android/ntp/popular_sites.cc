@@ -245,7 +245,7 @@ void PopularSites::RegisterProfilePrefs(
 }
 
 PopularSites::PopularSites(PrefService* prefs,
-                          net::URLRequestContextGetter* download_context,
+                           net::URLRequestContextGetter* download_context,
                            const base::FilePath& directory,
                            const std::string& country,
                            const std::string& version,
