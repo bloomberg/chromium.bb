@@ -583,8 +583,12 @@ void TaskManagerTableModel::OnTaskAdded(TaskId id) {
   // adding |id| to |tasks_| because we want to keep |tasks_| sorted by proc IDs
   // and then by Task IDs.
   tasks_ = observed_task_manager()->GetTaskIdsList();
-  if (table_model_observer_)
-    table_model_observer_->OnItemsAdded(RowCount() - 1, 1);
+
+  if (table_model_observer_) {
+    std::vector<TaskId>::difference_type index =
+        std::find(tasks_.begin(), tasks_.end(), id) - tasks_.begin();
+    table_model_observer_->OnItemsAdded(static_cast<int>(index), 1);
+  }
 }
 
 void TaskManagerTableModel::OnTaskToBeRemoved(TaskId id) {
