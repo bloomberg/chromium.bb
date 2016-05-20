@@ -11,6 +11,9 @@
         "mus::mojom::DisplayManager",
         "mus::mojom::Gpu",
         "mus::mojom::WindowTreeFactory"
+      ],
+      "test": [
+        "mus::mojom::WindowServerTest"
       ]
     },
     "required": {
