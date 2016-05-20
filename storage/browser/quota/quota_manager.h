@@ -397,6 +397,8 @@ class STORAGE_EXPORT QuotaManager
                                               int64_t unlimited_usage);
   void DidGetPersistentGlobalUsageForHistogram(int64_t usage,
                                                int64_t unlimited_usage);
+  void DidDumpOriginInfoTableForHistogram(
+      const OriginInfoTableEntries& entries);
 
   std::set<GURL> GetEvictionOriginExceptions(
       const std::set<GURL>& extra_exceptions);

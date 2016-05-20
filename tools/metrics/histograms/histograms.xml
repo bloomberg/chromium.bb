@@ -42965,8 +42965,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Quota.AgeOfDataInDays" units="days">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    How many kilobytes are how old. Similar to |AgeOfOrigin| except a sample is
+    added for each kilobyte of an origin's data. Logged hourly for all origins
+    with stored data.
+  </summary>
+</histogram>
+
+<histogram name="Quota.AgeOfOriginInDays" units="days">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    How many days it's been since an origin's temporary storage has been
+    accessed. Logged hourly for all origins with stored data.
+  </summary>
+</histogram>
+
 <histogram name="Quota.AvailableDiskSpace" units="MB">
-  <owner>micaheln@chromium.org</owner>
+  <owner>michaeln@chromium.org</owner>
   <summary>
     Amount of free disk space for the storage directory. Logged at irregular
     intervals.
@@ -43111,6 +43128,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Number of unlimited origins using temporary storage.</summary>
 </histogram>
 
+<histogram name="Quota.QuotaForOrigin" units="MB">
+  <owner>michaeln@chromium.org</owner>
+  <summary>
+    The quota value computed for an origin using temporary storage. Logged at
+    irregular intervals. (In the process of writing new data, storage systems
+    consult the quota system for &quot;usage and quota&quot; to determine if
+    there is sufficient space available for the new data. This value is logged
+    at the time of that consultation. The frequency is dependent on how
+    individual websites use the various storage apis.)
+  </summary>
+</histogram>
+
 <histogram name="Quota.SkippedEvictionRoundsPerHour">
   <owner>tzik@chromium.org</owner>
   <summary>Number of skipped eviction rounds in an hour.</summary>
@@ -43143,7 +43172,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Quota.TotalDiskSpace" units="MB">
-  <owner>micaheln@chromium.org</owner>
+  <owner>michaeln@chromium.org</owner>
   <summary>
     Total disk space for the storage directory. Logged at irregular intervals.
   </summary>
