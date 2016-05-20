@@ -60,6 +60,14 @@ static void recordSelectorStats(const CSSParserContext& context, const CSSSelect
                 if (context.mode() != UASheetMode)
                     feature = UseCounter::CSSSelectorInternalPseudoSpatialNavigationFocus;
                 break;
+            case CSSSelector::PseudoReadOnly:
+                if (context.mode() != UASheetMode)
+                    feature = UseCounter::CSSSelectorPseudoReadOnly;
+                break;
+            case CSSSelector::PseudoReadWrite:
+                if (context.mode() != UASheetMode)
+                    feature = UseCounter::CSSSelectorPseudoReadWrite;
+                break;
             default:
                 break;
             }
