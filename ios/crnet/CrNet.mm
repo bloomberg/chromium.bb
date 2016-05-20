@@ -11,7 +11,7 @@
 
 static CrNetEnvironment* g_chrome_net = NULL;
 
-static BOOL g_spdy_enabled = YES;
+static BOOL g_http2_enabled = YES;
 static BOOL g_quic_enabled = NO;
 static BOOL g_sdch_enabled = NO;
 static NSString* g_user_agent = nil;
@@ -20,8 +20,8 @@ static RequestFilterBlock g_request_filter_block = nil;
 
 @implementation CrNet
 
-+ (void)setSpdyEnabled:(BOOL)spdyEnabled {
-  g_spdy_enabled = spdyEnabled;
++ (void)setHttp2Enabled:(BOOL)http2Enabled {
+  g_http2_enabled = http2Enabled;
 }
 
 + (void)setQuicEnabled:(BOOL)quicEnabled {
@@ -43,7 +43,7 @@ static RequestFilterBlock g_request_filter_block = nil;
   std::string partial_user_agent = base::SysNSStringToUTF8(g_user_agent);
   g_chrome_net = new CrNetEnvironment(partial_user_agent);
 
-  g_chrome_net->set_spdy_enabled(g_spdy_enabled);
+  g_chrome_net->set_spdy_enabled(g_http2_enabled);
   g_chrome_net->set_quic_enabled(g_quic_enabled);
   g_chrome_net->set_sdch_enabled(g_sdch_enabled);
   if (g_sdch_pref_store_filename) {

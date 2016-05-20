@@ -45,6 +45,59 @@
       },
     },
     {
+      'target_name': 'crnet_framework',
+      'product_name': 'CrNet',
+      'type': 'shared_library',
+      'mac_bundle': 1,
+      'sources': [
+        'CrNet.h',
+        'CrNet.mm',
+        'crnet_environment.h',
+        'crnet_environment.mm',
+        'sdch_owner_pref_storage.cc',
+        'sdch_owner_pref_storage.h',
+        'sdch_owner_pref_storage.cc',
+      ],
+      'mac_framework_headers': [
+        'CrNet.h',
+      ],
+      'link_settings': {
+        'libraries': [
+          'Foundation.framework',
+        ],
+      },
+      'xcode_settings': {
+        'DEBUGGING_SYMBOLS': 'YES',
+        'INFOPLIST_FILE': 'Info.plist',
+        'LD_DYLIB_INSTALL_NAME': '@loader_path/Frameworks/CrNet.framework/CrNet',
+      },
+      'dependencies': [
+        '../../base/base.gyp:base',
+        '../../components/prefs/prefs.gyp:prefs',
+        '../../ios/net/ios_net.gyp:ios_net',
+        '../../ios/web/ios_web.gyp:user_agent',
+        '../../net/net.gyp:net',
+        'crnet_resources',
+      ],
+      'configurations': {
+        'Debug_Base': {
+          'xcode_settings': {
+            'DEPLOYMENT_POSTPROCESSING': 'NO',
+            'DEBUG_INFORMATION_FORMAT': 'dwarf',
+            'STRIP_INSTALLED_PRODUCT': 'NO',
+          }
+        },
+        'Release_Base': {
+          'xcode_settings': {
+            'DEPLOYMENT_POSTPROCESSING': 'YES',
+            'DEBUG_INFORMATION_FORMAT': 'dwarf-with-dsym',
+            'STRIP_INSTALLED_PRODUCT': 'YES',
+            'STRIP_STYLE': 'non-global',
+          }
+        },
+      },
+    },
+    {
       # This bundle contains "Accept-Languages" header values for known locales.
       # TODO(huey): These strings should be auto-generated from chrome's .xtb
       # files, not hardcoded.

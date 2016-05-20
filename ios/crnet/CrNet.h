@@ -18,11 +18,12 @@ typedef BOOL(^RequestFilterBlock)(NSURLRequest *request);
 typedef void(^ClearCacheCallback)(int errorCode);
 
 // Interface for installing CrNet.
+__attribute__((visibility("default")))
 @interface CrNet : NSObject
 
-// Sets whether SPDY should be supported by CrNet. This method only has any
-// effect before |install| is called.
-+ (void)setSpdyEnabled:(BOOL)spdyEnabled;
+// Sets whether HTTP/2 should be supported by CrNet. This method only has
+// any effect before |install| is called.
++ (void)setHttp2Enabled:(BOOL)http2Enabled;
 
 // Sets whether QUIC should be supported by CrNet. This method only has any
 // effect before |install| is called.
@@ -33,7 +34,7 @@ typedef void(^ClearCacheCallback)(int errorCode);
 // which file should be used for SDCH persistence metadata. If |filename| is
 // nil, persistence is not enabled. The default is for SDCH to be disabled.
 + (void)setSDCHEnabled:(BOOL)sdchEnabled
-         withPrefStore:(NSString*)filename;
+         withPrefStore:(NSString *)filename;
 
 // |userAgent| is expected to be of the form Product/Version.
 // Example: Foo/3.0.0.0

@@ -367,7 +367,8 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
       @"These values are copied from Chrome's .xtb files, so the same "
        "values are used in the |Accept-Language| header. Key name matches "
        "Chrome's.");
-  DCHECK(acceptableLanguages);
+  if (acceptableLanguages == Nil)
+    acceptableLanguages = @"en-US,en";
   std::string acceptable_languages =
       [acceptableLanguages cStringUsingEncoding:NSUTF8StringEncoding];
   std::string user_agent =
