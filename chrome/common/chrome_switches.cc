@@ -553,6 +553,11 @@ const char kEnableUserAlternateProtocolPorts[] =
 // apps).
 const char kEnableWebAppFrame[] = "enable-web-app-frame";
 
+#if defined(OS_ANDROID)
+// Enables "Add to Home screen" in the app menu to generate WebAPKs.
+const char kEnableWebApk[] = "enable-webapk";
+#endif
+
 // Enables Web Notification custom layouts.
 const char kEnableWebNotificationCustomLayouts[] =
     "enable-web-notification-custom-layouts";

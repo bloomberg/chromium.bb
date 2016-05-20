@@ -41,6 +41,7 @@ class NotificationPlatformBridgeAndroid : public NotificationPlatformBridge {
       const base::android::JavaParamRef<jstring>& java_profile_id,
       jboolean incognito,
       const base::android::JavaParamRef<jstring>& java_tag,
+      const base::android::JavaParamRef<jstring>& java_webapk_package,
       jint action_index);
 
   // Called by the Java implementation when the notification has been closed.
@@ -69,11 +70,21 @@ class NotificationPlatformBridgeAndroid : public NotificationPlatformBridge {
   static bool RegisterNotificationPlatformBridge(JNIEnv* env);
 
  private:
-  // Pair containing the information necessary in order to enable closing
-  // notifications that were not created by this instance of the manager: the
-  // notification's origin and tag. This list may not contain the notifications
-  // that have not been interacted with since the last restart of Chrome.
-  using RegeneratedNotificationInfo = std::pair<std::string, std::string>;
+  // Contains information necessary in order to enable closing notifications
+  // that were not created by this instance of the manager. This list may not
+  // contain the notifications that have not been interacted with since the last
+  // restart of Chrome.
+  struct RegeneratedNotificationInfo {
+    RegeneratedNotificationInfo();
+    RegeneratedNotificationInfo(const std::string& origin,
+                                const std::string& tag,
+                                const std::string& webapk_package);
+    ~RegeneratedNotificationInfo();
+
+    std::string origin;
+    std::string tag;
+    std::string webapk_package;
+  };
 
   // Mapping of a persistent notification id to renegerated notification info.
   // TODO(peter): Remove this map once notification delegate ids for Web

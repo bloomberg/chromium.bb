@@ -32,6 +32,8 @@ public class NotificationConstants {
     public static final String EXTRA_NOTIFICATION_INFO_TAG = "notification_info_tag";
     public static final String EXTRA_NOTIFICATION_INFO_ACTION_INDEX =
             "notification_info_action_index";
+    public static final String EXTRA_NOTIFICATION_INFO_WEBAPK_PACKAGE =
+            "notification_info_webapk_package";
 
     /**
      * Unique identifier for a single sync notification. Since the notification ID is reused,

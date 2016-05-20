@@ -59,11 +59,15 @@ android_library("dex_loader_lib") {
 android_apk("webapk") {
   android_manifest = shell_apk_manifest
   apk_name = "WebApk.$webapk_manifest_package_origin"
-  java_files = [ "src/org/chromium/webapk/shell_apk/MainActivity.java" ]
+  java_files = [
+    "src/org/chromium/webapk/shell_apk/MainActivity.java",
+    "src/org/chromium/webapk/shell_apk/WebApkServiceFactory.java",
+  ]
   deps = [
     ":shell_apk_manifest",
     ":shell_apk_resources",
     "//chrome/android/webapk/libs/common",
+    "//chrome/android/webapk/libs/runtime_library",
   ]
 }
 

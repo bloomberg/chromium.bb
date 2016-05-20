@@ -33,5 +33,13 @@
         <meta-data android:name="hostUrl" android:value="{{ host_url }}" />
         <meta-data android:name="mac" android:value="{{ mac }}" />
         <meta-data android:name="scope" android:value="{{ scope_url }}" />
+        <service
+            android:name="org.chromium.webapk.shell_apk.WebApkServiceFactory"
+            android:exported="true">
+            <intent-filter>
+              <action android:name="android.intent.action.MAIN" />
+              <category android:name="android.intent.category.WEBAPK_API" />
+            </intent-filter>
+        </service>
     </application>
 </manifest>

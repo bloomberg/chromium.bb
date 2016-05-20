@@ -1,0 +1,19 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/android/rules.gni")
+
+android_aidl("webapk_service_aidl") {
+  import_include = "src/org/chromium/webapk/lib/runtime_library"
+  interface_file = "src/org/chromium/webapk/lib/runtime_library/common.aidl"
+  sources = [
+    "src/org/chromium/webapk/lib/runtime_library/IWebApkApi.aidl",
+  ]
+}
+
+android_library("runtime_library") {
+  java_files =
+      [ "src/org/chromium/webapk/lib/runtime_library/WebApkServiceImpl.java" ]
+  srcjar_deps = [ ":webapk_service_aidl" ]
+}

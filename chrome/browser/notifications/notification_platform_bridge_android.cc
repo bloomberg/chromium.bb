@@ -9,6 +9,7 @@
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/notifications/persistent_notification_delegate.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_switches.h"
 #include "content/public/common/persistent_notification_status.h"
 #include "content/public/common/platform_notification_data.h"
 #include "jni/NotificationPlatformBridge_jni.h"
@@ -88,13 +90,16 @@ void NotificationPlatformBridgeAndroid::OnNotificationClicked(
     const JavaParamRef<jstring>& java_profile_id,
     jboolean incognito,
     const JavaParamRef<jstring>& java_tag,
+    const JavaParamRef<jstring>& java_webapk_package,
     jint action_index) {
   GURL origin(ConvertJavaStringToUTF8(env, java_origin));
   std::string tag = ConvertJavaStringToUTF8(env, java_tag);
   std::string profile_id = ConvertJavaStringToUTF8(env, java_profile_id);
+  std::string webapk_package =
+      ConvertJavaStringToUTF8(env, java_webapk_package);
 
   regenerated_notification_infos_[persistent_notification_id] =
-      std::make_pair(origin.spec(), tag);
+      RegeneratedNotificationInfo(origin.spec(), tag, webapk_package);
 
   PlatformNotificationServiceImpl::GetInstance()
       ->ProcessPersistentNotificationOperation(
@@ -146,6 +151,16 @@ void NotificationPlatformBridgeAndroid::Display(
 
   ScopedJavaLocalRef<jstring> origin =
       ConvertUTF8ToJavaString(env, origin_url.spec());
+
+  ScopedJavaLocalRef<jstring> webapk_package;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWebApk)) {
+    webapk_package = Java_NotificationPlatformBridge_queryWebApkPackage(
+        env, java_object_.obj(), origin.obj());
+  } else {
+    webapk_package = ConvertUTF8ToJavaString(env, "");
+  }
+
   ScopedJavaLocalRef<jstring> tag =
       ConvertUTF8ToJavaString(env, notification.tag());
   ScopedJavaLocalRef<jstring> title =
@@ -180,13 +195,16 @@ void NotificationPlatformBridgeAndroid::Display(
 
   Java_NotificationPlatformBridge_displayNotification(
       env, java_object_.obj(), persistent_notification_id, origin.obj(),
-      j_profile_id.obj(), incognito, tag.obj(), title.obj(), body.obj(),
-      notification_icon.obj(), badge.obj(), vibration_pattern.obj(),
-      notification.timestamp().ToJavaTime(), notification.renotify(),
-      notification.silent(), action_titles.obj(), action_icons.obj());
+      j_profile_id.obj(), incognito, tag.obj(), webapk_package.obj(),
+      title.obj(), body.obj(), notification_icon.obj(), badge.obj(),
+      vibration_pattern.obj(), notification.timestamp().ToJavaTime(),
+      notification.renotify(), notification.silent(), action_titles.obj(),
+      action_icons.obj());
 
   regenerated_notification_infos_[persistent_notification_id] =
-      std::make_pair(origin_url.spec(), notification.tag());
+      RegeneratedNotificationInfo(
+          origin_url.spec(), notification.tag(),
+          ConvertJavaStringToUTF8(env, webapk_package));
 }
 
 void NotificationPlatformBridgeAndroid::Close(
@@ -211,9 +229,12 @@ void NotificationPlatformBridgeAndroid::Close(
   JNIEnv* env = AttachCurrentThread();
 
   ScopedJavaLocalRef<jstring> origin =
-      ConvertUTF8ToJavaString(env, notification_info.first);
+      ConvertUTF8ToJavaString(env, notification_info.origin);
   ScopedJavaLocalRef<jstring> tag =
-      ConvertUTF8ToJavaString(env, notification_info.second);
+      ConvertUTF8ToJavaString(env, notification_info.tag);
+  ScopedJavaLocalRef<jstring> webapk_package =
+      ConvertUTF8ToJavaString(env, notification_info.webapk_package);
+
   ScopedJavaLocalRef<jstring> j_profile_id =
       ConvertUTF8ToJavaString(env, profile_id);
 
@@ -221,7 +242,7 @@ void NotificationPlatformBridgeAndroid::Close(
 
   Java_NotificationPlatformBridge_closeNotification(
       env, java_object_.obj(), j_profile_id.obj(), persistent_notification_id,
-      origin.obj(), tag.obj());
+      origin.obj(), tag.obj(), webapk_package.obj());
 }
 
 bool NotificationPlatformBridgeAndroid::GetDisplayed(
@@ -240,3 +261,15 @@ bool NotificationPlatformBridgeAndroid::RegisterNotificationPlatformBridge(
     JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
+
+NotificationPlatformBridgeAndroid::RegeneratedNotificationInfo::
+    RegeneratedNotificationInfo() {}
+
+NotificationPlatformBridgeAndroid::RegeneratedNotificationInfo::
+    RegeneratedNotificationInfo(const std::string& origin,
+                                const std::string& tag,
+                                const std::string& webapk_package)
+    : origin(origin), tag(tag), webapk_package(webapk_package) {}
+
+NotificationPlatformBridgeAndroid::RegeneratedNotificationInfo::
+    ~RegeneratedNotificationInfo() {}

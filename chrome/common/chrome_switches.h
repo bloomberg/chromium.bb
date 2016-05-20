@@ -166,6 +166,9 @@ extern const char kEnableTabAudioMuting[];
 extern const char kEnableThumbnailRetargeting[];
 extern const char kEnableUserAlternateProtocolPorts[];
 extern const char kEnableWebAppFrame[];
+#if defined(OS_ANDROID)
+extern const char kEnableWebApk[];
+#endif  // defined(OS_ANDROID)
 extern const char kEnableWebNotificationCustomLayouts[];
 extern const char kExtensionContentVerificationBootstrap[];
 extern const char kExtensionContentVerificationEnforceStrict[];
