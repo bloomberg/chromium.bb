@@ -31,15 +31,16 @@ int DOMTimerCoordinator::installNewTimeout(ExecutionContext* context, ScheduledA
     return timeoutID;
 }
 
-void DOMTimerCoordinator::removeTimeoutByID(int timeoutID)
+DOMTimer* DOMTimerCoordinator::removeTimeoutByID(int timeoutID)
 {
     if (timeoutID <= 0)
-        return;
+        return nullptr;
 
-    if (DOMTimer* removedTimer = m_timers.get(timeoutID))
+    DOMTimer* removedTimer = m_timers.take(timeoutID);
+    if (removedTimer)
         removedTimer->disposeTimer();
 
-    m_timers.remove(timeoutID);
+    return removedTimer;
 }
 
 DEFINE_TRACE(DOMTimerCoordinator)

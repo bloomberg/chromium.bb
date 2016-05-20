@@ -61,9 +61,12 @@ int DOMTimer::install(ExecutionContext* context, ScheduledAction* action, int ti
 
 void DOMTimer::removeByID(ExecutionContext* context, int timeoutID)
 {
-    context->timers()->removeTimeoutByID(timeoutID);
+    DOMTimer* timer = context->timers()->removeTimeoutByID(timeoutID);
     TRACE_EVENT_INSTANT1("devtools.timeline", "TimerRemove", TRACE_EVENT_SCOPE_THREAD, "data", InspectorTimerRemoveEvent::data(context, timeoutID));
     InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(context, "clearTimer", true);
+    // Eagerly unregister as ExecutionContext observer.
+    if (timer)
+        timer->clearContext();
 }
 
 DOMTimer::DOMTimer(ExecutionContext* context, ScheduledAction* action, int interval, bool singleShot, int timeoutID)
@@ -134,8 +137,13 @@ void DOMTimer::fired()
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
 
     // ExecutionContext might be already gone when we executed action->execute().
-    if (getExecutionContext())
-        getExecutionContext()->timers()->setTimerNestingLevel(0);
+    ExecutionContext* executionContext = getExecutionContext();
+    if (!executionContext)
+        return;
+
+    executionContext->timers()->setTimerNestingLevel(0);
+    // Eagerly unregister as ExecutionContext observer.
+    clearContext();
 }
 
 void DOMTimer::stop()

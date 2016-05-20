@@ -32,7 +32,7 @@ public:
 
     // Removes and disposes the timer with the specified ID, if any. This may
     // destroy the timer.
-    void removeTimeoutByID(int id);
+    DOMTimer* removeTimeoutByID(int id);
 
     // Timers created during the execution of other timers, and
     // repeating timers, are throttled. Timer nesting level tracks the
