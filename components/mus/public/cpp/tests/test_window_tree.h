@@ -47,6 +47,7 @@ class TestWindowTree : public mojom::WindowTree {
       uint32_t window_id,
       mojo::InsetsPtr insets,
       mojo::Array<mojo::RectPtr> additional_client_areas) override;
+  void SetHitTestMask(uint32_t window_id, mojo::RectPtr mask) override;
   void SetWindowVisibility(uint32_t change_id,
                            uint32_t window_id,
                            bool visible) override;

@@ -87,6 +87,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void SetClientArea(Id window_id,
                      const gfx::Insets& client_area,
                      const std::vector<gfx::Rect>& additional_client_areas);
+  void SetHitTestMask(Id window_id, const gfx::Rect& mask);
+  void ClearHitTestMask(Id window_id);
   void SetFocus(Window* window);
   void SetCanFocus(Id window_id, bool can_focus);
   void SetPredefinedCursor(Id window_id, mus::mojom::Cursor cursor_id);

@@ -179,6 +179,14 @@ void ServerWindow::SetClientArea(
       OnWindowClientAreaChanged(this, insets, additional_client_areas));
 }
 
+void ServerWindow::SetHitTestMask(const gfx::Rect& mask) {
+  hit_test_mask_.reset(new gfx::Rect(mask));
+}
+
+void ServerWindow::ClearHitTestMask() {
+  hit_test_mask_.reset();
+}
+
 const ServerWindow* ServerWindow::GetRoot() const {
   return delegate_->GetRootWindow(this);
 }

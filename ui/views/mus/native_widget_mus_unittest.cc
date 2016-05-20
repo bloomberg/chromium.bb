@@ -21,6 +21,7 @@
 #include "ui/events/test/test_event_handler.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/test/focus_manager_test.h"
@@ -121,6 +122,25 @@ class TestWidgetDelegate : public WidgetDelegateView {
   DISALLOW_COPY_AND_ASSIGN(TestWidgetDelegate);
 };
 
+class WidgetDelegateWithHitTestMask : public WidgetDelegateView {
+ public:
+  explicit WidgetDelegateWithHitTestMask(const gfx::Rect& mask_rect)
+      : mask_rect_(mask_rect) {}
+
+  ~WidgetDelegateWithHitTestMask() override {}
+
+  // views::WidgetDelegate:
+  bool WidgetHasHitTestMask() const override { return true; }
+  void GetWidgetHitTestMask(gfx::Path* mask) const override {
+    mask->addRect(gfx::RectToSkRect(mask_rect_));
+  }
+
+ private:
+  gfx::Rect mask_rect_;
+
+  DISALLOW_COPY_AND_ASSIGN(WidgetDelegateWithHitTestMask);
+};
+
 }  // namespace
 
 class NativeWidgetMusTest : public ViewsTestBase {
@@ -129,7 +149,7 @@ class NativeWidgetMusTest : public ViewsTestBase {
   ~NativeWidgetMusTest() override {}
 
   // Creates a test widget. Takes ownership of |delegate|.
-  std::unique_ptr<Widget> CreateWidget(TestWidgetDelegate* delegate) {
+  std::unique_ptr<Widget> CreateWidget(WidgetDelegate* delegate) {
     std::unique_ptr<Widget> widget(new Widget());
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
     params.delegate = delegate;
@@ -295,6 +315,20 @@ TEST_F(NativeWidgetMusTest, GetName) {
   mus::Window* window =
       static_cast<NativeWidgetMus*>(widget.native_widget_private())->window();
   EXPECT_EQ("MyWidget", window->GetName());
+}
+
+// Tests that a Widget with a hit test mask propagates the mask to the
+// mus::Window.
+TEST_F(NativeWidgetMusTest, HitTestMask) {
+  gfx::Rect mask(5, 5, 10, 10);
+  std::unique_ptr<Widget> widget(
+      CreateWidget(new WidgetDelegateWithHitTestMask(mask)));
+
+  // The window has the mask.
+  mus::Window* window =
+      static_cast<NativeWidgetMus*>(widget->native_widget_private())->window();
+  ASSERT_TRUE(window->hit_test_mask());
+  EXPECT_EQ(mask.ToString(), window->hit_test_mask()->ToString());
 }
 
 // Verifies changing the visibility of a child mus::Window doesn't change the

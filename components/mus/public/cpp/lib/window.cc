@@ -217,6 +217,30 @@ void Window::SetClientArea(
   LocalSetClientArea(client_area, additional_client_areas);
 }
 
+void Window::SetHitTestMask(const gfx::Rect& mask) {
+  if (!OwnsWindowOrIsRoot(this))
+    return;
+
+  if (hit_test_mask_ && *hit_test_mask_ == mask)
+    return;
+
+  if (connection_)
+    tree_client()->SetHitTestMask(server_id_, mask);
+  hit_test_mask_.reset(new gfx::Rect(mask));
+}
+
+void Window::ClearHitTestMask() {
+  if (!OwnsWindowOrIsRoot(this))
+    return;
+
+  if (!hit_test_mask_)
+    return;
+
+  if (connection_)
+    tree_client()->ClearHitTestMask(server_id_);
+  hit_test_mask_.reset();
+}
+
 void Window::SetVisible(bool value) {
   if (visible_ == value)
     return;

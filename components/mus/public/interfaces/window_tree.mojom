@@ -129,6 +129,11 @@ interface WindowTree {
                 mojo.Insets insets,
                 array<mojo.Rect>? additional_client_areas);
 
+  // Mouse events outside a hit test mask do not hit the window. The |mask| is
+  // in window local coordinates. Pass null to clear the mask.
+  // TODO(jamescook): Convert |mask| to a path. http://crbug.com/613210
+  SetHitTestMask(uint32 window_id, mojo.Rect? mask);
+
   // Sets the visibility of the specified window to |visible|. Connections are
   // allowed to change the visibility of any window they have created, as well
   // as any of their roots.

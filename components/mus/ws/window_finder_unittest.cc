@@ -47,5 +47,33 @@ TEST(WindowFinderTest, FindDeepestVisibleWindow) {
   EXPECT_EQ(gfx::Point(-2, -1), local_point);
 }
 
+TEST(WindowFinderTest, FindDeepestVisibleWindowHitTestMask) {
+  TestServerWindowDelegate window_delegate;
+  ServerWindow root(&window_delegate, WindowId(1, 2));
+  window_delegate.set_root_window(&root);
+  EnableHitTest(&root);
+  root.SetVisible(true);
+  root.SetBounds(gfx::Rect(0, 0, 100, 100));
+
+  ServerWindow child_with_mask(&window_delegate, WindowId(1, 4));
+  root.Add(&child_with_mask);
+  EnableHitTest(&child_with_mask);
+  child_with_mask.SetVisible(true);
+  child_with_mask.SetBounds(gfx::Rect(10, 10, 20, 20));
+  child_with_mask.SetHitTestMask(gfx::Rect(2, 2, 16, 16));
+
+  // Test a point inside the window but outside the mask.
+  gfx::Point point_outside_mask(11, 11);
+  EXPECT_EQ(&root,
+            FindDeepestVisibleWindowForEvents(&root, &point_outside_mask));
+  EXPECT_EQ(gfx::Point(11, 11), point_outside_mask);
+
+  // Test a point inside the window and inside the mask.
+  gfx::Point point_inside_mask(15, 15);
+  EXPECT_EQ(&child_with_mask,
+            FindDeepestVisibleWindowForEvents(&root, &point_inside_mask));
+  EXPECT_EQ(gfx::Point(5, 5), point_inside_mask);
+}
+
 }  // namespace ws
 }  // namespace mus

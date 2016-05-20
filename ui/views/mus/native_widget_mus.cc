@@ -28,6 +28,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/path.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/views/mus/platform_window_mus.h"
@@ -498,6 +499,7 @@ void NativeWidgetMus::NotifyFrameChanged(
       native_widget->GetWidget()->non_client_view()->Layout();
       native_widget->GetWidget()->non_client_view()->SchedulePaint();
       native_widget->UpdateClientArea();
+      native_widget->UpdateHitTestMask();
     }
   }
 }
@@ -681,6 +683,7 @@ void NativeWidgetMus::OnWidgetInitDone() {
   // function is called the NonClientView has been created, so that we can
   // correctly calculate the client area and push it to the mus::Window.
   UpdateClientArea();
+  UpdateHitTestMask();
 }
 
 bool NativeWidgetMus::ShouldUseNativeFrame() const {
@@ -1169,6 +1172,7 @@ void NativeWidgetMus::OnBoundsChanged(const gfx::Rect& old_bounds,
   if (old_bounds.size() != new_bounds.size()) {
     native_widget_delegate_->OnNativeWidgetSizeChanged(new_bounds.size());
     UpdateClientArea();
+    UpdateHitTestMask();
   }
 }
 
@@ -1312,6 +1316,25 @@ void NativeWidgetMus::OnMusWindowVisibilityChanged(mus::Window* window) {
     GetNativeWindow()->Hide();
   }
   native_widget_delegate_->OnNativeWidgetVisibilityChanged(window->visible());
+}
+
+void NativeWidgetMus::UpdateHitTestMask() {
+  // The window manager (or other underlay window provider) is not allowed to
+  // set a hit test mask, as that could interfere with a client app mask.
+  if (surface_type_ == mus::mojom::SurfaceType::UNDERLAY)
+    return;
+
+  if (!native_widget_delegate_->HasHitTestMask()) {
+    window_->ClearHitTestMask();
+    return;
+  }
+
+  gfx::Path mask_path;
+  native_widget_delegate_->GetHitTestMask(&mask_path);
+  // TODO(jamescook): Use the full path for the mask.
+  gfx::Rect mask_rect =
+      gfx::ToEnclosingRect(gfx::SkRectToRectF(mask_path.getBounds()));
+  window_->SetHitTestMask(mask_rect);
 }
 
 }  // namespace views

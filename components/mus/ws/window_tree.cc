@@ -1301,6 +1301,20 @@ void WindowTree::SetClientArea(
   window->SetClientArea(insets.To<gfx::Insets>(), additional_client_areas);
 }
 
+void WindowTree::SetHitTestMask(Id transport_window_id, mojo::RectPtr mask) {
+  ServerWindow* window =
+      GetWindowByClientId(ClientWindowId(transport_window_id));
+  if (!window || !access_policy_->CanSetHitTestMask(window)) {
+    DVLOG(1) << "SetHitTestMask failed";
+    return;
+  }
+
+  if (mask)
+    window->SetHitTestMask(mask.To<gfx::Rect>());
+  else
+    window->ClearHitTestMask();
+}
+
 void WindowTree::Embed(Id transport_window_id,
                        mojom::WindowTreeClientPtr client,
                        const EmbedCallback& callback) {

@@ -87,6 +87,12 @@ class Window {
   void SetClientArea(const gfx::Insets& new_client_area,
                      const std::vector<gfx::Rect>& additional_client_areas);
 
+  // Mouse events outside the hit test mask do not hit the window. Returns null
+  // if there is no mask.
+  const gfx::Rect* hit_test_mask() const { return hit_test_mask_.get(); }
+  void SetHitTestMask(const gfx::Rect& mask_rect);
+  void ClearHitTestMask();
+
   // Visibility (also see IsDrawn()). When created windows are hidden.
   bool visible() const { return visible_; }
   void SetVisible(bool value);
@@ -323,6 +329,7 @@ class Window {
   gfx::Rect bounds_;
   gfx::Insets client_area_;
   std::vector<gfx::Rect> additional_client_areas_;
+  std::unique_ptr<gfx::Rect> hit_test_mask_;
 
   mojom::ViewportMetricsPtr viewport_metrics_;
 

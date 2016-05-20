@@ -381,6 +381,7 @@ class WindowTree : public mojom::WindowTree,
       Id transport_window_id,
       mojo::InsetsPtr insets,
       mojo::Array<mojo::RectPtr> transport_additional_client_areas) override;
+  void SetHitTestMask(Id transport_window_id, mojo::RectPtr mask) override;
   void GetWindowManagerClient(
       mojo::AssociatedInterfaceRequest<mojom::WindowManagerClient> internal)
       override;

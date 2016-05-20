@@ -651,6 +651,45 @@ TEST_F(EventDispatcherTest, AdditionalClientArea) {
   EXPECT_FALSE(details->in_nonclient_area);
 }
 
+TEST_F(EventDispatcherTest, HitTestMask) {
+  std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
+
+  root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
+  child->SetBounds(gfx::Rect(10, 10, 20, 20));
+  child->SetHitTestMask(gfx::Rect(2, 2, 16, 16));
+
+  // Move in the masked area.
+  const ui::PointerEvent move1(ui::MouseEvent(
+      ui::ET_MOUSE_MOVED, gfx::Point(11, 11), gfx::Point(11, 11),
+      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+  event_dispatcher()->ProcessEvent(move1);
+
+  // Event went through the child window and hit the root.
+  std::unique_ptr<DispatchedEventDetails> details1 =
+      test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
+  EXPECT_EQ(root_window(), details1->window);
+  EXPECT_FALSE(details1->in_nonclient_area);
+
+  child->ClearHitTestMask();
+
+  // Move right in the same part of the window.
+  const ui::PointerEvent move2(ui::MouseEvent(
+      ui::ET_MOUSE_MOVED, gfx::Point(11, 12), gfx::Point(11, 12),
+      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+  event_dispatcher()->ProcessEvent(move2);
+
+  // Mouse exits the root.
+  std::unique_ptr<DispatchedEventDetails> details2 =
+      test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
+  EXPECT_EQ(ui::ET_POINTER_EXITED, details2->event->type());
+
+  // Mouse hits the child.
+  std::unique_ptr<DispatchedEventDetails> details3 =
+      test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
+  EXPECT_EQ(child.get(), details3->window);
+  EXPECT_FALSE(details3->in_nonclient_area);
+}
+
 TEST_F(EventDispatcherTest, DontFocusOnSecondDown) {
   std::unique_ptr<ServerWindow> child1 = CreateChildWindow(WindowId(1, 3));
   std::unique_ptr<ServerWindow> child2 = CreateChildWindow(WindowId(1, 4));

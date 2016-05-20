@@ -55,7 +55,7 @@ bool WindowManagerAccessPolicy::CanReorderWindow(
 
 bool WindowManagerAccessPolicy::CanDeleteWindow(
     const ServerWindow* window) const {
-  return window->id().connection_id == connection_id_;
+  return WasCreatedByThisConnection(window);
 }
 
 bool WindowManagerAccessPolicy::CanGetWindowTree(
@@ -74,7 +74,7 @@ bool WindowManagerAccessPolicy::CanEmbed(const ServerWindow* window) const {
 
 bool WindowManagerAccessPolicy::CanChangeWindowVisibility(
     const ServerWindow* window) const {
-  if (window->id().connection_id == connection_id_)
+  if (WasCreatedByThisConnection(window))
     return true;
   // The WindowManager can change the visibility of the WindowManager root.
   const ServerWindow* root = window->GetRoot();
@@ -83,39 +83,39 @@ bool WindowManagerAccessPolicy::CanChangeWindowVisibility(
 
 bool WindowManagerAccessPolicy::CanChangeWindowOpacity(
     const ServerWindow* window) const {
-  return window->id().connection_id == connection_id_;
+  return WasCreatedByThisConnection(window);
 }
 
 bool WindowManagerAccessPolicy::CanSetWindowSurface(
     const ServerWindow* window,
     mus::mojom::SurfaceType surface_type) const {
   if (surface_type == mojom::SurfaceType::UNDERLAY)
-    return window->id().connection_id == connection_id_;
+    return WasCreatedByThisConnection(window);
 
   if (delegate_->IsWindowRootOfAnotherTreeForAccessPolicy(window))
     return false;
-  return window->id().connection_id == connection_id_ ||
+  return WasCreatedByThisConnection(window) ||
          (delegate_->HasRootForAccessPolicy(window));
 }
 
 bool WindowManagerAccessPolicy::CanSetWindowBounds(
     const ServerWindow* window) const {
-  return window->id().connection_id == connection_id_;
+  return WasCreatedByThisConnection(window);
 }
 
 bool WindowManagerAccessPolicy::CanSetWindowProperties(
     const ServerWindow* window) const {
-  return window->id().connection_id == connection_id_;
+  return WasCreatedByThisConnection(window);
 }
 
 bool WindowManagerAccessPolicy::CanSetWindowTextInputState(
     const ServerWindow* window) const {
-  return window->id().connection_id == connection_id_;
+  return WasCreatedByThisConnection(window);
 }
 
 bool WindowManagerAccessPolicy::CanSetCapture(
     const ServerWindow* window) const {
-  return window->id().connection_id == connection_id_;
+  return WasCreatedByThisConnection(window);
 }
 
 bool WindowManagerAccessPolicy::CanSetFocus(const ServerWindow* window) const {
@@ -124,13 +124,19 @@ bool WindowManagerAccessPolicy::CanSetFocus(const ServerWindow* window) const {
 
 bool WindowManagerAccessPolicy::CanSetClientArea(
     const ServerWindow* window) const {
-  return window->id().connection_id == connection_id_ ||
+  return WasCreatedByThisConnection(window) ||
+         delegate_->HasRootForAccessPolicy(window);
+}
+
+bool WindowManagerAccessPolicy::CanSetHitTestMask(
+    const ServerWindow* window) const {
+  return WasCreatedByThisConnection(window) ||
          delegate_->HasRootForAccessPolicy(window);
 }
 
 bool WindowManagerAccessPolicy::CanSetCursorProperties(
     const ServerWindow* window) const {
-  return window->id().connection_id == connection_id_ ||
+  return WasCreatedByThisConnection(window) ||
          delegate_->HasRootForAccessPolicy(window);
 }
 
@@ -167,6 +173,11 @@ bool WindowManagerAccessPolicy::IsValidIdForNewWindow(
   // windows with the same id. Because of this the wm must use the same
   // connection id for all windows it creates.
   return WindowIdFromTransportId(id.id).connection_id == connection_id_;
+}
+
+bool WindowManagerAccessPolicy::WasCreatedByThisConnection(
+    const ServerWindow* window) const {
+  return window->id().connection_id == connection_id_;
 }
 
 }  // namespace ws

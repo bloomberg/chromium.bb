@@ -39,12 +39,17 @@ ServerWindow* FindDeepestVisibleWindowForEvents(ServerWindow* window,
                        -child->extended_hit_test_region().top(),
                        -child->extended_hit_test_region().right(),
                        -child->extended_hit_test_region().bottom());
-    if (child_bounds.Contains(child_location)) {
-      *location = child_location;
-      ServerWindow* result = FindDeepestVisibleWindowForEvents(child, location);
-      if (IsValidWindowForEvents(result))
-        return result;
-    }
+    if (!child_bounds.Contains(child_location))
+      continue;
+
+    if (child->hit_test_mask() &&
+        !child->hit_test_mask()->Contains(child_location))
+      continue;
+
+    *location = child_location;
+    ServerWindow* result = FindDeepestVisibleWindowForEvents(child, location);
+    if (IsValidWindowForEvents(result))
+      return result;
   }
   return window;
 }

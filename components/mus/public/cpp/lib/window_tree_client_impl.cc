@@ -313,6 +313,16 @@ void WindowTreeClientImpl::SetClientArea(
       mojo::Array<mojo::RectPtr>::From(additional_client_areas));
 }
 
+void WindowTreeClientImpl::SetHitTestMask(Id window_id, const gfx::Rect& mask) {
+  DCHECK(tree_);
+  tree_->SetHitTestMask(window_id, mojo::Rect::From(mask));
+}
+
+void WindowTreeClientImpl::ClearHitTestMask(Id window_id) {
+  DCHECK(tree_);
+  tree_->SetHitTestMask(window_id, nullptr);
+}
+
 void WindowTreeClientImpl::SetFocus(Window* window) {
   // In order for us to get here we had to have exposed a window, which implies
   // we got a connection.

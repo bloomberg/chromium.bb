@@ -50,6 +50,7 @@ class DefaultAccessPolicy : public AccessPolicy {
   bool CanSetCapture(const ServerWindow* window) const override;
   bool CanSetFocus(const ServerWindow* window) const override;
   bool CanSetClientArea(const ServerWindow* window) const override;
+  bool CanSetHitTestMask(const ServerWindow* window) const override;
   bool CanSetCursorProperties(const ServerWindow* window) const override;
   bool ShouldNotifyOnHierarchyChange(
       const ServerWindow* window,

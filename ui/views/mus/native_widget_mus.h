@@ -238,6 +238,11 @@ private:
   void OnMusWindowVisibilityChanging(mus::Window* window);
   void OnMusWindowVisibilityChanged(mus::Window* window);
 
+  // Propagates the widget hit test mask, if any, to the mus::Window.
+  // TODO(jamescook): Wire this through views::Widget so widgets can push
+  // updates if needed.
+  void UpdateHitTestMask();
+
   mus::Window* window_;
   mus::mojom::Cursor last_cursor_;
 

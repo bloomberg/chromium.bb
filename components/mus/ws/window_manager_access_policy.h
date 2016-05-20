@@ -49,6 +49,7 @@ class WindowManagerAccessPolicy : public AccessPolicy {
   bool CanSetCapture(const ServerWindow* window) const override;
   bool CanSetFocus(const ServerWindow* window) const override;
   bool CanSetClientArea(const ServerWindow* window) const override;
+  bool CanSetHitTestMask(const ServerWindow* window) const override;
   bool CanSetCursorProperties(const ServerWindow* window) const override;
   bool ShouldNotifyOnHierarchyChange(
       const ServerWindow* window,
@@ -61,6 +62,7 @@ class WindowManagerAccessPolicy : public AccessPolicy {
 
  private:
   bool IsWindowKnown(const ServerWindow* window) const;
+  bool WasCreatedByThisConnection(const ServerWindow* window) const;
 
   ConnectionSpecificId connection_id_ = 0u;
   AccessPolicyDelegate* delegate_ = nullptr;

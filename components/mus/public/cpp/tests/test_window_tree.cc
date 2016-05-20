@@ -55,6 +55,8 @@ void TestWindowTree::SetClientArea(
     mojo::InsetsPtr insets,
     mojo::Array<mojo::RectPtr> additional_client_areas) {}
 
+void TestWindowTree::SetHitTestMask(uint32_t window_id, mojo::RectPtr mask) {}
+
 void TestWindowTree::SetWindowVisibility(uint32_t change_id,
                                          uint32_t window_id,
                                          bool visible) {
