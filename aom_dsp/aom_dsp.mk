@@ -18,8 +18,11 @@ DSP_SRCS-$(HAVE_MSA)    += mips/macros_msa.h
 # bit reader
 DSP_SRCS-yes += prob.h
 DSP_SRCS-yes += prob.c
+DSP_SRCS-$(CONFIG_ANS) += ans.h
+DSP_SRCS-$(CONFIG_ANS) += ans.c
 
 ifeq ($(CONFIG_ENCODERS),yes)
+DSP_SRCS-$(CONFIG_ANS) += answriter.h
 DSP_SRCS-yes += bitwriter.h
 DSP_SRCS-yes += dkboolwriter.h
 DSP_SRCS-yes += dkboolwriter.c
@@ -34,6 +37,7 @@ DSP_SRCS-$(CONFIG_INTERNAL_STATS) += fastssim.c
 endif
 
 ifeq ($(CONFIG_DECODERS),yes)
+DSP_SRCS-$(CONFIG_ANS) += ansreader.h
 DSP_SRCS-yes += bitreader.h
 DSP_SRCS-yes += dkboolreader.h
 DSP_SRCS-yes += dkboolreader.c
