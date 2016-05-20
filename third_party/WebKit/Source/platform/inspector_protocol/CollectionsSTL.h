@@ -76,8 +76,8 @@ public:
     const OwnPtr<T>& at(size_t i) const { return m_impl.at(i); }
     OwnPtr<T>& last() { return m_impl[m_impl.size() - 1]; }
     const OwnPtr<T>& last() const { return m_impl[m_impl.size() - 1]; }
-    void append(const PassOwnPtr<T>& t) { m_impl.push_back(t); }
-    void prepend(const PassOwnPtr<T>& t) { m_impl.insert(m_impl.begin(), t); }
+    void append(PassOwnPtr<T> t) { m_impl.emplace_back(std::move(t)); }
+    void prepend(PassOwnPtr<T> t) { m_impl.insert(m_impl.begin(), std::move(t)); }
     void remove(size_t i) { m_impl.erase(m_impl.begin() + i); }
     void clear() { m_impl.clear(); }
     void swap(Vector& other) { m_impl.swap(other.m_impl); }
@@ -151,7 +151,7 @@ public:
         return isNew;
     }
     bool contains(const K& k) const { return m_impl.find(k) != m_impl.end(); }
-    V get(const K& k) const { return m_impl.find(k)->second; }
+    V get(const K& k) const { auto it = m_impl.find(k); return it == m_impl.end() ? V() : it->second; }
     void remove(const K& k) { m_impl.erase(k); }
     void clear() { m_impl.clear(); }
     V take(const K& k)
@@ -186,11 +186,11 @@ public:
     bool set(const K& k, PassOwnPtr<V> v)
     {
         bool isNew = m_impl.find(k) == m_impl.end();
-        m_impl[k] = v;
+        m_impl[k] = std::move(v);
         return isNew;
     }
     bool contains(const K& k) const { return m_impl.find(k) != m_impl.end(); }
-    V* get(const K& k) const { return m_impl.find(k)->second.get(); }
+    V* get(const K& k) const { auto it = m_impl.find(k); return it == m_impl.end() ? nullptr : it->second.get(); }
     PassOwnPtr<V> take(const K& k)
     {
         if (!contains(k))

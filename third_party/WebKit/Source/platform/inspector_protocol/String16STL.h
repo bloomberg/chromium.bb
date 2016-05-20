@@ -10,6 +10,7 @@
 #include <vector>
 
 using UChar = uint16_t;
+using UChar32 = uint32_t;
 using LChar = unsigned char;
 // presubmit: allow wstring
 using wstring = std::basic_string<UChar>;
@@ -37,9 +38,10 @@ public:
 
     unsigned sizeInBytes() const { return m_impl.size() * sizeof(UChar); }
     const UChar* characters16() const { return m_impl.c_str(); }
-    std::string utf8();
+    std::string utf8() const;
     static String16 number(int i) { return String16(std::to_string(i).c_str()); }
     static String16 fromDouble(double d) { return String16(std::to_string(d).c_str()); }
+    static String16 fromDoubleFixedPrecision(double d, int len) { return String16(std::to_string(d).c_str()); }
 
     static double charactersToDouble(const UChar* characters, size_t length, bool* ok = 0)
     {

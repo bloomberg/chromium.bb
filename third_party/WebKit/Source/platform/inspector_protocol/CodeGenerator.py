@@ -28,6 +28,7 @@ third_party_dir = os.path.normpath(os.path.join(
 # jinja2 is in chromium's third_party directory.
 # Insert at 1 so at front to override system libraries, and
 # after path[0] == invoking script dir
+
 sys.path.insert(1, third_party_dir)
 import jinja2
 
@@ -52,7 +53,10 @@ except Exception:
 
 json_api = {"domains": []}
 
+json_timestamp = 0
+
 for filename in arg_values:
+    json_timestamp = max(os.path.getmtime(filename), json_timestamp)
     input_file = open(filename, "r")
     json_string = input_file.read()
     parsed_json = json.loads(json_string)
@@ -259,7 +263,30 @@ def join_arrays(dict, keys):
     return result
 
 
+if os.path.exists(__file__):
+    current_script_timestamp = os.path.getmtime(__file__)
+else:
+    current_script_timestamp = 0
+
+
+def is_up_to_date(file, template):
+    if not os.path.exists(file):
+        return False
+    timestamp = os.path.getmtime(file)
+    return timestamp > max(os.path.getmtime(module_path + template),
+                           current_script_timestamp, json_timestamp)
+
+
 def generate(class_name):
+    h_template_name = "/%s_h.template" % class_name
+    cpp_template_name = "/%s_cpp.template" % class_name
+    h_file_name = output_dirname + "/" + class_name + ".h"
+    cpp_file_name = output_dirname + "/" + class_name + ".cpp"
+
+    if (is_up_to_date(cpp_file_name, cpp_template_name) and
+            is_up_to_date(h_file_name, h_template_name)):
+        return
+
     template_context = {
         "class_name": class_name,
         "api": json_api,
@@ -267,10 +294,10 @@ def generate(class_name):
         "resolve_type": resolve_type,
         "type_definition": type_definition
     }
-    h_template = jinja_env.get_template("/%s_h.template" % class_name)
-    cpp_template = jinja_env.get_template("/%s_cpp.template" % class_name)
-    h_file = output_file(output_dirname + "/" + class_name + ".h")
-    cpp_file = output_file(output_dirname + "/" + class_name + ".cpp")
+    h_template = jinja_env.get_template(h_template_name)
+    cpp_template = jinja_env.get_template(cpp_template_name)
+    h_file = output_file(h_file_name)
+    cpp_file = output_file(cpp_file_name)
     h_file.write(h_template.render(template_context))
     cpp_file.write(cpp_template.render(template_context))
     h_file.close()

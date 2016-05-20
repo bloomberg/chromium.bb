@@ -4,13 +4,10 @@
 
 #include "platform/inspector_protocol/String16STL.h"
 
-#include "wtf/ASCIICType.h"
-
 #include <algorithm>
 #include <cctype>
 #include <functional>
 #include <locale>
-#include <unicode/utf16.h>
 
 namespace blink {
 namespace protocol {
@@ -277,164 +274,6 @@ ConversionResult convertUTF16ToUTF8(
     return result;
 }
 
-// This must be called with the length pre-determined by the first byte.
-// If presented with a length > 4, this returns false.  The Unicode
-// definition of UTF-8 goes up to 4-byte sequences.
-static bool isLegalUTF8(const unsigned char* source, int length)
-{
-    unsigned char a;
-    const unsigned char* srcptr = source + length;
-    switch (length) {
-    default:
-        return false;
-    // Everything else falls through when "true"...
-    case 4:
-        if ((a = (*--srcptr)) < 0x80 || a > 0xBF)
-            return false;
-    case 3:
-        if ((a = (*--srcptr)) < 0x80 || a > 0xBF)
-            return false;
-    case 2:
-        if ((a = (*--srcptr)) > 0xBF)
-            return false;
-
-        // no fall-through in this inner switch
-        switch (*source) {
-        case 0xE0:
-            if (a < 0xA0)
-                return false;
-            break;
-        case 0xED:
-            if (a > 0x9F)
-                return false;
-            break;
-        case 0xF0:
-            if (a < 0x90)
-                return false;
-            break;
-        case 0xF4:
-            if (a > 0x8F)
-                return false;
-            break;
-        default:
-            if (a < 0x80)
-                return false;
-        }
-
-    case 1:
-        if (*source >= 0x80 && *source < 0xC2)
-            return false;
-    }
-    if (*source > 0xF4)
-        return false;
-    return true;
-}
-
-// Magic values subtracted from a buffer value during UTF8 conversion.
-// This table contains as many values as there might be trailing bytes
-// in a UTF-8 sequence.
-static const UChar32 offsetsFromUTF8[6] = { 0x00000000UL, 0x00003080UL, 0x000E2080UL, 0x03C82080UL, static_cast<UChar32>(0xFA082080UL), static_cast<UChar32>(0x82082080UL) };
-
-static inline UChar32 readUTF8Sequence(const char*& sequence, unsigned length)
-{
-    UChar32 character = 0;
-
-    // The cases all fall through.
-    switch (length) {
-    case 6:
-        character += static_cast<unsigned char>(*sequence++);
-        character <<= 6;
-    case 5:
-        character += static_cast<unsigned char>(*sequence++);
-        character <<= 6;
-    case 4:
-        character += static_cast<unsigned char>(*sequence++);
-        character <<= 6;
-    case 3:
-        character += static_cast<unsigned char>(*sequence++);
-        character <<= 6;
-    case 2:
-        character += static_cast<unsigned char>(*sequence++);
-        character <<= 6;
-    case 1:
-        character += static_cast<unsigned char>(*sequence++);
-    }
-
-    return character - offsetsFromUTF8[length - 1];
-}
-
-ConversionResult convertUTF8ToUTF16(
-    const char** sourceStart, const char* sourceEnd,
-    UChar** targetStart, UChar* targetEnd, bool* sourceAllASCII, bool strict)
-{
-    ConversionResult result = conversionOK;
-    const char* source = *sourceStart;
-    UChar* target = *targetStart;
-    UChar orAllData = 0;
-    while (source < sourceEnd) {
-        int utf8SequenceLength = inlineUTF8SequenceLength(*source);
-        if (sourceEnd - source < utf8SequenceLength)  {
-            result = sourceExhausted;
-            break;
-        }
-        // Do this check whether lenient or strict
-        if (!isLegalUTF8(reinterpret_cast<const unsigned char*>(source), utf8SequenceLength)) {
-            result = sourceIllegal;
-            break;
-        }
-
-        UChar32 character = readUTF8Sequence(source, utf8SequenceLength);
-
-        if (target >= targetEnd) {
-            source -= utf8SequenceLength; // Back up source pointer!
-            result = targetExhausted;
-            break;
-        }
-
-        if (U_IS_BMP(character)) {
-            // UTF-16 surrogate values are illegal in UTF-32
-            if (U_IS_SURROGATE(character)) {
-                if (strict) {
-                    source -= utf8SequenceLength; // return to the illegal value itself
-                    result = sourceIllegal;
-                    break;
-                }
-                *target++ = replacementCharacter;
-                orAllData |= replacementCharacter;
-            } else {
-                *target++ = static_cast<UChar>(character); // normal case
-                orAllData |= character;
-            }
-        } else if (U_IS_SUPPLEMENTARY(character)) {
-            // target is a character in range 0xFFFF - 0x10FFFF
-            if (target + 1 >= targetEnd) {
-                source -= utf8SequenceLength; // Back up source pointer!
-                result = targetExhausted;
-                break;
-            }
-            *target++ = U16_LEAD(character);
-            *target++ = U16_TRAIL(character);
-            orAllData = 0xffff;
-        } else {
-            if (strict) {
-                source -= utf8SequenceLength; // return to the start
-                result = sourceIllegal;
-                break; // Bail out; shouldn't continue
-            } else {
-                *target++ = replacementCharacter;
-                orAllData |= replacementCharacter;
-            }
-        }
-    }
-    *sourceStart = source;
-    *targetStart = target;
-
-    if (sourceAllASCII)
-        *sourceAllASCII = !(orAllData & ~0x7f);
-
-    return result;
-}
-
 // Helper to write a three-byte UTF-8 code point to the buffer, caller must check room is available.
 static inline void putUTF8Triple(char*& buffer, UChar ch)
 {
@@ -464,7 +303,7 @@ static inline wstring &trim(wstring &s)
     return ltrim(rtrim(s));
 }
 
-std::string String16::utf8()
+std::string String16::utf8() const
 {
     unsigned length = this->length();
 
