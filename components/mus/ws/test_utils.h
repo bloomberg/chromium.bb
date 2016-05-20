@@ -117,6 +117,7 @@ class EventDispatcherTestApi {
   ModalWindowController* modal_window_controller() const {
     return &ed_->modal_window_controller_;
   }
+  ServerWindow* capture_window() { return ed_->capture_window_; }
 
  private:
   EventDispatcher* ed_;

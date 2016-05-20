@@ -1544,6 +1544,40 @@ TEST_F(EventDispatcherTest, ModalWindowMultipleSystemModals) {
   EXPECT_EQ(nullptr, GetActiveSystemModalWindow());
 }
 
+TEST_F(EventDispatcherTest, CaptureNotResetOnParentChange) {
+  std::unique_ptr<ServerWindow> w1 = CreateChildWindow(WindowId(1, 3));
+  DisableHitTest(w1.get());
+  std::unique_ptr<ServerWindow> w11 =
+      CreateChildWindowWithParent(WindowId(1, 4), w1.get());
+  std::unique_ptr<ServerWindow> w2 = CreateChildWindow(WindowId(1, 5));
+  DisableHitTest(w2.get());
+
+  root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
+  w1->SetBounds(gfx::Rect(0, 0, 100, 100));
+  w11->SetBounds(gfx::Rect(10, 10, 10, 10));
+  w2->SetBounds(gfx::Rect(0, 0, 100, 100));
+
+  // Send event that is over |w11|.
+  const ui::PointerEvent mouse_pressed(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, gfx::Point(15, 15), gfx::Point(15, 15),
+      base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  event_dispatcher()->ProcessEvent(mouse_pressed);
+  event_dispatcher()->SetCaptureWindow(w11.get(), false);
+
+  std::unique_ptr<DispatchedEventDetails> details =
+      test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
+  ASSERT_TRUE(details);
+  EXPECT_EQ(w11.get(), details->window);
+  EXPECT_FALSE(details->in_nonclient_area);
+
+  // Move |w11| to |w2| and verify the mouse is still down, and |w11| has
+  // capture.
+  w2->Add(w11.get());
+  EXPECT_TRUE(IsMouseButtonDown());
+  EXPECT_EQ(w11.get(),
+            EventDispatcherTestApi(event_dispatcher()).capture_window());
+}
+
 }  // namespace test
 }  // namespace ws
 }  // namespace mus

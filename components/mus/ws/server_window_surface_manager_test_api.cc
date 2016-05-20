@@ -19,10 +19,20 @@ void ServerWindowSurfaceManagerTestApi::CreateEmptyDefaultSurface() {
   manager_->type_to_surface_map_[mojom::SurfaceType::DEFAULT] = nullptr;
 }
 
+void ServerWindowSurfaceManagerTestApi::DestroyDefaultSurface() {
+  manager_->type_to_surface_map_.erase(mojom::SurfaceType::DEFAULT);
+}
+
 void EnableHitTest(ServerWindow* window) {
   ServerWindowSurfaceManagerTestApi test_api(
       window->GetOrCreateSurfaceManager());
   test_api.CreateEmptyDefaultSurface();
+}
+
+void DisableHitTest(ServerWindow* window) {
+  ServerWindowSurfaceManagerTestApi test_api(
+      window->GetOrCreateSurfaceManager());
+  test_api.DestroyDefaultSurface();
 }
 
 }  // namespace ws

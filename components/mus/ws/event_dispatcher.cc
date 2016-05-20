@@ -510,7 +510,18 @@ Accelerator* EventDispatcher::FindAccelerator(
 void EventDispatcher::OnWillChangeWindowHierarchy(ServerWindow* window,
                                                   ServerWindow* new_parent,
                                                   ServerWindow* old_parent) {
-  CancelPointerEventsToTarget(window);
+  // TODO(sky): moving to a different root likely needs to transfer capture.
+  // TODO(sky): this isn't quite right, I think the logic should be (assuming
+  // moving in same root and still drawn):
+  // . if there is capture and window is still in the same root, continue
+  //   sending to it.
+  // . if there isn't capture, then reevaluate each of the pointer targets
+  //   sending exit as necessary.
+  // http://crbug.com/613646 .
+  if (!new_parent || !new_parent->IsDrawn() ||
+      new_parent->GetRoot() != old_parent->GetRoot()) {
+    CancelPointerEventsToTarget(window);
+  }
 }
 
 void EventDispatcher::OnWindowVisibilityChanged(ServerWindow* window) {

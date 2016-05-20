@@ -21,6 +21,7 @@ class ServerWindowSurfaceManagerTestApi {
   ~ServerWindowSurfaceManagerTestApi();
 
   void CreateEmptyDefaultSurface();
+  void DestroyDefaultSurface();
 
  private:
   ServerWindowSurfaceManager* manager_;
@@ -30,6 +31,7 @@ class ServerWindowSurfaceManagerTestApi {
 
 // Use to make |window| a target for events.
 void EnableHitTest(ServerWindow* window);
+void DisableHitTest(ServerWindow* window);
 
 }  // namespace ws
 }  // namespace mus
