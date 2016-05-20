@@ -20,6 +20,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_tree_owner.h"
+#include "ui/compositor/paint_context.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -27,10 +28,64 @@
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
+namespace {
+
+// A layer delegate to paint the content of the recreaetd layers
+// by delegating the paint request to the original delegate.
+// It checks if the orignal delegate is still valid by traversing
+// the original layers.
+class DragWindowLayerDelegate : public ui::LayerDelegate {
+ public:
+  DragWindowLayerDelegate(aura::Window* original_window,
+                          ui::LayerDelegate* delegate)
+      : original_window_(original_window), original_delegate_(delegate) {}
+  ~DragWindowLayerDelegate() override {}
+
+ private:
+  // ui:LayerDelegate:
+  void OnPaintLayer(const ui::PaintContext& context) override {
+    if (!original_delegate_)
+      return;
+    // |original_delegate_| may have already been deleted or
+    // disconnected by this time. Check if |original_delegate_| is still
+    // used by the original_window tree, or skip otherwise.
+    if (IsDelegateValid(original_window_->layer()))
+      original_delegate_->OnPaintLayer(context);
+    else
+      original_delegate_ = nullptr;
+  }
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override {
+    // Don't tell the original delegate about device scale factor change
+    // on cloned layer because the original layer is still on the same display.
+  }
+  base::Closure PrepareForLayerBoundsChange() override {
+    return base::Closure();
+  }
+
+  bool IsDelegateValid(ui::Layer* layer) {
+    if (layer->delegate() == original_delegate_)
+      return true;
+    for (auto* child : layer->children()) {
+      if (IsDelegateValid(child))
+        return true;
+    }
+    return false;
+  }
+
+  aura::Window* original_window_;
+  ui::LayerDelegate* original_delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(DragWindowLayerDelegate);
+};
+
+}  // namespace
 
 // This keeps tack of the drag window's state. It creates/destory/updates bounds
 // and opacity based on the current bounds.
-class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
+class DragWindowController::DragWindowDetails
+    : public aura::WindowDelegate,
+      public ::wm::LayerDelegateFactory {
  public:
   DragWindowDetails(const display::Display& display,
                     aura::Window* original_window)
@@ -78,6 +133,7 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
   void CreateDragWindow(aura::Window* original_window,
                         const gfx::Rect& bounds_in_screen) {
     DCHECK(!drag_window_);
+    original_window_ = original_window;
     drag_window_ = new aura::Window(this);
     int parent_id = original_window->parent()->id();
     aura::Window* container = root_window_->GetChildById(parent_id);
@@ -109,11 +165,7 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
 
   void RecreateWindowLayers(aura::Window* original_window) {
     DCHECK(!layer_owner_.get());
-    layer_owner_ = ::wm::RecreateLayers(original_window);
-    // TODO(oshima): Recreated child layers may not have been painted
-    // yet, and may not be able to paint to because it does not have
-    // its original delegate.
-    layer_owner_->root()->set_delegate(original_window->layer()->delegate());
+    layer_owner_ = ::wm::RecreateLayers(original_window, this);
     // Place the layer at (0, 0) of the DragWindowController's window.
     gfx::Rect layer_bounds = layer_owner_->root()->bounds();
     layer_bounds.set_origin(gfx::Point(0, 0));
@@ -128,6 +180,16 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
     ui::ScopedLayerAnimationSettings scoped_setter(layer->GetAnimator());
     layer->SetOpacity(opacity);
     layer_owner_->root()->SetOpacity(1.0f);
+  }
+
+  // aura::WindowDelegate:
+  ui::LayerDelegate* CreateDelegate(ui::LayerDelegate* delegate) override {
+    if (!delegate)
+      return nullptr;
+    DragWindowLayerDelegate* new_delegate =
+        new DragWindowLayerDelegate(original_window_, delegate);
+    delegates_.push_back(base::WrapUnique(new_delegate));
+    return new_delegate;
   }
 
   // aura::WindowDelegate:
@@ -162,6 +224,10 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
   aura::Window* root_window_;
 
   aura::Window* drag_window_ = nullptr;  // Owned by the container.
+
+  aura::Window* original_window_ = nullptr;
+
+  std::vector<std::unique_ptr<DragWindowLayerDelegate>> delegates_;
 
   // The copy of window_->layer() and its descendants.
   std::unique_ptr<ui::LayerTreeOwner> layer_owner_;
@@ -233,6 +299,22 @@ const ui::LayerTreeOwner* DragWindowController::GetDragLayerOwnerForTest(
     }
   }
   return nullptr;
+}
+
+void DragWindowController::RequestLayerPaintForTest() {
+  ui::PaintContext context(nullptr, 1.0f, gfx::Rect());
+  for (auto& details : drag_windows_) {
+    std::vector<ui::Layer*> layers;
+    layers.push_back(details->drag_window_->layer());
+    while (layers.size()) {
+      ui::Layer* layer = layers.back();
+      layers.pop_back();
+      if (layer->delegate())
+        layer->delegate()->OnPaintLayer(context);
+      for (auto* child : layer->children())
+        layers.push_back(child);
+    }
+  }
 }
 
 }  // namespace ash

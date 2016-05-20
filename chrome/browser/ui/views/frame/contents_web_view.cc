@@ -98,7 +98,8 @@ void ContentsWebView::CloneWebContentsLayer() {
 #if defined(USE_AURA)
   // We don't need to clone the layers on non-Aura (Mac), because closing an
   // NSWindow does not animate.
-  cloned_layer_tree_ = wm::RecreateLayers(web_contents()->GetNativeView());
+  cloned_layer_tree_ =
+      wm::RecreateLayers(web_contents()->GetNativeView(), nullptr);
 #endif
   if (!cloned_layer_tree_ || !cloned_layer_tree_->root()) {
     cloned_layer_tree_.reset();

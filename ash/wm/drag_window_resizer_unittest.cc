@@ -24,6 +24,7 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/compositor/layer_delegate.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/display/manager/display_layout_builder.h"
@@ -35,6 +36,30 @@ namespace ash {
 namespace {
 
 const int kRootHeight = 600;
+
+// Used to test if the OnPaintLayer is called by DragWindowLayerDelegate.
+class TestLayerDelegate : public ui::LayerDelegate {
+ public:
+  TestLayerDelegate() = default;
+  ~TestLayerDelegate() override = default;
+
+  int paint_count() const { return paint_count_; }
+
+ private:
+  // Paint content for the layer to the specified context.
+  void OnPaintLayer(const ui::PaintContext& context) override {
+    paint_count_++;
+  }
+  void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
+  void OnDeviceScaleFactorChanged(float device_scale_factor) override {}
+  base::Closure PrepareForLayerBoundsChange() override {
+    return base::Closure();
+  }
+
+  int paint_count_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestLayerDelegate);
+};
 
 }  // namespace
 
@@ -345,6 +370,8 @@ TEST_F(DragWindowResizerTest, DragWindowController) {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2U, root_windows.size());
 
+  TestLayerDelegate delegate;
+  window_->layer()->set_delegate(&delegate);
   window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
                              display::Screen::GetScreen()->GetPrimaryDisplay());
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
@@ -378,6 +405,16 @@ TEST_F(DragWindowResizerTest, DragWindowController) {
     const std::vector<ui::Layer*>& layers = drag_layer->children();
     EXPECT_FALSE(layers.empty());
     EXPECT_EQ(controller->GetDragLayerOwnerForTest(0)->root(), layers.back());
+
+    // The paint request on a drag window should reach the original delegate.
+    controller->RequestLayerPaintForTest();
+    EXPECT_EQ(1, delegate.paint_count());
+
+    // Invalidating the delegate on the original layer should prevent
+    // calling the OnPaintLayer on the original delegate from new delegate.
+    window_->layer()->set_delegate(nullptr);
+    controller->RequestLayerPaintForTest();
+    EXPECT_EQ(1, delegate.paint_count());
 
     // |window_| should be opaque since the pointer is still on the primary
     // root window. The drag window should be semi-transparent.

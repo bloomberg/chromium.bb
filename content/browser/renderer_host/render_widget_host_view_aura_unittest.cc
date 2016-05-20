@@ -1685,7 +1685,7 @@ TEST_F(RenderWidgetHostViewAuraTest, RecreateLayers) {
   view_->OnSwapCompositorFrame(0,
                                MakeDelegatedFrame(1.f, view_size, view_rect));
   std::unique_ptr<ui::LayerTreeOwner> cloned_owner(
-      wm::RecreateLayers(view_->GetNativeView()));
+      wm::RecreateLayers(view_->GetNativeView(), nullptr));
 
   cc::SurfaceId id = view_->GetDelegatedFrameHost()->SurfaceIdForTesting();
   if (!id.is_null()) {

@@ -16,7 +16,9 @@ namespace {
 // cloned children to |parent|.
 //
 // WARNING: It is assumed that |parent| is ultimately owned by a LayerTreeOwner.
-void CloneChildren(ui::Layer* to_clone, ui::Layer* parent) {
+void CloneChildren(ui::Layer* to_clone,
+                   ui::Layer* parent,
+                   wm::LayerDelegateFactory* factory) {
   typedef std::vector<ui::Layer*> Layers;
   // Make a copy of the children since RecreateLayer() mutates it.
   Layers children(to_clone->children());
@@ -24,10 +26,13 @@ void CloneChildren(ui::Layer* to_clone, ui::Layer* parent) {
     ui::LayerOwner* owner = (*i)->owner();
     ui::Layer* old_layer = owner ? owner->RecreateLayer().release() : NULL;
     if (old_layer) {
+      if (factory && owner->layer()->delegate())
+        old_layer->set_delegate(
+            factory->CreateDelegate(owner->layer()->delegate()));
       parent->Add(old_layer);
       // RecreateLayer() moves the existing children to the new layer. Create a
       // copy of those.
-      CloneChildren(owner->layer(), old_layer);
+      CloneChildren(owner->layer(), old_layer, factory);
     }
   }
 }
@@ -80,11 +85,18 @@ aura::Window* GetToplevelWindow(aura::Window* window) {
   return client ? client->GetToplevelWindow(window) : NULL;
 }
 
-std::unique_ptr<ui::LayerTreeOwner> RecreateLayers(ui::LayerOwner* root) {
+std::unique_ptr<ui::LayerTreeOwner> RecreateLayers(
+    ui::LayerOwner* root,
+    LayerDelegateFactory* factory) {
   std::unique_ptr<ui::LayerTreeOwner> old_layer(
       new ui::LayerTreeOwner(root->RecreateLayer().release()));
-  if (old_layer->root())
-    CloneChildren(root->layer(), old_layer->root());
+  if (old_layer->root()) {
+    if (factory) {
+      old_layer->root()->set_delegate(
+          factory->CreateDelegate(root->layer()->delegate()));
+    }
+    CloneChildren(root->layer(), old_layer->root(), factory);
+  }
   return old_layer;
 }
 

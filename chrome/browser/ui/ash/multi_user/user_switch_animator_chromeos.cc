@@ -329,7 +329,7 @@ void UserSwitchAnimatorChromeOS::TransitionWindows(
             // window we encounter.
             found_foreground_maximized_window = true;
             ui::LayerTreeOwner* old_layer =
-                wm::RecreateLayers(window).release();
+                wm::RecreateLayers(window, nullptr).release();
             window->layer()->parent()->StackAtBottom(old_layer->root());
             new MaximizedWindowAnimationWatcher(window->layer()->GetAnimator(),
                                                 old_layer);
