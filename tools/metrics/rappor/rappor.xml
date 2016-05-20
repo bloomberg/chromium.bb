@@ -1017,8 +1017,8 @@ components/rappor/rappor_parameters.h.
     The eTLD+1 of the website visited, along with a bitfield representing
     bucket membership in a coarse histogram of time from navigation start to the
     time the first real content (text/image) is painted on the screen (See
-    PageLoad.Timing2.NavigationToFirstContentfulPaint). The bucket's name is the
-    histogram's lower bound. Tracks the same sites that the rest of the
+    PageLoad.PaintTiming.NavigationToFirstContentfulPaint). The bucket's name is
+    the histogram's lower bound. Tracks the same sites that the rest of the
     PageLoad.* histogram metrics track, i.e. http/s, html, main frame
     navigations. Metrics are only recorded for navigations that reached first
     contentful paint entirely in the foreground.

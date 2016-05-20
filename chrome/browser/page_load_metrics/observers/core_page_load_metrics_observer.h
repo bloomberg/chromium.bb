@@ -41,7 +41,7 @@ extern const char kRapporMetricsNameCoarseTiming[];
 
 // Observer responsible for recording 'core' page load metrics. Core metrics are
 // maintained by loading-dev team, typically the metrics under
-// PageLoad.Timing2.*.
+// PageLoad.(Document|Paint|Parse)Timing.*.
 class CorePageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver {
  public:

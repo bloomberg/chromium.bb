@@ -193,8 +193,9 @@ void AbortsPageLoadMetricsObserver::OnComplete(
   // If we have a committed load but |timing.IsEmpty()|, then this load was not
   // tracked by the renderer. In this case, it is not possible to know whether
   // the abort signals came before the page painted. Additionally, for
-  // consistency with PageLoad.Timing2 metrics, we ignore non-render-tracked
-  // loads when tracking aborts after commit.
+  // consistency with PageLoad.(Document|Paint|Parse)Timing metrics recorded by
+  // the CorePageLoadMetricsObserver, we ignore non-render-tracked loads when
+  // tracking aborts after commit.
   if (timing.IsEmpty())
     return;
 
