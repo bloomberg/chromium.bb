@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <cstdlib>
 #include <map>
 #include <memory>
 #include <utility>
@@ -34,6 +35,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/log/test_net_log.h"
 #include "net/nqe/external_estimate_provider.h"
@@ -130,6 +132,8 @@ class DataReductionProxyConfigTest : public testing::Test {
       net::URLRequestStatus status,
       SecureProxyCheckFetchResult expected_fetch_result,
       const std::vector<net::ProxyServer>& expected_proxies_for_http) {
+    base::HistogramTester histogram_tester;
+
     ExpectSecureProxyCheckResult(expected_fetch_result);
     TestResponder responder;
     responder.response = response;
@@ -142,6 +146,15 @@ class DataReductionProxyConfigTest : public testing::Test {
     config()->OnIPAddressChanged();
     test_context_->RunUntilIdle();
     EXPECT_EQ(expected_proxies_for_http, GetConfiguredProxiesForHttp());
+
+    if (!status.is_success() &&
+        status.error() != net::ERR_INTERNET_DISCONNECTED) {
+      histogram_tester.ExpectUniqueSample("DataReductionProxy.ProbeURLNetError",
+                                          std::abs(status.error()), 1);
+    } else {
+      histogram_tester.ExpectTotalCount("DataReductionProxy.ProbeURLNetError",
+                                        0);
+    }
   }
 
   void RunUntilIdle() {

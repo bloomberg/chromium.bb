@@ -644,7 +644,7 @@ void DataReductionProxyConfig::HandleSecureProxyCheckResponse(
     event_creator_->EndSecureProxyCheck(bound_net_log_, status.error(),
                                         http_response_code, success_response);
 
-  if (status.status() == net::URLRequestStatus::FAILED) {
+  if (!status.is_success()) {
     if (status.error() == net::ERR_INTERNET_DISCONNECTED) {
       RecordSecureProxyCheckFetchResult(INTERNET_DISCONNECTED);
       return;
