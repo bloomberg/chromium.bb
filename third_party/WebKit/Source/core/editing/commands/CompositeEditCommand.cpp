@@ -1541,7 +1541,7 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(const Posi
     // Don't avoid block level anchors, because that would insert content into the wrong paragraph.
     if (enclosingAnchor && !isEnclosingBlock(enclosingAnchor)) {
         VisiblePosition firstInAnchor = VisiblePosition::firstPositionInNode(enclosingAnchor);
-        VisiblePosition lastInAnchor = createVisiblePosition(Position::lastPositionInNode(enclosingAnchor));
+        VisiblePosition lastInAnchor = VisiblePosition::lastPositionInNode(enclosingAnchor);
         // If visually just after the anchor, insert *inside* the anchor unless it's the last
         // VisiblePosition in the document, to match NSTextView.
         if (visiblePos.deepEquivalent() == lastInAnchor.deepEquivalent()) {

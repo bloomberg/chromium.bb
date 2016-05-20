@@ -612,7 +612,7 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
         Position downstreamEnd = mostForwardCaretPosition(endingSelection().end());
         VisiblePosition visibleEnd = endingSelection().visibleEnd();
         Node* enclosingTableCell = enclosingNodeOfType(visibleEnd.deepEquivalent(), &isTableCell);
-        if (enclosingTableCell && visibleEnd.deepEquivalent() == createVisiblePosition(Position::lastPositionInNode(enclosingTableCell)).deepEquivalent())
+        if (enclosingTableCell && visibleEnd.deepEquivalent() == VisiblePosition::lastPositionInNode(enclosingTableCell).deepEquivalent())
             return;
         if (visibleEnd.deepEquivalent() == endOfParagraph(visibleEnd).deepEquivalent())
             downstreamEnd = mostForwardCaretPosition(nextPositionOf(visibleEnd, CannotCrossEditingBoundary).deepEquivalent());

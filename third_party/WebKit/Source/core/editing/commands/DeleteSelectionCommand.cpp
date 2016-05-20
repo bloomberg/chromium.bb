@@ -49,7 +49,7 @@ using namespace HTMLNames;
 static bool isTableCellEmpty(Node* cell)
 {
     DCHECK(isTableCell(cell)) << cell;
-    return VisiblePosition::firstPositionInNode(cell).deepEquivalent() == createVisiblePosition(Position::lastPositionInNode(cell)).deepEquivalent();
+    return VisiblePosition::firstPositionInNode(cell).deepEquivalent() == VisiblePosition::lastPositionInNode(cell).deepEquivalent();
 }
 
 static bool isTableRowEmpty(Node* row)
@@ -399,7 +399,7 @@ void DeleteSelectionCommand::removeNode(Node* node, EditingState* editingState, 
             m_needPlaceholder = true;
     }
     if (node == m_endBlock) {
-        VisiblePosition next = nextPositionOf(createVisiblePosition(Position::lastPositionInNode(m_endBlock.get())));
+        VisiblePosition next = nextPositionOf(VisiblePosition::lastPositionInNode(m_endBlock.get()));
         if (next.isNotNull() && !isStartOfBlock(next))
             m_needPlaceholder = true;
     }

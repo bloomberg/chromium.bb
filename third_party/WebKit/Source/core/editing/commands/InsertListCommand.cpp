@@ -281,7 +281,7 @@ bool InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
             Node* firstChildInList = enclosingListChild(VisiblePosition::firstPositionInNode(listElement).deepEquivalent().anchorNode(), listElement);
             Element* outerBlock = firstChildInList && isBlockFlowElement(*firstChildInList) ? toElement(firstChildInList) : listElement;
 
-            moveParagraphWithClones(VisiblePosition::firstPositionInNode(listElement), createVisiblePosition(Position::lastPositionInNode(listElement)), newList, outerBlock, editingState);
+            moveParagraphWithClones(VisiblePosition::firstPositionInNode(listElement), VisiblePosition::lastPositionInNode(listElement), newList, outerBlock, editingState);
             if (editingState->isAborted())
                 return false;
 
@@ -333,7 +333,7 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
     DCHECK(listChildNode);
     if (isHTMLLIElement(*listChildNode)) {
         start = VisiblePosition::firstPositionInNode(listChildNode);
-        end = createVisiblePosition(Position::lastPositionInNode(listChildNode));
+        end = VisiblePosition::lastPositionInNode(listChildNode);
         nextListChild = listChildNode->nextSibling();
         previousListChild = listChildNode->previousSibling();
     } else {

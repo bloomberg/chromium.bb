@@ -572,7 +572,7 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
         // FIXME: Tolerate differences in id, class, and style attributes.
         if (element->parentNode() && isNonTableCellHTMLBlockElement(element) && areIdenticalElements(*element, *element->parentNode())
             && VisiblePosition::firstPositionInNode(element->parentNode()).deepEquivalent() == VisiblePosition::firstPositionInNode(element).deepEquivalent()
-            && createVisiblePosition(Position::lastPositionInNode(element->parentNode())).deepEquivalent() == createVisiblePosition(Position::lastPositionInNode(element)).deepEquivalent()) {
+            && VisiblePosition::lastPositionInNode(element->parentNode()).deepEquivalent() == VisiblePosition::lastPositionInNode(element).deepEquivalent()) {
             insertedNodes.willRemoveNodePreservingChildren(*element);
             removeNodePreservingChildren(element, editingState);
             if (editingState->isAborted())
@@ -705,7 +705,7 @@ void ReplaceSelectionCommand::moveElementOutOfAncestor(Element* element, Element
         return;
 
     VisiblePosition positionAtEndOfNode = createVisiblePosition(lastPositionInOrAfterNode(element));
-    VisiblePosition lastPositionInParagraph = createVisiblePosition(Position::lastPositionInNode(ancestor));
+    VisiblePosition lastPositionInParagraph = VisiblePosition::lastPositionInNode(ancestor);
     if (positionAtEndOfNode.deepEquivalent() == lastPositionInParagraph.deepEquivalent()) {
         removeNode(element, editingState);
         if (editingState->isAborted())

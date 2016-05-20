@@ -181,7 +181,7 @@ void IndentOutdentCommand::outdentParagraph(EditingState* editingState)
     // If the blockquote is inline, the start of the enclosing block coincides with
     // positionInEnclosingBlock.
     VisiblePosition startOfEnclosingBlock = (enclosingElement->layoutObject() && enclosingElement->layoutObject()->isInline()) ? positionInEnclosingBlock : startOfBlock(positionInEnclosingBlock);
-    VisiblePosition lastPositionInEnclosingBlock = createVisiblePosition(Position::lastPositionInNode(enclosingElement));
+    VisiblePosition lastPositionInEnclosingBlock = VisiblePosition::lastPositionInNode(enclosingElement);
     VisiblePosition endOfEnclosingBlock = endOfBlock(lastPositionInEnclosingBlock);
     if (visibleStartOfParagraph.deepEquivalent() == startOfEnclosingBlock.deepEquivalent()
         && visibleEndOfParagraph.deepEquivalent() == endOfEnclosingBlock.deepEquivalent()) {

@@ -97,6 +97,7 @@ public:
     static VisiblePositionTemplate<Strategy> firstPositionInNode(Node*);
     static VisiblePositionTemplate<Strategy> inParentAfterNode(const Node&);
     static VisiblePositionTemplate<Strategy> inParentBeforeNode(const Node&);
+    static VisiblePositionTemplate<Strategy> lastPositionInNode(Node*);
 
     DEFINE_INLINE_TRACE()
     {

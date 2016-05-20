@@ -95,6 +95,12 @@ VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::inParentBef
     return create(PositionWithAffinityTemplate<Strategy>(PositionTemplate<Strategy>::inParentBeforeNode(node)));
 }
 
+template <typename Strategy>
+VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::lastPositionInNode(Node* node)
+{
+    return create(PositionWithAffinityTemplate<Strategy>(PositionTemplate<Strategy>::lastPositionInNode(node)));
+}
+
 VisiblePosition createVisiblePosition(const Position& position, TextAffinity affinity)
 {
     return createVisiblePosition(PositionWithAffinity(position, affinity));
