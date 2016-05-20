@@ -55,7 +55,7 @@ public:
     // Append data to the internal buffer.
     void append(const String& data)
     {
-        ASSERT(!m_endOfStream);
+        DCHECK(!m_endOfStream);
         m_buffer.append(SegmentedString(data));
     }
 
@@ -75,7 +75,7 @@ private:
     // Consume the next character the buffer if it is the character |c|.
     void scanCharacter(UChar c)
     {
-        ASSERT(!m_buffer.isEmpty());
+        DCHECK(!m_buffer.isEmpty());
         if (m_buffer.currentChar() == c)
             m_buffer.advance();
     }

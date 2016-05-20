@@ -333,7 +333,7 @@ HTMLDivElement* VTTRegion::getDisplayTree(Document& document)
 void VTTRegion::willRemoveVTTCueBox(VTTCueBox* box)
 {
     DVLOG(VTT_LOG_LEVEL) << "willRemoveVTTCueBox";
-    ASSERT(m_cueContainer->contains(box));
+    DCHECK(m_cueContainer->contains(box));
 
     double boxHeight = box->getBoundingClientRect()->bottom() - box->getBoundingClientRect()->top();
 
@@ -345,7 +345,7 @@ void VTTRegion::willRemoveVTTCueBox(VTTCueBox* box)
 
 void VTTRegion::appendVTTCueBox(VTTCueBox* displayBox)
 {
-    ASSERT(m_cueContainer);
+    DCHECK(m_cueContainer);
 
     if (m_cueContainer->contains(displayBox))
         return;
@@ -357,7 +357,7 @@ void VTTRegion::appendVTTCueBox(VTTCueBox* displayBox)
 void VTTRegion::displayLastVTTCueBox()
 {
     DVLOG(VTT_LOG_LEVEL) << "displayLastVTTCueBox";
-    ASSERT(m_cueContainer);
+    DCHECK(m_cueContainer);
 
     // FIXME: This should not be causing recalc styles in a loop to set the "top" css
     // property to move elements. We should just scroll the text track cues on the
@@ -392,7 +392,7 @@ void VTTRegion::displayLastVTTCueBox()
 
 void VTTRegion::prepareRegionDisplayTree()
 {
-    ASSERT(m_regionDisplayTree);
+    DCHECK(m_regionDisplayTree);
 
     // 7.2 Prepare region CSS boxes
 

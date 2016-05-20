@@ -129,7 +129,7 @@ unsigned TextTrackCue::cueIndex()
 {
     // This method can only be called on cues while they are associated with
     // a(n enabled) track (and hence that track's list of cues should exist.)
-    ASSERT(track() && track()->cues());
+    DCHECK(track() && track()->cues());
     TextTrackCueList* cueList = track()->cues();
     if (!cueList->isCueIndexValid(m_cueIndex))
         cueList->validateCueIndexes();

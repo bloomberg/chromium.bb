@@ -91,13 +91,13 @@ VTTParser::VTTParser(VTTParserClient* client, Document& document)
 
 void VTTParser::getNewCues(HeapVector<Member<TextTrackCue>>& outputCues)
 {
-    ASSERT(outputCues.isEmpty());
+    DCHECK(outputCues.isEmpty());
     outputCues.swap(m_cueList);
 }
 
 void VTTParser::getNewRegions(HeapVector<Member<VTTRegion>>& outputRegions)
 {
-    ASSERT(outputRegions.isEmpty());
+    DCHECK(outputRegions.isEmpty());
     outputRegions.swap(m_regionList);
 }
 
@@ -193,7 +193,7 @@ void VTTParser::parse()
 
 void VTTParser::flushPendingCue()
 {
-    ASSERT(m_lineReader.isAtEndOfStream());
+    DCHECK(m_lineReader.isAtEndOfStream());
     // If we're in the CueText state when we run out of data, we emit the pending cue.
     if (m_state == CueText)
         createNewCue();

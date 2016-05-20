@@ -54,7 +54,7 @@ const AtomicString& textTrackKindToString(WebInbandTextTrack::Kind kind)
     default:
         break;
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return TextTrack::subtitlesKeyword();
 }
 
@@ -84,7 +84,7 @@ void InbandTextTrack::setTrackList(TextTrackList* trackList)
     if (trackList)
         return;
 
-    ASSERT(m_webTrack);
+    DCHECK(m_webTrack);
     m_webTrack->setClient(nullptr);
     m_webTrack = nullptr;
 }
@@ -92,7 +92,7 @@ void InbandTextTrack::setTrackList(TextTrackList* trackList)
 void InbandTextTrack::addWebVTTCue(double start, double end, const WebString& id, const WebString& content, const WebString& settings)
 {
     HTMLMediaElement* owner = mediaElement();
-    ASSERT(owner);
+    DCHECK(owner);
     VTTCue* cue = VTTCue::create(owner->document(), start, end, content);
     cue->setId(id);
     cue->parseSettings(settings);

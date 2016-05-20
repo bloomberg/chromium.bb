@@ -115,7 +115,7 @@ void TextTrackContainer::updateDisplay(HTMLMediaElement& mediaElement, ExposingC
     for (size_t i = 0; i < activeCues.size(); ++i) {
         TextTrackCue* cue = activeCues[i].data();
 
-        ASSERT(cue->isActive());
+        DCHECK(cue->isActive());
         if (!cue->track() || !cue->track()->isRendered() || !cue->isActive())
             continue;
 
