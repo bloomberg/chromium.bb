@@ -198,23 +198,6 @@ class SmoothnessGpuRasterizationTop25(_Smoothness):
               possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
 
 
-# crbug.com/589580 (This test should only be enabled on Android after fix.)
-@benchmark.Disabled('all')
-class SmoothnessGpuRasterizationKeyMobileSites(_Smoothness):
-  """Measures rendering statistics for the key mobile sites with GPU
-  rasterization.
-  """
-  tag = 'gpu_rasterization'
-  page_set = page_sets.KeyMobileSitesSmoothPageSet
-
-  def SetExtraBrowserOptions(self, options):
-    silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
-
-  @classmethod
-  def Name(cls):
-    return 'smoothness.gpu_rasterization.key_mobile_sites_smooth'
-
-
 class SmoothnessGpuRasterizationToughPathRenderingCases(_Smoothness):
   """Tests a selection of pages with SVG and 2D canvas paths with GPU
   rasterization.
