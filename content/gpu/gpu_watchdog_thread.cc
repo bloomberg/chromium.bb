@@ -29,11 +29,9 @@
 
 namespace content {
 namespace {
-#if defined(OS_CHROMEOS)
+#if defined(USE_X11)
 const base::FilePath::CharType
     kTtyFilePath[] = FILE_PATH_LITERAL("/sys/class/tty/tty0/active");
-#endif
-#if defined(USE_X11)
 const unsigned char text[20] = "check";
 #endif
 }  // namespace
@@ -55,6 +53,7 @@ GpuWatchdogThread::GpuWatchdogThread(int timeout)
       display_(NULL),
       window_(0),
       atom_(None),
+      host_tty_(-1),
 #endif
       weak_factory_(this) {
   DCHECK(timeout >= 0);
@@ -73,10 +72,8 @@ GpuWatchdogThread::GpuWatchdogThread(int timeout)
   DCHECK(result);
 #endif
 
-#if defined(OS_CHROMEOS)
-  tty_file_ = base::OpenFile(base::FilePath(kTtyFilePath), "r");
-#endif
 #if defined(USE_X11)
+  tty_file_ = base::OpenFile(base::FilePath(kTtyFilePath), "r");
   SetupXServer();
 #endif
   watched_message_loop_->AddTaskObserver(&task_observer_);
@@ -136,12 +133,9 @@ GpuWatchdogThread::~GpuWatchdogThread() {
   if (power_monitor)
     power_monitor->RemoveObserver(this);
 
-#if defined(OS_CHROMEOS)
+#if defined(USE_X11)
   if (tty_file_)
     fclose(tty_file_);
-#endif
-
-#if defined(USE_X11)
   XDestroyWindow(display_, window_);
   XCloseDisplay(display_);
 #endif
@@ -325,17 +319,11 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
     return;
 #endif
 
-#if defined(OS_CHROMEOS)
-  // Don't crash if we're not on tty1. This avoids noise in the GPU process
-  // crashes caused by people who use VT2 but still enable crash reporting.
-  char tty_string[8] = {0};
-  if (tty_file_ &&
-      !fseek(tty_file_, 0, SEEK_SET) &&
-      fread(tty_string, 1, 7, tty_file_)) {
-    int tty_number = -1;
-    int num_res = sscanf(tty_string, "tty%d", &tty_number);
-    if (num_res == 1 && tty_number != 1)
-      return;
+#if defined(USE_X11)
+  // Don't crash if we're not on the TTY of our host X11 server.
+  int active_tty = GetActiveTTY();
+  if(host_tty_ != -1 && active_tty != -1 && host_tty_ != active_tty) {
+    return;
   }
 #endif
 
@@ -380,6 +368,7 @@ void GpuWatchdogThread::SetupXServer() {
   window_ = XCreateWindow(display_, DefaultRootWindow(display_), 0, 0, 1, 1, 0,
                           CopyFromParent, InputOutput, CopyFromParent, 0, NULL);
   atom_ = XInternAtom(display_, "CHECK", False);
+  host_tty_ = GetActiveTTY();
 }
 
 void GpuWatchdogThread::SetupXChangeProp() {
@@ -460,6 +449,20 @@ base::ThreadTicks GpuWatchdogThread::GetWatchedThreadTime() {
            base::TimeDelta::FromMilliseconds(static_cast<int64_t>(
                (user_time64.QuadPart + kernel_time64.QuadPart) / 10000));
   }
+}
+#endif
+
+#if defined(USE_X11)
+int GpuWatchdogThread::GetActiveTTY() const {
+  char tty_string[8] = {0};
+  if (tty_file_ && !fseek(tty_file_, 0, SEEK_SET) &&
+      fread(tty_string, 1, 7, tty_file_)) {
+    int tty_number;
+    size_t num_res = sscanf(tty_string, "tty%d\n", &tty_number);
+    if (num_res == 1)
+      return tty_number;
+  }
+  return -1;
 }
 #endif
 

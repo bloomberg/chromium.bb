@@ -91,6 +91,10 @@ class GpuWatchdogThread : public base::Thread,
   base::ThreadTicks GetWatchedThreadTime();
 #endif
 
+#if defined(USE_X11)
+  int GetActiveTTY() const;
+#endif
+
   base::MessageLoop* watched_message_loop_;
   base::TimeDelta timeout_;
   volatile bool armed_;
@@ -127,14 +131,12 @@ class GpuWatchdogThread : public base::Thread,
   base::Time check_time_;
   base::TimeTicks check_timeticks_;
 
-#if defined(OS_CHROMEOS)
-  FILE* tty_file_;
-#endif
-
 #if defined(USE_X11)
   XDisplay* display_;
   gfx::AcceleratedWidget window_;
   XAtom atom_;
+  FILE* tty_file_;
+  int host_tty_;
 #endif
 
   base::WeakPtrFactory<GpuWatchdogThread> weak_factory_;
