@@ -722,6 +722,7 @@
       'renderer/media/android/media_info_loader_unittest.cc',
       'renderer/media/audio_message_filter_unittest.cc',
       'renderer/media/audio_renderer_mixer_manager_unittest.cc',
+      'renderer/media/html_audio_element_capturer_source_unittest.cc',
       'renderer/media/media_stream_audio_unittest.cc',
       'renderer/media/midi_message_filter_unittest.cc',
       'renderer/media/mock_audio_device_factory.cc',

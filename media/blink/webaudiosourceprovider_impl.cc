@@ -233,6 +233,10 @@ void WebAudioSourceProviderImpl::Initialize(const AudioParameters& params,
 void WebAudioSourceProviderImpl::SetCopyAudioCallback(
     const CopyAudioCB& callback) {
   DCHECK(!callback.is_null());
+
+  // Use |sink_lock_| to protect |tee_filter_| too since they go in lockstep.
+  base::AutoLock auto_lock(sink_lock_);
+
   DCHECK(tee_filter_);
   tee_filter_->set_copy_audio_bus_callback(callback);
 }
@@ -242,6 +246,10 @@ void WebAudioSourceProviderImpl::ClearCopyAudioCallback() {
   tee_filter_->set_copy_audio_bus_callback(CopyAudioCB());
 }
 
+int WebAudioSourceProviderImpl::RenderForTesting(AudioBus* audio_bus) {
+  return tee_filter_->Render(audio_bus, 0, 0);
+}
+
 void WebAudioSourceProviderImpl::OnSetFormat() {
   base::AutoLock auto_lock(sink_lock_);
   if (!client_)
@@ -249,10 +257,6 @@ void WebAudioSourceProviderImpl::OnSetFormat() {
 
   // Inform Blink about the audio stream format.
   client_->setFormat(tee_filter_->channels(), tee_filter_->sample_rate());
-}
-
-int WebAudioSourceProviderImpl::RenderForTesting(AudioBus* audio_bus) {
-  return tee_filter_->Render(audio_bus, 0, 0);
 }
 
 int WebAudioSourceProviderImpl::TeeFilter::Render(AudioBus* audio_bus,

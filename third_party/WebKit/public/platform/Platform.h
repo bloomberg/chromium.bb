@@ -515,7 +515,8 @@ public:
 
     // Fills in the WebMediaStream to capture from the WebMediaPlayer identified
     // by the second parameter.
-    virtual void createHTMLVideoElementCapturer(WebMediaStream*, WebMediaPlayer*) {}
+    virtual void createHTMLVideoElementCapturer(WebMediaStream*, WebMediaPlayer*) { }
+    virtual void createHTMLAudioElementCapturer(WebMediaStream*, WebMediaPlayer*) { }
 
     // Creates a WebImageCaptureFrameGrabber to take a snapshot of a Video Tracks.
     // May return null if the functionality is not available.
