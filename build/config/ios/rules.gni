@@ -42,6 +42,7 @@ template("ios_info_plist") {
     forward_variables_from(invoker,
                            [
                              "executable_name",
+                             "output_name",
                              "visibility",
                            ])
   }

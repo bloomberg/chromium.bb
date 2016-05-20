@@ -74,6 +74,10 @@ template("convert_plist") {
 #     extra_substitutions:
 #         (optional) string array, 'key=value' pairs for extra fields which are
 #         specified in a source Info.plist template.
+#
+#     output_name:
+#         (optional) string, name of the generated plist file, default to
+#         "$target_gen_dir/$target_name.plist".
 template("info_plist") {
   assert(defined(invoker.plist_templates),
          "A list of template plist files must be specified for $target_name")
@@ -83,11 +87,16 @@ template("info_plist") {
          "The plist format must be specified for $target_name")
   executable_name = invoker.executable_name
 
+  _output_name = "$target_gen_dir/$target_name.plist"
+  if (defined(invoker.output_name)) {
+    _output_name = invoker.output_name
+  }
+
   action(target_name) {
     script = "//build/config/mac/gen_plist.py"
     sources = invoker.plist_templates
     outputs = [
-      "$target_gen_dir/$target_name.plist",
+      _output_name,
     ]
     extra_args = []
     if (defined(invoker.extra_substitutions)) {
@@ -103,7 +112,7 @@ template("info_plist") {
           "-s=PRODUCT_NAME=$executable_name",
           "-s=XCODE_BUILD=$xcode_build",
           "-s=XCODE_VERSION=$xcode_version",
-          "-o=" + rebase_path(outputs[0], root_build_dir),
+          "-o=" + rebase_path(_output_name, root_build_dir),
           "-f=" + invoker.format,
         ] + rebase_path(sources, root_build_dir)
     args = [ "@{{response_file_name}}" ]
