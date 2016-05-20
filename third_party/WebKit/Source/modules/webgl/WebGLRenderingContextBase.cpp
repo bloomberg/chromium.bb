@@ -629,6 +629,18 @@ void WebGLRenderingContextBase::forceNextWebGLContextCreationToFail()
     shouldFailContextCreationForTesting = true;
 }
 
+ImageBitmap* WebGLRenderingContextBase::transferToImageBitmapBase()
+{
+    if (!drawingBuffer())
+        return nullptr;
+    WebExternalTextureMailbox mailbox;
+    drawingBuffer()->prepareMailbox(&mailbox, 0);
+    ImageBitmap* imageBitmap = ImageBitmap::create(mailbox);
+    // TODO(xidachen): Create a small pool of recycled textures from ImageBitmapRenderingContext's
+    // transferFromImageBitmap, and try to use them in DrawingBuffer.
+    return imageBitmap;
+}
+
 namespace {
 
 // ES2 enums
@@ -1159,6 +1171,9 @@ void WebGLRenderingContextBase::markContextChanged(ContentChangeType changeType)
         return;
 
     drawingBuffer()->markContentsChanged();
+
+    if (!canvas())
+        return;
 
     LayoutBox* layoutBox = canvas()->layoutBox();
     if (layoutBox && layoutBox->hasAcceleratedCompositing()) {

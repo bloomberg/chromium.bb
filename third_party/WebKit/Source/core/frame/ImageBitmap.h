@@ -40,6 +40,7 @@ public:
     static ImageBitmap* create(ImageBitmap*, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
     static ImageBitmap* create(PassRefPtr<StaticBitmapImage>);
     static ImageBitmap* create(PassRefPtr<StaticBitmapImage>, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
+    static ImageBitmap* create(WebExternalTextureMailbox&);
     static PassRefPtr<SkImage> getSkImageFromDecoder(PassOwnPtr<ImageDecoder>);
 
     // Type and helper function required by CallbackPromiseAdapter:
@@ -81,6 +82,7 @@ private:
     ImageBitmap(ImageBitmap*, const IntRect&, const ImageBitmapOptions&);
     ImageBitmap(PassRefPtr<StaticBitmapImage>);
     ImageBitmap(PassRefPtr<StaticBitmapImage>, const IntRect&, const ImageBitmapOptions&);
+    ImageBitmap(WebExternalTextureMailbox&);
 
     void parseOptions(const ImageBitmapOptions&, bool&, bool&);
 

@@ -6,6 +6,7 @@
 #define StaticBitmapImage_h
 
 #include "platform/graphics/Image.h"
+#include "public/platform/WebExternalTextureMailbox.h"
 
 namespace blink {
 
@@ -16,6 +17,7 @@ public:
     bool currentFrameIsComplete() override { return true; }
 
     static PassRefPtr<StaticBitmapImage> create(PassRefPtr<SkImage>);
+    static PassRefPtr<StaticBitmapImage> create(WebExternalTextureMailbox&);
     virtual void destroyDecodedData(bool destroyAll) { }
     virtual bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata);
     virtual IntSize size() const;
@@ -29,8 +31,10 @@ public:
     void setPremultiplied(bool flag) { m_isPremultiplied = flag; }
 protected:
     StaticBitmapImage(PassRefPtr<SkImage>);
+    StaticBitmapImage(WebExternalTextureMailbox&);
 
     RefPtr<SkImage> m_image;
+    WebExternalTextureMailbox m_mailbox;
     bool m_isOriginClean = true;
     // The premultiply info is stored here because the SkImage API
     // doesn't expose this info.

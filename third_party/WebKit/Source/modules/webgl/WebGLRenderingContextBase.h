@@ -1086,6 +1086,7 @@ protected:
 
     CrossThreadWeakPersistentThisPointer<WebGLRenderingContextBase> createWeakThisPointer() { return CrossThreadWeakPersistentThisPointer<WebGLRenderingContextBase>(this); }
 
+    ImageBitmap* transferToImageBitmapBase();
 private:
     WebGLRenderingContextBase(HTMLCanvasElement*, OffscreenCanvas*, PassOwnPtr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&);
     static PassOwnPtr<WebGraphicsContext3DProvider> createContextProviderInternal(HTMLCanvasElement*, ScriptState*, WebGLContextAttributes, unsigned);

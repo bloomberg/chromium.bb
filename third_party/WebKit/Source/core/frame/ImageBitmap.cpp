@@ -344,6 +344,11 @@ ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image)
     m_image = image;
 }
 
+ImageBitmap::ImageBitmap(WebExternalTextureMailbox& mailbox)
+{
+    m_image = StaticBitmapImage::create(mailbox);
+}
+
 PassRefPtr<StaticBitmapImage> ImageBitmap::transfer()
 {
     ASSERT(!isNeutered());
@@ -394,6 +399,11 @@ ImageBitmap* ImageBitmap::create(PassRefPtr<StaticBitmapImage> image, const IntR
 ImageBitmap* ImageBitmap::create(PassRefPtr<StaticBitmapImage> image)
 {
     return new ImageBitmap(image);
+}
+
+ImageBitmap* ImageBitmap::create(WebExternalTextureMailbox& mailbox)
+{
+    return new ImageBitmap(mailbox);
 }
 
 void ImageBitmap::close()

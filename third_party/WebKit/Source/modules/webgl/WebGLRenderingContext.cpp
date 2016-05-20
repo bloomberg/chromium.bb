@@ -148,8 +148,7 @@ void WebGLRenderingContext::setOffscreenCanvasGetContextResult(OffscreenRenderin
 
 ImageBitmap* WebGLRenderingContext::transferToImageBitmap(ExceptionState& exceptionState)
 {
-    NOTIMPLEMENTED();
-    return nullptr;
+    return transferToImageBitmapBase();
 }
 
 void WebGLRenderingContext::registerContextExtensions()
