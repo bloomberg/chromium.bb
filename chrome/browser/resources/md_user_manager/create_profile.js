@@ -219,6 +219,7 @@ Polymer({
       this.handleMessage_(this.i18n('custodianAccountNotSelectedError'));
     } else {
       var signedInUser = this.signedInUser_(this.signedInUserIndex_);
+      this.clearMessage_();
       this.createInProgress_ = true;
       this.browserProxy_.getExistingSupervisedUsers(signedInUser.profilePath)
           .then(this.showImportSupervisedUserPopup_.bind(this),
@@ -240,6 +241,7 @@ Polymer({
       this.handleMessage_(this.i18n('custodianAccountNotSelectedError'));
     } else {
       var signedInUser = this.signedInUser_(this.signedInUserIndex_);
+      this.clearMessage_();
       this.createInProgress_ = true;
       this.browserProxy_.getExistingSupervisedUsers(signedInUser.profilePath)
           .then(this.createProfileIfValidSupervisedUser_.bind(this),
@@ -326,6 +328,7 @@ Polymer({
       custodianProfilePath =
           this.signedInUser_(this.signedInUserIndex_).profilePath;
     }
+    this.clearMessage_();
     this.createInProgress_ = true;
     this.browserProxy_.createProfile(
         this.profileName_, this.profileIconUrl_, this.isSupervised_, '',
@@ -342,6 +345,7 @@ Polymer({
   onImportUserPopupImport_: function(event) {
     var supervisedUser = event.detail.supervisedUser;
     var signedInUser = event.detail.signedInUser;
+    this.clearMessage_();
     this.createInProgress_ = true;
     this.browserProxy_.createProfile(
         supervisedUser.name, supervisedUser.iconURL, true, supervisedUser.id,
@@ -393,6 +397,14 @@ Polymer({
     } else {
       this.fire('change-page', {page: 'user-pods-page'});
     }
+  },
+
+  /**
+   * Clears the warning/error message.
+   * @private
+   */
+  clearMessage_: function() {
+    this.message_ = '';
   },
 
   /**
