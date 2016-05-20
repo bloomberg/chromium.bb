@@ -443,7 +443,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
     }
 
     // Move the start node and the siblings of the start node.
-    if (createVisiblePosition(insertionPosition).deepEquivalent() != createVisiblePosition(positionBeforeNode(blockToInsert)).deepEquivalent()) {
+    if (createVisiblePosition(insertionPosition).deepEquivalent() != createVisiblePosition(Position::beforeNode(blockToInsert)).deepEquivalent()) {
         Node* n;
         if (insertionPosition.computeContainerNode() == startBlock) {
             n = insertionPosition.computeNodeAfterPosition();
@@ -455,7 +455,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
                 splitTreeToNode(splitTo, startBlock);
 
             for (n = startBlock->firstChild(); n; n = n->nextSibling()) {
-                VisiblePosition beforeNodePosition = createVisiblePosition(positionBeforeNode(n));
+                VisiblePosition beforeNodePosition = createVisiblePosition(Position::beforeNode(n));
                 if (!beforeNodePosition.isNull() && comparePositions(createVisiblePosition(insertionPosition), beforeNodePosition) <= 0)
                     break;
             }

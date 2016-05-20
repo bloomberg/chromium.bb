@@ -279,7 +279,7 @@ static Position previousRootInlineBoxCandidatePosition(Node* node, const Visible
         if (highestEditableRoot(firstPositionInOrBeforeNode(previousNode), editableType) != highestRoot)
             break;
 
-        Position pos = isHTMLBRElement(*previousNode) ? positionBeforeNode(previousNode) :
+        Position pos = isHTMLBRElement(*previousNode) ? Position::beforeNode(previousNode) :
             Position::editingPositionOf(previousNode, caretMaxOffset(previousNode));
 
         if (isVisuallyEquivalentCandidate(pos))

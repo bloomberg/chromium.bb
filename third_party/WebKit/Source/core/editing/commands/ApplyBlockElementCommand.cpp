@@ -121,7 +121,7 @@ void ApplyBlockElementCommand::formatSelection(const VisiblePosition& startOfSel
         appendNode(placeholder, blockquote, editingState);
         if (editingState->isAborted())
             return;
-        setEndingSelection(VisibleSelection(positionBeforeNode(placeholder), TextAffinity::Downstream, endingSelection().isDirectional()));
+        setEndingSelection(VisibleSelection(Position::beforeNode(placeholder), TextAffinity::Downstream, endingSelection().isDirectional()));
         return;
     }
 

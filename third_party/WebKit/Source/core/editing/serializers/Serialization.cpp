@@ -353,7 +353,7 @@ DocumentFragment* createFragmentFromMarkupWithContext(Document& document, const 
 
     Range* range = Range::create(*taggedDocument,
         Position::afterNode(nodeBeforeContext).parentAnchoredEquivalent(),
-        positionBeforeNode(nodeAfterContext).parentAnchoredEquivalent());
+        Position::beforeNode(nodeAfterContext).parentAnchoredEquivalent());
 
     Node* commonAncestor = range->commonAncestorContainer();
     HTMLElement* specialCommonAncestor = ancestorToRetainStructureAndAppearanceWithNoLayoutObject(commonAncestor);

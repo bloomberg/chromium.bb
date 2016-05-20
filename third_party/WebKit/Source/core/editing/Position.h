@@ -253,18 +253,13 @@ PositionTemplate<Strategy> PositionTemplate<Strategy>::inParentAfterNode(const N
     return PositionTemplate<Strategy>(Strategy::parent(node), Strategy::index(node) + 1);
 }
 
-// positionBeforeNode and Position::afterNode return neighbor-anchored positions,
-// construction is O(1)
+// |Position::beforeNode()| and |Position::afterNode()| return neighbor-anchored
+// positions, construction is O(1)
 template <typename Strategy>
 PositionTemplate<Strategy> PositionTemplate<Strategy>::beforeNode(Node* anchorNode)
 {
     DCHECK(anchorNode);
     return PositionTemplate<Strategy>(anchorNode, PositionAnchorType::BeforeAnchor);
-}
-
-inline Position positionBeforeNode(Node* anchorNode)
-{
-    return Position::beforeNode(anchorNode);
 }
 
 template <typename Strategy>

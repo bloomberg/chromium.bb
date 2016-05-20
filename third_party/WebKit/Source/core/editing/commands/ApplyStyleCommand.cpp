@@ -942,7 +942,7 @@ bool ApplyStyleCommand::shouldApplyInlineStyleToRun(EditingStyle* style, Node* r
         // We don't consider m_isInlineElementToRemoveFunction here because we never apply style when m_isInlineElementToRemoveFunction is specified
         if (!style->styleIsPresentInComputedStyleOfNode(node))
             return true;
-        if (m_styledInlineElement && !enclosingElementWithTag(positionBeforeNode(node), m_styledInlineElement->tagQName()))
+        if (m_styledInlineElement && !enclosingElementWithTag(Position::beforeNode(node), m_styledInlineElement->tagQName()))
             return true;
     }
     return false;
@@ -1344,7 +1344,7 @@ void ApplyStyleCommand::splitTextElementAtStart(const Position& start, const Pos
         newEnd = end;
 
     splitTextNodeContainingElement(toText(start.computeContainerNode()), start.offsetInContainerNode());
-    updateStartEnd(positionBeforeNode(start.computeContainerNode()), newEnd);
+    updateStartEnd(Position::beforeNode(start.computeContainerNode()), newEnd);
 }
 
 void ApplyStyleCommand::splitTextElementAtEnd(const Position& start, const Position& end)
@@ -1556,10 +1556,10 @@ Position ApplyStyleCommand::positionToComputeInlineStyleChange(Node* startNode, 
     // It's okay to obtain the style at the startNode because we've removed all relevant styles from the current run.
     if (!startNode->isElementNode()) {
         dummyElement = HTMLSpanElement::create(document());
-        insertNodeAt(dummyElement, positionBeforeNode(startNode), editingState);
+        insertNodeAt(dummyElement, Position::beforeNode(startNode), editingState);
         if (editingState->isAborted())
             return Position();
-        return positionBeforeNode(dummyElement);
+        return Position::beforeNode(dummyElement);
     }
 
     return firstPositionInOrBeforeNode(startNode);

@@ -382,7 +382,7 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
     if (editingState->isAborted())
         return;
 
-    VisiblePosition insertionPoint = createVisiblePosition(positionBeforeNode(placeholder));
+    VisiblePosition insertionPoint = createVisiblePosition(Position::beforeNode(placeholder));
     moveParagraphs(start, end, insertionPoint, editingState, /* preserveSelection */ true, /* preserveStyle */ true, listChildNode);
 }
 
@@ -495,7 +495,7 @@ void InsertListCommand::moveParagraphOverPositionIntoEmptyListItem(const Visible
     document().updateStyleAndLayoutIgnorePendingStylesheets();
     const VisiblePosition& start = startOfParagraph(pos, CanSkipOverEditingBoundary);
     const VisiblePosition& end = endOfParagraph(pos, CanSkipOverEditingBoundary);
-    moveParagraph(start, end, createVisiblePosition(positionBeforeNode(placeholder)), editingState, true);
+    moveParagraph(start, end, createVisiblePosition(Position::beforeNode(placeholder)), editingState, true);
 }
 
 DEFINE_TRACE(InsertListCommand)

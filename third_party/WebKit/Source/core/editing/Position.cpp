@@ -473,7 +473,7 @@ Position toPositionInDOMTree(const PositionInFlatTree& position)
     case PositionAnchorType::BeforeChildren:
         return Position(anchorNode, PositionAnchorType::BeforeChildren);
     case PositionAnchorType::BeforeAnchor:
-        return positionBeforeNode(anchorNode);
+        return Position::beforeNode(anchorNode);
     case PositionAnchorType::OffsetInAnchor: {
         int offset = position.offsetInContainerNode();
         if (anchorNode->offsetInCharacters())

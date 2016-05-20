@@ -909,7 +909,7 @@ void ReplaceSelectionCommand::mergeEndIfNeeded(EditingState* editingState)
         insertNodeBefore(placeholder, startOfParagraphToMove.deepEquivalent().anchorNode(), editingState);
         if (editingState->isAborted())
             return;
-        destination = createVisiblePosition(positionBeforeNode(placeholder));
+        destination = createVisiblePosition(Position::beforeNode(placeholder));
     }
 
     moveParagraph(startOfParagraphToMove, endOfParagraph(startOfParagraphToMove), destination, editingState);
@@ -1103,7 +1103,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
     HTMLBRElement* endBR = isHTMLBRElement(*mostForwardCaretPosition(insertionPos).anchorNode()) ? toHTMLBRElement(mostForwardCaretPosition(insertionPos).anchorNode()) : 0;
     VisiblePosition originalVisPosBeforeEndBR;
     if (endBR)
-        originalVisPosBeforeEndBR = previousPositionOf(createVisiblePosition(positionBeforeNode(endBR)));
+        originalVisPosBeforeEndBR = previousPositionOf(createVisiblePosition(Position::beforeNode(endBR)));
 
     Element* enclosingBlockOfInsertionPos = enclosingBlock(insertionPos.anchorNode());
 
@@ -1397,7 +1397,7 @@ bool ReplaceSelectionCommand::shouldRemoveEndBR(HTMLBRElement* endBR, const Visi
     if (!endBR || !endBR->inShadowIncludingDocument())
         return false;
 
-    VisiblePosition visiblePos = createVisiblePosition(positionBeforeNode(endBR));
+    VisiblePosition visiblePos = createVisiblePosition(Position::beforeNode(endBR));
 
     // Don't remove the br if nothing was inserted.
     if (previousPositionOf(visiblePos).deepEquivalent() == originalVisPosBeforeEndBR.deepEquivalent())
@@ -1686,7 +1686,7 @@ bool ReplaceSelectionCommand::performTrivialReplace(const ReplacementFragment& f
         return false;
 
     if (nodeAfterInsertionPos && nodeAfterInsertionPos->parentNode() && isHTMLBRElement(*nodeAfterInsertionPos)
-        && shouldRemoveEndBR(toHTMLBRElement(nodeAfterInsertionPos), createVisiblePosition(positionBeforeNode(nodeAfterInsertionPos)))) {
+        && shouldRemoveEndBR(toHTMLBRElement(nodeAfterInsertionPos), createVisiblePosition(Position::beforeNode(nodeAfterInsertionPos)))) {
         removeNodeAndPruneAncestors(nodeAfterInsertionPos, editingState);
         if (editingState->isAborted())
             return false;

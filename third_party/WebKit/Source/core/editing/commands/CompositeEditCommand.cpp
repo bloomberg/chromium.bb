@@ -1485,7 +1485,7 @@ bool CompositeEditCommand::breakOutOfEmptyMailBlockquotedParagraph(EditingState*
     insertNodeBefore(br, highestBlockquote, editingState);
     if (editingState->isAborted())
         return false;
-    VisiblePosition atBR = createVisiblePosition(positionBeforeNode(br));
+    VisiblePosition atBR = createVisiblePosition(Position::beforeNode(br));
     // If the br we inserted collapsed, for example foo<br><blockquote>...</blockquote>, insert
     // a second one.
     if (!isStartOfParagraph(atBR)) {

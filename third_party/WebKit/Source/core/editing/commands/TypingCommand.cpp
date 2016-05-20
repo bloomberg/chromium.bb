@@ -533,7 +533,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing,
             selectionModifier.modify(FrameSelection::AlterationExtend, DirectionBackward, granularity);
         // If the caret is just after a table, select the table and don't delete anything.
         } else if (Element* table = tableElementJustBefore(visibleStart)) {
-            setEndingSelection(VisibleSelection(positionBeforeNode(table), endingSelection().start(), TextAffinity::Downstream, endingSelection().isDirectional()));
+            setEndingSelection(VisibleSelection(Position::beforeNode(table), endingSelection().start(), TextAffinity::Downstream, endingSelection().isDirectional()));
             typingAddedToOpenCommand(DeleteKey);
             return;
         }

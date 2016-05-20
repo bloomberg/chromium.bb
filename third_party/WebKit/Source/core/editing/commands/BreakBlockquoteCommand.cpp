@@ -113,7 +113,7 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState)
         insertNodeBefore(breakElement, topBlockquote, editingState);
         if (editingState->isAborted())
             return;
-        setEndingSelection(VisibleSelection(positionBeforeNode(breakElement), TextAffinity::Downstream, endingSelection().isDirectional()));
+        setEndingSelection(VisibleSelection(Position::beforeNode(breakElement), TextAffinity::Downstream, endingSelection().isDirectional()));
         rebalanceWhitespace();
         return;
     }
@@ -125,7 +125,7 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState)
 
     // If we're inserting the break at the end of the quoted content, we don't need to break the quote.
     if (isLastVisPosInNode) {
-        setEndingSelection(VisibleSelection(positionBeforeNode(breakElement), TextAffinity::Downstream, endingSelection().isDirectional()));
+        setEndingSelection(VisibleSelection(Position::beforeNode(breakElement), TextAffinity::Downstream, endingSelection().isDirectional()));
         rebalanceWhitespace();
         return;
     }
@@ -236,7 +236,7 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState)
         return;
 
     // Put the selection right before the break.
-    setEndingSelection(VisibleSelection(positionBeforeNode(breakElement), TextAffinity::Downstream, endingSelection().isDirectional()));
+    setEndingSelection(VisibleSelection(Position::beforeNode(breakElement), TextAffinity::Downstream, endingSelection().isDirectional()));
     rebalanceWhitespace();
 }
 

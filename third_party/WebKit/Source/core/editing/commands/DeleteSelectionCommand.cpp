@@ -110,7 +110,7 @@ void DeleteSelectionCommand::initializeStartEnd(Position& start, Position& end)
     // For HRs, we'll get a position at (HR,1) when hitting delete from the beginning of the previous line, or (HR,0) when forward deleting,
     // but in these cases, we want to delete it, so manually expand the selection
     if (isHTMLHRElement(*start.anchorNode()))
-        start = positionBeforeNode(start.anchorNode());
+        start = Position::beforeNode(start.anchorNode());
     else if (isHTMLHRElement(*end.anchorNode()))
         end = Position::afterNode(end.anchorNode());
 
@@ -324,7 +324,7 @@ bool DeleteSelectionCommand::handleSpecialCaseBRDelete(EditingState* editingStat
 
     // FIXME: This code doesn't belong in here.
     // We detect the case where the start is an empty line consisting of BR not wrapped in a block element.
-    if (upstreamStartIsBR && downstreamStartIsBR && !(isStartOfBlock(createVisiblePosition(positionBeforeNode(nodeAfterUpstreamStart))) && isEndOfBlock(createVisiblePosition(Position::afterNode(nodeAfterUpstreamStart))))) {
+    if (upstreamStartIsBR && downstreamStartIsBR && !(isStartOfBlock(createVisiblePosition(Position::beforeNode(nodeAfterUpstreamStart))) && isEndOfBlock(createVisiblePosition(Position::afterNode(nodeAfterUpstreamStart))))) {
         m_startsAtEmptyLine = true;
         m_endingPosition = m_downstreamEnd;
     }

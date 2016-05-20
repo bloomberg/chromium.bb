@@ -292,7 +292,7 @@ static Position positionForIndex(HTMLElement* innerEditor, int index)
         ASSERT(remainingCharactersToMoveForward >= 0);
         if (node.hasTagName(brTag)) {
             if (remainingCharactersToMoveForward == 0)
-                return positionBeforeNode(&node);
+                return Position::beforeNode(&node);
             --remainingCharactersToMoveForward;
             lastBrOrText = &node;
             continue;
@@ -317,7 +317,7 @@ static int indexForPosition(HTMLElement* innerEditor, const Position& passedPosi
     if (!innerEditor || !innerEditor->contains(passedPosition.anchorNode()) || passedPosition.isNull())
         return 0;
 
-    if (positionBeforeNode(innerEditor) == passedPosition)
+    if (Position::beforeNode(innerEditor) == passedPosition)
         return 0;
 
     int index = 0;
