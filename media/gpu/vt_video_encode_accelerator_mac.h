@@ -63,6 +63,9 @@ class MEDIA_GPU_EXPORT VTVideoEncodeAccelerator
                                            uint32_t framerate);
   void DestroyTask();
 
+  // Helper function to set bitrate.
+  void SetAdjustedBitrate(int32_t bitrate);
+
   // Helper function to notify the client of an error on |client_task_runner_|.
   void NotifyError(media::VideoEncodeAccelerator::Error error);
 
@@ -107,8 +110,9 @@ class MEDIA_GPU_EXPORT VTVideoEncodeAccelerator
   gfx::Size input_visible_size_;
   size_t bitstream_buffer_size_;
   int32_t frame_rate_;
+  int32_t initial_bitrate_;
   int32_t target_bitrate_;
-  int32_t adjusted_bitrate_;
+  int32_t encoder_set_bitrate_;
 
   // Bitrate adjuster used to fix VideoToolbox's inconsistent bitrate issues.
   webrtc::BitrateAdjuster bitrate_adjuster_;

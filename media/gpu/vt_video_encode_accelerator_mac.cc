@@ -72,7 +72,8 @@ struct VTVideoEncodeAccelerator::BitstreamBufferRef {
 // conditions, 0.95 seems to give us better overall bitrate over long periods
 // of time.
 VTVideoEncodeAccelerator::VTVideoEncodeAccelerator()
-    : bitrate_adjuster_(webrtc::Clock::GetRealTimeClock(), .5, .95),
+    : target_bitrate_(0),
+      bitrate_adjuster_(webrtc::Clock::GetRealTimeClock(), .5, .95),
       client_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       encoder_thread_("VTEncoderThread"),
       encoder_task_weak_factory_(this) {
@@ -163,7 +164,7 @@ bool VTVideoEncodeAccelerator::Initialize(
   client_ = client_ptr_factory_->GetWeakPtr();
   input_visible_size_ = input_visible_size;
   frame_rate_ = kMaxFrameRateNumerator / kMaxFrameRateDenominator;
-  target_bitrate_ = initial_bitrate;
+  initial_bitrate_ = initial_bitrate;
   bitstream_buffer_size_ = input_visible_size.GetArea();
 
   if (!encoder_thread_.Start()) {
@@ -283,8 +284,7 @@ void VTVideoEncodeAccelerator::EncodeTask(
       new InProgressFrameEncode(frame->timestamp(), ref_time));
 
   // Update the bitrate if needed.
-  RequestEncodingParametersChangeTask(bitrate_adjuster_.GetAdjustedBitrateBps(),
-                                      frame_rate_);
+  SetAdjustedBitrate(bitrate_adjuster_.GetAdjustedBitrateBps());
 
   // We can pass the ownership of |request| to the encode callback if
   // successful. Otherwise let it fall out of scope.
@@ -326,34 +326,39 @@ void VTVideoEncodeAccelerator::RequestEncodingParametersChangeTask(
     return;
   }
 
-  bool rv;
   if (framerate != static_cast<uint32_t>(frame_rate_)) {
-    frame_rate_ = framerate > 1 ? framerate : 1;
     media::video_toolbox::SessionPropertySetter session_property_setter(
         compression_session_, videotoolbox_glue_);
-    rv = session_property_setter.Set(
+    session_property_setter.Set(
         videotoolbox_glue_->kVTCompressionPropertyKey_ExpectedFrameRate(),
         frame_rate_);
-    DLOG_IF(ERROR, !rv)
-        << "Couldn't change frame rate parameters of encode session.";
   }
 
-  if (bitrate != static_cast<uint32_t>(adjusted_bitrate_)) {
-    target_bitrate_ = bitrate > 1 ? bitrate : 1;
+  if (bitrate != static_cast<uint32_t>(target_bitrate_) && bitrate > 0) {
+    target_bitrate_ = bitrate;
     bitrate_adjuster_.SetTargetBitrateBps(target_bitrate_);
-    adjusted_bitrate_ = bitrate_adjuster_.GetAdjustedBitrateBps();
-    media::video_toolbox::SessionPropertySetter session_property_setter(
-        compression_session_, videotoolbox_glue_);
-    rv = session_property_setter.Set(
-        videotoolbox_glue_->kVTCompressionPropertyKey_AverageBitRate(),
-        adjusted_bitrate_);
-    rv &= session_property_setter.Set(
-        videotoolbox_glue_->kVTCompressionPropertyKey_DataRateLimits(),
-        media::video_toolbox::ArrayWithIntegerAndFloat(
-            adjusted_bitrate_ / kBitsPerByte, 1.0f));
-    DLOG_IF(ERROR, !rv)
-        << "Couldn't change bitrate parameters of encode session.";
+    SetAdjustedBitrate(bitrate_adjuster_.GetAdjustedBitrateBps());
   }
+}
+
+void VTVideoEncodeAccelerator::SetAdjustedBitrate(int32_t bitrate) {
+  DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
+
+  if (bitrate == encoder_set_bitrate_)
+    return;
+
+  encoder_set_bitrate_ = bitrate;
+  media::video_toolbox::SessionPropertySetter session_property_setter(
+      compression_session_, videotoolbox_glue_);
+  bool rv = session_property_setter.Set(
+      videotoolbox_glue_->kVTCompressionPropertyKey_AverageBitRate(),
+      encoder_set_bitrate_);
+  rv &= session_property_setter.Set(
+      videotoolbox_glue_->kVTCompressionPropertyKey_DataRateLimits(),
+      media::video_toolbox::ArrayWithIntegerAndFloat(
+          encoder_set_bitrate_ / kBitsPerByte, 1.0f));
+  DLOG_IF(ERROR, !rv)
+      << "Couldn't change bitrate parameters of encode session.";
 }
 
 void VTVideoEncodeAccelerator::DestroyTask() {
@@ -497,7 +502,7 @@ bool VTVideoEncodeAccelerator::ResetCompressionSession() {
 
   const bool configure_rv = ConfigureCompressionSession();
   if (configure_rv)
-    RequestEncodingParametersChange(target_bitrate_, frame_rate_);
+    RequestEncodingParametersChange(initial_bitrate_, frame_rate_);
   return configure_rv;
 }
 
