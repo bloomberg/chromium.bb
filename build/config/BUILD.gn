@@ -6,6 +6,7 @@ import("//build/config/allocator.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/crypto.gni")
+import("//build/config/dcheck_always_on.gni")
 import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
@@ -30,9 +31,6 @@ declare_args() {
   # of the current object. For iterator- and thread-heavy code, this can
   # significantly slow execution.
   enable_iterator_debugging = true
-
-  # Set to true to enable dcheck in Release builds.
-  dcheck_always_on = false
 
   # Normally we try to decide whether to use precompiled headers or
   # not based on the other build arguments, but in some cases it is
