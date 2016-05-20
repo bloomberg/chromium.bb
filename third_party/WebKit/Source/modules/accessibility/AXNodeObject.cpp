@@ -33,6 +33,8 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Text.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
+#include "core/editing/markers/DocumentMarkerController.h"
+#include "core/frame/FrameView.h"
 #include "core/html/HTMLDListElement.h"
 #include "core/html/HTMLFieldSetElement.h"
 #include "core/html/HTMLFrameElementBase.h"
@@ -1219,6 +1221,32 @@ String AXNodeObject::ariaAutoComplete() const
         return ariaAutoComplete;
 
     return String();
+}
+
+void AXNodeObject::markers(
+    Vector<DocumentMarker::MarkerType>& markerTypes,
+    Vector<AXRange>& markerRanges) const
+{
+    if (!getNode() || !getDocument() || !getDocument()->view())
+        return;
+
+    DocumentMarkerController& markerController = getDocument()->markers();
+    DocumentMarkerVector markers = markerController.markersFor(getNode());
+    for (size_t i = 0; i < markers.size(); ++i) {
+        DocumentMarker* marker = markers[i];
+        switch (marker->type()) {
+        case DocumentMarker::Spelling:
+        case DocumentMarker::Grammar:
+        case DocumentMarker::TextMatch:
+            markerTypes.append(marker->type());
+            markerRanges.append(AXRange(marker->startOffset(), marker->endOffset()));
+            break;
+        case DocumentMarker::InvisibleSpellcheck:
+        case DocumentMarker::Composition:
+            // No need for accessibility to know about these marker types.
+            break;
+        }
+    }
 }
 
 AccessibilityOrientation AXNodeObject::orientation() const

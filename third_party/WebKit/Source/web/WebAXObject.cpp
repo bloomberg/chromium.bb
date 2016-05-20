@@ -35,6 +35,7 @@
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/dom/Document.h"
 #include "core/dom/Node.h"
+#include "core/editing/markers/DocumentMarker.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/VisualViewport.h"
@@ -1422,6 +1423,34 @@ WebAXObject WebAXObject::previousOnLine() const
         return WebAXObject();
 
     return WebAXObject(m_private.get()->previousOnLine());
+}
+
+void WebAXObject::markers(
+    WebVector<WebAXMarkerType>& types,
+    WebVector<int>& starts,
+    WebVector<int>& ends) const
+{
+    if (isDetached())
+        return;
+
+    Vector<DocumentMarker::MarkerType> markerTypes;
+    Vector<AXObject::AXRange> markerRanges;
+    m_private->markers(markerTypes, markerRanges);
+    DCHECK_EQ(markerTypes.size(), markerRanges.size());
+
+    WebVector<WebAXMarkerType> webMarkerTypes(markerTypes.size());
+    WebVector<int> startOffsets(markerRanges.size());
+    WebVector<int> endOffsets(markerRanges.size());
+    for (size_t i = 0; i < markerTypes.size(); ++i) {
+        webMarkerTypes[i] = static_cast<WebAXMarkerType>(markerTypes[i]);
+        DCHECK(markerRanges[i].isSimple());
+        startOffsets[i] = markerRanges[i].anchorOffset;
+        endOffsets[i] = markerRanges[i].focusOffset;
+    }
+
+    types.swap(webMarkerTypes);
+    starts.swap(startOffsets);
+    ends.swap(endOffsets);
 }
 
 void WebAXObject::characterOffsets(WebVector<int>& offsets) const

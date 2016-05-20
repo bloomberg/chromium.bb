@@ -498,7 +498,7 @@ std::string AXNodeData::ToString() const {
         }
         break;
       case AX_ATTR_TEXT_STYLE: {
-        unsigned int text_style = int_attributes[i].second;
+        auto text_style = static_cast<AXTextStyle>(int_attributes[i].second);
         if (text_style == AX_TEXT_STYLE_NONE)
           break;
         std::string text_style_value(" text_style=");
@@ -683,6 +683,37 @@ std::string AXNodeData::ToString() const {
         break;
       case AX_ATTR_LINE_BREAKS:
         result += " line_breaks=" + IntVectorToString(values);
+        break;
+      case AX_ATTR_MARKER_TYPES: {
+        std::string types_str;
+        for (size_t i = 0; i < values.size(); ++i) {
+          auto type = static_cast<AXMarkerType>(values[i]);
+          if (type == AX_MARKER_TYPE_NONE)
+            continue;
+
+          if (i > 0)
+            types_str += ',';
+
+          if (type & AX_MARKER_TYPE_SPELLING)
+            types_str += "spelling&";
+          if (type & AX_MARKER_TYPE_GRAMMAR)
+            types_str += "grammar&";
+          if (type & AX_MARKER_TYPE_TEXT_MATCH)
+            types_str += "text_match&";
+
+          if (!types_str.empty())
+            types_str = types_str.substr(0, types_str.size() - 1);
+        }
+
+        if (!types_str.empty())
+          result += " marker_types=" + types_str;
+        break;
+      }
+      case AX_ATTR_MARKER_STARTS:
+        result += " marker_starts=" + IntVectorToString(values);
+        break;
+      case AX_ATTR_MARKER_ENDS:
+        result += " marker_ends=" + IntVectorToString(values);
         break;
       case AX_ATTR_CELL_IDS:
         result += " cell_ids=" + IntVectorToString(values);

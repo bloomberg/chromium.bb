@@ -405,6 +405,19 @@ ui::AXEvent AXEventFromBlink(blink::WebAXEvent event) {
   }
 }
 
+ui::AXMarkerType AXMarkerTypeFromBlink(blink::WebAXMarkerType marker_type) {
+  switch (marker_type) {
+    case blink::WebAXMarkerTypeSpelling:
+      return ui::AX_MARKER_TYPE_SPELLING;
+    case blink::WebAXMarkerTypeGrammar:
+      return ui::AX_MARKER_TYPE_GRAMMAR;
+    case blink::WebAXMarkerTypeTextMatch:
+      return ui::AX_MARKER_TYPE_TEXT_MATCH;
+  }
+  NOTREACHED();
+  return ui::AX_MARKER_TYPE_NONE;
+}
+
 ui::AXTextDirection AXTextDirectionFromBlink(
     blink::WebAXTextDirection text_direction) {
   switch (text_direction) {
@@ -416,10 +429,8 @@ ui::AXTextDirection AXTextDirectionFromBlink(
       return ui::AX_TEXT_DIRECTION_TTB;
     case blink::WebAXTextDirectionBT:
       return ui::AX_TEXT_DIRECTION_BTT;
-    default:
-      NOTREACHED();
   }
-
+  NOTREACHED();
   return ui::AX_TEXT_DIRECTION_NONE;
 }
 
@@ -477,7 +488,6 @@ ui::AXInvalidState AXInvalidStateFromBlink(
     case blink::WebAXInvalidStateOther:
       return ui::AX_INVALID_STATE_OTHER;
   }
-
   NOTREACHED();
   return ui::AX_INVALID_STATE_NONE;
 }
@@ -495,10 +505,8 @@ ui::AXSortDirection AXSortDirectionFromBlink(
       return ui::AX_SORT_DIRECTION_DESCENDING;
     case blink::WebAXSortDirectionOther:
       return ui::AX_SORT_DIRECTION_OTHER;
-    default:
-      NOTREACHED();
   }
-
+  NOTREACHED();
   return ui::AX_SORT_DIRECTION_NONE;
 }
 
@@ -520,11 +528,9 @@ ui::AXNameFrom AXNameFromFromBlink(blink::WebAXNameFrom name_from) {
       return ui::AX_NAME_FROM_VALUE;
     case blink::WebAXNameFromTitle:
       return ui::AX_NAME_FROM_ATTRIBUTE;
-    default:
-      NOTREACHED();
   }
-
-  return ui::AX_NAME_FROM_UNINITIALIZED;
+  NOTREACHED();
+  return ui::AX_NAME_FROM_NONE;
 }
 
 ui::AXDescriptionFrom AXDescriptionFromFromBlink(
@@ -540,11 +546,9 @@ ui::AXDescriptionFrom AXDescriptionFromFromBlink(
       return ui::AX_DESCRIPTION_FROM_PLACEHOLDER;
     case blink::WebAXDescriptionFromRelatedElement:
       return ui::AX_DESCRIPTION_FROM_RELATED_ELEMENT;
-    default:
-      NOTREACHED();
   }
-
-  return ui::AX_DESCRIPTION_FROM_UNINITIALIZED;
+  NOTREACHED();
+  return ui::AX_DESCRIPTION_FROM_NONE;
 }
 
 }  // namespace content.

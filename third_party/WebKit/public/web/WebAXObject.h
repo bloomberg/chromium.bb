@@ -222,6 +222,10 @@ public:
     BLINK_EXPORT WebString computedStyleDisplay() const;
     BLINK_EXPORT bool accessibilityIsIgnored() const;
     BLINK_EXPORT bool lineBreaks(WebVector<int>&) const;
+    BLINK_EXPORT void markers(
+        WebVector<WebAXMarkerType>& types,
+        WebVector<int>& starts,
+        WebVector<int>& ends) const;
 
     // Actions
     BLINK_EXPORT WebString actionVerb() const; // The verb corresponding to performDefaultAction.

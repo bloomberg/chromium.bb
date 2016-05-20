@@ -471,12 +471,37 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
 
       WebVector<int> src_line_breaks;
       src.lineBreaks(src_line_breaks);
-      if (src_line_breaks.size() > 0) {
+      if (src_line_breaks.size()) {
         std::vector<int32_t> line_breaks;
         line_breaks.reserve(src_line_breaks.size());
         for (size_t i = 0; i < src_line_breaks.size(); ++i)
           line_breaks.push_back(src_line_breaks[i]);
         dst->AddIntListAttribute(ui::AX_ATTR_LINE_BREAKS, line_breaks);
+      }
+
+      WebVector<blink::WebAXMarkerType> src_marker_types;
+      WebVector<int> src_marker_starts;
+      WebVector<int> src_marker_ends;
+      src.markers(src_marker_types, src_marker_starts, src_marker_ends);
+      DCHECK_EQ(src_marker_types.size(), src_marker_starts.size());
+      DCHECK_EQ(src_marker_starts.size(), src_marker_ends.size());
+
+      if (src_marker_types.size()) {
+        std::vector<int32_t> marker_types;
+        std::vector<int32_t> marker_starts;
+        std::vector<int32_t> marker_ends;
+        marker_types.reserve(src_marker_types.size());
+        marker_starts.reserve(src_marker_starts.size());
+        marker_ends.reserve(src_marker_ends.size());
+        for (size_t i = 0; i < src_marker_types.size(); ++i) {
+          marker_types.push_back(
+              static_cast<int32_t>(AXMarkerTypeFromBlink(src_marker_types[i])));
+          marker_starts.push_back(src_marker_starts[i]);
+          marker_ends.push_back(src_marker_ends[i]);
+        }
+        dst->AddIntListAttribute(ui::AX_ATTR_MARKER_TYPES, marker_types);
+        dst->AddIntListAttribute(ui::AX_ATTR_MARKER_STARTS, marker_starts);
+        dst->AddIntListAttribute(ui::AX_ATTR_MARKER_ENDS, marker_ends);
       }
     }
 

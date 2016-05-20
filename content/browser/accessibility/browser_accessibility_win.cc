@@ -8,6 +8,8 @@
 #include <UIAutomationCoreApi.h>
 
 #include <algorithm>
+#include <iterator>
+#include <utility>
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -3314,6 +3316,26 @@ void BrowserAccessibilityWin::ComputeStylesIfNeeded() {
   std::map<int, std::vector<base::string16>> attributes_map;
   if (PlatformIsLeaf()) {
     attributes_map[0] = ComputeTextAttributes();
+    std::map<int, std::vector<base::string16>> spelling_attributes =
+        GetSpellingAttributes();
+    for (auto& spelling_attribute : spelling_attributes) {
+      auto attributes_iterator = attributes_map.find(spelling_attribute.first);
+      if (attributes_iterator == attributes_map.end()) {
+        attributes_map[spelling_attribute.first] =
+            std::move(spelling_attribute.second);
+      } else {
+        std::vector<base::string16>& existing_attributes =
+            attributes_iterator->second;
+        auto existing_spelling_attribute =
+            std::find(existing_attributes.begin(), existing_attributes.end(),
+                      L"invalid:false");
+        if (existing_spelling_attribute != existing_attributes.end())
+          existing_attributes.erase(existing_spelling_attribute);
+        existing_attributes.insert(existing_attributes.end(),
+                                   spelling_attribute.second.begin(),
+                                   spelling_attribute.second.end());
+      }
+    }
     win_attributes_->offset_to_text_attributes.swap(attributes_map);
     return;
   }
@@ -3744,11 +3766,14 @@ std::vector<base::string16> BrowserAccessibilityWin::ComputeTextAttributes()
   auto text_style =
       static_cast<ui::AXTextStyle>(GetIntAttribute(ui::AX_ATTR_TEXT_STYLE));
   if (text_style == ui::AX_TEXT_STYLE_NONE) {
-    attributes.push_back(L"font-style:normal");
     attributes.push_back(L"font-weight:normal");
+    attributes.push_back(L"font-style:normal");
   } else {
-    if (text_style & ui::AX_TEXT_STYLE_BOLD)
+    if (text_style & ui::AX_TEXT_STYLE_BOLD) {
       attributes.push_back(L"font-weight:bold");
+    } else {
+      attributes.push_back(L"font-weight:normal");
+    }
 
     base::string16 font_style;
     if (text_style & ui::AX_TEXT_STYLE_ITALIC)
@@ -3854,6 +3879,60 @@ std::vector<base::string16> BrowserAccessibilityWin::ComputeTextAttributes()
 BrowserAccessibilityWin* BrowserAccessibilityWin::NewReference() {
   AddRef();
   return this;
+}
+
+std::map<int, std::vector<base::string16>>
+BrowserAccessibilityWin::GetSpellingAttributes() const {
+  std::map<int, std::vector<base::string16>> spelling_attributes;
+
+  // It doesn't make sense to expose spelling error information on anything
+  // other than a leaf object, because non-leaf objects do not expose text
+  // directly.
+  if (!PlatformIsLeaf())
+    return spelling_attributes;
+
+  if (IsTextOnlyObject()) {
+    const std::vector<int32_t>& marker_types =
+        GetIntListAttribute(ui::AX_ATTR_MARKER_TYPES);
+    const std::vector<int>& marker_starts =
+        GetIntListAttribute(ui::AX_ATTR_MARKER_STARTS);
+    const std::vector<int>& marker_ends =
+        GetIntListAttribute(ui::AX_ATTR_MARKER_ENDS);
+    for (size_t i = 0; i < marker_types.size(); ++i) {
+      if (!(static_cast<ui::AXMarkerType>(marker_types[i]) &
+            ui::AX_MARKER_TYPE_SPELLING))
+        continue;
+      int start_offset = marker_starts[i];
+      int end_offset = marker_ends[i];
+      std::vector<base::string16> start_attributes;
+      start_attributes.push_back(L"invalid:spelling");
+      std::vector<base::string16> end_attributes;
+      end_attributes.push_back(L"invalid:false");
+      spelling_attributes[start_offset] = start_attributes;
+      spelling_attributes[end_offset] = end_attributes;
+    }
+  }
+
+  if (IsSimpleTextControl()) {
+    int start_offset = 0;
+    for (const BrowserAccessibility* static_text =
+             BrowserAccessibilityManager::NextTextOnlyObject(
+                 InternalGetChild(0));
+         static_text; static_text = static_text->GetNextSibling()) {
+      auto text_win = ToBrowserAccessibilityWin(static_text);
+      if (text_win) {
+        std::map<int, std::vector<base::string16>> text_spelling_attributes =
+            text_win->GetSpellingAttributes();
+        for (auto& attribute : text_spelling_attributes) {
+          spelling_attributes[start_offset + attribute.first] =
+              std::move(attribute.second);
+        }
+        start_offset += static_cast<int>(text_win->GetText().length());
+      }
+    }
+  }
+
+  return spelling_attributes;
 }
 
 BrowserAccessibilityWin* BrowserAccessibilityWin::GetTargetFromChildID(
@@ -4337,6 +4416,7 @@ LONG BrowserAccessibilityWin::FindStartOfStyle(
     }
   }
 
+  NOTREACHED();
   return start_offset;
 }
 

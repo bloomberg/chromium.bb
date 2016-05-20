@@ -388,12 +388,33 @@ blink::WebRect BoundsForCharacter(const blink::WebAXObject& object,
   return blink::WebRect();
 }
 
+std::vector<std::string> GetMisspellings(blink::WebAXObject& object) {
+  std::vector<std::string> misspellings;
+  std::string text(object.name().utf8());
+
+  blink::WebVector<blink::WebAXMarkerType> marker_types;
+  blink::WebVector<int> marker_starts;
+  blink::WebVector<int> marker_ends;
+  object.markers(marker_types, marker_starts, marker_ends);
+  DCHECK_EQ(marker_types.size(), marker_starts.size());
+  DCHECK_EQ(marker_starts.size(), marker_ends.size());
+
+  for (size_t i = 0; i < marker_types.size(); ++i) {
+    if (marker_types[i] & blink::WebAXMarkerTypeSpelling) {
+      misspellings.push_back(
+          text.substr(marker_starts[i], marker_ends[i] - marker_starts[i]));
+    }
+  }
+
+  return misspellings;
+}
+
 void GetBoundariesForOneWord(const blink::WebAXObject& object,
                              int character_index,
                              int& word_start,
                              int& word_end) {
   int end = 0;
-  for (unsigned i = 0; i < object.childCount(); i++) {
+  for (size_t i = 0; i < object.childCount(); i++) {
     blink::WebAXObject inline_text_box = object.childAt(i);
     DCHECK_EQ(inline_text_box.role(), blink::WebAXRoleInlineTextBox);
     int start = end;
@@ -579,6 +600,7 @@ WebAXObjectProxy::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetMethod("wordEnd", &WebAXObjectProxy::WordEnd)
       .SetMethod("nextOnLine", &WebAXObjectProxy::NextOnLine)
       .SetMethod("previousOnLine", &WebAXObjectProxy::PreviousOnLine)
+      .SetMethod("misspellingAtIndex", &WebAXObjectProxy::MisspellingAtIndex)
       // TODO(hajimehoshi): This is for backward compatibility. Remove them.
       .SetMethod("addNotificationListener",
                  &WebAXObjectProxy::SetNotificationListener)
@@ -593,6 +615,7 @@ WebAXObjectProxy::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetMethod("nameElementAtIndex", &WebAXObjectProxy::NameElementAtIndex)
       .SetProperty("description", &WebAXObjectProxy::Description)
       .SetProperty("descriptionFrom", &WebAXObjectProxy::DescriptionFrom)
+      .SetProperty("misspellingsCount", &WebAXObjectProxy::MisspellingsCount)
       .SetMethod("descriptionElementCount",
                  &WebAXObjectProxy::DescriptionElementCount)
       .SetMethod("descriptionElementAtIndex",
@@ -1307,6 +1330,13 @@ v8::Local<v8::Object> WebAXObjectProxy::PreviousOnLine() {
   return factory_->GetOrCreate(obj);
 }
 
+std::string WebAXObjectProxy::MisspellingAtIndex(int index) {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  if (index < 0 || index >= MisspellingsCount())
+    return std::string();
+  return GetMisspellings(accessibility_object_)[index];
+}
+
 std::string WebAXObjectProxy::Name() {
   accessibility_object_.updateLayoutAndCheckValidity();
   return accessibility_object_.name().utf8();
@@ -1394,6 +1424,11 @@ std::string WebAXObjectProxy::DescriptionFrom() {
 
   NOTREACHED();
   return std::string();
+}
+
+int WebAXObjectProxy::MisspellingsCount() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  return GetMisspellings(accessibility_object_).size();
 }
 
 int WebAXObjectProxy::DescriptionElementCount() {

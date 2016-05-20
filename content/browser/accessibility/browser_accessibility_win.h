@@ -752,6 +752,11 @@ BrowserAccessibilityWin
   // an output parameter to a COM interface, never use it otherwise.
   BrowserAccessibilityWin* NewReference();
 
+  // Returns a list of IA2 attributes indicating the offsets in the text of a
+  // leaf object, such as a text field or static text, where spelling errors are
+  // present.
+  std::map<int, std::vector<base::string16>> GetSpellingAttributes() const;
+
   // Many MSAA methods take a var_id parameter indicating that the operation
   // should be performed on a particular child ID, rather than this object.
   // This method tries to figure out the target object from |var_id| and

@@ -24,6 +24,8 @@ ui::AXEvent AXEventFromBlink(blink::WebAXEvent event);
 // in AXNodeData instead.)
 uint32_t AXStateFromBlink(const blink::WebAXObject& o);
 
+ui::AXMarkerType AXMarkerTypeFromBlink(blink::WebAXMarkerType marker_type);
+
 ui::AXTextDirection AXTextDirectionFromBlink(
     blink::WebAXTextDirection text_direction);
 

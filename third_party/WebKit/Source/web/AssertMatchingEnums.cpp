@@ -351,6 +351,10 @@ STATIC_ASSERT_ENUM(WebAXInvalidStateSpelling, InvalidStateSpelling);
 STATIC_ASSERT_ENUM(WebAXInvalidStateGrammar, InvalidStateGrammar);
 STATIC_ASSERT_ENUM(WebAXInvalidStateOther, InvalidStateOther);
 
+STATIC_ASSERT_ENUM(WebAXMarkerTypeSpelling, DocumentMarker::Spelling);
+STATIC_ASSERT_ENUM(WebAXMarkerTypeGrammar, DocumentMarker::Grammar);
+STATIC_ASSERT_ENUM(WebAXMarkerTypeTextMatch, DocumentMarker::TextMatch);
+
 STATIC_ASSERT_ENUM(WebAXTextStyleNone, TextStyleNone);
 STATIC_ASSERT_ENUM(WebAXTextStyleBold, TextStyleBold);
 STATIC_ASSERT_ENUM(WebAXTextStyleItalic, TextStyleItalic);

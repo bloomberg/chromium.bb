@@ -165,6 +165,7 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   int WordEnd(int character_index);
   v8::Local<v8::Object> NextOnLine();
   v8::Local<v8::Object> PreviousOnLine();
+  std::string MisspellingAtIndex(int index);
 
   std::string Name();
   std::string NameFrom();
@@ -173,6 +174,7 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
 
   std::string Description();
   std::string DescriptionFrom();
+  int MisspellingsCount();
   int DescriptionElementCount();
   v8::Local<v8::Object> DescriptionElementAtIndex(unsigned index);
 

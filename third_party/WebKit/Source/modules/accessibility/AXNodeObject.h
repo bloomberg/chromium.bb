@@ -138,6 +138,7 @@ protected:
     bool canvasHasFallbackContent() const final;
     int headingLevel() const final;
     unsigned hierarchicalLevel() const final;
+    void markers(Vector<DocumentMarker::MarkerType>&, Vector<AXRange>&) const override;
     AccessibilityOrientation orientation() const override;
     String text() const override;
 

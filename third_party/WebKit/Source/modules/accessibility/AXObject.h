@@ -31,6 +31,7 @@
 #define AXObject_h
 
 #include "core/editing/VisiblePosition.h"
+#include "core/editing/markers/DocumentMarker.h"
 #include "modules/ModulesExport.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
@@ -736,11 +737,14 @@ public:
     virtual AXObject* nextOnLine() const { return nullptr; }
     virtual AXObject* previousOnLine() const { return nullptr; }
 
+    // For all node objects. The start and end character offset of each
+    // marker, such as spelling or grammar error.
+    virtual void markers(Vector<DocumentMarker::MarkerType>&, Vector<AXRange>&) const {}
     // For an inline text box.
     // The integer horizontal pixel offset of each character in the string; negative values for RTL.
     virtual void textCharacterOffsets(Vector<int>&) const { }
-    // The start and end character offset of each word in the inline text box.
-    virtual void wordBoundaries(Vector<AXRange>& words) const { }
+    // The start and end character offset of each word in the object's text.
+    virtual void wordBoundaries(Vector<AXRange>&) const {}
 
     // Properties of interactive elements.
     String actionVerb() const;

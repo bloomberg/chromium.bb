@@ -279,6 +279,12 @@ enum WebAXInvalidState {
     WebAXInvalidStateOther
 };
 
+enum WebAXMarkerType {
+    WebAXMarkerTypeSpelling = 1 << 0,
+    WebAXMarkerTypeGrammar = 1 << 1,
+    WebAXMarkerTypeTextMatch = 1 << 2
+};
+
 // Used for exposing text attributes.
 enum WebAXTextStyle {
     WebAXTextStyleNone = 0,

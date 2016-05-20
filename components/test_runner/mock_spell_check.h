@@ -15,10 +15,10 @@
 namespace test_runner {
 
 // A mock implementation of a spell-checker used for WebKit tests.
-// This class only implements the minimal functionarities required by WebKit
+// This class only implements the minimal functionalities required by WebKit
 // tests, i.e. this class just compares the given string with known misspelled
-// words in webkit tests and mark them as missspelled.
-// Even though this is sufficent for webkit tests, this class is not suitable
+// words in webkit tests and mark them as misspelled.
+// Even though this is sufficient for webkit tests, this class is not suitable
 // for any other usages.
 class MockSpellCheck {
  public:
