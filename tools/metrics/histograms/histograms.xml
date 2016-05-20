@@ -50218,6 +50218,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SharedMemory.CreateError" enum="SharedMemoryCreateError">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    A histogram entry is emitted each time a base::SharedMemory object is
+    constructed. The value of the entry indicates the type of error encountered
+    during construction.
+  </summary>
+</histogram>
+
 <histogram name="SharedMemory.TimeSpentMakingAnonymousMemory" units="ms">
   <obsolete>
     Deprecated 2015-06 because the Finch experiment SharedMemoryCreateStrategy
@@ -86196,6 +86205,34 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="SHADER_MODEL_4_0"/>
   <int value="4" label="SHADER_MODEL_4_1"/>
   <int value="5" label="SHADER_MODEL_5_0"/>
+</enum>
+
+<enum name="SharedMemoryCreateError" type="int">
+  <int value="0" label="SUCCESS">
+    The shared memory region was successfully created.
+  </int>
+  <int value="1" label="SIZE_ZERO">Failure because the size was zero.</int>
+  <int value="2" label="SIZE_TOO_LARGE">
+    Failure because the size was too large.
+  </int>
+  <int value="3" label="INITIALIZE_ACL_FAILURE">
+    Failure to initialize an ACL.
+  </int>
+  <int value="4" label="INITIALIZE_SECURITY_DESC_FAILURE">
+    Failure to initialize the security descriptor.
+  </int>
+  <int value="5" label="SET_SECURITY_DESC_FAILURE">
+    Failure to set the security descriptor.
+  </int>
+  <int value="6" label="CREATE_FILE_MAPPING_FAILURE">
+    Failure to create the file mapping.
+  </int>
+  <int value="7" label="REDUCE_PERMISSIONS_FAILURE">
+    Failure to reduce the permissions on the file mapping.
+  </int>
+  <int value="8" label="ALREADY_EXISTS">
+    The shared memory region already exists.
+  </int>
 </enum>
 
 <enum name="ShelfAlignmentValue" type="int">
