@@ -51,8 +51,9 @@ ProxyImpl::ProxyImpl(
     TaskRunnerProvider* task_runner_provider,
     std::unique_ptr<BeginFrameSource> external_begin_frame_source)
     : layer_tree_host_id_(layer_tree_host->id()),
-      next_commit_waits_for_activation_(false),
+      commit_completion_waits_for_activation_(false),
       commit_completion_event_(nullptr),
+      activation_completion_event_(nullptr),
       next_frame_is_newly_committed_frame_(false),
       inside_draw_(false),
       input_throttled_until_commit_(false),
@@ -241,6 +242,16 @@ void ProxyImpl::MainFrameWillHappenOnImplForTesting(
   completion->Signal();
 }
 
+void ProxyImpl::BlockNotifyReadyToActivateForTesting(bool block) {
+  DCHECK(IsImplThread());
+  layer_tree_host_impl_->BlockNotifyReadyToActivateForTesting(block);
+}
+
+CompletionEvent* ProxyImpl::ActivationCompletionEventForTesting() {
+  DCHECK(IsImplThread());
+  return activation_completion_event_;
+}
+
 void ProxyImpl::StartCommitOnImpl(CompletionEvent* completion,
                                   LayerTreeHost* layer_tree_host,
                                   base::TimeTicks main_thread_start_time,
@@ -250,13 +261,6 @@ void ProxyImpl::StartCommitOnImpl(CompletionEvent* completion,
   DCHECK(IsImplThread() && IsMainThreadBlocked());
   DCHECK(scheduler_);
   DCHECK(scheduler_->CommitPending());
-
-  if (hold_commit_for_activation) {
-    // This commit may be aborted. Store the value for
-    // hold_commit_for_activation so that whenever the next commit is started,
-    // the main thread will be unblocked only after pending tree activation.
-    next_commit_waits_for_activation_ = hold_commit_for_activation;
-  }
 
   if (!layer_tree_host_impl_) {
     TRACE_EVENT_INSTANT0("cc", "EarlyOut_NoLayerTree",
@@ -268,7 +272,10 @@ void ProxyImpl::StartCommitOnImpl(CompletionEvent* completion,
   // Ideally, we should inform to impl thread when BeginMainFrame is started.
   // But, we can avoid a PostTask in here.
   scheduler_->NotifyBeginMainFrameStarted(main_thread_start_time);
+
   commit_completion_event_ = completion;
+  commit_completion_waits_for_activation_ = hold_commit_for_activation;
+
   DCHECK(!blocked_main_commit().layer_tree_host);
   blocked_main_commit().layer_tree_host = layer_tree_host;
   scheduler_->NotifyReadyToCommit();
@@ -446,13 +453,11 @@ void ProxyImpl::DidActivateSyncTree() {
   TRACE_EVENT0("cc", "ProxyImpl::DidActivateSyncTreeOnImplThread");
   DCHECK(IsImplThread());
 
-  if (next_commit_waits_for_activation_) {
+  if (activation_completion_event_) {
     TRACE_EVENT_INSTANT0("cc", "ReleaseCommitbyActivation",
                          TRACE_EVENT_SCOPE_THREAD);
-    DCHECK(commit_completion_event_);
-    commit_completion_event_->Signal();
-    commit_completion_event_ = nullptr;
-    next_commit_waits_for_activation_ = false;
+    activation_completion_event_->Signal();
+    activation_completion_event_ = nullptr;
   }
 }
 
@@ -549,15 +554,17 @@ void ProxyImpl::ScheduledActionCommit() {
   // blocked for a commit.
   blocked_main_commit().layer_tree_host = nullptr;
 
-  if (next_commit_waits_for_activation_) {
-    // For some layer types in impl-side painting, the commit is held until
-    // the sync tree is activated.  It's also possible that the
-    // sync tree has already activated if there was no work to be done.
+  if (commit_completion_waits_for_activation_) {
+    // For some layer types in impl-side painting, the commit is held until the
+    // sync tree is activated.  It's also possible that the sync tree has
+    // already activated if there was no work to be done.
     TRACE_EVENT_INSTANT0("cc", "HoldCommit", TRACE_EVENT_SCOPE_THREAD);
+    commit_completion_waits_for_activation_ = false;
+    activation_completion_event_ = commit_completion_event_;
   } else {
     commit_completion_event_->Signal();
-    commit_completion_event_ = nullptr;
   }
+  commit_completion_event_ = nullptr;
 
   scheduler_->DidCommit();
 

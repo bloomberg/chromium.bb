@@ -280,64 +280,136 @@ PROXY_MAIN_THREADED_TEST_F(ProxyMainThreadedSetNeedsCommitWhileAnimating);
 
 class ProxyMainThreadedCommitWaitsForActivation : public ProxyMainThreaded {
  protected:
-  ProxyMainThreadedCommitWaitsForActivation() : commits_completed_(0) {}
+  ProxyMainThreadedCommitWaitsForActivation() : num_commits_(0) {}
   ~ProxyMainThreadedCommitWaitsForActivation() override {}
 
   void BeginTest() override { proxy()->SetNeedsCommit(); }
 
   void ScheduledActionCommit() override {
-    switch (commits_completed_) {
+    switch (num_commits_) {
       case 0:
-        // The first commit does not wait for activation. Verify that the
-        // completion event is cleared.
-        EXPECT_FALSE(GetProxyImplForTest()->HasCommitCompletionEvent());
-        EXPECT_FALSE(GetProxyImplForTest()->GetNextCommitWaitsForActivation());
-
         // Set next commit waits for activation and start another commit.
-        commits_completed_++;
         PostNextCommitWaitsForActivationToMainThread();
         PostSetNeedsCommitToMainThread();
         break;
       case 1:
-        // The second commit should be held until activation.
-        EXPECT_TRUE(GetProxyImplForTest()->HasCommitCompletionEvent());
-        EXPECT_TRUE(GetProxyImplForTest()->GetNextCommitWaitsForActivation());
-
-        // Start another commit to verify that this is not held until
-        // activation.
-        commits_completed_++;
         PostSetNeedsCommitToMainThread();
         break;
-      case 2:
-        // The third commit should not wait for activation.
-        EXPECT_FALSE(GetProxyImplForTest()->HasCommitCompletionEvent());
-        EXPECT_FALSE(GetProxyImplForTest()->GetNextCommitWaitsForActivation());
+    }
+    num_commits_++;
+  }
 
-        commits_completed_++;
+  void WillActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    CompletionEvent* activation_completion_event =
+        GetProxyImplForTest()->ActivationCompletionEventForTesting();
+    switch (num_commits_) {
+      case 1:
+        EXPECT_FALSE(activation_completion_event);
+        break;
+      case 2:
+        EXPECT_TRUE(activation_completion_event);
+        EXPECT_FALSE(activation_completion_event->IsSignaled());
+        break;
+      case 3:
+        EXPECT_FALSE(activation_completion_event);
+        EndTest();
+        break;
     }
   }
 
-  void DidActivateSyncTree() override {
-    // The next_commit_waits_for_activation should have been cleared after the
-    // sync tree is activated.
-    EXPECT_FALSE(GetProxyImplForTest()->GetNextCommitWaitsForActivation());
-    if (commits_completed_ == 3)
-      EndTest();
-  }
-
   void AfterTest() override {
-    // It is safe to read commits_completed_ on the main thread now since
-    // AfterTest() runs after the LayerTreeHost is destroyed and the impl thread
-    // tear down is finished.
-    EXPECT_EQ(3, commits_completed_);
+    // It is safe to read num_commits_ on the main thread now since AfterTest()
+    // runs after the LayerTreeHost is destroyed and the impl thread tear down
+    // is finished.
+    EXPECT_EQ(3, num_commits_);
   }
 
  private:
-  int commits_completed_;
+  int num_commits_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyMainThreadedCommitWaitsForActivation);
 };
 
 PROXY_MAIN_THREADED_TEST_F(ProxyMainThreadedCommitWaitsForActivation);
+
+// Test for a corner case of main frame before activation (MFBA) and commit
+// waits for activation. If a commit (with wait for activation flag set)
+// is ready before the activation for a previous commit then the activation
+// should not signal the completion event of the second commit.
+class ProxyMainThreadedCommitWaitsForActivationMFBA : public ProxyMainThreaded {
+ protected:
+  ProxyMainThreadedCommitWaitsForActivationMFBA() : num_commits_(0) {}
+  ~ProxyMainThreadedCommitWaitsForActivationMFBA() override {}
+
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->main_frame_before_activation_enabled = true;
+    ProxyMainThreaded::InitializeSettings(settings);
+  }
+
+  void BeginTest() override { proxy()->SetNeedsCommit(); }
+
+  // This is called right before NotifyReadyToCommit.
+  void StartCommitOnImpl() override {
+    switch (num_commits_) {
+      case 0:
+        // Block activation until next commit is ready.
+        GetProxyImplForTest()->BlockNotifyReadyToActivateForTesting(true);
+        break;
+      case 1:
+        // Unblock activation of first commit after second commit is ready.
+        ImplThreadTaskRunner()->PostTask(
+            FROM_HERE,
+            base::Bind(&ProxyImplForTest::BlockNotifyReadyToActivateForTesting,
+                       base::Unretained(GetProxyImplForTest()), false));
+        break;
+    }
+  }
+
+  void ScheduledActionCommit() override {
+    switch (num_commits_) {
+      case 0:
+        // Set next commit waits for activation and start another commit.
+        PostNextCommitWaitsForActivationToMainThread();
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 1:
+        PostSetNeedsCommitToMainThread();
+        break;
+    }
+    num_commits_++;
+  }
+
+  void WillActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    CompletionEvent* activation_completion_event =
+        GetProxyImplForTest()->ActivationCompletionEventForTesting();
+    switch (num_commits_) {
+      case 1:
+        EXPECT_FALSE(activation_completion_event);
+        break;
+      case 2:
+        EXPECT_TRUE(activation_completion_event);
+        EXPECT_FALSE(activation_completion_event->IsSignaled());
+        break;
+      case 3:
+        EXPECT_FALSE(activation_completion_event);
+        EndTest();
+        break;
+    }
+  }
+
+  void AfterTest() override {
+    // It is safe to read num_commits_ on the main thread now since AfterTest()
+    // runs after the LayerTreeHost is destroyed and the impl thread tear down
+    // is finished.
+    EXPECT_EQ(3, num_commits_);
+  }
+
+ private:
+  int num_commits_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProxyMainThreadedCommitWaitsForActivationMFBA);
+};
+
+PROXY_MAIN_THREADED_TEST_F(ProxyMainThreadedCommitWaitsForActivationMFBA);
 
 }  // namespace cc

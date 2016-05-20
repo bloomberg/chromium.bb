@@ -26,8 +26,6 @@ class ProxyImplForTest : public ProxyImpl {
   using ProxyImpl::DidCompletePageScaleAnimationOnImplThread;
   using ProxyImpl::SendBeginMainFrameNotExpectedSoon;
 
-  bool HasCommitCompletionEvent() const;
-  bool GetNextCommitWaitsForActivation() const;
   const DelayedUniqueNotifier& smoothness_priority_expiration_notifier() const {
     return smoothness_priority_expiration_notifier_;
   }

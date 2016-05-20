@@ -18,14 +18,6 @@ std::unique_ptr<ProxyImplForTest> ProxyImplForTest::Create(
       std::move(external_begin_frame_source)));
 }
 
-bool ProxyImplForTest::HasCommitCompletionEvent() const {
-  return commit_completion_event_ != nullptr;
-}
-
-bool ProxyImplForTest::GetNextCommitWaitsForActivation() const {
-  return next_commit_waits_for_activation_;
-}
-
 ProxyImplForTest::ProxyImplForTest(
     TestHooks* test_hooks,
     ChannelImpl* channel_impl,

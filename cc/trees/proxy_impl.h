@@ -48,13 +48,15 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   virtual void SetVisibleOnImpl(bool visible);
   virtual void ReleaseOutputSurfaceOnImpl(CompletionEvent* completion);
   virtual void FinishGLOnImpl(CompletionEvent* completion);
-  virtual void MainFrameWillHappenOnImplForTesting(
-      CompletionEvent* completion,
-      bool* main_frame_will_happen);
   virtual void StartCommitOnImpl(CompletionEvent* completion,
                                  LayerTreeHost* layer_tree_host,
                                  base::TimeTicks main_thread_start_time,
                                  bool hold_commit_for_activation);
+
+  void MainFrameWillHappenOnImplForTesting(CompletionEvent* completion,
+                                           bool* main_frame_will_happen);
+  void BlockNotifyReadyToActivateForTesting(bool block);
+  CompletionEvent* ActivationCompletionEventForTesting();
 
  protected:
   // protected for testing.
@@ -130,11 +132,13 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   std::unique_ptr<Scheduler> scheduler_;
 
   // Set when the main thread is waiting on a pending tree activation.
-  bool next_commit_waits_for_activation_;
+  bool commit_completion_waits_for_activation_;
 
-  // Set when the main thread is waiting on a commit to complete or on a
-  // pending tree activation.
+  // Set when the main thread is waiting on a commit to complete.
   CompletionEvent* commit_completion_event_;
+
+  // Set when the main thread is waiting for activation to complete.
+  CompletionEvent* activation_completion_event_;
 
   // Set when the next draw should post DidCommitAndDrawFrame to the main
   // thread.
