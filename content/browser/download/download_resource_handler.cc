@@ -16,6 +16,7 @@
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_request_handle.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -23,6 +24,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/resource_response.h"
 
 namespace content {
@@ -42,11 +44,22 @@ static void StartOnUIThread(
     std::unique_ptr<ByteStreamReader> stream,
     int render_process_id,
     int render_frame_id,
+    int frame_tree_node_id,
     const DownloadUrlParameters::OnStartedCallback& started_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderFrameHost* frame_host =
       RenderFrameHost::FromID(render_process_id, render_frame_id);
+
+  // PlzNavigate: navigations don't have associated RenderFrameHosts. Get the
+  // SiteInstance from the FrameTreeNode.
+  if (!frame_host && IsBrowserSideNavigationEnabled()) {
+    FrameTreeNode* frame_tree_node =
+        FrameTreeNode::GloballyFindByID(frame_tree_node_id);
+    if (frame_tree_node)
+      frame_host = frame_tree_node->current_frame_host();
+  }
+
   DownloadManager* download_manager =
       info->request_handle->GetDownloadManager();
   if (!download_manager || !frame_host) {
@@ -203,7 +216,8 @@ void DownloadResourceHandler::OnStart(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&StartOnUIThread, base::Passed(&create_info),
                  base::Passed(&tab_info_), base::Passed(&stream_reader),
-                 render_process_id, render_frame_id, callback));
+                 render_process_id, render_frame_id,
+                 request_info->frame_tree_node_id(), callback));
 }
 
 void DownloadResourceHandler::OnReadyToRead() {
