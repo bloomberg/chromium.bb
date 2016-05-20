@@ -191,6 +191,7 @@ to the classpath for downstream development. See "additional_entries" below.
     </classpathentry>
     <classpathentry kind="lib" path="third_party/android_tools/sdk/platforms/android-23/data/layoutlib.jar" sourcepath="third_party/android_tools/sdk/sources/"/>
     <classpathentry kind="lib" path="third_party/android_tools/sdk/platforms/android-23/uiautomator.jar" sourcepath="third_party/android_tools/sdk/sources"/>
+    <classpathentry kind="lib" path="third_party/android_tools/sdk/extras/android/support/design/libs/android-support-design.jar" sourcepath="third_party/android_tools/sdk/sources"/>
     <classpathentry kind="lib" path="third_party/android_tools/sdk/extras/android/support/v7/mediarouter/libs/android-support-v7-mediarouter.jar" sourcepath="third_party/android_tools/sdk/sources"/>
     <classpathentry kind="lib" path="third_party/android_tools/sdk/extras/android/support/v7/recyclerview/libs/android-support-v7-recyclerview.jar" sourcepath="third_party/android_tools/sdk/sources"/>
     <classpathentry kind="lib" path="third_party/android_tools/sdk/extras/android/support/v13/android-support-v13.jar" sourcepath="third_party/android_tools/sdk/sources"/>

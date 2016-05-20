@@ -40,6 +40,22 @@ android_java_prebuilt("emma_device") {
   jar_path = "$android_sdk_root/tools/lib/emma_device.jar"
 }
 
+android_resources("android_support_design_resources") {
+  v14_skip = true
+  deps = [
+    ":android_support_v7_appcompat_resources",
+  ]
+  resource_dirs = [ "$android_sdk_root/extras/android/support/design/res" ]
+  custom_package = "android.support.design"
+}
+
+android_java_prebuilt("android_support_design_java") {
+  deps = [
+    ":android_support_design_resources",
+  ]
+  jar_path = "$android_sdk_root/extras/android/support/design/libs/android-support-design.jar"
+}
+
 android_java_prebuilt("android_support_annotations_javalib") {
   jar_path = "$android_sdk_root/extras/android/support/annotations/android-support-annotations.jar"
 }

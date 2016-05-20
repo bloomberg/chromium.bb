@@ -275,7 +275,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     public void postInflationStartup() {
         super.postInflationStartup();
 
-        mSnackbarManager = new SnackbarManager((ViewGroup) findViewById(android.R.id.content));
+        mSnackbarManager = new SnackbarManager(this);
         mDataUseSnackbarController = new DataUseSnackbarController(this, getSnackbarManager());
 
         mAssistStatusHandler = createAssistStatusHandler();

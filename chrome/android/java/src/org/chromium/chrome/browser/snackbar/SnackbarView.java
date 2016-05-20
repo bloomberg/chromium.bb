@@ -4,24 +4,32 @@
 
 package org.chromium.chrome.browser.snackbar;
 
-import android.content.Context;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.drawable.GradientDrawable;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.CoordinatorLayout.Behavior;
+import android.support.design.widget.CoordinatorLayout.LayoutParams;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.ui.base.DeviceFormFactor;
 
 /**
@@ -29,13 +37,14 @@ import org.chromium.ui.base.DeviceFormFactor;
  * has a fixed width and is anchored at the start-bottom corner of the current window.
  */
 class SnackbarView {
+    private final Activity mActivity;
     private final ViewGroup mView;
-    private final ViewGroup mParent;
     private final TemplatePreservingTextView mMessageView;
     private final TextView mActionButtonView;
     private final ImageView mProfileImageView;
     private final int mAnimationDuration;
     private final boolean mIsTablet;
+    private ViewGroup mParent;
     private Snackbar mSnackbar;
 
     // Variables used to calculate the virtual keyboard's height.
@@ -55,17 +64,37 @@ class SnackbarView {
     };
 
     /**
+     * Behavior that intercepts touch event from the CompositorViewHoder.
+     */
+    private final Behavior<View> mBehavior = new Behavior<View>() {
+        @Override
+        public boolean onInterceptTouchEvent(CoordinatorLayout parent, View child, MotionEvent ev) {
+            return ev.getX() - child.getX() < child.getWidth()
+                    && ev.getY() - child.getY() < child.getHeight();
+        }
+
+        @Override
+        public boolean onTouchEvent(CoordinatorLayout parent, View child, MotionEvent ev) {
+            ev.offsetLocation(-child.getX(), -child.getY());
+            boolean consumed = child.dispatchTouchEvent(ev);
+            ev.offsetLocation(child.getX(), child.getY());
+            return consumed;
+        }
+    };
+
+    /**
      * Creates an instance of the {@link SnackbarView}.
-     * @param parent   The main view of the embedding Activity.
+     * @param activity The activity that displays the snackbar.
      * @param listener An {@link OnClickListener} that will be called when the action button is
      *                 clicked.
      * @param snackbar The snackbar to be displayed.
      */
-    SnackbarView(ViewGroup parent, OnClickListener listener, Snackbar snackbar) {
-        Context context = parent.getContext();
-        mIsTablet = DeviceFormFactor.isTablet(context);
-        mParent = parent;
-        mView = (ViewGroup) LayoutInflater.from(context).inflate(R.layout.snackbar, mParent, false);
+    SnackbarView(Activity activity, OnClickListener listener, Snackbar snackbar) {
+        mActivity = activity;
+        mIsTablet = DeviceFormFactor.isTablet(activity);
+        mParent = findParentView(activity);
+        mView = (ViewGroup) LayoutInflater.from(activity).inflate(
+                R.layout.snackbar, mParent, false);
         mAnimationDuration = mView.getResources()
                 .getInteger(android.R.integer.config_mediumAnimTime);
         mMessageView = (TemplatePreservingTextView) mView.findViewById(R.id.snackbar_message);
@@ -77,34 +106,45 @@ class SnackbarView {
     }
 
     void show() {
-        mParent.addView(mView);
+        if (mParent instanceof CoordinatorLayout) {
+            CoordinatorLayout.LayoutParams lp = (LayoutParams) mView.getLayoutParams();
+            lp.setBehavior(mBehavior);
+            mParent.addView(mView, lp);
+        } else {
+            mParent.addView(mView);
+        }
         adjustViewPosition();
         mView.getViewTreeObserver().addOnGlobalLayoutListener(mLayoutListener);
 
-        // Animation, instead of Animator or ViewPropertyAnimator is prefered here because:
-        // 1. Animation xml allows specifying 100% as translation, which is much more convenient
-        // than waiting for mView to be laid out to get measured height.
-        // 2. Animation avoids SurfaceView's clipping issue when doing translating animation.
-        Animation fadeIn = AnimationUtils.loadAnimation(mParent.getContext(), R.anim.snackbar_in);
-        mView.startAnimation(fadeIn);
+        mView.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                mView.removeOnLayoutChangeListener(this);
+                mView.setTranslationY(mView.getHeight());
+                Animator animator = ObjectAnimator.ofFloat(mView, View.TRANSLATION_Y, 0);
+                animator.setInterpolator(new DecelerateInterpolator());
+                animator.setDuration(mAnimationDuration);
+                startAnimatorOnSurfaceView(animator);
+            }
+        });
     }
 
     void dismiss() {
         // Disable action button during animation.
         mActionButtonView.setEnabled(false);
         mView.getViewTreeObserver().removeOnGlobalLayoutListener(mLayoutListener);
-        // ViewPropertyAnimator is prefered here because Animation is not canceled when the activity
-        // is in backbround.
-        mView.animate()
-                .alpha(0f)
-                .setDuration(mAnimationDuration)
-                .setInterpolator(new DecelerateInterpolator())
-                .withEndAction(new Runnable() {
-                    @Override
-                    public void run() {
-                        mParent.removeView(mView);
-                    }
-                }).start();
+
+        Animator animator = ObjectAnimator.ofFloat(mView, View.TRANSLATION_Y, mView.getHeight());
+        animator.setInterpolator(new DecelerateInterpolator());
+        animator.setDuration(mAnimationDuration);
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mParent.removeView(mView);
+            }
+        });
+        startAnimatorOnSurfaceView(animator);
     }
 
     void adjustViewPosition() {
@@ -193,6 +233,30 @@ class SnackbarView {
             mProfileImageView.setVisibility(View.GONE);
         }
         return true;
+    }
+
+    /**
+     * @return The parent {@link ViewGroup} that {@link #mView} will be added to.
+     */
+    private ViewGroup findParentView(Activity activity) {
+        if (activity instanceof ChromeActivity) {
+            return ((ChromeActivity) activity).getCompositorViewHolder();
+        } else {
+            return (ViewGroup) activity.findViewById(android.R.id.content);
+        }
+    }
+
+    /**
+     * Starts the {@link Animator} with {@link SurfaceView} optimization disabled. If a
+     * {@link SurfaceView} is not present in the given {@link Activity}, start the {@link Animator}
+     * in the normal way.
+     */
+    private void startAnimatorOnSurfaceView(Animator animator) {
+        if (mActivity instanceof ChromeActivity) {
+            ((ChromeActivity) mActivity).getWindowAndroid().startAnimationOverContent(animator);
+        } else {
+            animator.start();
+        }
     }
 
     private void setViewText(TextView view, CharSequence text, boolean animate) {

@@ -194,7 +194,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private GestureStateListener mGestureStateListener;
 
     /** The parent view of the ContentView and the InfoBarContainer. */
-    private FrameLayout mContentViewParent;
+    private TabContentViewParent mContentViewParent;
 
     /** A list of Tab observers.  These are used to broadcast Tab events to listeners. */
     private final ObserverList<TabObserver> mObservers = new ObserverList<TabObserver>();
@@ -1767,10 +1767,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                 assert false;
                 mContentViewParent.removeAllViews();
             }
-            mContentViewParent = new FrameLayout(mThemedApplicationContext);
-            mContentViewParent.addView(cvc.getContainerView(),
-                    new FrameLayout.LayoutParams(
-                            LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+            mContentViewParent = new TabContentViewParent(mThemedApplicationContext);
+            mContentViewParent.addView(cvc.getContainerView(), 0, new FrameLayout.LayoutParams(
+                    LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
             mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this);
             mWebContentsObserver =
