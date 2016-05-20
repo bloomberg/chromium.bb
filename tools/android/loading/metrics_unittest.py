@@ -65,6 +65,13 @@ class MetricsTestCase(unittest.TestCase):
         self._BODY_SIZE + self._RESPONSE_HEADERS_SIZE + cache_control_length,
         downloaded)
 
+  def testTransferSize(self):
+    trace = self._MakeTrace()
+    r = trace.request_track.GetEvents()[0]
+    (_, downloaded) = metrics.TransferSize([r])
+    self.assertEqual(self._BODY_SIZE + self._RESPONSE_HEADERS_SIZE,
+                     downloaded)
+
   @classmethod
   def _MakeTrace(cls):
     request = request_track.Request.FromJsonDict(copy.deepcopy(cls._REQUEST))

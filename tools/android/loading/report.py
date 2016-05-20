@@ -10,6 +10,7 @@ When executed as a script, takes a trace filename and print the report.
 from content_classification_lens import ContentClassificationLens
 from loading_graph_view import LoadingGraphView
 import loading_trace
+import metrics
 from network_activity_lens import NetworkActivityLens
 from user_satisfied_lens import (
     FirstTextPaintLens, FirstContentfulPaintLens, FirstSignificantPaintLens)
@@ -55,6 +56,7 @@ class LoadingReport(object):
         self._contentful_paint_msec)
     self._significant_inversion = graph.GetInversionsAtTime(
         self._significant_paint_msec)
+    self._transfer_size = metrics.TotalTransferSize(trace)[1]
 
   def GenerateReport(self):
     """Returns a report as a dict."""
@@ -75,7 +77,8 @@ class LoadingReport(object):
                                  else None),
         'significant_inversion': (self._significant_inversion[0].url
                                   if self._significant_inversion
-                                  else None)}
+                                  else None),
+        'transfer_size': self._transfer_size}
     report.update(self._ad_report)
     return report
 
@@ -95,7 +98,8 @@ class LoadingReport(object):
         'ad_requests': 0 if ad_rules else None,
         'tracking_requests': 0 if tracking_rules else None,
         'ad_or_tracking_requests': 0 if has_rules else None,
-        'ad_or_tracking_initiated_requests': 0 if has_rules else None}
+        'ad_or_tracking_initiated_requests': 0 if has_rules else None,
+        'ad_or_tracking_initiated_transfer_size': 0 if has_rules else None}
     content_classification_lens = ContentClassificationLens(
         trace, ad_rules, tracking_rules)
     if not has_rules:
@@ -108,8 +112,10 @@ class LoadingReport(object):
       if tracking_rules:
         result['tracking_requests'] += int(is_tracking)
       result['ad_or_tracking_requests'] += int(is_ad or is_tracking)
-    result['ad_or_tracking_initiated_requests'] = len(
-        content_classification_lens.AdAndTrackingRequests())
+    ad_tracking_requests = content_classification_lens.AdAndTrackingRequests()
+    result['ad_or_tracking_initiated_requests'] = len(ad_tracking_requests)
+    result['ad_or_tracking_initiated_transfer_size'] = metrics.TransferSize(
+        ad_tracking_requests)[1]
     return result
 
   @classmethod

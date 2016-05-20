@@ -12,6 +12,7 @@ page, with a given time interval.
 import content_classification_lens
 from request_track import CachingPolicy
 
+HTTP_OK_LENGTH = len("HTTP/1.1 200 OK\r\n")
 
 def _RequestTransferSize(request):
   def HeadersSize(headers):
@@ -25,7 +26,7 @@ def _RequestTransferSize(request):
           'body': request.encoded_data_length}
 
 
-def _TransferSize(requests):
+def TransferSize(requests):
   """Returns the total transfer size (uploaded, downloaded) of requests.
 
   This is an estimate as we assume:
@@ -43,7 +44,7 @@ def _TransferSize(requests):
   for request in requests:
     request_bytes = _RequestTransferSize(request)
     uploaded_bytes += request_bytes['get'] + request_bytes['request_headers']
-    downloaded_bytes += (len('HTTP/1.1 200 OK')
+    downloaded_bytes += (HTTP_OK_LENGTH
                          + request_bytes['response_headers']
                          + request_bytes['body'])
   return (uploaded_bytes, downloaded_bytes)
@@ -51,7 +52,7 @@ def _TransferSize(requests):
 
 def TotalTransferSize(trace):
   """Returns the total transfer size (uploaded, downloaded) from a trace."""
-  return _TransferSize(trace.request_track.GetEvents())
+  return TransferSize(trace.request_track.GetEvents())
 
 
 def TransferredDataRevisit(trace, after_time_s, assume_validation_ok=False):
@@ -80,7 +81,7 @@ def TransferredDataRevisit(trace, after_time_s, assume_validation_ok=False):
         and caching_policy.HasValidators() and assume_validation_ok):
       downloaded_bytes += len('HTTP/1.1 304 NOT MODIFIED\r\n')
       continue
-    downloaded_bytes += (len('HTTP/1.1 200 OK\r\n')
+    downloaded_bytes += (HTTP_OK_LENGTH
                          + request_bytes['response_headers']
                          + request_bytes['body'])
   return (uploaded_bytes, downloaded_bytes)
@@ -102,7 +103,7 @@ def AdsAndTrackingTransferSize(trace, ad_rules_filename,
       content_classification_lens.ContentClassificationLens.WithRulesFiles(
           trace, ad_rules_filename, tracking_rules_filename))
   requests = content_lens.AdAndTrackingRequests()
-  return _TransferSize(requests)
+  return TransferSize(requests)
 
 
 def PlotTransferSizeVsTimeBetweenVisits(trace):

@@ -4,6 +4,7 @@
 
 import unittest
 
+import metrics
 import report
 import test_utils
 import user_satisfied_lens_unittest
@@ -20,6 +21,8 @@ class LoadingReportTestCase(unittest.TestCase):
   _REQUEST_OFFSET = 5
   _LOAD_END_TIME = 1280
   _MAIN_FRAME_ID = 1
+  _FIRST_REQUEST_DATA_LENGTH = 128
+  _SECOND_REQUEST_DATA_LENGTH = 1024
 
   def setUp(self):
     self.trace_creator = test_utils.TraceCreator()
@@ -29,8 +32,8 @@ class LoadingReportTestCase(unittest.TestCase):
             self._NAVIGATION_START_TIME + self._REQUEST_OFFSET, self._DURATION)]
     self.requests[0].timing.receive_headers_end = 0
     self.requests[1].timing.receive_headers_end = 0
-    self.requests[0].encoded_data_length = 128
-    self.requests[1].encoded_data_length = 1024
+    self.requests[0].encoded_data_length = self._FIRST_REQUEST_DATA_LENGTH
+    self.requests[1].encoded_data_length = self._SECOND_REQUEST_DATA_LENGTH
 
     self.trace_events = [
         {'ts': self._NAVIGATION_START_TIME * self.MILLI_TO_MICRO, 'ph': 'R',
@@ -82,6 +85,11 @@ class LoadingReportTestCase(unittest.TestCase):
     self.assertIsNone(loading_report['ad_requests'])
     self.assertIsNone(loading_report['ad_or_tracking_requests'])
     self.assertIsNone(loading_report['ad_or_tracking_initiated_requests'])
+    self.assertIsNone(loading_report['ad_or_tracking_initiated_transfer_size'])
+    self.assertEqual(
+        self._FIRST_REQUEST_DATA_LENGTH + self._SECOND_REQUEST_DATA_LENGTH
+        + metrics.HTTP_OK_LENGTH * 2,
+        loading_report['transfer_size'])
 
   def testInversion(self):
     self.requests[0].timing.loading_finished = 4 * (
@@ -119,6 +127,9 @@ class LoadingReportTestCase(unittest.TestCase):
     self.assertEqual(1, loading_report['ad_or_tracking_requests'])
     self.assertEqual(1, loading_report['ad_or_tracking_initiated_requests'])
     self.assertIsNone(loading_report['tracking_requests'])
+    self.assertEqual(
+        self._FIRST_REQUEST_DATA_LENGTH + metrics.HTTP_OK_LENGTH,
+        loading_report['ad_or_tracking_initiated_transfer_size'])
 
 
 if __name__ == '__main__':
