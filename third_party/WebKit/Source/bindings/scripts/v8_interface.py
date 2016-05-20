@@ -180,7 +180,7 @@ def interface_context(interface):
         'is_typed_array_type': is_typed_array_type,
         'lifetime': 'Dependent' if (has_visit_dom_wrapper or is_dependent_lifetime) else 'Independent',
         'measure_as': v8_utilities.measure_as(interface, None),  # [MeasureAs]
-        'origin_trial_enabled_function': v8_utilities.origin_trial_enabled_function_name(interface, None),
+        'origin_trial_enabled_function': v8_utilities.origin_trial_enabled_function_name(interface),
         'parent_interface': parent_interface,
         'pass_cpp_type': cpp_name(interface) + '*',
         'active_scriptwrappable': active_scriptwrappable,
@@ -606,7 +606,7 @@ def constant_context(constant, interface):
         'idl_type': constant.idl_type.name,
         'measure_as': v8_utilities.measure_as(constant, interface),  # [MeasureAs]
         'name': constant.name,
-        'origin_trial_enabled_function': v8_utilities.origin_trial_enabled_function_name(constant, interface),  # [OriginTrialEnabled]
+        'origin_trial_enabled_function': v8_utilities.origin_trial_enabled_function_name(constant),  # [OriginTrialEnabled]
         # FIXME: use 'reflected_name' as correct 'name'
         'reflected_name': extended_attributes.get('Reflect', constant.name),
         'runtime_enabled_function': runtime_enabled_function_name(constant),  # [RuntimeEnabled]

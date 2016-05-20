@@ -359,7 +359,7 @@ def measure_as(definition_or_member, interface):
 
 
 # [OriginTrialEnabled]
-def origin_trial_enabled_function_name(definition_or_member, interface):
+def origin_trial_enabled_function_name(definition_or_member):
     """Returns the name of the OriginTrials enabled function.
 
     An exception is raised if both the OriginTrialEnabled and RuntimeEnabled
