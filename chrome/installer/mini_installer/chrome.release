@@ -20,7 +20,6 @@ wow_helper.exe: %(ChromeDir)s\
 #
 chrome.dll: %(VersionDir)s\
 chrome_100_percent.pak: %(VersionDir)s\
-chrome_material_100_percent.pak: %(VersionDir)s\
 chrome_child.dll: %(VersionDir)s\
 chrome_elf.dll: %(VersionDir)s\
 chrome_watcher.dll: %(VersionDir)s\
@@ -49,7 +48,6 @@ locales\*.pak: %(VersionDir)s\Locales
 
 [HIDPI]
 chrome_200_percent.pak: %(VersionDir)s\
-chrome_material_200_percent.pak: %(VersionDir)s\
 
 [TOUCH]
 

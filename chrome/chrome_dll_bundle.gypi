@@ -58,6 +58,7 @@
     '<@(mac_all_xibs)',
     'browser/mac/install.sh',
     '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_100_percent.pak',
+    '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_material_100_percent.pak',
     '<(SHARED_INTERMEDIATE_DIR)/repack/resources.pak',
     '<!@pymod_do_main(repack_locales -o -p <(OS) -g <(grit_out_dir) -s <(SHARED_INTERMEDIATE_DIR) -x <(SHARED_INTERMEDIATE_DIR) <(locales))',
     # Note: pseudo_locales are generated via the packed_resources
@@ -230,15 +231,6 @@
     ['enable_hidpi==1', {
       'mac_bundle_resources': [
         '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_200_percent.pak',
-      ],
-    }],
-    ['enable_topchrome_md==1', {
-      'mac_bundle_resources': [
-      '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_material_100_percent.pak',
-      ],
-    }],
-    ['enable_topchrome_md==1 and enable_hidpi==1', {
-      'mac_bundle_resources': [
         '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_material_200_percent.pak',
       ],
     }],

@@ -14,14 +14,19 @@ grit("theme_resources") {
     "theme_resources_100_percent.pak",
     "theme_resources_200_percent.pak",
     "theme_resources_300_percent.pak",
-    "theme_resources_material_100_percent.pak",
-    "theme_resources_material_200_percent.pak",
   ]
 
   deps = [
     ":chrome_unscaled_resources",
     "//ui/resources",
   ]
+
+  if (is_mac) {
+    outputs += [
+      "theme_resources_material_100_percent.pak",
+      "theme_resources_material_200_percent.pak",
+    ]
+  }
 
   output_dir = "$root_gen_dir/chrome"
 }

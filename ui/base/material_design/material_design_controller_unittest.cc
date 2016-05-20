@@ -48,10 +48,8 @@ void MaterialDesignControllerTest::TearDown() {
 
 void MaterialDesignControllerTest::SetCommandLineSwitch(
     const std::string& value_string) {
-#if defined(ENABLE_TOPCHROME_MD)
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kTopChromeMD, value_string);
-#endif  // defined(ENABLE_TOPCHROME_MD)
 }
 
 class MaterialDesignControllerTestMaterial :
@@ -97,18 +95,6 @@ class MaterialDesignControllerTestInvalid :
  private:
   DISALLOW_COPY_AND_ASSIGN(MaterialDesignControllerTestInvalid);
 };
-
-#if !defined(ENABLE_TOPCHROME_MD)
-
-// Verify the Mode maps to Mode::NON_MATERIAL when the compile time flag is not
-// defined.
-TEST_F(MaterialDesignControllerTest,
-       NonMaterialModeWhenCompileTimeFlagDisabled) {
-  EXPECT_EQ(MaterialDesignController::Mode::NON_MATERIAL,
-            MaterialDesignController::GetMode());
-}
-
-#else
 
 // Verify command line value "material" maps to Mode::MATERIAL when the compile
 // time flag is defined.
@@ -157,8 +143,6 @@ TEST_F(MaterialDesignControllerTestInvalid, InvalidCommandLineValue) {
 TEST_F(MaterialDesignControllerTestMaterial, IsModeMaterialInitializesMode) {
   EXPECT_TRUE(MaterialDesignController::IsModeMaterial());
 }
-
-#endif  // !defined(ENABLE_TOPCHROME_MD)
 
 }  // namespace
 }  // namespace ui
