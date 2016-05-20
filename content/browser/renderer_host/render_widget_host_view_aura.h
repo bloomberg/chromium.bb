@@ -432,6 +432,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void RemovingFromRootWindow();
 
   // DelegatedFrameHostClient implementation.
+  int DelegatedFrameHostGetGpuMemoryBufferClientId() const override;
   ui::Layer* DelegatedFrameHostGetLayer() const override;
   bool DelegatedFrameHostIsVisible() const override;
   SkColor DelegatedFrameHostGetGutterColor(SkColor color) const override;

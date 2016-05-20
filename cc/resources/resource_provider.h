@@ -165,7 +165,8 @@ class CC_EXPORT ResourceProvider
   void GenerateSyncTokenForResources(const ResourceIdArray& resource_ids);
 
   // Creates accounting for a child. Returns a child ID.
-  int CreateChild(const ReturnCallback& return_callback);
+  int CreateChild(const ReturnCallback& return_callback,
+                  int gpu_memory_buffer_client_id);
 
   // Destroys accounting for the child, deleting all accounted resources.
   void DestroyChild(int child);
@@ -330,6 +331,28 @@ class CC_EXPORT ResourceProvider
     base::ThreadChecker thread_checker_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGpuMemoryBuffer);
+  };
+
+  class CC_EXPORT ScopedReadLockGpuMemoryBuffer {
+   public:
+    ScopedReadLockGpuMemoryBuffer(ResourceProvider* resource_provider,
+                                  ResourceId resource_id);
+    ~ScopedReadLockGpuMemoryBuffer();
+
+    // This may return nullptr.
+    gfx::GpuMemoryBuffer* GetGpuMemoryBuffer() const;
+
+    // This returns the GL texture that is backed by a GL image bound to the
+    // resource's GpuMemoryBuffer.
+    unsigned GetTextureId() const;
+
+   private:
+    ResourceProvider* resource_provider_;
+    ResourceId resource_id_;
+    const ResourceProvider::Resource* resource_;
+    base::ThreadChecker thread_checker_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedReadLockGpuMemoryBuffer);
   };
 
   class CC_EXPORT ScopedWriteLockGr {
@@ -589,6 +612,7 @@ class CC_EXPORT ResourceProvider
     ResourceIdMap child_to_parent_map;
     ResourceIdMap parent_to_child_map;
     ReturnCallback return_callback;
+    int gpu_memory_buffer_client_id;
     bool marked_for_deletion;
     bool needs_sync_tokens;
   };
@@ -606,7 +630,7 @@ class CC_EXPORT ResourceProvider
   ResourceId CreateBitmap(const gfx::Size& size);
   Resource* InsertResource(ResourceId id, Resource resource);
   Resource* GetResource(ResourceId id);
-  const Resource* LockForRead(ResourceId id);
+  const Resource* LockForRead(ResourceId id, bool create_gpu_memory_buffer);
   void UnlockForRead(ResourceId id);
   Resource* LockForWrite(ResourceId id);
   void UnlockForWrite(Resource* resource);

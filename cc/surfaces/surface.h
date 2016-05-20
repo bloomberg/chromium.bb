@@ -49,6 +49,10 @@ class CC_SURFACES_EXPORT Surface {
   }
 
   void SetPreviousFrameSurface(Surface* surface);
+  void SetGpuMemoryBufferClientId(int gpu_memory_buffer_client_id);
+  int gpu_memory_buffer_client_id() const {
+    return gpu_memory_buffer_client_id_;
+  }
 
   void QueueFrame(std::unique_ptr<CompositorFrame> frame,
                   const DrawCallback& draw_callback);
@@ -94,6 +98,7 @@ class CC_SURFACES_EXPORT Surface {
 
   SurfaceId surface_id_;
   SurfaceId previous_frame_surface_id_;
+  int gpu_memory_buffer_client_id_ = -1;
   base::WeakPtr<SurfaceFactory> factory_;
   // TODO(jamesr): Support multiple frames in flight.
   std::unique_ptr<CompositorFrame> current_frame_;

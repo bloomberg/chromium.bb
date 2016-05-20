@@ -16,16 +16,17 @@
 namespace cc {
 namespace {
 
-int g_gpu_memory_buffer_id_counter = 0;
-
 class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
-  GpuMemoryBufferImpl(const gfx::Size& size,
+  GpuMemoryBufferImpl(TestGpuMemoryBufferManager* manager,
+                      int id,
+                      const gfx::Size& size,
                       gfx::BufferFormat format,
                       std::unique_ptr<base::SharedMemory> shared_memory,
                       size_t offset,
                       size_t stride)
-      : id_(++g_gpu_memory_buffer_id_counter),
+      : manager_(manager),
+        id_(id),
         size_(size),
         format_(format),
         shared_memory_(std::move(shared_memory)),
@@ -33,6 +34,8 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
         stride_(stride),
         mapped_(false),
         is_in_use_by_window_server_(false) {}
+
+  ~GpuMemoryBufferImpl() override { manager_->OnGpuMemoryBufferDestroyed(id_); }
 
   // Overridden from gfx::GpuMemoryBuffer:
   bool Map() override {
@@ -83,6 +86,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   }
 
  private:
+  TestGpuMemoryBufferManager* manager_;
   gfx::GpuMemoryBufferId id_;
   const gfx::Size size_;
   gfx::BufferFormat format_;
@@ -93,12 +97,65 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   bool is_in_use_by_window_server_;
 };
 
+class GpuMemoryBufferFromClient : public gfx::GpuMemoryBuffer {
+ public:
+  GpuMemoryBufferFromClient(TestGpuMemoryBufferManager* manager,
+                            int id,
+                            gfx::GpuMemoryBuffer* client_buffer)
+      : manager_(manager), id_(id), client_buffer_(client_buffer) {}
+
+  ~GpuMemoryBufferFromClient() override {
+    manager_->OnGpuMemoryBufferDestroyed(id_);
+  }
+
+  bool Map() override { return client_buffer_->Map(); }
+  void* memory(size_t plane) override { return client_buffer_->memory(plane); }
+  void Unmap() override { client_buffer_->Unmap(); }
+  bool IsInUseByMacOSWindowServer() const override {
+    return client_buffer_->IsInUseByMacOSWindowServer();
+  }
+  gfx::Size GetSize() const override { return client_buffer_->GetSize(); }
+  gfx::BufferFormat GetFormat() const override {
+    return client_buffer_->GetFormat();
+  }
+  int stride(size_t plane) const override {
+    return client_buffer_->stride(plane);
+  }
+  gfx::GpuMemoryBufferId GetId() const override { return id_; }
+  gfx::GpuMemoryBufferHandle GetHandle() const override {
+    return client_buffer_->GetHandle();
+  }
+  ClientBuffer AsClientBuffer() override {
+    return client_buffer_->AsClientBuffer();
+  }
+
+ private:
+  TestGpuMemoryBufferManager* manager_;
+  gfx::GpuMemoryBufferId id_;
+  gfx::GpuMemoryBuffer* client_buffer_;
+};
+
 }  // namespace
 
 TestGpuMemoryBufferManager::TestGpuMemoryBufferManager() {
 }
 
 TestGpuMemoryBufferManager::~TestGpuMemoryBufferManager() {
+  DCHECK(buffers_.empty());
+  DCHECK(clients_.empty());
+  if (parent_gpu_memory_buffer_manager_)
+    parent_gpu_memory_buffer_manager_->clients_.erase(client_id_);
+}
+
+std::unique_ptr<TestGpuMemoryBufferManager>
+TestGpuMemoryBufferManager::CreateClientGpuMemoryBufferManager() {
+  std::unique_ptr<TestGpuMemoryBufferManager> client(
+      new TestGpuMemoryBufferManager);
+  client->client_id_ = ++last_client_id_;
+  client->parent_gpu_memory_buffer_manager_ = this;
+
+  clients_[client->client_id_] = client.get();
+  return client;
 }
 
 void TestGpuMemoryBufferManager::SetGpuMemoryBufferIsInUseByMacOSWindowServer(
@@ -106,6 +163,12 @@ void TestGpuMemoryBufferManager::SetGpuMemoryBufferIsInUseByMacOSWindowServer(
     bool in_use) {
   static_cast<GpuMemoryBufferImpl*>(gpu_memory_buffer)
       ->SetIsInUseByMacOSWindowServer(in_use);
+}
+
+void TestGpuMemoryBufferManager::OnGpuMemoryBufferDestroyed(
+    gfx::GpuMemoryBufferId gpu_memory_buffer_id) {
+  DCHECK(buffers_.find(gpu_memory_buffer_id.id) != buffers_.end());
+  buffers_.erase(gpu_memory_buffer_id.id);
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
@@ -118,10 +181,14 @@ TestGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
   const size_t buffer_size = gfx::BufferSizeForBufferFormat(size, format);
   if (!shared_memory->CreateAnonymous(buffer_size))
     return nullptr;
-  return base::WrapUnique<gfx::GpuMemoryBuffer>(new GpuMemoryBufferImpl(
-      size, format, std::move(shared_memory), 0,
-      base::checked_cast<int>(
-          gfx::RowSizeForBufferFormat(size.width(), format, 0))));
+
+  last_gpu_memory_buffer_id_ += 1;
+  std::unique_ptr<gfx::GpuMemoryBuffer> result(new GpuMemoryBufferImpl(
+      this, last_gpu_memory_buffer_id_, size, format, std::move(shared_memory),
+      0, base::checked_cast<int>(
+             gfx::RowSizeForBufferFormat(size.width(), format, 0))));
+  buffers_[last_gpu_memory_buffer_id_] = result.get();
+  return result;
 }
 
 std::unique_ptr<gfx::GpuMemoryBuffer>
@@ -132,10 +199,13 @@ TestGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
   if (handle.type != gfx::SHARED_MEMORY_BUFFER)
     return nullptr;
 
-  return base::WrapUnique<gfx::GpuMemoryBuffer>(new GpuMemoryBufferImpl(
-      size, format,
+  last_gpu_memory_buffer_id_ += 1;
+  std::unique_ptr<gfx::GpuMemoryBuffer> result(new GpuMemoryBufferImpl(
+      this, last_gpu_memory_buffer_id_, size, format,
       base::WrapUnique(new base::SharedMemory(handle.handle, false)),
       handle.offset, handle.stride));
+  buffers_[last_gpu_memory_buffer_id_] = result.get();
+  return result;
 }
 
 gfx::GpuMemoryBuffer*
@@ -148,8 +218,20 @@ std::unique_ptr<gfx::GpuMemoryBuffer>
 TestGpuMemoryBufferManager::CreateGpuMemoryBufferFromClientId(
     int client_id,
     const gfx::GpuMemoryBufferId& gpu_memory_buffer_id) {
-  NOTIMPLEMENTED();
-  return nullptr;
+  // Check that the client and id are valid to ensure that the ResourceProvider
+  // is doing appropriate validation.
+  auto client_it = clients_.find(client_id);
+  DCHECK(client_it != clients_.end());
+  auto buffer_it = client_it->second->buffers_.find(gpu_memory_buffer_id.id);
+  DCHECK(buffer_it != client_it->second->buffers_.end());
+
+  gfx::GpuMemoryBuffer* found = buffer_it->second;
+
+  last_gpu_memory_buffer_id_ += 1;
+  std::unique_ptr<gfx::GpuMemoryBuffer> result(
+      new GpuMemoryBufferFromClient(this, last_gpu_memory_buffer_id_, found));
+  buffers_[last_gpu_memory_buffer_id_] = result.get();
+  return result;
 }
 
 void TestGpuMemoryBufferManager::SetDestructionSyncToken(

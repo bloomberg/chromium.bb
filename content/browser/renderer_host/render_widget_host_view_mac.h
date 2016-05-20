@@ -491,6 +491,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void PauseForPendingResizeOrRepaintsAndDraw();
 
   // DelegatedFrameHostClient implementation.
+  int DelegatedFrameHostGetGpuMemoryBufferClientId() const override;
   ui::Layer* DelegatedFrameHostGetLayer() const override;
   bool DelegatedFrameHostIsVisible() const override;
   SkColor DelegatedFrameHostGetGutterColor(SkColor color) const override;

@@ -48,6 +48,13 @@ void Surface::SetPreviousFrameSurface(Surface* surface) {
   previous_frame_surface_id_ = surface->surface_id();
 }
 
+void Surface::SetGpuMemoryBufferClientId(int gpu_memory_buffer_client_id) {
+  // This should only be set once.
+  DCHECK_EQ(-1, gpu_memory_buffer_client_id_);
+  DCHECK_NE(gpu_memory_buffer_client_id, gpu_memory_buffer_client_id_);
+  gpu_memory_buffer_client_id_ = gpu_memory_buffer_client_id;
+}
+
 void Surface::QueueFrame(std::unique_ptr<CompositorFrame> frame,
                          const DrawCallback& callback) {
   DCHECK(factory_);

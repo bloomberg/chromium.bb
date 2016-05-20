@@ -375,7 +375,9 @@ void ResourceProvider::Resource::WaitSyncToken(gpu::gles2::GLES2Interface* gl) {
 }
 
 ResourceProvider::Child::Child()
-    : marked_for_deletion(false), needs_sync_tokens(true) {}
+    : gpu_memory_buffer_client_id(-1),
+      marked_for_deletion(false),
+      needs_sync_tokens(true) {}
 
 ResourceProvider::Child::Child(const Child& other) = default;
 
@@ -721,7 +723,8 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
     resource->pixels = nullptr;
   }
   if (resource->gpu_memory_buffer) {
-    DCHECK(resource->origin == Resource::INTERNAL);
+    DCHECK(resource->origin == Resource::INTERNAL ||
+           resource->origin == Resource::DELEGATED);
     resource->gpu_memory_buffer.reset();
   }
   resources_.erase(it);
@@ -839,7 +842,9 @@ ResourceProvider::Resource* ResourceProvider::GetResource(ResourceId id) {
   return &it->second;
 }
 
-const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
+const ResourceProvider::Resource* ResourceProvider::LockForRead(
+    ResourceId id,
+    bool create_gpu_memory_buffer) {
   Resource* resource = GetResource(id);
   DCHECK(!resource->locked_for_write) << "locked for write: "
                                       << resource->locked_for_write;
@@ -880,6 +885,20 @@ const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
     if (current_read_lock_fence_.get())
       current_read_lock_fence_->Set();
     resource->read_lock_fence = current_read_lock_fence_;
+  }
+
+  if (create_gpu_memory_buffer && !resource->gpu_memory_buffer &&
+      resource->child_id) {
+    ChildMap::iterator child_it = children_.find(resource->child_id);
+    DCHECK(child_it != children_.end());
+    Child& child_info = child_it->second;
+    if (child_info.gpu_memory_buffer_client_id != -1 &&
+        resource->gpu_memory_buffer_id.id != -1) {
+      resource->gpu_memory_buffer =
+          gpu_memory_buffer_manager_->CreateGpuMemoryBufferFromClientId(
+              child_info.gpu_memory_buffer_client_id,
+              resource->gpu_memory_buffer_id);
+    }
   }
 
   return resource;
@@ -958,7 +977,7 @@ ResourceProvider::ScopedReadLockGL::ScopedReadLockGL(
     ResourceId resource_id)
     : resource_provider_(resource_provider),
       resource_id_(resource_id),
-      resource_(resource_provider->LockForRead(resource_id)) {
+      resource_(resource_provider->LockForRead(resource_id, false)) {
   DCHECK(resource_);
 }
 
@@ -1020,7 +1039,7 @@ ResourceProvider::ScopedReadLockSoftware::ScopedReadLockSoftware(
     ResourceProvider* resource_provider,
     ResourceId resource_id)
     : resource_provider_(resource_provider), resource_id_(resource_id) {
-  const Resource* resource = resource_provider->LockForRead(resource_id);
+  const Resource* resource = resource_provider->LockForRead(resource_id, false);
   ResourceProvider::PopulateSkBitmapWithResource(&sk_bitmap_, resource);
 }
 
@@ -1085,6 +1104,28 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::GetGpuMemoryBuffer() {
             gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, gpu::kNullSurfaceHandle);
   }
   return gpu_memory_buffer_.get();
+}
+
+ResourceProvider::ScopedReadLockGpuMemoryBuffer::ScopedReadLockGpuMemoryBuffer(
+    ResourceProvider* resource_provider,
+    ResourceId resource_id)
+    : resource_provider_(resource_provider),
+      resource_id_(resource_id),
+      resource_(resource_provider->LockForRead(resource_id, true)) {}
+
+ResourceProvider::ScopedReadLockGpuMemoryBuffer::
+    ~ScopedReadLockGpuMemoryBuffer() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  resource_provider_->UnlockForRead(resource_id_);
+}
+
+gfx::GpuMemoryBuffer*
+ResourceProvider::ScopedReadLockGpuMemoryBuffer::GetGpuMemoryBuffer() const {
+  return resource_->gpu_memory_buffer.get();
+}
+
+unsigned ResourceProvider::ScopedReadLockGpuMemoryBuffer::GetTextureId() const {
+  return resource_->gl_id;
 }
 
 ResourceProvider::ScopedWriteLockGr::ScopedWriteLockGr(
@@ -1264,11 +1305,13 @@ void ResourceProvider::Initialize() {
       new BufferIdAllocator(gl, id_allocation_chunk_size_));
 }
 
-int ResourceProvider::CreateChild(const ReturnCallback& return_callback) {
+int ResourceProvider::CreateChild(const ReturnCallback& return_callback,
+                                  int gpu_memory_buffer_client_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   Child child_info;
   child_info.return_callback = return_callback;
+  child_info.gpu_memory_buffer_client_id = gpu_memory_buffer_client_id;
 
   int child = next_child_++;
   children_[child] = child_info;

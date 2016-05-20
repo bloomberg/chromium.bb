@@ -17,9 +17,15 @@ class TestGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   TestGpuMemoryBufferManager();
   ~TestGpuMemoryBufferManager() override;
 
+  std::unique_ptr<TestGpuMemoryBufferManager>
+  CreateClientGpuMemoryBufferManager();
+  int GetClientId() { return client_id_; }
+
   void SetGpuMemoryBufferIsInUseByMacOSWindowServer(
       gfx::GpuMemoryBuffer* gpu_memory_buffer,
       bool in_use);
+
+  void OnGpuMemoryBufferDestroyed(gfx::GpuMemoryBufferId gpu_memory_buffer_id);
 
   // Overridden from gpu::GpuMemoryBufferManager:
   std::unique_ptr<gfx::GpuMemoryBuffer> AllocateGpuMemoryBuffer(
@@ -40,6 +46,18 @@ class TestGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
                                const gpu::SyncToken& sync_token) override;
 
  private:
+  // Buffers allocated by this manager.
+  int last_gpu_memory_buffer_id_ = 1000;
+  std::map<int, gfx::GpuMemoryBuffer*> buffers_;
+
+  // Parent information for child managers.
+  int client_id_ = -1;
+  TestGpuMemoryBufferManager* parent_gpu_memory_buffer_manager_ = nullptr;
+
+  // Child infomration for parent managers.
+  int last_client_id_ = 5000;
+  std::map<int, TestGpuMemoryBufferManager*> clients_;
+
   DISALLOW_COPY_AND_ASSIGN(TestGpuMemoryBufferManager);
 };
 

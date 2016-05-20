@@ -138,7 +138,8 @@ int SurfaceAggregator::ChildIdForSurface(Surface* surface) {
       surface_id_to_resource_child_id_.find(surface->surface_id());
   if (it == surface_id_to_resource_child_id_.end()) {
     int child_id =
-        provider_->CreateChild(base::Bind(&UnrefHelper, surface->factory()));
+        provider_->CreateChild(base::Bind(&UnrefHelper, surface->factory()),
+                               surface->gpu_memory_buffer_client_id());
     if (surface->factory()) {
       provider_->SetChildNeedsSyncTokens(
           child_id, surface->factory()->needs_sync_points());

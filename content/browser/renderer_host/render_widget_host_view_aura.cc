@@ -2760,6 +2760,10 @@ RenderWidgetHostViewAura::GetRenderViewHostDelegateView() {
 ////////////////////////////////////////////////////////////////////////////////
 // DelegatedFrameHost, public:
 
+int RenderWidgetHostViewAura::DelegatedFrameHostGetGpuMemoryBufferClientId()
+    const {
+  return host_->GetProcess()->GetID();
+}
 ui::Layer* RenderWidgetHostViewAura::DelegatedFrameHostGetLayer() const {
   return window_->layer();
 }

@@ -53,6 +53,10 @@ class CC_SURFACES_EXPORT SurfaceFactory
   // the current frame on old_id for the purposes of calculating damage.
   void SetPreviousFrameSurface(SurfaceId new_id, SurfaceId old_id);
 
+  // Set the GpuMemoryBuffer client id for resources coming from a surface.
+  void SetSurfaceGpuMemoryBufferClientId(SurfaceId surface_id,
+                                         int gpu_memory_buffer_client_id);
+
   // A frame can only be submitted to a surface created by this factory,
   // although the frame may reference surfaces created by other factories.
   // The callback is called the first time this frame is used to draw, or if

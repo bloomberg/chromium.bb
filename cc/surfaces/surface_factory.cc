@@ -63,6 +63,14 @@ void SurfaceFactory::SetPreviousFrameSurface(SurfaceId new_id,
   }
 }
 
+void SurfaceFactory::SetSurfaceGpuMemoryBufferClientId(
+    SurfaceId surface_id,
+    int gpu_memory_buffer_client_id) {
+  OwningSurfaceMap::iterator it = surface_map_.find(surface_id);
+  DCHECK(it != surface_map_.end());
+  it->second->SetGpuMemoryBufferClientId(gpu_memory_buffer_client_id);
+}
+
 void SurfaceFactory::SubmitCompositorFrame(
     SurfaceId surface_id,
     std::unique_ptr<CompositorFrame> frame,

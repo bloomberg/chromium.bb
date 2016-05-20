@@ -56,6 +56,7 @@ class ResizeLock;
 // display them.
 class CONTENT_EXPORT DelegatedFrameHostClient {
  public:
+  virtual int DelegatedFrameHostGetGpuMemoryBufferClientId() const = 0;
   virtual ui::Layer* DelegatedFrameHostGetLayer() const = 0;
   virtual bool DelegatedFrameHostIsVisible() const = 0;
 

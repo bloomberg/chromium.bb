@@ -406,6 +406,11 @@ namespace content {
 ////////////////////////////////////////////////////////////////////////////////
 // DelegatedFrameHost, public:
 
+int RenderWidgetHostViewMac::DelegatedFrameHostGetGpuMemoryBufferClientId()
+    const {
+  return render_widget_host_->GetProcess()->GetID();
+}
+
 ui::Layer* RenderWidgetHostViewMac::DelegatedFrameHostGetLayer() const {
   return root_layer_.get();
 }
