@@ -436,7 +436,6 @@ class PaygenStage(generic_stages.BoardSpecificBuilderStage):
                                         site_config=self._run.site_config,
                                         dry_run=debug,
                                         run_parallel=True,
-                                        run_on_builder=True,
                                         skip_delta_payloads=skip_delta_payloads,
                                         disable_tests=disable_tests,
                                         skip_duts_check=skip_duts_check)

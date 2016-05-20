@@ -1533,121 +1533,11 @@ DOC = "Faux doc"
 
 ''')
 
-  def testAutotestPayloads(self):
-    """Test the process of scheduling HWLab tests."""
-    paygen = paygen_build_lib._PaygenBuild(
-        self.foo_build, self.tempdir, config_lib_unittest.MockSiteConfig())
-    control_dir = paygen._control_dir
-    control_dump_dir = os.path.join(control_dir, paygen.CONTROL_FILE_SUBDIR)
-    payloads = ['foo', 'bar']
-    test_channel = self.foo_build.channel.rpartition('-')[0]
-    suite_name = paygen.PAYGEN_AU_SUITE_TEMPLATE % test_channel
-    tarball_name = paygen.CONTROL_TARBALL_TEMPLATE % test_channel
-    tarball_path = os.path.join(control_dir, tarball_name)
-    test_archive_build = '%s-release/R99-%s' % (self.foo_build.board,
-                                                self.foo_build.version)
-    test_archive_build_uri = ('gs://chromeos-image-archive/%s' %
-                              test_archive_build)
-    test_upload_path = os.path.join(test_archive_build_uri, tarball_name)
-
-    self.mox.StubOutWithMock(os, 'makedirs')
-    os.makedirs(os.path.join(control_dir, paygen.CONTROL_FILE_SUBDIR))
-
-    self.mox.StubOutWithMock(paygen, '_EmitControlFile')
-    paygen._EmitControlFile('foo', suite_name, control_dump_dir)
-    paygen._EmitControlFile('bar', suite_name, control_dump_dir)
-
-    self.mox.StubOutWithMock(cros_build_lib, 'CreateTarball')
-    cros_build_lib.CreateTarball(
-        tarball_path, control_dir,
-        compression=cros_build_lib.COMP_BZIP2,
-        inputs=[paygen.CONTROL_FILE_SUBDIR]).AndReturn(
-            cros_build_lib.CommandResult(returncode=0))
-
-    # Setup preliminary values needed for running autotests.
-    paygen._archive_board = self.foo_build.board
-    paygen._archive_build = test_archive_build
-    paygen._archive_build_uri = test_archive_build_uri
-
-    self.mox.StubOutWithMock(gslib, 'Copy')
-    gslib.Copy(tarball_path, test_upload_path, acl='public-read')
-
-    # Both utils and cros_build_lib versions of RunCommand exist. For now, stub
-    # them both out just to be safe (don't want unit tests running actual
-    # commands).
-    # TODO(garnold) remove the dryrun argument.
-    self.mox.StubOutWithMock(utils, 'RunCommand')
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-
-    timeout_mins = config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT / 60
-    expected_command = [
-        mox.StrContains('site_utils/run_suite.py'),
-        '--board', 'foo-board',
-        '--build', 'foo-board-release/R99-1.2.3',
-        '--suite_name', 'paygen_au_foo',
-        '--file_bugs', 'True',
-        '--pool', 'bvt',
-        '--retry', 'True',
-        '--timeout_mins', str(timeout_mins),
-        '--no_wait', 'False',
-        '--suite_min_duts', '2']
-
-    job_id_output = '''
-Autotest instance: cautotest
-02-23-2015 [06:26:51] Submitted create_suite_job rpc
-02-23-2015 [06:26:53] Created suite job: http://cautotest.corp.google.com/afe/#tab_id=view_job&object_id=26960110
-@@@STEP_LINK@Suite created@http://cautotest.corp.google.com/afe/#tab_id=view_job&object_id=26960110@@@
-The suite job has another 3:09:50.012887 till timeout.
-The suite job has another 2:39:39.789250 till timeout.
-    '''
-
-    cros_build_lib.RunCommand(
-        expected_command).AndReturn(
-            utils.CommandResult(returncode=0, output=job_id_output))
-
-    self.mox.ReplayAll()
-
-    paygen._AutotestPayloads(payloads)
-
-  def testScheduleAutotestTestsNormal(self):
-    """Test scheduling autotest tests with run_suite.py."""
-    paygen = paygen_build_lib._PaygenBuild(
-        self.foo_build, self.tempdir,
-        config_lib_unittest.MockSiteConfig())
-
-    self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
-    self.mox.StubOutWithMock(utils, 'RunCommand')
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-
-    timeout_mins = config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT / 60
-    expected_command = [
-        mox.StrContains('site_utils/run_suite.py'),
-        '--board', 'foo-board',
-        '--build', 'foo-board-release/R99-1.2.3',
-        '--suite_name', 'paygen_au_foo',
-        '--file_bugs', 'True',
-        '--pool', 'bvt',
-        '--retry', 'True',
-        '--timeout_mins', str(timeout_mins),
-        '--no_wait', 'False',
-        '--suite_min_duts', '2']
-    cros_build_lib.RunCommand(
-        expected_command).AndReturn(
-            utils.CommandResult(returncode=0, output=''))
-
-    self.mox.ReplayAll()
-
-    # Setup preliminary values needed for scheduling autotests.
-    paygen._archive_board = 'foo-board'
-    paygen._archive_build = 'foo-board-release/R99-1.2.3'
-
-    paygen._ScheduleAutotestTests('paygen_au_foo')
-
-  def testScheduleAutotestTestsBuilderEnvironment(self):
+  def testScheduleAutotestTests(self):
     """Test scheduling autotest tests with build autotest proxy."""
     paygen = paygen_build_lib._PaygenBuild(
         self.foo_build, self.tempdir,
-        config_lib_unittest.MockSiteConfig(), run_on_builder=True)
+        config_lib_unittest.MockSiteConfig())
 
     self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
     self.mox.StubOutWithMock(utils, 'RunCommand')
@@ -1670,11 +1560,11 @@ The suite job has another 2:39:39.789250 till timeout.
 
     paygen._ScheduleAutotestTests('paygen_au_foo')
 
-  def testScheduleAutotestTestsBuilderEnvironmentWarn(self):
+  def testScheduleAutotestTestsWarn(self):
     """Test scheduling autotest tests with build autotest proxy."""
     paygen = paygen_build_lib._PaygenBuild(
         self.foo_build, self.tempdir,
-        config_lib_unittest.MockSiteConfig(), run_on_builder=True)
+        config_lib_unittest.MockSiteConfig())
 
     self.mox.StubOutWithMock(commands, 'RunHWTestSuite')
     self.mox.StubOutWithMock(utils, 'RunCommand')

@@ -395,7 +395,7 @@ class _PaygenBuild(object):
                skip_full_payloads=False, skip_delta_payloads=False,
                skip_test_payloads=False, skip_nontest_payloads=False,
                disable_tests=False, output_dir=None,
-               run_parallel=False, run_on_builder=False, au_generator_uri=None,
+               run_parallel=False, au_generator_uri=None,
                skip_duts_check=False):
     """Initializer."""
     self._build = build
@@ -409,7 +409,6 @@ class _PaygenBuild(object):
     self._skip_nontest_payloads = skip_nontest_payloads
     self._output_dir = output_dir
     self._run_parallel = run_parallel
-    self._run_on_builder = run_on_builder
     self._archive_board = None
     self._archive_build = None
     self._archive_build_uri = None
@@ -1159,51 +1158,25 @@ class _PaygenBuild(object):
       suite_name: The name of the test suite.
     """
     timeout_mins = config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT / 60
-    if self._run_on_builder:
-      cmd_result = commands.RunHWTestSuite(
-          board=self._archive_board,
-          build=self._archive_build,
-          suite=suite_name,
-          file_bugs=True,
-          pool='bvt',
-          priority=constants.HWTEST_BUILD_PRIORITY,
-          retry=True,
-          wait_for_results=True,
-          timeout_mins=timeout_mins,
-          suite_min_duts=2,
-          debug=bool(self._drm),
-          skip_duts_check=self._skip_duts_check)
-      if cmd_result.to_raise:
-        if isinstance(cmd_result.to_raise, failures_lib.TestWarning):
-          logging.warning('Warning running test suite; error output:\n%s',
-                          cmd_result.to_raise)
-        else:
-          raise cmd_result.to_raise
-    else:
-      # Run run_suite.py locally.
-      cmd = [
-          os.path.join(AUTOTEST_DIR, 'site_utils', 'run_suite.py'),
-          '--board', self._archive_board,
-          '--build', self._archive_build,
-          '--suite_name', suite_name,
-          '--file_bugs', 'True',
-          '--pool', 'bvt',
-          '--retry', 'True',
-          '--timeout_mins', str(timeout_mins),
-          '--no_wait', 'False',
-          '--suite_min_duts', '2',
-      ]
-      if self._skip_duts_check:
-        cmd.append('--skip_duts_check')
-      logging.info('Running autotest suite: %s', ' '.join(cmd))
-      try:
-        cros_build_lib.RunCommand(cmd)
-      except cros_build_lib.RunCommandError as e:
-        if e.result.returncode:
-          logging.error('Error (%d) running test suite; error output:\n%s',
-                        e.result.returncode, e.result.error)
-          raise PayloadTestError('failed to run test (return code %d)' %
-                                 e.result.returncode)
+    cmd_result = commands.RunHWTestSuite(
+        board=self._archive_board,
+        build=self._archive_build,
+        suite=suite_name,
+        file_bugs=True,
+        pool='bvt',
+        priority=constants.HWTEST_BUILD_PRIORITY,
+        retry=True,
+        wait_for_results=True,
+        timeout_mins=timeout_mins,
+        suite_min_duts=2,
+        debug=bool(self._drm),
+        skip_duts_check=self._skip_duts_check)
+    if cmd_result.to_raise:
+      if isinstance(cmd_result.to_raise, failures_lib.TestWarning):
+        logging.warning('Warning running test suite; error output:\n%s',
+                        cmd_result.to_raise)
+      else:
+        raise cmd_result.to_raise
 
   def _AutotestPayloads(self, payload_tests):
     """Create necessary test artifacts and initiate Autotest runs.
@@ -1552,7 +1525,7 @@ def CreatePayloads(build, work_dir, site_config, dry_run=False,
                    ignore_finished=False, skip_full_payloads=False,
                    skip_delta_payloads=False, skip_test_payloads=False,
                    skip_nontest_payloads=False, disable_tests=False,
-                   output_dir=None, run_parallel=False, run_on_builder=False,
+                   output_dir=None, run_parallel=False,
                    au_generator_uri=None, skip_duts_check=False):
   """Helper method than generates payloads for a given build.
 
@@ -1569,7 +1542,6 @@ def CreatePayloads(build, work_dir, site_config, dry_run=False,
     disable_tests: Do not attempt generating test artifacts or running tests.
     output_dir: Directory for payload files, or None for GS default locations.
     run_parallel: Generate payloads in parallel processes.
-    run_on_builder: Running in a cbuildbot environment on a builder.
     au_generator_uri: URI of au_generator.zip to use, None to use the default.
     skip_duts_check: Do not force checking minimum available DUTs
   """
@@ -1585,6 +1557,5 @@ def CreatePayloads(build, work_dir, site_config, dry_run=False,
                disable_tests=disable_tests,
                output_dir=output_dir,
                run_parallel=run_parallel,
-               run_on_builder=run_on_builder,
                au_generator_uri=au_generator_uri,
                skip_duts_check=skip_duts_check).CreatePayloads()
