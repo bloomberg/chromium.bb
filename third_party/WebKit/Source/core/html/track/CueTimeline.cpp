@@ -24,7 +24,7 @@ CueTimeline::CueTimeline(HTMLMediaElement& mediaElement)
 
 void CueTimeline::addCues(TextTrack* track, const TextTrackCueList* cues)
 {
-    DCHECK_NE(track->mode(), TextTrack::disabledKeyword());
+    ASSERT(track->mode() != TextTrack::disabledKeyword());
     for (size_t i = 0; i < cues->length(); ++i)
         addCueInternal(cues->anonymousIndexedGetter(i));
     updateActiveCues(mediaElement().currentTime());
@@ -32,7 +32,7 @@ void CueTimeline::addCues(TextTrack* track, const TextTrackCueList* cues)
 
 void CueTimeline::addCue(TextTrack* track, TextTrackCue* cue)
 {
-    DCHECK_NE(track->mode(), TextTrack::disabledKeyword());
+    ASSERT(track->mode() != TextTrack::disabledKeyword());
     addCueInternal(cue);
     updateActiveCues(mediaElement().currentTime());
 }
@@ -72,7 +72,7 @@ void CueTimeline::removeCueInternal(TextTrackCue* cue)
 
     size_t index = m_currentlyActiveCues.find(interval);
     if (index != kNotFound) {
-        DCHECK(cue->isActive());
+        ASSERT(cue->isActive());
         m_currentlyActiveCues.remove(index);
         cue->setIsActive(false);
         // Since the cue will be removed from the media element and likely the
@@ -320,7 +320,7 @@ void CueTimeline::updateActiveCues(double movieTime)
         // simple event named cuechange at the track element as well.
         if (affectedTracks[i]->trackType() == TextTrack::TrackElement) {
             HTMLTrackElement* trackElement = static_cast<LoadableTextTrack*>(affectedTracks[i].get())->trackElement();
-            DCHECK(trackElement);
+            ASSERT(trackElement);
             mediaElement.scheduleEvent(createEventWithTarget(EventTypeNames::cuechange, trackElement));
         }
     }
@@ -351,7 +351,7 @@ void CueTimeline::beginIgnoringUpdateRequests()
 
 void CueTimeline::endIgnoringUpdateRequests()
 {
-    DCHECK(m_ignoreUpdate);
+    ASSERT(m_ignoreUpdate);
     --m_ignoreUpdate;
     if (!m_ignoreUpdate)
         updateActiveCues(mediaElement().currentTime());

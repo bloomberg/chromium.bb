@@ -67,10 +67,10 @@ bool VTTScanner::scan(const LChar* characters, size_t charactersCount)
 
 bool VTTScanner::scanRun(const Run& run, const String& toMatch)
 {
-    DCHECK_EQ(run.start(), getPosition());
-    DCHECK_LE(run.start(), end());
-    DCHECK_GE(run.end(), run.start());
-    DCHECK_LE(run.end(), end());
+    ASSERT(run.start() == getPosition());
+    ASSERT(run.start() <= end());
+    ASSERT(run.end() >= run.start());
+    ASSERT(run.end() <= end());
     size_t matchLength = run.length();
     if (toMatch.length() > matchLength)
         return false;
@@ -86,18 +86,18 @@ bool VTTScanner::scanRun(const Run& run, const String& toMatch)
 
 void VTTScanner::skipRun(const Run& run)
 {
-    DCHECK_LE(run.start(), end());
-    DCHECK_GE(run.end(), run.start());
-    DCHECK_LE(run.end(), end());
+    ASSERT(run.start() <= end());
+    ASSERT(run.end() >= run.start());
+    ASSERT(run.end() <= end());
     seekTo(run.end());
 }
 
 String VTTScanner::extractString(const Run& run)
 {
-    DCHECK_EQ(run.start(), getPosition());
-    DCHECK_LE(run.start(), end());
-    DCHECK_GE(run.end(), run.start());
-    DCHECK_LE(run.end(), end());
+    ASSERT(run.start() == getPosition());
+    ASSERT(run.start() <= end());
+    ASSERT(run.end() >= run.start());
+    ASSERT(run.end() <= end());
     String s;
     if (m_is8Bit)
         s = String(m_data.characters8, run.length());

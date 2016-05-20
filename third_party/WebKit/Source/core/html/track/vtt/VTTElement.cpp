@@ -59,7 +59,7 @@ static const QualifiedName& nodeTypeToTagName(VTTNodeType nodeType)
         return vTag;
     case VTTNodeTypeNone:
     default:
-        NOTREACHED();
+        ASSERT_NOT_REACHED();
         return cTag; // Make the compiler happy.
     }
 }
@@ -110,7 +110,7 @@ HTMLElement* VTTElement::createEquivalentHTMLElement(Document& document)
         htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::rtTag.localName(), document);
         break;
     default:
-        NOTREACHED();
+        ASSERT_NOT_REACHED();
     }
 
     htmlElement->setAttribute(HTMLNames::classAttr, getAttribute(HTMLNames::classAttr));

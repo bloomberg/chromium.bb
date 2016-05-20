@@ -75,7 +75,7 @@ public:
     }
     ~TrackDisplayUpdateScope()
     {
-        DCHECK(m_cueTimeline);
+        ASSERT(m_cueTimeline);
         m_cueTimeline->endIgnoringUpdateRequests();
     }
 

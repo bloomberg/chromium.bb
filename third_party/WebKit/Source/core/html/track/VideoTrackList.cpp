@@ -49,7 +49,7 @@ void VideoTrackList::trackSelected(WebMediaPlayer::TrackId selectedTrackId)
         if (track->trackId() != selectedTrackId)
             track->clearSelected();
         else
-            DCHECK(track->selected());
+            ASSERT(track->selected());
     }
 
     scheduleChangeEvent();

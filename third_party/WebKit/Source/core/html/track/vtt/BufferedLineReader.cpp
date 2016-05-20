@@ -96,7 +96,7 @@ bool BufferedLineReader::getLine(String& line)
         return true;
     }
 
-    DCHECK(m_buffer.isEmpty());
+    ASSERT(m_buffer.isEmpty());
     return false;
 }
 

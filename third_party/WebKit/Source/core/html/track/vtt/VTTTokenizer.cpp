@@ -40,7 +40,7 @@ namespace blink {
 #define WEBVTT_ADVANCE_TO(stateName)                               \
     do {                                                           \
         state = stateName;                                         \
-        DCHECK(!m_input.isEmpty());                                \
+        ASSERT(!m_input.isEmpty());                                \
         m_inputStreamPreprocessor.advance(m_input);                \
         cc = m_inputStreamPreprocessor.nextInputCharacter();       \
         goto stateName;                                            \
@@ -76,7 +76,7 @@ VTTTokenizer::VTTTokenizer(const String& input)
     , m_inputStreamPreprocessor(this)
 {
     // Append a EOF marker and close the input "stream".
-    DCHECK(!m_input.isClosed());
+    ASSERT(!m_input.isClosed());
     m_input.append(SegmentedString(String(&kEndOfFileMarker, 1)));
     m_input.close();
 }
@@ -174,10 +174,10 @@ bool VTTTokenizer::nextToken(VTTToken& token)
 
         WEBVTT_BEGIN_STATE(TagState) {
             if (isTokenizerWhitespace(cc)) {
-                DCHECK(result.isEmpty());
+                ASSERT(result.isEmpty());
                 WEBVTT_ADVANCE_TO(StartTagAnnotationState);
             } else if (cc == '.') {
-                DCHECK(result.isEmpty());
+                ASSERT(result.isEmpty());
                 WEBVTT_ADVANCE_TO(StartTagClassState);
             } else if (cc == '/') {
                 WEBVTT_ADVANCE_TO(EndTagState);
@@ -185,7 +185,7 @@ bool VTTTokenizer::nextToken(VTTToken& token)
                 result.append(cc);
                 WEBVTT_ADVANCE_TO(TimestampTagState);
             } else if (cc == '>' || cc == kEndOfFileMarker) {
-                DCHECK(result.isEmpty());
+                ASSERT(result.isEmpty());
                 return advanceAndEmitToken(m_input, token, VTTToken::StartTag(result.toString()));
             } else {
                 result.append(cc);
@@ -255,7 +255,7 @@ bool VTTTokenizer::nextToken(VTTToken& token)
 
     }
 
-    NOTREACHED();
+    ASSERT_NOT_REACHED();
     return false;
 }
 
