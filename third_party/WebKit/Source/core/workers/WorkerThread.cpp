@@ -43,7 +43,6 @@
 #include "platform/heap/SafePoint.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/weborigin/KURL.h"
-#include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Functional.h"
 #include "wtf/Noncopyable.h"
@@ -138,7 +137,6 @@ WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, Work
     , m_inspectorTaskRunner(adoptPtr(new InspectorTaskRunner()))
     , m_workerLoaderProxy(workerLoaderProxy)
     , m_workerReportingProxy(workerReportingProxy)
-    , m_webScheduler(nullptr)
     , m_terminationEvent(adoptPtr(new WaitableEvent(
         WaitableEvent::ResetPolicy::Manual,
         WaitableEvent::InitialState::NonSignaled)))
@@ -182,7 +180,6 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
     WorkerThreadStartMode startMode = startupData->m_startMode;
     OwnPtr<Vector<char>> cachedMetaData = std::move(startupData->m_cachedMetaData);
     V8CacheOptions v8CacheOptions = startupData->m_v8CacheOptions;
-    m_webScheduler = workerBackingThread().backingThread().platformThread().scheduler();
 
     {
         MutexLocker lock(m_threadStateMutex);

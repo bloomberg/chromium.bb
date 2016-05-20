@@ -149,7 +149,6 @@ private:
 
     RefPtr<WorkerLoaderProxy> m_workerLoaderProxy;
     WorkerReportingProxy& m_workerReportingProxy;
-    WebScheduler* m_webScheduler; // Not owned.
 
     // This lock protects |m_workerGlobalScope|, |m_terminated|, |m_shutdown|,
     // |m_runningDebuggerTask|, |m_shouldTerminateV8Execution| and
