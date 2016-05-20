@@ -201,12 +201,19 @@ SignalingAddress ParseAddress(
 void SetAddress(buzz::XmlElement* iqElement,
                 const SignalingAddress& address,
                 bool from) {
+  // Start from a fresh slate regardless of the previous address format.
+  iqElement->ClearAttr(GetQNameByField(Field::JID, from));
+  iqElement->ClearAttr(GetQNameByField(Field::CHANNEL, from));
+  iqElement->ClearAttr(GetQNameByField(Field::ENDPOINT_ID, from));
+
   if (address.empty()) {
     return;
   }
 
+  // Always set the JID.
   iqElement->AddAttr(GetQNameByField(Field::JID, from), address.jid);
 
+  // Only set the channel and endpoint_id in the LCS channel.
   if (address.channel == SignalingAddress::Channel::LCS) {
     iqElement->AddAttr(GetQNameByField(Field::ENDPOINT_ID, from),
                        address.endpoint_id);
