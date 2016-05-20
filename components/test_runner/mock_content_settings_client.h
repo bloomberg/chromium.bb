@@ -24,7 +24,6 @@ class MockContentSettingsClient : public blink::WebContentSettingsClient {
   // blink::WebContentSettingsClient:
   bool allowImage(bool enabled_per_settings,
                   const blink::WebURL& image_url) override;
-  bool allowMedia(const blink::WebURL& media_url) override;
   bool allowScript(bool enabled_per_settings) override;
   bool allowScriptFromSource(bool enabled_per_settings,
                              const blink::WebURL& script_url) override;

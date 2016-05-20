@@ -30,9 +30,6 @@ public:
     // Controls whether access to Indexed DB are allowed for this frame.
     virtual bool allowIndexedDB(const WebString& name, const WebSecurityOrigin&) { return true; }
 
-    // Controls whether HTML5 media elements (<audio>, <video>) are allowed for this frame.
-    virtual bool allowMedia(const WebURL& videoURL) { return true; }
-
     // Controls whether plugins are allowed for this frame.
     virtual bool allowPlugins(bool enabledPerSettings) { return enabledPerSettings; }
 

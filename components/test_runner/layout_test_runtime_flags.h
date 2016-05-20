@@ -106,7 +106,6 @@ class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
 
   // Flags influencing behavior of MockContentSettingsClient.
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(images_allowed)
-  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(media_allowed)
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(scripts_allowed)
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(storage_allowed)
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(plugins_allowed)

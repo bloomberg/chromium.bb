@@ -261,14 +261,6 @@ bool FrameLoaderClientImpl::allowImage(bool enabledPerSettings, const KURL& imag
     return enabledPerSettings;
 }
 
-bool FrameLoaderClientImpl::allowMedia(const KURL& mediaURL)
-{
-    if (m_webFrame->contentSettingsClient())
-        return m_webFrame->contentSettingsClient()->allowMedia(mediaURL);
-
-    return true;
-}
-
 bool FrameLoaderClientImpl::allowDisplayingInsecureContent(bool enabledPerSettings, const KURL& url)
 {
     if (m_webFrame->contentSettingsClient())

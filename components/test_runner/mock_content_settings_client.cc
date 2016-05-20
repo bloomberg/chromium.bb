@@ -29,16 +29,6 @@ bool MockContentSettingsClient::allowImage(bool enabled_per_settings,
   return allowed;
 }
 
-bool MockContentSettingsClient::allowMedia(const blink::WebURL& image_url) {
-  bool allowed = flags_->media_allowed();
-  if (flags_->dump_web_content_settings_client_callbacks() && delegate_)
-    delegate_->PrintMessage(
-        std::string("MockContentSettingsClient: allowMedia(") +
-        NormalizeLayoutTestURL(image_url.string().utf8()) +
-        "): " + (allowed ? "true" : "false") + "\n");
-  return allowed;
-}
-
 bool MockContentSettingsClient::allowScript(bool enabled_per_settings) {
   return enabled_per_settings && flags_->scripts_allowed();
 }

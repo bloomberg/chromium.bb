@@ -1,6 +1,0 @@
-MockContentSettingsClient: allowMedia((file test):media/content/silence.oga): true
-MockContentSettingsClient: allowMedia((file test):media/content/silence.oga?nocache): false
-MockContentSettingsClient: allowMedia((file test):media/content/silence.oga): false
-
-PASS: first sound loaded
-

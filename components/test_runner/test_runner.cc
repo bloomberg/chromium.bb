@@ -218,7 +218,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
                                       v8::Local<v8::Value> origin);
   void SetJavaScriptCanAccessClipboard(bool can_access);
   void SetMIDIAccessorResult(bool result);
-  void SetMediaAllowed(bool allowed);
   void SetMockDeviceLight(double value);
   void SetMockDeviceMotion(gin::Arguments* args);
   void SetMockDeviceOrientation(gin::Arguments* args);
@@ -524,7 +523,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetMIDIAccessorResult)
       .SetMethod("setMainFrameIsFirstResponder",
                  &TestRunnerBindings::NotImplemented)
-      .SetMethod("setMediaAllowed", &TestRunnerBindings::SetMediaAllowed)
       .SetMethod("setMockDeviceLight", &TestRunnerBindings::SetMockDeviceLight)
       .SetMethod("setMockDeviceMotion",
                  &TestRunnerBindings::SetMockDeviceMotion)
@@ -1095,11 +1093,6 @@ void TestRunnerBindings::DumpResourceResponseMIMETypes() {
 void TestRunnerBindings::SetImagesAllowed(bool allowed) {
   if (runner_)
     runner_->SetImagesAllowed(allowed);
-}
-
-void TestRunnerBindings::SetMediaAllowed(bool allowed) {
-  if (runner_)
-    runner_->SetMediaAllowed(allowed);
 }
 
 void TestRunnerBindings::SetScriptsAllowed(bool allowed) {
@@ -2452,11 +2445,6 @@ void TestRunner::DumpResourceResponseMIMETypes() {
 
 void TestRunner::SetImagesAllowed(bool allowed) {
   layout_test_runtime_flags_.set_images_allowed(allowed);
-  OnLayoutTestRuntimeFlagsChanged();
-}
-
-void TestRunner::SetMediaAllowed(bool allowed) {
-  layout_test_runtime_flags_.set_media_allowed(allowed);
   OnLayoutTestRuntimeFlagsChanged();
 }
 
