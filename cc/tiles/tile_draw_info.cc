@@ -15,11 +15,12 @@ TileDrawInfo::TileDrawInfo()
       resource_(nullptr),
       contents_swizzled_(false),
       was_ever_ready_to_draw_(false),
-      was_ever_used_to_draw_(false) {}
+      was_ever_used_to_draw_(false),
+      was_a_prepaint_tile_(false) {}
 
 TileDrawInfo::~TileDrawInfo() {
   DCHECK(!resource_);
-  if (was_ever_ready_to_draw_) {
+  if (was_ever_ready_to_draw_ && was_a_prepaint_tile_) {
     UMA_HISTOGRAM_BOOLEAN("Renderer4.ReadyToDrawTileDrawStatus",
                           was_ever_used_to_draw_);
   }

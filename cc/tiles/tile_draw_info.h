@@ -83,6 +83,7 @@ class CC_EXPORT TileDrawInfo {
 
   void set_was_ever_ready_to_draw() { was_ever_ready_to_draw_ = true; }
   void set_was_ever_used_to_draw() { was_ever_used_to_draw_ = true; }
+  void set_was_a_prepaint_tile() { was_a_prepaint_tile_ = true; }
 
  private:
   friend class Tile;
@@ -103,8 +104,9 @@ class CC_EXPORT TileDrawInfo {
   bool contents_swizzled_;
 
   // Used for gathering UMA stats.
-  bool was_ever_ready_to_draw_;
-  bool was_ever_used_to_draw_;
+  bool was_ever_ready_to_draw_ : 1;
+  bool was_ever_used_to_draw_ : 1;
+  bool was_a_prepaint_tile_ : 1;
 };
 
 }  // namespace cc

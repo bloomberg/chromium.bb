@@ -638,6 +638,7 @@ void TileManager::AssignGpuMemoryToTiles(
       break;
     }
 
+    bool tile_is_needed_now = priority.priority_bin == TilePriority::NOW;
     if (tile->use_picture_analysis() && kUseColorEstimator) {
       // We analyze for solid color here, to decide to continue
       // or drop the tile for scheduling and raster.
@@ -650,6 +651,8 @@ void TileManager::AssignGpuMemoryToTiles(
       if (is_solid_color) {
         tile->draw_info().set_solid_color(color);
         tile->draw_info().set_was_ever_ready_to_draw();
+        if (!tile_is_needed_now)
+          tile->draw_info().set_was_a_prepaint_tile();
         client_->NotifyTileStateChanged(tile);
         continue;
       }
@@ -675,8 +678,6 @@ void TileManager::AssignGpuMemoryToTiles(
       memory_required_by_tile_to_be_scheduled = MemoryUsage::FromConfig(
           tile->desired_texture_size(), DetermineResourceFormat(tile));
     }
-
-    bool tile_is_needed_now = priority.priority_bin == TilePriority::NOW;
 
     // This is the memory limit that will be used by this tile. Depending on
     // the tile priority, it will be one of hard_memory_limit or
@@ -704,6 +705,13 @@ void TileManager::AssignGpuMemoryToTiles(
 
     memory_usage += memory_required_by_tile_to_be_scheduled;
     tiles_that_need_to_be_rasterized->push_back(prioritized_tile);
+
+    // Since we scheduled the tile, set whether it was a prepaint or not
+    // assuming that the tile will successfully finish running. We don't have
+    // priority information at the time the tile completes, so it should be done
+    // here.
+    if (!tile_is_needed_now)
+      tile->draw_info().set_was_a_prepaint_tile();
   }
 
   // Note that we should try and further reduce memory in case the above loop
