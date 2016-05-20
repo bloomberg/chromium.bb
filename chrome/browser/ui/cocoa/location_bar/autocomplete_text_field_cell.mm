@@ -427,10 +427,15 @@ size_t CalculatePositionsInFrame(
 
     CGFloat alphaComponent = 0.5 / singlePixelLineWidth_;
     if (isModeMaterial && inDarkMode) {
-      alphaComponent = 1;
+      // Special focus color for Material Incognito.
+      [[NSColor colorWithSRGBRed:123 / 255.
+                           green:170 / 255.
+                            blue:247 / 255.
+                           alpha:1] set];
+    } else {
+      [[[NSColor keyboardFocusIndicatorColor]
+          colorWithAlphaComponent:alphaComponent] set];
     }
-    [[[NSColor keyboardFocusIndicatorColor]
-        colorWithAlphaComponent:alphaComponent] set];
     [path stroke];
   }
 }
