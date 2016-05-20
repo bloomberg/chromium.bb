@@ -35,6 +35,7 @@ public:
     virtual int ensureDefaultContextInGroup(int contextGroupId) = 0;
     virtual bool isInspectableHeapObject(v8::Local<v8::Object>) = 0;
 
+    virtual void installAdditionalCommandLineAPI(v8::Local<v8::Context>, v8::Local<v8::Object>) = 0;
     virtual void reportMessageToConsole(v8::Local<v8::Context>, MessageType, MessageLevel, const String16& message, const v8::FunctionCallbackInfo<v8::Value>* arguments, unsigned skipArgumentCount) = 0;
 
     virtual void consoleTime(const String16& title) = 0;

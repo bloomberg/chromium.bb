@@ -57,6 +57,7 @@
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDocument.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/MainThreadDebugger.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -251,7 +252,7 @@ static bool namedPropertyFromDebuggerScopeExtension(v8::Local<v8::Name> name, co
         return false;
 
     bool isGetter = V8Debugger::isCommandLineAPIGetter(nameString);
-    bool isMethod = !isGetter && V8Debugger::isCommandLineAPIMethod(nameString);
+    bool isMethod = !isGetter && MainThreadDebugger::isCommandLineAPIMethod(nameString);
     if (!isGetter && !isMethod)
         return false;
 

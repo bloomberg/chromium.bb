@@ -6,7 +6,7 @@
 
 function test()
 {
-    InspectorTest.addSniffer(WebInspector.ConsoleViewMessage.prototype, "_formattedParameterAsNodeForTest", formattedParameter);
+    InspectorTest.addSniffer(WebInspector.ConsoleViewMessage.prototype, "_formattedParameterAsNodeForTest", formattedParameter, true);
     InspectorTest.addConsoleViewSniffer(messageSniffer, true);
 
     InspectorTest.evaluateInConsole("$x('42')"); // number
@@ -14,6 +14,8 @@ function test()
     InspectorTest.evaluateInConsole("$x('not(42)')"); // boolean
     InspectorTest.evaluateInConsole("$x('/html/body/p').length"); // node iterator
     InspectorTest.evaluateInConsole("$x('//a/@href')[0]"); // href, should not throw
+    InspectorTest.evaluateInConsole("$x('./a/@href', document.body)[0]"); // relative to document.body selector
+    InspectorTest.evaluateInConsole("$x('./a@href', document.body)"); // incorrect selector, shouldn't crash
     InspectorTest.evaluateInPage("console.log('complete')"); // node iterator
 
     var completeMessageReceived = false;
@@ -25,16 +27,16 @@ function test()
         }
     }
 
-    var parameterFormatted = false;
+    var waitForParameteres = 2;
     function formattedParameter()
     {
-        parameterFormatted = true;
+        waitForParameteres--;
         maybeCompleteTest();
     }
 
     function maybeCompleteTest()
     {
-        if (parameterFormatted && completeMessageReceived) {
+        if (!waitForParameteres && completeMessageReceived) {
             InspectorTest.dumpConsoleMessages();
             InspectorTest.completeTest();
         }
@@ -43,8 +45,8 @@ function test()
 
 </script>
 </head>
-<a href="http://chromium.org"></a>
 <body onload="runTest()">
+<a href="http://chromium.org"></a>
 <p>
 Tests $x for iterator and non-iterator types.
 </p>

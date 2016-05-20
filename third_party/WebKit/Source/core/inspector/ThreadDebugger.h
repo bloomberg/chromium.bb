@@ -40,6 +40,7 @@ public:
     bool isExecutionAllowed() override;
     double currentTimeMS() override;
     bool isInspectableHeapObject(v8::Local<v8::Object>) override;
+    void installAdditionalCommandLineAPI(v8::Local<v8::Context>, v8::Local<v8::Object>) override { }
     void reportMessageToConsole(v8::Local<v8::Context>, MessageType, MessageLevel, const String16& message, const v8::FunctionCallbackInfo<v8::Value>* arguments, unsigned skipArgumentCount) final;
     void consoleTime(const String16& title) override;
     void consoleTimeEnd(const String16& title) override;

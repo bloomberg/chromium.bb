@@ -68,6 +68,9 @@ public:
     void contextCreated(ScriptState*, LocalFrame*, SecurityOrigin*);
     void contextWillBeDestroyed(ScriptState*);
 
+    static bool isCommandLineAPIMethod(const String& name);
+    void installAdditionalCommandLineAPI(v8::Local<v8::Context>, v8::Local<v8::Object>) override;
+
     v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*, v8::Local<v8::Context>, v8::Local<v8::Object> creationContext) override;
 protected:
     void reportMessageToConsole(v8::Local<v8::Context>, ConsoleMessage*) override;
@@ -87,6 +90,10 @@ private:
     OwnPtr<InspectorTaskRunner> m_taskRunner;
 
     static MainThreadDebugger* s_instance;
+
+    static void querySelectorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+    static void querySelectorAllCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+    static void xpathSelectorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 };
 
 } // namespace blink

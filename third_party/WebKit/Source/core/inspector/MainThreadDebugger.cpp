@@ -33,8 +33,13 @@
 #include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8Window.h"
+#include "core/dom/ContainerNode.h"
+#include "core/dom/Document.h"
+#include "core/dom/Element.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/StaticNodeList.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -44,6 +49,8 @@
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/timing/MemoryInfo.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
+#include "core/xml/XPathEvaluator.h"
+#include "core/xml/XPathResult.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 #include "public/platform/Platform.h"
@@ -232,6 +239,139 @@ v8::MaybeLocal<v8::Value> MainThreadDebugger::memoryInfo(v8::Isolate* isolate, v
     ASSERT_UNUSED(executionContext, executionContext);
     ASSERT(executionContext->isDocument());
     return toV8(MemoryInfo::create(), creationContext, isolate);
+}
+
+bool MainThreadDebugger::isCommandLineAPIMethod(const String& name)
+{
+    DEFINE_STATIC_LOCAL(HashSet<String>, methods, ());
+    if (methods.size() == 0) {
+        const char* members[] = { "$", "$$", "$x" };
+        for (size_t i = 0; i < WTF_ARRAY_LENGTH(members); ++i)
+            methods.add(members[i]);
+    }
+    return methods.find(name) != methods.end() || V8Debugger::isCommandLineAPIMethod(name);
+}
+
+static void returnDataCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    info.GetReturnValue().Set(info.Data());
+}
+
+static void createFunctionProperty(v8::Local<v8::Context> context, v8::Local<v8::Object> object, const char* name, v8::FunctionCallback callback, const char* description)
+{
+    v8::Local<v8::String> funcName = v8String(context->GetIsolate(), name);
+    v8::Local<v8::Function> func;
+    if (!v8::Function::New(context, callback).ToLocal(&func))
+        return;
+    func->SetName(funcName);
+    v8::Local<v8::String> returnValue = v8String(context->GetIsolate(), description);
+    v8::Local<v8::Function> toStringFunction;
+    if (v8::Function::New(context, returnDataCallback, returnValue).ToLocal(&toStringFunction))
+        func->Set(v8String(context->GetIsolate(), "toString"), toStringFunction);
+    if (!object->Set(context, funcName, func).FromMaybe(false))
+        return;
+}
+
+void MainThreadDebugger::installAdditionalCommandLineAPI(v8::Local<v8::Context> context, v8::Local<v8::Object> object)
+{
+    createFunctionProperty(context, object, "$", MainThreadDebugger::querySelectorCallback, "function $(selector, [startNode]) { [Command Line API] }");
+    createFunctionProperty(context, object, "$$", MainThreadDebugger::querySelectorAllCallback, "function $$(selector, [startNode]) { [Command Line API] }");
+    createFunctionProperty(context, object, "$x", MainThreadDebugger::xpathSelectorCallback, "function $x(xpath, [startNode]) { [Command Line API] }");
+}
+
+static Node* secondArgumentAsNode(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (info.Length() > 1) {
+        if (Node* node = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[1]))
+            return node;
+    }
+    ExecutionContext* executionContext = toExecutionContext(info.GetIsolate()->GetCurrentContext());
+    if (executionContext->isDocument())
+        return toDocument(executionContext);
+    return nullptr;
+}
+
+void MainThreadDebugger::querySelectorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (info.Length() < 1)
+        return;
+    String selector = toCoreStringWithUndefinedOrNullCheck(info[0]);
+    if (selector.isEmpty())
+        return;
+    Node* node = secondArgumentAsNode(info);
+    if (!node || !node->isContainerNode())
+        return;
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "$", "CommandLineAPI", info.Holder(), info.GetIsolate());
+    Element* element = toContainerNode(node)->querySelector(AtomicString(selector), exceptionState);
+    if (exceptionState.throwIfNeeded())
+        return;
+    if (element)
+        info.GetReturnValue().Set(toV8(element, info.Holder(), info.GetIsolate()));
+    else
+        info.GetReturnValue().Set(v8::Null(info.GetIsolate()));
+}
+
+void MainThreadDebugger::querySelectorAllCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (info.Length() < 1)
+        return;
+    String selector = toCoreStringWithUndefinedOrNullCheck(info[0]);
+    if (selector.isEmpty())
+        return;
+    Node* node = secondArgumentAsNode(info);
+    if (!node || !node->isContainerNode())
+        return;
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "$$", "CommandLineAPI", info.Holder(), info.GetIsolate());
+    // toV8(elementList) doesn't work here, since we need a proper Array instance, not NodeList.
+    StaticElementList* elementList = toContainerNode(node)->querySelectorAll(AtomicString(selector), exceptionState);
+    if (exceptionState.throwIfNeeded() || !elementList)
+        return;
+    v8::Isolate* isolate = info.GetIsolate();
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
+    v8::Local<v8::Array> nodes = v8::Array::New(isolate, elementList->length());
+    for (size_t i = 0; i < elementList->length(); ++i) {
+        Element* element = elementList->item(i);
+        if (!nodes->Set(context, i, toV8(element, info.Holder(), info.GetIsolate())).FromMaybe(false))
+            return;
+    }
+    info.GetReturnValue().Set(nodes);
+}
+
+void MainThreadDebugger::xpathSelectorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (info.Length() < 1)
+        return;
+    String selector = toCoreStringWithUndefinedOrNullCheck(info[0]);
+    if (selector.isEmpty())
+        return;
+    Node* node = secondArgumentAsNode(info);
+    if (!node || !node->isContainerNode())
+        return;
+
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "$x", "CommandLineAPI", info.Holder(), info.GetIsolate());
+    XPathResult* result = XPathEvaluator::create()->evaluate(selector, node, nullptr, XPathResult::ANY_TYPE, ScriptValue(), exceptionState);
+    if (exceptionState.throwIfNeeded() || !result)
+        return;
+    if (result->resultType() == XPathResult::NUMBER_TYPE) {
+        info.GetReturnValue().Set(toV8(result->numberValue(exceptionState), info.Holder(), info.GetIsolate()));
+    } else if (result->resultType() == XPathResult::STRING_TYPE) {
+        info.GetReturnValue().Set(toV8(result->stringValue(exceptionState), info.Holder(), info.GetIsolate()));
+    } else if (result->resultType() == XPathResult::BOOLEAN_TYPE) {
+        info.GetReturnValue().Set(toV8(result->booleanValue(exceptionState), info.Holder(), info.GetIsolate()));
+    } else {
+        v8::Isolate* isolate = info.GetIsolate();
+        v8::Local<v8::Context> context = isolate->GetCurrentContext();
+        v8::Local<v8::Array> nodes = v8::Array::New(isolate);
+        size_t index = 0;
+        while (Node* node = result->iterateNext(exceptionState)) {
+            if (exceptionState.throwIfNeeded())
+                return;
+            if (!nodes->Set(context, index++, toV8(node, info.Holder(), info.GetIsolate())).FromMaybe(false))
+                return;
+        }
+        info.GetReturnValue().Set(nodes);
+    }
+    exceptionState.throwIfNeeded();
 }
 
 } // namespace blink

@@ -693,6 +693,8 @@ v8::Local<v8::Object> V8Console::createCommandLineAPI(InspectedContext* inspecte
     createBoundFunctionProperty(context, commandLineAPI, "$3", V8Console::inspectedObject3);
     createBoundFunctionProperty(context, commandLineAPI, "$4", V8Console::inspectedObject4);
 
+    inspectedContext->debugger()->client()->installAdditionalCommandLineAPI(context, commandLineAPI);
+
     commandLineAPI->SetPrivate(context, inspectedContextPrivateKey(isolate), v8::External::New(isolate, inspectedContext));
     return commandLineAPI;
 }
@@ -707,7 +709,7 @@ bool V8Debugger::isCommandLineAPIMethod(const String16& name)
 {
     DEFINE_STATIC_LOCAL(protocol::HashSet<String16>, methods, ());
     if (methods.size() == 0) {
-        const char* members[] = { "$", "$$", "$x", "dir", "dirxml", "keys", "values", "profile", "profileEnd",
+        const char* members[] = { "dir", "dirxml", "keys", "values", "profile", "profileEnd",
             "monitorEvents", "unmonitorEvents", "inspect", "copy", "clear", "getEventListeners",
             "debug", "undebug", "monitor", "unmonitor", "table" };
         for (size_t i = 0; i < WTF_ARRAY_LENGTH(members); ++i)

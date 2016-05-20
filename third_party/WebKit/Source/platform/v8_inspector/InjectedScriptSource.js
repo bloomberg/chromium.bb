@@ -54,20 +54,6 @@ function push(array, var_args)
 }
 
 /**
- * @param {(!Arguments.<T>|!NodeList)} array
- * @param {number=} index
- * @return {!Array.<T>}
- * @template T
- */
-function slice(array, index)
-{
-    var result = [];
-    for (var i = index || 0, j = 0; i < array.length; ++i, ++j)
-        result[j] = array[i];
-    return result;
-}
-
-/**
  * @param {*} obj
  * @return {string}
  * @suppress {uselessCode}
@@ -542,13 +528,10 @@ InjectedScript.prototype = {
     {
         // NOTE: This list contains only not native Command Line API methods. For full list: V8Console.
         // NOTE: Argument names of these methods will be printed in the console, so use pretty names!
-        var members = [ "$", "$$", "$x", "monitorEvents", "unmonitorEvents", "getEventListeners" ];
+        var members = [ "monitorEvents", "unmonitorEvents", "getEventListeners" ];
         for (var member of members)
             nativeCommandLineAPI[member] = CommandLineAPIImpl[member];
         var functionToStringMap = new Map([
-            ["$",          "function $(selector, [startNode]) { [Command Line API] }"],
-            ["$$",         "function $$(selector, [startNode]) { [Command Line API] }"],
-            ["$x",         "function $x(xpath, [startNode]) { [Command Line API] }"],
             ["monitorEvents",   "function monitorEvents(object, [types]) { [Command Line API] }"],
             ["unmonitorEvents", "function unmonitorEvents(object, [types]) { [Command Line API] }"],
             ["getEventListeners", "function getEventListeners(node) { [Command Line API] }"]
@@ -1045,65 +1028,6 @@ InjectedScript.RemoteObject.prototype = {
 }
 
 var CommandLineAPIImpl = { __proto__: null }
-
-/**
- * @param {string} selector
- * @param {!Node=} opt_startNode
- * @return {*}
- */
-CommandLineAPIImpl.$ = function (selector, opt_startNode)
-{
-    if (CommandLineAPIImpl._canQuerySelectorOnNode(opt_startNode))
-        return opt_startNode.querySelector(selector);
-
-    return inspectedGlobalObject.document.querySelector(selector);
-}
-
-/**
- * @param {string} selector
- * @param {!Node=} opt_startNode
- * @return {*}
- */
-CommandLineAPIImpl.$$ = function (selector, opt_startNode)
-{
-    if (CommandLineAPIImpl._canQuerySelectorOnNode(opt_startNode))
-        return slice(opt_startNode.querySelectorAll(selector));
-    return slice(inspectedGlobalObject.document.querySelectorAll(selector));
-}
-
-/**
- * @param {!Node=} node
- * @return {boolean}
- */
-CommandLineAPIImpl._canQuerySelectorOnNode = function(node)
-{
-    return !!node && InjectedScriptHost.subtype(node) === "node" && (node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.DOCUMENT_NODE || node.nodeType === Node.DOCUMENT_FRAGMENT_NODE);
-}
-
-/**
- * @param {string} xpath
- * @param {!Node=} opt_startNode
- * @return {*}
- */
-CommandLineAPIImpl.$x = function(xpath, opt_startNode)
-{
-    var doc = (opt_startNode && opt_startNode.ownerDocument) || inspectedGlobalObject.document;
-    var result = doc.evaluate(xpath, opt_startNode || doc, null, XPathResult.ANY_TYPE, null);
-    switch (result.resultType) {
-    case XPathResult.NUMBER_TYPE:
-        return result.numberValue;
-    case XPathResult.STRING_TYPE:
-        return result.stringValue;
-    case XPathResult.BOOLEAN_TYPE:
-        return result.booleanValue;
-    default:
-        var nodes = [];
-        var node;
-        while (node = result.iterateNext())
-            push(nodes, node);
-        return nodes;
-    }
-}
 
 /**
  * @param {!Object} object
