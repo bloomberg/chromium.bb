@@ -221,10 +221,13 @@ crbug.com/542541 [ Debug ] virtual/pointerevent/fast/events/click-count.html [ P
 # TODO(oshima): Mac Android are currently not supported.
 crbug.com/567837 [ Mac Android ] virtual/scalefactor200withzoom/fast/hidpi/static [ Skip ]
 
-# TODO(oshima): Debug build generates slightly different image for these tests.
+# TODO(oshima): Debug build generates slightly different image for these tests due to different background color.
 #crbug.com/593567 [ Debug ] virtual/scalefactor150/fast/hidpi/static/calendar-picker-appearance.html [ Skip ]
 crbug.com/593567 [ Debug ] virtual/scalefactor150/fast/hidpi/static/data-suggestion-picker-appearance.html [ Skip ]
 crbug.com/593567 [ Debug ] virtual/scalefactor150/fast/hidpi/static/popup-menu-appearance.html [ Skip ]
+crbug.com/593567 [ Debug ] virtual/scalefactor150/fast/hidpi/static/calendar-picker-appearance.html [ Skip ]
+crbug.com/593567 [ Debug ] virtual/scalefactor200/fast/hidpi/static/calendar-picker-appearance.html [ Skip ]
+crbug.com/593567 [ Debug ] virtual/scalefactor200withzoom/fast/hidpi/static/calendar-picker-appearance.html [ Skip ]
 
 # Mac does not support fractional scale factor.
 crbug.com/567837 [ Mac ] virtual/scalefactor150/fast/hidpi/static [ Skip ]
@@ -1335,10 +1338,6 @@ crbug.com/601669 [ Win ] svg/as-image/svg-nested.html [ Crash ]
 
 crbug.com/600261 imported/wpt/mediacapture-streams/GUM-deny.html [ Failure ]
 crbug.com/600261 imported/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.html [ Failure ]
-
-crbug.com/593679 virtual/scalefactor150/fast/hidpi/static/calendar-picker-appearance.html [ NeedsManualRebaseline ]
-crbug.com/593679 virtual/scalefactor200/fast/hidpi/static/calendar-picker-appearance.html [ NeedsManualRebaseline ]
-crbug.com/593679 virtual/scalefactor200withzoom/fast/hidpi/static/calendar-picker-appearance.html [ NeedsManualRebaseline ]
 
 crbug.com/605525 [ Win ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Failure Pass ]
 
