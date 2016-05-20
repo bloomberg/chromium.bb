@@ -19,8 +19,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 /**
  * Access gate to C++ side offline pages functionalities.
  */
@@ -100,7 +98,7 @@ public class OfflinePageBridge {
      */
     public interface SingleOfflinePageItemCallback {
         @CalledByNative("SingleOfflinePageItemCallback")
-        void onResult(@Nullable OfflinePageItem item);
+        void onResult(OfflinePageItem item);
     }
 
     /**
