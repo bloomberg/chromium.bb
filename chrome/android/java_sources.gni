@@ -360,8 +360,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/infobar/AppBannerInfoBarDelegateAndroid.java",
   "java/src/org/chromium/chrome/browser/infobar/AutofillSaveCardInfoBar.java",
   "java/src/org/chromium/chrome/browser/infobar/ConfirmInfoBar.java",
-  "java/src/org/chromium/chrome/browser/infobar/DataReductionProxyInfoBar.java",
-  "java/src/org/chromium/chrome/browser/infobar/DataReductionProxyInfoBarDelegate.java",
   "java/src/org/chromium/chrome/browser/infobar/DownloadOverwriteInfoBar.java",
   "java/src/org/chromium/chrome/browser/infobar/GeneratedPasswordSavedInfoBar.java",
   "java/src/org/chromium/chrome/browser/infobar/GeneratedPasswordSavedInfoBarDelegate.java",

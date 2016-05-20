@@ -141,7 +141,6 @@
 #include "chrome/browser/ui/android/infobars/app_banner_infobar_android.h"
 #include "chrome/browser/ui/android/infobars/autofill_save_card_infobar.h"
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
-#include "chrome/browser/ui/android/infobars/data_reduction_proxy_infobar.h"
 #include "chrome/browser/ui/android/infobars/download_overwrite_infobar.h"
 #include "chrome/browser/ui/android/infobars/generated_password_saved_infobar.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
@@ -259,7 +258,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"CookiesFetcher", RegisterCookiesFetcher},
     {"Credential", RegisterCredential},
     {"CreditCardScanner", autofill::CreditCardScannerViewAndroid::Register},
-    {"DataReductionProxyInfoBarDelegate", DataReductionProxyInfoBar::Register},
     {"DataReductionProxySettings", DataReductionProxySettingsAndroid::Register},
     {"DataUseTabUIManager", RegisterDataUseTabUIManager},
     {"DevToolsServer", RegisterDevToolsServer},

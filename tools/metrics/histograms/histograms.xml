@@ -76070,7 +76070,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="19" label="MIDI_PERMISSION_INFOBAR_DELEGATE_ANDROID"/>
   <int value="20" label="PROTECTED_MEDIA_IDENTIFIER_INFOBAR_DELEGATE_ANDROID"/>
   <int value="21" label="NACL_INFOBAR_DELEGATE"/>
-  <int value="22" label="DATA_REDUCTION_PROXY_INFOBAR_DELEGATE_ANDROID"/>
+  <int value="22"
+      label="OBSOLETE_DATA_REDUCTION_PROXY_INFOBAR_DELEGATE_ANDROID"/>
   <int value="23" label="NOTIFICATION_PERMISSION_INFOBAR_DELEGATE"/>
   <int value="24" label="AUTO_SIGNIN_FIRST_RUN_INFOBAR_DELEGATE"/>
   <int value="25" label="GENERATED_PASSWORD_SAVED_INFOBAR_DELEGATE_ANDROID"/>

@@ -437,8 +437,6 @@
       'browser/ui/android/infobars/autofill_save_card_infobar.h',
       'browser/ui/android/infobars/confirm_infobar.cc',
       'browser/ui/android/infobars/confirm_infobar.h',
-      'browser/ui/android/infobars/data_reduction_proxy_infobar.cc',
-      'browser/ui/android/infobars/data_reduction_proxy_infobar.h',
       'browser/ui/android/infobars/download_overwrite_infobar.cc',
       'browser/ui/android/infobars/download_overwrite_infobar.h',
       'browser/ui/android/infobars/generated_password_saved_infobar.cc',
