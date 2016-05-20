@@ -143,11 +143,6 @@ static int check_cmd_bo(struct fd_ringbuffer *ring,
 	return msm_ring->submit.bos[cmd->submit_idx].handle == bo->handle;
 }
 
-static uint32_t offset_bytes(void *end, void *start)
-{
-	return ((char *)end) - ((char *)start);
-}
-
 static struct drm_msm_gem_submit_cmd * get_cmd(struct fd_ringbuffer *ring,
 		struct fd_ringbuffer *target_ring, struct fd_bo *target_bo,
 		uint32_t submit_offset, uint32_t size, uint32_t type)
@@ -328,16 +323,13 @@ static void msm_ringbuffer_emit_reloc(struct fd_ringbuffer *ring,
 }
 
 static void msm_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
-		struct fd_ringmarker *target, struct fd_ringmarker *end)
+		struct fd_ringbuffer *target,
+		uint32_t submit_offset, uint32_t size)
 {
-	struct fd_bo *target_bo = to_msm_ringbuffer(target->ring)->ring_bo;
+	struct fd_bo *target_bo = to_msm_ringbuffer(target)->ring_bo;
 	struct drm_msm_gem_submit_cmd *cmd;
-	uint32_t submit_offset, size;
 
-	submit_offset = offset_bytes(target->cur, target->ring->start);
-	size = offset_bytes(end->cur, target->cur);
-
-	cmd = get_cmd(ring, target->ring, target_bo, submit_offset, size,
+	cmd = get_cmd(ring, target, target_bo, submit_offset, size,
 			MSM_SUBMIT_CMD_IB_TARGET_BUF);
 	assert(cmd);
 

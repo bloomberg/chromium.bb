@@ -122,7 +122,8 @@ struct fd_ringbuffer_funcs {
 	void (*emit_reloc)(struct fd_ringbuffer *ring,
 			const struct fd_reloc *reloc);
 	void (*emit_reloc_ring)(struct fd_ringbuffer *ring,
-			struct fd_ringmarker *target, struct fd_ringmarker *end);
+			struct fd_ringbuffer *target,
+			uint32_t submit_offset, uint32_t size);
 	void (*destroy)(struct fd_ringbuffer *ring);
 };
 
@@ -167,5 +168,11 @@ struct fd_bo {
 
 #define U642VOID(x) ((void *)(unsigned long)(x))
 #define VOID2U64(x) ((uint64_t)(unsigned long)(x))
+
+static inline uint32_t
+offset_bytes(void *end, void *start)
+{
+	return ((char *)end) - ((char *)start);
+}
 
 #endif /* FREEDRENO_PRIV_H_ */

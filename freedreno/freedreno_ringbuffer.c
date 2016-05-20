@@ -102,8 +102,14 @@ fd_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
 			      struct fd_ringmarker *target,
 			      struct fd_ringmarker *end)
 {
+	uint32_t submit_offset, size;
+
 	assert(target->ring == end->ring);
-	ring->funcs->emit_reloc_ring(ring, target, end);
+
+	submit_offset = offset_bytes(target->cur, target->ring->start);
+	size = offset_bytes(end->cur, target->cur);
+
+	ring->funcs->emit_reloc_ring(ring, target->ring, submit_offset, size);
 }
 
 struct fd_ringmarker * fd_ringmarker_new(struct fd_ringbuffer *ring)

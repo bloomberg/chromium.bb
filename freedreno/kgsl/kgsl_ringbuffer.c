@@ -174,11 +174,11 @@ static void kgsl_ringbuffer_emit_reloc(struct fd_ringbuffer *ring,
 }
 
 static void kgsl_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
-		struct fd_ringmarker *target, struct fd_ringmarker *end)
+		struct fd_ringbuffer *target,
+		uint32_t submit_offset, uint32_t size)
 {
-	struct kgsl_ringbuffer *target_ring = to_kgsl_ringbuffer(target->ring);
-	(*ring->cur++) = target_ring->bo->gpuaddr +
-			(uint8_t *)target->cur - (uint8_t *)target->ring->start;
+	struct kgsl_ringbuffer *target_ring = to_kgsl_ringbuffer(target);
+	(*ring->cur++) = target_ring->bo->gpuaddr + submit_offset;
 }
 
 static void kgsl_ringbuffer_destroy(struct fd_ringbuffer *ring)
