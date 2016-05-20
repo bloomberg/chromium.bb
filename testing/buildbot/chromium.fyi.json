@@ -510,9 +510,6 @@
         "test": "compositor_unittests"
       },
       {
-        "args": [
-          "--gtest_filter=-WebRtcBrowserTest.CanForwardRemoteStream"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -8184,9 +8181,6 @@
         "test": "compositor_unittests"
       },
       {
-        "args": [
-          "--gtest_filter=-WebRtcBrowserTest.CanForwardRemoteStream"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
@@ -8377,6 +8371,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "remoting_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "sandbox_linux_unittests"
       },
       {
         "swarming": {
@@ -10083,9 +10083,6 @@
         "test": "compositor_unittests"
       },
       {
-        "args": [
-          "--gtest_filter=-WebRtcBrowserTest.CanForwardRemoteStream"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true
         },
