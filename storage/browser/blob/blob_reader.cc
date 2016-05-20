@@ -226,6 +226,9 @@ void BlobReader::Kill() {
 }
 
 bool BlobReader::IsInMemory() const {
+  if (blob_handle_ && blob_handle_->IsBeingBuilt()) {
+    return false;
+  }
   if (!blob_data_.get()) {
     return true;
   }

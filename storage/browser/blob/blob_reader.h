@@ -120,7 +120,8 @@ class STORAGE_EXPORT BlobReader {
   // after this call.
   void Kill();
 
-  // Returns if all of the blob's items are in memory.
+  // Returns if all of the blob's items are in memory. Should only be called
+  // after CalculateSize.
   bool IsInMemory() const;
 
   // Returns the remaining bytes to be read in the blob. This is populated

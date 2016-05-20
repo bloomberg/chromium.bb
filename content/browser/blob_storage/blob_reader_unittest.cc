@@ -424,6 +424,7 @@ TEST_F(BlobReaderTest, BasicMemory) {
   EXPECT_FALSE(IsReaderTotalSizeCalculated());
   EXPECT_EQ(BlobReader::Status::DONE,
             reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_TRUE(reader_->IsInMemory());
   CheckSizeCalculatedSynchronously(kDataSize, size_result);
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kDataSize));
@@ -454,6 +455,7 @@ TEST_F(BlobReaderTest, BasicFile) {
   EXPECT_FALSE(IsReaderTotalSizeCalculated());
   EXPECT_EQ(BlobReader::Status::DONE,
             reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_FALSE(reader_->IsInMemory());
   CheckSizeCalculatedSynchronously(kData.size(), size_result);
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kData.size()));
@@ -476,7 +478,6 @@ TEST_F(BlobReaderTest, BasicFileSystem) {
   const base::Time kTime = base::Time::Now();
   b.AppendFileSystemFile(kURL, 0, kData.size(), kTime);
   this->InitializeReader(&b);
-
   // Non-async reader.
   ExpectFileSystemCall(kURL, 0, kData.size(), kTime,
                        new FakeFileStreamReader(kData));
@@ -485,6 +486,8 @@ TEST_F(BlobReaderTest, BasicFileSystem) {
   EXPECT_FALSE(IsReaderTotalSizeCalculated());
   EXPECT_EQ(BlobReader::Status::DONE,
             reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_FALSE(reader_->IsInMemory());
+
   CheckSizeCalculatedSynchronously(kData.size(), size_result);
 
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kData.size()));
@@ -719,6 +722,7 @@ TEST_F(BlobReaderTest, FileAsync) {
   EXPECT_FALSE(IsReaderTotalSizeCalculated());
   EXPECT_EQ(BlobReader::Status::IO_PENDING,
             reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_FALSE(reader_->IsInMemory());
   CheckSizeNotCalculatedYet(size_result);
   message_loop_.RunUntilIdle();
   CheckSizeCalculatedAsynchronously(kData.size(), size_result);
@@ -755,6 +759,7 @@ TEST_F(BlobReaderTest, FileSystemAsync) {
   EXPECT_EQ(BlobReader::Status::IO_PENDING,
             reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
   CheckSizeNotCalculatedYet(size_result);
+  EXPECT_FALSE(reader_->IsInMemory());
   message_loop_.RunUntilIdle();
   CheckSizeCalculatedAsynchronously(kData.size(), size_result);
 
@@ -1178,6 +1183,7 @@ TEST_F(BlobReaderTest, HandleBeforeAsyncCancel) {
   int size_result = -1;
   EXPECT_EQ(BlobReader::Status::IO_PENDING,
             reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_FALSE(reader_->IsInMemory());
   context_.CancelPendingBlob(kUuid, IPCBlobCreationCancelCode::UNKNOWN);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(net::ERR_FAILED, size_result);
@@ -1198,6 +1204,7 @@ TEST_F(BlobReaderTest, ReadFromIncompleteBlob) {
   int size_result = -1;
   EXPECT_EQ(BlobReader::Status::IO_PENDING,
             reader_->CalculateSize(base::Bind(&SetValue<int>, &size_result)));
+  EXPECT_FALSE(reader_->IsInMemory());
   context_.CompletePendingBlob(b);
   message_loop_.RunUntilIdle();
   CheckSizeCalculatedAsynchronously(kDataSize, size_result);
