@@ -1952,8 +1952,9 @@ TEST_F(WidgetTest, WidgetDeleted_InOnMousePressed) {
 #if !defined(OS_MACOSX) || defined(USE_AURA)
 
 TEST_F(WidgetTest, WidgetDeleted_InDispatchGestureEvent) {
-  // This test doesn't make sense for mus. Force NativeWidgetAura to be used.
-  DisableNativeWidgetMus();
+  // This test doesn't make sense for mus.
+  if (IsMus())
+    return;
 
   Widget* widget = new Widget;
   Widget::InitParams params =

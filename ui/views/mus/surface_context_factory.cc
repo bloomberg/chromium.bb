@@ -39,7 +39,10 @@ SurfaceContextFactory::~SurfaceContextFactory() {}
 void SurfaceContextFactory::CreateOutputSurface(
     base::WeakPtr<ui::Compositor> compositor) {
   // NOTIMPLEMENTED();
-  compositor->SetOutputSurface(surface_binding_.CreateOutputSurface());
+  std::unique_ptr<cc::OutputSurface> surface =
+      surface_binding_.CreateOutputSurface();
+  if (surface)
+    compositor->SetOutputSurface(std::move(surface));
 }
 
 std::unique_ptr<ui::Reflector> SurfaceContextFactory::CreateReflector(

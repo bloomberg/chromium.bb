@@ -68,11 +68,6 @@ Widget::InitParams ViewsTestBase::CreateParams(
   return params;
 }
 
-void ViewsTestBase::DisableNativeWidgetMus() {
-  ViewsDelegate::GetInstance()->set_native_widget_factory(
-      ViewsDelegate::NativeWidgetFactory());
-}
-
 gfx::NativeWindow ViewsTestBase::GetContext() {
   return test_helper_->GetContext();
 }

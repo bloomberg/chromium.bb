@@ -98,6 +98,8 @@ std::unique_ptr<cc::OutputSurface>
 SurfaceBinding::PerConnectionState::CreateOutputSurface(
     mus::Window* window,
     mus::mojom::SurfaceType surface_type) {
+  if (gpu_.encountered_error())
+    return nullptr;
   // TODO(sky): figure out lifetime here. Do I need to worry about the return
   // value outliving this?
   mus::mojom::CommandBufferPtr cb;
@@ -127,6 +129,12 @@ SurfaceBinding::PerConnectionState::~PerConnectionState() {
 
 void SurfaceBinding::PerConnectionState::Init() {
   connector_->ConnectToInterface("mojo:mus", &gpu_);
+
+  // TODO(sad): If connection is lost (e.g. if gpu crashes), then the
+  // connections need to be restored. https://crbug.com/613366
+  // TODO(rockot|yzshen): It is necessary to install a connection-error handler,
+  // even if the handler doesn't actually do anything. https://crbug.com/613371
+  gpu_.set_connection_error_handler([]{});
 }
 
 // SurfaceBinding --------------------------------------------------------------

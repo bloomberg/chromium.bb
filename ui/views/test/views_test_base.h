@@ -42,11 +42,6 @@ class ViewsTestBase : public PlatformTest {
   // cross-platform tests.
   Widget::InitParams CreateParams(Widget::InitParams::Type type);
 
-  // Use for tests that you should not create a NativeWidgetMus. Ideally we
-  // would use an ifdef, but for the time being we're not compiling differently,
-  // so that a define is not possible.
-  void DisableNativeWidgetMus();
-
  protected:
   TestViewsDelegate* views_delegate() const {
     return test_helper_->views_delegate();
