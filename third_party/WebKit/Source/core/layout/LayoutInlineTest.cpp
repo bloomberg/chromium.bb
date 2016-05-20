@@ -13,14 +13,6 @@ namespace blink {
 class LayoutInlineTest : public RenderingTest {
 };
 
-TEST_F(LayoutInlineTest, LayoutNameCalledWithNullStyle)
-{
-    LayoutObject* obj = LayoutInline::createAnonymous(&document());
-    EXPECT_FALSE(obj->style());
-    EXPECT_STREQ("LayoutInline (anonymous)", obj->decoratedName().ascii().data());
-    obj->destroy();
-}
-
 TEST_F(LayoutInlineTest, SimpleContinuation)
 {
     setBodyInnerHTML("<span id='splitInline'><i id='before'></i><h1 id='blockChild'></h1><i id='after'></i></span>");

@@ -58,13 +58,6 @@ LayoutInline::LayoutInline(Element* element)
     setChildrenInline(true);
 }
 
-LayoutInline* LayoutInline::createAnonymous(Document* document)
-{
-    LayoutInline* layoutObject = new LayoutInline(nullptr);
-    layoutObject->setDocumentForAnonymous(document);
-    return layoutObject;
-}
-
 void LayoutInline::willBeDestroyed()
 {
     // Make sure to destroy anonymous children first while they are still connected to the rest of the tree, so that they will

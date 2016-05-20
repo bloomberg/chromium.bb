@@ -112,8 +112,6 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 public:
     explicit LayoutInline(Element*);
 
-    static LayoutInline* createAnonymous(Document*);
-
     LayoutObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
     LayoutObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
 
