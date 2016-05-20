@@ -69,6 +69,12 @@ public:
     AddRuleFlags m_flags;
 };
 
+} // namespace blink
+
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::MinimalRuleData);
+
+namespace blink {
+
 class CORE_EXPORT RuleData {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
@@ -108,6 +114,12 @@ private:
     // Use plain array instead of a Vector to minimize memory overhead.
     unsigned m_descendantSelectorIdentifierHashes[maximumIdentifierCount];
 };
+
+} // namespace blink
+
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::RuleData);
+
+namespace blink {
 
 struct SameSizeAsRuleData {
     DISALLOW_NEW();
@@ -237,8 +249,5 @@ private:
 };
 
 } // namespace blink
-
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::RuleData);
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::MinimalRuleData);
 
 #endif // RuleSet_h

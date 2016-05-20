@@ -52,6 +52,12 @@ public:
     unsigned end;
 };
 
+} // namespace blink
+
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::SourceRange);
+
+namespace blink {
+
 struct CSSPropertySourceData {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
@@ -67,6 +73,12 @@ public:
     bool parsedOk;
     SourceRange range;
 };
+
+} // namespace blink
+
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::CSSPropertySourceData);
+
+namespace blink {
 
 struct CSSStyleSourceData : public GarbageCollected<CSSStyleSourceData> {
     static CSSStyleSourceData* create()
@@ -92,6 +104,12 @@ public:
 
     SourceRange valueRange;
 };
+
+} // namespace blink
+
+WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::CSSMediaQueryExpSourceData);
+
+namespace blink {
 
 struct CSSMediaQuerySourceData : public GarbageCollected<CSSMediaQuerySourceData> {
     static CSSMediaQuerySourceData* create()
@@ -164,9 +182,5 @@ struct CSSRuleSourceData : public GarbageCollected<CSSRuleSourceData> {
 };
 
 } // namespace blink
-
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::SourceRange);
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::CSSPropertySourceData);
-WTF_ALLOW_MOVE_AND_INIT_WITH_MEM_FUNCTIONS(blink::CSSMediaQueryExpSourceData);
 
 #endif // CSSPropertySourceData_h
