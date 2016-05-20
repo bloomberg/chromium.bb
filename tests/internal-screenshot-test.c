@@ -32,25 +32,37 @@
 char *server_parameters="--use-pixman --width=320 --height=240";
 
 static void
-draw_stuff(void *pixels, int w, int h)
+draw_stuff(pixman_image_t *image)
 {
+	int w, h;
+	int stride; /* bytes */
 	int x, y;
 	uint8_t r, g, b;
+	uint32_t *pixels;
 	uint32_t *pixel;
+	pixman_format_code_t fmt;
+
+	fmt = pixman_image_get_format(image);
+	w = pixman_image_get_width(image);
+	h = pixman_image_get_height(image);
+	stride = pixman_image_get_stride(image);
+	pixels = pixman_image_get_data(image);
+
+	assert(PIXMAN_FORMAT_BPP(fmt) == 32);
 
 	for (x = 0; x < w; x++)
 		for (y = 0; y < h; y++) {
 			b = x;
 			g = x + y;
 			r = y;
-			pixel = (uint32_t *)pixels + y * w + x;
+			pixel = pixels + (y * stride / 4) + x;
 			*pixel = (255 << 24) | (r << 16) | (g << 8) | b;
 		}
 }
 
 TEST(internal_screenshot)
 {
-	struct wl_buffer *buf;
+	struct buffer *buf;
 	struct client *client;
 	struct wl_surface *surface;
 	struct surface *screenshot = NULL;
@@ -60,7 +72,6 @@ TEST(internal_screenshot)
 	const char *fname;
 	bool match = false;
 	bool dump_all_images = true;
-	void *pixels;
 
 	/* Create the client */
 	printf("Creating client for test\n");
@@ -86,9 +97,9 @@ TEST(internal_screenshot)
 	/* Move the pointer away from the screenshot area. */
 	weston_test_move_pointer(client->test->weston_test, 0, 0);
 
-	buf = create_shm_buffer(client, 100, 100, &pixels);
-	draw_stuff(pixels, 100, 100);
-	wl_surface_attach(surface, buf, 0, 0);
+	buf = create_shm_buffer_a8r8g8b8(client, 100, 100);
+	draw_stuff(buf->image);
+	wl_surface_attach(surface, buf->proxy, 0, 0);
 	wl_surface_damage(surface, 0, 0, 100, 100);
 	wl_surface_commit(surface);
 
