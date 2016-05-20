@@ -95,6 +95,8 @@ public:
     TextAffinity affinity() const { return m_positionWithAffinity.affinity(); }
 
     static VisiblePositionTemplate<Strategy> firstPositionInNode(Node*);
+    static VisiblePositionTemplate<Strategy> inParentAfterNode(const Node&);
+    static VisiblePositionTemplate<Strategy> inParentBeforeNode(const Node&);
 
     DEFINE_INLINE_TRACE()
     {

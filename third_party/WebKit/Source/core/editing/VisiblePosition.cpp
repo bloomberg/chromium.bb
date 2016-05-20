@@ -83,6 +83,18 @@ VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::firstPositi
     return create(PositionWithAffinityTemplate<Strategy>(PositionTemplate<Strategy>::firstPositionInNode(node)));
 }
 
+template <typename Strategy>
+VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::inParentAfterNode(const Node& node)
+{
+    return create(PositionWithAffinityTemplate<Strategy>(PositionTemplate<Strategy>::inParentAfterNode(node)));
+}
+
+template <typename Strategy>
+VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::inParentBeforeNode(const Node& node)
+{
+    return create(PositionWithAffinityTemplate<Strategy>(PositionTemplate<Strategy>::inParentBeforeNode(node)));
+}
+
 VisiblePosition createVisiblePosition(const Position& position, TextAffinity affinity)
 {
     return createVisiblePosition(PositionWithAffinity(position, affinity));

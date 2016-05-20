@@ -1331,7 +1331,7 @@ VisiblePosition previousLinePosition(const VisiblePosition& visiblePosition, Lay
         LineLayoutItem lineLayoutItem = root->closestLeafChildForPoint(pointInLine, isEditablePosition(p))->getLineLayoutItem();
         Node* node = lineLayoutItem.node();
         if (node && editingIgnoresContent(node))
-            return createVisiblePosition(Position::inParentBeforeNode(*node));
+            return VisiblePosition::inParentBeforeNode(*node);
         return createVisiblePosition(lineLayoutItem.positionForPoint(pointInLine));
     }
 
@@ -1387,7 +1387,7 @@ VisiblePosition nextLinePosition(const VisiblePosition& visiblePosition, LayoutU
         LineLayoutItem lineLayoutItem = root->closestLeafChildForPoint(pointInLine, isEditablePosition(p))->getLineLayoutItem();
         Node* node = lineLayoutItem.node();
         if (node && editingIgnoresContent(node))
-            return createVisiblePosition(Position::inParentBeforeNode(*node));
+            return VisiblePosition::inParentBeforeNode(*node);
         return createVisiblePosition(lineLayoutItem.positionForPoint(pointInLine));
     }
 

@@ -1030,7 +1030,7 @@ VisiblePosition visiblePositionBeforeNode(Node& node)
         return createVisiblePosition(firstPositionInOrBeforeNode(&node));
     DCHECK(node.parentNode()) << node;
     DCHECK(!node.parentNode()->isShadowRoot()) << node.parentNode();
-    return createVisiblePosition(Position::inParentBeforeNode(node));
+    return VisiblePosition::inParentBeforeNode(node);
 }
 
 // Returns the visible position at the ending of a node
@@ -1040,7 +1040,7 @@ VisiblePosition visiblePositionAfterNode(Node& node)
         return createVisiblePosition(lastPositionInOrAfterNode(&node));
     DCHECK(node.parentNode()) << node.parentNode();
     DCHECK(!node.parentNode()->isShadowRoot()) << node.parentNode();
-    return createVisiblePosition(Position::inParentAfterNode(node));
+    return VisiblePosition::inParentAfterNode(node);
 }
 
 bool isHTMLListElement(Node* n)
