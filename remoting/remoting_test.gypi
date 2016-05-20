@@ -406,6 +406,11 @@
             'host/local_input_monitor_unittest.cc',
           ],
         }],
+        ['use_x11 == 0', {
+          'sources!' : [
+            'host/linux/unicode_to_keysym_unittest.cc',
+          ]
+        }],
         [ 'use_ozone==1', {
           'sources!': [
             'host/local_input_monitor_unittest.cc',

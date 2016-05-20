@@ -140,6 +140,7 @@ if (is_mac) {
       if (is_linux) {
         # These will already be filtered out on non-Linux.
         sources -= [
+          "linux/unicode_to_keysym.cc",
           "linux/x11_util.cc",
           "linux/x_server_clipboard.cc",
           "linux/x_server_clipboard.h",
@@ -347,6 +348,9 @@ if (is_mac) {
       "win/worker_process_launcher_unittest.cc",
     ]
 
+    if (!use_x11 && is_linux) {
+      sources -= [ "linux/unicode_to_keysym_unittest.cc" ]
+    }
     if (use_ozone || is_chromeos) {
       sources -= [ "local_input_monitor_unittest.cc" ]
     }

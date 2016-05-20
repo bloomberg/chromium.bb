@@ -68,6 +68,10 @@
                     '../build/linux/system.gyp:xrandr',
                     '../build/linux/system.gyp:xtst',
                   ],
+                }, {
+                'sources!' : [
+                  'host/linux/unicode_to_keysym.cc',
+                ],
                 }],
                 ['chromeos==0 and use_ozone==0', {
                   'dependencies': [
