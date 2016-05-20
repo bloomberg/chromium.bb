@@ -234,16 +234,15 @@ public abstract class BidirectionalStream {
                 ByteBuffer buffer, boolean endOfStream);
 
         /**
-         * Invoked when data passed to {@link BidirectionalStream#write write()} is sent. The
-         * buffer's position is updated to the end of the sent data. The buffer's limit is not
-         * changed. Not all available data may have been sent, so the buffer's position is not
-         * necessarily equal to its limit. To continue writing, call
+         * Invoked when the entire ByteBuffer passed to {@link BidirectionalStream#write write()}
+         * is sent. The buffer's position is updated to be the same as the buffer's limit.
+         * The buffer's limit is not changed. To continue writing, call
          * {@link BidirectionalStream#write write()}.
          *
          * @param stream the stream on which the write completed
          * @param info the response information
          * @param buffer the buffer that was passed to {@link BidirectionalStream#write write()}.
-         *     The buffer's position is set to the end of the sent data. The buffer's limit
+         *     The buffer's position is set to the buffer's limit. The buffer's limit
          *     is not changed.
          * @param endOfStream the endOfStream flag that was passed to the corresponding
          *     {@link BidirectionalStream#write write()}. If true, the write side is closed.
@@ -361,10 +360,10 @@ public abstract class BidirectionalStream {
      * method if data is sent, or its {@link Callback#onFailed onFailed()} method if
      * there's an error.
      *
-     * An attempt to write data from {@code buffer} starting at {@code
-     * buffer.position()} is begun. At most {@code buffer.remaining()} bytes are
-     * written. {@code buffer.position()} is updated upon invocation of {@link
-     * Callback#onWriteCompleted onWriteCompleted()} to indicate how much data was written.
+     * An attempt to write data from {@code buffer} starting at {@code buffer.position()}
+     * is begun. {@code buffer.remaining()} bytes will be written.
+     * {@link Callback#onWriteCompleted onWriteCompleted()} will be invoked only when the
+     * full ByteBuffer is written.
      *
      * @param buffer the {@link ByteBuffer} to write data from. Must be a
      *     direct ByteBuffer. The embedder must not read or modify buffer's
