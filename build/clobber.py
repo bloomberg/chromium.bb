@@ -66,10 +66,17 @@ def delete_build_dir(build_dir):
   except IOError:
     args_contents = ''
 
-  delete_dir(build_dir)
+  e = None
+  try:
+    # delete_dir and os.mkdir() may fail, such as when chrome.exe is running,
+    # and we still want to restore args.gn/build.ninja/build.ninja.d, so catch
+    # the exception and rethrow it later.
+    delete_dir(build_dir)
+    os.mkdir(build_dir)
+  except Exception as e:
+    pass
 
   # Put back the args file (if any).
-  os.mkdir(build_dir)
   if args_contents != '':
     with open(gn_args_file, 'w') as f:
       f.write(args_contents)
@@ -94,6 +101,9 @@ depfile = build.ninja.d
   with open(build_ninja_d_file, 'w') as f:
     f.write('build.ninja: nonexistant_file.gn\n')
 
+  if e:
+    # Rethrow the exception we caught earlier.
+    raise e
 
 def clobber(out_dir):
   """Clobber contents of build directory.
