@@ -90,13 +90,11 @@ class PayloadManagerTest(cros_test_lib.MockTestCase):
 class BasePaygenBuildLibTest(cros_test_lib.MoxTempDirTestCase):
   """Base class for testing PaygenBuildLib class."""
 
-  def _GetPaygenBuildInstance(self, skip_test_payloads=False,
-                              disable_tests=False):
+  def _GetPaygenBuildInstance(self, disable_tests=False):
     """Helper method to create a standard Paygen instance."""
     return paygen_build_lib._PaygenBuild(self.foo_build, self.tempdir,
                                          config_lib_unittest.MockSiteConfig(),
-                                         disable_tests=disable_tests,
-                                         skip_test_payloads=skip_test_payloads)
+                                         disable_tests=disable_tests)
 
   def _GetBuildTestImage(self, build):
     """Returns a test image object for the build.
@@ -1120,10 +1118,9 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
 
     paygen._CleanupBuild()
 
-  def _CreatePayloadsSetup(self, skip_test_payloads=False, disable_tests=False):
+  def _CreatePayloadsSetup(self, disable_tests=False):
     """Helper method for related CreatePayloads tests."""
-    paygen = self._GetPaygenBuildInstance(skip_test_payloads=skip_test_payloads,
-                                          disable_tests=disable_tests)
+    paygen = self._GetPaygenBuildInstance(disable_tests=disable_tests)
 
     self.mox.StubOutWithMock(gslock, 'Lock')
     self.mox.StubOutWithMock(gslib, 'CreateWithContents')
@@ -1303,8 +1300,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
 
   def testCreatePayloadsSkipTests(self):
     """Test paygen_build_lib._GeneratePayloads success."""
-    paygen = self._CreatePayloadsSetup(skip_test_payloads=True,
-                                       disable_tests=True)
+    paygen = self._CreatePayloadsSetup(disable_tests=True)
 
     lock_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.LOCK)
     finished_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.FINISHED)

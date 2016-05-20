@@ -392,8 +392,7 @@ class _PaygenBuild(object):
 
   def __init__(self, build, work_dir, site_config,
                dry_run=False, ignore_finished=False,
-               skip_full_payloads=False, skip_delta_payloads=False,
-               skip_test_payloads=False, skip_nontest_payloads=False,
+               skip_delta_payloads=False,
                disable_tests=False, output_dir=None,
                run_parallel=False, au_generator_uri=None,
                skip_duts_check=False):
@@ -403,10 +402,7 @@ class _PaygenBuild(object):
     self._site_config = site_config
     self._drm = dryrun_lib.DryRunMgr(dry_run)
     self._ignore_finished = dryrun_lib.DryRunMgr(ignore_finished)
-    self._skip_full_payloads = skip_full_payloads
     self._skip_delta_payloads = skip_delta_payloads
-    self._skip_test_payloads = skip_test_payloads
-    self._skip_nontest_payloads = skip_nontest_payloads
     self._output_dir = output_dir
     self._run_parallel = run_parallel
     self._archive_board = None
@@ -926,23 +922,18 @@ class _PaygenBuild(object):
     previous_images = (
         _FilterForBasic(previous_images) + _FilterForTest(previous_images))
 
-    # Discover and catalogue full, non-test payloads.
-    skip_full = self._skip_full_payloads or self._skip_nontest_payloads
-
     # Full payloads for the current build.
     payload_manager.Add(
         ['full'],
-        self._DiscoverRequiredFullPayloads(_FilterForImages(images)),
-        skip=skip_full)
+        self._DiscoverRequiredFullPayloads(_FilterForImages(images)))
 
     # Full payloads for previous builds.
     payload_manager.Add(
         ['full', 'previous'],
-        self._DiscoverRequiredFullPayloads(_FilterForImages(previous_images)),
-        skip=skip_full)
+        self._DiscoverRequiredFullPayloads(_FilterForImages(previous_images)))
 
     # Discover delta payloads.
-    skip_deltas = self._skip_delta_payloads or self._skip_nontest_payloads
+    skip_deltas = self._skip_delta_payloads
 
     # Deltas for current -> NPO (pre-MP and MP).
     delta_npo_labels = ['delta', 'npo']
@@ -987,20 +978,17 @@ class _PaygenBuild(object):
 
     # Discover test payloads if Autotest is not disabled.
     if self._control_dir:
-      skip_test_full = self._skip_full_payloads or self._skip_test_payloads
-      skip_test_deltas = self._skip_delta_payloads or self._skip_test_payloads
+      skip_test_deltas = self._skip_delta_payloads
 
       # Full test payloads.
       payload_manager.Add(
           ['test', 'full'],
-          self._DiscoverRequiredFullPayloads(_FilterForTest(images)),
-          skip=skip_test_full)
+          self._DiscoverRequiredFullPayloads(_FilterForTest(images)))
 
       # Full previous payloads.
       payload_manager.Add(
           ['test', 'full', 'previous'],
-          self._DiscoverRequiredFullPayloads(_FilterForTest(previous_images)),
-          skip=skip_test_full)
+          self._DiscoverRequiredFullPayloads(_FilterForTest(previous_images)))
 
       # Deltas for current -> NPO (test payloads).
       payload_manager.Add(
@@ -1521,24 +1509,24 @@ def ValidateBoardConfig(board):
   raise BoardNotConfigured(board)
 
 
-def CreatePayloads(build, work_dir, site_config, dry_run=False,
-                   ignore_finished=False, skip_full_payloads=False,
-                   skip_delta_payloads=False, skip_test_payloads=False,
-                   skip_nontest_payloads=False, disable_tests=False,
-                   output_dir=None, run_parallel=False,
-                   au_generator_uri=None, skip_duts_check=False):
+def CreatePayloads(build, work_dir, site_config,
+                   dry_run=False,
+                   ignore_finished=False,
+                   skip_delta_payloads=False,
+                   disable_tests=False,
+                   output_dir=None,
+                   run_parallel=False,
+                   au_generator_uri=None,
+                   skip_duts_check=False):
   """Helper method than generates payloads for a given build.
 
   Args:
     build: gspaths.Build instance describing the build to generate payloads for.
     work_dir: Directory to contain both scratch and long-term work files.
-    dry_run: Do not generate payloads (optional).
     site_config: A valid SiteConfig. Only used to map board names.
+    dry_run: Do not generate payloads (optional).
     ignore_finished: Ignore the FINISHED flag (optional).
-    skip_full_payloads: Do not generate full payloads.
     skip_delta_payloads: Do not generate delta payloads.
-    skip_test_payloads: Do not generate test payloads.
-    skip_nontest_payloads: Do not generate non-test payloads.
     disable_tests: Do not attempt generating test artifacts or running tests.
     output_dir: Directory for payload files, or None for GS default locations.
     run_parallel: Generate payloads in parallel processes.
@@ -1550,10 +1538,7 @@ def CreatePayloads(build, work_dir, site_config, dry_run=False,
   _PaygenBuild(build, work_dir, site_config,
                dry_run=dry_run,
                ignore_finished=ignore_finished,
-               skip_full_payloads=skip_full_payloads,
                skip_delta_payloads=skip_delta_payloads,
-               skip_test_payloads=skip_test_payloads,
-               skip_nontest_payloads=skip_nontest_payloads,
                disable_tests=disable_tests,
                output_dir=output_dir,
                run_parallel=run_parallel,
