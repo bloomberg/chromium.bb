@@ -101,6 +101,7 @@ public:
     //
     void setAudioThreadToCurrentThread();
     ThreadIdentifier audioThread() const { return acquireLoad(&m_audioThread); }
+    void clearAudioThread();
 
     // TODO(hongchan): Use no-barrier load here. (crbug.com/247328)
     //

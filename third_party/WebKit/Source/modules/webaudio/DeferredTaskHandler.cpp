@@ -279,6 +279,11 @@ void DeferredTaskHandler::clearHandlersToBeDeleted()
     m_deletableOrphanHandlers.clear();
 }
 
+void DeferredTaskHandler::clearAudioThread()
+{
+    releaseStore(&m_audioThread, 0);
+}
+
 void DeferredTaskHandler::setAudioThreadToCurrentThread()
 {
     ASSERT(!isMainThread());

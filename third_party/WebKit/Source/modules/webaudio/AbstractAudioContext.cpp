@@ -150,6 +150,7 @@ void AbstractAudioContext::clear()
     // The audio rendering thread is dead.  Nobody will schedule AudioHandler
     // deletion.  Let's do it ourselves.
     deferredTaskHandler().clearHandlersToBeDeleted();
+    deferredTaskHandler().clearAudioThread();
     m_isCleared = true;
 }
 
