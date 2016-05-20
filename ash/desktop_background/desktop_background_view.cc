@@ -138,10 +138,13 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
   gfx::ImageSkia wallpaper = controller->GetWallpaper();
   WallpaperLayout wallpaper_layout = controller->GetWallpaperLayout();
 
-  if (wallpaper.isNull()) {
-    canvas->FillRect(GetLocalBounds(), SK_ColorBLACK);
+  // Wallpapers with png format could be partially transparent.
+  // Fill the canvas with black background to make it opaque
+  // before painting wallpaper
+  canvas->FillRect(GetLocalBounds(), SK_ColorBLACK);
+
+  if (wallpaper.isNull())
     return;
-  }
 
   if (wallpaper_layout == WALLPAPER_LAYOUT_CENTER_CROPPED) {
     // The dimension with the smallest ratio must be cropped, the other one
@@ -177,8 +180,6 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
     canvas->DrawImageInt(wallpaper, 0, 0, wallpaper.width(),
         wallpaper.height(), 0, 0, width(), height(), true);
   } else {
-    // Fill with black to make sure that the entire area is opaque.
-    canvas->FillRect(GetLocalBounds(), SK_ColorBLACK);
     float image_scale = canvas->image_scale();
     gfx::Rect wallpaper_rect(0, 0, wallpaper.width() / image_scale,
                              wallpaper.height() / image_scale);
