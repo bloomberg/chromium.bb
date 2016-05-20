@@ -163,7 +163,8 @@ void NetworkResourcesData::ResourceData::appendData(const char* data, size_t dat
 
 size_t NetworkResourcesData::ResourceData::decodeDataToContent()
 {
-    ASSERT(!hasContent());
+    DCHECK(!hasContent());
+    DCHECK(hasData());
     size_t dataLength = m_dataBuffer->size();
     bool success = InspectorPageAgent::sharedBufferContent(m_dataBuffer, m_mimeType, m_textEncodingName, &m_content, &m_base64Encoded);
     DCHECK(success);
@@ -202,7 +203,6 @@ void NetworkResourcesData::responseReceived(const String& requestId, const Strin
     resourceData->setFrameId(frameId);
     resourceData->setMimeType(response.mimeType());
     resourceData->setTextEncodingName(response.textEncodingName());
-    resourceData->setCanBeDecoded(InspectorPageAgent::canTextResourceBeDecoded(response.mimeType(), response.textEncodingName()));
     resourceData->setHTTPStatusCode(response.httpStatusCode());
 
     String filePath = response.downloadedFilePath();
@@ -261,8 +261,6 @@ void NetworkResourcesData::maybeAddResourceData(const String& requestId, const c
 {
     ResourceData* resourceData = resourceDataForRequestId(requestId);
     if (!resourceData)
-        return;
-    if (!resourceData->canBeDecoded())
         return;
     if (resourceData->dataLength() + dataLength > m_maximumSingleResourceContentSize)
         m_contentSize -= resourceData->evictContent();

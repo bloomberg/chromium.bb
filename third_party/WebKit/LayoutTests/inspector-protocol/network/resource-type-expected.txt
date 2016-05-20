@@ -6,8 +6,8 @@ Resource /resources-page.html got type: Document, type: Document, responseAvaila
 Resource /stylesheet.css got type: Stylesheet, type: Stylesheet, responseAvailable: true, responseEncoded: false
 Resource /script.js got type: Script, type: Script, responseAvailable: true, responseEncoded: false
 Resource /abe.png got type: Image, type: Image, responseAvailable: true, responseEncoded: true
-Resource /test.wav got type: Media, type: Media, responseAvailable: false
-Resource /test.ogv got type: Media, type: Media, responseAvailable: false
+Resource /test.wav got type: Media, type: Media, responseAvailable: true, responseEncoded: true
+Resource /test.ogv got type: Media, type: Media, responseAvailable: true, responseEncoded: true
 Resource /simple-captions.vtt got type: TextTrack, type: TextTrack, responseAvailable: true, responseEncoded: true
 Resource /greenbox.png got type: XHR, type: XHR, responseAvailable: true, responseEncoded: true
 

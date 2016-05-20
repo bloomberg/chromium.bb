@@ -86,7 +86,6 @@ public:
     static HeapVector<Member<Document>> importsForFrame(LocalFrame*);
     static bool cachedResourceContent(Resource*, String* result, bool* base64Encoded);
     static bool sharedBufferContent(PassRefPtr<SharedBuffer>, const String& mimeType, const String& textEncodingName, String* result, bool* base64Encoded);
-    static bool canTextResourceBeDecoded(const String& mimeType, const String& textEncodingName);
 
     static PassRefPtr<SharedBuffer> resourceData(LocalFrame*, const KURL&, String* textEncodingName);
     static Resource* cachedResource(LocalFrame*, const KURL&);

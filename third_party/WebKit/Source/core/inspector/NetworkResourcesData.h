@@ -114,9 +114,6 @@ public:
         String textEncodingName() const { return m_textEncodingName; }
         void setTextEncodingName(const String& textEncodingName) { m_textEncodingName = textEncodingName; }
 
-        bool canBeDecoded() const { return m_canBeDecoded; }
-        void setCanBeDecoded(bool canBeDecoded) { m_canBeDecoded = canBeDecoded; }
-
         PassRefPtr<SharedBuffer> buffer() const { return m_buffer; }
         void setBuffer(PassRefPtr<SharedBuffer> buffer) { m_buffer = buffer; }
 
@@ -152,7 +149,6 @@ public:
 
         String m_mimeType;
         String m_textEncodingName;
-        bool m_canBeDecoded;
 
         RefPtr<SharedBuffer> m_buffer;
         WeakMember<Resource> m_cachedResource;

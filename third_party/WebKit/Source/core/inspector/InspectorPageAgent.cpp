@@ -148,18 +148,6 @@ static bool hasTextContent(Resource* cachedResource)
     return type == Resource::CSSStyleSheet || type == Resource::XSLStyleSheet || type == Resource::Script || type == Resource::Raw || type == Resource::ImportResource || type == Resource::MainResource;
 }
 
-// static
-bool InspectorPageAgent::canTextResourceBeDecoded(const String& mimeType, const String& textEncodingName)
-{
-    if (!textEncodingName.isEmpty())
-        return true;
-    return DOMImplementation::isXMLMIMEType(mimeType)
-        || equalIgnoringCase(mimeType, "text/html")
-        || MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType)
-        || DOMImplementation::isJSONMIMEType(mimeType)
-        || DOMImplementation::isTextMIMEType(mimeType);
-}
-
 static PassOwnPtr<TextResourceDecoder> createResourceTextDecoder(const String& mimeType, const String& textEncodingName)
 {
     if (!textEncodingName.isEmpty())
