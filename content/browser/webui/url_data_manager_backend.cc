@@ -57,7 +57,6 @@ const char kChromeURLContentSecurityPolicyHeaderBase[] =
 
 const char kChromeURLXFrameOptionsHeader[] = "X-Frame-Options: DENY";
 static const char kNetworkErrorKey[] = "netError";
-const int kNoRenderProcessId = -1;
 
 bool SchemeIsInSchemes(const std::string& scheme,
                        const std::vector<std::string>& schemes) {
@@ -264,19 +263,40 @@ URLRequestChromeJob::~URLRequestChromeJob() {
 }
 
 void URLRequestChromeJob::Start() {
+  const GURL url = request_->url();
+
+  TRACE_EVENT_ASYNC_BEGIN1("browser", "DataManager:Request", this, "URL",
+      url.possibly_invalid_spec());
+
   int render_process_id, unused;
   bool is_renderer_request = ResourceRequestInfo::GetRenderFrameForRequest(
       request_, &render_process_id, &unused);
-  if (!is_renderer_request)
-    render_process_id = kNoRenderProcessId;
+
+  if (!is_renderer_request) {
+    StartAsync(true);
+    return;
+  }
+
+  if (url.SchemeIs(kChromeUIScheme)) {
+    // TODO(dbeam): it's not clear that partition checking is needed or used. It
+    // was added for iframe-based signin (http://crbug.com/338127), which has
+    // since changed. We should remove if no longer necessary.
+    std::vector<std::string> hosts;
+    hosts.push_back(content::kChromeUIResourcesHost);
+    GetContentClient()->
+        browser()->GetAdditionalWebUIHostsToIgnoreParititionCheck(&hosts);
+    if (std::find(hosts.begin(), hosts.end(), url.host()) != hosts.end()) {
+      StartAsync(true);
+      return;
+    }
+  }
+
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(&URLRequestChromeJob::CheckStoragePartitionMatches,
-                 render_process_id, request_->url(),
+                 render_process_id, url,
                  weak_factory_.GetWeakPtr()));
-  TRACE_EVENT_ASYNC_BEGIN1("browser", "DataManager:Request", this, "URL",
-      request_->url().possibly_invalid_spec());
 }
 
 void URLRequestChromeJob::Kill() {
@@ -396,25 +416,12 @@ void URLRequestChromeJob::CheckStoragePartitionMatches(
   // exploited renderer pretending to add them as a subframe. We skip this check
   // for resources.
   bool allowed = false;
-  std::vector<std::string> hosts;
-  GetContentClient()->
-      browser()->GetAdditionalWebUIHostsToIgnoreParititionCheck(&hosts);
-  if (url.SchemeIs(kChromeUIScheme) &&
-      (url.SchemeIs(kChromeUIScheme) ||
-       std::find(hosts.begin(), hosts.end(), url.host()) != hosts.end())) {
-    allowed = true;
-  } else if (render_process_id == kNoRenderProcessId) {
-    // Request was not issued by renderer.
-    allowed = true;
-  } else {
-    RenderProcessHost* process = RenderProcessHost::FromID(render_process_id);
-    if (process) {
-      StoragePartition* partition = BrowserContext::GetStoragePartitionForSite(
-          process->GetBrowserContext(), url);
-      allowed = partition == process->GetStoragePartition();
-    }
+  RenderProcessHost* process = RenderProcessHost::FromID(render_process_id);
+  if (process) {
+    StoragePartition* partition = BrowserContext::GetStoragePartitionForSite(
+        process->GetBrowserContext(), url);
+    allowed = partition == process->GetStoragePartition();
   }
-
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
