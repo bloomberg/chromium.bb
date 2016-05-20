@@ -395,7 +395,7 @@ TEST(ivi_layout_surface_configure_notification)
 	struct client *client;
 	struct runner *runner;
 	struct ivi_window *wind;
-	struct wl_buffer *buffer;
+	struct buffer *buffer;
 
 	client = create_client();
 	runner = client_create_runner(client);
@@ -404,21 +404,21 @@ TEST(ivi_layout_surface_configure_notification)
 
 	wind = client_create_ivi_window(client, IVI_TEST_SURFACE_ID(0));
 
-	buffer = create_shm_buffer(client, 200, 300, NULL);
+	buffer = create_shm_buffer_a8r8g8b8(client, 200, 300);
 
-	wl_surface_attach(wind->wl_surface, buffer, 0, 0);
+	wl_surface_attach(wind->wl_surface, buffer->proxy, 0, 0);
 	wl_surface_damage(wind->wl_surface, 0, 0, 20, 30);
 	wl_surface_commit(wind->wl_surface);
 
 	runner_run(runner, "surface_configure_notification_p2");
 
-	wl_surface_attach(wind->wl_surface, buffer, 0, 0);
+	wl_surface_attach(wind->wl_surface, buffer->proxy, 0, 0);
 	wl_surface_damage(wind->wl_surface, 0, 0, 40, 50);
 	wl_surface_commit(wind->wl_surface);
 
 	runner_run(runner, "surface_configure_notification_p3");
 
-	wl_buffer_destroy(buffer);
+	buffer_destroy(buffer);
 	ivi_window_destroy(wind);
 	runner_destroy(runner);
 }
