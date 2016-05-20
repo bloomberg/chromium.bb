@@ -85,10 +85,12 @@ bool PlatformShouldEnableAccessibility() {
 #endif  // defined(USE_GCONF)
 
 bool ShouldEnableAccessibility() {
+#if defined(USE_GCONF)
   char* enable_accessibility = getenv(kAccessibilityEnabled);
   if ((enable_accessibility && atoi(enable_accessibility) == 1) ||
       PlatformShouldEnableAccessibility())
     return true;
+#endif  // defined(USE_GCONF)
 
   return false;
 }
