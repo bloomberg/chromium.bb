@@ -222,7 +222,7 @@ void LevelDBWrapperImpl::GetAll(const mojo::String& source,
     return;
   }
 
-  mojo::Array<mojom::KeyValuePtr> all(map_->size());
+  mojo::Array<mojom::KeyValuePtr> all;
   for (const auto& it : (*map_)) {
     mojom::KeyValuePtr kv = mojom::KeyValue::New();
     kv->key = it.first.Clone();
