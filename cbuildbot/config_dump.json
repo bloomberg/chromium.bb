@@ -22824,7 +22824,6 @@
         "boards": [
             "veyron_rialto"
         ],
-        "important": false,
         "manifest": "official.xml",
         "vm_tests": []
     },

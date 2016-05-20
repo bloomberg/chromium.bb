@@ -640,9 +640,6 @@ _waterfall_config_map = {
         'lakitu_next-paladin',
         'veyron_rialto-paladin',
 
-        # Experimental PFQs.
-        'veyron_rialto-chrome-pfq',
-
         # Experimental Canaries
         # auron
         'lulu-release',
@@ -1317,6 +1314,7 @@ def GetConfig():
   _chrome_pfq_important_boards = frozenset([
       'peppy',
       'veyron_pinky',
+      'veyron_rialto',
       'nyan',
   ])
 
