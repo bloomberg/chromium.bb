@@ -5,7 +5,7 @@ function repaintTest() {
   document.getElementById('iframe').style.width='300px';
   document.getElementById('iframe').style.height='300px';
 }
-onload = runRepaintTest;
+onload = runRepaintAndPixelTest;
 </script>
 <div style="height: 100px">
 Tests paint invalidation of scrollbars and scroll corner when a srollable iframe is resized.

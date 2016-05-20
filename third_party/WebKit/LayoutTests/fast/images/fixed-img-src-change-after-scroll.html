@@ -5,7 +5,7 @@ function repaintTest() {
   window.scrollTo(0, 1000);
   document.getElementById('img').src = 'resources/green.jpg';
 }
-onload = runRepaintTest;
+onload = runRepaintAndPixelTest;
 </script>
 <body style="height: 2000px">
 Checks correct paint invalidation on image src change after a pending scroll.

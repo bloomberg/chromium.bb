@@ -43,7 +43,7 @@ function repaintTest()
 // We need to skip 2 frames for the bug to show under DRT.
 window.requestAnimationFrame(function() {
     window.requestAnimationFrame(function() {
-        runRepaintTest();
+        runRepaintAndPixelTest();
     });
 });
 </script>

@@ -32,7 +32,7 @@ window.onload = function() {
     window.resizeTo(1000, 600);
     // Invalidation of vertical scrollbar before the repaint test should not be tracked during repaintTest().
     document.getElementById('child').style.height = '2000px';
-    runRepaintTest();
+    runRepaintAndPixelTest();
 };
 </script>
 <div style="height: 50px">
