@@ -37,6 +37,7 @@ class MutableStylePropertySet;
 
 class CSSParserImpl {
     STACK_ALLOCATED();
+    WTF_MAKE_NONCOPYABLE(CSSParserImpl);
 public:
     CSSParserImpl(const CSSParserContext&, StyleSheetContents* = nullptr);
 

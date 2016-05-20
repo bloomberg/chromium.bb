@@ -47,6 +47,7 @@ enum StyleSheetUpdateType {
 
 class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
     DEFINE_WRAPPERTYPEINFO();
+    WTF_MAKE_NONCOPYABLE(CSSStyleSheet);
 public:
     static CSSStyleSheet* create(StyleSheetContents*, CSSImportRule* ownerRule = 0);
     static CSSStyleSheet* create(StyleSheetContents*, Node* ownerNode);

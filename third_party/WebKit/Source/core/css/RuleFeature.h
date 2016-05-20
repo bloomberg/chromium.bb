@@ -60,6 +60,7 @@ namespace blink {
 
 class CORE_EXPORT RuleFeatureSet {
     DISALLOW_NEW();
+    WTF_MAKE_NONCOPYABLE(RuleFeatureSet);
 public:
     RuleFeatureSet();
     ~RuleFeatureSet();

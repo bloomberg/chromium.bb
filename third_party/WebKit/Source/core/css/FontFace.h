@@ -58,6 +58,7 @@ class StyleRuleFontFace;
 class FontFace : public GarbageCollectedFinalized<FontFace>, public ScriptWrappable, public ActiveScriptWrappable, public ActiveDOMObject {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(FontFace);
+    WTF_MAKE_NONCOPYABLE(FontFace);
 public:
     enum LoadStatusType { Unloaded, Loading, Loaded, Error };
 

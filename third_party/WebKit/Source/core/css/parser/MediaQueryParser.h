@@ -50,6 +50,7 @@ public:
 
 class CORE_EXPORT MediaQueryParser {
     STACK_ALLOCATED();
+    WTF_MAKE_NONCOPYABLE(MediaQueryParser);
 public:
     static MediaQuerySet* parseMediaQuerySet(const String&);
     static MediaQuerySet* parseMediaQuerySet(CSSParserTokenRange);

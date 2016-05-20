@@ -85,8 +85,11 @@ private:
 };
 
 class CORE_EXPORT MatchResult {
+    WTF_MAKE_NONCOPYABLE(MatchResult);
     STACK_ALLOCATED();
 public:
+    MatchResult() {}
+
     void addMatchedProperties(const StylePropertySet* properties, unsigned linkMatchType = CSSSelector::MatchAll, PropertyWhitelistType = PropertyWhitelistNone);
     bool hasMatchedProperties() const { return m_matchedProperties.size(); }
 

@@ -40,6 +40,7 @@ class TreeScope;
 
 class StyleSheetInvalidationAnalysis {
     STACK_ALLOCATED();
+    WTF_MAKE_NONCOPYABLE(StyleSheetInvalidationAnalysis);
 public:
     StyleSheetInvalidationAnalysis(const TreeScope&, const HeapVector<Member<StyleSheetContents>>&);
 

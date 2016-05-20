@@ -44,6 +44,7 @@
 namespace blink {
 
 class CORE_EXPORT CSSValuePool :  public GarbageCollectedFinalized<CSSValuePool> {
+    WTF_MAKE_NONCOPYABLE(CSSValuePool);
 public:
     CSSValueList* createFontFaceValue(const AtomicString&);
     CSSFontFamilyValue* createFontFamilyValue(const String&);

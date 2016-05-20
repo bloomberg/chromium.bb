@@ -37,6 +37,7 @@ class StylePropertyShorthand;
 // Outputs: Vector of CSSProperties
 
 class CSSPropertyParser {
+    WTF_MAKE_NONCOPYABLE(CSSPropertyParser);
     STACK_ALLOCATED();
 public:
     static bool parseValue(CSSPropertyID, bool important,

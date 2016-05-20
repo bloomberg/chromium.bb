@@ -29,6 +29,7 @@
 namespace blink {
 
 class CORE_EXPORT CSSValueList : public CSSValue {
+    WTF_MAKE_NONCOPYABLE(CSSValueList);
 public:
     using iterator = HeapVector<Member<CSSValue>, 4>::iterator;
     using const_iterator = HeapVector<Member<CSSValue>, 4>::const_iterator;

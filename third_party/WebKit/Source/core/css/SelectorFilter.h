@@ -38,6 +38,7 @@ namespace blink {
 class CSSSelector;
 
 class SelectorFilter {
+    WTF_MAKE_NONCOPYABLE(SelectorFilter);
     DISALLOW_NEW();
 public:
     class ParentStackFrame {
@@ -51,6 +52,8 @@ public:
         Member<Element> element;
         Vector<unsigned, 4> identifierHashes;
     };
+
+    SelectorFilter() {}
 
     void pushParent(Element& parent);
     void popParent(Element& parent);

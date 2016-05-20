@@ -60,6 +60,7 @@ using FontFaceSetIterable = PairIterable<Member<FontFace>, Member<FontFace>>;
 class FontFaceSet final : public EventTargetWithInlineData, public Supplement<Document>, public ActiveDOMObject, public FontFaceSetIterable {
     USING_GARBAGE_COLLECTED_MIXIN(FontFaceSet);
     DEFINE_WRAPPERTYPEINFO();
+    WTF_MAKE_NONCOPYABLE(FontFaceSet);
 public:
     ~FontFaceSet() override;
 
