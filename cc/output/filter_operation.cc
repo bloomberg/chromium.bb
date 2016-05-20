@@ -316,6 +316,7 @@ void FilterOperation::AsValueInto(base::trace_event::TracedValue* value) const {
 }
 
 static SkVector MapStdDeviation(float std_deviation, const SkMatrix& matrix) {
+  // Corresponds to SpreadForStdDeviation in filter_operations.cc.
   SkVector sigma = SkVector::Make(std_deviation, std_deviation);
   matrix.mapVectors(&sigma, 1);
   return sigma * SkIntToScalar(3);

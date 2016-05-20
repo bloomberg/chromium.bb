@@ -1407,7 +1407,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForFilter) {
   ASSERT_TRUE(parent->render_surface());
   EXPECT_EQ(2U, parent->render_surface()->layer_list().size());
   EXPECT_EQ(4U, render_surface_layer_list.size());
-  EXPECT_EQ(gfx::RectF(-29, -29, 158, 158),
+  EXPECT_EQ(gfx::RectF(-30, -30, 160, 160),
             parent->render_surface()->DrawableContentRect());
 }
 

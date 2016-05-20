@@ -21,10 +21,10 @@ TEST(FilterOperationsTest, GetOutsetsBlur) {
   int top, right, bottom, left;
   top = right = bottom = left = 0;
   ops.GetOutsets(&top, &right, &bottom, &left);
-  EXPECT_EQ(57, top);
-  EXPECT_EQ(57, right);
-  EXPECT_EQ(57, bottom);
-  EXPECT_EQ(57, left);
+  EXPECT_EQ(60, top);
+  EXPECT_EQ(60, right);
+  EXPECT_EQ(60, bottom);
+  EXPECT_EQ(60, left);
 }
 
 TEST(FilterOperationsTest, MapRectBlur) {
@@ -100,10 +100,10 @@ TEST(FilterOperationsTest, GetOutsetsDropShadow) {
   int top, right, bottom, left;
   top = right = bottom = left = 0;
   ops.GetOutsets(&top, &right, &bottom, &left);
-  EXPECT_EQ(49, top);
-  EXPECT_EQ(60, right);
-  EXPECT_EQ(65, bottom);
-  EXPECT_EQ(54, left);
+  EXPECT_EQ(52, top);
+  EXPECT_EQ(63, right);
+  EXPECT_EQ(68, bottom);
+  EXPECT_EQ(57, left);
 }
 
 TEST(FilterOperationsTest, MapRectDropShadow) {
