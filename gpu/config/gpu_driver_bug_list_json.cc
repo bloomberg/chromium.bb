@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.66",
+  "version": "8.67",
   "entries": [
     {
       "id": 1,
@@ -2013,6 +2013,19 @@ LONG_STRING_CONST(
       },
       "features": [
         "disable_discard_framebuffer"
+      ]
+    },
+    {
+      "id": 167,
+      "cr_bugs": [610516],
+      "description": "glEGLImageTargetTexture2DOES crashes on Mali-400",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": "ARM.*",
+      "gl_renderer": ".*Mali-4.*",
+      "features": [
+        "avda_dont_copy_pictures"
       ]
     }
   ]

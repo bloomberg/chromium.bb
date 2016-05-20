@@ -440,12 +440,7 @@ bool AndroidDeferredRenderingBackingStrategy::DoesSurfaceTextureDetachWork()
 }
 
 bool AndroidDeferredRenderingBackingStrategy::ShouldCopyPictures() const {
-  // Mali + <= KitKat crashes when we try to do this.  We don't know if it's
-  // due to detaching a surface texture, but it's the same set of devices.
-  if (!DoesSurfaceTextureDetachWork())
-    return false;
-
-  // Other devices are unreliable for other reasons (e.g., EGLImage).
+  // See if there's a workaround.
   if (gpu::gles2::GLES2Decoder* gl_decoder =
           state_provider_->GetGlDecoder().get()) {
     if (gpu::gles2::ContextGroup* group = gl_decoder->GetContextGroup()) {
