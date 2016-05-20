@@ -390,6 +390,98 @@ bool PositionTemplate<Strategy>::atEndOfTree() const
     return !Strategy::parent(*anchorNode()) && m_offset >= EditingStrategy::lastOffsetForEditing(anchorNode());
 }
 
+// static
+template <typename Strategy>
+PositionTemplate<Strategy> PositionTemplate<Strategy>::inParentBeforeNode(const Node& node)
+{
+    // FIXME: This should DCHECK(node.parentNode())
+    // At least one caller currently hits this ASSERT though, which indicates
+    // that the caller is trying to make a position relative to a disconnected node (which is likely an error)
+    // Specifically, editing/deleting/delete-ligature-001.html crashes with DCHECK(node->parentNode())
+    return PositionTemplate<Strategy>(Strategy::parent(node), Strategy::index(node));
+}
+
+// static
+template <typename Strategy>
+PositionTemplate<Strategy> PositionTemplate<Strategy>::inParentAfterNode(const Node& node)
+{
+    DCHECK(node.parentNode()) << node;
+    return PositionTemplate<Strategy>(Strategy::parent(node), Strategy::index(node) + 1);
+}
+
+// static
+template <typename Strategy>
+PositionTemplate<Strategy> PositionTemplate<Strategy>::beforeNode(Node* anchorNode)
+{
+    DCHECK(anchorNode);
+    return PositionTemplate<Strategy>(anchorNode, PositionAnchorType::BeforeAnchor);
+}
+
+// static
+template <typename Strategy>
+PositionTemplate<Strategy> PositionTemplate<Strategy>::afterNode(Node* anchorNode)
+{
+    DCHECK(anchorNode);
+    return PositionTemplate<Strategy>(anchorNode, PositionAnchorType::AfterAnchor);
+}
+
+// static
+template <typename Strategy>
+int PositionTemplate<Strategy>::lastOffsetInNode(Node* node)
+{
+    return node->offsetInCharacters() ? node->maxCharacterOffset() : static_cast<int>(Strategy::countChildren(*node));
+}
+
+// static
+template <typename Strategy>
+PositionTemplate<Strategy> PositionTemplate<Strategy>::firstPositionInNode(Node* anchorNode)
+{
+    if (anchorNode->isTextNode())
+        return PositionTemplate<Strategy>(anchorNode, 0);
+    return PositionTemplate<Strategy>(anchorNode, PositionAnchorType::BeforeChildren);
+}
+
+// static
+template <typename Strategy>
+PositionTemplate<Strategy> PositionTemplate<Strategy>::lastPositionInNode(Node* anchorNode)
+{
+    if (anchorNode->isTextNode())
+        return PositionTemplate<Strategy>(anchorNode, lastOffsetInNode(anchorNode));
+    return PositionTemplate<Strategy>(anchorNode, PositionAnchorType::AfterChildren);
+}
+
+// static
+template <typename Strategy>
+int PositionTemplate<Strategy>::minOffsetForNode(Node* anchorNode, int offset)
+{
+    if (anchorNode->offsetInCharacters())
+        return std::min(offset, anchorNode->maxCharacterOffset());
+
+    int newOffset = 0;
+    for (Node* node = Strategy::firstChild(*anchorNode); node && newOffset < offset; node = Strategy::nextSibling(*node))
+        newOffset++;
+
+    return newOffset;
+}
+
+// static
+template <typename Strategy>
+PositionTemplate<Strategy> PositionTemplate<Strategy>::firstPositionInOrBeforeNode(Node* node)
+{
+    if (!node)
+        return PositionTemplate<Strategy>();
+    return Strategy::editingIgnoresContent(node) ? beforeNode(node) : firstPositionInNode(node);
+}
+
+// static
+template <typename Strategy>
+PositionTemplate<Strategy> PositionTemplate<Strategy>::lastPositionInOrAfterNode(Node* node)
+{
+    if (!node)
+        return PositionTemplate<Strategy>();
+    return Strategy::editingIgnoresContent(node) ? afterNode(node) : lastPositionInNode(node);
+}
+
 template <typename Strategy>
 void PositionTemplate<Strategy>::debugPosition(const char* msg) const
 {
