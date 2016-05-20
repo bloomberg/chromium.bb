@@ -977,54 +977,77 @@ should be able to be added at any place in this file.
 
 <action name="Autofill_FilledCreditCardSuggestion">
   <owner>sebsg@chromium.org</owner>
-  <description>A credit card suggestion was filled in a form.</description>
+  <description>
+    This user action is logged when the form is filled with the credit card
+    suggestion selected by the user. This should always happen after a
+    Autofill_SelectedSuggestion.
+  </description>
 </action>
 
 <action name="Autofill_FilledProfileSuggestion">
   <owner>sebsg@chromium.org</owner>
-  <description>A profile suggestion was filled in a form.</description>
+  <description>
+    This user action is logged when the form is filled with the profile
+    suggestion selected by the user. This should always happen after a
+    Autofill_SelectedSuggestion.
+  </description>
 </action>
 
 <action name="Autofill_FormSubmitted">
   <owner>sebsg@chromium.org</owner>
-  <description>An autofillable form was submitted by the user.</description>
+  <description>
+    This user action is logged when Autofill detects a form submission.
+  </description>
 </action>
 
 <action name="Autofill_OnWillSubmitForm">
   <owner>sebsg@chromium.org</owner>
-  <description>An autofillable form will be submitted by the user.</description>
+  <description>
+    This user action is logged when Autofill thinks a form is about to be
+    submitted. The reason behind this is that some sites do not use the
+    traditional submit flow and we miss some actual submissions because of that.
+  </description>
 </action>
 
 <action name="Autofill_PolledCreditCardSuggestions">
   <owner>sebsg@chromium.org</owner>
   <description>
-    The user focused on an autofillable credit card field.
+    This user action is logged when the user interacts with an autofillable
+    credit card field, either by clicking or by typing.
   </description>
 </action>
 
 <action name="Autofill_PolledProfileSuggestions">
   <owner>sebsg@chromium.org</owner>
-  <description>The user focused on an autofillable profile field.</description>
+  <description>
+    This user action is logged when the user interacts with an autofillable
+    profile field, either by clicking or by typing.
+  </description>
 </action>
 
 <action name="Autofill_SelectedSuggestion">
   <owner>sebsg@chromium.org</owner>
   <description>
-    The user selected one of the proposed Autofill suggestions.
+    This user action is logged when a user has selected (clicked on) an Autofill
+    suggestion. This should always happen after
+    Autofill_Showed(CreditCard|Profile)Suggestion.
   </description>
 </action>
 
 <action name="Autofill_ShowedCreditCardSuggestions">
   <owner>sebsg@chromium.org</owner>
   <description>
-    The autofill credit card suggestions popup was shown to the user.
+    This user action is logged when the user is shown some credit card
+    suggestions. This should always happen after a
+    Autofill_PolledCreditCardSuggestion.
   </description>
 </action>
 
 <action name="Autofill_ShowedProfileSuggestions">
   <owner>sebsg@chromium.org</owner>
   <description>
-    The autofill profile suggestions popup was shown to the user.
+    This user action is logged when the user is shown some profile suggestions.
+    This should always happen after a Autofill_PolledProfileSuggestion.
   </description>
 </action>
 
