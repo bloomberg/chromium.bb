@@ -69,9 +69,18 @@ class BattOrConnectionImpl
                     std::unique_ptr<std::vector<char>> data);
 
   // Pulls off the next complete message from already_read_buffer_, returning
-  // its type and contents (via out parameters) and whether a complete message
-  // was able to be read (via the return value).
-  bool ParseMessage(BattOrMessageType* type, std::vector<char>* data);
+  // its type and contents through out parameters and any error that occurred
+  // through the return value.
+  enum ParseMessageError {
+    NONE = 0,
+    NOT_ENOUGH_BYTES = 1,
+    MISSING_START_BYTE = 2,
+    INVALID_MESSAGE_TYPE = 3,
+    TOO_MANY_START_BYTES = 4
+  };
+
+  ParseMessageError ParseMessage(BattOrMessageType* type,
+                                 std::vector<char>* data);
 
   // Internal callback for when bytes are sent.
   void OnBytesSent(int bytes_sent, device::serial::SendError error);

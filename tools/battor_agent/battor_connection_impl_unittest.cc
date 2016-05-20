@@ -230,8 +230,9 @@ TEST_F(BattOrConnectionImplTest, ReadMessageEndsMidMessageByte) {
   SendBytesRaw(data, 5);
   ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL);
 
-  ASSERT_TRUE(IsReadComplete());
-  ASSERT_FALSE(GetReadSuccess());
+  // The first read should recognize that a second read is necessary, but the
+  // second read will hang because no bytes ever come in.
+  ASSERT_FALSE(IsReadComplete());
 }
 
 TEST_F(BattOrConnectionImplTest, ReadMessageMissingEndByte) {
@@ -251,8 +252,9 @@ TEST_F(BattOrConnectionImplTest, ReadMessageMissingEndByte) {
   SendBytesRaw(data, 6);
   ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL);
 
-  ASSERT_TRUE(IsReadComplete());
-  ASSERT_FALSE(GetReadSuccess());
+  // The first read should recognize that a second read is necessary, but the
+  // second read will hang because no bytes ever come in.
+  ASSERT_FALSE(IsReadComplete());
 }
 
 TEST_F(BattOrConnectionImplTest, ReadMessageWithEscapeCharacters) {

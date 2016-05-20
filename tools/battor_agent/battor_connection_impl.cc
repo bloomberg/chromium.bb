@@ -148,27 +148,37 @@ void BattOrConnectionImpl::SendBytes(BattOrMessageType type,
 }
 
 void BattOrConnectionImpl::ReadMessage(BattOrMessageType type) {
-  pending_read_message_type_ = type;
-  size_t max_bytes_to_read = GetMaxBytesForMessageType(type);
+  LogSerial("Read requested.");
 
-  // Check the left-over bytes from the last read to make sure that we don't
-  // already have a full message.
+  pending_read_message_type_ = type;
+  size_t message_max_bytes = GetMaxBytesForMessageType(type);
+
+  LogSerial(
+      "Before doing a serial read, checking to see if we already have a "
+      "complete message in the 'already read' buffer.");
+
   BattOrMessageType parsed_type;
   std::unique_ptr<vector<char>> bytes(new vector<char>());
-  bytes->reserve(max_bytes_to_read);
-
-  LogSerial("Checking if a complete message is in the 'already read' buffer.");
-  if (ParseMessage(&parsed_type, bytes.get())) {
+  bytes->reserve(message_max_bytes);
+  ParseMessageError parse_message_error =
+      ParseMessage(&parsed_type, bytes.get());
+  if (parse_message_error == ParseMessageError::NONE) {
     LogSerial("Complete message found.");
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&Listener::OnMessageRead, base::Unretained(listener_), true,
-                   parsed_type, base::Passed(std::move(bytes))));
+    EndReadBytes(true, parsed_type, std::move(bytes));
     return;
   }
 
-  LogSerial("No complete message found.");
-  BeginReadBytes(max_bytes_to_read - already_read_buffer_.size());
+  if (parse_message_error != ParseMessageError::NOT_ENOUGH_BYTES) {
+    LogSerial(StringPrintf(
+        "Read failed because, before performing a serial read, the message in "
+        "the 'already read' buffer had an irrecoverable error with code: %d.",
+        parse_message_error));
+    EndReadBytes(false, BATTOR_MESSAGE_TYPE_CONTROL, nullptr);
+    return;
+  }
+
+  LogSerial("No complete message found in the 'already read' buffer.");
+  BeginReadBytes(message_max_bytes - already_read_buffer_.size());
 }
 
 void BattOrConnectionImpl::Flush() {
@@ -199,8 +209,9 @@ void BattOrConnectionImpl::BeginReadBytes(size_t max_bytes_to_read) {
 void BattOrConnectionImpl::OnBytesRead(int bytes_read,
                                        device::serial::ReceiveError error) {
   if (error != device::serial::ReceiveError::NONE) {
-    LogSerial(StringPrintf("Read failed with error code: %d.",
-                           static_cast<int>(error)));
+    LogSerial(StringPrintf(
+        "Read failed due to serial read failure with error code: %d.",
+        static_cast<int>(error)));
     EndReadBytes(false, BATTOR_MESSAGE_TYPE_CONTROL, nullptr);
     return;
   }
@@ -222,12 +233,29 @@ void BattOrConnectionImpl::OnBytesRead(int bytes_read,
                               pending_read_buffer_->data() + bytes_read);
 
   BattOrMessageType type;
+  size_t message_max_bytes =
+      GetMaxBytesForMessageType(pending_read_message_type_);
   std::unique_ptr<vector<char>> bytes(new vector<char>());
-  bytes->reserve(GetMaxBytesForMessageType(pending_read_message_type_));
+  bytes->reserve(message_max_bytes);
 
-  if (!ParseMessage(&type, bytes.get())) {
-    LogSerial(
-        "Read failed due to having no complete message after max read length.");
+  ParseMessageError parse_message_error = ParseMessage(&type, bytes.get());
+  if (parse_message_error == ParseMessageError::NOT_ENOUGH_BYTES) {
+    if (already_read_buffer_.size() >= message_max_bytes) {
+      LogSerial(
+          "Read failed due to no complete message after max read length.");
+      EndReadBytes(false, BATTOR_MESSAGE_TYPE_CONTROL, nullptr);
+      return;
+    }
+
+    LogSerial("(Message still incomplete: reading more bytes.)");
+    BeginReadBytes(message_max_bytes - already_read_buffer_.size());
+    return;
+  }
+
+  if (parse_message_error != ParseMessageError::NONE) {
+    LogSerial(StringPrintf(
+        "Read failed due to the message containing an irrecoverable error: %d.",
+        parse_message_error));
     EndReadBytes(false, BATTOR_MESSAGE_TYPE_CONTROL, nullptr);
     return;
   }
@@ -253,23 +281,22 @@ void BattOrConnectionImpl::EndReadBytes(bool success,
                  type, base::Passed(std::move(bytes))));
 }
 
-bool BattOrConnectionImpl::ParseMessage(BattOrMessageType* type,
-                                        vector<char>* bytes) {
+BattOrConnectionImpl::ParseMessageError BattOrConnectionImpl::ParseMessage(
+    BattOrMessageType* type,
+    vector<char>* bytes) {
   if (already_read_buffer_.size() <= 3)
-    return false;
+    return ParseMessageError::NOT_ENOUGH_BYTES;
 
   // The first byte is the start byte.
-  if (already_read_buffer_[0] != BATTOR_CONTROL_BYTE_START) {
-    return false;
-  }
+  if (already_read_buffer_[0] != BATTOR_CONTROL_BYTE_START)
+    return ParseMessageError::MISSING_START_BYTE;
 
   // The second byte specifies the message type.
   *type = static_cast<BattOrMessageType>(already_read_buffer_[1]);
 
   if (*type < static_cast<uint8_t>(BATTOR_MESSAGE_TYPE_CONTROL) ||
-      *type > static_cast<uint8_t>(BATTOR_MESSAGE_TYPE_PRINT)) {
-    return false;
-  }
+      *type > static_cast<uint8_t>(BATTOR_MESSAGE_TYPE_PRINT))
+    return ParseMessageError::INVALID_MESSAGE_TYPE;
 
   // After that comes the message bytes.
   bool escape_next_byte = false;
@@ -285,12 +312,12 @@ bool BattOrConnectionImpl::ParseMessage(BattOrMessageType* type,
     switch (next_byte) {
       case BATTOR_CONTROL_BYTE_START:
         // Two start bytes in a message is invalid.
-        return false;
+        return ParseMessageError::TOO_MANY_START_BYTES;
 
       case BATTOR_CONTROL_BYTE_END:
         already_read_buffer_.erase(already_read_buffer_.begin(),
                                    already_read_buffer_.begin() + i + 1);
-        return true;
+        return ParseMessageError::NONE;
 
       case BATTOR_CONTROL_BYTE_ESCAPE:
         escape_next_byte = true;
@@ -303,7 +330,7 @@ bool BattOrConnectionImpl::ParseMessage(BattOrMessageType* type,
 
   // If we made it to the end of the read buffer and no end byte was seen, then
   // we don't have a complete message.
-  return false;
+  return ParseMessageError::NOT_ENOUGH_BYTES;
 }
 
 void BattOrConnectionImpl::OnBytesSent(int bytes_sent,
