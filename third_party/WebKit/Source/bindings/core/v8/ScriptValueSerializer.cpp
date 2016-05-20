@@ -812,30 +812,44 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeObject(v8::L
 {
     DCHECK(!jsObject.IsEmpty());
 
-    if (V8ArrayBufferView::hasInstance(jsObject, isolate())) {
+    if (jsObject->IsArrayBufferView()) {
         return writeAndGreyArrayBufferView(jsObject, next);
     }
     if (V8MessagePort::hasInstance(jsObject, isolate())) {
-        uint32_t messagePortIndex;
-        if (!m_transferredMessagePorts.tryGet(jsObject, &messagePortIndex))
+        uint32_t index;
+        if (!m_transferredMessagePorts.tryGet(jsObject, &index)) {
             return handleError(DataCloneError, "A MessagePort could not be cloned.", next);
-        m_writer.writeTransferredMessagePort(messagePortIndex);
+        }
+        m_writer.writeTransferredMessagePort(index);
         return nullptr;
     }
-    uint32_t arrayBufferIndex;
-    if (V8ArrayBuffer::hasInstance(jsObject, isolate()) && m_transferredArrayBuffers.tryGet(jsObject, &arrayBufferIndex)) {
-        return writeTransferredArrayBuffer(jsObject, arrayBufferIndex, next);
+    if (jsObject->IsArrayBuffer()) {
+        uint32_t index;
+        if (m_transferredArrayBuffers.tryGet(jsObject, &index)) {
+            return writeTransferredArrayBuffer(jsObject, index, next);
+        }
+        greyObject(jsObject);
+        return writeArrayBuffer(jsObject, next);
     }
-    uint32_t imageBitmapIndex;
-    if (V8ImageBitmap::hasInstance(jsObject, isolate()) && m_transferredImageBitmaps.tryGet(jsObject, &imageBitmapIndex)) {
-        return writeTransferredImageBitmap(jsObject, imageBitmapIndex, next);
+    if (V8ImageBitmap::hasInstance(jsObject, isolate())) {
+        uint32_t index;
+        if (m_transferredImageBitmaps.tryGet(jsObject, &index)) {
+            return writeTransferredImageBitmap(jsObject, index, next);
+        }
+        greyObject(jsObject);
+        return writeImageBitmap(jsObject, next);
     }
-    if (V8SharedArrayBuffer::hasInstance(jsObject, isolate()) && m_transferredArrayBuffers.tryGet(jsObject, &arrayBufferIndex)) {
-        return writeTransferredSharedArrayBuffer(jsObject, arrayBufferIndex, next);
+    if (jsObject->IsSharedArrayBuffer()) {
+        uint32_t index;
+        if (m_transferredArrayBuffers.tryGet(jsObject, &index)) {
+            return writeTransferredSharedArrayBuffer(jsObject, index, next);
+        }
     }
-    uint32_t offscreenCanvasIndex;
-    if (V8OffscreenCanvas::hasInstance(jsObject, isolate()) && m_transferredOffscreenCanvas.tryGet(jsObject, &offscreenCanvasIndex)) {
-        return writeTransferredOffscreenCanvas(jsObject, offscreenCanvasIndex, next);
+    if (V8OffscreenCanvas::hasInstance(jsObject, isolate())) {
+        uint32_t index;
+        if (m_transferredOffscreenCanvas.tryGet(jsObject, &index)) {
+            return writeTransferredOffscreenCanvas(jsObject, index, next);
+        }
     }
 
     greyObject(jsObject);
@@ -882,13 +896,6 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeObject(v8::L
     if (jsObject->IsRegExp()) {
         writeRegExp(jsObject);
         return nullptr;
-    }
-
-    if (V8ImageBitmap::hasInstance(jsObject, isolate())) {
-        return writeImageBitmap(jsObject, next);
-    }
-    if (V8ArrayBuffer::hasInstance(jsObject, isolate())) {
-        return writeArrayBuffer(jsObject, next);
     }
     if (V8CompositorProxy::hasInstance(jsObject, isolate())) {
         return writeCompositorProxy(jsObject, next);
