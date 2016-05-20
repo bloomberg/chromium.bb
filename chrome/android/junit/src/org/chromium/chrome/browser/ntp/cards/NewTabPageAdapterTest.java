@@ -9,6 +9,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
@@ -38,6 +39,7 @@ public class NewTabPageAdapterTest {
 
     @Before
     public void setUp() {
+        RecordHistogram.disableForTests();
         mNewTabPageManager = mock(NewTabPageManager.class);
         mSnippetsObserver = null;
 

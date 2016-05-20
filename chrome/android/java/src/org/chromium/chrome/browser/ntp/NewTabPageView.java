@@ -403,7 +403,6 @@ public class NewTabPageView extends FrameLayout
                     new ItemTouchHelper(mNewTabPageAdapter.getItemTouchCallbacks());
             helper.attachToRecyclerView(mRecyclerView);
 
-            NewTabPageUma.recordSnippetAction(NewTabPageUma.SNIPPETS_ACTION_SHOWN);
             mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 private boolean mScrolledOnce = false;
                 @Override

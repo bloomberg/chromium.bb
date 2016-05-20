@@ -16,6 +16,7 @@ import android.view.animation.Interpolator;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
+import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
@@ -135,6 +136,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
 
         // We don't want to get notified of other changes.
         mWantsSnippets = false;
+        NewTabPageUma.recordSnippetAction(NewTabPageUma.SNIPPETS_ACTION_SHOWN);
     }
 
     @Override
