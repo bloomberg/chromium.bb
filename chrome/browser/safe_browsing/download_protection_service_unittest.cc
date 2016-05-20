@@ -1842,6 +1842,212 @@ TEST_F(DownloadProtectionServiceTest, ShowDetailsForDownloadHasContext) {
                                             &mock_page_navigator);
 }
 
+TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_Unsupported) {
+  base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.txt"));
+  std::vector<base::FilePath::StringType> alternate_extensions{
+      FILE_PATH_LITERAL(".tmp"), FILE_PATH_LITERAL(".asdfasdf")};
+  download_service_->CheckPPAPIDownloadRequest(
+      GURL("http://example.com/foo"), default_file_path, alternate_extensions,
+      base::Bind(&DownloadProtectionServiceTest::SyncCheckDoneCallback,
+                 base::Unretained(this)));
+  ASSERT_TRUE(IsResult(DownloadProtectionService::SAFE));
+}
+
+TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_SupportedDefault) {
+  net::FakeURLFetcherFactory factory(nullptr);
+  base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.crx"));
+  std::vector<base::FilePath::StringType> alternate_extensions;
+  EXPECT_CALL(*sb_service_->mock_database_manager(),
+              MatchDownloadWhitelistUrl(_))
+      .WillRepeatedly(Return(false));
+  struct {
+    ClientDownloadResponse::Verdict verdict;
+    DownloadProtectionService::DownloadCheckResult expected_result;
+  } kExpectedResults[] = {
+      {ClientDownloadResponse::SAFE, DownloadProtectionService::SAFE},
+      {ClientDownloadResponse::DANGEROUS, DownloadProtectionService::DANGEROUS},
+      {ClientDownloadResponse::UNCOMMON, DownloadProtectionService::UNCOMMON},
+      {ClientDownloadResponse::DANGEROUS_HOST,
+       DownloadProtectionService::DANGEROUS_HOST},
+      {ClientDownloadResponse::POTENTIALLY_UNWANTED,
+       DownloadProtectionService::POTENTIALLY_UNWANTED},
+  };
+
+  for (const auto& test_case : kExpectedResults) {
+    factory.ClearFakeResponses();
+    PrepareResponse(&factory, test_case.verdict, net::HTTP_OK,
+                    net::URLRequestStatus::SUCCESS);
+    download_service_->CheckPPAPIDownloadRequest(
+        GURL("http://example.com/foo"), default_file_path, alternate_extensions,
+        base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                   base::Unretained(this)));
+    MessageLoop::current()->Run();
+    ASSERT_TRUE(IsResult(test_case.expected_result));
+  }
+}
+
+TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_SupportedAlternate) {
+  net::FakeURLFetcherFactory factory(nullptr);
+  base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.txt"));
+  std::vector<base::FilePath::StringType> alternate_extensions{
+      FILE_PATH_LITERAL(".tmp"), FILE_PATH_LITERAL(".crx")};
+  PrepareResponse(&factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
+  EXPECT_CALL(*sb_service_->mock_database_manager(),
+              MatchDownloadWhitelistUrl(_))
+      .WillRepeatedly(Return(false));
+  download_service_->CheckPPAPIDownloadRequest(
+      GURL("http://example.com/foo"), default_file_path, alternate_extensions,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  MessageLoop::current()->Run();
+
+  ASSERT_TRUE(IsResult(DownloadProtectionService::DANGEROUS));
+}
+
+TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_WhitelistedURL) {
+  net::FakeURLFetcherFactory factory(nullptr);
+  base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.crx"));
+  std::vector<base::FilePath::StringType> alternate_extensions;
+  EXPECT_CALL(*sb_service_->mock_database_manager(),
+              MatchDownloadWhitelistUrl(_))
+      .WillRepeatedly(Return(true));
+  download_service_->CheckPPAPIDownloadRequest(
+      GURL("http://example.com/foo"), default_file_path, alternate_extensions,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  MessageLoop::current()->Run();
+
+  ASSERT_TRUE(IsResult(DownloadProtectionService::SAFE));
+}
+
+TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_FetchFailed) {
+  net::FakeURLFetcherFactory factory(nullptr);
+  base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.crx"));
+  std::vector<base::FilePath::StringType> alternate_extensions;
+  PrepareResponse(&factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
+                  net::URLRequestStatus::FAILED);
+  EXPECT_CALL(*sb_service_->mock_database_manager(),
+              MatchDownloadWhitelistUrl(_))
+      .WillRepeatedly(Return(false));
+  download_service_->CheckPPAPIDownloadRequest(
+      GURL("http://example.com/foo"), default_file_path, alternate_extensions,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  MessageLoop::current()->Run();
+
+  ASSERT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+}
+
+TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_InvalidResponse) {
+  net::FakeURLFetcherFactory factory(nullptr);
+  base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.crx"));
+  std::vector<base::FilePath::StringType> alternate_extensions;
+  factory.SetFakeResponse(DownloadProtectionService::GetDownloadRequestUrl(),
+                          "Hello world!", net::HTTP_OK,
+                          net::URLRequestStatus::SUCCESS);
+  EXPECT_CALL(*sb_service_->mock_database_manager(),
+              MatchDownloadWhitelistUrl(_))
+      .WillRepeatedly(Return(false));
+  download_service_->CheckPPAPIDownloadRequest(
+      GURL("http://example.com/foo"), default_file_path, alternate_extensions,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  MessageLoop::current()->Run();
+
+  ASSERT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+}
+
+TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_Timeout) {
+  net::FakeURLFetcherFactory factory(nullptr);
+  base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.crx"));
+  std::vector<base::FilePath::StringType> alternate_extensions;
+  EXPECT_CALL(*sb_service_->mock_database_manager(),
+              MatchDownloadWhitelistUrl(_))
+      .WillRepeatedly(Return(false));
+  PrepareResponse(&factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
+  download_service_->download_request_timeout_ms_ = 0;
+  download_service_->CheckPPAPIDownloadRequest(
+      GURL("http://example.com/foo"), default_file_path, alternate_extensions,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  MessageLoop::current()->Run();
+
+  ASSERT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
+}
+
+namespace {
+
+std::unique_ptr<net::FakeURLFetcher> FakeURLFetcherCreatorFunc(
+    std::string* upload_data_receiver,
+    const GURL& url,
+    net::URLFetcherDelegate* delegate,
+    const std::string& response_body,
+    net::HttpStatusCode response_code,
+    net::URLRequestStatus::Status status) {
+  class URLFetcher : public net::FakeURLFetcher {
+   public:
+    URLFetcher(std::string* upload_data_receiver,
+               const GURL& url,
+               net::URLFetcherDelegate* delegate,
+               const std::string& response_body,
+               net::HttpStatusCode response_code,
+               net::URLRequestStatus::Status status)
+        : FakeURLFetcher(url, delegate, response_body, response_code, status),
+          upload_data_receiver_(upload_data_receiver) {}
+
+    void SetUploadData(const std::string& upload_content_type,
+                       const std::string& upload_content) override {
+      *upload_data_receiver_ = upload_content;
+      FakeURLFetcher::SetUploadData(upload_content_type, upload_content);
+    }
+
+   private:
+    std::string* upload_data_receiver_;
+  };
+
+  return std::unique_ptr<net::FakeURLFetcher>(
+      new URLFetcher(upload_data_receiver, url, delegate, response_body,
+                     response_code, status));
+}
+
+}  // namespace
+
+TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_Payload) {
+  std::string upload_data;
+  net::FakeURLFetcherFactory factory(
+      nullptr, base::Bind(&FakeURLFetcherCreatorFunc, &upload_data));
+  base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.crx"));
+  std::vector<base::FilePath::StringType> alternate_extensions{
+      FILE_PATH_LITERAL(".txt"), FILE_PATH_LITERAL(".abc"),
+      FILE_PATH_LITERAL(""), FILE_PATH_LITERAL(".sdF")};
+  EXPECT_CALL(*sb_service_->mock_database_manager(),
+              MatchDownloadWhitelistUrl(_))
+      .WillRepeatedly(Return(false));
+  PrepareResponse(&factory, ClientDownloadResponse::SAFE, net::HTTP_OK,
+                  net::URLRequestStatus::SUCCESS);
+  const GURL kRequestorUrl("http://example.com/foo");
+  download_service_->CheckPPAPIDownloadRequest(
+      kRequestorUrl, default_file_path, alternate_extensions,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  MessageLoop::current()->Run();
+
+  ASSERT_FALSE(upload_data.empty());
+
+  ClientDownloadRequest request;
+  ASSERT_TRUE(request.ParseFromString(upload_data));
+
+  EXPECT_EQ(ClientDownloadRequest::PPAPI_SAVE_REQUEST, request.download_type());
+  EXPECT_EQ(kRequestorUrl.spec(), request.url());
+  EXPECT_EQ("test.crx", request.file_basename());
+  ASSERT_EQ(3, request.alternate_extensions_size());
+  EXPECT_EQ(".txt", request.alternate_extensions(0));
+  EXPECT_EQ(".abc", request.alternate_extensions(1));
+  EXPECT_EQ(".sdF", request.alternate_extensions(2));
+}
+
 // ------------ class DownloadProtectionServiceFlagTest ----------------
 class DownloadProtectionServiceFlagTest : public DownloadProtectionServiceTest {
  protected:

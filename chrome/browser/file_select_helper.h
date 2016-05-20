@@ -21,10 +21,6 @@
 #include "net/base/directory_lister.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
-#if defined(FULL_SAFE_BROWSING)
-#include "chrome/browser/safe_browsing/unverified_download_policy.h"
-#endif
-
 class Profile;
 
 namespace content {
@@ -101,10 +97,13 @@ class FileSelectHelper : public base::RefCountedThreadSafe<
   void GetSanitizedFilenameOnUIThread(
       std::unique_ptr<content::FileChooserParams> params);
 #if defined(FULL_SAFE_BROWSING)
-  void ApplyUnverifiedDownloadPolicy(
+  void CheckDownloadRequestWithSafeBrowsing(
+      const base::FilePath& default_path,
+      std::unique_ptr<content::FileChooserParams> params);
+  void ProceedWithSafeBrowsingVerdict(
       const base::FilePath& default_path,
       std::unique_ptr<content::FileChooserParams> params,
-      safe_browsing::UnverifiedDownloadPolicy policy);
+      bool allowed_by_safe_browsing);
 #endif
   void RunFileChooserOnUIThread(
       const base::FilePath& default_path,

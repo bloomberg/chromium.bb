@@ -52,13 +52,6 @@ const char kAllowNaClFileHandleAPI[]        = "allow-nacl-file-handle-api";
 const char kAllowNaClSocketAPI[]            = "allow-nacl-socket-api";
 #endif
 
-#if defined(FULL_SAFE_BROWSING)
-const char kAllowUncheckedDangerousDownloads[] =
-    "allow-unchecked-dangerous-downloads";
-const char kDisallowUncheckedDangerousDownloads[] =
-    "disallow-unchecked-dangerous-downloads";
-#endif
-
 // Don't block outdated plugins.
 const char kAllowOutdatedPlugins[]          = "allow-outdated-plugins";
 

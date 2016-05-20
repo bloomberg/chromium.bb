@@ -13,6 +13,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/callback.h"
@@ -107,6 +108,12 @@ class DownloadProtectionService {
   virtual bool IsSupportedDownload(const content::DownloadItem& item,
                                    const base::FilePath& target_path) const;
 
+  virtual void CheckPPAPIDownloadRequest(
+      const GURL& requestor_url,
+      const base::FilePath& default_file_path,
+      const std::vector<base::FilePath::StringType>& alternate_extensions,
+      const CheckDownloadCallback& callback);
+
   // Display more information to the user regarding the download specified by
   // |info|. This method is invoked when the user requests more information
   // about a download that was marked as malicious.
@@ -173,7 +180,8 @@ class DownloadProtectionService {
   };
 
  private:
-  class CheckClientDownloadRequest;  // Per-request state
+  class CheckClientDownloadRequest;
+  class PPAPIDownloadRequest;
   friend class DownloadProtectionServiceTest;
 
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
@@ -198,6 +206,10 @@ class DownloadProtectionService {
                            TestDownloadRequestTimeout);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
                            CheckClientCrxDownloadSuccess);
+  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
+                           PPAPIDownloadRequest_InvalidResponse);
+  FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceTest,
+                           PPAPIDownloadRequest_Timeout);
   FRIEND_TEST_ALL_PREFIXES(DownloadProtectionServiceFlagTest,
                            CheckClientDownloadOverridenByFlag);
 
@@ -210,6 +222,8 @@ class DownloadProtectionService {
   // Called by a CheckClientDownloadRequest instance when it finishes, to
   // remove it from |download_requests_|.
   void RequestFinished(CheckClientDownloadRequest* request);
+
+  void PPAPIDownloadCheckRequestFinished(PPAPIDownloadRequest* request);
 
   // Given a certificate and its immediate issuer certificate, generates the
   // list of strings that need to be checked against the download whitelist to
@@ -229,10 +243,14 @@ class DownloadProtectionService {
   // The context we use to issue network requests.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
-  // Map of client download request to the corresponding callback that
-  // has to be invoked when the request is done.  This map contains all
-  // pending server requests.
-  std::set<scoped_refptr<CheckClientDownloadRequest> > download_requests_;
+  // Set of pending server requests for DownloadManager mediated downloads.
+  std::set<scoped_refptr<CheckClientDownloadRequest>> download_requests_;
+
+  // Set of pending server requests for PPAPI mediated downloads. Using a map
+  // because heterogeneous lookups aren't available yet in std::unordered_map.
+  std::unordered_map<PPAPIDownloadRequest*,
+                     std::unique_ptr<PPAPIDownloadRequest>>
+      ppapi_download_requests_;
 
   // Keeps track of the state of the service.
   bool enabled_;

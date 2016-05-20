@@ -48,7 +48,8 @@
 #endif
 
 #if defined(FULL_SAFE_BROWSING)
-#include "chrome/browser/safe_browsing/unverified_download_policy.h"
+#include "chrome/browser/safe_browsing/download_protection_service.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #endif
 
 using content::BrowserThread;
@@ -84,6 +85,37 @@ bool IsValidProfile(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return g_browser_process->profile_manager()->IsValidProfile(profile);
 }
+
+#if defined(FULL_SAFE_BROWSING)
+
+bool IsDownloadAllowedBySafeBrowsing(
+    safe_browsing::DownloadProtectionService::DownloadCheckResult result) {
+  using Result = safe_browsing::DownloadProtectionService::DownloadCheckResult;
+  switch (result) {
+    // Only allow downloads that are marked as SAFE or UNKNOWN by SafeBrowsing.
+    // All other types are going to be blocked. UNKNOWN could be the result of a
+    // failed safe browsing ping.
+    case Result::UNKNOWN:
+    case Result::SAFE:
+      return true;
+
+    case Result::DANGEROUS:
+    case Result::UNCOMMON:
+    case Result::DANGEROUS_HOST:
+    case Result::POTENTIALLY_UNWANTED:
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
+void InterpretSafeBrowsingVerdict(
+    const base::Callback<void(bool)>& recipient,
+    safe_browsing::DownloadProtectionService::DownloadCheckResult result) {
+  recipient.Run(IsDownloadAllowedBySafeBrowsing(result));
+}
+
+#endif
 
 }  // namespace
 
@@ -462,44 +494,55 @@ void FileSelectHelper::GetSanitizedFilenameOnUIThread(
     std::unique_ptr<FileChooserParams> params) {
   base::FilePath default_file_path = profile_->last_selected_directory().Append(
       GetSanitizedFileName(params->default_file_name));
-
 #if defined(FULL_SAFE_BROWSING)
-  std::vector<base::FilePath::StringType> alternate_extensions;
-  if (select_file_types_) {
-    for (const auto& extensions : select_file_types_->extensions) {
-      alternate_extensions.insert(alternate_extensions.end(),
-                                  extensions.begin(), extensions.end());
-    }
-  }
-
-  // Note that FileChooserParams::requestor is not considered a trusted field
-  // since it's provided by the renderer and not validated browserside.
-  if (params->mode == FileChooserParams::Save &&
-      (!params->default_file_name.empty() || !alternate_extensions.empty())) {
-    GURL requestor = params->requestor;
-    safe_browsing::CheckUnverifiedDownloadPolicy(
-        requestor, default_file_path, alternate_extensions,
-        base::Bind(&FileSelectHelper::ApplyUnverifiedDownloadPolicy, this,
-                   default_file_path, base::Passed(&params)));
-    return;
-  }
-#endif
-
+  CheckDownloadRequestWithSafeBrowsing(default_file_path, std::move(params));
+#else
   RunFileChooserOnUIThread(default_file_path, std::move(params));
+#endif
 }
 
 #if defined(FULL_SAFE_BROWSING)
-void FileSelectHelper::ApplyUnverifiedDownloadPolicy(
-    const base::FilePath& default_path,
-    std::unique_ptr<FileChooserParams> params,
-    safe_browsing::UnverifiedDownloadPolicy policy) {
-  DCHECK(params);
-  if (policy == safe_browsing::UnverifiedDownloadPolicy::DISALLOWED) {
-    NotifyRenderViewHostAndEnd(std::vector<ui::SelectedFileInfo>());
+void FileSelectHelper::CheckDownloadRequestWithSafeBrowsing(
+    const base::FilePath& default_file_path,
+    std::unique_ptr<FileChooserParams> params) {
+  safe_browsing::SafeBrowsingService* sb_service =
+      g_browser_process->safe_browsing_service();
+
+  if (!sb_service || !sb_service->download_protection_service() ||
+      !sb_service->download_protection_service()->enabled()) {
+    RunFileChooserOnUIThread(default_file_path, std::move(params));
     return;
   }
 
-  RunFileChooserOnUIThread(default_path, std::move(params));
+  std::vector<base::FilePath::StringType> alternate_extensions;
+  if (select_file_types_) {
+    for (const auto& extensions_list : select_file_types_->extensions) {
+      for (const auto& extension_in_list : extensions_list) {
+        base::FilePath::StringType extension =
+            default_file_path.ReplaceExtension(extension_in_list)
+                .FinalExtension();
+        alternate_extensions.push_back(extension);
+      }
+    }
+  }
+
+  GURL requestor_url = params->requestor;
+  sb_service->download_protection_service()->CheckPPAPIDownloadRequest(
+      requestor_url, default_file_path, alternate_extensions,
+      base::Bind(&InterpretSafeBrowsingVerdict,
+                 base::Bind(&FileSelectHelper::ProceedWithSafeBrowsingVerdict,
+                            this, default_file_path, base::Passed(&params))));
+}
+
+void FileSelectHelper::ProceedWithSafeBrowsingVerdict(
+    const base::FilePath& default_file_path,
+    std::unique_ptr<content::FileChooserParams> params,
+    bool allowed_by_safe_browsing) {
+  if (!allowed_by_safe_browsing) {
+    NotifyRenderViewHostAndEnd(std::vector<ui::SelectedFileInfo>());
+    return;
+  }
+  RunFileChooserOnUIThread(default_file_path, std::move(params));
 }
 #endif
 

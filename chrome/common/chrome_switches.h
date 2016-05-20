@@ -385,11 +385,6 @@ extern const char kAllowNaClFileHandleAPI[];
 extern const char kAllowNaClSocketAPI[];
 #endif
 
-#if defined(FULL_SAFE_BROWSING)
-extern const char kAllowUncheckedDangerousDownloads[];
-extern const char kDisallowUncheckedDangerousDownloads[];
-#endif
-
 #if defined(ENABLE_TASK_MANAGER)
 extern const char kDisableNewTaskManager[];
 #endif  // defined(ENABLE_TASK_MANAGER)

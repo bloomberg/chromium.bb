@@ -55,8 +55,11 @@ int64_t GetEndTime(const ClientIncidentReport_DownloadDetails& details) {
 
 bool IsBinaryDownloadForCurrentOS(
     ClientDownloadRequest::DownloadType download_type) {
+  // Whenever a new DownloadType is introduced, the following set of conditions
+  // should also be updated so that the IsBinaryDownloadForCurrentOS() will
+  // return true for that DownloadType as appropriate.
   static_assert(ClientDownloadRequest::DownloadType_MAX ==
-                    ClientDownloadRequest::INVALID_MAC_ARCHIVE,
+                    ClientDownloadRequest::PPAPI_SAVE_REQUEST,
                 "Update logic below");
 
 // Platform-specific types are relevant only for their own platforms.
@@ -78,7 +81,8 @@ bool IsBinaryDownloadForCurrentOS(
   if (download_type == ClientDownloadRequest::ZIPPED_EXECUTABLE ||
       download_type == ClientDownloadRequest::ZIPPED_ARCHIVE ||
       download_type == ClientDownloadRequest::INVALID_ZIP ||
-      download_type == ClientDownloadRequest::ARCHIVE) {
+      download_type == ClientDownloadRequest::ARCHIVE ||
+      download_type == ClientDownloadRequest::PPAPI_SAVE_REQUEST) {
     return true;
   }
 

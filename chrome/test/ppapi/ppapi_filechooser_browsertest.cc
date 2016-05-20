@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -15,11 +17,14 @@
 #include "ui/shell_dialogs/selected_file_info.h"
 
 #if defined(FULL_SAFE_BROWSING)
+#include "chrome/browser/safe_browsing/download_protection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "components/safe_browsing_db/test_database_manager.h"
-#endif
+#include "content/public/test/test_download_request_handler.h"
 
+using safe_browsing::DownloadProtectionService;
 using safe_browsing::SafeBrowsingService;
+#endif
 
 namespace {
 
@@ -88,8 +93,7 @@ class TestSelectFileDialogFactory final : public ui::SelectFileDialogFactory {
           break;
 
         case NOT_REACHED:
-          NOTREACHED();
-          break;
+          ADD_FAILURE() << "Unexpected SelectFileImpl invocation.";
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -124,6 +128,18 @@ class TestSelectFileDialogFactory final : public ui::SelectFileDialogFactory {
   Mode mode_;
 };
 
+class PPAPIFileChooserTest : public OutOfProcessPPAPITest {};
+
+#if defined(FULL_SAFE_BROWSING)
+
+struct SafeBrowsingTestConfiguration {
+  std::map<base::FilePath::StringType,
+           DownloadProtectionService::DownloadCheckResult>
+      result_map;
+  DownloadProtectionService::DownloadCheckResult default_result =
+      DownloadProtectionService::SAFE;
+};
+
 class FakeDatabaseManager
     : public safe_browsing::TestSafeBrowsingDatabaseManager {
  public:
@@ -138,35 +154,92 @@ class FakeDatabaseManager
   ~FakeDatabaseManager() override {}
 };
 
-class TestSafeBrowsingService : public SafeBrowsingService {
+class FakeDownloadProtectionService : public DownloadProtectionService {
  public:
-  safe_browsing::SafeBrowsingDatabaseManager* CreateDatabaseManager() override {
-    return new FakeDatabaseManager();
+  explicit FakeDownloadProtectionService(
+      const SafeBrowsingTestConfiguration* test_config)
+      : DownloadProtectionService(nullptr), test_configuration_(test_config) {}
+
+  void CheckPPAPIDownloadRequest(
+      const GURL& requestor_url,
+      const base::FilePath& default_file_path,
+      const std::vector<base::FilePath::StringType>& alternate_extensions,
+      const CheckDownloadCallback& callback) override {
+    const auto iter =
+        test_configuration_->result_map.find(default_file_path.Extension());
+    if (iter != test_configuration_->result_map.end()) {
+      callback.Run(iter->second);
+      return;
+    }
+
+    for (const auto extension : alternate_extensions) {
+      EXPECT_EQ(base::FilePath::kExtensionSeparator, extension[0]);
+      const auto iter = test_configuration_->result_map.find(extension);
+      if (iter != test_configuration_->result_map.end()) {
+        callback.Run(iter->second);
+        return;
+      }
+    }
+
+    callback.Run(test_configuration_->default_result);
   }
 
- protected:
-  ~TestSafeBrowsingService() override {}
+ private:
+  const SafeBrowsingTestConfiguration* test_configuration_;
+};
 
-  safe_browsing::SafeBrowsingProtocolManagerDelegate*
-      GetProtocolManagerDelegate() override {
-    // Our FakeDatabaseManager doesn't implement this delegate.
-    return NULL;
+class TestSafeBrowsingService
+    : public safe_browsing::ServicesDelegate::ServicesCreator,
+      public safe_browsing::SafeBrowsingService {
+ public:
+  explicit TestSafeBrowsingService(const SafeBrowsingTestConfiguration* config)
+      : test_configuration_(config) {
+    services_delegate_ =
+        safe_browsing::ServicesDelegate::CreateForTest(this, this);
   }
+
+ private:
+  // safe_browsing::ServicesDelegate::ServicesCreator
+  bool CanCreateDownloadProtectionService() override { return true; }
+  bool CanCreateIncidentReportingService() override { return false; }
+  bool CanCreateResourceRequestDetector() override { return false; }
+  DownloadProtectionService* CreateDownloadProtectionService() override {
+    return new FakeDownloadProtectionService(test_configuration_);
+  }
+  safe_browsing::IncidentReportingService* CreateIncidentReportingService()
+      override {
+    return nullptr;
+  }
+  safe_browsing::ResourceRequestDetector* CreateResourceRequestDetector()
+      override {
+    return nullptr;
+  }
+
+  const SafeBrowsingTestConfiguration* test_configuration_;
 };
 
 class TestSafeBrowsingServiceFactory
     : public safe_browsing::SafeBrowsingServiceFactory {
  public:
+  explicit TestSafeBrowsingServiceFactory(
+      const SafeBrowsingTestConfiguration* config)
+      : test_configuration_(config) {}
+
   SafeBrowsingService* CreateSafeBrowsingService() override {
-    SafeBrowsingService* service = new TestSafeBrowsingService();
+    SafeBrowsingService* service =
+        new TestSafeBrowsingService(test_configuration_);
     return service;
   }
-};
 
-class PPAPIFileChooserTest : public OutOfProcessPPAPITest {};
+ private:
+  const SafeBrowsingTestConfiguration* test_configuration_;
+};
 
 class PPAPIFileChooserTestWithSBService : public PPAPIFileChooserTest {
  public:
+  PPAPIFileChooserTestWithSBService()
+      : safe_browsing_service_factory_(&safe_browsing_test_configuration_) {}
+
   void SetUp() override {
     SafeBrowsingService::RegisterFactory(&safe_browsing_service_factory_);
     PPAPIFileChooserTest::SetUp();
@@ -176,9 +249,14 @@ class PPAPIFileChooserTestWithSBService : public PPAPIFileChooserTest {
     SafeBrowsingService::RegisterFactory(nullptr);
   }
 
+ protected:
+  SafeBrowsingTestConfiguration safe_browsing_test_configuration_;
+
  private:
   TestSafeBrowsingServiceFactory safe_browsing_service_factory_;
 };
+
+#endif
 
 }  // namespace
 
@@ -276,10 +354,14 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest, FileChooser_SaveAs_Cancel) {
 // that files written via the FileChooser_Trusted API are properly passed
 // through Safe Browsing.
 
-IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest,
+IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTestWithSBService,
                        FileChooser_SaveAs_DangerousExecutable_Allowed) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAllowUncheckedDangerousDownloads);
+  safe_browsing_test_configuration_.default_result =
+      DownloadProtectionService::DANGEROUS;
+  safe_browsing_test_configuration_.result_map.insert(
+      std::make_pair(base::FilePath::StringType(FILE_PATH_LITERAL(".exe")),
+                     DownloadProtectionService::SAFE));
+
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath suggested_filename = temp_dir.path().AppendASCII("foo");
@@ -299,52 +381,32 @@ IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest,
   EXPECT_EQ("Hello from PPAPI", file_contents);
 }
 
-IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest,
+IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTestWithSBService,
                        FileChooser_SaveAs_DangerousExecutable_Disallowed) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisallowUncheckedDangerousDownloads);
+  safe_browsing_test_configuration_.default_result =
+      DownloadProtectionService::SAFE;
+  safe_browsing_test_configuration_.result_map.insert(
+      std::make_pair(base::FilePath::StringType(FILE_PATH_LITERAL(".exe")),
+                     DownloadProtectionService::DANGEROUS));
+
   TestSelectFileDialogFactory test_dialog_factory(
       TestSelectFileDialogFactory::NOT_REACHED,
       TestSelectFileDialogFactory::SelectedFileInfoList());
   RunTestViaHTTP("FileChooser_SaveAsDangerousExecutableDisallowed");
 }
 
-IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTest,
+IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTestWithSBService,
                        FileChooser_SaveAs_DangerousExtensionList_Disallowed) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisallowUncheckedDangerousDownloads);
+  safe_browsing_test_configuration_.default_result =
+      DownloadProtectionService::SAFE;
+  safe_browsing_test_configuration_.result_map.insert(
+      std::make_pair(base::FilePath::StringType(FILE_PATH_LITERAL(".exe")),
+                     DownloadProtectionService::DANGEROUS));
+
   TestSelectFileDialogFactory test_dialog_factory(
       TestSelectFileDialogFactory::NOT_REACHED,
       TestSelectFileDialogFactory::SelectedFileInfoList());
   RunTestViaHTTP("FileChooser_SaveAsDangerousExtensionListDisallowed");
-}
-
-// The kDisallowUncheckedDangerousDownloads switch (whose behavior is verified
-// by the FileChooser_SaveAs_DangerousExecutable_Disallowed test above) should
-// block the file being downloaded. However, the FakeDatabaseManager reports
-// that the requestors document URL matches the Safe Browsing whitelist. Hence
-// the download succeeds.
-IN_PROC_BROWSER_TEST_F(PPAPIFileChooserTestWithSBService,
-                       FileChooser_SaveAs_DangerousExecutable_Whitelist) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisallowUncheckedDangerousDownloads);
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath suggested_filename = temp_dir.path().AppendASCII("foo");
-
-  TestSelectFileDialogFactory::SelectedFileInfoList file_info_list;
-  file_info_list.push_back(
-      ui::SelectedFileInfo(suggested_filename, suggested_filename));
-  TestSelectFileDialogFactory test_dialog_factory(
-      TestSelectFileDialogFactory::REPLACE_BASENAME, file_info_list);
-
-  RunTestViaHTTP("FileChooser_SaveAsDangerousExecutableAllowed");
-  base::FilePath actual_filename = temp_dir.path().AppendASCII("dangerous.exe");
-
-  ASSERT_TRUE(base::PathExists(actual_filename));
-  std::string file_contents;
-  ASSERT_TRUE(base::ReadFileToString(actual_filename, &file_contents));
-  EXPECT_EQ("Hello from PPAPI", file_contents);
 }
 
 #endif  // FULL_SAFE_BROWSING

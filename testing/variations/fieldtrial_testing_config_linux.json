@@ -251,16 +251,6 @@
             "group_name": "Disabled"
         }
     ],
-    "SafeBrowsingUnverifiedDownloads": [
-        {
-            "group_name": "DisableByParameterMostSbTypes2",
-            "params": {
-                "blacklist": ".exe-,.zip-",
-                "block_sb_types": "true",
-                "whitelist": ".rar,.svg,.url,.xml,.zip"
-            }
-        }
-    ],
     "SafeBrowsingUpdateFrequency": [
         {
             "group_name": "UpdateTime15m",

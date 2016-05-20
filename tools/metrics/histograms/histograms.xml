@@ -45107,6 +45107,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="SafeBrowsing.UnverifiedDownloads.Allowed"
     enum="SBClientDownloadExtensions">
   <owner>asanka@chromium.org</owner>
+  <obsolete>
+    Deprected. This was a temporary measure until PPAPI based download code
+    paths were migrated to use SafeBrowsing.
+  </obsolete>
   <summary>
     File types that were allowed to be downloaded without verifying their
     content nor their source URLs with Safe Browsing.
@@ -45116,6 +45120,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="SafeBrowsing.UnverifiedDownloads.AllowedByWhitelist"
     enum="SBClientDownloadExtensions">
   <owner>asanka@chromium.org</owner>
+  <obsolete>
+    Deprected. This was a temporary measure until PPAPI based download code
+    paths were migrated to use SafeBrowsing.
+  </obsolete>
   <summary>
     File types that were allowed to be downloaded without verifying their
     content nor their source URLs with Safe Browsing due to the requestor URL
@@ -45127,6 +45135,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="SafeBrowsing.UnverifiedDownloads.AllowedDueToDisabledService"
     enum="SBClientDownloadExtensions">
   <owner>asanka@chromium.org</owner>
+  <obsolete>
+    Deprected. This was a temporary measure until PPAPI based download code
+    paths were migrated to use SafeBrowsing.
+  </obsolete>
   <summary>
     File types that were allowed to be downloaded without verifying their
     content nor their source URLs with Safe Browsing due to the SafeBrowsing
@@ -45137,6 +45149,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SafeBrowsing.UnverifiedDownloads.AlternateExtensionCount">
   <owner>asanka@chromium.org</owner>
+  <obsolete>
+    Deprected. This was a temporary measure until PPAPI based download code
+    paths were migrated to use SafeBrowsing.
+  </obsolete>
   <summary>
     Count of alternate extensions that were supplied when attempting to download
     a file without verifying their content nor their source URLs with Safe
@@ -45147,6 +45163,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="SafeBrowsing.UnverifiedDownloads.Blocked"
     enum="SBClientDownloadExtensions">
   <owner>asanka@chromium.org</owner>
+  <obsolete>
+    Deprected. This was a temporary measure until PPAPI based download code
+    paths were migrated to use SafeBrowsing.
+  </obsolete>
   <summary>
     File types that were blocked from downloaded without verifying their content
     nor their source URLs with Safe Browsing.
@@ -46446,6 +46466,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Records the time it takes for the SafeBrowsing download service to extract
     info from a downloaded zip file.
   </summary>
+</histogram>
+
+<histogram name="SBClientDownload.PPAPIDownloadRequest.RequestDuration"
+    units="ms">
+  <owner>asanka@chromium.org</owner>
+  <summary>Time taken to complete a PPAPIDownloadRequest.</summary>
+</histogram>
+
+<histogram name="SBClientDownload.PPAPIDownloadRequest.RequestOutcome"
+    enum="SBClientDownloadPPAPIDownloadRequestOutcome">
+  <owner>asanka@chromium.org</owner>
+  <summary>
+    Outcome of running CheckPPAPIDownloadRequest. Most failure modes cause an
+    UNKNOWN result to be returned to the caller. If the attempt succeeds, the
+    result returned to the caller is based on the SafeBrowsing resopnse. The
+    final result returned is counted in
+    SBClientDownload.PPAPIDownloadRequest.Result.
+  </summary>
+</histogram>
+
+<histogram name="SBClientDownload.PPAPIDownloadRequest.Result"
+    enum="SBClientDownloadCheckResult">
+  <owner>asanka@chromium.org</owner>
+  <summary>Result returned to the caller of CheckPPAPIDownloadRequest.</summary>
 </histogram>
 
 <histogram name="SBClientDownload.SignedBinaryDownload"
@@ -85109,6 +85153,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="22" label="UNSUPPORTED_URL_SCHEME"/>
 </enum>
 
+<enum name="SBClientDownloadCheckResult" type="int">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="SAFE"/>
+  <int value="2" label="DANGEROUS"/>
+  <int value="3" label="UNCOMMON"/>
+  <int value="4" label="DANGEROUS_HOST"/>
+  <int value="5" label="POTENTIALLY_UNWANTED"/>
+</enum>
+
 <enum name="SBClientDownloadExtensions" type="int">
   <int value="-1" label="File extension not categorized"/>
   <int value="0" label="EXE"/>
@@ -85379,6 +85432,18 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="SBClientDownloadIsSignedBinary" type="int">
   <int value="0" label="Unsigned"/>
   <int value="1" label="Signed"/>
+</enum>
+
+<enum name="SBClientDownloadPPAPIDownloadRequestOutcome" type="int">
+  <int value="0" label="(unknown)"/>
+  <int value="1" label="Request destroyed before completion"/>
+  <int value="2" label="Unsupported file type"/>
+  <int value="3" label="Timed out"/>
+  <int value="4" label="Whitelisted URL"/>
+  <int value="5" label="Request was malformed"/>
+  <int value="6" label="Network request failed"/>
+  <int value="7" label="Response was malformed"/>
+  <int value="8" label="Succeeded"/>
 </enum>
 
 <enum name="SBClientMalwareSentReports" type="int">
