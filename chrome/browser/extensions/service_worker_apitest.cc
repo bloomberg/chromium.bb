@@ -697,14 +697,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest,
       << message_;
 }
 
-// Flaky on ChromiumOS bots. http://crbug.com/612673
-// Flaky on Windows bots. http://crbug.com/612840
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
-#define MAYBE_OnPush DISABLED_OnPush
-#else
-#define MAYBE_OnPush OnPush
-#endif
-IN_PROC_BROWSER_TEST_F(ServiceWorkerPushMessagingTest, MAYBE_OnPush) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerPushMessagingTest, OnPush) {
   const Extension* extension = LoadExtensionWithFlags(
       test_data_dir_.AppendASCII("service_worker/push_messaging"), kFlagNone);
   ASSERT_TRUE(extension);
@@ -730,6 +723,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPushMessagingTest, MAYBE_OnPush) {
   ASSERT_EQ(app_identifier.app_id(), gcm_service()->last_registered_app_id());
   EXPECT_EQ("1234567890", gcm_service()->last_registered_sender_ids()[0]);
 
+  base::RunLoop run_loop;
   // Send a push message via gcm and expect the ServiceWorker to receive it.
   ExtensionTestMessageListener push_message_listener("OK", false);
   push_message_listener.set_failure_message("FAIL");
@@ -737,8 +731,10 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerPushMessagingTest, MAYBE_OnPush) {
   message.sender_id = "1234567890";
   message.raw_data = "testdata";
   message.decrypted = true;
+  push_service()->SetMessageCallbackForTesting(run_loop.QuitClosure());
   push_service()->OnMessage(app_identifier.app_id(), message);
   EXPECT_TRUE(push_message_listener.WaitUntilSatisfied());
+  run_loop.Run();  // Wait until the message is handled by push service.
 }
 
 }  // namespace extensions
