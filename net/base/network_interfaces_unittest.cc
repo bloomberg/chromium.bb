@@ -36,7 +36,6 @@
 #if defined(OS_WIN)
 #include <iphlpapi.h>
 #include <objbase.h>
-#include "base/win/windows_version.h"
 #endif  // OS_WIN
 
 #if !defined(OS_MACOSX) && !defined(OS_NACL) && !defined(OS_WIN)
@@ -138,37 +137,17 @@ TEST(NetworkInterfacesTest, GetNetworkList) {
 
 #if defined(OS_WIN)
     // On Windows |name| is NET_LUID.
-    base::ScopedNativeLibrary phlpapi_lib(
-        base::FilePath(FILE_PATH_LITERAL("iphlpapi.dll")));
-    ASSERT_TRUE(phlpapi_lib.is_valid());
-    typedef NETIO_STATUS (WINAPI* ConvertInterfaceIndexToLuid)(NET_IFINDEX,
-                                                               PNET_LUID);
-    ConvertInterfaceIndexToLuid interface_to_luid =
-        reinterpret_cast<ConvertInterfaceIndexToLuid>(
-            phlpapi_lib.GetFunctionPointer("ConvertInterfaceIndexToLuid"));
+    NET_LUID luid;
+    EXPECT_EQ(static_cast<DWORD>(NO_ERROR),
+              ConvertInterfaceIndexToLuid(it->interface_index, &luid));
+    GUID guid;
+    EXPECT_EQ(static_cast<DWORD>(NO_ERROR),
+              ConvertInterfaceLuidToGuid(&luid, &guid));
+    LPOLESTR name;
+    StringFromCLSID(guid, &name);
+    EXPECT_STREQ(base::UTF8ToWide(it->name).c_str(), name);
+    CoTaskMemFree(name);
 
-    typedef NETIO_STATUS (WINAPI* ConvertInterfaceLuidToGuid)(NET_LUID*,
-                                                              GUID*);
-    ConvertInterfaceLuidToGuid luid_to_guid =
-        reinterpret_cast<ConvertInterfaceLuidToGuid>(
-            phlpapi_lib.GetFunctionPointer("ConvertInterfaceLuidToGuid"));
-
-    if (interface_to_luid && luid_to_guid) {
-      NET_LUID luid;
-      EXPECT_EQ(static_cast<DWORD>(NO_ERROR),
-                interface_to_luid(it->interface_index, &luid));
-      GUID guid;
-      EXPECT_EQ(static_cast<DWORD>(NO_ERROR), luid_to_guid(&luid, &guid));
-      LPOLESTR name;
-      StringFromCLSID(guid, &name);
-      EXPECT_STREQ(base::UTF8ToWide(it->name).c_str(), name);
-      CoTaskMemFree(name);
-      continue;
-    } else {
-      EXPECT_LT(base::win::GetVersion(), base::win::VERSION_VISTA);
-      EXPECT_LT(it->interface_index, 1u << 24u);  // Must fit 0.x.x.x.
-      EXPECT_NE(it->interface_index, 0u);  // 0 means to use default.
-    }
     if (it->type == NetworkChangeNotifier::CONNECTION_WIFI) {
       EXPECT_NE(WIFI_PHY_LAYER_PROTOCOL_NONE, GetWifiPHYLayerProtocol());
     }
@@ -490,7 +469,7 @@ TEST(NetworkInterfacesTest, GetNetworkListTrimming) {
   adapter_address.OperStatus = IfOperStatusDown;
 
   EXPECT_TRUE(internal::GetNetworkListImpl(
-      &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, true, &adapter_address));
+      &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, &adapter_address));
 
   EXPECT_EQ(results.size(), 0ul);
 
@@ -502,7 +481,7 @@ TEST(NetworkInterfacesTest, GetNetworkListTrimming) {
   adapter_address.IfType = IF_TYPE_SOFTWARE_LOOPBACK;
 
   EXPECT_TRUE(internal::GetNetworkListImpl(
-      &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, true, &adapter_address));
+      &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, &adapter_address));
   EXPECT_EQ(results.size(), 0ul);
 
   // vmware address should return by default.
@@ -511,7 +490,7 @@ TEST(NetworkInterfacesTest, GetNetworkListTrimming) {
       ipv6_address /* ip_address */, ipv6_prefix /* ip_netmask */,
       addresses /* sock_addrs */));
   EXPECT_TRUE(internal::GetNetworkListImpl(
-      &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, true, &adapter_address));
+      &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, &adapter_address));
   EXPECT_EQ(results.size(), 1ul);
   EXPECT_EQ(results[0].name, ifname_vm);
   EXPECT_EQ(results[0].prefix_length, 1ul);
@@ -525,7 +504,7 @@ TEST(NetworkInterfacesTest, GetNetworkListTrimming) {
       ipv6_address /* ip_address */, ipv6_prefix /* ip_netmask */,
       addresses /* sock_addrs */));
   EXPECT_TRUE(internal::GetNetworkListImpl(
-      &results, EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, true, &adapter_address));
+      &results, EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, &adapter_address));
   EXPECT_EQ(results.size(), 0ul);
   results.clear();
 
@@ -537,7 +516,7 @@ TEST(NetworkInterfacesTest, GetNetworkListTrimming) {
   adapter_address.FirstUnicastAddress->DadState = IpDadStateTentative;
 
   EXPECT_TRUE(internal::GetNetworkListImpl(
-      &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, true, &adapter_address));
+      &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, &adapter_address));
   EXPECT_EQ(results.size(), 0ul);
   results.clear();
 
@@ -553,7 +532,7 @@ TEST(NetworkInterfacesTest, GetNetworkListTrimming) {
   adapter_address.FirstUnicastAddress->SuffixOrigin = IpSuffixOriginRandom;
 
   EXPECT_TRUE(internal::GetNetworkListImpl(
-      &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, true, &adapter_address));
+      &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, &adapter_address));
   EXPECT_EQ(results.size(), 1ul);
   EXPECT_EQ(results[0].name, ifname_em1);
   EXPECT_EQ(results[0].prefix_length, 1ul);
@@ -571,7 +550,7 @@ TEST(NetworkInterfacesTest, GetNetworkListTrimming) {
   adapter_address.FirstUnicastAddress->PreferredLifetime = 0;
   adapter_address.FriendlyName = const_cast<PWCHAR>(L"FriendlyInterfaceName");
   EXPECT_TRUE(internal::GetNetworkListImpl(
-      &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, true, &adapter_address));
+      &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, &adapter_address));
   EXPECT_EQ(results.size(), 1ul);
   EXPECT_EQ(results[0].friendly_name, "FriendlyInterfaceName");
   EXPECT_EQ(results[0].name, ifname_em1);

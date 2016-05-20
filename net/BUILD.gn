@@ -1670,6 +1670,12 @@ test("net_unittests") {
       # data += [ "$root_out_dir/net_unittests.dSYM/" ]
     }
   }
+
+  if (is_win) {
+    libs = [
+      "iphlpapi.lib",
+    ]
+  }
 }
 
 # !is_android && !is_win && !is_mac
