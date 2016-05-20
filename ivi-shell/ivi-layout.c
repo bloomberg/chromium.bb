@@ -25,15 +25,15 @@
 
 /**
  * Implementation of ivi-layout library. The actual view on ivi_screen is
- * not updated till calling ivi_layout_commit_changes. A overview from
+ * not updated until ivi_layout_commit_changes is called. An overview from
  * calling API for updating properties of ivi_surface/ivi_layer to asking
  * compositor to compose them by using weston_compositor_schedule_repaint,
  * 0/ initialize this library by ivi_layout_init_with_compositor
  *    with (struct weston_compositor *ec) from ivi-shell.
- * 1/ When a API for updating properties of ivi_surface/ivi_layer, it updates
+ * 1/ When an API for updating properties of ivi_surface/ivi_layer, it updates
  *    pending prop of ivi_surface/ivi_layer/ivi_screen which are structure to
  *    store properties.
- * 2/ Before calling commitChanges, in case of calling a API to get a property,
+ * 2/ Before calling commitChanges, in case of calling an API to get a property,
  *    return current property, not pending property.
  * 3/ At the timing of calling ivi_layout_commitChanges, pending properties
  *    are applied to properties.
@@ -42,11 +42,11 @@
  *    per each frame. See ivi-layout-transition.c in details. Transition
  *    animation interpolates frames between previous properties of ivi_surface
  *    and new ones.
- *    For example, when a property of ivi_surface is changed from invisibility
- *    to visibility, it behaves like fade-in. When ivi_layout_commitChange is
+ *    For example, when a property of ivi_surface is changed from invisibile
+ *    to visibile, it behaves like fade-in. When ivi_layout_commitChange is
  *    called during transition animation, it cancels the transition and
  *    re-start transition to new properties from current properties of final
- *    frame just before the the cancellation.
+ *    frame just before the cancellation.
  *
  * 4/ According properties, set transformation by using weston_matrix and
  *    weston_view per ivi_surfaces and ivi_layers in while loop.
@@ -108,7 +108,7 @@ get_instance(void)
 }
 
 /**
- * Internal API to add/remove a ivi_layer to/from ivi_screen.
+ * Internal API to add/remove an ivi_layer to/from ivi_screen.
  */
 static struct ivi_layout_surface *
 get_surface(struct wl_list *surf_list, uint32_t id_surface)
@@ -246,7 +246,7 @@ init_surface_properties(struct ivi_layout_surface_properties *prop)
 	memset(prop, 0, sizeof *prop);
 	prop->opacity = wl_fixed_from_double(1.0);
 	/*
-	 * FIXME: this shall be finxed by ivi-layout-transition.
+	 * FIXME: this shall be fixed by ivi-layout-transition.
 	 */
 	prop->dest_width = 1;
 	prop->dest_height = 1;
@@ -459,7 +459,7 @@ calc_inverse_matrix_transform(const struct weston_matrix *matrix,
  * coordinates to multi-screen coordinates, which are global coordinates.
  * It is assumed that weston_view::geometry.{x,y} are zero.
  *
- * Additionally, this computes the mask on surface-local coordinates as a
+ * Additionally, this computes the mask on surface-local coordinates as an
  * ivi_rectangle. This can be set to weston_view_set_mask.
  *
  * The mask is computed by following steps
@@ -1112,7 +1112,7 @@ ivi_layout_get_layers(int32_t *pLength, struct ivi_layout_layer ***ppArray)
 	length = wl_list_length(&layout->layer_list);
 
 	if (length != 0) {
-		/* the Array must be free by module which called this function */
+		/* the Array must be freed by module which called this function */
 		*ppArray = calloc(length, sizeof(struct ivi_layout_layer *));
 		if (*ppArray == NULL) {
 			weston_log("fails to allocate memory\n");
@@ -1148,7 +1148,7 @@ ivi_layout_get_layers_on_screen(struct weston_output *output,
 	length = wl_list_length(&iviscrn->order.layer_list);
 
 	if (length != 0) {
-		/* the Array must be free by module which called this function */
+		/* the Array must be freed by module which called this function */
 		*ppArray = calloc(length, sizeof(struct ivi_layout_layer *));
 		if (*ppArray == NULL) {
 			weston_log("fails to allocate memory\n");
@@ -1179,7 +1179,7 @@ ivi_layout_get_layers_under_surface(struct ivi_layout_surface *ivisurf,
 	}
 
 	if (ivisurf->on_layer != NULL) {
-		/* the Array must be free by module which called this function */
+		/* the Array must be freed by module which called this function */
 		length = 1;
 		*ppArray = calloc(length, sizeof(struct ivi_layout_screen *));
 		if (*ppArray == NULL) {
@@ -1212,7 +1212,7 @@ ivi_layout_get_surfaces(int32_t *pLength, struct ivi_layout_surface ***ppArray)
 	length = wl_list_length(&layout->surface_list);
 
 	if (length != 0) {
-		/* the Array must be free by module which called this function */
+		/* the Array must be freed by module which called this function */
 		*ppArray = calloc(length, sizeof(struct ivi_layout_surface *));
 		if (*ppArray == NULL) {
 			weston_log("fails to allocate memory\n");
@@ -1246,7 +1246,7 @@ ivi_layout_get_surfaces_on_layer(struct ivi_layout_layer *ivilayer,
 	length = wl_list_length(&ivilayer->order.surface_list);
 
 	if (length != 0) {
-		/* the Array must be free by module which called this function */
+		/* the Array must be freed by module which called this function */
 		*ppArray = calloc(length, sizeof(struct ivi_layout_surface *));
 		if (*ppArray == NULL) {
 			weston_log("fails to allocate memory\n");
