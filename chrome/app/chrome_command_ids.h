@@ -33,6 +33,8 @@
 #define IDC_RELOAD_BYPASSING_CACHE      33007
 #define IDC_LOAD_NEW_TAB_PAGE           33008
 #define IDC_RELOAD_CLEARING_CACHE       33009
+#define IDC_BACKSPACE_BACK              33010
+#define IDC_BACKSPACE_FORWARD           33011
 
 // Window management commands
 #define IDC_NEW_WINDOW                  34000

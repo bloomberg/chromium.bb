@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/debug/debugging_flags.h"
 #include "base/debug/profiler.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -116,6 +117,10 @@ bool HasInternalURL(const NavigationEntry* entry) {
 }  // namespace
 
 namespace chrome {
+
+const base::Feature kBackspaceGoesBackFeature {
+  "BackspaceGoesBack", base::FEATURE_DISABLED_BY_DEFAULT
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserCommandController, public:
@@ -315,9 +320,15 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
   // declaration order in browser.h!
   switch (id) {
     // Navigation commands
+    case IDC_BACKSPACE_BACK:
+      if (!base::FeatureList::IsEnabled(kBackspaceGoesBackFeature))
+        break;
     case IDC_BACK:
       GoBack(browser_, disposition);
       break;
+    case IDC_BACKSPACE_FORWARD:
+      if (!base::FeatureList::IsEnabled(kBackspaceGoesBackFeature))
+        break;
     case IDC_FORWARD:
       GoForward(browser_, disposition);
       break;
@@ -978,7 +989,11 @@ void BrowserCommandController::UpdateCommandsForTabState() {
     return;
 
   // Navigation commands
+  command_updater_.UpdateCommandEnabled(IDC_BACKSPACE_BACK,
+                                        CanGoBack(browser_));
   command_updater_.UpdateCommandEnabled(IDC_BACK, CanGoBack(browser_));
+  command_updater_.UpdateCommandEnabled(IDC_BACKSPACE_FORWARD,
+                                        CanGoForward(browser_));
   command_updater_.UpdateCommandEnabled(IDC_FORWARD, CanGoForward(browser_));
   command_updater_.UpdateCommandEnabled(IDC_RELOAD, CanReload(browser_));
   command_updater_.UpdateCommandEnabled(IDC_RELOAD_BYPASSING_CACHE,
