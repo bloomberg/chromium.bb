@@ -684,6 +684,8 @@
     },
 
     'tryserver.chromium.angle': {
+      'linux_angle_chromeos_rel_ng':
+        'swarming_gpu_fyi_tests_chromeos_gyp_release_trybot',
       'linux_angle_dbg_ng': 'swarming_gpu_fyi_tests_gn_debug_trybot',
       'linux_angle_rel_ng': 'swarming_gpu_fyi_tests_gn_release_trybot',
       'mac_angle_dbg_ng': 'swarming_gpu_fyi_tests_gyp_debug_trybot',
