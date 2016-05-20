@@ -912,7 +912,7 @@ void WebMediaPlayerImpl::OnPipelineSuspended() {
   if (isRemote()) {
     scoped_refptr<VideoFrame> frame = cast_impl_.GetCastingBanner();
     if (frame)
-      compositor_->PaintFrameUsingOldRenderingPath(frame);
+      compositor_->PaintSingleFrame(frame);
   }
 #endif
 
@@ -1198,7 +1198,7 @@ void WebMediaPlayerImpl::SuspendForRemote() {
   if (pipeline_controller_.IsPipelineSuspended()) {
     scoped_refptr<VideoFrame> frame = cast_impl_.GetCastingBanner();
     if (frame)
-      compositor_->PaintFrameUsingOldRenderingPath(frame);
+      compositor_->PaintSingleFrame(frame);
   }
 
   UpdatePlayState();

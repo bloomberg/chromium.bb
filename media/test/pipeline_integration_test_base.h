@@ -135,6 +135,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   DummyTickClock dummy_clock_;
   AudioHardwareConfig hardware_config_;
   PipelineMetadata metadata_;
+  scoped_refptr<VideoFrame> last_frame_;
 
   PipelineStatus StartInternal(std::unique_ptr<DataSource> data_source,
                                CdmContext* cdm_context,

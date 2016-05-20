@@ -378,7 +378,7 @@ void CmaRenderer::OnStatisticsUpdated(
 
 void CmaRenderer::OnNaturalSizeChanged(const gfx::Size& size) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  video_renderer_sink_->PaintFrameUsingOldRenderingPath(
+  video_renderer_sink_->PaintSingleFrame(
       video_overlay_factory_->CreateFrame(size));
   client_->OnVideoNaturalSizeChange(size);
 }

@@ -88,8 +88,7 @@ void NullVideoSink::CallRender() {
                                 delay);
 }
 
-void NullVideoSink::PaintFrameUsingOldRenderingPath(
-    const scoped_refptr<VideoFrame>& frame) {
+void NullVideoSink::PaintSingleFrame(const scoped_refptr<VideoFrame>& frame) {
   new_frame_cb_.Run(frame);
 }
 

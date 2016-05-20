@@ -724,13 +724,11 @@ TEST_F(VideoRendererImplTest, UnderflowRecovery_CantReadWithoutStalling) {
   UnderflowRecoveryTest(UnderflowTestType::CANT_READ_WITHOUT_STALLING);
 }
 
-// Verifies that the sink is stopped after rendering the first frame if
-// playback hasn't started.
+// Verifies that the first frame is painted w/o rendering being started.
 TEST_F(VideoRendererImplTest, RenderingStopsAfterFirstFrame) {
   InitializeWithLowDelay(true);
   QueueFrames("0");
 
-  EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(0)));
   EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
   EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_)).Times(AnyNumber());
   EXPECT_CALL(mock_cb_, OnVideoNaturalSizeChange(_)).Times(1);
@@ -738,11 +736,11 @@ TEST_F(VideoRendererImplTest, RenderingStopsAfterFirstFrame) {
   EXPECT_CALL(mock_cb_, OnEnded()).Times(0);
 
   {
-    SCOPED_TRACE("Waiting for sink to stop.");
+    SCOPED_TRACE("Waiting for first frame to be painted.");
     WaitableMessageLoopEvent event;
 
-    null_video_sink_->set_background_render(true);
-    null_video_sink_->set_stop_cb(event.GetClosure());
+    EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(0)))
+        .WillOnce(RunClosure(event.GetClosure()));
     StartPlayingFrom(0);
 
     EXPECT_TRUE(IsReadPending());
@@ -755,12 +753,12 @@ TEST_F(VideoRendererImplTest, RenderingStopsAfterFirstFrame) {
 }
 
 // Verifies that the sink is stopped after rendering the first frame if
-// playback ha started.
+// playback has started.
 TEST_F(VideoRendererImplTest, RenderingStopsAfterOneFrameWithEOS) {
   InitializeWithLowDelay(true);
   QueueFrames("0");
 
-  EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(0)));
+  EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(0))).Times(2);
   EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
   EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_)).Times(AnyNumber());
   EXPECT_CALL(mock_cb_, OnVideoNaturalSizeChange(_)).Times(1);
@@ -800,15 +798,11 @@ TEST_F(VideoRendererImplTest, RenderingStartedThenStopped) {
     EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
     EXPECT_CALL(mock_cb_, FrameReceived(HasTimestamp(0)))
         .WillOnce(RunClosure(event.GetClosure()));
-    EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_))
-        .WillRepeatedly(SaveArg<0>(&last_pipeline_statistics));
     EXPECT_CALL(mock_cb_, OnVideoNaturalSizeChange(_)).Times(1);
     EXPECT_CALL(mock_cb_, OnVideoOpacityChange(_)).Times(1);
     StartPlayingFrom(0);
     event.RunAndWait();
     Mock::VerifyAndClearExpectations(&mock_cb_);
-    EXPECT_EQ(0u, last_pipeline_statistics.video_frames_dropped);
-    EXPECT_EQ(460800, last_pipeline_statistics.video_memory_usage);
   }
 
   // Consider the case that rendering is faster than we setup the test event.
@@ -819,6 +813,8 @@ TEST_F(VideoRendererImplTest, RenderingStartedThenStopped) {
       .Times(testing::AtMost(1));
   EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING))
       .Times(testing::AtMost(1));
+  EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_))
+      .WillRepeatedly(SaveArg<0>(&last_pipeline_statistics));
   renderer_->OnTimeStateChanged(true);
   time_source_.StartTicking();
 
@@ -836,7 +832,7 @@ TEST_F(VideoRendererImplTest, RenderingStartedThenStopped) {
   // reported
   EXPECT_EQ(0u, last_pipeline_statistics.video_frames_dropped);
   EXPECT_EQ(4u, last_pipeline_statistics.video_frames_decoded);
-  EXPECT_EQ(460800, last_pipeline_statistics.video_memory_usage);
+  EXPECT_EQ(115200, last_pipeline_statistics.video_memory_usage);
 
   AdvanceTimeInMs(30);
   WaitForEnded();

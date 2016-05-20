@@ -102,12 +102,12 @@ TEST_F(VideoFrameCompositorTest, InitialValues) {
   EXPECT_FALSE(compositor()->GetCurrentFrame().get());
 }
 
-TEST_F(VideoFrameCompositorTest, PaintFrameUsingOldRenderingPath) {
+TEST_F(VideoFrameCompositorTest, PaintSingleFrame) {
   scoped_refptr<VideoFrame> expected = VideoFrame::CreateEOSFrame();
 
   // Should notify compositor synchronously.
   EXPECT_EQ(0, did_receive_frame_count());
-  compositor()->PaintFrameUsingOldRenderingPath(expected);
+  compositor()->PaintSingleFrame(expected);
   scoped_refptr<VideoFrame> actual = compositor()->GetCurrentFrame();
   EXPECT_EQ(expected, actual);
   EXPECT_EQ(1, did_receive_frame_count());

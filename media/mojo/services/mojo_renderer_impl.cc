@@ -190,7 +190,7 @@ void MojoRendererImpl::OnVideoNaturalSizeChange(mojo::SizePtr size) {
   DVLOG(2) << __FUNCTION__ << ": " << new_size.ToString();
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  video_renderer_sink_->PaintFrameUsingOldRenderingPath(
+  video_renderer_sink_->PaintSingleFrame(
       video_overlay_factory_->CreateFrame(new_size));
   client_->OnVideoNaturalSizeChange(new_size);
 }

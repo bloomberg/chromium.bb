@@ -95,8 +95,6 @@ class MEDIA_EXPORT VideoRendererImpl
   void OnStatisticsUpdate(const PipelineStatistics& stats);
   void OnBufferingStateChange(BufferingState state);
   void OnWaitingForDecryptionKey();
-  void OnVideoNaturalSizeChange(const gfx::Size& size);
-  void OnVideoOpacityChange(bool opaque);
 
   // Callback for |video_frame_stream_| to deliver decoded video frames and
   // report video decoding status. If a frame is available the planes will be
@@ -117,7 +115,6 @@ class MEDIA_EXPORT VideoRendererImpl
   // Helper method that schedules an asynchronous read from the
   // |video_frame_stream_| as long as there isn't a pending read and we have
   // capacity.
-  void AttemptRead();
   void AttemptRead_Locked();
 
   // Called when VideoFrameStream::Reset() completes.
@@ -133,10 +130,6 @@ class MEDIA_EXPORT VideoRendererImpl
   // them to 0.
   void UpdateStats_Locked();
 
-  // Called after we've painted the first frame.  If |time_progressing_| is
-  // false it Stop() on |sink_|.
-  void MaybeStopSinkAfterFirstPaint();
-
   // Returns true if there is no more room for additional buffered frames.
   bool HaveReachedBufferingCap();
 
@@ -150,8 +143,8 @@ class MEDIA_EXPORT VideoRendererImpl
   //
   // When called from the media thread, |time_progressing| should reflect the
   // value of |time_progressing_|.  When called from Render() on the sink
-  // callback thread, the inverse of |render_first_frame_and_stop_| should be
-  // used as a proxy for |time_progressing_|.
+  // callback thread, |time_progressing| must be true since Render() could not
+  // have been called otherwise.
   void MaybeFireEndedCallback_Locked(bool time_progressing);
 
   // Helper method for converting a single media timestamp to wall clock time.
@@ -178,6 +171,16 @@ class MEDIA_EXPORT VideoRendererImpl
   // effective frames in the queue, the entire frame queue will be released to
   // avoid any stalling.
   void RemoveFramesForUnderflowOrBackgroundRendering();
+
+  // Notifies |client_| in the event of frame size or opacity changes. Must be
+  // called on |task_runner_|.
+  void CheckForMetadataChanges(VideoPixelFormat pixel_format,
+                               const gfx::Size& natural_size);
+
+  // Both calls AttemptRead_Locked() and CheckForMetadataChanges(). Must be
+  // called on |task_runner_|.
+  void AttemptReadAndCheckForMetadataChanges(VideoPixelFormat pixel_format,
+                                             const gfx::Size& natural_size);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
@@ -277,18 +280,13 @@ class MEDIA_EXPORT VideoRendererImpl
   // only be accessed from |task_runner_|.
   bool time_progressing_;
 
-  // Indicates that Render() should only render the first frame and then request
-  // that the sink be stopped.  |posted_maybe_stop_after_first_paint_| is used
-  // to avoid repeated task posts.
-  bool render_first_frame_and_stop_;
-  bool posted_maybe_stop_after_first_paint_;
-
   // Memory usage of |algorithm_| recorded during the last UpdateStats_Locked()
   // call.
   int64_t last_video_memory_usage_;
 
-  // Indicates if Render() has been called yet.
+  // Indicates if a frame has been processed by CheckForMetadataChanges().
   bool have_renderered_frames_;
+
   // Tracks last frame properties to detect and notify client of any changes.
   gfx::Size last_frame_natural_size_;
   bool last_frame_opaque_;

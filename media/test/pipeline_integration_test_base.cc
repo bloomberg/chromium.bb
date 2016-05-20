@@ -354,8 +354,9 @@ void PipelineIntegrationTestBase::OnVideoFramePaint(
   int result;
   if (frame->metadata()->GetInteger(VideoFrameMetadata::COLOR_SPACE, &result))
     last_video_frame_color_space_ = static_cast<ColorSpace>(result);
-  if (!hashing_enabled_)
+  if (!hashing_enabled_ || last_frame_ == frame)
     return;
+  last_frame_ = frame;
   VideoFrame::HashFrameForTesting(&md5_context_, frame);
 }
 

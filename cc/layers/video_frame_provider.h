@@ -43,8 +43,6 @@ class CC_EXPORT VideoFrameProvider {
     virtual void StopRendering() = 0;
 
     // Notifies the client that GetCurrentFrame() will return new data.
-    // TODO(dalecurtis): Nuke this once VideoFrameProviderClientImpl is using a
-    // BeginFrameObserver based approach. http://crbug.com/336733
     virtual void DidReceiveFrame() = 0;
 
    protected:
@@ -75,9 +73,6 @@ class CC_EXPORT VideoFrameProvider {
   //
   // Clients should call this in response to UpdateCurrentFrame() returning true
   // or in response to a DidReceiveFrame() call.
-  //
-  // TODO(dalecurtis): Remove text about DidReceiveFrame() once the old path
-  // has been removed. http://crbug.com/439548
   virtual scoped_refptr<media::VideoFrame> GetCurrentFrame() = 0;
 
   // Called in response to DidReceiveFrame() or a return value of true from

@@ -131,13 +131,12 @@ void VideoFrameCompositor::Stop() {
                             base::Unretained(this), false));
 }
 
-void VideoFrameCompositor::PaintFrameUsingOldRenderingPath(
+void VideoFrameCompositor::PaintSingleFrame(
     const scoped_refptr<VideoFrame>& frame) {
   if (!compositor_task_runner_->BelongsToCurrentThread()) {
     compositor_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&VideoFrameCompositor::PaintFrameUsingOldRenderingPath,
-                   base::Unretained(this), frame));
+        FROM_HERE, base::Bind(&VideoFrameCompositor::PaintSingleFrame,
+                              base::Unretained(this), frame));
     return;
   }
 
@@ -172,7 +171,7 @@ base::TimeDelta VideoFrameCompositor::GetCurrentFrameTimestamp() const {
   // When the VFC is stopped, |callback_| is cleared; this synchronously
   // prevents CallRender() from invoking ProcessNewFrame(), and so
   // |current_frame_| won't change again until after Start(). (Assuming that
-  // PaintFrameUsingOldRenderingPath() is not also called while stopped.)
+  // PaintSingleFrame() is not also called while stopped.)
   if (!current_frame_)
     return base::TimeDelta();
   return current_frame_->timestamp();

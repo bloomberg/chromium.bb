@@ -75,8 +75,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor
   // same thread (typically the media thread).
   void Start(RenderCallback* callback) override;
   void Stop() override;
-  void PaintFrameUsingOldRenderingPath(
-      const scoped_refptr<VideoFrame>& frame) override;
+  void PaintSingleFrame(const scoped_refptr<VideoFrame>& frame) override;
 
   // Returns |current_frame_| if |client_| is set.  If no |client_| is set,
   // |is_background_rendering_| is true, and |callback_| is set, it requests a
@@ -94,7 +93,7 @@ class MEDIA_BLINK_EXPORT VideoFrameCompositor
   // Returns the timestamp of the current (possibly stale) frame, or
   // base::TimeDelta() if there is no current frame. This method may be called
   // from the media thread as long as the VFC is stopped. (Assuming that
-  // PaintFrameUsingOldRenderingPath() is not also called while stopped.)
+  // PaintSingleFrame() is not also called while stopped.)
   base::TimeDelta GetCurrentFrameTimestamp() const;
 
   void set_tick_clock_for_testing(std::unique_ptr<base::TickClock> tick_clock) {
