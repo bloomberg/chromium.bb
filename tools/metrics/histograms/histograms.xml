@@ -85797,6 +85797,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="16" label="REQUEST_JOB_ERROR_DESTROYED"/>
   <int value="17" label="REQUEST_JOB_ERROR_DESTROYED_WITH_BLOB"/>
   <int value="18" label="REQUEST_JOB_ERROR_DESTROYED_WITH_STREAM"/>
+  <int value="19" label="REQUEST_JOB_ERROR_BAD_DELEGATE"/>
+  <int value="20" label="REQUEST_JOB_ERROR_REQUEST_BODY_BLOB_FAILED"/>
 </enum>
 
 <enum name="ServiceWorkerWriteResponseResult" type="int">
