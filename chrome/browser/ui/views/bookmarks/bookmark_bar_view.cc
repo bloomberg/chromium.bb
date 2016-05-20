@@ -563,11 +563,9 @@ class BookmarkBarView::ButtonSeparatorView : public views::View {
 
       const int height = gfx::kFaviconSize * scale;
       const int top_y = (scaled_bounds.height() - height) / 2;
-      canvas->DrawLine(
-          gfx::Point(x, top_y), gfx::Point(x, top_y + height),
-          SkColorSetA(GetThemeProvider()->GetColor(
-                          ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON),
-                      0x4D));
+      canvas->DrawLine(gfx::Point(x, top_y), gfx::Point(x, top_y + height),
+                       GetThemeProvider()->GetColor(
+                           ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR));
     } else {
       PaintVerticalDivider(
           canvas, kSeparatorStartX, height(), 1, kEdgeDividerColor,

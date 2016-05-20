@@ -441,6 +441,11 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
       separator_color_cache_[key] = separator_color;
       return separator_color;
     }
+    case ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR: {
+      return SkColorSetA(
+          GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON, incognito),
+          0x4D);
+    }
     case ThemeProperties::COLOR_BACKGROUND_TAB: {
       // The tints here serve a different purpose than TINT_BACKGROUND_TAB.
       // That tint is used to create background tab images for custom themes by
