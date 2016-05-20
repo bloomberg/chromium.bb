@@ -402,8 +402,8 @@ public class StripLayoutHelper {
      * @param title     The new title.
      */
     public void tabTitleChanged(int tabId, String title) {
-        StripLayoutTab tab = findTabById(tabId);
-        if (tab != null) tab.setAccessibilityDescription(title);
+        Tab tab = TabModelUtils.getTabById(mModel, tabId);
+        if (tab != null) setAccessibilityDescription(findTabById(tabId), title, tab.isHidden());
     }
 
     /**
@@ -452,7 +452,8 @@ public class StripLayoutHelper {
      * @param prevId The id of the previously selected tab.
      */
     public void tabSelected(long time, int id, int prevId) {
-        if (findTabById(id) == null) {
+        StripLayoutTab stripTab = findTabById(id);
+        if (stripTab == null) {
             tabCreated(time, id, prevId, true);
         } else {
             updateVisualTabOrdering();
@@ -462,6 +463,10 @@ public class StripLayoutHelper {
             bringSelectedTabToVisibleArea(time, true);
 
             mUpdateHost.requestUpdate();
+
+            setAccessibilityDescription(stripTab, TabModelUtils.getTabById(mModel, id));
+            setAccessibilityDescription(findTabById(prevId),
+                                        TabModelUtils.getTabById(mModel, prevId));
         }
     }
 
@@ -1010,10 +1015,11 @@ public class StripLayoutHelper {
         StripLayoutTab[] tabs = new StripLayoutTab[count];
 
         for (int i = 0; i < count; i++) {
-            int id = mModel.getTabAt(i).getId();
-            StripLayoutTab oldTab = findTabById(id);
+            final Tab tab = mModel.getTabAt(i);
+            final int id = tab.getId();
+            final StripLayoutTab oldTab = findTabById(id);
             tabs[i] = oldTab != null ? oldTab : createStripTab(id);
-            tabs[i].setAccessibilityDescription(mModel.getTabAt(i).getTitle());
+            setAccessibilityDescription(tabs[i], tab);
         }
 
         int oldStripLength = mStripTabs.length;
@@ -1723,5 +1729,39 @@ public class StripLayoutHelper {
     @VisibleForTesting
     float getTabOverlapWidth() {
         return mTabOverlapWidth;
+    }
+
+    private void setAccessibilityDescription(StripLayoutTab stripTab, Tab tab) {
+        if (tab != null) setAccessibilityDescription(stripTab, tab.getTitle(), tab.isHidden());
+    }
+
+    /**
+     * Set the accessibility description of a {@link StripLayoutTab}.
+     * @param stripTab  The StripLayoutTab to set the accessibility description.
+     * @param title     The title of the tab.
+     * @param isHidden  Is the tab hidden?
+     */
+    private void setAccessibilityDescription(StripLayoutTab stripTab, String title,
+            boolean isHidden) {
+        if (stripTab == null) return;
+
+        // Separator used to separate the different parts of the content description.
+        // Not for sentence construction and hence not localized.
+        final String contentDescriptionSeparator = ", ";
+
+        final StringBuilder builder = new StringBuilder(title);
+        builder.append(contentDescriptionSeparator);
+
+        int resId = R.string.accessibility_tabstrip_identifier;
+        if (!isHidden && !mIncognito) {
+            resId = R.string.accessibility_tabstrip_identifier_selected;
+        } else if (!isHidden && mIncognito) {
+            resId = R.string.accessibility_tabstrip_incognito_identifier_selected;
+        } else if (isHidden && mIncognito) {
+            resId = R.string.accessibility_tabstrip_incognito_identifier;
+        }
+        builder.append(mContext.getResources().getString(resId));
+
+        stripTab.setAccessibilityDescription(builder.toString());
     }
 }
