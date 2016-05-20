@@ -5,7 +5,6 @@
 #ifndef NET_NQE_NETWORK_QUALITY_ESTIMATOR_H_
 #define NET_NQE_NETWORK_QUALITY_ESTIMATOR_H_
 
-#include <stddef.h>
 #include <stdint.h>
 
 #include <map>
@@ -36,6 +35,12 @@ class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace net {
+
+namespace nqe {
+namespace internal {
+class ThroughputAnalyzer;
+}
+}
 
 class URLRequest;
 
@@ -121,18 +126,17 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // |external_estimates_provider| may be NULL.
   // |variation_params| is the map containing all field trial parameters for the
   // network quality estimator field trial.
-  // |allow_local_host_requests_for_tests| should only be true when testing
+  // |use_local_host_requests_for_tests| should only be true when testing
   // against local HTTP server and allows the requests to local host to be
   // used for network quality estimation.
-  // |allow_smaller_responses_for_tests| should only be true when testing.
-  // Allows the responses smaller than |kMinTransferSizeInBytes| or shorter than
-  // |kMinRequestDurationMicroseconds| to be used for network quality
-  // estimation.
+  // |use_smaller_responses_for_tests| should only be true when testing.
+  // Allows the responses smaller than |kMinTransferSizeInBits| to be used for
+  // network quality estimation.
   NetworkQualityEstimator(
       std::unique_ptr<ExternalEstimateProvider> external_estimates_provider,
       const std::map<std::string, std::string>& variation_params,
-      bool allow_local_host_requests_for_tests,
-      bool allow_smaller_responses_for_tests);
+      bool use_local_host_requests_for_tests,
+      bool use_smaller_responses_for_tests);
 
   ~NetworkQualityEstimator() override;
 
@@ -161,9 +165,16 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // been received.
   void NotifyHeadersReceived(const URLRequest& request);
 
+  // Notifies NetworkQualityEstimator that the headers of |request| are about to
+  // be sent.
+  void NotifyStartTransaction(const URLRequest& request);
+
   // Notifies NetworkQualityEstimator that the response body of |request| has
   // been received.
   void NotifyRequestCompleted(const URLRequest& request);
+
+  // Notifies NetworkQualityEstimator that |request| will be destroyed.
+  void NotifyURLRequestDestroyed(const URLRequest& request);
 
   // Returns true if median RTT at the HTTP layer is available and sets |rtt|
   // to the median of RTT observations since |start_time|.
@@ -291,14 +302,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   typedef std::map<NetworkID, nqe::internal::CachedNetworkQuality>
       CachedNetworkQualities;
 
-  // Tiny transfer sizes may give inaccurate throughput results.
-  // Minimum size of the transfer over which the throughput is computed.
-  static const int kMinTransferSizeInBytes = 10000;
-
-  // Minimum duration (in microseconds) of the transfer over which the
-  // throughput is computed.
-  static const int kMinRequestDurationMicroseconds = 1000;
-
   // Minimum valid value of the variation parameter that holds RTT (in
   // milliseconds) values.
   static const int kMinimumRTTVariationParameterMsec = 1;
@@ -322,7 +325,12 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   static const base::TimeDelta InvalidRTT();
 
   // Records UMA when there is a change in connection type.
-  void RecordMetricsOnConnectionTypeChanged();
+  void RecordMetricsOnConnectionTypeChanged() const;
+
+  // Records a downstream throughput observation to the observation buffer if
+  // a valid observation is available. |downstream_kbps| is the downstream
+  // throughput in kilobits per second.
+  void OnNewThroughputObservationAvailable(int32_t downstream_kbps);
 
   // Notifies |this| of a new transport layer RTT.
   void OnUpdatedRTTAvailable(SocketPerformanceWatcherFactory::Protocol protocol,
@@ -380,10 +388,8 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   void RecordURLRequestRTTUMA(int32_t estimated_value_msec,
                               int32_t actual_value_msec) const;
 
-  // Returns true only if |request| can be used for network quality estimation.
-  // Only the requests that go over network are considered to provide useful
-  // observations.
-  bool RequestProvidesUsefulObservations(const URLRequest& request) const;
+  // Returns true only if the |request| can be used for RTT estimation.
+  bool RequestProvidesRTTObservation(const URLRequest& request) const;
 
   // Values of external estimate provider status. This enum must remain
   // synchronized with the enum of the same name in
@@ -405,12 +411,12 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
   // Determines if the requests to local host can be used in estimating the
   // network quality. Set to true only for tests.
-  const bool allow_localhost_requests_;
+  const bool use_localhost_requests_;
 
   // Determines if the responses smaller than |kMinTransferSizeInBytes|
   // or shorter than |kMinTransferSizeInBytes| can be used in estimating the
   // network quality. Set to true only for tests.
-  const bool allow_small_responses_;
+  const bool use_small_responses_;
 
   // The factor by which the weight of an observation reduces every second.
   const double weight_multiplier_per_second_;
@@ -464,6 +470,12 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   base::ObserverList<ThroughputObserver> throughput_observer_list_;
 
   std::unique_ptr<SocketPerformanceWatcherFactory> watcher_factory_;
+
+  // Takes throughput measurements, and passes them back to |this| through the
+  // provided callback. |this| stores the throughput observations in
+  // |downstream_throughput_kbps_observations_|, which are later used for
+  // estimating the throughput.
+  std::unique_ptr<nqe::internal::ThroughputAnalyzer> throughput_analyzer_;
 
   base::ThreadChecker thread_checker_;
 

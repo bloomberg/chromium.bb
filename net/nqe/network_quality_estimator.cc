@@ -10,9 +10,11 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_base.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -21,6 +23,7 @@
 #include "net/base/load_timing_info.h"
 #include "net/base/network_interfaces.h"
 #include "net/base/url_util.h"
+#include "net/nqe/throughput_analyzer.h"
 #include "net/socket/socket_performance_watcher.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
@@ -148,6 +151,11 @@ net::NetworkQualityObservationSource ProtocolSourceToObservationSource(
   return net::NETWORK_QUALITY_OBSERVATION_SOURCE_TCP;
 }
 
+// Returns true if the scheme of the |request| is either HTTP or HTTPS.
+bool RequestSchemeIsHTTPOrHTTPS(const net::URLRequest& request) {
+  return request.url().is_valid() && request.url().SchemeIsHTTPOrHTTPS();
+}
+
 }  // namespace
 
 namespace net {
@@ -238,10 +246,10 @@ NetworkQualityEstimator::NetworkQualityEstimator(
 NetworkQualityEstimator::NetworkQualityEstimator(
     std::unique_ptr<ExternalEstimateProvider> external_estimates_provider,
     const std::map<std::string, std::string>& variation_params,
-    bool allow_local_host_requests_for_tests,
-    bool allow_smaller_responses_for_tests)
-    : allow_localhost_requests_(allow_local_host_requests_for_tests),
-      allow_small_responses_(allow_smaller_responses_for_tests),
+    bool use_local_host_requests_for_tests,
+    bool use_smaller_responses_for_tests)
+    : use_localhost_requests_(use_local_host_requests_for_tests),
+      use_small_responses_(use_smaller_responses_for_tests),
       weight_multiplier_per_second_(
           GetWeightMultiplierPerSecond(variation_params)),
       last_connection_change_(base::TimeTicks::Now()),
@@ -252,8 +260,6 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       rtt_observations_(weight_multiplier_per_second_),
       external_estimate_provider_(std::move(external_estimates_provider)),
       weak_ptr_factory_(this) {
-  static_assert(kMinRequestDurationMicroseconds > 0,
-                "Minimum request duration must be > 0");
   static_assert(kDefaultHalfLifeSeconds > 0,
                 "Default half life duration must be > 0");
   static_assert(kMaximumNetworkQualityCacheSize > 0,
@@ -277,6 +283,12 @@ NetworkQualityEstimator::NetworkQualityEstimator(
   }
   current_network_id_ = GetCurrentNetworkID();
   AddDefaultEstimates();
+
+  throughput_analyzer_.reset(new nqe::internal::ThroughputAnalyzer(
+      base::ThreadTaskRunnerHandle::Get(),
+      base::Bind(&NetworkQualityEstimator::OnNewThroughputObservationAvailable,
+                 base::Unretained(this)),
+      use_localhost_requests_, use_smaller_responses_for_tests));
 
   watcher_factory_.reset(new SocketWatcherFactory(
       base::ThreadTaskRunnerHandle::Get(), weak_ptr_factory_.GetWeakPtr()));
@@ -404,13 +416,25 @@ NetworkQualityEstimator::~NetworkQualityEstimator() {
   NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
 }
 
+void NetworkQualityEstimator::NotifyStartTransaction(
+    const URLRequest& request) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!RequestSchemeIsHTTPOrHTTPS(request))
+    return;
+
+  throughput_analyzer_->NotifyStartTransaction(request);
+}
+
 void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("net"),
                "NetworkQualityEstimator::NotifyHeadersReceived");
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!RequestProvidesUsefulObservations(request))
+  if (!RequestSchemeIsHTTPOrHTTPS(request) ||
+      !RequestProvidesRTTObservation(request)) {
     return;
+  }
 
   // Update |estimated_median_network_quality_| if this is a main frame request.
   if (request.load_flags() & LOAD_MAIN_FRAME) {
@@ -471,66 +495,17 @@ void NetworkQualityEstimator::NotifyRequestCompleted(
                "NetworkQualityEstimator::NotifyRequestCompleted");
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (!RequestProvidesUsefulObservations(request))
+  if (!RequestSchemeIsHTTPOrHTTPS(request))
     return;
 
-  base::TimeTicks now = base::TimeTicks::Now();
-  LoadTimingInfo load_timing_info;
-  request.GetLoadTimingInfo(&load_timing_info);
+  throughput_analyzer_->NotifyRequestCompleted(request);
+}
 
-  // If the load timing info is unavailable, it probably means that the request
-  // did not go over the network.
-  if (load_timing_info.send_start.is_null() ||
-      load_timing_info.receive_headers_end.is_null()) {
-    return;
-  }
+void NetworkQualityEstimator::NotifyURLRequestDestroyed(
+    const URLRequest& request) {
+  DCHECK(thread_checker_.CalledOnValidThread());
 
-  // Time since the resource was requested.
-  // TODO(tbansal): Change the start time to receive_headers_end, once we use
-  // NetworkActivityMonitor.
-  base::TimeDelta request_start_to_completed =
-      now - load_timing_info.send_start;
-  DCHECK_GE(request_start_to_completed, base::TimeDelta());
-
-  // Ignore tiny transfers which will not produce accurate rates.
-  // Ignore short duration transfers.
-  // Skip the checks if |allow_small_responses_| is true.
-  if (!allow_small_responses_ &&
-      (request.GetTotalReceivedBytes() < kMinTransferSizeInBytes ||
-       request_start_to_completed < base::TimeDelta::FromMicroseconds(
-                                        kMinRequestDurationMicroseconds))) {
-    return;
-  }
-
-  double downstream_kbps = request.GetTotalReceivedBytes() * 8.0 / 1000.0 /
-                           request_start_to_completed.InSecondsF();
-  DCHECK_GE(downstream_kbps, 0.0);
-
-  // Check overflow errors. This may happen if the downstream_kbps is more than
-  // 2 * 10^9 (= 2000 Gbps).
-  if (downstream_kbps >= std::numeric_limits<int32_t>::max())
-    downstream_kbps = std::numeric_limits<int32_t>::max();
-
-  int32_t downstream_kbps_as_integer = static_cast<int32_t>(downstream_kbps);
-
-  // Round up |downstream_kbps_as_integer|. If the |downstream_kbps_as_integer|
-  // is less than 1, it is set to 1 to differentiate from case when there is no
-  // connection.
-  if (downstream_kbps - downstream_kbps_as_integer > 0)
-    downstream_kbps_as_integer++;
-
-  DCHECK_GT(downstream_kbps_as_integer, 0.0);
-  if (downstream_kbps_as_integer >
-      peak_network_quality_.downstream_throughput_kbps())
-    peak_network_quality_ = nqe::internal::NetworkQuality(
-        peak_network_quality_.rtt(), downstream_kbps_as_integer);
-
-  ThroughputObservation throughput_observation(
-      downstream_kbps_as_integer, now,
-      NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST);
-  downstream_throughput_kbps_observations_.AddObservation(
-      throughput_observation);
-  NotifyObserversOfThroughput(throughput_observation);
+  NotifyRequestCompleted(request);
 }
 
 void NetworkQualityEstimator::AddRTTObserver(RTTObserver* rtt_observer) {
@@ -598,11 +573,11 @@ void NetworkQualityEstimator::RecordURLRequestRTTUMA(
   ratio_median_rtt->Add(ratio);
 }
 
-bool NetworkQualityEstimator::RequestProvidesUsefulObservations(
+bool NetworkQualityEstimator::RequestProvidesRTTObservation(
     const URLRequest& request) const {
-  return request.url().is_valid() &&
-         (allow_localhost_requests_ || !IsLocalhost(request.url().host())) &&
-         request.url().SchemeIsHTTPOrHTTPS() &&
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  return (use_localhost_requests_ || !IsLocalhost(request.url().host())) &&
          // Verify that response headers are received, so it can be ensured that
          // response is not cached.
          !request.response_info().response_time.is_null() &&
@@ -639,9 +614,10 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
   if (!ReadCachedNetworkQualityEstimate())
     AddDefaultEstimates();
   estimated_median_network_quality_ = nqe::internal::NetworkQuality();
+  throughput_analyzer_->OnConnectionTypeChanged();
 }
 
-void NetworkQualityEstimator::RecordMetricsOnConnectionTypeChanged() {
+void NetworkQualityEstimator::RecordMetricsOnConnectionTypeChanged() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (peak_network_quality_.rtt() != nqe::internal::InvalidRTT()) {
     base::HistogramBase* rtt_histogram =
@@ -1104,6 +1080,25 @@ void NetworkQualityEstimator::NotifyObserversOfThroughput(
       ThroughputObserver, throughput_observer_list_,
       OnThroughputObservation(observation.value, observation.timestamp,
                               observation.source));
+}
+
+void NetworkQualityEstimator::OnNewThroughputObservationAvailable(
+    int32_t downstream_kbps) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (downstream_kbps == 0)
+    return;
+
+  if (downstream_kbps > peak_network_quality_.downstream_throughput_kbps()) {
+    peak_network_quality_ = nqe::internal::NetworkQuality(
+        peak_network_quality_.rtt(), downstream_kbps);
+  }
+  ThroughputObservation throughput_observation(
+      downstream_kbps, base::TimeTicks::Now(),
+      NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST);
+  downstream_throughput_kbps_observations_.AddObservation(
+      throughput_observation);
+  NotifyObserversOfThroughput(throughput_observation);
 }
 
 }  // namespace net

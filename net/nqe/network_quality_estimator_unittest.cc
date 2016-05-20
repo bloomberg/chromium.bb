@@ -49,11 +49,21 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
  public:
   TestNetworkQualityEstimator(
       const std::map<std::string, std::string>& variation_params,
-      std::unique_ptr<ExternalEstimateProvider> external_estimate_provider)
+      std::unique_ptr<net::ExternalEstimateProvider> external_estimate_provider)
+      : TestNetworkQualityEstimator(std::move(external_estimate_provider),
+                                    variation_params,
+                                    true,
+                                    true) {}
+
+  TestNetworkQualityEstimator(
+      std::unique_ptr<net::ExternalEstimateProvider> external_estimate_provider,
+      const std::map<std::string, std::string>& variation_params,
+      bool allow_local_host_requests_for_tests,
+      bool allow_smaller_responses_for_tests)
       : NetworkQualityEstimator(std::move(external_estimate_provider),
                                 variation_params,
-                                true,
-                                true),
+                                allow_local_host_requests_for_tests,
+                                allow_smaller_responses_for_tests),
         url_rtt_set_(false),
         downlink_throughput_kbps_set_(false) {
     // Set up embedded test server.
@@ -503,7 +513,7 @@ TEST(NetworkQualityEstimatorTest, ObtainThresholdsRTTandThroughput) {
     NetworkQualityEstimator::EffectiveConnectionType expected_conn_type;
   } tests[] = {
       // Set RTT to a very low value to observe the effect of throughput.
-      // Throughout is the bottleneck.
+      // Throughput is the bottleneck.
       {1, 5, NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_OFFLINE},
       {1, 10, NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_OFFLINE},
       {1, 50, NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_SLOW_2G},
@@ -794,7 +804,8 @@ TEST(NetworkQualityEstimatorTest, TestGetMedianRTTSince) {
 // estimate.
 class InvalidExternalEstimateProvider : public ExternalEstimateProvider {
  public:
-  InvalidExternalEstimateProvider() : get_rtt_count_(0) {}
+  InvalidExternalEstimateProvider()
+      : get_rtt_count_(0), get_downstream_throughput_count_(0) {}
   ~InvalidExternalEstimateProvider() override {}
 
   // ExternalEstimateProvider implementation:
@@ -808,6 +819,7 @@ class InvalidExternalEstimateProvider : public ExternalEstimateProvider {
   bool GetDownstreamThroughputKbps(
       int32_t* downstream_throughput_kbps) const override {
     DCHECK(downstream_throughput_kbps);
+    get_downstream_throughput_count_++;
     return false;
   }
 
@@ -834,9 +846,14 @@ class InvalidExternalEstimateProvider : public ExternalEstimateProvider {
 
   size_t get_rtt_count() const { return get_rtt_count_; }
 
+  size_t get_downstream_throughput_count() const {
+    return get_downstream_throughput_count_;
+  }
+
  private:
   // Keeps track of number of times different functions were called.
   mutable size_t get_rtt_count_;
+  mutable size_t get_downstream_throughput_count_;
 
   DISALLOW_COPY_AND_ASSIGN(InvalidExternalEstimateProvider);
 };
@@ -856,6 +873,9 @@ TEST(NetworkQualityEstimatorTest, InvalidExternalEstimateProvider) {
   base::TimeDelta rtt;
   int32_t kbps;
   EXPECT_EQ(1U, invalid_external_estimate_provider->get_rtt_count());
+  EXPECT_EQ(
+      1U,
+      invalid_external_estimate_provider->get_downstream_throughput_count());
   EXPECT_FALSE(estimator.GetURLRequestRTTEstimate(&rtt));
   EXPECT_FALSE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
   histogram_tester.ExpectTotalCount("NQE.ExternalEstimateProviderStatus", 3);
@@ -1093,6 +1113,52 @@ TEST(NetworkQualityEstimatorTest, TestExternalEstimateProviderMergeEstimates) {
 
   EXPECT_TRUE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
   EXPECT_NE(external_estimate_provider_downstream_throughput, kbps);
+}
+
+// Tests if the throughput observation is taken correctly when local and network
+// requests do not overlap.
+TEST(NetworkQualityEstimatorTest, TestThroughputNoRequestOverlap) {
+  base::HistogramTester histogram_tester;
+  std::map<std::string, std::string> variation_params;
+
+  static const struct {
+    bool allow_small_localhost_requests;
+  } tests[] = {
+      {
+          false,
+      },
+      {
+          true,
+      },
+  };
+
+  for (const auto& test : tests) {
+    TestNetworkQualityEstimator estimator(
+        std::unique_ptr<net::ExternalEstimateProvider>(), variation_params,
+        test.allow_small_localhost_requests,
+        test.allow_small_localhost_requests);
+
+    base::TimeDelta rtt;
+    EXPECT_FALSE(estimator.GetURLRequestRTTEstimate(&rtt));
+    int32_t kbps;
+    EXPECT_FALSE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
+
+    TestDelegate test_delegate;
+    TestURLRequestContext context(true);
+    context.set_network_quality_estimator(&estimator);
+    context.Init();
+
+    std::unique_ptr<URLRequest> request(context.CreateRequest(
+        estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
+    request->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME);
+    request->Start();
+    base::RunLoop().Run();
+
+    EXPECT_EQ(test.allow_small_localhost_requests,
+              estimator.GetURLRequestRTTEstimate(&rtt));
+    EXPECT_EQ(test.allow_small_localhost_requests,
+              estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
+  }
 }
 
 TEST(NetworkQualityEstimatorTest, TestObservers) {
