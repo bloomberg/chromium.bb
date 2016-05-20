@@ -85,6 +85,11 @@ public:
         return s_fontSizePrecisionMultiplier;
     }
 
+    void clearFontSize()
+    {
+        m_fontSize = 0;
+    }
+
 private:
     static unsigned hashTableDeletedSize()
     {

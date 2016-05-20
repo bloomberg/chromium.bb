@@ -35,6 +35,11 @@ const base::Feature kDownloadResumption{"DownloadResumption",
 const base::Feature kDocumentWriteEvaluator{"DocumentWriteEvaluator",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables a blink::FontCache optimization that reuses a font to serve different
+// size of font.
+const base::Feature kFontCacheScaling{"FontCacheScaling",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Can main thread be pipelined with activation. Always disabled for devices
 // with fewer than 4 cores irrespective of this flag. Can also be overridden by
 // --enable(disable)-main-frame-before-activation command line flag.

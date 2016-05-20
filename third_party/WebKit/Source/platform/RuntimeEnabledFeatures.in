@@ -76,6 +76,7 @@ DisplayList2dCanvas status=stable
 DocumentWriteEvaluator
 DOMConvenienceAPI status=experimental
 DurableStorage status=experimental, origin_trial_feature_name=DurableStorage
+FontCacheScaling status=test
 ForceDisplayList2dCanvas
 // See crbug.com/585250.
 ForceDisable2dCanvasCopyOnWrite

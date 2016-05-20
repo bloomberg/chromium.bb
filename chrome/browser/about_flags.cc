@@ -1889,6 +1889,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_OPTIMIZE_LOADING_IPC_FOR_SMALL_RESOURCES_NAME,
      IDS_FLAGS_OPTIMIZE_LOADING_IPC_FOR_SMALL_RESOURCES_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kOptimizeLoadingIPCForSmallResources)},
+    {"enable-font-cache-scaling",
+     IDS_FLAGS_FONT_CACHE_SCALING_NAME,
+     IDS_FLAGS_FONT_CACHE_SCALING_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(features::kFontCacheScaling)},
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in

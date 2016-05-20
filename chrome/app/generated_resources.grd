@@ -14922,6 +14922,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
     <message name="IDS_FLAGS_OPTIMIZE_LOADING_IPC_FOR_SMALL_RESOURCES_DESCRIPTION" desc="Description for the flag to enable improved IPC">
       Enable loading IPC optimization for small resources.
     </message>
+    <message name="IDS_FLAGS_FONT_CACHE_SCALING_NAME" desc="Title for the flag to enable FontCache scaling">
+      FontCache scaling
+    </message>
+    <message name="IDS_FLAGS_FONT_CACHE_SCALING_DESCRIPTION" desc="Description for the flag to enable FontCache scaling">
+      Reuse a cached font in the renderer to serve different sizes of font for faster layout.
+    </message>
     </messages>
   </release>
 </grit>

@@ -173,6 +173,7 @@ private:
 
     // These methods are implemented by each platform.
     PassOwnPtr<FontPlatformData> createFontPlatformData(const FontDescription&, const FontFaceCreationParams&, float fontSize);
+    PassOwnPtr<FontPlatformData> scaleFontPlatformData(const FontPlatformData&, const FontDescription&, const FontFaceCreationParams&, float fontSize);
 
     // Implemented on skia platforms.
     PassRefPtr<SkTypeface> createTypeface(const FontDescription&, const FontFaceCreationParams&, CString& name);
