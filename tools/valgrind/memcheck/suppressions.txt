@@ -552,12 +552,6 @@
    fun:_ZNK5blink24BaseDateAndTimeInputType13sanitizeValueERKN3WTF6StringE
 }
 {
-   bug_418234
-   Memcheck:Uninitialized
-   fun:_ZN10extensions19ExtensionManagement7RefreshEv
-   fun:_ZN10extensions19ExtensionManagement22OnExtensionPrefChangedEv
-}
-{
    bug_464462
    Memcheck:Uninitialized
    fun:_ZN7content14ManifestParser16ParseIconDensityERKN4base15DictionaryValueE
