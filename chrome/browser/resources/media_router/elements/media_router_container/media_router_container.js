@@ -417,15 +417,25 @@ Polymer({
 
     Polymer.RenderStatus.afterNextRender(this, function() {
       // Import the elements that aren't needed at startup. This reduces
-      // initial load time.
+      // initial load time. Delayed loading interferes with getting the
+      // offsetHeight of the first-run-flow element in updateElementPositioning_
+      // though, so we also make sure it is called after the last load.
+      var that = this;
+      var loadsRemaining = 3;
+      var onload = function() {
+        loadsRemaining--;
+        if (loadsRemaining > 0) {
+          return;
+        }
+        that.updateElementPositioning_();
+      };
+      this.importHref('chrome://resources/polymer/v1_0/neon-animation/' +
+          'web-animations.html', onload);
       this.importHref(this.resolveUrl(
-          'chrome://resources/polymer/v1_0/neon-animation/' +
-              'web-animations.html'));
-      this.importHref(this.resolveUrl(
-          '../issue_banner/issue_banner.html'));
+          '../issue_banner/issue_banner.html'), onload);
       this.importHref(this.resolveUrl(
           '../media_router_search_highlighter/' +
-              'media_router_search_highlighter.html'));
+              'media_router_search_highlighter.html'), onload);
 
       // If this is not on a Mac platform, remove the placeholder. See
       // onFocus_() for more details. ready() is only called once, so no need
