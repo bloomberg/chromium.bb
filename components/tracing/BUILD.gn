@@ -51,6 +51,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "child_trace_message_filter_unittest.cc",
     "graphics_memory_dump_provider_android_unittest.cc",
     "process_metrics_memory_dump_provider_unittest.cc",
   ]
@@ -58,6 +59,8 @@ source_set("unit_tests") {
   deps = [
     ":tracing",
     "//base/test:test_support",
+    "//ipc",
+    "//testing/gmock:gmock",
     "//testing/gtest",
   ]
 
