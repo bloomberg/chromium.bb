@@ -484,21 +484,31 @@ DispatchEventResult EventTarget::fireEventListeners(Event* event)
 
     EventListenerVector* listenersVector = d->eventListenerMap.find(event->type());
 
+    bool firedEventListeners = false;
     if (listenersVector) {
-        fireEventListeners(event, d, *listenersVector);
+        firedEventListeners = fireEventListeners(event, d, *listenersVector);
     } else if (legacyListenersVector) {
         AtomicString unprefixedTypeName = event->type();
         event->setType(legacyTypeName);
-        fireEventListeners(event, d, *legacyListenersVector);
+        firedEventListeners = fireEventListeners(event, d, *legacyListenersVector);
         event->setType(unprefixedTypeName);
     }
 
+    // Only invoke the callback if event listeners were fired for this phase.
+    if (firedEventListeners)
+        event->doneDispatchingEventAtCurrentTarget();
+
+    // TODO(dtapuska): Should we really do counting here for these events
+    // if we really didn't fire a listener? For example having a bubbling
+    // listener on an event that doesn't bubble likely records a UMA
+    // metric where it probably shouldn't because it was never fired.
+    // See https://crbug.com/612829
     Editor::countEvent(getExecutionContext(), event);
     countLegacyEvents(legacyTypeName, listenersVector, legacyListenersVector);
     return dispatchEventResult(*event);
 }
 
-void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventListenerVector& entry)
+bool EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventListenerVector& entry)
 {
     // Fire all listeners registered for this event. Don't fire listeners removed
     // during event dispatch. Also, don't fire event listeners added during event
@@ -528,7 +538,7 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
 
     ExecutionContext* context = getExecutionContext();
     if (!context)
-        return;
+        return false;
 
     size_t i = 0;
     size_t size = entry.size();
@@ -543,6 +553,7 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
         now = WTF::monotonicallyIncreasingTime();
         shouldReportBlockedEvent = now - event->platformTimeStamp() > blockedEventThreshold;
     }
+    bool firedListener = false;
 
     while (i < size) {
         RegisteredEventListener& registeredListener = entry[i];
@@ -569,6 +580,7 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
         // To match Mozilla, the AT_TARGET phase fires both capturing and bubbling
         // event listeners, even though that violates some versions of the DOM spec.
         registeredListener.listener()->handleEvent(context, event);
+        firedListener = true;
 
         if (shouldReportBlockedEvent && !registeredListener.passive() && !registeredListener.blockedEventWarningEmitted() && !event->defaultPrevented())
             reportBlockedEvent(context, event, &registeredListener, now - event->platformTimeStamp());
@@ -578,6 +590,7 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
         RELEASE_ASSERT(i <= size);
     }
     d->firingEventIterators->removeLast();
+    return firedListener;
 }
 
 DispatchEventResult EventTarget::dispatchEventResult(const Event& event)

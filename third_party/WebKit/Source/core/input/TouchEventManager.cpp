@@ -50,53 +50,6 @@ const AtomicString& touchEventNameForTouchPointState(PlatformTouchPoint::TouchSt
     }
 }
 
-// These offsets change indicies into the ListenerHistogram
-// enumeration. The addition of a series of offsets then
-// produces the resulting ListenerHistogram value.
-const size_t kTouchTargetHistogramRootScrollerOffset = 4;
-const size_t kTouchTargetHistogramScrollableDocumentOffset = 2;
-const size_t kTouchTargetHistogramHandledOffset = 1;
-
-enum TouchTargetAndDispatchResultType {
-    NonRootScrollerNonScrollableNotHandled, // Non-root-scroller, non-scrollable document, not handled.
-    NonRootScrollerNonScrollableHandled, // Non-root-scroller, non-scrollable document, handled application.
-    NonRootScrollerScrollableDocumentNotHandled, // Non-root-scroller, scrollable document, not handled.
-    NonRootScrollerScrollableDocumentHandled, // Non-root-scroller, scrollable document, handled application.
-    RootScrollerNonScrollableNotHandled, // Root-scroller, non-scrollable document, not handled.
-    RootScrollerNonScrollableHandled, // Root-scroller, non-scrollable document, handled.
-    RootScrollerScrollableDocumentNotHandled, // Root-scroller, scrollable document, not handled.
-    RootScrollerScrollableDocumentHandled, // Root-scroller, scrollable document, handled.
-    TouchTargetAndDispatchResultTypeMax,
-};
-
-TouchTargetAndDispatchResultType toTouchTargetHistogramValue(EventTarget* eventTarget, DispatchEventResult dispatchResult)
-{
-    int result = 0;
-    Document* document = nullptr;
-
-    if (const LocalDOMWindow* domWindow = eventTarget->toLocalDOMWindow()) {
-        // Treat the window as a root scroller as well.
-        document = domWindow->document();
-        result += kTouchTargetHistogramRootScrollerOffset;
-    } else if (Node* node = eventTarget->toNode()) {
-        // Report if the target node is the document or body.
-        if (node->isDocumentNode() || static_cast<Node*>(node->document().documentElement()) == node || static_cast<Node*>(node->document().body()) == node) {
-            result += kTouchTargetHistogramRootScrollerOffset;
-        }
-        document = &node->document();
-    }
-
-    if (document) {
-        FrameView* view = document->view();
-        if (view && view->isScrollable())
-            result += kTouchTargetHistogramScrollableDocumentOffset;
-    }
-
-    if (dispatchResult != DispatchEventResult::NotCanceled)
-        result += kTouchTargetHistogramHandledOffset;
-    return static_cast<TouchTargetAndDispatchResultType>(result);
-}
-
 enum TouchEventDispatchResultType {
     UnhandledTouches, // Unhandled touch events.
     HandledTouches, // Handled touch events.
@@ -230,15 +183,13 @@ WebInputEventResult TouchEventManager::dispatchTouchEvents(
             TouchEvent* touchEvent = TouchEvent::create(
                 touches, touchesByTarget.get(touchEventTarget), changedTouches[state].m_touches.get(),
                 eventName, touchEventTarget->toNode()->document().domWindow(),
-                event.getModifiers(), event.cancelable(), event.causesScrollingIfUncanceled(), event.timestamp());
+                event.getModifiers(), event.cancelable(), event.causesScrollingIfUncanceled(), touchStartOrFirstTouchMove, event.timestamp());
 
             DispatchEventResult domDispatchResult = touchEventTarget->dispatchEvent(touchEvent);
 
             // Only report for top level documents with a single touch on
             // touch-start or the first touch-move.
             if (touchStartOrFirstTouchMove && touchInfos.size() == 1 && event.cancelable() && m_frame->isMainFrame()) {
-                DEFINE_STATIC_LOCAL(EnumerationHistogram, rootDocumentListenerHistogram, ("Event.Touch.TargetAndDispatchResult", TouchTargetAndDispatchResultTypeMax));
-                rootDocumentListenerHistogram.count(toTouchTargetHistogramValue(eventTarget, domDispatchResult));
 
                 // Record the disposition and latency of touch starts and first touch moves before and after the page is fully loaded respectively.
                 int64_t latencyInMicros = static_cast<int64_t>((currentTime() - event.timestamp()) * 1000000.0);

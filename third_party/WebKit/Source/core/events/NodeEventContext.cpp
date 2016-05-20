@@ -50,8 +50,8 @@ DEFINE_TRACE(NodeEventContext)
 
 void NodeEventContext::handleLocalEvents(Event& event) const
 {
-    if (touchEventContext()) {
-        touchEventContext()->handleLocalEvents(event);
+    if (TouchEventContext* touchContext = touchEventContext()) {
+        touchContext->handleLocalEvents(event);
     } else if (relatedTarget()) {
         if (event.isMouseEvent()) {
             toMouseEvent(event).setRelatedTarget(relatedTarget());

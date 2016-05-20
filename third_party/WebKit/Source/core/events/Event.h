@@ -118,6 +118,12 @@ public:
     EventTarget* currentTarget() const;
     void setCurrentTarget(EventTarget* currentTarget) { m_currentTarget = currentTarget; }
 
+    // This callback is invoked when an event listener has been dispatched
+    // at the current target. It should only be used to influence UMA metrics
+    // and not change functionality since observing the presence of listeners
+    // is dangerous.
+    virtual void doneDispatchingEventAtCurrentTarget() {}
+
     unsigned short eventPhase() const { return m_eventPhase; }
     void setEventPhase(unsigned short eventPhase) { m_eventPhase = eventPhase; }
 

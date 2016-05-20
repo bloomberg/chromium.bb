@@ -173,7 +173,7 @@ protected:
 private:
     LocalDOMWindow* executingWindow();
     void setDefaultAddEventListenerOptions(AddEventListenerOptions&);
-    void fireEventListeners(Event*, EventTargetData*, EventListenerVector&);
+    bool fireEventListeners(Event*, EventTargetData*, EventListenerVector&);
     void countLegacyEvents(const AtomicString& legacyTypeName, EventListenerVector*, EventListenerVector*);
 
     bool clearAttributeEventListener(const AtomicString& eventType);
