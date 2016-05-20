@@ -50902,6 +50902,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SimpleCache.KeyMatchedOnOpen" enum="BooleanMatched">
+  <obsolete>
+    Deprecated 2016-05 as the match checking was moved back into the entry
+    itself, so this result is now reported in the SimpleCache.x.SyncOpenResult
+    histograms.
+  </obsolete>
   <owner>gavinp@chromium.org</owner>
   <summary>
     For each call to OpenEntry, whether the key on disk matched the request key.
@@ -51013,6 +51018,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The result, at the synchronous layer, reported when attempting to create a
     new cache entry.
+  </summary>
+</histogram>
+
+<histogram name="SimpleCache.SyncKeySHA256Result"
+    enum="SimpleCacheSyncSHA256Result">
+  <owner>gavinp@chromium.org</owner>
+  <summary>
+    The result of the the key SHA256 check done when opening stream 0 for each
+    entry.
   </summary>
 </histogram>
 
@@ -86420,8 +86434,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Bad Magic Number"/>
   <int value="4" label="Bad Version"/>
   <int value="5" label="Can't Read Key"/>
-  <int value="6" label="Key Mismatch (obsolete)"/>
+  <int value="6" label="Key Mismatch"/>
   <int value="7" label="Hash Mismatch"/>
+</enum>
+
+<enum name="SimpleCacheSyncSHA256Result" type="int">
+  <int value="0" label="Not Present"/>
+  <int value="1" label="Matched"/>
+  <int value="2" label="Did Not Match"/>
 </enum>
 
 <enum name="SimpleCacheSyncWriteResult" type="int">
@@ -90717,6 +90737,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="SimpleCache.SyncCreateResult"/>
   <affected-histogram name="SimpleCache.SyncCreateResult_WithIndex"/>
   <affected-histogram name="SimpleCache.SyncCreateResult_WithoutIndex"/>
+  <affected-histogram name="SimpleCache.SyncKeySHA256Result"/>
   <affected-histogram name="SimpleCache.SyncOpenEntryAge"/>
   <affected-histogram name="SimpleCache.SyncOpenPlatformFileError"/>
   <affected-histogram name="SimpleCache.SyncOpenPlatformFileError_WithIndex"/>

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <string>
 
 #include "base/logging.h"
 #include "net/disk_cache/simple/simple_util.h"
@@ -12,8 +13,8 @@ using disk_cache::simple_util::ConvertEntryHashKeyToHexString;
 using disk_cache::simple_util::GetEntryHashKeyAsHexString;
 using disk_cache::simple_util::GetEntryHashKeyFromHexString;
 using disk_cache::simple_util::GetEntryHashKey;
-using disk_cache::simple_util::GetFileSizeFromKeyAndDataSize;
-using disk_cache::simple_util::GetDataSizeFromKeyAndFileSize;
+using disk_cache::simple_util::GetFileSizeFromDataSize;
+using disk_cache::simple_util::GetDataSizeFromFileSize;
 
 class SimpleUtilTest : public testing::Test {};
 
@@ -70,8 +71,8 @@ TEST_F(SimpleUtilTest, GetEntryHashKeyFromHexString) {
 }
 
 TEST_F(SimpleUtilTest, SizesAndOffsets) {
-  const char key[] = "This is an example key";
+  const std::string key("This is an example key");
   const int data_size = 1000;
-  const int file_size = GetFileSizeFromKeyAndDataSize(key, data_size);
-  EXPECT_EQ(data_size, GetDataSizeFromKeyAndFileSize(key, file_size));
+  const int file_size = GetFileSizeFromDataSize(key.size(), data_size);
+  EXPECT_EQ(data_size, GetDataSizeFromFileSize(key.size(), file_size));
 }

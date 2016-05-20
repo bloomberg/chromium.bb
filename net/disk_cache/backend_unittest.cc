@@ -33,6 +33,7 @@
 #include "net/disk_cache/simple/simple_backend_impl.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_index.h"
+#include "net/disk_cache/simple/simple_synchronous_entry.h"
 #include "net/disk_cache/simple/simple_test_util.h"
 #include "net/disk_cache/simple/simple_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -253,16 +254,19 @@ void DiskCacheBackendTest::InitSparseCache(base::Time* doomed_start,
 bool DiskCacheBackendTest::CreateSetOfRandomEntries(
     std::set<std::string>* key_pool) {
   const int kNumEntries = 10;
+  const int initial_entry_count = cache_->GetEntryCount();
 
   for (int i = 0; i < kNumEntries; ++i) {
     std::string key = GenerateKey(true);
     disk_cache::Entry* entry;
-    if (CreateEntry(key, &entry) != net::OK)
+    if (CreateEntry(key, &entry) != net::OK) {
       return false;
+    }
     key_pool->insert(key);
     entry->Close();
   }
-  return key_pool->size() == static_cast<size_t>(cache_->GetEntryCount());
+  return key_pool->size() ==
+         static_cast<size_t>(cache_->GetEntryCount() - initial_entry_count);
 }
 
 // Performs iteration over the backend and checks that the keys of entries
@@ -3688,9 +3692,6 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationWhileDoomed) {
 TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationCorruption) {
   SetSimpleCacheMode();
   InitCache();
-  std::set<std::string> key_pool;
-  ASSERT_TRUE(CreateSetOfRandomEntries(&key_pool));
-
   // Create a corrupt entry. The write/read sequence ensures that the entry will
   // have been created before corrupting the platform files, in the case of
   // optimistic operations.
@@ -3706,6 +3707,9 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationCorruption) {
             WriteData(corrupted_entry, 0, 0, buffer.get(), kSize, false));
   ASSERT_EQ(kSize, ReadData(corrupted_entry, 0, 0, buffer.get(), kSize));
   corrupted_entry->Close();
+
+  std::set<std::string> key_pool;
+  ASSERT_TRUE(CreateSetOfRandomEntries(&key_pool));
 
   EXPECT_TRUE(disk_cache::simple_util::CreateCorruptFileForTests(
       key, cache_path_));
@@ -3738,6 +3742,27 @@ TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationDestruction) {
 
   cache_.reset();
   // This test passes if we don't leak memory.
+}
+
+// Tests that enumerations include entries with long keys.
+TEST_F(DiskCacheBackendTest, SimpleCacheEnumerationLongKeys) {
+  SetSimpleCacheMode();
+  InitCache();
+  std::set<std::string> key_pool;
+  ASSERT_TRUE(CreateSetOfRandomEntries(&key_pool));
+
+  const size_t long_key_length =
+      disk_cache::SimpleSynchronousEntry::kInitialHeaderRead + 10;
+  std::string long_key(long_key_length, 'X');
+  key_pool.insert(long_key);
+  disk_cache::Entry* entry = NULL;
+  ASSERT_EQ(net::OK, CreateEntry(long_key.c_str(), &entry));
+  entry->Close();
+
+  std::unique_ptr<TestIterator> iter = CreateIterator();
+  size_t count = 0;
+  EXPECT_TRUE(EnumerateAndMatchKeys(-1, iter.get(), &key_pool, &count));
+  EXPECT_TRUE(key_pool.empty());
 }
 
 // Tests that a SimpleCache doesn't crash when files are deleted very quickly

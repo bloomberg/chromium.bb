@@ -696,19 +696,13 @@ void SimpleEntryImpl::OpenEntryInternal(bool have_index,
   std::unique_ptr<SimpleEntryCreationResults> results(
       new SimpleEntryCreationResults(SimpleEntryStat(
           last_used_, last_modified_, data_size_, sparse_data_size_)));
-  Closure task = base::Bind(&SimpleSynchronousEntry::OpenEntry,
-                            cache_type_,
-                            path_,
-                            entry_hash_,
-                            have_index,
-                            results.get());
-  Closure reply = base::Bind(&SimpleEntryImpl::CreationOperationComplete,
-                             this,
-                             callback,
-                             start_time,
-                             base::Passed(&results),
-                             out_entry,
-                             net::NetLog::TYPE_SIMPLE_CACHE_ENTRY_OPEN_END);
+  Closure task =
+      base::Bind(&SimpleSynchronousEntry::OpenEntry, cache_type_, path_, key_,
+                 entry_hash_, have_index, results.get());
+  Closure reply =
+      base::Bind(&SimpleEntryImpl::CreationOperationComplete, this, callback,
+                 start_time, base::Passed(&results), out_entry,
+                 net::NetLog::TYPE_SIMPLE_CACHE_ENTRY_OPEN_END);
   worker_pool_->PostTaskAndReply(FROM_HERE, task, reply);
 }
 
@@ -1147,11 +1141,14 @@ void SimpleEntryImpl::CreationOperationComplete(
     crc32s_[0] = in_results->stream_0_crc32;
     crc32s_end_offset_[0] = in_results->entry_stat.data_size(0);
   }
+  // If this entry was opened by hash, key_ could still be empty. If so, update
+  // it with the key read from the synchronous entry.
   if (key_.empty()) {
     SetKey(synchronous_entry_->key());
   } else {
-    // This should only be triggered when creating an entry. The key check in
-    // the open case is handled in SimpleBackendImpl.
+    // This should only be triggered when creating an entry. In the open case
+    // the key is either copied from the arguments to open, or checked
+    // in the synchronous entry.
     DCHECK_EQ(key_, synchronous_entry_->key());
   }
   UpdateDataFromEntryStat(in_results->entry_stat);
@@ -1403,7 +1400,7 @@ int64_t SimpleEntryImpl::GetDiskUsage() const {
   int64_t file_size = 0;
   for (int i = 0; i < kSimpleEntryStreamCount; ++i) {
     file_size +=
-        simple_util::GetFileSizeFromKeyAndDataSize(key_, data_size_[i]);
+        simple_util::GetFileSizeFromDataSize(key_.size(), data_size_[i]);
   }
   file_size += sparse_data_size_;
   return file_size;

@@ -43,6 +43,14 @@ class ImmutableArray {
 bool CreateCorruptFileForTests(const std::string& key,
                                const base::FilePath& cache_path);
 
+// Removes the key SHA256 from an entry.
+bool RemoveKeySHA256FromEntry(const std::string& key,
+                              const base::FilePath& cache_path);
+
+// Modifies the key SHA256 from an entry so that it is corrupt.
+bool CorruptKeySHA256FromEntry(const std::string& key,
+                               const base::FilePath& cache_path);
+
 }  // namespace simple_backend
 }  // namespace disk_cache
 

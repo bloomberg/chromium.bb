@@ -53,15 +53,19 @@ std::string GetFilenameFromEntryHashAndFileIndex(uint64_t entry_hash,
 // Given a |key| for an entry, returns the name of the sparse data file.
 std::string GetSparseFilenameFromEntryHash(uint64_t entry_hash);
 
+// Given the size of a key, the size in bytes of the header at the beginning
+// of a simple cache file.
+size_t GetHeaderSize(size_t key_length);
+
 // Given the size of a file holding a stream in the simple backend and the key
 // to an entry, returns the number of bytes in the stream.
-NET_EXPORT_PRIVATE int32_t GetDataSizeFromKeyAndFileSize(const std::string& key,
-                                                         int64_t file_size);
+NET_EXPORT_PRIVATE int32_t GetDataSizeFromFileSize(size_t key_length,
+                                                   int64_t file_size);
 
 // Given the size of a stream in the simple backend and the key to an entry,
 // returns the number of bytes in the file.
-NET_EXPORT_PRIVATE int64_t GetFileSizeFromKeyAndDataSize(const std::string& key,
-                                                         int32_t data_size);
+NET_EXPORT_PRIVATE int64_t GetFileSizeFromDataSize(size_t key_length,
+                                                   int32_t data_size);
 
 // Given the stream index, returns the number of the file the stream is stored
 // in.

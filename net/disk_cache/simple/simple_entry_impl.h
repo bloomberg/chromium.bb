@@ -79,6 +79,11 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
 
   const std::string& key() const { return key_; }
   uint64_t entry_hash() const { return entry_hash_; }
+
+  // The key is not a constructor parameter to the SimpleEntryImpl, because
+  // during cache iteration, it's necessary to open entries by their hash
+  // alone. In that case, the SimpleSynchronousEntry will read the key from disk
+  // and it will be set.
   void SetKey(const std::string& key);
 
   // From Entry:

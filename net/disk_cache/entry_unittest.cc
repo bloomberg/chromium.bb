@@ -9,6 +9,7 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
@@ -21,6 +22,7 @@
 #include "net/disk_cache/disk_cache_test_base.h"
 #include "net/disk_cache/disk_cache_test_util.h"
 #include "net/disk_cache/memory/mem_entry_impl.h"
+#include "net/disk_cache/simple/simple_backend_impl.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_entry_impl.h"
 #include "net/disk_cache/simple/simple_synchronous_entry.h"
@@ -2708,7 +2710,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheNoEOF) {
   SetSimpleCacheMode();
   InitCache();
 
-  const char key[] = "the first key";
+  const std::string key("the first key");
 
   disk_cache::Entry* entry = NULL;
   ASSERT_EQ(net::OK, CreateEntry(key, &entry));
@@ -2728,9 +2730,8 @@ TEST_F(DiskCacheEntryTest, SimpleCacheNoEOF) {
   int kTruncationBytes = -static_cast<int>(sizeof(disk_cache::SimpleFileEOF));
   const base::FilePath entry_path = cache_path_.AppendASCII(
       disk_cache::simple_util::GetFilenameFromKeyAndFileIndex(key, 0));
-  const int64_t invalid_size =
-      disk_cache::simple_util::GetFileSizeFromKeyAndDataSize(key,
-                                                             kTruncationBytes);
+  const int64_t invalid_size = disk_cache::simple_util::GetFileSizeFromDataSize(
+      key.size(), kTruncationBytes);
   EXPECT_TRUE(TruncatePath(entry_path, invalid_size));
   EXPECT_EQ(net::ERR_FAILED, OpenEntry(key, &entry));
   DisableIntegrityCheck();
@@ -3688,7 +3689,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheStream1SizeChanges) {
   SetSimpleCacheMode();
   InitCache();
   disk_cache::Entry* entry = NULL;
-  const char key[] = "the key";
+  const std::string key("the key");
   const int kSize = 100;
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kSize));
   scoped_refptr<net::IOBuffer> buffer_read(new net::IOBuffer(kSize));
@@ -3726,7 +3727,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheStream1SizeChanges) {
   int sparse_data_size = 0;
   disk_cache::SimpleEntryStat entry_stat(
       base::Time::Now(), base::Time::Now(), data_size, sparse_data_size);
-  int eof_offset = entry_stat.GetEOFOffsetInFile(key, 0);
+  int eof_offset = entry_stat.GetEOFOffsetInFile(key.size(), 0);
   disk_cache::SimpleFileEOF eof_record;
   ASSERT_EQ(static_cast<int>(sizeof(eof_record)),
             entry_file0.Read(eof_offset, reinterpret_cast<char*>(&eof_record),
@@ -4164,4 +4165,76 @@ TEST_F(DiskCacheEntryTest, SimpleCacheTruncateLargeSparseFile) {
   EXPECT_EQ(kSize, callback.GetResult(ret));
 
   entry->Close();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheReadWithoutKeySHA256) {
+  // This test runs as APP_CACHE to make operations more synchronous.
+  SetCacheType(net::APP_CACHE);
+  SetSimpleCacheMode();
+  InitCache();
+  disk_cache::Entry* entry;
+  std::string key("a key");
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry));
+
+  const std::string stream_0_data = "data for stream zero";
+  scoped_refptr<net::IOBuffer> stream_0_iobuffer(
+      new net::StringIOBuffer(stream_0_data));
+  EXPECT_EQ(static_cast<int>(stream_0_data.size()),
+            WriteData(entry, 0, 0, stream_0_iobuffer.get(),
+                      stream_0_data.size(), false));
+  const std::string stream_1_data = "FOR STREAM ONE, QUITE DIFFERENT THINGS";
+  scoped_refptr<net::IOBuffer> stream_1_iobuffer(
+      new net::StringIOBuffer(stream_1_data));
+  EXPECT_EQ(static_cast<int>(stream_1_data.size()),
+            WriteData(entry, 1, 0, stream_1_iobuffer.get(),
+                      stream_1_data.size(), false));
+  entry->Close();
+
+  base::RunLoop().RunUntilIdle();
+  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(
+      disk_cache::simple_util::RemoveKeySHA256FromEntry(key, cache_path_));
+  ASSERT_EQ(net::OK, OpenEntry(key, &entry));
+  ScopedEntryPtr entry_closer(entry);
+
+  EXPECT_EQ(static_cast<int>(stream_0_data.size()), entry->GetDataSize(0));
+  scoped_refptr<net::IOBuffer> check_stream_0_data(
+      new net::IOBuffer(stream_0_data.size()));
+  EXPECT_EQ(
+      static_cast<int>(stream_0_data.size()),
+      ReadData(entry, 0, 0, check_stream_0_data.get(), stream_0_data.size()));
+  EXPECT_EQ(0, stream_0_data.compare(0, std::string::npos,
+                                     check_stream_0_data->data(),
+                                     stream_0_data.size()));
+
+  EXPECT_EQ(static_cast<int>(stream_1_data.size()), entry->GetDataSize(1));
+  scoped_refptr<net::IOBuffer> check_stream_1_data(
+      new net::IOBuffer(stream_1_data.size()));
+  EXPECT_EQ(
+      static_cast<int>(stream_1_data.size()),
+      ReadData(entry, 1, 0, check_stream_1_data.get(), stream_1_data.size()));
+  EXPECT_EQ(0, stream_1_data.compare(0, std::string::npos,
+                                     check_stream_1_data->data(),
+                                     stream_1_data.size()));
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheReadCorruptKeySHA256) {
+  // This test runs as APP_CACHE to make operations more synchronous.
+  SetCacheType(net::APP_CACHE);
+  SetSimpleCacheMode();
+  InitCache();
+  disk_cache::Entry* entry;
+  std::string key("a key");
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry));
+  entry->Close();
+
+  base::RunLoop().RunUntilIdle();
+  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(
+      disk_cache::simple_util::CorruptKeySHA256FromEntry(key, cache_path_));
+  EXPECT_NE(net::OK, OpenEntry(key, &entry));
 }

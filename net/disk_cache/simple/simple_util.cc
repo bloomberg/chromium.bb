@@ -97,17 +97,19 @@ std::string GetFilenameFromKeyAndFileIndex(const std::string& key,
          base::StringPrintf("_%1d", file_index);
 }
 
-int32_t GetDataSizeFromKeyAndFileSize(const std::string& key,
-                                      int64_t file_size) {
+size_t GetHeaderSize(size_t key_length) {
+  return sizeof(SimpleFileHeader) + key_length;
+}
+
+int32_t GetDataSizeFromFileSize(size_t key_length, int64_t file_size) {
   int64_t data_size =
-      file_size - key.size() - sizeof(SimpleFileHeader) - sizeof(SimpleFileEOF);
+      file_size - key_length - sizeof(SimpleFileHeader) - sizeof(SimpleFileEOF);
   return base::checked_cast<int32_t>(data_size);
 }
 
-int64_t GetFileSizeFromKeyAndDataSize(const std::string& key,
-                                      int32_t data_size) {
-  return data_size + key.size() + sizeof(SimpleFileHeader) +
-      sizeof(SimpleFileEOF);
+int64_t GetFileSizeFromDataSize(size_t key_length, int32_t data_size) {
+  return data_size + key_length + sizeof(SimpleFileHeader) +
+         sizeof(SimpleFileEOF);
 }
 
 int GetFileIndexFromStreamIndex(int stream_index) {

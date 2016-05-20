@@ -390,14 +390,7 @@ int SimpleBackendImpl::OpenEntry(const std::string& key,
   }
   scoped_refptr<SimpleEntryImpl> simple_entry =
       CreateOrFindActiveEntry(entry_hash, key);
-  CompletionCallback backend_callback =
-      base::Bind(&SimpleBackendImpl::OnEntryOpenedFromKey,
-                 AsWeakPtr(),
-                 key,
-                 entry,
-                 simple_entry,
-                 callback);
-  return simple_entry->OpenEntry(entry, backend_callback);
+  return simple_entry->OpenEntry(entry, callback);
 }
 
 int SimpleBackendImpl::CreateEntry(const std::string& key,
@@ -711,29 +704,6 @@ void SimpleBackendImpl::OnEntryOpenedFromHash(
     simple_entry->Close();
     it->second->OpenEntry(entry, callback);
   }
-}
-
-void SimpleBackendImpl::OnEntryOpenedFromKey(
-    const std::string key,
-    Entry** entry,
-    const scoped_refptr<SimpleEntryImpl>& simple_entry,
-    const CompletionCallback& callback,
-    int error_code) {
-  int final_code = error_code;
-  if (final_code == net::OK) {
-    bool key_matches = key.compare(simple_entry->key()) == 0;
-    if (!key_matches) {
-      // TODO(clamy): Add a unit test to check this code path.
-      DLOG(WARNING) << "Key mismatch on open.";
-      simple_entry->Doom();
-      simple_entry->Close();
-      final_code = net::ERR_FAILED;
-    } else {
-      DCHECK_EQ(simple_entry->entry_hash(), simple_util::GetEntryHashKey(key));
-    }
-    SIMPLE_CACHE_UMA(BOOLEAN, "KeyMatchedOnOpen", cache_type_, key_matches);
-  }
-  callback.Run(final_code);
 }
 
 void SimpleBackendImpl::DoomEntriesComplete(
