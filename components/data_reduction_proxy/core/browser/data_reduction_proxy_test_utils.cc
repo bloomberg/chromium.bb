@@ -12,7 +12,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
@@ -27,6 +27,9 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "net/proxy/proxy_config.h"
+#include "net/proxy/proxy_info.h"
+#include "net/proxy/proxy_list.h"
 #include "net/socket/socket_test_util.h"
 #include "net/url_request/url_request_context_storage.h"
 #include "net/url_request/url_request_intercepting_job_factory.h"
@@ -280,7 +283,6 @@ DataReductionProxyTestContext::Builder::Builder()
       request_context_(nullptr),
       mock_socket_factory_(nullptr),
       use_mock_config_(false),
-      use_test_configurator_(false),
       use_mock_service_(false),
       use_mock_request_options_(false),
       use_config_client_(false),
@@ -323,12 +325,6 @@ DataReductionProxyTestContext::Builder::WithClient(Client client) {
 DataReductionProxyTestContext::Builder&
 DataReductionProxyTestContext::Builder::WithMockConfig() {
   use_mock_config_ = true;
-  return *this;
-}
-
-DataReductionProxyTestContext::Builder&
-DataReductionProxyTestContext::Builder::WithTestConfigurator() {
-  use_test_configurator_ = true;
   return *this;
 }
 
@@ -394,15 +390,8 @@ DataReductionProxyTestContext::Builder::Build() {
       new TestDataReductionProxyEventStorageDelegate());
   std::unique_ptr<DataReductionProxyEventCreator> event_creator(
       new DataReductionProxyEventCreator(storage_delegate.get()));
-  std::unique_ptr<DataReductionProxyConfigurator> configurator;
-  if (use_test_configurator_) {
-    test_context_flags |= USE_TEST_CONFIGURATOR;
-    configurator.reset(new TestDataReductionProxyConfigurator(
-        net_log.get(), event_creator.get()));
-  } else {
-    configurator.reset(
-        new DataReductionProxyConfigurator(net_log.get(), event_creator.get()));
-  }
+  std::unique_ptr<DataReductionProxyConfigurator> configurator(
+      new DataReductionProxyConfigurator(net_log.get(), event_creator.get()));
 
   std::unique_ptr<TestDataReductionProxyConfig> config;
   std::unique_ptr<DataReductionProxyConfigServiceClient> config_client;
@@ -611,9 +600,6 @@ void DataReductionProxyTestContext::AttachToURLRequestContext(
 void DataReductionProxyTestContext::
     EnableDataReductionProxyWithSecureProxyCheckSuccess() {
   DCHECK(mock_socket_factory_);
-  // This won't actually update the proxy config when using a test configurator.
-  DCHECK(!(test_context_flags_ &
-           DataReductionProxyTestContext::USE_TEST_CONFIGURATOR));
   // |settings_| needs to have been initialized, since a
   // |DataReductionProxyService| is needed in order to issue the secure proxy
   // check.
@@ -633,14 +619,6 @@ void DataReductionProxyTestContext::
   // Set the pref to cause the secure proxy check to be issued.
   pref_service()->SetBoolean(kDataReductionProxyEnabled, true);
   RunUntilIdle();
-}
-
-TestDataReductionProxyConfigurator*
-DataReductionProxyTestContext::test_configurator() const {
-  DCHECK(test_context_flags_ &
-         DataReductionProxyTestContext::USE_TEST_CONFIGURATOR);
-  return reinterpret_cast<TestDataReductionProxyConfigurator*>(
-      io_data_->configurator());
 }
 
 MockDataReductionProxyConfig* DataReductionProxyTestContext::mock_config()
@@ -707,6 +685,23 @@ DataReductionProxyTestContext::TestConfigStorer::TestConfigStorer(
 void DataReductionProxyTestContext::TestConfigStorer::StoreSerializedConfig(
     const std::string& serialized_config) {
   prefs_->SetString(prefs::kDataReductionProxyConfig, serialized_config);
+}
+
+std::vector<net::ProxyServer>
+DataReductionProxyTestContext::GetConfiguredProxiesForHttp() const {
+  const GURL kHttpUrl("http://test_http_url.net");
+  // The test URL shouldn't match any of the bypass rules in the proxy rules.
+  DCHECK(!configurator()->GetProxyConfig().proxy_rules().bypass_rules.Matches(
+      kHttpUrl));
+
+  net::ProxyInfo proxy_info;
+  configurator()->GetProxyConfig().proxy_rules().Apply(kHttpUrl, &proxy_info);
+
+  std::vector<net::ProxyServer> proxies_without_direct;
+  for (const net::ProxyServer& proxy : proxy_info.proxy_list().GetAll())
+    if (proxy.is_valid() && !proxy.is_direct())
+      proxies_without_direct.push_back(proxy);
+  return proxies_without_direct;
 }
 
 }  // namespace data_reduction_proxy

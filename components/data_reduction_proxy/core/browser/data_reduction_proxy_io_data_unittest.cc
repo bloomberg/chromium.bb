@@ -153,7 +153,6 @@ TEST_F(DataReductionProxyIODataTest, TestResetBadProxyListOnDisableDataSaver) {
                            DataReductionProxyParams::kFallbackAllowed |
                            DataReductionProxyParams::kPromoAllowed)
           .WithURLRequestContext(&context)
-          .WithTestConfigurator()
           .SkipSettingsInitialization()
           .Build();
 

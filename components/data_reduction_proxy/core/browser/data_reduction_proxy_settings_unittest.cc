@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/md5.h"
@@ -17,7 +19,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -25,6 +26,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "net/proxy/proxy_server.h"
 #include "net/socket/socket_test_util.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -156,6 +158,14 @@ TEST_F(DataReductionProxySettingsTest, TestContentLengths) {
 }
 
 TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndSecureProxyCheck) {
+  const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
+      "https://secure_origin.net:443", net::ProxyServer::SCHEME_HTTP);
+  const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
+      "insecure_origin.net:80", net::ProxyServer::SCHEME_HTTP);
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      data_reduction_proxy::switches::kDataReductionProxyHttpProxies,
+      kHttpsProxy.ToURI() + ";" + kHttpProxy.ToURI());
+
   base::MessageLoopForIO message_loop;
   struct TestCase {
     const char* response_headers;
@@ -188,7 +198,6 @@ TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndSecureProxyCheck) {
     std::unique_ptr<DataReductionProxyTestContext> drp_test_context =
         DataReductionProxyTestContext::Builder()
             .WithURLRequestContext(&context)
-            .WithTestConfigurator()
             .SkipSettingsInitialization()
             .Build();
 
@@ -214,8 +223,13 @@ TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndSecureProxyCheck) {
     drp_test_context->SetDataReductionProxyEnabled(true);
     drp_test_context->RunUntilIdle();
 
-    EXPECT_EQ(test_case.expected_restricted,
-              drp_test_context->test_configurator()->restricted());
+    if (test_case.expected_restricted) {
+      EXPECT_EQ(std::vector<net::ProxyServer>(1, kHttpProxy),
+                drp_test_context->GetConfiguredProxiesForHttp());
+    } else {
+      EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy, kHttpProxy}),
+                drp_test_context->GetConfiguredProxiesForHttp());
+    }
   }
 }
 
@@ -224,7 +238,6 @@ TEST(DataReductionProxySettingsStandaloneTest, TestOnProxyEnabledPrefChange) {
   std::unique_ptr<DataReductionProxyTestContext> drp_test_context =
       DataReductionProxyTestContext::Builder()
           .WithMockConfig()
-          .WithTestConfigurator()
           .WithMockDataReductionProxyService()
           .SkipSettingsInitialization()
           .Build();

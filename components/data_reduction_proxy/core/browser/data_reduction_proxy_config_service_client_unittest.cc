@@ -20,7 +20,7 @@
 #include "base/test/mock_entropy_provider.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_client_config_parser.h"
@@ -133,7 +133,6 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
             .WithParamsDefinitions(TestDataReductionProxyParams::HAS_EVERYTHING)
             .WithURLRequestContext(context_.get())
             .WithMockClientSocketFactory(mock_socket_factory_.get())
-            .WithTestConfigurator()
             .WithMockRequestOptions()
             .WithTestConfigClient()
             .SkipSettingsInitialization()
@@ -159,8 +158,6 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     ResetBackoffEntryReleaseTime();
     test_context_->test_config_client()->SetNow(base::Time::UnixEpoch());
     test_context_->test_config_client()->SetEnabled(true);
-    enabled_proxies_for_http_ =
-        test_context_->test_params()->proxies_for_http();
     test_context_->test_config_client()->SetConfigServiceURL(
         GURL("http://configservice.com"));
 
@@ -215,11 +212,9 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     }
     expected_http_proxies.push_back(net::ProxyServer::FromURI(
         kSuccessFallback, net::ProxyServer::SCHEME_HTTP));
-    expected_http_proxies.push_back(net::ProxyServer::Direct());
     EXPECT_EQ(base::TimeDelta::FromSeconds(kConfigRefreshDurationSeconds),
               config_client()->GetDelay());
-    EXPECT_THAT(configurator()->proxies_for_http(),
-                testing::ContainerEq(expected_http_proxies));
+    EXPECT_EQ(expected_http_proxies, GetConfiguredProxiesForHttp());
     EXPECT_EQ(kSuccessSessionKey, request_options()->GetSecureSession());
     // The config should be persisted on the pref.
     EXPECT_EQ(encoded_config(), persisted_config());
@@ -231,11 +226,9 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
         kOldSuccessOrigin, net::ProxyServer::SCHEME_HTTP));
     expected_http_proxies.push_back(net::ProxyServer::FromURI(
         kOldSuccessFallback, net::ProxyServer::SCHEME_HTTP));
-    expected_http_proxies.push_back(net::ProxyServer::Direct());
     EXPECT_EQ(base::TimeDelta::FromSeconds(kConfigRefreshDurationSeconds),
               config_client()->GetDelay());
-    EXPECT_THAT(configurator()->proxies_for_http(),
-                testing::ContainerEq(expected_http_proxies));
+    EXPECT_EQ(expected_http_proxies, GetConfiguredProxiesForHttp());
     EXPECT_EQ(kOldSuccessSessionKey, request_options()->GetSecureSession());
   }
 
@@ -247,9 +240,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     }
     expected_http_proxies.push_back(net::ProxyServer::FromURI(
         kPersistedFallback, net::ProxyServer::SCHEME_HTTP));
-    expected_http_proxies.push_back(net::ProxyServer::Direct());
-    EXPECT_THAT(configurator()->proxies_for_http(),
-                testing::ContainerEq(expected_http_proxies));
+    EXPECT_EQ(expected_http_proxies, GetConfiguredProxiesForHttp());
     EXPECT_EQ(kPersistedSessionKey, request_options()->GetSecureSession());
   }
 
@@ -257,8 +248,8 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     return test_context_->test_config_client();
   }
 
-  TestDataReductionProxyConfigurator* configurator() {
-    return test_context_->test_configurator();
+  DataReductionProxyConfigurator* configurator() {
+    return test_context_->configurator();
   }
 
   TestDataReductionProxyConfig* config() { return test_context_->config(); }
@@ -267,8 +258,8 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     return test_context_->mock_request_options();
   }
 
-  const std::vector<net::ProxyServer>& enabled_proxies_for_http() const {
-    return enabled_proxies_for_http_;
+  std::vector<net::ProxyServer> GetConfiguredProxiesForHttp() const {
+    return test_context_->GetConfiguredProxiesForHttp();
   }
 
   void RunUntilIdle() {
@@ -347,20 +338,16 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
               config_client()->GetDelay());
 
     // Verify that the proxies were set properly.
-    std::vector<net::ProxyServer> proxies_for_http =
-        configurator()->proxies_for_http();
-
-    EXPECT_EQ(3U, proxies_for_http.size());
-
-    EXPECT_EQ(net::ProxyServer(
-                  expected_primary_proxy_scheme,
-                  net::ProxyServer::FromURI(expected_primary_proxy,
-                                            expected_primary_proxy_scheme)
-                      .host_port_pair()),
-              proxies_for_http[0]);
-    EXPECT_EQ(net::ProxyServer::FromURI(expected_fallback_proxy,
-                                        net::ProxyServer::SCHEME_HTTP),
-              proxies_for_http[1]);
+    const net::ProxyServer expected_primary_proxy_server(
+        expected_primary_proxy_scheme,
+        net::ProxyServer::FromURI(expected_primary_proxy,
+                                  expected_primary_proxy_scheme)
+            .host_port_pair());
+    EXPECT_EQ(std::vector<net::ProxyServer>(
+                  {expected_primary_proxy_server,
+                   net::ProxyServer::FromURI(expected_fallback_proxy,
+                                             net::ProxyServer::SCHEME_HTTP)}),
+              GetConfiguredProxiesForHttp());
 
     // Test that the trusted SPDY proxy is updated correctly after each config
     // retrieval. Currently, only the HTTPS proxies are marked as trusted.
@@ -368,15 +355,8 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
         expected_primary_proxy_scheme == net::ProxyServer::SCHEME_HTTPS &&
         enable_trusted_spdy_proxy_field_trial;
 
-    // Apply the specified proxy scheme.
-    const net::ProxyServer proxy_server(
-        expected_primary_proxy_scheme,
-        net::ProxyServer::FromURI(expected_primary_proxy,
-                                  net::ProxyServer::SCHEME_HTTP)
-            .host_port_pair());
-
-    ASSERT_EQ(expected_primary_proxy_scheme, proxy_server.scheme());
-    EXPECT_EQ(expect_proxy_is_trusted, IsTrustedSpdyProxy(proxy_server));
+    EXPECT_EQ(expect_proxy_is_trusted,
+              IsTrustedSpdyProxy(expected_primary_proxy_server));
   }
 
  private:
@@ -386,7 +366,6 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
 
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
   std::unique_ptr<DataReductionProxyRequestOptions> request_options_;
-  std::vector<net::ProxyServer> enabled_proxies_for_http_;
 
   std::unique_ptr<DataReductionProxyDelegate> delegate_;
 
@@ -476,12 +455,12 @@ TEST_F(DataReductionProxyConfigServiceClientTest, EnsureBackoff) {
   EXPECT_EQ(0, config_client()->failed_attempts_before_success());
 
   SetDataReductionProxyEnabled(true, true);
-  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
 
   // First attempt should be unsuccessful.
   config_client()->RetrieveConfig();
   RunUntilIdle();
-  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
   EXPECT_EQ(base::TimeDelta::FromSeconds(20), config_client()->GetDelay());
 
 #if defined(OS_ANDROID)
@@ -491,7 +470,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, EnsureBackoff) {
   // Second attempt should be unsuccessful and backoff time should increase.
   config_client()->RetrieveConfig();
   RunUntilIdle();
-  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
   EXPECT_EQ(base::TimeDelta::FromSeconds(40), config_client()->GetDelay());
   EXPECT_TRUE(persisted_config().empty());
 
@@ -509,7 +488,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, RemoteConfigSuccess) {
   Init(true, false, std::string());
   AddMockSuccess();
   SetDataReductionProxyEnabled(true, true);
-  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
   config_client()->RetrieveConfig();
   RunUntilIdle();
   VerifyRemoteSuccess(true);
@@ -525,7 +504,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   Init(true, false, std::string());
   AddMockSuccess();
   SetDataReductionProxyEnabled(true, false);
-  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
   config_client()->RetrieveConfig();
   RunUntilIdle();
   VerifyRemoteSuccess(false);
@@ -541,7 +520,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   Init(true, false, std::string());
   AddMockSuccess();
   SetDataReductionProxyEnabled(true, true);
-  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
   config_client()->RetrieveConfig();
   RunUntilIdle();
   VerifyRemoteSuccess(true);
@@ -572,14 +551,14 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   EXPECT_EQ(0, config_client()->failed_attempts_before_success());
 
   SetDataReductionProxyEnabled(true, true);
-  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
 
   // First attempt should be unsuccessful.
   config_client()->RetrieveConfig();
   RunUntilIdle();
   EXPECT_EQ(1, config_client()->failed_attempts_before_success());
   EXPECT_EQ(base::TimeDelta::FromSeconds(20), config_client()->GetDelay());
-  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
   EXPECT_TRUE(request_options()->GetSecureSession().empty());
 
   // Second attempt should be successful.
@@ -921,7 +900,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, ApplySerializedConfig) {
   AddMockSuccess();
 
   SetDataReductionProxyEnabled(true, true);
-  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
   config_client()->ApplySerializedConfig(loaded_config());
   VerifySuccessWithLoadedConfig(true);
   EXPECT_TRUE(persisted_config().empty());
@@ -941,7 +920,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   AddMockSuccess();
 
   SetDataReductionProxyEnabled(true, false);
-  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
   config_client()->ApplySerializedConfig(loaded_config());
   VerifySuccessWithLoadedConfig(false);
   EXPECT_TRUE(persisted_config().empty());
@@ -959,7 +938,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   AddMockSuccess();
 
   SetDataReductionProxyEnabled(true, true);
-  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
   EXPECT_TRUE(request_options()->GetSecureSession().empty());
 
   // Retrieve the remote config.
@@ -978,12 +957,17 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
 TEST_F(DataReductionProxyConfigServiceClientTest, ApplySerializedConfigLocal) {
   Init(true, false, std::string());
   SetDataReductionProxyEnabled(true, true);
-  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
   EXPECT_TRUE(request_options()->GetSecureSession().empty());
 
   // ApplySerializedConfig should apply the encoded config.
   config_client()->ApplySerializedConfig(encoded_config());
-  EXPECT_EQ(3U, configurator()->proxies_for_http().size());
+  EXPECT_EQ(std::vector<net::ProxyServer>(
+                {net::ProxyServer::FromURI(kSuccessOrigin,
+                                           net::ProxyServer::SCHEME_HTTP),
+                 net::ProxyServer::FromURI(kSuccessFallback,
+                                           net::ProxyServer::SCHEME_HTTP)}),
+            GetConfiguredProxiesForHttp());
   EXPECT_TRUE(persisted_config().empty());
   EXPECT_FALSE(request_options()->GetSecureSession().empty());
 }

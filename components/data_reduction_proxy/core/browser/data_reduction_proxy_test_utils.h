@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -27,6 +28,7 @@
 #include "components/data_reduction_proxy/core/browser/data_store.h"
 #include "net/base/backoff_entry.h"
 #include "net/log/test_net_log.h"
+#include "net/proxy/proxy_server.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -55,7 +57,6 @@ class DataReductionProxySettings;
 class DataReductionProxyCompressionStats;
 class MockDataReductionProxyConfig;
 class TestDataReductionProxyConfig;
-class TestDataReductionProxyConfigurator;
 class TestDataReductionProxyEventStorageDelegate;
 class TestDataReductionProxyParams;
 
@@ -279,10 +280,6 @@ class DataReductionProxyTestContext {
     // |TestDataReductionProxyConfig|.
     Builder& WithMockConfig();
 
-    // Specifies the use of |TestDataReductionProxyConfigurator| instead of
-    // |DataReductionProxyConfigurator|.
-    Builder& WithTestConfigurator();
-
     // Specifies the use of |MockDataReductionProxyService| instead of
     // |DataReductionProxyService|.
     Builder& WithMockDataReductionProxyService();
@@ -312,7 +309,6 @@ class DataReductionProxyTestContext {
     net::MockClientSocketFactory* mock_socket_factory_;
 
     bool use_mock_config_;
-    bool use_test_configurator_;
     bool use_mock_service_;
     bool use_mock_request_options_;
     bool use_config_client_;
@@ -362,10 +358,6 @@ class DataReductionProxyTestContext {
   // |settings_| has been initialized, and |this| was built with a
   // |net::MockClientSocketFactory| specified.
   void EnableDataReductionProxyWithSecureProxyCheckSuccess();
-
-  // Returns the underlying |TestDataReductionProxyConfigurator|. This can only
-  // be called if built with WithTestConfigurator.
-  TestDataReductionProxyConfigurator* test_configurator() const;
 
   // Returns the underlying |MockDataReductionProxyConfig|. This can only be
   // called if built with WithMockConfig.
@@ -433,25 +425,26 @@ class DataReductionProxyTestContext {
     return params_;
   }
 
+  // Returns the proxies that are currently configured for "http://" requests,
+  // excluding any that are invalid or direct.
+  std::vector<net::ProxyServer> GetConfiguredProxiesForHttp() const;
+
  private:
   enum TestContextOptions {
     // Permits mocking of the underlying |DataReductionProxyConfig|.
     USE_MOCK_CONFIG = 0x1,
-    // Uses a |TestDataReductionProxyConfigurator| to record proxy configuration
-    // changes.
-    USE_TEST_CONFIGURATOR = 0x2,
     // Construct, but do not initialize the |DataReductionProxySettings| object.
     // Primarily used for testing of the |DataReductionProxySettings| object
     // itself.
-    SKIP_SETTINGS_INITIALIZATION = 0x4,
+    SKIP_SETTINGS_INITIALIZATION = 0x2,
     // Permits mocking of the underlying |DataReductionProxyService|.
-    USE_MOCK_SERVICE = 0x8,
+    USE_MOCK_SERVICE = 0x4,
     // Permits mocking of the underlying |DataReductionProxyRequestOptions|.
-    USE_MOCK_REQUEST_OPTIONS = 0x10,
+    USE_MOCK_REQUEST_OPTIONS = 0x8,
     // Specifies the use of the |DataReductionProxyConfigServiceClient|.
-    USE_CONFIG_CLIENT = 0x20,
+    USE_CONFIG_CLIENT = 0x10,
     // Specifies the use of the |TESTDataReductionProxyConfigServiceClient|.
-    USE_TEST_CONFIG_CLIENT = 0x40,
+    USE_TEST_CONFIG_CLIENT = 0x20,
   };
 
   // Used to storage a serialized Data Reduction Proxy config.

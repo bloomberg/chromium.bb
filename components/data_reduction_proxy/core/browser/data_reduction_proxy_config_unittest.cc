@@ -25,7 +25,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
@@ -40,6 +40,7 @@
 #include "net/nqe/network_quality_estimator.h"
 #include "net/proxy/proxy_server.h"
 #include "net/url_request/test_url_fetcher_factory.h"
+#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_test_util.h"
 
 using testing::_;
@@ -48,17 +49,34 @@ using testing::Return;
 
 namespace data_reduction_proxy {
 
+namespace {
+
+void SetProxiesForHttpOnCommandLine(
+    const std::vector<net::ProxyServer>& proxies_for_http) {
+  std::vector<std::string> proxy_strings;
+  for (const net::ProxyServer& proxy : proxies_for_http)
+    proxy_strings.push_back(proxy.ToURI());
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      data_reduction_proxy::switches::kDataReductionProxyHttpProxies,
+      base::JoinString(proxy_strings, ";"));
+}
+
+std::string GetRetryMapKeyFromOrigin(const std::string& origin) {
+  // The retry map has the scheme prefix for https but not for http.
+  return origin;
+}
+
+}  // namespace
+
 class DataReductionProxyConfigTest : public testing::Test {
  public:
-  static void AddTestProxyToCommandLine();
-
   DataReductionProxyConfigTest() {}
   ~DataReductionProxyConfigTest() override {}
 
   void SetUp() override {
     test_context_ = DataReductionProxyTestContext::Builder()
                         .WithMockConfig()
-                        .WithTestConfigurator()
                         .WithMockDataReductionProxyService()
                         .Build();
 
@@ -87,17 +105,12 @@ class DataReductionProxyConfigTest : public testing::Test {
     config()->ResetParamFlagsForTest(flags);
   }
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
+  const scoped_refptr<base::SingleThreadTaskRunner>& task_runner() {
     return message_loop_.task_runner();
   }
 
   void ExpectSecureProxyCheckResult(SecureProxyCheckFetchResult result) {
     EXPECT_CALL(*config(), RecordSecureProxyCheckFetchResult(result)).Times(1);
-  }
-
-  void CheckProxyConfigs(bool expected_enabled, bool expected_restricted) {
-    ASSERT_EQ(expected_restricted, configurator()->restricted());
-    ASSERT_EQ(expected_enabled, configurator()->enabled());
   }
 
   class TestResponder {
@@ -111,23 +124,24 @@ class DataReductionProxyConfigTest : public testing::Test {
     int http_response_code;
   };
 
-  void CheckSecureProxyCheckOnIPChange(const std::string& response,
-                                       SecureProxyCheckFetchResult fetch_result,
-                                       bool expected_restricted,
-                                       bool expected_fallback_restricted) {
-    ExpectSecureProxyCheckResult(fetch_result);
+  void CheckSecureProxyCheckOnIPChange(
+      const std::string& response,
+      int response_code,
+      net::URLRequestStatus status,
+      SecureProxyCheckFetchResult expected_fetch_result,
+      const std::vector<net::ProxyServer>& expected_proxies_for_http) {
+    ExpectSecureProxyCheckResult(expected_fetch_result);
     TestResponder responder;
     responder.response = response;
-    responder.status =
-        net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK);
-    responder.http_response_code = net::HTTP_OK;
+    responder.status = status;
+    responder.http_response_code = response_code;
     EXPECT_CALL(*config(), SecureProxyCheck(_, _))
         .Times(1)
         .WillRepeatedly(testing::WithArgs<1>(
             testing::Invoke(&responder, &TestResponder::ExecuteCallback)));
     config()->OnIPAddressChanged();
     test_context_->RunUntilIdle();
-    CheckProxyConfigs(true, expected_restricted);
+    EXPECT_EQ(expected_proxies_for_http, GetConfiguredProxiesForHttp());
   }
 
   void RunUntilIdle() {
@@ -145,8 +159,8 @@ class DataReductionProxyConfigTest : public testing::Test {
     return test_context_->mock_config();
   }
 
-  TestDataReductionProxyConfigurator* configurator() {
-    return test_context_->test_configurator();
+  DataReductionProxyConfigurator* configurator() const {
+    return test_context_->configurator();
   }
 
   TestDataReductionProxyParams* params() const {
@@ -159,6 +173,10 @@ class DataReductionProxyConfigTest : public testing::Test {
 
   net::NetLog* net_log() const { return test_context_->net_log(); }
 
+  std::vector<net::ProxyServer> GetConfiguredProxiesForHttp() const {
+    return test_context_->GetConfiguredProxiesForHttp();
+  }
+
  private:
   base::MessageLoopForIO message_loop_;
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
@@ -166,72 +184,122 @@ class DataReductionProxyConfigTest : public testing::Test {
 };
 
 TEST_F(DataReductionProxyConfigTest, TestUpdateConfigurator) {
+  const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
+      "https://secure_origin.net:443", net::ProxyServer::SCHEME_HTTP);
+  const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
+      "insecure_origin.net:80", net::ProxyServer::SCHEME_HTTP);
+  SetProxiesForHttpOnCommandLine({kHttpsProxy, kHttpProxy});
+
   ResetSettings(true, true, true, false);
 
-  std::vector<net::ProxyServer> expected_http_proxies;
-  config()->UpdateConfigurator(true /* enabled */,
-                               true /* secure_proxy_allowed */);
-  EXPECT_TRUE(configurator()->enabled());
-  expected_http_proxies.push_back(net::ProxyServer::FromURI(
-      params()->DefaultOrigin(), net::ProxyServer::SCHEME_HTTP));
-  expected_http_proxies.push_back(net::ProxyServer::FromURI(
-      params()->DefaultFallbackOrigin(), net::ProxyServer::SCHEME_HTTP));
-  expected_http_proxies.push_back(net::ProxyServer::Direct());
-  EXPECT_THAT(configurator()->proxies_for_http(),
-              testing::ContainerEq(expected_http_proxies));
+  // Expect both secure and insecure proxies to be available when the DRP is
+  // enabled and secure proxies are allowed.
+  config()->UpdateConfigurator(true, true);
+  EXPECT_EQ(std::vector<net::ProxyServer>({kHttpsProxy, kHttpProxy}),
+            GetConfiguredProxiesForHttp());
 
-  config()->UpdateConfigurator(false /* enabled */,
-                               false /* secure_proxy_allowed */);
-  EXPECT_FALSE(configurator()->enabled());
-  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  // Expect only insecure proxies to be available when the DRP is enabled and
+  // secure proxies are not allowed.
+  config()->UpdateConfigurator(true, false);
+  EXPECT_EQ(std::vector<net::ProxyServer>(1, kHttpProxy),
+            GetConfiguredProxiesForHttp());
 
-  config()->UpdateConfigurator(true /* enabled */,
-                               false /* secure_proxy_allowed */);
-  EXPECT_TRUE(configurator()->enabled());
-  expected_http_proxies.clear();
-  expected_http_proxies.push_back(net::ProxyServer::FromURI(
-      params()->DefaultOrigin(), net::ProxyServer::SCHEME_HTTP));
-  expected_http_proxies.push_back(net::ProxyServer::FromURI(
-      params()->DefaultFallbackOrigin(), net::ProxyServer::SCHEME_HTTP));
-  expected_http_proxies.push_back(net::ProxyServer::Direct());
-  EXPECT_THAT(configurator()->proxies_for_http(),
-              testing::ContainerEq(expected_http_proxies));
+  // Expect no proxies to be available when the DRP is disabled.
+  config()->UpdateConfigurator(false, false);
+  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
 }
 
 TEST_F(DataReductionProxyConfigTest, TestUpdateConfiguratorHoldback) {
+  const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
+      "https://secure_origin.net:443", net::ProxyServer::SCHEME_HTTP);
+  const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
+      "insecure_origin.net:80", net::ProxyServer::SCHEME_HTTP);
+  SetProxiesForHttpOnCommandLine({kHttpsProxy, kHttpProxy});
+
   ResetSettings(true, true, true, true);
 
   config()->UpdateConfigurator(true, false);
-  EXPECT_FALSE(configurator()->enabled());
-  EXPECT_TRUE(configurator()->proxies_for_http().empty());
+  EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
 }
 
 TEST_F(DataReductionProxyConfigTest, TestOnIPAddressChanged) {
+  const net::URLRequestStatus kSuccess(net::URLRequestStatus::SUCCESS, net::OK);
+  const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
+      "https://secure_origin.net:443", net::ProxyServer::SCHEME_HTTP);
+  const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
+      "insecure_origin.net:80", net::ProxyServer::SCHEME_HTTP);
+
+  SetProxiesForHttpOnCommandLine({kHttpsProxy, kHttpProxy});
+  ResetSettings(true, true, true, false);
+
   // The proxy is enabled initially.
   config()->enabled_by_user_ = true;
   config()->secure_proxy_allowed_ = true;
   config()->UpdateConfigurator(true, true);
+
   // IP address change triggers a secure proxy check that succeeds. Proxy
   // remains unrestricted.
-  CheckSecureProxyCheckOnIPChange("OK", SUCCEEDED_PROXY_ALREADY_ENABLED, false,
-                                  false);
+  CheckSecureProxyCheckOnIPChange("OK", net::HTTP_OK, kSuccess,
+                                  SUCCEEDED_PROXY_ALREADY_ENABLED,
+                                  {kHttpsProxy, kHttpProxy});
+
   // IP address change triggers a secure proxy check that fails. Proxy is
   // restricted.
-  CheckSecureProxyCheckOnIPChange("Bad", FAILED_PROXY_DISABLED, true, false);
+  CheckSecureProxyCheckOnIPChange("Bad", net::HTTP_OK, kSuccess,
+                                  FAILED_PROXY_DISABLED,
+                                  std::vector<net::ProxyServer>(1, kHttpProxy));
+
+  // IP address change triggers a secure proxy check that fails due to the
+  // network changing again. This should be ignored, so the proxy should remain
+  // unrestricted.
+  CheckSecureProxyCheckOnIPChange(
+      std::string(), net::URLFetcher::RESPONSE_CODE_INVALID,
+      net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                            net::ERR_INTERNET_DISCONNECTED),
+      INTERNET_DISCONNECTED, std::vector<net::ProxyServer>(1, kHttpProxy));
+
   // IP address change triggers a secure proxy check that fails. Proxy remains
   // restricted.
-  CheckSecureProxyCheckOnIPChange("Bad", FAILED_PROXY_ALREADY_DISABLED, true,
-                                  false);
+  CheckSecureProxyCheckOnIPChange("Bad", net::HTTP_OK, kSuccess,
+                                  FAILED_PROXY_ALREADY_DISABLED,
+                                  std::vector<net::ProxyServer>(1, kHttpProxy));
+
   // IP address change triggers a secure proxy check that succeeds. Proxy is
   // unrestricted.
-  CheckSecureProxyCheckOnIPChange("OK", SUCCEEDED_PROXY_ENABLED, false, false);
+  CheckSecureProxyCheckOnIPChange("OK", net::HTTP_OK, kSuccess,
+                                  SUCCEEDED_PROXY_ENABLED,
+                                  {kHttpsProxy, kHttpProxy});
+
+  // IP address change triggers a secure proxy check that fails due to the
+  // network changing again. This should be ignored, so the proxy should remain
+  // unrestricted.
+  CheckSecureProxyCheckOnIPChange(
+      std::string(), net::URLFetcher::RESPONSE_CODE_INVALID,
+      net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                            net::ERR_INTERNET_DISCONNECTED),
+      INTERNET_DISCONNECTED, {kHttpsProxy, kHttpProxy});
+
+  // IP address change triggers a secure proxy check that fails because of a
+  // redirect response, e.g. by a captive portal. Proxy is restricted.
+  CheckSecureProxyCheckOnIPChange(
+      "Bad", net::HTTP_FOUND,
+      net::URLRequestStatus(net::URLRequestStatus::CANCELED, net::ERR_ABORTED),
+      FAILED_PROXY_DISABLED, std::vector<net::ProxyServer>(1, kHttpProxy));
 }
 
 TEST_F(DataReductionProxyConfigTest,
        TestOnIPAddressChanged_SecureProxyDisabledByDefault) {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(
+  const net::URLRequestStatus kSuccess(net::URLRequestStatus::SUCCESS, net::OK);
+  const net::ProxyServer kHttpsProxy = net::ProxyServer::FromURI(
+      "https://secure_origin.net:443", net::ProxyServer::SCHEME_HTTP);
+  const net::ProxyServer kHttpProxy = net::ProxyServer::FromURI(
+      "insecure_origin.net:80", net::ProxyServer::SCHEME_HTTP);
+
+  SetProxiesForHttpOnCommandLine({kHttpsProxy, kHttpProxy});
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
       data_reduction_proxy::switches::kDataReductionProxyStartSecureDisabled);
+
+  ResetSettings(true, true, true, false);
 
   // The proxy is enabled initially.
   config()->enabled_by_user_ = true;
@@ -240,24 +308,25 @@ TEST_F(DataReductionProxyConfigTest,
 
   // IP address change triggers a secure proxy check that succeeds. Proxy
   // becomes unrestricted.
-  CheckSecureProxyCheckOnIPChange("OK", SUCCEEDED_PROXY_ENABLED, false, false);
+  CheckSecureProxyCheckOnIPChange("OK", net::HTTP_OK, kSuccess,
+                                  SUCCEEDED_PROXY_ENABLED,
+                                  {kHttpsProxy, kHttpProxy});
   // IP address change triggers a secure proxy check that fails. Proxy is
   // restricted before the check starts, and remains disabled.
   ExpectSecureProxyCheckResult(PROXY_DISABLED_BEFORE_CHECK);
-  CheckSecureProxyCheckOnIPChange("Bad", FAILED_PROXY_ALREADY_DISABLED, true,
-                                  false);
+  CheckSecureProxyCheckOnIPChange("Bad", net::HTTP_OK, kSuccess,
+                                  FAILED_PROXY_ALREADY_DISABLED,
+                                  std::vector<net::ProxyServer>(1, kHttpProxy));
   // IP address change triggers a secure proxy check that fails. Proxy remains
   // restricted.
-  CheckSecureProxyCheckOnIPChange("Bad", FAILED_PROXY_ALREADY_DISABLED, true,
-                                  false);
+  CheckSecureProxyCheckOnIPChange("Bad", net::HTTP_OK, kSuccess,
+                                  FAILED_PROXY_ALREADY_DISABLED,
+                                  std::vector<net::ProxyServer>(1, kHttpProxy));
   // IP address change triggers a secure proxy check that succeeds. Proxy is
   // unrestricted.
-  CheckSecureProxyCheckOnIPChange("OK", SUCCEEDED_PROXY_ENABLED, false, false);
-}
-
-std::string GetRetryMapKeyFromOrigin(const std::string& origin) {
-  // The retry map has the scheme prefix for https but not for http.
-  return origin;
+  CheckSecureProxyCheckOnIPChange("OK", net::HTTP_OK, kSuccess,
+                                  SUCCEEDED_PROXY_ENABLED,
+                                  {kHttpsProxy, kHttpProxy});
 }
 
 TEST_F(DataReductionProxyConfigTest, AreProxiesBypassed) {

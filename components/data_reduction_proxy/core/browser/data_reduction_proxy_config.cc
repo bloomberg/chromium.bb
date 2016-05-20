@@ -5,6 +5,8 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 
 #include <stddef.h>
+
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -18,6 +20,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/default_tick_clock.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
@@ -67,22 +71,6 @@ void RecordNetworkChangeEvent(DataReductionProxyNetworkChangeEvent event) {
                             CHANGE_EVENT_COUNT);
 }
 
-// Looks for an instance of |host_port_pair| in |proxy_list|, and returns true
-// if found. Also sets |index| to the index at which the matching address was
-// found.
-bool FindProxyInList(const std::vector<net::ProxyServer>& proxy_list,
-                     const net::HostPortPair& host_port_pair,
-                     int* index) {
-  for (size_t proxy_index = 0; proxy_index < proxy_list.size(); ++proxy_index) {
-    const net::ProxyServer& proxy = proxy_list[proxy_index];
-    if (proxy.is_valid() && proxy.host_port_pair().Equals(host_port_pair)) {
-      *index = proxy_index;
-      return true;
-    }
-  }
-  return false;
-}
-
 // Returns a descriptive name corresponding to |connection_type|.
 const char* GetNameForConnectionType(
     net::NetworkChangeNotifier::ConnectionType connection_type) {
@@ -113,13 +101,20 @@ const char* GetNameForConnectionType(
 // histogram. Number of buckets in the enumerated histogram are one more than
 // |max_limit|.
 base::HistogramBase* GetEnumeratedHistogram(
-    const std::string& prefix,
+    base::StringPiece prefix,
     net::NetworkChangeNotifier::ConnectionType type,
     int32_t max_limit) {
   DCHECK_GT(max_limit, 0);
 
+  base::StringPiece name_for_connection_type(GetNameForConnectionType(type));
+  std::string histogram_name;
+  histogram_name.reserve(prefix.size() + name_for_connection_type.size());
+  histogram_name.append(prefix.data(), prefix.size());
+  histogram_name.append(name_for_connection_type.data(),
+                        name_for_connection_type.size());
+
   return base::Histogram::FactoryGet(
-      prefix + GetNameForConnectionType(type), 0, max_limit, max_limit + 1,
+      histogram_name, 0, max_limit, max_limit + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag);
 }
 
@@ -349,15 +344,20 @@ bool DataReductionProxyConfig::IsDataReductionProxy(
     DataReductionProxyTypeInfo* proxy_info) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  int proxy_index = 0;
-  if (FindProxyInList(config_values_->proxies_for_http(), host_port_pair,
-                      &proxy_index)) {
+  const std::vector<net::ProxyServer>& proxy_list =
+      config_values_->proxies_for_http();
+  auto proxy_it =
+      std::find_if(proxy_list.begin(), proxy_list.end(),
+                   [&host_port_pair](const net::ProxyServer& proxy) {
+                     return proxy.is_valid() &&
+                            proxy.host_port_pair().Equals(host_port_pair);
+                   });
+
+  if (proxy_it != proxy_list.end()) {
     if (proxy_info) {
-      const std::vector<net::ProxyServer>& proxy_list =
-          config_values_->proxies_for_http();
-      proxy_info->proxy_servers = std::vector<net::ProxyServer>(
-          proxy_list.begin() + proxy_index, proxy_list.end());
-      proxy_info->is_fallback = (proxy_index != 0);
+      proxy_info->proxy_servers =
+          std::vector<net::ProxyServer>(proxy_it, proxy_list.end());
+      proxy_info->is_fallback = (proxy_it != proxy_list.begin());
     }
     return true;
   }
@@ -417,7 +417,7 @@ bool DataReductionProxyConfig::AreProxiesBypassed(
   base::TimeDelta min_delay = base::TimeDelta::Max();
   bool bypassed = false;
 
-  for (const net::ProxyServer proxy : proxies->GetAll()) {
+  for (const net::ProxyServer& proxy : proxies->GetAll()) {
     if (!proxy.is_valid() || proxy.is_direct())
       continue;
 
@@ -625,7 +625,7 @@ void DataReductionProxyConfig::SetProxyConfig(bool enabled, bool at_startup) {
 void DataReductionProxyConfig::UpdateConfigurator(bool enabled,
                                                   bool secure_proxy_allowed) {
   DCHECK(configurator_);
-  std::vector<net::ProxyServer> proxies_for_http =
+  const std::vector<net::ProxyServer>& proxies_for_http =
       config_values_->proxies_for_http();
   if (enabled && !config_values_->holdback() && !proxies_for_http.empty()) {
     configurator_->Enable(!secure_proxy_allowed, proxies_for_http);
@@ -638,7 +638,8 @@ void DataReductionProxyConfig::HandleSecureProxyCheckResponse(
     const std::string& response,
     const net::URLRequestStatus& status,
     int http_response_code) {
-  bool success_response = ("OK" == response.substr(0, 2));
+  bool success_response =
+      base::StartsWith(response, "OK", base::CompareCase::SENSITIVE);
   if (event_creator_)
     event_creator_->EndSecureProxyCheck(bound_net_log_, status.error(),
                                         http_response_code, success_response);

@@ -26,7 +26,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
@@ -80,7 +79,6 @@ TEST(DataReductionProxyDelegate, IsTrustedSpdyProxy) {
   std::unique_ptr<DataReductionProxyTestContext> test_context =
       DataReductionProxyTestContext::Builder()
           .WithConfigClient()
-          .WithTestConfigurator()
           .WithMockDataReductionProxyService()
           .Build();
 
