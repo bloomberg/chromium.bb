@@ -239,7 +239,7 @@ test("extensions_browsertests") {
     "//device/bluetooth:mocks",
     "//device/core:mocks",
     "//device/hid:mocks",
-    "//device/usb:mocks",
+    "//device/usb:test_support",
     "//mojo/edk/js",
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings",

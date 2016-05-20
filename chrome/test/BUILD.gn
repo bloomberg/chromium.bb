@@ -1746,7 +1746,7 @@ test("unit_tests") {
       "//content/app/resources",
       "//device/bluetooth:mocks",
       "//device/core:mocks",
-      "//device/usb:mocks",
+      "//device/usb:test_support",
       "//gpu:test_support",
       "//media:test_support",
       "//third_party/leveldatabase",

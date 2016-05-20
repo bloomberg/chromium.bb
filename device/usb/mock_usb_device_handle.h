@@ -67,9 +67,10 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
   MOCK_METHOD1(FindInterfaceByEndpoint,
                const UsbInterfaceDescriptor*(uint8_t endpoint_address));
 
- private:
+ protected:
   ~MockUsbDeviceHandle() override;
 
+ private:
   UsbDevice* device_;
 };
 
