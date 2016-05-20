@@ -229,8 +229,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   PP_Var GetInstanceObject(v8::Isolate* isolate);
   void ViewChanged(const gfx::Rect& window,
                    const gfx::Rect& clip,
-                   const gfx::Rect& unobscured,
-                   const std::vector<gfx::Rect>& cut_outs_rects);
+                   const gfx::Rect& unobscured);
 
   // Handlers for composition events.
   bool HandleCompositionStart(const base::string16& text);
@@ -863,10 +862,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // Set to true if this plugin thinks it will always be on top. This allows us
   // to use a more optimized painting path in some cases.
   bool always_on_top_;
-  // Even if |always_on_top_| is true, the plugin is not fully visible if there
-  // are some cut-out areas (occupied by iframes higher in the stacking order).
-  // This information is used in the optimized painting path.
-  std::vector<gfx::Rect> cut_outs_rects_;
 
   // Implementation of PPB_FlashFullscreen.
 

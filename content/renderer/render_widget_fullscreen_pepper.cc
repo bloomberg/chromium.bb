@@ -151,8 +151,7 @@ class PepperWidget : public WebWidget {
 
     size_ = size;
     WebRect plugin_rect(0, 0, size_.width, size_.height);
-    widget_->plugin()->ViewChanged(plugin_rect, plugin_rect, plugin_rect,
-                                   std::vector<gfx::Rect>());
+    widget_->plugin()->ViewChanged(plugin_rect, plugin_rect, plugin_rect);
     widget_->Invalidate();
   }
 

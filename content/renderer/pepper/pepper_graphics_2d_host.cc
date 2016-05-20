@@ -383,8 +383,6 @@ void PepperGraphics2DHost::ViewInitiatedPaint() {
   }
 }
 
-void PepperGraphics2DHost::SetScale(float scale) { scale_ = scale; }
-
 float PepperGraphics2DHost::GetScale() const { return scale_; }
 
 bool PepperGraphics2DHost::IsAlwaysOpaque() const { return is_always_opaque_; }

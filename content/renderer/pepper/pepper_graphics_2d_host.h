@@ -85,7 +85,6 @@ class CONTENT_EXPORT PepperGraphics2DHost
   // These messages are used to send Flush callbacks to the plugin.
   void ViewInitiatedPaint();
 
-  void SetScale(float scale);
   float GetScale() const;
   void SetLayerTransform(float scale, const PP_Point& transform);
   bool IsAlwaysOpaque() const;

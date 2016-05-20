@@ -1257,8 +1257,7 @@ PP_Var PepperPluginInstanceImpl::GetInstanceObject(v8::Isolate* isolate) {
 void PepperPluginInstanceImpl::ViewChanged(
     const gfx::Rect& window,
     const gfx::Rect& clip,
-    const gfx::Rect& unobscured,
-    const std::vector<gfx::Rect>& cut_outs_rects) {
+    const gfx::Rect& unobscured) {
   // WebKit can give weird (x,y) positions for empty clip rects (since the
   // position technically doesn't matter). But we want to make these
   // consistent since this is given to the plugin, so force everything to 0
@@ -1268,8 +1267,6 @@ void PepperPluginInstanceImpl::ViewChanged(
     new_clip = clip;
 
   unobscured_rect_ = unobscured;
-
-  cut_outs_rects_ = cut_outs_rects;
 
   view_data_.rect = PP_FromGfxRect(window);
   view_data_.clip_rect = PP_FromGfxRect(clip);
