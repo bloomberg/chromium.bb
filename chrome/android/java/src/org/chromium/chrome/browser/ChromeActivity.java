@@ -943,6 +943,21 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 ApiCompatibilityUtils.getColor(getResources(), R.color.light_background_color));
     }
 
+    @Override
+    public void finishNativeInitialization() {
+        // The window background color is used as the resizing background color in Android N+
+        // multi-window mode. See crbug.com/602366.
+        if (Build.VERSION.CODENAME.equals("N") || Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+            getWindow().setBackgroundDrawable(new ColorDrawable(
+                    ApiCompatibilityUtils.getColor(getResources(),
+                            R.color.resizing_background_color)));
+        } else {
+            removeWindowBackground();
+        }
+
+        super.finishNativeInitialization();
+    }
+
     /**
      * Called when the accessibility status of this device changes.  This might be triggered by
      * touch exploration or general accessibility status updates.  It is an aggregate of two other

@@ -145,8 +145,9 @@
     <color name="find_in_page_results_status_white_color">#7f7f7f</color>
     <color name="find_in_page_failed_results_status_color">#db4437</color>
 
-    <!-- App Launch Colors -->
+    <!-- App Background Colors -->
     <color name="light_background_color">#FFFFFF</color>
+    <color name="resizing_background_color">#000000</color>
 
     <!-- WebappActivity colors -->
     <color name="webapp_default_bg">#fafafa</color>
