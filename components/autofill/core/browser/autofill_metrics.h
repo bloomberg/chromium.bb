@@ -259,6 +259,13 @@ class AutofillMetrics {
     NUM_FIELD_TYPE_QUALITY_METRICS,
   };
 
+  enum QualityMetricType {
+    TYPE_SUBMISSION = 0,      // Logged based on user's submitted data.
+    TYPE_NO_SUBMISSION,       // Logged based on user's entered data.
+    TYPE_AUTOCOMPLETE_BASED,  // Logged based on the value of autocomplete attr.
+    NUM_QUALITY_METRIC_TYPES,
+  };
+
   // Each of these is logged at most once per query to the server, which in turn
   // occurs at most once per page load.
   enum ServerQueryMetric {
@@ -521,13 +528,13 @@ class AutofillMetrics {
 
   static void LogHeuristicTypePrediction(FieldTypeQualityMetric metric,
                                          ServerFieldType field_type,
-                                         bool observed_submission);
+                                         QualityMetricType metric_type);
   static void LogOverallTypePrediction(FieldTypeQualityMetric metric,
                                        ServerFieldType field_type,
-                                       bool observed_submission);
+                                       QualityMetricType metric_type);
   static void LogServerTypePrediction(FieldTypeQualityMetric metric,
                                       ServerFieldType field_type,
-                                      bool observed_submission);
+                                      QualityMetricType metric_type);
 
   static void LogServerQueryMetric(ServerQueryMetric metric);
 

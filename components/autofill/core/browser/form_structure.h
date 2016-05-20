@@ -132,6 +132,11 @@ class FormStructure {
                          bool did_show_suggestions,
                          bool observed_submission) const;
 
+  // Log the quality of the heuristics and server predictions for this form
+  // structure, if autocomplete attributes are present on the fields (they are
+  // used as golden truths).
+  void LogQualityMetricsBasedOnAutocomplete() const;
+
   // Classifies each field in |fields_| based upon its |autocomplete| attribute,
   // if the attribute is available.  The association is stored into the field's
   // |heuristic_type|.

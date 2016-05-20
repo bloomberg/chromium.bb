@@ -3513,7 +3513,6 @@ TEST_F(FormStructureTest, ParseQueryResponse) {
   EXPECT_EQ(0, forms[1]->field(1)->server_type());
 }
 
-// If user defined types are present, only parse password fields.
 TEST_F(FormStructureTest, ParseQueryResponseAuthorDefinedTypes) {
   FormData form;
   form.origin = GURL("http://foo.com");
@@ -3536,16 +3535,21 @@ TEST_F(FormStructureTest, ParseQueryResponseAuthorDefinedTypes) {
   forms.front()->DetermineHeuristicTypes();
 
   AutofillQueryResponseContents response;
-  response.add_field()->set_autofill_type(9);
-  response.add_field()->set_autofill_type(76);
+  response.add_field()->set_autofill_type(EMAIL_ADDRESS);
+  response.add_field()->set_autofill_type(ACCOUNT_CREATION_PASSWORD);
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
   FormStructure::ParseQueryResponse(response_string, forms.get(), nullptr);
 
   ASSERT_GE(forms[0]->field_count(), 2U);
-  EXPECT_EQ(NO_SERVER_DATA, forms[0]->field(0)->server_type());
-  EXPECT_EQ(76, forms[0]->field(1)->server_type());
+  // Server type is parsed from the response and is the end result type.
+  EXPECT_EQ(EMAIL_ADDRESS, forms[0]->field(0)->server_type());
+  EXPECT_EQ(EMAIL_ADDRESS, forms[0]->field(0)->Type().GetStorableType());
+  EXPECT_EQ(ACCOUNT_CREATION_PASSWORD, forms[0]->field(1)->server_type());
+  // TODO(crbug.com/613666): Should be a properly defined type, and not
+  // UNKNOWN_TYPE.
+  EXPECT_EQ(UNKNOWN_TYPE, forms[0]->field(1)->Type().GetStorableType());
 }
 
 TEST_F(FormStructureTest, FindLongestCommonPrefix) {

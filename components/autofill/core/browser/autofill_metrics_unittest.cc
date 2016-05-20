@@ -705,6 +705,120 @@ TEST_F(AutofillMetricsTest, QualityMetrics_NoSubmission) {
       GetFieldTypeGroupMetric(NAME_FULL, AutofillMetrics::TYPE_MISMATCH), 1);
 }
 
+// Test that we log quality metrics for heuristics and server predictions based
+// on autocomplete attributes present on the fields.
+TEST_F(AutofillMetricsTest, QualityMetrics_BasedOnAutocomplete) {
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("http://myform.com/form.html");
+  form.action = GURL("http://myform.com/submit.html");
+
+  FormFieldData field;
+  // Heuristic value will match with Autocomplete attribute.
+  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  field.autocomplete_attribute = "family-name";
+  form.fields.push_back(field);
+
+  // Heuristic value will NOT match with Autocomplete attribute.
+  test::CreateTestFormField("First Name", "firstname", "", "text", &field);
+  field.autocomplete_attribute = "additional-name";
+  form.fields.push_back(field);
+
+  // Heuristic value will be unknown.
+  test::CreateTestFormField("Garbage label", "garbage", "", "text", &field);
+  field.autocomplete_attribute = "postal-code";
+  form.fields.push_back(field);
+
+  // No autocomplete attribute. No metric logged.
+  test::CreateTestFormField("Address", "address", "", "text", &field);
+  field.autocomplete_attribute = "";
+  form.fields.push_back(field);
+
+  TestFormStructure* form_structure = new TestFormStructure(form);
+  form_structure->DetermineHeuristicTypes();
+  autofill_manager_->form_structures()->push_back(form_structure);
+
+  AutofillQueryResponseContents response;
+  // Server response will match with autocomplete.
+  response.add_field()->set_autofill_type(NAME_LAST);
+  // Server response will NOT match with autocomplete.
+  response.add_field()->set_autofill_type(NAME_FIRST);
+  // Server response will have no data.
+  response.add_field()->set_autofill_type(NO_SERVER_DATA);
+  // Not logged.
+  response.add_field()->set_autofill_type(NAME_MIDDLE);
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  std::vector<std::string> signatures;
+  signatures.push_back(form_structure->FormSignature());
+
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnLoadedServerPredictions(response_string, signatures);
+
+  // Verify that FormStructure::ParseQueryResponse was called (here and below).
+  histogram_tester.ExpectBucketCount("Autofill.ServerQueryResponse",
+                                     AutofillMetrics::QUERY_RESPONSE_RECEIVED,
+                                     1);
+  histogram_tester.ExpectBucketCount("Autofill.ServerQueryResponse",
+                                     AutofillMetrics::QUERY_RESPONSE_PARSED, 1);
+
+  // Autocomplete-derived types are eventually what's inferred.
+  EXPECT_EQ(NAME_LAST, form_structure->field(0)->Type().GetStorableType());
+  EXPECT_EQ(NAME_MIDDLE, form_structure->field(1)->Type().GetStorableType());
+  EXPECT_EQ(ADDRESS_HOME_ZIP,
+            form_structure->field(2)->Type().GetStorableType());
+
+  // Heuristic predictions.
+  // Unknown:
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.HeuristicType.BasedOnAutocomplete",
+      AutofillMetrics::TYPE_UNKNOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.HeuristicType.ByFieldType.BasedOnAutocomplete",
+      GetFieldTypeGroupMetric(ADDRESS_HOME_ZIP, AutofillMetrics::TYPE_UNKNOWN),
+      1);
+  // Match:
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.HeuristicType.BasedOnAutocomplete",
+      AutofillMetrics::TYPE_MATCH, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.HeuristicType.ByFieldType.BasedOnAutocomplete",
+      GetFieldTypeGroupMetric(NAME_LAST, AutofillMetrics::TYPE_MATCH), 1);
+  // Mismatch:
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.HeuristicType.BasedOnAutocomplete",
+      AutofillMetrics::TYPE_MISMATCH, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.HeuristicType.ByFieldType.BasedOnAutocomplete",
+      GetFieldTypeGroupMetric(NAME_MIDDLE, AutofillMetrics::TYPE_MISMATCH), 1);
+
+  // Server predictions.
+  // Unknown:
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.ServerType.BasedOnAutocomplete",
+      AutofillMetrics::TYPE_UNKNOWN, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.ServerType.ByFieldType.BasedOnAutocomplete",
+      GetFieldTypeGroupMetric(ADDRESS_HOME_ZIP, AutofillMetrics::TYPE_UNKNOWN),
+      1);
+  // Match:
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.ServerType.BasedOnAutocomplete",
+      AutofillMetrics::TYPE_MATCH, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.ServerType.ByFieldType.BasedOnAutocomplete",
+      GetFieldTypeGroupMetric(NAME_LAST, AutofillMetrics::TYPE_MATCH), 1);
+  // Mismatch:
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.ServerType.BasedOnAutocomplete",
+      AutofillMetrics::TYPE_MISMATCH, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.Quality.ServerType.ByFieldType.BasedOnAutocomplete",
+      GetFieldTypeGroupMetric(NAME_MIDDLE, AutofillMetrics::TYPE_MISMATCH), 1);
+}
+
 // Test that we do not log RAPPOR metrics when the number of mismatches is not
 // high enough.
 TEST_F(AutofillMetricsTest, Rappor_LowMismatchRate_NoMetricsReported) {

@@ -91942,8 +91942,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Extensions.ExternalExtensionEvent"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="FieldPredictionNoSubmission" separator=".">
+<histogram_suffixes name="FieldPredictionSubmissionEvents" separator=".">
   <suffix name="NoSubmission" label="No observed submission."/>
+  <suffix name="BasedOnAutocomplete"
+      label="Quality metrics based on autocomplete attributes."/>
   <affected-histogram
       name="Autofill.NumberOfEditedAutofilledFieldsAtSubmission"/>
   <affected-histogram name="Autofill.Quality.HeuristicType"/>

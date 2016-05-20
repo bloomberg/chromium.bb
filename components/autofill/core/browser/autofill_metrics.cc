@@ -214,14 +214,27 @@ void LogUMAHistogramLongTimes(const std::string& name,
 // Logs a type quality metric.  The primary histogram name is constructed based
 // on |base_name|.  The field-specific histogram name also factors in the
 // |field_type|.  Logs a sample of |metric|, which should be in the range
-// [0, |num_possible_metrics|).
+// [0, |num_possible_metrics|). May log a suffixed version of the metric
+// depending on |metric_type|.
 void LogTypeQualityMetric(const std::string& base_name,
                           AutofillMetrics::FieldTypeQualityMetric metric,
                           ServerFieldType field_type,
-                          bool observed_submission) {
+                          AutofillMetrics::QualityMetricType metric_type) {
   DCHECK_LT(metric, AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
 
-  const std::string suffix(observed_submission ? "" : ".NoSubmission");
+  std::string suffix;
+  switch (metric_type) {
+    case AutofillMetrics::TYPE_SUBMISSION:
+      break;
+    case AutofillMetrics::TYPE_NO_SUBMISSION:
+      suffix = ".NoSubmission";
+      break;
+    case AutofillMetrics::TYPE_AUTOCOMPLETE_BASED:
+      suffix = ".BasedOnAutocomplete";
+      break;
+    default:
+      NOTREACHED();
+  }
   LogUMAHistogramEnumeration(base_name + suffix, metric,
                              AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
 
@@ -408,27 +421,28 @@ void AutofillMetrics::LogDeveloperEngagementMetric(
 }
 
 // static
-void AutofillMetrics::LogHeuristicTypePrediction(FieldTypeQualityMetric metric,
-                                                 ServerFieldType field_type,
-                                                 bool observed_submission) {
+void AutofillMetrics::LogHeuristicTypePrediction(
+    FieldTypeQualityMetric metric,
+    ServerFieldType field_type,
+    QualityMetricType metric_type) {
   LogTypeQualityMetric("Autofill.Quality.HeuristicType", metric, field_type,
-                       observed_submission);
+                       metric_type);
 }
 
 // static
 void AutofillMetrics::LogOverallTypePrediction(FieldTypeQualityMetric metric,
                                                ServerFieldType field_type,
-                                               bool observed_submission) {
+                                               QualityMetricType metric_type) {
   LogTypeQualityMetric("Autofill.Quality.PredictedType", metric, field_type,
-                       observed_submission);
+                       metric_type);
 }
 
 // static
 void AutofillMetrics::LogServerTypePrediction(FieldTypeQualityMetric metric,
                                               ServerFieldType field_type,
-                                              bool observed_submission) {
+                                              QualityMetricType metric_type) {
   LogTypeQualityMetric("Autofill.Quality.ServerType", metric, field_type,
-                       observed_submission);
+                       metric_type);
 }
 
 // static

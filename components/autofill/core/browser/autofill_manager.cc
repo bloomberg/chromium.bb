@@ -878,6 +878,11 @@ void AutofillManager::OnLoadedServerPredictions(
   FormStructure::ParseQueryResponse(std::move(response), queried_forms,
                                     client_->GetRapporService());
 
+  // Will log quality metrics for each FormStructure based on the presence of
+  // autocomplete attributes, if available.
+  for (FormStructure* cur_form : queried_forms)
+    cur_form->LogQualityMetricsBasedOnAutocomplete();
+
   // Forward form structures to the password generation manager to detect
   // account creation forms.
   driver_->PropagateAutofillPredictions(queried_forms);
