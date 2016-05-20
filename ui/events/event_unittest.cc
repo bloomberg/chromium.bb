@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/test/histogram_tester.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_utils.h"
@@ -885,5 +886,58 @@ TEST(EventTest, PointerEventClone) {
     EXPECT_EQ(ptr_event.root_location(), clone_as_ptr->root_location());
   }
 }
+
+// Checks that Event.Latency.OS.TOUCH_PRESSED, TOUCH_MOVED,
+// and TOUCH_RELEASED histograms are computed properly.
+#if defined(USE_X11)
+TEST(EventTest, EventLatencyOSTouchHistograms) {
+  base::HistogramTester histogram_tester;
+  ScopedXI2Event scoped_xevent;
+
+  // SetUp for test
+  DeviceDataManagerX11::CreateInstance();
+  std::vector<int> devices;
+  devices.push_back(0);
+  ui::SetUpTouchDevicesForTest(devices);
+
+  // Init touch begin, update, and end events with tracking id 5, touch id 0.
+  scoped_xevent.InitTouchEvent(
+      0, XI_TouchBegin, 5, gfx::Point(10, 10), std::vector<Valuator>());
+  TouchEvent touch_begin(scoped_xevent);
+  histogram_tester.ExpectTotalCount("Event.Latency.OS.TOUCH_PRESSED", 1);
+  scoped_xevent.InitTouchEvent(
+      0, XI_TouchUpdate, 5, gfx::Point(20, 20), std::vector<Valuator>());
+  TouchEvent touch_update(scoped_xevent);
+  histogram_tester.ExpectTotalCount("Event.Latency.OS.TOUCH_MOVED", 1);
+  scoped_xevent.InitTouchEvent(
+      0, XI_TouchEnd, 5, gfx::Point(30, 30), std::vector<Valuator>());
+  TouchEvent touch_end(scoped_xevent);
+  histogram_tester.ExpectTotalCount("Event.Latency.OS.TOUCH_RELEASED", 1);
+}
+#endif
+
+// Checks that Event.Latency.OS.MOUSE_WHEEL histogram is computed properly.
+TEST(EventTest, EventLatencyOSMouseWheelHistogram) {
+#if defined(OS_WIN)
+  base::HistogramTester histogram_tester;
+  MSG event;
+  event.message = WM_MOUSEWHEEL;
+  MouseWheelEvent mouseWheelEvent(event);
+  histogram_tester.ExpectTotalCount("Event.Latency.OS.MOUSE_WHEEL", 1);
+#elif defined(USE_X11)
+  base::HistogramTester histogram_tester;
+
+  // Initializes a native event and uses it to generate a MouseWheel event.
+  XEvent * native_event = (XEvent *) malloc(sizeof(XEvent));
+  memset(native_event, 0, sizeof(XEvent));
+  XButtonEvent* button_event = &(native_event->xbutton);
+  button_event->type = ButtonPress;
+  button_event->button = 4; // A valid wheel button number between min and max.
+  MouseWheelEvent mouse_ev(native_event);
+
+  histogram_tester.ExpectTotalCount("Event.Latency.OS.MOUSE_WHEEL", 1);
+#endif
+}
+
 
 }  // namespace ui
