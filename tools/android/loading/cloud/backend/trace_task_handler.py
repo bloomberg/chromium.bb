@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import json
 import multiprocessing
 import os
 import re
@@ -72,8 +71,7 @@ def GenerateTrace(url, emulate_device, emulate_network, filename, log_filename):
       traceback.print_exc(file=sys.stderr)
 
     if trace:
-      with open(filename, 'w') as f:
-        json.dump(trace.ToJsonDict(), f, sort_keys=True, indent=2)
+      trace.ToJsonFile(filename)
 
   sys.stdout = old_stdout
   sys.stderr = old_stderr
