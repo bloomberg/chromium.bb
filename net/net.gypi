@@ -1352,6 +1352,7 @@
       'base/upload_file_element_reader_unittest.cc',
       'base/url_util_unittest.cc',
       'cert/ct_policy_enforcer_unittest.cc',
+      'cert/cert_verifier_unittest.cc',
       'cert/cert_verify_proc_unittest.cc',
       'cert/cert_verify_proc_whitelist_unittest.cc',
       'cert/crl_set_unittest.cc',
