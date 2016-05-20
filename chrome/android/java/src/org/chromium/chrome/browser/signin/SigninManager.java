@@ -77,8 +77,6 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
 
     private boolean mSigninAllowedByPolicy;
 
-    private boolean mSignOutInProgress;
-
     /**
      * A SignInStateObserver is notified when the user signs in to or out of Chrome.
      */
@@ -518,7 +516,6 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
      * @param wipeDataHooks Hooks to call during data wiping in case the account is managed.
      */
     public void signOut(Runnable callback, WipeDataHooks wipeDataHooks) {
-        mSignOutInProgress = true;
         mSignOutCallback = callback;
 
         boolean wipeData = getManagementDomain() != null;
@@ -590,15 +587,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         onSignOutDone();
     }
 
-    @CalledByNative
-    private void onNativeSignOut() {
-        if (!mSignOutInProgress) {
-            signOut();
-        }
-    }
-
     private void onSignOutDone() {
-        mSignOutInProgress = false;
         if (mSignOutCallback != null) {
             new Handler().post(mSignOutCallback);
             mSignOutCallback = null;
