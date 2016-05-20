@@ -1441,29 +1441,6 @@
    fun:_ZN5blink13ContainerNode6detachEv
 }
 {
-   bug_138220_a
-   Memcheck:Uninitialized
-   fun:_ZNK7blink16HTMLInputElement8dataListEv
-   fun:_ZNK7blink16HTMLInputElement4listEv
-   fun:_ZN5blink21RenderSliderContainer6layoutEv
-   fun:_ZN5blink11RenderBlock16layoutBlockChildEPNS_9RenderBoxERNS0_10MarginInfoERNS_20FractionalLayoutUnitES6_
-   fun:_ZN5blink11RenderBlock19layoutBlockChildrenEbRNS_20FractionalLayoutUnitE
-   fun:_ZN5blink11RenderBlock11layoutBlockEbNS_20FractionalLayoutUnitE
-   fun:_ZN5blink11RenderBlock6layoutEv
-   fun:_ZN5blink12RenderSlider6layoutEv
-}
-{
-   bug_138220_b
-   Memcheck:Uninitialized
-   fun:_ZNK7blink16HTMLInputElement8dataListEv
-   fun:_ZNK7blink16HTMLInputElement4listEv
-   fun:_ZN5blink11RenderTheme16paintSliderTicksEPNS_12RenderObjectERKNS_9PaintInfoERKNS_7IntRectE
-   fun:_ZN5blink24RenderThemeChromiumLinux16paintSliderTrackEPNS_12RenderObjectERKNS_9PaintInfoERKNS_7IntRectE
-   fun:_ZN5blink11RenderTheme5paintEPNS_12RenderObjectERKNS_9PaintInfoERKNS_7IntRectE
-   fun:_ZN5blink9RenderBox19paintBoxDecorationsERNS_9PaintInfoERKNS_21FractionalLayoutPointE
-   fun:_ZN5blink11RenderBlock11paintObjectERNS_9PaintInfoERKNS_21FractionalLayoutPointE
-}
-{
    bug_138233_a
    Memcheck:Leak
    fun:malloc
