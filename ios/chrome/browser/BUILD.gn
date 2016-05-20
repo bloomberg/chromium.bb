@@ -741,6 +741,8 @@ js_compile_unchecked("injected_js") {
   visibility = [ ":browser" ]
   sources = [
     "find_in_page/resources/find_in_page.js",
+    "passwords/resources/credential_manager.js",
+    "passwords/resources/password_controller.js",
   ]
 }
 
