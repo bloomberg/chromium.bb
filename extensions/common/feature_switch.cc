@@ -20,15 +20,7 @@ namespace {
 const char kMediaRouterFlag[] = "media-router";
 
 const char kEnableMediaRouterExperiment[] = "EnableMediaRouter";
-const char kEnableMediaRouterWithCastExtensionExperiment[] =
-    "EnableMediaRouterWithCastExtension";
 const char kExtensionActionRedesignExperiment[] = "ExtensionActionRedesign";
-
-const char* kMediaRouterRequiredExperiments[] = {
-    kEnableMediaRouterExperiment, kExtensionActionRedesignExperiment};
-const char* kMediaRouterWithCastExtensionRequiredExperiments[] = {
-    kEnableMediaRouterWithCastExtensionExperiment,
-    kExtensionActionRedesignExperiment};
 
 class CommonSwitches {
  public:
@@ -62,19 +54,8 @@ class CommonSwitches {
         trace_app_source(switches::kTraceAppSource,
                          FeatureSwitch::DEFAULT_ENABLED),
         media_router(kMediaRouterFlag,
-                     std::vector<std::string>(
-                         kMediaRouterRequiredExperiments,
-                         kMediaRouterRequiredExperiments +
-                             arraysize(kMediaRouterRequiredExperiments)),
-                     FeatureSwitch::DEFAULT_DISABLED),
-        media_router_with_cast_extension(
-            kMediaRouterFlag,
-            std::vector<std::string>(
-                kMediaRouterWithCastExtensionRequiredExperiments,
-                kMediaRouterWithCastExtensionRequiredExperiments +
-                    arraysize(
-                        kMediaRouterWithCastExtensionRequiredExperiments)),
-            FeatureSwitch::DEFAULT_DISABLED) {
+                     kEnableMediaRouterExperiment,
+                     FeatureSwitch::DEFAULT_DISABLED) {
   }
 
   // Enables extensions to be easily installed from sites other than the web
@@ -95,7 +76,6 @@ class CommonSwitches {
   FeatureSwitch embedded_extension_options;
   FeatureSwitch trace_app_source;
   FeatureSwitch media_router;
-  FeatureSwitch media_router_with_cast_extension;
 };
 
 base::LazyInstance<CommonSwitches> g_common_switches =
@@ -143,9 +123,6 @@ FeatureSwitch* FeatureSwitch::trace_app_source() {
 FeatureSwitch* FeatureSwitch::media_router() {
   return &g_common_switches.Get().media_router;
 }
-FeatureSwitch* FeatureSwitch::media_router_with_cast_extension() {
-  return &g_common_switches.Get().media_router_with_cast_extension;
-}
 
 FeatureSwitch::ScopedOverride::ScopedOverride(FeatureSwitch* feature,
                                               bool override_value)
@@ -170,38 +147,23 @@ FeatureSwitch::FeatureSwitch(const char* switch_name,
                              DefaultValue default_value)
     : FeatureSwitch(base::CommandLine::ForCurrentProcess(),
                     switch_name,
-                    std::vector<std::string>(1, field_trial_name),
-                    default_value) {}
-
-FeatureSwitch::FeatureSwitch(
-    const char* switch_name,
-    const std::vector<std::string>& required_field_trials,
-    DefaultValue default_value)
-    : FeatureSwitch(base::CommandLine::ForCurrentProcess(),
-                    switch_name,
-                    required_field_trials,
+                    field_trial_name,
                     default_value) {}
 
 FeatureSwitch::FeatureSwitch(const base::CommandLine* command_line,
                              const char* switch_name,
                              DefaultValue default_value)
-    : FeatureSwitch(command_line,
-                    switch_name,
-                    std::vector<std::string>(),
-                    default_value) {}
+    : FeatureSwitch(command_line, switch_name, nullptr, default_value) {}
 
-FeatureSwitch::FeatureSwitch(
-    const base::CommandLine* command_line,
-    const char* switch_name,
-    const std::vector<std::string>& required_field_trials,
-    DefaultValue default_value)
+FeatureSwitch::FeatureSwitch(const base::CommandLine* command_line,
+                             const char* switch_name,
+                             const char* field_trial_name,
+                             DefaultValue default_value)
     : command_line_(command_line),
       switch_name_(switch_name),
-      required_field_trials_(required_field_trials),
+      field_trial_name_(field_trial_name),
       default_value_(default_value == DEFAULT_ENABLED),
       override_value_(OVERRIDE_NONE) {}
-
-FeatureSwitch::~FeatureSwitch(){};
 
 bool FeatureSwitch::IsEnabled() const {
   if (override_value_ != OVERRIDE_NONE)
@@ -229,26 +191,13 @@ bool FeatureSwitch::IsEnabled() const {
   if (default_value_ && command_line_->HasSwitch(GetLegacyDisableFlag()))
     return false;
 
-  if (!required_field_trials_.empty()) {
-    bool enabled_by_field_trial = true;
-    bool disabled_by_field_trial = false;
-    for (const std::string& field_trial_name : required_field_trials_) {
-      std::string group_name =
-          base::FieldTrialList::FindFullName(field_trial_name);
-      if (!base::StartsWith(group_name, "Enabled",
-                            base::CompareCase::SENSITIVE)) {
-        enabled_by_field_trial = false;
-        if (base::StartsWith(group_name, "Disabled",
-                             base::CompareCase::SENSITIVE)) {
-          disabled_by_field_trial = true;
-          break;
-        }
-      }
-    }
-    if (disabled_by_field_trial)
-      return false;
-    if (enabled_by_field_trial)
+  if (field_trial_name_) {
+    std::string group_name =
+        base::FieldTrialList::FindFullName(field_trial_name_);
+    if (base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE))
       return true;
+    if (base::StartsWith(group_name, "Disabled", base::CompareCase::SENSITIVE))
+      return false;
   }
 
   return default_value_;
