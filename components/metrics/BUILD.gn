@@ -7,6 +7,12 @@ declare_args() {
   metrics_use_blimp = false
 }
 
+# These are only used by the blimp team, which has entirely migrated to gn,
+# so this logic is not replicated in the gyp file.
+if (metrics_use_blimp) {
+  defines = [ "OVERRIDE_OS_NAME_TO_BLIMP" ]
+}
+
 # GYP version: components/metrics.gypi:metrics
 source_set("metrics") {
   sources = [
@@ -365,11 +371,5 @@ source_set("unit_tests") {
 
   if (is_chromeos) {
     deps += [ ":leak_detector_unit_tests" ]
-  }
-
-  # These are only used by the blimp team, which has entirely migrated to gn,
-  # so this logic is not replicated in the gyp file.
-  if (metrics_use_blimp) {
-    defines = [ "OVERRIDE_OS_NAME_TO_BLIMP" ]
   }
 }

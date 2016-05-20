@@ -351,10 +351,10 @@ void MetricsLog::RecordEnvironment(
   hardware->set_dll_base(reinterpret_cast<uint64_t>(CURRENT_MODULE()));
 #endif
 
+  SystemProfileProto::OS* os = system_profile->mutable_os();
 #if defined(OVERRIDE_OS_NAME_TO_BLIMP)
   os->set_name("Blimp");
 #else
-  SystemProfileProto::OS* os = system_profile->mutable_os();
   std::string os_name = base::SysInfo::OperatingSystemName();
   os->set_name(os_name);
 #endif
