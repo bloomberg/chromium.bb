@@ -213,22 +213,26 @@ void PolicyProvider::GetContentSettingsFromPreferences(
 
     const base::ListValue* pattern_str_list = nullptr;
     if (!pref->GetValue()->GetAsList(&pattern_str_list)) {
-      NOTREACHED();
+      NOTREACHED() << "Could not read patterns from " << pref_name;
       return;
     }
 
     for (size_t j = 0; j < pattern_str_list->GetSize(); ++j) {
       std::string original_pattern_str;
       if (!pattern_str_list->GetString(j, &original_pattern_str)) {
-        NOTREACHED();
+        NOTREACHED() << "Could not read content settings pattern #" << j
+                     << " from " << pref_name;
         continue;
       }
+
+      VLOG(2) << "Reading content settings pattern " << original_pattern_str
+              << " from " << pref_name;
 
       PatternPair pattern_pair = ParsePatternString(original_pattern_str);
       // Ignore invalid patterns.
       if (!pattern_pair.first.IsValid()) {
-        VLOG(1) << "Ignoring invalid content settings pattern: " <<
-                   original_pattern_str;
+        VLOG(1) << "Ignoring invalid content settings pattern "
+                << original_pattern_str;
         continue;
       }
 
@@ -239,6 +243,9 @@ void PolicyProvider::GetContentSettingsFromPreferences(
       ContentSettingsPattern secondary_pattern =
           !pattern_pair.second.IsValid() ? ContentSettingsPattern::Wildcard()
                                          : pattern_pair.second;
+      VLOG_IF(2, !pattern_pair.second.IsValid())
+          << "Replacing invalid secondary pattern '"
+          << pattern_pair.second.ToString() << "' with wildcard";
       value_map->SetValue(pattern_pair.first, secondary_pattern, content_type,
                           ResourceIdentifier(),
                           new base::FundamentalValue(
