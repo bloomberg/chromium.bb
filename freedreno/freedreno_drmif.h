@@ -32,6 +32,15 @@
 #include <xf86drm.h>
 #include <stdint.h>
 
+#if defined(__GNUC__)
+#  define deprecated __attribute__((__deprecated__))
+#else
+#  define deprecated
+#endif
+
+/* an empty marker for things that will be deprecated in the future: */
+#define will_be_deprecated
+
 struct fd_bo;
 struct fd_pipe;
 struct fd_device;

@@ -112,6 +112,16 @@ fd_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
 	ring->funcs->emit_reloc_ring(ring, target->ring, submit_offset, size);
 }
 
+uint32_t
+fd_ringbuffer_emit_reloc_ring_full(struct fd_ringbuffer *ring,
+		struct fd_ringbuffer *target, uint32_t cmd_idx)
+{
+	uint32_t size = offset_bytes(target->cur, target->start);
+	assert(cmd_idx == 0);
+	ring->funcs->emit_reloc_ring(ring, target, 0, size);
+	return size;
+}
+
 struct fd_ringmarker * fd_ringmarker_new(struct fd_ringbuffer *ring)
 {
 	struct fd_ringmarker *marker = NULL;
@@ -124,7 +134,7 @@ struct fd_ringmarker * fd_ringmarker_new(struct fd_ringbuffer *ring)
 
 	marker->ring = ring;
 
-	fd_ringmarker_mark(marker);
+	marker->cur = marker->ring->cur;
 
 	return marker;
 }

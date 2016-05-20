@@ -75,14 +75,16 @@ struct fd_reloc {
 };
 
 void fd_ringbuffer_reloc(struct fd_ringbuffer *ring, const struct fd_reloc *reloc);
-void fd_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
+will_be_deprecated void fd_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
 		struct fd_ringmarker *target, struct fd_ringmarker *end);
+uint32_t fd_ringbuffer_emit_reloc_ring_full(struct fd_ringbuffer *ring,
+		struct fd_ringbuffer *target, uint32_t cmd_idx);
 
-struct fd_ringmarker * fd_ringmarker_new(struct fd_ringbuffer *ring);
-void fd_ringmarker_del(struct fd_ringmarker *marker);
-void fd_ringmarker_mark(struct fd_ringmarker *marker);
-uint32_t fd_ringmarker_dwords(struct fd_ringmarker *start,
+will_be_deprecated struct fd_ringmarker * fd_ringmarker_new(struct fd_ringbuffer *ring);
+will_be_deprecated void fd_ringmarker_del(struct fd_ringmarker *marker);
+will_be_deprecated void fd_ringmarker_mark(struct fd_ringmarker *marker);
+will_be_deprecated uint32_t fd_ringmarker_dwords(struct fd_ringmarker *start,
 		struct fd_ringmarker *end);
-int fd_ringmarker_flush(struct fd_ringmarker *marker);
+will_be_deprecated int fd_ringmarker_flush(struct fd_ringmarker *marker);
 
 #endif /* FREEDRENO_RINGBUFFER_H_ */
