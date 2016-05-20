@@ -9,6 +9,9 @@ Security Critical: yes
 Description:
 Compression library used by LevelDB.
 
+Local Changes:
+* #ifndef DISALLOW_COPY_AND_ASSIGN - https://github.com/google/snappy/pull/21
+
 Local Additions:
 * gyp file for building in chromium
   * Suppress clang header-hygiene warning - https://code.google.com/p/snappy/issues/detail?id=70

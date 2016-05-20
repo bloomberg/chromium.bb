@@ -80,9 +80,11 @@ typedef unsigned long long uint64;
 
 typedef std::string string;
 
+#ifndef DISALLOW_COPY_AND_ASSIGN
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) \
   TypeName(const TypeName&);               \
   void operator=(const TypeName&)
+#endif
 
 #if 1
 // Windows does not have an iovec type, yet the concept is universally useful.
