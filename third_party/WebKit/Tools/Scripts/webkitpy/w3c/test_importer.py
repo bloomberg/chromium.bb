@@ -245,11 +245,14 @@ class TestImporter(object):
                 if test_info is None:
                     continue
 
-                if 'reference' in test_info.keys():
-                    reftests += 1
-                    total_tests += 1
-                    test_basename = self.filesystem.basename(test_info['test'])
+                if self.path_too_long(path_full):
+                    _log.warning('%s skipped due to long path. '
+                                 'Max length from repo base %d chars; see http://crbug.com/609871.',
+                                 path_full, MAX_PATH_LENGTH)
+                    continue
 
+                if 'reference' in test_info.keys():
+                    test_basename = self.filesystem.basename(test_info['test'])
                     # Add the ref file, following WebKit style.
                     # FIXME: Ideally we'd support reading the metadata
                     # directly rather than relying  on a naming convention.
@@ -261,6 +264,14 @@ class TestImporter(object):
                     # references but HTML tests.
                     ref_file += self.filesystem.splitext(test_info['reference'])[1]
 
+                    if self.path_too_long(path_full.replace(filename, ref_file)):
+                        _log.warning('%s skipped because path of ref file %s would be too long. '
+                                     'Max length from repo base %d chars; see http://crbug.com/609871.',
+                                     path_full, ref_file, MAX_PATH_LENGTH)
+                        continue
+
+                    reftests += 1
+                    total_tests += 1
                     copy_list.append({'src': test_info['reference'], 'dest': ref_file,
                                       'reference_support_info': test_info['reference_support_info']})
                     copy_list.append({'src': test_info['test'], 'dest': filename})
@@ -333,11 +344,6 @@ class TestImporter(object):
 
                 if not self.filesystem.exists(orig_filepath):
                     _log.warning('%s not found. Possible error in the test.', orig_filepath)
-                    continue
-
-                if self.path_too_long(orig_filepath):
-                    _log.warning('%s skipped (longer than %d chars), to avoid hitting Windows max path length on builders (http://crbug.com/609871).',
-                                 orig_filepath, MAX_PATH_LENGTH)
                     continue
 
                 new_filepath = self.filesystem.join(new_path, file_to_copy['dest'])
