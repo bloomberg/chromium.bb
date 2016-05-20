@@ -60,6 +60,13 @@ mkdir /opt/app/clovis/binaries
 gsutil cp gs://$DEPLOYMENT_PATH/binaries/* /opt/app/clovis/binaries/
 unzip /opt/app/clovis/binaries/linux.zip -d /opt/app/clovis/binaries/
 
+# Ad and tracking filtering rules.
+# Made by the EasyList authors (https://easylist.github.io/).
+DATA_DIR=/opt/app/clovis/data
+mkdir $DATA_DIR && cd $DATA_DIR
+curl https://easylist.github.io/easylist/easylist.txt > easylist.txt
+curl https://easylist.github.io/easylist/easyprivacy.txt > easyprivacy.txt
+
 # Install the Chrome sandbox
 cp /opt/app/clovis/binaries/chrome_sandbox /usr/local/sbin/chrome-devel-sandbox
 chown root:root /usr/local/sbin/chrome-devel-sandbox
@@ -87,7 +94,9 @@ cat >$DEPLOYMENT_CONFIG_PATH << EOF
   "src_path" : "/opt/app/clovis/src",
   "taskqueue_tag" : "$TASKQUEUE_TAG",
   "worker_log_path" : "$WORKER_LOG_PATH",
-  "self_destruct" : "$SELF_DESTRUCT"
+  "self_destruct" : "$SELF_DESTRUCT",
+  "ad_rules_filename": "$DATA_DIR/easylist.txt",
+  "tracking_rules_filename": "$DATA_DIR/easyprivacy.txt"
 }
 EOF
 

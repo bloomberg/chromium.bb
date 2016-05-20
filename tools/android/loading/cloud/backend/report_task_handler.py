@@ -60,12 +60,15 @@ class ReportTaskHandler(object):
   """
 
   def __init__(self, project_name, failure_database, google_storage_accessor,
-               bigquery_service, logger):
+               bigquery_service, logger, ad_rules_filename,
+               tracking_rules_filename):
     self._project_name = project_name
     self._failure_database = failure_database
     self._google_storage_accessor = google_storage_accessor
     self._bigquery_service = bigquery_service
     self._logger = logger
+    self._ad_rules_filename = ad_rules_filename
+    self._tracking_rules_filename = tracking_rules_filename
 
   def _StreamRowsToBigQuery(self, rows, table_id):
     """Uploads a list of rows to the BigQuery table associated with the given
@@ -123,6 +126,9 @@ class ReportTaskHandler(object):
                                         'report_task_handler_run')
       return
 
+    ad_rules = open(self._ad_rules_filename).readlines()
+    tracking_rules = open(self._tracking_rules_filename).readlines()
+
     rows = []
     for path in clovis_task.ActionParams()['traces']:
       self._logger.info('Generating report for: ' + path)
@@ -131,7 +137,7 @@ class ReportTaskHandler(object):
         self._logger.error('Failed loading trace at: ' + path)
         self._failure_database.AddFailure('missing_trace_for_report', path)
         continue
-      report = LoadingReport(trace).GenerateReport()
+      report = LoadingReport(trace, ad_rules, tracking_rules).GenerateReport()
       if not report:
         self._logger.error('Failed generating report for: ' + path)
         self._failure_database.AddFailure('report_generation_failed', path)

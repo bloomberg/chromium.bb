@@ -65,7 +65,7 @@ class Worker(object):
                                                failure_database_filename)
 
     # Recover any existing failures in case the worker died.
-    self._DownloadFailureDatabase()
+    self._failure_database = self._GetFailureDatabase()
 
     if self._failure_database.ToJsonDict():
       # Script is restarting after a crash, or there are already files from a
@@ -74,11 +74,12 @@ class Worker(object):
                                         'failure_database')
 
     bigquery_service = discovery.build('bigquery', 'v2',
-                                      credentials=self._credentials)
+                                       credentials=self._credentials)
     self._clovis_task_handler = ClovisTaskHandler(
         self._project_name, self._base_path_in_bucket, self._failure_database,
         self._google_storage_accessor, bigquery_service,
-        config['binaries_path'], self._logger, self._instance_name)
+        config['binaries_path'], config['ad_rules_filename'],
+        config['tracking_rules_filename'], self._logger, self._instance_name)
 
     self._UploadFailureDatabase()
 
@@ -111,12 +112,12 @@ class Worker(object):
       self._logger.info('Finished task %s' % task_id)
     self._Finalize()
 
-  def _DownloadFailureDatabase(self):
+  def _GetFailureDatabase(self):
     """Downloads the failure database from CloudStorage."""
     self._logger.info('Downloading failure database')
     failure_database_string = self._google_storage_accessor.DownloadAsString(
         self._failure_database_path)
-    self._failure_database = FailureDatabase(failure_database_string)
+    return FailureDatabase(failure_database_string)
 
   def _UploadFailureDatabase(self):
     """Uploads the failure database to CloudStorage."""
@@ -211,4 +212,3 @@ if __name__ == '__main__':
   with open(args.config) as config_json:
     worker = Worker(json.load(config_json), worker_logger)
     worker.Start()
-

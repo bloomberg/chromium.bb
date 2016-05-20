@@ -104,6 +104,8 @@ dictionary with the keys:
 -   `src_path` (string): Path to the Chromium source directory.
 -   `taskqueue_tag` (string): Tag used by the worker when pulling tasks from
     `clovis-queue`.
+-   `ad_rules_filename` and `tracking_rules_filename` (string): Path to the ad
+     and tracking filtering rules.
 -   `instance_name` (string, optional): Name of the Compute Engine instance this
     script is running on.
 -   `worker_log_file` (string, optional): Path to the log file capturing the
