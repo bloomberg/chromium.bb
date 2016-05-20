@@ -927,16 +927,9 @@ IN_PROC_BROWSER_TEST_F(WebViewContextMenuInteractiveTest,
 // and in oopif-mode the events are sent directly to the child process without
 // the forwarding code path (relying on surface-based hittesting).
 
-// Flaky on ChromeOS.  http://crbug.com/613258
-#if defined(OS_CHROMEOS)
-#define MAYBE_ContextMenuParamsAfterCSSTransforms \
-  DISABLED_ContextMenuParamsAfterCSSTransforms
-#else
-#define MAYBE_ContextMenuParamsAfterCSSTransforms \
-  ContextMenuParamsAfterCSSTransforms
-#endif
+// Flaky.  http://crbug.com/613258
 IN_PROC_BROWSER_TEST_F(WebViewContextMenuInteractiveTest,
-                       MAYBE_ContextMenuParamsAfterCSSTransforms) {
+                       DISABLED_ContextMenuParamsAfterCSSTransforms) {
   LoadAndLaunchPlatformApp("web_view/context_menus/coordinates_with_transforms",
                            "Launched");
 
