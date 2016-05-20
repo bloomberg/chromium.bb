@@ -114,6 +114,10 @@ X11EventSource::~X11EventSource() {
     XDestroyWindow(display_, dummy_window_);
 }
 
+bool X11EventSource::HasInstance() {
+  return instance_;
+}
+
 // static
 X11EventSource* X11EventSource::GetInstance() {
   DCHECK(instance_);

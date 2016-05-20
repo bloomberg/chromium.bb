@@ -43,6 +43,8 @@ class EVENTS_EXPORT X11EventSource {
   X11EventSource(X11EventSourceDelegate* delegate, XDisplay* display);
   ~X11EventSource();
 
+  static bool HasInstance();
+
   static X11EventSource* GetInstance();
 
   // Called when there is a new XEvent available. Processes all (if any)

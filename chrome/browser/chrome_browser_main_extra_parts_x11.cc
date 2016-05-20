@@ -101,7 +101,7 @@ void ChromeBrowserMainExtraPartsX11::PostMainMessageLoopStart() {
 #if !defined(OS_CHROMEOS)
   // It is possible for X11EventSource to not have been created (e.g. when
   // running as a mus client).
-  if (ui::X11EventSource::GetInstance()) {
+  if (ui::X11EventSource::HasInstance()) {
     // Get a timestamp from the X server.  This makes our requests to the server
     // less likely to be thrown away by the window manager.  Put the timestamp
     // in a command line flag so we can forward it to an existing browser
