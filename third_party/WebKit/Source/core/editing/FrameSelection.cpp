@@ -89,7 +89,7 @@ using namespace HTMLNames;
 
 static inline bool shouldAlwaysUseDirectionalSelection(LocalFrame* frame)
 {
-    return !frame || frame->editor().behavior().shouldConsiderSelectionAsDirectional();
+    return frame->editor().behavior().shouldConsiderSelectionAsDirectional();
 }
 
 FrameSelection::FrameSelection(LocalFrame* frame)
@@ -103,12 +103,10 @@ FrameSelection::FrameSelection(LocalFrame* frame)
     , m_caretRectDirty(true)
     , m_shouldPaintCaret(true)
     , m_isCaretBlinkingSuspended(false)
-    , m_focused(frame && frame->page() && frame->page()->focusController().focusedFrame() == frame)
+    , m_focused(frame->page() && frame->page()->focusController().focusedFrame() == frame)
     , m_shouldShowBlockCursor(false)
     , m_caretBase(adoptPtr(new CaretBase))
 {
-    // TODO(yosin): We should remove null check for |m_frame| in
-    // "FrameSelection.cpp", since it never be null.
     DCHECK(frame);
     if (shouldAlwaysUseDirectionalSelection(m_frame))
         m_selectionEditor->setIsDirectional(true);
@@ -296,11 +294,6 @@ void FrameSelection::setSelectionAlgorithm(const VisibleSelectionTemplate<Strate
     VisibleSelectionTemplate<Strategy> s = validateSelection(newSelection);
     if (shouldAlwaysUseDirectionalSelection(m_frame))
         s.setIsDirectional(true);
-
-    if (!m_frame) {
-        m_selectionEditor->setVisibleSelection(s, options);
-        return;
-    }
 
     // <http://bugs.webkit.org/show_bug.cgi?id=23464>: Infinite recursion at
     // |FrameSelection::setSelection|
@@ -1330,7 +1323,7 @@ void FrameSelection::setShouldShowBlockCursor(bool shouldShowBlockCursor)
 template <typename Strategy>
 VisibleSelectionTemplate<Strategy> FrameSelection::validateSelection(const VisibleSelectionTemplate<Strategy>& selection)
 {
-    if (!m_frame || selection.isNone())
+    if (selection.isNone())
         return selection;
 
     const PositionTemplate<Strategy> base = selection.base();
@@ -1386,8 +1379,6 @@ void FrameSelection::setCaretRectNeedsUpdate()
 
 void FrameSelection::scheduleVisualUpdate() const
 {
-    if (!m_frame)
-        return;
     if (Page* page = m_frame->page())
         page->animator().scheduleVisualUpdate(m_frame->localFrameRoot());
 }
