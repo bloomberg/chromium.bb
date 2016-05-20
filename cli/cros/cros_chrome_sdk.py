@@ -408,7 +408,7 @@ class ChromeSDKCommand(command.CliCommand):
   _GOMA_URL = ('https://clients5.google.com/cxx-compiler-service/'
                'download/goma_ctl.py')
 
-  _CHROME_CLANG_DIR = 'third_party/llvm-build/Release+Asserts/bin'
+  _CLANG_DIR = 'third_party/llvm-build/Release+Asserts/bin'
 
   EBUILD_ENV = (
       # Compiler tools.
@@ -603,45 +603,24 @@ class ChromeSDKCommand(command.CliCommand):
     for var in ('CXX', 'CC', 'LD'):
       env[var] = self._FixGoldPath(env[var], target_tc_path)
 
-    # Detect if ChromeOS clang is installed, if so, configure to use ChromeOS
-    # clang.
-    cros_clang_path = os.path.join(target_tc_path, 'usr', 'bin')
-    cros_clang_bin = os.path.join(cros_clang_path, 'clang')
-    use_cros_clang = os.path.exists(cros_clang_bin)
-    if use_cros_clang:
-      clang_path = cros_clang_path
-    else:
-      clang_path = os.path.join(options.chrome_src, self._CHROME_CLANG_DIR)
-
+    clang_path = os.path.join(options.chrome_src, self._CLANG_DIR)
     if options.clang:
-      if use_cros_clang:
-        env['CLANG'] = cros_clang_bin
-        env['CC'] = sdk_ctx.target_tc + '-clang'
-        # clang++ needs explicitly add libstdc++ and libm to the
-        # command line.
-        env['CXX'] = (sdk_ctx.target_tc + '-clang++ ' +
-                      '-Wl,--as-needed -lstdc++ -lm')
-      else:
-        # Tell clang where to find the gcc headers and libraries.
-        flags = ['--gcc-toolchain=' + os.path.join(target_tc_path, 'usr'),
-                 '--target=' + sdk_ctx.target_tc]
-        # TODO: It'd be nicer to inject these flags via some gyp variable.
-        # Note: It's important they're only passed to target targets, not host
-        # targets. They are intentionally added only to CC and not CC_host.
-        clang_bin = os.path.join(clang_path, 'clang')
-        env['CC'] = ' '.join([clang_bin] + flags + [env['CC'].split()[-1]])
-        clangxx_bin = os.path.join(clang_path, 'clang++')
-        env['CXX'] = ' '.join([clangxx_bin] + flags + [env['CXX'].split()[-1]])
+      # Tell clang where to find the gcc headers and libraries.
+      flags = ['--gcc-toolchain=' + os.path.join(target_tc_path, 'usr'),
+               '--target=' + sdk_ctx.target_tc]
+      # TODO: It'd be nicer to inject these flags via some gyp variable.
+      # Note: It's important they're only passed to target targets, not host
+      # targets. They are intentionally added only to CC and not CC_host.
+      clang_bin = os.path.join(clang_path, 'clang')
+      env['CC'] = ' '.join([clang_bin] + flags + [env['CC'].split()[-1]])
+      clangxx_bin = os.path.join(clang_path, 'clang++')
+      env['CXX'] = ' '.join([clangxx_bin] + flags + [env['CXX'].split()[-1]])
 
-    # The host compiler intentionally doesn't use the libstdc++ from
-    # sdk_ctx, so that host binaries link against the system libstdc++ and
-    # can run without a special rpath.
+    # The host compiler intentionally doesn't use the libstdc++ from sdk_ctx,
+    # so that host binaries link against the system libstdc++ and can run
+    # without a special rpath.
     env['CC_host'] = os.path.join(clang_path, 'clang')
-    if use_cros_clang:
-      env['CXX_host'] = (os.path.join(clang_path, 'clang++') +
-                         ' -Wl,--as-needed -lstdc++ -lm')
-    else:
-      env['CXX_host'] = os.path.join(clang_path, 'clang++')
+    env['CXX_host'] = os.path.join(clang_path, 'clang++')
 
     if not options.fastbuild:
       # Enable debug fission for GYP. linux_use_debug_fission cannot be used
