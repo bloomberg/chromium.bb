@@ -24,6 +24,7 @@ import android.view.View;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -488,7 +489,22 @@ public class NewTabPage
 
             final long offlineQueryStartTime = SystemClock.elapsedRealtime();
 
-            OfflinePageBridge.getForProfile(mProfile).checkPagesExistOffline(
+            OfflinePageBridge offlinePageBridge = OfflinePageBridge.getForProfile(mProfile);
+
+            // TODO(dewittj): Remove this code by making the NTP badging available after the NTP is
+            // fully loaded.
+            if (offlinePageBridge == null || !offlinePageBridge.isOfflinePageModelLoaded()) {
+                // Posting a task to avoid potential re-entrancy issues.
+                ThreadUtils.postOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        callback.onResult(urlsAvailableOffline);
+                    }
+                });
+                return;
+            }
+
+            offlinePageBridge.checkPagesExistOffline(
                     urlsToCheckForOfflinePage, new Callback<Set<String>>() {
                         @Override
                         public void onResult(Set<String> urlsWithOfflinePages) {
