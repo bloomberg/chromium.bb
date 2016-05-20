@@ -41,15 +41,6 @@ source_set("pipeline_integration_tests") {
 
     deps = [
       ":pipeline_integration_test_base",
-      "//base",
-      "//media",
-      "//media:test_support",
-      "//media/audio:test_support",
-      "//media/base:test_support",
-      "//media/mojo/interfaces",
-      "//media/mojo/services:proxy",
-      "//services/shell/public/cpp:shell_test_support",
-      "//testing/gtest",
       "//url",
 
       # TODO(dalecurtis): Required since the gmock header is included in the

@@ -12,15 +12,21 @@
 #include "base/single_thread_task_runner.h"
 #include "media/base/demuxer_stream_provider.h"
 #include "media/base/renderer_client.h"
+#include "media/base/video_renderer_sink.h"
 #include "media/mojo/services/mojo_demuxer_stream_impl.h"
+#include "media/renderers/video_overlay_factory.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 
 namespace media {
 
 MojoRendererImpl::MojoRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    std::unique_ptr<VideoOverlayFactory> video_overlay_factory,
+    VideoRendererSink* video_renderer_sink,
     mojom::RendererPtr remote_renderer)
     : task_runner_(task_runner),
+      video_overlay_factory_(std::move(video_overlay_factory)),
+      video_renderer_sink_(video_renderer_sink),
       remote_renderer_info_(remote_renderer.PassInterface()),
       binding_(this) {
   DVLOG(1) << __FUNCTION__;
@@ -180,9 +186,13 @@ void MojoRendererImpl::OnError() {
 }
 
 void MojoRendererImpl::OnVideoNaturalSizeChange(mojo::SizePtr size) {
-  DVLOG(2) << __FUNCTION__ << ": " << size->width << "," << size->height;
+  gfx::Size new_size = size.To<gfx::Size>();
+  DVLOG(2) << __FUNCTION__ << ": " << new_size.ToString();
   DCHECK(task_runner_->BelongsToCurrentThread());
-  client_->OnVideoNaturalSizeChange(size.To<gfx::Size>());
+
+  video_renderer_sink_->PaintFrameUsingOldRenderingPath(
+      video_overlay_factory_->CreateFrame(new_size));
+  client_->OnVideoNaturalSizeChange(new_size);
 }
 
 void MojoRendererImpl::OnVideoOpacityChange(bool opaque) {

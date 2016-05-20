@@ -19,6 +19,8 @@ class SingleThreadTaskRunner;
 namespace media {
 
 class DemuxerStreamProvider;
+class VideoOverlayFactory;
+class VideoRendererSink;
 
 // A media::Renderer that proxies to a mojom::Renderer. That
 // mojom::Renderer proxies back to the MojoRendererImpl via the
@@ -34,6 +36,8 @@ class MojoRendererImpl : public Renderer, public mojom::RendererClient {
  public:
   MojoRendererImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      std::unique_ptr<VideoOverlayFactory> video_overlay_factory,
+      VideoRendererSink* video_renderer_sink,
       mojom::RendererPtr remote_renderer);
   ~MojoRendererImpl() override;
 
@@ -70,6 +74,14 @@ class MojoRendererImpl : public Renderer, public mojom::RendererClient {
   // |task_runner| on which all methods are invoked, except for GetMediaTime(),
   // which can be called on any thread.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  // Overlay factory used to create overlays for video frames rendered
+  // by the remote renderer.
+  std::unique_ptr<VideoOverlayFactory> video_overlay_factory_;
+
+  // Video frame overlays are rendered onto this sink.
+  // Rendering of a new overlay is only needed when video natural size changes.
+  VideoRendererSink* video_renderer_sink_;
 
   // Provider of audio/video DemuxerStreams. Must be valid throughout the
   // lifetime of |this|.

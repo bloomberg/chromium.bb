@@ -617,6 +617,8 @@
         'renderers/renderer_impl.h',
         'renderers/skcanvas_video_renderer.cc',
         'renderers/skcanvas_video_renderer.h',
+        'renderers/video_overlay_factory.cc',
+        'renderers/video_overlay_factory.h',
         'renderers/video_renderer_impl.cc',
         'renderers/video_renderer_impl.h',
         'video/fake_video_encode_accelerator.cc',

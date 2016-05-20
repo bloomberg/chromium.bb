@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/renderer/media/hole_frame_factory.h"
+#include "media/renderers/video_overlay_factory.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -11,15 +11,15 @@
 #include "media/base/video_frame.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 
-namespace chromecast {
 namespace media {
 
-HoleFrameFactory::HoleFrameFactory(
-    ::media::GpuVideoAcceleratorFactories* gpu_factories)
+VideoOverlayFactory::VideoOverlayFactory(
+    GpuVideoAcceleratorFactories* gpu_factories)
     : gpu_factories_(gpu_factories), texture_(0), image_id_(0) {
   if (gpu_factories_) {
-    std::unique_ptr<::media::GpuVideoAcceleratorFactories::ScopedGLContextLock>
-        lock(gpu_factories_->GetGLContextLock());
+    DCHECK(gpu_factories_->GetTaskRunner()->BelongsToCurrentThread());
+    std::unique_ptr<GpuVideoAcceleratorFactories::ScopedGLContextLock> lock(
+        gpu_factories_->GetGLContextLock());
     CHECK(lock);
     gpu::gles2::GLES2Interface* gl = lock->ContextGL();
 
@@ -39,10 +39,11 @@ HoleFrameFactory::HoleFrameFactory(
   }
 }
 
-HoleFrameFactory::~HoleFrameFactory() {
+VideoOverlayFactory::~VideoOverlayFactory() {
   if (texture_) {
-    std::unique_ptr<::media::GpuVideoAcceleratorFactories::ScopedGLContextLock>
-        lock(gpu_factories_->GetGLContextLock());
+    DCHECK(gpu_factories_->GetTaskRunner()->BelongsToCurrentThread());
+    std::unique_ptr<GpuVideoAcceleratorFactories::ScopedGLContextLock> lock(
+        gpu_factories_->GetGLContextLock());
     CHECK(lock);
     gpu::gles2::GLES2Interface* gl = lock->ContextGL();
     gl->BindTexture(GL_TEXTURE_2D, texture_);
@@ -52,32 +53,29 @@ HoleFrameFactory::~HoleFrameFactory() {
   }
 }
 
-scoped_refptr<::media::VideoFrame> HoleFrameFactory::CreateHoleFrame(
+scoped_refptr<VideoFrame> VideoOverlayFactory::CreateFrame(
     const gfx::Size& size) {
   // No texture => audio device.  size empty => video has one dimension = 0.
   // Dimension 0 case triggers a DCHECK later on in TextureMailbox if we push
   // through the overlay path.
   if (!texture_ || size.IsEmpty()) {
-    LOG(INFO) << "Create black frame " << size.width() << "x" << size.height();
-    return ::media::VideoFrame::CreateBlackFrame(gfx::Size(1, 1));
+    DVLOG(1) << "Create black frame " << size.width() << "x" << size.height();
+    return VideoFrame::CreateBlackFrame(gfx::Size(1, 1));
   }
 
-  LOG(INFO) << "Create hole frame " << size.width() << "x" << size.height();
-  gpu::MailboxHolder holders[::media::VideoFrame::kMaxPlanes] = {
+  DCHECK(gpu_factories_->GetTaskRunner()->BelongsToCurrentThread());
+  DVLOG(1) << "Create hole frame " << size.width() << "x" << size.height();
+  gpu::MailboxHolder holders[VideoFrame::kMaxPlanes] = {
       gpu::MailboxHolder(mailbox_, sync_token_, GL_TEXTURE_2D)};
-  scoped_refptr<::media::VideoFrame> frame =
-      ::media::VideoFrame::WrapNativeTextures(
-          ::media::PIXEL_FORMAT_XRGB, holders,
-          ::media::VideoFrame::ReleaseMailboxCB(),
-          size,                // coded_size
-          gfx::Rect(size),     // visible rect
-          size,                // natural size
-          base::TimeDelta());  // timestamp
+  scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(
+      PIXEL_FORMAT_XRGB, holders, VideoFrame::ReleaseMailboxCB(),
+      size,                // coded_size
+      gfx::Rect(size),     // visible rect
+      size,                // natural size
+      base::TimeDelta());  // timestamp
   CHECK(frame);
-  frame->metadata()->SetBoolean(::media::VideoFrameMetadata::ALLOW_OVERLAY,
-                                true);
+  frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
   return frame;
 }
 
 }  // namespace media
-}  // namespace chromecast

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_RENDERER_MEDIA_HOLE_FRAME_FACTORY_H_
-#define CHROMECAST_RENDERER_MEDIA_HOLE_FRAME_FACTORY_H_
+#ifndef MEDIA_RENDERERS_VIDEO_OVERLAY_FACTORY_H_
+#define MEDIA_RENDERERS_VIDEO_OVERLAY_FACTORY_H_
 
 #include <GLES2/gl2.h>
 
@@ -11,29 +11,27 @@
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "media/base/media_export.h"
 
 namespace gfx {
 class Size;
-}
+}  // namespace gfx
 
 namespace media {
+
 class GpuVideoAcceleratorFactories;
 class VideoFrame;
-}
 
-namespace chromecast {
-namespace media {
-
-// Creates VideoFrames for CMA - native textures that get turned into
+// Creates video overlay frames - native textures that get turned into
 // transparent holes in the browser compositor using overlay system.
-// All calls (including ctor/dtor) must be on media thread.
-class HoleFrameFactory {
+// This class must be used on GpuVideoAcceleratorFactories::GetTaskRunner().
+class MEDIA_EXPORT VideoOverlayFactory {
  public:
-  explicit HoleFrameFactory(
+  explicit VideoOverlayFactory(
       ::media::GpuVideoAcceleratorFactories* gpu_factories);
-  ~HoleFrameFactory();
+  ~VideoOverlayFactory();
 
-  scoped_refptr<::media::VideoFrame> CreateHoleFrame(const gfx::Size& size);
+  scoped_refptr<::media::VideoFrame> CreateFrame(const gfx::Size& size);
 
  private:
   ::media::GpuVideoAcceleratorFactories* gpu_factories_;
@@ -42,10 +40,9 @@ class HoleFrameFactory {
   GLuint texture_;
   GLuint image_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(HoleFrameFactory);
+  DISALLOW_COPY_AND_ASSIGN(VideoOverlayFactory);
 };
 
 }  // namespace media
-}  // namespace chromecast
 
-#endif  // CHROMECAST_RENDERER_MEDIA_HOLE_FRAME_FACTORY_H_
+#endif  // MEDIA_RENDERERS_VIDEO_OVERLAY_FACTORY_H_

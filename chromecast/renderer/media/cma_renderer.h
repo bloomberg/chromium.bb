@@ -25,6 +25,7 @@ class DemuxerStreamProvider;
 class GpuVideoAcceleratorFactories;
 class TimeDeltaInterpolator;
 class VideoFrame;
+class VideoOverlayFactory;
 class VideoRendererSink;
 }
 
@@ -32,7 +33,6 @@ namespace chromecast {
 namespace media {
 class AudioPipelineProxy;
 class BalancedMediaTaskRunnerFactory;
-class HoleFrameFactory;
 class MediaPipelineProxy;
 class VideoPipelineProxy;
 
@@ -123,7 +123,7 @@ class CmaRenderer : public ::media::Renderer {
 
   // Data members for helping the creation of the video hole frame.
   ::media::GpuVideoAcceleratorFactories* gpu_factories_;
-  std::unique_ptr<HoleFrameFactory> hole_frame_factory_;
+  std::unique_ptr<::media::VideoOverlayFactory> video_overlay_factory_;
 
   // Lock protecting access to |time_interpolator_|.
   base::Lock time_interpolator_lock_;

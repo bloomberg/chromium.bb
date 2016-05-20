@@ -20,7 +20,6 @@
 #include "chromecast/media/cma/pipeline/media_pipeline_client.h"
 #include "chromecast/media/cma/pipeline/video_pipeline_client.h"
 #include "chromecast/renderer/media/audio_pipeline_proxy.h"
-#include "chromecast/renderer/media/hole_frame_factory.h"
 #include "chromecast/renderer/media/media_pipeline_proxy.h"
 #include "chromecast/renderer/media/video_pipeline_proxy.h"
 #include "media/base/bind_to_current_loop.h"
@@ -29,7 +28,7 @@
 #include "media/base/renderer_client.h"
 #include "media/base/time_delta_interpolator.h"
 #include "media/base/video_renderer_sink.h"
-#include "media/renderers/gpu_video_accelerator_factories.h"
+#include "media/renderers/video_overlay_factory.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace chromecast {
@@ -95,7 +94,8 @@ void CmaRenderer::Initialize(
          demuxer_stream_provider->GetStream(::media::DemuxerStream::VIDEO));
 
   // Deferred from ctor so as to initialise on correct thread.
-  hole_frame_factory_.reset(new HoleFrameFactory(gpu_factories_));
+  video_overlay_factory_.reset(
+      new ::media::VideoOverlayFactory(gpu_factories_));
 
   BeginStateTransition();
 
@@ -379,7 +379,7 @@ void CmaRenderer::OnStatisticsUpdated(
 void CmaRenderer::OnNaturalSizeChanged(const gfx::Size& size) {
   DCHECK(thread_checker_.CalledOnValidThread());
   video_renderer_sink_->PaintFrameUsingOldRenderingPath(
-      hole_frame_factory_->CreateHoleFrame(size));
+      video_overlay_factory_->CreateFrame(size));
   client_->OnVideoNaturalSizeChange(size);
 }
 

@@ -29,8 +29,6 @@ source_set("media") {
       "cma_message_filter_proxy.h",
       "cma_renderer.cc",
       "cma_renderer.h",
-      "hole_frame_factory.cc",
-      "hole_frame_factory.h",
       "media_channel_proxy.cc",
       "media_channel_proxy.h",
       "media_pipeline_proxy.cc",
