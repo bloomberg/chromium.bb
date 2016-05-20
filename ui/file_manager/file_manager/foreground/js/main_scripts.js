@@ -107,6 +107,7 @@
 //<include src="empty_folder_controller.js">
 //<include src="file_manager.js">
 //<include src="file_manager_commands.js">
+//<include src="file_list_model.js">
 //<include src="file_selection.js">
 //<include src="file_tasks.js">
 //<include src="file_transfer_controller.js">
