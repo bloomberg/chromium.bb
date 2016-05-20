@@ -60,9 +60,6 @@
                  type="chrome_html"
                  flattenhtml="true"
                  allowexternalscript="true" />
-      <structure name="IDR_SETTINGS_ALL_SITES_CSS"
-                 file="site_settings/all_sites.css"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_ALL_SITES_HTML"
                  file="site_settings/all_sites.html"
                  type="chrome_html" />
@@ -118,9 +115,6 @@
       <structure name="IDR_SETTINGS_ON_STARTUP_PAGE_JS"
                  file="on_startup_page/on_startup_page.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_ON_STARTUP_SHARED_CSS"
-                 file="on_startup_page/on_startup_shared.css"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_STARTUP_URLS_PAGE_HTML"
                  file="on_startup_page/startup_urls_page.html"
                  type="chrome_html" />
@@ -147,9 +141,6 @@
                  file="on_startup_page/startup_url_entry.html"
                  type="chrome_html"
                  allowexternalscript="true" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_MAIN_CSS"
-                 file="settings_main/settings_main.css"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_MAIN_HTML"
                  file="settings_main/settings_main.html"
                  type="chrome_html"
@@ -306,9 +297,6 @@
       <structure name="IDR_SETTINGS_CONTROLS_INPUT_JS"
                  file="controls/settings_input.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CONTROLS_INPUT_CSS"
-                 file="controls/settings_input.css"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CONTROLS_PREF_CONTROL_BEHAVIOR_HTML"
                  file="controls/pref_control_behavior.html"
                  type="chrome_html" />
@@ -322,9 +310,6 @@
                  file="controls/settings_radio_group.js"
                  type="chrome_html" />
       <if expr="not chromeos">
-        <structure name="IDR_SETTINGS_DEFAULT_BROWSER_PAGE_CSS"
-                   file="default_browser_page/default_browser_page.css"
-                   type="chrome_html" />
         <structure name="IDR_SETTINGS_DEFAULT_BROWSER_PAGE_HTML"
                    file="default_browser_page/default_browser_page.html"
                    type="chrome_html"
@@ -372,9 +357,6 @@
       <structure name="IDR_SETTINGS_DIRECTION_DELEGATE_JS"
                  file="direction_delegate.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_DOWNLOADS_PAGE_CSS"
-                 file="downloads_page/downloads_page.css"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_DOWNLOADS_PAGE_HTML"
                  file="downloads_page/downloads_page.html"
                  type="chrome_html"
@@ -395,9 +377,6 @@
       <structure name="IDR_SETTINGS_POWERWASH_DIALOG_JS"
                  file="reset_page/powerwash_dialog.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_RESET_PAGE_DIALOG_CSS"
-                 file="reset_page/reset_page_dialog.css"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_RESET_PAGE_HTML"
                  file="reset_page/reset_page.html"
                  type="chrome_html"
@@ -410,9 +389,6 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_RESET_PROFILE_DIALOG_JS"
                  file="reset_page/reset_profile_dialog.js"
-                 type="chrome_html" />
-      <structure name="IDR_SETTINGS_RESET_PROFILE_BANNER_CSS"
-                 file="reset_page/reset_profile_banner.css"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_RESET_PROFILE_BANNER_HTML"
                  file="reset_page/reset_profile_banner.html"
@@ -605,9 +581,6 @@
       <structure name="IDR_SETTINGS_SITE_SETTINGS_BEHAVIOR_JS"
                  file="site_settings/site_settings_behavior.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_SITE_SETTINGS_CATEGORY_CSS"
-                 file="site_settings/site_settings_category.css"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SITE_SETTINGS_CATEGORY_HTML"
                  file="site_settings/site_settings_category.html"
                  type="chrome_html" />
@@ -619,9 +592,6 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CONSTANTS_HTML"
                  file="site_settings/constants.html"
-                 type="chrome_html" />
-      <structure name="IDR_SETTINGS_SITE_SETTINGS_PAGE_CSS"
-                 file="site_settings_page/site_settings_page.css"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_SITE_SETTINGS_PAGE_HTML"
                  file="site_settings_page/site_settings_page.html"
@@ -635,17 +605,11 @@
       <structure name="IDR_SETTINGS_SITE_SETTINGS_PREFS_BROWSER_PROXY_JS"
                  file="site_settings/site_settings_prefs_browser_proxy.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_SITE_DETAILS_CSS"
-                 file="site_settings/site_details.css"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SITE_DETAILS_HTML"
                  file="site_settings/site_details.html"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_SITE_DETAILS_JS"
                  file="site_settings/site_details.js"
-                 type="chrome_html" />
-      <structure name="IDR_SETTINGS_SITE_DETAILS_PERMISSION_CSS"
-                 file="site_settings/site_details_permission.css"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_SITE_DETAILS_PERMISSION_HTML"
                  file="site_settings/site_details_permission.html"
@@ -688,9 +652,6 @@
                  type="chrome_html"
                  flattenhtml="true"
                  allowexternalscript="true" />
-      <structure name="IDR_SETTINGS_SEARCH_ENGINES_PAGE_SEARCH_ENGINES_LIST_CSS"
-                 file="search_engines_page/search_engines_list.css"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SEARCH_ENGINES_PAGE_SEARCH_ENGINES_PAGE_JS"
                  file="search_engines_page/search_engines_page.js"
                  type="chrome_html" />
@@ -853,9 +814,6 @@
         <structure name="IDR_SETTINGS_NETWORK_SUMMARY_ITEM_JS"
                    file="internet_page/network_summary_item.js"
                    type="chrome_html" />
-        <structure name="IDR_SETTINGS_PEOPLE_PAGE_CAMERA_CSS"
-                   file="people_page/camera.css"
-                   type="chrome_html" />
         <structure name="IDR_SETTINGS_PEOPLE_PAGE_CAMERA_HTML"
                    file="people_page/camera.html"
                    type="chrome_html"
@@ -863,9 +821,6 @@
                    allowexternalscript="true" />
         <structure name="IDR_SETTINGS_PEOPLE_PAGE_CAMERA_JS"
                    file="people_page/camera.js"
-                   type="chrome_html" />
-        <structure name="IDR_SETTINGS_PEOPLE_PAGE_CHANGE_PICTURE_CSS"
-                   file="people_page/change_picture.css"
                    type="chrome_html" />
         <structure name="IDR_SETTINGS_PEOPLE_PAGE_CHANGE_PICTURE_HTML"
                    file="people_page/change_picture.html"

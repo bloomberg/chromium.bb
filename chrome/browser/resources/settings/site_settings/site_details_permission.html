@@ -12,9 +12,41 @@
 <link rel="import" href="chrome://md-settings/site_settings/site_settings_prefs_browser_proxy.html">
 
 <dom-module id="site-details-permission">
-  <link rel="import" type="css" href="site_details_permission.css">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      :host {
+        display: block;
+      }
+
+      .left-column {
+        -webkit-margin-start: 15px;
+      }
+
+      .right-column {
+        -webkit-margin-start: 10px;
+      }
+
+      .permission-header {
+        -webkit-margin-start: -1px;
+      }
+
+      .permission-list {
+        -webkit-margin-end: 7px;
+      }
+
+      .permission-list > paper-dropdown-menu {
+        -webkit-margin-end: 3px;
+        -webkit-margin-start: -13px;
+        margin-bottom: 12px;
+        margin-top: -20px;
+        width: 100%;
+      }
+
+      .permission-list > paper-dropdown-menu::shadow > paper-menu-button {
+        -webkit-margin-start: 11px;
+        width: 100%;
+      }
+    </style>
     <div id="details" class="horizontal layout top" hidden>
       <div class="left-column">
         <iron-icon icon="[[computeIconForContentCategory(category)]]"

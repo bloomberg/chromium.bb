@@ -4,8 +4,19 @@
 <link rel="import" href="chrome://md-settings/basic_page/basic_page.html">
 
 <dom-module id="settings-main">
-  <link rel="import" type="css" href="settings_main.css">
   <template>
+      <style>
+        #pageContainer {
+          box-sizing: border-box;
+          height: 100%;
+          overflow: auto;
+          padding: 0 16px;
+        }
+
+        ::content core-icon-button {
+          position: absolute;
+        }
+      </style>
     <content select="paper-icon-button"></content>
     <div id="pageContainer">
       <template is="dom-if" if="[[showBasicPage_]]">

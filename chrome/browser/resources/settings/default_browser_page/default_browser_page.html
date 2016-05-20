@@ -5,9 +5,12 @@
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 
 <dom-module id="settings-default-browser-page">
-  <link rel="import" type="css" href="default_browser_page.css">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      .error-icon {
+        color: var(--settings-error-color);
+      }
+    </style>
     <div class="settings-box first two-line">
       <template is="dom-if" if="[[showButton_]]">
         <div class="start" on-tap="onSetDefaultBrowserTap_">

@@ -7,8 +7,12 @@
 
 <dom-module id="settings-input">
   <link rel="import" type="css" href="chrome://resources/cr_elements/shared.css">
-  <link rel="import" type="css" href="settings_input.css">
   <template>
+    <style>
+      :host {
+        display: inline-block;
+      }
+    </style>
     <cr-events id="events"></cr-events>
 
     <div id="outerDiv" class="layout horizontal center">

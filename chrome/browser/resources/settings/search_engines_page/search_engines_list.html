@@ -2,8 +2,30 @@
 <link rel="import" href="chrome://md-settings/search_engines_page/search_engine_entry.html">
 
 <dom-module id="settings-search-engines-list">
-  <link rel="import" type="css" href="search_engines_list.css">
   <template>
+    <style>
+      .headers {
+        display: flex;
+        padding: 10px 0;
+      }
+
+      .headers .name,
+      .headers .keyword {
+        flex: 3;
+      }
+
+      .headers .url {
+        flex: 4.5;
+      }
+
+      div {
+        margin: var(--search-engines-list-margin);
+      }
+
+      ::content [is='action-link'] {
+        margin: var(--search-engines-list-item-vertical-space) 0;
+      }
+    </style>
     <div>
       <content></content>
       <template is="dom-repeat" items="[[engines]]">

@@ -7,9 +7,13 @@
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 
 <dom-module id="settings-powerwash-dialog">
-  <link rel="import" type="css" href="reset_page_dialog.css">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      a {
+        color: rgb(66, 133, 244);
+        text-decoration: none;
+      }
+    </style>
     <settings-dialog id="dialog">
       <div class="title">$i18n{powerwashDialogTitle}</div>
       <div class="body">

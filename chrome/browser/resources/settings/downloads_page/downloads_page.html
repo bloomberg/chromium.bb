@@ -6,9 +6,19 @@
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 
 <dom-module id="settings-downloads-page">
-  <link rel="import" type="css" href="downloads_page.css">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      settings-input {
+        /* This ensures that the "Download location" label and the text in the
+         * input itself are vertically aligned. */
+        margin-bottom: 1em;
+        width: 300px;
+      }
+
+      #locationLabel {
+        -webkit-margin-end: 10px;
+      }
+    </style>
     <div class="settings-box first two-line">
       <div class="start">
         <div>$i18n{downloadLocation}</div>

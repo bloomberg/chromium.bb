@@ -6,9 +6,12 @@
 <link rel="import" href="chrome://md-settings/on_startup_page/startup_urls_page_browser_proxy.html">
 
 <dom-module id="settings-startup-urls-page">
-  <link rel="import" type="css" href="on_startup_shared.css">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      paper-radio-button {
+        display: block;
+      }
+    </style>
     <div class="list-frame vertical-list">
       <template is="dom-repeat" items="[[startupPages_]]">
         <settings-startup-url-entry model="[[item]]">

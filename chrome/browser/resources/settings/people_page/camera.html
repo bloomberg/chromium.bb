@@ -6,9 +6,65 @@
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 
 <dom-module id="settings-camera">
-  <link rel="import" type="css" href="camera.css">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      #perspectiveBox {
+        -webkit-perspective: 600px;
+        height: 228px;
+        width: 228px;
+      }
+
+      #userImageStreamCrop {
+        height: 228px;
+        overflow: hidden;
+        position: relative;
+        width: 228px;
+      }
+
+      #userImageStreamCrop.flip-x {
+        -webkit-transform: rotateY(180deg);
+      }
+
+      paper-spinner {
+        bottom: 0;
+        left: 0;
+        margin: auto auto;
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+
+      #cameraVideo {
+        height: 228px;
+        /* Center image for 4:3 aspect ratio. */
+        left: -16.6%;
+        position: absolute;
+      }
+
+      #cameraControls {
+        background-color: var(--paper-grey-800);
+        border-bottom-left-radius: 2px;
+        border-bottom-right-radius: 2px;
+        padding: 8px;
+      }
+
+      #flipPhoto {
+        color: white;
+        float: right;
+      }
+
+      :host-context([dir=rtl]) #flipPhoto {
+        float: left;
+      }
+
+      #takePhoto {
+        background-color: var(--paper-green-500);
+        border-radius: 50%;
+        color: white;
+        display: block;
+        margin: 0 auto 0 auto;
+      }
+    </style>
     <div hidden="[[!cameraActive]]">
       <div id="perspectiveBox">
         <div id="userImageStreamCrop">

@@ -10,9 +10,39 @@
 <link rel="import" href="chrome://md-settings/site_settings/website_usage_private_api.html">
 
 <dom-module id="site-details">
-  <link rel="import" type="css" href="site_details.css">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      :host {
+        -webkit-margin-start: 4px;
+        display: block;
+      }
+
+      .origin-box {
+        margin-bottom: 20px;
+        margin-top: 35px;
+      }
+
+      .origin {
+        -webkit-margin-start: 10px;
+        font-size: 110%;
+        font-weight: 500;
+      }
+
+      .reset-button {
+        -webkit-margin-start: 15px;
+      }
+
+      #storage {
+        -webkit-padding-end: 0;
+      }
+
+      .website-icon {
+        background-repeat: no-repeat;
+        background-size: contain;
+        height: 16px;
+        width: 16px;
+      }
+    </style>
     <div class="settings-box block">
       <div class="horizontal layout origin-box">
         <div class="website-icon" style$="[[computeSiteIcon(site)]]"></div>
