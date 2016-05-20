@@ -19,6 +19,8 @@
 @property(nonatomic, assign) CGFloat swipeEdge;
 // The distance from the edge of the screen from which a gesture starts.
 @property(readonly, nonatomic) CGFloat swipeOffset;
+// The distance between touches for a swipe to begin.
+@property(readwrite, nonatomic) CGFloat swipeThreshold;
 // Starting point of swipe.
 @property(readonly, nonatomic) CGPoint startPoint;
 @property(nonatomic, assign) UISwipeGestureRecognizerDirection direction;
