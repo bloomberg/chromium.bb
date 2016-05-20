@@ -2058,6 +2058,32 @@ void PropertyTrees::PushOpacityIfNeeded(PropertyTrees* target_tree) {
   }
 }
 
+void PropertyTrees::RemoveIdFromIdToIndexMaps(int id) {
+  transform_id_to_index_map.erase(id);
+  effect_id_to_index_map.erase(id);
+  clip_id_to_index_map.erase(id);
+  scroll_id_to_index_map.erase(id);
+}
+
+bool PropertyTrees::IsInIdToIndexMap(TreeType tree_type, int id) {
+  std::unordered_map<int, int>* id_to_index_map = nullptr;
+  switch (tree_type) {
+    case TRANSFORM:
+      id_to_index_map = &transform_id_to_index_map;
+      break;
+    case EFFECT:
+      id_to_index_map = &effect_id_to_index_map;
+      break;
+    case CLIP:
+      id_to_index_map = &clip_id_to_index_map;
+      break;
+    case SCROLL:
+      id_to_index_map = &scroll_id_to_index_map;
+      break;
+  }
+  return id_to_index_map->find(id) != id_to_index_map->end();
+}
+
 void PropertyTrees::UpdateChangeTracking() {
   for (int id = 1; id < static_cast<int>(effect_tree.size()); ++id) {
     EffectNode* node = effect_tree.Node(id);
