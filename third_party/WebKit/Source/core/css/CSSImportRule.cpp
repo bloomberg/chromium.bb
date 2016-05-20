@@ -72,8 +72,6 @@ String CSSImportRule::cssText() const
 
 CSSStyleSheet* CSSImportRule::styleSheet() const
 {
-    // TODO(yukishiino): CSSImportRule.styleSheet attribute is not nullable,
-    // thus this function must not return nullptr.
     if (!m_importRule->styleSheet())
         return nullptr;
 
