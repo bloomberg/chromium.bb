@@ -62,7 +62,7 @@ VisitedLinkState::VisitedLinkState(const Document& document)
 
 static void invalidateStyleForAllLinksRecursively(Node& rootNode, bool invalidateVisitedLinkHashes)
 {
-    for (Node& node : NodeTraversal::startsAt(&rootNode)) {
+    for (Node& node : NodeTraversal::startsAt(rootNode)) {
         if (node.isLink()) {
             if (invalidateVisitedLinkHashes && isHTMLAnchorElement(node))
                 toHTMLAnchorElement(node).invalidateCachedVisitedLinkHash();
@@ -85,7 +85,7 @@ void VisitedLinkState::invalidateStyleForAllLinks(bool invalidateVisitedLinkHash
 
 static void invalidateStyleForLinkRecursively(Node& rootNode, LinkHash linkHash)
 {
-    for (Node& node : NodeTraversal::startsAt(&rootNode)) {
+    for (Node& node : NodeTraversal::startsAt(rootNode)) {
         if (node.isLink() && linkHashForElement(toElement(node)) == linkHash) {
             toElement(node).pseudoStateChanged(CSSSelector::PseudoLink);
             toElement(node).pseudoStateChanged(CSSSelector::PseudoVisited);

@@ -1899,7 +1899,7 @@ void Node::removeAllEventListeners()
 void Node::removeAllEventListenersRecursively()
 {
     ScriptForbiddenScope forbidScriptDuringRawIteration;
-    for (Node& node : NodeTraversal::startsAt(this)) {
+    for (Node& node : NodeTraversal::startsAt(*this)) {
         node.removeAllEventListeners();
         for (ShadowRoot* root = node.youngestShadowRoot(); root; root = root->olderShadowRoot())
             root->removeAllEventListenersRecursively();

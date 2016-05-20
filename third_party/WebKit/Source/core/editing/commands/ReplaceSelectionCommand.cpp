@@ -833,12 +833,15 @@ static bool handleStyleSpansBeforeInsertion(ReplacementFragment& fragment, const
 // or at copy time.
 void ReplaceSelectionCommand::handleStyleSpans(InsertedNodes& insertedNodes, EditingState* editingState)
 {
+    if (!insertedNodes.firstNodeInserted())
+        return;
+
     HTMLSpanElement* wrappingStyleSpan = nullptr;
     // The style span that contains the source document's default style should be at
     // the top of the fragment, but Mail sometimes adds a wrapper (for Paste As Quotation),
     // so search for the top level style span instead of assuming it's at the top.
 
-    for (Node& node : NodeTraversal::startsAt(insertedNodes.firstNodeInserted())) {
+    for (Node& node : NodeTraversal::startsAt(*insertedNodes.firstNodeInserted())) {
         if (isLegacyAppleHTMLSpanElement(&node)) {
             wrappingStyleSpan = toHTMLSpanElement(&node);
             break;

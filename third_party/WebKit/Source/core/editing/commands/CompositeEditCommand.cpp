@@ -862,7 +862,7 @@ void CompositeEditCommand::deleteInsignificantText(const Position& start, const 
         return;
 
     HeapVector<Member<Text>> nodes;
-    for (Node& node : NodeTraversal::startsAt(start.anchorNode())) {
+    for (Node& node : NodeTraversal::startsAt(*start.anchorNode())) {
         if (node.isTextNode())
             nodes.append(toText(&node));
         if (&node == end.anchorNode())

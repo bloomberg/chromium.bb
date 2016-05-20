@@ -747,7 +747,7 @@ TriState EditingStyle::triStateOfStyle(const VisibleSelection& selection) const
 
     TriState state = FalseTriState;
     bool nodeIsStart = true;
-    for (Node& node : NodeTraversal::startsAt(selection.start().anchorNode())) {
+    for (Node& node : NodeTraversal::startsAt(*selection.start().anchorNode())) {
         if (node.layoutObject() && node.hasEditableStyle()) {
             CSSComputedStyleDeclaration* nodeStyle = CSSComputedStyleDeclaration::create(&node);
             if (nodeStyle) {
