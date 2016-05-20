@@ -7,7 +7,6 @@
 [
     Exposed=PaintWorklet,
     RuntimeEnabled=CSSPaintAPI,
-    GarbageCollected,
 ] interface Geometry {
     readonly attribute double width;
     readonly attribute double height;

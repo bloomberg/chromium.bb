@@ -1,9 +1,7 @@
 {% from "macros.tmpl" import license %}
 {{ license() }}
 
-[
-    GarbageCollected,
-] interface InternalRuntimeFlags {
+interface InternalRuntimeFlags {
     {% for feature in standard_features %}
     {%+ if feature.condition %}[Conditional={{feature.condition}}] {% endif -%}
     {% if feature.settable_from_internals %}

@@ -51,7 +51,6 @@ DoNotCheckSecurity=|Setter
 EnforceRange
 Exposed=*
 FlexibleArrayBufferView
-GarbageCollected
 Global=|*
 ImplementedAs=*
 ImplementedInPrivateScript
