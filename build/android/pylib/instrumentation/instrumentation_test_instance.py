@@ -386,7 +386,6 @@ class InstrumentationTestInstance(test_instance.TestInstance):
       self._driver_apk = None
 
   def _initializeTestControlAttributes(self, args):
-    self._screenshot_dir = args.screenshot_dir
     self._timeout_scale = args.timeout_scale or 1
 
   @property
@@ -420,10 +419,6 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   @property
   def package_info(self):
     return self._package_info
-
-  @property
-  def screenshot_dir(self):
-    return self._screenshot_dir
 
   @property
   def suite(self):

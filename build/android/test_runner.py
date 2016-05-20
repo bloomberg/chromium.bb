@@ -337,7 +337,7 @@ def AddJavaTestOptions(argument_group):
       help=('Comma-separated list of annotations. Exclude tests with these '
             'annotations.'))
   argument_group.add_argument(
-      '--screenshot-directory', dest='screenshot_dir',
+      '--screenshot', dest='screenshot_failures', action='store_true',
       help='Capture screenshots of test failures')
   argument_group.add_argument(
       '--save-perf-json', action='store_true',
