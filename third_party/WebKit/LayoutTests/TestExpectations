@@ -998,6 +998,7 @@ crbug.com/611462 fast/repaint/table-overflow-auto-in-overflow-auto-scrolled.html
 crbug.com/611462 fast/repaint/table-overflow-scroll-in-overflow-scroll-scrolled.html [ Failure Pass ]
 crbug.com/611462 fast/repaint/text-match-document-change.html [ Failure Pass ]
 crbug.com/611462 virtual/gpu-rasterization/fast/images/fixed-img-src-change-after-scroll.html [ Failure Pass ]
+crbug.com/611462 [ Win7 ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/text-match-highlight.html [ Failure ]
 
 crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-vert-001a.xhtml [ Failure ]
 crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-vert-001b.xhtml [ Failure ]
