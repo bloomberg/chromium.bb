@@ -8,10 +8,11 @@
 #include <sstream>
 #include <utility>
 
-#include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
+#include "tools/gn/filesystem_utils.h"
 
 // Helper methods -------------------------------------------------------------
 
@@ -89,67 +90,71 @@ std::string EncodeString(const std::string& string) {
   return buffer.str();
 }
 
-const char* GetSourceType(const base::FilePath::StringType& ext) {
-  std::map<base::FilePath::StringType, const char*> extension_map = {
-      {FILE_PATH_LITERAL(".a"), "archive.ar"},
-      {FILE_PATH_LITERAL(".app"), "wrapper.application"},
-      {FILE_PATH_LITERAL(".bdic"), "file"},
-      {FILE_PATH_LITERAL(".bundle"), "wrapper.cfbundle"},
-      {FILE_PATH_LITERAL(".c"), "sourcecode.c.c"},
-      {FILE_PATH_LITERAL(".cc"), "sourcecode.cpp.cpp"},
-      {FILE_PATH_LITERAL(".cpp"), "sourcecode.cpp.cpp"},
-      {FILE_PATH_LITERAL(".css"), "text.css"},
-      {FILE_PATH_LITERAL(".cxx"), "sourcecode.cpp.cpp"},
-      {FILE_PATH_LITERAL(".dart"), "sourcecode"},
-      {FILE_PATH_LITERAL(".dylib"), "compiled.mach-o.dylib"},
-      {FILE_PATH_LITERAL(".framework"), "wrapper.framework"},
-      {FILE_PATH_LITERAL(".h"), "sourcecode.c.h"},
-      {FILE_PATH_LITERAL(".hxx"), "sourcecode.cpp.h"},
-      {FILE_PATH_LITERAL(".icns"), "image.icns"},
-      {FILE_PATH_LITERAL(".java"), "sourcecode.java"},
-      {FILE_PATH_LITERAL(".js"), "sourcecode.javascript"},
-      {FILE_PATH_LITERAL(".kext"), "wrapper.kext"},
-      {FILE_PATH_LITERAL(".m"), "sourcecode.c.objc"},
-      {FILE_PATH_LITERAL(".mm"), "sourcecode.cpp.objcpp"},
-      {FILE_PATH_LITERAL(".nib"), "wrapper.nib"},
-      {FILE_PATH_LITERAL(".o"), "compiled.mach-o.objfile"},
-      {FILE_PATH_LITERAL(".pdf"), "image.pdf"},
-      {FILE_PATH_LITERAL(".pl"), "text.script.perl"},
-      {FILE_PATH_LITERAL(".plist"), "text.plist.xml"},
-      {FILE_PATH_LITERAL(".pm"), "text.script.perl"},
-      {FILE_PATH_LITERAL(".png"), "image.png"},
-      {FILE_PATH_LITERAL(".py"), "text.script.python"},
-      {FILE_PATH_LITERAL(".r"), "sourcecode.rez"},
-      {FILE_PATH_LITERAL(".rez"), "sourcecode.rez"},
-      {FILE_PATH_LITERAL(".s"), "sourcecode.asm"},
-      {FILE_PATH_LITERAL(".storyboard"), "file.storyboard"},
-      {FILE_PATH_LITERAL(".strings"), "text.plist.strings"},
-      {FILE_PATH_LITERAL(".swift"), "sourcecode.swift"},
-      {FILE_PATH_LITERAL(".ttf"), "file"},
-      {FILE_PATH_LITERAL(".xcassets"), "folder.assetcatalog"},
-      {FILE_PATH_LITERAL(".xcconfig"), "text.xcconfig"},
-      {FILE_PATH_LITERAL(".xcdatamodel"), "wrapper.xcdatamodel"},
-      {FILE_PATH_LITERAL(".xcdatamodeld"), "wrapper.xcdatamodeld"},
-      {FILE_PATH_LITERAL(".xib"), "file.xib"},
-      {FILE_PATH_LITERAL(".y"), "sourcecode.yacc"},
-  };
+struct SourceTypeForExt {
+  const char* ext;
+  const char* source_type;
+};
 
-  const auto& iter = extension_map.find(ext);
-  if (iter != extension_map.end()) {
-    return iter->second;
+const SourceTypeForExt kSourceTypeForExt[] = {
+    {".a", "archive.ar"},
+    {".app", "wrapper.application"},
+    {".bdic", "file"},
+    {".bundle", "wrapper.cfbundle"},
+    {".c", "sourcecode.c.c"},
+    {".cc", "sourcecode.cpp.cpp"},
+    {".cpp", "sourcecode.cpp.cpp"},
+    {".css", "text.css"},
+    {".cxx", "sourcecode.cpp.cpp"},
+    {".dart", "sourcecode"},
+    {".dylib", "compiled.mach-o.dylib"},
+    {".framework", "wrapper.framework"},
+    {".h", "sourcecode.c.h"},
+    {".hxx", "sourcecode.cpp.h"},
+    {".icns", "image.icns"},
+    {".java", "sourcecode.java"},
+    {".js", "sourcecode.javascript"},
+    {".kext", "wrapper.kext"},
+    {".m", "sourcecode.c.objc"},
+    {".mm", "sourcecode.cpp.objcpp"},
+    {".nib", "wrapper.nib"},
+    {".o", "compiled.mach-o.objfile"},
+    {".pdf", "image.pdf"},
+    {".pl", "text.script.perl"},
+    {".plist", "text.plist.xml"},
+    {".pm", "text.script.perl"},
+    {".png", "image.png"},
+    {".py", "text.script.python"},
+    {".r", "sourcecode.rez"},
+    {".rez", "sourcecode.rez"},
+    {".s", "sourcecode.asm"},
+    {".storyboard", "file.storyboard"},
+    {".strings", "text.plist.strings"},
+    {".swift", "sourcecode.swift"},
+    {".ttf", "file"},
+    {".xcassets", "folder.assetcatalog"},
+    {".xcconfig", "text.xcconfig"},
+    {".xcdatamodel", "wrapper.xcdatamodel"},
+    {".xcdatamodeld", "wrapper.xcdatamodeld"},
+    {".xib", "file.xib"},
+    {".y", "sourcecode.yacc"},
+};
+
+const char* GetSourceType(const base::StringPiece& ext) {
+  for (size_t i = 0; i < arraysize(kSourceTypeForExt); ++i) {
+    if (kSourceTypeForExt[i].ext == ext)
+      return kSourceTypeForExt[i].source_type;
   }
 
   return "text";
 }
 
-bool HasExplicitFileType(const base::FilePath::StringType& ext) {
-  return ext == FILE_PATH_LITERAL(".dart");
+bool HasExplicitFileType(const base::StringPiece& ext) {
+  return ext == ".dart";
 }
 
-bool IsSourceFileForIndexing(const base::FilePath::StringType& ext) {
-  return ext == FILE_PATH_LITERAL(".c") || ext == FILE_PATH_LITERAL(".cc") ||
-         ext == FILE_PATH_LITERAL(".cpp") || ext == FILE_PATH_LITERAL(".cxx") ||
-         ext == FILE_PATH_LITERAL(".m") || ext == FILE_PATH_LITERAL(".mm");
+bool IsSourceFileForIndexing(const base::StringPiece& ext) {
+  return ext == ".c" || ext == ".cc" || ext == ".cpp" || ext == ".cxx" ||
+         ext == ".m" || ext == ".mm";
 }
 
 void PrintValue(std::ostream& out, IndentRules rules, unsigned value) {
@@ -411,9 +416,7 @@ void PBXFileReference::Print(std::ostream& out, unsigned indent) const {
     PrintProperty(out, rules, "explicitFileType", type_);
     PrintProperty(out, rules, "includeInIndex", 0u);
   } else {
-    const base::FilePath::StringType ext =
-        base::FilePath::FromUTF8Unsafe(path_).Extension();
-
+    base::StringPiece ext = FindExtension(&path_);
     if (HasExplicitFileType(ext))
       PrintProperty(out, rules, "explicitFileType", GetSourceType(ext));
     else
@@ -539,10 +542,12 @@ PBXNativeTarget::PBXNativeTarget(const std::string& name,
                                  const std::string& config_name,
                                  const PBXAttributes& attributes,
                                  const std::string& product_type,
+                                 const std::string& product_name,
                                  const PBXFileReference* product_reference)
     : PBXTarget(name, shell_script, config_name, attributes),
       product_reference_(product_reference),
-      product_type_(product_type) {
+      product_type_(product_type),
+      product_name_(product_name) {
   DCHECK(product_reference_);
   build_phases_.push_back(base::WrapUnique(new PBXSourcesBuildPhase));
   source_build_phase_ =
@@ -574,7 +579,7 @@ void PBXNativeTarget::Print(std::ostream& out, unsigned indent) const {
   PrintProperty(out, rules, "buildRules", EmptyPBXObjectVector());
   PrintProperty(out, rules, "dependencies", EmptyPBXObjectVector());
   PrintProperty(out, rules, "name", name_);
-  PrintProperty(out, rules, "productName", name_);
+  PrintProperty(out, rules, "productName", product_name_);
   PrintProperty(out, rules, "productReference", product_reference_);
   PrintProperty(out, rules, "productType", product_type_);
   out << indent_str << "};\n";
@@ -603,8 +608,7 @@ PBXProject::~PBXProject() {}
 
 void PBXProject::AddSourceFile(const std::string& source_path) {
   PBXFileReference* file_reference = sources_->AddSourceFile(source_path);
-  const base::FilePath::StringType ext =
-      base::FilePath::FromUTF8Unsafe(source_path).Extension();
+  base::StringPiece ext = FindExtension(&source_path);
   if (!IsSourceFileForIndexing(ext))
     return;
 
@@ -621,7 +625,7 @@ void PBXProject::AddSourceFile(const std::string& source_path) {
     const char product_type[] = "com.apple.product-type.tool";
     targets_.push_back(base::WrapUnique(
         new PBXNativeTarget(name_, std::string(), config_name_, attributes,
-                            product_type, product_reference)));
+                            product_type, name_, product_reference)));
     target_for_indexing_ = static_cast<PBXNativeTarget*>(targets_.back().get());
   }
 
@@ -645,20 +649,25 @@ void PBXProject::AddNativeTarget(const std::string& name,
                                  const std::string& output_name,
                                  const std::string& output_type,
                                  const std::string& shell_script) {
-  const base::FilePath::StringType ext =
-      base::FilePath::FromUTF8Unsafe(output_name).Extension();
+  base::StringPiece ext = FindExtension(&output_name);
+  PBXFileReference* product =
+      static_cast<PBXFileReference*>(products_->AddChild(base::WrapUnique(
+          new PBXFileReference(std::string(), output_name,
+                               type.empty() ? GetSourceType(ext) : type))));
 
-  PBXFileReference* product = static_cast<PBXFileReference*>(
-      products_->AddChild(base::WrapUnique(new PBXFileReference(
-          name, output_name, type.empty() ? GetSourceType(ext) : type))));
+  size_t ext_offset = FindExtensionOffset(output_name);
+  std::string product_name = ext_offset != std::string::npos
+                                 ? output_name.substr(0, ext_offset - 1)
+                                 : output_name;
 
   PBXAttributes attributes;
   attributes["CODE_SIGNING_REQUIRED"] = "NO";
   attributes["CONFIGURATION_BUILD_DIR"] = ".";
-  attributes["PRODUCT_NAME"] = name;
+  attributes["PRODUCT_NAME"] = product_name;
 
-  targets_.push_back(base::WrapUnique(new PBXNativeTarget(
-      name, shell_script, config_name_, attributes, output_type, product)));
+  targets_.push_back(base::WrapUnique(
+      new PBXNativeTarget(name, shell_script, config_name_, attributes,
+                          output_type, product_name, product)));
 }
 
 void PBXProject::SetProjectDirPath(const std::string& project_dir_path) {

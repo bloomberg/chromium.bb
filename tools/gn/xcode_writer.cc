@@ -189,7 +189,7 @@ bool XcodeWriter::RunAndWriteFiles(const std::string& workspace_name,
   XcodeWriter workspace(workspace_name);
   workspace.CreateProductsProject(targets, attributes, source_path, config_name,
                                   root_target_name, ninja_extra_args,
-                                  target_os);
+                                  build_settings, target_os);
 
   workspace.CreateSourcesProject(all_targets, build_settings->build_dir(),
                                  attributes, source_path, config_name,
@@ -266,6 +266,7 @@ void XcodeWriter::CreateProductsProject(
     const std::string& config_name,
     const std::string& root_target,
     const std::string& ninja_extra_args,
+    const BuildSettings* build_settings,
     TargetOsType target_os) {
   std::unique_ptr<PBXProject> main_project(
       new PBXProject("products", config_name, source_path, attributes));
@@ -298,10 +299,10 @@ void XcodeWriter::CreateProductsProject(
 
         main_project->AddNativeTarget(
             target->label().name(), std::string(),
-            target->bundle_data()
-                .GetBundleRootDirOutput(target->settings())
-                .Resolve(base::FilePath())
-                .AsUTF8Unsafe(),
+            RebasePath(target->bundle_data()
+                           .GetBundleRootDirOutput(target->settings())
+                           .value(),
+                       build_settings->build_dir()),
             target->bundle_data().product_type(),
             GetBuildScript(target->label().name(), build_path,
                            ninja_extra_args));
@@ -347,9 +348,10 @@ void XcodeWriter::CreateSourcesProject(
   std::sort(sources.begin(), sources.end());
   sources.erase(std::unique(sources.begin(), sources.end()), sources.end());
 
+  SourceDir source_dir("//");
   for (const SourceFile& source : sources) {
-    base::FilePath source_path = source.Resolve(base::FilePath());
-    sources_for_indexing->AddSourceFile(source_path.AsUTF8Unsafe());
+    std::string source_file = RebasePath(source.value(), source_dir);
+    sources_for_indexing->AddSourceFile(source_file);
   }
 
   projects_.push_back(std::move(sources_for_indexing));

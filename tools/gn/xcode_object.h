@@ -243,6 +243,7 @@ class PBXNativeTarget : public PBXTarget {
                   const std::string& config_name,
                   const PBXAttributes& attributes,
                   const std::string& product_type,
+                  const std::string& product_name,
                   const PBXFileReference* product_reference);
   ~PBXNativeTarget() override;
 
@@ -255,6 +256,7 @@ class PBXNativeTarget : public PBXTarget {
  private:
   const PBXFileReference* product_reference_;
   std::string product_type_;
+  std::string product_name_;
 
   DISALLOW_COPY_AND_ASSIGN(PBXNativeTarget);
 };

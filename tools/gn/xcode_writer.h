@@ -22,6 +22,10 @@ class Target;
 using PBXAttributes = std::map<std::string, std::string>;
 class PBXProject;
 
+namespace base {
+class FilePath;
+}
+
 class XcodeWriter {
  public:
   enum TargetOsType {
@@ -69,6 +73,7 @@ class XcodeWriter {
                              const std::string& config_name,
                              const std::string& root_target,
                              const std::string& ninja_extra_args,
+                             const BuildSettings* build_settings,
                              TargetOsType target_os);
 
   // Generates the "sources.xcodeproj" project that reference all source
