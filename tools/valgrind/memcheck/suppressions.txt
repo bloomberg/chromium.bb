@@ -2033,14 +2033,6 @@
    fun:_ZN7content17BlinkPlatformImpl9DoTimeoutEv
 }
 {
-   bug_350809
-   Memcheck:Uninitialized
-   fun:_ZN5blink23ReplaceSelectionCommand7doApplyEv
-   fun:_ZN5blink20CompositeEditCommand5applyEv
-   fun:_ZN5blink6Editor28replaceSelectionWithFragmentEN3WTF10PassRefPtrINS_16DocumentFragmentEEEbbb
-   fun:_ZN5blink6Editor24replaceSelectionWithTextERKN3WTF6StringEbb
-}
-{
   bug_361594
   Memcheck:Uninitialized
   ...
