@@ -31,6 +31,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "platform/Histogram.h"
+#include "platform/MemoryCacheDumpProvider.h"
 #include "platform/PartitionAllocMemoryDumpProvider.h"
 #include "platform/fonts/FontCacheMemoryDumpProvider.h"
 #include "platform/graphics/CompositorFactory.h"
@@ -104,6 +105,7 @@ void Platform::initialize(Platform* platform)
         s_gcTaskRunner = new GCTaskRunner(s_platform->m_mainThread);
         base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(PartitionAllocMemoryDumpProvider::instance(), "PartitionAlloc", base::ThreadTaskRunnerHandle::Get());
         base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(FontCacheMemoryDumpProvider::instance(), "FontCaches", base::ThreadTaskRunnerHandle::Get());
+        base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(MemoryCacheDumpProvider::instance(), "MemoryCache", base::ThreadTaskRunnerHandle::Get());
     }
 
     CompositorFactory::initializeDefault();
@@ -118,6 +120,7 @@ void Platform::shutdown()
         base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(FontCacheMemoryDumpProvider::instance());
         base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(PartitionAllocMemoryDumpProvider::instance());
         base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(BlinkGCMemoryDumpProvider::instance());
+        base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(MemoryCacheDumpProvider::instance());
 
         ASSERT(s_gcTaskRunner);
         delete s_gcTaskRunner;

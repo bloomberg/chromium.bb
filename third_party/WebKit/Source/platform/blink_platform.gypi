@@ -70,6 +70,8 @@
       'MIMETypeFromURL.h',
       'MIMETypeRegistry.cpp',
       'MIMETypeRegistry.h',
+      'MemoryCacheDumpProvider.cpp',
+      'MemoryCacheDumpProvider.h',
       'MemoryPurgeController.cpp',
       'MemoryPurgeController.h',
       'PartitionAllocMemoryDumpProvider.cpp',

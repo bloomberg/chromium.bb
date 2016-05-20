@@ -27,7 +27,7 @@
 
 #include "core/CoreExport.h"
 #include "core/fetch/Resource.h"
-#include "public/platform/WebMemoryDumpProvider.h"
+#include "platform/MemoryCacheDumpProvider.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
@@ -122,7 +122,8 @@ WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(blink::MemoryCacheLRUList);
 
 namespace blink {
 
-class CORE_EXPORT MemoryCache final : public GarbageCollectedFinalized<MemoryCache>, public WebThread::TaskObserver {
+class CORE_EXPORT MemoryCache final : public GarbageCollectedFinalized<MemoryCache>, public WebThread::TaskObserver, public MemoryCacheDumpClient {
+    USING_GARBAGE_COLLECTED_MIXIN(MemoryCache);
     WTF_MAKE_NONCOPYABLE(MemoryCache);
 public:
     static MemoryCache* create();
@@ -222,7 +223,7 @@ public:
     void updateFramePaintTimestamp();
 
     // Take memory usage snapshot for tracing.
-    void onMemoryDump(WebMemoryDumpLevelOfDetail, WebProcessMemoryDump*);
+    bool onMemoryDump(WebMemoryDumpLevelOfDetail, WebProcessMemoryDump*) override;
 
     bool isInSameLRUListForTest(const Resource*, const Resource*);
 private:
