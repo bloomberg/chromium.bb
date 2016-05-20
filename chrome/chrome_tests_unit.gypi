@@ -1037,6 +1037,7 @@
       'browser/chromeos/login/existing_user_controller_auto_login_unittest.cc',
       'browser/chromeos/login/hwid_checker_unittest.cc',
       'browser/chromeos/login/profile_auth_data_unittest.cc',
+      'browser/chromeos/login/quick_unlock/pin_storage_unittest.cc',
       'browser/chromeos/login/saml/saml_offline_signin_limiter_unittest.cc',
       'browser/chromeos/login/signin/merge_session_load_page_unittest.cc',
       'browser/chromeos/login/supervised/supervised_user_authentication_unittest.cc',

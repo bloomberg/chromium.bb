@@ -289,6 +289,8 @@ extern const char kPlatformKeys[];
 extern const char kUnifiedDesktopEnabledByDefault[];
 extern const char kAllowScreenLock[];
 extern const char kHatsLastInteractionTimestamp[];
+extern const char kQuickUnlockPinSalt[];
+extern const char kQuickUnlockPinSecret[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kShowHomeButton[];
 extern const char kRecentlySelectedEncoding[];

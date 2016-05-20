@@ -868,6 +868,10 @@ const char kAllowScreenLock[] = "allow_screen_lock";
 // An int64 pref. This is a timestamp of the most recent time the profile took
 // or dismissed HaTS (happiness-tracking) survey.
 const char kHatsLastInteractionTimestamp[] = "hats_last_interaction_timestamp";
+
+// The salt and hash for the pin quick unlock mechanism.
+const char kQuickUnlockPinSalt[] = "quick_unlock.pin.salt";
+const char kQuickUnlockPinSecret[] = "quick_unlock.pin.secret";
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be
