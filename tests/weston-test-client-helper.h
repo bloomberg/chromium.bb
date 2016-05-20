@@ -157,9 +157,6 @@ create_client(void);
 struct client *
 create_client_and_test_surface(int x, int y, int width, int height);
 
-struct wl_buffer *
-create_shm_buffer(struct client *client, int width, int height, void **pixels);
-
 struct buffer *
 create_shm_buffer_a8r8g8b8(struct client *client, int width, int height);
 

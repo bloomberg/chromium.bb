@@ -414,7 +414,7 @@ static const struct wl_surface_listener surface_listener = {
 	surface_leave
 };
 
-struct wl_buffer *
+static struct wl_buffer *
 create_shm_buffer(struct client *client, int width, int height, void **pixels)
 {
 	struct wl_shm *shm = client->wl_shm;
