@@ -76703,6 +76703,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="34" label="SERVER_UNAUTHORIZED"/>
   <int value="35" label="SERVER_CERT_PROBLEM"/>
   <int value="36" label="SERVER_FORBIDDEN"/>
+  <int value="37" label="SERVER_UNREACHABLE"/>
   <int value="40" label="USER_CANCELED"/>
   <int value="41" label="USER_SHUTDOWN"/>
   <int value="50" label="CRASH"/>
