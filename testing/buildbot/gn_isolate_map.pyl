@@ -428,6 +428,10 @@
     "label": "//mojo/edk/system:mojo_system_unittests",
     "type": "console_test_launcher",
   },
+  "mus_clipboard_unittests": {
+    "label": "//components/mus/clipboard:mus_clipboard_unittests",
+    "type": "windowed_test_launcher",
+  },
   "mus_public_unittests": {
     "label": "//components/mus/public/cpp/tests:mus_public_unittests",
     "type": "windowed_test_launcher",

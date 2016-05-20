@@ -22,6 +22,7 @@ foreach(typemap, _typemaps) {
 blacklist = [
   # TODO(sammc): Remove the following once |for_blink| bindings support WTF
   # maps. See https://crbug.com/583738.
+  "//components/mus/public/interfaces/clipboard.mojom",
   "//components/mus/public/interfaces/window_manager.mojom",
   "//components/mus/public/interfaces/window_tree.mojom",
   "//extensions/common/api/mime_handler.mojom",

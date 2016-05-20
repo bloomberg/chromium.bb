@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/mus/public/interfaces/clipboard.mojom.h"
 #include "components/mus/public/interfaces/display.mojom.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "components/mus/public/interfaces/user_access_manager.mojom.h"
@@ -54,13 +55,14 @@ class WindowServer;
 class MusApp
     : public shell::ShellClient,
       public ws::WindowServerDelegate,
+      public shell::InterfaceFactory<mojom::Clipboard>,
       public shell::InterfaceFactory<mojom::DisplayManager>,
+      public shell::InterfaceFactory<mojom::Gpu>,
       public shell::InterfaceFactory<mojom::UserAccessManager>,
       public shell::InterfaceFactory<mojom::WindowManagerFactoryService>,
       public shell::InterfaceFactory<mojom::WindowTreeFactory>,
       public shell::InterfaceFactory<mojom::WindowTreeHostFactory>,
-      public shell::InterfaceFactory<mojom::WindowServerTest>,
-      public shell::InterfaceFactory<mojom::Gpu> {
+      public shell::InterfaceFactory<mojom::WindowServerTest> {
  public:
   MusApp();
   ~MusApp() override;
@@ -95,9 +97,17 @@ class MusApp
   bool IsTestConfig() const override;
   void CreateDefaultDisplays() override;
 
+  // shell::InterfaceFactory<mojom::Clipboard> implementation.
+  void Create(shell::Connection* connection,
+              mojom::ClipboardRequest request) override;
+
   // shell::InterfaceFactory<mojom::DisplayManager> implementation.
   void Create(shell::Connection* connection,
               mojom::DisplayManagerRequest request) override;
+
+  // shell::InterfaceFactory<mojom::Gpu> implementation.
+  void Create(shell::Connection* connection,
+              mojom::GpuRequest request) override;
 
   // shell::InterfaceFactory<mojom::UserAccessManager> implementation.
   void Create(shell::Connection* connection,
@@ -118,10 +128,6 @@ class MusApp
   // shell::InterfaceFactory<mojom::WindowServerTest> implementation.
   void Create(shell::Connection* connection,
               mojom::WindowServerTestRequest request) override;
-
-  // shell::InterfaceFactory<mojom::Gpu> implementation.
-  void Create(shell::Connection* connection,
-              mojom::GpuRequest request) override;
 
   // Callback for display configuration. |id| is the identifying token for the
   // configured display that will identify a specific physical display across

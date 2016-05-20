@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
+#include "components/mus/clipboard/clipboard_impl.h"
 #include "components/mus/common/switches.h"
 #include "components/mus/gles2/gpu_impl.h"
 #include "components/mus/ws/display.h"
@@ -69,6 +70,7 @@ struct MusApp::PendingRequest {
 };
 
 struct MusApp::UserState {
+  std::unique_ptr<clipboard::ClipboardImpl> clipboard;
   std::unique_ptr<ws::WindowTreeHostFactory> window_tree_host_factory;
 };
 
@@ -184,6 +186,7 @@ void MusApp::Initialize(shell::Connector* connector,
 
 bool MusApp::AcceptConnection(Connection* connection) {
   connection->AddInterface<Gpu>(this);
+  connection->AddInterface<mojom::Clipboard>(this);
   connection->AddInterface<mojom::DisplayManager>(this);
   connection->AddInterface<mojom::UserAccessManager>(this);
   connection->AddInterface<WindowTreeHostFactory>(this);
@@ -219,10 +222,23 @@ void MusApp::CreateDefaultDisplays() {
 }
 
 void MusApp::Create(shell::Connection* connection,
+                    mojom::ClipboardRequest request) {
+  UserState* user_state = GetUserState(connection);
+  if (!user_state->clipboard)
+    user_state->clipboard.reset(new clipboard::ClipboardImpl);
+  user_state->clipboard->AddBinding(std::move(request));
+}
+
+void MusApp::Create(shell::Connection* connection,
                     mojom::DisplayManagerRequest request) {
   window_server_->display_manager()
       ->GetUserDisplayManager(connection->GetRemoteIdentity().user_id())
       ->AddDisplayManagerBinding(std::move(request));
+}
+
+void MusApp::Create(shell::Connection* connection, mojom::GpuRequest request) {
+  DCHECK(platform_display_init_params_.gpu_state);
+  new GpuImpl(std::move(request), platform_display_init_params_.gpu_state);
 }
 
 void MusApp::Create(shell::Connection* connection,
@@ -271,11 +287,6 @@ void MusApp::Create(Connection* connection,
   if (!test_config_)
     return;
   new ws::WindowServerTestImpl(window_server_.get(), std::move(request));
-}
-
-void MusApp::Create(shell::Connection* connection, mojom::GpuRequest request) {
-  DCHECK(platform_display_init_params_.gpu_state);
-  new GpuImpl(std::move(request), platform_display_init_params_.gpu_state);
 }
 
 void MusApp::OnCreatedPhysicalDisplay(int64_t id, const gfx::Rect& bounds) {

@@ -8,6 +8,7 @@ mojom("interfaces") {
   sources = [
     "accelerator_registrar.mojom",
     "channel_handle.mojom",
+    "clipboard.mojom",
     "command_buffer.mojom",
     "compositor_frame.mojom",
     "cursor.mojom",

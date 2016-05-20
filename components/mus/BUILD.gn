@@ -83,6 +83,7 @@ source_set("lib") {
     "//base",
     "//cc",
     "//cc/surfaces",
+    "//components/mus/clipboard:lib",
     "//components/mus/gles2",
     "//components/mus/gpu",
     "//components/mus/public/interfaces",

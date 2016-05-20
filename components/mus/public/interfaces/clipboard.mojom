@@ -1,0 +1,50 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mus.mojom;
+
+interface Clipboard {
+  enum Type {
+    COPY_PASTE = 0,
+    SELECTION = 1,
+    DRAG = 2
+  };
+
+  // Mime type constants
+  const string MIME_TYPE_TEXT = "text/plain";
+  const string MIME_TYPE_HTML = "text/html";
+  const string MIME_TYPE_URL = "text/url";
+
+  // Returns a sequence number which uniquely identifies clipboard state.
+  // Clients are able to assume that the clipboard contents are unchanged as
+  // long as this number has not changed. This number is monotonically
+  // increasing, is increased when the clipboard state changes, and is
+  // provided by Windows, Linux, and Mac.
+  [Sync]
+  GetSequenceNumber(Type clipboard_type) => (uint64 sequence);
+
+  // Returns the available mime types, and the current sequence number.
+  [Sync]
+  GetAvailableMimeTypes(Type clipboard_types)
+      => (uint64 sequence, array<string> types);
+
+  // If the current sequence number is still |sequence|, returns true and the
+  // current data associated with the requested Mime type. When the sequence
+  // number has changed (because new data has been written to the clipboard),
+  // returns false and null for |data|.
+  //
+  // We don't want to provide one API to return the entire clipboard state
+  // because the combined size of the clipboard can be megabytes, especially
+  // when image data is involved.
+  [Sync]
+  ReadMimeType(uint64 sequence, Type clipboard_type, string mime_type)
+      => (bool sequence_valid, array<uint8>? data);
+
+  // Writes a set of mime types to the clipboard. This will increment the
+  // sequence number and return that. In the case of an empty or null map,
+  // this will just clear the clipboard.
+  [Sync]
+  WriteClipboardData(Type clipboard_type, map<string, array<uint8>>? data)
+      => (uint64 sequence);
+};
