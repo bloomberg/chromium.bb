@@ -33,9 +33,11 @@ import android.widget.Toast;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
+import org.chromium.chromoting.NavigationMenuAdapter.NavigationMenuItem;
 import org.chromium.chromoting.accountswitcher.AccountSwitcher;
 import org.chromium.chromoting.accountswitcher.AccountSwitcherFactory;
 import org.chromium.chromoting.base.OAuthTokenFetcher;
+import org.chromium.chromoting.help.CreditsActivity;
 import org.chromium.chromoting.help.HelpContext;
 import org.chromium.chromoting.help.HelpSingleton;
 import org.chromium.chromoting.jni.Client;
@@ -170,6 +172,34 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
         mProgressView.setVisibility(View.GONE);
     }
 
+    private ListView createNavigationMenu() {
+        ListView navigationMenu = (ListView) getLayoutInflater()
+                .inflate(R.layout.navigation_list, null);
+
+        NavigationMenuItem helpItem = new NavigationMenuItem(R.menu.help_list_item,
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        HelpSingleton.getInstance().launchHelp(Chromoting.this,
+                                HelpContext.HOST_LIST);
+                    }
+                });
+
+        NavigationMenuItem creditsItem = new NavigationMenuItem(R.menu.credits_list_item,
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        startActivity(new Intent(Chromoting.this, CreditsActivity.class));
+                    }
+                });
+
+        NavigationMenuItem[] navigationMenuItems = { helpItem, creditsItem };
+        NavigationMenuAdapter adapter = new NavigationMenuAdapter(this, navigationMenuItems);
+        navigationMenu.setAdapter(adapter);
+        navigationMenu.setOnItemClickListener(adapter);
+        return navigationMenu;
+    }
+
     /**
      * Called when the activity is first created. Loads the native library and requests an
      * authentication token from the system.
@@ -240,30 +270,8 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
                 ChromotingUtil.getColorAttribute(this, R.attr.colorControlNormal));
         getSupportActionBar().setHomeAsUpIndicator(menuIcon);
 
-        ListView navigationMenu = new ListView(this);
-        navigationMenu.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-        navigationMenu.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT));
-
-        String[] navigationMenuItems = new String[] {
-            getString(R.string.actionbar_help)
-        };
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.navigation_list_item,
-                navigationMenuItems);
-        navigationMenu.setAdapter(adapter);
-        navigationMenu.setOnItemClickListener(
-                new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position,
-                            long id) {
-                        HelpSingleton.getInstance().launchHelp(Chromoting.this,
-                                HelpContext.HOST_LIST);
-                    }
-                });
-
         mAccountSwitcher = AccountSwitcherFactory.getInstance().createAccountSwitcher(this, this);
-        mAccountSwitcher.setNavigation(navigationMenu);
+        mAccountSwitcher.setNavigation(createNavigationMenu());
         LinearLayout navigationDrawer = (LinearLayout) findViewById(R.id.navigation_drawer);
         mAccountSwitcher.setDrawer(navigationDrawer);
         View switcherView = mAccountSwitcher.getView();
