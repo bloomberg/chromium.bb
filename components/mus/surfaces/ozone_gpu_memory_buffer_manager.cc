@@ -33,6 +33,14 @@ OzoneGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
   return nullptr;
 }
 
+std::unique_ptr<gfx::GpuMemoryBuffer>
+OzoneGpuMemoryBufferManager::CreateGpuMemoryBufferFromClientId(
+    int client_id,
+    const gfx::GpuMemoryBufferId& gpu_memory_buffer_id) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 gfx::GpuMemoryBuffer*
 OzoneGpuMemoryBufferManager::GpuMemoryBufferFromClientBuffer(
     ClientBuffer buffer) {

@@ -33,6 +33,12 @@ class GPU_EXPORT GpuMemoryBufferManager {
       const gfx::Size& size,
       gfx::BufferFormat format) = 0;
 
+  // Creates a new GpuMemoryBuffer instance of a client's buffer.
+  virtual std::unique_ptr<gfx::GpuMemoryBuffer>
+  CreateGpuMemoryBufferFromClientId(
+      int client_id,
+      const gfx::GpuMemoryBufferId& gpu_memory_buffer_id) = 0;
+
   // Returns a GpuMemoryBuffer instance given a ClientBuffer. Returns NULL on
   // failure.
   virtual gfx::GpuMemoryBuffer* GpuMemoryBufferFromClientBuffer(

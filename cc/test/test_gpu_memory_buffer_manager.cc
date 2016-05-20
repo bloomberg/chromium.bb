@@ -144,6 +144,14 @@ TestGpuMemoryBufferManager::GpuMemoryBufferFromClientBuffer(
   return reinterpret_cast<gfx::GpuMemoryBuffer*>(buffer);
 }
 
+std::unique_ptr<gfx::GpuMemoryBuffer>
+TestGpuMemoryBufferManager::CreateGpuMemoryBufferFromClientId(
+    int client_id,
+    const gfx::GpuMemoryBufferId& gpu_memory_buffer_id) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 void TestGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
     const gpu::SyncToken& sync_token) {}

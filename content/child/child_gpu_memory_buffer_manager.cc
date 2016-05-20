@@ -77,6 +77,14 @@ ChildGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
   return nullptr;
 }
 
+std::unique_ptr<gfx::GpuMemoryBuffer>
+ChildGpuMemoryBufferManager::CreateGpuMemoryBufferFromClientId(
+    int client_id,
+    const gfx::GpuMemoryBufferId& gpu_memory_buffer_id) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 gfx::GpuMemoryBuffer*
 ChildGpuMemoryBufferManager::GpuMemoryBufferFromClientBuffer(
     ClientBuffer buffer) {

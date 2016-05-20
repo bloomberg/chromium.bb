@@ -133,6 +133,14 @@ BlimpGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
       handle.offset, handle.stride));
 }
 
+std::unique_ptr<gfx::GpuMemoryBuffer>
+BlimpGpuMemoryBufferManager::CreateGpuMemoryBufferFromClientId(
+    int client_id,
+    const gfx::GpuMemoryBufferId& gpu_memory_buffer_id) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 gfx::GpuMemoryBuffer*
 BlimpGpuMemoryBufferManager::GpuMemoryBufferFromClientBuffer(
     ClientBuffer buffer) {

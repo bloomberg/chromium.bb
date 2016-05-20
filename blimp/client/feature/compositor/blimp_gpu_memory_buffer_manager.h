@@ -28,6 +28,9 @@ class BlimpGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
       const gfx::GpuMemoryBufferHandle& handle,
       const gfx::Size& size,
       gfx::BufferFormat format) override;
+  std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBufferFromClientId(
+      int client_id,
+      const gfx::GpuMemoryBufferId& gpu_memory_buffer_id) override;
   gfx::GpuMemoryBuffer* GpuMemoryBufferFromClientBuffer(
       ClientBuffer buffer) override;
   void SetDestructionSyncToken(gfx::GpuMemoryBuffer* buffer,

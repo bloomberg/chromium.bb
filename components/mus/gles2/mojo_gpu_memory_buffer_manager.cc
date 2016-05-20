@@ -31,6 +31,14 @@ MojoGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
   return nullptr;
 }
 
+std::unique_ptr<gfx::GpuMemoryBuffer>
+MojoGpuMemoryBufferManager::CreateGpuMemoryBufferFromClientId(
+    int client_id,
+    const gfx::GpuMemoryBufferId& gpu_memory_buffer_id) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 gfx::GpuMemoryBuffer*
 MojoGpuMemoryBufferManager::GpuMemoryBufferFromClientBuffer(
     ClientBuffer buffer) {
