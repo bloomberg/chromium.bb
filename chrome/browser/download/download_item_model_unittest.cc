@@ -26,6 +26,7 @@
 #include "ui/gfx/text_utils.h"
 
 using content::DownloadItem;
+using safe_browsing::DownloadFileType;
 using ::testing::Mock;
 using ::testing::NiceMock;
 using ::testing::Return;
@@ -375,10 +376,10 @@ TEST_F(DownloadItemModelTest, DangerLevel) {
   SetupDownloadItemDefaults();
 
   // Default danger level is NOT_DANGEROUS.
-  EXPECT_EQ(download_util::NOT_DANGEROUS, model().GetDangerLevel());
+  EXPECT_EQ(DownloadFileType::NOT_DANGEROUS, model().GetDangerLevel());
 
-  model().SetDangerLevel(download_util::ALLOW_ON_USER_GESTURE);
-  EXPECT_EQ(download_util::ALLOW_ON_USER_GESTURE, model().GetDangerLevel());
+  model().SetDangerLevel(DownloadFileType::ALLOW_ON_USER_GESTURE);
+  EXPECT_EQ(DownloadFileType::ALLOW_ON_USER_GESTURE, model().GetDangerLevel());
 }
 
 TEST_F(DownloadItemModelTest, ShouldRemoveFromShelfWhenComplete) {

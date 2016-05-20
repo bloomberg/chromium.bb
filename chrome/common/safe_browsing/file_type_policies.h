@@ -51,9 +51,6 @@ class FileTypePolicies {
   //
   // Accessors
   //
-  DownloadFileType PolicyForFile(const base::FilePath& file) const;
-  DownloadFileType::PlatformSettings SettingsForFile(
-      const base::FilePath& file) const;
   bool IsArchiveFile(const base::FilePath& file) const;
 
   // SBClientDownloadExtensions UMA histogram bucket for this file's type.
@@ -63,7 +60,18 @@ class FileTypePolicies {
   // this type of file.
   bool IsCheckedBinaryFile(const base::FilePath& file) const;
 
+  // True if the user can select this file type to be opened automatically.
+  bool IsAllowedToOpenAutomatically(const base::FilePath& file) const;
+
+  // Return the danger level of this file type.
+  DownloadFileType::DangerLevel GetFileDangerLevel(
+      const base::FilePath& file) const;
+
   float SampledPingProbability() const;
+
+  DownloadFileType PolicyForFile(const base::FilePath& file) const;
+  DownloadFileType::PlatformSettings SettingsForFile(
+      const base::FilePath& file) const;
 
  protected:
   // Creator must call one of Populate* before calling other methods.

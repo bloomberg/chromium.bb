@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_crx_util.h"
-#include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/image_decoder.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
+#include "chrome/common/safe_browsing/file_type_policies.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/google/core/browser/google_util.h"
@@ -180,8 +180,9 @@ bool DownloadCommands::IsCommandEnabled(Command command) const {
       // filename. Don't base an "Always open" decision based on it. Also
       // exclude extensions.
       return download_item_->CanOpenDownload() &&
-             download_util::IsAllowedToOpenAutomatically(
-                 download_item_->GetTargetFilePath()) &&
+             safe_browsing::FileTypePolicies::GetInstance()
+                 ->IsAllowedToOpenAutomatically(
+                     download_item_->GetTargetFilePath()) &&
              !download_crx_util::IsExtensionDownload(*download_item_);
     case CANCEL:
       return !download_item_->IsDone();

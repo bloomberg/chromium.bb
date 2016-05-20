@@ -18,9 +18,9 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/android/download/android_download_manager_overwrite_infobar_delegate.h"
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
+#include "chrome/common/safe_browsing/file_type_policies.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/android/download_controller_android.h"
@@ -45,8 +45,8 @@ static jboolean IsDownloadDangerous(JNIEnv* env,
                                     const JavaParamRef<jclass>& clazz,
                                     const JavaParamRef<jstring>& filename) {
   base::FilePath path(base::android::ConvertJavaStringToUTF8(env, filename));
-  return download_util::GetFileDangerLevel(path) !=
-      download_util::NOT_DANGEROUS;
+  return safe_browsing::FileTypePolicies::GetInstance()->GetFileDangerLevel(
+             path) != safe_browsing::DownloadFileType::NOT_DANGEROUS;
 }
 
 // Called when a dangerous download is validated.

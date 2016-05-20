@@ -202,8 +202,6 @@
       'browser/download/chrome_download_manager_delegate.cc',
       'browser/download/chrome_download_manager_delegate.h',
       'browser/download/download_crx_util_android.cc',
-      'browser/download/download_extensions.cc',
-      'browser/download/download_extensions.h',
       'browser/download/download_file_picker.cc',
       'browser/download/download_file_picker.h',
       'browser/download/download_history.cc',

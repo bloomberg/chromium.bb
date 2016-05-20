@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_TARGET_INFO_H_
 
 #include "base/files/file_path.h"
-#include "chrome/browser/download/download_extensions.h"
+#include "chrome/common/safe_browsing/download_file_types.pb.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_item.h"
 
@@ -51,7 +51,7 @@ struct DownloadTargetInfo {
   //       UNKONWN, the file will still be conisdered a DANGEROUS_FILE. However,
   //       SafeBrowsing may flag the file as being malicious, in which case the
   //       malicious classification should take precedence.
-  download_util::DownloadDangerLevel danger_level;
+  safe_browsing::DownloadFileType::DangerLevel danger_level;
 
   // Suggested intermediate path. The downloaded bytes should be written to this
   // path until all the bytes are available and the user has accepted a

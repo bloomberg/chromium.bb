@@ -209,4 +209,21 @@ bool FileTypePolicies::IsCheckedBinaryFile(const base::FilePath& file) const {
   return PolicyForExtension(ext).ping_setting() == DownloadFileType::FULL_PING;
 }
 
+bool FileTypePolicies::IsAllowedToOpenAutomatically(
+    const base::FilePath& file) const {
+  const std::string ext = CanonicalizedExtension(file);
+  if (ext.empty())
+    return false;
+  AutoLock lock(lock_);
+  return PolicyForExtension(ext).platform_settings(0).auto_open_hint() ==
+         DownloadFileType::ALLOW_AUTO_OPEN;
+}
+
+DownloadFileType::DangerLevel FileTypePolicies::GetFileDangerLevel(
+    const base::FilePath& file) const {
+  const std::string ext = CanonicalizedExtension(file);
+  AutoLock lock(lock_);
+  return PolicyForExtension(ext).platform_settings(0).danger_level();
+}
+
 }  // namespace safe_browsing

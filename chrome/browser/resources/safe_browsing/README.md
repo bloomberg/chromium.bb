@@ -9,7 +9,8 @@ Rendered version of this file: https://chromium.googlesource.com/chromium/src/+/
 
 
 ## Procedure for adding a new type
-  * Edit `download_file_types.asciipb` and update `histograms.xml`
+  * Edit `download_file_types.asciipb`, edit `download_stats.cc` (necessary
+    until it gets replaced), and update `histograms.xml`
   * Get it reviewed, submit.
   * Push via component update (PROCEDURE TBD)
 

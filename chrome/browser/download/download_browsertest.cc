@@ -64,6 +64,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
+#include "chrome/common/safe_browsing/download_file_types.pb.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -3209,7 +3210,7 @@ class DisableSafeBrowsingOnInProgressDownload
     EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
               download->GetDangerType());
     EXPECT_FALSE(download->IsDangerous());
-    EXPECT_NE(download_util::NOT_DANGEROUS,
+    EXPECT_NE(safe_browsing::DownloadFileType::NOT_DANGEROUS,
               DownloadItemModel(download).GetDangerLevel());
     return true;
   }

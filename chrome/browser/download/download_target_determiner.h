@@ -16,6 +16,7 @@
 #include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/download/download_target_determiner_delegate.h"
 #include "chrome/browser/download/download_target_info.h"
+#include "chrome/common/safe_browsing/download_file_types.pb.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
@@ -298,7 +299,7 @@ class DownloadTargetDeterminer
   //
   // If |require_explicit_consent| is non-null then the pointed bool will be set
   // to true if the download requires explicit user consent.
-  download_util::DownloadDangerLevel GetDangerLevel(
+  safe_browsing::DownloadFileType::DangerLevel GetDangerLevel(
       PriorVisitsToReferrer visits) const;
 
   // content::DownloadItem::Observer
@@ -311,7 +312,7 @@ class DownloadTargetDeterminer
   bool create_target_directory_;
   DownloadPathReservationTracker::FilenameConflictAction conflict_action_;
   content::DownloadDangerType danger_type_;
-  download_util::DownloadDangerLevel danger_level_;
+  safe_browsing::DownloadFileType::DangerLevel danger_level_;
   base::FilePath virtual_path_;
   base::FilePath local_path_;
   base::FilePath intermediate_path_;

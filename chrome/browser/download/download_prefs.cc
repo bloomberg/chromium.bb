@@ -22,7 +22,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
-#include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_target_determiner.h"
@@ -30,6 +29,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -49,6 +49,7 @@
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadManager;
+using safe_browsing::FileTypePolicies;
 
 namespace {
 
@@ -187,7 +188,8 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
     // automatically can change in the future. When the list is tightened, it is
     // expected that some entries in the users' auto open list will get dropped
     // permanently as a result.
-    if (download_util::IsAllowedToOpenAutomatically(filename_with_extension))
+    if (FileTypePolicies::GetInstance()->IsAllowedToOpenAutomatically(
+            filename_with_extension))
       auto_open_.insert(extension);
   }
 }
@@ -313,7 +315,8 @@ bool DownloadPrefs::IsAutoOpenEnabledBasedOnExtension(
 bool DownloadPrefs::EnableAutoOpenBasedOnExtension(
     const base::FilePath& file_name) {
   base::FilePath::StringType extension = file_name.Extension();
-  if (!download_util::IsAllowedToOpenAutomatically(file_name))
+  if (!FileTypePolicies::GetInstance()->IsAllowedToOpenAutomatically(
+          file_name))
     return false;
 
   DCHECK(extension[0] == base::FilePath::kExtensionSeparator);

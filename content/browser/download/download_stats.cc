@@ -70,9 +70,9 @@ void RecordContentDispositionCountFlag(
 }
 
 // Do not insert, delete, or reorder; this is being histogrammed. Append only.
-// All of the download_extensions.cc file types should be in this list.
-// TODO(asanka): This enum and the UMA metrics for dangerous/malicious downloads
-// should be moved to //chrome/browser/download.
+// All of the download_file_types.asciipb entries should be in this list.
+// TODO(asanka): Replace this enum with calls to FileTypePolicies and move the
+// UMA metrics for dangerous/malicious downloads to //chrome/browser/download.
 const base::FilePath::CharType* kDangerousFileTypes[] = {
   FILE_PATH_LITERAL(".ad"),
   FILE_PATH_LITERAL(".ade"),

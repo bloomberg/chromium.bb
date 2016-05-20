@@ -20,6 +20,7 @@
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
+#include "chrome/common/safe_browsing/download_file_types.pb.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/download_danger_type.h"
@@ -32,6 +33,7 @@
 
 using base::TimeDelta;
 using content::DownloadItem;
+using safe_browsing::DownloadFileType;
 
 namespace {
 
@@ -61,7 +63,7 @@ class DownloadItemModelData : public base::SupportsUserData::Data {
 
   // Danger level of the file determined based on the file type and whether
   // there was a user action associated with the download.
-  download_util::DownloadDangerLevel danger_level_;
+  DownloadFileType::DangerLevel danger_level_;
 
   // Whether the download is currently being revived.
   bool is_being_revived_;
@@ -98,7 +100,7 @@ DownloadItemModelData::DownloadItemModelData()
     : should_show_in_shelf_(true),
       was_ui_notified_(false),
       should_prefer_opening_in_browser_(false),
-      danger_level_(download_util::NOT_DANGEROUS),
+      danger_level_(DownloadFileType::NOT_DANGEROUS),
       is_being_revived_(false) {}
 
 base::string16 InterruptReasonStatusMessage(
@@ -617,13 +619,13 @@ void DownloadItemModel::SetShouldPreferOpeningInBrowser(bool preference) {
   data->should_prefer_opening_in_browser_ = preference;
 }
 
-download_util::DownloadDangerLevel DownloadItemModel::GetDangerLevel() const {
+DownloadFileType::DangerLevel DownloadItemModel::GetDangerLevel() const {
   const DownloadItemModelData* data = DownloadItemModelData::Get(download_);
-  return data ? data->danger_level_ : download_util::NOT_DANGEROUS;
+  return data ? data->danger_level_ : DownloadFileType::NOT_DANGEROUS;
 }
 
 void DownloadItemModel::SetDangerLevel(
-    download_util::DownloadDangerLevel danger_level) {
+    DownloadFileType::DangerLevel danger_level) {
   DownloadItemModelData* data = DownloadItemModelData::GetOrCreate(download_);
   data->danger_level_ = danger_level;
 }
