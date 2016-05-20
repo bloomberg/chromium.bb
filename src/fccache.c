@@ -1193,6 +1193,7 @@ FcDirCacheLock (const FcChar8 *dir,
 	    break;
 	}
     }
+    FcStrListDone (list);
     return fd;
 bail:
     if (fd != -1)
