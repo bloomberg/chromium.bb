@@ -954,12 +954,6 @@ crbug.com/467127 imported/csswg-test/css-flexbox-1/getcomputedstyle/flexbox_comp
 crbug.com/467127 [ Mac Win ] imported/csswg-test/css-flexbox-1/ttwf-reftest-flex-wrap-reverse.html [ Failure ]
 crbug.com/467127 [ Mac Win ] imported/csswg-test/css-flexbox-1/ttwf-reftest-flex-wrap.html [ Failure ]
 
-crbug.com/612874 [ Linux ] tables/mozilla_expected_failures/marvin/backgr_position-table-cell.html [ NeedsRebaseline ]
-crbug.com/612874 [ Linux ] css1/box_properties/border_bottom_width.html [ NeedsRebaseline ]
-crbug.com/612874 [ Win ] tables/mozilla/marvin/backgr_simple-table-column-group.html [ NeedsRebaseline ]
-crbug.com/612874 [ Win ] fast/forms/suggestion-picker/date-suggestion-picker-appearance-rtl.html [ NeedsRebaseline ]
-crbug.com/612874 [ Win ] svg/wicd/test-scalable-background-image1.xhtml [ NeedsRebaseline ]
-
 crbug.com/570894 [ Win ] imported/csswg-test/css-flexbox-1/flexbox_flex-natural-mixed-basis-auto.html [ Failure Pass ]
 
 crbug.com/553838 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-vert-001a.xhtml [ Failure ]
