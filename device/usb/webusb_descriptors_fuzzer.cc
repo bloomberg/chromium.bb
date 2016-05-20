@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/i18n/icu_util.h"
@@ -22,7 +25,7 @@ namespace device {
 void Done(std::unique_ptr<WebUsbAllowedOrigins> allowed_origins,
           const GURL& landing_page) {}
 
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   scoped_refptr<UsbDeviceHandle> device_handle =
       new FakeUsbDeviceHandle(data, size);
   ReadWebUsbDescriptors(device_handle, base::Bind(&Done));

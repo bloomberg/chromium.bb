@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <unistd.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <memory>
 #include <vector>
@@ -21,7 +22,7 @@ extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
   return InitLogging(settings);
 }
 
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   safe_browsing::dmg::MemoryReadStream input(data, size);
   safe_browsing::dmg::UDIFParser udif_parser(&input);
 

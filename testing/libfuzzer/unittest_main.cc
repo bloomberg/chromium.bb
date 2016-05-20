@@ -5,6 +5,9 @@
 // A simple unit-test style driver for libfuzzer tests.
 // Usage: <fuzzer_test> <file>...
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -13,14 +16,14 @@
 // Libfuzzer API.
 extern "C" {
   // User function.
-  int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size);
+  int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size);
   // Initialization function.
   __attribute__((weak)) int LLVMFuzzerInitialize(int *argc, char ***argv);
 }
 
-std::vector<char> readFile(std::string path) {
+std::vector<uint8_t> readFile(std::string path) {
   std::ifstream in(path);
-  return std::vector<char>((std::istreambuf_iterator<char>(in)),
+  return std::vector<uint8_t>((std::istreambuf_iterator<char>(in)),
       std::istreambuf_iterator<char>());
 }
 
@@ -36,6 +39,6 @@ int main(int argc, char **argv) {
   for (int i = 1; i < argc; ++i) {
     std::cout << argv[i] << std::endl;
     auto v = readFile(argv[i]);
-    LLVMFuzzerTestOneInput((const unsigned char *)v.data(), v.size());
+    LLVMFuzzerTestOneInput(v.data(), v.size());
   }
 }

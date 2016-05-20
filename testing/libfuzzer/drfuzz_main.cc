@@ -3,14 +3,15 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <stdint.h>
 
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size);
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size);
 
 // Provide main for running fuzzer tests with Dr. Fuzz.
 int main(int argc, char **argv)
 {
   static const size_t kFuzzInputMaxSize = 8;
-  unsigned char* fuzz_input = new unsigned char[kFuzzInputMaxSize]();
+  uint8_t* fuzz_input = new uint8_t[kFuzzInputMaxSize]();
   // The buffer and size arguments can be changed by Dr. Fuzz.
   int result = LLVMFuzzerTestOneInput(fuzz_input, kFuzzInputMaxSize);
   delete[] fuzz_input;

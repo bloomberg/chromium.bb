@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "net/cert/internal/certificate_policies.h"
 #include "net/cert/internal/extended_key_usage.h"
@@ -66,7 +69,7 @@ void ParseCertificateForFuzzer(const der::Input& in) {
 }  // namespace
 }  // namespace net
 
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   net::der::Input in(data, size);
   net::ParseCertificateForFuzzer(in);
   return 0;

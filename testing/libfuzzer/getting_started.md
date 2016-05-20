@@ -33,7 +33,10 @@ Supported sanitizer configurations are:
 Create a new .cc file and define a `LLVMFuzzerTestOneInput` function:
 
 ```cpp
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
+#include <stddef.h>
+#include <stdint.h>
+
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // put your fuzzing code here and use data+size as input.
   return 0;
 }

@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -12,7 +15,7 @@ namespace device {
 
 void Done(std::unique_ptr<std::map<uint8_t, base::string16>> index_map) {}
 
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Uses the first few bytes of the input to decide which strings to request.
   // Stops once it encounters 0 which is not a valid string index.
   std::unique_ptr<std::map<uint8_t, base::string16>> index_map(
