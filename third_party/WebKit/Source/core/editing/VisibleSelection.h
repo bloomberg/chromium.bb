@@ -104,9 +104,8 @@ public:
     bool isNone() const { return getSelectionType() == NoSelection; }
     bool isCaret() const { return getSelectionType() == CaretSelection; }
     bool isRange() const { return getSelectionType() == RangeSelection; }
-    bool isCaretOrRange() const { return getSelectionType() != NoSelection; }
     bool isNonOrphanedRange() const { return isRange() && !start().isOrphan() && !end().isOrphan(); }
-    bool isNonOrphanedCaretOrRange() const { return isCaretOrRange() && !start().isOrphan() && !end().isOrphan(); }
+    bool isNonOrphanedCaretOrRange() const { return !isNone() && !start().isOrphan() && !end().isOrphan(); }
 
     bool isBaseFirst() const { return m_baseIsFirst; }
     bool isDirectional() const { return m_isDirectional; }

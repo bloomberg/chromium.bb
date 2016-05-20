@@ -149,7 +149,7 @@ bool SelectionController::handleMousePressEventSingleClick(const MouseEventWithH
     VisibleSelectionInFlatTree newSelection = selection().visibleSelection<EditingInFlatTreeStrategy>();
     TextGranularity granularity = CharacterGranularity;
 
-    if (extendSelection && newSelection.isCaretOrRange()) {
+    if (extendSelection && !newSelection.isNone()) {
         const VisibleSelectionInFlatTree selectionInUserSelectAll(expandSelectionToRespectUserSelectAll(innerNode, VisibleSelectionInFlatTree(createVisiblePosition(pos))));
         if (selectionInUserSelectAll.isRange()) {
             if (selectionInUserSelectAll.start().compareTo(newSelection.start()) < 0)

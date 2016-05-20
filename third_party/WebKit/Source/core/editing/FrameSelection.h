@@ -164,7 +164,6 @@ public:
     bool isNone() const { return selection().isNone(); }
     bool isCaret() const { return selection().isCaret(); }
     bool isRange() const { return selection().isRange(); }
-    bool isCaretOrRange() const { return selection().isCaretOrRange(); }
     bool isInPasswordField() const;
     bool isDirectional() const { return selection().isDirectional(); }
 

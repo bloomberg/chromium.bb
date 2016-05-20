@@ -1303,7 +1303,7 @@ static bool enabledVisibleSelectionAndMark(LocalFrame& frame, Event* event, Edit
 {
     const VisibleSelection& selection = frame.editor().selectionForCommand(event);
     return ((selection.isCaret() && selection.isContentEditable()) || selection.isRange())
-        && frame.editor().mark().isCaretOrRange();
+        && !frame.editor().mark().isNone();
 }
 
 static bool enableCaretInEditableText(LocalFrame& frame, Event* event, EditorCommandSource)
@@ -1359,7 +1359,7 @@ static bool enabledInRichlyEditableText(LocalFrame& frame, Event*, EditorCommand
     // We should update selection to canonicalize with current layout and style,
     // before accessing |FrameSelection::selection()|.
     frame.selection().updateIfNeeded();
-    return frame.selection().isCaretOrRange() && frame.selection().isContentRichlyEditable() && frame.selection().rootEditableElement();
+    return !frame.selection().isNone() && frame.selection().isContentRichlyEditable() && frame.selection().rootEditableElement();
 }
 
 static bool enabledPaste(LocalFrame& frame, Event*, EditorCommandSource source)

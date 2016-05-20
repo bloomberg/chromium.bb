@@ -739,7 +739,7 @@ TriState EditingStyle::triStateOfStyle(CSSStyleDeclaration* styleToCompare, Shou
 
 TriState EditingStyle::triStateOfStyle(const VisibleSelection& selection) const
 {
-    if (!selection.isCaretOrRange())
+    if (selection.isNone())
         return FalseTriState;
 
     if (selection.isCaret())

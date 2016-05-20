@@ -1015,7 +1015,7 @@ OptionalCursor EventHandler::selectAutoCursor(const HitTestResult& result, Node*
     // If a drag may be starting or we're capturing mouse events for a particular node, don't treat this as a selection.
     if (m_mousePressed && selectionController().mouseDownMayStartSelect()
         && !m_mouseDownMayStartDrag
-        && m_frame->selection().isCaretOrRange()
+        && !m_frame->selection().isNone()
         && !m_capturingMouseEventsNode) {
         return iBeam;
     }

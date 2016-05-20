@@ -109,7 +109,7 @@ static bool IsWhiteSpaceOrPunctuation(UChar c)
 static String selectMisspellingAsync(LocalFrame* selectedFrame, String& description, uint32_t& hash)
 {
     VisibleSelection selection = selectedFrame->selection().selection();
-    if (!selection.isCaretOrRange())
+    if (selection.isNone())
         return String();
 
     // Caret and range selections always return valid normalized ranges.

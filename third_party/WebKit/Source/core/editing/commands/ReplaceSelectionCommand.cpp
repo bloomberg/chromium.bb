@@ -985,7 +985,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
 {
     TRACE_EVENT0("blink", "ReplaceSelectionCommand::doApply");
     const VisibleSelection selection = endingSelection();
-    DCHECK(selection.isCaretOrRange());
+    DCHECK(!selection.isNone());
     DCHECK(selection.start().anchorNode());
     if (!selection.isNonOrphanedCaretOrRange() || !selection.start().anchorNode())
         return;
