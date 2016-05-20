@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_strings.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
@@ -343,18 +346,17 @@ FileManagerPrivateGetStringsFunction::~FileManagerPrivateGetStringsFunction() {
 }
 
 bool FileManagerPrivateGetStringsFunction::RunSync() {
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  SetResult(dict);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
-  AddStringsForDrive(dict);
-  AddStringsForFileTypes(dict);
-  AddStringsForGallery(dict);
-  AddStringsForMediaPlayer(dict);
-  AddStringsForVideoPlayer(dict);
-  AddStringsForAudioPlayer(dict);
-  AddStringsForCloudImport(dict);
-  AddStringsForCrUiMenuItemShortcuts(dict);
-  AddStringsForFileErrors(dict);
+  AddStringsForDrive(dict.get());
+  AddStringsForFileTypes(dict.get());
+  AddStringsForGallery(dict.get());
+  AddStringsForMediaPlayer(dict.get());
+  AddStringsForVideoPlayer(dict.get());
+  AddStringsForAudioPlayer(dict.get());
+  AddStringsForCloudImport(dict.get());
+  AddStringsForCrUiMenuItemShortcuts(dict.get());
+  AddStringsForFileErrors(dict.get());
 
   SET_STRING("ADD_NEW_SERVICES_BUTTON_LABEL",
              IDS_FILE_BROWSER_ADD_NEW_SERVICES_BUTTON_LABEL);
@@ -642,7 +644,8 @@ bool FileManagerPrivateGetStringsFunction::RunSync() {
   dict->SetString("UI_LOCALE", extension_l10n_util::CurrentLocaleOrDefault());
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
-  webui::SetLoadTimeDataDefaults(app_locale, dict);
+  webui::SetLoadTimeDataDefaults(app_locale, dict.get());
+  SetResult(std::move(dict));
 
   return true;
 }

@@ -165,13 +165,13 @@ bool ContentSettingsContentSettingGetFunction::RunSync() {
                                      resource_identifier);
   }
 
-  base::DictionaryValue* result = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   std::string setting_string =
       content_settings::ContentSettingToString(setting);
   DCHECK(!setting_string.empty());
   result->SetString(keys::kContentSettingKey, setting_string);
 
-  SetResult(result);
+  SetResult(std::move(result));
 
   return true;
 }
@@ -306,7 +306,7 @@ void ContentSettingsContentSettingGetResourceIdentifiersFunction::OnGotPlugins(
     const std::vector<content::WebPluginInfo>& plugins) {
   PluginFinder* finder = PluginFinder::GetInstance();
   std::set<std::string> group_identifiers;
-  base::ListValue* list = new base::ListValue();
+  std::unique_ptr<base::ListValue> list(new base::ListValue());
   for (std::vector<content::WebPluginInfo>::const_iterator it = plugins.begin();
        it != plugins.end(); ++it) {
     std::unique_ptr<PluginMetadata> plugin_metadata(
@@ -321,7 +321,7 @@ void ContentSettingsContentSettingGetResourceIdentifiersFunction::OnGotPlugins(
     dict->SetString(keys::kDescriptionKey, plugin_metadata->name());
     list->Append(dict);
   }
-  SetResult(list);
+  SetResult(std::move(list));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE, base::Bind(
           &ContentSettingsContentSettingGetResourceIdentifiersFunction::

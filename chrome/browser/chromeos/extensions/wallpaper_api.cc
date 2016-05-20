@@ -11,6 +11,7 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/worker_pool.h"
@@ -236,7 +237,7 @@ void WallpaperSetWallpaperFunction::ThumbnailGenerated(
       thumbnail_data->size());
 
   if (params_->details.thumbnail) {
-    SetResult(thumbnail_result);
+    SetResult(base::WrapUnique(thumbnail_result));
     SendResponse(true);
   }
 

@@ -128,7 +128,7 @@ void WebrtcLoggingPrivateFunctionWithUploadCallback::FireCallback(
   if (success) {
     api::webrtc_logging_private::UploadResult result;
     result.report_id = report_id;
-    SetResult(result.ToValue().release());
+    SetResult(result.ToValue());
   } else {
     SetError(error_message);
   }
@@ -151,7 +151,7 @@ void WebrtcLoggingPrivateFunctionWithRecordingDoneCallback::FireCallback(
   result.prefix_path = prefix_path;
   result.did_stop = did_stop;
   result.did_manual_stop = did_manual_stop;
-  SetResult(result.ToValue().release());
+  SetResult(result.ToValue());
   SendResponse(true);
 }
 

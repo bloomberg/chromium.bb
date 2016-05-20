@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/api/browsing_data/browsing_data_api.h"
 
 #include <string>
+#include <utility>
 
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -218,7 +219,7 @@ bool BrowsingDataSettingsFunction::RunSync() {
               selected.release());
   result->Set(extension_browsing_data_api_constants::kDataRemovalPermittedKey,
               permitted.release());
-  SetResult(result.release());
+  SetResult(std::move(result));
   return true;
 }
 

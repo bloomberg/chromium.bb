@@ -196,9 +196,7 @@ void WindowsEventRouter::OnWindowControllerAdded(
     return;
 
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  base::DictionaryValue* window_dictionary =
-      window_controller->CreateWindowValue();
-  args->Append(window_dictionary);
+  args->Append(window_controller->CreateWindowValue());
   DispatchEvent(events::WINDOWS_ON_CREATED, windows::OnCreated::kEventName,
                 window_controller, std::move(args));
 }

@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/signed_in_devices/signed_in_devices_api.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/scoped_vector.h"
 #include "base/values.h"
@@ -122,11 +123,11 @@ bool SignedInDevicesGetFunction::RunSync() {
   if (is_local) {
     std::unique_ptr<DeviceInfo> device =
         GetLocalDeviceInfo(extension_id(), GetProfile());
-    base::ListValue* result = new base::ListValue();
+    std::unique_ptr<base::ListValue> result(new base::ListValue());
     if (device.get()) {
       result->Append(device->ToValue());
     }
-    SetResult(result);
+    SetResult(std::move(result));
     return true;
   }
 
@@ -141,7 +142,7 @@ bool SignedInDevicesGetFunction::RunSync() {
     result->Append((*it)->ToValue());
   }
 
-  SetResult(result.release());
+  SetResult(std::move(result));
   return true;
 }
 

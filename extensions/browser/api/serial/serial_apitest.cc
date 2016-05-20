@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -29,14 +30,14 @@ namespace {
 class FakeSerialGetDevicesFunction : public AsyncExtensionFunction {
  public:
   bool RunAsync() override {
-    base::ListValue* devices = new base::ListValue();
+    std::unique_ptr<base::ListValue> devices(new base::ListValue());
     base::DictionaryValue* device0 = new base::DictionaryValue();
     device0->SetString("path", "/dev/fakeserial");
     base::DictionaryValue* device1 = new base::DictionaryValue();
     device1->SetString("path", "\\\\COM800\\");
     devices->Append(device0);
     devices->Append(device1);
-    SetResult(devices);
+    SetResult(std::move(devices));
     SendResponse(true);
     return true;
   }

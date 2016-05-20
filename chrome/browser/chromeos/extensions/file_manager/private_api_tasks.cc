@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
@@ -235,7 +236,7 @@ bool FileManagerPrivateInternalSetDefaultTaskFunction::RunSync() {
   // TODO(gspencer): Fix file manager so that it never tries to set default in
   // cases where extensionless local files are part of the selection.
   if (suffixes.empty() && mime_types.empty()) {
-    SetResult(new base::FundamentalValue(true));
+    SetResult(base::MakeUnique<base::FundamentalValue>(true));
     return true;
   }
 

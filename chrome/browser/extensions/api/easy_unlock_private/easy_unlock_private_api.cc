@@ -359,7 +359,7 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
                      l10n_util::GetStringUTF16(
                          IDS_EASY_UNLOCK_SETUP_ERROR_CONNECTING_TO_PHONE));
 
-  SetResult(strings.release());
+  SetResult(std::move(strings));
   return true;
 }
 
@@ -706,7 +706,8 @@ bool EasyUnlockPrivateGetRemoteDevicesFunction::RunAsync() {
     Profile* profile = Profile::FromBrowserContext(browser_context());
     const base::ListValue* devices =
         EasyUnlockService::Get(profile)->GetRemoteDevices();
-    SetResult(devices ? devices->DeepCopy() : new base::ListValue());
+    SetResult(devices ? devices->CreateDeepCopy()
+                      : base::MakeUnique<base::ListValue>());
     SendResponse(true);
   }
 

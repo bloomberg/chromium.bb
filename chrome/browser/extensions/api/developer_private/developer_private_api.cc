@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -967,7 +968,7 @@ void DeveloperPrivateLoadDirectoryFunction::Load() {
 
   // TODO(grv) : The unpacked installer should fire an event when complete
   // and return the extension_id.
-  SetResult(new base::StringValue("-1"));
+  SetResult(base::MakeUnique<base::StringValue>("-1"));
   SendResponse(true);
 }
 
@@ -1155,7 +1156,8 @@ void DeveloperPrivateChoosePathFunction::FileSelectionCanceled() {
 DeveloperPrivateChoosePathFunction::~DeveloperPrivateChoosePathFunction() {}
 
 bool DeveloperPrivateIsProfileManagedFunction::RunSync() {
-  SetResult(new base::FundamentalValue(GetProfile()->IsSupervised()));
+  SetResult(
+      base::MakeUnique<base::FundamentalValue>(GetProfile()->IsSupervised()));
   return true;
 }
 

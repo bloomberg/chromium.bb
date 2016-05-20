@@ -25,7 +25,7 @@ bool SystemCpuGetInfoFunction::RunAsync() {
 
 void SystemCpuGetInfoFunction::OnGetCpuInfoCompleted(bool success) {
   if (success)
-    SetResult(CpuInfoProvider::Get()->cpu_info().ToValue().release());
+    SetResult(CpuInfoProvider::Get()->cpu_info().ToValue());
   else
     SetError("Error occurred when querying cpu information.");
   SendResponse(success);

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -75,7 +76,8 @@ bool SystemPrivateGetIncognitoModeAvailabilityFunction::RunSync() {
   EXTENSION_FUNCTION_VALIDATE(
       value >= 0 &&
       value < static_cast<int>(arraysize(kIncognitoModeAvailabilityStrings)));
-  SetResult(new base::StringValue(kIncognitoModeAvailabilityStrings[value]));
+  SetResult(base::MakeUnique<base::StringValue>(
+      kIncognitoModeAvailabilityStrings[value]));
   return true;
 }
 
@@ -133,16 +135,16 @@ bool SystemPrivateGetUpdateStatusFunction::RunSync() {
     state = kNotAvailableState;
   }
 #endif
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString(kStateKey, state);
   dict->SetDouble(kDownloadProgressKey, download_progress);
-  SetResult(dict);
+  SetResult(std::move(dict));
 
   return true;
 }
 
 bool SystemPrivateGetApiKeyFunction::RunSync() {
-  SetResult(new base::StringValue(google_apis::GetAPIKey()));
+  SetResult(base::MakeUnique<base::StringValue>(google_apis::GetAPIKey()));
   return true;
 }
 

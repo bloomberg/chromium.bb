@@ -136,8 +136,7 @@ void FeedbackPrivateAPI::RequestFeedbackForFlow(
 base::Closure* FeedbackPrivateGetStringsFunction::test_callback_ = NULL;
 
 bool FeedbackPrivateGetStringsFunction::RunSync() {
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  SetResult(dict);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
 #define SET_STRING(id, idr) \
   dict->SetString(id, l10n_util::GetStringUTF16(idr))
@@ -178,7 +177,9 @@ bool FeedbackPrivateGetStringsFunction::RunSync() {
 #undef SET_STRING
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
-  webui::SetLoadTimeDataDefaults(app_locale, dict);
+  webui::SetLoadTimeDataDefaults(app_locale, dict.get());
+
+  SetResult(std::move(dict));
 
   if (test_callback_ && !test_callback_->is_null())
     test_callback_->Run();
@@ -189,7 +190,7 @@ bool FeedbackPrivateGetStringsFunction::RunSync() {
 bool FeedbackPrivateGetUserEmailFunction::RunSync() {
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(GetProfile());
-  SetResult(new base::StringValue(
+  SetResult(base::MakeUnique<base::StringValue>(
       signin_manager ? signin_manager->GetAuthenticatedAccountInfo().email
                      : std::string()));
   return true;

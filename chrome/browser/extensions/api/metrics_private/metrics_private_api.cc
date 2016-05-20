@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
@@ -42,7 +43,7 @@ const size_t kMaxBuckets = 10000; // We don't ever want more than these many
 } // namespace
 
 bool MetricsPrivateGetIsCrashReportingEnabledFunction::RunSync() {
-  SetResult(new base::FundamentalValue(
+  SetResult(base::MakeUnique<base::FundamentalValue>(
       ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()));
   return true;
 }
@@ -51,7 +52,8 @@ bool MetricsPrivateGetFieldTrialFunction::RunSync() {
   std::string name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &name));
 
-  SetResult(new base::StringValue(base::FieldTrialList::FindFullName(name)));
+  SetResult(base::MakeUnique<base::StringValue>(
+      base::FieldTrialList::FindFullName(name)));
   return true;
 }
 
@@ -63,7 +65,7 @@ bool MetricsPrivateGetVariationParamsFunction::RunSync() {
   GetVariationParams::Results::Params result;
   if (variations::GetVariationParams(params->name,
                                      &result.additional_properties)) {
-    SetResult(result.ToValue().release());
+    SetResult(result.ToValue());
   }
   return true;
 }

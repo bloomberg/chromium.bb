@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/values.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/window_controller_list.h"
@@ -68,8 +70,9 @@ Browser* WindowController::GetBrowser() const {
 
 namespace keys = tabs_constants;
 
-base::DictionaryValue* WindowController::CreateWindowValue() const {
-  base::DictionaryValue* result = new base::DictionaryValue();
+std::unique_ptr<base::DictionaryValue> WindowController::CreateWindowValue()
+    const {
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
 
   result->SetInteger(keys::kIdKey, GetWindowId());
   result->SetString(keys::kWindowTypeKey, GetWindowTypeText());

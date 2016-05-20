@@ -256,12 +256,7 @@ void ExtensionFunction::OnQuotaExceeded(const std::string& violation_error) {
 
 void ExtensionFunction::SetArgs(const base::ListValue* args) {
   DCHECK(!args_.get());  // Should only be called once.
-  args_.reset(args->DeepCopy());
-}
-
-void ExtensionFunction::SetResult(base::Value* result) {
-  results_.reset(new base::ListValue());
-  results_->Append(result);
+  args_ = args->CreateDeepCopy();
 }
 
 void ExtensionFunction::SetResult(std::unique_ptr<base::Value> result) {

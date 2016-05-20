@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -360,7 +361,7 @@ bool InputImeClearCompositionFunction::RunSync() {
   InputMethodEngine* engine = GetActiveEngine(
       Profile::FromBrowserContext(browser_context()), extension_id());
   if (!engine) {
-    SetResult(new base::FundamentalValue(false));
+    SetResult(base::MakeUnique<base::FundamentalValue>(false));
     return true;
   }
 
@@ -369,7 +370,7 @@ bool InputImeClearCompositionFunction::RunSync() {
   const ClearComposition::Params::Parameters& params =
       parent_params->parameters;
 
-  SetResult(new base::FundamentalValue(
+  SetResult(base::MakeUnique<base::FundamentalValue>(
       engine->ClearComposition(params.context_id, &error_)));
   return true;
 }
@@ -396,7 +397,7 @@ bool InputImeSetCandidateWindowPropertiesFunction::RunSync() {
       event_router ? event_router->GetEngine(extension_id(), params.engine_id)
                    : nullptr;
   if (!engine) {
-    SetResult(new base::FundamentalValue(false));
+    SetResult(base::MakeUnique<base::FundamentalValue>(false));
     return true;
   }
 
@@ -405,7 +406,7 @@ bool InputImeSetCandidateWindowPropertiesFunction::RunSync() {
 
   if (properties.visible &&
       !engine->SetCandidateWindowVisible(*properties.visible, &error_)) {
-    SetResult(new base::FundamentalValue(false));
+    SetResult(base::MakeUnique<base::FundamentalValue>(false));
     return true;
   }
 
@@ -451,7 +452,7 @@ bool InputImeSetCandidateWindowPropertiesFunction::RunSync() {
     engine->SetCandidateWindowProperty(properties_out);
   }
 
-  SetResult(new base::FundamentalValue(true));
+  SetResult(base::MakeUnique<base::FundamentalValue>(true));
 
   return true;
 }
@@ -460,7 +461,7 @@ bool InputImeSetCandidatesFunction::RunSync() {
   InputMethodEngine* engine = GetActiveEngine(
       Profile::FromBrowserContext(browser_context()), extension_id());
   if (!engine) {
-    SetResult(new base::FundamentalValue(false));
+    SetResult(base::MakeUnique<base::FundamentalValue>(true));
     return true;
   }
 
@@ -484,7 +485,7 @@ bool InputImeSetCandidatesFunction::RunSync() {
     }
   }
 
-  SetResult(new base::FundamentalValue(
+  SetResult(base::MakeUnique<base::FundamentalValue>(
       engine->SetCandidates(params.context_id, candidates_out, &error_)));
   return true;
 }
@@ -493,7 +494,7 @@ bool InputImeSetCursorPositionFunction::RunSync() {
   InputMethodEngine* engine = GetActiveEngine(
       Profile::FromBrowserContext(browser_context()), extension_id());
   if (!engine) {
-    SetResult(new base::FundamentalValue(false));
+    SetResult(base::MakeUnique<base::FundamentalValue>(false));
     return true;
   }
 
@@ -502,9 +503,8 @@ bool InputImeSetCursorPositionFunction::RunSync() {
   const SetCursorPosition::Params::Parameters& params =
       parent_params->parameters;
 
-  SetResult(new base::FundamentalValue(
-      engine->SetCursorPosition(params.context_id, params.candidate_id,
-                                &error_)));
+  SetResult(base::MakeUnique<base::FundamentalValue>(engine->SetCursorPosition(
+      params.context_id, params.candidate_id, &error_)));
   return true;
 }
 

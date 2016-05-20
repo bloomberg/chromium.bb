@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/api/commands/commands.h"
 
+#include <memory>
+#include <utility>
+
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/profiles/profile.h"
 
@@ -23,7 +26,7 @@ base::DictionaryValue* CreateCommandValue(
 }  // namespace
 
 bool GetAllCommandsFunction::RunSync() {
-  base::ListValue* command_list = new base::ListValue();
+  std::unique_ptr<base::ListValue> command_list(new base::ListValue());
 
   extensions::CommandService* command_service =
       extensions::CommandService::Get(GetProfile());
@@ -61,6 +64,6 @@ bool GetAllCommandsFunction::RunSync() {
     command_list->Append(CreateCommandValue(iter->second, active));
   }
 
-  SetResult(command_list);
+  SetResult(std::move(command_list));
   return true;
 }

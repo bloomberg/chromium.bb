@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "apps/saved_files_service.h"
@@ -487,14 +489,12 @@ bool FileSystemGetDisplayPathFunction::RunSync() {
     return false;
 
   file_path = path_util::PrettifyPath(file_path);
-  SetResult(new base::StringValue(file_path.value()));
+  SetResult(base::MakeUnique<base::StringValue>(file_path.value()));
   return true;
 }
 
 FileSystemEntryFunction::FileSystemEntryFunction()
-    : multiple_(false),
-      is_directory_(false),
-      response_(NULL) {}
+    : multiple_(false), is_directory_(false) {}
 
 void FileSystemEntryFunction::PrepareFilesForWritableApp(
     const std::vector<base::FilePath>& paths) {
@@ -519,27 +519,23 @@ void FileSystemEntryFunction::RegisterFileSystemsAndSendResponse(
   if (!render_frame_host())
     return;
 
-  CreateResponse();
-  for (std::vector<base::FilePath>::const_iterator it = paths.begin();
-       it != paths.end(); ++it) {
-    AddEntryToResponse(*it, "");
-  }
+  std::unique_ptr<base::DictionaryValue> result = CreateResult();
+  for (const auto& path : paths)
+    AddEntryToResult(path, std::string(), result.get());
+  SetResult(std::move(result));
   SendResponse(true);
 }
 
-void FileSystemEntryFunction::CreateResponse() {
-  DCHECK(!response_);
-  response_ = new base::DictionaryValue();
-  base::ListValue* list = new base::ListValue();
-  response_->Set("entries", list);
-  response_->SetBoolean("multiple", multiple_);
-  SetResult(response_);
+std::unique_ptr<base::DictionaryValue> FileSystemEntryFunction::CreateResult() {
+  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+  result->Set("entries", base::MakeUnique<base::ListValue>());
+  result->SetBoolean("multiple", multiple_);
+  return result;
 }
 
-void FileSystemEntryFunction::AddEntryToResponse(
-    const base::FilePath& path,
-    const std::string& id_override) {
-  DCHECK(response_);
+void FileSystemEntryFunction::AddEntryToResult(const base::FilePath& path,
+                                               const std::string& id_override,
+                                               base::DictionaryValue* result) {
   GrantedFileEntry file_entry = app_file_handler_util::CreateFileEntry(
       GetProfile(),
       extension(),
@@ -547,7 +543,7 @@ void FileSystemEntryFunction::AddEntryToResponse(
       path,
       is_directory_);
   base::ListValue* entries;
-  bool success = response_->GetList("entries", &entries);
+  bool success = result->GetList("entries", &entries);
   DCHECK(success);
 
   base::DictionaryValue* entry = new base::DictionaryValue();
@@ -635,7 +631,7 @@ bool FileSystemIsWritableEntryFunction::RunSync() {
   bool is_writable = policy->CanReadWriteFileSystem(renderer_id,
                                                     filesystem_id);
 
-  SetResult(new base::FundamentalValue(is_writable));
+  SetResult(base::MakeUnique<base::FundamentalValue>(is_writable));
   return true;
 }
 
@@ -1201,8 +1197,9 @@ void FileSystemRetainEntryFunction::RetainFileEntry(
 bool FileSystemIsRestorableFunction::RunSync() {
   std::string entry_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &entry_id));
-  SetResult(new base::FundamentalValue(SavedFilesService::Get(
-      GetProfile())->IsRegistered(extension_->id(), entry_id)));
+  SetResult(base::MakeUnique<base::FundamentalValue>(
+      SavedFilesService::Get(GetProfile())
+          ->IsRegistered(extension_->id(), entry_id)));
   return true;
 }
 
@@ -1226,8 +1223,9 @@ bool FileSystemRestoreEntryFunction::RunAsync() {
   // |entry_id|.
   if (needs_new_entry) {
     is_directory_ = file_entry->is_directory;
-    CreateResponse();
-    AddEntryToResponse(file_entry->path, file_entry->id);
+    std::unique_ptr<base::DictionaryValue> result = CreateResult();
+    AddEntryToResult(file_entry->path, file_entry->id, result.get());
+    SetResult(std::move(result));
   }
   SendResponse(true);
   return true;
@@ -1424,11 +1422,11 @@ void FileSystemRequestFileSystemFunction::OnConsentReceived(
         render_frame_host()->GetProcess()->GetID(), file_system_id);
   }
 
-  base::DictionaryValue* const dict = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("file_system_id", file_system_id);
   dict->SetString("file_system_path", register_name);
 
-  SetResult(dict);
+  SetResult(std::move(dict));
   SendResponse(true);
 }
 

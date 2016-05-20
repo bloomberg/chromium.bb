@@ -22,8 +22,7 @@ class BrowserExtensionWindowController : public extensions::WindowController {
   // extensions::WindowController implementation.
   int GetWindowId() const override;
   std::string GetWindowTypeText() const override;
-  base::DictionaryValue* CreateWindowValue() const override;
-  base::DictionaryValue* CreateWindowValueWithTabs(
+  std::unique_ptr<base::DictionaryValue> CreateWindowValueWithTabs(
       const extensions::Extension* extension) const override;
   base::DictionaryValue* CreateTabValue(const extensions::Extension* extension,
                                         int tab_index) const override;

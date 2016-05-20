@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
@@ -308,8 +309,8 @@ bool TtsResumeFunction::RunSync() {
 }
 
 bool TtsIsSpeakingFunction::RunSync() {
-  SetResult(
-      new base::FundamentalValue(TtsController::GetInstance()->IsSpeaking()));
+  SetResult(base::MakeUnique<base::FundamentalValue>(
+      TtsController::GetInstance()->IsSpeaking()));
   return true;
 }
 
@@ -343,7 +344,7 @@ bool TtsGetVoicesFunction::RunSync() {
     result_voices->Append(result_voice);
   }
 
-  SetResult(result_voices.release());
+  SetResult(std::move(result_voices));
   return true;
 }
 

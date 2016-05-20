@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -20,6 +21,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
@@ -1037,7 +1039,8 @@ void DownloadsDownloadFunction::OnStarted(
   VLOG(1) << __FUNCTION__ << " " << item << " " << interrupt_reason;
   if (item) {
     DCHECK_EQ(content::DOWNLOAD_INTERRUPT_REASON_NONE, interrupt_reason);
-    SetResult(new base::FundamentalValue(static_cast<int>(item->GetId())));
+    SetResult(base::MakeUnique<base::FundamentalValue>(
+        static_cast<int>(item->GetId())));
     if (!creator_suggested_filename.empty() ||
         (creator_conflict_action !=
          downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY)) {
@@ -1090,7 +1093,7 @@ bool DownloadsSearchFunction::RunSync() {
   if (!error_.empty())
     return false;
 
-  base::ListValue* json_results = new base::ListValue();
+  std::unique_ptr<base::ListValue> json_results(new base::ListValue());
   for (DownloadManager::DownloadVector::const_iterator it = results.begin();
        it != results.end(); ++it) {
     DownloadItem* download_item = *it;
@@ -1102,7 +1105,7 @@ bool DownloadsSearchFunction::RunSync() {
                         : GetProfile()->GetOriginalProfile()));
     json_results->Append(json_item.release());
   }
-  SetResult(json_results);
+  SetResult(std::move(json_results));
   RecordApiFunctions(DOWNLOADS_FUNCTION_SEARCH);
   return true;
 }
@@ -1187,14 +1190,14 @@ bool DownloadsEraseFunction::RunSync() {
                    &results);
   if (!error_.empty())
     return false;
-  base::ListValue* json_results = new base::ListValue();
+  std::unique_ptr<base::ListValue> json_results(new base::ListValue());
   for (DownloadManager::DownloadVector::const_iterator it = results.begin();
        it != results.end(); ++it) {
     json_results->Append(
         new base::FundamentalValue(static_cast<int>((*it)->GetId())));
     (*it)->Remove();
   }
-  SetResult(json_results);
+  SetResult(std::move(json_results));
   RecordApiFunctions(DOWNLOADS_FUNCTION_ERASE);
   return true;
 }
@@ -1505,7 +1508,7 @@ void DownloadsGetFileIconFunction::OnIconURLExtracted(const std::string& url) {
     return;
   }
   RecordApiFunctions(DOWNLOADS_FUNCTION_GET_FILE_ICON);
-  SetResult(new base::StringValue(url));
+  SetResult(base::MakeUnique<base::StringValue>(url));
   SendResponse(true);
 }
 

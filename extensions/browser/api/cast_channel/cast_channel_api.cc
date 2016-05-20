@@ -238,7 +238,7 @@ CastSocket* CastChannelAsyncApiFunction::GetSocket(int channel_id) const {
 void CastChannelAsyncApiFunction::SetResultFromChannelInfo(
     const ChannelInfo& channel_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  SetResult(channel_info.ToValue().release());
+  SetResult(channel_info.ToValue());
 }
 
 CastChannelOpenFunction::CastChannelOpenFunction()
@@ -480,7 +480,7 @@ void CastChannelGetLogsFunction::AsyncWorkStart() {
   size_t length = 0;
   std::unique_ptr<char[]> out = api_->GetLogger()->GetLogs(&length);
   if (out.get()) {
-    SetResult(new base::BinaryValue(std::move(out), length));
+    SetResult(base::MakeUnique<base::BinaryValue>(std::move(out), length));
   } else {
     SetError("Unable to get logs.");
   }

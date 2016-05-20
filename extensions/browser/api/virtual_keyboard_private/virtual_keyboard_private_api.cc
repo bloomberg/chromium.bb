@@ -4,6 +4,9 @@
 
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_private_api.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "base/strings/string16.h"
 #include "extensions/browser/api/extensions_api_client.h"
@@ -113,9 +116,9 @@ bool VirtualKeyboardPrivateKeyboardLoadedFunction::RunSync() {
 bool VirtualKeyboardPrivateGetKeyboardConfigFunction::RunSync() {
   VirtualKeyboardDelegate* delegate = GetDelegate(this);
   if (delegate) {
-    base::DictionaryValue* results = new base::DictionaryValue();
-    if (delegate->GetKeyboardConfig(results)) {
-      SetResult(results);
+    std::unique_ptr<base::DictionaryValue> results(new base::DictionaryValue());
+    if (delegate->GetKeyboardConfig(results.get())) {
+      SetResult(std::move(results));
       return true;
     }
   }

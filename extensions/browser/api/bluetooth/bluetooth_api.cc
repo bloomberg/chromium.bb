@@ -4,7 +4,9 @@
 
 #include "extensions/browser/api/bluetooth/bluetooth_api.h"
 
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
@@ -115,8 +117,7 @@ bool BluetoothGetDevicesFunction::DoWork(
     scoped_refptr<BluetoothAdapter> adapter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::ListValue* device_list = new base::ListValue;
-  SetResult(device_list);
+  std::unique_ptr<base::ListValue> device_list(new base::ListValue);
 
   BluetoothAdapter::DeviceList devices = adapter->GetDevices();
   for (BluetoothAdapter::DeviceList::const_iterator iter = devices.begin();
@@ -131,6 +132,7 @@ bool BluetoothGetDevicesFunction::DoWork(
     device_list->Append(extension_device.ToValue().release());
   }
 
+  SetResult(std::move(device_list));
   SendResponse(true);
 
   return true;
@@ -149,7 +151,7 @@ bool BluetoothGetDeviceFunction::DoWork(
   if (device) {
     bluetooth::Device extension_device;
     bluetooth::BluetoothDeviceToApiDevice(*device, &extension_device);
-    SetResult(extension_device.ToValue().release());
+    SetResult(extension_device.ToValue());
     SendResponse(true);
   } else {
     SetError(kInvalidDevice);

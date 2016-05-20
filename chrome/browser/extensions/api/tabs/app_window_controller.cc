@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/tabs/app_window_controller.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
@@ -45,9 +46,10 @@ std::string AppWindowController::GetWindowTypeText() const {
   return tabs_constants::kWindowTypeValueApp;
 }
 
-base::DictionaryValue* AppWindowController::CreateWindowValueWithTabs(
+std::unique_ptr<base::DictionaryValue>
+AppWindowController::CreateWindowValueWithTabs(
     const Extension* extension) const {
-  base::DictionaryValue* result = CreateWindowValue();
+  std::unique_ptr<base::DictionaryValue> result = CreateWindowValue();
 
   base::DictionaryValue* tab_value = CreateTabValue(extension, 0);
   if (!tab_value)

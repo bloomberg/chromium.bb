@@ -427,7 +427,7 @@ void LogPrivateGetHistoricalFunction::OnSystemLogsLoaded(
   CollectLogInfo(filter_handler_.get(), sys_info.get(), &result.data);
   api::log_private::Filter::Populate(
       *((filter_handler_->GetFilter())->ToValue()), &result.filter);
-  SetResult(result.ToValue().release());
+  SetResult(result.ToValue());
   SendResponse(true);
 }
 
@@ -540,7 +540,7 @@ void LogPrivateDumpLogsFunction::OnStoreLogsCompleted(
   entry_list->Append(entry);
   response->Set("entries", entry_list);
   response->SetBoolean("multiple", false);
-  SetResult(response.release());
+  SetResult(std::move(response));
   SendResponse(succeeded);
 }
 

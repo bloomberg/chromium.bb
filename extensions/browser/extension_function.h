@@ -201,12 +201,11 @@ class ExtensionFunction
   virtual void OnQuotaExceeded(const std::string& violation_error);
 
   // Specifies the raw arguments to the function, as a JSON value.
+  // TODO(dcheng): This should take a const ref.
   virtual void SetArgs(const base::ListValue* args);
 
   // Sets a single Value as the results of the function.
   void SetResult(std::unique_ptr<base::Value> result);
-  // As above, but deprecated. TODO(estade): remove.
-  void SetResult(base::Value* result);
 
   // Sets multiple Values as the results of the function.
   void SetResultList(std::unique_ptr<base::ListValue> results);

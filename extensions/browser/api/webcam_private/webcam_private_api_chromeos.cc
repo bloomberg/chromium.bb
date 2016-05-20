@@ -5,6 +5,7 @@
 #include "extensions/browser/api/webcam_private/webcam_private_api.h"
 
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/media_device_id.h"
 #include "content/public/browser/resource_context.h"
@@ -204,7 +205,7 @@ void WebcamPrivateOpenSerialWebcamFunction::OnOpenWebcam(
     const std::string& webcam_id,
     bool success) {
   if (success) {
-    SetResult(new base::StringValue(webcam_id));
+    SetResult(base::MakeUnique<base::StringValue>(webcam_id));
     SendResponse(true);
   } else {
     SetError(kOpenSerialWebcamError);
@@ -385,7 +386,7 @@ void WebcamPrivateGetFunction::OnGetWebcamParameters(InquiryType type,
       result.pan.reset(new double(pan_));
       result.tilt.reset(new double(tilt_));
       result.zoom.reset(new double(zoom_));
-      SetResult(result.ToValue().release());
+      SetResult(result.ToValue());
       SendResponse(true);
     }
   }

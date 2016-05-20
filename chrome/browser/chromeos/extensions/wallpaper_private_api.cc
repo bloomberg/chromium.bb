@@ -21,6 +21,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
@@ -293,8 +294,7 @@ user_manager::User::WallpaperType getWallpaperType(
 }  // namespace
 
 bool WallpaperPrivateGetStringsFunction::RunSync() {
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  SetResult(dict);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
 #define SET_STRING(id, idr) \
   dict->SetString(id, l10n_util::GetStringUTF16(idr))
@@ -326,7 +326,7 @@ bool WallpaperPrivateGetStringsFunction::RunSync() {
 #undef SET_STRING
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
-  webui::SetLoadTimeDataDefaults(app_locale, dict);
+  webui::SetLoadTimeDataDefaults(app_locale, dict.get());
 
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();
@@ -348,6 +348,8 @@ bool WallpaperPrivateGetStringsFunction::RunSync() {
   dict->SetBoolean("isOEMDefaultWallpaper", IsOEMDefaultWallpaper());
   dict->SetString("canceledWallpaper",
                   wallpaper_api_util::kCancelWallpaperMessage);
+
+  SetResult(std::move(dict));
   return true;
 }
 
@@ -355,10 +357,10 @@ bool WallpaperPrivateGetSyncSettingFunction::RunSync() {
   Profile* profile =  Profile::FromBrowserContext(browser_context());
   ProfileSyncService* sync =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  SetResult(dict);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetBoolean("syncThemes",
                    sync->GetActiveDataTypes().Has(syncer::THEMES));
+  SetResult(std::move(dict));
   return true;
 }
 
@@ -458,7 +460,7 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::OnWallpaperDecoded(
                                    user_manager::User::ONLINE,
                                    base::Time::Now().LocalMidnight()};
   wallpaper_manager->SetUserWallpaperInfo(account_id_, info, is_persistent);
-  SetResult(new base::FundamentalValue(true));
+  SetResult(base::MakeUnique<base::FundamentalValue>(true));
   Profile* profile = Profile::FromBrowserContext(browser_context());
   // This API is only available to the component wallpaper picker. We do not
   // need to show the app's name if it is the component wallpaper picker. So set
@@ -470,7 +472,7 @@ void WallpaperPrivateSetWallpaperIfExistsFunction::OnWallpaperDecoded(
 
 void WallpaperPrivateSetWallpaperIfExistsFunction::OnFileNotExists(
     const std::string& error) {
-  SetResult(new base::FundamentalValue(false));
+  SetResult(base::MakeUnique<base::FundamentalValue>(false));
   OnFailure(error);
 }
 
@@ -702,7 +704,7 @@ void WallpaperPrivateSetCustomWallpaperFunction::ThumbnailGenerated(
     base::RefCountedBytes* data) {
   BinaryValue* result = BinaryValue::CreateWithCopiedBuffer(
       reinterpret_cast<const char*>(data->front()), data->size());
-  SetResult(result);
+  SetResult(base::WrapUnique(result));
   SendResponse(true);
 }
 
@@ -828,7 +830,7 @@ void WallpaperPrivateGetThumbnailFunction::FileLoaded(
     const std::string& data) {
   BinaryValue* thumbnail = BinaryValue::CreateWithCopiedBuffer(data.c_str(),
                                                                data.size());
-  SetResult(thumbnail);
+  SetResult(base::WrapUnique(thumbnail));
   SendResponse(true);
 }
 
@@ -954,9 +956,9 @@ void WallpaperPrivateGetOfflineWallpaperListFunction::GetList() {
 
 void WallpaperPrivateGetOfflineWallpaperListFunction::OnComplete(
     const std::vector<std::string>& file_list) {
-  base::ListValue* results = new base::ListValue();
+  std::unique_ptr<base::ListValue> results(new base::ListValue());
   results->AppendStrings(file_list);
-  SetResult(results);
+  SetResult(std::move(results));
   SendResponse(true);
 }
 

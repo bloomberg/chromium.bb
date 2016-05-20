@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/api/dial/dial_api_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -166,7 +167,7 @@ void DialDiscoverNowFunction::Work() {
 
 bool DialDiscoverNowFunction::Respond() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  SetResult(new base::FundamentalValue(result_));
+  SetResult(base::MakeUnique<base::FundamentalValue>(result_));
   return true;
 }
 

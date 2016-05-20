@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/music_manager_private/music_manager_private_api.h"
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/api/music_manager_private/device_id.h"
 
 using content::BrowserThread;
@@ -44,7 +45,7 @@ void MusicManagerPrivateGetDeviceIdFunction::DeviceIdCallback(
     SetError(kDeviceIdNotSupported);
     response = false;
   } else {
-    SetResult(new base::StringValue(device_id));
+    SetResult(base::MakeUnique<base::StringValue>(device_id));
     response = true;
   }
 

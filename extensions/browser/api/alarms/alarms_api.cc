@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
@@ -186,7 +187,7 @@ bool AlarmsClearFunction::RunAsync() {
 }
 
 void AlarmsClearFunction::Callback(const std::string& name, bool success) {
-  SetResult(new base::FundamentalValue(success));
+  SetResult(base::MakeUnique<base::FundamentalValue>(success));
   SendResponse(true);
 }
 
@@ -198,7 +199,7 @@ bool AlarmsClearAllFunction::RunAsync() {
 }
 
 void AlarmsClearAllFunction::Callback() {
-  SetResult(new base::FundamentalValue(true));
+  SetResult(base::MakeUnique<base::FundamentalValue>(true));
   SendResponse(true);
 }
 

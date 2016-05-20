@@ -65,7 +65,7 @@ void DesktopCaptureChooseDesktopMediaFunctionBase::Cancel() {
   scoped_refptr<DesktopCaptureChooseDesktopMediaFunctionBase> self(this);
   if (picker_) {
     picker_.reset();
-    SetResult(new base::StringValue(std::string()));
+    SetResult(base::MakeUnique<base::StringValue>(std::string()));
     SendResponse(true);
   }
 }
@@ -230,7 +230,7 @@ void DesktopCaptureChooseDesktopMediaFunctionBase::OnPickerDialogResults(
                                       extension()->name());
   }
 
-  SetResult(new base::StringValue(result));
+  SetResult(base::MakeUnique<base::StringValue>(result));
   SendResponse(true);
 }
 

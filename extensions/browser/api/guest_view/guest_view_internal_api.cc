@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/guest_view/guest_view_internal_api.h"
 
+#include <utility>
+
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
@@ -77,7 +79,7 @@ void GuestViewInternalCreateGuestFunction::CreateGuestCallback(
       new base::DictionaryValue());
   return_params->SetInteger(guest_view::kID, guest_instance_id);
   return_params->SetInteger(guest_view::kContentWindowID, content_window_id);
-  SetResult(return_params.release());
+  SetResult(std::move(return_params));
   SendResponse(true);
 }
 

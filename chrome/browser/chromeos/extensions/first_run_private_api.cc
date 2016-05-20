@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/extensions/first_run_private_api.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
@@ -18,7 +21,8 @@
 
 bool FirstRunPrivateGetLocalizedStringsFunction::RunSync() {
   UMA_HISTOGRAM_COUNTS("CrosFirstRun.DialogShown", 1);
-  base::DictionaryValue* localized_strings = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> localized_strings(
+      new base::DictionaryValue());
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(GetProfile());
   if (!user->GetGivenName().empty()) {
@@ -49,9 +53,9 @@ bool FirstRunPrivateGetLocalizedStringsFunction::RunSync() {
       l10n_util::GetStringUTF16(IDS_CLOSE));
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
-  webui::SetLoadTimeDataDefaults(app_locale, localized_strings);
+  webui::SetLoadTimeDataDefaults(app_locale, localized_strings.get());
 
-  SetResult(localized_strings);
+  SetResult(std::move(localized_strings));
   return true;
 }
 

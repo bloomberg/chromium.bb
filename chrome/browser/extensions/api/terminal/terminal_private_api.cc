@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
@@ -169,7 +170,7 @@ void TerminalPrivateOpenTerminalProcessFunction::RespondOnUIThread(
     SendResponse(false);
     return;
   }
-  SetResult(new base::FundamentalValue(terminal_id));
+  SetResult(base::MakeUnique<base::FundamentalValue>(terminal_id));
   SendResponse(true);
 }
 
@@ -197,7 +198,7 @@ void TerminalPrivateSendInputFunction::SendInputOnFileThread(
 }
 
 void TerminalPrivateSendInputFunction::RespondOnUIThread(bool success) {
-  SetResult(new base::FundamentalValue(success));
+  SetResult(base::MakeUnique<base::FundamentalValue>(success));
   SendResponse(true);
 }
 
@@ -232,7 +233,7 @@ void TerminalPrivateCloseTerminalProcessFunction::CloseOnFileThread(
 
 void TerminalPrivateCloseTerminalProcessFunction::RespondOnUIThread(
     bool success) {
-  SetResult(new base::FundamentalValue(success));
+  SetResult(base::MakeUnique<base::FundamentalValue>(success));
   SendResponse(true);
 }
 
@@ -266,7 +267,7 @@ void TerminalPrivateOnTerminalResizeFunction::OnResizeOnFileThread(
 }
 
 void TerminalPrivateOnTerminalResizeFunction::RespondOnUIThread(bool success) {
-  SetResult(new base::FundamentalValue(success));
+  SetResult(base::MakeUnique<base::FundamentalValue>(success));
   SendResponse(true);
 }
 

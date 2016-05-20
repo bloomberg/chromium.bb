@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -127,7 +128,7 @@ bool GcmRegisterFunction::DoWork() {
 void GcmRegisterFunction::CompleteFunctionWithResult(
     const std::string& registration_id,
     gcm::GCMClient::Result result) {
-  SetResult(new base::StringValue(registration_id));
+  SetResult(base::MakeUnique<base::StringValue>(registration_id));
   SetError(GcmResultToError(result));
   SendResponse(gcm::GCMClient::SUCCESS == result);
 }
@@ -181,7 +182,7 @@ bool GcmSendFunction::DoWork() {
 void GcmSendFunction::CompleteFunctionWithResult(
     const std::string& message_id,
     gcm::GCMClient::Result result) {
-  SetResult(new base::StringValue(message_id));
+  SetResult(base::MakeUnique<base::StringValue>(message_id));
   SetError(GcmResultToError(result));
   SendResponse(gcm::GCMClient::SUCCESS == result);
 }

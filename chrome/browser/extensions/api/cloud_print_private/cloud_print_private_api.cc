@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
@@ -79,10 +80,10 @@ CloudPrintPrivateGetHostNameFunction::~CloudPrintPrivateGetHostNameFunction() {
 }
 
 bool CloudPrintPrivateGetHostNameFunction::RunAsync() {
-  SetResult(
-      new base::StringValue(CloudPrintTestsDelegate::Get()
-                                ? CloudPrintTestsDelegate::Get()->GetHostName()
-                                : net::GetHostName()));
+  SetResult(base::MakeUnique<base::StringValue>(
+      CloudPrintTestsDelegate::Get()
+          ? CloudPrintTestsDelegate::Get()->GetHostName()
+          : net::GetHostName()));
   SendResponse(true);
   return true;
 }
@@ -127,7 +128,7 @@ CloudPrintPrivateGetClientIdFunction::~CloudPrintPrivateGetClientIdFunction() {
 }
 
 bool CloudPrintPrivateGetClientIdFunction::RunAsync() {
-  SetResult(new base::StringValue(
+  SetResult(base::MakeUnique<base::StringValue>(
       CloudPrintTestsDelegate::Get()
           ? CloudPrintTestsDelegate::Get()->GetClientId()
           : google_apis::GetOAuth2ClientID(google_apis::CLIENT_CLOUD_PRINT)));

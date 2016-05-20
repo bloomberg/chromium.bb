@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <algorithm>
 #include <iterator>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -623,7 +624,7 @@ bool BluetoothLowEnergyGetCharacteristicFunction::DoWork() {
   // Manually construct the result instead of using
   // apibtle::GetCharacteristic::Result::Create as it doesn't convert lists of
   // enums correctly.
-  SetResult(apibtle::CharacteristicToValue(&characteristic).release());
+  SetResult(apibtle::CharacteristicToValue(&characteristic));
   SendResponse(true);
 
   return true;
@@ -664,7 +665,7 @@ bool BluetoothLowEnergyGetCharacteristicsFunction::DoWork() {
   for (apibtle::Characteristic& characteristic : characteristic_list)
     result->Append(apibtle::CharacteristicToValue(&characteristic));
 
-  SetResult(result.release());
+  SetResult(std::move(result));
   SendResponse(true);
 
   return true;
@@ -733,7 +734,7 @@ bool BluetoothLowEnergyGetDescriptorFunction::DoWork() {
   // Manually construct the result instead of using
   // apibtle::GetDescriptor::Result::Create as it doesn't convert lists of enums
   // correctly.
-  SetResult(apibtle::DescriptorToValue(&descriptor).release());
+  SetResult(apibtle::DescriptorToValue(&descriptor));
   SendResponse(true);
 
   return true;
@@ -773,7 +774,7 @@ bool BluetoothLowEnergyGetDescriptorsFunction::DoWork() {
   for (apibtle::Descriptor& descriptor : descriptor_list)
     result->Append(apibtle::DescriptorToValue(&descriptor));
 
-  SetResult(result.release());
+  SetResult(std::move(result));
   SendResponse(true);
 
   return true;
@@ -827,7 +828,7 @@ void BluetoothLowEnergyReadCharacteristicValueFunction::SuccessCallback() {
   // Manually construct the result instead of using
   // apibtle::GetCharacteristic::Result::Create as it doesn't convert lists of
   // enums correctly.
-  SetResult(apibtle::CharacteristicToValue(&characteristic).release());
+  SetResult(apibtle::CharacteristicToValue(&characteristic));
   SendResponse(true);
 }
 
@@ -1018,7 +1019,7 @@ void BluetoothLowEnergyReadDescriptorValueFunction::SuccessCallback() {
   // Manually construct the result instead of using
   // apibtle::GetDescriptor::Results::Create as it doesn't convert lists of
   // enums correctly.
-  SetResult(apibtle::DescriptorToValue(&descriptor).release());
+  SetResult(apibtle::DescriptorToValue(&descriptor));
   SendResponse(true);
 }
 

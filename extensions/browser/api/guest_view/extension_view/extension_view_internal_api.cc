@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/crx_file/id_util.h"
@@ -63,7 +64,7 @@ bool ExtensionViewInternalLoadSrcFunction::RunAsyncSafe(
     has_load_succeeded = guest->NavigateGuest(src, true /* force_navigation */);
 
   // Return whether load is successful.
-  SetResult(new base::FundamentalValue(has_load_succeeded));
+  SetResult(base::MakeUnique<base::FundamentalValue>(has_load_succeeded));
   SendResponse(true);
   return true;
 }

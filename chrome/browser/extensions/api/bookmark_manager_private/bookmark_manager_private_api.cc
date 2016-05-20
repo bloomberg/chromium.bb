@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -430,7 +431,7 @@ bool BookmarkManagerPrivateCanPasteFunction::RunOnReady() {
 
   PrefService* prefs = user_prefs::UserPrefs::Get(GetProfile());
   if (!prefs->GetBoolean(bookmarks::prefs::kEditBookmarksEnabled)) {
-    SetResult(new base::FundamentalValue(false));
+    SetResult(base::MakeUnique<base::FundamentalValue>(false));
     return true;
   }
 
@@ -441,7 +442,7 @@ bool BookmarkManagerPrivateCanPasteFunction::RunOnReady() {
     return false;
   }
   bool can_paste = bookmarks::CanPasteFromClipboard(model, parent_node);
-  SetResult(new base::FundamentalValue(can_paste));
+  SetResult(base::MakeUnique<base::FundamentalValue>(can_paste));
   return true;
 }
 
@@ -462,7 +463,8 @@ bool BookmarkManagerPrivateSortChildrenFunction::RunOnReady() {
 }
 
 bool BookmarkManagerPrivateGetStringsFunction::RunAsync() {
-  base::DictionaryValue* localized_strings = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> localized_strings(
+      new base::DictionaryValue());
 
   localized_strings->SetString("title",
       l10n_util::GetStringUTF16(IDS_BOOKMARK_MANAGER_TITLE));
@@ -532,9 +534,9 @@ bool BookmarkManagerPrivateGetStringsFunction::RunAsync() {
       l10n_util::GetStringUTF16(IDS_CANCEL));
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
-  webui::SetLoadTimeDataDefaults(app_locale, localized_strings);
+  webui::SetLoadTimeDataDefaults(app_locale, localized_strings.get());
 
-  SetResult(localized_strings);
+  SetResult(std::move(localized_strings));
 
   // This is needed because unlike the rest of these functions, this class
   // inherits from AsyncFunction directly, rather than BookmarkFunction.
@@ -648,7 +650,7 @@ bool BookmarkManagerPrivateGetSubtreeFunction::RunOnReady() {
 
 bool BookmarkManagerPrivateCanEditFunction::RunOnReady() {
   PrefService* prefs = user_prefs::UserPrefs::Get(GetProfile());
-  SetResult(new base::FundamentalValue(
+  SetResult(base::MakeUnique<base::FundamentalValue>(
       prefs->GetBoolean(bookmarks::prefs::kEditBookmarksEnabled)));
   return true;
 }
@@ -791,7 +793,7 @@ bool BookmarkManagerPrivateUpdateMetaInfoFunction::RunOnReady() {
 
 bool BookmarkManagerPrivateCanOpenNewWindowsFunction::RunOnReady() {
   bool can_open_new_windows = true;
-  SetResult(new base::FundamentalValue(can_open_new_windows));
+  SetResult(base::MakeUnique<base::FundamentalValue>(can_open_new_windows));
   return true;
 }
 

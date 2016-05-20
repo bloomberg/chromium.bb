@@ -729,7 +729,7 @@ void DebuggerGetTargetsFunction::SendTargetList(
   for (size_t i = 0; i < target_list.size(); ++i)
     result->Append(SerializeTarget(*target_list[i]));
   STLDeleteContainerPointers(target_list.begin(), target_list.end());
-  SetResult(result.release());
+  SetResult(std::move(result));
   SendResponse(true);
 }
 

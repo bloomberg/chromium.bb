@@ -29,7 +29,7 @@ class AppWindowController : public WindowController {
   // extensions::WindowController:
   int GetWindowId() const override;
   std::string GetWindowTypeText() const override;
-  base::DictionaryValue* CreateWindowValueWithTabs(
+  std::unique_ptr<base::DictionaryValue> CreateWindowValueWithTabs(
       const Extension* extension) const override;
   base::DictionaryValue* CreateTabValue(const Extension* extension,
                                         int tab_index) const override;

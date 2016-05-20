@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/networking_private/networking_private_api.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -64,7 +66,7 @@ bool NetworkingPrivateGetPropertiesFunction::RunAsync() {
 
 void NetworkingPrivateGetPropertiesFunction::Success(
     std::unique_ptr<base::DictionaryValue> result) {
-  SetResult(result.release());
+  SetResult(std::move(result));
   SendResponse(true);
 }
 
@@ -97,7 +99,7 @@ bool NetworkingPrivateGetManagedPropertiesFunction::RunAsync() {
 
 void NetworkingPrivateGetManagedPropertiesFunction::Success(
     std::unique_ptr<base::DictionaryValue> result) {
-  SetResult(result.release());
+  SetResult(std::move(result));
   SendResponse(true);
 }
 
@@ -127,7 +129,7 @@ bool NetworkingPrivateGetStateFunction::RunAsync() {
 
 void NetworkingPrivateGetStateFunction::Success(
     std::unique_ptr<base::DictionaryValue> result) {
-  SetResult(result.release());
+  SetResult(std::move(result));
   SendResponse(true);
 }
 
@@ -259,7 +261,7 @@ bool NetworkingPrivateGetNetworksFunction::RunAsync() {
 
 void NetworkingPrivateGetNetworksFunction::Success(
     std::unique_ptr<base::ListValue> network_list) {
-  SetResult(network_list.release());
+  SetResult(std::move(network_list));
   SendResponse(true);
 }
 
@@ -296,7 +298,7 @@ bool NetworkingPrivateGetVisibleNetworksFunction::RunAsync() {
 
 void NetworkingPrivateGetVisibleNetworksFunction::Success(
     std::unique_ptr<base::ListValue> network_properties_list) {
-  SetResult(network_properties_list.release());
+  SetResult(std::move(network_properties_list));
   SendResponse(true);
 }
 
@@ -342,7 +344,7 @@ bool NetworkingPrivateGetEnabledNetworkTypesFunction::RunSync() {
       LOG(ERROR) << "networkingPrivate: Unexpected type: " << type;
     }
   }
-  SetResult(enabled_networks_list.release());
+  SetResult(std::move(enabled_networks_list));
   return true;
 }
 
@@ -364,7 +366,7 @@ bool NetworkingPrivateGetDeviceStatesFunction::RunSync() {
   std::unique_ptr<base::ListValue> device_state_list(new base::ListValue);
   for (const auto& properties : *device_states)
     device_state_list->Append(properties->ToValue().release());
-  SetResult(device_state_list.release());
+  SetResult(std::move(device_state_list));
   return true;
 }
 

@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/history/top_sites_factory.h"
@@ -48,7 +50,7 @@ void TopSitesGetFunction::OnMostVisitedURLsAvailable(
     }
   }
 
-  SetResult(pages_value.release());
+  SetResult(std::move(pages_value));
   SendResponse(true);
 }
 

@@ -13,6 +13,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
@@ -437,8 +438,7 @@ void IdentityGetAuthTokenFunction::CompleteAsyncRun(bool success) {
 
 void IdentityGetAuthTokenFunction::CompleteFunctionWithResult(
     const std::string& access_token) {
-
-  SetResult(new base::StringValue(access_token));
+  SetResult(base::MakeUnique<base::StringValue>(access_token));
   CompleteAsyncRun(true);
 }
 
@@ -1013,7 +1013,7 @@ void IdentityLaunchWebAuthFlowFunction::OnAuthFlowFailure(
 void IdentityLaunchWebAuthFlowFunction::OnAuthFlowURLChange(
     const GURL& redirect_url) {
   if (redirect_url.GetWithEmptyPath() == final_url_prefix_) {
-    SetResult(new base::StringValue(redirect_url.spec()));
+    SetResult(base::MakeUnique<base::StringValue>(redirect_url.spec()));
     SendResponse(true);
     if (auth_flow_)
       auth_flow_.release()->DetachDelegateAndDelete();

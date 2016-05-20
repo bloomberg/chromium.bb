@@ -151,8 +151,7 @@ bool BrailleDisplayPrivateGetDisplayStateFunction::Prepare() {
 }
 
 void BrailleDisplayPrivateGetDisplayStateFunction::Work() {
-  SetResult(
-      BrailleController::GetInstance()->GetDisplayState()->ToValue().release());
+  SetResult(BrailleController::GetInstance()->GetDisplayState()->ToValue());
 }
 
 bool BrailleDisplayPrivateGetDisplayStateFunction::Respond() {

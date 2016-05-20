@@ -349,10 +349,10 @@ std::unique_ptr<api::tabs::Tab> ExtensionTabUtil::CreateTabObject(
   return result;
 }
 
-base::ListValue* ExtensionTabUtil::CreateTabList(
+std::unique_ptr<base::ListValue> ExtensionTabUtil::CreateTabList(
     const Browser* browser,
     const Extension* extension) {
-  base::ListValue* tab_list = new base::ListValue();
+  std::unique_ptr<base::ListValue> tab_list(new base::ListValue());
   TabStripModel* tab_strip = browser->tab_strip_model();
   for (int i = 0; i < tab_strip->count(); ++i) {
     tab_list->Append(

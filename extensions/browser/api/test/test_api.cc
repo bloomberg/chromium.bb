@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
@@ -91,7 +92,7 @@ bool TestSendMessageFunction::RunAsync() {
 TestSendMessageFunction::~TestSendMessageFunction() {}
 
 void TestSendMessageFunction::Reply(const std::string& message) {
-  SetResult(new base::StringValue(message));
+  SetResult(base::MakeUnique<base::StringValue>(message));
   SendResponse(true);
 }
 
@@ -126,7 +127,7 @@ bool TestGetConfigFunction::RunSafe() {
     return false;
   }
 
-  SetResult(test_config_state->config_state()->DeepCopy());
+  SetResult(test_config_state->config_state()->CreateDeepCopy());
   return true;
 }
 
@@ -135,7 +136,7 @@ TestWaitForRoundTripFunction::~TestWaitForRoundTripFunction() {}
 bool TestWaitForRoundTripFunction::RunSafe() {
   std::unique_ptr<WaitForRoundTrip::Params> params(
       WaitForRoundTrip::Params::Create(*args_));
-  SetResult(new base::StringValue(params->message));
+  SetResult(base::MakeUnique<base::StringValue>(params->message));
   return true;
 }
 

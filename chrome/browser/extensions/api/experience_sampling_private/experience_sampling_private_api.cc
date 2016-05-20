@@ -18,7 +18,7 @@ bool ExperienceSamplingPrivateGetBrowserInfoFunction::RunAsync() {
   base::FieldTrialList::StatesToString(&field_trials);
   info.variations = field_trials;
 
-  SetResult(info.ToValue().release());
+  SetResult(info.ToValue());
   SendResponse(true /* success */);
   return true;
 }

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/hotword_private/hotword_private_api.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -220,7 +221,7 @@ bool HotwordPrivateGetStatusFunction::RunSync() {
   PrefService* prefs = GetProfile()->GetPrefs();
   result.enabled_set = prefs->HasPrefPath(prefs::kHotwordSearchEnabled);
 
-  SetResult(result.ToValue().release());
+  SetResult(result.ToValue());
   return true;
 }
 
@@ -282,7 +283,7 @@ bool HotwordPrivateGetLaunchStateFunction::RunSync() {
   api::hotword_private::LaunchState result;
   result.launch_mode =
       hotword_service->GetHotwordAudioVerificationLaunchMode();
-  SetResult(result.ToValue().release());
+  SetResult(result.ToValue());
   return true;
 }
 
@@ -345,7 +346,8 @@ bool HotwordPrivateGetLocalizedStringsFunction::RunSync() {
       l10n_util::GetStringFUTF16(IDS_HOTWORD_BROWSER_NAME, product_name);
 #endif
 
-  base::DictionaryValue* localized_strings = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> localized_strings(
+      new base::DictionaryValue());
 
   localized_strings->SetString(
       "close",
@@ -451,9 +453,9 @@ bool HotwordPrivateGetLocalizedStringsFunction::RunSync() {
       l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_FINISHED_WAIT));
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
-  webui::SetLoadTimeDataDefaults(app_locale, localized_strings);
+  webui::SetLoadTimeDataDefaults(app_locale, localized_strings.get());
 
-  SetResult(localized_strings);
+  SetResult(std::move(localized_strings));
   return true;
 }
 
@@ -482,7 +484,7 @@ void HotwordPrivateSetAudioHistoryEnabledFunction::SetResultAndSendResponse(
   api::hotword_private::AudioHistoryState result;
   result.success = success;
   result.enabled = new_enabled_value;
-  SetResult(result.ToValue().release());
+  SetResult(result.ToValue());
   SendResponse(true);
 }
 
@@ -506,7 +508,7 @@ void HotwordPrivateGetAudioHistoryEnabledFunction::SetResultAndSendResponse(
   api::hotword_private::AudioHistoryState result;
   result.success = success;
   result.enabled = new_enabled_value;
-  SetResult(result.ToValue().release());
+  SetResult(result.ToValue());
   SendResponse(true);
 }
 

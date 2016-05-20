@@ -665,7 +665,7 @@ bool GetPreferenceFunction::RunSync() {
                        ep->HasIncognitoPrefValue(browser_pref));
   }
 
-  SetResult(result.release());
+  SetResult(std::move(result));
   return true;
 }
 

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -185,7 +186,7 @@ bool FileManagerPrivateGetPreferencesFunction::RunSync() {
       UTF16ToUTF8(chromeos::system::TimezoneSettings::GetInstance()
                       ->GetCurrentTimezoneID());
 
-  SetResult(result.ToValue().release());
+  SetResult(result.ToValue());
 
   drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
   if (logger)
@@ -277,7 +278,7 @@ bool FileManagerPrivateInternalZipSelectionFunction::RunAsync() {
 }
 
 void FileManagerPrivateInternalZipSelectionFunction::OnZipDone(bool success) {
-  SetResult(new base::FundamentalValue(success));
+  SetResult(base::MakeUnique<base::FundamentalValue>(success));
   SendResponse(true);
 }
 
@@ -358,7 +359,7 @@ void FileManagerPrivateRequestWebStoreAccessTokenFunction::OnAccessTokenFetched(
     DCHECK(access_token == auth_service_->access_token());
     if (logger)
       logger->Log(logging::LOG_INFO, "CWS OAuth token fetch succeeded.");
-    SetResult(new base::StringValue(access_token));
+    SetResult(base::MakeUnique<base::StringValue>(access_token));
     SendResponse(true);
   } else {
     if (logger) {
@@ -459,7 +460,7 @@ bool FileManagerPrivateInternalGetMimeTypeFunction::RunAsync() {
 
 void FileManagerPrivateInternalGetMimeTypeFunction::OnGetMimeType(
     const std::string& mimeType) {
-  SetResult(new base::StringValue(mimeType));
+  SetResult(base::MakeUnique<base::StringValue>(mimeType));
   SendResponse(true);
 }
 

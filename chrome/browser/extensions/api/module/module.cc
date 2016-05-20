@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -50,13 +51,13 @@ bool ExtensionSetUpdateUrlDataFunction::RunSync() {
 }
 
 bool ExtensionIsAllowedIncognitoAccessFunction::RunSync() {
-  SetResult(new base::FundamentalValue(
+  SetResult(base::MakeUnique<base::FundamentalValue>(
       util::IsIncognitoEnabled(extension_id(), GetProfile())));
   return true;
 }
 
 bool ExtensionIsAllowedFileSchemeAccessFunction::RunSync() {
-  SetResult(new base::FundamentalValue(
+  SetResult(base::MakeUnique<base::FundamentalValue>(
       util::AllowFileAccess(extension_id(), GetProfile())));
   return true;
 }

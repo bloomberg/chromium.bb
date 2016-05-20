@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/system_storage/system_storage_api.h"
 
+#include "base/memory/ptr_util.h"
+
 using storage_monitor::StorageMonitor;
 
 namespace extensions {
@@ -88,7 +90,8 @@ void SystemStorageEjectDeviceFunction::HandleResponse(
       result = api::system_storage::EJECT_DEVICE_RESULT_CODE_FAILURE;
   }
 
-  SetResult(new base::StringValue(api::system_storage::ToString(result)));
+  SetResult(base::MakeUnique<base::StringValue>(
+      api::system_storage::ToString(result)));
   SendResponse(true);
 }
 
@@ -136,7 +139,7 @@ void SystemStorageGetAvailableCapacityFunction::OnQueryCompleted(
     api::system_storage::StorageAvailableCapacityInfo result;
     result.id = transient_id;
     result.available_capacity = available_capacity;
-    SetResult(result.ToValue().release());
+    SetResult(result.ToValue());
   } else {
     SetError("Error occurred when querying available capacity.");
   }

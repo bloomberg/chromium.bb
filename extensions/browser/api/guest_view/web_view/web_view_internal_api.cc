@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -300,7 +301,7 @@ void WebViewInternalCaptureVisibleRegionFunction::OnCaptureSuccess(
     return;
   }
 
-  SetResult(new base::StringValue(base64_result));
+  SetResult(base::MakeUnique<base::StringValue>(base64_result));
   SendResponse(true);
 }
 
@@ -454,7 +455,7 @@ void WebViewInternalExecuteScriptFunction::OnExecuteCodeFinished(
     const GURL& on_url,
     const base::ListValue& result) {
   if (error.empty())
-    SetResult(result.DeepCopy());
+    SetResult(result.CreateDeepCopy());
   WebViewInternalExecuteCodeFunction::OnExecuteCodeFinished(
       error, on_url, result);
 }
@@ -617,7 +618,7 @@ bool WebViewInternalGetZoomFunction::RunAsyncSafe(WebViewGuest* guest) {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   double zoom_factor = guest->GetZoom();
-  SetResult(new base::FundamentalValue(zoom_factor));
+  SetResult(base::MakeUnique<base::FundamentalValue>(zoom_factor));
   SendResponse(true);
   return true;
 }
@@ -680,7 +681,8 @@ bool WebViewInternalGetZoomModeFunction::RunAsyncSafe(WebViewGuest* guest) {
       NOTREACHED();
   }
 
-  SetResult(new base::StringValue(web_view_internal::ToString(zoom_mode)));
+  SetResult(base::MakeUnique<base::StringValue>(
+      web_view_internal::ToString(zoom_mode)));
   SendResponse(true);
   return true;
 }
@@ -782,7 +784,7 @@ bool WebViewInternalGoFunction::RunAsyncSafe(WebViewGuest* guest) {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   bool successful = guest->Go(params->relative_index);
-  SetResult(new base::FundamentalValue(successful));
+  SetResult(base::MakeUnique<base::FundamentalValue>(successful));
   SendResponse(true);
   return true;
 }
@@ -838,7 +840,7 @@ bool WebViewInternalSetPermissionFunction::RunAsyncSafe(WebViewGuest* guest) {
   EXTENSION_FUNCTION_VALIDATE(result !=
                               WebViewPermissionHelper::SET_PERMISSION_INVALID);
 
-  SetResult(new base::FundamentalValue(
+  SetResult(base::MakeUnique<base::FundamentalValue>(
       result == WebViewPermissionHelper::SET_PERMISSION_ALLOWED));
   SendResponse(true);
   return true;

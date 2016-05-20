@@ -24,7 +24,7 @@ bool SystemMemoryGetInfoFunction::RunAsync() {
 
 void SystemMemoryGetInfoFunction::OnGetMemoryInfoCompleted(bool success) {
   if (success)
-    SetResult(MemoryInfoProvider::Get()->memory_info().ToValue().release());
+    SetResult(MemoryInfoProvider::Get()->memory_info().ToValue());
   else
     SetError("Error occurred when querying memory information.");
   SendResponse(success);

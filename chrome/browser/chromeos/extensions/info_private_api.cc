@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -171,7 +173,7 @@ bool ChromeosInfoPrivateGetFunction::RunAsync() {
     if (value)
       result->Set(property_name, value);
   }
-  SetResult(result.release());
+  SetResult(std::move(result));
   SendResponse(true);
   return true;
 }

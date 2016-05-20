@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -62,7 +64,7 @@ class PanelExtensionWindowController : public extensions::WindowController {
   // Overridden from extensions::WindowController.
   int GetWindowId() const override;
   std::string GetWindowTypeText() const override;
-  base::DictionaryValue* CreateWindowValueWithTabs(
+  std::unique_ptr<base::DictionaryValue> CreateWindowValueWithTabs(
       const extensions::Extension* extension) const override;
   base::DictionaryValue* CreateTabValue(const extensions::Extension* extension,
                                         int tab_index) const override;
@@ -99,10 +101,10 @@ std::string PanelExtensionWindowController::GetWindowTypeText() const {
   return extensions::tabs_constants::kWindowTypeValuePanel;
 }
 
-base::DictionaryValue*
+std::unique_ptr<base::DictionaryValue>
 PanelExtensionWindowController::CreateWindowValueWithTabs(
     const extensions::Extension* extension) const {
-  base::DictionaryValue* result = CreateWindowValue();
+  std::unique_ptr<base::DictionaryValue> result = CreateWindowValue();
 
   base::DictionaryValue* tab_value = CreateTabValue(extension, 0);
   if (tab_value) {

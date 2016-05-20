@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/api/page_capture/page_capture_api.h"
 
 #include <limits>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -174,10 +175,10 @@ void PageCaptureSaveAsMHTMLFunction::ReturnSuccess(int64_t file_size) {
   ChildProcessSecurityPolicy::GetInstance()->GrantReadFile(
       child_id, mhtml_path_);
 
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  SetResult(dict);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("mhtmlFilePath", mhtml_path_.value());
   dict->SetInteger("mhtmlFileLength", file_size);
+  SetResult(std::move(dict));
 
   SendResponse(true);
 

@@ -8,6 +8,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -437,7 +438,7 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
   }
 
   // The custom JS binding will use this list to create DOMFileSystem objects.
-  SetResult(list.release());
+  SetResult(std::move(list));
   SendResponse(true);
 }
 
@@ -553,10 +554,10 @@ void MediaGalleriesAddUserSelectedFolderFunction::ReturnGalleriesAndId(
       }
     }
   }
-  base::DictionaryValue* results = new base::DictionaryValue;
+  std::unique_ptr<base::DictionaryValue> results(new base::DictionaryValue);
   results->SetWithoutPathExpansion("mediaFileSystems", list.release());
   results->SetIntegerWithoutPathExpansion("selectedFileSystemIndex", index);
-  SetResult(results);
+  SetResult(std::move(results));
   SendResponse(true);
 }
 
@@ -631,9 +632,10 @@ void MediaGalleriesGetMetadataFunction::GetMetadata(
     MediaGalleries::MediaMetadata metadata;
     metadata.mime_type = mime_type;
 
-    base::DictionaryValue* result_dictionary = new base::DictionaryValue;
+    std::unique_ptr<base::DictionaryValue> result_dictionary(
+        new base::DictionaryValue);
     result_dictionary->Set(kMetadataKey, metadata.ToValue().release());
-    SetResult(result_dictionary);
+    SetResult(std::move(result_dictionary));
     SendResponse(true);
     return;
   }
@@ -671,7 +673,7 @@ void MediaGalleriesGetMetadataFunction::OnSafeMediaMetadataParserDone(
   result_dictionary->Set(kMetadataKey, metadata_dictionary.release());
 
   if (attached_images->empty()) {
-    SetResult(result_dictionary.release());
+    SetResult(std::move(result_dictionary));
     SendResponse(true);
     return;
   }
@@ -739,7 +741,7 @@ void MediaGalleriesGetMetadataFunction::ConstructNextBlob(
   }
 
   // All Blobs have been constructed. The renderer will take ownership.
-  SetResult(result_dictionary.release());
+  SetResult(std::move(result_dictionary));
   SetTransferredBlobUUIDs(*blob_uuids);
   SendResponse(true);
 }
@@ -785,7 +787,7 @@ void MediaGalleriesAddGalleryWatchFunction::OnPreferencesInit(
     error_ = kInvalidGalleryIdMsg;
     result.gallery_id = kInvalidGalleryId;
     result.success = false;
-    SetResult(result.ToValue().release());
+    SetResult(result.ToValue());
     SendResponse(false);
     return;
   }
@@ -812,14 +814,14 @@ void MediaGalleriesAddGalleryWatchFunction::HandleResponse(
 
   if (!api->ExtensionHasGalleryChangeListener(extension()->id())) {
     result.success = false;
-    SetResult(result.ToValue().release());
+    SetResult(result.ToValue());
     error_ = kMissingEventListener;
     SendResponse(false);
     return;
   }
 
   result.success = error.empty();
-  SetResult(result.ToValue().release());
+  SetResult(result.ToValue());
   if (error.empty()) {
     SendResponse(true);
   } else {

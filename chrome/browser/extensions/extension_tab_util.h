@@ -68,8 +68,9 @@ class ExtensionTabUtil {
   static int GetTabId(const content::WebContents* web_contents);
   static std::string GetTabStatusText(bool is_loading);
   static int GetWindowIdOfTab(const content::WebContents* web_contents);
-  static base::ListValue* CreateTabList(const Browser* browser,
-                                        const Extension* extension);
+  static std::unique_ptr<base::ListValue> CreateTabList(
+      const Browser* browser,
+      const Extension* extension);
 
   // DEPRECATED: Please consider using ChromeExtensionFunctionDetails instead
   // of the deprecated ChromeUIThreadExtensionFunction and use the overload

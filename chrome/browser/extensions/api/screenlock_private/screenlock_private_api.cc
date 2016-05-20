@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_proximity_auth_client.h"
@@ -54,7 +55,7 @@ ScreenlockPrivateGetLockedFunction::ScreenlockPrivateGetLockedFunction() {}
 ScreenlockPrivateGetLockedFunction::~ScreenlockPrivateGetLockedFunction() {}
 
 bool ScreenlockPrivateGetLockedFunction::RunAsync() {
-  SetResult(new base::FundamentalValue(
+  SetResult(base::MakeUnique<base::FundamentalValue>(
       proximity_auth::ScreenlockBridge::Get()->IsLocked()));
   SendResponse(error_.empty());
   return true;
