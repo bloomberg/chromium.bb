@@ -76,7 +76,7 @@ NotificationCenterButton::NotificationCenterButton(
   if (text_id)
     SetTooltipText(resource_bundle.GetLocalizedString(text_id));
 
-  Button::ConfigureDefaultFocus(this);
+  SetFocusForPlatform();
 
   SetFocusPainter(views::Painter::CreateSolidFocusPainter(
       kFocusBorderColor,

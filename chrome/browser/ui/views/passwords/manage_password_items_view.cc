@@ -103,7 +103,7 @@ std::unique_ptr<views::ImageButton> GenerateDeleteButton(
                    rb->GetImageNamed(IDR_CLOSE_2_H).ToImageSkia());
   button->SetImage(views::ImageButton::STATE_PRESSED,
                    rb->GetImageNamed(IDR_CLOSE_2_P).ToImageSkia());
-  views::Button::ConfigureDefaultFocus(button.get());
+  button->SetFocusForPlatform();
   return button;
 }
 

@@ -257,7 +257,7 @@ class InMenuButton : public LabelButton {
 
   void Init(InMenuButtonBackground::ButtonType type) {
     // An InMenuButton should always be focusable regardless of the platform.
-    // Hence we don't use Button::ConfigureDefaultFocus().
+    // Hence we don't use SetFocusForPlatform().
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetHorizontalAlignment(gfx::ALIGN_CENTER);
 

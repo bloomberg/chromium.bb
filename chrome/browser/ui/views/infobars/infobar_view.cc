@@ -160,7 +160,7 @@ views::LabelButton* InfoBarView::CreateTextButton(
   button->set_animate_on_state_change(false);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   button->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
-  views::Button::ConfigureDefaultFocus(button);
+  button->SetFocusForPlatform();
   button->set_request_focus_on_press(true);
   button->SetTextColor(views::Button::STATE_NORMAL, GetInfobarTextColor());
   button->SetTextColor(views::Button::STATE_HOVERED, GetInfobarTextColor());
@@ -290,7 +290,7 @@ void InfoBarView::ViewHierarchyChanged(
     }
     close_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
-    views::Button::ConfigureDefaultFocus(close_button_);
+    close_button_->SetFocusForPlatform();
     // Subclasses should already be done adding child views by this point (see
     // related DCHECK in Layout()).
     child_container_->AddChildView(close_button_);

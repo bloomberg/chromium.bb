@@ -269,7 +269,7 @@ void WimaxConfigView::Init() {
   } else {
     // Password visible button.
     passphrase_visible_button_ = new views::ToggleImageButton(this);
-    views::Button::ConfigureDefaultFocus(passphrase_visible_button_);
+    passphrase_visible_button_->SetFocusForPlatform();
     passphrase_visible_button_->set_request_focus_on_press(true);
     passphrase_visible_button_->SetTooltipText(
         l10n_util::GetStringUTF16(

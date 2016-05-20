@@ -72,7 +72,7 @@ FolderHeaderView::FolderHeaderView(FolderHeaderViewDelegate* delegate)
     back_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                                     views::ImageButton::ALIGN_MIDDLE);
     AddChildView(back_button_);
-    views::Button::ConfigureDefaultFocus(back_button_);
+    back_button_->SetFocusForPlatform();
     back_button_->set_request_focus_on_press(true);
     back_button_->SetAccessibleName(
         ui::ResourceBundle::GetSharedInstance().GetLocalizedString(

@@ -24,20 +24,19 @@ Button::ButtonState Button::GetButtonStateFrom(ui::NativeTheme::State state) {
   return Button::STATE_NORMAL;
 }
 
-// static
-void Button::ConfigureDefaultFocus(Button* button) {
-#if defined(OS_MACOSX)
-  // On Mac, buttons are focusable only in full keyboard access mode.
-  button->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
-#else
-  button->SetFocusBehavior(FocusBehavior::ALWAYS);
-#endif
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Button, public:
 
 Button::~Button() {
+}
+
+void Button::SetFocusForPlatform() {
+#if defined(OS_MACOSX)
+  // On Mac, buttons are focusable only in full keyboard access mode.
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+#else
+  SetFocusBehavior(FocusBehavior::ALWAYS);
+#endif
 }
 
 void Button::SetTooltipText(const base::string16& tooltip_text) {

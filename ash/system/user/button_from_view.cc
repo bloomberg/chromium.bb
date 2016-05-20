@@ -43,7 +43,7 @@ ButtonFromView::ButtonFromView(views::View* content,
   ShowActive();
   // Only make it focusable when we are active/interested in clicks.
   if (listener)
-    Button::ConfigureDefaultFocus(this);
+    SetFocusForPlatform();
 }
 
 ButtonFromView::~ButtonFromView() {}

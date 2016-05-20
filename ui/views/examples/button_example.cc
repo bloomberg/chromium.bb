@@ -44,7 +44,7 @@ void ButtonExample::CreateExampleView(View* container) {
   container->SetLayoutManager(layout);
 
   label_button_ = new LabelButton(this, ASCIIToUTF16(kLabelButton));
-  Button::ConfigureDefaultFocus(label_button_);
+  label_button_->SetFocusForPlatform();
   label_button_->set_request_focus_on_press(true);
   container->AddChildView(label_button_);
 
@@ -72,7 +72,7 @@ void ButtonExample::CreateExampleView(View* container) {
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   image_button_ = new ImageButton(this);
-  Button::ConfigureDefaultFocus(image_button_);
+  image_button_->SetFocusForPlatform();
   image_button_->set_request_focus_on_press(true);
   image_button_->SetImage(ImageButton::STATE_NORMAL,
                           rb.GetImageNamed(IDR_CLOSE).ToImageSkia());
@@ -108,7 +108,7 @@ void ButtonExample::LabelButtonPressed(LabelButton* label_button,
       // Toggle focusability.
       label_button_->IsAccessibilityFocusable()
           ? label_button_->SetFocusBehavior(View::FocusBehavior::NEVER)
-          : Button::ConfigureDefaultFocus(label_button_);
+          : label_button_->SetFocusForPlatform();
     } else {
       label_button->SetStyle(static_cast<Button::ButtonStyle>(
           (label_button->style() + 1) % Button::STYLE_COUNT));

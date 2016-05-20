@@ -156,7 +156,7 @@ views::ImageButton* CreateBackButton(views::ButtonListener* listener) {
                         rb->GetImageSkiaNamed(IDR_BACK_P));
   back_button->SetImage(views::ImageButton::STATE_DISABLED,
                         rb->GetImageSkiaNamed(IDR_BACK_D));
-  views::Button::ConfigureDefaultFocus(back_button);
+  back_button->SetFocusForPlatform();
   back_button->set_request_focus_on_press(true);
   return back_button;
 }
@@ -176,7 +176,7 @@ class BackgroundColorHoverButton : public views::LabelButton {
     SetMinSize(gfx::Size(0,
         kButtonHeight + views::kRelatedControlVerticalSpacing));
     SetImage(STATE_NORMAL, icon);
-    Button::ConfigureDefaultFocus(this);
+    SetFocusForPlatform();
     set_request_focus_on_press(true);
   }
 
@@ -1405,7 +1405,7 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
             views::LabelButton::STATE_NORMAL,
             gfx::CreateVectorIcon(gfx::VectorIconId::WARNING, 18,
                                   gfx::kChromeIconGrey));
-        views::Button::ConfigureDefaultFocus(auth_error_email_button_);
+        auth_error_email_button_->SetFocusForPlatform();
         auth_error_email_button_->set_request_focus_on_press(true);
         gfx::Insets insets =
             views::LabelButtonAssetBorder::GetDefaultInsetsForStyle(

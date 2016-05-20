@@ -49,8 +49,8 @@ class VIEWS_EXPORT Button : public InkDropHostView {
 
   static ButtonState GetButtonStateFrom(ui::NativeTheme::State state);
 
-  // Make the |button| focusable as per the platform.
-  static void ConfigureDefaultFocus(Button* button);
+  // Make the button focusable as per the platform.
+  void SetFocusForPlatform();
 
   void SetTooltipText(const base::string16& tooltip_text);
 

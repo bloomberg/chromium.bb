@@ -35,7 +35,7 @@ TrayPopupHeaderButton::TrayPopupHeaderButton(views::ButtonListener* listener,
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);
   SetAccessibleName(bundle.GetLocalizedString(accessible_name_id));
-  Button::ConfigureDefaultFocus(this);
+  SetFocusForPlatform();
 
   SetFocusPainter(views::Painter::CreateSolidFocusPainter(
                       kFocusBorderColor,

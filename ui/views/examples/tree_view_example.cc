@@ -47,13 +47,13 @@ void TreeViewExample::CreateExampleView(View* container) {
   tree_view_->SetModel(&model_);
   tree_view_->SetController(this);
   add_ = new LabelButton(this, ASCIIToUTF16("Add"));
-  Button::ConfigureDefaultFocus(add_);
+  add_->SetFocusForPlatform();
   add_->set_request_focus_on_press(true);
   remove_ = new LabelButton(this, ASCIIToUTF16("Remove"));
-  Button::ConfigureDefaultFocus(remove_);
+  remove_->SetFocusForPlatform();
   remove_->set_request_focus_on_press(true);
   change_title_ = new LabelButton(this, ASCIIToUTF16("Change Title"));
-  Button::ConfigureDefaultFocus(change_title_);
+  change_title_->SetFocusForPlatform();
   change_title_->set_request_focus_on_press(true);
 
   GridLayout* layout = new GridLayout(container);

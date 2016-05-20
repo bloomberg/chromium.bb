@@ -20,7 +20,7 @@ class Painter;
 // An image button.
 // Note that this type of button is not focusable by default and will not be
 // part of the focus chain, unless in accessibility mode. Call
-// Button::ConfigureDefaultFocus() to make it part of the focus chain.
+// SetFocusForPlatform() to make it part of the focus chain.
 class VIEWS_EXPORT ImageButton : public CustomButton {
  public:
   static const char kViewClassName[];
