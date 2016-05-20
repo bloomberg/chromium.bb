@@ -560,8 +560,6 @@ COMMON_GTESTS = {
     ],
     'swarming': {
       'shards': 4,
-      'priority_adjustment': 'lower',
-      'expiration': 7200
     }
   },
 
@@ -589,8 +587,6 @@ COMMON_GTESTS = {
     ],
     'swarming': {
       'shards': 12,
-      'priority_adjustment': 'lower',
-      'expiration': 7200
     }
   },
 

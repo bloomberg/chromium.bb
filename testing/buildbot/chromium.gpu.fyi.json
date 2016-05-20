@@ -3075,8 +3075,6 @@
               "os": "Linux"
             }
           ],
-          "expiration": 7200,
-          "priority_adjustment": "lower",
           "shards": 4
         },
         "test": "angle_deqp_gles2_tests",
@@ -3091,8 +3089,6 @@
               "os": "Linux"
             }
           ],
-          "expiration": 7200,
-          "priority_adjustment": "lower",
           "shards": 12
         },
         "test": "angle_deqp_gles3_tests",
@@ -6940,8 +6936,6 @@
               "os": "Linux"
             }
           ],
-          "expiration": 7200,
-          "priority_adjustment": "lower",
           "shards": 4
         },
         "test": "angle_deqp_gles2_tests",
@@ -7350,8 +7344,6 @@
               "os": "Windows-2008ServerR2-SP1"
             }
           ],
-          "expiration": 7200,
-          "priority_adjustment": "lower",
           "shards": 4
         },
         "test": "angle_deqp_gles2_tests",
@@ -10118,8 +10110,6 @@
               "os": "Windows-2008ServerR2-SP1"
             }
           ],
-          "expiration": 7200,
-          "priority_adjustment": "lower",
           "shards": 4
         },
         "test": "angle_deqp_gles2_tests",
@@ -10134,8 +10124,6 @@
               "os": "Windows-2008ServerR2-SP1"
             }
           ],
-          "expiration": 7200,
-          "priority_adjustment": "lower",
           "shards": 12
         },
         "test": "angle_deqp_gles3_tests",
@@ -11503,8 +11491,6 @@
               "os": "Windows-2008ServerR2-SP1"
             }
           ],
-          "expiration": 7200,
-          "priority_adjustment": "lower",
           "shards": 4
         },
         "test": "angle_deqp_gles2_tests",
