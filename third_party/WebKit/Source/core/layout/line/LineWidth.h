@@ -50,7 +50,10 @@ public:
     bool fitsOnLine(float extra) const { return currentWidth() + extra <= (m_availableWidth + LayoutUnit::epsilon()); }
     bool fitsOnLine(float extra, WhitespaceTreatment whitespaceTreatment) const
     {
-        return currentWidth() - (whitespaceTreatment == ExcludeWhitespace ? trailingWhitespaceWidth() : 0) + extra <= (m_availableWidth + LayoutUnit::epsilon());
+        LayoutUnit w = LayoutUnit::fromFloatFloor(currentWidth() + extra);
+        if (whitespaceTreatment == ExcludeWhitespace)
+            w -= LayoutUnit::fromFloatCeil(trailingWhitespaceWidth());
+        return w <= m_availableWidth;
     }
 
     // Note that m_uncommittedWidth may not be LayoutUnit-snapped at this point.  Because
@@ -77,7 +80,7 @@ public:
 
 private:
     void computeAvailableWidthFromLeftAndRight();
-    void updateLineDimension(LayoutUnit newLineTop, LayoutUnit newLineWidth, const float& newLineLeft, const float& newLineRight);
+    void updateLineDimension(LayoutUnit newLineTop, LayoutUnit newLineWidth, const LayoutUnit& newLineLeft, const LayoutUnit& newLineRight);
     void wrapNextToShapeOutside(bool isFirstLine);
 
     LineLayoutBlockFlow m_block;
@@ -85,9 +88,9 @@ private:
     float m_committedWidth;
     float m_overhangWidth; // The amount by which |m_availableWidth| has been inflated to account for possible contraction due to ruby overhang.
     float m_trailingWhitespaceWidth;
-    float m_left;
-    float m_right;
-    float m_availableWidth;
+    LayoutUnit m_left;
+    LayoutUnit m_right;
+    LayoutUnit m_availableWidth;
     bool m_isFirstLine;
     IndentTextOrNot m_indentText;
 };

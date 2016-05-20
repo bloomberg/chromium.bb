@@ -40,9 +40,6 @@ LineWidth::LineWidth(LineLayoutBlockFlow block, bool isFirstLine, IndentTextOrNo
     , m_committedWidth(0)
     , m_overhangWidth(0)
     , m_trailingWhitespaceWidth(0)
-    , m_left(0)
-    , m_right(0)
-    , m_availableWidth(0)
     , m_isFirstLine(isFirstLine)
     , m_indentText(indentText)
 {
@@ -53,8 +50,8 @@ void LineWidth::updateAvailableWidth(LayoutUnit replacedHeight)
 {
     LayoutUnit height = m_block.logicalHeight();
     LayoutUnit logicalHeight = m_block.minLineHeightForReplacedObject(m_isFirstLine, replacedHeight);
-    m_left = m_block.logicalLeftOffsetForLine(height, indentText(), logicalHeight).toFloat();
-    m_right = m_block.logicalRightOffsetForLine(height, indentText(), logicalHeight).toFloat();
+    m_left = m_block.logicalLeftOffsetForLine(height, indentText(), logicalHeight);
+    m_right = m_block.logicalRightOffsetForLine(height, indentText(), logicalHeight);
 
     computeAvailableWidthFromLeftAndRight();
 }
@@ -72,7 +69,7 @@ void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(const FloatingObject& ne
     }
 
     if (newFloat.getType() == FloatingObject::FloatLeft) {
-        float newLeft = m_block.logicalRightForFloat(newFloat).toFloat();
+        LayoutUnit newLeft = m_block.logicalRightForFloat(newFloat);
         if (shapeDeltas.isValid()) {
             if (shapeDeltas.lineOverlapsShape())
                 newLeft += shapeDeltas.rightMarginBoxDelta();
@@ -81,9 +78,9 @@ void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(const FloatingObject& ne
         }
         if (indentText() == IndentText && m_block.style()->isLeftToRightDirection())
             newLeft += floorToInt(m_block.textIndentOffset());
-        m_left = std::max<float>(m_left, newLeft);
+        m_left = std::max(m_left, newLeft);
     } else {
-        float newRight = m_block.logicalLeftForFloat(newFloat).toFloat();
+        LayoutUnit newRight = m_block.logicalLeftForFloat(newFloat);
         if (shapeDeltas.isValid()) {
             if (shapeDeltas.lineOverlapsShape())
                 newRight += shapeDeltas.leftMarginBoxDelta();
@@ -92,7 +89,7 @@ void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(const FloatingObject& ne
         }
         if (indentText() == IndentText && !m_block.style()->isLeftToRightDirection())
             newRight -= floorToInt(m_block.textIndentOffset());
-        m_right = std::min<float>(m_right, newRight);
+        m_right = std::min(m_right, newRight);
     }
 
     computeAvailableWidthFromLeftAndRight();
@@ -118,21 +115,22 @@ void LineWidth::applyOverhang(LineLayoutRubyRun rubyRun, LineLayoutItem startLay
     m_overhangWidth += startOverhang + endOverhang;
 }
 
-inline static float availableWidthAtOffset(LineLayoutBlockFlow block, const LayoutUnit& offset, IndentTextOrNot indentText, float& newLineLeft,
-    float& newLineRight, const LayoutUnit& lineHeight = LayoutUnit())
+inline static LayoutUnit availableWidthAtOffset(LineLayoutBlockFlow block,
+    const LayoutUnit& offset, IndentTextOrNot indentText, LayoutUnit& newLineLeft,
+    LayoutUnit& newLineRight, const LayoutUnit& lineHeight = LayoutUnit())
 {
-    newLineLeft = block.logicalLeftOffsetForLine(offset, indentText, lineHeight).toFloat();
-    newLineRight = block.logicalRightOffsetForLine(offset, indentText, lineHeight).toFloat();
-    return std::max(0.0f, newLineRight - newLineLeft);
+    newLineLeft = block.logicalLeftOffsetForLine(offset, indentText, lineHeight);
+    newLineRight = block.logicalRightOffsetForLine(offset, indentText, lineHeight);
+    return (newLineRight - newLineLeft).clampNegativeToZero();
 }
 
-void LineWidth::updateLineDimension(LayoutUnit newLineTop, LayoutUnit newLineWidth, const float& newLineLeft, const float& newLineRight)
+void LineWidth::updateLineDimension(LayoutUnit newLineTop, LayoutUnit newLineWidth, const LayoutUnit& newLineLeft, const LayoutUnit& newLineRight)
 {
     if (newLineWidth <= m_availableWidth)
         return;
 
     m_block.setLogicalHeight(newLineTop);
-    m_availableWidth = newLineWidth + m_overhangWidth;
+    m_availableWidth = newLineWidth + LayoutUnit::fromFloatCeil(m_overhangWidth);
     m_left = newLineLeft;
     m_right = newLineRight;
 }
@@ -144,9 +142,9 @@ void LineWidth::wrapNextToShapeOutside(bool isFirstLine)
     LayoutUnit newLineTop = lineLogicalTop;
     LayoutUnit floatLogicalBottom = m_block.nextFloatLogicalBottomBelow(lineLogicalTop);
 
-    float newLineWidth;
-    float newLineLeft = m_left;
-    float newLineRight = m_right;
+    LayoutUnit newLineWidth;
+    LayoutUnit newLineLeft = m_left;
+    LayoutUnit newLineRight = m_right;
     while (true) {
         newLineWidth = availableWidthAtOffset(m_block, newLineTop, indentText(), newLineLeft, newLineRight, lineHeight);
         if (newLineWidth >= m_uncommittedWidth)
@@ -168,9 +166,9 @@ void LineWidth::fitBelowFloats(bool isFirstLine)
 
     LayoutUnit floatLogicalBottom;
     LayoutUnit lastFloatLogicalBottom = m_block.logicalHeight();
-    float newLineWidth = m_availableWidth;
-    float newLineLeft = m_left;
-    float newLineRight = m_right;
+    LayoutUnit newLineWidth = m_availableWidth;
+    LayoutUnit newLineLeft = m_left;
+    LayoutUnit newLineRight = m_right;
 
     FloatingObject* lastFloatFromPreviousLine = m_block.lastFloatFromPreviousLine();
         if (lastFloatFromPreviousLine && lastFloatFromPreviousLine->layoutObject()->shapeOutsideInfo())
@@ -192,7 +190,7 @@ void LineWidth::fitBelowFloats(bool isFirstLine)
 
 void LineWidth::computeAvailableWidthFromLeftAndRight()
 {
-    m_availableWidth = max(0.0f, m_right - m_left) + m_overhangWidth;
+    m_availableWidth = (m_right - m_left).clampNegativeToZero() + LayoutUnit::fromFloatCeil(m_overhangWidth);
 }
 
 } // namespace blink
