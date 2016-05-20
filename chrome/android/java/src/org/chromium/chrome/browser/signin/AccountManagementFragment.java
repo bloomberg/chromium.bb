@@ -119,6 +119,13 @@ public class AccountManagementFragment extends PreferenceFragment
     public void onCreate(Bundle savedState) {
         super.onCreate(savedState);
 
+        // Prevent sync from starting if it hasn't already to give the user a chance to change
+        // their sync settings.
+        ProfileSyncService syncService = ProfileSyncService.get();
+        if (syncService != null) {
+            syncService.setSetupInProgress(true);
+        }
+
         mGaiaServiceType = AccountManagementScreenHelper.GAIA_SERVICE_TYPE_NONE;
         if (getArguments() != null) {
             mGaiaServiceType =
@@ -153,6 +160,17 @@ public class AccountManagementFragment extends PreferenceFragment
         ProfileSyncService syncService = ProfileSyncService.get();
         if (syncService != null) {
             syncService.removeSyncStateChangedListener(this);
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        // Allow sync to begin syncing if it hasn't yet.
+        ProfileSyncService syncService = ProfileSyncService.get();
+        if (syncService != null) {
+            syncService.setSetupInProgress(false);
         }
     }
 
@@ -489,7 +507,9 @@ public class AccountManagementFragment extends PreferenceFragment
     @Override
     public void syncStateChanged() {
         SyncPreference pref = (SyncPreference) findPreference(PREF_SYNC_SETTINGS);
-        pref.updateSyncSummaryAndIcon();
+        if (pref != null) {
+            pref.updateSyncSummaryAndIcon();
+        }
 
         // TODO(crbug/557784): Show notification for sync error
     }
