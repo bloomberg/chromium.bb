@@ -143,7 +143,7 @@ virtual/threaded/printing/width-overflow.html [ WontFix ]
 [ Release ] editing/input/orphan-set-selection-range.html [ WontFix ]
 
 # See crbug.com/522326
-imported/web-platform-tests/html/obsolete/requirements-for-implementations/the-marquee-element-0/marquee-events.html [ WontFix ]
+imported/wpt/html/obsolete/requirements-for-implementations/the-marquee-element-0/marquee-events.html [ WontFix ]
 
 # Some CSS2.1 tests pass but cause 1px diff due to old font-size guidelines,
 # or render colors differently for text and images on Mac.
@@ -166,13 +166,13 @@ imported/csswg-test/css21/linebox/line-height-126.xht [ WontFix ]
 [ Linux ] imported/csswg-test/css21/linebox/vertical-align-super-001.xht [ WontFix ]
 
 # Ref tests that pass but causes 1px diff on images at direction boundaries.
-[ Win ] imported/web-platform-tests/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-002c.html [ WontFix ]
-[ Mac ] imported/web-platform-tests/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006a.html [ WontFix ]
-[ Mac ] imported/web-platform-tests/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006b.html [ WontFix ]
-[ Mac Win ] imported/web-platform-tests/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006c.html [ WontFix ]
-[ Mac ] imported/web-platform-tests/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009a.html [ WontFix ]
-[ Mac ] imported/web-platform-tests/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009b.html [ WontFix ]
-[ Mac ] imported/web-platform-tests/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009c.html [ WontFix ]
+[ Win ] imported/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-002c.html [ WontFix ]
+[ Mac ] imported/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006a.html [ WontFix ]
+[ Mac ] imported/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006b.html [ WontFix ]
+[ Mac Win ] imported/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006c.html [ WontFix ]
+[ Mac ] imported/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009a.html [ WontFix ]
+[ Mac ] imported/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009b.html [ WontFix ]
+[ Mac ] imported/wpt/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009c.html [ WontFix ]
 
 # We could fix this test for us and upstream it if the test shell user agent
 # would let us differentiate test_shell and WebKit DumpTreeNode.

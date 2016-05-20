@@ -173,17 +173,17 @@ crbug.com/453312 html5lib/generated/run-webkit01-data.html [ Slow ]
 crbug.com/453312 html5lib/webkit-resumer.html [ Slow ]
 
 crbug.com/577381 [ Linux Debug ] imported/wpt/encoding/api-invalid-label.html [ Slow ]
-crbug.com/577381 [ Linux Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_tests10.html [ Slow ]
-crbug.com/577381 [ Linux Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_tests21.html [ Slow ]
-crbug.com/577381 [ Linux Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_webkit01.html [ Slow ]
-crbug.com/577381 [ Linux Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_domjs-unsafe.html [ Slow ]
+crbug.com/577381 [ Linux Debug ] imported/wpt/html/syntax/parsing/html5lib_tests10.html [ Slow ]
+crbug.com/577381 [ Linux Debug ] imported/wpt/html/syntax/parsing/html5lib_tests21.html [ Slow ]
+crbug.com/577381 [ Linux Debug ] imported/wpt/html/syntax/parsing/html5lib_webkit01.html [ Slow ]
+crbug.com/577381 [ Linux Debug ] imported/wpt/html/syntax/parsing/html5lib_domjs-unsafe.html [ Slow ]
 
-crbug.com/490511 imported/web-platform-tests/html/syntax/parsing/html5lib_entities01.html [ Slow ]
-crbug.com/490511 imported/web-platform-tests/html/syntax/parsing/html5lib_template.html [ Slow ]
-crbug.com/490511 imported/web-platform-tests/html/syntax/parsing/html5lib_tests1.html [ Slow ]
-crbug.com/490511 imported/web-platform-tests/html/syntax/parsing/html5lib_tests16.html [ Slow ]
-crbug.com/490511 imported/web-platform-tests/html/syntax/parsing/html5lib_tests19.html [ Slow ]
-crbug.com/490511 imported/web-platform-tests/html/syntax/parsing/html5lib_tests2.html [ Slow ]
+crbug.com/490511 imported/wpt/html/syntax/parsing/html5lib_entities01.html [ Slow ]
+crbug.com/490511 imported/wpt/html/syntax/parsing/html5lib_template.html [ Slow ]
+crbug.com/490511 imported/wpt/html/syntax/parsing/html5lib_tests1.html [ Slow ]
+crbug.com/490511 imported/wpt/html/syntax/parsing/html5lib_tests16.html [ Slow ]
+crbug.com/490511 imported/wpt/html/syntax/parsing/html5lib_tests19.html [ Slow ]
+crbug.com/490511 imported/wpt/html/syntax/parsing/html5lib_tests2.html [ Slow ]
 
 # FIXME: These tests might still be buggy and time out. They were marked as Slow on 9/20/2013.
 # Double-check the data after they've been running another week or so.
@@ -221,9 +221,9 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001o.html [ Slow ]
 
 crbug.com/336481 inspector/jump-to-previous-editing-location.html [ Slow ]
-crbug.com/490511 imported/web-platform-tests/html/rendering/replaced-elements/svg-embedded-sizing/ [ Slow ]
-crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/media-elements/playing-the-media-resource/pause-remove-from-document-networkState.html [ Slow ]
-crbug.com/490511 imported/web-platform-tests/html/semantics/forms/textfieldselection/selection.html [ Slow ]
+crbug.com/490511 imported/wpt/html/rendering/replaced-elements/svg-embedded-sizing/ [ Slow ]
+crbug.com/490511 imported/wpt/html/semantics/embedded-content/media-elements/playing-the-media-resource/pause-remove-from-document-networkState.html [ Slow ]
+crbug.com/490511 imported/wpt/html/semantics/forms/textfieldselection/selection.html [ Slow ]
 crbug.com/346259 http/tests/websocket/no-crash-on-cookie-flood.html [ Slow ]
 
 crbug.com/358313 virtual/gpu/fast/canvas/webgl/webgl-large-texture.html [ Slow ]

@@ -63,10 +63,10 @@
   http/tests/navigation/back-to-dynamic-iframe.html [ Failure Crash ]
   http/tests/navigation/history-back-across-form-submission-to-fragment.html [ Timeout ]
   http/tests/navigation/redirect-on-reload-updates-history-item.html [ Failure ]
-  imported/web-platform-tests/html/browsers/browsing-the-web/history-traversal/popstate_event.html [ Crash Failure Timeout ]
-  imported/web-platform-tests/html/browsers/browsing-the-web/history-traversal/popstate_event.html [ Timeout ]
-  imported/web-platform-tests/html/browsers/history/the-history-interface/004.html [ Failure ]
-  imported/web-platform-tests/html/browsers/history/the-location-interface/security_location_0.sub.htm [ Failure ]
+  imported/wpt/html/browsers/browsing-the-web/history-traversal/popstate_event.html [ Crash Failure Timeout ]
+  imported/wpt/html/browsers/browsing-the-web/history-traversal/popstate_event.html [ Timeout ]
+  imported/wpt/html/browsers/history/the-history-interface/004.html [ Failure ]
+  imported/wpt/html/browsers/history/the-location-interface/security_location_0.sub.htm [ Failure ]
 
 # https://crbug.com/551000: PlzNavigate: DevTools support
   http/tests/inspector/console-resource-errors.html [ Failure ]
@@ -193,7 +193,7 @@
   http/tests/misc/policy-delegate-called-twice.html [ Failure ]
   http/tests/misc/window-dot-stop.html [ Failure ]
   http/tests/misc/window-open-then-write.html [ Timeout ]
-  imported/web-platform-tests/html/semantics/embedded-content/the-object-element/object-attributes.html [ Failure ]
+  imported/wpt/html/semantics/embedded-content/the-object-element/object-attributes.html [ Failure ]
   imported/wpt/shadow-dom/untriaged/html-elements-in-shadow-trees/html-forms/test-003.html [ Failure ]
   mhtml/multi_frames_contentid.mht [ Timeout Failure ]
   plugins/object-onfocus-mutation-crash.html [ Timeout ]
