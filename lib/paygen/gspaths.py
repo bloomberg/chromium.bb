@@ -6,14 +6,12 @@
 
 This includes definitions for various build flags:
 
-  SKIP - means a given build is bad and should not have payloads generated.
   FINISHED - means that the payloads have been fully generated.
   LOCK - means that payload processing is in progress on the host which
          owns the locks. Locks have a timeout associated with them in
          case of error, but are not 100% atomic when a lock is timing out.
 
   Example file paths:
-    gs://chromeos-releases/blah-channel/board-name/1.2.3/payloads/SKIP_flag
     gs://chromeos-releases/blah-channel/board-name/1.2.3/payloads/FINISHED_flag
     gs://chromeos-releases/blah-channel/board-name/1.2.3/payloads/LOCK_flag
 """
@@ -165,11 +163,10 @@ class ChromeosReleases(object):
   BUCKET = 'chromeos-releases'
 
   # Build flags
-  SKIP = 'SKIP'
   FINISHED = 'FINISHED'
   LOCK = 'LOCK'
 
-  FLAGS = (SKIP, FINISHED, LOCK)
+  FLAGS = (FINISHED, LOCK)
 
   UNSIGNED_IMAGE_TYPES = ('test', 'recovery', 'base')
 
@@ -261,7 +258,6 @@ class ChromeosReleases(object):
   def BuildPayloadsFlagUri(channel, board, version, flag, bucket=None):
     """Creates the gspath for a given build flag.
 
-    SKIP - means a given build is bad and should not have payloads generated.
     FINISHED - means that the payloads have been fully generated.
     LOCK - means that payload processing is in progress on the host which
            owns the locks. Locks have a timeout associated with them in
@@ -271,12 +267,12 @@ class ChromeosReleases(object):
       channel: What channel does the build belong too. Usually "xxx-channel".
       board: What board is the build for? "x86-alex", "lumpy", etc.
       version: What is the build version. "3015.0.0", "1945.76.3", etc
-      flag: gs_paths.SKIP, gs_paths.FINISHED, or gs_paths.LOCK
+      flag: gs_paths.FINISHED, or gs_paths.LOCK
       bucket: What bucket is the build in? (None means ChromeosReleases.BUCKET)
 
     Returns:
       The url for the specified build's payloads. Should be of the form:
-      gs://chromeos-releases/blah-channel/board-name/1.2.3/payloads/SKIP_FLAG
+      gs://chromeos-releases/blah-channel/board-name/1.2.3/payloads/LOCK_FLAG
     """
     assert flag in ChromeosReleases.FLAGS
     return os.path.join(ChromeosReleases.BuildPayloadsUri(channel,

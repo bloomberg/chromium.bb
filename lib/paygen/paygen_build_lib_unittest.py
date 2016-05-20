@@ -190,9 +190,6 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
         paygen._GetFlagURI(gspaths.ChromeosReleases.LOCK),
         'gs://crt/foo-channel/foo-board/1.2.3/payloads/LOCK_flag')
     self.assertEqual(
-        paygen._GetFlagURI(gspaths.ChromeosReleases.SKIP),
-        'gs://crt/foo-channel/foo-board/1.2.3/payloads/SKIP_flag')
-    self.assertEqual(
         paygen._GetFlagURI(gspaths.ChromeosReleases.FINISHED),
         'gs://crt/foo-channel/foo-board/1.2.3/payloads/FINISHED_flag')
 
@@ -1154,39 +1151,17 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     with self.assertRaises(paygen_build_lib.BuildLocked):
       paygen.CreatePayloads()
 
-  def testCreatePayloadsSkipBuild(self):
-    """Test paygen_build_lib._GeneratePayloads if the build marked skip."""
-    paygen = self._CreatePayloadsSetup()
-    lock_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.LOCK)
-    skip_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.SKIP)
-
-    lock = self.mox.CreateMockAnything()
-
-    gslock.Lock(lock_uri, dry_run=False).AndReturn(lock)
-    lock.__enter__().AndReturn(lock)
-    gslib.Exists(skip_uri).AndReturn(True)
-    lock.__exit__(
-        mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(None)
-
-    # Run the test verification.
-    self.mox.ReplayAll()
-
-    with self.assertRaises(paygen_build_lib.BuildSkip):
-      paygen.CreatePayloads()
-
   def testCreatePayloadsFinishedBuild(self):
     """Test paygen_build_lib._GeneratePayloads if the build marked finished."""
     paygen = self._CreatePayloadsSetup()
 
     lock_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.LOCK)
-    skip_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.SKIP)
     finished_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.FINISHED)
 
     lock = self.mox.CreateMockAnything()
 
     gslock.Lock(lock_uri, dry_run=False).AndReturn(lock)
     lock.__enter__().AndReturn(lock)
-    gslib.Exists(skip_uri).AndReturn(False)
     gslib.Exists(finished_uri).AndReturn(True)
     lock.__exit__(
         mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(None)
@@ -1202,14 +1177,12 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     paygen = self._CreatePayloadsSetup()
 
     lock_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.LOCK)
-    skip_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.SKIP)
     finished_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.FINISHED)
 
     lock = self.mox.CreateMockAnything()
 
     gslock.Lock(lock_uri, dry_run=False).AndReturn(lock)
     lock.__enter__().AndReturn(lock)
-    gslib.Exists(skip_uri).AndReturn(False)
     gslib.Exists(finished_uri).AndReturn(False)
     paygen._DiscoverRequiredPayloads(
         ).AndRaise(paygen_build_lib.BuildNotReady())
@@ -1227,7 +1200,6 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     paygen = self._CreatePayloadsSetup()
 
     lock_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.LOCK)
-    skip_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.SKIP)
     finished_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.FINISHED)
 
     lock = self.mox.CreateMockAnything()
@@ -1240,7 +1212,6 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
 
     gslock.Lock(lock_uri, dry_run=False).AndReturn(lock)
     lock.__enter__().AndReturn(lock)
-    gslib.Exists(skip_uri).AndReturn(False)
     gslib.Exists(finished_uri).AndReturn(False)
     paygen._DiscoverRequiredPayloads().AndReturn(payload_manager)
     self.mox.StubOutWithMock(paygen_payload_lib, 'FindExistingPayloads')
@@ -1260,7 +1231,6 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     paygen = self._CreatePayloadsSetup()
 
     lock_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.LOCK)
-    skip_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.SKIP)
     finished_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.FINISHED)
 
     lock = self.mox.CreateMockAnything()
@@ -1272,7 +1242,6 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
 
     gslock.Lock(lock_uri, dry_run=False).AndReturn(lock)
     lock.__enter__().AndReturn(lock)
-    gslib.Exists(skip_uri).AndReturn(False)
     gslib.Exists(finished_uri).AndReturn(False)
     paygen._DiscoverRequiredPayloads().AndReturn(payload_manager)
     self.mox.StubOutWithMock(paygen_payload_lib, 'FindExistingPayloads')
@@ -1298,7 +1267,6 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     paygen = self._CreatePayloadsSetup()
 
     lock_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.LOCK)
-    skip_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.SKIP)
     finished_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.FINISHED)
 
     lock = self.mox.CreateMockAnything()
@@ -1312,7 +1280,6 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
 
     gslock.Lock(lock_uri, dry_run=False).AndReturn(lock)
     lock.__enter__().AndReturn(lock)
-    gslib.Exists(skip_uri).AndReturn(False)
     gslib.Exists(finished_uri).AndReturn(False)
     paygen._DiscoverRequiredPayloads().AndReturn(payload_manager)
     paygen_payload_lib.FindExistingPayloads(payload_existing).AndReturn(
@@ -1340,7 +1307,6 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
                                        disable_tests=True)
 
     lock_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.LOCK)
-    skip_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.SKIP)
     finished_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.FINISHED)
 
     lock = self.mox.CreateMockAnything()
@@ -1352,7 +1318,6 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
 
     gslock.Lock(lock_uri, dry_run=False).AndReturn(lock)
     lock.__enter__().AndReturn(lock)
-    gslib.Exists(skip_uri).AndReturn(False)
     gslib.Exists(finished_uri).AndReturn(False)
     paygen._DiscoverRequiredPayloads().AndReturn(payload_manager)
     self.mox.StubOutWithMock(paygen_payload_lib, 'FindExistingPayloads')

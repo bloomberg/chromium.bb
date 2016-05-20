@@ -214,16 +214,6 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
             self.channel,
             self.board,
             self.version,
-            gspaths.ChromeosReleases.SKIP,
-            bucket=self.bucket),
-        self._PopulateGsPath(self._GS_PAYLOADS_PATH_TEMPLATE,
-                             suffix='SKIP_flag'))
-
-    self.assertEquals(
-        gspaths.ChromeosReleases.BuildPayloadsFlagUri(
-            self.channel,
-            self.board,
-            self.version,
             gspaths.ChromeosReleases.FINISHED,
             bucket=self.bucket),
         self._PopulateGsPath(self._GS_PAYLOADS_PATH_TEMPLATE,
@@ -245,9 +235,9 @@ class GsPathsChromeosReleasesTest(cros_test_lib.TestCase):
             self.channel,
             self.board,
             self.version,
-            gspaths.ChromeosReleases.SKIP),
+            gspaths.ChromeosReleases.LOCK),
         self._PopulateGsPath(self._GS_PAYLOADS_PATH_TEMPLATE,
-                             suffix='SKIP_flag',
+                             suffix='LOCK_flag',
                              bucket=self._CHROMEOS_RELEASES_BUCKET))
 
   def testImageName(self):

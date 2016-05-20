@@ -102,11 +102,6 @@ class BuildLocked(EarlyExit):
   RESULT = 23
 
 
-class BuildSkip(EarlyExit):
-  """This build has been marked as skip, and should not be processed."""
-  RESULT = 24
-
-
 class BuildNotReady(EarlyExit):
   """Not all images for this build are uploaded, don't process it yet."""
   RESULT = 25
@@ -1396,22 +1391,16 @@ class _PaygenBuild(object):
     process this build.
 
     Raises:
-      BuildSkip: If the build was marked with a skip flag.
       BuildFinished: If the build was already marked as finished.
       BuildLocked: If the build is locked by another server or process.
     """
     lock_uri = self._GetFlagURI(gspaths.ChromeosReleases.LOCK)
-    skip_uri = self._GetFlagURI(gspaths.ChromeosReleases.SKIP)
     finished_uri = self._GetFlagURI(gspaths.ChromeosReleases.FINISHED)
 
     logging.info('Examining: %s', self._build)
 
     try:
       with gslock.Lock(lock_uri, dry_run=bool(self._drm)) as build_lock:
-        # If the build was marked to skip, skip
-        if gslib.Exists(skip_uri):
-          raise BuildSkip()
-
         # If the build was already marked as finished, we're finished.
         if self._ignore_finished(gslib.Exists, finished_uri):
           raise BuildFinished()
