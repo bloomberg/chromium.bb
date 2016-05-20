@@ -1,0 +1,105 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import logging
+
+from telemetry.testing import serially_executed_browser_test_case
+
+from gpu_tests import exception_formatter
+from gpu_tests import gpu_test_expectations
+
+
+# Temporary class which bridges the gap beween these serially executed
+# browser tests and the old benchmark-based tests. As soon as all of
+# the tests have been coverted over, this will be deleted.
+class _EmulatedPage(object):
+  def __init__(self, url, name):
+    self.url = url
+    self.name = name
+
+
+class GpuIntegrationTest(
+    serially_executed_browser_test_case.SeriallyBrowserTestCase):
+
+  _cached_expectations = None
+
+  @classmethod
+  def GenerateTestCases__RunGpuTest(cls, options):
+    for test_name, url, args in cls.GenerateGpuTests(options):
+      yield test_name, (url, test_name, args)
+
+  def _RunGpuTest(self, url, test_name, args):
+    temp_page = _EmulatedPage(url, test_name)
+    expectations = self.__class__.GetExpectations()
+    expectation = expectations.GetExpectationForPage(
+      self.browser, temp_page)
+    if expectation == 'skip':
+      # skipTest in Python's unittest harness raises an exception, so
+      # aborts the control flow here.
+      self.skipTest('SKIPPING TEST due to test expectations')
+    try:
+      self.RunActualGpuTest(url, *args)
+    except Exception:
+      if expectation == 'pass':
+        raise
+      elif expectation == 'fail':
+        msg = 'Expected exception while running %s' % test_name
+        exception_formatter.PrintFormattedException(msg=msg)
+        return
+      if expectation != 'flaky':
+        logging.warning(
+          'Unknown expectation %s while handling exception for %s',
+          expectation, test_name)
+        raise
+      # Flaky tests are handled here.
+      num_retries = expectations.GetFlakyRetriesForPage(
+        self.browser, temp_page)
+      if not num_retries:
+        # Re-raise the exception.
+        raise
+      # Re-run the test up to |num_retries| times.
+      for ii in xrange(0, num_retries):
+        print 'FLAKY TEST FAILURE, retrying: ' + test_name
+        try:
+          self.RunActualGpuTest(url, *args)
+          break
+        except Exception:
+          # Squelch any exceptions from any but the last retry.
+          if ii == num_retries - 1:
+            raise
+    else:
+      if expectation == 'fail':
+        logging.warning(
+            '%s was expected to fail, but passed.\n', test_name)
+
+  @classmethod
+  def GenerateGpuTests(cls, options):
+    """Subclasses must implement this to yield (test_name, url, args)
+    tuples of tests to run."""
+    raise NotImplementedError
+
+  def RunActualGpuTest(self, file_path, *args):
+    """Subclasses must override this to run the actual test at the given
+    URL. file_path is a path on the local file system that may need to
+    be resolved via UrlOfStaticFilePath.
+    """
+    raise NotImplementedError
+
+  @classmethod
+  def GetExpectations(cls):
+    if not cls._cached_expectations:
+      cls._cached_expectations = cls._CreateExpectations()
+    if not isinstance(cls._cached_expectations,
+                      gpu_test_expectations.GpuTestExpectations):
+      raise Exception(
+          'gpu_integration_test requires use of GpuTestExpectations')
+    return cls._cached_expectations
+
+  @classmethod
+  def _CreateExpectations(cls):
+    # Subclasses **must** override this in order to provide their test
+    # expectations to the harness.
+    #
+    # Do not call this directly. Call GetExpectations where necessary.
+    raise NotImplementedError

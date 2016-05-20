@@ -2,13 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from gpu_tests import gpu_integration_test
 from gpu_tests import webgl_conformance
+from gpu_tests import webgl_conformance_expectations
+from gpu_tests import webgl2_conformance_expectations
 
-from telemetry.testing import serially_executed_browser_test_case
 
-
-class WebGLConformanceIntegrationTest(
-    serially_executed_browser_test_case.SeriallyBrowserTestCase):
+class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
 
   _webgl_version = None
 
@@ -26,7 +26,7 @@ class WebGLConformanceIntegrationTest(
         default='false')
 
   @classmethod
-  def GenerateTestCases_RunWebGLTests(cls, options):
+  def GenerateGpuTests(cls, options):
     test_paths = webgl_conformance.WebglConformance._ParseTests(
         '00_test_list.txt',
         options.webgl_conformance_version,
@@ -34,29 +34,45 @@ class WebGLConformanceIntegrationTest(
         None)
     cls._webgl_version = [
         int(x) for x in options.webgl_conformance_version.split('.')][0]
-    for test in test_paths:
+    for test_path in test_paths:
       # generated test name cannot contain '.'
-      name = webgl_conformance.GenerateTestNameFromTestPath(test).replace(
+      name = webgl_conformance.GenerateTestNameFromTestPath(test_path).replace(
           '.', '_')
-      yield name, (test, )
+      yield (name, test_path, ())
 
-  def RunWebGLTests(self, test_path):
+  def RunActualGpuTest(self, test_path, *args):
     url = self.UrlOfStaticFilePath(test_path)
     harness_script = webgl_conformance.conformance_harness_script
     self.tab.Navigate(url, script_to_evaluate_on_commit=harness_script)
-
+    self.tab.action_runner.WaitForJavaScriptCondition(
+        'webglTestHarness._finished', timeout_in_seconds=300)
     if not webgl_conformance._DidWebGLTestSucceed(self.tab):
       self.fail(webgl_conformance._WebGLTestMessages(self.tab))
 
   @classmethod
   def CustomizeOptions(cls):
-    validator = webgl_conformance.WebglConformanceValidator()
+    assert cls._webgl_version == 1 or cls._webgl_version == 2
+    validator = None
+    if cls._webgl_version == 1:
+      validator = webgl_conformance.WebglConformanceValidator()
+    else:
+      validator = webgl_conformance.Webgl2ConformanceValidator()
     validator.CustomizeBrowserOptions(cls._finder_options.browser_options)
+
+  @classmethod
+  def _CreateExpectations(cls):
+    assert cls._webgl_version == 1 or cls._webgl_version == 2
+    if cls._webgl_version == 1:
+      return webgl_conformance_expectations.WebGLConformanceExpectations(
+          webgl_conformance.conformance_path)
+    else:
+      return webgl2_conformance_expectations.WebGL2ConformanceExpectations(
+          webgl_conformance.conformance_path)
 
   @classmethod
   def setUpClass(cls):
     super(cls, WebGLConformanceIntegrationTest).setUpClass()
     cls.CustomizeOptions()
     cls.StartBrowser(cls._finder_options)
-    cls.tab = cls._browser.tabs[0]
+    cls.tab = cls.browser.tabs[0]
     cls.SetStaticServerDir(webgl_conformance.conformance_path)
