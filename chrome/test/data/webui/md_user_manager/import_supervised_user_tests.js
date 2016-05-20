@@ -25,7 +25,11 @@ cr.define('user_manager.import_supervised_user_tests', function() {
         Polymer.dom.flush();
       });
 
-      teardown(function() { importElement.remove(); });
+      teardown(function(done) {
+        importElement.remove();
+        // Allow asynchronous tasks to finish.
+        setTimeout(done);
+      });
 
       test('Dialog does not show if no signed-in user is provided', function() {
         // The dialog is initially not visible.

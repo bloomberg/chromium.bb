@@ -78,6 +78,9 @@ Polymer({
     if (this.signedInUser_)
       this.popupHidden_ = false;
 
+    if (this.popupHidden_)
+      return;
+
     this.async(function() {
       this.$$('paper-listbox').focus();
     }.bind(this));
