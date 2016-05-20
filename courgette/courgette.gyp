@@ -25,6 +25,8 @@
       'disassembler_elf_32_arm.h',
       'disassembler_elf_32_x86.cc',
       'disassembler_elf_32_x86.h',
+      'disassembler_win32.cc',
+      'disassembler_win32.h',
       'disassembler_win32_x86.cc',
       'disassembler_win32_x86.h',
       'disassembler_win32_x64.cc',

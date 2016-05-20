@@ -16,7 +16,7 @@
 class DisassemblerWin32X64Test : public BaseTest {
  public:
   void TestExe() const;
-  void TestExe32() const;
+  void TestExe32ShouldFail() const;
   void TestResourceDll() const;
 };
 
@@ -35,7 +35,6 @@ void DisassemblerWin32X64Test::TestExe() const {
   EXPECT_TRUE(disassembler->ok());
   EXPECT_TRUE(disassembler->has_text_section());
   EXPECT_EQ(488448U, disassembler->size_of_code());
-  EXPECT_FALSE(disassembler->is_32bit());
   EXPECT_EQ(courgette::DisassemblerWin32X64::SectionName(
       disassembler->RVAToSection(0x00401234 - 0x00400000)),
       std::string(".text"));
@@ -62,7 +61,7 @@ void DisassemblerWin32X64Test::TestExe() const {
   EXPECT_EQ('Z', rva_p[1]);
 }
 
-void DisassemblerWin32X64Test::TestExe32() const {
+void DisassemblerWin32X64Test::TestExe32ShouldFail() const {
   std::string file1 = FileContents("setup1.exe");
 
   std::unique_ptr<courgette::DisassemblerWin32X64> disassembler(
@@ -75,9 +74,6 @@ void DisassemblerWin32X64Test::TestExe32() const {
   EXPECT_EQ(file1.length(), disassembler->length());
 
   EXPECT_FALSE(disassembler->ok());
-  EXPECT_TRUE(disassembler->has_text_section());
-  EXPECT_EQ(449536U, disassembler->size_of_code());
-  EXPECT_TRUE(disassembler->is_32bit());
 }
 
 void DisassemblerWin32X64Test::TestResourceDll() const {
@@ -93,13 +89,10 @@ void DisassemblerWin32X64Test::TestResourceDll() const {
   EXPECT_EQ(file1.length(), disassembler->length());
 
   EXPECT_FALSE(disassembler->ok());
-  EXPECT_FALSE(disassembler->has_text_section());
-  EXPECT_EQ(0U, disassembler->size_of_code());
-  EXPECT_FALSE(disassembler->is_32bit());
 }
 
 TEST_F(DisassemblerWin32X64Test, All) {
   TestExe();
-  TestExe32();
+  TestExe32ShouldFail();
   TestResourceDll();
 }
