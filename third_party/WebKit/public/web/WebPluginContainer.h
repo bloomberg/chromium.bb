@@ -136,6 +136,10 @@ public:
     // WebPluginContainer does *not* take ownership.
     virtual void setWebLayer(WebLayer*) = 0;
 
+    virtual void requestFullscreen() = 0;
+    virtual bool isFullscreenElement() const = 0;
+    virtual void cancelFullscreen() = 0;
+
 protected:
     ~WebPluginContainer() { }
 };

@@ -40,7 +40,6 @@
 #include "core/dom/DocumentStatisticsCollector.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
-#include "core/dom/Fullscreen.h"
 #include "core/dom/StyleEngine.h"
 #include "core/events/Event.h"
 #include "core/html/HTMLAllCollection.h"
@@ -227,19 +226,6 @@ void WebDocument::watchCSSSelectors(const WebVector<WebString>& webSelectors)
     Vector<String> selectors;
     selectors.append(webSelectors.data(), webSelectors.size());
     CSSSelectorWatch::from(*document).watchCSSSelectors(selectors);
-}
-
-void WebDocument::cancelFullScreen()
-{
-    Fullscreen::fullyExitFullscreen(*unwrap<Document>());
-}
-
-WebElement WebDocument::fullScreenElement() const
-{
-    Element* fullScreenElement = 0;
-    if (Fullscreen* fullscreen = Fullscreen::fromIfExists(*const_cast<WebDocument*>(this)->unwrap<Document>()))
-        fullScreenElement = fullscreen->webkitCurrentFullScreenElement();
-    return WebElement(fullScreenElement);
 }
 
 WebReferrerPolicy WebDocument::referrerPolicy() const

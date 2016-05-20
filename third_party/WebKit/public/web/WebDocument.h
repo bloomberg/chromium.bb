@@ -107,8 +107,6 @@ public:
     BLINK_EXPORT WebURL completeURL(const WebString&) const;
     BLINK_EXPORT WebElement getElementById(const WebString&) const;
     BLINK_EXPORT WebElement focusedElement() const;
-    BLINK_EXPORT void cancelFullScreen();
-    BLINK_EXPORT WebElement fullScreenElement() const;
     BLINK_EXPORT WebReferrerPolicy referrerPolicy() const;
     BLINK_EXPORT WebString outgoingReferrer();
 

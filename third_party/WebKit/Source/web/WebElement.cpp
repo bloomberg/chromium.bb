@@ -33,7 +33,6 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Element.h"
-#include "core/dom/Fullscreen.h"
 #include "core/dom/custom/V0CustomElementProcessingStack.h"
 #include "core/html/HTMLTextFormControlElement.h"
 #include "platform/graphics/Image.h"
@@ -132,12 +131,6 @@ WebString WebElement::attributeValue(unsigned index) const
 WebString WebElement::textContent() const
 {
     return constUnwrap<Element>()->textContent();
-}
-
-void WebElement::requestFullScreen()
-{
-    Element* element = unwrap<Element>();
-    Fullscreen::from(element->document()).requestFullscreen(*element, Fullscreen::PrefixedRequest);
 }
 
 bool WebElement::hasNonEmptyLayoutSize() const

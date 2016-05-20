@@ -123,7 +123,11 @@ public:
     float pageScaleFactor() override;
     float pageZoomFactor() override;
 
-    virtual void setWebLayer(WebLayer*);
+    void setWebLayer(WebLayer*) override;
+
+    void requestFullscreen() override;
+    bool isFullscreenElement() const override;
+    void cancelFullscreen() override;
 
     // Printing interface. The plugin can support custom printing
     // (which means it controls the layout, number of pages etc).

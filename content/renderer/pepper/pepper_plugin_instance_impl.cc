@@ -1289,9 +1289,7 @@ void PepperPluginInstanceImpl::ViewChanged(
                                           scroll_offset.height());
 
   if (desired_fullscreen_state_ || view_data_.is_fullscreen) {
-    WebElement element = container_->element();
-    WebDocument document = element.document();
-    bool is_fullscreen_element = (element == document.fullScreenElement());
+    bool is_fullscreen_element = container_->isFullscreenElement();
     if (!view_data_.is_fullscreen && desired_fullscreen_state_ &&
         render_frame()->GetRenderWidget()->is_fullscreen_granted() &&
         is_fullscreen_element) {
@@ -1956,9 +1954,9 @@ bool PepperPluginInstanceImpl::SetFullscreen(bool fullscreen) {
     // so we will tweak plugin's attributes to support the expected behavior.
     KeepSizeAttributesBeforeFullscreen();
     SetSizeAttributesForFullscreen();
-    container_->element().requestFullScreen();
+    container_->requestFullscreen();
   } else {
-    container_->document().cancelFullScreen();
+    container_->cancelFullscreen();
   }
   return true;
 }

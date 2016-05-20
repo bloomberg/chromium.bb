@@ -38,6 +38,7 @@
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransfer.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/Fullscreen.h"
 #include "core/events/DragEvent.h"
 #include "core/events/EventQueue.h"
 #include "core/events/GestureEvent.h"
@@ -326,6 +327,23 @@ void WebPluginContainerImpl::setWebLayer(WebLayer* layer)
 
     if (m_element)
         m_element->setNeedsCompositingUpdate();
+}
+
+void WebPluginContainerImpl::requestFullscreen()
+{
+    Fullscreen::from(m_element->document()).requestFullscreen(*m_element, Fullscreen::PrefixedRequest);
+}
+
+bool WebPluginContainerImpl::isFullscreenElement() const
+{
+    if (Fullscreen* fullscreen = Fullscreen::fromIfExists(m_element->document()))
+        return m_element == fullscreen->webkitCurrentFullScreenElement();
+    return false;
+}
+
+void WebPluginContainerImpl::cancelFullscreen()
+{
+    Fullscreen::fullyExitFullscreen(m_element->document());
 }
 
 bool WebPluginContainerImpl::supportsPaginatedPrint() const
