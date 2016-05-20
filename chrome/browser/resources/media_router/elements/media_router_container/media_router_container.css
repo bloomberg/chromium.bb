@@ -193,10 +193,6 @@ paper-menu {
   /* TODO(crbug/589697): Handle overflow of very long domain names. */
 }
 
-#sink-list {
-  padding-bottom: 0;
-}
-
 #sink-list-view {
   position: relative;
 }

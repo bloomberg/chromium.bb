@@ -154,19 +154,19 @@ cr.define('media_router_container_search', function() {
             pseudoSink.iconType, undefined, pseudoSink.castModes);
         fakeSinkListWithPseudoSink = fakeSinkList.concat([pseudoSink]);
 
+        container.allSinks = fakeSinkListWithPseudoSink;
+
         // Allow for the media router container to be created, attached, and
         // listeners registered in an afterNextRender() call.
         Polymer.RenderStatus.afterNextRender(this, done);
       });
 
       test('pseudo sink hidden without filter input', function(done) {
-        container.allSinks = fakeSinkListWithPseudoSink;
-
         setTimeout(function() {
           var sinkList =
               container.$$('#sink-list').querySelectorAll('paper-item');
           assertEquals(fakeSinkList.length, sinkList.length);
-          MockInteractions.tap(container.$['sink-search-icon']);
+          MockInteractions.tap(container.$$('#sink-search-icon'));
           chainOnAnimationPromise(function() {
             var searchResults =
                 container.$$('#search-results').querySelectorAll('paper-item');
@@ -177,9 +177,7 @@ cr.define('media_router_container_search', function() {
       });
 
       test('filter input adds pseudo sink', function(done) {
-        container.allSinks = fakeSinkListWithPseudoSink;
-
-        var searchInput = container.$['sink-search-input'];
+        var searchInput = container.$$('#sink-search-input');
         searchInput.value = 'no existing sink';
         chainOnAnimationPromise(function() {
           var searchResults =
@@ -193,9 +191,7 @@ cr.define('media_router_container_search', function() {
       });
 
       test('filter exact match real sink hides pseudo sink', function(done) {
-        container.allSinks = fakeSinkListWithPseudoSink;
-
-        var searchInput = container.$['sink-search-input'];
+        var searchInput = container.$$('#sink-search-input');
         searchInput.value = fakeSinkList[0].name;
         chainOnAnimationPromise(function() {
           var searchResults =
@@ -209,9 +205,7 @@ cr.define('media_router_container_search', function() {
       });
 
       test('clicking pseudo sink starts search', function(done) {
-        container.allSinks = fakeSinkListWithPseudoSink;
-
-        var searchInput = container.$['sink-search-input'];
+        var searchInput = container.$$('#sink-search-input');
         searchInput.value = 'no existing sink';
         chainOnAnimationPromise(function() {
           var searchResults =
@@ -228,9 +222,7 @@ cr.define('media_router_container_search', function() {
       });
 
       test('spinner starts on pseudo sink', function(done) {
-        container.allSinks = fakeSinkListWithPseudoSink;
-
-        var searchInput = container.$['sink-search-input'];
+        var searchInput = container.$$('#sink-search-input');
         searchInput.value = foundSink.name;
         chainOnAnimationPromise(function() {
           var searchResults =
@@ -257,9 +249,7 @@ cr.define('media_router_container_search', function() {
       });
 
       test('pseudo sink shown in sink list before real sink', function(done) {
-        container.allSinks = fakeSinkListWithPseudoSink;
-
-        var searchInput = container.$['sink-search-input'];
+        var searchInput = container.$$('#sink-search-input');
         searchInput.value = foundSink.name;
         chainOnAnimationPromise(function() {
           var searchResults =
@@ -277,9 +267,7 @@ cr.define('media_router_container_search', function() {
       });
 
       test('onReceiveSearchResult updates spinner', function(done) {
-        container.allSinks = fakeSinkListWithPseudoSink;
-
-        var searchInput = container.$['sink-search-input'];
+        var searchInput = container.$$('#sink-search-input');
         searchInput.value = foundSink.name;
         chainOnAnimationPromise(function() {
           var searchResults =
@@ -298,9 +286,7 @@ cr.define('media_router_container_search', function() {
       });
 
       test('sink list updates spinner', function(done) {
-        container.allSinks = fakeSinkListWithPseudoSink;
-
-        var searchInput = container.$['sink-search-input'];
+        var searchInput = container.$$('#sink-search-input');
         searchInput.value = foundSink.name;
         chainOnAnimationPromise(function() {
           var searchResults =
@@ -323,9 +309,8 @@ cr.define('media_router_container_search', function() {
       test('route received clears spinner and search state', function(done) {
         var route = new media_router.Route(
             'id 1', foundSink.id, 'Title 1', 0, true, false);
-        container.allSinks = fakeSinkListWithPseudoSink;
 
-        var searchInput = container.$['sink-search-input'];
+        var searchInput = container.$$('#sink-search-input');
         searchInput.value = foundSink.name;
         chainOnAnimationPromise(function() {
           var searchResults =
@@ -362,10 +347,9 @@ cr.define('media_router_container_search', function() {
         };
         var route = new media_router.Route(
             'id 1', foundSink.id, 'Title 1', 0, true, false);
-        container.allSinks = fakeSinkListWithPseudoSink;
         container.addEventListener('create-route', checkNoCreateRoute);
 
-        var searchInput = container.$['sink-search-input'];
+        var searchInput = container.$$('#sink-search-input');
         searchInput.value = foundSink.name;
         chainOnAnimationPromise(function() {
           var searchResults =
@@ -406,9 +390,7 @@ cr.define('media_router_container_search', function() {
       });
 
       test('route creation failure clears spinner and search', function(done) {
-        container.allSinks = fakeSinkListWithPseudoSink;
-
-        var searchInput = container.$['sink-search-input'];
+        var searchInput = container.$$('#sink-search-input');
         searchInput.value = foundSink.name;
         chainOnAnimationPromise(function() {
           var searchResults =
@@ -433,9 +415,12 @@ cr.define('media_router_container_search', function() {
 
       test('pseudo sink with empty domain is not shown', function(done) {
         pseudoSink.domain = '';
+        // Trigger |allSinks| observer to be called again with new pseudo sink
+        // domain.
+        container.allSinks = [];
         container.allSinks = fakeSinkListWithPseudoSink;
 
-        var searchInput = container.$['sink-search-input'];
+        var searchInput = container.$$('#sink-search-input');
         searchInput.value = foundSink.name;
         chainOnAnimationPromise(function() {
           var noMatches = container.$$('#no-search-matches');

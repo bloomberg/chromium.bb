@@ -275,6 +275,17 @@ Polymer({
     },
 
     /**
+     * Whether the search feature is enabled and we should show the search
+     * input.
+     * @private {boolean}
+     */
+    searchEnabled_: {
+      type: Boolean,
+      value: false,
+      observer: 'searchEnabledChanged_',
+    },
+
+    /**
      * Search text entered by the user into the sink search input.
      * @private {string}
      */
@@ -1319,7 +1330,7 @@ Polymer({
     var deviceMissing = this.$['device-missing'];
     var list = this.$$('#sink-list');
     var resultsContainer = this.$$('#search-results-container');
-    var search = this.$['sink-search'];
+    var search = this.$$('#sink-search');
     var view = this.$['sink-list-view'];
 
     var hasList = this.hasConditionalElement_(list);
@@ -1429,7 +1440,7 @@ Polymer({
     var noMatches = this.$$('#no-search-matches');
     var results = this.$$('#search-results');
     var resultsContainer = this.$$('#search-results-container');
-    var search = this.$['sink-search'];
+    var search = this.$$('#sink-search');
     var view = this.$['sink-list-view'];
 
     // Saves current search container |offsetHeight| which includes bottom
@@ -1736,10 +1747,13 @@ Polymer({
    * @private
    */
   putSearchAtBottom_: function() {
+    var search = this.$$('#sink-search');
+    if (!this.hasConditionalElement_(search)) {
+      return;
+    }
     var deviceMissing = this.$['device-missing'];
     var list = this.$$('#sink-list');
     var resultsContainer = this.$$('#search-results-container');
-    var search = this.$['sink-search'];
     var view = this.$['sink-list-view'];
     this.searchUseBottomPadding = true;
     search.style['top'] = '';
@@ -1756,6 +1770,8 @@ Polymer({
       list.style['opacity'] = '';
     } else {
       deviceMissing.style['margin-bottom'] = search.offsetHeight + 'px';
+      search.style['margin-top'] = '';
+      view.style['padding-bottom'] = '';
     }
   },
 
@@ -1780,12 +1796,14 @@ Polymer({
     var noMatches = this.$$('#no-search-matches');
     var results = this.$$('#search-results');
     var resultsContainer = this.$$('#search-results-container');
-    var search = this.$['sink-search'];
+    var search = this.$$('#sink-search');
     var view = this.$['sink-list-view'];
 
     // If there is a height mismatch between where the animation calculated the
     // height should be and where it is now because the search results changed
     // during the animation, correct it with... another animation.
+    this.searchUseBottomPadding =
+        this.shouldSearchUseBottomPadding_(deviceMissing);
     var resultsPadding = this.computeElementVerticalPadding_(results);
     var finalHeight = this.computeTotalSearchHeight_(deviceMissing, noMatches,
         results, search.offsetHeight, this.sinkListMaxHeight_ + resultsPadding);
@@ -1982,6 +2000,8 @@ Polymer({
       return sink.isPseudoSink && !!sink.domain;
     });
     this.rebuildSinksToShow_();
+    this.searchEnabled_ = this.searchEnabled_ || this.pseudoSinks_.length > 0 ||
+        this.sinksToShow_.length >= media_router.MINIMUM_SINKS_FOR_SEARCH;
     this.filterSinks_(this.searchInputText_ || '');
     if (this.currentView_ != media_router.MediaRouterView.FILTER) {
       // This code is in the unique position of seeing |animationPromise_| as
@@ -2023,7 +2043,20 @@ Polymer({
     // clicks the search button, a focus event will not fire and so its event
     // handler from ready() will not run.
     this.showSearchResults_();
-    this.$['sink-search-input'].focus();
+    this.$$('#sink-search-input').focus();
+  },
+
+  /**
+   * Initializes the position of the search input if search becomes enabled.
+   * @param {boolean} searchEnabled The new value of |searchEnabled_|.
+   * @private
+   */
+  searchEnabledChanged_: function(searchEnabled) {
+    if (searchEnabled) {
+      this.async(function() {
+        this.putSearchAtBottom_();
+      });
+    }
   },
 
   /**
@@ -2046,7 +2079,8 @@ Polymer({
    * @private
    */
   setSearchFocusHandlers_: function() {
-    var search = this.$['sink-search-input'];
+    var search = this.$$('#sink-search');
+    var searchInput = this.$$('#sink-search-input');
     var that = this;
 
     // The window can see a blur event for two important cases: the window is
@@ -2063,11 +2097,13 @@ Polymer({
       that.isSearchFocusedOnWindowBlur_ =
           that.shadowRoot.activeElement == search;
     });
-    search.addEventListener('focus', function() {
-      if (!that.isSearchFocusedOnWindowBlur_) {
-        that.showSearchResults_();
-      }
-    });
+    if (this.hasConditionalElement_(search)) {
+      searchInput.addEventListener('focus', function() {
+        if (!that.isSearchFocusedOnWindowBlur_) {
+          that.showSearchResults_();
+        }
+      });
+    }
   },
 
   /**
@@ -2240,17 +2276,24 @@ Polymer({
       var issueHeight = this.$$('#issue-banner') &&
           this.$$('#issue-banner').style.display != 'none' ?
               this.$$('#issue-banner').offsetHeight : 0;
-      var search = this.$['sink-search'];
-      var searchHeight = search.offsetHeight;
+      var search = this.$$('#sink-search');
+      var hasSearch = this.hasConditionalElement_(search);
+      var searchHeight = hasSearch ? search.offsetHeight : 0;
+      var searchPadding =
+          hasSearch ? this.computeElementVerticalPadding_(search) : 0;
 
       this.$['container-header'].style.marginTop = firstRunFlowHeight + 'px';
       this.$['content'].style.marginTop =
           firstRunFlowHeight + headerHeight + 'px';
 
       var sinkList = this.$$('#sink-list');
+      if (hasSearch && sinkList) {
+        // This would need to be reset to '' if search could be disabled again,
+        // but once it's enabled it can't be disabled again.
+        sinkList.style.paddingBottom = '0';
+      }
       var sinkListPadding =
           sinkList ? this.computeElementVerticalPadding_(sinkList) : 0;
-      var searchPadding = this.computeElementVerticalPadding_(search);
 
       this.sinkListMaxHeight_ = this.dialogHeight_ - headerHeight -
           firstRunFlowHeight - issueHeight - searchHeight + searchPadding -

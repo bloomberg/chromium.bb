@@ -66,6 +66,14 @@ media_router.MediaRouterView = {
 };
 
 /**
+ * The minimum number of sinks to have to enable the search input strictly for
+ * filtering (i.e. the Media Router doesn't support search so the search input
+ * only filters existing sinks).
+ * @const {number}
+ */
+media_router.MINIMUM_SINKS_FOR_SEARCH = 20;
+
+/**
  * This corresponds to the C++ MediaSink IconType.
  * @enum {number}
  */

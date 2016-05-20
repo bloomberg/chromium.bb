@@ -142,20 +142,22 @@
             </template>
           </paper-menu>
         </template>
-        <div id="sink-search">
-          <div class="sink-content">
-            <div>
-              <paper-icon-button id="sink-search-icon" icon="media-router:search"
-                  on-tap="searchButtonClick_" title="[[i18n('searchButtonTitle')]]">
-              </paper-icon-button>
-            </div>
-            <div id="search-input-container">
-              <paper-input id="sink-search-input" label="[[i18n('searchInputLabel')]]"
-                  no-label-float value="{{searchInputText_}}">
-              </paper-input>
+        <template is="dom-if" if="[[searchEnabled_]]">
+          <div id="sink-search">
+            <div class="sink-content">
+              <div>
+                <paper-icon-button id="sink-search-icon" icon="media-router:search"
+                    on-tap="searchButtonClick_" title="[[i18n('searchButtonTitle')]]">
+                </paper-icon-button>
+              </div>
+              <div id="search-input-container">
+                <paper-input id="sink-search-input" label="[[i18n('searchInputLabel')]]"
+                    no-label-float value="{{searchInputText_}}">
+                </paper-input>
+              </div>
             </div>
           </div>
-        </div>
+        </template>
         <template is="dom-if" if="[[!isSearchListHidden_]]">
           <div id="search-results-container">
             <div id="no-search-matches"
