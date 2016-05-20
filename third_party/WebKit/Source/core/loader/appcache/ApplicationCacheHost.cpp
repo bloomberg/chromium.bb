@@ -34,8 +34,8 @@
 #include "core/events/ApplicationCacheErrorEvent.h"
 #include "core/events/ProgressEvent.h"
 #include "core/frame/Deprecation.h"
+#include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/OriginsUsingFeatures.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorApplicationCacheAgent.h"
@@ -128,7 +128,7 @@ void ApplicationCacheHost::selectCacheWithManifest(const KURL& manifestURL)
     } else {
         Deprecation::countDeprecation(document, UseCounter::ApplicationCacheManifestSelectInsecureOrigin);
         Deprecation::countDeprecationCrossOriginIframe(*document, UseCounter::ApplicationCacheManifestSelectInsecureOrigin);
-        OriginsUsingFeatures::countAnyWorld(*document, OriginsUsingFeatures::Feature::ApplicationCacheManifestSelectInsecureOrigin);
+        HostsUsingFeatures::countAnyWorld(*document, HostsUsingFeatures::Feature::ApplicationCacheManifestSelectInsecureHost);
     }
     if (m_host && !m_host->selectCacheWithManifest(manifestURL)) {
         // It's a foreign entry, restart the current navigation from the top

@@ -212,7 +212,7 @@ void Page::documentDetached(Document* document)
     m_contextMenuController->documentDetached(document);
     if (m_validationMessageClient)
         m_validationMessageClient->documentDetached(*document);
-    m_originsUsingFeatures.documentDetached(*document);
+    m_hostsUsingFeatures.documentDetached(*document);
 }
 
 bool Page::openedByDOM() const
@@ -473,7 +473,7 @@ void Page::didCommitLoad(LocalFrame* frame)
         useCounter().didCommitLoad();
         deprecation().clearSuppression();
         frameHost().visualViewport().sendUMAMetrics();
-        m_originsUsingFeatures.updateMeasurementsAndClear();
+        m_hostsUsingFeatures.updateMeasurementsAndClear();
         UserGestureIndicator::clearProcessedUserGestureSinceLoad();
     }
 }

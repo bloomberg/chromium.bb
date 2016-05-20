@@ -34,8 +34,8 @@
 #include "core/dom/StyleEngine.h"
 #include "core/events/Event.h"
 #include "core/frame/FrameHost.h"
+#include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/OriginsUsingFeatures.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLIFrameElement.h"
@@ -205,7 +205,7 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType)
         UseCounter::count(document(), UseCounter::FullscreenSecureOrigin);
     } else {
         UseCounter::count(document(), UseCounter::FullscreenInsecureOrigin);
-        OriginsUsingFeatures::countAnyWorld(*document(), OriginsUsingFeatures::Feature::FullscreenInsecureOrigin);
+        HostsUsingFeatures::countAnyWorld(*document(), HostsUsingFeatures::Feature::FullscreenInsecureHost);
     }
 
     // Ignore this request if the document is not in a live frame.

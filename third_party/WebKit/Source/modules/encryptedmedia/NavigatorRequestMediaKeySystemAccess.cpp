@@ -10,7 +10,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/Deprecation.h"
-#include "core/frame/OriginsUsingFeatures.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/encryptedmedia/EncryptedMediaUtils.h"
 #include "modules/encryptedmedia/MediaKeySession.h"

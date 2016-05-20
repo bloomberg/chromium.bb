@@ -2,30 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/frame/OriginsUsingFeatures.h"
+#include "core/frame/HostsUsingFeatures.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-TEST(OriginsUsingFeaturesTest, countName)
+TEST(HostsUsingFeaturesTest, countName)
 {
-    OriginsUsingFeatures originsUsingFeatures;
-    originsUsingFeatures.countName(OriginsUsingFeatures::Feature::EventPath, "test 1");
-    EXPECT_EQ(1u, originsUsingFeatures.valueByName().size());
-    originsUsingFeatures.countName(OriginsUsingFeatures::Feature::ElementCreateShadowRoot, "test 1");
-    EXPECT_EQ(1u, originsUsingFeatures.valueByName().size());
-    originsUsingFeatures.countName(OriginsUsingFeatures::Feature::EventPath, "test 2");
-    EXPECT_EQ(2u, originsUsingFeatures.valueByName().size());
+    HostsUsingFeatures hostsUsingFeatures;
+    hostsUsingFeatures.countName(HostsUsingFeatures::Feature::EventPath, "test 1");
+    EXPECT_EQ(1u, hostsUsingFeatures.valueByName().size());
+    hostsUsingFeatures.countName(HostsUsingFeatures::Feature::ElementCreateShadowRoot, "test 1");
+    EXPECT_EQ(1u, hostsUsingFeatures.valueByName().size());
+    hostsUsingFeatures.countName(HostsUsingFeatures::Feature::EventPath, "test 2");
+    EXPECT_EQ(2u, hostsUsingFeatures.valueByName().size());
 
-    EXPECT_TRUE(originsUsingFeatures.valueByName().get("test 1").get(OriginsUsingFeatures::Feature::EventPath));
-    EXPECT_TRUE(originsUsingFeatures.valueByName().get("test 1").get(OriginsUsingFeatures::Feature::ElementCreateShadowRoot));
-    EXPECT_FALSE(originsUsingFeatures.valueByName().get("test 1").get(OriginsUsingFeatures::Feature::DocumentRegisterElement));
-    EXPECT_TRUE(originsUsingFeatures.valueByName().get("test 2").get(OriginsUsingFeatures::Feature::EventPath));
-    EXPECT_FALSE(originsUsingFeatures.valueByName().get("test 2").get(OriginsUsingFeatures::Feature::ElementCreateShadowRoot));
-    EXPECT_FALSE(originsUsingFeatures.valueByName().get("test 2").get(OriginsUsingFeatures::Feature::DocumentRegisterElement));
+    EXPECT_TRUE(hostsUsingFeatures.valueByName().get("test 1").get(HostsUsingFeatures::Feature::EventPath));
+    EXPECT_TRUE(hostsUsingFeatures.valueByName().get("test 1").get(HostsUsingFeatures::Feature::ElementCreateShadowRoot));
+    EXPECT_FALSE(hostsUsingFeatures.valueByName().get("test 1").get(HostsUsingFeatures::Feature::DocumentRegisterElement));
+    EXPECT_TRUE(hostsUsingFeatures.valueByName().get("test 2").get(HostsUsingFeatures::Feature::EventPath));
+    EXPECT_FALSE(hostsUsingFeatures.valueByName().get("test 2").get(HostsUsingFeatures::Feature::ElementCreateShadowRoot));
+    EXPECT_FALSE(hostsUsingFeatures.valueByName().get("test 2").get(HostsUsingFeatures::Feature::DocumentRegisterElement));
 
-    originsUsingFeatures.clear();
+    hostsUsingFeatures.clear();
 }
 
 } // namespace blink

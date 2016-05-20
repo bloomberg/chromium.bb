@@ -86,9 +86,9 @@
 #include "core/events/FocusEvent.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/OriginsUsingFeatures.h"
 #include "core/frame/ScrollToOptions.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
@@ -1905,7 +1905,7 @@ V0CustomElementDefinition* Element::customElementDefinition() const
 
 ShadowRoot* Element::createShadowRoot(const ScriptState* scriptState, ExceptionState& exceptionState)
 {
-    OriginsUsingFeatures::countMainWorldOnly(scriptState, document(), OriginsUsingFeatures::Feature::ElementCreateShadowRoot);
+    HostsUsingFeatures::countMainWorldOnly(scriptState, document(), HostsUsingFeatures::Feature::ElementCreateShadowRoot);
     if (ShadowRoot* root = shadowRoot()) {
         if (root->isV1()) {
             exceptionState.throwDOMException(InvalidStateError, "Shadow root cannot be created on a host which already hosts a v1 shadow tree.");
@@ -1928,7 +1928,7 @@ ShadowRoot* Element::attachShadow(const ScriptState* scriptState, const ShadowRo
 {
     DCHECK(RuntimeEnabledFeatures::shadowDOMV1Enabled());
 
-    OriginsUsingFeatures::countMainWorldOnly(scriptState, document(), OriginsUsingFeatures::Feature::ElementAttachShadow);
+    HostsUsingFeatures::countMainWorldOnly(scriptState, document(), HostsUsingFeatures::Feature::ElementAttachShadow);
 
     const AtomicString& tagName = localName();
     bool tagNameIsSupported = isV0CustomElement()

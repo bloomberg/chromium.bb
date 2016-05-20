@@ -30,8 +30,8 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/events/EventListener.h"
 #include "core/frame/Deprecation.h"
+#include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/OriginsUsingFeatures.h"
 #include "core/frame/UseCounter.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
@@ -148,7 +148,7 @@ void ApplicationCache::recordAPIUseType() const
         UseCounter::count(document, UseCounter::ApplicationCacheAPISecureOrigin);
     } else {
         Deprecation::countDeprecation(document, UseCounter::ApplicationCacheAPIInsecureOrigin);
-        OriginsUsingFeatures::countAnyWorld(*document, OriginsUsingFeatures::Feature::ApplicationCacheAPIInsecureOrigin);
+        HostsUsingFeatures::countAnyWorld(*document, HostsUsingFeatures::Feature::ApplicationCacheAPIInsecureHost);
     }
 }
 

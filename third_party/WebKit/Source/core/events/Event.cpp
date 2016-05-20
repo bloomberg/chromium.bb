@@ -25,7 +25,7 @@
 #include "core/dom/StaticNodeList.h"
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/EventTarget.h"
-#include "core/frame/OriginsUsingFeatures.h"
+#include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/UseCounter.h"
 #include "core/svg/SVGElement.h"
 #include "core/timing/DOMWindowPerformance.h"
@@ -289,7 +289,7 @@ HeapVector<Member<EventTarget>> Event::deepPath(ScriptState* scriptState) const
 HeapVector<Member<EventTarget>> Event::pathInternal(ScriptState* scriptState, EventPathMode mode) const
 {
     if (m_target)
-        OriginsUsingFeatures::countOriginOrIsolatedWorldHumanReadableName(scriptState, *m_target, OriginsUsingFeatures::Feature::EventPath);
+        HostsUsingFeatures::countHostOrIsolatedWorldHumanReadableName(scriptState, *m_target, HostsUsingFeatures::Feature::EventPath);
 
     if (!m_currentTarget) {
         ASSERT(m_eventPhase == Event::NONE);

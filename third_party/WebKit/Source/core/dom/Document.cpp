@@ -131,9 +131,9 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/History.h"
+#include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/OriginsUsingFeatures.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/DocumentNameCollection.h"
@@ -737,7 +737,7 @@ Element* Document::createElementNS(const AtomicString& namespaceURI, const Atomi
 
 ScriptValue Document::registerElement(ScriptState* scriptState, const AtomicString& name, const ElementRegistrationOptions& options, ExceptionState& exceptionState, V0CustomElement::NameSet validNames)
 {
-    OriginsUsingFeatures::countMainWorldOnly(scriptState, *this, OriginsUsingFeatures::Feature::DocumentRegisterElement);
+    HostsUsingFeatures::countMainWorldOnly(scriptState, *this, HostsUsingFeatures::Feature::DocumentRegisterElement);
 
     if (!registrationContext()) {
         exceptionState.throwDOMException(NotSupportedError, "No element registration context is available.");

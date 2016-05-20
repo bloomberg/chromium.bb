@@ -29,7 +29,7 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/Deprecation.h"
-#include "core/frame/OriginsUsingFeatures.h"
+#include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/Settings.h"
 #include "modules/geolocation/Coordinates.h"
 #include "modules/geolocation/GeolocationError.h"
@@ -153,11 +153,11 @@ void Geolocation::recordOriginTypeAccess() const
         // See https://crbug.com/603574.
         Deprecation::countDeprecation(document, UseCounter::GeolocationInsecureOriginDeprecatedNotRemoved);
         Deprecation::countDeprecationCrossOriginIframe(*document, UseCounter::GeolocationInsecureOriginIframeDeprecatedNotRemoved);
-        OriginsUsingFeatures::countAnyWorld(*document, OriginsUsingFeatures::Feature::GeolocationInsecureOrigin);
+        HostsUsingFeatures::countAnyWorld(*document, HostsUsingFeatures::Feature::GeolocationInsecureHost);
     } else {
         Deprecation::countDeprecation(document, UseCounter::GeolocationInsecureOrigin);
         Deprecation::countDeprecationCrossOriginIframe(*document, UseCounter::GeolocationInsecureOriginIframe);
-        OriginsUsingFeatures::countAnyWorld(*document, OriginsUsingFeatures::Feature::GeolocationInsecureOrigin);
+        HostsUsingFeatures::countAnyWorld(*document, HostsUsingFeatures::Feature::GeolocationInsecureHost);
     }
 }
 

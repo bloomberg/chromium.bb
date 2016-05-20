@@ -24,8 +24,8 @@
 #include "core/CoreExport.h"
 #include "core/dom/ViewportDescription.h"
 #include "core/frame/Deprecation.h"
+#include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/LocalFrame.h"
-#include "core/frame/OriginsUsingFeatures.h"
 #include "core/frame/SettingsDelegate.h"
 #include "core/frame/UseCounter.h"
 #include "core/page/Page.h"
@@ -162,7 +162,7 @@ public:
 
     UseCounter& useCounter() { return m_useCounter; }
     Deprecation& deprecation() { return m_deprecation; }
-    OriginsUsingFeatures& originsUsingFeatures() { return m_originsUsingFeatures; }
+    HostsUsingFeatures& hostsUsingFeatures() { return m_hostsUsingFeatures; }
 
     void setTabKeyCyclesThroughElements(bool b) { m_tabKeyCyclesThroughElements = b; }
     bool tabKeyCyclesThroughElements() const { return m_tabKeyCyclesThroughElements; }
@@ -258,7 +258,7 @@ private:
 
     UseCounter m_useCounter;
     Deprecation m_deprecation;
-    OriginsUsingFeatures m_originsUsingFeatures;
+    HostsUsingFeatures m_hostsUsingFeatures;
 
     bool m_openedByDOM;
 

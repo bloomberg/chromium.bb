@@ -6,7 +6,7 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/Deprecation.h"
-#include "core/frame/OriginsUsingFeatures.h"
+#include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/Settings.h"
 #include "modules/EventModules.h"
 #include "modules/device_orientation/DeviceMotionData.h"
@@ -52,7 +52,7 @@ void DeviceMotionController::didAddEventListener(LocalDOMWindow* window, const A
             UseCounter::count(document().frame(), UseCounter::DeviceMotionSecureOrigin);
         } else {
             Deprecation::countDeprecation(document().frame(), UseCounter::DeviceMotionInsecureOrigin);
-            OriginsUsingFeatures::countAnyWorld(document(), OriginsUsingFeatures::Feature::DeviceMotionInsecureOrigin);
+            HostsUsingFeatures::countAnyWorld(document(), HostsUsingFeatures::Feature::DeviceMotionInsecureHost);
             if (document().frame()->settings()->strictPowerfulFeatureRestrictions())
                 return;
         }

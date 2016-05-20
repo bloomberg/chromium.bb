@@ -46,8 +46,8 @@
 #include "core/dom/custom/V0CustomElement.h"
 #include "core/fetch/ClientHintsPreferences.h"
 #include "core/frame/DOMTimerCoordinator.h"
+#include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/LocalDOMWindow.h"
-#include "core/frame/OriginsUsingFeatures.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/CollectionType.h"
 #include "core/html/parser/ParserSynchronizationPolicy.h"
@@ -1028,7 +1028,7 @@ public:
     v8::Local<v8::Object> wrap(v8::Isolate*, v8::Local<v8::Object> creationContext) override;
     v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override WARN_UNUSED_RETURN;
 
-    OriginsUsingFeatures::Value& originsUsingFeaturesValue() { return m_originsUsingFeaturesValue; }
+    HostsUsingFeatures::Value& HostsUsingFeaturesValue() { return m_hostsUsingFeaturesValue; }
 
     NthIndexCache* nthIndexCache() const { return m_nthIndexCache; }
 
@@ -1381,7 +1381,7 @@ private:
 
     ParserSynchronizationPolicy m_parserSyncPolicy;
 
-    OriginsUsingFeatures::Value m_originsUsingFeaturesValue;
+    HostsUsingFeatures::Value m_hostsUsingFeaturesValue;
 
     ClientHintsPreferences m_clientHintsPreferences;
 
