@@ -1,9 +1,15 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://md-settings/about_page/about_page_browser_proxy.html">
+<link rel="import" href="chrome://md-settings/i18n_setup.html">
+<link rel="import" href="chrome://md-settings/icons.html">
 <link rel="import" href="chrome://md-settings/settings_page/main_page_behavior.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_section.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 
@@ -25,6 +31,18 @@
       img {
         -webkit-margin-end: 10px;
       }
+
+      iron-icon {
+        -webkit-margin-end: var(--iron-icon-spacing);
+      }
+
+      iron-icon[icon="settings:check-circle"] {
+        fill: var(--paper-blue-600);
+      }
+
+      iron-icon[icon="settings:error"] {
+        fill: var(--paper-red-600);
+      }
     </style>
     <settings-section page-title="$i18n{aboutPageTitle}"
         current-route="[[currentRoute]]" section="about">
@@ -38,14 +56,21 @@
             <span>$i18n{aboutProductTitle}</span>
           </div>
           <div class="settings-box two-line">
-            <!-- TODO(dpapad): Implement this. -->
+            <div hidden="[[!shouldShowUpdateStatus_(currentUpdateStatusEvent_)]]">
+              <iron-icon
+                  icon$="[[getIcon_(currentUpdateStatusEvent_)]]"
+                  src="[[getIconSrc_(currentUpdateStatusEvent_)]]">
+              </iron-icon>
+            </div>
             <div class="start">
-              <div>Your device is up to date</div>
-              <div class="secondary">Version Foo.bar.baz</div>
+              <div hidden="[[!shouldShowUpdateStatus_(currentUpdateStatusEvent_)]]">
+                [[getUpdateStatusMessage_(currentUpdateStatusEvent_)]]
+              </div>
+              <div class="secondary">$i18n{aboutBrowserVersion}</div>
             </div>
-            <div class="secondary-action">
-              <paper-button class="secondary-button">Check for update</paper-button>
-            </div>
+<if expr="chromeos">
+            <paper-button class="secondary-action">Check for update</paper-button>
+</if>
           </div>
           <div id="help" class="settings-box two-line" on-tap="onHelpTap_">
             $i18n{aboutGetHelpUsingChrome}

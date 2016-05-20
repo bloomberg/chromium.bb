@@ -7,22 +7,6 @@
  * information for ChromeOS.
  */
 
-(function() {
-
-/**
- * @param {!BrowserChannel} channel
- * @return {string}
- */
-function browserChannelToI18nId(channel) {
-  switch (channel) {
-    case BrowserChannel.BETA: return 'aboutChannelBeta';
-    case BrowserChannel.DEV: return 'aboutChannelDev';
-    case BrowserChannel.STABLE: return 'aboutChannelStable';
-  }
-
-  assertNotReached();
-}
-
 Polymer({
   is: 'settings-detailed-build-info',
 
@@ -47,7 +31,7 @@ Polymer({
     browserProxy.getCurrentChannel().then(function(channel) {
       this.currentlyOnChannelText_ = this.i18n(
           'aboutCurrentlyOnChannel',
-          this.i18n(browserChannelToI18nId(channel)));
+          this.i18n(settings.browserChannelToI18nId(channel)));
     }.bind(this));
   },
 
@@ -60,5 +44,3 @@ Polymer({
     return version.length > 0;
   },
 });
-
-})();

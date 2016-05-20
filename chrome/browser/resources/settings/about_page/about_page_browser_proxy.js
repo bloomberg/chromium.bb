@@ -36,7 +36,45 @@ var BrowserChannel = {
 };
 </if>
 
+/**
+ * Enumeration of all possible update statuses. The string literals must match
+ * the ones defined at |AboutHandler::UpdateStatusToString|.
+ * @enum {string}
+ */
+var UpdateStatus = {
+  CHECKING: 'checking',
+  UPDATING: 'updating',
+  NEARLY_UPDATED: 'nearly_updated',
+  UPDATED: 'updated',
+  FAILED: 'failed',
+  DISABLED: 'disabled',
+  DISABLED_BY_ADMIN: 'disabled_by_admin',
+};
+
+/**
+ * @typedef {{
+ *   status: !UpdateStatus,
+ *   progress: number,
+ *   message: string,
+ * }}
+ */
+var UpdateStatusChangedEvent;
+
 cr.define('settings', function() {
+  /**
+   * @param {!BrowserChannel} channel
+   * @return {string}
+   */
+  function browserChannelToI18nId(channel) {
+    switch (channel) {
+      case BrowserChannel.BETA: return 'aboutChannelBeta';
+      case BrowserChannel.DEV: return 'aboutChannelDev';
+      case BrowserChannel.STABLE: return 'aboutChannelStable';
+    }
+
+    assertNotReached();
+  }
+
   /** @interface */
   function AboutPageBrowserProxy() {}
 
@@ -164,5 +202,6 @@ cr.define('settings', function() {
   return {
     AboutPageBrowserProxy: AboutPageBrowserProxy,
     AboutPageBrowserProxyImpl: AboutPageBrowserProxyImpl,
+    browserChannelToI18nId: browserChannelToI18nId,
   };
 });
