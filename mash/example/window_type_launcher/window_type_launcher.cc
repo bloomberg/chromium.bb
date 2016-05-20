@@ -4,6 +4,8 @@
 
 #include "mash/example/window_type_launcher/window_type_launcher.h"
 
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -37,6 +39,46 @@ SkColor g_colors[] = { SK_ColorRED,
                        SK_ColorBLUE,
                        SK_ColorGREEN };
 int g_color_index = 0;
+
+// WidgetDelegateView implementation used for new windows.
+class WindowDelegateView : public views::WidgetDelegateView {
+ public:
+  enum Traits {
+    RESIZABLE = 1 << 0,
+    ALWAYS_ON_TOP = 1 << 1,
+    PANEL = 1 << 2,
+  };
+
+  explicit WindowDelegateView(uint32_t traits) : traits_(traits) {}
+  ~WindowDelegateView() override {}
+
+  // Creates and shows a window with the specified traits.
+  static void Create(uint32_t traits) {
+    // Widget destroys itself when closed or mus::Window destroyed.
+    views::Widget* widget = new views::Widget;
+    views::Widget::InitParams params(
+        (traits & PANEL) != 0 ? views::Widget::InitParams::TYPE_PANEL
+                              : views::Widget::InitParams::TYPE_WINDOW);
+    params.keep_on_top = (traits & ALWAYS_ON_TOP) != 0;
+    // WidgetDelegateView deletes itself when Widget is destroyed.
+    params.delegate = new WindowDelegateView(traits);
+    widget->Init(params);
+    widget->Show();
+  }
+
+  // WidgetDelegateView:
+  bool CanMaximize() const override { return true; }
+  bool CanMinimize() const override { return true; }
+  bool CanResize() const override { return (traits_ & RESIZABLE) != 0; }
+  base::string16 GetWindowTitle() const override {
+    return base::ASCIIToUTF16("Window");
+  }
+
+ private:
+  const uint32_t traits_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowDelegateView);
+};
 
 class ModalWindow : public views::WidgetDelegateView,
                     public views::ButtonListener {
@@ -173,6 +215,9 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
         connector_(connector),
         create_button_(
             new views::LabelButton(this, base::ASCIIToUTF16("Create Window"))),
+        always_on_top_button_(new views::LabelButton(
+            this,
+            base::ASCIIToUTF16("Create Always On Top Window"))),
         panel_button_(
             new views::LabelButton(this, base::ASCIIToUTF16("Create Panel"))),
         create_nonresizable_button_(new views::LabelButton(
@@ -212,6 +257,7 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
             this,
             base::ASCIIToUTF16("Show a web/app notification"))) {
     create_button_->SetStyle(views::Button::STYLE_BUTTON);
+    always_on_top_button_->SetStyle(views::Button::STYLE_BUTTON);
     panel_button_->SetStyle(views::Button::STYLE_BUTTON);
     create_nonresizable_button_->SetStyle(views::Button::STYLE_BUTTON);
     bubble_button_->SetStyle(views::Button::STYLE_BUTTON);
@@ -238,6 +284,7 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
                           0,
                           0);
     AddViewToLayout(layout, create_button_);
+    AddViewToLayout(layout, always_on_top_button_);
     AddViewToLayout(layout, panel_button_);
     AddViewToLayout(layout, create_nonresizable_button_);
     AddViewToLayout(layout, bubble_button_);
@@ -287,11 +334,14 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     if (sender == create_button_) {
-      NOTIMPLEMENTED();
+      WindowDelegateView::Create(WindowDelegateView::RESIZABLE);
+    } else if (sender == always_on_top_button_) {
+      WindowDelegateView::Create(WindowDelegateView::RESIZABLE |
+                                 WindowDelegateView::ALWAYS_ON_TOP);
     } else if (sender == panel_button_) {
-      NOTIMPLEMENTED();
+      WindowDelegateView::Create(WindowDelegateView::PANEL);
     } else if (sender == create_nonresizable_button_) {
-      NOTIMPLEMENTED();
+      WindowDelegateView::Create(0u);
     } else if (sender == bubble_button_) {
       NOTIMPLEMENTED();
     } else if (sender == lock_button_) {
@@ -362,6 +412,7 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
   WindowTypeLauncher* window_type_launcher_;
   shell::Connector* connector_;
   views::LabelButton* create_button_;
+  views::LabelButton* always_on_top_button_;
   views::LabelButton* panel_button_;
   views::LabelButton* create_nonresizable_button_;
   views::LabelButton* bubble_button_;
