@@ -1359,10 +1359,10 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
         self.tool.builders = FakeBuilders({
             "MOCK Win": {"port_name": "test-win-win7", "specifiers": set(["mock-specifier"])},
         })
-        old_branch_name = webkitpy.tool.commands.rebaseline._get_branch_name_or_ref
+        old_branch_name = self.tool.scm().current_branch_or_ref
         try:
             self.command.tree_status = lambda: 'open'
-            webkitpy.tool.commands.rebaseline._get_branch_name_or_ref = lambda x: 'auto-rebaseline-temporary-branch'
+            self.tool.scm().current_branch_or_ref = lambda: 'auto-rebaseline-temporary-branch'
             self._execute_command_with_mock_options()
             self.assertEqual(self.tool.executive.calls, [
                 ['git', 'cl', 'upload', '-f'],
@@ -1375,7 +1375,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
 Bug(foo) [ Linux Mac Win10 ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
 """)
         finally:
-            webkitpy.tool.commands.rebaseline._get_branch_name_or_ref = old_branch_name
+            self.tool.scm().current_branch_or_ref = old_branch_name
 
     def test_execute_stuck_on_alternate_rebaseline_branch(self):
         def blame(path):
@@ -1418,10 +1418,10 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
             "MOCK Win": {"port_name": "test-win-win7", "specifiers": set(["mock-specifier"])},
         })
 
-        old_branch_name = webkitpy.tool.commands.rebaseline._get_branch_name_or_ref
+        old_branch_name = self.tool.scm().current_branch_or_ref
         try:
             self.command.tree_status = lambda: 'open'
-            webkitpy.tool.commands.rebaseline._get_branch_name_or_ref = lambda x: 'auto-rebaseline-alt-temporary-branch'
+            self.tool.scm().current_branch_or_ref = lambda: 'auto-rebaseline-alt-temporary-branch'
             self._execute_command_with_mock_options()
             self.assertEqual(self.tool.executive.calls, [
                 ['git', 'cl', 'upload', '-f'],
@@ -1434,7 +1434,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
 Bug(foo) [ Linux Mac Win10 ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
 """)
         finally:
-            webkitpy.tool.commands.rebaseline._get_branch_name_or_ref = old_branch_name
+            self.tool.scm().current_branch_or_ref = old_branch_name
 
     def _basic_execute_test(self, expected_executive_calls, auth_refresh_token_json=None, commit_author=None, dry_run=False):
         def blame(path):

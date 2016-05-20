@@ -57,6 +57,9 @@ class MockSCM(object):
     def current_branch(self):
         return "mock-branch-name"
 
+    def current_branch_or_ref(self):
+        return "mock-branch-name"
+
     def checkout_branch(self, name):
         pass
 

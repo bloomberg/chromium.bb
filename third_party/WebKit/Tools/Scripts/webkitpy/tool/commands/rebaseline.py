@@ -57,14 +57,6 @@ def _baseline_name(fs, test_name, suffix):
     return fs.splitext(test_name)[0] + TestResultWriter.FILENAME_SUFFIX_EXPECTED + "." + suffix
 
 
-def _get_branch_name_or_ref(tool):
-    branch_name = tool.scm().current_branch()
-    if not branch_name:
-        # If HEAD is detached use commit SHA instead.
-        return tool.executive.run_command(['git', 'rev-parse', 'HEAD']).strip()
-    return branch_name
-
-
 class AbstractRebaseliningCommand(Command):
     # not overriding execute() - pylint: disable=W0223
 
@@ -901,7 +893,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
         rebaseline_branch_name = self.AUTO_REBASELINE_BRANCH_NAME
         try:
             # Save the current branch name and check out a clean branch for the patch.
-            old_branch_name_or_ref = _get_branch_name_or_ref(tool)
+            old_branch_name_or_ref = tool.scm().current_branch_or_ref()
             if old_branch_name_or_ref == self.AUTO_REBASELINE_BRANCH_NAME:
                 rebaseline_branch_name = self.AUTO_REBASELINE_ALT_BRANCH_NAME
             if not options.dry_run:

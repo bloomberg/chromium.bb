@@ -135,9 +135,20 @@ class Git(SCM):
         return ref.replace('refs/heads/', '')
 
     def current_branch(self):
+        """Returns the name of the current branch, or empty string if HEAD is detached."""
         ref = self._run_git(['rev-parse', '--symbolic-full-name', 'HEAD']).strip()
-        # Return an empty string if HEAD is detached.
-        return self._branch_from_ref('' if ref == 'HEAD' else ref)
+        if ref == 'HEAD':
+            # HEAD is detached; return an empty string.
+            return ''
+        return self._branch_from_ref(ref)
+
+    def current_branch_or_ref(self):
+        """Returns the name of the current branch, or the commit hash if HEAD is detached."""
+        branch_name = self.current_branch()
+        if not branch_name:
+            # HEAD is detached; use commit SHA instead.
+            return self._run_git(['rev-parse', 'HEAD']).strip()
+        return branch_name
 
     def _upstream_branch(self):
         current_branch = self.current_branch()
