@@ -873,7 +873,7 @@ class TestExpectationSerializationTests(unittest.TestCase):
         expectation_line.bugs = ['Bug(x)']
         expectation_line.name = 'test/name/for/realz.html'
         expectation_line.parsed_expectations = set([IMAGE])
-        self.assertEqual(expectation_line.to_string(self._converter), None)
+        self.assertIsNone(expectation_line.to_string(self._converter))
         expectation_line.matching_configurations = set([TestConfiguration('win7', 'x86', 'release')])
         self.assertEqual(expectation_line.to_string(self._converter),
                          'Bug(x) [ Win7 Release ] test/name/for/realz.html [ Failure ]')
@@ -886,7 +886,7 @@ class TestExpectationSerializationTests(unittest.TestCase):
         expectation_line.bugs = ['Bug(x)']
         expectation_line.name = 'test/name/for/realz.html'
         expectation_line.parsed_expectations = set([IMAGE])
-        self.assertEqual(expectation_line.to_string(self._converter), None)
+        self.assertIsNone(expectation_line.to_string(self._converter))
         expectation_line.matching_configurations = set([TestConfiguration('mac10.10', 'x86', 'release')])
         self.assertEqual(expectation_line.to_string(self._converter),
                          'Bug(x) [ Mac10.10 Release ] test/name/for/realz.html [ Failure ]')

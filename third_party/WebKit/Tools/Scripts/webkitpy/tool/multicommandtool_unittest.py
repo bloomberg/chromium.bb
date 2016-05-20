@@ -103,7 +103,7 @@ class MultiCommandToolTest(unittest.TestCase):
         # This also tests Command auto-discovery.
         tool = TrivialTool()
         self.assertEqual(tool.command_by_name("trivial").name, "trivial")
-        self.assertEqual(tool.command_by_name("bar"), None)
+        self.assertIsNone(tool.command_by_name("bar"))
 
     def _assert_tool_main_outputs(self, tool, main_args, expected_stdout, expected_stderr="", expected_exit_code=0):
         exit_code = OutputCapture().assert_outputs(

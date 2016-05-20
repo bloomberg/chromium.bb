@@ -44,8 +44,8 @@ class WorkspaceTest(unittest.TestCase):
         })
         workspace = Workspace(filesystem, None)
         self.assertEqual(workspace.find_unused_filename("bar", "bar", "bar"), "bar/bar.bar")
-        self.assertEqual(workspace.find_unused_filename("dir", "foo", "jpg", search_limit=1), None)
-        self.assertEqual(workspace.find_unused_filename("dir", "foo", "jpg", search_limit=2), None)
+        self.assertIsNone(workspace.find_unused_filename("dir", "foo", "jpg", search_limit=1))
+        self.assertIsNone(workspace.find_unused_filename("dir", "foo", "jpg", search_limit=2))
         self.assertEqual(workspace.find_unused_filename("dir", "foo", "jpg"), "dir/foo-3.jpg")
 
     def test_create_zip(self):

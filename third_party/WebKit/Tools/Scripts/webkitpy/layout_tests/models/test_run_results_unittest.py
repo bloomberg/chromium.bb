@@ -280,7 +280,7 @@ class SummarizedResultsTest(unittest.TestCase):
         summary = test_run_results.summarize_results(
             self.port, expectations, initial_results, all_retry_results,
             enabled_pixel_tests_in_retry=True)
-        self.assertTrue('is_unexpected' in summary['tests']['failures']['expected']['text.html'])
+        self.assertIn('is_unexpected', summary['tests']['failures']['expected']['text.html'])
         self.assertEquals(summary['tests']['failures']['expected']['text.html']['expected'], 'FAIL')
         self.assertEquals(summary['tests']['failures']['expected']['text.html']['actual'], 'TIMEOUT LEAK PASS PASS')
         self.assertEquals(summary['num_passes'], 1)

@@ -137,7 +137,7 @@ class DriverTest(unittest.TestCase):
         cmd_line = driver.cmd_line(True, [])
         self.assertEqual(cmd_line[0], '/mock-checkout/out/Release/content_shell')
         self.assertEqual(cmd_line[-1], '-')
-        self.assertTrue('--no-timeout' in cmd_line)
+        self.assertIn('--no-timeout', cmd_line)
 
     def test_check_for_driver_crash(self):
         port = TestWebKitPort()
@@ -224,7 +224,7 @@ class DriverTest(unittest.TestCase):
         port = TestWebKitPort()
         driver = Driver(port, 0, pixel_tests=True)
         self.assertEqual(port._filesystem.written_files, {})
-        self.assertEqual(port._filesystem.last_tmpdir, None)
+        self.assertIsNone(port._filesystem.last_tmpdir)
 
     def test_stop_cleans_up_properly(self):
         port = TestWebKitPort()
@@ -232,7 +232,7 @@ class DriverTest(unittest.TestCase):
         driver = Driver(port, 0, pixel_tests=True)
         driver.start(True, [], None)
         last_tmpdir = port._filesystem.last_tmpdir
-        self.assertNotEquals(last_tmpdir, None)
+        self.assertIsNotNone(last_tmpdir)
         driver.stop()
         self.assertFalse(port._filesystem.isdir(last_tmpdir))
 

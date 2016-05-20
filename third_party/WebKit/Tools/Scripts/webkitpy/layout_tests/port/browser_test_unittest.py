@@ -94,4 +94,4 @@ class BrowserTestMacTest(_BrowserTestTestCaseMixin, port_testcase.PortTestCase):
 
     def test_driver_path(self):
         test_port = self.make_port(options=MockOptions(driver_name='browser_tests'))
-        self.assertFalse('.app/Contents/MacOS' in test_port._path_to_driver())
+        self.assertNotIn('.app/Contents/MacOS', test_port._path_to_driver())

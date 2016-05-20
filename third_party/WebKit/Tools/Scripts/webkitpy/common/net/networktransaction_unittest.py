@@ -76,7 +76,7 @@ class NetworkTransactionTest(LoggingTestCase):
 
     def test_convert_404_to_None(self):
         transaction = NetworkTransaction(convert_404_to_None=True)
-        self.assertEqual(transaction.run(lambda: self._raise_404_error()), None)
+        self.assertIsNone(transaction.run(lambda: self._raise_404_error()))
 
     def test_timeout(self):
         self._run_count = 0

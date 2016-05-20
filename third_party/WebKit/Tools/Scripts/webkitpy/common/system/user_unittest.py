@@ -53,7 +53,7 @@ class UserTest(unittest.TestCase):
         def mock_raw_input(message):
             self.repeatsRemaining -= 1
             return None
-        self.assertEqual(User.prompt("input", repeat=self.repeatsRemaining, raw_input=mock_raw_input), None)
+        self.assertIsNone(User.prompt("input", repeat=self.repeatsRemaining, raw_input=mock_raw_input))
 
     def test_prompt_with_multiple_lists(self):
         def run_prompt_test(inputs, expected_result, can_choose_multiple=False):
