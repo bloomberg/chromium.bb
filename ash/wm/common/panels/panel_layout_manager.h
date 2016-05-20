@@ -108,8 +108,7 @@ class ASH_WM_COMMON_EXPORT PanelLayoutManager
 
   // Overridden from wm::WmWindowObserver
   void OnWindowPropertyChanged(wm::WmWindow* window,
-                               wm::WmWindowProperty property,
-                               intptr_t old) override;
+                               wm::WmWindowProperty property) override;
 
   // Overridden from wm::WindowStateObserver
   void OnPostWindowStateTypeChange(wm::WindowState* window_state,

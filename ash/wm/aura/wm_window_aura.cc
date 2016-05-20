@@ -541,7 +541,7 @@ void WmWindowAura::OnWindowPropertyChanged(aura::Window* window,
     return;
   }
   FOR_EACH_OBSERVER(WmWindowObserver, observers_,
-                    OnWindowPropertyChanged(this, wm_property, old));
+                    OnWindowPropertyChanged(this, wm_property));
 }
 
 void WmWindowAura::OnWindowBoundsChanged(aura::Window* window,

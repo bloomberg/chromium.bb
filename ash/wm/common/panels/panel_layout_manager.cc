@@ -447,9 +447,9 @@ void PanelLayoutManager::OnShelfAlignmentChanged() {
 /////////////////////////////////////////////////////////////////////////////
 // PanelLayoutManager, WindowObserver implementation:
 
-void PanelLayoutManager::OnWindowPropertyChanged(wm::WmWindow* window,
-                                                 wm::WmWindowProperty property,
-                                                 intptr_t old) {
+void PanelLayoutManager::OnWindowPropertyChanged(
+    wm::WmWindow* window,
+    wm::WmWindowProperty property) {
   // Trigger a relayout to position the panels whenever the panel icon is set
   // or changes.
   if (property == wm::WmWindowProperty::SHELF_ID)

@@ -71,8 +71,7 @@ class ASH_WM_COMMON_EXPORT WorkspaceLayoutManager
       wm::WmWindow* window,
       const wm::WmWindowObserver::TreeChangeParams& params) override;
   void OnWindowPropertyChanged(wm::WmWindow* window,
-                               wm::WmWindowProperty property,
-                               intptr_t old) override;
+                               wm::WmWindowProperty property) override;
   void OnWindowStackingChanged(wm::WmWindow* window) override;
   void OnWindowDestroying(wm::WmWindow* window) override;
   void OnWindowBoundsChanged(wm::WmWindow* window,

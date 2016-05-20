@@ -33,8 +33,7 @@ class ASH_WM_COMMON_EXPORT WmWindowObserver {
                                    const TreeChangeParams& params) {}
 
   virtual void OnWindowPropertyChanged(WmWindow* window,
-                                       WmWindowProperty property,
-                                       intptr_t old) {}
+                                       WmWindowProperty property) {}
 
   virtual void OnWindowStackingChanged(WmWindow* window) {}
 

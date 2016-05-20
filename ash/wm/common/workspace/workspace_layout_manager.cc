@@ -215,8 +215,7 @@ void WorkspaceLayoutManager::OnWindowTreeChanged(
 
 void WorkspaceLayoutManager::OnWindowPropertyChanged(
     wm::WmWindow* window,
-    wm::WmWindowProperty property,
-    intptr_t old) {
+    wm::WmWindowProperty property) {
   if (property == wm::WmWindowProperty::ALWAYS_ON_TOP &&
       window->GetBoolProperty(wm::WmWindowProperty::ALWAYS_ON_TOP)) {
     root_window_controller_->GetAlwaysOnTopController()

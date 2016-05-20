@@ -36,8 +36,7 @@ class ASH_WM_COMMON_EXPORT AlwaysOnTopController : public wm::WmWindowObserver {
   void OnWindowTreeChanged(wm::WmWindow* window,
                            const TreeChangeParams& params) override;
   void OnWindowPropertyChanged(wm::WmWindow* window,
-                               wm::WmWindowProperty property,
-                               intptr_t old) override;
+                               wm::WmWindowProperty property) override;
   void OnWindowDestroying(wm::WmWindow* window) override;
 
   wm::WmWindow* always_on_top_container_;

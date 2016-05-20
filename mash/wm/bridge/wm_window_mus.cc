@@ -587,11 +587,12 @@ void WmWindowMus::OnWindowSharedPropertyChanged(
     const std::vector<uint8_t>* new_data) {
   if (name == mus::mojom::WindowManager::kShowState_Property) {
     GetWindowState()->OnWindowShowStateChanged();
+    return;
   }
   if (name == mus::mojom::WindowManager::kAlwaysOnTop_Property) {
     FOR_EACH_OBSERVER(ash::wm::WmWindowObserver, observers_,
                       OnWindowPropertyChanged(
-                          this, ash::wm::WmWindowProperty::ALWAYS_ON_TOP, 0u));
+                          this, ash::wm::WmWindowProperty::ALWAYS_ON_TOP));
     return;
   }
 

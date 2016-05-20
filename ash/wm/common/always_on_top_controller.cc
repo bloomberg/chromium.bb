@@ -57,8 +57,7 @@ void AlwaysOnTopController::OnWindowTreeChanged(
 
 void AlwaysOnTopController::OnWindowPropertyChanged(
     wm::WmWindow* window,
-    wm::WmWindowProperty property,
-    intptr_t old) {
+    wm::WmWindowProperty property) {
   if (window != always_on_top_container_ &&
       property == wm::WmWindowProperty::ALWAYS_ON_TOP) {
     DCHECK(window->GetType() == ui::wm::WINDOW_TYPE_NORMAL ||
