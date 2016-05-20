@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/renderer/pepper/host_array_buffer_var.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_try_catch.h"
 #include "content/renderer/pepper/plugin_module.h"
@@ -27,20 +26,12 @@
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
 #include "third_party/WebKit/public/web/WebDOMMessageEvent.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
-#include "third_party/WebKit/public/web/WebSerializedScriptValue.h"
 #include "v8/include/v8.h"
 
-using ppapi::ArrayBufferVar;
 using ppapi::PpapiGlobals;
 using ppapi::ScopedPPVar;
 using ppapi::StringVar;
-using blink::WebElement;
-using blink::WebDOMEvent;
 using blink::WebDOMMessageEvent;
 using blink::WebPluginContainer;
 using blink::WebSerializedScriptValue;
