@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.payments.ui;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.TextUtils.TruncateAt;
@@ -125,17 +124,12 @@ public abstract class PaymentRequestSection extends LinearLayout {
                 getResources().getDimensionPixelSize(R.dimen.payments_section_large_spacing);
         mVerticalSpacing =
                 getResources().getDimensionPixelSize(R.dimen.payments_section_vertical_spacing);
-        setPadding(0, mVerticalSpacing, 0, mVerticalSpacing);
-
-        TintedDrawable chevron =
-                TintedDrawable.constructTintedDrawable(getResources(), R.drawable.ic_expanded);
-        chevron.setTint(ApiCompatibilityUtils.getColorStateList(
-                getResources(), R.color.payments_section_chevron));
+        setPadding(mLargeSpacing, mVerticalSpacing, mLargeSpacing, mVerticalSpacing);
 
         // Create the main content.
         mMainSection = prepareMainSection(sectionName);
-        mLogoView = isLogoNecessary() ? createAndAddLogoView(this, 0, 0, mLargeSpacing) : null;
-        mChevronView = createAndAddImageView(this, chevron, 0, mLargeSpacing);
+        mLogoView = isLogoNecessary() ? createAndAddLogoView(this, 0, mLargeSpacing) : null;
+        mChevronView = createAndAddChevron(this);
         setDisplayMode(DISPLAY_MODE_NORMAL);
     }
 
@@ -237,8 +231,6 @@ public abstract class PaymentRequestSection extends LinearLayout {
         mainSectionLayout.setOrientation(VERTICAL);
         LinearLayout.LayoutParams mainParams = new LayoutParams(0, LayoutParams.WRAP_CONTENT);
         mainParams.weight = 1;
-        ApiCompatibilityUtils.setMarginStart(mainParams, mLargeSpacing);
-        ApiCompatibilityUtils.setMarginEnd(mainParams, mLargeSpacing);
         addView(mainSectionLayout, mainParams);
 
         // The title is always displayed for the row at the top of the main section.
@@ -284,7 +276,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
     }
 
     private static ImageView createAndAddLogoView(
-            ViewGroup parent, int resourceId, int startMargin, int endMargin) {
+            ViewGroup parent, int resourceId, int startMargin) {
         ImageView view = new ImageView(parent.getContext());
         view.setBackgroundResource(R.drawable.payments_ui_logo_bg);
         if (resourceId != 0) view.setImageResource(resourceId);
@@ -294,21 +286,24 @@ public abstract class PaymentRequestSection extends LinearLayout {
                 parent.getResources().getDimensionPixelSize(R.dimen.payments_section_logo_width),
                 parent.getResources().getDimensionPixelSize(R.dimen.payments_section_logo_height));
         ApiCompatibilityUtils.setMarginStart(params, startMargin);
-        ApiCompatibilityUtils.setMarginEnd(params, endMargin);
         parent.addView(view, params);
         return view;
     }
 
-    private static ImageView createAndAddImageView(
-            ViewGroup parent, @Nullable Drawable drawable, int startMargin, int endMargin) {
+    private ImageView createAndAddChevron(ViewGroup parent) {
+        Resources resources = parent.getResources();
+        TintedDrawable chevron =
+                TintedDrawable.constructTintedDrawable(resources, R.drawable.ic_expanded);
+        chevron.setTint(ApiCompatibilityUtils.getColorStateList(
+                resources, R.color.payments_section_chevron));
+
         ImageView view = new ImageView(parent.getContext());
-        view.setImageDrawable(drawable);
+        view.setImageDrawable(chevron);
 
         // Wrap whatever image is passed in.
         LayoutParams params =
                 new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-        ApiCompatibilityUtils.setMarginStart(params, startMargin);
-        ApiCompatibilityUtils.setMarginEnd(params, endMargin);
+        ApiCompatibilityUtils.setMarginStart(params, mLargeSpacing);
         parent.addView(view, params);
         return view;
     }
@@ -541,7 +536,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
 
                 // If there's an icon to display, it floats to the right of everything.
                 int resourceId = item.getDrawableIconId();
-                if (resourceId != 0) createAndAddLogoView(this, resourceId, mLargeSpacing, 0);
+                if (resourceId != 0) createAndAddLogoView(this, resourceId, mLargeSpacing);
 
                 // Making the radio button unclickable makes clicks fall through to the row.
                 mRadioButton.setClickable(false);
