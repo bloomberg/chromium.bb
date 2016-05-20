@@ -183,14 +183,6 @@ public class ExternalDataUseObserver {
             long startTimeInMillis, long endTimeInMillis, long bytesDownloaded,
             long bytesUploaded) {}
 
-    /**
-     * TODO(rajendrant): Remove this function once the downstream CL lands.
-     * This overloaded function is kept to avoid breakage.
-     */
-    protected void reportDataUse(String label, int networkType, String mccMnc,
-            long startTimeInMillis, long endTimeInMillis, long bytesDownloaded,
-            long bytesUploaded) {}
-
     /*
      * {@link #onReportDataUseDone}  reports the result of {@link #reportDataUse} to
      * the native.
