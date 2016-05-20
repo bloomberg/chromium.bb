@@ -9,23 +9,32 @@
 
 #include "base/macros.h"
 
+namespace ui {
+class Event;
+}
+
 namespace mus {
 namespace mojom {
 class WindowTree;
 }
 
+class Window;
 class WindowTreeClientImpl;
 
 // Use to access implementation details of WindowTreeClientImpl.
 class WindowTreeClientImplPrivate {
  public:
   explicit WindowTreeClientImplPrivate(WindowTreeClientImpl* tree_client_impl);
+  explicit WindowTreeClientImplPrivate(Window* window);
   ~WindowTreeClientImplPrivate();
 
   uint32_t event_observer_id();
 
   // Calls OnEmbed() on the WindowTreeClientImpl.
   void OnEmbed(mojom::WindowTree* window_tree);
+
+  // Pretends that |event| has been received from the window server.
+  void CallOnWindowInputEvent(Window* window, const ui::Event& event);
 
  private:
   WindowTreeClientImpl* tree_client_impl_;

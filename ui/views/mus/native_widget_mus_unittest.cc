@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "components/mus/public/cpp/property_type_converters.h"
+#include "components/mus/public/cpp/tests/window_tree_client_impl_private.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
@@ -17,6 +18,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
+#include "ui/events/test/test_event_handler.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
@@ -361,6 +363,25 @@ TEST_F(NativeWidgetMusTest, FocusChildAuraWindow) {
       aura::client::GetActivationClient(window.get()->GetRootWindow())
           ->GetActiveWindow();
   EXPECT_EQ(widget.GetNativeView(), active_window);
+}
+
+TEST_F(NativeWidgetMusTest, WidgetReceivesEvent) {
+  std::unique_ptr<Widget> widget(CreateWidget(nullptr));
+  widget->Show();
+
+  View* content = new HandleMousePressView;
+  content->SetBounds(10, 20, 90, 180);
+  widget->GetContentsView()->AddChildView(content);
+
+  ui::test::TestEventHandler handler;
+  content->AddPreTargetHandler(&handler);
+
+  std::unique_ptr<ui::MouseEvent> mouse = CreateMouseEvent();
+  NativeWidgetMus* native_widget =
+      static_cast<NativeWidgetMus*>(widget->native_widget_private());
+  mus::WindowTreeClientImplPrivate test_api(native_widget->window());
+  test_api.CallOnWindowInputEvent(native_widget->window(), *mouse);
+  EXPECT_EQ(1, handler.num_mouse_events());
 }
 
 // Tests that an incoming UI event is acked with the handled status.

@@ -32,6 +32,7 @@ class WindowObserver;
 class WindowSurface;
 class WindowSurfaceBinding;
 class WindowTreeClientImpl;
+class WindowTreeClientImplPrivate;
 class WindowTreeConnection;
 
 namespace {
@@ -229,6 +230,7 @@ class Window {
  private:
   friend class WindowPrivate;
   friend class WindowTreeClientImpl;
+  friend class WindowTreeClientImplPrivate;
 
   Window(WindowTreeConnection* connection, Id id);
 

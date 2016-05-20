@@ -186,6 +186,7 @@ test("views_mus_unittests") {
     "//base:i18n",
     "//cc",
     "//components/mus/public/cpp",
+    "//components/mus/public/cpp/tests:unittest_support",
     "//components/mus/public/interfaces",
     "//services/shell/background:main",  # Provides main().
     "//skia",
