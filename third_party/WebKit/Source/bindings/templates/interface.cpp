@@ -724,19 +724,15 @@ v8::Local<v8::FunctionTemplate> {{v8_class}}::domTemplateForNamedPropertiesObjec
 {% endif %}
 {% endblock %}
 
-
 {##############################################################################}
 {% block has_instance %}
+{% if not is_array_buffer_or_view %}
+
 bool {{v8_class}}::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
 {
-    {% if is_array_buffer_or_view %}
-    return v8Value->Is{{interface_name}}();
-    {% else %}
     return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, v8Value);
-    {% endif %}
 }
 
-{% if not is_array_buffer_or_view %}
 v8::Local<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
 {
     return V8PerIsolateData::from(isolate)->findInstanceInPrototypeChain(&wrapperTypeInfo, v8Value);
@@ -836,7 +832,11 @@ v8::Local<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Local<v8::V
 {% block to_impl_with_type_check %}
 {{cpp_class}}* {{v8_class}}::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : 0;
+{% if is_array_buffer_or_view %}
+    return value->Is{{interface_name}}() ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+{% else %}
+    return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
+{% endif %}
 }
 
 {% endblock %}

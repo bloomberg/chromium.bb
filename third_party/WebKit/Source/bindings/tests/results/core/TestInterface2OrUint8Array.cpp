@@ -83,7 +83,7 @@ void V8TestInterface2OrUint8Array::toImpl(v8::Isolate* isolate, v8::Local<v8::Va
         return;
     }
 
-    if (V8Uint8Array::hasInstance(v8Value, isolate)) {
+    if (v8Value->IsUint8Array()) {
         DOMUint8Array* cppValue = V8Uint8Array::toImpl(v8::Local<v8::Object>::Cast(v8Value));
         impl.setUint8Array(cppValue);
         return;

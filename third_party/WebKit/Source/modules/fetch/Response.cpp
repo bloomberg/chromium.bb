@@ -128,9 +128,9 @@ Response* Response::create(ScriptState* scriptState, ScriptValue bodyValue, cons
         Blob* blob = V8Blob::toImpl(body.As<v8::Object>());
         bodyBuffer = new BodyStreamBuffer(scriptState, FetchBlobDataConsumerHandle::create(executionContext, blob->blobDataHandle()));
         contentType = blob->type();
-    } else if (V8ArrayBuffer::hasInstance(body, isolate)) {
+    } else if (body->IsArrayBuffer()) {
         bodyBuffer = new BodyStreamBuffer(scriptState, FetchFormDataConsumerHandle::create(V8ArrayBuffer::toImpl(body.As<v8::Object>())));
-    } else if (V8ArrayBufferView::hasInstance(body, isolate)) {
+    } else if (body->IsArrayBufferView()) {
         bodyBuffer = new BodyStreamBuffer(scriptState, FetchFormDataConsumerHandle::create(V8ArrayBufferView::toImpl(body.As<v8::Object>())));
     } else if (V8FormData::hasInstance(body, isolate)) {
         RefPtr<EncodedFormData> formData = V8FormData::toImpl(body.As<v8::Object>())->encodeMultiPartFormData();

@@ -39,10 +39,10 @@ public:
     };
 
     {% endif %}
-    {{exported}}static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
     {% if is_array_buffer_or_view %}
     {{exported}}static {{cpp_class}}* toImpl(v8::Local<v8::Object> object);
     {% else %}
+    {{exported}}static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
     static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
     {{exported}}static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);
     {% if has_named_properties_object %}

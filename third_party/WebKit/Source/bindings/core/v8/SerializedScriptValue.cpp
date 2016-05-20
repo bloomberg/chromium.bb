@@ -267,14 +267,14 @@ bool SerializedScriptValue::extractTransferables(v8::Isolate* isolate, v8::Local
                 return false;
             }
             transferables.messagePorts.append(port);
-        } else if (V8ArrayBuffer::hasInstance(transferableObject, isolate)) {
+        } else if (transferableObject->IsArrayBuffer()) {
             DOMArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(transferableObject));
             if (transferables.arrayBuffers.contains(arrayBuffer)) {
                 exceptionState.throwDOMException(DataCloneError, "ArrayBuffer at index " + String::number(i) + " is a duplicate of an earlier ArrayBuffer.");
                 return false;
             }
             transferables.arrayBuffers.append(arrayBuffer);
-        } else if (V8SharedArrayBuffer::hasInstance(transferableObject, isolate)) {
+        } else if (transferableObject->IsSharedArrayBuffer()) {
             DOMSharedArrayBuffer* sharedArrayBuffer = V8SharedArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(transferableObject));
             if (transferables.arrayBuffers.contains(sharedArrayBuffer)) {
                 exceptionState.throwDOMException(DataCloneError, "SharedArrayBuffer at index " + String::number(i) + " is a duplicate of an earlier SharedArrayBuffer.");

@@ -97,13 +97,13 @@ void V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(v8::Isolate* isolate, v8
     if (conversionMode == UnionTypeConversionMode::Nullable && isUndefinedOrNull(v8Value))
         return;
 
-    if (V8ArrayBuffer::hasInstance(v8Value, isolate)) {
+    if (v8Value->IsArrayBuffer()) {
         TestArrayBuffer* cppValue = V8ArrayBuffer::toImpl(v8::Local<v8::Object>::Cast(v8Value));
         impl.setArrayBuffer(cppValue);
         return;
     }
 
-    if (V8ArrayBufferView::hasInstance(v8Value, isolate)) {
+    if (v8Value->IsArrayBufferView()) {
         TestArrayBufferView* cppValue = V8ArrayBufferView::toImpl(v8::Local<v8::Object>::Cast(v8Value));
         impl.setArrayBufferView(cppValue);
         return;

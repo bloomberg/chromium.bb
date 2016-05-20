@@ -44,10 +44,10 @@ v8::Local<v8::Value> WebArrayBufferConverter::toV8Value(WebArrayBuffer* buffer, 
     return toV8(*buffer, isolate->GetCurrentContext()->Global(), isolate);
 }
 
-WebArrayBuffer* WebArrayBufferConverter::createFromV8Value(v8::Local<v8::Value> value, v8::Isolate* isolate)
+WebArrayBuffer* WebArrayBufferConverter::createFromV8Value(v8::Local<v8::Value> value, v8::Isolate*)
 {
-    if (!V8ArrayBuffer::hasInstance(value, isolate))
-        return 0;
+    if (!value->IsArrayBuffer())
+        return nullptr;
     return new WebArrayBuffer(V8ArrayBuffer::toImpl(value.As<v8::Object>()));
 }
 

@@ -33,11 +33,6 @@ const WrapperTypeInfo V8ArrayBuffer::wrapperTypeInfo = { gin::kEmbedderBlink, 0,
 // bindings/core/v8/ScriptWrappable.h.
 const WrapperTypeInfo& TestArrayBuffer::s_wrapperTypeInfo = V8ArrayBuffer::wrapperTypeInfo;
 
-bool V8ArrayBuffer::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
-{
-    return v8Value->IsArrayBuffer();
-}
-
 TestArrayBuffer* V8ArrayBuffer::toImpl(v8::Local<v8::Object> object)
 {
     ASSERT(object->IsArrayBuffer());
@@ -62,7 +57,7 @@ TestArrayBuffer* V8ArrayBuffer::toImpl(v8::Local<v8::Object> object)
 
 TestArrayBuffer* V8ArrayBuffer::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : 0;
+    return value->IsArrayBuffer() ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 } // namespace blink

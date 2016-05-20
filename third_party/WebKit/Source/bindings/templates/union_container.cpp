@@ -4,7 +4,11 @@
 
 {% from 'utilities.cpp' import v8_value_to_local_cpp_value %}
 {% macro assign_and_return_if_hasinstance(member) %}
+{% if member.is_array_buffer_or_view_type %}
+if (v8Value->Is{{member.type_name}}()) {
+{% else %}
 if (V8{{member.type_name}}::hasInstance(v8Value, isolate)) {
+{% endif %}
     {{member.cpp_local_type}} cppValue = V8{{member.type_name}}::toImpl(v8::Local<v8::Object>::Cast(v8Value));
     impl.set{{member.type_name}}(cppValue);
     return;

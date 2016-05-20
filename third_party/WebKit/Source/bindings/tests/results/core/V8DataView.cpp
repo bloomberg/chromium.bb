@@ -33,11 +33,6 @@ const WrapperTypeInfo V8DataView::wrapperTypeInfo = { gin::kEmbedderBlink, 0, V8
 // bindings/core/v8/ScriptWrappable.h.
 const WrapperTypeInfo& TestDataView::s_wrapperTypeInfo = V8DataView::wrapperTypeInfo;
 
-bool V8DataView::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
-{
-    return v8Value->IsDataView();
-}
-
 TestDataView* V8DataView::toImpl(v8::Local<v8::Object> object)
 {
     ASSERT(object->IsDataView());
@@ -63,7 +58,7 @@ TestDataView* V8DataView::toImpl(v8::Local<v8::Object> object)
 
 TestDataView* V8DataView::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : 0;
+    return value->IsDataView() ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 } // namespace blink

@@ -21,7 +21,6 @@ namespace blink {
 class V8ArrayBufferView {
     STATIC_ONLY(V8ArrayBufferView);
 public:
-    CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
     CORE_EXPORT static TestArrayBufferView* toImpl(v8::Local<v8::Object> object);
     CORE_EXPORT static TestArrayBufferView* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
     CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;

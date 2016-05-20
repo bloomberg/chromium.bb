@@ -54,7 +54,7 @@ public:
                 readingContext->onReadDone();
                 return v;
             }
-            if (!V8Uint8Array::hasInstance(value, v.isolate())) {
+            if (!value->IsUint8Array()) {
                 readingContext->onRejected();
                 return ScriptValue();
             }

@@ -32,11 +32,6 @@ const WrapperTypeInfo V8Uint8ClampedArray::wrapperTypeInfo = { gin::kEmbedderBli
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
 // bindings/core/v8/ScriptWrappable.h.
 
-bool V8Uint8ClampedArray::hasInstance(v8::Local<v8::Value> v8Value, v8::Isolate* isolate)
-{
-    return v8Value->IsUint8ClampedArray();
-}
-
 TestUint8ClampedArray* V8Uint8ClampedArray::toImpl(v8::Local<v8::Object> object)
 {
     ASSERT(object->IsUint8ClampedArray());
@@ -62,7 +57,7 @@ TestUint8ClampedArray* V8Uint8ClampedArray::toImpl(v8::Local<v8::Object> object)
 
 TestUint8ClampedArray* V8Uint8ClampedArray::toImplWithTypeCheck(v8::Isolate* isolate, v8::Local<v8::Value> value)
 {
-    return hasInstance(value, isolate) ? toImpl(v8::Local<v8::Object>::Cast(value)) : 0;
+    return value->IsUint8ClampedArray() ? toImpl(v8::Local<v8::Object>::Cast(value)) : nullptr;
 }
 
 } // namespace blink

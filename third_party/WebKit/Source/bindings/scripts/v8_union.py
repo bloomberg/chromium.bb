@@ -143,6 +143,7 @@ def member_context(member, interfaces_info):
             cpp_value='impl.getAs%s()' % member.name, isolate='isolate',
             creation_context='creationContext'),
         'enum_values': member.enum_values,
+        'is_array_buffer_or_view_type': member.is_array_buffer_or_view,
         'is_traceable': member.is_traceable,
         'rvalue_cpp_type': member.cpp_type_args(used_as_rvalue_type=True),
         'specific_type_enum': 'SpecificType' + member.name,
