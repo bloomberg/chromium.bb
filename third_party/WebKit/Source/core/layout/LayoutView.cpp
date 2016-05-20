@@ -339,7 +339,7 @@ void LayoutView::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, Transf
     }
 
     if ((mode & IsFixed) && m_frameView) {
-        transformState.move(toIntSize(m_frameView->scrollPosition()));
+        transformState.move(LayoutSize(m_frameView->scrollOffset()));
         if (hasOverflowClip())
             transformState.move(scrolledContentOffset());
         // IsFixed flag is only applicable within this LayoutView.
@@ -372,7 +372,7 @@ const LayoutObject* LayoutView::pushMappingToContainer(const LayoutBoxModelObjec
     LayoutObject* container = nullptr;
 
     if (m_frameView) {
-        offsetForFixedPosition = LayoutSize(toIntSize(m_frameView->scrollPosition()));
+        offsetForFixedPosition = LayoutSize(LayoutSize(m_frameView->scrollOffset()));
         if (hasOverflowClip())
             offsetForFixedPosition = LayoutSize(scrolledContentOffset());
     }
@@ -406,7 +406,7 @@ void LayoutView::mapAncestorToLocal(const LayoutBoxModelObject* ancestor, Transf
         return;
 
     if (mode & IsFixed && m_frameView)
-        transformState.move(toIntSize(m_frameView->scrollPosition()));
+        transformState.move(m_frameView->scrollOffset());
 
     if (mode & UseTransforms && shouldUseTransformFromContainer(0)) {
         TransformationMatrix t;
@@ -419,9 +419,10 @@ void LayoutView::mapAncestorToLocal(const LayoutBoxModelObject* ancestor, Transf
             // A LayoutView is a containing block for fixed-position elements, so don't carry this state across frames.
             mode &= ~IsFixed;
 
-            parentDocLayoutObject->mapAncestorToLocal(ancestor, transformState, mode);
-            transformState.move(parentDocLayoutObject->contentBoxOffset());
             transformState.move(-frame()->view()->scrollOffset());
+            transformState.move(parentDocLayoutObject->contentBoxOffset());
+
+            parentDocLayoutObject->mapAncestorToLocal(ancestor, transformState, mode);
         }
     } else {
         ASSERT(!ancestor);
@@ -541,7 +542,7 @@ bool LayoutView::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ance
 void LayoutView::adjustOffsetForFixedPosition(LayoutRect& rect) const
 {
     if (m_frameView) {
-        rect.move(toIntSize(m_frameView->scrollPosition()));
+        rect.move(LayoutSize(m_frameView->scrollOffset()));
         if (hasOverflowClip())
             rect.move(scrolledContentOffset());
 

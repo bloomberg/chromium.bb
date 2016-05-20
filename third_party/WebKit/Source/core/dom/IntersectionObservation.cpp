@@ -94,7 +94,7 @@ void IntersectionObservation::mapTargetRectToTargetFrameCoordinates(LayoutRect& 
 {
     LayoutObject& targetLayoutObject = *target()->layoutObject();
     Document& targetDocument = target()->document();
-    LayoutSize scrollPosition = LayoutSize(toIntSize(targetDocument.view()->scrollPosition()));
+    LayoutSize scrollPosition = LayoutSize(targetDocument.view()->scrollOffset());
     mapRectUpToDocument(rect, targetLayoutObject, targetDocument);
     rect.move(-scrollPosition);
 }
@@ -103,7 +103,7 @@ void IntersectionObservation::mapRootRectToRootFrameCoordinates(LayoutRect& rect
 {
     LayoutObject& rootLayoutObject = *m_observer->rootLayoutObject();
     Document& rootDocument = rootLayoutObject.document();
-    LayoutSize scrollPosition = LayoutSize(toIntSize(rootDocument.view()->scrollPosition()));
+    LayoutSize scrollPosition = LayoutSize(rootDocument.view()->scrollOffset());
     mapRectUpToDocument(rect, rootLayoutObject, rootLayoutObject.document());
     rect.move(-scrollPosition);
 }
@@ -112,7 +112,7 @@ void IntersectionObservation::mapRootRectToTargetFrameCoordinates(LayoutRect& re
 {
     LayoutObject& rootLayoutObject = *m_observer->rootLayoutObject();
     Document& targetDocument = target()->document();
-    LayoutSize scrollPosition = LayoutSize(toIntSize(targetDocument.view()->scrollPosition()));
+    LayoutSize scrollPosition = LayoutSize(targetDocument.view()->scrollOffset());
 
     if (&targetDocument == &rootLayoutObject.document())
         mapRectUpToDocument(rect, rootLayoutObject, targetDocument);

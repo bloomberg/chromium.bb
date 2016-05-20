@@ -451,7 +451,7 @@ TEST_F(MapCoordinatesTest, FixedPosInFixedPos)
 }
 
 // TODO(chrishtr): add more multi-frame tests.
-TEST_F(MapCoordinatesTest, FixedPosInScrolledIFrame)
+TEST_F(MapCoordinatesTest, FixedPosInIFrameWhenMainFrameScrolled)
 {
     document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
     setBodyInnerHTML(
@@ -473,6 +473,29 @@ TEST_F(MapCoordinatesTest, FixedPosInScrolledIFrame)
     // The scroll is not taken into account because the element is not fixed to the root LayoutView,
     // and the space of the root LayoutView does not include scroll.
     EXPECT_EQ(FloatPoint(10, -7930), mappedPoint);
+}
+
+TEST_F(MapCoordinatesTest, FixedPosInScrolledIFrameWithTransform)
+{
+    document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
+    setBodyInnerHTML(
+        "<style>* { margin: 0; }</style>"
+        "<div style='position: absolute; left: 0px; top: 0px; width: 1024px; height: 768px; transform-origin: 0 0; transform: scale(0.5, 0.5);'>"
+        "    <iframe id='frame' frameborder=0 src='http://test.com' class='frame' sandbox='allow-same-origin' width='1024' height='768'></iframe>"
+        "</div>");
+
+    Document& frameDocument = setupChildIframe("frame",
+        "<style>* { margin: 0; } #target { width: 200px; height: 200px; position:fixed}</style><div id=target></div>"
+        "<div style='width: 200; height: 8000px'></div>");
+
+    document().view()->updateAllLifecyclePhases();
+    frameDocument.view()->setScrollPosition(DoublePoint(0.0, 1000), ProgrammaticScroll);
+
+    Element* target = frameDocument.getElementById("target");
+    ASSERT_TRUE(target);
+    FloatPoint mappedPoint = mapAncestorToLocal(target->layoutObject(), nullptr, FloatPoint(0, 0), UseTransforms | TraverseDocumentBoundaries);
+
+    EXPECT_EQ(FloatPoint(0, 0), mappedPoint);
 }
 
 TEST_F(MapCoordinatesTest, MulticolWithText)
