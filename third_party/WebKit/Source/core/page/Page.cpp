@@ -258,9 +258,6 @@ void Page::refreshPlugins()
 
 PluginData* Page::pluginData() const
 {
-    if (!mainFrame()->isLocalFrame()
-        || !deprecatedLocalMainFrame()->loader().allowPlugins(NotAboutToInstantiatePlugin))
-        return nullptr;
     if (!m_pluginData)
         m_pluginData = PluginData::create(this);
     return m_pluginData.get();

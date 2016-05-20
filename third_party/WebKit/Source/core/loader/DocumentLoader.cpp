@@ -319,11 +319,11 @@ void DocumentLoader::redirectReceived(Resource* resource, ResourceRequest& reque
     frameLoader()->receivedMainResourceRedirect(requestURL);
 }
 
-static bool canShowMIMEType(const String& mimeType, Page* page)
+static bool canShowMIMEType(const String& mimeType, LocalFrame* frame)
 {
     if (Platform::current()->mimeRegistry()->supportsMIMEType(mimeType) == WebMimeRegistry::IsSupported)
         return true;
-    PluginData* pluginData = page->pluginData();
+    PluginData* pluginData = frame->pluginData();
     return !mimeType.isEmpty() && pluginData && pluginData->supportsMimeType(mimeType);
 }
 
@@ -345,7 +345,7 @@ bool DocumentLoader::shouldContinueForResponse() const
         return false;
     }
 
-    if (!canShowMIMEType(m_response.mimeType(), m_frame->page()))
+    if (!canShowMIMEType(m_response.mimeType(), m_frame))
         return false;
     return true;
 }

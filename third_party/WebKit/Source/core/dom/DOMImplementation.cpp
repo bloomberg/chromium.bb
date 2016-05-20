@@ -227,7 +227,7 @@ Document* DOMImplementation::createDocument(const String& type, const DocumentIn
 
     PluginData* pluginData = 0;
     if (init.frame() && init.frame()->page() && init.frame()->loader().allowPlugins(NotAboutToInstantiatePlugin))
-        pluginData = init.frame()->page()->pluginData();
+        pluginData = init.frame()->pluginData();
 
     // PDF is one image type for which a plugin can override built-in support.
     // We do not want QuickTime to take over all image types, obviously.

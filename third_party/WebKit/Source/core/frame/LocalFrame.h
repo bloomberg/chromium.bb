@@ -66,6 +66,7 @@ class LocalDOMWindow;
 class NavigationScheduler;
 class Node;
 class NodeTraversal;
+class PluginData;
 class Range;
 class LayoutView;
 class ScriptController;
@@ -178,6 +179,8 @@ public:
     ServiceRegistry* serviceRegistry() { return m_serviceRegistry; }
 
     FrameLoaderClient* client() const;
+
+    PluginData* pluginData() const;
 
 private:
     friend class FrameNavigationDisabler;

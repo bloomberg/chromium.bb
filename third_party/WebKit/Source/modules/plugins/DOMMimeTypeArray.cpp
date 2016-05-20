@@ -73,10 +73,7 @@ PluginData* DOMMimeTypeArray::getPluginData() const
 {
     if (!m_frame)
         return nullptr;
-    Page* p = m_frame->page();
-    if (!p)
-        return nullptr;
-    return p->pluginData();
+    return m_frame->pluginData();
 }
 
 } // namespace blink

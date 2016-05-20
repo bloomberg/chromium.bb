@@ -82,10 +82,7 @@ PluginData* DOMPluginArray::pluginData() const
 {
     if (!m_frame)
         return nullptr;
-    Page* page = m_frame->page();
-    if (!page)
-        return nullptr;
-    return page->pluginData();
+    return m_frame->pluginData();
 }
 
 } // namespace blink

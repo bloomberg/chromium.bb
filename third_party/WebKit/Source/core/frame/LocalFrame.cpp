@@ -78,6 +78,7 @@
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
+#include "platform/plugins/PluginData.h"
 #include "platform/text/TextStream.h"
 #include "public/platform/ServiceRegistry.h"
 #include "public/platform/WebFrameScheduler.h"
@@ -803,6 +804,13 @@ void LocalFrame::scheduleVisualUpdateUnlessThrottled()
 FrameLoaderClient* LocalFrame::client() const
 {
     return static_cast<FrameLoaderClient*>(Frame::client());
+}
+
+PluginData* LocalFrame::pluginData() const
+{
+    if (!loader().allowPlugins(NotAboutToInstantiatePlugin))
+        return nullptr;
+    return page()->pluginData();
 }
 
 DEFINE_WEAK_IDENTIFIER_MAP(LocalFrame);

@@ -516,7 +516,7 @@ bool HTMLPlugInElement::shouldUsePlugin(const KURL& url, const String& mimeType,
     // installed a plugin that can handle TIFF (which QuickTime can also
     // handle) they probably intended to override QT.
     if (document().frame()->page() && (mimeType == "image/tiff" || mimeType == "image/tif" || mimeType == "image/x-tiff")) {
-        const PluginData* pluginData = document().frame()->page()->pluginData();
+        const PluginData* pluginData = document().frame()->pluginData();
         String pluginName = pluginData ? pluginData->pluginNameForMimeType(mimeType) : String();
         if (!pluginName.isEmpty() && !pluginName.contains("QuickTime", TextCaseInsensitive)) {
             useFallback = false;

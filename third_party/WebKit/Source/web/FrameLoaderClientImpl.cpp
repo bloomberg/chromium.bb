@@ -869,7 +869,7 @@ ObjectContentType FrameLoaderClientImpl::getObjectContentType(
     }
 
     // If Chrome is started with the --disable-plugins switch, pluginData is 0.
-    PluginData* pluginData = m_webFrame->frame()->page()->pluginData();
+    PluginData* pluginData = m_webFrame->frame()->pluginData();
     bool plugInSupportsMIMEType = pluginData && pluginData->supportsMimeType(mimeType);
 
     if (MIMETypeRegistry::isSupportedImageMIMEType(mimeType))
