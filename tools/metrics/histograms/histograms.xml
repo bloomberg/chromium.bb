@@ -73189,6 +73189,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1373" label="FixedRasterScaleBlurryContent"/>
   <int value="1374" label="FixedRasterScalePotentialPerformanceRegression"/>
   <int value="1375" label="CSSDeepCombinatorAndShadow"/>
+  <int value="1376" label="OpacityWithPreserve3DQuirk"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

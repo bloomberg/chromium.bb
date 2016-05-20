@@ -400,6 +400,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
 
     PaintLayerCompositor* compositor = this->compositor();
     LayoutObject* layoutObject = this->layoutObject();
+    const ComputedStyle& style = layoutObject->styleRef();
 
     bool layerConfigChanged = false;
     setBackgroundLayerPaintsFixedRootBackground(compositor->needsFixedRootBackgroundLayer(&m_owningLayer));
@@ -438,10 +439,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     if (updateOverflowControlsLayers(requiresHorizontalScrollbarLayer(), requiresVerticalScrollbarLayer(), requiresScrollCornerLayer(), needsAncestorClip))
         layerConfigChanged = true;
 
-    bool hasPerspective = false;
-    // FIXME: Can |style| be really null that late in the DocumentCycle?
-    if (const ComputedStyle* style = layoutObject->style())
-        hasPerspective = style->hasPerspective();
+    bool hasPerspective = style.hasPerspective();
     bool needsChildTransformLayer = hasPerspective && layoutObject->isBox();
     if (updateChildTransformLayer(needsChildTransformLayer))
         layerConfigChanged = true;
@@ -471,8 +469,8 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     bool hasChildClippingLayer = compositor->clipsCompositingDescendants(&m_owningLayer) && (hasClippingLayer() || hasScrollingLayer());
     // If we have a border radius or clip path on a scrolling layer, we need a clipping mask to properly
     // clip the scrolled contents, even if there are no composited descendants.
-    bool hasClipPath = layoutObject->style()->clipPath();
-    bool needsChildClippingMask = (hasClipPath || layoutObject->style()->hasBorderRadius()) && (hasChildClippingLayer || isAcceleratedContents(layoutObject) || hasScrollingLayer());
+    bool hasClipPath = style.clipPath();
+    bool needsChildClippingMask = (hasClipPath || style.hasBorderRadius()) && (hasChildClippingLayer || isAcceleratedContents(layoutObject) || hasScrollingLayer());
 
     GraphicsLayer* layerToApplyChildClippingMask = nullptr;
     bool shouldApplyChildClippingMaskOnContents = false;
@@ -556,7 +554,11 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
 
     updateElementIdAndCompositorMutableProperties();
 
-    m_graphicsLayer->setHasWillChangeTransformHint(m_owningLayer.layoutObject()->styleRef().hasWillChangeTransformHint());
+    m_graphicsLayer->setHasWillChangeTransformHint(style.hasWillChangeTransformHint());
+
+    m_owningLayer.update3DTransformedDescendantStatus();
+    if (style.preserves3D() && style.hasOpacity() && m_owningLayer.has3DTransformedDescendant())
+        UseCounter::count(layoutObject->document(), UseCounter::OpacityWithPreserve3DQuirk);
 
     return layerConfigChanged;
 }
