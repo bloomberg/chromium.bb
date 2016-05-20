@@ -31,8 +31,14 @@ const CGFloat kCornerRadius = 3.0;
 
 // How far to inset the left- and right-hand decorations from the field's
 // bounds.
-const CGFloat kLeftDecorationXOffset = 5.0;
 const CGFloat kRightDecorationXOffset = 5.0;
+CGFloat LeftDecorationXOffset() {
+  const CGFloat kLeftDecorationXOffset = 5.0;
+  const CGFloat kLeftMaterialDecorationXOffset = 6.0;
+  return ui::MaterialDesignController::IsModeMaterial()
+             ? kLeftMaterialDecorationXOffset
+             : kLeftDecorationXOffset;
+}
 
 // The amount of padding on either side reserved for drawing
 // decorations.  [Views has |kItemPadding| == 3.]
@@ -141,7 +147,7 @@ size_t CalculatePositionsInFrame(
 
   // Layout |left_decorations| against the LHS.
   CalculatePositionsHelper(frame, left_decorations, NSMinXEdge,
-                           kLeftDecorationXOffset, decorations,
+                           LeftDecorationXOffset(), decorations,
                            decoration_frames, &frame);
   DCHECK_EQ(decorations->size(), decoration_frames->size());
 

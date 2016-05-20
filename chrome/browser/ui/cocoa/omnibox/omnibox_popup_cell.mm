@@ -30,9 +30,6 @@
 
 namespace {
 
-// How far to offset image column from the left.
-const CGFloat kImageXOffset = 5.0;
-
 // How far to offset text.
 const CGFloat kVerticalTextPadding = 3.0;
 
@@ -40,7 +37,7 @@ const CGFloat kVerticalImagePadding = 3.0;
 const CGFloat kMaterialVerticalImagePadding = 5.0;
 
 const CGFloat kTextStartOffset = 28.0;
-const CGFloat kMaterialTextStartOffset = 26.0;
+const CGFloat kMaterialTextStartOffset = 27.0;
 
 // Rounding radius of selection and hover background on popup items.
 const CGFloat kCellRoundingRadius = 2.0;
@@ -51,6 +48,16 @@ CGFloat VerticalImagePadding() {
     return kVerticalImagePadding;
   }
   return kMaterialVerticalImagePadding;
+}
+
+// How far to offset the image column from the left.
+CGFloat ImageXOffset() {
+  const CGFloat kImageXOffset = 5.0;
+  const CGFloat kMaterialImageXOffset = 6.0;
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    return kImageXOffset;
+  }
+  return kMaterialImageXOffset;
 }
 
 // How far to offset the text column from the left.
@@ -510,7 +517,7 @@ NSAttributedString* CreateClassifiedAttributedString(
   NSImage* theImage =
       isDarkTheme ? [cellData incognitoImage] : [cellData image];
   imageRect.size = [theImage size];
-  imageRect.origin.x += kImageXOffset + [tableView contentLeftPadding];
+  imageRect.origin.x += ImageXOffset() + [tableView contentLeftPadding];
   imageRect.origin.y += VerticalImagePadding();
   [theImage drawInRect:FlipIfRTL(imageRect, cellFrame)
               fromRect:NSZeroRect
