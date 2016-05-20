@@ -210,9 +210,10 @@ public:
     // send it.
     virtual void clearFocusedElement() = 0;
 
-    // Scrolls the node currently in focus into |rect|, where |rect| is in
-    // viewport space. Returns true if an animation was started.
-    virtual bool scrollFocusedNodeIntoRect(const WebRect&) { return false; }
+    // If it is editable, scrolls the element currently in focus into |rect|,
+    // where |rect| is in viewport space.
+    // Returns false if there is currently no currently focused element.
+    virtual bool scrollFocusedEditableElementIntoRect(const WebRect&) { return false; }
 
     // Smooth scroll the root layer to |targetX|, |targetY| in |durationMs|.
     virtual void smoothScroll(int targetX, int targetY, long durationMs) { }

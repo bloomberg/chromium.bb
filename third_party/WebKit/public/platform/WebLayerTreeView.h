@@ -89,6 +89,9 @@ public:
     // If useAnchor is false, destination is the final top-left scroll position.
     virtual void startPageScaleAnimation(const WebPoint& destination, bool useAnchor, float newPageScale, double durationSec) { }
 
+    // Returns true if the page scale animation had started.
+    virtual bool hasPendingPageScaleAnimation() const { return false; }
+
     virtual void heuristicsForGpuRasterizationUpdated(bool) { }
 
     // Sets the amount that the top controls are showing, from 0 (hidden) to 1

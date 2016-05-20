@@ -188,7 +188,7 @@ public:
     void focusDocumentView(WebFrame*) override;
     void setInitialFocus(bool reverse) override;
     void clearFocusedElement() override;
-    bool scrollFocusedNodeIntoRect(const WebRect&) override;
+    bool scrollFocusedEditableElementIntoRect(const WebRect&) override;
     void smoothScroll(int targetX, int targetY, long durationMs) override;
     void zoomToFindInPageRect(const WebRect&);
     void advanceFocus(bool reverse) override;

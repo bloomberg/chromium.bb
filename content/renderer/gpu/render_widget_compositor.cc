@@ -657,6 +657,10 @@ void RenderWidgetCompositor::startPageScaleAnimation(
       duration);
 }
 
+bool RenderWidgetCompositor::hasPendingPageScaleAnimation() const {
+  return layer_tree_host_->HasPendingPageScaleAnimation();
+}
+
 void RenderWidgetCompositor::heuristicsForGpuRasterizationUpdated(
     bool matches_heuristics) {
   layer_tree_host_->SetHasGpuRasterizationTrigger(matches_heuristics);

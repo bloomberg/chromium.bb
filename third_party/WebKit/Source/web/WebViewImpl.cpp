@@ -1460,6 +1460,9 @@ void WebViewImpl::animateDoubleTapZoom(const IntPoint& pointInRootFrame)
         isAnimating = startPageScaleAnimation(scroll, false, scale, doubleTapZoomAnimationDurationInSeconds);
     }
 
+    // TODO(dglazkov): The only reason why we're using isAnimating and not just checking for
+    // m_layerTreeView->hasPendingPageScaleAnimation() is because of fake page scale animation plumbing
+    // for testing, which doesn't actually initiate a page scale animation.
     if (isAnimating) {
         m_doubleTapZoomPageScaleFactor = scale;
         m_doubleTapZoomPending = true;
@@ -2950,12 +2953,31 @@ void WebViewImpl::clearFocusedElement()
         localFrame->selection().clear();
 }
 
-bool WebViewImpl::scrollFocusedNodeIntoRect(const WebRect& rectInViewport)
+// TODO(dglazkov): Remove and replace with Node:hasEditableStyle.
+// http://crbug.com/612560
+static bool isElementEditable(const Element* element)
+{
+    if (element->isContentEditable())
+        return true;
+
+    if (element->isTextFormControl()) {
+        const HTMLTextFormControlElement* input = toHTMLTextFormControlElement(element);
+        if (!input->isDisabledOrReadOnly())
+            return true;
+    }
+
+    return equalIgnoringCase(element->getAttribute(HTMLNames::roleAttr), "textbox");
+}
+
+bool WebViewImpl::scrollFocusedEditableElementIntoRect(const WebRect& rectInViewport)
 {
     LocalFrame* frame = page()->mainFrame() && page()->mainFrame()->isLocalFrame()
         ? page()->deprecatedLocalMainFrame() : nullptr;
     Element* element = focusedElement();
     if (!frame || !frame->view() || !element)
+        return false;
+
+    if (!isElementEditable(element))
         return false;
 
     element->document().updateStyleAndLayoutIgnorePendingStylesheets();
@@ -2977,9 +2999,9 @@ bool WebViewImpl::scrollFocusedNodeIntoRect(const WebRect& rectInViewport)
     bool needAnimation;
     computeScaleAndScrollForFocusedNode(element, zoomInToLegibleScale, scale, scroll, needAnimation);
     if (needAnimation)
-        return startPageScaleAnimation(scroll, false, scale, scrollAndScaleAnimationDurationInSeconds);
+        startPageScaleAnimation(scroll, false, scale, scrollAndScaleAnimationDurationInSeconds);
 
-    return false;
+    return true;
 }
 
 void WebViewImpl::smoothScroll(int targetX, int targetY, long durationMs)

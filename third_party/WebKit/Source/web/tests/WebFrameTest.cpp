@@ -2961,7 +2961,7 @@ TEST_F(WebFrameTest, DontZoomInOnFocusedInTouchAction)
     // Focus the first textbox that's in a touch-action: pan-x ancestor, this
     // shouldn't cause an autozoom since pan-x disables pinch-zoom.
     webViewHelper.webViewImpl()->advanceFocus(false);
-    webViewHelper.webViewImpl()->scrollFocusedNodeIntoRect(WebRect());
+    webViewHelper.webViewImpl()->scrollFocusedEditableElementIntoRect(WebRect());
     EXPECT_EQ(webViewHelper.webViewImpl()->fakePageScaleAnimationPageScaleForTesting(), 0);
 
     setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), WebPoint(0, 0), initialScale);
@@ -2970,7 +2970,7 @@ TEST_F(WebFrameTest, DontZoomInOnFocusedInTouchAction)
     // Focus the second textbox that's in a touch-action: manipulation ancestor,
     // this should cause an autozoom since it allows pinch-zoom.
     webViewHelper.webViewImpl()->advanceFocus(false);
-    webViewHelper.webViewImpl()->scrollFocusedNodeIntoRect(WebRect());
+    webViewHelper.webViewImpl()->scrollFocusedEditableElementIntoRect(WebRect());
     EXPECT_GT(webViewHelper.webViewImpl()->fakePageScaleAnimationPageScaleForTesting(), initialScale);
 
     setScaleAndScrollAndLayout(webViewHelper.webViewImpl(), WebPoint(0, 0), initialScale);
@@ -2980,7 +2980,7 @@ TEST_F(WebFrameTest, DontZoomInOnFocusedInTouchAction)
     // should cause an autozoom since it's seperated from the node with the
     // touch-action by an overflow:scroll element.
     webViewHelper.webView()->advanceFocus(false);
-    webViewHelper.webViewImpl()->scrollFocusedNodeIntoRect(WebRect());
+    webViewHelper.webViewImpl()->scrollFocusedEditableElementIntoRect(WebRect());
     EXPECT_GT(webViewHelper.webViewImpl()->fakePageScaleAnimationPageScaleForTesting(), initialScale);
 }
 

@@ -1406,15 +1406,12 @@ void RenderViewImpl::OnScrollFocusedEditableNodeIntoRect(
     return;
   }
 
-  blink::WebElement element = GetFocusedElement();
-  bool will_animate = false;
-  if (!element.isNull() && element.isEditable()) {
-    rect_for_scrolled_focused_editable_node_ = rect;
-    has_scrolled_focused_editable_node_into_rect_ = true;
-    will_animate = webview()->scrollFocusedNodeIntoRect(rect);
-  }
+  if (!webview()->scrollFocusedEditableElementIntoRect(rect))
+    return;
 
-  if (!will_animate)
+  rect_for_scrolled_focused_editable_node_ = rect;
+  has_scrolled_focused_editable_node_into_rect_ = true;
+  if (!compositor()->hasPendingPageScaleAnimation())
     GetWidget()->FocusChangeComplete();
 }
 
@@ -2321,19 +2318,6 @@ void RenderViewImpl::DidStartLoading() {
 
 void RenderViewImpl::DidStopLoading() {
   main_render_frame_->didStopLoading();
-}
-
-blink::WebElement RenderViewImpl::GetFocusedElement() const {
-  if (!webview())
-    return WebElement();
-  WebFrame* focused_frame = webview()->focusedFrame();
-  if (focused_frame) {
-    WebDocument doc = focused_frame->document();
-    if (!doc.isNull())
-      return doc.focusedElement();
-  }
-
-  return WebElement();
 }
 
 void RenderViewImpl::OnSetPageScale(float page_scale_factor) {

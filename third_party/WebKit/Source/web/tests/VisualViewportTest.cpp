@@ -948,8 +948,8 @@ TEST_P(ParameterizedVisualViewportTest, DISABLED_TestWebFrameRangeAccountsForVis
     EXPECT_EQ("t ", mainFrame->selectionAsText().utf8());
 }
 
-// Test that the scrollFocusedNodeIntoRect method works with the visual viewport.
-TEST_P(ParameterizedVisualViewportTest, DISABLED_TestScrollFocusedNodeIntoRect)
+// Test that the scrollFocusedEditableElementIntoRect method works with the visual viewport.
+TEST_P(ParameterizedVisualViewportTest, DISABLED_TestScrollFocusedEditableElementIntoRect)
 {
     initializeWithDesktopSettings();
     webViewImpl()->resize(IntSize(500, 300));
@@ -961,7 +961,7 @@ TEST_P(ParameterizedVisualViewportTest, DISABLED_TestScrollFocusedNodeIntoRect)
     webViewImpl()->resizeVisualViewport(IntSize(200, 100));
     webViewImpl()->setInitialFocus(false);
     visualViewport.setLocation(FloatPoint());
-    webViewImpl()->scrollFocusedNodeIntoRect(IntRect(0, 0, 500, 200));
+    webViewImpl()->scrollFocusedEditableElementIntoRect(IntRect(0, 0, 500, 200));
 
     EXPECT_POINT_EQ(IntPoint(0, frame()->view()->maximumScrollPosition().y()),
         frame()->view()->scrollPosition());
@@ -973,7 +973,7 @@ TEST_P(ParameterizedVisualViewportTest, DISABLED_TestScrollFocusedNodeIntoRect)
     visualViewport.setLocation(FloatPoint(0, 0));
 
     webViewImpl()->setPageScaleFactor(2);
-    webViewImpl()->scrollFocusedNodeIntoRect(IntRect(0, 0, 500, 200));
+    webViewImpl()->scrollFocusedEditableElementIntoRect(IntRect(0, 0, 500, 200));
     EXPECT_POINT_EQ(IntPoint(0, frame()->view()->maximumScrollPosition().y()),
         frame()->view()->scrollPosition());
     EXPECT_FLOAT_POINT_EQ(FloatPoint(125, 150), visualViewport.visibleRect().location());
@@ -988,7 +988,7 @@ TEST_P(ParameterizedVisualViewportTest, DISABLED_TestScrollFocusedNodeIntoRect)
     visualViewport.setLocation(FloatPoint(30, 50));
 
     webViewImpl()->setPageScaleFactor(2);
-    webViewImpl()->scrollFocusedNodeIntoRect(IntRect(0, 0, 500, 200));
+    webViewImpl()->scrollFocusedEditableElementIntoRect(IntRect(0, 0, 500, 200));
     EXPECT_POINT_EQ(IntPoint(200-30-75, 600-50-65), frame()->view()->scrollPosition());
     EXPECT_FLOAT_POINT_EQ(FloatPoint(30, 50), visualViewport.visibleRect().location());
 }

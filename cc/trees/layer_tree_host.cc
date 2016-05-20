@@ -839,6 +839,10 @@ void LayerTreeHost::StartPageScaleAnimation(const gfx::Vector2d& target_offset,
   SetNeedsCommit();
 }
 
+bool LayerTreeHost::HasPendingPageScaleAnimation() const {
+  return !!pending_page_scale_animation_.get();
+}
+
 void LayerTreeHost::NotifyInputThrottledUntilCommit() {
   proxy_->NotifyInputThrottledUntilCommit();
 }

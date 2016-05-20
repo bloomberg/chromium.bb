@@ -116,6 +116,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
                                bool use_anchor,
                                float new_page_scale,
                                double duration_sec) override;
+  bool hasPendingPageScaleAnimation() const override;
   void heuristicsForGpuRasterizationUpdated(bool matches_heuristics) override;
   void setNeedsAnimate() override;
   void setNeedsBeginFrame() override;

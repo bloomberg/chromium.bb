@@ -273,6 +273,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
                                bool use_anchor,
                                float scale,
                                base::TimeDelta duration);
+  bool HasPendingPageScaleAnimation() const;
 
   void ApplyScrollAndScale(ScrollAndScaleSet* info);
   void SetImplTransform(const gfx::Transform& transform);
