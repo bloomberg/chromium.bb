@@ -10,6 +10,7 @@ import contextlib
 import datetime
 import functools
 import signal
+import threading
 import time
 
 from chromite.lib import cros_logging as logging
@@ -256,9 +257,9 @@ def WaitForSuccess(retry_check, func, timeout, period=1, side_effect_func=None,
 
   end = datetime.datetime.now() + timeout
 
-  # Use a sigalarm after an extra delay, in case a function we call is
-  # blocking for some reason. This should NOT be considered reliable.
-  with Timeout(timeout + fallback_timeout):
+  is_main_thread = isinstance(threading.current_thread(),
+                              threading._MainThread)
+  def retry():
     while True:
       # Guarantee we always run at least once.
       value = func(*func_args, **func_kwargs)
@@ -278,3 +279,14 @@ def WaitForSuccess(retry_check, func, timeout, period=1, side_effect_func=None,
         raise TimeoutError('Timed out after %s' % timeout)
 
       time.sleep(period.total_seconds())
+
+  if not is_main_thread:
+    # Warning: the function here is not working in the main thread. Since
+    # signal only works in main thread, this function may run longer than
+    # timeout or even hang.
+    return retry()
+  else:
+    # Use a sigalarm after an extra delay, in case a function we call is
+    # blocking for some reason. This should NOT be considered reliable.
+    with Timeout(timeout + fallback_timeout):
+      return retry()

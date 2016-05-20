@@ -11,6 +11,7 @@ import time
 
 from chromite.lib import cros_test_lib
 from chromite.lib import timeout_util
+from multiprocessing.pool import ThreadPool
 
 
 # pylint: disable=W0212,R0904
@@ -92,6 +93,16 @@ class TestWaitFors(cros_test_lib.TestCase):
     """Run through a test for WaitForReturnValue."""
     func = self.GetFunc(range(20))
     return timeout_util.WaitForReturnValue(values, func, timeout, **kwargs)
+
+  def testWaitForSuccessNotMainThread(self):
+    """Test success after a few tries."""
+    pool = ThreadPool(processes=1)
+    async_result = pool.apply_async(self._TestWaitForSuccess, (4, 10, ),
+                                    {'period': 1})
+    return_val = async_result.get()
+    self.assertEquals(4, return_val)
+    self.assertEquals(5, self.GetTryCount())
+    self.assertEquals(4, self.GetTrySeconds())
 
   def testWaitForSuccess1(self):
     """Test success after a few tries."""
