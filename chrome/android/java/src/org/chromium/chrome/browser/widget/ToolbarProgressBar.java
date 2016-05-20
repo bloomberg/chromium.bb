@@ -8,10 +8,13 @@ import android.animation.TimeAnimator;
 import android.animation.TimeAnimator.TimeListener;
 import android.content.Context;
 import android.graphics.Color;
+import android.support.v4.view.ViewCompat;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityEvent;
 import android.widget.FrameLayout.LayoutParams;
+import android.widget.ProgressBar;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.VisibleForTesting;
@@ -132,6 +135,10 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
     public ToolbarProgressBar(Context context, AttributeSet attrs) {
         super(context, attrs);
         setAlpha(0.0f);
+
+        // This tells accessibility services that progress bar changes are important enough to
+        // announce to the user even when not focused.
+        ViewCompat.setAccessibilityLiveRegion(this, ViewCompat.ACCESSIBILITY_LIVE_REGION_POLITE);
     }
 
     /**
@@ -316,6 +323,7 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
         } else {
             if (!mProgressAnimator.isStarted()) mProgressAnimator.start();
         }
+        sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_SELECTED);
     }
 
     // ClipDrawableProgressBar implementation.
@@ -364,5 +372,17 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
             mAnimatingView.setColor(ColorUtils.getColorWithOverlay(Color.WHITE, color,
                     ANIMATION_WHITE_FRACTION));
         }
+    }
+
+    @Override
+    public CharSequence getAccessibilityClassName() {
+        return ProgressBar.class.getName();
+    }
+
+    @Override
+    public void onInitializeAccessibilityEvent(AccessibilityEvent event) {
+        super.onInitializeAccessibilityEvent(event);
+        event.setCurrentItemIndex((int) (mTargetProgress * 100));
+        event.setItemCount(100);
     }
 }
