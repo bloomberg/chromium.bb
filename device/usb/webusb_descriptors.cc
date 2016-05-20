@@ -294,7 +294,8 @@ void OnReadWebUsbAllowedOriginsHeader(
     return;
   }
 
-  uint16_t new_length = buffer->data()[2] | (buffer->data()[3] << 8);
+  const uint8_t* data = reinterpret_cast<uint8_t*>(buffer->data());
+  uint16_t new_length = data[2] | (data[3] << 8);
   scoped_refptr<IOBufferWithSize> new_buffer = new IOBufferWithSize(new_length);
   device_handle->ControlTransfer(
       USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR, UsbDeviceHandle::DEVICE,
@@ -351,7 +352,8 @@ void OnReadBosDescriptorHeader(scoped_refptr<UsbDeviceHandle> device_handle,
     return;
   }
 
-  uint16_t new_length = buffer->data()[2] | (buffer->data()[3] << 8);
+  const uint8_t* data = reinterpret_cast<uint8_t*>(buffer->data());
+  uint16_t new_length = data[2] | (data[3] << 8);
   scoped_refptr<IOBufferWithSize> new_buffer = new IOBufferWithSize(new_length);
   device_handle->ControlTransfer(
       USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD, UsbDeviceHandle::DEVICE,
