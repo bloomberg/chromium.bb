@@ -848,7 +848,7 @@ static void installV8TestInterface5Template(v8::Isolate* isolate, const DOMWrapp
         V8DOMConfiguration::installAttributes(isolate, world, instanceTemplate, prototypeTemplate, V8TestInterface5Attributes, WTF_ARRAY_LENGTH(V8TestInterface5Attributes));
         V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterface5Accessors, WTF_ARRAY_LENGTH(V8TestInterface5Accessors));
         V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterface5Methods, WTF_ARRAY_LENGTH(V8TestInterface5Methods));
-    } // if (RuntimeEnabledFeatures::featureNameEnabled())
+    }
 
     // Indexed properties
     v8::IndexedPropertyHandlerConfiguration indexedPropertyHandlerConfig(TestInterface5ImplementationV8Internal::indexedPropertyGetterCallback, TestInterface5ImplementationV8Internal::indexedPropertySetterCallback, 0, TestInterface5ImplementationV8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestInterface5Implementation>, v8::Local<v8::Value>(), v8::PropertyHandlerFlags::kNone);

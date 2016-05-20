@@ -120,8 +120,7 @@ bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object
        method_implemented_in_private_script, generate_post_message_impl,
        runtime_determined_length_method, runtime_determined_maxarg_method
        with context %}
-{% for method in methods %}
-{% if method.should_be_exposed_to_script %}
+{% for method in methods if method.should_be_exposed_to_script %}
 {% for world_suffix in method.world_suffixes %}
 {% if not method.is_custom and not method.is_post_message and method.visible %}
 {{generate_method(method, world_suffix)}}
@@ -153,7 +152,6 @@ bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object
 {{origin_safe_method_getter(method, world_suffix)}}
 {% endif %}
 {% endfor %}
-{% endif %}
 {% endfor %}
 {% if iterator_method %}
 {{generate_method(iterator_method)}}
@@ -189,7 +187,7 @@ bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object
 {##############################################################################}
 {% block install_attributes %}
 {% from 'attributes.cpp' import attribute_configuration with context %}
-{% if has_attribute_configuration %}
+{% if attributes | has_attribute_configuration %}
 // Suppress warning: global constructors, because AttributeConfiguration is trivial
 // and does not depend on another global objects.
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
@@ -197,11 +195,7 @@ bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
 const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[] = {
-    {% for attribute in attributes
-       if not (attribute.exposed_test or
-               attribute.runtime_enabled_function) and
-          attribute.is_data_type_property and
-          attribute.should_be_exposed_to_script %}
+    {% for attribute in attributes | has_attribute_configuration %}
     {{attribute_configuration(attribute)}},
     {% endfor %}
 };
@@ -214,13 +208,9 @@ const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[] = {
 {##############################################################################}
 {% block install_accessors %}
 {% from 'attributes.cpp' import attribute_configuration with context %}
-{% if has_accessor_configuration %}
+{% if attributes | has_accessor_configuration %}
 const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] = {
-    {% for attribute in attributes
-       if not (attribute.exposed_test or
-               attribute.runtime_enabled_function) and
-          not attribute.is_data_type_property and
-          attribute.should_be_exposed_to_script %}
+    {% for attribute in attributes | has_accessor_configuration %}
     {{attribute_configuration(attribute)}},
     {% endfor %}
 };
@@ -284,27 +274,20 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
     {% endif %}
 
     // Register DOM constants, attributes and operations.
-    {% if runtime_enabled_function %}
-    if ({{runtime_enabled_function}}()) {
-    {% endif %}
-    {% filter indent(4 if runtime_enabled_function else 0, true) %}
+    {% filter runtime_enabled(runtime_enabled_function) %}
     {% if constants %}
     {{install_constants() | indent}}
     {% endif %}
-    {% if has_attribute_configuration %}
+    {% if attributes | has_attribute_configuration %}
     V8DOMConfiguration::installAttributes(isolate, world, instanceTemplate, prototypeTemplate, {{'%sAttributes' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sAttributes)' % v8_class}});
     {% endif %}
-    {% if has_accessor_configuration %}
+    {% if attributes | has_accessor_configuration %}
     V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, {{'%sAccessors' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sAccessors)' % v8_class}});
     {% endif %}
     {% if method_configuration_methods %}
     V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, {{'%sMethods' % v8_class}}, {{'WTF_ARRAY_LENGTH(%sMethods)' % v8_class}});
     {% endif %}
-    {% endfilter %}{{newline}}
-    {% if runtime_enabled_function %}
-    } // if ({{runtime_enabled_function}}())
-    {% endif %}
-
+    {% endfilter %}
     {%- if has_access_check_callbacks and not is_partial %}{{newline}}
     // Cross-origin access check
     instanceTemplate->SetAccessCheckCallback({{cpp_class}}V8Internal::securityCheck, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class}}::wrapperTypeInfo)));
@@ -315,21 +298,9 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
     prototypeTemplate->SetIntrinsicDataProperty(v8::Symbol::GetIterator(isolate), v8::kArrayProto_values, v8::DontEnum);
     {% endif %}
 
-    {%- set runtime_enabled_features = dict() %}
-    {% for attribute in attributes
-       if attribute.runtime_enabled_function and
-          not attribute.exposed_test %}
-        {% if attribute.runtime_enabled_function not in runtime_enabled_features %}
-            {% set unused = runtime_enabled_features.update({attribute.runtime_enabled_function: []}) %}
-        {% endif %}
-        {% set unused = runtime_enabled_features.get(attribute.runtime_enabled_function).append(attribute) %}
-    {% endfor %}
-    {% for runtime_enabled_feature in runtime_enabled_features | sort %}{{newline}}
-    if ({{runtime_enabled_feature}}()) {
-        {% set distinct_attributes = [] %}
-        {% for attribute in runtime_enabled_features.get(runtime_enabled_feature) | sort
-           if attribute.name not in distinct_attributes %}
-        {% set unused = distinct_attributes.append(attribute.name) %}
+    {%- for group in attributes | runtime_enabled_attributes | groupby('runtime_feature_name') %}{{newline}}
+    if ({{group.list[0].runtime_enabled_function}}()) {
+        {% for attribute in group.list | unique_by('name') | sort %}
         {% if attribute.is_data_type_property %}
         const V8DOMConfiguration::AttributeConfiguration attribute{{attribute.name}}Configuration = \
         {{attribute_configuration(attribute)}};

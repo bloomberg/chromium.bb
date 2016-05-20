@@ -154,6 +154,7 @@ def attribute_context(interface, attribute):
         'reflect_missing': extended_attributes.get('ReflectMissing'),
         'reflect_only': extended_attribute_value_as_list(attribute, 'ReflectOnly'),
         'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(attribute),  # [RuntimeEnabled]
+        'runtime_feature_name': v8_utilities.runtime_feature_name(attribute),  # [RuntimeEnabled]
         'should_be_exposed_to_script': not (is_implemented_in_private_script and is_only_exposed_to_private_script),
         'world_suffixes': (
             ['', 'ForMainWorld']
@@ -169,6 +170,35 @@ def attribute_context(interface, attribute):
         setter_context(interface, attribute, context)
 
     return context
+
+
+def filter_has_accessor_configuration(attributes):
+    return [attribute for attribute in attributes if
+            not (attribute['exposed_test'] or
+                 attribute['runtime_enabled_function']) and
+            not attribute['is_data_type_property'] and
+            attribute['should_be_exposed_to_script']]
+
+
+def filter_has_attribute_configuration(attributes):
+    return [attribute for attribute in attributes if
+            not (attribute['exposed_test'] or
+                 attribute['runtime_enabled_function']) and
+            attribute['is_data_type_property'] and
+            attribute['should_be_exposed_to_script']]
+
+
+def filter_runtime_enabled(attributes):
+    return [attribute for attribute in attributes if
+            attribute['runtime_feature_name'] and
+            not attribute['exposed_test']]
+
+
+def attribute_filters():
+    return {'has_accessor_configuration': filter_has_accessor_configuration,
+            'has_attribute_configuration': filter_has_attribute_configuration,
+            'runtime_enabled_attributes': filter_runtime_enabled,
+            }
 
 
 ################################################################################

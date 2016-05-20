@@ -26,20 +26,18 @@ void V8TestPermissiveDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Valu
         exceptionState.rethrowV8Exception(block.Exception());
         return;
     }
-    {
-        v8::Local<v8::Value> booleanMemberValue;
-        if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "booleanMember")).ToLocal(&booleanMemberValue)) {
-            exceptionState.rethrowV8Exception(block.Exception());
+    v8::Local<v8::Value> booleanMemberValue;
+    if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "booleanMember")).ToLocal(&booleanMemberValue)) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return;
+    }
+    if (booleanMemberValue.IsEmpty() || booleanMemberValue->IsUndefined()) {
+        // Do nothing.
+    } else {
+        bool booleanMember = toBoolean(isolate, booleanMemberValue, exceptionState);
+        if (exceptionState.hadException())
             return;
-        }
-        if (booleanMemberValue.IsEmpty() || booleanMemberValue->IsUndefined()) {
-            // Do nothing.
-        } else {
-            bool booleanMember = toBoolean(isolate, booleanMemberValue, exceptionState);
-            if (exceptionState.hadException())
-                return;
-            impl.setBooleanMember(booleanMember);
-        }
+        impl.setBooleanMember(booleanMember);
     }
 
 }

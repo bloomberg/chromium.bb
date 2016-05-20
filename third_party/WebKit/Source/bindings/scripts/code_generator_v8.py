@@ -73,13 +73,14 @@ import jinja2
 from idl_definitions import Visitor
 import idl_types
 from idl_types import IdlType
+from v8_attributes import attribute_filters
 import v8_callback_interface
 import v8_dictionary
 from v8_globals import includes, interfaces
 import v8_interface
 import v8_types
 import v8_union
-from v8_utilities import capitalize, cpp_name, v8_class_name
+from v8_utilities import capitalize, cpp_name, unique_by, v8_class_name
 from utilities import KNOWN_COMPONENTS, idl_filename_to_component, is_valid_component_dependency, is_testing_target, shorten_union_name
 
 
@@ -420,7 +421,9 @@ def initialize_jinja_env(cache_dir):
         'blink_capitalize': capitalize,
         'exposed': exposed_if,
         'runtime_enabled': runtime_enabled_if,
+        'unique_by': unique_by,
         })
+    jinja_env.filters.update(attribute_filters())
     return jinja_env
 
 

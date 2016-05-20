@@ -112,6 +112,17 @@ def uncapitalize(name):
     return name[0].lower() + name[1:]
 
 
+def unique_by(dict_list, key):
+    """Returns elements from a list of dictionaries with unique values for the named key."""
+    keys_seen = set()
+    filtered_list = []
+    for item in dict_list:
+        if item.get(key) not in keys_seen:
+            filtered_list.append(item)
+            keys_seen.add(item.get(key))
+    return filtered_list
+
+
 ################################################################################
 # C++
 ################################################################################

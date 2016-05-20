@@ -31,20 +31,18 @@ void V8TestInterfaceEventInit::toImpl(v8::Isolate* isolate, v8::Local<v8::Value>
         exceptionState.rethrowV8Exception(block.Exception());
         return;
     }
-    {
-        v8::Local<v8::Value> stringMemberValue;
-        if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "stringMember")).ToLocal(&stringMemberValue)) {
-            exceptionState.rethrowV8Exception(block.Exception());
+    v8::Local<v8::Value> stringMemberValue;
+    if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "stringMember")).ToLocal(&stringMemberValue)) {
+        exceptionState.rethrowV8Exception(block.Exception());
+        return;
+    }
+    if (stringMemberValue.IsEmpty() || stringMemberValue->IsUndefined()) {
+        // Do nothing.
+    } else {
+        V8StringResource<> stringMember = stringMemberValue;
+        if (!stringMember.prepare(exceptionState))
             return;
-        }
-        if (stringMemberValue.IsEmpty() || stringMemberValue->IsUndefined()) {
-            // Do nothing.
-        } else {
-            V8StringResource<> stringMember = stringMemberValue;
-            if (!stringMember.prepare(exceptionState))
-                return;
-            impl.setStringMember(stringMember);
-        }
+        impl.setStringMember(stringMember);
     }
 
 }

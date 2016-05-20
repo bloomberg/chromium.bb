@@ -2080,7 +2080,7 @@ void V8TestInterface::installV8TestInterfaceTemplate(v8::Isolate* isolate, const
         V8DOMConfiguration::installAttributes(isolate, world, instanceTemplate, prototypeTemplate, V8TestInterfaceAttributes, WTF_ARRAY_LENGTH(V8TestInterfaceAttributes));
         V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceAccessors, WTF_ARRAY_LENGTH(V8TestInterfaceAccessors));
         V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods));
-    } // if (RuntimeEnabledFeatures::featureNameEnabled())
+    }
 
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
         const V8DOMConfiguration::AccessorConfiguration accessorconditionalReadOnlyLongAttributeConfiguration = \
