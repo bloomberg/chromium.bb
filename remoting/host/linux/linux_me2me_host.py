@@ -576,8 +576,8 @@ class Desktop:
     # Reconfigure the X server to use "evdev" keymap rules.  The X server must
     # be started with -noreset otherwise it'll reset as soon as the command
     # completes, since there are no other X clients running yet.
-    retcode = subprocess.call("setxkbmap -rules evdev", env=self.child_env,
-                              shell=True)
+    retcode = subprocess.call(["setxkbmap", "-rules", "evdev"],
+                              env=self.child_env)
     if retcode != 0:
       logging.error("Failed to set XKB to 'evdev'")
 
