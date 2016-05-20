@@ -44,6 +44,27 @@ source_set("linux_dmabuf_protocol") {
   public_configs = [ ":linux_dmabuf_protocol_config" ]
 }
 
+config("viewporter_protocol_config") {
+  include_dirs = [ "include/protocol" ]
+}
+
+source_set("viewporter_protocol") {
+  sources = [
+    "include/protocol/viewporter-client-protocol.h",
+    "include/protocol/viewporter-server-protocol.h",
+    "protocol/viewporter-protocol.c",
+  ]
+
+  deps = [
+    "//third_party/wayland:wayland_util",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  public_configs = [ ":viewporter_protocol_config" ]
+}
+
 config("scaler_protocol_config") {
   include_dirs = [ "include/protocol" ]
 }

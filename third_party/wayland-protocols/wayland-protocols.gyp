@@ -65,6 +65,26 @@
       },
     },
     {
+      'target_name': 'viewporter_protocol',
+      'type': 'static_library',
+      'dependencies' : [
+        '../wayland/wayland.gyp:wayland_util',
+      ],
+      'sources': [
+        'include/protocol/viewporter-client-protocol.h',
+        'include/protocol/viewporter-server-protocol.h',
+        'protocol/viewporter-protocol.c',
+      ],
+      'include_dirs': [
+        'include/protocol',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          'include/protocol',
+        ],
+      },
+    },
+    {
       'target_name': 'secure_output_protocol',
       'type': 'static_library',
       'dependencies' : [
