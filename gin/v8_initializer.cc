@@ -440,12 +440,20 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
   if (base::FeatureList::IsEnabled(features::kV8Ignition)) {
     std::string flag("--ignition");
     v8::V8::SetFlagsFromString(flag.c_str(), static_cast<int>(flag.size()));
+
+    if (base::FeatureList::IsEnabled(features::kV8IgnitionEager)) {
+      std::string eager_flag("--ignition-eager");
+      v8::V8::SetFlagsFromString(
+          eager_flag.c_str(), static_cast<int>(eager_flag.size()));
+    }
+
+    if (base::FeatureList::IsEnabled(features::kV8IgnitionLazy)) {
+      std::string lazy_flag("--no-ignition-eager");
+      v8::V8::SetFlagsFromString(
+          lazy_flag.c_str(), static_cast<int>(lazy_flag.size()));
+    }
   }
 
-  if (base::FeatureList::IsEnabled(features::kV8IgnitionLazy)) {
-    std::string flag("--no-ignition-eager");
-    v8::V8::SetFlagsFromString(flag.c_str(), static_cast<int>(flag.size()));
-  }
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   v8::StartupData natives;
