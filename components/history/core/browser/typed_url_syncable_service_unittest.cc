@@ -149,7 +149,7 @@ class TestHistoryBackend;
 
 class TestHistoryBackendDelegate : public HistoryBackend::Delegate {
  public:
-  explicit TestHistoryBackendDelegate(TestHistoryBackend* test) : test_(test) {}
+  TestHistoryBackendDelegate() {}
 
   void NotifyProfileError(sql::InitStatus init_status) override {}
   void SetInMemoryBackend(
@@ -172,16 +172,13 @@ class TestHistoryBackendDelegate : public HistoryBackend::Delegate {
   void DBLoaded() override{};
 
  private:
-  // Not owned by us.
-  TestHistoryBackend* test_;
-
   DISALLOW_COPY_AND_ASSIGN(TestHistoryBackendDelegate);
 };
 
 class TestHistoryBackend : public HistoryBackend {
  public:
   TestHistoryBackend()
-      : HistoryBackend(new TestHistoryBackendDelegate(this),
+      : HistoryBackend(new TestHistoryBackendDelegate(),
                        nullptr,
                        base::ThreadTaskRunnerHandle::Get()) {}
 

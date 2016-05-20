@@ -16,14 +16,11 @@ using sync_driver::SyncClient;
 DeviceInfoModelTypeController::DeviceInfoModelTypeController(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     const base::Closure& error_callback,
-    SyncClient* sync_client,
-    LocalDeviceInfoProvider* local_device_info_provider)
+    SyncClient* sync_client)
     : UIModelTypeController(ui_thread,
                             error_callback,
                             syncer::DEVICE_INFO,
-                            sync_client),
-      local_device_info_provider_(local_device_info_provider) {
-}
+                            sync_client) {}
 
 DeviceInfoModelTypeController::~DeviceInfoModelTypeController() {}
 

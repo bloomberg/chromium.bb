@@ -89,7 +89,9 @@ CrashHandlerHostLinux::CrashHandlerHostLinux(const std::string& process_type,
                                              bool upload)
     : process_type_(process_type),
       dumps_path_(dumps_path),
+#if !defined(OS_ANDROID)
       upload_(upload),
+#endif
       shutting_down_(false),
       worker_pool_token_(base::SequencedWorkerPool::GetSequenceToken()) {
   int fds[2];

@@ -146,8 +146,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   if (channel_ == version_info::Channel::UNKNOWN &&
       command_line_.HasSwitch(switches::kSyncEnableUSSDeviceInfo)) {
     sync_service->RegisterDataTypeController(new DeviceInfoModelTypeController(
-        ui_thread_, error_callback, sync_client_,
-        sync_service->GetLocalDeviceInfoProvider()));
+        ui_thread_, error_callback, sync_client_));
   } else {
     sync_service->RegisterDataTypeController(new DeviceInfoDataTypeController(
         ui_thread_, error_callback, sync_client_,

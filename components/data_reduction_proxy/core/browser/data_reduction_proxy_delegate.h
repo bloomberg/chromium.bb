@@ -37,7 +37,6 @@ class DataReductionProxyDelegate : public net::ProxyDelegate {
   // ProxyDelegate instance is owned by io_thread. |auth_handler| and |config|
   // outlives this class instance.
   explicit DataReductionProxyDelegate(
-      DataReductionProxyRequestOptions* request_options,
       DataReductionProxyConfig* config,
       const DataReductionProxyConfigurator* configurator,
       DataReductionProxyEventCreator* event_creator,
@@ -68,7 +67,6 @@ class DataReductionProxyDelegate : public net::ProxyDelegate {
       const net::HttpResponseHeaders& response_headers) override;
 
  private:
-  DataReductionProxyRequestOptions* request_options_;
   const DataReductionProxyConfig* config_;
   const DataReductionProxyConfigurator* configurator_;
   DataReductionProxyEventCreator* event_creator_;

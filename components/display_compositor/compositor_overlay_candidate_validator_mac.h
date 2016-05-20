@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "components/display_compositor/compositor_overlay_candidate_validator.h"
 #include "components/display_compositor/display_compositor_export.h"
-#include "ui/gfx/native_widget_types.h"
 
 namespace display_compositor {
 
@@ -29,7 +28,6 @@ class DISPLAY_COMPOSITOR_EXPORT CompositorOverlayCandidateValidatorMac
   void SetSoftwareMirrorMode(bool enabled) override;
 
  private:
-  gfx::AcceleratedWidget widget_;
   bool software_mirror_active_;
   const bool ca_layer_disabled_;
 

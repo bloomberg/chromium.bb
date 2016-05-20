@@ -80,13 +80,13 @@ class GCMProfileService : public KeyedService {
   GCMProfileService();
 
  private:
-  net::URLRequestContextGetter* request_context_;
   std::unique_ptr<ProfileIdentityProvider> profile_identity_provider_;
-
   std::unique_ptr<GCMDriver> driver_;
 
-// Used for both account tracker and GCM.UserSignedIn UMA.
 #if !defined(OS_ANDROID)
+  net::URLRequestContextGetter* request_context_ = nullptr;
+
+  // Used for both account tracker and GCM.UserSignedIn UMA.
   class IdentityObserver;
   std::unique_ptr<IdentityObserver> identity_observer_;
 #endif

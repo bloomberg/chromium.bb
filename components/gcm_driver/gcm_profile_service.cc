@@ -146,8 +146,8 @@ GCMProfileService::GCMProfileService(
     const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
     scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
-    : request_context_(request_context),
-      profile_identity_provider_(std::move(identity_provider)) {
+    : profile_identity_provider_(std::move(identity_provider)),
+      request_context_(request_context) {
   driver_ = CreateGCMDriverDesktop(std::move(gcm_client_factory), prefs,
                                    path.Append(gcm_driver::kGCMStoreDirname),
                                    request_context_, channel, ui_task_runner,
@@ -158,7 +158,7 @@ GCMProfileService::GCMProfileService(
 }
 #endif  // defined(OS_ANDROID)
 
-GCMProfileService::GCMProfileService() : request_context_(nullptr) {}
+GCMProfileService::GCMProfileService() {}
 
 GCMProfileService::~GCMProfileService() {}
 

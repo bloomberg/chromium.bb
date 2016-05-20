@@ -151,8 +151,8 @@ DataReductionProxyIOData::DataReductionProxyIOData(
   }
 
   proxy_delegate_.reset(new DataReductionProxyDelegate(
-      request_options_.get(), config_.get(), configurator_.get(),
-      event_creator_.get(), bypass_stats_.get(), net_log_));
+      config_.get(), configurator_.get(), event_creator_.get(),
+      bypass_stats_.get(), net_log_));
  }
 
  DataReductionProxyIOData::DataReductionProxyIOData()
@@ -233,8 +233,8 @@ std::unique_ptr<DataReductionProxyDelegate>
 DataReductionProxyIOData::CreateProxyDelegate() const {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   return base::WrapUnique(new DataReductionProxyDelegate(
-      request_options_.get(), config_.get(), configurator_.get(),
-      event_creator_.get(), bypass_stats_.get(), net_log_));
+      config_.get(), configurator_.get(), event_creator_.get(),
+      bypass_stats_.get(), net_log_));
 }
 
 // TODO(kundaji): Rename this method to something more descriptive.

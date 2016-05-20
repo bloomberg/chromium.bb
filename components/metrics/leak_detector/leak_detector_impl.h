@@ -231,10 +231,6 @@ class LeakDetectorImpl {
   uintptr_t mapping_addr_;
   size_t mapping_size_;
 
-  // Number of consecutive times an allocation size must trigger suspicion to be
-  // considered a leak suspect.
-  int size_suspicion_threshold_;
-
   // Number of consecutive times a call stack must trigger suspicion to be
   // considered a leak suspect.
   int call_stack_suspicion_threshold_;

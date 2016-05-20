@@ -11,7 +11,6 @@
 #include "components/sync_driver/ui_model_type_controller.h"
 
 namespace sync_driver {
-class LocalDeviceInfoProvider;
 class SyncClient;
 }
 
@@ -23,13 +22,11 @@ class DeviceInfoModelTypeController : public UIModelTypeController {
   DeviceInfoModelTypeController(
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       const base::Closure& error_callback,
-      sync_driver::SyncClient* sync_client,
-      sync_driver::LocalDeviceInfoProvider* local_device_info_provider);
+      sync_driver::SyncClient* sync_client);
 
  private:
   ~DeviceInfoModelTypeController() override;
 
-  sync_driver::LocalDeviceInfoProvider* const local_device_info_provider_;
   std::unique_ptr<sync_driver::LocalDeviceInfoProvider::Subscription>
       subscription_;
   DISALLOW_COPY_AND_ASSIGN(DeviceInfoModelTypeController);

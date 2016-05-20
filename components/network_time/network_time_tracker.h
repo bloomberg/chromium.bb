@@ -144,8 +144,6 @@ class NetworkTimeTracker : public net::URLFetcherDelegate {
 
   base::ThreadChecker thread_checker_;
 
-  bool received_network_time_;
-
   DISALLOW_COPY_AND_ASSIGN(NetworkTimeTracker);
 };
 

@@ -149,8 +149,7 @@ TEST(DataReductionProxyDelegate, IsTrustedSpdyProxy) {
             test_context->event_creator()));
 
     DataReductionProxyDelegate delegate(
-        test_context->io_data()->request_options(), config.get(),
-        test_context->io_data()->configurator(),
+        config.get(), test_context->io_data()->configurator(),
         test_context->io_data()->event_creator(),
         test_context->io_data()->bypass_stats(),
         test_context->io_data()->net_log());

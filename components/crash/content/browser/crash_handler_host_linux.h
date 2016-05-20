@@ -73,7 +73,9 @@ class CrashHandlerHostLinux : public base::MessageLoopForIO::Watcher,
 
   std::string process_type_;
   base::FilePath dumps_path_;
+#if !defined(OS_ANDROID)
   bool upload_;
+#endif
 
   int process_socket_;
   int browser_socket_;

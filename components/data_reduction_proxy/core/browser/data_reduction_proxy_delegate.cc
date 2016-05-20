@@ -24,19 +24,16 @@
 namespace data_reduction_proxy {
 
 DataReductionProxyDelegate::DataReductionProxyDelegate(
-    DataReductionProxyRequestOptions* request_options,
     DataReductionProxyConfig* config,
     const DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator,
     DataReductionProxyBypassStats* bypass_stats,
     net::NetLog* net_log)
-    : request_options_(request_options),
-      config_(config),
+    : config_(config),
       configurator_(configurator),
       event_creator_(event_creator),
       bypass_stats_(bypass_stats),
       net_log_(net_log) {
-  DCHECK(request_options);
   DCHECK(config);
   DCHECK(configurator);
   DCHECK(event_creator);
