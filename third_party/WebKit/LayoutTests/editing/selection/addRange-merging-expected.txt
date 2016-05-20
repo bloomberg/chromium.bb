@@ -1,43 +1,43 @@
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
-CONSOLE ERROR: Discontiguous selection is not supported.
+CONSOLE ERROR: line 132: Discontiguous selection is not supported.
+CONSOLE ERROR: line 132: Discontiguous selection is not supported.
+CONSOLE ERROR: line 132: Discontiguous selection is not supported.
+CONSOLE ERROR: line 132: Discontiguous selection is not supported.
+CONSOLE ERROR: line 132: Discontiguous selection is not supported.
+CONSOLE ERROR: line 132: Discontiguous selection is not supported.
+CONSOLE ERROR: line 132: Discontiguous selection is not supported.
+CONSOLE ERROR: line 132: Discontiguous selection is not supported.
+CONSOLE ERROR: line 132: Discontiguous selection is not supported.
+CONSOLE ERROR: line 132: Discontiguous selection is not supported.
+CONSOLE ERROR: line 139: Discontiguous selection is not supported.
+CONSOLE ERROR: line 139: Discontiguous selection is not supported.
+CONSOLE ERROR: line 139: Discontiguous selection is not supported.
+CONSOLE ERROR: line 139: Discontiguous selection is not supported.
+CONSOLE ERROR: line 139: Discontiguous selection is not supported.
+CONSOLE ERROR: line 139: Discontiguous selection is not supported.
+CONSOLE ERROR: line 139: Discontiguous selection is not supported.
+CONSOLE ERROR: line 139: Discontiguous selection is not supported.
+CONSOLE ERROR: line 139: Discontiguous selection is not supported.
+CONSOLE ERROR: line 139: Discontiguous selection is not supported.
+CONSOLE ERROR: line 146: Discontiguous selection is not supported.
+CONSOLE ERROR: line 146: Discontiguous selection is not supported.
+CONSOLE ERROR: line 146: Discontiguous selection is not supported.
+CONSOLE ERROR: line 146: Discontiguous selection is not supported.
+CONSOLE ERROR: line 146: Discontiguous selection is not supported.
+CONSOLE ERROR: line 146: Discontiguous selection is not supported.
+CONSOLE ERROR: line 146: Discontiguous selection is not supported.
+CONSOLE ERROR: line 146: Discontiguous selection is not supported.
+CONSOLE ERROR: line 146: Discontiguous selection is not supported.
+CONSOLE ERROR: line 146: Discontiguous selection is not supported.
+CONSOLE ERROR: line 153: Discontiguous selection is not supported.
+CONSOLE ERROR: line 153: Discontiguous selection is not supported.
+CONSOLE ERROR: line 153: Discontiguous selection is not supported.
+CONSOLE ERROR: line 153: Discontiguous selection is not supported.
+CONSOLE ERROR: line 153: Discontiguous selection is not supported.
+CONSOLE ERROR: line 153: Discontiguous selection is not supported.
+CONSOLE ERROR: line 153: Discontiguous selection is not supported.
+CONSOLE ERROR: line 153: Discontiguous selection is not supported.
+CONSOLE ERROR: line 153: Discontiguous selection is not supported.
+CONSOLE ERROR: line 153: Discontiguous selection is not supported.
 Selection.addRange() should properly merge intersecting (and don't merge discrete) ranges.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

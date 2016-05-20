@@ -1,8 +1,8 @@
 CONSOLE WARNING: line 13: The specified value "abc" is not a valid email address.
-CONSOLE ERROR: An invalid form control with name='' is not focusable.
-CONSOLE ERROR: An invalid form control with name='' is not focusable.
-CONSOLE ERROR: An invalid form control with name='' is not focusable.
-CONSOLE ERROR: An invalid form control with name='' is not focusable.
+CONSOLE ERROR: line 79: An invalid form control with name='' is not focusable.
+CONSOLE ERROR: line 79: An invalid form control with name='' is not focusable.
+CONSOLE ERROR: line 103: An invalid form control with name='' is not focusable.
+CONSOLE ERROR: line 105: An invalid form control with name='' is not focusable.
 This is a testharness.js-based test.
 PASS If there is any invalid submittable element whose form owner is the form, the form.checkValidity must be false 
 PASS If there is any invalid submittable element whose form owner is the form, the form.reportValidity must be false 

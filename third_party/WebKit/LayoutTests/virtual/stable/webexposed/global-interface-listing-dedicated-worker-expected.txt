@@ -1,4 +1,4 @@
-CONSOLE ERROR: The 'DurableStorage' feature is currently enabled in limited trials. Please see https://bit.ly/OriginTrials for information on enabling a trial for your site.
+CONSOLE ERROR: line 94: The 'DurableStorage' feature is currently enabled in limited trials. Please see https://bit.ly/OriginTrials for information on enabling a trial for your site.
 CONSOLE WARNING: 'webkitIDBTransaction' is deprecated. Please use 'IDBTransaction' instead.
 CONSOLE WARNING: 'webkitIDBRequest' is deprecated. Please use 'IDBRequest' instead.
 CONSOLE WARNING: 'webkitIDBObjectStore' is deprecated. Please use 'IDBObjectStore' instead.

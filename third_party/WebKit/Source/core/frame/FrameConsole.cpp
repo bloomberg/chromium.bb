@@ -125,7 +125,7 @@ void FrameConsole::reportResourceResponseReceived(DocumentLoader* loader, unsign
     if (response.wasFallbackRequiredByServiceWorker())
         return;
     String message = "Failed to load resource: the server responded with a status of " + String::number(response.httpStatusCode()) + " (" + response.httpStatusText() + ')';
-    ConsoleMessage* consoleMessage = ConsoleMessage::create(NetworkMessageSource, ErrorMessageLevel, message, response.url().getString());
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(NetworkMessageSource, ErrorMessageLevel, message, response.url().getString(), 0);
     consoleMessage->setRequestIdentifier(requestIdentifier);
     addMessage(consoleMessage);
 }
@@ -175,7 +175,7 @@ void FrameConsole::didFailLoading(unsigned long requestIdentifier, const Resourc
         message.appendLiteral(": ");
         message.append(error.localizedDescription());
     }
-    ConsoleMessage* consoleMessage = ConsoleMessage::create(NetworkMessageSource, ErrorMessageLevel, message.toString(), error.failingURL());
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(NetworkMessageSource, ErrorMessageLevel, message.toString(), error.failingURL(), 0);
     consoleMessage->setRequestIdentifier(requestIdentifier);
     storage->reportMessage(m_frame->document(), consoleMessage);
 }

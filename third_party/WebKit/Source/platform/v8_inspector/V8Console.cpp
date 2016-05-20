@@ -80,13 +80,13 @@ public:
         if (!allowEmptyArguments && !m_info.Length())
             return;
         if (V8DebuggerClient* debuggerClient = ensureDebuggerClient())
-            debuggerClient->reportMessageToConsole(m_context, type, level, String16(), &m_info, skipArgumentCount, -1);
+            debuggerClient->reportMessageToConsole(m_context, type, level, String16(), &m_info, skipArgumentCount);
     }
 
     void addMessage(MessageType type, MessageLevel level, const String16& message)
     {
         if (V8DebuggerClient* debuggerClient = ensureDebuggerClient())
-            debuggerClient->reportMessageToConsole(m_context, type, level, message, nullptr, 0 /* skipArgumentsCount */, 1 /* maxStackSize */);
+            debuggerClient->reportMessageToConsole(m_context, type, level, message, nullptr, 0 /* skipArgumentsCount */);
     }
 
     void addDeprecationMessage(const char* id, const String16& message)
@@ -94,7 +94,7 @@ public:
         if (checkAndSetPrivateFlagOnConsole(id, false))
             return;
         if (V8DebuggerClient* debuggerClient = ensureDebuggerClient())
-            debuggerClient->reportMessageToConsole(m_context, LogMessageType, WarningMessageLevel, message, nullptr, 0 /* skipArgumentsCount */, 0 /* maxStackSize */);
+            debuggerClient->reportMessageToConsole(m_context, LogMessageType, WarningMessageLevel, message, nullptr, 0 /* skipArgumentsCount */);
     }
 
     bool firstArgToBoolean(bool defaultValue)

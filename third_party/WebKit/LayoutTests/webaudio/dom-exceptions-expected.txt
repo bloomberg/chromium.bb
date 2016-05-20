@@ -1,8 +1,8 @@
-CONSOLE WARNING: The provided value 'fancy' is not a valid enum value of type ChannelCountMode.
-CONSOLE WARNING: The provided value 'undefined' is not a valid enum value of type ChannelInterpretation.
-CONSOLE WARNING: The provided value '9x' is not a valid enum value of type OverSampleType.
-CONSOLE WARNING: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
-CONSOLE WARNING: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
+CONSOLE WARNING: line 1: The provided value 'fancy' is not a valid enum value of type ChannelCountMode.
+CONSOLE WARNING: line 1: The provided value 'undefined' is not a valid enum value of type ChannelInterpretation.
+CONSOLE WARNING: line 1: The provided value '9x' is not a valid enum value of type OverSampleType.
+CONSOLE WARNING: line 1: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
+CONSOLE WARNING: line 1: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
 Tests DOM exception messages
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

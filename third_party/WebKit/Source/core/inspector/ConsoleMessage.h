@@ -24,10 +24,18 @@ class WorkerInspectorProxy;
 
 class CORE_EXPORT ConsoleMessage final: public GarbageCollectedFinalized<ConsoleMessage> {
 public:
-    static ConsoleMessage* create(MessageSource source, MessageLevel level, const String& message, const String& url = String(), unsigned lineNumber = 0, unsigned columnNumber = 0)
+    static ConsoleMessage* create(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber = 0)
     {
         return new ConsoleMessage(source, level, message, url, lineNumber, columnNumber);
     }
+
+    static ConsoleMessage* create(MessageSource source, MessageLevel level, const String& message)
+    {
+        ConsoleMessage* consoleMessage = new ConsoleMessage(source, level, message, String(), 0, 0);
+        consoleMessage->collectCallStack();
+        return consoleMessage;
+    }
+
     ~ConsoleMessage();
 
     MessageType type() const;

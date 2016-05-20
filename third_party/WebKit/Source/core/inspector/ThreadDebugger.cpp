@@ -117,7 +117,7 @@ bool ThreadDebugger::isInspectableHeapObject(v8::Local<v8::Object> object)
     return true;
 }
 
-void ThreadDebugger::reportMessageToConsole(v8::Local<v8::Context> context, MessageType type, MessageLevel level, const String16& message, const v8::FunctionCallbackInfo<v8::Value>* arguments, unsigned skipArgumentCount, int maxStackSize)
+void ThreadDebugger::reportMessageToConsole(v8::Local<v8::Context> context, MessageType type, MessageLevel level, const String16& message, const v8::FunctionCallbackInfo<v8::Value>* arguments, unsigned skipArgumentCount)
 {
     ScriptState* scriptState = ScriptState::from(context);
     ScriptArguments* scriptArguments = nullptr;
@@ -132,10 +132,6 @@ void ThreadDebugger::reportMessageToConsole(v8::Local<v8::Context> context, Mess
     consoleMessage->setScriptState(scriptState);
     if (arguments)
         consoleMessage->setScriptArguments(scriptArguments);
-    if (maxStackSize == -1)
-        consoleMessage->setCallStack(ScriptCallStack::captureForConsole());
-    else if (maxStackSize)
-        consoleMessage->setCallStack(ScriptCallStack::capture(maxStackSize));
     reportMessageToConsole(context, consoleMessage);
 }
 

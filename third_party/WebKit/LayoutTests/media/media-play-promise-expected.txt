@@ -1,4 +1,4 @@
-CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
+CONSOLE WARNING: line 37: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
 Test the play() behaviour with regards to the returned promise for media elements.
 
 

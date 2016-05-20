@@ -1,5 +1,5 @@
-CONSOLE WARNING: BiquadFilter.frequency.linearRampToValueAtTime value 8360 outside nominal range [0, 8000]; value will be clamped.
-CONSOLE WARNING: BiquadFilter.frequency.setValueAtTime value 10000 outside nominal range [0, 8000]; value will be clamped.
+CONSOLE WARNING: line 151: BiquadFilter.frequency.linearRampToValueAtTime value 8360 outside nominal range [0, 8000]; value will be clamped.
+CONSOLE WARNING: line 264: BiquadFilter.frequency.setValueAtTime value 10000 outside nominal range [0, 8000]; value will be clamped.
 Test Automation of Biquad Filters
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

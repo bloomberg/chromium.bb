@@ -1,4 +1,4 @@
-CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
+CONSOLE WARNING: line 1: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
 CONSOLE ERROR: line 1: Uncaught (in promise) NotAllowedError: play() can only be initiated by a user gesture.
 Test that video play() does not work unless a user clicked on the play button.
 
