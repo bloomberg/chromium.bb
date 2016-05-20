@@ -53,49 +53,45 @@ const base::Time::Exploded kDefaultCreationTime = {2015, 11, 4, 25, 13, 46, 45};
 const char kTestContentSnippetsServerFormat[] =
     "https://chromereader-pa.googleapis.com/v1/fetch?key=%s";
 
+const char kSnippetUrl[] = "http://localhost/foobar";
+const char kSnippetTitle[] = "Title";
+const char kSnippetText[] = "Snippet";
+const char kSnippetSalientImage[] = "http://localhost/salient_image";
+const char kSnippetPublisherName[] = "Foo News";
+const char kSnippetAmpUrl[] = "http://localhost/amp";
+const float kSnippetScore = 5.0;
+
 base::Time GetDefaultCreationTime() {
   return base::Time::FromUTCExploded(kDefaultCreationTime);
 }
 
-std::string GetTestJson(const std::string& content_creation_time_str,
-                        const std::string& expiry_time_str) {
-  char json_str_format[] =
-      "{ \"recos\": [ "
-      "{ \"contentInfo\": {"
-      "\"url\" : \"http://localhost/foobar\","
-      "\"title\" : \"Title\","
-      "\"snippet\" : \"Snippet\","
-      "\"thumbnailUrl\" : \"http://localhost/salient_image\","
-      "\"creationTimestampSec\" : \"%s\","
-      "\"expiryTimestampSec\" : \"%s\","
-      "\"sourceCorpusInfo\" : [ "
-      "{\"ampUrl\" : \"http://localhost/amp\","
-      "\"corpusId\" : \"http://localhost/foobar\","
-      "\"publisherData\": { \"sourceName\" : \"Foo News\"}}]"
-      "}}"
-      "]}";
-
-  return base::StringPrintf(json_str_format, content_creation_time_str.c_str(),
-                            expiry_time_str.c_str());
+base::Time GetDefaultExpirationTime() {
+  return base::Time::Now() + base::TimeDelta::FromHours(1);
 }
 
-std::string GetTestJsonWithSources(const std::string& content_creation_time_str,
-                                   const std::string& expiry_time_str,
-                                   const std::vector<std::string>& source_urls,
-                                   const std::vector<std::string>& publishers,
-                                   const std::vector<std::string>& amp_urls) {
+std::string GetTestJson(const std::vector<std::string>& snippets) {
+  return base::StringPrintf("{\"recos\":[%s]}",
+                            base::JoinString(snippets, ", ").c_str());
+}
+
+std::string GetSnippetWithUrlAndTimesAndSources(
+    const std::string& url,
+    const std::string& content_creation_time_str,
+    const std::string& expiry_time_str,
+    const std::vector<std::string>& source_urls,
+    const std::vector<std::string>& publishers,
+    const std::vector<std::string>& amp_urls) {
   char json_str_format[] =
-      "{ \"recos\": [ "
       "{ \"contentInfo\": {"
-      "\"url\" : \"http://localhost/foobar\","
-      "\"title\" : \"Title\","
-      "\"snippet\" : \"Snippet\","
-      "\"thumbnailUrl\" : \"http://localhost/salient_image\","
+      "\"url\" : \"%s\","
+      "\"title\" : \"%s\","
+      "\"snippet\" : \"%s\","
+      "\"thumbnailUrl\" : \"%s\","
       "\"creationTimestampSec\" : \"%s\","
       "\"expiryTimestampSec\" : \"%s\","
       "\"sourceCorpusInfo\" : [%s]"
-      "}}"
-      "]}";
+      "}, "
+      "\"score\" : %f}";
 
   char source_corpus_info_format[] =
       "{\"corpusId\": \"%s\","
@@ -116,44 +112,64 @@ std::string GetTestJsonWithSources(const std::string& content_creation_time_str,
   }
   // Remove the last comma
   source_corpus_info_list_str.erase(source_corpus_info_list_str.size()-1, 1);
-  return base::StringPrintf(json_str_format, content_creation_time_str.c_str(),
+  return base::StringPrintf(json_str_format, url.c_str(), kSnippetTitle,
+                            kSnippetText, kSnippetSalientImage,
+                            content_creation_time_str.c_str(),
                             expiry_time_str.c_str(),
-                            source_corpus_info_list_str.c_str());
+                            source_corpus_info_list_str.c_str(), kSnippetScore);
 }
 
-std::string GetTestJsonWithSources(const std::vector<std::string>& source_urls,
-                                   const std::vector<std::string>& publishers,
-                                   const std::vector<std::string>& amp_urls) {
-  base::Time expiry_time = base::Time::Now() + base::TimeDelta::FromHours(1);
-  return GetTestJsonWithSources(
+std::string GetSnippetWithSources(const std::vector<std::string>& source_urls,
+                                  const std::vector<std::string>& publishers,
+                                  const std::vector<std::string>& amp_urls) {
+  return GetSnippetWithUrlAndTimesAndSources(
+      kSnippetUrl, NTPSnippet::TimeToJsonString(GetDefaultCreationTime()),
+      NTPSnippet::TimeToJsonString(GetDefaultExpirationTime()), source_urls,
+      publishers, amp_urls);
+}
+
+std::string GetSnippetWithUrlAndTimes(
+    const std::string& url,
+    const std::string& content_creation_time_str,
+    const std::string& expiry_time_str) {
+  return GetSnippetWithUrlAndTimesAndSources(
+      url, content_creation_time_str, expiry_time_str,
+      {std::string(url)}, {std::string(kSnippetPublisherName)},
+      {std::string(kSnippetAmpUrl)});
+}
+
+std::string GetSnippetWithTimes(const std::string& content_creation_time_str,
+                                const std::string& expiry_time_str) {
+  return GetSnippetWithUrlAndTimes(kSnippetUrl, content_creation_time_str,
+                                   expiry_time_str);
+}
+
+std::string GetSnippetWithUrl(const std::string& url) {
+  return GetSnippetWithUrlAndTimes(
+      url, NTPSnippet::TimeToJsonString(GetDefaultCreationTime()),
+      NTPSnippet::TimeToJsonString(GetDefaultExpirationTime()));
+}
+
+std::string GetSnippet() {
+  return GetSnippetWithUrlAndTimes(
+      kSnippetUrl, NTPSnippet::TimeToJsonString(GetDefaultCreationTime()),
+      NTPSnippet::TimeToJsonString(GetDefaultExpirationTime()));
+}
+
+std::string GetExpiredSnippet() {
+  return GetSnippetWithTimes(
       NTPSnippet::TimeToJsonString(GetDefaultCreationTime()),
-      NTPSnippet::TimeToJsonString(expiry_time), source_urls, publishers,
-      amp_urls);
+      NTPSnippet::TimeToJsonString(base::Time::Now()));
 }
 
-std::string GetTestJson(const std::string& content_creation_time_str) {
-  base::Time expiry_time = base::Time::Now() + base::TimeDelta::FromHours(1);
-  return GetTestJson(content_creation_time_str,
-                     NTPSnippet::TimeToJsonString(expiry_time));
-}
-
-std::string GetTestJson() {
-  return GetTestJson(NTPSnippet::TimeToJsonString(GetDefaultCreationTime()));
-}
-
-std::string GetTestExpiredJson() {
-  return GetTestJson(NTPSnippet::TimeToJsonString(GetDefaultCreationTime()),
-                     NTPSnippet::TimeToJsonString(base::Time::Now()));
-}
-
-std::string GetInvalidJson() {
-  std::string json_str = GetTestJson();
+std::string GetInvalidSnippet() {
+  std::string json_str = GetSnippet();
   // Make the json invalid by removing the final closing brace.
   return json_str.substr(0, json_str.size() - 1);
 }
 
-std::string GetIncompleteJson() {
-  std::string json_str = GetTestJson();
+std::string GetIncompleteSnippet() {
+  std::string json_str = GetSnippet();
   // Rename the "url" entry. The result is syntactically valid json that will
   // fail to parse as snippets.
   size_t pos = json_str.find("\"url\"");
@@ -298,24 +314,23 @@ TEST_F(NTPSnippetsServiceDisabledTest, Unschedule) {
 }
 
 TEST_F(NTPSnippetsServiceTest, Full) {
-  std::string json_str(GetTestJson());
+  std::string json_str(GetTestJson({GetSnippet()}));
 
   LoadFromJSONString(json_str);
   ASSERT_THAT(service()->snippets(), SizeIs(1));
   const NTPSnippet& snippet = *service()->snippets().front();
-  EXPECT_EQ(snippet.id(), "http://localhost/foobar");
-  EXPECT_EQ(snippet.best_source().publisher_name, "Foo News");
-  EXPECT_EQ(snippet.title(), "Title");
-  EXPECT_EQ(snippet.snippet(), "Snippet");
-  EXPECT_EQ(snippet.salient_image_url(),
-            GURL("http://localhost/salient_image"));
+
+  EXPECT_EQ(snippet.id(), kSnippetUrl);
+  EXPECT_EQ(snippet.title(), kSnippetTitle);
+  EXPECT_EQ(snippet.snippet(), kSnippetText);
+  EXPECT_EQ(snippet.salient_image_url(), GURL(kSnippetSalientImage));
   EXPECT_EQ(GetDefaultCreationTime(), snippet.publish_date());
-  EXPECT_EQ(snippet.best_source().amp_url.spec(),
-            GURL("http://localhost/amp").spec());
+  EXPECT_EQ(snippet.best_source().publisher_name, kSnippetPublisherName);
+  EXPECT_EQ(snippet.best_source().amp_url, GURL(kSnippetAmpUrl));
 }
 
 TEST_F(NTPSnippetsServiceTest, Clear) {
-  std::string json_str(GetTestJson());
+  std::string json_str(GetTestJson({GetSnippet()}));
 
   LoadFromJSONString(json_str);
   EXPECT_THAT(service()->snippets(), SizeIs(1));
@@ -325,103 +340,49 @@ TEST_F(NTPSnippetsServiceTest, Clear) {
 }
 
 TEST_F(NTPSnippetsServiceTest, InsertAtFront) {
-  base::Time expiry_time = base::Time::Now() + base::TimeDelta::FromHours(1);
-  char json_str_format[] =
-      "{ \"recos\": [ "
-      "{ \"contentInfo\": {"
-      "\"url\" : \"%s\","
-      "\"title\" : \"Title\","
-      "\"snippet\" : \"Snippet\","
-      "\"thumbnailUrl\" : \"http://localhost/salient_image\","
-      "\"creationTimestampSec\" : \"%s\","
-      "\"expiryTimestampSec\" : \"%s\","
-      "\"sourceCorpusInfo\" : [{\"corpusId\": \"%s\","
-      "\"publisherData\": {"
-      "\"sourceName\": \"Source 1\""
-      "},"
-      "\"ampUrl\": \"\"}]"
-      "}}"
-      "]}";
-  const std::string first_url = "http://first";
-  std::string json_str(base::StringPrintf(
-      json_str_format, first_url.c_str(),
-      NTPSnippet::TimeToJsonString(GetDefaultCreationTime()).c_str(),
-      NTPSnippet::TimeToJsonString(expiry_time).c_str(), first_url.c_str()));
+  std::string first("http://first");
+  LoadFromJSONString(GetTestJson({GetSnippetWithUrl(first)}));
+  EXPECT_THAT(service()->snippets(), ElementsAre(IdEq(first)));
 
-  LoadFromJSONString(json_str);
-
-  EXPECT_THAT(service()->snippets(), ElementsAre(IdEq(first_url)));
-
-  const std::string second_url = "http://second";
-  json_str = base::StringPrintf(
-      json_str_format, second_url.c_str(),
-      NTPSnippet::TimeToJsonString(GetDefaultCreationTime()).c_str(),
-      NTPSnippet::TimeToJsonString(expiry_time).c_str(), second_url.c_str());
-
-  LoadFromJSONString(json_str);
-
+  std::string second("http://second");
+  LoadFromJSONString(GetTestJson({GetSnippetWithUrl(second)}));
   // The snippet loaded last should be at the first position in the list now.
-  EXPECT_THAT(service()->snippets(),
-              ElementsAre(IdEq(second_url), IdEq(first_url)));
+  EXPECT_THAT(service()->snippets(), ElementsAre(IdEq(second), IdEq(first)));
 }
 
 TEST_F(NTPSnippetsServiceTest, LimitNumSnippets) {
   int max_snippet_count = NTPSnippetsService::GetMaxSnippetCountForTesting();
   int snippets_per_load = max_snippet_count / 2 + 1;
-
-  base::Time expiry_time = base::Time::Now() + base::TimeDelta::FromHours(1);
-  char json_str_format[] =
-      "{ \"contentInfo\": {"
-      "\"url\" : \"http://localhost/%i\","
-      "\"title\" : \"Title\","
-      "\"snippet\" : \"Snippet\","
-      "\"thumbnailUrl\" : \"http://localhost/salient_image\","
-      "\"creationTimestampSec\" : \"%s\","
-      "\"expiryTimestampSec\" : \"%s\","
-      "\"sourceCorpusInfo\" : [{\"corpusId\": \"http://localhost/%i\","
-      "\"publisherData\": {"
-      "\"sourceName\": \"Source 1\""
-      "},"
-      "\"ampUrl\": \"\"}]"
-      "}}";
+  char url_format[] = "http://localhost/%i";
 
   std::vector<std::string> snippets1;
   std::vector<std::string> snippets2;
   for (int i = 0; i < snippets_per_load; i++) {
-    snippets1.push_back(base::StringPrintf(
-        json_str_format, i,
-        NTPSnippet::TimeToJsonString(GetDefaultCreationTime()).c_str(),
-        NTPSnippet::TimeToJsonString(expiry_time).c_str(), i /* for corpusId */
-        ));
-    snippets2.push_back(base::StringPrintf(
-        json_str_format, snippets_per_load + i,
-        NTPSnippet::TimeToJsonString(GetDefaultCreationTime()).c_str(),
-        NTPSnippet::TimeToJsonString(expiry_time).c_str(),
-        snippets_per_load + i /* for corpusId */));
+    snippets1.push_back(GetSnippetWithUrl(base::StringPrintf(url_format, i)));
+    snippets2.push_back(GetSnippetWithUrl(
+        base::StringPrintf(url_format, snippets_per_load + i)));
   }
 
-  LoadFromJSONString(
-      "{ \"recos\": [ " + base::JoinString(snippets1, ", ") + "]}");
+  LoadFromJSONString(GetTestJson(snippets1));
   ASSERT_THAT(service()->snippets(), SizeIs(snippets1.size()));
 
-  LoadFromJSONString(
-      "{ \"recos\": [ " + base::JoinString(snippets2, ", ") + "]}");
+  LoadFromJSONString(GetTestJson(snippets2));
   EXPECT_THAT(service()->snippets(), SizeIs(max_snippet_count));
 }
 
 TEST_F(NTPSnippetsServiceTest, LoadInvalidJson) {
-  LoadFromJSONString(GetInvalidJson());
+  LoadFromJSONString(GetTestJson({GetInvalidSnippet()}));
   EXPECT_THAT(service()->snippets_fetcher()->last_status(),
               StartsWith("Received invalid JSON"));
   EXPECT_THAT(service()->snippets(), IsEmpty());
 }
 
 TEST_F(NTPSnippetsServiceTest, LoadInvalidJsonWithExistingSnippets) {
-  LoadFromJSONString(GetTestJson());
+  LoadFromJSONString(GetTestJson({GetSnippet()}));
   ASSERT_THAT(service()->snippets(), SizeIs(1));
   ASSERT_EQ("OK", service()->snippets_fetcher()->last_status());
 
-  LoadFromJSONString(GetInvalidJson());
+  LoadFromJSONString(GetTestJson({GetInvalidSnippet()}));
   EXPECT_THAT(service()->snippets_fetcher()->last_status(),
               StartsWith("Received invalid JSON"));
   // This should not have changed the existing snippets.
@@ -429,17 +390,17 @@ TEST_F(NTPSnippetsServiceTest, LoadInvalidJsonWithExistingSnippets) {
 }
 
 TEST_F(NTPSnippetsServiceTest, LoadIncompleteJson) {
-  LoadFromJSONString(GetIncompleteJson());
+  LoadFromJSONString(GetTestJson({GetIncompleteSnippet()}));
   EXPECT_EQ("Invalid / empty list.",
             service()->snippets_fetcher()->last_status());
   EXPECT_THAT(service()->snippets(), IsEmpty());
 }
 
 TEST_F(NTPSnippetsServiceTest, LoadIncompleteJsonWithExistingSnippets) {
-  LoadFromJSONString(GetTestJson());
+  LoadFromJSONString(GetTestJson({GetSnippet()}));
   ASSERT_THAT(service()->snippets(), SizeIs(1));
 
-  LoadFromJSONString(GetIncompleteJson());
+  LoadFromJSONString(GetTestJson({GetIncompleteSnippet()}));
   EXPECT_EQ("Invalid / empty list.",
             service()->snippets_fetcher()->last_status());
   // This should not have changed the existing snippets.
@@ -452,7 +413,7 @@ TEST_F(NTPSnippetsServiceTest, Discard) {
   publishers.push_back(std::string("Source 1"));
   amp_urls.push_back(std::string());
   std::string json_str(
-      GetTestJsonWithSources(source_urls, publishers, amp_urls));
+      GetTestJson({GetSnippetWithSources(source_urls, publishers, amp_urls)}));
 
   LoadFromJSONString(json_str);
 
@@ -463,7 +424,7 @@ TEST_F(NTPSnippetsServiceTest, Discard) {
   EXPECT_THAT(service()->snippets(), SizeIs(1));
 
   // Discard the snippet.
-  EXPECT_TRUE(service()->DiscardSnippet("http://localhost/foobar"));
+  EXPECT_TRUE(service()->DiscardSnippet(kSnippetUrl));
   EXPECT_THAT(service()->snippets(), IsEmpty());
 
   // Make sure that fetching the same snippet again does not re-add it.
@@ -484,14 +445,14 @@ TEST_F(NTPSnippetsServiceTest, Discard) {
 }
 
 TEST_F(NTPSnippetsServiceTest, GetDiscarded) {
-  LoadFromJSONString(GetTestJson());
+  LoadFromJSONString(GetTestJson({GetSnippet()}));
 
   // For the test, we need the snippet to get discarded.
-  ASSERT_TRUE(service()->DiscardSnippet("http://localhost/foobar"));
+  ASSERT_TRUE(service()->DiscardSnippet(kSnippetUrl));
   const NTPSnippet::PtrVector& snippets = service()->discarded_snippets();
   EXPECT_EQ(1u, snippets.size());
   for (auto& snippet : snippets) {
-    EXPECT_EQ("http://localhost/foobar", snippet->id());
+    EXPECT_EQ(kSnippetUrl, snippet->id());
   }
 
   // There should be no discarded snippet after clearing the list.
@@ -500,19 +461,21 @@ TEST_F(NTPSnippetsServiceTest, GetDiscarded) {
 }
 
 TEST_F(NTPSnippetsServiceTest, CreationTimestampParseFail) {
-  std::string json_str(GetTestJson("aaa1448459205"));
+  std::string json_str(GetTestJson({GetSnippetWithTimes(
+      "aaa1448459205",
+      NTPSnippet::TimeToJsonString(GetDefaultExpirationTime()))}));
 
   LoadFromJSONString(json_str);
   ASSERT_THAT(service()->snippets(), SizeIs(1));
   const NTPSnippet& snippet = *service()->snippets().front();
-  EXPECT_EQ(snippet.id(), "http://localhost/foobar");
-  EXPECT_EQ(snippet.title(), "Title");
-  EXPECT_EQ(snippet.snippet(), "Snippet");
+  EXPECT_EQ(snippet.id(), kSnippetUrl);
+  EXPECT_EQ(snippet.title(), kSnippetTitle);
+  EXPECT_EQ(snippet.snippet(), kSnippetText);
   EXPECT_EQ(base::Time::UnixEpoch(), snippet.publish_date());
 }
 
 TEST_F(NTPSnippetsServiceTest, RemoveExpiredContent) {
-  std::string json_str(GetTestExpiredJson());
+  std::string json_str(GetTestJson({GetExpiredSnippet()}));
 
   LoadFromJSONString(json_str);
   EXPECT_THAT(service()->snippets(), IsEmpty());
@@ -524,13 +487,13 @@ TEST_F(NTPSnippetsServiceTest, TestSingleSource) {
   publishers.push_back(std::string("Source 1"));
   amp_urls.push_back(std::string("http://source1.amp.com"));
   std::string json_str(
-      GetTestJsonWithSources(source_urls, publishers, amp_urls));
+      GetTestJson({GetSnippetWithSources(source_urls, publishers, amp_urls)}));
 
   LoadFromJSONString(json_str);
   ASSERT_THAT(service()->snippets(), SizeIs(1));
   const NTPSnippet& snippet = *service()->snippets().front();
   EXPECT_EQ(snippet.sources().size(), 1u);
-  EXPECT_EQ(snippet.id(), "http://localhost/foobar");
+  EXPECT_EQ(snippet.id(), kSnippetUrl);
   EXPECT_EQ(snippet.best_source().url, GURL("http://source1.com"));
   EXPECT_EQ(snippet.best_source().publisher_name, std::string("Source 1"));
   EXPECT_EQ(snippet.best_source().amp_url, GURL("http://source1.amp.com"));
@@ -542,7 +505,7 @@ TEST_F(NTPSnippetsServiceTest, TestSingleSourceWithMalformedUrl) {
   publishers.push_back(std::string("Source 1"));
   amp_urls.push_back(std::string("http://source1.amp.com"));
   std::string json_str(
-      GetTestJsonWithSources(source_urls, publishers, amp_urls));
+      GetTestJson({GetSnippetWithSources(source_urls, publishers, amp_urls)}));
 
   LoadFromJSONString(json_str);
   EXPECT_THAT(service()->snippets(), IsEmpty());
@@ -554,7 +517,7 @@ TEST_F(NTPSnippetsServiceTest, TestSingleSourceWithMissingData) {
   publishers.push_back(std::string());
   amp_urls.push_back(std::string());
   std::string json_str(
-      GetTestJsonWithSources(source_urls, publishers, amp_urls));
+      GetTestJson({GetSnippetWithSources(source_urls, publishers, amp_urls)}));
 
   LoadFromJSONString(json_str);
   EXPECT_THAT(service()->snippets(), IsEmpty());
@@ -569,14 +532,14 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleSources) {
   amp_urls.push_back(std::string("http://source1.amp.com"));
   amp_urls.push_back(std::string("http://source2.amp.com"));
   std::string json_str(
-      GetTestJsonWithSources(source_urls, publishers, amp_urls));
+      GetTestJson({GetSnippetWithSources(source_urls, publishers, amp_urls)}));
 
   LoadFromJSONString(json_str);
   ASSERT_THAT(service()->snippets(), SizeIs(1));
   const NTPSnippet& snippet = *service()->snippets().front();
   // Expect the first source to be chosen
   EXPECT_EQ(snippet.sources().size(), 2u);
-  EXPECT_EQ(snippet.id(), "http://localhost/foobar");
+  EXPECT_EQ(snippet.id(), kSnippetUrl);
   EXPECT_EQ(snippet.best_source().url, GURL("http://source1.com"));
   EXPECT_EQ(snippet.best_source().publisher_name, std::string("Source 1"));
   EXPECT_EQ(snippet.best_source().amp_url, GURL("http://source1.amp.com"));
@@ -593,14 +556,14 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleIncompleteSources) {
   amp_urls.push_back(std::string("http://source1.amp.com"));
   amp_urls.push_back(std::string());
   std::string json_str(
-      GetTestJsonWithSources(source_urls, publishers, amp_urls));
+      GetTestJson({GetSnippetWithSources(source_urls, publishers, amp_urls)}));
 
   LoadFromJSONString(json_str);
   ASSERT_THAT(service()->snippets(), SizeIs(1));
   {
     const NTPSnippet& snippet = *service()->snippets().front();
     EXPECT_EQ(snippet.sources().size(), 2u);
-    EXPECT_EQ(snippet.id(), "http://localhost/foobar");
+    EXPECT_EQ(snippet.id(), kSnippetUrl);
     EXPECT_EQ(snippet.best_source().url, GURL("http://source2.com"));
     EXPECT_EQ(snippet.best_source().publisher_name, std::string("Source 2"));
     EXPECT_EQ(snippet.best_source().amp_url, GURL());
@@ -618,14 +581,15 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleIncompleteSources) {
   amp_urls.clear();
   amp_urls.push_back(std::string());
   amp_urls.push_back(std::string("http://source2.amp.com"));
-  json_str = GetTestJsonWithSources(source_urls, publishers, amp_urls);
+  json_str =
+      GetTestJson({GetSnippetWithSources(source_urls, publishers, amp_urls)});
 
   LoadFromJSONString(json_str);
   ASSERT_THAT(service()->snippets(), SizeIs(1));
   {
     const NTPSnippet& snippet = *service()->snippets().front();
     EXPECT_EQ(snippet.sources().size(), 2u);
-    EXPECT_EQ(snippet.id(), "http://localhost/foobar");
+    EXPECT_EQ(snippet.id(), kSnippetUrl);
     EXPECT_EQ(snippet.best_source().url, GURL("http://source1.com"));
     EXPECT_EQ(snippet.best_source().publisher_name, std::string("Source 1"));
     EXPECT_EQ(snippet.best_source().amp_url, GURL());
@@ -644,7 +608,8 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleIncompleteSources) {
   amp_urls.clear();
   amp_urls.push_back(std::string());
   amp_urls.push_back(std::string("http://source2.amp.com"));
-  json_str = GetTestJsonWithSources(source_urls, publishers, amp_urls);
+  json_str =
+      GetTestJson({GetSnippetWithSources(source_urls, publishers, amp_urls)});
 
   LoadFromJSONString(json_str);
   EXPECT_THAT(service()->snippets(), IsEmpty());
@@ -663,14 +628,14 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleCompleteSources) {
   amp_urls.push_back(std::string("http://source2.amp.com"));
   amp_urls.push_back(std::string("http://source3.amp.com"));
   std::string json_str(
-      GetTestJsonWithSources(source_urls, publishers, amp_urls));
+      GetTestJson({GetSnippetWithSources(source_urls, publishers, amp_urls)}));
 
   LoadFromJSONString(json_str);
   ASSERT_THAT(service()->snippets(), SizeIs(1));
   {
     const NTPSnippet& snippet = *service()->snippets().front();
     EXPECT_EQ(snippet.sources().size(), 3u);
-    EXPECT_EQ(snippet.id(), "http://localhost/foobar");
+    EXPECT_EQ(snippet.id(), kSnippetUrl);
     EXPECT_EQ(snippet.best_source().url, GURL("http://source1.com"));
     EXPECT_EQ(snippet.best_source().publisher_name, std::string("Source 1"));
     EXPECT_EQ(snippet.best_source().amp_url, GURL("http://source1.amp.com"));
@@ -690,14 +655,15 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleCompleteSources) {
   amp_urls.push_back(std::string("http://source1.amp.com"));
   amp_urls.push_back(std::string("http://source2.amp.com"));
   amp_urls.push_back(std::string("http://source3.amp.com"));
-  json_str = GetTestJsonWithSources(source_urls, publishers, amp_urls);
+  json_str =
+      GetTestJson({GetSnippetWithSources(source_urls, publishers, amp_urls)});
 
   LoadFromJSONString(json_str);
   ASSERT_THAT(service()->snippets(), SizeIs(1));
   {
     const NTPSnippet& snippet = *service()->snippets().front();
     EXPECT_EQ(snippet.sources().size(), 3u);
-    EXPECT_EQ(snippet.id(), "http://localhost/foobar");
+    EXPECT_EQ(snippet.id(), kSnippetUrl);
     EXPECT_EQ(snippet.best_source().url, GURL("http://source2.com"));
     EXPECT_EQ(snippet.best_source().publisher_name, std::string("Source 2"));
     EXPECT_EQ(snippet.best_source().amp_url, GURL("http://source2.amp.com"));
@@ -717,14 +683,15 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleCompleteSources) {
   amp_urls.push_back(std::string());
   amp_urls.push_back(std::string("http://source2.amp.com"));
   amp_urls.push_back(std::string("http://source3.amp.com"));
-  json_str = GetTestJsonWithSources(source_urls, publishers, amp_urls);
+  json_str =
+      GetTestJson({GetSnippetWithSources(source_urls, publishers, amp_urls)});
 
   LoadFromJSONString(json_str);
   ASSERT_THAT(service()->snippets(), SizeIs(1));
   {
     const NTPSnippet& snippet = *service()->snippets().front();
     EXPECT_EQ(snippet.sources().size(), 3u);
-    EXPECT_EQ(snippet.id(), "http://localhost/foobar");
+    EXPECT_EQ(snippet.id(), kSnippetUrl);
     EXPECT_EQ(snippet.best_source().url, GURL("http://source2.com"));
     EXPECT_EQ(snippet.best_source().publisher_name, std::string("Source 2"));
     EXPECT_EQ(snippet.best_source().amp_url, GURL("http://source2.amp.com"));
@@ -733,20 +700,21 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleCompleteSources) {
 
 TEST_F(NTPSnippetsServiceTest, LogNumArticlesHistogram) {
   base::HistogramTester tester;
-  LoadFromJSONString(GetInvalidJson());
+  LoadFromJSONString(GetTestJson({GetInvalidSnippet()}));
+
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/1)));
   // Invalid JSON shouldn't contribute to NumArticlesFetched.
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticlesFetched"),
               IsEmpty());
   // Valid JSON with empty list.
-  LoadFromJSONString("{ \"recos\": []}");
+  LoadFromJSONString(GetTestJson(std::vector<std::string>()));
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/2)));
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticlesFetched"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/1)));
   // Snippet list should be populated with size 1.
-  LoadFromJSONString(GetTestJson());
+  LoadFromJSONString(GetTestJson({GetSnippet()}));
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/2),
                           base::Bucket(/*min=*/1, /*count=*/1)));
@@ -754,7 +722,7 @@ TEST_F(NTPSnippetsServiceTest, LogNumArticlesHistogram) {
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/1),
                           base::Bucket(/*min=*/1, /*count=*/1)));
   // Duplicate snippet shouldn't increase the list size.
-  LoadFromJSONString(GetTestJson());
+  LoadFromJSONString(GetTestJson({GetSnippet()}));
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/2),
                           base::Bucket(/*min=*/1, /*count=*/2)));
@@ -766,8 +734,8 @@ TEST_F(NTPSnippetsServiceTest, LogNumArticlesHistogram) {
       IsEmpty());
   // Discarding a snippet should decrease the list size. This will only be
   // logged after the next fetch.
-  EXPECT_TRUE(service()->DiscardSnippet("http://localhost/foobar"));
-  LoadFromJSONString(GetTestJson());
+  EXPECT_TRUE(service()->DiscardSnippet(kSnippetUrl));
+  LoadFromJSONString(GetTestJson({GetSnippet()}));
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/3),
                           base::Bucket(/*min=*/1, /*count=*/2)));
@@ -785,67 +753,32 @@ TEST_F(NTPSnippetsServiceTest, LogNumArticlesHistogram) {
   tester.ExpectTotalCount("NewTabPage.Snippets.NumArticlesFetched", 4);
 }
 
-const char kChromeReaderResponseMultipleUrls[] =
-    "{ \"recos\": [{ "
-    "  \"contentInfo\": { "
-    "    \"url\": \"%s\", "
-    "    \"creationTimestampSec\": \"%s\", "
-    "    \"expiryTimestampSec\" : \"%s\","
-    "    \"title\": \"Stolen doggie finally gets returned to owner\", "
-    "    \"snippet\": \"It\'s at least this man\'s best friend.\", "
-    "    \"thumbnailUrl\": \"http://t0.gstatic.com/images?q=tbn:1\", "
-    "    \"sourceCorpusInfo\": [{"
-    "      \"type\" : \"CHROME_LOGS\", "
-    "      \"corpusId\": \"http://mashable.com/2016/05/11/stolen\", "
-    "      \"publisherData\": { "
-    "        \"sourceName\": \"Mashable\", "
-    "        \"sourceLogoUrl\": \"http://t3.gstatic.com/images?q=tbn:2\" "
-    "      }, "
-    "      \"ampUrl\": \"http://mashable-amphtml.googleusercontent.com/1\" "
-    "    }, { "
-    "      \"type\": \"CHROME_LOGS\", "
-    "      \"corpusId\": \"http://www.aol.com/article/2016/05/stolen-doggie\", "
-    "      \"publisherData\":  { "
-    "        \"sourceName\": \"AOL\", "
-    "        \"sourceLogoUrl\": \"http://t2.gstatic.com/images?q=tbn:3\" "
-    "      }, "
-    "      \"ampUrl\": \"http://mashable-amphtml.googleusercontent.com/1\" "
-    "    }, { "
-    "      \"type\": \"CHROME_LOGS\", "
-    "      \"corpusId\": \"http://mashable.com/2016/05/11/stolen?utm_cid=1\", "
-    "      \"publisherData\": { "
-    "        \"sourceName\": \"Mashable\", "
-    "        \"sourceLogoUrl\": \"http://t3.gstatic.com/images?q=tbn:2\" "
-    "      }, "
-    "      \"ampUrl\": \"http://mashable-amphtml.googleusercontent.com/1\" "
-    "    }] "
-    "  }, "
-    "  \"score\" : \"0.099307865\" "
-    "}]} ";
-
 TEST_F(NTPSnippetsServiceTest, DiscardShouldRespectAllKnownUrls) {
-  const std::string url_mashable = "http://mashable.com/2016/05/11/stolen";
-  const std::string url_aol =
-      "http://www.aol.com/article/2016/05/stolen-doggie";
+  const std::string creation =
+      NTPSnippet::TimeToJsonString(GetDefaultCreationTime());
+  const std::string expiry =
+      NTPSnippet::TimeToJsonString(GetDefaultExpirationTime());
+  const std::vector<std::string> source_urls = {
+      "http://mashable.com/2016/05/11/stolen",
+      "http://www.aol.com/article/2016/05/stolen-doggie",
+      "http://mashable.com/2016/05/11/stolen?utm_cid=1"};
+  const std::vector<std::string> publishers = {"Mashable", "AOL", "Mashable"};
+  const std::vector<std::string> amp_urls = {
+      "http://mashable-amphtml.googleusercontent.com/1",
+      "http://t2.gstatic.com/images?q=tbn:3",
+      "http://t2.gstatic.com/images?q=tbn:3"};
 
-  LoadFromJSONString(base::StringPrintf(
-      kChromeReaderResponseMultipleUrls, url_mashable.c_str(),
-      NTPSnippet::TimeToJsonString(GetDefaultCreationTime()).c_str(),
-      NTPSnippet::TimeToJsonString(base::Time::Now() +
-                                   base::TimeDelta::FromHours(1))
-          .c_str()));
+  // Add the snippet from the mashable domain.
+  LoadFromJSONString(GetTestJson({GetSnippetWithUrlAndTimesAndSources(
+      source_urls[0], creation, expiry, source_urls, publishers, amp_urls)}));
   ASSERT_THAT(service()->snippets(), SizeIs(1));
   // Discard the snippet via the mashable source corpus ID.
-  EXPECT_TRUE(service()->DiscardSnippet(url_mashable));
+  EXPECT_TRUE(service()->DiscardSnippet(source_urls[0]));
   EXPECT_THAT(service()->snippets(), IsEmpty());
 
   // The same article from the AOL domain should now be detected as discarded.
-  LoadFromJSONString(base::StringPrintf(
-      kChromeReaderResponseMultipleUrls, url_aol.c_str(),
-      NTPSnippet::TimeToJsonString(GetDefaultCreationTime()).c_str(),
-      NTPSnippet::TimeToJsonString(base::Time::Now() +
-                                   base::TimeDelta::FromHours(1))
-          .c_str()));
+  LoadFromJSONString(GetTestJson({GetSnippetWithUrlAndTimesAndSources(
+      source_urls[1], creation, expiry, source_urls, publishers, amp_urls)}));
   ASSERT_THAT(service()->snippets(), IsEmpty());
 }
 
