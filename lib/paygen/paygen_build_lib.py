@@ -241,7 +241,7 @@ def _FilterForTest(artifacts):
           if i.image_type == 'test']
 
 
-def _GenerateSinglePayload(payload, work_dir, sign, au_generator_uri, dry_run):
+def _GenerateSinglePayload(payload, work_dir, sign, dry_run):
   """Generate a single payload.
 
   This is intended to be safe to call inside a new process.
@@ -250,7 +250,6 @@ def _GenerateSinglePayload(payload, work_dir, sign, au_generator_uri, dry_run):
     payload: gspath.Payload object defining the payloads to generate.
     work_dir: Working directory for payload generation.
     sign: boolean to decide if payload should be signed.
-    au_generator_uri: URI of the au_generator.zip to use, None for the default.
     dry_run: boolean saying if this is a dry run.
   """
   # This cache dir will be shared with other processes, but we need our
@@ -264,7 +263,6 @@ def _GenerateSinglePayload(payload, work_dir, sign, au_generator_uri, dry_run):
         cache,
         work_dir=work_dir,
         sign=sign,
-        au_generator_uri=au_generator_uri,
         dry_run=dry_run)
 
 
@@ -394,7 +392,7 @@ class _PaygenBuild(object):
                dry_run=False, ignore_finished=False,
                skip_delta_payloads=False,
                disable_tests=False, output_dir=None,
-               run_parallel=False, au_generator_uri=None,
+               run_parallel=False,
                skip_duts_check=False):
     """Initializer."""
     self._build = build
@@ -408,7 +406,6 @@ class _PaygenBuild(object):
     self._archive_board = None
     self._archive_build = None
     self._archive_build_uri = None
-    self._au_generator_uri = au_generator_uri
     self._skip_duts_check = skip_duts_check
     self._control_dir = (None if disable_tests else
                          _FindControlFileDir(self._work_dir))
@@ -1031,7 +1028,6 @@ class _PaygenBuild(object):
     payloads_args = [(payload,
                       self._work_dir,
                       isinstance(payload.tgt_image, gspaths.Image),
-                      self._au_generator_uri,
                       bool(self._drm))
                      for payload in payloads]
 
@@ -1516,7 +1512,6 @@ def CreatePayloads(build, work_dir, site_config,
                    disable_tests=False,
                    output_dir=None,
                    run_parallel=False,
-                   au_generator_uri=None,
                    skip_duts_check=False):
   """Helper method than generates payloads for a given build.
 
@@ -1530,7 +1525,6 @@ def CreatePayloads(build, work_dir, site_config,
     disable_tests: Do not attempt generating test artifacts or running tests.
     output_dir: Directory for payload files, or None for GS default locations.
     run_parallel: Generate payloads in parallel processes.
-    au_generator_uri: URI of au_generator.zip to use, None to use the default.
     skip_duts_check: Do not force checking minimum available DUTs
   """
   ValidateBoardConfig(build.board)
@@ -1542,5 +1536,4 @@ def CreatePayloads(build, work_dir, site_config,
                disable_tests=disable_tests,
                output_dir=output_dir,
                run_parallel=run_parallel,
-               au_generator_uri=au_generator_uri,
                skip_duts_check=skip_duts_check).CreatePayloads()
