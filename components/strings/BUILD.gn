@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/locales.gni")
 import("//tools/grit/grit_rule.gni")
 
 if (is_android) {
@@ -69,72 +70,9 @@ grit("components_strings") {
   source = "../components_strings.grd"
   outputs = [
     "grit/components_strings.h",
-    "components_strings_am.pak",
-    "components_strings_ar.pak",
-    "components_strings_bg.pak",
-    "components_strings_bn.pak",
-    "components_strings_ca.pak",
-    "components_strings_cs.pak",
-    "components_strings_da.pak",
-    "components_strings_de.pak",
-    "components_strings_el.pak",
-    "components_strings_en-GB.pak",
-    "components_strings_en-US.pak",
-    "components_strings_es.pak",
-    "components_strings_es-419.pak",
-    "components_strings_et.pak",
-    "components_strings_fa.pak",
-    "components_strings_fake-bidi.pak",
-    "components_strings_fi.pak",
-    "components_strings_fil.pak",
-    "components_strings_fr.pak",
-    "components_strings_gu.pak",
-    "components_strings_he.pak",
-    "components_strings_hi.pak",
-    "components_strings_hr.pak",
-    "components_strings_hu.pak",
-    "components_strings_id.pak",
-    "components_strings_it.pak",
-    "components_strings_ja.pak",
-    "components_strings_kn.pak",
-    "components_strings_ko.pak",
-    "components_strings_lt.pak",
-    "components_strings_lv.pak",
-    "components_strings_ml.pak",
-    "components_strings_mr.pak",
-    "components_strings_ms.pak",
-    "components_strings_nl.pak",
-    "components_strings_nb.pak",
-    "components_strings_pl.pak",
-    "components_strings_pt-BR.pak",
-    "components_strings_pt-PT.pak",
-    "components_strings_ro.pak",
-    "components_strings_ru.pak",
-    "components_strings_sk.pak",
-    "components_strings_sl.pak",
-    "components_strings_sr.pak",
-    "components_strings_sv.pak",
-    "components_strings_sw.pak",
-    "components_strings_ta.pak",
-    "components_strings_te.pak",
-    "components_strings_th.pak",
-    "components_strings_tr.pak",
-    "components_strings_uk.pak",
-    "components_strings_vi.pak",
-    "components_strings_zh-CN.pak",
-    "components_strings_zh-TW.pak",
   ]
-
-  if (is_ios) {
-    # iOS uses "pt" for pt-BR" and "es-MX" for "es-419".
-    outputs -= [
-      "components_strings_pt-BR.pak",
-      "components_strings_es-419.pak",
-    ]
-    outputs += [
-      "components_strings_pt.pak",
-      "components_strings_es-MX.pak",
-    ]
+  foreach(locale, locales_with_fake_bidi) {
+    outputs += [ "components_strings_$locale.pak" ]
   }
 
   if (is_android) {
@@ -159,72 +97,9 @@ grit("components_chromium_strings") {
   source = "../components_chromium_strings.grd"
   outputs = [
     "grit/components_chromium_strings.h",
-    "components_chromium_strings_am.pak",
-    "components_chromium_strings_ar.pak",
-    "components_chromium_strings_bg.pak",
-    "components_chromium_strings_bn.pak",
-    "components_chromium_strings_ca.pak",
-    "components_chromium_strings_cs.pak",
-    "components_chromium_strings_da.pak",
-    "components_chromium_strings_de.pak",
-    "components_chromium_strings_el.pak",
-    "components_chromium_strings_en-GB.pak",
-    "components_chromium_strings_en-US.pak",
-    "components_chromium_strings_es.pak",
-    "components_chromium_strings_es-419.pak",
-    "components_chromium_strings_et.pak",
-    "components_chromium_strings_fa.pak",
-    "components_chromium_strings_fake-bidi.pak",
-    "components_chromium_strings_fi.pak",
-    "components_chromium_strings_fil.pak",
-    "components_chromium_strings_fr.pak",
-    "components_chromium_strings_gu.pak",
-    "components_chromium_strings_he.pak",
-    "components_chromium_strings_hi.pak",
-    "components_chromium_strings_hr.pak",
-    "components_chromium_strings_hu.pak",
-    "components_chromium_strings_id.pak",
-    "components_chromium_strings_it.pak",
-    "components_chromium_strings_ja.pak",
-    "components_chromium_strings_kn.pak",
-    "components_chromium_strings_ko.pak",
-    "components_chromium_strings_lt.pak",
-    "components_chromium_strings_lv.pak",
-    "components_chromium_strings_ml.pak",
-    "components_chromium_strings_mr.pak",
-    "components_chromium_strings_ms.pak",
-    "components_chromium_strings_nl.pak",
-    "components_chromium_strings_nb.pak",
-    "components_chromium_strings_pl.pak",
-    "components_chromium_strings_pt-BR.pak",
-    "components_chromium_strings_pt-PT.pak",
-    "components_chromium_strings_ro.pak",
-    "components_chromium_strings_ru.pak",
-    "components_chromium_strings_sk.pak",
-    "components_chromium_strings_sl.pak",
-    "components_chromium_strings_sr.pak",
-    "components_chromium_strings_sv.pak",
-    "components_chromium_strings_sw.pak",
-    "components_chromium_strings_ta.pak",
-    "components_chromium_strings_te.pak",
-    "components_chromium_strings_th.pak",
-    "components_chromium_strings_tr.pak",
-    "components_chromium_strings_uk.pak",
-    "components_chromium_strings_vi.pak",
-    "components_chromium_strings_zh-CN.pak",
-    "components_chromium_strings_zh-TW.pak",
   ]
-
-  if (is_ios) {
-    # iOS uses "pt" for pt-BR" and "es-MX" for "es-419".
-    outputs -= [
-      "components_chromium_strings_pt-BR.pak",
-      "components_chromium_strings_es-419.pak",
-    ]
-    outputs += [
-      "components_chromium_strings_pt.pak",
-      "components_chromium_strings_es-MX.pak",
-    ]
+  foreach(locale, locales_with_fake_bidi) {
+    outputs += [ "components_chromium_strings_$locale.pak" ]
   }
 }
 
@@ -234,72 +109,9 @@ grit("components_google_chrome_strings") {
   source = "../components_google_chrome_strings.grd"
   outputs = [
     "grit/components_google_chrome_strings.h",
-    "components_google_chrome_strings_am.pak",
-    "components_google_chrome_strings_ar.pak",
-    "components_google_chrome_strings_bg.pak",
-    "components_google_chrome_strings_bn.pak",
-    "components_google_chrome_strings_ca.pak",
-    "components_google_chrome_strings_cs.pak",
-    "components_google_chrome_strings_da.pak",
-    "components_google_chrome_strings_de.pak",
-    "components_google_chrome_strings_el.pak",
-    "components_google_chrome_strings_en-GB.pak",
-    "components_google_chrome_strings_en-US.pak",
-    "components_google_chrome_strings_es.pak",
-    "components_google_chrome_strings_es-419.pak",
-    "components_google_chrome_strings_et.pak",
-    "components_google_chrome_strings_fa.pak",
-    "components_google_chrome_strings_fake-bidi.pak",
-    "components_google_chrome_strings_fi.pak",
-    "components_google_chrome_strings_fil.pak",
-    "components_google_chrome_strings_fr.pak",
-    "components_google_chrome_strings_gu.pak",
-    "components_google_chrome_strings_he.pak",
-    "components_google_chrome_strings_hi.pak",
-    "components_google_chrome_strings_hr.pak",
-    "components_google_chrome_strings_hu.pak",
-    "components_google_chrome_strings_id.pak",
-    "components_google_chrome_strings_it.pak",
-    "components_google_chrome_strings_ja.pak",
-    "components_google_chrome_strings_kn.pak",
-    "components_google_chrome_strings_ko.pak",
-    "components_google_chrome_strings_lt.pak",
-    "components_google_chrome_strings_lv.pak",
-    "components_google_chrome_strings_ml.pak",
-    "components_google_chrome_strings_mr.pak",
-    "components_google_chrome_strings_ms.pak",
-    "components_google_chrome_strings_nl.pak",
-    "components_google_chrome_strings_nb.pak",
-    "components_google_chrome_strings_pl.pak",
-    "components_google_chrome_strings_pt-BR.pak",
-    "components_google_chrome_strings_pt-PT.pak",
-    "components_google_chrome_strings_ro.pak",
-    "components_google_chrome_strings_ru.pak",
-    "components_google_chrome_strings_sk.pak",
-    "components_google_chrome_strings_sl.pak",
-    "components_google_chrome_strings_sr.pak",
-    "components_google_chrome_strings_sv.pak",
-    "components_google_chrome_strings_sw.pak",
-    "components_google_chrome_strings_ta.pak",
-    "components_google_chrome_strings_te.pak",
-    "components_google_chrome_strings_th.pak",
-    "components_google_chrome_strings_tr.pak",
-    "components_google_chrome_strings_uk.pak",
-    "components_google_chrome_strings_vi.pak",
-    "components_google_chrome_strings_zh-CN.pak",
-    "components_google_chrome_strings_zh-TW.pak",
   ]
-
-  if (is_ios) {
-    # iOS uses "pt" for pt-BR" and "es-MX" for "es-419".
-    outputs -= [
-      "components_google_chrome_strings_pt-BR.pak",
-      "components_google_chrome_strings_es-419.pak",
-    ]
-    outputs += [
-      "components_google_chrome_strings_pt.pak",
-      "components_google_chrome_strings_es-MX.pak",
-    ]
+  foreach(locale, locales_with_fake_bidi) {
+    outputs += [ "components_google_chrome_strings_$locale.pak" ]
   }
 }
 
@@ -309,71 +121,8 @@ grit("components_locale_settings") {
   source = "../components_locale_settings.grd"
   outputs = [
     "grit/components_locale_settings.h",
-    "components_locale_settings_am.pak",
-    "components_locale_settings_ar.pak",
-    "components_locale_settings_bg.pak",
-    "components_locale_settings_bn.pak",
-    "components_locale_settings_ca.pak",
-    "components_locale_settings_cs.pak",
-    "components_locale_settings_da.pak",
-    "components_locale_settings_de.pak",
-    "components_locale_settings_el.pak",
-    "components_locale_settings_en-GB.pak",
-    "components_locale_settings_en-US.pak",
-    "components_locale_settings_es.pak",
-    "components_locale_settings_es-419.pak",
-    "components_locale_settings_et.pak",
-    "components_locale_settings_fa.pak",
-    "components_locale_settings_fake-bidi.pak",
-    "components_locale_settings_fi.pak",
-    "components_locale_settings_fil.pak",
-    "components_locale_settings_fr.pak",
-    "components_locale_settings_gu.pak",
-    "components_locale_settings_he.pak",
-    "components_locale_settings_hi.pak",
-    "components_locale_settings_hr.pak",
-    "components_locale_settings_hu.pak",
-    "components_locale_settings_id.pak",
-    "components_locale_settings_it.pak",
-    "components_locale_settings_ja.pak",
-    "components_locale_settings_kn.pak",
-    "components_locale_settings_ko.pak",
-    "components_locale_settings_lt.pak",
-    "components_locale_settings_lv.pak",
-    "components_locale_settings_ml.pak",
-    "components_locale_settings_mr.pak",
-    "components_locale_settings_ms.pak",
-    "components_locale_settings_nl.pak",
-    "components_locale_settings_nb.pak",
-    "components_locale_settings_pl.pak",
-    "components_locale_settings_pt-BR.pak",
-    "components_locale_settings_pt-PT.pak",
-    "components_locale_settings_ro.pak",
-    "components_locale_settings_ru.pak",
-    "components_locale_settings_sk.pak",
-    "components_locale_settings_sl.pak",
-    "components_locale_settings_sr.pak",
-    "components_locale_settings_sv.pak",
-    "components_locale_settings_sw.pak",
-    "components_locale_settings_ta.pak",
-    "components_locale_settings_te.pak",
-    "components_locale_settings_th.pak",
-    "components_locale_settings_tr.pak",
-    "components_locale_settings_uk.pak",
-    "components_locale_settings_vi.pak",
-    "components_locale_settings_zh-CN.pak",
-    "components_locale_settings_zh-TW.pak",
   ]
-
-  if (is_ios) {
-    # iOS uses "pt" for pt-BR" and "es-MX" for "es-419".
-    outputs -= [
-      "components_locale_settings_pt-BR.pak",
-      "components_locale_settings_es-419.pak",
-    ]
-    outputs += [
-      "components_locale_settings_pt.pak",
-      "components_locale_settings_es-MX.pak",
-    ]
+  foreach(locale, locales_with_fake_bidi) {
+    outputs += [ "components_locale_settings_$locale.pak" ]
   }
 }

@@ -99,6 +99,8 @@ if (!is_ios) {
   ios_packed_locales = locales - ios_unsupported_locales
 }
 
+locales_with_fake_bidi = locales + [ "fake-bidi" ]
+
 # Same as the locales list but in the format Mac expects for output files:
 # it uses underscores instead of hyphens, and "en" instead of "en-US".
 locales_as_mac_outputs = [
