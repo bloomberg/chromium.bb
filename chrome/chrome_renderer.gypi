@@ -5,6 +5,8 @@
 {
   'variables': {
     'chrome_renderer_sources': [
+      'renderer/app_categorizer.h',
+      'renderer/app_categorizer.cc',
       'renderer/banners/app_banner_client.cc',
       'renderer/banners/app_banner_client.h',
       'renderer/benchmarking_extension.cc',

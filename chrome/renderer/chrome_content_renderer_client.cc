@@ -32,6 +32,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "chrome/grit/renderer_resources.h"
+#include "chrome/renderer/app_categorizer.h"
 #include "chrome/renderer/banners/app_banner_client.h"
 #include "chrome/renderer/benchmarking_extension.h"
 #include "chrome/renderer/chrome_render_frame_observer.h"
@@ -903,43 +904,8 @@ bool ChromeContentRendererClient::IsNaClAllowed(
     const Extension* extension,
     WebPluginParams* params) {
   // Temporarily allow these whitelisted apps and WebUIs to use NaCl.
-  std::string app_url_host = app_url.host();
-  std::string manifest_url_path = manifest_url.path();
-
   bool is_whitelisted_web_ui =
       app_url.spec() == chrome::kChromeUIAppListStartPageURL;
-
-  bool is_photo_app =
-      // Whitelisted apps must be served over https.
-      app_url.SchemeIsCryptographic() && manifest_url.SchemeIsCryptographic() &&
-      (base::EndsWith(app_url_host, "plus.google.com",
-                      base::CompareCase::INSENSITIVE_ASCII) ||
-       base::EndsWith(app_url_host, "plus.sandbox.google.com",
-                      base::CompareCase::INSENSITIVE_ASCII)) &&
-      manifest_url.DomainIs("ssl.gstatic.com") &&
-      (manifest_url_path.find("s2/oz/nacl/") == 1 ||
-       manifest_url_path.find("photos/nacl/") == 1);
-
-  std::string manifest_fs_host;
-  if (manifest_url.SchemeIsFileSystem() && manifest_url.inner_url()) {
-    manifest_fs_host = manifest_url.inner_url()->host();
-  }
-  bool is_hangouts_app =
-      // Whitelisted apps must be served over secure scheme.
-      app_url.SchemeIsCryptographic() && manifest_url.SchemeIsFileSystem() &&
-      manifest_url.inner_url()->SchemeIsCryptographic() &&
-      (base::EndsWith(app_url_host, "talkgadget.google.com",
-                      base::CompareCase::INSENSITIVE_ASCII) ||
-       base::EndsWith(app_url_host, "plus.google.com",
-                      base::CompareCase::INSENSITIVE_ASCII) ||
-       base::EndsWith(app_url_host, "plus.sandbox.google.com",
-                      base::CompareCase::INSENSITIVE_ASCII) ||
-       base::EndsWith(app_url_host, "hangouts.google.com",
-                      base::CompareCase::INSENSITIVE_ASCII)) &&
-      // The manifest must be loaded from the host's FileSystem.
-      (manifest_fs_host == app_url_host);
-
-  bool is_whitelisted_app = is_photo_app || is_hangouts_app;
 
   bool is_invoked_by_webstore_installed_extension = false;
   bool is_extension_unrestricted = false;
@@ -973,7 +939,7 @@ bool ChromeContentRendererClient::IsNaClAllowed(
   //  5) --enable-nacl is set.
   bool is_nacl_allowed_by_location =
       is_whitelisted_web_ui ||
-      is_whitelisted_app ||
+      AppCategorizer::IsWhitelistedApp(manifest_url, app_url) ||
       is_extension_unrestricted ||
       is_extension_force_installed ||
       is_invoked_by_webstore_installed_extension;
@@ -1229,29 +1195,20 @@ ChromeContentRendererClient::OverrideSpeechSynthesizer(
 
 bool ChromeContentRendererClient::AllowPepperMediaStreamAPI(
     const GURL& url) {
-#if !defined(OS_ANDROID)
-  // Allow only the Hangouts app to use the MediaStream APIs. It's OK to check
-  // the whitelist in the renderer, since we're only preventing access until
-  // these APIs are public and stable.
-  std::string url_host = url.host();
-  if (url.SchemeIs("https") &&
-      (base::EndsWith(url_host, "talkgadget.google.com",
-                      base::CompareCase::INSENSITIVE_ASCII) ||
-       base::EndsWith(url_host, "plus.google.com",
-                      base::CompareCase::INSENSITIVE_ASCII) ||
-       base::EndsWith(url_host, "plus.sandbox.google.com",
-                      base::CompareCase::INSENSITIVE_ASCII)) &&
-      base::StartsWith(url.path(), "/hangouts/",
-                       base::CompareCase::INSENSITIVE_ASCII)) {
-    return true;
-  }
+#if defined(OS_ANDROID)
+  return false;
+#else
   // Allow access for tests.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnablePepperTesting)) {
     return true;
   }
+
+  // Allow only the Hangouts app to use the MediaStream APIs. It's OK to check
+  // the whitelist in the renderer, since we're only preventing access until
+  // these APIs are public and stable.
+  return (AppCategorizer::IsHangoutsUrl(url));
 #endif  // !defined(OS_ANDROID)
-  return false;
 }
 
 void ChromeContentRendererClient::AddSupportedKeySystems(

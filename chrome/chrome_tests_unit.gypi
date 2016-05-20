@@ -304,6 +304,7 @@
       'common/secure_origin_whitelist_unittest.cc',
       'common/switch_utils_unittest.cc',
       'common/variations/variations_util_unittest.cc',
+      'renderer/app_categorizer_unittest.cc',
       'renderer/chrome_content_renderer_client_unittest.cc',
       'renderer/content_settings_observer_unittest.cc',
       'renderer/instant_restricted_id_cache_unittest.cc',

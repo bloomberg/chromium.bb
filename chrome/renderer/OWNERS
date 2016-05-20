@@ -2,3 +2,8 @@
 per-file page_load_histograms*=file://components/page_load_metrics/OWNERS
 # Instant/Search files.
 per-file instant_restricted_id_cache*=file://chrome/browser/search/OWNERS
+# Security checks and whitelists
+per-file app_categorizer*=set noparent
+per-file app_categorizer*=jschuh@chromium.org
+per-file app_categorizer*=tsepez@chromium.org
+per-file app_categorizer*=wfh@chromium.org
