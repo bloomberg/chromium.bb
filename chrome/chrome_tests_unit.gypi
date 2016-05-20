@@ -558,6 +558,7 @@
       'browser/media/cast_transport_host_filter_unittest.cc',
       'browser/metrics/extensions_metrics_provider_unittest.cc',
       'browser/notifications/extension_welcome_notification_unittest.cc',
+      'browser/notifications/notification_builder_mac_unittest.mm',
       'browser/notifications/notification_conversion_helper_unittest.cc',
       'browser/renderer_context_menu/context_menu_content_type_unittest.cc',
       'browser/search/hotword_service_unittest.cc',

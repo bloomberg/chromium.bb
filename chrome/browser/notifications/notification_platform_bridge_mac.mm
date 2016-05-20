@@ -12,12 +12,14 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_builder_mac.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/persistent_notification_delegate.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/generated_resources.h"
+#include "third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
 
@@ -40,18 +42,6 @@
 // - Sound names can be implemented by setting soundName in NSUserNotification
 //   NSUserNotificationDefaultSoundName gives you the platform default.
 
-namespace {
-
-// Keys in NSUserNotification.userInfo to map chrome notifications to
-// native ones.
-NSString* const kNotificationOriginKey = @"notification_origin";
-NSString* const kNotificationPersistentIdKey = @"notification_persistent_id";
-
-NSString* const kNotificationProfilePersistentIdKey =
-    @"notification_profile_persistent_id";
-NSString* const kNotificationIncognitoKey = @"notification_incognito";
-
-}  // namespace
 
 // static
 NotificationPlatformBridge* NotificationPlatformBridge::Create() {
@@ -86,10 +76,11 @@ void NotificationPlatformBridgeMac::Display(const std::string& notification_id,
                                             const std::string& profile_id,
                                             bool incognito,
                                             const Notification& notification) {
-  base::scoped_nsobject<NSUserNotification> toast(
-      [[NSUserNotification alloc] init]);
-  [toast setTitle:base::SysUTF16ToNSString(notification.title())];
-  [toast setSubtitle:base::SysUTF16ToNSString(notification.message())];
+  base::scoped_nsobject<NotificationBuilder> builder(
+      [[NotificationBuilder alloc] init]);
+
+  [builder setTitle:base::SysUTF16ToNSString(notification.title())];
+  [builder setSubTitle:base::SysUTF16ToNSString(notification.message())];
 
   // TODO(miguelg): try to elide the origin perhaps See NSString
   // stringWithFormat. It seems that the informativeText font is constant.
@@ -97,62 +88,29 @@ void NotificationPlatformBridgeMac::Display(const std::string& notification_id,
       notification.context_message().empty()
           ? base::SysUTF8ToNSString(notification.origin_url().spec())
           : base::SysUTF16ToNSString(notification.context_message());
-  [toast setInformativeText:informative_text];
 
-  // Some functionality requires private APIs
-  // Icon
-  if ([toast respondsToSelector:@selector(_identityImage)] &&
-      !notification.icon().IsEmpty()) {
-    [toast setValue:notification.icon().ToNSImage() forKey:@"_identityImage"];
-    [toast setValue:@NO forKey:@"_identityImageHasBorder"];
+  [builder setContextMessage:informative_text];
+  if (!notification.icon().IsEmpty()) {
+    [builder setIcon:notification.icon().ToNSImage()];
   }
 
-  // Buttons
-  if ([toast respondsToSelector:@selector(_showsButtons)]) {
-    [toast setValue:@YES forKey:@"_showsButtons"];
-    // A default close button label is provided by the platform but we
-    // explicitly override it in case the user decides to not
-    // use the OS language in Chrome.
-    [toast setOtherButtonTitle:l10n_util::GetNSString(
-                                   IDS_NOTIFICATION_BUTTON_CLOSE)];
-
-    // Display the Settings button as the action button if there either are no
-    // developer-provided action buttons, or the alternate action menu is not
-    // available on this Mac version. This avoids needlessly showing the menu.
-    if (notification.buttons().empty() ||
-        ![toast respondsToSelector:@selector(_alwaysShowAlternateActionMenu)]) {
-      [toast setActionButtonTitle:l10n_util::GetNSString(
-                                      IDS_NOTIFICATION_BUTTON_SETTINGS)];
-    } else {
-      // Otherwise show the alternate menu, then show the developer actions and
-      // finally the settings one.
-      DCHECK(
-          [toast respondsToSelector:@selector(_alwaysShowAlternateActionMenu)]);
-      DCHECK(
-          [toast respondsToSelector:@selector(_alternateActionButtonTitles)]);
-
-      [toast setActionButtonTitle:l10n_util::GetNSString(
-                                      IDS_NOTIFICATION_BUTTON_OPTIONS)];
-      [toast setValue:@YES forKey:@"_alwaysShowAlternateActionMenu"];
-
-      NSMutableArray* buttons = [NSMutableArray arrayWithCapacity:3];
-      for (const auto& action : notification.buttons())
-        [buttons addObject:base::SysUTF16ToNSString(action.title)];
-      [buttons
-          addObject:l10n_util::GetNSString(IDS_NOTIFICATION_BUTTON_SETTINGS)];
-
-      [toast setValue:buttons forKey:@"_alternateActionButtonTitles"];
-    }
+  std::vector<message_center::ButtonInfo> buttons = notification.buttons();
+  if (!buttons.empty()) {
+    DCHECK_LE(buttons.size(), blink::kWebNotificationMaxActions);
+    NSString* buttonOne = SysUTF16ToNSString(buttons[0].title);
+    NSString* buttonTwo = nullptr;
+    if (buttons.size() > 1)
+      buttonTwo = SysUTF16ToNSString(buttons[1].title);
+    [builder setButtons:buttonOne secondaryButton:buttonTwo];
   }
 
   // Tag
-  if ([toast respondsToSelector:@selector(setIdentifier:)] &&
-      !notification.tag().empty()) {
-    [toast setValue:base::SysUTF8ToNSString(notification.tag())
-             forKey:@"identifier"];
-
+  if (!notification.tag().empty()) {
+    [builder setTag:base::SysUTF8ToNSString(notification.tag())];
     // If renotify is needed, delete the notification with the same tag
     // from the notification center before displaying this one.
+    // TODO(miguelg): This will need to work for alerts as well via XPC
+    // once supported.
     if (notification.renotify()) {
       NSUserNotificationCenter* notification_center =
           [NSUserNotificationCenter defaultUserNotificationCenter];
@@ -169,13 +127,12 @@ void NotificationPlatformBridgeMac::Display(const std::string& notification_id,
     }
   }
 
-  toast.get().userInfo = @{
-    kNotificationOriginKey :
-        base::SysUTF8ToNSString(notification.origin_url().spec()),
-    kNotificationPersistentIdKey : base::SysUTF8ToNSString(notification_id),
-    kNotificationProfilePersistentIdKey : base::SysUTF8ToNSString(profile_id),
-    kNotificationIncognitoKey : [NSNumber numberWithBool:incognito]
-  };
+  [builder setOrigin:base::SysUTF8ToNSString(notification.origin_url().spec())];
+  [builder setNotificationId:base::SysUTF8ToNSString(notification_id)];
+  [builder setProfileId:base::SysUTF8ToNSString(profile_id)];
+  [builder setIncognito:incognito];
+
+  NSUserNotification* toast = [builder buildUserNotification];
 
   [notification_center_ deliverNotification:toast];
 }
@@ -188,10 +145,10 @@ void NotificationPlatformBridgeMac::Close(const std::string& profile_id,
   for (NSUserNotification* toast in
        [notification_center_ deliveredNotifications]) {
     NSString* toast_id =
-        [toast.userInfo objectForKey:kNotificationPersistentIdKey];
+        [toast.userInfo objectForKey:notification_builder::kNotificationId];
 
-    NSString* persistent_profile_id =
-        [toast.userInfo objectForKey:kNotificationProfilePersistentIdKey];
+    NSString* persistent_profile_id = [toast.userInfo
+        objectForKey:notification_builder::kNotificationProfileId];
 
     if (toast_id == candidate_id &&
         persistent_profile_id == current_profile_id) {
@@ -208,11 +165,11 @@ bool NotificationPlatformBridgeMac::GetDisplayed(
   NSString* current_profile_id = base::SysUTF8ToNSString(profile_id);
   for (NSUserNotification* toast in
        [notification_center_ deliveredNotifications]) {
-    NSString* toast_profile_id =
-        [toast.userInfo objectForKey:kNotificationProfilePersistentIdKey];
+    NSString* toast_profile_id = [toast.userInfo
+        objectForKey:notification_builder::kNotificationProfileId];
     if (toast_profile_id == current_profile_id) {
       notifications->insert(base::SysNSStringToUTF8(
-          [toast.userInfo objectForKey:kNotificationPersistentIdKey]));
+          [toast.userInfo objectForKey:notification_builder::kNotificationId]));
     }
   }
   return true;
@@ -227,14 +184,15 @@ bool NotificationPlatformBridgeMac::SupportsNotificationCenter() const {
 @implementation NotificationCenterDelegate
 - (void)userNotificationCenter:(NSUserNotificationCenter*)center
        didActivateNotification:(NSUserNotification*)notification {
-  std::string notificationOrigin = base::SysNSStringToUTF8(
-      [notification.userInfo objectForKey:kNotificationOriginKey]);
-  NSNumber* persistentNotificationId =
-      [notification.userInfo objectForKey:kNotificationPersistentIdKey];
-  NSString* persistentProfileId =
-      [notification.userInfo objectForKey:kNotificationProfilePersistentIdKey];
-  NSNumber* isIncognito =
-      [notification.userInfo objectForKey:kNotificationIncognitoKey];
+  std::string notificationOrigin =
+      base::SysNSStringToUTF8([notification.userInfo
+          objectForKey:notification_builder::kNotificationOrigin]);
+  NSNumber* notificationId = [notification.userInfo
+      objectForKey:notification_builder::kNotificationId];
+  NSString* profileId = [notification.userInfo
+      objectForKey:notification_builder::kNotificationProfileId];
+  NSNumber* isIncognito = [notification.userInfo
+      objectForKey:notification_builder::kNotificationIncognito];
 
   GURL origin(notificationOrigin);
 
@@ -280,9 +238,9 @@ bool NotificationPlatformBridgeMac::SupportsNotificationCenter() const {
 
   PlatformNotificationServiceImpl::GetInstance()
       ->ProcessPersistentNotificationOperation(
-          operation, base::SysNSStringToUTF8(persistentProfileId),
-          [isIncognito boolValue], origin,
-          persistentNotificationId.longLongValue, buttonIndex);
+          operation, base::SysNSStringToUTF8(profileId),
+          [isIncognito boolValue], origin, notificationId.longLongValue,
+          buttonIndex);
 }
 
 - (BOOL)userNotificationCenter:(NSUserNotificationCenter*)center

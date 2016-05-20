@@ -2191,6 +2191,8 @@
       'browser/notifications/native_notification_display_service.h',
       'browser/notifications/notification.cc',
       'browser/notifications/notification.h',
+      'browser/notifications/notification_builder_mac.mm',
+      'browser/notifications/notification_builder_mac.h',
       'browser/notifications/notification_delegate.h',
       'browser/notifications/notification_display_service.h',
       'browser/notifications/notification_display_service_factory.cc',
