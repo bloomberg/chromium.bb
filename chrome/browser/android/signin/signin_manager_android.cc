@@ -86,6 +86,7 @@ SigninManagerAndroid::SigninManagerAndroid(JNIEnv* env, jobject obj)
   java_signin_manager_.Reset(env, obj);
   profile_ = ProfileManager::GetActiveUserProfile();
   DCHECK(profile_);
+  SigninManagerFactory::GetForProfile(profile_)->AddObserver(this);
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(
       prefs::kSigninAllowed,
@@ -267,6 +268,20 @@ jboolean SigninManagerAndroid::IsSignedInOnNative(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   return SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated();
+}
+
+void SigninManagerAndroid::GoogleSigninFailed(
+    const GoogleServiceAuthError& error) {}
+
+void SigninManagerAndroid::GoogleSigninSucceeded(const std::string& account_id,
+                                                 const std::string& username,
+                                                 const std::string& password) {}
+
+void SigninManagerAndroid::GoogleSignedOut(const std::string& account_id,
+                                           const std::string& username) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  Java_SigninManager_onNativeSignOut(base::android::AttachCurrentThread(),
+                                     java_signin_manager_.obj());
 }
 
 void SigninManagerAndroid::OnSigninAllowedPrefChanged() {

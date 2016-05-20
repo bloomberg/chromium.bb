@@ -81,7 +81,7 @@ public class GmsCoreSyncListenerTest extends SyncTestBase {
         encryptWithPassphrase(PASSPHRASE);
         waitForCallCount(1);
         clearServerData();
-        startSyncAndWait();
+        setUpTestAccountAndSignInToSync();
         encryptWithPassphrase(PASSPHRASE);
         waitForCallCount(2);
     }
