@@ -20,6 +20,7 @@
     {
       'target_name': 'autofill_section',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_shared_menu/compiled_resources2.gyp:cr_shared_menu',
         '<(EXTERNS_GYP):autofill_private',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],

@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/cr_elements/cr_shared_menu/cr_shared_menu.html">
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
@@ -34,8 +35,9 @@
         <template>
           <div class="list-item two-line">
             <div id="addressSummary" class="start">[[address_(item)]]</div>
-            <paper-icon-button id="addressMenu" icon="more-vert"
-                tabindex$="[[tabIndex]]">
+            <paper-icon-button id="addressMenu" icon="cr:more-vert"
+                tabindex$="[[tabIndex]]" alt="$i18n{overflowMenu}"
+                on-tap="onAddressMenuTap_">
             </paper-icon-button>
           </div>
         </template>
@@ -44,6 +46,12 @@
         <a is="action-link" on-tap="onAddAddressTap_">$i18n{addAddress}</a>
       </div>
     </div>
+    <cr-shared-menu id="addressSharedMenu">
+      <div id="menuEditAddress" class="list-item menu-item"
+          on-tap="onMenuEditAddressTap_">$i18n{editAddress}</div>
+      <div id="menuRemoveAddress" class="list-item menu-item"
+          on-tap="onMenuRemoveAddressTap_">$i18n{removeAddress}</div>
+    </cr-shared-menu>
     <div class="heading">$i18n{creditCards}</div>
     <div class="item-list">
       <div class="list-item column-header">
@@ -59,8 +67,9 @@
             <div class="expiration-column">
               <div id="creditCardExpiration"
                   class="expiration-date">[[expiration_(item)]]</div>
-              <paper-icon-button icon="more-vert"
-                  tabindex$="[[tabIndex]]">
+              <paper-icon-button id="creditCardMenu" icon="cr:more-vert"
+                  tabindex$="[[tabIndex]]" alt="$i18n{overflowMenu}"
+                  on-tap="onCreditCardMenuTap_">
               </paper-icon-button>
             </div>
           </div>
@@ -72,6 +81,12 @@
         </a>
       </div>
     </div>
+    <cr-shared-menu id="creditCardSharedMenu">
+      <div id="menuEditCreditCard" class="list-item menu-item"
+          on-tap="onMenuEditCreditCardTap_">$i18n{editCreditCard}</div>
+      <div id="menuRemoveCreditCard" class="list-item menu-item"
+          on-tap="onMenuRemoveCreditCardTap_">$i18n{removeCreditCard}</div>
+    </cr-shared-menu>
   </template>
   <link rel="import" type="css" href="chrome://resources/css/action_link.css">
   <script src="chrome://md-settings/passwords_and_forms_page/autofill_section.js"></script>

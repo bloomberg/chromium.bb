@@ -30,6 +30,12 @@
       },
     },
 
+    listeners: {
+      'addressList.scroll': 'closeMenu_',
+      'creditCardList.scroll': 'closeMenu_',
+      'tap': 'closeMenu_',
+    },
+
     /**
      * Formats an AddressEntry so it's displayed as an address.
      * @param {!chrome.autofillPrivate.AddressEntry} item
@@ -49,21 +55,101 @@
     },
 
     /**
+     * Toggles the address overflow menu.
+     * @param {!Event} e The polymer event.
+     * @private
+     */
+    onAddressMenuTap_: function(e) {
+      // Close the other menu.
+      this.$.creditCardSharedMenu.closeMenu();
+
+      var menuEvent = /** @type {!{model: !{item: !Object}}} */(e);
+      var address = /** @type {!chrome.autofillPrivate.AddressEntry} */(
+          menuEvent.model.item);
+      this.$.addressSharedMenu.toggleMenu(Polymer.dom(e).localTarget, address);
+      e.stopPropagation();  // Prevent the tap event from closing the menu.
+    },
+
+    /**
      * Handles tapping on the "Add address" button.
      * @param {!Event} e
+     * @private
      */
     onAddAddressTap_: function(e) {
-      // TODO(hcarmona): implement this.
+      // TODO(hcarmona): implement adding an address.
       e.preventDefault();
+    },
+
+    /**
+     * Handles tapping on the "Edit" address button.
+     * @private
+     */
+    onMenuEditAddressTap_: function() {
+      // TODO(hcarmona): implement editing an address.
+      this.$.addressSharedMenu.closeMenu();
+    },
+
+    /**
+     * Handles tapping on the "Remove" address button.
+     * @private
+     */
+    onMenuRemoveAddressTap_: function() {
+      // TODO(hcarmona): implement removing an address.
+      this.$.addressSharedMenu.closeMenu();
+    },
+
+    /**
+     * Toggles the credit card overflow menu.
+     * @param {!Event} e The polymer event.
+     * @private
+     */
+    onCreditCardMenuTap_: function(e) {
+      // Close the other menu.
+      this.$.addressSharedMenu.closeMenu();
+
+      var menuEvent = /** @type {!{model: !{item: !Object}}} */(e);
+      var creditCard = /** @type {!chrome.autofillPrivate.CreditCardEntry} */(
+          menuEvent.model.item);
+      this.$.creditCardSharedMenu.toggleMenu(
+          Polymer.dom(e).localTarget, creditCard);
+      e.stopPropagation();  // Prevent the tap event from closing the menu.
     },
 
     /**
      * Handles tapping on the "Add credit card" button.
      * @param {!Event} e
+     * @private
      */
     onAddCreditCardTap_: function(e) {
-      // TODO(hcarmona): implement this.
+      // TODO(hcarmona): implement adding a credit card.
       e.preventDefault();
+    },
+
+    /**
+     * Handles tapping on the "Edit" credit card button.
+     * @private
+     */
+    onMenuEditCreditCardTap_: function() {
+      // TODO(hcarmona): implement editing a credit card.
+      this.$.creditCardSharedMenu.closeMenu();
+    },
+
+    /**
+     * Handles tapping on the "Remove" credit card button.
+     * @private
+     */
+    onMenuRemoveCreditCardTap_: function() {
+      // TODO(hcarmona): implement removing a credit card.
+      this.$.creditCardSharedMenu.closeMenu();
+    },
+
+    /**
+     * Closes the overflow menus.
+     * @private
+     */
+    closeMenu_: function() {
+      this.$.addressSharedMenu.closeMenu();
+      this.$.creditCardSharedMenu.closeMenu();
     },
   });
 })();

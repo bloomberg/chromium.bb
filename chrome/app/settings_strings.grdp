@@ -172,6 +172,9 @@
   </if>
 
   <!-- Passwords and Autofill Page -->
+  <message name="IDS_SETTINGS_OVERFLOW_MENU" desc="Alt text for the overflow button on a list item. Triggers a context menu when clicked.">
+   Menu
+  </message>
   <message name="IDS_SETTINGS_PASSWORDS_AND_AUTOFILL_PAGE_TITLE" desc="Name of the settings page which allows managing passwords and autofill settings.">
     Passwords and forms
   </message>
@@ -199,6 +202,18 @@
   <message name="IDS_SETTINGS_AUTOFILL_DETAIL" desc="Description of what toggling the 'Autofill' setting does. Immediately underneath IDS_SETTINGS_AUTOFILL">
     Enable Autofill to fill out forms in a single click
   </message>
+  <message name="IDS_SETTINGS_ADDRESS_EDIT" desc="Label for a context menu item that shows a dialog with edit options for the selected address." meaning="Edit selected address.">
+   Edit
+  </message>
+  <message name="IDS_SETTINGS_ADDRESS_REMOVE" desc="Label for a context menu item that removes the selected address." meaning="Remove selected address.">
+   Remove
+  </message>
+  <message name="IDS_SETTINGS_CREDIT_CARD_EDIT" desc="Label for a context menu item that shows a dialog with edit options for the selected credit card." meaning="Edit selected credit card.">
+   Edit
+  </message>
+  <message name="IDS_SETTINGS_CREDIT_CARD_REMOVE" desc="Label for a context menu item that removes the selected credit card." meaning="Remove selected credit card.">
+   Remove
+  </message>
   <message name="IDS_SETTINGS_PASSWORDS" desc="Name for the password section and toggle">
     Manage passwords
   </message>
@@ -214,13 +229,10 @@
   <message name="IDS_SETTINGS_PASSWORDS_DELETE_EXCEPTION" desc="The alt text for a button that deletes a site for which passwords would not be saved.">
     Delete this item
   </message>
-  <message name="IDS_SETTINGS_PASSWORDS_MENU" desc="Label for a button shows options available for this password item. Available options should be 'Edit' and 'Remove'">
-   Menu
-  </message>
-  <message name="IDS_SETTINGS_PASSWORDS_EDIT" desc="Label for a menu item that shows a dialog with edit options for a password.">
+  <message name="IDS_SETTINGS_PASSWORD_EDIT" desc="Label for a context menu item that shows a dialog with edit options for the selected password." meaning="Edit selected password.">
    Edit
   </message>
-  <message name="IDS_SETTINGS_PASSWORDS_REMOVE" desc="Label for a menu item that removes a saved password.">
+  <message name="IDS_SETTINGS_PASSWORD_REMOVE" desc="Label for a context menu item that removes the selected password." meaning="Remove selected password.">
    Remove
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_EDIT_TITLE" desc="Title for the 'Edit saved password' dialog. This dialog lets a user see a saved password and copy the username.">
