@@ -76,6 +76,17 @@ DocumentLifecycle::AllowThrottlingScope::~AllowThrottlingScope()
     s_allowThrottlingCount--;
 }
 
+DocumentLifecycle::DisallowThrottlingScope::DisallowThrottlingScope(DocumentLifecycle& lifecycle)
+{
+    m_savedCount = s_allowThrottlingCount;
+    s_allowThrottlingCount = 0;
+}
+
+DocumentLifecycle::DisallowThrottlingScope::~DisallowThrottlingScope()
+{
+    s_allowThrottlingCount = m_savedCount;
+}
+
 DocumentLifecycle::DocumentLifecycle()
     : m_state(Uninitialized)
     , m_detachCount(0)

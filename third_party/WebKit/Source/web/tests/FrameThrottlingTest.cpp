@@ -809,4 +809,46 @@ TEST_F(FrameThrottlingTest, SkipPaintingLayersInThrottledFrames)
     EXPECT_FALSE(displayItems2.contains(SimCanvas::Rect, "red"));
 }
 
+TEST_F(FrameThrottlingTest, SynchronousLayoutInAnimationFrameCallback)
+{
+    webView().settings()->setJavaScriptEnabled(true);
+
+    // Prepare a page with two cross origin frames (from the same origin so they
+    // are able to access eachother).
+    SimRequest mainResource("https://example.com/", "text/html");
+    SimRequest firstFrameResource("https://thirdparty.com/first.html", "text/html");
+    SimRequest secondFrameResource("https://thirdparty.com/second.html", "text/html");
+    loadURL("https://example.com/");
+    mainResource.complete(
+        "<iframe id=first name=first src='https://thirdparty.com/first.html'></iframe>\n"
+        "<iframe id=second name=second src='https://thirdparty.com/second.html'></iframe>");
+
+    // The first frame contains just a simple div. This frame will be made
+    // throttled.
+    firstFrameResource.complete("<div id=d>first frame</div>");
+
+    // The second frame just used to execute a requestAnimationFrame callback.
+    secondFrameResource.complete("");
+
+    // Throttle the first frame.
+    auto* firstFrameElement = toHTMLIFrameElement(document().getElementById("first"));
+    firstFrameElement->setAttribute(styleAttr, "transform: translateY(480px)");
+    compositeFrame();
+    EXPECT_TRUE(firstFrameElement->contentDocument()->view()->canThrottleRendering());
+
+    // Run a animation frame callback in the second frame which mutates the
+    // contents of the first frame and causes a synchronous style update. This
+    // should not result in an unexpected lifecycle state even if the first
+    // frame is throttled during the animation frame callback.
+    auto* secondFrameElement = toHTMLIFrameElement(document().getElementById("second"));
+    LocalFrame* localFrame = toLocalFrame(secondFrameElement->contentFrame());
+    localFrame->script().executeScriptInMainWorld(
+        "window.requestAnimationFrame(function() {\n"
+        "  var throttledFrame = window.parent.frames.first;\n"
+        "  throttledFrame.document.documentElement.style = 'margin: 50px';\n"
+        "  throttledFrame.document.querySelector('#d').getBoundingClientRect();\n"
+        "});\n");
+    compositeFrame();
+}
+
 } // namespace blink

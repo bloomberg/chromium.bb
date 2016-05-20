@@ -47,6 +47,9 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
         if (document->view()) {
             if (document->view()->shouldThrottleRendering())
                 continue;
+            // Disallow throttling in case any script needs to do a synchronous
+            // lifecycle update in other frames which are throttled.
+            DocumentLifecycle::DisallowThrottlingScope noThrottlingScope(document->lifecycle());
             document->view()->getScrollableArea()->serviceScrollAnimations(monotonicAnimationStartTime);
 
             if (const FrameView::ScrollableAreaSet* animatingScrollableAreas = document->view()->animatingScrollableAreas()) {
@@ -60,6 +63,7 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
             SVGDocumentExtensions::serviceOnAnimationFrame(*document);
         }
         // TODO(skyostil): This function should not run for documents without views.
+        DocumentLifecycle::DisallowThrottlingScope noThrottlingScope(document->lifecycle());
         document->serviceScriptedAnimations(monotonicAnimationStartTime);
     }
 
