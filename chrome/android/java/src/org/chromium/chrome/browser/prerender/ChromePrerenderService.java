@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalauth.VerifiedHandler;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.content.browser.ChildProcessCreationParams;
 import org.chromium.content.browser.ChildProcessLauncher;
 
 /**
@@ -40,10 +41,9 @@ public class ChromePrerenderService extends Service {
 
     private static class LauncherWarmUpTaskParams {
         final Context mContext;
-        final ChildProcessLauncher.ChildProcessCreationParams mParams;
+        final ChildProcessCreationParams mParams;
 
-        LauncherWarmUpTaskParams(
-                Context context, ChildProcessLauncher.ChildProcessCreationParams params) {
+        LauncherWarmUpTaskParams(Context context, ChildProcessCreationParams params) {
             mContext = context;
             mParams = params;
         }

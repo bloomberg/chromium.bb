@@ -73,7 +73,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     private ChromiumLinkerParams mLinkerParams = null;
 
     private final boolean mAlwaysInForeground;
-    private final ChildProcessLauncher.ChildProcessCreationParams mCreationParams;
+    private final ChildProcessCreationParams mCreationParams;
 
     // Caches whether non-sandboxed and sandboxed services require an extra
     // binding flag provided via ChildProcessCreationParams.
@@ -214,7 +214,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
             Class<? extends ChildProcessService> serviceClass,
             ChromiumLinkerParams chromiumLinkerParams,
             boolean alwaysInForeground,
-            ChildProcessLauncher.ChildProcessCreationParams creationParams) {
+            ChildProcessCreationParams creationParams) {
         mContext = context;
         mServiceNumber = number;
         mInSandbox = inSandbox;

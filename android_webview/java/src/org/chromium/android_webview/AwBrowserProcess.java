@@ -17,7 +17,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.BrowserStartupController;
-import org.chromium.content.browser.ChildProcessLauncher;
+import org.chromium.content.browser.ChildProcessCreationParams;
 import org.chromium.policy.CombinedPolicyProvider;
 
 import java.io.File;
@@ -60,8 +60,8 @@ public abstract class AwBrowserProcess {
      * WebView.
      */
     public static void configureChildProcessLauncher(String packageName, int extraBindFlags) {
-        ChildProcessLauncher.setChildProcessCreationParams(
-                new ChildProcessLauncher.ChildProcessCreationParams(packageName, extraBindFlags,
+        ChildProcessCreationParams.set(
+                new ChildProcessCreationParams(packageName, extraBindFlags,
                         LibraryProcessType.PROCESS_WEBVIEW_CHILD));
     }
 

@@ -90,6 +90,7 @@ import org.chromium.chrome.browser.tabmodel.document.StorageDelegate;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content.app.ContentApplication;
+import org.chromium.content.browser.ChildProcessCreationParams;
 import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.browser.ContentViewStatics;
 import org.chromium.content.browser.DownloadController;
@@ -192,7 +193,7 @@ public class ChromeApplication extends ContentApplication {
      * This is called during early initialization in order to set up ChildProcessLauncher
      * for certain Chrome packaging configurations
      */
-    public ChildProcessLauncher.ChildProcessCreationParams getChildProcessCreationParams() {
+    public ChildProcessCreationParams getChildProcessCreationParams() {
         return null;
     }
 

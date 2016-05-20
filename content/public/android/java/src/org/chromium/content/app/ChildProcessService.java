@@ -26,6 +26,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.ChildProcessConstants;
+import org.chromium.content.browser.ChildProcessCreationParams;
 import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.browser.FileDescriptorInfo;
 import org.chromium.content.common.ContentSwitches;
@@ -259,8 +260,7 @@ public class ChildProcessService extends Service {
             // mLinkerParams is never used if Linker.isUsed() returns false.
             // See onCreate().
             mLinkerParams = new ChromiumLinkerParams(intent);
-            mLibraryProcessType =
-                    ChildProcessLauncher.ChildProcessCreationParams.getLibraryProcessType(intent);
+            mLibraryProcessType = ChildProcessCreationParams.getLibraryProcessType(intent);
             mIsBound = true;
             mMainThread.notifyAll();
         }

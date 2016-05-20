@@ -45,7 +45,7 @@ import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
-import org.chromium.content.browser.ChildProcessLauncher;
+import org.chromium.content.browser.ChildProcessCreationParams;
 import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.browser.SpeechRecognition;
 import org.chromium.net.NetworkChangeNotifier;
@@ -312,8 +312,7 @@ public class ChromeBrowserInitializer {
         });
 
         // See crbug.com/593250. This can be removed after N SDK is released, crbug.com/592722.
-        ChildProcessLauncher.setChildProcessCreationParams(
-                mApplication.getChildProcessCreationParams());
+        ChildProcessCreationParams.set(mApplication.getChildProcessCreationParams());
         if (isAsync) {
             // We want to start this queue once the C++ startup tasks have run; allow the
             // C++ startup to run asynchonously, and set it up to start the Java queue once

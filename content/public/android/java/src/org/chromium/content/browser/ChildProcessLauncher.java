@@ -26,7 +26,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.content.app.ChildProcessService;
 import org.chromium.content.app.ChromiumLinkerParams;
@@ -56,58 +55,6 @@ public class ChildProcessLauncher {
     static final int CALLBACK_FOR_RENDERER_PROCESS = 2;
     static final int CALLBACK_FOR_UTILITY_PROCESS = 3;
     static final int CALLBACK_FOR_DOWNLOAD_PROCESS = 4;
-
-    /**
-     * Allows specifying the package name for looking up child services
-     * configuration and classes into (if it differs from the application
-     * package name, like in the case of Android WebView). Also allows
-     * specifying additional child service binging flags.
-     */
-    public static class ChildProcessCreationParams {
-        private final String mPackageName;
-        private final int mExtraBindFlags;
-        private final int mLibraryProcessType;
-        private static final String EXTRA_LIBRARY_PROCESS_TYPE =
-                "org.chromium.content.common.child_service_params.library_process_type";
-
-        public ChildProcessCreationParams(String packageName, int extraBindFlags,
-                int libraryProcessType) {
-            mPackageName = packageName;
-            mExtraBindFlags = extraBindFlags;
-            mLibraryProcessType = libraryProcessType;
-        }
-
-        public String getPackageName() {
-            return mPackageName;
-        }
-
-        /**
-         * Adds required extra flags to the given child service binding flags and returns them.
-         * Does not modify the state of the ChildProcessCreationParams instance.
-         *
-         * @param bindFlags Source bind flags to modify.
-         * @return Bind flags with extra flags added.
-         */
-        public int addExtraBindFlags(int bindFlags) {
-            return bindFlags | mExtraBindFlags;
-        }
-
-        public void addIntentExtras(Intent intent) {
-            intent.putExtra(EXTRA_LIBRARY_PROCESS_TYPE, mLibraryProcessType);
-        }
-
-        public static int getLibraryProcessType(Intent intent) {
-            return intent.getIntExtra(EXTRA_LIBRARY_PROCESS_TYPE,
-                    LibraryProcessType.PROCESS_CHILD);
-        }
-    }
-
-    /**
-     * Sets ChildProcessCreationParams to be used when creating child services.
-     */
-    public static void setChildProcessCreationParams(ChildProcessCreationParams params) {
-        sChildProcessCreationParams = params;
-    }
 
     private static class ChildConnectionAllocator {
         // Connections to services. Indices of the array correspond to the service numbers.
@@ -266,7 +213,6 @@ public class ChildProcessLauncher {
         }
     }
 
-    private static ChildProcessCreationParams sChildProcessCreationParams;
     private static final PendingSpawnQueue sPendingSpawnQueue = new PendingSpawnQueue();
 
     // Service class for child process. As the default value it uses SandboxedProcessService0 and
@@ -285,8 +231,10 @@ public class ChildProcessLauncher {
     private static int getNumberOfServices(Context context, boolean inSandbox) {
         try {
             PackageManager packageManager = context.getPackageManager();
-            final String packageName = sChildProcessCreationParams != null
-                    ? sChildProcessCreationParams.getPackageName() : context.getPackageName();
+            ChildProcessCreationParams childProcessCreationParams =
+                    ChildProcessCreationParams.get();
+            final String packageName = childProcessCreationParams != null
+                    ? childProcessCreationParams.getPackageName() : context.getPackageName();
             ApplicationInfo appInfo = packageManager.getApplicationInfo(packageName,
                     PackageManager.GET_META_DATA);
             int numServices = appInfo.metaData.getInt(inSandbox ? NUM_SANDBOXED_SERVICES_KEY
@@ -347,7 +295,7 @@ public class ChildProcessLauncher {
                 };
         initConnectionAllocatorsIfNecessary(context);
         return getConnectionAllocator(inSandbox).allocate(context, deathCallback,
-                chromiumLinkerParams, alwaysInForeground, sChildProcessCreationParams);
+                chromiumLinkerParams, alwaysInForeground, ChildProcessCreationParams.get());
     }
 
     private static boolean sLinkerInitialized = false;
@@ -599,7 +547,7 @@ public class ChildProcessLauncher {
      * @param params child process creation params.
      */
     public static void warmUp(Context context, ChildProcessCreationParams params) {
-        setChildProcessCreationParams(params);
+        ChildProcessCreationParams.set(params);
         synchronized (ChildProcessLauncher.class) {
             assert !ThreadUtils.runningOnUiThread();
             if (sSpareSandboxedConnection == null) {
