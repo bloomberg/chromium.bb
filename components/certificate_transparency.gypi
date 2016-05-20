@@ -20,6 +20,10 @@
       'sources': [
         'certificate_transparency/log_proof_fetcher.h',
         'certificate_transparency/log_proof_fetcher.cc',
+        'certificate_transparency/single_tree_tracker.cc',
+        'certificate_transparency/single_tree_tracker.h',
+        'certificate_transparency/tree_state_tracker.h',
+        'certificate_transparency/tree_state_tracker.cc',
       ],
     }
   ],

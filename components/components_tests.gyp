@@ -108,6 +108,7 @@
     ],
     'certificate_transparency_unittest_sources': [
       'certificate_transparency/log_proof_fetcher_unittest.cc',
+      'certificate_transparency/single_tree_tracker_unittest.cc',
     ],
     'child_trace_message_filter_unittest_sources': [
       'tracing/child_trace_message_filter_unittest.cc',

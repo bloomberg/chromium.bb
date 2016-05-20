@@ -6,6 +6,10 @@ source_set("certificate_transparency") {
   sources = [
     "log_proof_fetcher.cc",
     "log_proof_fetcher.h",
+    "single_tree_tracker.cc",
+    "single_tree_tracker.h",
+    "tree_state_tracker.cc",
+    "tree_state_tracker.h",
   ]
 
   deps = [
@@ -20,6 +24,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "log_proof_fetcher_unittest.cc",
+    "single_tree_tracker_unittest.cc",
   ]
 
   deps = [
