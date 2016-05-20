@@ -1351,6 +1351,12 @@ crbug.com/593568 [ Win Debug ] virtual/threaded/fast/scroll-behavior/smooth-scro
 crbug.com/591832 [ Mac10.11 Retina ] compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ Failure ]
 crbug.com/591832 [ Mac10.11 Retina ] compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html [ Failure ]
 
+crbug.com/605319 [ Win ] paint/selection/invalidation-rect-includes-newline-for-rtl.html [ Failure ]
+crbug.com/605319 [ Win ] paint/selection/invalidation-rect-includes-newline-for-vertical-lr.html [ Failure ]
+crbug.com/605319 [ Win ] paint/selection/invalidation-rect-includes-newline-for-vertical-rl.html [ Failure ]
+crbug.com/605319 [ Win ] paint/selection/invalidation-rect-includes-newline.html [ Failure ]
+crbug.com/605319 [ Win ] paint/selection/invalidation-rect-with-br-includes-newline.html [ Failure ]
+
 crbug.com/591902 [ Linux Mac10.10 Mac10.11 Retina ] http/tests/security/contentTypeOptions/nosniff-script-without-content-type-blocked.html [ Failure ]
 
 crbug.com/592185 fast/repaint/fixed-right-in-page-scale.html [ Failure Pass ]
