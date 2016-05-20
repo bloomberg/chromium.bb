@@ -132,6 +132,11 @@
           !themeProvider->HasCustomColor(ThemeProperties::COLOR_FRAME)) {
         theColor = themeProvider->GetNSColor(
             ThemeProperties::COLOR_FRAME_VIBRANCY_OVERLAY);
+      } else if (!supportsVibrancy && themeProvider->InIncognitoMode()) {
+        theColor = [NSColor colorWithSRGBRed:20 / 255.
+                                       green:22 / 255.
+                                        blue:24 / 255.
+                                       alpha:1];
       } else {
         theColor = themeProvider->GetNSColor(ThemeProperties::COLOR_FRAME);
       }
