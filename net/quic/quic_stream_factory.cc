@@ -1468,9 +1468,6 @@ int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
   bool tsvipcli_loaded = ::GetModuleHandle(L"TSVIPCli.dll") != NULL;
   UMA_HISTOGRAM_BOOLEAN("Net.QuicStreamFactory.TSVIPCliIsLoaded",
                         tsvipcli_loaded);
-  if (tsvipcli_loaded) {
-    return ERR_QUIC_PROTOCOL_ERROR;
-  }
 #endif
 
   int rv;
