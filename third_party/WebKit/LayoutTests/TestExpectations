@@ -1344,9 +1344,6 @@ crbug.com/600248 imported/wpt/web-animations/animation/onfinish.html [ Pass Fail
 
 crbug.com/604642 [ Mac ]  fast/text/midword-break-after-breakable-char.html [ Failure ]
 
-crbug.com/609427 editing/inserting/typing-at-end-of-line.html [ NeedsRebaseline ]
-crbug.com/609427 css1/color_and_background/background_position.html [ NeedsRebaseline ]
-
 crbug.com/611658 [ Win7 ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
 crbug.com/611658 [ Win7 ] fast/text/emphasis-combined-text.html [ Failure ]
 crbug.com/611658 [ Win7 ] fast/text/emphasis.html [ Failure ]
