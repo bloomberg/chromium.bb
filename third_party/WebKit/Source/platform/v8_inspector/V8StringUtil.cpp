@@ -17,7 +17,7 @@ namespace {
 
 String16 findMagicComment(const String16& content, const String16& name, bool multiline, bool* deprecated)
 {
-    ASSERT(name.find("=") == kNotFound);
+    DCHECK(name.find("=") == kNotFound);
     if (deprecated)
         *deprecated = false;
 
@@ -60,8 +60,8 @@ String16 findMagicComment(const String16& content, const String16& name, bool mu
     if (deprecated && content[pos + 2] == '@')
         *deprecated = true;
 
-    ASSERT(equalSignPos);
-    ASSERT(!multiline || closingCommentPos);
+    DCHECK(equalSignPos);
+    DCHECK(!multiline || closingCommentPos);
     size_t urlPos = equalSignPos + 1;
     String16 match = multiline
         ? content.substring(urlPos, closingCommentPos - urlPos)
@@ -212,7 +212,7 @@ PassOwnPtr<protocol::Array<protocol::Debugger::SearchMatch>> searchInTextByLines
 PassOwnPtr<protocol::Value> toProtocolValue(v8::Local<v8::Context> context, v8::Local<v8::Value> value, int maxDepth)
 {
     if (value.IsEmpty()) {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return nullptr;
     }
 
@@ -273,7 +273,7 @@ PassOwnPtr<protocol::Value> toProtocolValue(v8::Local<v8::Context> context, v8::
         }
         return std::move(jsonObject);
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
 }
 

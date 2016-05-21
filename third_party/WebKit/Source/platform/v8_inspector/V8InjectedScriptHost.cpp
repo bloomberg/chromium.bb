@@ -29,10 +29,10 @@ void setFunctionProperty(v8::Local<v8::Context> context, v8::Local<v8::Object> o
 
 V8DebuggerImpl* unwrapDebugger(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ASSERT(!info.Data().IsEmpty());
-    ASSERT(info.Data()->IsExternal());
+    DCHECK(!info.Data().IsEmpty());
+    DCHECK(info.Data()->IsExternal());
     V8DebuggerImpl* debugger = static_cast<V8DebuggerImpl*>(info.Data().As<v8::External>()->Value());
-    ASSERT(debugger);
+    DCHECK(debugger);
     return debugger;
 }
 
@@ -198,11 +198,11 @@ void V8InjectedScriptHost::getEventListenersCallback(const v8::FunctionCallbackI
 void V8InjectedScriptHost::suppressWarningsAndCallFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 2 || info.Length() > 3 || !info[0]->IsFunction()) {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return;
     }
     if (info.Length() > 2 && (!info[2]->IsArray() && !info[2]->IsUndefined())) {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return;
     }
 
@@ -242,7 +242,7 @@ void V8InjectedScriptHost::setNonEnumPropertyCallback(const v8::FunctionCallback
 
     v8::Local<v8::Object> object = info[0].As<v8::Object>();
     v8::Maybe<bool> success = object->DefineOwnProperty(info.GetIsolate()->GetCurrentContext(), info[1].As<v8::String>(), info[2], v8::DontEnum);
-    ASSERT_UNUSED(!success.IsNothing(), !success.IsNothing());
+    DCHECK(!success.IsNothing());
 }
 
 void V8InjectedScriptHost::bindCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -262,7 +262,7 @@ void V8InjectedScriptHost::bindCallback(const v8::FunctionCallbackInfo<v8::Value
 void V8InjectedScriptHost::proxyTargetValueCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() != 1 || !info[0]->IsProxy()) {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return;
     }
     v8::Local<v8::Object> target = info[0].As<v8::Proxy>();
@@ -273,7 +273,7 @@ void V8InjectedScriptHost::proxyTargetValueCallback(const v8::FunctionCallbackIn
 
 void V8InjectedScriptHost::prototypeCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ASSERT(info.Length() > 0 && info[0]->IsObject());
+    DCHECK(info.Length() > 0 && info[0]->IsObject());
     info.GetReturnValue().Set(info[0].As<v8::Object>()->GetPrototype());
 }
 

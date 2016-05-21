@@ -23,7 +23,7 @@ ErrorSupport::~ErrorSupport()
 
 void ErrorSupport::setName(const String16& name)
 {
-    ASSERT(m_path.size());
+    DCHECK(m_path.size());
     m_path[m_path.size() - 1] = name;
 }
 

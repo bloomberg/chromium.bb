@@ -33,7 +33,7 @@ InjectedScriptNative* InjectedScriptNative::fromInjectedScriptHost(v8::Local<v8:
     v8::Local<v8::Context> context = isolate->GetCurrentContext();
     v8::Local<v8::Private> privateKey = v8::Private::ForApi(isolate, v8::String::NewFromUtf8(isolate, privateKeyName, v8::NewStringType::kInternalized).ToLocalChecked());
     v8::Local<v8::Value> value = injectedScriptObject->GetPrivate(context, privateKey).ToLocalChecked();
-    ASSERT(value->IsExternal());
+    DCHECK(value->IsExternal());
     v8::Local<v8::External> external = value.As<v8::External>();
     return static_cast<InjectedScriptNative*>(external->Value());
 }

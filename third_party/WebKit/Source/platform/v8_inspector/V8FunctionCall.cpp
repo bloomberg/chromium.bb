@@ -94,13 +94,13 @@ v8::Local<v8::Value> V8FunctionCall::callWithoutExceptionHandling()
     if (!thisObject->Get(m_context, m_name).ToLocal(&value))
         return v8::Local<v8::Value>();
 
-    ASSERT(value->IsFunction());
+    DCHECK(value->IsFunction());
 
     v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(value);
     OwnPtr<v8::Local<v8::Value>[]> info = adoptArrayPtr(new v8::Local<v8::Value>[m_arguments.size()]);
     for (size_t i = 0; i < m_arguments.size(); ++i) {
         info[i] = m_arguments[i];
-        ASSERT(!info[i].IsEmpty());
+        DCHECK(!info[i].IsEmpty());
     }
 
     v8::MicrotasksScope microtasksScope(m_context->GetIsolate(), v8::MicrotasksScope::kDoNotRunMicrotasks);
@@ -118,7 +118,7 @@ v8::Local<v8::Function> V8FunctionCall::function()
     if (!thisObject->Get(m_context, m_name).ToLocal(&value))
         return v8::Local<v8::Function>();
 
-    ASSERT(value->IsFunction());
+    DCHECK(value->IsFunction());
     return v8::Local<v8::Function>::Cast(value);
 }
 

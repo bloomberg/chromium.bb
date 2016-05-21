@@ -38,7 +38,7 @@ V8StackTraceImpl::Frame toFrame(v8::Local<v8::StackFrame> frame)
 
 void toFramesVector(v8::Local<v8::StackTrace> stackTrace, protocol::Vector<V8StackTraceImpl::Frame>& frames, size_t maxStackSize, v8::Isolate* isolate)
 {
-    ASSERT(isolate->InContext());
+    DCHECK(isolate->InContext());
     int frameCount = stackTrace->GetFrameCount();
     if (frameCount > static_cast<int>(maxStackSize))
         frameCount = maxStackSize;
@@ -154,31 +154,31 @@ V8StackTraceImpl::~V8StackTraceImpl()
 
 String16 V8StackTraceImpl::topSourceURL() const
 {
-    ASSERT(m_frames.size());
+    DCHECK(m_frames.size());
     return m_frames[0].m_scriptName;
 }
 
 int V8StackTraceImpl::topLineNumber() const
 {
-    ASSERT(m_frames.size());
+    DCHECK(m_frames.size());
     return m_frames[0].m_lineNumber;
 }
 
 int V8StackTraceImpl::topColumnNumber() const
 {
-    ASSERT(m_frames.size());
+    DCHECK(m_frames.size());
     return m_frames[0].m_columnNumber;
 }
 
 String16 V8StackTraceImpl::topFunctionName() const
 {
-    ASSERT(m_frames.size());
+    DCHECK(m_frames.size());
     return m_frames[0].m_functionName;
 }
 
 String16 V8StackTraceImpl::topScriptId() const
 {
-    ASSERT(m_frames.size());
+    DCHECK(m_frames.size());
     return m_frames[0].m_scriptId;
 }
 

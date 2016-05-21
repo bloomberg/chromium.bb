@@ -139,7 +139,7 @@ void V8ProfilerAgentImpl::consoleProfile(const String16& title)
 {
     if (!m_enabled)
         return;
-    ASSERT(m_frontend);
+    DCHECK(m_frontend);
     String16 id = nextProfileId();
     m_startedProfiles.append(ProfileDescriptor(id, title));
     startProfiling(id);
@@ -150,7 +150,7 @@ void V8ProfilerAgentImpl::consoleProfileEnd(const String16& title)
 {
     if (!m_enabled)
         return;
-    ASSERT(m_frontend);
+    DCHECK(m_frontend);
     String16 id;
     String16 resolvedTitle;
     // Take last started profile if no title was passed.
@@ -215,13 +215,13 @@ void V8ProfilerAgentImpl::clearFrontend()
 {
     ErrorString error;
     disable(&error);
-    ASSERT(m_frontend);
+    DCHECK(m_frontend);
     m_frontend = nullptr;
 }
 
 void V8ProfilerAgentImpl::restore()
 {
-    ASSERT(!m_enabled);
+    DCHECK(!m_enabled);
     if (!m_state->booleanProperty(ProfilerAgentState::profilerEnabled, false))
         return;
     m_enabled = true;

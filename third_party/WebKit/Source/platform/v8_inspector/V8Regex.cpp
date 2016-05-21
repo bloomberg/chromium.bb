@@ -69,7 +69,7 @@ int V8Regex::match(const String16& string, int startFrom, int* matchLength) cons
     //
     // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/RegExp/exec
 
-    ASSERT(!returnValue.IsEmpty());
+    DCHECK(!returnValue.IsEmpty());
     if (!returnValue->IsArray())
         return -1;
 

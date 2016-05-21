@@ -77,7 +77,7 @@ public:
     void sendResponse(int sessionId, int callId, const ErrorString& invocationError, ErrorSupport* errors, PassOwnPtr<protocol::DictionaryValue> result);
 
 {% for domain in api.domains %}
-    virtual void registerAgent(blink::protocol::Backend::{{domain.domain}}* agent) { ASSERT(!m_{{domain.domain | lower}}Agent); m_{{domain.domain | lower}}Agent = agent; }
+    virtual void registerAgent(blink::protocol::Backend::{{domain.domain}}* agent) { DCHECK(!m_{{domain.domain | lower}}Agent); m_{{domain.domain | lower}}Agent = agent; }
 {% endfor %}
 
 private:
@@ -183,7 +183,7 @@ public:
 
     void sendFailure(const ErrorString& error) override
     {
-        ASSERT(error.length());
+        DCHECK(error.length());
         sendIfActive(nullptr, error);
     }
 };
@@ -284,18 +284,18 @@ void DispatcherImpl::dispatch(int sessionId, const String16& message)
 {
     int callId = 0;
     OwnPtr<protocol::Value> parsedMessage = parseJSON(message);
-    ASSERT(parsedMessage);
+    DCHECK(parsedMessage);
     OwnPtr<protocol::DictionaryValue> messageObject = DictionaryValue::cast(std::move(parsedMessage));
-    ASSERT(messageObject);
+    DCHECK(messageObject);
 
     protocol::Value* callIdValue = messageObject->get("id");
     bool success = callIdValue->asNumber(&callId);
-    ASSERT_UNUSED(success, success);
+    DCHECK(success);
 
     protocol::Value* methodValue = messageObject->get("method");
     String16 method;
     success = methodValue && methodValue->asString(&method);
-    ASSERT_UNUSED(success, success);
+    DCHECK(success);
 
     protocol::HashMap<String16, CallHandler>::iterator it = m_dispatchMap.find(method);
     if (it == m_dispatchMap.end()) {
@@ -329,13 +329,13 @@ void Dispatcher::reportProtocolError(int sessionId, int callId, CommonErrorCode 
 
 void DispatcherImpl::reportProtocolError(int sessionId, int callId, CommonErrorCode code, const String16& errorMessage, ErrorSupport* errors) const
 {
-    ASSERT(code >=0);
-    ASSERT((unsigned)code < m_commonErrors.size());
-    ASSERT(m_commonErrors[code]);
+    DCHECK(code >=0);
+    DCHECK((unsigned)code < m_commonErrors.size());
+    DCHECK(m_commonErrors[code]);
     OwnPtr<protocol::DictionaryValue> error = DictionaryValue::create();
     error->setNumber("code", m_commonErrors[code]);
     error->setString("message", errorMessage);
-    ASSERT(error);
+    DCHECK(error);
     if (errors && errors->hasErrors())
         error->setString("data", errors->errors());
     OwnPtr<protocol::DictionaryValue> message = DictionaryValue::create();

@@ -203,7 +203,7 @@ void V8InspectorSessionImpl::reportAllContexts(V8RuntimeAgentImpl* agent)
 
 void V8InspectorSessionImpl::changeInstrumentationCounter(int delta)
 {
-    ASSERT(m_instrumentationCounter + delta >= 0);
+    DCHECK_GE(m_instrumentationCounter + delta, 0);
     if (!m_instrumentationCounter && m_client)
         m_client->startInstrumenting();
     m_instrumentationCounter += delta;
@@ -222,7 +222,7 @@ V8InspectorSession::Inspectable* V8InspectorSessionImpl::inspectedObject(unsigne
 {
     if (num >= m_inspectedObjects.size())
         return nullptr;
-    return m_inspectedObjects[num].get();
+    return m_inspectedObjects[num];
 }
 
 void V8InspectorSessionImpl::schedulePauseOnNextStatement(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data)

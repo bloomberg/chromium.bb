@@ -126,13 +126,13 @@ public:
 
     WriteResult WriteAsciiChunk(char* data, int size) override
     {
-        ASSERT(false);
+        DCHECK(false);
         return kAbort;
     }
 
     WriteResult WriteHeapStatsChunk(v8::HeapStatsUpdate* updateData, int count) override
     {
-        ASSERT(count > 0);
+        DCHECK_GT(count, 0);
         OwnPtr<protocol::Array<int>> statsDiff = protocol::Array<int>::create();
         for (int i = 0; i < count; ++i) {
             statsDiff->addItem(updateData[i].index);
@@ -164,7 +164,7 @@ void V8HeapProfilerAgentImpl::clearFrontend()
 {
     ErrorString error;
     disable(&error);
-    ASSERT(m_frontend);
+    DCHECK(m_frontend);
     m_frontend = nullptr;
 }
 

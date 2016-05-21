@@ -88,7 +88,7 @@ PassOwnPtr<InjectedScript> InjectedScript::create(InspectedContext* inspectedCon
     v8::Local<v8::Value> value;
     if (!inspectedContext->debugger()->compileAndRunInternalScript(context, toV8String(isolate, injectedScriptSource)).ToLocal(&value))
         return nullptr;
-    ASSERT(value->IsFunction());
+    DCHECK(value->IsFunction());
     v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(value);
     v8::Local<v8::Object> windowGlobal = context->Global();
     v8::Local<v8::Value> info[] = { scriptHostWrapper, windowGlobal, v8::Number::New(isolate, inspectedContext->contextId()) };
@@ -268,7 +268,7 @@ void InjectedScript::setCustomObjectFormatterEnabled(bool enabled)
     function.appendArgument(enabled);
     bool hadException = false;
     function.call(hadException);
-    ASSERT(!hadException);
+    DCHECK(!hadException);
 }
 
 bool InjectedScript::canAccessInspectedWindow() const
@@ -429,7 +429,7 @@ bool InjectedScript::Scope::installCommandLineAPI()
 
 void InjectedScript::Scope::ignoreExceptionsAndMuteConsole()
 {
-    ASSERT(!m_ignoreExceptionsAndMuteConsole);
+    DCHECK(!m_ignoreExceptionsAndMuteConsole);
     m_ignoreExceptionsAndMuteConsole = true;
     m_debugger->client()->muteConsole();
     m_previousPauseOnExceptionsState = setPauseOnExceptionsState(V8DebuggerImpl::DontPauseOnExceptions);
@@ -447,7 +447,7 @@ V8DebuggerImpl::PauseOnExceptionsState InjectedScript::Scope::setPauseOnExceptio
 
 void InjectedScript::Scope::pretendUserGesture()
 {
-    ASSERT(!m_userGesture);
+    DCHECK(!m_userGesture);
     m_userGesture = true;
     m_debugger->client()->beginUserGesture();
 }
@@ -456,7 +456,7 @@ void InjectedScript::Scope::cleanup()
 {
     v8::Local<v8::Object> global;
     if (m_global.ToLocal(&global)) {
-        ASSERT(!m_context.IsEmpty());
+        DCHECK(!m_context.IsEmpty());
         global->DeletePrivate(m_context, m_extensionPrivate);
         m_global = v8::MaybeLocal<v8::Object>();
     }

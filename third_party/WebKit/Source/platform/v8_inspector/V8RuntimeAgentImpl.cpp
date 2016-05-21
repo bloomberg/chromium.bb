@@ -357,7 +357,7 @@ void V8RuntimeAgentImpl::clearFrontend()
 {
     ErrorString error;
     disable(&error);
-    ASSERT(m_frontend);
+    DCHECK(m_frontend);
     m_frontend = nullptr;
 }
 

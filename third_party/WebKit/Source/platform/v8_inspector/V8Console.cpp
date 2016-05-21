@@ -43,8 +43,8 @@ public:
     v8::Local<v8::Object> ensureConsole()
     {
         if (m_console.IsEmpty()) {
-            ASSERT(!m_info.Data().IsEmpty());
-            ASSERT(!m_info.Data()->IsUndefined());
+            DCHECK(!m_info.Data().IsEmpty());
+            DCHECK(!m_info.Data()->IsUndefined());
             m_console = m_info.Data().As<v8::Object>();
         }
         return m_console;
@@ -60,7 +60,7 @@ public:
         v8::Local<v8::Value> inspectedContextValue;
         if (!console->GetPrivate(m_context, key).ToLocal(&inspectedContextValue))
             return nullptr;
-        ASSERT(inspectedContextValue->IsExternal());
+        DCHECK(inspectedContextValue->IsExternal());
         m_inspectedContext = static_cast<InspectedContext*>(inspectedContextValue.As<v8::External>()->Value());
         return m_inspectedContext;
     }
@@ -229,9 +229,9 @@ private:
         v8::Local<v8::Value> flagValue;
         if (!console->GetPrivate(m_context, key).ToLocal(&flagValue))
             return defaultValue;
-        ASSERT(flagValue->IsUndefined() || flagValue->IsBoolean());
+        DCHECK(flagValue->IsUndefined() || flagValue->IsBoolean());
         if (flagValue->IsBoolean()) {
-            ASSERT(flagValue.As<v8::Boolean>()->Value());
+            DCHECK(flagValue.As<v8::Boolean>()->Value());
             return true;
         }
         if (!console->SetPrivate(m_context, key, v8::True(m_isolate)).FromMaybe(false))
@@ -612,7 +612,7 @@ void V8Console::copyCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 void V8Console::inspectedObject(const v8::FunctionCallbackInfo<v8::Value>& info, unsigned num)
 {
-    ASSERT(num < V8InspectorSessionImpl::kInspectedObjectBufferSize);
+    DCHECK(num < V8InspectorSessionImpl::kInspectedObjectBufferSize);
     ConsoleHelper helper(info);
     if (V8InspectorSessionImpl* session = helper.currentSession()) {
         V8InspectorSession::Inspectable* object = session->inspectedObject(num);

@@ -71,7 +71,7 @@ v8::Isolate* InspectedContext::isolate() const
 
 void InspectedContext::createInjectedScript()
 {
-    ASSERT(!m_injectedScript);
+    DCHECK(!m_injectedScript);
     v8::HandleScope handles(isolate());
     v8::Local<v8::Context> localContext = context();
     v8::Local<v8::Context> callingContext = isolate()->GetCallingContext();

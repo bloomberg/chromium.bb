@@ -116,7 +116,7 @@ public:
 
     T* get(size_t index)
     {
-        return m_vector[index].get();
+        return m_vector[index];
     }
 
     PassOwnPtr<protocol::ListValue> serialize()

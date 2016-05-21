@@ -88,13 +88,13 @@ extern const LChar ASCIICaseFoldTable[256] = {
 
 template<typename CharType> inline int toASCIIHexValue(CharType c)
 {
-    ASSERT(isASCIIHexDigit(c));
+    DCHECK(isASCIIHexDigit(c));
     return c < 'A' ? c - '0' : (c - 'A' + 10) & 0xF;
 }
 
 template<typename CharType> inline int toASCIIHexValue(CharType upperValue, CharType lowerValue)
 {
-    ASSERT(isASCIIHexDigit(upperValue) && isASCIIHexDigit(lowerValue));
+    DCHECK(isASCIIHexDigit(upperValue) && isASCIIHexDigit(lowerValue));
     return ((toASCIIHexValue(upperValue) << 4) & 0xF0) | toASCIIHexValue(lowerValue);
 }
 
@@ -114,7 +114,7 @@ template<typename CharType> inline bool isASCIIAlphaCaselessEqual(CharType cssCh
 {
     // This function compares a (preferrably) constant ASCII
     // lowercase letter to any input character.
-    ASSERT(character >= 'a' && character <= 'z');
+    DCHECK(character >= 'a' && character <= 'z');
     return LIKELY(toASCIILowerUnchecked(cssCharacter) == character);
 }
 
@@ -277,7 +277,7 @@ ConversionResult convertUTF16ToUTF8(
 // Helper to write a three-byte UTF-8 code point to the buffer, caller must check room is available.
 static inline void putUTF8Triple(char*& buffer, UChar ch)
 {
-    ASSERT(ch >= 0x0800);
+    DCHECK_GE(ch, 0x0800);
     *buffer++ = static_cast<char>(((ch >> 12) & 0x0F) | 0xE0);
     *buffer++ = static_cast<char>(((ch >> 6) & 0x3F) | 0x80);
     *buffer++ = static_cast<char>((ch & 0x3F) | 0x80);
@@ -328,11 +328,11 @@ std::string String16::utf8() const
 
     bool strict = false;
     ConversionResult result = convertUTF16ToUTF8(&characters, characters + length, &buffer, buffer + bufferVector.size(), strict);
-    ASSERT(result != targetExhausted); // (length * 3) should be sufficient for any conversion
+    DCHECK(result != targetExhausted); // (length * 3) should be sufficient for any conversion
 
     // Only produced from strict conversion.
     if (result == sourceIllegal) {
-        ASSERT(strict);
+        DCHECK(strict);
         return std::string();
     }
 
@@ -344,11 +344,11 @@ std::string String16::utf8() const
         // was as an unpaired high surrogate would have been handled in
         // the middle of a string with non-strict conversion - which is
         // to say, simply encode it to UTF-8.
-        ASSERT((characters + 1) == (m_impl.data() + length));
-        ASSERT((*characters >= 0xD800) && (*characters <= 0xDBFF));
+        DCHECK((characters + 1) == (m_impl.data() + length));
+        DCHECK((*characters >= 0xD800) && (*characters <= 0xDBFF));
         // There should be room left, since one UChar hasn't been
         // converted.
-        ASSERT((buffer + 3) <= (buffer + bufferVector.size()));
+        DCHECK((buffer + 3) <= (buffer + bufferVector.size()));
         putUTF8Triple(buffer, *characters);
     }
 

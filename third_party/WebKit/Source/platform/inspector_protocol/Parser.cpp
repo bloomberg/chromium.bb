@@ -283,7 +283,7 @@ inline int hexToInt(UChar c)
         return c - 'A' + 10;
     if ('a' <= c && c <= 'f')
         return c - 'a' + 10;
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return 0;
 }
 
