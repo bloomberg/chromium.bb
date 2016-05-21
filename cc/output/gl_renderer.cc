@@ -53,8 +53,6 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
-#include "third_party/skia/include/gpu/GrTexture.h"
-#include "third_party/skia/include/gpu/GrTextureProvider.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gfx/geometry/quad_f.h"
@@ -139,16 +137,6 @@ BlendMode BlendModeFromSkXfermode(SkXfermode::Mode mode) {
       NOTREACHED();
       return BLEND_MODE_NONE;
   }
-}
-
-void RoundUpToPow2(gfx::RectF* rect) {
-  float w, h;
-  for (w = 1.f; w < rect->width(); w *= 2.f) {
-  }
-  for (h = 1.f; h < rect->height(); h *= 2.f) {
-  }
-  rect->set_width(w);
-  rect->set_height(h);
 }
 
 // Smallest unit that impact anti-aliasing output. We use this to
@@ -599,6 +587,24 @@ void GLRenderer::DrawDebugBorderQuad(const DrawingFrame* frame,
   gl_->DrawElements(GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, 0);
 }
 
+static sk_sp<SkImage> WrapTexture(
+    const ResourceProvider::ScopedReadLockGL& lock,
+    GrContext* context) {
+  // Wrap a given texture in a Ganesh platform texture.
+  GrBackendTextureDesc backend_texture_description;
+  GrGLTextureInfo texture_info;
+  texture_info.fTarget = lock.target();
+  texture_info.fID = lock.texture_id();
+  backend_texture_description.fWidth = lock.texture_size().width();
+  backend_texture_description.fHeight = lock.texture_size().height();
+  backend_texture_description.fConfig = kSkia8888_GrPixelConfig;
+  backend_texture_description.fTextureHandle =
+      skia::GrGLTextureInfoToGrBackendObject(texture_info);
+  backend_texture_description.fOrigin = kBottomLeft_GrSurfaceOrigin;
+
+  return SkImage::MakeFromTexture(context, backend_texture_description);
+}
+
 static sk_sp<SkImage> ApplyImageFilter(
     std::unique_ptr<GLRenderer::ScopedUseGrContext> use_gr_context,
     ResourceProvider* resource_provider,
@@ -606,31 +612,16 @@ static sk_sp<SkImage> ApplyImageFilter(
     const gfx::RectF& dst_rect,
     const gfx::Vector2dF& scale,
     sk_sp<SkImageFilter> filter,
-    ScopedResource* source_texture_resource) {
-  if (!filter)
-    return nullptr;
-
-  if (!use_gr_context)
+    ScopedResource* source_texture_resource,
+    SkIPoint* offset,
+    SkIRect* subset) {
+  if (!filter || !use_gr_context)
     return nullptr;
 
   ResourceProvider::ScopedReadLockGL lock(resource_provider,
                                           source_texture_resource->id());
 
-  // Wrap the source texture in a Ganesh platform texture.
-  GrBackendTextureDesc backend_texture_description;
-  GrGLTextureInfo texture_info;
-  texture_info.fTarget = lock.target();
-  texture_info.fID = lock.texture_id();
-  backend_texture_description.fWidth = source_texture_resource->size().width();
-  backend_texture_description.fHeight =
-      source_texture_resource->size().height();
-  backend_texture_description.fConfig = kSkia8888_GrPixelConfig;
-  backend_texture_description.fTextureHandle =
-      skia::GrGLTextureInfoToGrBackendObject(texture_info);
-  backend_texture_description.fOrigin = kBottomLeft_GrSurfaceOrigin;
-
-  sk_sp<SkImage> src_image = SkImage::MakeFromTexture(
-      use_gr_context->context(), backend_texture_description);
+  sk_sp<SkImage> src_image = WrapTexture(lock, use_gr_context->context());
   if (!src_image) {
     TRACE_EVENT_INSTANT0("cc",
                          "ApplyImageFilter wrap background texture failed",
@@ -638,35 +629,24 @@ static sk_sp<SkImage> ApplyImageFilter(
     return nullptr;
   }
 
-  // Create surface to draw into.
-  SkImageInfo dst_info =
-      SkImageInfo::MakeN32Premul(dst_rect.width(), dst_rect.height());
-  sk_sp<SkSurface> surface = SkSurface::MakeRenderTarget(
-      use_gr_context->context(), SkBudgeted::kYes, dst_info);
-  if (!surface) {
-    TRACE_EVENT_INSTANT0("cc", "ApplyImageFilter surface allocation failed",
-                         TRACE_EVENT_SCOPE_THREAD);
-    return nullptr;
-  }
-
   SkMatrix local_matrix;
-  local_matrix.setScale(scale.x(), scale.y());
+  local_matrix.setTranslate(-src_rect.x(), -src_rect.y());
+  local_matrix.postScale(scale.x(), scale.y());
 
-  SkPaint paint;
-  paint.setImageFilter(filter->makeWithLocalMatrix(local_matrix));
-  surface->getCanvas()->translate(-dst_rect.x(), -dst_rect.y());
-  surface->getCanvas()->drawImage(src_image, src_rect.x(), src_rect.y(),
-                                  &paint);
-  // Flush the drawing before source texture read lock goes out of scope.
-  // Skia API does not guarantee that when the SkImage goes out of scope,
-  // its externally referenced resources would force the rendering to be
-  // flushed.
-  surface->getCanvas()->flush();
-  sk_sp<SkImage> image = surface->makeImageSnapshot();
+  SkIRect clip_bounds = gfx::RectFToSkRect(dst_rect).roundOut();
+  clip_bounds.offset(-src_rect.x(), -src_rect.y());
+  filter = filter->makeWithLocalMatrix(local_matrix);
+  SkIRect in_subset = SkIRect::MakeWH(src_image->width(), src_image->height());
+  sk_sp<SkImage> image = src_image->makeWithFilter(filter.get(), in_subset,
+                                                   clip_bounds, subset, offset);
+
   if (!image || !image->isTextureBacked()) {
     return nullptr;
   }
 
+  // Force a flush of the Skia pipeline before we switch back to the compositor
+  // context.
+  image->getTextureHandle(true);
   CHECK(image->isTextureBacked());
   return image;
 }
@@ -859,13 +839,57 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
     ScopedResource* background_texture,
     const gfx::RectF& rect) {
   DCHECK(ShouldApplyBackgroundFilters(quad));
+  auto use_gr_context = ScopedUseGrContext::Create(this, frame);
   sk_sp<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
       quad->background_filters, gfx::SizeF(background_texture->size()));
 
-  sk_sp<SkImage> background_with_filters = ApplyImageFilter(
-      ScopedUseGrContext::Create(this, frame), resource_provider_, rect, rect,
-      quad->filters_scale, std::move(filter), background_texture);
-  return background_with_filters;
+  // TODO(senorblanco): background filters should be moved to the
+  // makeWithFilter fast-path, and go back to calling ApplyImageFilter().
+  // See http://crbug.com/613233.
+  if (!filter || !use_gr_context)
+    return nullptr;
+
+  ResourceProvider::ScopedReadLockGL lock(resource_provider_,
+                                          background_texture->id());
+
+  sk_sp<SkImage> src_image = WrapTexture(lock, use_gr_context->context());
+  if (!src_image) {
+    TRACE_EVENT_INSTANT0(
+        "cc", "ApplyBackgroundFilters wrap background texture failed",
+        TRACE_EVENT_SCOPE_THREAD);
+    return nullptr;
+  }
+
+  // Create surface to draw into.
+  SkImageInfo dst_info =
+      SkImageInfo::MakeN32Premul(rect.width(), rect.height());
+  sk_sp<SkSurface> surface = SkSurface::MakeRenderTarget(
+      use_gr_context->context(), SkBudgeted::kYes, dst_info);
+  if (!surface) {
+    TRACE_EVENT_INSTANT0("cc",
+                         "ApplyBackgroundFilters surface allocation failed",
+                         TRACE_EVENT_SCOPE_THREAD);
+    return nullptr;
+  }
+
+  SkMatrix local_matrix;
+  local_matrix.setScale(quad->filters_scale.x(), quad->filters_scale.y());
+
+  SkPaint paint;
+  paint.setImageFilter(filter->makeWithLocalMatrix(local_matrix));
+  surface->getCanvas()->translate(-rect.x(), -rect.y());
+  surface->getCanvas()->drawImage(src_image, rect.x(), rect.y(), &paint);
+  // Flush the drawing before source texture read lock goes out of scope.
+  // Skia API does not guarantee that when the SkImage goes out of scope,
+  // its externally referenced resources would force the rendering to be
+  // flushed.
+  surface->getCanvas()->flush();
+  sk_sp<SkImage> image = surface->makeImageSnapshot();
+  if (!image || !image->isTextureBacked()) {
+    return nullptr;
+  }
+
+  return image;
 }
 
 // Map device space quad to local space. Device_transform has no 3d
@@ -997,7 +1021,9 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   GLuint filter_image_id = 0;
   SkScalar color_matrix[20];
   bool use_color_matrix = false;
-  gfx::RectF rect = gfx::RectF(quad->rect);
+  gfx::Size texture_size = contents_texture->size();
+  bool flip_texture = true;
+  gfx::Point src_offset;
   if (!quad->filters.IsEmpty()) {
     sk_sp<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
         quad->filters, gfx::SizeF(contents_texture->size()));
@@ -1028,19 +1054,28 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
         if (dst_rect.IsEmpty()) {
           return;
         }
-        // Expand dst_rect size to the nearest power of 2, in order to get
-        // more cache hits in Skia's texture cache.
-        RoundUpToPow2(&dst_rect);
-        filter_image = ApplyImageFilter(
-            ScopedUseGrContext::Create(this, frame), resource_provider_, rect,
-            dst_rect, quad->filters_scale, std::move(filter), contents_texture);
+        SkIPoint offset;
+        SkIRect subset;
+        gfx::RectF src_rect(quad->rect);
+        filter_image = ApplyImageFilter(ScopedUseGrContext::Create(this, frame),
+                                        resource_provider_, src_rect, dst_rect,
+                                        quad->filters_scale, std::move(filter),
+                                        contents_texture, &offset, &subset);
         if (!filter_image) {
           return;
         }
         filter_image_id = skia::GrBackendObjectToGrGLTextureInfo(
                               filter_image->getTextureHandle(true))
                               ->fID;
+        texture_size.set_width(filter_image->width());
+        texture_size.set_height(filter_image->height());
         DCHECK(filter_image_id);
+        dst_rect =
+            gfx::RectF(src_rect.x() + offset.fX, src_rect.y() + offset.fY,
+                       subset.width(), subset.height());
+        src_offset.SetPoint(subset.x(), subset.y());
+        flip_texture =
+            filter_image->getTexture()->origin() == kBottomLeft_GrSurfaceOrigin;
       }
     }
   }
@@ -1152,25 +1187,21 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     program->fragment_shader().FillLocations(&locations);
     gl_->Uniform1i(locations.sampler, 0);
   }
-  float tex_scale_x, tex_scale_y;
-  if (filter_image) {
-    // Skia filters always return SkImages with snug textures.
-    tex_scale_x = tex_scale_y = 1.0f;
-  } else {
-    tex_scale_x = quad->rect.width() /
-                  static_cast<float>(contents_texture->size().width());
-    tex_scale_y = quad->rect.height() /
-                  static_cast<float>(contents_texture->size().height());
-  }
-  DCHECK_LE(tex_scale_x, 1.0f);
-  DCHECK_LE(tex_scale_y, 1.0f);
+  gfx::RectF tex_rect(src_offset.x(), src_offset.y(), dst_rect.width(),
+                      dst_rect.height());
+  tex_rect.Scale(1.0f / texture_size.width(), 1.0f / texture_size.height());
 
   DCHECK(locations.tex_transform != -1 || IsContextLost());
-  // Flip the content vertically in the shader, as the RenderPass input
-  // texture is already oriented the same way as the framebuffer, but the
-  // projection transform does a flip.
-  gl_->Uniform4f(locations.tex_transform, 0.0f, 1.0f, tex_scale_x,
-                 -tex_scale_y);
+  if (flip_texture) {
+    // Flip the content vertically in the shader, as the RenderPass input
+    // texture is already oriented the same way as the framebuffer, but the
+    // projection transform does a flip.
+    gl_->Uniform4f(locations.tex_transform, tex_rect.x(), 1.0f - tex_rect.y(),
+                   tex_rect.width(), -tex_rect.height());
+  } else {
+    gl_->Uniform4f(locations.tex_transform, tex_rect.x(), tex_rect.y(),
+                   tex_rect.width(), tex_rect.height());
+  }
 
   GLint last_texture_unit = 0;
   if (locations.mask_sampler != -1) {
@@ -1187,11 +1218,12 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     // Mask textures are oriented vertically flipped relative to the framebuffer
     // and the RenderPass contents texture, so we flip the tex coords from the
     // RenderPass texture to find the mask texture coords.
-    gl_->Uniform2f(locations.mask_tex_coord_offset, mask_uv_rect.x(),
-                   mask_uv_rect.height() / tex_scale_y + mask_uv_rect.y());
+    gl_->Uniform2f(
+        locations.mask_tex_coord_offset, mask_uv_rect.x(),
+        mask_uv_rect.height() / tex_rect.height() + mask_uv_rect.y());
     gl_->Uniform2f(locations.mask_tex_coord_scale,
-                   mask_uv_rect.width() / tex_scale_x,
-                   -mask_uv_rect.height() / tex_scale_y);
+                   mask_uv_rect.width() / tex_rect.width(),
+                   -mask_uv_rect.height() / tex_rect.height());
 
     last_texture_unit = 1;
   }

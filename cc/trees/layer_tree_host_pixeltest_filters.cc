@@ -609,8 +609,8 @@ class RotatedDropShadowFilterTest : public LayerTreeHostFiltersPixelTest {
     background->AddChild(child);
 
 #if defined(OS_WIN)
-    // Windows has 2 pixels off by 1: crbug.com/259915
-    float percentage_pixels_large_error = 0.00222223f;  // 1px / (300*300)
+    // Windows has 3 pixels off by 1: crbug.com/259915
+    float percentage_pixels_large_error = 0.00333334f;  // 3px / (300*300)
     float percentage_pixels_small_error = 0.0f;
     float average_error_allowed_in_bad_pixels = 1.f;
     int large_error_allowed = 1;
@@ -744,6 +744,62 @@ TEST_F(EnlargedTextureWithCropOffsetFilter, Software) {
   RunPixelTestType(
       PIXEL_TEST_SOFTWARE,
       base::FilePath(FILE_PATH_LITERAL("enlarged_texture_on_crop_offset.png")));
+}
+
+class BlurFilterWithClip : public LayerTreeHostFiltersPixelTest {
+ protected:
+  void RunPixelTestType(PixelTestType test_type, base::FilePath image_name) {
+    scoped_refptr<SolidColorLayer> child1 =
+        CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorBLUE);
+    scoped_refptr<SolidColorLayer> child2 =
+        CreateSolidColorLayer(gfx::Rect(20, 20, 160, 160), SK_ColorWHITE);
+    scoped_refptr<SolidColorLayer> child3 =
+        CreateSolidColorLayer(gfx::Rect(40, 40, 20, 30), SK_ColorRED);
+    scoped_refptr<SolidColorLayer> child4 =
+        CreateSolidColorLayer(gfx::Rect(60, 70, 100, 90), SK_ColorGREEN);
+    scoped_refptr<SolidColorLayer> filter_layer =
+        CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
+
+    filter_layer->AddChild(child1);
+    filter_layer->AddChild(child2);
+    filter_layer->AddChild(child3);
+    filter_layer->AddChild(child4);
+
+    FilterOperations filters;
+    filters.Append(FilterOperation::CreateBlurFilter(2.f));
+    filter_layer->SetFilters(filters);
+
+    // Force the allocation a larger textures.
+    set_enlarge_texture_amount(gfx::Vector2d(50, 50));
+
+#if defined(OS_WIN)
+    // Windows has 1880 pixels off by 1: crbug.com/259915
+    float percentage_pixels_large_error = 4.7f;  // 1880px / (200*200)
+    float percentage_pixels_small_error = 0.0f;
+    float average_error_allowed_in_bad_pixels = 1.f;
+    int large_error_allowed = 2;
+    int small_error_allowed = 0;
+    pixel_comparator_.reset(new FuzzyPixelComparator(
+        true,  // discard_alpha
+        percentage_pixels_large_error, percentage_pixels_small_error,
+        average_error_allowed_in_bad_pixels, large_error_allowed,
+        small_error_allowed));
+#endif
+
+    RunPixelTest(test_type, filter_layer, image_name);
+  }
+};
+
+TEST_F(BlurFilterWithClip, GL) {
+  RunPixelTestType(
+      PIXEL_TEST_GL,
+      base::FilePath(FILE_PATH_LITERAL("blur_filter_with_clip_gl.png")));
+}
+
+TEST_F(BlurFilterWithClip, Software) {
+  RunPixelTestType(
+      PIXEL_TEST_SOFTWARE,
+      base::FilePath(FILE_PATH_LITERAL("blur_filter_with_clip_sw.png")));
 }
 
 class FilterWithGiantCropRectPixelTest : public LayerTreeHostFiltersPixelTest {

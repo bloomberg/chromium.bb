@@ -1271,6 +1271,17 @@ crbug.com/587136 [ Linux Debug ] http/tests/security/xss-DENIED-cross-origin-sta
 
 crbug.com/587593 [ Android ] fast/js/pic/cached-single-entry-transition.html [ Pass Failure ]
 
+crbug.com/611823 css3/filters/effect-reference-hw.html [ NeedsRebaseline ]
+crbug.com/611823 css3/filters/effect-blur-hw.html [ NeedsRebaseline ]
+crbug.com/611823 css3/filters/effect-reference-colorspace-hw.html [ NeedsRebaseline ]
+crbug.com/611823 css3/filters/effect-reference-hidpi-hw.html [ NeedsRebaseline ]
+crbug.com/611823 css3/filters/effect-reference-ordering-hw.html [ NeedsRebaseline ]
+crbug.com/611823 css3/filters/effect-reference-subregion-hw.html [ NeedsRebaseline ]
+crbug.com/611823 css3/filters/effect-reference-zoom-hw.html [ NeedsRebaseline ]
+crbug.com/611823 compositing/overflow/nested-render-surfaces-with-rotation.html [ NeedsRebaseline ]
+crbug.com/611823 compositing/reflections/animation-inside-reflection.html [ NeedsRebaseline ]
+crbug.com/611823 virtual/prefer_compositing_to_lcd_text/compositing/overflow/nested-render-surfaces-with-intervening-clip.html [ NeedsRebaseline ]
+
 crbug.com/587779 [ Linux Mac10.9 Mac10.10 Mac10.11 Retina ] fast/dynamic/window-resize-scrollbars-test.html [ Timeout Failure Pass ]
 
 crbug.com/588103 fast/xmlhttprequest/xmlhttprequest-responsetype-arraybuffer.html [ Pass Failure ]
