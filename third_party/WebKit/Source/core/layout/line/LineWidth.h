@@ -46,8 +46,15 @@ class LineWidth {
 public:
     LineWidth(LineLayoutBlockFlow, bool isFirstLine, IndentTextOrNot);
 
-    bool fitsOnLine() const { return currentWidth() <= (m_availableWidth + LayoutUnit::epsilon()); }
-    bool fitsOnLine(float extra) const { return currentWidth() + extra <= (m_availableWidth + LayoutUnit::epsilon()); }
+    bool fitsOnLine() const
+    {
+        return LayoutUnit::fromFloatFloor(currentWidth()) <= m_availableWidth;
+    }
+    bool fitsOnLine(float extra) const
+    {
+        float totalWidth = currentWidth() + extra;
+        return LayoutUnit::fromFloatFloor(totalWidth) <= m_availableWidth;
+    }
     bool fitsOnLine(float extra, WhitespaceTreatment whitespaceTreatment) const
     {
         LayoutUnit w = LayoutUnit::fromFloatFloor(currentWidth() + extra);
