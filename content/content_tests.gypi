@@ -461,6 +461,7 @@
       'browser/fileapi/transient_file_util_unittest.cc',
       'browser/fileapi/upload_file_system_file_element_reader_unittest.cc',
       'browser/frame_host/frame_tree_unittest.cc',
+      'browser/frame_host/frame_tree_node_blame_context_unittest.cc',
       'browser/frame_host/navigation_controller_impl_unittest.cc',
       'browser/frame_host/navigation_entry_impl_unittest.cc',
       'browser/frame_host/navigation_handle_impl_unittest.cc',

@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "content/browser/frame_host/frame_tree_node_blame_context.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/common/content_export.h"
@@ -283,10 +284,11 @@ class CONTENT_EXPORT FrameTreeNode {
   // FrameTreeNode.
   void BeforeUnloadCanceled();
 
+  // Returns the BlameContext associated with this node.
+  FrameTreeNodeBlameContext& blame_context() { return blame_context_; }
+
  private:
   class OpenerDestroyedObserver;
-
-  void TraceSnapshot() const;
 
   FrameTreeNode* GetSibling(int relative_offset) const;
 
@@ -363,6 +365,11 @@ class CONTENT_EXPORT FrameTreeNode {
   base::ObserverList<Observer> observers_;
 
   base::TimeTicks last_focus_time_;
+
+  // A helper for tracing the snapshots of this FrameTreeNode and attributing
+  // browser process activities to this node (when possible).  It is unrelated
+  // to the core logic of FrameTreeNode.
+  FrameTreeNodeBlameContext blame_context_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameTreeNode);
 };
