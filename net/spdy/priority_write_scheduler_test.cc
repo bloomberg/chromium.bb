@@ -70,13 +70,13 @@ TEST_F(PriorityWriteSchedulerTest, RegisterStream) {
   EXPECT_FALSE(scheduler_.StreamRegistered(1));
   scheduler_.RegisterStream(1, kHttp2RootStreamId, 123, false);
   EXPECT_TRUE(scheduler_.StreamRegistered(1));
-  EXPECT_EQ(Http2WeightToSpdyPriority(123), scheduler_.GetStreamPriority(1));
+  EXPECT_EQ(Http2WeightToSpdy3Priority(123), scheduler_.GetStreamPriority(1));
   EXPECT_EQ(kHttp2RootStreamId, scheduler_.GetStreamParent(1));
   EXPECT_FALSE(scheduler_.HasReadyStreams());
 
   EXPECT_SPDY_BUG(scheduler_.RegisterStream(1, kHttp2RootStreamId, 456, false),
                   "Stream 1 already registered");
-  EXPECT_EQ(Http2WeightToSpdyPriority(123), scheduler_.GetStreamPriority(1));
+  EXPECT_EQ(Http2WeightToSpdy3Priority(123), scheduler_.GetStreamPriority(1));
 
   EXPECT_SPDY_BUG(scheduler_.RegisterStream(2, 3, 123, false),
                   "Stream 3 not registered");
@@ -164,8 +164,8 @@ TEST_F(PriorityWriteSchedulerTest, GetStreamWeight) {
 
   scheduler_.RegisterStream(1, 3);
   scheduler_.RegisterStream(2, 4);
-  EXPECT_EQ(SpdyPriorityToHttp2Weight(3), scheduler_.GetStreamWeight(1));
-  EXPECT_EQ(SpdyPriorityToHttp2Weight(4), scheduler_.GetStreamWeight(2));
+  EXPECT_EQ(Spdy3PriorityToHttp2Weight(3), scheduler_.GetStreamWeight(1));
+  EXPECT_EQ(Spdy3PriorityToHttp2Weight(4), scheduler_.GetStreamWeight(2));
 
   scheduler_.UnregisterStream(1);
   EXPECT_SPDY_BUG(
@@ -178,10 +178,10 @@ TEST_F(PriorityWriteSchedulerTest, UpdateStreamWeight) {
                   "Stream 3 not registered");
 
   scheduler_.RegisterStream(3, 3);
-  EXPECT_EQ(SpdyPriorityToHttp2Weight(3), scheduler_.GetStreamWeight(3));
+  EXPECT_EQ(Spdy3PriorityToHttp2Weight(3), scheduler_.GetStreamWeight(3));
 
-  scheduler_.UpdateStreamWeight(3, SpdyPriorityToHttp2Weight(4));
-  EXPECT_EQ(SpdyPriorityToHttp2Weight(4), scheduler_.GetStreamWeight(3));
+  scheduler_.UpdateStreamWeight(3, Spdy3PriorityToHttp2Weight(4));
+  EXPECT_EQ(Spdy3PriorityToHttp2Weight(4), scheduler_.GetStreamWeight(3));
   EXPECT_EQ(4, scheduler_.GetStreamPriority(3));
 
   scheduler_.UnregisterStream(3);

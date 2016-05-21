@@ -163,23 +163,6 @@ class NET_EXPORT_PRIVATE WriteScheduler {
   virtual size_t NumReadyStreams() const = 0;
 };
 
-// Returns SPDY priority value clamped to the valid range of [0, 7].
-NET_EXPORT_PRIVATE SpdyPriority ClampSpdyPriority(SpdyPriority priority);
-
-// Returns HTTP/2 weight clamped to the valid range of [1, 256].
-NET_EXPORT_PRIVATE int ClampHttp2Weight(int weight);
-
-// Maps SPDY priority value in range [0, 7] to HTTP/2 weight value in range
-// [1, 256], where priority 0 (i.e. highest precedence) corresponds to maximum
-// weight 256 and priority 7 (lowest precedence) corresponds to minimum weight
-// 1.
-NET_EXPORT_PRIVATE int SpdyPriorityToHttp2Weight(SpdyPriority priority);
-
-// Maps HTTP/2 weight value in range [1, 256] to SPDY priority value in range
-// [0, 7], where minimum weight 1 corresponds to priority 7 (lowest precedence)
-// and maximum weight 256 corresponds to priority 0 (highest precedence).
-NET_EXPORT_PRIVATE SpdyPriority Http2WeightToSpdyPriority(int weight);
-
 }  // namespace net
 
 #endif  // NET_SPDY_WRITE_SCHEDULER_H_

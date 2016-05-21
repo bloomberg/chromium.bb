@@ -4,6 +4,7 @@
 
 #include "net/spdy/spdy_protocol.h"
 
+#include <iostream>
 #include <limits>
 #include <memory>
 
@@ -13,11 +14,23 @@
 #include "net/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
-}  // namespace
+using std::ostream;
 
 namespace net {
+
+ostream& operator<<(ostream& os, const SpdyStreamPrecedence precedence) {
+  if (precedence.is_spdy3_priority()) {
+    os << "SpdyStreamPrecedence[spdy3_priority=" << precedence.spdy3_priority()
+       << "]";
+  } else {
+    os << "SpdyStreamPrecedence[parent_id=" << precedence.parent_id()
+       << ", weight=" << precedence.weight()
+       << ", is_exclusive=" << precedence.is_exclusive() << "]";
+  }
+  return os;
+}
+
+namespace test {
 
 TEST(SpdyProtocolDeathTest, TestSpdySettingsAndIdOutOfBounds) {
   std::unique_ptr<SettingsFlagsAndId> flags_and_id;
@@ -60,4 +73,121 @@ TEST(SpdyProtocolTest, IsValidHTTP2FrameStreamId) {
   EXPECT_TRUE(SpdyConstants::IsValidHTTP2FrameStreamId(0, WINDOW_UPDATE));
 }
 
+TEST(SpdyProtocolTest, ClampSpdy3Priority) {
+  EXPECT_SPDY_BUG(EXPECT_EQ(7, ClampSpdy3Priority(8)), "Invalid priority: 8");
+  EXPECT_EQ(kV3LowestPriority, ClampSpdy3Priority(kV3LowestPriority));
+  EXPECT_EQ(kV3HighestPriority, ClampSpdy3Priority(kV3HighestPriority));
+}
+
+TEST(SpdyProtocolTest, ClampHttp2Weight) {
+  EXPECT_SPDY_BUG(EXPECT_EQ(kHttp2MinStreamWeight, ClampHttp2Weight(0)),
+                  "Invalid weight: 0");
+  EXPECT_SPDY_BUG(EXPECT_EQ(kHttp2MaxStreamWeight, ClampHttp2Weight(300)),
+                  "Invalid weight: 300");
+  EXPECT_EQ(kHttp2MinStreamWeight, ClampHttp2Weight(kHttp2MinStreamWeight));
+  EXPECT_EQ(kHttp2MaxStreamWeight, ClampHttp2Weight(kHttp2MaxStreamWeight));
+}
+
+TEST(SpdyProtocolTest, Spdy3PriorityToHttp2Weight) {
+  EXPECT_EQ(256, Spdy3PriorityToHttp2Weight(0));
+  EXPECT_EQ(220, Spdy3PriorityToHttp2Weight(1));
+  EXPECT_EQ(183, Spdy3PriorityToHttp2Weight(2));
+  EXPECT_EQ(147, Spdy3PriorityToHttp2Weight(3));
+  EXPECT_EQ(110, Spdy3PriorityToHttp2Weight(4));
+  EXPECT_EQ(74, Spdy3PriorityToHttp2Weight(5));
+  EXPECT_EQ(37, Spdy3PriorityToHttp2Weight(6));
+  EXPECT_EQ(1, Spdy3PriorityToHttp2Weight(7));
+}
+
+TEST(SpdyProtocolTest, Http2WeightToSpdy3Priority) {
+  EXPECT_EQ(0u, Http2WeightToSpdy3Priority(256));
+  EXPECT_EQ(0u, Http2WeightToSpdy3Priority(221));
+  EXPECT_EQ(1u, Http2WeightToSpdy3Priority(220));
+  EXPECT_EQ(1u, Http2WeightToSpdy3Priority(184));
+  EXPECT_EQ(2u, Http2WeightToSpdy3Priority(183));
+  EXPECT_EQ(2u, Http2WeightToSpdy3Priority(148));
+  EXPECT_EQ(3u, Http2WeightToSpdy3Priority(147));
+  EXPECT_EQ(3u, Http2WeightToSpdy3Priority(111));
+  EXPECT_EQ(4u, Http2WeightToSpdy3Priority(110));
+  EXPECT_EQ(4u, Http2WeightToSpdy3Priority(75));
+  EXPECT_EQ(5u, Http2WeightToSpdy3Priority(74));
+  EXPECT_EQ(5u, Http2WeightToSpdy3Priority(38));
+  EXPECT_EQ(6u, Http2WeightToSpdy3Priority(37));
+  EXPECT_EQ(6u, Http2WeightToSpdy3Priority(2));
+  EXPECT_EQ(7u, Http2WeightToSpdy3Priority(1));
+}
+
+TEST(SpdyStreamPrecedenceTest, Basic) {
+  SpdyStreamPrecedence spdy3_prec(2);
+  EXPECT_TRUE(spdy3_prec.is_spdy3_priority());
+  EXPECT_EQ(2, spdy3_prec.spdy3_priority());
+  EXPECT_EQ(kHttp2RootStreamId, spdy3_prec.parent_id());
+  EXPECT_EQ(Spdy3PriorityToHttp2Weight(2), spdy3_prec.weight());
+  EXPECT_FALSE(spdy3_prec.is_exclusive());
+
+  for (bool is_exclusive : {true, false}) {
+    SpdyStreamPrecedence h2_prec(7, 123, is_exclusive);
+    EXPECT_FALSE(h2_prec.is_spdy3_priority());
+    EXPECT_EQ(Http2WeightToSpdy3Priority(123), h2_prec.spdy3_priority());
+    EXPECT_EQ(7u, h2_prec.parent_id());
+    EXPECT_EQ(123, h2_prec.weight());
+    EXPECT_EQ(is_exclusive, h2_prec.is_exclusive());
+  }
+}
+
+TEST(SpdyStreamPrecedenceTest, Clamping) {
+  EXPECT_SPDY_BUG(EXPECT_EQ(7, SpdyStreamPrecedence(8).spdy3_priority()),
+                  "Invalid priority: 8");
+  EXPECT_SPDY_BUG(EXPECT_EQ(kHttp2MinStreamWeight,
+                            SpdyStreamPrecedence(3, 0, false).weight()),
+                  "Invalid weight: 0");
+  EXPECT_SPDY_BUG(EXPECT_EQ(kHttp2MaxStreamWeight,
+                            SpdyStreamPrecedence(3, 300, false).weight()),
+                  "Invalid weight: 300");
+}
+
+TEST(SpdyStreamPrecedenceTest, Copying) {
+  SpdyStreamPrecedence prec1(3);
+  SpdyStreamPrecedence copy1(prec1);
+  EXPECT_TRUE(copy1.is_spdy3_priority());
+  EXPECT_EQ(3, copy1.spdy3_priority());
+
+  SpdyStreamPrecedence prec2(4, 5, true);
+  SpdyStreamPrecedence copy2(prec2);
+  EXPECT_FALSE(copy2.is_spdy3_priority());
+  EXPECT_EQ(4u, copy2.parent_id());
+  EXPECT_EQ(5, copy2.weight());
+  EXPECT_TRUE(copy2.is_exclusive());
+
+  copy1 = prec2;
+  EXPECT_FALSE(copy1.is_spdy3_priority());
+  EXPECT_EQ(4u, copy1.parent_id());
+  EXPECT_EQ(5, copy1.weight());
+  EXPECT_TRUE(copy1.is_exclusive());
+
+  copy2 = prec1;
+  EXPECT_TRUE(copy2.is_spdy3_priority());
+  EXPECT_EQ(3, copy2.spdy3_priority());
+}
+
+TEST(SpdyStreamPrecedenceTest, Equals) {
+  EXPECT_EQ(SpdyStreamPrecedence(3), SpdyStreamPrecedence(3));
+  EXPECT_NE(SpdyStreamPrecedence(3), SpdyStreamPrecedence(4));
+
+  EXPECT_EQ(SpdyStreamPrecedence(1, 2, false),
+            SpdyStreamPrecedence(1, 2, false));
+  EXPECT_NE(SpdyStreamPrecedence(1, 2, false),
+            SpdyStreamPrecedence(2, 2, false));
+  EXPECT_NE(SpdyStreamPrecedence(1, 2, false),
+            SpdyStreamPrecedence(1, 3, false));
+  EXPECT_NE(SpdyStreamPrecedence(1, 2, false),
+            SpdyStreamPrecedence(1, 2, true));
+
+  SpdyStreamPrecedence spdy3_prec(3);
+  SpdyStreamPrecedence h2_prec(spdy3_prec.parent_id(), spdy3_prec.weight(),
+                               spdy3_prec.is_exclusive());
+  EXPECT_NE(spdy3_prec, h2_prec);
+}
+
+}  // namespace test
 }  // namespace net

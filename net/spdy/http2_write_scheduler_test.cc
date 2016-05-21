@@ -113,7 +113,7 @@ TEST_F(Http2PriorityWriteSchedulerTest, RegisterStream) {
   EXPECT_EQ(0u, scheduler_.NumReadyStreams());
   EXPECT_TRUE(scheduler_.StreamRegistered(1));
   EXPECT_EQ(3, scheduler_.GetStreamPriority(1));
-  EXPECT_EQ(SpdyPriorityToHttp2Weight(3), scheduler_.GetStreamWeight(1));
+  EXPECT_EQ(Spdy3PriorityToHttp2Weight(3), scheduler_.GetStreamWeight(1));
   EXPECT_EQ(kHttp2RootStreamId, scheduler_.GetStreamParent(1));
   EXPECT_THAT(scheduler_.GetStreamChildren(1), IsEmpty());
 
@@ -140,9 +140,9 @@ TEST_F(Http2PriorityWriteSchedulerTest, GetStreamPriority) {
   EXPECT_SPDY_BUG(EXPECT_EQ(kV3LowestPriority, scheduler_.GetStreamPriority(3)),
                   "Stream 3 not registered");
   scheduler_.RegisterStream(3, 0, 130, true);
-  EXPECT_EQ(Http2WeightToSpdyPriority(130), scheduler_.GetStreamPriority(3));
+  EXPECT_EQ(Http2WeightToSpdy3Priority(130), scheduler_.GetStreamPriority(3));
   scheduler_.UpdateStreamWeight(3, 50);
-  EXPECT_EQ(Http2WeightToSpdyPriority(50), scheduler_.GetStreamPriority(3));
+  EXPECT_EQ(Http2WeightToSpdy3Priority(50), scheduler_.GetStreamPriority(3));
   scheduler_.UnregisterStream(3);
   EXPECT_SPDY_BUG(EXPECT_EQ(kV3LowestPriority, scheduler_.GetStreamPriority(3)),
                   "Stream 3 not registered");
@@ -565,7 +565,7 @@ TEST_F(Http2PriorityWriteSchedulerTest, GetLatestEventWithPrecedence) {
                   "Stream 4 not registered");
 
   for (int i = 1; i < 5; ++i) {
-    scheduler_.RegisterStream(i, 0, SpdyPriorityToHttp2Weight(i), false);
+    scheduler_.RegisterStream(i, 0, Spdy3PriorityToHttp2Weight(i), false);
   }
   for (int i = 1; i < 5; ++i) {
     EXPECT_EQ(0, scheduler_.GetLatestEventWithPrecedence(i));

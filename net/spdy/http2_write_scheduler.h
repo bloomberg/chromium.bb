@@ -253,7 +253,7 @@ void Http2PriorityWriteScheduler<StreamIdType>::RegisterStream(
     StreamIdType stream_id,
     SpdyPriority priority) {
   RegisterStream(stream_id, kHttp2RootStreamId,
-                 SpdyPriorityToHttp2Weight(priority), false);
+                 Spdy3PriorityToHttp2Weight(priority), false);
 }
 
 template <typename StreamIdType>
@@ -304,7 +304,7 @@ void Http2PriorityWriteScheduler<StreamIdType>::UnregisterStream(
 template <typename StreamIdType>
 SpdyPriority Http2PriorityWriteScheduler<StreamIdType>::GetStreamPriority(
     StreamIdType stream_id) const {
-  return Http2WeightToSpdyPriority(GetStreamWeight(stream_id));
+  return Http2WeightToSpdy3Priority(GetStreamWeight(stream_id));
 }
 
 template <typename StreamIdType>
@@ -352,7 +352,7 @@ template <typename StreamIdType>
 void Http2PriorityWriteScheduler<StreamIdType>::UpdateStreamPriority(
     StreamIdType stream_id,
     SpdyPriority priority) {
-  UpdateStreamWeight(stream_id, SpdyPriorityToHttp2Weight(priority));
+  UpdateStreamWeight(stream_id, Spdy3PriorityToHttp2Weight(priority));
 }
 
 template <typename StreamIdType>

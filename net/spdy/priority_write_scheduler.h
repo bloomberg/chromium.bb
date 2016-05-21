@@ -47,7 +47,7 @@ class PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
     // parent_id not used here, but may as well validate it
     SPDY_BUG_IF(parent_id != kHttp2RootStreamId && !StreamRegistered(parent_id))
         << "Stream " << parent_id << " not registered";
-    RegisterStream(stream_id, Http2WeightToSpdyPriority(weight));
+    RegisterStream(stream_id, Http2WeightToSpdy3Priority(weight));
   }
 
   void RegisterStream(StreamIdType stream_id, SpdyPriority priority) override {
@@ -55,7 +55,7 @@ class PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
       SPDY_BUG << "Stream " << kHttp2RootStreamId << " already registered";
       return;
     }
-    priority = ClampSpdyPriority(priority);
+    priority = ClampSpdy3Priority(priority);
     StreamInfo stream_info = {priority, false};
     bool inserted =
         stream_infos_.insert(std::make_pair(stream_id, stream_info)).second;
@@ -111,11 +111,11 @@ class PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
   }
 
   int GetStreamWeight(StreamIdType stream_id) const override {
-    return SpdyPriorityToHttp2Weight(GetStreamPriority(stream_id));
+    return Spdy3PriorityToHttp2Weight(GetStreamPriority(stream_id));
   }
 
   void UpdateStreamWeight(StreamIdType stream_id, int weight) override {
-    UpdateStreamPriority(stream_id, Http2WeightToSpdyPriority(weight));
+    UpdateStreamPriority(stream_id, Http2WeightToSpdy3Priority(weight));
   }
 
   StreamIdType GetStreamParent(StreamIdType stream_id) const override {
