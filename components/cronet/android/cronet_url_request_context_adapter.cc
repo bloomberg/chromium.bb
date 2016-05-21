@@ -37,6 +37,7 @@
 #include "components/prefs/pref_service_factory.h"
 #include "jni/CronetUrlRequestContext_jni.h"
 #include "net/base/load_flags.h"
+#include "net/base/logging_network_change_observer.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate_impl.h"
 #include "net/base/url_util.h"
@@ -60,8 +61,25 @@
 
 namespace {
 
+// This class wraps a NetLog that also contains network change events.
+class NetLogWithNetworkChangeEvents {
+ public:
+  NetLogWithNetworkChangeEvents() : net_log_(), net_change_logger_(&net_log_) {}
+
+  net::NetLog* net_log() { return &net_log_; }
+
+ private:
+  net::NetLog net_log_;
+  // LoggingNetworkChangeObserver logs network change events to a NetLog.
+  // This class bundles one LoggingNetworkChangeObserver with one NetLog,
+  // so network change event are logged just once in the NetLog.
+  net::LoggingNetworkChangeObserver net_change_logger_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetLogWithNetworkChangeEvents);
+};
+
 // Use a global NetLog instance. See crbug.com/486120.
-static base::LazyInstance<net::NetLog>::Leaky g_net_log =
+static base::LazyInstance<NetLogWithNetworkChangeEvents>::Leaky g_net_log =
     LAZY_INSTANCE_INITIALIZER;
 
 const char kHttpServerProperties[] = "net.http_server_properties";
@@ -491,7 +509,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
         config->data_reduction_proxy_key, config->data_reduction_primary_proxy,
         config->data_reduction_fallback_proxy,
         config->data_reduction_secure_proxy_check_url, config->user_agent,
-        GetNetworkTaskRunner(), g_net_log.Pointer()));
+        GetNetworkTaskRunner(), g_net_log.Get().net_log()));
     network_delegate = data_reduction_proxy_->CreateNetworkDelegate(
         std::move(network_delegate));
     context_builder.set_proxy_delegate(
@@ -502,17 +520,18 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   }
 #endif  // defined(DATA_REDUCTION_PROXY_SUPPORT)
   context_builder.set_network_delegate(std::move(network_delegate));
-  context_builder.set_net_log(g_net_log.Pointer());
+  context_builder.set_net_log(g_net_log.Get().net_log());
 
   // Android provides a local HTTP proxy server that handles proxying when a PAC
   // URL is present. Create a proxy service without a resolver and rely on this
   // local HTTP proxy. See: crbug.com/432539.
   context_builder.set_proxy_service(
       net::ProxyService::CreateWithoutProxyResolver(
-          std::move(proxy_config_service_), g_net_log.Pointer()));
+          std::move(proxy_config_service_), g_net_log.Get().net_log()));
 
-  config->ConfigureURLRequestContextBuilder(
-      &context_builder, g_net_log.Pointer(), GetFileThread()->task_runner());
+  config->ConfigureURLRequestContextBuilder(&context_builder,
+                                            g_net_log.Get().net_log(),
+                                            GetFileThread()->task_runner());
 
   // Set up pref file if storage path is specified.
   if (!config->storage_path.empty()) {
