@@ -40,6 +40,7 @@
 #include <signal.h>
 #include <pthread.h>
 
+#include "wayland-util.h"
 #include "wayland-private.h"
 #include "wayland-server.h"
 
