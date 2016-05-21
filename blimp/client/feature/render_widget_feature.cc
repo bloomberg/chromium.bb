@@ -83,23 +83,23 @@ void RenderWidgetFeature::ProcessMessage(
     std::unique_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
   DCHECK(!callback.is_null());
-  DCHECK(message->type() == BlimpMessage::RENDER_WIDGET ||
-         message->type() == BlimpMessage::COMPOSITOR);
+  DCHECK(BlimpMessage::kRenderWidget == message->feature_case() ||
+         BlimpMessage::kCompositor == message->feature_case());
 
   int target_tab_id = message->target_tab_id();
   RenderWidgetFeatureDelegate* delegate = FindDelegate(target_tab_id);
   DCHECK(delegate) << "RenderWidgetFeatureDelegate not found for "
       << target_tab_id;
 
-  switch (message->type()) {
-    case BlimpMessage::RENDER_WIDGET:
+  switch (message->feature_case()) {
+    case BlimpMessage::kRenderWidget:
       ProcessRenderWidgetMessage(delegate, message->render_widget());
       break;
-    case BlimpMessage::COMPOSITOR:
+    case BlimpMessage::kCompositor:
       ProcessCompositorMessage(delegate, message->compositor());
       break;
     default:
-      NOTIMPLEMENTED();
+      NOTREACHED();
   }
 
   callback.Run(net::OK);

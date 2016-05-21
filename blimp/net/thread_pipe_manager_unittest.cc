@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
+#include "blimp/common/create_blimp_message.h"
 #include "blimp/net/blimp_message_thread_pipe.h"
 #include "blimp/net/browser_connection_handler.h"
 #include "blimp/net/test_common.h"
@@ -24,18 +25,13 @@ using testing::SaveArg;
 namespace blimp {
 namespace {
 
-std::unique_ptr<BlimpMessage> CreateMessage(BlimpMessage::Type type) {
-  std::unique_ptr<BlimpMessage> output(new BlimpMessage);
-  output->set_type(type);
-  return output;
-}
-
 // A feature that registers itself with ThreadPipeManager.
 class FakeFeature {
  public:
-  FakeFeature(BlimpMessage::Type type, ThreadPipeManager* pipe_manager_) {
-    outgoing_message_processor_ =
-        pipe_manager_->RegisterFeature(type, &incoming_message_processor_);
+  FakeFeature(BlimpMessage::FeatureCase feature_case,
+              ThreadPipeManager* pipe_manager_) {
+    outgoing_message_processor_ = pipe_manager_->RegisterFeature(
+        feature_case, &incoming_message_processor_);
   }
 
   ~FakeFeature() {}
@@ -57,10 +53,10 @@ class FakeFeature {
 // |message_processor|.
 class FakeFeaturePeer : public BlimpMessageProcessor {
  public:
-  FakeFeaturePeer(BlimpMessage::Type type,
+  FakeFeaturePeer(BlimpMessage::FeatureCase feature_case,
                   BlimpMessageProcessor* message_processor,
                   const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-      : type_(type),
+      : feature_case_(feature_case),
         message_processor_(message_processor),
         task_runner_(task_runner) {}
 
@@ -77,7 +73,7 @@ class FakeFeaturePeer : public BlimpMessageProcessor {
   void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
-    ASSERT_EQ(type_, message->type());
+    ASSERT_EQ(feature_case_, message->feature_case());
     base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&FakeFeaturePeer::ForwardMessage,
                               base::Unretained(this), base::Passed(&message)));
@@ -85,7 +81,7 @@ class FakeFeaturePeer : public BlimpMessageProcessor {
       callback.Run(net::OK);
   }
 
-  BlimpMessage::Type type_;
+  BlimpMessage::FeatureCase feature_case_;
   BlimpMessageProcessor* message_processor_ = nullptr;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 };
@@ -99,11 +95,11 @@ class FakeBrowserConnectionHandler : public BrowserConnectionHandler {
       const scoped_refptr<base::SequencedTaskRunner>& task_runner)
       : task_runner_(task_runner) {}
   std::unique_ptr<BlimpMessageProcessor> RegisterFeature(
-      BlimpMessage::Type type,
+      BlimpMessage::FeatureCase feature_case,
       BlimpMessageProcessor* incoming_processor) override {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
     return base::WrapUnique(
-        new FakeFeaturePeer(type, incoming_processor, task_runner_));
+        new FakeFeaturePeer(feature_case, incoming_processor, task_runner_));
   }
 
  private:
@@ -127,9 +123,9 @@ class ThreadPipeManagerTest : public testing::Test {
         connection_handler_.get()));
 
     input_feature_.reset(
-        new FakeFeature(BlimpMessage::INPUT, pipe_manager_.get()));
+        new FakeFeature(BlimpMessage::kInput, pipe_manager_.get()));
     tab_control_feature_.reset(
-        new FakeFeature(BlimpMessage::TAB_CONTROL, pipe_manager_.get()));
+        new FakeFeature(BlimpMessage::kTabControl, pipe_manager_.get()));
   }
 
   void TearDown() override { SynchronizeWithThread(); }
@@ -156,10 +152,11 @@ class ThreadPipeManagerTest : public testing::Test {
 // Features send out message and receive the same message due to
 // |FakeFeaturePeer| loops the message back on |thread_|.
 TEST_F(ThreadPipeManagerTest, MessageSentIsReceived) {
-  std::unique_ptr<BlimpMessage> input_message =
-      CreateMessage(BlimpMessage::INPUT);
+  InputMessage* input = nullptr;
+  std::unique_ptr<BlimpMessage> input_message = CreateBlimpMessage(&input);
+  TabControlMessage* tab_control = nullptr;
   std::unique_ptr<BlimpMessage> tab_control_message =
-      CreateMessage(BlimpMessage::TAB_CONTROL);
+      CreateBlimpMessage(&tab_control);
 
   EXPECT_CALL(*(input_feature_->incoming_message_processor()),
               MockableProcessMessage(EqualsProto(*input_message), _))

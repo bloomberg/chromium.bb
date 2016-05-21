@@ -39,10 +39,10 @@ class BLIMP_NET_EXPORT ThreadPipeManager {
   ~ThreadPipeManager();
 
   // Registers a message processor |incoming_processor| which will receive all
-  // messages of the |type| specified. Returns a BlimpMessageProcessor object
-  // for sending messages of type |type|.
+  // messages of the |feature_case| specified. Returns a BlimpMessageProcessor
+  // object for sending messages of the given feature.
   std::unique_ptr<BlimpMessageProcessor> RegisterFeature(
-      BlimpMessage::Type type,
+      BlimpMessage::FeatureCase feature_case,
       BlimpMessageProcessor* incoming_processor);
 
  private:

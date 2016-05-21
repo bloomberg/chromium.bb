@@ -5,6 +5,7 @@
 #include "blimp/net/blimp_message_demultiplexer.h"
 
 #include "base/logging.h"
+#include "blimp/common/create_blimp_message.h"
 #include "blimp/net/test_common.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -25,10 +26,12 @@ class BlimpMessageDemultiplexerTest : public testing::Test {
       : input_msg_(new BlimpMessage), compositor_msg_(new BlimpMessage) {}
 
   void SetUp() override {
-    demux_.AddProcessor(BlimpMessage::INPUT, &receiver1_);
-    demux_.AddProcessor(BlimpMessage::COMPOSITOR, &receiver2_);
-    input_msg_->set_type(BlimpMessage::INPUT);
-    compositor_msg_->set_type(BlimpMessage::COMPOSITOR);
+    demux_.AddProcessor(BlimpMessage::kInput, &receiver1_);
+    demux_.AddProcessor(BlimpMessage::kCompositor, &receiver2_);
+    InputMessage* input = nullptr;
+    input_msg_ = CreateBlimpMessage(&input);
+    CompositorMessage* compositor = nullptr;
+    compositor_msg_ = CreateBlimpMessage(&compositor, 1);
   }
 
  protected:
@@ -61,7 +64,6 @@ TEST_F(BlimpMessageDemultiplexerTest, ProcessMessageFailed) {
 TEST_F(BlimpMessageDemultiplexerTest, ProcessMessageNoRegisteredHandler) {
   net::TestCompletionCallback cb;
   std::unique_ptr<BlimpMessage> unknown_message(new BlimpMessage);
-  unknown_message->set_type(BlimpMessage::UNKNOWN);
   demux_.ProcessMessage(std::move(unknown_message), cb.callback());
   EXPECT_EQ(net::ERR_NOT_IMPLEMENTED, cb.WaitForResult());
 }

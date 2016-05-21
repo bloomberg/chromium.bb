@@ -17,7 +17,7 @@
 namespace blimp {
 
 // Multiplexing BlimpMessageProcessor which routes BlimpMessages to message
-// processors based on |message.type|.
+// processors based on the specific feature.
 // BlimpMessageDemultiplexer is created on the UI thread, and then used and
 // destroyed on the IO thread.
 class BLIMP_NET_EXPORT BlimpMessageDemultiplexer
@@ -27,18 +27,19 @@ class BLIMP_NET_EXPORT BlimpMessageDemultiplexer
   ~BlimpMessageDemultiplexer() override;
 
   // Registers a message processor which will receive all messages
-  // of the |type| specified.
+  // of the |feature_case| specified.
   // Only one handler may be added per type.
   //
   // |handler| must be valid when ProcessMessage() is called.
-  void AddProcessor(BlimpMessage::Type type, BlimpMessageProcessor* handler);
+  void AddProcessor(BlimpMessage::FeatureCase feature_case,
+                    BlimpMessageProcessor* handler);
 
   // BlimpMessageProcessor implementation.
   void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
  private:
-  base::SmallMap<std::map<BlimpMessage::Type, BlimpMessageProcessor*>>
+  base::SmallMap<std::map<BlimpMessage::FeatureCase, BlimpMessageProcessor*>>
       feature_receiver_map_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpMessageDemultiplexer);

@@ -135,8 +135,8 @@ void BlimpMessageOutputBuffer::WriteNextMessageIfReady() {
   std::unique_ptr<BlimpMessage> message_to_write(
       new BlimpMessage(*write_buffer_.front()->message));
   DVLOG(3) << "Writing message (id="
-           << write_buffer_.front()->message->message_id()
-           << ", type=" << message_to_write->type() << ")";
+           << write_buffer_.front()->message->message_id() << ", "
+           << *message_to_write << ")";
 
   output_processor_->ProcessMessage(std::move(message_to_write),
                                     write_complete_cb_.callback());

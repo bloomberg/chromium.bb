@@ -44,15 +44,16 @@ class BLIMP_COMMON_EXPORT BlimpMessageLogger {
   void LogMessageToStream(const BlimpMessage& message, std::ostream* out) const;
 
  private:
-  // Adds |extractor| to the registry for parsing messages of type |type|.
-  // |type_name|: The human readable name of |type|.
-  void AddHandler(const std::string& type_name,
-                  BlimpMessage::Type type,
+  // Adds |extractor| to the registry for parsing messages of type
+  // |feature_case|.
+  // |feature_name|: The human readable name of |feature_case|.
+  void AddHandler(const std::string& feature_name,
+                  BlimpMessage::FeatureCase feature_case,
                   std::unique_ptr<LogExtractor> extractor);
 
   // Registry of log extractors. Map structure is:
   // {message type => (human readable message type, LogExtractor*)}
-  std::map<BlimpMessage::Type,
+  std::map<BlimpMessage::FeatureCase,
            std::pair<std::string, std::unique_ptr<LogExtractor>>>
       extractors_;
 

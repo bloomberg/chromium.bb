@@ -102,10 +102,9 @@ void NavigationFeature::ProcessMessage(
     std::unique_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
   DCHECK(!callback.is_null());
-  DCHECK(message->type() == BlimpMessage::NAVIGATION);
+  DCHECK_EQ(BlimpMessage::kNavigation, message->feature_case());
 
   int tab_id = message->target_tab_id();
-  DCHECK(message->has_navigation());
   const NavigationMessage& navigation_message = message->navigation();
 
   NavigationFeatureDelegate* delegate = FindDelegate(tab_id);

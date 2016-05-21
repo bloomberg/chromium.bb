@@ -111,9 +111,8 @@ void Authenticator::OnConnectionError(int error) {
 
 void Authenticator::ProcessMessage(std::unique_ptr<BlimpMessage> message,
                                    const net::CompletionCallback& callback) {
-  if (message->type() == BlimpMessage::PROTOCOL_CONTROL &&
-      message->protocol_control().type() ==
-          ProtocolControlMessage::START_CONNECTION) {
+  if (message->has_protocol_control() &&
+      message->protocol_control().has_start_connection()) {
     bool token_match =
         client_token_ ==
         message->protocol_control().start_connection().client_token();

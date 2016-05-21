@@ -35,27 +35,10 @@ import "tab_control.proto";
 package blimp;
 
 message BlimpMessage {
-  enum Type {
-    UNKNOWN = 0;
-    TAB_CONTROL = 1;
-    NAVIGATION = 2;
-    RENDER_WIDGET = 3;
-    INPUT = 4;
-    COMPOSITOR = 5;
-    PROTOCOL_CONTROL = 6;
-    IME = 7;
-    SETTINGS = 8;
-  }
-
   // Sequence number of this message, used for message acknowledgement.
   // The sender may omit this value if it is exactly one higher than the
   // message that was previously sent.
   optional int64 message_id = 1;
-
-  // Identifies the feature type of this message.
-  // The feature-specific contents are contained in optional fields of the same
-  // name (example: use |compositor| field for type=COMPOSITOR.)
-  optional Type type = 2;
 
   // Uniquely identifies the Blimp session that originated this message.
   // Session IDs are invalidated whenever new sessions are created.
@@ -69,16 +52,15 @@ message BlimpMessage {
   optional int32 target_tab_id = 4;
 
   // Feature-specific messages follow.
-  // Only one of these fields may be set per BlimpMessage.
-  // TODO(kmarshall): use a 'oneof' union when it's supported in Chromium.  See
-  // crbug.com/570371.
-  optional TabControlMessage tab_control = 1000;
-  optional NavigationMessage navigation = 1001;
-  optional RenderWidgetMessage render_widget = 1002;
-  optional InputMessage input = 1003;
-  optional CompositorMessage compositor = 1004;
-  optional ProtocolControlMessage protocol_control = 1005;
-  optional ImeMessage ime = 1006;
-  optional SettingsMessage settings = 1007;
+  oneof feature {
+    TabControlMessage tab_control = 40;
+    NavigationMessage navigation = 41;
+    RenderWidgetMessage render_widget = 42;
+    InputMessage input = 43;
+    CompositorMessage compositor = 44;
+    ProtocolControlMessage protocol_control = 45;
+    ImeMessage ime = 46;
+    SettingsMessage settings = 47;
+  }
 }
 

@@ -225,33 +225,33 @@ void BlimpClientSession::RegisterFeatures() {
 
   // Register features' message senders and receivers.
   tab_control_feature_->set_outgoing_message_processor(
-      thread_pipe_manager_->RegisterFeature(BlimpMessage::TAB_CONTROL,
+      thread_pipe_manager_->RegisterFeature(BlimpMessage::kTabControl,
                                             tab_control_feature_.get()));
   navigation_feature_->set_outgoing_message_processor(
-      thread_pipe_manager_->RegisterFeature(BlimpMessage::NAVIGATION,
+      thread_pipe_manager_->RegisterFeature(BlimpMessage::kNavigation,
                                             navigation_feature_.get()));
   render_widget_feature_->set_outgoing_input_message_processor(
-      thread_pipe_manager_->RegisterFeature(BlimpMessage::INPUT,
+      thread_pipe_manager_->RegisterFeature(BlimpMessage::kInput,
                                             render_widget_feature_.get()));
   render_widget_feature_->set_outgoing_compositor_message_processor(
-      thread_pipe_manager_->RegisterFeature(BlimpMessage::COMPOSITOR,
+      thread_pipe_manager_->RegisterFeature(BlimpMessage::kCompositor,
                                             render_widget_feature_.get()));
   settings_feature_->set_outgoing_message_processor(
-      thread_pipe_manager_->RegisterFeature(BlimpMessage::SETTINGS,
+      thread_pipe_manager_->RegisterFeature(BlimpMessage::kSettings,
                                             settings_feature_.get()));
+
+  // Client will not send send any RenderWidget messages, so don't save the
+  // outgoing BlimpMessageProcessor in the RenderWidgetFeature.
+  thread_pipe_manager_->RegisterFeature(BlimpMessage::kRenderWidget,
+                                        render_widget_feature_.get());
+
+  ime_feature_->set_outgoing_message_processor(
+      thread_pipe_manager_->RegisterFeature(BlimpMessage::kIme,
+                                            ime_feature_.get()));
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDownloadWholeDocument))
     settings_feature_->SetRecordWholeDocument(true);
-
-  // Client will not send send any RenderWidget messages, so don't save the
-  // outgoing BlimpMessageProcessor in the RenderWidgetFeature.
-  thread_pipe_manager_->RegisterFeature(BlimpMessage::RENDER_WIDGET,
-                                        render_widget_feature_.get());
-
-  ime_feature_->set_outgoing_message_processor(
-      thread_pipe_manager_->RegisterFeature(BlimpMessage::IME,
-                                            ime_feature_.get()));
 }
 
 void BlimpClientSession::OnConnected() {}

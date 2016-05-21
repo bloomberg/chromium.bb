@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/callback_helpers.h"
+#include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_message_pump.h"
 #include "blimp/net/common.h"
@@ -30,10 +31,11 @@ namespace {
 
 class BlimpMessagePumpTest : public testing::Test {
  public:
-  BlimpMessagePumpTest()
-      : message1_(new BlimpMessage), message2_(new BlimpMessage) {
-    message1_->set_type(BlimpMessage::INPUT);
-    message2_->set_type(BlimpMessage::TAB_CONTROL);
+  BlimpMessagePumpTest() {
+    TabControlMessage* tab_control = nullptr;
+    message1_ = CreateBlimpMessage(&tab_control);
+    InputMessage* input = nullptr;
+    message2_ = CreateBlimpMessage(&input);
     message_pump_.reset(new BlimpMessagePump(&reader_));
     message_pump_->set_error_observer(&error_observer_);
   }

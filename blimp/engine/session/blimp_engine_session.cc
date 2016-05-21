@@ -293,25 +293,25 @@ void BlimpEngineSession::RegisterFeatures() {
 
   // Register features' message senders and receivers.
   tab_control_message_sender_ =
-      thread_pipe_manager_->RegisterFeature(BlimpMessage::TAB_CONTROL, this);
+      thread_pipe_manager_->RegisterFeature(BlimpMessage::kTabControl, this);
   navigation_message_sender_ =
-      thread_pipe_manager_->RegisterFeature(BlimpMessage::NAVIGATION, this);
+      thread_pipe_manager_->RegisterFeature(BlimpMessage::kNavigation, this);
   render_widget_feature_.set_render_widget_message_sender(
-      thread_pipe_manager_->RegisterFeature(BlimpMessage::RENDER_WIDGET,
+      thread_pipe_manager_->RegisterFeature(BlimpMessage::kRenderWidget,
                                             &render_widget_feature_));
   render_widget_feature_.set_input_message_sender(
-      thread_pipe_manager_->RegisterFeature(BlimpMessage::INPUT,
+      thread_pipe_manager_->RegisterFeature(BlimpMessage::kInput,
                                             &render_widget_feature_));
   render_widget_feature_.set_compositor_message_sender(
-      thread_pipe_manager_->RegisterFeature(BlimpMessage::COMPOSITOR,
+      thread_pipe_manager_->RegisterFeature(BlimpMessage::kCompositor,
                                             &render_widget_feature_));
   render_widget_feature_.set_ime_message_sender(
-      thread_pipe_manager_->RegisterFeature(BlimpMessage::IME,
+      thread_pipe_manager_->RegisterFeature(BlimpMessage::kIme,
                                             &render_widget_feature_));
 
   // The Settings feature does not need an outgoing message processor, since we
   // don't send any messages to the client right now.
-  thread_pipe_manager_->RegisterFeature(BlimpMessage::SETTINGS,
+  thread_pipe_manager_->RegisterFeature(BlimpMessage::kSettings,
                                         &settings_feature_);
 }
 
@@ -454,19 +454,19 @@ void BlimpEngineSession::ProcessMessage(
   TRACE_EVENT1("blimp", "BlimpEngineSession::ProcessMessage", "TabId",
                message->target_tab_id());
   DCHECK(!callback.is_null());
-  DCHECK(message->type() == BlimpMessage::TAB_CONTROL ||
-         message->type() == BlimpMessage::NAVIGATION);
+  DCHECK(BlimpMessage::kTabControl == message->feature_case() ||
+         BlimpMessage::kNavigation == message->feature_case());
 
   net::Error result = net::OK;
-  if (message->type() == BlimpMessage::TAB_CONTROL) {
-    switch (message->tab_control().type()) {
-      case TabControlMessage::CREATE_TAB:
+  if (message->has_tab_control()) {
+    switch (message->tab_control().tab_control_case()) {
+      case TabControlMessage::kCreateTab:
         if (!CreateWebContents(message->target_tab_id()))
           result = net::ERR_FAILED;
         break;
-      case TabControlMessage::CLOSE_TAB:
+      case TabControlMessage::kCloseTab:
         CloseWebContents(message->target_tab_id());
-      case TabControlMessage::SIZE:
+      case TabControlMessage::kSize:
         HandleResize(message->tab_control().size().device_pixel_ratio(),
                      gfx::Size(message->tab_control().size().width(),
                                message->tab_control().size().height()));
@@ -475,7 +475,7 @@ void BlimpEngineSession::ProcessMessage(
         NOTIMPLEMENTED();
         result = net::ERR_NOT_IMPLEMENTED;
     }
-  } else if (message->type() == BlimpMessage::NAVIGATION && web_contents_) {
+  } else if (message->has_navigation() && web_contents_) {
     switch (message->navigation().type()) {
       case NavigationMessage::LOAD_URL:
         LoadUrl(message->target_tab_id(),

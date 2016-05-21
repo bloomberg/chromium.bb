@@ -22,7 +22,7 @@ namespace blimp {
 namespace client {
 
 MATCHER_P3(EqualsSizeMessage, width, height, dp_to_px, "") {
-  return arg.tab_control().type() == TabControlMessage::SIZE &&
+  return arg.tab_control().tab_control_case() == TabControlMessage::kSize &&
          arg.tab_control().size().width() == width &&
          arg.tab_control().size().height() == height &&
          arg.tab_control().size().device_pixel_ratio() == dp_to_px;

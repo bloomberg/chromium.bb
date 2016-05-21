@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_message_processor.h"
 
@@ -15,36 +16,32 @@ namespace {
 class MultiplexedSender : public BlimpMessageProcessor {
  public:
   MultiplexedSender(base::WeakPtr<BlimpMessageProcessor> output_processor,
-                    BlimpMessage::Type type);
+                    BlimpMessage::FeatureCase feature_case);
   ~MultiplexedSender() override;
 
   // BlimpMessageProcessor implementation.
-  // |message.type|, if set, must match the sender's type.
+  // |message.feature_case|, if set, must match the sender's |feature_case_|.
   void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
  private:
   base::WeakPtr<BlimpMessageProcessor> output_processor_;
-  BlimpMessage::Type type_;
+  BlimpMessage::FeatureCase feature_case_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiplexedSender);
 };
 
 MultiplexedSender::MultiplexedSender(
     base::WeakPtr<BlimpMessageProcessor> output_processor,
-    BlimpMessage::Type type)
-    : output_processor_(output_processor), type_(type) {}
+    BlimpMessage::FeatureCase feature_case)
+    : output_processor_(output_processor), feature_case_(feature_case) {}
 
 MultiplexedSender::~MultiplexedSender() {}
 
 void MultiplexedSender::ProcessMessage(
     std::unique_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
-  if (message->has_type()) {
-    DCHECK_EQ(type_, message->type());
-  } else {
-    message->set_type(type_);
-  }
+  DCHECK_EQ(feature_case_, message->feature_case());
   output_processor_->ProcessMessage(std::move(message), callback);
 }
 
@@ -56,9 +53,9 @@ BlimpMessageMultiplexer::BlimpMessageMultiplexer(
 
 BlimpMessageMultiplexer::~BlimpMessageMultiplexer() {}
 
-std::unique_ptr<BlimpMessageProcessor>
-BlimpMessageMultiplexer::CreateSenderForType(BlimpMessage::Type type) {
+std::unique_ptr<BlimpMessageProcessor> BlimpMessageMultiplexer::CreateSender(
+    BlimpMessage::FeatureCase feature_case) {
   return base::WrapUnique(
-      new MultiplexedSender(output_weak_factory_.GetWeakPtr(), type));
+      new MultiplexedSender(output_weak_factory_.GetWeakPtr(), feature_case));
 }
 }  // namespace blimp

@@ -29,9 +29,9 @@ class BlimpMessageOutputBufferTest : public testing::Test {
   BlimpMessageOutputBufferTest() {}
 
   void SetUp() override {
-    input_msg_.set_type(BlimpMessage::INPUT);
+    input_msg_.mutable_input();
     input_msg_.set_message_id(1);
-    compositor_msg_.set_type(BlimpMessage::COMPOSITOR);
+    compositor_msg_.mutable_compositor();
     compositor_msg_.set_message_id(2);
 
     // Buffer should only have space for two unacknowledged messages

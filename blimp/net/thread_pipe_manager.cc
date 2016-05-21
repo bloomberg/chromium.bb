@@ -24,7 +24,7 @@ class IoThreadPipeManager {
   // Connects message pipes between the specified feature and the network layer,
   // using |incoming_proxy| as the incoming message processor, and connecting
   // |outgoing_pipe| to the actual message sender.
-  void RegisterFeature(BlimpMessage::Type type,
+  void RegisterFeature(BlimpMessage::FeatureCase feature_case,
                        std::unique_ptr<BlimpMessageThreadPipe> outgoing_pipe,
                        std::unique_ptr<BlimpMessageProcessor> incoming_proxy);
 
@@ -54,14 +54,14 @@ IoThreadPipeManager::IoThreadPipeManager(
 IoThreadPipeManager::~IoThreadPipeManager() {}
 
 void IoThreadPipeManager::RegisterFeature(
-    BlimpMessage::Type type,
+    BlimpMessage::FeatureCase feature_case,
     std::unique_ptr<BlimpMessageThreadPipe> outgoing_pipe,
     std::unique_ptr<BlimpMessageProcessor> incoming_proxy) {
   // Registers |incoming_proxy| as the message processor for incoming
-  // messages with |type|. Sets the returned outgoing message processor as the
-  // target of the |outgoing_pipe|.
+  // messages with |feature_case|. Sets the returned outgoing message processor
+  // as the target of the |outgoing_pipe|.
   std::unique_ptr<BlimpMessageProcessor> outgoing_message_processor =
-      connection_handler_->RegisterFeature(type, incoming_proxy.get());
+      connection_handler_->RegisterFeature(feature_case, incoming_proxy.get());
   outgoing_pipe->set_target_processor(outgoing_message_processor.get());
 
   // This object manages the lifetimes of the pipe, proxy and target processor.
@@ -83,7 +83,7 @@ ThreadPipeManager::~ThreadPipeManager() {
 }
 
 std::unique_ptr<BlimpMessageProcessor> ThreadPipeManager::RegisterFeature(
-    BlimpMessage::Type type,
+    BlimpMessage::FeatureCase feature_case,
     BlimpMessageProcessor* incoming_processor) {
   // Creates an outgoing pipe and a proxy for forwarding messages
   // from features on the UI thread to network components on the IO thread.
@@ -102,10 +102,11 @@ std::unique_ptr<BlimpMessageProcessor> ThreadPipeManager::RegisterFeature(
 
   // Finishes registration on IO thread.
   io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&IoThreadPipeManager::RegisterFeature,
-                            base::Unretained(io_pipe_manager_.get()), type,
-                            base::Passed(std::move(outgoing_pipe)),
-                            base::Passed(std::move(incoming_proxy))));
+      FROM_HERE,
+      base::Bind(&IoThreadPipeManager::RegisterFeature,
+                 base::Unretained(io_pipe_manager_.get()), feature_case,
+                 base::Passed(std::move(outgoing_pipe)),
+                 base::Passed(std::move(incoming_proxy))));
 
   incoming_pipes_.push_back(std::move(incoming_pipe));
   return outgoing_proxy;

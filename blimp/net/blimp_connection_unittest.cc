@@ -11,6 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/common.h"
 #include "blimp/net/connection_error_observer.h"
@@ -48,15 +49,13 @@ class BlimpConnectionTest : public testing::Test {
 
  protected:
   std::unique_ptr<BlimpMessage> CreateInputMessage() {
-    std::unique_ptr<BlimpMessage> msg(new BlimpMessage);
-    msg->set_type(BlimpMessage::INPUT);
-    return msg;
+    InputMessage* input;
+    return CreateBlimpMessage(&input);
   }
 
   std::unique_ptr<BlimpMessage> CreateControlMessage() {
-    std::unique_ptr<BlimpMessage> msg(new BlimpMessage);
-    msg->set_type(BlimpMessage::TAB_CONTROL);
-    return msg;
+    TabControlMessage* control;
+    return CreateBlimpMessage(&control);
   }
 
   base::MessageLoop message_loop_;

@@ -64,7 +64,8 @@ TEST(CreateBlimpMessageTest, SizeMessage) {
   std::unique_ptr<BlimpMessage> message = CreateBlimpMessage(&details);
   EXPECT_NE(nullptr, details);
   EXPECT_NE(nullptr, message);
-  EXPECT_EQ(TabControlMessage::SIZE, message->mutable_tab_control()->type());
+  EXPECT_EQ(TabControlMessage::kSize,
+            message->mutable_tab_control()->tab_control_case());
   EXPECT_EQ(details, message->mutable_tab_control()->mutable_size());
 }
 
@@ -82,9 +83,9 @@ TEST(CreateBlimpMessageTest, StartConnectionMessage) {
   std::unique_ptr<BlimpMessage> message =
       CreateStartConnectionMessage(client_token, protocol_version);
   EXPECT_NE(nullptr, message);
-  EXPECT_EQ(BlimpMessage::PROTOCOL_CONTROL, message->type());
-  EXPECT_EQ(ProtocolControlMessage::START_CONNECTION,
-            message->protocol_control().type());
+  EXPECT_EQ(BlimpMessage::kProtocolControl, message->feature_case());
+  EXPECT_EQ(ProtocolControlMessage::kStartConnection,
+            message->protocol_control().connection_message_case());
   EXPECT_EQ(client_token,
             message->protocol_control().start_connection().client_token());
   EXPECT_EQ(protocol_version,

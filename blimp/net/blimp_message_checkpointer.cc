@@ -35,9 +35,7 @@ BlimpMessageCheckpointer::~BlimpMessageCheckpointer() {}
 void BlimpMessageCheckpointer::ProcessMessage(
     std::unique_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
-  if (message->type() == BlimpMessage::PROTOCOL_CONTROL &&
-      message->protocol_control().type() ==
-          ProtocolControlMessage::CHECKPOINT_ACK) {
+  if (message->has_protocol_control()) {
     if (message->protocol_control().has_checkpoint_ack() &&
         message->protocol_control().checkpoint_ack().has_checkpoint_id()) {
       checkpoint_observer_->OnMessageCheckpoint(

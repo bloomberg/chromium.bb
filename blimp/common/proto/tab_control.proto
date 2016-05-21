@@ -18,23 +18,16 @@ message SizeMessage {
   optional float device_pixel_ratio = 3;
 }
 
-message TabControlMessage {
-  enum Type {
-    UNKNOWN = 0;
+message EmptyMessage {}
 
+message TabControlMessage {
+  // Feature-specific messages follow.
+  oneof tab_control {
     // Client <=> Server types.
-    CREATE_TAB = 1;
-    CLOSE_TAB = 2;
+    EmptyMessage create_tab = 40;
+    EmptyMessage close_tab = 41;
 
     // Client => Server types.
-    SIZE = 3;
+    SizeMessage size = 42;
   }
-
-  optional Type type = 1;
-
-  // Feature-specific messages follow.
-  // Only one of these fields may be set per TabControlMessage.
-  // TODO(kmarshall): use a 'oneof' union when it's supported in Chromium.  See
-  // crbug.com/570371.
-  optional SizeMessage size = 1000;
 }

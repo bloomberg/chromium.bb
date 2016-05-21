@@ -29,10 +29,11 @@ class BLIMP_NET_EXPORT BlimpMessageMultiplexer {
 
   ~BlimpMessageMultiplexer();
 
-  // Creates a BlimpMessageProcessor object for sending messages of type |type|.
-  // Any number of senders can be created at a time for a given type.
-  std::unique_ptr<BlimpMessageProcessor> CreateSenderForType(
-      BlimpMessage::Type type);
+  // Creates a BlimpMessageProcessor object for sending messages of type
+  // |feature_case|. Any number of senders can be created at a time for a given
+  // type.
+  std::unique_ptr<BlimpMessageProcessor> CreateSender(
+      BlimpMessage::FeatureCase feature_case);
 
  private:
   base::WeakPtrFactory<BlimpMessageProcessor> output_weak_factory_;

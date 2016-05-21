@@ -26,9 +26,9 @@ class BlimpMessageMultiplexerTest : public testing::Test {
       : multiplexer_(&mock_output_processor_),
         input_message_(new BlimpMessage),
         navigation_message_(new BlimpMessage),
-        input_processor_(multiplexer_.CreateSenderForType(BlimpMessage::INPUT)),
+        input_processor_(multiplexer_.CreateSender(BlimpMessage::kInput)),
         navigation_processor_(
-            multiplexer_.CreateSenderForType(BlimpMessage::NAVIGATION)) {}
+            multiplexer_.CreateSender(BlimpMessage::kNavigation)) {}
 
   void SetUp() override {
     EXPECT_CALL(mock_output_processor_, MockableProcessMessage(_, _))
@@ -57,7 +57,7 @@ class BlimpMessageMultiplexerTest : public testing::Test {
 TEST_F(BlimpMessageMultiplexerTest, TypeSetByMux) {
   net::TestCompletionCallback cb_1;
   input_processor_->ProcessMessage(std::move(input_message_), cb_1.callback());
-  EXPECT_EQ(BlimpMessage::INPUT, captured_message_.type());
+  EXPECT_EQ(BlimpMessage::kInput, captured_message_.feature_case());
   EXPECT_EQ(InputMessage::Type_GestureScrollBegin,
             captured_message_.input().type());
   captured_cb_.Run(net::OK);
@@ -66,7 +66,7 @@ TEST_F(BlimpMessageMultiplexerTest, TypeSetByMux) {
   net::TestCompletionCallback cb_2;
   navigation_processor_->ProcessMessage(std::move(navigation_message_),
                                         cb_2.callback());
-  EXPECT_EQ(BlimpMessage::NAVIGATION, captured_message_.type());
+  EXPECT_EQ(BlimpMessage::kNavigation, captured_message_.feature_case());
   EXPECT_EQ(NavigationMessage::LOAD_URL, captured_message_.navigation().type());
   captured_cb_.Run(net::ERR_FAILED);
   EXPECT_EQ(net::ERR_FAILED, cb_2.WaitForResult());
@@ -74,11 +74,11 @@ TEST_F(BlimpMessageMultiplexerTest, TypeSetByMux) {
 
 // Verify that the multiplexer allows the caller to supply a message type.
 TEST_F(BlimpMessageMultiplexerTest, TypeSetByCaller) {
-  input_message_->set_type(BlimpMessage::INPUT);
+  input_message_->mutable_input();
 
   net::TestCompletionCallback cb_1;
   input_processor_->ProcessMessage(std::move(input_message_), cb_1.callback());
-  EXPECT_EQ(BlimpMessage::INPUT, captured_message_.type());
+  EXPECT_EQ(BlimpMessage::kInput, captured_message_.feature_case());
   EXPECT_EQ(InputMessage::Type_GestureScrollBegin,
             captured_message_.input().type());
   captured_cb_.Run(net::OK);
@@ -88,9 +88,9 @@ TEST_F(BlimpMessageMultiplexerTest, TypeSetByCaller) {
 // Verify that senders for a given type can be torn down and recreated.
 TEST_F(BlimpMessageMultiplexerTest, SenderTransience) {
   net::TestCompletionCallback cb_3;
-  input_processor_ = multiplexer_.CreateSenderForType(BlimpMessage::INPUT);
+  input_processor_ = multiplexer_.CreateSender(BlimpMessage::kInput);
   input_processor_->ProcessMessage(std::move(input_message_), cb_3.callback());
-  EXPECT_EQ(BlimpMessage::INPUT, captured_message_.type());
+  EXPECT_EQ(BlimpMessage::kInput, captured_message_.feature_case());
   EXPECT_EQ(InputMessage::Type_GestureScrollBegin,
             captured_message_.input().type());
   captured_cb_.Run(net::OK);
@@ -101,9 +101,9 @@ TEST_F(BlimpMessageMultiplexerTest, SenderTransience) {
 TEST_F(BlimpMessageMultiplexerTest, SenderMultiplicity) {
   net::TestCompletionCallback cb_4;
   std::unique_ptr<BlimpMessageProcessor> input_processor_2 =
-      multiplexer_.CreateSenderForType(BlimpMessage::INPUT);
+      multiplexer_.CreateSender(BlimpMessage::kInput);
   input_processor_2->ProcessMessage(std::move(input_message_), cb_4.callback());
-  EXPECT_EQ(BlimpMessage::INPUT, captured_message_.type());
+  EXPECT_EQ(BlimpMessage::kInput, captured_message_.feature_case());
   EXPECT_EQ(InputMessage::Type_GestureScrollBegin,
             captured_message_.input().type());
   captured_cb_.Run(net::ERR_INVALID_ARGUMENT);

@@ -206,7 +206,6 @@ void SendInputMessage(BlimpMessageProcessor* processor,
   InputMessageGenerator generator;
   std::unique_ptr<BlimpMessage> message =
       generator.GenerateMessage(input_event);
-  message->set_type(BlimpMessage::INPUT);
   message->set_target_tab_id(tab_id);
   message->mutable_input()->set_render_widget_id(rw_id);
 

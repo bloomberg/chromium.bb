@@ -46,7 +46,7 @@ void TabControlFeature::SetSizeAndScale(const gfx::Size& size,
 void TabControlFeature::CreateTab(int tab_id) {
   TabControlMessage* tab_control;
   std::unique_ptr<BlimpMessage> message = CreateBlimpMessage(&tab_control);
-  tab_control->set_type(TabControlMessage::CREATE_TAB);
+  tab_control->mutable_create_tab();
   outgoing_message_processor_->ProcessMessage(std::move(message),
                                               net::CompletionCallback());
 }
@@ -54,7 +54,7 @@ void TabControlFeature::CreateTab(int tab_id) {
 void TabControlFeature::CloseTab(int tab_id) {
   TabControlMessage* tab_control;
   std::unique_ptr<BlimpMessage> message = CreateBlimpMessage(&tab_control);
-  tab_control->set_type(TabControlMessage::CLOSE_TAB);
+  tab_control->mutable_close_tab();
   outgoing_message_processor_->ProcessMessage(std::move(message),
                                               net::CompletionCallback());
 }

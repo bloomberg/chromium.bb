@@ -190,10 +190,10 @@ void EngineRenderWidgetFeature::ProcessMessage(
     std::unique_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
   DCHECK(!callback.is_null());
-  DCHECK(message->type() == BlimpMessage::RENDER_WIDGET ||
-         message->type() == BlimpMessage::IME ||
-         message->type() == BlimpMessage::INPUT ||
-         message->type() == BlimpMessage::COMPOSITOR);
+  DCHECK(message->feature_case() == BlimpMessage::kRenderWidget ||
+         message->feature_case() == BlimpMessage::kIme ||
+         message->feature_case() == BlimpMessage::kInput ||
+         message->feature_case() == BlimpMessage::kCompositor);
 
   int target_tab_id = message->target_tab_id();
 
@@ -202,8 +202,8 @@ void EngineRenderWidgetFeature::ProcessMessage(
 
   content::RenderWidgetHost* render_widget_host = nullptr;
 
-  switch (message->type()) {
-    case BlimpMessage::INPUT:
+  switch (message->feature_case()) {
+    case BlimpMessage::kInput:
       render_widget_host = GetRenderWidgetHost(target_tab_id,
                               message->input().render_widget_id());
       if (render_widget_host) {
@@ -213,7 +213,7 @@ void EngineRenderWidgetFeature::ProcessMessage(
           delegate->OnWebGestureEvent(render_widget_host, std::move(event));
       }
       break;
-    case BlimpMessage::COMPOSITOR:
+    case BlimpMessage::kCompositor:
       render_widget_host = GetRenderWidgetHost(target_tab_id,
                                     message->compositor().render_widget_id());
       if (render_widget_host) {
@@ -224,7 +224,7 @@ void EngineRenderWidgetFeature::ProcessMessage(
         delegate->OnCompositorMessageReceived(render_widget_host, payload);
       }
       break;
-    case BlimpMessage::IME:
+    case BlimpMessage::kIme:
       DCHECK(message->ime().type() == ImeMessage::SET_TEXT);
       render_widget_host =
           GetRenderWidgetHost(target_tab_id, message->ime().render_widget_id());

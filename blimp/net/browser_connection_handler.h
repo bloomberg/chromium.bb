@@ -35,14 +35,15 @@ class BLIMP_NET_EXPORT BrowserConnectionHandler
   BrowserConnectionHandler();
   ~BrowserConnectionHandler() override;
 
-  // Registers a message processor which will receive all messages of the |type|
-  // specified. Only one handler may be added per type.
+  // Registers a message processor which will receive all messages of the
+  // |feature_case| specified. Only one handler may be added per feature.
   // That caller must ensure |incoming_processor| remains valid while
   // this object is in-use.
   //
-  // Returns a BlimpMessageProcessor object for sending messages of type |type|.
+  // Returns a BlimpMessageProcessor object for sending messages for a given
+  // feature.
   virtual std::unique_ptr<BlimpMessageProcessor> RegisterFeature(
-      BlimpMessage::Type type,
+      BlimpMessage::FeatureCase feature_case,
       BlimpMessageProcessor* incoming_processor);
 
   // ConnectionHandler implementation.

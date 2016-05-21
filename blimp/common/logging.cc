@@ -169,8 +169,8 @@ class NavigationLogExtractor : public LogExtractor {
 class ProtocolControlLogExtractor : public LogExtractor {
   void ExtractFields(const BlimpMessage& message,
                      LogFields* output) const override {
-    switch (message.protocol_control().type()) {
-      case ProtocolControlMessage::START_CONNECTION:
+    switch (message.protocol_control().connection_message_case()) {
+      case ProtocolControlMessage::kStartConnection:
         AddField("subtype", "START_CONNECTION", output);
         AddField("client_token",
                  message.protocol_control().start_connection().client_token(),
@@ -180,7 +180,7 @@ class ProtocolControlLogExtractor : public LogExtractor {
             message.protocol_control().start_connection().protocol_version(),
             output);
         break;
-      case ProtocolControlMessage::CHECKPOINT_ACK:
+      case ProtocolControlMessage::kCheckpointAck:
         AddField("subtype", "CHECKPOINT_ACK", output);
         AddField("checkpoint_id",
                  message.protocol_control().checkpoint_ack().checkpoint_id(),
@@ -231,14 +231,14 @@ class SettingsLogExtractor : public LogExtractor {
 class TabControlLogExtractor : public LogExtractor {
   void ExtractFields(const BlimpMessage& message,
                      LogFields* output) const override {
-    switch (message.tab_control().type()) {
-      case TabControlMessage::CREATE_TAB:
+    switch (message.tab_control().tab_control_case()) {
+      case TabControlMessage::kCreateTab:
         AddField("subtype", "CREATE_TAB", output);
         break;
-      case TabControlMessage::CLOSE_TAB:
+      case TabControlMessage::kCloseTab:
         AddField("subtype", "CLOSE_TAB", output);
         break;
-      case TabControlMessage::SIZE:
+      case TabControlMessage::kSize:
         AddField("subtype", "SIZE", output);
         AddField("size", message.tab_control().size(), output);
         break;
@@ -257,37 +257,37 @@ class NullLogExtractor : public LogExtractor {
 }  // namespace
 
 BlimpMessageLogger::BlimpMessageLogger() {
-  AddHandler("COMPOSITOR", BlimpMessage::COMPOSITOR,
+  AddHandler("COMPOSITOR", BlimpMessage::kCompositor,
              base::WrapUnique(new CompositorLogExtractor));
-  AddHandler("INPUT", BlimpMessage::INPUT,
+  AddHandler("INPUT", BlimpMessage::kInput,
              base::WrapUnique(new InputLogExtractor));
-  AddHandler("NAVIGATION", BlimpMessage::NAVIGATION,
+  AddHandler("NAVIGATION", BlimpMessage::kNavigation,
              base::WrapUnique(new NavigationLogExtractor));
-  AddHandler("PROTOCOL_CONTROL", BlimpMessage::PROTOCOL_CONTROL,
+  AddHandler("PROTOCOL_CONTROL", BlimpMessage::kProtocolControl,
              base::WrapUnique(new ProtocolControlLogExtractor));
-  AddHandler("RENDER_WIDGET", BlimpMessage::RENDER_WIDGET,
+  AddHandler("RENDER_WIDGET", BlimpMessage::kRenderWidget,
              base::WrapUnique(new RenderWidgetLogExtractor));
-  AddHandler("SETTINGS", BlimpMessage::SETTINGS,
+  AddHandler("SETTINGS", BlimpMessage::kSettings,
              base::WrapUnique(new SettingsLogExtractor));
-  AddHandler("TAB_CONTROL", BlimpMessage::TAB_CONTROL,
+  AddHandler("TAB_CONTROL", BlimpMessage::kTabControl,
              base::WrapUnique(new TabControlLogExtractor));
 }
 
 BlimpMessageLogger::~BlimpMessageLogger() {}
 
-void BlimpMessageLogger::AddHandler(const std::string& type_name,
-                                    BlimpMessage::Type type,
+void BlimpMessageLogger::AddHandler(const std::string& feature_name,
+                                    BlimpMessage::FeatureCase feature_case,
                                     std::unique_ptr<LogExtractor> extractor) {
-  DCHECK(extractors_.find(type) == extractors_.end());
-  DCHECK(!type_name.empty());
-  extractors_[type] = make_pair(type_name, std::move(extractor));
+  DCHECK(extractors_.find(feature_case) == extractors_.end());
+  DCHECK(!feature_name.empty());
+  extractors_[feature_case] = make_pair(feature_name, std::move(extractor));
 }
 
 void BlimpMessageLogger::LogMessageToStream(const BlimpMessage& message,
                                             std::ostream* out) const {
   LogFields fields;
 
-  auto extractor = extractors_.find(message.type());
+  auto extractor = extractors_.find(message.feature_case());
   if (extractor != extractors_.end()) {
     // An extractor is registered for |message|.
     // Add the human-readable name of |message.type|.
@@ -296,7 +296,7 @@ void BlimpMessageLogger::LogMessageToStream(const BlimpMessage& message,
   } else {
     // Don't know the human-readable name of |message.type|.
     // Just represent it using its numeric form instead.
-    AddField("type", message.type(), &fields);
+    AddField("type", message.feature_case(), &fields);
   }
 
   // Append "target_tab_id" (if present) and "byte_size" to the field set.

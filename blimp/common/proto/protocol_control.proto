@@ -20,20 +20,11 @@ message StartConnectionMessage {
 }
 
 message ProtocolControlMessage {
-  enum Type {
-    UNKNOWN = 0;
-
+  oneof connection_message {
     // Client => Server types.
-    START_CONNECTION = 1;
+    StartConnectionMessage start_connection = 41;
 
-    // Server => Client types will start from 100.
-
-    // Bi-directional types.
-    CHECKPOINT_ACK = 200;
+    // Server => Client types.
+    CheckpointAckMessage checkpoint_ack = 42;
   }
-
-  optional Type type = 1;
-
-  optional StartConnectionMessage start_connection = 1001;
-  optional CheckpointAckMessage checkpoint_ack = 1200;
 }

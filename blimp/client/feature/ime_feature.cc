@@ -36,7 +36,7 @@ void ImeFeature::OnImeTextEntered(const std::string& text) {
 void ImeFeature::ProcessMessage(std::unique_ptr<BlimpMessage> message,
                                 const net::CompletionCallback& callback) {
   DCHECK(!callback.is_null());
-  DCHECK_EQ(BlimpMessage::IME, message->type());
+  DCHECK_EQ(BlimpMessage::kIme, message->feature_case());
 
   DCHECK(delegate_);
 

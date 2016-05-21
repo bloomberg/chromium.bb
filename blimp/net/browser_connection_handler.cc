@@ -35,10 +35,10 @@ BrowserConnectionHandler::~BrowserConnectionHandler() {}
 
 std::unique_ptr<BlimpMessageProcessor>
 BrowserConnectionHandler::RegisterFeature(
-    BlimpMessage::Type type,
+    BlimpMessage::FeatureCase feature_case,
     BlimpMessageProcessor* incoming_processor) {
-  demultiplexer_->AddProcessor(type, incoming_processor);
-  return multiplexer_->CreateSenderForType(type);
+  demultiplexer_->AddProcessor(feature_case, incoming_processor);
+  return multiplexer_->CreateSender(feature_case);
 }
 
 void BrowserConnectionHandler::HandleConnection(

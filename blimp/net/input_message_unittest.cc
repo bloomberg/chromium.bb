@@ -24,8 +24,7 @@ void ValidateWebGestureEventRoundTripping(const blink::WebGestureEvent& event) {
 
   std::unique_ptr<BlimpMessage> proto = generator.GenerateMessage(event);
   EXPECT_NE(nullptr, proto.get());
-  EXPECT_TRUE(proto->has_input());
-  EXPECT_EQ(BlimpMessage::INPUT, proto->type());
+  EXPECT_EQ(BlimpMessage::kInput, proto->feature_case());
 
   std::unique_ptr<blink::WebGestureEvent> new_event =
       processor.ProcessMessage(proto->input());
