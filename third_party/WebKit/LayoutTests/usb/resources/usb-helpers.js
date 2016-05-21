@@ -41,7 +41,6 @@ function usbMocks(mojo) {
     'device/usb/public/interfaces/device.mojom',
   ], (bindings, connection, chooserService, deviceManager, device) => {
     function assertDeviceInfoEquals(device, info) {
-      assert_equals(device.guid, info.guid);
       assert_equals(device.usbVersionMajor, info.usb_version_major);
       assert_equals(device.usbVersionMinor, info.usb_version_minor);
       assert_equals(device.usbVersionSubminor, info.usb_version_subminor);
@@ -339,6 +338,7 @@ function usbMocks(mojo) {
         this.mockDevices_.forEach(device => {
           for (var stub of device.stubs)
             bindings.StubBindings(stub).close();
+          this.client_.onDeviceRemoved(device.info);
         });
         this.mockDevices_.clear();
       }

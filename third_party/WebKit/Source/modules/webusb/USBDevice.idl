@@ -15,7 +15,6 @@ enum USBTransferStatus {
 [
     RuntimeEnabled=WebUSB,
 ] interface USBDevice {
-    readonly attribute DOMString guid;
     readonly attribute octet usbVersionMajor;
     readonly attribute octet usbVersionMinor;
     readonly attribute octet usbVersionSubminor;

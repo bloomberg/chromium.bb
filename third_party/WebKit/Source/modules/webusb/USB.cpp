@@ -145,6 +145,19 @@ void USB::contextDestroyed()
     m_chooserServiceRequests.clear();
 }
 
+USBDevice* USB::getOrCreateDevice(usb::DeviceInfoPtr deviceInfo)
+{
+    USBDevice* device = m_deviceCache.get(deviceInfo->guid);
+    if (!device) {
+        String guid = deviceInfo->guid;
+        usb::DevicePtr pipe;
+        m_deviceManager->GetDevice(guid, mojo::GetProxy(&pipe));
+        device = USBDevice::create(std::move(deviceInfo), std::move(pipe), getExecutionContext());
+        m_deviceCache.add(guid, device);
+    }
+    return device;
+}
+
 void USB::onGetDevices(ScriptPromiseResolver* resolver, mojo::WTFArray<usb::DeviceInfoPtr> deviceInfos)
 {
     auto requestEntry = m_deviceManagerRequests.find(resolver);
@@ -153,11 +166,8 @@ void USB::onGetDevices(ScriptPromiseResolver* resolver, mojo::WTFArray<usb::Devi
     m_deviceManagerRequests.remove(requestEntry);
 
     HeapVector<Member<USBDevice>> devices;
-    for (auto& deviceInfo : deviceInfos.PassStorage()) {
-        usb::DevicePtr device;
-        m_deviceManager->GetDevice(deviceInfo->guid, mojo::GetProxy(&device));
-        devices.append(USBDevice::create(std::move(deviceInfo), std::move(device), resolver->getExecutionContext()));
-    }
+    for (auto& deviceInfo : deviceInfos.PassStorage())
+        devices.append(getOrCreateDevice(std::move(deviceInfo)));
     resolver->resolve(devices);
     m_deviceManagerRequests.remove(resolver);
 }
@@ -174,13 +184,10 @@ void USB::onGetPermission(ScriptPromiseResolver* resolver, usb::DeviceInfoPtr de
         return;
     }
 
-    if (deviceInfo) {
-        usb::DevicePtr device;
-        m_deviceManager->GetDevice(deviceInfo->guid, mojo::GetProxy(&device));
-        resolver->resolve(USBDevice::create(std::move(deviceInfo), std::move(device), resolver->getExecutionContext()));
-    } else {
+    if (deviceInfo)
+        resolver->resolve(getOrCreateDevice(std::move(deviceInfo)));
+    else
         resolver->reject(DOMException::create(NotFoundError, "No device selected."));
-    }
 }
 
 void USB::OnDeviceAdded(usb::DeviceInfoPtr deviceInfo)
@@ -188,14 +195,17 @@ void USB::OnDeviceAdded(usb::DeviceInfoPtr deviceInfo)
     if (!m_deviceManager)
         return;
 
-    usb::DevicePtr device;
-    m_deviceManager->GetDevice(deviceInfo->guid, mojo::GetProxy(&device));
-    dispatchEvent(USBConnectionEvent::create(EventTypeNames::connect, USBDevice::create(std::move(deviceInfo), std::move(device), getExecutionContext())));
+    dispatchEvent(USBConnectionEvent::create(EventTypeNames::connect, getOrCreateDevice(std::move(deviceInfo))));
 }
 
 void USB::OnDeviceRemoved(usb::DeviceInfoPtr deviceInfo)
 {
-    dispatchEvent(USBConnectionEvent::create(EventTypeNames::disconnect, USBDevice::create(std::move(deviceInfo), nullptr, getExecutionContext())));
+    String guid = deviceInfo->guid;
+    USBDevice* device = m_deviceCache.get(guid);
+    if (!device)
+        device = USBDevice::create(std::move(deviceInfo), nullptr, getExecutionContext());
+    dispatchEvent(USBConnectionEvent::create(EventTypeNames::disconnect, device));
+    m_deviceCache.remove(guid);
 }
 
 void USB::onDeviceManagerConnectionError()
@@ -220,6 +230,7 @@ DEFINE_TRACE(USB)
     ContextLifecycleObserver::trace(visitor);
     visitor->trace(m_deviceManagerRequests);
     visitor->trace(m_chooserServiceRequests);
+    visitor->trace(m_deviceCache);
 }
 
 } // namespace blink

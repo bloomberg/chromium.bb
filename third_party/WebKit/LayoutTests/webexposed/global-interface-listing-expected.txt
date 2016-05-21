@@ -6220,7 +6220,6 @@ interface USBDevice
     getter deviceVersionMajor
     getter deviceVersionMinor
     getter deviceVersionSubminor
-    getter guid
     getter manufacturerName
     getter opened
     getter productId

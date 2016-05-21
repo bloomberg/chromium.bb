@@ -41,7 +41,6 @@ public:
     size_t selectedAlternateInterface(size_t interfaceIndex) const;
 
     // USBDevice.idl
-    String guid() const { return info().guid; }
     uint8_t usbVersionMajor() const { return info().usb_version_major; }
     uint8_t usbVersionMinor() const { return info().usb_version_minor; }
     uint8_t usbVersionSubminor() const { return info().usb_version_subminor; }

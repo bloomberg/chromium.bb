@@ -19,6 +19,7 @@ namespace blink {
 class LocalFrame;
 class ScopedScriptPromiseResolver;
 class ScriptState;
+class USBDevice;
 class USBDeviceRequestOptions;
 
 class USB final
@@ -51,14 +52,16 @@ public:
     // ContextLifecycleObserver overrides.
     void contextDestroyed() override;
 
-    // DeviceManagerClient implementation.
-    void OnDeviceAdded(device::usb::blink::DeviceInfoPtr);
-    void OnDeviceRemoved(device::usb::blink::DeviceInfoPtr);
+    USBDevice* getOrCreateDevice(device::usb::blink::DeviceInfoPtr);
 
     device::usb::blink::DeviceManager* deviceManager() const { return m_deviceManager.get(); }
 
     void onGetDevices(ScriptPromiseResolver*, mojo::WTFArray<device::usb::blink::DeviceInfoPtr>);
     void onGetPermission(ScriptPromiseResolver*, device::usb::blink::DeviceInfoPtr);
+
+    // DeviceManagerClient implementation.
+    void OnDeviceAdded(device::usb::blink::DeviceInfoPtr);
+    void OnDeviceRemoved(device::usb::blink::DeviceInfoPtr);
 
     void onDeviceManagerConnectionError();
     void onChooserServiceConnectionError();
@@ -73,6 +76,7 @@ private:
     device::usb::blink::ChooserServicePtr m_chooserService;
     HeapHashSet<Member<ScriptPromiseResolver>> m_chooserServiceRequests;
     mojo::Binding<device::usb::blink::DeviceManagerClient> m_clientBinding;
+    HeapHashMap<String, WeakMember<USBDevice>> m_deviceCache;
 };
 
 } // namespace blink
