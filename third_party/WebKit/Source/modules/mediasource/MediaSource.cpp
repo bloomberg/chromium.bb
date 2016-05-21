@@ -51,6 +51,8 @@
 using blink::WebMediaSource;
 using blink::WebSourceBuffer;
 
+#define MEDIA_SOURCE_LOG_LEVEL 3
+
 namespace blink {
 
 static bool throwExceptionIfClosedOrUpdating(bool isOpen, bool isUpdating, ExceptionState& exceptionState)
@@ -102,24 +104,24 @@ MediaSource::MediaSource(ExecutionContext* context)
     , m_activeSourceBuffers(SourceBufferList::create(getExecutionContext(), m_asyncEventQueue.get()))
     , m_isAddedToRegistry(false)
 {
-    WTF_LOG(Media, "MediaSource::MediaSource %p", this);
+    DVLOG(MEDIA_SOURCE_LOG_LEVEL) << __FUNCTION__ << "(" << this << ")";
 }
 
 MediaSource::~MediaSource()
 {
-    WTF_LOG(Media, "MediaSource::~MediaSource %p", this);
-    ASSERT(isClosed());
+    DVLOG(MEDIA_SOURCE_LOG_LEVEL) << __FUNCTION__ << "(" << this << ")";
+    DCHECK(isClosed());
 }
 
 void MediaSource::logAndThrowDOMException(ExceptionState& exceptionState, const ExceptionCode& error, const String& message)
 {
-    WTF_LOG(Media, "throwDOMException: error=%d msg=%s", error, message.utf8().data());
+    DVLOG(MEDIA_SOURCE_LOG_LEVEL) << __FUNCTION__ << "(error=" << error << ", message=" << message << ")";
     exceptionState.throwDOMException(error, message);
 }
 
 SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& exceptionState)
 {
-    WTF_LOG(Media, "MediaSource::addSourceBuffer(%s) %p", type.ascii().data(), this);
+    DVLOG(MEDIA_SOURCE_LOG_LEVEL) << __FUNCTION__ << "(" << type << ") " << this;
 
     // 2.2 https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type
     // 1. If type is an empty string then throw an InvalidAccessError exception
@@ -149,7 +151,7 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& e
     OwnPtr<WebSourceBuffer> webSourceBuffer = createWebSourceBuffer(contentType.type(), codecs, exceptionState);
 
     if (!webSourceBuffer) {
-        ASSERT(exceptionState.code() == NotSupportedError || exceptionState.code() == QuotaExceededError);
+        DCHECK(exceptionState.code() == NotSupportedError || exceptionState.code() == QuotaExceededError);
         // 2. If type contains a MIME type that is not supported ..., then throw a NotSupportedError exception and abort these steps.
         // 3. If the user agent can't handle any more SourceBuffer objects then throw a QuotaExceededError exception and abort these steps
         return 0;
@@ -160,13 +162,13 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& e
     m_sourceBuffers->add(buffer);
 
     // 7. Return the new object to the caller.
-    WTF_LOG(Media, "MediaSource::addSourceBuffer(%s) %p -> %p", type.ascii().data(), this, buffer);
+    DVLOG(MEDIA_SOURCE_LOG_LEVEL) << __FUNCTION__ << "(" << type << ") " << buffer << " -> " << this;
     return buffer;
 }
 
 void MediaSource::removeSourceBuffer(SourceBuffer* buffer, ExceptionState& exceptionState)
 {
-    WTF_LOG(Media, "MediaSource::removeSourceBuffer() %p", this);
+    DVLOG(MEDIA_SOURCE_LOG_LEVEL) << __FUNCTION__ << "(" << buffer << ") -> " << this;
 
     // 2.2 https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-removeSourceBuffer-void-SourceBuffer-sourceBuffer
 
@@ -203,7 +205,7 @@ void MediaSource::onReadyStateChange(const AtomicString& oldState, const AtomicS
         return;
     }
 
-    ASSERT(isClosed());
+    DCHECK(isClosed());
 
     m_activeSourceBuffers->clear();
 
@@ -234,7 +236,7 @@ bool MediaSource::isTypeSupported(const String& type)
     // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#widl-MediaSource-isTypeSupported-boolean-DOMString-type
     // 1. If type is an empty string, then return false.
     if (type.isEmpty()) {
-        WTF_LOG(Media, "MediaSource::isTypeSupported(%s) -> false (empty input)", type.ascii().data());
+        DVLOG(MEDIA_SOURCE_LOG_LEVEL) << __FUNCTION__ << "(" << type << ") -> false (empty input)";
         return false;
     }
 
@@ -243,14 +245,14 @@ bool MediaSource::isTypeSupported(const String& type)
 
     // 2. If type does not contain a valid MIME type string, then return false.
     if (contentType.type().isEmpty()) {
-        WTF_LOG(Media, "MediaSource::isTypeSupported(%s) -> false (invalid mime type)", type.ascii().data());
+        DVLOG(MEDIA_SOURCE_LOG_LEVEL) << __FUNCTION__ << "(" << type << ") -> false (invalid mime type)";
         return false;
     }
 
     // Note: MediaSource.isTypeSupported() returning true implies that HTMLMediaElement.canPlayType() will return "maybe" or "probably"
     // since it does not make sense for a MediaSource to support a type the HTMLMediaElement knows it cannot play.
     if (HTMLMediaElement::supportsType(contentType) == WebMimeRegistry::IsNotSupported) {
-        WTF_LOG(Media, "MediaSource::isTypeSupported(%s) -> false (not supported by HTMLMediaElement)", type.ascii().data());
+        DVLOG(MEDIA_SOURCE_LOG_LEVEL) << __FUNCTION__ << "(" << type << ") -> false (not supported by HTMLMediaElement)";
         return false;
     }
 
@@ -259,7 +261,7 @@ bool MediaSource::isTypeSupported(const String& type)
     // 5. If the MediaSource does not support the specified combination of media type, media subtype, and codecs then return false.
     // 6. Return true.
     bool result = MIMETypeRegistry::isSupportedMediaSourceMIMEType(contentType.type(), codecs);
-    WTF_LOG(Media, "MediaSource::isTypeSupported(%s) -> %s", type.ascii().data(), result ? "true" : "false");
+    DVLOG(MEDIA_SOURCE_LOG_LEVEL) << __FUNCTION__ << "(" << type << ") -> " << (result ? "true" : "false");
     return result;
 }
 
@@ -286,22 +288,22 @@ DEFINE_TRACE(MediaSource)
 void MediaSource::setWebMediaSourceAndOpen(PassOwnPtr<WebMediaSource> webMediaSource)
 {
     TRACE_EVENT_ASYNC_END0("media", "MediaSource::attachToElement", this);
-    ASSERT(webMediaSource);
-    ASSERT(!m_webMediaSource);
-    ASSERT(m_attachedElement);
+    DCHECK(webMediaSource);
+    DCHECK(!m_webMediaSource);
+    DCHECK(m_attachedElement);
     m_webMediaSource = std::move(webMediaSource);
     setReadyState(openKeyword());
 }
 
 void MediaSource::addedToRegistry()
 {
-    ASSERT(!m_isAddedToRegistry);
+    DCHECK(!m_isAddedToRegistry);
     m_isAddedToRegistry = true;
 }
 
 void MediaSource::removedFromRegistry()
 {
-    ASSERT(m_isAddedToRegistry);
+    DCHECK(m_isAddedToRegistry);
     m_isAddedToRegistry = false;
 }
 
@@ -442,10 +444,10 @@ void MediaSource::durationChangeAlgorithm(double newDuration)
 
 void MediaSource::setReadyState(const AtomicString& state)
 {
-    ASSERT(state == openKeyword() || state == closedKeyword() || state == endedKeyword());
+    DCHECK(state == openKeyword() || state == closedKeyword() || state == endedKeyword());
 
     AtomicString oldState = readyState();
-    WTF_LOG(Media, "MediaSource::setReadyState() %p : %s -> %s", this, oldState.ascii().data(), state.ascii().data());
+    DVLOG(MEDIA_SOURCE_LOG_LEVEL) << __FUNCTION__ << " : " << oldState << " -> " << state << " " << this;
 
     if (state == closedKeyword()) {
         m_webMediaSource.clear();
@@ -469,7 +471,7 @@ void MediaSource::endOfStream(const AtomicString& error, ExceptionState& excepti
     } else if (error == decode) {
         endOfStreamInternal(WebMediaSource::EndOfStreamStatusDecodeError, exceptionState);
     } else {
-        ASSERT_NOT_REACHED(); // IDL enforcement should prevent this case.
+        NOTREACHED(); // IDL enforcement should prevent this case.
     }
 }
 
@@ -504,7 +506,7 @@ bool MediaSource::isOpen() const
 
 void MediaSource::setSourceBufferActive(SourceBuffer* sourceBuffer)
 {
-    ASSERT(!m_activeSourceBuffers->contains(sourceBuffer));
+    DCHECK(!m_activeSourceBuffers->contains(sourceBuffer));
 
     // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#widl-MediaSource-activeSourceBuffers
     // SourceBuffer objects in SourceBuffer.activeSourceBuffers must appear in
@@ -513,7 +515,7 @@ void MediaSource::setSourceBufferActive(SourceBuffer* sourceBuffer)
     // same order as buffers in |m_sourceBuffers|, so this method needs to
     // insert |sourceBuffer| into |m_activeSourceBuffers|.
     size_t indexInSourceBuffers = m_sourceBuffers->find(sourceBuffer);
-    ASSERT(indexInSourceBuffers != kNotFound);
+    DCHECK(indexInSourceBuffers != kNotFound);
 
     size_t insertPosition = 0;
     while (insertPosition < m_activeSourceBuffers->length()
@@ -544,7 +546,7 @@ bool MediaSource::attachToElement(HTMLMediaElement* element)
     if (m_attachedElement)
         return false;
 
-    ASSERT(isClosed());
+    DCHECK(isClosed());
 
     TRACE_EVENT_ASYNC_BEGIN0("media", "MediaSource::attachToElement", this);
     m_attachedElement = element;
@@ -583,7 +585,7 @@ PassOwnPtr<WebSourceBuffer> MediaSource::createWebSourceBuffer(const String& typ
     case WebMediaSource::AddStatusOk:
         return adoptPtr(webSourceBuffer);
     case WebMediaSource::AddStatusNotSupported:
-        ASSERT(!webSourceBuffer);
+        DCHECK(!webSourceBuffer);
         // 2.2 https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type
         // Step 2: If type contains a MIME type ... that is not supported with the types
         // specified for the other SourceBuffer objects in sourceBuffers, then throw
@@ -591,7 +593,7 @@ PassOwnPtr<WebSourceBuffer> MediaSource::createWebSourceBuffer(const String& typ
         logAndThrowDOMException(exceptionState, NotSupportedError, "The type provided ('" + type + "') is not supported.");
         return nullptr;
     case WebMediaSource::AddStatusReachedIdLimit:
-        ASSERT(!webSourceBuffer);
+        DCHECK(!webSourceBuffer);
         // 2.2 https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type
         // Step 3: If the user agent can't handle any more SourceBuffer objects then throw
         // a QuotaExceededError exception and abort these steps.
@@ -599,13 +601,13 @@ PassOwnPtr<WebSourceBuffer> MediaSource::createWebSourceBuffer(const String& typ
         return nullptr;
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
 }
 
 void MediaSource::scheduleEvent(const AtomicString& eventName)
 {
-    ASSERT(m_asyncEventQueue);
+    DCHECK(m_asyncEventQueue);
 
     Event* event = Event::create(eventName);
     event->setTarget(this);
