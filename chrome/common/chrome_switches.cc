@@ -1057,6 +1057,11 @@ const char kUnlimitedStorage[]              = "unlimited-storage";
 const char kUnsafelyTreatInsecureOriginAsSecure[] =
     "unsafely-treat-insecure-origin-as-secure";
 
+// Pass the full https:// URL to PAC (Proxy Auto Config) scripts. As opposed to
+// the default behavior which strips path and query components before passing
+// to the PAC scripts.
+const char kUnsafePacUrl[] = "unsafe-pac-url";
+
 // A string used to override the default user agent with a custom one.
 const char kUserAgent[]                     = "user-agent";
 

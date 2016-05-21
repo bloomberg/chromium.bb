@@ -290,6 +290,7 @@ extern const char kTestName[];
 extern const char kTryChromeAgain[];
 extern const char kUnlimitedStorage[];
 extern const char kUnsafelyTreatInsecureOriginAsSecure[];
+extern const char kUnsafePacUrl[];
 extern const char kUseSimpleCacheBackend[];
 extern const char kUserAgent[];
 extern const char kUserDataDir[];

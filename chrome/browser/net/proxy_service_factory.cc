@@ -188,5 +188,10 @@ std::unique_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
 
   proxy_service->set_quick_check_enabled(quick_check_enabled);
 
+  if (command_line.HasSwitch(switches::kUnsafePacUrl)) {
+    proxy_service->set_sanitize_url_policy(
+        net::ProxyService::SanitizeUrlPolicy::UNSAFE);
+  }
+
   return proxy_service;
 }

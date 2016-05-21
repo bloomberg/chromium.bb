@@ -3480,4 +3480,224 @@ TEST_F(ProxyServiceTest, SynchronousWithFixedConfiguration) {
   EXPECT_EQ(0u, factory->pending_requests().size());
 }
 
+// Helper class to exercise URL sanitization using the different policies. This
+// works by submitted URLs to the ProxyService. In turn the ProxyService
+// sanitizes the URL and then passes it along to the ProxyResolver. This helper
+// returns the URL seen by the ProxyResolver.
+class SanitizeUrlHelper {
+ public:
+  SanitizeUrlHelper() {
+    std::unique_ptr<MockProxyConfigService> config_service(
+        new MockProxyConfigService("http://foopy/proxy.pac"));
+
+    factory = new MockAsyncProxyResolverFactory(false);
+
+    service_.reset(new ProxyService(std::move(config_service),
+                                    base::WrapUnique(factory), nullptr));
+
+    // Do an initial request to initialize the service (configure the PAC
+    // script).
+    GURL url("http://example.com");
+
+    ProxyInfo info;
+    TestCompletionCallback callback;
+    int rv = service_->ResolveProxy(url, std::string(), LOAD_NORMAL, &info,
+                                    callback.callback(), nullptr, nullptr,
+                                    BoundNetLog());
+    EXPECT_EQ(ERR_IO_PENDING, rv);
+
+    // First step is to download the PAC script.
+    EXPECT_EQ(GURL("http://foopy/proxy.pac"),
+              factory->pending_requests()[0]->script_data()->url());
+    factory->pending_requests()[0]->CompleteNowWithForwarder(OK, &resolver);
+
+    EXPECT_EQ(1u, resolver.pending_requests().size());
+    EXPECT_EQ(url, resolver.pending_requests()[0]->url());
+
+    // Complete the request.
+    resolver.pending_requests()[0]->results()->UsePacString("DIRECT");
+    resolver.pending_requests()[0]->CompleteNow(OK);
+    EXPECT_EQ(OK, callback.WaitForResult());
+    EXPECT_TRUE(info.is_direct());
+  }
+
+  // Changes the URL sanitization policy for the underlying ProxyService. This
+  // will affect subsequent calls to SanitizeUrl.
+  void SetSanitizeUrlPolicy(ProxyService::SanitizeUrlPolicy policy) {
+    service_->set_sanitize_url_policy(policy);
+  }
+
+  // Makes a proxy resolution request through the ProxyService, and returns the
+  // URL that was submitted to the Proxy Resolver.
+  GURL SanitizeUrl(const GURL& raw_url) {
+    // Issue a request and see what URL is sent to the proxy resolver.
+    ProxyInfo info;
+    TestCompletionCallback callback;
+    int rv = service_->ResolveProxy(raw_url, std::string(), LOAD_NORMAL, &info,
+                                    callback.callback(), nullptr, nullptr,
+                                    BoundNetLog());
+    EXPECT_EQ(ERR_IO_PENDING, rv);
+
+    EXPECT_EQ(1u, resolver.pending_requests().size());
+
+    GURL sanitized_url = resolver.pending_requests()[0]->url();
+
+    // Complete the request.
+    resolver.pending_requests()[0]->results()->UsePacString("DIRECT");
+    resolver.pending_requests()[0]->CompleteNow(OK);
+    EXPECT_EQ(OK, callback.WaitForResult());
+    EXPECT_TRUE(info.is_direct());
+
+    return sanitized_url;
+  }
+
+  // Changes the ProxyService's URL sanitization policy and then sanitizes
+  // |raw_url|.
+  GURL SanitizeUrl(const GURL& raw_url,
+                   ProxyService::SanitizeUrlPolicy policy) {
+    service_->set_sanitize_url_policy(policy);
+    return SanitizeUrl(raw_url);
+  }
+
+ private:
+  MockAsyncProxyResolver resolver;
+  MockAsyncProxyResolverFactory* factory;
+  std::unique_ptr<ProxyService> service_;
+};
+
+TEST_F(ProxyServiceTest, SanitizeUrlDefaultsToSafe) {
+  SanitizeUrlHelper helper;
+
+  // Without changing the URL sanitization policy, the default should be to
+  // strip https:// URLs.
+  EXPECT_EQ(GURL("https://example.com/"),
+            helper.SanitizeUrl(
+                GURL("https://foo:bar@example.com/foo/bar/baz?hello#sigh")));
+}
+
+// Tests URL sanitization with input URLs that have a // non-cryptographic
+// scheme (i.e. http://). The sanitized result is consistent regardless of the
+// stripping mode selected.
+TEST_F(ProxyServiceTest, SanitizeUrlForPacScriptNonCryptographic) {
+  const struct {
+    const char* raw_url;
+    const char* sanitized_url;
+  } kTests[] = {
+      // Embedded identity is stripped.
+      {
+          "http://foo:bar@example.com/", "http://example.com/",
+      },
+      {
+          "ftp://foo:bar@example.com/", "ftp://example.com/",
+      },
+      {
+          "ftp://example.com/some/path/here",
+          "ftp://example.com/some/path/here",
+      },
+      // Reference fragment is stripped.
+      {
+          "http://example.com/blah#hello", "http://example.com/blah",
+      },
+      // Query parameters are NOT stripped.
+      {
+          "http://example.com/foo/bar/baz?hello",
+          "http://example.com/foo/bar/baz?hello",
+      },
+      // Fragment is stripped, but path and query are left intact.
+      {
+          "http://foo:bar@example.com/foo/bar/baz?hello#sigh",
+          "http://example.com/foo/bar/baz?hello",
+      },
+      // Port numbers are not affected.
+      {
+          "http://example.com:88/hi", "http://example.com:88/hi",
+      },
+  };
+
+  SanitizeUrlHelper helper;
+
+  for (const auto& test : kTests) {
+    // The result of SanitizeUrlForPacScript() is the same regardless of the
+    // second parameter (sanitization mode), since the input URLs do not use a
+    // cryptographic scheme.
+    GURL raw_url(test.raw_url);
+    ASSERT_TRUE(raw_url.is_valid());
+    EXPECT_FALSE(raw_url.SchemeIsCryptographic());
+
+    EXPECT_EQ(
+        GURL(test.sanitized_url),
+        helper.SanitizeUrl(raw_url, ProxyService::SanitizeUrlPolicy::UNSAFE));
+
+    EXPECT_EQ(
+        GURL(test.sanitized_url),
+        helper.SanitizeUrl(raw_url, ProxyService::SanitizeUrlPolicy::SAFE));
+  }
+}
+
+// Tests URL sanitization using input URLs that have a cryptographic schemes
+// (i.e. https://). The sanitized result differs depending on the sanitization
+// mode chosen.
+TEST_F(ProxyServiceTest, SanitizeUrlForPacScriptCryptographic) {
+  const struct {
+    // Input URL.
+    const char* raw_url;
+
+    // Output URL when stripping of cryptographic URLs is disabled.
+    const char* sanitized_url_unstripped;
+
+    // Output URL when stripping of cryptographic URLs is enabled.
+    const char* sanitized_url;
+  } kTests[] = {
+      // Embedded identity is always stripped.
+      {
+          "https://foo:bar@example.com/", "https://example.com/",
+          "https://example.com/",
+      },
+      // Fragments are always stripped, but stripping path is conditional on the
+      // mode.
+      {
+          "https://example.com/blah#hello", "https://example.com/blah",
+          "https://example.com/",
+      },
+      // Stripping the query is conditional on the mode.
+      {
+          "https://example.com/?hello", "https://example.com/?hello",
+          "https://example.com/",
+      },
+      // The embedded identity and fragment is always stripped, however path and
+      // query are conditional on the stripping mode.
+      {
+          "https://foo:bar@example.com/foo/bar/baz?hello#sigh",
+          "https://example.com/foo/bar/baz?hello", "https://example.com/",
+      },
+      // The URL's port should not be stripped.
+      {
+          "https://example.com:88/hi", "https://example.com:88/hi",
+          "https://example.com:88/",
+      },
+      // Try a wss:// URL, to make sure it also strips (is is also a
+      // cryptographic URL).
+      {
+          "wss://example.com:88/hi", "wss://example.com:88/hi",
+          "wss://example.com:88/",
+      },
+  };
+
+  SanitizeUrlHelper helper;
+
+  for (const auto& test : kTests) {
+    GURL raw_url(test.raw_url);
+    ASSERT_TRUE(raw_url.is_valid());
+    EXPECT_TRUE(raw_url.SchemeIsCryptographic());
+
+    EXPECT_EQ(
+        GURL(test.sanitized_url_unstripped),
+        helper.SanitizeUrl(raw_url, ProxyService::SanitizeUrlPolicy::UNSAFE));
+
+    EXPECT_EQ(
+        GURL(test.sanitized_url),
+        helper.SanitizeUrl(raw_url, ProxyService::SanitizeUrlPolicy::SAFE));
+  }
+}
+
 }  // namespace net
