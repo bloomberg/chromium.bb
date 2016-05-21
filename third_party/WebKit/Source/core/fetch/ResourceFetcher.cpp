@@ -424,8 +424,12 @@ Resource* ResourceFetcher::requestResource(FetchRequest& request, const Resource
 
     bool isStaticData = request.resourceRequest().url().protocolIsData() || substituteData.isValid() || m_archive;
     Resource* resource(nullptr);
-    if (isStaticData)
+    if (isStaticData) {
         resource = resourceForStaticData(request, factory, substituteData);
+        // Abort the request if the archive doesn't contain the resource.
+        if (!resource && m_archive)
+            return nullptr;
+    }
     if (!resource)
         resource = memoryCache()->resourceForURL(url, getCacheIdentifier());
 
