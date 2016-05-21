@@ -3686,6 +3686,17 @@ TEST_P(GLES3DecoderTest, ClearLevel3DMultipleCallsPerLayer) {
       texture, kTarget, kLevel, kFormat, kType, kWidth, kHeight, kDepth));
 }
 
+TEST_P(GLES3DecoderTest, BindSamplerInvalidUnit) {
+  cmds::BindSampler cmd;
+  cmd.Init(kNumTextureUnits, client_texture_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+
+  cmd.Init(kNumTextureUnits, 0);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
 // Test that copyTexImage2D uses the emulated internal format, rather than the
 // real internal format.
 TEST_P(GLES2DecoderWithShaderTest, CHROMIUMImageEmulatingRGB) {

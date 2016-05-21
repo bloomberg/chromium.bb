@@ -5260,6 +5260,10 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
 }
 
 void GLES2DecoderImpl::DoBindSampler(GLuint unit, GLuint client_id) {
+  if (unit >= group_->max_texture_units()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glBindSampler", "unit out of bounds");
+    return;
+  }
   Sampler* sampler = nullptr;
   if (client_id != 0) {
     sampler = GetSampler(client_id);
