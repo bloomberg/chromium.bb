@@ -16,22 +16,20 @@ These files implement the current streams spec, plus the more speculative
 ReadableByteStream, to the extent necessary to support Fetch response bodies.
 They do not support author-constructed readable streams. They use the normal
 approach for implementing web-exposed classes, i.e. IDL bindings with C++
-implementation. They are currently shipping in Chrome.
+implementation. They are now deprecated and will be removed shortly. See
+https://crbug.com/613435.
 
 ## V8 Extras ReadableStream Implementation
 
 - ByteLengthQueuingStrategy.js
 - CountQueuingStrategy.js
 - ReadableStream.js
-- ReadableStreamTempStub.js
 - ReadableStreamController.h
 - UnderlyingSourceBase.{cpp,h,idl}
 - bindings/core/v8/ReadableStreamOperations.{cpp,h}
 
-These files are an in-progress implementation of the current streams spec,
-using [V8 extras][1]. They allow author construction. We hope eventually to
-have these supercede the traditional ReadableStream implementation, but the
-work to build Fetch response body streams on top of this is ongoing.
+These files implement [V8 extras][1] based ReadableStream which is currently
+used.
 
 [1]: https://docs.google.com/document/d/1AT5-T0aHGp7Lt29vPWFr2-qG8r3l9CByyvKwEuA8Ec0
 

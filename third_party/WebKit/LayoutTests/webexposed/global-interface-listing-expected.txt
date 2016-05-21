@@ -4478,11 +4478,6 @@ interface Range
     method setStartBefore
     method surroundContents
     method toString
-interface ReadableByteStream
-    attribute @@toStringTag
-    method cancel
-    method constructor
-    method getReader
 interface ReadableStream
     getter locked
     method cancel

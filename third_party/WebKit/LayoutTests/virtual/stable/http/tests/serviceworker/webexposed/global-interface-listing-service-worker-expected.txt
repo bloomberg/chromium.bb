@@ -3,6 +3,9 @@ interface Blob
     getter type
     method constructor
     method slice
+interface ByteLengthQueuingStrategy
+    method constructor
+    method size
 interface Cache
     method add
     method addAll
@@ -36,6 +39,9 @@ interface CloseEvent : Event
     getter reason
     getter wasClean
     method constructor
+interface CountQueuingStrategy
+    method constructor
+    method size
 interface Crypto
     getter subtle
     method constructor
@@ -469,14 +475,12 @@ interface PushSubscription
     method getKey
     method toJSON
     method unsubscribe
-interface ReadableByteStream
-    method cancel
-    method constructor
-    method getReader
 interface ReadableStream
+    getter locked
     method cancel
     method constructor
     method getReader
+    method tee
 interface Request
     getter bodyUsed
     getter credentials

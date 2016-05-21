@@ -171,8 +171,8 @@ ReducedReferrerGranularity
 RemotePlayback status=experimental
 RenderingPipelineThrottling status=stable
 RequestIdleCallback status=stable
-ResponseConstructedWithReadableStream status=experimental
-ResponseBodyWithV8ExtraStream status=experimental
+ResponseConstructedWithReadableStream status=stable
+ResponseBodyWithV8ExtraStream status=stable
 SandboxBlocksModals status=stable
 ScreenOrientation status=stable
 ScriptedSpeech status=stable

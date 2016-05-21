@@ -265,6 +265,9 @@ interface BlobEvent : Event
     attribute @@toStringTag
     getter data
     method constructor
+interface ByteLengthQueuingStrategy
+    method constructor
+    method size
 interface CDATASection : Text
     attribute @@toStringTag
     method constructor
@@ -561,6 +564,9 @@ interface ConvolverNode : AudioNode
     method constructor
     setter buffer
     setter normalize
+interface CountQueuingStrategy
+    method constructor
+    method size
 interface Credential
     attribute @@toStringTag
     getter id
@@ -3825,15 +3831,12 @@ interface Range
     method setStartBefore
     method surroundContents
     method toString
-interface ReadableByteStream
-    attribute @@toStringTag
-    method cancel
-    method constructor
-    method getReader
 interface ReadableStream
+    getter locked
     method cancel
     method constructor
     method getReader
+    method tee
 interface Request
     attribute @@toStringTag
     getter bodyUsed

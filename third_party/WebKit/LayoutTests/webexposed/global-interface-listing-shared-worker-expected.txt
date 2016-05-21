@@ -588,11 +588,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter promise
 [Worker]     getter reason
 [Worker]     method constructor
-[Worker] interface ReadableByteStream
-[Worker]     attribute @@toStringTag
-[Worker]     method cancel
-[Worker]     method constructor
-[Worker]     method getReader
 [Worker] interface ReadableStream
 [Worker]     getter locked
 [Worker]     method cancel

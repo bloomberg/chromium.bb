@@ -586,10 +586,6 @@ interface PushSubscription
     method getKey
     method toJSON
     method unsubscribe
-interface ReadableByteStream
-    method cancel
-    method constructor
-    method getReader
 interface ReadableStream
     getter locked
     method cancel
