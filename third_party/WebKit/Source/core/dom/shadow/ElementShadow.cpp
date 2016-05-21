@@ -382,4 +382,9 @@ DEFINE_TRACE(ElementShadow)
     visitor->trace(m_shadowRoot);
 }
 
+DEFINE_TRACE_WRAPPERS(ElementShadow)
+{
+    visitor->traceWrappers(m_shadowRoot);
+}
+
 } // namespace blink

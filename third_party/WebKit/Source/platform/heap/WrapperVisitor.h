@@ -16,12 +16,13 @@ class ScriptWrappable;
 
 // TODO(hlopko): Find a way to remove special-casing using templates
 #define WRAPPER_VISITOR_SPECIAL_CLASSES(V)                           \
-    V(HTMLImportsController)                                         \
-    V(NodeRareData);                                                 \
-    V(NodeListsNodeData);                                            \
-    V(ElementRareData);                                              \
-    V(StyleEngine);                                                  \
     V(DocumentStyleSheetCollection);                                 \
+    V(ElementRareData);                                              \
+    V(ElementShadow);                                                \
+    V(HTMLImportsController)                                         \
+    V(NodeListsNodeData);                                            \
+    V(NodeRareData);                                                 \
+    V(StyleEngine);                                                  \
 
 #define FORWARD_DECLARE_SPECIAL_CLASSES(className)                   \
     class className;

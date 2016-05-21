@@ -71,6 +71,7 @@ public:
     bool isOpenOrV0() const { return youngestShadowRoot().isOpenOrV0(); };
 
     DECLARE_TRACE();
+    DECLARE_TRACE_WRAPPERS();
 
 private:
     ElementShadow();

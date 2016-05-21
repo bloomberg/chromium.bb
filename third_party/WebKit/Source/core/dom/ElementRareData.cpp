@@ -84,6 +84,12 @@ DEFINE_TRACE_AFTER_DISPATCH(ElementRareData)
 
 DEFINE_TRACE_WRAPPERS_AFTER_DISPATCH(ElementRareData)
 {
+    if (m_attrNodeList.get()) {
+        for (auto& attr : *m_attrNodeList) {
+            visitor->traceWrappers(attr);
+        }
+    }
+    visitor->traceWrappers(m_shadow);
     visitor->traceWrappers(m_attributeMap);
     visitor->traceWrappers(m_dataset);
     visitor->traceWrappers(m_classList);
