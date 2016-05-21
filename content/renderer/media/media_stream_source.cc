@@ -15,13 +15,15 @@ MediaStreamSource::MediaStreamSource() {
 
 MediaStreamSource::~MediaStreamSource() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  RunStopCallbackAndEndStream();
+  DCHECK(stop_callback_.is_null());
 }
 
 void MediaStreamSource::StopSource() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DoStopSource();
-  RunStopCallbackAndEndStream();
+  if (!stop_callback_.is_null())
+    base::ResetAndReturn(&stop_callback_).Run(owner());
+  owner().setReadyState(blink::WebMediaStreamSource::ReadyStateEnded);
 }
 
 void MediaStreamSource::SetDeviceInfo(const StreamDeviceInfo& device_info) {
@@ -40,14 +42,6 @@ void MediaStreamSource::ResetSourceStoppedCallback() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!stop_callback_.is_null());
   stop_callback_.Reset();
-}
-
-void MediaStreamSource::RunStopCallbackAndEndStream() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!stop_callback_.is_null())
-    base::ResetAndReturn(&stop_callback_).Run(owner());
-  if (!owner().isNull())
-    owner().setReadyState(blink::WebMediaStreamSource::ReadyStateEnded);
 }
 
 }  // namespace content

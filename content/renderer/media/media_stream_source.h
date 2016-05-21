@@ -66,11 +66,6 @@ class CONTENT_EXPORT MediaStreamSource
   virtual void DoStopSource() = 0;
 
  private:
-  // Called by both StopSource() and the destructor to ensure the
-  // |stop_callback_| has been run and the blink::WebMediaStreamSource's ready
-  // state has been set to "ended."
-  void RunStopCallbackAndEndStream();
-
   StreamDeviceInfo device_info_;
   SourceStoppedCallback stop_callback_;
 
