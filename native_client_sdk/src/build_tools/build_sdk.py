@@ -370,7 +370,7 @@ def GnNinjaInstall(pepperdir, toolchains):
       pair[1] += '.exe'
 
   InstallFiles(GetNinjaOutDir('x64'), tools_dir, tools_files_x64)
-  if platform != 'mac' and platform != 'linux':
+  if platform != 'mac':
     InstallFiles(GetNinjaOutDir('x86'), tools_dir, tools_files_x86)
   if platform == 'linux':
     InstallFiles(GetNinjaOutDir('arm'), tools_dir, tools_files_arm)
@@ -407,7 +407,7 @@ def GnNinjaBuildAll(rel_out_dir):
 
   GnNinjaBuild('x64', MakeNinjaRelPath('-x64'),
       ['nacl_sdk_untrusted=true'])
-  if platform != 'mac' and platform != 'linux':
+  if platform != 'mac':
     GnNinjaBuild('x86', MakeNinjaRelPath('-x86'))
 
   if platform == 'linux':
