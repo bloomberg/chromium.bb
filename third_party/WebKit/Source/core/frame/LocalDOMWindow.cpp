@@ -897,9 +897,10 @@ int LocalDOMWindow::outerHeight() const
     if (!host)
         return 0;
 
+    ChromeClient& chromeClient = host->chromeClient();
     if (host->settings().reportScreenSizeInPhysicalPixelsQuirk())
-        return lroundf(host->chromeClient().windowRect().height() * host->deviceScaleFactor());
-    return host->chromeClient().windowRect().height();
+        return lroundf(chromeClient.windowRect().height() * chromeClient.screenInfo().deviceScaleFactor);
+    return chromeClient.windowRect().height();
 }
 
 int LocalDOMWindow::outerWidth() const
@@ -911,9 +912,11 @@ int LocalDOMWindow::outerWidth() const
     if (!host)
         return 0;
 
+    ChromeClient& chromeClient = host->chromeClient();
     if (host->settings().reportScreenSizeInPhysicalPixelsQuirk())
-        return lroundf(host->chromeClient().windowRect().width() * host->deviceScaleFactor());
-    return host->chromeClient().windowRect().width();
+        return lroundf(chromeClient.windowRect().width() * chromeClient.screenInfo().deviceScaleFactor);
+
+    return chromeClient.windowRect().width();
 }
 
 static FloatSize getViewportSize(LocalFrame* frame)
@@ -971,9 +974,10 @@ int LocalDOMWindow::screenX() const
     if (!host)
         return 0;
 
+    ChromeClient& chromeClient = host->chromeClient();
     if (host->settings().reportScreenSizeInPhysicalPixelsQuirk())
-        return lroundf(host->chromeClient().windowRect().x() * host->deviceScaleFactor());
-    return host->chromeClient().windowRect().x();
+        return lroundf(chromeClient.windowRect().x() * chromeClient.screenInfo().deviceScaleFactor);
+    return chromeClient.windowRect().x();
 }
 
 int LocalDOMWindow::screenY() const
@@ -985,9 +989,10 @@ int LocalDOMWindow::screenY() const
     if (!host)
         return 0;
 
+    ChromeClient& chromeClient = host->chromeClient();
     if (host->settings().reportScreenSizeInPhysicalPixelsQuirk())
-        return lroundf(host->chromeClient().windowRect().y() * host->deviceScaleFactor());
-    return host->chromeClient().windowRect().y();
+        return lroundf(chromeClient.windowRect().y() * chromeClient.screenInfo().deviceScaleFactor);
+    return chromeClient.windowRect().y();
 }
 
 double LocalDOMWindow::scrollX() const

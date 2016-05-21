@@ -48,18 +48,20 @@ double MediaValues::calculateViewportHeight(LocalFrame* frame)
 int MediaValues::calculateDeviceWidth(LocalFrame* frame)
 {
     ASSERT(frame && frame->view() && frame->settings() && frame->host());
-    int deviceWidth = frame->host()->chromeClient().screenInfo().rect.width;
+    blink::WebScreenInfo screenInfo = frame->host()->chromeClient().screenInfo();
+    int deviceWidth = screenInfo.rect.width;
     if (frame->settings()->reportScreenSizeInPhysicalPixelsQuirk())
-        deviceWidth = lroundf(deviceWidth * frame->host()->deviceScaleFactor());
+        deviceWidth = lroundf(deviceWidth * screenInfo.deviceScaleFactor);
     return deviceWidth;
 }
 
 int MediaValues::calculateDeviceHeight(LocalFrame* frame)
 {
     ASSERT(frame && frame->view() && frame->settings() && frame->host());
-    int deviceHeight = frame->host()->chromeClient().screenInfo().rect.height;
+    blink::WebScreenInfo screenInfo = frame->host()->chromeClient().screenInfo();
+    int deviceHeight = screenInfo.rect.height;
     if (frame->settings()->reportScreenSizeInPhysicalPixelsQuirk())
-        deviceHeight = lroundf(deviceHeight * frame->host()->deviceScaleFactor());
+        deviceHeight = lroundf(deviceHeight * screenInfo.deviceScaleFactor);
     return deviceHeight;
 }
 

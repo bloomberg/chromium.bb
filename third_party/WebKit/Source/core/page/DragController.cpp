@@ -899,7 +899,7 @@ bool DragController::startDrag(LocalFrame* src, const DragState& state, const Pl
             IntSize imageSizeInPixels = imageRect.size();
             // TODO(oshima): Remove this scaling and simply pass imageRect to dragImageForImage
             // once all platforms are migrated to use zoom for dsf.
-            imageSizeInPixels.scale(src->host()->deviceScaleFactor());
+            imageSizeInPixels.scale(src->host()->deviceScaleFactorDeprecated());
 
             float screenDeviceScaleFactor = src->page()->chromeClient().screenInfo().deviceScaleFactor;
             // Pass the selected image size in DIP becasue dragImageForImage clips the image in DIP.

@@ -109,8 +109,8 @@ public:
     {
         if (m_draggedNode && m_draggedNode->layoutObject())
             m_draggedNode->layoutObject()->updateDragState(true);
+        float deviceScaleFactor = m_localFrame->host()->chromeClient().screenInfo().deviceScaleFactor;
 
-        float deviceScaleFactor = m_localFrame->host()->deviceScaleFactor();
         m_bounds.setWidth(m_bounds.width() * deviceScaleFactor);
         m_bounds.setHeight(m_bounds.height() * deviceScaleFactor);
         m_pictureBuilder = adoptPtr(new SkPictureBuilder(SkRect::MakeIWH(m_bounds.width(), m_bounds.height())));
@@ -606,7 +606,7 @@ double LocalFrame::devicePixelRatio() const
     if (!m_host)
         return 0;
 
-    double ratio = m_host->deviceScaleFactor();
+    double ratio = m_host->deviceScaleFactorDeprecated();
     ratio *= pageZoomFactor();
     return ratio;
 }

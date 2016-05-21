@@ -119,7 +119,7 @@ const Deprecation& FrameHost::deprecation() const
     return m_page->deprecation();
 }
 
-float FrameHost::deviceScaleFactor() const
+float FrameHost::deviceScaleFactorDeprecated() const
 {
     return m_page->deviceScaleFactor();
 }

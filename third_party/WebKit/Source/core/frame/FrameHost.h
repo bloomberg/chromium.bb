@@ -90,7 +90,12 @@ public:
     // Corresponds to pixel density of the device where this Page is
     // being displayed. In multi-monitor setups this can vary between pages.
     // This value does not account for Page zoom, use LocalFrame::devicePixelRatio instead.
-    float deviceScaleFactor() const;
+    // This is to be deprecated. Use this with caution.
+    // 1) If you need to scale the content per device scale factor, this is still valid.
+    //    In use-zoom-for-dsf mode, this is always 1, and will be remove when transition is complete.
+    // 2) If you want to compute the device related measure (such as device pixel height, or the scale factor for drag image),
+    //    use ChromeClient::screenInfo() instead.
+    float deviceScaleFactorDeprecated() const;
 
     RootScroller* rootScroller();
     const RootScroller* rootScroller() const;
