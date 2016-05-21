@@ -18,8 +18,6 @@
       'base/auth.cc',
       'base/auth.h',
       'base/completion_callback.h',
-      'base/connection_type_histograms.cc',
-      'base/connection_type_histograms.h',
       'base/escape.cc',
       'base/escape.h',
       'base/hash_value.cc',

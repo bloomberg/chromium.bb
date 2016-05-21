@@ -14,7 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "net/base/address_list.h"
-#include "net/base/connection_type_histograms.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/base/port_util.h"

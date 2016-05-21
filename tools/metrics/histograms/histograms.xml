@@ -25607,6 +25607,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.ConnectionTypeCount3" enum="ConnectionType">
+  <obsolete>
+    Removed May 2016.
+  </obsolete>
   <owner>davidben@chromium.org</owner>
   <summary>
     Each bucket is the number of successful connections of a particular type
@@ -26941,6 +26944,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.HadConnectionType3" enum="ConnectionType">
+  <obsolete>
+    Removed May 2016.
+  </obsolete>
   <owner>davidben@chromium.org</owner>
   <summary>
     Each bucket is a boolean (0 or 1) indicating whether the user has had a
@@ -66309,6 +66315,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="ConnectionType" type="int">
+  <obsolete>
+    Removed May 2016.
+  </obsolete>
   <summary>
     Connection type as defined in net/base/connection_type_histograms.h
   </summary>

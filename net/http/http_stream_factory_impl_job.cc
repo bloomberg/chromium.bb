@@ -24,7 +24,6 @@
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "net/base/connection_type_histograms.h"
 #include "net/base/port_util.h"
 #include "net/cert/cert_verifier.h"
 #include "net/http/bidirectional_stream_impl.h"
@@ -1270,14 +1269,6 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
   if (result < 0 && !ssl_started)
     return ReconsiderProxyAfterError(result);
   establishing_tunnel_ = false;
-
-  if (connection_->socket()) {
-    // We officially have a new connection.  Record the type.
-    if (!connection_->is_reused()) {
-      ConnectionType type = using_spdy_ ? CONNECTION_SPDY : CONNECTION_HTTP;
-      UpdateConnectionTypeHistograms(type);
-    }
-  }
 
   // Handle SSL errors below.
   if (using_ssl_) {
