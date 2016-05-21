@@ -377,6 +377,13 @@ void KeySystemsImpl::AddSupportedKeySystems(
     DCHECK(properties->GetDistinctiveIdentifierSupport() !=
            EmeFeatureSupport::INVALID);
 
+    if (!IsPotentiallySupportedKeySystem(properties->GetKeySystemName())) {
+      // If you encounter this path, see the comments for the function above.
+      DLOG(ERROR) << "Unsupported name '" << properties->GetKeySystemName()
+                  << "'. See code comments.";
+      continue;
+    }
+
     // Supporting persistent state is a prerequsite for supporting persistent
     // sessions.
     if (properties->GetPersistentStateSupport() ==
@@ -546,15 +553,6 @@ bool KeySystemsImpl::IsSupportedKeySystem(const std::string& key_system) const {
 
   if (!key_system_properties_map_.count(key_system))
     return false;
-
-  // TODO(ddorwin): Move this to where we add key systems when prefixed EME is
-  // removed (crbug.com/249976).
-  if (!IsPotentiallySupportedKeySystem(key_system)) {
-    // If you encounter this path, see the comments for the above function.
-    DLOG(ERROR) << "Unrecognized key system " << key_system
-                << ". See code comments.";
-    return false;
-  }
 
   return true;
 }
