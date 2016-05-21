@@ -3238,6 +3238,7 @@ void FrameView::setScrollOffset(const DoublePoint& offset, ScrollType scrollType
     if (LayoutViewItem layoutView = LayoutViewItem(document->layoutView())) {
         if (layoutView.usesCompositing())
             layoutView.compositor()->frameViewDidScroll();
+        layoutView.clearHitTestCache();
     }
 
     if (m_didScrollTimer.isActive())
@@ -3247,7 +3248,6 @@ void FrameView::setScrollOffset(const DoublePoint& offset, ScrollType scrollType
     if (AXObjectCache* cache = m_frame->document()->existingAXObjectCache())
         cache->handleScrollPositionChanged(this);
 
-    layoutView()->clearHitTestCache();
     frame().loader().saveScrollState();
     frame().loader().client()->didChangeScrollOffset();
 
