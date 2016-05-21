@@ -114,6 +114,8 @@ SkImageGenerator* DecodingImageGenerator::create(SkData* data)
     if (!decoder)
         return 0;
 
+    // Blink does not know Skia has already adopted |data|.
+    WTF::adopted(data);
     RefPtr<SegmentReader> segmentReader = SegmentReader::createFromSkData(data);
     decoder->setData(segmentReader.get(), true);
     if (!decoder->isSizeAvailable())
