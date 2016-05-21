@@ -63,9 +63,12 @@ Dst GetMaxConvertibleToFloat() {
 
 // Helper macros to wrap displaying the conversion types and line numbers.
 #define TEST_EXPECTED_VALIDITY(expected, actual)                           \
-  EXPECT_EQ(expected, CheckedNumeric<Dst>(actual).validity())              \
+  EXPECT_EQ(expected, CheckedNumeric<Dst>(actual).IsValid())               \
       << "Result test: Value " << +(actual).ValueUnsafe() << " as " << dst \
       << " on line " << line;
+
+#define TEST_EXPECTED_SUCCESS(actual) TEST_EXPECTED_VALIDITY(true, actual)
+#define TEST_EXPECTED_FAILURE(actual) TEST_EXPECTED_VALIDITY(false, actual)
 
 #define TEST_EXPECTED_VALUE(expected, actual)                                \
   EXPECT_EQ(static_cast<Dst>(expected),                                      \
@@ -82,43 +85,32 @@ static void TestSpecializedArithmetic(
                                 numeric_limits<Dst>::is_signed,
                             int>::type = 0) {
   typedef numeric_limits<Dst> DstLimits;
-  TEST_EXPECTED_VALIDITY(RANGE_OVERFLOW,
-                         -CheckedNumeric<Dst>(DstLimits::min()));
-  TEST_EXPECTED_VALIDITY(RANGE_OVERFLOW,
-                         CheckedNumeric<Dst>(DstLimits::min()).Abs());
+  TEST_EXPECTED_FAILURE(-CheckedNumeric<Dst>(DstLimits::min()));
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(DstLimits::min()).Abs());
   TEST_EXPECTED_VALUE(1, CheckedNumeric<Dst>(-1).Abs());
 
-  TEST_EXPECTED_VALIDITY(RANGE_VALID,
-                         CheckedNumeric<Dst>(DstLimits::max()) + -1);
-  TEST_EXPECTED_VALIDITY(RANGE_UNDERFLOW,
-                         CheckedNumeric<Dst>(DstLimits::min()) + -1);
-  TEST_EXPECTED_VALIDITY(
-      RANGE_UNDERFLOW,
-      CheckedNumeric<Dst>(-DstLimits::max()) + -DstLimits::max());
+  TEST_EXPECTED_SUCCESS(CheckedNumeric<Dst>(DstLimits::max()) + -1);
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(DstLimits::min()) + -1);
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(-DstLimits::max()) +
+                        -DstLimits::max());
 
-  TEST_EXPECTED_VALIDITY(RANGE_UNDERFLOW,
-                         CheckedNumeric<Dst>(DstLimits::min()) - 1);
-  TEST_EXPECTED_VALIDITY(RANGE_VALID,
-                         CheckedNumeric<Dst>(DstLimits::min()) - -1);
-  TEST_EXPECTED_VALIDITY(
-      RANGE_OVERFLOW,
-      CheckedNumeric<Dst>(DstLimits::max()) - -DstLimits::max());
-  TEST_EXPECTED_VALIDITY(
-      RANGE_UNDERFLOW,
-      CheckedNumeric<Dst>(-DstLimits::max()) - DstLimits::max());
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(DstLimits::min()) - 1);
+  TEST_EXPECTED_SUCCESS(CheckedNumeric<Dst>(DstLimits::min()) - -1);
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(DstLimits::max()) -
+                        -DstLimits::max());
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(-DstLimits::max()) -
+                        DstLimits::max());
 
-  TEST_EXPECTED_VALIDITY(RANGE_UNDERFLOW,
-                         CheckedNumeric<Dst>(DstLimits::min()) * 2);
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(DstLimits::min()) * 2);
 
-  TEST_EXPECTED_VALIDITY(RANGE_OVERFLOW,
-                         CheckedNumeric<Dst>(DstLimits::min()) / -1);
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(DstLimits::min()) / -1);
   TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(-1) / 2);
 
   // Modulus is legal only for integers.
   TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>() % 1);
   TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(1) % 1);
   TEST_EXPECTED_VALUE(-1, CheckedNumeric<Dst>(-1) % 2);
-  TEST_EXPECTED_VALIDITY(RANGE_INVALID, CheckedNumeric<Dst>(-1) % -2);
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(-1) % -2);
   TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(DstLimits::min()) % 2);
   TEST_EXPECTED_VALUE(1, CheckedNumeric<Dst>(DstLimits::max()) % 2);
   // Test all the different modulus combinations.
@@ -138,19 +130,14 @@ static void TestSpecializedArithmetic(
                                 !numeric_limits<Dst>::is_signed,
                             int>::type = 0) {
   typedef numeric_limits<Dst> DstLimits;
-  TEST_EXPECTED_VALIDITY(RANGE_VALID, -CheckedNumeric<Dst>(DstLimits::min()));
-  TEST_EXPECTED_VALIDITY(RANGE_VALID,
-                         CheckedNumeric<Dst>(DstLimits::min()).Abs());
-  TEST_EXPECTED_VALIDITY(RANGE_UNDERFLOW,
-                         CheckedNumeric<Dst>(DstLimits::min()) + -1);
-  TEST_EXPECTED_VALIDITY(RANGE_UNDERFLOW,
-                         CheckedNumeric<Dst>(DstLimits::min()) - 1);
+  TEST_EXPECTED_SUCCESS(-CheckedNumeric<Dst>(DstLimits::min()));
+  TEST_EXPECTED_SUCCESS(CheckedNumeric<Dst>(DstLimits::min()).Abs());
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(DstLimits::min()) + -1);
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(DstLimits::min()) - 1);
   TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(DstLimits::min()) * 2);
   TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(1) / 2);
-  TEST_EXPECTED_VALIDITY(RANGE_VALID,
-                         CheckedNumeric<Dst>(DstLimits::min()).UnsignedAbs());
-  TEST_EXPECTED_VALIDITY(
-      RANGE_VALID,
+  TEST_EXPECTED_SUCCESS(CheckedNumeric<Dst>(DstLimits::min()).UnsignedAbs());
+  TEST_EXPECTED_SUCCESS(
       CheckedNumeric<typename SignedIntegerForSize<Dst>::type>(
           std::numeric_limits<typename SignedIntegerForSize<Dst>::type>::min())
           .UnsignedAbs());
@@ -176,29 +163,22 @@ void TestSpecializedArithmetic(
     int line,
     typename std::enable_if<numeric_limits<Dst>::is_iec559, int>::type = 0) {
   typedef numeric_limits<Dst> DstLimits;
-  TEST_EXPECTED_VALIDITY(RANGE_VALID, -CheckedNumeric<Dst>(DstLimits::min()));
+  TEST_EXPECTED_SUCCESS(-CheckedNumeric<Dst>(DstLimits::min()));
 
-  TEST_EXPECTED_VALIDITY(RANGE_VALID,
-                         CheckedNumeric<Dst>(DstLimits::min()).Abs());
+  TEST_EXPECTED_SUCCESS(CheckedNumeric<Dst>(DstLimits::min()).Abs());
   TEST_EXPECTED_VALUE(1, CheckedNumeric<Dst>(-1).Abs());
 
-  TEST_EXPECTED_VALIDITY(RANGE_VALID,
-                         CheckedNumeric<Dst>(DstLimits::min()) + -1);
-  TEST_EXPECTED_VALIDITY(RANGE_VALID,
-                         CheckedNumeric<Dst>(DstLimits::max()) + 1);
-  TEST_EXPECTED_VALIDITY(
-      RANGE_UNDERFLOW,
-      CheckedNumeric<Dst>(-DstLimits::max()) + -DstLimits::max());
+  TEST_EXPECTED_SUCCESS(CheckedNumeric<Dst>(DstLimits::min()) + -1);
+  TEST_EXPECTED_SUCCESS(CheckedNumeric<Dst>(DstLimits::max()) + 1);
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(-DstLimits::max()) +
+                        -DstLimits::max());
 
-  TEST_EXPECTED_VALIDITY(
-      RANGE_OVERFLOW,
-      CheckedNumeric<Dst>(DstLimits::max()) - -DstLimits::max());
-  TEST_EXPECTED_VALIDITY(
-      RANGE_UNDERFLOW,
-      CheckedNumeric<Dst>(-DstLimits::max()) - DstLimits::max());
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(DstLimits::max()) -
+                        -DstLimits::max());
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(-DstLimits::max()) -
+                        DstLimits::max());
 
-  TEST_EXPECTED_VALIDITY(RANGE_VALID,
-                         CheckedNumeric<Dst>(DstLimits::min()) * 2);
+  TEST_EXPECTED_SUCCESS(CheckedNumeric<Dst>(DstLimits::min()) * 2);
 
   TEST_EXPECTED_VALUE(-0.5, CheckedNumeric<Dst>(-1.0) / 2);
   EXPECT_EQ(static_cast<Dst>(1.0), CheckedNumeric<Dst>(1.0).ValueFloating());
@@ -258,17 +238,15 @@ static void TestArithmetic(const char* dst, int line) {
   TEST_EXPECTED_VALUE(1, (CheckedNumeric<Dst>() + 1));
   TEST_EXPECTED_VALUE(2, (CheckedNumeric<Dst>(1) + 1));
   TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>(-1) + 1));
-  TEST_EXPECTED_VALIDITY(RANGE_VALID,
-                         CheckedNumeric<Dst>(DstLimits::min()) + 1);
-  TEST_EXPECTED_VALIDITY(
-      RANGE_OVERFLOW, CheckedNumeric<Dst>(DstLimits::max()) + DstLimits::max());
+  TEST_EXPECTED_SUCCESS(CheckedNumeric<Dst>(DstLimits::min()) + 1);
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(DstLimits::max()) +
+                        DstLimits::max());
 
   // Generic subtraction.
   TEST_EXPECTED_VALUE(-1, (CheckedNumeric<Dst>() - 1));
   TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>(1) - 1));
   TEST_EXPECTED_VALUE(-2, (CheckedNumeric<Dst>(-1) - 1));
-  TEST_EXPECTED_VALIDITY(RANGE_VALID,
-                         CheckedNumeric<Dst>(DstLimits::max()) - 1);
+  TEST_EXPECTED_SUCCESS(CheckedNumeric<Dst>(DstLimits::max()) - 1);
 
   // Generic multiplication.
   TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>() * 1));
@@ -277,8 +255,8 @@ static void TestArithmetic(const char* dst, int line) {
   TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>(0) * 0));
   TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>(-1) * 0));
   TEST_EXPECTED_VALUE(0, (CheckedNumeric<Dst>(0) * -1));
-  TEST_EXPECTED_VALIDITY(
-      RANGE_OVERFLOW, CheckedNumeric<Dst>(DstLimits::max()) * DstLimits::max());
+  TEST_EXPECTED_FAILURE(CheckedNumeric<Dst>(DstLimits::max()) *
+                        DstLimits::max());
 
   // Generic division.
   TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>() / 1);
@@ -349,18 +327,18 @@ struct TestNumericConversion<Dst, Src, SIGN_PRESERVING_VALUE_PRESERVING> {
                   "Comparison must be sign preserving and value preserving");
 
     const CheckedNumeric<Dst> checked_dst = SrcLimits::max();
-    TEST_EXPECTED_VALIDITY(RANGE_VALID, checked_dst);
+    TEST_EXPECTED_SUCCESS(checked_dst);
     if (MaxExponent<Dst>::value > MaxExponent<Src>::value) {
       if (MaxExponent<Dst>::value >= MaxExponent<Src>::value * 2 - 1) {
         // At least twice larger type.
-        TEST_EXPECTED_VALIDITY(RANGE_VALID, SrcLimits::max() * checked_dst);
+        TEST_EXPECTED_SUCCESS(SrcLimits::max() * checked_dst);
 
       } else {  // Larger, but not at least twice as large.
-        TEST_EXPECTED_VALIDITY(RANGE_OVERFLOW, SrcLimits::max() * checked_dst);
-        TEST_EXPECTED_VALIDITY(RANGE_VALID, checked_dst + 1);
+        TEST_EXPECTED_FAILURE(SrcLimits::max() * checked_dst);
+        TEST_EXPECTED_SUCCESS(checked_dst + 1);
       }
     } else {  // Same width type.
-      TEST_EXPECTED_VALIDITY(RANGE_OVERFLOW, checked_dst + 1);
+      TEST_EXPECTED_FAILURE(checked_dst + 1);
     }
 
     TEST_EXPECTED_RANGE(RANGE_VALID, SrcLimits::max());
@@ -389,9 +367,9 @@ struct TestNumericConversion<Dst, Src, SIGN_PRESERVING_NARROW> {
                   "Destination must be narrower than source");
 
     const CheckedNumeric<Dst> checked_dst;
-    TEST_EXPECTED_VALIDITY(RANGE_OVERFLOW, checked_dst + SrcLimits::max());
+    TEST_EXPECTED_FAILURE(checked_dst + SrcLimits::max());
     TEST_EXPECTED_VALUE(1, checked_dst + static_cast<Src>(1));
-    TEST_EXPECTED_VALIDITY(RANGE_UNDERFLOW, checked_dst - SrcLimits::max());
+    TEST_EXPECTED_FAILURE(checked_dst - SrcLimits::max());
 
     TEST_EXPECTED_RANGE(RANGE_OVERFLOW, SrcLimits::max());
     TEST_EXPECTED_RANGE(RANGE_VALID, static_cast<Src>(1));
@@ -418,7 +396,7 @@ struct TestNumericConversion<Dst, Src, SIGN_PRESERVING_NARROW> {
       TEST_EXPECTED_RANGE(RANGE_UNDERFLOW, SrcLimits::min());
       TEST_EXPECTED_RANGE(RANGE_VALID, static_cast<Src>(-1));
     } else {
-      TEST_EXPECTED_VALIDITY(RANGE_INVALID, checked_dst - static_cast<Src>(1));
+      TEST_EXPECTED_FAILURE(checked_dst - static_cast<Src>(1));
       TEST_EXPECTED_RANGE(RANGE_VALID, SrcLimits::min());
     }
   }
@@ -436,8 +414,8 @@ struct TestNumericConversion<Dst, Src, SIGN_TO_UNSIGN_WIDEN_OR_EQUAL> {
 
     const CheckedNumeric<Dst> checked_dst;
     TEST_EXPECTED_VALUE(SrcLimits::max(), checked_dst + SrcLimits::max());
-    TEST_EXPECTED_VALIDITY(RANGE_UNDERFLOW, checked_dst + static_cast<Src>(-1));
-    TEST_EXPECTED_VALIDITY(RANGE_UNDERFLOW, checked_dst + -SrcLimits::max());
+    TEST_EXPECTED_FAILURE(checked_dst + static_cast<Src>(-1));
+    TEST_EXPECTED_FAILURE(checked_dst + -SrcLimits::max());
 
     TEST_EXPECTED_RANGE(RANGE_UNDERFLOW, SrcLimits::min());
     TEST_EXPECTED_RANGE(RANGE_VALID, SrcLimits::max());
@@ -459,9 +437,9 @@ struct TestNumericConversion<Dst, Src, SIGN_TO_UNSIGN_NARROW> {
 
     const CheckedNumeric<Dst> checked_dst;
     TEST_EXPECTED_VALUE(1, checked_dst + static_cast<Src>(1));
-    TEST_EXPECTED_VALIDITY(RANGE_OVERFLOW, checked_dst + SrcLimits::max());
-    TEST_EXPECTED_VALIDITY(RANGE_UNDERFLOW, checked_dst + static_cast<Src>(-1));
-    TEST_EXPECTED_VALIDITY(RANGE_UNDERFLOW, checked_dst + -SrcLimits::max());
+    TEST_EXPECTED_FAILURE(checked_dst + SrcLimits::max());
+    TEST_EXPECTED_FAILURE(checked_dst + static_cast<Src>(-1));
+    TEST_EXPECTED_FAILURE(checked_dst + -SrcLimits::max());
 
     TEST_EXPECTED_RANGE(RANGE_OVERFLOW, SrcLimits::max());
     TEST_EXPECTED_RANGE(RANGE_VALID, static_cast<Src>(1));
@@ -501,7 +479,7 @@ struct TestNumericConversion<Dst, Src, UNSIGN_TO_SIGN_NARROW_OR_EQUAL> {
 
     const CheckedNumeric<Dst> checked_dst;
     TEST_EXPECTED_VALUE(1, checked_dst + static_cast<Src>(1));
-    TEST_EXPECTED_VALIDITY(RANGE_OVERFLOW, checked_dst + SrcLimits::max());
+    TEST_EXPECTED_FAILURE(checked_dst + SrcLimits::max());
     TEST_EXPECTED_VALUE(SrcLimits::min(), checked_dst + SrcLimits::min());
 
     TEST_EXPECTED_RANGE(RANGE_VALID, SrcLimits::min());
