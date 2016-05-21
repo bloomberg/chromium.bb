@@ -50,7 +50,6 @@ class AXObjectCacheImpl;
 class Element;
 class FrameView;
 class IntPoint;
-class NameSource;
 class Node;
 class LayoutObject;
 class ScrollableArea;
@@ -468,6 +467,14 @@ public:
         visitor->trace(relatedObjects);
     }
 };
+
+} // namespace blink
+
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::IgnoredReason);
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::NameSource);
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::DescriptionSource);
+
+namespace blink {
 
 class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 public:
@@ -975,9 +982,5 @@ private:
     DEFINE_TYPE_CASTS(thisType, AXObject, object, object->predicate, object.predicate)
 
 } // namespace blink
-
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::IgnoredReason);
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::NameSource);
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::DescriptionSource);
 
 #endif // AXObject_h
