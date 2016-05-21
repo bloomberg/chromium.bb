@@ -1,0 +1,43 @@
+Tests fetch network filters
+
+filterText: -.css
+isRegex: false
+Found results: 2
+
+filterText: -.png
+isRegex: false
+Found results: 1
+
+filterText: css
+isRegex: false
+Found results: 1
+
+filterText: 
+isRegex: false
+Found results: 3
+
+filterText: .*
+isRegex: true
+Found results: 3
+
+filterText: .*\..*
+isRegex: true
+Found results: 3
+
+filterText: .*\.png
+isRegex: true
+Found results: 2
+
+filterText: NOTHINGTOMATCH
+isRegex: true
+Found results: 0
+
+filterText: 
+isRegex: true
+Found results: 3
+
+filterText: png
+isRegex: false
+Found results: 2
+
+

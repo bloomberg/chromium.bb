@@ -1,0 +1,91 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
+<script>
+function test()
+{
+    InspectorTest.recordNetwork();
+
+    var totalResourceCount = 3;
+    InspectorTest.makeFetch("resources/style.css", {}, ensureAllResources);
+    InspectorTest.makeFetch("resources/abe.png", {}, ensureAllResources);
+    InspectorTest.makeFetch("resources/abe.png", {}, ensureAllResources);
+    var filterChecks = [{
+        filterText: "-.css",
+        isRegex: false
+    }, {
+        filterText: "-.png",
+        isRegex: false
+    }, {
+        filterText: "css",
+        isRegex: false
+    }, {
+        filterText: "",
+        isRegex: false
+    }, {
+        filterText: ".*",
+        isRegex: true
+    }, {
+        filterText: ".*\\..*",
+        isRegex: true
+    }, {
+        filterText: ".*\\.png",
+        isRegex: true
+    }, {
+        filterText: "NOTHINGTOMATCH",
+        isRegex: true
+    }, {
+        filterText: "",
+        isRegex: true
+    }, {
+        filterText: "png",
+        isRegex: false
+    }];
+
+    var resourceCount = 0;
+    function ensureAllResources()
+    {
+        if (++resourceCount >= totalResourceCount)
+            checkFilters();
+    }
+
+    function checkFilters()
+    {
+        for (var filterObj of filterChecks) {
+            InspectorTest.addResult("filterText: " + filterObj.filterText);
+            InspectorTest.addResult("isRegex: " + filterObj.isRegex);
+
+            setNetworkLogFilter(filterObj.filterText, filterObj.isRegex);
+
+            var nodes = WebInspector.panels.network._networkLogView._nodesByRequestId.valuesArray();
+            var foundNodesCount = 0;
+            for (var i = 0; i < nodes.length; i++) {
+                if (!nodes[i][WebInspector.NetworkLogView._isFilteredOutSymbol])
+                    foundNodesCount++;
+            }
+
+            InspectorTest.addResult("Found results: " + foundNodesCount);
+            InspectorTest.addResult("");
+        }
+        InspectorTest.completeTest();
+    }
+
+    /**
+     * @param {string} value
+     * @param {RegExp} isRegex
+     */
+    function setNetworkLogFilter(value, isRegex)
+    {
+        WebInspector.panels.network._networkLogView._textFilterUI._filterInputElement.value = value;
+        WebInspector.panels.network._networkLogView._textFilterUI._regexCheckBox.checked = isRegex;
+        WebInspector.panels.network._networkLogView._textFilterUI._valueChanged();
+        WebInspector.panels.network._networkLogView._filterChanged(null); // event not used in this method, so passing null
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests fetch network filters</p>
+</body>
+</html>
