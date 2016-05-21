@@ -64,6 +64,7 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
                                 variation_params,
                                 allow_local_host_requests_for_tests,
                                 allow_smaller_responses_for_tests),
+        current_network_simulated_(false),
         url_rtt_set_(false),
         downlink_throughput_kbps_set_(false) {
     // Set up embedded test server.
@@ -85,7 +86,8 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   // Overrides the current network type and id.
   // Notifies network quality estimator of change in connection.
   void SimulateNetworkChangeTo(NetworkChangeNotifier::ConnectionType type,
-                               std::string network_id) {
+                               const std::string& network_id) {
+    current_network_simulated_ = true;
     current_network_type_ = type;
     current_network_id_ = network_id;
     OnConnectionTypeChanged(type);
@@ -137,9 +139,18 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   using NetworkQualityEstimator::OnConnectionTypeChanged;
 
  private:
+  // True if the network type and network id are currently simulated. This
+  // ensures that the correctness of the test does not depend on the
+  // actual network type of the device on which the test is running.
+  bool current_network_simulated_;
+
   // NetworkQualityEstimator implementation that returns the overridden network
   // id (instead of invoking platform APIs).
   NetworkQualityEstimator::NetworkID GetCurrentNetworkID() const override {
+    // GetCurrentNetworkID should be called only if the network type is
+    // currently simulated.
+    EXPECT_TRUE(current_network_simulated_);
+
     return NetworkQualityEstimator::NetworkID(current_network_type_,
                                               current_network_id_);
   }
@@ -433,6 +444,11 @@ TEST(NetworkQualityEstimatorTest, ObtainThresholdsNone) {
 
   TestNetworkQualityEstimator estimator(variation_params);
 
+  // Simulate the connection type as Wi-Fi so that GetEffectiveConnectionType
+  // does not return Offline if the device is offline.
+  estimator.SimulateNetworkChangeTo(NetworkChangeNotifier::CONNECTION_WIFI,
+                                    "test");
+
   const struct {
     int32_t rtt_msec;
     NetworkQualityEstimator::EffectiveConnectionType expected_conn_type;
@@ -444,6 +460,31 @@ TEST(NetworkQualityEstimatorTest, ObtainThresholdsNone) {
   for (const auto& test : tests) {
     estimator.set_url_rtt(base::TimeDelta::FromMilliseconds(test.rtt_msec));
     EXPECT_EQ(test.expected_conn_type, estimator.GetEffectiveConnectionType());
+  }
+}
+
+// Tests that |GetEffectiveConnectionType| returns
+// EFFECTIVE_CONNECTION_TYPE_OFFLINE when the device is currently offline.
+TEST(NetworkQualityEstimatorTest, Offline) {
+  std::map<std::string, std::string> variation_params;
+  TestNetworkQualityEstimator estimator(variation_params);
+
+  const struct {
+    NetworkChangeNotifier::ConnectionType connection_type;
+    NetworkQualityEstimator::EffectiveConnectionType expected_connection_type;
+  } tests[] = {
+      {NetworkChangeNotifier::CONNECTION_2G,
+       NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_UNKNOWN},
+      {NetworkChangeNotifier::CONNECTION_NONE,
+       NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_OFFLINE},
+      {NetworkChangeNotifier::CONNECTION_3G,
+       NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_UNKNOWN},
+  };
+
+  for (const auto& test : tests) {
+    estimator.SimulateNetworkChangeTo(test.connection_type, "test");
+    EXPECT_EQ(test.expected_connection_type,
+              estimator.GetEffectiveConnectionType());
   }
 }
 
@@ -460,6 +501,11 @@ TEST(NetworkQualityEstimatorTest, ObtainThresholdsOnlyRTT) {
   variation_params["Broadband.ThresholdMedianURLRTTMsec"] = "100";
 
   TestNetworkQualityEstimator estimator(variation_params);
+
+  // Simulate the connection type as Wi-Fi so that GetEffectiveConnectionType
+  // does not return Offline if the device is offline.
+  estimator.SimulateNetworkChangeTo(NetworkChangeNotifier::CONNECTION_WIFI,
+                                    "test");
 
   const struct {
     int32_t rtt_msec;
@@ -506,6 +552,11 @@ TEST(NetworkQualityEstimatorTest, ObtainThresholdsRTTandThroughput) {
   variation_params["Broadband.ThresholdMedianKbps"] = "2000";
 
   TestNetworkQualityEstimator estimator(variation_params);
+
+  // Simulate the connection type as Wi-Fi so that GetEffectiveConnectionType
+  // does not return Offline if the device is offline.
+  estimator.SimulateNetworkChangeTo(NetworkChangeNotifier::CONNECTION_WIFI,
+                                    "test");
 
   const struct {
     int32_t rtt_msec;

@@ -692,6 +692,11 @@ NetworkQualityEstimator::EffectiveConnectionType
 NetworkQualityEstimator::GetEffectiveConnectionType() const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  // If the device is currently offline, then return
+  // EFFECTIVE_CONNECTION_TYPE_OFFLINE.
+  if (GetCurrentNetworkID().type == NetworkChangeNotifier::CONNECTION_NONE)
+    return EFFECTIVE_CONNECTION_TYPE_OFFLINE;
+
   base::TimeDelta url_request_rtt = nqe::internal::InvalidRTT();
   if (!GetURLRequestRTTEstimate(&url_request_rtt))
     url_request_rtt = nqe::internal::InvalidRTT();
