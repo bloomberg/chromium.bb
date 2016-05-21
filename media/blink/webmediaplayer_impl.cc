@@ -718,9 +718,10 @@ void WebMediaPlayerImpl::paint(blink::WebCanvas* canvas,
   if (video_frame.get() && video_frame->HasTextures()) {
     if (!context_3d_cb_.is_null())
       context_3d = context_3d_cb_.Run();
-    // GPU Process crashed.
     if (!context_3d.gl)
-      return;
+      return;  // Unable to get/create a shared main thread context.
+    if (!context_3d.gr_context)
+      return;  // The context has been lost since and can't setup a GrContext.
   }
   skcanvas_video_renderer_.Paint(video_frame, canvas, gfx::RectF(gfx_rect),
                                  alpha, mode, pipeline_metadata_.video_rotation,
