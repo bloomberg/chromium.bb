@@ -9,6 +9,9 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMException.h"
 #include "bindings/core/v8/V8DOMTokenList.h"
+#include "bindings/core/v8/V8Event.h"
+#include "bindings/core/v8/V8EventListener.h"
+#include "bindings/core/v8/V8EventListenerList.h"
 #include "bindings/core/v8/V8HTMLAllCollection.h"
 #include "bindings/core/v8/V8HTMLCollection.h"
 #include "bindings/core/v8/V8Node.h"
@@ -115,6 +118,150 @@ bool ThreadDebugger::isInspectableHeapObject(v8::Local<v8::Object> object)
     if (!wrapper.IsEmpty() && wrapper->IsUndefined())
         return false;
     return true;
+}
+
+static void returnDataCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    info.GetReturnValue().Set(info.Data());
+}
+
+void ThreadDebugger::createFunctionProperty(v8::Local<v8::Context> context, v8::Local<v8::Object> object, const char* name, v8::FunctionCallback callback, const char* description)
+{
+    v8::Local<v8::String> funcName = v8String(context->GetIsolate(), name);
+    v8::Local<v8::Function> func;
+    if (!v8::Function::New(context, callback, v8::External::New(context->GetIsolate(), this)).ToLocal(&func))
+        return;
+    func->SetName(funcName);
+    v8::Local<v8::String> returnValue = v8String(context->GetIsolate(), description);
+    v8::Local<v8::Function> toStringFunction;
+    if (v8::Function::New(context, returnDataCallback, returnValue).ToLocal(&toStringFunction))
+        func->Set(v8String(context->GetIsolate(), "toString"), toStringFunction);
+    if (!object->Set(context, funcName, func).FromMaybe(false))
+        return;
+}
+
+bool ThreadDebugger::isCommandLineAPIMethod(const String& name)
+{
+    DEFINE_STATIC_LOCAL(HashSet<String>, methods, ());
+    if (methods.size() == 0) {
+        const char* members[] = { "monitorEvents", "unmonitorEvents" };
+        for (size_t i = 0; i < WTF_ARRAY_LENGTH(members); ++i)
+            methods.add(members[i]);
+    }
+    return methods.find(name) != methods.end() || V8Debugger::isCommandLineAPIMethod(name);
+}
+
+void ThreadDebugger::installAdditionalCommandLineAPI(v8::Local<v8::Context> context, v8::Local<v8::Object> object)
+{
+    createFunctionProperty(context, object, "monitorEvents", ThreadDebugger::monitorEventsCallback, "function monitorEvents(object, [types]) { [Command Line API] }");
+    createFunctionProperty(context, object, "unmonitorEvents", ThreadDebugger::unmonitorEventsCallback, "function unmonitorEvents(object, [types]) { [Command Line API] }");
+}
+
+static Vector<String> normalizeEventTypes(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    Vector<String> types;
+    if (info.Length() > 1 && info[1]->IsString())
+        types.append(toCoreString(info[1].As<v8::String>()));
+    if (info.Length() > 1 && info[1]->IsArray()) {
+        v8::Local<v8::Array> typesArray = v8::Local<v8::Array>::Cast(info[1]);
+        for (size_t i = 0; i < typesArray->Length(); ++i) {
+            v8::Local<v8::Value> typeValue;
+            if (!typesArray->Get(info.GetIsolate()->GetCurrentContext(), i).ToLocal(&typeValue) || !typeValue->IsString())
+                continue;
+            types.append(toCoreString(v8::Local<v8::String>::Cast(typeValue)));
+        }
+    }
+    if (info.Length() == 1)
+        types.appendVector(Vector<String>({ "mouse", "key", "touch", "pointer", "control", "load", "unload", "abort", "error", "select", "input", "change", "submit", "reset", "focus", "blur", "resize", "scroll", "search", "devicemotion", "deviceorientation" }));
+
+    Vector<String> outputTypes;
+    for (size_t i = 0; i < types.size(); ++i) {
+        if (types[i] == "mouse")
+            outputTypes.appendVector(Vector<String>({ "click", "dblclick", "mousedown", "mouseeenter", "mouseleave", "mousemove", "mouseout", "mouseover", "mouseup", "mouseleave", "mousewheel" }));
+        else if (types[i] == "key")
+            outputTypes.appendVector(Vector<String>({ "keydown", "keyup", "keypress", "textInput" }));
+        else if (types[i] == "touch")
+            outputTypes.appendVector(Vector<String>({ "touchstart", "touchmove", "touchend", "touchcancel" }));
+        else if (types[i] == "pointer")
+            outputTypes.appendVector(Vector<String>({ "pointerover", "pointerout", "pointerenter", "pointerleave", "pointerdown", "pointerup", "pointermove", "pointercancel", "gotpointercapture", "lostpointercapture" }));
+        else if (types[i] == "control")
+            outputTypes.appendVector(Vector<String>({ "resize", "scroll", "zoom", "focus", "blur", "select", "input", "change", "submit", "reset" }));
+        else
+            outputTypes.append(types[i]);
+    }
+    return outputTypes;
+}
+
+void ThreadDebugger::logCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (info.Length() < 1)
+        return;
+    ThreadDebugger* debugger = static_cast<ThreadDebugger*>(v8::Local<v8::External>::Cast(info.Data())->Value());
+    DCHECK(debugger);
+    Event* event = V8Event::toImplWithTypeCheck(info.GetIsolate(), info[0]);
+    if (!event)
+        return;
+
+    v8::Local<v8::Context> context = info.GetIsolate()->GetCurrentContext();
+    ScriptState* scriptState = ScriptState::from(context);
+    DCHECK(scriptState->contextIsValid());
+    Vector<ScriptValue> arguments = Vector<ScriptValue>({
+        ScriptValue(scriptState, v8String(info.GetIsolate(), event->type())),
+        ScriptValue(scriptState, info[0])
+    });
+
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, LogMessageLevel, event->type());
+    consoleMessage->setType(LogMessageType);
+    consoleMessage->setScriptState(scriptState);
+    consoleMessage->setScriptArguments(ScriptArguments::create(scriptState, arguments));
+    debugger->reportMessageToConsole(context, consoleMessage);
+}
+
+v8::Local<v8::Function> ThreadDebugger::eventLogFunction()
+{
+    if (m_eventLogFunction.IsEmpty())
+        m_eventLogFunction.Reset(m_isolate, v8::Function::New(m_isolate, logCallback, v8::External::New(m_isolate, this)));
+    return m_eventLogFunction.Get(m_isolate);
+}
+
+static EventTarget* firstArgumentAsEventTarget(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (info.Length() < 1)
+        return nullptr;
+    if (EventTarget* target = V8EventTarget::toImplWithTypeCheck(info.GetIsolate(), info[0]))
+        return target;
+    return toDOMWindow(info.GetIsolate(), info[0]);
+}
+
+void ThreadDebugger::setMonitorEventsCallback(const v8::FunctionCallbackInfo<v8::Value>& info, bool enabled)
+{
+    EventTarget* eventTarget = firstArgumentAsEventTarget(info);
+    if (!eventTarget)
+        return;
+    Vector<String> types = normalizeEventTypes(info);
+    ThreadDebugger* debugger = static_cast<ThreadDebugger*>(v8::Local<v8::External>::Cast(info.Data())->Value());
+    DCHECK(debugger);
+    EventListener* eventListener = V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), debugger->eventLogFunction(), false, enabled ? ListenerFindOrCreate : ListenerFindOnly);
+    if (!eventListener)
+        return;
+    for (size_t i = 0; i < types.size(); ++i) {
+        if (enabled)
+            eventTarget->addEventListener(AtomicString(types[i]), eventListener, false);
+        else
+            eventTarget->removeEventListener(AtomicString(types[i]), eventListener, false);
+    }
+}
+
+// static
+void ThreadDebugger::monitorEventsCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    setMonitorEventsCallback(info, true);
+}
+
+// static
+void ThreadDebugger::unmonitorEventsCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    setMonitorEventsCallback(info, false);
 }
 
 void ThreadDebugger::reportMessageToConsole(v8::Local<v8::Context> context, MessageType type, MessageLevel level, const String16& message, const v8::FunctionCallbackInfo<v8::Value>* arguments, unsigned skipArgumentCount)

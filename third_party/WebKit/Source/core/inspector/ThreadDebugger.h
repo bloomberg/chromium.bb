@@ -40,7 +40,8 @@ public:
     bool isExecutionAllowed() override;
     double currentTimeMS() override;
     bool isInspectableHeapObject(v8::Local<v8::Object>) override;
-    void installAdditionalCommandLineAPI(v8::Local<v8::Context>, v8::Local<v8::Object>) override { }
+    static bool isCommandLineAPIMethod(const String& name);
+    void installAdditionalCommandLineAPI(v8::Local<v8::Context>, v8::Local<v8::Object>) override;
     void reportMessageToConsole(v8::Local<v8::Context>, MessageType, MessageLevel, const String16& message, const v8::FunctionCallbackInfo<v8::Value>* arguments, unsigned skipArgumentCount) final;
     void consoleTime(const String16& title) override;
     void consoleTimeEnd(const String16& title) override;
@@ -51,15 +52,26 @@ public:
     V8Debugger* debugger() const { return m_debugger.get(); }
     virtual bool isWorker() { return true; }
 protected:
+    void createFunctionProperty(v8::Local<v8::Context>, v8::Local<v8::Object>, const char* name, v8::FunctionCallback, const char* description);
     virtual void reportMessageToConsole(v8::Local<v8::Context>, ConsoleMessage*) = 0;
     void onTimer(Timer<ThreadDebugger>*);
 
     v8::Isolate* m_isolate;
     OwnPtr<V8Debugger> m_debugger;
+
+private:
+    v8::Local<v8::Function> eventLogFunction();
+
+    static void setMonitorEventsCallback(const v8::FunctionCallbackInfo<v8::Value>&, bool enabled);
+    static void monitorEventsCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+    static void unmonitorEventsCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+    static void logCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+
     Vector<OwnPtr<Timer<ThreadDebugger>>> m_timers;
     Vector<V8DebuggerClient::TimerCallback> m_timerCallbacks;
     Vector<void*> m_timerData;
     OwnPtr<UserGestureIndicator> m_userGestureIndicator;
+    v8::Global<v8::Function> m_eventLogFunction;
 };
 
 } // namespace blink

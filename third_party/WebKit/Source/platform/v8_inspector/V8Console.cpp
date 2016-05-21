@@ -712,9 +712,8 @@ bool V8Debugger::isCommandLineAPIMethod(const String16& name)
 {
     DEFINE_STATIC_LOCAL(protocol::HashSet<String16>, methods, ());
     if (methods.size() == 0) {
-        const char* members[] = { "dir", "dirxml", "keys", "values", "profile", "profileEnd",
-            "monitorEvents", "unmonitorEvents", "inspect", "copy", "clear", "getEventListeners",
-            "debug", "undebug", "monitor", "unmonitor", "table" };
+        const char* members[] = { "dir", "dirxml", "keys", "values", "profile", "profileEnd", "inspect",
+            "copy", "clear", "getEventListeners", "debug", "undebug", "monitor", "unmonitor", "table" };
         for (size_t i = 0; i < WTF_ARRAY_LENGTH(members); ++i)
             methods.add(members[i]);
     }

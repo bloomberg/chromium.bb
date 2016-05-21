@@ -249,31 +249,12 @@ bool MainThreadDebugger::isCommandLineAPIMethod(const String& name)
         for (size_t i = 0; i < WTF_ARRAY_LENGTH(members); ++i)
             methods.add(members[i]);
     }
-    return methods.find(name) != methods.end() || V8Debugger::isCommandLineAPIMethod(name);
-}
-
-static void returnDataCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    info.GetReturnValue().Set(info.Data());
-}
-
-static void createFunctionProperty(v8::Local<v8::Context> context, v8::Local<v8::Object> object, const char* name, v8::FunctionCallback callback, const char* description)
-{
-    v8::Local<v8::String> funcName = v8String(context->GetIsolate(), name);
-    v8::Local<v8::Function> func;
-    if (!v8::Function::New(context, callback).ToLocal(&func))
-        return;
-    func->SetName(funcName);
-    v8::Local<v8::String> returnValue = v8String(context->GetIsolate(), description);
-    v8::Local<v8::Function> toStringFunction;
-    if (v8::Function::New(context, returnDataCallback, returnValue).ToLocal(&toStringFunction))
-        func->Set(v8String(context->GetIsolate(), "toString"), toStringFunction);
-    if (!object->Set(context, funcName, func).FromMaybe(false))
-        return;
+    return methods.find(name) != methods.end() || ThreadDebugger::isCommandLineAPIMethod(name);
 }
 
 void MainThreadDebugger::installAdditionalCommandLineAPI(v8::Local<v8::Context> context, v8::Local<v8::Object> object)
 {
+    ThreadDebugger::installAdditionalCommandLineAPI(context, object);
     createFunctionProperty(context, object, "$", MainThreadDebugger::querySelectorCallback, "function $(selector, [startNode]) { [Command Line API] }");
     createFunctionProperty(context, object, "$$", MainThreadDebugger::querySelectorAllCallback, "function $$(selector, [startNode]) { [Command Line API] }");
     createFunctionProperty(context, object, "$x", MainThreadDebugger::xpathSelectorCallback, "function $x(xpath, [startNode]) { [Command Line API] }");

@@ -527,17 +527,7 @@ InjectedScript.prototype = {
     installCommandLineAPI: function(nativeCommandLineAPI)
     {
         // NOTE: This list contains only not native Command Line API methods. For full list: V8Console.
-        // NOTE: Argument names of these methods will be printed in the console, so use pretty names!
-        var members = [ "monitorEvents", "unmonitorEvents", "getEventListeners" ];
-        for (var member of members)
-            nativeCommandLineAPI[member] = CommandLineAPIImpl[member];
-        var functionToStringMap = new Map([
-            ["monitorEvents",   "function monitorEvents(object, [types]) { [Command Line API] }"],
-            ["unmonitorEvents", "function unmonitorEvents(object, [types]) { [Command Line API] }"],
-            ["getEventListeners", "function getEventListeners(node) { [Command Line API] }"]
-        ]);
-        for (let entry of functionToStringMap)
-            nativeCommandLineAPI[entry[0]].toString = (() => entry[1]);
+        nativeCommandLineAPI["getEventListeners"] = CommandLineAPIImpl["getEventListeners"];
         return nativeCommandLineAPI;
     },
 
@@ -1030,34 +1020,6 @@ InjectedScript.RemoteObject.prototype = {
 var CommandLineAPIImpl = { __proto__: null }
 
 /**
- * @param {!Object} object
- * @param {!Array.<string>|string=} opt_types
- */
-CommandLineAPIImpl.monitorEvents = function(object, opt_types)
-{
-    if (!object || !object.addEventListener || !object.removeEventListener)
-        return;
-    var types = CommandLineAPIImpl._normalizeEventTypes(opt_types);
-    for (var i = 0; i < types.length; ++i) {
-        object.removeEventListener(types[i], CommandLineAPIImpl._logEvent, false);
-        object.addEventListener(types[i], CommandLineAPIImpl._logEvent, false);
-    }
-}
-
-/**
- * @param {!Object} object
- * @param {!Array.<string>|string=} opt_types
- */
-CommandLineAPIImpl.unmonitorEvents = function(object, opt_types)
-{
-    if (!object || !object.addEventListener || !object.removeEventListener)
-        return;
-    var types = CommandLineAPIImpl._normalizeEventTypes(opt_types);
-    for (var i = 0; i < types.length; ++i)
-        object.removeEventListener(types[i], CommandLineAPIImpl._logEvent, false);
-}
-
-/**
  * @param {!Node} node
  * @return {!Object|undefined}
  */
@@ -1105,42 +1067,7 @@ CommandLineAPIImpl.getEventListeners = function(node)
     return result;
 }
 
-/**
- * @param {!Array.<string>|string=} types
- * @return {!Array.<string>}
- */
-CommandLineAPIImpl._normalizeEventTypes = function(types)
-{
-    if (typeof types === "undefined")
-        types = ["mouse", "key", "touch", "pointer", "control", "load", "unload", "abort", "error", "select", "input", "change", "submit", "reset", "focus", "blur", "resize", "scroll", "search", "devicemotion", "deviceorientation"];
-    else if (typeof types === "string")
-        types = [types];
-
-    var result = [];
-    for (var i = 0; i < types.length; ++i) {
-        if (types[i] === "mouse")
-            push(result, "click", "dblclick", "mousedown", "mouseeenter", "mouseleave", "mousemove", "mouseout", "mouseover", "mouseup", "mouseleave", "mousewheel");
-        else if (types[i] === "key")
-            push(result, "keydown", "keyup", "keypress", "textInput");
-        else if (types[i] === "touch")
-            push(result, "touchstart", "touchmove", "touchend", "touchcancel");
-        else if (types[i] === "pointer")
-            push(result, "pointerover", "pointerout", "pointerenter", "pointerleave", "pointerdown", "pointerup", "pointermove", "pointercancel", "gotpointercapture", "lostpointercapture");
-        else if (types[i] === "control")
-            push(result, "resize", "scroll", "zoom", "focus", "blur", "select", "input", "change", "submit", "reset");
-        else
-            push(result, types[i]);
-    }
-    return result;
-}
-
-/**
- * @param {!Event} event
- */
-CommandLineAPIImpl._logEvent = function(event)
-{
-    inspectedGlobalObject.console.log(event.type, event);
-}
+CommandLineAPIImpl.getEventListeners.toString = (() => "function getEventListeners(node) { [Command Line API] }");
 
 return injectedScript;
 })
