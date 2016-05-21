@@ -130,7 +130,10 @@ void CustomElementsRegistry::define(ScriptState* scriptState,
 
     Id id = m_definitions.size();
     v8::Local<v8::Value> idValue = v8::Integer::NewFromUnsigned(isolate, id);
-    m_definitions.append(new CustomElementDefinition(this, id, name));
+    m_definitions.append(new CustomElementDefinition(
+        this,
+        id,
+        CustomElementDescriptor(name, name)));
     // This map is stored in a hidden reference from the
     // CustomElementsRegistry wrapper.
     v8::Local<v8::Map> map = idMap(scriptState);

@@ -6,10 +6,10 @@
 #define CustomElementDefinition_h
 
 #include "bindings/core/v8/ScopedPersistent.h"
+#include "core/dom/custom/CustomElementDescriptor.h"
 #include "core/dom/custom/CustomElementsRegistry.h"
 #include "platform/heap/Handle.h"
 #include "v8.h"
-#include "wtf/text/AtomicString.h"
 
 namespace blink {
 
@@ -19,10 +19,10 @@ public:
     CustomElementDefinition(
         CustomElementsRegistry*,
         CustomElementsRegistry::Id,
-        const AtomicString& localName);
+        const CustomElementDescriptor&);
 
     CustomElementsRegistry::Id id() const { return m_id; }
-    const AtomicString& localName() const { return m_localName; }
+    const CustomElementDescriptor& descriptor() { return m_descriptor; }
     v8::Local<v8::Object> prototype(ScriptState*) const;
 
     DEFINE_INLINE_TRACE()
@@ -33,7 +33,7 @@ public:
 private:
     Member<CustomElementsRegistry> m_registry;
     CustomElementsRegistry::Id m_id;
-    AtomicString m_localName;
+    CustomElementDescriptor m_descriptor;
 };
 
 } // namespace blink

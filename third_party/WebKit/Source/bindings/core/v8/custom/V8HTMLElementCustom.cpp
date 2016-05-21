@@ -52,7 +52,7 @@ void V8HTMLElement::constructorCustom(
         info.Holder(),
         isolate);
     Element* element = window->document()->createElement(
-        def->localName(),
+        def->descriptor().localName(),
         AtomicString(),
         exceptionState);
     if (exceptionState.throwIfNeeded())

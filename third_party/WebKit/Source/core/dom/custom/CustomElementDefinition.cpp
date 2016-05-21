@@ -9,10 +9,10 @@ namespace blink {
 CustomElementDefinition::CustomElementDefinition(
     CustomElementsRegistry* registry,
     CustomElementsRegistry::Id id,
-    const AtomicString& localName)
+    const CustomElementDescriptor& descriptor)
     : m_registry(registry)
     , m_id(id)
-    , m_localName(localName)
+    , m_descriptor(descriptor)
 {
 }
 
