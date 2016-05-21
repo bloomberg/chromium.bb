@@ -15,7 +15,6 @@
 #include "base/run_loop.h"
 #include "blimp/client/app/blimp_client_switches.h"
 #include "blimp/client/session/assignment_source.h"
-#include "blimp/common/get_client_token.h"
 #include "blimp/common/switches.h"
 #include "blimp/engine/app/blimp_browser_main_parts.h"
 #include "blimp/engine/app/blimp_content_browser_client.h"
@@ -31,6 +30,7 @@ namespace blimp {
 namespace {
 const char kTestDataFilePath[] = "blimp/test/data";
 const char kClientTokenFilePath[] = "blimp/test/data/test_client_token";
+const char kClientToken[] = "MyVoiceIsMyPassport";
 }  // namespace
 
 BlimpBrowserTest::BlimpBrowserTest() {
@@ -62,8 +62,7 @@ void BlimpBrowserTest::OnGetEnginePort(uint16_t port) {
 
 client::Assignment BlimpBrowserTest::GetAssignment() {
   client::Assignment assignment;
-  assignment.client_token = GetClientToken(
-      *base::CommandLine::ForCurrentProcess());
+  assignment.client_token = kClientToken;
   assignment.engine_endpoint =
       net::IPEndPoint(net::IPAddress::IPv4Localhost(), engine_port_);
   assignment.transport_protocol = client::Assignment::TransportProtocol::TCP;
