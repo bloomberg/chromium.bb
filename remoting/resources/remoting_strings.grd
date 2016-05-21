@@ -755,6 +755,9 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       <message desc="Error displayed if an invalid access code is entered." name="IDS_ERROR_INVALID_ACCESS_CODE" formatter_data="android_java">
         The access code is invalid. Please try again.
       </message>
+      <message desc="Error displayed if the host security policies do not allow connections from client." name="IDS_ERROR_INVALID_ACCOUNT" formatter_data="android_java">
+        Security policies on the remote computer do not allow connections from your account.
+      </message>
       <message desc="Error displayed when the host is online, but we are unable to connect to it due to network configuration." name="IDS_ERROR_P2P_FAILURE" formatter_data="android_java">
         Unable to reach the host. This is probably due to the configuration of the network you are using.
       </message>

@@ -43,13 +43,14 @@ public interface ConnectionListener {
         SESSION_REJECTED(2, R.string.error_invalid_access_code),
         INCOMPATIBLE_PROTOCOL(3, R.string.error_incompatible_protocol),
         AUTHENTICATION_FAILED(4, R.string.error_invalid_access_code),
-        CHANNEL_CONNECTION_ERROR(5, R.string.error_p2p_failure),
-        SIGNALING_ERROR(6, R.string.error_p2p_failure),
-        SIGNALING_TIMEOUT(7, R.string.error_p2p_failure),
-        HOST_OVERLOAD(8, R.string.error_host_overload),
-        MAX_SESSION_LENGTH(9, R.string.error_max_session_length),
-        HOST_CONFIGURATION_ERROR(10, R.string.error_host_configuration_error),
-        UNKNOWN_ERROR(11, R.string.error_unexpected);
+        INVALID_ACCOUNT(5, R.string.error_invalid_account),
+        CHANNEL_CONNECTION_ERROR(6, R.string.error_p2p_failure),
+        SIGNALING_ERROR(7, R.string.error_p2p_failure),
+        SIGNALING_TIMEOUT(8, R.string.error_p2p_failure),
+        HOST_OVERLOAD(9, R.string.error_host_overload),
+        MAX_SESSION_LENGTH(10, R.string.error_max_session_length),
+        HOST_CONFIGURATION_ERROR(11, R.string.error_host_configuration_error),
+        UNKNOWN_ERROR(12, R.string.error_unexpected);
 
         private final int mValue;
         private final int mMessage;

@@ -43,7 +43,7 @@ It2MeHostAuthenticatorFactory::CreateAuthenticator(
       LOG(ERROR) << "Rejecting incoming connection from " << remote_jid
                  << ": Domain mismatch.";
       return base::WrapUnique(
-          new RejectingAuthenticator(Authenticator::INVALID_CREDENTIALS));
+          new RejectingAuthenticator(Authenticator::INVALID_ACCOUNT));
     }
   }
 

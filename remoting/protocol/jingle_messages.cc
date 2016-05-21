@@ -49,6 +49,7 @@ const NameMapElement<JingleMessage::ActionType> kActionTypes[] = {
 const NameMapElement<JingleMessage::Reason> kReasons[] = {
   { JingleMessage::SUCCESS, "success" },
   { JingleMessage::DECLINE, "decline" },
+  { JingleMessage::SECURITY_ERROR, "security-error" },
   { JingleMessage::CANCEL, "cancel" },
   { JingleMessage::EXPIRED, "expired" },
   { JingleMessage::GENERAL_ERROR, "general-error" },

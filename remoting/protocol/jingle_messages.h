@@ -67,6 +67,7 @@ struct JingleMessage {
     GENERAL_ERROR,
     FAILED_APPLICATION,
     INCOMPATIBLE_PARAMETERS,
+    SECURITY_ERROR,
   };
 
 

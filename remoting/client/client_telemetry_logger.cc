@@ -127,6 +127,8 @@ ChromotingEvent::ConnectionError ClientTelemetryLogger::TranslateError(
       return ChromotingEvent::ConnectionError::INCOMPATIBLE_PROTOCOL;
     case protocol::AUTHENTICATION_FAILED:
       return ChromotingEvent::ConnectionError::AUTHENTICATION_FAILED;
+    case protocol::INVALID_ACCOUNT:
+      return ChromotingEvent::ConnectionError::INVALID_ACCOUNT;
     case protocol::CHANNEL_CONNECTION_ERROR:
       return ChromotingEvent::ConnectionError::P2P_FAILURE;
     case protocol::SIGNALING_ERROR:

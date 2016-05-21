@@ -65,6 +65,7 @@ class Authenticator {
 
   enum RejectionReason {
     INVALID_CREDENTIALS,
+    INVALID_ACCOUNT,
     PROTOCOL_ERROR,
   };
 

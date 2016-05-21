@@ -54,6 +54,8 @@ ErrorCode AuthRejectionReasonToErrorCode(
       return AUTHENTICATION_FAILED;
     case Authenticator::PROTOCOL_ERROR:
       return INCOMPATIBLE_PROTOCOL;
+    case Authenticator::INVALID_ACCOUNT:
+      return INVALID_ACCOUNT;
   }
   NOTREACHED();
   return UNKNOWN_ERROR;
@@ -245,6 +247,11 @@ void JingleSession::Close(protocol::ErrorCode error) {
       case SESSION_REJECTED:
       case AUTHENTICATION_FAILED:
         reason = JingleMessage::DECLINE;
+        break;
+      case INVALID_ACCOUNT:
+        // TODO(zijiehe): Instead of using SECURITY_ERROR Jingle reason, add a
+        // new tag under crd namespace to export detail error reason to client.
+        reason = JingleMessage::SECURITY_ERROR;
         break;
       case INCOMPATIBLE_PROTOCOL:
         reason = JingleMessage::INCOMPATIBLE_PARAMETERS;
@@ -484,6 +491,9 @@ void JingleSession::OnTerminate(const JingleMessage& message,
       break;
     case JingleMessage::DECLINE:
       error_ = AUTHENTICATION_FAILED;
+      break;
+    case JingleMessage::SECURITY_ERROR:
+      error_ = INVALID_ACCOUNT;
       break;
     case JingleMessage::CANCEL:
       error_ = HOST_OVERLOAD;

@@ -88,6 +88,8 @@ const char* GetValueError(ErrorCode error) {
       return "host-configuration-error";
     case protocol::UNKNOWN_ERROR:
       return "unknown-error";
+    case protocol::INVALID_ACCOUNT:
+      return "invalid-account";
   }
   NOTREACHED();
   return nullptr;

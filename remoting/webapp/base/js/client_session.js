@@ -182,7 +182,8 @@ remoting.ClientSession.ConnectionError = {
   HOST_OVERLOAD: 5,
   MAX_SESSION_LENGTH: 6,
   HOST_CONFIGURATION_ERROR: 7,
-  NACL_PLUGIN_CRASHED: 8
+  NACL_PLUGIN_CRASHED: 8,
+  INVALID_ACCOUNT: 9
 };
 
 /**
@@ -487,6 +488,9 @@ remoting.ClientSession.prototype.onConnectionStatusUpdate =
         break;
       case remoting.ClientSession.ConnectionError.NACL_PLUGIN_CRASHED:
         errorTag = remoting.Error.Tag.NACL_PLUGIN_CRASHED;
+        break;
+      case remoting.ClientSession.ConnectionError.INVALID_ACCOUNT:
+        errorTag = remoting.Error.Tag.INVALID_ACCOUNT;
         break;
       default:
         this.error_ = remoting.Error.unexpected();

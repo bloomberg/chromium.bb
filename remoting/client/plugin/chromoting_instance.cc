@@ -119,6 +119,9 @@ std::string ConnectionErrorToString(protocol::ErrorCode error) {
     case protocol::AUTHENTICATION_FAILED:
       return "SESSION_REJECTED";
 
+    case protocol::INVALID_ACCOUNT:
+      return "INVALID_ACCOUNT";
+
     case protocol::INCOMPATIBLE_PROTOCOL:
       return "INCOMPATIBLE_PROTOCOL";
 

@@ -35,7 +35,8 @@ class ChromotingEvent {
     NACL_DISABLED = 15,
     MAX_SESSION_LENGTH = 16,
     HOST_CONFIGURATION_ERROR = 17,
-    NACL_PLUGIN_CRASHED = 18
+    NACL_PLUGIN_CRASHED = 18,
+    INVALID_ACCOUNT = 19
   };
 
   enum class Mode { IT2ME = 1, ME2ME = 2 };
