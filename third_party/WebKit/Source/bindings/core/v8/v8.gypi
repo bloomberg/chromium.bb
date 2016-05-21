@@ -124,6 +124,7 @@
             'V8ErrorHandler.h',
             'V8EventListener.cpp',
             'V8EventListener.h',
+            'V8EventListenerInfo.h',
             'V8EventListenerList.cpp',
             'V8EventListenerList.h',
             'V8GCController.cpp',

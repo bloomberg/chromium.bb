@@ -10,7 +10,6 @@
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
-#include "platform/v8_inspector/public/V8EventListenerInfo.h"
 
 namespace blink {
 
@@ -49,7 +48,6 @@ v8::Local<v8::Object> V8InjectedScriptHost::create(v8::Local<v8::Context> contex
     setFunctionProperty(context, injectedScriptHost, "subtype", V8InjectedScriptHost::subtypeCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "collectionEntries", V8InjectedScriptHost::collectionEntriesCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "getInternalProperties", V8InjectedScriptHost::getInternalPropertiesCallback, debuggerExternal);
-    setFunctionProperty(context, injectedScriptHost, "getEventListeners", V8InjectedScriptHost::getEventListenersCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "suppressWarningsAndCallFunction", V8InjectedScriptHost::suppressWarningsAndCallFunctionCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "setNonEnumProperty", V8InjectedScriptHost::setNonEnumPropertyCallback, debuggerExternal);
     setFunctionProperty(context, injectedScriptHost, "bind", V8InjectedScriptHost::bindCallback, debuggerExternal);
@@ -151,48 +149,6 @@ void V8InjectedScriptHost::getInternalPropertiesCallback(const v8::FunctionCallb
     v8::Local<v8::Array> properties;
     if (v8::Debug::GetInternalProperties(info.GetIsolate(), object).ToLocal(&properties))
         info.GetReturnValue().Set(properties);
-}
-
-static v8::Local<v8::Array> wrapListenerFunctions(v8::Isolate* isolate, const V8EventListenerInfoList& listeners, const String16& type)
-{
-    v8::Local<v8::Array> result = v8::Array::New(isolate);
-    size_t handlersCount = listeners.size();
-    for (size_t i = 0, outputIndex = 0; i < handlersCount; ++i) {
-        if (listeners[i].eventType != type)
-            continue;
-        v8::Local<v8::Object> function = listeners[i].handler;
-        v8::Local<v8::Object> listenerEntry = v8::Object::New(isolate);
-        listenerEntry->Set(toV8StringInternalized(isolate, "listener"), function);
-        listenerEntry->Set(toV8StringInternalized(isolate, "useCapture"), v8::Boolean::New(isolate, listeners[i].useCapture));
-        listenerEntry->Set(toV8StringInternalized(isolate, "passive"), v8::Boolean::New(isolate, listeners[i].passive));
-        result->Set(v8::Number::New(isolate, outputIndex++), listenerEntry);
-    }
-    return result;
-}
-
-void V8InjectedScriptHost::getEventListenersCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (info.Length() < 1)
-        return;
-
-    V8DebuggerClient* client = unwrapDebugger(info)->client();
-    V8EventListenerInfoList listenerInfo;
-    // eventListeners call can produce message on ErrorEvent during lazy event listener compilation.
-    client->muteWarningsAndDeprecations();
-    client->eventListeners(info[0], listenerInfo);
-    client->unmuteWarningsAndDeprecations();
-
-    v8::Local<v8::Object> result = v8::Object::New(info.GetIsolate());
-    protocol::HashSet<String16> types;
-    for (auto& info : listenerInfo)
-        types.add(info.eventType);
-    for (const auto& it : types) {
-        v8::Local<v8::Array> listeners = wrapListenerFunctions(info.GetIsolate(), listenerInfo, it.first);
-        if (!listeners->Length())
-            continue;
-        result->Set(toV8String(info.GetIsolate(), it.first), listeners);
-    }
-    info.GetReturnValue().Set(result);
 }
 
 void V8InjectedScriptHost::suppressWarningsAndCallFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

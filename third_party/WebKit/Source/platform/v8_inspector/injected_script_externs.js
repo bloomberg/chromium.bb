@@ -50,12 +50,6 @@ InjectedScriptHostClass.prototype.collectionEntries = function(obj) {}
 InjectedScriptHostClass.prototype.getInternalProperties = function(obj) {}
 
 /**
- * @param {!EventTarget} target
- * @return {!Object|undefined}
- */
-InjectedScriptHostClass.prototype.getEventListeners = function(target) {}
-
-/**
  * @param {!Function} fn
  * @param {*} receiver
  * @param {!Array.<*>=} argv

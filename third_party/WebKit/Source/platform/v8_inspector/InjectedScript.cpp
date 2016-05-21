@@ -366,18 +366,10 @@ void InjectedScript::wrapEvaluateResult(ErrorString* errorString, v8::MaybeLocal
     }
 }
 
-v8::MaybeLocal<v8::Object> InjectedScript::commandLineAPI(ErrorString* errorString)
+v8::Local<v8::Object> InjectedScript::commandLineAPI()
 {
-    v8::Isolate* isolate = m_context->isolate();
-    if (m_commandLineAPI.IsEmpty()) {
-        V8FunctionCall function(m_context->debugger(), m_context->context(), v8Value(), "installCommandLineAPI");
-        function.appendArgument(V8Console::createCommandLineAPI(m_context));
-        bool hadException = false;
-        v8::Local<v8::Value> extension = function.call(hadException, false);
-        if (hasInternalError(errorString, hadException || extension.IsEmpty() || !extension->IsObject()))
-            return v8::MaybeLocal<v8::Object>();
-        m_commandLineAPI.Reset(isolate, extension.As<v8::Object>());
-    }
+    if (m_commandLineAPI.IsEmpty())
+        m_commandLineAPI.Reset(m_context->isolate(), V8Console::createCommandLineAPI(m_context));
     return m_commandLineAPI.Get(m_context->isolate());
 }
 
@@ -414,12 +406,9 @@ bool InjectedScript::Scope::initialize()
 bool InjectedScript::Scope::installCommandLineAPI()
 {
     DCHECK(m_injectedScript && !m_context.IsEmpty() && m_global.IsEmpty());
-    v8::Local<v8::Object> extensionObject;
-    if (!m_injectedScript->commandLineAPI(m_errorString).ToLocal(&extensionObject))
-        return false;
     m_extensionPrivate = V8Debugger::scopeExtensionPrivate(m_debugger->isolate());
     v8::Local<v8::Object> global = m_context->Global();
-    if (!global->SetPrivate(m_context, m_extensionPrivate, extensionObject).FromMaybe(false)) {
+    if (!global->SetPrivate(m_context, m_extensionPrivate, m_injectedScript->commandLineAPI()).FromMaybe(false)) {
         *m_errorString = "Internal error";
         return false;
     }

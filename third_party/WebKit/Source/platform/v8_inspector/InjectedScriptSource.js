@@ -521,17 +521,6 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @param {!Object} nativeCommandLineAPI
-     * @return {!Object}
-     */
-    installCommandLineAPI: function(nativeCommandLineAPI)
-    {
-        // NOTE: This list contains only not native Command Line API methods. For full list: V8Console.
-        nativeCommandLineAPI["getEventListeners"] = CommandLineAPIImpl["getEventListeners"];
-        return nativeCommandLineAPI;
-    },
-
-    /**
      * @param {*} object
      * @return {boolean}
      */
@@ -1016,58 +1005,6 @@ InjectedScript.RemoteObject.prototype = {
 
     __proto__: null
 }
-
-var CommandLineAPIImpl = { __proto__: null }
-
-/**
- * @param {!Node} node
- * @return {!Object|undefined}
- */
-CommandLineAPIImpl.getEventListeners = function(node)
-{
-    var result = nullifyObjectProto(InjectedScriptHost.getEventListeners(node));
-    if (!result)
-        return;
-
-    // TODO(dtapuska): Remove this one closure compiler is updated
-    // to handle EventListenerOptions and passive event listeners
-    // has shipped. Don't JSDoc these otherwise it will fail.
-    // @param {boolean} capture
-    // @param {boolean} passive
-    // @return {boolean|undefined|{capture: (boolean|undefined), passive: boolean}}
-    function eventListenerOptions(capture, passive)
-    {
-        return {"capture": capture, "passive": passive};
-    }
-
-    /**
-     * @param {!Node} node
-     * @param {string} type
-     * @param {function()} listener
-     * @param {boolean} capture
-     * @param {boolean} passive
-     */
-    function removeEventListenerWrapper(node, type, listener, capture, passive)
-    {
-        node.removeEventListener(type, listener, eventListenerOptions(capture, passive));
-    }
-
-    /** @this {{type: string, listener: function(), useCapture: boolean, passive: boolean}} */
-    var removeFunc = function()
-    {
-        removeEventListenerWrapper(node, this.type, this.listener, this.useCapture, this.passive);
-    }
-    for (var type in result) {
-        var listeners = result[type];
-        for (var i = 0, listener; listener = listeners[i]; ++i) {
-            listener["type"] = type;
-            listener["remove"] = removeFunc;
-        }
-    }
-    return result;
-}
-
-CommandLineAPIImpl.getEventListeners.toString = (() => "function getEventListeners(node) { [Command Line API] }");
 
 return injectedScript;
 })

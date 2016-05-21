@@ -9,7 +9,6 @@
 #include "platform/v8_inspector/public/ConsoleAPITypes.h"
 #include "platform/v8_inspector/public/ConsoleTypes.h"
 #include "platform/v8_inspector/public/V8ContextInfo.h"
-#include "platform/v8_inspector/public/V8EventListenerInfo.h"
 
 #include <v8.h>
 
@@ -26,7 +25,6 @@ public:
     virtual void unmuteConsole() = 0;
     virtual void beginUserGesture() = 0;
     virtual void endUserGesture() = 0;
-    virtual void eventListeners(v8::Local<v8::Value>, V8EventListenerInfoList&) = 0;
     virtual bool callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target) = 0;
     virtual String16 valueSubtype(v8::Local<v8::Value>) = 0;
     virtual bool formatAccessorsAsProperties(v8::Local<v8::Value>) = 0;

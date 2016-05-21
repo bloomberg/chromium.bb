@@ -162,7 +162,7 @@ private:
     bool canAccessInspectedWindow() const;
     v8::Local<v8::Value> v8Value() const;
     v8::MaybeLocal<v8::Value> wrapValue(ErrorString*, v8::Local<v8::Value>, const String16& groupName, bool forceValueType, bool generatePreview) const;
-    v8::MaybeLocal<v8::Object> commandLineAPI(ErrorString*);
+    v8::Local<v8::Object> commandLineAPI();
 
     InspectedContext* m_context;
     v8::Global<v8::Value> m_value;

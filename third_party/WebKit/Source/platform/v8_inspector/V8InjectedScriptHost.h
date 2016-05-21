@@ -30,7 +30,6 @@ private:
     static void generatorObjectDetailsCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void collectionEntriesCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void getInternalPropertiesCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-    static void getEventListenersCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void suppressWarningsAndCallFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void setNonEnumPropertyCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void setFunctionVariableValueCallback(const v8::FunctionCallbackInfo<v8::Value>&);

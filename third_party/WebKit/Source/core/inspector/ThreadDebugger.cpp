@@ -11,6 +11,7 @@
 #include "bindings/core/v8/V8DOMTokenList.h"
 #include "bindings/core/v8/V8Event.h"
 #include "bindings/core/v8/V8EventListener.h"
+#include "bindings/core/v8/V8EventListenerInfo.h"
 #include "bindings/core/v8/V8EventListenerList.h"
 #include "bindings/core/v8/V8HTMLAllCollection.h"
 #include "bindings/core/v8/V8HTMLCollection.h"
@@ -71,11 +72,6 @@ void ThreadDebugger::beginUserGesture()
 void ThreadDebugger::endUserGesture()
 {
     m_userGestureIndicator.clear();
-}
-
-void ThreadDebugger::eventListeners(v8::Local<v8::Value> value, V8EventListenerInfoList& result)
-{
-    InspectorDOMDebuggerAgent::eventListenersInfoForTarget(m_isolate, value, result);
 }
 
 String16 ThreadDebugger::valueSubtype(v8::Local<v8::Value> value)
@@ -144,7 +140,7 @@ bool ThreadDebugger::isCommandLineAPIMethod(const String& name)
 {
     DEFINE_STATIC_LOCAL(HashSet<String>, methods, ());
     if (methods.size() == 0) {
-        const char* members[] = { "monitorEvents", "unmonitorEvents" };
+        const char* members[] = { "monitorEvents", "unmonitorEvents", "getEventListeners" };
         for (size_t i = 0; i < WTF_ARRAY_LENGTH(members); ++i)
             methods.add(members[i]);
     }
@@ -155,6 +151,7 @@ void ThreadDebugger::installAdditionalCommandLineAPI(v8::Local<v8::Context> cont
 {
     createFunctionProperty(context, object, "monitorEvents", ThreadDebugger::monitorEventsCallback, "function monitorEvents(object, [types]) { [Command Line API] }");
     createFunctionProperty(context, object, "unmonitorEvents", ThreadDebugger::unmonitorEventsCallback, "function unmonitorEvents(object, [types]) { [Command Line API] }");
+    createFunctionProperty(context, object, "getEventListeners", ThreadDebugger::getEventListenersCallback, "function getEventListeners(node) { [Command Line API] }");
 }
 
 static Vector<String> normalizeEventTypes(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -262,6 +259,80 @@ void ThreadDebugger::monitorEventsCallback(const v8::FunctionCallbackInfo<v8::Va
 void ThreadDebugger::unmonitorEventsCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     setMonitorEventsCallback(info, false);
+}
+
+static void removeEventListenerCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Isolate* isolate = info.GetIsolate();
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
+    EventTarget* eventTarget = V8EventTarget::toImplWithTypeCheck(isolate, info.Data());
+    if (!eventTarget)
+        return;
+    v8::Local<v8::Value> thisHandler;
+    if (!info.Holder()->Get(context, v8String(isolate, "listener")).ToLocal(&thisHandler) || !thisHandler->IsObject())
+        return;
+    v8::Local<v8::Value> v8ThisType;
+    if (!info.Holder()->Get(context, v8String(isolate, "type")).ToLocal(&v8ThisType) || !v8ThisType->IsString())
+        return;
+    AtomicString thisType = AtomicString(toCoreString(v8::Local<v8::String>::Cast(v8ThisType)));
+    v8::Local<v8::Value> thisUseCapture;
+    if (!info.Holder()->Get(context, v8String(isolate, "useCapture")).ToLocal(&thisUseCapture) || !thisUseCapture->IsBoolean())
+        return;
+
+    EventListener* eventListener = V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), thisHandler, false, ListenerFindOnly);
+    if (!eventListener)
+        eventListener = V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), thisHandler, true, ListenerFindOnly);
+    if (!eventListener)
+        return;
+    EventListenerOptions options;
+    options.setCapture(v8::Local<v8::Boolean>::Cast(thisUseCapture)->Value());
+    eventTarget->removeEventListener(thisType, eventListener, options);
+}
+
+// static
+void ThreadDebugger::getEventListenersCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (info.Length() < 1)
+        return;
+
+    ThreadDebugger* debugger = static_cast<ThreadDebugger*>(v8::Local<v8::External>::Cast(info.Data())->Value());
+    DCHECK(debugger);
+    v8::Isolate* isolate = info.GetIsolate();
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
+
+    V8EventListenerInfoList listenerInfo;
+    // eventListeners call can produce message on ErrorEvent during lazy event listener compilation.
+    debugger->muteWarningsAndDeprecations();
+    InspectorDOMDebuggerAgent::eventListenersInfoForTarget(isolate, info[0], listenerInfo);
+    debugger->unmuteWarningsAndDeprecations();
+
+    v8::Local<v8::Object> result = v8::Object::New(isolate);
+
+    v8::Local<v8::Function> removeFunc = v8::Function::New(isolate, removeEventListenerCallback, info[0]);
+    v8::Local<v8::Function> toStringFunction;
+    if (v8::Function::New(context, returnDataCallback, v8String(isolate, "function remove() { [Command Line API] }")).ToLocal(&toStringFunction))
+        removeFunc->Set(v8String(context->GetIsolate(), "toString"), toStringFunction);
+
+    AtomicString currentEventType;
+    v8::Local<v8::Array> listeners;
+    size_t outputIndex = 0;
+    for (auto& info : listenerInfo) {
+        if (currentEventType != info.eventType) {
+            currentEventType = info.eventType;
+            listeners = v8::Array::New(isolate);
+            outputIndex = 0;
+            result->Set(v8String(isolate, currentEventType), listeners);
+        }
+
+        v8::Local<v8::Object> listenerObject = v8::Object::New(isolate);
+        listenerObject->Set(v8String(isolate, "listener"), info.handler);
+        listenerObject->Set(v8String(isolate, "useCapture"), v8::Boolean::New(isolate, info.useCapture));
+        listenerObject->Set(v8String(isolate, "passive"), v8::Boolean::New(isolate, info.passive));
+        listenerObject->Set(v8String(isolate, "type"), v8String(isolate, currentEventType));
+        listenerObject->Set(v8String(isolate, "remove"), removeFunc);
+        listeners->Set(outputIndex++, listenerObject);
+    }
+    info.GetReturnValue().Set(result);
 }
 
 void ThreadDebugger::reportMessageToConsole(v8::Local<v8::Context> context, MessageType type, MessageLevel level, const String16& message, const v8::FunctionCallbackInfo<v8::Value>* arguments, unsigned skipArgumentCount)

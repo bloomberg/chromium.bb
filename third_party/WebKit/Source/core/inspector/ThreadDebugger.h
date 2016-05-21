@@ -34,7 +34,6 @@ public:
     // V8DebuggerClient implementation.
     void beginUserGesture() override;
     void endUserGesture() override;
-    void eventListeners(v8::Local<v8::Value>, V8EventListenerInfoList&) override;
     String16 valueSubtype(v8::Local<v8::Value>) override;
     bool formatAccessorsAsProperties(v8::Local<v8::Value>) override;
     bool isExecutionAllowed() override;
@@ -66,6 +65,8 @@ private:
     static void monitorEventsCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void unmonitorEventsCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void logCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+
+    static void getEventListenersCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 
     Vector<OwnPtr<Timer<ThreadDebugger>>> m_timers;
     Vector<V8DebuggerClient::TimerCallback> m_timerCallbacks;

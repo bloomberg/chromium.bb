@@ -1096,7 +1096,6 @@
       'v8_inspector/V8StackTraceImpl.h',
       'v8_inspector/V8StringUtil.cpp',
       'v8_inspector/V8StringUtil.h',
-      'v8_inspector/public/V8EventListenerInfo.h',
       'v8_inspector/public/V8ContentSearchUtil.h',
       'v8_inspector/public/V8ContextInfo.h',
       'v8_inspector/public/V8Debugger.h',
