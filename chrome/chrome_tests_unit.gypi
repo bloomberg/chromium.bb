@@ -459,6 +459,7 @@
       'browser/extensions/api/management/management_api_unittest.cc',
       'browser/extensions/api/omnibox/omnibox_unittest.cc',
       'browser/extensions/api/permissions/permissions_api_helpers_unittest.cc',
+      'browser/extensions/api/permissions/permissions_api_unittest.cc',
       'browser/extensions/api/preference/preference_api_prefs_unittest.cc',
       'browser/extensions/api/proxy/proxy_api_helpers_unittest.cc',
       'browser/extensions/api/runtime/chrome_runtime_api_delegate_unittest.cc',
