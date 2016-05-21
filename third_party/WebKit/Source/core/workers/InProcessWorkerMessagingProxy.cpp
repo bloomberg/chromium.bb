@@ -180,15 +180,8 @@ void InProcessWorkerMessagingProxy::reportConsoleMessage(MessageSource source, M
     DCHECK(isParentContextThread());
     if (m_askedToTerminate)
         return;
-
-    Document* document = toDocument(getExecutionContext());
-    LocalFrame* frame = document->frame();
-    if (!frame)
-        return;
-
-    ConsoleMessage* consoleMessage = ConsoleMessage::create(source, level, message, sourceURL, lineNumber, 0);
-    consoleMessage->setWorkerInspectorProxy(m_workerInspectorProxy.get());
-    frame->console().addMessage(consoleMessage);
+    if (m_workerInspectorProxy)
+        m_workerInspectorProxy->addConsoleMessageFromWorker(ConsoleMessage::create(source, level, message, sourceURL, lineNumber, 0));
 }
 
 void InProcessWorkerMessagingProxy::workerThreadCreated()
@@ -297,11 +290,6 @@ void InProcessWorkerMessagingProxy::terminateInternally()
 {
     DCHECK(isParentContextThread());
     m_workerInspectorProxy->workerThreadTerminated();
-
-    Document* document = toDocument(getExecutionContext());
-    LocalFrame* frame = document->frame();
-    if (frame)
-        frame->console().adoptWorkerMessagesAfterTermination(m_workerInspectorProxy.get());
 }
 
 bool InProcessWorkerMessagingProxy::isParentContextThread() const

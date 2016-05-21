@@ -247,7 +247,7 @@ class XMLHttpRequest;
     [Worker]
     void didStartWorker(ExecutionContext*, WorkerInspectorProxy* proxy, bool waitingForDebugger);
 
-    [Worker, PageConsole]
+    [Worker]
     void workerTerminated(ExecutionContext*, WorkerInspectorProxy* proxy);
 
     [Resource]

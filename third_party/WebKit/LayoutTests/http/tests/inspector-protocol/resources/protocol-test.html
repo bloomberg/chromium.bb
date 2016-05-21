@@ -275,6 +275,30 @@ InspectorTest.evaluateInPage = function(string, callback)
     });
 };
 
+InspectorTest._asyncCallbacks = {};
+InspectorTest._asyncCallbackId = 0;
+
+InspectorTest.evaluateInPageAsync = function(string, callback)
+{
+    var id = ++InspectorTest._asyncCallbackId;
+    InspectorTest._asyncCallbacks[id] = callback;
+    var callbackString = "testRunner.evaluateInWebInspector.bind(testRunner, 42, \"InspectorTest._evaluateInPageAsyncCompleted(" + id + ")\")";
+    var code = string.replace("%callback", callbackString);
+    InspectorTest.evaluateInPage(code);
+};
+
+InspectorTest._evaluateInPageAsyncCompleted = function(id)
+{
+    var callback = InspectorTest._asyncCallbacks[id];
+    delete InspectorTest._asyncCallbacks[id];
+    if (!callback) {
+        InspectorTest.log("Error: no callback for async function");
+        InspectorTest.completeTest();
+        return;
+    }
+    callback();
+}
+
 InspectorTest.completeTestIfError = function(messageObject)
 {
     if (messageObject.error) {

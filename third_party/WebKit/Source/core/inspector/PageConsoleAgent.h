@@ -41,8 +41,6 @@ class ConsoleMessage;
 class ConsoleMessageStorage;
 class InspectedFrames;
 class InspectorDOMAgent;
-class WorkerInspectorProxy;
-class WorkerGlobalScopeProxy;
 
 class CORE_EXPORT PageConsoleAgent final : public InspectorConsoleAgent {
     WTF_MAKE_NONCOPYABLE(PageConsoleAgent);
@@ -53,9 +51,6 @@ public:
 
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;
-
-    void workerTerminated(WorkerInspectorProxy*);
-    void workerConsoleAgentEnabled(WorkerInspectorProxy*);
 
     void consoleMessagesCleared() override;
 
@@ -70,8 +65,6 @@ private:
 
     Member<InspectorDOMAgent> m_inspectorDOMAgent;
     Member<InspectedFrames> m_inspectedFrames;
-    using WorkerInspectorProxySet = HeapHashSet<Member<WorkerInspectorProxy>>;
-    WorkerInspectorProxySet m_workersWithEnabledConsole;
 
     static int s_enabledAgentCount;
 };

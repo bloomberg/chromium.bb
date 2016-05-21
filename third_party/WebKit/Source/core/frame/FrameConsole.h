@@ -55,7 +55,9 @@ public:
     }
 
     void addMessage(ConsoleMessage*);
-    void adoptWorkerMessagesAfterTermination(WorkerInspectorProxy*);
+
+    void reportWorkerMessage(ConsoleMessage*);
+    void adoptWorkerMessage(ConsoleMessage*);
 
     void reportResourceResponseReceived(DocumentLoader*, unsigned long requestIdentifier, const ResourceResponse&);
 
@@ -78,6 +80,8 @@ private:
     }
 
     ConsoleMessageStorage* messageStorage();
+    bool addMessageToStorage(ConsoleMessage*);
+    void reportMessageToClient(ConsoleMessage*);
 
     Member<LocalFrame> m_frame;
 };

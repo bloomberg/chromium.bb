@@ -156,9 +156,6 @@ static String messageLevelValue(MessageLevel level)
 
 void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* consoleMessage, bool generatePreview)
 {
-    if (consoleMessage->workerInspectorProxy())
-        return;
-
     OwnPtr<protocol::Console::ConsoleMessage> jsonObj = protocol::Console::ConsoleMessage::create()
         .setSource(messageSourceValue(consoleMessage->source()))
         .setLevel(messageLevelValue(consoleMessage->level()))

@@ -6,6 +6,7 @@
 #define WorkerInspectorProxy_h
 
 #include "core/CoreExport.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -30,7 +31,6 @@ public:
     public:
         virtual ~PageInspector() { }
         virtual void dispatchMessageFromWorker(WorkerInspectorProxy*, const String&) = 0;
-        virtual void workerConsoleAgentEnabled(WorkerInspectorProxy*) = 0;
     };
 
     WorkerThreadStartMode workerStartMode(Document*);
@@ -38,6 +38,7 @@ public:
     void workerThreadTerminated();
     void dispatchMessageFromWorker(const String&);
     void workerConsoleAgentEnabled();
+    void addConsoleMessageFromWorker(ConsoleMessage*);
 
     void connectToInspector(PageInspector*);
     void disconnectFromInspector(PageInspector*);
@@ -59,6 +60,8 @@ private:
     PageInspector* m_pageInspector;
     String m_url;
     String m_inspectorId;
+    HeapDeque<Member<ConsoleMessage>> m_consoleMessages;
+    bool m_ignoreConsoleMessages;
 };
 
 } // namespace blink

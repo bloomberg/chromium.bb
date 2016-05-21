@@ -32,7 +32,6 @@
 
 #include "core/dom/Document.h"
 #include "core/inspector/InspectedFrames.h"
-#include "core/inspector/PageConsoleAgent.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -45,15 +44,9 @@ static const char workerInspectionEnabled[] = "workerInspectionEnabled";
 static const char waitForDebuggerOnStart[] = "waitForDebuggerOnStart";
 };
 
-InspectorWorkerAgent* InspectorWorkerAgent::create(InspectedFrames* inspectedFrames, PageConsoleAgent* consoleAgent)
-{
-    return new InspectorWorkerAgent(inspectedFrames, consoleAgent);
-}
-
-InspectorWorkerAgent::InspectorWorkerAgent(InspectedFrames* inspectedFrames, PageConsoleAgent* consoleAgent)
+InspectorWorkerAgent::InspectorWorkerAgent(InspectedFrames* inspectedFrames)
     : InspectorBaseAgent<InspectorWorkerAgent, protocol::Frontend::Worker>("Worker")
     , m_inspectedFrames(inspectedFrames)
-    , m_consoleAgent(consoleAgent)
 {
 }
 
@@ -182,15 +175,9 @@ void InspectorWorkerAgent::dispatchMessageFromWorker(WorkerInspectorProxy* proxy
     frontend()->dispatchMessageFromWorker(proxy->inspectorId(), message);
 }
 
-void InspectorWorkerAgent::workerConsoleAgentEnabled(WorkerInspectorProxy* proxy)
-{
-    m_consoleAgent->workerConsoleAgentEnabled(proxy);
-}
-
 DEFINE_TRACE(InspectorWorkerAgent)
 {
     visitor->trace(m_connectedProxies);
-    visitor->trace(m_consoleAgent);
     visitor->trace(m_inspectedFrames);
     InspectorBaseAgent<InspectorWorkerAgent, protocol::Frontend::Worker>::trace(visitor);
 }

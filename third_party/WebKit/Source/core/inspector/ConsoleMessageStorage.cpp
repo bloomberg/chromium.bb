@@ -48,14 +48,6 @@ Vector<unsigned> ConsoleMessageStorage::argumentCounts() const
     return result;
 }
 
-void ConsoleMessageStorage::adoptWorkerMessagesAfterTermination(WorkerInspectorProxy* workerInspectorProxy)
-{
-    for (size_t i = 0; i < m_messages.size(); ++i) {
-        if (m_messages[i]->workerInspectorProxy() == workerInspectorProxy)
-            m_messages[i]->setWorkerInspectorProxy(nullptr);
-    }
-}
-
 void ConsoleMessageStorage::frameWindowDiscarded(LocalDOMWindow* window)
 {
     for (size_t i = 0; i < m_messages.size(); ++i)

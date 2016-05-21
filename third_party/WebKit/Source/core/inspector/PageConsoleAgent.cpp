@@ -39,7 +39,6 @@
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorDOMAgent.h"
-#include "core/workers/WorkerInspectorProxy.h"
 
 namespace blink {
 
@@ -60,22 +59,17 @@ DEFINE_TRACE(PageConsoleAgent)
 {
     visitor->trace(m_inspectorDOMAgent);
     visitor->trace(m_inspectedFrames);
-    visitor->trace(m_workersWithEnabledConsole);
     InspectorConsoleAgent::trace(visitor);
 }
 
 void PageConsoleAgent::enable(ErrorString* errorString)
 {
     InspectorConsoleAgent::enable(errorString);
-    m_workersWithEnabledConsole.clear();
-    m_instrumentingAgents->addPageConsoleAgent(this);
 }
 
 void PageConsoleAgent::disable(ErrorString* errorString)
 {
-    m_instrumentingAgents->removePageConsoleAgent(this);
     InspectorConsoleAgent::disable(errorString);
-    m_workersWithEnabledConsole.clear();
 }
 
 void PageConsoleAgent::clearMessages(ErrorString* errorString)
@@ -83,33 +77,9 @@ void PageConsoleAgent::clearMessages(ErrorString* errorString)
     messageStorage()->clear(m_inspectedFrames->root()->document());
 }
 
-void PageConsoleAgent::workerConsoleAgentEnabled(WorkerInspectorProxy* workerInspectorProxy)
-{
-    m_workersWithEnabledConsole.add(workerInspectorProxy);
-}
-
 ConsoleMessageStorage* PageConsoleAgent::messageStorage()
 {
     return &m_inspectedFrames->root()->host()->consoleMessageStorage();
-}
-
-void PageConsoleAgent::workerTerminated(WorkerInspectorProxy* workerInspectorProxy)
-{
-    WorkerInspectorProxySet::iterator it = m_workersWithEnabledConsole.find(workerInspectorProxy);
-    if (it != m_workersWithEnabledConsole.end()) {
-        m_workersWithEnabledConsole.remove(it);
-        return;
-    }
-
-    ConsoleMessageStorage* storage = messageStorage();
-    size_t messageCount = storage->size();
-    for (size_t i = 0; i < messageCount; ++i) {
-        ConsoleMessage* message = storage->at(i);
-        if (message->workerInspectorProxy() == workerInspectorProxy) {
-            message->setWorkerInspectorProxy(nullptr);
-            sendConsoleMessageToFrontend(message, false);
-        }
-    }
 }
 
 void PageConsoleAgent::consoleMessagesCleared()

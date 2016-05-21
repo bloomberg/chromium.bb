@@ -7,7 +7,6 @@
 #include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/inspector/ScriptArguments.h"
-#include "core/workers/WorkerInspectorProxy.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -70,7 +69,6 @@ ConsoleMessage::ConsoleMessage(MessageSource source,
     , m_callStack(callStack)
     , m_requestIdentifier(0)
     , m_timestamp(WTF::currentTime())
-    , m_workerProxy(nullptr)
     , m_messageId(0)
     , m_relatedMessageId(0)
 {
@@ -224,7 +222,6 @@ unsigned ConsoleMessage::argumentCount()
 DEFINE_TRACE(ConsoleMessage)
 {
     visitor->trace(m_scriptArguments);
-    visitor->trace(m_workerProxy);
 }
 
 } // namespace blink

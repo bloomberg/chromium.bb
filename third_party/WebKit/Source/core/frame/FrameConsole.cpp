@@ -69,19 +69,24 @@ FrameConsole::FrameConsole(LocalFrame& frame)
 
 void FrameConsole::addMessage(ConsoleMessage* consoleMessage)
 {
+    if (addMessageToStorage(consoleMessage))
+        reportMessageToClient(consoleMessage);
+}
+
+bool FrameConsole::addMessageToStorage(ConsoleMessage* consoleMessage)
+{
+    if (muteCount && consoleMessage->source() != ConsoleAPIMessageSource)
+        return false;
+    if (!m_frame->document() || !messageStorage())
+        return false;
+    messageStorage()->reportMessage(m_frame->document(), consoleMessage);
+    return true;
+}
+
+void FrameConsole::reportMessageToClient(ConsoleMessage* consoleMessage)
+{
     if (muteCount && consoleMessage->source() != ConsoleAPIMessageSource)
         return;
-
-    // FIXME: This should not need to reach for the main-frame.
-    // Inspector code should just take the current frame and know how to walk itself.
-    ExecutionContext* context = frame().document();
-    if (!context)
-        return;
-    if (!messageStorage())
-        return;
-
-    messageStorage()->reportMessage(m_frame->document(), consoleMessage);
-
     if (consoleMessage->source() == NetworkMessageSource)
         return;
 
@@ -99,6 +104,16 @@ void FrameConsole::addMessage(ConsoleMessage* consoleMessage)
     }
 
     frame().chromeClient().addMessageToConsole(m_frame, consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->lineNumber(), consoleMessage->url(), stackTrace);
+}
+
+void FrameConsole::reportWorkerMessage(ConsoleMessage* consoleMessage)
+{
+    reportMessageToClient(consoleMessage);
+}
+
+void FrameConsole::adoptWorkerMessage(ConsoleMessage* consoleMessage)
+{
+    addMessageToStorage(consoleMessage);
 }
 
 void FrameConsole::reportResourceResponseReceived(DocumentLoader* loader, unsigned long requestIdentifier, const ResourceResponse& response)
@@ -138,13 +153,6 @@ void FrameConsole::clearMessages()
     ConsoleMessageStorage* storage = messageStorage();
     if (storage)
         storage->clear(m_frame->document());
-}
-
-void FrameConsole::adoptWorkerMessagesAfterTermination(WorkerInspectorProxy* proxy)
-{
-    ConsoleMessageStorage* storage = messageStorage();
-    if (storage)
-        storage->adoptWorkerMessagesAfterTermination(proxy);
 }
 
 void FrameConsole::didFailLoading(unsigned long requestIdentifier, const ResourceError& error)

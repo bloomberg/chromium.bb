@@ -1,0 +1,38 @@
+CONSOLE MESSAGE: line 3: message0
+CONSOLE MESSAGE: line 3: message1
+CONSOLE MESSAGE: line 3: message2
+CONSOLE MESSAGE: line 3: message3
+CONSOLE MESSAGE: line 3: message4
+CONSOLE MESSAGE: line 3: message5
+CONSOLE MESSAGE: line 3: message6
+Starting worker
+Logging in worker: message0
+Stopping worker
+Got console message from page: message0
+Starting worker
+Logging in worker: message1
+Sending Worker.enable
+Worker.created
+Sending Console.enable to worker
+Got console message from worker: message1
+Logging in worker: message2
+Got console message from worker: message2
+Sending Worker.disable
+Logging in worker: message3
+Stopping worker
+Sending Worker.enable
+Starting worker
+Worker.created
+Logging in worker: message4
+Sending Console.enable to worker
+Got console message from worker: message4
+Logging in worker: message5
+Got console message from worker: message5
+Stopping worker
+Starting worker
+Worker.created
+Logging in worker: message6
+Stopping worker
+Got console message from page: message6
+Sending Worker.disable
+
