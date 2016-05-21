@@ -13,9 +13,12 @@
 
 namespace {
 
-const std::string kDummyFrameName = "chromedriver dummy frame";
-const std::string kDummyFrameUrl = "about:blank";
-const std::string kUnreachableWebDataURL = "data:text/html,chromewebdata";
+const char kDummyFrameName[] = "chromedriver dummy frame";
+const char kDummyFrameUrl[] = "about:blank";
+const char kUnreachableWebDataURL[] = "data:text/html,chromewebdata";
+const char kAutomationExtensionBackgroundPage[] =
+    "chrome-extension://aapnijgdinlhnhlmodcfapnahmbfebeb/"
+    "_generated_background_page.html";
 
 Status MakeNavigationCheckFailedStatus(Status command_status) {
   return Status(command_status.code() == kTimeout ? kTimeout : kUnknownError,
@@ -107,24 +110,34 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
       return Status(kOk);
     }
 
+    // If we're loading the ChromeDriver automation extension background page,
+    // look for a known function to determine the loading status.
+    if (base_url == kAutomationExtensionBackgroundPage) {
+      bool function_exists = false;
+      status = CheckFunctionExists(timeout, &function_exists);
+      if (status.IsError())
+        return MakeNavigationCheckFailedStatus(status);
+      loading_state_ = function_exists ? kNotLoading : kLoading;
+    }
+
     // If the loading state is unknown (which happens after first connecting),
     // force loading to start and set the state to loading. This will cause a
     // frame start event to be received, and the frame stop event will not be
     // received until all frames are loaded.  Loading is forced to start by
     // attaching a temporary iframe.  Forcing loading to start is not
     // necessary if the main frame is not yet loaded.
-    const std::string kStartLoadingIfMainFrameNotLoading =
+    const std::string kStartLoadingIfMainFrameNotLoading = base::StringPrintf(
        "var isLoaded = document.readyState == 'complete' ||"
        "    document.readyState == 'interactive';"
        "if (isLoaded) {"
        "  var frame = document.createElement('iframe');"
-       "  frame.name = '" + kDummyFrameName + "';"
-       "  frame.src = '" + kDummyFrameUrl + "';"
+       "  frame.name = '%s';"
+       "  frame.src = '%s';"
        "  document.body.appendChild(frame);"
        "  window.setTimeout(function() {"
        "    document.body.removeChild(frame);"
        "  }, 0);"
-       "}";
+       "}", kDummyFrameName, kDummyFrameUrl);
     base::DictionaryValue params;
     params.SetString("expression", kStartLoadingIfMainFrameNotLoading);
     status = client_->SendCommandAndGetResultWithTimeout(
@@ -148,6 +161,20 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
     *is_pending |= scheduled_frame_set_.count(frame_id) > 0;
     *is_pending |= pending_frame_set_.count(frame_id) > 0;
   }
+  return Status(kOk);
+}
+
+Status NavigationTracker::CheckFunctionExists(const Timeout* timeout,
+                                              bool* exists) {
+  base::DictionaryValue params;
+  params.SetString("expression", "typeof(getWindowInfo)");
+  std::unique_ptr<base::DictionaryValue> result;
+  Status status = client_->SendCommandAndGetResultWithTimeout(
+      "Runtime.evaluate", params, timeout, &result);
+  std::string type;
+  if (status.IsError() || !result->GetString("result.value", &type))
+    return MakeNavigationCheckFailedStatus(status);
+  *exists = type == "function";
   return Status(kOk);
 }
 
@@ -263,15 +290,21 @@ Status NavigationTracker::OnEvent(DevToolsClient* client,
     }
   } else if (method == "Runtime.executionContextsCleared") {
     if (!IsExpectingFrameLoadingEvents()) {
+      execution_context_set_.clear();
+      load_event_fired_ = false;
       if (browser_info_->build_no >= 2685 && execution_context_set_.empty()) {
         // As of crrev.com/382211, DevTools sends an executionContextsCleared
         // event right before the first execution context is created, but after
-        // Page.loadEventFired.
-        ResetLoadingState(kUnknown);
+        // Page.loadEventFired. Set the loading state to loading, but do not
+        // clear the pending and scheduled frame sets, since they may contain
+        // frames that we're still waiting for.
+        loading_state_ = kLoading;
       } else {
-        execution_context_set_.clear();
+        // In older browser versions, this event signifies the first event after
+        // a cross-process navigation. Set the loading state, and clear any
+        // pending or scheduled frames, since we're about to navigate away from
+        // them.
         ResetLoadingState(kLoading);
-        load_event_fired_ = false;
       }
     }
   } else if (method == "Runtime.executionContextCreated") {
