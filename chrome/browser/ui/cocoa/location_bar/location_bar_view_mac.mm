@@ -633,11 +633,6 @@ void LocationBarViewMac::OnChanged() {
   UpdateLocationIcon();
 }
 
-void LocationBarViewMac::OnSetFocus() {
-  // Update the keyword and search hint states.
-  OnChanged();
-}
-
 void LocationBarViewMac::ShowURL() {
   omnibox_view_->ShowURL();
 }

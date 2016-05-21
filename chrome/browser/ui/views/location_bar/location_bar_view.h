@@ -378,7 +378,6 @@ class LocationBarView : public LocationBar,
 
   // ChromeOmniboxEditController:
   void OnChanged() override;
-  void OnSetFocus() override;
   const ToolbarModel* GetToolbarModel() const override;
 
   // DropdownBarHostDelegate:

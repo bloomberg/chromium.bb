@@ -26,6 +26,9 @@ class BackgroundWith1PxBorder : public views::Background {
 
   void Paint(gfx::Canvas* canvas, views::View* view) const override;
 
+  // Corner radius of the roundrect border.
+  static const float kCornerRadius;
+
  private:
   // Color for the one pixel border.
   SkColor border_color_;

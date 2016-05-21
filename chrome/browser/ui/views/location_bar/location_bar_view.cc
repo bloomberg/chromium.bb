@@ -1258,16 +1258,28 @@ void LocationBarView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 }
 
 void LocationBarView::OnFocus() {
-  // Explicitly focus the omnibox so a focus ring will be displayed around it on
-  // Windows.
   omnibox_view_->SetFocus();
 }
 
 void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 
-  if (ui::MaterialDesignController::IsModeMaterial() && !is_popup_mode_)
-    return;  // The background and border are painted by our Background.
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    if (show_focus_rect_ && omnibox_view_->HasFocus()) {
+      SkPaint paint;
+      paint.setAntiAlias(true);
+      paint.setColor(GetNativeTheme()->GetSystemColor(
+          ui::NativeTheme::NativeTheme::kColorId_FocusedBorderColor));
+      paint.setStyle(SkPaint::kStroke_Style);
+      paint.setStrokeWidth(1);
+      gfx::RectF focus_rect(GetLocalBounds());
+      focus_rect.Inset(gfx::InsetsF(0.5f));
+      canvas->DrawRoundRect(focus_rect, BackgroundWith1PxBorder::kCornerRadius,
+                            paint);
+    }
+    if (!is_popup_mode_)
+      return;  // The background and border are painted by our Background.
+  }
 
   // Fill the location bar background color behind the border.  Parts of the
   // border images are meant to rest atop the toolbar background and parts atop
@@ -1295,14 +1307,14 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
 
 void LocationBarView::PaintChildren(const ui::PaintContext& context) {
   View::PaintChildren(context);
-
   ui::PaintRecorder recorder(context, size());
 
   // For non-InstantExtendedAPI cases, if necessary, show focus rect. As we need
   // the focus rect to appear on top of children we paint here rather than
   // OnPaint().
   // Note: |Canvas::DrawFocusRect| paints a dashed rect with gray color.
-  if (show_focus_rect_ && HasFocus())
+  if (!ui::MaterialDesignController::IsModeMaterial() && show_focus_rect_ &&
+      HasFocus())
     recorder.canvas()->DrawFocusRect(omnibox_view_->bounds());
 
   if (!ui::MaterialDesignController::IsModeMaterial() && !is_popup_mode_) {
@@ -1363,10 +1375,6 @@ void LocationBarView::OnChanged() {
   location_icon_view_->set_show_tooltip(!GetOmniboxView()->IsEditingOrEmpty());
   Layout();
   SchedulePaint();
-}
-
-void LocationBarView::OnSetFocus() {
-  GetFocusManager()->SetFocusedView(this);
 }
 
 const ToolbarModel* LocationBarView::GetToolbarModel() const {

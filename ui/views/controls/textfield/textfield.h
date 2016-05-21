@@ -206,8 +206,6 @@ class VIEWS_EXPORT Textfield : public View,
   // Performs the action associated with the specified command id.
   void ExecuteCommand(int command_id);
 
-  void SetFocusPainter(std::unique_ptr<Painter> focus_painter);
-
   // Returns whether there is a drag operation originating from the textfield.
   bool HasTextBeingDragged();
 
@@ -409,8 +407,6 @@ class VIEWS_EXPORT Textfield : public View,
   // The default number of average characters for the width of this text field.
   // This will be reported as the "desired size". Defaults to 0.
   int default_width_in_chars_;
-
-  std::unique_ptr<Painter> focus_painter_;
 
   // Flags indicating whether various system colors should be used, and if not,
   // what overriding color values should be used instead.

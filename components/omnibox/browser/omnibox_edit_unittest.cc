@@ -112,7 +112,6 @@ class TestingOmniboxEditController : public OmniboxEditController {
   // OmniboxEditController:
   void OnInputInProgress(bool in_progress) override {}
   void OnChanged() override {}
-  void OnSetFocus() override {}
   void ShowURL() override {}
   ToolbarModel* GetToolbarModel() override { return toolbar_model_; }
   const ToolbarModel* GetToolbarModel() const override {

@@ -18,7 +18,11 @@ class WebOmniboxEditController : public OmniboxEditController {
   // Returns the WebState of the currently active tab.
   virtual web::WebState* GetWebState() = 0;
 
+  // The autocomplete edit lost focus.
   virtual void OnKillFocus() = 0;
+
+  // The autocomplete got focus.
+  virtual void OnSetFocus() = 0;
 
  protected:
   WebOmniboxEditController();

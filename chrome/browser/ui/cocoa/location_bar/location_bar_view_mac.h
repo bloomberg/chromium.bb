@@ -178,7 +178,6 @@ class LocationBarViewMac : public LocationBar,
   // ChromeOmniboxEditController:
   void UpdateWithoutTabRestore() override;
   void OnChanged() override;
-  void OnSetFocus() override;
   void ShowURL() override;
   ToolbarModel* GetToolbarModel() override;
   const ToolbarModel* GetToolbarModel() const override;

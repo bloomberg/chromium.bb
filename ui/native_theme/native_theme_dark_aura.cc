@@ -66,6 +66,10 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     case kColorId_ResultsTableSelectedDimmedText:
       return kResultsTableDimmedText;
 
+    // FocusableBorder
+    case kColorId_FocusedBorderColor:
+      return gfx::kGoogleBlue300;
+
     // Intentional pass-throughs to NativeThemeAura.
     case kColorId_ButtonEnabledColor:
     case kColorId_TextOnCallToActionColor:
@@ -80,7 +84,6 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     case kColorId_WindowBackground:
     case kColorId_DialogBackground:
     case kColorId_BubbleBackground:
-    case kColorId_FocusedBorderColor:
     case kColorId_UnfocusedBorderColor:
     case kColorId_ButtonBackgroundColor:
     case kColorId_ButtonDisabledColor:

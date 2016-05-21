@@ -920,7 +920,8 @@ bool OmniboxViewMac::OnDoCommandBySelector(SEL cmd) {
 
 void OmniboxViewMac::OnSetFocus(bool control_down) {
   model()->OnSetFocus(control_down);
-  controller()->OnSetFocus();
+  // Update the keyword and search hint states.
+  controller()->OnChanged();
 }
 
 void OmniboxViewMac::OnKillFocus() {

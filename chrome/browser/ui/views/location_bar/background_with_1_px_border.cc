@@ -13,6 +13,9 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+// static
+const float BackgroundWith1PxBorder::kCornerRadius = 2.5f;
+
 BackgroundWith1PxBorder::BackgroundWith1PxBorder(SkColor background,
                                                  SkColor border)
     : border_color_(border) {
@@ -31,9 +34,9 @@ void BackgroundWith1PxBorder::Paint(gfx::Canvas* canvas,
   border_rect_f.Inset(inset, inset);
 
   SkPath path;
-  const SkScalar kCornerRadius = SkDoubleToScalar(2.5f * scale);
-  path.addRoundRect(gfx::RectFToSkRect(border_rect_f), kCornerRadius,
-                    kCornerRadius);
+  const SkScalar scaled_corner_radius = SkFloatToScalar(kCornerRadius * scale);
+  path.addRoundRect(gfx::RectFToSkRect(border_rect_f), scaled_corner_radius,
+                    scaled_corner_radius);
 
   SkPaint paint;
   paint.setStyle(SkPaint::kStroke_Style);

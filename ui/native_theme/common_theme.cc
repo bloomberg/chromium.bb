@@ -63,6 +63,12 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
         // Normal and pressed share a color.
         return kLinkEnabledColorMd;
 
+      // FocusableBorder
+      case NativeTheme::kColorId_FocusedBorderColor:
+        return gfx::kGoogleBlue500;
+      case NativeTheme::kColorId_UnfocusedBorderColor:
+        return SkColorSetA(SK_ColorBLACK, 0x66);
+
       // Results Tables
       case NativeTheme::kColorId_ResultsTableHoveredBackground:
         return SkColorSetA(base_theme->GetSystemColor(
@@ -95,19 +101,6 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_ResultsTableNegativeHoveredText:
       case NativeTheme::kColorId_ResultsTableNegativeSelectedText:
         return kNegativeTextColorMd;
-
-      default:
-        break;
-    }
-  }
-
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    switch (color_id) {
-      // FocusableBorder
-      case NativeTheme::kColorId_FocusedBorderColor:
-        return gfx::kGoogleBlue500;
-      case NativeTheme::kColorId_UnfocusedBorderColor:
-        return SkColorSetA(SK_ColorBLACK, 0x66);
 
       default:
         break;

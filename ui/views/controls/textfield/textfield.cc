@@ -573,10 +573,6 @@ void Textfield::ExecuteCommand(int command_id) {
   ExecuteCommand(command_id, ui::EF_NONE);
 }
 
-void Textfield::SetFocusPainter(std::unique_ptr<Painter> focus_painter) {
-  focus_painter_ = std::move(focus_painter);
-}
-
 bool Textfield::HasTextBeingDragged() {
   return initiating_drag_;
 }

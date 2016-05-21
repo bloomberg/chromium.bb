@@ -30,9 +30,6 @@ class OmniboxEditController {
   // status of any keyword- or hint-related state.
   virtual void OnChanged() = 0;
 
-  // Called whenever the autocomplete edit gets focused.
-  virtual void OnSetFocus() = 0;
-
   // Shows the URL.
   virtual void ShowURL() = 0;
 
