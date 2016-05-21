@@ -24,20 +24,50 @@ unsigned nextMessageId()
     return ++messageId->value;
 }
 
+// static
+ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassRefPtr<ScriptCallStack> passCallStack, int scriptId)
+{
+    RefPtr<ScriptCallStack> callStack = passCallStack;
+    if (callStack && !callStack->isEmpty() && (!scriptId || !lineNumber))
+        return new ConsoleMessage(source, level, message, callStack->topSourceURL(), callStack->topLineNumber(), callStack->topColumnNumber(), callStack, 0);
+    return new ConsoleMessage(source, level, message, url, lineNumber, columnNumber, callStack, scriptId);
+}
+
+// static
+ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber)
+{
+    return ConsoleMessage::create(source, level, message, url, lineNumber, columnNumber, nullptr, 0);
+}
+
+// static
+ConsoleMessage* ConsoleMessage::createWithCallStack(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber)
+{
+    return ConsoleMessage::create(source, level, message, url, lineNumber, columnNumber, ScriptCallStack::captureForConsole(), 0);
+}
+
+// static
+ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level, const String& message)
+{
+    return ConsoleMessage::createWithCallStack(source, level, message, String(), 0, 0);
+}
+
 ConsoleMessage::ConsoleMessage(MessageSource source,
     MessageLevel level,
     const String& message,
     const String& url,
     unsigned lineNumber,
-    unsigned columnNumber)
+    unsigned columnNumber,
+    PassRefPtr<ScriptCallStack> callStack,
+    int scriptId)
     : m_source(source)
     , m_level(level)
     , m_type(LogMessageType)
     , m_message(message)
-    , m_scriptId(0)
+    , m_scriptId(scriptId)
     , m_url(url)
     , m_lineNumber(lineNumber)
     , m_columnNumber(columnNumber)
+    , m_callStack(callStack)
     , m_requestIdentifier(0)
     , m_timestamp(WTF::currentTime())
     , m_workerProxy(nullptr)
@@ -63,11 +93,6 @@ void ConsoleMessage::setType(MessageType type)
 int ConsoleMessage::scriptId() const
 {
     return m_scriptId;
-}
-
-void ConsoleMessage::setScriptId(int scriptId)
-{
-    m_scriptId = scriptId;
 }
 
 const String& ConsoleMessage::url() const
@@ -103,16 +128,6 @@ void ConsoleMessage::setColumnNumber(unsigned columnNumber)
 PassRefPtr<ScriptCallStack> ConsoleMessage::callStack() const
 {
     return m_callStack;
-}
-
-void ConsoleMessage::setCallStack(PassRefPtr<ScriptCallStack> callStack)
-{
-    m_callStack = callStack;
-    if (m_callStack && !m_callStack->isEmpty() && !m_scriptId) {
-        m_url = m_callStack->topSourceURL();
-        m_lineNumber = m_callStack->topLineNumber();
-        m_columnNumber = m_callStack->topColumnNumber();
-    }
 }
 
 ScriptState* ConsoleMessage::getScriptState() const
@@ -204,15 +219,6 @@ unsigned ConsoleMessage::argumentCount()
     if (m_scriptArguments)
         return m_scriptArguments->argumentCount();
     return 0;
-}
-
-void ConsoleMessage::collectCallStack()
-{
-    if (m_type == EndGroupMessageType)
-        return;
-
-    if (!m_callStack)
-        setCallStack(ScriptCallStack::captureForConsole());
 }
 
 DEFINE_TRACE(ConsoleMessage)

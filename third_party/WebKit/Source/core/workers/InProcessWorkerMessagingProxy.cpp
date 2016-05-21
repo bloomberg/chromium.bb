@@ -186,7 +186,7 @@ void InProcessWorkerMessagingProxy::reportConsoleMessage(MessageSource source, M
     if (!frame)
         return;
 
-    ConsoleMessage* consoleMessage = ConsoleMessage::create(source, level, message, sourceURL, lineNumber);
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(source, level, message, sourceURL, lineNumber, 0);
     consoleMessage->setWorkerInspectorProxy(m_workerInspectorProxy.get());
     frame->console().addMessage(consoleMessage);
 }

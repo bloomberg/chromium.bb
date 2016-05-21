@@ -151,7 +151,6 @@ void SVGDocumentExtensions::dispatchSVGLoadEventToOutermostSVGElements()
 void SVGDocumentExtensions::reportError(const String& message)
 {
     ConsoleMessage* consoleMessage = ConsoleMessage::create(RenderingMessageSource, ErrorMessageLevel,  "Error: " + message);
-    consoleMessage->collectCallStack();
     m_document->addConsoleMessage(consoleMessage);
 }
 

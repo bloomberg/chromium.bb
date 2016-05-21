@@ -80,7 +80,7 @@ void XSLTProcessor::parseErrorFunc(void* userData, xmlError* error)
         break;
     }
 
-    console->addMessage(ConsoleMessage::create(XMLMessageSource, level, error->message, error->file, error->line));
+    console->addMessage(ConsoleMessage::create(XMLMessageSource, level, error->message, error->file, error->line, 0));
 }
 
 // FIXME: There seems to be no way to control the ctxt pointer for loading here, thus we have globals.

@@ -263,7 +263,7 @@ void DocumentWebSocketChannel::fail(const String& reason, MessageLevel level, co
 
     InspectorInstrumentation::didReceiveWebSocketFrameError(document(), m_identifier, reason);
     const String message = "WebSocket connection to '" + m_url.elidedString() + "' failed: " + reason;
-    getExecutionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, level, message, sourceURL, lineNumber));
+    getExecutionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, level, message, sourceURL, lineNumber, 0));
 
     if (m_client)
         m_client->didError();

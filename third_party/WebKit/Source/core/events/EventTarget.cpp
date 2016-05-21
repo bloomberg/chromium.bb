@@ -98,14 +98,13 @@ void reportBlockedEvent(ExecutionContext* context, const Event* event, Registere
         "Handling of '%s' input event was delayed for %ld ms due to main thread being busy. "
         "Consider marking event handler as 'passive' to make the page more responive.",
         event->type().characters8(), lround(delayedSeconds * 1000));
-    ConsoleMessage* message = ConsoleMessage::create(JSMessageSource, WarningMessageLevel, messageText);
+    ConsoleMessage* message = nullptr;
 
     v8::Local<v8::Function> function = eventListenerEffectiveFunction(v8Listener->isolate(), handler);
-    if (!function.IsEmpty()) {
-        message->setLineNumber(function->GetScriptLineNumber() + 1);
-        message->setColumnNumber(function->GetScriptColumnNumber());
-        message->setScriptId(function->ScriptId());
-    }
+    if (!function.IsEmpty())
+        message = ConsoleMessage::create(JSMessageSource, WarningMessageLevel, messageText, String(), function->GetScriptLineNumber() + 1, function->GetScriptColumnNumber() + 1, nullptr, function->ScriptId());
+    else
+        message = ConsoleMessage::create(JSMessageSource, WarningMessageLevel, messageText, String(), 0, 0);
     context->addConsoleMessage(message);
     registeredListener->setBlockedEventWarningEmitted();
 }

@@ -1044,7 +1044,6 @@ void ContentSecurityPolicy::logToConsole(const String& message, MessageLevel lev
 
 void ContentSecurityPolicy::logToConsole(ConsoleMessage* consoleMessage, LocalFrame* frame)
 {
-    consoleMessage->collectCallStack();
     if (frame)
         frame->document()->addConsoleMessage(consoleMessage);
     else if (m_executionContext)

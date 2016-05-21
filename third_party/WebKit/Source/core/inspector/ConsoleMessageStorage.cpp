@@ -20,8 +20,6 @@ ConsoleMessageStorage::ConsoleMessageStorage()
 
 void ConsoleMessageStorage::reportMessage(ExecutionContext* context, ConsoleMessage* message)
 {
-    message->collectCallStack();
-
     if (message->type() == ClearMessageType)
         clear(context);
 

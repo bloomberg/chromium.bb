@@ -5,6 +5,7 @@
 #ifndef ConsoleMessage_h
 #define ConsoleMessage_h
 
+#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
@@ -18,30 +19,28 @@
 namespace blink {
 
 class ScriptArguments;
-class ScriptCallStack;
 class ScriptState;
 class WorkerInspectorProxy;
 
 class CORE_EXPORT ConsoleMessage final: public GarbageCollectedFinalized<ConsoleMessage> {
 public:
-    static ConsoleMessage* create(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber = 0)
-    {
-        return new ConsoleMessage(source, level, message, url, lineNumber, columnNumber);
-    }
+    // Callstack may be empty. Zero lineNumber or columnNumber means unknown.
+    static ConsoleMessage* create(MessageSource, MessageLevel, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassRefPtr<ScriptCallStack>, int scriptId = 0);
 
-    static ConsoleMessage* create(MessageSource source, MessageLevel level, const String& message)
-    {
-        ConsoleMessage* consoleMessage = new ConsoleMessage(source, level, message, String(), 0, 0);
-        consoleMessage->collectCallStack();
-        return consoleMessage;
-    }
+    // Shortcut when callstack is unavailable.
+    static ConsoleMessage* create(MessageSource, MessageLevel, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber);
+
+    // This method tries to capture callstack if possible and falls back to provided location.
+    static ConsoleMessage* createWithCallStack(MessageSource, MessageLevel, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber);
+
+    // Shortcut when location is unavailable. This method captures callstack.
+    static ConsoleMessage* create(MessageSource, MessageLevel, const String& message);
 
     ~ConsoleMessage();
 
     MessageType type() const;
     void setType(MessageType);
     int scriptId() const;
-    void setScriptId(int);
     const String& url() const;
     void setURL(const String&);
     unsigned lineNumber() const;
@@ -49,7 +48,6 @@ public:
     unsigned columnNumber() const;
     void setColumnNumber(unsigned);
     PassRefPtr<ScriptCallStack> callStack() const;
-    void setCallStack(PassRefPtr<ScriptCallStack>);
     ScriptState* getScriptState() const;
     void setScriptState(ScriptState*);
     ScriptArguments* scriptArguments() const;
@@ -72,12 +70,10 @@ public:
     void frameWindowDiscarded(LocalDOMWindow*);
     unsigned argumentCount();
 
-    void collectCallStack();
-
     DECLARE_TRACE();
 
 private:
-    ConsoleMessage(MessageSource, MessageLevel, const String& message, const String& url = String(), unsigned lineNumber = 0, unsigned columnNumber = 0);
+    ConsoleMessage(MessageSource, MessageLevel, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassRefPtr<ScriptCallStack>, int scriptId);
 
     MessageSource m_source;
     MessageLevel m_level;

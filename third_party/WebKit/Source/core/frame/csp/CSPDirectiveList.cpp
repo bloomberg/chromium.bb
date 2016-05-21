@@ -91,7 +91,7 @@ void CSPDirectiveList::reportViolationWithFrame(const String& directiveText, con
 void CSPDirectiveList::reportViolationWithLocation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const String& contextURL, const WTF::OrdinalNumber& contextLine) const
 {
     String message = m_reportOnly ? "[Report Only] " + consoleMessage : consoleMessage;
-    m_policy->logToConsole(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message, contextURL, contextLine.oneBasedInt()));
+    m_policy->logToConsole(ConsoleMessage::createWithCallStack(SecurityMessageSource, ErrorMessageLevel, message, contextURL, contextLine.oneBasedInt(), 0));
     m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportEndpoints, m_header, ContentSecurityPolicy::InlineViolation);
 }
 

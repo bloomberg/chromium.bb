@@ -80,40 +80,25 @@ void FrameConsole::addMessage(ConsoleMessage* consoleMessage)
     if (!messageStorage())
         return;
 
-    String messageURL;
-    unsigned lineNumber = 0;
-    if (consoleMessage->callStack() && !consoleMessage->callStack()->isEmpty()) {
-        lineNumber = consoleMessage->callStack()->topLineNumber();
-        messageURL = consoleMessage->callStack()->topSourceURL();
-    } else {
-        lineNumber = consoleMessage->lineNumber();
-        messageURL = consoleMessage->url();
-    }
-
     messageStorage()->reportMessage(m_frame->document(), consoleMessage);
 
     if (consoleMessage->source() == NetworkMessageSource)
         return;
 
-    RefPtr<ScriptCallStack> reportedCallStack;
-    if (consoleMessage->source() != ConsoleAPIMessageSource) {
-        if (consoleMessage->callStack() && frame().chromeClient().shouldReportDetailedMessageForSource(frame(), messageURL))
-            reportedCallStack = consoleMessage->callStack();
-    } else {
+    String stackTrace;
+    if (consoleMessage->source() == ConsoleAPIMessageSource) {
         if (!frame().host() || (consoleMessage->scriptArguments() && !consoleMessage->scriptArguments()->argumentCount()))
             return;
-
         if (!allClientReportingMessageTypes().contains(consoleMessage->type()))
             return;
-
-        if (frame().chromeClient().shouldReportDetailedMessageForSource(frame(), messageURL))
-            reportedCallStack = ScriptCallStack::capture();
+        if (frame().chromeClient().shouldReportDetailedMessageForSource(frame(), consoleMessage->url()))
+            stackTrace = ScriptCallStack::capture()->toString();
+    } else {
+        if (consoleMessage->callStack() && frame().chromeClient().shouldReportDetailedMessageForSource(frame(), consoleMessage->url()))
+            stackTrace = consoleMessage->callStack()->toString();
     }
 
-    String stackTrace;
-    if (reportedCallStack)
-        stackTrace = reportedCallStack->toString();
-    frame().chromeClient().addMessageToConsole(m_frame, consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), lineNumber, messageURL, stackTrace);
+    frame().chromeClient().addMessageToConsole(m_frame, consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->lineNumber(), consoleMessage->url(), stackTrace);
 }
 
 void FrameConsole::reportResourceResponseReceived(DocumentLoader* loader, unsigned long requestIdentifier, const ResourceResponse& response)
@@ -125,7 +110,7 @@ void FrameConsole::reportResourceResponseReceived(DocumentLoader* loader, unsign
     if (response.wasFallbackRequiredByServiceWorker())
         return;
     String message = "Failed to load resource: the server responded with a status of " + String::number(response.httpStatusCode()) + " (" + response.httpStatusText() + ')';
-    ConsoleMessage* consoleMessage = ConsoleMessage::create(NetworkMessageSource, ErrorMessageLevel, message, response.url().getString(), 0);
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(NetworkMessageSource, ErrorMessageLevel, message, response.url().getString(), 0, 0);
     consoleMessage->setRequestIdentifier(requestIdentifier);
     addMessage(consoleMessage);
 }
@@ -175,7 +160,7 @@ void FrameConsole::didFailLoading(unsigned long requestIdentifier, const Resourc
         message.appendLiteral(": ");
         message.append(error.localizedDescription());
     }
-    ConsoleMessage* consoleMessage = ConsoleMessage::create(NetworkMessageSource, ErrorMessageLevel, message.toString(), error.failingURL(), 0);
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(NetworkMessageSource, ErrorMessageLevel, message.toString(), error.failingURL(), 0, 0);
     consoleMessage->setRequestIdentifier(requestIdentifier);
     storage->reportMessage(m_frame->document(), consoleMessage);
 }

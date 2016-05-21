@@ -127,7 +127,6 @@ void logConsoleError(ExecutionContext* context, const String& message)
     // FIXME: It's not good to report the bad usage without indicating what source line it came from.
     // We should pass additional parameters so we can tell the console where the mistake occurred.
     ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message);
-    consoleMessage->collectCallStack();
     context->addConsoleMessage(consoleMessage);
 }
 
