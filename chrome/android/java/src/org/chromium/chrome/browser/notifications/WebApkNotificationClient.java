@@ -19,7 +19,7 @@ public class WebApkNotificationClient {
     private static final String TAG = "cr_WebApk";
 
     // Callback which catches RemoteExceptions thrown due to IWebApkApi failure.
-    private abstract static class ApiUseCallback implements Callback<IWebApkApi> {
+    private abstract static class ApiUseCallback extends Callback<IWebApkApi> {
         public abstract void useApi(IWebApkApi api) throws RemoteException;
 
         @Override

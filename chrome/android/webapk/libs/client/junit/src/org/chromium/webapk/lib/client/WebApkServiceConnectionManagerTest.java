@@ -35,7 +35,7 @@ public class WebApkServiceConnectionManagerTest {
     private ShadowApplication mShadowApplication;
     private WebApkServiceConnectionManager mConnectionManager;
 
-    private class TestCallback implements Callback<IWebApkApi> {
+    private class TestCallback extends Callback<IWebApkApi> {
         public boolean mGotResult = false;
 
         @Override

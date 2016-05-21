@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -125,7 +126,7 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
         updateFavicon(item);
     }
 
-    private static class FetchImageCallback implements SnippetsBridge.FetchSnippetImageCallback {
+    private static class FetchImageCallback extends Callback<Bitmap> {
         private SnippetArticleViewHolder mViewHolder;
         private final SnippetArticle mSnippet;
 
@@ -135,7 +136,7 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
         }
 
         @Override
-        public void onSnippetImageAvailable(Bitmap image) {
+        public void onResult(Bitmap image) {
             if (mViewHolder == null) return;
             mViewHolder.fadeThumbnailIn(mSnippet, image);
         }

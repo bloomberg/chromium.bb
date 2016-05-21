@@ -8,6 +8,7 @@
 #include "base/android/apk_assets.h"
 #include "base/android/application_status_listener.h"
 #include "base/android/build_info.h"
+#include "base/android/callback_android.h"
 #include "base/android/command_line_android.h"
 #include "base/android/content_uri_utils.h"
 #include "base/android/context_utils.h"
@@ -44,6 +45,7 @@ static RegistrationMethod kBaseRegisteredMethods[] = {
     {"ApplicationStatusListener",
      base::android::ApplicationStatusListener::RegisterBindings},
     {"BuildInfo", base::android::BuildInfo::RegisterBindings},
+    {"CallbackAndroid", base::android::RegisterCallbackAndroid},
     {"CommandLine", base::android::RegisterCommandLine},
     {"ContentUriUtils", base::RegisterContentUriUtils},
     {"ContextUtils", base::android::RegisterContextUtils},

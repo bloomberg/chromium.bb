@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.preferences.website;
 
+import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ContentSettingsType;
 
 import java.util.ArrayList;
@@ -315,47 +316,46 @@ public class WebsitePermissionsFetcher {
     private class LocalStorageInfoFetcher extends Task {
         @Override
         public void runAsync(final TaskQueue queue) {
-            WebsitePreferenceBridge.fetchLocalStorageInfo(
-                    new WebsitePreferenceBridge.LocalStorageInfoReadyCallback() {
+            WebsitePreferenceBridge.fetchLocalStorageInfo(new Callback<HashMap>() {
+                @Override
+                public void onResult(HashMap result) {
+                    for (Object o : result.entrySet()) {
                         @SuppressWarnings("unchecked")
-                        @Override
-                        public void onLocalStorageInfoReady(HashMap map) {
-                            for (Object o : map.entrySet()) {
-                                Map.Entry<String, LocalStorageInfo> entry =
-                                        (Map.Entry<String, LocalStorageInfo>) o;
-                                WebsiteAddress address = WebsiteAddress.create(entry.getKey());
-                                if (address == null) continue;
-                                Set<Website> sites = findOrCreateSitesByOrigin(address);
-                                for (Website site : sites) {
-                                    site.setLocalStorageInfo(entry.getValue());
-                                }
-                            }
-                            queue.next();
+                        Map.Entry<String, LocalStorageInfo> entry =
+                                (Map.Entry<String, LocalStorageInfo>) o;
+                        WebsiteAddress address = WebsiteAddress.create(entry.getKey());
+                        if (address == null) continue;
+                        Set<Website> sites = findOrCreateSitesByOrigin(address);
+                        for (Website site : sites) {
+                            site.setLocalStorageInfo(entry.getValue());
                         }
-                    });
+                    }
+                    queue.next();
+                }
+            });
         }
     }
 
     private class WebStorageInfoFetcher extends Task {
         @Override
         public void runAsync(final TaskQueue queue) {
-            WebsitePreferenceBridge.fetchStorageInfo(
-                    new WebsitePreferenceBridge.StorageInfoReadyCallback() {
-                        @SuppressWarnings("unchecked")
-                        @Override
-                        public void onStorageInfoReady(ArrayList array) {
-                            ArrayList<StorageInfo> infoArray = array;
-                            for (StorageInfo info : infoArray) {
-                                WebsiteAddress address = WebsiteAddress.create(info.getHost());
-                                if (address == null) continue;
-                                Set<Website> sites = findOrCreateSitesByHost(address);
-                                for (Website site : sites) {
-                                    site.addStorageInfo(info);
-                                }
-                            }
-                            queue.next();
+            WebsitePreferenceBridge.fetchStorageInfo(new Callback<ArrayList>() {
+                @Override
+                public void onResult(ArrayList result) {
+                    @SuppressWarnings("unchecked")
+                    ArrayList<StorageInfo> infoArray = result;
+
+                    for (StorageInfo info : infoArray) {
+                        WebsiteAddress address = WebsiteAddress.create(info.getHost());
+                        if (address == null) continue;
+                        Set<Website> sites = findOrCreateSitesByHost(address);
+                        for (Website site : sites) {
+                            site.addStorageInfo(info);
                         }
-                    });
+                    }
+                    queue.next();
+                }
+            });
         }
     }
 

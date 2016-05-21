@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/preferences/website_preference_bridge.h"
 
+#include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
@@ -544,9 +545,7 @@ class StorageInfoReadyCallback {
           env_, list.obj(), host.obj(), i->type, i->usage);
     }
 
-    Java_StorageInfoReadyCallback_onStorageInfoReady(
-        env_, java_callback_.obj(), list.obj());
-
+    base::android::RunCallbackAndroid(java_callback_, list);
     delete this;
   }
 
@@ -605,8 +604,7 @@ class LocalStorageInfoReadyCallback {
           env_, map.obj(), origin.obj(), full_origin.obj(), i->size);
     }
 
-    Java_LocalStorageInfoReadyCallback_onLocalStorageInfoReady(
-        env_, java_callback_.obj(), map.obj());
+    base::android::RunCallbackAndroid(java_callback_, map);
     delete this;
   }
 

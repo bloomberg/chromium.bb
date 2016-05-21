@@ -10,6 +10,7 @@ import android.app.ActivityManager;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.net.Uri;
@@ -605,8 +606,7 @@ public class NewTabPage
         }
 
         @Override
-        public void fetchSnippetImage(
-                SnippetArticle snippet, SnippetsBridge.FetchSnippetImageCallback callback) {
+        public void fetchSnippetImage(SnippetArticle snippet, Callback<Bitmap> callback) {
             if (mIsDestroyed) return;
 
             mSnippetsBridge.fetchSnippetImage(snippet, callback);

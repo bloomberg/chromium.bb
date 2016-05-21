@@ -1383,6 +1383,7 @@
             'android/java/src/org/chromium/base/ApplicationStatus.java',
             'android/java/src/org/chromium/base/AnimationFrameTimeHistogram.java',
             'android/java/src/org/chromium/base/BuildInfo.java',
+            'android/java/src/org/chromium/base/Callback.java',
             'android/java/src/org/chromium/base/CommandLine.java',
             'android/java/src/org/chromium/base/ContentUriUtils.java',
             'android/java/src/org/chromium/base/ContextUtils.java',

@@ -32,6 +32,8 @@
           'android/base_jni_registrar.h',
           'android/build_info.cc',
           'android/build_info.h',
+          'android/callback_android.cc',
+          'android/callback_android.h',
           'android/command_line_android.cc',
           'android/command_line_android.h',
           'android/content_uri_utils.cc',

@@ -6,6 +6,7 @@
 
 #include <jni.h>
 
+#include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -38,10 +39,7 @@ void SnippetVisitedHistoryRequestCallback(
       const history::URLRow& row,
       const history::VisitVector& visitVector) {
   bool visited = success && row.visit_count() != 0;
-
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_SnippetsBridge_runCallback(env, callback.obj(),
-                                  static_cast<jboolean>(visited));
+  base::android::RunCallbackAndroid(callback, visited);
 }
 
 } // namespace
@@ -178,14 +176,11 @@ void NTPSnippetsBridge::NTPSnippetsServiceDisabled() {
 void NTPSnippetsBridge::OnImageFetched(ScopedJavaGlobalRef<jobject> callback,
                                        const std::string& snippet_id,
                                        const gfx::Image& image) {
-  JNIEnv* env = AttachCurrentThread();
-
   ScopedJavaLocalRef<jobject> j_bitmap;
   if (!image.IsEmpty())
     j_bitmap = gfx::ConvertToJavaBitmap(image.ToSkBitmap());
 
-  Java_FetchSnippetImageCallback_onSnippetImageAvailable(env, callback.obj(),
-                                                         j_bitmap.obj());
+  base::android::RunCallbackAndroid(callback, j_bitmap);
 }
 
 // static

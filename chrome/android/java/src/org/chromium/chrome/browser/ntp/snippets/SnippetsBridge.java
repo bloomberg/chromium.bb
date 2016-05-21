@@ -23,14 +23,6 @@ public class SnippetsBridge {
     private SnippetsObserver mObserver;
 
     /**
-     * A callback that is called after a snippet image was fetched from the snippets service.
-     */
-    public interface FetchSnippetImageCallback {
-        @CalledByNative("FetchSnippetImageCallback")
-        void onSnippetImageAvailable(Bitmap image);
-    }
-
-    /**
      * An observer for events in the snippets service.
      */
     public interface SnippetsObserver {
@@ -89,7 +81,7 @@ public class SnippetsBridge {
     /**
      * Fetches the thumbnail image for a snippet.
      */
-    public void fetchSnippetImage(SnippetArticle snippet, FetchSnippetImageCallback callback) {
+    public void fetchSnippetImage(SnippetArticle snippet, Callback<Bitmap> callback) {
         nativeFetchImage(mNativeSnippetsBridge, snippet.mId, callback);
     }
 
@@ -99,14 +91,6 @@ public class SnippetsBridge {
     public void getSnippedVisited(SnippetArticle snippet, Callback<Boolean> callback) {
         assert mNativeSnippetsBridge != 0;
         nativeSnippetVisited(mNativeSnippetsBridge, callback, snippet.mUrl);
-    }
-
-    /**
-     * {@link Callback#onResult} is not annotated with CalledByNative, so we must use this wrapper.
-     */
-    @CalledByNative
-    private static void runCallback(Callback<Boolean> callback, boolean result) {
-        callback.onResult(result);
     }
 
     /**
@@ -155,5 +139,5 @@ public class SnippetsBridge {
     private static native void nativeSnippetVisited(long nativeNTPSnippetsBridge,
             Callback<Boolean> callback, String url);
     private native void nativeFetchImage(
-            long nativeNTPSnippetsBridge, String snippetId, FetchSnippetImageCallback callback);
+            long nativeNTPSnippetsBridge, String snippetId, Callback<Bitmap> callback);
 }
