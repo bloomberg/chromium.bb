@@ -572,12 +572,7 @@ void V8DebuggerImpl::handleV8AsyncTaskEvent(V8DebuggerAgentImpl* agent, v8::Loca
     String16 type = toProtocolStringWithTypeCheck(callInternalGetterFunction(eventData, "type"));
     String16 name = toProtocolStringWithTypeCheck(callInternalGetterFunction(eventData, "name"));
     int id = callInternalGetterFunction(eventData, "id")->ToInteger(m_isolate)->Value();
-
-    m_pausedContext = context;
-    m_executionState = executionState;
     agent->didReceiveV8AsyncTaskEvent(context, type, name, id);
-    m_pausedContext.Clear();
-    m_executionState.Clear();
 }
 
 V8DebuggerParsedScript V8DebuggerImpl::createParsedScript(v8::Local<v8::Object> object, bool success)
