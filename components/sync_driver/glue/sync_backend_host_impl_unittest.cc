@@ -845,6 +845,18 @@ TEST_F(SyncBackendHostTest, IgnoreOldInvalidations) {
   }
 }
 
+// Tests that SyncBackendHostImpl retains ModelTypeConnector after call to
+// StopSyncingForShutdown. This is needed for datatype deactivation during
+// DataTypeManager shutdown.
+TEST_F(SyncBackendHostTest, ModelTypeConnectorValidDuringShutdown) {
+  InitializeBackend(true);
+  backend_->StopSyncingForShutdown();
+  // Verify that call to DeactivateNonBlockingDataType doesn't assert.
+  backend_->DeactivateNonBlockingDataType(syncer::AUTOFILL);
+  backend_->Shutdown(syncer::STOP_SYNC);
+  backend_.reset();
+}
+
 }  // namespace
 
 }  // namespace browser_sync

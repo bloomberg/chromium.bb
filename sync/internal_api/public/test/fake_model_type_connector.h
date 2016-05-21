@@ -9,7 +9,7 @@
 
 namespace syncer_v2 {
 
-// A non-functional implementation of ModelTypeConnector for testing.
+// A no-op implementation of ModelTypeConnector for testing.
 class FakeModelTypeConnector : public ModelTypeConnector {
  public:
   FakeModelTypeConnector();

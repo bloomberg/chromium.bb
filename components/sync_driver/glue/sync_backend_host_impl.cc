@@ -237,9 +237,6 @@ void SyncBackendHostImpl::StopSyncingForShutdown() {
   // Immediately stop sending messages to the frontend.
   frontend_ = NULL;
 
-  // Stop non-blocking sync types from sending any more requests to the syncer.
-  model_type_connector_.reset();
-
   DCHECK(registrar_->sync_thread()->IsRunning());
 
   registrar_->RequestWorkerStopOnUIThread();
@@ -264,6 +261,8 @@ std::unique_ptr<base::Thread> SyncBackendHostImpl::Shutdown(
     invalidator_ = NULL;
   }
   invalidation_handler_registered_ = false;
+
+  model_type_connector_.reset();
 
   // Shut down and destroy sync manager.
   registrar_->sync_thread()->task_runner()->PostTask(

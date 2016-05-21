@@ -15,11 +15,9 @@ FakeModelTypeConnector::~FakeModelTypeConnector() {}
 void FakeModelTypeConnector::ConnectType(
     syncer::ModelType type,
     std::unique_ptr<ActivationContext> activation_context) {
-  NOTREACHED() << "FakeModelTypeConnector is not meant to be used";
 }
 
 void FakeModelTypeConnector::DisconnectType(syncer::ModelType type) {
-  NOTREACHED() << "FakeModelTypeConnector is not meant to be used";
 }
 
 }  // namespace syncer_v2
