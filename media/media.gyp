@@ -1293,10 +1293,13 @@
           'sources!': [
             'ffmpeg/ffmpeg_common_unittest.cc',
             'filters/audio_decoder_unittest.cc',
+            'filters/audio_file_reader_unittest.cc',
+            'filters/blocking_url_protocol_unittest.cc',
             'filters/ffmpeg_aac_bitstream_converter_unittest.cc',
             'filters/ffmpeg_demuxer_unittest.cc',
             'filters/ffmpeg_glue_unittest.cc',
             'filters/ffmpeg_h264_to_annex_b_bitstream_converter_unittest.cc',
+            'filters/in_memory_url_protocol_unittest.cc'
           ],
         }],
         # Even if FFmpeg is enabled on Android we don't want these.
