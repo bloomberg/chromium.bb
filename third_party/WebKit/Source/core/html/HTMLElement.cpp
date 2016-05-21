@@ -915,32 +915,41 @@ static RGBA32 parseColorStringWithCrazyLegacyRules(const String& colorString)
 }
 
 // Color parsing that matches HTML's "rules for parsing a legacy color value"
-void HTMLElement::addHTMLColorToStyle(MutableStylePropertySet* style, CSSPropertyID propertyID, const String& attributeValue)
+bool HTMLElement::parseColorWithLegacyRules(const String& attributeValue, Color& parsedColor)
 {
     // An empty string doesn't apply a color. (One containing only whitespace does, which is why this check occurs before stripping.)
     if (attributeValue.isEmpty())
-        return;
+        return false;
 
     String colorString = attributeValue.stripWhiteSpace();
 
     // "transparent" doesn't apply a color either.
     if (equalIgnoringCase(colorString, "transparent"))
-        return;
-
-    Color color;
+        return false;
 
     // If the string is a 3/6-digit hex color or a named CSS color, use that. Apply legacy rules otherwise. Note color.setFromString()
     // accepts 4/8-digit hex color, so restrict its use with length checks here to support legacy HTML attributes.
 
     bool success = false;
     if ((colorString.length() == 4 || colorString.length() == 7) && colorString[0] == '#')
-        success = color.setFromString(colorString);
+        success = parsedColor.setFromString(colorString);
     if (!success)
-        success = color.setNamedColor(colorString);
-    if (!success)
-        color.setRGB(parseColorStringWithCrazyLegacyRules(colorString));
+        success = parsedColor.setNamedColor(colorString);
+    if (!success) {
+        parsedColor.setRGB(parseColorStringWithCrazyLegacyRules(colorString));
+        success = true;
+    }
 
-    style->setProperty(propertyID, cssValuePool().createColorValue(color.rgb()));
+    return success;
+}
+
+void HTMLElement::addHTMLColorToStyle(MutableStylePropertySet* style, CSSPropertyID propertyID, const String& attributeValue)
+{
+    Color parsedColor;
+    if (!parseColorWithLegacyRules(attributeValue, parsedColor))
+        return;
+
+    style->setProperty(propertyID, cssValuePool().createColorValue(parsedColor.rgb()));
 }
 
 bool HTMLElement::isInteractiveContent() const

@@ -113,6 +113,7 @@ protected:
     void applyBorderAttributeToStyle(const AtomicString&, MutableStylePropertySet*);
 
     void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
+    static bool parseColorWithLegacyRules(const String& attributeValue, Color& parsedColor);
     bool isPresentationAttribute(const QualifiedName&) const override;
     void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) override;
     unsigned parseBorderWidthAttribute(const AtomicString&) const;

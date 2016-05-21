@@ -94,14 +94,16 @@ void HTMLBodyElement::parseAttribute(const QualifiedName& name, const AtomicStri
                 document().textLinkColors().resetActiveLinkColor();
         } else {
             Color color;
-            if (CSSParser::parseColor(color, value, !document().inQuirksMode())) {
-                if (name == linkAttr)
-                    document().textLinkColors().setLinkColor(color);
-                else if (name == vlinkAttr)
-                    document().textLinkColors().setVisitedLinkColor(color);
-                else
-                    document().textLinkColors().setActiveLinkColor(color);
-            }
+            String stringValue = value;
+            if (!HTMLElement::parseColorWithLegacyRules(stringValue, color))
+                return;
+
+            if (name == linkAttr)
+                document().textLinkColors().setLinkColor(color);
+            else if (name == vlinkAttr)
+                document().textLinkColors().setVisitedLinkColor(color);
+            else
+                document().textLinkColors().setActiveLinkColor(color);
         }
 
         setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::LinkColorChange));
