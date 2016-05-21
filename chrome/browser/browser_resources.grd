@@ -475,15 +475,16 @@
         <include name="IDR_ABOUT_POWER_JS" file="resources\chromeos\power.js" type="BINDATA" />
         <include name="IDR_ABOUT_POWER_CSS" file="resources\chromeos\power.css" type="BINDATA" />
         <include name="IDR_DEVICE_EMULATOR_HTML" file="resources\chromeos\emulator\device_emulator.html" type="BINDATA" />
-        <include name="IDR_DEVICE_EMULATOR_CSS" file="resources\chromeos\emulator\device_emulator.css" type="BINDATA" />
-        <include name="IDR_DEVICE_EMULATOR_JS" file="resources\chromeos\emulator\device_emulator.js" type="BINDATA" />
-        <include name="IDR_DEVICE_EMULATOR_SHARED_STYLES_CSS" file="resources\chromeos\emulator\shared_styles.css" type="BINDATA" />
-        <include name="IDR_AUDIO_SETTINGS_HTML" file="resources\chromeos\emulator\audio_settings.html" type="BINDATA" />
-        <include name="IDR_AUDIO_SETTINGS_JS" file="resources\chromeos\emulator\audio_settings.js" type="BINDATA" />
-        <include name="IDR_BATTERY_SETTINGS_HTML" file="resources\chromeos\emulator\battery_settings.html" type="BINDATA" />
-        <include name="IDR_BATTERY_SETTINGS_JS" file="resources\chromeos\emulator\battery_settings.js" type="BINDATA" />
-        <include name="IDR_BLUETOOTH_SETTINGS_HTML" file="resources\chromeos\emulator\bluetooth_settings.html" type="BINDATA" />
-        <include name="IDR_BLUETOOTH_SETTINGS_JS" file="resources\chromeos\emulator\bluetooth_settings.js" type="BINDATA" />
+        <include name="IDR_DEVICE_EMULATOR_AUDIO_SETTINGS_HTML" file="resources\chromeos\emulator\audio_settings.html" type="BINDATA" />
+        <include name="IDR_DEVICE_EMULATOR_AUDIO_SETTINGS_JS" file="resources\chromeos\emulator\audio_settings.js" type="BINDATA" />
+        <include name="IDR_DEVICE_EMULATOR_BATTERY_SETTINGS_HTML" file="resources\chromeos\emulator\battery_settings.html" type="BINDATA" />
+        <include name="IDR_DEVICE_EMULATOR_BATTERY_SETTINGS_JS" file="resources\chromeos\emulator\battery_settings.js" type="BINDATA" />
+        <include name="IDR_DEVICE_EMULATOR_BLUETOOTH_SETTINGS_HTML" file="resources\chromeos\emulator\bluetooth_settings.html" type="BINDATA" />
+        <include name="IDR_DEVICE_EMULATOR_BLUETOOTH_SETTINGS_JS" file="resources\chromeos\emulator\bluetooth_settings.js" type="BINDATA" />
+        <include name="IDR_DEVICE_EMULATOR_ICONS_HTML" file="resources\chromeos\emulator\icons.html" type="BINDATA" />
+        <include name="IDR_DEVICE_EMULATOR_PAGES_HTML" file="resources\chromeos\emulator\device_emulator_pages.html" type="BINDATA" />
+        <include name="IDR_DEVICE_EMULATOR_PAGES_JS" file="resources\chromeos\emulator\device_emulator_pages.js" type="BINDATA" />
+        <include name="IDR_DEVICE_EMULATOR_SHARED_STYLES_HTML" file="resources\chromeos\emulator\shared_styles.html" type="BINDATA" />
       </if>
       <include name="IDR_EASY_UNLOCK_MANIFEST" file="resources\easy_unlock\manifest.json" type="BINDATA" />
       <include name="IDR_EASY_UNLOCK_MANIFEST_SIGNIN" file="resources\easy_unlock\manifest_signin.json" type="BINDATA" />

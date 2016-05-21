@@ -1,16 +1,24 @@
-<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/device-icons.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog/paper-dialog.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
+<link rel="import" href="icons.html">
+<link rel="import" href="shared_styles.html">
 
 <dom-module id="bluetooth-settings">
-  <link rel="import" type="css" href="shared_styles.css">
   <template>
-    <paper-dialog on-iron-overlay-opened="editDialogOpened" modal
-        id="editModal">
+    <!-- TODO(michaelpg): Wrap the line below to fit within the 80-char limit.
+         See https://github.com/Polymer/polymer/pull/3668. -->
+    <style include="device-emulator-shared-styles iron-flex iron-flex-alignment iron-positioning">
+    </style>
+    <paper-dialog on-iron-overlay-opened="editDialogOpened" with-backdrop
+        id="editDialog">
       <div class="element-label">[[currentEditableObject.alias]]</div>
       <div>
         <form>
@@ -93,8 +101,8 @@
 
     <div class="layout vertical">
       <div class="element-label">
-        <paper-icon-button icon="device:bluetooth"></paper-icon-button>
-        <span>[[title]]</span>
+        <paper-icon-button icon="device-emulator:bluetooth"></paper-icon-button>
+        Bluetooth
       </div>
       <table class="devices-table">
         <tbody>
@@ -107,11 +115,13 @@
             <tr>
               <td class="alias-cell">[[item.alias]]</td>
               <td class="icon-cell">
-                <paper-icon-button icon="content-copy"
+                <paper-icon-button icon="device-emulator:content-copy"
                     on-click="copyDevice" data-predefined="true">
                 </paper-icon-button>
-                <paper-icon-button disabled icon="settings"></paper-icon-button>
-                <paper-icon-button disabled icon="delete"></paper-icon-button>
+                <paper-icon-button disabled icon="device-emulator:settings">
+                </paper-icon-button>
+                <paper-icon-button disabled icon="device-emulator:delete">
+                </paper-icon-button>
               </td>
               <td class="control-cell">
                 <paper-checkbox checked="{{item.discoverable}}"
@@ -133,12 +143,15 @@
             <tr>
               <td class="alias-cell">[[item.alias]]</td>
               <td class="icon-cell">
-                <paper-icon-button icon="content-copy" data-predefined="false"
-                    on-click="copyDevice"></paper-icon-button>
-                <paper-icon-button icon="settings" on-click="showEditModal"
-                    ></paper-icon-button>
-                <paper-icon-button icon="delete" on-click="deleteDevice"
-                    ></paper-icon-button>
+                <paper-icon-button icon="device-emulator:content-copy"
+                    data-predefined="false" on-click="copyDevice">
+                </paper-icon-button>
+                <paper-icon-button icon="device-emulator:settings"
+                    on-click="showEditDialog">
+                </paper-icon-button>
+                <paper-icon-button icon="device-emulator:delete"
+                    on-click="deleteDevice">
+                </paper-icon-button>
               </td>
               <td class="control-cell">
                 <paper-checkbox checked="{{item.discoverable}}"

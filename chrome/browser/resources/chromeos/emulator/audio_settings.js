@@ -49,6 +49,8 @@ var AudioNode = function() {
 Polymer({
   is: 'audio-settings',
 
+  behaviors: [Polymer.NeonAnimatableBehavior],
+
   properties: {
     /**
      * An AudioNode which is currently being edited.
@@ -103,11 +105,6 @@ Polymer({
         ];
       }
     },
-
-    /**
-     * The title to be displayed in a heading element for the element.
-     */
-    title: {type: String},
   },
 
   ready: function() {
@@ -184,15 +181,15 @@ Polymer({
   },
 
   /**
-   * Shows a modal dialog to edit the selected node's properties.
+   * Shows a dialog to edit the selected node's properties.
    * @param {Event} event Contains event data. |event.model.index| is the index
    *     of the item which the target is contained in.
    */
-  showEditModal: function(event) {
+  showEditDialog: function(event) {
     var index = event.model.index;
     this.currentEditIndex = index;
     this.currentEditableObject = this.nodes[index];
-    this.$.editModal.toggle();
+    this.$.editDialog.toggle();
   },
 
   /**

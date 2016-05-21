@@ -54,12 +54,9 @@ var BluetoothDevice = function() {
 Polymer({
   is: 'bluetooth-settings',
 
-  properties: {
-    /**
-     * The title to be displayed in a heading element for the element.
-     */
-    title: {type: String},
+  behaviors: [Polymer.NeonAnimatableBehavior],
 
+  properties: {
     /**
      * A set of bluetooth devices.
      * @type !Array<!BluetoothDevice>
@@ -163,7 +160,7 @@ Polymer({
   },
 
   /**
-   * Called when the device edit modal is opened. Re-validates necessary input
+   * Called when the device edit dialog is opened. Re-validates necessary input
    * fields.
    */
   editDialogOpened: function() {
@@ -190,7 +187,7 @@ Polymer({
   },
 
   /**
-   * Called on-input from an input element and on edit modal open.
+   * Called on-input from an input element and on edit dialog open.
    * Validates whether or not the
    * input's content matches a regular expression. If the input's value
    * satisfies the regex, then make sure that the address is not already
@@ -457,15 +454,15 @@ Polymer({
   },
 
   /**
-   * Shows a modal dialog to edit the selected device's properties.
+   * Shows a dialog to edit the selected device's properties.
    * @param {Event} event Contains event data. |event.model.index| is the index
    *     of the item which the target is contained in.
    */
-  showEditModal: function(event) {
+  showEditDialog: function(event) {
     var index = event.model.index;
     this.currentEditIndex = index;
     this.currentEditableObject = this.devices[index];
-    this.$.editModal.toggle();
+    this.$.editDialog.toggle();
   },
 
   /**

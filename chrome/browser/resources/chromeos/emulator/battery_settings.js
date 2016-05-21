@@ -5,6 +5,8 @@
 var BatterySettings = Polymer({
   is: 'battery-settings',
 
+  behaviors: [Polymer.NeonAnimatableBehavior],
+
   properties: {
     /** The system's battery percentage. */
     batteryPercent: Number,
@@ -69,12 +71,6 @@ var BatterySettings = Polymer({
 
     /** A string representing the time left until the battery is at 100%. */
     timeUntilFull: String,
-
-    /** The title for the settings section. */
-    title: {
-      type: String,
-      value: 'Power',
-    },
   },
 
   observers: [

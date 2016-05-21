@@ -1,24 +1,29 @@
-<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/device-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable-behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
+<link rel="import" href="icons.html">
+<link rel="import" href="shared_styles.html">
 
 <dom-module id="battery-settings">
-  <link rel="import" type="css" href="shared_styles.css">
   <template>
+    <!-- TODO(michaelpg): Wrap the line below to fit within the 80-char limit.
+         See https://github.com/Polymer/polymer/pull/3668. -->
+    <style include="device-emulator-shared-styles iron-flex iron-flex-alignment iron-positioning">
+    </style>
     <div class="layout vertical">
       <div class="element-label">
-        <paper-icon-button icon="device:battery-charging-full">
+        <paper-icon-button icon="device-emulator:battery-charging-full">
         </paper-icon-button>
-        <span>[[title]]</span>
+        Power
       </div>
       <label>
         <span class="form-label">Battery state</span>
@@ -62,7 +67,8 @@
                 <paper-button on-tap="onSetAsSourceTap"
                     hidden$="[[!isDualRole(item)]]"
                     raised="[[!isSelectedSource(item, selectedPowerSourceId)]]"
-                    disabled="[[!canBecomeSource(item, selectedPowerSourceId, powerSourceOptions.*)]]">
+                    disabled="[[!canBecomeSource(
+                        item, selectedPowerSourceId, powerSourceOptions.*)]]">
                   Set as source
                 </paper-button>
                 <div hidden$="[[isDualRole(item)]]">Source</div>
@@ -70,11 +76,11 @@
               <td class="control-cell">
                 <paper-dropdown-menu class="device-class-group"
                     disabled="[[!item.variablePower]]">
-                  <paper-menu selected="{{item.power}}"
+                  <paper-listbox selected="{{item.power}}"
                       class="dropdown-content" attr-for-selected="data-value">
                     <paper-item data-value="high">High</paper-item>
                     <paper-item data-value="low">Low</paper-item>
-                  </paper-menu>
+                  </paper-listbox>
                 </paper-dropdown-menu>
               </td>
           </template>

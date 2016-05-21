@@ -24,6 +24,7 @@
 namespace {
 
 // Define the name of the callback functions that will be used by JavaScript.
+const char kInitialize[] = "initializeDeviceEmulator";
 const char kBluetoothDiscoverFunction[] = "requestBluetoothDiscover";
 const char kBluetoothPairFunction[] = "requestBluetoothPair";
 const char kRequestBluetoothInfo[] = "requestBluetoothInfo";
@@ -203,10 +204,8 @@ DeviceEmulatorMessageHandler::DeviceEmulatorMessageHandler()
 DeviceEmulatorMessageHandler::~DeviceEmulatorMessageHandler() {
 }
 
-void DeviceEmulatorMessageHandler::Init() {
-  bluetooth_observer_.reset(new BluetoothObserver(this));
-  cras_audio_observer_.reset(new CrasAudioObserver(this));
-  power_observer_.reset(new PowerObserver(this));
+void DeviceEmulatorMessageHandler::Init(const base::ListValue* args) {
+  AllowJavascript();
 }
 
 void DeviceEmulatorMessageHandler::RequestPowerInfo(
@@ -450,6 +449,9 @@ void DeviceEmulatorMessageHandler::UpdatePowerSourceId(
 
 void DeviceEmulatorMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
+      kInitialize,
+      base::Bind(&DeviceEmulatorMessageHandler::Init, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       kRequestPowerInfo,
       base::Bind(&DeviceEmulatorMessageHandler::RequestPowerInfo,
                  base::Unretained(this)));
@@ -505,6 +507,18 @@ void DeviceEmulatorMessageHandler::RegisterMessages() {
       kRemoveBluetoothDevice,
       base::Bind(&DeviceEmulatorMessageHandler::HandleRemoveBluetoothDevice,
                  base::Unretained(this)));
+}
+
+void DeviceEmulatorMessageHandler::OnJavascriptAllowed() {
+  bluetooth_observer_.reset(new BluetoothObserver(this));
+  cras_audio_observer_.reset(new CrasAudioObserver(this));
+  power_observer_.reset(new PowerObserver(this));
+}
+
+void DeviceEmulatorMessageHandler::OnJavascriptDisallowed() {
+  bluetooth_observer_.reset();
+  cras_audio_observer_.reset();
+  power_observer_.reset();
 }
 
 std::string DeviceEmulatorMessageHandler::CreateBluetoothDeviceFromListValue(

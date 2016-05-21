@@ -36,7 +36,7 @@ class DeviceEmulatorMessageHandler
   ~DeviceEmulatorMessageHandler() override;
 
   // Adds |this| as an observer to all necessary objects.
-  void Init();
+  void Init(const base::ListValue* args);
 
   // Callback for the "removeBluetoothDevice" message. This is called by
   // the view to remove a bluetooth device from the FakeBluetoothDeviceClient's
@@ -84,6 +84,8 @@ class DeviceEmulatorMessageHandler
 
   // content::WebUIMessageHandler:
   void RegisterMessages() override;
+  void OnJavascriptAllowed() override;
+  void OnJavascriptDisallowed() override;
 
   // Callback for the "requestPowerInfo" message. This asynchronously requests
   // for power settings such as battery percentage, external power, etc. to

@@ -1,124 +1,21 @@
-<!DOCTYPE HTML>
-<html>
+<!doctype html>
 <head>
   <meta charset="utf-8">
   <title>Device Emulator</title>
-  <script src="chrome://resources/js/polymer_config.js"></script>
-  <script src="chrome://resources/js/cr.js"></script>
-  <script src="chrome://resources/js/load_time_data.js"></script>
-  <script src="chrome://resources/js/util.js"></script>
-  <script src="strings.js"></script>
+  <link rel="import" href="chrome://resources/html/cr.html">
+  <link rel="import" href="chrome://resources/html/polymer.html">
+  <link rel="import" href="chrome://resources/html/util.html">
+  <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
+  <link rel="import" href="device_emulator_pages.html">
+
   <link rel="stylesheet" href="chrome://resources/css/roboto.css">
   <link rel="stylesheet" href="device_emulator.css">
-  <link rel="import" href="audio_settings.html">
-  <link rel="import" href="battery_settings.html">
-  <link rel="import" href="bluetooth_settings.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/av-icons.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/device-icons.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/paper-drawer-panel/paper-drawer-panel.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/paper-header-panel/paper-header-panel.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html"
-  <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/paper-toolbar/paper-toolbar.html">
-  <style is="custom-style">
-    paper-drawer-panel {
-      --paper-drawer-panel-main-container: {
-        background-color: #ddd;
-      };
-    }
-
-    paper-drawer-panel .bold { font-weight: bolder; }
-    paper-drawer-panel .menu-item { margin: 20px 15px; }
-
-    paper-drawer-panel .cards-container {
-      overflow: scroll;
-    }
-
-    paper-drawer-panel .card {
-      display: block;
-      margin: 20px 20px 60px 20px;
-      width: 95%;
-      background-color: #fff;
-      box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
-      border-radius: 2px;
-    }
-
-    paper-drawer-panel .card .card-body {
-      margin: 0 20px;
-      padding-bottom: 20px;
-    }
-
-    paper-header-panel div paper-item:first {
-      margin-top: 20px;
+  <style is="custom-style" include="iron-flex iron-flex-alignment">
+    body {
+      font-family: Roboto;
     }
   </style>
 </head>
-<body unresolved fullbleed layout vertical>
-  <paper-drawer-panel>
-    <paper-header-panel drawer>
-      <paper-toolbar>
-        <div><span class="bold">Chrome OS Device Emulator</span></div>
-      </paper-toolbar>
-      <div>
-        <paper-item>
-          <div class="menu-item">
-            <paper-checkbox
-                class="menu-item-toggle"
-                data-content-id="audio-settings-card"></paper-checkbox>
-            <paper-icon-button icon="av:volume-up"></paper-icon-button>
-            <span>Audio</span>
-          </div>
-        </paper-item>
-        <paper-item>
-          <div class="menu-item">
-            <paper-checkbox
-                data-content-id="battery-settings-card"
-                class="menu-item-toggle"></paper-checkbox>
-            <paper-icon-button icon="device:battery-charging-full">
-            </paper-icon-button>
-            <span>Battery/Power</span>
-          </div>
-        </paper-item>
-        <paper-item>
-          <div class="menu-item">
-            <paper-checkbox
-                class="menu-item-toggle"
-                data-content-id="bluetooth-settings-card"></paper-checkbox>
-            <paper-icon-button icon="device:bluetooth"></paper-icon-button>
-            <span>Bluetooth</span>
-          </div>
-        </paper-item>
-      </div>
-    </paper-header-panel>
-    <paper-header-panel main>
-      <paper-toolbar>
-      </paper-toolbar>
-      <div>
-        <div id="cards-container">
-          <div class="card" hidden id="audio-settings-card">
-            <div class="card-body">
-              <audio-settings id="audio-settings"></audio-settings>
-            </div>
-          </div>
-          <div class="card" hidden id="battery-settings-card">
-            <div class="card-body">
-              <battery-settings id="battery-settings">
-              </battery-settings>
-            </div>
-          </div>
-          <div class="card" hidden id="bluetooth-settings-card">
-            <div class="card-body">
-              <bluetooth-settings id="bluetooth-settings"></bluetooth-settings>
-            </div>
-          </div>
-        </div>
-      </div>
-    </paper-header-panel>
-  </paper-drawer-panel>
-  <script src="chrome://resources/js/i18n_template.js"></script>
-  <script src="device_emulator.js"></script>
+<body unresolved class="fullbleed layout vertical">
+  <device-emulator-pages class="flex layout vertical"></device-emulator-pages>
 </body>
-</html>
