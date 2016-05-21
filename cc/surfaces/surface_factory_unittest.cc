@@ -55,10 +55,20 @@ class TestSurfaceFactoryClient : public SurfaceFactoryClient {
   DISALLOW_COPY_AND_ASSIGN(TestSurfaceFactoryClient);
 };
 
+gpu::SyncToken GenTestSyncToken(int id) {
+  gpu::SyncToken token;
+  token.Set(gpu::CommandBufferNamespace::GPU_IO, 0,
+            gpu::CommandBufferId::FromUnsafeValue(id), 1);
+  return token;
+}
+
 class SurfaceFactoryTest : public testing::Test {
  public:
   SurfaceFactoryTest()
-      : factory_(new SurfaceFactory(&manager_, &client_)), surface_id_(3) {
+      : factory_(new SurfaceFactory(&manager_, &client_)),
+        surface_id_(3),
+        frame_sync_token_(GenTestSyncToken(4)),
+        consumer_sync_token_(GenTestSyncToken(5)) {
     factory_->Create(surface_id_);
   }
 
@@ -74,6 +84,7 @@ class SurfaceFactoryTest : public testing::Test {
       TransferableResource resource;
       resource.id = resource_ids[i];
       resource.mailbox_holder.texture_target = GL_TEXTURE_2D;
+      resource.mailbox_holder.sync_token = frame_sync_token_;
       frame_data->resource_list.push_back(resource);
     }
     std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
@@ -88,6 +99,7 @@ class SurfaceFactoryTest : public testing::Test {
     ReturnedResourceArray unref_array;
     for (size_t i = 0; i < num_ids_to_unref; ++i) {
       ReturnedResource resource;
+      resource.sync_token = consumer_sync_token_;
       resource.id = ids_to_unref[i];
       resource.count = counts_to_unref[i];
       unref_array.push_back(resource);
@@ -97,12 +109,14 @@ class SurfaceFactoryTest : public testing::Test {
 
   void CheckReturnedResourcesMatchExpected(ResourceId* expected_returned_ids,
                                            int* expected_returned_counts,
-                                           size_t expected_resources) {
+                                           size_t expected_resources,
+                                           gpu::SyncToken expected_sync_token) {
     const ReturnedResourceArray& actual_resources =
         client_.returned_resources();
     ASSERT_EQ(expected_resources, actual_resources.size());
     for (size_t i = 0; i < expected_resources; ++i) {
       ReturnedResource resource = actual_resources[i];
+      EXPECT_EQ(expected_sync_token, resource.sync_token);
       EXPECT_EQ(expected_returned_ids[i], resource.id);
       EXPECT_EQ(expected_returned_counts[i], resource.count);
     }
@@ -120,6 +134,14 @@ class SurfaceFactoryTest : public testing::Test {
   TestSurfaceFactoryClient client_;
   std::unique_ptr<SurfaceFactory> factory_;
   SurfaceId surface_id_;
+
+  // This is the sync token submitted with the frame. It should never be
+  // returned to the client.
+  const gpu::SyncToken frame_sync_token_;
+
+  // This is the sync token returned by the consumer. It should always be
+  // returned to the client.
+  const gpu::SyncToken consumer_sync_token_;
 };
 
 // Tests submitting a frame with resources followed by one with no resources
@@ -141,9 +163,10 @@ TEST_F(SurfaceFactoryTest, ResourceLifetimeSimple) {
 
   ResourceId expected_returned_ids[] = {1, 2, 3};
   int expected_returned_counts[] = {1, 1, 1};
-  CheckReturnedResourcesMatchExpected(expected_returned_ids,
-                                      expected_returned_counts,
-                                      arraysize(expected_returned_counts));
+  // Resources were never consumed so no sync token should be set.
+  CheckReturnedResourcesMatchExpected(
+      expected_returned_ids, expected_returned_counts,
+      arraysize(expected_returned_counts), gpu::SyncToken());
 }
 
 // Tests submitting a frame with resources followed by one with no resources
@@ -174,9 +197,9 @@ TEST_F(SurfaceFactoryTest, ResourceLifetimeSimpleWithProviderHoldingAlive) {
 
   ResourceId expected_returned_ids[] = {1, 2, 3};
   int expected_returned_counts[] = {1, 1, 1};
-  CheckReturnedResourcesMatchExpected(expected_returned_ids,
-                                      expected_returned_counts,
-                                      arraysize(expected_returned_counts));
+  CheckReturnedResourcesMatchExpected(
+      expected_returned_ids, expected_returned_counts,
+      arraysize(expected_returned_counts), consumer_sync_token_);
 }
 
 // Tests referencing a resource, unref'ing it to zero, then using it again
@@ -252,9 +275,9 @@ TEST_F(SurfaceFactoryTest, ResourceRefMultipleTimes) {
 
     ResourceId expected_returned_ids[] = {3};
     int expected_returned_counts[] = {1};
-    CheckReturnedResourcesMatchExpected(expected_returned_ids,
-                                        expected_returned_counts,
-                                        arraysize(expected_returned_counts));
+    CheckReturnedResourcesMatchExpected(
+        expected_returned_ids, expected_returned_counts,
+        arraysize(expected_returned_counts), consumer_sync_token_);
   }
 
   // Expected refs remaining:
@@ -268,9 +291,9 @@ TEST_F(SurfaceFactoryTest, ResourceRefMultipleTimes) {
 
     ResourceId expected_returned_ids[] = {5};
     int expected_returned_counts[] = {1};
-    CheckReturnedResourcesMatchExpected(expected_returned_ids,
-                                        expected_returned_counts,
-                                        arraysize(expected_returned_counts));
+    CheckReturnedResourcesMatchExpected(
+        expected_returned_ids, expected_returned_counts,
+        arraysize(expected_returned_counts), consumer_sync_token_);
   }
 
   // Now, just 2 refs remaining on resource 4. Unref both at once and make sure
@@ -283,9 +306,9 @@ TEST_F(SurfaceFactoryTest, ResourceRefMultipleTimes) {
 
     ResourceId expected_returned_ids[] = {4};
     int expected_returned_counts[] = {2};
-    CheckReturnedResourcesMatchExpected(expected_returned_ids,
-                                        expected_returned_counts,
-                                        arraysize(expected_returned_counts));
+    CheckReturnedResourcesMatchExpected(
+        expected_returned_ids, expected_returned_counts,
+        arraysize(expected_returned_counts), consumer_sync_token_);
   }
 }
 
@@ -311,9 +334,9 @@ TEST_F(SurfaceFactoryTest, ResourceLifetime) {
     SCOPED_TRACE("second frame");
     ResourceId expected_returned_ids[] = {1};
     int expected_returned_counts[] = {1};
-    CheckReturnedResourcesMatchExpected(expected_returned_ids,
-                                        expected_returned_counts,
-                                        arraysize(expected_returned_counts));
+    CheckReturnedResourcesMatchExpected(
+        expected_returned_ids, expected_returned_counts,
+        arraysize(expected_returned_counts), gpu::SyncToken());
   }
 
   // The third frame references a disjoint set of resources, so we expect to
@@ -328,9 +351,9 @@ TEST_F(SurfaceFactoryTest, ResourceLifetime) {
     SCOPED_TRACE("third frame");
     ResourceId expected_returned_ids[] = {2, 3, 4};
     int expected_returned_counts[] = {2, 2, 1};
-    CheckReturnedResourcesMatchExpected(expected_returned_ids,
-                                        expected_returned_counts,
-                                        arraysize(expected_returned_counts));
+    CheckReturnedResourcesMatchExpected(
+        expected_returned_ids, expected_returned_counts,
+        arraysize(expected_returned_counts), gpu::SyncToken());
   }
 
   // Simulate a ResourceProvider taking a ref on all of the resources.
@@ -360,9 +383,9 @@ TEST_F(SurfaceFactoryTest, ResourceLifetime) {
     SCOPED_TRACE("fourth frame, first unref");
     ResourceId expected_returned_ids[] = {10, 11};
     int expected_returned_counts[] = {1, 1};
-    CheckReturnedResourcesMatchExpected(expected_returned_ids,
-                                        expected_returned_counts,
-                                        arraysize(expected_returned_counts));
+    CheckReturnedResourcesMatchExpected(
+        expected_returned_ids, expected_returned_counts,
+        arraysize(expected_returned_counts), consumer_sync_token_);
   }
 
   {
@@ -382,9 +405,9 @@ TEST_F(SurfaceFactoryTest, ResourceLifetime) {
     SCOPED_TRACE("fourth frame, second unref");
     ResourceId expected_returned_ids[] = {12, 13};
     int expected_returned_counts[] = {2, 2};
-    CheckReturnedResourcesMatchExpected(expected_returned_ids,
-                                        expected_returned_counts,
-                                        arraysize(expected_returned_counts));
+    CheckReturnedResourcesMatchExpected(
+        expected_returned_ids, expected_returned_counts,
+        arraysize(expected_returned_counts), consumer_sync_token_);
   }
 }
 

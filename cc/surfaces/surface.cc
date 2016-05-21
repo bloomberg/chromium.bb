@@ -32,11 +32,7 @@ Surface::Surface(SurfaceId id, SurfaceFactory* factory)
 Surface::~Surface() {
   ClearCopyRequests();
   if (current_frame_ && factory_) {
-    ReturnedResourceArray current_resources;
-    TransferableResource::ReturnResources(
-        current_frame_->delegated_frame_data->resource_list,
-        &current_resources);
-    factory_->UnrefResources(current_resources);
+    UnrefFrameResources(current_frame_->delegated_frame_data.get());
   }
   if (!draw_callback_.is_null())
     draw_callback_.Run(SurfaceDrawStatus::DRAW_SKIPPED);
@@ -86,11 +82,7 @@ void Surface::QueueFrame(std::unique_ptr<CompositorFrame> frame,
   }
 
   if (previous_frame) {
-    ReturnedResourceArray previous_resources;
-    TransferableResource::ReturnResources(
-        previous_frame->delegated_frame_data->resource_list,
-        &previous_resources);
-    factory_->UnrefResources(previous_resources);
+    UnrefFrameResources(previous_frame->delegated_frame_data.get());
   }
   if (!draw_callback_.is_null())
     draw_callback_.Run(SurfaceDrawStatus::DRAW_SKIPPED);
@@ -191,6 +183,15 @@ void Surface::SatisfyDestructionDependencies(
                                !valid_id_namespaces->count(seq.id_namespace));
                      }),
       destruction_dependencies_.end());
+}
+
+void Surface::UnrefFrameResources(DelegatedFrameData* frame_data) {
+  ReturnedResourceArray resources;
+  TransferableResource::ReturnResources(frame_data->resource_list, &resources);
+  // No point in returning same sync token to sender.
+  for (auto& resource : resources)
+    resource.sync_token.Clear();
+  factory_->UnrefResources(resources);
 }
 
 void Surface::ClearCopyRequests() {

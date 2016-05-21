@@ -24,7 +24,7 @@ void SurfaceResourceHolder::ReceiveFromChild(
   for (TransferableResourceArray::const_iterator it = resources.begin();
        it != resources.end();
        ++it) {
-    ResourceRefs& ref = resource_id_use_count_map_[it->id];
+    ResourceRefs& ref = resource_id_info_map_[it->id];
     ref.refs_holding_resource_alive++;
     ref.refs_received_from_child++;
   }
@@ -35,9 +35,8 @@ void SurfaceResourceHolder::RefResources(
   for (TransferableResourceArray::const_iterator it = resources.begin();
        it != resources.end();
        ++it) {
-    ResourceIdCountMap::iterator count_it =
-        resource_id_use_count_map_.find(it->id);
-    DCHECK(count_it != resource_id_use_count_map_.end());
+    ResourceIdInfoMap::iterator count_it = resource_id_info_map_.find(it->id);
+    DCHECK(count_it != resource_id_info_map_.end());
     count_it->second.refs_holding_resource_alive++;
   }
 }
@@ -50,16 +49,21 @@ void SurfaceResourceHolder::UnrefResources(
        it != resources.end();
        ++it) {
     unsigned id = it->id;
-    ResourceIdCountMap::iterator count_it = resource_id_use_count_map_.find(id);
-    if (count_it == resource_id_use_count_map_.end())
+    ResourceIdInfoMap::iterator count_it = resource_id_info_map_.find(id);
+    if (count_it == resource_id_info_map_.end())
       continue;
     ResourceRefs& ref = count_it->second;
     ref.refs_holding_resource_alive -= it->count;
+    // Keep the newest return sync token that has data.
+    // TODO(jbauman): Handle the case with two valid sync tokens.
+    if (it->sync_token.HasData())
+      ref.sync_token = it->sync_token;
     if (ref.refs_holding_resource_alive == 0) {
       ReturnedResource returned = *it;
+      returned.sync_token = ref.sync_token;
       returned.count = ref.refs_received_from_child;
       resources_available_to_return.push_back(returned);
-      resource_id_use_count_map_.erase(count_it);
+      resource_id_info_map_.erase(count_it);
     }
   }
 

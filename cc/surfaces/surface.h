@@ -94,6 +94,7 @@ class CC_SURFACES_EXPORT Surface {
   void set_destroyed(bool destroyed) { destroyed_ = destroyed; }
 
  private:
+  void UnrefFrameResources(DelegatedFrameData* frame_data);
   void ClearCopyRequests();
 
   SurfaceId surface_id_;

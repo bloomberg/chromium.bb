@@ -37,12 +37,14 @@ class CC_SURFACES_EXPORT SurfaceResourceHolder {
 
     int refs_received_from_child;
     int refs_holding_resource_alive;
+    gpu::SyncToken sync_token;
   };
   // Keeps track of the number of users currently in flight for each resource
   // ID we've received from the client. When this counter hits zero for a
-  // particular resource, that ID is available to return to the client.
-  using ResourceIdCountMap = std::unordered_map<ResourceId, ResourceRefs>;
-  ResourceIdCountMap resource_id_use_count_map_;
+  // particular resource, that ID is available to return to the client with
+  // the most recently given non-empty sync token.
+  using ResourceIdInfoMap = std::unordered_map<ResourceId, ResourceRefs>;
+  ResourceIdInfoMap resource_id_info_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceResourceHolder);
 };
