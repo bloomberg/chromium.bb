@@ -4,7 +4,6 @@
 
 {
   'includes': [
-    'cdm_paths.gypi',
     'media_variables.gypi',
   ],
   'variables': {
@@ -24,7 +23,6 @@
         {
           # GN version: //media/cdm/ppapi:clearkeycdm
           'target_name': 'clearkeycdm',
-          'product_dir': '<(PRODUCT_DIR)/<(clearkey_cdm_path)',
           'type': 'none',
           # TODO(tomfinegan): Simplify this by unconditionally including all the
           # decoders, and changing clearkeycdm to select which decoder to use
@@ -71,7 +69,7 @@
             }],
             ['OS == "mac"', {
               'xcode_settings': {
-                'DYLIB_INSTALL_NAME_BASE': '@rpath',
+                'DYLIB_INSTALL_NAME_BASE': '@loader_path',
               },
             }]
           ],
@@ -115,8 +113,8 @@
           ],
         },
         {
-          'target_name': 'clearkeycdmadapter_binary',
-          'product_name': 'clearkeycdmadapter',
+          # GN version: //media/cdm/ppapi:clearkeycdmadapter
+          'target_name': 'clearkeycdmadapter',
           'type': 'none',
           # Check whether the plugin's origin URL is valid.
           'defines': ['CHECK_DOCUMENT_URL'],
@@ -136,41 +134,12 @@
               'libraries': [
                '-lrt',
                 # Built by clearkeycdm.
-                '<(PRODUCT_DIR)/<(clearkey_cdm_path)/libclearkeycdm.so',
+                '<(PRODUCT_DIR)/libclearkeycdm.so',
               ],
             }],
-            ['OS == "mac"', {
-              'xcode_settings': {
-                'LD_RUNPATH_SEARCH_PATHS' : [ '@loader_path/.' ],
-              },
-            }, {
-              # Put Clear Key CDM adapter to the correct path directly except
-              # for mac. On mac strip_save_dsym doesn't work with product_dir
-              # so we rely on "clearkeycdmadapter" target to copy it over.
-              # See http://crbug.com/611990
-              'product_dir': '<(PRODUCT_DIR)/<(clearkey_cdm_path)',
-            }]
           ],
         },
-        {
-          # GN version: //media/cdm/ppapi:clearkeycdmadapter
-          # On Mac this copies the clearkeycdmadapter binary to
-          # <(clearkey_cdm_path). On all other platforms the binary is already
-          # in <(clearkey_cdm_path). See "product_dir" above.
-          'target_name': 'clearkeycdmadapter',
-          'type': 'none',
-          'dependencies': [
-            'clearkeycdmadapter_binary',
-          ],
-          'conditions': [
-            ['OS == "mac"', {
-              'copies': [{
-                'destination': '<(PRODUCT_DIR)/<(clearkey_cdm_path)',
-                'files': [ '<(PRODUCT_DIR)/clearkeycdmadapter.plugin' ],
-              }],
-            }],
-          ],
-        }],
+      ],
     }],
   ],
 }

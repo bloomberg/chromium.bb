@@ -14,24 +14,12 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
-
 #include "widevine_cdm_version.h"  //  In SHARED_INTERMEDIATE_DIR.
 
-#if defined(ENABLE_PEPPER_CDMS)
-#include "chrome/browser/media/pepper_cdm_test_helper.h"
-#include "media/cdm/cdm_paths.h"
-#endif
-
-namespace {
-
 // Measures the size (bytes) and time to load (sec) of a native library.
-// |library_relative_dir| is the relative path based on DIR_MODULE.
-void MeasureSizeAndTimeToLoadNativeLibrary(
-    const base::FilePath& library_relative_dir,
-    const base::FilePath& library_name) {
+void MeasureSizeAndTimeToLoadNativeLibrary(const base::FilePath& library_name) {
   base::FilePath output_dir;
   ASSERT_TRUE(PathService::Get(base::DIR_MODULE, &output_dir));
-  output_dir = output_dir.Append(library_relative_dir);
   base::FilePath library_path = output_dir.Append(library_name);
   ASSERT_TRUE(base::PathExists(library_path)) << library_path.value();
 
@@ -59,48 +47,42 @@ void MeasureSizeAndTimeToLoadNativeLibrary(
                          true);
 }
 
-#if defined(ENABLE_PEPPER_CDMS)
-
-// File name of the ClearKey CDM on different platforms.
-// TODO(xhwang): Consolidate this with external_clear_key_test_helper.cc.
-const char kClearKeyCdmFileName[] =
-#if defined(OS_MACOSX)
-    "libclearkeycdm.dylib";
-#elif defined(OS_WIN)
-    "clearkeycdm.dll";
-#else  // OS_LINUX, etc.
-    "libclearkeycdm.so";
-#endif
-
-void MeasureSizeAndTimeToLoadCdm(const std::string& cdm_base_dir,
-                                 const std::string& cdm_name) {
-  MeasureSizeAndTimeToLoadNativeLibrary(
-      media::GetPlatformSpecificDirectory(cdm_base_dir),
-      base::FilePath::FromUTF8Unsafe(cdm_name));
+// Use the base name of the library to dynamically get the platform specific
+// name. See base::GetNativeLibraryName() for details.
+void MeasureSizeAndTimeToLoadNativeLibraryByBaseName(
+    const std::string& base_library_name) {
+  MeasureSizeAndTimeToLoadNativeLibrary(base::FilePath::FromUTF16Unsafe(
+      base::GetNativeLibraryName(base::ASCIIToUTF16(base_library_name))));
 }
-
-#endif  // defined(ENABLE_PEPPER_CDMS)
-
-}  // namespace
 
 #if defined(ENABLE_PEPPER_CDMS)
 #if defined(WIDEVINE_CDM_AVAILABLE)
 TEST(LoadCDMPerfTest, Widevine) {
-  MeasureSizeAndTimeToLoadCdm(kWidevineCdmBaseDirectory, kWidevineCdmFileName);
+  MeasureSizeAndTimeToLoadNativeLibrary(
+      base::FilePath::FromUTF8Unsafe(kWidevineCdmFileName));
 }
 
 TEST(LoadCDMPerfTest, WidevineAdapter) {
-  MeasureSizeAndTimeToLoadCdm(kWidevineCdmBaseDirectory,
-                              kWidevineCdmAdapterFileName);
+  MeasureSizeAndTimeToLoadNativeLibrary(
+      base::FilePath::FromUTF8Unsafe(kWidevineCdmAdapterFileName));
 }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
 TEST(LoadCDMPerfTest, ExternalClearKey) {
-  MeasureSizeAndTimeToLoadCdm(kClearKeyCdmBaseDirectory, kClearKeyCdmFileName);
+#if defined(OS_MACOSX)
+  MeasureSizeAndTimeToLoadNativeLibrary(
+    base::FilePath::FromUTF8Unsafe("libclearkeycdm.dylib"));
+#else
+  MeasureSizeAndTimeToLoadNativeLibraryByBaseName("clearkeycdm");
+#endif  // defined(OS_MACOSX)
 }
 
 TEST(LoadCDMPerfTest, ExternalClearKeyAdapter) {
-  MeasureSizeAndTimeToLoadCdm(kClearKeyCdmBaseDirectory,
-                              kClearKeyCdmAdapterFileName);
+#if defined(OS_MACOSX)
+  MeasureSizeAndTimeToLoadNativeLibrary(
+    base::FilePath::FromUTF8Unsafe("clearkeycdmadapter.plugin"));
+#else
+  MeasureSizeAndTimeToLoadNativeLibraryByBaseName("clearkeycdmadapter");
+#endif  // defined(OS_MACOSX)
 }
 #endif  // defined(ENABLE_PEPPER_CDMS)

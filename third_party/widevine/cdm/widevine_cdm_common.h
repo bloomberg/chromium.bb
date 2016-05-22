@@ -16,9 +16,6 @@ const char kWidevineKeySystem[] = "com.widevine.alpha";
 // This type is used to register the Widevine CDM.
 const char kWidevineCdmType[] = "Widevine";
 
-// Widevine CDM files are in a directory with this name.
-const char kWidevineCdmBaseDirectory[] = "WidevineCdm";
-
 // This name is used by UMA. Do not change it!
 const char kWidevineKeySystemNameForUMA[] = "Widevine";
 

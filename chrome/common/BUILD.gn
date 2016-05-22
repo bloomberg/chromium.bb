@@ -353,7 +353,6 @@ static_library("constants") {
     "//base/third_party/dynamic_annotations",
     "//components/bookmarks/common",
     "//components/nacl/common:switches",
-    "//media:cdm_paths",  # Needed by chrome_paths.cc.
     "//third_party/widevine/cdm:version_h",
   ]
 

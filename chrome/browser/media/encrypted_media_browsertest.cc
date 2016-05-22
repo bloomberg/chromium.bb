@@ -251,15 +251,13 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
 
 #if defined(ENABLE_PEPPER_CDMS)
     if (IsExternalClearKey(key_system)) {
-      RegisterPepperCdm(command_line, kClearKeyCdmBaseDirectory,
-                        kClearKeyCdmAdapterFileName, kClearKeyCdmDisplayName,
-                        kClearKeyCdmPepperMimeType);
+      RegisterPepperCdm(command_line, kClearKeyCdmAdapterFileName,
+                        kClearKeyCdmDisplayName, kClearKeyCdmPepperMimeType);
     }
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
     else if (IsWidevine(key_system)) {  // NOLINT
-      RegisterPepperCdm(command_line, kWidevineCdmBaseDirectory,
-                        kWidevineCdmAdapterFileName, kWidevineCdmDisplayName,
-                        kWidevineCdmPluginMimeType);
+      RegisterPepperCdm(command_line, kWidevineCdmAdapterFileName,
+                        kWidevineCdmDisplayName, kWidevineCdmPluginMimeType);
     }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
 #endif  // defined(ENABLE_PEPPER_CDMS)

@@ -40,7 +40,6 @@
   },
   'includes': [
     'chrome_nibs.gypi',
-    '../media/cdm_paths.gypi',
   ],
   # TODO(mark): Come up with a fancier way to do this.  It should
   # only be necessary to list framework-Info.plist once, not the
@@ -136,12 +135,12 @@
     {
       # The adapter is not a complete library on its own. It needs the Widevine
       # CDM to work.
-      'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries/<(widevine_cdm_path)',
+      'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries/',
       'files': [],
       'conditions': [
         ['branding == "Chrome"', {
           'files': [
-            '<(PRODUCT_DIR)/<(widevine_cdm_path)/widevinecdmadapter.plugin',
+            '<(PRODUCT_DIR)/widevinecdmadapter.plugin',
           ],
         }],
       ],

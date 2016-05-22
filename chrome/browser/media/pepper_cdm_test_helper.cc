@@ -9,11 +9,10 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/content_switches.h"
-#include "media/cdm/cdm_paths.h"
 
 #include "widevine_cdm_version.h"  //  In SHARED_INTERMEDIATE_DIR.
 
-const char kClearKeyCdmBaseDirectory[] = "ClearKeyCdm";
+const char kClearKeyCdmDisplayName[] = "Clear Key CDM";
 
 const char kClearKeyCdmAdapterFileName[] =
 #if defined(OS_MACOSX)
@@ -24,23 +23,17 @@ const char kClearKeyCdmAdapterFileName[] =
     "libclearkeycdmadapter.so";
 #endif
 
-const char kClearKeyCdmDisplayName[] = "Clear Key CDM";
-
 const char kClearKeyCdmPepperMimeType[] = "application/x-ppapi-clearkey-cdm";
 
 base::FilePath::StringType BuildPepperCdmRegistration(
-    const std::string& adapter_base_dir,
     const std::string& adapter_file_name,
     const std::string& display_name,
     const std::string& mime_type,
     bool expect_adapter_exists) {
   base::FilePath adapter_path;
   PathService::Get(base::DIR_MODULE, &adapter_path);
-  adapter_path = adapter_path.Append(
-      media::GetPlatformSpecificDirectory(adapter_base_dir));
   adapter_path = adapter_path.AppendASCII(adapter_file_name);
-  DCHECK_EQ(expect_adapter_exists, base::PathExists(adapter_path))
-      << adapter_path.MaybeAsASCII();
+  DCHECK_EQ(expect_adapter_exists, base::PathExists(adapter_path));
 
   base::FilePath::StringType pepper_cdm_registration = adapter_path.value();
 
@@ -59,14 +52,12 @@ base::FilePath::StringType BuildPepperCdmRegistration(
 }
 
 void RegisterPepperCdm(base::CommandLine* command_line,
-                       const std::string& adapter_base_dir,
                        const std::string& adapter_file_name,
                        const std::string& display_name,
                        const std::string& mime_type,
                        bool expect_adapter_exists) {
   base::FilePath::StringType pepper_cdm_registration =
-      BuildPepperCdmRegistration(adapter_base_dir, adapter_file_name,
-                                 display_name, mime_type,
+      BuildPepperCdmRegistration(adapter_file_name, display_name, mime_type,
                                  expect_adapter_exists);
 
   // Append the switch to register the CDM Adapter.

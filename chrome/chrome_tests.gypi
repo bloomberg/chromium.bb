@@ -2673,10 +2673,14 @@
           'sources': [ '<@(chrome_browser_tests_supervised_user_sources)' ],
         }],
         ['enable_pepper_cdms==1', {
+          'sources' : [
+            'browser/media/pepper_cdm_test_helper.cc',
+            'browser/media/pepper_cdm_test_helper.h',
+          ],
           'dependencies': [
             # Runtime dependencies.
-            '../media/media.gyp:clearkeycdmadapter',
             '../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',
+            '../media/media.gyp:clearkeycdmadapter',
           ],
         }],
         ['enable_print_preview==0', {
@@ -3158,8 +3162,6 @@
       'conditions': [
         ['enable_pepper_cdms==1', {
           'dependencies': [
-            'test_support_common',
-            '../media/media.gyp:cdm_paths',
             # Runtime dependencies.
             '../media/media.gyp:clearkeycdmadapter',
             '../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',

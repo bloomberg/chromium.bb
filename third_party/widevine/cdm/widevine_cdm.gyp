@@ -60,8 +60,8 @@
   },
   'includes': [
     '../../../build/util/version.gypi',
-    '../../../media/cdm_paths.gypi',
   ],
+
   # Always provide a target, so we can put the logic about whether there's
   # anything to be done in this file (instead of a higher-level .gyp file).
   'targets': [
@@ -84,8 +84,8 @@
       ],
     },
     {
-      'target_name': 'widevinecdmadapter_binary',
-      'product_name': 'widevinecdmadapter',
+      # GN version: //third_party/widevine/cdm:widevinecdmadapter
+      'target_name': 'widevinecdmadapter',
       'type': 'none',
       'conditions': [
         [ '(branding == "Chrome" or enable_widevine == 1) and enable_pepper_cdms == 1', {
@@ -104,47 +104,22 @@
               'libraries': [
                 '-lrt',
                 # Copied/created by widevinecdm.
-                '<(PRODUCT_DIR)/<(widevine_cdm_path)/libwidevinecdm.so',
+                '<(PRODUCT_DIR)/libwidevinecdm.so',
               ],
             }],
             [ 'OS == "win"', {
               'libraries': [
                 # Copied/created by widevinecdm.
-                '<(PRODUCT_DIR)/<(widevine_cdm_path)/widevinecdm.dll.lib',
+                '<(PRODUCT_DIR)/widevinecdm.dll.lib',
               ],
             }],
             [ 'OS == "mac"', {
               'libraries': [
                 # Copied/created by widevinecdm.
-                '<(PRODUCT_DIR)/<(widevine_cdm_path)/libwidevinecdm.dylib',
+                '<(PRODUCT_DIR)/libwidevinecdm.dylib',
               ],
-            }, {
-              # Put Widevine CDM adapter to the correct path directly except
-              # for mac. On mac strip_save_dsym doesn't work with product_dir
-              # so we rely on "widevinecdmadapter" target to copy it over.
-              # See http://crbug.com/611990
-              'product_dir': '<(PRODUCT_DIR)/<(widevine_cdm_path)',
             }],
           ],
-        }],
-      ],
-    },
-    {
-      # GN version: //third_party/widevine/cdm:widevinecdmadapter
-      # On Mac this copies the widevinecdmadapter binary to
-      # <(widevine_cdm_path). On all other platforms the binary is already
-      # in <(widevine_cdm_path). See "product_dir" above.
-      'target_name': 'widevinecdmadapter',
-      'type': 'none',
-      'dependencies': [
-        'widevinecdmadapter_binary',
-      ],
-      'conditions': [
-        [ '(branding == "Chrome" or enable_widevine == 1) and enable_pepper_cdms == 1 and OS == "mac"', {
-          'copies': [{
-            'destination': '<(PRODUCT_DIR)/<(widevine_cdm_path)',
-            'files': [ '<(PRODUCT_DIR)/widevinecdmadapter.plugin' ],
-          }],
         }],
       ],
     },
@@ -171,18 +146,19 @@
             }],
           ],
           'copies': [{
-            'destination': '<(PRODUCT_DIR)/<(widevine_cdm_path)',
+            # TODO(ddorwin): Do we need a sub-directory? We either need a
+            # sub-directory or to rename manifest.json before we can copy it.
+            'destination': '<(PRODUCT_DIR)',
             'files': [ '<@(widevine_cdm_binary_files)' ],
           }],
         }],
         [ 'branding != "Chrome" and enable_widevine == 1', {
-          'product_dir': '<(PRODUCT_DIR)/<(widevine_cdm_path)',
           'conditions': [
             ['os_posix == 1 and OS != "mac"', {
               'type': 'loadable_module',
-              # This causes the binary to be put in
-              # <(PRODUCT_DIR)/<(widevine_cdm_path) instead of lib/.
-              # This matches what happens in the copy step above.
+              # Note that this causes the binary to be put in PRODUCT_DIR
+              # instead of lib/. This matches what happens in the copy step
+              # above.
             }],
             ['OS == "mac" or OS == "win"', {
               'type': 'shared_library',
