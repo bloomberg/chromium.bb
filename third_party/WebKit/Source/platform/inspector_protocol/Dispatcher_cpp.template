@@ -70,11 +70,11 @@ public:
         return weak;
     }
 
-    virtual void dispatch(int sessionId, const String16& message);
-    virtual void reportProtocolError(int sessionId, int callId, CommonErrorCode, const String16& errorMessage, ErrorSupport* errors) const;
+    virtual void dispatch(const String16& message);
+    virtual void reportProtocolError(int callId, CommonErrorCode, const String16& errorMessage, ErrorSupport* errors) const;
     using Dispatcher::reportProtocolError;
 
-    void sendResponse(int sessionId, int callId, const ErrorString& invocationError, ErrorSupport* errors, PassOwnPtr<protocol::DictionaryValue> result);
+    void sendResponse(int callId, const ErrorString& invocationError, ErrorSupport* errors, PassOwnPtr<protocol::DictionaryValue> result);
 
 {% for domain in api.domains %}
     virtual void registerAgent(blink::protocol::Backend::{{domain.domain}}* agent) { DCHECK(!m_{{domain.domain | lower}}Agent); m_{{domain.domain | lower}}Agent = agent; }
@@ -83,14 +83,14 @@ public:
 private:
     friend class DispatcherCallbackBase;
     friend class DispatcherImplWeakPtr;
-    using CallHandler = void (DispatcherImpl::*)(int sessionId, int callId, PassOwnPtr<DictionaryValue> messageObject, ErrorSupport* errors);
+    using CallHandler = void (DispatcherImpl::*)(int callId, PassOwnPtr<DictionaryValue> messageObject, ErrorSupport* errors);
     using DispatchMap = protocol::HashMap<String16, CallHandler>;
 
 {% for domain in api.domains %}
   {% for command in domain.commands %}
     {% if "redirect" in command %}{% continue %}{% endif %}
     {% if "handlers" in command and not ("renderer" in command["handlers"]) %}{% continue %}{% endif %}
-    void {{domain.domain}}_{{command.name}}(int sessionId, int callId, PassOwnPtr<DictionaryValue> requestMessageObject, ErrorSupport*);
+    void {{domain.domain}}_{{command.name}}(int callId, PassOwnPtr<DictionaryValue> requestMessageObject, ErrorSupport*);
   {% endfor %}
 {% endfor %}
 
@@ -100,14 +100,14 @@ private:
     Backend::{{domain.domain}}* m_{{domain.domain | lower}}Agent;
 {% endfor %}
 
-    void sendResponse(int sessionId, int callId, ErrorString invocationError, PassOwnPtr<protocol::DictionaryValue> result)
+    void sendResponse(int callId, ErrorString invocationError, PassOwnPtr<protocol::DictionaryValue> result)
     {
-        sendResponse(sessionId, callId, invocationError, nullptr, std::move(result));
+        sendResponse(callId, invocationError, nullptr, std::move(result));
     }
 
-    void sendResponse(int sessionId, int callId, ErrorString invocationError)
+    void sendResponse(int callId, ErrorString invocationError)
     {
-        sendResponse(sessionId, callId, invocationError, nullptr, DictionaryValue::create());
+        sendResponse(callId, invocationError, nullptr, DictionaryValue::create());
     }
 
     static const char kInvalidRequest[];
@@ -119,8 +119,8 @@ private:
 
 class PLATFORM_EXPORT DispatcherCallbackBase : public protocol::Backend::CallbackBase {
 public:
-    DispatcherCallbackBase(PassOwnPtr<DispatcherImplWeakPtr> backendImpl, int sessionId, int id)
-        : m_backendImpl(std::move(backendImpl)), m_sessionId(sessionId), m_id(id) { }
+    DispatcherCallbackBase(PassOwnPtr<DispatcherImplWeakPtr> backendImpl, int callId)
+        : m_backendImpl(std::move(backendImpl)), m_callId(callId) { }
     virtual ~DispatcherCallbackBase() { }
     void dispose() { m_backendImpl = nullptr; }
 
@@ -129,14 +129,13 @@ protected:
     {
         if (!m_backendImpl->get())
             return;
-        m_backendImpl->get()->sendResponse(m_sessionId, m_id, invocationError, nullptr, std::move(partialMessage));
+        m_backendImpl->get()->sendResponse(m_callId, invocationError, nullptr, std::move(partialMessage));
         m_backendImpl = nullptr;
     }
 
 private:
     OwnPtr<DispatcherImplWeakPtr> m_backendImpl;
-    int m_sessionId;
-    int m_id;
+    int m_callId;
 };
 
 DispatcherImplWeakPtr::~DispatcherImplWeakPtr()
@@ -156,8 +155,8 @@ const char DispatcherImpl::kInvalidRequest[] = "Invalid request";
 
 class PLATFORM_EXPORT {{domain.domain}}{{command.name | to_title_case}}Callback : public Backend::{{domain.domain}}::{{command.name | to_title_case}}Callback, public DispatcherCallbackBase {
 public:
-    {{domain.domain}}{{command.name | to_title_case}}Callback(PassOwnPtr<DispatcherImplWeakPtr> backendImpl, int sessionId, int id)
-        : DispatcherCallbackBase(std::move(backendImpl), sessionId, id) { }
+    {{domain.domain}}{{command.name | to_title_case}}Callback(PassOwnPtr<DispatcherImplWeakPtr> backendImpl, int callId)
+        : DispatcherCallbackBase(std::move(backendImpl), callId) { }
 
     void sendSuccess(
     {%- for parameter in command.returns -%}
@@ -189,13 +188,13 @@ public:
 };
     {% endif %}
 
-void DispatcherImpl::{{domain.domain}}_{{command.name}}(int sessionId, int callId, PassOwnPtr<DictionaryValue> requestMessageObject, ErrorSupport* errors)
+void DispatcherImpl::{{domain.domain}}_{{command.name}}(int callId, PassOwnPtr<DictionaryValue> requestMessageObject, ErrorSupport* errors)
 {
     if (!m_{{domain.domain | lower}}Agent)
         errors->addError("{{domain.domain}} handler is not available.");
 
     if (errors->hasErrors()) {
-        reportProtocolError(sessionId, callId, InvalidParams, kInvalidRequest, errors);
+        reportProtocolError(callId, InvalidParams, kInvalidRequest, errors);
         return;
     }
     {% if "parameters" in command %}
@@ -218,13 +217,13 @@ void DispatcherImpl::{{domain.domain}}_{{command.name}}(int sessionId, int callI
       {% endfor %}
     errors->pop();
     if (errors->hasErrors()) {
-        reportProtocolError(sessionId, callId, InvalidParams, kInvalidRequest, errors);
+        reportProtocolError(callId, InvalidParams, kInvalidRequest, errors);
         return;
     }
     {% endif %}
 
     {% if "async" in command %}
-    OwnPtr<{{domain.domain}}{{command.name | to_title_case}}Callback> callback = adoptPtr(new {{domain.domain}}{{command.name | to_title_case}}Callback(weakPtr(), sessionId, callId));
+    OwnPtr<{{domain.domain}}{{command.name | to_title_case}}Callback> callback = adoptPtr(new {{domain.domain}}{{command.name | to_title_case}}Callback(weakPtr(), callId));
     {% elif "returns" in command %}
     // Declare output parameters.
     OwnPtr<protocol::DictionaryValue> result = DictionaryValue::create();
@@ -266,10 +265,10 @@ void DispatcherImpl::{{domain.domain}}_{{command.name}}(int sessionId, int callI
       {% endfor %}
     }
     if (weak->get())
-        weak->get()->sendResponse(sessionId, callId, error, std::move(result));
+        weak->get()->sendResponse(callId, error, std::move(result));
     {% elif not("async" in command) %}
     if (weak->get())
-        weak->get()->sendResponse(sessionId, callId, error);
+        weak->get()->sendResponse(callId, error);
     {% endif %}
 }
   {% endfor %}
@@ -280,7 +279,7 @@ PassOwnPtr<Dispatcher> Dispatcher::create(FrontendChannel* frontendChannel)
     return adoptPtr(new DispatcherImpl(frontendChannel));
 }
 
-void DispatcherImpl::dispatch(int sessionId, const String16& message)
+void DispatcherImpl::dispatch(const String16& message)
 {
     int callId = 0;
     OwnPtr<protocol::Value> parsedMessage = parseJSON(message);
@@ -299,18 +298,18 @@ void DispatcherImpl::dispatch(int sessionId, const String16& message)
 
     protocol::HashMap<String16, CallHandler>::iterator it = m_dispatchMap.find(method);
     if (it == m_dispatchMap.end()) {
-        reportProtocolError(sessionId, callId, MethodNotFound, "'" + method + "' wasn't found");
+        reportProtocolError(callId, MethodNotFound, "'" + method + "' wasn't found");
         return;
     }
 
     protocol::ErrorSupport errors;
-    ((*this).*(*it->second))(sessionId, callId, std::move(messageObject), &errors);
+    ((*this).*(*it->second))(callId, std::move(messageObject), &errors);
 }
 
-void DispatcherImpl::sendResponse(int sessionId, int callId, const ErrorString& invocationError, ErrorSupport* errors, PassOwnPtr<protocol::DictionaryValue> result)
+void DispatcherImpl::sendResponse(int callId, const ErrorString& invocationError, ErrorSupport* errors, PassOwnPtr<protocol::DictionaryValue> result)
 {
     if (invocationError.length() || (errors && errors->hasErrors())) {
-        reportProtocolError(sessionId, callId, ServerError, invocationError, errors);
+        reportProtocolError(callId, ServerError, invocationError, errors);
         return;
     }
 
@@ -318,16 +317,16 @@ void DispatcherImpl::sendResponse(int sessionId, int callId, const ErrorString& 
     responseMessage->setNumber("id", callId);
     responseMessage->setObject("result", std::move(result));
     if (m_frontendChannel)
-        m_frontendChannel->sendProtocolResponse(sessionId, callId, std::move(responseMessage));
+        m_frontendChannel->sendProtocolResponse(callId, responseMessage->toJSONString());
 }
 
-void Dispatcher::reportProtocolError(int sessionId, int callId, CommonErrorCode code, const String16& errorMessage) const
+void Dispatcher::reportProtocolError(int callId, CommonErrorCode code, const String16& errorMessage) const
 {
     ErrorSupport errors;
-    reportProtocolError(sessionId, callId, code, errorMessage, &errors);
+    reportProtocolError(callId, code, errorMessage, &errors);
 }
 
-void DispatcherImpl::reportProtocolError(int sessionId, int callId, CommonErrorCode code, const String16& errorMessage, ErrorSupport* errors) const
+void DispatcherImpl::reportProtocolError(int callId, CommonErrorCode code, const String16& errorMessage, ErrorSupport* errors) const
 {
     DCHECK(code >=0);
     DCHECK((unsigned)code < m_commonErrors.size());
@@ -342,7 +341,7 @@ void DispatcherImpl::reportProtocolError(int sessionId, int callId, CommonErrorC
     message->setObject("error", std::move(error));
     message->setNumber("id", callId);
     if (m_frontendChannel)
-        m_frontendChannel->sendProtocolResponse(sessionId, callId, std::move(message));
+        m_frontendChannel->sendProtocolResponse(callId, message->toJSONString());
 }
 
 bool Dispatcher::getCommandName(const String16& message, String16* result)

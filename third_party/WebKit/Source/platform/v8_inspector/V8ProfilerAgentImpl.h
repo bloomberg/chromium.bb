@@ -6,9 +6,9 @@
 #define V8ProfilerAgentImpl_h
 
 #include "platform/inspector_protocol/Allocator.h"
+#include "platform/inspector_protocol/Backend.h"
 #include "platform/inspector_protocol/Frontend.h"
 #include "platform/inspector_protocol/String16.h"
-#include "platform/v8_inspector/public/V8ProfilerAgent.h"
 
 namespace v8 {
 class Isolate;
@@ -18,18 +18,14 @@ namespace blink {
 
 class V8InspectorSessionImpl;
 
-class V8ProfilerAgentImpl : public V8ProfilerAgent {
+class V8ProfilerAgentImpl : public protocol::Backend::Profiler {
     PROTOCOL_DISALLOW_COPY(V8ProfilerAgentImpl);
 public:
-    explicit V8ProfilerAgentImpl(V8InspectorSessionImpl*);
+    V8ProfilerAgentImpl(V8InspectorSessionImpl*, protocol::Frontend::Profiler*, protocol::DictionaryValue* state);
     ~V8ProfilerAgentImpl() override;
 
     bool enabled() const { return m_enabled; }
-
-    void setInspectorState(protocol::DictionaryValue* state) override { m_state = state; }
-    void setFrontend(protocol::Frontend::Profiler* frontend) override { m_frontend = frontend; }
-    void clearFrontend() override;
-    void restore() override;
+    void restore();
 
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;

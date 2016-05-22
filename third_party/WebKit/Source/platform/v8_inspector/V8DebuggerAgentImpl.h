@@ -5,12 +5,11 @@
 #ifndef V8DebuggerAgentImpl_h
 #define V8DebuggerAgentImpl_h
 
+#include "platform/inspector_protocol/Backend.h"
 #include "platform/inspector_protocol/Collections.h"
-#include "platform/inspector_protocol/Dispatcher.h"
 #include "platform/inspector_protocol/Frontend.h"
 #include "platform/inspector_protocol/String16.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
-#include "platform/v8_inspector/public/V8DebuggerAgent.h"
 
 namespace blink {
 
@@ -26,7 +25,7 @@ class DictionaryValue;
 
 using protocol::Maybe;
 
-class V8DebuggerAgentImpl : public V8DebuggerAgent {
+class V8DebuggerAgentImpl : public protocol::Backend::Debugger {
     PROTOCOL_DISALLOW_COPY(V8DebuggerAgentImpl);
 public:
     enum SkipPauseRequest {
@@ -43,17 +42,13 @@ public:
         MonitorCommandBreakpointSource
     };
 
-    explicit V8DebuggerAgentImpl(V8InspectorSessionImpl*);
+    V8DebuggerAgentImpl(V8InspectorSessionImpl*, protocol::Frontend::Debugger*, protocol::DictionaryValue* state);
     ~V8DebuggerAgentImpl() override;
-
-    void setInspectorState(protocol::DictionaryValue*) override;
-    void setFrontend(protocol::Frontend::Debugger* frontend) override { m_frontend = frontend; }
-    void clearFrontend() override;
-    void restore() override;
-    void disable(ErrorString*) override;
+    void restore();
 
     // Part of the protocol.
     void enable(ErrorString*) override;
+    void disable(ErrorString*) override;
     void setBreakpointsActive(ErrorString*, bool active) override;
     void setSkipAllPauses(ErrorString*, bool skipped) override;
     void setBreakpointByUrl(ErrorString*,

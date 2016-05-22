@@ -31,7 +31,6 @@
 
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorOverlayHost.h"
-#include "core/inspector/InspectorProfilerAgent.h"
 #include "platform/Timer.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
@@ -52,11 +51,11 @@ class LocalFrame;
 class GraphicsContext;
 class GraphicsLayer;
 class InspectorCSSAgent;
-class InspectorDebuggerAgent;
 class LayoutEditor;
 class Node;
 class Page;
 class PageOverlay;
+class V8InspectorSession;
 class WebViewImpl;
 
 namespace protocol {
@@ -77,7 +76,7 @@ public:
     ~InspectorOverlay() override;
     DECLARE_TRACE();
 
-    void init(InspectorCSSAgent*, InspectorDebuggerAgent*, InspectorDOMAgent*);
+    void init(InspectorCSSAgent*, V8InspectorSession*, InspectorDOMAgent*);
 
     void clear();
     void suspend();
@@ -158,7 +157,7 @@ private:
     int m_suspendCount;
     bool m_inLayout;
     bool m_needsUpdate;
-    Member<InspectorDebuggerAgent> m_debuggerAgent;
+    V8InspectorSession* m_v8Session;
     Member<InspectorDOMAgent> m_domAgent;
     Member<InspectorCSSAgent> m_cssAgent;
     Member<LayoutEditor> m_layoutEditor;

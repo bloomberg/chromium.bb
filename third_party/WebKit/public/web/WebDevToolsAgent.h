@@ -62,6 +62,7 @@ public:
         virtual ~MessageDescriptor() { }
         virtual WebDevToolsAgent* agent() = 0;
         virtual WebString message() = 0;
+        virtual WebString method() = 0;
     };
     // Asynchronously request debugger to pause immediately and run the command.
     BLINK_EXPORT static void interruptAndDispatch(int sessionId, MessageDescriptor*);

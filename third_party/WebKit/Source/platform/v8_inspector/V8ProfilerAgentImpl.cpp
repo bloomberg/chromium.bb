@@ -121,11 +121,11 @@ public:
     String16 m_title;
 };
 
-V8ProfilerAgentImpl::V8ProfilerAgentImpl(V8InspectorSessionImpl* session)
+V8ProfilerAgentImpl::V8ProfilerAgentImpl(V8InspectorSessionImpl* session, protocol::Frontend::Profiler* frontend, protocol::DictionaryValue* state)
     : m_session(session)
     , m_isolate(m_session->debugger()->isolate())
-    , m_state(nullptr)
-    , m_frontend(nullptr)
+    , m_state(state)
+    , m_frontend(frontend)
     , m_enabled(false)
     , m_recordingCPUProfile(false)
 {
@@ -209,14 +209,6 @@ void V8ProfilerAgentImpl::setSamplingInterval(ErrorString* error, int interval)
     }
     m_state->setNumber(ProfilerAgentState::samplingInterval, interval);
     m_isolate->GetCpuProfiler()->SetSamplingInterval(interval);
-}
-
-void V8ProfilerAgentImpl::clearFrontend()
-{
-    ErrorString error;
-    disable(&error);
-    DCHECK(m_frontend);
-    m_frontend = nullptr;
 }
 
 void V8ProfilerAgentImpl::restore()

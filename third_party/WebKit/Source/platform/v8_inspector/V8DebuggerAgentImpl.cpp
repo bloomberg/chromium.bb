@@ -155,12 +155,12 @@ static PassOwnPtr<protocol::Debugger::Location> buildProtocolLocation(const Stri
         .setColumnNumber(columnNumber).build();
 }
 
-V8DebuggerAgentImpl::V8DebuggerAgentImpl(V8InspectorSessionImpl* session)
+V8DebuggerAgentImpl::V8DebuggerAgentImpl(V8InspectorSessionImpl* session, protocol::Frontend::Debugger* frontend, protocol::DictionaryValue* state)
     : m_debugger(session->debugger())
     , m_session(session)
     , m_enabled(false)
-    , m_state(nullptr)
-    , m_frontend(nullptr)
+    , m_state(state)
+    , m_frontend(frontend)
     , m_isolate(m_debugger->isolate())
     , m_breakReason(protocol::Debugger::Paused::ReasonEnum::Other)
     , m_scheduledDebuggerStep(NoStep)
@@ -270,19 +270,6 @@ void V8DebuggerAgentImpl::internalSetAsyncCallStackDepth(int depth)
     } else {
         m_maxAsyncCallStackDepth = depth;
     }
-}
-
-void V8DebuggerAgentImpl::setInspectorState(protocol::DictionaryValue* state)
-{
-    m_state = state;
-}
-
-void V8DebuggerAgentImpl::clearFrontend()
-{
-    ErrorString error;
-    disable(&error);
-    DCHECK(m_frontend);
-    m_frontend = nullptr;
 }
 
 void V8DebuggerAgentImpl::restore()

@@ -32,7 +32,6 @@
 #define WebDevToolsAgentImpl_h
 
 #include "core/inspector/InspectorPageAgent.h"
-#include "core/inspector/InspectorRuntimeAgent.h"
 #include "core/inspector/InspectorSession.h"
 #include "core/inspector/InspectorTracingAgent.h"
 #include "platform/heap/Handle.h"
@@ -57,7 +56,6 @@ class PlatformGestureEvent;
 class PlatformKeyboardEvent;
 class PlatformMouseEvent;
 class PlatformTouchEvent;
-class V8InspectorSession;
 class WebDevToolsAgentClient;
 class WebFrameWidgetImpl;
 class WebInputEvent;
@@ -87,8 +85,7 @@ public:
     void willBeDestroyed();
     WebDevToolsAgentClient* client() { return m_client; }
     InspectorOverlay* overlay() const { return m_overlay.get(); }
-    void flushPendingProtocolNotifications();
-    void dispatchMessageFromFrontend(int sessionId, const String& message);
+    void flushProtocolNotifications();
     static void webViewImplClosed(WebViewImpl*);
     static void webFrameWidgetImplClosed(WebFrameWidgetImpl*);
 
@@ -134,8 +131,9 @@ private:
     void willProcessTask() override;
     void didProcessTask() override;
 
-    void initializeSession(int sessionId, const String& hostId);
+    void initializeSession(int sessionId, const String& hostId, String* state);
     void destroySession();
+    void dispatchMessageFromFrontend(int sessionId, const String& method, const String& message);
 
     friend class WebDevToolsAgent;
     static void runDebuggerTask(int sessionId, PassOwnPtr<WebDevToolsAgent::MessageDescriptor>);
@@ -153,7 +151,6 @@ private:
     Member<InspectorOverlay> m_overlay;
     Member<InspectedFrames> m_inspectedFrames;
     Member<InspectorResourceContainer> m_resourceContainer;
-    OwnPtr<V8InspectorSession> m_v8Session;
 
     Member<InspectorDOMAgent> m_domAgent;
     Member<InspectorPageAgent> m_pageAgent;

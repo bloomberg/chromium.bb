@@ -39,7 +39,6 @@
 #include "core/frame/Settings.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/InspectorCSSAgent.h"
-#include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorOverlayHost.h"
 #include "core/inspector/LayoutEditor.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -51,6 +50,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/inspector_protocol/Values.h"
+#include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "web/PageOverlay.h"
@@ -200,16 +200,15 @@ DEFINE_TRACE(InspectorOverlay)
     visitor->trace(m_overlayPage);
     visitor->trace(m_overlayChromeClient);
     visitor->trace(m_overlayHost);
-    visitor->trace(m_debuggerAgent);
     visitor->trace(m_domAgent);
     visitor->trace(m_cssAgent);
     visitor->trace(m_layoutEditor);
     visitor->trace(m_hoveredNodeForInspectMode);
 }
 
-void InspectorOverlay::init(InspectorCSSAgent* cssAgent, InspectorDebuggerAgent* debuggerAgent, InspectorDOMAgent* domAgent)
+void InspectorOverlay::init(InspectorCSSAgent* cssAgent, V8InspectorSession* v8Session, InspectorDOMAgent* domAgent)
 {
-    m_debuggerAgent = debuggerAgent;
+    m_v8Session = v8Session;
     m_domAgent = domAgent;
     m_cssAgent = cssAgent;
     m_overlayHost->setListener(this);
@@ -591,7 +590,7 @@ void InspectorOverlay::clearInternal()
 void InspectorOverlay::clear()
 {
     clearInternal();
-    m_debuggerAgent.clear();
+    m_v8Session = nullptr;
     m_domAgent.clear();
     m_cssAgent.clear();
     m_overlayHost->setListener(nullptr);
@@ -599,18 +598,14 @@ void InspectorOverlay::clear()
 
 void InspectorOverlay::overlayResumed()
 {
-    if (m_debuggerAgent) {
-        ErrorString error;
-        m_debuggerAgent->resume(&error);
-    }
+    if (m_v8Session)
+        m_v8Session->resume();
 }
 
 void InspectorOverlay::overlaySteppedOver()
 {
-    if (m_debuggerAgent) {
-        ErrorString error;
-        m_debuggerAgent->stepOver(&error);
-    }
+    if (m_v8Session)
+        m_v8Session->stepOver();
 }
 
 void InspectorOverlay::overlayStartedPropertyChange(const String& property)

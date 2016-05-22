@@ -247,6 +247,7 @@ void WorkerThread::shutdown()
     // This should be called before we start the shutdown procedure.
     workerReportingProxy().willDestroyWorkerGlobalScope();
 
+    InspectorInstrumentation::allAsyncTasksCanceled(workerGlobalScope());
     workerGlobalScope()->dispose();
 
     workerBackingThread().backingThread().removeTaskObserver(m_microtaskRunner.get());
@@ -377,7 +378,6 @@ void WorkerThread::terminateInternal()
         }
     }
 
-    InspectorInstrumentation::allAsyncTasksCanceled(m_workerGlobalScope.get());
     m_inspectorTaskRunner->kill();
     workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::shutdown, AllowCrossThreadAccess(this)));
 }

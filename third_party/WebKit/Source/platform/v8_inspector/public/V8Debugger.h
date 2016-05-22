@@ -16,6 +16,7 @@ namespace blink {
 class V8ContextInfo;
 class V8DebuggerClient;
 class V8InspectorSession;
+class V8InspectorSessionClient;
 class V8StackTrace;
 
 namespace protocol {
@@ -24,15 +25,6 @@ class DictionaryValue;
 
 class PLATFORM_EXPORT V8Debugger {
 public:
-    template <typename T>
-    class Agent {
-    public:
-        virtual void setInspectorState(protocol::DictionaryValue*) = 0;
-        virtual void setFrontend(T*) = 0;
-        virtual void clearFrontend() = 0;
-        virtual void restore() = 0;
-    };
-
     static PassOwnPtr<V8Debugger> create(v8::Isolate*, V8DebuggerClient*);
     virtual ~V8Debugger() { }
 
@@ -48,7 +40,7 @@ public:
     virtual void idleStarted() = 0;
     virtual void idleFinished() = 0;
 
-    virtual PassOwnPtr<V8InspectorSession> connect(int contextGroupId) = 0;
+    virtual PassOwnPtr<V8InspectorSession> connect(int contextGroupId, V8InspectorSessionClient*, const String16* state) = 0;
     virtual bool isPaused() = 0;
 
     static v8::Local<v8::Private> scopeExtensionPrivate(v8::Isolate*);

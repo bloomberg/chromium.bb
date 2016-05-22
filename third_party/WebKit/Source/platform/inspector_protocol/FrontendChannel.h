@@ -34,9 +34,9 @@ namespace protocol {
 class FrontendChannel {
 public:
     virtual ~FrontendChannel() { }
-    virtual void sendProtocolResponse(int sessionId, int callId, PassOwnPtr<protocol::DictionaryValue> message) = 0;
-    virtual void sendProtocolNotification(PassOwnPtr<protocol::DictionaryValue> message) = 0;
-    virtual void flush() = 0;
+    virtual void sendProtocolResponse(int callId, const String16& message) = 0;
+    virtual void sendProtocolNotification(const String16& message) = 0;
+    virtual void flushProtocolNotifications() = 0;
 };
 
 } // namespace protocol

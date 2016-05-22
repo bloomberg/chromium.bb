@@ -158,8 +158,8 @@ V8DebuggerAgentImpl* V8DebuggerImpl::findEnabledDebuggerAgent(int contextGroupId
     if (!contextGroupId)
         return nullptr;
     V8InspectorSessionImpl* session = m_sessions.get(contextGroupId);
-    if (session && session->debuggerAgentImpl()->enabled())
-        return session->debuggerAgentImpl();
+    if (session && session->debuggerAgent()->enabled())
+        return session->debuggerAgent();
     return nullptr;
 }
 
@@ -731,10 +731,10 @@ PassOwnPtr<V8StackTrace> V8DebuggerImpl::createStackTrace(v8::Local<v8::StackTra
     return V8StackTraceImpl::create(agent, stackTrace, maxStackSize);
 }
 
-PassOwnPtr<V8InspectorSession> V8DebuggerImpl::connect(int contextGroupId)
+PassOwnPtr<V8InspectorSession> V8DebuggerImpl::connect(int contextGroupId, V8InspectorSessionClient* client, const String16* state)
 {
     DCHECK(!m_sessions.contains(contextGroupId));
-    OwnPtr<V8InspectorSessionImpl> session = V8InspectorSessionImpl::create(this, contextGroupId);
+    OwnPtr<V8InspectorSessionImpl> session = V8InspectorSessionImpl::create(this, contextGroupId, client, state);
     m_sessions.set(contextGroupId, session.get());
     return std::move(session);
 }
@@ -764,7 +764,7 @@ void V8DebuggerImpl::contextCreated(const V8ContextInfo& info)
     m_contexts.get(info.contextGroupId)->set(contextId, std::move(contextOwner));
 
     if (V8InspectorSessionImpl* session = m_sessions.get(info.contextGroupId))
-        session->runtimeAgentImpl()->reportExecutionContextCreated(inspectedContext);
+        session->runtimeAgent()->reportExecutionContextCreated(inspectedContext);
 }
 
 void V8DebuggerImpl::contextDestroyed(v8::Local<v8::Context> context)
@@ -776,7 +776,7 @@ void V8DebuggerImpl::contextDestroyed(v8::Local<v8::Context> context)
 
     InspectedContext* inspectedContext = m_contexts.get(contextGroupId)->get(contextId);
     if (V8InspectorSessionImpl* session = m_sessions.get(contextGroupId))
-        session->runtimeAgentImpl()->reportExecutionContextDestroyed(inspectedContext);
+        session->runtimeAgent()->reportExecutionContextDestroyed(inspectedContext);
 
     m_contexts.get(contextGroupId)->remove(contextId);
     if (m_contexts.get(contextGroupId)->isEmpty())

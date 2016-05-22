@@ -38,7 +38,7 @@ public:
         );
   {% endfor %}
 
-        void flush() { m_frontendChannel->flush(); }
+        void flush() { m_frontendChannel->flushProtocolNotifications(); }
     private:
         FrontendChannel* m_frontendChannel;
     };

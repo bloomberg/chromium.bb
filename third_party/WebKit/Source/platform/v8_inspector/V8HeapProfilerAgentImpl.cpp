@@ -149,23 +149,17 @@ private:
 
 } // namespace
 
-V8HeapProfilerAgentImpl::V8HeapProfilerAgentImpl(V8InspectorSessionImpl* session)
+V8HeapProfilerAgentImpl::V8HeapProfilerAgentImpl(V8InspectorSessionImpl* session, protocol::Frontend::HeapProfiler* frontend, protocol::DictionaryValue* state)
     : m_session(session)
     , m_isolate(session->debugger()->isolate())
+    , m_frontend(frontend)
+    , m_state(state)
     , m_hasTimer(false)
 {
 }
 
 V8HeapProfilerAgentImpl::~V8HeapProfilerAgentImpl()
 {
-}
-
-void V8HeapProfilerAgentImpl::clearFrontend()
-{
-    ErrorString error;
-    disable(&error);
-    DCHECK(m_frontend);
-    m_frontend = nullptr;
 }
 
 void V8HeapProfilerAgentImpl::restore()

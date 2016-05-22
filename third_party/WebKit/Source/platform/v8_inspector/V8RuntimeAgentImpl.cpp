@@ -56,10 +56,10 @@ static bool hasInternalError(ErrorString* errorString, bool hasError)
     return hasError;
 }
 
-V8RuntimeAgentImpl::V8RuntimeAgentImpl(V8InspectorSessionImpl* session)
+V8RuntimeAgentImpl::V8RuntimeAgentImpl(V8InspectorSessionImpl* session, protocol::Frontend::Runtime* frontend, protocol::DictionaryValue* state)
     : m_session(session)
-    , m_state(nullptr)
-    , m_frontend(nullptr)
+    , m_state(state)
+    , m_frontend(frontend)
     , m_debugger(session->debugger())
     , m_enabled(false)
 {
@@ -341,24 +341,6 @@ void V8RuntimeAgentImpl::runScript(ErrorString* errorString,
     if (!scope.initialize())
         return;
     scope.injectedScript()->wrapEvaluateResult(errorString, maybeResultValue, scope.tryCatch(), objectGroup.fromMaybe(""), false, false, result, nullptr, exceptionDetails);
-}
-
-void V8RuntimeAgentImpl::setInspectorState(protocol::DictionaryValue* state)
-{
-    m_state = state;
-}
-
-void V8RuntimeAgentImpl::setFrontend(protocol::Frontend::Runtime* frontend)
-{
-    m_frontend = frontend;
-}
-
-void V8RuntimeAgentImpl::clearFrontend()
-{
-    ErrorString error;
-    disable(&error);
-    DCHECK(m_frontend);
-    m_frontend = nullptr;
 }
 
 void V8RuntimeAgentImpl::restore()

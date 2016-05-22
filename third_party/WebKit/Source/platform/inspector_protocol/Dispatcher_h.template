@@ -23,7 +23,7 @@ public:
 
     class PLATFORM_EXPORT CallbackBase {
     public:
-        CallbackBase(PassOwnPtr<DispatcherImplWeakPtr> backendImpl, int sessionId, int id);
+        CallbackBase(PassOwnPtr<DispatcherImplWeakPtr> backendImpl, int callId);
         virtual ~CallbackBase();
         void sendFailure(const ErrorString&);
         void dispose();
@@ -33,8 +33,7 @@ public:
 
     private:
         OwnPtr<DispatcherImplWeakPtr> m_backendImpl;
-        int m_sessionId;
-        int m_id;
+        int m_callId;
     };
 
 {% for domain in api.domains %}
@@ -53,9 +52,9 @@ public:
         LastEntry,
     };
 
-    void reportProtocolError(int sessionId, int callId, CommonErrorCode, const String16& errorMessage) const;
-    virtual void reportProtocolError(int sessionId, int callId, CommonErrorCode, const String16& errorMessage, ErrorSupport*) const = 0;
-    virtual void dispatch(int sessionId, const String16& message) = 0;
+    void reportProtocolError(int callId, CommonErrorCode, const String16& errorMessage) const;
+    virtual void reportProtocolError(int callId, CommonErrorCode, const String16& errorMessage, ErrorSupport*) const = 0;
+    virtual void dispatch(const String16& message) = 0;
     static bool getCommandName(const String16& message, String16* result);
 };
 

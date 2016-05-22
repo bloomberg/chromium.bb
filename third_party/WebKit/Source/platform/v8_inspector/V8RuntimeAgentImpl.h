@@ -32,8 +32,11 @@
 #define V8RuntimeAgentImpl_h
 
 #include "platform/inspector_protocol/Allocator.h"
+#include "platform/inspector_protocol/Backend.h"
 #include "platform/inspector_protocol/Frontend.h"
-#include "platform/v8_inspector/public/V8RuntimeAgent.h"
+#include "platform/inspector_protocol/String16.h"
+
+#include <v8.h>
 
 namespace blink {
 
@@ -49,17 +52,12 @@ class DictionaryValue;
 
 using protocol::Maybe;
 
-class V8RuntimeAgentImpl : public V8RuntimeAgent {
+class V8RuntimeAgentImpl : public protocol::Backend::Runtime {
     PROTOCOL_DISALLOW_COPY(V8RuntimeAgentImpl);
 public:
-    explicit V8RuntimeAgentImpl(V8InspectorSessionImpl*);
+    V8RuntimeAgentImpl(V8InspectorSessionImpl*, protocol::Frontend::Runtime*, protocol::DictionaryValue* state);
     ~V8RuntimeAgentImpl() override;
-
-    // State management methods.
-    void setInspectorState(protocol::DictionaryValue*) override;
-    void setFrontend(protocol::Frontend::Runtime*) override;
-    void clearFrontend() override;
-    void restore() override;
+    void restore();
 
     // Part of the protocol.
     void enable(ErrorString*) override;

@@ -191,8 +191,8 @@ public:
     V8ProfilerAgentImpl* profilerAgent()
     {
         if (V8InspectorSessionImpl* session = currentSession()) {
-            if (session && session->profilerAgentImpl()->enabled())
-                return session->profilerAgentImpl();
+            if (session && session->profilerAgent()->enabled())
+                return session->profilerAgent();
         }
         return nullptr;
     }
@@ -200,8 +200,8 @@ public:
     V8DebuggerAgentImpl* debuggerAgent()
     {
         if (V8InspectorSessionImpl* session = currentSession()) {
-            if (session && session->debuggerAgentImpl()->enabled())
-                return session->debuggerAgentImpl();
+            if (session && session->debuggerAgent()->enabled())
+                return session->debuggerAgent();
         }
         return nullptr;
     }
@@ -597,7 +597,7 @@ static void inspectImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool co
     if (copyToClipboard)
         hints->setBoolean("copyToClipboard", true);
     if (V8InspectorSessionImpl* session = helper.currentSession())
-        session->runtimeAgentImpl()->inspect(std::move(wrappedObject), std::move(hints));
+        session->runtimeAgent()->inspect(std::move(wrappedObject), std::move(hints));
 }
 
 void V8Console::inspectCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

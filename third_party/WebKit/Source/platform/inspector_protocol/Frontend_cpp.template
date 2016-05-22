@@ -44,7 +44,7 @@ void Frontend::{{domain.domain}}::{{event.name}}(
     {% endfor %}
     jsonMessage->setObject("params", std::move(paramsObject));
     if (m_frontendChannel)
-        m_frontendChannel->sendProtocolNotification(std::move(jsonMessage));
+        m_frontendChannel->sendProtocolNotification(jsonMessage->toJSONString());
 }
   {% endfor %}
 {% endfor %}

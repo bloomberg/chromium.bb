@@ -42,18 +42,14 @@
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorDOMDebuggerAgent.h"
-#include "core/inspector/InspectorDebuggerAgent.h"
-#include "core/inspector/InspectorHeapProfilerAgent.h"
 #include "core/inspector/InspectorInputAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorLayerTreeAgent.h"
 #include "core/inspector/InspectorMemoryAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
-#include "core/inspector/InspectorProfilerAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
 #include "core/inspector/InspectorResourceContainer.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
-#include "core/inspector/InspectorRuntimeAgent.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/InspectorTracingAgent.h"
 #include "core/inspector/InspectorWorkerAgent.h"
@@ -187,7 +183,7 @@ private:
     {
         // 0. Flush pending frontend messages.
         WebDevToolsAgentImpl* agent = frame->devToolsAgentImpl();
-        agent->flushPendingProtocolNotifications();
+        agent->flushProtocolNotifications();
 
         Vector<WebViewImpl*> views;
         HeapVector<Member<WebFrameWidgetImpl>> widgets;
@@ -374,18 +370,15 @@ void WebDevToolsAgentImpl::willBeDestroyed()
     m_resourceContentLoader->dispose();
 }
 
-void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId)
+void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId, String* state)
 {
-    m_session = new InspectorSession(this, m_inspectedFrames.get(), m_instrumentingAgents.get(), sessionId, false /* autoFlush */);
-
     ClientMessageLoopAdapter::ensureMainThreadDebuggerCreated(m_client);
     MainThreadDebugger* mainThreadDebugger = MainThreadDebugger::instance();
     v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
-    m_v8Session = mainThreadDebugger->debugger()->connect(mainThreadDebugger->contextGroupId(m_inspectedFrames->root()));
 
-    m_session->append(new InspectorRuntimeAgent(m_v8Session->runtimeAgent()));
+    m_session = new InspectorSession(this, m_inspectedFrames.get(), m_instrumentingAgents.get(), sessionId, false /* autoFlush */, mainThreadDebugger->debugger(), mainThreadDebugger->contextGroupId(m_inspectedFrames->root()), state);
 
-    InspectorDOMAgent* domAgent = new InspectorDOMAgent(isolate, m_inspectedFrames.get(), m_v8Session.get(), m_overlay.get());
+    InspectorDOMAgent* domAgent = new InspectorDOMAgent(isolate, m_inspectedFrames.get(), m_session->v8Session(), m_overlay.get());
     m_domAgent = domAgent;
     m_session->append(domAgent);
 
@@ -400,7 +393,7 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
     InspectorCSSAgent* cssAgent = InspectorCSSAgent::create(m_domAgent, m_inspectedFrames.get(), m_resourceAgent, m_resourceContentLoader.get(), m_resourceContainer.get());
     m_session->append(cssAgent);
 
-    m_session->append(new InspectorAnimationAgent(m_inspectedFrames.get(), m_domAgent, cssAgent, m_v8Session.get()));
+    m_session->append(new InspectorAnimationAgent(m_inspectedFrames.get(), m_domAgent, cssAgent, m_session->v8Session()));
 
     m_session->append(InspectorMemoryAgent::create());
 
@@ -408,10 +401,7 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
 
     m_session->append(InspectorIndexedDBAgent::create(m_inspectedFrames.get()));
 
-    InspectorDebuggerAgent* debuggerAgent = new InspectorDebuggerAgent(m_v8Session->debuggerAgent());
-    m_session->append(debuggerAgent);
-
-    m_session->append(new PageConsoleAgent(m_v8Session.get(), m_domAgent, m_inspectedFrames.get()));
+    m_session->append(new PageConsoleAgent(m_session->v8Session(), m_domAgent, m_inspectedFrames.get()));
 
     InspectorWorkerAgent* workerAgent = new InspectorWorkerAgent(m_inspectedFrames.get());
     m_session->append(workerAgent);
@@ -420,15 +410,11 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
     m_tracingAgent = tracingAgent;
     m_session->append(tracingAgent);
 
-    m_session->append(new InspectorDOMDebuggerAgent(isolate, m_domAgent, m_v8Session.get()));
+    m_session->append(new InspectorDOMDebuggerAgent(isolate, m_domAgent, m_session->v8Session()));
 
     m_session->append(InspectorInputAgent::create(m_inspectedFrames.get()));
 
-    m_session->append(new InspectorProfilerAgent(m_v8Session->profilerAgent()));
-
-    m_session->append(new InspectorHeapProfilerAgent(m_v8Session->heapProfilerAgent()));
-
-    InspectorPageAgent* pageAgent = InspectorPageAgent::create(m_inspectedFrames.get(), this, m_resourceContentLoader.get(), m_v8Session.get());
+    InspectorPageAgent* pageAgent = InspectorPageAgent::create(m_inspectedFrames.get(), this, m_resourceContentLoader.get(), m_session->v8Session());
     m_pageAgent = pageAgent;
     m_session->append(pageAgent);
 
@@ -451,7 +437,7 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId, const String& hostId
     }
 
     if (m_overlay)
-        m_overlay->init(cssAgent, debuggerAgent, m_domAgent);
+        m_overlay->init(cssAgent, m_session->v8Session(), m_domAgent);
 
     Platform::current()->currentThread()->addTaskObserver(this);
 }
@@ -467,8 +453,7 @@ void WebDevToolsAgentImpl::destroySession()
     m_pageAgent.clear();
     m_domAgent.clear();
 
-    m_session->detach();
-    m_v8Session.clear();
+    m_session->dispose();
     m_session.clear();
 
     Platform::current()->currentThread()->removeTaskObserver(this);
@@ -478,17 +463,16 @@ void WebDevToolsAgentImpl::attach(const WebString& hostId, int sessionId)
 {
     if (attached())
         return;
-    initializeSession(sessionId, hostId);
-    m_session->attach(m_v8Session.get(), nullptr);
+    initializeSession(sessionId, hostId, nullptr);
 }
 
 void WebDevToolsAgentImpl::reattach(const WebString& hostId, int sessionId, const WebString& savedState)
 {
     if (attached())
         return;
-    initializeSession(sessionId, hostId);
     String state = savedState;
-    m_session->attach(m_v8Session.get(), &state);
+    initializeSession(sessionId, hostId, &state);
+    m_session->restore();
 }
 
 void WebDevToolsAgentImpl::detach()
@@ -557,15 +541,15 @@ void WebDevToolsAgentImpl::dispatchOnInspectorBackend(int sessionId, int callId,
     if (WebDevToolsAgent::shouldInterruptForMethod(method))
         MainThreadDebugger::instance()->taskRunner()->runAllTasksDontWait();
     else
-        dispatchMessageFromFrontend(sessionId, message);
+        dispatchMessageFromFrontend(sessionId, method, message);
 }
 
-void WebDevToolsAgentImpl::dispatchMessageFromFrontend(int sessionId, const String& message)
+void WebDevToolsAgentImpl::dispatchMessageFromFrontend(int sessionId, const String& method, const String& message)
 {
     if (!attached() || sessionId != m_session->sessionId())
         return;
     InspectorTaskRunner::IgnoreInterruptsScope scope(MainThreadDebugger::instance()->taskRunner());
-    m_session->dispatchProtocolMessage(message);
+    m_session->dispatchProtocolMessage(method, message);
 }
 
 void WebDevToolsAgentImpl::inspectElementAt(const WebPoint& pointInRootFrame)
@@ -647,10 +631,10 @@ WebString WebDevToolsAgentImpl::evaluateInWebInspectorOverlay(const WebString& s
     return m_overlay->evaluateInOverlayForTest(script);
 }
 
-void WebDevToolsAgentImpl::flushPendingProtocolNotifications()
+void WebDevToolsAgentImpl::flushProtocolNotifications()
 {
     if (m_session)
-        m_session->flushPendingProtocolNotifications();
+        m_session->flushProtocolNotifications();
 }
 
 void WebDevToolsAgentImpl::willProcessTask()
@@ -665,7 +649,7 @@ void WebDevToolsAgentImpl::didProcessTask()
     if (!attached())
         return;
     ThreadDebugger::idleStarted(V8PerIsolateData::mainThreadIsolate());
-    flushPendingProtocolNotifications();
+    flushProtocolNotifications();
 }
 
 void WebDevToolsAgentImpl::runDebuggerTask(int sessionId, PassOwnPtr<WebDevToolsAgent::MessageDescriptor> descriptor)
@@ -676,7 +660,7 @@ void WebDevToolsAgentImpl::runDebuggerTask(int sessionId, PassOwnPtr<WebDevTools
 
     WebDevToolsAgentImpl* agentImpl = static_cast<WebDevToolsAgentImpl*>(webagent);
     if (agentImpl->attached())
-        agentImpl->dispatchMessageFromFrontend(sessionId, descriptor->message());
+        agentImpl->dispatchMessageFromFrontend(sessionId, descriptor->method(), descriptor->message());
 }
 
 void WebDevToolsAgent::interruptAndDispatch(int sessionId, MessageDescriptor* rawDescriptor)

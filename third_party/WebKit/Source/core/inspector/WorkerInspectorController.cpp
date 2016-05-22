@@ -32,11 +32,7 @@
 
 #include "core/InstrumentingAgents.h"
 #include "core/inspector/InspectorConsoleAgent.h"
-#include "core/inspector/InspectorDebuggerAgent.h"
-#include "core/inspector/InspectorHeapProfilerAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/InspectorProfilerAgent.h"
-#include "core/inspector/InspectorRuntimeAgent.h"
 #include "core/inspector/WorkerConsoleAgent.h"
 #include "core/inspector/WorkerThreadDebugger.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -46,7 +42,6 @@
 #include "platform/inspector_protocol/Frontend.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
-#include "platform/v8_inspector/public/V8RuntimeAgent.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -73,32 +68,27 @@ void WorkerInspectorController::connectFrontend()
     if (m_session)
         return;
 
-    // sessionId will be overwritten by WebDevToolsAgent::sendProtocolNotifications call.
-    m_session = new InspectorSession(this, nullptr, m_instrumentingAgents.get(), 0, true /* autoFlush */);
-    m_v8Session = m_debugger->debugger()->connect(m_debugger->contextGroupId());
-
-    m_session->append(new InspectorRuntimeAgent(m_v8Session->runtimeAgent()));
-    m_session->append(new InspectorDebuggerAgent(m_v8Session->debuggerAgent()));
-    m_session->append(new InspectorProfilerAgent(m_v8Session->profilerAgent()));
-    m_session->append(new InspectorHeapProfilerAgent(m_v8Session->heapProfilerAgent()));
-    m_session->append(new WorkerConsoleAgent(m_v8Session.get(), m_workerGlobalScope));
-
-    m_session->attach(m_v8Session.get(), nullptr);
+    // sessionId will be overwritten by WebDevToolsAgent::sendProtocolNotification call.
+    m_session = new InspectorSession(this, nullptr, m_instrumentingAgents.get(), 0, true /* autoFlush */, m_debugger->debugger(), m_debugger->contextGroupId(), nullptr);
+    m_session->append(new WorkerConsoleAgent(m_session->v8Session(), m_workerGlobalScope));
 }
 
 void WorkerInspectorController::disconnectFrontend()
 {
     if (!m_session)
         return;
-    m_session->detach();
-    m_v8Session.clear();
+    m_session->dispose();
     m_session.clear();
 }
 
 void WorkerInspectorController::dispatchMessageFromFrontend(const String& message)
 {
-    if (m_session)
-        m_session->dispatchProtocolMessage(message);
+    if (!m_session)
+        return;
+    protocol::String16 method;
+    if (!protocol::Dispatcher::getCommandName(message, &method))
+        return;
+    m_session->dispatchProtocolMessage(method, message);
 }
 
 void WorkerInspectorController::dispose()

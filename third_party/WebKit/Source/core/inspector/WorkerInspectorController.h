@@ -31,7 +31,6 @@
 #ifndef WorkerInspectorController_h
 #define WorkerInspectorController_h
 
-#include "core/inspector/InspectorRuntimeAgent.h"
 #include "core/inspector/InspectorSession.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "wtf/Allocator.h"
@@ -44,7 +43,6 @@ namespace blink {
 
 class InstrumentingAgents;
 class V8Debugger;
-class V8InspectorSession;
 class WorkerGlobalScope;
 class WorkerThreadDebugger;
 
@@ -78,7 +76,6 @@ private:
     WorkerThreadDebugger* m_debugger;
     Member<WorkerGlobalScope> m_workerGlobalScope;
     Member<InstrumentingAgents> m_instrumentingAgents;
-    OwnPtr<V8InspectorSession> m_v8Session;
     Member<InspectorSession> m_session;
 };
 
