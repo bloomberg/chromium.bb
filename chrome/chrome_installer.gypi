@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  'includes': [
+    '../media/cdm_paths.gypi',
+  ],
   'variables': {
     'lastchange_path': '../build/util/LASTCHANGE',
     'branding_dir': 'app/theme/<(branding_path_component)',
@@ -525,8 +528,8 @@
             'rpm_arch': 'i386',
             'packaging_files_binaries': [
               '<(PRODUCT_DIR)/nacl_irt_x86_32.nexe',
-              '<(PRODUCT_DIR)/libwidevinecdmadapter.so',
-              '<(PRODUCT_DIR)/libwidevinecdm.so',
+              '<(PRODUCT_DIR)/<(widevine_cdm_path)/libwidevinecdmadapter.so',
+              '<(PRODUCT_DIR)/<(widevine_cdm_path)/libwidevinecdm.so',
             ],
             'packaging_files_common': [
               '<(DEPTH)/build/linux/bin/eu-strip',
@@ -537,8 +540,8 @@
             'rpm_arch': 'x86_64',
             'packaging_files_binaries': [
               '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
-              '<(PRODUCT_DIR)/libwidevinecdmadapter.so',
-              '<(PRODUCT_DIR)/libwidevinecdm.so',
+              '<(PRODUCT_DIR)/<(widevine_cdm_path)/libwidevinecdmadapter.so',
+              '<(PRODUCT_DIR)/<(widevine_cdm_path)/libwidevinecdm.so',
             ],
             'packaging_files_common': [
               '<!(which eu-strip)',

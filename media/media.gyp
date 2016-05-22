@@ -1108,11 +1108,24 @@
       ],  # target_conditions
     },
     {
+      # GN version: //media:cdm_paths
+      'target_name': 'cdm_paths',
+      'type': 'static_library',
+      'sources': [
+        'cdm/cdm_paths.cc',
+        'cdm/cdm_paths.h',
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+      ]
+    },
+    {
       # GN version: //media:media_unittests
       'target_name': 'media_unittests',
       'type': '<(gtest_target_type)',
       'dependencies': [
         'audio_test_config',
+        'cdm_paths',
         'media',
         'media_features',
         'media_test_support',
@@ -1332,6 +1345,13 @@
           'sources': [
             'cdm/cdm_adapter_unittest.cc',
           ],
+          'conditions': [
+            ['OS == "mac"', {
+              'xcode_settings': {
+                'LD_RUNPATH_SEARCH_PATHS' : [ '@executable_path/<(clearkey_cdm_path)' ],
+              },
+            }]
+           ],
         }],
         ['target_arch != "arm" and chromeos == 1 and use_x11 == 1', {
           'sources': [

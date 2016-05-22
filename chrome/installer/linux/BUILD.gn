@@ -8,6 +8,10 @@ import("//build/config/sanitizers/sanitizers.gni")
 import("//build/util/version.gni")
 import("//chrome/version.gni")
 
+if (current_cpu == "x86" || current_cpu == "x64") {
+  import("//media/cdm/ppapi/cdm_paths.gni")
+}
+
 assert(is_linux && is_chrome_branded)
 
 # This target builds all "normal" Linux installers.
@@ -220,14 +224,14 @@ template("linux_package") {
   if (current_cpu == "x86") {
     packaging_files_binaries += [
       "$root_out_dir/nacl_irt_x86_32.nexe",
-      "$root_out_dir/libwidevinecdmadapter.so",
-      "$root_out_dir/libwidevinecdm.so",
+      "$root_out_dir/$widevine_cdm_path/libwidevinecdmadapter.so",
+      "$root_out_dir/$widevine_cdm_path/libwidevinecdm.so",
     ]
   } else if (current_cpu == "x64") {
     packaging_files_binaries += [
       "$root_out_dir/nacl_irt_x86_64.nexe",
-      "$root_out_dir/libwidevinecdmadapter.so",
-      "$root_out_dir/libwidevinecdm.so",
+      "$root_out_dir/$widevine_cdm_path/libwidevinecdmadapter.so",
+      "$root_out_dir/$widevine_cdm_path/libwidevinecdm.so",
     ]
   } else if (current_cpu == "arm") {
     packaging_files_binaries += [ "$root_out_dir/nacl_irt_arm.nexe" ]

@@ -491,6 +491,16 @@ component("media") {
   ]
 }
 
+source_set("cdm_paths") {
+  sources = [
+    "cdm/cdm_paths.cc",
+    "cdm/cdm_paths.h",
+  ]
+  deps = [
+    "//base",
+  ]
+}
+
 # Minimal media component for media/cast on iOS.
 if (is_ios) {
   component("media_for_cast_ios") {
@@ -583,6 +593,7 @@ test("media_unittests") {
 
   deps = [
     ":cdm_api",
+    ":cdm_paths",
     ":media",
     ":test_support",
     "//base/test:test_support",
