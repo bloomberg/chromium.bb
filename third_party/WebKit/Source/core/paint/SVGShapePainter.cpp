@@ -60,7 +60,7 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
             LayoutObjectDrawingRecorder recorder(paintContext.paintInfo().context, m_layoutSVGShape, paintContext.paintInfo().phase, boundingBox);
             const SVGComputedStyle& svgStyle = m_layoutSVGShape.style()->svgStyle();
 
-            bool shouldAntiAlias = svgStyle.shapeRendering() != SR_CRISPEDGES;
+            bool shouldAntiAlias = svgStyle.shapeRendering() != SR_CRISPEDGES && svgStyle.shapeRendering() != SR_OPTIMIZESPEED;
 
             for (int i = 0; i < 3; i++) {
                 switch (svgStyle.paintOrderType(i)) {
