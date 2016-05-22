@@ -270,6 +270,9 @@ class DownloadProtectionServiceTest : public testing::Test {
     profile_.reset(new TestingProfile(profile_dir_.path()));
     ASSERT_TRUE(profile_->CreateHistoryService(true /* delete_file */,
                                                false /* no_db */));
+
+    // Setup a directory to place test files in.
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
   void TearDown() override {
@@ -385,14 +388,25 @@ class DownloadProtectionServiceTest : public testing::Test {
       const std::string& referrer_url,
       const base::FilePath::StringType& tmp_path_literal,
       const base::FilePath::StringType& final_path_literal) {
+    base::FilePath tmp_path = temp_dir_.path().Append(tmp_path_literal);
+    base::FilePath final_path = temp_dir_.path().Append(final_path_literal);
+
+    PrepareBasicDownloadItemWithFullPaths(item, url_chain_items, referrer_url,
+      tmp_path, final_path);
+  }
+
+  void PrepareBasicDownloadItemWithFullPaths(
+      content::MockDownloadItem* item,
+      const std::vector<std::string> url_chain_items,
+      const std::string& referrer_url,
+      const base::FilePath& tmp_full_path,
+      const base::FilePath& final_full_path) {
     url_chain_.clear();
     for (std::string item: url_chain_items)
       url_chain_.push_back(GURL(item));
     referrer_ = GURL(referrer_url);
-    tmp_path_ = base::FilePath(
-        base::FilePath::StringPieceType(tmp_path_literal));
-    final_path_ = base::FilePath(
-        base::FilePath::StringPieceType(final_path_literal));
+    tmp_path_ = tmp_full_path;
+    final_path_ = final_full_path;
     hash_ = "hash";
 
     EXPECT_CALL(*item, GetFullPath()).WillRepeatedly(ReturnRef(tmp_path_));
@@ -510,6 +524,7 @@ class DownloadProtectionServiceTest : public testing::Test {
   base::FilePath tmp_path_;
   base::FilePath final_path_;
   std::string hash_;
+  base::ScopedTempDir temp_dir_;
 };
 
 
@@ -565,8 +580,6 @@ void DownloadProtectionServiceTest::CheckClientDownloadReportCorruptZip(
 
   Mock::VerifyAndClearExpectations(sb_service_.get());
   Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
-
-  base::DeleteFile(tmp_path_, false);
 }
 
 
@@ -1203,8 +1216,6 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadZip) {
             GetClientDownloadRequest()->download_type());
   ClearClientDownloadRequest();
   Mock::VerifyAndClearExpectations(binary_feature_extractor_.get());
-
-  base::DeleteFile(tmp_path_, false);
 }
 
 TEST_F(DownloadProtectionServiceTest,
@@ -2108,13 +2119,12 @@ TEST_F(DownloadProtectionServiceFlagTest,
        CheckClientDownloadZipOverridenByFlag) {
   content::MockDownloadItem item;
 
-  PrepareBasicDownloadItem(
-    &item,
-    {"http://www.evil.com/a.exe"},                   // url_chain
-    "http://www.google.com/",                        // referrer
-    testdata_path_.AppendASCII(
-        "zipfile_one_unsigned_binary.zip").value(),  // tmp_path
-    FILE_PATH_LITERAL("a.zip"));                     // final_path
+  PrepareBasicDownloadItemWithFullPaths(
+      &item, {"http://www.evil.com/a.exe"},  // url_chain
+      "http://www.google.com/",              // referrer
+      testdata_path_.AppendASCII(
+          "zipfile_one_unsigned_binary.zip"),                // tmp_path
+      temp_dir_.path().Append(FILE_PATH_LITERAL("a.zip")));  // final_path
 
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
