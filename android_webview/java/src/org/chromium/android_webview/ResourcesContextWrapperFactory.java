@@ -10,8 +10,6 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.view.LayoutInflater;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
-
 import java.lang.ref.WeakReference;
 import java.util.WeakHashMap;
 
@@ -54,7 +52,6 @@ public class ResourcesContextWrapperFactory {
             super(base);
         }
 
-        @SuppressFBWarnings("DP_CREATE_CLASSLOADER_INSIDE_DO_PRIVILEGED")
         @Override
         public ClassLoader getClassLoader() {
             final ClassLoader appCl = getBaseContext().getClassLoader();

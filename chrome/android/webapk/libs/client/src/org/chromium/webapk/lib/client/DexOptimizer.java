@@ -10,8 +10,6 @@ import android.util.Log;
 import dalvik.system.DexClassLoader;
 import dalvik.system.DexFile;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -32,7 +30,6 @@ public class DexOptimizer {
      * @param dexFile Path to a dex file.
      * @return True if the dex file was successfully optimized.
      */
-    @SuppressFBWarnings("DP_CREATE_CLASSLOADER_INSIDE_DO_PRIVILEGED")
     public static boolean optimize(File dexFile) {
         if (!dexFile.exists()) {
             Log.e(TAG, "Dex file does not exist! " + dexFile.getAbsolutePath());
