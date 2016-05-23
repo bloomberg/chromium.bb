@@ -316,6 +316,12 @@ gbm_bo_get_format(struct gbm_bo *bo)
 	return bo->format;
 }
 
+PUBLIC uint64_t
+gbm_bo_get_format_modifier(struct gbm_bo *bo)
+{
+	return gbm_bo_get_plane_format_modifier(bo, 0);
+}
+
 PUBLIC struct gbm_device *
 gbm_bo_get_device(struct gbm_bo *bo)
 {
@@ -386,6 +392,13 @@ gbm_bo_get_plane_stride(struct gbm_bo *bo, size_t plane)
 {
 	assert(plane < bo->num_planes);
 	return bo->strides[plane];
+}
+
+PUBLIC uint64_t
+gbm_bo_get_plane_format_modifier(struct gbm_bo *bo, size_t plane)
+{
+	assert(plane < bo->num_planes);
+	return bo->format_modifiers[plane];
 }
 
 PUBLIC void
