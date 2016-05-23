@@ -143,6 +143,7 @@
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 #include "chrome/browser/ui/android/infobars/download_overwrite_infobar.h"
 #include "chrome/browser/ui/android/infobars/generated_password_saved_infobar.h"
+#include "chrome/browser/ui/android/infobars/grouped_permission_infobar.h"
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
 #include "chrome/browser/ui/android/infobars/infobar_container_android.h"
 #include "chrome/browser/ui/android/infobars/save_password_infobar.h"
@@ -284,6 +285,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      FullscreenInfoBarDelegate::RegisterFullscreenInfoBarDelegate},
     {"GeneratedPasswordSavedInfoBarDelegate",
      RegisterGeneratedPasswordSavedInfoBarDelegate},
+    {"GroupedPermissionInfoBar", GroupedPermissionInfoBar::Register},
     {"HistoryReportJniBridge", history_report::RegisterHistoryReportJniBridge},
     {"InfoBarContainer", RegisterInfoBarContainer},
     {"InterestsService", InterestsService::Register},

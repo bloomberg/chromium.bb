@@ -2044,6 +2044,7 @@
       'android/java/src/org/chromium/chrome/browser/infobar/AutofillSaveCardInfoBar.java',
       'android/java/src/org/chromium/chrome/browser/infobar/ConfirmInfoBar.java',
       'android/java/src/org/chromium/chrome/browser/infobar/GeneratedPasswordSavedInfoBarDelegate.java',
+      'android/java/src/org/chromium/chrome/browser/infobar/GroupedPermissionInfoBar.java',
       'android/java/src/org/chromium/chrome/browser/infobar/InfoBar.java',
       'android/java/src/org/chromium/chrome/browser/infobar/InfoBarContainer.java',
       'android/java/src/org/chromium/chrome/browser/infobar/PermissionUpdateInfoBarDelegate.java',
@@ -2293,6 +2294,8 @@
     ],
     # Permissions sources used when android_java_ui is enabled.
     'chrome_browser_permissions_android_java_ui_sources': [
+      'browser/permissions/grouped_permission_infobar_delegate.cc',
+      'browser/permissions/grouped_permission_infobar_delegate.h',
       'browser/permissions/permission_update_infobar_delegate_android.cc',
       'browser/permissions/permission_update_infobar_delegate_android.h',
     ],

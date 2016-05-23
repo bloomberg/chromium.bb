@@ -201,7 +201,7 @@ public class AutofillSaveCardInfoBar extends ConfirmInfoBar {
         super.createContent(layout);
         InfoBarControlLayout control = layout.addControlLayout();
         for (CardDetail detail : mCardDetails) {
-            control.addIcon(detail.issuerIconDrawableId, detail.label, detail.subLabel);
+            control.addIcon(detail.issuerIconDrawableId, detail.label, detail.subLabel, 0);
         }
 
         for (LegalMessageLine line : mLegalMessageLines) {

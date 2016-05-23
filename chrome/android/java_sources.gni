@@ -363,6 +363,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/infobar/DownloadOverwriteInfoBar.java",
   "java/src/org/chromium/chrome/browser/infobar/GeneratedPasswordSavedInfoBar.java",
   "java/src/org/chromium/chrome/browser/infobar/GeneratedPasswordSavedInfoBarDelegate.java",
+  "java/src/org/chromium/chrome/browser/infobar/GroupedPermissionInfoBar.java",
   "java/src/org/chromium/chrome/browser/infobar/InfoBar.java",
   "java/src/org/chromium/chrome/browser/infobar/InfoBarContainer.java",
   "java/src/org/chromium/chrome/browser/infobar/InfoBarContainerLayout.java",

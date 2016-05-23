@@ -275,15 +275,19 @@ public final class InfoBarControlLayout extends ViewGroup {
      * @param iconResourceId   ID of the drawable to use for the icon.
      * @param primaryMessage   Message to display for the toggle.
      * @param secondaryMessage Additional descriptive text for the toggle.  May be null.
+     * @param iconColorId      ID of the tint color for the icon, or 0 for default.
      */
-    public View addIcon(
-            int iconResourceId, CharSequence primaryMessage, CharSequence secondaryMessage) {
+    public View addIcon(int iconResourceId, CharSequence primaryMessage,
+            CharSequence secondaryMessage, int iconColorId) {
         LinearLayout layout = (LinearLayout) LayoutInflater.from(getContext()).inflate(
                 R.layout.infobar_control_icon_with_description, this, false);
         addView(layout, new ControlLayoutParams());
 
         ImageView iconView = (ImageView) layout.findViewById(R.id.control_icon);
         iconView.setImageResource(iconResourceId);
+        if (iconColorId != 0) {
+            iconView.setColorFilter(ApiCompatibilityUtils.getColor(getResources(), iconColorId));
+        }
 
         // The primary message text is always displayed.
         TextView primaryView = (TextView) layout.findViewById(R.id.control_message);
