@@ -1355,8 +1355,6 @@ crbug.com/605059 [ Retina ] fast/text/international/rtl-negative-letter-spacing.
 crbug.com/610464 [ Win7 Debug ] inspector/components/throttler.html [ Failure Pass ]
 crbug.com/606649 fast/dom/gc-dom-tree-lifetime.html [ Pass Timeout ]
 
-crbug.com/613941 virtual/prefer_compositing_to_lcd_text/compositing/overflow/nested-render-surfaces-with-intervening-clip.html [ NeedsRebaseline ]
-
 # TODO(jlebel): Remove when methods are implemented.
 crbug.com/609065 [ Mac ] bluetooth/characteristicProperties.html [ Skip ]
 crbug.com/609064 [ Mac ] bluetooth/connect/connect-disconnected-connect.html [ Skip ]
