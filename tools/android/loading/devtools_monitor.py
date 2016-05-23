@@ -388,6 +388,9 @@ class DevToolsConnection(object):
       if target_descriptor['type'] == 'page':
         self._target_descriptor = target_descriptor
         break
+    if not self._target_descriptor:
+      raise DevToolsConnectionException(
+        'No pages are open, connected to a wrong instance?')
     if self._target_descriptor['url'] != 'about:blank':
       raise DevToolsConnectionException(
           'Looks like devtools connection was made to a different instance.')
