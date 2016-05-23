@@ -12,14 +12,24 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
+#include "components/offline_pages/archive_manager.h"
 #include "components/offline_pages/offline_page_types.h"
 
 namespace base {
 class Clock;
-}
+}  // namespace base
 
 namespace offline_pages {
 
+// Limit of the total storage space occupied by offline pages should be 30% of
+// available storage. And we clear storage when it is over the threshold,
+// reducing the usage below threshold.
+const double kOfflinePageStorageLimit = 0.3;
+const double kOfflinePageStorageClearThreshold = 0.1;
+const base::TimeDelta kClearStorageInterval = base::TimeDelta::FromMinutes(10);
+
+class ArchiveManager;
 class ClientPolicyController;
 
 // This class is used for storage management of offline pages. It provides
@@ -48,40 +58,65 @@ class OfflinePageStorageManager {
                                         const DeletePageCallback& callback) = 0;
   };
 
+  enum class ClearStorageResult {
+    SUCCESS,         // Cleared successfully.
+    UNNECESSARY,     // No expired pages.
+    DELETE_FAILURE,  // Deletion failed.
+  };
+
   // Callback used when calling ClearPagesIfNeeded.
-  // int: the number of deleted pages.
-  // DeletePageResult: result of deleting pages.
-  typedef base::Callback<void(int, DeletePageResult)> ClearPageCallback;
+  // int: the number of expired pages.
+  // ClearStorageResult: result of expiring pages in storage.
+  typedef base::Callback<void(int, ClearStorageResult)> ClearPagesCallback;
 
   explicit OfflinePageStorageManager(Client* client,
-                                     ClientPolicyController* policy_controller);
+                                     ClientPolicyController* policy_controller,
+                                     ArchiveManager* archive_manager);
 
   ~OfflinePageStorageManager();
 
   // The manager would *try* to clear pages when called. It may not delete any
   // pages (if clearing condition wasn't satisfied).
-  void ClearPagesIfNeeded(const ClearPageCallback& callback);
+  // It clears the storage (expire pages) when it's using more disk space than a
+  // certain limit, or the time elapsed from last time clearing is longer than a
+  // certain interval. Both values are defined above.
+  void ClearPagesIfNeeded(const ClearPagesCallback& callback);
 
   // Sets the clock for testing.
   void SetClockForTesting(std::unique_ptr<base::Clock> clock);
 
  private:
-  // Selects and removes pages that need to be expired. Triggered as a callback
-  // to |GetAllPages|.
-  void ClearExpiredPages(const ClearPageCallback& callback,
+  // Enum indicating how to clear the pages.
+  enum class ClearMode {
+    // Using normal expiration logic to expire pages. Will reduce the storage
+    // usage down below the threshold.
+    DEFAULT,
+    // No need to expire any page (no pages in the model or no expired
+    // pages and we're not exceeding the storage limit.)
+    NOT_NEEDED,
+  };
+
+  // Callback called after getting storage stats from archive manager.
+  void OnGetStorageStatsDone(const ClearPagesCallback& callback,
+                             const ArchiveManager::StorageStats& pages);
+
+  // Callback called after getting all pages from client done.
+  void OnGetAllPagesDone(const ClearPagesCallback& callback,
+                         const ArchiveManager::StorageStats& storage_stats,
                          const MultipleOfflinePageItemResult& pages);
 
-  // Gets offline IDs of all expired pages and return in |offline_ids|.
-  void GetExpiredPageIds(const MultipleOfflinePageItemResult& pages,
-                         std::vector<int64_t>& offline_ids);
-
-  // Callback when expired pages has been deleted.
-  void OnExpiredPagesDeleted(const ClearPageCallback& callback,
+  // Callback called after expired pages have been deleted.
+  void OnExpiredPagesDeleted(const ClearPagesCallback& callback,
                              int pages_to_clear,
                              DeletePageResult result);
 
+  // Gets offline IDs of all expired pages and return in |offline_ids|.
+  void GetExpiredPageIds(const MultipleOfflinePageItemResult& pages,
+                         const ArchiveManager::StorageStats& stats,
+                         std::vector<int64_t>& offline_ids);
+
   // Determine if manager should clear pages.
-  bool ShouldClearPages();
+  ClearMode ShouldClearPages(const ArchiveManager::StorageStats& storage_stats);
 
   // Return true if |page| is expired comparing to |now|.
   bool ShouldBeExpired(const base::Time& now, const OfflinePageItem& page);
@@ -92,7 +127,12 @@ class OfflinePageStorageManager {
   // Not owned.
   ClientPolicyController* policy_controller_;
 
+  // Not owned.
+  ArchiveManager* archive_manager_;
+
   bool in_progress_;
+
+  base::Time last_clear_time_;
 
   // Clock for getting time.
   std::unique_ptr<base::Clock> clock_;

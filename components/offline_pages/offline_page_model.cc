@@ -620,8 +620,8 @@ void OfflinePageModel::OnLoadDone(
                       base::TimeTicks::Now() - start_time);
 
   // Create Storage Manager.
-  storage_manager_.reset(
-      new OfflinePageStorageManager(this, GetPolicyController()));
+  storage_manager_.reset(new OfflinePageStorageManager(
+      this, GetPolicyController(), archive_manager_.get()));
 
   // Run all the delayed tasks.
   for (const auto& delayed_task : delayed_tasks_)

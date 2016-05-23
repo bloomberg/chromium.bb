@@ -69,6 +69,9 @@ void GetStorageStatsImpl(const base::FilePath& archive_dir,
 
 }  // namespace
 
+// protected and used for testing.
+ArchiveManager::ArchiveManager() {}
+
 ArchiveManager::ArchiveManager(
     const base::FilePath& archives_dir,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)

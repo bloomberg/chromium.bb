@@ -63,6 +63,9 @@ class ArchiveManager {
       const base::Callback<void(const StorageStats& storage_sizes)>& callback)
       const;
 
+ protected:
+  ArchiveManager();
+
  private:
   // Path under which all of the managed archives should be stored.
   base::FilePath archives_dir_;
