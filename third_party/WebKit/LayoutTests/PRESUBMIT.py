@@ -12,13 +12,8 @@ import filecmp
 
 
 def _CheckTestharnessResults(input_api, output_api):
-    """Checks for testharness.js test baseline files that contain only PASS lines.
-
-    In general these files are unnecessary because for testharness.js tests, if there is
-    no baseline file then the test is considered to pass when the output is all PASS.
-    """
-    baseline_files = _TestharnessBaselineFilesToCheck(input_api)
-    if not baseline_files:
+    expected_files = [f.AbsoluteLocalPath() for f in input_api.AffectedFiles() if f.LocalPath().endswith('-expected.txt') and f.Action() != 'D']
+    if len(expected_files) == 0:
         return []
 
     checker_path = input_api.os_path.join(input_api.PresubmitLocalPath(),
@@ -32,27 +27,6 @@ def _CheckTestharnessResults(input_api, output_api):
     if errs:
         return [output_api.PresubmitError(errs)]
     return []
-
-
-def _TestharnessBaselineFilesToCheck(input_api):
-    """Returns a list of paths of -expected.txt files for testharness.js tests."""
-    baseline_files = []
-    for f in input_api.AffectedFiles():
-        if f.Action() == 'D':
-            continue
-        path = f.AbsoluteLocalPath()
-        if not path.endswith('-expected.txt'):
-            continue
-        if (input_api.os_path.join('LayoutTests', 'platform') in path or
-            input_api.os_path.join('LayoutTests', 'virtual') in path):
-            # We want to ignore files in LayoutTests/platform, because some all-PASS
-            # platform specific baselines may be necessary to prevent fallback to a
-            # more general baseline; we also ignore files in LayoutTests/virtual
-            # for a similar reason; some all-pass baselines are necessary to
-            # prevent fallback to the corresponding non-virtual test baseline.
-            continue
-        baseline_files.append(path)
-    return baseline_files
 
 
 def _CheckIdenticalFiles(input_api, output_api):
