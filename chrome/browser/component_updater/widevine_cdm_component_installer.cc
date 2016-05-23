@@ -333,6 +333,15 @@ std::string WidevineCdmComponentInstallerTraits::GetAp() const {
   return std::string();
 }
 
+static bool HasValidAdapter(const base::FilePath& adapter_version_path,
+                            const base::FilePath& adapter_install_path,
+                            const std::string& chrome_version) {
+  std::string adapter_version;
+  return base::ReadFileToString(adapter_version_path, &adapter_version) &&
+         adapter_version == chrome_version &&
+         base::PathExists(adapter_install_path);
+}
+
 void WidevineCdmComponentInstallerTraits::UpdateCdmAdapter(
     const base::Version& cdm_version,
     const base::FilePath& cdm_install_dir,
@@ -347,12 +356,18 @@ void WidevineCdmComponentInstallerTraits::UpdateCdmAdapter(
           << " adapter_install_path=" << adapter_install_path.AsUTF8Unsafe()
           << " adapter_version_path=" << adapter_version_path.AsUTF8Unsafe();
 
+  base::FilePath adapter_source_path;
+  PathService::Get(chrome::FILE_WIDEVINE_CDM_ADAPTER, &adapter_source_path);
+
   const std::string chrome_version = version_info::GetVersionNumber();
   DCHECK(!chrome_version.empty());
-  std::string adapter_version;
-  if (!base::ReadFileToString(adapter_version_path, &adapter_version) ||
-      adapter_version != chrome_version ||
-      !base::PathExists(adapter_install_path)) {
+
+  // If we are not using bundled CDM and we don't have a valid adapter, create
+  // the version file and copy the CDM adapter from |adapter_source_path| to
+  // |adapter_install_path|.
+  if (adapter_install_path != adapter_source_path &&
+      !HasValidAdapter(adapter_version_path, adapter_install_path,
+                       chrome_version)) {
     int bytes_written = base::WriteFile(
         adapter_version_path, chrome_version.data(), chrome_version.size());
     if (bytes_written < 0 ||
@@ -361,8 +376,6 @@ void WidevineCdmComponentInstallerTraits::UpdateCdmAdapter(
       // Ignore version file writing failure and try to copy the CDM adapter.
     }
 
-    base::FilePath adapter_source_path;
-    PathService::Get(chrome::FILE_WIDEVINE_CDM_ADAPTER, &adapter_source_path);
     if (!base::CopyFile(adapter_source_path, adapter_install_path)) {
       PLOG(WARNING) << "Failed to copy Widevine CDM adapter.";
       return;

@@ -11,6 +11,7 @@
     'enable_widevine%': '<(enable_widevine)',
     'widevine_cdm_version_h_file%': 'widevine_cdm_version.h',
     'widevine_cdm_binary_files%': [],
+    'widevine_cdm_manifest_file%': [],
     'conditions': [
       [ 'branding == "Chrome"', {
         'conditions': [
@@ -34,6 +35,9 @@
             'widevine_cdm_binary_files%': [
               'mac/<(target_arch)/libwidevinecdm.dylib',
             ],
+            'widevine_cdm_manifest_file%': [
+              'mac/<(target_arch)/manifest.json',
+            ],
           }],
           [ 'OS == "win"', {
             'widevine_cdm_version_h_file%':
@@ -41,6 +45,9 @@
             'widevine_cdm_binary_files%': [
               'win/<(target_arch)/widevinecdm.dll',
               'win/<(target_arch)/widevinecdm.dll.lib',
+            ],
+            'widevine_cdm_manifest_file%': [
+              'win/<(target_arch)/manifest.json',
             ],
           }],
         ],
@@ -93,6 +100,7 @@
             '<(DEPTH)/ppapi/ppapi.gyp:ppapi_cpp',
             '<(DEPTH)/media/media_cdm_adapter.gyp:cdmadapter',
             'widevine_cdm_version_h',
+            'widevine_cdm_manifest',
             'widevinecdm',
             'widevinecdmadapter_resources',
           ],
@@ -156,6 +164,19 @@
         'destination': '<(SHARED_INTERMEDIATE_DIR)',
         'files': [ '<(widevine_cdm_version_h_file)' ],
       }],
+    },
+    {
+      # GN version: //third_party/widevine/cdm:widevine_cdm_manifest
+      'target_name': 'widevine_cdm_manifest',
+      'type': 'none',
+      'conditions': [
+        [ 'branding == "Chrome"', {
+          'copies': [{
+            'destination': '<(PRODUCT_DIR)/WidevineCdm',
+            'files': [ '<(widevine_cdm_manifest_file)' ],
+          }],
+        }],
+      ],
     },
     {
       # GN version: //third_party/widevine/cdm:widevinecdm

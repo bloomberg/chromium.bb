@@ -14,10 +14,12 @@ if (widevine_arch == "x86") {
   widevine_arch = "ia32"
 }
 
+widevine_cdm_binary_files = []
+widevine_cdm_manifest_file = []
+
 if (is_android) {
   # Always available on Android regardless of branding.
   widevine_cdm_version_h_file = "android/widevine_cdm_version.h"
-  widevine_cdm_binary_files = []
 } else if (is_chrome_branded) {
   if (is_chromeos) {
     widevine_cdm_version_h_file =
@@ -32,21 +34,20 @@ if (is_android) {
       "win/$widevine_arch/widevinecdm.dll",
       "win/$widevine_arch/widevinecdm.dll.lib",
     ]
+    widevine_cdm_manifest_file = [ "win/$widevine_arch/manifest.json" ]
   } else if (is_mac) {
     widevine_cdm_version_h_file = "mac/$widevine_arch/widevine_cdm_version.h"
     widevine_cdm_binary_files = [ "mac/$widevine_arch/libwidevinecdm.dylib" ]
+    widevine_cdm_manifest_file = [ "mac/$widevine_arch/manifest.json" ]
   } else {
     # Other platforms, use the default one.
     widevine_cdm_version_h_file = "widevine_cdm_version.h"
-    widevine_cdm_binary_files = []
   }
 } else if (enable_widevine) {
   widevine_cdm_version_h_file = "stub/widevine_cdm_version.h"
-  widevine_cdm_binary_files = []
 } else {
   # No branding, use the default one.
   widevine_cdm_version_h_file = "widevine_cdm_version.h"
-  widevine_cdm_binary_files = []
 }
 
 # GYP version: third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h
@@ -112,6 +113,19 @@ if (widevine_cdm_binary_files != []) {
   }
 }
 
+if (widevine_cdm_manifest_file != []) {
+  copy("widevine_cdm_manifest") {
+    sources = widevine_cdm_manifest_file
+    outputs = [
+      "$root_out_dir/WidevineCdm/{{source_file_part}}",
+    ]
+  }
+} else {
+  group("widevine_cdm_manifest") {
+    # NOP
+  }
+}
+
 if ((is_chrome_branded || enable_widevine) && enable_pepper_cdms) {
   # Produce and compile the .rc file.
   process_version("widevinecdmadapter_resources") {
@@ -129,6 +143,7 @@ if ((is_chrome_branded || enable_widevine) && enable_pepper_cdms) {
     output_dir = "$root_out_dir/$widevine_cdm_path"
     deps = [
       ":version_h",
+      ":widevine_cdm_manifest",
       ":widevinecdm",
       ":widevinecdmadapter_resources",
     ]

@@ -141,7 +141,19 @@
       'conditions': [
         ['branding == "Chrome"', {
           'files': [
+            '<(PRODUCT_DIR)/<(widevine_cdm_path)/libwidevinecdm.dylib',
             '<(PRODUCT_DIR)/<(widevine_cdm_path)/widevinecdmadapter.plugin',
+          ],
+        }],
+      ],
+    },
+    {
+      'destination': '<(PRODUCT_DIR)/$(CONTENTS_FOLDER_PATH)/Libraries/WidevineCdm',
+      'files': [],
+      'conditions': [
+        ['branding == "Chrome"', {
+          'files': [
+            '<(PRODUCT_DIR)/WidevineCdm/manifest.json',
           ],
         }],
       ],
