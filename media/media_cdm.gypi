@@ -4,6 +4,7 @@
 
 {
   'includes': [
+    'cdm_paths.gypi',
     'media_variables.gypi',
   ],
   'variables': {
@@ -21,8 +22,8 @@
         ],
         'targets': [
         {
-          # GN version: //media/cdm/ppapi:clearkeycdm
-          'target_name': 'clearkeycdm',
+          'target_name': 'clearkeycdm_binary',
+          'product_name': 'clearkeycdm',
           'type': 'none',
           # TODO(tomfinegan): Simplify this by unconditionally including all the
           # decoders, and changing clearkeycdm to select which decoder to use
@@ -69,8 +70,14 @@
             }],
             ['OS == "mac"', {
               'xcode_settings': {
-                'DYLIB_INSTALL_NAME_BASE': '@loader_path',
+                'DYLIB_INSTALL_NAME_BASE': '@rpath',
               },
+            }, {
+              # Put Clear Key CDM in the correct path directly except
+              # for mac. On mac strip_save_dsym doesn't work with product_dir
+              # so we rely on "clearkeycdm" target to copy it over.
+              # See http://crbug.com/611990
+              'product_dir': '<(PRODUCT_DIR)/<(clearkey_cdm_path)',
             }]
           ],
           'defines': ['CDM_IMPLEMENTATION'],
@@ -94,6 +101,25 @@
           'msvs_disabled_warnings': [ 4267, ],
         },
         {
+          # GN version: //media/cdm/ppapi:clearkeycdm
+          # On Mac this copies the clearkeycdm binary to <(clearkey_cdm_path).
+          # On other platforms the binary is already in <(clearkey_cdm_path).
+          # See "clearkeycdm_binary" above.
+          'target_name': 'clearkeycdm',
+          'type': 'none',
+          'dependencies': [
+            'clearkeycdm_binary',
+          ],
+          'conditions': [
+            ['OS == "mac"', {
+              'copies': [{
+                'destination': '<(PRODUCT_DIR)/<(clearkey_cdm_path)',
+                'files': [ '<(PRODUCT_DIR)/libclearkeycdm.dylib' ],
+              }],
+            }],
+          ],
+        },
+        {
           # GN version: //media/cdm/ppapi:clearkeycdmadapter_resources
           'target_name': 'clearkeycdmadapter_resources',
           'type': 'none',
@@ -113,8 +139,8 @@
           ],
         },
         {
-          # GN version: //media/cdm/ppapi:clearkeycdmadapter
-          'target_name': 'clearkeycdmadapter',
+          'target_name': 'clearkeycdmadapter_binary',
+          'product_name': 'clearkeycdmadapter',
           'type': 'none',
           # Check whether the plugin's origin URL is valid.
           'defines': ['CHECK_DOCUMENT_URL'],
@@ -134,12 +160,41 @@
               'libraries': [
                '-lrt',
                 # Built by clearkeycdm.
-                '<(PRODUCT_DIR)/libclearkeycdm.so',
+                '<(PRODUCT_DIR)/<(clearkey_cdm_path)/libclearkeycdm.so',
               ],
             }],
+            ['OS == "mac"', {
+              'xcode_settings': {
+                'LD_RUNPATH_SEARCH_PATHS' : [ '@loader_path/.' ],
+              },
+            }, {
+              # Put Clear Key CDM adapter to the correct path directly except
+              # for mac. On mac strip_save_dsym doesn't work with product_dir
+              # so we rely on "clearkeycdmadapter" target to copy it over.
+              # See http://crbug.com/611990
+              'product_dir': '<(PRODUCT_DIR)/<(clearkey_cdm_path)',
+            }]
           ],
         },
-      ],
+        {
+          # GN version: //media/cdm/ppapi:clearkeycdmadapter
+          # On Mac this copies the clearkeycdmadapter binary to
+          # <(clearkey_cdm_path). On all other platforms the binary is already
+          # in <(clearkey_cdm_path). See "clearkeycdmadapter_binary" above.
+          'target_name': 'clearkeycdmadapter',
+          'type': 'none',
+          'dependencies': [
+            'clearkeycdmadapter_binary',
+          ],
+          'conditions': [
+            ['OS == "mac"', {
+              'copies': [{
+                'destination': '<(PRODUCT_DIR)/<(clearkey_cdm_path)',
+                'files': [ '<(PRODUCT_DIR)/clearkeycdmadapter.plugin' ],
+              }],
+            }],
+          ],
+        }],
     }],
   ],
 }

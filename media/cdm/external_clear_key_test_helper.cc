@@ -9,6 +9,7 @@
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "media/cdm/api/content_decryption_module.h"
+#include "media/cdm/cdm_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -18,6 +19,8 @@ namespace media {
 // is expanded.
 #define STRINGIFY(X) #X
 #define MAKE_STRING(X) STRINGIFY(X)
+
+const char kClearKeyCdmBaseDirectory[] = "ClearKeyCdm";
 
 // File name of the External ClearKey CDM on different platforms.
 const base::FilePath::CharType kExternalClearKeyCdmFileName[] =
@@ -40,10 +43,12 @@ ExternalClearKeyTestHelper::~ExternalClearKeyTestHelper() {
 void ExternalClearKeyTestHelper::LoadLibrary() {
   // Determine the location of the CDM. It is expected to be in the same
   // directory as the current module.
-  base::FilePath current_module_dir;
-  ASSERT_TRUE(PathService::Get(base::DIR_MODULE, &current_module_dir));
+  base::FilePath cdm_base_path;
+  ASSERT_TRUE(PathService::Get(base::DIR_MODULE, &cdm_base_path));
+  cdm_base_path = cdm_base_path.Append(
+      GetPlatformSpecificDirectory(kClearKeyCdmBaseDirectory));
   library_path_ =
-      current_module_dir.Append(base::FilePath(kExternalClearKeyCdmFileName));
+      cdm_base_path.Append(base::FilePath(kExternalClearKeyCdmFileName));
   ASSERT_TRUE(base::PathExists(library_path_)) << library_path_.value();
 
   // Now load the CDM library.

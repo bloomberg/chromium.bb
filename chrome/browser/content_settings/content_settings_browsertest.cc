@@ -326,14 +326,14 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
 #if defined(ENABLE_PEPPER_CDMS)
     // Append the switch to register the External Clear Key CDM.
     base::FilePath::StringType pepper_plugins = BuildPepperCdmRegistration(
-        kClearKeyCdmAdapterFileName, kClearKeyCdmDisplayName,
-        kClearKeyCdmPepperMimeType);
+        kClearKeyCdmBaseDirectory, kClearKeyCdmAdapterFileName,
+        kClearKeyCdmDisplayName, kClearKeyCdmPepperMimeType);
 #if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
     // The CDM must be registered when it is a component.
     pepper_plugins.append(FILE_PATH_LITERAL(","));
     pepper_plugins.append(BuildPepperCdmRegistration(
-        kWidevineCdmAdapterFileName, kWidevineCdmDisplayName,
-        kWidevineCdmPluginMimeType));
+        kWidevineCdmBaseDirectory, kWidevineCdmAdapterFileName,
+        kWidevineCdmDisplayName, kWidevineCdmPluginMimeType));
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
     command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
                                      pepper_plugins);

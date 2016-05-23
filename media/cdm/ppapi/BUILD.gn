@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//chrome/version.gni")  # TODO layering violation!
+import("//media/cdm/ppapi/cdm_paths.gni")
 import("//media/cdm/ppapi/ppapi_cdm_adapter.gni")
 import("//media/media_options.gni")
 
@@ -11,6 +12,7 @@ import("//media/media_options.gni")
 # "use_vpx". These should be added here if necessary but its not clear if
 # they are required any more.
 shared_library("clearkeycdm") {
+  output_dir = "$root_out_dir/$clearkey_cdm_path"
   sources = [
     "cdm_file_io_test.cc",
     "cdm_file_io_test.h",
@@ -62,6 +64,8 @@ process_version("clearkeycdmadapter_resources") {
 }
 
 ppapi_cdm_adapter("clearkeycdmadapter") {
+  output_dir = "$root_out_dir/$clearkey_cdm_path"
+
   # Check whether the plugin's origin URL is valid.
   defines = [ "CHECK_DOCUMENT_URL" ]
   deps = [

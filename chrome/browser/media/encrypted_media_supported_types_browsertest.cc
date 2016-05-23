@@ -258,8 +258,9 @@ class EncryptedMediaSupportedTypesExternalClearKeyTest
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaSupportedTypesTest::SetUpCommandLine(command_line);
-    RegisterPepperCdm(command_line, kClearKeyCdmAdapterFileName,
-                      kClearKeyCdmDisplayName, kClearKeyCdmPepperMimeType);
+    RegisterPepperCdm(command_line, kClearKeyCdmBaseDirectory,
+                      kClearKeyCdmAdapterFileName, kClearKeyCdmDisplayName,
+                      kClearKeyCdmPepperMimeType);
   }
 #endif  // defined(ENABLE_PEPPER_CDMS)
 };
@@ -278,7 +279,8 @@ class EncryptedMediaSupportedTypesClearKeyCDMRegisteredWithWrongPathTest
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaSupportedTypesTest::SetUpCommandLine(command_line);
-    RegisterPepperCdm(command_line, "clearkeycdmadapterwrongname.dll",
+    RegisterPepperCdm(command_line, kClearKeyCdmBaseDirectory,
+                      "clearkeycdmadapterwrongname.dll",
                       kClearKeyCdmDisplayName, kClearKeyCdmPepperMimeType,
                       false);
   }
@@ -290,7 +292,8 @@ class EncryptedMediaSupportedTypesWidevineCDMRegisteredWithWrongPathTest
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaSupportedTypesTest::SetUpCommandLine(command_line);
-    RegisterPepperCdm(command_line, "widevinecdmadapterwrongname.dll",
+    RegisterPepperCdm(command_line, "WidevineCdm",
+                      "widevinecdmadapterwrongname.dll",
                       "Widevine Content Decryption Module",
                       "application/x-ppapi-widevine-cdm", false);
   }

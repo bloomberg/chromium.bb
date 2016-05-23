@@ -181,20 +181,27 @@
     ['OS=="mac"', {
       'variables': {
         'files': [
-          '<(PRODUCT_DIR)/clearkeycdmadapter.plugin',
           '<(PRODUCT_DIR)/content_shell.pak',
-          '<(PRODUCT_DIR)/libclearkeycdm.dylib',
           '<(PRODUCT_DIR)/osmesa.so',
           '<(PRODUCT_DIR)/power_saver_test_plugin.plugin/Contents/MacOS/power_saver_test_plugin',
           '<(PRODUCT_DIR)/ppapi_tests.plugin/Contents/MacOS/ppapi_tests',
         ],
       },
     }],
-    ['OS=="mac" and branding=="Chrome" and enable_pepper_cdms==1', {
+    # We don't support ia32 target for mac. Still check arch for completeness.
+    ['OS=="mac" and target_arch=="x64"', {
       'variables': {
         'files': [
-          '<(PRODUCT_DIR)/libwidevinecdm.dylib',
-          '<(PRODUCT_DIR)/widevinecdmadapter.plugin',
+          '<(PRODUCT_DIR)/ClearKeyCdm/_platform_specific/mac_x64/clearkeycdmadapter.plugin',
+          '<(PRODUCT_DIR)/ClearKeyCdm/_platform_specific/mac_x64/libclearkeycdm.dylib',
+        ],
+      },
+    }],
+    ['OS=="mac" and target_arch=="x64" and branding=="Chrome" and enable_pepper_cdms==1', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/WidevineCdm/_platform_specific/mac_x64/libwidevinecdm.dylib',
+          '<(PRODUCT_DIR)/WidevineCdm/_platform_specific/mac_x64/widevinecdmadapter.plugin',
         ],
       },
     }],
@@ -203,8 +210,6 @@
         'files': [
           '../native_client/build/build_nexe.py',
           '<(PRODUCT_DIR)/chrome_elf.dll',
-          '<(PRODUCT_DIR)/clearkeycdm.dll',
-          '<(PRODUCT_DIR)/clearkeycdmadapter.dll',
           '<(PRODUCT_DIR)/crashpad_handler.exe',
           '<(PRODUCT_DIR)/power_saver_test_plugin.dll',
           '<(PRODUCT_DIR)/ppapi_tests.dll',
@@ -212,11 +217,35 @@
         ],
       },
     }],
-    ['OS=="win" and branding=="Chrome" and enable_pepper_cdms==1', {
+    ['OS=="win" and target_arch=="ia32"', {
       'variables': {
         'files': [
-          '<(PRODUCT_DIR)/widevinecdm.dll',
-          '<(PRODUCT_DIR)/widevinecdmadapter.dll',
+          '<(PRODUCT_DIR)/ClearKeyCdm/_platform_specific/win_x86/clearkeycdm.dll',
+          '<(PRODUCT_DIR)/ClearKeyCdm/_platform_specific/win_x86/clearkeycdmadapter.dll',
+        ],
+      },
+    }],
+    ['OS=="win" and target_arch=="x64"', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/ClearKeyCdm/_platform_specific/win_x64/clearkeycdm.dll',
+          '<(PRODUCT_DIR)/ClearKeyCdm/_platform_specific/win_x64/clearkeycdmadapter.dll',
+        ],
+      },
+    }],
+    ['OS=="win" and target_arch=="ia32" and branding=="Chrome" and enable_pepper_cdms==1', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/WidevineCdm/_platform_specific/win_x86/clearkeycdm.dll',
+          '<(PRODUCT_DIR)/WidevineCdm/_platform_specific/win_x86/clearkeycdmadapter.dll',
+        ],
+      },
+    }],
+    ['OS=="win" and target_arch=="x64" and branding=="Chrome" and enable_pepper_cdms==1', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/WidevineCdm/_platform_specific/win_x64/clearkeycdm.dll',
+          '<(PRODUCT_DIR)/WidevineCdm/_platform_specific/win_x64/clearkeycdmadapter.dll',
         ],
       },
     }],

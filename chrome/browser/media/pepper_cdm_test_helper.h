@@ -13,11 +13,14 @@ namespace base {
 class CommandLine;
 }
 
-// Display name for Clear Key CDM.
-extern const char kClearKeyCdmDisplayName[];
+// Base path for Clear Key CDM (relative to the chrome executable).
+extern const char kClearKeyCdmBaseDirectory[];
 
 // Platform-specific filename relative to kClearKeyCdmBaseDirectory.
 extern const char kClearKeyCdmAdapterFileName[];
+
+// Display name for Clear Key CDM.
+extern const char kClearKeyCdmDisplayName[];
 
 // Pepper type for Clear Key CDM.
 extern const char kClearKeyCdmPepperMimeType[];
@@ -27,6 +30,7 @@ extern const char kClearKeyCdmPepperMimeType[];
 // Multiple results may be passed to kRegisterPepperPlugins, separated by ",".
 // The CDM adapter should be located in DIR_MODULE.
 base::FilePath::StringType BuildPepperCdmRegistration(
+    const std::string& adapter_base_dir,
     const std::string& adapter_file_name,
     const std::string& display_name,
     const std::string& mime_type,
@@ -34,6 +38,7 @@ base::FilePath::StringType BuildPepperCdmRegistration(
 
 // Registers pepper CDM in |command_line|.
 void RegisterPepperCdm(base::CommandLine* command_line,
+                       const std::string& adapter_base_dir,
                        const std::string& adapter_file_name,
                        const std::string& display_name,
                        const std::string& mime_type,

@@ -5,6 +5,7 @@
 import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
 import("//chrome/version.gni")  # TODO layering violation
+import("//media/cdm/ppapi/cdm_paths.gni")
 import("//media/cdm/ppapi/ppapi_cdm_adapter.gni")
 import("//third_party/widevine/cdm/widevine.gni")
 
@@ -67,7 +68,7 @@ if (widevine_cdm_binary_files != []) {
   copy("widevinecdm") {
     sources = widevine_cdm_binary_files
     outputs = [
-      "$root_out_dir/{{source_file_part}}",
+      "$root_out_dir/$widevine_cdm_path/{{source_file_part}}",
     ]
 
     # TODO(jrummell)
@@ -77,6 +78,7 @@ if (widevine_cdm_binary_files != []) {
   assert(!is_chrome_branded, "Branded Chrome should have binary files to copy.")
   assert(!is_android, "Android should not have enable_pepper_cdms.")
   shared_library("widevinecdm") {
+    output_dir = "$root_out_dir/$widevine_cdm_path"
     sources = [
       "//media/cdm/stub/stub_cdm.cc",
       "//media/cdm/stub/stub_cdm.h",
@@ -124,6 +126,7 @@ if ((is_chrome_branded || enable_widevine) && enable_pepper_cdms) {
 
   ppapi_cdm_adapter("widevinecdmadapter") {
     defines = []
+    output_dir = "$root_out_dir/$widevine_cdm_path"
     deps = [
       ":version_h",
       ":widevinecdm",
@@ -132,13 +135,16 @@ if ((is_chrome_branded || enable_widevine) && enable_pepper_cdms) {
 
     if (is_linux) {
       ldflags =
-          [ rebase_path("$root_out_dir/libwidevinecdm.so", root_build_dir) ]
+          [ rebase_path("$root_out_dir/$widevine_cdm_path/libwidevinecdm.so",
+                        root_build_dir) ]
     } else if (is_win) {
       ldflags =
-          [ rebase_path("$root_out_dir/widevinecdm.dll.lib", root_build_dir) ]
+          [ rebase_path("$root_out_dir/$widevine_cdm_path/widevinecdm.dll.lib",
+                        root_build_dir) ]
     } else if (is_mac) {
       ldflags =
-          [ rebase_path("$root_out_dir/libwidevinecdm.dylib", root_build_dir) ]
+          [ rebase_path("$root_out_dir/$widevine_cdm_path/libwidevinecdm.dylib",
+                        root_build_dir) ]
     }
   }
 } else {

@@ -1289,6 +1289,14 @@ source_set("test_support") {
       "ui/app_list/test/test_app_list_controller_delegate.h",
     ]
   }
+
+  if (enable_pepper_cdms) {
+    sources += [
+      "media/pepper_cdm_test_helper.cc",
+      "media/pepper_cdm_test_helper.h",
+    ]
+    deps += [ "//media:cdm_paths" ]
+  }
 }
 
 # In GYP this is part of test_support_ui.
