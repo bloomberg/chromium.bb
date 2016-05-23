@@ -808,3 +808,12 @@ UNADDRESSABLE ACCESS
 name=bug_608064
 *!ExtensionService::NotifyExtensionLoaded
 *!ExtensionService::AddExtension
+
+UNADDRESSABLE ACCESS
+name=https://bugs.chromium.org/p/webrtc/issues/detail?id=5151
+*!sctp_iterator_inp_being_freed
+*!sctp_inpcb_free
+*!sctp_close
+*!sofree
+*!usrsctp_close
+*!cricket::SctpDataMediaChannel::CloseSctpSocket
