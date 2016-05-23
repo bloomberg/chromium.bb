@@ -151,8 +151,6 @@ EVENTS_EXPORT bool ShouldDefaultToNaturalScroll();
 // Returns whether or not the internal display produces touch events.
 EVENTS_EXPORT display::Display::TouchSupport GetInternalDisplayTouchSupport();
 
-EVENTS_EXPORT void ComputeEventLatencyOS(const base::NativeEvent& native_event);
-
 #if defined(OS_WIN)
 EVENTS_EXPORT int GetModifiersFromKeyState();
 
