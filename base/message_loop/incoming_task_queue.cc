@@ -37,6 +37,15 @@ bool AlwaysNotifyPump(MessageLoop::Type type) {
 #endif
 }
 
+TimeTicks CalculateDelayedRuntime(TimeDelta delay) {
+  TimeTicks delayed_run_time;
+  if (delay > TimeDelta())
+    delayed_run_time = TimeTicks::Now() + delay;
+  else
+    DCHECK_EQ(delay.InMilliseconds(), 0) << "delay should not be negative";
+  return delayed_run_time;
+}
+
 }  // namespace
 
 IncomingTaskQueue::IncomingTaskQueue(MessageLoop* message_loop)
@@ -122,15 +131,6 @@ void IncomingTaskQueue::StartScheduling() {
 IncomingTaskQueue::~IncomingTaskQueue() {
   // Verify that WillDestroyCurrentMessageLoop() has been called.
   DCHECK(!message_loop_);
-}
-
-TimeTicks IncomingTaskQueue::CalculateDelayedRuntime(TimeDelta delay) {
-  TimeTicks delayed_run_time;
-  if (delay > TimeDelta())
-    delayed_run_time = TimeTicks::Now() + delay;
-  else
-    DCHECK_EQ(delay.InMilliseconds(), 0) << "delay should not be negative";
-  return delayed_run_time;
 }
 
 bool IncomingTaskQueue::PostPendingTask(PendingTask* pending_task) {

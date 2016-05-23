@@ -62,9 +62,6 @@ class BASE_EXPORT IncomingTaskQueue
   friend class RefCountedThreadSafe<IncomingTaskQueue>;
   virtual ~IncomingTaskQueue();
 
-  // Calculates the time at which a PendingTask should run.
-  TimeTicks CalculateDelayedRuntime(TimeDelta delay);
-
   // Adds a task to |incoming_queue_|. The caller retains ownership of
   // |pending_task|, but this function will reset the value of
   // |pending_task->task|. This is needed to ensure that the posting call stack
