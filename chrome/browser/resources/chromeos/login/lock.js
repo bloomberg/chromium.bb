@@ -19,8 +19,7 @@
   });
 
   // Called after polymer has been loaded. Fades the pin element in.
-  var onPolymerLoaded = function() {
-    var pinContainer = $('pin-container');
+  var onPinLoaded = function(pinContainer) {
     pinContainer.style.opacity = 1;
   };
 
@@ -31,8 +30,10 @@
   // animations. We load the PIN after an idle notification to allow the pod
   // fly-in animation to complete without interruption.
   if (loadTimeData.getBoolean('showPin')) {
-    cr.ui.login.ResourceLoader.loadAssetsOnIdle('custom-elements',
-                                                onPolymerLoaded);
+    cr.ui.login.ResourceLoader.loadAssetsOnIdle('custom-elements', function() {
+      cr.ui.login.ResourceLoader.waitUntilLayoutComplete('pin-container',
+                                                         onPinLoaded);
+    });
   }
 })();
 

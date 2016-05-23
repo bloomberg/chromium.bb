@@ -208,11 +208,32 @@ cr.define('cr.ui.login.ResourceLoader', function() {
     }
   }
 
+  /**
+   * Wait until the element with the given |id| has finished its layout,
+   * specifically, after it has an offsetHeight > 0.
+   * @param {string} id Identifier of the element to wait for.
+   * @param {function()} callback Function to invoke when done loading.
+   */
+  function waitUntilLayoutComplete(id, callback) {
+    var doWait = function() {
+      var element = $(id);
+      if (!element || !element.offsetHeight) {
+        requestAnimationFrame(doWait);
+        return;
+      }
+
+      callback(element);
+    };
+
+    requestAnimationFrame(doWait);
+  }
+
   return {
     alreadyLoadedAssets: alreadyLoadedAssets,
     hasDeferredAssets: hasDeferredAssets,
     loadAssets: loadAssets,
     loadAssetsOnIdle: loadAssetsOnIdle,
+    waitUntilLayoutComplete: waitUntilLayoutComplete,
     registerAssets: registerAssets
   };
 });
