@@ -201,6 +201,10 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   // Deactivate the system tray in the shelf if it was active before.
   void CloseSystemBubbleAndDeactivateSystemTray();
 
+  // Records UMA metrics for the number of user-visible rows in the system menu
+  // and the percentage of the work area height covered by the system menu.
+  void RecordSystemMenuMetrics();
+
   const ScopedVector<SystemTrayItem>& items() const { return items_; }
 
   // Overridden from ActionableView.

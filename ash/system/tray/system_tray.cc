@@ -26,6 +26,7 @@
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/wm/common/shelf/wm_shelf_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "grit/ash_strings.h"
@@ -513,6 +514,10 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
 
     system_bubble_.reset(new SystemBubbleWrapper(bubble));
     system_bubble_->InitView(this, tray_container(), &init_params, persistent);
+
+    // Record metrics for the system menu when the default view is invoked.
+    if (!detailed)
+      RecordSystemMenuMetrics();
   }
   // Save height of default view for creating detailed views directly.
   if (!detailed)
@@ -726,6 +731,31 @@ void SystemTray::CloseSystemBubbleAndDeactivateSystemTray() {
   if (full_system_tray_menu_) {
     SetDrawBackgroundAsActive(false);
     full_system_tray_menu_ = false;
+  }
+}
+
+void SystemTray::RecordSystemMenuMetrics() {
+  DCHECK(system_bubble_);
+
+  TrayBubbleView* bubble_view = system_bubble_->bubble_view();
+  int num_rows = 0;
+  for (int i = 0; i < bubble_view->child_count(); i++) {
+    // Certain menu rows are attached by default but can set themselves as
+    // invisible (IME is one such example). Count only user-visible rows.
+    if (bubble_view->child_at(i)->visible())
+      num_rows++;
+  }
+  UMA_HISTOGRAM_COUNTS_100("Ash.SystemMenu.Rows", num_rows);
+
+  int work_area_height =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(bubble_view->GetWidget()->GetNativeView())
+          .work_area()
+          .height();
+  if (work_area_height > 0) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Ash.SystemMenu.PercentageOfWorkAreaHeightCoveredByMenu",
+        100 * bubble_view->height() / work_area_height, 1, 300, 100);
   }
 }
 

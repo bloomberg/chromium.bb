@@ -1302,6 +1302,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The duration of mostly stationary long-duration touches.</summary>
 </histogram>
 
+<histogram name="Ash.SystemMenu.PercentageOfWorkAreaHeightCoveredByMenu"
+    units="%">
+  <owner>tdanderson@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
+  <summary>
+    The height of the system menu divided by the height of the Ash desktop work
+    area; a value over 100% indicates that a portion of the system menu is not
+    visible to the user. Recorded each time the menu is opened.
+  </summary>
+</histogram>
+
+<histogram name="Ash.SystemMenu.Rows" units="rows">
+  <owner>tdanderson@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
+  <summary>
+    The number of user-visible rows in the system menu's default view. Recorded
+    each time the menu is opened.
+  </summary>
+</histogram>
+
 <histogram name="Ash.Tab.TimeBetweenSwitchToExistingTabUserActions"
     units="seconds">
   <owner>bruthig@chromium.org</owner>
