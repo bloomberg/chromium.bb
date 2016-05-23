@@ -2637,9 +2637,10 @@ TEST_F(WebContentsImplTest, PendingContents) {
   std::unique_ptr<TestWebContents> other_contents(
       static_cast<TestWebContents*>(CreateTestWebContents()));
   contents()->AddPendingContents(other_contents.get());
+  int process_id = other_contents->GetRenderViewHost()->GetProcess()->GetID();
   int route_id = other_contents->GetRenderViewHost()->GetRoutingID();
   other_contents.reset();
-  EXPECT_EQ(nullptr, contents()->GetCreatedWindow(route_id));
+  EXPECT_EQ(nullptr, contents()->GetCreatedWindow(process_id, route_id));
 }
 
 TEST_F(WebContentsImplTest, CapturerOverridesPreferredSize) {

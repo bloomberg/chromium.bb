@@ -6932,4 +6932,190 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DetachInUnloadHandler) {
       DepictFrameTree(root));
 }
 
+// Helper filter class to wait for a ShowView or ShowWidget message, record the
+// routing ID from the message, and then drop the message.
+class PendingWidgetMessageFilter : public BrowserMessageFilter {
+ public:
+  PendingWidgetMessageFilter()
+      : BrowserMessageFilter(ViewMsgStart),
+        routing_id_(MSG_ROUTING_NONE),
+        message_loop_runner_(new MessageLoopRunner) {}
+
+  bool OnMessageReceived(const IPC::Message& message) override {
+    bool handled = true;
+    IPC_BEGIN_MESSAGE_MAP(PendingWidgetMessageFilter, message)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_ShowView, OnShowView)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
+      IPC_MESSAGE_UNHANDLED(handled = false)
+    IPC_END_MESSAGE_MAP()
+    return handled;
+  }
+
+  void Wait() {
+    message_loop_runner_->Run();
+  }
+
+  int routing_id() { return routing_id_; }
+
+ private:
+  ~PendingWidgetMessageFilter() override {}
+
+  void OnShowView(int routing_id,
+                  WindowOpenDisposition disposition,
+                  const gfx::Rect& initial_rect,
+                  bool user_gesture) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&PendingWidgetMessageFilter::OnReceivedRoutingIDOnUI, this,
+                   routing_id));
+  }
+
+  void OnShowWidget(int routing_id, const gfx::Rect& initial_rect) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&PendingWidgetMessageFilter::OnReceivedRoutingIDOnUI, this,
+                   routing_id));
+  }
+
+  void OnReceivedRoutingIDOnUI(int routing_id) {
+    routing_id_ = routing_id;
+    message_loop_runner_->Quit();
+  }
+
+  int routing_id_;
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(PendingWidgetMessageFilter);
+};
+
+// Test for https://crbug.com/612276.  Simultaneously open two new windows from
+// two subframes in different processes, where each subframe process's next
+// routing ID is the same.  Make sure that both windows are created properly.
+//
+// Each new window requires two IPCs to first create it (handled by
+// CreateNewWindow) and then show it (ShowCreatedWindow).  In the bug, both
+// CreateNewWindow calls arrived before the ShowCreatedWindow calls, resulting
+// in the two pending windows colliding in the pending WebContents map, which
+// used to be keyed only by routing_id.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       TwoSubframesCreatePopupsSimultaneously) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,c)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child1 = root->child_at(0);
+  FrameTreeNode* child2 = root->child_at(1);
+  RenderProcessHost* process1 = child1->current_frame_host()->GetProcess();
+  RenderProcessHost* process2 = child2->current_frame_host()->GetProcess();
+
+  // Call window.open simultaneously in both subframes to create two popups.
+  // Wait for and then drop both ViewHostMsg_ShowView messages.  This will
+  // ensure that both CreateNewWindow calls happen before either
+  // ShowCreatedWindow call.
+  scoped_refptr<PendingWidgetMessageFilter> filter1 =
+      new PendingWidgetMessageFilter();
+  process1->AddFilter(filter1.get());
+  EXPECT_TRUE(ExecuteScript(child1->current_frame_host(), "window.open();"));
+  filter1->Wait();
+
+  scoped_refptr<PendingWidgetMessageFilter> filter2 =
+      new PendingWidgetMessageFilter();
+  process2->AddFilter(filter2.get());
+  EXPECT_TRUE(ExecuteScript(child2->current_frame_host(), "window.open();"));
+  filter2->Wait();
+
+  // At this point, we should have two pending WebContents.
+  EXPECT_TRUE(
+      ContainsKey(web_contents()->pending_contents_,
+                  std::make_pair(process1->GetID(), filter1->routing_id())));
+  EXPECT_TRUE(
+      ContainsKey(web_contents()->pending_contents_,
+                  std::make_pair(process2->GetID(), filter2->routing_id())));
+
+  // Both subframes were set up in the same way, so the next routing ID for the
+  // new popup windows should match up (this led to the collision in the
+  // pending contents map in the original bug).
+  EXPECT_EQ(filter1->routing_id(), filter2->routing_id());
+
+  // Now, simulate that both ShowView messages arrive by showing both of the
+  // pending WebContents.
+  web_contents()->ShowCreatedWindow(process1->GetID(), filter1->routing_id(),
+                                    NEW_FOREGROUND_TAB, gfx::Rect(), true);
+  web_contents()->ShowCreatedWindow(process2->GetID(), filter2->routing_id(),
+                                    NEW_FOREGROUND_TAB, gfx::Rect(), true);
+
+  // Verify that both shells were properly created.
+  EXPECT_EQ(3u, Shell::windows().size());
+}
+
+// Test for https://crbug.com/612276.  Similar to
+// TwoSubframesOpenWindowsSimultaneously, but use popup menu widgets instead of
+// windows.
+//
+// The plumbing that this test is verifying is not utilized on Mac/Android,
+// where popup menus don't create a popup RenderWidget, but rather they trigger
+// a FrameHostMsg_ShowPopup to ask the browser to build and display the actual
+// popup using native controls.
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       TwoSubframesCreatePopupMenuWidgetsSimultaneously) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,c)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  FrameTreeNode* child1 = root->child_at(0);
+  FrameTreeNode* child2 = root->child_at(1);
+  RenderProcessHost* process1 = child1->current_frame_host()->GetProcess();
+  RenderProcessHost* process2 = child2->current_frame_host()->GetProcess();
+
+  // Navigate both subframes to a page with a <select> element.
+  NavigateFrameToURL(child1, embedded_test_server()->GetURL(
+      "b.com", "/site_isolation/page-with-select.html"));
+  NavigateFrameToURL(child2, embedded_test_server()->GetURL(
+      "c.com", "/site_isolation/page-with-select.html"));
+
+  // Open both <select> menus.  This creates a popup widget in both processes.
+  // Wait for and then drop the ViewHostMsg_ShowWidget messages, so that both
+  // widgets are left in pending-but-not-shown state.
+  scoped_refptr<PendingWidgetMessageFilter> filter1 =
+      new PendingWidgetMessageFilter();
+  process1->AddFilter(filter1.get());
+  EXPECT_TRUE(ExecuteScript(child1->current_frame_host(), "openSelectMenu();"));
+  filter1->Wait();
+
+  scoped_refptr<PendingWidgetMessageFilter> filter2 =
+      new PendingWidgetMessageFilter();
+  process2->AddFilter(filter2.get());
+  EXPECT_TRUE(ExecuteScript(child2->current_frame_host(), "openSelectMenu();"));
+  filter2->Wait();
+
+  // At this point, we should have two pending widgets.
+  EXPECT_TRUE(
+      ContainsKey(web_contents()->pending_widget_views_,
+                  std::make_pair(process1->GetID(), filter1->routing_id())));
+  EXPECT_TRUE(
+      ContainsKey(web_contents()->pending_widget_views_,
+                  std::make_pair(process2->GetID(), filter2->routing_id())));
+
+  // Both subframes were set up in the same way, so the next routing ID for the
+  // new popup widgets should match up (this led to the collision in the
+  // pending widgets map in the original bug).
+  EXPECT_EQ(filter1->routing_id(), filter2->routing_id());
+
+  // Now simulate both widgets being shown.
+  web_contents()->ShowCreatedWidget(process1->GetID(), filter1->routing_id(),
+                                    false, gfx::Rect());
+  web_contents()->ShowCreatedWidget(process2->GetID(), filter2->routing_id(),
+                                    false, gfx::Rect());
+  EXPECT_FALSE(
+      ContainsKey(web_contents()->pending_widget_views_,
+                  std::make_pair(process1->GetID(), filter1->routing_id())));
+  EXPECT_FALSE(
+      ContainsKey(web_contents()->pending_widget_views_,
+                  std::make_pair(process2->GetID(), filter2->routing_id())));
+}
+#endif
+
 }  // namespace content

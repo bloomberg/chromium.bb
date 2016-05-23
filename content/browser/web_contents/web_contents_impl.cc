@@ -1453,7 +1453,7 @@ void WebContentsImpl::Observe(int type,
         // destroyed.
         fullscreen_widget_had_focus_at_shutdown_ = (view && view->HasFocus());
       } else {
-        for (PendingWidgetViews::iterator i = pending_widget_views_.begin();
+        for (auto i = pending_widget_views_.begin();
              i != pending_widget_views_.end(); ++i) {
           if (host->GetView() == i->second) {
             pending_widget_views_.erase(i);
@@ -1603,8 +1603,7 @@ void WebContentsImpl::OnWebContentsDestroyed(WebContentsImpl* web_contents) {
   RemoveDestructionObserver(web_contents);
 
   // Clear a pending contents that has been closed before being shown.
-  for (PendingContents::iterator iter = pending_contents_.begin();
-       iter != pending_contents_.end();
+  for (auto iter = pending_contents_.begin(); iter != pending_contents_.end();
        ++iter) {
     if (iter->second != web_contents)
       continue;
@@ -2048,7 +2047,8 @@ void WebContentsImpl::CreateNewWindow(
     // Save the created window associated with the route so we can show it
     // later.
     DCHECK_NE(MSG_ROUTING_NONE, route_id);
-    pending_contents_[route_id] = new_contents;
+    pending_contents_[std::make_pair(render_process_id, route_id)] =
+        new_contents;
     AddDestructionObserver(new_contents);
   }
 
@@ -2130,7 +2130,8 @@ void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
     widget_view->SetPopupType(popup_type);
   }
   // Save the created widget associated with the route so we can show it later.
-  pending_widget_views_[route_id] = widget_view;
+  pending_widget_views_[std::make_pair(render_process_id, route_id)] =
+      widget_view;
 
 #if defined(OS_MACOSX)
   // A RenderWidgetHostViewMac has lifetime scoped to the view. We'll retain it
@@ -2139,11 +2140,12 @@ void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
 #endif
 }
 
-void WebContentsImpl::ShowCreatedWindow(int route_id,
+void WebContentsImpl::ShowCreatedWindow(int process_id,
+                                        int route_id,
                                         WindowOpenDisposition disposition,
                                         const gfx::Rect& initial_rect,
                                         bool user_gesture) {
-  WebContentsImpl* contents = GetCreatedWindow(route_id);
+  WebContentsImpl* contents = GetCreatedWindow(process_id, route_id);
   if (contents) {
     WebContentsDelegate* delegate = GetDelegate();
     contents->is_resume_pending_ = true;
@@ -2157,20 +2159,24 @@ void WebContentsImpl::ShowCreatedWindow(int route_id,
   }
 }
 
-void WebContentsImpl::ShowCreatedWidget(int route_id,
+void WebContentsImpl::ShowCreatedWidget(int process_id,
+                                        int route_id,
                                         const gfx::Rect& initial_rect) {
-  ShowCreatedWidget(route_id, false, initial_rect);
+  ShowCreatedWidget(process_id, route_id, false, initial_rect);
 }
 
-void WebContentsImpl::ShowCreatedFullscreenWidget(int route_id) {
-  ShowCreatedWidget(route_id, true, gfx::Rect());
+void WebContentsImpl::ShowCreatedFullscreenWidget(int process_id,
+                                                  int route_id) {
+  ShowCreatedWidget(process_id, route_id, true, gfx::Rect());
 }
 
-void WebContentsImpl::ShowCreatedWidget(int route_id,
+void WebContentsImpl::ShowCreatedWidget(int process_id,
+                                        int route_id,
                                         bool is_fullscreen,
                                         const gfx::Rect& initial_rect) {
   RenderWidgetHostViewBase* widget_host_view =
-      static_cast<RenderWidgetHostViewBase*>(GetCreatedWidget(route_id));
+      static_cast<RenderWidgetHostViewBase*>(
+          GetCreatedWidget(process_id, route_id));
   if (!widget_host_view)
     return;
 
@@ -2217,17 +2223,17 @@ void WebContentsImpl::ShowCreatedWidget(int route_id,
 #endif
 }
 
-WebContentsImpl* WebContentsImpl::GetCreatedWindow(int route_id) {
-  PendingContents::iterator iter = pending_contents_.find(route_id);
+WebContentsImpl* WebContentsImpl::GetCreatedWindow(int process_id,
+                                                   int route_id) {
+  auto iter = pending_contents_.find(std::make_pair(process_id, route_id));
 
   // Certain systems can block the creation of new windows. If we didn't succeed
   // in creating one, just return NULL.
-  if (iter == pending_contents_.end()) {
-    return NULL;
-  }
+  if (iter == pending_contents_.end())
+    return nullptr;
 
   WebContentsImpl* new_contents = iter->second;
-  pending_contents_.erase(route_id);
+  pending_contents_.erase(std::make_pair(process_id, route_id));
   RemoveDestructionObserver(new_contents);
 
   // Don't initialize the guest WebContents immediately.
@@ -2236,25 +2242,26 @@ WebContentsImpl* WebContentsImpl::GetCreatedWindow(int route_id) {
 
   if (!new_contents->GetRenderProcessHost()->HasConnection() ||
       !new_contents->GetRenderViewHost()->GetWidget()->GetView())
-    return NULL;
+    return nullptr;
 
   return new_contents;
 }
 
-RenderWidgetHostView* WebContentsImpl::GetCreatedWidget(int route_id) {
-  PendingWidgetViews::iterator iter = pending_widget_views_.find(route_id);
+RenderWidgetHostView* WebContentsImpl::GetCreatedWidget(int process_id,
+                                                        int route_id) {
+  auto iter = pending_widget_views_.find(std::make_pair(process_id, route_id));
   if (iter == pending_widget_views_.end()) {
     DCHECK(false);
-    return NULL;
+    return nullptr;
   }
 
   RenderWidgetHostView* widget_host_view = iter->second;
-  pending_widget_views_.erase(route_id);
+  pending_widget_views_.erase(std::make_pair(process_id, route_id));
 
   RenderWidgetHost* widget_host = widget_host_view->GetRenderWidgetHost();
   if (!widget_host->GetProcess()->HasConnection()) {
     // The view has gone away or the renderer crashed. Nothing to do.
-    return NULL;
+    return nullptr;
   }
 
   return widget_host_view;

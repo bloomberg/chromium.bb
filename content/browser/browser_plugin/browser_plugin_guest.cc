@@ -975,7 +975,8 @@ void BrowserPluginGuest::OnShowPopup(
 
 void BrowserPluginGuest::OnShowWidget(int route_id,
                                       const gfx::Rect& initial_rect) {
-  GetWebContents()->ShowCreatedWidget(route_id, initial_rect);
+  int process_id = GetWebContents()->GetRenderProcessHost()->GetID();
+  GetWebContents()->ShowCreatedWidget(process_id, route_id, initial_rect);
 }
 
 void BrowserPluginGuest::OnTakeFocus(bool reverse) {

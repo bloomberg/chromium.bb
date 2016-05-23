@@ -968,19 +968,19 @@ void RenderViewHostImpl::OnShowView(int route_id,
                                     WindowOpenDisposition disposition,
                                     const gfx::Rect& initial_rect,
                                     bool user_gesture) {
-  delegate_->ShowCreatedWindow(route_id, disposition, initial_rect,
-                               user_gesture);
+  delegate_->ShowCreatedWindow(GetProcess()->GetID(), route_id, disposition,
+                               initial_rect, user_gesture);
   Send(new ViewMsg_Move_ACK(route_id));
 }
 
 void RenderViewHostImpl::OnShowWidget(int route_id,
                                       const gfx::Rect& initial_rect) {
-  delegate_->ShowCreatedWidget(route_id, initial_rect);
+  delegate_->ShowCreatedWidget(GetProcess()->GetID(), route_id, initial_rect);
   Send(new ViewMsg_Move_ACK(route_id));
 }
 
 void RenderViewHostImpl::OnShowFullscreenWidget(int route_id) {
-  delegate_->ShowCreatedFullscreenWidget(route_id);
+  delegate_->ShowCreatedFullscreenWidget(GetProcess()->GetID(), route_id);
   Send(new ViewMsg_Move_ACK(route_id));
 }
 

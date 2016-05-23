@@ -512,12 +512,15 @@ class CONTENT_EXPORT WebContentsImpl
                        blink::WebPopupType popup_type) override;
   void CreateNewFullscreenWidget(int32_t render_process_id,
                                  int32_t route_id) override;
-  void ShowCreatedWindow(int route_id,
+  void ShowCreatedWindow(int process_id,
+                         int route_id,
                          WindowOpenDisposition disposition,
                          const gfx::Rect& initial_rect,
                          bool user_gesture) override;
-  void ShowCreatedWidget(int route_id, const gfx::Rect& initial_rect) override;
-  void ShowCreatedFullscreenWidget(int route_id) override;
+  void ShowCreatedWidget(int process_id,
+                         int route_id,
+                         const gfx::Rect& initial_rect) override;
+  void ShowCreatedFullscreenWidget(int process_id, int route_id) override;
   void RequestMediaAccessPermission(
       const MediaStreamRequest& request,
       const MediaResponseCallback& callback) override;
@@ -779,6 +782,10 @@ class CONTENT_EXPORT WebContentsImpl
   FRIEND_TEST_ALL_PREFIXES(NavigationControllerTest, HistoryNavigate);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest, PageDoesBackAndReload);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, CrossSiteIframe);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+                           TwoSubframesCreatePopupsSimultaneously);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+                           TwoSubframesCreatePopupMenuWidgetsSimultaneously);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessAccessibilityBrowserTest,
                            CrossSiteIframeAccessibility);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
@@ -997,18 +1004,19 @@ class CONTENT_EXPORT WebContentsImpl
                        blink::WebPopupType popup_type);
 
   // Helper for ShowCreatedWidget/ShowCreatedFullscreenWidget.
-  void ShowCreatedWidget(int route_id,
+  void ShowCreatedWidget(int process_id,
+                         int route_id,
                          bool is_fullscreen,
                          const gfx::Rect& initial_rect);
 
   // Finds the new RenderWidgetHost and returns it. Note that this can only be
   // called once as this call also removes it from the internal map.
-  RenderWidgetHostView* GetCreatedWidget(int route_id);
+  RenderWidgetHostView* GetCreatedWidget(int process_id, int route_id);
 
   // Finds the new WebContentsImpl by route_id, initializes it for
   // renderer-initiated creation, and returns it. Note that this can only be
   // called once as this call also removes it from the internal map.
-  WebContentsImpl* GetCreatedWindow(int route_id);
+  WebContentsImpl* GetCreatedWindow(int process_id, int route_id);
 
   // Sends a Page message IPC.
   void SendPageMessage(IPC::Message* msg);
@@ -1091,14 +1099,13 @@ class CONTENT_EXPORT WebContentsImpl
   RenderViewHostDelegateView* render_view_host_delegate_view_;
 
   // Tracks created WebContentsImpl objects that have not been shown yet. They
-  // are identified by the route ID passed to CreateNewWindow.
-  typedef std::map<int, WebContentsImpl*> PendingContents;
-  PendingContents pending_contents_;
+  // are identified by the process ID and routing ID passed to CreateNewWindow.
+  typedef std::pair<int, int> ProcessRoutingIdPair;
+  std::map<ProcessRoutingIdPair, WebContentsImpl*> pending_contents_;
 
-  // These maps hold on to the widgets that we created on behalf of the renderer
-  // that haven't shown yet.
-  typedef std::map<int, RenderWidgetHostView*> PendingWidgetViews;
-  PendingWidgetViews pending_widget_views_;
+  // This map holds widgets that were created on behalf of the renderer but
+  // haven't been shown yet.
+  std::map<ProcessRoutingIdPair, RenderWidgetHostView*> pending_widget_views_;
 
   typedef std::map<WebContentsImpl*, DestructionObserver*> DestructionObservers;
   DestructionObservers destruction_observers_;

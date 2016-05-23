@@ -759,19 +759,22 @@ void InterstitialPageImpl::CreateNewFullscreenWidget(int32_t render_process_id,
       << "InterstitialPage does not support showing full screen popups.";
 }
 
-void InterstitialPageImpl::ShowCreatedWindow(int route_id,
+void InterstitialPageImpl::ShowCreatedWindow(int process_id,
+                                             int route_id,
                                              WindowOpenDisposition disposition,
                                              const gfx::Rect& initial_rect,
                                              bool user_gesture) {
   NOTREACHED() << "InterstitialPage does not support showing popups yet.";
 }
 
-void InterstitialPageImpl::ShowCreatedWidget(int route_id,
+void InterstitialPageImpl::ShowCreatedWidget(int process_id,
+                                             int route_id,
                                              const gfx::Rect& initial_rect) {
   NOTREACHED() << "InterstitialPage does not support showing drop-downs yet.";
 }
 
-void InterstitialPageImpl::ShowCreatedFullscreenWidget(int route_id) {
+void InterstitialPageImpl::ShowCreatedFullscreenWidget(int process_id,
+                                                       int route_id) {
   NOTREACHED()
       << "InterstitialPage does not support showing full screen popups.";
 }

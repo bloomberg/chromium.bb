@@ -279,7 +279,9 @@ void TestWebContents::SetOpener(TestWebContents* opener) {
 
 void TestWebContents::AddPendingContents(TestWebContents* contents) {
   // This is normally only done in WebContentsImpl::CreateNewWindow.
-  pending_contents_[contents->GetRenderViewHost()->GetRoutingID()] = contents;
+  ProcessRoutingIdPair key(contents->GetRenderViewHost()->GetProcess()->GetID(),
+                           contents->GetRenderViewHost()->GetRoutingID());
+  pending_contents_[key] = contents;
   AddDestructionObserver(contents);
 }
 
@@ -337,17 +339,20 @@ void TestWebContents::CreateNewWidget(int32_t render_process_id,
 void TestWebContents::CreateNewFullscreenWidget(int32_t render_process_id,
                                                 int32_t route_id) {}
 
-void TestWebContents::ShowCreatedWindow(int route_id,
+void TestWebContents::ShowCreatedWindow(int process_id,
+                                        int route_id,
                                         WindowOpenDisposition disposition,
                                         const gfx::Rect& initial_rect,
                                         bool user_gesture) {
 }
 
-void TestWebContents::ShowCreatedWidget(int route_id,
+void TestWebContents::ShowCreatedWidget(int process_id,
+                                        int route_id,
                                         const gfx::Rect& initial_rect) {
 }
 
-void TestWebContents::ShowCreatedFullscreenWidget(int route_id) {
+void TestWebContents::ShowCreatedFullscreenWidget(int process_id,
+                                                  int route_id) {
 }
 
 void TestWebContents::SaveFrameWithHeaders(const GURL& url,

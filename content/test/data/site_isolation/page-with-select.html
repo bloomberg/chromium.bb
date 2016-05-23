@@ -8,6 +8,15 @@ select {
   width:80px;
 }
 </style>
+<script>
+
+function openSelectMenu(target) {
+  var evt = document.createEvent("MouseEvents");
+  evt.initMouseEvent("mousedown", true, true, window);
+  document.querySelector('select').dispatchEvent(evt);
+}
+
+</script>
 <html>
 <body>
 <select>
