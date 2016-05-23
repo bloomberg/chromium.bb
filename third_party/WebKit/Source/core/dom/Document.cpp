@@ -5206,13 +5206,14 @@ void Document::addConsoleMessage(ConsoleMessage* consoleMessage)
     if (!m_frame)
         return;
 
-    if (!consoleMessage->getScriptState() && consoleMessage->url().isNull() && !consoleMessage->lineNumber()) {
-        consoleMessage->setURL(url().getString());
+    if (!consoleMessage->messageId() && !consoleMessage->relatedMessageId() && consoleMessage->url().isNull() && !consoleMessage->lineNumber()) {
+        unsigned lineNumber = 0;
         if (!isInDocumentWrite() && scriptableDocumentParser()) {
             ScriptableDocumentParser* parser = scriptableDocumentParser();
             if (parser->isParsingAtLineNumber())
-                consoleMessage->setLineNumber(parser->lineNumber().oneBasedInt());
+                lineNumber = parser->lineNumber().oneBasedInt();
         }
+        consoleMessage = ConsoleMessage::create(consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), url().getString(), lineNumber, 0, consoleMessage->callStack(), 0, consoleMessage->scriptArguments());
     }
     m_frame->console().addMessage(consoleMessage);
 }

@@ -24,12 +24,12 @@ unsigned nextMessageId()
 }
 
 // static
-ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassRefPtr<ScriptCallStack> passCallStack, int scriptId)
+ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassRefPtr<ScriptCallStack> passCallStack, int scriptId, ScriptArguments* arguments)
 {
     RefPtr<ScriptCallStack> callStack = passCallStack;
     if (callStack && !callStack->isEmpty() && (!scriptId || !lineNumber))
-        return new ConsoleMessage(source, level, message, callStack->topSourceURL(), callStack->topLineNumber(), callStack->topColumnNumber(), callStack, 0);
-    return new ConsoleMessage(source, level, message, url, lineNumber, columnNumber, callStack, scriptId);
+        return new ConsoleMessage(source, level, message, callStack->topSourceURL(), callStack->topLineNumber(), callStack->topColumnNumber(), callStack, 0, arguments);
+    return new ConsoleMessage(source, level, message, url, lineNumber, columnNumber, callStack, scriptId, arguments);
 }
 
 // static
@@ -50,6 +50,22 @@ ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level,
     return ConsoleMessage::createWithCallStack(source, level, message, String(), 0, 0);
 }
 
+// static
+ConsoleMessage* ConsoleMessage::createForRequest(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned long requestIdentifier)
+{
+    ConsoleMessage* consoleMessage = ConsoleMessage::createWithCallStack(source, level, message, url, 0, 0);
+    consoleMessage->m_requestIdentifier = requestIdentifier;
+    return consoleMessage;
+}
+
+// static
+ConsoleMessage* ConsoleMessage::createForConsoleAPI(MessageLevel level, MessageType type, const String& message, ScriptArguments* arguments)
+{
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, level, message, String(), 0, 0, ScriptCallStack::captureForConsole(), 0, arguments);
+    consoleMessage->m_type = type;
+    return consoleMessage;
+}
+
 ConsoleMessage::ConsoleMessage(MessageSource source,
     MessageLevel level,
     const String& message,
@@ -57,7 +73,8 @@ ConsoleMessage::ConsoleMessage(MessageSource source,
     unsigned lineNumber,
     unsigned columnNumber,
     PassRefPtr<ScriptCallStack> callStack,
-    int scriptId)
+    int scriptId,
+    ScriptArguments* arguments)
     : m_source(source)
     , m_level(level)
     , m_type(LogMessageType)
@@ -67,6 +84,7 @@ ConsoleMessage::ConsoleMessage(MessageSource source,
     , m_lineNumber(lineNumber)
     , m_columnNumber(columnNumber)
     , m_callStack(callStack)
+    , m_scriptArguments(arguments)
     , m_requestIdentifier(0)
     , m_timestamp(WTF::currentTime())
     , m_messageId(0)
@@ -83,11 +101,6 @@ MessageType ConsoleMessage::type() const
     return m_type;
 }
 
-void ConsoleMessage::setType(MessageType type)
-{
-    m_type = type;
-}
-
 int ConsoleMessage::scriptId() const
 {
     return m_scriptId;
@@ -98,19 +111,9 @@ const String& ConsoleMessage::url() const
     return m_url;
 }
 
-void ConsoleMessage::setURL(const String& url)
-{
-    m_url = url;
-}
-
 unsigned ConsoleMessage::lineNumber() const
 {
     return m_lineNumber;
-}
-
-void ConsoleMessage::setLineNumber(unsigned lineNumber)
-{
-    m_lineNumber = lineNumber;
 }
 
 unsigned ConsoleMessage::columnNumber() const
@@ -118,32 +121,9 @@ unsigned ConsoleMessage::columnNumber() const
     return m_columnNumber;
 }
 
-void ConsoleMessage::setColumnNumber(unsigned columnNumber)
-{
-    m_columnNumber = columnNumber;
-}
-
 PassRefPtr<ScriptCallStack> ConsoleMessage::callStack() const
 {
     return m_callStack;
-}
-
-ScriptState* ConsoleMessage::getScriptState() const
-{
-    if (m_scriptState)
-        return m_scriptState->get();
-    return nullptr;
-}
-
-void ConsoleMessage::setScriptState(ScriptState* scriptState)
-{
-    if (m_scriptState)
-        m_scriptState->clear();
-
-    if (scriptState)
-        m_scriptState = adoptPtr(new ScriptStateProtectingContext(scriptState));
-    else
-        m_scriptState.clear();
 }
 
 ScriptArguments* ConsoleMessage::scriptArguments() const
@@ -151,29 +131,14 @@ ScriptArguments* ConsoleMessage::scriptArguments() const
     return m_scriptArguments;
 }
 
-void ConsoleMessage::setScriptArguments(ScriptArguments* scriptArguments)
-{
-    m_scriptArguments = scriptArguments;
-}
-
 unsigned long ConsoleMessage::requestIdentifier() const
 {
     return m_requestIdentifier;
 }
 
-void ConsoleMessage::setRequestIdentifier(unsigned long requestIdentifier)
-{
-    m_requestIdentifier = requestIdentifier;
-}
-
 double ConsoleMessage::timestamp() const
 {
     return m_timestamp;
-}
-
-void ConsoleMessage::setTimestamp(double timestamp)
-{
-    m_timestamp = timestamp;
 }
 
 unsigned ConsoleMessage::assignMessageId()
@@ -200,9 +165,6 @@ const String& ConsoleMessage::message() const
 
 void ConsoleMessage::frameWindowDiscarded(LocalDOMWindow* window)
 {
-    if (getScriptState() && getScriptState()->domWindow() == window)
-        setScriptState(nullptr);
-
     if (!m_scriptArguments)
         return;
     if (m_scriptArguments->getScriptState()->domWindow() != window)

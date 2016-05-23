@@ -393,8 +393,7 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
             String content = it->value;
             if (frameLoader()->shouldInterruptLoadForXFrameOptions(content, response.url(), mainResourceIdentifier())) {
                 String message = "Refused to display '" + response.url().elidedString() + "' in a frame because it set 'X-Frame-Options' to '" + content + "'.";
-                ConsoleMessage* consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message);
-                consoleMessage->setRequestIdentifier(mainResourceIdentifier());
+                ConsoleMessage* consoleMessage = ConsoleMessage::createForRequest(SecurityMessageSource, ErrorMessageLevel, message, response.url(), mainResourceIdentifier());
                 frame()->document()->addConsoleMessage(consoleMessage);
 
                 cancelLoadAfterXFrameOptionsOrCSPDenied(response);

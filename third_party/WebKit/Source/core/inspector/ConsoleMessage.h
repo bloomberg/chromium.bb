@@ -24,7 +24,7 @@ class ScriptState;
 class CORE_EXPORT ConsoleMessage final: public GarbageCollectedFinalized<ConsoleMessage> {
 public:
     // Callstack may be empty. Zero lineNumber or columnNumber means unknown.
-    static ConsoleMessage* create(MessageSource, MessageLevel, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassRefPtr<ScriptCallStack>, int scriptId = 0);
+    static ConsoleMessage* create(MessageSource, MessageLevel, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassRefPtr<ScriptCallStack>, int scriptId = 0, ScriptArguments* = nullptr);
 
     // Shortcut when callstack is unavailable.
     static ConsoleMessage* create(MessageSource, MessageLevel, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber);
@@ -35,31 +35,27 @@ public:
     // Shortcut when location is unavailable. This method captures callstack.
     static ConsoleMessage* create(MessageSource, MessageLevel, const String& message);
 
+    // This method captures callstack.
+    static ConsoleMessage* createForRequest(MessageSource, MessageLevel, const String& message, const String& url, unsigned long requestIdentifier);
+
+    // This method captures callstack.
+    static ConsoleMessage* createForConsoleAPI(MessageLevel, MessageType, const String& message, ScriptArguments*);
+
     ~ConsoleMessage();
 
     MessageType type() const;
-    void setType(MessageType);
     int scriptId() const;
     const String& url() const;
-    void setURL(const String&);
     unsigned lineNumber() const;
-    void setLineNumber(unsigned);
     unsigned columnNumber() const;
-    void setColumnNumber(unsigned);
     PassRefPtr<ScriptCallStack> callStack() const;
-    ScriptState* getScriptState() const;
-    void setScriptState(ScriptState*);
     ScriptArguments* scriptArguments() const;
-    void setScriptArguments(ScriptArguments*);
     unsigned long requestIdentifier() const;
-    void setRequestIdentifier(unsigned long);
     double timestamp() const;
-    void setTimestamp(double);
     unsigned assignMessageId();
     unsigned messageId() const { return m_messageId; }
     unsigned relatedMessageId() const { return m_relatedMessageId; }
     void setRelatedMessageId(unsigned relatedMessageId) { m_relatedMessageId = relatedMessageId; }
-
     MessageSource source() const;
     MessageLevel level() const;
     const String& message() const;
@@ -70,7 +66,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    ConsoleMessage(MessageSource, MessageLevel, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassRefPtr<ScriptCallStack>, int scriptId);
+    ConsoleMessage(MessageSource, MessageLevel, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassRefPtr<ScriptCallStack>, int scriptId, ScriptArguments*);
 
     MessageSource m_source;
     MessageLevel m_level;
@@ -81,7 +77,6 @@ private:
     unsigned m_lineNumber;
     unsigned m_columnNumber;
     RefPtr<ScriptCallStack> m_callStack;
-    OwnPtr<ScriptStateProtectingContext> m_scriptState;
     Member<ScriptArguments> m_scriptArguments;
     unsigned long m_requestIdentifier;
     double m_timestamp;

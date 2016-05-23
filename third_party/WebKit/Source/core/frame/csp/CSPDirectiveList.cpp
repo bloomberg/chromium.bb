@@ -104,7 +104,6 @@ void CSPDirectiveList::reportViolationWithState(const String& directiveText, con
     // a violation.)
     if (m_reportOnly || exceptionStatus == ContentSecurityPolicy::WillNotThrowException) {
         ConsoleMessage* consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, reportMessage);
-        consoleMessage->setScriptState(scriptState);
         m_policy->logToConsole(consoleMessage);
     }
     m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportEndpoints, m_header, ContentSecurityPolicy::EvalViolation);

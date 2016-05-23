@@ -52,7 +52,7 @@ public:
 
 protected:
     explicit InspectorConsoleAgent(V8InspectorSession*);
-    void sendConsoleMessageToFrontend(ConsoleMessage*, bool generatePreview);
+    void sendConsoleMessageToFrontend(ConsoleMessage*, bool generatePreview, double* timestamp = nullptr);
     virtual ConsoleMessageStorage* messageStorage() = 0;
 
     virtual void enableStackCapturingIfNeeded() = 0;

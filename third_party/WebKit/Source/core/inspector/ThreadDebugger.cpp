@@ -207,10 +207,7 @@ void ThreadDebugger::logCallback(const v8::FunctionCallbackInfo<v8::Value>& info
         ScriptValue(scriptState, info[0])
     });
 
-    ConsoleMessage* consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, LogMessageLevel, event->type());
-    consoleMessage->setType(LogMessageType);
-    consoleMessage->setScriptState(scriptState);
-    consoleMessage->setScriptArguments(ScriptArguments::create(scriptState, arguments));
+    ConsoleMessage* consoleMessage = ConsoleMessage::createForConsoleAPI(LogMessageLevel, LogMessageType, event->type(), ScriptArguments::create(scriptState, arguments));
     debugger->reportMessageToConsole(context, consoleMessage);
 }
 
@@ -345,12 +342,7 @@ void ThreadDebugger::reportMessageToConsole(v8::Local<v8::Context> context, Mess
     if (messageText.isEmpty() && scriptArguments)
         scriptArguments->getFirstArgumentAsString(messageText);
 
-    ConsoleMessage* consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, level, messageText);
-    consoleMessage->setType(type);
-    consoleMessage->setScriptState(scriptState);
-    if (arguments)
-        consoleMessage->setScriptArguments(scriptArguments);
-    reportMessageToConsole(context, consoleMessage);
+    reportMessageToConsole(context, ConsoleMessage::createForConsoleAPI(level, type, messageText, scriptArguments));
 }
 
 void ThreadDebugger::consoleTime(const String16& title)

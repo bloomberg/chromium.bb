@@ -86,8 +86,7 @@ public:
             else if (embedderErrorMessage.startsWith("Uncaught "))
                 embedderErrorMessage.insert(" (in promise)", 8);
 
-            ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, embedderErrorMessage, m_resourceName, m_lineNumber, m_columnNumber, m_callStack, m_scriptId);
-            consoleMessage->setScriptArguments(arguments);
+            ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, embedderErrorMessage, m_resourceName, m_lineNumber, m_columnNumber, m_callStack, m_scriptId, arguments);
             m_consoleMessageId = consoleMessage->assignMessageId();
             executionContext->addConsoleMessage(consoleMessage);
         }

@@ -64,8 +64,8 @@ void InspectorConsoleAgent::enable(ErrorString*)
     ConsoleMessageStorage* storage = messageStorage();
     if (storage->expiredCount()) {
         ConsoleMessage* expiredMessage = ConsoleMessage::create(OtherMessageSource, WarningMessageLevel, String::format("%d console messages are not shown.", storage->expiredCount()));
-        expiredMessage->setTimestamp(0);
-        sendConsoleMessageToFrontend(expiredMessage, false);
+        double timestamp = 0;
+        sendConsoleMessageToFrontend(expiredMessage, false, &timestamp);
     }
 
     size_t messageCount = storage->size();
@@ -154,13 +154,13 @@ static String messageLevelValue(MessageLevel level)
     return protocol::Console::ConsoleMessage::LevelEnum::Log;
 }
 
-void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* consoleMessage, bool generatePreview)
+void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* consoleMessage, bool generatePreview, double* timestamp)
 {
     OwnPtr<protocol::Console::ConsoleMessage> jsonObj = protocol::Console::ConsoleMessage::create()
         .setSource(messageSourceValue(consoleMessage->source()))
         .setLevel(messageLevelValue(consoleMessage->level()))
         .setText(consoleMessage->message())
-        .setTimestamp(consoleMessage->timestamp()).build();
+        .setTimestamp(timestamp ? *timestamp : consoleMessage->timestamp()).build();
     // FIXME: only send out type for ConsoleAPI source messages.
     jsonObj->setType(messageTypeValue(consoleMessage->type()));
     jsonObj->setLine(static_cast<int>(consoleMessage->lineNumber()));
@@ -168,12 +168,11 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
     if (consoleMessage->scriptId())
         jsonObj->setScriptId(String::number(consoleMessage->scriptId()));
     jsonObj->setUrl(consoleMessage->url());
-    ScriptState* scriptState = consoleMessage->getScriptState();
-    if (scriptState)
-        jsonObj->setExecutionContextId(scriptState->contextIdInDebugger());
     if (consoleMessage->source() == NetworkMessageSource && consoleMessage->requestIdentifier())
         jsonObj->setNetworkRequestId(IdentifiersFactory::requestId(consoleMessage->requestIdentifier()));
     ScriptArguments* arguments = consoleMessage->scriptArguments();
+    if (arguments && arguments->getScriptState())
+        jsonObj->setExecutionContextId(arguments->getScriptState()->contextIdInDebugger());
     if (arguments && arguments->argumentCount()) {
         ScriptState::Scope scope(arguments->getScriptState());
         v8::Local<v8::Context> context = arguments->getScriptState()->context();

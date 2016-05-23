@@ -1490,14 +1490,12 @@ bool FrameLoader::shouldInterruptLoadForXFrameOptions(const String& content, con
     case XFrameOptionsAllowAll:
         return false;
     case XFrameOptionsConflict: {
-        ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, "Multiple 'X-Frame-Options' headers with conflicting values ('" + content + "') encountered when loading '" + url.elidedString() + "'. Falling back to 'DENY'.");
-        consoleMessage->setRequestIdentifier(requestIdentifier);
+        ConsoleMessage* consoleMessage = ConsoleMessage::createForRequest(JSMessageSource, ErrorMessageLevel, "Multiple 'X-Frame-Options' headers with conflicting values ('" + content + "') encountered when loading '" + url.elidedString() + "'. Falling back to 'DENY'.", url, requestIdentifier);
         m_frame->document()->addConsoleMessage(consoleMessage);
         return true;
     }
     case XFrameOptionsInvalid: {
-        ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, "Invalid 'X-Frame-Options' header encountered when loading '" + url.elidedString() + "': '" + content + "' is not a recognized directive. The header will be ignored.");
-        consoleMessage->setRequestIdentifier(requestIdentifier);
+        ConsoleMessage* consoleMessage = ConsoleMessage::createForRequest(JSMessageSource, ErrorMessageLevel, "Invalid 'X-Frame-Options' header encountered when loading '" + url.elidedString() + "': '" + content + "' is not a recognized directive. The header will be ignored.", url, requestIdentifier);
         m_frame->document()->addConsoleMessage(consoleMessage);
         return false;
     }
