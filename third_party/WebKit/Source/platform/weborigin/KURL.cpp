@@ -687,7 +687,7 @@ String encodeWithURLEscapeSequences(const String& notEncodedString)
 
     url::RawCanonOutputT<char> buffer;
     int inputLength = utf8.length();
-    if (buffer.length() < inputLength * 3)
+    if (buffer.capacity() < inputLength * 3)
         buffer.Resize(inputLength * 3);
 
     url::EncodeURIComponent(utf8.data(), inputLength, &buffer);
