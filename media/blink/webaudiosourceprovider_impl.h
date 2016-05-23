@@ -72,14 +72,14 @@ class MEDIA_BLINK_EXPORT WebAudioSourceProviderImpl
   void SetCopyAudioCallback(const CopyAudioCB& callback);
   void ClearCopyAudioCallback();
 
-  int RenderForTesting(AudioBus* audio_bus);
-
  private:
   friend class WebAudioSourceProviderImplTest;
   ~WebAudioSourceProviderImpl() override;
 
   // Calls setFormat() on |client_| from the Blink renderer thread.
   void OnSetFormat();
+
+  int RenderForTesting(AudioBus* audio_bus);
 
   // Used to keep the volume across reconfigurations.
   double volume_;

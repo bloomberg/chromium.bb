@@ -728,7 +728,6 @@ test("content_unittests") {
                     ".",
                     "//content")
     deps += [
-      "//media/blink",
       "//third_party/libjingle:libjingle_webrtc",
       "//third_party/webrtc/base:rtc_base",
       "//third_party/webrtc/modules/desktop_capture:primitives",

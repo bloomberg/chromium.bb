@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/guid.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -62,7 +61,6 @@
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/media/audio_decoder.h"
 #include "content/renderer/media/canvas_capture_handler.h"
-#include "content/renderer/media/html_audio_element_capturer_source.h"
 #include "content/renderer/media/html_video_element_capturer_source.h"
 #include "content/renderer/media/image_capture_frame_grabber.h"
 #include "content/renderer/media/media_recorder_handler.h"
@@ -975,33 +973,6 @@ void RendererBlinkPlatformImpl::createHTMLVideoElementCapturer(
       false,  // is_readonly
       web_media_stream);
 #endif
-}
-
-void RendererBlinkPlatformImpl::createHTMLAudioElementCapturer(
-    WebMediaStream* web_media_stream,
-    WebMediaPlayer* web_media_player) {
-  DCHECK(web_media_stream);
-  DCHECK(web_media_player);
-
-  blink::WebMediaStreamSource web_media_stream_source;
-  blink::WebMediaStreamTrack web_media_stream_track;
-  const WebString track_id = WebString::fromUTF8(base::GenerateGUID());
-
-  web_media_stream_source.initialize(track_id,
-                                     blink::WebMediaStreamSource::TypeAudio,
-                                     track_id,
-                                     false /* is_remote */);
-  web_media_stream_track.initialize(web_media_stream_source);
-
-  MediaStreamAudioSource* const media_stream_source =
-      HtmlAudioElementCapturerSource::CreateFromWebMediaPlayerImpl(
-          web_media_player);
-
-  // Takes ownership of |media_stream_source|.
-  web_media_stream_source.setExtraData(media_stream_source);
-
-  media_stream_source->ConnectToTrack(web_media_stream_track);
-  web_media_stream->addTrack(web_media_stream_track);
 }
 
 //------------------------------------------------------------------------------
