@@ -939,7 +939,7 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
     bool disableSoftHyphen = styleToUse.getHyphens() == HyphensNone;
     float maxWordWidth = 0;
     if (!hyphenation)
-        maxWordWidth = std::numeric_limits<float>::max();
+        maxWordWidth = std::numeric_limits<float>::infinity();
 
     BidiResolver<TextRunIterator, BidiCharacterRun> bidiResolver;
     BidiCharacterRun* run;
@@ -1063,6 +1063,7 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
             }
 
             if (w > maxWordWidth) {
+                DCHECK(hyphenation);
                 int suffixStart;
                 float maxFragmentWidth = maxWordFragmentWidth(this, styleToUse, f, textDirection, *hyphenation, i, wordLen, suffixStart);
                 if (suffixStart) {
