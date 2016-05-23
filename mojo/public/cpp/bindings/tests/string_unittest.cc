@@ -8,6 +8,10 @@
 namespace mojo {
 namespace test {
 
+namespace {
+const char* kHelloWorld = "hello world";
+}  // namespace
+
 TEST(StringTest, DefaultIsNotNull) {
   String s;
   EXPECT_FALSE(s.is_null());
@@ -38,28 +42,28 @@ TEST(StringTest, Empty) {
 }
 
 TEST(StringTest, Basic) {
-  String s("hello world");
-  EXPECT_EQ(std::string("hello world"), s.get());
+  String s(kHelloWorld);
+  EXPECT_EQ(std::string(kHelloWorld), s.get());
 }
 
 TEST(StringTest, Assignment) {
-  String s("hello world");
+  String s(kHelloWorld);
   String t = s;  // Makes a copy.
   EXPECT_FALSE(t.is_null());
-  EXPECT_EQ(std::string("hello world"), t.get());
+  EXPECT_EQ(std::string(kHelloWorld), t.get());
   EXPECT_FALSE(s.is_null());
 }
 
 TEST(StringTest, Equality) {
-  String s("hello world");
-  String t("hello world");
+  String s(kHelloWorld);
+  String t(kHelloWorld);
   EXPECT_EQ(s, t);
   EXPECT_TRUE(s == s);
   EXPECT_FALSE(s != s);
   EXPECT_TRUE(s == t);
   EXPECT_FALSE(s != t);
-  EXPECT_TRUE("hello world" == s);
-  EXPECT_TRUE(s == "hello world");
+  EXPECT_TRUE(kHelloWorld == s);
+  EXPECT_TRUE(s == kHelloWorld);
   EXPECT_TRUE("not" != s);
   EXPECT_FALSE("not" == s);
   EXPECT_TRUE(s != "not");
@@ -87,6 +91,40 @@ TEST(StringTest, LessThanNullness) {
   String real("real");
   EXPECT_TRUE(null < real);
   EXPECT_FALSE(real < null);
+}
+
+TEST(StringTest, MoveConstructors) {
+  std::string std_str(kHelloWorld);
+
+  String str1(std::move(std_str));
+  EXPECT_TRUE(kHelloWorld == str1);
+
+  String str2(std::move(str1));
+  EXPECT_TRUE(kHelloWorld == str2);
+  EXPECT_TRUE(str1.is_null());
+}
+
+TEST(StringTest, MoveAssignments) {
+  std::string std_str(kHelloWorld);
+
+  String str1;
+  str1 = std::move(std_str);
+  EXPECT_TRUE(kHelloWorld == str1);
+
+  String str2;
+  str2 = std::move(str1);
+  EXPECT_TRUE(kHelloWorld == str2);
+  EXPECT_TRUE(str1.is_null());
+}
+
+TEST(StringTest, Storage) {
+  String str(kHelloWorld);
+
+  EXPECT_TRUE(kHelloWorld == str.storage());
+
+  std::string storage = str.PassStorage();
+  EXPECT_TRUE(str.is_null());
+  EXPECT_TRUE(kHelloWorld == storage);
 }
 
 }  // namespace test
