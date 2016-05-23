@@ -94,7 +94,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
         NetworkState getNetworkState(Network network) {
             final NetworkInfo networkInfo = mConnectivityManager.getNetworkInfo(network);
-            if (networkInfo.getType() == TYPE_VPN) {
+            if (networkInfo != null && networkInfo.getType() == TYPE_VPN) {
                 // When a VPN is in place the underlying network type can be queried via
                 // getActiveNeworkInfo() thanks to
                 // https://android.googlesource.com/platform/frameworks/base/+/d6a7980d

@@ -692,6 +692,13 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
                 new ConnectivityManagerDelegate(getInstrumentation().getTargetContext());
         delegate.getNetworkState();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // getNetworkState(Network) doesn't crash upon invalid Network argument.
+            Network invalidNetwork = netIdToNetwork(NetId.INVALID);
+            NetworkState invalidNetworkState = delegate.getNetworkState(invalidNetwork);
+            assertFalse(invalidNetworkState.isConnected());
+            assertEquals(-1, invalidNetworkState.getNetworkType());
+            assertEquals(-1, invalidNetworkState.getNetworkSubType());
+
             Network[] networks = delegate.getAllNetworksUnfiltered();
             if (networks.length >= 1) {
                 delegate.getNetworkState(networks[0]);
