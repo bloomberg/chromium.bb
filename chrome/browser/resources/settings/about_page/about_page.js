@@ -24,11 +24,11 @@ Polymer({
     currentUpdateStatusEvent_: Object,
 
 <if expr="chromeos">
-    /**
-     * Whether the current and target channel is different.
-     * @private
-     */
-    channelsDiffer_: Boolean,
+    /** @private */
+    hasCheckedForUpdates_: Boolean,
+
+    /** @private {!BrowserChannel} */
+    currentChannel_: String,
 
     /** @private {!BrowserChannel} */
     targetChannel_: String,
@@ -55,8 +55,9 @@ Polymer({
       this.browserProxy_.getCurrentChannel(),
       this.browserProxy_.getTargetChannel(),
     ]).then(function(channels) {
+      this.currentChannel_ = channels[0];
       this.targetChannel_ = channels[1];
-      this.channelsDiffer_ = channels[0] != this.targetChannel_;
+
       this.startListening_();
     }.bind(this));
 </if>
@@ -69,14 +70,23 @@ Polymer({
   startListening_: function() {
     this.addWebUIListener(
         'update-status-changed',
-        /** @param {!UpdateStatusChangedEvent} event */
-        function(event) {
-          this.currentUpdateStatusEvent_ = event;
-        }.bind(this));
+        this.onUpdateStatusChanged_.bind(this));
     this.browserProxy_.refreshUpdateStatus();
   },
 
-   /** @override */
+  /**
+   * @param {!UpdateStatusChangedEvent} event
+   * @private
+   */
+  onUpdateStatusChanged_: function(event) {
+<if expr="chromeos">
+    if (event.status == UpdateStatus.CHECKING)
+      this.hasCheckedForUpdates_ = true;
+</if>
+    this.currentUpdateStatusEvent_ = event;
+  },
+
+  /** @override */
   attached: function() {
     this.scroller = this.parentElement;
   },
@@ -86,12 +96,34 @@ Polymer({
     this.browserProxy_.openHelpPage();
   },
 
+  /** @private */
+  onRelaunchTap_: function() {
+    this.browserProxy_.relaunchNow();
+  },
+
   /**
    * @return {boolean}
    * @private
    */
   shouldShowUpdateStatus_: function() {
     return this.currentUpdateStatusEvent_.status != UpdateStatus.DISABLED;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowRelaunch_: function() {
+    var shouldShow = false;
+<if expr="not chromeos">
+    shouldShow =
+        this.currentUpdateStatusEvent_.status == UpdateStatus.NEARLY_UPDATED;
+</if>
+<if expr="chromeos">
+    shouldShow = !this.isTargetChannelMoreStable_() &&
+        this.currentUpdateStatusEvent_.status == UpdateStatus.NEARLY_UPDATED;
+</if>
+    return shouldShow;
   },
 
   /**
@@ -104,7 +136,7 @@ Polymer({
         return this.i18n('aboutUpgradeCheckStarted');
       case UpdateStatus.NEARLY_UPDATED:
 <if expr="chromeos">
-        if (this.channelsDiffer_)
+        if (this.currentChannel_ != this.targetChannel_)
           return this.i18n('aboutUpgradeSuccessChannelSwitch');
 </if>
         return this.i18n('aboutUpgradeRelaunch');
@@ -112,14 +144,14 @@ Polymer({
         return this.i18n('aboutUpgradeUpToDate');
       case UpdateStatus.UPDATING:
 <if expr="chromeos">
-        if (this.channelsDiffer_) {
+        if (this.currentChannel_ != this.targetChannel_) {
           return this.i18n('aboutUpgradeUpdatingChannelSwitch',
               this.i18n(settings.browserChannelToI18nId(this.targetChannel_)));
         }
 </if>
         return this.i18n('aboutUpgradeUpdating');
       default:
-        return this.currentUpdateStatusEvent_.message;
+        return this.currentUpdateStatusEvent_.message || '';
     }
   },
 
@@ -156,11 +188,59 @@ Polymer({
   },
 
 <if expr="chromeos">
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isTargetChannelMoreStable_: function() {
+    assert(this.currentChannel_.length > 0);
+    assert(this.targetChannel_.length > 0);
+
+    // List of channels in increasing stability order.
+    var channelList = [
+      BrowserChannel.DEV,
+      BrowserChannel.BETA,
+      BrowserChannel.STABLE,
+    ];
+    var currentIndex = channelList.indexOf(this.currentChannel_);
+    var targetIndex = channelList.indexOf(this.targetChannel_);
+    return currentIndex < targetIndex;
+  },
+
   /** @private */
   onDetailedBuildInfoTap_: function() {
     var animatedPages = /** @type {!SettingsAnimatedPagesElement} */ (
         this.$.pages);
     animatedPages.setSubpageChain(['detailed-build-info']);
+  },
+
+  /** @private */
+  onRelaunchAndPowerwashTap_: function() {
+    // TODO(dpapad): Implement this.
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowRelaunchAndPowerwash_: function() {
+    return this.isTargetChannelMoreStable_() &&
+        this.currentUpdateStatusEvent_.status == UpdateStatus.NEARLY_UPDATED;
+  },
+
+  /** @private */
+  onCheckUpdatesTap_: function() {
+    this.onUpdateStatusChanged_({status: UpdateStatus.CHECKING});
+    this.browserProxy_.requestUpdate();
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowCheckUpdates_: function() {
+    return !this.hasCheckedForUpdates_ ||
+        this.currentUpdateStatusEvent_.status == UpdateStatus.FAILED;
   },
 </if>
 

@@ -54,8 +54,8 @@ var UpdateStatus = {
 /**
  * @typedef {{
  *   status: !UpdateStatus,
- *   progress: number,
- *   message: string,
+ *   progress: (number|undefined),
+ *   message: (string|undefined),
  * }}
  */
 var UpdateStatusChangedEvent;

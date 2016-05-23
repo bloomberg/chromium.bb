@@ -7,6 +7,7 @@
 <link rel="import" href="chrome://md-settings/settings_page/settings_section.html">
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
@@ -68,8 +69,22 @@
               </div>
               <div class="secondary">$i18n{aboutBrowserVersion}</div>
             </div>
+            <paper-button id="relaunch" class="secondary-action"
+                hidden="[[!shouldShowRelaunch_(currentUpdateStatusEvent_)]]"
+                on-tap="onRelaunchTap_">
+              $i18n{aboutRelaunch}
+            </paper-button>
 <if expr="chromeos">
-            <paper-button class="secondary-action">Check for update</paper-button>
+            <paper-button id="relaunchAndPowerwash" class="secondary-action"
+                hidden="[[!shouldShowRelaunchAndPowerwash_(currentUpdateStatusEvent_)]]"
+                on-tap="onRelaunchAndPowerwashTap_">
+              $i18n{aboutRelaunchAndPowerwash}
+            </paper-button>
+            <paper-button id="checkForUpdates" class="secondary-action"
+                hidden="[[!shouldShowCheckUpdates_(currentUpdateStatusEvent_)]]"
+                on-tap="onCheckUpdatesTap_">
+              $i18n{aboutCheckForUpdates}
+            </paper-button>
 </if>
           </div>
           <div id="help" class="settings-box two-line" on-tap="onHelpTap_">

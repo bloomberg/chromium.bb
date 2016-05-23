@@ -139,6 +139,7 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
       {"aboutReportAnIssue", IDS_SETTINGS_ABOUT_PAGE_REPORT_AN_ISSUE},
 #endif
 
+      {"aboutRelaunch", IDS_SETTINGS_ABOUT_PAGE_RELAUNCH},
       {"aboutUpgradeCheckStarted", IDS_SETTINGS_ABOUT_UPGRADE_CHECK_STARTED},
       {"aboutUpgradeRelaunch", IDS_SETTINGS_UPGRADE_SUCCESSFUL_RELAUNCH},
       {"aboutUpgradeUpdating", IDS_SETTINGS_UPGRADE_UPDATING},
@@ -147,7 +148,10 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
       {"aboutChannelStable", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_STABLE},
       {"aboutChannelBeta", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_BETA},
       {"aboutChannelDev", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_DEV},
+      {"aboutCheckForUpdates", IDS_SETTINGS_ABOUT_PAGE_CHECK_FOR_UPDATES},
       {"aboutCurrentlyOnChannel", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL},
+      {"aboutRelaunchAndPowerwash",
+        IDS_SETTINGS_ABOUT_PAGE_RELAUNCH_AND_POWERWASH},
       {"aboutUpgradeUpdatingChannelSwitch",
         IDS_SETTINGS_UPGRADE_UPDATING_CHANNEL_SWITCH},
       {"aboutUpgradeSuccessChannelSwitch",
