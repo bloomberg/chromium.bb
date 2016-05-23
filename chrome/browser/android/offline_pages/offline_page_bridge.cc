@@ -161,8 +161,12 @@ static ScopedJavaLocalRef<jobject> GetOfflinePageBridgeForProfile(
     const JavaParamRef<jclass>& jcaller,
     const JavaParamRef<jobject>& j_profile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+
   OfflinePageModel* offline_page_model =
       OfflinePageModelFactory::GetForBrowserContext(profile);
+
+  if (offline_page_model == nullptr)
+    return ScopedJavaLocalRef<jobject>();
 
   OfflinePageBridge* bridge = static_cast<OfflinePageBridge*>(
       offline_page_model->GetUserData(kOfflinePageBridgeKey));
@@ -170,6 +174,7 @@ static ScopedJavaLocalRef<jobject> GetOfflinePageBridgeForProfile(
     bridge = new OfflinePageBridge(env, profile, offline_page_model);
     offline_page_model->SetUserData(kOfflinePageBridgeKey, bridge);
   }
+
   return ScopedJavaLocalRef<jobject>(bridge->java_ref());
 }
 
