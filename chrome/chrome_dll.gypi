@@ -116,8 +116,6 @@
             'app/chrome_main_delegate.h',
             'app/chrome_main_mac.h',
             'app/chrome_main_mac.mm',
-            'app/delay_load_hook_win.cc',
-            'app/delay_load_hook_win.h',
           ],
           'dependencies': [
             '<@(chromium_browser_dependencies)',
@@ -139,13 +137,6 @@
                 '../ui/compositor/compositor.gyp:compositor',
               ],
             }],
-            ['OS=="win" and target_arch=="ia32"', {
-              # Add a dependency to custom import library for user32 delay
-              # imports only in x86 builds.
-              'dependencies': [
-                'chrome_user32_delay_imports',
-              ],
-            },],
             ['OS=="win"', {
               'product_name': 'chrome',
               'dependencies': [
@@ -194,34 +185,6 @@
                     ['target_arch=="ia32"', {
                       # Don't set an x64 base address (to avoid breaking HE-ASLR).
                       'BaseAddress': '0x01c30000',
-                      # Link against the XP-constrained user32 import library
-                      # instead of the platform-SDK provided one to avoid
-                      # inadvertently taking dependencies on post-XP user32
-                      # exports.
-                      'AdditionalDependencies!': [
-                        'user32.lib',
-                      ],
-                      'IgnoreDefaultLibraryNames': [
-                        'user32.lib',
-                      ],
-                      # Remove user32 delay load for chrome.dll.
-                      'DelayLoadDLLs!': [
-                        'user32.dll',
-                      ],
-                      'AdditionalDependencies': [
-                        'user32.winxp.lib',
-                      ],
-                      'DelayLoadDLLs': [
-                        'user32-delay.dll',
-                      ],
-                      'AdditionalLibraryDirectories': [
-                        '<(DEPTH)/build/win/importlibs/x86',
-                      ],
-                      'ForceSymbolReferences': [
-                        # Force the inclusion of the delay load hook in this
-                        # binary.
-                        '_ChromeDelayLoadHook@8',
-                      ],
                     }],
                   ],
                   'DelayLoadDLLs': [
