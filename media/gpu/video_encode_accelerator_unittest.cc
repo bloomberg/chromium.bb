@@ -166,17 +166,14 @@ struct TestStream {
   // And the file must be an I420 (YUV planar) raw stream.
   std::string in_filename;
 
-  // A temporary file used to prepare aligned input buffers of |in_filename|.
-  // The file makes sure starting address of YUV planes are 64 byte-aligned.
-  base::FilePath aligned_in_file;
+  // A vector used to prepare aligned input buffers of |in_filename|. This
+  // makes sure starting address of YUV planes are 64 bytes-aligned.
+  std::vector<char> aligned_in_file_data;
 
-  // The memory mapping of |aligned_in_file|
-  base::MemoryMappedFile mapped_aligned_in_file;
-
-  // Byte size of a frame of |aligned_in_file|.
+  // Byte size of a frame of |aligned_in_file_data|.
   size_t aligned_buffer_size;
 
-  // Byte size for each aligned plane of a frame
+  // Byte size for each aligned plane of a frame.
   std::vector<size_t> aligned_plane_size;
 
   std::string out_filename;
@@ -189,23 +186,6 @@ struct TestStream {
 
 inline static size_t Align64Bytes(size_t value) {
   return (value + 63) & ~63;
-}
-
-// Write |data| of |size| bytes at |offset| bytes into |file|.
-static bool WriteFile(base::File* file,
-                      const off_t offset,
-                      const uint8_t* data,
-                      size_t size) {
-  size_t written_bytes = 0;
-  while (written_bytes < size) {
-    int bytes = file->Write(offset + written_bytes,
-                            reinterpret_cast<const char*>(data + written_bytes),
-                            size - written_bytes);
-    if (bytes <= 0)
-      return false;
-    written_bytes += bytes;
-  }
-  return true;
 }
 
 // Return the |percentile| from a sorted vector.
@@ -241,17 +221,17 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
                                          TestStream* test_stream) {
   // Test case may have many encoders and memory should be prepared once.
   if (test_stream->coded_size == coded_size &&
-      test_stream->mapped_aligned_in_file.IsValid())
+      !test_stream->aligned_in_file_data.empty())
     return;
 
   // All encoders in multiple encoder test reuse the same test_stream, make
   // sure they requested the same coded_size
-  ASSERT_TRUE(!test_stream->mapped_aligned_in_file.IsValid() ||
+  ASSERT_TRUE(test_stream->aligned_in_file_data.empty() ||
               coded_size == test_stream->coded_size);
   test_stream->coded_size = coded_size;
 
   size_t num_planes = media::VideoFrame::NumPlanes(kInputFormat);
-  std::vector<std::vector<uint8_t>> padding(num_planes);
+  std::vector<size_t> padding_sizes(num_planes);
   std::vector<size_t> coded_bpl(num_planes);
   std::vector<size_t> visible_bpl(num_planes);
   std::vector<size_t> visible_plane_rows(num_planes);
@@ -277,61 +257,50 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
     const size_t padding_rows =
         media::VideoFrame::Rows(i, kInputFormat, coded_size.height()) -
         visible_plane_rows[i];
-    padding[i].resize(padding_rows * coded_bpl[i] + Align64Bytes(size) - size);
+    padding_sizes[i] = padding_rows * coded_bpl[i] + Align64Bytes(size) - size;
   }
 
-  base::MemoryMappedFile src_file;
-  LOG_ASSERT(src_file.Initialize(base::FilePath(test_stream->in_filename)));
-  LOG_ASSERT(base::CreateTemporaryFile(&test_stream->aligned_in_file));
+  base::FilePath src_file(test_stream->in_filename);
+  int64_t src_file_size = 0;
+  LOG_ASSERT(base::GetFileSize(src_file, &src_file_size));
 
   size_t visible_buffer_size = media::VideoFrame::AllocationSize(
       kInputFormat, test_stream->visible_size);
-  LOG_ASSERT(src_file.length() % visible_buffer_size == 0U)
+  LOG_ASSERT(src_file_size % visible_buffer_size == 0U)
       << "Stream byte size is not a product of calculated frame byte size";
 
-  test_stream->num_frames = src_file.length() / visible_buffer_size;
-  uint32_t flags = base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE |
-                   base::File::FLAG_READ;
+  test_stream->num_frames = src_file_size / visible_buffer_size;
 
-  // Create a temporary file with coded_size length.
-  base::File dest_file(test_stream->aligned_in_file, flags);
   LOG_ASSERT(test_stream->aligned_buffer_size > 0UL);
-  dest_file.SetLength(test_stream->aligned_buffer_size *
-                      test_stream->num_frames);
+  test_stream->aligned_in_file_data.resize(test_stream->aligned_buffer_size *
+                                           test_stream->num_frames);
 
-  const uint8_t* src = src_file.data();
+  std::vector<char> src_data(visible_buffer_size);
   off_t dest_offset = 0;
   for (size_t frame = 0; frame < test_stream->num_frames; frame++) {
+    LOG_ASSERT(base::ReadFile(src_file, &src_data[0], visible_buffer_size) ==
+               static_cast<int>(visible_buffer_size));
+    const char* src_ptr = &src_data[0];
     for (size_t i = 0; i < num_planes; i++) {
       // Assert that each plane of frame starts at 64 byte boundary.
       ASSERT_EQ(dest_offset & 63, 0)
           << "Planes of frame should be mapped at a 64 byte boundary";
       for (size_t j = 0; j < visible_plane_rows[i]; j++) {
-        LOG_ASSERT(WriteFile(&dest_file, dest_offset, src, visible_bpl[i]));
-        src += visible_bpl[i];
+        memcpy(&test_stream->aligned_in_file_data[dest_offset], src_ptr,
+               visible_bpl[i]);
+        src_ptr += visible_bpl[i];
         dest_offset += coded_bpl[i];
       }
-      if (!padding[i].empty()) {
-        LOG_ASSERT(WriteFile(&dest_file, dest_offset, &padding[i][0],
-                             padding[i].size()));
-        dest_offset += padding[i].size();
-      }
+      dest_offset += padding_sizes[i];
     }
   }
-  LOG_ASSERT(
-      test_stream->mapped_aligned_in_file.Initialize(std::move(dest_file)));
+
   // Assert that memory mapped of file starts at 64 byte boundary. So each
   // plane of frames also start at 64 byte boundary.
-
-  ASSERT_EQ(
-      reinterpret_cast<off_t>(test_stream->mapped_aligned_in_file.data()) & 63,
-      0)
+  ASSERT_EQ(reinterpret_cast<off_t>(&test_stream->aligned_in_file_data[0]) & 63,
+            0)
       << "File should be mapped at a 64 byte boundary";
 
-  LOG_ASSERT(test_stream->mapped_aligned_in_file.length() %
-                 test_stream->aligned_buffer_size ==
-             0U)
-      << "Stream byte size is not a product of calculated frame byte size";
   LOG_ASSERT(test_stream->num_frames > 0UL);
 }
 
@@ -424,9 +393,6 @@ class VideoEncodeAcceleratorTestEnvironment : public ::testing::Environment {
   }
 
   virtual void TearDown() {
-    for (size_t i = 0; i < test_streams_.size(); i++) {
-      base::DeleteFile(test_streams_[i]->aligned_in_file, false);
-    }
     log_file_.reset();
   }
 
@@ -1331,8 +1297,9 @@ void VEAClient::InputNoLongerNeededCallback(int32_t input_id) {
 }
 
 scoped_refptr<media::VideoFrame> VEAClient::CreateFrame(off_t position) {
-  uint8_t* frame_data_y = const_cast<uint8_t*>(
-      test_stream_->mapped_aligned_in_file.data() + position);
+  uint8_t* frame_data_y =
+      reinterpret_cast<uint8_t*>(&test_stream_->aligned_in_file_data[0]) +
+      position;
   uint8_t* frame_data_u = frame_data_y + test_stream_->aligned_plane_size[0];
   uint8_t* frame_data_v = frame_data_u + test_stream_->aligned_plane_size[1];
   CHECK_GT(current_framerate_, 0U);
@@ -1355,7 +1322,7 @@ scoped_refptr<media::VideoFrame> VEAClient::PrepareInputFrame(
     off_t position,
     int32_t* input_id) {
   CHECK_LE(position + test_stream_->aligned_buffer_size,
-           test_stream_->mapped_aligned_in_file.length());
+           test_stream_->aligned_in_file_data.size());
 
   scoped_refptr<media::VideoFrame> frame = CreateFrame(position);
   EXPECT_TRUE(frame);
@@ -1384,7 +1351,7 @@ void VEAClient::FeedEncoderWithOneInput() {
     return;
 
   size_t bytes_left =
-      test_stream_->mapped_aligned_in_file.length() - pos_in_input_stream_;
+      test_stream_->aligned_in_file_data.size() - pos_in_input_stream_;
   if (bytes_left < test_stream_->aligned_buffer_size) {
     DCHECK_EQ(bytes_left, 0UL);
     // Rewind if at the end of stream and we are still encoding.
