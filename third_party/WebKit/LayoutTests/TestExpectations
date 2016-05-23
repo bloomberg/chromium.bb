@@ -1341,8 +1341,6 @@ crbug.com/600248 imported/wpt/web-animations/animation/finished.html [ Pass Fail
 crbug.com/600248 imported/wpt/web-animations/animation/oncancel.html [ Pass Failure ]
 crbug.com/600248 imported/wpt/web-animations/animation/onfinish.html [ Pass Failure ]
 
-crbug.com/604642 [ Mac ]  fast/text/midword-break-after-breakable-char.html [ NeedsRebaseline ]
-
 crbug.com/611658 [ Win7 ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
 crbug.com/611658 [ Win7 ] fast/text/emphasis-combined-text.html [ Failure ]
 crbug.com/611658 [ Win7 ] fast/text/emphasis.html [ Failure ]
