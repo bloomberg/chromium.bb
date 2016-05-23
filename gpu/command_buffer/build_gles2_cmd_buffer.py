@@ -4068,6 +4068,7 @@ _FUNCTION_INFO = {
   'TexStorage2DEXT': {
     'unit_test': False,
     'extension': 'EXT_texture_storage',
+    'extension_flag': 'ext_texture_storage',
     'decoder_func': 'DoTexStorage2DEXT',
     'trace_level': 2,
   },

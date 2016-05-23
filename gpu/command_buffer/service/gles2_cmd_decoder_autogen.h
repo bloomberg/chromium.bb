@@ -4408,6 +4408,10 @@ error::Error GLES2DecoderImpl::HandleTexStorage2DEXT(
   const gles2::cmds::TexStorage2DEXT& c =
       *static_cast<const gles2::cmds::TexStorage2DEXT*>(cmd_data);
   (void)c;
+  if (!features().ext_texture_storage) {
+    return error::kUnknownCommand;
+  }
+
   GLenum target = static_cast<GLenum>(c.target);
   GLsizei levels = static_cast<GLsizei>(c.levels);
   GLenum internalFormat = static_cast<GLenum>(c.internalFormat);

@@ -42,8 +42,10 @@ const char kGLRendererStringANGLE[] = "ANGLE (some renderer)";
 }  // anonymous namespace
 
 enum MockedGLVersionKind {
-  Version3_0,
-  Version3_2Compatibility
+  ES2_on_Version3_0,
+  ES2_on_Version3_2Compatibility,
+  ES3_on_Version3_0,
+  ES3_on_Version3_2Compatibility
 };
 
 class FeatureInfoTest
@@ -58,10 +60,12 @@ class FeatureInfoTest
     // Most of the tests' expectations currently assume the desktop
     // OpenGL compatibility profile.
     switch (GetParam()) {
-      case Version3_0:
+      case ES2_on_Version3_0:
+      case ES3_on_Version3_0:
         SetupInitExpectationsWithGLVersion(extensions_str.c_str(), "", "3.0");
         break;
-      case Version3_2Compatibility:
+      case ES2_on_Version3_2Compatibility:
+      case ES3_on_Version3_2Compatibility:
         if (extensions_str.find("GL_ARB_compatibility") == std::string::npos) {
           extensions_str += " GL_ARB_compatibility";
         }
@@ -73,13 +77,27 @@ class FeatureInfoTest
     }
   }
 
+  ContextType GetContextType() {
+    switch (GetParam()) {
+      case ES2_on_Version3_0:
+      case ES2_on_Version3_2Compatibility:
+        return CONTEXT_TYPE_OPENGLES2;
+      case ES3_on_Version3_0:
+      case ES3_on_Version3_2Compatibility:
+        return CONTEXT_TYPE_OPENGLES3;
+      default:
+        NOTREACHED();
+        return CONTEXT_TYPE_OPENGLES2;
+    }
+  }
+
   void SetupInitExpectationsWithGLVersion(
       const char* extensions, const char* renderer, const char* version) {
     GpuServiceTest::SetUpWithGLVersion(version, extensions);
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
         gl_.get(), extensions, renderer, version);
     info_ = new FeatureInfo();
-    info_->InitializeForTesting();
+    info_->Initialize(GetContextType(), DisallowedFeatures());
   }
 
   void SetupInitExpectationsWithGLVersionAndDisallowedFeatures(
@@ -91,7 +109,7 @@ class FeatureInfoTest
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
         gl_.get(), extensions, renderer, version);
     info_ = new FeatureInfo();
-    info_->InitializeForTesting(disallowed_features);
+    info_->Initialize(GetContextType(), disallowed_features);
   }
 
   void SetupInitExpectationsWithGLVersionAndCommandLine(
@@ -104,7 +122,7 @@ class FeatureInfoTest
         gl_.get(), extensions, renderer, version);
     GpuDriverBugWorkarounds gpu_driver_bug_workaround(&command_line);
     info_ = new FeatureInfo(command_line, gpu_driver_bug_workaround);
-    info_->InitializeForTesting();
+    info_->Initialize(GetContextType(), DisallowedFeatures());
   }
 
   void SetupWithCommandLine(const base::CommandLine& command_line) {
@@ -121,7 +139,7 @@ class FeatureInfoTest
         gl_.get(), extensions, "", "");
     GpuDriverBugWorkarounds gpu_driver_bug_workaround(&command_line);
     info_ = new FeatureInfo(command_line, gpu_driver_bug_workaround);
-    info_->InitializeForTesting();
+    info_->Initialize(GetContextType(), DisallowedFeatures());
   }
 
   void SetupWithoutInit() {
@@ -153,8 +171,10 @@ struct FormatInfo {
 }  // anonymous namespace.
 
 static const MockedGLVersionKind kGLVersionKinds[] = {
-  Version3_0,
-  Version3_2Compatibility
+  ES2_on_Version3_0,
+  ES2_on_Version3_2Compatibility,
+  ES3_on_Version3_0,
+  ES3_on_Version3_2Compatibility
 };
 
 INSTANTIATE_TEST_CASE_P(Service,
@@ -458,20 +478,33 @@ TEST_P(FeatureInfoTest, InitializeGLES_no_EXT_read_format_bgra) {
 
 TEST_P(FeatureInfoTest, InitializeEXT_sRGB) {
   SetupInitExpectations("GL_EXT_sRGB GL_OES_rgb8_rgba8");
-  EXPECT_THAT(info_->extensions(),
-              HasSubstr("GL_EXT_sRGB"));
-  EXPECT_TRUE(info_->validators()->texture_format.IsValid(
-      GL_SRGB_EXT));
-  EXPECT_TRUE(info_->validators()->texture_format.IsValid(
-      GL_SRGB_ALPHA_EXT));
-  EXPECT_TRUE(info_->validators()->texture_internal_format.IsValid(
-      GL_SRGB_EXT));
-  EXPECT_TRUE(info_->validators()->texture_internal_format.IsValid(
-      GL_SRGB_ALPHA_EXT));
-  EXPECT_TRUE(info_->validators()->render_buffer_format.IsValid(
-      GL_SRGB8_ALPHA8_EXT));
-  EXPECT_TRUE(info_->validators()->frame_buffer_parameter.IsValid(
-      GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT));
+
+  if (GetContextType() == CONTEXT_TYPE_OPENGLES3) {
+    EXPECT_THAT(info_->extensions(), Not(HasSubstr("GL_EXT_sRGB")));
+    EXPECT_FALSE(info_->validators()->texture_format.IsValid(GL_SRGB_EXT));
+    EXPECT_FALSE(
+        info_->validators()->texture_format.IsValid(GL_SRGB_ALPHA_EXT));
+    EXPECT_FALSE(
+        info_->validators()->texture_internal_format.IsValid(GL_SRGB_EXT));
+    EXPECT_FALSE(info_->validators()->texture_internal_format.IsValid(
+        GL_SRGB_ALPHA_EXT));
+    EXPECT_FALSE(
+        info_->validators()->render_buffer_format.IsValid(GL_SRGB8_ALPHA8_EXT));
+    EXPECT_FALSE(info_->validators()->frame_buffer_parameter.IsValid(
+        GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT));
+  } else {
+    EXPECT_THAT(info_->extensions(), HasSubstr("GL_EXT_sRGB"));
+    EXPECT_TRUE(info_->validators()->texture_format.IsValid(GL_SRGB_EXT));
+    EXPECT_TRUE(info_->validators()->texture_format.IsValid(GL_SRGB_ALPHA_EXT));
+    EXPECT_TRUE(
+        info_->validators()->texture_internal_format.IsValid(GL_SRGB_EXT));
+    EXPECT_TRUE(info_->validators()->texture_internal_format.IsValid(
+        GL_SRGB_ALPHA_EXT));
+    EXPECT_TRUE(
+        info_->validators()->render_buffer_format.IsValid(GL_SRGB8_ALPHA8_EXT));
+    EXPECT_TRUE(info_->validators()->frame_buffer_parameter.IsValid(
+        GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT));
+  }
 }
 
 TEST_P(FeatureInfoTest, InitializeGLES2EXT_texture_storage) {
@@ -658,14 +691,23 @@ TEST_P(FeatureInfoTest, InitializeGLES2_neither_texture_storage_nor_BGRA) {
               Not(HasSubstr("GL_EXT_texture_format_BGRA8888")));
 }
 
-// 5- ES3 + GL_EXT_texture_format_BGRA8888 -> GL_EXT_texture_format_BGRA8888
-// (we can't expose GL_EXT_texture_storage because we fail the GL_BGRA8
+// 5- ES3 + GL_EXT_texture_format_BGRA8888
+// If creating a GLES2 context, expose GL_EXT_texture_format_BGRA8888
+// If creating a GLES3 context, expose GL_EXT_texture_storage
+// (we can't expose both at the same time because we fail the GL_BGRA8
 // requirement)
 TEST_P(FeatureInfoTest, InitializeGLES3_texture_storage_EXT_BGRA) {
   SetupInitExpectationsWithGLVersion(
       "GL_EXT_texture_format_BGRA8888", "", "OpenGL ES 3.0");
-  EXPECT_THAT(info_->extensions(), Not(HasSubstr("GL_EXT_texture_storage")));
-  EXPECT_THAT(info_->extensions(), HasSubstr("GL_EXT_texture_format_BGRA8888"));
+  if (GetContextType() == CONTEXT_TYPE_OPENGLES3) {
+    EXPECT_THAT(info_->extensions(), HasSubstr("GL_EXT_texture_storage"));
+    EXPECT_THAT(info_->extensions(),
+                Not(HasSubstr("GL_EXT_texture_format_BGRA8888")));
+  } else {
+    EXPECT_THAT(info_->extensions(), Not(HasSubstr("GL_EXT_texture_storage")));
+    EXPECT_THAT(info_->extensions(),
+                HasSubstr("GL_EXT_texture_format_BGRA8888"));
+  }
 }
 
 // 6- ES3 + GL_APPLE_texture_format_bgra8888 -> GL_EXT_texture_storage +

@@ -1235,6 +1235,7 @@ TEST_P(GLES2DecoderManualInitTest, MemoryTrackerTexStorage2DEXT) {
       new SizeOnlyMemoryTracker();
   set_memory_tracker(memory_tracker.get());
   InitState init;
+  init.extensions = "GL_EXT_texture_storage";
   init.bind_generates_resource = true;
   InitDecoder(init);
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);

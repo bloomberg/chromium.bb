@@ -561,33 +561,44 @@ void FeatureInfo::InitializeFeatures() {
     validators_.texture_unsized_internal_format.AddValue(GL_SRGB_ALPHA_EXT);
   }
 
-  bool enable_texture_format_bgra8888 = false;
-  bool enable_read_format_bgra = false;
-  bool enable_render_buffer_bgra = false;
-  bool enable_immutable_texture_format_bgra_on_es3 =
-      extensions.Contains("GL_APPLE_texture_format_BGRA8888");
+  // Note: Only APPLE_texture_format_BGRA8888 extension allows BGRA8_EXT in
+  // ES3's glTexStorage2D, whereas EXT_texture_format_BGRA8888 doesn't provide
+  // that compatibility. So if EXT_texture_format_BGRA8888 (but not
+  // APPLE_texture_format_BGRA8888) is present on an underlying ES3 context, we
+  // have to choose which one of BGRA vs texture storage we expose.
+  // When creating ES2 contexts, we prefer support BGRA to texture storage, so
+  // we disable texture storage if only EXT_texture_format_BGRA8888 is present.
+  // If neither is present, we expose texture storage.
+  // When creating ES3 contexts, we do need to expose texture storage, so we
+  // disable BGRA if we have to.
+  bool has_apple_bgra = extensions.Contains("GL_APPLE_texture_format_BGRA8888");
+  bool has_ext_bgra = extensions.Contains("GL_EXT_texture_format_BGRA8888");
+  bool has_bgra = has_ext_bgra || has_apple_bgra || !gl_version_info_->is_es;
 
-  // Check if we should allow GL_EXT_texture_format_BGRA8888.
-  if (extensions.Contains("GL_EXT_texture_format_BGRA8888") ||
-      enable_immutable_texture_format_bgra_on_es3 ||
-      !gl_version_info_->is_es) {
-    enable_texture_format_bgra8888 = true;
-  }
+  bool has_ext_texture_storage = extensions.Contains("GL_EXT_texture_storage");
+  bool has_arb_texture_storage = extensions.Contains("GL_ARB_texture_storage");
+  bool has_texture_storage =
+      !workarounds_.disable_texture_storage &&
+      (has_ext_texture_storage || has_arb_texture_storage ||
+       gl_version_info_->is_es3 || gl_version_info_->IsAtLeastGL(4, 2));
 
-  // On desktop, all devices support BGRA render buffers (note that on desktop
-  // BGRA internal formats are converted to RGBA in the API implementation).
-  // For ES, there is no extension that exposes BGRA renderbuffers, however
-  // Angle does support these.
-  if (gl_version_info_->is_angle || !gl_version_info_->is_es) {
-    enable_render_buffer_bgra = true;
-  }
+  bool enable_texture_format_bgra8888 = has_bgra;
+  bool enable_texture_storage = has_texture_storage;
 
-  // On desktop, all devices support BGRA readback since OpenGL 2.0, which we
-  // require. On ES, support is indicated by the GL_EXT_read_format_bgra
-  // extension.
-  if (extensions.Contains("GL_EXT_read_format_bgra") ||
-      !gl_version_info_->is_es) {
-    enable_read_format_bgra = true;
+  bool texture_storage_incompatible_with_bgra =
+      gl_version_info_->is_es3 && !has_ext_texture_storage && !has_apple_bgra;
+  if (texture_storage_incompatible_with_bgra &&
+      enable_texture_format_bgra8888 && enable_texture_storage) {
+    switch (context_type_) {
+      case CONTEXT_TYPE_OPENGLES2:
+      case CONTEXT_TYPE_WEBGL1:
+        enable_texture_storage = false;
+        break;
+      case CONTEXT_TYPE_OPENGLES3:
+      case CONTEXT_TYPE_WEBGL2:
+        enable_texture_format_bgra8888 = false;
+        break;
+    }
   }
 
   if (enable_texture_format_bgra8888) {
@@ -597,6 +608,26 @@ void FeatureInfo::InitializeFeatures() {
     validators_.texture_format.AddValue(GL_BGRA_EXT);
     validators_.texture_unsized_internal_format.AddValue(GL_BGRA_EXT);
   }
+
+  // On desktop, all devices support BGRA render buffers (note that on desktop
+  // BGRA internal formats are converted to RGBA in the API implementation).
+  // For ES, there is no extension that exposes BGRA renderbuffers, however
+  // Angle does support these.
+  bool enable_render_buffer_bgra =
+      gl_version_info_->is_angle || !gl_version_info_->is_es;
+
+  if (enable_render_buffer_bgra) {
+    feature_flags_.ext_render_buffer_format_bgra8888 = true;
+    AddExtensionString("GL_CHROMIUM_renderbuffer_format_BGRA8888");
+    validators_.render_buffer_format.AddValue(GL_BGRA8_EXT);
+  }
+
+  // On desktop, all devices support BGRA readback since OpenGL 2.0, which we
+  // require. On ES, support is indicated by the GL_EXT_read_format_bgra
+  // extension.
+  bool enable_read_format_bgra =
+      extensions.Contains("GL_EXT_read_format_bgra") ||
+      !gl_version_info_->is_es;
 
   if (enable_read_format_bgra) {
     feature_flags_.ext_read_format_bgra = true;
@@ -614,12 +645,6 @@ void FeatureInfo::InitializeFeatures() {
       extensions.Contains("GL_ARB_timer_query") ||
       extensions.Contains("GL_EXT_timer_query")) {
     AddExtensionString("GL_EXT_disjoint_timer_query");
-  }
-
-  if (enable_render_buffer_bgra) {
-    feature_flags_.ext_render_buffer_format_bgra8888 = true;
-    AddExtensionString("GL_CHROMIUM_renderbuffer_format_BGRA8888");
-    validators_.render_buffer_format.AddValue(GL_BGRA8_EXT);
   }
 
   if (extensions.Contains("GL_OES_rgb8_rgba8") || gfx::HasDesktopGLFeatures()) {
@@ -975,22 +1000,7 @@ void FeatureInfo::InitializeFeatures() {
     validators_.texture_parameter.AddValue(GL_TEXTURE_USAGE_ANGLE);
   }
 
-  // Note: Only APPLE_texture_format_BGRA8888 extension allows BGRA8_EXT in
-  // ES3's glTexStorage2D. We prefer support BGRA to texture storage.
-  // So we don't expose GL_EXT_texture_storage when ES3 +
-  // GL_EXT_texture_format_BGRA8888 because we fail the GL_BGRA8 requirement.
-  // However we expose GL_EXT_texture_storage when just ES3 because we don't
-  // claim to handle GL_BGRA8.
-  bool support_texture_storage_on_es3 =
-      (gl_version_info_->is_es3 &&
-       enable_immutable_texture_format_bgra_on_es3) ||
-      (gl_version_info_->is_es3 &&
-       !enable_texture_format_bgra8888);
-  if (!workarounds_.disable_texture_storage &&
-      (extensions.Contains("GL_EXT_texture_storage") ||
-       extensions.Contains("GL_ARB_texture_storage") ||
-       support_texture_storage_on_es3 ||
-       gl_version_info_->IsAtLeastGL(4, 2))) {
+  if (enable_texture_storage) {
     feature_flags_.ext_texture_storage = true;
     AddExtensionString("GL_EXT_texture_storage");
     validators_.texture_parameter.AddValue(GL_TEXTURE_IMMUTABLE_FORMAT_EXT);
@@ -1286,6 +1296,8 @@ void FeatureInfo::InitializeFeatures() {
 
 bool FeatureInfo::IsES3Capable() const {
   if (!enable_unsafe_es3_apis_switch_)
+    return false;
+  if (workarounds_.disable_texture_storage)
     return false;
   if (gl_version_info_)
     return gl_version_info_->IsES3Capable();
