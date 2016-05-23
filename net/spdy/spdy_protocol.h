@@ -541,6 +541,9 @@ class NET_EXPORT_PRIVATE SpdyConstants {
   // Returns the size of a header block size field. Valid only for SPDY 3.
   static size_t GetSizeOfSizeField();
 
+  // Returns the per-header overhead for block size accounting in bytes.
+  static size_t GetPerHeaderOverhead(SpdyMajorVersion version);
+
   // Returns the size (in bytes) of a wire setting ID and value.
   static size_t GetSettingSize(SpdyMajorVersion version);
 

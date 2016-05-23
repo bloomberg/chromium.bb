@@ -738,6 +738,10 @@ size_t SpdyConstants::GetSizeOfSizeField() {
   return sizeof(uint32_t);
 }
 
+size_t SpdyConstants::GetPerHeaderOverhead(SpdyMajorVersion version) {
+  return (version == net::HTTP2) ? 32 : 0;
+}
+
 size_t SpdyConstants::GetSettingSize(SpdyMajorVersion version) {
   return version == SPDY3 ? 8 : 6;
 }
