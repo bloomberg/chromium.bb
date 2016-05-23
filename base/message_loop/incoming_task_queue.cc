@@ -67,9 +67,9 @@ bool IncomingTaskQueue::AddToIncomingQueue(
       << "Requesting super-long task delay period of " << delay.InSeconds()
       << " seconds from here: " << from_here.ToString();
 
-  AutoLock locked(incoming_queue_lock_);
   PendingTask pending_task(
-      from_here, task, CalculateDelayedRuntime(delay), nestable);
+    from_here, task, CalculateDelayedRuntime(delay), nestable);
+  AutoLock locked(incoming_queue_lock_);
 #if defined(OS_WIN)
   // We consider the task needs a high resolution timer if the delay is
   // more than 0 and less than 32ms. This caps the relative error to
