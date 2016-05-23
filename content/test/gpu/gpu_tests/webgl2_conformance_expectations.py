@@ -319,10 +319,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texstorage2d_format_depth_stencil.html',
-        ['win', ('amd', 0x6779)], bug=483282)
+        ['win', ('amd', 0x6779)], bug=614178)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texstorage3d_format_depth_stencil.html',
-        ['win', ('amd', 0x6779)], bug=483282)
+        ['win', ('amd', 0x6779)], bug=614178)
 
     # Win / Intel
     self.Fail('conformance2/buffers/uniform-buffers.html',
@@ -382,51 +382,52 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('deqp/functional/gles3/shaderswitch.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
+
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'teximage2d_pbo_2d_00.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
+        ['mac', ('nvidia', 0xfe9)], bug=614174)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'teximage2d_pbo_2d_01.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
+        ['mac', ('nvidia', 0xfe9)], bug=614174)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texsubimage2d_pbo_2d_00.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
+        ['mac', ('nvidia', 0xfe9)], bug=614174)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texsubimage2d_pbo_2d_01.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
+        ['mac', ('nvidia', 0xfe9)], bug=614174)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texsubimage2d_pbo_cube_00.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
+        ['mac', ('nvidia', 0xfe9)], bug=614174)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texsubimage2d_pbo_cube_01.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
+        ['mac', ('nvidia', 0xfe9)], bug=614174)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texsubimage2d_pbo_cube_02.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
+        ['mac', ('nvidia', 0xfe9)], bug=614174)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texsubimage2d_pbo_cube_03.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
+        ['mac', ('nvidia', 0xfe9)], bug=614174)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texsubimage2d_pbo_cube_04.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
+        ['mac', ('nvidia', 0xfe9)], bug=614174)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'teximage3d_pbo_2d_array_00.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
+        ['mac', ('nvidia', 0xfe9)], bug=614174)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'teximage3d_pbo_2d_array_01.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
+        ['mac', ('nvidia', 0xfe9)], bug=614174)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'teximage3d_pbo_3d_00.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
+        ['mac', ('nvidia', 0xfe9)], bug=614174)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'teximage3d_pbo_3d_01.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
+        ['mac', ('nvidia', 0xfe9)], bug=614174)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texsubimage3d_pbo_3d_00.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
+        ['mac', ('nvidia', 0xfe9)], bug=614174)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texsubimage3d_pbo_3d_01.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
+        ['mac', ('nvidia', 0xfe9)], bug=614174)
 
     # Mac AMD
     self.Fail('deqp/functional/gles3/clipping.html',
