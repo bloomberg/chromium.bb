@@ -99,12 +99,8 @@ bool IsUnifiedMediaPipelineEnabled() {
   const bool disabled_via_cli =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableUnifiedMediaPipeline);
-  // TODO(watk, dalecurtis): AVDA has bugs on API level 16 and 17 so it's
-  // disabled for now. http://crbug.com/597467
-  const bool api_level_supported =
-      base::android::BuildInfo::GetInstance()->sdk_int() >= 18;
 
-  return !disabled_via_cli && api_level_supported &&
+  return !disabled_via_cli &&
          !base::StartsWith(group_name, "Disabled",
                            base::CompareCase::SENSITIVE);
 }
