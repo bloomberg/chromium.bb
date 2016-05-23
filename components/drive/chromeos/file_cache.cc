@@ -4,7 +4,9 @@
 
 #include "components/drive/chromeos/file_cache.h"
 
-#include <unistd.h>
+#include <linux/fs.h>
+#include <sys/ioctl.h>
+#include <sys/xattr.h>
 
 #include <queue>
 #include <vector>
@@ -12,11 +14,13 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
+#include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
@@ -34,6 +38,9 @@ namespace drive {
 namespace internal {
 namespace {
 
+typedef std::pair<base::File::Info, ResourceEntry> CacheInfo;
+typedef long FileAttributes;  // NOLINT(runtime/int)
+
 // Returns ID extracted from the path.
 std::string GetIdFromPath(const base::FilePath& path) {
   return util::UnescapeCacheFileName(path.BaseName().AsUTF8Unsafe());
@@ -45,7 +52,70 @@ base::FilePath GetPathForId(const base::FilePath& cache_directory,
       base::FilePath::FromUTF8Unsafe(util::EscapeCacheFileName(id)));
 }
 
-typedef std::pair<base::File::Info, ResourceEntry> CacheInfo;
+// Sets extended file attribute as |name| |value| pair.
+bool SetExtendedFileAttributes(const base::FilePath& path,
+    const std::string& name, const std::string& value) {
+  return setxattr(path.value().c_str(), name.c_str(), value.c_str(),
+      value.size() + 1, 0) == 0;
+}
+
+// Changes attributes of the file with |flags|, e.g. FS_NODUMP_FL (cryptohome
+// will remove Drive caches with this attribute).
+// See linux/fs.h for available flags, and chattr(1) which does similar thing.
+// Returns whether operation succeeded.
+bool SetFileAttributes(const base::FilePath& path, FileAttributes flags) {
+  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!file.IsValid()) {
+    PLOG(ERROR) << "Failed to open file: " << path.value();
+    return false;
+  }
+  if (ioctl(file.GetPlatformFile(), FS_IOC_SETFLAGS, &flags) < 0) {
+    PLOG(ERROR) << "ioctl: " << path.value();
+    return false;
+  }
+  return true;
+}
+
+// Gets file attributes similarly to lsattr(1). Returns flags or -1 on error.
+// See linux/fs.h for the definition of the returned flags e.g. FS_NODUMP_FL.
+FileAttributes GetFileAttributes(const base::FilePath& path) {
+  base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!file.IsValid()) {
+    PLOG(ERROR) << "Failed to open file: " << path.value();
+    return -1;
+  }
+  FileAttributes flags = 0;
+  if (ioctl(file.GetPlatformFile(), FS_IOC_GETFLAGS, &flags) < 0) {
+    PLOG(ERROR) << "ioctl: " << path.value();
+    return -1;
+  }
+  return flags;
+}
+
+// Marks the cache file to be removable by cryptohome.
+bool SetRemovable(const base::FilePath& path) {
+  FileAttributes flags = GetFileAttributes(path);
+  if (flags < 0) return false;
+  if ((flags & FS_NODUMP_FL) == FS_NODUMP_FL) return true;
+
+  return SetFileAttributes(path, flags | FS_NODUMP_FL);
+}
+
+// Marks the cache file to be unremovable by cryptohome.
+bool UnsetRemovable(const base::FilePath& path) {
+  FileAttributes flags = GetFileAttributes(path);
+  if (flags < 0) return false;
+  if ((flags & FS_NODUMP_FL) == 0) return true;
+
+  return SetFileAttributes(path, flags & ~FS_NODUMP_FL);
+}
+
+// Marks |path| as drive cache dir.
+// Returns if the operation succeeded.
+bool MarkAsDriveCacheDir(const base::FilePath& path) {
+  return SetRemovable(path)
+      && SetExtendedFileAttributes(path, FileCache::kGCacheFilesAttribute, "");
+}
 
 class CacheInfoLatestCompare {
  public:
@@ -57,6 +127,9 @@ class CacheInfoLatestCompare {
 const size_t kMaxNumOfEvictedCacheFiles = 30000;
 
 }  // namespace
+
+// static
+const char FileCache::kGCacheFilesAttribute[] = "user.GCacheFiles";
 
 FileCache::FileCache(ResourceMetadataStorage* storage,
                      const base::FilePath& cache_file_directory,
@@ -282,6 +355,15 @@ FileError FileCache::Store(const std::string& id,
   cache_state->set_is_present(true);
   if (md5.empty())
     cache_state->set_is_dirty(true);
+
+  if (!cache_state->is_pinned() && !cache_state->is_dirty()) {
+    if (!SetRemovable(dest_path))
+      return FILE_ERROR_FAILED;
+  } else {
+    if (!UnsetRemovable(dest_path))
+      return FILE_ERROR_FAILED;
+  }
+
   return storage_->PutEntry(entry);
 }
 
@@ -292,8 +374,17 @@ FileError FileCache::Pin(const std::string& id) {
   FileError error = storage_->GetEntry(id, &entry);
   if (error != FILE_ERROR_OK)
     return error;
+
   entry.mutable_file_specific_info()->mutable_cache_state()->set_is_pinned(
       true);
+
+  base::FilePath file_path = GetCacheFilePath(entry.local_id());
+  // Cache file can be created later.
+  if (entry.file_specific_info().cache_state().is_present()) {
+    if (!UnsetRemovable(file_path))
+      return FILE_ERROR_FAILED;
+  }
+
   return storage_->PutEntry(entry);
 }
 
@@ -310,6 +401,10 @@ FileError FileCache::Unpin(const std::string& id) {
   if (entry.file_specific_info().cache_state().is_present()) {
     entry.mutable_file_specific_info()->mutable_cache_state()->set_is_pinned(
         false);
+    if (!entry.file_specific_info().cache_state().is_dirty()) {
+      if (!SetRemovable(GetCacheFilePath(entry.local_id())))
+        return FILE_ERROR_FAILED;
+    }
   } else {
     // Remove the existing entry if we are unpinning a non-present file.
     entry.mutable_file_specific_info()->clear_cache_state();
@@ -376,6 +471,9 @@ FileError FileCache::OpenForWrite(
   }
 
   entry.mutable_file_specific_info()->mutable_cache_state()->set_is_dirty(true);
+  if (!UnsetRemovable(GetCacheFilePath(entry.local_id())))
+    return FILE_ERROR_FAILED;
+
   entry.mutable_file_specific_info()->mutable_cache_state()->clear_md5();
   error = storage_->PutEntry(entry);
   if (error != FILE_ERROR_OK)
@@ -447,6 +545,11 @@ FileError FileCache::ClearDirty(const std::string& id) {
 
   entry.mutable_file_specific_info()->mutable_cache_state()->set_is_dirty(
       false);
+  if (!entry.file_specific_info().cache_state().is_pinned()) {
+    if (!SetRemovable(GetCacheFilePath(entry.local_id())))
+      return FILE_ERROR_FAILED;
+  }
+
   return storage_->PutEntry(entry);
 }
 
@@ -513,6 +616,13 @@ bool FileCache::Initialize() {
 
   if (!RenameCacheFilesToNewFormat())
     return false;
+
+  // Run this every time to resolve inconsistency between metadata
+  // and file attributes which possibly occurs on abrupt power failure.
+  if (!FixMetadataAndFileAttributes()) {
+    return false;
+  }
+
   return true;
 }
 
@@ -684,47 +794,55 @@ bool FileCache::RenameCacheFilesToNewFormat() {
   return true;
 }
 
-// static
-bool FileCache::MigrateCacheFiles(const base::FilePath& from,
-                                  const base::FilePath& to_files,
-                                  const base::FilePath& to_links,
-                                  ResourceMetadataStorage* metadata_storage) {
+bool FileCache::FixMetadataAndFileAttributes() {
   std::unique_ptr<ResourceMetadataStorage::Iterator> it =
-      metadata_storage->GetIterator();
+      storage_->GetIterator();
+
   for (; !it->IsAtEnd(); it->Advance()) {
-    const ResourceEntry& entry = it->GetValue();
-    if (!entry.file_specific_info().cache_state().is_present()) {
-      continue;
-    }
+    ResourceEntry entry = it->GetValue();
+    FileCacheEntry* file_cache_entry =
+        entry.mutable_file_specific_info()->mutable_cache_state();
 
-    // Ignore missing cache file case since it never succeeds.
-    // TODO(yawano): handle this case at metadata validation in FileCache.
-    const base::FilePath move_from = GetPathForId(from, entry.local_id());
-    if (!base::PathExists(move_from)) {
-      continue;
-    }
+    const base::FilePath filepath = GetPathForId(cache_file_directory_,
+        entry.local_id());
 
-    // Create hard link to cache file if it's pinned or dirty. cryptohome will
-    // not delete a cache file if there is a hard link to it.
-    const FileCacheEntry& file_cache_entry =
-        entry.file_specific_info().cache_state();
-    if (file_cache_entry.is_pinned() || file_cache_entry.is_dirty()) {
-      const base::FilePath link_path = GetPathForId(to_links, entry.local_id());
-      int link_result = link(move_from.AsUTF8Unsafe().c_str(),
-                             link_path.AsUTF8Unsafe().c_str());
-      if (link_result != 0 && errno != EEXIST) {
-        return false;
+    if (base::PathExists(filepath)) {
+      if (file_cache_entry->is_present()) {
+        // Update file attribues for cryptohome.
+        if (file_cache_entry->is_pinned() || file_cache_entry->is_dirty()) {
+          if (!UnsetRemovable(filepath)) return false;
+        } else {
+          if (!SetRemovable(filepath)) return false;
+        }
+      } else {
+        // Delete file if the file is present but metadata says not.
+        // It happens only on abrupt shutdown.
+        LOG(WARNING)
+            << "File is present but metadata's state was inconsistent.";
+
+        if (!base::DeleteFile(filepath, false /* recursive */))
+          return false;
       }
-    }
-
-    // Move cache file.
-    const base::FilePath move_to = GetPathForId(to_files, entry.local_id());
-    if (!base::Move(move_from, move_to)) {
-      return false;
+    } else {
+      // Update metatadata if there is no file but metadata says there is.
+      // It happens when cryptohome removed the file.
+      // We don't clear is_pinned here, so that file download is restarted on
+      // the following scenario:
+      //  1. The file was pinned but not present.
+      //  2. Then the file was downloaded and became present.
+      //  3. Unclean shutdown happens, metadata update was saved to the disk,
+      //     but the file move was not.
+      if (file_cache_entry->is_present()) {
+        file_cache_entry->set_is_present(false);
+        file_cache_entry->set_is_dirty(false);
+        file_cache_entry->clear_md5();
+        if (storage_->PutEntry(entry) != FILE_ERROR_OK)
+          return false;
+      }
     }
   }
 
-  return true;
+  return MarkAsDriveCacheDir(cache_file_directory_);
 }
 
 void FileCache::CloseForWrite(const std::string& id) {

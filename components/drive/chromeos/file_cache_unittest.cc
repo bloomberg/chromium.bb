@@ -4,22 +4,24 @@
 
 #include "components/drive/chromeos/file_cache.h"
 
+#include <linux/fs.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
+#include <sys/ioctl.h>
+#include <sys/xattr.h>
 
 #include <string>
 #include <vector>
 
 #include "base/callback_helpers.h"
+#include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/md5.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -36,20 +38,29 @@ namespace drive {
 namespace internal {
 namespace {
 
+typedef long FileAttributes;  // NOLINT(runtime/int)
+
 const base::FilePath::CharType kCacheFileDirectory[] =
     FILE_PATH_LITERAL("files");
-const base::FilePath::CharType kNewCacheFileDirectory[] =
-    FILE_PATH_LITERAL("blobs");
-const base::FilePath::CharType kLinkDirectory[] = FILE_PATH_LITERAL("links");
 
 const int kTemporaryFileSizeInBytes = 10;
 
-int GetNumberOfLinks(const base::FilePath& file_path) {
-  struct stat result;
-  if (stat(file_path.AsUTF8Unsafe().c_str(), &result) != 0) {
+FileAttributes GetFileAttributes(const base::FilePath& file_path) {
+  base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!file.IsValid()) {
+    ADD_FAILURE() << "Failed to open file: " << file_path.value();
     return -1;
   }
-  return result.st_nlink;
+  FileAttributes flags = 0;
+  if (ioctl(file.GetPlatformFile(), FS_IOC_GETFLAGS, &flags) < 0) {
+    ADD_FAILURE() << "Failed to get attributes: " << file_path.value();
+    return -1;
+  }
+  return flags;
+}
+
+bool HasRemovableFlag(const base::FilePath& file_path) {
+  return (GetFileAttributes(file_path) & FS_NODUMP_FL) == FS_NODUMP_FL;
 }
 
 }  // namespace
@@ -80,6 +91,10 @@ class FileCacheTest : public testing::Test {
 
   static bool RenameCacheFilesToNewFormat(FileCache* cache) {
     return cache->RenameCacheFilesToNewFormat();
+  }
+
+  base::FilePath GetCacheFilePath(const std::string& id) {
+    return cache_->GetCacheFilePath(id);
   }
 
   base::FilePath AddTestEntry(const std::string id,
@@ -422,6 +437,9 @@ TEST_F(FileCacheTest, Store) {
   EXPECT_EQ(FILE_ERROR_OK, cache_->GetFile(id, &cache_file_path));
   EXPECT_TRUE(base::ContentsEqual(src_file_path, cache_file_path));
 
+  base::FilePath dest_file_path = GetCacheFilePath(id);
+  EXPECT_TRUE(HasRemovableFlag((dest_file_path)));
+
   // Store a non-existent file.
   EXPECT_EQ(FILE_ERROR_FAILED, cache_->Store(
       id, md5, base::FilePath::FromUTF8Unsafe("non_existent_file"),
@@ -435,6 +453,7 @@ TEST_F(FileCacheTest, Store) {
   EXPECT_TRUE(entry.file_specific_info().cache_state().is_present());
   EXPECT_TRUE(entry.file_specific_info().cache_state().md5().empty());
   EXPECT_TRUE(entry.file_specific_info().cache_state().is_dirty());
+  EXPECT_FALSE(HasRemovableFlag((dest_file_path)));
 
   // No free space available.
   fake_free_disk_space_getter_->set_default_value(0);
@@ -458,20 +477,24 @@ TEST_F(FileCacheTest, PinAndUnpin) {
   EXPECT_EQ(FILE_ERROR_OK, cache_->Store(
       id, md5, src_file_path, FileCache::FILE_OPERATION_COPY));
 
+  const base::FilePath dest_file_path = GetCacheFilePath(id);
   EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
   EXPECT_FALSE(entry.file_specific_info().cache_state().is_pinned());
+  EXPECT_TRUE(HasRemovableFlag((dest_file_path)));
 
   // Pin the existing file.
   EXPECT_EQ(FILE_ERROR_OK, cache_->Pin(id));
 
   EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
   EXPECT_TRUE(entry.file_specific_info().cache_state().is_pinned());
+  EXPECT_FALSE(HasRemovableFlag((dest_file_path)));
 
   // Unpin the file.
   EXPECT_EQ(FILE_ERROR_OK, cache_->Unpin(id));
 
   EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
   EXPECT_FALSE(entry.file_specific_info().cache_state().is_pinned());
+  EXPECT_TRUE(HasRemovableFlag((dest_file_path)));
 
   // Pin a non-present file.
   std::string id_non_present = "id_non_present";
@@ -540,6 +563,9 @@ TEST_F(FileCacheTest, OpenForWrite) {
   EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
   EXPECT_FALSE(entry.file_specific_info().cache_state().is_dirty());
 
+  const base::FilePath dest_file = GetCacheFilePath(id);
+  EXPECT_TRUE(HasRemovableFlag((dest_file)));
+
   // Open (1).
   std::unique_ptr<base::ScopedClosureRunner> file_closer1;
   EXPECT_EQ(FILE_ERROR_OK, cache_->OpenForWrite(id, &file_closer1));
@@ -548,6 +574,7 @@ TEST_F(FileCacheTest, OpenForWrite) {
   // Entry is dirty.
   EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
   EXPECT_TRUE(entry.file_specific_info().cache_state().is_dirty());
+  EXPECT_FALSE(HasRemovableFlag((dest_file)));
 
   // Open (2).
   std::unique_ptr<base::ScopedClosureRunner> file_closer2;
@@ -626,6 +653,9 @@ TEST_F(FileCacheTest, ClearDirty) {
   ASSERT_EQ(FILE_ERROR_OK, cache_->Store(id, "md5", src_file,
                                          FileCache::FILE_OPERATION_COPY));
 
+  const base::FilePath dest_file = GetCacheFilePath(id);
+  EXPECT_TRUE(HasRemovableFlag((dest_file)));
+
   // Open the file.
   std::unique_ptr<base::ScopedClosureRunner> file_closer;
   EXPECT_EQ(FILE_ERROR_OK, cache_->OpenForWrite(id, &file_closer));
@@ -633,9 +663,11 @@ TEST_F(FileCacheTest, ClearDirty) {
   // Entry is dirty.
   EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
   EXPECT_TRUE(entry.file_specific_info().cache_state().is_dirty());
+  EXPECT_FALSE(HasRemovableFlag((dest_file)));
 
   // Cannot clear the dirty bit of an opened entry.
   EXPECT_EQ(FILE_ERROR_IN_USE, cache_->ClearDirty(id));
+  EXPECT_FALSE(HasRemovableFlag((dest_file)));
 
   // Close the file and clear the dirty bit.
   file_closer.reset();
@@ -645,6 +677,7 @@ TEST_F(FileCacheTest, ClearDirty) {
   // Entry is not dirty.
   EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id, &entry));
   EXPECT_FALSE(entry.file_specific_info().cache_state().is_dirty());
+  EXPECT_TRUE(HasRemovableFlag((dest_file)));
 }
 
 TEST_F(FileCacheTest, Remove) {
@@ -711,156 +744,120 @@ TEST_F(FileCacheTest, RenameCacheFilesToNewFormat) {
   EXPECT_EQ("kyu", contents);
 }
 
-// Test for migrating cache files from files to blobs.
-TEST_F(FileCacheTest, MigrateCacheFiles) {
+TEST_F(FileCacheTest, FixMetadataAndFileAttributes) {
   // Create test files and metadata.
   base::FilePath temp_file;
   ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &temp_file));
 
-  const base::FilePath old_cache_dir =
-      temp_dir_.path().Append(kCacheFileDirectory);
-  const base::FilePath new_cache_dir =
-      temp_dir_.path().Append(kNewCacheFileDirectory);
-  const base::FilePath link_dir = temp_dir_.path().Append(kLinkDirectory);
-  ASSERT_TRUE(base::CreateDirectory(old_cache_dir));
-  ASSERT_TRUE(base::CreateDirectory(new_cache_dir));
-  ASSERT_TRUE(base::CreateDirectory(link_dir));
-
-  // Entry A: cache file in old cache directory with metadata.
+  // Entry A: pinned cache file.
   const std::string id_a = "id_a";
   ResourceEntry entry_a;
   entry_a.set_local_id(id_a);
-  entry_a.mutable_file_specific_info()->mutable_cache_state()->set_is_present(
-      true);
+  FileCacheEntry* file_cache_entry_a =
+      entry_a.mutable_file_specific_info()->mutable_cache_state();
+  file_cache_entry_a->set_is_present(true);
+  file_cache_entry_a->set_is_pinned(true);
+  file_cache_entry_a->set_is_dirty(false);
   ASSERT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry_a));
-  const base::FilePath old_file_path_a = old_cache_dir.AppendASCII(id_a);
-  const base::FilePath new_file_path_a = new_cache_dir.AppendASCII(id_a);
-  ASSERT_TRUE(base::CopyFile(temp_file, old_file_path_a));
+  const base::FilePath file_path_a = GetCacheFilePath(id_a);
+  ASSERT_TRUE(base::CopyFile(temp_file, file_path_a));
 
-  // Entry B: cache file in old cache directory without metadata.
+  // Entry B: dirty cache file.
   const std::string id_b = "id_b";
-  const base::FilePath old_file_path_b = old_cache_dir.AppendASCII(id_b);
-  ASSERT_TRUE(base::CopyFile(temp_file, old_file_path_b));
+  ResourceEntry entry_b;
+  entry_b.set_local_id(id_b);
+  FileCacheEntry* file_cache_entry_b =
+      entry_b.mutable_file_specific_info()->mutable_cache_state();
+  file_cache_entry_b->set_is_present(true);
+  file_cache_entry_b->set_is_pinned(false);
+  file_cache_entry_b->set_is_dirty(true);
+  ASSERT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry_b));
+  const base::FilePath file_path_b = GetCacheFilePath(id_b);
+  ASSERT_TRUE(base::CopyFile(temp_file, file_path_b));
 
-  // Entry C: already migrated cache file.
+  // Entry C: not pinned nor dirty cache file.
   const std::string id_c = "id_c";
   ResourceEntry entry_c;
   entry_c.set_local_id(id_c);
-  entry_c.mutable_file_specific_info()->mutable_cache_state()->set_is_present(
-      true);
+  FileCacheEntry* file_cache_entry_c =
+      entry_c.mutable_file_specific_info()->mutable_cache_state();
+  file_cache_entry_c->set_is_present(true);
+  file_cache_entry_c->set_is_pinned(false);
+  file_cache_entry_c->set_is_dirty(false);
   ASSERT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry_c));
-  const base::FilePath new_file_path_c = new_cache_dir.AppendASCII(id_c);
-  ASSERT_TRUE(base::CopyFile(temp_file, new_file_path_c));
+  const base::FilePath file_path_c = GetCacheFilePath(id_c);
+  ASSERT_TRUE(base::CopyFile(temp_file, file_path_c));
 
-  // Entry D: metadata entry without cache file.
+  // Entry D: pinned cache file somehow having removable flag.
   const std::string id_d = "id_d";
   ResourceEntry entry_d;
   entry_d.set_local_id(id_d);
-  entry_d.mutable_file_specific_info()->mutable_cache_state()->set_is_present(
-      true);
+  FileCacheEntry* file_cache_entry_d =
+      entry_d.mutable_file_specific_info()->mutable_cache_state();
+  file_cache_entry_d->set_is_present(true);
+  file_cache_entry_d->set_is_pinned(true);
+  file_cache_entry_d->set_is_dirty(false);
   ASSERT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry_d));
+  const base::FilePath file_path_d = GetCacheFilePath(id_d);
+  ASSERT_TRUE(base::CopyFile(temp_file, file_path_d));
 
-  // Entry E: pinned cache file.
+  // Set removable flag.
+  FileAttributes flags = GetFileAttributes(file_path_d);
+  ASSERT_GE(flags, 0);
+  flags |= FS_NODUMP_FL;
+  base::File file_d(file_path_d, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  ASSERT_EQ(ioctl(file_d.GetPlatformFile(), FS_IOC_SETFLAGS, &flags), 0);
+
+  // Entry E: there is no file; removed by cryptohome.
   const std::string id_e = "id_e";
   ResourceEntry entry_e;
   entry_e.set_local_id(id_e);
   FileCacheEntry* file_cache_entry_e =
       entry_e.mutable_file_specific_info()->mutable_cache_state();
   file_cache_entry_e->set_is_present(true);
-  file_cache_entry_e->set_is_pinned(true);
+  file_cache_entry_e->set_is_pinned(false);
   file_cache_entry_e->set_is_dirty(false);
   ASSERT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry_e));
-  const base::FilePath old_file_path_e = old_cache_dir.AppendASCII(id_e);
-  const base::FilePath new_file_path_e = new_cache_dir.AppendASCII(id_e);
-  const base::FilePath link_path_e = link_dir.AppendASCII(id_e);
-  ASSERT_TRUE(base::CopyFile(temp_file, old_file_path_e));
+  const base::FilePath file_path_e = GetCacheFilePath(id_e);
 
-  // Entry F: dirty cache file.
+  // Entry F: there is a file, but metadata says not.
   const std::string id_f = "id_f";
   ResourceEntry entry_f;
   entry_f.set_local_id(id_f);
-  FileCacheEntry* file_cache_entry_f =
-      entry_f.mutable_file_specific_info()->mutable_cache_state();
-  file_cache_entry_f->set_is_present(true);
-  file_cache_entry_f->set_is_pinned(false);
-  file_cache_entry_f->set_is_dirty(true);
+  entry_f.mutable_file_specific_info()->mutable_cache_state()->set_is_present(
+      false);
   ASSERT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry_f));
-  const base::FilePath old_file_path_f = old_cache_dir.AppendASCII(id_f);
-  const base::FilePath new_file_path_f = new_cache_dir.AppendASCII(id_f);
-  const base::FilePath link_path_f = link_dir.AppendASCII(id_f);
-  ASSERT_TRUE(base::CopyFile(temp_file, old_file_path_f));
+  const base::FilePath file_path_f = GetCacheFilePath(id_f);
+  ASSERT_TRUE(base::CopyFile(temp_file, file_path_f));
 
-  // Entry G: partially migrated pinned cache file.
+  // Entry G: no file nor metadata.
   const std::string id_g = "id_g";
   ResourceEntry entry_g;
   entry_g.set_local_id(id_g);
-  FileCacheEntry* file_cache_entry_g =
-      entry_g.mutable_file_specific_info()->mutable_cache_state();
-  file_cache_entry_g->set_is_present(true);
-  file_cache_entry_g->set_is_pinned(true);
-  file_cache_entry_g->set_is_dirty(false);
-  ASSERT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry_g));
-  const base::FilePath old_file_path_g = old_cache_dir.AppendASCII(id_g);
-  const base::FilePath new_file_path_g = new_cache_dir.AppendASCII(id_g);
-  const base::FilePath link_path_g = link_dir.AppendASCII(id_g);
-  ASSERT_TRUE(base::CopyFile(temp_file, old_file_path_g));
-  ASSERT_EQ(0, link(old_file_path_g.AsUTF8Unsafe().c_str(),
-                    link_path_g.AsUTF8Unsafe().c_str()));
+  entry_f.mutable_file_specific_info()->mutable_cache_state()->set_is_present(
+      false);
+  ASSERT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry_f));
 
-  // Entry H: pinned entry without cache file.
-  const std::string id_h = "id_h";
-  ResourceEntry entry_h;
-  entry_h.set_local_id(id_h);
-  FileCacheEntry* file_cache_entry_h =
-      entry_h.mutable_file_specific_info()->mutable_cache_state();
-  file_cache_entry_h->set_is_present(true);
-  file_cache_entry_h->set_is_pinned(true);
-  file_cache_entry_h->set_is_dirty(false);
-  ASSERT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry_h));
-
-  // Entry I: already migrated pinned cache file.
-  const std::string id_i = "id_i";
-  ResourceEntry entry_i;
-  entry_i.set_local_id(id_i);
-  FileCacheEntry* file_cache_entry_i =
-      entry_i.mutable_file_specific_info()->mutable_cache_state();
-  file_cache_entry_i->set_is_present(true);
-  file_cache_entry_i->set_is_pinned(true);
-  file_cache_entry_i->set_is_dirty(false);
-  ASSERT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry_i));
-  const base::FilePath new_file_path_i = new_cache_dir.AppendASCII(id_i);
-  const base::FilePath link_path_i = link_dir.AppendASCII(id_i);
-  ASSERT_TRUE(base::CopyFile(temp_file, new_file_path_i));
-  ASSERT_EQ(0, link(new_file_path_i.AsUTF8Unsafe().c_str(),
-                    link_path_i.AsUTF8Unsafe().c_str()));
-
-  // Run migration.
-  ASSERT_TRUE(FileCache::MigrateCacheFiles(old_cache_dir, new_cache_dir,
-                                           link_dir, metadata_storage_.get()));
+  // Initialize fixes inconsistency between metadata and cache file attributes
+  // as well as adding specific file attributes to the cache directory.
+  ASSERT_TRUE(cache_->Initialize());
 
   // Check result.
-  EXPECT_FALSE(base::PathExists(old_file_path_a));
-  EXPECT_TRUE(base::PathExists(new_file_path_a));
-  EXPECT_EQ(1, GetNumberOfLinks(new_file_path_a));
-  // MigrateCacheFiles doesn't delete invalid cache file.
-  EXPECT_TRUE(base::PathExists(old_file_path_b));
-  EXPECT_TRUE(base::PathExists(new_file_path_c));
-  EXPECT_EQ(1, GetNumberOfLinks(new_file_path_c));
-  EXPECT_FALSE(base::PathExists(old_file_path_e));
-  EXPECT_TRUE(base::PathExists(new_file_path_e));
-  EXPECT_TRUE(base::PathExists(link_path_e));
-  EXPECT_EQ(2, GetNumberOfLinks(new_file_path_e));
-  EXPECT_FALSE(base::PathExists(old_file_path_f));
-  EXPECT_TRUE(base::PathExists(new_file_path_f));
-  EXPECT_TRUE(base::PathExists(link_path_f));
-  EXPECT_EQ(2, GetNumberOfLinks(new_file_path_f));
-  EXPECT_FALSE(base::PathExists(old_file_path_g));
-  EXPECT_TRUE(base::PathExists(new_file_path_g));
-  EXPECT_TRUE(base::PathExists(link_path_g));
-  EXPECT_EQ(2, GetNumberOfLinks(new_file_path_g));
-  EXPECT_TRUE(base::PathExists(new_file_path_i));
-  EXPECT_TRUE(base::PathExists(link_path_i));
-  EXPECT_EQ(2, GetNumberOfLinks(new_file_path_i));
+  EXPECT_FALSE(HasRemovableFlag(file_path_a));
+  EXPECT_FALSE(HasRemovableFlag((file_path_b)));
+  EXPECT_TRUE(HasRemovableFlag((file_path_c)));
+  EXPECT_FALSE(HasRemovableFlag((file_path_d)));
+  EXPECT_FALSE(base::PathExists(file_path_f));
+
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id_e, &entry_e));
+  EXPECT_FALSE(entry_e.file_specific_info().cache_state().is_present());
+  EXPECT_EQ(FILE_ERROR_OK, metadata_storage_->GetEntry(id_f, &entry_f));
+  EXPECT_FALSE(entry_f.file_specific_info().cache_state().is_present());
+
+  // Check the cache dir has appropriate attributes.
+  EXPECT_TRUE(HasRemovableFlag((cache_files_dir_)));
+  EXPECT_GE(getxattr(cache_files_dir_.value().c_str(),
+      FileCache::kGCacheFilesAttribute, nullptr, 0), 0);
 }
 
 TEST_F(FileCacheTest, ClearAll) {
