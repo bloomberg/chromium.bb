@@ -81,7 +81,7 @@ public:
 private:
     class RunningAnimation final : public GarbageCollectedFinalized<RunningAnimation> {
     public:
-        RunningAnimation(Animation* animation, CSSAnimationUpdate::NewAnimation newAnimation)
+        RunningAnimation(Animation* animation, NewCSSAnimation newAnimation)
             : animation(animation)
             , name(newAnimation.name)
             , nameIndex(newAnimation.nameIndex)
@@ -91,7 +91,7 @@ private:
         {
         }
 
-        void update(CSSAnimationUpdate::UpdatedAnimation update)
+        void update(UpdatedCSSAnimation update)
         {
             ASSERT(update.animation == animation);
             styleRule = update.styleRule;

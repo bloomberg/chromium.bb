@@ -22,67 +22,74 @@ namespace blink {
 
 class Animation;
 
+class NewCSSAnimation {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+public:
+    NewCSSAnimation(AtomicString name, size_t nameIndex, const InertEffect& effect, Timing timing, StyleRuleKeyframes* styleRule)
+        : name(name)
+        , nameIndex(nameIndex)
+        , effect(effect)
+        , timing(timing)
+        , styleRule(styleRule)
+        , styleRuleVersion(this->styleRule->version())
+    {
+    }
+
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(effect);
+        visitor->trace(styleRule);
+    }
+
+    AtomicString name;
+    size_t nameIndex;
+    Member<const InertEffect> effect;
+    Timing timing;
+    Member<StyleRuleKeyframes> styleRule;
+    unsigned styleRuleVersion;
+};
+
+class UpdatedCSSAnimation {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+public:
+    UpdatedCSSAnimation(size_t index, Animation* animation, const InertEffect& effect, Timing specifiedTiming, StyleRuleKeyframes* styleRule)
+        : index(index)
+        , animation(animation)
+        , effect(&effect)
+        , specifiedTiming(specifiedTiming)
+        , styleRule(styleRule)
+        , styleRuleVersion(this->styleRule->version())
+    {
+    }
+
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(animation);
+        visitor->trace(effect);
+        visitor->trace(styleRule);
+    }
+
+    size_t index;
+    Member<Animation> animation;
+    Member<const InertEffect> effect;
+    Timing specifiedTiming;
+    Member<StyleRuleKeyframes> styleRule;
+    unsigned styleRuleVersion;
+};
+
+} // namespace blink
+
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::NewCSSAnimation);
+WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::UpdatedCSSAnimation);
+
+namespace blink {
+
 // This class stores the CSS Animations/Transitions information we use during a style recalc.
 // This includes updates to animations/transitions as well as the Interpolations to be applied.
 class CSSAnimationUpdate final {
     DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(CSSAnimationUpdate);
 public:
-    class NewAnimation {
-        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    public:
-        NewAnimation(AtomicString name, size_t nameIndex, const InertEffect& effect, Timing timing, StyleRuleKeyframes* styleRule)
-            : name(name)
-            , nameIndex(nameIndex)
-            , effect(effect)
-            , timing(timing)
-            , styleRule(styleRule)
-            , styleRuleVersion(this->styleRule->version())
-        {
-        }
-
-        DEFINE_INLINE_TRACE()
-        {
-            visitor->trace(effect);
-            visitor->trace(styleRule);
-        }
-
-        AtomicString name;
-        size_t nameIndex;
-        Member<const InertEffect> effect;
-        Timing timing;
-        Member<StyleRuleKeyframes> styleRule;
-        unsigned styleRuleVersion;
-    };
-
-    class UpdatedAnimation {
-        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-    public:
-        UpdatedAnimation(size_t index, Animation* animation, const InertEffect& effect, Timing specifiedTiming, StyleRuleKeyframes* styleRule)
-            : index(index)
-            , animation(animation)
-            , effect(&effect)
-            , specifiedTiming(specifiedTiming)
-            , styleRule(styleRule)
-            , styleRuleVersion(this->styleRule->version())
-        {
-        }
-
-        DEFINE_INLINE_TRACE()
-        {
-            visitor->trace(animation);
-            visitor->trace(effect);
-            visitor->trace(styleRule);
-        }
-
-        size_t index;
-        Member<Animation> animation;
-        Member<const InertEffect> effect;
-        Timing specifiedTiming;
-        Member<StyleRuleKeyframes> styleRule;
-        unsigned styleRuleVersion;
-    };
-
     CSSAnimationUpdate()
     {
     }
@@ -122,7 +129,7 @@ public:
 
     void startAnimation(const AtomicString& animationName, size_t nameIndex, const InertEffect& effect, const Timing& timing, StyleRuleKeyframes* styleRule)
     {
-        m_newAnimations.append(NewAnimation(animationName, nameIndex, effect, timing, styleRule));
+        m_newAnimations.append(NewCSSAnimation(animationName, nameIndex, effect, timing, styleRule));
     }
     // Returns whether animation has been suppressed and should be filtered during style application.
     bool isSuppressedAnimation(const Animation* animation) const { return m_suppressedAnimations.contains(animation); }
@@ -138,7 +145,7 @@ public:
     void updateAnimation(size_t index, Animation* animation, const InertEffect& effect, const Timing& specifiedTiming,
         StyleRuleKeyframes* styleRule)
     {
-        m_animationsWithUpdates.append(UpdatedAnimation(index, animation, effect, specifiedTiming, styleRule));
+        m_animationsWithUpdates.append(UpdatedCSSAnimation(index, animation, effect, specifiedTiming, styleRule));
         m_suppressedAnimations.add(animation);
     }
     void updateCompositorKeyframes(Animation* animation)
@@ -161,11 +168,11 @@ public:
     void cancelTransition(CSSPropertyID id) { m_cancelledTransitions.add(id); }
     void finishTransition(CSSPropertyID id) { m_finishedTransitions.add(id); }
 
-    const HeapVector<NewAnimation>& newAnimations() const { return m_newAnimations; }
+    const HeapVector<NewCSSAnimation>& newAnimations() const { return m_newAnimations; }
     const Vector<size_t>& cancelledAnimationIndices() const { return m_cancelledAnimationIndices; }
     const HeapHashSet<Member<const Animation>>& suppressedAnimations() const { return m_suppressedAnimations; }
     const Vector<size_t>& animationIndicesWithPauseToggled() const { return m_animationIndicesWithPauseToggled; }
-    const HeapVector<UpdatedAnimation>& animationsWithUpdates() const { return m_animationsWithUpdates; }
+    const HeapVector<UpdatedCSSAnimation>& animationsWithUpdates() const { return m_animationsWithUpdates; }
     const HeapVector<Member<Animation>>& updatedCompositorKeyframes() const { return m_updatedCompositorKeyframes; }
 
     struct NewTransition {
@@ -223,11 +230,11 @@ private:
     // will be started. Note that there may be multiple animations present
     // with the same name, due to the way in which we split up animations with
     // incomplete keyframes.
-    HeapVector<NewAnimation> m_newAnimations;
+    HeapVector<NewCSSAnimation> m_newAnimations;
     Vector<size_t> m_cancelledAnimationIndices;
     HeapHashSet<Member<const Animation>> m_suppressedAnimations;
     Vector<size_t> m_animationIndicesWithPauseToggled;
-    HeapVector<UpdatedAnimation> m_animationsWithUpdates;
+    HeapVector<UpdatedCSSAnimation> m_animationsWithUpdates;
     HeapVector<Member<Animation>> m_updatedCompositorKeyframes;
 
     NewTransitionMap m_newTransitions;
@@ -241,8 +248,5 @@ private:
 };
 
 } // namespace blink
-
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::CSSAnimationUpdate::NewAnimation);
-WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::CSSAnimationUpdate::UpdatedAnimation);
 
 #endif
