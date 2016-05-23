@@ -16,10 +16,7 @@
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
         '../sql/sql.gyp:sql',
-        '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
-        'components.gyp:leveldb_proto',
         'keyed_service_core',
-        'offline_pages_proto',
       ],
       'sources': [
         'offline_pages/archive_manager.cc',
@@ -34,8 +31,6 @@
         'offline_pages/offline_page_item.h',
         'offline_pages/offline_page_metadata_store.cc',
         'offline_pages/offline_page_metadata_store.h',
-        'offline_pages/offline_page_metadata_store_impl.cc',
-        'offline_pages/offline_page_metadata_store_impl.h',
         'offline_pages/offline_page_model.cc',
         'offline_pages/offline_page_model.h',
         'offline_pages/offline_page_storage_manager.cc',
@@ -93,18 +88,6 @@
         'offline_pages/offline_page_test_store.h',
         'offline_pages/offline_page_test_store.cc',
       ],
-    },
-    {
-      # Protobuf compiler / generator for the offline page item protocol buffer.
-      # GN version: //components/offline_pages/proto
-      'target_name': 'offline_pages_proto',
-      'type': 'static_library',
-      'sources': [ 'offline_pages/proto/offline_pages.proto', ],
-      'variables': {
-        'proto_in_dir': 'offline_pages/proto',
-        'proto_out_dir': 'components/offline_pages/proto',
-      },
-      'includes': [ '../build/protoc.gypi', ],
     },
   ],
   'conditions': [
