@@ -631,7 +631,9 @@ if (is_win) {
       sources += [ "$root_out_dir/chrome_200_percent.pak" ]
     }
 
-    if (enable_topchrome_md) {
+    # TODO(estade): remove material design specific resources.
+    # See crbug.com/613593
+    if (is_mac) {
       sources += [ "$root_out_dir/chrome_material_100_percent.pak" ]
 
       if (enable_hidpi) {
@@ -1079,7 +1081,7 @@ group("packed_resources") {
     public_deps += [ ":repack_chrome_200_percent" ]
   }
 
-  if (enable_topchrome_md) {
+  if (is_mac) {
     public_deps += [ ":repack_chrome_material_100_percent" ]
 
     if (enable_hidpi) {
@@ -1335,7 +1337,6 @@ template("chrome_repack_material_percent") {
     # All sources should also have deps for completeness.
     sources = [
       "$root_gen_dir/chrome/theme_resources_material_${percent}_percent.pak",
-      "$root_gen_dir/components/components_resources_material_${percent}_percent.pak",
     ]
 
     deps = [
@@ -1360,7 +1361,7 @@ template("chrome_repack_material_percent") {
   }
 }
 
-if (enable_topchrome_md) {
+if (is_mac) {
   chrome_repack_material_percent("repack_chrome_material_100_percent") {
     percent = "100"
   }

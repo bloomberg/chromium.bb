@@ -63,9 +63,7 @@
     ['OS=="linux" or OS=="win"', {
       'variables': {
         'files': [
-          '<(PRODUCT_DIR)/chrome_material_100_percent.pak',
           '<(PRODUCT_DIR)/chrome_100_percent.pak',
-          '<(PRODUCT_DIR)/chrome_material_200_percent.pak',
           '<(PRODUCT_DIR)/chrome_200_percent.pak',
           '<(PRODUCT_DIR)/locales/en-US.pak',
           '<(PRODUCT_DIR)/locales/fr.pak',

@@ -76,9 +76,6 @@
           # Enable HiDPI support.
           'enable_hidpi%': 0,
 
-          # Enable top chrome material design.
-          'enable_topchrome_md%' : 0,
-
           # Enable Wayland display server support.
           'enable_wayland_server%' : 0,
 
@@ -165,7 +162,6 @@
         'use_openssl_certs%': '<(use_openssl_certs)',
         'enable_viewport%': '<(enable_viewport)',
         'enable_hidpi%': '<(enable_hidpi)',
-        'enable_topchrome_md%': '<(enable_topchrome_md)',
         'enable_wayland_server%': '<(enable_wayland_server)',
         'enable_wifi_display%': '<(enable_wifi_display)',
         'buildtype%': '<(buildtype)',
@@ -250,12 +246,6 @@
           # Enable HiDPI on Mac OS, Windows and Linux (including Chrome OS).
           ['OS=="mac" or OS=="win" or OS=="linux" or OS=="openbsd" or OS=="freebsd"', {
             'enable_hidpi%': 1,
-          }],
-
-          # Enable Top Chrome Material Design on Chrome OS, Windows, and Linux,
-          # Mac, and *BSD.
-          ['chromeos==1 or OS=="win" or OS=="linux" or OS=="mac" or OS=="openbsd" or OS=="freebsd"', {
-            'enable_topchrome_md%': 1,
           }],
 
           # Enable App Launcher on ChromeOS only.
@@ -351,7 +341,6 @@
       'use_openssl_certs%': '<(use_openssl_certs)',
       'enable_viewport%': '<(enable_viewport)',
       'enable_hidpi%': '<(enable_hidpi)',
-      'enable_topchrome_md%': '<(enable_topchrome_md)',
       'enable_wayland_server%': '<(enable_wayland_server)',
       'enable_wifi_display%': '<(enable_wifi_display)',
       'android_channel%': '<(android_channel)',
@@ -1172,7 +1161,6 @@
     'is_cast_desktop_build%': '<(is_cast_desktop_build)',
     'enable_viewport%': '<(enable_viewport)',
     'enable_hidpi%': '<(enable_hidpi)',
-    'enable_topchrome_md%': '<(enable_topchrome_md)',
     'enable_wayland_server%': '<(enable_wayland_server)',
     'enable_wifi_display%': '<(enable_wifi_display)',
     'image_loader_extension%': '<(image_loader_extension)',
@@ -2204,9 +2192,6 @@
       ['mac_views_browser==1', {
         'grit_defines': ['-D', 'mac_views_browser'],
       }],
-      ['enable_topchrome_md==1', {
-        'grit_defines': ['-D', 'enable_topchrome_md'],
-      }],
       ['enable_resource_whitelist_generation==1 and OS!="win"', {
         'grit_rc_header_format': ['-h', '#define {textual_id} _Pragma("whitelisted_resource_{numeric_id}") {numeric_id}'],
       }],
@@ -2769,9 +2754,6 @@
       }],
       ['notifications==1', {
         'defines': ['ENABLE_NOTIFICATIONS'],
-      }],
-      ['enable_topchrome_md==1', {
-        'defines': ['ENABLE_TOPCHROME_MD=1'],
       }],
       ['enable_wayland_server==1', {
         'defines': ['ENABLE_WAYLAND_SERVER=1'],
