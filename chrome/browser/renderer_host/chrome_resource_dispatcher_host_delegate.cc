@@ -219,7 +219,8 @@ void LaunchURL(
     int render_process_id,
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     ui::PageTransition page_transition,
-    bool has_user_gesture) {
+    bool has_user_gesture,
+    bool is_whitelisted) {
   // If there is no longer a WebContents, the request may have raced with tab
   // closing. Don't fire the external request. (It may have been a prerender.)
   content::WebContents* web_contents = web_contents_getter.Run();
@@ -235,9 +236,17 @@ void LaunchURL(
     return;
   }
 
-  ExternalProtocolHandler::LaunchUrlWithDelegate(
-      url, render_process_id, web_contents->GetRoutingID(), page_transition,
-      has_user_gesture, g_external_protocol_handler_delegate);
+  // If the URL is in whitelist, we launch it without asking the user and
+  // without any additional security checks. Since the URL is whitelisted,
+  // we assume it can be executed.
+  if (is_whitelisted) {
+    ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
+        url, render_process_id, web_contents->GetRoutingID());
+  } else {
+    ExternalProtocolHandler::LaunchUrlWithDelegate(
+        url, render_process_id, web_contents->GetRoutingID(), page_transition,
+        has_user_gesture, g_external_protocol_handler_delegate);
+  }
 }
 
 #if !defined(DISABLE_NACL)
@@ -513,7 +522,19 @@ bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     bool is_main_frame,
     ui::PageTransition page_transition,
-    bool has_user_gesture) {
+    bool has_user_gesture,
+    content::ResourceContext* resource_context) {
+  // Get the state, if |url| is in blacklist, whitelist or in none of those.
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
+  const policy::URLBlacklist::URLBlacklistState url_state =
+      io_data->GetURLBlacklistState(url);
+  if (url_state == policy::URLBlacklist::URLBlacklistState::URL_IN_BLACKLIST) {
+    // It's a link with custom scheme and it's blacklisted. We return false here
+    // and let it process as a normal URL. Eventually chrome_network_delegate
+    // will see it's in the blacklist and the user will be shown the blocked
+    // content page.
+    return false;
+  }
 #if defined(ENABLE_EXTENSIONS)
   // External protocols are disabled for guests. An exception is made for the
   // "mailto" protocol, so that pages that utilize it work properly in a
@@ -531,10 +552,12 @@ bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
     return false;
 #endif  // defined(ANDROID)
 
+  const bool is_whitelisted =
+      url_state == policy::URLBlacklist::URLBlacklistState::URL_IN_WHITELIST;
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&LaunchURL, url, child_id, web_contents_getter,
-                 page_transition, has_user_gesture));
+                 page_transition, has_user_gesture, is_whitelisted));
   return true;
 }
 

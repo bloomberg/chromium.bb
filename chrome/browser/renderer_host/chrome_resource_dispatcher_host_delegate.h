@@ -72,7 +72,8 @@ class ChromeResourceDispatcherHostDelegate
           web_contents_getter,
       bool is_main_frame,
       ui::PageTransition page_transition,
-      bool has_user_gesture) override;
+      bool has_user_gesture,
+      content::ResourceContext* resource_context) override;
   bool ShouldForceDownloadResource(const GURL& url,
                                    const std::string& mime_type) override;
   bool ShouldInterceptResourceAsStream(net::URLRequest* request,

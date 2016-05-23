@@ -317,7 +317,8 @@ bool AwResourceDispatcherHostDelegate::HandleExternalProtocol(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     bool is_main_frame,
     ui::PageTransition page_transition,
-    bool has_user_gesture) {
+    bool has_user_gesture,
+    content::ResourceContext* resource_context) {
   // The AwURLRequestJobFactory implementation should ensure this method never
   // gets called.
   NOTREACHED();

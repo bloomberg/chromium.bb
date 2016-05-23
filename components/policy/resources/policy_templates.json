@@ -4304,7 +4304,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': ['example.com', 'https://ssl.server.com', 'hosting.com/bad_path', 'https://server:8080/path', '.exact.hostname.com', 'file://*', '*'],
+      'example_value': ['example.com', 'https://ssl.server.com', 'hosting.com/bad_path', 'https://server:8080/path', '.exact.hostname.com', 'file://*', 'custom_scheme:*', '*'],
       'id': 103,
       'caption': '''Block access to a list of URLs''',
       'tags': ['filtering'],
@@ -4312,13 +4312,7 @@
 
       This policy prevents the user from loading web pages from blacklisted URLs. The blacklist provides a list of URL patterns that specify which URLs will be blacklisted.
 
-      Each URL pattern can either be a pattern for local files or a generic URL pattern. Local file patterns are of the format 'file://path', where path should be an absolute path to block. All file system locations for which that path is a prefix will be blocked.
-
-      A generic URL pattern has the format 'scheme://host:port/path'.
-      If present, only the specified scheme will be blocked. If the scheme:// prefix is not specified, all schemes are blocked.
-      The host is required and can be a hostname or an IP address. Subdomains of a hostname will also be blocked. To prevent blocking subdomains, include a '.' before the hostname. The special hostname '*' will block all domains.
-      The optional port is a valid port number from 1 to 65535. If none is specified, all ports are blocked.
-      If the optional path is specified, only paths with that prefix will be blocked.
+      A URL pattern has to be formatted according to https://www.chromium.org/administrators/url-blacklist-filter-format.
 
       Exceptions can be defined in the URL whitelist policy. These policies are limited to 1000 entries; subsequent entries will be ignored.
 

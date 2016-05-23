@@ -1339,3 +1339,8 @@ void ProfileIOData::SetCookieSettingsForTesting(
   DCHECK(!cookie_settings_.get());
   cookie_settings_ = cookie_settings;
 }
+
+policy::URLBlacklist::URLBlacklistState ProfileIOData::GetURLBlacklistState(
+    const GURL& url) const {
+  return url_blacklist_manager_->GetURLBlacklistState(url);
+}

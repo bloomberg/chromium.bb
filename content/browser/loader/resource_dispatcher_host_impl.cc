@@ -923,7 +923,8 @@ bool ResourceDispatcherHostImpl::HandleExternalProtocol(ResourceLoader* loader,
 
   return delegate_->HandleExternalProtocol(
       url, info->GetChildID(), info->GetWebContentsGetterForRequest(),
-      info->IsMainFrame(), info->GetPageTransition(), info->HasUserGesture());
+      info->IsMainFrame(), info->GetPageTransition(), info->HasUserGesture(),
+      info->GetContext());
 }
 
 void ResourceDispatcherHostImpl::DidStartRequest(ResourceLoader* loader) {

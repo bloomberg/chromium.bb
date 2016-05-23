@@ -25,6 +25,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
@@ -243,6 +244,11 @@ class ProfileIOData {
   data_reduction_proxy_io_data() const {
     return data_reduction_proxy_io_data_.get();
   }
+
+  // This function is to be used to check if the |url| is defined in
+  // blacklist or whitelist policy.
+  virtual policy::URLBlacklist::URLBlacklistState GetURLBlacklistState(
+      const GURL& url) const;
 
  protected:
   // A URLRequestContext for media that owns its HTTP factory, to ensure

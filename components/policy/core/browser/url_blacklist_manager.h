@@ -40,6 +40,15 @@ namespace policy {
 // against this set. The filters are currently kept in memory.
 class POLICY_EXPORT URLBlacklist {
  public:
+  // Indicates if the URL matches a pattern defined in blacklist, in whitelist
+  // or doesn't match anything in either list as defined in URLBlacklist and
+  // URLWhitelist policies.
+  enum URLBlacklistState {
+    URL_IN_WHITELIST,
+    URL_IN_BLACKLIST,
+    URL_NEUTRAL_STATE,
+  };
+
   // This is meant to be bound to url_formatter::SegmentURL. See that function
   // for documentation on the parameters and return value.
   typedef std::string (*SegmentURLCallback)(const std::string&, url::Parsed*);
@@ -62,12 +71,15 @@ class POLICY_EXPORT URLBlacklist {
   // Returns true if the URL is blocked.
   bool IsURLBlocked(const GURL& url) const;
 
+  URLBlacklistState GetURLBlacklistState(const GURL& url) const;
+
   // Returns the number of items in the list.
   size_t Size() const;
 
   // Splits a URL filter into its components. A GURL isn't used because these
   // can be invalid URLs e.g. "google.com".
-  // Returns false if the URL couldn't be parsed.
+  // Returns false if the URL couldn't be parsed. In case false is returned,
+  // the values of output parameters are undefined.
   // The |host| is preprocessed so it can be passed to URLMatcher for the
   // appropriate condition.
   // The optional username and password are ignored.
@@ -76,6 +88,7 @@ class POLICY_EXPORT URLBlacklist {
   // |port| is 0 if none is explicitly defined.
   // |path| does not include query parameters.
   // |query| contains the query parameters ('?' not included).
+  // All arguments are mandatory.
   static bool FilterToComponents(SegmentURLCallback segment_url,
                                  const std::string& filter,
                                  std::string* scheme,
@@ -159,6 +172,8 @@ class POLICY_EXPORT URLBlacklistManager {
   // Returns true if |url| is blocked by the current blacklist. Must be called
   // from the IO thread.
   bool IsURLBlocked(const GURL& url) const;
+
+  URLBlacklist::URLBlacklistState GetURLBlacklistState(const GURL& url) const;
 
   // Returns true if a request for |url| is blocked by the current blacklist.
   //

@@ -81,7 +81,8 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
       const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
       bool is_main_frame,
       ui::PageTransition page_transition,
-      bool has_user_gesture);
+      bool has_user_gesture,
+      ResourceContext* resource_context);
 
   // Returns true if we should force the given resource to be downloaded.
   // Otherwise, the content layer decides.
