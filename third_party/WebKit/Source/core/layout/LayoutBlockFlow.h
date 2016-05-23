@@ -50,6 +50,7 @@ namespace blink {
 class BlockChildrenLayoutInfo;
 class ClipScope;
 class MarginInfo;
+class LayoutInline;
 class LineBreaker;
 class LineInfo;
 class LineWidth;

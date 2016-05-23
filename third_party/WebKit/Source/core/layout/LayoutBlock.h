@@ -36,7 +36,6 @@ namespace blink {
 
 class LineLayoutState;
 struct PaintInfo;
-class LayoutInline;
 class WordMeasurement;
 
 typedef WTF::ListHashSet<LayoutBox*, 16> TrackedLayoutBoxListHashSet;
