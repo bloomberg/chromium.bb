@@ -215,13 +215,15 @@ LayerTreeHostImpl::LayerTreeHostImpl(
                                       !settings.single_thread_proxy_scheduler),
       // Must be initialized after is_synchronous_single_threaded_ and
       // task_runner_provider_.
-      tile_manager_(
-          TileManager::Create(this,
-                              GetTaskRunner(),
-                              is_synchronous_single_threaded_
-                                  ? std::numeric_limits<size_t>::max()
-                                  : settings.scheduled_raster_task_limit,
-                              settings.use_partial_raster)),
+      // TODO(vmpstr): TileManager takes a scoped reftr for the task runner,
+      // figure out if it actually needs a ref or whether it can use a raw
+      // pointer.
+      tile_manager_(new TileManager(this,
+                                    GetTaskRunner(),
+                                    is_synchronous_single_threaded_
+                                        ? std::numeric_limits<size_t>::max()
+                                        : settings.scheduled_raster_task_limit,
+                                    settings.use_partial_raster)),
       pinch_gesture_active_(false),
       pinch_gesture_end_should_clear_scrolling_layer_(false),
       fps_counter_(
