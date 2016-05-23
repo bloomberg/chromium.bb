@@ -25,14 +25,14 @@
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/message_center/views/message_bubble_base.h"
@@ -74,7 +74,7 @@ namespace {
 const SkColor kWebNotificationColorNoUnread =
     SkColorSetARGB(128, 255, 255, 255);
 const SkColor kWebNotificationColorWithUnread = SK_ColorWHITE;
-
+const int kNoUnreadIconSize = 18;
 }
 
 // Class to initialize and manage the WebNotificationBubble and
@@ -122,10 +122,9 @@ class WebNotificationButton : public views::CustomButton {
         unread_count_(0) {
     SetLayoutManager(new views::FillLayout);
 
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    no_unread_icon_.SetImage(
-        rb.GetImageNamed(IDR_ASH_SHELF_NOTIFICATION_TRAY_BELL).ToImageSkia());
-    no_unread_icon_.SetImageSize(gfx::Size(18, 18));
+    no_unread_icon_.SetImage(gfx::CreateVectorIcon(
+        gfx::VectorIconId::NOTIFICATIONS, kNoUnreadIconSize,
+        kWebNotificationColorNoUnread));
     no_unread_icon_.set_owned_by_client();
 
     unread_label_.set_owned_by_client();

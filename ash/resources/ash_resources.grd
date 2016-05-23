@@ -24,7 +24,6 @@
       <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_UNDERLINE_RUNNING" file="common/shelf/shelf_underline_running.png" />
       <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_ICON_SETTINGS" file="common/shelf/settings_app_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_ICON_TASK_MANAGER" file="common/shelf/task_manager.png" />
-      <structure type="chrome_scaled_image" name="IDR_ASH_SHELF_NOTIFICATION_TRAY_BELL" file="common/shelf/notification_tray_bell.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BACKGROUND_NORMAL" file="common/shelf/status_icon_background_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BACKGROUND_ON_BLACK" file="common/shelf/status_icon_background_onblack_normal.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_NOTIFICATION_BACKGROUND_PRESSED" file="common/shelf/status_icon_background_pressed.png" />
