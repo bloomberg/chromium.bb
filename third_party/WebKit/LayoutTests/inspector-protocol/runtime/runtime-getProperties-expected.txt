@@ -37,4 +37,8 @@ Internal properties
   [[BoundArgs]] object undefined
   [[BoundThis]] object undefined
   [[TargetFunction]] function undefined
+Properties of Event with user defined property
+  __proto__ own object undefined
+  eventPhase own no value, getter
+  isTrusted own boolean false
 

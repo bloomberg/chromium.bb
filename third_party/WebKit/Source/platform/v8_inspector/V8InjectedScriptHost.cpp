@@ -67,9 +67,13 @@ void V8InjectedScriptHost::internalConstructorNameCallback(const v8::FunctionCal
 
 void V8InjectedScriptHost::formatAccessorsAsProperties(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (info.Length() < 1)
+    DCHECK_EQ(info.Length(), 2);
+    info.GetReturnValue().Set(false);
+    if (!info[1]->IsFunction())
         return;
-
+    // Check that function is user-defined.
+    if (info[1].As<v8::Function>()->ScriptId() != v8::UnboundScript::kNoScriptId)
+        return;
     info.GetReturnValue().Set(unwrapDebugger(info)->client()->formatAccessorsAsProperties(info[0]));
 }
 

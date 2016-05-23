@@ -8,7 +8,7 @@ function test()
     // A general-purpose engine for sending a sequence of protocol commands.
     // The clients provide requests and response handlers, while the engine catches
     // errors and makes sure that once there's nothing to do completeTest() is called.
-    // @param step is an object with command, params and callback fields 
+    // @param step is an object with command, params and callback fields
     function runRequestSeries(step)
     {
         processStep(step);
@@ -22,7 +22,7 @@ function test()
                 InspectorTest.completeTest();
             }
         }
-        
+
         function processStepOrFail(s)
         {
             if (!s) {
@@ -56,7 +56,7 @@ function test()
             InspectorTest.sendCommand(s.command, s.params, innerCallback);
         }
     }
-    
+
     var firstStep = { callback: callbackStart5 };
 
     runRequestSeries(firstStep);
@@ -67,7 +67,7 @@ function test()
     {
         // Create an wrapper object with additional property.
         var expression = "(function(){var r = Object(5); r.foo = 'cat';return r;})()";
-        
+
         return { command: "Runtime.evaluate", params: {expression: expression}, callback: callbackEval5 };
     }
     function callbackEval5(result)
@@ -85,14 +85,14 @@ function test()
         return { callback: callbackStartNotOwn };
     }
 
-    
+
     // 'Not own' section -- check all properties of the object, including ones from it prototype chain.
 
     function callbackStartNotOwn()
     {
         // Create an wrapper object with additional property.
         var expression = "({ a: 2, set b(_) {}, get b() {return 5;}, __proto__: { a: 3, c: 4, get d() {return 6;} }})";
-        
+
         return { command: "Runtime.evaluate", params: {expression: expression}, callback: callbackEvalNotOwn };
     }
     function callbackEvalNotOwn(result)
@@ -110,14 +110,14 @@ function test()
         return { callback: callbackStartAccessorsOnly };
     }
 
-    
+
     // 'Accessors only' section -- check only accessor properties of the object.
 
     function callbackStartAccessorsOnly()
     {
         // Create an wrapper object with additional property.
         var expression = "({ a: 2, set b(_) {}, get b() {return 5;}, c: 'c', set d(_){} })";
-        
+
         return { command: "Runtime.evaluate", params: {expression: expression}, callback: callbackEvalAccessorsOnly };
     }
     function callbackEvalAccessorsOnly(result)
@@ -135,9 +135,9 @@ function test()
         return { callback: callbackStartArray };
     }
 
-    
+
     // 'Array' section -- check properties of an array.
-    
+
     function callbackStartArray()
     {
         var expression = "['red', 'green', 'blue']";
@@ -158,9 +158,9 @@ function test()
         return { callback: callbackStartBound };
     }
 
-    
+
     // 'Bound' section -- check properties of a bound function (has a bunch of internal properties).
-    
+
     function callbackStartBound()
     {
         var expression = "Number.bind({}, 5)";
@@ -178,11 +178,31 @@ function test()
     function callbackPropertiesBound(result)
     {
         logGetPropertiesResult("Bound function", result);
+        return { callback: callbackStartUserDefinedPropertyOnEvent };
+    }
+
+    function callbackStartUserDefinedPropertyOnEvent()
+    {
+        var expression = "var e = document.createEvent(\"Event\"); Object.defineProperty(e, \"eventPhase\", { get: function() { return 239; } })";
+        return { command: "Runtime.evaluate", params: {expression: expression}, callback: callbackEvalUserDefinedPropertyOnEvent };
+    }
+    function callbackEvalUserDefinedPropertyOnEvent(result)
+    {
+        var id = result.result.objectId;
+        if (id === undefined)
+            throw new Error("objectId is expected");
+        return {
+            command: "Runtime.getProperties", params: {objectId: id, ownProperties: true}, callback: callbackPropertiesUserDefinedPropertyOnEvent
+        };
+    }
+    function callbackPropertiesUserDefinedPropertyOnEvent(result)
+    {
+        logGetPropertiesResult("Event with user defined property", result);
         return; // End of test
     }
-    
 
-    // A helper function that dumps object properties and internal properties in sorted order.    
+
+    // A helper function that dumps object properties and internal properties in sorted order.
     function logGetPropertiesResult(title, protocolResult)
     {
         function hasGetterSetter(property, fieldName)
@@ -192,7 +212,7 @@ function test()
                 return false;
             return v.type !== "undefined"
         }
-    
+
         InspectorTest.log("Properties of " + title);
         var propertyArray = protocolResult.result;
         propertyArray.sort(NamedThingComparator);
@@ -216,7 +236,7 @@ function test()
                 InspectorTest.log("  " + p.name + " " + v.type + " " + v.value);
             }
         }
-    
+
         function NamedThingComparator(o1, o2)
         {
             return o1.name === o2.name ? 0 : (o1.name < o2.name ? -1 : 1);
