@@ -7,11 +7,13 @@
 #include "base/json/string_escape.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "ios/web/grit/ios_web_resources.h"
 #import "ios/web/net/request_group_util.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_client.h"
@@ -19,6 +21,7 @@
 #include "ios/web/web_state/web_state_impl.h"
 #import "ios/web/webui/crw_web_ui_page_builder.h"
 #include "ios/web/webui/url_fetcher_block_adapter.h"
+#include "mojo/public/js/constants.h"
 #import "net/base/mac/url_conversions.h"
 
 namespace {
@@ -48,6 +51,11 @@ const char kScriptCommandPrefix[] = "webui";
 
 // Handles webui.loadMojo JavaScript message from the WebUI page.
 - (BOOL)handleLoadMojo:(const base::ListValue*)arguments;
+
+// Executes mojo script and signals |webui.loadMojo| finish.
+- (void)executeMojoScript:(const std::string&)mojoScript
+            forModuleName:(const std::string&)moduleName
+                   loadID:(const std::string&)loadID;
 
 // Removes favicon callback from web state.
 - (void)resetWebState;
@@ -233,7 +241,27 @@ const char kScriptCommandPrefix[] = "webui";
     return NO;
   }
 
-  // Load and inject the script.
+  // Look for built-in scripts first.
+  std::map<std::string, int> resource_map{
+      {mojo::kBindingsModuleName, IDR_MOJO_BINDINGS_JS},
+      {mojo::kBufferModuleName, IDR_MOJO_BUFFER_JS},
+      {mojo::kCodecModuleName, IDR_MOJO_CODEC_JS},
+      {mojo::kConnectionModuleName, IDR_MOJO_CONNECTION_JS},
+      {mojo::kConnectorModuleName, IDR_MOJO_CONNECTOR_JS},
+      {mojo::kRouterModuleName, IDR_MOJO_ROUTER_JS},
+      {mojo::kUnicodeModuleName, IDR_MOJO_UNICODE_JS},
+      {mojo::kValidatorModuleName, IDR_MOJO_VALIDATOR_JS},
+  };
+  scoped_refptr<base::RefCountedStaticMemory> scriptData(
+      web::GetWebClient()->GetDataResourceBytes(resource_map[moduleName]));
+  if (scriptData) {
+    std::string script(reinterpret_cast<const char*>(scriptData->front()),
+                       scriptData->size());
+    [self executeMojoScript:script forModuleName:moduleName loadID:loadID];
+    return YES;
+  }
+
+  // Not a built-in script, try retrieving from network.
   GURL resourceURL(self.webState->GetLastCommittedURL().Resolve(moduleName));
   base::WeakNSObject<CRWWebUIManager> weakSelf(self);
   [self fetchResourceWithURL:resourceURL completionHandler:^(NSData* data) {
@@ -251,21 +279,28 @@ const char kScriptCommandPrefix[] = "webui";
       }
     }
 
-    // Append with completion function call.
-    if (script.empty()) {
-      DLOG(ERROR) << "Unable to find a module named " << moduleName;
-      script = "__crWeb.webUIModuleLoadNotifier.moduleLoadFailed";
-    } else {
-      script += "__crWeb.webUIModuleLoadNotifier.moduleLoadCompleted";
-    }
-    base::StringAppendF(&script, "(%s, %s);",
-                        base::GetQuotedJSONString(moduleName).c_str(),
-                        base::GetQuotedJSONString(loadID).c_str());
-
-    [weakSelf webState]->ExecuteJavaScript(base::UTF8ToUTF16(script));
+    [weakSelf executeMojoScript:script forModuleName:moduleName loadID:loadID];
   }];
 
   return YES;
+}
+
+- (void)executeMojoScript:(const std::string&)mojoScript
+            forModuleName:(const std::string&)moduleName
+                   loadID:(const std::string&)loadID {
+  std::string script = mojoScript;
+  // Append with completion function call.
+  if (script.empty()) {
+    DLOG(ERROR) << "Unable to find a module named " << moduleName;
+    script = "__crWeb.webUIModuleLoadNotifier.moduleLoadFailed";
+  } else {
+    script += "__crWeb.webUIModuleLoadNotifier.moduleLoadCompleted";
+  }
+  base::StringAppendF(&script, "(%s, %s);",
+                      base::GetQuotedJSONString(moduleName).c_str(),
+                      base::GetQuotedJSONString(loadID).c_str());
+
+  _webState->ExecuteJavaScript(base::UTF8ToUTF16(script));
 }
 
 - (void)resetWebState {

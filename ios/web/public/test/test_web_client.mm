@@ -28,6 +28,8 @@ bool TestWebClient::IsAppSpecificURL(const GURL& url) const {
 
 base::RefCountedStaticMemory* TestWebClient::GetDataResourceBytes(
     int resource_id) const {
+  if (!ResourceBundle::HasSharedInstance())
+    return nullptr;
   return ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id);
 }
 

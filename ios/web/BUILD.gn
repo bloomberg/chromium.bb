@@ -18,6 +18,7 @@ source_set("web") {
     "//ios/third_party/blink:html_tokenizer",
     "//mojo/edk/system",
     "//mojo/public/cpp/system",
+    "//mojo/public/js",
     "//net",
     "//services/shell/public/cpp",
     "//ui/base",
