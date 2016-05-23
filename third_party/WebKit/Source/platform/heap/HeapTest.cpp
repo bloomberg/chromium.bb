@@ -34,6 +34,7 @@
 #include "platform/heap/HeapLinkedStack.h"
 #include "platform/heap/HeapTerminatedArrayBuilder.h"
 #include "platform/heap/SafePoint.h"
+#include "platform/heap/SelfKeepAlive.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/Visitor.h"
 #include "platform/testing/UnitTestHelpers.h"

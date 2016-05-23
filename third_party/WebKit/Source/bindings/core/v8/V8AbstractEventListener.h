@@ -35,8 +35,7 @@
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "core/CoreExport.h"
 #include "core/events/EventListener.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefCounted.h"
+#include "platform/heap/SelfKeepAlive.h"
 #include <v8.h>
 
 namespace blink {

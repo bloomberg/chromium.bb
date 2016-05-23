@@ -13,7 +13,8 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExecutionContext.h"
 #include "platform/Timer.h"
-#include "wtf/RefCounted.h"
+#include "platform/heap/Handle.h"
+#include "platform/heap/SelfKeepAlive.h"
 #include <v8.h>
 
 namespace blink {

@@ -29,6 +29,7 @@
 #include "core/CoreExport.h"
 #include "core/css/CSSValue.h"
 #include "platform/geometry/IntSizeHash.h"
+#include "platform/heap/SelfKeepAlive.h"
 #include "wtf/HashCountedSet.h"
 #include "wtf/RefPtr.h"
 

@@ -37,9 +37,10 @@
 #include "core/frame/LocalFrameLifecycleObserver.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
+#include "platform/heap/SelfKeepAlive.h"
 #include "public/platform/WebURLLoaderClient.h"
+#include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 

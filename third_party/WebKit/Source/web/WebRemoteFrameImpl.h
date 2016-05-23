@@ -6,6 +6,7 @@
 #define WebRemoteFrameImpl_h
 
 #include "core/frame/RemoteFrame.h"
+#include "platform/heap/SelfKeepAlive.h"
 #include "public/web/WebRemoteFrame.h"
 #include "public/web/WebRemoteFrameClient.h"
 #include "web/RemoteFrameClientImpl.h"

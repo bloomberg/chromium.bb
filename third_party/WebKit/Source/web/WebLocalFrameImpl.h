@@ -34,6 +34,7 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/geometry/FloatRect.h"
+#include "platform/heap/SelfKeepAlive.h"
 #include "public/platform/WebFileSystemType.h"
 #include "public/web/WebFrameWidget.h"
 #include "public/web/WebLocalFrame.h"
@@ -43,7 +44,6 @@
 #include "web/WebFrameImplBase.h"
 #include "wtf/Compiler.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

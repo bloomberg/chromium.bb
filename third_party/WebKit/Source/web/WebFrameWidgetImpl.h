@@ -32,6 +32,7 @@
 #define WebFrameWidgetImpl_h
 
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/heap/SelfKeepAlive.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebSize.h"
@@ -43,7 +44,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/RefCounted.h"
 
 namespace blink {
 class Frame;
