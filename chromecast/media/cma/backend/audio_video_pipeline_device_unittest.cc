@@ -54,6 +54,9 @@ const base::TimeDelta kMonitorLoopDelay = base::TimeDelta::FromMilliseconds(20);
 const int64_t kStartPts = 1000 * 1000;
 // Amount that PTS is allowed to progress past the time that Pause() was called.
 const int kPausePtsSlackMs = 75;
+// Number of effects streams to open simultaneously when also playing a
+// non-effects stream.
+const int kNumEffectsStreams = 1;
 
 void IgnoreEos() {}
 
@@ -627,7 +630,6 @@ void AudioVideoPipelineDeviceTest::PauseBeforeEos() {
 }
 
 void AudioVideoPipelineDeviceTest::AddEffectsStreams() {
-  const int kNumEffectsStreams = 3;
   for (int i = 0; i < kNumEffectsStreams; ++i) {
     MediaPipelineDeviceParams params(
         MediaPipelineDeviceParams::kModeIgnorePts,
