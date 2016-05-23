@@ -695,18 +695,6 @@ void FrameSelection::prepareForDestruction()
     m_frameCaret->prepareForDestruction();
 }
 
-void FrameSelection::setBase(const VisiblePosition &pos, EUserTriggered userTriggered)
-{
-    const bool selectionHasDirection = true;
-    setSelection(VisibleSelection(pos.deepEquivalent(), selection().extent(), pos.affinity(), selectionHasDirection), CloseTyping | ClearTypingStyle | userTriggered);
-}
-
-void FrameSelection::setExtent(const VisiblePosition &pos, EUserTriggered userTriggered)
-{
-    const bool selectionHasDirection = true;
-    setSelection(VisibleSelection(selection().base(), pos.deepEquivalent(), pos.affinity(), selectionHasDirection), CloseTyping | ClearTypingStyle | userTriggered);
-}
-
 static bool isTextFormControl(const VisibleSelection& selection)
 {
     return enclosingTextFormControl(selection.start());

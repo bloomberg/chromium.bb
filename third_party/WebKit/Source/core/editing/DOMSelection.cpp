@@ -363,7 +363,11 @@ void DOMSelection::extend(Node* node, int offset, ExceptionState& exceptionState
     if (!isValidForPosition(node))
         return;
 
-    m_frame->selection().setExtent(createVisiblePosition(createPosition(node, offset)));
+    const Position& base = m_frame->selection().base();
+    const Position& extent = createPosition(node, offset);
+    const bool selectionHasDirection = true;
+    const VisibleSelection newSelection(base, extent, TextAffinity::Downstream, selectionHasDirection);
+    m_frame->selection().setSelection(newSelection);
 }
 
 Range* DOMSelection::getRangeAt(int index, ExceptionState& exceptionState)

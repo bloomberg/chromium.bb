@@ -146,9 +146,6 @@ public:
 
     TextGranularity granularity() const { return m_granularity; }
 
-    void setBase(const VisiblePosition&, EUserTriggered = NotUserTriggered);
-    void setExtent(const VisiblePosition&, EUserTriggered = NotUserTriggered);
-
     Position base() const { return selection().base(); }
     Position extent() const { return selection().extent(); }
     Position start() const { return selection().start(); }
