@@ -53,7 +53,5 @@ def main():
                               if not IsBlacklisted(dep, blacklist_patterns)]))
     manifest.write('\n')
 
-  print 'Created ' + args.output
-
 if __name__ == "__main__":
   main()
