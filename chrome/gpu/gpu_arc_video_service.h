@@ -5,11 +5,12 @@
 #ifndef CHROME_GPU_GPU_ARC_VIDEO_SERVICE_H_
 #define CHROME_GPU_GPU_ARC_VIDEO_SERVICE_H_
 
-#include <map>
 #include <memory>
 
+#include "base/files/scoped_file.h"
 #include "base/macros.h"
-#include "components/arc/common/video.mojom.h"
+#include "chrome/gpu/arc_video_accelerator.h"
+#include "components/arc/common/video_accelerator.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace chromeos {
@@ -20,34 +21,55 @@ namespace arc {
 //
 // For each creation request from GpuArcVideoServiceHost, GpuArcVideoService
 // will create a new IPC channel.
-class GpuArcVideoService : public ::arc::mojom::VideoHost {
+class GpuArcVideoService : public ::arc::mojom::VideoAcceleratorService,
+                           public ArcVideoAccelerator::Client {
  public:
-  class AcceleratorStub;
-
-  // |request| is mojo interface request of arc::mojom::VideoHost.
-  explicit GpuArcVideoService(
-      mojo::InterfaceRequest<::arc::mojom::VideoHost> request);
-
-  // Upon deletion, all ArcVideoAccelerator will be deleted and the associated
-  // IPC channels are closed.
+  GpuArcVideoService();
   ~GpuArcVideoService() override;
 
-  // Removes the reference of |stub| (and trigger deletion) from this class.
-  void RemoveClient(AcceleratorStub* stub);
+  // Connects to VideoAcceleratorServiceClient.
+  // |request| specified the message pipe of client to use.
+  void Connect(::arc::mojom::VideoAcceleratorServiceClientRequest request);
 
  private:
-  // arc::mojom::VideoHost implementation.
-  void OnRequestArcVideoAcceleratorChannel(
-      const OnRequestArcVideoAcceleratorChannelCallback& callback) override;
+  // ArcVideoAccelerator::Client implementation.
+  void OnError(ArcVideoAccelerator::Error error) override;
+  void OnBufferDone(PortType port,
+                    uint32_t index,
+                    const BufferMetadata& metadata) override;
+  void OnFlushDone() override;
+  void OnResetDone() override;
+  void OnOutputFormatChanged(const VideoFormat& format) override;
+
+  // ::arc::mojom::VideoAcceleratorService implementation.
+  void Initialize(::arc::mojom::ArcVideoAcceleratorConfigPtr config,
+                  const InitializeCallback& callback) override;
+  void BindSharedMemory(::arc::mojom::PortType port,
+                        uint32_t index,
+                        mojo::ScopedHandle ashmem_handle,
+                        uint32_t offset,
+                        uint32_t length) override;
+  void BindDmabuf(::arc::mojom::PortType port,
+                  uint32_t index,
+                  mojo::ScopedHandle dmabuf_handle,
+                  int32_t stride) override;
+  void UseBuffer(::arc::mojom::PortType port,
+                 uint32_t index,
+                 ::arc::mojom::BufferMetadataPtr metadata) override;
+  void SetNumberOfOutputBuffers(uint32_t number) override;
+  void Flush() override;
+  void Reset() override;
+
+  base::ScopedFD UnwrapFdFromMojoHandle(mojo::ScopedHandle handle);
 
   base::ThreadChecker thread_checker_;
 
-  // Binding of arc::mojom::VideoHost. It also takes ownership of |this|.
-  mojo::StrongBinding<::arc::mojom::VideoHost> binding_;
+  std::unique_ptr<ArcVideoAccelerator> accelerator_;
+  ::arc::mojom::VideoAcceleratorServiceClientPtr client_;
 
-  // Bookkeeping all accelerator stubs.
-  std::map<AcceleratorStub*, std::unique_ptr<AcceleratorStub>>
-      accelerator_stubs_;
+  // Binding of arc::mojom::VideoAcceleratorService. It also takes ownership of
+  // |this|.
+  mojo::StrongBinding<::arc::mojom::VideoAcceleratorService> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuArcVideoService);
 };

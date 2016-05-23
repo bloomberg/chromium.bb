@@ -8,19 +8,25 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/arc/common/video_accelerator.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_service_registry.h"
 #include "content/public/common/service_registry.h"
+#include "mojo/edk/embedder/embedder.h"
 
 namespace {
 
-mojo::InterfacePtrInfo<arc::mojom::VideoHost> GetServiceOnIOThread() {
-  arc::mojom::VideoHostPtr host_ptr;
+void ConnectToVideoAcceleratorServiceOnIOThread(
+    arc::mojom::VideoAcceleratorServiceClientRequest request) {
   content::ServiceRegistry* registry = content::GetGpuServiceRegistry();
-  registry->ConnectToRemoteService(mojo::GetProxy(&host_ptr));
 
-  // Unbind and reply back to UI thread.
-  return host_ptr.PassInterface();
+  // Note |request| is not a ServiceRequest. It is a ClientRequest but doesn't
+  // request for a Client. Instead, it requests for a Service while specified
+  // the client. It works this odd way because the interfaces were modeled as
+  // arc's "Host notifies to Instance::Init", not mojo's typical "Client
+  // registers to Service".
+  // TODO(kcwu): revise the interface.
+  registry->ConnectToRemoteService(std::move(request));
 }
 
 }  // namespace
@@ -29,7 +35,7 @@ namespace arc {
 
 GpuArcVideoServiceHost::GpuArcVideoServiceHost(
     arc::ArcBridgeService* bridge_service)
-    : ArcService(bridge_service), binding_(this), weak_factory_(this) {
+    : ArcService(bridge_service), binding_(this) {
   arc_bridge_service()->AddObserver(this);
 }
 
@@ -45,28 +51,43 @@ void GpuArcVideoServiceHost::OnVideoInstanceReady() {
   video_instance->Init(binding_.CreateInterfacePtrAndBind());
 }
 
-void GpuArcVideoServiceHost::OnVideoInstanceClosed() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  service_ptr_.reset();
-}
-
 void GpuArcVideoServiceHost::OnRequestArcVideoAcceleratorChannel(
     const OnRequestArcVideoAcceleratorChannelCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::IO, FROM_HERE, base::Bind(&GetServiceOnIOThread),
-      base::Bind(&GpuArcVideoServiceHost::BindServiceAndCreateChannel,
-                 weak_factory_.GetWeakPtr(), callback));
-}
+  // Hardcode pid 0 since it is unused in mojo.
+  const base::ProcessHandle kUnusedChildProcessHandle =
+      base::kNullProcessHandle;
+  mojo::edk::ScopedPlatformHandle child_platform_handle =
+      mojo::edk::ChildProcessLaunched(kUnusedChildProcessHandle);
 
-void GpuArcVideoServiceHost::BindServiceAndCreateChannel(
-    const OnRequestArcVideoAcceleratorChannelCallback& callback,
-    mojo::InterfacePtrInfo<arc::mojom::VideoHost> ptr_info) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  MojoHandle wrapped_handle;
+  MojoResult wrap_result = mojo::edk::CreatePlatformHandleWrapper(
+      std::move(child_platform_handle), &wrapped_handle);
+  if (wrap_result != MOJO_RESULT_OK) {
+    LOG(ERROR) << "Pipe failed to wrap handles. Closing: " << wrap_result;
+    callback.Run(mojo::ScopedHandle(), std::string());
+    return;
+  }
+  mojo::ScopedHandle child_handle{mojo::Handle(wrapped_handle)};
 
-  service_ptr_.Bind(std::move(ptr_info));
-  service_ptr_->OnRequestArcVideoAcceleratorChannel(callback);
+  std::string token = mojo::edk::GenerateRandomToken();
+  mojo::ScopedMessagePipeHandle server_pipe =
+      mojo::edk::CreateParentMessagePipe(token);
+  if (!server_pipe.is_valid()) {
+    LOG(ERROR) << "Invalid pipe";
+    callback.Run(mojo::ScopedHandle(), std::string());
+    return;
+  }
+  callback.Run(std::move(child_handle), token);
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          &ConnectToVideoAcceleratorServiceOnIOThread,
+          base::Passed(
+              mojo::MakeRequest<::arc::mojom::VideoAcceleratorServiceClient>(
+                  std::move(server_pipe)))));
 }
 
 }  // namespace arc

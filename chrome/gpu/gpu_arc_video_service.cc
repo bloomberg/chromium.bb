@@ -4,19 +4,20 @@
 
 #include "chrome/gpu/gpu_arc_video_service.h"
 
-#include <fcntl.h>
-
 #include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/gpu/arc_gpu_video_decode_accelerator.h"
-#include "chrome/gpu/arc_video_accelerator.h"
-#include "components/arc/common/video_accelerator.mojom.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
+
+namespace {
+void OnConnectionError() {
+  DVLOG(2) << "OnConnectionError";
+}
+}  // namespace
 
 namespace mojo {
 
@@ -82,190 +83,138 @@ struct TypeConverter<chromeos::arc::ArcVideoAccelerator::Config,
 namespace chromeos {
 namespace arc {
 
-class GpuArcVideoService::AcceleratorStub
-    : public ::arc::mojom::VideoAcceleratorService,
-      public ArcVideoAccelerator::Client {
- public:
-  // |owner| outlives AcceleratorStub.
-  explicit AcceleratorStub(GpuArcVideoService* owner)
-      : owner_(owner), binding_(this) {}
+GpuArcVideoService::GpuArcVideoService() : binding_(this) {}
 
-  ~AcceleratorStub() override { DCHECK(thread_checker_.CalledOnValidThread()); }
-
-  bool Connect(const std::string& token) {
-    DVLOG(2) << "Connect";
-
-    mojo::ScopedMessagePipeHandle server_pipe =
-        mojo::edk::CreateParentMessagePipe(token);
-    if (!server_pipe.is_valid()) {
-      LOG(ERROR) << "Invalid pipe";
-      return false;
-    }
-
-    client_.Bind(
-        mojo::InterfacePtrInfo<::arc::mojom::VideoAcceleratorServiceClient>(
-            std::move(server_pipe), 0u));
-
-    // base::Unretained is safe because we own |client_|
-    client_.set_connection_error_handler(
-        base::Bind(&GpuArcVideoService::AcceleratorStub::OnConnectionError,
-                   base::Unretained(this)));
-
-    accelerator_.reset(new ArcGpuVideoDecodeAccelerator());
-
-    ::arc::mojom::VideoAcceleratorServicePtr service;
-    binding_.Bind(GetProxy(&service));
-    // base::Unretained is safe because we own |binding_|
-    binding_.set_connection_error_handler(
-        base::Bind(&GpuArcVideoService::AcceleratorStub::OnConnectionError,
-                   base::Unretained(this)));
-
-    client_->Init(std::move(service));
-    return true;
-  }
-
-  void OnConnectionError() {
-    DVLOG(2) << "OnConnectionError";
-    owner_->RemoveClient(this);
-    // |this| is deleted.
-  }
-
-  // ArcVideoAccelerator::Client implementation:
-  void OnError(ArcVideoAccelerator::Error error) override {
-    DVLOG(2) << "OnError " << error;
-    client_->OnError(
-        static_cast<::arc::mojom::VideoAcceleratorServiceClient::Error>(error));
-  }
-
-  void OnBufferDone(PortType port,
-                    uint32_t index,
-                    const BufferMetadata& metadata) override {
-    DVLOG(2) << "OnBufferDone " << port << "," << index;
-    client_->OnBufferDone(static_cast<::arc::mojom::PortType>(port), index,
-                          ::arc::mojom::BufferMetadata::From(metadata));
-  }
-
-  void OnResetDone() override {
-    DVLOG(2) << "OnResetDone";
-    client_->OnResetDone();
-  }
-
-  void OnFlushDone() override {
-    DVLOG(2) << "OnFlushDone";
-    client_->OnFlushDone();
-  }
-
-  void OnOutputFormatChanged(const VideoFormat& format) override {
-    DVLOG(2) << "OnOutputFormatChanged";
-    client_->OnOutputFormatChanged(::arc::mojom::VideoFormat::From(format));
-  }
-
-  // ::arc::mojom::VideoAcceleratorService impementation.
-  void Initialize(::arc::mojom::ArcVideoAcceleratorConfigPtr config,
-                  const InitializeCallback& callback) override {
-    DVLOG(2) << "Initialize";
-    bool result = accelerator_->Initialize(
-        config.To<ArcVideoAccelerator::Config>(), this);
-    callback.Run(result);
-  }
-
-  void BindSharedMemory(::arc::mojom::PortType port,
-                        uint32_t index,
-                        mojo::ScopedHandle ashmem_handle,
-                        uint32_t offset,
-                        uint32_t length) override {
-    DVLOG(2) << "BindSharedMemoryCallback port=" << port << ", index=" << index
-             << ", offset=" << offset << ", length=" << length;
-
-    // TODO(kcwu) make sure do we need special care for invalid handle?
-    mojo::edk::ScopedPlatformHandle scoped_platform_handle;
-    MojoResult mojo_result = mojo::edk::PassWrappedPlatformHandle(
-        ashmem_handle.release().value(), &scoped_platform_handle);
-    DCHECK_EQ(mojo_result, MOJO_RESULT_OK);
-
-    auto fd = base::ScopedFD(scoped_platform_handle.release().handle);
-    accelerator_->BindSharedMemory(static_cast<PortType>(port), index,
-                                   std::move(fd), offset, length);
-  }
-
-  void BindDmabuf(::arc::mojom::PortType port,
-                  uint32_t index,
-                  mojo::ScopedHandle dmabuf_handle,
-                  int32_t stride) override {
-    DVLOG(2) << "BindDmabuf port=" << port << ", index=" << index;
-    mojo::edk::ScopedPlatformHandle scoped_platform_handle;
-    MojoResult mojo_result = mojo::edk::PassWrappedPlatformHandle(
-        dmabuf_handle.release().value(), &scoped_platform_handle);
-    DCHECK_EQ(mojo_result, MOJO_RESULT_OK);
-
-    auto fd = base::ScopedFD(scoped_platform_handle.release().handle);
-    accelerator_->BindDmabuf(static_cast<PortType>(port), index, std::move(fd),
-                             stride);
-  }
-
-  void UseBuffer(::arc::mojom::PortType port,
-                 uint32_t index,
-                 ::arc::mojom::BufferMetadataPtr metadata) override {
-    DVLOG(2) << "UseBuffer port=" << port << ", index=" << index;
-    accelerator_->UseBuffer(static_cast<PortType>(port), index,
-                            metadata.To<BufferMetadata>());
-  }
-
-  void SetNumberOfOutputBuffers(uint32_t number) override {
-    DVLOG(2) << "SetNumberOfOutputBuffers number=" << number;
-    accelerator_->SetNumberOfOutputBuffers(number);
-  }
-
-  void Reset() override { accelerator_->Reset(); }
-
-  void Flush() override { accelerator_->Flush(); }
-
- private:
-  base::ThreadChecker thread_checker_;
-  GpuArcVideoService* const owner_;
-  std::unique_ptr<ArcVideoAccelerator> accelerator_;
-  ::arc::mojom::VideoAcceleratorServiceClientPtr client_;
-  mojo::Binding<::arc::mojom::VideoAcceleratorService> binding_;
-};
-
-GpuArcVideoService::GpuArcVideoService(
-    mojo::InterfaceRequest<::arc::mojom::VideoHost> request)
-    : binding_(this, std::move(request)) {}
-
-GpuArcVideoService::~GpuArcVideoService() {}
-
-void GpuArcVideoService::OnRequestArcVideoAcceleratorChannel(
-    const OnRequestArcVideoAcceleratorChannelCallback& callback) {
-  DVLOG(1) << "OnRequestArcVideoAcceleratorChannelCallback";
-
-  // Hardcode pid 0 since it is unused in mojo.
-  const base::ProcessHandle kUnusedChildProcessHandle = 0;
-  mojo::edk::ScopedPlatformHandle child_handle =
-      mojo::edk::ChildProcessLaunched(kUnusedChildProcessHandle);
-
-  MojoHandle wrapped_handle;
-  MojoResult wrap_result = mojo::edk::CreatePlatformHandleWrapper(
-      std::move(child_handle), &wrapped_handle);
-  if (wrap_result != MOJO_RESULT_OK) {
-    LOG(WARNING) << "Pipe failed to wrap handles. Closing: " << wrap_result;
-    callback.Run(mojo::ScopedHandle(), std::string());
-    return;
-  }
-
-  std::unique_ptr<AcceleratorStub> stub(new AcceleratorStub(this));
-
-  std::string token = mojo::edk::GenerateRandomToken();
-  if (!stub->Connect(token)) {
-    callback.Run(mojo::ScopedHandle(), std::string());
-    return;
-  }
-  accelerator_stubs_.insert(std::make_pair(stub.get(), std::move(stub)));
-
-  callback.Run(mojo::ScopedHandle(mojo::Handle(wrapped_handle)), token);
+GpuArcVideoService::~GpuArcVideoService() {
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void GpuArcVideoService::RemoveClient(AcceleratorStub* stub) {
-  accelerator_stubs_.erase(stub);
+void GpuArcVideoService::Connect(
+    ::arc::mojom::VideoAcceleratorServiceClientRequest request) {
+  DVLOG(2) << "Connect";
+
+  client_.Bind(::arc::mojom::VideoAcceleratorServiceClientPtrInfo(
+      request.PassMessagePipe(), 0u));
+  client_.set_connection_error_handler(base::Bind(&OnConnectionError));
+
+  accelerator_.reset(new ArcGpuVideoDecodeAccelerator());
+
+  ::arc::mojom::VideoAcceleratorServicePtr service;
+  binding_.Bind(GetProxy(&service));
+  binding_.set_connection_error_handler(base::Bind(&OnConnectionError));
+
+  client_->Init(std::move(service));
+}
+
+void GpuArcVideoService::OnError(ArcVideoAccelerator::Error error) {
+  DVLOG(2) << "OnError " << error;
+  client_->OnError(
+      static_cast<::arc::mojom::VideoAcceleratorServiceClient::Error>(error));
+}
+
+void GpuArcVideoService::OnBufferDone(PortType port,
+                                      uint32_t index,
+                                      const BufferMetadata& metadata) {
+  DVLOG(2) << "OnBufferDone " << port << "," << index;
+  client_->OnBufferDone(static_cast<::arc::mojom::PortType>(port), index,
+                        ::arc::mojom::BufferMetadata::From(metadata));
+}
+
+void GpuArcVideoService::OnFlushDone() {
+  DVLOG(2) << "OnFlushDone";
+  client_->OnFlushDone();
+}
+
+void GpuArcVideoService::OnResetDone() {
+  DVLOG(2) << "OnResetDone";
+  client_->OnResetDone();
+}
+
+void GpuArcVideoService::OnOutputFormatChanged(const VideoFormat& format) {
+  DVLOG(2) << "OnOutputFormatChanged";
+  client_->OnOutputFormatChanged(::arc::mojom::VideoFormat::From(format));
+}
+
+void GpuArcVideoService::Initialize(
+    ::arc::mojom::ArcVideoAcceleratorConfigPtr config,
+    const InitializeCallback& callback) {
+  DVLOG(2) << "Initialize";
+  bool result =
+      accelerator_->Initialize(config.To<ArcVideoAccelerator::Config>(), this);
+  callback.Run(result);
+}
+
+base::ScopedFD GpuArcVideoService::UnwrapFdFromMojoHandle(
+    mojo::ScopedHandle handle) {
+  if (!handle.is_valid()) {
+    LOG(ERROR) << "handle is invalid";
+    client_->OnError(
+        ::arc::mojom::VideoAcceleratorServiceClient::Error::INVALID_ARGUMENT);
+    return base::ScopedFD();
+  }
+
+  mojo::edk::ScopedPlatformHandle scoped_platform_handle;
+  MojoResult mojo_result = mojo::edk::PassWrappedPlatformHandle(
+      handle.release().value(), &scoped_platform_handle);
+  if (mojo_result != MOJO_RESULT_OK) {
+    LOG(ERROR) << "PassWrappedPlatformHandle failed: " << mojo_result;
+    client_->OnError(
+        ::arc::mojom::VideoAcceleratorServiceClient::Error::PLATFORM_FAILURE);
+    return base::ScopedFD();
+  }
+
+  return base::ScopedFD(scoped_platform_handle.release().handle);
+}
+
+void GpuArcVideoService::BindSharedMemory(::arc::mojom::PortType port,
+                                          uint32_t index,
+                                          mojo::ScopedHandle ashmem_handle,
+                                          uint32_t offset,
+                                          uint32_t length) {
+  DVLOG(2) << "BindSharedMemoryCallback port=" << port << ", index=" << index
+           << ", offset=" << offset << ", length=" << length;
+
+  base::ScopedFD fd = UnwrapFdFromMojoHandle(std::move(ashmem_handle));
+  if (!fd.is_valid())
+    return;
+  accelerator_->BindSharedMemory(static_cast<PortType>(port), index,
+                                 std::move(fd), offset, length);
+}
+
+void GpuArcVideoService::BindDmabuf(::arc::mojom::PortType port,
+                                    uint32_t index,
+                                    mojo::ScopedHandle dmabuf_handle,
+                                    int32_t stride) {
+  DVLOG(2) << "BindDmabuf port=" << port << ", index=" << index;
+
+  base::ScopedFD fd = UnwrapFdFromMojoHandle(std::move(dmabuf_handle));
+  if (!fd.is_valid())
+    return;
+  accelerator_->BindDmabuf(static_cast<PortType>(port), index, std::move(fd),
+                           stride);
+}
+
+void GpuArcVideoService::UseBuffer(::arc::mojom::PortType port,
+                                   uint32_t index,
+                                   ::arc::mojom::BufferMetadataPtr metadata) {
+  DVLOG(2) << "UseBuffer port=" << port << ", index=" << index;
+  accelerator_->UseBuffer(static_cast<PortType>(port), index,
+                          metadata.To<BufferMetadata>());
+}
+
+void GpuArcVideoService::SetNumberOfOutputBuffers(uint32_t number) {
+  DVLOG(2) << "SetNumberOfOutputBuffers number=" << number;
+  accelerator_->SetNumberOfOutputBuffers(number);
+}
+
+void GpuArcVideoService::Reset() {
+  DVLOG(2) << "Reset";
+  accelerator_->Reset();
+}
+
+void GpuArcVideoService::Flush() {
+  DVLOG(2) << "Flush";
+  accelerator_->Flush();
 }
 
 }  // namespace arc

@@ -14,12 +14,13 @@
 namespace {
 
 void CreateGpuArcVideoService(
-    mojo::InterfaceRequest<::arc::mojom::VideoHost> request) {
+    ::arc::mojom::VideoAcceleratorServiceClientRequest request) {
   // GpuArcVideoService is strongly bound to the Mojo message pipe it
   // is connected to. When that message pipe is closed, either explicitly on the
   // other end (in the browser process), or by a connection error, this object
   // will be destroyed.
-  new chromeos::arc::GpuArcVideoService(std::move(request));
+  auto* service = new chromeos::arc::GpuArcVideoService();
+  service->Connect(std::move(request));
 }
 
 }  // namespace

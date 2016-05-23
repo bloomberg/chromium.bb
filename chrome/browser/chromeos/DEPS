@@ -13,6 +13,7 @@ include_rules = [
   "+media/audio/sounds",  # For system sounds
   "+media/base/media_switches.h",  # For media command line switches.
   "+media/mojo/interfaces",  # For platform verification mojom interface.
+  "+mojo/edk/embedder",
   "+ui/ozone/public",
 
   # Other libraries.
