@@ -73,6 +73,49 @@ TEST(SpdyProtocolTest, IsValidHTTP2FrameStreamId) {
   EXPECT_TRUE(SpdyConstants::IsValidHTTP2FrameStreamId(0, WINDOW_UPDATE));
 }
 
+TEST(SpdyDataIRTest, Construct) {
+  // Confirm that it makes a string of zero length from a StringPiece(nullptr).
+  base::StringPiece s1(nullptr);
+  SpdyDataIR d1(1, s1);
+  EXPECT_EQ(d1.data().size(), (uint64_t)0);
+  EXPECT_NE(d1.data().data(), nullptr);
+
+  // Confirms makes a copy of char array.
+  const char s2[] = "something";
+  SpdyDataIR d2(2, s2);
+  EXPECT_EQ(d2.data(), s2);
+  EXPECT_NE(d1.data().data(), s2);
+
+  // Confirm copies a const string.
+  const std::string foo = "foo";
+  SpdyDataIR d3(3, foo);
+  EXPECT_EQ(foo, d3.data());
+
+  // Confirm copies a non-const string.
+  std::string bar = "bar";
+  SpdyDataIR d4(4, bar);
+  bar[0] = 'B';
+  EXPECT_EQ("bar", d4.data());
+
+  // Confirm moves an rvalue reference. Note that the test string "baz" is too
+  // short to trigger the move optimization, and instead a copy occurs.
+  std::string baz = "The quick brown fox jumps over the lazy dog.";
+  const char* baz_data = baz.data();
+  SpdyDataIR d5(5, std::move(baz));
+  EXPECT_EQ("", baz);
+  EXPECT_EQ(d5.data(), "The quick brown fox jumps over the lazy dog.");
+  EXPECT_EQ(d5.data().data(), baz_data);
+
+  // Confirm that it makes a string of zero length from a nullptr.
+  SpdyDataIR d6(6, nullptr);
+  EXPECT_EQ(d6.data().size(), (uint64_t)0);
+  EXPECT_NE(d6.data().data(), nullptr);
+
+  // Confirms makes a copy of string literal.
+  SpdyDataIR d7(7, "something else");
+  EXPECT_EQ(d7.data(), "something else");
+}
+
 TEST(SpdyProtocolTest, ClampSpdy3Priority) {
   EXPECT_SPDY_BUG(EXPECT_EQ(7, ClampSpdy3Priority(8)), "Invalid priority: 8");
   EXPECT_EQ(kV3LowestPriority, ClampSpdy3Priority(kV3LowestPriority));

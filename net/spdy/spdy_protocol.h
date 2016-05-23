@@ -738,8 +738,14 @@ class NET_EXPORT_PRIVATE SpdyFrameWithHeaderBlockIR
 class NET_EXPORT_PRIVATE SpdyDataIR
     : public NON_EXPORTED_BASE(SpdyFrameWithFinIR) {
  public:
-  // Performs deep copy on data.
+  // Performs a deep copy on data.
   SpdyDataIR(SpdyStreamId stream_id, base::StringPiece data);
+
+  // Performs a deep copy on data.
+  SpdyDataIR(SpdyStreamId stream_id, const char* data);
+
+  // Moves data into data_store_. Makes a copy if passed a non-movable string.
+  SpdyDataIR(SpdyStreamId stream_id, std::string data);
 
   // Use in conjunction with SetDataShallow() for shallow-copy on data.
   explicit SpdyDataIR(SpdyStreamId stream_id);
@@ -912,9 +918,24 @@ class NET_EXPORT_PRIVATE SpdyPingIR : public SpdyFrameIR {
 
 class NET_EXPORT_PRIVATE SpdyGoAwayIR : public SpdyFrameIR {
  public:
+  // References description, doesn't copy it, so description must outlast
+  // this SpdyGoAwayIR.
   SpdyGoAwayIR(SpdyStreamId last_good_stream_id,
                SpdyGoAwayStatus status,
                base::StringPiece description);
+
+  // References description, doesn't copy it, so description must outlast
+  // this SpdyGoAwayIR.
+  SpdyGoAwayIR(SpdyStreamId last_good_stream_id,
+               SpdyGoAwayStatus status,
+               const char* description);
+
+  // Moves description into description_store_, so caller doesn't need to
+  // keep description live after constructing this SpdyGoAwayIR.
+  SpdyGoAwayIR(SpdyStreamId last_good_stream_id,
+               SpdyGoAwayStatus status,
+               std::string description);
+
   ~SpdyGoAwayIR() override;
   SpdyStreamId last_good_stream_id() const { return last_good_stream_id_; }
   void set_last_good_stream_id(SpdyStreamId last_good_stream_id) {
@@ -935,6 +956,7 @@ class NET_EXPORT_PRIVATE SpdyGoAwayIR : public SpdyFrameIR {
  private:
   SpdyStreamId last_good_stream_id_;
   SpdyGoAwayStatus status_;
+  const std::string description_store_;
   const base::StringPiece description_;
 
   DISALLOW_COPY_AND_ASSIGN(SpdyGoAwayIR);
@@ -1068,7 +1090,7 @@ class NET_EXPORT_PRIVATE SpdyAltSvcIR : public SpdyFrameWithStreamIdIR {
     return altsvc_vector_;
   }
 
-  void set_origin(const std::string& origin) { origin_ = origin; }
+  void set_origin(std::string origin) { origin_ = std::move(origin); }
   void add_altsvc(const SpdyAltSvcWireFormat::AlternativeService& altsvc) {
     altsvc_vector_.push_back(altsvc);
   }

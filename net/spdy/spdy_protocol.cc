@@ -4,6 +4,7 @@
 
 #include "net/spdy/spdy_protocol.h"
 
+#include "base/memory/ptr_util.h"
 #include "net/spdy/spdy_bug_tracker.h"
 
 namespace net {
@@ -776,6 +777,16 @@ SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id, base::StringPiece data)
   SetDataDeep(data);
 }
 
+SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id, const char* data)
+    : SpdyDataIR(stream_id, base::StringPiece(data)) {}
+
+SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id, std::string data)
+    : SpdyFrameWithFinIR(stream_id),
+      data_store_(base::MakeUnique<std::string>(std::move(data))),
+      data_(*data_store_),
+      padded_(false),
+      padding_payload_len_(0) {}
+
 SpdyDataIR::SpdyDataIR(SpdyStreamId stream_id)
     : SpdyFrameWithFinIR(stream_id), padded_(false), padding_payload_len_(0) {}
 
@@ -824,6 +835,22 @@ SpdyGoAwayIR::SpdyGoAwayIR(SpdyStreamId last_good_stream_id,
                            base::StringPiece description)
     : description_(description) {
       set_last_good_stream_id(last_good_stream_id);
+  set_status(status);
+}
+
+SpdyGoAwayIR::SpdyGoAwayIR(SpdyStreamId last_good_stream_id,
+                           SpdyGoAwayStatus status,
+                           const char* description)
+    : SpdyGoAwayIR(last_good_stream_id,
+                   status,
+                   base::StringPiece(description)) {}
+
+SpdyGoAwayIR::SpdyGoAwayIR(SpdyStreamId last_good_stream_id,
+                           SpdyGoAwayStatus status,
+                           std::string description)
+    : description_store_(std::move(description)),
+      description_(description_store_) {
+  set_last_good_stream_id(last_good_stream_id);
   set_status(status);
 }
 

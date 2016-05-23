@@ -122,11 +122,11 @@ SpdyHeaderBlock::StringPieceProxy::~StringPieceProxy() {}
 SpdyHeaderBlock::StringPieceProxy& SpdyHeaderBlock::StringPieceProxy::operator=(
     const StringPiece value) {
   if (lookup_result_ == block_->end()) {
-    VLOG(1) << "Inserting: (" << key_ << ", " << value << ")";
+    DVLOG(1) << "Inserting: (" << key_ << ", " << value << ")";
     lookup_result_ =
         block_->insert(std::make_pair(key_, storage_->Write(value))).first;
   } else {
-    VLOG(1) << "Updating key: " << key_ << " with value: " << value;
+    DVLOG(1) << "Updating key: " << key_ << " with value: " << value;
     lookup_result_->second = storage_->Write(value);
   }
   return *this;
@@ -195,15 +195,16 @@ void SpdyHeaderBlock::insert(
 
 SpdyHeaderBlock::StringPieceProxy SpdyHeaderBlock::operator[](
     const StringPiece key) {
-  VLOG(2) << "Operator[] saw key: " << key;
+  DVLOG(2) << "Operator[] saw key: " << key;
   StringPiece out_key;
   auto iter = block_.find(key);
   if (iter == block_.end()) {
     // We write the key first, to assure that the StringPieceProxy has a
     // reference to a valid StringPiece in its operator=.
     out_key = storage_->Write(key);
-    VLOG(2) << "Key written as: " << hex << static_cast<const void*>(key.data())
-            << ", " << dec << key.size();
+    DVLOG(2) << "Key written as: " << hex
+             << static_cast<const void*>(key.data()) << ", " << dec
+             << key.size();
   } else {
     out_key = iter->first;
   }
@@ -220,10 +221,10 @@ void SpdyHeaderBlock::ReplaceOrAppendHeader(const StringPiece key,
   // TODO(birenroy): Write new value in place of old value, if it fits.
   auto iter = block_.find(key);
   if (iter == block_.end()) {
-    VLOG(1) << "Inserting: (" << key << ", " << value << ")";
+    DVLOG(1) << "Inserting: (" << key << ", " << value << ")";
     AppendHeader(key, value);
   } else {
-    VLOG(1) << "Updating key: " << iter->first << " with value: " << value;
+    DVLOG(1) << "Updating key: " << iter->first << " with value: " << value;
     iter->second = storage_->Write(value);
   }
 }
