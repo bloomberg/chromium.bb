@@ -217,9 +217,9 @@ class PhishingClassifierTest : public InProcessBrowserTest {
 
 // This test flakes on Mac with force compositing mode.
 // http://crbug.com/316709
-// Flaky on Chrome OS, running into a memory allocation error.
+// Flaky on Chrome OS and Linux, running into a memory allocation error.
 // http://crbug.com/544085
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_LINUX)
 #define MAYBE_TestClassificationOfPhishingDotCom \
   DISABLED_TestClassificationOfPhishingDotCom
 #else
@@ -245,9 +245,9 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierTest,
 
 // This test flakes on Mac with force compositing mode.
 // http://crbug.com/316709
-// Flaky on Chrome OS, running into a memory allocation error.
+// Flaky on Chrome OS and Linux, running into a memory allocation error.
 // http://crbug.com/544085
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_LINUX)
 #define MAYBE_TestClassificationOfSafeDotCom \
   DISABLED_TestClassificationOfSafeDotCom
 #else
@@ -273,9 +273,9 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierTest,
 
 // This test flakes on Mac with force compositing mode.
 // http://crbug.com/316709
-// Flaky on Chrome OS, running into a memory allocation error.
+// Flaky on Chrome OS and Linux, running into a memory allocation error.
 // http://crbug.com/544085
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_LINUX)
 #define MAYBE_TestClassificationWhenNoTld DISABLED_TestClassificationWhenNoTld
 #else
 #define MAYBE_TestClassificationWhenNoTld TestClassificationWhenNoTld
@@ -294,9 +294,9 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierTest,
 
 // This test flakes on Mac with force compositing mode.
 // http://crbug.com/316709
-// Flaky on Chrome OS, running into a memory allocation error.
+// Flaky on Chrome OS and Linux, running into a memory allocation error.
 // http://crbug.com/544085
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_LINUX)
 #define MAYBE_TestClassificationWhenNotHttp \
   DISABLED_TestClassificationWhenNotHttp
 #else
@@ -323,9 +323,9 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierTest,
 
 // This test flakes on Mac with force compositing mode.
 // http://crbug.com/316709
-// Flaky on Chrome OS, running into a memory allocation error.
+// Flaky on Chrome OS and Linux, running into a memory allocation error.
 // http://crbug.com/544085
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_LINUX)
 #define MAYBE_TestClassificationWhenPostRequest \
   DISABLED_TestClassificationWhenPostRequest
 #else
