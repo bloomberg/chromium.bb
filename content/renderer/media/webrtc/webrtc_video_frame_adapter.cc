@@ -7,21 +7,6 @@
 #include "base/logging.h"
 
 namespace content {
-namespace {
-int WebRtcToMediaPlaneType(webrtc::PlaneType type) {
-  switch (type) {
-    case webrtc::kYPlane:
-      return media::VideoFrame::kYPlane;
-    case webrtc::kUPlane:
-      return media::VideoFrame::kUPlane;
-    case webrtc::kVPlane:
-      return media::VideoFrame::kVPlane;
-    default:
-      NOTREACHED();
-      return media::VideoFrame::kMaxPlanes;
-  }
-}
-}  // anonymous namespace
 
 WebRtcVideoFrameAdapter::WebRtcVideoFrameAdapter(
     const scoped_refptr<media::VideoFrame>& frame)
@@ -39,12 +24,24 @@ int WebRtcVideoFrameAdapter::height() const {
   return frame_->visible_rect().height();
 }
 
-const uint8_t* WebRtcVideoFrameAdapter::data(webrtc::PlaneType type) const {
-  return frame_->visible_data(WebRtcToMediaPlaneType(type));
+const uint8_t* WebRtcVideoFrameAdapter::DataY() const {
+  return frame_->visible_data(media::VideoFrame::kYPlane);
+}
+const uint8_t* WebRtcVideoFrameAdapter::DataU() const {
+  return frame_->visible_data(media::VideoFrame::kUPlane);
+}
+const uint8_t* WebRtcVideoFrameAdapter::DataV() const {
+  return frame_->visible_data(media::VideoFrame::kVPlane);
 }
 
-int WebRtcVideoFrameAdapter::stride(webrtc::PlaneType type) const {
-  return frame_->stride(WebRtcToMediaPlaneType(type));
+int WebRtcVideoFrameAdapter::StrideY() const {
+  return frame_->stride(media::VideoFrame::kYPlane);
+}
+int WebRtcVideoFrameAdapter::StrideU() const {
+  return frame_->stride(media::VideoFrame::kUPlane);
+}
+int WebRtcVideoFrameAdapter::StrideV() const {
+  return frame_->stride(media::VideoFrame::kVPlane);
 }
 
 void* WebRtcVideoFrameAdapter::native_handle() const {
