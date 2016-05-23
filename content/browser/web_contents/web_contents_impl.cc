@@ -1584,6 +1584,13 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
     GetRenderManager()->current_frame_host()->SetRenderFrameCreated(true);
   }
 
+  // Create the renderer process in advance if requested.
+  if (params.initialize_renderer) {
+    if (!GetRenderManager()->current_frame_host()->IsRenderFrameLive()) {
+      GetRenderManager()->InitRenderView(GetRenderViewHost(), nullptr);
+    }
+  }
+
   // Ensure that observers are notified of the creation of this WebContents's
   // main RenderFrameHost. It must be done here for main frames, since the
   // NotifySwappedFromRenderManager expects view_ to already be created and that

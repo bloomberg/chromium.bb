@@ -757,7 +757,7 @@ class CONTENT_EXPORT WebContentsImpl
                                  const gfx::RectF& active_rect);
 #endif
 
-private:
+ private:
   friend class WebContentsObserver;
   friend class WebContents;  // To implement factory methods.
 

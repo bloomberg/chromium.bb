@@ -149,6 +149,14 @@ class WebContents : public PageNavigator,
     // RenderFrame, have already been created on the renderer side, and
     // WebContents construction should take this into account.
     bool renderer_initiated_creation;
+
+    // True if the WebContents should create its renderer process and main
+    // RenderFrame before the first navigation. This is useful to reduce
+    // the latency of the first navigation in cases where it might
+    // not happen right away.
+    // Note that the pre-created renderer process may not be used if the first
+    // navigation requires a dedicated or privileged process, such as a WebUI.
+    bool initialize_renderer;
   };
 
   // Creates a new WebContents.

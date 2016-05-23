@@ -28,7 +28,9 @@ WebContents::CreateParams::CreateParams(BrowserContext* context,
       initially_hidden(false),
       guest_delegate(nullptr),
       context(nullptr),
-      renderer_initiated_creation(false) {}
+      renderer_initiated_creation(false),
+      initialize_renderer(false) {
+}
 
 WebContents::CreateParams::CreateParams(const CreateParams& other) = default;
 

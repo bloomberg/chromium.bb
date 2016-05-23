@@ -1011,4 +1011,83 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   wc->SetJavaScriptDialogManagerForTesting(nullptr);
 }
 
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       CreateWebContentsWithRendererProcess) {
+  GURL url("http://c.com/title3.html");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebContents* base_web_contents = shell()->web_contents();
+  ASSERT_TRUE(base_web_contents);
+
+  WebContents::CreateParams create_params(
+      base_web_contents->GetBrowserContext());
+  create_params.initialize_renderer = true;
+  create_params.initial_size =
+      base_web_contents->GetContainerBounds().size();
+  std::unique_ptr<WebContents> web_contents(WebContents::Create(create_params));
+  ASSERT_TRUE(web_contents);
+
+  // There is no navigation (to about:blank or something like that).
+  EXPECT_FALSE(web_contents->IsLoading());
+
+  ASSERT_TRUE(web_contents->GetMainFrame());
+  EXPECT_TRUE(web_contents->GetMainFrame()->IsRenderFrameLive());
+  EXPECT_TRUE(web_contents->GetController().IsInitialBlankNavigation());
+  int renderer_id = web_contents->GetRenderProcessHost()->GetID();
+
+  TestNavigationObserver same_tab_observer(web_contents.get(), 1);
+  NavigationController::LoadURLParams params(url);
+  params.transition_type = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+  web_contents->GetController().LoadURLWithParams(params);
+  same_tab_observer.Wait();
+
+  // Check that pre-warmed process is used.
+  EXPECT_EQ(renderer_id, web_contents->GetRenderProcessHost()->GetID());
+  EXPECT_EQ(1, web_contents->GetController().GetEntryCount());
+  NavigationEntry* entry =
+      web_contents->GetController().GetLastCommittedEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(url, entry->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       NavigatingToWebUIDoesNotUsePreWarmedProcess) {
+  GURL web_ui_url(std::string(kChromeUIScheme) + "://" +
+                  std::string(kChromeUIGpuHost));
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebContents* base_web_contents = shell()->web_contents();
+  ASSERT_TRUE(base_web_contents);
+
+  WebContents::CreateParams create_params(
+      base_web_contents->GetBrowserContext());
+  create_params.initialize_renderer = true;
+  create_params.initial_size =
+      base_web_contents->GetContainerBounds().size();
+  std::unique_ptr<WebContents> web_contents(WebContents::Create(create_params));
+  ASSERT_TRUE(web_contents);
+
+  // There is no navigation (to about:blank or something like that).
+  EXPECT_FALSE(web_contents->IsLoading());
+
+  ASSERT_TRUE(web_contents->GetMainFrame());
+  EXPECT_TRUE(web_contents->GetMainFrame()->IsRenderFrameLive());
+  EXPECT_TRUE(web_contents->GetController().IsInitialBlankNavigation());
+  int renderer_id = web_contents->GetRenderProcessHost()->GetID();
+
+  TestNavigationObserver same_tab_observer(web_contents.get(), 1);
+  NavigationController::LoadURLParams params(web_ui_url);
+  params.transition_type = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+  web_contents->GetController().LoadURLWithParams(params);
+  same_tab_observer.Wait();
+
+  // Check that pre-warmed process isn't used.
+  EXPECT_NE(renderer_id, web_contents->GetRenderProcessHost()->GetID());
+  EXPECT_EQ(1, web_contents->GetController().GetEntryCount());
+  NavigationEntry* entry =
+      web_contents->GetController().GetLastCommittedEntry();
+  ASSERT_TRUE(entry);
+  EXPECT_EQ(web_ui_url, entry->GetURL());
+}
+
 }  // namespace content

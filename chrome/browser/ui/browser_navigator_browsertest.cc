@@ -30,7 +30,10 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 using content::WebContents;
@@ -126,8 +129,9 @@ Browser* BrowserNavigatorTest::CreateEmptyBrowserForApp(Profile* profile) {
   return browser;
 }
 
-WebContents* BrowserNavigatorTest::CreateWebContents() {
+WebContents* BrowserNavigatorTest::CreateWebContents(bool initialize_renderer) {
   content::WebContents::CreateParams create_params(browser()->profile());
+  create_params.initialize_renderer = initialize_renderer;
   content::WebContents* base_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   if (base_web_contents) {
@@ -700,10 +704,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_IgnoreAction) {
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, TargetContents_ForegroundTab) {
   chrome::NavigateParams params(MakeNavigateParams());
   params.disposition = NEW_FOREGROUND_TAB;
-  params.target_contents = CreateWebContents();
+  params.target_contents = CreateWebContents(false);
   chrome::Navigate(&params);
 
-  // Navigate() should have opened the contents in a new foreground in the
+  // Navigate() should have opened the contents in a new foreground tab in the
   // current Browser.
   EXPECT_EQ(browser(), params.browser);
   EXPECT_EQ(browser()->tab_strip_model()->GetActiveWebContents(),
@@ -719,7 +723,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, TargetContents_ForegroundTab) {
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, DISABLED_TargetContents_Popup) {
   chrome::NavigateParams params(MakeNavigateParams());
   params.disposition = NEW_POPUP;
-  params.target_contents = CreateWebContents();
+  params.target_contents = CreateWebContents(false);
   params.window_bounds = gfx::Rect(10, 10, 500, 500);
   chrome::Navigate(&params);
 
@@ -752,6 +756,46 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, DISABLED_TargetContents_Popup) {
   EXPECT_EQ(1, params.browser->tab_strip_model()->count());
 }
 #endif
+
+// This test checks that we can create WebContents with renderer process and
+// RenderFrame without navigating it.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       CreateWebContentsWithRendererProcess) {
+  chrome::NavigateParams params(MakeNavigateParams());
+  params.disposition = NEW_FOREGROUND_TAB;
+  params.target_contents = CreateWebContents(true);
+  ASSERT_TRUE(params.target_contents);
+
+  // There is no navigation (to about:blank or something like that).
+  EXPECT_FALSE(params.target_contents->IsLoading());
+
+  ASSERT_TRUE(params.target_contents->GetMainFrame());
+  EXPECT_TRUE(params.target_contents->GetMainFrame()->IsRenderFrameLive());
+  EXPECT_TRUE(
+      params.target_contents->GetController().IsInitialBlankNavigation());
+  int renderer_id = params.target_contents->GetRenderProcessHost()->GetID();
+
+  // We should have one window, with one tab of WebContents differ from
+  // params.target_contents.
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  EXPECT_NE(browser()->tab_strip_model()->GetActiveWebContents(),
+            params.target_contents);
+
+  chrome::Navigate(&params);
+
+  // Navigate() should have opened the contents in a new foreground tab in the
+  // current Browser, without changing the renderer process of target_contents.
+  EXPECT_EQ(browser(), params.browser);
+  EXPECT_EQ(browser()->tab_strip_model()->GetActiveWebContents(),
+            params.target_contents);
+  EXPECT_EQ(renderer_id,
+            params.target_contents->GetRenderProcessHost()->GetID());
+
+  // We should have one window, with two tabs.
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+}
 
 // This tests adding a tab at a specific index.
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Tabstrip_InsertAtIndex) {
