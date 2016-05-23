@@ -15,10 +15,8 @@
 
 // static
 void AvatarMenu::GetImageForMenuButton(const base::FilePath& profile_path,
-                                       gfx::Image* image,
-                                       bool* is_rectangle) {
+                                       gfx::Image* image) {
   // ChromeOS avatar icon is circular.
-  *is_rectangle = false;
   Profile* profile =
       g_browser_process->profile_manager()->GetProfileByPath(profile_path);
   *image = gfx::Image(GetAvatarImageForContext(profile));

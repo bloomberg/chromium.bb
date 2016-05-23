@@ -83,8 +83,8 @@
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
-#include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
+#include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/session_crashed_bubble_view.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
@@ -174,10 +174,6 @@
 #if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
 #include "chrome/browser/ui/sync/one_click_signin_links_delegate_impl.h"
 #include "chrome/browser/ui/views/sync/one_click_signin_dialog_view.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #endif
 
 #if defined(OS_LINUX)
@@ -607,32 +603,6 @@ bool BrowserView::IsGuestSession() const {
 
 bool BrowserView::IsRegularOrGuestSession() const {
   return profiles::IsRegularOrGuestSession(browser_.get());
-}
-
-bool BrowserView::ShouldShowAvatar() const {
-#if defined(OS_CHROMEOS)
-  if (!browser_->is_type_tabbed() && !browser_->is_app())
-    return false;
-  // Don't show incognito avatar in the guest session.
-  if (IsOffTheRecord() && !IsGuestSession())
-    return true;
-  return chrome::MultiUserWindowManager::ShouldShowAvatar(GetNativeWindow());
-#else
-  if (!IsBrowserTypeNormal())
-    return false;
-  if (IsOffTheRecord())  // Desktop guest is incognito and needs avatar.
-    return true;
-  // Tests may not have a profile manager.
-  if (!g_browser_process->profile_manager())
-    return false;
-  ProfileAttributesEntry* entry;
-  if (!g_browser_process->profile_manager()->GetProfileAttributesStorage().
-      GetProfileAttributesWithPath(browser_->profile()->GetPath(), &entry)) {
-    return false;
-  }
-
-  return AvatarMenu::ShouldShowAvatarMenu();
-#endif
 }
 
 bool BrowserView::GetAccelerator(int cmd_id,

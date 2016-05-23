@@ -45,7 +45,7 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView {
   void Layout() override;
 
   // BrowserNonClientFrameView:
-  void UpdateAvatar() override;
+  void UpdateProfileIcons() override;
 
  private:
   // views::NonClientFrameView:

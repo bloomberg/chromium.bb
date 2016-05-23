@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_platform_specific.h"
-#include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
+#include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -188,8 +188,8 @@ gfx::Rect OpaqueBrowserFrameView::GetWindowBoundsForClientBounds(
 
 bool OpaqueBrowserFrameView::IsWithinAvatarMenuButtons(
     const gfx::Point& point) const {
-  if (avatar_button() &&
-     avatar_button()->GetMirroredBounds().Contains(point)) {
+  if (profile_indicator_icon() &&
+      profile_indicator_icon()->GetMirroredBounds().Contains(point)) {
     return true;
   }
   if (profile_switcher_.view() &&
@@ -380,10 +380,6 @@ bool OpaqueBrowserFrameView::ShouldShowCaptionButtons() const {
   return ShouldShowWindowTitleBar();
 }
 
-bool OpaqueBrowserFrameView::ShouldShowAvatar() const {
-  return browser_view()->ShouldShowAvatar();
-}
-
 bool OpaqueBrowserFrameView::IsRegularOrGuestSession() const {
   return browser_view()->IsRegularOrGuestSession();
 }
@@ -462,11 +458,11 @@ bool OpaqueBrowserFrameView::ShouldPaintAsThemed() const {
          platform_observer_->IsUsingSystemTheme();
 }
 
-void OpaqueBrowserFrameView::UpdateAvatar() {
+void OpaqueBrowserFrameView::UpdateProfileIcons() {
   if (browser_view()->IsRegularOrGuestSession())
     profile_switcher_.Update(AvatarButtonStyle::THEMED);
   else
-    UpdateOldAvatarButton();
+    UpdateProfileIndicatorIcon();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
+#include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/common/chrome_switches.h"
@@ -39,15 +39,10 @@ const int kCaptionButtonHeight = 18;
 
 class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
  public:
-  TestLayoutDelegate()
-      : show_avatar_(false),
-        show_caption_buttons_(true),
-        maximized_(false) {
-  }
+  TestLayoutDelegate() : show_caption_buttons_(true), maximized_(false) {}
   ~TestLayoutDelegate() override {}
 
   void set_window_title(const base::string16& title) { window_title_ = title; }
-  void set_show_avatar(bool show_avatar) { show_avatar_ = show_avatar; }
   void set_show_caption_buttons(bool show_caption_buttons) {
     show_caption_buttons_ = show_caption_buttons;
   }
@@ -64,7 +59,6 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
   bool ShouldShowCaptionButtons() const override {
     return show_caption_buttons_;
   }
-  bool ShouldShowAvatar() const override { return show_avatar_; }
   bool IsRegularOrGuestSession() const override { return true; }
   gfx::ImageSkia GetOTRAvatarIcon() const override {
     return gfx::ImageSkia(gfx::ImageSkiaRep(gfx::Size(40, 29), 1.0f));
@@ -84,7 +78,6 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
 
  private:
   base::string16 window_title_;
-  bool show_avatar_;
   bool show_caption_buttons_;
   bool maximized_;
 
@@ -166,11 +159,9 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
   }
 
   void AddNewAvatarButton() {
-    new_avatar_button_ =
-        new views::MenuButton(base::string16(), nullptr, false);
-    new_avatar_button_->set_id(VIEW_ID_NEW_AVATAR_BUTTON);
-    root_view_->AddChildView(new_avatar_button_);
-    delegate_->set_show_avatar(true);
+    avatar_button_ = new views::MenuButton(base::string16(), nullptr, false);
+    avatar_button_->set_id(VIEW_ID_AVATAR_BUTTON);
+    root_view_->AddChildView(avatar_button_);
   }
 
   int CaptionY() const {
@@ -240,8 +231,9 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
     int caption_buttons_width = kCaptionButtonsWidth;
     bool show_caption_buttons = delegate_->ShouldShowCaptionButtons();
     bool maximized = delegate_->IsMaximized() || !show_caption_buttons;
-    if (delegate_->ShouldShowAvatar()) {
-      caption_buttons_width += new_avatar_button_->GetPreferredSize().width() +
+    if (avatar_button_) {
+      caption_buttons_width +=
+          avatar_button_->GetPreferredSize().width() +
           (maximized ? OBFVL::kCaptionSpacing
                      : -GetLayoutSize(NEW_TAB_BUTTON).width());
     }
@@ -326,30 +318,30 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
   }
 
   void ExpectAvatar() {
-    int avatar_width = new_avatar_button_->GetPreferredSize().width();
-    gfx::Rect avatar_bounds(new_avatar_button_->bounds());
+    int avatar_width = avatar_button_->GetPreferredSize().width();
+    gfx::Rect avatar_bounds(avatar_button_->bounds());
     EXPECT_EQ(CaptionLeft() - avatar_width, avatar_bounds.x());
     EXPECT_EQ(CaptionY(), avatar_bounds.y());
     EXPECT_EQ(avatar_width, avatar_bounds.width());
     EXPECT_EQ(kCaptionButtonHeight, avatar_bounds.height());
   }
 
-  views::Widget* widget_;
-  views::View* root_view_;
-  OBFVL* layout_manager_;
+  views::Widget* widget_ = nullptr;
+  views::View* root_view_ = nullptr;
+  OBFVL* layout_manager_ = nullptr;
   std::unique_ptr<TestLayoutDelegate> delegate_;
 
   // Widgets:
-  views::ImageButton* minimize_button_;
-  views::ImageButton* maximize_button_;
-  views::ImageButton* restore_button_;
-  views::ImageButton* close_button_;
+  views::ImageButton* minimize_button_ = nullptr;
+  views::ImageButton* maximize_button_ = nullptr;
+  views::ImageButton* restore_button_ = nullptr;
+  views::ImageButton* close_button_ = nullptr;
 
-  TabIconView* tab_icon_view_;
-  views::Label* window_title_;
+  TabIconView* tab_icon_view_ = nullptr;
+  views::Label* window_title_ = nullptr;
 
-  AvatarMenuButton* menu_button_;
-  views::MenuButton* new_avatar_button_;
+  AvatarMenuButton* menu_button_ = nullptr;
+  views::MenuButton* avatar_button_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(OpaqueBrowserFrameViewLayoutTest);
 };

@@ -74,7 +74,7 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
 
  protected:
   // BrowserNonClientFrameView:
-  void UpdateAvatar() override;
+  void UpdateProfileIcons() override;
 
  private:
   mus::Window* mus_window();

@@ -16,12 +16,11 @@
 
 // static
 void AvatarMenu::GetImageForMenuButton(const base::FilePath& profile_path,
-                                       gfx::Image* image,
-                                       bool* is_rectangle) {
+                                       gfx::Image* image) {
   ProfileAttributesEntry* entry;
   if (!g_browser_process->profile_manager()->GetProfileAttributesStorage().
           GetProfileAttributesWithPath(profile_path, &entry)) {
-    NOTREACHED();
+    // This can happen if the user deletes the current profile.
     return;
   }
 
@@ -30,7 +29,6 @@ void AvatarMenu::GetImageForMenuButton(const base::FilePath& profile_path,
     const gfx::Image* gaia_image = entry->GetGAIAPicture();
     if (gaia_image) {
       *image = *gaia_image;
-      *is_rectangle = true;
       return;
     }
   }
@@ -40,5 +38,4 @@ void AvatarMenu::GetImageForMenuButton(const base::FilePath& profile_path,
   const int resource_id =
       profiles::GetDefaultAvatarIconResourceIDAtIndex(icon_index);
   *image = ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
-  *is_rectangle = false;
 }

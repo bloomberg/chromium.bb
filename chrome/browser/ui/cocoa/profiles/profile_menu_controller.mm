@@ -151,11 +151,8 @@ class Observer : public chrome::BrowserListObserver,
       [item setIndentationLevel:1];
     } else {
       gfx::Image itemIcon;
-      bool isRectangle;
       // Always use the low-res, small default avatars in the menu.
-      AvatarMenu::GetImageForMenuButton(itemData.profile_path,
-                                        &itemIcon,
-                                        &isRectangle);
+      AvatarMenu::GetImageForMenuButton(itemData.profile_path, &itemIcon);
 
       // The image might be too large and need to be resized (i.e. if this is
       // a signed-in user using the GAIA profile photo).

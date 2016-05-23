@@ -14,7 +14,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
+#include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -224,8 +224,8 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
     return HTNOWHERE;
 
   // See if the point is within the incognito icon or the profile switcher menu.
-  if ((avatar_button() &&
-       avatar_button()->GetMirroredBounds().Contains(point)) ||
+  if ((profile_indicator_icon() &&
+       profile_indicator_icon()->GetMirroredBounds().Contains(point)) ||
       (profile_switcher_.view() &&
        profile_switcher_.view()->GetMirroredBounds().Contains(point)))
     return HTCLIENT;
@@ -284,11 +284,11 @@ void GlassBrowserFrameView::Layout() {
 // GlassBrowserFrameView, protected:
 
 // BrowserNonClientFrameView:
-void GlassBrowserFrameView::UpdateAvatar() {
+void GlassBrowserFrameView::UpdateProfileIcons() {
   if (browser_view()->IsRegularOrGuestSession())
     profile_switcher_.Update(AvatarButtonStyle::NATIVE);
   else
-    UpdateOldAvatarButton();
+    UpdateProfileIndicatorIcon();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -298,8 +298,9 @@ void GlassBrowserFrameView::UpdateAvatar() {
 bool GlassBrowserFrameView::DoesIntersectRect(const views::View* target,
                                               const gfx::Rect& rect) const {
   CHECK_EQ(target, this);
-  bool hit_incognito_icon = avatar_button() &&
-      avatar_button()->GetMirroredBounds().Intersects(rect);
+  bool hit_incognito_icon =
+      profile_indicator_icon() &&
+      profile_indicator_icon()->GetMirroredBounds().Intersects(rect);
   bool hit_profile_switcher_button =
       profile_switcher_.view() &&
       profile_switcher_.view()->GetMirroredBounds().Intersects(rect);
@@ -553,7 +554,7 @@ void GlassBrowserFrameView::LayoutIncognitoIcon() {
         (profile_switcher_.view() ? (profile_switcher_.view()->width() +
                                      kProfileSwitcherButtonOffset)
                                   : 0);
-  } else if (!md && !avatar_button() && IsToolbarVisible() &&
+  } else if (!md && !profile_indicator_icon() && IsToolbarVisible() &&
              (base::win::GetVersion() < base::win::VERSION_WIN10)) {
     // In non-MD before Win 10, the toolbar has a rounded corner that we don't
     // want the tabstrip to overlap.
@@ -566,10 +567,11 @@ void GlassBrowserFrameView::LayoutIncognitoIcon() {
   const int y = (md || !frame()->IsMaximized())
                     ? (bottom - size.height())
                     : FrameTopBorderThickness(false);
-  incognito_bounds_.SetRect(x + (avatar_button() ? insets.left() : 0), y,
-                            avatar_button() ? size.width() : 0, bottom - y);
-  if (avatar_button())
-    avatar_button()->SetBoundsRect(incognito_bounds_);
+  incognito_bounds_.SetRect(x + (profile_indicator_icon() ? insets.left() : 0),
+                            y, profile_indicator_icon() ? size.width() : 0,
+                            bottom - y);
+  if (profile_indicator_icon())
+    profile_indicator_icon()->SetBoundsRect(incognito_bounds_);
 }
 
 void GlassBrowserFrameView::LayoutClientView() {

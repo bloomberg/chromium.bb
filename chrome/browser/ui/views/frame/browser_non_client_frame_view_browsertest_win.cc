@@ -56,5 +56,5 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewTestWin, HitTestFrameItems) {
           widget->non_client_view()->frame_view());
 
   EXPECT_NO_FATAL_FAILURE(
-      HitTestPerimeter(frame_view->GetViewByID(VIEW_ID_NEW_AVATAR_BUTTON)));
+      HitTestPerimeter(frame_view->GetViewByID(VIEW_ID_AVATAR_BUTTON)));
 }

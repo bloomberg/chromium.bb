@@ -200,9 +200,6 @@ class BrowserView : public BrowserWindow,
   // not off the record or a guest session.
   bool IsRegularOrGuestSession() const;
 
-  // Returns true if the non-client view should render an avatar icon.
-  bool ShouldShowAvatar() const;
-
   // Provides the containing frame with the accelerator for the specified
   // command id. This can be used to provide menu item shortcut hints etc.
   // Returns true if an accelerator was found for the specified |cmd_id|, false

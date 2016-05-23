@@ -111,7 +111,6 @@ class BrowserFrame
                               const gfx::Point& p,
                               ui::MenuSourceType source_type) override;
 
-  AvatarMenuButton* GetAvatarMenuButton();
   views::View* GetNewAvatarMenuButton();
 
   // Returns the menu model. BrowserFrame owns the returned model.

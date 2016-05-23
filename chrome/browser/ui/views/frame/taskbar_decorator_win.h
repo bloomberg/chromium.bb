@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_TASKBAR_DECORATOR_H_
-#define CHROME_BROWSER_UI_VIEWS_FRAME_TASKBAR_DECORATOR_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_FRAME_TASKBAR_DECORATOR_WIN_H_
+#define CHROME_BROWSER_UI_VIEWS_FRAME_TASKBAR_DECORATOR_WIN_H_
 
 #include "ui/gfx/native_widget_types.h"
 
@@ -17,7 +17,6 @@ namespace chrome {
 // associated with top level, visible |window|. Currently only implemented
 // for Windows 7 and above.
 void DrawTaskbarDecoration(gfx::NativeWindow window, const gfx::Image* image);
+}  // namespace chrome
 
-}
-
-#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_TASKBAR_DECORATOR_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_FRAME_TASKBAR_DECORATOR_WIN_H_

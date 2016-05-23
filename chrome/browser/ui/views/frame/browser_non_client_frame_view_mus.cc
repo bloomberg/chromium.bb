@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/web_app_left_header_view_ash.h"
-#include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
+#include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -55,7 +55,7 @@ namespace {
 
 #if defined(FRAME_AVATAR_BUTTON)
 // Space between the new avatar button and the minimize button.
-const int kNewAvatarButtonOffset = 5;
+const int kAvatarButtonOffset = 5;
 #endif
 // Space between right edge of tabstrip and maximize button.
 const int kTabstripRightSpacing = 10;
@@ -278,7 +278,7 @@ void BrowserNonClientFrameViewMus::OnPaint(gfx::Canvas* canvas) {
 }
 
 void BrowserNonClientFrameViewMus::Layout() {
-  if (avatar_button())
+  if (profile_indicator_icon())
     LayoutIncognitoButton();
 
 #if defined(FRAME_AVATAR_BUTTON)
@@ -337,13 +337,13 @@ gfx::ImageSkia BrowserNonClientFrameViewMus::GetFaviconForTabIconView() {
 // BrowserNonClientFrameViewMus, protected:
 
 // BrowserNonClientFrameView:
-void BrowserNonClientFrameViewMus::UpdateAvatar() {
+void BrowserNonClientFrameViewMus::UpdateProfileIcons() {
 #if defined(FRAME_AVATAR_BUTTON)
   if (browser_view()->IsRegularOrGuestSession())
     profile_switcher_.Update(AvatarButtonStyle::NATIVE);
   else
 #endif
-    UpdateOldAvatarButton();
+    UpdateProfileIndicatorIcon();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -405,8 +405,9 @@ bool BrowserNonClientFrameViewMus::DoesIntersectRect(
 
 int BrowserNonClientFrameViewMus::GetTabStripLeftInset() const {
   const gfx::Insets insets(GetLayoutInsets(AVATAR_ICON));
-  const int avatar_right =
-      avatar_button() ? (insets.left() + GetOTRAvatarIcon().width()) : 0;
+  const int avatar_right = profile_indicator_icon()
+                               ? (insets.left() + GetOTRAvatarIcon().width())
+                               : 0;
   return avatar_right + insets.right() + frame_values().normal_insets.left();
 }
 
@@ -417,7 +418,7 @@ int BrowserNonClientFrameViewMus::GetTabStripRightInset() const {
 
 #if defined(FRAME_AVATAR_BUTTON)
   if (profile_switcher_.view()) {
-    right_inset += kNewAvatarButtonOffset +
+    right_inset += kAvatarButtonOffset +
                    profile_switcher_.view()->GetPreferredSize().width();
   }
 #endif
@@ -450,7 +451,7 @@ bool BrowserNonClientFrameViewMus::UseWebAppHeaderStyle() const {
 }
 
 void BrowserNonClientFrameViewMus::LayoutIncognitoButton() {
-  DCHECK(avatar_button());
+  DCHECK(profile_indicator_icon());
 #if !defined(OS_CHROMEOS)
   // ChromeOS shows avatar on V1 app.
   DCHECK(browser_view()->IsTabStripVisible());
@@ -474,14 +475,14 @@ void BrowserNonClientFrameViewMus::LayoutIncognitoButton() {
 
   gfx::Rect avatar_bounds(avatar_insets.left(), avatar_y,
                           incognito_icon.width(), avatar_height);
-  avatar_button()->SetBoundsRect(avatar_bounds);
-  avatar_button()->SetVisible(avatar_visible);
+  profile_indicator_icon()->SetBoundsRect(avatar_bounds);
+  profile_indicator_icon()->SetVisible(avatar_visible);
 }
 
 void BrowserNonClientFrameViewMus::LayoutProfileSwitcher() {
 #if defined(FRAME_AVATAR_BUTTON)
   gfx::Size button_size = profile_switcher_.view()->GetPreferredSize();
-  int button_x = width() - GetTabStripRightInset() + kNewAvatarButtonOffset;
+  int button_x = width() - GetTabStripRightInset() + kAvatarButtonOffset;
   profile_switcher_.view()->SetBounds(button_x, 0, button_size.width(),
                                       button_size.height());
 #endif

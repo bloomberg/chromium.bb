@@ -23,7 +23,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
+#include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/profiles/user_manager_view.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -34,6 +34,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "ui/events/event_utils.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/webview/webview.h"
 
 namespace {
@@ -132,8 +133,6 @@ class ProfileChooserViewExtensionsTest : public ExtensionBrowserTest {
     views::View* button = browser_view->frame()->GetNewAvatarMenuButton();
     if (!button)
       NOTREACHED() << "NewAvatarButton not found.";
-    if (browser_view->frame()->GetAvatarMenuButton())
-      NOTREACHED() << "Old Avatar Menu Button found.";
 
     ProfileChooserView::close_on_deactivate_for_testing_ = false;
 

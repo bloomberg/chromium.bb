@@ -460,7 +460,6 @@ source_set("ui") {
   if (is_win) {
     sources +=
         rebase_path(gypi_values.chrome_browser_ui_win_sources, ".", "//chrome")
-    sources -= [ "views/frame/taskbar_decorator.cc" ]
     public_deps += [
       "//ui/views",
       "//ui/views/controls/webview",

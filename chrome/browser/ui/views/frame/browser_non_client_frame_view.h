@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_H_
 
 #include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "ui/views/window/non_client_view.h"
 
-class AvatarMenuButton;
 class BrowserFrame;
 class BrowserView;
 
@@ -22,7 +22,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   BrowserView* browser_view() const { return browser_view_; }
   BrowserFrame* frame() const { return frame_; }
-  AvatarMenuButton* avatar_button() const { return avatar_button_; }
 
   // Called when BrowserView creates all it's child views.
   virtual void OnBrowserViewInitViewsComplete();
@@ -82,12 +81,19 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   gfx::ImageSkia GetFrameImage() const;
   gfx::ImageSkia GetFrameOverlayImage() const;
 
-  // Update the profile switcher button if one should exist. Otherwise, update
-  // the incognito avatar, or profile avatar for teleported frames in ChromeOS.
-  virtual void UpdateAvatar() = 0;
+  // Updates the profile switcher button if one should exist. Otherwise, updates
+  // the icon that indicates incognito (or a teleported window in ChromeOS).
+  virtual void UpdateProfileIcons() = 0;
 
-  // Updates the title and icon of the old avatar button.
-  void UpdateOldAvatarButton();
+  // Updates the icon that indicates incognito/teleportation state.
+  void UpdateProfileIndicatorIcon();
+
+  const views::View* profile_indicator_icon() const {
+    return profile_indicator_icon_;
+  }
+  views::View* profile_indicator_icon() {
+    return profile_indicator_icon_;
+  }
 
  private:
   // views::NonClientFrameView:
@@ -114,9 +120,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // The BrowserView hosted within this View.
   BrowserView* browser_view_;
 
-  // Menu button that displays the incognito icon. May be null for some frame
-  // styles. TODO(anthonyvd): simplify/rename.
-  AvatarMenuButton* avatar_button_ = nullptr;
+  // On desktop, this is used to show an incognito icon. On CrOS, it's also used
+  // for teleported windows (in multi-profile mode).
+  ProfileIndicatorIcon* profile_indicator_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameView);
 };

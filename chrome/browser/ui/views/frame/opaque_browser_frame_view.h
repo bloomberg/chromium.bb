@@ -80,7 +80,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   int GetIconSize() const override;
   gfx::Size GetBrowserViewMinimumSize() const override;
   bool ShouldShowCaptionButtons() const override;
-  bool ShouldShowAvatar() const override;
   bool IsRegularOrGuestSession() const override;
   gfx::ImageSkia GetOTRAvatarIcon() const override;
   bool IsMaximized() const override;
@@ -103,7 +102,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // BrowserNonClientFrameView:
   bool ShouldPaintAsThemed() const override;
-  void UpdateAvatar() override;
+  void UpdateProfileIcons() override;
 
  private:
   // views::NonClientFrameView:

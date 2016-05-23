@@ -1922,8 +1922,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   // Use the low-res, small default avatars in the fast user switcher, like
   // we do in the menu bar.
   gfx::Image itemIcon;
-  bool isRectangle;
-  AvatarMenu::GetImageForMenuButton(item.profile_path, &itemIcon, &isRectangle);
+  AvatarMenu::GetImageForMenuButton(item.profile_path, &itemIcon);
 
   [profileButton setDefaultImage:CreateProfileImage(
       itemIcon, kSmallImageSide).ToNSImage()];

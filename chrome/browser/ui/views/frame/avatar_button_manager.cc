@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/frame/avatar_button_manager.h"
 
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -19,11 +21,16 @@ void AvatarButtonManager::Update(AvatarButtonStyle style) {
 
   // This should never be called in incognito mode.
   DCHECK(browser_view->IsRegularOrGuestSession());
-
-  if (browser_view->ShouldShowAvatar()) {
+  ProfileAttributesEntry* unused;
+  if (browser_view->IsBrowserTypeNormal() &&
+      // Tests may not have a profile manager.
+      g_browser_process->profile_manager() &&
+      g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(profile->GetPath(), &unused)) {
     if (!view_) {
       view_ = new NewAvatarButton(this, style, profile);
-      view_->set_id(VIEW_ID_NEW_AVATAR_BUTTON);
+      view_->set_id(VIEW_ID_AVATAR_BUTTON);
       frame_view_->AddChildView(view_);
       frame->GetRootView()->Layout();
     }

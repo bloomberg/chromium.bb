@@ -8,7 +8,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
+#include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -72,7 +72,6 @@ const int OpaqueBrowserFrameViewLayout::kCaptionButtonBottomPadding = 3;
 // need to reserve a larger, 16 px gap to avoid looking too cluttered.
 const int OpaqueBrowserFrameViewLayout::kNewTabCaptionCondensedSpacing = 16;
 
-
 OpaqueBrowserFrameViewLayout::OpaqueBrowserFrameViewLayout(
     OpaqueBrowserFrameViewLayoutDelegate* delegate)
     : delegate_(delegate),
@@ -89,7 +88,7 @@ OpaqueBrowserFrameViewLayout::OpaqueBrowserFrameViewLayout(
       close_button_(nullptr),
       window_icon_(nullptr),
       window_title_(nullptr),
-      avatar_button_(nullptr),
+      incognito_icon_(nullptr),
       new_avatar_button_(nullptr) {
   trailing_buttons_.push_back(views::FRAME_BUTTON_MINIMIZE);
   trailing_buttons_.push_back(views::FRAME_BUTTON_MAXIMIZE);
@@ -374,13 +373,13 @@ void OpaqueBrowserFrameViewLayout::LayoutIncognitoIcon(views::View* host) {
   int min_button_width = NonClientBorderThickness();
   // In non-MD, the toolbar has a rounded corner that we don't want the tabstrip
   // to overlap.
-  if (!md && !avatar_button_ && delegate_->IsToolbarVisible())
+  if (!md && !incognito_icon_ && delegate_->IsToolbarVisible())
     min_button_width += delegate_->GetToolbarLeadingCornerClientWidth();
   leading_button_start_ = std::max(leading_button_start_, min_button_width);
   // The trailing corner is a mirror of the leading one.
   trailing_button_start_ = std::max(trailing_button_start_, min_button_width);
 
-  if (avatar_button_) {
+  if (incognito_icon_) {
     const gfx::Insets insets(GetLayoutInsets(AVATAR_ICON));
     const gfx::Size size(delegate_->GetOTRAvatarIcon().size());
     const int incognito_width = insets.left() + size.width();
@@ -396,7 +395,7 @@ void OpaqueBrowserFrameViewLayout::LayoutIncognitoIcon(views::View* host) {
         delegate_->GetTabStripHeight() - insets.bottom();
     const int y = (md || !IsTitleBarCondensed()) ?
         (bottom - size.height()) : FrameBorderThickness(false);
-    avatar_button_->SetBounds(x, y, size.width(), bottom - y);
+    incognito_icon_->SetBounds(x, y, size.width(), bottom - y);
   }
 
   minimum_size_for_buttons_ +=
@@ -569,14 +568,10 @@ void OpaqueBrowserFrameViewLayout::SetView(int id, views::View* view) {
       }
       window_title_ = static_cast<views::Label*>(view);
       break;
-    case VIEW_ID_AVATAR_BUTTON:
-      if (view) {
-        DCHECK_EQ(std::string(AvatarMenuButton::kViewClassName),
-                  view->GetClassName());
-      }
-      avatar_button_ = static_cast<AvatarMenuButton*>(view);
+    case VIEW_ID_PROFILE_INDICATOR_ICON:
+      incognito_icon_ = view;
       break;
-    case VIEW_ID_NEW_AVATAR_BUTTON:
+    case VIEW_ID_AVATAR_BUTTON:
       new_avatar_button_ = view;
       break;
     default:

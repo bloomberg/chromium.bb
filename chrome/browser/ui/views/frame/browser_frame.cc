@@ -272,10 +272,6 @@ ui::MenuModel* BrowserFrame::GetSystemMenuModel() {
   return menu_model_builder_->menu_model();
 }
 
-AvatarMenuButton* BrowserFrame::GetAvatarMenuButton() {
-  return browser_frame_view_->avatar_button();
-}
-
 views::View* BrowserFrame::GetNewAvatarMenuButton() {
   return browser_frame_view_->GetProfileSwitcherView();
 }
