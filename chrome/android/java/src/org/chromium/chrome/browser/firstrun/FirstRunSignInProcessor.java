@@ -14,7 +14,6 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
@@ -82,7 +81,6 @@ public final class FirstRunSignInProcessor {
         }
 
         final boolean setUp = getFirstRunFlowSignInSetup(activity);
-        RecordUserAction.record("Signin_Signin_FromStartPage");
         signinManager.signIn(accountName, activity, new SignInCallback() {
             @Override
             public void onSignInComplete() {

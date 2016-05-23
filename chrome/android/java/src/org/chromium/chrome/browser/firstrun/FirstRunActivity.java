@@ -324,7 +324,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     @Override
     public void onSigninDialogShown() {
         RecordUserAction.record("MobileFre.SignInShown");
-        RecordUserAction.record("Signin_Impression_FromStartPage");
+        RecordUserAction.record("Signin_Signin_FromStartPage");
         SigninManager.logSigninStartAccessPoint(SigninAccessPoint.START_PAGE);
     }
 
