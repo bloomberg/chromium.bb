@@ -329,10 +329,6 @@ define('media_router_bindings', [
 
     function issueActionToMojo_(action) {
       switch (action) {
-        case 'ok':
-          return mediaRouterMojom.Issue.ActionType.OK;
-        case 'cancel':
-          return mediaRouterMojom.Issue.ActionType.CANCEL;
         case 'dismiss':
           return mediaRouterMojom.Issue.ActionType.DISMISS;
         case 'learn_more':
