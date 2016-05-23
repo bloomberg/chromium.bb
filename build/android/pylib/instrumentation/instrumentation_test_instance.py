@@ -239,6 +239,9 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._timeout_scale = None
     self._initializeTestControlAttributes(args)
 
+    self._coverage_directory = None
+    self._initializeTestCoverageAttributes(args)
+
   def _initializeApkAttributes(self, args, error_func):
     if args.apk_under_test:
       apk_under_test_path = args.apk_under_test
@@ -388,6 +391,9 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   def _initializeTestControlAttributes(self, args):
     self._timeout_scale = args.timeout_scale or 1
 
+  def _initializeTestCoverageAttributes(self, args):
+    self._coverage_directory = args.coverage_dir
+
   @property
   def additional_apks(self):
     return self._additional_apks
@@ -401,8 +407,8 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     return self._apk_under_test_incremental_install_script
 
   @property
-  def flags(self):
-    return self._flags
+  def coverage_directory(self):
+    return self._coverage_directory
 
   @property
   def driver_apk(self):
@@ -415,6 +421,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   @property
   def driver_name(self):
     return self._driver_name
+
+  @property
+  def flags(self):
+    return self._flags
 
   @property
   def package_info(self):

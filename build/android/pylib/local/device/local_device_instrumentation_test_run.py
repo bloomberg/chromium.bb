@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import logging
+import os
 import re
 import time
 
@@ -186,6 +187,16 @@ class LocalDeviceInstrumentationTestRun(
 
     flags = None
     test_timeout_scale = None
+    if self._test_instance.coverage_directory:
+      coverage_basename = '%s.ec' % ('%s_group' % test[0]['method']
+          if isinstance(test, list) else test['method'])
+      extras['coverage'] = 'true'
+      coverage_directory = os.path.join(
+          device.GetExternalStoragePath(), 'chrome', 'test', 'coverage')
+      coverage_device_file = os.path.join(
+          coverage_directory, coverage_basename)
+      extras['coverageFile'] = coverage_device_file
+
     if isinstance(test, list):
       if not self._test_instance.driver_apk:
         raise Exception('driver_apk does not exist. '
@@ -279,7 +290,11 @@ class LocalDeviceInstrumentationTestRun(
       logging.debug('raw output from %s:', test_display_name)
       for l in output:
         logging.debug('  %s', l)
-
+    if self._test_instance.coverage_directory:
+      device.PullFile(coverage_directory,
+          self._test_instance.coverage_directory)
+      device.RunShellCommand('rm -f %s' % os.path.join(coverage_directory,
+          '*'))
     return results
 
   #override
