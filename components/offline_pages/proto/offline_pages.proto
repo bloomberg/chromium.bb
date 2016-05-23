@@ -1,0 +1,65 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Offline page item protocol for storage and exchanging of offline page
+// metadata.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+option retain_unknown_fields = true;
+
+package offline_pages;
+
+message OfflinePageEntry {
+  // URL of the offline page.
+  optional string url = 1;
+
+  // Bookmark ID of the offline page, this is deprecated in favor of the
+  // more generic ClientID below.  No new pages should have this field.
+  optional int64 deprecated_bookmark_id = 2 [default = -1];
+
+  // Offline ID of the page.  Every page entry has a unique offline_id.
+  optional int64 offline_id = 10;
+
+  // Version of the offline page metadata.
+  optional int32 version = 3;
+
+  // Path to the offline archive.
+  optional string file_path = 4;
+
+  // Size of the offline archive.
+  optional int64 file_size = 5;
+
+  // Creation time of the offline archive.
+  optional int64 creation_time = 6;
+
+  // Last access time of the offline archive.
+  optional int64 last_access_time = 7;
+
+  // Number of times that the offline archive has been accessed.
+  optional int32 access_count = 8;
+
+  // Flags about the state and behavior of the offline page.
+  enum Flags {
+    // No flag is set.
+    NONE = 0;
+    // Indicates that the page is marked for deletion. The real deletion will
+    // occur soon, after which the undo will not be possible.
+    MARKED_FOR_DELETION = 1;
+  };
+
+  // Flags for the offline page.
+  optional Flags flags = 9;
+
+  // Information about this offline page in the namespace/id of the client that
+  // requested that it be saved. Useful for reverse lookups.
+
+  // Namespace (e.g. client name) to separate the (possibly identical) ids
+  // from two different clients.
+  optional string client_id_name_space = 11;
+  // Identifier that has meaning for clients of the offline page API.
+  // This is provided by consumers of the offline pages API and is opaque to us.
+  optional string client_id = 12;
+}

@@ -15,6 +15,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/offline_pages/offline_page_metadata_store_sql.h"
 #include "components/offline_pages/offline_page_model.h"
+#include "components/offline_pages/proto/offline_pages.pb.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace offline_pages {
