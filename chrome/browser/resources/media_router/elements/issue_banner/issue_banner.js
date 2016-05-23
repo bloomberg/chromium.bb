@@ -80,7 +80,7 @@ Polymer({
    * @private
    */
   computeOptionalActionHidden_: function(issue) {
-    return !issue || !issue.secondaryActionType;
+    return !issue || issue.secondaryActionType === undefined;
   },
 
   /**
@@ -132,7 +132,7 @@ Polymer({
           this.i18n(this.actionTypeToButtonTextResource_[
               this.issue.defaultActionType]);
 
-      if (this.issue.secondaryActionType) {
+      if (this.issue.secondaryActionType !== undefined) {
         secondaryText =
             this.i18n(this.actionTypeToButtonTextResource_[
                 this.issue.secondaryActionType]);
