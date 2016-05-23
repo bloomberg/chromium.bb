@@ -7,10 +7,13 @@
 *   A Mac running 10.9+.
 *   [Xcode](https://developer.apple.com/xcode) 5+.
 *   [depot\_tools](http://dev.chromium.org/developers/how-tos/depottools).
-*   Install Xcode's "Command Line Tools" via Xcode menu -> Preferences ->
-    Downloads
+*   Xcode Command Line Tools. Run
+    ```
+    xcode-select --install
+    ```
+    to install them.
 *   The OSX 10.10 SDK. Run
-    ```sh
+    ```
     ls `xcode-select -p`/Platforms/MacOSX.platform/Developer/SDKs
     ```
     to check whether you have it. If you don't have it, you need to get one from
