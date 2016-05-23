@@ -60,7 +60,7 @@ BubbleObserver::BubbleObserver(content::WebContents* web_contents)
     : passwords_model_delegate_(
           PasswordsModelDelegateFromWebContents(web_contents)) {}
 
-bool BubbleObserver::IsSaveShowingPrompt() const {
+bool BubbleObserver::IsShowingSavePrompt() const {
   return passwords_model_delegate_->GetState() ==
       password_manager::ui::PENDING_PASSWORD_STATE;
 }
@@ -82,9 +82,9 @@ void BubbleObserver::Dismiss() const  {
 }
 
 void BubbleObserver::AcceptSavePrompt() const {
-  ASSERT_TRUE(IsSaveShowingPrompt());
+  ASSERT_TRUE(IsShowingSavePrompt());
   passwords_model_delegate_->SavePassword();
-  EXPECT_FALSE(IsSaveShowingPrompt());
+  EXPECT_FALSE(IsShowingSavePrompt());
 }
 
 void BubbleObserver::AcceptUpdatePrompt(
@@ -92,12 +92,6 @@ void BubbleObserver::AcceptUpdatePrompt(
   ASSERT_TRUE(IsShowingUpdatePrompt());
   passwords_model_delegate_->UpdatePassword(form);
   EXPECT_FALSE(IsShowingUpdatePrompt());
-}
-
-// static
-std::unique_ptr<BubbleObserver> BubbleObserver::Create(
-    content::WebContents* web_contents) {
-  return base::WrapUnique(new BubbleObserver(web_contents));
 }
 
 PasswordManagerBrowserTestBase::PasswordManagerBrowserTestBase() {
@@ -154,7 +148,7 @@ void PasswordManagerBrowserTestBase::VerifyPasswordIsSavedAndFilled(
 
   NavigationObserver observer(WebContents());
   std::unique_ptr<BubbleObserver> prompt_observer(
-      BubbleObserver::Create(WebContents()));
+      new BubbleObserver(WebContents()));
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), submission_script));
   observer.Wait();
 

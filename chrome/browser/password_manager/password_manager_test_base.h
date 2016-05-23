@@ -63,7 +63,7 @@ class BubbleObserver {
   explicit BubbleObserver(content::WebContents* web_contents);
 
   // Checks if the save prompt is being currently shown.
-  bool IsSaveShowingPrompt() const;
+  bool IsShowingSavePrompt() const;
 
   // Checks if the update prompt is being currently shown.
   bool IsShowingUpdatePrompt() const;
@@ -79,11 +79,6 @@ class BubbleObserver {
   // Expecting that the prompt is shown, update |form| with the password from
   // observed form. Checks that the prompt is no longer visible afterwards.
   void AcceptUpdatePrompt(const autofill::PasswordForm& form) const;
-
-  // Chooses the right implementation of PromptObserver and creates an instance
-  // of it.
-  static std::unique_ptr<BubbleObserver> Create(
-      content::WebContents* web_contents);
 
  private:
   PasswordsModelDelegate* const passwords_model_delegate_;

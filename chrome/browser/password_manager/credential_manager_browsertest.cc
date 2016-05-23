@@ -117,9 +117,9 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   observer.Wait();
 
   std::unique_ptr<BubbleObserver> prompt_observer(
-      BubbleObserver::Create(WebContents()));
+      new BubbleObserver(WebContents()));
   // The autofill password manager shouldn't react to the successful login.
-  EXPECT_FALSE(prompt_observer->IsSaveShowingPrompt());
+  EXPECT_FALSE(prompt_observer->IsShowingSavePrompt());
 }
 
 IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, SaveViaAPIAndAutofill) {
@@ -135,8 +135,8 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, SaveViaAPIAndAutofill) {
       "var c = new PasswordCredential({ id: 'user', password: '12345' });"
       "navigator.credentials.store(c);"));
   std::unique_ptr<BubbleObserver> prompt_observer(
-      BubbleObserver::Create(WebContents()));
-  EXPECT_TRUE(prompt_observer->IsSaveShowingPrompt());
+      new BubbleObserver(WebContents()));
+  EXPECT_TRUE(prompt_observer->IsShowingSavePrompt());
   prompt_observer->Dismiss();
 
   NavigationObserver form_submit_observer(WebContents());
@@ -144,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, SaveViaAPIAndAutofill) {
       RenderViewHost(),
       "document.getElementById('input_submit_button').click();"));
   form_submit_observer.Wait();
-  EXPECT_FALSE(prompt_observer->IsSaveShowingPrompt());
+  EXPECT_FALSE(prompt_observer->IsShowingSavePrompt());
 }
 
 IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, UpdateViaAPIAndAutofill) {
@@ -175,8 +175,8 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, UpdateViaAPIAndAutofill) {
       "var c = new PasswordCredential({ id: 'user', password: '12345' });"
       "navigator.credentials.store(c);"));
   std::unique_ptr<BubbleObserver> prompt_observer(
-      BubbleObserver::Create(WebContents()));
-  EXPECT_FALSE(prompt_observer->IsSaveShowingPrompt());
+      new BubbleObserver(WebContents()));
+  EXPECT_FALSE(prompt_observer->IsShowingSavePrompt());
   EXPECT_FALSE(prompt_observer->IsShowingUpdatePrompt());
   signin_form.skip_zero_click = false;
   signin_form.times_used = 1;
@@ -192,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest, UpdateViaAPIAndAutofill) {
       RenderViewHost(),
       "document.getElementById('input_submit_button').click();"));
   form_submit_observer.Wait();
-  EXPECT_FALSE(prompt_observer->IsSaveShowingPrompt());
+  EXPECT_FALSE(prompt_observer->IsShowingSavePrompt());
   EXPECT_FALSE(prompt_observer->IsShowingUpdatePrompt());
   stored = password_store->stored_passwords();
   ASSERT_EQ(1u, stored.size());
