@@ -274,6 +274,11 @@
                 "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
                 "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
                 "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
+            ],
+            "vm_tests_override": [
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
             ]
         },
         "chrome-perf": {
@@ -631,6 +636,11 @@
                 "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
                 "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
                 "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
+            ],
+            "vm_tests_override": [
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
             ]
         },
         "firmware": {
@@ -919,6 +929,11 @@
                 "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
                 "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
                 "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
+            ],
+            "vm_tests_override": [
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
             ]
         },
         "no-vmtest-pre-cq": {
@@ -1131,6 +1146,11 @@
                 "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
                 "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
                 "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
+            ],
+            "vm_tests_override": [
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
             ]
         },
         "release-afdo-generate": {
@@ -1183,6 +1203,11 @@
             ],
             "usepkg_build_packages": false,
             "vm_tests": [
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
+            ],
+            "vm_tests_override": [
                 "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
                 "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
                 "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
@@ -1243,6 +1268,11 @@
             ],
             "usepkg_build_packages": false,
             "vm_tests": [
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
+            ],
+            "vm_tests_override": [
                 "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
                 "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
                 "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
@@ -1991,7 +2021,8 @@
         "chrome_sdk_build_chrome": false,
         "dev_installer_prebuilts": false,
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "arkham-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -3471,7 +3502,8 @@
                 ],
                 "grouped": true,
                 "name": "beaglebone-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -3480,24 +3512,28 @@
                 ],
                 "grouped": true,
                 "name": "beaglebone-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "beaglebone-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "beaglebone"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "beaglebone-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "beaglebone"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "beaglebone-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -3651,7 +3687,8 @@
                 ],
                 "grouped": true,
                 "name": "beaglebone_servo-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -3660,24 +3697,28 @@
                 ],
                 "grouped": true,
                 "name": "beaglebone_servo-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "beaglebone_servo-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "beaglebone_servo"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "beaglebone_servo-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "beaglebone_servo"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "beaglebone_servo-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -4539,7 +4580,8 @@
         ],
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "celes-cheets-release-afdo": {
         "_template": "release-afdo-generate",
@@ -4554,7 +4596,8 @@
                 ],
                 "grouped": true,
                 "name": "celes-cheets-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -4563,24 +4606,28 @@
                 ],
                 "grouped": true,
                 "name": "celes-cheets-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "celes-cheets-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "celes-cheets"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "celes-cheets-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "celes-cheets"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "celes-cheets-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -4868,7 +4915,8 @@
         ],
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "chell-cheets-release-afdo": {
         "_template": "release-afdo-generate",
@@ -4883,7 +4931,8 @@
                 ],
                 "grouped": true,
                 "name": "chell-cheets-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -4892,24 +4941,28 @@
                 ],
                 "grouped": true,
                 "name": "chell-cheets-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "chell-cheets-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "chell-cheets"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "chell-cheets-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "chell-cheets"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "chell-cheets-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -5759,7 +5812,8 @@
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "cyan-cheets-release-afdo": {
         "_template": "release-afdo-generate",
@@ -5774,7 +5828,8 @@
                 ],
                 "grouped": true,
                 "name": "cyan-cheets-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -5783,24 +5838,28 @@
                 ],
                 "grouped": true,
                 "name": "cyan-cheets-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "cyan-cheets-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "cyan-cheets"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "cyan-cheets-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "cyan-cheets"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "cyan-cheets-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -6154,7 +6213,8 @@
         ],
         "critical_for_chrome": true,
         "important": true,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "daisy-release-afdo": {
         "_template": "release-afdo-generate",
@@ -6169,7 +6229,8 @@
                 ],
                 "grouped": true,
                 "name": "daisy-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -6178,24 +6239,28 @@
                 ],
                 "grouped": true,
                 "name": "daisy-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "daisy-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "daisy"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "daisy-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "daisy"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "daisy-toolchain-gcc": {
         "_template": "gcc",
@@ -6376,7 +6441,8 @@
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "daisy_skate-release-afdo": {
         "_template": "release-afdo-generate",
@@ -6391,7 +6457,8 @@
                 ],
                 "grouped": true,
                 "name": "daisy_skate-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -6400,24 +6467,28 @@
                 ],
                 "grouped": true,
                 "name": "daisy_skate-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "daisy_skate-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "daisy_skate"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "daisy_skate-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "daisy_skate"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "daisy_skate-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -6559,7 +6630,8 @@
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "daisy_spring-release-afdo": {
         "_template": "release-afdo-generate",
@@ -6574,7 +6646,8 @@
                 ],
                 "grouped": true,
                 "name": "daisy_spring-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -6583,24 +6656,28 @@
                 ],
                 "grouped": true,
                 "name": "daisy_spring-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "daisy_spring-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "daisy_spring"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "daisy_spring-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "daisy_spring"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "daisy_spring-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -6900,7 +6977,8 @@
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "elm-cheets-release-afdo": {
         "_template": "release-afdo-generate",
@@ -6915,7 +6993,8 @@
                 ],
                 "grouped": true,
                 "name": "elm-cheets-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -6924,24 +7003,28 @@
                 ],
                 "grouped": true,
                 "name": "elm-cheets-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "elm-cheets-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "elm-cheets"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "elm-cheets-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "elm-cheets"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "elm-cheets-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -7071,7 +7154,8 @@
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "elm-release-afdo": {
         "_template": "release-afdo-generate",
@@ -7086,7 +7170,8 @@
                 ],
                 "grouped": true,
                 "name": "elm-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -7095,24 +7180,28 @@
                 ],
                 "grouped": true,
                 "name": "elm-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "elm-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "elm"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "elm-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "elm"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "elm-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -8036,7 +8125,8 @@
         "chrome_sdk": false,
         "dev_installer_prebuilts": false,
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "gale-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -8378,7 +8468,8 @@
         ],
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "glados-cheets-release-afdo": {
         "_template": "release-afdo-generate",
@@ -8393,7 +8484,8 @@
                 ],
                 "grouped": true,
                 "name": "glados-cheets-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -8402,24 +8494,28 @@
                 ],
                 "grouped": true,
                 "name": "glados-cheets-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "glados-cheets-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "glados-cheets"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "glados-cheets-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "glados-cheets"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "glados-cheets-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -9113,7 +9209,8 @@
         "boards": [
             "gru"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "gru-release-afdo": {
         "_template": "release-afdo-generate",
@@ -9128,7 +9225,8 @@
                 ],
                 "grouped": true,
                 "name": "gru-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -9137,24 +9235,28 @@
                 ],
                 "grouped": true,
                 "name": "gru-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "gru-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "gru"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "gru-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "gru"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "gru-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -10408,7 +10510,8 @@
         ],
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "kevin-release-afdo": {
         "_template": "release-afdo-generate",
@@ -10423,7 +10526,8 @@
                 ],
                 "grouped": true,
                 "name": "kevin-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -10432,24 +10536,28 @@
                 ],
                 "grouped": true,
                 "name": "kevin-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "kevin-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "kevin"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "kevin-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "kevin"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "kevin-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -11009,7 +11117,8 @@
         "sync_chrome": false,
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        ],
+        "vm_tests_override": null
     },
     "lakitu-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -11197,7 +11306,8 @@
         "sync_chrome": false,
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        ],
+        "vm_tests_override": null
     },
     "lakitu_next-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -11932,7 +12042,8 @@
         ],
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "lulu-cheets-release-afdo": {
         "_template": "release-afdo-generate",
@@ -11947,7 +12058,8 @@
                 ],
                 "grouped": true,
                 "name": "lulu-cheets-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -11956,24 +12068,28 @@
                 ],
                 "grouped": true,
                 "name": "lulu-cheets-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "lulu-cheets-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "lulu-cheets"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "lulu-cheets-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "lulu-cheets"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "lulu-cheets-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -13319,7 +13435,8 @@
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "nyan-release-afdo": {
         "_template": "release-afdo-generate",
@@ -13334,7 +13451,8 @@
                 ],
                 "grouped": true,
                 "name": "nyan-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -13343,24 +13461,28 @@
                 ],
                 "grouped": true,
                 "name": "nyan-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "nyan-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "nyan"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "nyan-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "nyan"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "nyan-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -13488,7 +13610,8 @@
             "nyan_big"
         ],
         "important": true,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "nyan_big-release-afdo": {
         "_template": "release-afdo-generate",
@@ -13503,7 +13626,8 @@
                 ],
                 "grouped": true,
                 "name": "nyan_big-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -13512,24 +13636,28 @@
                 ],
                 "grouped": true,
                 "name": "nyan_big-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "nyan_big-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "nyan_big"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "nyan_big-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "nyan_big"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "nyan_big-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -13659,7 +13787,8 @@
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "nyan_blaze-release-afdo": {
         "_template": "release-afdo-generate",
@@ -13674,7 +13803,8 @@
                 ],
                 "grouped": true,
                 "name": "nyan_blaze-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -13683,24 +13813,28 @@
                 ],
                 "grouped": true,
                 "name": "nyan_blaze-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "nyan_blaze-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "nyan_blaze"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "nyan_blaze-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "nyan_blaze"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "nyan_blaze-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -13827,7 +13961,8 @@
         "boards": [
             "nyan_freon"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "nyan_freon-release-afdo": {
         "_template": "release-afdo-generate",
@@ -13842,7 +13977,8 @@
                 ],
                 "grouped": true,
                 "name": "nyan_freon-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -13851,24 +13987,28 @@
                 ],
                 "grouped": true,
                 "name": "nyan_freon-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "nyan_freon-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "nyan_freon"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "nyan_freon-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "nyan_freon"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "nyan_freon-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -13998,7 +14138,8 @@
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "nyan_kitty-release-afdo": {
         "_template": "release-afdo-generate",
@@ -14013,7 +14154,8 @@
                 ],
                 "grouped": true,
                 "name": "nyan_kitty-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -14022,24 +14164,28 @@
                 ],
                 "grouped": true,
                 "name": "nyan_kitty-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "nyan_kitty-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "nyan_kitty"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "nyan_kitty-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "nyan_kitty"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "nyan_kitty-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -14169,7 +14315,8 @@
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "oak-cheets-release-afdo": {
         "_template": "release-afdo-generate",
@@ -14184,7 +14331,8 @@
                 ],
                 "grouped": true,
                 "name": "oak-cheets-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -14193,24 +14341,28 @@
                 ],
                 "grouped": true,
                 "name": "oak-cheets-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "oak-cheets-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "oak-cheets"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "oak-cheets-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "oak-cheets"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "oak-cheets-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -14339,7 +14491,8 @@
             "oak"
         ],
         "important": true,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "oak-release-afdo": {
         "_template": "release-afdo-generate",
@@ -14354,7 +14507,8 @@
                 ],
                 "grouped": true,
                 "name": "oak-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -14363,24 +14517,28 @@
                 ],
                 "grouped": true,
                 "name": "oak-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "oak-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "oak"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "oak-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "oak"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "oak-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -14852,7 +15010,8 @@
         "profile": "minimal",
         "signer_tests": false,
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "panther_embedded-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -14918,7 +15077,8 @@
         "chrome_sdk": false,
         "dev_installer_prebuilts": false,
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "panther_embedded-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -15771,7 +15931,8 @@
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "peach_pi-release-afdo": {
         "_template": "release-afdo-generate",
@@ -15786,7 +15947,8 @@
                 ],
                 "grouped": true,
                 "name": "peach_pi-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -15795,24 +15957,28 @@
                 ],
                 "grouped": true,
                 "name": "peach_pi-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "peach_pi-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "peach_pi"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "peach_pi-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "peach_pi"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "peach_pi-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -15959,7 +16125,8 @@
             "peach_pit"
         ],
         "important": true,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "peach_pit-release-afdo": {
         "_template": "release-afdo-generate",
@@ -15974,7 +16141,8 @@
                 ],
                 "grouped": true,
                 "name": "peach_pit-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -15983,24 +16151,28 @@
                 ],
                 "grouped": true,
                 "name": "peach_pit-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "peach_pit-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "peach_pit"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "peach_pit-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "peach_pit"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "peach_pit-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -16360,7 +16532,8 @@
         "chrome_sdk": false,
         "dev_installer_prebuilts": false,
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "purin-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -17584,7 +17757,8 @@
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "samus-cheets-release-afdo": {
         "_template": "release-afdo-generate",
@@ -17599,7 +17773,8 @@
                 ],
                 "grouped": true,
                 "name": "samus-cheets-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -17608,24 +17783,28 @@
                 ],
                 "grouped": true,
                 "name": "samus-cheets-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "samus-cheets-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "samus-cheets"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "samus-cheets-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "samus-cheets"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "samus-cheets-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -18448,7 +18627,8 @@
         "boards": [
             "smaug-cheets"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "smaug-cheets-release-afdo": {
         "_template": "release-afdo-generate",
@@ -18463,7 +18643,8 @@
                 ],
                 "grouped": true,
                 "name": "smaug-cheets-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -18472,24 +18653,28 @@
                 ],
                 "grouped": true,
                 "name": "smaug-cheets-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "smaug-cheets-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "smaug-cheets"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "smaug-cheets-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "smaug-cheets"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "smaug-cheets-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -18714,7 +18899,8 @@
         "boards": [
             "smaug-kasan"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "smaug-kasan-release-afdo": {
         "_template": "release-afdo-generate",
@@ -18729,7 +18915,8 @@
                 ],
                 "grouped": true,
                 "name": "smaug-kasan-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -18738,24 +18925,28 @@
                 ],
                 "grouped": true,
                 "name": "smaug-kasan-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "smaug-kasan-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "smaug-kasan"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "smaug-kasan-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "smaug-kasan"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "smaug-kasan-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -18852,7 +19043,8 @@
         "sign_types": [
             "nv_lp0_firmware"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "smaug-release-afdo": {
         "_template": "release-afdo-generate",
@@ -18870,7 +19062,8 @@
                 "factory_toolkit": false,
                 "grouped": true,
                 "name": "smaug-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -18882,13 +19075,15 @@
                 "factory_toolkit": false,
                 "grouped": true,
                 "name": "smaug-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "smaug-release-afdo-generate": {
         "_template": "release-afdo-generate",
@@ -18898,7 +19093,8 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "smaug-release-afdo-use": {
         "_template": "release-afdo-use",
@@ -18908,7 +19104,8 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "smaug-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -19263,7 +19460,8 @@
         "paygen_skip_testing": true,
         "signer_tests": false,
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "storm-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -21351,7 +21549,8 @@
         ],
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_fievel-release-afdo": {
         "_template": "release-afdo-generate",
@@ -21366,7 +21565,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_fievel-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -21375,24 +21575,28 @@
                 ],
                 "grouped": true,
                 "name": "veyron_fievel-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_fievel-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "veyron_fievel"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_fievel-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "veyron_fievel"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_fievel-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -21522,7 +21726,8 @@
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_gus-release-afdo": {
         "_template": "release-afdo-generate",
@@ -21537,7 +21742,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_gus-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -21546,24 +21752,28 @@
                 ],
                 "grouped": true,
                 "name": "veyron_gus-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_gus-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "veyron_gus"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_gus-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "veyron_gus"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_gus-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -21693,7 +21903,8 @@
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_jaq-release-afdo": {
         "_template": "release-afdo-generate",
@@ -21708,7 +21919,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_jaq-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -21717,24 +21929,28 @@
                 ],
                 "grouped": true,
                 "name": "veyron_jaq-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_jaq-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "veyron_jaq"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_jaq-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "veyron_jaq"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_jaq-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -21864,7 +22080,8 @@
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_jerry-release-afdo": {
         "_template": "release-afdo-generate",
@@ -21879,7 +22096,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_jerry-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -21888,24 +22106,28 @@
                 ],
                 "grouped": true,
                 "name": "veyron_jerry-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_jerry-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "veyron_jerry"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_jerry-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "veyron_jerry"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_jerry-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -22048,7 +22270,8 @@
         ],
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_mickey-release-afdo": {
         "_template": "release-afdo-generate",
@@ -22063,7 +22286,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_mickey-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -22072,24 +22296,28 @@
                 ],
                 "grouped": true,
                 "name": "veyron_mickey-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_mickey-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "veyron_mickey"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_mickey-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "veyron_mickey"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_mickey-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -22222,7 +22450,8 @@
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_mighty-release-afdo": {
         "_template": "release-afdo-generate",
@@ -22237,7 +22466,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_mighty-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -22246,24 +22476,28 @@
                 ],
                 "grouped": true,
                 "name": "veyron_mighty-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_mighty-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "veyron_mighty"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_mighty-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "veyron_mighty"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_mighty-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -22417,7 +22651,8 @@
         ],
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_minnie-cheets-release-afdo": {
         "_template": "release-afdo-generate",
@@ -22432,7 +22667,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_minnie-cheets-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -22441,24 +22677,28 @@
                 ],
                 "grouped": true,
                 "name": "veyron_minnie-cheets-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_minnie-cheets-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "veyron_minnie-cheets"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_minnie-cheets-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "veyron_minnie-cheets"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_minnie-cheets-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -22588,7 +22828,8 @@
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_minnie-release-afdo": {
         "_template": "release-afdo-generate",
@@ -22603,7 +22844,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_minnie-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -22612,24 +22854,28 @@
                 ],
                 "grouped": true,
                 "name": "veyron_minnie-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_minnie-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "veyron_minnie"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_minnie-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "veyron_minnie"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_minnie-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -22757,7 +23003,8 @@
             "veyron_pinky"
         ],
         "important": true,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_pinky-release-afdo": {
         "_template": "release-afdo-generate",
@@ -22772,7 +23019,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_pinky-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -22781,24 +23029,28 @@
                 ],
                 "grouped": true,
                 "name": "veyron_pinky-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_pinky-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "veyron_pinky"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_pinky-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "veyron_pinky"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_pinky-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -22929,7 +23181,8 @@
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_rialto-release-afdo": {
         "_template": "release-afdo-generate",
@@ -22944,7 +23197,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_rialto-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -22953,24 +23207,28 @@
                 ],
                 "grouped": true,
                 "name": "veyron_rialto-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_rialto-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "veyron_rialto"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_rialto-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "veyron_rialto"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_rialto-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -23099,7 +23357,8 @@
         ],
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_shark-release-afdo": {
         "_template": "release-afdo-generate",
@@ -23114,7 +23373,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_shark-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -23123,24 +23383,28 @@
                 ],
                 "grouped": true,
                 "name": "veyron_shark-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_shark-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "veyron_shark"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_shark-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "veyron_shark"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_shark-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -23273,7 +23537,8 @@
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
         "important": true,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_speedy-release-afdo": {
         "_template": "release-afdo-generate",
@@ -23288,7 +23553,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_speedy-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -23297,24 +23563,28 @@
                 ],
                 "grouped": true,
                 "name": "veyron_speedy-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_speedy-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "veyron_speedy"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_speedy-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "veyron_speedy"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_speedy-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -23457,7 +23727,8 @@
         ],
         "buildslave_type": "gce_beefy",
         "chrome_sdk_build_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_tiger-release-afdo": {
         "_template": "release-afdo-generate",
@@ -23472,7 +23743,8 @@
                 ],
                 "grouped": true,
                 "name": "veyron_tiger-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release-afdo-use",
@@ -23481,24 +23753,28 @@
                 ],
                 "grouped": true,
                 "name": "veyron_tiger-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_tiger-release-afdo-generate": {
         "_template": "release-afdo-generate",
         "boards": [
             "veyron_tiger"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_tiger-release-afdo-use": {
         "_template": "release-afdo-use",
         "boards": [
             "veyron_tiger"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "veyron_tiger-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -23644,7 +23920,8 @@
         "chrome_sdk": false,
         "chrome_sdk_build_chrome": false,
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "whirlwind-test-ap": {
         "_template": "test-ap",

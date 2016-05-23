@@ -2112,9 +2112,16 @@ def GetConfig():
                        'chromeos-dev-installer',
       dev_installer_prebuilts=True,
       git_sync=False,
-      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
-                config_lib.VMTestConfig(constants.DEV_MODE_TEST_TYPE),
-                config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)],
+      vm_tests=[
+          config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
+          config_lib.VMTestConfig(constants.DEV_MODE_TEST_TYPE),
+          config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)],
+      # Some release builders disable VMTests to be able to build on GCE, but
+      # still want VMTests enabled on trybot builders.
+      vm_tests_override=[
+          config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
+          config_lib.VMTestConfig(constants.DEV_MODE_TEST_TYPE),
+          config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)],
       hw_tests=HWTestList.SharedPoolCanary(),
       paygen=True,
       signer_tests=True,
