@@ -425,10 +425,6 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   static void GetAppLauncherEnabled(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  // Gets the desired navigation behavior from a click event.
-  static void GetDispositionFromClick(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
-
   // Gets Most Visited Items.
   static void GetMostVisitedItems(
       const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -478,10 +474,6 @@ class SearchBoxExtensionWrapper : public v8::Extension {
 
   // Logs a navigation on one of the Most Visited tile on the NTP.
   static void LogMostVisitedNavigation(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // Navigates the window to a URL represented by a restricted ID.
-  static void NavigateContentWindow(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
   // Pastes provided value or clipboard's content into the omnibox.
@@ -611,8 +603,6 @@ SearchBoxExtensionWrapper::GetNativeFunctionTemplate(
     return v8::FunctionTemplate::New(isolate, Focus);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "GetAppLauncherEnabled")))
     return v8::FunctionTemplate::New(isolate, GetAppLauncherEnabled);
-  if (name->Equals(v8::String::NewFromUtf8(isolate, "GetDispositionFromClick")))
-    return v8::FunctionTemplate::New(isolate, GetDispositionFromClick);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "GetMostVisitedItems")))
     return v8::FunctionTemplate::New(isolate, GetMostVisitedItems);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "GetMostVisitedItemData")))
@@ -643,8 +633,6 @@ SearchBoxExtensionWrapper::GetNativeFunctionTemplate(
           v8::String::NewFromUtf8(isolate, "LogMostVisitedNavigation"))) {
     return v8::FunctionTemplate::New(isolate, LogMostVisitedNavigation);
   }
-  if (name->Equals(v8::String::NewFromUtf8(isolate, "NavigateContentWindow")))
-    return v8::FunctionTemplate::New(isolate, NavigateContentWindow);
   if (name->Equals(v8::String::NewFromUtf8(isolate, "Paste")))
     return v8::FunctionTemplate::New(isolate, Paste);
   if (name->Equals(
@@ -737,32 +725,6 @@ void SearchBoxExtensionWrapper::GetAppLauncherEnabled(
 
   args.GetReturnValue().Set(
       SearchBox::Get(render_view)->app_launcher_enabled());
-}
-
-// static
-void SearchBoxExtensionWrapper::GetDispositionFromClick(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return;
-
-  if (args.Length() != 5) {
-    ThrowInvalidParameters(args);
-    return;
-  }
-
-  bool middle_button = args[0]->BooleanValue();
-  bool alt_key = args[1]->BooleanValue();
-  bool ctrl_key = args[2]->BooleanValue();
-  bool meta_key = args[3]->BooleanValue();
-  bool shift_key = args[4]->BooleanValue();
-
-  WindowOpenDisposition disposition = ui::DispositionFromClick(middle_button,
-                                                               alt_key,
-                                                               ctrl_key,
-                                                               meta_key,
-                                                               shift_key);
-  v8::Isolate* isolate = args.GetIsolate();
-  args.GetReturnValue().Set(v8::Int32::New(isolate, disposition));
 }
 
 // static
@@ -1125,39 +1087,6 @@ void SearchBoxExtensionWrapper::LogMostVisitedNavigation(
 
   SearchBox::Get(render_view)->LogMostVisitedNavigation(
       args[0]->IntegerValue(), V8ValueToUTF16(args[1]));
-}
-
-// static
-void SearchBoxExtensionWrapper::NavigateContentWindow(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return;
-
-  if (!args.Length() || !args[0]->IsNumber()) {
-    ThrowInvalidParameters(args);
-    return;
-  }
-
-  InstantRestrictedID rid = args[0]->Int32Value();
-  InstantMostVisitedItem item;
-  if (!SearchBox::Get(render_view)->GetMostVisitedItemWithID(rid, &item))
-    return;
-
-  GURL destination_url = item.url;
-
-  DVLOG(1) << render_view << " NavigateContentWindow: " << destination_url;
-
-  // Navigate the main frame. Note that the security checks are enforced by the
-  // browser process in InstantService::IsValidURLForNavigation(), but some
-  // simple checks here are useful for avoiding unnecessary IPCs.
-  if (destination_url.is_valid() &&
-      !destination_url.SchemeIs(url::kJavaScriptScheme)) {
-    WindowOpenDisposition disposition = CURRENT_TAB;
-    if (args[1]->IsNumber()) {
-      disposition = (WindowOpenDisposition) args[1]->Uint32Value();
-    }
-    SearchBox::Get(render_view)->NavigateToURL(destination_url, disposition);
-  }
 }
 
 // static

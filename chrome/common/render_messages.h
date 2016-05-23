@@ -531,13 +531,6 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem,
                     int /* page_seq_no */,
                     GURL /* url */)
 
-// Tells InstantExtended to navigate the active tab to a possibly privileged
-// URL.
-IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_SearchBoxNavigate,
-                    int /* page_seq_no */,
-                    GURL /* destination */,
-                    WindowOpenDisposition /* disposition */)
-
 // Tells InstantExtended to undo all most visited item deletions.
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions,
                     int /* page_seq_no */)

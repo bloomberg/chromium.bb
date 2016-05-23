@@ -41,13 +41,6 @@ class SearchIPCRouter : public content::WebContentsObserver {
     // the omnibox focus state.
     virtual void FocusOmnibox(OmniboxFocusState state) = 0;
 
-    // Called when the page wants to navigate to |url|. Usually used by the
-    // page to navigate to privileged destinations (e.g. chrome:// URLs) or to
-    // navigate to URLs that are hidden from the page using Restricted IDs (rid
-    // in the API).
-    virtual void NavigateToURL(const GURL& url,
-                               WindowOpenDisposition disposition) = 0;
-
     // Called when the SearchBox wants to delete a Most Visited item.
     virtual void OnDeleteMostVisitedItem(const GURL& url) = 0;
 
@@ -98,7 +91,6 @@ class SearchIPCRouter : public content::WebContentsObserver {
     // SearchIPCRouter calls these functions before sending/receiving messages
     // to/from the page.
     virtual bool ShouldProcessFocusOmnibox(bool is_active_tab) = 0;
-    virtual bool ShouldProcessNavigateToURL(bool is_active_tab) = 0;
     virtual bool ShouldProcessDeleteMostVisitedItem() = 0;
     virtual bool ShouldProcessUndoMostVisitedDeletion() = 0;
     virtual bool ShouldProcessUndoAllMostVisitedDeletions() = 0;
@@ -188,9 +180,6 @@ class SearchIPCRouter : public content::WebContentsObserver {
 
   void OnInstantSupportDetermined(int page_seq_no, bool supports_instant) const;
   void OnFocusOmnibox(int page_id, OmniboxFocusState state) const;
-  void OnSearchBoxNavigate(int page_id,
-                           const GURL& url,
-                           WindowOpenDisposition disposition) const;
   void OnDeleteMostVisitedItem(int page_seq_no, const GURL& url) const;
   void OnUndoMostVisitedDeletion(int page_seq_no, const GURL& url) const;
   void OnUndoAllMostVisitedDeletions(int page_seq_no) const;

@@ -8,7 +8,6 @@
  */
 
 <include src="instant_iframe_validation.js">
-<include src="window_disposition_util.js">
 
 
 /**
@@ -148,9 +147,6 @@ function createMostVisitedLink(params, href, title, text, direction, provider) {
     window.parent.postMessage('linkBlurred', DOMAIN_ORIGIN);
   });
 
-  // Webkit's security policy prevents some Most Visited thumbnails from
-  // working (those with schemes different from http and https). Therefore,
-  // navigateContentWindow is being used in order to get all schemes working.
   var navigateFunction = function handleNavigation(e) {
     var isServerSuggestion = 'url' in params;
 
@@ -165,12 +161,7 @@ function createMostVisitedLink(params, href, title, text, direction, provider) {
                                             provider || '');
     }
 
-    if ('rid' in params) {
-      e.preventDefault();
-      ntpApiHandle.navigateContentWindow(params.rid,
-                                         getDispositionFromEvent(e));
-    }
-    // Else follow <a> normally, so transition type would be LINK.
+    // Follow <a> normally, so transition type will be LINK.
   };
 
   link.addEventListener('click', navigateFunction);

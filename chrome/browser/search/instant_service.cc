@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "base/metrics/field_trial.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -62,22 +61,6 @@
 #endif  // defined(ENABLE_THEMES)
 
 namespace {
-
-// Used in a histogram; don't reorder, insert new values only at the end, and
-// keep in sync with "NtpMostVisitedScheme" in histograms.xml.
-enum class HistogramScheme {
-  OTHER,
-  OTHER_WEBSAFE,
-  HTTP,
-  HTTPS,
-  FTP,
-  FILE,
-  CHROME,
-  EXTENSION,
-  JAVASCRIPT,
-  // Insert new values here.
-  COUNT
-};
 
 const char kLocalNTPSuggestionService[] = "LocalNTPSuggestionsService";
 const char kLocalNTPSuggestionServiceEnabled[] = "Enabled";
@@ -306,53 +289,6 @@ void InstantService::Observe(int type,
 void InstantService::SendSearchURLsToRenderer(content::RenderProcessHost* rph) {
   rph->Send(new ChromeViewMsg_SetSearchURLs(
       search::GetSearchURLs(profile_), search::GetNewTabPageURL(profile_)));
-}
-
-bool InstantService::IsValidURLForNavigation(const GURL& url) const {
-  HistogramScheme scheme = HistogramScheme::OTHER;
-  if (url.SchemeIs(url::kHttpScheme)) {
-    scheme = HistogramScheme::HTTP;
-  } else if (url.SchemeIs(url::kHttpsScheme)) {
-    scheme = HistogramScheme::HTTPS;
-  } else if (url.SchemeIs(url::kFtpScheme)) {
-    scheme = HistogramScheme::FTP;
-  } else if (url.SchemeIsFile()) {
-    scheme = HistogramScheme::FILE;
-  } else if (url.SchemeIs(content::kChromeUIScheme)) {
-    scheme = HistogramScheme::CHROME;
-  } else if (url.SchemeIs(extensions::kExtensionScheme)) {
-    scheme = HistogramScheme::EXTENSION;
-  } else if (url.SchemeIs(url::kJavaScriptScheme)) {
-    scheme = HistogramScheme::JAVASCRIPT;
-  } else if (content::ChildProcessSecurityPolicy::GetInstance()
-                 ->IsWebSafeScheme(url.scheme())) {
-    scheme = HistogramScheme::OTHER_WEBSAFE;
-  }
-  UMA_HISTOGRAM_ENUMERATION("NewTabPage.MostVisitedScheme",
-                            static_cast<int32_t>(scheme),
-                            static_cast<int32_t>(HistogramScheme::COUNT));
-
-  // Certain URLs are privileged and should never be considered valid
-  // navigation targets.
-  // TODO(treib): Ideally this should deny by default and only allow if the
-  // scheme passes the content::ChildProcessSecurityPolicy::IsWebSafeScheme()
-  // check.
-  if (url.SchemeIs(content::kChromeUIScheme))
-    return false;
-
-  // javascript: URLs never make sense as a most visited item either.
-  if (url.SchemeIs(url::kJavaScriptScheme))
-    return false;
-
-  for (const auto& item : most_visited_items_) {
-    if (item.url == url)
-      return true;
-  }
-  for (const auto& item : suggestions_items_) {
-    if (item.url == url)
-      return true;
-  }
-  return false;
 }
 
 void InstantService::OnRendererProcessTerminated(int process_id) {

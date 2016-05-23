@@ -1891,27 +1891,6 @@ bool Browser::CanSaveContents(content::WebContents* web_contents) const {
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, SearchTabHelperDelegate implementation:
 
-void Browser::NavigateOnThumbnailClick(const GURL& url,
-                                       WindowOpenDisposition disposition,
-                                       content::WebContents* source_contents) {
-  DCHECK(source_contents);
-  // We're guaranteed that AUTO_BOOKMARK is the right transition since this only
-  // gets called to handle clicks in the new tab page (to navigate to most
-  // visited item URLs) and in the search results page (to navigate to
-  // privileged destinations (e.g. chrome://URLs)).
-  //
-  // TODO(kmadhusu): Page transitions to privileged destinations should be
-  // marked as "LINK" instead of "AUTO_BOOKMARK"?
-  chrome::NavigateParams params(this, url,
-                                ui::PAGE_TRANSITION_AUTO_BOOKMARK);
-  params.referrer = content::Referrer();
-  params.source_contents = source_contents;
-  params.disposition = disposition;
-  params.is_renderer_initiated = false;
-  params.initiating_profile = profile_;
-  chrome::Navigate(&params);
-}
-
 void Browser::OnWebContentsInstantSupportDisabled(
     const content::WebContents* web_contents) {
   DCHECK(web_contents);

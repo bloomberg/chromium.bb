@@ -163,8 +163,6 @@ bool SearchIPCRouter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_InstantSupportDetermined,
                         OnInstantSupportDetermined)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FocusOmnibox, OnFocusOmnibox);
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxNavigate,
-                        OnSearchBoxNavigate);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem,
                         OnDeleteMostVisitedItem);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion,
@@ -205,20 +203,6 @@ void SearchIPCRouter::OnFocusOmnibox(int page_seq_no,
     return;
 
   delegate_->FocusOmnibox(state);
-}
-
-void SearchIPCRouter::OnSearchBoxNavigate(
-    int page_seq_no,
-    const GURL& url,
-    WindowOpenDisposition disposition) const {
-  if (page_seq_no != commit_counter_)
-    return;
-
-  delegate_->OnInstantSupportDetermined(true);
-  if (!policy_->ShouldProcessNavigateToURL(is_active_tab_))
-    return;
-
-  delegate_->NavigateToURL(url, disposition);
 }
 
 void SearchIPCRouter::OnDeleteMostVisitedItem(int page_seq_no,

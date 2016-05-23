@@ -424,18 +424,6 @@ var renderTile = function(data) {
     if (data.provider) {
       logMostVisitedNavigation(position, data.provider);
     }
-
-    // For local suggestions, we use navigateContentWindow instead of the
-    // default action, since it includes support for file:// urls.
-    if (data.rid) {
-      ev.preventDefault();
-      var disp = chrome.embeddedSearch.newTabPage.getDispositionFromClick(
-        ev.button == 1,  // MIDDLE BUTTON
-        ev.altKey, ev.ctrlKey, ev.metaKey, ev.shiftKey);
-
-      window.chrome.embeddedSearch.newTabPage.navigateContentWindow(data.rid,
-                                                                    disp);
-    }
   });
 
   tile.addEventListener('keydown', function(event) {

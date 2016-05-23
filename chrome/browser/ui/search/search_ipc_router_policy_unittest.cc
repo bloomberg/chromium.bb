@@ -113,19 +113,6 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotProcessHistorySyncCheck) {
   EXPECT_FALSE(GetSearchIPCRouterPolicy()->ShouldProcessHistorySyncCheck());
 }
 
-TEST_F(SearchIPCRouterPolicyTest, ProcessNavigateToURL) {
-  NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
-  EXPECT_TRUE(GetSearchIPCRouterPolicy()->ShouldProcessNavigateToURL(true));
-}
-
-TEST_F(SearchIPCRouterPolicyTest, DoNotProcessNavigateToURL) {
-  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
-  EXPECT_FALSE(GetSearchIPCRouterPolicy()->ShouldProcessNavigateToURL(true));
-
-  NavigateAndCommitActiveTab(GURL("file://foo/bar"));
-  EXPECT_FALSE(GetSearchIPCRouterPolicy()->ShouldProcessNavigateToURL(true));
-}
-
 TEST_F(SearchIPCRouterPolicyTest, ProcessPasteIntoOmniboxMsg) {
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   EXPECT_TRUE(GetSearchIPCRouterPolicy()->ShouldProcessPasteIntoOmnibox(true));
@@ -143,7 +130,6 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotProcessMessagesForIncognitoPage) {
 
   SearchIPCRouter::Policy* router_policy = GetSearchIPCRouterPolicy();
   EXPECT_FALSE(router_policy->ShouldProcessFocusOmnibox(true));
-  EXPECT_FALSE(router_policy->ShouldProcessNavigateToURL(true));
   EXPECT_FALSE(router_policy->ShouldProcessDeleteMostVisitedItem());
   EXPECT_FALSE(router_policy->ShouldProcessUndoMostVisitedDeletion());
   EXPECT_FALSE(router_policy->ShouldProcessUndoAllMostVisitedDeletions());
@@ -157,7 +143,6 @@ TEST_F(SearchIPCRouterPolicyTest, DoNotProcessMessagesForInactiveTab) {
   // Assume the NTP is deactivated.
   SearchIPCRouter::Policy* router_policy = GetSearchIPCRouterPolicy();
   EXPECT_FALSE(router_policy->ShouldProcessFocusOmnibox(false));
-  EXPECT_FALSE(router_policy->ShouldProcessNavigateToURL(false));
   EXPECT_FALSE(router_policy->ShouldProcessPasteIntoOmnibox(false));
   EXPECT_FALSE(router_policy->ShouldSendSetInputInProgress(false));
 }

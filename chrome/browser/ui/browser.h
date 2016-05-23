@@ -692,9 +692,6 @@ class Browser : public TabStripModelObserver,
   bool CanSaveContents(content::WebContents* web_contents) const override;
 
   // Overridden from SearchTabHelperDelegate:
-  void NavigateOnThumbnailClick(const GURL& url,
-                                WindowOpenDisposition disposition,
-                                content::WebContents* source_contents) override;
   void OnWebContentsInstantSupportDisabled(
       const content::WebContents* web_contents) override;
   OmniboxView* GetOmniboxView() override;

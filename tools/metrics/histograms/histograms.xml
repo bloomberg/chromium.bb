@@ -33409,6 +33409,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.MostVisitedScheme" enum="NtpMostVisitedScheme">
+  <obsolete>
+    Deprecated 2016-05.
+  </obsolete>
   <owner>treib@chromium.org</owner>
   <summary>
     The schemes of URLs of most visited thumbnails that the user clicked on.
@@ -81063,6 +81066,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="NtpMostVisitedScheme" type="int">
+  <obsolete>
+    Deprecated 2016-05.
+  </obsolete>
   <int value="0" label="Other (not web-safe)"/>
   <int value="1" label="Other (web-safe)"/>
   <int value="2" label="http://"/>

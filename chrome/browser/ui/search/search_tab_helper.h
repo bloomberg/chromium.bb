@@ -160,8 +160,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   // Overridden from SearchIPCRouter::Delegate:
   void OnInstantSupportDetermined(bool supports_instant) override;
   void FocusOmnibox(OmniboxFocusState state) override;
-  void NavigateToURL(const GURL& url,
-                     WindowOpenDisposition disposition) override;
   void OnDeleteMostVisitedItem(const GURL& url) override;
   void OnUndoMostVisitedDeletion(const GURL& url) override;
   void OnUndoAllMostVisitedDeletions() override;

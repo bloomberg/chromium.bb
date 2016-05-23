@@ -21,18 +21,6 @@ class OmniboxView;
 // SearchTabHelper and to provide necessary functionality.
 class SearchTabHelperDelegate {
  public:
-  // Navigates the page to |url| in response to a click event. Usually used
-  // by the page to navigate to privileged destinations (e.g. chrome:// URLs) or
-  // to navigate to URLs that are hidden from the page using Restricted IDs
-  // (rid in the API).
-  //
-  // TODO(kmadhusu): Handle search results page navigations to privileged
-  // destinations in a seperate function. This function should handle only the
-  // new tab page thumbnail click events.
-  virtual void NavigateOnThumbnailClick(const GURL& url,
-                                        WindowOpenDisposition disposition,
-                                        content::WebContents* source_contents);
-
   // Invoked when the |web_contents| no longer supports Instant.
   virtual void OnWebContentsInstantSupportDisabled(
       const content::WebContents* web_contents);

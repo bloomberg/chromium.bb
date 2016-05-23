@@ -450,17 +450,6 @@ void SearchTabHelper::FocusOmnibox(OmniboxFocusState state) {
 #endif
 }
 
-void SearchTabHelper::NavigateToURL(const GURL& url,
-                                    WindowOpenDisposition disposition) {
-  // Make sure the specified URL is actually on the most visited or suggested
-  // items list.
-  if (!instant_service_ || !instant_service_->IsValidURLForNavigation(url))
-    return;
-
-  if (delegate_)
-    delegate_->NavigateOnThumbnailClick(url, disposition, web_contents_);
-}
-
 void SearchTabHelper::OnDeleteMostVisitedItem(const GURL& url) {
   DCHECK(!url.is_empty());
   if (instant_service_)
