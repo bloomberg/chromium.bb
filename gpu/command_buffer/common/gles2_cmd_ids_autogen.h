@@ -330,11 +330,13 @@
   OP(UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate) /* 571 */
 
 enum CommandId {
-  kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.
+  kOneBeforeStartPoint =
+      cmd::kLastCommonId,  // All GLES2 commands start after this.
 #define GLES2_CMD_OP(name) k##name,
   GLES2_COMMAND_LIST(GLES2_CMD_OP)
 #undef GLES2_CMD_OP
-      kNumCommands
+      kNumCommands,
+  kFirstGLES2Command = kOneBeforeStartPoint + 1
 };
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_IDS_AUTOGEN_H_

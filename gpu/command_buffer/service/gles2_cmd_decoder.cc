@@ -2203,7 +2203,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   };
 
   // A table of CommandInfo for all the commands.
-  static const CommandInfo command_info[kNumCommands - kStartPoint];
+  static const CommandInfo command_info[kNumCommands - kFirstGLES2Command];
 
   // Most recent generation of the TextureManager.  If this no longer matches
   // the current generation when our context becomes current, then we'll rebind
@@ -4645,7 +4645,7 @@ error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(
 }
 
 const char* GLES2DecoderImpl::GetCommandName(unsigned int command_id) const {
-  if (command_id > kStartPoint && command_id < kNumCommands) {
+  if (command_id >= kFirstGLES2Command && command_id < kNumCommands) {
     return gles2::GetCommandName(static_cast<CommandId>(command_id));
   }
   return GetCommonCommandName(static_cast<cmd::CommandId>(command_id));
@@ -4700,7 +4700,7 @@ error::Error GLES2DecoderImpl::DoCommandsImpl(unsigned int num_commands,
     }
 
     const unsigned int arg_count = size - 1;
-    unsigned int command_index = command - kStartPoint - 1;
+    unsigned int command_index = command - kFirstGLES2Command;
     if (command_index < arraysize(command_info)) {
       const CommandInfo& info = command_info[command_index];
       unsigned int info_arg_count = static_cast<unsigned int>(info.arg_count);

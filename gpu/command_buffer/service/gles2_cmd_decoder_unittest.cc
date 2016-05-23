@@ -108,6 +108,12 @@ TEST_P(GLES3DecoderTest, Basic) {
       GL_TEXTURE_3D));
 }
 
+TEST_P(GLES2DecoderTest, InvalidCommand) {
+  cmd::Noop cmd;
+  cmd.header.Init(gles2::kNumCommands, 1);
+  EXPECT_EQ(error::kUnknownCommand, ExecuteImmediateCmd(cmd, 0));
+}
+
 TEST_P(GLES2DecoderTest, GetIntegervCached) {
   struct TestInfo {
     GLenum pname;

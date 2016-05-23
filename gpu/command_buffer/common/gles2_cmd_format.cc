@@ -25,7 +25,7 @@ const char* GetCommandName(CommandId id) {
   #undef GLES2_CMD_OP
   };
 
-  size_t index = static_cast<size_t>(id) - kStartPoint - 1;
+  size_t index = static_cast<size_t>(id) - kFirstGLES2Command;
   return (index < arraysize(names)) ?  names[index] : "*unknown-command*";
 }
 

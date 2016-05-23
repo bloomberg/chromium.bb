@@ -10220,12 +10220,13 @@ class GLGenerator(object):
       f.write("\n")
 
       f.write("enum CommandId {\n")
-      f.write("  kStartPoint = cmd::kLastCommonId,  "
+      f.write("  kOneBeforeStartPoint = cmd::kLastCommonId,  "
                  "// All GLES2 commands start after this.\n")
       f.write("#define GLES2_CMD_OP(name) k ## name,\n")
       f.write("  GLES2_COMMAND_LIST(GLES2_CMD_OP)\n")
       f.write("#undef GLES2_CMD_OP\n")
-      f.write("  kNumCommands\n")
+      f.write("  kNumCommands,\n")
+      f.write("  kFirstGLES2Command = kOneBeforeStartPoint + 1\n")
       f.write("};\n")
       f.write("\n")
     self.generated_cpp_filenames.append(filename)
