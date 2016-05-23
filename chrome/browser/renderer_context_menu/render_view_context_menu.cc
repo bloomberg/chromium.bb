@@ -99,6 +99,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_plugin_guest_mode.h"
@@ -1741,10 +1742,18 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     return;
   command_executed_ = true;
 
+  // MAY BE NULL. Check before using. The frame under the cursor could have
+  // been asynchronously destroyed while the context menu was open, but many
+  // context menu commands should continue to function in this situation (e.g.
+  // "Reload").
+  RenderFrameHost* render_frame_host = GetRenderFrameHost();
+
   // Process extension menu items.
   if (ContextMenuMatcher::IsExtensionsCustomCommandId(id)) {
-    extension_items_.ExecuteCommand(id, source_web_contents_,
-                                    GetRenderFrameHost(), params_);
+    if (render_frame_host) {
+      extension_items_.ExecuteCommand(id, source_web_contents_,
+                                      render_frame_host, params_);
+    }
     return;
   }
 
@@ -1819,21 +1828,9 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
               ui::PAGE_TRANSITION_LINK);
       break;
 
-    case IDC_CONTENT_CONTEXT_SAVELINKAS: {
-      RecordDownloadSource(DOWNLOAD_INITIATED_BY_CONTEXT_MENU);
-      const GURL& url = params_.link_url;
-      content::Referrer referrer = CreateReferrer(url, params_);
-      DownloadManager* dlm =
-          BrowserContext::GetDownloadManager(browser_context_);
-      std::unique_ptr<DownloadUrlParameters> dl_params(
-          DownloadUrlParameters::FromWebContents(source_web_contents_, url));
-      dl_params->set_referrer(referrer);
-      dl_params->set_referrer_encoding(params_.frame_charset);
-      dl_params->set_suggested_name(params_.suggested_filename);
-      dl_params->set_prompt(true);
-      dlm->DownloadUrl(std::move(dl_params));
+    case IDC_CONTENT_CONTEXT_SAVELINKAS:
+      SaveLinkAs();
       break;
-    }
 
     case IDC_CONTENT_CONTEXT_SAVEAVAS:
     case IDC_CONTENT_CONTEXT_SAVEIMAGEAS: {
@@ -2002,7 +1999,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_PRINT: {
 #if defined(ENABLE_PRINTING)
       if (params_.media_type != WebContextMenuData::MediaTypeNone) {
-        RenderFrameHost* render_frame_host = GetRenderFrameHost();
         if (render_frame_host) {
           render_frame_host->Send(new PrintMsg_PrintNodeUnderContextMenu(
               render_frame_host->GetRoutingID()));
@@ -2267,6 +2263,34 @@ void RenderViewContextMenu::Inspect(int x, int y) {
   if (!render_frame_host)
     return;
   DevToolsWindow::InspectElement(render_frame_host, x, y);
+}
+
+void RenderViewContextMenu::SaveLinkAs() {
+  RenderFrameHost* render_frame_host = GetRenderFrameHost();
+  if (!render_frame_host)
+    return;
+
+  RecordDownloadSource(DOWNLOAD_INITIATED_BY_CONTEXT_MENU);
+
+  const GURL& url = params_.link_url;
+  content::StoragePartition* storage_partition =
+      BrowserContext::GetStoragePartition(
+          source_web_contents_->GetBrowserContext(),
+          render_frame_host->GetSiteInstance());
+
+  std::unique_ptr<DownloadUrlParameters> dl_params(
+      new DownloadUrlParameters(
+          url, render_frame_host->GetProcess()->GetID(),
+          render_frame_host->GetRenderViewHost()->GetRoutingID(),
+          render_frame_host->GetRoutingID(),
+          storage_partition->GetURLRequestContext()));
+  dl_params->set_referrer(CreateReferrer(url, params_));
+  dl_params->set_referrer_encoding(params_.frame_charset);
+  dl_params->set_suggested_name(params_.suggested_filename);
+  dl_params->set_prompt(true);
+
+  BrowserContext::GetDownloadManager(browser_context_)->DownloadUrl(
+      std::move(dl_params));
 }
 
 void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {

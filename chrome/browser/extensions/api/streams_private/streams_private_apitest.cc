@@ -387,7 +387,8 @@ IN_PROC_BROWSER_TEST_F(StreamsPrivateApiTest, DirectDownload) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
   std::unique_ptr<DownloadUrlParameters> params(
-      DownloadUrlParameters::FromWebContents(web_contents, url));
+      DownloadUrlParameters::CreateForWebContentsMainFrame(
+          web_contents, url));
   params->set_file_path(target_path);
 
   // Start download of the URL with a path "/text_path.txt" on the test server.

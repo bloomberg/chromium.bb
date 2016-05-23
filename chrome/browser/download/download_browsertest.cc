@@ -883,7 +883,8 @@ class DownloadTest : public InProcessBrowserTest {
           creation_observer(new content::DownloadTestItemCreationObserver);
 
       std::unique_ptr<DownloadUrlParameters> params(
-          DownloadUrlParameters::FromWebContents(web_contents, starting_url));
+          DownloadUrlParameters::CreateForWebContentsMainFrame(
+              web_contents, starting_url));
       params->set_callback(creation_observer->callback());
       DownloadManagerForBrowser(browser())->DownloadUrl(std::move(params));
 
@@ -1680,7 +1681,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab4) {
 
   // Download a file in that new tab, having it open a file picker
   std::unique_ptr<DownloadUrlParameters> params(
-      DownloadUrlParameters::FromWebContents(new_tab, slow_download_url));
+      DownloadUrlParameters::CreateForWebContentsMainFrame(
+          new_tab, slow_download_url));
   params->set_prompt(true);
   manager->DownloadUrl(std::move(params));
   observer->WaitForFinished();
@@ -2150,7 +2152,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrl) {
           DownloadManagerForBrowser(browser()), 1,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
   std::unique_ptr<DownloadUrlParameters> params(
-      DownloadUrlParameters::FromWebContents(web_contents, url));
+      DownloadUrlParameters::CreateForWebContentsMainFrame(
+          web_contents, url));
   params->set_prompt(true);
   DownloadManagerForBrowser(browser())->DownloadUrl(std::move(params));
   observer->WaitForFinished();
@@ -2178,7 +2181,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadUrlToPath) {
       = other_directory.path().Append(file.BaseName());
   content::DownloadTestObserver* observer(CreateWaiter(browser(), 1));
   std::unique_ptr<DownloadUrlParameters> params(
-      DownloadUrlParameters::FromWebContents(web_contents, url));
+      DownloadUrlParameters::CreateForWebContentsMainFrame(
+          web_contents, url));
   params->set_file_path(target_file_full_path);
   DownloadManagerForBrowser(browser())->DownloadUrl(std::move(params));
   observer->WaitForFinished();
@@ -3634,7 +3638,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTestWithShelf, HiddenDownload) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   std::unique_ptr<DownloadUrlParameters> params(
-      DownloadUrlParameters::FromWebContents(web_contents, url));
+      DownloadUrlParameters::CreateForWebContentsMainFrame(
+          web_contents, url));
   params->set_callback(base::Bind(&SetHiddenDownloadCallback));
   download_manager->DownloadUrl(std::move(params));
   observer->WaitForFinished();

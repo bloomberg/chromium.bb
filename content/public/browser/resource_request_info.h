@@ -30,6 +30,12 @@ class ResourceRequestInfo {
 
   // Allocates a new, dummy ResourceRequestInfo and associates it with the
   // given URLRequest.
+  //
+  // The RenderView routing ID must correspond to the RenderView of the
+  // RenderFrame, both of which share the same RenderProcess. This may be a
+  // different RenderView than the WebContents' main RenderView. If the
+  // download is not associated with a frame, the IDs can be all -1.
+  //
   // NOTE: Add more parameters if you need to initialize other fields.
   CONTENT_EXPORT static void AllocateForTesting(net::URLRequest* request,
                                                 ResourceType resource_type,

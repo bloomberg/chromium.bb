@@ -155,7 +155,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       const Referrer& referrer,
       bool is_content_initiated,
       ResourceContext* context,
-      int child_id,
+      int render_process_id,
       int render_view_route_id,
       int render_frame_route_id,
       bool do_not_prompt_for_login);

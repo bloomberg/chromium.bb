@@ -61,31 +61,28 @@ class CONTENT_EXPORT DownloadUrlParameters {
   typedef std::vector<RequestHeadersNameValuePair> RequestHeadersType;
 
   // Construct DownloadUrlParameters for downloading the resource at |url| and
-  // associating the download with |web_contents|.
-  //
-  // DEPRECATED: Using this method can cause the request to be associated with
-  // the wrong site instance where multiple iframes are involved. Use the
-  // DownloadUrlParameters constructor below and specify the process and frame
-  // IDs explicitly.
-  static std::unique_ptr<DownloadUrlParameters> FromWebContents(
+  // associating the download with the main frame of the given WebContents.
+  static std::unique_ptr<DownloadUrlParameters> CreateForWebContentsMainFrame(
       WebContents* web_contents,
       const GURL& url);
 
-  // Construct DownloadUrlParameters for downloading the resource at |url| and
-  // associating the download with the WebContents identified by
-  // |render_process_host_id| and |render_view_host_routing_id|.
+  // Constructs a download not associated with a frame.
   //
-  // If the download is not associated with a WebContents, then set the IDs to
-  // -1.
-  //
-  // NOTE: Initiating downloads that are not associated with a WebContents is
-  // not safe and should only be done in a limited set of cases where the
-  // download URL has been previously vetted. A download that's initiated
-  // without associating it with a WebContents don't receive the same security
-  // checks as a request that's associated with one. Hence, downloads that are
-  // not associated with a WebContents should only be made for URLs that are
-  // either trusted or URLs that have previously been successfully issued using
-  // a non-privileged WebContents.
+  // It is not safe to have downloads not associated with a frame and
+  // this should only be done in a limited set of cases where the download URL
+  // has been previously vetted. A download that's initiated without
+  // associating it with a frame don't receive the same security checks
+  // as a request that's associated with one. Hence, downloads that are not
+  // associated with a frame should only be made for URLs that are either
+  // trusted or URLs that have previously been successfully issued using a
+  // non-privileged frame.
+  DownloadUrlParameters(
+      const GURL& url,
+      net::URLRequestContextGetter* url_request_context_getter);
+
+  // The RenderView routing ID must correspond to the RenderView of the
+  // RenderFrame, both of which share the same RenderProcess. This may be a
+  // different RenderView than the WebContents' main RenderView.
   DownloadUrlParameters(
       const GURL& url,
       int render_process_host_id,
@@ -214,6 +211,9 @@ class CONTENT_EXPORT DownloadUrlParameters {
   bool prefer_cache() const { return prefer_cache_; }
   const Referrer& referrer() const { return referrer_; }
   const std::string& referrer_encoding() const { return referrer_encoding_; }
+
+  // These will be -1 if the request is not associated with a frame. See
+  // the constructors for more.
   int render_process_host_id() const { return render_process_host_id_; }
   int render_view_host_routing_id() const {
     return render_view_host_routing_id_;
@@ -221,6 +221,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   int render_frame_host_routing_id() const {
     return render_frame_host_routing_id_;
   }
+
   const RequestHeadersType& request_headers() const { return request_headers_; }
   net::URLRequestContextGetter* url_request_context_getter() {
     return url_request_context_getter_.get();

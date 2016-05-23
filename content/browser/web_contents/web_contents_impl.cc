@@ -2769,9 +2769,14 @@ void WebContentsImpl::SaveFrameWithHeaders(const GURL& url,
     return;
 
   // TODO(nasko): This check for main frame is incorrect and should be fixed
-  // by explicitly passing in which frame this method should target.
+  // by explicitly passing in which frame this method should target. This would
+  // indicate whether it's the main frame, and also tell us the frame pointer
+  // to use for routing.
   bool is_main_frame = (url == GetLastCommittedURL());
+  RenderFrameHost* frame_host = GetMainFrame();
 
+  StoragePartition* storage_partition = BrowserContext::GetStoragePartition(
+      GetBrowserContext(), frame_host->GetSiteInstance());
   DownloadManager* dlm =
       BrowserContext::GetDownloadManager(GetBrowserContext());
   if (!dlm)
@@ -2782,8 +2787,10 @@ void WebContentsImpl::SaveFrameWithHeaders(const GURL& url,
     if (entry)
       post_id = entry->GetPostID();
   }
-  std::unique_ptr<DownloadUrlParameters> params(
-      DownloadUrlParameters::FromWebContents(this, url));
+  std::unique_ptr<DownloadUrlParameters> params(new DownloadUrlParameters(
+      url, frame_host->GetProcess()->GetID(),
+      frame_host->GetRenderViewHost()->GetRoutingID(),
+      frame_host->GetRoutingID(), storage_partition->GetURLRequestContext()));
   params->set_referrer(referrer);
   params->set_post_id(post_id);
   if (post_id >= 0)

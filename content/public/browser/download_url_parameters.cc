@@ -18,6 +18,12 @@ namespace content {
 
 DownloadUrlParameters::DownloadUrlParameters(
     const GURL& url,
+    net::URLRequestContextGetter* url_request_context_getter)
+    : DownloadUrlParameters(url, -1, -1, -1, url_request_context_getter) {
+}
+
+DownloadUrlParameters::DownloadUrlParameters(
+    const GURL& url,
     int render_process_host_id,
     int render_view_host_routing_id,
     int render_frame_host_routing_id,
@@ -37,7 +43,8 @@ DownloadUrlParameters::~DownloadUrlParameters() {
 }
 
 // static
-std::unique_ptr<DownloadUrlParameters> DownloadUrlParameters::FromWebContents(
+std::unique_ptr<DownloadUrlParameters>
+DownloadUrlParameters::CreateForWebContentsMainFrame(
     WebContents* web_contents,
     const GURL& url) {
   RenderFrameHost* render_frame_host = web_contents->GetMainFrame();
@@ -45,7 +52,7 @@ std::unique_ptr<DownloadUrlParameters> DownloadUrlParameters::FromWebContents(
       web_contents->GetBrowserContext(), render_frame_host->GetSiteInstance());
   return std::unique_ptr<DownloadUrlParameters>(new DownloadUrlParameters(
       url, render_frame_host->GetProcess()->GetID(),
-      web_contents->GetRenderViewHost()->GetRoutingID(),
+      render_frame_host->GetRenderViewHost()->GetRoutingID(),
       render_frame_host->GetRoutingID(),
       storage_partition->GetURLRequestContext()));
 }

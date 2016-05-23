@@ -1914,7 +1914,7 @@ void DownloadItemImpl::ResumeInterruptedDownload() {
   // request will not be dropped if the WebContents (and by extension, the
   // associated renderer) goes away before a response is received.
   std::unique_ptr<DownloadUrlParameters> download_params(
-      new DownloadUrlParameters(GetURL(), -1, -1, -1,
+      new DownloadUrlParameters(GetURL(),
                                 storage_partition->GetURLRequestContext()));
   download_params->set_file_path(GetFullPath());
   download_params->set_offset(GetReceivedBytes());

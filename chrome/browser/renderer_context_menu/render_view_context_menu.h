@@ -160,6 +160,8 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   // Launch the inspector targeting a point in the RenderView
   void Inspect(int x, int y);
 
+  void SaveLinkAs();
+
   // Writes the specified text/url to the system clipboard
   void WriteURLToClipboard(const GURL& url);
 

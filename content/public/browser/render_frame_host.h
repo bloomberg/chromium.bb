@@ -163,7 +163,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   virtual void InsertVisualStateCallback(
       const VisualStateCallback& callback) = 0;
 
-  // Temporary until we get rid of RenderViewHost.
+  // RenderViewHost for this frame.
   virtual RenderViewHost* GetRenderViewHost() = 0;
 
   // Returns the ServiceRegistry for this frame.

@@ -286,7 +286,8 @@ void IndexedDBInternalsUI::OnDownloadDataReady(
   BrowserContext* browser_context =
       web_ui()->GetWebContents()->GetBrowserContext();
   std::unique_ptr<DownloadUrlParameters> dl_params(
-      DownloadUrlParameters::FromWebContents(web_ui()->GetWebContents(), url));
+      DownloadUrlParameters::CreateForWebContentsMainFrame(
+          web_ui()->GetWebContents(), url));
   DownloadManager* dlm = BrowserContext::GetDownloadManager(browser_context);
 
   const GURL referrer(web_ui()->GetWebContents()->GetLastCommittedURL());

@@ -65,8 +65,11 @@ class DragDownloadFile::DragDownloadFileUI : public DownloadItem::Observer {
         BrowserContext::GetDownloadManager(web_contents_->GetBrowserContext());
 
     RecordDownloadSource(INITIATED_BY_DRAG_N_DROP);
+    // TODO(https://crbug.com/614134) This should use the frame actually
+    // containing the link being dragged rather than the main frame of the tab.
     std::unique_ptr<content::DownloadUrlParameters> params(
-        DownloadUrlParameters::FromWebContents(web_contents_, url_));
+        DownloadUrlParameters::CreateForWebContentsMainFrame(
+            web_contents_, url_));
     params->set_referrer(referrer_);
     params->set_referrer_encoding(referrer_encoding_);
     params->set_callback(base::Bind(&DragDownloadFileUI::OnDownloadStarted,

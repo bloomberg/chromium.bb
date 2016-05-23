@@ -747,7 +747,7 @@ DownloadInterruptReason ResourceDispatcherHostImpl::BeginDownload(
     const Referrer& referrer,
     bool is_content_initiated,
     ResourceContext* context,
-    int child_id,
+    int render_process_id,
     int render_view_route_id,
     int render_frame_route_id,
     bool do_not_prompt_for_login) {
@@ -775,7 +775,7 @@ DownloadInterruptReason ResourceDispatcherHostImpl::BeginDownload(
 
   // Check if the renderer is permitted to request the requested URL.
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->
-          CanRequestURL(child_id, url)) {
+          CanRequestURL(render_process_id, url)) {
     DVLOG(1) << "Denied unauthorized download request for "
              << url.possibly_invalid_spec();
     return DOWNLOAD_INTERRUPT_REASON_NETWORK_INVALID_REQUEST;
@@ -791,7 +791,7 @@ DownloadInterruptReason ResourceDispatcherHostImpl::BeginDownload(
   }
 
   ResourceRequestInfoImpl* extra_info =
-      CreateRequestInfo(child_id, render_view_route_id,
+      CreateRequestInfo(render_process_id, render_view_route_id,
                         render_frame_route_id, true, context);
   extra_info->set_do_not_prompt_for_login(do_not_prompt_for_login);
   extra_info->AssociateWithRequest(request.get());  // Request takes ownership.

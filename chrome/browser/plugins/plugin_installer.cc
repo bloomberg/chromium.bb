@@ -104,8 +104,8 @@ void PluginInstaller::StartInstallingWithDownloadManager(
   state_ = INSTALLER_STATE_DOWNLOADING;
   FOR_EACH_OBSERVER(PluginInstallerObserver, observers_, DownloadStarted());
   std::unique_ptr<content::DownloadUrlParameters> download_parameters(
-      content::DownloadUrlParameters::FromWebContents(web_contents,
-                                                      plugin_url));
+      content::DownloadUrlParameters::CreateForWebContentsMainFrame(
+          web_contents, plugin_url));
   download_parameters->set_callback(
       base::Bind(&PluginInstaller::DownloadStarted, base::Unretained(this)));
   RecordDownloadSource(DOWNLOAD_INITIATED_BY_PLUGIN_INSTALLER);

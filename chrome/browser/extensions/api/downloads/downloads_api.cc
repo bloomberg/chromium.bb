@@ -965,7 +965,7 @@ bool DownloadsDownloadFunction::RunAsync() {
   std::unique_ptr<content::DownloadUrlParameters> download_params(
       new content::DownloadUrlParameters(
           download_url, render_frame_host()->GetProcess()->GetID(),
-          render_view_host_do_not_use()->GetRoutingID(),
+          render_frame_host()->GetRenderViewHost()->GetRoutingID(),
           render_frame_host()->GetRoutingID(),
           storage_partition->GetURLRequestContext()));
 
