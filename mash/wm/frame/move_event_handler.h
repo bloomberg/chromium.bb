@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "ash/wm/common/wm_toplevel_window_event_handler.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
 #include "ui/events/event_handler.h"
@@ -21,15 +22,16 @@ class WindowManagerClient;
 }
 
 namespace ui {
-class LocatedEvent;
+class CancelModeEvent;
 }
 
 namespace mash {
 namespace wm {
 
-class MoveLoop;
+class WmWindowMus;
 
-// EventHandler attached to the root. Starts a MoveLoop as necessary.
+// EventHandler attached to windows that may be dragged and/or resized. This
+// forwards to WmToplevelWindowEventHandler to handle the actual drag/resize.
 class MoveEventHandler : public ui::EventHandler, public aura::WindowObserver {
  public:
   MoveEventHandler(mus::Window* mus_window,
@@ -38,25 +40,23 @@ class MoveEventHandler : public ui::EventHandler, public aura::WindowObserver {
   ~MoveEventHandler() override;
 
  private:
-  void ProcessLocatedEvent(ui::LocatedEvent* event);
-  int GetNonClientComponentForEvent(const ui::LocatedEvent* event);
-
   // Removes observer and EventHandler installed on |root_window_|.
   void Detach();
 
   // Overridden from ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
-  void OnTouchEvent(ui::TouchEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
   void OnCancelMode(ui::CancelModeEvent* event) override;
 
   // Overridden from aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
 
-  mus::Window* mus_window_;
+  WmWindowMus* wm_window_;
   mus::WindowManagerClient* window_manager_client_;
-  aura::Window* aura_window_;
+  // The root window of the aura::Window supplied to the constructor.
+  // MoveEventHandler is added as a pre-target handler (and observer) of this.
   aura::Window* root_window_;
-  std::unique_ptr<MoveLoop> move_loop_;
+  ash::wm::WmToplevelWindowEventHandler toplevel_window_event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(MoveEventHandler);
 };

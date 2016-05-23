@@ -7,12 +7,14 @@
 #include "ash/wm/common/window_resizer.h"
 #include "ash/wm/common/wm_activation_observer.h"
 #include "ash/wm/common/wm_shell_window_ids.h"
+#include "base/memory/ptr_util.h"
 #include "components/mus/common/util.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "mash/wm/bridge/wm_root_window_controller_mus.h"
 #include "mash/wm/bridge/wm_window_mus.h"
 #include "mash/wm/container_ids.h"
+#include "mash/wm/drag_window_resizer.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
 #include "mash/wm/root_window_controller.h"
 
@@ -129,8 +131,8 @@ void WmGlobalsMus::RecordUserMetricsAction(
 std::unique_ptr<ash::WindowResizer> WmGlobalsMus::CreateDragWindowResizer(
     std::unique_ptr<ash::WindowResizer> next_window_resizer,
     ash::wm::WindowState* window_state) {
-  NOTIMPLEMENTED();
-  return next_window_resizer;
+  return base::WrapUnique(
+      new DragWindowResizer(std::move(next_window_resizer), window_state));
 }
 
 bool WmGlobalsMus::IsOverviewModeSelecting() {

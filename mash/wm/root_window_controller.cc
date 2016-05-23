@@ -10,6 +10,8 @@
 #include <sstream>
 
 #include "ash/wm/common/always_on_top_controller.h"
+#include "ash/wm/common/dock/docked_window_layout_manager.h"
+#include "ash/wm/common/panels/panel_layout_manager.h"
 #include "ash/wm/common/wm_shell_window_ids.h"
 #include "ash/wm/common/workspace/workspace_layout_manager.h"
 #include "ash/wm/common/workspace/workspace_layout_manager_delegate.h"
@@ -311,6 +313,21 @@ void RootWindowController::CreateContainers() {
       ->SetLayoutManager(base::WrapUnique(new ash::WorkspaceLayoutManager(
           WmWindowMus::Get(user_private_windows),
           std::move(workspace_layout_manager_delegate))));
+
+  mus::Window* user_private_docked_windows =
+      GetWindowForContainer(mojom::Container::USER_PRIVATE_DOCKED_WINDOWS);
+  WmWindowMus* user_private_docked_windows_wm =
+      WmWindowMus::Get(user_private_docked_windows);
+  layout_managers_.erase(user_private_docked_windows);
+  user_private_docked_windows_wm->SetLayoutManager(base::WrapUnique(
+      new ash::DockedWindowLayoutManager(user_private_docked_windows_wm)));
+
+  mus::Window* user_private_panels =
+      GetWindowForContainer(mojom::Container::USER_PRIVATE_PANELS);
+  WmWindowMus* user_private_panels_wm = WmWindowMus::Get(user_private_panels);
+  layout_managers_.erase(user_private_panels);
+  user_private_panels_wm->SetLayoutManager(
+      base::WrapUnique(new ash::PanelLayoutManager(user_private_panels_wm)));
 }
 
 }  // namespace wm

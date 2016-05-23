@@ -68,6 +68,9 @@ class ASH_WM_COMMON_EXPORT WmToplevelWindowEventHandler
   // If there is a drag in progress it is reverted, otherwise does nothing.
   void RevertDrag();
 
+  // Returns true if there is a drag in progress.
+  bool is_drag_in_progress() const { return window_resizer_.get() != nullptr; }
+
  private:
   class ScopedWindowResizer;
 

@@ -35,7 +35,7 @@ mus::Window* ShelfLayoutManager::GetShelfWindow() {
 
 void ShelfLayoutManager::LayoutWindow(mus::Window* window) {
   if (GetAshWindowType(window) != mojom::AshWindowType::SHELF) {
-    NOTREACHED() << "Unknown window in USER_SHELF container.";
+    // Phantom windows end up in this container, ignore them.
     return;
   }
   gfx::Size size = GetWindowPreferredSize(window);

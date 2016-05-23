@@ -7,10 +7,9 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_manager_delegate.h"
 #include "components/mus/public/interfaces/cursor.mojom.h"
-#include "mash/wm/frame/move_loop.h"
-#include "mojo/converters/input_events/input_events_type_converters.h"
+#include "mash/wm/bridge/wm_window_mus.h"
+#include "mash/wm/bridge/wm_window_mus.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 
@@ -47,57 +46,16 @@ MoveEventHandler::MoveEventHandler(
     mus::Window* mus_window,
     mus::WindowManagerClient* window_manager_client,
     aura::Window* aura_window)
-    : mus_window_(mus_window),
+    : wm_window_(WmWindowMus::Get(mus_window)),
       window_manager_client_(window_manager_client),
-      aura_window_(aura_window),
-      root_window_(aura_window->GetRootWindow()) {
+      root_window_(aura_window->GetRootWindow()),
+      toplevel_window_event_handler_(wm_window_->GetGlobals()) {
   root_window_->AddObserver(this);
   root_window_->AddPreTargetHandler(this);
 }
 
 MoveEventHandler::~MoveEventHandler() {
   Detach();
-}
-
-void MoveEventHandler::ProcessLocatedEvent(ui::LocatedEvent* event) {
-  const bool had_move_loop = move_loop_.get() != nullptr;
-  DCHECK(event->IsMouseEvent() || event->IsTouchEvent());
-
-  // This event handler can receive mouse events like ET_MOUSE_CAPTURE_CHANGED
-  // that cannot be converted to PointerEvents. Ignore them because they aren't
-  // needed for move handling.
-  if (!ui::PointerEvent::CanConvertFrom(*event))
-    return;
-
-  // TODO(moshayedi): no need for this once MoveEventHandler directly receives
-  // pointer events.
-  std::unique_ptr<ui::PointerEvent> pointer_event;
-  if (event->IsMouseEvent())
-    pointer_event.reset(new ui::PointerEvent(*event->AsMouseEvent()));
-  else
-    pointer_event.reset(new ui::PointerEvent(*event->AsTouchEvent()));
-
-  if (move_loop_) {
-    if (move_loop_->Move(*pointer_event.get()) == MoveLoop::DONE)
-      move_loop_.reset();
-  } else if (pointer_event->type() == ui::ET_POINTER_DOWN) {
-    const int ht_location = GetNonClientComponentForEvent(pointer_event.get());
-    if (ht_location != HTNOWHERE) {
-      move_loop_ =
-          MoveLoop::Create(mus_window_, ht_location, *pointer_event.get());
-    }
-  } else if (pointer_event->type() == ui::ET_POINTER_MOVED) {
-    const int ht_location = GetNonClientComponentForEvent(pointer_event.get());
-    window_manager_client_->SetNonClientCursor(
-        mus_window_, CursorForWindowComponent(ht_location));
-  }
-  if (had_move_loop || move_loop_)
-    event->SetHandled();
-}
-
-int MoveEventHandler::GetNonClientComponentForEvent(
-    const ui::LocatedEvent* event) {
-  return aura_window_->delegate()->GetNonClientComponent(event->location());
 }
 
 void MoveEventHandler::Detach() {
@@ -110,20 +68,22 @@ void MoveEventHandler::Detach() {
 }
 
 void MoveEventHandler::OnMouseEvent(ui::MouseEvent* event) {
-  ProcessLocatedEvent(event);
+  toplevel_window_event_handler_.OnMouseEvent(event, wm_window_);
+  if (!toplevel_window_event_handler_.is_drag_in_progress() &&
+      event->type() == ui::ET_POINTER_MOVED) {
+    const int hit_test_location =
+        wm_window_->GetNonClientComponent(event->location());
+    window_manager_client_->SetNonClientCursor(
+        wm_window_->mus_window(), CursorForWindowComponent(hit_test_location));
+  }
 }
 
-void MoveEventHandler::OnTouchEvent(ui::TouchEvent* event) {
-  ProcessLocatedEvent(event);
+void MoveEventHandler::OnGestureEvent(ui::GestureEvent* event) {
+  toplevel_window_event_handler_.OnGestureEvent(event, wm_window_);
 }
 
 void MoveEventHandler::OnCancelMode(ui::CancelModeEvent* event) {
-  if (!move_loop_)
-    return;
-
-  move_loop_->Revert();
-  move_loop_.reset();
-  event->SetHandled();
+  toplevel_window_event_handler_.RevertDrag();
 }
 
 void MoveEventHandler::OnWindowDestroying(aura::Window* window) {
