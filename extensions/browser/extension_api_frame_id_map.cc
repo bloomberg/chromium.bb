@@ -110,7 +110,7 @@ int ExtensionApiFrameIdMap::GetFrameId(content::RenderFrameHost* rfh) {
 int ExtensionApiFrameIdMap::GetFrameId(
     content::NavigationHandle* navigation_handle) {
   return navigation_handle->IsInMainFrame()
-             ? 0
+             ? kTopFrameId
              : navigation_handle->GetFrameTreeNodeId();
 }
 
@@ -123,10 +123,10 @@ int ExtensionApiFrameIdMap::GetParentFrameId(content::RenderFrameHost* rfh) {
 int ExtensionApiFrameIdMap::GetParentFrameId(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsInMainFrame())
-    return -1;
+    return kInvalidFrameId;
 
   if (navigation_handle->IsParentMainFrame())
-    return 0;
+    return kTopFrameId;
 
   return navigation_handle->GetParentFrameTreeNodeId();
 }
@@ -164,7 +164,7 @@ ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::KeyToValue(
 
 ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::LookupFrameDataOnUI(
     const RenderFrameIdKey& key,
-    bool for_lookup) {
+    bool is_from_io) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   bool lookup_successful = false;
@@ -186,7 +186,7 @@ ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::LookupFrameDataOnUI(
 
   // TODO(devlin): Depending on how the data looks, this may be removable after
   // a few cycles. Check back in M52 to see if it's still needed.
-  if (for_lookup) {
+  if (is_from_io) {
     UMA_HISTOGRAM_BOOLEAN("Extensions.ExtensionFrameMapLookupSuccessful",
                           lookup_successful);
   }
@@ -201,7 +201,7 @@ void ExtensionApiFrameIdMap::ReceivedFrameDataOnIO(
 
   FrameDataCallbacksMap::iterator map_iter = callbacks_map_.find(key);
   if (map_iter == callbacks_map_.end()) {
-    // Can happen if ReceivedFrameIdOnIO was called after the frame ID was
+    // Can happen if ReceivedFrameDataOnIO was called after the frame ID was
     // resolved (e.g. via GetFrameDataOnIO), but before PostTaskAndReply
     // replied.
     return;
@@ -269,7 +269,7 @@ void ExtensionApiFrameIdMap::GetFrameDataOnIO(
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(&ExtensionApiFrameIdMap::LookupFrameDataOnUI,
-                 base::Unretained(this), key, true /* for lookup */),
+                 base::Unretained(this), key, true /* is_from_io */),
       base::Bind(&ExtensionApiFrameIdMap::ReceivedFrameDataOnIO,
                  base::Unretained(this), key));
 }
@@ -293,8 +293,8 @@ bool ExtensionApiFrameIdMap::GetCachedFrameDataOnIO(int render_process_id,
     FrameDataMap::const_iterator frame_id_iter = frame_data_map_.find(
         RenderFrameIdKey(render_process_id, frame_routing_id));
     if (frame_id_iter != frame_data_map_.end()) {
-      // This is very likely to happen because CacheFrameId() is called as soon
-      // as the frame is created.
+      // This is very likely to happen because CacheFrameData() is called as
+      // soon as the frame is created.
       *frame_data_out = frame_id_iter->second;
       found = true;
     }
@@ -306,6 +306,14 @@ bool ExtensionApiFrameIdMap::GetCachedFrameDataOnIO(int render_process_id,
   return found;
 }
 
+ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::GetFrameData(
+    content::RenderFrameHost* rfh) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  const RenderFrameIdKey key(rfh->GetProcess()->GetID(), rfh->GetRoutingID());
+  return LookupFrameDataOnUI(key, false /* is_from_io */);
+}
+
 void ExtensionApiFrameIdMap::CacheFrameData(content::RenderFrameHost* rfh) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -315,7 +323,7 @@ void ExtensionApiFrameIdMap::CacheFrameData(content::RenderFrameHost* rfh) {
 }
 
 void ExtensionApiFrameIdMap::CacheFrameData(const RenderFrameIdKey& key) {
-  LookupFrameDataOnUI(key, false /* not for lookup */);
+  LookupFrameDataOnUI(key, false /* is_from_io */);
 }
 
 void ExtensionApiFrameIdMap::RemoveFrameData(content::RenderFrameHost* rfh) {

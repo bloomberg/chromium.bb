@@ -36,7 +36,7 @@ namespace extensions {
 // other threads, as long as there is no concurrent access.
 class WebRequestEventDetails {
  public:
-  using DeterminedFrameIdCallback =
+  using DeterminedFrameDataCallback =
       base::Callback<void(std::unique_ptr<WebRequestEventDetails>)>;
 
   // Create a WebRequestEventDetails with the following keys:
@@ -89,24 +89,26 @@ class WebRequestEventDetails {
   }
 
   // Sets the following keys using information from constructor.
+  // - tabId
   // - frameId
   // - parentFrameId
   // This must be called from the UI thread.
-  void DetermineFrameIdOnUI();
+  void DetermineFrameDataOnUI();
 
   // Sets the following keys using information from constructor.
+  // - tabId
   // - frameId
   // - parentFrameId
   //
-  // This method is more expensive than DetermineFrameIdOnUI because it may
-  // involve thread hops, so prefer using DetermineFrameIdOnUI() when possible.
+  // This method is more expensive than DetermineFrameDataOnUI because it may
+  // involve thread hops, so prefer using DetermineFrameDataOnUI() if possible.
   // The callback is called as soon as these IDs are determined, which can be
   // synchronous or asynchronous.
   //
   // The caller must not use or delete this WebRequestEventDetails instance
   // after calling this method. Ownership of this instance is transferred to
   // |callback|.
-  void DetermineFrameIdOnIO(const DeterminedFrameIdCallback& callback);
+  void DetermineFrameDataOnIO(const DeterminedFrameDataCallback& callback);
 
   // Create an event dictionary that contains all required keys, and also the
   // extra keys as specified by the |extra_info_spec| filter.
@@ -119,9 +121,10 @@ class WebRequestEventDetails {
   std::unique_ptr<base::DictionaryValue> GetAndClearDict();
 
  private:
-  void OnDeterminedFrameId(std::unique_ptr<WebRequestEventDetails> self,
-                           const DeterminedFrameIdCallback& callback,
-                           const ExtensionApiFrameIdMap::FrameData& frame_data);
+  void OnDeterminedFrameData(
+      std::unique_ptr<WebRequestEventDetails> self,
+      const DeterminedFrameDataCallback& callback,
+      const ExtensionApiFrameIdMap::FrameData& frame_data);
 
   // The details that are always included in a webRequest event object.
   base::DictionaryValue dict_;
@@ -133,7 +136,7 @@ class WebRequestEventDetails {
 
   int extra_info_spec_;
 
-  // Used to determine the frameId and parentFrameId.
+  // Used to determine the tabId, frameId and parentFrameId.
   int render_process_id_;
   int render_frame_id_;
 

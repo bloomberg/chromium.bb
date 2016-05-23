@@ -243,7 +243,7 @@ void SendOnMessageEventOnUI(
     return;
 
   std::unique_ptr<base::ListValue> event_args(new base::ListValue);
-  event_details->DetermineFrameIdOnUI();
+  event_details->DetermineFrameDataOnUI();
   event_args->Append(event_details->GetAndClearDict());
 
   EventRouter* event_router = EventRouter::Get(browser_context);
@@ -601,17 +601,6 @@ ExtensionWebRequestEventRouter::CreateEventDetails(
   std::unique_ptr<WebRequestEventDetails> event_details(
       new WebRequestEventDetails(request, extra_info_spec));
 
-  int render_frame_id = -1;
-  int render_process_id = -1;
-  int tab_id = -1;
-  ExtensionApiFrameIdMap::FrameData frame_data;
-  if (content::ResourceRequestInfo::GetRenderFrameForRequest(
-          request, &render_process_id, &render_frame_id) &&
-      ExtensionApiFrameIdMap::Get()->GetCachedFrameDataOnIO(
-          render_process_id, render_frame_id, &frame_data)) {
-    tab_id = frame_data.tab_id;
-  }
-  event_details->SetInteger(keys::kTabIdKey, tab_id);
   return event_details;
 }
 
@@ -1032,7 +1021,7 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
     }
   }
 
-  event_details.release()->DetermineFrameIdOnIO(base::Bind(
+  event_details.release()->DetermineFrameDataOnIO(base::Bind(
       &ExtensionWebRequestEventRouter::DispatchEventToListeners, AsWeakPtr(),
       browser_context, base::Passed(&listeners_to_dispatch)));
 

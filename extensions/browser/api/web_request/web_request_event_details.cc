@@ -149,21 +149,24 @@ void WebRequestEventDetails::SetResponseSource(const net::URLRequest* request) {
     dict_.SetString(keys::kIpKey, response_ip);
 }
 
-void WebRequestEventDetails::DetermineFrameIdOnUI() {
+void WebRequestEventDetails::DetermineFrameDataOnUI() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
-  dict_.SetInteger(keys::kFrameIdKey, ExtensionApiFrameIdMap::GetFrameId(rfh));
-  dict_.SetInteger(keys::kParentFrameIdKey,
-                   ExtensionApiFrameIdMap::GetParentFrameId(rfh));
+  ExtensionApiFrameIdMap::FrameData frame_data =
+      ExtensionApiFrameIdMap::Get()->GetFrameData(rfh);
+
+  dict_.SetInteger(keys::kTabIdKey, frame_data.tab_id);
+  dict_.SetInteger(keys::kFrameIdKey, frame_data.frame_id);
+  dict_.SetInteger(keys::kParentFrameIdKey, frame_data.parent_frame_id);
 }
 
-void WebRequestEventDetails::DetermineFrameIdOnIO(
-    const DeterminedFrameIdCallback& callback) {
+void WebRequestEventDetails::DetermineFrameDataOnIO(
+    const DeterminedFrameDataCallback& callback) {
   std::unique_ptr<WebRequestEventDetails> self(this);
   ExtensionApiFrameIdMap::Get()->GetFrameDataOnIO(
       render_process_id_, render_frame_id_,
-      base::Bind(&WebRequestEventDetails::OnDeterminedFrameId,
+      base::Bind(&WebRequestEventDetails::OnDeterminedFrameData,
                  base::Unretained(this), base::Passed(&self), callback));
 }
 
@@ -186,10 +189,11 @@ WebRequestEventDetails::GetAndClearDict() {
   return result;
 }
 
-void WebRequestEventDetails::OnDeterminedFrameId(
+void WebRequestEventDetails::OnDeterminedFrameData(
     std::unique_ptr<WebRequestEventDetails> self,
-    const DeterminedFrameIdCallback& callback,
+    const DeterminedFrameDataCallback& callback,
     const ExtensionApiFrameIdMap::FrameData& frame_data) {
+  dict_.SetInteger(keys::kTabIdKey, frame_data.tab_id);
   dict_.SetInteger(keys::kFrameIdKey, frame_data.frame_id);
   dict_.SetInteger(keys::kParentFrameIdKey, frame_data.parent_frame_id);
   callback.Run(std::move(self));
