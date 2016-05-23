@@ -61,7 +61,7 @@ int TextTrackList::getTrackIndex(TextTrack *textTrack)
     if (textTrack->trackType() == TextTrack::InBand)
         return m_elementTracks.size() + m_addTrackTracks.size() + m_inbandTracks.find(textTrack);
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 
     return -1;
 }
@@ -98,7 +98,7 @@ int TextTrackList::getTrackIndexRelativeToRenderedTracks(TextTrack *textTrack)
         ++trackIndex;
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 
     return -1;
 }
@@ -159,7 +159,7 @@ void TextTrackList::invalidateTrackIndexesAfterTrack(TextTrack* track)
     } else if (track->trackType() == TextTrack::InBand) {
         tracks = &m_inbandTracks;
     } else {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 
     size_t index = tracks->find(track);
@@ -181,12 +181,12 @@ void TextTrackList::append(TextTrack* track)
     } else if (track->trackType() == TextTrack::InBand) {
         m_inbandTracks.append(track);
     } else {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 
     invalidateTrackIndexesAfterTrack(track);
 
-    ASSERT(!track->trackList());
+    DCHECK(!track->trackList());
     track->setTrackList(this);
 
     scheduleAddTrackEvent(track);
@@ -203,7 +203,7 @@ void TextTrackList::remove(TextTrack* track)
     } else if (track->trackType() == TextTrack::InBand) {
         tracks = &m_inbandTracks;
     } else {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 
     size_t index = tracks->find(track);
@@ -212,7 +212,7 @@ void TextTrackList::remove(TextTrack* track)
 
     invalidateTrackIndexesAfterTrack(track);
 
-    ASSERT(track->trackList() == this);
+    DCHECK_EQ(track->trackList(), this);
     track->setTrackList(0);
 
     tracks->remove(index);
@@ -239,7 +239,7 @@ bool TextTrackList::contains(TextTrack* track) const
     else if (track->trackType() == TextTrack::InBand)
         tracks = &m_inbandTracks;
     else
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
 
     return tracks->find(track) != kNotFound;
 }

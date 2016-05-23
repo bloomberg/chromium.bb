@@ -144,7 +144,7 @@ bool TextTrack::isVisualKind() const
 
 void TextTrack::setMode(const AtomicString& mode)
 {
-    ASSERT(mode == disabledKeyword() || mode == hiddenKeyword() || mode == showingKeyword());
+    DCHECK(mode == disabledKeyword() || mode == hiddenKeyword() || mode == showingKeyword());
 
     // On setting, if the new value isn't equal to what the attribute would currently
     // return, the new value must be processed as follows ...
@@ -230,7 +230,7 @@ TextTrackCueList* TextTrack::activeCues()
 
 void TextTrack::addCue(TextTrackCue* cue)
 {
-    ASSERT(cue);
+    DCHECK(cue);
 
     // TODO(93143): Add spec-compliant behavior for negative time values.
     if (std::isnan(cue->startTime()) || std::isnan(cue->endTime()) || cue->startTime() < 0 || cue->endTime() < 0)
@@ -257,7 +257,7 @@ void TextTrack::addCue(TextTrackCue* cue)
 
 void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& exceptionState)
 {
-    ASSERT(cue);
+    DCHECK(cue);
 
     // https://html.spec.whatwg.org/multipage/embedded-content.html#dom-texttrack-removecue
 
@@ -273,14 +273,14 @@ void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& exceptionState)
     // cue->track() == this implies that cue is in this track's list of cues,
     // so this track should have a list of cues and the cue being removed
     // should be in it.
-    ASSERT(m_cues);
+    DCHECK(m_cues);
 
     // 2. Remove cue from the method's TextTrack object's text track's text track list of cues.
     bool wasRemoved = m_cues->remove(cue);
-    ASSERT_UNUSED(wasRemoved, wasRemoved);
+    DCHECK(wasRemoved);
 
     // If the cue is active, a timeline needs to be available.
-    ASSERT(!cue->isActive() || cueTimeline());
+    DCHECK(!cue->isActive() || cueTimeline());
 
     cue->setTrack(0);
 
@@ -370,7 +370,7 @@ void TextTrack::cueDidChange(TextTrackCue* cue)
 {
     // This method is called through cue->track(), which should imply that this
     // track has a list of cues.
-    ASSERT(m_cues && cue->track() == this);
+    DCHECK(m_cues && cue->track() == this);
 
     // Make sure the TextTrackCueList order is up-to-date.
     // FIXME: Only need to do this if the change was to any of the timestamps.
@@ -379,7 +379,7 @@ void TextTrack::cueDidChange(TextTrackCue* cue)
     // Since a call to cueDidChange is always preceded by a call to
     // cueWillChange, the cue should no longer be active when we reach this
     // point (since it was removed from the timeline in cueWillChange).
-    ASSERT(!cue->isActive());
+    DCHECK(!cue->isActive());
 
     if (m_mode == disabledKeyword())
         return;
@@ -391,7 +391,7 @@ void TextTrack::cueDidChange(TextTrackCue* cue)
 
 int TextTrack::trackIndex()
 {
-    ASSERT(m_trackList);
+    DCHECK(m_trackList);
 
     if (m_trackIndex == invalidTrackIndex)
         m_trackIndex = m_trackList->getTrackIndex(this);
@@ -426,7 +426,7 @@ TextTrackCueList* TextTrack::ensureTextTrackCueList()
 
 int TextTrack::trackIndexRelativeToRenderedTracks()
 {
-    ASSERT(m_trackList);
+    DCHECK(m_trackList);
 
     if (m_renderedTrackIndex == invalidTrackIndex)
         m_renderedTrackIndex = m_trackList->getTrackIndexRelativeToRenderedTracks(this);

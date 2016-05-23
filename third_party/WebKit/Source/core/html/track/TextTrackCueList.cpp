@@ -67,8 +67,8 @@ void TextTrackCueList::collectActiveCues(TextTrackCueList& activeCues) const
 
 bool TextTrackCueList::add(TextTrackCue* cue)
 {
-    ASSERT(cue->startTime() >= 0);
-    ASSERT(cue->endTime() >= 0);
+    DCHECK_GE(cue->startTime(), 0);
+    DCHECK_GE(cue->endTime(), 0);
 
     // Maintain text track cue order:
     // https://html.spec.whatwg.org/#text-track-cue-order
@@ -95,7 +95,7 @@ size_t TextTrackCueList::findInsertionIndex(const TextTrackCue* cueToInsert) con
 {
     auto it = std::upper_bound(m_list.begin(), m_list.end(), cueToInsert, cueIsBefore);
     size_t index = safeCast<size_t>(it - m_list.begin());
-    ASSERT_WITH_SECURITY_IMPLICATION(index <= m_list.size());
+    SECURITY_DCHECK(index <= m_list.size());
     return index;
 }
 

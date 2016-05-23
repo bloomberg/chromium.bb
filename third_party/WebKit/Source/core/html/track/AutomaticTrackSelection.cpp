@@ -72,7 +72,7 @@ const AtomicString& AutomaticTrackSelection::preferredTrackKind() const
 
 void AutomaticTrackSelection::performAutomaticTextTrackSelection(const TrackGroup& group)
 {
-    ASSERT(group.tracks.size());
+    DCHECK(group.tracks.size());
 
     // First, find the track in the group that should be enabled (if any).
     HeapVector<Member<TextTrack>> currentlyEnabledTracks;
@@ -142,7 +142,7 @@ void AutomaticTrackSelection::performAutomaticTextTrackSelection(const TrackGrou
 
 void AutomaticTrackSelection::enableDefaultMetadataTextTracks(const TrackGroup& group)
 {
-    ASSERT(group.tracks.size());
+    DCHECK(group.tracks.size());
 
     // https://html.spec.whatwg.org/multipage/embedded-content.html#honor-user-preferences-for-automatic-text-track-selection
 
@@ -180,7 +180,7 @@ void AutomaticTrackSelection::perform(TextTrackList& textTracks)
         } else if (kind == TextTrack::chaptersKeyword()) {
             currentGroup = &chapterTracks;
         } else {
-            ASSERT(kind == TextTrack::metadataKeyword());
+            DCHECK_EQ(kind, TextTrack::metadataKeyword());
             currentGroup = &metadataTracks;
         }
 

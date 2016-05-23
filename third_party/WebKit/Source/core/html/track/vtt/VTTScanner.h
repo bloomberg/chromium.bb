@@ -216,19 +216,19 @@ inline VTTScanner::Run VTTScanner::collectUntil()
 
 inline void VTTScanner::seekTo(Position position)
 {
-    ASSERT(position <= end());
+    DCHECK_LE(position, end());
     m_data.characters8 = position;
 }
 
 inline UChar VTTScanner::currentChar() const
 {
-    ASSERT(getPosition() < end());
+    DCHECK_LT(getPosition(), end());
     return m_is8Bit ? *m_data.characters8 : *m_data.characters16;
 }
 
 inline void VTTScanner::advance(unsigned amount)
 {
-    ASSERT(getPosition() < end());
+    DCHECK_LT(getPosition(), end());
     if (m_is8Bit)
         m_data.characters8 += amount;
     else

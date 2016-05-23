@@ -73,7 +73,7 @@ public:
             m_tracks.remove(i);
             return;
         }
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 
     void removeAll()
