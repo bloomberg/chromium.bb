@@ -10,6 +10,11 @@ interface CrashCollectorHost {
   // |type| is a string instead of an enum, because its value is not relevant
   // to the host: it only serves as a tag in the report.
   DumpCrash(string type, handle pipe);
+
+  // Sets build properties included in every report.
+  [MinVersion=1] SetBuildProperties(string device,
+                                    string board,
+                                    string cpu_abi);
 };
 
 interface CrashCollectorInstance {

@@ -48,8 +48,13 @@ void ArcCrashCollectorBridge::DumpCrash(const mojo::String& type,
   base::LaunchOptions options;
   options.fds_to_remap = &fd_map;
 
-  const auto flag = "--arc_java_crash=" + type.get();
-  auto process = base::LaunchProcess({ kCrashReporterPath, flag }, options);
+  auto process = base::LaunchProcess({
+    kCrashReporterPath,
+    "--arc_java_crash=" + type.get(),
+    "--arc_device=" + device_,
+    "--arc_board=" + board_,
+    "--arc_cpu_abi=" + cpu_abi_
+  }, options);
 
   int exit_code;
   if (!process.WaitForExit(&exit_code)) {
@@ -57,6 +62,14 @@ void ArcCrashCollectorBridge::DumpCrash(const mojo::String& type,
   } else if (exit_code != EX_OK) {
     LOG(ERROR) << kCrashReporterPath << " failed with exit code " << exit_code;
   }
+}
+
+void ArcCrashCollectorBridge::SetBuildProperties(const mojo::String& device,
+                                                 const mojo::String& board,
+                                                 const mojo::String& cpu_abi) {
+  device_ = device.get();
+  board_ = board.get();
+  cpu_abi_ = cpu_abi.get();
 }
 
 }  // namespace arc
