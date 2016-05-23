@@ -96,8 +96,11 @@ void FrameConsole::reportMessageToClient(ConsoleMessage* consoleMessage)
             return;
         if (!allClientReportingMessageTypes().contains(consoleMessage->type()))
             return;
-        if (frame().chromeClient().shouldReportDetailedMessageForSource(frame(), consoleMessage->url()))
-            stackTrace = ScriptCallStack::capture()->toString();
+        if (frame().chromeClient().shouldReportDetailedMessageForSource(frame(), consoleMessage->url())) {
+            RefPtr<ScriptCallStack> captured = ScriptCallStack::capture();
+            if (captured)
+                stackTrace = captured->toString();
+        }
     } else {
         if (consoleMessage->callStack() && frame().chromeClient().shouldReportDetailedMessageForSource(frame(), consoleMessage->url()))
             stackTrace = consoleMessage->callStack()->toString();
