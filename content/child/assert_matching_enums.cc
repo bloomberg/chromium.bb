@@ -6,7 +6,6 @@
 // from Blink are valid.
 
 #include "base/macros.h"
-#include "content/public/common/mhtml_generation_params.h"
 #include "content/public/common/screen_orientation_values.h"
 #include "media/base/mime_util.h"
 #include "third_party/WebKit/public/platform/WebMimeRegistry.h"
@@ -45,14 +44,5 @@ STATIC_ASSERT_ENUM(blink::WebMimeRegistry::IsNotSupported,
 STATIC_ASSERT_ENUM(blink::WebMimeRegistry::IsSupported, media::IsSupported);
 STATIC_ASSERT_ENUM(blink::WebMimeRegistry::MayBeSupported,
                    media::MayBeSupported);
-
-// MHTMLCacheControlPolicy
-STATIC_ASSERT_ENUM(blink::WebFrameSerializerCacheControlPolicy::None,
-                   MHTMLCacheControlPolicy::NONE);
-STATIC_ASSERT_ENUM(
-    blink::WebFrameSerializerCacheControlPolicy::FailForNoStoreMainFrame,
-    MHTMLCacheControlPolicy::FAIL_FOR_NO_STORE_MAIN_FRAME);
-STATIC_ASSERT_ENUM(blink::WebFrameSerializerCacheControlPolicy::Last,
-                   MHTMLCacheControlPolicy::LAST);
 
 } // namespace content

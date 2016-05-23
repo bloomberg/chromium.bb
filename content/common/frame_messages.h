@@ -31,7 +31,6 @@
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/javascript_message_type.h"
-#include "content/public/common/mhtml_generation_params.h"
 #include "content/public/common/page_importance_signals.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/resource_response.h"
@@ -43,6 +42,7 @@
 #include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
+#include "third_party/WebKit/public/web/WebFrameSerializerCacheControlPolicy.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -503,7 +503,7 @@ IPC_STRUCT_BEGIN(FrameMsg_SerializeAsMHTML_Params)
   // intended for sharing.
   IPC_STRUCT_MEMBER(bool, mhtml_binary_encoding)
 
-  IPC_STRUCT_MEMBER(content::MHTMLCacheControlPolicy,
+  IPC_STRUCT_MEMBER(blink::WebFrameSerializerCacheControlPolicy,
                     mhtml_cache_control_policy)
 
   // Frame to content-id map.

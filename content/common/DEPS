@@ -48,6 +48,7 @@ include_rules = [
   "+third_party/WebKit/public/web/WebDragStatus.h",
   "+third_party/WebKit/public/web/WebFindOptions.h",
   "+third_party/WebKit/public/web/WebFrameOwnerProperties.h",
+  "+third_party/WebKit/public/web/WebFrameSerializerCacheControlPolicy.h",
   "+third_party/WebKit/public/web/WebInputEvent.h",
   "+third_party/WebKit/public/web/WebMediaPlayerAction.h",
   "+third_party/WebKit/public/web/WebPluginAction.h",

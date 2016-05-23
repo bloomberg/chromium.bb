@@ -16,7 +16,8 @@ namespace blink {
 enum class WebFrameSerializerCacheControlPolicy {
     None = 0,
     FailForNoStoreMainFrame,
-    Last = FailForNoStoreMainFrame,
+    SkipAnyFrameOrResourceMarkedNoStore,
+    Last = SkipAnyFrameOrResourceMarkedNoStore,
 };
 
 } // namespace blink

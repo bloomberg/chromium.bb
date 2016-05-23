@@ -85,9 +85,15 @@ public:
             return false;
         }
 
-        // Tells whether to skip serialization of a subresource with a given URI.
-        // Used to deduplicate resources across multiple frames.
-        virtual bool shouldSkipResource(const KURL&)
+        // Tells whether to skip serialization of a subresource or CSSStyleSheet
+        // with a given URI. Used to deduplicate resources across multiple frames.
+        virtual bool shouldSkipResourceWithURL(const KURL&)
+        {
+            return false;
+        }
+
+        // Tells whether to skip serialization of a subresource.
+        virtual bool shouldSkipResource(const Resource&)
         {
             return false;
         }
@@ -117,7 +123,7 @@ private:
 
     bool shouldAddURL(const KURL&);
 
-    void addToResources(Resource *, PassRefPtr<SharedBuffer>, const KURL&);
+    void addToResources(const Resource&, PassRefPtr<SharedBuffer>, const KURL&);
     void addImageToResources(ImageResource*, const KURL&);
     void addFontToResources(FontResource*);
 

@@ -10,7 +10,6 @@
 
 #include "build/build_config.h"
 #include "content/public/common/console_message_level.h"
-#include "content/public/common/mhtml_generation_params.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/security_style.h"
 #include "content/public/common/ssl_status.h"
@@ -24,6 +23,7 @@
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
+#include "third_party/WebKit/public/web/WebFrameSerializerCacheControlPolicy.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_update.h"
@@ -44,10 +44,10 @@ IPC_ENUM_TRAITS_MAX_VALUE(net::NetworkChangeNotifier::ConnectionType,
                           net::NetworkChangeNotifier::CONNECTION_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(content::ConsoleMessageLevel,
                           content::CONSOLE_MESSAGE_LEVEL_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(content::MHTMLCacheControlPolicy,
-                          content::MHTMLCacheControlPolicy::LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(content::SecurityStyle,
                           content::SECURITY_STYLE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebFrameSerializerCacheControlPolicy,
+                          blink::WebFrameSerializerCacheControlPolicy::Last)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebReferrerPolicy,
                           blink::WebReferrerPolicyLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::PermissionStatus,

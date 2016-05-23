@@ -938,7 +938,7 @@ bool Resource::canReuseRedirectChain()
     return true;
 }
 
-bool Resource::hasCacheControlNoStoreHeader()
+bool Resource::hasCacheControlNoStoreHeader() const
 {
     return m_response.cacheControlContainsNoStore() || m_resourceRequest.cacheControlContainsNoStore();
 }

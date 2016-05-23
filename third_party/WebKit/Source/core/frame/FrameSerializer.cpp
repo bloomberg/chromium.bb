@@ -386,17 +386,20 @@ void FrameSerializer::serializeCSSRule(CSSRule* rule)
 bool FrameSerializer::shouldAddURL(const KURL& url)
 {
     return url.isValid() && !m_resourceURLs.contains(url) && !url.protocolIsData()
-        && !m_delegate.shouldSkipResource(url);
+        && !m_delegate.shouldSkipResourceWithURL(url);
 }
 
-void FrameSerializer::addToResources(Resource* resource, PassRefPtr<SharedBuffer> data, const KURL& url)
+void FrameSerializer::addToResources(const Resource& resource, PassRefPtr<SharedBuffer> data, const KURL& url)
 {
+    if (m_delegate.shouldSkipResource(resource))
+        return;
+
     if (!data) {
         DLOG(ERROR) << "No data for resource " << url.getString();
         return;
     }
 
-    String mimeType = resource->response().mimeType();
+    String mimeType = resource.response().mimeType();
     m_resources->append(SerializedResource(url, mimeType, data));
     m_resourceURLs.add(url);
 }
@@ -407,7 +410,7 @@ void FrameSerializer::addImageToResources(ImageResource* image, const KURL& url)
         return;
 
     RefPtr<SharedBuffer> data = image->getImage()->data();
-    addToResources(image, data, url);
+    addToResources(*image, data, url);
 }
 
 void FrameSerializer::addFontToResources(FontResource* font)
@@ -417,7 +420,7 @@ void FrameSerializer::addFontToResources(FontResource* font)
 
     RefPtr<SharedBuffer> data(font->resourceBuffer());
 
-    addToResources(font, data, font->url());
+    addToResources(*font, data, font->url());
 }
 
 void FrameSerializer::retrieveResourcesForProperties(const StylePropertySet* styleDeclaration, Document& document)

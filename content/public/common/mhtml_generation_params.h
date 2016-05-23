@@ -7,20 +7,9 @@
 
 #include "base/files/file_path.h"
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/web/WebFrameSerializerCacheControlPolicy.h"
 
 namespace content {
-
-// Options for changing serialization behavior based on the CacheControl header
-// of each subresource.
-enum class MHTMLCacheControlPolicy {
-  NONE = 0,
-  FAIL_FOR_NO_STORE_MAIN_FRAME,
-
-  // |LAST| is used in content/public/common/common_param_traits_macros.h with
-  // IPC_ENUM_TRAITS_MAX_VALUE macro. Keep the value up to date. Otherwise
-  // a new value can not be passed to the renderer.
-  LAST = FAIL_FOR_NO_STORE_MAIN_FRAME
-};
 
 struct CONTENT_EXPORT MHTMLGenerationParams {
   MHTMLGenerationParams(const base::FilePath& file_path);
@@ -37,7 +26,8 @@ struct CONTENT_EXPORT MHTMLGenerationParams {
   // By default, MHTML includes all subresources.  This flag can be used to
   // cause the generator to fail or silently ignore resources if the
   // Cache-Control header is used.
-  MHTMLCacheControlPolicy cache_control_policy = MHTMLCacheControlPolicy::NONE;
+  blink::WebFrameSerializerCacheControlPolicy cache_control_policy =
+      blink::WebFrameSerializerCacheControlPolicy::None;
 };
 
 }  // namespace content

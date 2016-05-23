@@ -48,20 +48,6 @@ template <typename T> class WebVector;
 // Serialization of frame contents into html or mhtml.
 class WebFrameSerializer {
 public:
-    // Generates an MHTML header; returns false if an error occurred.  The
-    // header will be returned via the WebData out-param.
-    //
-    // Contents of the header (i.e. title and mime type) will be based
-    // on the frame passed as an argument (which typically should be
-    // the main, top-level frame).
-    //
-    // Same |boundary| needs to used for all generateMHTMLHeader and
-    // generateMHTMLParts and generateMHTMLFooter calls that belong to the same
-    // MHTML document (see also rfc1341, section 7.2.1, "boundary" description).
-    BLINK_EXPORT static bool generateMHTMLHeader(
-        const WebString& boundary, WebFrameSerializerCacheControlPolicy, WebLocalFrame*,
-        WebData*);
-
     // Delegate for controling the behavior of generateMHTMLParts method.
     class MHTMLPartsGenerationDelegate {
     public:
@@ -75,7 +61,23 @@ public:
         // (i.e. the strings should include the angle brackets).  The method
         // should return null WebString if the frame doesn't have a content-id.
         virtual WebString getContentID(WebFrame*) = 0;
+
+        virtual WebFrameSerializerCacheControlPolicy cacheControlPolicy() = 0;
+
+        virtual bool useBinaryEncoding() = 0;
     };
+
+    // Generates and returns an MHTML header.
+    //
+    // Contents of the header (i.e. title and mime type) will be based
+    // on the frame passed as an argument (which typically should be
+    // the main, top-level frame).
+    //
+    // Same |boundary| needs to used for all generateMHTMLHeader and
+    // generateMHTMLParts and generateMHTMLFooter calls that belong to the same
+    // MHTML document (see also rfc1341, section 7.2.1, "boundary" description).
+    BLINK_EXPORT static WebData generateMHTMLHeader(
+        const WebString& boundary, WebLocalFrame*, MHTMLPartsGenerationDelegate*);
 
     // Generates and returns MHTML parts for the given frame and the
     // savable resources underneath.
@@ -84,8 +86,7 @@ public:
     // generateMHTMLParts and generateMHTMLFooter calls that belong to the same
     // MHTML document (see also rfc1341, section 7.2.1, "boundary" description).
     BLINK_EXPORT static WebData generateMHTMLParts(
-        const WebString& boundary, WebLocalFrame*, bool useBinaryEncoding,
-        MHTMLPartsGenerationDelegate*);
+        const WebString& boundary, WebLocalFrame*, MHTMLPartsGenerationDelegate*);
 
     // Generates and returns an MHTML footer.
     //

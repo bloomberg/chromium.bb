@@ -121,8 +121,8 @@ void OfflinePageMHTMLArchiver::GenerateMHTML(
           GenerateFileName(url, base::UTF16ToUTF8(title), archive_id)));
 
   content::MHTMLGenerationParams params(file_path);
-  params.cache_control_policy =
-      content::MHTMLCacheControlPolicy::FAIL_FOR_NO_STORE_MAIN_FRAME;
+  params.cache_control_policy = blink::WebFrameSerializerCacheControlPolicy::
+      SkipAnyFrameOrResourceMarkedNoStore;
   params.use_binary_encoding = true;
 
   web_contents_->GenerateMHTML(

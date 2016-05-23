@@ -47,6 +47,7 @@
 #include "platform/SharedBuffer.h"
 #include "platform/mhtml/MHTMLArchive.h"
 #include "platform/mhtml/MHTMLParser.h"
+#include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebString.h"
@@ -78,7 +79,8 @@ public:
     explicit MHTMLFrameSerializerDelegate(WebFrameSerializer::MHTMLPartsGenerationDelegate&);
     bool shouldIgnoreAttribute(const Attribute&) override;
     bool rewriteLink(const Element&, String& rewrittenLink) override;
-    bool shouldSkipResource(const KURL&) override;
+    bool shouldSkipResourceWithURL(const KURL&) override;
+    bool shouldSkipResource(const Resource&) override;
 
 private:
     WebFrameSerializer::MHTMLPartsGenerationDelegate& m_webDelegate;
@@ -135,25 +137,57 @@ bool MHTMLFrameSerializerDelegate::rewriteLink(
     return false;
 }
 
-bool MHTMLFrameSerializerDelegate::shouldSkipResource(const KURL& url)
+bool MHTMLFrameSerializerDelegate::shouldSkipResourceWithURL(const KURL& url)
 {
     return m_webDelegate.shouldSkipResource(url);
 }
 
-} // namespace
+bool MHTMLFrameSerializerDelegate::shouldSkipResource(const Resource& resource)
+{
+    return m_webDelegate.cacheControlPolicy() == WebFrameSerializerCacheControlPolicy::SkipAnyFrameOrResourceMarkedNoStore
+        && resource.hasCacheControlNoStoreHeader();
+}
 
-bool WebFrameSerializer::generateMHTMLHeader(
-    const WebString& boundary, WebFrameSerializerCacheControlPolicy cacheControlPolicy,
-    WebLocalFrame* frame, WebData* data)
+bool cacheControlNoStoreHeaderPresent(const WebLocalFrameImpl& webLocalFrameImpl)
+{
+    const ResourceResponse& response = webLocalFrameImpl.dataSource()->response().toResourceResponse();
+    if (response.cacheControlContainsNoStore())
+        return true;
+
+    const ResourceRequest& request = webLocalFrameImpl.dataSource()->request().toResourceRequest();
+    return request.cacheControlContainsNoStore();
+}
+
+bool frameShouldBeSerializedAsMHTML(WebLocalFrame* frame, WebFrameSerializerCacheControlPolicy cacheControlPolicy)
 {
     WebLocalFrameImpl* webLocalFrameImpl = toWebLocalFrameImpl(frame);
     DCHECK(webLocalFrameImpl);
 
-    if (cacheControlPolicy == WebFrameSerializerCacheControlPolicy::FailForNoStoreMainFrame) {
-        const ResourceResponse& response = webLocalFrameImpl->dataSource()->response().toResourceResponse();
-        if (response.cacheControlContainsNoStore())
-            return false;
-    }
+    if (cacheControlPolicy == WebFrameSerializerCacheControlPolicy::None)
+        return true;
+
+    bool needToCheckNoStore = cacheControlPolicy == WebFrameSerializerCacheControlPolicy::SkipAnyFrameOrResourceMarkedNoStore
+        || (!frame->parent() && cacheControlPolicy == WebFrameSerializerCacheControlPolicy::FailForNoStoreMainFrame);
+
+    if (!needToCheckNoStore)
+        return true;
+
+    return !cacheControlNoStoreHeaderPresent(*webLocalFrameImpl);
+}
+
+} // namespace
+
+WebData WebFrameSerializer::generateMHTMLHeader(
+    const WebString& boundary, WebLocalFrame* frame, MHTMLPartsGenerationDelegate* delegate)
+{
+    DCHECK(frame);
+    DCHECK(delegate);
+
+    if (!frameShouldBeSerializedAsMHTML(frame, delegate->cacheControlPolicy()))
+        return WebData();
+
+    WebLocalFrameImpl* webLocalFrameImpl = toWebLocalFrameImpl(frame);
+    DCHECK(webLocalFrameImpl);
 
     Document* document = webLocalFrameImpl->frame()->document();
 
@@ -161,20 +195,21 @@ bool WebFrameSerializer::generateMHTMLHeader(
     MHTMLArchive::generateMHTMLHeader(
         boundary, document->title(), document->suggestedMIMEType(),
         *buffer);
-    *data = buffer.release();
-    return true;
+    return buffer.release();
 }
 
 WebData WebFrameSerializer::generateMHTMLParts(
-    const WebString& boundary, WebLocalFrame* webFrame, bool useBinaryEncoding,
-    MHTMLPartsGenerationDelegate* webDelegate)
+    const WebString& boundary, WebLocalFrame* webFrame, MHTMLPartsGenerationDelegate* webDelegate)
 {
     DCHECK(webFrame);
     DCHECK(webDelegate);
 
+    if (!frameShouldBeSerializedAsMHTML(webFrame, webDelegate->cacheControlPolicy()))
+        return WebData();
+
     // Translate arguments from public to internal blink APIs.
     LocalFrame* frame = toWebLocalFrameImpl(webFrame)->frame();
-    MHTMLArchive::EncodingPolicy encodingPolicy = useBinaryEncoding
+    MHTMLArchive::EncodingPolicy encodingPolicy = webDelegate->useBinaryEncoding()
         ? MHTMLArchive::EncodingPolicy::UseBinaryEncoding
         : MHTMLArchive::EncodingPolicy::UseDefaultEncoding;
 

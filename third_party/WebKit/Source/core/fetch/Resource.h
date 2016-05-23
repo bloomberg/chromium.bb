@@ -211,7 +211,7 @@ public:
     bool mustRevalidateDueToCacheHeaders();
     bool canUseCacheValidator();
     bool isCacheValidator() const { return !m_revalidatingRequest.isNull(); }
-    bool hasCacheControlNoStoreHeader();
+    bool hasCacheControlNoStoreHeader() const;
     bool hasVaryHeader() const;
     virtual bool mustRefetchDueToIntegrityMetadata(const FetchRequest& request) const { return false; }
 

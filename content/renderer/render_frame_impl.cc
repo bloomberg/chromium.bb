@@ -70,7 +70,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/isolated_world_ids.h"
-#include "content/public/common/mhtml_generation_params.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_constants.h"
@@ -169,6 +168,7 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "third_party/WebKit/public/web/WebFrameSerializer.h"
+#include "third_party/WebKit/public/web/WebFrameSerializerCacheControlPolicy.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -779,6 +779,12 @@ class MHTMLPartsGenerationDelegate
     const std::string& content_id = it->second;
     return WebString::fromUTF8(content_id);
   }
+
+  blink::WebFrameSerializerCacheControlPolicy cacheControlPolicy() override {
+    return params_.mhtml_cache_control_policy;
+  }
+
+  bool useBinaryEncoding() override { return params_.mhtml_binary_encoding; }
 
  private:
   const FrameMsg_SerializeAsMHTML_Params& params_;
@@ -5009,30 +5015,36 @@ void RenderFrameImpl::OnSerializeAsMHTML(
   DCHECK(!mhtml_boundary.isEmpty());
 
   WebData data;
-  bool success = true;
   std::set<std::string> digests_of_uris_of_serialized_resources;
   MHTMLPartsGenerationDelegate delegate(
       params, &digests_of_uris_of_serialized_resources);
 
+  bool success = true;
+
   // Generate MHTML header if needed.
   if (IsMainFrame()) {
-    blink::WebFrameSerializerCacheControlPolicy policy =
-        static_cast<blink::WebFrameSerializerCacheControlPolicy>(
-            params.mhtml_cache_control_policy);
-    success = WebFrameSerializer::generateMHTMLHeader(mhtml_boundary, policy,
-                                                      GetWebFrame(), &data);
-    if (success && file.WriteAtCurrentPos(data.data(), data.size()) < 0) {
+    // |data| can be empty if the main frame should be skipped.  If the main
+    // frame is
+    // skipped, then the whole archive is bad, so bail to the error condition.
+    WebData data = WebFrameSerializer::generateMHTMLHeader(
+        mhtml_boundary, GetWebFrame(), &delegate);
+    if (data.isEmpty() ||
+        file.WriteAtCurrentPos(data.data(), data.size()) < 0) {
       success = false;
     }
   }
 
-  // Generate MHTML parts.
+  // Generate MHTML parts.  Note that if this is not the main frame, then even
+  // skipping the whole parts generation step is not an error - it simply
+  // results in an omitted resource in the final file.
   if (success) {
-    data = WebFrameSerializer::generateMHTMLParts(
-        mhtml_boundary, GetWebFrame(), params.mhtml_binary_encoding, &delegate);
+    // |data| can be empty if the frame should be skipped, but this is OK.
+    data = WebFrameSerializer::generateMHTMLParts(mhtml_boundary, GetWebFrame(),
+                                                  &delegate);
     // TODO(jcivelli): write the chunks in deferred tasks to give a chance to
     //                 the message loop to process other events.
-    if (file.WriteAtCurrentPos(data.data(), data.size()) < 0) {
+    if (!data.isEmpty() &&
+        file.WriteAtCurrentPos(data.data(), data.size()) < 0) {
       success = false;
     }
   }
