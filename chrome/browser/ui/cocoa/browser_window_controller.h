@@ -44,6 +44,7 @@ class ExclusiveAccessContext;
 @class FindBarCocoaController;
 @class FullscreenModeController;
 @class FullscreenWindow;
+class FullscreenLowPowerCoordinatorCocoa;
 @class InfoBarContainerController;
 class LocationBarViewMac;
 @class OverlayableContentsController;
@@ -88,6 +89,8 @@ class Command;
   std::unique_ptr<ExclusiveAccessController> exclusiveAccessController_;
   base::scoped_nsobject<BrowserWindowFullscreenTransition>
       fullscreenTransition_;
+  std::unique_ptr<FullscreenLowPowerCoordinatorCocoa>
+      fullscreenLowPowerCoordinator_;
 
   // Strong. StatusBubble is a special case of a strong reference that
   // we don't wrap in a scoped_ptr because it is acting the same

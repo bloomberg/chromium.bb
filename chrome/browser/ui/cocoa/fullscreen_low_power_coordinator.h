@@ -29,8 +29,10 @@ class FullscreenLowPowerCoordinatorCocoa
 
   // Interface to BrowserWindowController.
   NSWindow* GetFullscreenLowPowerWindow();
-  void AddLowPowerModeSuppression();
-  void RemoveLowPowerModeSuppression();
+  void SetLayoutParameters(const NSRect& toolbar_frame,
+                           const NSRect& infobar_frame,
+                           const NSRect& content_frame,
+                           const NSRect& download_shelf_frame);
 
   // ui::FullscreenLowPowerCoordinator implementation.
   void SetLowPowerLayerValid(bool valid) override;
@@ -55,9 +57,9 @@ class FullscreenLowPowerCoordinatorCocoa
   // enter low power mode.
   bool low_power_layer_valid_ = false;
 
-  // The balance of calls to Add/RemoveLowPowerModeSuppression. This must be
-  // zero to enter low power mode.
-  int suppression_count_ = 0;
+  // Set if the NSView hierarchy allows low power mode. Low power mode is only
+  // allowed when nothing but the web contents is on-screen.
+  bool allowed_by_nsview_layout_ = true;
 
   // Updated by EnterOrExitLowPowerModeIfNeeded.
   bool in_low_power_mode_ = false;

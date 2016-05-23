@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/cocoa/fullscreen_low_power_coordinator.h"
 
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
+
 @interface FullscreenLowPowerWindow : NSWindow {
   base::scoped_nsobject<NSWindow> eventTargetWindow_;
 }
@@ -68,14 +71,27 @@ NSWindow* FullscreenLowPowerCoordinatorCocoa::GetFullscreenLowPowerWindow() {
   return low_power_window_.get();
 }
 
-void FullscreenLowPowerCoordinatorCocoa::AddLowPowerModeSuppression() {
-  suppression_count_ += 1;
-  EnterOrExitLowPowerModeIfNeeded();
-}
+void FullscreenLowPowerCoordinatorCocoa::SetLayoutParameters(
+    const NSRect& toolbar_frame,
+    const NSRect& infobar_frame,
+    const NSRect& content_frame,
+    const NSRect& download_shelf_frame) {
+  NSRect screen_frame = [[content_window_ screen] frame];
+  allowed_by_nsview_layout_ = true;
 
-void FullscreenLowPowerCoordinatorCocoa::RemoveLowPowerModeSuppression() {
-  DCHECK(suppression_count_ > 0);
-  suppression_count_ -= 1;
+  // The toolbar and infobar must be above the top of the screen.
+  allowed_by_nsview_layout_ &=
+      toolbar_frame.origin.y >= screen_frame.size.height;
+  allowed_by_nsview_layout_ &=
+      infobar_frame.origin.y >= screen_frame.size.height;
+
+  // The content rect must equal the screen's rect.
+  allowed_by_nsview_layout_ &= NSEqualRects(content_frame, screen_frame);
+
+  // The download shelf must not extend on to the screen.
+  allowed_by_nsview_layout_ &=
+      download_shelf_frame.origin.y + download_shelf_frame.size.height <= 0;
+
   EnterOrExitLowPowerModeIfNeeded();
 }
 
@@ -92,8 +108,14 @@ void FullscreenLowPowerCoordinatorCocoa::WillLoseAcceleratedWidget() {
 }
 
 void FullscreenLowPowerCoordinatorCocoa::EnterOrExitLowPowerModeIfNeeded() {
-  bool new_in_low_power_mode = widget_ && low_power_window_ &&
-                               !suppression_count_ && low_power_layer_valid_;
+  static bool enabled_at_command_line =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableFullscreenLowPowerMode);
+
+  bool new_in_low_power_mode =
+      widget_ && low_power_window_ && allowed_by_nsview_layout_ &&
+      low_power_layer_valid_ && enabled_at_command_line;
+
   if (new_in_low_power_mode) {
     if (!in_low_power_mode_) {
       [low_power_window_ setFrame:[content_window_ frame] display:YES];

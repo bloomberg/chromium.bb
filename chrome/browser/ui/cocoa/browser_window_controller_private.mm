@@ -31,6 +31,7 @@
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/floating_bar_backing_view.h"
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
+#include "chrome/browser/ui/cocoa/fullscreen_low_power_coordinator.h"
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
@@ -793,6 +794,9 @@ willPositionSheet:(NSWindow*)sheet
     return;
   }
 
+  // Destroy the NSWindow used for fullscreen low power mode.
+  fullscreenLowPowerCoordinator_.reset();
+
   if (notification)  // For System Fullscreen when non-nil.
     [self deregisterForContentViewResizeNotifications];
 
@@ -817,6 +821,7 @@ willPositionSheet:(NSWindow*)sheet
   [self deregisterForContentViewResizeNotifications];
   [self resetCustomAppKitFullscreenVariables];
   [self adjustUIForExitingFullscreenAndStopOmniboxSliding];
+  fullscreenLowPowerCoordinator_.reset();
 }
 
 - (void)windowDidFailToExitFullScreen:(NSWindow*)window {
@@ -1031,6 +1036,12 @@ willPositionSheet:(NSWindow*)sheet
                        maxWidth:NSWidth(output.contentAreaFrame)];
 
   exclusiveAccessController_->Layout(output.fullscreenExitButtonMaxY);
+
+  if (fullscreenLowPowerCoordinator_) {
+    fullscreenLowPowerCoordinator_->SetLayoutParameters(
+        output.toolbarFrame, output.infoBarFrame, output.contentAreaFrame,
+        output.downloadShelfFrame);
+  }
 }
 
 - (void)updateSubviewZOrder {
@@ -1184,11 +1195,26 @@ willPositionSheet:(NSWindow*)sheet
   if (![self shouldUseCustomAppKitFullscreenTransition:YES])
     return nil;
 
+  WebContents* webContents = [self webContents];
+  NSWindow* lowPowerWindow = nil;
+  if (webContents) {
+    fullscreenLowPowerCoordinator_.reset(new FullscreenLowPowerCoordinatorCocoa(
+        [self window],
+        webContents->GetRenderWidgetHostView()->GetAcceleratedWidgetMac()));
+    lowPowerWindow =
+        fullscreenLowPowerCoordinator_->GetFullscreenLowPowerWindow();
+  }
+
   fullscreenTransition_.reset(
       [[BrowserWindowFullscreenTransition alloc] initEnterWithController:self]);
 
   NSArray* customWindows =
       [fullscreenTransition_ customWindowsForFullScreenTransition];
+  if (customWindows && lowPowerWindow)
+    customWindows = [customWindows arrayByAddingObject:lowPowerWindow];
+  else
+    fullscreenLowPowerCoordinator_.reset();
+
   isUsingCustomAnimation_ = customWindows != nil;
   return customWindows;
 }

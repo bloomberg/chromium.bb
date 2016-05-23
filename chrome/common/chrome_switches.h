@@ -351,6 +351,7 @@ extern const char kDisableMacViewsNativeAppWindows[];
 extern const char kDisableTranslateNewUX[];
 extern const char kEnableAppInfoDialogMac[];
 extern const char kEnableAppWindowCycling[];
+extern const char kEnableFullscreenLowPowerMode[];
 extern const char kEnableFullscreenTabDetaching[];
 extern const char kEnableHostedAppsInWindows[];
 extern const char kEnableMacViewsNativeAppWindows[];
