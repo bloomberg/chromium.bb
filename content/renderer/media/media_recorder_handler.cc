@@ -177,6 +177,11 @@ bool MediaRecorderHandler::start(int timeslice) {
       audio_tracks[0].source().getReadyState() !=
           blink::WebMediaStreamSource::ReadyStateEnded;
 
+  if (!use_video_tracks && !use_audio_tracks) {
+    LOG(WARNING) << __FUNCTION__ << ": no tracks to be recorded.";
+    return false;
+  }
+
   webm_muxer_.reset(new media::WebmMuxer(
       CodecIdToMediaVideoCodec(codec_id_), use_video_tracks, use_audio_tracks,
       base::Bind(&MediaRecorderHandler::WriteData,
