@@ -275,7 +275,8 @@ void OfflinePageMetadataStoreSQL::NotifyLoadResult(
   UMA_HISTOGRAM_ENUMERATION("OfflinePages.LoadStatus", status,
                             OfflinePageMetadataStore::LOAD_STATUS_COUNT);
   if (status == LOAD_SUCCEEDED) {
-    UMA_HISTOGRAM_COUNTS("OfflinePages.SavedPageCount", result.size());
+    UMA_HISTOGRAM_COUNTS("OfflinePages.SavedPageCount",
+                         static_cast<int32_t>(result.size()));
   } else {
     DVLOG(1) << "Offline pages database loading failed: " << status;
   }

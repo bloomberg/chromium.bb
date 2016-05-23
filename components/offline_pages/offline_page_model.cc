@@ -715,7 +715,8 @@ void OfflinePageModel::OnRemoveOfflinePagesDone(
     offline_pages_.erase(iter);
   }
   if (offline_ids.size() > 1) {
-    UMA_HISTOGRAM_COUNTS("OfflinePages.BatchDelete.Count", offline_ids.size());
+    UMA_HISTOGRAM_COUNTS("OfflinePages.BatchDelete.Count",
+                         static_cast<int32_t>(offline_ids.size()));
     UMA_HISTOGRAM_MEMORY_KB(
         "OfflinePages.BatchDelete.TotalPageSize", total_size / 1024);
   }

@@ -66,9 +66,9 @@ void OfflinePageStorageManager::OnGetAllPagesDone(
   std::vector<int64_t> offline_ids;
   GetExpiredPageIds(pages, stats, offline_ids);
   client_->DeletePagesByOfflineId(
-      offline_ids,
-      base::Bind(&OfflinePageStorageManager::OnExpiredPagesDeleted,
-                 weak_ptr_factory_.GetWeakPtr(), callback, offline_ids.size()));
+      offline_ids, base::Bind(&OfflinePageStorageManager::OnExpiredPagesDeleted,
+                              weak_ptr_factory_.GetWeakPtr(), callback,
+                              static_cast<int>(offline_ids.size())));
 }
 
 void OfflinePageStorageManager::OnExpiredPagesDeleted(
@@ -112,7 +112,7 @@ void OfflinePageStorageManager::GetExpiredPageIds(
                 return a.last_access_time > b.last_access_time;
               });
 
-    int page_list_size = page_list.size();
+    int page_list_size = static_cast<int>(page_list.size());
     int pos = 0;
     while (pos < page_list_size &&
            (policy.page_limit == kUnlimitedPages || pos < policy.page_limit) &&
@@ -139,7 +139,7 @@ void OfflinePageStorageManager::GetExpiredPageIds(
               [](const OfflinePageItem& a, const OfflinePageItem& b) -> bool {
                 return a.last_access_time < b.last_access_time;
               });
-    int kept_pages_size = kept_pages.size();
+    int kept_pages_size = static_cast<int>(kept_pages.size());
     int pos = 0;
     while (pos < kept_pages_size && space_to_release > 0) {
       space_to_release -= kept_pages.at(pos).file_size;
