@@ -32,7 +32,6 @@ import org.chromium.mojom.payments.PaymentRequestClient;
 import org.chromium.mojom.payments.PaymentResponse;
 import org.chromium.mojom.payments.ShippingOption;
 import org.chromium.ui.base.WindowAndroid;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -57,6 +56,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private static final int FAVICON_SIZE_DP = 24;
 
     private static final String TAG = "cr_PaymentRequest";
+
+    private final Handler mHandler = new Handler();
+
     private Activity mContext;
     private String mMerchantName;
     private String mOrigin;
@@ -238,7 +240,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
 
         mUI.updateOrderSummarySection(mLineItems);
-        mUI.updateShippingOptionsSection(mShippingOptionsSection);
+        mUI.updateSection(PaymentRequestUI.TYPE_SHIPPING_OPTIONS, mShippingOptionsSection);
     }
 
     private boolean setLineItemsAndShippingOptionsOrDisconnectFromClient(PaymentDetails details) {
@@ -398,7 +400,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         if (mPaymentMethodsSection == null) return;
 
-        new Handler().post(new Runnable() {
+        mHandler.post(new Runnable() {
             @Override
             public void run() {
                 provideDefaultPaymentInformation();
@@ -416,7 +418,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
     @Override
     public void getLineItems(final Callback<List<LineItem>> callback) {
-        new Handler().post(new Runnable() {
+        mHandler.post(new Runnable() {
             @Override
             public void run() {
                 callback.onResult(mLineItems);
@@ -425,56 +427,41 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     }
 
     @Override
-    public void getShippingAddresses(final Callback<SectionInformation> callback) {
-        new Handler().post(new Runnable() {
+    public void getSectionInformation(@PaymentRequestUI.DataType final int optionType,
+            final Callback<SectionInformation> callback) {
+        mHandler.post(new Runnable() {
             @Override
             public void run() {
-                callback.onResult(mShippingAddressesSection);
+                if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
+                    callback.onResult(mShippingAddressesSection);
+                } else if (optionType == PaymentRequestUI.TYPE_SHIPPING_OPTIONS) {
+                    callback.onResult(mShippingOptionsSection);
+                } else if (optionType == PaymentRequestUI.TYPE_PAYMENT_METHODS) {
+                    assert mPaymentMethodsSection != null;
+                    callback.onResult(mPaymentMethodsSection);
+                }
             }
         });
     }
 
     @Override
-    public void getShippingOptions(final Callback<SectionInformation> callback) {
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                callback.onResult(mShippingOptionsSection);
+    public void onSectionOptionChanged(
+            @PaymentRequestUI.DataType int optionType, PaymentOption option) {
+        if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
+            // This may update the line items and/or the shipping options.
+            assert option instanceof AutofillAddress;
+            mShippingAddressesSection.setSelectedItem(option);
+            if (mMerchantNeedsShippingAddress) {
+                mClient.onShippingAddressChange(((AutofillAddress) option).toShippingAddress());
             }
-        });
-    }
-
-    @Override
-    public void getPaymentMethods(final Callback<SectionInformation> callback) {
-        assert mPaymentMethodsSection != null;
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                callback.onResult(mPaymentMethodsSection);
-            }
-        });
-    }
-
-    @Override
-    public void onShippingAddressChanged(PaymentOption selectedShippingAddress) {
-        assert selectedShippingAddress instanceof AutofillAddress;
-        mShippingAddressesSection.setSelectedItem(selectedShippingAddress);
-        if (mMerchantNeedsShippingAddress) {
-            mClient.onShippingAddressChange(
-                    ((AutofillAddress) selectedShippingAddress).toShippingAddress());
+        } else if (optionType == PaymentRequestUI.TYPE_SHIPPING_OPTIONS) {
+            // This may update the line items.
+            mShippingOptionsSection.setSelectedItem(option);
+            mClient.onShippingOptionChange(option.getIdentifier());
+        } else if (optionType == PaymentRequestUI.TYPE_PAYMENT_METHODS) {
+            assert option instanceof PaymentInstrument;
+            mPaymentMethodsSection.setSelectedItem(option);
         }
-    }
-
-    @Override
-    public void onShippingOptionChanged(PaymentOption selectedShippingOption) {
-        mShippingOptionsSection.setSelectedItem(selectedShippingOption);
-        mClient.onShippingOptionChange(selectedShippingOption.getIdentifier());
-    }
-
-    @Override
-    public void onPaymentMethodChanged(PaymentOption selectedPaymentMethod) {
-        assert selectedPaymentMethod instanceof PaymentInstrument;
-        mPaymentMethodsSection.setSelectedItem(selectedPaymentMethod);
     }
 
     @Override

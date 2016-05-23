@@ -17,6 +17,7 @@ import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.support.annotation.IntDef;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.text.TextUtils.TruncateAt;
@@ -47,6 +48,8 @@ import org.chromium.chrome.browser.widget.DualControlLayout;
 import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
 import org.chromium.chrome.browser.widget.animation.FocusAnimator;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,6 +58,18 @@ import java.util.List;
  */
 public class PaymentRequestUI implements DialogInterface.OnDismissListener, View.OnClickListener,
         PaymentRequestSection.PaymentsSectionDelegate {
+    public static final int TYPE_SHIPPING_ADDRESSES = 1;
+    public static final int TYPE_SHIPPING_OPTIONS = 2;
+    public static final int TYPE_PAYMENT_METHODS = 3;
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({
+        TYPE_SHIPPING_ADDRESSES,
+        TYPE_SHIPPING_OPTIONS,
+        TYPE_PAYMENT_METHODS
+    })
+    public @interface DataType {}
+
     /**
      * The interface to be implemented by the consumer of the PaymentRequest UI.
      */
@@ -70,35 +85,21 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         void getLineItems(Callback<List<LineItem>> callback);
 
         /**
-         * Asynchronously returns the full list of available shipping addresses.
+         * Asynchronously returns the full list of options for the given type.
+         *
+         * @param optionType Data being updated.
+         * @param callback   Callback to run when the data has been fetched.
          */
-        void getShippingAddresses(Callback<SectionInformation> callback);
+        void getSectionInformation(
+                @DataType int optionType, Callback<SectionInformation> callback);
 
         /**
-         * Asynchronously returns the full list of available shipping options.
+         * Called when the user changes one of their payment options.
+         *
+         * @param optionType Data being updated.
+         * @param option     Value of the data being updated.
          */
-        void getShippingOptions(Callback<SectionInformation> callback);
-
-        /**
-         * Asynchronously returns the full list of available payment methods.
-         */
-        void getPaymentMethods(Callback<SectionInformation> callback);
-
-        /**
-         * Called when the user changes the current shipping address. This may update the line items
-         * and/or the shipping options.
-         */
-        void onShippingAddressChanged(PaymentOption selectedShippingAddress);
-
-        /**
-         * Called when the user changes the current shipping option. This may update the line items.
-         */
-        void onShippingOptionChanged(PaymentOption selectedShippingOption);
-
-        /**
-         * Called when the user changes the current payment method.
-         */
-        void onPaymentMethodChanged(PaymentOption selectedPaymentMethod);
+        void onSectionOptionChanged(@DataType int optionType, PaymentOption option);
 
         /**
          * Called when the user clicks on the “Pay” button. At this point, the UI is disabled and is
@@ -303,8 +304,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 updateOrderSummarySection(result.getLineItems());
 
                 if (mRequestShipping) {
-                    updateShippingAddressSection(result.getShippingAddresses());
-                    updateShippingOptionsSection(result.getShippingOptions());
+                    updateSection(TYPE_SHIPPING_ADDRESSES, result.getShippingAddresses());
+                    updateSection(TYPE_SHIPPING_OPTIONS, result.getShippingOptions());
 
                     String selectedShippingAddress = result.getSelectedShippingAddressLabel();
                     String selectedShippingName = result.getSelectedShippingAddressSublabel();
@@ -330,7 +331,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                     }
                 }
 
-                updatePaymentMethodSection(result.getPaymentMethods());
+                updateSection(TYPE_PAYMENT_METHODS, result.getPaymentMethods());
                 updatePayButtonEnabled();
 
                 // Hide the loading indicators and show the real sections.
@@ -401,38 +402,36 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         }
     }
 
-    private void updateShippingAddressSection(SectionInformation section) {
-        mShippingAddressSectionInformation = section;
-        mShippingAddressSection.update(section);
-    }
-
     /**
-     * Updates the shipping options in response to a changed shipping address.
+     * Updates the UI to account for changes in payment information.
      *
-     * @param shipping The shipping options.
+     * @param section The shipping options.
      */
-    public void updateShippingOptionsSection(SectionInformation section) {
-        mShippingOptionsSectionInformation = section;
-        mShippingOptionSection.update(section);
+    public void updateSection(@DataType int whichSection, SectionInformation section) {
+        if (whichSection == TYPE_SHIPPING_ADDRESSES) {
+            mShippingAddressSectionInformation = section;
+            mShippingAddressSection.update(section);
+        } else if (whichSection == TYPE_SHIPPING_OPTIONS) {
+            mShippingOptionsSectionInformation = section;
+            mShippingOptionSection.update(section);
+        } else if (whichSection == TYPE_PAYMENT_METHODS) {
+            mPaymentMethodSectionInformation = section;
+            mPaymentMethodSection.update(section);
+        }
         updatePayButtonEnabled();
-    }
-
-    private void updatePaymentMethodSection(SectionInformation section) {
-        mPaymentMethodSectionInformation = section;
-        mPaymentMethodSection.update(section);
     }
 
     @Override
     public void onPaymentOptionChanged(OptionSection section, PaymentOption option) {
         if (section == mShippingAddressSection) {
             mShippingAddressSectionInformation.setSelectedItem(option);
-            mClient.onShippingAddressChanged(option);
+            mClient.onSectionOptionChanged(TYPE_SHIPPING_ADDRESSES, option);
         } else if (section == mShippingOptionSection) {
             mShippingOptionsSectionInformation.setSelectedItem(option);
-            mClient.onShippingOptionChanged(option);
+            mClient.onSectionOptionChanged(TYPE_SHIPPING_OPTIONS, option);
         } else if (section == mPaymentMethodSection) {
             mPaymentMethodSectionInformation.setSelectedItem(option);
-            mClient.onPaymentMethodChanged(option);
+            mClient.onSectionOptionChanged(TYPE_PAYMENT_METHODS, option);
         }
 
         // Collapse all sections after an option is selected.
@@ -587,32 +586,27 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 }
             });
         } else if (mSelectedSection == mShippingAddressSection) {
-            mClient.getShippingAddresses(new Callback<SectionInformation>() {
-                @Override
-                public void onResult(SectionInformation result) {
-                    updateShippingAddressSection(result);
-                    updateSectionVisibility();
-                }
-            });
+            mClient.getSectionInformation(
+                    TYPE_SHIPPING_ADDRESSES, createUpdateSectionCallback(TYPE_SHIPPING_ADDRESSES));
         } else if (mSelectedSection == mShippingOptionSection) {
-            mClient.getShippingOptions(new Callback<SectionInformation>() {
-                @Override
-                public void onResult(SectionInformation result) {
-                    updateShippingOptionsSection(result);
-                    updateSectionVisibility();
-                }
-            });
+            mClient.getSectionInformation(
+                    TYPE_SHIPPING_OPTIONS, createUpdateSectionCallback(TYPE_SHIPPING_OPTIONS));
         } else if (mSelectedSection == mPaymentMethodSection) {
-            mClient.getPaymentMethods(new Callback<SectionInformation>() {
-                @Override
-                public void onResult(SectionInformation result) {
-                    updatePaymentMethodSection(result);
-                    updateSectionVisibility();
-                }
-            });
+            mClient.getSectionInformation(
+                    TYPE_PAYMENT_METHODS, createUpdateSectionCallback(TYPE_PAYMENT_METHODS));
         } else {
             updateSectionVisibility();
         }
+    }
+
+    private Callback<SectionInformation> createUpdateSectionCallback(@DataType final int type) {
+        return new Callback<SectionInformation>() {
+            @Override
+            public void onResult(SectionInformation result) {
+                updateSection(type, result);
+                updateSectionVisibility();
+            }
+        };
     }
 
     /** Update the display status of each expandable section. */
