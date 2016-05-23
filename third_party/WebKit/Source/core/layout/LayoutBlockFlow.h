@@ -53,6 +53,7 @@ class MarginInfo;
 class LayoutInline;
 class LineBreaker;
 class LineInfo;
+class LineLayoutState;
 class LineWidth;
 class LayoutMultiColumnFlowThread;
 class LayoutMultiColumnSpannerPlaceholder;

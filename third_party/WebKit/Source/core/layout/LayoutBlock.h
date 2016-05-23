@@ -34,7 +34,6 @@
 
 namespace blink {
 
-class LineLayoutState;
 struct PaintInfo;
 class WordMeasurement;
 
@@ -102,9 +101,6 @@ enum ContainingBlockState { NewContainingBlock, SameContainingBlock };
 //     ...
 // }
 class CORE_EXPORT LayoutBlock : public LayoutBox {
-public:
-    friend class LineLayoutState;
-
 protected:
     explicit LayoutBlock(ContainerNode*);
     ~LayoutBlock() override;
