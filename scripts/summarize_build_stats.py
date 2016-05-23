@@ -124,7 +124,8 @@ class CLStatsEngine(object):
   def Gather(self, start_date, end_date,
              master_config=constants.CQ_MASTER,
              sort_by_build_number=True,
-             starting_build_number=None):
+             starting_build_number=None,
+             ending_build_number=None):
     """Fetches build data and failure reasons.
 
     Args:
@@ -138,6 +139,8 @@ class CLStatsEngine(object):
           sorted by build number.
       starting_build_number: (optional) The lowest build number to
           include in the results.
+      ending_build_number: (optional) The highest build number to include
+          in the results.
     """
     logging.info('Gathering data for %s from %s until %s', master_config,
                  start_date, end_date)
@@ -147,6 +150,9 @@ class CLStatsEngine(object):
         end_date=end_date,
         starting_build_number=starting_build_number,
         num_results=self.db.NUM_RESULTS_NO_LIMIT)
+    if ending_build_number is not None:
+      self.builds = [x for x in self.builds
+                     if x['build_number'] <= ending_build_number]
     if self.builds:
       logging.info('Fetched %d builds (build_id: %d to %d)', len(self.builds),
                    self.builds[0]['id'], self.builds[-1]['id'])
@@ -556,6 +562,9 @@ def GetParser():
   parser.add_argument('--starting-build', action='store', type=int,
                       default=None, help='Filter to builds after given number'
                                          '(inclusive).')
+  parser.add_argument('--ending-build', action='store', type=int,
+                      default=None, help='Builder to builds before a given '
+                                         'number (inclusive).')
   parser.add_argument('--end-date', action='store', type='date', default=None,
                       help='Limit scope to an end date in the past.')
 
@@ -602,6 +611,7 @@ def main(argv):
 
   cl_stats_engine = CLStatsEngine(db)
   cl_stats_engine.Gather(start_date, end_date, master_config,
-                         starting_build_number=options.starting_build)
+                         starting_build_number=options.starting_build,
+                         ending_build_number=options.ending_build)
   cl_stats_engine.Summarize(options.build_type,
                             options.bad_patch_candidates)
