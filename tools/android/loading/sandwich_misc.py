@@ -338,39 +338,25 @@ def VerifyBenchmarkOutputDirectory(benchmark_setup_path,
                          'Distinct resource requests to WPR')
 
 
-def ReadSubresourceMapFromBenchmarkOutput(benchmark_output_directory_path):
-  """Extracts a map URL-to-subresources for each navigation in benchmark
-  directory.
+def ReadSubresourceFromRunnerOutputDir(runner_output_dir):
+  """Extracts a list of subresources in runner output directory.
 
   Args:
-    benchmark_output_directory_path: Path of the benchmark output directory to
-        verify.
+    runner_output_dir: Path of the runner's output directory.
 
   Returns:
-    {url -> [URLs of sub-resources]}
+    [URLs of sub-resources]
   """
-  url_subresources = {}
-  run_id = -1
-  while True:
-    run_id += 1
-    run_path = os.path.join(benchmark_output_directory_path, str(run_id))
-    if not os.path.isdir(run_path):
-      break
-    trace_path = os.path.join(run_path, sandwich_runner.TRACE_FILENAME)
-    if not os.path.isfile(trace_path):
-      continue
-    trace = LoadingTrace.FromJsonFile(trace_path)
-    if trace.url in url_subresources:
-      continue
-    logging.info('lists resources of %s from %s' % (trace.url, trace_path))
-    urls_set = set()
-    for request_event in _FilterOutDataAndIncompleteRequests(
-        trace.request_track.GetEvents()):
-      if request_event.url not in urls_set:
-        logging.info('  %s' % request_event.url)
-        urls_set.add(request_event.url)
-    url_subresources[trace.url] = [url for url in urls_set]
-  return url_subresources
+  trace_path = os.path.join(
+      runner_output_dir, '0', sandwich_runner.TRACE_FILENAME)
+  trace = LoadingTrace.FromJsonFile(trace_path)
+  url_set = set()
+  for request_event in _FilterOutDataAndIncompleteRequests(
+      trace.request_track.GetEvents()):
+    url_set.add(request_event.url)
+  logging.info('lists %s resources of %s from %s' % \
+               (len(url_set), trace.url, trace_path))
+  return [url for url in url_set]
 
 
 def ValidateCacheArchiveContent(ref_urls, cache_archive_path):

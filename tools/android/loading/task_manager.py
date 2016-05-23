@@ -60,6 +60,7 @@ Example:
 
 
 import argparse
+import collections
 import logging
 import os
 import subprocess
@@ -110,16 +111,20 @@ class Task(object):
 class Builder(object):
   """Utilities for creating sub-graphs of tasks with dependencies."""
 
-  def __init__(self, output_directory):
+  def __init__(self, output_directory, output_subdirectory):
     """Constructor.
 
     Args:
       output_directory: Output directory where the dynamic tasks work.
+      output_subdirectory: Subdirectory to put all created tasks in or None.
     """
     self.output_directory = output_directory
+    self._output_subdirectory = output_subdirectory
     self.tasks = {}
 
   def CreateStaticTask(self, task_name, path):
+    """Creates and returns a new static task."""
+    task_name = self._RebaseTaskName(task_name)
     if not os.path.exists(path):
       raise TaskError('Error while creating task {}: File not found: {}'.format(
           task_name, path))
@@ -160,6 +165,7 @@ class Builder(object):
       A Task that was created by wrapping the function or an existing registered
       wrapper (that have wrapped a different function).
     """
+    task_name = self._RebaseTaskName(task_name)
     dependencies = dependencies or []
     def InnerAddTaskWithNewPath(recipe):
       if task_name in self.tasks:
@@ -175,6 +181,11 @@ class Builder(object):
       self.tasks[task_name] = task
       return task
     return InnerAddTaskWithNewPath
+
+  def _RebaseTaskName(self,  task_name):
+    if self._output_subdirectory:
+      return os.path.join(self._output_subdirectory, task_name)
+    return task_name
 
 
 def GenerateScenario(final_tasks, frozen_tasks):

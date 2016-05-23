@@ -99,23 +99,23 @@ class TaskTest(TaskManagerTestCase):
 
 class BuilderTest(TaskManagerTestCase):
   def testCreateUnexistingStaticTask(self):
-    builder = task_manager.Builder(self.output_directory)
+    builder = task_manager.Builder(self.output_directory, None)
     with self.assertRaises(task_manager.TaskError):
       builder.CreateStaticTask('hello.txt', '/__unexisting/file/path')
 
   def testCreateStaticTask(self):
-    builder = task_manager.Builder(self.output_directory)
+    builder = task_manager.Builder(self.output_directory, None)
     task = builder.CreateStaticTask('hello.py', __file__)
     self.assertTrue(task.IsStatic())
 
   def testDuplicateStaticTask(self):
-    builder = task_manager.Builder(self.output_directory)
+    builder = task_manager.Builder(self.output_directory, None)
     builder.CreateStaticTask('hello.py', __file__)
     with self.assertRaises(task_manager.TaskError):
       builder.CreateStaticTask('hello.py', __file__)
 
   def testRegisterTask(self):
-    builder = task_manager.Builder(self.output_directory)
+    builder = task_manager.Builder(self.output_directory, None)
     @builder.RegisterTask('hello.txt')
     def TaskA():
       TaskA.executed = True
@@ -128,7 +128,7 @@ class BuilderTest(TaskManagerTestCase):
     self.assertTrue(TaskA.executed)
 
   def testRegisterDuplicateTask(self):
-    builder = task_manager.Builder(self.output_directory)
+    builder = task_manager.Builder(self.output_directory, None)
     @builder.RegisterTask('hello.txt')
     def TaskA():
       pass
@@ -140,7 +140,7 @@ class BuilderTest(TaskManagerTestCase):
       del TaskB # unused
 
   def testTaskMerging(self):
-    builder = task_manager.Builder(self.output_directory)
+    builder = task_manager.Builder(self.output_directory, None)
     @builder.RegisterTask('hello.txt')
     def TaskA():
       pass
@@ -150,7 +150,7 @@ class BuilderTest(TaskManagerTestCase):
     self.assertEqual(TaskA, TaskB)
 
   def testStaticTaskMergingError(self):
-    builder = task_manager.Builder(self.output_directory)
+    builder = task_manager.Builder(self.output_directory, None)
     builder.CreateStaticTask('hello.py', __file__)
     with self.assertRaises(task_manager.TaskError):
       @builder.RegisterTask('hello.py', merge=True)
@@ -158,10 +158,33 @@ class BuilderTest(TaskManagerTestCase):
         pass
       del TaskA # unused
 
+  def testOutputSubdirectory(self):
+    builder = task_manager.Builder(self.output_directory, 'subdir')
+
+    builder.CreateStaticTask('hello.py', __file__)
+    self.assertIn('subdir/hello.py', builder.tasks)
+    self.assertNotIn('hello.py', builder.tasks)
+
+    builder.CreateStaticTask('subdir/hello.py', __file__)
+    self.assertIn('subdir/subdir/hello.py', builder.tasks)
+
+    @builder.RegisterTask('world.txt')
+    def TaskA():
+      pass
+    del TaskA # unused
+    self.assertIn('subdir/world.txt', builder.tasks)
+    self.assertNotIn('hello.py', builder.tasks)
+
+    @builder.RegisterTask('subdir/world.txt')
+    def TaskB():
+      pass
+    del TaskB # unused
+    self.assertIn('subdir/subdir/world.txt', builder.tasks)
+
 
 class GenerateScenarioTest(TaskManagerTestCase):
   def testParents(self):
-    builder = task_manager.Builder(self.output_directory)
+    builder = task_manager.Builder(self.output_directory, None)
     @builder.RegisterTask('a')
     def TaskA():
       pass
@@ -184,7 +207,7 @@ class GenerateScenarioTest(TaskManagerTestCase):
     self.assertListEqual([TaskA, TaskB, TaskC], scenario)
 
   def testFreezing(self):
-    builder = task_manager.Builder(self.output_directory)
+    builder = task_manager.Builder(self.output_directory, None)
     @builder.RegisterTask('a')
     def TaskA():
       pass
@@ -213,7 +236,7 @@ class GenerateScenarioTest(TaskManagerTestCase):
     self.assertListEqual([TaskC, TaskD], scenario)
 
   def testCycleError(self):
-    builder = task_manager.Builder(self.output_directory)
+    builder = task_manager.Builder(self.output_directory, None)
     @builder.RegisterTask('a')
     def TaskA():
       pass
@@ -231,8 +254,8 @@ class GenerateScenarioTest(TaskManagerTestCase):
       task_manager.GenerateScenario([TaskD], set())
 
   def testCollisionError(self):
-    builder_a = task_manager.Builder(self.output_directory)
-    builder_b = task_manager.Builder(self.output_directory)
+    builder_a = task_manager.Builder(self.output_directory, None)
+    builder_b = task_manager.Builder(self.output_directory, None)
     @builder_a.RegisterTask('a')
     def TaskA():
       pass
@@ -243,7 +266,7 @@ class GenerateScenarioTest(TaskManagerTestCase):
       task_manager.GenerateScenario([TaskA, TaskB], set())
 
   def testGraphVizOutput(self):
-    builder = task_manager.Builder(self.output_directory)
+    builder = task_manager.Builder(self.output_directory, None)
     static_task = builder.CreateStaticTask('a', __file__)
     @builder.RegisterTask('b')
     def TaskB():
@@ -268,7 +291,7 @@ class GenerateScenarioTest(TaskManagerTestCase):
 
   def testListResumingTasksToFreeze(self):
     TaskManagerTestCase.setUp(self)
-    builder = task_manager.Builder(self.output_directory)
+    builder = task_manager.Builder(self.output_directory, None)
     static_task = builder.CreateStaticTask('static', __file__)
     @builder.RegisterTask('a')
     def TaskA():
@@ -315,7 +338,7 @@ class GenerateScenarioTest(TaskManagerTestCase):
 
 class CommandLineControlledExecutionTest(TaskManagerTestCase):
   def Execute(self, *command_line_args):
-    builder = task_manager.Builder(self.output_directory)
+    builder = task_manager.Builder(self.output_directory, None)
     @builder.RegisterTask('a')
     def TaskA():
       pass

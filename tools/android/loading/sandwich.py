@@ -7,16 +7,16 @@
 
 When running Chrome is sandwiched between preprocessed disk caches and
 WepPageReplay serving all connections.
-
-TODO(pasko): implement cache preparation and WPR.
 """
 
 import argparse
 import csv
+import json
 import logging
 import os
 import shutil
 import sys
+from urlparse import urlparse
 
 _SRC_DIR = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..', '..'))
@@ -35,7 +35,7 @@ import emulation
 import options
 import sandwich_metrics
 import sandwich_misc
-from sandwich_runner import SandwichRunner
+import sandwich_runner
 import sandwich_task_builder
 import task_manager
 from trace_test.webserver_test import WebServer
@@ -46,6 +46,30 @@ OPTIONS = options.OPTIONS
 
 _SPEED_INDEX_MEASUREMENT = 'speed-index'
 _MEMORY_MEASUREMENT = 'memory'
+_CORPUS_DIR = 'sandwich_corpuses'
+
+
+def ReadUrlsFromCorpus(corpus_path):
+  """Retrieves the list of URLs associated with the corpus name."""
+  try:
+    # Attempt to read by regular file name.
+    json_file_name = corpus_path
+    with open(json_file_name) as f:
+      json_data = json.load(f)
+  except IOError:
+    # Extra sugar: attempt to load from _CORPUS_DIR.
+    json_file_name = os.path.join(
+        os.path.dirname(__file__), _CORPUS_DIR, corpus_path)
+    with open(json_file_name) as f:
+      json_data = json.load(f)
+
+  key = 'urls'
+  if json_data and key in json_data:
+    url_list = json_data[key]
+    if isinstance(url_list, list) and len(url_list) > 0:
+      return url_list
+  raise Exception(
+      'File {} does not define a list named "urls"'.format(json_file_name))
 
 
 def _ArgumentParser():
@@ -85,8 +109,8 @@ def _ArgumentParser():
   run_parser.add_argument('-g', '--gen-full', action='store_true',
                           help='Generate the full graph with all possible '
                                'benchmarks.')
-  run_parser.add_argument('--job', required=True,
-      help='JSON file with job description such as in sandwich_jobs/.')
+  run_parser.add_argument('-c', '--corpus', required=True,
+      help='Path to a JSON file with a corpus such as in %s/.' % _CORPUS_DIR)
   run_parser.add_argument('-m', '--measure', default=[], nargs='+',
       choices=[_SPEED_INDEX_MEASUREMENT, _MEMORY_MEASUREMENT],
       dest='optional_measures', help='Enable optional measurements.')
@@ -108,28 +132,29 @@ def _GetAndroidDeviceFromArgs(args):
 
 def _RecordWebServerTestTrace(args):
   with common_util.TemporaryDirectory() as out_path:
-    sandwich_runner = SandwichRunner()
-    sandwich_runner.android_device = _GetAndroidDeviceFromArgs(args)
+    runner = sandwich_runner.SandwichRunner()
+    runner.android_device = _GetAndroidDeviceFromArgs(args)
     # Reuse the WPR's forwarding to access the webpage from Android.
-    sandwich_runner.wpr_record = True
-    sandwich_runner.wpr_archive_path = os.path.join(out_path, 'wpr')
-    sandwich_runner.trace_output_directory = os.path.join(out_path, 'run')
+    runner.wpr_record = True
+    runner.wpr_archive_path = os.path.join(out_path, 'wpr')
+    runner.output_dir = os.path.join(out_path, 'run')
     with WebServer.Context(
         source_dir=args.source_dir, communication_dir=out_path) as server:
       address = server.Address()
-      sandwich_runner.urls = ['http://%s/%s' % (address, args.page)]
-      sandwich_runner.Run()
+      runner.url = 'http://%s/%s' % (address, args.page)
+      runner.Run()
     trace_path = os.path.join(
         out_path, 'run', '0', sandwich_runner.TRACE_FILENAME)
     shutil.copy(trace_path, args.output)
   return 0
 
 
-def _RunAllMain(args):
+def _GenerateNoStatePrefetchBenchmarkTasks(args, url, output_subdirectory):
   builder = sandwich_task_builder.SandwichTaskBuilder(
-      output_directory=args.output,
       android_device=_GetAndroidDeviceFromArgs(args),
-      job_path=args.job)
+      url=url,
+      output_directory=args.output,
+      output_subdirectory=output_subdirectory)
   if args.wpr_archive_path:
     builder.OverridePathToWprArchive(args.wpr_archive_path)
   else:
@@ -139,7 +164,7 @@ def _RunAllMain(args):
   def MainTransformer(runner):
     runner.record_video = _SPEED_INDEX_MEASUREMENT in args.optional_measures
     runner.record_memory_dumps = _MEMORY_MEASUREMENT in args.optional_measures
-    runner.job_repeat = args.url_repeat
+    runner.repeat = args.url_repeat
 
   transformer_list_name = 'no-network-emulation'
   builder.PopulateLoadBenchmark(sandwich_misc.EMPTY_CACHE_DISCOVERER,
@@ -160,9 +185,25 @@ def _RunAllMain(args):
           continue
         builder.PopulateLoadBenchmark(subresource_discoverer,
             transformer_list_name, transformer_list)
+  return builder.tasks.values(), builder.default_final_tasks
 
-  return task_manager.ExecuteWithCommandLine(
-      args, builder.tasks.values(), builder.default_final_tasks)
+
+def _RunAllMain(args):
+  urls = ReadUrlsFromCorpus(args.corpus)
+  domain_times_encountered_per_domain = {}
+  tasks = []
+  default_final_tasks = []
+  for url in urls:
+    domain = '.'.join(urlparse(url).netloc.split('.')[-2:])
+    domain_times_encountered = domain_times_encountered_per_domain.get(
+        domain, 0)
+    output_subdirectory = '{}.{}'.format(domain, domain_times_encountered)
+    domain_times_encountered_per_domain[domain] = domain_times_encountered + 1
+    gen_tasks, gen_default_final_tasks = \
+        _GenerateNoStatePrefetchBenchmarkTasks(args, url, output_subdirectory)
+    tasks.extend(gen_tasks)
+    default_final_tasks.extend(gen_default_final_tasks)
+  return task_manager.ExecuteWithCommandLine(args, tasks, default_final_tasks)
 
 
 def main(command_line_args):

@@ -37,18 +37,20 @@ class SandwichTaskBuilder(task_manager.Builder):
   """A builder for a graph of tasks, each prepares or invokes a SandwichRunner.
   """
 
-  def __init__(self, output_directory, android_device, job_path):
+  def __init__(self, android_device, url, output_directory,
+               output_subdirectory):
     """Constructor.
 
     Args:
-      output_directory: As in task_manager.Builder.__init__
       android_device: The android DeviceUtils to run sandwich on or None to run
         it locally.
-      job_path: Path of the sandwich's job.
+      url: URL to benchmark.
+      output_directory: As in task_manager.Builder.__init__
+      output_subdirectory: As in task_manager.Builder.__init__
     """
-    task_manager.Builder.__init__(self, output_directory)
+    task_manager.Builder.__init__(self, output_directory, output_subdirectory)
     self._android_device = android_device
-    self._job_path = job_path
+    self._url = url
     self._default_final_tasks = []
 
     self._original_wpr_task = None
@@ -64,7 +66,7 @@ class SandwichTaskBuilder(task_manager.Builder):
   def _CreateSandwichRunner(self):
     """Create a runner for non benchmark purposes."""
     runner = sandwich_runner.SandwichRunner()
-    runner.LoadJob(self._job_path)
+    runner.url = self._url
     runner.android_device = self._android_device
     return runner
 
@@ -119,15 +121,16 @@ class SandwichTaskBuilder(task_manager.Builder):
       runner = self._CreateSandwichRunner()
       runner.wpr_archive_path = BuildPatchedWpr.path
       runner.cache_archive_path = BuildOriginalCache.path
-      runner.cache_operation = 'save'
-      runner.trace_output_directory = BuildOriginalCache.run_path
+      runner.cache_operation = sandwich_runner.CacheOperation.SAVE
+      runner.output_dir = BuildOriginalCache.run_path
       runner.Run()
     BuildOriginalCache.run_path = BuildOriginalCache.path[:-4] + '-run'
 
     @self.RegisterTask('common/patched-cache.zip', [BuildOriginalCache])
     def BuildPatchedCache():
       sandwich_misc.PatchCacheArchive(BuildOriginalCache.path,
-          os.path.join(BuildOriginalCache.run_path, '0', 'trace.json'),
+          os.path.join(BuildOriginalCache.run_path, '0',
+                       sandwich_runner.TRACE_FILENAME),
           BuildPatchedCache.path)
 
     @self.RegisterTask('common/subresources-for-urls-run/',
@@ -135,16 +138,16 @@ class SandwichTaskBuilder(task_manager.Builder):
     def UrlsResourcesRun():
       runner = self._CreateSandwichRunner()
       runner.wpr_archive_path = self._original_wpr_task.path
-      runner.cache_operation = 'clear'
-      runner.trace_output_directory = UrlsResourcesRun.path
+      runner.cache_operation = sandwich_runner.CacheOperation.CLEAR
+      runner.output_dir = UrlsResourcesRun.path
       runner.Run()
 
     @self.RegisterTask('common/subresources-for-urls.json', [UrlsResourcesRun])
     def ListUrlsResources():
-      json_content = sandwich_misc.ReadSubresourceMapFromBenchmarkOutput(
+      url_resources = sandwich_misc.ReadSubresourceFromRunnerOutputDir(
           UrlsResourcesRun.path)
       with open(ListUrlsResources.path, 'w') as output:
-        json.dump(json_content, output)
+        json.dump(url_resources, output)
 
     @self.RegisterTask('common/patched-cache-validation.log',
                        [BuildPatchedCache, ListUrlsResources])
@@ -201,11 +204,7 @@ class SandwichTaskBuilder(task_manager.Builder):
       whitelisted_urls = sandwich_misc.ExtractDiscoverableUrls(
           trace_path, subresource_discoverer)
 
-      urls_resources = json.load(open(self._subresources_for_urls_task.path))
-      # TODO(gabadie): Implement support for multiple URLs in this Task.
-      assert len(urls_resources) == 1
-      url = urls_resources.keys()[0]
-      url_resources = urls_resources[url]
+      url_resources = json.load(open(self._subresources_for_urls_task.path))
       common_util.EnsureParentDirectoryExists(SetupBenchmark.path)
       with open(SetupBenchmark.path, 'w') as output:
         json.dump({
@@ -231,10 +230,11 @@ class SandwichTaskBuilder(task_manager.Builder):
       for transformer in transformer_list:
         transformer(runner)
       runner.wpr_archive_path = self._patched_wpr_task.path
-      runner.wpr_out_log_path = os.path.join(RunBenchmark.path, 'wpr.log')
+      runner.wpr_out_log_path = os.path.join(
+          RunBenchmark.path, sandwich_runner.WPR_LOG_FILENAME)
       runner.cache_archive_path = BuildBenchmarkCacheArchive.path
-      runner.cache_operation = 'push'
-      runner.trace_output_directory = RunBenchmark.path
+      runner.cache_operation = sandwich_runner.CacheOperation.PUSH
+      runner.output_dir = RunBenchmark.path
       runner.Run()
 
     @self.RegisterTask(task_prefix + '-metrics.csv',
