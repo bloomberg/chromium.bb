@@ -133,6 +133,19 @@ TEST_F(SurfaceTest, SetViewport) {
   EXPECT_EQ(viewport.ToString(), surface->bounds().size().ToString());
 }
 
+TEST_F(SurfaceTest, SetCrop) {
+  gfx::Size buffer_size(16, 16);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+
+  surface->Attach(buffer.get());
+  gfx::Size crop_size(12, 12);
+  surface->SetCrop(gfx::RectF(gfx::PointF(2.0, 2.0), gfx::SizeF(crop_size)));
+  surface->Commit();
+  EXPECT_EQ(crop_size.ToString(), surface->bounds().size().ToString());
+}
+
 TEST_F(SurfaceTest, SetOnlyVisibleOnSecureOutput) {
   gfx::Size buffer_size(1, 1);
   std::unique_ptr<Buffer> buffer(

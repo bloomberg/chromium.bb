@@ -85,6 +85,9 @@ class Surface : public aura::Window,
   // This sets the surface viewport for scaling.
   void SetViewport(const gfx::Size& viewport);
 
+  // This sets the surface crop rectangle.
+  void SetCrop(const gfx::RectF& crop);
+
   // This sets the only visible on secure output flag, preventing it from
   // appearing in screenshots or from being viewed on non-secure displays.
   void SetOnlyVisibleOnSecureOutput(bool only_visible_on_secure_output);
@@ -204,6 +207,9 @@ class Surface : public aura::Window,
 
   // The viewport to take effect when Commit() is called.
   gfx::Size pending_viewport_;
+
+  // The crop rectangle to take effect when Commit() is called.
+  gfx::RectF pending_crop_;
 
   // The secure output visibility state to take effect when Commit() is called.
   bool pending_only_visible_on_secure_output_;

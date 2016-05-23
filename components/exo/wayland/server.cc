@@ -11,6 +11,7 @@
 #include <secure-output-unstable-v1-server-protocol.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <viewporter-server-protocol.h>
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>
 #include <xdg-shell-unstable-v5-server-protocol.h>
@@ -1849,7 +1850,7 @@ void bind_seat(wl_client* client, void* data, uint32_t version, uint32_t id) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// wl_viewport_interface:
+// wp_viewport_interface:
 
 // Implements the viewport interface to a Surface. The "viewport"-state is set
 // to null upon destruction. A window property will be set during the lifetime
@@ -1864,9 +1865,15 @@ class Viewport : public SurfaceObserver {
   ~Viewport() override {
     if (surface_) {
       surface_->RemoveSurfaceObserver(this);
+      surface_->SetCrop(gfx::RectF());
       surface_->SetViewport(gfx::Size());
       surface_->SetProperty(kSurfaceHasViewportKey, false);
     }
+  }
+
+  void SetSource(const gfx::RectF& rect) {
+    if (surface_)
+      surface_->SetCrop(rect);
   }
 
   void SetDestination(const gfx::Size& size) {
@@ -1890,30 +1897,139 @@ void viewport_destroy(wl_client* client, wl_resource* resource) {
   wl_resource_destroy(resource);
 }
 
-void viewport_set(wl_client* client,
-                  wl_resource* resource,
-                  wl_fixed_t src_x,
-                  wl_fixed_t src_y,
-                  wl_fixed_t src_width,
-                  wl_fixed_t src_height,
-                  int32_t dst_width,
-                  int32_t dst_height) {
-  NOTIMPLEMENTED();
-}
-
 void viewport_set_source(wl_client* client,
                          wl_resource* resource,
                          wl_fixed_t x,
                          wl_fixed_t y,
                          wl_fixed_t width,
                          wl_fixed_t height) {
-  NOTIMPLEMENTED();
+  if (x == wl_fixed_from_int(-1) && y == wl_fixed_from_int(-1) &&
+      width == wl_fixed_from_int(-1) && height == wl_fixed_from_int(-1)) {
+    GetUserDataAs<Viewport>(resource)->SetSource(gfx::RectF());
+    return;
+  }
+
+  if (x < 0 || y < 0 || width <= 0 || height <= 0) {
+    wl_resource_post_error(resource, WP_VIEWPORT_ERROR_BAD_VALUE,
+                           "source rectangle must be non-empty (%dx%d) and"
+                           "have positive origin (%d,%d)",
+                           width, height, x, y);
+    return;
+  }
+
+  GetUserDataAs<Viewport>(resource)->SetSource(
+      gfx::RectF(wl_fixed_to_double(x), wl_fixed_to_double(y),
+                 wl_fixed_to_double(width), wl_fixed_to_double(height)));
 }
 
 void viewport_set_destination(wl_client* client,
                               wl_resource* resource,
                               int32_t width,
                               int32_t height) {
+  if (width == -1 && height == -1) {
+    GetUserDataAs<Viewport>(resource)->SetDestination(gfx::Size());
+    return;
+  }
+
+  if (width <= 0 || height <= 0) {
+    wl_resource_post_error(resource, WP_VIEWPORT_ERROR_BAD_VALUE,
+                           "destination size must be positive (%dx%d)", width,
+                           height);
+    return;
+  }
+
+  GetUserDataAs<Viewport>(resource)->SetDestination(gfx::Size(width, height));
+}
+
+const struct wp_viewport_interface viewport_implementation = {
+    viewport_destroy, viewport_set_source, viewport_set_destination};
+
+////////////////////////////////////////////////////////////////////////////////
+// wp_viewporter_interface:
+
+void viewporter_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+void viewporter_get_viewport(wl_client* client,
+                             wl_resource* resource,
+                             uint32_t id,
+                             wl_resource* surface_resource) {
+  Surface* surface = GetUserDataAs<Surface>(surface_resource);
+  if (surface->GetProperty(kSurfaceHasViewportKey)) {
+    wl_resource_post_error(resource, WP_VIEWPORTER_ERROR_VIEWPORT_EXISTS,
+                           "a viewport for that surface already exists");
+    return;
+  }
+
+  wl_resource* viewport_resource = wl_resource_create(
+      client, &wl_viewport_interface, wl_resource_get_version(resource), id);
+
+  SetImplementation(viewport_resource, &viewport_implementation,
+                    base::WrapUnique(new Viewport(surface)));
+}
+
+const struct wp_viewporter_interface viewporter_implementation = {
+    viewporter_destroy, viewporter_get_viewport};
+
+void bind_viewporter(wl_client* client,
+                     void* data,
+                     uint32_t version,
+                     uint32_t id) {
+  wl_resource* resource =
+      wl_resource_create(client, &wp_viewporter_interface, 1, id);
+
+  wl_resource_set_implementation(resource, &viewporter_implementation, data,
+                                 nullptr);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// wl_viewport_interface:
+
+void viewport_destroy_DEPRECATED(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+void viewport_set_DEPRECATED(wl_client* client,
+                             wl_resource* resource,
+                             wl_fixed_t src_x,
+                             wl_fixed_t src_y,
+                             wl_fixed_t src_width,
+                             wl_fixed_t src_height,
+                             int32_t dst_width,
+                             int32_t dst_height) {
+  NOTIMPLEMENTED();
+}
+
+void viewport_set_source_DEPRECATED(wl_client* client,
+                                    wl_resource* resource,
+                                    wl_fixed_t x,
+                                    wl_fixed_t y,
+                                    wl_fixed_t width,
+                                    wl_fixed_t height) {
+  if (x == wl_fixed_from_int(-1) && y == wl_fixed_from_int(-1) &&
+      width == wl_fixed_from_int(-1) && height == wl_fixed_from_int(-1)) {
+    GetUserDataAs<Viewport>(resource)->SetSource(gfx::RectF());
+    return;
+  }
+
+  if (x < 0 || y < 0 || width <= 0 || height <= 0) {
+    wl_resource_post_error(resource, WL_VIEWPORT_ERROR_BAD_VALUE,
+                           "source rectangle must be non-empty (%dx%d) and"
+                           "have positive origin (%d,%d)",
+                           width, height, x, y);
+    return;
+  }
+
+  GetUserDataAs<Viewport>(resource)->SetSource(
+      gfx::RectF(wl_fixed_to_double(x), wl_fixed_to_double(y),
+                 wl_fixed_to_double(width), wl_fixed_to_double(height)));
+}
+
+void viewport_set_destination_DEPRECATED(wl_client* client,
+                                         wl_resource* resource,
+                                         int32_t width,
+                                         int32_t height) {
   if (width == -1 && height == -1) {
     GetUserDataAs<Viewport>(resource)->SetDestination(gfx::Size());
     return;
@@ -1929,9 +2045,9 @@ void viewport_set_destination(wl_client* client,
   GetUserDataAs<Viewport>(resource)->SetDestination(gfx::Size(width, height));
 }
 
-const struct wl_viewport_interface viewport_implementation = {
-    viewport_destroy, viewport_set, viewport_set_source,
-    viewport_set_destination};
+const struct wl_viewport_interface viewport_implementation_DEPRECATED = {
+    viewport_destroy_DEPRECATED, viewport_set_DEPRECATED,
+    viewport_set_source_DEPRECATED, viewport_set_destination_DEPRECATED};
 
 ////////////////////////////////////////////////////////////////////////////////
 // wl_scaler_interface:
@@ -1954,7 +2070,7 @@ void scaler_get_viewport(wl_client* client,
   wl_resource* viewport_resource = wl_resource_create(
       client, &wl_viewport_interface, wl_resource_get_version(resource), id);
 
-  SetImplementation(viewport_resource, &viewport_implementation,
+  SetImplementation(viewport_resource, &viewport_implementation_DEPRECATED,
                     base::WrapUnique(new Viewport(surface)));
 }
 
@@ -2206,6 +2322,8 @@ Server::Server(Display* display)
                    display_, bind_data_device_manager);
   wl_global_create(wl_display_.get(), &wl_seat_interface, seat_version,
                    display_, bind_seat);
+  wl_global_create(wl_display_.get(), &wp_viewporter_interface, 1, display_,
+                   bind_viewporter);
   wl_global_create(wl_display_.get(), &wl_scaler_interface, scaler_version,
                    display_, bind_scaler);
   wl_global_create(wl_display_.get(), &zwp_secure_output_v1_interface, 1,

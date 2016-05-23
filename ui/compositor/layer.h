@@ -290,6 +290,12 @@ class COMPOSITOR_EXPORT Layer
   // crbug.com/610086
   void SetTextureAlpha(float alpha);
 
+  // The texture crop rectangle to be used. Empty rectangle means no cropping.
+  void SetTextureCrop(const gfx::RectF& crop);
+
+  // The texture scale to be used. Defaults to no scaling.
+  void SetTextureScale(float x_scale, float y_scale);
+
   // Begins showing content from a surface with a particular id.
   void SetShowSurface(cc::SurfaceId surface_id,
                       const cc::SurfaceLayer::SatisfyCallback& satisfy_callback,
@@ -509,6 +515,13 @@ class COMPOSITOR_EXPORT Layer
   // The size of the frame or texture in DIP, set when SetShowDelegatedContent
   // or SetTextureMailbox was called.
   gfx::Size frame_size_in_dip_;
+
+  // The texture crop rectangle.
+  gfx::RectF texture_crop_;
+
+  // The texture scale.
+  float texture_x_scale_;
+  float texture_y_scale_;
 
   DISALLOW_COPY_AND_ASSIGN(Layer);
 };

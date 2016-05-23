@@ -24,6 +24,8 @@
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
 #include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/transform_util.h"
@@ -310,6 +312,12 @@ void Surface::SetViewport(const gfx::Size& viewport) {
   pending_viewport_ = viewport;
 }
 
+void Surface::SetCrop(const gfx::RectF& crop) {
+  TRACE_EVENT1("exo", "Surface::SetCrop", "crop", crop.ToString());
+
+  pending_crop_ = crop;
+}
+
 void Surface::SetOnlyVisibleOnSecureOutput(bool only_visible_on_secure_output) {
   TRACE_EVENT1("exo", "Surface::SetOnlyVisibleOnSecureOutput",
                "only_visible_on_secure_output", only_visible_on_secure_output);
@@ -364,19 +372,34 @@ void Surface::CommitSurfaceHierarchy() {
           &texture_mailbox, secure_output_only, false);
     }
 
+    // Update layer with the new contents.
     if (texture_mailbox_release_callback) {
-      // Update layer with the new contents. If a viewport has been set then
-      // use that to determine the size of the layer and the surface, otherwise
-      // buffer scale and buffer size determines the size.
-      gfx::Size contents_size =
-          pending_viewport_.IsEmpty()
-              ? gfx::ScaleToFlooredSize(texture_mailbox.size_in_pixels(),
-                                        1.0f / pending_buffer_scale_)
-              : pending_viewport_;
+      gfx::Size texture_size_in_dip = gfx::ScaleToFlooredSize(
+          texture_mailbox.size_in_pixels(), 1.0f / pending_buffer_scale_);
+      // Determine the new surface size.
+      // - Texture size in DIP defines the size if nothing else is set.
+      // - If a viewport is set then that defines the size, otherwise
+      //   the crop rectangle defines the size if set.
+      gfx::Size contents_size = texture_size_in_dip;
+      if (!pending_viewport_.IsEmpty()) {
+        contents_size = pending_viewport_;
+      } else if (!pending_crop_.IsEmpty()) {
+        DLOG_IF(WARNING, !gfx::IsExpressibleAsInt(pending_crop_.width()) ||
+                             !gfx::IsExpressibleAsInt(pending_crop_.height()))
+            << "Crop rectangle size (" << pending_crop_.size().ToString()
+            << ") most be expressible using integers when viewport is not set";
+        contents_size = gfx::ToCeiledSize(pending_crop_.size());
+      }
       layer()->SetTextureMailbox(texture_mailbox,
                                  std::move(texture_mailbox_release_callback),
-                                 contents_size);
+                                 texture_size_in_dip);
       layer()->SetTextureFlipped(false);
+      layer()->SetTextureCrop(pending_crop_);
+      layer()->SetTextureScale(
+          static_cast<float>(texture_size_in_dip.width()) /
+              contents_size.width(),
+          static_cast<float>(texture_size_in_dip.height()) /
+              contents_size.height());
       layer()->SetBounds(gfx::Rect(layer()->bounds().origin(), contents_size));
     } else {
       // Show solid color content if no buffer is attached or we failed
