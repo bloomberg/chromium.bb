@@ -124,6 +124,8 @@ void ChromotingJniInstance::Disconnect() {
   signaling_.reset();
   perf_tracker_.reset();
   client_context_.reset();
+
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void ChromotingJniInstance::FetchThirdPartyToken(

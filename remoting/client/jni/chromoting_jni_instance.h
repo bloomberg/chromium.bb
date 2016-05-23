@@ -55,7 +55,8 @@ class ChromotingJniInstance
                         const std::string& flags);
 
   // Terminates the current connection (if it hasn't already failed) and cleans
-  // up. Must be called before destruction.
+  // up. The instance will no longer be valid after calling this function.
+  // Must be called before destruction.
   void Disconnect();
 
   // Requests the android app to fetch a third-party token.
