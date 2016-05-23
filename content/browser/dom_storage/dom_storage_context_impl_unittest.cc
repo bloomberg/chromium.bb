@@ -268,4 +268,35 @@ TEST_F(DOMStorageContextImplTest, DeleteSessionStorage) {
   base::MessageLoop::current()->RunUntilIdle();
 }
 
+TEST_F(DOMStorageContextImplTest, PurgeMemory) {
+  auto dom_namespace = context_->GetStorageNamespace(kLocalStorageNamespaceId);
+  auto area1 = dom_namespace->OpenStorageArea(kOrigin);
+  area1->InitialImportIfNeeded();
+
+  // PURGE_UNOPENED does not delete the open area.
+  context_->PurgeMemory(DOMStorageContextImpl::PURGE_UNOPENED);
+  EXPECT_EQ(1u, dom_namespace->GetUsageStatistics().total_area_count);
+  EXPECT_EQ(0u, dom_namespace->GetUsageStatistics().inactive_area_count);
+
+  // PURGE_UNOPENED deletes the unopened area.
+  dom_namespace->CloseStorageArea(area1);
+  EXPECT_EQ(1u, dom_namespace->GetUsageStatistics().inactive_area_count);
+  context_->PurgeMemory(DOMStorageContextImpl::PURGE_UNOPENED);
+  EXPECT_EQ(0u, dom_namespace->GetUsageStatistics().total_area_count);
+
+  // Add an item to the database and commit changes, and keep it open. So, cache
+  // is kept alive.
+  auto area2 = dom_namespace->OpenStorageArea(kOrigin);
+  base::NullableString16 old_value;
+  area2->SetItem(kKey, kValue, &old_value);
+  // Call commit directly instead of posting task.
+  area2->CommitChanges(area2->commit_batch_.get());
+  area2->commit_batch_ = nullptr;
+
+  // PURGE_AGGRESSIVE clears the cache in the open area.
+  EXPECT_NE(0u, dom_namespace->GetUsageStatistics().total_cache_size);
+  context_->PurgeMemory(DOMStorageContextImpl::PURGE_AGGRESSIVE);
+  EXPECT_EQ(0u, dom_namespace->GetUsageStatistics().total_cache_size);
+}
+
 }  // namespace content

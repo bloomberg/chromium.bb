@@ -285,6 +285,9 @@ DOMStorageContextWrapper::DOMStorageContextWrapper(
           worker_pool->GetNamedSequenceToken("dom_storage_commit"),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)
               .get()));
+
+  memory_pressure_listener_.reset(new base::MemoryPressureListener(
+      base::Bind(&DOMStorageContextWrapper::OnMemoryPressure, this)));
 }
 
 DOMStorageContextWrapper::~DOMStorageContextWrapper() {}
@@ -359,6 +362,7 @@ void DOMStorageContextWrapper::SetForceKeepSessionState() {
 void DOMStorageContextWrapper::Shutdown() {
   DCHECK(context_.get());
   mojo_state_.reset();
+  memory_pressure_listener_.reset();
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE,
       DOMStorageTaskRunner::PRIMARY_SEQUENCE,
@@ -378,6 +382,19 @@ void DOMStorageContextWrapper::OpenLocalStorage(
     mojom::LevelDBWrapperRequest request) {
   mojo_state_->OpenLocalStorage(
       origin, std::move(observer), std::move(request));
+}
+
+void DOMStorageContextWrapper::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  DOMStorageContextImpl::PurgeOption purge_option =
+      DOMStorageContextImpl::PURGE_UNOPENED;
+  if (memory_pressure_level ==
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
+    purge_option = DOMStorageContextImpl::PURGE_AGGRESSIVE;
+  }
+  context_->task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&DOMStorageContextImpl::PurgeMemory, context_, purge_option));
 }
 
 }  // namespace content

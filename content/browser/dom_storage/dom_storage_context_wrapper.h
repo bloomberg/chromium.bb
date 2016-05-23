@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/common/storage_partition_service.mojom.h"
@@ -73,6 +74,10 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
                         mojom::LevelDBObserverPtr observer,
                         mojom::LevelDBWrapperRequest request);
 
+  // Called on UI thread when the system is under memory pressure.
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
  private:
   friend class DOMStorageMessageFilter;  // for access to context()
   friend class SessionStorageNamespaceImpl;  // ditto
@@ -85,6 +90,9 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
   // through the public interface.
   class MojoState;
   std::unique_ptr<MojoState> mojo_state_;
+
+  // To receive memory pressure signals.
+  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   scoped_refptr<DOMStorageContextImpl> context_;
 

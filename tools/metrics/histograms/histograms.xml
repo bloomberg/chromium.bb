@@ -19819,6 +19819,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Records events related to local discovery notifications.</summary>
 </histogram>
 
+<histogram name="LocalStorage.BrowserLocalStorageCachePurgedInKB" units="KB">
+  <owner>ssid@chromium.org</owner>
+  <summary>
+    Total size of the HTML5 LocalStorage browser-side cache purged in KB when
+    memory pressure signal was triggered or cache size hit the limits.
+  </summary>
+</histogram>
+
+<histogram name="LocalStorage.BrowserLocalStorageCacheSizeInKB" units="KB">
+  <owner>ssid@chromium.org</owner>
+  <summary>
+    Total size of the HTML5 LocalStorage databases in KB in the browser-side
+    cache recorded each time a new database is opened in memory.
+  </summary>
+</histogram>
+
 <histogram name="LocalStorage.BrowserLocalStorageSizeInKB" units="KB">
   <owner>michaeln@chromium.org</owner>
   <summary>

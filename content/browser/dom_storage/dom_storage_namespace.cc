@@ -117,9 +117,10 @@ void DOMStorageNamespace::DeleteSessionStorageOrigin(const GURL& origin) {
   CloseStorageArea(area);
 }
 
-void DOMStorageNamespace::PurgeMemory(PurgeOption option) {
+void DOMStorageNamespace::PurgeMemory(bool aggressively) {
   if (directory_.empty())
     return;  // We can't purge w/o backing on disk.
+
   AreaMap::iterator it = areas_.begin();
   while (it != areas_.end()) {
     const AreaHolder& holder = it->second;
@@ -143,7 +144,7 @@ void DOMStorageNamespace::PurgeMemory(PurgeOption option) {
       continue;
     }
 
-    if (option == PURGE_AGGRESSIVE) {
+    if (aggressively) {
       // If aggressive is true, we clear caches and such
       // for opened areas.
       holder.area_->PurgeMemory();
@@ -167,13 +168,18 @@ void DOMStorageNamespace::Flush() {
   }
 }
 
-unsigned int DOMStorageNamespace::CountInMemoryAreas() const {
-  unsigned int area_count = 0;
+DOMStorageNamespace::UsageStatistics DOMStorageNamespace::GetUsageStatistics()
+    const {
+  UsageStatistics stats = {0};
   for (AreaMap::const_iterator it = areas_.begin(); it != areas_.end(); ++it) {
-    if (it->second.area_->IsLoadedInMemory())
-      ++area_count;
+    if (it->second.area_->IsLoadedInMemory()) {
+      stats.total_cache_size += it->second.area_->map_usage_in_bytes();
+      ++stats.total_area_count;
+      if (it->second.open_count_ == 0)
+        ++stats.inactive_area_count;
+    }
   }
-  return area_count;
+  return stats;
 }
 
 void DOMStorageNamespace::OnMemoryDump(

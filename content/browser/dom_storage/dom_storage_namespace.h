@@ -32,14 +32,11 @@ class SessionStorageDatabase;
 class CONTENT_EXPORT DOMStorageNamespace
     : public base::RefCountedThreadSafe<DOMStorageNamespace> {
  public:
-  // Option for PurgeMemory.
-  enum PurgeOption {
-    // Purge unopened areas only.
-    PURGE_UNOPENED,
-
-    // Purge aggressively, i.e. discard cache even for areas that have
-    // non-zero open count.
-    PURGE_AGGRESSIVE,
+  // Struct to hold statistics about the areas in the namespace.
+  struct UsageStatistics {
+    size_t total_cache_size;
+    unsigned total_area_count;
+    unsigned inactive_area_count;  // areas with open count 0.
   };
 
   // Constructor for a LocalStorage namespace with id of 0
@@ -76,11 +73,12 @@ class CONTENT_EXPORT DOMStorageNamespace
 
   void DeleteLocalStorageOrigin(const GURL& origin);
   void DeleteSessionStorageOrigin(const GURL& origin);
-  void PurgeMemory(PurgeOption purge);
+  void PurgeMemory(bool aggressively);
   void Shutdown();
   void Flush();
 
-  unsigned int CountInMemoryAreas() const;
+  // Returns statistics about the areas in the namespace.
+  UsageStatistics GetUsageStatistics() const;
 
   // Adds memory statistics to |pmd| for chrome://tracing.
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd);

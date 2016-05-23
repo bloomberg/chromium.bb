@@ -35,9 +35,6 @@ const int64_t kLocalStorageNamespaceId = 0;
 
 const int64_t kInvalidSessionStorageNamespaceId = kLocalStorageNamespaceId;
 
-// Start purging memory if the number of in-memory areas exceeds this.
-const int64_t kMaxInMemoryStorageAreas = 100;
-
 }  // namespace content
 
 #endif  // CONTENT_COMMON_DOM_STORAGE_DOM_STORAGE_TYPES_H_

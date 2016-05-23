@@ -7,7 +7,6 @@
 #include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/dom_storage/dom_storage_namespace.h"
-#include "content/common/dom_storage/dom_storage_types.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -55,11 +54,7 @@ bool DOMStorageHost::ExtractAreaValues(
   if (!area->IsLoadedInMemory()) {
     DOMStorageNamespace* ns = GetNamespace(connection_id);
     DCHECK(ns);
-    if (ns->CountInMemoryAreas() > kMaxInMemoryStorageAreas) {
-      ns->PurgeMemory(DOMStorageNamespace::PURGE_UNOPENED);
-      if (ns->CountInMemoryAreas() > kMaxInMemoryStorageAreas)
-        ns->PurgeMemory(DOMStorageNamespace::PURGE_AGGRESSIVE);
-    }
+    context_->PurgeMemory(DOMStorageContextImpl::PURGE_IF_NEEDED);
   }
   area->ExtractValues(map);
   return true;
