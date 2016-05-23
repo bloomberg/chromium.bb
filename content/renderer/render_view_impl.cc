@@ -854,8 +854,8 @@ RenderViewImpl::~RenderViewImpl() {
   }
 
 #if defined(OS_ANDROID)
-  // The date/time picker client is both a scoped_ptr member of this class and
-  // a RenderViewObserver. Reset it to prevent double deletion.
+  // The date/time picker client is both a std::unique_ptr member of this class
+  // and a RenderViewObserver. Reset it to prevent double deletion.
   date_time_picker_client_.reset();
 #endif
 
