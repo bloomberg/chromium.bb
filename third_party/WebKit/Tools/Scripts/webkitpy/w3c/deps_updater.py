@@ -31,7 +31,7 @@ class DepsUpdater(object):
         if not self.checkout_is_okay():
             return 1
 
-        self.print_('## noting the current Chromium commitish')
+        self.print_('## Noting the current Chromium commit.')
         _, show_ref_output = self.run(['git', 'show-ref', 'HEAD'])
         chromium_commitish = show_ref_output.split()[0]
 
@@ -78,20 +78,20 @@ class DepsUpdater(object):
     def checkout_is_okay(self):
         git_diff_retcode, _ = self.run(['git', 'diff', '--quiet', 'HEAD'], exit_on_failure=False)
         if git_diff_retcode:
-            self.print_('## checkout is dirty, aborting')
+            self.print_('## Checkout is dirty; aborting.')
             return False
 
         local_commits = self.run(['git', 'log', '--oneline', 'origin/master..HEAD'])[1]
         if local_commits and not self.allow_local_commits:
-            self.print_('## checkout has local commits, aborting')
+            self.print_('## Checkout has local commits; aborting. Use --allow-local-commits to allow this.')
             return False
 
         if self.fs.exists(self.path_from_webkit_base(WPT_DEST_NAME)):
-            self.print_('## web-platform-tests repo exists, aborting')
+            self.print_('## WebKit/%s exists; aborting.' % WPT_DEST_NAME)
             return False
 
         if self.fs.exists(self.path_from_webkit_base(CSS_DEST_NAME)):
-            self.print_('## csswg-test repo exists, aborting')
+            self.print_('## WebKit/%s repo exists; aborting.' % CSS_DEST_NAME)
             return False
 
         return True
@@ -107,34 +107,34 @@ class DepsUpdater(object):
             A string for the commit description "<destination>@<commitish>".
         """
         temp_repo_path = self.path_from_webkit_base(dest_dir_name)
-        self.print_('## cloning %s into %s' % (url, temp_repo_path))
+        self.print_('## Cloning %s into %s.' % (url, temp_repo_path))
         self.run(['git', 'clone', url, temp_repo_path])
 
         self.run(['git', 'submodule', 'update', '--init', '--recursive'], cwd=temp_repo_path)
 
-        self.print_('## noting the revision we are importing')
+        self.print_('## Noting the revision we are importing.')
         _, show_ref_output = self.run(['git', 'show-ref', 'origin/master'], cwd=temp_repo_path)
         master_commitish = show_ref_output.split()[0]
 
-        self.print_('## cleaning out tests from LayoutTests/imported/%s' % dest_dir_name)
+        self.print_('## Cleaning out tests from LayoutTests/imported/%s.' % dest_dir_name)
         dest_path = self.path_from_webkit_base('LayoutTests', 'imported', dest_dir_name)
         files_to_delete = self.fs.files_under(dest_path, file_filter=self.is_not_baseline)
         for subpath in files_to_delete:
             self.remove('LayoutTests', 'imported', subpath)
 
-        self.print_('## importing the tests')
+        self.print_('## Importing the tests.')
         src_repo = self.path_from_webkit_base(dest_dir_name)
         import_path = self.path_from_webkit_base('Tools', 'Scripts', 'import-w3c-tests')
         self.run([self.host.executable, import_path, '-d', 'imported', src_repo])
 
         self.run(['git', 'add', '--all', 'LayoutTests/imported/%s' % dest_dir_name])
 
-        self.print_('## deleting manual tests')
+        self.print_('## Deleting manual tests.')
         files_to_delete = self.fs.files_under(dest_path, file_filter=self.is_manual_test)
         for subpath in files_to_delete:
             self.remove('LayoutTests', 'imported', subpath)
 
-        self.print_('## deleting any orphaned baselines')
+        self.print_('## Deleting any orphaned baselines.')
         previous_baselines = self.fs.files_under(dest_path, file_filter=self.is_baseline)
         for subpath in previous_baselines:
             full_path = self.fs.join(dest_path, subpath)
@@ -142,14 +142,14 @@ class DepsUpdater(object):
                 self.fs.remove(full_path)
 
         if not self.keep_w3c_repos_around:
-            self.print_('## deleting %s repo directory' % temp_repo_path)
+            self.print_('## Deleting temp repo directory %s.' % temp_repo_path)
             self.rmtree(temp_repo_path)
 
         return '%s@%s' % (dest_dir_name, master_commitish)
 
     def commit_changes_if_needed(self, chromium_commitish, import_commitish):
         if self.run(['git', 'diff', '--quiet', 'HEAD'], exit_on_failure=False)[0]:
-            self.print_('## committing changes')
+            self.print_('## Committing changes.')
             commit_msg = ('Import %s\n'
                           '\n'
                           'Using update-w3c-deps in Chromium %s.\n'
@@ -162,9 +162,9 @@ class DepsUpdater(object):
             self.fs.write_text_file(path_to_commit_msg, commit_msg)
             self.run(['git', 'commit', '-a', '-F', path_to_commit_msg])
             self.remove(path_to_commit_msg)
-            self.print_('## Done: changes imported and committed')
+            self.print_('## Done: changes imported and committed.')
         else:
-            self.print_('## Done: no changes to import')
+            self.print_('## Done: no changes to import.')
 
     def is_manual_test(self, fs, dirname, basename):
         return basename.endswith('-manual.html') or basename.endswith('-manual.htm')
