@@ -262,6 +262,7 @@
 <translation id="3583757800736429874">&amp;Rehacer Mover</translation>
 <translation id="3586931643579894722">Ocultar detalles</translation>
 <translation id="3587482841069643663">Todos</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3608308818141211642">El cliente y el servidor no admiten un conjunto de cifrado o una versión de protocolo SSL en común. Es probable que esto suceda porque el servidor necesita el sistema RC4 y este ya no se considera seguro.</translation>
 <translation id="3609138628363401169">El servidor no admite la extensión de negociación TLS.</translation>
 <translation id="362276910939193118">Mostrar historial completo</translation>

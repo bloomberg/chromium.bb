@@ -92,7 +92,6 @@ Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="3621712662352432595">Lydinnstillinger</translation>
 <translation id="3625258641415618104">Skjermdumper er deaktivert</translation>
 <translation id="3626281679859535460">Lysstyrke</translation>
-<translation id="3626637461649818317"><ph name="PERCENTAGE" />% igjen</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME" />: <ph name="ANNOTATION" /></translation>
 <translation id="3683428399328702079">Oppløsningen for <ph name="DISPLAY_NAME" /> ble endret til <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Aktiver Wi-Fi</translation>
@@ -112,7 +111,6 @@ Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="397105322502079400">Beregner …</translation>
 <translation id="3995138139523574647">USB-C-enhet (porten bak på høyre side)</translation>
 <translation id="4053612967614057854">Slå av skjermtastaturet</translation>
-<translation id="412065659894267608"><ph name="HOUR" /> t og <ph name="MINUTE" /> m til batteriet er ferdigladet</translation>
 <translation id="4250680216510889253">Nei</translation>
 <translation id="4279490309300973883">Speiling</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -130,7 +128,6 @@ Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Ctrl+Shift+Mellomrom</translation>
 <translation id="5045002648206642691">Innstillinger for Google Disk</translation>
-<translation id="5102001756192215136"><ph name="HOUR" />.<ph name="MINUTE" /> gjenstår</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Cast-enheter er tilgjengelige</translation>
 <translation id="5222676887888702881">Logg av</translation>
@@ -167,7 +164,6 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="615957422585914272">Vis skjermtastaturet</translation>
 <translation id="6165508094623778733">Les mer</translation>
 <translation id="6203030746557259519">Virtuell skjerm</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE" /> %</translation>
 <translation id="6248847161401822652">Trykk Control+Shift+Q to ganger for å avslutte.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ble rotert til <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">Tekstmelding fra <ph name="PHONE_NUMBER" /></translation>
@@ -226,7 +222,6 @@ Trykk på Alt + Søk eller Shift for å avbryte.</translation>
 <translation id="8308637677604853869">Forrige meny</translation>
 <translation id="8356164830168736643">Lukk <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Innstillinger</translation>
-<translation id="8456362689280298700"><ph name="HOUR" />.<ph name="MINUTE" /> til fulladet</translation>
 <translation id="8517041960877371778">Det kan hende at din <ph name="DEVICE_TYPE" /> ikke lader når den er slått på.</translation>
 <translation id="8528322925433439945">Mobil</translation>
 <translation id="8673028979667498656">270°</translation>

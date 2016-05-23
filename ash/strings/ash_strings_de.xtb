@@ -92,7 +92,6 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="3621712662352432595">Audioeinstellungen</translation>
 <translation id="3625258641415618104">Screenshot-Funktion deaktiviert</translation>
 <translation id="3626281679859535460">Helligkeit</translation>
-<translation id="3626637461649818317"><ph name="PERCENTAGE" /> % verbleibend</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME" />: <ph name="ANNOTATION" /></translation>
 <translation id="3683428399328702079">Auflösung von <ph name="DISPLAY_NAME" /> wurde zu <ph name="RESOLUTION" /> geändert.</translation>
 <translation id="370649949373421643">WLAN aktivieren</translation>
@@ -111,7 +110,6 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="397105322502079400">Wird berechnet...</translation>
 <translation id="3995138139523574647">USB-C-Gerät (Port hinten rechts)</translation>
 <translation id="4053612967614057854">Bildschirmtastatur deaktivieren</translation>
-<translation id="412065659894267608">In <ph name="HOUR" /> Std. <ph name="MINUTE" /> Min. vollständig aufgeladen</translation>
 <translation id="4250680216510889253">Nein</translation>
 <translation id="4279490309300973883">Spiegelung</translation>
 <translation id="4321179778687042513">Strg</translation>
@@ -129,7 +127,6 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Strg + Shift + Leer</translation>
 <translation id="5045002648206642691">Google Drive-Einstellungen...</translation>
-<translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> verbleiben</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Übertragungsgeräte verfügbar</translation>
 <translation id="5222676887888702881">Abmelden</translation>
@@ -166,7 +163,6 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="615957422585914272">Bildschirmtastatur anzeigen</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
 <translation id="6203030746557259519">Virtueller Bildschirm</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE" /> %</translation>
 <translation id="6248847161401822652">Drücken Sie zum Beenden zweimal Steuerung-Shift-Q.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> wurde zu <ph name="ROTATION" /> gedreht.</translation>
 <translation id="6359806961507272919">SMS von <ph name="PHONE_NUMBER" /></translation>
@@ -226,7 +222,6 @@ Drücken Sie Alt+Suchen oder Shift, um die Aktivierung aufzuheben.</translation>
 <translation id="8308637677604853869">Vorheriges Menü</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" /> schließen</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
-<translation id="8456362689280298700"><ph name="HOUR" />:<ph name="MINUTE" /> bis voll aufgeladen</translation>
 <translation id="8517041960877371778">Ihr <ph name="DEVICE_TYPE" /> wird möglicherweise nicht aufgeladen, wenn es eingeschaltet ist.</translation>
 <translation id="8528322925433439945">Mobil...</translation>
 <translation id="8673028979667498656">270°</translation>

@@ -28,6 +28,7 @@
 <translation id="2479520428668657293">Pārvietot pa labi un mainīt atlasi</translation>
 <translation id="2482878487686419369">Paziņojumi</translation>
 <translation id="2497284189126895209">Visi faili</translation>
+<translation id="2515586267016047495">Alt</translation>
 <translation id="2538759511191347839">Pārvietot uz rindiņas beigām un mainīt atlasi</translation>
 <translation id="2557207087669398617">Pārvietot uz rindiņas sākumu</translation>
 <translation id="2666092431469916601">Augša</translation>
@@ -58,7 +59,6 @@
 <translation id="4252565523989510616">Dzēst nākamo vārdu</translation>
 <translation id="4320177379694898372">Nav interneta savienojuma.</translation>
 <translation id="436869212180315161">Nospiediet</translation>
-<translation id="4552416320897244156">Lejup</translation>
 <translation id="4588090240171750605">Ritināt pa labi</translation>
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekunde}zero{# sekundes}one{# sekunde}other{# sekundes}}</translation>
@@ -129,10 +129,10 @@
 <translation id="8328145009876646418">Kreisā mala</translation>
 <translation id="8331626408530291785">Ritināt augšup</translation>
 <translation id="8371695176452482769">Runājiet tūlīt</translation>
+<translation id="8392688371657486010">Jums nav neviena paziņojuma.</translation>
 <translation id="8394908167088220973">Multivide — atskaņot/apturēt</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8428213095426709021">Iestatījumi</translation>
-<translation id="8447116497070723931">Augšup</translation>
 <translation id="8471049483003785219">Pārvietot pa kreisi par vienu vārdu un mainīt atlasi</translation>
 <translation id="8602707065186045623">Fails <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>

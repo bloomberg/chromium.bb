@@ -34,6 +34,7 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="1779766957982586368">Lukk vindu</translation>
 <translation id="1841799852846221389">Slår av eksterne tilkoblinger for denne datamaskinen …</translation>
 <translation id="189172778771606813">Lukk uttrekksmenyen</translation>
+<translation id="1897488610212723051">Slett</translation>
 <translation id="195619862187186579">Tastaturoppsett</translation>
 <translation id="1996161829609978754">Chrome laster ned installasjonsprogrammet for Chromoting-verten. Når nedlastingen er ferdig, må du kjøre installasjonsprogrammet før du fortsetter.</translation>
 <translation id="2009755455353575666">Tilkobling mislyktes</translation>
@@ -122,9 +123,6 @@ Vert</translation>
 <translation id="3950820424414687140">Logg på</translation>
 <translation id="3989511127559254552">Før du kan fortsette, må du gi datamaskinen utvidede tilgangstillatelser. Det er bare nødvendig å gjøre dette én gang.</translation>
 <translation id="4006787130661126000">Du må aktivere eksterne tilkoblinger hvis du vil ha tilgang til denne datamaskinen gjennom Chrome Eksternt skrivebord.</translation>
-<translation id="4028465833180158312">• Oppdateringer av «Material Design»-grensesnittet.
-• Kildereferanser for tredjepartslisenser.
-• Informasjon blir vist for eksterne datamaskiner som ikke er på nettet.</translation>
 <translation id="405887016757208221">Den eksterne datamaskinen kunne ikke initialisere økten. Hvis problemet vedvarer, kan du prøve å konfigurere verten på nytt.</translation>
 <translation id="4068946408131579958">Alle tilkoblinger</translation>
 <translation id="409800995205263688">MERK: I henhold til lokale retningslinjer er tilkobling tillatt bare mellom datamaskiner i nettverket ditt.</translation>
@@ -168,6 +166,7 @@ skrivebord-vert</translation>
 <translation id="4985296110227979402">Du må først konfigurere en datamaskin for ekstern tilgang.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (ikke på nett)</translation>
 <translation id="5070121137485264635">Den eksterne verten krever at du godkjenner via et tredjepartsnettsted. For å fortsette må du gi Chrome Eksternt skrivebord ytterligere tillatelser til å åpne denne adressen:</translation>
+<translation id="507204348399810022">Er du sikker på at du vil deaktivere eksterne tilkoblinger til <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Skriv inn samme PIN-kode i begge feltene.</translation>
 <translation id="5168917394043976756">Åpne uttrekksmenyen</translation>
 <translation id="5170982930780719864">Ugyldig verts-ID.</translation>

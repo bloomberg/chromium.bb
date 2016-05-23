@@ -262,6 +262,7 @@
 <translation id="3583757800736429874">이동 다시 실행(&amp;R)</translation>
 <translation id="3586931643579894722">세부정보 숨기기</translation>
 <translation id="3587482841069643663">전체</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3608308818141211642">클라이언트와 서버가 일반적인 SSL 프로토콜 버전 또는 암호화 제품군을 지원하지 않습니다. 더 이상 안전하지 않다고 간주되는 RC4를 서버에서 필요로 하기 때문인 경우가 많습니다.</translation>
 <translation id="3609138628363401169">서버에서 TLS 재협상 수정을 지원하지 않습니다.</translation>
 <translation id="362276910939193118">방문 기록 전체 보기</translation>

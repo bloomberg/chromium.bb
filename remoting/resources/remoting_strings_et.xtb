@@ -34,6 +34,7 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="1779766957982586368">Sulgeb akna</translation>
 <translation id="1841799852846221389">Arvuti kaugühenduste keelamine …</translation>
 <translation id="189172778771606813">Sule navigeerimissahtel</translation>
+<translation id="1897488610212723051">Kustuta</translation>
 <translation id="195619862187186579">Klaviatuuri paigutused</translation>
 <translation id="1996161829609978754">Chrome laadib alla rakenduse Chromoting Host installerit. Kui allalaadimine on lõppenud, käitage enne jätkamist installerit.</translation>
 <translation id="2009755455353575666">Ühendamine ebaõnnestus</translation>
@@ -122,9 +123,6 @@ Host</translation>
 <translation id="3950820424414687140">Sisselogimine</translation>
 <translation id="3989511127559254552">Jätkamiseks peate esmalt oma arvutile andma laiendatud juurdepääsuload. Peate seda tegema vaid ühe korra.</translation>
 <translation id="4006787130661126000">Kui soovite Chrome Remote Desktopiga arvuti juurde pääseda, peate lubama kaugühendused.</translation>
-<translation id="4028465833180158312">• Materiaalsel disainil põhineva kasutajaliidese värskendused.
-• Kolmanda osapoole litsentside omistused.
-• Võrguühenduseta kaugarvutite teabe kuvamine.</translation>
 <translation id="405887016757208221">Kaugarvutil ei õnnestunud seanssi lähtestada. Kui probleem püsib, proovige hosti uuesti seadistada.</translation>
 <translation id="4068946408131579958">Kõik ühendused</translation>
 <translation id="409800995205263688">MÄRKUS: reegli seaded lubavad luua ühenduse ainult teie võrku kuuluvate arvutite vahel.</translation>
@@ -168,6 +166,7 @@ Desktopi host</translation>
 <translation id="4985296110227979402">Esmalt tuleb arvutis seadistada kaugjuurdepääs</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (võrguühenduseta)</translation>
 <translation id="5070121137485264635">Kaughost vajab autentimist kolmanda osapoole veebisaidil. Jätkamiseks peate andma Chrome Remote Desktopile täiendavad load juurdepääsuks sellele aadressile:</translation>
+<translation id="507204348399810022">Kas soovite kindlasti keelata kaugühendused hostiga <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Sisestage mõlemale väljale sama PIN-kood.</translation>
 <translation id="5168917394043976756">Ava navigeerimissahtel</translation>
 <translation id="5170982930780719864">Sobimatu hosti ID.</translation>

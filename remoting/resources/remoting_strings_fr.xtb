@@ -34,6 +34,7 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="1779766957982586368">Fermer la fenêtre</translation>
 <translation id="1841799852846221389">Désactivation des connexions à distance pour cet ordinateur en cours…</translation>
 <translation id="189172778771606813">Fermer le panneau de navigation</translation>
+<translation id="1897488610212723051">Supprimer</translation>
 <translation id="195619862187186579">Dispositions de clavier</translation>
 <translation id="1996161829609978754">Le programme d'installation de l'hôte de Google Chromoting est en cours de téléchargement dans Google Chrome. Une fois le téléchargement terminé, veuillez lancer le programme d'installation avant de continuer.</translation>
 <translation id="2009755455353575666">Échec de la connexion</translation>
@@ -122,9 +123,6 @@ Chromoting</translation>
 <translation id="3950820424414687140">Ouvrir une session</translation>
 <translation id="3989511127559254552">Pour continuer, vous devez autoriser l'accès étendu à votre ordinateur. Vous n'aurez à effectuer cette opération qu'une seule fois.</translation>
 <translation id="4006787130661126000">Si vous souhaitez utiliser le bureau à distance Google Chrome pour accéder à cet ordinateur, vous devez activer les connexions à distance.</translation>
-<translation id="4028465833180158312">• Mises à jour de l'interface utilisateur de Material Design
-• Crédits de licence tiers
-• Affichage d'informations pour les ordinateurs à distance qui sont hors connexion</translation>
 <translation id="405887016757208221">Échec de l'initialisation de la session par l'ordinateur distant. Si le problème persiste, veuillez réessayer de configurer l'hôte.</translation>
 <translation id="4068946408131579958">Toutes les connexions</translation>
 <translation id="409800995205263688">REMARQUE : Les paramètres des règles n'autorisent que les connexions entre les ordinateurs de votre réseau.</translation>
@@ -168,6 +166,7 @@ Google Chrome</translation>
 <translation id="4985296110227979402">Vous devez tout d'abord configurer votre ordinateur pour l'accès à distance.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (hors connexion)</translation>
 <translation id="5070121137485264635">L'hôte distant nécessite votre authentification auprès d'un site Web tiers. Pour continuer, vous devez accorder au Bureau à distance Chrome des autorisations supplémentaires afin d'accéder à l'adresse suivante :</translation>
+<translation id="507204348399810022">Voulez-vous vraiment désactiver les connexions à distance à <ph name="HOSTNAME" /> ?</translation>
 <translation id="5156271271724754543">Veuillez saisir le même code d'accès dans les deux champs.</translation>
 <translation id="5168917394043976756">Ouvrir le panneau de navigation</translation>
 <translation id="5170982930780719864">ID d'hôte incorrect.</translation>

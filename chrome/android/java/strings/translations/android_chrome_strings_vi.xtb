@@ -101,7 +101,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="2268044343513325586">Tinh chỉnh</translation>
 <translation id="2315043854645842844">Lựa chọn chứng chỉ phía ứng dụng khách không được hệ điều hành hỗ trợ.</translation>
 <translation id="2321958826496381788">Kéo thanh trượt cho đến khi bạn có thể đọc nội dung này thoải mái. Chữ tối thiểu phải to như này sau khi bấm đúp vào một đoạn.</translation>
-<translation id="2331464965008647960">Các thiết bị lân cận mà bạn đang truyền trang web qua Bluetooth. Chrome sẽ quét tìm các trang và hiển thị chúng khi bạn khởi động thiết bị của mình. Các trang này sẽ được chuyển tới một dịch vụ của Google để cải thiện chất lượng của kết quả trang.
+<translation id="2331464965008647960">Các thiết bị lân cận mà bạn đang truyền trang web qua Bluetooth. Chrome sẽ quét tìm các trang và hiển thị chúng khi bạn đánh thức thiết bị của mình. Các trang này sẽ được chuyển tới một dịch vụ của Google để cải thiện chất lượng của kết quả trang.
 
 Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 
@@ -129,6 +129,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="257931822824936280">Đã mở rộng - nhấp để thu gọn.</translation>
 <translation id="2587052924345400782">Đã có phiên bản mới hơn</translation>
 <translation id="2593272815202181319">Monospace</translation>
+<translation id="2621115761605608342">Cho phép JavaScript cho trang web cụ thể.</translation>
 <translation id="2646820313617290661">Cha mẹ của bạn giúp quản lý những cài đặt này.</translation>
 <translation id="2653659639078652383">Gửi</translation>
 <translation id="2677748264148917807">Rời khỏi</translation>
@@ -152,6 +153,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="2903493209154104877">Địa chỉ</translation>
 <translation id="2913331724188855103">Cho phép trang web lưu và đọc dữ liệu cookie (được đề xuất)</translation>
 <translation id="2956410042958133412">Tài khoản này do <ph name="PARENT_NAME_1" /> và <ph name="PARENT_NAME_2" /> quản lý.</translation>
+<translation id="2959609938957585241">Để có các tab từ thiết bị khác của bạn, hãy bật "Tự động đồng bộ hóa dữ liệu" trong cài đặt tài khoản Android.</translation>
 <translation id="2960796085439532066">Bản quyền <ph name="YEAR" /> Google Inc. Mọi quyền được bảo lưu.</translation>
 <translation id="2968755619301702150">Trình xem chứng chỉ</translation>
 <translation id="2996291259634659425">Tạo cụm mật khẩu</translation>
@@ -188,6 +190,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 
 Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp cho quản trị viên quyền kiểm soát đối với hồ sơ trên Chrome của bạn. Dữ liệu Chrome của bạn sẽ vĩnh viễn gắn với tài khoản này. Ngắt kết nối khỏi tài khoản này sẽ xóa các dữ liệu Chrome trên máy.</translation>
 <translation id="3384347053049321195">Chia sẻ hình ảnh</translation>
+<translation id="3386292677130313581">Hỏi trước khi cho phép các trang web biết vị trí của bạn (được đề xuất)</translation>
 <translation id="3387650086002190359">Tải xuống <ph name="FILE_NAME" /> không thành công do lỗi hệ thống tệp.</translation>
 <translation id="3414952576877147120">Kích thước:</translation>
 <translation id="3435896845095436175">Bật</translation>
@@ -240,6 +243,7 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="4254813446494774748">Ngôn ngữ dịch:</translation>
 <translation id="4256782883801055595">Giấy phép nguồn mở</translation>
 <translation id="4259722352634471385">Điều hướng bị chặn: <ph name="URL" /></translation>
+<translation id="4262028915562328938">Đã xảy ra lỗi đồng bộ hóa, hãy nhấn để biết thông tin chi tiết.</translation>
 <translation id="4269820728363426813">Sao chép địa chỉ liên kết</translation>
 <translation id="4271185234001491831">Không bao giờ dịch <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Truyền thông</translation>
@@ -254,6 +258,7 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="4440256989292146959">Duyệt nhiều hơn với ít chi phí hơn</translation>
 <translation id="4452548195519783679">Đã đánh dấu trang vào <ph name="FOLDER_NAME" /></translation>
 <translation id="4457399174246232812">Các trang Web trong cuộc sống lân cận trong tương lai sẽ hiển thị trong danh sách thông báo của bạn</translation>
+<translation id="4479647676395637221">Hỏi trước trước khi cho phép các trang web sử dụng máy ảnh của bạn (được đề xuất)</translation>
 <translation id="4498934959426056365">Tạo khóa</translation>
 <translation id="4508440807153586353">Chỉ người có cụm mật khẩu mới có thể đọc dữ liệu được mã hóa của bạn. Cụm mật khẩu không được gửi tới hoặc được lưu trữ bởi Google. Nếu bạn quên cụm mật khẩu hoặc muốn thay đổi cài đặt này, bạn cần đặt lại đồng bộ hóa. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# ngày trước}other{# ngày trước}}</translation>
@@ -323,6 +328,7 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="5317780077021120954">Lưu</translation>
 <translation id="5324858694974489420">Cài đặt của phụ huynh</translation>
 <translation id="5327248766486351172">Tên</translation>
+<translation id="5335288049665977812">Cho phép các trang web chạy JavaScript (được đề xuất)</translation>
 <translation id="5345040418939504969">Đã xóa <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Truy cập vị trí cũng đã được <ph name="BEGIN_LINK" />tắt cho thiết bị này<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Không bao giờ gửi</translation>
@@ -368,6 +374,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="585027516397408832">Đã bật Trình tiết kiệm dữ liệu</translation>
 <translation id="5860033963881614850">Tắt</translation>
 <translation id="5869522115854928033">Mật khẩu đã lưu</translation>
+<translation id="588563574323093535">Hỏi trước trước khi cho phép các trang web truy cập chế độ toàn màn hình (được đề xuất)</translation>
 <translation id="5899349522111170522">Tạo tệp mới</translation>
 <translation id="5902828464777634901">Tất cả dữ liệu cục bộ được trang web này lưu, bao gồm cookie, sẽ bị xóa.</translation>
 <translation id="5911030830365207728">Google Dịch</translation>
@@ -392,6 +399,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="6140912465461743537">Quốc gia/Vùng</translation>
 <translation id="6159335304067198720">Tiết kiệm <ph name="PERCENT" /> dữ liệu</translation>
 <translation id="6165508094623778733">Tìm hiểu thêm</translation>
+<translation id="6181444274883918285">Thêm ngoại lệ cho trang web</translation>
 <translation id="6192792657125177640">Ngoại lệ</translation>
 <translation id="6232535412751077445">Bật tính năng “Không theo dõi” nghĩa là một yêu cầu sẽ được đi kèm với lưu lượng duyệt web của bạn. Mọi ảnh hưởng đều phụ thuộc vào việc trang web có phản hồi yêu cầu không và cách thức diễn giải yêu cầu.
 
@@ -427,6 +435,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6627583120233659107">Chỉnh sửa thư mục</translation>
 <translation id="6647073004883890710">Bạn có muốn <ph name="PASSWORD_MANAGER_BRAND" /> cập nhật mật khẩu cho <ph name="USERNAME" /> cho trang web này không?</translation>
 <translation id="6656545060687952787">Chrome cần có quyền truy cập vị trí để quét tìm thiết bị. <ph name="BEGIN_LINK" />Cập nhật quyền<ph name="END_LINK" /></translation>
+<translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">Sử dụng dịch vụ dự đoán để hiển thị các truy vấn có liên quan và các trang web phổ biến khi bạn nhập vào thanh địa chỉ</translation>
 <translation id="666981079809192359">Thông báo bảo mật của Chrome</translation>
 <translation id="6698801883190606802">Quản lý dữ liệu được đồng bộ hóa</translation>
@@ -453,6 +462,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6981982820502123353">Truy cập</translation>
 <translation id="6990079615885386641">Tải ứng dụng từ Cửa hàng Google Play: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">Tự động báo cáo với Google chi tiết về sự cố bảo mật có thể xảy ra</translation>
+<translation id="6992289844737586249">Hỏi trước trước khi cho phép các trang web sử dụng micrô của bạn (được đề xuất)</translation>
 <translation id="6999892069268112724">Xác nhận Tài khoản Google</translation>
 <translation id="7021515813996758557">Đã tải xuống <ph name="FILE_NAME" /></translation>
 <translation id="7022756207310403729">Mở trong trình duyệt</translation>
@@ -515,6 +525,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="7682287625158474539">Địa chỉ gửi hàng</translation>
 <translation id="7690588279513156836">Tải trang web gốc</translation>
 <translation id="771135159654932189">Xem có gì ở gần đây</translation>
+<translation id="7713873128508426081">Luôn cho phép</translation>
 <translation id="7764225426217299476">Thêm địa chỉ</translation>
 <translation id="7765158879357617694">Di chuyển</translation>
 <translation id="7772032839648071052">Xác nhận cụm mật khẩu</translation>
@@ -559,6 +570,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8275818695183729150">Cho phép (dành cho tìm kiếm bằng thanh địa chỉ)</translation>
 <translation id="8283853025636624853">Đang đồng bộ hóa với <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Tab chuẩn</translation>
+<translation id="8372893542064058268">Cho phép Đồng bộ hóa dưới nền cho trang web cụ thể.</translation>
 <translation id="8374821112118309944">Bạn cần phải cập nhật TalkBack lên phiên bản mới hơn.</translation>
 <translation id="8396312449826231789">Chỉ các trang web đã được phê duyệt</translation>
 <translation id="8413126021676339697">Hiển thị toàn bộ lịch sử</translation>
@@ -593,6 +605,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8812942424849541387">Kiểm soát cách hoạt động của ứng dụng này trong <ph name="BEGIN_LINK1" />Cài đặt<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Dấu trang</translation>
 <translation id="8829678271838353305"><ph name="ACCOUNT_EMAIL_LAST" /> đã được đăng nhập. Đăng nhập bằng <ph name="ACCOUNT_EMAIL_NEW" /> sẽ hợp nhất dữ liệu đã đồng bộ hóa như dấu trang giữa các tài khoản. Để giữ thông tin riêng biệt, hãy xóa dữ liệu duyệt web trong <ph name="BEGIN_LINK" />cài đặt<ph name="END_LINK" />.</translation>
+<translation id="883635517171802338">Chặn trang web hiển thị cửa sổ bật lên (được đề xuất)</translation>
 <translation id="884264119367021077">Ðịa chỉ giao hàng</translation>
 <translation id="8853345339104747198">Tab <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Dung lượng</translation>
@@ -622,6 +635,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="9100610230175265781">Yêu cầu cụm mật khẩu</translation>
 <translation id="9133515669113036225">Đặt lại thông tin đăng nhập thiết bị</translation>
 <translation id="9137013805542155359">Hiển thị văn bản gốc</translation>
+<translation id="9139068048179869749">Hỏi trước khi cho phép trang web gửi thông báo (được đề xuất)</translation>
 <translation id="9141510419986760385">Bạn đang chuyển các tài khoản đồng bộ hóa từ <ph name="FROM_ACCOUNT" /> về <ph name="TO_ACCOUNT" />. Bạn muốn làm gì với dấu trang, lịch sử, mật khẩu hiện có và các cài đặt khác?</translation>
 <translation id="917685106653909562">Trang Web trong cuộc sống lân cận</translation>
 <translation id="9187199695613236444">Chế độ xem thân thiện với thiết bị di động</translation>

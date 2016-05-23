@@ -262,6 +262,7 @@
 <translation id="3583757800736429874">&amp;Pārvietošanas atsaukuma atcelšana</translation>
 <translation id="3586931643579894722">Slēpt detaļas</translation>
 <translation id="3587482841069643663">Visi</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3608308818141211642">Klients un serveris neatbalsta bieži lietoto SSL protokola versiju vai šifra komplektu. Parasti tā notiek, ja serverim ir nepieciešams RC4, taču tas vairs netiek uzskatīts par drošu.</translation>
 <translation id="3609138628363401169">Serveris neatbalsta TLS pārskatīšanas paplašinājumu.</translation>
 <translation id="362276910939193118">Rādīt pilnu vēsturi</translation>

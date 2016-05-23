@@ -66,6 +66,7 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="2997147809295888909">Chrome verificó que <ph name="ISSUER" /> emitió el certificado de este sitio web. El servidor no proporcionó información de transparencia de certificados.</translation>
 <translation id="3037838751736561277">Google Chrome está en modo de segundo plano</translation>
 <translation id="3047079729301751317">Si desconectas <ph name="USERNAME" />, se borrarán el historial, los marcadores, la configuración y otros datos de Chrome almacenados en este dispositivo. Los datos almacenados en la cuenta de Google no se borrarán y se pueden administrar en el <ph name="GOOGLE_DASHBOARD_LINK" />Panel de control de Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
+<translation id="3065168410429928842">Pestaña de Chrome</translation>
 <translation id="3080151273017101988">Seguir ejecutando aplicaciones en segundo plano al cerrar Google Chrome</translation>
 <translation id="3089968997497233615">Hay disponible una versión de Google Chrome más nueva y más segura.</translation>
 <translation id="3149510190863420837">Aplicaciones de Chrome</translation>

@@ -92,7 +92,6 @@ Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="3621712662352432595">Mga Setting ng Audio</translation>
 <translation id="3625258641415618104">Naka-disable ang mga screenshot</translation>
 <translation id="3626281679859535460">Tingkad</translation>
-<translation id="3626637461649818317"><ph name="PERCENTAGE" />% ang natitira</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME" />: <ph name="ANNOTATION" /></translation>
 <translation id="3683428399328702079">Ginawang <ph name="RESOLUTION" /> ang resolution ng <ph name="DISPLAY_NAME" /></translation>
 <translation id="370649949373421643">Paganahin ang Wi-Fi</translation>
@@ -111,7 +110,6 @@ Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="397105322502079400">Kinakalkula...</translation>
 <translation id="3995138139523574647">USB-C device (port sa kanang bahagi sa likod)</translation>
 <translation id="4053612967614057854">I-disable ang on-screen na keyboard</translation>
-<translation id="412065659894267608"><ph name="HOUR" />o <ph name="MINUTE" />m hanggang mapuno</translation>
 <translation id="4250680216510889253">Hindi</translation>
 <translation id="4279490309300973883">Nagmi-mirror</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -129,7 +127,6 @@ Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Mga setting ng Google Drive ...</translation>
-<translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> ang natitira</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">I-cast ang mga available na device</translation>
 <translation id="5222676887888702881">Mag-sign out</translation>
@@ -166,7 +163,6 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="615957422585914272">Ipakita ang on-screen na keyboard</translation>
 <translation id="6165508094623778733">Matuto nang higit pa</translation>
 <translation id="6203030746557259519">Virtual na Display</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">Pindutin ang Control Shift Q nang dalawang beses upang lumabas.</translation>
 <translation id="6310121235600822547">Na-rotate ang <ph name="DISPLAY_NAME" /> sa <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS mula kay <ph name="PHONE_NUMBER" /></translation>
@@ -226,7 +222,6 @@ Pindutin ang Alt+Search o Shift upang kanselahin.</translation>
 <translation id="8308637677604853869">Nakaraang menu</translation>
 <translation id="8356164830168736643">Isara ang <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Mga Setting</translation>
-<translation id="8456362689280298700"><ph name="HOUR" />:<ph name="MINUTE" /> hanggang mapuno</translation>
 <translation id="8517041960877371778">Maaaring hindi mag-charge ang iyong <ph name="DEVICE_TYPE" /> habang naka-on ito.</translation>
 <translation id="8528322925433439945">Mobile ...</translation>
 <translation id="8673028979667498656">270°</translation>

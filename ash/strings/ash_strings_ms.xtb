@@ -91,7 +91,6 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="3621712662352432595">Tetapan Audio</translation>
 <translation id="3625258641415618104">Tangkapan skrin dilumpuhkan</translation>
 <translation id="3626281679859535460">Kecerahan</translation>
-<translation id="3626637461649818317">Tinggal <ph name="PERCENTAGE" />%</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME" />: <ph name="ANNOTATION" /></translation>
 <translation id="3683428399328702079">Peleraian <ph name="DISPLAY_NAME" /> telah diubah kepada <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Dayakan Wi-Fi</translation>
@@ -110,7 +109,6 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="397105322502079400">Mengira...</translation>
 <translation id="3995138139523574647">Peranti USB-C (port belakang sebelah kanan)</translation>
 <translation id="4053612967614057854">Lumpuhkan papan kekunci pada skrin</translation>
-<translation id="412065659894267608"><ph name="HOUR" />j <ph name="MINUTE" />m sehingga penuh</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="4279490309300973883">Pencerminan</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -128,7 +126,6 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Tetapan Google Drive</translation>
-<translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> tinggal</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Peranti Cast tersedia</translation>
 <translation id="5222676887888702881">Log keluar</translation>
@@ -165,7 +162,6 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="615957422585914272">Paparkan papan kekunci pada skrin</translation>
 <translation id="6165508094623778733">Ketahui lebih lanjut</translation>
 <translation id="6203030746557259519">Paparan Maya</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">Tekan Control Shift Q dua kali untuk keluar.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> telah diputarkan ke <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS daripada <ph name="PHONE_NUMBER" /></translation>
@@ -225,7 +221,6 @@ Tekan Alt+Search atau Shift untuk membatalkan.</translation>
 <translation id="8308637677604853869">Menu sebelumnya</translation>
 <translation id="8356164830168736643">Tutup <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Tetapan</translation>
-<translation id="8456362689280298700"><ph name="HOUR" />:<ph name="MINUTE" /> sehingga penuh</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> anda mungkin tidak akan dicas semasa dihidupkan.</translation>
 <translation id="8528322925433439945">Mudah alih ...</translation>
 <translation id="8673028979667498656">270°</translation>

@@ -2241,23 +2241,6 @@
 <translation id="8587229956764455752">Luba uute kasutajakontode loomine</translation>
 <translation id="8614804915612153606">Keelab automaatvärskenduse</translation>
 <translation id="8631434304112909927">versioonini <ph name="UNTIL_VERSION" /></translation>
-<translation id="863712305404093038">Blokeerib juurdepääsu loetletud URL-idele.
-
-      See reegel keelab kasutajal laadida keelatud URL-ide loendis olevaid veebilehti. Keelatute loendis on loend URL-i mustritest, milles määratakse, millised URL-id keelatute loendisse lisatakse.
-
-      Iga URL-i muster võib olla muster kohalike failide jaoks või üldine URL-i muster. Kohalikud failimustrid on vormingus „file://path”, kus „path” peaks olema blokeeritav absoluutne tee. Kõik failisüsteemi asukohad, mille eesliide see tee on, blokeeritakse.
-
-      Üldine URL-i muster on vormingus „scheme://host:port/path”.
-      Selle olemasolul blokeeritakse ainult määratud skeem. Kui eesliidet scheme:// ei määrata, blokeeritakse kõik skeemid.
-      Host on kohustuslik ja see võib olla hosti nimi või IP-aadress. Blokeeritakse ka hosti nime alamdomeenid. Alamdomeenide blokeerimise vältimiseks lisage hosti nime ette „.”. Spetsiaalne hosti nimi „*” blokeerib kõik domeenid.
-      Valikuline port on kehtiv pordi number vahemikus 1 kuni 65 535. Kui seda ei määrata, blokeeritakse kõik pordid.
-      Kui määratakse valikuline tee, blokeeritakse ainult selle eesliitega teed.
-
-      Erandid saab määrata lubatud URL-ide loendi reegliga. Need reeglid kehtivad vaid 1000 kirje puhul, järgnevaid kirjeid eiratakse.
-
-      Pange tähele, et me ei soovita blokeerida sisemisi URL-e „chrome://*”, kuna see võib tekitada ootamatuid vigu.
-
-      Kui seda reeglit ei määrata, ei lisata brauseris keelatute loendisse ühtegi URL-i.</translation>
 <translation id="8649763579836720255">Chrome OS-i seadmed saavad kasutada kaugatesteerimist (kinnitatud juurdepääs), et saada Chrome OS CA välja antav sertifikaat, mis kinnitab seadme sobilikkust kaitstud sisu esitamiseks.  Protsess hõlmab riistvara kinnitusteabe saatmist Chrome OS CA-le seadme kordumatuks tuvastamiseks.
 
           Kui seade väärtuseks on Vale, ei kasuta seade sisu kaitsmiseks kaugatesteerimist ja seade ei pruugi saada kaitstud sisu esitada.

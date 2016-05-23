@@ -34,6 +34,7 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="1779766957982586368">Tutup tetingkap</translation>
 <translation id="1841799852846221389">Melumpuhkan sambungan jauh untuk komputer ini…</translation>
 <translation id="189172778771606813">Tutup laci navigasi</translation>
+<translation id="1897488610212723051">Padam</translation>
 <translation id="195619862187186579">Reka letak papan kekunci</translation>
 <translation id="1996161829609978754">Chrome sedang memuat turun pemasang Hos Chromoting.  Setelah muat turun selesai, sila jalankan pemasang sebelum meneruskan.</translation>
 <translation id="2009755455353575666">Sambungan gagal</translation>
@@ -122,9 +123,6 @@ Chromoting</translation>
 <translation id="3950820424414687140">Log masuk</translation>
 <translation id="3989511127559254552">Untuk meneruskan, anda mesti memberikan kebenaran akses lanjutan terlebih dahulu kepada komputer anda. Anda hanya perlu melakukannya sekali.</translation>
 <translation id="4006787130661126000">Anda mesti mendayakan sambungan jauh jika anda mahu menggunakan Desktop Jauh Chrome untuk mengakses komputer ini.</translation>
-<translation id="4028465833180158312">• Kemas kini UI Reka Bentuk Bahan.
-• Kredit pelesenan pihak ketiga.
-• Maklumat yang ditunjukkan bagi komputer jauh yang berada di luar talian.</translation>
 <translation id="405887016757208221">Komputer jauh gagal memulakan sesi. Jika masalah berterusan, sila cuba mengkonfigurasi hos sekali lagi.</translation>
 <translation id="4068946408131579958">Semua sambungan</translation>
 <translation id="409800995205263688">NOTA: Tetapan dasar membenarkan sambungan antara komputer dalam rangkaian anda sahaja.</translation>
@@ -168,6 +166,7 @@ Jauh Chrome</translation>
 <translation id="4985296110227979402">Anda perlu menyediakan komputer untuk akses jauh terlebih dahulu</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (luar talian)</translation>
 <translation id="5070121137485264635">Hos jauh memerlukan anda membuat pengesahan pada tapak web pihak ketiga. Untuk meneruskan, anda hendaklah memberikan Desktop Jauh Chrome kebenaran tambahan untuk mengakses alamat ini:</translation>
+<translation id="507204348399810022">Adakah anda pasti mahu melumpuhkan sambungan jauh kepada <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Sila masukkan PIN yang sama dalam kedua-dua kotak.</translation>
 <translation id="5168917394043976756">Buka laci navigasi</translation>
 <translation id="5170982930780719864">Id hos tidak sah.</translation>

@@ -129,6 +129,7 @@ Du kan kontrollere Fysisk web i Chrome-indstillingerne.
 <translation id="257931822824936280">Udvidet – klik for at skjule.</translation>
 <translation id="2587052924345400782">Der findes en nyere version</translation>
 <translation id="2593272815202181319">Enkelt tegnafstand</translation>
+<translation id="2621115761605608342">Tillad JavaScript for et bestemt website.</translation>
 <translation id="2646820313617290661">Dine forældre hjælper med at administrere disse indstillinger.</translation>
 <translation id="2653659639078652383">Indsend</translation>
 <translation id="2677748264148917807">Forlad</translation>
@@ -152,6 +153,7 @@ Du kan kontrollere Fysisk web i Chrome-indstillingerne.
 <translation id="2903493209154104877">Adresser</translation>
 <translation id="2913331724188855103">Tillad, at websites gemmer og læser cookiedata (anbefales)</translation>
 <translation id="2956410042958133412">Denne konto administreres af <ph name="PARENT_NAME_1" /> og <ph name="PARENT_NAME_2" />.</translation>
+<translation id="2959609938957585241">Aktivér "Automatisk synkronisering af data" i kontoindstillingerne for Android for at få adgang til dine faner på dine andre enheder.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Alle rettigheder forbeholdes.</translation>
 <translation id="2968755619301702150">Certifikatfremviser</translation>
 <translation id="2996291259634659425">Opret adgangssætning</translation>
@@ -188,6 +190,7 @@ Du kan kontrollere Fysisk web i Chrome-indstillingerne.
 
 Du logger ind med en administreret konto, og du giver administratoren kontrol over din Chrome-profil. Dine Chrome-data vil blive knyttet permanent til denne konto. Hvis du logger ud af denne konto, slettes de lokale Chrome-data.</translation>
 <translation id="3384347053049321195">Del billede</translation>
+<translation id="3386292677130313581">Spørg om tilladelse, inden websites får oplyst din placering (anbefales)</translation>
 <translation id="3387650086002190359">Download af <ph name="FILE_NAME" /> mislykkedes på grund af fejl i filsystemet.</translation>
 <translation id="3414952576877147120">Størrelse:</translation>
 <translation id="3435896845095436175">Aktiver</translation>
@@ -240,6 +243,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4254813446494774748">Sprog, der skal oversættes til:</translation>
 <translation id="4256782883801055595">Open source-licenser</translation>
 <translation id="4259722352634471385">Navigationen er blokeret: <ph name="URL" /></translation>
+<translation id="4262028915562328938">Der opstod en synkroniseringsfejl. Tryk for at få nærmere oplysninger.</translation>
 <translation id="4269820728363426813">Kopiér linkadresse</translation>
 <translation id="4271185234001491831">Oversæt aldrig <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Medier</translation>
@@ -254,6 +258,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4440256989292146959">Flere data for færre penge</translation>
 <translation id="4452548195519783679">Bogmærket er gemt i <ph name="FOLDER_NAME" /></translation>
 <translation id="4457399174246232812">Fremtidige Fysisk web-sider i nærheden vises i din underretningsliste.</translation>
+<translation id="4479647676395637221">Spørg om tilladelse, inden websites bruger dit kamera (anbefales)</translation>
 <translation id="4498934959426056365">Nøglegenerering</translation>
 <translation id="4508440807153586353">Det er kun personer med din adgangssætning, der kan læse dine krypterede data. Adgangssætningen sendes ikke til eller gemmes af Google. Hvis du glemmer din adgangssætning eller vil ændre denne indstilling, skal du nulstille synkroniseringen. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{For 1 dag siden}one{For # dag siden}other{For # dage siden}}</translation>
@@ -323,6 +328,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="5317780077021120954">Gem</translation>
 <translation id="5324858694974489420">Indstillinger for forældrekontrol</translation>
 <translation id="5327248766486351172">Navn</translation>
+<translation id="5335288049665977812">Tillad, at websites kører JavaScript (anbefales)</translation>
 <translation id="5345040418939504969">Slettede <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Placeringsadgang er også <ph name="BEGIN_LINK" />slået fra for denne enhed<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Send aldrig</translation>
@@ -368,6 +374,7 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="585027516397408832">Datasparefunktionen er aktiveret</translation>
 <translation id="5860033963881614850">Fra</translation>
 <translation id="5869522115854928033">Gemte adgangskoder</translation>
+<translation id="588563574323093535">Spørg om tilladelse, inden websites åbner i fuld skærm (anbefales)</translation>
 <translation id="5899349522111170522">Opret en ny fil</translation>
 <translation id="5902828464777634901">Alle lokale data, der gemmes af websitet, herunder cookies, slettes</translation>
 <translation id="5911030830365207728">Google Oversæt</translation>
@@ -392,6 +399,7 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="6140912465461743537">Land/region</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> sparet data</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
+<translation id="6181444274883918285">Tilføj en undtagelse for et website</translation>
 <translation id="6192792657125177640">Undtagelser</translation>
 <translation id="6232535412751077445">Aktivering af "Do Not Track" betyder, at en anmodning medtages i din browsertrafik. Effekten afhænger af, om et website reagerer på anmodningen, og hvordan anmodningen fortolkes.
 
@@ -427,6 +435,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6627583120233659107">Rediger mappen</translation>
 <translation id="6647073004883890710">Skal <ph name="PASSWORD_MANAGER_BRAND" /> opdatere adgangskoden for <ph name="USERNAME" /> for dette website?</translation>
 <translation id="6656545060687952787">Chrome skal bruge placeringsadgang for at kunne scanne efter enheder. <ph name="BEGIN_LINK" />Opdater tilladelser<ph name="END_LINK" /></translation>
+<translation id="6659594942844771486">Fane</translation>
 <translation id="666268767214822976">Brug en forslagstjeneste til at få vist relaterede forespørgsler og populære websites, mens du skriver i adresselinjen</translation>
 <translation id="666981079809192359">Erklæring om privatliv for Google Chrome</translation>
 <translation id="6698801883190606802">Administrer synkroniserede data</translation>
@@ -453,6 +462,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6981982820502123353">Hjælpefunktioner</translation>
 <translation id="6990079615885386641">Hent appen i Google Play Butik: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">Rapportér automatisk oplysninger om mulige sikkerhedshændelser til Google.</translation>
+<translation id="6992289844737586249">Spørg om tilladelse, inden websites bruger din mikrofon (anbefales)</translation>
 <translation id="6999892069268112724">Bekræft Google-konto</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> blev downloadet</translation>
 <translation id="7022756207310403729">Åbn i browser</translation>
@@ -515,6 +525,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="7682287625158474539">Forsendelse</translation>
 <translation id="7690588279513156836">Indlæs originalen</translation>
 <translation id="771135159654932189">Se, hvad der er i nærheden</translation>
+<translation id="7713873128508426081">Tillad altid</translation>
 <translation id="7764225426217299476">Tilføj adresse</translation>
 <translation id="7765158879357617694">Flyt</translation>
 <translation id="7772032839648071052">Bekræft adgangssætning</translation>
@@ -559,6 +570,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="8275818695183729150">Tillad (for søgninger i adresselinjen)</translation>
 <translation id="8283853025636624853">Synkroniserer til <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Standardfaner</translation>
+<translation id="8372893542064058268">Tillad synkronisering i baggrunden et bestemt website.</translation>
 <translation id="8374821112118309944">Du skal opdatere TalkBack til en nyere version.</translation>
 <translation id="8396312449826231789">Kun godkendte websites</translation>
 <translation id="8413126021676339697">Vis hele historikken</translation>
@@ -593,6 +605,7 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="8812942424849541387">Kontrollér, hvordan dette fungerer i <ph name="BEGIN_LINK1" />Indstillinger<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Bogmærker</translation>
 <translation id="8829678271838353305">Der blev logget ind på <ph name="ACCOUNT_EMAIL_LAST" />. Hvis der logges ind med <ph name="ACCOUNT_EMAIL_NEW" />, flettes synkroniserede data, som f.eks. bogmærker mellem konti. Hvis du vil holde oplysningerne adskilt, skal du rydde browserdata under <ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" />.</translation>
+<translation id="883635517171802338">Bloker visning af pop up-vinduer på websites (anbefales)</translation>
 <translation id="884264119367021077">Leveringsadresse</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, fane</translation>
 <translation id="885701979325669005">Lagerplads</translation>
@@ -622,6 +635,7 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="9100610230175265781">Adgangssætning kræves</translation>
 <translation id="9133515669113036225">Nulstil loginoplysningerne for enheden</translation>
 <translation id="9137013805542155359">Vis oprindelig</translation>
+<translation id="9139068048179869749">Spørg om tilladelse, før websites sender underretninger (anbefales)</translation>
 <translation id="9141510419986760385">Du er ved at skifte synkroniseringskonto fra <ph name="FROM_ACCOUNT" /> til <ph name="TO_ACCOUNT" />. Hvad vil du gøre med dine eksisterende bogmærker, din historik, dine adgangskoder og andre indstillinger?</translation>
 <translation id="917685106653909562">Fysisk web-sider i nærheden</translation>
 <translation id="9187199695613236444">Mobilvenlig visning</translation>

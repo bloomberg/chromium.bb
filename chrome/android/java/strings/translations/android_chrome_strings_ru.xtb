@@ -103,7 +103,7 @@
 <translation id="2321958826496381788">Перемещайте ползунок, пока текст не станет удобным для чтения. После двойного нажатия на абзац текст должен быть такого размера.</translation>
 <translation id="2331464965008647960">Просматривайте веб-страницы, связанные с объектами вокруг вас. Chrome будет искать их с помощью Bluetooth, когда ваше устройство разблокировано. Чтобы улучшить работу функции, страницы будут отправляться через сервис Google.
 
-Включить или отключить Интернет вокруг нас можно в настройках Chrome.
+Включить или отключить "Интернет вокруг нас" можно в настройках Chrome.
 
 <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">Установка…</translation>
@@ -129,6 +129,7 @@
 <translation id="257931822824936280">Развернуто. Нажмите, чтобы свернуть.</translation>
 <translation id="2587052924345400782">Доступна новая версия</translation>
 <translation id="2593272815202181319">Моноширинный</translation>
+<translation id="2621115761605608342">Разрешить JavaScript для конкретного сайта.</translation>
 <translation id="2646820313617290661">Этими настройками управляют родители.</translation>
 <translation id="2653659639078652383">Отправить</translation>
 <translation id="2677748264148917807">Закрыть</translation>
@@ -152,6 +153,7 @@
 <translation id="2903493209154104877">Адреса</translation>
 <translation id="2913331724188855103">Разрешить сайтам сохранять и читать файлы cookie (рекомендуется)</translation>
 <translation id="2956410042958133412">Этим аккаунтом управляют <ph name="PARENT_NAME_1" /> и <ph name="PARENT_NAME_2" />.</translation>
+<translation id="2959609938957585241">Чтобы получить доступ к вкладкам на всех ваших устройствах, включите автосинхронизацию данных в настройках аккаунта на устройстве Android.</translation>
 <translation id="2960796085439532066">© Google Inc., <ph name="YEAR" />. Все права защищены.</translation>
 <translation id="2968755619301702150">Просмотр сертификатов</translation>
 <translation id="2996291259634659425">Придумайте кодовую фразу</translation>
@@ -188,6 +190,7 @@
 
 Если вы войдете в аккаунт, администратор домена сможет управлять вашим профилем Chrome. Ваши данные будут связаны с этим аккаунтом. Если вы из него выйдете, все данные Chrome будут удалены с устройства.</translation>
 <translation id="3384347053049321195">Поделиться изображением</translation>
+<translation id="3386292677130313581">Запрашивать разрешение на доступ к данным о местоположении (рекомендуется)</translation>
 <translation id="3387650086002190359">Не удалось скачать файл <ph name="FILE_NAME" /> из-за ошибок файловой системы.</translation>
 <translation id="3414952576877147120">Размер:</translation>
 <translation id="3435896845095436175">Включить</translation>
@@ -240,6 +243,7 @@
 <translation id="4254813446494774748">Перевести на:</translation>
 <translation id="4256782883801055595">Лицензии на ПО с открытым кодом</translation>
 <translation id="4259722352634471385">Навигация заблокирована: <ph name="URL" /></translation>
+<translation id="4262028915562328938">Ошибка синхронизации. Нажмите, чтобы получить подробную информацию.</translation>
 <translation id="4269820728363426813">Копировать адрес ссылки</translation>
 <translation id="4271185234001491831">Никогда не переводить <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Камера и микрофон </translation>
@@ -254,6 +258,7 @@
 <translation id="4440256989292146959">Разумная экономия</translation>
 <translation id="4452548195519783679">Закладка добавлена в папку "<ph name="FOLDER_NAME" />"</translation>
 <translation id="4457399174246232812">Страницы из Интернета вокруг нас будут показываться в списке оповещений.</translation>
+<translation id="4479647676395637221">Запрашивать разрешение на доступ к камере (рекомендуется)</translation>
 <translation id="4498934959426056365">Создание ключей</translation>
 <translation id="4508440807153586353">Ваши зашифрованные данные может прочитать только тот, кто знает кодовую фразу. Она не пересылается и не хранится в Google. Если вы забудете фразу или решите изменить эту настройку, вам придется сбросить параметры синхронизации. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# день назад}one{# день назад}few{# дня назад}many{# дней назад}other{# дня назад}}</translation>
@@ -323,6 +328,7 @@
 <translation id="5317780077021120954">Сохранить</translation>
 <translation id="5324858694974489420">Родительские настройки</translation>
 <translation id="5327248766486351172">Название</translation>
+<translation id="5335288049665977812">Разрешить сайтам использовать JavaScript (рекомендуется)</translation>
 <translation id="5345040418939504969">Закладка "<ph name="BOOKMARK_TITLE" />" удалена</translation>
 <translation id="5345083863238459644">На этом устройстве также <ph name="BEGIN_LINK" />открыт<ph name="END_LINK" /> доступ к местоположению.</translation>
 <translation id="5380554235172449987">Не отправлять</translation>
@@ -368,6 +374,7 @@
 <translation id="585027516397408832">Расширение "Экономия трафика" включено</translation>
 <translation id="5860033963881614850">Выкл.</translation>
 <translation id="5869522115854928033">Сайты с сохраненными паролями</translation>
+<translation id="588563574323093535">Запрашивать разрешение на переход в полноэкранный режим (рекомендуется)</translation>
 <translation id="5899349522111170522">Новый файл</translation>
 <translation id="5902828464777634901">Все данные этого веб-сайта, включая файлы cookie, будут удалены.</translation>
 <translation id="5911030830365207728">Google Переводчик</translation>
@@ -392,6 +399,7 @@
 <translation id="6140912465461743537">Страна/регион</translation>
 <translation id="6159335304067198720">Сжатие данных: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Подробнее...</translation>
+<translation id="6181444274883918285">Добавить исключение</translation>
 <translation id="6192792657125177640">Исключения</translation>
 <translation id="6232535412751077445">Если вы запретите отслеживание, в запросы браузера будет включена специальная команда. Сайты могут интерпретировать ее и отвечать на нее по-разному.
 
@@ -427,6 +435,7 @@
 <translation id="6627583120233659107">Изменить папку</translation>
 <translation id="6647073004883890710">Сохранить в <ph name="PASSWORD_MANAGER_BRAND" /> новый пароль пользователя <ph name="USERNAME" /> для этого сайта?</translation>
 <translation id="6656545060687952787">Чтобы выполнить поиск устройств, браузеру Chrome нужен доступ к геоданным. <ph name="BEGIN_LINK" />Обновить разрешения<ph name="END_LINK" /></translation>
+<translation id="6659594942844771486">Вкладка</translation>
 <translation id="666268767214822976">Показывать подсказки с похожими запросами и часто посещаемыми сайтами по мере ввода в адресную строку</translation>
 <translation id="666981079809192359">Примечание о конфиденциальности Chrome</translation>
 <translation id="6698801883190606802">Управление синхронизированными данными</translation>
@@ -453,6 +462,7 @@
 <translation id="6981982820502123353">Специальные возможности</translation>
 <translation id="6990079615885386641">Приложение в Google Play Маркете: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">Автоматически отправлять в Google информацию о возможных проблемах безопасности</translation>
+<translation id="6992289844737586249">Запрашивать разрешение на доступ к микрофону (рекомендуется)</translation>
 <translation id="6999892069268112724">Подтверждение аккаунта Google</translation>
 <translation id="7021515813996758557">Файл <ph name="FILE_NAME" /> скачан</translation>
 <translation id="7022756207310403729">Открыть в браузере</translation>
@@ -515,6 +525,7 @@
 <translation id="7682287625158474539">Адрес доставки</translation>
 <translation id="7690588279513156836">Полная версия</translation>
 <translation id="771135159654932189">Узнать, что поблизости</translation>
+<translation id="7713873128508426081">Разрешать всегда</translation>
 <translation id="7764225426217299476">Добавить адрес</translation>
 <translation id="7765158879357617694">Переместить</translation>
 <translation id="7772032839648071052">Подтвердите кодовую фразу</translation>
@@ -559,6 +570,7 @@
 <translation id="8275818695183729150">Разрешать (для поиска в адресной строке)</translation>
 <translation id="8283853025636624853">Синхронизация с аккаунтом <ph name="SYNC_ACCOUNT_USER_NAME" />…</translation>
 <translation id="8310344678080805313">Обычные вкладки</translation>
+<translation id="8372893542064058268">Разрешить фоновую синхронизацию для конкретного сайта.</translation>
 <translation id="8374821112118309944">Установите последнюю версию TalkBack.</translation>
 <translation id="8396312449826231789">Только одобренные сайты</translation>
 <translation id="8413126021676339697">Показать всю историю</translation>
@@ -593,6 +605,7 @@
 <translation id="8812942424849541387">Изменить эти параметры можно в <ph name="BEGIN_LINK1" />настройках<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Закладки</translation>
 <translation id="8829678271838353305">Был выполнен вход в аккаунт <ph name="ACCOUNT_EMAIL_LAST" />. Если вы войдете в аккаунт <ph name="ACCOUNT_EMAIL_NEW" />, синхронизируемые данные (например, закладки) будут объединены. Чтобы этого не произошло, <ph name="BEGIN_LINK" />удалите данные о работе в браузере<ph name="END_LINK" />.</translation>
+<translation id="883635517171802338">Блокировать всплывающие окна на сайтах (рекомендуется)</translation>
 <translation id="884264119367021077">Адрес доставки</translation>
 <translation id="8853345339104747198">Вкладка "<ph name="TAB_TITLE" />"</translation>
 <translation id="885701979325669005">Хранилище</translation>
@@ -622,6 +635,7 @@
 <translation id="9100610230175265781">Необходима кодовая фраза</translation>
 <translation id="9133515669113036225">Сбросить учетные данные</translation>
 <translation id="9137013805542155359">Показать оригинал</translation>
+<translation id="9139068048179869749">Запрашивать разрешение на отправку уведомлений (рекомендуется)</translation>
 <translation id="9141510419986760385">Вы переключаетесь с синхронизируемого аккаунта <ph name="FROM_ACCOUNT" /> на <ph name="TO_ACCOUNT" />. Что нужно сделать с текущими закладками, паролями, историей и другими настройками?</translation>
 <translation id="917685106653909562">Веб-страницы из Интернета вокруг нас</translation>
 <translation id="9187199695613236444">Адаптировано для мобильных устройств</translation>

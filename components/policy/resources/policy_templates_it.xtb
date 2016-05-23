@@ -2009,23 +2009,6 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8587229956764455752">Consenti la creazione di nuovi account utente</translation>
 <translation id="8614804915612153606">Disattiva l'aggiornamento automatico</translation>
 <translation id="8631434304112909927">fino alla versione <ph name="UNTIL_VERSION" /></translation>
-<translation id="863712305404093038">Consente di impedire l'accesso agli URL elencati.
-
-      Questa norma consente di impedire all'utente di caricare le pagine web degli URL vietati. Nella lista nera è presente un elenco di pattern URL che indicano gli URL vietati.
-
-      Ogni pattern URL può essere generico oppure riguardare file locali. I pattern relativi a file locali sono nel formato "file://percorso", dove "percorso" deve essere un percorso assoluto da bloccare. Vengono bloccati tutti i percorsi del file system che hanno come prefisso il percorso indicato.
-
-      Un pattern URL generico è nel formato "schema://host:porta/percorso".
-      Se indicato, viene bloccato soltanto lo scherma specificato. Se non viene specificato il prefisso schema://, vengono bloccati tutti gli schemi.
-      Il valore "host" è obbligatorio e può essere un nome host o un indirizzo IP. Vengono bloccati anche i sottodomini di un nome host. Per impedire il blocco dei sottodomini, inserisci un segno "." davanti al nome host. Il nome host speciale "*" consente di bloccare tutti i domini.
-      La porta facoltativa è un numero di porta valido compreso tra 1 e 65535. Se non vengono specificate porte, vengono bloccate tutte le porte.
-      Se viene specificato il percorso facoltativo, vengono bloccati soltanto i percorsi con il prefisso indicato.
-
-      È possibile definire eccezioni nella norma relativa alla whitelist di URL. Per queste norme è possibile definire massimo 1000 voci; le voci in più vengono ignorate.
-
-      È sconsigliato bloccare gli URL interni "chrome://*" perché potrebbero verificarsi errori imprevisti.
-
-      Se questa norma non viene impostata, non sarà vietato alcun URL nel browser.</translation>
 <translation id="8649763579836720255">I dispositivi Chrome OS possono utilizzare un'attestazione remota (Accesso verificato) per ottenere un certificato emesso dalla CA di Chrome OS in cui si afferma che il dispositivo è idoneo a riprodurre contenuti protetti. Questo processo comporta l'invio alla CA di Chrome OS di informazioni di approvazione dell'hardware che identificano in modo univoco il dispositivo.
 
 Se questa impostazione viene impostata su false, il dispositivo non utilizzerà l'attestazione remota per la protezione dei contenuti e il dispositivo potrebbe non essere in grado di riprodurre i contenuti protetti.

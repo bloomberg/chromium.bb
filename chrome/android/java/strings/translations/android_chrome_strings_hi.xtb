@@ -129,6 +129,7 @@
 <translation id="257931822824936280">विस्‍तारित - संक्षिप्‍त करने के लिए क्‍लिक करें.</translation>
 <translation id="2587052924345400782">अधिक नया वर्शन उपलब्ध है</translation>
 <translation id="2593272815202181319">मोनोस्पेस</translation>
+<translation id="2621115761605608342">विशिष्ट साइट के लिए JavaScript की अनुमति दें.</translation>
 <translation id="2646820313617290661">आपके अभिभावक इन सेटिंग को प्रबंधित करने में आपकी सहायता करते हैं.</translation>
 <translation id="2653659639078652383">सबमिट करें</translation>
 <translation id="2677748264148917807">छोड़ें</translation>
@@ -152,6 +153,7 @@
 <translation id="2903493209154104877">पते</translation>
 <translation id="2913331724188855103">साइटों को कुकी डेटा सहेजने और पढ़ने दें (अनुशंसित)</translation>
 <translation id="2956410042958133412">यह खाता <ph name="PARENT_NAME_1" /> और <ph name="PARENT_NAME_2" /> के द्वारा प्रबंधित है.</translation>
+<translation id="2959609938957585241">अपने अन्य डिवाइस से अपने टैब प्राप्त करने के लिए, Android खाता सेटिंग में "डेटा स्वत: समन्वयित करें" चालू करें.</translation>
 <translation id="2960796085439532066">कॉपीराइट <ph name="YEAR" /> Google Inc. सर्वाधिकार सुरक्षित.</translation>
 <translation id="2968755619301702150">प्रमाणपत्र व्यूअर</translation>
 <translation id="2996291259634659425">पासफ़्रेज़ बनाएं</translation>
@@ -188,6 +190,7 @@
 
 आप प्रबंधित खाते से प्रवेश कर रहे हैं और अपनी Chrome प्रोफ़ाइल को इसका व्यवस्थापक नियंत्रण दे रहे हैं. आपका Chrome डेटा इस खाते से स्थायी रूप से जुड़ जाएगा. इस खाते से डिस्कनेक्ट करने से स्थानीय Chrome डेटा हट जाएगा.</translation>
 <translation id="3384347053049321195">चित्र साझा करें</translation>
+<translation id="3386292677130313581">साइट को अपना स्थान जानने देने से पहले अनुमति लेना आवश्यक बनाएं (अनुशंसित)</translation>
 <translation id="3387650086002190359">सिस्‍टम त्रुटियों के कारण <ph name="FILE_NAME" /> डाउनलोड विफल रहा.</translation>
 <translation id="3414952576877147120">आकार:</translation>
 <translation id="3435896845095436175">सक्षम करें</translation>
@@ -240,6 +243,7 @@
 <translation id="4254813446494774748">अनुवाद की भाषा:</translation>
 <translation id="4256782883801055595">ओपन सोर्स लाइसेंस</translation>
 <translation id="4259722352634471385">मार्गदर्शक अवरोधित है: <ph name="URL" /></translation>
+<translation id="4262028915562328938">समन्वयन त्रुटि हुई, विवरण प्राप्त करने के लिए टैप करें.</translation>
 <translation id="4269820728363426813">लिंक पते की प्रतिलिपि बनाएं</translation>
 <translation id="4271185234001491831">कभी भी <ph name="LANGUAGE" /> का अनुवाद न करें</translation>
 <translation id="4275663329226226506">मीडिया</translation>
@@ -254,6 +258,7 @@
 <translation id="4440256989292146959">कम से अधिक ब्राउज़ करें</translation>
 <translation id="4452548195519783679"><ph name="FOLDER_NAME" /> में बुकमार्क किया गया</translation>
 <translation id="4457399174246232812">भविष्य के आस-पास स्थित भौतिक वेब पृष्ठ आपकी नोटिफिकेशन सूची में दिखाई देंगे</translation>
+<translation id="4479647676395637221">साइट को अपने कैमरे का उपयोग करने देने से पहले अनुमति लेना आवश्यक बनाएं (अनुशंसित)</translation>
 <translation id="4498934959426056365">कुंजी जेनरेशन</translation>
 <translation id="4508440807153586353">आपके एन्क्रिप्ट किए गए डेटा को केवल वही व्यक्ति पढ़ सकता है जिसके पास आपका पासफ़्रेज़ है. Google द्वारा पासफ़्रेज़ भेजा या संग्रहीत नहीं किया जाता. यदि आप अपना पासफ़्रेज़ भूल जाते हैं या यह सेटिंग बदलना चाहते हैं, तो आपको समन्वयन को रीसेट करना होगा. <ph name="BEGIN_LINK" />अधिक जानें<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# दिन पहले}one{# दिन पहले}other{# दिन पहले}}</translation>
@@ -323,6 +328,7 @@
 <translation id="5317780077021120954">सहेजें</translation>
 <translation id="5324858694974489420">अभिभावकीय सेटिंग</translation>
 <translation id="5327248766486351172">नाम</translation>
+<translation id="5335288049665977812">साइट को JavaScript चलाने की अनुमति दें (अनुशंसित)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> हटाया गया</translation>
 <translation id="5345083863238459644">स्थान ऐक्सेस को भी <ph name="BEGIN_LINK" />इस डिवाइस के लिए बंद कर दिया गया है<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">कभी ना भेजें</translation>
@@ -368,6 +374,7 @@
 <translation id="585027516397408832">डेटा बचतकर्ता सक्षम किया गया है</translation>
 <translation id="5860033963881614850">बंद</translation>
 <translation id="5869522115854928033">सहेजे गए पासवर्ड</translation>
+<translation id="588563574323093535">साइट को पूर्णस्क्रीन में जाने देने से पहले अनुमति लेना आवश्यक बनाएं (अनुशंसित)</translation>
 <translation id="5899349522111170522">नई फ़ाइल बनाएं</translation>
 <translation id="5902828464777634901">कुकी सहित, इस वेबसाइट द्वारा संग्रहीत किया गया सभी डेटा हटा दिया जाएगा.</translation>
 <translation id="5911030830365207728">Google अनुवाद</translation>
@@ -392,6 +399,7 @@
 <translation id="6140912465461743537">देश/क्षेत्र</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> डेटा बचत</translation>
 <translation id="6165508094623778733">अधिक जानें</translation>
+<translation id="6181444274883918285">साइट का अपवाद जोड़ें</translation>
 <translation id="6192792657125177640">अपवाद</translation>
 <translation id="6232535412751077445">“नज़र न रखें” सक्षम करने का अर्थ है कि आपके ब्राउज़िंग ट्रैफ़िक के साथ एक अनुरोध शामिल किया जाएगा. कोई भी प्रभाव इस बात पर निर्भर करता है कि वेबसाइट अनुरोध का प्रतिसाद देती है या नहीं और अनुरोध को किस तरह समझा जाता है.
 
@@ -427,6 +435,7 @@
 <translation id="6627583120233659107">फ़ोल्‍डर संपादित करें</translation>
 <translation id="6647073004883890710">क्या आप चाहते हैं कि <ph name="PASSWORD_MANAGER_BRAND" /> इस साइट के लिए <ph name="USERNAME" /> के पासवर्ड को अपडेट करे?</translation>
 <translation id="6656545060687952787">डिवाइस स्‍कैन करने के लिए Chrome को स्‍थान एक्‍सेस की आवश्‍यकता है. <ph name="BEGIN_LINK" />अनुमतियां अपडेट करें<ph name="END_LINK" /></translation>
+<translation id="6659594942844771486">टैब</translation>
 <translation id="666268767214822976">आपके द्वारा पता बार में लिखते ही संबंधित क्‍वेरी और लोकप्रिय वेबसाइटें दिखाने के लिए पूर्वानुमान सेवा का उपयोग करें</translation>
 <translation id="666981079809192359">Chrome गोपनीयता सूचना</translation>
 <translation id="6698801883190606802">समन्वयित डेटा प्रबंधित करें</translation>
@@ -453,6 +462,7 @@
 <translation id="6981982820502123353">पहुंच क्षमता</translation>
 <translation id="6990079615885386641">Google Play स्‍टोर से ऐप प्राप्‍त करें: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">Google को संभावित सुरक्षा घटनाओं के विवरणों की अपने आप रिपोर्ट करें</translation>
+<translation id="6992289844737586249">साइट को अपने माइक्रोफ़ोन का उपयोग करने देने से पहले अनुमति लेना आवश्यक बनाएं (अनुशंसित)</translation>
 <translation id="6999892069268112724">Google खाते की पुष्‍टि करें</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> को डाउनलोड किया गया</translation>
 <translation id="7022756207310403729">ब्राउज़र में खोलें</translation>
@@ -515,6 +525,7 @@
 <translation id="7682287625158474539">शिपिंग</translation>
 <translation id="7690588279513156836">मूल लोड करें</translation>
 <translation id="771135159654932189">देखें कि आस-पास क्या है</translation>
+<translation id="7713873128508426081">हमेशा अनुमति है</translation>
 <translation id="7764225426217299476">पता जोड़ें</translation>
 <translation id="7765158879357617694">ले जाएं</translation>
 <translation id="7772032839648071052">पासफ़्रेज़ की दुबारा पूछें</translation>
@@ -559,6 +570,7 @@
 <translation id="8275818695183729150">अनुमति दें (पता बार खोजों के लिए)</translation>
 <translation id="8283853025636624853"><ph name="SYNC_ACCOUNT_USER_NAME" /> से समन्वयित हो रहा है</translation>
 <translation id="8310344678080805313">मानक टैब</translation>
+<translation id="8372893542064058268">किसी विशिष्ट साइट के लिए पृष्ठभूमि समन्वयन की अनुमति दें.</translation>
 <translation id="8374821112118309944">आपको TalkBack को अधिक नए वर्शन से अपडेट करना होगा.</translation>
 <translation id="8396312449826231789">केवल स्‍वीकृत साइटें</translation>
 <translation id="8413126021676339697">संपूर्ण इतिहास दिखाएं</translation>
@@ -593,6 +605,7 @@
 <translation id="8812942424849541387">नियंत्रित करें कि यह <ph name="BEGIN_LINK1" />सेटिंग<ph name="END_LINK1" /> में कैसे काम करता है</translation>
 <translation id="8820817407110198400">बुकमार्क</translation>
 <translation id="8829678271838353305"><ph name="ACCOUNT_EMAIL_LAST" /> में प्रवेश किया गया था. <ph name="ACCOUNT_EMAIL_NEW" /> के द्वारा प्रवेश करने से बुकमार्क जैसा समन्‍वयित डेटा खातों के बीच मर्ज किया जाएगा. जानकारी को अलग बनाए रखने के लिए, <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में ब्राउज़िंग डेटा साफ़ करें.</translation>
+<translation id="883635517171802338">साइट को पॉप-अप दिखाने से अवरुद्ध करें (अनुशंसित)</translation>
 <translation id="884264119367021077">शिपिंग पता</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, टैब</translation>
 <translation id="885701979325669005">मेमोरी</translation>
@@ -622,6 +635,7 @@
 <translation id="9100610230175265781">पासफ़्रेज़ आवश्यक</translation>
 <translation id="9133515669113036225">डिवाइस प्रमाणिकता रीसेट करें</translation>
 <translation id="9137013805542155359">मूल दिखाएं</translation>
+<translation id="9139068048179869749">साइट को नोटिफ़िकेशन भेजने देने से पहले अनुमति लेना आवश्यक बनाएं (अनुशंसित)</translation>
 <translation id="9141510419986760385">आप समन्वयन खातों को <ph name="FROM_ACCOUNT" /> से <ph name="TO_ACCOUNT" /> में बदल रहे हैं. आप अपने मौजूदा बुकमार्क, इतिहास, पासवर्ड और अन्य सेटिंग का क्या करना चाहते हैं?</translation>
 <translation id="917685106653909562">आस-पास के शारीरिक वेब पृष्ठ</translation>
 <translation id="9187199695613236444">मोबाइल के अनुकूल दृश्‍य</translation>

@@ -260,6 +260,7 @@
 <translation id="3583757800736429874">&amp;Áthelyezés újra</translation>
 <translation id="3586931643579894722">Részletek elrejtése</translation>
 <translation id="3587482841069643663">Mind</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" /> és <ph name="TIME" /></translation>
 <translation id="3608308818141211642">Az ügyfél és a szerver nem támogatnak ugyanolyan SSL-protokollverziót vagy rejtjelezési csomagot. Ennek valószínűleg az az oka, hogy a szerver RC4-támogatást követel meg, amely már nem számít biztonságosnak.</translation>
 <translation id="3609138628363401169">A szerver nem támogatja a TLS renegotiation bővítményt.</translation>
 <translation id="362276910939193118">Minden előzmény megjelenítése</translation>

@@ -34,6 +34,7 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="1779766957982586368">Luk vindue</translation>
 <translation id="1841799852846221389">Deaktiverer fjernforbindelserne for denne computer…</translation>
 <translation id="189172778771606813">Luk sidemenuen</translation>
+<translation id="1897488610212723051">Slet</translation>
 <translation id="195619862187186579">Tastaturlayout</translation>
 <translation id="1996161829609978754">Chrome downloader installationsprogrammet Chromoting Host. Når overførslen er færdig, skal du køre installationsprogrammet, før du fortsætter.</translation>
 <translation id="2009755455353575666">Der kunne ikke etableres forbindelse</translation>
@@ -122,9 +123,6 @@ host</translation>
 <translation id="3950820424414687140">Log ind</translation>
 <translation id="3989511127559254552">For at fortsætte skal du give udvidet adgangstilladelse til din computer. Du skal kun gøre dette én gang.</translation>
 <translation id="4006787130661126000">Du skal aktivere fjernforbindelserne, hvis du vil bruge Chrome Fjernskrivebord til at få adgang til denne computer.</translation>
-<translation id="4028465833180158312">• Opdateringer af Material Design-grænsefladen.
-• Angivelser af tredjepartslicensering.
-• Der vises oplysninger for fjerncomputere, som er offline.</translation>
 <translation id="405887016757208221">Fjerncomputeren har ikke startet sessionen. Hvis problemet fortsætter, kan du prøve at konfigurere hosten igen.</translation>
 <translation id="4068946408131579958">Alle forbindelser</translation>
 <translation id="409800995205263688">BEMÆRK! Politikindstillingerne tillader kun forbindelser mellem computere inden for dit netværk.</translation>
@@ -168,6 +166,7 @@ Fjernskrivebord</translation>
 <translation id="4985296110227979402">Du skal først konfigurere din computer til fjernadgang</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Fjernværten kræver, at du bekræftes over for et tredjepartswebsite. Du skal give Chrome Fjernskrivebord yderligere tilladelser til at få adgang til denne adresse, før du kan fortsætte:</translation>
+<translation id="507204348399810022">Er du sikker på, at du vil deaktivere fjernforbindelserne til <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Indtast den samme pinkode i begge felter.</translation>
 <translation id="5168917394043976756">Åbn sidemenuen</translation>
 <translation id="5170982930780719864">Ugyldigt host-id.</translation>

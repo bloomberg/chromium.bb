@@ -92,7 +92,6 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="3621712662352432595">অডিও সেটিংস</translation>
 <translation id="3625258641415618104">স্ক্রীনশট অক্ষম হয়েছে</translation>
 <translation id="3626281679859535460">উজ্জ্বলতা</translation>
-<translation id="3626637461649818317"><ph name="PERCENTAGE" />% বাকি আছে</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME" />: <ph name="ANNOTATION" /></translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> এর রেসুলিউশান বদল  করে <ph name="RESOLUTION" /> করা হয়েছে</translation>
 <translation id="370649949373421643">Wi-fi সক্ষম করুন</translation>
@@ -111,7 +110,6 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="397105322502079400">গণনা করা হচ্ছে...</translation>
 <translation id="3995138139523574647">USB-C ডিভাইস (ডান দিকের পিছনের পোর্ট)</translation>
 <translation id="4053612967614057854">অন-স্ক্রীন কীবোর্ড অক্ষম করুন</translation>
-<translation id="412065659894267608"><ph name="HOUR" />ঘণ্টা <ph name="MINUTE" /> মিনিট পর্যন্ত পূর্ণ</translation>
 <translation id="4250680216510889253">না</translation>
 <translation id="4279490309300973883">অনুকরণ করা হচ্ছে</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -129,7 +127,6 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Google ড্রাইভ সেটিংস ...</translation>
-<translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> বাকি</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">কাস্ট ডিভাইসগুলি উপলব্ধ</translation>
 <translation id="5222676887888702881">সাইন আউট</translation>
@@ -166,7 +163,6 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="615957422585914272">অন-স্ক্রীন কীবোর্ড প্রদর্শন করুন</translation>
 <translation id="6165508094623778733">আরো জানুন</translation>
 <translation id="6203030746557259519">ভার্চুয়াল প্রদর্শন</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">প্রস্থান করার জন্য দুবার Control Shift Q টিপুন৷</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" /> আবর্তিত হয়েছে</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" />-এর থেকে SMS...</translation>
@@ -225,7 +221,6 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="8308637677604853869">পূর্ববর্তী মেনু</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" /> বন্ধ করুন</translation>
 <translation id="8428213095426709021">সেটিংস</translation>
-<translation id="8456362689280298700"><ph name="HOUR" />:<ph name="MINUTE" /> বাকি পুরো চার্জ হতে</translation>
 <translation id="8517041960877371778">আপনার <ph name="DEVICE_TYPE" /> চালু থাকা অবস্থায় চার্জ নাও হতে পারে।</translation>
 <translation id="8528322925433439945">মোবাইল ...</translation>
 <translation id="8673028979667498656">২৭০°</translation>

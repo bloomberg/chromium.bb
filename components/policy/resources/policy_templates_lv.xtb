@@ -154,6 +154,11 @@
 <translation id="1608755754295374538">Vietrāži URL, kuriem tiks nodrošināta piekļuve audio tveršanas ierīcēm bez uzvednes parādīšanas.</translation>
 <translation id="1617235075406854669">Iespējot pārlūka un lejupielādes vēstures dzēšanu</translation>
 <translation id="1617384279878333801">Personas pievienošanas iespējošana profilu pārvaldniekā</translation>
+<translation id="163200210584085447">Šajā sarakstā pieejamajiem šabloniem tiks meklēta atbilstība
+      pieprasītā URL drošības avotam. Ja tiks atrasta atbilstība, piekļuve video
+      ierakstīšanas ierīcēm tiks nodrošināta SAML pieteikšanās lapās. Ja netiks
+      atrasta atbilstība, piekļuve tiks automātiski liegta. Aizstājējzīmes netiek
+      atļautas.</translation>
 <translation id="1655229863189977773">Iestatīt diska kešatmiņas lielumu baitos</translation>
 <translation id="166427968280387991">Starpniekserveris</translation>
 <translation id="1675002386741412210">Saderīga ar:</translation>
@@ -274,6 +279,7 @@
 <translation id="2113068765175018713">Ierobežot ierīces darbspējas laiku, veicot automātisku atsāknēšanu</translation>
 <translation id="2127599828444728326">Paziņojumu atļaušana šajās vietnēs</translation>
 <translation id="2131902621292742709">Aizkave līdz ekrāna aptumšošanai, ja ierīce darbojas ar akumulatora jaudu</translation>
+<translation id="2134437727173969994">Atļaut ekrāna bloķēšanu</translation>
 <translation id="2137064848866899664">Ja šī politika ir iestatīta, katrs ekrāns tiek pagriezts
       iestatītajā virzienā ikreiz, kad ierīce tiek atkārtoti palaista,
       kā arī tad, kad ekrāns tiek pirmo reizi pievienots 
@@ -904,6 +910,7 @@
 <translation id="3967075520570946456">Sveiciena lapas rādīšanas iespējošana pirmajā pārlūka palaišanas reizē pēc operētājsistēmas jaunināšanas</translation>
 <translation id="3973371701361892765">Nekad automātiski neslēpt plauktu</translation>
 <translation id="3984028218719007910">Nosaka, vai produkts <ph name="PRODUCT_OS_NAME" /> saglabā lokālā konta datus pēc atteikšanās. Ja politika iestatīta uz Patiesa, produkts  <ph name="PRODUCT_OS_NAME" /> nesaglabā nevienu pastāvīgo kontu un visi dati no lietotāja sesijas tiek atmesti pēc atteikšanās. Ja politika ir iestatīta uz Aplama vai nav konfigurēta, ierīce, iespējams, saglabā (šifrētos) lokālos lietotāja datus.</translation>
+<translation id="3997519162482760140">Vietrāži URL, kuriem tiks nodrošināta piekļuve video tveršanas ierīcēm SAML pieteikšanās lapās.</translation>
 <translation id="4001275826058808087">IT administratori var izmantot šo atzīmi uzņēmuma ierīcēs, lai noteiktu, vai ļaut lietotājiem izpirkt piedāvājumus, izmantojot operētājsistēmas Chrome OS reģistrāciju.
 
       Ja šai politikai ir iestatīta vērtība Patiesa vai politika nav iestatīta, lietotāji var izpirkt piedāvājumus, izmantojot operētājsistēmas Chrome OS reģistrāciju.
@@ -937,6 +944,9 @@
           Ja šī politika nav iestatīta, tiek izmantots noklusējuma laika periods.
 
           Politikas vērtību nedrīkst norādīt milisekundēs.</translation>
+<translation id="4115096483386877940">Atļaut ekrāna bloķēšanu.
+
+      Ja šai politikai ir iestatīta vērtība “Aplams”, lietotāji nevarēs bloķēt ekrānu (varēs tikai izrakstīties no lietotāja sesijas). Ja šī iestatījuma statuss ir “Patiess” vai tas nav iestatīts, lietotāji, kuri būs autentificējušies ar paroli, varēs atbloķēt ekrānu.</translation>
 <translation id="4121350739760194865">Novērst lietotņu reklāmu rādīšanu Jaunas cilnes lapā.</translation>
 <translation id="4147054660081653009">Klienta sertifikāts savienojuma izveidei ar RemoteAccessHostTokenValidationUrl.
 
@@ -2253,25 +2263,6 @@
 <translation id="8587229956764455752">Atļaut jaunu lietotāju kontu izveidi</translation>
 <translation id="8614804915612153606">Atspējot automātisko atjaunināšanu</translation>
 <translation id="8631434304112909927">līdz <ph name="UNTIL_VERSION" /> versijai</translation>
-<translation id="863712305404093038">Tiek bloķēta piekļuve norādītajiem vietrāžiem URL.
-
-      Šī politika neļauj lietotājam ielādēt tīmekļa lapas no melnajā sarakstā iekļautajiem vietrāžiem URL. Melnajā sarakstā ir iekļauts URL šablonu saraksts, kas nosaka, kuri vietrāži URL nav atļauti.
-
-
-      URL šablons var būt lokālo failu šablons vai vispārīgs URL šablons. Lokālo failu šabloni ir jānorāda formātā “file://ceļš”, kurā “ceļš” ir bloķējamais absolūtais ceļš. Tiks bloķētas visas failu sistēmas atrašanās vietas, kurām šis ceļš ir prefikss.
-
-
-      Vispārīga URL šablona formāts “shēma://saimniekdators:ports/ceļš”.
-      Ja būs norādīta konkrēta shēma, tiks bloķēta tikai šī shēma. Ja prefikss shēma:// nebūs norādīts, tiks bloķētas visas shēmas.
-      Saimniekdators ir jānorāda obligāti; tas var būt saimniekdatora nosaukums vai IP adrese. Tiks bloķēti arī saimniekdatora nosaukuma apakšdomēni. Lai novērstu apakšdomēnu bloķēšanu, pirms saimniekdatora nosaukuma iekļaujiet “.”. Īpašais saimniekdatora nosaukums “*” bloķēs visus domēnus.
-      Porta numuram (nav obligāts) ir jābūt derīgam porta numuram no 1 līdz 65535. Ja tas netiks norādīts, tiks bloķēti visi porti.
-      Ja būs norādīts ceļš (nav obligāts), tiks bloķēti tikai ceļi ar šo prefiksu.
-
-
-      Izņēmumus var definēt URL baltā saraksta politikā. Šīm politikām ir 1000 ierakstu ierobežojums; pārējie ieraksti tiks ignorēti.
-
-
-      Ja šī politika nav iestatīta, pārlūkā netiks bloķēts neviens vietrādis URL.</translation>
 <translation id="8649763579836720255">Chrome OS ierīcēs var izmantot attālo apstiprināšanu (verificēta piekļuve), lai saņemtu Chrome OS sertifikāta izdevējiestādes izsniegtu sertifikātu, kas apstiprina, ka ierīcē ir atļauts atskaņot aizsargātu saturu. Šī procesa laikā aparatūras apstiprinājuma informācija tiek nosūtīta Chrome OS sertifikāta izdevējiestādei, kas unikāli identificē ierīci.
 
           Ja šis iestatījums ir “False”, ierīcē satura aizsardzībai netiks izmantota attālā apstiprināšana un, iespējams, nevarēs atskaņot aizsargāto saturu.

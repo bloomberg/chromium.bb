@@ -249,6 +249,7 @@
 <translation id="3583757800736429874">&amp;Opnieuw verplaatsen</translation>
 <translation id="3586931643579894722">Details verbergen</translation>
 <translation id="3587482841069643663">Alles</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3608308818141211642">De client en server bieden geen ondersteuning voor een algemene SSL-protocolversie of een coderingspakket. Dit treedt mogelijk op wanneer de server RC4 nodig heeft, wat niet langer als veilig wordt beschouwd.</translation>
 <translation id="3609138628363401169">De server ondersteunt de extensie voor TLS-onderhandeling niet.</translation>
 <translation id="362276910939193118">Volledige geschiedenis weergeven</translation>

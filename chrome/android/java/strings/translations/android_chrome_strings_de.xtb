@@ -129,6 +129,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="257931822824936280">Maximiert – zum Minimieren klicken</translation>
 <translation id="2587052924345400782">Neuere Version verfügbar</translation>
 <translation id="2593272815202181319">Monospace</translation>
+<translation id="2621115761605608342">JavaScript für eine bestimmte Website zulassen.</translation>
 <translation id="2646820313617290661">Deine Eltern verwalten diese Einstellungen.</translation>
 <translation id="2653659639078652383">Senden</translation>
 <translation id="2677748264148917807">Verlassen</translation>
@@ -152,6 +153,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="2903493209154104877">Adressen</translation>
 <translation id="2913331724188855103">Websites dürfen Cookiedaten speichern und lesen (empfohlen).</translation>
 <translation id="2956410042958133412">Dieses Konto wird von <ph name="PARENT_NAME_1" /> und <ph name="PARENT_NAME_2" /> verwaltet.</translation>
+<translation id="2959609938957585241">Aktivieren Sie "Daten automatisch synchronisieren" in den Android-Kontoeinstellungen, um Tabs von Ihren anderen Geräten abzurufen.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Alle Rechte vorbehalten.</translation>
 <translation id="2968755619301702150">Zertifikats-Viewer</translation>
 <translation id="2996291259634659425">Passphrase erstellen</translation>
@@ -188,6 +190,7 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 
 Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrator des Kontos Kontrolle über Ihr Chrome-Profil. Ihre Chrome-Daten werden dauerhaft mit diesem Konto verknüpft. Wenn Sie sich aus diesem Konto abmelden, werden alle lokalen Chrome-Daten gelöscht.</translation>
 <translation id="3384347053049321195">Bild teilen</translation>
+<translation id="3386292677130313581">Nachfragen, bevor Websites Ihr Standort angezeigt wird (empfohlen)</translation>
 <translation id="3387650086002190359"><ph name="FILE_NAME" /> konnte aufgrund von Dateisystemfehlern nicht heruntergeladen werden.</translation>
 <translation id="3414952576877147120">Größe:</translation>
 <translation id="3435896845095436175">Aktivieren</translation>
@@ -240,6 +243,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4254813446494774748">Zielsprache:</translation>
 <translation id="4256782883801055595">Open Source-Lizenzen</translation>
 <translation id="4259722352634471385">Die Navigation zu <ph name="URL" /> ist blockiert.</translation>
+<translation id="4262028915562328938">Es ist ein Synchronisierungsfehler aufgetreten. Tippen Sie, um Details zu erhalten.</translation>
 <translation id="4269820728363426813">URL kopieren</translation>
 <translation id="4271185234001491831"><ph name="LANGUAGE" /> nie übersetzen</translation>
 <translation id="4275663329226226506">Medien</translation>
@@ -254,6 +258,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4440256989292146959">Mehr surfen, weniger verbrauchen</translation>
 <translation id="4452548195519783679">Als Lesezeichen in "<ph name="FOLDER_NAME" />" gespeichert</translation>
 <translation id="4457399174246232812">Zukünftige Physical Web-Seiten zu Objekten in der Nähe werden in Ihrer Benachrichtigungsliste angezeigt.</translation>
+<translation id="4479647676395637221">Nachfragen, bevor Websites Zugriff auf Ihre Kamera erhalten (empfohlen)</translation>
 <translation id="4498934959426056365">Schlüsselgenerierung</translation>
 <translation id="4508440807153586353">Nur Personen mit Ihrer Passphrase können Ihre verschlüsselten Daten lesen. Die Passphrase wird nicht an Google gesendet oder von Google gespeichert. Falls Sie sie vergessen oder diese Einstellung ändern möchten, müssen Sie die Synchronisierung zurücksetzen. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{Vor # Tag}other{Vor # Tagen}}</translation>
@@ -323,6 +328,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="5317780077021120954">Speichern</translation>
 <translation id="5324858694974489420">Jugendschutzeinstellungen</translation>
 <translation id="5327248766486351172">Name</translation>
+<translation id="5335288049665977812">Ausführung von JavaScript durch Websites zulassen (empfohlen)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> gelöscht</translation>
 <translation id="5345083863238459644">Der Standortzugriff ist auch <ph name="BEGIN_LINK" />für dieses Gerät deaktiviert<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Nie senden</translation>
@@ -368,6 +374,7 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="585027516397408832">Datensparmodus aktiviert</translation>
 <translation id="5860033963881614850">Aus</translation>
 <translation id="5869522115854928033">Gespeicherte Passwörter</translation>
+<translation id="588563574323093535">Nachfragen, bevor Websites in den Vollbildmodus wechseln dürfen (empfohlen)</translation>
 <translation id="5899349522111170522">Neue Datei erstellen</translation>
 <translation id="5902828464777634901">Alle von dieser Website gespeicherten lokalen Daten, einschließlich Cookies, werden gelöscht.</translation>
 <translation id="5911030830365207728">Google Übersetzer</translation>
@@ -392,6 +399,7 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="6140912465461743537">Land/Region</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> Einsparungen bei der Datennutzung</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
+<translation id="6181444274883918285">Ausnahme für Website hinzufügen</translation>
 <translation id="6192792657125177640">Ausnahmen</translation>
 <translation id="6232535412751077445">Wenn Sie das Kästchen "Do Not Track" anklicken, wird mit Ihren Browserzugriffen eine Anforderung gesendet. Wie sich diese Anforderung auswirkt, hängt davon ab, ob eine Website darauf reagiert und wie die Anforderung interpretiert wird.
 
@@ -427,6 +435,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6627583120233659107">Ordner bearbeiten</translation>
 <translation id="6647073004883890710">Soll <ph name="PASSWORD_MANAGER_BRAND" /> das Passwort für <ph name="USERNAME" /> für diese Website aktualisieren?</translation>
 <translation id="6656545060687952787">Chrome benötigt Zugriff auf den Standort, um nach Geräten suchen zu können. <ph name="BEGIN_LINK" />Berechtigungen aktualisieren<ph name="END_LINK" /></translation>
+<translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">Während der Eingabe in die Adressleiste mithilfe einer Vervollständigungsfunktion verwandte Suchanfragen und beliebte Websites einblenden</translation>
 <translation id="666981079809192359">Chrome-Datenschutzhinweise</translation>
 <translation id="6698801883190606802">Synchronisierte Daten verwalten</translation>
@@ -453,6 +462,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6981982820502123353">Bedienungshilfen</translation>
 <translation id="6990079615885386641">App aus dem Play Store abrufen: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">Details zu möglichen sicherheitsrelevanten Zwischenfällen automatisch an Google senden</translation>
+<translation id="6992289844737586249">Nachfragen, bevor Websites auf Ihr Mikrofon zugreifen dürfen (empfohlen)</translation>
 <translation id="6999892069268112724">Google-Konto bestätigen</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> heruntergeladen</translation>
 <translation id="7022756207310403729">Im Browser öffnen</translation>
@@ -515,6 +525,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="7682287625158474539">Versand</translation>
 <translation id="7690588279513156836">Original laden</translation>
 <translation id="771135159654932189">URLs in der Nähe</translation>
+<translation id="7713873128508426081">Immer erlaubt</translation>
 <translation id="7764225426217299476">Adresse hinzufügen</translation>
 <translation id="7765158879357617694">Verschieben</translation>
 <translation id="7772032839648071052">Passphrase bestätigen</translation>
@@ -522,7 +533,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="7791543448312431591">Hinzufügen</translation>
 <translation id="780301667611848630">Kein Interesse</translation>
 <translation id="7829298379596169484">Zugriff auf Audio-Eingang</translation>
-<translation id="7837582000577464779">Bei der Verarbeitung Ihrer Bestellung ist ein Fehler aufgetreten. Überprüfen Sie Ihr Konto und versuchen Sie es erneut.</translation>
+<translation id="7837582000577464779">Bei der Verarbeitung Ihrer Bestellung ist ein Fehler aufgetreten. Bitte überprüfen Sie Ihr Konto und versuchen Sie es erneut.</translation>
 <translation id="7840369537802583269">Erkennung und Wiedergabe wichtiger Medien für eine bestimmte Website</translation>
 <translation id="7846076177841592234">Auswahl aufheben</translation>
 <translation id="7851858861565204677">Andere Geräte</translation>
@@ -559,6 +570,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="8275818695183729150">Zulassen (für Suchanfragen in der Adressleiste)</translation>
 <translation id="8283853025636624853">Synchronisierung mit <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Standard-Tabs</translation>
+<translation id="8372893542064058268">Lässt die Hintergrundsynchronisierung für eine bestimmte Website zu.</translation>
 <translation id="8374821112118309944">TalkBack muss auf eine neuere Version aktualisiert werden.</translation>
 <translation id="8396312449826231789">Nur genehmigte Websites</translation>
 <translation id="8413126021676339697">Gesamtverlauf anzeigen</translation>
@@ -593,6 +605,7 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="8812942424849541387">Funktionsweise unter <ph name="BEGIN_LINK1" />Einstellungen<ph name="END_LINK1" /> verwalten</translation>
 <translation id="8820817407110198400">Lesezeichen</translation>
 <translation id="8829678271838353305"><ph name="ACCOUNT_EMAIL_LAST" /> war zuletzt angemeldet. Wenn Sie sich mit <ph name="ACCOUNT_EMAIL_NEW" /> anmelden, werden synchronisierte Daten wie Lesezeichen in den Konten zusammengeführt. Wenn die Daten nicht zusammengeführt werden sollen, löschen Sie in den <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> die Browserdaten.</translation>
+<translation id="883635517171802338">Anzeige von Pop-ups für Websites blockieren (empfohlen)</translation>
 <translation id="884264119367021077">Versandadresse</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Speicher</translation>
@@ -622,6 +635,7 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="9100610230175265781">Passphrase erforderlich</translation>
 <translation id="9133515669113036225">Anmeldedaten des Geräts zurücksetzen</translation>
 <translation id="9137013805542155359">Original anzeigen</translation>
+<translation id="9139068048179869749">Nachfragen, bevor Websites Benachrichtigungen senden dürfen (empfohlen)</translation>
 <translation id="9141510419986760385">Sie stellen die Kontosynchronisierung von <ph name="FROM_ACCOUNT" /> auf <ph name="TO_ACCOUNT" /> um. Was möchten Sie mit Ihren bestehenden Lesezeichen, Ihrem Verlauf, Ihren Passwörtern und anderen Einstellungen tun?</translation>
 <translation id="917685106653909562">Physical Web-Seiten zu Objekten in der Nähe</translation>
 <translation id="9187199695613236444">Für Mobilgeräte optimierte Ansicht</translation>

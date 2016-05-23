@@ -34,6 +34,7 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="1779766957982586368">Đóng cửa sổ</translation>
 <translation id="1841799852846221389">Đang tắt kết nối từ xa cho máy tính này…</translation>
 <translation id="189172778771606813">Đóng ngăn điều hướng</translation>
+<translation id="1897488610212723051">Xóa</translation>
 <translation id="195619862187186579">Bố cục bàn phím</translation>
 <translation id="1996161829609978754">Chrome đang tải xuống trình cài đặt máy chủ Kết nối từ xa trên Chrome. Sau khi quá trình tải xuống hoàn tất, vui lòng chạy trình cài đặt trước khi tiếp tục.</translation>
 <translation id="2009755455353575666">Không kết nối được</translation>
@@ -122,9 +123,6 @@ trên Chrome</translation>
 <translation id="3950820424414687140">Đăng nhập</translation>
 <translation id="3989511127559254552">Để tiếp tục, trước tiên, bạn phải cấp các quyền truy cập mở rộng cho máy tính của mình. Bạn chỉ phải thực hiện việc này một lần.</translation>
 <translation id="4006787130661126000">Bạn phải bật kết nối từ xa nếu bạn muốn sử dụng Chrome Remote Desktop để truy cập vào máy tính này.</translation>
-<translation id="4028465833180158312">• Bản cập nhật giao diện người dùng thiết kế material design.
-• Tín dụng cấp phép bên thứ ba.
-• Thông tin được hiển thị cho các máy tính từ xa đang ngoại tuyến.</translation>
 <translation id="405887016757208221">Máy tính từ xa đã không khởi tạo được phiên. Nếu sự cố vẫn tiếp diễn, vui lòng thử định cấu hình lại máy chủ.</translation>
 <translation id="4068946408131579958">Tất cả kết nối</translation>
 <translation id="409800995205263688">LƯU Ý: Cài đặt chính sách chỉ cho phép kết nối giữa các máy tính trong mạng của bạn.</translation>
@@ -168,6 +166,7 @@ Remote Desktop</translation>
 <translation id="4985296110227979402">Trước tiên, bạn cần thiết lập máy tính để truy cập từ xa</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (ngoại tuyến)</translation>
 <translation id="5070121137485264635">Máy chủ lưu trữ từ xa yêu cầu bạn xác thực với một trang web của bên thứ ba. Để tiếp tục, bạn phải cấp cho Chrome Remote Desktop thêm quyền truy cập vào địa chỉ sau:</translation>
+<translation id="507204348399810022">Bạn có chắc chắn muốn tắt kết nối từ xa với <ph name="HOSTNAME" /> không?</translation>
 <translation id="5156271271724754543">Vui lòng nhập cùng một mã PIN vào cả hai hộp.</translation>
 <translation id="5168917394043976756">Mở ngăn điều hướng</translation>
 <translation id="5170982930780719864">Id máy chủ không hợp lệ.</translation>

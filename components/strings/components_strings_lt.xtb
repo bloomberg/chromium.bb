@@ -263,6 +263,7 @@
 <translation id="3583757800736429874">&amp;Perkelti dar kartą</translation>
 <translation id="3586931643579894722">Slėpti išsamią informaciją</translation>
 <translation id="3587482841069643663">Visi</translation>
+<translation id="3600246354004376029">„<ph name="TITLE" />“, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3608308818141211642">Programa ir serveris nepalaiko bendrojo SSL protokolo versijos arba šifruotojo programų komplekto. Taip gali nutikti, kai serveriui reikia RC4, kuris nebėra saugus.</translation>
 <translation id="3609138628363401169">Serveris nepalaiko TLS pakartotinių derybų plėtinio.</translation>
 <translation id="362276910939193118">Rodyti visą istoriją</translation>

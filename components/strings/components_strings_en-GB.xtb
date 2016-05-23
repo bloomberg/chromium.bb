@@ -262,6 +262,7 @@
 <translation id="3583757800736429874">&amp;Redo Move</translation>
 <translation id="3586931643579894722">Hide details</translation>
 <translation id="3587482841069643663">All</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3608308818141211642">The client and server don't support a common SSL protocol version or cipher suite. This is likely to be caused when the server needs RC4, which is no longer considered secure.</translation>
 <translation id="3609138628363401169">The server does not support the TLS renegotiation extension.</translation>
 <translation id="362276910939193118">Show Full History</translation>

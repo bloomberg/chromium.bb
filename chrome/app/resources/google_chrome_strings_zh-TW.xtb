@@ -66,6 +66,7 @@
 <translation id="2997147809295888909">Chrome 已驗證這個網站的憑證核發者是 <ph name="ISSUER" />。該伺服器未提供任何 Certificate Transparency 資訊。</translation>
 <translation id="3037838751736561277">Google Chrome 正在背景模式中執行。</translation>
 <translation id="3047079729301751317">解除與 <ph name="USERNAME" /> 的連結將會清除此裝置上已儲存的歷史紀錄、書籤、設定和其他 Chrome 資料。不過，這不會清除 Google 帳戶中儲存的資料，您可以在 <ph name="GOOGLE_DASHBOARD_LINK" />Google 資訊主頁<ph name="END_GOOGLE_DASHBOARD_LINK" />管理這些資料。</translation>
+<translation id="3065168410429928842">Chrome 分頁</translation>
 <translation id="3080151273017101988">Google Chrome 關閉時繼續執行背景應用程式</translation>
 <translation id="3089968997497233615">Google Chrome 推出全新版本，安全性更勝以往。</translation>
 <translation id="3149510190863420837">Chrome 應用程式</translation>

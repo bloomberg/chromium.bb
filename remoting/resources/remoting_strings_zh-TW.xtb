@@ -34,6 +34,7 @@
 <translation id="1779766957982586368">關閉視窗</translation>
 <translation id="1841799852846221389">正在停用這台電腦的遠端連線...</translation>
 <translation id="189172778771606813">關閉導覽匣</translation>
+<translation id="1897488610212723051">刪除</translation>
 <translation id="195619862187186579">鍵盤配置</translation>
 <translation id="1996161829609978754">Chrome 正在下載 Chromoting 主機安裝程式。下載完成後，請先執行安裝程式，然後再繼續操作。</translation>
 <translation id="2009755455353575666">連線失敗</translation>
@@ -122,9 +123,6 @@
 <translation id="3950820424414687140">登入</translation>
 <translation id="3989511127559254552">您必須先授予電腦的延伸存取權限，才能繼續操作 (只需執行一次)。</translation>
 <translation id="4006787130661126000">您必須啟用遠端連線，才能透過 Chrome 遠端桌面存取這台電腦。</translation>
-<translation id="4028465833180158312">• Material Design 使用者介面更新。
-• 第三方授權額度。
-• 顯示離線的遠端電腦資訊。</translation>
 <translation id="405887016757208221">遠端電腦無法初始化工作階段。如果問題持續發生，請嘗試重新設定主機。</translation>
 <translation id="4068946408131579958">所有連線</translation>
 <translation id="409800995205263688">注意：政策設定僅允許您網路中的電腦相互連線。</translation>
@@ -168,6 +166,7 @@
 <translation id="4985296110227979402">您必須先設定電腦，才能執行遠端存取作業。</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (離線)</translation>
 <translation id="5070121137485264635">遠端主機要求您向第三方網站進行驗證。如要繼續，您必須授予額外權限，讓 Chrome 遠端桌面能夠存取這個位址：</translation>
+<translation id="507204348399810022">您確定要停用與「<ph name="HOSTNAME" />」之間的遠端連線嗎？</translation>
 <translation id="5156271271724754543">請在兩個方塊中輸入相同的 PIN。</translation>
 <translation id="5168917394043976756">開啟導覽匣</translation>
 <translation id="5170982930780719864">主機 ID 無效。</translation>

@@ -92,7 +92,6 @@ Kikapcsolásához nyomja meg a Keresés vagy a Shift billentyűt.</translation>
 <translation id="3621712662352432595">Hangbeállítások</translation>
 <translation id="3625258641415618104">Képernyőképek letiltva</translation>
 <translation id="3626281679859535460">Fényerő</translation>
-<translation id="3626637461649818317"><ph name="PERCENTAGE" />% maradt</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME" />: <ph name="ANNOTATION" /></translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> felbontása erre módosult: <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Wi-Fi engedélyezése</translation>
@@ -111,7 +110,6 @@ Kikapcsolásához nyomja meg a Keresés vagy a Shift billentyűt.</translation>
 <translation id="397105322502079400">Számítás…</translation>
 <translation id="3995138139523574647">C típusú USB-vel kompatibilis eszköz (jobb hátsó port)</translation>
 <translation id="4053612967614057854">Képernyő-billentyűzet letiltása</translation>
-<translation id="412065659894267608"><ph name="HOUR" /> ó <ph name="MINUTE" /> p a teljes feltöltésig</translation>
 <translation id="4250680216510889253">Nem</translation>
 <translation id="4279490309300973883">Tükrözés</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -129,7 +127,6 @@ Kikapcsolásához nyomja meg a Keresés vagy a Shift billentyűt.</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">A Google Drive beállításai...</translation>
-<translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> van hátra</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Cast-eszközök állnak rendelkezésre</translation>
 <translation id="5222676887888702881">Kijelentkezés</translation>
@@ -166,7 +163,6 @@ A váltáshoz nyomja meg a Shift + Alt billentyűkódot.</translation>
 <translation id="615957422585914272">A képernyő-billentyűzet megjelenítése</translation>
 <translation id="6165508094623778733">További információ</translation>
 <translation id="6203030746557259519">Virtuális kijelző</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">A kilépéshez nyomja meg kétszer a Ctrl Shift Q billentyűkódot.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> elfordult erre: <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS innen: <ph name="PHONE_NUMBER" /></translation>
@@ -226,7 +222,6 @@ Kikapcsolásához nyomja meg az Alt + Keresés vagy a Shift billentyűt.</transl
 <translation id="8308637677604853869">Előző menü</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" /> bezárása</translation>
 <translation id="8428213095426709021">Beállítások</translation>
-<translation id="8456362689280298700"><ph name="HOUR" />:<ph name="MINUTE" /> a teljes feltöltésig</translation>
 <translation id="8517041960877371778">Előfordulhat, hogy a(z) <ph name="DEVICE_TYPE" /> nem töltődik, amíg be van kapcsolva.</translation>
 <translation id="8528322925433439945">Mobil...</translation>
 <translation id="8673028979667498656">270°</translation>

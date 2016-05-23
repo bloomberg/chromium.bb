@@ -34,6 +34,7 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="1779766957982586368">Fechar janela</translation>
 <translation id="1841799852846221389">Desativando conexões remotas para este computador...</translation>
 <translation id="189172778771606813">Fechar gaveta de navegação</translation>
+<translation id="1897488610212723051">Excluir</translation>
 <translation id="195619862187186579">Layouts de teclado</translation>
 <translation id="1996161829609978754">O Google Chrome está fazendo download do instalador do host do Chromoting. Quando o download estiver concluído, execute o instalador antes de continuar.</translation>
 <translation id="2009755455353575666">Falha na conexão</translation>
@@ -122,9 +123,6 @@ Chromoting</translation>
 <translation id="3950820424414687140">Fazer login</translation>
 <translation id="3989511127559254552">Para continuar, é necessário conceder permissões de acesso estendidas ao seu computador. Você só precisará fazer isso uma vez.</translation>
 <translation id="4006787130661126000">Ative conexões remotas se desejar usar a Área de trabalho remota do Google Chrome para acessar este computador.</translation>
-<translation id="4028465833180158312">• Atualizações da IU material de design.
-• Créditos de licenciamento de terceiros.
-• Informações exibidas para computadores remotos que estão off-line.</translation>
 <translation id="405887016757208221">O computador remoto apresentou uma falha ao inicializar a sessão. Se o problema persistir, tente configurar o host novamente.</translation>
 <translation id="4068946408131579958">Todas as conexões</translation>
 <translation id="409800995205263688">OBSERVAÇÃO: as configurações da política permitem conexão apenas entre computadores em sua rede.</translation>
@@ -168,6 +166,7 @@ remota do Google Chrome</translation>
 <translation id="4985296110227979402">Primeiro, é necessário configurar seu computador para acesso remoto.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (off-line)</translation>
 <translation id="5070121137485264635">O host remoto requer a autenticação em um website de terceiros. Para continuar, você deve conceder à Área de trabalho remota do Google Chrome acesso a permissões adicionais para acessar este endereço:</translation>
+<translation id="507204348399810022">Tem certeza de que deseja desativar conexões remotas para <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Digite o mesmo PIN nas duas caixas.</translation>
 <translation id="5168917394043976756">Abrir gaveta de navegação</translation>
 <translation id="5170982930780719864">ID de host inválido.</translation>

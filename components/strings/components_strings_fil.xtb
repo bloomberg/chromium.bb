@@ -262,6 +262,7 @@
 <translation id="3583757800736429874">&amp;Gawing Muli ang Paglilipat</translation>
 <translation id="3586931643579894722">Magtago ng mga detalye</translation>
 <translation id="3587482841069643663">Lahat</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3608308818141211642">Hindi sumusuporta ng pangkaraniwang bersyon o cipher suite ng SSL protocol ang client at server. Karaniwan itong nangyayari kapag kailangan ng server ng RC4 na hindi na itinuturing na ligtas.</translation>
 <translation id="3609138628363401169">Hindi sinusuportahan ng server ang extension ng muling pagsasaayos ng TLS.</translation>
 <translation id="362276910939193118">Ipakita ang Buong History</translation>

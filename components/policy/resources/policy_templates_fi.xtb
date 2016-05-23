@@ -2075,23 +2075,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8587229956764455752">Salli uusien käyttäjätilien luominen</translation>
 <translation id="8614804915612153606">Poistaa automaattisen päivityksen käytöstä</translation>
 <translation id="8631434304112909927">versioon <ph name="UNTIL_VERSION" /> saakka</translation>
-<translation id="863712305404093038">Estää luettelossa olevien URL-osoitteiden käytön.
-
-      Tämä käytäntö estää käyttäjää lataamasta mustalle listalle merkityistä URL-osoitteista. Mustalle listalle merkitään URL-osoitemallit, joiden perusteella URL-osoitteita kielletään.
-
-      URL-osoitemalli voi olla paikallisiin tiedostoihin viittaava tai yleinen URL-osoitemalli. Paikallisiin tiedostoihin viittaavat mallit ovat muotoa file://polku, jossa polku on estettävä absoluuttinen polku. Esto koskee tiedostojärjestelmän kaikkia sijainteja, jotka alkavat kyseisellä polulla.
-
-      Yleinen URL-osoitemalli on muotoa protokolla://isäntä:portti/polku.
-      Esto koskee vain määriteltyä protokollaa. Jos protokolla://-alkuosaa ei määritellä, esto koskee kaikkia protokollia.
-      Isäntä on pakollinen määrite, ja se voi olla isäntänimi tai IP-osoite. Esto koskee myös merkityn isäntänimen aliverkkotunnuksia. Aliverkkotunnusten esto voidaan kiertää merkitsemällä isäntänimen alkuun piste (.). Jos isäntänimeksi merkitään tähti (*), esto koskee kaikkia isäntänimiä.
-      Portti on valinnainen määrite. Se voi olla mikä tahansa kelvollinen portti väliltä 1 – 65 535. Jos porttia ei määritetä, esto koskee kaikkia portteja.
-      Polku on valinnainen määrite. Jos se merkitään, esto koskee vain sijainteja, jotka alkavat annetulla polulla.
-
-      Poikkeuksia on mahdollista merkitä sallittujen URL-osoitteiden luettelossa. Käytännössä huomioidaan vain 1 000 ensimmäistä merkintää.
-
-      Sisäisten, ”chrome://*”-alkuisten URL-osoitteiden estämistä ei suositella. Tällainen esto voi johtaa odottamattomiin virheisiin.
-
-      Jos tätä käytäntöä ei aseteta, selaimessa ei estetä minkään URL-osoitteiden lataamista.</translation>
 <translation id="8649763579836720255">Chrome-käyttöjärjestelmää käyttävät laitteet voivat käyttää etävahvistusta (vahvistetut käyttöoikeudet), jotta saavat Chrome-käyttöjärjestelmän CA:n lähettämän todistuksen, joka vahvistaa, että laitteella voi toistaa suojattua sisältöä. Tähän prosessiin kuuluu laitteistosuositusten lähettäminen Chrome-käyttöjärjestelmän CA:lle, joka tunnistaa jokaisen yksittäisen laitteen.
 
           Jos tämän asetuksen arvoksi on asetettu epätosi, laite ei käytä etävahvistusta sisällön suojaamiseen eikä laite välttämättä voi toistaa suojattua sisältöä.

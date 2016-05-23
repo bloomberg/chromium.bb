@@ -262,6 +262,7 @@
 <translation id="3583757800736429874">&amp;Toista siirto</translation>
 <translation id="3586931643579894722">Piilota lisätiedot</translation>
 <translation id="3587482841069643663">Kaikki</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3608308818141211642">Asiakas ja palvelin eivät tue samaa SSL-protokollaversiota tai salaustekniikkaa. Palvelin edellyttää luultavasti RC4:ää, jota ei enää pidetä turvallisena.</translation>
 <translation id="3609138628363401169">Palvelin ei tue TLS-edelleensiirto-laajennusta</translation>
 <translation id="362276910939193118">Näytä koko selaushistoria</translation>

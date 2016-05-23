@@ -34,6 +34,7 @@ Jei reikia informacijos apie privatumą, žr. „Google“ privatumo politiką (
 <translation id="1779766957982586368">Uždaryti langą</translation>
 <translation id="1841799852846221389">Neleidžiamas nuotolinis ryšys šiame kompiuteryje…</translation>
 <translation id="189172778771606813">Uždaryti naršymo skydelį</translation>
+<translation id="1897488610212723051">Ištrinti</translation>
 <translation id="195619862187186579">Klaviatūros išdėstymai</translation>
 <translation id="1996161829609978754">„Chrome“ atsisiunčiama „Chrome“ nuotolinio ryšio prieglobos diegimo programa. Kai atsisiuntimas bus baigtas, prieš tęsdami paleiskite ją.</translation>
 <translation id="2009755455353575666">Nepavyko užmegzti ryšio</translation>
@@ -122,9 +123,6 @@ priegloba</translation>
 <translation id="3950820424414687140">Prisijungti</translation>
 <translation id="3989511127559254552">Jei norite tęsti, pirmiausia turite suteikti išplėstinės prieigos prie kompiuterio leidimus. Tai reikės atlikti tik vieną kartą.</translation>
 <translation id="4006787130661126000">Jei norite naudoti „Chrome“ nuotolinį kompiuterio valdymą šiam kompiuteriui pasiekti, turite įgalinti nuotolinį ryšį.</translation>
-<translation id="4028465833180158312">• Trimačių objektų dizaino NS naujiniai.
-• Trečiosios šalies licencijavimo kreditai.
-• Rodoma nuotolinių kompiuterių, kurie neprijungti prie interneto, informacija.</translation>
 <translation id="405887016757208221">Nuotoliniam kompiuteriui nepavyko inicijuoti sesijos. Jei problema išlieka, pabandykite dar kartą sukonfigūruoti prieglobą.</translation>
 <translation id="4068946408131579958">Visi ryšiai</translation>
 <translation id="409800995205263688">PASTABA: pagal politikos nustatymus leidžiama užmegzti ryšį tik tarp tinkle esančių kompiuterių.</translation>
@@ -168,6 +166,7 @@ valdymo priegloba</translation>
 <translation id="4985296110227979402">Pirmiausia turite nustatyti nuotolinę kompiuterio prieigą</translation>
 <translation id="5064360042339518108">„<ph name="HOSTNAME" />“ (neprisijungta)</translation>
 <translation id="5070121137485264635">Nuotolinė priegloba reikalauja autentifikuoti trečiosios šalies svetainę. Jei norite tęsti, turite suteikti „Chrome“ nuotolinio kompiuterio valdymo programai papildomas teises pasiekti šį adresą</translation>
+<translation id="507204348399810022">Ar tikrai norite išjungti nuotolinį ryšį su „<ph name="HOSTNAME" />“?</translation>
 <translation id="5156271271724754543">Įveskite tą patį PIN kodą abiejuose laukeliuose.</translation>
 <translation id="5168917394043976756">Atidaryti naršymo skydelį</translation>
 <translation id="5170982930780719864">Netinkamas prieglobos ID.</translation>

@@ -2236,23 +2236,6 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 <translation id="8587229956764455752">Povoliť vytváranie nových používateľských účtov</translation>
 <translation id="8614804915612153606">Zakáže automatickú aktualizáciu</translation>
 <translation id="8631434304112909927">po verziu <ph name="UNTIL_VERSION" /></translation>
-<translation id="863712305404093038">Blokuje prístup k webovým adresám uvedeným v zozname.
-
-      Toto pravidlo bráni používateľom načítať webové stránky zo zoznamu zakázaných webových adries. Zoznam zakázaných položiek obsahuje vzory webových adries. Tie určujú, ktoré webové adresy budú zakázané.
-
-      Každý vzor webovej adresy môže byť buď vzorom pre miestne súbory, alebo všeobecným vzorom pre webové adresy. Vzory miestnych súborov sú vo formáte file://cesta. Ak chcete zablokovať prístup, cesta musí byť absolútna. Všetky umiestnenia v systéme súborov s touto predponou budú zablokované.
-
-      Všeobecný vzor webovej adresy má formát schéma://hostiteľ:port/cesta.
-      Ak je určená schéma dostupná, bude zablokovaná iba ona. Ak nie je určená predpona schéma://, budú blokované všetky schémy.
-      Hostiteľ sa vyžaduje a môže ísť o názov hostiteľa alebo adresu IP. Blokované budú aj subdomény názvu hostiteľa. Ak chcete zabrániť blokovaniu subdomén, zadajte pred názov hostiteľa bodku „.“. Špeciálny názov hostiteľa „*“ zablokuje všetky domény.
-      Ako port je možné zvoliť platné číslo portu v rozpätí od 1 do 65535. Ak to nie je bližšie určené, blokované budú všetky porty.
-      Ak je určená voliteľná cesta, budú blokované iba cesty s príslušnou predponou.
-
-      Výnimky môžu byť definované v pravidle zoznamu povolených webových adries.Počet záznamov v týchto pravidlách je obmedzený na 1 000. Všetky ďalšie záznamy sa budú ignorovať.
-
-      Upozorňujeme, že sa neodporúča blokovať interné webové adresy „chrome://*“, pretože by to mohlo viesť k neočakávaným chybám.
-
-      Ak toto pravidlo nebude nastavené, nebude v prehliadači zakázaná žiadna webová adresa.</translation>
 <translation id="8649763579836720255">Zariadenia OS Chrome môžu používať vzdialené overenie (overený prístup) na získanie certifikátu vydaného certifikačnou autoritou OS Chrome, ktorý potvrdzuje, že zariadenie môže prehrávať chránený obsah. Tento proces zahrnuje odoslanie informácií o hardvére certifikačnej autorite OS Chrome, ktoré dané zariadenie jedinečne identifikujú.
 
           Ak je toto nastavenie nastavené na hodnotu False, dané zariadenie nepoužije vzdialené overenie na ochranu obsahu a pravdepodobne nebude môcť prehrávať chránený obsah.

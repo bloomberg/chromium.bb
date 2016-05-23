@@ -2098,23 +2098,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="8587229956764455752">Permite crearea de noi conturi de utilizator</translation>
 <translation id="8614804915612153606">Dezactivează actualizarea automată</translation>
 <translation id="8631434304112909927">până la versiunea <ph name="UNTIL_VERSION" /></translation>
-<translation id="863712305404093038">Blochează accesul la adresele URL incluse în listă.
-
-      Politica împiedică utilizatorul să încarce pagini web de la adresele URL incluse în lista neagră. Lista neagră este o listă cu șabloane de adrese URL care indică ce adrese URL vor fi adăugate în lista neagră.
-
-      Fiecare șablon de adrese URL poate fi un șablon pentru fișierele locale sau un șablon de adrese URL generic. Șabloanele pentru fișierele locale au formatul „file://path”, în care „path” trebuie să fie o cale absolută de blocat. Toate locațiile sistemului de fișiere pentru care acea cale este un prefix vor fi blocate.
-
-      Un șablon de adrese URL generic are formatul „scheme://host:port/path”.
-      Dacă există, numai schema specificată va fi blocată. Dacă prefixul scheme:// nu este specificat, toate schemele sunt blocate.
-      Gazda este obligatorie și poate fi un nume de gazdă sau o adresă IP. Subdomeniile unui nume de gazdă vor fi, de asemenea, blocate. Pentru a împiedica blocarea subdomeniilor, include un semn „.” înaintea numelui de gazdă. Numele de gazdă special „*” va bloca toate domeniile.
-      Portul opțional este un număr de port valid, de la 1 la 65535. Dacă nu este specificat niciun număr, toate porturile vor fi blocate.
-      Dacă este specificată calea opțională, numai căile cu acel prefix vor fi blocate.
-
-      Excepțiile pot fi definite în politica privind lista albă de adrese URL. Aceste politici sunt limitate la 1.000 de intrări. Intrările suplimentare vor fi ignorate.
-
-      Reține că nu este recomandat să blochezi adresele URL interne de tipul „chrome://*”, deoarece pot rezulta erori neașteptate.
-
-      Dacă această politică nu este configurată, în browser nu va fi adăugată nicio adresă URL în lista neagră.</translation>
 <translation id="8649763579836720255">Dispozitivele care rulează sistemul de operare Chrome pot utiliza atestarea de la distanță (Acces verificat) pentru a obține un certificat emis de Autoritatea de certificare a sistemului de operare Chrome, care confirmă că dispozitivul este eligibil pentru a reda conținut protejat. Acest proces presupune trimiterea informațiilor privind garantarea hardware-ului la Autoritatea de certificare a sistemului de operare Chrome, care identifică în mod unic dispozitivul.
 
           Dacă setarea nu este activată, dispozitivul nu va utiliza atestarea de la distanță pentru protejarea conținutului, iar dispozitivul nu va putea reda conținutul protejat.

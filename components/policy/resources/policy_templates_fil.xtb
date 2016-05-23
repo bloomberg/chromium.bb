@@ -2255,23 +2255,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8587229956764455752">Payagan ang paglikha ng mga bagong user account</translation>
 <translation id="8614804915612153606">Hindi Pinapagana ang Awtomatikong Pag-update</translation>
 <translation id="8631434304112909927">hanggang bersyon <ph name="UNTIL_VERSION" /></translation>
-<translation id="863712305404093038">Nagba-block ng access sa mga nakalistang URL.
-
-      Pinipigilan ng patakarang ito ang user na mag-load ng mga web page mula sa mga na-blacklist na URL. Nagbibigay ang blacklist ng isang listahan ng mga pattern ng URL, na tinutukoy ang mga iba-blacklist na URL.
-
-      Ang bawat pattern ng URL ay maaaring maging isang pattern para sa mga lokal na file o isang karaniwang pattern ng URL. Nasa format na 'file://path' ang mga pattern ng lokal na file, kung saan dapat i-block ang path na isang ganap na path. Iba-block ang lahat ng lokasyon ng file system kung saan ginagamit na prefix ang nabanggit na path.
-
-      May format na 'scheme://host:port/path' ang isang karaniwang pattern ng URL.
-      Kung mayroon, tanging ang tutukuying scheme lang ang iba-block. Kung hindi tutukuyin ang scheme:// na prefix, iba-block ang lahat ng scheme.
-      Kinakailangan ng host, at maaari itong maging isang hostname o IP address. Iba-block din ang mga subdomain ng isang hostname. Upang hindi ma-block ang mga subdomain, maglagay ng '.' bago ang hostname. Iba-block ng espesyal na hostname na '*' ang lahat ng domain.
-      Ang opsyonal na port ay isang wastong port number na nasa pagitan ng 1 at 65535. Kung walang tutukuyin, iba-block ang lahat ng port.
-      Kung tutukuyin ang opsyonal na path, ang mga path lang na gumagamit sa nabanggit na prefix ang iba-block.
-
-      Maaaring ilarawan ang mga exception sa patakaran sa pag-whitelist ng URL. Hanggang 1000 entry lang ang mga patakarang ito; babalewalain ang mga susunod na entry.
-
-      Tandaang hindi inirerekomendang i-block ang mga internal na 'chrome://*' na URL, dahil maaaring magresulta ang mga ito sa mga hindi inaasahang error.
-
-      Kung hindi itatakda ang patakarang ito, walang iba-blacklist na URL sa browser.</translation>
 <translation id="8649763579836720255">Ang mga Chrome OS device ay maaaring gumamit ng malayuang attestation (Verified Access) upang kumuha ng certificate na ibinibigay ng Chrome OS CA na ihinahayag na karapat-dapat ang device na mag-play ng pinoprotektahang nilalaman.  Kabilang sa prosesong ito ang pagpapadala ng impormasyon sa pag-endorso sa hardware sa Chrome OS CA na natatanging tumutukoy sa device.
 
           Kung false ang setting na ito, hindi gagamit ng malayuang attestation ang device para sa pagprotekta sa nilalaman at maaaring hindi makapag-play ang device ng pinoprotektahang nilalaman.

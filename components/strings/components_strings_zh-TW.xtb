@@ -262,6 +262,7 @@
 <translation id="3583757800736429874">重做移動(&amp;R)</translation>
 <translation id="3586931643579894722">隱藏詳細資訊</translation>
 <translation id="3587482841069643663">[全部]</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />，<ph name="DOMAIN" />，<ph name="TIME" /></translation>
 <translation id="3608308818141211642">用戶端和伺服器不支援通用 SSL 通訊協定版本或加密套件。這可能是因為系統判定伺服器所需的 RC4 不安全。</translation>
 <translation id="3609138628363401169">伺服器並不支援 TLS 重新交涉擴充功能。</translation>
 <translation id="362276910939193118">顯示完整記錄</translation>

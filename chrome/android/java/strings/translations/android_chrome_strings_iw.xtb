@@ -129,6 +129,7 @@
 <translation id="257931822824936280">מורחב - לחץ כדי לכווץ.</translation>
 <translation id="2587052924345400782">יש גרסה חדשה יותר</translation>
 <translation id="2593272815202181319">רוחב אחיד</translation>
+<translation id="2621115761605608342">‏אפשר JavaScript לאתר ספציפי.</translation>
 <translation id="2646820313617290661">ההורים שלך עוזרים בניהול ההגדרות האלה.</translation>
 <translation id="2653659639078652383">שלח</translation>
 <translation id="2677748264148917807">צא</translation>
@@ -152,6 +153,7 @@
 <translation id="2903493209154104877">כתובות</translation>
 <translation id="2913331724188855103">‏התר לאתרים לשמור ולקרוא נתונים של קובצי Cookie (מומלץ)</translation>
 <translation id="2956410042958133412">החשבון הזה מנוהל על ידי <ph name="PARENT_NAME_1" /> ו-<ph name="PARENT_NAME_2" />.</translation>
+<translation id="2959609938957585241">‏כדי לקבל את הכרטיסיות מהמכשירים האחרים שלך, הפעל את האפשרות 'סנכרון אוטומטי של נתונים' בהגדרות של חשבון Android.</translation>
 <translation id="2960796085439532066">‏זכויות יוצרים <ph name="YEAR" /> Google Inc. כל הזכויות שמורות.</translation>
 <translation id="2968755619301702150">מציג האישורים</translation>
 <translation id="2996291259634659425">יצירת ביטוי סיסמה</translation>
@@ -188,6 +190,7 @@
 
 אתה נכנס לחשבון מנוהל, ונותן למנהל המערכת שליטה על פרופיל Chrome שלך. נתוני Chrome שלך ייקשרו באופן קבוע לחשבון הזה. התנתקות מהחשבון הזה תמחק את נתוני Chrome המקומיים.</translation>
 <translation id="3384347053049321195">שתף תמונה</translation>
+<translation id="3386292677130313581">שאל לפני שתאפשר לאתרים לדעת מה המיקום שלך (מומלץ)</translation>
 <translation id="3387650086002190359">הורדת <ph name="FILE_NAME" /> נכשלה עקב שגיאות במערכת הקבצים.</translation>
 <translation id="3414952576877147120">גודל:</translation>
 <translation id="3435896845095436175">הפעל</translation>
@@ -240,6 +243,7 @@
 <translation id="4254813446494774748">שפת התרגום:</translation>
 <translation id="4256782883801055595">רישיונות קוד פתוח</translation>
 <translation id="4259722352634471385">הניווט חסום: <ph name="URL" /></translation>
+<translation id="4262028915562328938">אירעה שגיאת סנכרון, הקש כדי לקבל פרטים.</translation>
 <translation id="4269820728363426813">העתק כתובת של קישור</translation>
 <translation id="4271185234001491831">אל תתרגם <ph name="LANGUAGE" /> אף פעם</translation>
 <translation id="4275663329226226506">מדיה</translation>
@@ -254,6 +258,7 @@
 <translation id="4440256989292146959">לגלוש יותר, לשלם פחות</translation>
 <translation id="4452548195519783679">התווסף לסימניות ב-<ph name="FOLDER_NAME" /></translation>
 <translation id="4457399174246232812">מעתה ואילך, דפים בקרבת מקום באינטרנט הווירטופיזי יופיע ברשימת ההתראות</translation>
+<translation id="4479647676395637221">שאל תחילה לפני שתאפשר לאתרים להשתמש במצלמה שלך (מומלץ)</translation>
 <translation id="4498934959426056365">יצירת מפתחות</translation>
 <translation id="4508440807153586353">‏רק מי שיודע את ביטוי הסיסמה שלך יכול לקרוא את הנתונים המוצפנים. ביטוי הסיסמה לא נשלח אל Google והיא אינה מאחסנת אותו. אם תשכח את ביטוי הסיסמה או אם תרצה לשנות את ההגדרה הזו, יהיה עליך לאפס את הסינכרון. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{לפני יום}two{לפני יומיים}many{לפני # ימים}other{לפני # ימים}}</translation>
@@ -323,6 +328,7 @@
 <translation id="5317780077021120954">שמור</translation>
 <translation id="5324858694974489420">הגדרות הורים</translation>
 <translation id="5327248766486351172">שם</translation>
+<translation id="5335288049665977812">‏אפשר לאתרים להריץ JavaScript (מומלץ)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> נמחק</translation>
 <translation id="5345083863238459644">הגישה למיקום <ph name="BEGIN_LINK" />כבויה גם בשביל המכשיר הזה<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">לעולם אל תשלח</translation>
@@ -368,6 +374,7 @@
 <translation id="585027516397408832">‏חוסך הנתונים (Data Saver) מופעל</translation>
 <translation id="5860033963881614850">כבוי</translation>
 <translation id="5869522115854928033">סיסמאות שמורות</translation>
+<translation id="588563574323093535">שאל תחילה לפני שתאפשר לאתרים לעבור למסך מלא (מומלץ)</translation>
 <translation id="5899349522111170522">צור קובץ חדש</translation>
 <translation id="5902828464777634901">‏כל הנתונים המקומיים המאוחסנים על ידי האתר הזה יימחקו, כולל קובצי Cookie.</translation>
 <translation id="5911030830365207728">Google Translate</translation>
@@ -392,6 +399,7 @@
 <translation id="6140912465461743537">ארץ/אזור</translation>
 <translation id="6159335304067198720">חיסכון בצריכת נתונים בשיעור של <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
+<translation id="6181444274883918285">הוסף חריג של אתר</translation>
 <translation id="6192792657125177640">יוצאי דופן</translation>
 <translation id="6232535412751077445">אם תפעיל את התכונה 'אל תעקוב', בקשה זו תיכלל בתנועת הגלישה שלך. השפעת הבקשה תלויה באופן הפעולה של כל אתר - אם הוא מגיב לבקשה או לא, וכיצד הוא מפרש אותה.
 
@@ -427,6 +435,7 @@
 <translation id="6627583120233659107">ערוך תיקיה</translation>
 <translation id="6647073004883890710">האם אתה רוצה ש-<ph name="PASSWORD_MANAGER_BRAND" /> יעדכן את הסיסמה של <ph name="USERNAME" /> באתר הזה?</translation>
 <translation id="6656545060687952787">‏כדי לבצע סריקה לאיתור מכשירים ב-Chrome, יש צורך בגישה לנתוני מיקום. <ph name="BEGIN_LINK" />עדכן הרשאות<ph name="END_LINK" /></translation>
+<translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">השתמש בשירות חיזוי כדי להציג שאילתות קשורות ואתרים פופולריים תוך כדי ההקלדה בסרגל הכתובות</translation>
 <translation id="666981079809192359">‏הודעת הפרטיות של Chrome</translation>
 <translation id="6698801883190606802">נהל נתונים מסונכרנים</translation>
@@ -453,6 +462,7 @@
 <translation id="6981982820502123353">נגישות</translation>
 <translation id="6990079615885386641">‏קבל את האפליקציה מחנות Google Play‏: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">‏דווח אוטומטית ל-Google על פרטים של בעיות אבטחה אפשריות</translation>
+<translation id="6992289844737586249">שאל תחילה לפני שתאפשר לאתרים להשתמש במיקרופון (מומלץ)</translation>
 <translation id="6999892069268112724">‏אישור חשבון Google</translation>
 <translation id="7021515813996758557">הורדת הקובץ <ph name="FILE_NAME" /> בוצעה</translation>
 <translation id="7022756207310403729">פתיחה בדפדפן</translation>
@@ -515,6 +525,7 @@
 <translation id="7682287625158474539">משלוח</translation>
 <translation id="7690588279513156836">טען אתר מקורי</translation>
 <translation id="771135159654932189">ראה מה נמצא בקרבת מקום</translation>
+<translation id="7713873128508426081">מותר תמיד</translation>
 <translation id="7764225426217299476">הוסף כתובת</translation>
 <translation id="7765158879357617694">העבר</translation>
 <translation id="7772032839648071052">אשר משפט-סיסמה</translation>
@@ -559,6 +570,7 @@
 <translation id="8275818695183729150">התר (בשביל חיפושים בסרגל הכתובות)</translation>
 <translation id="8283853025636624853">מסנכרן עם <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">כרטיסיות רגילות</translation>
+<translation id="8372893542064058268">אפשר סנכרון ברקע לאתר ספציפי.</translation>
 <translation id="8374821112118309944">‏עליך לעדכן את TalkBack לגרסה חדשה יותר.</translation>
 <translation id="8396312449826231789">רק אתרים שאושרו</translation>
 <translation id="8413126021676339697">הצג את ההיסטוריה המלאה</translation>
@@ -591,6 +603,7 @@
 <translation id="8812942424849541387">קבע ב<ph name="BEGIN_LINK1" />הגדרות<ph name="END_LINK1" /> כיצד זה פועל</translation>
 <translation id="8820817407110198400">סימניות</translation>
 <translation id="8829678271838353305">בוצעה כניסה לחשבון עם <ph name="ACCOUNT_EMAIL_LAST" />. כניסה עם <ph name="ACCOUNT_EMAIL_NEW" /> תמזג נתונים מסונכרנים בין החשבונות, כמו סימניות. כדי לשמור על הפרדת המידע, נקה את נתוני הגלישה ב<ph name="BEGIN_LINK" />הגדרות<ph name="END_LINK" />.</translation>
+<translation id="883635517171802338">חסום הצגת מודעות קופצות באתרים (מומלץ)</translation>
 <translation id="884264119367021077">כתובת למשלוח</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, כרטיסייה</translation>
 <translation id="885701979325669005">אחסון</translation>
@@ -620,6 +633,7 @@
 <translation id="9100610230175265781">יש להזין ביטוי סיסמה</translation>
 <translation id="9133515669113036225">אפס את פרטי הכניסה של המכשיר</translation>
 <translation id="9137013805542155359">הצג מקור</translation>
+<translation id="9139068048179869749">שאל תחילה לפני שתאפשר לאתרים לשלוח הודעות (מומלץ)</translation>
 <translation id="9141510419986760385">אתה מחליף חשבונות סינכרון מ-<ph name="FROM_ACCOUNT" /> ל-<ph name="TO_ACCOUNT" />. מה ברצונך לעשות עם הסימניות, ההיסטוריה, הסיסמאות ושאר ההגדרות הקיימות?</translation>
 <translation id="917685106653909562">דפים של האינטרנט הווירטופיזי בקרבת מקום</translation>
 <translation id="9187199695613236444">תצוגה מותאמת למכשירים ניידים</translation>

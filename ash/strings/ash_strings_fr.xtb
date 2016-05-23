@@ -92,7 +92,6 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="3621712662352432595">Paramètres audio</translation>
 <translation id="3625258641415618104">Captures d'écran désactivées</translation>
 <translation id="3626281679859535460">Luminosité</translation>
-<translation id="3626637461649818317"><ph name="PERCENTAGE" /> % restant(s)</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME" /> : <ph name="ANNOTATION" /></translation>
 <translation id="3683428399328702079">La résolution de l'écran "<ph name="DISPLAY_NAME" />" est désormais définie sur <ph name="RESOLUTION" />.</translation>
 <translation id="370649949373421643">Activer le Wi-Fi</translation>
@@ -111,7 +110,6 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="397105322502079400">Calcul en cours…</translation>
 <translation id="3995138139523574647">Appareil USB de type C (port situé sur la droite de l'appareil, à l'arrière)</translation>
 <translation id="4053612967614057854">Désactiver le clavier à l'écran</translation>
-<translation id="412065659894267608">Encore <ph name="HOUR" /> h <ph name="MINUTE" /> min de chargement</translation>
 <translation id="4250680216510889253">Non</translation>
 <translation id="4279490309300973883">Mise en miroir</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -129,7 +127,6 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Ctrl+Maj+Espace</translation>
 <translation id="5045002648206642691">Paramètres Google Drive…</translation>
-<translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> d'autonomie</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Appareils Cast disponibles</translation>
 <translation id="5222676887888702881">Déconnexion</translation>
@@ -166,7 +163,6 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="615957422585914272">Afficher le clavier à l'écran</translation>
 <translation id="6165508094623778733">En savoir plus</translation>
 <translation id="6203030746557259519">Affichage virtuel</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE" /> %</translation>
 <translation id="6248847161401822652">Pour quitter, appuyez deux fois sur Ctrl+Maj+Q.</translation>
 <translation id="6310121235600822547">L'écran "<ph name="DISPLAY_NAME" />" a effectué une rotation de <ph name="ROTATION" />.</translation>
 <translation id="6359806961507272919">SMS de <ph name="PHONE_NUMBER" /></translation>
@@ -226,7 +222,6 @@ Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
 <translation id="8308637677604853869">Menu précédent</translation>
 <translation id="8356164830168736643">Fermer <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Paramètres</translation>
-<translation id="8456362689280298700"><ph name="HOUR" />:<ph name="MINUTE" /> de chargement</translation>
 <translation id="8517041960877371778">Il est possible que votre appareil <ph name="DEVICE_TYPE" /> ne se recharge pas lorsqu'il est allumé.</translation>
 <translation id="8528322925433439945">Mobile…</translation>
 <translation id="8673028979667498656">270°</translation>

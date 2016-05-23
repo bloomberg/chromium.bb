@@ -34,6 +34,7 @@ Per obtenir informació sobre la privadesa, vegeu la Política de privadesa de G
 <translation id="1779766957982586368">Tanca la finestra</translation>
 <translation id="1841799852846221389">S'estan desactivant les connexions remotes en aquest ordinador...</translation>
 <translation id="189172778771606813">Tanca el tauler de navegació</translation>
+<translation id="1897488610212723051">Suprimeix</translation>
 <translation id="195619862187186579">Dissenys de teclat</translation>
 <translation id="1996161829609978754">Chrome està baixant l'instal·lador de l'amfitrió de Chromoting. Quan s'hagi completat la baixada, executeu l'instal·lador abans de continuar.</translation>
 <translation id="2009755455353575666">S'ha produït un error en la connexió</translation>
@@ -119,12 +120,9 @@ Host</translation>
 <translation id="3908017899227008678">Redueix per ajustar</translation>
 <translation id="3931191050278863510">S'ha aturat l'amfitrió.</translation>
 <translation id="3933246213702324812">Chromoting a <ph name="HOSTNAME" /> és obsolet i cal actualitzar-lo.</translation>
-<translation id="3950820424414687140">Inici de sessió</translation>
+<translation id="3950820424414687140">Inicia la sessió</translation>
 <translation id="3989511127559254552">Per continuar heu de concedir permisos d'accés ampliat a l'ordinador. Només ho heu de fer una vegada.</translation>
 <translation id="4006787130661126000">Heu d'activar les connexions remotes si voleu utilitzar l'escriptori remot de Chrome per accedir a aquest ordinador.</translation>
-<translation id="4028465833180158312">• Actualitzacions a la interfície de material design.
-• Atribució de llicències de tercers.
-• Es mostra informació per als ordinadors remots que no tenen connexió.</translation>
 <translation id="405887016757208221">L'ordinador remot no ha pogut inicialitzar la sessió. Si el problema continua, torneu a configurar l'amfitrió.</translation>
 <translation id="4068946408131579958">Totes les connexions</translation>
 <translation id="409800995205263688">NOTA: La configuració de la política només permet connexions entre ordinadors de la vostra xarxa.</translation>
@@ -168,6 +166,7 @@ remot de Chrome</translation>
 <translation id="4985296110227979402">Primer heu de configurar l'accés remot al vostre ordinador.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (fora de línia)</translation>
 <translation id="5070121137485264635">L'amfitrió remot necessita que us autentiqueu en un lloc web de tercers. Per continuar, cal que concediu permisos addicionals a l'escriptori remot de Chrome per accedir a aquesta adreça:</translation>
+<translation id="507204348399810022">Confirmeu que voleu desactivar les connexions remotes a <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Introduïu el mateix PIN als dos quadres.</translation>
 <translation id="5168917394043976756">Obre el tauler de navegació</translation>
 <translation id="5170982930780719864">L'identificador de l'amfitrió no és vàlid.</translation>

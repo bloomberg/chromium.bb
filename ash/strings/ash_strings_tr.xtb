@@ -92,7 +92,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="3621712662352432595">Ses Ayarları</translation>
 <translation id="3625258641415618104">Ekran görüntüleri devre dışı</translation>
 <translation id="3626281679859535460">Parlaklık</translation>
-<translation id="3626637461649818317">%<ph name="PERCENTAGE" /> kaldı</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME" />: <ph name="ANNOTATION" /></translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> çözünürlüğü <ph name="RESOLUTION" /> olarak değiştirildi</translation>
 <translation id="370649949373421643">Kablosuzu Etkinleştir</translation>
@@ -111,7 +110,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="397105322502079400">Hesaplanııyor...</translation>
 <translation id="3995138139523574647">USB-C cihaz (sağ arka bağlantı noktası)</translation>
 <translation id="4053612967614057854">Ekran klavyesini devre dışı bırak</translation>
-<translation id="412065659894267608">Tam dolana kadar <ph name="HOUR" /> sa <ph name="MINUTE" /> dk var</translation>
 <translation id="4250680216510889253">Hayır</translation>
 <translation id="4279490309300973883">Yansıtılıyor</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -129,7 +127,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Ctrl+Üst Karakter+Boşluk</translation>
 <translation id="5045002648206642691">Google Drive ayarları...</translation>
-<translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> kaldı</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Yayın cihazları kullanılabilir</translation>
 <translation id="5222676887888702881">Çıkış</translation>
@@ -167,7 +164,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="615957422585914272">Dokunmatik klavyeyi göster</translation>
 <translation id="6165508094623778733">Daha fazla bilgi edinin</translation>
 <translation id="6203030746557259519">Sanal Görüntü</translation>
-<translation id="6247708409970142803">%<ph name="PERCENTAGE" /></translation>
 <translation id="6248847161401822652">Çıkmak için Ctrl+ÜstKrktr+Q tuşlarına iki kez basın.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> dönme ayarı <ph name="ROTATION" /> olarak değiştirildi</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" /> numaradan SMS alındı</translation>
@@ -227,7 +223,6 @@ Devre dışı bırakmak için Ctrl+Alt+Z tuşlarına basın.</translation>
 <translation id="8308637677604853869">Önceki menü</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" /> penceresini kapat</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
-<translation id="8456362689280298700">Dolması için gereken süre: <ph name="HOUR" />:<ph name="MINUTE" /> </translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> cihazınız açıkken şarj olmayabilir.</translation>
 <translation id="8528322925433439945">Mobile...</translation>
 <translation id="8673028979667498656">270°</translation>

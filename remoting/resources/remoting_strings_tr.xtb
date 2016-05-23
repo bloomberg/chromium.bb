@@ -34,6 +34,7 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="1779766957982586368">Pencereyi kapat</translation>
 <translation id="1841799852846221389">Bu bilgisayara uzaktan bağlantılar devre dışı bırakılıyor…</translation>
 <translation id="189172778771606813">Gezinme çekmecesini kapat</translation>
+<translation id="1897488610212723051">Sil</translation>
 <translation id="195619862187186579">Klavye düzenleri</translation>
 <translation id="1996161829609978754">Chrome, Chromoting Ana Bilgisayar yükleyicisini indiriyor. İndirme işlemi tamamlandığında, devam etmeden önce lütfen yükleyiciyi çalıştırın.</translation>
 <translation id="2009755455353575666">Bağlantı başarısız oldu</translation>
@@ -122,9 +123,6 @@ Ana Makinesi</translation>
 <translation id="3950820424414687140">Oturum açın</translation>
 <translation id="3989511127559254552">Devam etmek için öncelikle bilgisayarınıza genişletilmiş erişim izinleri vermelisiniz. Bunu yalnızca bir kez yapmanız yeterlidir.</translation>
 <translation id="4006787130661126000">Bu bilgisayara erişmek için Chrome Uzaktan Masaüstü uygulamasını kullanmak istiyorsanız uzaktan bağlantıları etkinleştirmelisiniz.</translation>
-<translation id="4028465833180158312">• Materyal Tasarım kullanıcı arayüzü güncellemeleri.
-• Üçüncü taraf lisanslama kredileri.
-• Çevrimdışı uzak bilgisayarlar için gösterilen bilgiler.</translation>
 <translation id="405887016757208221">Uzak bilgisayar, oturumu ilk kullanıma hazırlayamadı. Sorun devam ederse lütfen ana makineyi tekrar yapılandırmayı deneyin.</translation>
 <translation id="4068946408131579958">Tüm bağlantılar</translation>
 <translation id="409800995205263688">NOT: Politika ayarları, yalnızca ağınızdaki bilgisayarlar arasındaki bağlantılara izin veriyor.</translation>
@@ -168,6 +166,7 @@ Masaüstü Ana Makinesi</translation>
 <translation id="4985296110227979402">İlk olarak bilgisayarınızı uzaktan erişim için ayarlamanız gerekir</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (çevrimdışı)</translation>
 <translation id="5070121137485264635">Uzak ana makine üçüncü taraf bir web sitesine kimlik doğrulama işlemi yapmanızı gerektiriyor. Devam etmek üzere şu adrese erişim için Chrome Uzaktan Masaüstü'ne ek izinler vermelisiniz:</translation>
+<translation id="507204348399810022"><ph name="HOSTNAME" /> adlı ana bilgisayara uzaktan bağlantıları devre dışı bırakmak istediğinizden emin misiniz?</translation>
 <translation id="5156271271724754543">Lütfen her iki kutuya da aynı PIN'i girin.</translation>
 <translation id="5168917394043976756">Gezinme çekmecesini aç</translation>
 <translation id="5170982930780719864">Ana makine kimliği geçersiz.</translation>

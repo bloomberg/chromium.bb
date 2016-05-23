@@ -149,7 +149,7 @@
       z którego pochodzi żądanie. Po znalezieniu odpowiednika dostęp do urządzeń
       rejestrujących wideo jest udzielany na stronach logowania SAML. Jeśli
       odpowiednik nie zostanie znaleziony, następuje automatyczna odmowa
-      dostępu. Wzorce z użyciem symboli wieloznacznych są niedozwolone</translation>
+      dostępu. Wzorce z użyciem symboli wieloznacznych są niedozwolone.</translation>
 <translation id="1655229863189977773">Ustaw rozmiar dyskowej pamięci podręcznej w bajtach</translation>
 <translation id="166427968280387991">Serwer proxy</translation>
 <translation id="1675002386741412210">Obsługiwana przez:</translation>
@@ -2071,23 +2071,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="8587229956764455752">Pozwól na tworzenie nowych kont użytkowników</translation>
 <translation id="8614804915612153606">Wyłącza automatyczne aktualizacje</translation>
 <translation id="8631434304112909927">do wersji <ph name="UNTIL_VERSION" /></translation>
-<translation id="863712305404093038">Blokuje dostęp do określonych adresów URL.
-
-      Ta zasada sprawia, że użytkownik nie może załadować stron internetowych z czarnej listy adresów URL. Czarna lista zawiera wzorce adresów URL, które mają być blokowane.
-
-      Każdy wzorzec adresu URL może odnosić się do plików lokalnych lub ogólnych zasobów URL internetu. Wzorce dla plików lokalnych mają format „plik://ścieżka”, gdzie ścieżka musi być bezwzględnym adresem do zablokowania. Zablokowane zostaną wszystkie lokalizacje plików w systemie, dla których dana ścieżka jest prefiksem.
-
-      Ogólny wzorzec adresu URL ma format „schemat://host:port/ścieżka”.
-      Zostanie zablokowany tylko określony schemat, jeśli został podany. Jeśli prefiks schemat:// nie został określony, zablokowane zostaną wszystkie schematy.
-      Host jest wymagany. Może nim być nazwa hosta lub adres IP. Blokowane będą też subdomeny nazwy hosta. Jeśli nie chcesz, by subdomeny były blokowane, wpisz „.” przed nazwą hosta. Specjalna nazwa hosta „*” blokuje wszystkie domeny.
-      Opcjonalny port to prawidłowy numer portu z zakresu od 1 do 65535. Jeśli go nie wpiszesz, zostaną zablokowane wszystkie porty.
-      W przypadku określenia opcjonalnej ścieżki zablokowane zostaną tylko ścieżki z danym prefiksem.
-
-      Wyjątki można zdefiniować w zasadzie białej listy adresów URL. W zasadach tego typu można podać maksymalnie 1000 pozycji. Pozycje dodane po przekroczeniu tego limitu będą ignorowane.
-
-      Uwaga: nie zalecamy blokowania wewnętrznych adresów URL „chrome://*”, bo w rezultacie mogą wystąpić nieoczekiwane błędy.
-
-      Jeśli ta zasada nie zostanie ustawiona, czarna lista adresów URL w przeglądarce będzie pusta.</translation>
 <translation id="8649763579836720255">Urządzenia z Chrome OS mogą używać zaświadczeń zdalnych (zweryfikowanego dostępu), by uzyskać certyfikat Chrome OS CA, który zaświadcza, że urządzenie jest uprawnione do odtwarzania materiałów chronionych. Ten proces obejmuje wysłanie do Chrome OS CA informacji polecających sprzęt, które jednoznacznie identyfikują urządzenie.
 
           Jeśli w tym ustawieniu wybierzesz wartość Fałsz, urządzenie nie będzie korzystać z zaświadczeń zdalnych do ochrony treści i może nie móc odtwarzać materiałów chronionych.

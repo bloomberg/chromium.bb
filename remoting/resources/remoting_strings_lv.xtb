@@ -34,6 +34,7 @@ Lai saņemtu informāciju par konfidencialitāti, skatiet Google konfidencialit�
 <translation id="1779766957982586368">Aizvērt logu</translation>
 <translation id="1841799852846221389">Notiek attālo savienojumu atspējošana šim datoram…</translation>
 <translation id="189172778771606813">Aizvērt navigācijas atvilktni</translation>
+<translation id="1897488610212723051">Dzēst</translation>
 <translation id="195619862187186579">Tastatūras izkārtojumi</translation>
 <translation id="1996161829609978754">No pārlūka Chrome tiek lejupielādēta Chrome saites saimniekdatoram paredzētā instalēšanas programma. Kad lejupielāde būs pabeigta, lūdzu, vispirms palaidiet instalēšanas programmu.</translation>
 <translation id="2009755455353575666">Savienojuma kļūme</translation>
@@ -122,9 +123,6 @@ saimniekdators</translation>
 <translation id="3950820424414687140">Pierakstīties</translation>
 <translation id="3989511127559254552">Lai turpinātu, jums vispirms ir jāpiešķir paplašinātas piekļuves atļaujas savam datoram. Tas ir jādara tikai vienreiz.</translation>
 <translation id="4006787130661126000">Ja vēlaties piekļūt šim datoram, izmantojot Chrome attālo darbvirsmu, ir jāiespējo attālie savienojumi.</translation>
-<translation id="4028465833180158312">• Lietotāja saskarnes atjauninājumi atbilstoši materiāla dizaina vadlīnijām.
-• Trešās puses licenču attiecinājums.
-• Informācija par attāliem datoriem, kas ir bezsaistē.</translation>
 <translation id="405887016757208221">Attālajam datoram neizdevās inicializēt sesiju. Ja problēma atkārtojas, lūdzu, mēģiniet vēlreiz konfigurēt saimniekdatoru.</translation>
 <translation id="4068946408131579958">Visi savienojumi</translation>
 <translation id="409800995205263688">PIEZĪME. Saskaņā ar politikas iestatījumiem savienojumus ir atļauts veidot tikai starp jūsu tīkla datoriem.</translation>
@@ -168,6 +166,7 @@ darbvirsmas saimniekdators</translation>
 <translation id="4985296110227979402">Vispirms datorā ir jāiestata attālā piekļuve.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (bezsaistē)</translation>
 <translation id="5070121137485264635">Attālajā saimniekdatorā tiek pieprasīts, lai veicat autentificēšanu trešās puses vietnē. Lai turpinātu, jums jāpiešķir Chrome attālajai darbvirsmai papildu atļaujas piekļūt šai adresei:</translation>
+<translation id="507204348399810022">Vai tiešām vēlaties atspējot attālos savienojumus ar saimniekdatoru <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Lūdzu, ievadiet vienu un to pašu PIN abos lodziņos.</translation>
 <translation id="5168917394043976756">Atvērt navigācijas atvilktni</translation>
 <translation id="5170982930780719864">Saimniekdatora ID nav derīgs.</translation>

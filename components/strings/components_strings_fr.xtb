@@ -262,6 +262,7 @@
 <translation id="3583757800736429874">&amp;Rétablir le déplacement</translation>
 <translation id="3586931643579894722">Masquer les détails</translation>
 <translation id="3587482841069643663">Tous</translation>
+<translation id="3600246354004376029">"<ph name="TITLE" />", <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3608308818141211642">Le client et le serveur ne sont pas compatibles avec une version de protocole ou une méthode de chiffrement SSL courante. Le problème se produit généralement lorsque le serveur nécessite un chiffrement RC4, qui n'est plus considéré comme sécurisé.</translation>
 <translation id="3609138628363401169">Le serveur ne prend pas en charge l'extension de renégociation TLS.</translation>
 <translation id="362276910939193118">Afficher l'historique complet</translation>

@@ -252,6 +252,7 @@
 <translation id="3583757800736429874">恢复移动(&amp;R)</translation>
 <translation id="3586931643579894722">隐藏详细信息</translation>
 <translation id="3587482841069643663">全部</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />，<ph name="DOMAIN" />，<ph name="TIME" /></translation>
 <translation id="3608308818141211642">客户端和服务器不支持常用的 SSL 协议版本或加密套件。导致此问题的原因通常是服务器要求使用 RC4，而这种加密方式根据当前标准已不够安全。</translation>
 <translation id="3609138628363401169">服务器不支持 TLS 重新协商修正。</translation>
 <translation id="362276910939193118">显示所有历史记录</translation>
@@ -476,7 +477,7 @@
 <translation id="6328639280570009161">请尝试停用网络联想查询功能</translation>
 <translation id="6337534724793800597">按名称过滤政策</translation>
 <translation id="6342069812937806050">刚刚</translation>
-<translation id="6355080345576803305">覆盖公开会话</translation>
+<translation id="6355080345576803305">覆盖公用自助终端</translation>
 <translation id="6358450015545214790">这分别意味着什么？</translation>
 <translation id="6387478394221739770">想试试超酷的 Chrome 新功能？欢迎访问 chrome.com/beta，试用我们的测试版！</translation>
 <translation id="6391832066170725637">无法找到该文件或目录。</translation>

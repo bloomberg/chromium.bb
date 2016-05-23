@@ -101,7 +101,7 @@
 <translation id="2268044343513325586">优化</translation>
 <translation id="2315043854645842844">操作系统不支持选择客户端证书。</translation>
 <translation id="2321958826496381788">拖动该滑块，将文字调整到适合您阅读的大小。点按两次某段落后，显示的文字至少应是这么大。</translation>
-<translation id="2331464965008647960">附近有设备在通过蓝牙播报网页。当您唤醒自己的设备时，Chrome 将会搜索并显示这些网页。这些网页将经由 Google 服务进行处理，以让网页搜索结果的展示效果更理想。
+<translation id="2331464965008647960">附近有设备在通过蓝牙播报网页。当您唤醒自己的设备时，Chrome 将会搜索并显示这些网页。这些网页将经由 Google 服务进行处理，以让网页搜索结果的品质更理想。
 
 您可以在 Chrome 设置部分中控制实物网。
 
@@ -129,6 +129,7 @@
 <translation id="257931822824936280">已展开 - 点击此处即可收起。</translation>
 <translation id="2587052924345400782">新版本已推出</translation>
 <translation id="2593272815202181319">等宽</translation>
+<translation id="2621115761605608342">允许特定网站运行 JavaScript。</translation>
 <translation id="2646820313617290661">您的家长会协助管理这些设置。</translation>
 <translation id="2653659639078652383">提交</translation>
 <translation id="2677748264148917807">离开</translation>
@@ -152,6 +153,7 @@
 <translation id="2903493209154104877">地址</translation>
 <translation id="2913331724188855103">允许网站保存和读取 Cookie 数据（推荐）</translation>
 <translation id="2956410042958133412">该帐户由 <ph name="PARENT_NAME_1" /> 和 <ph name="PARENT_NAME_2" /> 管理。</translation>
+<translation id="2959609938957585241">要获取您在其他设备上的标签页，请在 Android 帐号设置部分开启“自动同步数据”。</translation>
 <translation id="2960796085439532066">版权所有 <ph name="YEAR" /> Google Inc. 保留所有权利。</translation>
 <translation id="2968755619301702150">证书查看器</translation>
 <translation id="2996291259634659425">创建密码</translation>
@@ -188,6 +190,7 @@
 
 您目前登录的帐户是一个托管帐户，该帐户的管理员将能够控制您的 Chrome 个人资料。您的 Chrome 数据将永远与此帐户相关联。断开与此帐户的关联将删除本地 Chrome 数据。</translation>
 <translation id="3384347053049321195">分享图片</translation>
+<translation id="3386292677130313581">在允许网站获悉您的位置信息前先询问（推荐）</translation>
 <translation id="3387650086002190359">未能成功下载 <ph name="FILE_NAME" />，因为文件系统出现了错误。</translation>
 <translation id="3414952576877147120">大小：</translation>
 <translation id="3435896845095436175">启用</translation>
@@ -240,6 +243,7 @@
 <translation id="4254813446494774748">翻译语言：</translation>
 <translation id="4256782883801055595">开放源代码许可</translation>
 <translation id="4259722352634471385">已屏蔽 <ph name="URL" /></translation>
+<translation id="4262028915562328938">同步时出现错误，点按可了解详情。</translation>
 <translation id="4269820728363426813">复制链接地址</translation>
 <translation id="4271185234001491831">一律不翻译<ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">媒体</translation>
@@ -254,6 +258,7 @@
 <translation id="4440256989292146959">加载更快，流量更省</translation>
 <translation id="4452548195519783679">已将书签添加到“<ph name="FOLDER_NAME" />”</translation>
 <translation id="4457399174246232812">日后附近的“实物网”网页将会显示在您的通知列表中</translation>
+<translation id="4479647676395637221">在允许网站使用您的摄像头前先询问（推荐）</translation>
 <translation id="4498934959426056365">密钥生成</translation>
 <translation id="4508440807153586353">只有知道您密码的人才能读取您的已加密数据。系统不会将该密码发送给 Google，Google 也不会存储该密码。如果您忘记了密码或想更改此设置，则需重置同步设置。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# 天前}other{# 天前}}</translation>
@@ -323,6 +328,7 @@
 <translation id="5317780077021120954">保存</translation>
 <translation id="5324858694974489420">家长设置</translation>
 <translation id="5327248766486351172">名称</translation>
+<translation id="5335288049665977812">允许网站运行 JavaScript（推荐）</translation>
 <translation id="5345040418939504969">已删除“<ph name="BOOKMARK_TITLE" />”</translation>
 <translation id="5345083863238459644"><ph name="BEGIN_LINK" />此设备的位置信息使用权也已被停用<ph name="END_LINK" />。</translation>
 <translation id="5380554235172449987">一律不发送</translation>
@@ -368,6 +374,7 @@
 <translation id="585027516397408832">流量节省程序已启用</translation>
 <translation id="5860033963881614850">关闭</translation>
 <translation id="5869522115854928033">已保存的密码</translation>
+<translation id="588563574323093535">在允许网站进入全屏前先询问（推荐）</translation>
 <translation id="5899349522111170522">创建新文件</translation>
 <translation id="5902828464777634901">该网站存储的所有本地数据（包括 Cookie）都将被删除。</translation>
 <translation id="5911030830365207728">Google 翻译</translation>
@@ -392,6 +399,7 @@
 <translation id="6140912465461743537">国家/地区</translation>
 <translation id="6159335304067198720">节省 <ph name="PERCENT" /> 的数据流量</translation>
 <translation id="6165508094623778733">了解详情</translation>
+<translation id="6181444274883918285">添加例外网站</translation>
 <translation id="6192792657125177640">例外</translation>
 <translation id="6232535412751077445">如果您启用了“不跟踪”，您的浏览流量中将会包含一项请求。具体影响取决于网站是否会回应该请求以及如何解读该请求。
 
@@ -427,6 +435,7 @@
 <translation id="6627583120233659107">修改文件夹</translation>
 <translation id="6647073004883890710">您希望 <ph name="PASSWORD_MANAGER_BRAND" /> 更新 <ph name="USERNAME" /> 用于登录此网站的密码吗？</translation>
 <translation id="6656545060687952787">Chrome 需要拥有位置信息权限才能扫描设备。<ph name="BEGIN_LINK" />更新权限<ph name="END_LINK" /></translation>
+<translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">当您在地址栏中输入查询内容时，使用联想查询服务显示相关查询和热门网站</translation>
 <translation id="666981079809192359">Chrome 隐私权声明</translation>
 <translation id="6698801883190606802">管理已同步的数据</translation>
@@ -453,6 +462,7 @@
 <translation id="6981982820502123353">无障碍</translation>
 <translation id="6990079615885386641">从 Google Play 商店下载应用：<ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">自动向Google报告可能出现的安全事件详情</translation>
+<translation id="6992289844737586249">在允许网站使用您的麦克风前先询问（推荐）</translation>
 <translation id="6999892069268112724">确认 Google 帐户</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> 已下载完毕</translation>
 <translation id="7022756207310403729">在浏览器中打开</translation>
@@ -515,6 +525,7 @@
 <translation id="7682287625158474539">送货地址</translation>
 <translation id="7690588279513156836">加载原始网站</translation>
 <translation id="771135159654932189">查看附近的实物网网址</translation>
+<translation id="7713873128508426081">始终允许</translation>
 <translation id="7764225426217299476">添加地址</translation>
 <translation id="7765158879357617694">移动</translation>
 <translation id="7772032839648071052">确认密码</translation>
@@ -559,6 +570,7 @@
 <translation id="8275818695183729150">允许（针对地址栏搜索）</translation>
 <translation id="8283853025636624853">正在同步到 <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">标准标签页</translation>
+<translation id="8372893542064058268">允许特定网站进行后台同步。</translation>
 <translation id="8374821112118309944">您需要将 TalkBack 更新到更高版本。</translation>
 <translation id="8396312449826231789">只能访问经过批准的网站</translation>
 <translation id="8413126021676339697">显示全部历史记录</translation>
@@ -593,6 +605,7 @@
 <translation id="8812942424849541387">您可以转到<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />控制该功能的运行方式</translation>
 <translation id="8820817407110198400">书签</translation>
 <translation id="8829678271838353305">您上次是使用 <ph name="ACCOUNT_EMAIL_LAST" /> 登录的。如果现在使用 <ph name="ACCOUNT_EMAIL_NEW" /> 登录，那么已同步到这两个帐户的数据（如书签）将会合并到一起。要分开保存信息，请在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中清除浏览数据。</translation>
+<translation id="883635517171802338">禁止网站显示弹出式窗口（推荐）</translation>
 <translation id="884264119367021077">送货地址</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />，标签页</translation>
 <translation id="885701979325669005">存储空间</translation>
@@ -622,6 +635,7 @@
 <translation id="9100610230175265781">必须提供密码</translation>
 <translation id="9133515669113036225">重置设备凭据</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
+<translation id="9139068048179869749">在允许网站发送通知前先询问（推荐）</translation>
 <translation id="9141510419986760385">您正要将同步帐户从 <ph name="FROM_ACCOUNT" /> 切换到 <ph name="TO_ACCOUNT" />。您希望如何处理现有书签、历史记录、密码及其他设置？</translation>
 <translation id="917685106653909562">附近的“实物网”网页</translation>
 <translation id="9187199695613236444">适合在移动设备上浏览的视图</translation>

@@ -2076,23 +2076,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="8587229956764455752">Új felhasználói fiókok létrehozásának engedélyezése</translation>
 <translation id="8614804915612153606">Letiltja az automatikus frissítést</translation>
 <translation id="8631434304112909927">a(z) <ph name="UNTIL_VERSION" /> verzióig</translation>
-<translation id="863712305404093038">Letiltja a hozzáférést a felsorolt URL-ekhez.
-
-      A házirend megakadályozza, hogy a felhasználó betöltse a tiltólistán szereplő URL-eket. A tiltólistán URL-minták találhatók, amelyek meghatározzák, hogy mely URL-ek lesznek letiltva.
-
-      Az URL-minták vagy helyi fájlokra vonatkozó, vagy általános URL-minták lehetnek. A helyi fájlokra vonatkozó minták formátuma „fájl://elérési út”, ahol az elérési útnak abszolút útvonalnak kell lennie. A fájlrendszer minden olyan helye le lesz tiltva, amelynek az előtagja az elérési út.
-
-      Az általános URL-minta formátuma a következő: „protokoll://gazdagép:port/elérési út”.
-      Ha meg van adva, akkor csak az adott protokoll lesz letiltva. Ha a protokoll:// előtag nincs megadva, akkor a böngésző minden protokollt letilt.
-      A gazdagép megadása kötelező: lehet gazdagépnév vagy IP-cím. A gazdagépnév aldomainjei sem lesznek elérhetők. Ha meg szeretné előzni az aldomainek letiltását, írjon egy „.” karaktert a gazdagépnév elé. A „*” gazdagépnév minden domaint letilt.
-      A port megadása nem kötelező, száma 1 és 65535 között kell, hogy legyen. Ha nincs megadva, minden portot letilt a böngésző.
-      Ha megadja a (nem kötelező) elérési utat, akkor csak az adott előtaggal rendelkező útvonalak válnak elérhetetlenné.
-
-      Kivételeket az URL-ek engedélyezőlistáját meghatározó házirendben lehet megadni. E házirendekben legfeljebb 1000 bejegyzés vehető fel, a további bejegyzéseket figyelmen kívül hagyja a böngésző.
-
-      Vegye figyelembe, hogy nem ajánlott tiltani a belső „chrome://*” URL-eket, mivel ez váratlan hibákat eredményezhet.
-
-      Ha ez a házirend nincs konfigurálva, akkor egyetlen URL se kerül tiltólistára a böngészőben.</translation>
 <translation id="8649763579836720255">A Chrome OS-eszközök távoli hitelesítést (ellenőrzött hozzáférés) használhatnak, hogy a Chrome OS CA által kiállított tanúsítványt kapjanak, amely megerősíti, hogy az eszközön lejátszható védett tartalom is. A folyamat hardver-jóváhagyási információk küldését is magában foglalja a Chrome OS CA-nak, amely egyedileg beazonosítja az eszközt.
 
           Ha „hamis” értékre van állítva, az eszköz nem fog távoli hitelesítést használni a tartalomvédelem érdekében, és az eszközön valószínűleg nem lehet majd védett tartalmat lejátszani.

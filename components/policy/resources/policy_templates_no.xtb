@@ -876,7 +876,7 @@
 <translation id="3967075520570946456">Slå på visning av velkomstsiden ved den første oppstarten av nettleseren etter at operativsystemet er oppgradert.</translation>
 <translation id="3973371701361892765">Aldri skjul hyllen automatisk</translation>
 <translation id="3984028218719007910">Avgjør om <ph name="PRODUCT_OS_NAME" /> beholder lokal kontodata etter avlogging. Hvis retningslinjen er angitt som Sann, beholdes det ikke noen vedvarende kontoer av <ph name="PRODUCT_OS_NAME" />, og all data fra brukerøkten blir forkastet etter avlogging. Hvis denne retningslinjen er angitt som Usann eller ikke er konfigurert, kan enheten beholde (kryptert) lokal brukerdata.</translation>
-<translation id="3997519162482760140">Nettadresser som gis tilgang til videoopptaksenheter på SAML-påloggingssider</translation>
+<translation id="3997519162482760140">Nettadresser som får tilgang til videoopptaksenheter på SAML-påloggingssider</translation>
 <translation id="4001275826058808087">IT-administratorer for bedriftsenheter kan bruke denne markeringen til å kontrollere om brukerne kan innløse tilbud via Chrome OS- registrering.
 
       Hvis denne innstillingen angis som sann eller ikke angis, kan brukere innløse tilbud via Chrome OS-registrering.
@@ -2204,21 +2204,6 @@ programtillegg. Shockwave Flash-programtillegget tilhører for eksempel Adobe Fl
 <translation id="8587229956764455752">Tillat oppretting av nye brukerkontoer</translation>
 <translation id="8614804915612153606">Deaktiverer automatiske oppdateringer</translation>
 <translation id="8631434304112909927">frem til versjon <ph name="UNTIL_VERSION" /></translation>
-<translation id="863712305404093038">Blokkerer tilgangen til de spesifiserte nettadressene.
-
-      Denne regelen hindrer brukerne i å laste inn nettsider fra svartelistede nettadresser. Svartelisten er en liste over nettadressemønstre som spesifiserer hvilke nettadresser som skal være svartelistet.
-
-      Hvert nettadressemønster kan enten være et mønster for lokale filer eller et generisk nettadressemønster. Mønstre for lokale filer har formatet «fil://bane», der banen skal være en absolutt bane som skal blokkeres. Alle filsystemplasseringer denne banen er et prefiks for, blir blokkert.
-
-      Generiske nettadressemønstre har formatet «protokoll://vert:port/bane».
-      Bare den spesifiserte protokollen blir blokkert, hvis den er til stede. Hvis protokoll://-prefikset ikke er spesifisert, blokkeres alle protokoller.
-      Verten er obligatorisk og kan være et vertsnavn eller en IP-adresse. Underdomenene under vertsnavnet blir også blokkert. For å unngå blokkering av underdomener, ta med et «.» før vertsnavnet. Spesialvertsnavnet «*» blokkerer alle domener.
-      Porten er valgfri og er et gyldig portnummer fra 1 til 65535. Hvis verdien for porten ikke spesifiseres, blokkeres alle portene.
-      Banen er valgfri, og hvis den spesifiseres, blokkeres bare banene med dette prefikset.
-
-      Unntak kan defineres i godkjenningslisten for nettadresser. Disse reglene er begrenset til 1000 oppføringer. Oppføringer etter dette blir ignorert.
-
-      Hvis denne regelen ikke spesifiseres, blir ingen nettadresser svartelistet i nettleseren.</translation>
 <translation id="8649763579836720255">Chrome OS-enheter can bruke ekstern godkjenning (godkjent tilgang) for å få et sertifikat utstedt av Chrome OS CA, som bekrefter at enheten er kvalifisert til å spille av beskyttet innhold. Denne prosessen involverer sending av godkjenningsinformasjon for maskinvaren til Chrome OS CA, som unikt identifiserer enheten.
 
           Hvis denne innstillingen angis til «false», kommer ikke enheten til å bruke ekstern godkjenning for innholdsbeskyttelse, og enheten kan sannsynligvis ikke spille av beskyttet innhold.

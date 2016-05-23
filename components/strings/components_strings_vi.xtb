@@ -262,6 +262,7 @@
 <translation id="3583757800736429874">&amp;Làm lại di chuyển</translation>
 <translation id="3586931643579894722">Ẩn chi tiết</translation>
 <translation id="3587482841069643663">Tất cả</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3608308818141211642">Ứng dụng và máy chủ không hỗ trợ bộ mã hóa hoặc phiên bản giao thức SSL thông thường. Vấn đề này có thể xảy ra khi máy chủ cần RC4. Chuẩn này không còn được coi là an toàn nữa.</translation>
 <translation id="3609138628363401169">Máy chủ không hỗ trợ tiện ích đàm phán lại TLS.</translation>
 <translation id="362276910939193118">Hiển thị Toàn bộ Lịch sử</translation>

@@ -129,6 +129,7 @@ Makokontrol mo ang Pisikal na Web sa Mga Setting ng Chrome.
 <translation id="257931822824936280">Pinalawak - i-click upang i-collapse.</translation>
 <translation id="2587052924345400782">May available na mas bagong bersyon</translation>
 <translation id="2593272815202181319">Monospace</translation>
+<translation id="2621115761605608342">Payagan ang JavaScript para sa isang partikular na site.</translation>
 <translation id="2646820313617290661">Tumutulong ang iyong mga magulang na pamahalaan ang mga setting na ito.</translation>
 <translation id="2653659639078652383">Isumite</translation>
 <translation id="2677748264148917807">Umalis</translation>
@@ -152,6 +153,7 @@ Makokontrol mo ang Pisikal na Web sa Mga Setting ng Chrome.
 <translation id="2903493209154104877">Mga Address</translation>
 <translation id="2913331724188855103">Payagan ang mga site na mag-save at magbasa ng data ng cookie (inirerekomenda)</translation>
 <translation id="2956410042958133412">Pinapamahalaan ang account na ito ng <ph name="PARENT_NAME_1" /> at <ph name="PARENT_NAME_2" />.</translation>
+<translation id="2959609938957585241">Upang makuha ang iyong mga tab mula sa iba mo pang mga device, i-on ang "I-auto sync ang data" sa mga setting ng Android account.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Nakalaan ang lahat ng karapatan.</translation>
 <translation id="2968755619301702150">Viewer ng certificate</translation>
 <translation id="2996291259634659425">Gumawa ng passphrase</translation>
@@ -188,6 +190,7 @@ Makokontrol mo ang Pisikal na Web sa Mga Setting ng Chrome.
 
 Nagsa-sign in ka sa isang pinamamahalaang account at nagbibigay sa administrator nito ng kontrol sa iyong profile sa Chrome. Permanenteng mauugnay ang iyong data ng Chrome sa account na ito. Ang pagdiskonekta mula sa account na ito ay magtatanggal sa lokal na data ng Chrome.</translation>
 <translation id="3384347053049321195">Magbahagi ng larawan</translation>
+<translation id="3386292677130313581">Magtanong bago payagan ang mga site na malaman ang iyong lokasyon (inirerekomenda)</translation>
 <translation id="3387650086002190359">Hindi na-download ang <ph name="FILE_NAME" /> dahil sa mga error sa file system.</translation>
 <translation id="3414952576877147120">Laki:</translation>
 <translation id="3435896845095436175">I-enable</translation>
@@ -240,6 +243,7 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="4254813446494774748">Wika ng Pagsasalin:</translation>
 <translation id="4256782883801055595">Mga lisensya ng open source</translation>
 <translation id="4259722352634471385">Naka-block ang navigation: <ph name="URL" /></translation>
+<translation id="4262028915562328938">Nagkaroon ng error sa pag-sync, i-tap upang kunin ang mga detalye.</translation>
 <translation id="4269820728363426813">Kopyahin ang address ng link</translation>
 <translation id="4271185234001491831">Huwag isalin kailanman ang <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Media</translation>
@@ -254,6 +258,7 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="4440256989292146959">Mag-browse pa nang mas mura</translation>
 <translation id="4452548195519783679">Na-bookmark sa <ph name="FOLDER_NAME" /></translation>
 <translation id="4457399174246232812">Lalabas sa iyong listahan ng mga notification ang mga kalapit na page ng Pisikal na Web sa hinaharap</translation>
+<translation id="4479647676395637221">Magtanong muna bago payagan ang mga site na gamitin ang iyong camera (inirerekomenda)</translation>
 <translation id="4498934959426056365">Pagbuo ng key</translation>
 <translation id="4508440807153586353">Ang taong may alam ng iyong passphrase lang ang makakabasa sa iyong naka-encrypt na data. Hindi ipinapadala sa o iniimbak ng Google ang passphrase. Kung makakalimutan mo ang iyong passphrase o gusto mong baguhin ang setting na ito, kakailanganin mong i-reset ang pag-sync. <ph name="BEGIN_LINK" />Matuto nang higit pa<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# araw ang nakalipas}one{# araw ang nakalipas}other{# na araw ang nakalipas}}</translation>
@@ -323,6 +328,7 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="5317780077021120954">I-save</translation>
 <translation id="5324858694974489420">Mga Setting para sa Magulang</translation>
 <translation id="5327248766486351172">Pangalan</translation>
+<translation id="5335288049665977812">Payagan ang mga site na magpatakbo ng JavaScript (inirerekomenda)</translation>
 <translation id="5345040418939504969">Na-delete ang <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Ang access sa lokasyon ay <ph name="BEGIN_LINK" />naka-off din para sa device na ito<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Huwag na huwag ipadala</translation>
@@ -368,6 +374,7 @@ Gayunpaman, hindi ka invisible. Hindi tinatago ng pagiging incognito ang iyong p
 <translation id="585027516397408832">Naka-enable ang Data Saver</translation>
 <translation id="5860033963881614850">Naka-off</translation>
 <translation id="5869522115854928033">Mga naka-save na password</translation>
+<translation id="588563574323093535">Magtanong muna bago payagan ang mga site na mag-fullscreen (inirerekomenda)</translation>
 <translation id="5899349522111170522">Gumawa ng bagong file</translation>
 <translation id="5902828464777634901">Made-delete ang lahat ng lokal na data na inimbak ng website na ito, kasama ang cookies.</translation>
 <translation id="5911030830365207728">Google Translate</translation>
@@ -392,6 +399,7 @@ Gayunpaman, hindi ka invisible. Hindi tinatago ng pagiging incognito ang iyong p
 <translation id="6140912465461743537">Bansa/Rehiyon</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> natipid sa data</translation>
 <translation id="6165508094623778733">Matuto nang higit pa</translation>
+<translation id="6181444274883918285">Magdagdag ng pagbubukod ng site</translation>
 <translation id="6192792657125177640">Mga Pagbubukod</translation>
 <translation id="6232535412751077445">Kapag na-enable mo ang “Huwag Subaybayan,” magsasama ng isang kahilingan sa trapiko ng iyong pagba-browse. Ang anumang magiging epekto ay dedepende sa pagtugon at pagbibigay-kahulugan ng website sa nabanggit na kahilingan.
 
@@ -427,6 +435,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6627583120233659107">I-edit ang folder</translation>
 <translation id="6647073004883890710">Gusto mo bang i-update ng <ph name="PASSWORD_MANAGER_BRAND" /> ang password para kay <ph name="USERNAME" /> para sa site na ito?</translation>
 <translation id="6656545060687952787">Kailangan ng Chrome ng access sa lokasyon upang makapag-scan at makakita ng mga device. <ph name="BEGIN_LINK" />I-update ang mga pahintulot<ph name="END_LINK" /></translation>
+<translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">Gumamit ng serbisyo sa paghula upang magpakita ng mga nauugnay na query at sikat na website habang nagta-type ka sa address bar</translation>
 <translation id="666981079809192359">Notification ng Privacy ng Chrome</translation>
 <translation id="6698801883190606802">Pamahalaan ang na-sync na data</translation>
@@ -453,6 +462,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6981982820502123353">Pagiging Maa-access</translation>
 <translation id="6990079615885386641">Kunin ang app mula sa Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">Awtomatikong iulat sa Google ang mga detalye ng mga posibleng isyu sa seguridad</translation>
+<translation id="6992289844737586249">Magtanong muna bago payagan ang mga site na gamitin ang iyong mikropono (inirerekomenda)</translation>
 <translation id="6999892069268112724">Kumpirmahin ang Google Account</translation>
 <translation id="7021515813996758557">Na-download na ang <ph name="FILE_NAME" /></translation>
 <translation id="7022756207310403729">Buksan sa browser</translation>
@@ -515,6 +525,7 @@ Maaaring mayroong ibang mga uri ng history ng pagba-browse ang iyong Google acco
 <translation id="7682287625158474539">Pagpapadala</translation>
 <translation id="7690588279513156836">I-load ang orihinal</translation>
 <translation id="771135159654932189">Tingnan kung anong nasa malapit</translation>
+<translation id="7713873128508426081">Palaging pinapayagan</translation>
 <translation id="7764225426217299476">Magdagdag ng address</translation>
 <translation id="7765158879357617694">Ilipat</translation>
 <translation id="7772032839648071052">Kumpirmahin ang passphrase</translation>
@@ -559,6 +570,7 @@ Maaaring mayroong ibang mga uri ng history ng pagba-browse ang iyong Google acco
 <translation id="8275818695183729150">Payagan (para sa mga paghahanap sa address bar)</translation>
 <translation id="8283853025636624853">Sini-sync sa <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Mga karaniwang tab</translation>
+<translation id="8372893542064058268">Payagan ang Pag-sync sa Background para sa isang partikular na site.</translation>
 <translation id="8374821112118309944">Kailangan mong i-update ang TalkBack sa isang mas bagong bersyon.</translation>
 <translation id="8396312449826231789">Mga naaprubahang site lang</translation>
 <translation id="8413126021676339697">Ipakita ang buong history</translation>
@@ -593,6 +605,7 @@ Upang makakuha ng mga bagong lisensya, kumonekta sa internet at i-play ang iyong
 <translation id="8812942424849541387">Kontrolin kung paano ito gumagana sa <ph name="BEGIN_LINK1" />Mga Setting<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Mga Bookmark</translation>
 <translation id="8829678271838353305">Nag-sign in si <ph name="ACCOUNT_EMAIL_LAST" />. Ang pagsa-sign in gamit ang <ph name="ACCOUNT_EMAIL_NEW" /> ay magme-merge ng na-sync na data gaya ng mga bookmark sa pagitan ng mga account. Upang mapanatiling hiwalay ang impormasyon, i-clear ang data ng pagba-browse sa <ph name="BEGIN_LINK" />mga setting<ph name="END_LINK" />.</translation>
+<translation id="883635517171802338">I-block ang mga site sa pagpapakita ng mga pop-up (inirerekomenda)</translation>
 <translation id="884264119367021077">Shipping address</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, tab</translation>
 <translation id="885701979325669005">Storage</translation>
@@ -622,6 +635,7 @@ Upang makakuha ng mga bagong lisensya, kumonekta sa internet at i-play ang iyong
 <translation id="9100610230175265781">Kinakailangan ang passphrase</translation>
 <translation id="9133515669113036225">I-reset ang mga kredensyal ng device</translation>
 <translation id="9137013805542155359">Ipakita ang orihinal</translation>
+<translation id="9139068048179869749">Magtanong bago payagan ang mga site na magpadala ng mga notification (inirerekomenda)</translation>
 <translation id="9141510419986760385">Lumilipat ka sa naka-sync na account na <ph name="TO_ACCOUNT" /> mula sa <ph name="FROM_ACCOUNT" />. Ano ang gusto mong gawin sa kasalukuyan mong mga bookmark, history, mga password at iba pang mga setting?</translation>
 <translation id="917685106653909562">Kalapit na mga page ng Pisikal na Web</translation>
 <translation id="9187199695613236444">View na pang-mobile</translation>

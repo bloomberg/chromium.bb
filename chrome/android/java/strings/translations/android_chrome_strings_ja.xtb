@@ -129,6 +129,7 @@
 <translation id="257931822824936280">展開されています - クリックすると折りたたまれます。</translation>
 <translation id="2587052924345400782">新しいバージョンをご利用いただけます</translation>
 <translation id="2593272815202181319">等幅</translation>
+<translation id="2621115761605608342">特定のサイトに対して JavaScript を許可します。</translation>
 <translation id="2646820313617290661">これらの設定はあなたの保護者が管理します。</translation>
 <translation id="2653659639078652383">送信</translation>
 <translation id="2677748264148917807">このページを離れる</translation>
@@ -152,6 +153,7 @@
 <translation id="2903493209154104877">住所</translation>
 <translation id="2913331724188855103">サイトに Cookie データの保存と読み取りを許可する（推奨）</translation>
 <translation id="2956410042958133412">このアカウントは <ph name="PARENT_NAME_1" /> と <ph name="PARENT_NAME_2" /> によって管理されています。</translation>
+<translation id="2959609938957585241">他の端末と同じタブを使用するには、Android のアカウント設定で [データの自動同期] を有効にします。</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2968755619301702150">証明書ビューア</translation>
 <translation id="2996291259634659425">パスフレーズの作成</translation>
@@ -188,6 +190,7 @@
 
 管理対象アカウントでログインし、アカウントの管理者に自分の Chrome プロフィールの管理を委ねようとしています。あなたの Chrome データはこのアカウントに永続的に関連付けられます。このアカウントを切り離すと、ローカルの Chrome データが削除されます。</translation>
 <translation id="3384347053049321195">画像を共有</translation>
+<translation id="3386292677130313581">サイトに現在地の認識を許可する前に確認する（推奨）</translation>
 <translation id="3387650086002190359">ファイル システムでエラーが発生したため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="3414952576877147120">サイズ:</translation>
 <translation id="3435896845095436175">有効にする</translation>
@@ -240,6 +243,7 @@
 <translation id="4254813446494774748">翻訳言語:</translation>
 <translation id="4256782883801055595">オープンソース ライセンス</translation>
 <translation id="4259722352634471385"><ph name="URL" /> へのアクセスがブロックされました</translation>
+<translation id="4262028915562328938">同期エラーが発生しました。タップして詳細を確認できます。</translation>
 <translation id="4269820728363426813">リンクアドレスをコピー</translation>
 <translation id="4271185234001491831"><ph name="LANGUAGE" />を翻訳しない</translation>
 <translation id="4275663329226226506">メディア</translation>
@@ -252,8 +256,9 @@
 <translation id="4378154925671717803">電話番号</translation>
 <translation id="4412992751769744546">サードパーティの Cookie を許可</translation>
 <translation id="4440256989292146959">データ使用量を抑えながら快適にブラウジング</translation>
-<translation id="4452548195519783679">「<ph name="FOLDER_NAME" />」をブックマークしました</translation>
+<translation id="4452548195519783679">「<ph name="FOLDER_NAME" />」にブックマークしました</translation>
 <translation id="4457399174246232812">今後、近くのフィジカル ウェブページは通知リストに表示されます</translation>
+<translation id="4479647676395637221">サイトにカメラの使用を許可する前に確認する（推奨）</translation>
 <translation id="4498934959426056365">キーの生成</translation>
 <translation id="4508440807153586353">パスフレーズを知っているユーザーだけが暗号化データを読み取ることができます。パスフレーズが Google に送信されたり Google で保存されたりすることはありません。パスフレーズを忘れた場合や、この設定を変更する場合は、同期をリセットする必要があります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# 日前}other{# 日前}}</translation>
@@ -323,6 +328,7 @@
 <translation id="5317780077021120954">保存</translation>
 <translation id="5324858694974489420">保護者設定</translation>
 <translation id="5327248766486351172">名前</translation>
+<translation id="5335288049665977812">サイトに Javascript の実行を許可する（推奨）</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> を削除しました</translation>
 <translation id="5345083863238459644">現在地情報へのアクセスは<ph name="BEGIN_LINK" />この端末でもオフになっています<ph name="END_LINK" />。</translation>
 <translation id="5380554235172449987">送信しない</translation>
@@ -368,6 +374,7 @@
 <translation id="585027516397408832">データセーバーが有効です</translation>
 <translation id="5860033963881614850">オフ</translation>
 <translation id="5869522115854928033">保存したパスワード</translation>
+<translation id="588563574323093535">サイトに全画面表示を許可する前に確認する（推奨）</translation>
 <translation id="5899349522111170522">新しいファイルを作成</translation>
 <translation id="5902828464777634901">このウェブサイトで保存したすべてのローカルデータ（Cookie を含む）を削除します。</translation>
 <translation id="5911030830365207728">Google 翻訳</translation>
@@ -392,6 +399,7 @@
 <translation id="6140912465461743537">国 / 地域</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> のデータを削減</translation>
 <translation id="6165508094623778733">詳しく見る</translation>
+<translation id="6181444274883918285">サイトの例外を追加</translation>
 <translation id="6192792657125177640">例外</translation>
 <translation id="6232535412751077445">「トラッキング拒否」を有効にすると、リクエストが閲覧トラフィックに含まれるようになります。ウェブサイトがリクエストに応答するかどうか、またリクエストがどのように解釈されるかによって、この影響は異なります。
 
@@ -427,6 +435,7 @@
 <translation id="6627583120233659107">フォルダを編集</translation>
 <translation id="6647073004883890710"><ph name="PASSWORD_MANAGER_BRAND" /> に保存されているこのサイトの <ph name="USERNAME" /> のパスワードを更新しますか？</translation>
 <translation id="6656545060687952787">デバイスをスキャンするには、Chrome で位置情報にアクセスする必要があります。<ph name="BEGIN_LINK" />権限を更新<ph name="END_LINK" /></translation>
+<translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">予測サービスを使用し、アドレスバーへの入力時に関連性の高い検索キーワードや人気のウェブサイトを表示します</translation>
 <translation id="666981079809192359">Chrome のプライバシーに関するお知らせ</translation>
 <translation id="6698801883190606802">同期データを管理</translation>
@@ -453,6 +462,7 @@
 <translation id="6981982820502123353">ユーザー補助機能</translation>
 <translation id="6990079615885386641">Google Play ストアからアプリを入手: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">セキュリティに関する事象についての詳細を Google に自動送信する</translation>
+<translation id="6992289844737586249">サイトにマイクの使用を許可する前に確認する（推奨）</translation>
 <translation id="6999892069268112724">Google アカウントの確認</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> をダウンロードしました</translation>
 <translation id="7022756207310403729">ブラウザで開く</translation>
@@ -515,6 +525,7 @@
 <translation id="7682287625158474539">発送先</translation>
 <translation id="7690588279513156836">元のサイトを表示</translation>
 <translation id="771135159654932189">近くの URL を表示</translation>
+<translation id="7713873128508426081">常に許可する</translation>
 <translation id="7764225426217299476">住所を追加</translation>
 <translation id="7765158879357617694">移動</translation>
 <translation id="7772032839648071052">パスフレーズの確認</translation>
@@ -559,6 +570,7 @@
 <translation id="8275818695183729150">許可（アドレスバーでの検索）</translation>
 <translation id="8283853025636624853"><ph name="SYNC_ACCOUNT_USER_NAME" /> に同期しています</translation>
 <translation id="8310344678080805313">標準のタブ</translation>
+<translation id="8372893542064058268">特定のサイトに対してバックグラウンド同期を許可します。</translation>
 <translation id="8374821112118309944">TalkBack を最新版に更新する必要があります。</translation>
 <translation id="8396312449826231789">承認済みのサイトのみ</translation>
 <translation id="8413126021676339697">全履歴を表示</translation>
@@ -593,6 +605,7 @@
 <translation id="8812942424849541387">[<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />] でこの動作を管理</translation>
 <translation id="8820817407110198400">ブックマーク</translation>
 <translation id="8829678271838353305">前回 <ph name="ACCOUNT_EMAIL_LAST" /> でログインしました。<ph name="ACCOUNT_EMAIL_NEW" /> でログインすると、アカウント間でブックマークなどの同期データが統合されます。データを個別に保持するには、[<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で閲覧履歴データを消去してください。</translation>
+<translation id="883635517171802338">サイトでのポップアップ表示をブロックする（推奨）</translation>
 <translation id="884264119367021077">配送先住所</translation>
 <translation id="8853345339104747198">「<ph name="TAB_TITLE" />」タブ</translation>
 <translation id="885701979325669005">ストレージ</translation>
@@ -622,6 +635,7 @@
 <translation id="9100610230175265781">パスフレーズを入力してください</translation>
 <translation id="9133515669113036225">デバイス認証情報のリセット</translation>
 <translation id="9137013805542155359">原文のページを表示</translation>
+<translation id="9139068048179869749">サイトに通知の送信を許可する前に確認する（推奨）</translation>
 <translation id="9141510419986760385">同期アカウントを <ph name="FROM_ACCOUNT" /> から <ph name="TO_ACCOUNT" /> に切り替えます。既存のブックマーク、履歴、パスワード、その他の設定をどのように処理しますか？</translation>
 <translation id="917685106653909562">近くのフィジカル ウェブページ</translation>
 <translation id="9187199695613236444">モバイル向け表示</translation>

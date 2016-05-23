@@ -92,7 +92,6 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="3621712662352432595">Configuració d'àudio</translation>
 <translation id="3625258641415618104">Captures de pantalla desactivades</translation>
 <translation id="3626281679859535460">Brillantor</translation>
-<translation id="3626637461649818317">Queda un <ph name="PERCENTAGE" />%</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME" />: <ph name="ANNOTATION" /></translation>
 <translation id="3683428399328702079">La resolució de <ph name="DISPLAY_NAME" /> ha canviat a <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Activa la Wi-Fi</translation>
@@ -111,7 +110,6 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="397105322502079400">S’està calculant...</translation>
 <translation id="3995138139523574647">Dispositiu USB-C (port posterior dret)</translation>
 <translation id="4053612967614057854">Desactiva el teclat en pantalla</translation>
-<translation id="412065659894267608">Falten <ph name="HOUR" /> h <ph name="MINUTE" /> min fins que estigui carregada completament</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4279490309300973883">S'està creant una rèplica</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -129,7 +127,6 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Ctrl + Maj + Espai</translation>
 <translation id="5045002648206642691">Configuració de Google Drive...</translation>
-<translation id="5102001756192215136">Temps d'autonomia: <ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Dispositius d'emissió disponibles</translation>
 <translation id="5222676887888702881">Tanca la sessió</translation>
@@ -166,7 +163,6 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="615957422585914272">Mostra el teclat en pantalla</translation>
 <translation id="6165508094623778733">Més informació</translation>
 <translation id="6203030746557259519">Pantalla virtual</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">Premeu Control+Maj+Q dues vegades per sortir.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> s'ha canviat a <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS de <ph name="PHONE_NUMBER" /></translation>
@@ -226,7 +222,6 @@ Premeu Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="8308637677604853869">Menú anterior</translation>
 <translation id="8356164830168736643">Tanca <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Configuració</translation>
-<translation id="8456362689280298700">Temps per a càrrega completa: <ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="8517041960877371778">És possible que el dispositiu <ph name="DEVICE_TYPE" /> no es carregui mentre està encès.</translation>
 <translation id="8528322925433439945">Xarxes mòbils...</translation>
 <translation id="8673028979667498656">270°</translation>

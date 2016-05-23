@@ -34,6 +34,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="1779766957982586368">Isara ang window</translation>
 <translation id="1841799852846221389">Hindi pinapagana ang mga malayuang koneksyon para sa computer na ito…</translation>
 <translation id="189172778771606813">Isara ang navigation drawer</translation>
+<translation id="1897488610212723051">I-delete</translation>
 <translation id="195619862187186579">Mga layout ng keyboard</translation>
 <translation id="1996161829609978754">Dina-download ng Chrome ang installer ng Host ng Chromoting.  Sa sandaling makumpleto ang pag-download, mangyaring patakbuhin ang installer bago magpatuloy.</translation>
 <translation id="2009755455353575666">Hindi nakakonekta</translation>
@@ -122,9 +123,6 @@ Host</translation>
 <translation id="3950820424414687140">Mag-sign in</translation>
 <translation id="3989511127559254552">Upang magpatuloy, dapat ka munang magbigay ng mga pahintulot sa pinalawak na access sa iyong computer. Isang beses mo lang ito kailangang gawin.</translation>
 <translation id="4006787130661126000">Dapat mong paganahin ang mga malayuang koneksyon kung nais mong gamitin ang Remote na Desktop ng Chrome upang i-access ang computer na ito.</translation>
-<translation id="4028465833180158312">• Mga update sa UI ng Material Design.
-• Mga third-party na credit sa paglilisensya.
-• Ang ipinapakitang impormasyon ay para sa mga naka-offline na remote na computer.</translation>
 <translation id="405887016757208221">Hindi nasimulan ng remote na computer ang session. Kung ayaw mawala ng problema, pakisubukang i-configure muli ang host.</translation>
 <translation id="4068946408131579958">Lahat ng koneksyon</translation>
 <translation id="409800995205263688">TANDAAN: Ang pinapayagan ng mga setting ng patakaran ay mga koneksyon lang sa pagitan ng mga computer sa loob ng iyong network.</translation>
@@ -168,6 +166,7 @@ Desktop ng Chrome</translation>
 <translation id="4985296110227979402">Kailangan mo munang i-set up ang iyong computer para sa remote na access</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Hinihiling sa iyo ng remote host na magpatunay sa isang website ng third-party. Upang makapagpatuloy, dapat mong bigyan ng mga karagdagang pahintulot ang Remote na Desktop ng Chrome upang ma-access ang address na ito:</translation>
+<translation id="507204348399810022">Sigurado ka bang gusto mong i-disable ang mga malayuang koneksyon sa <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Pakilagay ang parehong PIN sa parehong kahon.</translation>
 <translation id="5168917394043976756">Buksan ang navigation drawer</translation>
 <translation id="5170982930780719864">Di-wastong host id.</translation>

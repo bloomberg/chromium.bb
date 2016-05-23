@@ -2093,23 +2093,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="8587229956764455752">Tillad oprettelse af nye brugerkonti</translation>
 <translation id="8614804915612153606">Deaktiverer Automatisk opdatering</translation>
 <translation id="8631434304112909927">indtil version <ph name="UNTIL_VERSION" /></translation>
-<translation id="863712305404093038">Adgangen blokeres til de angivne webadresser.
-
-      Denne politik forhindrer brugeren i at indlæse websider fra sortlistede webadresser. Sortlisten viser en liste over webadressemønstre, der angiver, hvilke webadresser der føjes til sortlisten.
-
-      De enkelte webadressemønstre kan enten være et mønster for lokale filer eller et generisk webadressemønster. Mønstre for lokale filer vises i formatet "file://sti", hvor hele stien til den webadresse, der skal blokeres, skal angives. Alle filsystemer, hvor denne sti er angivet som præfiks, blokeres.
-
-      Et generisk webadressemønster har formatet "skema://host:port/sti"'.
-      Hvis der er angivet et skema, vil kun det pågældende skema blive blokeret. Hvis præfikset skema:// ikke specificeres, blokeres alle skemaer.
-      Hosten skal angives i form af et hostname eller en IP-adresse. Underdomæner af et hostname vil ligeledes blive blokeret. For at forhindre blokering af underdomæner skal du medtage et "." før navnet på hosten. Det særlige hostname "*" blokerer alle domæner.
-      Den valgfrie port er et gyldigt portnummer mellem 1 og 65535. Hvis der ikke er angivet et portnummer, blokeres de alle sammen.
-      Hvis den valgfrie sti er angivet, er det kun stier med det pågældende præfiks, som blokeres.
-
-      Undtagelser kan defineres i politikken for hvidlistede webadresser. Der er en maksimumsgrænse på 1000 poster for disse politikker. Alle efterfølgende poster ignoreres.
-
-      Bemærk, at det frarådes at blokere interne webadresser af typen "chrome://*", da dette kan føre til uventede fejl.
-
-      Hvis denne politik ikke er angivet, føjes der ikke nogen webadresser til sortlisten i browseren.</translation>
 <translation id="8649763579836720255">Chrome OS-enheder kan bruge ekstern attestation (bekræftet adgang) til at få udstedt et certifikat af Chrome OS CA, som bekræfter, at enheden er kvalificeret til at afspille beskyttet indhold. Denne proces involverer afsendelse af oplysninger om hardwaregodkendelse til Chrome OS CA, som identificerer enheden.
 
           Hvis denne indstilling er angivet som falsk, anvender enheden ikke ekstern attestation til indholdsbeskyttelse, og enheden kan muligvis ikke afspille beskyttet indhold.

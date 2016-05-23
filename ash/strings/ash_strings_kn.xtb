@@ -92,7 +92,6 @@
 <translation id="3621712662352432595">ಆಡಿಯೊ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="3625258641415618104">ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="3626281679859535460">ಪ್ರಕಾಶಮಾನ</translation>
-<translation id="3626637461649818317"><ph name="PERCENTAGE" />% ಉಳಿದಿದೆ</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME" />: <ph name="ANNOTATION" /></translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> ರೆಸಲ್ಯೂಷನ್ ಅನ್ನು <ph name="RESOLUTION" /> ಗೆ ಬದಲಿಸಲಾಗಿದೆ</translation>
 <translation id="370649949373421643">Wi-Fi ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
@@ -111,7 +110,6 @@
 <translation id="397105322502079400">ಎಣಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="3995138139523574647">USB-C ಸಾಧನ (ಬಲ ಭಾಗದ ಹಿಂದಿನ ಪೋರ್ಟ್‌)</translation>
 <translation id="4053612967614057854">ಆನ್‌-ಸ್ಕ್ರೀನ್‌ ಕೀಬೋರ್ಡ್ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸು</translation>
-<translation id="412065659894267608">ಪೂರ್ಣವಾಗುವವರಗೆ <ph name="HOUR" />ಗಂ <ph name="MINUTE" />ನಿ</translation>
 <translation id="4250680216510889253">ಇಲ್ಲ</translation>
 <translation id="4279490309300973883">ಪ್ರತಿಬಿಂಬಿಸುವಿಕೆ</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -129,7 +127,6 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Google ಡ್ರೈವ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು...</translation>
-<translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> ಉಳಿದಿದೆ</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">ಬಿತ್ತರಿಸುವಿಕೆಯ ಸಾಧನಗಳು ಲಭ್ಯವಿದೆ</translation>
 <translation id="5222676887888702881">ಸೈನ್ ಔಟ್</translation>
@@ -166,7 +163,6 @@
 <translation id="615957422585914272">ಆನ್-ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್ ತೋರಿಸು</translation>
 <translation id="6165508094623778733">ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ</translation>
 <translation id="6203030746557259519">ವರ್ಚುವಲ್ ಪ್ರದರ್ಶನ</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">ತೊರೆಯಲು Control Shift Q ಅನ್ನು ಎರಡು ಬಾರಿ ಒತ್ತಿರಿ.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ಅನ್ನು <ph name="ROTATION" /> ಗೆ ತಿರುಗಿಸಲಾಗಿದೆ</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" /> ನಿಂದ SMS</translation>
@@ -225,7 +221,6 @@
 <translation id="8308637677604853869">ಹಿಂದಿನ ಮೆನು</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" /> ಮುಚ್ಚಿ</translation>
 <translation id="8428213095426709021">ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
-<translation id="8456362689280298700"><ph name="HOUR" />:<ph name="MINUTE" /> ಪೂರ್ಣಗೊಳ್ಳುವವರೆಗೆ</translation>
 <translation id="8517041960877371778">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಆನ್ ಮಾಡಿರುವಾಗ ಅದನ್ನು ಚಾರ್ಜ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="8528322925433439945">ಮೊಬೈಲ್...</translation>
 <translation id="8673028979667498656">270°</translation>

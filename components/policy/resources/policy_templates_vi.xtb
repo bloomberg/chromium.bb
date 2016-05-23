@@ -158,7 +158,7 @@
       bảo mật của URL yêu cầu.  Nếu tìm thấy mẫu phù hợp, quyền
       truy cập thiết bị quay video sẽ được cấp trên
       các trang đăng nhập SAML.  Nếu không tìm thấy mẫu
-      phù hợp, quyền truy cập sẽ tự động bị từ chối.  Các mẫu ký tự đại          diện không được phép.</translation>
+      phù hợp, quyền truy cập sẽ tự động bị từ chối.  Các mẫu ký tự đại diện không được phép.</translation>
 <translation id="1655229863189977773">Đặt kích thước bộ nhớ cache của đĩa theo byte</translation>
 <translation id="166427968280387991">Máy chủ proxy</translation>
 <translation id="1675002386741412210">Hỗ trợ trên:</translation>
@@ -2235,23 +2235,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="8587229956764455752">Cho phép tạo tài khoản người dùng mới</translation>
 <translation id="8614804915612153606">Tắt cập nhật tự động</translation>
 <translation id="8631434304112909927">cho đến phiên bản <ph name="UNTIL_VERSION" /></translation>
-<translation id="863712305404093038">Chặn truy cập vào các URL được liệt kê.
-
-      Chính sách này ngăn người dùng tải trang web từ các URL được liệt kê trong danh sách cấm. Danh sách cấm cung cấp danh sách các mẫu URL giúp chỉ định các URL nào sẽ bị liệt kê vào danh sách cấm.
-
-      Mỗi mẫu URL có thể là mẫu cho các tệp cục bộ hoặc mẫu URL chung. Các mẫu tệp cục bộ có định dạng 'file://path', trong đó đường dẫn sẽ là một đường dẫn tuyệt đối để chặn. Tất cả các vị trí hệ thống tệp có đường dẫn đó là tiền tố sẽ bị chặn.
-
-      Mẫu URL chung có định dạng 'scheme://host:port/path'.
-      Nếu xuất hiện, chỉ giao thức truy cập được chỉ định mới bị chặn. Nếu tiền tố scheme:// không được chỉ định, tất cả giao thức truy cập sẽ bị chặn.
-      Cần có máy chủ và máy chủ này có thể là tên máy chủ hoặc địa chỉ IP. Tên miền phụ của tên máy chủ cũng sẽ bị chặn. Để ngăn việc chặn tên miền phụ, hãy bao gồm '.' trước tên máy chủ. Tên máy chủ đặc biệt '*' sẽ chặn tất cả các miền.
-      Cổng tùy chọn là một số cổng hợp lệ từ 1 đến 65535. Nếu không chỉ định cổng nào, tất cả các cổng sẽ bị chặn.
-      Nếu đường dẫn tùy chọn được chỉ định thì chỉ các đường dẫn có tiền tố đó mới bị chặn.
-
-      Có thể xác định các ngoại lệ trong chính sách về danh sách URL cho phép. Các chính sách này chỉ áp dụng cho 1000 mục nhập, các mục tiếp theo sẽ bị bỏ qua.
-
-      Lưu ý rằng không nên chặn các URL 'chrome://*' nội bộ vì điều này có thể dẫn đến các lỗi không mong muốn.
-
-      Nếu chính sách này không được đặt thì sẽ không có URL nào được liệt kê vào danh sách cấm trong trình duyệt.</translation>
 <translation id="8649763579836720255">Thiết bị Chrome OS có thể sử dụng chứng thực từ xa (Quyền truy cập đã xác minh) để nhận được chứng chỉ do Chrome OS CA phát hành khẳng định rằng thiết bị đủ điều kiện để phát nội dung được bảo vệ. Quy trình này bao gồm gửi thông tin chứng thực phần cứng tới Chrome OS CA xác định duy nhất thiết bị.
 
           Nếu cài đặt này là false, thiết bị sẽ không sử dụng chứng thực từ xa để bảo vệ nội dung và thiết bị không thể phát nội dung được bảo vệ.

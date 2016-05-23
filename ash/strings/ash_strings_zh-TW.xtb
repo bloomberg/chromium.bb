@@ -92,7 +92,6 @@
 <translation id="3621712662352432595">音訊設定</translation>
 <translation id="3625258641415618104">已停用螢幕擷取畫面</translation>
 <translation id="3626281679859535460">亮度</translation>
-<translation id="3626637461649818317">剩餘電量：<ph name="PERCENTAGE" />%</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME" />：<ph name="ANNOTATION" /></translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> 的解析度已變更為 <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">啟用 Wi-Fi</translation>
@@ -111,7 +110,6 @@
 <translation id="397105322502079400">計算中…</translation>
 <translation id="3995138139523574647">USB-C 裝置 (右後方連接埠)</translation>
 <translation id="4053612967614057854">停用螢幕小鍵盤</translation>
-<translation id="412065659894267608">尚需 <ph name="HOUR" /> 小時 <ph name="MINUTE" /> 分鐘才能充滿電</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="4279490309300973883">鏡像</translation>
 <translation id="4321179778687042513">Ctrl</translation>
@@ -129,7 +127,6 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Ctrl + Shift + 空格鍵</translation>
 <translation id="5045002648206642691">Google 雲端硬碟設定...</translation>
-<translation id="5102001756192215136">電量剩餘時間：<ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />，<ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">可用的投放裝置</translation>
 <translation id="5222676887888702881">登出</translation>
@@ -166,7 +163,6 @@
 <translation id="615957422585914272">顯示螢幕小鍵盤</translation>
 <translation id="6165508094623778733">瞭解詳情</translation>
 <translation id="6203030746557259519">虛擬顯示</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">按兩下 Control、Shift 和 Q 鍵即可結束。</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> 已旋轉到<ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">來自 <ph name="PHONE_NUMBER" /> 的簡訊</translation>
@@ -226,7 +222,6 @@
 <translation id="8308637677604853869">前一個選單</translation>
 <translation id="8356164830168736643">關閉「<ph name="WINDOW_TITLE" />」</translation>
 <translation id="8428213095426709021">設定</translation>
-<translation id="8456362689280298700">完成充電尚需 <ph name="HOUR" /> 小時 <ph name="MINUTE" /> 分鐘</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> 在開啟時可能無法充電。</translation>
 <translation id="8528322925433439945">行動服務 ...</translation>
 <translation id="8673028979667498656">270 度</translation>

@@ -34,6 +34,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="1779766957982586368">Venster sluiten</translation>
 <translation id="1841799852846221389">Externe verbindingen voor deze computer uitschakelen…</translation>
 <translation id="189172778771606813">Zijmenu sluiten</translation>
+<translation id="1897488610212723051">Verwijderen</translation>
 <translation id="195619862187186579">Toetsenbordindeling</translation>
 <translation id="1996161829609978754">Chrome downloadt het installatieprogramma voor de Chromoting-host. Zodra het downloaden is voltooid, voer je het installatieprogramma uit voordat je doorgaat.</translation>
 <translation id="2009755455353575666">Verbinding mislukt</translation>
@@ -122,9 +123,6 @@ host</translation>
 <translation id="3950820424414687140">Inloggen</translation>
 <translation id="3989511127559254552">Als je wilt doorgaan, moet je eerst uitgebreide toegangsrechten voor je computer verlenen. Je hoeft dit slechts één keer te doen.</translation>
 <translation id="4006787130661126000">Je moet externe verbindingen inschakelen als je Chrome Remote Desktop wilt gebruiken voor toegang tot deze computer.</translation>
-<translation id="4028465833180158312">• Updates voor gebruikersinterface in Material design.
-• Kennisgeving voor licenties van derden.
-• Weergave van informatie voor externe computers die offline zijn.</translation>
 <translation id="405887016757208221">De externe computer kan de sessie niet initialiseren. Als het probleem blijft optreden, configureer je de host opnieuw.</translation>
 <translation id="4068946408131579958">Alle verbindingen</translation>
 <translation id="409800995205263688">OPMERKING: beleidsinstellingen staan alleen verbindingen tussen computers binnen je netwerk toe.</translation>
@@ -168,6 +166,7 @@ Desktop-host</translation>
 <translation id="4985296110227979402">Je moet eerst je computer instellen voor externe toegang</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">De externe host vereist dat je op een website van derden wordt geverifieerd. Als je wilt doorgaan, moet je Chrome Remote Desktop aanvullende machtigingen geven om toegang tot dit adres te krijgen:</translation>
+<translation id="507204348399810022">Weet je zeker dat je externe verbindingen met <ph name="HOSTNAME" /> wilt uitschakelen?</translation>
 <translation id="5156271271724754543">Geef dezelfde pincode in beide vakken op.</translation>
 <translation id="5168917394043976756">Zijmenu openen</translation>
 <translation id="5170982930780719864">Ongeldige host-ID.</translation>

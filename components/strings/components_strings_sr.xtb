@@ -261,6 +261,7 @@
 <translation id="3583757800736429874">&amp;Понови премештање</translation>
 <translation id="3586931643579894722">Сакриј детаље</translation>
 <translation id="3587482841069643663">Све</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3608308818141211642">Клијент и сервер не подржавају исту верзију SSL протокола или пакет за шифровање. До овог проблема често долази када је серверу потребан RC4, који се више не сматра безбедним.</translation>
 <translation id="3609138628363401169">Сервер не подржава додатак за поновно прихватање TLS-а.</translation>
 <translation id="362276910939193118">Прикажи комплетну историју</translation>

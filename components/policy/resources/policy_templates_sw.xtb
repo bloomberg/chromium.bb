@@ -2219,23 +2219,6 @@ Kama sera hii haitawekwa, hali ya juu ya utofautishaji itazimwa mwanzoni lakini 
 <translation id="8587229956764455752">Ruhusu uundaji wa akaunti mpya za mtumiaji</translation>
 <translation id="8614804915612153606">Inalemaza Kusasisha Otomatiki</translation>
 <translation id="8631434304112909927">mpaka toleo la <ph name="UNTIL_VERSION" /></translation>
-<translation id="863712305404093038">Huzuia uwezo wa kufikia URL zilizoorodheshwa.
-
-      Sera hii humzuia mtumiaji asipakie kurasa za wavuti kutoka kwenye URL zilizozuiwa. Orodha hii hutoa orodha ya michoro ya URL inayobainisha URL zitakazozuiwa.
-
-      Kila mchoro wa URL unaweza kuwa mchoro au faili za ndani za mchoro zalishi wa URL. Michoro ya faili za ndani ina muundo wa 'file://path', ambapo njia inafaa iwe njia kamili ya kuzuia. Sehemu zote za mfumo wa faili ambazo njia hiyo ni kiambishi awali huzuiwa.
-
-      Picha zalishi ya URL ina mpango wa muundo wa //host:port/path'.
-      Kama ipo, ni mpango uliobainishwa pekee utakaozuiwa. Ikiwa kiambaishi awali cha mpango:// haujabainishwa, mipango yote huzuiwa.
-      Kipangishaji kinahitajika na kinaweza kuwa jina la mpangishaji au anwani ya IP. Vijikoa vya jina la mpangishaji pia vitazuiwa. Ili kuepuka kuzuia vijikoa, jumuisha,  a '.' kabla ya jina la mpangishaji. Jina maalum la mpangishaji '*' litazuia vikoa vyote.
-      Mlango wa hiari ni nambari halali ya mlango kuanzia 1 hadi 65535. Kama hakuna iliyobainishwa, milango yote huzuiwa.
-     Ikiwa njia hiari imebainishwa, ni njia zenye kiambishi awali hicho ambayo itazuiwa.
-
-      URL zisizofuata kanuni zinaweza kufafanuliwa kama sera ya URL iliyoidhinishwa. Sera hizi hazizidi maingizo 1000; maingizo yatakayofuata yatapuuzwa.
-
-      Kumbuka kwamba kama haipendekezwi kuzuia URL za 'chrome://*' za ndani kwa sababu hii inaweza kusababisha hitilafu zisizotarajiwa.
-
-      Kama sera hii haitawekwa hakuna URL itakayozuiwa katika kivinjari hiki.</translation>
 <translation id="8649763579836720255">Vifaa vyenye Chrome OS vinaweza kutumia uwezo wa kuthibitisha kutoka mbali (Ufikiaji Uliothibitishwa) kupata cheti kilichotolewa na Chrome OS CA kinachothibitisha kuwa kifaa kimekubaliwa kucheza maudhui yanayolindwa. Utaratibu huu unahusisha kutumia Chrome OS CA maelezo maalum ya kuthibitisha maunzi yanayokitambua kifaa husika. 
 
         Kama mipangilio hii si ya kweli, kifaa hakitatumia uwezo wa kuthibitisha kutoka mbali kulinda maudhui na huenda kifaa hakitaweza kucheza maudhui yanayolindwa.

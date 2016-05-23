@@ -34,6 +34,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="1779766957982586368">ウィンドウを閉じる</translation>
 <translation id="1841799852846221389">このパソコンのリモート接続を無効にしています...</translation>
 <translation id="189172778771606813">操作パネルを閉じる</translation>
+<translation id="1897488610212723051">削除</translation>
 <translation id="195619862187186579">キーボード配列</translation>
 <translation id="1996161829609978754">Chromoting ホスト インストーラをダウンロードしています。ダウンロードが完了したら、続行する前にインストーラを実行してください。</translation>
 <translation id="2009755455353575666">接続失敗</translation>
@@ -122,9 +123,6 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="3950820424414687140">ログイン</translation>
 <translation id="3989511127559254552">続行するには、このパソコンに拡張アクセス許可を付与する必要があります。この作業は 1 回だけ必要です。</translation>
 <translation id="4006787130661126000">Chrome リモート デスクトップを使用してこのパソコンにアクセスするには、リモート接続を有効にする必要があります。</translation>
-<translation id="4028465833180158312">• マテリアル デザインのユーザー インターフェースの更新。
-• サードパーティ ライセンスのクレジット。
-• オフラインのリモート パソコンに関する情報の表示。</translation>
 <translation id="405887016757208221">リモート パソコンでセッションを初期化できませんでした。引き続き問題が発生する場合は、ホストを設定し直してみてください。</translation>
 <translation id="4068946408131579958">すべての接続</translation>
 <translation id="409800995205263688">注: ポリシー設定に基づき、接続が許可されるのはこのネットワーク内のパソコン間のみとなります。</translation>
@@ -168,6 +166,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="4985296110227979402">リモート接続に使用するパソコンを最初に設定しておく必要があります</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" />（オフライン）</translation>
 <translation id="5070121137485264635">リモート ホストで、サードパーティ ウェブサイトへの認証が求められています。続行するには、次のアドレスにアクセスできるように Chrome リモート デスクトップに追加の権限を与える必要があります:</translation>
+<translation id="507204348399810022"><ph name="HOSTNAME" /> へのリモート接続を無効にしてもよろしいですか？</translation>
 <translation id="5156271271724754543">両方のボックスに同じ PIN を入力してください。</translation>
 <translation id="5168917394043976756">操作パネルを開く</translation>
 <translation id="5170982930780719864">ホスト ID が無効です。</translation>

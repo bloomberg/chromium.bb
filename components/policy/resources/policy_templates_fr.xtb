@@ -2268,23 +2268,6 @@ Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette
 <translation id="8587229956764455752">Autoriser la création de comptes utilisateur</translation>
 <translation id="8614804915612153606">Désactive les mises à jour automatiques</translation>
 <translation id="8631434304112909927">jusqu'à la version <ph name="UNTIL_VERSION" /></translation>
-<translation id="863712305404093038">Bloque l'accès aux URL répertoriées.
-
-      Cette règle empêche l'utilisateur de charger des pages Web à partir d'URL figurant sur la liste noire. La liste noire contient une liste de formats d'URL qui définissent quelles URL sont ajoutées à la liste noire.
-
-      Chaque format d'URL peut être soit un format pour fichiers locaux, soit un format d'URL générique. Les fichiers locaux suivent le format "file://path". Le chemin spécifié doit alors correspondre au chemin absolu à bloquer. Toutes les adresses du système de fichiers ayant ce chemin pour préfixe seront bloquées.
-
-      Le format pour une URL générique est "scheme://host:port/path".
-      Seul le schéma spécifié sera bloqué. Si le préfixe "scheme://" n'est pas spécifié, tous les schémas sont bloqués.
-      L'hôte doit être précisé sous la forme d'un nom d'hôte ou d'une adresse IP. Les sous-domaines d'un nom d'hôte seront également bloqués. Afin d'éviter le blocage des sous-domaines, ajoutez un "." devant le nom d'hôte. Le nom d'hôte spécial "*" bloque tous les domaines.
-      Le port facultatif est un numéro de port valide de 1 à 65535. Si aucun port n'est spécifié, tous les ports sont bloqués.
-      Si le chemin facultatif est spécifié, seuls les chemins contenant ce préfixe sont bloqués.
-
-      Vous pouvez définir des exceptions dans la règle s'appliquant aux URL sur liste blanche. Cette règle étant limitée à 1 000 entrées, les entrées suivantes seront ignorées.
-
-      Sachez qu'il est déconseillé de bloquer les URL internes "chrome://*", car cela peut provoquer des erreurs inattendues.
-
-      Si cette règle n'est pas configurée, aucune URL n'est mise sur liste noire dans le navigateur.</translation>
 <translation id="8649763579836720255">Il est possible d'utiliser l'attestation à distance (accès vérifié) pour les appareils Chrome OS afin d'obtenir un certificat délivré par Chrome OS CA qui atteste que vous pouvez lire du contenu protégé sur cet appareil. Ce processus implique l'envoi d'informations relatives au matériel à Chrome OS CA qui permettent d'identifier l'appareil de façon unique.
 
           Si ce paramètre est défini sur "False", l'attestation à distance n'est pas utilisée pour la protection du contenu, et vous ne pourrez peut-être pas lire du contenu protégé.

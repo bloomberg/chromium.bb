@@ -34,6 +34,7 @@
 <translation id="1779766957982586368">መስኮት ዝጋ</translation>
 <translation id="1841799852846221389">ለዚህ ኮምፒውተር የርቀት ግንኙነቶችን በማሰናከል ላይ…</translation>
 <translation id="189172778771606813">የአሰሳ መሳቢያ ዝጋ</translation>
+<translation id="1897488610212723051">ሰርዝ</translation>
 <translation id="195619862187186579">የቁልፍ ሰሌዳ አቀማመጦች</translation>
 <translation id="1996161829609978754">Chrome የChromoting አስተናጋጅ ጫኚውን እያወረደ ነው። ውርዱ አንዴ ከተጠናቀቀ በኋላ እባክዎ ከመቀጠልዎ በፊት ጫኚውን ያሂዱት።</translation>
 <translation id="2009755455353575666">ግንኙነት አልተሳካም</translation>
@@ -122,9 +123,6 @@
 <translation id="3950820424414687140">ይግቡ</translation>
 <translation id="3989511127559254552">ለመቀጠል በመጀመሪያ ለኮሚውተርዎ ተጨማሪ የመዳረሻ ፍቃዶችን መስጠት አለብዎት። ይህንን አንድ ጊዜ ብቻ ነው ማድረግ የሚኖርብዎት።</translation>
 <translation id="4006787130661126000">Chrome የርቀት ዴስክቶፕን ተጠቅመው ይህንን ኮምፒውተር መድረስ ከፈለጉ የርቀት ግንኙነቶችን ማንቃት አለብዎት።</translation>
-<translation id="4028465833180158312">• የቁሳዊ ንድፍ በይነገጽ ዝማኔዎች።
-• የሶስተኛ ወገን ፍቃድ እውቅናዎች።
-• ከመስመር ውጪ የሆኑ የርቀት ኮምፒውተሮች መረጃ</translation>
 <translation id="405887016757208221">የርቀት ኮምፒውተሩ ክፍለጊዜውን ለመጀመር ተስኖታል። ችግሩ ከቀጠለ እባክዎን አስተናጋጁን በድጋሚ ለማዋቀር ይሞክሩ።</translation>
 <translation id="4068946408131579958">ሁሉም ግንኙነቶች</translation>
 <translation id="409800995205263688">ማሳሰቢያ፦ የመምሪያ ቅንብሮች በአውታረ መረብዎ ውስጥ ባሉ ኮምፒውተሮች የሚኖሩ ግንኙነቶችን ብቻ ነው የሚፈቅዱት።</translation>
@@ -168,6 +166,7 @@
 <translation id="4985296110227979402">በመጀመሪያ ኮምፒውተርዎን ለርቀት መዳረሻ ማዋቀር አለብዎት</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (ከመስመር ውጪ)</translation>
 <translation id="5070121137485264635">የርቀት አስተናጋጁ ለሶስተኛ ወገን ድር ጣቢያ እንዲያረጋግጡ ይፈልጋል። ለመቀጠል Chrome የርቀት ዴስክቶፕ ይህን አድራሻ እንዲደርስበት ተጨማሪ ፍቃዶችን መስጠት አለብዎት፦</translation>
+<translation id="507204348399810022">ከ<ph name="HOSTNAME" /> ጋር ያሉ የርቀት ግንኙነቶችን ማሰናከል ይፈልጋሉ?</translation>
 <translation id="5156271271724754543">እባክዎ ተመሳሳዩን ፒን በሁለቱም ሳጥኖች ውስጥ ያስገቡ።</translation>
 <translation id="5168917394043976756">የአሰሳ መሳቢያ ክፈት</translation>
 <translation id="5170982930780719864">ልክ ያልሆነ የአስተናጋጅ መታወቂያ።</translation>

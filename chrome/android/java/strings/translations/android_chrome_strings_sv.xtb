@@ -129,6 +129,7 @@ Du kan styra Physical Web i inställningarna för Chrome
 <translation id="257931822824936280">Vyn har expanderats. Komprimera den genom att klicka.</translation>
 <translation id="2587052924345400782">Det finns en nyare version</translation>
 <translation id="2593272815202181319">Monospace</translation>
+<translation id="2621115761605608342">Tillåt Javascript på en specifik webbplats.</translation>
 <translation id="2646820313617290661">Dina föräldrar hanterar de här inställningarna åt dig.</translation>
 <translation id="2653659639078652383">Skicka</translation>
 <translation id="2677748264148917807">Lämna</translation>
@@ -152,6 +153,7 @@ Du kan styra Physical Web i inställningarna för Chrome
 <translation id="2903493209154104877">Adresser</translation>
 <translation id="2913331724188855103">Tillåt att webbplatser sparar och läser cookiedata (rekommenderas)</translation>
 <translation id="2956410042958133412">Det här kontot hanteras av <ph name="PARENT_NAME_1" /> och <ph name="PARENT_NAME_2" />.</translation>
+<translation id="2959609938957585241">Aktivera Automatisk synkronisering av data i kontoinställningarna för Android om du vill ha samma flikar tillgängliga på alla enheter.</translation>
 <translation id="2960796085439532066">Upphovsrätt <ph name="YEAR" /> Google Inc. Med ensamrätt.</translation>
 <translation id="2968755619301702150">Certifikatvisare</translation>
 <translation id="2996291259634659425">Skapa lösenfras</translation>
@@ -188,6 +190,7 @@ Du kan styra Physical Web i inställningarna för Chrome
 
 Du loggar in med ett hanterat konto, vilket innebär att administratören kontrollerar din Chrome-profil. Din Chrome-data kommer att knytas permanent till det här kontot. Om du kopplar ifrån det här kontot raderas din lokala Chrome-data.</translation>
 <translation id="3384347053049321195">Dela bild</translation>
+<translation id="3386292677130313581">Fråga innan webbplatser tillåts att veta var du befinner dig (rekommenderas)</translation>
 <translation id="3387650086002190359">Det gick inte att ladda ned <ph name="FILE_NAME" /> på grund av filsystemfel.</translation>
 <translation id="3414952576877147120">Storlek:</translation>
 <translation id="3435896845095436175">Aktivera</translation>
@@ -240,6 +243,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4254813446494774748">Översättningsspråk:</translation>
 <translation id="4256782883801055595">Licenser för öppen källkod</translation>
 <translation id="4259722352634471385">Webbadressen har blockerats: <ph name="URL" /></translation>
+<translation id="4262028915562328938">Ett synkroniseringsfel uppstod. Tryck här om du vill veta mer.</translation>
 <translation id="4269820728363426813">Kopiera länkadress</translation>
 <translation id="4271185234001491831">Översätt aldrig från <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Media</translation>
@@ -254,6 +258,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4440256989292146959">Surfa mer för mindre</translation>
 <translation id="4452548195519783679">Bokmärkt i <ph name="FOLDER_NAME" /></translation>
 <translation id="4457399174246232812">Physical Web-sidor i närheten visas i aviseringslistan i fortsättningen</translation>
+<translation id="4479647676395637221">Fråga innan webbplatser tillåts att använda kameran (rekommenderas)</translation>
 <translation id="4498934959426056365">Nyckelgenerering</translation>
 <translation id="4508440807153586353">Endast personer som har ditt lösenord kan läsa dina krypterade uppgifter. Lösenordet skickas inte till och sparas inte av Google. Om du glömmer lösenordet måste du återställa synkroniseringen. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{för # dag sedan}other{för # dagar sedan}}</translation>
@@ -323,6 +328,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="5317780077021120954">Spara</translation>
 <translation id="5324858694974489420">Föräldrainställningar</translation>
 <translation id="5327248766486351172">Namn</translation>
+<translation id="5335288049665977812">Tillåt att Javascript körs på webbplatser (rekommenderas)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> raderades</translation>
 <translation id="5345083863238459644">Platsåtkomst har också <ph name="BEGIN_LINK" />inaktiverats för enheten<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Skicka aldrig</translation>
@@ -368,6 +374,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="585027516397408832">Databesparing har aktiverats</translation>
 <translation id="5860033963881614850">Av</translation>
 <translation id="5869522115854928033">Sparade lösenord</translation>
+<translation id="588563574323093535">Fråga innan webbplatser tillåts att använda helskärmsläge (rekommenderas)</translation>
 <translation id="5899349522111170522">Skapa ny fil</translation>
 <translation id="5902828464777634901">All data som sparats lokalt av webbplatsen tas bort, inklusive cookies.</translation>
 <translation id="5911030830365207728">Google Översätt</translation>
@@ -392,6 +399,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="6140912465461743537">Land/region</translation>
 <translation id="6159335304067198720">Sparat utrymme: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Läs mer</translation>
+<translation id="6181444274883918285">Lägg till en webbplats i undantagen</translation>
 <translation id="6192792657125177640">Undantag</translation>
 <translation id="6232535412751077445">Om du aktiverar Do Not Track inkluderas en begäran i din surftrafik. Eventuella effekter beror på om webbplatsen svarar på begäran och hur begäran tolkas.
 
@@ -427,6 +435,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6627583120233659107">Redigera mapp</translation>
 <translation id="6647073004883890710">Vill du att <ph name="PASSWORD_MANAGER_BRAND" /> ska uppdatera lösenordet för <ph name="USERNAME" /> på den här webbplatsen?</translation>
 <translation id="6656545060687952787">Chrome behöver platsåtkomst för att söka efter enheter. <ph name="BEGIN_LINK" />Uppdatera behörigheter<ph name="END_LINK" /></translation>
+<translation id="6659594942844771486">Flik</translation>
 <translation id="666268767214822976">Använd en tjänst som ger förslag på relaterade sökfrågor och populära webbplatser när du skriver i adressfältet</translation>
 <translation id="666981079809192359">Chromes sekretessmeddelande</translation>
 <translation id="6698801883190606802">Hantera synkroniserad data</translation>
@@ -453,6 +462,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6981982820502123353">Tillgänglighet</translation>
 <translation id="6990079615885386641">Hämta appen från Google Play Butik: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">Rapportera uppgifter om möjliga säkerhetsincidenter till Google automatiskt</translation>
+<translation id="6992289844737586249">Fråga innan webbplatser tillåts att använda mikrofonen (rekommenderas)</translation>
 <translation id="6999892069268112724">Bekräfta Google-konto</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> har laddats ned</translation>
 <translation id="7022756207310403729">Öppna i webbläsaren</translation>
@@ -515,6 +525,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="7682287625158474539">Frakt</translation>
 <translation id="7690588279513156836">Läs in originalet</translation>
 <translation id="771135159654932189">Se vad som finns i närheten</translation>
+<translation id="7713873128508426081">Tillåt alltid</translation>
 <translation id="7764225426217299476">Lägg till adress</translation>
 <translation id="7765158879357617694">Flytta</translation>
 <translation id="7772032839648071052">Bekräfta lösenfras</translation>
@@ -559,6 +570,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="8275818695183729150">Tillåt (för sökningar i adressfältet)</translation>
 <translation id="8283853025636624853">Synkroniseras med <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Standardflikar</translation>
+<translation id="8372893542064058268">Tillåt bakgrundssynkronisering för en specifik webbplats.</translation>
 <translation id="8374821112118309944">Du måste uppdatera till en senare version av TalkBack.</translation>
 <translation id="8396312449826231789">Endast godkända webbplatser</translation>
 <translation id="8413126021676339697">Visa fullständig historik</translation>
@@ -593,6 +605,7 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="8812942424849541387">Styr hur det fungerar i <ph name="BEGIN_LINK1" />Inställningar<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Bokmärken</translation>
 <translation id="8829678271838353305"><ph name="ACCOUNT_EMAIL_LAST" /> är inloggad. Om du loggar in med <ph name="ACCOUNT_EMAIL_NEW" /> slås synkroniserade uppgifter som bokmärken ihop mellan olika konton. Om du inte vill att uppgifterna ska slås ihop tar du bort webbinformationen i <ph name="BEGIN_LINK" />inställningarna<ph name="END_LINK" />.</translation>
+<translation id="883635517171802338">Blockera webbplatser från att visa popup-fönster (rekommenderas)</translation>
 <translation id="884264119367021077">Leveransadress</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, flik</translation>
 <translation id="885701979325669005">Lagring</translation>
@@ -622,6 +635,7 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="9100610230175265781">Lösenfras krävs</translation>
 <translation id="9133515669113036225">Återställ användaruppgifter för enheten</translation>
 <translation id="9137013805542155359">Visa original</translation>
+<translation id="9139068048179869749">Fråga innan webbplatser tillåts att skicka aviseringar (rekommenderas)</translation>
 <translation id="9141510419986760385">Du håller på att byta synkroniseringskonto från <ph name="FROM_ACCOUNT" /> till <ph name="TO_ACCOUNT" />. Vad vill du ska hända med bokmärken, historik, lösenord och andra inställningar?</translation>
 <translation id="917685106653909562">Physical Web-sidor i närheten</translation>
 <translation id="9187199695613236444">Mobilanpassad vy</translation>

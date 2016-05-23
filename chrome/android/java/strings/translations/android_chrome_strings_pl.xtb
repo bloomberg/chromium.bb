@@ -129,6 +129,7 @@ Internet rzeczy możesz skonfigurować w ustawieniach Chrome.
 <translation id="257931822824936280">Rozwinięty – kliknij, by zwinąć.</translation>
 <translation id="2587052924345400782">Dostępna jest nowsza wersja</translation>
 <translation id="2593272815202181319">Stała szerokość znaków</translation>
+<translation id="2621115761605608342">Zezwól na użycie JavaScriptu w określonej witrynie.</translation>
 <translation id="2646820313617290661">Tymi ustawieniami zarządzają Twoi rodzice.</translation>
 <translation id="2653659639078652383">Prześlij</translation>
 <translation id="2677748264148917807">Wyjdź</translation>
@@ -152,6 +153,7 @@ Internet rzeczy możesz skonfigurować w ustawieniach Chrome.
 <translation id="2903493209154104877">Adresy</translation>
 <translation id="2913331724188855103">Zezwalaj witrynom na zapisywanie danych w plikach cookie i ich odczytywanie (zalecane)</translation>
 <translation id="2956410042958133412">Tym kontem zarządzają <ph name="PARENT_NAME_1" /> i <ph name="PARENT_NAME_2" />.</translation>
+<translation id="2959609938957585241">Aby korzystać z kart ze swoich innych urządzeń, włącz opcję „Autosynchronizacja danych” w ustawieniach konta na urządzeniu z Androidem.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Wszelkie prawa zastrzeżone.</translation>
 <translation id="2968755619301702150">Przeglądarka certyfikatów</translation>
 <translation id="2996291259634659425">Utwórz hasło</translation>
@@ -188,6 +190,7 @@ Internet rzeczy możesz skonfigurować w ustawieniach Chrome.
 
 Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad swoim profilem Chrome. Twoje dane Chrome zostaną na stałe powiązane z tym kontem. Odłączenie od tego konta spowoduje usunięcie lokalnych danych Chrome.</translation>
 <translation id="3384347053049321195">Udostępnij zdjęcie</translation>
+<translation id="3386292677130313581">Pytaj, zanim udostępnisz stronom swoją lokalizację (zalecane)</translation>
 <translation id="3387650086002190359">Nie udało się pobrać pliku <ph name="FILE_NAME" /> z powodu błędów systemu plików.</translation>
 <translation id="3414952576877147120">Rozmiar:</translation>
 <translation id="3435896845095436175">Włącz</translation>
@@ -240,6 +243,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4254813446494774748">Język tłumaczenia:</translation>
 <translation id="4256782883801055595">Licencje open source</translation>
 <translation id="4259722352634471385">Adres zablokowany: <ph name="URL" /></translation>
+<translation id="4262028915562328938">Błąd synchronizacji. Kliknij, by zobaczyć szczegóły.</translation>
 <translation id="4269820728363426813">Kopiuj adres linku</translation>
 <translation id="4271185234001491831">Nigdy nie tłumacz z języka: <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Multimedia</translation>
@@ -254,6 +258,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4440256989292146959">Przeglądaj więcej za mniej</translation>
 <translation id="4452548195519783679">Utworzono zakładkę w folderze <ph name="FOLDER_NAME" /></translation>
 <translation id="4457399174246232812">Strony internetu rzeczy w pobliżu będą pojawiać się na liście powiadomień</translation>
+<translation id="4479647676395637221">Pytaj, zanim zezwolisz stronom na korzystanie z kamery (zalecane)</translation>
 <translation id="4498934959426056365">Generowanie kluczy</translation>
 <translation id="4508440807153586353">Twoje zaszyfrowane dane może odczytać tylko ktoś znający hasło. Google nie otrzyma Twojego hasła ani nie będzie go przechowywać. Jeśli je zapomnisz lub zechcesz zmienić to ustawienie, musisz zresetować synchronizację. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# dzień temu}few{# dni temu}many{# dni temu}other{# dnia temu}}</translation>
@@ -323,6 +328,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="5317780077021120954">Zapisz</translation>
 <translation id="5324858694974489420">Ustawienia rodzicielskie</translation>
 <translation id="5327248766486351172">Nazwa</translation>
+<translation id="5335288049665977812">Zezwalaj na wykonywanie kodu JavaScript w witrynach (zalecane)</translation>
 <translation id="5345040418939504969">Usunięto: <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Dostęp do lokalizacji jest też <ph name="BEGIN_LINK" />wyłączony na tym urządzeniu<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Nigdy nie wysyłaj</translation>
@@ -368,6 +374,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="585027516397408832">Oszczędzanie danych włączone</translation>
 <translation id="5860033963881614850">Wyłączone</translation>
 <translation id="5869522115854928033">Zapisane hasła</translation>
+<translation id="588563574323093535">Pytaj, zanim zezwolisz stronom na korzystanie z pełnego ekranu (zalecane)</translation>
 <translation id="5899349522111170522">Utwórz nowy plik</translation>
 <translation id="5902828464777634901">Wszystkie dane lokalne zapisane przez tę witrynę (w tym pliki cookie) zostaną usunięte.</translation>
 <translation id="5911030830365207728">Tłumacz Google</translation>
@@ -392,6 +399,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="6140912465461743537">Kraj/region</translation>
 <translation id="6159335304067198720">Oszczędność danych: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Więcej informacji</translation>
+<translation id="6181444274883918285">Dodaj witrynę do wyjątków</translation>
 <translation id="6192792657125177640">Wyjątki</translation>
 <translation id="6232535412751077445">Włączenie opcji „Bez śledzenia” oznacza, że podczas przeglądania będzie wysyłane żądanie. Jego wynik zależy od tego, czy strona na nie odpowie oraz jak zostanie ono zinterpretowane.
 
@@ -427,6 +435,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6627583120233659107">Edytuj folder</translation>
 <translation id="6647073004883890710">Czy <ph name="PASSWORD_MANAGER_BRAND" /> ma zaktualizować hasło użytkownika <ph name="USERNAME" /> do tej witryny?</translation>
 <translation id="6656545060687952787">Aby wyszukać urządzenia, Chrome potrzebuje dostępu do lokalizacji. <ph name="BEGIN_LINK" />Zwiększ uprawnienia<ph name="END_LINK" /></translation>
+<translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">Gdy piszesz na pasku adresu, korzystaj z usługi przewidywania, by wyświetlać podobne zapytania i adresy popularnych stron</translation>
 <translation id="666981079809192359">Informacje na temat ochrony prywatności w Chrome</translation>
 <translation id="6698801883190606802">Zarządzaj synchronizowanymi danymi</translation>
@@ -453,6 +462,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6981982820502123353">Ułatwienia dostępu</translation>
 <translation id="6990079615885386641">Pobierz aplikację ze sklepu Google Play: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">Automatycznie przesyłaj do Google szczegółowe informacje o możliwych zagrożeniach</translation>
+<translation id="6992289844737586249">Pytaj, zanim zezwolisz stronom na korzystanie z mikrofonu (zalecane)</translation>
 <translation id="6999892069268112724">Potwierdź konto Google</translation>
 <translation id="7021515813996758557">Plik <ph name="FILE_NAME" /> został pobrany</translation>
 <translation id="7022756207310403729">Otwórz w przeglądarce</translation>
@@ -515,6 +525,7 @@ Inne rodzaje historii przeglądania, takie jak wyszukiwania i aktywność w inny
 <translation id="7682287625158474539">Adres wysyłkowy</translation>
 <translation id="7690588279513156836">Załaduj oryginał</translation>
 <translation id="771135159654932189">Zobacz, co jest w pobliżu</translation>
+<translation id="7713873128508426081">Zawsze dozwolone</translation>
 <translation id="7764225426217299476">Dodaj adres</translation>
 <translation id="7765158879357617694">Przenieś</translation>
 <translation id="7772032839648071052">Potwierdź hasło</translation>
@@ -559,6 +570,7 @@ Inne rodzaje historii przeglądania, takie jak wyszukiwania i aktywność w inny
 <translation id="8275818695183729150">Zezwól (w przypadku wyszukiwań na pasku adresu)</translation>
 <translation id="8283853025636624853">Synchronizowanie z kontem <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Karty standardowe</translation>
+<translation id="8372893542064058268">Zezwalaj na synchronizowanie w tle z określoną stroną.</translation>
 <translation id="8374821112118309944">Musisz zainstalować nowszą wersję TalkBack.</translation>
 <translation id="8396312449826231789">Tylko zatwierdzone witryny</translation>
 <translation id="8413126021676339697">Wyświetl całą historię</translation>
@@ -593,6 +605,7 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="8812942424849541387">Określ działanie w <ph name="BEGIN_LINK1" />Ustawieniach<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Zakładki</translation>
 <translation id="8829678271838353305">Zalogowany był użytkownik <ph name="ACCOUNT_EMAIL_LAST" />. Jeśli zalogujesz się jako <ph name="ACCOUNT_EMAIL_NEW" />, zsynchronizowane dane z obu kont (np. zakładki) zostaną połączone. Aby zachować informacje oddzielnie, wyczyść dane przeglądarki w <ph name="BEGIN_LINK" />ustawieniach<ph name="END_LINK" />.</translation>
+<translation id="883635517171802338">Blokuj próby pokazywania wyskakujących okienek na stronach (zalecane)</translation>
 <translation id="884264119367021077">Adres wysyłki</translation>
 <translation id="8853345339104747198">Karta <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Pamięć</translation>
@@ -622,6 +635,7 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="9100610230175265781">Wymagane jest hasło</translation>
 <translation id="9133515669113036225">Zresetuj dane logowania na urządzeniu</translation>
 <translation id="9137013805542155359">Pokaż tekst oryginalny</translation>
+<translation id="9139068048179869749">Pytaj, zanim zezwolisz stronom na wysyłanie powiadomień (zalecane)</translation>
 <translation id="9141510419986760385">Przełączasz synchronizację kont z <ph name="FROM_ACCOUNT" /> na <ph name="TO_ACCOUNT" />. Co chcesz zrobić z istniejącymi zakładkami, historią, hasłami i innymi ustawieniami?</translation>
 <translation id="917685106653909562">Strony internetu rzeczy w pobliżu</translation>
 <translation id="9187199695613236444">Wersja na urządzenia mobilne</translation>

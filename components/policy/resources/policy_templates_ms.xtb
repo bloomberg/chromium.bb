@@ -157,7 +157,7 @@
 <translation id="163200210584085447">Corak dalam senarai ini akan dipadankan dengan keselamatan
       asal URL yang meminta.  Jika padanan ditemui, akses kepada peranti
       tangkapan video akan diberi pada halaman log masuk SAML.  Jika padanan tidak
-      ditemui, akan akan ditolak secara automatik.  Corak kad bebas tidak
+      ditemui, akses akan ditolak secara automatik.  Corak kad bebas tidak
       dibenarkan.</translation>
 <translation id="1655229863189977773">Tetapkan saiz cache cakera dalam bait</translation>
 <translation id="166427968280387991">Pelayan proksi</translation>
@@ -2262,23 +2262,6 @@ Jika dasar ini dibiarkan tidak ditetapkan mana-mana pemalam yang sepadan dengan 
 <translation id="8587229956764455752">Benarkan ciptaan akaun pengguna baharu</translation>
 <translation id="8614804915612153606">Lumpuhkan Kemas Kini Auto</translation>
 <translation id="8631434304112909927">sehingga versi <ph name="UNTIL_VERSION" /></translation>
-<translation id="863712305404093038">Menyekat akses kepada URL yang disenaraikan.
-
-      Dasar ini menghalang pengguna daripada memuatkan halaman web daripada URL yang disenaraihitamkan. Senarai hitam tersebut memberi senarai pola URL yang menentukan URL yang akan disenaraihitamkan.
-
-      Setiap pola URL boleh jadi pola untuk fail setempat atau pola URL generik. Pola fail setempat adalah dalam format 'file://path', di mana laluan sepatutnya adalah laluan mutlak untuk menyekat. Semua lokasi sistem fail yang mana laluan itu adalah awalan akan disekat.
-
-      Pola URL generik mempunyai format 'scheme://host:port/path'.
-      Jika ada, hanya skim yang ditentukan akan disekat. Semua skim akan disekat jika awalan scheme:// tidak dinyatakan.
-      Hos diperlukan dan boleh jadi nama hos atau alamat IP. Subdomain nama hos akan turut disekat. Untuk menghalang subdomain daripada disekat, masukkan '.' sebelum nama hos. Nama hos khas '*' akan menyekat semua domain.
-      Port pilihan ialah nombor port yang sah dari 1 hingga 65535. Jika tiada nombor ditetapkan, semua port akan disekat.
-      Jika laluan pilihan ditentukan, hanya laluan dengan awalan tersebut akan disekat.
-
-      Pengecualian boleh ditentukan dalam dasar senarai putih URL. Dasar ini terhad kepada 1,000 masukan; masukan berikutnya akan diabaikan.
-
-      Ambil perhatian bahawa anda tidak digalakkan untuk menyekat URL 'chrome://*' dalaman kerana tindakan ini boleh menyebabkan berlakunya ralat yang tidak dijangka.
-
-      Jika dasar ini tidak ditetapkan, tiada URL akan disenaraihitamkan dalam penyemak imbas.</translation>
 <translation id="8649763579836720255">Peranti OS Chrome boleh menggunakan pembuktian jauh (Akses Disahkan) untuk mendapatkan perakuan yang dikeluarkan oleh CA OS Chrome yang menyatakan peranti layak memainkan kandungan yang dilindungi.  Proses ini melibatkan penghantaran maklumat sokongan kepada CA OS Chrome yang mengenal pasti peranti tersebut secara unik.
 
           Jika tetapan ini palsu, peranti tidak akan menggunakan pembuktian jauh untuk perlindungan kandungan dan peranti mungkin tidak dapat memainkan kandungan yang dilindungi.

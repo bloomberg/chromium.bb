@@ -2077,23 +2077,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="8587229956764455752">Permitir a criação de novas contas de utilizador</translation>
 <translation id="8614804915612153606">Desativar a Atualização Automática</translation>
 <translation id="8631434304112909927">até à versão <ph name="UNTIL_VERSION" /></translation>
-<translation id="863712305404093038">Bloqueia o acesso aos URLs listados.
-
-      Esta política impede que o utilizador carregue páginas Web a partir de URLs incluídos na lista negra. A lista negra fornece uma lista de padrões de URL que especifica que URLs são nela incluídos.
-
-      Cada padrão de URL pode ser um padrão para ficheiros locais ou um padrão de URL genérico. Os padrões de ficheiros locais têm o formato "ficheiro://caminho", em que o caminho deve ser um caminho absoluto a bloquear. Todas as localizações do sistema de ficheiros para as quais esse caminho seja um prefixo são bloqueadas.
-
-      Um padrão de URL genérico tem o formato "esquema://anfitrião:porta/caminho".
-      Caso presente, só este esquema é bloqueado. Caso o prefixo esquema:// não seja especificado, todos os esquemas são bloqueados.
-      O anfitrião é obrigatório e pode ser um nome de anfitrião ou um endereço IP. Os subdomínios de um nome de anfitrião também são bloqueados. Para evitar o bloqueio de subdomínios, inclua um "." antes do nome do anfitrião. O nome de anfitrião especial "*" bloqueia todos os domínios.
-      A porta opcional é um número de porta válido entre 1 e 65535. Se não tiver sido especificado nenhum número, todas as portas são bloqueadas.
-      Se o caminho opcional for especificado, apenas os caminhos com esse prefixo são bloqueados.
-
-      É possível definir exceções na política de lista de autorizações de URLs. Estas políticas estão limitadas a 1000 entradas; as entradas subsequentes são ignoradas.
-
-      Tenha em atenção que não é recomendado bloquear URLs "chrome://*" internos, uma vez que isto pode causar erros inesperados.
-
-      Se esta política não for definida, a lista negra do navegador não inclui qualquer URL.</translation>
 <translation id="8649763579836720255">Os dispositivos SO Chrome podem utilizar a comprovação remota (Acesso confirmado) para obter um certificado emitido pela AC do SO Chrome que declara que o dispositivo é elegível para reproduzir conteúdo protegido. Este processo envolve o envio de informações de garantia de hardware para a AC do SO Chrome, que identifica de forma única o dispositivo.
 
           Se esta definição for falsa, o dispositivo não utilizará a comprovação remota para proteção de conteúdo e o dispositivo poderá não conseguir reproduzir conteúdo protegido.

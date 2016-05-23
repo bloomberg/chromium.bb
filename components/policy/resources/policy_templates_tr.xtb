@@ -2247,23 +2247,6 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
 <translation id="8587229956764455752">Yeni kullanıcı hesapları oluşturulmasına izin ver</translation>
 <translation id="8614804915612153606">Otomatik Güncellemeyi devre dışı bırakır</translation>
 <translation id="8631434304112909927"><ph name="UNTIL_VERSION" /> sürümüne kadar</translation>
-<translation id="863712305404093038">Listelenen URL'lere erişimi engeller.
-
-      Bu politika, kullanıcının kara listeye alınmış URL'lere ait web sayfalarını yüklemesini engeller. Kara liste, hangi URL'lerin kara listeye alınacağını belirten URL kalıplarının listesini sağlar.
-
-      Her bir URL kalıbı, yerel dosyalar için bir kalıp veya genel bir URL kalıbı olabilir. Yerel dosya kalıpları "file://path" biçimindedir; burada yol (path) engellenecek mutlak bir yol olmalıdır. Önek olarak o yolu taşıyan tüm dosya sistemi konumları engellenir.
-
-      Genel URL kalıbı "scheme://host:port/path" biçimindedir.
-      Varsa, sadece belirtilen şema engellenir. scheme:// öneki belirtilmezse, tüm şemalar engellenir.
-      Ana makine (host) gereklidir ve bir ana makine adı veya IP adresi olabilir. Bir ana makinenin alt alan adları da engellenir. Alt alanların engellenmesini önlemek için ana makine adından önce bir "." ekleyin. Özel ana makine adı "*" tüm alan adlarını engeller.
-      İsteğe bağlı bağlantı noktası 1 ile 65535 arasında geçerli bir bağlantı noktasıdır. Hiçbir değer belirtilmezse, tüm bağlantı noktaları engellenir.
-      İsteğe bağlı yol belirtilirse, sadece o öneke sahip yollar engellenir.
-
-      İstisnalar URL beyaz liste politikasında tanımlanabilir. Bu politikalar 1000 girişle sınırlıdır; ondan sonra yapılan girişler yoksayılır.
-
-      Dahili "chrome://*" URL'lerinin engellenmesinin, beklenmeyen hatalara yol açabileceği için önerilmediğini unutmayın.
-
-      Bu politika ayarlanmazsa, tarayıcıda hiçbir URL kara listeye alınmaz.</translation>
 <translation id="8649763579836720255">Chrome OS cihazları, cihazın korumalı içerikleri oynatabileceğini onaylayan Chrome OS CA'sı (sertifika yetkilisi) tarafından yayınlanan bir sertifika almak için uzaktan onay (Doğrulanmış Erişim) işlevini kullanabilir. Bu işlem Chrome OS CA'ya, cihazı benzersiz şekilde tanımlayan donanım onay bilgilerinin gönderilmesini içerir.
 
           Bu ayar yanlış seçeneğine ayarlanırsa cihaz, içerik koruma için uzaktan onay işlevini kullanmaz ve korumalı içeriği oynatamaz.

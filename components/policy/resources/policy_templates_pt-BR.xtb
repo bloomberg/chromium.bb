@@ -2046,23 +2046,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="8587229956764455752">Permite a criação de novas contas de usuários</translation>
 <translation id="8614804915612153606">Desativa a atualização automática</translation>
 <translation id="8631434304112909927">até a versão <ph name="UNTIL_VERSION" /></translation>
-<translation id="863712305404093038">Bloqueia o acesso aos URLs listados.
-
-      Esta política impede que o usuário carregue páginas da Web a partir de URLs incluídos em uma lista negra, a qual fornece padrões que especificam quais URLs devem ser incluídos na lista.
-
-      Cada padrão de URL pode ser um padrão para arquivos locais ou um padrão genérico de URL. Padrões de arquivos locais têm o formato "arquivo://caminho", em que o caminho deve ser um caminho absoluto para bloqueio. Todos os locais de sistema de arquivos para os quais esse caminho é prefixado serão bloqueados.
-
-      Um padrão de URL genérico tem o formato "esquema://host:porta/caminho".
-      Caso esteja presente, apenas o esquema especificado é bloqueado. Se o prefixo esquema:// não for especificado, todos os esquemas serão bloqueados.
-      O host é necessário e pode ser um nome de host ou um endereço IP. Subdomínios de um nome de host também serão bloqueados. Para evitar o bloqueio de subdomínios, inclua um "." antes do nome do host. O nome de host especial "*" bloqueará todos os domínios.
-      A porta opcional é um número de porta válido entre 1 e 65.535. Se nenhuma porta for especificada, todas as portas serão bloqueadas.
-      Se o caminho opcional for especificado, somente os caminhos com esse prefixo serão bloqueados.
-
-      É possível configurar exceções na política de lista de permissões de URLs. Essas políticas são limitadas a 1.000 entradas. Entradas subsequentes serão ignoradas.
-
-      Observe que não é recomendado bloquear URLs "chrome://*" internos, pois isso pode causar erros inesperados.
-
-      Se esta política não for configurada, nenhum URL será incluído na lista negra no navegador.</translation>
 <translation id="8649763579836720255">Os dispositivos Chrome OS podem usar atestado remoto (acesso confirmado) para receber um certificado emitido pelo Chrome OS CA que declare que o dispositivo é qualificado para reproduzir conteúdo protegido. Este processo envolve o envio de informações de endosso de hardware para o Chrome OS CA que identifiquem com exclusividade o dispositivo.
 
           Se essa configuração for falsa, o dispositivo não usará atestado remoto para proteção de conteúdo e o dispositivo pode ser incapaz de reproduzir conteúdo protegido.

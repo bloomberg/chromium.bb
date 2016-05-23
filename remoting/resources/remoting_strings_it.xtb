@@ -34,6 +34,7 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="1779766957982586368">Chiudi finestra</translation>
 <translation id="1841799852846221389">Disattivazione connessioni remote per questo computer in corso…</translation>
 <translation id="189172778771606813">Chiudi riquadro di navigazione a scomparsa</translation>
+<translation id="1897488610212723051">Elimina</translation>
 <translation id="195619862187186579">Layout tastiera</translation>
 <translation id="1996161829609978754">Chrome sta scaricando il programma di installazione di Chromoting Host. Al termine del download esegui il programma di installazione prima di continuare.</translation>
 <translation id="2009755455353575666">Connessione non riuscita</translation>
@@ -122,9 +123,6 @@ Chromoting</translation>
 <translation id="3950820424414687140">Accedi</translation>
 <translation id="3989511127559254552">Per continuare devi concedere autorizzazioni di accesso esteso per il tuo computer. È necessario eseguire questa operazione solo una volta.</translation>
 <translation id="4006787130661126000">Per accedere a questo computer utilizzando Chrome Remote Desktop devi attivare le connessioni remote.</translation>
-<translation id="4028465833180158312">• Aggiornamenti all'interfaccia utente di material design.
-• Crediti per le licenze di terze parti.
-• Informazioni visualizzate per computer remoti offline.</translation>
 <translation id="405887016757208221">Impossibile inizializzare la sessione sul computer remoto. Se il problema persiste, riprova a configurare l'host.</translation>
 <translation id="4068946408131579958">Tutte le connessioni</translation>
 <translation id="409800995205263688">NOTA. Le impostazioni dei criteri consentono connessioni solo tra computer all'interno della tua rete.</translation>
@@ -168,6 +166,7 @@ Remote Desktop</translation>
 <translation id="4985296110227979402">Devi eseguire prima la configurazione del computer per poter effettuare l'accesso remoto</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">L'host remoto richiede l'autenticazione su un sito web di terze parti. Per continuare, devi concedere a Chrome Remote Desktop ulteriori autorizzazioni per accedere a questo indirizzo:</translation>
+<translation id="507204348399810022">Vuoi disattivare le connessioni remote a <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Inserisci lo stesso PIN in entrambe le caselle.</translation>
 <translation id="5168917394043976756">Apri riquadro di navigazione a scomparsa</translation>
 <translation id="5170982930780719864">ID host non valido.</translation>

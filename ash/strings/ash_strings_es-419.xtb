@@ -92,7 +92,6 @@ Presiona Mayús o la tecla de búsqueda para cancelar la operación.</translatio
 <translation id="3621712662352432595">Configuración de audio</translation>
 <translation id="3625258641415618104">Capturas de pantalla inhabilitadas</translation>
 <translation id="3626281679859535460">Brillo</translation>
-<translation id="3626637461649818317"><ph name="PERCENTAGE" />% restante</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME" />: <ph name="ANNOTATION" /></translation>
 <translation id="3683428399328702079">La resolución de <ph name="DISPLAY_NAME" /> se cambió por <ph name="RESOLUTION" />.</translation>
 <translation id="370649949373421643">Habilitar Wi-Fi</translation>
@@ -111,7 +110,6 @@ Presiona Mayús o la tecla de búsqueda para cancelar la operación.</translatio
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (puerto lateral derecho trasero)</translation>
 <translation id="4053612967614057854">Inhabilitar el teclado en pantalla</translation>
-<translation id="412065659894267608"><ph name="HOUR" />h <ph name="MINUTE" />min para completar la carga</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4279490309300973883">Duplicando</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -129,7 +127,6 @@ Presiona Mayús o la tecla de búsqueda para cancelar la operación.</translatio
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Ctrl + mayúscula + espacio</translation>
 <translation id="5045002648206642691">Configuración de Google Drive...</translation>
-<translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> restante</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Dispositivos de transmisión disponibles</translation>
 <translation id="5222676887888702881">Salir</translation>
@@ -166,7 +163,6 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="615957422585914272">Mostrar el teclado en pantalla</translation>
 <translation id="6165508094623778733">Más información</translation>
 <translation id="6203030746557259519">Virtual Display</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">Presiona Control+Mayús+Q dos veces para salir.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> se giró a <ph name="ROTATION" />.</translation>
 <translation id="6359806961507272919">SMS de <ph name="PHONE_NUMBER" /></translation>
@@ -225,7 +221,6 @@ Presiona Alt y la tecla de búsqueda o Mayús para cancelar la operación.</tran
 <translation id="8308637677604853869">Menú anterior</translation>
 <translation id="8356164830168736643">Cerrar <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Configuración</translation>
-<translation id="8456362689280298700"><ph name="HOUR" />:<ph name="MINUTE" /> hasta completar</translation>
 <translation id="8517041960877371778">Tu <ph name="DEVICE_TYPE" /> podría no cargarse si el dispositivo está encendido.</translation>
 <translation id="8528322925433439945">Dispositivos móviles...</translation>
 <translation id="8673028979667498656">270°</translation>

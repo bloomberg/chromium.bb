@@ -2074,23 +2074,6 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8587229956764455752">Permet la creació de comptes d'usuari</translation>
 <translation id="8614804915612153606">Desactiva l'actualització automàtica</translation>
 <translation id="8631434304112909927">fins a la versió <ph name="UNTIL_VERSION" /></translation>
-<translation id="863712305404093038">Bloqueja l'accés als URL de la llista.
-
-      Aquesta política impedeix que l'usuari carregui pàgines web d'URL inclosos en llistes negres. La llista negra facilita una llista de patrons d'URL que especifiquen quins URL acabaran inclosos en una llista negra.
-
-      Cada patró d'URL pot ser un patró de fitxers locals o un patró genèric d'URL. Els de fitxers locals tenen el format "file://path", on el camí ha de ser un camí absolut que cal bloquejar. Es bloquejaran totes les ubicacions del sistema de fitxers que tinguin aquest camí com a prefix.
-
-      Un patró genèric d'URL té el format "scheme://host:port/path".
-      Si està present, només es bloquejarà l'esquema especificat. Si el prefix "scheme://" no està especificat, es bloquejaran tots els esquemes.
-      Cal definir un amfitrió, el qual pot ser un nom d'amfitrió o una adreça IP. També es bloquejaran els subdominis del nom d'amfitrió. Per impedir-ho, incloeu un punt (".") abans del nom d'amfitrió. El nom d'amfitrió especial "*" bloquejarà tots els dominis.
-      El port opcional és un número de port vàlid d'1 a 65535. Si no se n'especifica cap, es bloquejaran tots els ports.
-      Si s'especifica el camí opcional, només es bloquejaran camins amb aquest prefix.
-
-      Es poden definir excepcions a la política de llista blanca d'URL. Aquestes polítiques es limiten a 1000 entrades; les posteriors s'ignoren.
-
-      Tingueu en compte que no es recomana bloquejar URL interns amb format "chrome://*", ja que es podrien produir errors imprevistos.
-
-      Si aquesta política no s'estableix, no s'afegirà cap URL a la llista negra del navegador.</translation>
 <translation id="8649763579836720255">Els dispositius amb Chrome OS poden utilitzar l'autenticació remota (accés verificat) per obtenir un certificat emès per la entitat emissora de certificats (CA) de Chrome OS que afirmi que el dispositiu és apte per reproduir contingut protegit. Aquest procés inclou l'enviament d'informació de ratificació del maquinari a la CA de Chrome OS que identifica el dispositiu de manera única.
 
           Si el paràmetre està configurat com a False, el dispositiu no farà servir l'autenticació remota de la protecció del contingut i pot ser que no pugui reproduir contingut protegit.

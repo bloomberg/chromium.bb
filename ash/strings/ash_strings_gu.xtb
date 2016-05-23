@@ -92,7 +92,6 @@
 <translation id="3621712662352432595">ઑડિઓ સેટિંગ્સ</translation>
 <translation id="3625258641415618104">સ્ક્રીનશોટ્સ અક્ષમ કર્યા</translation>
 <translation id="3626281679859535460">તેજ</translation>
-<translation id="3626637461649818317"><ph name="PERCENTAGE" />% બાકી</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME" />: <ph name="ANNOTATION" /></translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> ને <ph name="RESOLUTION" /> પર બદલવામાં આવ્યું હતું</translation>
 <translation id="370649949373421643">Wi-Fi સક્ષમ કરો</translation>
@@ -111,7 +110,6 @@
 <translation id="397105322502079400">ગણના કરી રહ્યું છે...</translation>
 <translation id="3995138139523574647">USB-C ઉપકરણ (જમણી બાજુનું પાછળનું પોર્ટ)</translation>
 <translation id="4053612967614057854">ઓન-સ્ક્રીન કીબોર્ડ અક્ષમ કરો</translation>
-<translation id="412065659894267608"><ph name="HOUR" />ક <ph name="MINUTE" />મિ સુધીમાં પૂર્ણ</translation>
 <translation id="4250680216510889253">નહીં</translation>
 <translation id="4279490309300973883">પ્રતિબિંબત થઈ રહ્યું છે</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -129,7 +127,6 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Google ડ્રાઇવ સેટિંગ્સ...</translation>
-<translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> બાકી</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Cast ઉપકરણો ઉપલબ્ધ</translation>
 <translation id="5222676887888702881">સાઇન આઉટ</translation>
@@ -166,7 +163,6 @@
 <translation id="615957422585914272">ઑન-સ્ક્રીન કીબોર્ડ બતાવો</translation>
 <translation id="6165508094623778733">વધુ જાણો</translation>
 <translation id="6203030746557259519">વર્ચ્યુઅલ ડિસ્પ્લે</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">છોડવા માટે બે વાર Control Shift Q દબાવો.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ને <ph name="ROTATION" /> પર ફેરવવામાં આવ્યું હતું</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" /> તરફથી SMS</translation>
@@ -225,7 +221,6 @@
 <translation id="8308637677604853869">પહેલાનું મેનૂ</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" /> બંધ કરો</translation>
 <translation id="8428213095426709021">સેટિંગ્સ</translation>
-<translation id="8456362689280298700">પૂર્ણ થવામાં <ph name="HOUR" />:<ph name="MINUTE" /> બાકી</translation>
 <translation id="8517041960877371778">તમારું <ph name="DEVICE_TYPE" /> ચાલુ હોય ત્યારે તે ચાર્જ ન થાય તેવું બની શકે.</translation>
 <translation id="8528322925433439945">મોબાઇલ ...</translation>
 <translation id="8673028979667498656">270°</translation>

@@ -2248,23 +2248,6 @@ Si no se establece esta política, cualquier complemento que coincida con los pa
 <translation id="8587229956764455752">Permitir la creación de nuevas cuentas de usuario</translation>
 <translation id="8614804915612153606">Inhabilitar las actualizaciones automáticas</translation>
 <translation id="8631434304112909927">hasta la versión <ph name="UNTIL_VERSION" /></translation>
-<translation id="863712305404093038">Bloquea el acceso a la lista de URLs.
-
-      Esta política evita que el usuario cargue páginas web de las URL incluidas en una lista negra. La lista negra ofrece una lista de los patrones de URL que especifican las URL que se mostrarán en una lista negra.
-
-      Cada patrón de URL puede ser tanto un patrón para archivos locales como un patrón de URL genérica. Los patrones de archivos locales tienen el formato "file://path", donde "path" debería ser una ruta absoluta para bloquear. Se bloquearán todas las ubicaciones del sistema de archivos en las que esta ruta sea un prefijo.
-
-      Los patrones de URL genérica tienen el formato "scheme://host:port/path".
-      Si está presente, solo se bloqueará el esquema especificado. Si no se ha especificado el prefijo scheme://, se bloquearán todos los esquemas.
-      Se necesita el host y puede ser un nombre de host o una dirección IP. También se bloquearán los subdominios de un nombre de host. Para evitar que se bloqueen subdominios, debes incluir un símbolo "." delante del nombre de host. El símbolo "*" del nombre de host especial bloqueará todos los dominios.
-      El puerto opcional es un número de puerto válido comprendido entre 1 y 65.535. Si no se especifica ninguno, se bloquearán todos los puertos.
-      Si se especifica la ruta opcional, solo se bloquearán las rutas con ese prefijo.
-
-      Las excepciones se pueden definir en la política de listas blancas de URL. Estas políticas se limitan a 1000 entradas, y se ignorarán las entradas que superen este número.
-
-      No se recomienda bloquear las URL internas "chrome://*", porque podrían producirse errores inesperados.
-
-      Si no se configura esta política, no se mostrará ninguna URL en la lista negra del navegador.</translation>
 <translation id="8649763579836720255">Los dispositivos Chrome OS pueden utilizar la confirmación remota (acceso verificado) para obtener un certificado emitido por la autoridad de certificación de Chrome OS que afirme que el dispositivo puede reproducir contenido protegido. Este proceso implica el envío de información de aprobación del hardware a la autoridad de certificación de Chrome OS que identifica el dispositivo de forma única.
 
           Si esta opción está establecida en False, el dispositivo no utilizará la confirmación remota para la protección del contenido y es posible que el dispositivo no pueda reproducir contenido protegido.

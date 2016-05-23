@@ -129,6 +129,7 @@
 <translation id="257931822824936280">Visualização expandida. Clique para recolher</translation>
 <translation id="2587052924345400782">Versão mais recente disponível</translation>
 <translation id="2593272815202181319">Espaçamento uniforme</translation>
+<translation id="2621115761605608342">Permitir JavaScript para um site específico.</translation>
 <translation id="2646820313617290661">Seus pais ajudam a gerenciar essas configurações.</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2677748264148917807">Sair</translation>
@@ -152,6 +153,7 @@
 <translation id="2903493209154104877">Endereços</translation>
 <translation id="2913331724188855103">Permitir que os sites salvem e leiam dados de cookies (recomendado)</translation>
 <translation id="2956410042958133412">Esta conta é gerenciada por <ph name="PARENT_NAME_1" /> e <ph name="PARENT_NAME_2" />.</translation>
+<translation id="2959609938957585241">Para ver as guias dos seus outros dispositivos, ative a opção "Sincronizar dados automaticamente" nas configurações de conta do Android.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Todos os direitos reservados.</translation>
 <translation id="2968755619301702150">Leitor de certificados</translation>
 <translation id="2996291259634659425">Criar senha longa</translation>
@@ -188,6 +190,7 @@
 
 Você está fazendo login com uma conta gerenciada e fornecendo ao administrador da conta o controle sobre seu perfil do Google Chrome. Seus dados do Chrome serão permanentemente vinculados a esta conta. Se você se desconectar desta conta, os dados locais do Chrome serão excluídos.</translation>
 <translation id="3384347053049321195">Compartilhar imagem</translation>
+<translation id="3386292677130313581">Perguntar antes de permitir que sites saibam seu local (recomendado)</translation>
 <translation id="3387650086002190359">Falha no download de <ph name="FILE_NAME" /> devido a erros do sistema de arquivos.</translation>
 <translation id="3414952576877147120">Tamanho:</translation>
 <translation id="3435896845095436175">Ativar</translation>
@@ -240,6 +243,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="4254813446494774748">Idioma de tradução:</translation>
 <translation id="4256782883801055595">Licenças de código aberto</translation>
 <translation id="4259722352634471385">A Navegação GPS está bloqueada: <ph name="URL" /></translation>
+<translation id="4262028915562328938">Ocorreu um erro de sincronização. Toque para ver detalhes.</translation>
 <translation id="4269820728363426813">Copiar endereço do link</translation>
 <translation id="4271185234001491831">Nunca traduzir <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Mídia</translation>
@@ -254,6 +258,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="4440256989292146959">Navegue mais por menos</translation>
 <translation id="4452548195519783679">Adicionado como favorito em <ph name="FOLDER_NAME" /></translation>
 <translation id="4457399174246232812">As futuras páginas da Web física nas proximidades serão exibidas na sua lista de notificações</translation>
+<translation id="4479647676395637221">Perguntar antes de permitir que sites usem sua câmera (recomendado)</translation>
 <translation id="4498934959426056365">Geração de chaves</translation>
 <translation id="4508440807153586353">Somente uma pessoa com sua senha longa pode ler seus dados criptografados. A senha longa não é enviada ou armazenada pelo Google. Se você esquecer sua senha longa ou desejar alterar essa configuração, será necessário redefinir a sincronização. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# dia atrás}one{# dias atrás}other{# dias atrás}}</translation>
@@ -323,6 +328,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="5317780077021120954">Salvar</translation>
 <translation id="5324858694974489420">Configurações parentais</translation>
 <translation id="5327248766486351172">Nome</translation>
+<translation id="5335288049665977812">Permitir que sites executem o JavaScript (recomendado)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> excluído</translation>
 <translation id="5345083863238459644">O acesso a locais também está <ph name="BEGIN_LINK" />desativado para este dispositivo<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Nunca enviar</translation>
@@ -367,6 +373,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="585027516397408832">Economia de dados ativada</translation>
 <translation id="5860033963881614850">Desativado</translation>
 <translation id="5869522115854928033">Senhas salvas</translation>
+<translation id="588563574323093535">Perguntar antes de permitir que sites entrem no modo de tela cheia (recomendado)</translation>
 <translation id="5899349522111170522">Criar novo arquivo</translation>
 <translation id="5902828464777634901">Os dados locais armazenados por este site serão excluídos, inclusive os cookies.</translation>
 <translation id="5911030830365207728">Google Tradutor</translation>
@@ -391,6 +398,7 @@ Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para
 <translation id="6140912465461743537">País/região</translation>
 <translation id="6159335304067198720">Economia de dados de <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Saiba mais</translation>
+<translation id="6181444274883918285">Adicionar site às exceções</translation>
 <translation id="6192792657125177640">Exceções</translation>
 <translation id="6232535412751077445">A ativação de "Não rastrear" significa que uma solicitação será incluída no tráfego de navegação. Todo efeito depende de um website responder à solicitação e de como a solicitação é interpretada.
 
@@ -426,6 +434,7 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="6627583120233659107">Editar pasta</translation>
 <translation id="6647073004883890710">Deseja que <ph name="PASSWORD_MANAGER_BRAND" /> atualize a senha de <ph name="USERNAME" /> para este site?</translation>
 <translation id="6656545060687952787">O Chrome precisa de acesso ao local para procurar por dispositivos. <ph name="BEGIN_LINK" />Atualizar permissões<ph name="END_LINK" /></translation>
+<translation id="6659594942844771486">Guia</translation>
 <translation id="666268767214822976">Usar um serviço de previsão para mostrar consultas relacionadas e sites populares quando você digitar na barra de endereços</translation>
 <translation id="666981079809192359">Aviso de Privacidade do Chrome</translation>
 <translation id="6698801883190606802">Gerenciar dados sincronizados</translation>
@@ -452,6 +461,7 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="6981982820502123353">Acessibilidade</translation>
 <translation id="6990079615885386641">Comprar aplicativo na Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">Informar automaticamente ao Google detalhes de possíveis incidentes de segurança.</translation>
+<translation id="6992289844737586249">Perguntar antes de permitir que sites usem o microfone (recomendado)</translation>
 <translation id="6999892069268112724">Confirmar Conta do Google</translation>
 <translation id="7021515813996758557">O download de <ph name="FILE_NAME" /> foi concluído</translation>
 <translation id="7022756207310403729">Abrir no navegador</translation>
@@ -514,6 +524,7 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="7682287625158474539">Entrega</translation>
 <translation id="7690588279513156836">Carregar original</translation>
 <translation id="771135159654932189">Ver o que está nas proximidades</translation>
+<translation id="7713873128508426081">Sempre permitido</translation>
 <translation id="7764225426217299476">Adicionar endereço</translation>
 <translation id="7765158879357617694">Mover</translation>
 <translation id="7772032839648071052">Confirmar senha</translation>
@@ -558,6 +569,7 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="8275818695183729150">Permitir (para pesquisas na barra de endereço)</translation>
 <translation id="8283853025636624853">Sincronizando com <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Guias padrão</translation>
+<translation id="8372893542064058268">Permite a sincronização em segundo plano para um site específico.</translation>
 <translation id="8374821112118309944">Atualize o TalkBack para receber uma versão mais nova.</translation>
 <translation id="8396312449826231789">Somente sites aprovados</translation>
 <translation id="8413126021676339697">Mostrar histórico completo</translation>
@@ -591,6 +603,7 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="8812942424849541387">Controlar como esse recurso funciona nas <ph name="BEGIN_LINK1" />Configurações<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Favoritos</translation>
 <translation id="8829678271838353305"><ph name="ACCOUNT_EMAIL_LAST" /> fez o login. Fazer o login com <ph name="ACCOUNT_EMAIL_NEW" /> mescla dados sincronizados, por exemplo, os favoritos, entre as contas. Para manter as informações separadas, limpe os dados de navegação em "<ph name="BEGIN_LINK" />Configurações<ph name="END_LINK" />".</translation>
+<translation id="883635517171802338">Impedir que sites exibam pop-ups (recomendado)</translation>
 <translation id="884264119367021077">Endereço de entrega</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, guia</translation>
 <translation id="885701979325669005">Armazenamento</translation>
@@ -620,6 +633,7 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="9100610230175265781">Senha necessária</translation>
 <translation id="9133515669113036225">Redefinir as credenciais do dispositivo</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
+<translation id="9139068048179869749">Perguntar antes de permitir que sites enviem notificações (recomendado)</translation>
 <translation id="9141510419986760385">Você está trocando de contas de sincronização de <ph name="FROM_ACCOUNT" /> para <ph name="TO_ACCOUNT" />. O que deseja fazer com os favoritos, histórico, senhas e outras configurações já existentes?</translation>
 <translation id="917685106653909562">Páginas da Web física nas proximidades</translation>
 <translation id="9187199695613236444">Visualização otimizada para dispositivos móveis</translation>

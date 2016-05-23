@@ -92,7 +92,6 @@
 <translation id="3621712662352432595">ఆడియో సెట్టింగ్‌‍లు</translation>
 <translation id="3625258641415618104">స్క్రీన్‌షాట్‌లు నిలిపివేయబడ్డాయి</translation>
 <translation id="3626281679859535460">ప్రకాశం</translation>
-<translation id="3626637461649818317"><ph name="PERCENTAGE" />% మిగిలి ఉంది</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME" />: <ph name="ANNOTATION" /></translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> రిజల్యూషన్ <ph name="RESOLUTION" />కి మార్చబడింది</translation>
 <translation id="370649949373421643">Wi-fiని ప్రారంభించు</translation>
@@ -111,7 +110,6 @@
 <translation id="397105322502079400">గణిస్తోంది...</translation>
 <translation id="3995138139523574647">USB-C పరికరం (కుడివైపు వెనుక పోర్ట్)</translation>
 <translation id="4053612967614057854">స్క్రీన్‌పై కీబోర్డ్‌ను నిలిపివేయి</translation>
-<translation id="412065659894267608">నిండే వరకు <ph name="HOUR" />h <ph name="MINUTE" />m అవుతుంది</translation>
 <translation id="4250680216510889253">కాదు</translation>
 <translation id="4279490309300973883">ప్రతిబింబిస్తుంది</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -129,7 +127,6 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Google డిస్క్ సెట్టింగ్‌లు...</translation>
-<translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> మిగిలి ఉంది</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Cast పరికరాలు అందుబాటులో ఉన్నాయి</translation>
 <translation id="5222676887888702881">సైన్ ఔట్</translation>
@@ -166,7 +163,6 @@
 <translation id="615957422585914272">స్క్రీన్‌పై కీబోర్డ్‌ను చూపు</translation>
 <translation id="6165508094623778733">మరింత తెలుసుకోండి</translation>
 <translation id="6203030746557259519">వర్చువల్ డిస్‌ప్లే</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">నిష్క్రమించడానికి రెండుసార్లు Control Shift Q నొక్కండి.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" />కి తిప్పబడింది</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" /> నుండి SMS</translation>
@@ -226,7 +222,6 @@
 <translation id="8308637677604853869">మునుపటి మెను</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" />ని మూసివేయి</translation>
 <translation id="8428213095426709021">సెట్టింగ్‌లు</translation>
-<translation id="8456362689280298700"><ph name="HOUR" />:<ph name="MINUTE" />లో పూర్తవుతుంది</translation>
 <translation id="8517041960877371778">మీ <ph name="DEVICE_TYPE" /> ఆన్‌లో ఉన్నప్పుడు ఛార్జ్ కాకపోవచ్చు.</translation>
 <translation id="8528322925433439945">మొబైల్ ...</translation>
 <translation id="8673028979667498656">270°</translation>

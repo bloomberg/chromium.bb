@@ -28,6 +28,7 @@
 <translation id="2479520428668657293">右に移動して選択範囲を変更</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2497284189126895209">すべてのファイル</translation>
+<translation id="2515586267016047495">Alt</translation>
 <translation id="2538759511191347839">行末に移動して選択範囲を変更</translation>
 <translation id="2557207087669398617">行頭に移動</translation>
 <translation id="2666092431469916601">一番上</translation>
@@ -58,7 +59,6 @@
 <translation id="4252565523989510616">前方の単語を削除</translation>
 <translation id="4320177379694898372">インターネットに接続されていません</translation>
 <translation id="436869212180315161">押す</translation>
-<translation id="4552416320897244156">PageDown</translation>
 <translation id="4588090240171750605">右にスクロール</translation>
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 秒}other{# 秒}}</translation>
@@ -129,10 +129,10 @@
 <translation id="8328145009876646418">左端</translation>
 <translation id="8331626408530291785">上にスクロール</translation>
 <translation id="8371695176452482769">お話しください</translation>
+<translation id="8392688371657486010">通知はありません</translation>
 <translation id="8394908167088220973">メディアの再生/一時停止</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8428213095426709021">設定</translation>
-<translation id="8447116497070723931">PageUp</translation>
 <translation id="8471049483003785219">左の単語に移動して選択範囲を変更</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> ファイル (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/秒</translation>

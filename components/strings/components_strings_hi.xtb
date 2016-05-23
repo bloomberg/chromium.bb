@@ -260,6 +260,7 @@
 <translation id="3583757800736429874">&amp;ले जाना फिर से करें</translation>
 <translation id="3586931643579894722">विवरण छुपाएं</translation>
 <translation id="3587482841069643663">सभी</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3608308818141211642">क्‍लाइंट और सर्वर किसी सामान्‍य SSL प्रोटोकॉल वर्शन या साइफर सुइट का समर्थन नहीं करता. ऐसा संभवत: तब होता है जब सर्वर को RC4 की आवश्‍यकता होती है, जिसे अब सुरक्षित नहीं माना जाता है.</translation>
 <translation id="3609138628363401169">सर्वर, TLS फिर से मध्यस्थता विस्तार का समर्थन नहीं करता है.</translation>
 <translation id="362276910939193118">संपूर्ण इतिहास दिखाएं</translation>

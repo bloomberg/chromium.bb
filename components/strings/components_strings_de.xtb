@@ -263,6 +263,7 @@
 <translation id="3583757800736429874">&amp;Verschieben wiederholen</translation>
 <translation id="3586931643579894722">Details ausblenden</translation>
 <translation id="3587482841069643663">Alle</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3608308818141211642">Der Client und der Server unterstützen keine gemeinsame SSL-Protokollversion oder Verschlüsselungssammlung. Dieses Problem tritt häufig auf, wenn der Server die RC4-Verschlüsselung erfordert, die nicht mehr als sicher gilt.</translation>
 <translation id="3609138628363401169">Der Server unterstützt die TLS-Renegotiation-Erweiterung nicht.</translation>
 <translation id="362276910939193118">Gesamtverlauf anzeigen</translation>

@@ -262,6 +262,7 @@
 <translation id="3583757800736429874">إ&amp;عادة النقل</translation>
 <translation id="3586931643579894722">إخفاء التفاصيل</translation>
 <translation id="3587482841069643663">الكل</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />، و<ph name="DOMAIN" />، و<ph name="TIME" /></translation>
 <translation id="3608308818141211642">‏لا يدعم العميل والخادم إصدارًا مشتركًا لبروتوكول طبقة المقابس الآمنة أو مجموعة التشفير. وربما يحدث هذا عندما يحتاج الخادم تشفير RC4، والذي لم يُعد آمنًا.</translation>
 <translation id="3609138628363401169">‏لا يوفر الخادم إضافة إعادة التفاوض بروتوكول أمان طبقة النقل (TLS).</translation>
 <translation id="362276910939193118">عرض السجل بكامله</translation>

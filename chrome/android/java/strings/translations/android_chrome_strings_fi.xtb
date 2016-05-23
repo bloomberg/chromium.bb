@@ -129,6 +129,7 @@ Voit hallinnoida Fyysisen webin ominaisuuksia Chromen asetuksissa.
 <translation id="257931822824936280">Laajennettu – tiivistä klikkaamalla.</translation>
 <translation id="2587052924345400782">Uudempi versio on saatavilla.</translation>
 <translation id="2593272815202181319">Monospace</translation>
+<translation id="2621115761605608342">Salli JavaScript tietyllä sivustolla.</translation>
 <translation id="2646820313617290661">Vanhempasi auttavat näiden asetusten hallinnassa.</translation>
 <translation id="2653659639078652383">Lähetä</translation>
 <translation id="2677748264148917807">Poistu</translation>
@@ -152,6 +153,7 @@ Voit hallinnoida Fyysisen webin ominaisuuksia Chromen asetuksissa.
 <translation id="2903493209154104877">Osoitteet</translation>
 <translation id="2913331724188855103">Salli sivustojen tallentaa ja lukea evästetietoja (suositus).</translation>
 <translation id="2956410042958133412">Tätä tiliä hallinnoivat <ph name="PARENT_NAME_1" /> ja <ph name="PARENT_NAME_2" />.</translation>
+<translation id="2959609938957585241">Ota tietojen automaattinen synkronointi käyttöön Androidin tiliasetuksissa, niin voit käyttää välilehtiäsi kaikilla laitteilla.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Kaikki oikeudet pidätetään.</translation>
 <translation id="2968755619301702150">Varmennetiedot</translation>
 <translation id="2996291259634659425">Luo tunnuslause</translation>
@@ -188,6 +190,7 @@ Voit hallinnoida Fyysisen webin ominaisuuksia Chromen asetuksissa.
 
 Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata Chrome-profiiliasi. Chrome-tietosi yhdistetään tähän tiliin pysyvästi. Jos irrotat Chrome-tiedot tilistä, paikalliset Chrome-tiedot poistetaan.</translation>
 <translation id="3384347053049321195">Jaa kuva</translation>
+<translation id="3386292677130313581">Pyydä lupaa, kun sivustot yrittävät käyttää sijaintiasi (suositus).</translation>
 <translation id="3387650086002190359">Tiedoston <ph name="FILE_NAME" /> lataus epäonnistui tiedostojärjestelmävirheen vuoksi.</translation>
 <translation id="3414952576877147120">Koko:</translation>
 <translation id="3435896845095436175">Ota käyttöön</translation>
@@ -240,6 +243,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4254813446494774748">Käännöksen kieli:</translation>
 <translation id="4256782883801055595">Avoimen lähdekoodin käyttöluvat</translation>
 <translation id="4259722352634471385">Kohde on estetty: <ph name="URL" /></translation>
+<translation id="4262028915562328938">Synkronoinnissa tapahtui virhe – saat lisätietoja napauttamalla.</translation>
 <translation id="4269820728363426813">Kopioi linkin osoite</translation>
 <translation id="4271185234001491831">Älä koskaan käännä kieltä <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Media</translation>
@@ -254,6 +258,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4440256989292146959">Selaa enemmän vähemmällä</translation>
 <translation id="4452548195519783679">Lisätty kirjanmerkiksi kansioon <ph name="FOLDER_NAME" /></translation>
 <translation id="4457399174246232812">Lähistöltä löytyvät Fyysinen web ‑sivut näytetään ilmoitusluettelossasi.</translation>
+<translation id="4479647676395637221">Pyydä lupaa, kun sivustot yrittävät käyttää kameraasi (suositus).</translation>
 <translation id="4498934959426056365">Avaimen luominen</translation>
 <translation id="4508440807153586353">Salattuja tietojasi voi lukea vain tunnuslauseesi avulla. Tunnuslausetta ei lähetetä Googlelle eikä Google tallenna sitä. Jos unohdat tunnuslauseesi tai haluat muokata tätä asetusta, synkronointi täytyy nollata. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# päivä sitten}other{# päivää sitten}}</translation>
@@ -323,6 +328,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="5317780077021120954">Tallenna</translation>
 <translation id="5324858694974489420">Vanhempien asetukset</translation>
 <translation id="5327248766486351172">Nimi</translation>
+<translation id="5335288049665977812">Anna kaikkien sivustojen käyttää JavaScriptiä (suositus).</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> poistettiin.</translation>
 <translation id="5345083863238459644">Sijaintitiedot on <ph name="BEGIN_LINK" />poistettu käytöstä myös tässä laitteessa<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Älä lähetä koskaan</translation>
@@ -368,6 +374,7 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 <translation id="585027516397408832">Data Saver käytössä</translation>
 <translation id="5860033963881614850">Pois käytöstä</translation>
 <translation id="5869522115854928033">Tallennetut salasanat</translation>
+<translation id="588563574323093535">Pyydä lupaa, kun sivustot yrittävät siirtyä koko näytön tilaan (suositus).</translation>
 <translation id="5899349522111170522">Luo uusi tiedosto.</translation>
 <translation id="5902828464777634901">Kaikki tämän sivuston tallentamat paikalliset tiedot (myös evästeet) poistetaan.</translation>
 <translation id="5911030830365207728">Google Kääntäjä</translation>
@@ -392,6 +399,7 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 <translation id="6140912465461743537">Maa/alue</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> vähemmän tiedonsiirtoa</translation>
 <translation id="6165508094623778733">Lisätietoja</translation>
+<translation id="6181444274883918285">Lisää sivustopoikkeus</translation>
 <translation id="6192792657125177640">Poikkeukset</translation>
 <translation id="6232535412751077445">Do Not Track -toiminnon käyttöönotto tarkoittaa sitä, että selausliikenteeseesi sisällytetään pyyntö. Sen vaikutus riippuu siitä, vastaako verkkosivusto pyyntöön ja miten pyyntöä tulkitaan.
 
@@ -427,6 +435,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6627583120233659107">Muokkaa kansiota</translation>
 <translation id="6647073004883890710">Haluatko, että <ph name="PASSWORD_MANAGER_BRAND" /> päivittää tilin <ph name="USERNAME" /> salasanan tällä sivustolla?</translation>
 <translation id="6656545060687952787">Chrome tarvitsee sijaintitietojen käyttöoikeuden hakeakseen laitteita. <ph name="BEGIN_LINK" />Päivitä käyttöoikeudet<ph name="END_LINK" />.</translation>
+<translation id="6659594942844771486">Välilehti</translation>
 <translation id="666268767214822976">Käytä ennakointipalvelua, joka näyttää sinulle aiheeseen liittyviä kyselyitä sekä suosittuja verkkosivustoja kirjoittaessasi osoitepalkkiin.</translation>
 <translation id="666981079809192359">Chromen tietosuojailmoitus</translation>
 <translation id="6698801883190606802">Hallinnoi synkronoituja tietoja</translation>
@@ -453,6 +462,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6981982820502123353">Esteettömyys</translation>
 <translation id="6990079615885386641">Hanki sovellus Google Play Kaupasta: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">Ilmoita mahdollisista turvallisuusongelmista Googlelle automaattisesti</translation>
+<translation id="6992289844737586249">Pyydä lupaa, kun sivustot yrittävät käyttää mikrofonia (suositus).</translation>
 <translation id="6999892069268112724">Vahvista Google-tili</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> ladattiin.</translation>
 <translation id="7022756207310403729">Avaa selaimessa</translation>
@@ -515,6 +525,7 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="7682287625158474539">Toimitus</translation>
 <translation id="7690588279513156836">Lataa alkuperäinen</translation>
 <translation id="771135159654932189">Näytä lähellä olevat sivut</translation>
+<translation id="7713873128508426081">Salli aina</translation>
 <translation id="7764225426217299476">Lisää osoite</translation>
 <translation id="7765158879357617694">Siirrä</translation>
 <translation id="7772032839648071052">Vahvista tunnuslause</translation>
@@ -559,6 +570,7 @@ Google-tililläsi voi olla muita selaushistoriatietoja, kuten hakuja ja toiminta
 <translation id="8275818695183729150">Salli (osoitepalkissa tehtäville hauille)</translation>
 <translation id="8283853025636624853">Synkronoidaan tietoja tilille <ph name="SYNC_ACCOUNT_USER_NAME" />.</translation>
 <translation id="8310344678080805313">Tavalliset välilehdet</translation>
+<translation id="8372893542064058268">Salli taustasynkronointi tietyllä sivustolla.</translation>
 <translation id="8374821112118309944">TalkBack täytyy päivittää uudempaan versioon.</translation>
 <translation id="8396312449826231789">Vain hyväksytyt sivustot</translation>
 <translation id="8413126021676339697">Näytä koko selaushistoria</translation>
@@ -593,6 +605,7 @@ Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisält�
 <translation id="8812942424849541387">Säädä tämän toimintaa <ph name="BEGIN_LINK1" />asetuksissa<ph name="END_LINK1" />.</translation>
 <translation id="8820817407110198400">Kirjanmerkit</translation>
 <translation id="8829678271838353305"><ph name="ACCOUNT_EMAIL_LAST" /> on laitteeseen viimeksi kirjautunut käyttäjä. Jos kirjaudut sisään tilillä <ph name="ACCOUNT_EMAIL_NEW" />, näiden tilien synkronoidut tiedot, kuten kirjanmerkit, yhdistetään. Jos haluat pitää tiedot toisistaan erillään, tyhjennä selaustiedot <ph name="BEGIN_LINK" />asetuksissa<ph name="END_LINK" />.</translation>
+<translation id="883635517171802338">Estä ponnahdusikkunoiden näyttäminen sivustoilla (suositus).</translation>
 <translation id="884264119367021077">Toimitusosoite</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, välilehti</translation>
 <translation id="885701979325669005">Tallennus</translation>
@@ -622,6 +635,7 @@ Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisält�
 <translation id="9100610230175265781">Tunnuslause tarvitaan</translation>
 <translation id="9133515669113036225">Nollaa laitteen kirjautumistiedot</translation>
 <translation id="9137013805542155359">Näytä alkuperäinen</translation>
+<translation id="9139068048179869749">Pyydä lupaa, kun sivustot yrittävät lähettää ilmoituksia (suositus).</translation>
 <translation id="9141510419986760385">Muutoksen jälkeen synkronointi käyttää tilin <ph name="FROM_ACCOUNT" /> sijaan tiliä <ph name="TO_ACCOUNT" />. Mitä nykyisille kirjanmerkeille, historiatiedoille, salasanoille ja muille asetuksille tehdään?</translation>
 <translation id="917685106653909562">Lähistöllä on Fyysisen webin sivuja.</translation>
 <translation id="9187199695613236444">Mobiililaitteille sopiva näkymä</translation>

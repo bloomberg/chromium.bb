@@ -262,6 +262,7 @@
 <translation id="3583757800736429874">&amp;Teisalda uuesti</translation>
 <translation id="3586931643579894722">Peida üksikasjad</translation>
 <translation id="3587482841069643663">Kõik</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3608308818141211642">Klient ja server ei toeta šifreerimiskomplekti ega SSL-protokolli ühist versiooni. Põhjuseks on tõenäoliselt see, et server vajab RC4, mida ei loeta enam turvaliseks.</translation>
 <translation id="3609138628363401169">Server ei toeta TLS-i taasläbirääkimise laiendust.</translation>
 <translation id="362276910939193118">Näita kogu ajalugu</translation>

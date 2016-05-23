@@ -92,7 +92,6 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="3621712662352432595">Setări audio</translation>
 <translation id="3625258641415618104">Capturile de ecran sunt dezactivate</translation>
 <translation id="3626281679859535460">Luminozitate</translation>
-<translation id="3626637461649818317">Nivel disponibil: <ph name="PERCENTAGE" />%</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME" />: <ph name="ANNOTATION" /></translation>
 <translation id="3683428399328702079">Rezoluția <ph name="DISPLAY_NAME" /> a fost modificată la <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Activați Wi-Fi</translation>
@@ -111,7 +110,6 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="397105322502079400">Se calculează...</translation>
 <translation id="3995138139523574647">Dispozitiv USB-C (portul din dreapta spate)</translation>
 <translation id="4053612967614057854">Dezactivează tastatura de pe ecran</translation>
-<translation id="412065659894267608"><ph name="HOUR" /> h. <ph name="MINUTE" /> min. până la încărcare completă</translation>
 <translation id="4250680216510889253">Nu</translation>
 <translation id="4279490309300973883">Oglindire</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -129,7 +127,6 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Ctrl + Shift + bara de spațiu</translation>
 <translation id="5045002648206642691">Setări Disc Google...</translation>
-<translation id="5102001756192215136">Timp rămas: <ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Dispozitive de proiecție disponibile</translation>
 <translation id="5222676887888702881">Deconectează-te</translation>
@@ -166,7 +163,6 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="615957422585914272">Afișați tastatura pe ecran</translation>
 <translation id="6165508094623778733">Află mai multe</translation>
 <translation id="6203030746557259519">Afișare virtuală</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE" /> %</translation>
 <translation id="6248847161401822652">Apăsați de două ori Control Shift Q pentru a ieși.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> a fost rotit la <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS de la <ph name="PHONE_NUMBER" /></translation>
@@ -226,7 +222,6 @@ Apăsați Alt+Căutare sau Shift pentru a anula.</translation>
 <translation id="8308637677604853869">Meniul anterior</translation>
 <translation id="8356164830168736643">Închide <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Setări</translation>
-<translation id="8456362689280298700"><ph name="HOUR" />:<ph name="MINUTE" /> până ce bateria va fi plină</translation>
 <translation id="8517041960877371778">Este posibil ca <ph name="DEVICE_TYPE" /> să nu se încarce cât timp este pornit.</translation>
 <translation id="8528322925433439945">Rețele mobile...</translation>
 <translation id="8673028979667498656">270°</translation>

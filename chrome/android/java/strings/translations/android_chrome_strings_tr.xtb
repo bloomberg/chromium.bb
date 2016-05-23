@@ -129,6 +129,7 @@ Chrome Ayarları'ndan Fiziksel Web'i kontrol edebilirsiniz.
 <translation id="257931822824936280">Genişletildi - Daraltmak için tıklayın.</translation>
 <translation id="2587052924345400782">Daha yeni bir sürüm mevcut</translation>
 <translation id="2593272815202181319">Eş aralıklı</translation>
+<translation id="2621115761605608342">Belirli bir site için JavaScript'e izin verin.</translation>
 <translation id="2646820313617290661">Ebeveyniniz bu ayarları yönetmenize yardımcı olabilir.</translation>
 <translation id="2653659639078652383">Gönder</translation>
 <translation id="2677748264148917807">Çık</translation>
@@ -152,6 +153,7 @@ Chrome Ayarları'ndan Fiziksel Web'i kontrol edebilirsiniz.
 <translation id="2903493209154104877">Adresler</translation>
 <translation id="2913331724188855103">Sitelerin, çerez verilerini kaydetmelerine ve okumalarına izin ver (önerilir)</translation>
 <translation id="2956410042958133412">Bu hesap <ph name="PARENT_NAME_1" /> ve <ph name="PARENT_NAME_2" /> tarafından yönetiliyor.</translation>
+<translation id="2959609938957585241">Diğer cihazlarınızdaki sekmelerinize ulaşmak için Android hesap ayarlarından "Verileri otomatik olarak senkronize et" seçeneğini etkinleştirin.</translation>
 <translation id="2960796085439532066">Telif Hakkı <ph name="YEAR" /> Google Inc. Tüm hakları saklıdır.</translation>
 <translation id="2968755619301702150">Sertifika görüntüleyici</translation>
 <translation id="2996291259634659425">Parola oluşturun</translation>
@@ -188,6 +190,7 @@ Chrome Ayarları'ndan Fiziksel Web'i kontrol edebilirsiniz.
 
 Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chrome profilinizi denetleme olanağı veriyorsunuz. Chrome verileriniz bu hesaba kalıcı olarak bağlanır. Bu hesabın bağlantısı kesildiğinde yerel Chrome verileriniz silinir.</translation>
 <translation id="3384347053049321195">Resmi paylaş</translation>
+<translation id="3386292677130313581">Sitelerin, konumunuzu öğrenmesine izin verilmeden önce size sorulsun (önerilir)</translation>
 <translation id="3387650086002190359">Dosya sistemi hataları nedeniyle <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
 <translation id="3414952576877147120">Boyut:</translation>
 <translation id="3435896845095436175">Etkinleştir</translation>
@@ -240,6 +243,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4254813446494774748">Çeviri Dili:</translation>
 <translation id="4256782883801055595">Açık kaynak lisansları</translation>
 <translation id="4259722352634471385">Gezinme engellendi: <ph name="URL" /></translation>
+<translation id="4262028915562328938">Senkronizasyon hatası oluştu, ayrıntıları görmek için dokunun.</translation>
 <translation id="4269820728363426813">Bağlantı adresini kopyala</translation>
 <translation id="4271185234001491831"><ph name="LANGUAGE" /> dilini asla çevirme</translation>
 <translation id="4275663329226226506">Medya</translation>
@@ -254,6 +258,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4440256989292146959">Daha az bant genişliği harcayarak daha çok göz atın</translation>
 <translation id="4452548195519783679">Yer işareti <ph name="FOLDER_NAME" /> klasörüne eklendi</translation>
 <translation id="4457399174246232812">Bundan sonra yakınlardaki Fiziksel Web sayfaları bildirimler listenizde gösterilecek</translation>
+<translation id="4479647676395637221">Sitelerin, kameranızı kullanmasına izin verilmeden önce size sorulsun (önerilir)</translation>
 <translation id="4498934959426056365">Anahtar oluşturma</translation>
 <translation id="4508440807153586353">Yalnızca parolanızı bilen biri, şifrelenmiş verilerinizi okuyabilir. Parola Google'a gönderilmez veya Google tarafından saklanmaz. Parolanızı unutursanız veya bu ayarı değiştirmek isterseniz senkronizasyonu sıfırlamanız gerekir. <ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# gün önce}other{# gün önce}}</translation>
@@ -323,6 +328,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="5317780077021120954">Kaydet</translation>
 <translation id="5324858694974489420">Ebeveyn Ayarları</translation>
 <translation id="5327248766486351172">Ad</translation>
+<translation id="5335288049665977812">Sitelerin JavaScript çalıştırmasına izin ver (önerilir)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> silindi</translation>
 <translation id="5345083863238459644">Konum erişimi de <ph name="BEGIN_LINK" />bu cihaz için kapatıldı<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Hiçbir zaman gönderme</translation>
@@ -368,6 +374,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="585027516397408832">Veri Tasarrufu etkinleştirildi</translation>
 <translation id="5860033963881614850">Kapalı</translation>
 <translation id="5869522115854928033">Kayıtlı şifreler</translation>
+<translation id="588563574323093535">Sitelerin, tam ekrana geçmesine izin verilmeden önce size sorulsun (önerilir)</translation>
 <translation id="5899349522111170522">Yeni dosya oluştur</translation>
 <translation id="5902828464777634901">Çerezler dahil bu web sitesinin depoladığı tüm yerel veriler silinecek.</translation>
 <translation id="5911030830365207728">Google Çeviri</translation>
@@ -392,6 +399,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6140912465461743537">Ülke/Bölge</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> veri tasarrufu</translation>
 <translation id="6165508094623778733">Daha fazla bilgi edinin</translation>
+<translation id="6181444274883918285">Site istisnası ekle</translation>
 <translation id="6192792657125177640">İstisnalar</translation>
 <translation id="6232535412751077445">"Do Not Track" seçeneği etkinleştirildiğinde, göz atma trafiğinize bir istek eklenir. Her türlü etki, bir web sitesinin isteğe cevap verip vermemesine ve isteğin nasıl yorumlandığına bağlıdır.
 
@@ -427,6 +435,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6627583120233659107">Klasörü düzenle</translation>
 <translation id="6647073004883890710"><ph name="USERNAME" /> adlı kullanıcının bu siteye ait şifresinin <ph name="PASSWORD_MANAGER_BRAND" /> tarafından güncellenmesini istiyor musunuz?</translation>
 <translation id="6656545060687952787">Chrome'un cihazları taraması için konuma erişmesi gerekiyor. <ph name="BEGIN_LINK" />İzinleri güncelleyin<ph name="END_LINK" /></translation>
+<translation id="6659594942844771486">Sekme</translation>
 <translation id="666268767214822976">Adres çubuğuna yazarken ilgili sorguları ve popüler siteleri göstermek için bir tahmin hizmeti kullan</translation>
 <translation id="666981079809192359">Chrome Gizlilik Uyarısı</translation>
 <translation id="6698801883190606802">Senkronize edilen verileri yönetme</translation>
@@ -453,6 +462,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6981982820502123353">Erişilebilirlik</translation>
 <translation id="6990079615885386641">Uygulamayı Google Play Store'dan edinin: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">Olası güvenlik olaylarının ayrıntılarını Google'a otomatik olarak bildir</translation>
+<translation id="6992289844737586249">Sitelerin, mikrofonunuzu kullanmasına izin verilmeden önce size sorulsun (önerilen)</translation>
 <translation id="6999892069268112724">Google Hesabı Onayı</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> dosyası indirildi</translation>
 <translation id="7022756207310403729">Tarayıcıda aç</translation>
@@ -515,6 +525,7 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="7682287625158474539">Sevkiyat</translation>
 <translation id="7690588279513156836">Orijinali yükle</translation>
 <translation id="771135159654932189">Yakınlarda nelerin olduğunu görün</translation>
+<translation id="7713873128508426081">Her zaman izin veriliyor</translation>
 <translation id="7764225426217299476">Adres ekle</translation>
 <translation id="7765158879357617694">Taşı</translation>
 <translation id="7772032839648071052">Parolayı onayla</translation>
@@ -559,6 +570,7 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="8275818695183729150">İzin ver (adres çubuğu aramaları için)</translation>
 <translation id="8283853025636624853"><ph name="SYNC_ACCOUNT_USER_NAME" /> ile senkronize ediliyor</translation>
 <translation id="8310344678080805313">Standart sekmeler</translation>
+<translation id="8372893542064058268">Belirli bir site için Arka Plan Senkronizasyonuna izin verin.</translation>
 <translation id="8374821112118309944">TalkBack'i daha yeni bir sürüme güncellemeniz gerekiyor.</translation>
 <translation id="8396312449826231789">Sadece onaylı siteler</translation>
 <translation id="8413126021676339697">Tüm geçmişi göster</translation>
@@ -593,6 +605,7 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="8812942424849541387">Bunun nasıl çalışacağını <ph name="BEGIN_LINK1" />Ayarlar<ph name="END_LINK1" />'dan kontrol edin</translation>
 <translation id="8820817407110198400">Favoriler</translation>
 <translation id="8829678271838353305"><ph name="ACCOUNT_EMAIL_LAST" /> olarak oturum açıldı. <ph name="ACCOUNT_EMAIL_NEW" /> olarak oturum açıldığında, hesaplardaki yer işaretleri gibi senkronize edilmiş veriler birleştirilir. Bilgilerin ayrı kalmasını sağlamak için <ph name="BEGIN_LINK" />ayarlarda<ph name="END_LINK" /> tarama verilerini temizleyin.</translation>
+<translation id="883635517171802338">Sitelerin pop-up göstermesini engelle (önerilir)</translation>
 <translation id="884264119367021077">Gönderim adresi</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, sekme</translation>
 <translation id="885701979325669005">Depolama</translation>
@@ -622,6 +635,7 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="9100610230175265781">Parola gerekli</translation>
 <translation id="9133515669113036225">Cihazın kimlik bilgilerini sıfırla</translation>
 <translation id="9137013805542155359">Orijinali göster</translation>
+<translation id="9139068048179869749">Sitelerin bildirim göndermesine izin vermeden önce size sorulsun (önerilir)</translation>
 <translation id="9141510419986760385">Senkronizasyon hesapları arasında (<ph name="FROM_ACCOUNT" /> hesabından <ph name="TO_ACCOUNT" /> hesabına) geçiş yapıyorsunuz. Mevcut yer işaretleri, geçmiş, şifreler ve diğer ayarlarınızla ne yapmak istiyorsunuz?</translation>
 <translation id="917685106653909562">Yakınlardaki Fiziksel Web sayfaları</translation>
 <translation id="9187199695613236444">Mobil uyumlu görünüm</translation>

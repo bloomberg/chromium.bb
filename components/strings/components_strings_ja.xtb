@@ -261,6 +261,7 @@
 <translation id="3583757800736429874">移動のやり直し（&amp;R）</translation>
 <translation id="3586931643579894722">詳細を非表示</translation>
 <translation id="3587482841069643663">すべて</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />、<ph name="DOMAIN" />、<ph name="TIME" /></translation>
 <translation id="3608308818141211642">クライアントとサーバーで、共通の SSL プロトコル バージョンまたは暗号化スイートがサポートされていません。原因として、サーバーで RC4 が要求されている可能性があります。RC4 は安全とみなされなくなりました。</translation>
 <translation id="3609138628363401169">このサーバーでは TLS の再交渉拡張がサポートされていません。</translation>
 <translation id="362276910939193118">全履歴を表示</translation>

@@ -92,7 +92,6 @@
 <translation id="3621712662352432595">ஆடியோ அமைப்புகள்</translation>
 <translation id="3625258641415618104">ஸ்கிரீன்ஷாட்கள் முடக்கப்பட்டன</translation>
 <translation id="3626281679859535460">ஒளிர்வு</translation>
-<translation id="3626637461649818317"><ph name="PERCENTAGE" />% மீதமுள்ளது</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME" />: <ph name="ANNOTATION" /></translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> தெளிவுத்திறன் <ph name="RESOLUTION" /> க்கு மாற்றப்பட்டது</translation>
 <translation id="370649949373421643">Wi-fi ஐ இயக்கு</translation>
@@ -111,7 +110,6 @@
 <translation id="397105322502079400">கணக்கிடுகிறது...</translation>
 <translation id="3995138139523574647">USB-C சாதனம் (வலது பக்கம் பின்னே இருக்கும் போர்ட்)</translation>
 <translation id="4053612967614057854">ஆன்ஸ்க்ரீன் விசைப்பலகையை முடக்கு</translation>
-<translation id="412065659894267608">முழுவதும் சார்ஜ் ஆகும் நேரம் - <ph name="HOUR" />ம <ph name="MINUTE" />நி</translation>
 <translation id="4250680216510889253">இல்லை</translation>
 <translation id="4279490309300973883">பிரதிபலிக்கிறது</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -129,7 +127,6 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Google இயக்கக அமைப்புகள்...</translation>
-<translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> உள்ளது</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">அனுப்பும் சாதனங்கள் உள்ளன</translation>
 <translation id="5222676887888702881">வெளியேறு</translation>
@@ -166,7 +163,6 @@
 <translation id="615957422585914272">ஆன்-ஸ்கிரீன் விசைப்பலகையைக் காட்டு</translation>
 <translation id="6165508094623778733">மேலும் அறிக</translation>
 <translation id="6203030746557259519">விர்ச்சுவல் காட்சி</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">வெளியேற Control Shift Q ஐ இருமுறை அழுத்தவும்.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" /> ஆகச் சுழற்றப்பட்டது</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" /> என்ற எண்ணிலிருந்து வந்த SMS</translation>
@@ -226,7 +222,6 @@
 <translation id="8308637677604853869">முந்தைய மெனு</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" />ஐ மூடு</translation>
 <translation id="8428213095426709021">அமைப்புகள்</translation>
-<translation id="8456362689280298700">நிரம்ப <ph name="HOUR" />:<ph name="MINUTE" /> உள்ளது</translation>
 <translation id="8517041960877371778">இயக்கப்பட்டிருக்கும் போது உங்கள் <ph name="DEVICE_TYPE" /> இல் சார்ஜ் ஏறாது.</translation>
 <translation id="8528322925433439945">மொபைல் ...</translation>
 <translation id="8673028979667498656">270°</translation>

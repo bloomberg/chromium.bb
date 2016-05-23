@@ -262,6 +262,7 @@
 <translation id="3583757800736429874">&amp;Buat Semula Pindahkan</translation>
 <translation id="3586931643579894722">Sembunyikan butiran</translation>
 <translation id="3587482841069643663">Semua</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3608308818141211642">Pelanggan dan pelayan tidak menyokong versi protokol SSL atau suit sifer yang sama. Ini mungkin berlaku apabila pelayan memerlukan RC4, yang tidak lagi dianggap selamat.</translation>
 <translation id="3609138628363401169">Pelayan tidak menyokong sambungan rundingan semula TLS.</translation>
 <translation id="362276910939193118">Paparkan Sejarah Penuh</translation>

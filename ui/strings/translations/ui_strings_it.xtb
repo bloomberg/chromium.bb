@@ -28,6 +28,7 @@
 <translation id="2479520428668657293">Sposta a destra e modifica selezione</translation>
 <translation id="2482878487686419369">Notifiche</translation>
 <translation id="2497284189126895209">Tutti i file</translation>
+<translation id="2515586267016047495">Alt</translation>
 <translation id="2538759511191347839">Sposta fino a fine riga e modifica selezione</translation>
 <translation id="2557207087669398617">Sposta fino a inizio riga</translation>
 <translation id="2666092431469916601">In alto</translation>
@@ -58,7 +59,6 @@
 <translation id="4252565523989510616">Elimina una parola avanti</translation>
 <translation id="4320177379694898372">Nessuna connessione Internet</translation>
 <translation id="436869212180315161">Premi</translation>
-<translation id="4552416320897244156">PGGIÙ</translation>
 <translation id="4588090240171750605">Scorri a destra</translation>
 <translation id="4820616160060340806">Comando+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 secondo}other{# secondi}}</translation>
@@ -129,10 +129,10 @@
 <translation id="8328145009876646418">Margine sinistro</translation>
 <translation id="8331626408530291785">Scorri verso l'alto</translation>
 <translation id="8371695176452482769">Parla adesso</translation>
+<translation id="8392688371657486010">Nessuna notifica</translation>
 <translation id="8394908167088220973">Play/Pausa contenuti multimediali</translation>
 <translation id="8400147561352026160">Maiusc+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8428213095426709021">Impostazioni</translation>
-<translation id="8447116497070723931">PGSU</translation>
 <translation id="8471049483003785219">Sposta di una parola a sinistra e modifica selezione</translation>
 <translation id="8602707065186045623">File <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> kB/s</translation>

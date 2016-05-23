@@ -129,6 +129,7 @@ You can control the Physical Web in Chrome Settings.
 <translation id="257931822824936280">Expanded – click to collapse.</translation>
 <translation id="2587052924345400782">Newer version is available</translation>
 <translation id="2593272815202181319">Monospace</translation>
+<translation id="2621115761605608342">Allow JavaScript for a specific site.</translation>
 <translation id="2646820313617290661">Your parents help manage these settings.</translation>
 <translation id="2653659639078652383">Submit</translation>
 <translation id="2677748264148917807">Leave</translation>
@@ -152,6 +153,7 @@ You can control the Physical Web in Chrome Settings.
 <translation id="2903493209154104877">Addresses</translation>
 <translation id="2913331724188855103">Allow sites to save and read cookie data (recommended)</translation>
 <translation id="2956410042958133412">This account is managed by <ph name="PARENT_NAME_1" /> and <ph name="PARENT_NAME_2" />.</translation>
+<translation id="2959609938957585241">To get your tabs from your other devices, turn on "Auto-sync data" in Android account settings.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2968755619301702150">Certificate viewer</translation>
 <translation id="2996291259634659425">Create passphrase</translation>
@@ -188,6 +190,7 @@ You can control the Physical Web in Chrome Settings.
 
 You are signing in with a managed account and giving its administrator control over your Chrome profile. Your Chrome data will become permanently tied to this account. Disconnecting from this account will delete the local Chrome data.</translation>
 <translation id="3384347053049321195">Share image</translation>
+<translation id="3386292677130313581">Ask before allowing sites to know your location (recommended)</translation>
 <translation id="3387650086002190359"><ph name="FILE_NAME" /> download failed due to file system errors.</translation>
 <translation id="3414952576877147120">Size:</translation>
 <translation id="3435896845095436175">Enable</translation>
@@ -240,6 +243,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4254813446494774748">Translation language:</translation>
 <translation id="4256782883801055595">Open-source licences</translation>
 <translation id="4259722352634471385">Navigation is blocked: <ph name="URL" /></translation>
+<translation id="4262028915562328938">Sync error occurred, tap to get details.</translation>
 <translation id="4269820728363426813">Copy link address</translation>
 <translation id="4271185234001491831">Never translate <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Media</translation>
@@ -254,6 +258,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4440256989292146959">Browse more for less</translation>
 <translation id="4452548195519783679">Bookmarked to <ph name="FOLDER_NAME" /></translation>
 <translation id="4457399174246232812">Future nearby Physical Web pages will show up in your notifications list</translation>
+<translation id="4479647676395637221">Ask first before allowing sites to use your camera (recommended)</translation>
 <translation id="4498934959426056365">Key generation</translation>
 <translation id="4508440807153586353">Only someone with your passphrase can read your encrypted data. The passphrase is not sent to or stored by Google. If you forget your passphrase or want to change this setting you'll need to reset sync. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# day ago}other{# days ago}}</translation>
@@ -323,6 +328,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="5317780077021120954">Save</translation>
 <translation id="5324858694974489420">Parental Settings</translation>
 <translation id="5327248766486351172">Name</translation>
+<translation id="5335288049665977812">Allow sites to run JavaScript (recommended)</translation>
 <translation id="5345040418939504969">Deleted <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Location access is also <ph name="BEGIN_LINK" />turned off for this device<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Never send</translation>
@@ -368,6 +374,7 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="585027516397408832">Data Saver enabled</translation>
 <translation id="5860033963881614850">Off</translation>
 <translation id="5869522115854928033">Saved passwords</translation>
+<translation id="588563574323093535">Ask first before allowing sites to enter full screen (recommended)</translation>
 <translation id="5899349522111170522">Create new file</translation>
 <translation id="5902828464777634901">All local data stored by this website, including cookies, will be deleted.</translation>
 <translation id="5911030830365207728">Google Translate</translation>
@@ -392,6 +399,7 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="6140912465461743537">Country/Region</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> data savings</translation>
 <translation id="6165508094623778733">Learn more</translation>
+<translation id="6181444274883918285">Add site exception</translation>
 <translation id="6192792657125177640">Exceptions</translation>
 <translation id="6232535412751077445">Enabling “Do Not Track” means that a request will be included with your browsing traffic. Any effect depends on whether a website responds to the request and how the request is interpreted.
 
@@ -427,6 +435,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6627583120233659107">Edit folder</translation>
 <translation id="6647073004883890710">Do you want <ph name="PASSWORD_MANAGER_BRAND" /> to update the password for <ph name="USERNAME" /> for this site?</translation>
 <translation id="6656545060687952787">Chrome needs location access to scan for devices. <ph name="BEGIN_LINK" />Update permissions<ph name="END_LINK" /></translation>
+<translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">Use a prediction service to show related queries and popular websites as you type in the address bar</translation>
 <translation id="666981079809192359">Chrome Privacy Notice</translation>
 <translation id="6698801883190606802">Manage synced data</translation>
@@ -453,6 +462,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6981982820502123353">Accessibility</translation>
 <translation id="6990079615885386641">Get the app from the Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">Automatically report details of possible security incidents to Google</translation>
+<translation id="6992289844737586249">Ask first before allowing sites to use your microphone (recommended)</translation>
 <translation id="6999892069268112724">Confirm Google Account</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> downloaded</translation>
 <translation id="7022756207310403729">Open in browser</translation>
@@ -515,6 +525,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="7682287625158474539">Shipping</translation>
 <translation id="7690588279513156836">Load original</translation>
 <translation id="771135159654932189">See what's nearby</translation>
+<translation id="7713873128508426081">Always allowed?</translation>
 <translation id="7764225426217299476">Add address</translation>
 <translation id="7765158879357617694">Move</translation>
 <translation id="7772032839648071052">Confirm passphrase</translation>
@@ -559,6 +570,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8275818695183729150">Allow (for address bar searches)</translation>
 <translation id="8283853025636624853">Syncing to <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Standard tabs</translation>
+<translation id="8372893542064058268">Allow Background Sync for a specific site.</translation>
 <translation id="8374821112118309944">You need to update TalkBack to a newer version.</translation>
 <translation id="8396312449826231789">Only approved sites</translation>
 <translation id="8413126021676339697">Show full history</translation>
@@ -591,6 +603,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8812942424849541387">Control how this works in <ph name="BEGIN_LINK1" />Settings<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Bookmarks</translation>
 <translation id="8829678271838353305"><ph name="ACCOUNT_EMAIL_LAST" /> was signed in. Signing in with <ph name="ACCOUNT_EMAIL_NEW" /> will merge synced data like bookmarks between accounts. To keep information separate, clear browsing data in <ph name="BEGIN_LINK" />settings<ph name="END_LINK" />.</translation>
+<translation id="883635517171802338">Block sites from showing pop-ups (recommended)</translation>
 <translation id="884264119367021077">Delivery address</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, tab</translation>
 <translation id="885701979325669005">Storage</translation>
@@ -620,6 +633,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="9100610230175265781">Passphrase required</translation>
 <translation id="9133515669113036225">Reset device credentials</translation>
 <translation id="9137013805542155359">Show original</translation>
+<translation id="9139068048179869749">Ask before allowing sites to send notifications (recommended)</translation>
 <translation id="9141510419986760385">You’re switching sync accounts from <ph name="FROM_ACCOUNT" /> to <ph name="TO_ACCOUNT" />. What do you want to do with your existing bookmarks, history, passwords and other settings?</translation>
 <translation id="917685106653909562">Physical Web pages nearby</translation>
 <translation id="9187199695613236444">Mobile-friendly view</translation>

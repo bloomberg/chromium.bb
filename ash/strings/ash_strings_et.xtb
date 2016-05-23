@@ -92,7 +92,6 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="3621712662352432595">Heliseaded</translation>
 <translation id="3625258641415618104">Ekraanipildid on keelatud</translation>
 <translation id="3626281679859535460">Eredus</translation>
-<translation id="3626637461649818317"><ph name="PERCENTAGE" />% on jäänud</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME" />: <ph name="ANNOTATION" /></translation>
 <translation id="3683428399328702079">Ekraani <ph name="DISPLAY_NAME" /> eraldusvõimeks määrati <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Luba WiFi</translation>
@@ -111,7 +110,6 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="397105322502079400">Arvutamine ...</translation>
 <translation id="3995138139523574647">C-tüüpi USB-seade (tagumine parempoolne port)</translation>
 <translation id="4053612967614057854">Keela ekraanil kuvatav klaviatuur</translation>
-<translation id="412065659894267608"><ph name="HOUR" /> h <ph name="MINUTE" /> min aku täitumiseni</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="4279490309300973883">Peegeldamine</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -129,7 +127,6 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Ctrl + Tõstuklahv + Tühik</translation>
 <translation id="5045002648206642691">Google Drive'i seaded ...</translation>
-<translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> alles</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Ülekandeseadmed on saadaval</translation>
 <translation id="5222676887888702881">Logi välja</translation>
@@ -166,7 +163,6 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="615957422585914272">Ekraanil kuvatava klaviatuuri kuvamine</translation>
 <translation id="6165508094623778733">Lisateave</translation>
 <translation id="6203030746557259519">Virtuaalne ekraan</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">Väljumiseks vajutage kaks korda klahvikombinatsiooni Ctrl + tõstuklahv + Q.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> vahetati valikule <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS numbrilt <ph name="PHONE_NUMBER" /></translation>
@@ -226,7 +222,6 @@ Tühistamiseks vajutage klahvikombinatsiooni Alt + otsinguklahv või tõstuklahv
 <translation id="8308637677604853869">Eelmine menüü</translation>
 <translation id="8356164830168736643">Sule <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Seaded</translation>
-<translation id="8456362689280298700"><ph name="HOUR" />:<ph name="MINUTE" /> täislaadimiseni</translation>
 <translation id="8517041960877371778">Kui seade <ph name="DEVICE_TYPE" /> on sisse lülitatud, ei pruugita seda laadida.</translation>
 <translation id="8528322925433439945">Mobiil ...</translation>
 <translation id="8673028979667498656">270°</translation>

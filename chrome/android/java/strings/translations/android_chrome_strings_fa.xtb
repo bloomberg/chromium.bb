@@ -25,7 +25,7 @@
 <translation id="1272079795634619415">توقف</translation>
 <translation id="1285320974508926690">این سایت هرگز ترجمه نشود</translation>
 <translation id="1291207594882862231">پاک کردن سابقه، کوکی‌ها، داده‌های سایت، حافظه پنهان…</translation>
-<translation id="129553762522093515">اخیراً بسته شده</translation>
+<translation id="129553762522093515">اخیراً بسته‌شده</translation>
 <translation id="1326317727527857210">‏برای دسترسی به برگه‌هایتان در دستگاه‌های دیگر، به سیستم Chrome وارد شوید.</translation>
 <translation id="13410144310025252">‏آنها را در Chrome ببینید</translation>
 <translation id="1369915414381695676">سایت <ph name="SITE_NAME" /> اضافه شد</translation>
@@ -129,6 +129,7 @@
 <translation id="257931822824936280">بزرگ‌شده - برای کوچک کردن کلیک کنید.</translation>
 <translation id="2587052924345400782">نسخه جدیدتری در دسترس است</translation>
 <translation id="2593272815202181319">قلم‌های با عرض ثابت</translation>
+<translation id="2621115761605608342">جاوااسکرپیت را برای سایتی خاص مجاز کنید.</translation>
 <translation id="2646820313617290661">والدین شما در مدیریت این تنظیمات کمک می‌کنند.</translation>
 <translation id="2653659639078652383">ارائه</translation>
 <translation id="2677748264148917807">خروج</translation>
@@ -152,6 +153,7 @@
 <translation id="2903493209154104877">آدرس‌ها</translation>
 <translation id="2913331724188855103">سایت‌ها مجاز به ذخیره و خواندن داده‌های کوکی باشند (توصیه می‌شود)</translation>
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" /> و <ph name="PARENT_NAME_2" /> این حساب را مدیریت می‌کنند.</translation>
+<translation id="2959609938957585241">‏برای دسترسی به برگه‌هایتان در دستگاه‌های دیگر، «همگام‌سازی خودکار داده‌ها» را در تنظیمات حساب Android روشن کنید.</translation>
 <translation id="2960796085439532066">‏حق نسخه‌برداری ‪<ph name="YEAR" /> Google Inc.‬. کلیه حقوق محفوظ است.</translation>
 <translation id="2968755619301702150">بیننده گواهی</translation>
 <translation id="2996291259634659425">ایجاد عبارت عبور</translation>
@@ -188,6 +190,7 @@
 
 شما با یک حساب مدیریت شده وارد سیستم می‌شوید و به سرپرست این حساب اجازه کنترل نمایه Chrome خود را می‌دهید. داده‌های Chrome شما به‌طور ثابت با این حساب مرتبط می‌شود. با قطع ارتباط از این حساب، کلیه داده‌های Chrome شما در دستگاه حذف می‌شود.</translation>
 <translation id="3384347053049321195">اشتراک‌گذاری تصویر</translation>
+<translation id="3386292677130313581">قبل از اجازه به سایت‌ها برای اطلاع از مکانتان، ابتدا سؤال شود (توصیه می‌شود)</translation>
 <translation id="3387650086002190359">به‌دلیل خطاهای سیستم فایل، بارگیری <ph name="FILE_NAME" /> انجام نشد.</translation>
 <translation id="3414952576877147120">اندازه:</translation>
 <translation id="3435896845095436175">فعال کردن</translation>
@@ -240,6 +243,7 @@
 <translation id="4254813446494774748">زبان ترجمه:</translation>
 <translation id="4256782883801055595">مجوزهای منبع آزاد</translation>
 <translation id="4259722352634471385">پیمایش مسدود است: <ph name="URL" /></translation>
+<translation id="4262028915562328938">خطای همگام‌سازی رخ داد برای دریافت جزئیات ضربه بزنید.</translation>
 <translation id="4269820728363426813">کپی آدرس پیوند</translation>
 <translation id="4271185234001491831"><ph name="LANGUAGE" /> هرگز ترجمه نشود</translation>
 <translation id="4275663329226226506">رسانه</translation>
@@ -254,6 +258,7 @@
 <translation id="4440256989292146959">مرور بیشتر با هزینه کمتر</translation>
 <translation id="4452548195519783679">در <ph name="FOLDER_NAME" /> نشانک گذاشته شد</translation>
 <translation id="4457399174246232812">صفحه‌های «وب فیزیکی» اطراف در آینده در فهرست اعلان‌ها نشان داده می‌شوند</translation>
+<translation id="4479647676395637221">قبل از اجازه به سایت‌ها برای استفاده از دوربین، ابتدا سؤال شود (توصیه می‌شود)</translation>
 <translation id="4498934959426056365">تولید کلید</translation>
 <translation id="4508440807153586353">‏فقط فردی که عبارت عبور شما را دارد می‌تواند اطلاعات رمزگذاری‌شده شما را بخواند. این عبارت عبور به Google ارسال یا در سرورهای آن ذخیره نمی‌شود. اگر عبارت عبورتان را فراموش کنید، باید همگام‌سازی را بازنشانی کنید. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{۱ روز قبل}one{#  روز قبل}other{#  روز قبل}}</translation>
@@ -323,6 +328,7 @@
 <translation id="5317780077021120954">ذخیره</translation>
 <translation id="5324858694974489420">تنظیمات والدین</translation>
 <translation id="5327248766486351172">نام</translation>
+<translation id="5335288049665977812">مجاز کردن همه سایت‌ها برای اجرای جاوااسکریپت (توصیه‌ می‌شود)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> حذف شد</translation>
 <translation id="5345083863238459644">دسترسی به موقعیت مکانی نیز <ph name="BEGIN_LINK" />برای این دستگاه خاموش است<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">هرگز ارسال نشود</translation>
@@ -367,6 +373,7 @@
 <translation id="585027516397408832">صرفه‌جویی داده فعال است</translation>
 <translation id="5860033963881614850">خاموش</translation>
 <translation id="5869522115854928033">گذرواژه‌های ذخیره‌شده</translation>
+<translation id="588563574323093535">قبل از اجازه به سایت‌ها برای ورود به حالت تمام‌صفحه، ابتدا سؤال شود (توصیه می‌شود)</translation>
 <translation id="5899349522111170522">ایجاد فایل جدید</translation>
 <translation id="5902828464777634901">تمام داده‌های محلی ذخیره شده مرتبط با این وب‌سایت، از جمله کوکی‌ها، حذف می‌شوند.</translation>
 <translation id="5911030830365207728">Google Translate</translation>
@@ -391,6 +398,7 @@
 <translation id="6140912465461743537">کشور/منطقه</translation>
 <translation id="6159335304067198720">ذخیره داده‌ها: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
+<translation id="6181444274883918285">افزودن استثنای سایت</translation>
 <translation id="6192792657125177640">موارد استثنا</translation>
 <translation id="6232535412751077445">فعال کردن «ردیابی نشود» به این معنی است که درخواستی به ترافیک مرور شما اضافه می‌شود. هر گونه اثری به این بستگی دارد که وب‌سایت به درخواست‌ پاسخ می‌دهد یا نه و درخواست چگونه تفسیر می‌شود.
 
@@ -426,6 +434,7 @@
 <translation id="6627583120233659107">ویرایش پوشه</translation>
 <translation id="6647073004883890710">می‌خواهید <ph name="PASSWORD_MANAGER_BRAND" /> گذرواژه <ph name="USERNAME" /> را برای این سایت به‌روزرسانی کند؟</translation>
 <translation id="6656545060687952787">‏Chrome برای جستجوی دستگاه‌ها باید به مکان دسترسی داشته باشد. <ph name="BEGIN_LINK" />به‌روزرسانی مجوزها<ph name="END_LINK" /></translation>
+<translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">از یک سرویس پیش‌بینی استفاده می‌شود تا هم‌زمان با تایپ کردن شما در نوار آدرس، عبارت‌های جستجوی مرتبط و وب‌سایت‌های محبوب نشان داده شوند</translation>
 <translation id="666981079809192359">‏اخطار حریم خصوصی Chrome</translation>
 <translation id="6698801883190606802">مدیریت داده‌های همگام‌سازی شده</translation>
@@ -452,6 +461,7 @@
 <translation id="6981982820502123353">قابلیت دسترسی</translation>
 <translation id="6990079615885386641">‏دریافت برنامه از فروشگاه Google Play: ‏<ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">‏گزارش خودکار جزئیات حوادث امنیتی احتمالی به Google.</translation>
+<translation id="6992289844737586249">قبل از اجازه به سایت‌ها برای استفاده از میکروفون ابتدا سؤال شود (توصیه می‌شود)</translation>
 <translation id="6999892069268112724">‏تأیید حساب Google</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> بارگیری شد</translation>
 <translation id="7022756207310403729">بازکردن در مرورگر</translation>
@@ -514,6 +524,7 @@
 <translation id="7682287625158474539">ارسال</translation>
 <translation id="7690588279513156836">بارکردن نسخه اصلی</translation>
 <translation id="771135159654932189">مشاهده چیزهایی که در نزدیکی است</translation>
+<translation id="7713873128508426081">همیشه مجاز </translation>
 <translation id="7764225426217299476">افزودن آدرس</translation>
 <translation id="7765158879357617694">انتقال</translation>
 <translation id="7772032839648071052">تأیید عبارت عبور</translation>
@@ -558,6 +569,7 @@
 <translation id="8275818695183729150">اجازه دادن (برای جستجوهای نوار آدرس)</translation>
 <translation id="8283853025636624853">در حال همگام‌سازی در <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">برگه‌های استاندارد</translation>
+<translation id="8372893542064058268">«همگام‌سازی پس‌زمینه» را برای یک سایت خاص مجاز کنید.</translation>
 <translation id="8374821112118309944">‏باید TalkBack را به نسخه جدیدتری به‌روزرسانی کنید.</translation>
 <translation id="8396312449826231789">فقط سایت‌های تأیید شده</translation>
 <translation id="8413126021676339697">نمایش کل سابقه</translation>
@@ -592,6 +604,7 @@
 <translation id="8812942424849541387">کنترل نحوه عملکرد آن در <ph name="BEGIN_LINK1" />تنظیمات<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">نشانک‌ها</translation>
 <translation id="8829678271838353305"><ph name="ACCOUNT_EMAIL_LAST" /> وارد سیستم شد. ورود به سیستم با <ph name="ACCOUNT_EMAIL_NEW" /> داده‌های همگا‌م‌سازی شده‌ای مانند نشانک‌ها را بین حساب‌ها ادغام می‌کند. برای جدا نگه‌داشتن اطلاعات، داده‌های مرور را در <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> پاک کنید.</translation>
+<translation id="883635517171802338">مسدود کردن نمایش پنجره‌های بازشو در سایت‌ها (توصیه می‌شود)</translation>
 <translation id="884264119367021077">اطلاعات ارسال</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />، برگه</translation>
 <translation id="885701979325669005">فضای ذخیره‌سازی</translation>
@@ -621,6 +634,7 @@
 <translation id="9100610230175265781">عبارت عبور لازم است</translation>
 <translation id="9133515669113036225">بازنشانی اعتبارنامه‌های دستگاه</translation>
 <translation id="9137013805542155359">نمایش مورد اصلی</translation>
+<translation id="9139068048179869749">قبل از اجازه به سایت‌ها برای ارسال اعلان ابتدا سؤال شود (توصیه می‌شود)</translation>
 <translation id="9141510419986760385">در حال تغییر دادن حساب‌های همگام‌سازی از <ph name="FROM_ACCOUNT" /> به <ph name="TO_ACCOUNT" /> هستید. با نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات موجودتان چه می‌کنید؟</translation>
 <translation id="917685106653909562">صفحات وب فیزیکی همین اطراف</translation>
 <translation id="9187199695613236444">نمای مناسب دستگاه همراه</translation>

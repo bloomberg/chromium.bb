@@ -263,6 +263,7 @@
 <translation id="3583757800736429874">&amp;Uveljavi premik</translation>
 <translation id="3586931643579894722">Skrij podrobnosti</translation>
 <translation id="3587482841069643663">Vse</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3608308818141211642">Odjemalec in strežnik ne podpirata običajne različice protokola SSL ali zbirke šifre. To se verjetno zgodi, ko strežnik potrebuje algoritem RC4, ki ne velja več za varnega.</translation>
 <translation id="3609138628363401169">Strežnik ne podpora razširitve za vnovično pogajanje TLS.</translation>
 <translation id="362276910939193118">Prikaži celotno zgodovino</translation>

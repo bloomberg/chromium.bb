@@ -91,7 +91,6 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="3621712662352432595">Configurações de áudio</translation>
 <translation id="3625258641415618104">Capturas de tela desativadas</translation>
 <translation id="3626281679859535460">Brilho</translation>
-<translation id="3626637461649818317"><ph name="PERCENTAGE" />% restante</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME" />: <ph name="ANNOTATION" /></translation>
 <translation id="3683428399328702079">A resolução de <ph name="DISPLAY_NAME" /> foi alterada para <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Ativar Wi-Fi</translation>
@@ -110,7 +109,6 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (porta traseira da direita)</translation>
 <translation id="4053612967614057854">Desativar o teclado na tela</translation>
-<translation id="412065659894267608"><ph name="HOUR" />h<ph name="MINUTE" />m até a carga total</translation>
 <translation id="4250680216510889253">Não</translation>
 <translation id="4279490309300973883">Espelhamento</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -128,7 +126,6 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Ctrl+Shift+Barra de espaço</translation>
 <translation id="5045002648206642691">Configurações do Google Drive...</translation>
-<translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> restantes</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">Dispositivos de transmissão disponíveis</translation>
 <translation id="5222676887888702881">Sair</translation>
@@ -165,7 +162,6 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="615957422585914272">Mostrar teclado na tela</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
 <translation id="6203030746557259519">Tela virtual</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">Pressione Control+Shift+Q duas vezes para sair.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> foi substituída por <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS de <ph name="PHONE_NUMBER" /></translation>
@@ -225,14 +221,13 @@ Pressione Ctrl+Alt+Z para desativar.</translation>
 <translation id="8308637677604853869">Menu anterior</translation>
 <translation id="8356164830168736643">Fechar <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">Configurações</translation>
-<translation id="8456362689280298700"><ph name="HOUR" />:<ph name="MINUTE" /> para carga completa</translation>
 <translation id="8517041960877371778">Seu <ph name="DEVICE_TYPE" /> pode não ser carregado enquanto estiver ligado.</translation>
 <translation id="8528322925433439945">Celular...</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Carregador de baixa potência conectado</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">Clique para visualizar</translation>
-<translation id="8825534185036233643">Não há compatibilidade com o espelhamento com mais de duas telas.</translation>
+<translation id="8825534185036233643">Não há suporte para o espelhamento com mais de duas telas.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Pesquisa+Esc</translation>
 <translation id="8878886163241303700">Tela ampla</translation>

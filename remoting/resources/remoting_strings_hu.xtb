@@ -34,6 +34,7 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="1779766957982586368">Ablak bezárása</translation>
 <translation id="1841799852846221389">Távoli kapcsolatok letiltása ezen a számítógépen...</translation>
 <translation id="189172778771606813">Navigációs fiók bezárása</translation>
+<translation id="1897488610212723051">Törlés</translation>
 <translation id="195619862187186579">Billentyűzetkiosztások</translation>
 <translation id="1996161829609978754">A Chrome letölti a Chromoting gazdagépekhez való telepítőjét. Miután a letöltés befejeződött, futtassa a telepítőt a folytatás előtt.</translation>
 <translation id="2009755455353575666">Sikertelen kapcsolódás</translation>
@@ -122,9 +123,6 @@ gazdagép</translation>
 <translation id="3950820424414687140">Bejelentkezés</translation>
 <translation id="3989511127559254552">A folytatáshoz előbb kiterjesztett hozzáférési jogosultságokat kell adnia a számítógépének. Ezt csak egyszer kell elvégezni.</translation>
 <translation id="4006787130661126000">Engedélyeznie kell a távoli kapcsolatokat, ha a Chrome távoliasztal-szolgáltatást szeretné használni ennek a számítógépnek az eléréséhez.</translation>
-<translation id="4028465833180158312">• Frissítések az anyagszerű megjelenés kezelőfelülethez.
-• Harmadik felek licenceinek feltüntetése.
-• Offline távoli számítógépekkel kapcsolatos információk megjelenítése.</translation>
 <translation id="405887016757208221">A távoli számítógépnek nem sikerült inicializálnia a munkamenetet. Ha a probléma továbbra is fennáll, próbálja meg újra beállítani a gazdagépet.</translation>
 <translation id="4068946408131579958">Minden kapcsolat</translation>
 <translation id="409800995205263688">MEGJEGYZÉS: az irányelv-beállítások a csatlakozást csak a saját hálózaton belül található számítógépek között teszik lehetővé.</translation>
@@ -168,6 +166,7 @@ gazdagép</translation>
 <translation id="4985296110227979402">Előbb be kell állítania számítógépén a távoli hozzáférést.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">A távoli gazdagép hitelesítést kér egy harmadik féltől származó webhelyhez. A folytatáshoz további engedélyeket kell adnia a Chrome távoliasztal-szolgáltatásnak a cím eléréséhez:</translation>
+<translation id="507204348399810022">Biztosan szeretné letiltani a távoli kapcsolatokat a(z) <ph name="HOSTNAME" /> gazdagéppel?</translation>
 <translation id="5156271271724754543">Kérjük, ugyanazt a PIN kódot adja meg mindkét mezőben.</translation>
 <translation id="5168917394043976756">Navigációs fiók megnyitása</translation>
 <translation id="5170982930780719864">Érvénytelen gazdagép-azonosító</translation>

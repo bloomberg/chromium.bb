@@ -70,6 +70,7 @@
 <translation id="2997147809295888909">Chrome에서 <ph name="ISSUER" />이(가) 이 웹사이트의 인증서를 발행했음을 확인했습니다. 서버에서 인증서 투명성 정보를 제공하지 않았습니다.</translation>
 <translation id="3037838751736561277">Chrome이 백그라운드 모드로 실행 중입니다.</translation>
 <translation id="3047079729301751317"><ph name="USERNAME" />의 연결을 해제하면 이 기기에 저장된 방문 기록, 북마크, 설정 및 기타 Chrome 데이터가 삭제됩니다. Google 계정에 저장된 데이터는 삭제되지 않으며 <ph name="GOOGLE_DASHBOARD_LINK" />Google 대시보드<ph name="END_GOOGLE_DASHBOARD_LINK" />에서 관리될 수 있습니다.</translation>
+<translation id="3065168410429928842">Chrome 탭</translation>
 <translation id="3080151273017101988">Chrome 종료 후에도 백그라운드 앱을 계속 실행</translation>
 <translation id="3089968997497233615">새롭고 안전한 Chrome의 새 버전을 사용할 수 있습니다.</translation>
 <translation id="3149510190863420837">Chrome 앱</translation>

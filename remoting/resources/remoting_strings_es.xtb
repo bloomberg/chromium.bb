@@ -34,6 +34,7 @@ Para obtener información sobre la privacidad, consulta la Política de Privacid
 <translation id="1779766957982586368">Cerrar ventana</translation>
 <translation id="1841799852846221389">Inhabilitando conexiones remotas con este ordenador...</translation>
 <translation id="189172778771606813">Cerrar panel de navegación</translation>
+<translation id="1897488610212723051">Eliminar</translation>
 <translation id="195619862187186579">Diseños de teclado</translation>
 <translation id="1996161829609978754">Chrome está descargando el archivo de instalación del host de Chromoting. Cuando se haya completado la descarga, ejecuta el archivo de instalación antes de continuar.</translation>
 <translation id="2009755455353575666">Error de conexión</translation>
@@ -122,9 +123,6 @@ Chromoting</translation>
 <translation id="3950820424414687140">Iniciar sesión</translation>
 <translation id="3989511127559254552">Para continuar, primero debes conceder permisos de acceso ampliados a tu ordenador. Solo debes realizar esta acción una vez.</translation>
 <translation id="4006787130661126000">Si quieres utilizar Escritorio remoto de Chrome para acceder a este ordenador, debes habilitar las conexiones remotas.</translation>
-<translation id="4028465833180158312">• Actualizaciones de Material Design en la interfaz de usuario.
-• Créditos de licencias de terceros.
-• Ahora se muestra información para los ordenadores remotos que no están conectados.</translation>
 <translation id="405887016757208221">El equipo remoto no ha podido inicializar la sesión. Si el problema persiste, prueba a volver a configurar el host.</translation>
 <translation id="4068946408131579958">Todas las conexiones</translation>
 <translation id="409800995205263688">NOTA: la configuración de la política solo permite establecer conexiones entre ordenadores de tu misma red.</translation>
@@ -168,6 +166,7 @@ remoto de Chrome</translation>
 <translation id="4985296110227979402">En primer lugar, debes configurar el acceso remoto a tu ordenador</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (sin conexión)</translation>
 <translation id="5070121137485264635">El host remoto requiere tu autenticación en un sitio web de terceros. Para continuar, debes conceder a la aplicación Escritorio remoto de Chrome permisos adicionales para acceder a la siguiente dirección:</translation>
+<translation id="507204348399810022">¿Seguro que quieres inhabilitar las conexiones remotas a <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Debes introducir el mismo PIN en los dos cuadros.</translation>
 <translation id="5168917394043976756">Abrir panel de navegación</translation>
 <translation id="5170982930780719864">Identificador del host no válido</translation>

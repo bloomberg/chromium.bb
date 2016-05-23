@@ -262,6 +262,7 @@
 <translation id="3583757800736429874">&amp;Ponovi premještanje</translation>
 <translation id="3586931643579894722">Sakrij detalje</translation>
 <translation id="3587482841069643663">Sve</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3608308818141211642">Klijent i poslužitelj ne podržavaju zajedničku verziju SSL protokola niti paket šifri. To se najčešće događa kad poslužitelj treba RC4 koji se više ne smatra sigurnim.</translation>
 <translation id="3609138628363401169">Poslužitelj ne podržava proširenje TLS ponovljenog pregovaranja.</translation>
 <translation id="362276910939193118">Pokaži cijelu povijest</translation>

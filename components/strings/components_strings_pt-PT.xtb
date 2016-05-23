@@ -262,6 +262,7 @@
 <translation id="3583757800736429874">&amp;Refazer movimentação</translation>
 <translation id="3586931643579894722">Ocultar detalhes</translation>
 <translation id="3587482841069643663">Tudo</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3608308818141211642">O cliente e o servidor não suportam uma versão de protocolo SSL ou um conjunto de cifras comum. Tal deve-se, provavelmente, ao facto de o servidor necessitar de encriptação RC4, que já não é considerada segura.</translation>
 <translation id="3609138628363401169">O servidor não suporta a extensão de renegociação TLS.</translation>
 <translation id="362276910939193118">Mostrar histórico completo</translation>

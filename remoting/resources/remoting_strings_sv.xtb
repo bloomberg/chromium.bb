@@ -34,6 +34,7 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="1779766957982586368">Stäng fönstret</translation>
 <translation id="1841799852846221389">Fjärranslutningar inaktiveras för den här datorn ...</translation>
 <translation id="189172778771606813">Stäng navigeringspanelen</translation>
+<translation id="1897488610212723051">Radera</translation>
 <translation id="195619862187186579">Tangentbordslayouter</translation>
 <translation id="1996161829609978754">Chrome laddar ned installationsprogrammet för fjärranslutningsvärden Chromoting Host. Kör installationsprogrammet när nedladdningen är klar.</translation>
 <translation id="2009755455353575666">Anslutningen misslyckades</translation>
@@ -122,9 +123,6 @@ Host</translation>
 <translation id="3950820424414687140">Logga in</translation>
 <translation id="3989511127559254552">Innan du kan fortsätta måste du bevilja utökad åtkomstbehörighet till datorn. Du behöver bara göra det en gång.</translation>
 <translation id="4006787130661126000">Du måste aktivera fjärranslutningar om du vill använda Chrome Remote Desktop för att få åtkomst till den här datorn.</translation>
-<translation id="4028465833180158312">• Användargränssnittet för Material Design uppdateras.
-• Licensieringar från tredje part.
-• Information visas för fjärrdatorer som är offline.</translation>
 <translation id="405887016757208221">Fjärrdatorn har misslyckats med att starta sessionen. Konfigurera värden på nytt om problemet kvarstår.</translation>
 <translation id="4068946408131579958">Alla anslutningar</translation>
 <translation id="409800995205263688">OBS! Enligt policyinställningarna tillåts endast anslutning mellan datorer i ditt nätverk.</translation>
@@ -168,6 +166,7 @@ Desktop Host</translation>
 <translation id="4985296110227979402">Du måste först konfigurera datorn för fjärråtkomst</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Fjärrvärden kräver att du autentiserar via en tredje parts webbplats. Om du vill fortsätta måste du ge Chrome Remote Desktop ytterligare behörigheter att komma åt den här adressen:</translation>
+<translation id="507204348399810022">Är du säker på att du vill inaktivera fjärranslutningar till <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Ange samma PIN-kod i båda rutorna.</translation>
 <translation id="5168917394043976756">Öppna navigeringspanelen</translation>
 <translation id="5170982930780719864">Ogiltigt värd-id.</translation>

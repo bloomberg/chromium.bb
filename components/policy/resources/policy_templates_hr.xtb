@@ -2072,23 +2072,6 @@
 <translation id="8587229956764455752">Dopusti stvaranje novih korisničkih računa</translation>
 <translation id="8614804915612153606">Onemogućuje automatsko ažuriranje</translation>
 <translation id="8631434304112909927">do verzije <ph name="UNTIL_VERSION" /></translation>
-<translation id="863712305404093038">Blokiranje pristupa navedenim URL-ovima.
-
-      To pravilo korisniku sprječava učitavanje web-stranica s popisa nedopuštenih URL-ova. To je popis uzoraka URL-ova koji navodi URL-ove koji nisu dopušteni.
-
-      Svaki uzorak URL-a može biti uzorak za lokalne datoteke ili generički uzorak URL-a. Format uzorka lokalnih datoteka glasi "file://path", pri čemu je "path" apsolutni put koji se blokira. Blokirat će se sve lokacije datoteka sustava koje u prefiksu imaju taj put.
-
-      Format generičkog uzorka URL-a glasi "scheme://host:port/path".
-      Blokirat će se samo navedena shema ako je prisutna. Ako prefiks "scheme://" nije naveden, blokirat će se sve sheme.
-      Host je obavezan i to može biti naziv hosta ili IP adresa. Poddomene naziva hosta također će se blokirati. Da biste spriječili blokiranje poddomena, stavite "." ispred naziva hosta. Poseban naziv hosta "*" blokirat će sve domene.
-      Neobavezni priključak važeći je broj priključka od 1 do 65535. Ako se ne navede nijedan, blokirat će se svi priključci.
-      Ako se navede neobavezan put, blokirat će se samo putovi s tim prefiksom.
-
-      Izuzeci se mogu definirati u pravilu popisa dopuštenih URL-ova. Ta su pravila ograničena na 1000 unosa, a daljnji se unosi zanemaruju.
-
-      Ne preporučujemo blokiranje internih URL-ova "chrome://*" jer to može dovesti do neočekivanih pogrešaka.
-
-      Ako se pravilo ne postavi, neće nijedan URL biti na popisu nedopuštenih u pregledniku.</translation>
 <translation id="8649763579836720255">Uređaji s OS-om Chrome mogu upotrebljavati daljinsku ovjeru (potvrđeni pristup) kako bi dobili certifikat koji izdaje tijelo za izdavanje certifikata OS-a Chrome koje potvrđuje da uređaj ispunjava uvjete za reprodukciju zaštićenog sadržaja. Taj proces uključuje slanje informacija o potvrdi hardvera tijelu za izdavanje certifikata OS-a Chrome koje jedinstveno identificira uređaj.
 
           Ako je ta postavka netočna, uređaj neće upotrebljavati daljinsku ovjeru za zaštitu sadržaja i uređaj možda neće moći reproducirati zaštićeni sadržaj.

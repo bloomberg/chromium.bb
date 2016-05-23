@@ -261,6 +261,7 @@
 <translation id="3583757800736429874">&amp;Repetați mutarea</translation>
 <translation id="3586931643579894722">Ascunde detaliile</translation>
 <translation id="3587482841069643663">Toate</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3608308818141211642">Clientul și serverul nu acceptă o versiune a protocolului SSL sau o suită de codificare obișnuită. Eroarea apare probabil când serverul necesită compatibilitatea cu RC4, care nu mai este considerat sigur.</translation>
 <translation id="3609138628363401169">Serverul nu acceptă extensia de renegociere TLS.</translation>
 <translation id="362276910939193118">Afișează întregul istoric</translation>

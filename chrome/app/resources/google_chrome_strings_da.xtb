@@ -66,6 +66,7 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="2997147809295888909">Chrome bekræftede, at <ph name="ISSUER" /> har udstedt certifikatet for dette website. Serveren leverede ikke nogen Certificate Transparency-oplysninger.</translation>
 <translation id="3037838751736561277">Google Chrome kører i baggrunden.</translation>
 <translation id="3047079729301751317">Hvis du afbryder forbindelsen for <ph name="USERNAME" />, slettes din historik, dine bogmærker, dine indstillinger og andre Chrome-data, der er gemt på denne enhed. Data, der er gemt på din Google-konto, slettes ikke og kan administreres i <ph name="GOOGLE_DASHBOARD_LINK" />Google Betjeningspanel<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
+<translation id="3065168410429928842">Fanen Chrome</translation>
 <translation id="3080151273017101988">Fortsæt med at køre baggrundsapps, når Google Chrome er lukket</translation>
 <translation id="3089968997497233615">Der findes en ny, sikker version af Google Chrome.</translation>
 <translation id="3149510190863420837">Chrome-apps</translation>

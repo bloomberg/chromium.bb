@@ -92,7 +92,6 @@
 <translation id="3621712662352432595">ऑडिओ सेटिंग्ज</translation>
 <translation id="3625258641415618104">स्क्रीनशॉट अक्षम केले</translation>
 <translation id="3626281679859535460">ब्राइटनेस</translation>
-<translation id="3626637461649818317"><ph name="PERCENTAGE" />% उर्वरित</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME" />: <ph name="ANNOTATION" /></translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> रिजोल्यूशन <ph name="RESOLUTION" /> वर बदलले होते</translation>
 <translation id="370649949373421643">Wi-fi सक्षम करा</translation>
@@ -111,7 +110,6 @@
 <translation id="397105322502079400">गणना करत आहे...</translation>
 <translation id="3995138139523574647">USB-C डिव्‍हाइस (उजव्या बाजूचे मागील पोर्ट)</translation>
 <translation id="4053612967614057854">ऑन-स्क्रीन कीबोर्ड अक्षम करा</translation>
-<translation id="412065659894267608">पूर्ण होईपर्यंत  <ph name="HOUR" />ता <ph name="MINUTE" />मि</translation>
 <translation id="4250680216510889253">नाही</translation>
 <translation id="4279490309300973883">मिररिंग</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -129,7 +127,6 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Google ड्राइव्ह सेटिंग्ज...</translation>
-<translation id="5102001756192215136"><ph name="HOUR" />:<ph name="MINUTE" /> शिल्‍लक</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">कास्‍ट डिव्‍हाइसेस उपलब्‍ध</translation>
 <translation id="5222676887888702881">साइन आउट करा</translation>
@@ -166,7 +163,6 @@
 <translation id="615957422585914272">ऑन-स्‍क्रीन कीबोर्ड दर्शवा</translation>
 <translation id="6165508094623778733">अधिक जाणून घ्या</translation>
 <translation id="6203030746557259519">व्हर्च्युअल प्रदर्शन</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">बाहेर पडण्यासाठी Control Shift Q दोनदा दाबा.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" /> वर फिरविले होते</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" /> कडून SMS</translation>
@@ -225,14 +221,13 @@
 <translation id="8308637677604853869">मागील मेनू</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" /> बंद करा</translation>
 <translation id="8428213095426709021">सेटिंग्ज</translation>
-<translation id="8456362689280298700"><ph name="HOUR" />:<ph name="MINUTE" /> बाकी पूर्ण होण्यात</translation>
 <translation id="8517041960877371778">आपले <ph name="DEVICE_TYPE" /> चालू केले असताना कदाचित चार्ज होणार नाही.</translation>
 <translation id="8528322925433439945">मोबाइल ...</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">निम्न-उर्जेचे चार्जर कनेक्ट केले</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="882279321799040148">पाहण्यासाठी क्लिक करा</translation>
-<translation id="8825534185036233643">दोन पेक्षा जास्त प्रदर्शनापेक्षा जास्त मि‍ररिंग समर्थित नाही.</translation>
+<translation id="8825534185036233643">दोन पेक्षा जास्त प्रदर्शनासाठी मि‍ररिंग समर्थित नाही.</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">स्क्रीन विस्तृत करत आहे</translation>

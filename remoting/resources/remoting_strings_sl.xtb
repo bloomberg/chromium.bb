@@ -34,6 +34,7 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="1779766957982586368">Zapre okno</translation>
 <translation id="1841799852846221389">Onemogočanje oddaljenih povezav za ta računalnik ...</translation>
 <translation id="189172778771606813">Zapri predal za krmarjenje</translation>
+<translation id="1897488610212723051">Izbriši</translation>
 <translation id="195619862187186579">Postavitve tipkovnice</translation>
 <translation id="1996161829609978754">Chrome prenaša namestitveni program za gostitelja Oddaljenega povezovanja s Chromom. Po končanem prenosu zaženite namestitveni program, preden nadaljujete.</translation>
 <translation id="2009755455353575666">Vzpostavitev povezave ni uspela</translation>
@@ -122,9 +123,6 @@ povezovanje s Chromom</translation>
 <translation id="3950820424414687140">Prijava</translation>
 <translation id="3989511127559254552">Če želite nadaljevati, morate računalniku najprej odobriti dovoljenja za razširjen dostop. To je treba narediti samo enkrat.</translation>
 <translation id="4006787130661126000">Če želite do računalnika dostopati z Oddaljenim namizjem za Chrome, omogočite oddaljene povezave.</translation>
-<translation id="4028465833180158312">• Posodobitve uporabniškega vmesnika z materialnim oblikovanjem.
-• Navedbe licenc tretjih oseb.
-• Podatki, prikazani za oddaljene računalnike, ki so brez povezave.</translation>
 <translation id="405887016757208221">Oddaljeni računalnik ni inicializiral seje. Če se težava ponovi, poskusite znova konfigurirati gostitelja.</translation>
 <translation id="4068946408131579958">Vse povezave</translation>
 <translation id="409800995205263688">OPOMBA: Nastavitve na podlagi pravilnika dovoljujejo povezave samo med računalniki v vašem omrežju.</translation>
@@ -168,6 +166,7 @@ namizje za Chrome</translation>
 <translation id="4985296110227979402">Računalnik morate najprej nastaviti za oddaljeni dostop.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (brez povezave)</translation>
 <translation id="5070121137485264635">Oddaljeni gostitelj zahteva, da previte pristnost na spletnem mestu tretje osebe. Če želite nadaljevati, morate Oddaljenemu namizju za Chrome dodeliti dodatna dovoljenja za dostop do tega naslova:</translation>
+<translation id="507204348399810022">Ali ste prepričani, da želite onemogočiti oddaljene povezave z gostiteljem <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">V polji vnesite isto kodo PIN.</translation>
 <translation id="5168917394043976756">Odpri predal za krmarjenje</translation>
 <translation id="5170982930780719864">Neveljaven ID gostitelja.</translation>

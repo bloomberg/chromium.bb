@@ -262,6 +262,7 @@
 <translation id="3583757800736429874">&amp;Gör om Flytta</translation>
 <translation id="3586931643579894722">Dölj detaljerad information</translation>
 <translation id="3587482841069643663">Alla</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3608308818141211642">Klienten och servern har inte stöd för en vanlig SSL-protokollsversion eller chiffersvit. Det beror antagligen på att servern behöver RC4, vilket inte längre anses vara säkert.</translation>
 <translation id="3609138628363401169">Servern stöder inte tillägget för TLS-omförhandling.</translation>
 <translation id="362276910939193118">Visa fullständig historik</translation>

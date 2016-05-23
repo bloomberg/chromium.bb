@@ -41,7 +41,7 @@
 <translation id="1232569758102978740">بدون عنوان</translation>
 <translation id="1254117744268754948">انتخاب پوشه</translation>
 <translation id="1285320974508926690">این سایت هرگز ترجمه نشود</translation>
-<translation id="129553762522093515">اخیراً بسته شده</translation>
+<translation id="129553762522093515">اخیراً بسته‌شده</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />کوکی‌ها را پاک کنید<ph name="END_LINK" /></translation>
 <translation id="1339601241726513588">دامنه ثبت‌نام:</translation>
 <translation id="1344588688991793829">‏تنظیمات تکمیل خودکار Chromium...</translation>
@@ -262,6 +262,7 @@
 <translation id="3583757800736429874">&amp;انجام مجدد انتقال</translation>
 <translation id="3586931643579894722">عدم نمایش جزئیات</translation>
 <translation id="3587482841069643663">همه</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />، <ph name="DOMAIN" />، <ph name="TIME" /></translation>
 <translation id="3608308818141211642">‏کلاینت و سرور از نسخه پروتکل SSL یا مجموعه رمز متداولی پشتیبانی نمی‌کنند. احتمالاً علت آن این است که سرور به RC4 نیاز دارد که دیگر ایمن محسوب نمی‌شود.</translation>
 <translation id="3609138628363401169">‏سرور از برنامه اضافی گفتگوی مجدد TLS پشتیبانی نمی‌کند.</translation>
 <translation id="362276910939193118">نمایش کل سابقه</translation>
@@ -716,7 +717,7 @@
 <translation id="885730110891505394">‏اشتراک‌گذاری با Google</translation>
 <translation id="8866481888320382733">خطا در تجزیه تنظیمات خط‌مشی</translation>
 <translation id="8866959479196209191">این صفحه می‌گوید:</translation>
-<translation id="8870413625673593573">اخیراً بسته شده</translation>
+<translation id="8870413625673593573">اخیراً بسته‌شده</translation>
 <translation id="8876793034577346603">پیکربندی شبکه نتوانست تجزیه شود.</translation>
 <translation id="8891727572606052622">حالت پروکسی نامعتبر است.</translation>
 <translation id="889901481107108152">متأسفیم، این آزمایش بر روی دستگاه شما قابل انجام نیست.</translation>

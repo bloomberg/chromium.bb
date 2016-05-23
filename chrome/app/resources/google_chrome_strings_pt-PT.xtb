@@ -66,6 +66,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="2997147809295888909">O Chrome confirmou que <ph name="ISSUER" /> emitiu o certificado deste Website. O servidor não forneceu quaisquer informações de Transparência do certificado.</translation>
 <translation id="3037838751736561277">O Google Chrome está no modo em segundo plano.</translation>
 <translation id="3047079729301751317">Desligar <ph name="USERNAME" /> irá limpar o seu histórico, os marcadores, as definições e outros dados do Chrome armazenados neste dispositivo. Os dados armazenados na Conta Google não serão limpos e podem ser geridos no <ph name="GOOGLE_DASHBOARD_LINK" />Painel de controlo Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
+<translation id="3065168410429928842">Separador do Chrome</translation>
 <translation id="3080151273017101988">Continuar a executar aplicações em segundo plano quando o Google Chrome está fechado</translation>
 <translation id="3089968997497233615">Está disponível uma versão nova e mais segura do Google Chrome.</translation>
 <translation id="3149510190863420837">Aplicações do Chrome</translation>

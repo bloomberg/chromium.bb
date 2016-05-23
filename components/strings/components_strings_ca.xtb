@@ -259,6 +259,7 @@
 <translation id="3583757800736429874">&amp;Refés el moviment</translation>
 <translation id="3586931643579894722">Oculta els detalls</translation>
 <translation id="3587482841069643663">Tots</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, a les <ph name="TIME" /></translation>
 <translation id="3608308818141211642">El client i el servidor no admeten cap versió de protocol SSL comú ni cap sistema de xifratge obsolet. És probable que això passi perquè el servidor ha de ser compatible amb el sistema RC4, que ja no es considera segur.</translation>
 <translation id="3609138628363401169">El servidor no admet l'extensió de renegociació TLS.</translation>
 <translation id="362276910939193118">Mostra l'historial complet</translation>

@@ -2263,23 +2263,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="8587229956764455752">Omogoči ustvarjanje novih uporabniških računov</translation>
 <translation id="8614804915612153606">Onemogoči samodejno posodabljanje</translation>
 <translation id="8631434304112909927">do različice <ph name="UNTIL_VERSION" /></translation>
-<translation id="863712305404093038">Blokira dostop do navedenih URL-jev.
-
-      Pravilnik uporabniku ne dovoli, da bi nalagal spletne strani s seznama blokiranih URL-jev. Seznam blokiranih posreduje seznam vzorcev URL-jev, ki določajo, kateri URL-ji bodo uvrščeni na seznam blokiranih.
-
-      Vsak vzorec URL-ja je lahko vzorec lokalnih datotek ali splošni vzorec URL-ja. Vzorci lokalnih datotek so oblike »file://path«, pri čemer mora biti pot absolutna pot za blokiranje. Vse lokacije datotečnega sistema, ki imajo za predpono to pot, bodo blokirane.
-
-      Splošni vzorec URL-ja ima obliko »scheme://host:port/path«.
-      Če je na voljo, bo blokirana samo določena shema. Če predpona za »scheme://« ni določena, so blokirane vse sheme.
-      Gostitelj je obvezen in je lahko ime gostitelja ali naslov IP. Prav tako bodo blokirane poddomene imena gostitelja. Če želite preprečiti blokiranje poddomen, pred ime gostitelja vključite ».«. Posebno ime gostitelja »*« blokira vse domene.
-      Izbirna vrata so veljavna številka vrat od 1 do 65535. Če ni določenih vrat, so blokirana vsa vrata.
-      Če je določena izbirna pot, bodo blokirane samo poti s tisto predpono.
-
-      Izjeme je mogoče opredeliti v pravilniku o seznamu dovoljenih URL-jev. Ti pravilniki so omejeni na 1000 vnosov; nadaljnji vnosi bodo prezrti.
-
-      Notranjih URL-jev »chrome://*« ni priporočljivo blokirati, ker bo morda to povzročilo nepričakovane napake.
-
-      Če pravilnik ni nastavljen, noben URL v brskalniku ne bo uvrščen na seznam blokiranih.</translation>
 <translation id="8649763579836720255">Naprave Chrome OS lahko uporabljajo oddaljeno potrjevanje (potrjen dostop) za pridobitev potrdil, ki ga izda overitelj sistema Chrome OS, ki potrjuje, da je naprava primerna za predvajanje zaščitene vsebine. Pri tem postopku se overitelju sistema Chrome OS pošljejo potrditveni podatki strojne opreme, ki enolično določajo napravo.
 
           Če je ta možnost nastavljena na »false«, naprava za zaščito vsebine ne bo uporabljala oddaljenega potrjevanja in naprava morda ne bo mogla predvajati zaščitene vsebine.

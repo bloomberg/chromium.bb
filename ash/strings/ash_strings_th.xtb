@@ -92,7 +92,6 @@
 <translation id="3621712662352432595">การตั้งค่าเสียง</translation>
 <translation id="3625258641415618104">ปิดใช้การจับภาพหน้าจอ</translation>
 <translation id="3626281679859535460">ความสว่าง</translation>
-<translation id="3626637461649818317">เหลืออีก <ph name="PERCENTAGE" />%</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME" />: <ph name="ANNOTATION" /></translation>
 <translation id="3683428399328702079">ความละเอียดของ <ph name="DISPLAY_NAME" /> เปลี่ยนเป็น <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">เปิดใช้งาน Wi-Fi</translation>
@@ -111,7 +110,6 @@
 <translation id="397105322502079400">กำลังคำนวณ...</translation>
 <translation id="3995138139523574647">อุปกรณ์ USB-C (พอร์ตด้านหลังขวา)</translation>
 <translation id="4053612967614057854">ปิดใช้แป้นพิมพ์บนหน้าจอ</translation>
-<translation id="412065659894267608">อีก <ph name="HOUR" />ชม. <ph name="MINUTE" />นาทีจึงจะเต็ม</translation>
 <translation id="4250680216510889253">ไม่มี</translation>
 <translation id="4279490309300973883">กำลังแสดงผล</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -129,7 +127,6 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">การตั้งค่า Google ไดรฟ์...</translation>
-<translation id="5102001756192215136">เหลืออีก <ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />, <ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">เครื่องส่งพร้อมใช้งาน</translation>
 <translation id="5222676887888702881">ออกจากระบบ</translation>
@@ -166,7 +163,6 @@
 <translation id="615957422585914272">แสดงแป้นพิมพ์บนหน้าจอ</translation>
 <translation id="6165508094623778733">เรียนรู้เพิ่มเติม</translation>
 <translation id="6203030746557259519">หน้าจอเสมือน</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">กด Control Shift Q สองครั้งเพื่อออก</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> หมุนเวียนเป็น <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS จาก <ph name="PHONE_NUMBER" /></translation>
@@ -226,7 +222,6 @@
 <translation id="8308637677604853869">เมนูก่อนหน้า</translation>
 <translation id="8356164830168736643">ปิด <ph name="WINDOW_TITLE" /></translation>
 <translation id="8428213095426709021">การตั้งค่า</translation>
-<translation id="8456362689280298700">อีก <ph name="HOUR" />:<ph name="MINUTE" /> จึงจะเต็ม</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> ของคุณอาจไม่ชาร์จเมื่อเครื่องเปิดอยู่</translation>
 <translation id="8528322925433439945">มือถือ ...</translation>
 <translation id="8673028979667498656">270°</translation>

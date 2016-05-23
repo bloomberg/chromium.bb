@@ -28,6 +28,7 @@
 <translation id="2479520428668657293">ወደ ቀኝ ውሰድ እና ምርጫ ቀይር</translation>
 <translation id="2482878487686419369">ማስታወቂያዎች</translation>
 <translation id="2497284189126895209">ሁሉም ፋይሎች</translation>
+<translation id="2515586267016047495">Alt</translation>
 <translation id="2538759511191347839">ወደ የመስመር መጨረሻ ውሰድ እና ምርጫ ቀይር</translation>
 <translation id="2557207087669398617">ወደ የመስመር መጀመሪያ ውሰድ</translation>
 <translation id="2666092431469916601">ላይ</translation>
@@ -58,7 +59,6 @@
 <translation id="4252565523989510616">ቃል ወደፊት ሰርዝ</translation>
 <translation id="4320177379694898372">ምንም የበይነመረብ ግንኙነት የለም</translation>
 <translation id="436869212180315161">ተጫን</translation>
-<translation id="4552416320897244156">PgDwn</translation>
 <translation id="4588090240171750605">ወደ ቀኝ ሸብልል</translation>
 <translation id="4820616160060340806">Command+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 ሰከንድ}one{# ሰከንዶች}other{# ሰከንዶች}}</translation>
@@ -129,10 +129,10 @@
 <translation id="8328145009876646418">የግራ ጠርዝ</translation>
 <translation id="8331626408530291785">ወደ ላይ ሸብልል</translation>
 <translation id="8371695176452482769">አሁን ይናገሩ</translation>
+<translation id="8392688371657486010">ምንም ማሳወቂያዎች የሉዎትም</translation>
 <translation id="8394908167088220973">ሚዲያ አጫውት/ለአፍታ አቁም</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="8428213095426709021">ቅንብሮች</translation>
-<translation id="8447116497070723931">PgUp</translation>
 <translation id="8471049483003785219">ቃል ወደ ግራ ውሰድ እና ምርጫ ቀይር</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> ፋይል(.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> ኪባ/ሰ</translation>

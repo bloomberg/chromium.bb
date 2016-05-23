@@ -2266,23 +2266,6 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įv
 <translation id="8587229956764455752">Leisti kurti naujų naudotojų paskyras</translation>
 <translation id="8614804915612153606">Neleidžiamas automatinis naujinys</translation>
 <translation id="8631434304112909927">iki <ph name="UNTIL_VERSION" /> versijos</translation>
-<translation id="863712305404093038">Blokuojama galimybė pasiekti sąraše pateiktus URL.
-
-      Naudojant šią politiką naudotojams neleidžiama įkelti tinklalapių iš juodojo URL sąrašo. Juodajame sąraše pateikiami URL šablonai, nurodantys, kurie URL bus įtraukti į juodąjį sąrašą.
-
-      Kiekvienas URL šablonas gali būti vietinių failų arba bendrojo URL šablonas. Vietinių failų šablonų formatas yra „file://path“, kur kelias („path“) turi būti absoliutus blokavimo kelias. Visos failų sistemos vietos, kurių priešdėlis yra kelias, bus užblokuotos.
-
-      Bendrojo URL šablono formatas yra „scheme://host:port/path“.
-      Jei nustatyta schema („scheme“), bus užblokuota tik nurodyta schema. Jei priešdėlis „scheme://“ nenurodytas, bus užblokuotos visos schemos.
-      Būtina nurodyti prieglobos serverį („host“). Tai gali būti prieglobos serverio pavadinimas arba IP adresas. Prieglobos serverio pavadinimo padomeniai taip pat bus blokuojami. Kad padomeniai nebūtų blokuojami, prieš prieglobos serverio pavadinimą nurodykite „.“. Naudojant specialųjį prieglobos serverio pavadinimą „*“ bus užblokuoti visi domenai.
-      Prievadas (nurodyti nebūtina) yra galiojantis prievado skaičius nuo 1 iki 65 535. Jei jis nenurodytas, blokuojami visi prievadai.
-      Jei nurodytas kelias („path“) (nėra būtinas), bus blokuojami tik keliai su tuo priešdėliu.
-
-      URL baltojo sąrašo politikoje galima pateikti išimčių. Šiose politikose galima pateikti iki 1 000 įrašų; kitų įrašų bus nepaisoma.
-
-      Atminkite, kad nerekomenduojama blokuoti vidinių „chrome://*“ URL, nes gali kilti netikėtų klaidų.
-
-      Jei ši politika nenustatyta, į naršyklės juodąjį sąrašą nebus įtrauktas nė vienas URL.</translation>
 <translation id="8649763579836720255">„Chrome“ OS įrenginiai gali naudoti nuotolinį patvirtinimą (patvirtinta prieiga), kad gautų „Chrome“ OS CA išduotą sertifikatą, pagal kurį nurodoma, kad įrenginys yra tinkamas paleisti apsaugotą turinį. Šis procesas apima aparatinės įrangos patvirtinimo informacijos siuntimą „Chrome“ OS CA, kuri unikaliai identifikuoja įrenginį.
 
           Jei šis nustatymas negalioja, įrenginys nenaudos nuotolinio turinio apsaugos patvirtinimo ir galbūt įrenginys negalės paleisti apsaugoto turinio.

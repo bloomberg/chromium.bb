@@ -880,7 +880,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           Nilai kebijakan harus ditetapkan dalam milidetik.</translation>
 <translation id="4115096483386877940">Mengizinkan penguncian layar.
 
-      Jika kebijakan ini disetel ke false. pengguna tidak akan dapat mengunci layar (mereka hanya dapat keluar dari sesi pengguna). Jika setelan ini disetel ke true atau tidak disetel, pengguna yang diautentikasi dengan sandi dapat mengunci layar.</translation>
+      Jika kebijakan ini disetel ke false. pengguna tidak dapat mengunci layar (mereka hanya dapat keluar dari sesi pengguna). Jika setelan ini disetel ke true atau tidak disetel, pengguna yang diautentikasi dengan sandi dapat mengunci layar.</translation>
 <translation id="4121350739760194865">Mencegah promosi apl muncul di laman tab baru</translation>
 <translation id="4147054660081653009">Sertifikat klien untuk menyambung ke RemoteAccessHostTokenValidationUrl.
 
@@ -2079,23 +2079,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="8587229956764455752">Mengizinkan pembuatan akun pengguna baru</translation>
 <translation id="8614804915612153606">Nonaktifkan Pembaruan Otomatis</translation>
 <translation id="8631434304112909927">sampai versi <ph name="UNTIL_VERSION" /></translation>
-<translation id="863712305404093038">Memblokir akses ke URL yang tercantum.
-
-      Kebijakan ini mencegah pengguna memuat laman web dari URL yang dimasukkan daftar hitam. Daftar hitam memberikan daftar pola URL yang menentukan URL yang akan dimasukkan dalam daftar hitam.
-
-      Setiap pola URL dapat berupa pola file lokal atau pola URL generik. Pola URL lokal memiliki format 'file://path', yang jalurnya harus jalur absolut untuk diblokir. Semua lokasi sistem file, jika jalur tersebut adalah awalannya, akan diblokir.
-
-      Pola URL generik memiliki format 'scheme://host:port/path'.
-      Jika disajikan, hanya skema yang ditentukan yang akan diblokir. Jika awalan scheme:// tidak ditentukan, semua skema akan diblokir.
-      Host bersifat wajib dan dapat berupa hostname atau alamat IP. Subdomain pada hostname juga akan diblokir. Agar subdomain tidak diblokir, sertakan '.' sebelum hostname. Hostname khusus '*' akan memblokir semua domain.
-      Port opsional adalah nomor port valid mulai 1 hingga 65535. Jika tidak ada yang ditetapkan, semua port akan diblokir.
-      Jika jalur opsional ditentukan, hanya jalur dengan awalan tersebut yang akan diblokir. 
-
-      Pengecualian dapat didefinisikan dalam kebijakan daftar putih URL. Kebijakan ini dibatasi hingga 1000 entri; entri berikutnya akan diabaikan.
-
-      Perlu diingat bahwa sebaiknya Anda tidak memblokir URL 'chrome://*' internal karena dapat menyebabkan kesalahan yang tidak terduga.
-
-      Jika kebijakan ini tidak disetel, tidak ada URL yang akan dimasukkan dalam daftar hitam pada browser.</translation>
 <translation id="8649763579836720255">Perangkat Chrome OS dapat menggunakan atestasi jarak jauh (Akses Terverifikasi) untuk mendapatkan sertifikat yang diberikan oleh Chrome OS CA yang menyatakan bahwa perangkat tersebut memenuhi syarat untuk memutar konten yang dilindungi. Proses ini mencakup pengiriman informasi dukungan perangkat keras ke Chrome OS CA yang mengidentifikasi perangkat tersebut secara unik.
 
           Jika disetel ke false, perangkat tidak akan menggunakan atestasi perlindungan konten jarak jauh dan tidak dapat memutar konten yang dilindungi.

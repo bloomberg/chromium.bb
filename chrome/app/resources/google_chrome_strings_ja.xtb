@@ -66,6 +66,7 @@
 <translation id="2997147809295888909">Chrome で <ph name="ISSUER" /> がこのウェブサイトの証明書を発行したことを確認しました。証明書の透明性に関する情報はサーバーから提供されませんでした。</translation>
 <translation id="3037838751736561277">Google Chrome はバックグラウンド モードです。</translation>
 <translation id="3047079729301751317"><ph name="USERNAME" /> の接続を解除すると、履歴、ブックマーク、設定、このデバイスに保存されたその他の Chrome データが消去されます。ただし、Google アカウントに保存されたデータは消去されず、引き続き <ph name="GOOGLE_DASHBOARD_LINK" />Google ダッシュボード<ph name="END_GOOGLE_DASHBOARD_LINK" />で管理できます。</translation>
+<translation id="3065168410429928842">Chrome タブ</translation>
 <translation id="3080151273017101988">Google Chrome を閉じた際にバックグラウンド アプリの処理を続行する</translation>
 <translation id="3089968997497233615">Google クロームブラウザがより速く、さらに便利に。いますぐトライ！</translation>
 <translation id="3149510190863420837">Chrome アプリ</translation>

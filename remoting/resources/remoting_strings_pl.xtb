@@ -34,6 +34,7 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="1779766957982586368">Zamknij okno</translation>
 <translation id="1841799852846221389">Wyłączam połączenia zdalne z tym komputerem…</translation>
 <translation id="189172778771606813">Zamknij panel nawigacji</translation>
+<translation id="1897488610212723051">Usuń</translation>
 <translation id="195619862187186579">Układy klawiatury</translation>
 <translation id="1996161829609978754">Chrome pobiera instalatora hosta Chromoting. Po zakończeniu pobierania uruchom instalatora.</translation>
 <translation id="2009755455353575666">Połączenie się nie udało</translation>
@@ -122,9 +123,6 @@ Chromoting</translation>
 <translation id="3950820424414687140">Zaloguj się</translation>
 <translation id="3989511127559254552">Aby przejść dalej, musisz najpierw przyznać rozszerzone uprawnienia dostępu do swojego komputera. Trzeba to zrobić tylko raz.</translation>
 <translation id="4006787130661126000">Jeśli chcesz korzystać z tego komputera przez Pulpit zdalny Chrome, musisz włączyć połączenia zdalne.</translation>
-<translation id="4028465833180158312">• Zaktualizowano interfejs Material Design.
-• Dodano informacje o licencjach firm zewnętrznych.
-• Dodano wyświetlanie informacji o komputerach zdalnych, które są offline.</translation>
 <translation id="405887016757208221">Komputerowi zdalnemu nie udało się zainicjować sesji. Jeśli problem nie zniknie, spróbuj ponownie skonfigurować hosta.</translation>
 <translation id="4068946408131579958">Wszystkie połączenia</translation>
 <translation id="409800995205263688">UWAGA: ustawienia zasad zezwalają wyłącznie na połączenia między komputerami w Twojej sieci.</translation>
@@ -168,6 +166,7 @@ zdalnego Chrome</translation>
 <translation id="4985296110227979402">Najpierw musisz skonfigurować funkcję dostępu zdalnego na komputerze.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Host zdalny wymaga uwierzytelnienia w witrynie innej firmy. Aby kontynuować, musisz udzielić Pulpitowi zdalnemu Chrome dodatkowych uprawnień dostępu do tego adresu:</translation>
+<translation id="507204348399810022">Na pewno chcesz wyłączyć połączenia zdalne z: <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Wpisz ten sam PIN w obu polach.</translation>
 <translation id="5168917394043976756">Otwórz panel nawigacji</translation>
 <translation id="5170982930780719864">Nieprawidłowy identyfikator hosta.</translation>

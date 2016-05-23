@@ -92,7 +92,6 @@
 <translation id="3621712662352432595">オーディオ設定</translation>
 <translation id="3625258641415618104">スクリーンショットが無効</translation>
 <translation id="3626281679859535460">輝度</translation>
-<translation id="3626637461649818317">残り <ph name="PERCENTAGE" />%</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME" />: <ph name="ANNOTATION" /></translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> の解像度を <ph name="RESOLUTION" /> に変更しました</translation>
 <translation id="370649949373421643">Wi-Fi を有効にする</translation>
@@ -111,7 +110,6 @@
 <translation id="397105322502079400">計算しています...</translation>
 <translation id="3995138139523574647">USB-C デバイス（右奥のポート）</translation>
 <translation id="4053612967614057854">画面キーボードを無効にする</translation>
-<translation id="412065659894267608">フル充電まで <ph name="HOUR" /> 時間 <ph name="MINUTE" /> 分</translation>
 <translation id="4250680216510889253">いいえ</translation>
 <translation id="4279490309300973883">ミラーリングしています</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -129,7 +127,6 @@
 <translation id="5011233892417813670">Chromebook</translation>
 <translation id="5012744545445585468">Ctrl+Shift+Space</translation>
 <translation id="5045002648206642691">Google ドライブの設定...</translation>
-<translation id="5102001756192215136">残り時間: <ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="511445211639755999"><ph name="RESOLUTION" />、<ph name="OVERSCAN" /></translation>
 <translation id="5168181903108465623">キャスト デバイスを利用できます</translation>
 <translation id="5222676887888702881">ログアウト</translation>
@@ -166,7 +163,6 @@
 <translation id="615957422585914272">画面キーボードを表示する</translation>
 <translation id="6165508094623778733">詳しく見る</translation>
 <translation id="6203030746557259519">仮想ディスプレイ</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">終了するには Ctrl+Shift+Q を 2 回押してください。</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> を <ph name="ROTATION" /> に回転しました</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" /> の SMS</translation>
@@ -226,7 +222,6 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="8308637677604853869">前のメニュー</translation>
 <translation id="8356164830168736643"><ph name="WINDOW_TITLE" /> を閉じる</translation>
 <translation id="8428213095426709021">設定</translation>
-<translation id="8456362689280298700">フル充電まで: <ph name="HOUR" />:<ph name="MINUTE" /></translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> は電源がオンでも充電できない可能性があります。</translation>
 <translation id="8528322925433439945">モバイル...</translation>
 <translation id="8673028979667498656">270°</translation>

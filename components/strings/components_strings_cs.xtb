@@ -249,6 +249,7 @@
 <translation id="3583757800736429874">&amp;Opakovat přesunutí</translation>
 <translation id="3586931643579894722">Skrýt podrobnosti</translation>
 <translation id="3587482841069643663">Vše</translation>
+<translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
 <translation id="3608308818141211642">Klient a server nepodporují společnou verzi protokolu SSL nebo šifrovací sadu. Tento problém bývá často způsoben tím, že server požaduje šifrovací algoritmus RC4, který již není považován za bezpečný.</translation>
 <translation id="3609138628363401169">Server nepodporuje rozšíření opětovného vyjednání protokolu TLS.</translation>
 <translation id="362276910939193118">Zobrazit celou historii</translation>

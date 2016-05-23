@@ -34,6 +34,7 @@ Informace ohledně ochrany soukromí naleznete v zásadách ochrany soukromí sp
 <translation id="1779766957982586368">Zavřít okno</translation>
 <translation id="1841799852846221389">Zakazování vzdálených připojení k tomuto počítači…</translation>
 <translation id="189172778771606813">Zavřít vysouvací panel navigace</translation>
+<translation id="1897488610212723051">Smazat</translation>
 <translation id="195619862187186579">Rozložení klávesnice</translation>
 <translation id="1996161829609978754">Chrome stahuje instalační program hostitele funkce Chromoting. Po stažení instalační program spusťte a poté pokračujte.</translation>
 <translation id="2009755455353575666">Připojení se nezdařilo</translation>
@@ -123,9 +124,6 @@ Chromoting</translation>
 <translation id="3950820424414687140">Přihlaste se</translation>
 <translation id="3989511127559254552">Aby bylo možné pokračovat, je nutné udělit dodatečná oprávnění k přístupu do vašeho počítače. Tuto akci stačí provést jednou.</translation>
 <translation id="4006787130661126000">Chcete-li se k tomuto počítači připojit prostřednictvím Vzdálené plochy Chrome, je třeba povolit vzdálená připojení.</translation>
-<translation id="4028465833180158312">• Byly provedeny aktualizace uživatelského rozhraní se vzhledem Material Design.
-• Jsou uvedeny licence třetích stran.
-• Zobrazují se informace o vzdálených počítačích, které jsou offline.</translation>
 <translation id="405887016757208221">Vzdálený počítač relaci neinicializoval. Pokud problém přetrvává, zkuste hostitele nakonfigurovat znovu.</translation>
 <translation id="4068946408131579958">Všechna připojení</translation>
 <translation id="409800995205263688">POZNÁMKA: Nastavení zásad umožňují spojení pouze mezi počítači v rámci vaší sítě.</translation>
@@ -169,6 +167,7 @@ plochy Chrome</translation>
 <translation id="4985296110227979402">Nejdříve je potřeba v počítači nastavit vzdálený přístup.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Vzdálený hostitelský server vyžaduje, abyste provedli ověření na stránce třetí strany. Aby bylo možné pokračovat, je nutné udělit Vzdálené ploše Chrome dodatečná oprávnění k přístupu na tuto adresu:</translation>
+<translation id="507204348399810022">Opravdu chcete vzdálená připojení k počítači <ph name="HOSTNAME" /> zakázat?</translation>
 <translation id="5156271271724754543">Zadejte do obou polí stejný kód PIN.</translation>
 <translation id="5168917394043976756">Otevřít vysouvací panel navigace</translation>
 <translation id="5170982930780719864">Neplatné ID hostitele.</translation>

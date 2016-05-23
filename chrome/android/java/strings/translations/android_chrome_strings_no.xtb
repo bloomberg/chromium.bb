@@ -129,6 +129,7 @@ Du kan kontrollere det fysiske nettet i Chrome-innstillingene.
 <translation id="257931822824936280">Utvidet – klikk for å minimere.</translation>
 <translation id="2587052924345400782">En nyere versjon er tilgjengelig</translation>
 <translation id="2593272815202181319">Monospace</translation>
+<translation id="2621115761605608342">Tillat JavaScript for et bestemt nettsted.</translation>
 <translation id="2646820313617290661">Foreldrene dine er med på å styre disse innstillingene.</translation>
 <translation id="2653659639078652383">Send</translation>
 <translation id="2677748264148917807">Gå ut</translation>
@@ -152,6 +153,7 @@ Du kan kontrollere det fysiske nettet i Chrome-innstillingene.
 <translation id="2903493209154104877">Adresser</translation>
 <translation id="2913331724188855103">Tillat at nettsteder lagrer og leser data i informasjonskapsler (anbefales).</translation>
 <translation id="2956410042958133412">Denne kontoen er administrert av <ph name="PARENT_NAME_1" /> og <ph name="PARENT_NAME_2" />.</translation>
+<translation id="2959609938957585241">For å få fanene dine fra de andre enhetene du bruker, slå på «Auto-synkroniser data» i kontoinnstillingene for Android.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Med enerett.</translation>
 <translation id="2968755619301702150">Visningsprogram for sertifikater</translation>
 <translation id="2996291259634659425">Opprett en passordfrase</translation>
@@ -188,6 +190,7 @@ Du kan kontrollere det fysiske nettet i Chrome-innstillingene.
 
 Du logger på med en administrert konto, og gir administratoren kontroll over Chrome-profilen din. Chrome-dataene dine blir permanent knyttet til denne kontoen. Hvis du kobler fra denne kontoen, slettes de lokale Chrome-dataene.</translation>
 <translation id="3384347053049321195">Del bildet</translation>
+<translation id="3386292677130313581">Spør før nettsteder får vite posisjonen min (anbefales)</translation>
 <translation id="3387650086002190359">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt på grunn av filsystemfeil.</translation>
 <translation id="3414952576877147120">Størrelse:</translation>
 <translation id="3435896845095436175">Slå på</translation>
@@ -240,6 +243,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4254813446494774748">Språket siden skal oversettes til:</translation>
 <translation id="4256782883801055595">Lisenser for åpen kildekode</translation>
 <translation id="4259722352634471385">Nettadressen er blokkert: <ph name="URL" /></translation>
+<translation id="4262028915562328938">Det har oppstått en synkroniseringsfeil. Trykk for å se detaljene.</translation>
 <translation id="4269820728363426813">Kopiér linkadressen</translation>
 <translation id="4271185234001491831">Oversett aldri <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Medier</translation>
@@ -254,6 +258,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4440256989292146959">Mer surfing for mindre penger</translation>
 <translation id="4452548195519783679">Satt som bokmerke i <ph name="FOLDER_NAME" /></translation>
 <translation id="4457399174246232812">Fremtidige sider på det fysiske nettet i nærheten vises i varsellisten din</translation>
+<translation id="4479647676395637221">Spør før nettsteder får bruke kameraet (anbefales)</translation>
 <translation id="4498934959426056365">Nøkkelgenerering</translation>
 <translation id="4508440807153586353">Bare personer som har passordfrasen din, kan lese de krypterte dataene dine. Passordfrasen blir verken sendt til Google eller lagret. Hvis du glemmer passordfrasen eller vil endre denne innstillingen, må du tilbakestille synkroniseringen. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{for # dag siden}other{for # dager siden}}</translation>
@@ -323,6 +328,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="5317780077021120954">Lagre</translation>
 <translation id="5324858694974489420">Foreldreinnstillinger</translation>
 <translation id="5327248766486351172">Navn</translation>
+<translation id="5335288049665977812">Tillat at nettsteder kan kjøre JavaScript (anbefales)</translation>
 <translation id="5345040418939504969">Slettet <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Posisjonstilgang er også <ph name="BEGIN_LINK" />slått av for denne enheten<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Send aldri</translation>
@@ -368,6 +374,7 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="585027516397408832">Datasparing er slått på</translation>
 <translation id="5860033963881614850">Av</translation>
 <translation id="5869522115854928033">Lagrede passord</translation>
+<translation id="588563574323093535">Spør før nettsteder får gå i fullskjermmodus (anbefales)</translation>
 <translation id="5899349522111170522">Opprett en ny fil</translation>
 <translation id="5902828464777634901">Alle data som er lagret lokalt av dette nettstedet, inkludert informasjonskapsler, blir slettet.</translation>
 <translation id="5911030830365207728">Google Oversetter</translation>
@@ -392,6 +399,7 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="6140912465461743537">Land/område</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> datasparing</translation>
 <translation id="6165508094623778733">Les mer</translation>
+<translation id="6181444274883918285">Legg til et nettsted som unntak</translation>
 <translation id="6192792657125177640">Unntak</translation>
 <translation id="6232535412751077445">Hvis du slår på «Deaktivering av sporing», blir det sendt en forespørsel sammen med nettrafikken din. Hvilke virkninger dette eventuelt får, avhenger av om det aktuelle nettstedet svarer på forespørselen eller ikke, samt hvordan forespørselen tolkes.
 
@@ -427,6 +435,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6627583120233659107">Rediger mappen</translation>
 <translation id="6647073004883890710">Vil du at <ph name="PASSWORD_MANAGER_BRAND" /> skal oppdatere passordet for <ph name="USERNAME" /> for dette nettstedet?</translation>
 <translation id="6656545060687952787">Chrome trenger posisjonstilgang for å søke etter enheter. <ph name="BEGIN_LINK" />Oppdater tillatelsene<ph name="END_LINK" /></translation>
+<translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">Bruk en forslagstjeneste for å vise relaterte søkeord og populære nettsteder mens du skriver i adressefeltet</translation>
 <translation id="666981079809192359">Merknad om personvern for Chrome</translation>
 <translation id="6698801883190606802">Administrer synkroniserte data</translation>
@@ -453,6 +462,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6981982820502123353">Tilgjengelighet</translation>
 <translation id="6990079615885386641">Last ned appen fra Google Play Butikk: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">Rapportér detaljer om mulige sikkerhetsbrudd til Google automatisk</translation>
+<translation id="6992289844737586249">Spør før nettsteder får bruke mikrofonen (anbefales)</translation>
 <translation id="6999892069268112724">Bekreftelse av Google-konto</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> er lastet ned</translation>
 <translation id="7022756207310403729">Åpne i nettleseren</translation>
@@ -515,6 +525,7 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="7682287625158474539">Forsendelse</translation>
 <translation id="7690588279513156836">Last inn originalen</translation>
 <translation id="771135159654932189">Se hva som er i nærheten</translation>
+<translation id="7713873128508426081">Alltid tillatt</translation>
 <translation id="7764225426217299476">Legg til adresse</translation>
 <translation id="7765158879357617694">Flytt</translation>
 <translation id="7772032839648071052">Bekreft passord</translation>
@@ -559,6 +570,7 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="8275818695183729150">Tillat (for søk fra adressefeltet)</translation>
 <translation id="8283853025636624853">Synkroniserer til <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Standardfaner</translation>
+<translation id="8372893542064058268">Tillat bakgrunnssynkronisering for et bestemt nettsted.</translation>
 <translation id="8374821112118309944">Du må oppdatere til en nyere versjon av Talkback.</translation>
 <translation id="8396312449826231789">Bare godkjente nettsteder</translation>
 <translation id="8413126021676339697">Vis fullstendig logg</translation>
@@ -593,6 +605,7 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="8812942424849541387">Kontrollér hvordan dette fungerer, i <ph name="BEGIN_LINK1" />innstillingene<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Bokmerker</translation>
 <translation id="8829678271838353305"><ph name="ACCOUNT_EMAIL_LAST" /> var pålogget. Hvis du logger på <ph name="ACCOUNT_EMAIL_NEW" />, blir synkroniserte data, for eksempel bokmerker, slått sammen for disse kontoene. For å holde informasjonen atskilt må du fjerne nettleserdataene i <ph name="BEGIN_LINK" />innstillingene<ph name="END_LINK" />.</translation>
+<translation id="883635517171802338">Blokkér nettsteder fra å vise forgrunnsvinduer (anbefales)</translation>
 <translation id="884264119367021077">Leveringsadresse</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /> – fane</translation>
 <translation id="885701979325669005">Lagring</translation>
@@ -622,6 +635,7 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="9100610230175265781">Det kreves en passordfrase</translation>
 <translation id="9133515669113036225">Nullstill påloggingsinformasjon for enheten</translation>
 <translation id="9137013805542155359">Vis original</translation>
+<translation id="9139068048179869749">Spør før nettsteder får sende varsler (anbefales)</translation>
 <translation id="9141510419986760385">Du bytter synkroniseringskonto fra <ph name="FROM_ACCOUNT" /> til <ph name="TO_ACCOUNT" />. Hva vil du gjøre med de eksisterende bokmerkene, loggoppføringene, passordene og de andre innstillingene dine?</translation>
 <translation id="917685106653909562">Fysisk nett-sider i nærheten</translation>
 <translation id="9187199695613236444">Mobilvennlig visning</translation>

@@ -34,6 +34,7 @@ Untuk informasi tentang privasi, lihat Kebijakan Privasi Google (http://goo.gl/S
 <translation id="1779766957982586368">Tutup jendela</translation>
 <translation id="1841799852846221389">Menonaktifkan sambungan jarak jauh untuk komputer ini...</translation>
 <translation id="189172778771606813">Tutup panel samping navigasi</translation>
+<translation id="1897488610212723051">Hapus</translation>
 <translation id="195619862187186579">Layout keyboard</translation>
 <translation id="1996161829609978754">Chrome sedang mengunduh pemasang Inang Chromoting. Setelah unduhan selesai, jalankan pemasang sebelum melanjutkan.</translation>
 <translation id="2009755455353575666">Koneksi gagal</translation>
@@ -122,9 +123,6 @@ Chromoting</translation>
 <translation id="3950820424414687140">Masuk</translation>
 <translation id="3989511127559254552">Untuk melanjutkan, Anda harus memberikan izin akses yang diperpanjang ke komputer. Anda hanya perlu melakukan ini satu kali.</translation>
 <translation id="4006787130661126000">Anda harus mengaktifkan sambungan jarak jauh jika ingin menggunakan Chrome Desktop Jarak Jauh untuk mengakses komputer ini.</translation>
-<translation id="4028465833180158312">• Pembaruan Antarmuka Desain Material.
-• Kredit pemberian lisensi pihak ketiga.
-• Tampilan informasi untuk komputer jarak jauh yang sedang offline.</translation>
 <translation id="405887016757208221">Komputer jarak jauh gagal melakukan inisialisasi sesi. Jika masalah tetap ada, coba konfigurasi ulang host.</translation>
 <translation id="4068946408131579958">Semua sambungan</translation>
 <translation id="409800995205263688">CATATAN: Setelan kebijakan hanya mengizinkan sambungan antar-komputer dalam jaringan Anda.</translation>
@@ -168,6 +166,7 @@ Desktop Jarak Jauh</translation>
 <translation id="4985296110227979402">Pertama, Anda perlu menyiapkan komputer untuk akses jarak jauh</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (offline)</translation>
 <translation id="5070121137485264635">Hosting jarak jauh mewajibkan Anda mengautentikasi ke situs web pihak ketiga. Untuk melanjutkan, Anda harus memberikan izin tambahan ke Chrome Desktop Jarak Jauh untuk mengakses alamat ini:</translation>
+<translation id="507204348399810022">Yakin ingin menonaktifkan sambungan jarak jauh ke <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Masukkan PIN yang sama di kedua kotak.</translation>
 <translation id="5168917394043976756">Buka panel samping navigasi</translation>
 <translation id="5170982930780719864">ID host tidak valid.</translation>

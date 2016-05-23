@@ -129,6 +129,7 @@ Anda dapat mengontrol Web Fisik di Setelan Chrome.
 <translation id="257931822824936280">Diperluas - klik untuk menciutkan</translation>
 <translation id="2587052924345400782">Versi baru telah tersedia</translation>
 <translation id="2593272815202181319">Monospace</translation>
+<translation id="2621115761605608342">Memungkinkan JavaScript untuk situs tertentu.</translation>
 <translation id="2646820313617290661">Orang tua Anda membantu mengelola setelan ini.</translation>
 <translation id="2653659639078652383">Kirim</translation>
 <translation id="2677748264148917807">Keluar</translation>
@@ -152,6 +153,7 @@ Anda dapat mengontrol Web Fisik di Setelan Chrome.
 <translation id="2903493209154104877">Alamat</translation>
 <translation id="2913331724188855103">Izinkan situs untuk menyimpan dan membaca data cookie (disarankan)</translation>
 <translation id="2956410042958133412">Akun ini dikelola oleh <ph name="PARENT_NAME_1" /> dan <ph name="PARENT_NAME_2" />.</translation>
+<translation id="2959609938957585241">Untuk mendapatkan tab dari perangkat lainnya, aktifkan "Sinkronisasi data otomatis" di setelan akun Android.</translation>
 <translation id="2960796085439532066">Hak cipta <ph name="YEAR" /> Google Inc. Semua hak dilindungi undang-undang.</translation>
 <translation id="2968755619301702150">Penampil sertifikat</translation>
 <translation id="2996291259634659425">Buat frasa sandi</translation>
@@ -188,6 +190,7 @@ Anda dapat mengontrol Web Fisik di Setelan Chrome.
 
 Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol atas profil Chrome Anda. Data Chrome Anda akan terikat dengan akun ini secara permanen. Memutuskan tautan dengan akun ini akan menghapus data Chrome lokal.</translation>
 <translation id="3384347053049321195">Bagikan gambar</translation>
+<translation id="3386292677130313581">Meminta izin sebelum memungkinkan situs mengetahui lokasi Anda (disarankan)</translation>
 <translation id="3387650086002190359">Unduhan <ph name="FILE_NAME" /> gagal karena kesalahan sistem file.</translation>
 <translation id="3414952576877147120">Ukuran:</translation>
 <translation id="3435896845095436175">Aktifkan</translation>
@@ -240,6 +243,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4254813446494774748">Bahasa Terjemahan:</translation>
 <translation id="4256782883801055595">Lisensi sumber terbuka</translation>
 <translation id="4259722352634471385">Navigasi diblokir: <ph name="URL" /></translation>
+<translation id="4262028915562328938">Terjadi kesalahan sinkronisasi, ketuk untuk melihat detailnya.</translation>
 <translation id="4269820728363426813">Salin alamat tautan</translation>
 <translation id="4271185234001491831">Jangan pernah terjemahkan bahasa <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Media</translation>
@@ -254,6 +258,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4440256989292146959">Jelajahi lebih banyak dengan lebih hemat</translation>
 <translation id="4452548195519783679">Dibookmark ke <ph name="FOLDER_NAME" /></translation>
 <translation id="4457399174246232812">Laman Web Fisik di sekitar mendatang akan muncul di daftar notifikasi</translation>
+<translation id="4479647676395637221">Meminta izin terlebih dahulu sebelum memungkinkan situs menggunakan kamera Anda (disarankan)</translation>
 <translation id="4498934959426056365">Pembuatan kunci</translation>
 <translation id="4508440807153586353">Hanya orang yang memiliki frasa sandi Anda yang dapat membaca data terenkripsi. Frasa sandi tidak akan dikirim ke atau disimpan oleh Google. Jika lupa frasa sandi atau ingin mengubah setelan ini, Anda perlu menyetel ulang sinkronisasi. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# hari yang lalu}other{# hari yang lalu}}</translation>
@@ -323,6 +328,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="5324858694974489420">Setelan Orang Tua</translation>
 <translation id="5327248766486351172">Nama</translation>
+<translation id="5335288049665977812">Mengizinkan situs menjalankan JavaScript (disarankan)</translation>
 <translation id="5345040418939504969">Menghapus <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Akses lokasi juga <ph name="BEGIN_LINK" />dinonaktifkan untuk perangkat ini<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Jangan pernah mengirim</translation>
@@ -368,6 +374,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="585027516397408832">Penghemat Data diaktifkan</translation>
 <translation id="5860033963881614850">Nonaktif</translation>
 <translation id="5869522115854928033">Sandi yang disimpan</translation>
+<translation id="588563574323093535">Meminta izin terlebih dahulu sebelum memungkinkan situs memasuki mode layar penuh (disarankan)</translation>
 <translation id="5899349522111170522">Buat file baru</translation>
 <translation id="5902828464777634901">Semua data lokal yang disimpan oleh situs web ini, termasuk cookie, akan dihapus.</translation>
 <translation id="5911030830365207728">Google Terjemahan</translation>
@@ -392,6 +399,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="6140912465461743537">Negara/Wilayah</translation>
 <translation id="6159335304067198720">Penghematan data <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Pelajari lebih lanjut</translation>
+<translation id="6181444274883918285">Tambahkan pengecualian situs</translation>
 <translation id="6192792657125177640">Pengecualian</translation>
 <translation id="6232535412751077445">Jika ‘Jangan Lacak’ diaktifkan, permintaan akan disertakan dengan lalu lintas penjelajahan Anda. Dampak apa pun yang muncul bergantung pada apakah situs web menanggapi permintaan, dan bagaimana permintaan diinterpretasikan.
 
@@ -427,6 +435,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6627583120233659107">Edit folder</translation>
 <translation id="6647073004883890710">Ingin <ph name="PASSWORD_MANAGER_BRAND" /> memperbarui sandi bagi <ph name="USERNAME" /> untuk situs ini?</translation>
 <translation id="6656545060687952787">Chrome memerlukan akses lokasi untuk memindai perangkat. <ph name="BEGIN_LINK" />Perbarui izin<ph name="END_LINK" /></translation>
+<translation id="6659594942844771486">Tab</translation>
 <translation id="666268767214822976">Gunakan layanan prediksi untuk menunjukkan kueri terkait dan situs web populer saat Anda mengetik di bilah alamat</translation>
 <translation id="666981079809192359">Notifikasi Privasi Chrome</translation>
 <translation id="6698801883190606802">Kelola data yang disinkronkan</translation>
@@ -453,6 +462,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6981982820502123353">Aksesibilitas</translation>
 <translation id="6990079615885386641">Dapatkan aplikasi dari Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">Otomatis melaporkan detail kemungkinan insiden keamanan ke Google</translation>
+<translation id="6992289844737586249">Meminta izin terlebih dahulu sebelum memungkinkan situs menggunakan mikrofon Anda (disarankan)</translation>
 <translation id="6999892069268112724">Konfirmasi Akun Google</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> diunduh</translation>
 <translation id="7022756207310403729">Buka di browser</translation>
@@ -515,6 +525,7 @@ Akun Google Anda mungkin memiliki bentuk riwayat penjelajahan lain seperti penel
 <translation id="7682287625158474539">Pengiriman</translation>
 <translation id="7690588279513156836">Muat yang asli</translation>
 <translation id="771135159654932189">Lihat yang ada di sekitar</translation>
+<translation id="7713873128508426081">Selalu izinkan</translation>
 <translation id="7764225426217299476">Tambahkan alamat</translation>
 <translation id="7765158879357617694">Pindahkan</translation>
 <translation id="7772032839648071052">Konfirmasi frasa sandi</translation>
@@ -559,6 +570,7 @@ Akun Google Anda mungkin memiliki bentuk riwayat penjelajahan lain seperti penel
 <translation id="8275818695183729150">Izinkan (untuk penelusuran bilah alamat)</translation>
 <translation id="8283853025636624853">Menyinkronkan dengan <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Tab standar</translation>
+<translation id="8372893542064058268">Mengizinkan Sinkronisasi Latar Belakang untuk situs tertentu.</translation>
 <translation id="8374821112118309944">Anda perlu memperbarui TalkBack ke versi yang lebih baru.</translation>
 <translation id="8396312449826231789">Hanya situs yang disetujui</translation>
 <translation id="8413126021676339697">Tampilkan riwayat lengkap</translation>
@@ -593,6 +605,7 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diu
 <translation id="8812942424849541387">Kontrol cara kerjanya di <ph name="BEGIN_LINK1" />Setelan<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Bookmark</translation>
 <translation id="8829678271838353305"><ph name="ACCOUNT_EMAIL_LAST" /> telah masuk. Masuk dengan <ph name="ACCOUNT_EMAIL_NEW" /> akan menggabungkan data yang disinkronkan seperti bookmark antarakun. Agar informasi tetap terpisah, hapus data penjelajahan di <ph name="BEGIN_LINK" />setelan<ph name="END_LINK" />.</translation>
+<translation id="883635517171802338">Memblokir situs agar tidak menampilkan munculan (disarankan)</translation>
 <translation id="884264119367021077">Alamat pengiriman</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, tab</translation>
 <translation id="885701979325669005">Penyimpanan</translation>
@@ -622,6 +635,7 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diu
 <translation id="9100610230175265781">Frasa sandi diwajibkan</translation>
 <translation id="9133515669113036225">Menyetel ulang kredensial perangkat</translation>
 <translation id="9137013805542155359">Perlihatkan laman asli</translation>
+<translation id="9139068048179869749">Meminta izin sebelum memungkinkan situs mengirimkan notifikasi (disarankan)</translation>
 <translation id="9141510419986760385">Anda beralih akun sinkronisasi dari <ph name="FROM_ACCOUNT" /> ke <ph name="TO_ACCOUNT" />. Apa yang ingin Anda lakukan dengan bookmark, riwayat, sandi, dan setelan lain yang sudah ada?</translation>
 <translation id="917685106653909562">Laman Web fisik di sekitar</translation>
 <translation id="9187199695613236444">Tampilan mobile-friendly</translation>
