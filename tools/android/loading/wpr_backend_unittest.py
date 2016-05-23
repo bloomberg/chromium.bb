@@ -20,7 +20,7 @@ LOADING_DIR = os.path.dirname(__file__)
 
 class MockWprResponse(object):
   def __init__(self, headers):
-    self.headers = headers
+    self.original_headers = headers
 
 class WprUrlEntryTest(unittest.TestCase):
 
@@ -64,7 +64,7 @@ class WprUrlEntryTest(unittest.TestCase):
     headers = entry.GetResponseHeadersDict()
     self.assertEquals(3, len(headers))
     self.assertEquals('new_value0', headers['new_header0'])
-    self.assertEquals('new_header0', entry._wpr_response.headers[2][0])
+    self.assertEquals('new_header0', entry._wpr_response.original_headers[2][0])
 
     entry = self._CreateWprUrlEntry([('header0', 'value0'),
                                      ('header1', 'value1'),
@@ -73,7 +73,7 @@ class WprUrlEntryTest(unittest.TestCase):
     headers = entry.GetResponseHeadersDict()
     self.assertEquals(3, len(headers))
     self.assertEquals('new_value1', headers['header1'])
-    self.assertEquals('header1', entry._wpr_response.headers[1][0])
+    self.assertEquals('header1', entry._wpr_response.original_headers[1][0])
 
     entry = self._CreateWprUrlEntry([('header0', 'value0'),
                                      ('hEADEr1', 'value1'),
@@ -82,7 +82,7 @@ class WprUrlEntryTest(unittest.TestCase):
     headers = entry.GetResponseHeadersDict()
     self.assertEquals(3, len(headers))
     self.assertEquals('new_value1', headers['header1'])
-    self.assertEquals('hEADEr1', entry._wpr_response.headers[1][0])
+    self.assertEquals('hEADEr1', entry._wpr_response.original_headers[1][0])
 
     entry = self._CreateWprUrlEntry([('header0', 'value0'),
                                      ('header1', 'value1'),
@@ -94,9 +94,9 @@ class WprUrlEntryTest(unittest.TestCase):
     headers = entry.GetResponseHeadersDict()
     self.assertEquals(4, len(headers))
     self.assertEquals('new_value2', headers['header1'])
-    self.assertEquals('header1', entry._wpr_response.headers[1][0])
-    self.assertEquals('header3', entry._wpr_response.headers[3][0])
-    self.assertEquals('value4', entry._wpr_response.headers[3][1])
+    self.assertEquals('header1', entry._wpr_response.original_headers[1][0])
+    self.assertEquals('header3', entry._wpr_response.original_headers[3][0])
+    self.assertEquals('value4', entry._wpr_response.original_headers[3][1])
 
     entry = self._CreateWprUrlEntry([('header0', 'value0'),
                                      ('heADer1', 'value1'),
@@ -108,9 +108,9 @@ class WprUrlEntryTest(unittest.TestCase):
     headers = entry.GetResponseHeadersDict()
     self.assertEquals(4, len(headers))
     self.assertEquals('new_value2', headers['header1'])
-    self.assertEquals('heADer1', entry._wpr_response.headers[1][0])
-    self.assertEquals('header3', entry._wpr_response.headers[3][0])
-    self.assertEquals('value4', entry._wpr_response.headers[3][1])
+    self.assertEquals('heADer1', entry._wpr_response.original_headers[1][0])
+    self.assertEquals('header3', entry._wpr_response.original_headers[3][0])
+    self.assertEquals('value4', entry._wpr_response.original_headers[3][1])
 
   def testDeleteResponseHeader(self):
     entry = self._CreateWprUrlEntry([('header0', 'value0'),
@@ -146,8 +146,9 @@ class WprUrlEntryTest(unittest.TestCase):
     entry.RemoveResponseHeaderDirectives('header0', {'keyword1'})
     self.assertEquals(
         'keYWOrd0,keYwoRd2', entry.GetResponseHeadersDict()['header0'])
-    self.assertEquals(3, len(entry._wpr_response.headers))
-    self.assertEquals('keYWOrd0,keYwoRd2', entry._wpr_response.headers[0][1])
+    self.assertEquals(3, len(entry._wpr_response.original_headers))
+    self.assertEquals(
+        'keYWOrd0,keYwoRd2', entry._wpr_response.original_headers[0][1])
 
 
 class WprHostTest(unittest.TestCase):

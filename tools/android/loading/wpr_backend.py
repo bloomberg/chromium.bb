@@ -48,7 +48,7 @@ class WprUrlEntry(object):
       dict(name -> value)
     """
     headers = collections.defaultdict(list)
-    for (key, value) in self._wpr_response.headers:
+    for (key, value) in self._wpr_response.original_headers:
       headers[key.lower()].append(value)
     return {k: ','.join(v) for (k, v) in headers.items()}
 
@@ -66,16 +66,16 @@ class WprUrlEntry(object):
     assert name.islower()
     new_headers = []
     new_header_set = False
-    for header in self._wpr_response.headers:
+    for header in self._wpr_response.original_headers:
       if header[0].lower() != name:
         new_headers.append(header)
       elif not new_header_set:
         new_header_set = True
         new_headers.append((header[0], value))
     if new_header_set:
-      self._wpr_response.headers = new_headers
+      self._wpr_response.original_headers = new_headers
     else:
-      self._wpr_response.headers.append((name, value))
+      self._wpr_response.original_headers.append((name, value))
 
   def DeleteResponseHeader(self, name):
     """Delete a header.
@@ -88,8 +88,8 @@ class WprUrlEntry(object):
       name: The name of the response header field to delete.
     """
     assert name.islower()
-    self._wpr_response.headers = \
-        [x for x in self._wpr_response.headers if x[0].lower() != name]
+    self._wpr_response.original_headers = \
+        [x for x in self._wpr_response.original_headers if x[0].lower() != name]
 
   def RemoveResponseHeaderDirectives(self, name, directives_blacklist):
     """Removed a set of directives from response headers.
@@ -143,6 +143,9 @@ class WprArchiveBackend(object):
 
   def Persist(self):
     """Persists the archive to disk. """
+    for request in self._http_archive.get_requests():
+      response = self._http_archive[request]
+      response.headers = response._TrimHeaders(response.original_headers)
     self._http_archive.Persist(self._wpr_archive_path)
 
 
