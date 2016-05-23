@@ -879,8 +879,14 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("iframe-coordinates-cross-process.html"));
 }
 
+// Flaky on Win7. http://crbug.com/610744
+#ifdef OS_WIN
+#define MAYBE_AccessibilityIframePresentational DISABLED_AccessibilityIframePresentational
+#else
+#define MAYBE_AccessibilityIframePresentational AccessibilityIframePresentational
+#endif
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityIframePresentational) {
+                       MAYBE_AccessibilityIframePresentational) {
   RunHtmlTest(FILE_PATH_LITERAL("iframe-presentational.html"));
 }
 
