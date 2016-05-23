@@ -15,7 +15,7 @@ function MultiFileDetailsPanel() {
 }
 
 /**
- * Inherits from cr.ui.List.
+ * Inherits from HTMLDivElement.
  */
 MultiFileDetailsPanel.prototype = {
   __proto__: HTMLDivElement.prototype,
@@ -149,7 +149,7 @@ MultiFileDetailsPanel.Aggregator.prototype.dequeue_ = function() {
 };
 
 /**
- * Decorates an HTML element to be a SingleFileDetailsList.
+ * Decorates an HTML element to be a MultiFileDetailsPanel.
  * @param {!HTMLDivElement} self The grid to decorate.
  * @param {!MetadataModel} metadataModel File system metadata.
  */

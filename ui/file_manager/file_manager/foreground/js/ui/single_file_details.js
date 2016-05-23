@@ -11,11 +11,11 @@
  * @extends {HTMLDivElement}
  */
 function SingleFileDetailsPanel() {
-  throw new Error('Use SingleFileDetailsList.decorate');
+  throw new Error('Use SingleFileDetailsPanel.decorate');
 }
 
 /**
- * Inherits from cr.ui.List.
+ * Inherits from HTMLDivElement.
  */
 SingleFileDetailsPanel.prototype = {
   __proto__: HTMLDivElement.prototype,
@@ -288,7 +288,7 @@ SingleFileDetailsPanel.CONTENT_ITEMS = [
 ];
 
 /**
- * Decorates an HTML element to be a SingleFileDetailsList.
+ * Decorates an HTML element to be a SingleFileDetailsPanel.
  * @param {!HTMLDivElement} self The grid to decorate.
  * @param {!MetadataModel} metadataModel File system metadata.
  */
