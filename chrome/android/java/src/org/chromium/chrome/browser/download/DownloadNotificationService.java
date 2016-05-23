@@ -13,6 +13,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 
@@ -140,7 +141,13 @@ public class DownloadNotificationService extends Service {
             NumberFormat formatter = NumberFormat.getPercentInstance(Locale.getDefault());
             String percentText = formatter.format(percentage / 100.0);
             String duration = getDurationString(timeRemainingInMillis);
-            builder.setContentText(duration).setContentInfo(percentText);
+            builder.setContentText(duration);
+            if (Build.VERSION.CODENAME.equals("N")
+                    || Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+                builder.setSubText(percentText);
+            } else {
+                builder.setContentInfo(percentText);
+            }
         }
         addOrReplaceSharedPreferenceEntry(new DownloadSharedPreferenceEntry(
                 notificationId, isResumable, canDownloadWhileMetered, downloadGuid, fileName));
