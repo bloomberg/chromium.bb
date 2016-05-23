@@ -49,8 +49,7 @@ void BeginFrameObserverBase::OnBeginFrame(const BeginFrameArgs& args) {
 }
 
 // BeginFrameSourceBase ------------------------------------------------------
-BeginFrameSourceBase::BeginFrameSourceBase()
-    : paused_(false), inside_as_value_into_(false) {}
+BeginFrameSourceBase::BeginFrameSourceBase() : paused_(false) {}
 
 BeginFrameSourceBase::~BeginFrameSourceBase() {}
 

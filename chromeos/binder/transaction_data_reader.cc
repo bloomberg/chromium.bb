@@ -26,8 +26,7 @@ size_t AddPadding(size_t n) {
 }  // namespace
 
 TransactionDataReader::TransactionDataReader(const TransactionData& data)
-    : data_(data),
-      reader_(reinterpret_cast<const char*>(data.GetData()),
+    : reader_(reinterpret_cast<const char*>(data.GetData()),
               data.GetDataSize()) {}
 
 TransactionDataReader::~TransactionDataReader() {}

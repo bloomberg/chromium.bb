@@ -15,7 +15,7 @@ namespace bluez {
 FakeBluetoothMediaEndpointServiceProvider::
     FakeBluetoothMediaEndpointServiceProvider(const ObjectPath& object_path,
                                               Delegate* delegate)
-    : visible_(false), object_path_(object_path), delegate_(delegate) {
+    : object_path_(object_path), delegate_(delegate) {
   VLOG(1) << "Create Bluetooth Media Endpoint: " << object_path_.value();
 }
 

@@ -55,7 +55,6 @@ class MobileSessionShutdownMetricsProviderForTesting
 
  private:
   bool is_first_launch_after_upgrade_;
-  bool was_last_shutdown_clean_;
   bool has_crash_logs_;
   bool has_uploaded_crash_reports_in_background_;
   bool received_memory_warning_before_last_shutdown_;

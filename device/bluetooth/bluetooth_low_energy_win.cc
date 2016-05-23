@@ -595,17 +595,14 @@ DeviceRegistryPropertyValue::Create(DWORD property_type,
       break;
     }
   }
-  return base::WrapUnique(new DeviceRegistryPropertyValue(
-      property_type, std::move(value), value_size));
+  return base::WrapUnique(
+      new DeviceRegistryPropertyValue(property_type, std::move(value)));
 }
 
 DeviceRegistryPropertyValue::DeviceRegistryPropertyValue(
     DWORD property_type,
-    std::unique_ptr<uint8_t[]> value,
-    size_t value_size)
-    : property_type_(property_type),
-      value_(std::move(value)),
-      value_size_(value_size) {}
+    std::unique_ptr<uint8_t[]> value)
+    : property_type_(property_type), value_(std::move(value)) {}
 
 DeviceRegistryPropertyValue::~DeviceRegistryPropertyValue() {
 }

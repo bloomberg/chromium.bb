@@ -63,10 +63,6 @@ ChromePluginPlaceholder::ChromePluginPlaceholder(
                                          html_data),
       status_(ChromeViewHostMsg_GetPluginInfo_Status::kAllowed),
       title_(title),
-#if defined(ENABLE_PLUGIN_INSTALLATION)
-      placeholder_routing_id_(MSG_ROUTING_NONE),
-#endif
-      has_host_(false),
       context_menu_request_id_(0),
       ignore_updates_(false) {
   RenderThread::Get()->AddObserver(this);

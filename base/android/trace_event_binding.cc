@@ -28,10 +28,7 @@ const char kLooperDispatchMessage[] = "Looper.dispatchMessage";
 class TraceEventDataConverter {
  public:
   TraceEventDataConverter(JNIEnv* env, jstring jname, jstring jarg)
-      : env_(env),
-        jname_(jname),
-        jarg_(jarg),
-        name_(ConvertJavaStringToUTF8(env, jname)),
+      : name_(ConvertJavaStringToUTF8(env, jname)),
         has_arg_(jarg != nullptr),
         arg_(jarg ? ConvertJavaStringToUTF8(env, jarg) : "") {}
   ~TraceEventDataConverter() {
@@ -43,9 +40,6 @@ class TraceEventDataConverter {
   const char* arg() { return has_arg_ ? arg_.c_str() : nullptr; }
 
  private:
-  JNIEnv* env_;
-  jstring jname_;
-  jstring jarg_;
   std::string name_;
   bool has_arg_;
   std::string arg_;

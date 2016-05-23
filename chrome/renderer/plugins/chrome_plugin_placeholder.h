@@ -112,10 +112,11 @@ class ChromePluginPlaceholder final
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   // |routing_id()| is the routing ID of our associated RenderView, but we have
   // a separate routing ID for messages specific to this placeholder.
-  int32_t placeholder_routing_id_;
+  int32_t placeholder_routing_id_ = MSG_ROUTING_NONE;
+
+  bool has_host_ = false;
 #endif
 
-  bool has_host_;
   int context_menu_request_id_;  // Nonzero when request pending.
   base::string16 plugin_name_;
 

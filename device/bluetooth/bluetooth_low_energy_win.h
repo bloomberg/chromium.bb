@@ -41,12 +41,10 @@ class DEVICE_BLUETOOTH_EXPORT DeviceRegistryPropertyValue {
 
  private:
   DeviceRegistryPropertyValue(DWORD property_type,
-                              std::unique_ptr<uint8_t[]> value,
-                              size_t value_size);
+                              std::unique_ptr<uint8_t[]> value);
 
   DWORD property_type_;
   std::unique_ptr<uint8_t[]> value_;
-  size_t value_size_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceRegistryPropertyValue);
 };

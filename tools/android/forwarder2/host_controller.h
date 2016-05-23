@@ -58,7 +58,6 @@ class HostController {
   HostController(int device_port,
                  int host_port,
                  int adb_port,
-                 int exit_notifier_fd,
                  const ErrorCallback& error_callback,
                  std::unique_ptr<Socket> adb_control_socket,
                  std::unique_ptr<PipeNotifier> delete_controller_notifier);
@@ -77,8 +76,6 @@ class HostController {
   const int device_port_;
   const int host_port_;
   const int adb_port_;
-  // Used to notify the controller when the process is killed.
-  const int global_exit_notifier_fd_;
   std::unique_ptr<Socket> adb_control_socket_;
   // Used to cancel the pending blocking IO operations when the host controller
   // instance is deleted.

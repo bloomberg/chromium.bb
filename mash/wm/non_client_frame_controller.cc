@@ -36,20 +36,13 @@ namespace mash {
 namespace wm {
 namespace {
 
-enum class ShadowStyle {
-  NORMAL,
-  SMALL,
-};
-
 // LayoutManager associated with the window created by WindowTreeHost. Resizes
 // all children of the parent to match the bounds of the parent. Additionally
 // handles sizing of a Shadow.
 class ContentWindowLayoutManager : public aura::LayoutManager {
  public:
-  explicit ContentWindowLayoutManager(aura::Window* window,
-                                      ShadowStyle style,
-                                      Shadow* shadow)
-      : window_(window), style_(style), shadow_(shadow) {
+  ContentWindowLayoutManager(aura::Window* window, Shadow* shadow)
+      : window_(window), shadow_(shadow) {
     OnWindowResized();
   }
   ~ContentWindowLayoutManager() override {}
@@ -86,7 +79,6 @@ class ContentWindowLayoutManager : public aura::LayoutManager {
   }
 
   aura::Window* window_;
-  const ShadowStyle style_;
   Shadow* shadow_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentWindowLayoutManager);
@@ -124,7 +116,7 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
     shadow_->Init(Shadow::STYLE_INACTIVE);
     shadow_->Install(window());
     ContentWindowLayoutManager* layout_manager = new ContentWindowLayoutManager(
-        window_tree_host->window(), ShadowStyle::NORMAL, shadow_.get());
+        window_tree_host->window(), shadow_.get());
     window_tree_host->window()->SetLayoutManager(layout_manager);
     const int inset = Shadow::GetInteriorInsetForStyle(Shadow::STYLE_ACTIVE);
     window_tree_host->SetOutputSurfacePadding(

@@ -41,9 +41,6 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothMediaEndpointServiceProvider
   const dbus::ObjectPath& object_path() const { return object_path_; }
 
  private:
-  // Indicates whether the endpoint object is visible or not.
-  bool visible_;
-
   // The path of the media endpoint object.
   dbus::ObjectPath object_path_;
 

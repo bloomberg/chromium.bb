@@ -150,13 +150,8 @@ class Shell : public ShellClient {
   std::set<std::string> singletons_;
 
   std::map<Identity, mojom::ShellClientFactoryPtr> shell_client_factories_;
-  // Counter used to assign ids to client factories.
-  uint32_t shell_client_factory_id_counter_;
-
   std::map<Identity, mojom::ShellResolverPtr> identity_to_resolver_;
-
   mojo::InterfacePtrSet<mojom::InstanceListener> instance_listeners_;
-
   base::Callback<void(const Identity&)> instance_quit_callback_;
   std::unique_ptr<NativeRunnerFactory> native_runner_factory_;
   std::unique_ptr<ShellConnection> shell_connection_;

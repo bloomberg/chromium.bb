@@ -44,7 +44,6 @@ class MojoTestBase : public testing::Test {
    private:
     friend class MojoTestBase;
 
-    MojoTestBase* test_;
 #if !defined(OS_IOS)
     MultiprocessTestHelper helper_;
 #endif

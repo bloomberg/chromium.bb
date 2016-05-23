@@ -137,7 +137,6 @@ class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
   base::ScopedFD fd_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  base::ThreadChecker thread_checker_;
 
   // Maps claimed interfaces by interface number to their current alternate
   // setting.

@@ -48,8 +48,7 @@ MojoTestBase::ClientController& MojoTestBase::StartClient(
 }
 
 MojoTestBase::ClientController::ClientController(const std::string& client_name,
-                                                 MojoTestBase* test)
-    : test_(test) {
+                                                 MojoTestBase* test) {
 #if !defined(OS_IOS)
 #if defined(OS_MACOSX)
   // This lock needs to be held while launching the child because the Mach port

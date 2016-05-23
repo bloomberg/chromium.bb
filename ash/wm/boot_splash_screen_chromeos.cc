@@ -24,7 +24,10 @@ class BootSplashScreen::CopyHostContentLayerDelegate
     : public ui::LayerDelegate {
  public:
   explicit CopyHostContentLayerDelegate(aura::WindowTreeHost* host)
-      : host_(host) {
+#if defined(USE_X11)
+      : host_(host)
+#endif
+  {
   }
 
   ~CopyHostContentLayerDelegate() override {}
@@ -57,7 +60,9 @@ class BootSplashScreen::CopyHostContentLayerDelegate
   }
 
  private:
+#if defined(USE_X11)
   aura::WindowTreeHost* host_;  // not owned
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(CopyHostContentLayerDelegate);
 };

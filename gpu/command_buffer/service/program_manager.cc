@@ -497,7 +497,6 @@ void Program::Update() {
     }
   }
 
-#if !defined(NDEBUG)
   if (manager_->gpu_preferences_.enable_gpu_service_logging_gpu) {
     DVLOG(1) << "----: attribs for service_id: " << service_id();
     for (size_t ii = 0; ii < attrib_infos_.size(); ++ii) {
@@ -508,10 +507,9 @@ void Program::Update() {
                << ", name = " << info.name;
     }
   }
-#endif
+
   UpdateUniforms();
 
-#if !defined(NDEBUG)
   if (manager_->gpu_preferences_.enable_gpu_service_logging_gpu) {
     DVLOG(1) << "----: uniforms for service_id: " << service_id();
     size_t ii = 0;
@@ -522,7 +520,6 @@ void Program::Update() {
                << ", name = " << info.name;
     }
   }
-#endif
 
   UpdateFragmentInputs();
   UpdateProgramOutputs();

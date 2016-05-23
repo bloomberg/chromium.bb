@@ -320,7 +320,6 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   bool debug_;
   bool log_commands_;
   bool unsafe_es3_apis_enabled_;
-  bool force_shader_name_hashing_for_test_;
   DISALLOW_COPY_AND_ASSIGN(GLES2Decoder);
 };
 

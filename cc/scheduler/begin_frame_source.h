@@ -155,8 +155,6 @@ class CC_EXPORT BeginFrameSourceBase : public BeginFrameSource {
   bool paused_;
 
  private:
-  bool inside_as_value_into_;
-
   DISALLOW_COPY_AND_ASSIGN(BeginFrameSourceBase);
 };
 

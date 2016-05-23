@@ -45,11 +45,9 @@ class UI : public views::WidgetDelegateView,
            public navigation::mojom::ViewClient {
  public:
   UI(Webtest* webtest,
-     bool is_popup,
      navigation::mojom::ViewPtr view,
      navigation::mojom::ViewClientRequest request)
       : webtest_(webtest),
-        is_popup_(is_popup),
         view_(std::move(view)),
         view_client_binding_(this, std::move(request)) {}
   ~UI() override {
@@ -117,8 +115,8 @@ class UI : public views::WidgetDelegateView,
                    mojo::RectPtr initial_rect,
                    bool user_gesture) override {
     views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
-        new UI(webtest_, is_popup, std::move(view), std::move(request)),
-               nullptr, initial_rect.To<gfx::Rect>());
+        new UI(webtest_, std::move(view), std::move(request)), nullptr,
+        initial_rect.To<gfx::Rect>());
     window->Show();
     webtest_->AddWindow(window);
   }
@@ -127,7 +125,6 @@ class UI : public views::WidgetDelegateView,
   }
 
   Webtest* webtest_;
-  bool is_popup_;
   mus::Window* content_area_ = nullptr;
   navigation::mojom::ViewPtr view_;
   mojo::Binding<navigation::mojom::ViewClient> view_client_binding_;
@@ -181,7 +178,7 @@ void Webtest::Launch(uint32_t what, mojom::LaunchMode how) {
   navigation::mojom::ViewClientRequest view_client_request =
       GetProxy(&view_client);
   view_factory->CreateView(std::move(view_client), GetProxy(&view));
-  UI* ui = new UI(this, false, std::move(view), std::move(view_client_request));
+  UI* ui = new UI(this, std::move(view), std::move(view_client_request));
   views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
       ui, nullptr, gfx::Rect(50, 10, 600, 600));
   ui->NavigateTo(GURL("http://www.theverge.com/"));

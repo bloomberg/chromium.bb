@@ -48,9 +48,8 @@ std::unique_ptr<HostController> HostController::Create(
     return host_controller;
   }
   host_controller.reset(new HostController(
-      device_port_allocated, host_port, adb_port, exit_notifier_fd,
-      error_callback, std::move(adb_control_socket),
-      std::move(delete_controller_notifier)));
+      device_port_allocated, host_port, adb_port, error_callback,
+      std::move(adb_control_socket), std::move(delete_controller_notifier)));
   return host_controller;
 }
 
@@ -68,7 +67,6 @@ HostController::HostController(
     int device_port,
     int host_port,
     int adb_port,
-    int exit_notifier_fd,
     const ErrorCallback& error_callback,
     std::unique_ptr<Socket> adb_control_socket,
     std::unique_ptr<PipeNotifier> delete_controller_notifier)
@@ -76,7 +74,6 @@ HostController::HostController(
       device_port_(device_port),
       host_port_(host_port),
       adb_port_(adb_port),
-      global_exit_notifier_fd_(exit_notifier_fd),
       adb_control_socket_(std::move(adb_control_socket)),
       delete_controller_notifier_(std::move(delete_controller_notifier)),
       deletion_task_runner_(base::ThreadTaskRunnerHandle::Get()),

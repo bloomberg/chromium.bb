@@ -123,7 +123,6 @@ class XmppSignalStrategy::Core : public XmppLoginHandler::Delegate {
 
   std::unique_ptr<net::StreamSocket> socket_;
   std::unique_ptr<BufferedSocketWriter> writer_;
-  int pending_writes_ = 0;
   scoped_refptr<net::IOBuffer> read_buffer_;
   bool read_pending_ = false;
 

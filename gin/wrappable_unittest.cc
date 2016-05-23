@@ -16,10 +16,16 @@
 
 namespace gin {
 
+// This useless base class ensures that the value of a pointer to a MyObject
+// (below) is not the same as the value of that pointer cast to the object's
+// WrappableBase base.
 class BaseClass {
  public:
   BaseClass() : value_(23) {}
   virtual ~BaseClass() {}
+
+  // So the compiler doesn't complain that |value_| is unused.
+  int value() const { return value_; }
 
  private:
   int value_;

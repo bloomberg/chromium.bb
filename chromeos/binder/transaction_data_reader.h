@@ -73,7 +73,6 @@ class CHROMEOS_EXPORT TransactionDataReader {
   bool ReadFileDescriptor(int* fd);
 
  private:
-  const TransactionData& data_;
   BufferReader reader_;
 
   DISALLOW_COPY_AND_ASSIGN(TransactionDataReader);

@@ -398,8 +398,7 @@ TimeZoneResolver::TimeZoneResolver(
       url_(url),
       apply_timezone_(apply_timezone),
       delay_network_call_(delay_network_call),
-      local_state_(local_state),
-      send_wifi_data_to_geolocation_api_(false) {
+      local_state_(local_state) {
   DCHECK(!apply_timezone.is_null());
   DCHECK(delegate_);
 }
