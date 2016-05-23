@@ -2952,7 +2952,7 @@
       }],
       ['enable_prod_wallet_service==1', {
         # In GN, this is set on the autofill tagets only. See
-        # //components/autofill/core/browser:wallet_service
+        # //components/autofill/core/browser:payments_service
         'defines': ['ENABLE_PROD_WALLET_SERVICE=1'],
       }],
       ['enable_basic_printing==1 or enable_print_preview==1', {

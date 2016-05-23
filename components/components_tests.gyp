@@ -17,8 +17,7 @@
     ],
     'autofill_unittest_sources': [
       'autofill/content/browser/content_autofill_driver_unittest.cc',
-      'autofill/content/browser/wallet/payments_client_unittest.cc',
-      'autofill/content/browser/wallet/wallet_service_url_unittest.cc',
+      'autofill/content/browser/payments/payments_client_unittest.cc',
       'autofill/content/renderer/renderer_save_password_progress_logger_unittest.cc',
       'autofill/core/browser/address_field_unittest.cc',
       'autofill/core/browser/address_i18n_unittest.cc',
@@ -47,6 +46,7 @@
       'autofill/core/browser/name_field_unittest.cc',
       'autofill/core/browser/password_generator_unittest.cc',
       'autofill/core/browser/payments/full_card_request_unittest.cc',
+      'autofill/core/browser/payments/payments_service_url_unittest.cc',
       'autofill/core/browser/personal_data_manager_unittest.cc',
       'autofill/core/browser/phone_field_unittest.cc',
       'autofill/core/browser/phone_number_i18n_unittest.cc',

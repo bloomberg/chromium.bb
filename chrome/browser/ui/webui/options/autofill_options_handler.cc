@@ -26,11 +26,11 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -244,11 +244,11 @@ void AutofillOptionsHandler::GetLocalizedValues(
   SetCreditCardOverlayStrings(localized_strings);
 
   localized_strings->SetString(
-      "manageWalletAddressesUrl",
-      autofill::wallet::GetManageAddressesUrl(0).spec());
+      "paymentsManageAddressesUrl",
+      autofill::payments::GetManageAddressesUrl(0).spec());
   localized_strings->SetString(
-      "manageWalletPaymentMethodsUrl",
-      autofill::wallet::GetManageInstrumentsUrl(0).spec());
+      "paymentsManageInstrumentsUrl",
+      autofill::payments::GetManageInstrumentsUrl(0).spec());
 }
 
 void AutofillOptionsHandler::InitializeHandler() {

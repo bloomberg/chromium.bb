@@ -13,11 +13,9 @@ static_library("browser") {
     "content_autofill_driver_factory.h",
     "risk/fingerprint.cc",
     "risk/fingerprint.h",
-    "wallet/wallet_service_url.cc",
-    "wallet/wallet_service_url.h",
   ]
 
-  configs += [ "//components/autofill/core/browser:wallet_service" ]
+  configs += [ "//components/autofill/core/browser:payments_service" ]
 
   public_deps = [
     ":risk_proto",
@@ -64,8 +62,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "content_autofill_driver_unittest.cc",
-    "wallet/payments_client_unittest.cc",
-    "wallet/wallet_service_url_unittest.cc",
+    "payments/payments_client_unittest.cc",
   ]
 
   deps = [

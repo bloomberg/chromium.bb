@@ -31,8 +31,6 @@ extern const char kEnableSuggestionsWithSubstringMatch[];
 extern const char kIgnoreAutocompleteOffForAutofill[];
 extern const char kLocalHeuristicsOnlyForPasswordGeneration[];
 extern const char kShowAutofillTypePredictions[];
-extern const char kWalletSecureServiceUrl[];
-extern const char kWalletServiceUrl[];
 extern const char kWalletServiceUseSandbox[];
 
 #if defined(OS_ANDROID)

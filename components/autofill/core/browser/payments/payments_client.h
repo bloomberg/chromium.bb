@@ -54,7 +54,7 @@ class PaymentsClientDelegate {
 // conditions. Only one request may be active at a time. Initiating a new
 // request will cancel a pending request.
 // Tests are located in
-// src/components/autofill/content/browser/wallet/payments_client_unittest.cc.
+// src/components/autofill/content/browser/payments/payments_client_unittest.cc.
 class PaymentsClient : public net::URLFetcherDelegate,
                        public OAuth2TokenService::Consumer {
  public:

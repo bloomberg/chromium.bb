@@ -4,10 +4,10 @@
 
 import("//build/config/chrome_build.gni")
 
-# This config sets the define that controls which Wallet service to contact
-# for features using Wallet integration. Unofficial builds won't have the
+# This config sets the define that controls which Payments service to contact
+# for features using Payments integration. Unofficial builds won't have the
 # proper API keys so it uses the "sandbox" test servers instead.
-config("wallet_service") {
+config("payments_service") {
   if (is_official_build) {
     defines = [ "ENABLE_PROD_WALLET_SERVICE=1" ]
   }
@@ -98,6 +98,8 @@ source_set("browser") {
     "payments/payments_client.cc",
     "payments/payments_client.h",
     "payments/payments_request.h",
+    "payments/payments_service_url.cc",
+    "payments/payments_service_url.h",
     "personal_data_manager.cc",
     "personal_data_manager.h",
     "personal_data_manager_observer.h",
@@ -206,7 +208,7 @@ source_set("browser") {
   ]
 
   configs += [
-    ":wallet_service",
+    ":payments_service",
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
 
@@ -310,6 +312,7 @@ source_set("unit_tests") {
     "name_field_unittest.cc",
     "password_generator_unittest.cc",
     "payments/full_card_request_unittest.cc",
+    "payments/payments_service_url_unittest.cc",
     "personal_data_manager_unittest.cc",
     "phone_field_unittest.cc",
     "phone_number_i18n_unittest.cc",

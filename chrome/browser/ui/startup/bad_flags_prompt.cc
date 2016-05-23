@@ -65,7 +65,6 @@ void ShowBadFlagsPrompt(Browser* browser) {
     invalidation::switches::kSyncAllowInsecureXmppConnection,
 
     // These flags change the URLs that handle PII.
-    autofill::switches::kWalletSecureServiceUrl,
     switches::kGaiaUrl,
     translate::switches::kTranslateScriptURL,
 

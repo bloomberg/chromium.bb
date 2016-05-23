@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill/content/browser/wallet/wallet_service_url.h"
+#include "components/autofill/core/browser/payments/payments_service_url.h"
 
 #include <string>
 
@@ -14,8 +14,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/autofill_switches.h"
-#include "content/public/common/content_switches.h"
-#include "content/public/common/url_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
@@ -23,12 +21,16 @@
 namespace autofill {
 namespace {
 
-const char kProdWalletServiceUrl[] = "https://wallet.google.com/";
+const char kProdPaymentsServiceUrl[] = "https://wallet.google.com/";
 
-const char kSandboxWalletSecureServiceUrl[] =
+const char kSandboxPaymentsSecureServiceUrl[] =
     "https://wallet-web.sandbox.google.com/";
 
-bool IsWalletProductionEnabled() {
+}  // namespace
+
+namespace payments {
+
+bool IsPaymentsProductionEnabled() {
   // If the command line flag exists, it takes precedence.
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
@@ -36,11 +38,6 @@ bool IsWalletProductionEnabled() {
       command_line->GetSwitchValueASCII(switches::kWalletServiceUseSandbox));
   if (!sandbox_enabled.empty())
     return sandbox_enabled != "1";
-
-  // Default to sandbox when --reduce-security-for-testing is passed to allow
-  // rAc on http:// pages.
-  if (command_line->HasSwitch(::switches::kReduceSecurityForTesting))
-    return false;
 
 #if defined(ENABLE_PROD_WALLET_SERVICE)
   return true;
@@ -50,20 +47,9 @@ bool IsWalletProductionEnabled() {
 }
 
 GURL GetBaseSecureUrl() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  std::string wallet_secure_url =
-      command_line.GetSwitchValueASCII(switches::kWalletSecureServiceUrl);
-  if (!wallet_secure_url.empty())
-    return GURL(wallet_secure_url);
-  if (IsWalletProductionEnabled())
-    return GURL(kProdWalletServiceUrl);
-  return GURL(kSandboxWalletSecureServiceUrl);
+  return GURL(IsPaymentsProductionEnabled() ? kProdPaymentsServiceUrl
+                                            : kSandboxPaymentsSecureServiceUrl);
 }
-
-}  // namespace
-
-namespace wallet {
 
 GURL GetManageInstrumentsUrl(size_t user_index) {
   std::string path =
@@ -77,5 +63,5 @@ GURL GetManageAddressesUrl(size_t user_index) {
   return GetBaseSecureUrl().Resolve(path);
 }
 
-}  // namespace wallet
+}  // namespace payments
 }  // namespace autofill

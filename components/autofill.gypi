@@ -182,6 +182,8 @@
         'autofill/core/browser/payments/payments_client.cc',
         'autofill/core/browser/payments/payments_client.h',
         'autofill/core/browser/payments/payments_request.h',
+        'autofill/core/browser/payments/payments_service_url.cc',
+        'autofill/core/browser/payments/payments_service_url.h',
         'autofill/core/browser/personal_data_manager.cc',
         'autofill/core/browser/personal_data_manager.h',
         'autofill/core/browser/personal_data_manager_observer.h',
@@ -383,7 +385,6 @@
           'includes': [ '../build/protoc.gypi' ]
         },
        {
-         # GN version: //components/autofill/content/browser/wallet:test_support
          # GN version: //components/autofill/content/renderer:test_support
          'target_name': 'autofill_content_test_support',
          'type': 'static_library',
@@ -448,8 +449,6 @@
             'autofill/content/browser/content_autofill_driver_factory.h',
             'autofill/content/browser/risk/fingerprint.cc',
             'autofill/content/browser/risk/fingerprint.h',
-            'autofill/content/browser/wallet/wallet_service_url.cc',
-            'autofill/content/browser/wallet/wallet_service_url.h',
           ],
 
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

@@ -98,14 +98,14 @@ cr.define('options.autofillOptions', function() {
 
     /**
      * For local Autofill data, this function causes the AutofillOptionsHandler
-     * to call showEditAddressOverlay(). For Wallet data, the user is
-     * redirected to the Wallet web interface.
+     * to call showEditAddressOverlay(). For Payments data, the user is
+     * redirected to the Payments web interface.
      */
     loadAddressEditor: function() {
       if (this.metadata_.isLocal)
         chrome.send('loadAddressEditor', [this.metadata_.guid]);
       else
-        window.open(loadTimeData.getString('manageWalletAddressesUrl'));
+        window.open(loadTimeData.getString('paymentsManageAddressesUrl'));
     },
   };
 
@@ -171,14 +171,14 @@ cr.define('options.autofillOptions', function() {
 
     /**
      * For local Autofill data, this function causes the AutofillOptionsHandler
-     * to call showEditCreditCardOverlay(). For Wallet data, the user is
-     * redirected to the Wallet web interface.
+     * to call showEditCreditCardOverlay(). For Payments data, the user is
+     * redirected to the Payments web interface.
      */
     loadCreditCardEditor: function() {
       if (this.metadata_.isLocal)
         chrome.send('loadCreditCardEditor', [this.metadata_.guid]);
       else
-        window.open(loadTimeData.getString('manageWalletPaymentMethodsUrl'));
+        window.open(loadTimeData.getString('paymentsManageInstrumentsUrl'));
     },
   };
 

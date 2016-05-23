@@ -84,14 +84,6 @@ const char kLocalHeuristicsOnlyForPasswordGeneration[] =
 // Annotates forms with Autofill field type predictions.
 const char kShowAutofillTypePredictions[]   = "show-autofill-type-predictions";
 
-// Secure service URL for Online Wallet service. Used as the base url to escrow
-// credit card numbers.
-const char kWalletSecureServiceUrl[]        = "wallet-secure-service-url";
-
-// Service URL for Online Wallet service. Used as the base url for Online Wallet
-// API calls.
-const char kWalletServiceUrl[]              = "wallet-service-url";
-
 // Use the sandbox Online Wallet service URL (for developer testing).
 const char kWalletServiceUseSandbox[]       = "wallet-service-use-sandbox";
 

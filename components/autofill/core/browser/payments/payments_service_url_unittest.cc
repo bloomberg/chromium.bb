@@ -3,14 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "components/autofill/content/browser/wallet/wallet_service_url.h"
+#include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/common/autofill_switches.h"
-#include "content/public/common/content_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace autofill {
-namespace wallet {
+namespace payments {
 
 namespace {
 
@@ -20,7 +19,7 @@ bool IsUsingProd() {
 }
 }
 
-TEST(WalletServiceSandboxUrl, CheckSandboxUrls) {
+TEST(PaymentsServiceSandboxUrl, CheckSandboxUrls) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kWalletServiceUseSandbox, "1");
 
@@ -31,7 +30,7 @@ TEST(WalletServiceSandboxUrl, CheckSandboxUrls) {
             GetManageAddressesUrl(1).spec());
 }
 
-TEST(WalletServiceSandboxUrl, CheckProdUrls) {
+TEST(PaymentsServiceSandboxUrl, CheckProdUrls) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kWalletServiceUseSandbox, "0");
 
@@ -42,26 +41,23 @@ TEST(WalletServiceSandboxUrl, CheckProdUrls) {
 }
 
 // Disabling, see http://crbug.com/581880.
-TEST(WalletServiceUrl, DISABLED_DefaultsToProd) {
-#if defined(ENABLE_PROD_WALLET_SERVICE)
+TEST(PaymentsServiceUrl, DISABLED_DefaultsToProd) {
+#if defined(ENABLE_PROD_PAYMENTS_SERVICE)
   EXPECT_TRUE(IsUsingProd());
 #else
   EXPECT_FALSE(IsUsingProd());
 #endif
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(::switches::kReduceSecurityForTesting);
-  EXPECT_FALSE(IsUsingProd());
-
   command_line->AppendSwitchASCII(switches::kWalletServiceUseSandbox, "0");
   EXPECT_TRUE(IsUsingProd());
 }
 
-TEST(WalletServiceUrl, IsUsingProd) {
+TEST(PaymentsServiceUrl, IsUsingProd) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(switches::kWalletServiceUseSandbox, "1");
   EXPECT_FALSE(IsUsingProd());
 }
 
-}  // namespace wallet
+}  // namespace payments
 }  // namespace autofill
