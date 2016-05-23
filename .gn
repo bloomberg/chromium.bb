@@ -41,6 +41,7 @@ check_targets = [
   "//content/browser/*",
   "//content/child/*",
   "//content/gpu/*",
+  "//content/ppapi_plugin/*",
   "//content/public/*",
   "//content/renderer/*",
 
