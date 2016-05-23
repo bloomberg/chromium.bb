@@ -52092,11 +52092,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Skia.DrawScaleFactor" enum="SkiaScaleFactor">
+  <owner>ericrk@chromium.org</owner>
+  <summary>The scale factor of any images drawn by Skia.</summary>
+</histogram>
+
 <histogram name="Skia.DrawTiled" enum="BooleanTiled">
   <owner>ericrk@chromium.org</owner>
   <summary>
     Whether a call to drawBitmap(Rect) or drawImage(Rect) used the tiled or
     non-tiled rasterization path.
+  </summary>
+</histogram>
+
+<histogram name="Skia.FilterQuality" enum="SkiaFilterQuality">
+  <owner>ericrk@chromium.org</owner>
+  <summary>
+    The count of images drawn by Skia with a given filter quality.
   </summary>
 </histogram>
 
@@ -86678,6 +86690,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4" label="Others"/>
 </enum>
 
+<enum name="SkiaFilterQuality" type="int">
+  <int value="0" label="None"/>
+  <int value="1" label="Low"/>
+  <int value="2" label="Medium"/>
+  <int value="3" label="High"/>
+</enum>
+
 <enum name="SkiaLockTexturePath" type="int">
   <int value="0" label="Failure"/>
   <int value="1" label="Pre-Existing"/>
@@ -86685,6 +86704,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Compressed"/>
   <int value="4" label="YUV"/>
   <int value="5" label="RGBA"/>
+</enum>
+
+<enum name="SkiaScaleFactor" type="int">
+  <int value="0" label="Upscale"/>
+  <int value="1" label="No Scale"/>
+  <int value="2" label="Downscale"/>
+  <int value="3" label="Large Downscale"/>
 </enum>
 
 <enum name="SnackbarIdentifier" type="int">
@@ -96055,6 +96081,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="WithoutIndex"
       label="The Simple Cache index was not yet loaded."/>
   <affected-histogram name="SimpleCache.SyncOpenResult"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="SkiaDrawScaleFactorFilterQuality">
+  <affected-histogram name="Skia.DrawScaleFactor"/>
+  <suffix name="AnyFilterQuality" label="Any filter quality was used."/>
+  <suffix name="HighFilterQuality" label="High filter quality was used."/>
+  <suffix name="LowFilterQuality" label="Low filter quality was used."/>
+  <suffix name="MediumFilterQuality" label="Medium filter quality was used."/>
+  <suffix name="NoneFilterQuality" label="None filter quality was used."/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SocketOperation" separator=".">
