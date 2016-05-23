@@ -968,106 +968,125 @@ screenshot_reference_filename(const char *basename, uint32_t seq)
 }
 
 /**
- * check_surfaces_geometry() - verifies two surfaces are same size
+ * Compute the ROI for image comparisons
  *
- * @returns true if surfaces have the same width and height, or false
- * if not, or if there is no actual data.
+ * \param img_a An image.
+ * \param img_b Another image.
+ * \param clip_rect Explicit ROI, or NULL for using the whole
+ * image area.
+ *
+ * \return The region of interest (ROI) that is guaranteed to be inside both
+ * images.
+ *
+ * If clip_rect is given, it must fall inside of both images.
+ * If clip_rect is NULL, the images must be of the same size.
+ * If any precondition is violated, this function aborts with an error.
+ *
+ * The ROI is given as pixman_box32_t, where x2,y2 are non-inclusive.
  */
-bool
-check_surfaces_geometry(const struct surface *a, const struct surface *b)
+static pixman_box32_t
+image_check_get_roi(pixman_image_t *img_a, pixman_image_t *img_b,
+		   const struct rectangle *clip_rect)
 {
-	if (a == NULL || b == NULL) {
-		printf("Undefined surfaces\n");
-		return false;
+	int width_a;
+	int width_b;
+	int height_a;
+	int height_b;
+	pixman_box32_t box;
+
+	width_a = pixman_image_get_width(img_a);
+	height_a = pixman_image_get_height(img_a);
+
+	width_b = pixman_image_get_width(img_b);
+	height_b = pixman_image_get_height(img_b);
+
+	if (clip_rect) {
+		box.x1 = clip_rect->x;
+		box.y1 = clip_rect->y;
+		box.x2 = clip_rect->x + clip_rect->width;
+		box.y2 = clip_rect->y + clip_rect->height;
+	} else {
+		box.x1 = 0;
+		box.y1 = 0;
+		box.x2 = max(width_a, width_b);
+		box.y2 = max(height_a, height_b);
 	}
-	else if (a->buffer == NULL || b->buffer == NULL) {
-		printf("Undefined data\n");
-		return false;
-	}
-	else if (a->width != b->width || a->height != b->height) {
-		printf("Mismatched dimensions:  %d,%d != %d,%d\n",
-		       a->width, a->height, b->width, b->height);
-		return false;
-	}
-	return true;
+
+	assert(box.x1 >= 0);
+	assert(box.y1 >= 0);
+	assert(box.x2 > box.x1);
+	assert(box.y2 > box.y1);
+	assert(box.x2 <= width_a);
+	assert(box.x2 <= width_b);
+	assert(box.y2 <= height_a);
+	assert(box.y2 <= height_b);
+
+	return box;
+}
+
+struct image_iterator {
+	char *data;
+	int stride; /* bytes */
+};
+
+static void
+image_iter_init(struct image_iterator *it, pixman_image_t *image)
+{
+	pixman_format_code_t fmt;
+
+	it->stride = pixman_image_get_stride(image);
+	it->data = (void *)pixman_image_get_data(image);
+
+	fmt = pixman_image_get_format(image);
+	assert(PIXMAN_FORMAT_BPP(fmt) == 32);
+}
+
+static uint32_t *
+image_iter_get_row(struct image_iterator *it, int y)
+{
+	return (uint32_t *)(it->data + y * it->stride);
 }
 
 /**
- * check_surfaces_equal() - tests if two surfaces are pixel-identical
+ * Test if a given region within two images are pixel-identical.
  *
- * Returns true if surface buffers have all the same byte values,
- * false if the surfaces don't match or can't be compared due to
- * different dimensions.
+ * Returns true if the two images pixel-wise identical, and false otherwise.
+ *
+ * \param img_a First image.
+ * \param img_b Second image.
+ * \param clip_rect The region of interest, or NULL for comparing the whole
+ * images.
+ *
+ * This function hard-fails if clip_rect is not inside both images. If clip_rect
+ * is given, the images do not have to match in size, otherwise size mismatch
+ * will be a hard failure.
  */
 bool
-check_surfaces_equal(const struct surface *a, const struct surface *b)
+check_images_match(pixman_image_t *img_a, pixman_image_t *img_b,
+		   const struct rectangle *clip_rect)
 {
-	int bpp = 4;  /* Assumes ARGB */
-	void *data_a;
-	void *data_b;
+	struct image_iterator it_a;
+	struct image_iterator it_b;
+	pixman_box32_t box;
+	int x, y;
+	uint32_t *pix_a;
+	uint32_t *pix_b;
 
-	if (!check_surfaces_geometry(a, b))
-		return false;
+	box = image_check_get_roi(img_a, img_b, clip_rect);
 
-	data_a = pixman_image_get_data(a->buffer->image);
-	data_b = pixman_image_get_data(b->buffer->image);
+	image_iter_init(&it_a, img_a);
+	image_iter_init(&it_b, img_b);
 
-	return (memcmp(data_a, data_b, bpp * a->width * a->height) == 0);
-}
+	for (y = box.y1; y < box.y2; y++) {
+		pix_a = image_iter_get_row(&it_a, y) + box.x1;
+		pix_b = image_iter_get_row(&it_b, y) + box.x1;
 
-/**
- * check_surfaces_match_in_clip() - tests if a given region within two
- * surfaces are pixel-identical.
- *
- * Returns true if the two surfaces have the same byte values within the
- * given clipping region, or false if they don't match or the surfaces
- * can't be compared.
- */
-bool
-check_surfaces_match_in_clip(const struct surface *a, const struct surface *b, const struct rectangle *clip_rect)
-{
-	int i, j;
-	int x0, y0, x1, y1;
-	void *p, *q;
-	int bpp = 4;  /* Assumes ARGB */
-	void *data_a;
-	void *data_b;
+		for (x = box.x1; x < box.x2; x++) {
+			if (*pix_a != *pix_b)
+				return false;
 
-	if (!check_surfaces_geometry(a, b) || clip_rect == NULL)
-		return false;
-
-	if (clip_rect->x > a->width || clip_rect->y > a->height) {
-		printf("Clip outside image boundaries\n");
-		return true;
-	}
-
-	x0 = max(0, clip_rect->x);
-	y0 = max(0, clip_rect->y);
-	x1 = min(a->width,  clip_rect->x + clip_rect->width);
-	y1 = min(a->height, clip_rect->y + clip_rect->height);
-
-	if (x0 == x1 || y0 == y1) {
-		printf("Degenerate comparison\n");
-		return true;
-	}
-
-	data_a = pixman_image_get_data(a->buffer->image);
-	data_b = pixman_image_get_data(b->buffer->image);
-
-	printf("Bytewise comparison inside clip\n");
-	for (i=y0; i<y1; i++) {
-		p = data_a + i * a->width * bpp + x0 * bpp;
-		q = data_b + i * b->width * bpp + x0 * bpp;
-		if (memcmp(p, q, (x1-x0)*bpp) != 0) {
-			/* Dump the bad row */
-			printf("Mismatched image on row %d\n", i);
-			for (j=0; j<(x1-x0)*bpp; j++) {
-				char a_char = *((char*)(p+j*bpp));
-				char b_char = *((char*)(q+j*bpp));
-				printf("%d,%d: %8x %8x %s\n", i, j, a_char, b_char,
-				       (a_char != b_char)? " <---": "");
-			}
-			return false;
+			pix_a++;
+			pix_b++;
 		}
 	}
 

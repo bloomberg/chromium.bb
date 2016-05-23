@@ -198,13 +198,8 @@ char *
 screenshot_reference_filename(const char *basename, uint32_t seq);
 
 bool
-check_surfaces_geometry(const struct surface *a, const struct surface *b);
-
-bool
-check_surfaces_equal(const struct surface *a, const struct surface *b);
-
-bool
-check_surfaces_match_in_clip(const struct surface *a, const struct surface *b, const struct rectangle *clip);
+check_images_match(pixman_image_t *img_a, pixman_image_t *img_b,
+		   const struct rectangle *clip);
 
 bool
 write_surface_as_png(const struct surface *weston_surface, const char *fname);

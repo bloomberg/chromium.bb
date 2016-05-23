@@ -120,16 +120,17 @@ TEST(internal_screenshot)
 	reference_bad = load_surface_from_png(fname);
 	assert(reference_bad);
 
-	/* Test check_surfaces_equal()
+	/* Test check_images_match() without a clip.
 	 * We expect this to fail since we use a bad reference image
 	 */
-	match = check_surfaces_equal(screenshot, reference_bad);
+	match = check_images_match(screenshot->buffer->image,
+				   reference_bad->buffer->image, NULL);
 	printf("Screenshot %s reference image\n", match? "equal to" : "different from");
 	assert(!match);
 	buffer_destroy(reference_bad->buffer);
 	free(reference_bad);
 
-	/* Test check_surfaces_match_in_clip()
+	/* Test check_images_match() with clip.
 	 * Alpha-blending and other effects can cause irrelevant discrepancies, so look only
 	 * at a small portion of the solid-colored background
 	 */
@@ -138,8 +139,9 @@ TEST(internal_screenshot)
 	clip.width = 100;
 	clip.height = 100;
 	printf("Clip: %d,%d %d x %d\n", clip.x, clip.y, clip.width, clip.height);
-	match = check_surfaces_match_in_clip(screenshot, reference_good,
-					     &clip);
+	match = check_images_match(screenshot->buffer->image,
+				   reference_good->buffer->image,
+				   &clip);
 	printf("Screenshot %s reference image in clipped area\n", match? "matches" : "doesn't match");
 	buffer_destroy(reference_good->buffer);
 	free(reference_good);
