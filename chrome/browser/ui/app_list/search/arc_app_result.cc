@@ -28,6 +28,7 @@ ArcAppResult::ArcAppResult(Profile* profile,
   set_id(id);
   icon_loader_.reset(new ArcAppIconLoader(profile,
                                           GetPreferredIconDimension(),
+                                          nullptr,
                                           this));
   icon_loader_->FetchImage(app_id);
 }

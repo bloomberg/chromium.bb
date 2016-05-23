@@ -34,6 +34,7 @@
 #include "ui/aura/window_observer.h"
 
 class AppSyncUIState;
+class ArcAppDeferredLauncherController;
 class Browser;
 class BrowserShortcutLauncherItemController;
 class BrowserStatusMonitor;
@@ -355,6 +356,11 @@ class ChromeLauncherController
     return app_window_controllers_[0].get();
   }
 
+  // Controller to launch Arc apps in deferred mode.
+  ArcAppDeferredLauncherController* arc_deferred_launcher() {
+    return arc_deferred_launcher_.get();
+  }
+
   // TODO(khmel): Find better home for Pinnable enum.
   AppListControllerDelegate::Pinnable GetPinnable(const std::string& app_id);
 
@@ -531,6 +537,8 @@ class ChromeLauncherController
   // A special observer class to detect user switches.
   std::unique_ptr<ChromeLauncherControllerUserSwitchObserver>
       user_switch_observer_;
+
+  std::unique_ptr<ArcAppDeferredLauncherController> arc_deferred_launcher_;
 
   // If true, incoming pinned state changes should be ignored.
   bool ignore_persist_pinned_state_change_;

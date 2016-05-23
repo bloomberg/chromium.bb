@@ -187,9 +187,6 @@ class ArcAppModelBuilderTest : public AppListTestBase {
       std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(id);
       ASSERT_NE(nullptr, app_info.get());
       EXPECT_EQ(ready, app_info->ready);
-      const ArcAppItem* app_item = FindArcItem(id);
-      ASSERT_NE(nullptr, app_item);
-      EXPECT_EQ(ready, app_item->ready());
     }
 
     // Process the rest of the apps.
@@ -197,9 +194,6 @@ class ArcAppModelBuilderTest : public AppListTestBase {
       std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(id);
       ASSERT_NE(nullptr, app_info.get());
       EXPECT_NE(ready, app_info->ready);
-      const ArcAppItem* app_item = FindArcItem(id);
-      ASSERT_NE(nullptr, app_item);
-      EXPECT_NE(ready, app_item->ready());
     }
   }
 
@@ -593,7 +587,10 @@ TEST_F(ArcAppModelBuilderTest, IconLoader) {
       fake_apps().begin(), fake_apps().begin() + 1));
 
   FakeAppIconLoaderDelegate delegate;
-  ArcAppIconLoader icon_loader(profile(), app_list::kListIconSize, &delegate);
+  ArcAppIconLoader icon_loader(profile(),
+                               app_list::kListIconSize,
+                               nullptr,
+                               &delegate);
   EXPECT_EQ(0UL, delegate.update_image_cnt());
   icon_loader.FetchImage(app_id);
   EXPECT_EQ(1UL, delegate.update_image_cnt());

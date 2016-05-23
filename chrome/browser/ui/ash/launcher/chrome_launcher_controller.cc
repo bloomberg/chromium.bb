@@ -45,6 +45,7 @@
 #include "chrome/browser/ui/ash/launcher/app_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
@@ -282,6 +283,8 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
     if (app_sync_ui_state_)
       app_sync_ui_state_->AddObserver(this);
   }
+
+  arc_deferred_launcher_.reset(new ArcAppDeferredLauncherController(this));
 
   // All profile relevant settings get bound to the current profile.
   AttachProfile(profile_);
@@ -1071,11 +1074,9 @@ void ChromeLauncherController::OnAppInstalled(
 void ChromeLauncherController::OnAppUpdated(
     content::BrowserContext* browser_context,
     const std::string& app_id) {
-  if (IsAppPinned(app_id)) {
-    AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app_id);
-    if (app_icon_loader)
-      app_icon_loader->UpdateImage(app_id);
-  }
+  AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app_id);
+  if (app_icon_loader)
+    app_icon_loader->UpdateImage(app_id);
 }
 
 void ChromeLauncherController::OnAppUninstalled(
@@ -1845,8 +1846,10 @@ void ChromeLauncherController::AttachProfile(Profile* profile) {
           profile_, extension_misc::EXTENSION_ICON_SMALL, this));
   app_icon_loaders_.push_back(std::move(extension_app_icon_loader));
 
-  std::unique_ptr<AppIconLoader> arc_app_icon_loader(new ArcAppIconLoader(
-      profile_, extension_misc::EXTENSION_ICON_SMALL, this));
+  DCHECK(arc_deferred_launcher());
+  std::unique_ptr<AppIconLoader> arc_app_icon_loader(
+      new ArcAppIconLoader(profile_, extension_misc::EXTENSION_ICON_SMALL,
+                           arc_deferred_launcher(), this));
   app_icon_loaders_.push_back(std::move(arc_app_icon_loader));
 
   pref_change_registrar_.Init(profile_->GetPrefs());

@@ -38,6 +38,7 @@
 #include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
@@ -644,7 +645,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
         account_id.GetUserEmail());
   }
 
-  void InstallArcApps() {
+  void SendListOfArcApps() {
     arc_test_.app_instance()->RefreshAppList();
     arc_test_.app_instance()->SendRefreshAppList(arc_test_.fake_apps());
   }
@@ -1431,12 +1432,84 @@ TEST_F(ChromeLauncherControllerTest, CheckRunningAppOrder) {
   EXPECT_EQ("AppList, Chrome", GetPinnedAppStatus());
 }
 
+TEST_F(ChromeLauncherControllerTest, ArcDeferredLaunch) {
+  arc_test_.CreateUserAndLogin();
+
+  launcher_controller_.reset(
+      ChromeLauncherController::CreateInstance(profile(), model_.get()));
+  launcher_controller_->Init();
+
+  const arc::mojom::AppInfo& app1 = arc_test_.fake_apps()[0];
+  const arc::mojom::AppInfo& app2 = arc_test_.fake_apps()[1];
+  const arc::mojom::AppInfo& app3 = arc_test_.fake_apps()[2];
+  const std::string arc_app_id1 = ArcAppTest::GetAppId(app1);
+  const std::string arc_app_id2 = ArcAppTest::GetAppId(app2);
+  const std::string arc_app_id3 = ArcAppTest::GetAppId(app3);
+
+  SendListOfArcApps();
+
+  arc_test_.bridge_service()->SetStopped();
+
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id1));
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id2));
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id3));
+
+  arc::LaunchApp(profile(), arc_app_id1);
+  arc::LaunchApp(profile(), arc_app_id1);
+  arc::LaunchApp(profile(), arc_app_id2);
+  arc::LaunchApp(profile(), arc_app_id3);
+  arc::LaunchApp(profile(), arc_app_id3);
+
+  const ash::ShelfID shelf_id_app_1 =
+      launcher_controller_->GetShelfIDForAppID(arc_app_id1);
+  const ash::ShelfID shelf_id_app_2 =
+      launcher_controller_->GetShelfIDForAppID(arc_app_id2);
+  const ash::ShelfID shelf_id_app_3 =
+      launcher_controller_->GetShelfIDForAppID(arc_app_id3);
+  EXPECT_NE(0, shelf_id_app_1);
+  EXPECT_NE(0, shelf_id_app_2);
+  EXPECT_NE(0, shelf_id_app_3);
+
+  // We activated arc_app_id1 twice but expect one close for item controller
+  // stops launching request.
+  LauncherItemController* item_controller =
+      launcher_controller_->GetLauncherItemController(shelf_id_app_1);
+  ASSERT_NE(nullptr, item_controller);
+  item_controller->Close();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id1));
+  EXPECT_EQ(shelf_id_app_2,
+            launcher_controller_->GetShelfIDForAppID(arc_app_id2));
+  EXPECT_EQ(shelf_id_app_3,
+            launcher_controller_->GetShelfIDForAppID(arc_app_id3));
+
+  arc_test_.bridge_service()->SetReady();
+  SendListOfArcApps();
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id1));
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id2));
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id3));
+
+  ASSERT_EQ(2U, arc_test_.app_instance()->launch_requests().size());
+
+  const arc::FakeAppInstance::Request* request1 =
+      arc_test_.app_instance()->launch_requests()[0];
+  const arc::FakeAppInstance::Request* request2 =
+      arc_test_.app_instance()->launch_requests()[1];
+
+  EXPECT_TRUE((request1->IsForApp(app2) && request2->IsForApp(app3)) ||
+              (request1->IsForApp(app3) && request2->IsForApp(app2)));
+}
+
 TEST_F(ChromeLauncherControllerTest, ArcRunningApp) {
   arc_test_.CreateUserAndLogin();
   InitLauncherController();
 
   const std::string arc_app_id = ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
-  InstallArcApps();
+  SendListOfArcApps();
   EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
 
   // Normal flow, create/destroy tasks.
@@ -1465,7 +1538,7 @@ TEST_F(ChromeLauncherControllerTest, ArcAppPin) {
 
   const std::string arc_app_id = ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
 
-  InstallArcApps();
+  SendListOfArcApps();
   extension_service_->AddExtension(extension1_.get());
   extension_service_->AddExtension(extension2_.get());
 
@@ -1484,7 +1557,7 @@ TEST_F(ChromeLauncherControllerTest, ArcAppPin) {
   EXPECT_EQ("AppList, Chrome, App1, Fake App 0, App2", GetPinnedAppStatus());
   UninstallArcApps();
   EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
-  InstallArcApps();
+  SendListOfArcApps();
   EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
 
   // Disable/Enable Arc should persist pin state.
@@ -1500,7 +1573,7 @@ TEST_F(ChromeLauncherControllerTest, ArcAppPin) {
   EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
   EnableArc(true);
   EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
-  InstallArcApps();
+  SendListOfArcApps();
   EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
 }
 

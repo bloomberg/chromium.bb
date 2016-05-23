@@ -21,10 +21,8 @@ ArcAppItem::ArcAppItem(
     Profile* profile,
     const app_list::AppListSyncableService::SyncItem* sync_item,
     const std::string& id,
-    const std::string& name,
-    bool ready)
-    : ChromeAppListItem(profile, id),
-      ready_(ready) {
+    const std::string& name)
+    : ChromeAppListItem(profile, id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   arc_app_icon_.reset(new ArcAppIcon(profile,
@@ -60,26 +58,13 @@ void ArcAppItem::ExecuteLaunchCommand(int event_flags) {
   Activate(event_flags);
 }
 
-void ArcAppItem::SetReady(bool ready) {
-  if (ready_ == ready)
-    return;
-
-  ready_ = ready;
-  UpdateIcon();
-}
-
 void ArcAppItem::SetName(const std::string& name) {
   SetNameAndShortName(name, name);
 }
 
 void ArcAppItem::UpdateIcon() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  gfx::ImageSkia icon = arc_app_icon_->image_skia();
-  if (!ready_)
-    icon = CreateDisabledIcon(icon);
-
-  SetIcon(icon);
+  SetIcon(arc_app_icon_->image_skia());
 }
 
 void ArcAppItem::UpdatePositionFromOrdering() {

@@ -6,14 +6,15 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "ui/app_list/app_list_constants.h"
 
 ArcAppIconLoader::ArcAppIconLoader(Profile* profile,
                                    int icon_size,
+                                   PostEffect* post_effect,
                                    AppIconLoaderDelegate* delegate)
-    : AppIconLoader(profile, icon_size, delegate) {
-  arc_prefs_ = ArcAppListPrefs::Get(profile);
+    : AppIconLoader(profile, icon_size, delegate),
+      arc_prefs_(ArcAppListPrefs::Get(profile)),
+      post_effect_(post_effect) {
   arc_prefs_->AddObserver(this);
 }
 
@@ -49,15 +50,13 @@ void ArcAppIconLoader::UpdateImage(const std::string& app_id) {
   if (it == icon_map_.end())
     return;
 
-  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-      ArcAppListPrefs::Get(profile())->GetApp(app_id);
-  if (!app_info || !app_info->ready) {
-    delegate()->OnAppImageUpdated(app_id,
-        ChromeAppListItem::CreateDisabledIcon(it->second->image_skia()));
+  if (post_effect_) {
+    gfx::ImageSkia image = it->second->image_skia();
+    post_effect_->Apply(app_id, &image);
+    delegate()->OnAppImageUpdated(app_id, image);
   } else {
     delegate()->OnAppImageUpdated(app_id, it->second->image_skia());
   }
-
 }
 
 void ArcAppIconLoader::OnIconUpdated(ArcAppIcon* icon) {

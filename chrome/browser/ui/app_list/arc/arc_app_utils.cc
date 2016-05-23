@@ -8,6 +8,8 @@
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "components/arc/arc_bridge_service.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -40,6 +42,7 @@ class LaunchAppWithoutSize {
       delete this;
       return true;
     }
+
     // TODO(skuhne): Change CanHandleResolution into a call which returns
     // capability flags like [PHONE/TABLET]_[LANDSCAPE/PORTRAIT] and which
     // might also return the used DP->PIX conversion constant to do better
@@ -161,6 +164,20 @@ bool LaunchApp(content::BrowserContext* context, const std::string& app_id) {
 bool LaunchApp(content::BrowserContext* context,
                const std::string& app_id,
                bool landscape_layout) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context);
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
+  if (app_info && !app_info->ready) {
+    if (!ash::Shell::HasInstance()) {
+      VLOG(2) << "Cannot start app deferred:" << app_id << " no shelf.";
+      return false;
+    }
+    ChromeLauncherController* chrome_controller =
+        ChromeLauncherController::instance();
+    DCHECK(chrome_controller);
+    chrome_controller->arc_deferred_launcher()->RegisterDeferredLaunch(app_id);
+    return true;
+  }
+
   return (new LaunchAppWithoutSize(context, app_id, landscape_layout))->
       LaunchAndRelease();
 }

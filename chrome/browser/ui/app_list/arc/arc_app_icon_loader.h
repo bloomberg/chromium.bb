@@ -20,8 +20,18 @@ class ArcAppIconLoader : public AppIconLoader,
                          public ArcAppListPrefs::Observer,
                          public ArcAppIcon::Observer {
  public:
+  // Interface to apply post effects
+  class PostEffect {
+   public:
+    virtual void Apply(const std::string& app_id, gfx::ImageSkia* image) = 0;
+
+   protected:
+    virtual ~PostEffect() {}
+  };
+
   ArcAppIconLoader(Profile* profile,
                    int icon_size,
+                   PostEffect* post_effects,
                    AppIconLoaderDelegate* delegate);
   ~ArcAppIconLoader() override;
 
@@ -42,8 +52,9 @@ class ArcAppIconLoader : public AppIconLoader,
  private:
   using AppIDToIconMap = std::map<std::string, std::unique_ptr<ArcAppIcon>>;
 
-  // Unowned pointer.
-  ArcAppListPrefs* arc_prefs_;
+  // Unowned pointers.
+  ArcAppListPrefs* const arc_prefs_;
+  PostEffect* const post_effect_;
 
   AppIDToIconMap icon_map_;
 

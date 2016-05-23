@@ -364,7 +364,7 @@ TEST_F(AppContextMenuTest, ArcMenu) {
   arc_test.app_instance()->RefreshAppList();
   arc_test.app_instance()->SendRefreshAppList(arc_test.fake_apps());
 
-  ArcAppItem item(profile(), nullptr, app_id, std::string(), true);
+  ArcAppItem item(profile(), nullptr, app_id, std::string());
 
   ui::MenuModel* menu = item.GetContextMenuModel();
   ASSERT_NE(nullptr, menu);
@@ -401,13 +401,12 @@ TEST_F(AppContextMenuTest, ArcMenu) {
   arc_test.app_instance()->RefreshAppList();
   arc_test.app_instance()->SendRefreshAppList(
       std::vector<arc::mojom::AppInfo>());
-  item.SetReady(false);
   controller()->SetAppOpen(app_id, false);
 
   menu = item.GetContextMenuModel();
   ASSERT_EQ(3, menu->GetItemCount());
   EXPECT_EQ(app_list::AppContextMenu::LAUNCH_NEW, menu->GetCommandIdAt(0));
-  EXPECT_FALSE(menu->IsEnabledAt(0));
+  EXPECT_TRUE(menu->IsEnabledAt(0));
   EXPECT_FALSE(menu->IsItemCheckedAt(0));
   EXPECT_EQ(-1, menu->GetCommandIdAt(1));  // separator
   EXPECT_EQ(app_list::AppContextMenu::TOGGLE_PIN, menu->GetCommandIdAt(2));
@@ -429,7 +428,7 @@ TEST_F(AppContextMenuTest, ArcMenuStickyItem) {
     const std::string store_id = ArcAppTest::GetAppId(store_info);
     controller()->SetAppPinnable(store_id,
                                  AppListControllerDelegate::PIN_EDITABLE);
-    ArcAppItem item(profile(), nullptr, store_id, std::string(), true);
+    ArcAppItem item(profile(), nullptr, store_id, std::string());
     ui::MenuModel* menu = item.GetContextMenuModel();
     ASSERT_NE(nullptr, menu);
 
@@ -450,7 +449,7 @@ TEST_F(AppContextMenuTest, ArcMenuStickyItem) {
     const std::string app_id = ArcAppTest::GetAppId(app_info);
     controller()->SetAppPinnable(app_id,
                                  AppListControllerDelegate::PIN_EDITABLE);
-    ArcAppItem item(profile(), nullptr, app_id, std::string(), true);
+    ArcAppItem item(profile(), nullptr, app_id, std::string());
     ui::MenuModel* menu = item.GetContextMenuModel();
     ASSERT_NE(nullptr, menu);
 

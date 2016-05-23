@@ -27,8 +27,7 @@ class ArcAppItem : public ChromeAppListItem,
   ArcAppItem(Profile* profile,
              const app_list::AppListSyncableService::SyncItem* sync_item,
              const std::string& id,
-             const std::string& name,
-             bool ready);
+             const std::string& name);
   ~ArcAppItem() override;
 
   void SetName(const std::string& name);
@@ -43,10 +42,6 @@ class ArcAppItem : public ChromeAppListItem,
 
   ArcAppIcon* arc_app_icon() { return arc_app_icon_.get(); }
 
-  bool ready() const { return ready_; }
-
-  void SetReady(bool ready);
-
   // ArcAppIcon::Observer
   void OnIconUpdated(ArcAppIcon* icon) override;
 
@@ -57,7 +52,6 @@ class ArcAppItem : public ChromeAppListItem,
   // Set the position from the ordering.
   void UpdatePositionFromOrdering();
 
-  bool ready_;
   std::unique_ptr<ArcAppIcon> arc_app_icon_;
   std::unique_ptr<ArcAppContextMenu> context_menu_;
 

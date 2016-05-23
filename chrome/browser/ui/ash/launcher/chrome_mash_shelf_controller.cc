@@ -100,7 +100,7 @@ void ChromeMashShelfController::Init() {
   app_icon_loaders_.push_back(std::move(extension_app_icon_loader));
 
   std::unique_ptr<AppIconLoader> arc_app_icon_loader(new ArcAppIconLoader(
-      profile, extension_misc::EXTENSION_ICON_SMALL, this));
+      profile, extension_misc::EXTENSION_ICON_SMALL, nullptr, this));
   app_icon_loaders_.push_back(std::move(arc_app_icon_loader));
 
   PinAppsFromPrefs();
