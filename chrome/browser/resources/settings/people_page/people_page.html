@@ -95,10 +95,12 @@
           </div>
 <if expr="not chromeos">
           <template is="dom-if" if="[[!syncStatus.signedIn]]">
-            <paper-button class="action-button" on-tap="onSigninTap_"
-                disabled="[[syncStatus.setupInProgress]]">
-              $i18n{syncSignin}
-            </paper-button>
+            <span class="secondary-action">
+              <paper-button class="primary-button" on-tap="onSigninTap_"
+                  disabled="[[syncStatus.setupInProgress]]">
+                $i18n{syncSignin}
+              </paper-button>
+            </span>
           </template>
           <template is="dom-if" if="[[syncStatus.signedIn]]">
             <span class="secondary-action">
