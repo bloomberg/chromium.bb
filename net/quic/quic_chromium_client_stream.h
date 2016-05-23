@@ -4,10 +4,12 @@
 //
 // NOTE: This code is not shared between Google and Chrome.
 
-#ifndef NET_QUIC_QUIC_RELIABLE_CLIENT_STREAM_H_
-#define NET_QUIC_QUIC_RELIABLE_CLIENT_STREAM_H_
+#ifndef NET_QUIC_QUIC_CHROMIUM_CLIENT_STREAM_H_
+#define NET_QUIC_QUIC_CHROMIUM_CLIENT_STREAM_H_
 
 #include <stddef.h>
+
+#include <deque>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -143,4 +145,4 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
 
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_RELIABLE_CLIENT_STREAM_H_
+#endif  // NET_QUIC_QUIC_CHROMIUM_CLIENT_STREAM_H_

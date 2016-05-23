@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include <memory>
-#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -29,8 +28,6 @@
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_server_info.h"
 #include "net/quic/quic_chromium_alarm_factory.h"
-#include "net/quic/quic_chromium_client_session.h"
-#include "net/quic/quic_chromium_client_stream.h"
 #include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_chromium_packet_reader.h"
 #include "net/quic/quic_chromium_packet_writer.h"

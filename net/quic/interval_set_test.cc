@@ -5,13 +5,11 @@
 #include "net/quic/interval_set.h"
 
 #include <stdarg.h>
-#include <algorithm>
+
 #include <iostream>
 #include <iterator>
 #include <limits>
-#include <vector>
 
-#include "base/logging.h"
 #include "net/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

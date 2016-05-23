@@ -6,7 +6,6 @@
 
 #include <set>
 
-#include "net/base/host_port_pair.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {

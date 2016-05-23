@@ -4,11 +4,6 @@
 
 #include "net/quic/bidirectional_stream_quic_impl.h"
 
-#include <stdint.h>
-
-#include <memory>
-#include <vector>
-
 #include "base/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -25,8 +20,6 @@
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_server_info.h"
 #include "net/quic/quic_chromium_alarm_factory.h"
-#include "net/quic/quic_chromium_client_session.h"
-#include "net/quic/quic_chromium_client_stream.h"
 #include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_chromium_packet_reader.h"
 #include "net/quic/quic_chromium_packet_writer.h"
@@ -345,7 +338,7 @@ class BidirectionalStreamQuicImplTest
         mock_writes_[i] = MockWrite(writes_[i].mode, writes_[i].packet->data(),
                                     writes_[i].packet->length());
       }
-    };
+    }
 
     socket_data_.reset(new StaticSocketDataProvider(
         nullptr, 0, mock_writes_.get(), writes_.size()));
@@ -365,7 +358,8 @@ class BidirectionalStreamQuicImplTest
     session_.reset(new QuicChromiumClientSession(
         connection_, std::move(socket),
         /*stream_factory=*/nullptr, &crypto_client_stream_factory_, &clock_,
-        &transport_security_state_, base::WrapUnique((QuicServerInfo*)nullptr),
+        &transport_security_state_,
+        base::WrapUnique(static_cast<QuicServerInfo*>(nullptr)),
         QuicServerId(kDefaultServerHostName, kDefaultServerPort,
                      PRIVACY_MODE_DISABLED),
         kQuicYieldAfterPacketsRead,

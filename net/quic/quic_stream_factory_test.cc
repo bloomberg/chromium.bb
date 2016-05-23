@@ -26,9 +26,7 @@
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_server_info.h"
 #include "net/quic/quic_client_promised_info.h"
-#include "net/quic/quic_http_stream.h"
 #include "net/quic/quic_http_utils.h"
-#include "net/quic/quic_server_id.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_crypto_client_stream_factory.h"
 #include "net/quic/test_tools/mock_random.h"
@@ -45,7 +43,6 @@
 #include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::StringPiece;
 using std::string;
 using std::vector;
 
@@ -88,8 +85,8 @@ struct TestParams {
   bool enable_connection_racing;
 };
 
-std::vector<TestParams> GetTestParams() {
-  std::vector<TestParams> params;
+vector<TestParams> GetTestParams() {
+  vector<TestParams> params;
   QuicVersionVector all_supported_versions = QuicSupportedVersions();
   for (const QuicVersion version : all_supported_versions) {
     params.push_back(TestParams{version, false});
@@ -127,8 +124,8 @@ struct PoolingTestParams {
   DestinationType destination_type;
 };
 
-std::vector<PoolingTestParams> GetPoolingTestParams() {
-  std::vector<PoolingTestParams> params;
+vector<PoolingTestParams> GetPoolingTestParams() {
+  vector<PoolingTestParams> params;
   QuicVersionVector all_supported_versions = QuicSupportedVersions();
   for (const QuicVersion version : all_supported_versions) {
     params.push_back(PoolingTestParams{version, false, SAME_AS_FIRST});
@@ -319,7 +316,7 @@ class QuicStreamFactoryTestBase {
         &transport_security_state_, cert_transparency_verifier_.get(),
         /*SocketPerformanceWatcherFactory*/ nullptr,
         &crypto_client_stream_factory_, &random_generator_, clock_,
-        kDefaultMaxPacketSize, std::string(), SupportedVersions(version_),
+        kDefaultMaxPacketSize, string(), SupportedVersions(version_),
         enable_port_selection_, always_require_handshake_confirmation_,
         disable_connection_pooling_, load_server_info_timeout_srtt_multiplier_,
         enable_connection_racing_, enable_non_blocking_io_, disable_disk_cache_,
@@ -352,14 +349,14 @@ class QuicStreamFactoryTestBase {
   }
 
   bool HasActiveSession(const HostPortPair& host_port_pair) {
-    return QuicStreamFactoryPeer::HasActiveSession(factory_.get(),
-                                                   host_port_pair);
+    QuicServerId server_id(host_port_pair, PRIVACY_MODE_DISABLED);
+    return QuicStreamFactoryPeer::HasActiveSession(factory_.get(), server_id);
   }
 
   QuicChromiumClientSession* GetActiveSession(
       const HostPortPair& host_port_pair) {
-    return QuicStreamFactoryPeer::GetActiveSession(factory_.get(),
-                                                   host_port_pair);
+    QuicServerId server_id(host_port_pair, PRIVACY_MODE_DISABLED);
+    return QuicStreamFactoryPeer::GetActiveSession(factory_.get(), server_id);
   }
 
   std::unique_ptr<QuicHttpStream> CreateFromSession(
@@ -1132,7 +1129,7 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   socket_factory_.AddSocketDataProvider(&socket_data);
 
   HttpRequestInfo request_info;
-  std::vector<QuicHttpStream*> streams;
+  vector<QuicHttpStream*> streams;
   // The MockCryptoClientStream sets max_open_streams to be
   // kDefaultMaxStreamsPerConnection / 2.
   for (size_t i = 0; i < kDefaultMaxStreamsPerConnection / 2; i++) {
@@ -1254,7 +1251,7 @@ TEST_P(QuicStreamFactoryTest, CreateConsistentEphemeralPort) {
   // default host.  Verify that the default host gets a consistent ephemeral
   // port, that is different from the other host's connection.
 
-  std::string other_server_name = kServer2HostName;
+  string other_server_name = kServer2HostName;
   EXPECT_NE(kDefaultServerHostName, other_server_name);
   HostPortPair host_port_pair2(other_server_name, kDefaultServerPort);
 
@@ -1286,7 +1283,7 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> rst(ConstructClientRstPacket());
-  std::vector<MockWrite> writes;
+  vector<MockWrite> writes;
   writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
   SequencedSocketData socket_data(reads, arraysize(reads),
                                   writes.empty() ? nullptr : &writes[0],
@@ -1342,7 +1339,7 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> rst(ConstructClientRstPacket());
-  std::vector<MockWrite> writes;
+  vector<MockWrite> writes;
   writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
   SequencedSocketData socket_data(reads, arraysize(reads),
                                   writes.empty() ? nullptr : &writes[0],
@@ -2385,7 +2382,7 @@ TEST_P(QuicStreamFactoryTest, OnSSLConfigChanged) {
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> rst(ConstructClientRstPacket());
-  std::vector<MockWrite> writes;
+  vector<MockWrite> writes;
   writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
   SequencedSocketData socket_data(reads, arraysize(reads),
                                   writes.empty() ? nullptr : &writes[0],
@@ -2440,7 +2437,7 @@ TEST_P(QuicStreamFactoryTest, OnCertAdded) {
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> rst(ConstructClientRstPacket());
-  std::vector<MockWrite> writes;
+  vector<MockWrite> writes;
   writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
   SequencedSocketData socket_data(reads, arraysize(reads),
                                   writes.empty() ? nullptr : &writes[0],
@@ -2496,7 +2493,7 @@ TEST_P(QuicStreamFactoryTest, OnCACertChanged) {
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   std::unique_ptr<QuicEncryptedPacket> rst(ConstructClientRstPacket());
-  std::vector<MockWrite> writes;
+  vector<MockWrite> writes;
   writes.push_back(MockWrite(ASYNC, rst->data(), rst->length(), 1));
   SequencedSocketData socket_data(reads, arraysize(reads),
                                   writes.empty() ? nullptr : &writes[0],
@@ -3998,7 +3995,7 @@ TEST_P(QuicStreamFactoryTest, ServerPushSessionAffinity) {
 
   EXPECT_EQ(0, QuicStreamFactoryPeer::GetNumPushStreamsCreated(factory_.get()));
 
-  std::string url = "https://www.example.org/";
+  string url = "https://www.example.org/";
 
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
 
@@ -4047,7 +4044,7 @@ TEST_P(QuicStreamFactoryTest, ServerPushPrivacyModeMismatch) {
 
   EXPECT_EQ(0, QuicStreamFactoryPeer::GetNumPushStreamsCreated(factory_.get()));
 
-  std::string url = "https://www.example.org/";
+  string url = "https://www.example.org/";
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
 
   QuicClientPromisedInfo promised(session, kServerDataStreamId1, url);
@@ -4170,8 +4167,7 @@ class QuicStreamFactoryWithDestinationTest
   HostPortPair origin1_;
   HostPortPair origin2_;
   MockRead hanging_read_;
-  std::vector<std::unique_ptr<SequencedSocketData>>
-      sequenced_socket_data_vector_;
+  vector<std::unique_ptr<SequencedSocketData>> sequenced_socket_data_vector_;
 };
 
 INSTANTIATE_TEST_CASE_P(Version,

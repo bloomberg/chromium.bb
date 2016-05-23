@@ -4,10 +4,9 @@
 
 #include "net/quic/quic_connection_logger.h"
 
-#include "net/quic/quic_protocol.h"
+#include "net/cert/x509_certificate.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
-#include "net/socket/socket_performance_watcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -19,14 +18,14 @@ class QuicConnectionLoggerPeer {
     return logger.num_truncated_acks_sent_;
   }
 
-  static void set_num_packets_received(QuicConnectionLogger& logger,
+  static void set_num_packets_received(QuicConnectionLogger* logger,
                                        int value) {
-    logger.num_packets_received_ = value;
+    logger->num_packets_received_ = value;
   }
 
-  static void set_largest_received_packet_number(QuicConnectionLogger& logger,
+  static void set_largest_received_packet_number(QuicConnectionLogger* logger,
                                                  int value) {
-    logger.largest_received_packet_number_ = value;
+    logger->largest_received_packet_number_ = value;
   }
 };
 
@@ -73,8 +72,8 @@ TEST_F(QuicConnectionLoggerTest, TruncatedAcksSent) {
 }
 
 TEST_F(QuicConnectionLoggerTest, ReceivedPacketLossRate) {
-  QuicConnectionLoggerPeer::set_num_packets_received(logger_, 1);
-  QuicConnectionLoggerPeer::set_largest_received_packet_number(logger_, 2);
+  QuicConnectionLoggerPeer::set_num_packets_received(&logger_, 1);
+  QuicConnectionLoggerPeer::set_largest_received_packet_number(&logger_, 2);
   EXPECT_EQ(0.5f, logger_.ReceivedPacketLossRate());
 }
 

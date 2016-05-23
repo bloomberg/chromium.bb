@@ -18,7 +18,7 @@ class NET_EXPORT QuicP2PCryptoConfig {
  public:
   // |shared_key| specifies a key that's used to generate crypto keys. The key
   // must be exchanged out-of-bound when the P2P transport is negotiated.
-  QuicP2PCryptoConfig(const std::string& shared_key);
+  explicit QuicP2PCryptoConfig(const std::string& shared_key);
   ~QuicP2PCryptoConfig();
 
   void set_aead(QuicTag aead) { aead_ = aead; }

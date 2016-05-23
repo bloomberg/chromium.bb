@@ -26,8 +26,6 @@
 #include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_client_promised_info.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
-#include "net/quic/quic_protocol.h"
-#include "net/quic/quic_server_id.h"
 #include "net/quic/quic_stream_factory.h"
 #include "net/spdy/spdy_session.h"
 #include "net/ssl/channel_id_service.h"
@@ -491,7 +489,7 @@ QuicChromiumClientSession::CreateOutgoingReliableStreamImpl() {
 
 QuicCryptoClientStream* QuicChromiumClientSession::GetCryptoStream() {
   return crypto_stream_.get();
-};
+}
 
 // TODO(rtenneti): Add unittests for GetSSLInfo which exercise the various ways
 // we learn about SSL info (sync vs async vs cached).

@@ -6,6 +6,7 @@
 #define NET_QUIC_P2P_QUIC_P2P_SESSION_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"

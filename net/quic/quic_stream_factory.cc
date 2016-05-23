@@ -4,14 +4,13 @@
 
 #include "net/quic/quic_stream_factory.h"
 
+#include <openssl/aead.h>
+
 #include <algorithm>
 #include <tuple>
 #include <utility>
 
-#include <openssl/aead.h>
-
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
@@ -40,7 +39,6 @@
 #include "net/quic/crypto/quic_server_info.h"
 #include "net/quic/port_suggester.h"
 #include "net/quic/quic_chromium_alarm_factory.h"
-#include "net/quic/quic_chromium_client_session.h"
 #include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_chromium_packet_reader.h"
 #include "net/quic/quic_chromium_packet_writer.h"
@@ -49,9 +47,6 @@
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
 #include "net/quic/quic_flags.h"
-#include "net/quic/quic_http_stream.h"
-#include "net/quic/quic_protocol.h"
-#include "net/quic/quic_server_id.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/socket_performance_watcher.h"
 #include "net/socket/socket_performance_watcher_factory.h"

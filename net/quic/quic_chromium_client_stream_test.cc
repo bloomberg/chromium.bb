@@ -4,7 +4,8 @@
 
 #include "net/quic/quic_chromium_client_stream.h"
 
-#include "base/macros.h"
+#include <string>
+
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/base/io_buffer.h"

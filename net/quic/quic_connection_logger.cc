@@ -5,8 +5,9 @@
 #include "net/quic/quic_connection_logger.h"
 
 #include <algorithm>
-#include <string>
+#include <limits>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -16,9 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/base/ip_address.h"
-#include "net/cert/cert_verify_result.h"
 #include "net/cert/x509_certificate.h"
-#include "net/log/net_log.h"
 #include "net/quic/crypto/crypto_handshake_message.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_address_mismatch.h"

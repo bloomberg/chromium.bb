@@ -11,7 +11,6 @@
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/quic/p2p/quic_p2p_crypto_stream.h"
-#include "net/quic/p2p/quic_p2p_stream.h"
 #include "net/quic/quic_connection.h"
 #include "net/socket/socket.h"
 

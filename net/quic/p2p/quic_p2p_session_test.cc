@@ -4,7 +4,10 @@
 
 #include "net/quic/p2p/quic_p2p_session.h"
 
+#include <algorithm>
+#include <deque>
 #include <utility>
+#include <vector>
 
 #include "base/callback_helpers.h"
 #include "base/location.h"

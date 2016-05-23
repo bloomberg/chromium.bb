@@ -4,8 +4,6 @@
 
 #include "net/quic/quic_chromium_client_session.h"
 
-#include <vector>
-
 #include "base/base64.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
@@ -30,7 +28,6 @@
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_http_utils.h"
 #include "net/quic/quic_packet_writer.h"
-#include "net/quic/quic_protocol.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/mock_crypto_client_stream_factory.h"
 #include "net/quic/test_tools/quic_chromium_client_session_peer.h"
@@ -38,7 +35,6 @@
 #include "net/quic/test_tools/quic_test_packet_maker.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simple_quic_framer.h"
-#include "net/socket/socket_performance_watcher.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_test_utils.h"
 #include "net/test/cert_test_util.h"
@@ -96,7 +92,8 @@ class QuicChromiumClientSessionTest
     session_.reset(new QuicChromiumClientSession(
         connection, std::move(socket),
         /*stream_factory=*/nullptr, &crypto_client_stream_factory_, &clock_,
-        &transport_security_state_, base::WrapUnique((QuicServerInfo*)nullptr),
+        &transport_security_state_,
+        base::WrapUnique(static_cast<QuicServerInfo*>(nullptr)),
         QuicServerId(kServerHostname, kServerPort, PRIVACY_MODE_DISABLED),
         kQuicYieldAfterPacketsRead,
         QuicTime::Delta::FromMilliseconds(kQuicYieldAfterDurationMilliseconds),

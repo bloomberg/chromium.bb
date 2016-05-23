@@ -5,7 +5,6 @@
 #include "net/quic/test_tools/quic_test_packet_maker.h"
 
 #include <list>
-#include <memory>
 
 #include "base/memory/ptr_util.h"
 #include "net/quic/quic_framer.h"

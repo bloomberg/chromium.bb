@@ -4,7 +4,6 @@
 
 #include "net/quic/network_connection.h"
 
-#include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -16,18 +15,18 @@ class NetworkConnectionPeer {
       const NetworkConnection& network_connection) {
     return network_connection.connection_type_;
   }
-  static void set_connection_type(NetworkConnection& network_connection,
+  static void set_connection_type(NetworkConnection* network_connection,
                                   NetworkChangeNotifier::ConnectionType type) {
-    network_connection.connection_type_ = type;
+    network_connection->connection_type_ = type;
   }
 
   static const char* connection_description(
       const NetworkConnection& network_connection) {
     return network_connection.connection_description_;
   }
-  static void set_connection_description(NetworkConnection& network_connection,
+  static void set_connection_description(NetworkConnection* network_connection,
                                          const char* description) {
-    network_connection.connection_description_ = description;
+    network_connection->connection_description_ = description;
   }
 };
 
@@ -59,13 +58,13 @@ TEST_F(NetworkConnectionTest, GetDescription) {
   const char* description = network_connection_.GetDescription();
 
   // Set connection description to nullptr.
-  NetworkConnectionPeer::set_connection_description(network_connection_,
+  NetworkConnectionPeer::set_connection_description(&network_connection_,
                                                     nullptr);
   CheckNetworkConnectionDescription();
 
   // Set connection type to a junk value.
   NetworkConnectionPeer::set_connection_type(
-      network_connection_, NetworkChangeNotifier::CONNECTION_LAST);
+      &network_connection_, NetworkChangeNotifier::CONNECTION_LAST);
   CheckNetworkConnectionDescription();
 
   EXPECT_EQ(description, network_connection_.GetDescription());

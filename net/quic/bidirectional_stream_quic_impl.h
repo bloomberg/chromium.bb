@@ -8,12 +8,15 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/http/bidirectional_stream_impl.h"
+#include "net/log/net_log.h"
 #include "net/quic/quic_chromium_client_session.h"
 #include "net/quic/quic_chromium_client_stream.h"
+#include "net/spdy/spdy_header_block.h"
 
 namespace base {
 class Timer;
@@ -22,9 +25,7 @@ class Timer;
 namespace net {
 
 struct BidirectionalStreamRequestInfo;
-class BoundNetLog;
 class IOBuffer;
-class SpdyHeaderBlock;
 
 class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
     : public BidirectionalStreamImpl,

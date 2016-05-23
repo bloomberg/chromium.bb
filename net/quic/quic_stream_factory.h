@@ -50,7 +50,6 @@ class HostResolver;
 class HttpServerProperties;
 class QuicClock;
 class QuicChromiumAlarmFactory;
-class QuicChromiumClientSession;
 class QuicChromiumConnectionHelper;
 class QuicCryptoClientStreamFactory;
 class QuicRandom;

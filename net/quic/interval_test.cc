@@ -11,9 +11,6 @@
 
 #include "net/quic/interval.h"
 
-#include <string>
-#include <utility>
-
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "net/test/gtest_util.h"
