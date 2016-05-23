@@ -9,12 +9,15 @@ shouldBe('typeof window.internals.observeGC', '"function"',
 
 // "Generic Kid's Movie III": ... where nobody dies.
 
-var valueA = {};
-// Do not pass the object directly to observeGC function. This may
-// remain live on this function's stack preventing GC from collecting
-// it. Accessing the object inside an inner function will prevent any
-// unneeded references on this function's stack.
-observationA = internals.observeGC((() => {return valueA;})());
+// Do initialization work in an inner function to avoid references to
+// objects remaining live on this function's stack frame.
+// (http://crbug.com/595672/).
+var valueA, observationA;
+(function () {
+  valueA = {};
+  observationA = internals.observeGC(valueA);
+})();
+
 gc();
 shouldBeFalse('observationA.wasCollected');
 // value ineligible for GC should not be flagged as collected
@@ -23,13 +26,15 @@ observationA = null;
 
 // "Romeo and GCuliet": Romeo JavaScript finds G.uliet C.apulet and dies.
 
-var valueB = {};
-// Do not pass the object directly to observeGC function. This may
-// remain live on this function's stack preventing GC from collecting
-// it. Accessing the object inside an inner function will prevent any
-// unneeded references on this function's stack.
-observationB = internals.observeGC((() => {return valueB;})());
-valueB = null;
+// Do initialization work in an inner function to avoid references to
+// objects remaining live on this function's stack frame.
+// (http://crbug.com/595672/).
+var observationB;
+(function() {
+  var valueB = {};
+  observationB = internals.observeGC(valueB);
+})();
+
 gc();
 shouldBeTrue('observationB.wasCollected');
 // value eligible for GC should be flagged as collected
@@ -38,13 +43,15 @@ observationB = null;
 // "One DOM Tree Hill": A family struggles with the loss of
 // innocence. And a DOM node.
 
-var valueC = document.createElement('div');
-// Do not pass the object directly to observeGC function. This may
-// remain live on this function's stack preventing GC from collecting
-// it. Accessing the object inside an inner function will prevent any
-// unneeded references on this function's stack.
-observationC = internals.observeGC((() => {return valueC;})());
-valueC = null;
+// Do initialization work in an inner function to avoid references to
+// objects remaining live on this function's stack frame.
+// (http://crbug.com/595672/).
+var observationC;
+(function() {
+ var valueC = document.createElement('div');
+ observationC = internals.observeGC(valueC);
+})();
+
 gc();
 shouldBeTrue('observationC.wasCollected');
 // DOM node eligible for GC should be flagged as collected
@@ -59,15 +66,16 @@ shouldThrow('internals.observeGC(null)',
 
 // Try to create objects and observers that will die at once
 
-var valueD = {};
-// Do not pass the object directly to observeGC function. This may
-// remain live on this function's stack preventing GC from collecting
-// it. Accessing the object inside an inner function will prevent any
-// unneeded references on this function's stack.
-var observerD = internals.observeGC((() => {return valueD;})());
-valueD.observer = observerD;
-observerD.observed = valueD;
-valueD = observerD = null;
+// Do initialization work in an inner function to avoid references to
+// objects remaining live on this function's stack frame.
+// (http://crbug.com/595672/).
+(function() {
+  var valueD = {};
+  var observerD = internals.observeGC(valueD);
+  valueD.observer = observerD;
+  observerD.observed = valueD;
+})();
+
 gc();
 testPassed('did not crash');
 

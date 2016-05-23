@@ -32,19 +32,19 @@ function onOpen(evt)
     };
     tx.oncomplete = function() {
         db.close();
-
-        // Try and induce a leak by a reference cycle from DOM to V8 and back.
-        // If the v8 value of cursor.key (etc) is only held by the cursor's
-        // V8 wrapper then there will be no leak.
-        cursor.key.cursor = cursor;
-        cursor.primaryKey.cursor = cursor;
-        cursor.value.cursor = cursor;
-
-        // Do not pass the object directly to observeGC function. This may
-        // remain live on this function's stack preventing GC from collecting
-        // it. Accessing the object inside an inner function will prevent any
-        // unneeded references on this function's stack.
-        cursorObserver = internals.observeGC((() => {return cursor;})());
+        
+        // Do initialization work in an inner function to avoid references to
+        // objects remaining live on this function's stack frame
+        // (http://crbug.com/595672/).
+        (function() {
+            // Try and induce a leak by a reference cycle from DOM to V8 and
+            // back. If the v8 value of cursor.key (etc) is only held by the
+            // cursor's V8 wrapper then there will be no leak.
+            cursor.key.cursor = cursor;
+            cursor.primaryKey.cursor = cursor;
+            cursor.value.cursor = cursor;
+            cursorObserver = internals.observeGC(cursor);
+        })();
 
         cursorRequest = null;
         cursor = null;

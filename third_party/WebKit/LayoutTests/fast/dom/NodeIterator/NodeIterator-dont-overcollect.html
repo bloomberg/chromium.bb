@@ -4,21 +4,24 @@
 <script src="../../../resources/js-test.js"></script>
 <script>
     var callbackWasTriggered = false;
+    var nodeIterator, callbackObservation, nodeFilterObservation,
+        nodeIteratorObservation;
 
-    var callback = function(node) {
+    // Do initialization work in an inner function to avoid references to
+    // objects remaining live on this function's stack frame.
+    // (http://crbug.com/595672/).
+    (function() {
+      var callback = function(node) {
         callbackWasTriggered = true;
         return NodeFilter.FILTER_ACCEPT;
-    };
-    var nodeIterator = document.createNodeIterator(document, NodeFilter.SHOW_ELEMENT, callback, false);
+      };
 
-    // Do not pass the object as a parameter to observeGC function. This may
-    // remain live on this function's stack preventing GC from collecting
-    // it. Accessing the object inside an inner function will prevent any
-    // unneeded references on this function's stack.
-    var callbackObservation = internals.observeGC((() => {return callback;})());
-    callback = null;
-    var nodeFilterObservation = internals.observeGC((() => {return nodeIterator.filter;})());
-    var nodeIteratorObservation = internals.observeGC((() => {return nodeIterator;})());
+      nodeIterator = document.createNodeIterator(document,
+          NodeFilter.SHOW_ELEMENT, callback, false);
+      callbackObservation = internals.observeGC(callback);
+      nodeFilterObservation = internals.observeGC(nodeIterator.filter);
+      nodeIteratorObservation = internals.observeGC(nodeIterator);
+    })()
 
     gc();
     shouldBeFalse('nodeFilterObservation.wasCollected');
