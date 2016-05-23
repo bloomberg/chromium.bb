@@ -498,6 +498,30 @@ class ReadbackWebGLGpuProcessPage(gpu_test_base.PageBase):
         raise page_test.Failure('WebGL readback setup failed: %s' \
           % feature_status_list)
 
+
+class EqualBugWorkaroundsInBrowserAndGpuProcessPage(gpu_test_base.PageBase):
+  def __init__(self, story_set, expectations):
+    super(EqualBugWorkaroundsInBrowserAndGpuProcessPage, self).__init__(
+      url='chrome:gpu',
+      name='GpuProcess.equal_bug_workarounds_in_browser_and_gpu_process',
+      page_set=story_set,
+      shared_page_state_class=GpuProcessSharedPageState,
+      expectations=expectations)
+
+  def Validate(self, tab, results):
+    browser_list = tab.EvaluateJavaScript('GetDriverBugWorkarounds()')
+    gpu_list = tab.EvaluateJavaScript( \
+      'chrome.gpuBenchmarking.getGpuDriverBugWorkarounds()')
+
+    diff = set(browser_list).symmetric_difference(set(gpu_list))
+    if len(diff) > 0:
+      print 'Test failed. Printing page contents:'
+      print tab.EvaluateJavaScript('document.body.innerHTML')
+      raise page_test.Failure('Browser and GPU process list of driver bug' \
+        'workarounds are not equal: %s != %s, diff: %s' % \
+        (browser_list, gpu_list, list(diff)))
+
+
 class GpuProcessTestsStorySet(story_set_module.StorySet):
 
   """ Tests that accelerated content triggers the creation of a GPU process """
@@ -531,6 +555,8 @@ class GpuProcessTestsStorySet(story_set_module.StorySet):
     self.AddStory(IdentifyActiveGpuPage4(self, expectations))
     self.AddStory(ReadbackWebGLGpuProcessPage(self, expectations))
     self.AddStory(DriverBugWorkaroundsUponGLRendererPage(self, expectations))
+    self.AddStory(EqualBugWorkaroundsInBrowserAndGpuProcessPage(self,
+                                                                expectations))
 
   @property
   def allow_mixed_story_states(self):
