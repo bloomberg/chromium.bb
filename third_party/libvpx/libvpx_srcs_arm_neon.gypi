@@ -328,6 +328,7 @@
     '<(libvpx_source)/vpx_dsp/arm/avg_neon.c',
     '<(libvpx_source)/vpx_dsp/arm/bilinear_filter_media.asm',
     '<(libvpx_source)/vpx_dsp/arm/fwd_txfm_neon.c',
+    '<(libvpx_source)/vpx_dsp/arm/hadamard_neon.c',
     '<(libvpx_source)/vpx_dsp/arm/idct16x16_1_add_neon.asm',
     '<(libvpx_source)/vpx_dsp/arm/idct16x16_add_neon.asm',
     '<(libvpx_source)/vpx_dsp/arm/idct16x16_neon.c',

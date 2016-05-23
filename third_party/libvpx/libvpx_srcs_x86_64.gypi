@@ -360,7 +360,6 @@
     '<(libvpx_source)/vpx_dsp/x86/quantize_avx_x86_64.asm',
     '<(libvpx_source)/vpx_dsp/x86/quantize_ssse3_x86_64.asm',
     '<(libvpx_source)/vpx_dsp/x86/sad4d_sse2.asm',
-    '<(libvpx_source)/vpx_dsp/x86/sad_mmx.asm',
     '<(libvpx_source)/vpx_dsp/x86/sad_sse2.asm',
     '<(libvpx_source)/vpx_dsp/x86/sad_sse3.asm',
     '<(libvpx_source)/vpx_dsp/x86/sad_sse4.asm',

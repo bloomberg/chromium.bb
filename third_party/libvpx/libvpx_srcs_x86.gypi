@@ -353,7 +353,6 @@
     '<(libvpx_source)/vpx_dsp/x86/inv_wht_sse2.asm',
     '<(libvpx_source)/vpx_dsp/x86/loopfilter_mmx.asm',
     '<(libvpx_source)/vpx_dsp/x86/sad4d_sse2.asm',
-    '<(libvpx_source)/vpx_dsp/x86/sad_mmx.asm',
     '<(libvpx_source)/vpx_dsp/x86/sad_sse2.asm',
     '<(libvpx_source)/vpx_dsp/x86/sad_sse3.asm',
     '<(libvpx_source)/vpx_dsp/x86/sad_sse4.asm',
