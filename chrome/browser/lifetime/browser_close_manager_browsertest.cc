@@ -479,6 +479,105 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
 }
 
+// Test that tabs that are slow to respond are not closed prematurely.
+// Regression for crbug.com/365052 caused some of tabs to be closed even if
+// user chose to cancel browser close.
+//
+// Test is disabled as it likely to flack for the same reason as
+// TestHangInBeforeUnloadMultipleTabs: there is a chance (especially under
+// load) that normal tab will not answer within
+// RenderViewHostImpl::kUnloadTimeoutMS thus |AcceptClose| or |CancelClose|
+// will not find a dialog and fail.
+IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
+                       DISABLED_TestUnloadMultipleSlowTabs) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const int kTabCount = 5;
+  const int kResposiveTabIndex = 2;
+  // Create tab strip with all tabs except one responding after
+  // RenderViewHostImpl::kUnloadTimeoutMS.
+  // Minimum configuration is two slow tabs and then responsive tab.
+  // But we also want to check how slow tabs behave in tail.
+  for (int i = 0; i < kTabCount; i++) {
+    if (i)
+      AddBlankTabAndShow(browsers_[0]);
+    ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+        browsers_[0],
+        embedded_test_server()->GetURL((i == kResposiveTabIndex)
+                                           ? "/beforeunload.html"
+                                           : "/beforeunload_slow.html")));
+  }
+  RepeatedNotificationObserver cancel_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED, 1);
+  chrome::CloseAllBrowsersAndQuit();
+  ASSERT_NO_FATAL_FAILURE(CancelClose());
+  cancel_observer.Wait();
+  EXPECT_FALSE(browser_shutdown::IsTryingToQuit());
+
+  // All tabs should still be open.
+  EXPECT_EQ(kTabCount, browsers_[0]->tab_strip_model()->count());
+  RepeatedNotificationObserver close_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED, 1);
+
+  // Quit, this time accepting close confirmation dialog.
+  chrome::CloseAllBrowsersAndQuit();
+  ASSERT_NO_FATAL_FAILURE(AcceptClose());
+  close_observer.Wait();
+  EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
+  EXPECT_TRUE(BrowserList::GetInstance()->empty());
+}
+
+// Test that tabs in different windows with a slow beforeunload event response
+// are treated the same as the user accepting the close, but do not close the
+// tab early.
+// Regression for crbug.com/365052 caused CHECK in tabstrip.
+//
+// Test is disabled as it likely to flack for the same reason as
+// TestHangInBeforeUnloadMultipleTabs: there is a chance (especially under
+// load) that normal tab will not answer within
+// RenderViewHostImpl::kUnloadTimeoutMS thus |AcceptClose| or |CancelClose|
+// will not find a dialog and fail.
+IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
+                       DISABLED_TestBeforeUnloadMultipleSlowWindows) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const int kBrowserCount = 5;
+  const int kResposiveBrowserIndex = 2;
+  // Create multiple browsers with all tabs except one responding after
+  // RenderViewHostImpl::kUnloadTimeoutMS .
+  // Minimum configuration is just one browser with slow tab and then
+  // browser with responsive tab.
+  // But we also want to check how slow tabs behave in tail and make test
+  // more robust.
+  for (int i = 0; i < kBrowserCount; i++) {
+    if (i)
+      browsers_.push_back(CreateBrowser(browser()->profile()));
+    ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+        browsers_[i],
+        embedded_test_server()->GetURL((i == kResposiveBrowserIndex)
+                                           ? "/beforeunload.html"
+                                           : "/beforeunload_slow.html")));
+  }
+
+  RepeatedNotificationObserver cancel_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED, kResposiveBrowserIndex + 1);
+  chrome::CloseAllBrowsersAndQuit();
+  ASSERT_NO_FATAL_FAILURE(CancelClose());
+  cancel_observer.Wait();
+  EXPECT_FALSE(browser_shutdown::IsTryingToQuit());
+
+  // All windows should still be open.
+  for (int i = 0; i < kBrowserCount; i++)
+    EXPECT_EQ(1, browsers_[i]->tab_strip_model()->count());
+
+  // Quit, this time accepting close confirmation dialog.
+  RepeatedNotificationObserver close_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED, kBrowserCount);
+  chrome::CloseAllBrowsersAndQuit();
+  ASSERT_NO_FATAL_FAILURE(AcceptClose());
+  close_observer.Wait();
+  EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
+  EXPECT_TRUE(BrowserList::GetInstance()->empty());
+}
+
 // Test that a window created during shutdown is closed.
 IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
                        TestAddWindowDuringShutdown) {

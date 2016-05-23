@@ -4559,27 +4559,28 @@ void WebContentsImpl::RendererUnresponsive(
   if (DevToolsAgentHost::IsDebuggerAttached(this))
     return;
 
-  if (rfhi->is_waiting_for_beforeunload_ack() ||
-      rfhi->IsWaitingForUnloadACK()) {
-    // Hang occurred while firing the beforeunload/unload handler.
+  // We might have been waiting for both beforeunload and unload ACK.
+  // Check if tab is to be unloaded first.
+  if (rfhi->IsWaitingForUnloadACK()) {
+    // Hang occurred while firing the unload handler.
     // Pretend the handler fired so tab closing continues as if it had.
     GetRenderViewHost()->set_sudden_termination_allowed(true);
 
     if (!GetRenderManager()->ShouldCloseTabOnUnresponsiveRenderer())
       return;
 
-    // If the tab hangs in the beforeunload/unload handler there's really
-    // nothing we can do to recover. If the hang is in the beforeunload handler,
-    // pretend the beforeunload listeners have all fired and allow the delegate
-    // to continue closing; the user will not have the option of cancelling the
-    // close. Otherwise, pretend the unload listeners have all fired and close
+    // If the tab hangs in the unload handler there's really nothing we can do
+    // to recover. Pretend the unload listeners have all fired and close
     // the tab.
-    bool close = true;
-    if (rfhi->is_waiting_for_beforeunload_ack() && delegate_) {
-      delegate_->BeforeUnloadFired(this, true, &close);
-    }
-    if (close)
-      Close();
+    Close();
+    return;
+  }
+
+  if (rfhi->is_waiting_for_beforeunload_ack()) {
+    // If the hang is in the beforeunload handler, pretend the beforeunload
+    // listeners have all fired and allow the delegate to continue closing;
+    // the user will not have the option of cancelling the close.
+    rfhi->SimulateBeforeUnloadAck();
     return;
   }
 

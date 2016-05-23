@@ -411,6 +411,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // PlzNavigate: this call happens on all browser-initiated navigations.
   void DispatchBeforeUnload(bool for_navigation);
 
+  // Simulate beforeunload ack on behalf of renderer if it's unrenresponsive.
+  void SimulateBeforeUnloadAck();
+
   // Returns true if a call to DispatchBeforeUnload will actually send the
   // BeforeUnload IPC. This is the case if the current renderer is live and this
   // frame is the main frame.
