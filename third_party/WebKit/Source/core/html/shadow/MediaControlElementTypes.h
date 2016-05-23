@@ -96,7 +96,7 @@ protected:
 
     MediaControls& mediaControls() const
     {
-        ASSERT(m_mediaControls);
+        DCHECK(m_mediaControls);
         return *m_mediaControls;
     }
     HTMLMediaElement& mediaElement() const;

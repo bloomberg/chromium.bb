@@ -211,7 +211,7 @@ bool HTMLVideoElement::copyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interf
     if (!webMediaPlayer())
         return false;
 
-    ASSERT(Extensions3DUtil::canUseCopyTextureCHROMIUM(GL_TEXTURE_2D, internalFormat, type, 0));
+    DCHECK(Extensions3DUtil::canUseCopyTextureCHROMIUM(GL_TEXTURE_2D, internalFormat, type, 0));
     return webMediaPlayer()->copyVideoTextureToPlatformTexture(gl, texture, internalFormat, type, premultiplyAlpha, flipY);
 }
 
@@ -327,7 +327,7 @@ IntSize HTMLVideoElement::bitmapSourceSize() const
 
 ScriptPromise HTMLVideoElement::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, int sx, int sy, int sw, int sh, const ImageBitmapOptions& options, ExceptionState& exceptionState)
 {
-    ASSERT(eventTarget.toLocalDOMWindow());
+    DCHECK(eventTarget.toLocalDOMWindow());
     if (getNetworkState() == HTMLMediaElement::NETWORK_EMPTY) {
         exceptionState.throwDOMException(InvalidStateError, "The provided element has not retrieved data.");
         return ScriptPromise();

@@ -81,14 +81,14 @@ public:
     explicit BatchedControlUpdate(MediaControls* controls)
         : m_controls(controls)
     {
-        ASSERT(isMainThread());
-        ASSERT(s_batchDepth >= 0);
+        DCHECK(isMainThread());
+        DCHECK_GE(s_batchDepth, 0);
         ++s_batchDepth;
     }
     ~BatchedControlUpdate()
     {
-        ASSERT(isMainThread());
-        ASSERT(s_batchDepth > 0);
+        DCHECK(isMainThread());
+        DCHECK_GT(s_batchDepth, 0);
         if (!(--s_batchDepth))
             m_controls->computeWhichControlsFit();
     }

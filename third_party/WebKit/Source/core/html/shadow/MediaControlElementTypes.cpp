@@ -58,7 +58,7 @@ const HTMLMediaElement* toParentMediaElement(const Node* node)
 
 MediaControlElementType mediaControlElementType(const Node* node)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(node->isMediaControlElement());
+    SECURITY_DCHECK(node->isMediaControlElement());
     const HTMLElement* element = toHTMLElement(node);
     if (isHTMLInputElement(*element))
         return static_cast<const MediaControlInputElement*>(element)->displayType();

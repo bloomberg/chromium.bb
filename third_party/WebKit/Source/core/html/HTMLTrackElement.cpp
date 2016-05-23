@@ -193,7 +193,7 @@ void HTMLTrackElement::loadTimerFired(Timer<HTMLTrackElement>*)
     }
 
     if (url == m_url) {
-        ASSERT(m_loader);
+        DCHECK(m_loader);
         switch (m_loader->loadState()) {
         case TextTrackLoader::Idle:
         case TextTrackLoader::Loading:
@@ -206,7 +206,7 @@ void HTMLTrackElement::loadTimerFired(Timer<HTMLTrackElement>*)
             didCompleteLoad(Failure);
             break;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
         }
         return;
     }
@@ -271,8 +271,8 @@ void HTMLTrackElement::didCompleteLoad(LoadStatus status)
 
 void HTMLTrackElement::newCuesAvailable(TextTrackLoader* loader)
 {
-    ASSERT_UNUSED(loader, m_loader == loader);
-    ASSERT(m_track);
+    DCHECK_EQ(m_loader, loader);
+    DCHECK(m_track);
 
     HeapVector<Member<TextTrackCue>> newCues;
     m_loader->getNewCues(newCues);
@@ -282,8 +282,8 @@ void HTMLTrackElement::newCuesAvailable(TextTrackLoader* loader)
 
 void HTMLTrackElement::newRegionsAvailable(TextTrackLoader* loader)
 {
-    ASSERT_UNUSED(loader, m_loader == loader);
-    ASSERT(m_track);
+    DCHECK_EQ(m_loader, loader);
+    DCHECK(m_track);
 
     HeapVector<Member<VTTRegion>> newRegions;
     m_loader->getNewRegions(newRegions);
@@ -293,7 +293,7 @@ void HTMLTrackElement::newRegionsAvailable(TextTrackLoader* loader)
 
 void HTMLTrackElement::cueLoadingCompleted(TextTrackLoader* loader, bool loadingFailed)
 {
-    ASSERT_UNUSED(loader, m_loader == loader);
+    DCHECK_EQ(m_loader, loader);
 
     didCompleteLoad(loadingFailed ? Failure : Success);
 }

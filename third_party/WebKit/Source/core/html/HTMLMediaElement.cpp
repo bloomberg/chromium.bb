@@ -166,7 +166,7 @@ void removeElementFromDocumentMap(HTMLMediaElement* element, Document* document)
 {
     DocumentElementSetMap& map = documentToElementSetMap();
     auto it = map.find(document);
-    ASSERT(it != map.end());
+    DCHECK(it != map.end());
     WeakMediaElementSet* set = it->value;
     set->remove(element);
     if (set->isEmpty())
@@ -211,7 +211,7 @@ const AtomicString& AudioKindToString(WebMediaPlayerClient::AudioTrackKind kind)
         return AudioTrack::commentaryKeyword();
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return emptyAtom;
 }
 
@@ -234,7 +234,7 @@ const AtomicString& VideoKindToString(WebMediaPlayerClient::VideoTrackKind kind)
         return VideoTrack::commentaryKeyword();
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return emptyAtom;
 }
 
@@ -277,7 +277,7 @@ String preloadTypeToString(WebMediaPlayer::Preload preloadType)
         return "auto";
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return String();
 }
 
@@ -375,7 +375,7 @@ URLRegistry* HTMLMediaElement::s_mediaStreamRegistry = 0;
 
 void HTMLMediaElement::setMediaStreamRegistry(URLRegistry* registry)
 {
-    ASSERT(!s_mediaStreamRegistry);
+    DCHECK(!s_mediaStreamRegistry);
     s_mediaStreamRegistry = registry;
 }
 
@@ -466,7 +466,7 @@ HTMLMediaElement::~HTMLMediaElement()
     // Since AudioNode::dispose() is guaranteed to be always called before
     // the AudioNode is destructed, m_audioSourceNode is explicitly cleared
     // even if the AudioNode and the HTMLMediaElement die together.
-    ASSERT(!m_audioSourceNode);
+    DCHECK(!m_audioSourceNode);
 }
 
 void HTMLMediaElement::dispose()
@@ -911,13 +911,13 @@ void HTMLMediaElement::selectMediaResource()
         DVLOG(MEDIA_LOG_LEVEL) << "selectMediaResource(" << (void*)this << "), using source element";
         break;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 }
 
 void HTMLMediaElement::loadSourceFromObject()
 {
-    ASSERT(m_srcObject);
+    DCHECK(m_srcObject);
     m_loadState = LoadingFromSrcObject;
 
     // No type is available when the resource comes from the 'srcObject'
@@ -968,11 +968,11 @@ void HTMLMediaElement::loadNextSourceChild()
 
 void HTMLMediaElement::loadResource(const WebMediaPlayerSource& source, ContentType& contentType)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     KURL url;
     if (source.isURL()) {
         url = source.getAsURL();
-        ASSERT(isSafeToLoadURL(url, Complain));
+        DCHECK(isSafeToLoadURL(url, Complain));
         DVLOG(MEDIA_LOG_LEVEL) << "loadResource(" << (void*)this << ", " << urlForLoggingMedia(url) << ", " << contentType.raw() << ")";
     }
 
@@ -1007,7 +1007,7 @@ void HTMLMediaElement::loadResource(const WebMediaPlayerSource& source, ContentT
         m_muted = true;
     updateVolume();
 
-    ASSERT(!m_mediaSource);
+    DCHECK(!m_mediaSource);
 
     bool attemptLoad = true;
 
@@ -1032,7 +1032,7 @@ void HTMLMediaElement::loadResource(const WebMediaPlayerSource& source, ContentT
 
     bool canLoadResource = source.isMediaStream() || canLoadURL(url, contentType);
     if (attemptLoad && canLoadResource) {
-        ASSERT(!webMediaPlayer());
+        DCHECK(!webMediaPlayer());
 
         // Conditionally defer the load if effective preload is 'none'.
         // Skip this optional deferral for MediaStream sources or any blob URL,
@@ -1057,7 +1057,7 @@ void HTMLMediaElement::loadResource(const WebMediaPlayerSource& source, ContentT
 
 void HTMLMediaElement::startPlayerLoad()
 {
-    ASSERT(!m_webMediaPlayer);
+    DCHECK(!m_webMediaPlayer);
 
     WebMediaPlayerSource source;
     if (m_srcObject) {
@@ -1135,8 +1135,8 @@ bool HTMLMediaElement::loadIsDeferred() const
 void HTMLMediaElement::deferLoad()
 {
     // This implements the "optional" step 3 from the resource fetch algorithm.
-    ASSERT(!m_deferredLoadTimer.isActive());
-    ASSERT(m_deferredLoadState == NotDeferred);
+    DCHECK(!m_deferredLoadTimer.isActive());
+    DCHECK_EQ(m_deferredLoadState, NotDeferred);
     // 1. Set the networkState to NETWORK_IDLE.
     // 2. Queue a task to fire a simple event named suspend at the element.
     changeNetworkStateFromLoadingToIdle();
@@ -1156,7 +1156,7 @@ void HTMLMediaElement::cancelDeferredLoad()
 
 void HTMLMediaElement::executeDeferredLoad()
 {
-    ASSERT(m_deferredLoadState >= WaitingForTrigger);
+    DCHECK_GE(m_deferredLoadState, WaitingForTrigger);
 
     // resource fetch algorithm step 3 - continued from deferLoad().
 
@@ -1182,7 +1182,7 @@ void HTMLMediaElement::startDeferredLoad()
     }
     if (m_deferredLoadState == ExecuteOnStopDelayingLoadEventTask)
         return;
-    ASSERT(m_deferredLoadState == WaitingForStopDelayingLoadEventTask);
+    DCHECK_EQ(m_deferredLoadState, WaitingForStopDelayingLoadEventTask);
     m_deferredLoadState = ExecuteOnStopDelayingLoadEventTask;
 }
 
@@ -1194,7 +1194,7 @@ void HTMLMediaElement::deferredLoadTimerFired(Timer<HTMLMediaElement>*)
         executeDeferredLoad();
         return;
     }
-    ASSERT(m_deferredLoadState == WaitingForStopDelayingLoadEventTask);
+    DCHECK_EQ(m_deferredLoadState, WaitingForStopDelayingLoadEventTask);
     m_deferredLoadState = WaitingForTrigger;
 }
 
@@ -1247,7 +1247,7 @@ void HTMLMediaElement::textTrackModeChanged(TextTrack* track)
 
     configureTextTrackDisplay();
 
-    ASSERT(textTracks()->contains(track));
+    DCHECK(textTracks()->contains(track));
     textTracks()->scheduleChangeEvent();
 }
 
@@ -1361,7 +1361,7 @@ void HTMLMediaElement::noneSupported()
 
 void HTMLMediaElement::mediaEngineError(MediaError* err)
 {
-    ASSERT(m_readyState >= HAVE_METADATA);
+    DCHECK_GE(m_readyState, HAVE_METADATA);
     DVLOG(MEDIA_LOG_LEVEL) << "mediaEngineError(" << (void*)this << ", " << static_cast<int>(err->code()) << ")";
 
     // 1 - The user agent should cancel the fetching process.
@@ -2029,7 +2029,7 @@ ScriptPromise HTMLMediaElement::playForBindings(ScriptState* scriptState)
             message = "The element has no supported sources.";
             break;
         default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
         }
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(code.get(), message));
     }
@@ -2156,14 +2156,14 @@ void HTMLMediaElement::pauseInternal()
 
 void HTMLMediaElement::requestRemotePlayback()
 {
-    ASSERT(m_remoteRoutesAvailable);
+    DCHECK(m_remoteRoutesAvailable);
     webMediaPlayer()->requestRemotePlayback();
     Platform::current()->recordAction(UserMetricsAction("Media_RequestRemotePlayback"));
 }
 
 void HTMLMediaElement::requestRemotePlaybackControl()
 {
-    ASSERT(m_remoteRoutesAvailable);
+    DCHECK(m_remoteRoutesAvailable);
     webMediaPlayer()->requestRemotePlaybackControl();
     Platform::current()->recordAction(UserMetricsAction("Media_RequestRemotePlayback_Control"));
 }
@@ -2346,14 +2346,14 @@ void HTMLMediaElement::togglePlayState()
 
 AudioTrackList& HTMLMediaElement::audioTracks()
 {
-    ASSERT(RuntimeEnabledFeatures::audioVideoTracksEnabled());
+    DCHECK(RuntimeEnabledFeatures::audioVideoTracksEnabled());
     return *m_audioTracks;
 }
 
 void HTMLMediaElement::audioTrackChanged(WebMediaPlayer::TrackId trackId, bool enabled)
 {
     DVLOG(MEDIA_LOG_LEVEL) << "audioTrackChanged(" << (void*)this << ") trackId= " << trackId << " enabled=" << boolString(enabled);
-    ASSERT(RuntimeEnabledFeatures::audioVideoTracksEnabled());
+    DCHECK(RuntimeEnabledFeatures::audioVideoTracksEnabled());
 
     audioTracks().scheduleChangeEvent();
 
@@ -2402,14 +2402,14 @@ void HTMLMediaElement::removeAudioTrack(WebMediaPlayer::TrackId trackId)
 
 VideoTrackList& HTMLMediaElement::videoTracks()
 {
-    ASSERT(RuntimeEnabledFeatures::audioVideoTracksEnabled());
+    DCHECK(RuntimeEnabledFeatures::audioVideoTracksEnabled());
     return *m_videoTracks;
 }
 
 void HTMLMediaElement::selectedVideoTrackChanged(WebMediaPlayer::TrackId* selectedTrackId)
 {
     DVLOG(MEDIA_LOG_LEVEL) << "selectedVideoTrackChanged(" << (void*)this << ") selectedTrackId=" << (selectedTrackId ? String::format("%u", *selectedTrackId) : "none");
-    ASSERT(RuntimeEnabledFeatures::audioVideoTracksEnabled());
+    DCHECK(RuntimeEnabledFeatures::audioVideoTracksEnabled());
 
     if (selectedTrackId)
         videoTracks().trackSelected(*selectedTrackId);
@@ -2964,7 +2964,7 @@ void HTMLMediaElement::sizeChanged()
 {
     DVLOG(MEDIA_LOG_LEVEL) << "sizeChanged(" << (void*)this << ")";
 
-    ASSERT(hasVideo()); // "resize" makes no sense absent video.
+    DCHECK(hasVideo()); // "resize" makes no sense in absence of video.
     if (m_readyState > HAVE_NOTHING && isHTMLVideoElement())
         scheduleEvent(EventTypeNames::resize);
 
@@ -3043,7 +3043,7 @@ bool HTMLMediaElement::endedPlayback(LoopCondition loopCondition) const
 
     // or the current playback position is the earliest possible position and the direction
     // of playback is backwards
-    ASSERT(getDirectionOfPlayback() == Backward);
+    DCHECK_EQ(getDirectionOfPlayback(), Backward);
     return now <= 0;
 }
 
@@ -3181,7 +3181,7 @@ void HTMLMediaElement::stop()
 
     // Ensure that hasPendingActivity() is not preventing garbage collection, since otherwise this
     // media element will simply leak.
-    ASSERT(!hasPendingActivity());
+    DCHECK(!hasPendingActivity());
 }
 
 bool HTMLMediaElement::hasPendingActivity() const
@@ -3281,19 +3281,19 @@ bool HTMLMediaElement::textTracksVisible() const
 
 static void assertShadowRootChildren(ShadowRoot& shadowRoot)
 {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     // There can be up to two children, either or both of the text
     // track container and media controls. If both are present, the
     // text track container must be the first child.
     unsigned numberOfChildren = shadowRoot.countChildren();
-    ASSERT(numberOfChildren <= 2);
+    DCHECK_LE(numberOfChildren, 2u);
     Node* firstChild = shadowRoot.firstChild();
     Node* lastChild = shadowRoot.lastChild();
     if (numberOfChildren == 1) {
-        ASSERT(firstChild->isTextTrackContainer() || firstChild->isMediaControls());
+        DCHECK(firstChild->isTextTrackContainer() || firstChild->isMediaControls());
     } else if (numberOfChildren == 2) {
-        ASSERT(firstChild->isTextTrackContainer());
-        ASSERT(lastChild->isMediaControls());
+        DCHECK(firstChild->isTextTrackContainer());
+        DCHECK(lastChild->isMediaControls());
     }
 #endif
 }
@@ -3341,7 +3341,7 @@ void HTMLMediaElement::setTextTrackKindUserPreferenceForAllMediaElements(Documen
     auto it = documentToElementSetMap().find(document);
     if (it == documentToElementSetMap().end())
         return;
-    ASSERT(it->value);
+    DCHECK(it->value);
     WeakMediaElementSet& elements = *it->value;
     for (const auto& element : elements)
         element->automaticTrackSelectionForUpdatedUserPreference();
@@ -3476,7 +3476,7 @@ CueTimeline& HTMLMediaElement::cueTimeline()
 
 void HTMLMediaElement::configureTextTrackDisplay()
 {
-    ASSERT(m_textTracks);
+    DCHECK(m_textTracks);
     DVLOG(MEDIA_LOG_LEVEL) << "configureTextTrackDisplay(" << (void*)this << ")";
 
     if (m_processingPreferenceChange)
@@ -3530,7 +3530,7 @@ void HTMLMediaElement::resetMediaPlayerAndMediaSource()
 
 void HTMLMediaElement::setAudioSourceNode(AudioSourceProviderClient* sourceNode)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     m_audioSourceNode = sourceNode;
 
     AudioSourceProviderClientLockScope scope(*this);
@@ -3742,7 +3742,7 @@ void HTMLMediaElement::rejectPlayPromises()
     // TODO(mlamouri): the message is generated based on the code because
     // arguments can't be passed to a cancellable task. In order to save space
     // used by the object, the string isn't saved.
-    ASSERT(m_playPromiseErrorCode == AbortError || m_playPromiseErrorCode == NotSupportedError);
+    DCHECK(m_playPromiseErrorCode == AbortError || m_playPromiseErrorCode == NotSupportedError);
     if (m_playPromiseErrorCode == AbortError)
         rejectPlayPromises(AbortError, "The play() request was interrupted by a call to pause().");
     else
@@ -3751,7 +3751,7 @@ void HTMLMediaElement::rejectPlayPromises()
 
 void HTMLMediaElement::rejectPlayPromises(ExceptionCode code, const String& message)
 {
-    ASSERT(code == AbortError || code == NotSupportedError);
+    DCHECK(code == AbortError || code == NotSupportedError);
 
     for (auto& resolver: m_playResolvers)
         resolver->reject(DOMException::create(code, message));
@@ -3794,7 +3794,7 @@ void HTMLMediaElement::AudioSourceProviderImpl::setClient(AudioSourceProviderCli
 
 void HTMLMediaElement::AudioSourceProviderImpl::provideInput(AudioBus* bus, size_t framesToProcess)
 {
-    ASSERT(bus);
+    DCHECK(bus);
 
     MutexTryLocker tryLocker(provideInputLock);
     if (!tryLocker.locked() || !m_webAudioSourceProvider || !m_client.get()) {

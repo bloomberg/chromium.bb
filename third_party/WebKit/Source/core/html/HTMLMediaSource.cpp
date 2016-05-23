@@ -36,7 +36,7 @@ URLRegistry* HTMLMediaSource::s_registry = 0;
 
 void HTMLMediaSource::setRegistry(URLRegistry* registry)
 {
-    ASSERT(!s_registry);
+    DCHECK(!s_registry);
     s_registry = registry;
 }
 
