@@ -160,6 +160,17 @@ fi
 # We're on POSIX. We can now safely look for svn checkout.
 if [ "X$DEPOT_TOOLS_UPDATE" != "X0" -a -e "$base_dir/.svn" ]
 then
+  echo "========================"
+  echo "WARNING: You have an SVN checkout of depot_tools!"
+  echo
+  echo "depot_tools is migrating to Git on June 6, 2016. If you still have an"
+  echo "SVN checkout then, you will STOP RECEIVING UPDATES to depot_tools."
+  echo
+  echo "Before that date, please follow the instructions here[1] to get a Git"
+  echo "copy of depot_tools."
+  echo
+  echo "[1]: https://www.chromium.org/developers/how-tos/install-depot-tools"
+  echo "========================"
   # Update the root directory to stay up-to-date with the latest depot_tools.
   BEFORE_REVISION=$(get_svn_revision)
   if echo $* | grep -e --force > /dev/null; then

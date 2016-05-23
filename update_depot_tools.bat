@@ -38,6 +38,17 @@ goto :EOF
 
 
 :SVN_UPDATE
+echo ========================
+echo WARNING: You have an SVN checkout of depot_tools!
+echo.
+echo depot_tools is migrating to Git on June 6, 2016. If you still have an
+echo SVN checkout then, you will STOP RECEIVING UPDATES to depot_tools.
+echo.
+echo Before that date, please follow the instructions here[1] to get a Git
+echo copy of depot_tools.
+echo.
+echo [1]: https://www.chromium.org/developers/how-tos/install-depot-tools
+echo ========================
 FOR %%A IN (%*) DO (
   IF "%%A" == "--force" (
     call svn -q revert -R "%DEPOT_TOOLS_DIR%."
