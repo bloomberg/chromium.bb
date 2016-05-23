@@ -54,7 +54,9 @@ public final class DistillablePageUtils {
     @CalledByNative
     private static void callOnIsPageDistillableUpdate(
             PageDistillableDelegate delegate, boolean isDistillable, boolean isLast) {
-        delegate.onIsPageDistillableResult(isDistillable, isLast);
+        if (delegate != null) {
+            delegate.onIsPageDistillableResult(isDistillable, isLast);
+        }
     }
 
     private static native void nativeSetDelegate(
