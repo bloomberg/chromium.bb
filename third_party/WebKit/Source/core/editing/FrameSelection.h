@@ -47,6 +47,7 @@ class CharacterData;
 class CullRect;
 class LayoutBlock;
 class LocalFrame;
+class FrameCaret;
 class GranularityStrategy;
 class GraphicsContext;
 class HTMLFormElement;
@@ -181,15 +182,15 @@ public:
     void commitAppearanceIfNeeded(LayoutView&);
     void updateAppearance();
     void setCaretVisible(bool caretIsVisible);
-    bool isCaretBoundsDirty() const { return m_caretRectDirty; }
+    bool isCaretBoundsDirty() const;
     void setCaretRectNeedsUpdate();
     void scheduleVisualUpdate() const;
     void invalidateCaretRect();
     void paintCaret(GraphicsContext&, const LayoutPoint&);
 
     // Used to suspend caret blinking while the mouse is down.
-    void setCaretBlinkingSuspended(bool suspended) { m_isCaretBlinkingSuspended = suspended; }
-    bool isCaretBlinkingSuspended() const { return m_isCaretBlinkingSuspended; }
+    void setCaretBlinkingSuspended(bool);
+    bool isCaretBlinkingSuspended() const;
 
     // Focus
     void setFocused(bool);
@@ -271,9 +272,6 @@ private:
 
     void focusedOrActiveStateChanged();
 
-    void caretBlinkTimerFired(Timer<FrameSelection>*);
-    void stopCaretBlinkTimer();
-
     void setUseSecureKeyboardEntry(bool);
 
     void setCaretVisibility(CaretVisibility);
@@ -287,8 +285,8 @@ private:
     GranularityStrategy* granularityStrategy();
 
     // For unittests
-    bool shouldPaintCaretForTesting() const { return m_shouldPaintCaret; }
-    bool isPreviousCaretDirtyForTesting() const { return m_previousCaretNode; }
+    bool shouldPaintCaretForTesting() const;
+    bool isPreviousCaretDirtyForTesting() const;
 
     Member<LocalFrame> m_frame;
     const Member<PendingSelection> m_pendingSelection;
@@ -300,24 +298,15 @@ private:
     TextGranularity m_granularity;
     LayoutUnit m_xPosForVerticalArrowNavigation;
 
-    Member<Node> m_previousCaretNode; // The last node which painted the caret. Retained for clearing the old caret when it moves.
-    LayoutRect m_previousCaretRect;
-    CaretVisibility m_previousCaretVisibility;
-
     Member<EditingStyle> m_typingStyle;
 
-    Timer<FrameSelection> m_caretBlinkTimer;
-
-    bool m_caretRectDirty : 1;
-    bool m_shouldPaintCaret : 1;
-    bool m_isCaretBlinkingSuspended : 1;
     bool m_focused : 1;
     bool m_shouldShowBlockCursor : 1;
 
     // Controls text granularity used to adjust the selection's extent in moveRangeSelectionExtent.
     OwnPtr<GranularityStrategy> m_granularityStrategy;
 
-    OwnPtr<CaretBase> m_caretBase;
+    const Member<FrameCaret> m_frameCaret;
 };
 
 inline EditingStyle* FrameSelection::typingStyle() const

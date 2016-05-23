@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2008, 2009, 2010 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,40 +23,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DragCaretController_h
-#define DragCaretController_h
-
-#include "core/editing/CaretBase.h"
+#include "core/editing/FrameCaret.h"
 
 namespace blink {
 
-class DragCaretController final : public GarbageCollectedFinalized<DragCaretController> {
-    WTF_MAKE_NONCOPYABLE(DragCaretController);
-public:
-    static DragCaretController* create();
+FrameCaret::FrameCaret(LocalFrame* frame)
+    : m_frame(frame)
+    , m_previousCaretVisibility(CaretVisibility::Hidden)
+    , m_caretBlinkTimer(this, &FrameCaret::caretBlinkTimerFired)
+    , m_caretRectDirty(true)
+    , m_shouldPaintCaret(true)
+    , m_isCaretBlinkingSuspended(false)
+{
+    DCHECK(frame);
+}
 
-    LayoutBlock* caretLayoutObject() const;
-    void paintDragCaret(LocalFrame*, GraphicsContext&, const LayoutPoint&) const;
+FrameCaret::~FrameCaret() = default;
 
-    bool isContentEditable() const;
-    bool isContentRichlyEditable() const;
+DEFINE_TRACE(FrameCaret)
+{
+    visitor->trace(m_frame);
+    visitor->trace(m_previousCaretNode);
+    CaretBase::trace(visitor);
+}
 
-    bool hasCaret() const { return m_position.isNotNull(); }
-    const VisiblePosition& caretPosition() { return m_position; }
-    void setCaretPosition(const PositionWithAffinity&);
-    void clear() { setCaretPosition(PositionWithAffinity()); }
-
-    void nodeWillBeRemoved(Node&);
-
-    DECLARE_TRACE();
-
-private:
-    DragCaretController();
-
-    VisiblePosition m_position;
-    const Member<CaretBase> m_caretBase;
-};
-
-} // namespace blink
-
-#endif // DragCaretController_h
+} // nemaspace blink

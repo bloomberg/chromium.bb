@@ -1468,6 +1468,8 @@
             'editing/EditorKeyBindings.cpp',
             'editing/EphemeralRange.cpp',
             'editing/EphemeralRange.h',
+            'editing/FrameCaret.cpp',
+            'editing/FrameCaret.h',
             'editing/FrameSelection.cpp',
             'editing/GranularityStrategy.cpp',
             'editing/InputMethodController.cpp',

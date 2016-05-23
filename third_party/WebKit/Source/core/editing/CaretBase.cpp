@@ -43,6 +43,12 @@ CaretBase::CaretBase(CaretVisibility visibility)
 {
 }
 
+CaretBase::~CaretBase() = default;
+
+DEFINE_TRACE(CaretBase)
+{
+}
+
 void CaretBase::clearCaretRect()
 {
     m_caretLocalRect = LayoutRect();
