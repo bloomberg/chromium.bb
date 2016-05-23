@@ -79,8 +79,8 @@ class DiskCachePerfTest : public DiskCacheTestWithCache {
   const size_t kFdLimitForCacheTests = 8192;
 
   const int kNumEntries = 1000;
-  const int kHeadersSize = 200;
-  const int kBodySize = 16 * 1024 - 1;
+  const int kHeadersSize = 800;
+  const int kBodySize = 256 * 1024 - 1;
 
   std::vector<TestEntry> entries_;
 
@@ -88,9 +88,14 @@ class DiskCachePerfTest : public DiskCacheTestWithCache {
   const size_t saved_fd_limit_;
 };
 
-// Creates num_entries on the cache, and writes 200 bytes of metadata and up
-// to kBodySize of data to each entry.
+// Creates num_entries on the cache, and writes kHeaderSize bytes of metadata
+// and up to kBodySize of data to each entry.
 bool DiskCachePerfTest::TimeWrite() {
+  // TODO(gavinp): This test would be significantly more realistic if it didn't
+  // do single reads and writes. Perhaps entries should be written 64kb at a
+  // time. As well, not all entries should be created and written essentially
+  // simultaneously; some number of entries in flight at a time would be a
+  // likely better testing load.
   scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kHeadersSize));
   scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kBodySize));
 
