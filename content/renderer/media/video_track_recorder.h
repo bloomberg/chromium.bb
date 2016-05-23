@@ -32,9 +32,7 @@ class CONTENT_EXPORT VideoTrackRecorder
   enum class CodecId {
     VP8,
     VP9,
-#if BUILDFLAG(RTC_USE_H264)
     H264,
-#endif
   };
   class Encoder;
 

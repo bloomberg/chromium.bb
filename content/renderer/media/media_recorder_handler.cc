@@ -40,10 +40,8 @@ media::VideoCodec CodecIdToMediaVideoCodec(VideoTrackRecorder::CodecId id) {
       return media::kCodecVP8;
     case VideoTrackRecorder::CodecId::VP9:
       return media::kCodecVP8;
-#if BUILDFLAG(RTC_USE_H264)
     case VideoTrackRecorder::CodecId::H264:
       return media::kCodecH264;
-#endif
   }
   NOTREACHED() << "Unsupported codec";
   return media::kUnknownVideoCodec;
