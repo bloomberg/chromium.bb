@@ -84,6 +84,7 @@ class SandwichRunner(object):
   using the PullConfigFromArgs() method. The only job is to make sure that the
   command line flags have `dest` parameter set to existing runner members.
   """
+  _ATTEMPT_COUNT = 3
 
   def __init__(self):
     """Configures a sandwich runner out of the box.
@@ -224,17 +225,32 @@ class SandwichRunner(object):
       trace.ToJsonFile(trace_path)
 
   def _RunUrl(self, url, run_id):
-    self._chrome_ctl.ResetBrowserState()
-    clear_cache = False
-    if self.cache_operation == 'clear':
-      clear_cache = True
-    elif self.cache_operation == 'push':
-      self._chrome_ctl.PushBrowserCache(self._local_cache_directory_path)
-    elif self.cache_operation == 'reload':
-      self._RunNavigation(url, clear_cache=True)
-    elif self.cache_operation == 'save':
-      clear_cache = run_id == 0
-    self._RunNavigation(url, clear_cache=clear_cache, run_id=run_id)
+    for attempt_id in xrange(self._ATTEMPT_COUNT):
+      try:
+        self._chrome_ctl.ResetBrowserState()
+        clear_cache = False
+        if self.cache_operation == 'clear':
+          clear_cache = True
+        elif self.cache_operation == 'push':
+          self._chrome_ctl.PushBrowserCache(self._local_cache_directory_path)
+        elif self.cache_operation == 'reload':
+          self._RunNavigation(url, clear_cache=True)
+        elif self.cache_operation == 'save':
+          clear_cache = run_id == 0
+        self._RunNavigation(url, clear_cache=clear_cache, run_id=run_id)
+        break
+      except controller.ChromeControllerError as error:
+        if not error.IsIntermittent():
+          raise
+        if self.trace_output_directory is not None:
+          dump_path = os.path.join(self.trace_output_directory, str(run_id),
+                                   'error{}'.format(attempt_id))
+          with open(dump_path, 'w') as dump_output:
+            error.Dump(dump_output)
+    else:
+      logging.error('Failed to navigate to %s after %d attemps' % \
+                    (url, self._ATTEMPT_COUNT))
+      raise
 
   def _PullCacheFromDevice(self):
     assert self.cache_operation == 'save'
