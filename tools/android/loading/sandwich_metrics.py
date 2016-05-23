@@ -57,6 +57,8 @@ CSV_FIELD_NAMES = [
 
 _UNAVAILABLE_CSV_VALUE = 'unavailable'
 
+_FAILED_CSV_VALUE = 'failed'
+
 _TRACKED_EVENT_NAMES = set(['requestStart', 'loadEventStart', 'loadEventEnd'])
 
 # Points of a completeness record.
@@ -305,8 +307,13 @@ def _ExtractMetricsFromRunDirectory(benchmark_setup, run_directory_path):
   video_path = os.path.join(run_directory_path, 'video.mp4')
   if os.path.isfile(video_path):
     logging.info('processing speed-index video \'%s\'' % video_path)
-    completeness_record = _ExtractCompletenessRecordFromVideo(video_path)
-    run_metrics['speed_index'] = ComputeSpeedIndex(completeness_record)
+    try:
+      completeness_record = _ExtractCompletenessRecordFromVideo(video_path)
+      run_metrics['speed_index'] = ComputeSpeedIndex(completeness_record)
+    except video.BoundingBoxNotFoundException:
+      # Sometimes the bounding box for the web content area is not present. Skip
+      # calculating Speed Index.
+      run_metrics['speed_index'] = _FAILED_CSV_VALUE
   else:
     run_metrics['speed_index'] = _UNAVAILABLE_CSV_VALUE
   for key, value in loading_trace.metadata['network_emulation'].iteritems():
