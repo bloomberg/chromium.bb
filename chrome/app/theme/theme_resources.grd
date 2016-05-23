@@ -19,10 +19,8 @@
     <output filename="theme_resources_100_percent.pak" type="data_package" context="default_100_percent" />
     <output filename="theme_resources_200_percent.pak" type="data_package" context="default_200_percent" />
     <output filename="theme_resources_300_percent.pak" type="data_package" context="default_300_percent" />
-    <if expr="is_macosx">
-      <output filename="theme_resources_material_100_percent.pak" type="data_package" context="material_100_percent" fallback_to_default_layout="false" />
-      <output filename="theme_resources_material_200_percent.pak" type="data_package" context="material_200_percent" fallback_to_default_layout="false" />
-    </if>
+    <output filename="theme_resources_material_100_percent.pak" type="data_package" context="material_100_percent" fallback_to_default_layout="false" />
+    <output filename="theme_resources_material_200_percent.pak" type="data_package" context="material_200_percent" fallback_to_default_layout="false" />
   </outputs>
   <release seq="1">
     <structures fallback_to_low_resolution="true">
@@ -119,16 +117,18 @@
         <structure type="chrome_scaled_image" name="IDR_BLUETOOTH_PAIRING_TICK" file="cros/bluetooth_pairing_tick.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_BOOKMARKS_FAVICON" file="common/favicon_bookmarks.png" />
+      <if expr="is_macosx">
+        <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_CHEVRONS" file="legacy/chevron.png" />
+      </if>
       <if expr="is_macosx or is_ios">
         <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER" file="mac/bookmark_bar_folder.png" />
         <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER_MANAGED" file="mac/bookmark_bar_folder_managed.png" />
         <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER_SUPERVISED" file="mac/bookmark_bar_folder_supervised.png" />
-      </if>
-      <if expr="is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_CHEVRONS" file="legacy/chevron.png" />
-        <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER_WHITE" file="mac/bookmark_bar_folder_white.png" />
-        <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER_MANAGED_WHITE" file="mac/bookmark_bar_folder_managed_white.png" />
-        <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER_SUPERVISED_WHITE" file="mac/bookmark_bar_folder_supervised_white.png" />
+        <if expr="enable_topchrome_md">
+          <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER_WHITE" file="mac/bookmark_bar_folder_white.png" />
+          <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER_MANAGED_WHITE" file="mac/bookmark_bar_folder_managed_white.png" />
+          <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER_SUPERVISED_WHITE" file="mac/bookmark_bar_folder_supervised_white.png" />
+        </if>
       </if>
       <if expr="not is_macosx and not is_ios">
         <structure type="chrome_scaled_image" name="IDR_BOOKMARK_BAR_FOLDER" file="common/bookmark_bar_folder.png" />
@@ -470,7 +470,7 @@
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_TOP" file="common/omnibox_content_setting_bubble_top.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_TOP_LEFT" file="common/omnibox_content_setting_bubble_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_TOP_RIGHT" file="common/omnibox_content_setting_bubble_top_right.png" />
-      <if expr="toolkit_views">
+      <if expr="enable_topchrome_md">
         <structure type="chrome_scaled_image" name="IDR_OMNIBOX_DROPDOWN_SHADOW_BOTTOM" file="common/omnibox_dropdown_shadow_bottom.png" />
         <structure type="chrome_scaled_image" name="IDR_OMNIBOX_DROPDOWN_SHADOW_TOP" file="common/omnibox_dropdown_shadow_top.png" />
       </if>

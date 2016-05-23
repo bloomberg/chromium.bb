@@ -37,6 +37,9 @@ bool MaterialDesignController::include_secondary_ui_ = false;
 void MaterialDesignController::Initialize() {
   TRACE_EVENT0("startup", "MaterialDesignController::InitializeMode");
   CHECK(!is_mode_initialized_);
+#if !defined(ENABLE_TOPCHROME_MD)
+  SetMode(NON_MATERIAL);
+#else
   const std::string switch_value =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kTopChromeMD);
@@ -58,6 +61,7 @@ void MaterialDesignController::Initialize() {
 
   include_secondary_ui_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kExtendMdToSecondaryUi);
+#endif  // !defined(ENABLE_TOPCHROME_MD)
 }
 
 // static

@@ -350,7 +350,9 @@ if (!is_android) {
     if (is_linux || is_win) {
       data += [
         "$root_out_dir/chrome_100_percent.pak",
+        "$root_out_dir/chrome_material_100_percent.pak",
         "$root_out_dir/chrome_200_percent.pak",
+        "$root_out_dir/chrome_material_200_percent.pak",
         "$root_out_dir/locales/en-US.pak",
         "$root_out_dir/locales/fr.pak",
       ]
