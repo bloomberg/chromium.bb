@@ -25,9 +25,9 @@ std::mt19937_64 CreateRng(const uint8_t* data, size_t size) {
 }
 
 const icu::Locale& GetRandomLocale(std::mt19937_64* rng) {
-  int32_t num_locales;
-  assert(num_locales > 0);
+  int32_t num_locales = 0;
   const icu::Locale* locales = icu::Locale::getAvailableLocales(num_locales);
+  assert(num_locales > 0);
   return locales[(*rng)() % num_locales];
 }
 
