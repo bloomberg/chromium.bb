@@ -295,21 +295,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'tex-2d-rgba8-rgba-unsigned_byte.html',
         ['win', 'debug'], bug=542901)
 
-    # This test actually passes from time to time.
-    self.Fail('deqp/functional/gles3/texturefiltering/cube_sizes_00.html',
-        ['win'], bug=606021)
-    # More intermittently flaky.
-    self.Fail('deqp/functional/gles3/texturefiltering/cube_sizes_03.html',
-        ['win'], bug=606021)
-
-    # Win / Release.
-    self.Fail(
-        'deqp/functional/gles3/texturefiltering/cube_combinations_01.html',
-        ['win', 'release'], bug=607393)
-    self.Fail(
-        'deqp/functional/gles3/texturefiltering/cube_combinations_05.html',
-        ['win', 'release'], bug=607393)
-
     # Win / AMD
     # It's unfortunate that this suppression needs to be so broad, but
     # basically any test that uses readPixels is potentially flaky, and
@@ -468,10 +453,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux'], bug=483282)
     self.Fail('conformance2/rendering/draw-buffers.html',
         ['linux'], bug=483282)
-    self.Fail('deqp/functional/gles3/texturefiltering/cube_sizes_00.html',
-        ['linux'], bug=606021)
-    self.Flaky('deqp/functional/gles3/texturefiltering/cube_sizes_03.html',
-        ['linux'], bug=606021)
 
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
         ['linux', 'amd', 'intel'], bug=483282)
