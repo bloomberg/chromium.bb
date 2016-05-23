@@ -711,14 +711,14 @@ class GclientTest(trial_dir.TestCase):
     obj.RunOnDeps('None', [])
     self.assertEquals(
         [
-          'svn://example.com/foo',
           'svn://example.com/bar',
-          'svn://example.com/tar',
+          'svn://example.com/foo',
           'svn://example.com/foo/bar',
           'svn://example.com/foo/bar/baz',
           'svn://example.com/foo/bar/baz/fizz',
+          'svn://example.com/tar',
         ],
-        self._get_processed())
+        sorted(self._get_processed()))
 
   def testRecursedepsOverrideWithRelativePaths(self):
     """Verifies gclient respects |recursedeps| with relative paths."""

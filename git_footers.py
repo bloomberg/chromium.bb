@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import argparse
+import json
 import re
 import sys
 
@@ -163,7 +164,8 @@ def main(args):
   parser = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter
   )
-  parser.add_argument('ref')
+  parser.add_argument('ref', nargs='?', help="Git ref to retrieve footers from."
+                      " Omit to parse stdin.")
 
   g = parser.add_mutually_exclusive_group()
   g.add_argument('--key', metavar='KEY',
@@ -172,11 +174,16 @@ def main(args):
   g.add_argument('--position', action='store_true')
   g.add_argument('--position-ref', action='store_true')
   g.add_argument('--position-num', action='store_true')
+  g.add_argument('--json', help="filename to dump JSON serialized headers to.")
 
 
   opts = parser.parse_args(args)
 
-  message = git.run('log', '-1', '--format=%B', opts.ref)
+  if opts.ref:
+    message = git.run('log', '-1', '--format=%B', opts.ref)
+  else:
+    message = '\n'.join(l for l in sys.stdin)
+
   footers = parse_footers(message)
 
   if opts.key:
@@ -191,6 +198,9 @@ def main(args):
     pos = get_position(footers)
     assert pos[1], 'No valid position for commit'
     print pos[1]
+  elif opts.json:
+    with open(opts.json, 'w') as f:
+      json.dump(footers, f)
   else:
     for k in footers.keys():
       for v in footers[k]:

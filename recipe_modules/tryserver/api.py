@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections
 import contextlib
 import hashlib
 
@@ -278,3 +279,33 @@ class TryserverApi(recipe_api.RecipeApi):
           failure_hash.hexdigest()
 
       raise
+
+  def get_footers(self, patch_text=None):
+    """Retrieves footers from the patch description.
+
+    footers are machine readable tags embedded in commit messages. See
+    git-footers documentation for more information.
+    """
+    if patch_text is None:
+      codereview = None
+      if not self.can_apply_issue: #pragma: no cover
+        raise recipe_api.StepFailure("Cannot get tags from gerrit yet.")
+      else:
+        codereview = 'rietveld'
+        patch = (
+            self.m.properties['rietveld'].strip('/') + '/' +
+            str(self.m.properties['issue']))
+
+      patch_text = self.m.git_cl.get_description(
+          patch=patch, codereview=codereview).stdout
+
+    result = self.m.python(
+        'parse description', self.package_repo_resource('git_footers.py'),
+        args=['--json', self.m.json.output()],
+        stdin=self.m.raw_io.input(data=patch_text))
+    return result.json.output
+
+  def get_footer(self, tag, patch_text=None):
+    """Gets a specific tag from a CL description"""
+    return self.get_footers(patch_text).get(tag, [])
+

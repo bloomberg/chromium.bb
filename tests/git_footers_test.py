@@ -3,14 +3,17 @@
 """Tests for git_footers."""
 
 import os
+import StringIO
 import sys
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from testing_support.auto_stub import TestCase
+
 import git_footers
 
-class GitFootersTest(unittest.TestCase):
+class GitFootersTest(TestCase):
   _message = """
 This is my commit message. There are many like it, but this one is mine.
 
@@ -103,6 +106,17 @@ My commit message is my best friend. It is my life. I must master it.
     self.assertEqual(
         git_footers.add_footer_change_id('header: like footer', 'Ixxx'),
         'header: like footer\n\nChange-Id: Ixxx')
+
+  def testReadStdin(self):
+    self.mock(git_footers.sys, 'stdin', StringIO.StringIO(
+        'line\r\notherline\r\n\r\n\r\nFoo: baz'))
+
+    stdout = StringIO.StringIO()
+    self.mock(git_footers.sys, 'stdout', stdout)
+
+    self.assertEqual(git_footers.main([]), 0)
+    self.assertEqual(stdout.getvalue(), "Foo: baz\n")
+
 
 
 if __name__ == '__main__':

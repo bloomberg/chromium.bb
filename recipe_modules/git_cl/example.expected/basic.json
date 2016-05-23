@@ -2,10 +2,25 @@
   {
     "cmd": [
       "RECIPE_PACKAGE_REPO[depot_tools]/git_cl.py",
-      "-d"
+      "description",
+      "-d",
+      "--rietveld",
+      "https://code.review/123"
     ],
-    "cwd": "[TMP_BASE]/fakee_tmp_1",
-    "name": "git_cl description",
+    "name": "git_cl description (build)",
+    "stdout": "/path/to/tmp/"
+  },
+  {
+    "cmd": [
+      "RECIPE_PACKAGE_REPO[depot_tools]/git_cl.py",
+      "description",
+      "-n",
+      "-",
+      "https://code.review/123",
+      "--rietveld"
+    ],
+    "name": "git_cl set description",
+    "stdin": "bammmm",
     "stdout": "/path/to/tmp/"
   },
   {
@@ -18,10 +33,11 @@
   {
     "cmd": [
       "RECIPE_PACKAGE_REPO[depot_tools]/git_cl.py",
+      "description",
       "-d"
     ],
-    "cwd": "[TMP_BASE]/fakerepo_tmp_2",
-    "name": "git_cl description (2)",
+    "cwd": "[TMP_BASE]/fakerepo_tmp_1",
+    "name": "git_cl description",
     "stdout": "/path/to/tmp/"
   },
   {
@@ -34,21 +50,23 @@
   {
     "cmd": [
       "RECIPE_PACKAGE_REPO[depot_tools]/git_cl.py",
+      "description",
       "-n",
       "-"
     ],
-    "cwd": "[TMP_BASE]/fakerepo_tmp_2",
-    "name": "git_cl set description",
+    "cwd": "[TMP_BASE]/fakerepo_tmp_1",
+    "name": "git_cl set description (2)",
     "stdin": "new description woo",
     "stdout": "/path/to/tmp/"
   },
   {
     "cmd": [
       "RECIPE_PACKAGE_REPO[depot_tools]/git_cl.py",
+      "description",
       "-d"
     ],
-    "cwd": "[TMP_BASE]/fakerepo_tmp_2",
-    "name": "git_cl description (3)",
+    "cwd": "[TMP_BASE]/fakerepo_tmp_1",
+    "name": "git_cl description (2)",
     "stdout": "/path/to/tmp/"
   },
   {
