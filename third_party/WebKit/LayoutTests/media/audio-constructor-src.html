@@ -1,17 +1,18 @@
-<body>
-<p>Test that Audio("url") constructor loads the specified resource.</p>
-<script src=media-file.js></script>
-<!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=video-test.js></script>
+<!DOCTYPE html>
+<title>Test that Audio("url") constructor loads the specified resource.</title>
+<script src="media-file.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 <script>
+async_test(function(t) {
     var audioFile = findMediaFile("audio", "content/test");
     var audio = new Audio(audioFile);
-    mediaElement = audio;
 
-    testExpected("audio instanceof HTMLAudioElement", true);
+    audio.onloadstart = t.step_func(function () {
+        var url = audio.currentSrc;
+        assert_equals(url.substr(url.lastIndexOf("/media/")+7), audioFile);
+    });
 
-    waitForEvent("loadstart", function () { testExpected("relativeURL(audio.currentSrc)", audioFile); });
-
-    waitForEventAndEnd("canplaythrough");
+    audio.oncanplaythrough = t.step_func_done();
+});
 </script>

@@ -1,41 +1,22 @@
-<html>
-    <head>
-        <script src=media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
+<!DOCTYPE html>
+<title>Test that Audio() sets "preload" attribute.</title>
+<script src="media-file.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+async_test(function(t) {
+    var audio = new Audio();
 
-        <script>
+    // Test initial attribute value.
+    assert_equals(audio.getAttribute("preload"), "auto");
+    assert_equals(audio.preload, "auto");
 
-            function canplaythrough()
-            {
-                consoleWrite("++ Test after 'canplaythrough' event");
-                testExpected("mediaElement.getAttribute('preload')", "auto");
-                testExpected("mediaElement.preload", "auto");
-                endTest();
-            }
+    audio.oncanplaythrough = t.step_func_done(function() {
+        assert_equals(audio.getAttribute("preload"), "auto");
+        assert_equals(audio.preload, "auto");
+    });
 
-            function start()
-            {
-                run("mediaElement = new Audio()");
-                consoleWrite("");
-
-                consoleWrite("++ Test initial attribute value");
-                testExpected("mediaElement.getAttribute('preload')", "auto");
-                testExpected("mediaElement.preload", "auto");
-                consoleWrite("");
-
-                mediaElement.addEventListener("canplaythrough", canplaythrough);
-                run("mediaElement.src = '" + findMediaFile("audio", "content/test") + "'");
-                run("mediaElement.load()");
-
-                consoleWrite("");
-            }
-
-        </script>
-    </head>
-
-    <body onload="start()">
-        <p>Test that Audio() sets 'preload' attribute.</p>
-    </body>
-</html>
+    audio.src = findMediaFile("audio", "content/test");
+    audio.load();
+});
+</script>

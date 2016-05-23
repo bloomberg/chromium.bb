@@ -1,22 +1,21 @@
-<body>
-<p>Test that Audio() object loads the resource after src attribute is set and load() is called.</p>
-
-<script src=media-file.js></script>
-<!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=video-test.js></script>
-
+<!DOCTYPE html>
+<title>Test that Audio() object loads the resource after src attribute is set and load() is called.</title>
+<script src="media-file.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 <script>
+async_test(function(t) {
     var audio = new Audio();
-    mediaElement = audio;
 
-    testExpected("audio instanceof HTMLAudioElement", true);
+    var audioFile = findMediaFile("audio", "content/test");
+    audio.src = audioFile;
+    audio.onloadstart = t.step_func(function () {
+        var url = audio.currentSrc;
+        assert_equals(url.substr(url.lastIndexOf("/media/")+7), audioFile);
+    });
 
-    var mediaFile = findMediaFile("audio", "content/test");
-    waitForEvent("loadstart", function () { testExpected("relativeURL(audio.currentSrc)", mediaFile); });
+    audio.oncanplaythrough = t.step_func_done();
 
-    waitForEventAndEnd("canplaythrough");
-
-    audio.src = mediaFile;
-    run("audio.load()");
+    audio.load();
+});
 </script>
