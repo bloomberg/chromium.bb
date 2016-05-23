@@ -61,6 +61,7 @@ class ASH_EXPORT WmGlobalsAura : public WmGlobals,
                          aura::Window* lost_active) override;
 
   // WindowTreeHostManager::Observer:
+  void OnDisplayConfigurationChanging() override;
   void OnDisplayConfigurationChanged() override;
 
   // ShellObserver:

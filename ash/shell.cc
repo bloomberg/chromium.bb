@@ -1025,7 +1025,8 @@ void Shell::Init(const ShellInitParams& init_params) {
   event_transformation_handler_.reset(new EventTransformationHandler);
   AddPreTargetHandler(event_transformation_handler_.get());
 
-  toplevel_window_event_handler_.reset(new ToplevelWindowEventHandler);
+  toplevel_window_event_handler_.reset(
+      new ToplevelWindowEventHandler(wm_globals_.get()));
 
   system_gesture_filter_.reset(new SystemGestureEventFilter);
   AddPreTargetHandler(system_gesture_filter_.get());

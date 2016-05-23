@@ -6,6 +6,7 @@
 
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf_util.h"
+#include "ash/shell.h"
 #include "ash/wm/aura/aura_layout_manager_adapter.h"
 #include "ash/wm/aura/wm_globals_aura.h"
 #include "ash/wm/aura/wm_root_window_controller_aura.h"
@@ -13,6 +14,7 @@
 #include "ash/wm/common/wm_layout_manager.h"
 #include "ash/wm/common/wm_window_observer.h"
 #include "ash/wm/common/wm_window_property.h"
+#include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_aura.h"
@@ -490,6 +492,20 @@ std::vector<WmWindow*> WmWindowAura::GetChildren() {
 
 WmWindow* WmWindowAura::GetChildByShellWindowId(int id) {
   return Get(window_->GetChildById(id));
+}
+
+void WmWindowAura::ShowResizeShadow(int component) {
+  ResizeShadowController* resize_shadow_controller =
+      Shell::GetInstance()->resize_shadow_controller();
+  if (resize_shadow_controller)
+    resize_shadow_controller->ShowShadow(window_, component);
+}
+
+void WmWindowAura::HideResizeShadow() {
+  ResizeShadowController* resize_shadow_controller =
+      Shell::GetInstance()->resize_shadow_controller();
+  if (resize_shadow_controller)
+    resize_shadow_controller->HideShadow(window_);
 }
 
 void WmWindowAura::SnapToPixelBoundaryIfNecessary() {

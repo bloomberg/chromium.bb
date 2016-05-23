@@ -121,6 +121,8 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   void Minimize() override;
   void Unminimize() override;
   std::vector<WmWindow*> GetChildren() override;
+  void ShowResizeShadow(int component) override;
+  void HideResizeShadow() override;
   void SnapToPixelBoundaryIfNecessary() override;
   void AddObserver(WmWindowObserver* observer) override;
   void RemoveObserver(WmWindowObserver* observer) override;

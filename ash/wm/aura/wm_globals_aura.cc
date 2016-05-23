@@ -166,6 +166,11 @@ void WmGlobalsAura::OnWindowActivated(
                                       WmWindowAura::Get(lost_active)));
 }
 
+void WmGlobalsAura::OnDisplayConfigurationChanging() {
+  FOR_EACH_OBSERVER(WmDisplayObserver, display_observers_,
+                    OnDisplayConfigurationChanging());
+}
+
 void WmGlobalsAura::OnDisplayConfigurationChanged() {
   FOR_EACH_OBSERVER(WmDisplayObserver, display_observers_,
                     OnDisplayConfigurationChanged());

@@ -552,6 +552,14 @@ ash::wm::WmWindow* WmWindowMus::GetChildByShellWindowId(int id) {
   return nullptr;
 }
 
+void WmWindowMus::ShowResizeShadow(int component) {
+  NOTIMPLEMENTED();
+}
+
+void WmWindowMus::HideResizeShadow() {
+  NOTIMPLEMENTED();
+}
+
 void WmWindowMus::SnapToPixelBoundaryIfNecessary() {
   NOTIMPLEMENTED();
 }

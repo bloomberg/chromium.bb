@@ -186,6 +186,11 @@ class ASH_WM_COMMON_EXPORT WmWindow {
 
   virtual std::vector<WmWindow*> GetChildren() = 0;
 
+  // Shows/hides the resize shadow. |component| is the component to show the
+  // shadow for (one of the constants in ui/base/hit_test.h).
+  virtual void ShowResizeShadow(int component) = 0;
+  virtual void HideResizeShadow() = 0;
+
   // If an ancestor has been set to snap children to pixel boundaries, then
   // snaps the layer associated with this window to the layer associated with
   // the ancestor.

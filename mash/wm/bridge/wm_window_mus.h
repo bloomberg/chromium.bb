@@ -162,6 +162,8 @@ class WmWindowMus : public ash::wm::WmWindow, public mus::WindowObserver {
   void StackChildBelow(ash::wm::WmWindow* child,
                        ash::wm::WmWindow* target) override;
   std::vector<ash::wm::WmWindow*> GetChildren() override;
+  void ShowResizeShadow(int component) override;
+  void HideResizeShadow() override;
   void SnapToPixelBoundaryIfNecessary() override;
   void AddObserver(ash::wm::WmWindowObserver* observer) override;
   void RemoveObserver(ash::wm::WmWindowObserver* observer) override;

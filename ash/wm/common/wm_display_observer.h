@@ -15,6 +15,10 @@ class WmWindow;
 // Used to track changes in display configuration.
 class ASH_WM_COMMON_EXPORT WmDisplayObserver {
  public:
+  // Called prior to the display configuration changing.
+  virtual void OnDisplayConfigurationChanging() {}
+
+  // Called after the display configure changed.
   virtual void OnDisplayConfigurationChanged() {}
 
  protected:
