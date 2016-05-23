@@ -486,10 +486,10 @@ need to be translated for each locale.-->
         End
       </message>
       <message name="IDS_APP_PAGEUP_KEY" desc="Page up key">
-        PgUp
+        Page Up
       </message>
       <message name="IDS_APP_PAGEDOWN_KEY" desc="Page down key">
-        PgDwn
+        Page Down
       </message>
       <message name="IDS_APP_LEFT_ARROW_KEY" desc="Left arrow key">
         Left Arrow
