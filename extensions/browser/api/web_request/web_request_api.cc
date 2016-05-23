@@ -1182,6 +1182,16 @@ void ExtensionWebRequestEventRouter::RemoveEventListener(
   if (it == event_listeners.end())
     return;
 
+#if defined(OS_WIN)
+  // Debugging https://crbug.com/589735
+  // Please post crash reports at the following lines to the above issue.
+  unsigned event_listener_count = event_listeners.count(listener);
+  CHECK_GE(event_listener_count, 0u);
+  CHECK_GE(event_listener_count, 1u);
+  CHECK_LE(event_listener_count, 2u);
+  CHECK_EQ(event_listener_count, 1u);
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+#endif  // OS_WIN
   CHECK_EQ(event_listeners.count(listener), 1u) <<
       "extension=" << extension_id << " event=" << event_name;
 
