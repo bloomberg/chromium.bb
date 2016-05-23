@@ -82,4 +82,10 @@ DEFINE_TRACE(HTMLTemplateElement)
     HTMLElement::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(HTMLTemplateElement)
+{
+    visitor->traceWrappers(m_content);
+    HTMLElement::traceWrappers(visitor);
+}
+
 } // namespace blink

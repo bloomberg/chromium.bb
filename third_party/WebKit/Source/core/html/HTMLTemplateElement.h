@@ -47,6 +47,8 @@ public:
 
     DocumentFragment* content() const;
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
 private:
     Node* cloneNode(bool deep) override;
     void didMoveToNewDocument(Document& oldDocument) override;
