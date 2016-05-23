@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <memory>
+#include <utility>
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -412,6 +413,16 @@ ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetCreditCard(
     personal_data_manager_->UpdateCreditCard(card);
   }
   return ConvertUTF8ToJavaString(env, card.guid());
+}
+
+void PersonalDataManagerAndroid::AddServerCreditCardForTest(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& unused_obj,
+    const base::android::JavaParamRef<jobject>& jcard) {
+  std::unique_ptr<CreditCard> card(new CreditCard);
+  PopulateNativeCreditCardFromJava(jcard, env, card.get());
+  card->set_record_type(CreditCard::MASKED_SERVER_CARD);
+  personal_data_manager_->AddServerCreditCardForTest(std::move(card));
 }
 
 void PersonalDataManagerAndroid::RemoveByGUID(

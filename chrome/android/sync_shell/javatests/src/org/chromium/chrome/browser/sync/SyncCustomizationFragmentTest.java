@@ -21,6 +21,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.sync.ui.PassphraseCreationDialogFragment;
 import org.chromium.chrome.browser.sync.ui.PassphraseDialogFragment;
@@ -37,6 +38,7 @@ import org.chromium.sync.PassphraseType;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -303,6 +305,58 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
 
         closeFragment(fragment);
         assertPaymentsIntegrationEnabled(true);
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testPaymentsIntegrationCheckboxClearsServerAutofillCreditCards() throws Exception {
+        setUpTestAccountAndSignInToSync();
+
+        setPaymentsIntegrationEnabled(true);
+
+        assertFalse("There should be no server cards", hasServerAutofillCreditCards());
+        addServerAutofillCreditCard();
+        assertTrue("There should be server cards", hasServerAutofillCreditCards());
+
+        SyncCustomizationFragment fragment = startSyncCustomizationFragment();
+        assertDefaultSyncOnState(fragment);
+        SwitchPreference syncEverything = getSyncEverything(fragment);
+        togglePreference(syncEverything);
+
+        CheckBoxPreference paymentsIntegration = (CheckBoxPreference) fragment.findPreference(
+                SyncCustomizationFragment.PREFERENCE_PAYMENTS_INTEGRATION);
+        togglePreference(paymentsIntegration);
+
+        closeFragment(fragment);
+        assertPaymentsIntegrationEnabled(false);
+
+        assertFalse("There should be no server cards remaining", hasServerAutofillCreditCards());
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testSyncSwitchClearsServerAutofillCreditCards() throws Exception {
+        setUpTestAccountAndSignInToSync();
+
+        setPaymentsIntegrationEnabled(true);
+
+        assertFalse("There should be no server cards", hasServerAutofillCreditCards());
+        addServerAutofillCreditCard();
+        assertTrue("There should be server cards", hasServerAutofillCreditCards());
+
+        assertTrue(AndroidSyncSettings.isChromeSyncEnabled(mContext));
+        SyncCustomizationFragment fragment = startSyncCustomizationFragment();
+        assertDefaultSyncOnState(fragment);
+        SwitchPreference syncSwitch = getSyncSwitch(fragment);
+        assertTrue(syncSwitch.isChecked());
+        assertTrue(AndroidSyncSettings.isChromeSyncEnabled(mContext));
+        togglePreference(syncSwitch);
+        assertFalse(syncSwitch.isChecked());
+        assertFalse(AndroidSyncSettings.isChromeSyncEnabled(mContext));
+
+        closeFragment(fragment);
+
+        assertFalse("There should be no server cards remaining", hasServerAutofillCreditCards());
     }
 
     @SmallTest
@@ -634,6 +688,31 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
                 assertEquals(enabled, PersonalDataManager.isPaymentsIntegrationEnabled());
             }
         });
+    }
+
+    private void addServerAutofillCreditCard() throws Exception {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                boolean isLocal = false;
+                PersonalDataManager.getInstance().addServerCreditCardForTest(new CreditCard("",
+                        "https://example.com", isLocal, false, "Jon Doe", "4111111111111111",
+                        "1111", "11", "20", "visa", 0));
+            }
+        });
+    }
+
+    private boolean hasServerAutofillCreditCards() throws Exception {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                List<CreditCard> cards = PersonalDataManager.getInstance().getCreditCards();
+                for (int i = 0; i < cards.size(); i++) {
+                    if (!cards.get(i).getIsLocal()) return true;
+                }
+                return false;
+            }
+        }).booleanValue();
     }
 
     private void waitForBackendInitialized() throws InterruptedException {

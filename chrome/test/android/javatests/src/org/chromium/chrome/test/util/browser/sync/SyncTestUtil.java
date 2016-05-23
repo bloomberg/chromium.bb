@@ -44,14 +44,14 @@ public final class SyncTestUtil {
     /**
      * Verifies that sync is signed out.
      */
-    public static void verifySyncIsSignedOut(Context context) {
+    public static void verifySyncIsSignedOut() {
         Assert.assertTrue(isSyncOff());
     }
 
     /**
      * Triggers a sync cycle.
      */
-    public static void triggerSync() throws InterruptedException {
+    public static void triggerSync() {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -142,7 +142,7 @@ public final class SyncTestUtil {
      *
      * This method blocks until the data is available or until it times out.
      */
-    private static JSONArray getAllNodesAsJsonArray(final Context context) throws JSONException {
+    private static JSONArray getAllNodesAsJsonArray() throws JSONException {
         final Semaphore semaphore = new Semaphore(0);
         final ProfileSyncService.GetAllNodesCallback callback =
                 new ProfileSyncService.GetAllNodesCallback() {
@@ -239,7 +239,7 @@ public final class SyncTestUtil {
      */
     public static List<Pair<String, JSONObject>> getLocalData(
             Context context, String typeString) throws JSONException {
-        JSONArray localData = getAllNodesAsJsonArray(context);
+        JSONArray localData = getAllNodesAsJsonArray();
         JSONArray datatypeNodes = new JSONArray();
         for (int i = 0; i < localData.length(); i++) {
             JSONObject datatypeObject = localData.getJSONObject(i);

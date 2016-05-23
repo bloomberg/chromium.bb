@@ -43,7 +43,7 @@ public class FirstRunTest extends SyncTestBase {
     @Feature({"Sync"})
     public void testFreSignin() throws Exception {
         Account testAccount = SigninTestUtil.get().addTestAccount();
-        SyncTestUtil.verifySyncIsSignedOut(mContext);
+        SyncTestUtil.verifySyncIsSignedOut();
         assertFalse(AndroidSyncSettings.isChromeSyncEnabled(mContext));
         processFirstRun(testAccount.name, ShowSyncSettings.NO);
         assertEquals(
@@ -56,11 +56,11 @@ public class FirstRunTest extends SyncTestBase {
     @Feature({"Sync"})
     public void testFreNoSignin() throws Exception {
         SigninTestUtil.get().addTestAccount();
-        SyncTestUtil.verifySyncIsSignedOut(mContext);
+        SyncTestUtil.verifySyncIsSignedOut();
         assertFalse(AndroidSyncSettings.isChromeSyncEnabled(mContext));
         processFirstRun(null, ShowSyncSettings.NO);
         assertNull(ChromeSigninController.get(mContext).getSignedInAccountName());
-        SyncTestUtil.verifySyncIsSignedOut(mContext);
+        SyncTestUtil.verifySyncIsSignedOut();
         assertFalse(AndroidSyncSettings.isChromeSyncEnabled(mContext));
     }
 

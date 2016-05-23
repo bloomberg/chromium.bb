@@ -138,9 +138,9 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
         AndroidSyncSettings.overrideForTests(mContext, mSyncContentResolver);
     }
 
-    protected Account setUpTestAccount() throws InterruptedException {
+    protected Account setUpTestAccount() {
         Account account = SigninTestUtil.get().addAndSignInTestAccount();
-        SyncTestUtil.verifySyncIsSignedOut(getActivity());
+        SyncTestUtil.verifySyncIsSignedOut();
         return account;
     }
 
@@ -150,7 +150,7 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
         return account;
     }
 
-    protected void startSync() throws InterruptedException {
+    protected void startSync() {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -198,7 +198,7 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
             }
         });
         assertTrue(s.tryAcquire(SyncTestUtil.TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        SyncTestUtil.verifySyncIsSignedOut(mContext);
+        SyncTestUtil.verifySyncIsSignedOut();
     }
 
     protected void clearServerData() throws InterruptedException {

@@ -150,6 +150,9 @@ class PersonalDataManager : public KeyedService,
   // Deletes all server profiles and cards (both masked and unmasked).
   void ClearAllServerData();
 
+  // Sets a server credit card for test.
+  void AddServerCreditCardForTest(std::unique_ptr<CreditCard> credit_card);
+
   // Returns the credit card with the specified |guid|, or NULL if there is
   // no credit card with the specified |guid|.
   CreditCard* GetCreditCardByGUID(const std::string& guid);

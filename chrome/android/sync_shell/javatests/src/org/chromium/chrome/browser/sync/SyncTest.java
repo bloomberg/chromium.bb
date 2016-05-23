@@ -57,7 +57,7 @@ public class SyncTest extends SyncTestBase {
 
         // Signing out should disable sync.
         signOut();
-        SyncTestUtil.verifySyncIsSignedOut(mContext);
+        SyncTestUtil.verifySyncIsSignedOut();
 
         // Signing back in should re-enable sync.
         signIn(account);
@@ -80,7 +80,7 @@ public class SyncTest extends SyncTestBase {
         clearServerData();
 
         // Clearing server data should turn off sync and sign out of chrome.
-        SyncTestUtil.verifySyncIsSignedOut(mContext);
+        SyncTestUtil.verifySyncIsSignedOut();
         assertFalse(ChromeSigninController.get(mContext).isSignedIn());
         CriteriaHelper.pollUiThread(
                 new Criteria("Timed out checking that isSignedInOnNative() == false") {

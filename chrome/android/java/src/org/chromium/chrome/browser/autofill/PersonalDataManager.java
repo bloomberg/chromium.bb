@@ -529,7 +529,15 @@ public class PersonalDataManager {
 
     public String setCreditCard(CreditCard card) {
         ThreadUtils.assertOnUiThread();
+        assert card.getIsLocal();
         return nativeSetCreditCard(mPersonalDataManagerAndroid, card);
+    }
+
+    @VisibleForTesting
+    public void addServerCreditCardForTest(CreditCard card) {
+        ThreadUtils.assertOnUiThread();
+        assert !card.getIsLocal();
+        nativeAddServerCreditCardForTest(mPersonalDataManagerAndroid, card);
     }
 
     public void deleteCreditCard(String guid) {
@@ -600,6 +608,8 @@ public class PersonalDataManager {
     private native CreditCard nativeGetCreditCardByGUID(long nativePersonalDataManagerAndroid,
             String guid);
     private native String nativeSetCreditCard(long nativePersonalDataManagerAndroid,
+            CreditCard card);
+    private native void nativeAddServerCreditCardForTest(long nativePersonalDataManagerAndroid,
             CreditCard card);
     private native void nativeRemoveByGUID(long nativePersonalDataManagerAndroid, String guid);
     private native void nativeClearUnmaskedCache(

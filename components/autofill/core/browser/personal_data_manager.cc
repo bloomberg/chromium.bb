@@ -612,6 +612,11 @@ void PersonalDataManager::ClearAllServerData() {
   server_profiles_.clear();
 }
 
+void PersonalDataManager::AddServerCreditCardForTest(
+    std::unique_ptr<CreditCard> credit_card) {
+  server_credit_cards_.push_back(credit_card.release());
+}
+
 void PersonalDataManager::RemoveByGUID(const std::string& guid) {
   if (is_off_the_record_)
     return;
