@@ -48,12 +48,20 @@ private:
     String getShorthandValue(const StylePropertyShorthand&, String separator = " ") const;
     String fontValue() const;
     String fontVariantValue() const;
-    void appendFontLonghandValueIfNotNormal(CSSPropertyID, StringBuilder& result, String& value) const;
+    void appendFontLonghandValueIfNotNormal(CSSPropertyID, StringBuilder& result) const;
     String backgroundRepeatPropertyValue() const;
     String getPropertyText(CSSPropertyID, const String& value, bool isImportant, bool isNotFirstDecl) const;
     bool isPropertyShorthandAvailable(const StylePropertyShorthand&) const;
     bool shorthandHasOnlyInitialOrInheritedValue(const StylePropertyShorthand&) const;
     void appendBackgroundPropertyAsText(StringBuilder& result, unsigned& numDecls) const;
+
+    // This function does checks common to all shorthands, and returns:
+    // - The serialization if the shorthand serializes as a css-wide keyword.
+    // - An empty string if either some longhands are not set, the important
+    // flag is not set consistently, or css-wide keywords are used. In these
+    // cases serialization will always fail.
+    // - A null string otherwise.
+    String commonShorthandChecks(const StylePropertyShorthand&) const;
 
     // Only StylePropertySerializer uses the following two classes.
     class PropertyValueForSerializer {

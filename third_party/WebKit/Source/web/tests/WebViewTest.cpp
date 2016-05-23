@@ -2169,7 +2169,8 @@ TEST_F(WebViewTest, SmartClipData)
         "font-weight: normal; letter-spacing: "
         "normal; line-height: normal; orphans: 2; text-align: start; "
         "text-indent: 0px; text-transform: none; white-space: normal; widows: "
-        "2; word-spacing: 0px; -webkit-text-stroke-width: 0px;\">Air "
+        "2; word-spacing: 0px; -webkit-text-stroke-width: 0px; "
+        "text-decoration-style: initial; text-decoration-color: initial;\">Air "
         "conditioner</div><div id=\"div5\" style=\"padding: 10px; margin: "
         "10px; border: 2px solid skyblue; float: left; width: "
         "190px; height: 30px; color: rgb(0, 0, 0); font-family: myahem; "
@@ -2178,7 +2179,8 @@ TEST_F(WebViewTest, SmartClipData)
         "letter-spacing: normal; line-height: normal; orphans: 2; "
         "text-align: start; text-indent: 0px; text-transform: "
         "none; white-space: normal; widows: 2; word-spacing: 0px; "
-        "-webkit-text-stroke-width: 0px;\">Price 10,000,000won</div>";
+        "-webkit-text-stroke-width: 0px; text-decoration-style: initial; "
+        "text-decoration-color: initial;\">Price 10,000,000won</div>";
     WebString clipText;
     WebString clipHtml;
     WebRect clipRect;
@@ -2204,7 +2206,8 @@ TEST_F(WebViewTest, SmartClipDataWithPinchZoom)
         "font-weight: normal; letter-spacing: "
         "normal; line-height: normal; orphans: 2; text-align: start; "
         "text-indent: 0px; text-transform: none; white-space: normal; widows: "
-        "2; word-spacing: 0px; -webkit-text-stroke-width: 0px;\">Air "
+        "2; word-spacing: 0px; -webkit-text-stroke-width: 0px; "
+        "text-decoration-style: initial; text-decoration-color: initial;\">Air "
         "conditioner</div><div id=\"div5\" style=\"padding: 10px; margin: "
         "10px; border: 2px solid skyblue; float: left; width: "
         "190px; height: 30px; color: rgb(0, 0, 0); font-family: myahem; "
@@ -2212,7 +2215,8 @@ TEST_F(WebViewTest, SmartClipDataWithPinchZoom)
         "font-variant-caps: normal; font-weight: normal; letter-spacing: normal; "
         "line-height: normal; orphans: 2; text-align: start; text-indent: 0px; "
         "text-transform: none; white-space: normal; widows: 2; "
-        "word-spacing: 0px; -webkit-text-stroke-width: 0px;\">"
+        "word-spacing: 0px; -webkit-text-stroke-width: 0px;"
+        " text-decoration-style: initial; text-decoration-color: initial;\">"
         "Price 10,000,000won</div>";
     WebString clipText;
     WebString clipHtml;
