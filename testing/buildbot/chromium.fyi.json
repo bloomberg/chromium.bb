@@ -2695,9 +2695,6 @@
         "test": "angle_unittests"
       },
       {
-        "test": "app_list_unittests"
-      },
-      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 5
@@ -3004,9 +3001,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "angle_unittests"
-      },
-      {
-        "test": "app_list_unittests"
       },
       {
         "swarming": {
