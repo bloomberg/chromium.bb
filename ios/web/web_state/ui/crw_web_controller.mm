@@ -759,6 +759,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Returns YES if the current navigation item corresponds to a web page
 // loaded by a POST request.
 - (BOOL)isCurrentNavigationItemPOST;
+// Returns YES if current navigation item is WKNavigationTypeBackForward.
+- (BOOL)isCurrentNavigationBackForward;
 // Returns whether the given navigation is triggered by a user link click.
 - (BOOL)isLinkNavigation:(WKNavigationType)navigationType;
 
@@ -1515,6 +1517,14 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
           ? [_pendingNavigationInfo HTTPMethod]
           : [self currentBackForwardListItemHolder]->http_method();
   return [HTTPMethod isEqual:@"POST"];
+}
+
+- (BOOL)isCurrentNavigationBackForward {
+  if (![self currentNavItem])
+    return NO;
+  WKNavigationType currentNavigationType =
+      [self currentBackForwardListItemHolder]->navigation_type();
+  return currentNavigationType == WKNavigationTypeBackForward;
 }
 
 - (BOOL)isLinkNavigation:(WKNavigationType)navigationType {
@@ -5199,16 +5209,28 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (void)webViewLoadingStateDidChange {
   if ([_webView isLoading]) {
     [self addActivityIndicatorTask];
-  } else {
-    [self clearActivityIndicatorTasks];
-    if ([self currentNavItem] &&
-        [self currentBackForwardListItemHolder]->navigation_type() ==
-            WKNavigationTypeBackForward) {
-      // A fast back/forward may not call |webView:didFinishNavigation:|, so
-      // finishing the navigation should be signalled explicitly.
-      [self didFinishNavigation];
-    }
+    return;
   }
+
+  [self clearActivityIndicatorTasks];
+  if (![self isCurrentNavigationBackForward]) {
+    return;
+  }
+
+  GURL webViewURL = net::GURLWithNSURL([_webView URL]);
+  if (_loadPhase == web::LOAD_REQUESTED &&
+      ![_pendingNavigationInfo cancelled]) {
+    // A fast back/forward within the same origin does not call
+    // |didCommitNavigation:|, so signal page change explicitly.
+    DCHECK_EQ(_documentURL.GetOrigin(), webViewURL.GetOrigin());
+    [self setDocumentURL:webViewURL];
+    [self webPageChanged];
+  }
+
+  // Fast back forward navigation does not call |didFinishNavigation:|, so
+  // signal did finish navigation explicitly.
+  [self updateSSLStatusForCurrentNavigationItem];
+  [self didFinishNavigation];
 }
 
 - (void)webViewTitleDidChange {
@@ -5427,6 +5449,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     if ([self currentNavigationURL] == net::GURLWithNSURL([_webView URL])) {
       [_webView reload];
     } else {
+      // |didCommitNavigation:| may not be called for fast navigation, so update
+      // the navigation type now as it is already known.
+      holder->set_navigation_type(WKNavigationTypeBackForward);
       [_webView goToBackForwardListItem:holder->back_forward_list_item()];
     }
   };
