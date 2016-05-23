@@ -12,4 +12,10 @@ group("installer") {
       "//chrome/installer/linux",
     ]
   }
+
+  if (is_mac) {
+    deps = [
+      "//chrome/installer/mac",
+    ]
+  }
 }
