@@ -1075,7 +1075,7 @@ void Editor::transpose()
     String transposed = text.right(1) + text.left(1);
 
     // Select the two characters.
-    if (!equalSelectionsInDOMTree(newSelection, frame().selection().selection()))
+    if (newSelection != frame().selection().selection())
         frame().selection().setSelection(newSelection);
 
     // Insert the transposed characters.
@@ -1099,7 +1099,7 @@ void Editor::changeSelectionAfterCommand(const VisibleSelection& newSelection,  
         return;
 
     // See <rdar://problem/5729315> Some shouldChangeSelectedDOMRange contain Ranges for selections that are no longer valid
-    bool selectionDidNotChangeDOMPosition = equalSelectionsInDOMTree(newSelection, frame().selection().selection());
+    bool selectionDidNotChangeDOMPosition = newSelection == frame().selection().selection();
     frame().selection().setSelection(newSelection, options);
 
     // Some editing operations change the selection visually without affecting its position within the DOM.

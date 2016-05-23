@@ -881,13 +881,6 @@ static bool equalSelectionsAlgorithm(const VisibleSelectionTemplate<Strategy>& s
         && selectionWrapper1.extent() == selectionWrapper2.extent();
 }
 
-// TODO(yosin): We should use |operator==()| instead of
-// |equalSelectionsInDOMTree()|.
-bool equalSelectionsInDOMTree(const VisibleSelection& selection1, const VisibleSelection& selection2)
-{
-    return selection1 == selection2;
-}
-
 template <typename Strategy>
 bool VisibleSelectionTemplate<Strategy>::operator==(const VisibleSelectionTemplate<Strategy>& other) const
 {

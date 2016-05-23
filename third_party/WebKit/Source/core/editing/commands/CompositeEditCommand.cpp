@@ -266,7 +266,7 @@ void CompositeEditCommand::applyCommandToComposite(EditCommand* command, Editing
 void CompositeEditCommand::applyCommandToComposite(CompositeEditCommand* command, const VisibleSelection& selection, EditingState* editingState)
 {
     command->setParent(this);
-    if (!equalSelectionsInDOMTree(selection, command->endingSelection())) {
+    if (selection != command->endingSelection()) {
         command->setStartingSelection(selection);
         command->setEndingSelection(selection);
     }

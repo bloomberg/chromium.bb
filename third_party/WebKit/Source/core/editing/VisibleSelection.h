@@ -210,10 +210,6 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT VisibleSelectionTemplate<Editi
 using VisibleSelection = VisibleSelectionTemplate<EditingStrategy>;
 using VisibleSelectionInFlatTree = VisibleSelectionTemplate<EditingInFlatTreeStrategy>;
 
-// TODO(yosin): We should use |operator==()| instead of
-// |equalSelectionsInDOMTree()|.
-bool equalSelectionsInDOMTree(const VisibleSelection&, const VisibleSelection&);
-
 // We don't yet support multi-range selections, so we only ever have one range
 // to return.
 CORE_EXPORT EphemeralRange firstEphemeralRangeOf(const VisibleSelection&);

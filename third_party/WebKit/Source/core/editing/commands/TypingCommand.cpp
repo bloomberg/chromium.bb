@@ -126,7 +126,7 @@ void TypingCommand::updateSelectionIfDifferentFromCurrentSelection(TypingCommand
 {
     DCHECK(frame);
     VisibleSelection currentSelection = frame->selection().selection();
-    if (equalSelectionsInDOMTree(currentSelection, typingCommand->endingSelection()))
+    if (currentSelection == typingCommand->endingSelection())
         return;
 
     typingCommand->setStartingSelection(currentSelection);
@@ -175,7 +175,7 @@ void TypingCommand::insertText(Document& document, const String& text, const Vis
     // that is different from the current selection.  In the future, we should change EditCommand
     // to deal with custom selections in a general way that can be used by all of the commands.
     if (TypingCommand* lastTypingCommand = lastTypingCommandIfStillOpenForTyping(frame)) {
-        if (!equalSelectionsInDOMTree(lastTypingCommand->endingSelection(), selectionForInsertion)) {
+        if (lastTypingCommand->endingSelection() != selectionForInsertion) {
             lastTypingCommand->setStartingSelection(selectionForInsertion);
             lastTypingCommand->setEndingSelection(selectionForInsertion);
         }
@@ -190,7 +190,7 @@ void TypingCommand::insertText(Document& document, const String& text, const Vis
     }
 
     TypingCommand* command = TypingCommand::create(document, InsertText, newText, options, compositionType);
-    bool changeSelection = !equalSelectionsInDOMTree(selectionForInsertion, currentSelection);
+    bool changeSelection = selectionForInsertion != currentSelection;
     if (changeSelection) {
         command->setStartingSelection(selectionForInsertion);
         command->setEndingSelection(selectionForInsertion);

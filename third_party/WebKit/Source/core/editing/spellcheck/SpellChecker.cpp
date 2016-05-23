@@ -842,7 +842,7 @@ void SpellChecker::spellCheckOldSelection(const VisibleSelection& oldSelection, 
 
     VisiblePosition oldStart(oldSelection.visibleStart());
     VisibleSelection oldAdjacentWords = VisibleSelection(startOfWord(oldStart, LeftWordIfOnBoundary), endOfWord(oldStart, RightWordIfOnBoundary));
-    if (!equalSelectionsInDOMTree(oldAdjacentWords, newAdjacentWords)) {
+    if (oldAdjacentWords != newAdjacentWords) {
         if (isContinuousSpellCheckingEnabled()) {
             VisibleSelection selectedSentence = VisibleSelection(startOfSentence(oldStart), endOfSentence(oldStart));
             markMisspellingsAndBadGrammar(oldAdjacentWords, true, selectedSentence);
