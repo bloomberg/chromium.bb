@@ -46,12 +46,6 @@ AutoplayExperimentHelper::~AutoplayExperimentHelper()
 {
 }
 
-void AutoplayExperimentHelper::dispose()
-{
-    // Do any cleanup that requires the client.
-    unregisterForPositionUpdatesIfNeeded();
-}
-
 void AutoplayExperimentHelper::becameReadyToPlay()
 {
     // Assuming that we're eligible to override the user gesture requirement,
@@ -412,11 +406,6 @@ void AutoplayExperimentHelper::prepareToAutoplay(AutoplayMetrics metric)
     muteIfNeeded();
 
     // Do not actually start playback here.
-}
-
-AutoplayExperimentHelper::Client& AutoplayExperimentHelper::client() const
-{
-    return *m_client;
 }
 
 AutoplayExperimentHelper::Mode AutoplayExperimentHelper::fromString(const String& mode)

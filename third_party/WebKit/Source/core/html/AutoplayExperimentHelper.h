@@ -5,15 +5,13 @@
 #ifndef AutoplayExperimentHelper_h
 #define AutoplayExperimentHelper_h
 
-#include "core/page/Page.h"
+#include "core/page/PageVisibilityState.h"
 #include "platform/Timer.h"
 #include "platform/geometry/IntRect.h"
 
 namespace blink {
+
 class Document;
-class HTMLMediaElement;
-class EventListener;
-class LayoutObject;
 class AutoplayExperimentTest;
 
 // These values are used for a histogram. Do not reorder.
@@ -161,10 +159,6 @@ public:
     // is not ExperimentOff).
     bool isExperimentEnabled();
 
-    // Clean up.  For Oilpan, this means "early in HTMLMediaElement's dispose".
-    // For non-Oilpan, just delete the object.
-    void dispose();
-
     // Remove the user gesture requirement, and record why.  If there is no
     // gesture requirement, then this does nothing.
     void unlockUserGesture(AutoplayMetrics);
@@ -274,16 +268,13 @@ private:
     // Process a timer for checking visibility.
     void viewportTimerFired(Timer<AutoplayExperimentHelper>*);
 
-    // Return our media element's document.
-    Document& document() const;
-
-    Client& client() const;
+    Client& client() const { return *m_client; }
 
     bool isLockedPendingUserGesture() const;
 
     inline bool enabled(Mode mode) const
     {
-        return ((int)m_mode) & ((int)mode);
+        return static_cast<int>(m_mode) & static_cast<int>(mode);
     }
 
     Mode fromString(const String& mode);
