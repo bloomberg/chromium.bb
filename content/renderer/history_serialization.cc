@@ -6,9 +6,12 @@
 
 #include <stddef.h>
 
+#include "base/strings/nullable_string16.h"
 #include "content/common/page_state_serialization.h"
 #include "content/public/common/page_state.h"
 #include "content/renderer/history_entry.h"
+#include "content/renderer/http_body_conversions.h"
+#include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
@@ -17,6 +20,7 @@
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebSerializedScriptValue.h"
 
+using blink::WebData;
 using blink::WebHTTPBody;
 using blink::WebHistoryItem;
 using blink::WebSerializedScriptValue;
@@ -31,56 +35,6 @@ void ToNullableString16Vector(const WebVector<WebString>& input,
   output->reserve(output->size() + input.size());
   for (size_t i = 0; i < input.size(); ++i)
     output->push_back(input[i]);
-}
-
-void ToExplodedHttpBodyElement(const WebHTTPBody::Element& input,
-                               ExplodedHttpBodyElement* output) {
-  switch (input.type) {
-    case WebHTTPBody::Element::TypeData:
-      output->data.assign(input.data.data(), input.data.size());
-      break;
-    case WebHTTPBody::Element::TypeFile:
-      output->file_path = input.filePath;
-      output->file_start = input.fileStart;
-      output->file_length = input.fileLength;
-      output->file_modification_time = input.modificationTime;
-      break;
-    case WebHTTPBody::Element::TypeFileSystemURL:
-      output->filesystem_url = input.fileSystemURL;
-      output->file_start = input.fileStart;
-      output->file_length = input.fileLength;
-      output->file_modification_time = input.modificationTime;
-      break;
-    case WebHTTPBody::Element::TypeBlob:
-      output->blob_uuid = input.blobUUID.utf8();
-      break;
-  }
-}
-
-void AppendHTTPBodyElement(const ExplodedHttpBodyElement& element,
-                           WebHTTPBody* http_body) {
-  switch (element.type) {
-    case WebHTTPBody::Element::TypeData:
-      http_body->appendData(element.data);
-      break;
-    case WebHTTPBody::Element::TypeFile:
-      http_body->appendFileRange(
-          element.file_path,
-          element.file_start,
-          element.file_length,
-          element.file_modification_time);
-      break;
-    case WebHTTPBody::Element::TypeFileSystemURL:
-      http_body->appendFileSystemURLRange(
-          element.filesystem_url,
-          element.file_start,
-          element.file_length,
-          element.file_modification_time);
-      break;
-    case WebHTTPBody::Element::TypeBlob:
-      http_body->appendBlob(WebString::fromUTF8(element.blob_uuid));
-      break;
-  }
 }
 
 void GenerateFrameStateFromItem(const WebHistoryItem& item,
@@ -109,7 +63,7 @@ void GenerateFrameStateFromItem(const WebHistoryItem& item,
     for (size_t i = 0; i < http_body.elementCount(); ++i) {
       WebHTTPBody::Element element;
       http_body.elementAt(i, element);
-      ToExplodedHttpBodyElement(element, &state->http_body.elements[i]);
+      ConvertToHttpBodyElement(element, &state->http_body.elements[i]);
     }
     state->http_body.contains_passwords = http_body.containsPasswordData();
   }
@@ -162,7 +116,7 @@ void RecursivelyGenerateHistoryItem(const ExplodedFrameState& state,
     http_body.initialize();
     http_body.setIdentifier(state.http_body.identifier);
     for (size_t i = 0; i < state.http_body.elements.size(); ++i)
-      AppendHTTPBodyElement(state.http_body.elements[i], &http_body);
+      AppendHttpBodyElement(state.http_body.elements[i], &http_body);
     item.setHTTPBody(http_body);
   }
   node->set_item(item);

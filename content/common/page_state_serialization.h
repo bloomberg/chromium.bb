@@ -12,6 +12,7 @@
 #include "base/strings/nullable_string16.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "content/common/resource_request_body.h"
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
 #include "third_party/WebKit/public/platform/WebHistoryScrollRestorationType.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
@@ -21,22 +22,7 @@
 
 namespace content {
 
-class ResourceRequestBody;
-
-struct CONTENT_EXPORT ExplodedHttpBodyElement {
-  blink::WebHTTPBody::Element::Type type;
-  std::string data;
-  base::NullableString16 file_path;
-  GURL filesystem_url;
-  int64_t file_start;
-  int64_t file_length;
-  double file_modification_time;
-  std::string blob_uuid;
-
-  ExplodedHttpBodyElement();
-  ExplodedHttpBodyElement(const ExplodedHttpBodyElement& other);
-  ~ExplodedHttpBodyElement();
-};
+using ExplodedHttpBodyElement = ResourceRequestBody::Element;
 
 struct CONTENT_EXPORT ExplodedHttpBody {
   base::NullableString16 http_content_type;

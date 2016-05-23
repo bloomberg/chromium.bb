@@ -237,6 +237,8 @@
       'renderer/history_entry.h',
       'renderer/history_serialization.cc',
       'renderer/history_serialization.h',
+      'renderer/http_body_conversions.cc',
+      'renderer/http_body_conversions.h',
       'renderer/idle_user_detector.cc',
       'renderer/idle_user_detector.h',
       'renderer/image_downloader/image_downloader_impl.cc',
