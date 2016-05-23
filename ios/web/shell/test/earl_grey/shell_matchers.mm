@@ -67,7 +67,7 @@ id<GREYMatcher> addressField() {
   };
 
   DescribeToBlock describe = ^(id<GREYDescription> description) {
-    [description appendText:@"web view containing "];
+    [description appendText:@"address field containing "];
     [description appendText:text];
   };
 

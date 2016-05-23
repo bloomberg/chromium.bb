@@ -69,7 +69,7 @@
 }
 
 // Tests the back and forward button after entering two URLs.
-- (void)testWebScenarioBrowsingBackAndForward {
+- (void)testNavigationBackAndForward {
   // Create map of canned responses and set up the test HTML server.
   std::map<GURL, std::string> responses;
   const GURL URL1 = web::test::HttpServer::MakeUrl("http://firstURL");
@@ -108,6 +108,39 @@
   [[EarlGrey selectElementWithMatcher:web::addressFieldText(URL2Text)]
       assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:web::webViewContainingText(response2)]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Tests back and forward navigation where a fragment link is tapped.
+- (void)testNavigationBackAndForwardAfterFragmentLink {
+  // Create map of canned responses and set up the test HTML server.
+  std::map<GURL, std::string> responses;
+  const GURL URL1 = web::test::HttpServer::MakeUrl("http://fragmentLink");
+  NSString* URL1Text = base::SysUTF8ToNSString(URL1.spec());
+  const std::string response = "<a href='#hash' id='link'>link</a>";
+  responses[URL1] = response;
+
+  const GURL URL2 = web::test::HttpServer::MakeUrl("http://fragmentLink/#hash");
+  NSString* URL2Text = base::SysUTF8ToNSString(URL2.spec());
+
+  web::test::SetUpSimpleHttpServer(responses);
+
+  web::shell_test_util::LoadUrl(URL1);
+  [[EarlGrey selectElementWithMatcher:web::addressFieldText(URL1Text)]
+      assertWithMatcher:grey_notNil()];
+
+  web::shell_test_util::TapWebViewElementWithId("link");
+  [[EarlGrey selectElementWithMatcher:web::addressFieldText(URL2Text)]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:web::backButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:web::addressFieldText(URL1Text)]
+      assertWithMatcher:grey_notNil()];
+
+  [[EarlGrey selectElementWithMatcher:web::forwardButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:web::addressFieldText(URL2Text)]
       assertWithMatcher:grey_notNil()];
 }
 
