@@ -232,7 +232,7 @@ class BaselineOptimizer(object):
                 file_name = self._join_directory(directory, baseline_name)
                 if self._scm.exists(file_name):
                     scm_files.append(file_name)
-                else:
+                elif self._filesystem.exists(file_name):
                     fs_files.append(file_name)
 
         if scm_files or fs_files:
