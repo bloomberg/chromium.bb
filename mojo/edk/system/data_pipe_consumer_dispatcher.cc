@@ -531,6 +531,11 @@ void DataPipeConsumerDispatcher::UpdateSignalsStateNoLock() {
       if (rv != ports::OK)
         peer_closed_ = true;
       if (message) {
+        if (message->num_payload_bytes() < sizeof(DataPipeControlMessage)) {
+          peer_closed_ = true;
+          break;
+        }
+
         const DataPipeControlMessage* m =
             static_cast<const DataPipeControlMessage*>(
                 message->payload_bytes());

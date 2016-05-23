@@ -175,6 +175,7 @@ MojoResult MessagePipeDispatcher::ReadMessage(
 
   bool no_space = false;
   bool may_discard = flags & MOJO_READ_MESSAGE_FLAG_MAY_DISCARD;
+  bool invalid_message = false;
 
   // Grab a message if the provided handles buffer is large enough. If the input
   // |num_bytes| is provided and |read_any_size| is false, we also ensure
@@ -186,15 +187,22 @@ MojoResult MessagePipeDispatcher::ReadMessage(
   ports::ScopedMessage ports_message;
   int rv = node_controller_->node()->GetMessageIf(
       port_,
-      [read_any_size, num_bytes, num_handles, &no_space, &may_discard](
+      [read_any_size, num_bytes, num_handles, &no_space, &may_discard,
+       &invalid_message](
           const ports::Message& next_message) {
         const PortsMessage& message =
             static_cast<const PortsMessage&>(next_message);
-        DCHECK_GE(message.num_payload_bytes(), sizeof(MessageHeader));
+        if (message.num_payload_bytes() < sizeof(MessageHeader)) {
+          invalid_message = true;
+          return true;
+        }
 
         const MessageHeader* header =
             static_cast<const MessageHeader*>(message.payload_bytes());
-        DCHECK_LE(header->header_size, message.num_payload_bytes());
+        if (header->header_size > message.num_payload_bytes()) {
+          invalid_message = true;
+          return true;
+        }
 
         uint32_t bytes_to_read = 0;
         uint32_t bytes_available =
@@ -221,6 +229,9 @@ MojoResult MessagePipeDispatcher::ReadMessage(
         return true;
       },
       &ports_message);
+
+  if (invalid_message)
+    return MOJO_RESULT_UNKNOWN;
 
   if (rv != ports::OK && rv != ports::ERROR_PORT_PEER_CLOSED) {
     if (rv == ports::ERROR_PORT_UNKNOWN ||
@@ -258,12 +269,12 @@ MojoResult MessagePipeDispatcher::ReadMessage(
       static_cast<PortsMessage*>(ports_message.release()));
 
   const MessageHeader* header =
-      static_cast<const MessageHeader*>( msg->payload_bytes());
+      static_cast<const MessageHeader*>(msg->payload_bytes());
   const DispatcherHeader* dispatcher_headers =
       reinterpret_cast<const DispatcherHeader*>(header + 1);
 
-  const char* dispatcher_data = reinterpret_cast<const char*>(
-      dispatcher_headers + header->num_dispatchers);
+  if (header->num_dispatchers > std::numeric_limits<uint16_t>::max())
+    return MOJO_RESULT_UNKNOWN;
 
   // Deserialize dispatchers.
   if (header->num_dispatchers > 0) {
@@ -271,18 +282,32 @@ MojoResult MessagePipeDispatcher::ReadMessage(
     std::vector<DispatcherInTransit> dispatchers(header->num_dispatchers);
     size_t data_payload_index = sizeof(MessageHeader) +
         header->num_dispatchers * sizeof(DispatcherHeader);
+    if (data_payload_index > header->header_size)
+      return MOJO_RESULT_UNKNOWN;
+    const char* dispatcher_data = reinterpret_cast<const char*>(
+        dispatcher_headers + header->num_dispatchers);
     size_t port_index = 0;
     size_t platform_handle_index = 0;
     for (size_t i = 0; i < header->num_dispatchers; ++i) {
       const DispatcherHeader& dh = dispatcher_headers[i];
       Type type = static_cast<Type>(dh.type);
 
-      DCHECK_GE(msg->num_payload_bytes(),
-                data_payload_index + dh.num_bytes);
-      DCHECK_GE(msg->num_ports(),
-                port_index + dh.num_ports);
-      DCHECK_GE(msg->num_handles(),
-                platform_handle_index + dh.num_platform_handles);
+      size_t next_payload_index = data_payload_index + dh.num_bytes;
+      if (msg->num_payload_bytes() < next_payload_index ||
+          next_payload_index < data_payload_index) {
+        return MOJO_RESULT_UNKNOWN;
+      }
+
+      size_t next_port_index = port_index + dh.num_ports;
+      if (msg->num_ports() < next_port_index || next_port_index < port_index)
+        return MOJO_RESULT_UNKNOWN;
+
+      size_t next_platform_handle_index =
+          platform_handle_index + dh.num_platform_handles;
+      if (msg->num_handles() < next_platform_handle_index ||
+          next_platform_handle_index < platform_handle_index) {
+        return MOJO_RESULT_UNKNOWN;
+      }
 
       PlatformHandle* out_handles =
           msg->num_handles() ? msg->handles() + platform_handle_index : nullptr;
@@ -293,9 +318,9 @@ MojoResult MessagePipeDispatcher::ReadMessage(
         return MOJO_RESULT_UNKNOWN;
 
       dispatcher_data += dh.num_bytes;
-      data_payload_index += dh.num_bytes;
-      port_index += dh.num_ports;
-      platform_handle_index += dh.num_platform_handles;
+      data_payload_index = next_payload_index;
+      port_index = next_port_index;
+      platform_handle_index = next_platform_handle_index;
     }
 
     if (!node_controller_->core()->AddDispatchersFromTransit(dispatchers,

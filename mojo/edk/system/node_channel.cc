@@ -395,6 +395,11 @@ void NodeChannel::OnChannelMessage(const void* payload,
 
   RequestContext request_context(RequestContext::Source::SYSTEM);
 
+  // Ensure this NodeChannel stays alive through the extent of this method. The
+  // delegate may have the only other reference to this object and it may choose
+  // to drop it here in response to, e.g., a malformed message.
+  scoped_refptr<NodeChannel> keepalive = this;
+
 #if defined(OS_WIN)
   // If we receive handles from a known process, rewrite them to our own
   // process. This can occur when a privileged node receives handles directly
@@ -683,6 +688,9 @@ void NodeChannel::ProcessPendingMessagesWithMachPorts() {
       channel_->Write(std::move(message));
     }
   }
+
+  // Ensure this NodeChannel stays alive while flushing relay messages.
+  scoped_refptr<NodeChannel> keepalive = this;
 
   while (!pending_relays.empty()) {
     ports::NodeName destination = pending_relays.front().first;

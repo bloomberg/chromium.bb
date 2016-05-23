@@ -509,10 +509,14 @@ void DataPipeProducerDispatcher::UpdateSignalsStateNoLock() {
       if (rv != ports::OK)
         peer_closed_ = true;
       if (message) {
-        PortsMessage* ports_message = static_cast<PortsMessage*>(message.get());
+        if (message->num_payload_bytes() < sizeof(DataPipeControlMessage)) {
+          peer_closed_ = true;
+          break;
+        }
+
         const DataPipeControlMessage* m =
             static_cast<const DataPipeControlMessage*>(
-                ports_message->payload_bytes());
+                message->payload_bytes());
 
         if (m->command != DataPipeCommand::DATA_WAS_READ) {
           DLOG(ERROR) << "Unexpected message from consumer.";
