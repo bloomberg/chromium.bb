@@ -6,15 +6,15 @@ package org.chromium.android_webview.test;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.apache.http.Header;
-import org.apache.http.HttpRequest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.net.test.util.TestWebServer;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Tests for Accept Language implementation.
@@ -23,23 +23,48 @@ public class AcceptLanguageTest extends AwTestBase {
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
 
+    private EmbeddedTestServer mTestServer;
+
     @Override
     public void setUp() throws Exception {
         super.setUp();
         mContentsClient = new TestAwContentsClient();
         mAwContents = createAwTestContainerViewOnMainSync(mContentsClient).getAwContents();
+
+        mTestServer = EmbeddedTestServer.createAndStartDefaultServer(
+                getInstrumentation().getContext());
     }
 
-    private String getPrimaryAcceptLanguage(final HttpRequest request)
-            throws Throwable {
-        assertNotNull(request);
+    @Override
+    public void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
+    }
 
-        Header[] headers = request.getHeaders("Accept-Language");
-        assertEquals(1, headers.length);
+    private static final Pattern COMMA_AND_OPTIONAL_Q_VALUE = Pattern.compile("(?:;q=[^,]+)?,");
+    private static final Pattern MAYBE_QUOTED_STRING = Pattern.compile("^(\"?)(.*)\\1$");
 
-        String acceptLanguageString = headers[0].getValue();
-        assertNotNull(acceptLanguageString);
-        return acceptLanguageString.split(",")[0];
+    /**
+     * Extract the languages from the Accept-Language header.
+     *
+     * The Accept-Language header can have more than one language along with optional quality
+     * factors for each, e.g.
+     *
+     *  "de-DE,en-US;q=0.8,en-UK;q=0.5"
+     *
+     * This function extracts only the language strings from the Accept-Language header, so
+     * the example above would yield the following:
+     *
+     *  ["de-DE", "en-US", "en-UK"]
+     *
+     * @param raw String containing the raw Accept-Language header
+     * @return A list of languages as Strings.
+     */
+    private String[] getAcceptLanguages(String raw) {
+        assertNotNull(raw);
+        Matcher m = MAYBE_QUOTED_STRING.matcher(raw);
+        assertTrue(m.matches());
+        return COMMA_AND_OPTIONAL_Q_VALUE.split(m.group(2));
     }
 
     /**
@@ -50,52 +75,37 @@ public class AcceptLanguageTest extends AwTestBase {
     public void testAcceptLanguage() throws Throwable {
         getAwSettingsOnUiThread(mAwContents).setJavaScriptEnabled(true);
 
-        TestWebServer webServer = TestWebServer.start();
-        try {
-            HttpRequest request;
+        // This should yield a lightly formatted page with the contents of the Accept-Language
+        // header, e.g. "en-US" or "de-DE,en-US;q=0.8", as the only text content.
+        String url = mTestServer.getURL("/echoheader?Accept-Language");
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
 
-            final String pagePath = "/test_accept_language.html";
-            final String pageUrl = webServer.setResponse(
-                    pagePath, "<html><body>hello world</body></html>", null);
-            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
-                    pageUrl);
+        String[] acceptLanguages = getAcceptLanguages(
+                JSUtils.executeJavaScriptAndWaitForResult(
+                        this, mAwContents, mContentsClient.getOnEvaluateJavaScriptResultHelper(),
+                        "document.body.textContent"));
+        assertEquals(LocaleUtils.getDefaultLocale(), acceptLanguages[0]);
 
-            assertEquals(1, webServer.getRequestCount(pagePath));
-
-            request = webServer.getLastRequest(pagePath);
-
-            assertEquals(LocaleUtils.getDefaultLocale(), getPrimaryAcceptLanguage(request));
-
-            // Get rid of q-value for languages if any. The header with a q-value looks like:
-            // Accept-Language: da, en-gb;q=0.8, en;q=0.7
-            String acceptLanguagesFromRequest =
-                    request.getHeaders("Accept-Language")[0].getValue().replaceAll(";q=[^,]+", "");
-
-            String acceptLanguagesFromJS = JSUtils.executeJavaScriptAndWaitForResult(this,
-                    mAwContents, mContentsClient.getOnEvaluateJavaScriptResultHelper(),
-                    "navigator.languages.join(',')");
-            assertEquals(acceptLanguagesFromJS, "\"" + acceptLanguagesFromRequest + "\"");
-
-            // Now test locale change at run time
-            Locale.setDefault(new Locale("de", "DE"));
-            mAwContents.setLocale("de-DE");
-            mAwContents.getSettings().updateAcceptLanguages();
-
-            loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
-
-            request = webServer.getLastRequest(pagePath);
-            assertEquals(2, webServer.getRequestCount(pagePath));
-
-            assertEquals(LocaleUtils.getDefaultLocale(), getPrimaryAcceptLanguage(request));
-
-            acceptLanguagesFromRequest =
-                    request.getHeaders("Accept-Language")[0].getValue().replaceAll(";q=[^,]+", "");
-            acceptLanguagesFromJS = JSUtils.executeJavaScriptAndWaitForResult(this, mAwContents,
-                    mContentsClient.getOnEvaluateJavaScriptResultHelper(),
-                    "navigator.languages.join(',')");
-            assertEquals(acceptLanguagesFromJS, "\"" + acceptLanguagesFromRequest + "\"");
-        } finally {
-            webServer.shutdown();
+        String[] acceptLanguagesJs = getAcceptLanguages(
+                JSUtils.executeJavaScriptAndWaitForResult(
+                        this, mAwContents, mContentsClient.getOnEvaluateJavaScriptResultHelper(),
+                        "navigator.languages.join(',')"));
+        assertEquals(acceptLanguagesJs.length, acceptLanguages.length);
+        for (int i = 0; i < acceptLanguagesJs.length; ++i) {
+            assertEquals(acceptLanguagesJs[i], acceptLanguages[i]);
         }
+
+        // Now test locale change at run time
+        Locale.setDefault(new Locale("de", "DE"));
+        mAwContents.setLocale("de-DE");
+        mAwContents.getSettings().updateAcceptLanguages();
+
+        loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+
+        acceptLanguages = getAcceptLanguages(
+                JSUtils.executeJavaScriptAndWaitForResult(
+                        this, mAwContents, mContentsClient.getOnEvaluateJavaScriptResultHelper(),
+                        "document.body.textContent"));
+        assertEquals(LocaleUtils.getDefaultLocale(), acceptLanguages[0]);
     }
 }
