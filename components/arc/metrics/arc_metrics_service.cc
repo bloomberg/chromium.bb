@@ -139,9 +139,21 @@ void ArcMetricsService::ReportBootProgress(
     std::string title = "Arc." + event->event.get();
     base::TimeDelta elapsed_time = base::TimeDelta::FromMilliseconds(
         event->uptimeMillis - arc_start_time_in_ms);
-    UMA_HISTOGRAM_TIMES(title, elapsed_time);
+    // Note: This leaks memory, which is expected behavior.
+    base::HistogramBase* histogram =
+        base::Histogram::FactoryTimeGet(
+            title,
+            base::TimeDelta::FromMilliseconds(1),
+            base::TimeDelta::FromSeconds(30),
+            50,
+            base::HistogramBase::kUmaTargetedHistogramFlag);
+    histogram->AddTime(elapsed_time);
     if (event->event.get().compare(kBootProgressEnableScreen) == 0)
-      UMA_HISTOGRAM_TIMES("Arc.AndroidBootTime", elapsed_time);
+      UMA_HISTOGRAM_CUSTOM_TIMES("Arc.AndroidBootTime",
+                                 elapsed_time,
+                                 base::TimeDelta::FromMilliseconds(1),
+                                 base::TimeDelta::FromSeconds(30),
+                                 50);
   }
 }
 
