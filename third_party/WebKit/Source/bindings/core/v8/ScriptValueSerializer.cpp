@@ -808,105 +808,100 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerialize(v8::Local<v
     return nullptr;
 }
 
-ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeObject(v8::Local<v8::Object> jsObject, ScriptValueSerializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeObject(v8::Local<v8::Object> object, ScriptValueSerializer::StateBase* next)
 {
-    DCHECK(!jsObject.IsEmpty());
+    DCHECK(!object.IsEmpty());
 
-    if (jsObject->IsArrayBufferView()) {
-        return writeAndGreyArrayBufferView(jsObject, next);
+
+    if (object->IsArrayBufferView()) {
+        return writeAndGreyArrayBufferView(object, next);
     }
-    if (V8MessagePort::hasInstance(jsObject, isolate())) {
+    if (object->IsArrayBuffer()) {
+        return writeAndGreyArrayBuffer(object, next);
+    }
+    if (object->IsSharedArrayBuffer()) {
         uint32_t index;
-        if (!m_transferredMessagePorts.tryGet(jsObject, &index)) {
+        if (!m_transferredArrayBuffers.tryGet(object, &index)) {
+            return handleError(DataCloneError, "A SharedArrayBuffer could not be cloned.", next);
+        }
+        return writeTransferredSharedArrayBuffer(object, index, next);
+    }
+
+    // Transferable only objects
+    if (V8MessagePort::hasInstance(object, isolate())) {
+        uint32_t index;
+        if (!m_transferredMessagePorts.tryGet(object, &index)) {
             return handleError(DataCloneError, "A MessagePort could not be cloned.", next);
         }
         m_writer.writeTransferredMessagePort(index);
         return nullptr;
     }
-    if (jsObject->IsArrayBuffer()) {
+    if (V8OffscreenCanvas::hasInstance(object, isolate())) {
         uint32_t index;
-        if (m_transferredArrayBuffers.tryGet(jsObject, &index)) {
-            return writeTransferredArrayBuffer(jsObject, index, next);
+        if (!m_transferredOffscreenCanvas.tryGet(object, &index)) {
+            return handleError(DataCloneError, "A OffscreenCanvas could not be cloned.", next);
         }
-        greyObject(jsObject);
-        return writeArrayBuffer(jsObject, next);
+        return writeTransferredOffscreenCanvas(object, index, next);
     }
-    if (V8ImageBitmap::hasInstance(jsObject, isolate())) {
-        uint32_t index;
-        if (m_transferredImageBitmaps.tryGet(jsObject, &index)) {
-            return writeTransferredImageBitmap(jsObject, index, next);
-        }
-        greyObject(jsObject);
-        return writeImageBitmap(jsObject, next);
-    }
-    if (jsObject->IsSharedArrayBuffer()) {
-        uint32_t index;
-        if (m_transferredArrayBuffers.tryGet(jsObject, &index)) {
-            return writeTransferredSharedArrayBuffer(jsObject, index, next);
-        }
-    }
-    if (V8OffscreenCanvas::hasInstance(jsObject, isolate())) {
-        uint32_t index;
-        if (m_transferredOffscreenCanvas.tryGet(jsObject, &index)) {
-            return writeTransferredOffscreenCanvas(jsObject, index, next);
-        }
+    if (V8ImageBitmap::hasInstance(object, isolate())) {
+        return writeAndGreyImageBitmap(object, next);
     }
 
-    greyObject(jsObject);
+    greyObject(object);
 
-    if (jsObject->IsDate()) {
-        m_writer.writeDate(jsObject.As<v8::Date>()->ValueOf());
+    if (object->IsDate()) {
+        m_writer.writeDate(object.As<v8::Date>()->ValueOf());
         return nullptr;
     }
-    if (jsObject->IsStringObject()) {
-        writeStringObject(jsObject);
+    if (object->IsStringObject()) {
+        writeStringObject(object);
         return nullptr;
     }
-    if (jsObject->IsNumberObject()) {
-        writeNumberObject(jsObject);
+    if (object->IsNumberObject()) {
+        writeNumberObject(object);
         return nullptr;
     }
-    if (jsObject->IsBooleanObject()) {
-        writeBooleanObject(jsObject);
+    if (object->IsBooleanObject()) {
+        writeBooleanObject(object);
         return nullptr;
     }
-    if (jsObject->IsArray()) {
-        return startArrayState(jsObject.As<v8::Array>(), next);
+    if (object->IsArray()) {
+        return startArrayState(object.As<v8::Array>(), next);
     }
-    if (jsObject->IsMap()) {
-        return startMapState(jsObject.As<v8::Map>(), next);
+    if (object->IsMap()) {
+        return startMapState(object.As<v8::Map>(), next);
     }
-    if (jsObject->IsSet()) {
-        return startSetState(jsObject.As<v8::Set>(), next);
+    if (object->IsSet()) {
+        return startSetState(object.As<v8::Set>(), next);
     }
 
-    if (V8File::hasInstance(jsObject, isolate())) {
-        return writeFile(jsObject, next);
+    if (V8File::hasInstance(object, isolate())) {
+        return writeFile(object, next);
     }
-    if (V8Blob::hasInstance(jsObject, isolate())) {
-        return writeBlob(jsObject, next);
+    if (V8Blob::hasInstance(object, isolate())) {
+        return writeBlob(object, next);
     }
-    if (V8FileList::hasInstance(jsObject, isolate())) {
-        return writeFileList(jsObject, next);
+    if (V8FileList::hasInstance(object, isolate())) {
+        return writeFileList(object, next);
     }
-    if (V8ImageData::hasInstance(jsObject, isolate())) {
-        writeImageData(jsObject);
+    if (V8ImageData::hasInstance(object, isolate())) {
+        writeImageData(object);
         return nullptr;
     }
-    if (jsObject->IsRegExp()) {
-        writeRegExp(jsObject);
+    if (object->IsRegExp()) {
+        writeRegExp(object);
         return nullptr;
     }
-    if (V8CompositorProxy::hasInstance(jsObject, isolate())) {
-        return writeCompositorProxy(jsObject, next);
+    if (V8CompositorProxy::hasInstance(object, isolate())) {
+        return writeCompositorProxy(object, next);
     }
 
     // Since IsNativeError is expensive, this check should always be the last check.
-    if (isHostObject(jsObject) || jsObject->IsCallable() || jsObject->IsNativeError()) {
+    if (isHostObject(object) || object->IsCallable() || object->IsNativeError()) {
         return handleError(DataCloneError, "An object could not be cloned.", next);
     }
 
-    return startObjectState(jsObject, next);
+    return startObjectState(object, next);
 }
 
 ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeArrayBuffer(v8::Local<v8::Value> arrayBuffer, ScriptValueSerializer::StateBase* next)
@@ -1087,15 +1082,22 @@ void ScriptValueSerializer::writeImageData(v8::Local<v8::Value> value)
     m_writer.writeImageData(imageData->width(), imageData->height(), pixelArray->data(), pixelArray->length());
 }
 
-ScriptValueSerializer::StateBase* ScriptValueSerializer::writeImageBitmap(v8::Local<v8::Value> value, ScriptValueSerializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeAndGreyImageBitmap(v8::Local<v8::Object> object, ScriptValueSerializer::StateBase* next)
 {
-    ImageBitmap* imageBitmap = V8ImageBitmap::toImpl(value.As<v8::Object>());
+    ImageBitmap* imageBitmap = V8ImageBitmap::toImpl(object);
     if (!imageBitmap)
         return nullptr;
     if (imageBitmap->isNeutered())
         return handleError(DataCloneError, "An ImageBitmap is detached and could not be cloned.", next);
-    OwnPtr<uint8_t[]> pixelData = imageBitmap->copyBitmapData(PremultiplyAlpha);
-    m_writer.writeImageBitmap(imageBitmap->width(), imageBitmap->height(), pixelData.get(), imageBitmap->width() * imageBitmap->height() * 4);
+
+    uint32_t index;
+    if (m_transferredImageBitmaps.tryGet(object, &index)) {
+        m_writer.writeTransferredImageBitmap(index);
+    } else {
+        greyObject(object);
+        OwnPtr<uint8_t[]> pixelData = imageBitmap->copyBitmapData(PremultiplyAlpha);
+        m_writer.writeImageBitmap(imageBitmap->width(), imageBitmap->height(), pixelData.get(), imageBitmap->width() * imageBitmap->height() * 4);
+    }
     return nullptr;
 }
 
@@ -1134,38 +1136,22 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeAndGreyArrayBuffer
     return 0;
 }
 
-ScriptValueSerializer::StateBase* ScriptValueSerializer::writeArrayBuffer(v8::Local<v8::Value> value, ScriptValueSerializer::StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeAndGreyArrayBuffer(v8::Local<v8::Object> object, ScriptValueSerializer::StateBase* next)
 {
-    DOMArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(value.As<v8::Object>());
+    DOMArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(object);
     if (!arrayBuffer)
-        return 0;
+        return nullptr;
     if (arrayBuffer->isNeutered())
         return handleError(DataCloneError, "An ArrayBuffer is neutered and could not be cloned.", next);
-    ASSERT(!m_transferredArrayBuffers.contains(value.As<v8::Object>()));
-    m_writer.writeArrayBuffer(*arrayBuffer);
-    return 0;
-}
 
-ScriptValueSerializer::StateBase* ScriptValueSerializer::writeTransferredArrayBuffer(v8::Local<v8::Value> value, uint32_t index, ScriptValueSerializer::StateBase* next)
-{
-    DOMArrayBuffer* arrayBuffer = V8ArrayBuffer::toImpl(value.As<v8::Object>());
-    if (!arrayBuffer)
-        return 0;
-    if (arrayBuffer->isNeutered())
-        return handleError(DataCloneError, "An ArrayBuffer is neutered and could not be cloned.", next);
-    m_writer.writeTransferredArrayBuffer(index);
-    return 0;
-}
-
-ScriptValueSerializer::StateBase* ScriptValueSerializer::writeTransferredImageBitmap(v8::Local<v8::Value> value, uint32_t index, ScriptValueSerializer::StateBase* next)
-{
-    ImageBitmap* imageBitmap = V8ImageBitmap::toImpl(value.As<v8::Object>());
-    if (!imageBitmap)
-        return 0;
-    if (imageBitmap->isNeutered())
-        return handleError(DataCloneError, "An ImageBitmap is detached and could not be cloned.", next);
-    m_writer.writeTransferredImageBitmap(index);
-    return 0;
+    uint32_t index;
+    if (m_transferredArrayBuffers.tryGet(object, &index)) {
+        m_writer.writeTransferredArrayBuffer(index);
+    } else {
+        greyObject(object);
+        m_writer.writeArrayBuffer(*arrayBuffer);
+    }
+    return nullptr;
 }
 
 ScriptValueSerializer::StateBase* ScriptValueSerializer::writeTransferredOffscreenCanvas(v8::Local<v8::Value> value, uint32_t index, ScriptValueSerializer::StateBase* next)

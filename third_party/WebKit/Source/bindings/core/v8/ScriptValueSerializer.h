@@ -404,12 +404,10 @@ private:
     StateBase* writeFile(v8::Local<v8::Value>, StateBase* next);
     StateBase* writeFileList(v8::Local<v8::Value>, StateBase* next);
     void writeImageData(v8::Local<v8::Value>);
-    StateBase* writeImageBitmap(v8::Local<v8::Value>, StateBase* next);
+    StateBase* writeAndGreyImageBitmap(v8::Local<v8::Object>, StateBase* next);
     void writeRegExp(v8::Local<v8::Value>);
     StateBase* writeAndGreyArrayBufferView(v8::Local<v8::Object>, StateBase* next);
-    StateBase* writeArrayBuffer(v8::Local<v8::Value>, StateBase* next);
-    StateBase* writeTransferredArrayBuffer(v8::Local<v8::Value>, uint32_t index, StateBase* next);
-    StateBase* writeTransferredImageBitmap(v8::Local<v8::Value>, uint32_t index, StateBase* next);
+    StateBase* writeAndGreyArrayBuffer(v8::Local<v8::Object>, StateBase* next);
     StateBase* writeTransferredOffscreenCanvas(v8::Local<v8::Value>, uint32_t index, StateBase* next);
     StateBase* writeTransferredSharedArrayBuffer(v8::Local<v8::Value>, uint32_t index, StateBase* next);
     static bool shouldSerializeDensely(uint32_t length, uint32_t propertyCount);
