@@ -127,11 +127,7 @@ remoting.ConnectionStats.prototype.update = function(stats) {
    * @return {string} Formatted number.
    */
   function formatStatNumber(value, units, digits) {
-    if (value != undefined) {
-      return value.toFixed(digits) + ' ' + units;
-    } else {
-      return "n/a";
-    }
+    return value.toFixed(digits) + ' ' + units;
   }
 
   /**
@@ -141,8 +137,7 @@ remoting.ConnectionStats.prototype.update = function(stats) {
    * @return {string} "type: avg, max; " e.g. "RTT: 8.0, 13; "
    */
   function formatStat(type, avg, max) {
-    var avgStr = (avg == undefined) ? 'n/a' : avg.toFixed(1);
-    return type + ': ' + avgStr + ', ' + max + '; ';
+    return type + ': ' + avg.toFixed(1) + ', ' + max + '; ';
   }
 
   var statistics = document.getElementById('statistics');

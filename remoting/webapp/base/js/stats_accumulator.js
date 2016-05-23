@@ -16,6 +16,8 @@
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
+(function() {
+
 /**
  * @constructor
  */
@@ -35,11 +37,28 @@ remoting.StatsAccumulator = function() {
 };
 
 /**
- * Adds values to this object.
+ * @param {Object<number>} stats
+ * @return {boolean} true if there is any non-zero value in stats, false
+ *     otherwise.
+ */
+function hasValidField(stats) {
+  for (var key in stats) {
+    if (stats[key] !== 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Adds values to this object. Do nothing if newValues has no valid field.
  *
  * @param {Object<number>} newValues
  */
 remoting.StatsAccumulator.prototype.add = function(newValues) {
+  if (!hasValidField(newValues)) {
+    return;
+  }
   for (var key in newValues) {
     this.getValueList(key).push(newValues[key]);
   }
@@ -161,10 +180,7 @@ remoting.StatsAccumulator.prototype.getPerfStats = function() {
   stats.roundtripLatency = this.calcMean('roundtripLatency');
   stats.maxRoundtripLatency = this.calcMax('maxRoundtripLatency');
 
-  for (var key in stats) {
-    if (stats[key] !== 0) {
-      return stats;
-    }
-  }
-  return null;
+  return hasValidField(stats) ? stats : null;
 };
+
+})();
