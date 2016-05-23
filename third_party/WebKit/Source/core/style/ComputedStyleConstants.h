@@ -189,7 +189,7 @@ enum EMaskSourceType { MaskAlpha, MaskLuminance };
 
 // Deprecated Flexible Box Properties
 
-enum EBoxPack { Start, Center, End, Justify };
+enum EBoxPack { BoxPackStart, BoxPackCenter, BoxPackEnd, BoxPackJustify };
 enum EBoxAlignment { BSTRETCH, BSTART, BCENTER, BEND, BBASELINE };
 enum EBoxOrient { HORIZONTAL, VERTICAL };
 enum EBoxLines { SINGLE, MULTIPLE };

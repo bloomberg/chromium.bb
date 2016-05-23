@@ -1728,7 +1728,7 @@ public:
     static EBoxDirection initialBoxDirection() { return BNORMAL; }
     static EBoxLines initialBoxLines() { return SINGLE; }
     static EBoxOrient initialBoxOrient() { return HORIZONTAL; }
-    static EBoxPack initialBoxPack() { return Start; }
+    static EBoxPack initialBoxPack() { return BoxPackStart; }
     static float initialBoxFlex() { return 0.0f; }
     static unsigned initialBoxFlexGroup() { return 1; }
     static unsigned initialBoxOrdinalGroup() { return 1; }

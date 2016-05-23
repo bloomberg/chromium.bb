@@ -648,11 +648,11 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
 
     LayoutBlock::finishDelayUpdateScrollInfo(nullptr, nullptr);
 
-    if (remainingSpace > 0 && ((style()->isLeftToRightDirection() && style()->boxPack() != Start)
-        || (!style()->isLeftToRightDirection() && style()->boxPack() != End))) {
+    if (remainingSpace > 0 && ((style()->isLeftToRightDirection() && style()->boxPack() != BoxPackStart)
+        || (!style()->isLeftToRightDirection() && style()->boxPack() != BoxPackEnd))) {
         // Children must be repositioned.
         LayoutUnit offset;
-        if (style()->boxPack() == Justify) {
+        if (style()->boxPack() == BoxPackJustify) {
             // Determine the total number of children.
             int totalChildren = 0;
             for (LayoutBox* child = iterator.first(); child; child = iterator.next()) {
@@ -683,7 +683,7 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
                 }
             }
         } else {
-            if (style()->boxPack() == Center)
+            if (style()->boxPack() == BoxPackCenter)
                 offset += remainingSpace / 2;
             else // END for LTR, START for RTL
                 offset += remainingSpace;
@@ -899,10 +899,10 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
 
     LayoutBlock::finishDelayUpdateScrollInfo(nullptr, nullptr);
 
-    if (style()->boxPack() != Start && remainingSpace > 0) {
+    if (style()->boxPack() != BoxPackStart && remainingSpace > 0) {
         // Children must be repositioned.
         LayoutUnit offset;
-        if (style()->boxPack() == Justify) {
+        if (style()->boxPack() == BoxPackJustify) {
             // Determine the total number of children.
             int totalChildren = 0;
             for (LayoutBox* child = iterator.first(); child; child = iterator.next()) {
@@ -933,7 +933,7 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
                 }
             }
         } else {
-            if (style()->boxPack() == Center)
+            if (style()->boxPack() == BoxPackCenter)
                 offset += remainingSpace / 2;
             else // END
                 offset += remainingSpace;

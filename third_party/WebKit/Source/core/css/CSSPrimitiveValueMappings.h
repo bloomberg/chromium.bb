@@ -687,16 +687,16 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EBoxPack e)
 {
     init(UnitType::ValueID);
     switch (e) {
-    case Start:
+    case BoxPackStart:
         m_value.valueID = CSSValueStart;
         break;
-    case Center:
+    case BoxPackCenter:
         m_value.valueID = CSSValueCenter;
         break;
-    case End:
+    case BoxPackEnd:
         m_value.valueID = CSSValueEnd;
         break;
-    case Justify:
+    case BoxPackJustify:
         m_value.valueID = CSSValueJustify;
         break;
     }
@@ -707,19 +707,19 @@ template<> inline EBoxPack CSSPrimitiveValue::convertTo() const
     ASSERT(isValueID());
     switch (m_value.valueID) {
     case CSSValueStart:
-        return Start;
+        return BoxPackStart;
     case CSSValueEnd:
-        return End;
+        return BoxPackEnd;
     case CSSValueCenter:
-        return Center;
+        return BoxPackCenter;
     case CSSValueJustify:
-        return Justify;
+        return BoxPackJustify;
     default:
         break;
     }
 
     ASSERT_NOT_REACHED();
-    return Justify;
+    return BoxPackJustify;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EBoxAlignment e)
