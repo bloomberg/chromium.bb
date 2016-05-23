@@ -62,6 +62,10 @@ using google_breakpad::UContextReader;
 
 const size_t kLineBufferSize = 2048;
 
+#if !defined(__LP64__)
+// The following are only used by DumpFreeSpace, so need to be compiled
+// in conditionally in the same way.
+
 template <typename Dst, typename Src>
 Dst saturated_cast(Src src) {
   if (src >= std::numeric_limits<Dst>::max())
@@ -121,6 +125,8 @@ size_t NextOrderedMapping(
   }
   return best;
 }
+
+#endif  // !__LP64__
 
 class MicrodumpWriter {
  public:
