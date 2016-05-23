@@ -71394,6 +71394,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1128"
       label="BLUETOOTHLOWENERGY_NOTIFYCHARACTERISTICVALUECHANGED"/>
   <int value="1129" label="BLUETOOTHLOWENERGY_REMOVESERVICE"/>
+  <int value="1130" label="AUTOFILLPRIVATE_GETADDRESSLIST"/>
+  <int value="1131" label="AUTOFILLPRIVATE_GETCREDITCARDLIST"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

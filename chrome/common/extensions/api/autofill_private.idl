@@ -165,10 +165,11 @@ namespace autofillPrivate {
     DOMString countryCode;
   };
 
-  callback GetAddressComponentsCallback =
-      void(AddressComponents components);
+  callback GetAddressComponentsCallback = void(AddressComponents components);
+  callback GetAddressListCallback = void(AddressEntry[] entries);
   callback ValidatePhoneNumbersCallback =
       void(DOMString[] validatedPhoneNumbers);
+  callback GetCreditCardListCallback = void(CreditCardEntry[] entries);
 
   interface Functions {
     // Saves the given address. If |address| has an empty string as its ID, it
@@ -185,6 +186,10 @@ namespace autofillPrivate {
     // |callback|: Callback which will be called with components.
     static void getAddressComponents(DOMString countryCode,
         GetAddressComponentsCallback callback);
+
+    // Gets the list of addresses.
+    // |callback|: Callback which will be called with the list of addresses.
+    static void getAddressList(GetAddressListCallback callback);
 
     // Saves the given credit card. If |card| has an empty string as its
     // ID, it will be assigned a new one and added as a new entry.
@@ -205,6 +210,10 @@ namespace autofillPrivate {
     // |callback|: Callback which will be called with validated phone numbers.
     static void validatePhoneNumbers(ValidatePhoneParams params,
         ValidatePhoneNumbersCallback callback);
+
+    // Gets the list of credit cards.
+    // |callback|: Callback which will be called with the list of credit cards.
+    static void getCreditCardList(GetCreditCardListCallback callback);
 
     // Clears the data associated with a wallet card which was saved
     // locally so that the saved copy is masked (e.g., "Card ending

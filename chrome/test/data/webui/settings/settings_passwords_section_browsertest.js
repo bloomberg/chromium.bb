@@ -11,6 +11,10 @@ var ROOT_PATH = '../../../../../';
 GEN_INCLUDE(
     [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
 
+// Fake data generator.
+GEN_INCLUDE([ROOT_PATH +
+    'chrome/test/data/webui/settings/passwords_and_autofill_fake_data.js']);
+
 /**
  * @constructor
  * @extends {PolymerTest}
@@ -33,35 +37,6 @@ SettingsPasswordSectionBrowserTest.prototype = {
 
     // Test is run on an individual element that won't have a page language.
     this.accessibilityAuditConfig.auditRulesToIgnore.push('humanLangMissing');
-  },
-
-  /**
-   * Creates a single item for the list of passwords.
-   * @param {string} url
-   * @param {string} username
-   * @param {number} passwordLength
-   * @return {chrome.passwordsPrivate.PasswordUiEntry}
-   * @private
-   */
-  createPasswordItem_: function(url, username, passwordLength) {
-    return {
-      loginPair: {originUrl: url, username: username},
-      linkUrl: 'http://' + url + '/login',
-      numCharactersInPassword: passwordLength
-    };
-  },
-
-  /**
-   * Creates a single item for the list of password exceptions.
-   * @param {string} url
-   * @return {chrome.passwordsPrivate.ExceptionPair}
-   * @private
-   */
-  createExceptionItem_: function(url) {
-    return {
-      exceptionUrl: url,
-      linkUrl: 'http://' + url + '/login',
-    };
   },
 
   /**
@@ -200,12 +175,12 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       assertEquals(self.browsePreload, document.location.href);
 
       var passwordList = [
-        self.createPasswordItem_('site1.com', 'luigi', 1),
-        self.createPasswordItem_('longwebsite.com', 'peach', 7),
-        self.createPasswordItem_('site2.com', 'mario', 70),
-        self.createPasswordItem_('site1.com', 'peach', 11),
-        self.createPasswordItem_('google.com', 'mario', 7),
-        self.createPasswordItem_('site2.com', 'luigi', 8),
+        FakeDataMaker.passwordEntry('site1.com', 'luigi', 1),
+        FakeDataMaker.passwordEntry('longwebsite.com', 'peach', 7),
+        FakeDataMaker.passwordEntry('site2.com', 'mario', 70),
+        FakeDataMaker.passwordEntry('site1.com', 'peach', 11),
+        FakeDataMaker.passwordEntry('google.com', 'mario', 7),
+        FakeDataMaker.passwordEntry('site2.com', 'luigi', 8),
       ];
 
       var passwordsSection = self.createPasswordsSection_(passwordList, []);
@@ -222,9 +197,9 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
     // Test verifies that removing a password will update the elements.
     test('verifyPasswordListRemove', function() {
       var passwordList = [
-        self.createPasswordItem_('anotherwebsite.com', 'luigi', 1),
-        self.createPasswordItem_('longwebsite.com', 'peach', 7),
-        self.createPasswordItem_('website.com', 'mario', 70)
+        FakeDataMaker.passwordEntry('anotherwebsite.com', 'luigi', 1),
+        FakeDataMaker.passwordEntry('longwebsite.com', 'peach', 7),
+        FakeDataMaker.passwordEntry('website.com', 'mario', 70)
       ];
 
       var passwordsSection = self.createPasswordsSection_(passwordList, []);
@@ -249,12 +224,12 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
     // event. Does not actually remove any passwords.
     test('verifyPasswordItemRemoveButton', function(done) {
       var passwordList = [
-        self.createPasswordItem_('one', 'six', 5),
-        self.createPasswordItem_('two', 'five', 3),
-        self.createPasswordItem_('three', 'four', 1),
-        self.createPasswordItem_('four', 'three', 2),
-        self.createPasswordItem_('five', 'two', 4),
-        self.createPasswordItem_('six', 'one', 6),
+        FakeDataMaker.passwordEntry('one', 'six', 5),
+        FakeDataMaker.passwordEntry('two', 'five', 3),
+        FakeDataMaker.passwordEntry('three', 'four', 1),
+        FakeDataMaker.passwordEntry('four', 'three', 2),
+        FakeDataMaker.passwordEntry('five', 'two', 4),
+        FakeDataMaker.passwordEntry('six', 'one', 6),
       ];
 
       var passwordsSection = self.createPasswordsSection_(passwordList, []);
@@ -295,12 +270,12 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
 
     test('verifyPasswordExceptions', function() {
       var exceptionList = [
-        self.createExceptionItem_('docs.google.com'),
-        self.createExceptionItem_('mail.com'),
-        self.createExceptionItem_('google.com'),
-        self.createExceptionItem_('inbox.google.com'),
-        self.createExceptionItem_('maps.google.com'),
-        self.createExceptionItem_('plus.google.com'),
+        FakeDataMaker.exceptionEntry('docs.google.com'),
+        FakeDataMaker.exceptionEntry('mail.com'),
+        FakeDataMaker.exceptionEntry('google.com'),
+        FakeDataMaker.exceptionEntry('inbox.google.com'),
+        FakeDataMaker.exceptionEntry('maps.google.com'),
+        FakeDataMaker.exceptionEntry('plus.google.com'),
       ];
 
       var passwordsSection = self.createPasswordsSection_([], exceptionList);
@@ -318,12 +293,12 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
     // Test verifies that removing an exception will update the elements.
     test('verifyPasswordExceptionRemove', function() {
       var exceptionList = [
-        self.createExceptionItem_('docs.google.com'),
-        self.createExceptionItem_('mail.com'),
-        self.createExceptionItem_('google.com'),
-        self.createExceptionItem_('inbox.google.com'),
-        self.createExceptionItem_('maps.google.com'),
-        self.createExceptionItem_('plus.google.com'),
+        FakeDataMaker.exceptionEntry('docs.google.com'),
+        FakeDataMaker.exceptionEntry('mail.com'),
+        FakeDataMaker.exceptionEntry('google.com'),
+        FakeDataMaker.exceptionEntry('inbox.google.com'),
+        FakeDataMaker.exceptionEntry('maps.google.com'),
+        FakeDataMaker.exceptionEntry('plus.google.com'),
       ];
 
       var passwordsSection = self.createPasswordsSection_([], exceptionList);
@@ -348,12 +323,12 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
     // event. Does not actually remove any exceptions.
     test('verifyPasswordExceptionRemoveButton', function(done) {
       var exceptionList = [
-        self.createExceptionItem_('docs.google.com'),
-        self.createExceptionItem_('mail.com'),
-        self.createExceptionItem_('google.com'),
-        self.createExceptionItem_('inbox.google.com'),
-        self.createExceptionItem_('maps.google.com'),
-        self.createExceptionItem_('plus.google.com'),
+        FakeDataMaker.exceptionEntry('docs.google.com'),
+        FakeDataMaker.exceptionEntry('mail.com'),
+        FakeDataMaker.exceptionEntry('google.com'),
+        FakeDataMaker.exceptionEntry('inbox.google.com'),
+        FakeDataMaker.exceptionEntry('maps.google.com'),
+        FakeDataMaker.exceptionEntry('plus.google.com'),
       ];
 
       var passwordsSection = self.createPasswordsSection_([], exceptionList);
@@ -389,7 +364,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
 
     test('usePasswordDialogTwice', function() {
       var BLANK_PASSWORD = '       ';
-      var item = self.createPasswordItem_('google.com', 'homer',
+      var item = FakeDataMaker.passwordEntry('google.com', 'homer',
                                           BLANK_PASSWORD.length);
       var passwordDialog = self.createPasswordDialog_(item);
 
@@ -410,7 +385,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       Polymer.dom.flush();
 
       var blankPassword2 = ' '.repeat(17);
-      var item2 = self.createPasswordItem_('drive.google.com', 'marge',
+      var item2 = FakeDataMaker.passwordEntry('drive.google.com', 'marge',
                                            blankPassword2.length);
 
       passwordDialog.item = item2;
@@ -430,7 +405,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
 
     test('showSavedPassword', function() {
       var PASSWORD = 'bAn@n@5';
-      var item = self.createPasswordItem_('goo.gl', 'bart', PASSWORD.length);
+      var item = FakeDataMaker.passwordEntry('goo.gl', 'bart', PASSWORD.length);
       var passwordDialog = self.createPasswordDialog_(item);
 
       passwordDialog.open();
@@ -450,7 +425,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
 
     // Test will timeout if event is not received.
     test('onShowSavedPassword', function(done) {
-      var item = self.createPasswordItem_('goo.gl', 'bart', 1);
+      var item = FakeDataMaker.passwordEntry('goo.gl', 'bart', 1);
       var passwordDialog = self.createPasswordDialog_(item);
 
       passwordDialog.open();

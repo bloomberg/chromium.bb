@@ -136,6 +136,14 @@ chrome.autofillPrivate.saveAddress = function(address) {};
 chrome.autofillPrivate.getAddressComponents = function(countryCode, callback) {};
 
 /**
+ * Gets the list of addresses.
+ * @param {function(!Array<!chrome.autofillPrivate.AddressEntry>):void} callback
+ *     Callback which will be called with the list of addresses.
+ * @see https://developer.chrome.com/extensions/autofillPrivate#method-getAddressList
+ */
+chrome.autofillPrivate.getAddressList = function(callback) {};
+
+/**
  * Saves the given credit card. If |card| has an empty string as its ID, it will
  * be assigned a new one and added as a new entry.
  * @param {!chrome.autofillPrivate.CreditCardEntry} card The card entry to save.
@@ -161,6 +169,14 @@ chrome.autofillPrivate.removeEntry = function(guid) {};
  * @see https://developer.chrome.com/extensions/autofillPrivate#method-validatePhoneNumbers
  */
 chrome.autofillPrivate.validatePhoneNumbers = function(params, callback) {};
+
+/**
+ * Gets the list of credit cards.
+ * @param {function(!Array<!chrome.autofillPrivate.CreditCardEntry>):void}
+ *     callback Callback which will be called with the list of credit cards.
+ * @see https://developer.chrome.com/extensions/autofillPrivate#method-getCreditCardList
+ */
+chrome.autofillPrivate.getCreditCardList = function(callback) {};
 
 /**
  * Clears the data associated with a wallet card which was saved locally so that

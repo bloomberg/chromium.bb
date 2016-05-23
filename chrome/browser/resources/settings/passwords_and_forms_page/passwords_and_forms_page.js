@@ -27,10 +27,22 @@ PasswordManager.PlaintextPasswordEvent;
 
 PasswordManager.prototype = {
   /**
-   * Request the list of saved passwords and observe future changes.
+   * Add an observer to the list of saved passwords.
+   * @param {function(!Array<!PasswordManager.PasswordUiEntry>):void} listener
+   */
+  addSavedPasswordListChangedListener: assertNotReached,
+
+  /**
+   * Remove an observer from the list of saved passwords.
+   * @param {function(!Array<!PasswordManager.PasswordUiEntry>):void} listener
+   */
+  removeSavedPasswordListChangedListener: assertNotReached,
+
+  /**
+   * Request the list of saved passwords.
    * @param {function(!Array<!PasswordManager.PasswordUiEntry>):void} callback
    */
-  setSavedPasswordListChangedCallback: assertNotReached,
+  getSavedPasswordList: assertNotReached,
 
   /**
    * Should remove the saved password and notify that the list has changed.
@@ -40,30 +52,87 @@ PasswordManager.prototype = {
   removeSavedPassword: assertNotReached,
 
   /**
-   * Request the list of password exceptions and observe future changes.
+   * Add an observer to the list of password exceptions.
+   * @param {function(!Array<!PasswordManager.ExceptionPair>):void} listener
+   */
+  addExceptionListChangedListener: assertNotReached,
+
+  /**
+   * Remove an observer from the list of password exceptions.
+   * @param {function(!Array<!PasswordManager.ExceptionPair>):void} listener
+   */
+  removeExceptionListChangedListener: assertNotReached,
+
+  /**
+   * Request the list of password exceptions.
    * @param {function(!Array<!PasswordManager.ExceptionPair>):void} callback
    */
-  setExceptionListChangedCallback: assertNotReached,
+  getExceptionList: assertNotReached,
 
   /**
    * Should remove the password exception and notify that the list has changed.
    * @param {!string} exception The exception that should be removed from the
    *     list. No-op if |exception| is not in the list.
    */
-  removePasswordException: assertNotReached,
+  removeException: assertNotReached,
 
   /**
-   * Register a callback for when a password is requested.
-   * @param {function(!Array<!PasswordManager.LoginPair>):void} callback
-   */
-  onPlaintextPasswordRequestedCallback: assertNotReached,
-
-  /**
-   * Should request the saved password for a given login pair.
+   * Gets the saved password for a given login pair.
    * @param {!PasswordManager.LoginPair} loginPair The saved password that
    *     should be retrieved.
+   * @param {function(!PasswordManager.PlaintextPasswordEvent):void} callback
    */
-  requestPlaintextPassword: assertNotReached,
+  getPlaintextPassword: assertNotReached,
+};
+
+/**
+ * Interface for all callbacks to the autofill API.
+ * @interface
+ */
+function AutofillManager() {}
+
+/** @typedef {chrome.autofillPrivate.AddressEntry} */
+AutofillManager.AddressEntry;
+
+/** @typedef {chrome.autofillPrivate.CreditCardEntry} */
+AutofillManager.CreditCardEntry;
+
+AutofillManager.prototype = {
+  /**
+   * Add an observer to the list of addresses.
+   * @param {function(!Array<!AutofillManager.AddressEntry>):void} listener
+   */
+  addAddressListChangedListener: assertNotReached,
+
+  /**
+   * Remove an observer from the list of addresses.
+   * @param {function(!Array<!AutofillManager.AddressEntry>):void} listener
+   */
+  removeAddressListChangedListener: assertNotReached,
+
+  /**
+   * Request the list of addresses.
+   * @param {function(!Array<!AutofillManager.AddressEntry>):void} callback
+   */
+  getAddressList: assertNotReached,
+
+  /**
+   * Add an observer to the list of credit cards.
+   * @param {function(!Array<!AutofillManager.CreditCardEntry>):void} listener
+   */
+  addCreditCardListChangedListener: assertNotReached,
+
+  /**
+   * Remove an observer from the list of credit cards.
+   * @param {function(!Array<!AutofillManager.CreditCardEntry>):void} listener
+   */
+  removeCreditCardListChangedListener: assertNotReached,
+
+  /**
+   * Request the list of credit cards.
+   * @param {function(!Array<!AutofillManager.CreditCardEntry>):void} callback
+   */
+  getCreditCardList: assertNotReached,
 };
 
 /**
@@ -78,11 +147,19 @@ PasswordManagerImpl.prototype = {
   __proto__: PasswordManager,
 
   /** @override */
-  setSavedPasswordListChangedCallback: function(callback) {
-    // Get the list of passwords...
+  addSavedPasswordListChangedListener: function(listener) {
+    chrome.passwordsPrivate.onSavedPasswordsListChanged.addListener(listener);
+  },
+
+  /** @override */
+  removeSavedPasswordListChangedListener: function(listener) {
+    chrome.passwordsPrivate.onSavedPasswordsListChanged.removeListener(
+        listener);
+  },
+
+  /** @override */
+  getSavedPasswordList: function(callback) {
     chrome.passwordsPrivate.getSavedPasswordList(callback);
-    // ...and listen for future changes.
-    chrome.passwordsPrivate.onSavedPasswordsListChanged.addListener(callback);
   },
 
   /** @override */
@@ -91,27 +168,82 @@ PasswordManagerImpl.prototype = {
   },
 
   /** @override */
-  setExceptionListChangedCallback: function(callback) {
-    // Get the list of exceptions...
-    chrome.passwordsPrivate.getPasswordExceptionList(callback);
-    // ...and listen for future changes.
+  addExceptionListChangedListener: function(listener) {
     chrome.passwordsPrivate.onPasswordExceptionsListChanged.addListener(
-        callback);
+        listener);
   },
 
   /** @override */
-  removePasswordException: function(exception) {
+  removeExceptionListChangedListener: function(listener) {
+    chrome.passwordsPrivate.onPasswordExceptionsListChanged.removeListener(
+        listener);
+  },
+
+  /** @override */
+  getExceptionList: function(callback) {
+    chrome.passwordsPrivate.getPasswordExceptionList(callback);
+  },
+
+  /** @override */
+  removeException: function(exception) {
     chrome.passwordsPrivate.removePasswordException(exception);
   },
 
   /** @override */
-  onPlaintextPasswordRequestedCallback: function(callback) {
-    chrome.passwordsPrivate.onPlaintextPasswordRetrieved.addListener(callback);
+  getPlaintextPassword: function(loginPair, callback) {
+    var listener = function(reply) {
+      // Only handle the reply for our loginPair request.
+      if (reply.loginPair.originUrl == loginPair.originUrl &&
+          reply.loginPair.username == loginPair.username) {
+        chrome.passwordsPrivate.onPlaintextPasswordRetrieved.removeListener(
+            listener);
+        callback(reply);
+      }
+    };
+    chrome.passwordsPrivate.onPlaintextPasswordRetrieved.addListener(listener);
+    chrome.passwordsPrivate.requestPlaintextPassword(loginPair);
+  },
+};
+
+/**
+ * Implementation that accesses the private API.
+ * @implements {AutofillManager}
+ * @constructor
+ */
+function AutofillManagerImpl() {}
+cr.addSingletonGetter(AutofillManagerImpl);
+
+AutofillManagerImpl.prototype = {
+  __proto__: AutofillManager,
+
+  /** @override */
+  addAddressListChangedListener: function(listener) {
+    chrome.autofillPrivate.onAddressListChanged.addListener(listener);
   },
 
   /** @override */
-  requestPlaintextPassword: function(loginPair) {
-    chrome.passwordsPrivate.requestPlaintextPassword(loginPair);
+  removeAddressListChangedListener: function(listener) {
+    chrome.autofillPrivate.onAddressListChanged.removeListener(listener);
+  },
+
+  /** @override */
+  getAddressList: function(callback) {
+    chrome.autofillPrivate.getAddressList(callback);
+  },
+
+  /** @override */
+  addCreditCardListChangedListener: function(listener) {
+    chrome.autofillPrivate.onCreditCardListChanged.addListener(listener);
+  },
+
+  /** @override */
+  removeCreditCardListChangedListener: function(listener) {
+    chrome.autofillPrivate.onCreditCardListChanged.removeListener(listener);
+  },
+
+  /** @override */
+  getCreditCardList: function(callback) {
+    chrome.autofillPrivate.getCreditCardList(callback);
   },
 };
 
@@ -144,7 +276,6 @@ Polymer({
      */
     savedPasswords: {
       type: Array,
-      value: function() { return []; },
     },
 
     /**
@@ -153,9 +284,24 @@ Polymer({
      */
     passwordExceptions: {
       type: Array,
-      value: function() { return []; },
     },
-  },
+
+     /**
+     * An array of saved addresses.
+     * @type {!Array<!AutofillManager.AddressEntry>}
+     */
+    addresses: {
+      type: Array,
+    },
+
+    /**
+     * An array of saved addresses.
+     * @type {!Array<!AutofillManager.CreditCardEntry>}
+     */
+    creditCards: {
+      type: Array,
+    },
+ },
 
   listeners: {
     'remove-password-exception': 'removePasswordException_',
@@ -163,19 +309,68 @@ Polymer({
     'show-password': 'showPassword_',
   },
 
+  /** @type {?function(!Array<PasswordManager.PasswordUiEntry>):void} */
+  setSavedPasswordsListener_: null,
+
+  /** @type {?function(!Array<PasswordManager.ExceptionPair>):void} */
+  setPasswordExceptionsListener_: null,
+
+  /** @type {?function(!Array<!AutofillManager.AddressEntry>)} */
+  setAddressesListener_: null,
+
+  /** @type {?function(!Array<!AutofillManager.CreditCardEntry>)} */
+  setCreditCardsListener_: null,
+
   /** @override */
   ready: function() {
-    this.passwordManager_ = PasswordManagerImpl.getInstance();
-
-    this.passwordManager_.setSavedPasswordListChangedCallback(function(list) {
+    // Create listener functions.
+    this.setSavedPasswordsListener_ = function(list) {
       this.savedPasswords = list;
-    }.bind(this));
-    this.passwordManager_.setExceptionListChangedCallback(function(list) {
+    }.bind(this);
+
+    this.setPasswordExceptionsListener_ = function(list) {
       this.passwordExceptions = list;
-    }.bind(this));
-    this.passwordManager_.onPlaintextPasswordRequestedCallback(function(e) {
-      this.$$('#passwordSection').setPassword(e.loginPair, e.plaintextPassword);
-    }.bind(this));
+    }.bind(this);
+
+    this.setAddressesListener_ = function(list) {
+      this.addresses = list;
+    }.bind(this);
+
+    this.setCreditCardsListener_ = function(list) {
+      this.creditCards = list;
+    }.bind(this);
+
+    // Set the managers. These can be overridden by tests.
+    this.passwordManager_ = PasswordManagerImpl.getInstance();
+    this.autofillManager_ = AutofillManagerImpl.getInstance();
+
+    // Request initial data.
+    this.passwordManager_.getSavedPasswordList(this.setSavedPasswordsListener_);
+    this.passwordManager_.getExceptionList(this.setPasswordExceptionsListener_);
+    this.autofillManager_.getAddressList(this.setAddressesListener_);
+    this.autofillManager_.getCreditCardList(this.setCreditCardsListener_);
+
+    // Listen for changes.
+    this.passwordManager_.addSavedPasswordListChangedListener(
+        this.setSavedPasswordsListener_);
+    this.passwordManager_.addExceptionListChangedListener(
+        this.setPasswordExceptionsListener_);
+    this.autofillManager_.addAddressListChangedListener(
+        this.setAddressesListener_);
+    this.autofillManager_.addCreditCardListChangedListener(
+        this.setCreditCardsListener_);
+  },
+
+  /** @override */
+  detached: function() {
+    this.passwordManager_.removeSavedPasswordListChangedListener(
+        this.setSavedPasswordsListener_);
+    this.passwordManager_.removeExceptionListChangedListener(
+        this.setPasswordExceptionsListener_);
+    this.autofillManager_.removeAddressListChangedListener(
+        this.setAddressesListener_);
+    this.autofillManager_.removeCreditCardListChangedListener(
+        this.setCreditCardsListener_);
   },
 
   /**
@@ -184,7 +379,7 @@ Polymer({
    * @private
    */
   removePasswordException_: function(event) {
-    this.passwordManager_.removePasswordException(event.detail);
+    this.passwordManager_.removeException(event.detail);
   },
 
   /**
@@ -229,7 +424,9 @@ Polymer({
    * @private
    */
   showPassword_: function(event) {
-    this.passwordManager_.requestPlaintextPassword(event.detail);
+    this.passwordManager_.getPlaintextPassword(event.detail, function(e) {
+      this.$$('#passwordSection').setPassword(e.loginPair, e.plaintextPassword);
+    }.bind(this));
   },
 });
 })();

@@ -25,6 +25,7 @@ var availableTests = [
     }
 
     chrome.autofillPrivate.onAddressListChanged.addListener(handler);
+    chrome.autofillPrivate.getAddressList(handler);
     chrome.autofillPrivate.saveAddress({fullNames: [NAME]});
   },
 
@@ -63,6 +64,7 @@ var availableTests = [
     }
 
     chrome.autofillPrivate.onCreditCardListChanged.addListener(handler);
+    chrome.autofillPrivate.getCreditCardList(handler);
     chrome.autofillPrivate.saveCreditCard({name: NAME});
   },
 
@@ -90,6 +92,7 @@ var availableTests = [
     }
 
     chrome.autofillPrivate.onCreditCardListChanged.addListener(handler);
+    chrome.autofillPrivate.getCreditCardList(handler);
     chrome.autofillPrivate.saveCreditCard({name: NAME});
   },
 

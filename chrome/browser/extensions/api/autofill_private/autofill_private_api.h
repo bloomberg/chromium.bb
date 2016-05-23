@@ -48,6 +48,24 @@ class AutofillPrivateGetAddressComponentsFunction :
   DISALLOW_COPY_AND_ASSIGN(AutofillPrivateGetAddressComponentsFunction);
 };
 
+class AutofillPrivateGetAddressListFunction : public UIThreadExtensionFunction {
+ public:
+  AutofillPrivateGetAddressListFunction();
+  DECLARE_EXTENSION_FUNCTION("autofillPrivate.getAddressList",
+                             AUTOFILLPRIVATE_GETADDRESSLIST);
+
+ protected:
+  ~AutofillPrivateGetAddressListFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  ChromeExtensionFunctionDetails chrome_details_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutofillPrivateGetAddressListFunction);
+};
+
 class AutofillPrivateSaveCreditCardFunction : public UIThreadExtensionFunction {
  public:
   AutofillPrivateSaveCreditCardFunction();
@@ -117,6 +135,25 @@ class AutofillPrivateMaskCreditCardFunction : public UIThreadExtensionFunction {
   ChromeExtensionFunctionDetails chrome_details_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPrivateMaskCreditCardFunction);
+};
+
+class AutofillPrivateGetCreditCardListFunction
+    : public UIThreadExtensionFunction {
+ public:
+  AutofillPrivateGetCreditCardListFunction();
+  DECLARE_EXTENSION_FUNCTION("autofillPrivate.getCreditCardList",
+                             AUTOFILLPRIVATE_GETCREDITCARDLIST);
+
+ protected:
+  ~AutofillPrivateGetCreditCardListFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  ChromeExtensionFunctionDetails chrome_details_;
+
+  DISALLOW_COPY_AND_ASSIGN(AutofillPrivateGetCreditCardListFunction);
 };
 
 }  // namespace extensions

@@ -11,6 +11,10 @@ var ROOT_PATH = '../../../../../';
 GEN_INCLUDE(
     [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
 
+// Fake data generator.
+GEN_INCLUDE([ROOT_PATH +
+    'chrome/test/data/webui/settings/passwords_and_autofill_fake_data.js']);
+
 /**
  * @constructor
  * @extends {PolymerTest}
@@ -33,71 +37,6 @@ SettingsAutofillSectionBrowserTest.prototype = {
 
     // Test is run on an individual element that won't have a page language.
     this.accessibilityAuditConfig.auditRulesToIgnore.push('humanLangMissing');
-  },
-
-  /**
-   * Replaces any 'x' in a string with a random number of the base.
-   * @param {!string} pattern The pattern that should be used as an input.
-   * @param {!number} base The number base. ie: 16 for hex or 10 for decimal.
-   * @return {!string}
-   * @private
-   */
-  patternMaker_: function(pattern, base) {
-    return pattern.replace(/x/g, function() {
-      return Math.floor(Math.random() * base).toString(base);
-    });
-  },
-
-  /**
-   * Creates a new random GUID for testing.
-   * @return {!string}
-   * @private
-   */
-  makeGuid_: function() {
-    return this.patternMaker_('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', 16);
-  },
-
-  /**
-   * Creates a fake address entry for testing.
-   * @return {!chrome.autofillPrivate.AddressEntry}
-   * @private
-   */
-  createFakeAddressEntry_: function() {
-    var ret = {};
-    ret.guid = this.makeGuid_();
-    ret.fullNames = ['John', 'Doe'];
-    ret.companyName = 'Google';
-    ret.addressLines = this.patternMaker_('xxxx Main St', 10);
-    ret.addressLevel1 = "CA";
-    ret.addressLevel2 = "Venice";
-    ret.postalCode = this.patternMaker_('xxxxx', 10);
-    ret.countryCode = 'US';
-    ret.phoneNumbers = [this.patternMaker_('(xxx) xxx-xxxx', 10)];
-    ret.emailAddresses = [this.patternMaker_('userxxxx@gmail.com', 16)];
-    ret.languageCode = 'EN-US';
-    ret.metadata = {isLocal: true};
-    ret.metadata.summaryLabel = ret.fullNames[0];
-    ret.metadata.summarySublabel = ' ' + ret.addressLines;
-    return ret;
-  },
-
-  /**
-   * Creates a new random credit card entry for testing.
-   * @return {!chrome.autofillPrivate.CreditCardEntry}
-   * @private
-   */
-  createFakeCreditCardEntry_: function() {
-    var ret = {};
-    ret.guid = this.makeGuid_();
-    ret.name = 'Jane Doe';
-    ret.cardNumber = this.patternMaker_('xxxx xxxx xxxx xxxx', 10);
-    ret.expirationMonth = Math.ceil(Math.random() * 11).toString();
-    ret.expirationYear = (2016 + Math.floor(Math.random() * 5)).toString();
-    ret.metadata = {isLocal: true};
-    var cards = ['Visa', 'Mastercard', 'Discover', 'Card'];
-    var card = cards[Math.floor(Math.random() * cards.length)];
-    ret.metadata.summaryLabel = card + ' ' + '****' + ret.cardNumber.substr(-4);
-    return ret;
   },
 
   /**
@@ -137,12 +76,12 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'uiTests', function() {
   suite('AutofillSection', function() {
     test('verifyCreditCardCount', function() {
       var creditCards = [
-        self.createFakeCreditCardEntry_(),
-        self.createFakeCreditCardEntry_(),
-        self.createFakeCreditCardEntry_(),
-        self.createFakeCreditCardEntry_(),
-        self.createFakeCreditCardEntry_(),
-        self.createFakeCreditCardEntry_(),
+        FakeDataMaker.creditCardEntry(),
+        FakeDataMaker.creditCardEntry(),
+        FakeDataMaker.creditCardEntry(),
+        FakeDataMaker.creditCardEntry(),
+        FakeDataMaker.creditCardEntry(),
+        FakeDataMaker.creditCardEntry(),
       ];
 
       var section = self.createAutofillSection_([], creditCards);
@@ -156,7 +95,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'uiTests', function() {
     });
 
     test('verifyCreditCardFields', function() {
-      var creditCard = self.createFakeCreditCardEntry_();
+      var creditCard = FakeDataMaker.creditCardEntry();
       var section = self.createAutofillSection_([], [creditCard]);
       var creditCardList = section.$.creditCardList;
       var row = creditCardList.children[1];  // Skip over the template.
@@ -170,11 +109,11 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'uiTests', function() {
 
     test('verifyAddressCount', function() {
       var addresses = [
-        self.createFakeAddressEntry_(),
-        self.createFakeAddressEntry_(),
-        self.createFakeAddressEntry_(),
-        self.createFakeAddressEntry_(),
-        self.createFakeAddressEntry_(),
+        FakeDataMaker.addressEntry(),
+        FakeDataMaker.addressEntry(),
+        FakeDataMaker.addressEntry(),
+        FakeDataMaker.addressEntry(),
+        FakeDataMaker.addressEntry(),
       ];
 
       var section = self.createAutofillSection_(addresses, []);
@@ -188,7 +127,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'uiTests', function() {
     });
 
     test('verifyAddressFields', function() {
-      var address = self.createFakeAddressEntry_();
+      var address = FakeDataMaker.addressEntry();
       var section = self.createAutofillSection_([address], []);
       var addressList = section.$.addressList;
       var row = addressList.children[1];  // Skip over the template.

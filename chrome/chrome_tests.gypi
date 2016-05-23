@@ -1017,6 +1017,8 @@
       'test/data/webui/settings/easy_unlock_browsertest_chromeos.js',
       'test/data/webui/settings/languages_page_browsertest.js',
       'test/data/webui/settings/on_startup_browsertest.js',
+      'test/data/webui/settings/passwords_and_autofill_fake_data.js',
+      'test/data/webui/settings/passwords_and_forms_browsertest.js',
       'test/data/webui/settings/settings_autofill_section_browsertest.js',
       'test/data/webui/settings/settings_page_browsertest.js',
       'test/data/webui/settings/settings_passwords_section_browsertest.js',
