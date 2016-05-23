@@ -69,6 +69,8 @@ void WebRtcAudioSink::OnSetFormat(const media::AudioParameters& params) {
 
   DCHECK(params.IsValid());
   params_ = params;
+  // Make sure that our params always reflect a buffer size of 10ms.
+  params_.set_frames_per_buffer(params_.sample_rate() / 100);
   fifo_.Reset(params_.frames_per_buffer());
   const int num_pcm16_data_elements =
       params_.frames_per_buffer() * params_.channels();
