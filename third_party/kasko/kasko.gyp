@@ -77,6 +77,9 @@
           'dependencies': [
             'kasko_features',
           ],
+          'export_dependent_settings': [
+            'kasko_features',
+          ]
         },
       ],
     }],
