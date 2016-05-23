@@ -698,13 +698,13 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
             media::VideoFrameMetadata::COPY_REQUIRED)) {
       CopyPlaneTexture(video_frame.get(), mailbox_holder, &external_resources);
     } else {
-      external_resources.mailboxes.push_back(
-          TextureMailbox(mailbox_holder.mailbox, mailbox_holder.sync_token,
-                         mailbox_holder.texture_target,
-                         video_frame->coded_size(), gfx::GpuMemoryBufferId(),
-                         video_frame->metadata()->IsTrue(
-                             media::VideoFrameMetadata::ALLOW_OVERLAY),
-                         false));
+      external_resources.mailboxes.push_back(TextureMailbox(
+          mailbox_holder.mailbox, mailbox_holder.sync_token,
+          mailbox_holder.texture_target, video_frame->coded_size(),
+          video_frame->texture_gpu_memory_buffer_id(i),
+          video_frame->metadata()->IsTrue(
+              media::VideoFrameMetadata::ALLOW_OVERLAY),
+          false));
 
       external_resources.release_callbacks.push_back(
           base::Bind(&ReturnTexture, AsWeakPtr(), video_frame));

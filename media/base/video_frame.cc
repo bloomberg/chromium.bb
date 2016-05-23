@@ -184,6 +184,27 @@ scoped_refptr<VideoFrame> VideoFrame::WrapNativeTextures(
 }
 
 // static
+scoped_refptr<VideoFrame> VideoFrame::WrapGpuMemoryBufferBackedNativeTextures(
+    VideoPixelFormat format,
+    const gpu::MailboxHolder (&mailbox_holders)[kMaxPlanes],
+    const gfx::GpuMemoryBufferId (&gpu_memory_buffer_ids)[kMaxPlanes],
+    const ReleaseMailboxCB& mailbox_holder_release_cb,
+    const gfx::Size& coded_size,
+    const gfx::Rect& visible_rect,
+    const gfx::Size& natural_size,
+    base::TimeDelta timestamp) {
+  scoped_refptr<VideoFrame> frame =
+      WrapNativeTextures(format, mailbox_holders, mailbox_holder_release_cb,
+                         coded_size, visible_rect, natural_size, timestamp);
+  if (frame) {
+    frame->storage_type_ = STORAGE_GPU_MEMORY_BUFFERS;
+    for (size_t i = 0; i < kMaxPlanes; ++i)
+      frame->texture_gpu_memory_buffer_ids_[i] = gpu_memory_buffer_ids[i];
+  }
+  return frame;
+}
+
+// static
 scoped_refptr<VideoFrame> VideoFrame::WrapExternalData(
     VideoPixelFormat format,
     const gfx::Size& coded_size,
@@ -659,6 +680,13 @@ VideoFrame::mailbox_holder(size_t texture_index) const {
   DCHECK(HasTextures());
   DCHECK(IsValidPlane(texture_index, format_));
   return mailbox_holders_[texture_index];
+}
+
+const gfx::GpuMemoryBufferId& VideoFrame::texture_gpu_memory_buffer_id(
+    size_t texture_index) const {
+  DCHECK(HasTextures());
+  DCHECK(IsValidPlane(texture_index, format_));
+  return texture_gpu_memory_buffer_ids_[texture_index];
 }
 
 base::SharedMemoryHandle VideoFrame::shared_memory_handle() const {

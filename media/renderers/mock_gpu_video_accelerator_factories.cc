@@ -13,6 +13,7 @@ namespace media {
 namespace {
 
 bool gpu_memory_buffers_in_use_by_window_server = false;
+int g_next_gpu_memory_buffer_id = 1;
 
 class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
@@ -20,7 +21,8 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
       : mapped_(false),
         format_(format),
         size_(size),
-        num_planes_(gfx::NumberOfPlanesForBufferFormat(format)) {
+        num_planes_(gfx::NumberOfPlanesForBufferFormat(format)),
+        id_(g_next_gpu_memory_buffer_id++) {
     DCHECK(gfx::BufferFormat::R_8 == format_ ||
            gfx::BufferFormat::YUV_420_BIPLANAR == format_ ||
            gfx::BufferFormat::UYVY_422 == format_);
@@ -59,10 +61,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
     return static_cast<int>(gfx::RowSizeForBufferFormat(
         size_.width(), format_, static_cast<int>(plane)));
   }
-  gfx::GpuMemoryBufferId GetId() const override {
-    NOTREACHED();
-    return gfx::GpuMemoryBufferId(0);
-  }
+  gfx::GpuMemoryBufferId GetId() const override { return id_; }
   gfx::GpuMemoryBufferHandle GetHandle() const override {
     NOTREACHED();
     return gfx::GpuMemoryBufferHandle();
@@ -79,6 +78,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   const gfx::Size size_;
   size_t num_planes_;
   std::vector<uint8_t> bytes_[kMaxPlanes];
+  gfx::GpuMemoryBufferId id_;
 };
 
 }  // unnamed namespace

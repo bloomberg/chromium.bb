@@ -553,6 +553,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
   const size_t planes_per_copy = PlanesPerCopy(output_format_);
   const gfx::Size coded_size = CodedSize(video_frame, output_format_);
   gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes];
+  gfx::GpuMemoryBufferId gpu_memory_buffer_ids[VideoFrame::kMaxPlanes];
   // Set up the planes creating the mailboxes needed to refer to the textures.
   for (size_t i = 0; i < num_planes; i += planes_per_copy) {
     PlaneResource& plane_resource = frame_resources->plane_resources[i];
@@ -573,6 +574,8 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
     } else if (plane_resource.image_id) {
       gles2->ReleaseTexImage2DCHROMIUM(texture_target, plane_resource.image_id);
     }
+    if (plane_resource.gpu_memory_buffer)
+      gpu_memory_buffer_ids[i] = plane_resource.gpu_memory_buffer->GetId();
     if (plane_resource.image_id)
       gles2->BindTexImage2DCHROMIUM(texture_target, plane_resource.image_id);
     mailbox_holders[i] = gpu::MailboxHolder(plane_resource.mailbox,
@@ -596,10 +599,11 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
 
   // Create the VideoFrame backed by native textures.
   gfx::Size visible_size = video_frame->visible_rect().size();
-  scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTextures(
-      output_format_, mailbox_holders, release_mailbox_callback, coded_size,
-      gfx::Rect(visible_size), video_frame->natural_size(),
-      video_frame->timestamp());
+  scoped_refptr<VideoFrame> frame =
+      VideoFrame::WrapGpuMemoryBufferBackedNativeTextures(
+          output_format_, mailbox_holders, gpu_memory_buffer_ids,
+          release_mailbox_callback, coded_size, gfx::Rect(visible_size),
+          video_frame->natural_size(), video_frame->timestamp());
 
   if (!frame) {
     release_mailbox_callback.Run(gpu::SyncToken());
