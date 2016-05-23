@@ -23,6 +23,7 @@ namespace blink {
 
 template<typename T, typename Traits = WTF::VectorTraits<T>> class HeapVectorBacking {
     DISALLOW_NEW();
+    IS_GARBAGE_COLLECTED_TYPE();
 public:
     static void finalize(void* pointer);
     void finalizeGarbageCollectedObject() { finalize(this); }
@@ -30,6 +31,7 @@ public:
 
 template<typename Table> class HeapHashTableBacking {
     DISALLOW_NEW();
+    IS_GARBAGE_COLLECTED_TYPE();
 public:
     static void finalize(void* pointer);
     void finalizeGarbageCollectedObject() { finalize(this); }
@@ -541,6 +543,11 @@ struct NeedsTracing<ListHashSetNode<T, blink::HeapListHashSetAllocator<T, inline
     // All heap allocated node pointers need visiting to keep the nodes alive,
     // regardless of whether they contain pointers to other heap allocated
     // objects.
+    static const bool value = true;
+};
+
+template<typename T, size_t inlineCapacity>
+struct IsGarbageCollectedType<ListHashSetNode<T, blink::HeapListHashSetAllocator<T, inlineCapacity>>> {
     static const bool value = true;
 };
 

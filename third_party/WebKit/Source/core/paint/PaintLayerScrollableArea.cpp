@@ -80,6 +80,10 @@
 
 namespace blink {
 
+PaintLayerScrollableAreaRareData::PaintLayerScrollableAreaRareData()
+{
+}
+
 const int ResizerControlExpandRatioForTouch = 2;
 
 PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)

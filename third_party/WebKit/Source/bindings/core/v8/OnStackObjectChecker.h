@@ -23,7 +23,7 @@ class Dictionary;
 class CORE_EXPORT OnStackObjectChecker final {
     WTF_MAKE_NONCOPYABLE(OnStackObjectChecker);
 public:
-    OnStackObjectChecker() { }
+    OnStackObjectChecker();
     ~OnStackObjectChecker();
 
     void add(Dictionary*);

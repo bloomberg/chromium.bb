@@ -10,6 +10,10 @@
 namespace blink {
 
 #if ENABLE(ASSERT)
+OnStackObjectChecker::OnStackObjectChecker()
+{
+}
+
 OnStackObjectChecker::~OnStackObjectChecker()
 {
     // All dictionaries must be removed before the checker is destructed.

@@ -14,6 +14,7 @@ namespace blink {
 template<typename T>
 class HeapTerminatedArray : public TerminatedArray<T> {
     DISALLOW_NEW();
+    IS_GARBAGE_COLLECTED_TYPE();
 public:
     using TerminatedArray<T>::begin;
     using TerminatedArray<T>::end;

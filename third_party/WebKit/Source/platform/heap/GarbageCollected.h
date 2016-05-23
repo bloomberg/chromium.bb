@@ -8,26 +8,13 @@
 #include "platform/heap/ThreadState.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
-#include "wtf/ListHashSet.h"
 #include "wtf/TypeTraits.h"
 
 namespace blink {
 
 template<typename T> class GarbageCollected;
-template<typename T, typename U, typename V, typename W, typename X> class HeapHashMap;
-template<typename T, typename U, typename V> class HeapHashSet;
-template<typename T, typename U, typename V> class HeapLinkedHashSet;
-template<typename T, size_t inlineCapacity, typename U> class HeapListHashSet;
-template<typename T, size_t inlineCapacity> class HeapVector;
-template<typename T, size_t inlineCapacity> class HeapDeque;
-template<typename T, typename U, typename V> class HeapHashCountedSet;
-template<typename T> class HeapTerminatedArray;
-template<typename T, typename Traits> class HeapVectorBacking;
-template<typename Table> class HeapHashTableBacking;
-template<typename ValueArg, size_t inlineCapacity> class HeapListHashSetAllocator;
 class InlinedGlobalMarkingVisitor;
 class WrapperVisitor;
-template<typename T> class Persistent;
 
 // GC_PLUGIN_IGNORE is used to make the plugin ignore a particular class or
 // field when checking for proper usage.  When using GC_PLUGIN_IGNORE
@@ -57,54 +44,6 @@ public:
     static const bool value = sizeof(checkMarker<T>(nullptr)) == sizeof(YesType);
 };
 
-template <typename T>
-struct IsGarbageCollectedType {
-    using TrueType = char;
-    struct FalseType {
-        char dummy[2];
-    };
-
-    using NonConstType = typename std::remove_const<T>::type;
-    using GarbageCollectedSubclass = WTF::IsSubclassOfTemplate<NonConstType, GarbageCollected>;
-    using GarbageCollectedMixinSubclass = IsGarbageCollectedMixin<NonConstType>;
-    using HeapHashSetSubclass = WTF::IsSubclassOfTemplate<NonConstType, HeapHashSet>;
-    using HeapLinkedHashSetSubclass = WTF::IsSubclassOfTemplate<NonConstType, HeapLinkedHashSet>;
-    using HeapListHashSetSubclass = WTF::IsSubclassOfTemplateTypenameSizeTypename<NonConstType, HeapListHashSet>;
-    using HeapHashMapSubclass = WTF::IsSubclassOfTemplate<NonConstType, HeapHashMap>;
-    using HeapVectorSubclass = WTF::IsSubclassOfTemplateTypenameSize<NonConstType, HeapVector>;
-    using HeapDequeSubclass = WTF::IsSubclassOfTemplateTypenameSize<NonConstType, HeapDeque>;
-    using HeapHashCountedSetSubclass = WTF::IsSubclassOfTemplate<NonConstType, HeapHashCountedSet>;
-    using HeapTerminatedArraySubclass = WTF::IsSubclassOfTemplate<NonConstType, HeapTerminatedArray>;
-    using HeapVectorBackingSubclass = WTF::IsSubclassOfTemplate<NonConstType, HeapVectorBacking>;
-    using HeapHashTableBackingSubclass = WTF::IsSubclassOfTemplate<NonConstType, HeapHashTableBacking>;
-
-    template<typename U, size_t inlineCapacity> static TrueType listHashSetNodeIsHeapAllocated(WTF::ListHashSetNode<U, HeapListHashSetAllocator<U, inlineCapacity>>*);
-    static FalseType listHashSetNodeIsHeapAllocated(...);
-    static const bool isHeapAllocatedListHashSetNode = sizeof(TrueType) == sizeof(listHashSetNodeIsHeapAllocated(reinterpret_cast<NonConstType*>(0)));
-
-    static_assert(sizeof(T), "T must be fully defined");
-
-    static const bool value =
-        GarbageCollectedSubclass::value
-        || GarbageCollectedMixinSubclass::value
-        || HeapHashSetSubclass::value
-        || HeapLinkedHashSetSubclass::value
-        || HeapListHashSetSubclass::value
-        || HeapHashMapSubclass::value
-        || HeapVectorSubclass::value
-        || HeapDequeSubclass::value
-        || HeapHashCountedSetSubclass::value
-        || HeapTerminatedArraySubclass::value
-        || HeapVectorBackingSubclass::value
-        || HeapHashTableBackingSubclass::value
-        || isHeapAllocatedListHashSetNode;
-};
-
-template <>
-struct IsGarbageCollectedType<void> {
-    static const bool value = false;
-};
-
 // The GarbageCollectedMixin interface and helper macro
 // USING_GARBAGE_COLLECTED_MIXIN can be used to automatically define
 // TraceTrait/ObjectAliveTrait on non-leftmost deriving classes
@@ -118,15 +57,15 @@ struct IsGarbageCollectedType<void> {
 // object header statically. This can be solved by using GarbageCollectedMixin:
 // class B : public GarbageCollectedMixin {};
 // class A : public GarbageCollected, public B {
-//   USING_GARBAGE_COLLECTED_MIXIN(A)
+//   USING_GARBAGE_COLLECTED_MIXIN(A);
 // };
 //
 // With the helper, as long as we are using Member<B>, TypeTrait<B> will
 // dispatch adjustAndMark dynamically to find collect addr of the object header.
 // Note that this is only enabled for Member<B>. For Member<A> which we can
 // compute the object header addr statically, this dynamic dispatch is not used.
+//
 class PLATFORM_EXPORT GarbageCollectedMixin {
-    IS_GARBAGE_COLLECTED_TYPE();
 public:
     typedef int IsGarbageCollectedMixinMarker;
     virtual void adjustAndMark(Visitor*) const = 0;
@@ -327,9 +266,5 @@ public:
 };
 
 } // namespace blink
-
-namespace WTF {
-
-} // namespace WTF
 
 #endif

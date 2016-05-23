@@ -300,10 +300,33 @@ class IsGarbageCollectedType {
         char padding[8];
     } NoType;
 
+    static_assert(sizeof(T), "T must be fully defined");
+
+    using NonConstType = typename std::remove_const<T>::type;
     template <typename U> static YesType checkGarbageCollectedType(typename U::IsGarbageCollectedTypeMarker*);
     template <typename U> static NoType checkGarbageCollectedType(...);
+
+    // Separately check for GarbageCollectedMixin, which declares a different
+    // marker typedef, to avoid resolution ambiguity for cases like
+    // IsGarbageCollectedType<B> over:
+    //
+    //    class A : public GarbageCollected<A>, public GarbageCollectedMixin {
+    //        USING_GARBAGE_COLLECTED_MIXIN(A);
+    //        ...
+    //    };
+    //    class B : public A, public GarbageCollectedMixin { ... };
+    //
+    template <typename U> static YesType checkGarbageCollectedMixinType(typename U::IsGarbageCollectedMixinMarker*);
+    template <typename U> static NoType checkGarbageCollectedMixinType(...);
 public:
-    static const bool value = (sizeof(YesType) == sizeof(checkGarbageCollectedType<T>(nullptr)));
+    static const bool value = (sizeof(YesType) == sizeof(checkGarbageCollectedType<NonConstType>(nullptr)))
+        || (sizeof(YesType) == sizeof(checkGarbageCollectedMixinType<NonConstType>(nullptr)));
+};
+
+template<>
+class IsGarbageCollectedType<void> {
+public:
+    static const bool value = false;
 };
 
 template<typename T>
@@ -319,17 +342,20 @@ public:
     static const bool value = (sizeof(YesType) == sizeof(checkPersistentReferenceType<T>(nullptr)));
 };
 
-template<typename T>
+template<typename T, bool = std::is_function<typename std::remove_const<typename std::remove_pointer<T>::type>::type>::value || std::is_void<typename std::remove_const<typename std::remove_pointer<T>::type>::type>::value>
 class IsPointerToGarbageCollectedType {
 public:
     static const bool value = false;
 };
+
 template<typename T>
-class IsPointerToGarbageCollectedType<T*> {
+class IsPointerToGarbageCollectedType<T*, false> {
 public:
     static const bool value = IsGarbageCollectedType<T>::value;
 };
 
 } // namespace WTF
+
+using WTF::IsGarbageCollectedType;
 
 #endif // TypeTraits_h

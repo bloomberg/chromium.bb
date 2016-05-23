@@ -26,6 +26,7 @@
 #include "platform/graphics/ImageDecodingStore.h"
 
 #include "platform/TraceEvent.h"
+#include "platform/graphics/ImageFrameGenerator.h"
 #include "wtf/Threading.h"
 
 namespace blink {

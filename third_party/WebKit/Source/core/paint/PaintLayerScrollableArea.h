@@ -69,7 +69,7 @@ struct PaintLayerScrollableAreaRareData {
     WTF_MAKE_NONCOPYABLE(PaintLayerScrollableAreaRareData);
     USING_FAST_MALLOC(PaintLayerScrollableAreaRareData);
 public:
-    PaintLayerScrollableAreaRareData() {}
+    PaintLayerScrollableAreaRareData();
 
     StickyConstraintsMap m_stickyConstraintsMap;
 };

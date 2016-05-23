@@ -132,10 +132,8 @@ public:
         Vector<LayoutTableCell*, 1> cells;
         bool inColSpan; // true for columns after the first in a colspan
 
-        CellStruct()
-            : inColSpan(false)
-        {
-        }
+        CellStruct();
+        ~CellStruct();
 
         // This is the cell in the grid "slot" that is on top of the others
         // (aka the last cell in DOM order for this slot).

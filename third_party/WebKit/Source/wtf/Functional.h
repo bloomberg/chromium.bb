@@ -34,9 +34,14 @@
 #include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
+#include "wtf/TypeTraits.h"
 #include "wtf/WeakPtr.h"
 #include <tuple>
 #include <utility>
+
+namespace blink {
+template<typename T> class CrossThreadPersistent;
+}
 
 namespace WTF {
 
@@ -230,6 +235,31 @@ struct ParamStorageTraits<PassedWrapper<T>> {
 
     static StorageType wrap(PassedWrapper<T>&& value) { return std::move(value); }
     static T unwrap(StorageType& value) { return value.moveOut(); }
+};
+
+template<typename T, bool isGarbageCollected> struct PointerParamStorageTraits;
+
+template<typename T>
+struct PointerParamStorageTraits<T*, false> {
+    STATIC_ONLY(PointerParamStorageTraits);
+    using StorageType = T*;
+
+    static StorageType wrap(T* value) { return value; }
+    static T* unwrap(const StorageType& value) { return value; }
+};
+
+template<typename T>
+struct PointerParamStorageTraits<T*, true> {
+    STATIC_ONLY(PointerParamStorageTraits);
+    using StorageType = blink::CrossThreadPersistent<T>;
+
+    static StorageType wrap(T* value) { return value; }
+    static T* unwrap(const StorageType& value) { return value.get(); }
+};
+
+template<typename T>
+struct ParamStorageTraits<T*> : public PointerParamStorageTraits<T*, IsGarbageCollectedType<T>::value> {
+    STATIC_ONLY(ParamStorageTraits);
 };
 
 enum FunctionThreadAffinity {

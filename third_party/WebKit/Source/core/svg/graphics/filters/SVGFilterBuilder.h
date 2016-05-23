@@ -66,7 +66,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    SVGFilterGraphNodeMap() = default;
+    SVGFilterGraphNodeMap();
 
     // The value is a list, which contains those filter effects,
     // which depends on the key filter effect.

@@ -6658,4 +6658,35 @@ TEST(HeapTest, TestWeakConstObject)
     EXPECT_EQ(nullptr, weakWrapper->value());
 }
 
+class EmptyMixin : public GarbageCollectedMixin {};
+class UseMixinFromLeftmostInherited : public UseMixin, public EmptyMixin {
+public:
+    ~UseMixinFromLeftmostInherited() { }
+};
+
+TEST(HeapTest, IsGarbageCollected)
+{
+    // Static sanity checks covering the correct operation of
+    // IsGarbageCollectedType<>.
+
+    static_assert(WTF::IsGarbageCollectedType<SimpleObject>::value, "GarbageCollected<>");
+    static_assert(WTF::IsGarbageCollectedType<const SimpleObject>::value, "const GarbageCollected<>");
+    static_assert(WTF::IsGarbageCollectedType<IntWrapper>::value, "GarbageCollectedFinalized<>");
+    static_assert(WTF::IsGarbageCollectedType<GarbageCollectedMixin>::value, "GarbageCollectedMixin");
+    static_assert(WTF::IsGarbageCollectedType<const GarbageCollectedMixin>::value, "const GarbageCollectedMixin");
+    static_assert(WTF::IsGarbageCollectedType<UseMixin>::value, "GarbageCollectedMixin instance");
+    static_assert(WTF::IsGarbageCollectedType<const UseMixin>::value, "const GarbageCollectedMixin instance");
+    static_assert(WTF::IsGarbageCollectedType<UseMixinFromLeftmostInherited>::value, "GarbageCollectedMixin derived instance");
+    static_assert(WTF::IsGarbageCollectedType<MultipleMixins>::value, "GarbageCollectedMixin");
+
+    static_assert(WTF::IsGarbageCollectedType<HeapHashSet<Member<IntWrapper>>>::value, "HeapHashSet");
+    static_assert(WTF::IsGarbageCollectedType<HeapLinkedHashSet<Member<IntWrapper>>>::value, "HeapLinkedHashSet");
+    static_assert(WTF::IsGarbageCollectedType<HeapListHashSet<Member<IntWrapper>>>::value, "HeapListHashSet");
+    static_assert(WTF::IsGarbageCollectedType<HeapHashCountedSet<Member<IntWrapper>>>::value, "HeapHashCountedSet");
+    static_assert(WTF::IsGarbageCollectedType<HeapHashMap<int, Member<IntWrapper>>>::value, "HeapHashMap");
+    static_assert(WTF::IsGarbageCollectedType<HeapVector<Member<IntWrapper>>>::value, "HeapVector");
+    static_assert(WTF::IsGarbageCollectedType<HeapDeque<Member<IntWrapper>>>::value, "HeapDeque");
+    static_assert(WTF::IsGarbageCollectedType<HeapTerminatedArray<Member<IntWrapper>>>::value, "HeapTerminatedArray");
+}
+
 } // namespace blink

@@ -64,6 +64,10 @@ public:
 
 } // namespace
 
+SVGFilterGraphNodeMap::SVGFilterGraphNodeMap()
+{
+}
+
 void SVGFilterGraphNodeMap::addBuiltinEffect(FilterEffect* effect)
 {
     m_effectReferences.add(effect, FilterEffectSet());

@@ -41,7 +41,6 @@
 #include "wtf/Allocator.h"
 #include "wtf/Atomics.h"
 #include "wtf/HashFunctions.h"
-#include "wtf/TypeTraits.h"
 
 #if defined(LEAK_SANITIZER)
 #include "wtf/LeakAnnotations.h"
@@ -1157,34 +1156,6 @@ template<typename T>
 struct IsWeak<blink::WeakMember<T>> {
     STATIC_ONLY(IsWeak);
     static const bool value = true;
-};
-
-// For wtf/Functional.h
-template<typename T, bool isGarbageCollected> struct PointerParamStorageTraits;
-
-// The condition of 'T must be fully defined' (except for void) is checked in
-// blink::IsGarbageCollectedType<T>::value.
-template<typename T>
-struct PointerParamStorageTraits<T*, false> {
-    STATIC_ONLY(PointerParamStorageTraits);
-    using StorageType = T*;
-
-    static StorageType wrap(T* value) { return value; }
-    static T* unwrap(const StorageType& value) { return value; }
-};
-
-template<typename T>
-struct PointerParamStorageTraits<T*, true> {
-    STATIC_ONLY(PointerParamStorageTraits);
-    using StorageType = blink::CrossThreadPersistent<T>;
-
-    static StorageType wrap(T* value) { return value; }
-    static T* unwrap(const StorageType& value) { return value.get(); }
-};
-
-template<typename T>
-struct ParamStorageTraits<T*> : public PointerParamStorageTraits<T*, blink::IsGarbageCollectedType<T>::value> {
-    STATIC_ONLY(ParamStorageTraits);
 };
 
 template<typename T>

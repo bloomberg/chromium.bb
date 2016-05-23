@@ -87,6 +87,15 @@ void CellSpan::ensureConsistency(const unsigned maximumSpanSize)
     RELEASE_ASSERT(m_start <= m_end);
 }
 
+LayoutTableSection::CellStruct::CellStruct()
+    : inColSpan(false)
+{
+}
+
+LayoutTableSection::CellStruct::~CellStruct()
+{
+}
+
 LayoutTableSection::LayoutTableSection(Element* element)
     : LayoutTableBoxComponent(element)
     , m_cCol(0)
