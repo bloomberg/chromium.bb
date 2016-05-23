@@ -629,11 +629,13 @@ void InspectorPageAgent::frameClearedScheduledNavigation(LocalFrame* frame)
 void InspectorPageAgent::willRunJavaScriptDialog(const String& message, ChromeClient::DialogType dialogType)
 {
     frontend()->javascriptDialogOpening(message, dialogTypeToProtocol(dialogType));
+    frontend()->flush();
 }
 
 void InspectorPageAgent::didRunJavaScriptDialog(bool result)
 {
     frontend()->javascriptDialogClosed(result);
+    frontend()->flush();
 }
 
 void InspectorPageAgent::didUpdateLayout()

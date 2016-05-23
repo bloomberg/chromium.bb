@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -33,6 +34,64 @@ namespace {
 const char kIdParam[] = "id";
 const char kMethodParam[] = "method";
 const char kParamsParam[] = "params";
+
+class TestJavaScriptDialogManager : public JavaScriptDialogManager,
+                                    public WebContentsDelegate {
+ public:
+  TestJavaScriptDialogManager() : handle_(false) {}
+  ~TestJavaScriptDialogManager() override {}
+
+  void Handle()
+  {
+    if (!callback_.is_null()) {
+      callback_.Run(true, base::string16());
+      callback_.Reset();
+    } else {
+      handle_ = true;
+    }
+  }
+
+  // WebContentsDelegate
+  JavaScriptDialogManager* GetJavaScriptDialogManager(
+      WebContents* source) override {
+    return this;
+  }
+
+  // JavaScriptDialogManager
+  void RunJavaScriptDialog(WebContents* web_contents,
+                           const GURL& origin_url,
+                           JavaScriptMessageType javascript_message_type,
+                           const base::string16& message_text,
+                           const base::string16& default_prompt_text,
+                           const DialogClosedCallback& callback,
+                           bool* did_suppress_message) override {
+    if (handle_) {
+      handle_ = false;
+      callback.Run(true, base::string16());
+    } else {
+      callback_ = callback;
+    }
+  };
+
+  void RunBeforeUnloadDialog(WebContents* web_contents,
+                             bool is_reload,
+                             const DialogClosedCallback& callback) override {}
+
+  bool HandleJavaScriptDialog(WebContents* web_contents,
+                              bool accept,
+                              const base::string16* prompt_override) override {
+    return true;
+  }
+
+  void CancelActiveAndPendingDialogs(WebContents* web_contents) override {}
+
+  void ResetDialogState(WebContents* web_contents) override {}
+
+ private:
+  DialogClosedCallback callback_;
+  bool handle_;
+  DISALLOW_COPY_AND_ASSIGN(TestJavaScriptDialogManager);
+};
 
 }
 
@@ -513,6 +572,19 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
   bool wasThrown = true;
   EXPECT_TRUE(result_->GetBoolean("wasThrown", &wasThrown));
   EXPECT_FALSE(wasThrown);
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, JavaScriptDialogNotifications) {
+  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
+  Attach();
+  TestJavaScriptDialogManager dialog_manager;
+  shell()->web_contents()->SetDelegate(&dialog_manager);
+  SendCommand("Page.enable", nullptr, true);
+  std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+  params->SetString("expression", "alert('alert')");
+  SendCommand("Runtime.evaluate", std::move(params), false);
+  WaitForNotification("Page.javascriptDialogOpening");
+  dialog_manager.Handle();
 }
 
 }  // namespace content
