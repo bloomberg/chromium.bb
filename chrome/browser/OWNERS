@@ -10,12 +10,17 @@ per-file browser_resources.grd=michaelpg@chromium.org
 per-file browser_resources.grd=pam@chromium.org
 per-file browser_resources.grd=xiyuan@chromium.org
 
+per-file browser_navigator_browsertest.*=alexmos@chromium.org
+per-file browser_navigator_browsertest.*=creis@chromium.org
+per-file browser_navigator_browsertest.*=nasko@chromium.org
+per-file browser_navigator_browsertest.*=nick@chromium.org
+
 per-file chrome_content_browser_client.cc=*
 per-file chrome_content_browser_client.h=*
 per-file chrome_content_browser_client_browsertest.cc=*
 per-file chrome_content_browser_client_unittest.cc=*
 
-per-file chrome_browser_field_trials*=file://components/variations/OWNERS 
+per-file chrome_browser_field_trials*=file://components/variations/OWNERS
 
 per-file chrome_device_client*=reillyg@chromium.org
 per-file chrome_device_client*=rockot@chromium.org
