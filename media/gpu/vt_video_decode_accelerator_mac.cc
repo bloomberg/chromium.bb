@@ -750,8 +750,8 @@ void VTVideoDecodeAccelerator::DecodeTask(
   // Send the frame for decoding.
   // Asynchronous Decompression allows for parallel submission of frames
   // (without it, DecodeFrame() does not return until the frame has been
-  // decoded). We don't enable Temporal Processing because we are not passing
-  // timestamps anyway.
+  // decoded). We don't enable Temporal Processing so that frames are always
+  // returned in decode order; this makes it easier to avoid deadlock.
   VTDecodeFrameFlags decode_flags =
       kVTDecodeFrame_EnableAsynchronousDecompression;
   status = VTDecompressionSessionDecodeFrame(

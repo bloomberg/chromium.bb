@@ -62,9 +62,9 @@ bool H264POC::ComputePicOrderCnt(
     return false;
   }
 
-  // TODO(sandersd): Do something sensible if this happens.
-  if (!slice_hdr.idr_pic_flag && slice_hdr.frame_num == prev_frame_num_) {
-    DLOG(WARNING) << "Redundant picture passed to H264POC";
+  // TODO(sandersd): Handle |gaps_in_frame_num_value|.
+  if (prev_frame_num_ > 0 && prev_frame_num_ < slice_hdr.frame_num - 1) {
+    DLOG(ERROR) << "Gaps in frame_num are not supported";
     return false;
   }
 
@@ -72,15 +72,6 @@ bool H264POC::ComputePicOrderCnt(
   int32_t max_frame_num = 1 << (sps->log2_max_frame_num_minus4 + 4);
   int32_t max_pic_order_cnt_lsb =
       1 << (sps->log2_max_pic_order_cnt_lsb_minus4 + 4);
-
-  if (!slice_hdr.idr_pic_flag &&
-      slice_hdr.frame_num != (prev_frame_num_ + 1) % max_frame_num) {
-    // We don't do any special handling of gaps in |frame_num|, because the
-    // computations below are unaffected by them. In particular, wrapping is
-    // handled the same whether we simulate the missing frames or not.
-    if (!sps->gaps_in_frame_num_value_allowed_flag)
-      DLOG(WARNING) << "Invalid gap in frame_num";
-  }
 
   // Based on T-REC-H.264 8.2.1, "Decoding process for picture order
   // count", available from http://www.itu.int/rec/T-REC-H.264.
