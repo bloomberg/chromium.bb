@@ -13,6 +13,7 @@ source_set("public") {
     "cast_egl_platform_shlib.h",
     "cast_media_shlib.h",
     "cast_sys_info.h",
+    "cast_sys_info_shlib.h",
     "chromecast_export.h",
     "graphics_properties_shlib.h",
     "graphics_types.h",
