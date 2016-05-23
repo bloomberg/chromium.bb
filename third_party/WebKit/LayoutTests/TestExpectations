@@ -327,6 +327,11 @@ crbug.com/470482 fast/cookies/local-file-can-set-cookies.html [ Skip ]
 # Text::inDocument() returns false but should not.
 crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Failure ]
 
+# https://codereview.chromium.org/2003903002
+crbug.com/424655 fast/forms/datalist/input-appearance-range-with-datalist-zoomed.html [ NeedsRebaseline ]
+crbug.com/424655 fast/forms/datalist/input-appearance-range-with-padding-with-datalist.html [ NeedsRebaseline ]
+crbug.com/424655 fast/forms/range/input-appearance-range.html [ NeedsRebaseline ]
+
 crbug.com/240374 compositing/overlap-blending/reflection-opacity-huge.html [ Failure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-huge.html [ Failure ]
 crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [ Failure ]

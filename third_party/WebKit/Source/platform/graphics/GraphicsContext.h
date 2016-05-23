@@ -98,9 +98,6 @@ public:
     Color strokeColor() const { return immutableState()->strokeColor(); }
     void setStrokeColor(const Color& color) { mutableState()->setStrokeColor(color); }
 
-    Gradient* strokeGradient() const { return immutableState()->strokeGradient(); }
-    void setStrokeGradient(PassRefPtr<Gradient>, float alpha = 1);
-
     void setLineCap(LineCap cap) { mutableState()->setLineCap(cap); }
     void setLineDash(const DashArray& dashes, float dashOffset) { mutableState()->setLineDash(dashes, dashOffset); }
     void setLineJoin(LineJoin join) { mutableState()->setLineJoin(join); }
@@ -108,8 +105,6 @@ public:
 
     Color fillColor() const { return immutableState()->fillColor(); }
     void setFillColor(const Color& color) { mutableState()->setFillColor(color); }
-
-    void setFillGradient(PassRefPtr<Gradient>, float alpha = 1);
 
     void setShouldAntialias(bool antialias) { mutableState()->setShouldAntialias(antialias); }
     bool shouldAntialias() const { return immutableState()->shouldAntialias(); }
@@ -173,6 +168,7 @@ public:
     void drawOval(const SkRect&, const SkPaint&);
     void drawPath(const SkPath&, const SkPaint&);
     void drawRect(const SkRect&, const SkPaint&);
+    void drawRRect(const SkRRect&, const SkPaint&);
 
     void clip(const IntRect& rect) { clipRect(rect); }
     void clip(const FloatRect& rect) { clipRect(rect); }
@@ -238,6 +234,7 @@ public:
         Edges clippedEdges = NoEdge);
 
     const SkPaint& fillPaint() const { return immutableState()->fillPaint(); }
+    const SkPaint& strokePaint() const { return immutableState()->strokePaint(); }
 
     // ---------- Transformation methods -----------------
     void concatCTM(const AffineTransform&);
@@ -316,7 +313,6 @@ private:
     // SkCanvas wrappers.
     void clipRRect(const SkRRect&, AntiAliasingMode = NotAntiAliased, SkRegion::Op = SkRegion::kIntersect_Op);
     void concat(const SkMatrix&);
-    void drawRRect(const SkRRect&, const SkPaint&);
 
     // Apply deferred paint state saves
     void realizePaintSave()

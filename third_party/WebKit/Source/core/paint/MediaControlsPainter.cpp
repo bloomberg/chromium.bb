@@ -272,19 +272,17 @@ static void paintSliderRangeHighlight(const IntRect& rect, const ComputedStyle& 
     gradient->addColorStop(1.0, endColor);
 
     // Fill highlight rectangle with gradient, potentially rounded if on left or right edge.
-    context.save();
-    context.setFillGradient(gradient);
+    SkPaint gradientPaint(context.fillPaint());
+    gradient->applyToPaint(gradientPaint);
 
     if (startOffset < borderRadius && endOffset < borderRadius)
-        context.fillRoundedRect(FloatRoundedRect(highlightRect, radii, radii, radii, radii), startColor);
+        context.drawRRect(FloatRoundedRect(highlightRect, radii, radii, radii, radii), gradientPaint);
     else if (startOffset < borderRadius)
-        context.fillRoundedRect(FloatRoundedRect(highlightRect, radii, FloatSize(0, 0), radii, FloatSize(0, 0)), startColor);
+        context.drawRRect(FloatRoundedRect(highlightRect, radii, FloatSize(0, 0), radii, FloatSize(0, 0)), gradientPaint);
     else if (endOffset < borderRadius)
-        context.fillRoundedRect(FloatRoundedRect(highlightRect, FloatSize(0, 0), radii, FloatSize(0, 0), radii), startColor);
+        context.drawRRect(FloatRoundedRect(highlightRect, FloatSize(0, 0), radii, FloatSize(0, 0), radii), gradientPaint);
     else
-        context.fillRect(highlightRect);
-
-    context.restore();
+        context.drawRect(highlightRect, gradientPaint);
 }
 
 bool MediaControlsPainter::paintMediaSlider(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& rect)

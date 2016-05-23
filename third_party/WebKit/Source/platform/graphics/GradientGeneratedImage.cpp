@@ -48,8 +48,10 @@ void GradientGeneratedImage::draw(SkCanvas* canvas, const SkPaint& paint, const 
 
 void GradientGeneratedImage::drawTile(GraphicsContext& context, const FloatRect& srcRect)
 {
-    context.setFillGradient(m_gradient);
-    context.fillRect(srcRect);
+    SkPaint gradientPaint(context.fillPaint());
+    m_gradient->applyToPaint(gradientPaint);
+
+    context.drawRect(srcRect, gradientPaint);
 }
 
 } // namespace blink

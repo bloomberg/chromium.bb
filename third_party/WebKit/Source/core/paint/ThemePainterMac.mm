@@ -348,15 +348,17 @@ bool ThemePainterMac::paintSliderTrack(const LayoutObject& o, const PaintInfo& p
         isVerticalSlider ? fillBounds.maxXMinYCorner() : fillBounds.minXMaxYCorner());
     borderGradient->addColorStop(0.0, borderGradientTopColor);
     borderGradient->addColorStop(1.0, borderGradientBottomColor);
-    Path borderPath;
+
     FloatRect borderRect(unzoomedRect);
     borderRect.inflate(-LayoutThemeMac::sliderTrackBorderWidth / 2.0);
     float borderRadiusSize = (isVerticalSlider ? borderRect.width() : borderRect.height()) / 2;
     FloatSize borderRadius(borderRadiusSize, borderRadiusSize);
-    borderPath.addRoundedRect(borderRect, borderRadius, borderRadius, borderRadius, borderRadius);
-    paintInfo.context.setStrokeGradient(borderGradient);
+    FloatRoundedRect borderRRect(borderRect, borderRadius, borderRadius, borderRadius, borderRadius);
     paintInfo.context.setStrokeThickness(LayoutThemeMac::sliderTrackBorderWidth);
-    paintInfo.context.strokePath(borderPath);
+    SkPaint borderPaint(paintInfo.context.strokePaint());
+    borderGradient->applyToPaint(borderPaint);
+    paintInfo.context.drawRRect(borderRRect, borderPaint);
+
     return false;
 }
 
@@ -417,15 +419,17 @@ bool ThemePainterMac::paintSliderThumb(const LayoutObject& o, const PaintInfo& p
     fillGradient->addColorStop(0.52, fillGradientUpperMiddleColor);
     fillGradient->addColorStop(0.52, fillGradientLowerMiddleColor);
     fillGradient->addColorStop(1.0, fillGradientBottomColor);
-    paintInfo.context.setFillGradient(fillGradient);
-    paintInfo.context.fillEllipse(borderBounds);
+    SkPaint fillPaint(paintInfo.context.fillPaint());
+    fillGradient->applyToPaint(fillPaint);
+    paintInfo.context.drawOval(borderBounds, fillPaint);
 
     RefPtr<Gradient> borderGradient = Gradient::create(fillBounds.minXMinYCorner(), fillBounds.minXMaxYCorner());
     borderGradient->addColorStop(0.0, borderGradientTopColor);
     borderGradient->addColorStop(1.0, borderGradientBottomColor);
-    paintInfo.context.setStrokeGradient(borderGradient);
     paintInfo.context.setStrokeThickness(LayoutThemeMac::sliderThumbBorderWidth);
-    paintInfo.context.strokeEllipse(borderBounds);
+    SkPaint borderPaint(paintInfo.context.strokePaint());
+    borderGradient->applyToPaint(borderPaint);
+    paintInfo.context.drawOval(borderBounds, borderPaint);
 
     if (LayoutTheme::isFocused(o)) {
         Path borderPath;

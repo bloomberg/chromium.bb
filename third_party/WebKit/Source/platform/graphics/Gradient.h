@@ -68,8 +68,6 @@ public:
     void addColorStop(const ColorStop&);
     void addColorStop(float value, const Color& color) { addColorStop(ColorStop(value, color)); }
 
-    bool shaderChanged() const { return !m_gradient; }
-
     bool isRadial() const { return m_radial; }
     bool isZeroSize() const { return m_p0.x() == m_p1.x() && m_p0.y() == m_p1.y() && (!m_radial || m_r0 == m_r1); }
 

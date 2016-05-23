@@ -29,7 +29,6 @@
 #include "platform/TraceEvent.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/ColorSpace.h"
-#include "platform/graphics/Gradient.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/Path.h"
@@ -166,33 +165,6 @@ void GraphicsContext::setInDrawingRecorder(bool val)
     m_inDrawingRecorder = val;
 }
 #endif
-
-void GraphicsContext::setStrokeGradient(PassRefPtr<Gradient> gradient, float alpha)
-{
-    if (contextDisabled())
-        return;
-
-    ASSERT(gradient);
-    if (!gradient) {
-        setStrokeColor(Color::black);
-        return;
-    }
-    mutableState()->setStrokeGradient(gradient, alpha);
-}
-
-void GraphicsContext::setFillGradient(PassRefPtr<Gradient> gradient, float alpha)
-{
-    if (contextDisabled())
-        return;
-
-    ASSERT(gradient);
-    if (!gradient) {
-        setFillColor(Color::black);
-        return;
-    }
-
-    mutableState()->setFillGradient(gradient, alpha);
-}
 
 void GraphicsContext::setShadow(const FloatSize& offset, float blur, const Color& color,
     DrawLooperBuilder::ShadowTransformMode shadowTransformMode,
