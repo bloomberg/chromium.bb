@@ -55,7 +55,7 @@ interface VideoAcceleratorService {
   BindSharedMemory@1(PortType port, uint32 index, handle ashmem_fd,
                    uint32 offset, uint32 length);
 
-  BindDmabuf@2(PortType port, uint32 index, handle dmabuf_fd);
+  BindDmabuf@2(PortType port, uint32 index, handle dmabuf_fd, int32 stride);
 
   UseBuffer@3(PortType port, uint32 index, BufferMetadata metadata);
 

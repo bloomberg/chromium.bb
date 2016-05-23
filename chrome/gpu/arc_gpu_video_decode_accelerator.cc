@@ -6,6 +6,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/numerics/safe_math.h"
 #include "base/run_loop.h"
 #include "content/public/gpu/gpu_video_decode_accelerator_factory.h"
 #include "media/base/video_frame.h"
@@ -21,20 +22,24 @@ ArcGpuVideoDecodeAccelerator::InputRecord::InputRecord(
       buffer_index(buffer_index),
       timestamp(timestamp) {}
 
-ArcGpuVideoDecodeAccelerator::InputBufferInfo::InputBufferInfo()
-    : offset(0), length(0) {}
+ArcGpuVideoDecodeAccelerator::InputBufferInfo::InputBufferInfo() = default;
 
 ArcGpuVideoDecodeAccelerator::InputBufferInfo::InputBufferInfo(
-    InputBufferInfo&& other)
-    : handle(std::move(other.handle)),
-      offset(other.offset),
-      length(other.length) {}
+    InputBufferInfo&& other) = default;
 
-ArcGpuVideoDecodeAccelerator::InputBufferInfo::~InputBufferInfo() {}
+ArcGpuVideoDecodeAccelerator::InputBufferInfo::~InputBufferInfo() = default;
+
+ArcGpuVideoDecodeAccelerator::OutputBufferInfo::OutputBufferInfo() = default;
+
+ArcGpuVideoDecodeAccelerator::OutputBufferInfo::OutputBufferInfo(
+    OutputBufferInfo&& other) = default;
+
+ArcGpuVideoDecodeAccelerator::OutputBufferInfo::~OutputBufferInfo() = default;
 
 ArcGpuVideoDecodeAccelerator::ArcGpuVideoDecodeAccelerator()
     : arc_client_(nullptr),
       next_bitstream_buffer_id_(0),
+      output_pixel_format_(media::PIXEL_FORMAT_UNKNOWN),
       output_buffer_size_(0) {}
 
 ArcGpuVideoDecodeAccelerator::~ArcGpuVideoDecodeAccelerator() {}
@@ -153,9 +158,50 @@ void ArcGpuVideoDecodeAccelerator::BindSharedMemory(PortType port,
   input_info->length = length;
 }
 
+bool ArcGpuVideoDecodeAccelerator::VerifyStride(const base::ScopedFD& dmabuf_fd,
+                                                int32_t stride) const {
+  off_t size = lseek(dmabuf_fd.get(), 0, SEEK_END);
+  lseek(dmabuf_fd.get(), 0, SEEK_SET);
+
+  if (size < 0) {
+    DPLOG(ERROR) << "fail to find the size of dmabuf";
+    return false;
+  }
+
+  int height = coded_size_.height();
+  switch (output_pixel_format_) {
+    case media::PIXEL_FORMAT_I420:
+    case media::PIXEL_FORMAT_YV12:
+    case media::PIXEL_FORMAT_NV12:
+    case media::PIXEL_FORMAT_NV21:
+      // Adjusts the height for UV plane.
+      // The coded height should always be even. But for security reason,  we
+      // still round up to two here in case VDA reports an incorrect value.
+      height += (height + 1) / 2;
+      break;
+    case media::PIXEL_FORMAT_ARGB:
+      // No need to adjust height.
+      break;
+    default:
+      DLOG(ERROR) << "Format not supported: " << output_pixel_format_;
+      return false;
+  }
+  base::CheckedNumeric<off_t> used_bytes(height);
+  used_bytes *= stride;
+
+  if (stride < 0 || !used_bytes.IsValid() || used_bytes.ValueOrDie() > size) {
+    DLOG(ERROR) << "invalid stride: " << stride << ", height: " << height
+                << ", size of dmabuf: " << size;
+    return false;
+  }
+
+  return true;
+}
+
 void ArcGpuVideoDecodeAccelerator::BindDmabuf(PortType port,
                                               uint32_t index,
-                                              base::ScopedFD dmabuf_fd) {
+                                              base::ScopedFD dmabuf_fd,
+                                              int32_t stride) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!vda_) {
@@ -172,7 +218,14 @@ void ArcGpuVideoDecodeAccelerator::BindDmabuf(PortType port,
     arc_client_->OnError(INVALID_ARGUMENT);
     return;
   }
-  buffers_pending_import_[index] = std::move(dmabuf_fd);
+  if (!VerifyStride(dmabuf_fd, stride)) {
+    arc_client_->OnError(INVALID_ARGUMENT);
+    return;
+  }
+
+  OutputBufferInfo& info = buffers_pending_import_[index];
+  info.handle = std::move(dmabuf_fd);
+  info.stride = stride;
 }
 
 void ArcGpuVideoDecodeAccelerator::UseBuffer(PortType port,
@@ -212,11 +265,13 @@ void ArcGpuVideoDecodeAccelerator::UseBuffer(PortType port,
     case PORT_OUTPUT: {
       // is_valid() is true for the first time the buffer is passed to the VDA.
       // In that case, VDA needs to import the buffer first.
-      if (buffers_pending_import_[index].is_valid()) {
+      OutputBufferInfo& info = buffers_pending_import_[index];
+      if (info.handle.is_valid()) {
         gfx::GpuMemoryBufferHandle handle;
 #if defined(USE_OZONE)
-        handle.native_pixmap_handle.fd = base::FileDescriptor(
-            buffers_pending_import_[index].release(), true);
+        handle.native_pixmap_handle.fd =
+            base::FileDescriptor(info.handle.release(), true);
+        handle.native_pixmap_handle.stride = info.stride;
 #endif
         vda_->ImportBufferForPicture(index, {handle});
       } else {
@@ -257,10 +312,10 @@ void ArcGpuVideoDecodeAccelerator::ProvidePictureBuffers(
            << ", dimensions=" << dimensions.ToString() << ")";
   DCHECK(thread_checker_.CalledOnValidThread());
   coded_size_ = dimensions;
+  output_pixel_format_ = vda_->GetOutputFormat();
 
   VideoFormat video_format;
-  media::VideoPixelFormat output_format = vda_->GetOutputFormat();
-  switch (output_format) {
+  switch (output_pixel_format_) {
     case media::PIXEL_FORMAT_I420:
     case media::PIXEL_FORMAT_YV12:
     case media::PIXEL_FORMAT_NV12:
@@ -274,12 +329,12 @@ void ArcGpuVideoDecodeAccelerator::ProvidePictureBuffers(
       video_format.pixel_format = HAL_PIXEL_FORMAT_BGRA_8888;
       break;
     default:
-      DLOG(ERROR) << "Format not supported: " << output_format;
+      DLOG(ERROR) << "Format not supported: " << output_pixel_format_;
       arc_client_->OnError(PLATFORM_FAILURE);
       return;
   }
   video_format.buffer_size =
-      media::VideoFrame::AllocationSize(output_format, coded_size_);
+      media::VideoFrame::AllocationSize(output_pixel_format_, coded_size_);
   output_buffer_size_ = video_format.buffer_size;
   video_format.min_num_buffers = requested_num_of_buffers;
   video_format.coded_width = dimensions.width();
@@ -390,7 +445,7 @@ ArcGpuVideoDecodeAccelerator::FindInputRecord(int32_t bitstream_buffer_id) {
 }
 
 bool ArcGpuVideoDecodeAccelerator::ValidatePortAndIndex(PortType port,
-                                                        uint32_t index) {
+                                                        uint32_t index) const {
   switch (port) {
     case PORT_INPUT:
       if (index >= input_buffer_info_.size()) {

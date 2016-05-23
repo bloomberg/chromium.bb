@@ -120,10 +120,12 @@ class ArcVideoAccelerator {
   // Assigns a buffer to be used for the accelerator at the specified
   // port and index. A buffer must be successfully bound before it can be
   // passed to the accelerator via UseBuffer(). Already bound buffers may be
-  // reused multiple times without additional bindings.
+  // reused multiple times without additional bindings. |stride| is counted in
+  // bytes.
   virtual void BindDmabuf(PortType port,
                           uint32_t index,
-                          base::ScopedFD dmabuf_fd) = 0;
+                          base::ScopedFD dmabuf_fd,
+                          int32_t stride) = 0;
 
   // Passes a buffer to the accelerator. For input buffer, the accelerator
   // will process it. For output buffer, the accelerator will output content

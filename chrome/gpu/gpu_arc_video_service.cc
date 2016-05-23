@@ -190,7 +190,8 @@ class GpuArcVideoService::AcceleratorStub
 
   void BindDmabuf(::arc::mojom::PortType port,
                   uint32_t index,
-                  mojo::ScopedHandle dmabuf_handle) override {
+                  mojo::ScopedHandle dmabuf_handle,
+                  int32_t stride) override {
     DVLOG(2) << "BindDmabuf port=" << port << ", index=" << index;
     mojo::edk::ScopedPlatformHandle scoped_platform_handle;
     MojoResult mojo_result = mojo::edk::PassWrappedPlatformHandle(
@@ -198,7 +199,8 @@ class GpuArcVideoService::AcceleratorStub
     DCHECK_EQ(mojo_result, MOJO_RESULT_OK);
 
     auto fd = base::ScopedFD(scoped_platform_handle.release().handle);
-    accelerator_->BindDmabuf(static_cast<PortType>(port), index, std::move(fd));
+    accelerator_->BindDmabuf(static_cast<PortType>(port), index, std::move(fd),
+                             stride);
   }
 
   void UseBuffer(::arc::mojom::PortType port,

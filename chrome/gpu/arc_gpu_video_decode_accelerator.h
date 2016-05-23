@@ -42,7 +42,8 @@ class ArcGpuVideoDecodeAccelerator
                         size_t length) override;
   void BindDmabuf(PortType port,
                   uint32_t index,
-                  base::ScopedFD dmabuf_fd) override;
+                  base::ScopedFD dmabuf_fd,
+                  int32_t stride) override;
   void UseBuffer(PortType port,
                  uint32_t index,
                  const BufferMetadata& metadata) override;
@@ -79,16 +80,33 @@ class ArcGpuVideoDecodeAccelerator
     // The file handle to access the buffer. It is owned by this class and
     // should be closed after use.
     base::ScopedFD handle;
-    off_t offset;
-    size_t length;
+
+    // The offset of the payload to the beginning of the shared memory.
+    off_t offset = 0;
+
+    // The size of the payload in bytes.
+    size_t length = 0;
 
     InputBufferInfo();
     InputBufferInfo(InputBufferInfo&& other);
     ~InputBufferInfo();
   };
 
+  // The information about the dmabuf used as an output buffer.
+  struct OutputBufferInfo {
+    base::ScopedFD handle;
+    int32_t stride = 0;  // In bytes.
+
+    OutputBufferInfo();
+    OutputBufferInfo(OutputBufferInfo&& other);
+    ~OutputBufferInfo();
+  };
+
   // Helper function to validate |port| and |index|.
-  bool ValidatePortAndIndex(PortType port, uint32_t index);
+  bool ValidatePortAndIndex(PortType port, uint32_t index) const;
+
+  // Helper function to verify the length of stride is legal.
+  bool VerifyStride(const base::ScopedFD& fd, int32_t stride) const;
 
   // Creates an InputRecord for the given |bitstream_buffer_id|. The
   // |buffer_index| is the index of the associated input buffer. The |timestamp|
@@ -111,6 +129,7 @@ class ArcGpuVideoDecodeAccelerator
   int32_t next_bitstream_buffer_id_;
 
   gfx::Size coded_size_;
+  media::VideoPixelFormat output_pixel_format_;
 
   // A list of most recent |kMaxNumberOfInputRecord| InputRecords.
   // |kMaxNumberOfInputRecord| is defined in the cc file.
@@ -119,10 +138,10 @@ class ArcGpuVideoDecodeAccelerator
   // The details of the shared memory of each input buffers.
   std::vector<InputBufferInfo> input_buffer_info_;
 
-  // To keep those output buffers which have been bound by bindDmabuf() but not
-  // be used yet. Will call VDA::ImportBufferForPicture() when those buffers are
-  // used for the first time.
-  std::vector<base::ScopedFD> buffers_pending_import_;
+  // To keep those output buffers which have been bound by bindDmabuf() but
+  // haven't been passed to VDA yet. Will call VDA::ImportBufferForPicture()
+  // when those buffers are used for the first time.
+  std::vector<OutputBufferInfo> buffers_pending_import_;
 
   base::ThreadChecker thread_checker_;
   size_t output_buffer_size_;
