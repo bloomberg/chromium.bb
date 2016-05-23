@@ -251,6 +251,7 @@
       'tests/FrameTestHelpers.h',
       'tests/FrameThrottlingTest.cpp',
       'tests/ImeOnFocusTest.cpp',
+      'tests/IntersectionObserverTest.cpp',
       'tests/KeyboardTest.cpp',
       'tests/ListenerLeakTest.cpp',
       'tests/LinkSelectionTest.cpp',

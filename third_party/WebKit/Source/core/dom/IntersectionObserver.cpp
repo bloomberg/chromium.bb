@@ -15,6 +15,7 @@
 #include "core/dom/IntersectionObserverEntry.h"
 #include "core/dom/IntersectionObserverInit.h"
 #include "core/dom/NodeIntersectionObserverData.h"
+#include "core/frame/FrameView.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutView.h"
 #include "core/timing/DOMWindowPerformance.h"
@@ -183,6 +184,10 @@ void IntersectionObserver::observe(Element* target)
     IntersectionObservation* observation = new IntersectionObservation(*this, *target, shouldReportRootBounds);
     target->ensureIntersectionObserverData().addObservation(*observation);
     m_observations.add(observation);
+    if (!rootFrame)
+        return;
+    if (FrameView* rootFrameView = rootFrame->view())
+        rootFrameView->scheduleAnimation();
 }
 
 void IntersectionObserver::unobserve(Element* target)

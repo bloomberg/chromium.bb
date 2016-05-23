@@ -21,7 +21,7 @@ class LayoutObject;
 class IntersectionObserverCallback;
 class IntersectionObserverInit;
 
-class IntersectionObserver final : public GarbageCollectedFinalized<IntersectionObserver>, public ScriptWrappable {
+class CORE_EXPORT IntersectionObserver final : public GarbageCollectedFinalized<IntersectionObserver>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
