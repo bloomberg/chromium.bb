@@ -206,7 +206,7 @@ class HWTestList(object):
     #                                num=8, pool=constants.HWTEST_MACH_POOL,
     #                                **default_dict),
     return [config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
-                                    num=4, pool=constants.HWTEST_PALADIN_POOL,
+                                    num=4, pool=constants.HWTEST_MACH_POOL,
                                     **default_dict)]
 
   @classmethod
