@@ -7,6 +7,7 @@
 
 #include <set>
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -131,7 +132,9 @@ class InFlightIO {
   scoped_refptr<base::TaskRunner> callback_task_runner_;
 
   bool running_;  // True after the first posted operation completes.
-  bool single_thread_;  // True if we only have one thread.
+#if DCHECK_IS_ON()
+  bool single_thread_ = false;  // True if we only have one thread.
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(InFlightIO);
 };

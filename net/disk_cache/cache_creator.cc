@@ -51,7 +51,9 @@ class CacheCreator {
   int max_bytes_;
   net::CacheType type_;
   net::BackendType backend_type_;
+#if !defined(OS_ANDROID)
   uint32_t flags_;
+#endif
   scoped_refptr<base::SingleThreadTaskRunner> thread_;
   std::unique_ptr<disk_cache::Backend>* backend_;
   net::CompletionCallback callback_;
@@ -78,11 +80,14 @@ CacheCreator::CacheCreator(
       max_bytes_(max_bytes),
       type_(type),
       backend_type_(backend_type),
+#if !defined(OS_ANDROID)
       flags_(flags),
+#endif
       thread_(thread),
       backend_(backend),
       callback_(callback),
-      net_log_(net_log) {}
+      net_log_(net_log) {
+}
 
 CacheCreator::~CacheCreator() {
 }

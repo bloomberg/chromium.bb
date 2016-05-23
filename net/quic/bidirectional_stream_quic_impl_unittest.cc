@@ -221,8 +221,8 @@ class DeleteStreamDelegate : public TestDelegateBase {
     ON_FAILED,
   };
 
-  DeleteStreamDelegate(IOBuffer* buf, int buf_len, Phase phase, bool do_cancel)
-      : TestDelegateBase(buf, buf_len), phase_(phase), do_cancel_(do_cancel) {}
+  DeleteStreamDelegate(IOBuffer* buf, int buf_len, Phase phase)
+      : TestDelegateBase(buf, buf_len), phase_(phase) {}
   ~DeleteStreamDelegate() override {}
 
   void OnHeadersReceived(const SpdyHeaderBlock& response_headers) override {
@@ -259,8 +259,6 @@ class DeleteStreamDelegate : public TestDelegateBase {
   // Indicates in which callback the delegate should cancel or delete the
   // stream.
   Phase phase_;
-  // Indicates whether to cancel or delete the stream.
-  bool do_cancel_;
 
   DISALLOW_COPY_AND_ASSIGN(DeleteStreamDelegate);
 };
@@ -1194,9 +1192,9 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnHeadersReceived) {
   request.priority = DEFAULT_PRIORITY;
 
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
-  std::unique_ptr<DeleteStreamDelegate> delegate(new DeleteStreamDelegate(
-      read_buffer.get(), kReadBufferSize,
-      DeleteStreamDelegate::ON_HEADERS_RECEIVED, true));
+  std::unique_ptr<DeleteStreamDelegate> delegate(
+      new DeleteStreamDelegate(read_buffer.get(), kReadBufferSize,
+                               DeleteStreamDelegate::ON_HEADERS_RECEIVED));
   delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
   delegate->WaitUntilNextCallback();  // OnStreamReady
 
@@ -1237,9 +1235,8 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnDataRead) {
   request.priority = DEFAULT_PRIORITY;
 
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
-  std::unique_ptr<DeleteStreamDelegate> delegate(
-      new DeleteStreamDelegate(read_buffer.get(), kReadBufferSize,
-                               DeleteStreamDelegate::ON_DATA_READ, true));
+  std::unique_ptr<DeleteStreamDelegate> delegate(new DeleteStreamDelegate(
+      read_buffer.get(), kReadBufferSize, DeleteStreamDelegate::ON_DATA_READ));
   delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
   delegate->WaitUntilNextCallback();  // OnStreamReady
 
@@ -1289,9 +1286,9 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
   request.priority = DEFAULT_PRIORITY;
 
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
-  std::unique_ptr<DeleteStreamDelegate> delegate(new DeleteStreamDelegate(
-      read_buffer.get(), kReadBufferSize,
-      DeleteStreamDelegate::ON_TRAILERS_RECEIVED, true));
+  std::unique_ptr<DeleteStreamDelegate> delegate(
+      new DeleteStreamDelegate(read_buffer.get(), kReadBufferSize,
+                               DeleteStreamDelegate::ON_TRAILERS_RECEIVED));
   delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
   delegate->WaitUntilNextCallback();  // OnStreamReady
 
