@@ -28,12 +28,12 @@ from devil.utils import reraiser_thread
 from devil.utils import run_tests_helper
 
 from pylib import constants
-from pylib.constants import host_paths
 from pylib.base import base_test_result
 from pylib.base import environment_factory
 from pylib.base import test_dispatcher
 from pylib.base import test_instance_factory
 from pylib.base import test_run_factory
+from pylib.constants import host_paths
 from pylib.linker import setup as linker_setup
 from pylib.junit import setup as junit_setup
 from pylib.junit import test_dispatcher as junit_dispatcher
@@ -852,28 +852,48 @@ def RunTestsInPlatformMode(args):
     with test_instance_factory.CreateTestInstance(args, infra_error) as test:
       with test_run_factory.CreateTestRun(
           args, env, test, infra_error) as test_run:
-        results = []
+
+        # TODO(jbudorick): Rewrite results handling.
+
+        # all_raw_results is a list of lists of base_test_result.TestRunResults
+        # objects. Each instance of TestRunResults contains all test results
+        # produced by a single try, while each list of TestRunResults contains
+        # all tries in a single iteration.
+        all_raw_results = []
+        # all_iteration_results is a list of base_test_result.TestRunResults
+        # objects. Each instance of TestRunResults contains the last test result
+        # for each test run in that iteration.
+        all_iteration_results = []
+
         repetitions = (xrange(args.repeat + 1) if args.repeat >= 0
                        else itertools.count())
         result_counts = collections.defaultdict(
             lambda: collections.defaultdict(int))
         iteration_count = 0
         for _ in repetitions:
-          iteration_results = test_run.RunTests()
-          if iteration_results is not None:
-            iteration_count += 1
-            results.append(iteration_results)
-            for r in iteration_results.GetAll():
-              result_counts[r.GetName()][r.GetType()] += 1
-            report_results.LogFull(
-                results=iteration_results,
-                test_type=test.TestType(),
-                test_package=test_run.TestPackage(),
-                annotation=getattr(args, 'annotations', None),
-                flakiness_server=getattr(args, 'flakiness_dashboard_server',
-                                         None))
-            if args.break_on_failure and not iteration_results.DidRunPass():
-              break
+          raw_results = test_run.RunTests()
+          if not raw_results:
+            continue
+
+          all_raw_results.append(raw_results)
+
+          iteration_results = base_test_result.TestRunResults()
+          for r in reversed(raw_results):
+            iteration_results.AddTestRunResults(r)
+          all_iteration_results.append(iteration_results)
+
+          iteration_count += 1
+          for r in iteration_results.GetAll():
+            result_counts[r.GetName()][r.GetType()] += 1
+          report_results.LogFull(
+              results=iteration_results,
+              test_type=test.TestType(),
+              test_package=test_run.TestPackage(),
+              annotation=getattr(args, 'annotations', None),
+              flakiness_server=getattr(args, 'flakiness_dashboard_server',
+                                       None))
+          if args.break_on_failure and not iteration_results.DidRunPass():
+            break
 
         if iteration_count > 1:
           # display summary results
@@ -902,9 +922,9 @@ def RunTestsInPlatformMode(args):
 
         if args.json_results_file:
           json_results.GenerateJsonResultsFile(
-              results, args.json_results_file)
+              all_raw_results, args.json_results_file)
 
-  return (0 if all(r.DidRunPass() for r in results)
+  return (0 if all(r.DidRunPass() for r in all_iteration_results)
           else constants.ERROR_EXIT_CODE)
 
 

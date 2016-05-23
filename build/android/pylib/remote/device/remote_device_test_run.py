@@ -112,7 +112,7 @@ class RemoteDeviceTestRun(test_run.TestRun):
         raise remote_device_helper.RemoteDeviceError(
             self._results['results']['exception'], is_infra_error=True)
 
-      return self._ParseTestResults()
+      return [self._ParseTestResults()]
 
   #override
   def TearDown(self):

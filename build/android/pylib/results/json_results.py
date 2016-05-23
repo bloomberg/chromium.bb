@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import collections
+import itertools
 import json
 
 from pylib.base import base_test_result
@@ -33,6 +35,7 @@ def GenerateResultsDict(test_run_results):
   #           "output_snippet_base64": "",
   #           "losless_snippet": "",
   #         },
+  #         ...
   #       ],
   #       "test2": [
   #         {
@@ -42,6 +45,7 @@ def GenerateResultsDict(test_run_results):
   #           "output_snippet_base64": "",
   #           "losless_snippet": "",
   #         },
+  #         ...
   #       ],
   #     },
   #     {
@@ -85,16 +89,21 @@ def GenerateResultsDict(test_run_results):
   all_tests = set()
   per_iteration_data = []
   for test_run_result in test_run_results:
-    iteration_data = {
-      t.GetName(): [{
-        'status': status_as_string(t.GetType()),
-        'elapsed_time_ms': t.GetDuration(),
-        'output_snippet': '',
-        'losless_snippet': '',
-        'output_snippet_base64:': '',
-      }]
-      for t in test_run_result.GetAll()
-    }
+    iteration_data = collections.defaultdict(list)
+    if isinstance(test_run_result, list):
+      results_iterable = itertools.chain(*(t.GetAll() for t in test_run_result))
+    else:
+      results_iterable = test_run_result.GetAll()
+
+    for r in results_iterable:
+      iteration_data[r.GetName()].append({
+          'status': status_as_string(r.GetType()),
+          'elapsed_time_ms': r.GetDuration(),
+          'output_snippet': '',
+          'losless_snippet': '',
+          'output_snippet_base64:': '',
+      })
+
     all_tests = all_tests.union(set(iteration_data.iterkeys()))
     per_iteration_data.append(iteration_data)
 

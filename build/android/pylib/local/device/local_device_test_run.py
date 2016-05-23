@@ -113,8 +113,7 @@ class LocalDeviceTestRun(test_run.TestRun):
       logging.info('Finished running tests on this device.')
 
     tries = 0
-    results = base_test_result.TestRunResults()
-    all_fail_results = {}
+    results = []
     while tries < self._env.max_tries and tests:
       logging.info('STARTING TRY #%d/%d', tries + 1, self._env.max_tries)
       logging.info('Will run %d tests on %d devices: %s',
@@ -132,45 +131,38 @@ class LocalDeviceTestRun(test_run.TestRun):
         self._env.parallel_devices.pMap(
             run_tests_on_device, tests, try_results).pGet(None)
 
-      for result in try_results.GetAll():
-        if result.GetType() in (base_test_result.ResultType.PASS,
-                                base_test_result.ResultType.SKIP):
-          results.AddResult(result)
-        else:
-          all_fail_results[result.GetName()] = result
-
-      results_names = set(r.GetName() for r in results.GetAll())
-
-      def has_test_result(name):
-        # When specifying a test filter, names can contain trailing wildcards.
-        # See local_device_gtest_run._ExtractTestsFromFilter()
-        if name.endswith('*'):
-          return any(fnmatch.fnmatch(n, name) for n in results_names)
-        return name in results_names
-
-      tests = [t for t in tests if not has_test_result(self._GetTestName(t))]
+      results.append(try_results)
       tries += 1
+      tests = self._GetTestsToRetry(tests, try_results)
+
       logging.info('FINISHED TRY #%d/%d', tries, self._env.max_tries)
       if tests:
         logging.info('%d failed tests remain.', len(tests))
       else:
         logging.info('All tests completed.')
 
-    all_unknown_test_names = set(self._GetTestName(t) for t in tests)
-    all_failed_test_names = set(all_fail_results.iterkeys())
-
-    unknown_tests = all_unknown_test_names.difference(all_failed_test_names)
-    failed_tests = all_failed_test_names.intersection(all_unknown_test_names)
-
-    if unknown_tests:
-      results.AddResults(
-          base_test_result.BaseTestResult(
-              u, base_test_result.ResultType.UNKNOWN)
-          for u in unknown_tests)
-    if failed_tests:
-      results.AddResults(all_fail_results[f] for f in failed_tests)
-
     return results
+
+  def _GetTestsToRetry(self, tests, try_results):
+
+    def is_failure(test_result):
+      return (
+          test_result is None
+          or test_result.GetType() not in (
+              base_test_result.ResultType.PASS,
+              base_test_result.ResultType.SKIP))
+
+    all_test_results = {r.GetName(): r for r in try_results.GetAll()}
+
+    def should_retry(name):
+      # When specifying a test filter, names can contain trailing wildcards.
+      # See local_device_gtest_run._ExtractTestsFromFilter()
+      if name.endswith('*'):
+        return any(fnmatch.fnmatch(n, name) and is_failure(t)
+                   for n, t in all_test_results.iteritems())
+      return is_failure(all_test_results.get(name))
+
+    return [t for t in tests if should_retry(self._GetTestName(t))]
 
   def GetTool(self, device):
     if not str(device) in self._tools:
