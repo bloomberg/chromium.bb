@@ -9,7 +9,6 @@
 
 #include <limits>
 
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
@@ -385,28 +384,19 @@ bool MessagePumpForUI::ProcessMessageHelper(const MSG& msg) {
 }
 
 bool MessagePumpForUI::ProcessPumpReplacementMessage() {
-  // When we encounter a kMsgHaveWork message, this method is called to peek
-  // and process a replacement message, such as a WM_PAINT or WM_TIMER.  The
-  // goal is to make the kMsgHaveWork as non-intrusive as possible, even though
-  // a continuous stream of such messages are posted.  This method carefully
-  // peeks a message while there is no chance for a kMsgHaveWork to be pending,
-  // then resets the have_work_ flag (allowing a replacement kMsgHaveWork to
-  // possibly be posted), and finally dispatches that peeked replacement.  Note
-  // that the re-post of kMsgHaveWork may be asynchronous to this thread!!
+  // When we encounter a kMsgHaveWork message, this method is called to peek and
+  // process a replacement message. The goal is to make the kMsgHaveWork as non-
+  // intrusive as possible, even though a continuous stream of such messages are
+  // posted. This method carefully peeks a message while there is no chance for
+  // a kMsgHaveWork to be pending, then resets the |have_work_| flag (allowing a
+  // replacement kMsgHaveWork to possibly be posted), and finally dispatches
+  // that peeked replacement. Note that the re-post of kMsgHaveWork may be
+  // asynchronous to this thread!!
 
-  bool have_message = false;
   MSG msg;
-  // We should not process all window messages if we are in the context of an
-  // OS modal loop, i.e. in the context of a windows API call like MessageBox.
-  // This is to ensure that these messages are peeked out by the OS modal loop.
-  if (MessageLoop::current()->os_modal_loop()) {
-    // We only peek out WM_PAINT and WM_TIMER here for reasons mentioned above.
-    have_message = PeekMessage(&msg, NULL, WM_PAINT, WM_PAINT, PM_REMOVE) ||
-                   PeekMessage(&msg, NULL, WM_TIMER, WM_TIMER, PM_REMOVE);
-  } else {
-    have_message = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) != FALSE;
-  }
+  const bool have_message = PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) != FALSE;
 
+  // Expect no message or a message different than kMsgHaveWork.
   DCHECK(!have_message || kMsgHaveWork != msg.message ||
          msg.hwnd != message_hwnd_);
 
