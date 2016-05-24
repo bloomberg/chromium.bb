@@ -52,7 +52,6 @@ class ToughCanvasCasesPageSet(story.StorySet):
       # pylint: disable=line-too-long
       'http://ie.microsoft.com/testdrive/Performance/FishIETank/Default.html',
       'http://ie.microsoft.com/testdrive/Performance/SpeedReading/Default.html',
-      'http://acko.net/dumpx/996b.html',
       'http://www.kevs3d.co.uk/dev/canvask3d/k3d_test.html',
       'http://www.megidish.net/awjs/',
       'http://themaninblue.com/experiment/AnimationBenchmark/canvas/',
@@ -82,7 +81,8 @@ class ToughCanvasCasesPageSet(story.StorySet):
       'file://tough_canvas_cases/canvas-animation-no-clear.html',
       'file://tough_canvas_cases/canvas_toBlob.html',
       'file://../../../chrome/test/data/perf/canvas_bench/single_image.html',
-      'file://../../../chrome/test/data/perf/canvas_bench/many_images.html'
+      'file://../../../chrome/test/data/perf/canvas_bench/many_images.html',
+      'file://tough_canvas_cases/rendering_throughput/canvas_arcs.html'
     ]
 
     for url in urls_list:
