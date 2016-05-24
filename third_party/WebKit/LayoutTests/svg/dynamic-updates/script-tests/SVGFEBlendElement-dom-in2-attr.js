@@ -187,7 +187,7 @@ darkenRectElement.setAttribute("width", "240");
 darkenRectElement.setAttribute("height", "20");
 darkenRectElement.setAttribute("fill", "blue");
 darkenRectElement.setAttribute("opacity", "0.5");
-darkenRectElement.setAttribute("filter", "url(darkenFilter)");
+darkenRectElement.setAttribute("filter", "url(#darkenFilter)");
 rootSVGElement.appendChild(darkenRectElement);
 
 var lightenRectElement = createSVGElement("rect");
