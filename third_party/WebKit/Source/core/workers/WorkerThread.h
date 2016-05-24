@@ -67,8 +67,8 @@ public:
     void terminate();
 
     // Called in shutdown sequence on the main thread. Internally calls
-    // terminate() (or terminateInternal) and wait (by *blocking* the calling
-    // thread) until the worker(s) is/are shut down.
+    // terminate() and wait (by *blocking* the calling thread) until the
+    // worker(s) is/are shut down.
     void terminateAndWait();
     static void terminateAndWaitForAllWorkers();
 
@@ -126,9 +126,6 @@ protected:
 
 private:
     std::unique_ptr<CrossThreadClosure> createWorkerThreadTask(std::unique_ptr<ExecutionContextTask>, bool isInstrumented);
-
-    // Called on the main thread.
-    void terminateInternal();
 
     // Called on the worker thread.
     void initialize(PassOwnPtr<WorkerThreadStartupData>);

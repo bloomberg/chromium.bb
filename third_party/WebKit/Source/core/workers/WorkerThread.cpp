@@ -284,57 +284,12 @@ void WorkerThread::terminate()
 
     // Prevent the deadlock between GC and an attempt to terminate a thread.
     SafePointScope safePointScope(BlinkGC::HeapPointersOnStack);
-    terminateInternal();
-}
-
-void WorkerThread::terminateAndWait()
-{
-    DCHECK(isMainThread());
-    terminate();
-    m_shutdownEvent->wait();
-}
-
-void WorkerThread::terminateAndWaitForAllWorkers()
-{
-    DCHECK(isMainThread());
-
-    // Keep this lock to prevent WorkerThread instances from being destroyed.
-    MutexLocker lock(threadSetMutex());
-    HashSet<WorkerThread*> threads = workerThreads();
-    for (WorkerThread* thread : threads)
-        thread->terminateInternal();
-
-    for (WorkerThread* thread : threads)
-        thread->m_shutdownEvent->wait();
-}
-
-void WorkerThread::terminateFromWorkerThread()
-{
-    DCHECK(isCurrentThread());
-    shutdown();
-}
-
-WorkerGlobalScope* WorkerThread::workerGlobalScope()
-{
-    DCHECK(isCurrentThread());
-    return m_workerGlobalScope.get();
-}
-
-bool WorkerThread::terminated()
-{
-    MutexLocker lock(m_threadStateMutex);
-    return m_terminated;
-}
-
-void WorkerThread::terminateInternal()
-{
-    DCHECK(isMainThread());
 
     // Protect against this method, initialize() or termination via the global
     // scope racing each other.
     MutexLocker lock(m_threadStateMutex);
 
-    // If terminateInternal has already been called, just return.
+    // If terminate has already been called, just return.
     if (m_terminated)
         return;
     m_terminated = true;
@@ -380,6 +335,45 @@ void WorkerThread::terminateInternal()
 
     m_inspectorTaskRunner->kill();
     workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::shutdown, AllowCrossThreadAccess(this)));
+}
+
+void WorkerThread::terminateAndWait()
+{
+    DCHECK(isMainThread());
+    terminate();
+    m_shutdownEvent->wait();
+}
+
+void WorkerThread::terminateAndWaitForAllWorkers()
+{
+    DCHECK(isMainThread());
+
+    // Keep this lock to prevent WorkerThread instances from being destroyed.
+    MutexLocker lock(threadSetMutex());
+    HashSet<WorkerThread*> threads = workerThreads();
+    for (WorkerThread* thread : threads)
+        thread->terminate();
+
+    for (WorkerThread* thread : threads)
+        thread->m_shutdownEvent->wait();
+}
+
+void WorkerThread::terminateFromWorkerThread()
+{
+    DCHECK(isCurrentThread());
+    shutdown();
+}
+
+WorkerGlobalScope* WorkerThread::workerGlobalScope()
+{
+    DCHECK(isCurrentThread());
+    return m_workerGlobalScope.get();
+}
+
+bool WorkerThread::terminated()
+{
+    MutexLocker lock(m_threadStateMutex);
+    return m_terminated;
 }
 
 v8::Isolate* WorkerThread::isolate()
