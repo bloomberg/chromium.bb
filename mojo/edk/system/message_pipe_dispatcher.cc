@@ -7,6 +7,7 @@
 #include <limits>
 #include <memory>
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/edk/embedder/embedder_internal.h"
@@ -521,7 +522,7 @@ void MessagePipeDispatcher::OnPortStatusChanged() {
   if (port_transferred_)
     return;
 
-#if !defined(NDEBUG)
+#if DCHECK_IS_ON()
   ports::PortStatus port_status;
   if (node_controller_->node()->GetStatus(port_, &port_status) == ports::OK) {
     if (port_status.has_messages) {

@@ -55,7 +55,7 @@ bool Node::CanShutdownCleanly(bool allow_local_ports) {
   base::AutoLock ports_lock(ports_lock_);
 
   if (!allow_local_ports) {
-#if !defined(NDEBUG)
+#if DCHECK_IS_ON()
     for (auto entry : ports_) {
       DVLOG(2) << "Port " << entry.first << " referencing node "
                << entry.second->peer_node_name << " is blocking shutdown of "
@@ -74,7 +74,7 @@ bool Node::CanShutdownCleanly(bool allow_local_ports) {
     if (entry.second->peer_node_name != name_ &&
         entry.second->state != Port::kReceiving) {
       can_shutdown = false;
-#if !defined(NDEBUG)
+#if DCHECK_IS_ON()
       DVLOG(2) << "Port " << entry.first << " referencing node "
                << entry.second->peer_node_name << " is blocking shutdown of "
                << "node " << name_ << " (state=" << entry.second->state << ")";
@@ -449,7 +449,7 @@ int Node::OnUserMessage(ScopedMessage message) {
   PortName port_name = GetEventHeader(*message)->port_name;
   const auto* event = GetEventData<UserEventData>(*message);
 
-#if !defined(NDEBUG)
+#if DCHECK_IS_ON()
   std::ostringstream ports_buf;
   for (size_t i = 0; i < message->num_ports(); ++i) {
     if (i > 0)
@@ -752,7 +752,8 @@ int Node::OnMergePort(const PortName& port_name,
   scoped_refptr<Port> port = GetPort(port_name);
 
   DVLOG(1) << "MergePort at " << port_name << "@" << name_ << " (state="
-           << port->state << ") merging with proxy " << event.new_port_name
+           << (port ? port->state : -1) << ") merging with proxy "
+           << event.new_port_name
            << "@" << name_ << " pointing to "
            << event.new_port_descriptor.peer_port_name << "@"
            << event.new_port_descriptor.peer_node_name << " referred by "
@@ -1060,7 +1061,7 @@ int Node::WillSendMessage_Locked(Port* port,
   if (*sequence_num == 0)
     *sequence_num = port->next_sequence_num_to_send++;
 
-#if !defined(NDEBUG)
+#if DCHECK_IS_ON()
   std::ostringstream ports_buf;
   for (size_t i = 0; i < message->num_ports(); ++i) {
     if (i > 0)
@@ -1113,7 +1114,7 @@ int Node::WillSendMessage_Locked(Port* port,
       ports[i]->lock.Release();
   }
 
-#if !defined(NDEBUG)
+#if DCHECK_IS_ON()
   DVLOG(2) << "Sending message "
            << GetEventData<UserEventData>(*message)->sequence_num
            << " [ports=" << ports_buf.str() << "]"

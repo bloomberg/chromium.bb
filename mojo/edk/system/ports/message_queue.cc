@@ -31,7 +31,7 @@ MessageQueue::MessageQueue(uint64_t next_sequence_num)
 }
 
 MessageQueue::~MessageQueue() {
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
   size_t num_leaked_ports = 0;
   for (const auto& message : heap_)
     num_leaked_ports += message->num_ports();
