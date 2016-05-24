@@ -2141,7 +2141,7 @@ def GetConfig():
       internal,
       default_hw_tests_override,
       build_type=constants.TOOLCHAIN_TYPE,
-      build_timeout=12 * 60 * 60 if IS_RELEASE_BRANCH else (7 * 60 + 50) * 60,
+      build_timeout=(9 * 60 + 50) * 60,
       useflags=append_useflags(['-cros-debug']),
       afdo_use=True,
       manifest=constants.OFFICIAL_MANIFEST,
