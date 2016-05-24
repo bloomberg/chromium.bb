@@ -329,15 +329,20 @@ void ChannelMojo::OnPipeError() {
 }
 
 bool ChannelMojo::Send(Message* message) {
-  base::AutoLock lock(lock_);
-  if (!message_reader_) {
-    pending_messages_.push_back(base::WrapUnique(message));
-    // Counts as OK before the connection is established, but it's an
-    // error otherwise.
-    return waiting_connect_;
+  bool sent = false;
+  {
+    base::AutoLock lock(lock_);
+    if (!message_reader_) {
+      pending_messages_.push_back(base::WrapUnique(message));
+      // Counts as OK before the connection is established, but it's an
+      // error otherwise.
+      return waiting_connect_;
+    }
+
+    sent = message_reader_->Send(base::WrapUnique(message));
   }
 
-  if (!message_reader_->Send(base::WrapUnique(message))) {
+  if (!sent) {
     OnPipeError();
     return false;
   }
