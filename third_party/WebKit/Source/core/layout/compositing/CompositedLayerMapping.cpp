@@ -123,6 +123,16 @@ static inline bool isAcceleratedCanvas(const LayoutObject* layoutObject)
     return false;
 }
 
+static inline bool isCanvasControlledByOffscreen(const LayoutObject* layoutObject)
+{
+    if (layoutObject->isCanvas()) {
+        HTMLCanvasElement* canvas = toHTMLCanvasElement(layoutObject->node());
+        if (canvas->surfaceLayerBridge())
+            return true;
+    }
+    return false;
+}
+
 static bool hasBoxDecorationsOrBackgroundImage(const ComputedStyle& style)
 {
     return style.hasBoxDecorations() || style.hasBackgroundImage();
@@ -536,6 +546,10 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     } else if (layoutObject->isVideo()) {
         HTMLMediaElement* mediaElement = toHTMLMediaElement(layoutObject->node());
         m_graphicsLayer->setContentsToPlatformLayer(mediaElement->platformLayer());
+    } else if (isCanvasControlledByOffscreen(layoutObject)) {
+        HTMLCanvasElement* canvas = toHTMLCanvasElement(layoutObject->node());
+        m_graphicsLayer->setContentsToPlatformLayer(canvas->surfaceLayerBridge()->getWebLayer());
+        layerConfigChanged = true;
     } else if (isAcceleratedCanvas(layoutObject)) {
         HTMLCanvasElement* canvas = toHTMLCanvasElement(layoutObject->node());
         if (CanvasRenderingContext* context = canvas->renderingContext())

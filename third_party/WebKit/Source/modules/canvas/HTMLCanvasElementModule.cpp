@@ -27,6 +27,7 @@ OffscreenCanvas* HTMLCanvasElementModule::transferControlToOffscreen(HTMLCanvasE
     }
     OffscreenCanvas* offscreenCanvas = OffscreenCanvas::create(canvas.width(), canvas.height());
     offscreenCanvas->setAssociatedCanvasId(DOMNodeIds::idForNode(&canvas));
+    canvas.createSurfaceLayerBridge();
     return offscreenCanvas;
 }
 

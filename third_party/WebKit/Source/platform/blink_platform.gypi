@@ -559,6 +559,8 @@
       'graphics/Canvas2DLayerBridge.h',
       'graphics/CanvasMetrics.cpp',
       'graphics/CanvasMetrics.h',
+      'graphics/CanvasSurfaceLayerBridge.cpp',
+      'graphics/CanvasSurfaceLayerBridge.h',
       'graphics/Color.cpp',
       'graphics/Color.h',
       'graphics/ColorSpace.cpp',

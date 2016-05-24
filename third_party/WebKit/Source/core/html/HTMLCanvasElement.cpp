@@ -251,7 +251,7 @@ CanvasRenderingContext* HTMLCanvasElement::getCanvasRenderingContext(const Strin
 
 bool HTMLCanvasElement::shouldBeDirectComposited() const
 {
-    return (m_context && m_context->isAccelerated()) || (hasImageBuffer() && buffer()->isExpensiveToPaint());
+    return (m_context && m_context->isAccelerated()) || (hasImageBuffer() && buffer()->isExpensiveToPaint()) || (!!m_surfaceLayerBridge);
 }
 
 bool HTMLCanvasElement::isPaintable() const
@@ -1134,6 +1134,11 @@ String HTMLCanvasElement::getIdFromControl(const Element* element)
     if (m_context)
         return m_context->getIdFromControl(element);
     return String();
+}
+
+void HTMLCanvasElement::createSurfaceLayerBridge()
+{
+    m_surfaceLayerBridge = adoptPtr(new CanvasSurfaceLayerBridge());
 }
 
 } // namespace blink

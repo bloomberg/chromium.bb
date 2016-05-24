@@ -41,6 +41,7 @@
 #include "core/page/PageLifecycleObserver.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/CanvasSurfaceLayerBridge.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/graphics/ImageBufferClient.h"
@@ -197,6 +198,10 @@ public:
     std::pair<Element*, String> getControlAndIdIfHitRegionExists(const LayoutPoint&);
     String getIdFromControl(const Element*);
 
+    // For OffscreenCanvas that controls this html canvas element
+    CanvasSurfaceLayerBridge* surfaceLayerBridge() const { return m_surfaceLayerBridge.get(); }
+    void createSurfaceLayerBridge();
+
 protected:
     void didMoveToNewDocument(Document& oldDocument) override;
 
@@ -246,6 +251,9 @@ private:
     OwnPtr<ImageBuffer> m_imageBuffer;
 
     mutable RefPtr<Image> m_copiedImage; // FIXME: This is temporary for platforms that have to copy the image buffer to render (and for CSSCanvasValue).
+
+    // Used for OffscreenCanvas that controls this HTML canvas element
+    OwnPtr<CanvasSurfaceLayerBridge> m_surfaceLayerBridge;
 };
 
 } // namespace blink
