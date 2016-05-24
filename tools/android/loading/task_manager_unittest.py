@@ -162,24 +162,24 @@ class BuilderTest(TaskManagerTestCase):
     builder = task_manager.Builder(self.output_directory, 'subdir')
 
     builder.CreateStaticTask('hello.py', __file__)
-    self.assertIn('subdir/hello.py', builder.tasks)
-    self.assertNotIn('hello.py', builder.tasks)
+    self.assertIn('subdir/hello.py', builder._tasks)
+    self.assertNotIn('hello.py', builder._tasks)
 
     builder.CreateStaticTask('subdir/hello.py', __file__)
-    self.assertIn('subdir/subdir/hello.py', builder.tasks)
+    self.assertIn('subdir/subdir/hello.py', builder._tasks)
 
     @builder.RegisterTask('world.txt')
     def TaskA():
       pass
     del TaskA # unused
-    self.assertIn('subdir/world.txt', builder.tasks)
-    self.assertNotIn('hello.py', builder.tasks)
+    self.assertIn('subdir/world.txt', builder._tasks)
+    self.assertNotIn('hello.py', builder._tasks)
 
     @builder.RegisterTask('subdir/world.txt')
     def TaskB():
       pass
     del TaskB # unused
-    self.assertIn('subdir/subdir/world.txt', builder.tasks)
+    self.assertIn('subdir/subdir/world.txt', builder._tasks)
 
 
 class GenerateScenarioTest(TaskManagerTestCase):
@@ -337,6 +337,10 @@ class GenerateScenarioTest(TaskManagerTestCase):
 
 
 class CommandLineControlledExecutionTest(TaskManagerTestCase):
+  def setUp(self):
+    TaskManagerTestCase.setUp(self)
+    self.with_raise_exception_task = False
+
   def Execute(self, *command_line_args):
     builder = task_manager.Builder(self.output_directory, None)
     @builder.RegisterTask('a')
@@ -355,17 +359,18 @@ class CommandLineControlledExecutionTest(TaskManagerTestCase):
     def TaskE():
       pass
     @builder.RegisterTask('raise_exception', dependencies=[TaskB])
-    def TaskF():
+    def RaiseExceptionTask():
       raise TestException('Expected error.')
 
     default_final_tasks = [TaskD, TaskE]
+    if self.with_raise_exception_task:
+      default_final_tasks.append(RaiseExceptionTask)
     parser = task_manager.CommandLineParser()
     cmd = ['-o', self.output_directory]
     cmd.extend([i for i in command_line_args])
     args = parser.parse_args(cmd)
     with EatStdoutAndStderr():
-      return task_manager.ExecuteWithCommandLine(
-          args, [TaskA, TaskB, TaskC, TaskD, TaskE, TaskF], default_final_tasks)
+      return task_manager.ExecuteWithCommandLine(args, default_final_tasks)
 
   def testSimple(self):
     self.assertEqual(0, self.Execute())
@@ -383,6 +388,7 @@ class CommandLineControlledExecutionTest(TaskManagerTestCase):
     self.assertEqual(0, self.Execute('-f', 'c'))
 
   def testTaskFailure(self):
+    self.with_raise_exception_task = True
     with self.assertRaisesRegexp(TestException, r'^Expected error\.$'):
       self.Execute('-e', 'raise_exception')
 

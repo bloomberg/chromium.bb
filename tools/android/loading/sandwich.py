@@ -185,13 +185,12 @@ def _GenerateNoStatePrefetchBenchmarkTasks(args, url, output_subdirectory):
           continue
         builder.PopulateLoadBenchmark(subresource_discoverer,
             transformer_list_name, transformer_list)
-  return builder.tasks.values(), builder.default_final_tasks
+  return builder.default_final_tasks
 
 
 def _RunAllMain(args):
   urls = ReadUrlsFromCorpus(args.corpus)
   domain_times_encountered_per_domain = {}
-  tasks = []
   default_final_tasks = []
   for url in urls:
     domain = '.'.join(urlparse(url).netloc.split('.')[-2:])
@@ -199,11 +198,9 @@ def _RunAllMain(args):
         domain, 0)
     output_subdirectory = '{}.{}'.format(domain, domain_times_encountered)
     domain_times_encountered_per_domain[domain] = domain_times_encountered + 1
-    gen_tasks, gen_default_final_tasks = \
-        _GenerateNoStatePrefetchBenchmarkTasks(args, url, output_subdirectory)
-    tasks.extend(gen_tasks)
-    default_final_tasks.extend(gen_default_final_tasks)
-  return task_manager.ExecuteWithCommandLine(args, tasks, default_final_tasks)
+    default_final_tasks.extend(
+        _GenerateNoStatePrefetchBenchmarkTasks(args, url, output_subdirectory))
+  return task_manager.ExecuteWithCommandLine(args, default_final_tasks)
 
 
 def main(command_line_args):

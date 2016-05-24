@@ -60,7 +60,6 @@ Example:
 
 
 import argparse
-import collections
 import logging
 import os
 import subprocess
@@ -120,7 +119,7 @@ class Builder(object):
     """
     self.output_directory = output_directory
     self._output_subdirectory = output_subdirectory
-    self.tasks = {}
+    self._tasks = {}
 
   def CreateStaticTask(self, task_name, path):
     """Creates and returns a new static task."""
@@ -128,10 +127,10 @@ class Builder(object):
     if not os.path.exists(path):
       raise TaskError('Error while creating task {}: File not found: {}'.format(
           task_name, path))
-    if task_name in self.tasks:
+    if task_name in self._tasks:
       raise TaskError('Task {} already exists.'.format(task_name))
     task = Task(task_name, path, [], None)
-    self.tasks[task_name] = task
+    self._tasks[task_name] = task
     return task
 
   # Caution:
@@ -168,17 +167,17 @@ class Builder(object):
     task_name = self._RebaseTaskName(task_name)
     dependencies = dependencies or []
     def InnerAddTaskWithNewPath(recipe):
-      if task_name in self.tasks:
+      if task_name in self._tasks:
         if not merge:
           raise TaskError('Task {} already exists.'.format(task_name))
-        task = self.tasks[task_name]
+        task = self._tasks[task_name]
         if task.IsStatic():
           raise TaskError('Should not merge dynamic task {} with the already '
                           'existing static one.'.format(task_name))
         return task
       task_path = os.path.join(self.output_directory, task_name)
       task = Task(task_name, task_path, dependencies, recipe)
-      self.tasks[task_name] = task
+      self._tasks[task_name] = task
       return task
     return InnerAddTaskWithNewPath
 
@@ -341,12 +340,11 @@ def _GetCommandLineArgumentsStr(final_task_regexes, frozen_tasks):
   return subprocess.list2cmdline(arguments)
 
 
-def ExecuteWithCommandLine(args, tasks, default_final_tasks):
+def ExecuteWithCommandLine(args, default_final_tasks):
   """Helper to execute tasks using command line arguments.
 
   Args:
     args: Command line argument parsed with CommandLineParser().
-    tasks: Unordered list of tasks to publish to command line regexes.
     default_final_tasks: Default final tasks if there is no -r command
       line arguments.
 
@@ -357,6 +355,12 @@ def ExecuteWithCommandLine(args, tasks, default_final_tasks):
                       for e in args.frozen_regexes]
   run_regexes = [common_util.VerboseCompileRegexOrAbort(e)
                    for e in args.run_regexes]
+
+  # Traverse the graph in the normal execution order starting from
+  # |default_final_tasks| in case of command line regex selection.
+  tasks = []
+  if frozen_regexes or run_regexes:
+    tasks = GenerateScenario(default_final_tasks, frozen_tasks=set())
 
   # Lists frozen tasks
   frozen_tasks = set()
@@ -371,11 +375,11 @@ def ExecuteWithCommandLine(args, tasks, default_final_tasks):
   final_tasks = default_final_tasks
   if run_regexes:
     final_tasks = []
-    for task in tasks:
-      for regex in run_regexes:
+    # Order of run regexes prevails on the traversing order of tasks.
+    for regex in run_regexes:
+      for task in tasks:
         if regex.search(task.name):
           final_tasks.append(task)
-          break
 
   # Create the scenario.
   scenario = GenerateScenario(final_tasks, frozen_tasks)
