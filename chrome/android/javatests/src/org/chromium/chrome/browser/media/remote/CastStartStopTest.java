@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.LargeTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.media.ui.MediaNotificationListener;
 import org.chromium.chrome.browser.tab.Tab;
 
@@ -73,6 +74,7 @@ public class CastStartStopTest extends CastTestBase {
     @DisableIf.Build(sdk_is_less_than = 19, message = "crbug.com/582067")
     @Feature({"VideoFling"})
     @LargeTest
+    @FlakyTest
     public void testStopWhenVideoEnds() throws InterruptedException, TimeoutException {
         castDefaultVideoFromPage(DEFAULT_VIDEO_PAGE);
         // Wait for the video to finish (this assumes the video is short, the test video
