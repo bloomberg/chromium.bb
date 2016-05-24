@@ -1397,5 +1397,4 @@ crbug.com/613497 [ Linux Release ] transforms/3d/point-mapping/3d-point-mapping-
 crbug.com/613659 imported/wpt/quirks-mode/percentage-height-calculation.html [ Failure ]
 crbug.com/613661 imported/wpt/quirks-mode/table-cell-nowrap-minimum-width-calculation.html [ Failure ]
 crbug.com/613663 imported/wpt/quirks-mode/table-cell-width-calculation.html [ Failure ]
-crbug.com/611442 [ Release ] imported/wpt/quirks-mode/hashless-hex-color.html [ Failure ]
-crbug.com/611442 [ Debug ] imported/wpt/quirks-mode/hashless-hex-color.html [ Failure Timeout ]
+crbug.com/611442 [ Win7 Debug ] imported/wpt/quirks-mode/hashless-hex-color.html [ Failure Timeout ]

@@ -404,7 +404,9 @@ static bool parseHexColor(CSSParserTokenRange& range, RGBA32& result, bool accep
 {
     const CSSParserToken& token = range.peek();
     String color;
-    if (acceptQuirkyColors) {
+    if (token.type() == HashToken) {
+        color = token.value();
+    } else if (acceptQuirkyColors) {
         if (token.type() == NumberToken || token.type() == DimensionToken) {
             if (token.numericValueType() != IntegerValueType
                 || token.numericValue() < 0. || token.numericValue() >= 1000000.)
@@ -416,14 +418,12 @@ static bool parseHexColor(CSSParserTokenRange& range, RGBA32& result, bool accep
             while (color.length() < 6)
                 color = "0" + color;
         } else if (token.type() == IdentToken) { // e.g. FF0000
-            unsigned length = token.value().length();
-            if (length != 3 && length != 6)
-                return false;
             color = token.value();
         }
+        unsigned length = color.length();
+        if (length != 3 && length != 6)
+            return false;
     }
-    if (token.type() == HashToken)
-        color = token.value();
     if (!Color::parseHexColor(color, result))
         return false;
     range.consumeIncludingWhitespace();
