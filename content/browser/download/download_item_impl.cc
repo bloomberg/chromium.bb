@@ -375,7 +375,7 @@ void DownloadItemImpl::Resume() {
 
     case INTERRUPTED_INTERNAL:
       auto_resume_count_ = 0;  // User input resets the counter.
-      ResumeInterruptedDownload();
+      ResumeInterruptedDownload(ResumptionRequestSource::USER);
       UpdateObservers();
       return;
 
@@ -1878,10 +1878,11 @@ void DownloadItemImpl::AutoResumeIfValid() {
 
   auto_resume_count_++;
 
-  ResumeInterruptedDownload();
+  ResumeInterruptedDownload(ResumptionRequestSource::AUTOMATIC);
 }
 
-void DownloadItemImpl::ResumeInterruptedDownload() {
+void DownloadItemImpl::ResumeInterruptedDownload(
+    ResumptionRequestSource source) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!IsDownloadResumptionEnabled())
     return;
@@ -1930,6 +1931,9 @@ void DownloadItemImpl::ResumeInterruptedDownload() {
       Referrer(GetReferrerUrl(), blink::WebReferrerPolicyAlways));
 
   TransitionTo(RESUMING_INTERNAL);
+  RecordDownloadSource(source == ResumptionRequestSource::USER
+                           ? INITIATED_BY_MANUAL_RESUMPTION
+                           : INITIATED_BY_AUTOMATIC_RESUMPTION);
   delegate_->ResumeInterruptedDownload(std::move(download_params), GetId());
   // Just in case we were interrupted while paused.
   is_paused_ = false;

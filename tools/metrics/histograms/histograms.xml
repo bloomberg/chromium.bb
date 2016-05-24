@@ -68468,7 +68468,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Initiated by Drag-and-drop"/>
   <int value="2" label="Initiated by RPC from Renderer"/>
   <int value="3" label="Initiated by Save from Pepper"/>
-  <int value="4" label="Initiated by Resumption"/>
+  <int value="4"
+      label="Initiated by Resumption, manual or automatic (Deprecated)"/>
+  <int value="5" label="Initiated by Manual Resumption"/>
+  <int value="6" label="Initiated by Automatic Resumption"/>
 </enum>
 
 <enum name="DragDropEventSource" type="int">

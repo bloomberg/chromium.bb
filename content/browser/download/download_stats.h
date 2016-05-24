@@ -107,9 +107,16 @@ enum DownloadSource {
   // Fomerly INITIATED_BY_PEPPER_SAVE.
   DOWNLOAD_SOURCE_UNUSED_3,
 
-  // A request that was initiated as a result of resuming an interrupted
-  // download.
-  INITIATED_BY_RESUMPTION,
+  // Formerly INITIATED_BY_RESUMPTION.
+  DOWNLOAD_SOURCE_UNUSED_4,
+
+  // A request that was initiated as a result of manually resuming an
+  // interrupted download.
+  INITIATED_BY_MANUAL_RESUMPTION,
+
+  // A request that was initiated as a result of automatically resuming an
+  // interrupted download.
+  INITIATED_BY_AUTOMATIC_RESUMPTION,
 
   DOWNLOAD_SOURCE_LAST_ENTRY
 };

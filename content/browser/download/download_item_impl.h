@@ -476,7 +476,8 @@ class CONTENT_EXPORT DownloadItemImpl
 
   void AutoResumeIfValid();
 
-  void ResumeInterruptedDownload();
+  enum class ResumptionRequestSource { AUTOMATIC, USER };
+  void ResumeInterruptedDownload(ResumptionRequestSource source);
 
   // Update origin information based on the response to a download resumption
   // request. Should only be called if the resumption request was successful.

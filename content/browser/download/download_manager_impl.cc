@@ -470,7 +470,6 @@ void DownloadManagerImpl::OnSavePackageSuccessfullyFinished(
 void DownloadManagerImpl::ResumeInterruptedDownload(
     std::unique_ptr<content::DownloadUrlParameters> params,
     uint32_t id) {
-  RecordDownloadSource(INITIATED_BY_RESUMPTION);
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&BeginDownload, base::Passed(&params),
