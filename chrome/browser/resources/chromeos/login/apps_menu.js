@@ -76,22 +76,9 @@ cr.define('login', function() {
     },
 
     findAndRunAppForTesting: function(id, opt_diagnostic_mode) {
-      this.showMenu(true);
-      for (var i = 0; i < this.menu.menuItems.length; i++) {
-        var menuNode = this.menu.menuItems[i];
-        if (menuNode.appId == id) {
-          var activationEvent = cr.doc.createEvent('Event');
-          activationEvent.initEvent('activate', true, true);
-
-          if (opt_diagnostic_mode) {
-            var fakeCtrlEnterEvent = cr.doc.createEvent('KeyboardEvent');
-            fakeCtrlEnterEvent.initKeyboardEvent('keypress', true, true, null,
-                                                 'Enter', 0,
-                                                 true, false, false, false);
-            activationEvent.originalEvent = fakeCtrlEnterEvent;
-          }
-
-          menuNode.dispatchEvent(activationEvent);
+      for (var i = 0; i < this.data.length; i++) {
+        if (this.data[i].id == id) {
+          this.launchApp_(this.data[i], !!opt_diagnostic_mode);
           break;
         }
       }
@@ -134,7 +121,6 @@ cr.define('login', function() {
     addItem_: function(app) {
       var menuItem = this.menu.addMenuItem(app);
       menuItem.classList.add('apps-menu-item');
-      menuItem.appId = app.id;
       menuItem.addEventListener('activate', function(e) {
         var diagnosticMode = e.originalEvent && e.originalEvent.ctrlKey;
         this.launchApp_(app, diagnosticMode);
