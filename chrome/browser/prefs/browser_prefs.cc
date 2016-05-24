@@ -201,7 +201,6 @@
 
 #if defined(OS_CHROMEOS) && defined(ENABLE_APP_LIST)
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ui/app_list/google_now_extension.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -627,11 +626,6 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
 // This method should be periodically pruned of year+ old migrations.
 void MigrateObsoleteProfilePrefs(Profile* profile) {
   PrefService* profile_prefs = profile->GetPrefs();
-
-#if defined(OS_CHROMEOS) && defined(ENABLE_APP_LIST)
-  // Added 02/2015.
-  MigrateGoogleNowPrefs(profile);
-#endif
 
 #if defined(OS_WIN)
   // Added 11/2015.

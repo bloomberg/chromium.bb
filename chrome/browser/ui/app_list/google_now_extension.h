@@ -7,14 +7,8 @@
 
 #include <string>
 
-class Profile;
-
 // Returns true and sets |extension_id| if extension experiment enabled
 //         false if no experiment or |extension_id| is empty.
 bool GetGoogleNowExtensionId(std::string* extension_id);
-
-// Migrates settings from the Now Notifications extension to the Now Launcher
-// Page extension.
-void MigrateGoogleNowPrefs(Profile* profile);
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_GOOGLE_NOW_EXTENSION_H_
