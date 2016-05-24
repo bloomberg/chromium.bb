@@ -62,6 +62,7 @@ public:
     void clearSegmentedFontFace() { m_segmentedFontFace = nullptr; }
 
     bool isValid() const { return !m_sources.isEmpty(); }
+    size_t approximateBlankCharacterCount() const;
 
     void addSource(CSSFontFaceSource*);
 
@@ -72,8 +73,8 @@ public:
     PassRefPtr<SimpleFontData> getFontData(const FontDescription&);
 
     FontFace::LoadStatusType loadStatus() const { return m_fontFace->loadStatus(); }
-    bool maybeScheduleFontLoad(const FontDescription&, UChar32);
-    bool maybeScheduleFontLoad(const FontDescription&, const FontDataForRangeSet&);
+    bool maybeLoadFont(const FontDescription&, const String&);
+    bool maybeLoadFont(const FontDescription&, const FontDataForRangeSet&);
     void load();
     void load(const FontDescription&);
 

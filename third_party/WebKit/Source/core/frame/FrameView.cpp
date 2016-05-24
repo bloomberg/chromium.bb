@@ -842,6 +842,7 @@ PassOwnPtr<TracedValue> FrameView::analyzerCounters()
     value->setString("frame", String::format("0x%" PRIxPTR, reinterpret_cast<uintptr_t>(m_frame.get())));
     value->setInteger("contentsHeightAfterLayout", layoutView()->documentRect().height());
     value->setInteger("visibleHeight", visibleHeight());
+    value->setInteger("approximateBlankCharacterCount", FontFaceSet::approximateBlankCharacterCount(*m_frame->document()));
     return value;
 }
 

@@ -467,11 +467,11 @@ bool Font::computeCanShapeWordByWord() const
     return !platformData.hasSpaceInLigaturesOrKerning(features);
 };
 
-void Font::willUseFontData(UChar32 character) const
+void Font::willUseFontData(const String& text) const
 {
     const FontFamily& family = getFontDescription().family();
     if (m_fontFallbackList && m_fontFallbackList->getFontSelector() && !family.familyIsEmpty())
-        m_fontFallbackList->getFontSelector()->willUseFontData(getFontDescription(), family.family(), character);
+        m_fontFallbackList->getFontSelector()->willUseFontData(getFontDescription(), family.family(), text);
 }
 
 static inline GlyphData glyphDataForNonCJKCharacterWithGlyphOrientation(UChar32 character, bool isUpright, GlyphData& data, unsigned pageNumber)

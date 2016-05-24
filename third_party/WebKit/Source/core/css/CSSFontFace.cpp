@@ -76,6 +76,13 @@ void CSSFontFace::fontLoaded(RemoteFontFaceSource* source)
         m_segmentedFontFace->fontFaceInvalidated();
 }
 
+size_t CSSFontFace::approximateBlankCharacterCount() const
+{
+    if (!m_sources.isEmpty() && m_sources.first()->isBlank() && m_segmentedFontFace)
+        return m_segmentedFontFace->approximateCharacterCount();
+    return 0;
+}
+
 void CSSFontFace::didBecomeVisibleFallback(RemoteFontFaceSource* source)
 {
     if (!isValid() || source != m_sources.first())
@@ -108,8 +115,13 @@ PassRefPtr<SimpleFontData> CSSFontFace::getFontData(const FontDescription& fontD
     return nullptr;
 }
 
-bool CSSFontFace::maybeScheduleFontLoad(const FontDescription& fontDescription, UChar32 character)
+bool CSSFontFace::maybeLoadFont(const FontDescription& fontDescription, const String& text)
 {
+    // This is a fast path of loading web font in style phase. For speed, this
+    // only checks if the first character of the text is included in the font's
+    // unicode range. If this font is needed by subsequent characters, load is
+    // kicked off in layout phase.
+    UChar32 character = text.characterStartingAt(0);
     if (m_ranges->contains(character)) {
         if (loadStatus() == FontFace::Unloaded)
             load(fontDescription);
@@ -118,7 +130,7 @@ bool CSSFontFace::maybeScheduleFontLoad(const FontDescription& fontDescription, 
     return false;
 }
 
-bool CSSFontFace::maybeScheduleFontLoad(const FontDescription& fontDescription, const FontDataForRangeSet& rangeSet)
+bool CSSFontFace::maybeLoadFont(const FontDescription& fontDescription, const FontDataForRangeSet& rangeSet)
 {
     if (m_ranges == rangeSet.ranges()) {
         if (loadStatus() == FontFace::Unloaded) {

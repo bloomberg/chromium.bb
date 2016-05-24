@@ -43,6 +43,8 @@ public:
     void fontLoadLongLimitExceeded(FontResource*) override;
     String debugName() const override { return "RemoteFontFaceSource"; }
 
+    bool isBlank() override { return m_period == BlockPeriod; }
+
     // For UMA reporting
     bool hadBlankText() override { return m_histograms.hadBlankText(); }
     void paintRequested() { m_histograms.fallbackFontPainted(m_period); }

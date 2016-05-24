@@ -42,7 +42,7 @@ public:
     }
 
     void willUseFontData(const FontDescription&, const AtomicString& familyName,
-        UChar32) override { }
+        const String& text) override { }
     void willUseRange(const FontDescription&, const AtomicString& familyName,
         const FontDataForRangeSet&) override { };
 

@@ -503,6 +503,13 @@ FontTraits FontFace::traits() const
     return FontTraits(style, weight, stretch);
 }
 
+size_t FontFace::approximateBlankCharacterCount() const
+{
+    if (m_status == Loading)
+        return m_cssFontFace->approximateBlankCharacterCount();
+    return 0;
+}
+
 static FontDisplay CSSValueToFontDisplay(CSSValue* value)
 {
     if (value && value->isPrimitiveValue()) {

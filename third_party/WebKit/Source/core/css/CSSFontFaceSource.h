@@ -55,6 +55,8 @@ public:
     virtual bool isLocalFontAvailable(const FontDescription&) { return false; }
     virtual void beginLoadIfNeeded() { }
 
+    virtual bool isBlank() { return false; }
+
     // For UMA reporting
     virtual bool hadBlankText() { return false; }
 

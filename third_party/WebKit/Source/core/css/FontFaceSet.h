@@ -90,6 +90,8 @@ public:
     void fontLoaded(FontFace*);
     void loadError(FontFace*);
 
+    size_t approximateBlankCharacterCount() const;
+
     // ActiveDOMObject
     void suspend() override;
     void resume() override;
@@ -97,6 +99,7 @@ public:
 
     static FontFaceSet* from(Document&);
     static void didLayout(Document&);
+    static size_t approximateBlankCharacterCount(Document&);
 
     static const char* supplementName()
     {

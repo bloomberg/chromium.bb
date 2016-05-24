@@ -68,8 +68,9 @@ public:
 
     bool checkFont(const String&) const;
     void match(const String&, HeapVector<Member<FontFace>>&) const;
-    void willUseFontData(const FontDescription&, UChar32);
+    void willUseFontData(const FontDescription&, const String& text);
     void willUseRange(const FontDescription&, const blink::FontDataForRangeSet&);
+    size_t approximateCharacterCount() const { return m_approximateCharacterCount; }
 
     DECLARE_TRACE();
 
@@ -87,6 +88,14 @@ private:
     // All non-CSS-connected FontFaces are stored after the CSS-connected ones.
     FontFaceList m_fontFaces;
     FontFaceList::iterator m_firstNonCssConnectedFace;
+
+    // Approximate number of characters styled with this CSSSegmentedFontFace.
+    // LayoutText::styleDidChange() increments this on the first
+    // CSSSegmentedFontFace in the style's font family list, so this is not
+    // counted if this font is used as a fallback font. Also, this may be double
+    // counted by style recalcs.
+    // TODO(ksakamoto): Revisit the necessity of this. crbug.com/613500
+    size_t m_approximateCharacterCount;
 };
 
 } // namespace blink

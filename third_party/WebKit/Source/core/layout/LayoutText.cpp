@@ -203,10 +203,8 @@ void LayoutText::styleDidChange(StyleDifference diff, const ComputedStyle* oldSt
         transformText();
 
     // This is an optimization that kicks off font load before layout.
-    // In order to make it fast, we only check if the first character of the
-    // text is included in the unicode ranges of the fonts.
     if (!text().containsOnlyWhitespace())
-        newStyle.font().willUseFontData(text().characterStartingAt(0));
+        newStyle.font().willUseFontData(text());
 }
 
 void LayoutText::removeAndDestroyTextBoxes()

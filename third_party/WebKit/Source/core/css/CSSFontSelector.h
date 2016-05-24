@@ -52,7 +52,7 @@ public:
     unsigned version() const override { return m_fontFaceCache.version(); }
 
     PassRefPtr<FontData> getFontData(const FontDescription&, const AtomicString&) override;
-    void willUseFontData(const FontDescription&, const AtomicString& family, UChar32) override;
+    void willUseFontData(const FontDescription&, const AtomicString& family, const String& text) override;
     void willUseRange(const FontDescription&, const AtomicString& familyName, const FontDataForRangeSet&) override;
     bool isPlatformFontAvailable(const FontDescription&, const AtomicString& family);
 

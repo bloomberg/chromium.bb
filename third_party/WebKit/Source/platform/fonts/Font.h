@@ -146,7 +146,7 @@ public:
     PassRefPtr<FontFallbackIterator> createFontFallbackIterator(
         FontFallbackPriority) const;
 
-    void willUseFontData(UChar32) const;
+    void willUseFontData(const String& text) const;
 
     bool loadingCustomFonts() const;
     bool isFallbackValid() const;

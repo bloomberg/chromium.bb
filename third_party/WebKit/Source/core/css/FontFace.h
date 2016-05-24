@@ -95,6 +95,7 @@ public:
     DOMException* error() const { return m_error; }
     FontTraits traits() const;
     CSSFontFace* cssFontFace() { return m_cssFontFace.get(); }
+    size_t approximateBlankCharacterCount() const;
 
     DECLARE_VIRTUAL_TRACE();
 

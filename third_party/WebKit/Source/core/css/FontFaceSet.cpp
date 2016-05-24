@@ -232,6 +232,14 @@ void FontFaceSet::loadError(FontFace* fontFace)
     removeFromLoadingFonts(fontFace);
 }
 
+size_t FontFaceSet::approximateBlankCharacterCount() const
+{
+    size_t count = 0;
+    for (auto& fontFace : m_loadingFonts)
+        count += fontFace->approximateBlankCharacterCount();
+    return count;
+}
+
 void FontFaceSet::addToLoadingFonts(FontFace* fontFace)
 {
     if (!m_isLoading) {
@@ -501,6 +509,13 @@ void FontFaceSet::didLayout(Document& document)
 {
     if (FontFaceSet* fonts = static_cast<FontFaceSet*>(Supplement<Document>::from(document, supplementName())))
         fonts->didLayout();
+}
+
+size_t FontFaceSet::approximateBlankCharacterCount(Document& document)
+{
+    if (FontFaceSet* fonts = static_cast<FontFaceSet*>(Supplement<Document>::from(document, supplementName())))
+        return fonts->approximateBlankCharacterCount();
+    return 0;
 }
 
 FontFaceSetIterable::IterationSource* FontFaceSet::startIteration(ScriptState*, ExceptionState&)
