@@ -179,11 +179,12 @@ void ArcNotificationManager::SendNotificationButtonClickedOnChrome(
 }
 
 void ArcNotificationManager::OnToastPosted(mojom::ArcToastDataPtr data) {
-  ash::Shell::GetInstance()->toast_manager()->Show(data->text, data->duration);
+  ash::Shell::GetInstance()->toast_manager()->Show(
+      ash::ToastData(data->id, data->text, data->duration));
 }
 
 void ArcNotificationManager::OnToastCancelled(mojom::ArcToastDataPtr data) {
-  // TODO(yoshiki): Implement cancel.
+  ash::Shell::GetInstance()->toast_manager()->Cancel(data->id);
 }
 
 }  // namespace arc

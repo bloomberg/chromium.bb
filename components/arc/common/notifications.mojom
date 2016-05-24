@@ -75,7 +75,7 @@ struct ArcToastData {
   // Unique identifier
   string id;
   // Toast text.
-  string text;
+  string? text;
   // Toast duration in milliseconds.
   int32 duration;
 };

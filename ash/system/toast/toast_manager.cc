@@ -21,42 +21,73 @@ ToastManager::ToastManager() : weak_ptr_factory_(this) {}
 
 ToastManager::~ToastManager() {}
 
-void ToastManager::Show(const std::string& text, uint64_t duration_ms) {
-  queue_.emplace(std::make_pair(text, duration_ms));
+void ToastManager::Show(const ToastData& data) {
+  const std::string& id = data.id;
+  DCHECK(!id.empty());
+
+  if (current_toast_id_ == id) {
+    // TODO(yoshiki): Replaces the visible toast.
+    return;
+  }
+
+  auto existing_toast =
+      std::find_if(queue_.begin(), queue_.end(),
+                   [&id](const ToastData& data) { return data.id == id; });
+
+  if (existing_toast == queue_.end()) {
+    queue_.emplace_back(data);
+  } else {
+    *existing_toast = data;
+  }
 
   if (queue_.size() == 1 && overlay_ == nullptr)
     ShowLatest();
 }
 
+void ToastManager::Cancel(const std::string& id) {
+  if (id == current_toast_id_) {
+    overlay_->Show(false);
+    return;
+  }
+
+  auto cancelled_toast =
+      std::find_if(queue_.begin(), queue_.end(),
+                   [&id](const ToastData& data) { return data.id == id; });
+  if (cancelled_toast != queue_.end())
+    queue_.erase(cancelled_toast);
+}
+
 void ToastManager::OnClosed() {
   overlay_.reset();
+  current_toast_id_.clear();
 
   // Show the next toast if available.
-  if (queue_.size() != 0)
+  if (!queue_.empty())
     ShowLatest();
 }
 
 void ToastManager::ShowLatest() {
   DCHECK(!overlay_);
 
-  auto data = queue_.front();
-  uint64_t duration_ms = std::max(data.second, kMinimumDurationMs);
+  const ToastData data = std::move(queue_.front());
+  queue_.pop_front();
 
-  toast_id_++;
+  uint64_t duration_ms = std::max(data.duration_ms, kMinimumDurationMs);
 
-  overlay_.reset(new ToastOverlay(this, data.first /* text */));
+  current_toast_id_ = data.id;
+  serial_++;
+
+  overlay_.reset(new ToastOverlay(this, data.text));
   overlay_->Show(true);
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&ToastManager::OnDurationPassed,
-                            weak_ptr_factory_.GetWeakPtr(), toast_id_),
+                            weak_ptr_factory_.GetWeakPtr(), serial_),
       base::TimeDelta::FromMilliseconds(duration_ms));
-
-  queue_.pop();
 }
 
-void ToastManager::OnDurationPassed(int toast_id) {
-  if (overlay_ && toast_id_ == toast_id)
+void ToastManager::OnDurationPassed(int toast_number) {
+  if (overlay_ && serial_ == toast_number)
     overlay_->Show(false);
 }
 

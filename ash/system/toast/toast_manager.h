@@ -5,12 +5,13 @@
 #ifndef ASH_SYSTEM_TOAST_TOAST_MANAGER_H_
 #define ASH_SYSTEM_TOAST_TOAST_MANAGER_H_
 
+#include <deque>
 #include <memory>
-#include <queue>
 #include <string>
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
+#include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_overlay.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -25,7 +26,9 @@ class ASH_EXPORT ToastManager : public ToastOverlay::Delegate {
 
   // Show a toast. If there are queued toasts, succeeding toasts are queued as
   // well, and are shown one by one.
-  void Show(const std::string& text, uint64_t duration_ms);
+  void Show(const ToastData& data);
+
+  void Cancel(const std::string& id);
 
   // ToastOverlay::Delegate overrides:
   void OnClosed() override;
@@ -34,14 +37,17 @@ class ASH_EXPORT ToastManager : public ToastOverlay::Delegate {
   friend class ToastManagerTest;
 
   void ShowLatest();
-  void OnDurationPassed(int toast_id);
+  void OnDurationPassed(int toast_number);
 
-  int toast_id_for_testing() const { return toast_id_; }
   ToastOverlay* GetCurrentOverlayForTesting() { return overlay_.get(); }
-  void ResetToastIdForTesting() { toast_id_ = 0; }
+  int serial_for_testing() const { return serial_; }
+  void ResetSerialForTesting() { serial_ = 0; }
 
-  int toast_id_ = 0;
-  std::queue<std::pair<std::string, uint64_t>> queue_;
+  // ID of the toast which is currently shown. Empty if no toast is visible.
+  std::string current_toast_id_;
+
+  int serial_ = 0;
+  std::deque<ToastData> queue_;
   std::unique_ptr<ToastOverlay> overlay_;
 
   base::WeakPtrFactory<ToastManager> weak_ptr_factory_;
