@@ -601,6 +601,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texstorage3d_format_depth_stencil.html',
         ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'texstorage3d_format_size.html',
+        ['linux', 'amd'], bug=483282)
 
     # Conflicting expectations to test that the
     # "Expectations Have No collisions" unittest works.
