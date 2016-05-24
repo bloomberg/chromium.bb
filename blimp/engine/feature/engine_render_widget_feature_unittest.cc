@@ -87,6 +87,7 @@ class MockRenderWidgetHost
   bool IsLoading() const override { return false; }
   void ResizeRectChanged(const gfx::Rect& new_rect) override {}
   void RestartHangMonitorTimeout() override {}
+  void DisableHangMonitorForTesting() override {}
   void SetIgnoreInputEvents(bool ignore_input_events) override {}
   void WasResized() override {}
   void AddKeyPressEventCallback(

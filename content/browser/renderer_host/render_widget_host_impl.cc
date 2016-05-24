@@ -915,6 +915,11 @@ void RenderWidgetHostImpl::RestartHangMonitorTimeout() {
     hang_monitor_timeout_->Restart(hung_renderer_delay_);
 }
 
+void RenderWidgetHostImpl::DisableHangMonitorForTesting() {
+  StopHangMonitorTimeout();
+  hang_monitor_timeout_.reset();
+}
+
 void RenderWidgetHostImpl::StopHangMonitorTimeout() {
   if (hang_monitor_timeout_)
     hang_monitor_timeout_->Stop();
