@@ -28,7 +28,7 @@
       {
         "id": "ViewType",
         "type": "string",
-        "enum": ["tab", "notification", "popup"],
+        "enum": ["tab", "popup"],
         "description": "The type of extension view."
       }
     ],
