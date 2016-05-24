@@ -13,7 +13,8 @@ namespace media {
 // Note: This file must be in sync with cdm_paths.{gypi|gni}
 // TODO(xhwang): Improve how we enable platform specific path. See
 // http://crbug.com/468584
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if (defined(OS_MACOSX) || defined(OS_WIN)) && \
+    (defined(ARCH_CPU_X86) || defined(ARCH_CPU_X86_64))
 #define CDM_USE_PLATFORM_SPECIFIC_PATH
 #endif
 
@@ -29,7 +30,7 @@ const char kComponentPlatform[] =
 #elif defined(OS_WIN)
     "win";
 #elif defined(OS_CHROMEOS)
-    "chromeos";
+    "cros";
 #elif defined(OS_LINUX)
     "linux";
 #else

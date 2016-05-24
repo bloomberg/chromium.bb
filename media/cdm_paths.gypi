@@ -25,7 +25,7 @@
         }, 'OS == "mac"', {
           'component_os%': 'mac'
         }, {
-          'component_os%': '<(OS)'
+          'component_os%': 'unsupported_platform'
         }],
         # Architecture name for components is close to "<(current_cpu)" but has
         # some differences. Explicitly define what we use to avoid confusion.
@@ -36,7 +36,7 @@
         }, 'target_arch == "arm"', {
           'component_arch%': 'arm'
         }, {
-          'component_arch%': '<(current_cpu)'
+          'component_arch%': 'unsupported_arch'
         }],
       ],
     },
@@ -45,7 +45,7 @@
       # Chrome components.
       # TODO(xhwang): Improve how we enable platform specific path. See
       # http://crbug.com/468584
-      ['OS == "win" or OS == "mac"', {
+      ['( OS == "win" or OS == "mac") and (target_arch == "ia32" or target_arch == "x64")', {
         # Path of Clear Key and Widevine CDMs relative to the output dir.
         'widevine_cdm_path%': 'WidevineCdm/_platform_specific/<(component_os)_<(component_arch)',
         'clearkey_cdm_path%': 'ClearKeyCdm/_platform_specific/<(component_os)_<(component_arch)',
