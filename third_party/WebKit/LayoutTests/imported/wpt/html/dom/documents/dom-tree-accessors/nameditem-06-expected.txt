@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
 PASS If there is one img, it should be returned (name) 
 PASS If there are two imgs, a collection should be returned. (name) 
-FAIL If there is one img, it should not be returned (id) assert_false: "test3" in document should be false expected false got true
+PASS If there is one img, it should not be returned (id) 
 FAIL If there are two imgs, nothing should be returned. (id) assert_false: "test4" in document should be false expected false got true
 PASS If there are two imgs, the one with a name should be returned. (name and id) 
 PASS If there are two imgs, the one with a name should be returned. (id and name) 

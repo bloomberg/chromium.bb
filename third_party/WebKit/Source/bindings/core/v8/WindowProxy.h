@@ -63,9 +63,6 @@ public:
     // Update document object of the frame.
     void updateDocument();
 
-    void namedItemAdded(HTMLDocument*, const AtomicString&);
-    void namedItemRemoved(HTMLDocument*, const AtomicString&);
-
     // Update the security origin of a document
     // (e.g., after setting docoument.domain).
     void updateSecurityOrigin(SecurityOrigin*);

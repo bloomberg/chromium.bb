@@ -128,9 +128,6 @@ public:
     void clearWindowProxy();
     void updateDocument();
 
-    void namedItemAdded(HTMLDocument*, const AtomicString&);
-    void namedItemRemoved(HTMLDocument*, const AtomicString&);
-
     void updateSecurityOrigin(SecurityOrigin*);
 
     void clearForClose();

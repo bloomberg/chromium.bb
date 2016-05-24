@@ -15,6 +15,7 @@
             'V8ErrorEventCustom.cpp',
             'V8EventTargetCustom.cpp',
             'V8HTMLAllCollectionCustom.cpp',
+            'V8HTMLDocumentCustom.cpp',
             'V8HTMLElementCustom.cpp',
             'V8HTMLPlugInElementCustom.cpp',
             'V8IntersectionObserverCustom.cpp',
