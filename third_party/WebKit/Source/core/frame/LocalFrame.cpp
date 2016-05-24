@@ -618,16 +618,17 @@ PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
     if (!layoutObject)
         return nullptr;
 
-    // Paint starting at the nearest self painting layer, clipped to the object itself.
-    // TODO(pdr): This will also paint the content behind the object if the object contains
-    // transparency but the layer is opaque. We could directly call layoutObject->paint(...)
-    // (see ObjectPainter::paintAllPhasesAtomically) but this would skip self-painting children.
-    PaintLayer* layer = layoutObject->enclosingLayer()->enclosingSelfPaintingLayer();
+    // Paint starting at the nearest stacking context, clipped to the object itself.
+    // This will also paint the contents behind the object if the object contains transparency
+    // and there are other elements in the same stacking context which stacked below.
+    PaintLayer* layer = layoutObject->enclosingLayer();
+    if (!layer->stackingNode()->isStackingContext())
+        layer = layer->stackingNode()->ancestorStackingContextNode()->layer();
     IntRect absoluteBoundingBox = layoutObject->absoluteBoundingBoxRectIncludingDescendants();
     FloatRect boundingBox = layer->layoutObject()->absoluteToLocalQuad(FloatQuad(absoluteBoundingBox), UseTransforms).boundingBox();
     DragImageBuilder dragImageBuilder(this, boundingBox, &node);
     {
-        PaintLayerPaintingInfo paintingInfo(layer, LayoutRect(boundingBox), GlobalPaintFlattenCompositingLayers, LayoutSize(), 0);
+        PaintLayerPaintingInfo paintingInfo(layer, LayoutRect(boundingBox), GlobalPaintFlattenCompositingLayers, LayoutSize());
         PaintLayerFlags flags = PaintLayerHaveTransparency | PaintLayerAppliedTransform | PaintLayerUncachedClipRects;
         PaintLayerPainter(*layer).paintLayer(dragImageBuilder.context(), paintingInfo, flags);
     }

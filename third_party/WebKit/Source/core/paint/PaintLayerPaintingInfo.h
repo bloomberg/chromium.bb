@@ -78,10 +78,8 @@ typedef unsigned PaintLayerFlags;
 struct PaintLayerPaintingInfo {
     STACK_ALLOCATED();
     PaintLayerPaintingInfo(PaintLayer* inRootLayer, const LayoutRect& inDirtyRect,
-        GlobalPaintFlags globalPaintFlags, const LayoutSize& inSubPixelAccumulation,
-        LayoutObject* inPaintingRoot = 0)
+        GlobalPaintFlags globalPaintFlags, const LayoutSize& inSubPixelAccumulation)
         : rootLayer(inRootLayer)
-        , paintingRoot(inPaintingRoot)
         , paintDirtyRect(inDirtyRect)
         , subPixelAccumulation(inSubPixelAccumulation)
         , clipToDirtyRect(true)
@@ -93,7 +91,6 @@ struct PaintLayerPaintingInfo {
 
     // TODO(jchaffraix): We should encapsulate all these fields.
     PaintLayer* rootLayer;
-    LayoutObject* paintingRoot; // only paint descendants of this object
     LayoutRect paintDirtyRect; // relative to rootLayer;
     LayoutSize subPixelAccumulation;
     IntSize scrollOffsetAccumulation;
