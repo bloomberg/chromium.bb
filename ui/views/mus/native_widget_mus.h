@@ -227,6 +227,7 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
 private:
   friend class NativeWidgetMusTest;
   class MusWindowObserver;
+  class MusCaptureClient;
 
   ui::PlatformWindowDelegate* platform_window_delegate() {
     return window_tree_host();
@@ -263,7 +264,7 @@ private:
   std::unique_ptr<WindowTreeHostMus> window_tree_host_;
   aura::Window* content_;
   std::unique_ptr<wm::FocusController> focus_client_;
-  std::unique_ptr<aura::client::DefaultCaptureClient> capture_client_;
+  std::unique_ptr<MusCaptureClient> capture_client_;
   std::unique_ptr<aura::client::WindowTreeClient> window_tree_client_;
   std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
   std::unique_ptr<wm::CursorManager> cursor_manager_;

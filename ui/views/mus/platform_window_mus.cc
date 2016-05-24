@@ -76,13 +76,9 @@ void PlatformWindowMus::SetTitle(const base::string16& title) {
   NOTIMPLEMENTED();
 }
 
-void PlatformWindowMus::SetCapture() {
-  mus_window_->SetCapture();
-}
+void PlatformWindowMus::SetCapture() {}
 
-void PlatformWindowMus::ReleaseCapture() {
-  mus_window_->ReleaseCapture();
-}
+void PlatformWindowMus::ReleaseCapture() {}
 
 void PlatformWindowMus::ToggleFullscreen() {
   NOTIMPLEMENTED();

@@ -439,6 +439,34 @@ class NativeWidgetMus::MusWindowObserver : public mus::WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(MusWindowObserver);
 };
 
+class NativeWidgetMus::MusCaptureClient
+    : public aura::client::DefaultCaptureClient {
+ public:
+  MusCaptureClient(aura::Window* root_window, aura::Window* aura_window,
+                   mus::Window* mus_window)
+      : aura::client::DefaultCaptureClient(root_window),
+        aura_window_(aura_window), mus_window_(mus_window) {}
+  ~MusCaptureClient() override {}
+
+  // aura::client::DefaultCaptureClient:
+  void SetCapture(aura::Window* window) override {
+    aura::client::DefaultCaptureClient::SetCapture(window);
+    if (aura_window_ == window)
+      mus_window_->SetCapture();
+  }
+  void ReleaseCapture(aura::Window* window) override {
+    aura::client::DefaultCaptureClient::ReleaseCapture(window);
+    if (aura_window_ == window)
+      mus_window_->ReleaseCapture();
+  }
+
+ private:
+  aura::Window* aura_window_;
+  mus::Window* mus_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(MusCaptureClient);
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetMus, public:
 
@@ -647,7 +675,7 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   window_tree_host_->window()->SetLayoutManager(
       new ContentWindowLayoutManager(window_tree_host_->window(), content_));
   capture_client_.reset(
-      new aura::client::DefaultCaptureClient(window_tree_host_->window()));
+      new MusCaptureClient(window_tree_host_->window(), content_, window_));
 
   content_->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   content_->Init(ui::LAYER_TEXTURED);

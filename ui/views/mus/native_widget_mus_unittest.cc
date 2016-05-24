@@ -470,4 +470,25 @@ TEST_F(NativeWidgetMusTest, EventAckedWithWindowDestruction) {
   EXPECT_EQ(1, ack_callback_count());
 }
 
+TEST_F(NativeWidgetMusTest, SetAndReleaseCapture) {
+  std::unique_ptr<Widget> widget(CreateWidget(nullptr));
+  widget->Show();
+  View* content = new View;
+  widget->GetContentsView()->AddChildView(content);
+  internal::NativeWidgetPrivate* widget_private =
+      widget->native_widget_private();
+  mus::Window* mus_window =
+      static_cast<NativeWidgetMus*>(widget_private)->window();
+  EXPECT_FALSE(widget_private->HasCapture());
+  EXPECT_FALSE(mus_window->HasCapture());
+
+  widget->SetCapture(content);
+  EXPECT_TRUE(widget_private->HasCapture());
+  EXPECT_TRUE(mus_window->HasCapture());
+
+  widget->ReleaseCapture();
+  EXPECT_FALSE(widget_private->HasCapture());
+  EXPECT_FALSE(mus_window->HasCapture());
+}
+
 }  // namespace views
