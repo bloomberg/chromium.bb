@@ -46,7 +46,8 @@
 #include "chrome/utility/image_writer/image_writer_handler.h"
 #endif
 
-#if defined(ENABLE_PRINT_PREVIEW) || defined(OS_WIN)
+#if defined(ENABLE_PRINT_PREVIEW) || \
+    (defined(ENABLE_BASIC_PRINTING) && defined(OS_WIN))
 #include "chrome/utility/printing_handler.h"
 #endif
 
@@ -121,7 +122,8 @@ ChromeContentUtilityClient::ChromeContentUtilityClient()
   handlers_.push_back(new image_writer::ImageWriterHandler());
 #endif
 
-#if defined(ENABLE_PRINT_PREVIEW) || defined(OS_WIN)
+#if defined(ENABLE_PRINT_PREVIEW) || \
+    (defined(ENABLE_BASIC_PRINTING) && defined(OS_WIN))
   handlers_.push_back(new printing::PrintingHandler());
 #endif
 

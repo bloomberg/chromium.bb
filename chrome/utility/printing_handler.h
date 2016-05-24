@@ -12,8 +12,9 @@
 #include "ipc/ipc_platform_file.h"
 #include "printing/pdf_render_settings.h"
 
-#if !defined(ENABLE_PRINT_PREVIEW) && !defined(OS_WIN)
-#error "Windows or full printing must be enabled"
+#if !defined(ENABLE_PRINT_PREVIEW) && \
+    !(defined(ENABLE_BASIC_PRINTING) && defined(OS_WIN))
+#error "Windows basic printing or print preview must be enabled"
 #endif
 
 namespace printing {

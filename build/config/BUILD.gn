@@ -80,6 +80,12 @@ config("feature_flags") {
       # Can be defined without ENABLE_BASIC_PRINTING.
       defines += [ "ENABLE_PRINT_PREVIEW=1" ]
     }
+    if ((enable_basic_printing && is_win) || enable_print_preview) {
+      # Windows basic printing or print preview requires pdf enabled.
+      assert(enable_pdf,
+             "Windows basic printing or print preview needs pdf: " +
+                 "set enable_pdf=true.")
+    }
   }
   if (enable_spellcheck) {
     defines += [ "ENABLE_SPELLCHECK=1" ]

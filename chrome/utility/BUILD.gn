@@ -100,7 +100,9 @@ static_library("utility") {
     ]
   }
 
-  if (!enable_print_preview) {
+  if (enable_print_preview || (enable_basic_printing && is_win)) {
+    deps += [ "//pdf" ]
+  } else {
     sources -= [
       "printing_handler.cc",
       "printing_handler.h",
@@ -111,10 +113,6 @@ static_library("utility") {
     sources +=
         rebase_path(gypi_values.chrome_utility_safe_browsing_sources, ".", "..")
     deps += [ "//third_party/zlib" ]
-  }
-
-  if (enable_pdf) {
-    deps += [ "//pdf" ]
   }
 }
 
