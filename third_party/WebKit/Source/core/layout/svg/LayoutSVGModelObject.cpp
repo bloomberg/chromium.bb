@@ -130,21 +130,4 @@ IntRect LayoutSVGModelObject::absoluteElementBoundingBoxRect() const
     return localToAbsoluteQuad(FloatQuad(paintInvalidationRectInLocalSVGCoordinates())).enclosingBoundingBox();
 }
 
-void LayoutSVGModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
-{
-    ASSERT(!needsLayout());
-
-    // If we didn't need paint invalidation then our children don't need as well.
-    // Skip walking down the tree as everything should be fine below us.
-    if (!shouldCheckForPaintInvalidation(paintInvalidationState))
-        return;
-
-    PaintInvalidationState newPaintInvalidationState(paintInvalidationState, *this);
-    PaintInvalidationReason reason = invalidatePaintIfNeeded(newPaintInvalidationState);
-    clearPaintInvalidationFlags(newPaintInvalidationState);
-
-    newPaintInvalidationState.updateForChildren(reason);
-    invalidatePaintOfSubtreesIfNeeded(newPaintInvalidationState);
-}
-
 } // namespace blink

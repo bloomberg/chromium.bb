@@ -15,6 +15,10 @@
           "object": "LayoutBlockFlow DIV id='target' class='square'",
           "rect": [8, 8, 100, 100],
           "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='square'",
+          "reason": "none"
         }
       ]
     }

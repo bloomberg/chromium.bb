@@ -392,6 +392,9 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& 
     if (!shouldCheckForPaintInvalidation(newPaintInvalidationState))
         return;
 
+    if (mayNeedPaintInvalidationSubtree())
+        newPaintInvalidationState.setForceSubtreeInvalidationCheckingWithinContainer();
+
     LayoutRect previousPaintInvalidationRect = this->previousPaintInvalidationRect();
     LayoutPoint previousPosition = previousPositionFromPaintInvalidationBacking();
     PaintInvalidationReason reason = invalidatePaintIfNeeded(newPaintInvalidationState);

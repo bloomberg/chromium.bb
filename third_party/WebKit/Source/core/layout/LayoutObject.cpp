@@ -1313,6 +1313,10 @@ void LayoutObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInv
         return;
 
     PaintInvalidationState newPaintInvalidationState(paintInvalidationState, *this);
+
+    if (mayNeedPaintInvalidationSubtree())
+        newPaintInvalidationState.setForceSubtreeInvalidationCheckingWithinContainer();
+
     PaintInvalidationReason reason = invalidatePaintIfNeeded(newPaintInvalidationState);
     clearPaintInvalidationFlags(newPaintInvalidationState);
 
@@ -3451,6 +3455,14 @@ void LayoutObject::setMayNeedPaintInvalidation()
     frameView()->scheduleVisualUpdateForPaintInvalidationIfNeeded();
 }
 
+void LayoutObject::setMayNeedPaintInvalidationSubtree()
+{
+    if (mayNeedPaintInvalidationSubtree())
+        return;
+    m_bitfields.setMayNeedPaintInvalidationSubtree(true);
+    setMayNeedPaintInvalidation();
+}
+
 void LayoutObject::clearPaintInvalidationFlags(const PaintInvalidationState& paintInvalidationState)
 {
     // paintInvalidationStateIsDirty should be kept in sync with the
@@ -3461,6 +3473,7 @@ void LayoutObject::clearPaintInvalidationFlags(const PaintInvalidationState& pai
     m_bitfields.setNeededLayoutBecauseOfChildren(false);
     m_bitfields.setShouldInvalidateOverflowForPaint(false);
     m_bitfields.setMayNeedPaintInvalidation(false);
+    m_bitfields.setMayNeedPaintInvalidationSubtree(false);
     m_bitfields.setShouldInvalidateSelection(false);
 }
 

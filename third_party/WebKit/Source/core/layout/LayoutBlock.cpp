@@ -244,8 +244,7 @@ void LayoutBlock::updateFromStyle()
     if (shouldClipOverflow != hasOverflowClip()) {
         if (!shouldClipOverflow)
             getScrollableArea()->invalidateAllStickyConstraints();
-        for (LayoutObject* child = firstChild(); child; child = child->nextSibling())
-            child->setMayNeedPaintInvalidation();
+        setMayNeedPaintInvalidationSubtree();
     }
     setHasOverflowClip(shouldClipOverflow);
 }

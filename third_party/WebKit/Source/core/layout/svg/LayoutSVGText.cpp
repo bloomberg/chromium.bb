@@ -396,17 +396,9 @@ void LayoutSVGText::removeChild(LayoutObject* child)
 
 void LayoutSVGText::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
-    ASSERT(!needsLayout());
-
-    if (!shouldCheckForPaintInvalidation(paintInvalidationState))
-        return;
-
-    PaintInvalidationState newPaintInvalidationState(paintInvalidationState, *this);
-    PaintInvalidationReason reason = invalidatePaintIfNeeded(newPaintInvalidationState);
-    clearPaintInvalidationFlags(newPaintInvalidationState);
-
-    newPaintInvalidationState.updateForChildren(reason);
-    invalidatePaintOfSubtreesIfNeeded(newPaintInvalidationState);
+    // TODO(wangxianzhu): Verify if the inherited LayoutBoxModelObject::invalidateTreeIfNeeded()
+    // is applicable here. If yes, remove this overriding method.
+    LayoutObject::invalidateTreeIfNeeded(paintInvalidationState);
 }
 
 } // namespace blink
