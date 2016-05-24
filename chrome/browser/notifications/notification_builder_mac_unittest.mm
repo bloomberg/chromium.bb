@@ -14,8 +14,8 @@ TEST(NotificationBuilderMacTest, TestNotificationNoButtons) {
   base::scoped_nsobject<NotificationBuilder> builder(
       [[NotificationBuilder alloc] init]);
   [builder setTitle:@"Title"];
-  [builder setSubTitle:@""];
-  [builder setContextMessage:@"https://www.miguel.com"];
+  [builder setSubTitle:@"https://www.miguel.com"];
+  [builder setContextMessage:@""];
   [builder setTag:@"tag1"];
   [builder setIcon:[NSImage imageNamed:@"NSApplicationIcon"]];
   [builder setNotificationId:@"notificationId"];
@@ -24,9 +24,9 @@ TEST(NotificationBuilderMacTest, TestNotificationNoButtons) {
 
   NSUserNotification* notification = [builder buildUserNotification];
   EXPECT_EQ("Title", base::SysNSStringToUTF8([notification title]));
-  EXPECT_EQ(nullptr, [notification subtitle]);
+  EXPECT_EQ(nullptr, [notification informativeText]);
   EXPECT_EQ("https://www.miguel.com",
-            base::SysNSStringToUTF8([notification informativeText]));
+            base::SysNSStringToUTF8([notification subtitle]));
   EXPECT_EQ("tag1",
             base::SysNSStringToUTF8([notification valueForKey:@"identifier"]));
 
@@ -40,8 +40,8 @@ TEST(NotificationBuilderMacTest, TestNotificationOneButton) {
   base::scoped_nsobject<NotificationBuilder> builder(
       [[NotificationBuilder alloc] init]);
   [builder setTitle:@"Title"];
-  [builder setSubTitle:@"SubTitle"];
-  [builder setContextMessage:@"https://www.miguel.com"];
+  [builder setSubTitle:@"https://www.miguel.com"];
+  [builder setContextMessage:@"SubTitle"];
   [builder setButtons:@"Button1" secondaryButton:@""];
   [builder setNotificationId:@"notificationId"];
   [builder setProfileId:@"profileId"];
@@ -50,9 +50,10 @@ TEST(NotificationBuilderMacTest, TestNotificationOneButton) {
    NSUserNotification* notification = [builder buildUserNotification];
 
   EXPECT_EQ("Title", base::SysNSStringToUTF8([notification title]));
-  EXPECT_EQ("SubTitle", base::SysNSStringToUTF8([notification subtitle]));
-  EXPECT_EQ("https://www.miguel.com",
+  EXPECT_EQ("SubTitle",
             base::SysNSStringToUTF8([notification informativeText]));
+  EXPECT_EQ("https://www.miguel.com",
+            base::SysNSStringToUTF8([notification subtitle]));
 
   EXPECT_TRUE([notification hasActionButton]);
 
@@ -70,8 +71,8 @@ TEST(NotificationBuilderMacTest, TestNotificationTwoButtons) {
   base::scoped_nsobject<NotificationBuilder> builder(
       [[NotificationBuilder alloc] init]);
   [builder setTitle:@"Title"];
-  [builder setSubTitle:@"SubTitle"];
-  [builder setContextMessage:@"https://www.miguel.com"];
+  [builder setSubTitle:@"https://www.miguel.com"];
+  [builder setContextMessage:@"SubTitle"];
   [builder setButtons:@"Button1" secondaryButton:@"Button2"];
   [builder setNotificationId:@"notificationId"];
   [builder setProfileId:@"profileId"];
@@ -80,9 +81,10 @@ TEST(NotificationBuilderMacTest, TestNotificationTwoButtons) {
   NSUserNotification* notification = [builder buildUserNotification];
 
   EXPECT_EQ("Title", base::SysNSStringToUTF8([notification title]));
-  EXPECT_EQ("SubTitle", base::SysNSStringToUTF8([notification subtitle]));
-  EXPECT_EQ("https://www.miguel.com",
+  EXPECT_EQ("SubTitle",
             base::SysNSStringToUTF8([notification informativeText]));
+  EXPECT_EQ("https://www.miguel.com",
+            base::SysNSStringToUTF8([notification subtitle]));
 
   EXPECT_TRUE([notification hasActionButton]);
 
@@ -130,8 +132,8 @@ TEST(NotificationBuilderMacTest, TestBuildDictionary) {
     base::scoped_nsobject<NotificationBuilder> sourceBuilder(
         [[NotificationBuilder alloc] init]);
     [sourceBuilder setTitle:@"Title"];
-    [sourceBuilder setSubTitle:@"SubTitle"];
-    [sourceBuilder setContextMessage:@"https://www.miguel.com"];
+    [sourceBuilder setSubTitle:@"https://www.miguel.com"];
+    [sourceBuilder setContextMessage:@"SubTitle"];
     [sourceBuilder setNotificationId:@"notificationId"];
     [sourceBuilder setProfileId:@"profileId"];
     [sourceBuilder setIncognito:false];
@@ -143,7 +145,8 @@ TEST(NotificationBuilderMacTest, TestBuildDictionary) {
   NSUserNotification* notification = [finalBuilder buildUserNotification];
 
   EXPECT_EQ("Title", base::SysNSStringToUTF8([notification title]));
-  EXPECT_EQ("SubTitle", base::SysNSStringToUTF8([notification subtitle]));
-  EXPECT_EQ("https://www.miguel.com",
+  EXPECT_EQ("SubTitle",
             base::SysNSStringToUTF8([notification informativeText]));
+  EXPECT_EQ("https://www.miguel.com",
+            base::SysNSStringToUTF8([notification subtitle]));
 }

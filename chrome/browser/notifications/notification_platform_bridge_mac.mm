@@ -29,8 +29,8 @@
 // The mapping from web notifications to NsUserNotification works as follows
 
 // notification#title in NSUserNotification.title
-// notification#message in NSUserNotification.subtitle
-// notification#context_message in NSUserNotification.informativeText
+// notification#message in NSUserNotification.informativeText
+// notification#context_message in NSUserNotification.subtitle
 // notification#tag in NSUserNotification.identifier (10.9)
 // notification#icon in NSUserNotification.contentImage (10.9)
 // Site settings button is implemented as NSUserNotification's action button
@@ -80,16 +80,16 @@ void NotificationPlatformBridgeMac::Display(const std::string& notification_id,
       [[NotificationBuilder alloc] init]);
 
   [builder setTitle:base::SysUTF16ToNSString(notification.title())];
-  [builder setSubTitle:base::SysUTF16ToNSString(notification.message())];
+  [builder setContextMessage:base::SysUTF16ToNSString(notification.message())];
 
   // TODO(miguelg): try to elide the origin perhaps See NSString
   // stringWithFormat. It seems that the informativeText font is constant.
-  NSString* informative_text =
+  NSString* subtitle =
       notification.context_message().empty()
           ? base::SysUTF8ToNSString(notification.origin_url().spec())
           : base::SysUTF16ToNSString(notification.context_message());
 
-  [builder setContextMessage:informative_text];
+  [builder setSubTitle:subtitle];
   if (!notification.icon().IsEmpty()) {
     [builder setIcon:notification.icon().ToNSImage()];
   }
