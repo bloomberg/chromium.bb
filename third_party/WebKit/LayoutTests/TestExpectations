@@ -486,6 +486,8 @@ crbug.com/552532 [ Win10 ] plugins/tabindex.html [ Pass Crash ]
 
 crbug.com/602110 hittesting/border-hittest-with-image-fallback.html [ Failure ]
 
+crbug.com/614425 [ Win7 ] svg/dynamic-updates/SVGFEBlendElement-dom-in2-attr.html [ Failure ]
+
 crbug.com/387740 imported/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.html [ Skip ]
 crbug.com/387740 imported/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-video-is-black.html [ Skip ]
 crbug.com/387740 imported/wpt/mediacapture-streams/MediaStreamTrack-end.html [ Skip ]
