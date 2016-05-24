@@ -526,6 +526,40 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',
         ['linux', 'amd', 'no_angle'], bug=483282)
 
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'teximage2d_pbo_cube_00.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'teximage2d_pbo_cube_01.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'teximage2d_pbo_cube_02.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'teximage2d_pbo_cube_03.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'teximage2d_pbo_cube_04.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'teximage2d_pbo_params.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'teximage2d_depth_pbo.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'basic_copyteximage2d.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'basic_teximage3d_3d_00.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'basic_teximage3d_3d_01.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'basic_teximage3d_3d_02.html',
+        ['linux', 'amd'], bug=483282)
+
     # Conflicting expectations to test that the
     # "Expectations Have No collisions" unittest works.
     # page_name = 'conformance/glsl/constructors/glsl-construct-ivec4.html'
