@@ -170,8 +170,8 @@ if (host_toolchain == "") {
   } else if (host_os == "mac") {
     host_toolchain = "//build/toolchain/mac:clang_$host_cpu"
   } else if (host_os == "win") {
-    # TODO(crbug.com/467159): win cross-compiles don't actually work yet, so
-    # use the target_cpu instead of the host_cpu.
+    # On Windows always use the target CPU for host builds. On the
+    # configurations we support this will always work and it saves build steps.
     if (is_clang) {
       host_toolchain = "//build/toolchain/win:clang_$target_cpu"
     } else {

@@ -260,7 +260,7 @@ template("test") {
       }
     }
 
-    # TODO(GYP): Delete this after we've converted everything to GN.
+    # TODO(GYP_GONE): Delete this after we've converted everything to GN.
     # The _run targets exist only for compatibility w/ GYP.
     group("${target_name}_apk_run") {
       testonly = true
@@ -288,8 +288,8 @@ template("test") {
     }
 
     ios_app_bundle(_test_target) {
-      # TODO(GYP): Make this configurable and only provide a default
-      # that can be overridden.
+      # TODO: Make this configurable and only provide a default that can be
+      # overridden.
       info_plist = "//testing/gtest_ios/unittest-Info.plist"
       app_name = target_name
       entitlements_path = "//testing/gtest_ios"
@@ -329,7 +329,7 @@ template("test") {
       ]
     }
 
-    # TODO(GYP): Delete this after we've converted everything to GN.
+    # TODO(GYP_GONE): Delete this after we've converted everything to GN.
     # The _run targets exist only for compatibility with GYP.
     group("${target_name}_run") {
       testonly = true

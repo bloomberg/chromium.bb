@@ -231,42 +231,39 @@ static_library("test_support") {
   ]
 }
 
-if (is_linux && !is_chromeos) {
-  # TODO(GYP): Figure out which of these work and are needed on other platforms.
-  if (toolkit_views) {
-    executable("app_list_demo") {
-      testonly = true
+if (toolkit_views) {
+  executable("app_list_demo") {
+    testonly = true
 
-      sources = [
-        "demo/app_list_demo_views.cc",
+    sources = [
+      "demo/app_list_demo_views.cc",
+    ]
+
+    deps = [
+      ":app_list",
+      ":test_support",
+      "//base",
+      "//build/config/sanitizers:deps",
+      "//content",
+      "//content/public/browser",
+      "//skia",
+      "//ui/base",
+      "//ui/events",
+      "//ui/resources",
+      "//ui/resources:ui_test_pak",
+      "//ui/views",
+      "//ui/views/controls/webview",
+      "//ui/views_content_client",
+      "//url",
+    ]
+    if (is_win) {
+      configs -= [ "//build/config/win:console" ]
+      configs += [ "//build/config/win:windowed" ]
+
+      deps += [
+        "//content:sandbox_helper_win",
+        "//sandbox",
       ]
-
-      deps = [
-        ":app_list",
-        ":test_support",
-        "//base",
-        "//build/config/sanitizers:deps",
-        "//content",
-        "//content/public/browser",
-        "//skia",
-        "//ui/base",
-        "//ui/events",
-        "//ui/resources",
-        "//ui/resources:ui_test_pak",
-        "//ui/views",
-        "//ui/views/controls/webview",
-        "//ui/views_content_client",
-        "//url",
-      ]
-      if (is_win) {
-        configs -= [ "//build/config/win:console" ]
-        configs += [ "//build/config/win:windowed" ]
-
-        deps += [
-          "//content:sandbox_helper_win",
-          "//sandbox",
-        ]
-      }
     }
   }
 }

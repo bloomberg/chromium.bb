@@ -215,10 +215,7 @@ repack("repack_ui_test_pak") {
 # copied, because it causes leaks from allocations within system libraries when
 # trying to load non-string resources. http://crbug.com/413034.
 repack("repack_ui_test_mac_locale_pack") {
-  visibility = [
-    ":ui_test_pak",
-    "//:gn_visibility",  # TODO(GYP): this shouldn't be necessary.
-  ]
+  visibility = [ ":ui_test_pak" ]
 
   sources = [
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",

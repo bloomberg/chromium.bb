@@ -114,7 +114,6 @@ test("cacheinvalidation_unittests") {
   ]
 }
 
-# TODO(GYP) Test isolation stuff.
 if (is_android) {
   import("//build/config/android/rules.gni")
 

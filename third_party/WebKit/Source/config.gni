@@ -52,8 +52,6 @@ feature_defines_list = [
 ]
 
 if (is_debug) {
-  # TODO(GYP) this should also be set when release_valgrind_build is set,
-  # but we don't have that flag in the GN build yet.
   feature_defines_list += [ "WTF_USE_DYNAMIC_ANNOTATIONS=1" ]
 }
 

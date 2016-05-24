@@ -181,6 +181,8 @@ group("both_gn_and_gyp") {
       "//ppapi/examples/video_effects",
       "//ppapi/examples/video_encode",
       "//printing:printing_unittests",
+      "//sync/tools:sync_client",
+      "//sync/tools:sync_listen_notifications",
       "//third_party/cacheinvalidation:cacheinvalidation_unittests",
       "//third_party/codesighs",
       "//third_party/pdfium/samples:pdfium_test",
@@ -529,8 +531,6 @@ group("both_gn_and_gyp") {
         "//media/cast:tap_proxy",
         "//skia:filter_fuzz_stub",
         "//skia:image_operations_bench",
-        "//sync/tools:sync_client",
-        "//sync/tools:sync_listen_notifications",
         "//third_party/sqlite:sqlite_shell",
         "//ui/keyboard:keyboard_unittests",
         "//ui/message_center:message_center_unittests",
@@ -790,11 +790,8 @@ group("gn_mojo_targets") {
 group("gn_visibility") {
   deps = [
     "//build/config/sanitizers:options_sources",
-
     # "//third_party/pdfium:pdfium_embeddertests",  # TODO(GYP): visibility?
     # "//third_party/pdfium:pdfium_unittests",  # TODO(GYP): visibility?
-
-    "//ui/resources:repack_ui_test_mac_locale_pack",
   ]
 
   if (!is_ios) {

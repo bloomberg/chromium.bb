@@ -158,8 +158,6 @@ source_set("platform") {
     ":generate_ozone_platform_list",
   ]
 
-  # TODO(GYP) the GYP version has a way to add additional dependencies via
-  # build flags.
   deps += ozone_platform_deps
 
   # Platforms are always linked into //ui/ozone and can include our headers.

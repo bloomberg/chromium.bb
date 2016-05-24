@@ -81,11 +81,6 @@ config("config") {
       "blink-gc-plugin",
     ]
   }
-
-  ## TODO(GYP) : gn does not yet support use_system_icu.
-  #if (use_system_icu) {
-  #  defines += [ "USING_SYSTEM_ICU" ]
-  #}
 }
 
 # The follow configs apply to all targets except for unit tests, which rely on
