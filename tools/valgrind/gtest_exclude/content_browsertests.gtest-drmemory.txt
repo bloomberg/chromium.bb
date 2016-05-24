@@ -78,3 +78,6 @@ WebRtcDataChannelTest.DataChannelGC
 
 # https://crbug.com/611557
 FindRequestManagerTest.RapidFire
+
+# https://crbug.com/614466
+IFrameZoomBrowserTest.SubframesDontZoomIndependently
