@@ -6865,6 +6865,13 @@ void GLES2DecoderImpl::DoFramebufferTexture2DCommon(
           name, "unknown texture_ref");
       return;
     }
+    GLenum texture_target = texture_ref->texture()->target();
+    if (texture_target != GLES2Util::GLFaceTargetToTextureTarget(textarget)) {
+      LOCAL_SET_GL_ERROR(
+          GL_INVALID_OPERATION,
+          name, "Attachment textarget doesn't match texture target");
+      return;
+    }
     service_id = texture_ref->service_id();
   }
 
