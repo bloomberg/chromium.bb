@@ -987,6 +987,8 @@ crbug.com/582836 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reft
 crbug.com/582836 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-17.html [ Pass Failure ]
 crbug.com/582836 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-declaration-18.html [ Pass Failure ]
 crbug.com/613462 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-external-font-face-01.html [ Failure Pass ]
+crbug.com/582836 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-font-face-01.html [ Pass Failure ]
+crbug.com/582836 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-font-face-02.html [ Pass Failure ]
 
 # These need a rebaseline due crbug.com/504745 on Windows when they are activated again.
 crbug.com/521124 crbug.com/410145 [ Win7 ] fast/css/font-weight-1.html [ Pass Failure ]
