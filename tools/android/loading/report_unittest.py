@@ -23,6 +23,8 @@ class LoadingReportTestCase(unittest.TestCase):
   _MAIN_FRAME_ID = 1
   _FIRST_REQUEST_DATA_LENGTH = 128
   _SECOND_REQUEST_DATA_LENGTH = 1024
+  _TOPLEVEL_EVENT_OFFSET = 10
+  _TOPLEVEL_EVENT_DURATION = 100
 
   def setUp(self):
     self.trace_creator = test_utils.TraceCreator()
@@ -36,30 +38,36 @@ class LoadingReportTestCase(unittest.TestCase):
     self.requests[1].encoded_data_length = self._SECOND_REQUEST_DATA_LENGTH
 
     self.trace_events = [
+        {'args': {'name': 'CrRendererMain'}, 'cat': '__metadata',
+         'name': 'thread_name', 'ph': 'M', 'pid': 1, 'tid': 1, 'ts': 0},
         {'ts': self._NAVIGATION_START_TIME * self.MILLI_TO_MICRO, 'ph': 'R',
-         'cat': 'blink.user_timing',
+         'cat': 'blink.user_timing', 'pid': 1, 'tid': 1,
          'name': 'navigationStart',
          'args': {'frame': 1}},
         {'ts': self._LOAD_END_TIME * self.MILLI_TO_MICRO, 'ph': 'I',
-         'cat': 'devtools.timeline',
+         'cat': 'devtools.timeline', 'pid': 1, 'tid': 1,
          'name': 'MarkLoad',
          'args': {'data': {'isMainFrame': True}}},
         {'ts': self._CONTENTFUL_PAINT * self.MILLI_TO_MICRO, 'ph': 'I',
-         'cat': 'blink.user_timing',
+         'cat': 'blink.user_timing', 'pid': 1, 'tid': 1,
          'name': 'firstContentfulPaint',
          'args': {'frame': self._MAIN_FRAME_ID}},
         {'ts': self._TEXT_PAINT * self.MILLI_TO_MICRO, 'ph': 'I',
-         'cat': 'blink.user_timing',
+         'cat': 'blink.user_timing', 'pid': 1, 'tid': 1,
          'name': 'firstPaint',
          'args': {'frame': self._MAIN_FRAME_ID}},
         {'ts': 90 * self.MILLI_TO_MICRO, 'ph': 'I',
-         'cat': 'blink',
+         'cat': 'blink', 'pid': 1, 'tid': 1,
          'name': 'FrameView::synchronizedPaint'},
         {'ts': self._SIGNIFICANT_PAINT * self.MILLI_TO_MICRO, 'ph': 'I',
-         'cat': 'foobar', 'name': 'biz',
+         'cat': 'foobar', 'name': 'biz', 'pid': 1, 'tid': 1,
          'args': {'counters': {
-             'LayoutObjectsThatHadNeverHadLayout': 10
-         }}}]
+             'LayoutObjectsThatHadNeverHadLayout': 10}}},
+        {'ts': (self._NAVIGATION_START_TIME - self._TOPLEVEL_EVENT_OFFSET)
+         * self.MILLI_TO_MICRO,
+         'pid': 1, 'tid': 1, 'ph': 'X',
+         'dur': self._TOPLEVEL_EVENT_DURATION * self.MILLI_TO_MICRO,
+         'cat': 'toplevel', 'name': 'MessageLoop::RunTask'}]
 
   def _MakeTrace(self):
     trace = self.trace_creator.CreateTrace(
@@ -130,6 +138,19 @@ class LoadingReportTestCase(unittest.TestCase):
     self.assertEqual(
         self._FIRST_REQUEST_DATA_LENGTH + metrics.HTTP_OK_LENGTH,
         loading_report['ad_or_tracking_initiated_transfer_size'])
+
+  def testThreadBusyness(self):
+    loading_report = report.LoadingReport(self._MakeTrace()).GenerateReport()
+    self.assertAlmostEqual(
+        1., loading_report['activity_significant_paint_frac'])
+    self.assertAlmostEqual(
+        float(self._TOPLEVEL_EVENT_DURATION - self._TOPLEVEL_EVENT_OFFSET)
+        / (self._CONTENTFUL_PAINT - self._NAVIGATION_START_TIME),
+        loading_report['activity_contentful_paint_frac'])
+    self.assertAlmostEqual(
+        float(self._TOPLEVEL_EVENT_DURATION - self._TOPLEVEL_EVENT_OFFSET)
+        / (self._LOAD_END_TIME - self._NAVIGATION_START_TIME),
+        loading_report['activity_load_frac'])
 
 
 if __name__ == '__main__':

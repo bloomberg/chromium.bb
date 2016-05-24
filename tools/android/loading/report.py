@@ -7,6 +7,7 @@
 When executed as a script, takes a trace filename and print the report.
 """
 
+from activity_lens import ActivityLens
 from content_classification_lens import ContentClassificationLens
 from loading_graph_view import LoadingGraphView
 import loading_trace
@@ -32,11 +33,13 @@ class LoadingReport(object):
         FirstContentfulPaintLens(self.trace).SatisfiedMs())
     self._significant_paint_msec = (
         FirstSignificantPaintLens(self.trace).SatisfiedMs())
+
     navigation_start_events = trace.tracing_track.GetMatchingEvents(
         'blink.user_timing', 'navigationStart')
     self._navigation_start_msec = min(
         e.start_msec for e in navigation_start_events)
     self._load_end_msec = self._ComputePlt(trace)
+
     network_lens = NetworkActivityLens(self.trace)
     if network_lens.total_download_bytes > 0:
       self._contentful_byte_frac = (
@@ -57,6 +60,25 @@ class LoadingReport(object):
     self._significant_inversion = graph.GetInversionsAtTime(
         self._significant_paint_msec)
     self._transfer_size = metrics.TotalTransferSize(trace)[1]
+    self._cpu_busyness = self._ComputeCpuBusyness(trace)
+
+  def _ComputeCpuBusyness(self, trace):
+    activity = ActivityLens(trace)
+    load_start = self._navigation_start_msec
+    load_end = self._load_end_msec
+    contentful = self._contentful_paint_msec
+    significant = self._significant_paint_msec
+
+    return {
+        'activity_load_frac': (
+            activity.MainRendererThreadBusyness(load_start, load_end)
+            / float(load_end - load_start)),
+        'activity_contentful_paint_frac': (
+            activity.MainRendererThreadBusyness(load_start, contentful)
+            / float(contentful - load_start)),
+        'activity_significant_paint_frac': (
+            activity.MainRendererThreadBusyness(load_start, significant)
+            / float(significant - load_start))}
 
   def GenerateReport(self):
     """Returns a report as a dict."""
@@ -80,6 +102,7 @@ class LoadingReport(object):
                                   else None),
         'transfer_size': self._transfer_size}
     report.update(self._ad_report)
+    report.update(self._cpu_busyness)
     return report
 
   @classmethod
@@ -139,7 +162,7 @@ def _Main(args):
   tracking_rules = open(args[3]).readlines()
   report = LoadingReport.FromTraceFilename(
       trace_filename, ad_rules, tracking_rules)
-  print json.dumps(report.GenerateReport(), indent=2)
+  print json.dumps(report.GenerateReport(), indent=2, sort_keys=True)
 
 
 if __name__ == '__main__':
