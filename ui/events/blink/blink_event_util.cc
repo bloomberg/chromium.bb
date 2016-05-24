@@ -234,7 +234,19 @@ WebGestureEvent CreateWebGestureEvent(const GestureEventDetails& details,
   gesture.globalX = gfx::ToFlooredInt(raw_location.x());
   gesture.globalY = gfx::ToFlooredInt(raw_location.y());
   gesture.modifiers = EventFlagsToWebEventModifiers(flags);
-  gesture.sourceDevice = blink::WebGestureDeviceTouchscreen;
+
+  switch (details.device_type()) {
+    case GestureDeviceType::DEVICE_TOUCHSCREEN:
+      gesture.sourceDevice = blink::WebGestureDeviceTouchscreen;
+      break;
+    case GestureDeviceType::DEVICE_TOUCHPAD:
+      gesture.sourceDevice = blink::WebGestureDeviceTouchpad;
+      break;
+    case GestureDeviceType::DEVICE_UNKNOWN:
+      NOTREACHED() << "Unknown device type is not allowed";
+      gesture.sourceDevice = blink::WebGestureDeviceUninitialized;
+      break;
+  }
 
   switch (details.type()) {
     case ET_GESTURE_SHOW_PRESS:

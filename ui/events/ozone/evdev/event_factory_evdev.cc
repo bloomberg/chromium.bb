@@ -252,6 +252,7 @@ void EventFactoryEvdev::DispatchPinchEvent(const PinchEventParams& params) {
   TRACE_EVENT1("evdev", "EventFactoryEvdev::DispatchPinchEvent", "device",
                params.device_id);
   GestureEventDetails details(params.type);
+  details.set_device_type(GestureDeviceType::DEVICE_TOUCHPAD);
   details.set_scale(params.scale);
   GestureEvent event(params.location.x(), params.location.y(), 0,
                      params.timestamp, details);

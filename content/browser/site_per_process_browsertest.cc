@@ -4987,9 +4987,12 @@ void SendGestureTapSequenceWithExpectedTarget(
     const RenderWidgetHostViewBase* expected_target) {
   auto root_view_aura = static_cast<RenderWidgetHostViewAura*>(root_view);
 
-  ui::GestureEvent gesture_begin_event(
-      gesture_point.x(), gesture_point.y(), 0, ui::EventTimeForNow(),
-      ui::GestureEventDetails(ui::ET_GESTURE_BEGIN));
+  ui::GestureEventDetails gesture_begin_details(ui::ET_GESTURE_BEGIN);
+  gesture_begin_details.set_device_type(
+      ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
+  ui::GestureEvent gesture_begin_event(gesture_point.x(), gesture_point.y(), 0,
+                                       ui::EventTimeForNow(),
+                                       gesture_begin_details);
   root_view_aura->OnGestureEvent(&gesture_begin_event);
   // We expect to still have the old gesture target in place for the
   // GestureFlingCancel that will be inserted before GestureTapDown.
@@ -4998,29 +5001,40 @@ void SendGestureTapSequenceWithExpectedTarget(
   // explicitly add it here.
   EXPECT_EQ(old_expected_target, router_gesture_target);
 
-  ui::GestureEvent gesture_tap_down_event(
-      gesture_point.x(), gesture_point.y(), 0, ui::EventTimeForNow(),
-      ui::GestureEventDetails(ui::ET_GESTURE_TAP_DOWN));
+  ui::GestureEventDetails gesture_tap_down_details(ui::ET_GESTURE_TAP_DOWN);
+  gesture_tap_down_details.set_device_type(
+      ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
+  ui::GestureEvent gesture_tap_down_event(gesture_point.x(), gesture_point.y(),
+                                          0, ui::EventTimeForNow(),
+                                          gesture_tap_down_details);
   root_view_aura->OnGestureEvent(&gesture_tap_down_event);
   EXPECT_EQ(expected_target, router_gesture_target);
 
+  ui::GestureEventDetails gesture_show_press_details(ui::ET_GESTURE_SHOW_PRESS);
+  gesture_show_press_details.set_device_type(
+      ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
   ui::GestureEvent gesture_show_press_event(
       gesture_point.x(), gesture_point.y(), 0, ui::EventTimeForNow(),
-      ui::GestureEventDetails(ui::ET_GESTURE_SHOW_PRESS));
+      gesture_show_press_details);
   root_view_aura->OnGestureEvent(&gesture_show_press_event);
   EXPECT_EQ(expected_target, router_gesture_target);
 
   ui::GestureEventDetails gesture_tap_details(ui::ET_GESTURE_TAP);
+  gesture_tap_details.set_device_type(
+      ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
   gesture_tap_details.set_tap_count(1);
-  ui::GestureEvent gesture_tap_event(
-      gesture_point.x(), gesture_point.y(), 0, ui::EventTimeForNow(),
-      gesture_tap_details);
+  ui::GestureEvent gesture_tap_event(gesture_point.x(), gesture_point.y(), 0,
+                                     ui::EventTimeForNow(),
+                                     gesture_tap_details);
   root_view_aura->OnGestureEvent(&gesture_tap_event);
   EXPECT_EQ(expected_target, router_gesture_target);
 
-  ui::GestureEvent gesture_end_event(
-      gesture_point.x(), gesture_point.y(), 0, ui::EventTimeForNow(),
-      ui::GestureEventDetails(ui::ET_GESTURE_END));
+  ui::GestureEventDetails gesture_end_details(ui::ET_GESTURE_END);
+  gesture_end_details.set_device_type(
+      ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
+  ui::GestureEvent gesture_end_event(gesture_point.x(), gesture_point.y(), 0,
+                                     ui::EventTimeForNow(),
+                                     gesture_end_details);
   root_view_aura->OnGestureEvent(&gesture_end_event);
   EXPECT_EQ(expected_target, router_gesture_target);
 }

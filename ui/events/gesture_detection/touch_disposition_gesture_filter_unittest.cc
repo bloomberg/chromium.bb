@@ -39,6 +39,8 @@ class TouchDispositionGestureFilterTest
 
   // TouchDispositionGestureFilterClient
   void ForwardGestureEvent(const GestureEventData& event) override {
+    EXPECT_EQ(GestureDeviceType::DEVICE_TOUCHSCREEN,
+              event.details.device_type());
     ++sent_gesture_count_;
     last_sent_gesture_.reset(new GestureEventData(event));
     sent_gestures_.push_back(event.type());
@@ -263,9 +265,11 @@ class TouchDispositionGestureFilterTest
                                  float x,
                                  float y,
                                  float diameter) {
+    GestureEventDetails details(type);
+    details.set_device_type(GestureDeviceType::DEVICE_TOUCHSCREEN);
     return GestureEventData(
-        GestureEventDetails(type), 0, MotionEvent::TOOL_TYPE_FINGER,
-        base::TimeTicks(), x, y, 0, 0, 1,
+        details, 0, MotionEvent::TOOL_TYPE_FINGER, base::TimeTicks(), x, y, 0,
+        0, 1,
         gfx::RectF(x - diameter / 2, y - diameter / 2, diameter, diameter),
         kDefaultEventFlags);
   }

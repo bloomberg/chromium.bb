@@ -68,11 +68,9 @@ gfx::Rect AdjustDragImageBoundsForScaleAndOffset(
 
 void DispatchGestureEndToWindow(aura::Window* window) {
   if (window && window->delegate()) {
-    ui::GestureEvent gesture_end(0,
-                                 0,
-                                 0,
-                                 ui::EventTimeForNow(),
-                                 ui::GestureEventDetails(ui::ET_GESTURE_END));
+    ui::GestureEventDetails details(ui::ET_GESTURE_END);
+    details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
+    ui::GestureEvent gesture_end(0, 0, 0, ui::EventTimeForNow(), details);
     window->delegate()->OnGestureEvent(&gesture_end);
   }
 }

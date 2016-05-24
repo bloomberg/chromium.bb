@@ -342,8 +342,9 @@ void EventGenerator::PressMoveAndReleaseTouchToCenterOf(EventTarget* window) {
 }
 
 void EventGenerator::GestureEdgeSwipe() {
-  ui::GestureEvent gesture(
-      0, 0, 0, Now(), ui::GestureEventDetails(ui::ET_GESTURE_WIN8_EDGE_SWIPE));
+  GestureEventDetails details(ET_GESTURE_WIN8_EDGE_SWIPE);
+  details.set_device_type(GestureDeviceType::DEVICE_TOUCHSCREEN);
+  GestureEvent gesture(0, 0, 0, Now(), details);
   Dispatch(&gesture);
 }
 

@@ -23,17 +23,13 @@ GestureEventData CreateGesture(EventType type,
                                const GestureEventDataPacket& packet) {
   // As the event is purely synthetic, we needn't be strict with event flags.
   int flags = EF_NONE;
-  return GestureEventData(GestureEventDetails(type),
-                          motion_event_id,
-                          primary_tool_type,
-                          packet.timestamp(),
-                          packet.touch_location().x(),
-                          packet.touch_location().y(),
-                          packet.raw_touch_location().x(),
-                          packet.raw_touch_location().y(),
-                          1,
-                          gfx::RectF(packet.touch_location(), gfx::SizeF()),
-                          flags);
+  GestureEventDetails details(type);
+  details.set_device_type(GestureDeviceType::DEVICE_TOUCHSCREEN);
+  return GestureEventData(
+      details, motion_event_id, primary_tool_type, packet.timestamp(),
+      packet.touch_location().x(), packet.touch_location().y(),
+      packet.raw_touch_location().x(), packet.raw_touch_location().y(), 1,
+      gfx::RectF(packet.touch_location(), gfx::SizeF()), flags);
 }
 
 enum RequiredTouches {

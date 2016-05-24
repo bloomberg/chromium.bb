@@ -173,6 +173,13 @@ enum class EventPointerType : int {
   POINTER_TYPE_TOUCH,
 };
 
+// Device type for gesture events.
+enum class GestureDeviceType : int {
+  DEVICE_UNKNOWN = 0,
+  DEVICE_TOUCHPAD,
+  DEVICE_TOUCHSCREEN,
+};
+
 }  // namespace ui
 
 #endif  // UI_EVENTS_EVENT_CONSTANTS_H_

@@ -25,8 +25,12 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(ui::EventPhase,
                               ui::EventPhase::EP_POSTDISPATCH)
 
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(ui::EventPointerType,
-                              ui::EventPhase::EP_PREDISPATCH,
-                              ui::EventPhase::EP_POSTDISPATCH)
+                              ui::EventPointerType::POINTER_TYPE_UNKNOWN,
+                              ui::EventPointerType::POINTER_TYPE_TOUCH)
+
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(ui::GestureDeviceType,
+                              ui::GestureDeviceType::DEVICE_UNKNOWN,
+                              ui::GestureDeviceType::DEVICE_TOUCHSCREEN)
 
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(ui::KeyboardCode,
                               ui::KeyboardCode::VKEY_UNKNOWN, /* 0x00 */
@@ -97,6 +101,7 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(ui::GestureEventDetails)
   IPC_STRUCT_TRAITS_MEMBER(type_)
   IPC_STRUCT_TRAITS_MEMBER(data_)
+  IPC_STRUCT_TRAITS_MEMBER(device_type_)
   IPC_STRUCT_TRAITS_MEMBER(touch_points_)
   IPC_STRUCT_TRAITS_MEMBER(bounding_box_)
 IPC_STRUCT_TRAITS_END()

@@ -96,6 +96,7 @@ TEST(WebInputEventUtilTest, ScrollUpdateConversion) {
   ui::GestureEventDetails details(ui::ET_GESTURE_SCROLL_UPDATE,
                                   delta.x(),
                                   delta.y());
+  details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
   details.mark_previous_scroll_update_in_sequence_prevented();
   ui::GestureEventData event(details,
                              motion_event_id,

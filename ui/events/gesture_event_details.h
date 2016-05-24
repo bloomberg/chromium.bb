@@ -31,6 +31,11 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
 
   EventType type() const { return type_; }
 
+  GestureDeviceType device_type() const { return device_type_; }
+  void set_device_type(GestureDeviceType device_type) {
+    device_type_ = device_type;
+  }
+
   int touch_points() const { return touch_points_; }
   void set_touch_points(int touch_points) {
     DCHECK_GT(touch_points, 0);
@@ -147,6 +152,7 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
   bool operator==(const GestureEventDetails& other) const {
     return type_ == other.type_ &&
            !memcmp(&data_, &other.data_, sizeof(Details)) &&
+           device_type_ == other.device_type_ &&
            touch_points_ == other.touch_points_ &&
            bounding_box_ == other.bounding_box_;
   }
@@ -199,6 +205,8 @@ struct EVENTS_BASE_EXPORT GestureEventDetails {
   // For mojo native implementation of (de)serialization.
   friend struct IPC::ParamTraits<ui::GestureEventDetails>;
   friend struct IPC::ParamTraits<ui::GestureEventDetails::Details>;
+
+  GestureDeviceType device_type_;
 
   int touch_points_;  // Number of active touch points in the gesture.
 

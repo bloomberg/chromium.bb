@@ -7,10 +7,14 @@
 namespace ui {
 
 GestureEventDetails::GestureEventDetails()
-    : type_(ET_UNKNOWN), touch_points_(0) {}
+    : type_(ET_UNKNOWN),
+      device_type_(GestureDeviceType::DEVICE_UNKNOWN),
+      touch_points_(0) {}
 
 GestureEventDetails::GestureEventDetails(ui::EventType type)
-    : type_(type), touch_points_(1) {
+    : type_(type),
+      device_type_(GestureDeviceType::DEVICE_UNKNOWN),
+      touch_points_(1) {
   DCHECK_GE(type, ET_GESTURE_TYPE_START);
   DCHECK_LE(type, ET_GESTURE_TYPE_END);
 }
@@ -18,7 +22,9 @@ GestureEventDetails::GestureEventDetails(ui::EventType type)
 GestureEventDetails::GestureEventDetails(ui::EventType type,
                                          float delta_x,
                                          float delta_y)
-    : type_(type), touch_points_(1) {
+    : type_(type),
+      device_type_(GestureDeviceType::DEVICE_UNKNOWN),
+      touch_points_(1) {
   DCHECK_GE(type, ET_GESTURE_TYPE_START);
   DCHECK_LE(type, ET_GESTURE_TYPE_END);
   switch (type_) {
@@ -58,6 +64,7 @@ GestureEventDetails::GestureEventDetails(ui::EventType type,
                                          const GestureEventDetails& other)
     : type_(type),
       data_(other.data_),
+      device_type_(other.device_type_),
       touch_points_(other.touch_points_),
       bounding_box_(other.bounding_box_) {
   DCHECK_GE(type, ET_GESTURE_TYPE_START);

@@ -135,6 +135,8 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
 
   // GestureProviderClient
   void OnGestureEvent(const GestureEventData& gesture) override {
+    EXPECT_EQ(GestureDeviceType::DEVICE_TOUCHSCREEN,
+              gesture.details.device_type());
     if (gesture.type() == ET_GESTURE_SCROLL_BEGIN)
       active_scroll_begin_event_.reset(new GestureEventData(gesture));
     gestures_.push_back(gesture);
