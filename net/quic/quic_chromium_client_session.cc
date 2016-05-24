@@ -141,6 +141,22 @@ std::unique_ptr<base::Value> NetLogQuicPushPromiseReceivedCallback(
   return std::move(dict);
 }
 
+class HpackEncoderDebugVisitor : public QuicHeadersStream::HpackDebugVisitor {
+  void OnUseEntry(QuicTime::Delta elapsed) override {
+    UMA_HISTOGRAM_TIMES(
+        "Net.QuicHpackEncoder.IndexedEntryAge",
+        base::TimeDelta::FromMicroseconds(elapsed.ToMicroseconds()));
+  }
+};
+
+class HpackDecoderDebugVisitor : public QuicHeadersStream::HpackDebugVisitor {
+  void OnUseEntry(QuicTime::Delta elapsed) override {
+    UMA_HISTOGRAM_TIMES(
+        "Net.QuicHpackDecoder.IndexedEntryAge",
+        base::TimeDelta::FromMicroseconds(elapsed.ToMicroseconds()));
+  }
+};
+
 }  // namespace
 
 QuicChromiumClientSession::StreamRequest::StreamRequest() : stream_(nullptr) {}
@@ -364,6 +380,14 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
   UMA_HISTOGRAM_COUNTS(
       "Net.QuicSession.MaxReordering",
       static_cast<base::HistogramBase::Sample>(stats.max_sequence_reordering));
+}
+
+void QuicChromiumClientSession::Initialize() {
+  QuicClientSessionBase::Initialize();
+  headers_stream()->SetHpackEncoderDebugVisitor(
+      base::WrapUnique(new HpackEncoderDebugVisitor()));
+  headers_stream()->SetHpackDecoderDebugVisitor(
+      base::WrapUnique(new HpackDecoderDebugVisitor()));
 }
 
 void QuicChromiumClientSession::OnHeadersHeadOfLineBlocking(

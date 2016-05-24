@@ -28436,11 +28436,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicHpackDecoder.IndexedEntryAge" units="ms">
+  <owner>ckrasic@chromium.org</owner>
+  <summary>
+    For each indexed representation decoded, records the time since the
+    corresponding entry was added to the dynamic table.  This data is being
+    collected to help analyze a proposed solution to HPACK induced head of line
+    blocking.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicHpackDecompressionPercentage" units="%">
   <owner>ckrasic@chromium.org</owner>
   <summary>
     The decompression percentage, logged for each received HPACK compressed
     header frame.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicHpackEncoder.IndexedEntryAge" units="ms">
+  <owner>ckrasic@chromium.org</owner>
+  <summary>
+    For each indexed representation encoded, records the time since the
+    corresponding entry was added to the dynamic table.  This data is being
+    collected to help analyze a proposed solution to HPACK induced head of line
+    blocking.
   </summary>
 </histogram>
 

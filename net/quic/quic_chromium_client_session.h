@@ -138,6 +138,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       NetLog* net_log);
   ~QuicChromiumClientSession() override;
 
+  void Initialize() override;
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
