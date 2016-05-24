@@ -78,6 +78,8 @@ class GlApiLoader {
 };
 
 // Returns true if we should operate in Mus mode.
+// TODO(rjkroege): Create an explicit "single process ozone mode" that can be
+// used for tests after mus+ash team finishes splitting mus.
 bool RunningInsideMus() {
   bool has_channel_handle = base::CommandLine::ForCurrentProcess()->HasSwitch(
       "mojo-platform-channel-handle");

@@ -10,17 +10,13 @@
 #include "ui/gl/test/gl_surface_test_support.h"
 
 #if defined(USE_OZONE)
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #endif
 
 namespace gl {
 
 // static
 void GLImageTestSupport::InitializeGL() {
-#if defined(USE_OZONE)
-  // On Ozone, the backend initializes the event system using a UI thread.
-  base::MessageLoopForUI main_loop;
-#endif
 
   std::vector<gfx::GLImplementation> allowed_impls;
   GetAllowedGLImplementations(&allowed_impls);
@@ -28,6 +24,11 @@ void GLImageTestSupport::InitializeGL() {
 
   gfx::GLImplementation impl = allowed_impls[0];
   gfx::GLSurfaceTestSupport::InitializeOneOffImplementation(impl, true);
+#if defined(USE_OZONE)
+  // Make sure all the tasks posted to the current task runner by the
+  // initialization functions are run before running the tests.
+  base::RunLoop().RunUntilIdle();
+#endif
 }
 
 // static
