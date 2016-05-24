@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "mojo/platform_handle/platform_handle_private_thunks.h"
 #include "mojo/public/platform/native/system_thunks.h"
 
 namespace shell {
@@ -82,10 +81,7 @@ bool RunNativeApplication(base::NativeLibrary app_library,
   }
 #endif
 
-  // Apps need not include platform handle thunks.
-  SetThunks(&MojoMakePlatformHandlePrivateThunks,
-            "MojoSetPlatformHandlePrivateThunks", app_library);
-#endif
+#endif  // !defined(COMPONENT_BUILD)
 
   typedef MojoResult (*MojoMainFunction)(MojoHandle);
   MojoMainFunction main_function = reinterpret_cast<MojoMainFunction>(

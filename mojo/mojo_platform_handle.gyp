@@ -13,22 +13,7 @@
     {
       # GN version: //mojo/platform_handle:platform_handle/platform_handle_impl
       'target_name': 'platform_handle',
-      'type': '<(component)',
-      'include_dirs': [
-        '../..',
-      ],
-      'defines': [
-        'PLATFORM_HANDLE_IMPLEMENTATION'
-      ],
-      'sources': [
-        'platform_handle/platform_handle.h',
-        'platform_handle/platform_handle_functions.h',
-        'platform_handle/platform_handle_functions.cc',
-      ],
-      'dependencies': [
-        'mojo_edk.gyp:mojo_system_impl',
-        'mojo_public.gyp:mojo_cpp_bindings',
-      ]
+      'type': 'none',
     }
   ]
 }

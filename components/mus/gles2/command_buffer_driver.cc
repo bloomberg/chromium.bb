@@ -26,7 +26,7 @@
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "mojo/platform_handle/platform_handle_functions.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/vsync_provider.h"
@@ -255,18 +255,18 @@ void CommandBufferDriver::CreateImage(int32_t id,
     return;
   }
 
-  MojoPlatformHandle platform_handle;
-  MojoResult extract_result = MojoExtractPlatformHandle(
-      memory_handle.release().value(), &platform_handle);
-  if (extract_result != MOJO_RESULT_OK) {
+  base::PlatformFile platform_file;
+  MojoResult unwrap_result = mojo::UnwrapPlatformFile(std::move(memory_handle),
+                                                      &platform_file);
+  if (unwrap_result != MOJO_RESULT_OK) {
     NOTREACHED();
     return;
   }
 
 #if defined(OS_WIN)
-  base::SharedMemoryHandle handle(platform_handle, base::GetCurrentProcId());
+  base::SharedMemoryHandle handle(platform_file, base::GetCurrentProcId());
 #else
-  base::FileDescriptor handle(platform_handle, false);
+  base::FileDescriptor handle(platform_file, false);
 #endif
 
   scoped_refptr<gl::GLImageSharedMemory> image =

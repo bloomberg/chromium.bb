@@ -10,6 +10,7 @@
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/functions.h"
 #include "mojo/public/c/system/message_pipe.h"
+#include "mojo/public/c/system/platform_handle.h"
 #include "mojo/public/c/system/wait_set.h"
 
 using mojo::edk::internal::g_core;
@@ -213,6 +214,34 @@ MojoResult MojoMapBuffer(MojoHandle buffer_handle,
 
 MojoResult MojoUnmapBuffer(void* buffer) {
   return g_core->UnmapBuffer(buffer);
+}
+
+MojoResult MojoWrapPlatformHandle(const MojoPlatformHandle* platform_handle,
+                                  MojoHandle* mojo_handle) {
+  return g_core->WrapPlatformHandle(platform_handle, mojo_handle);
+}
+
+MojoResult MojoUnwrapPlatformHandle(MojoHandle mojo_handle,
+                                    MojoPlatformHandle* platform_handle) {
+  return g_core->UnwrapPlatformHandle(mojo_handle, platform_handle);
+}
+
+MojoResult MojoWrapPlatformSharedBufferHandle(
+    const MojoPlatformHandle* platform_handle,
+    size_t num_bytes,
+    MojoPlatformSharedBufferHandleFlags flags,
+    MojoHandle* mojo_handle) {
+  return g_core->WrapPlatformSharedBufferHandle(platform_handle, num_bytes,
+                                                flags, mojo_handle);
+}
+
+MojoResult MojoUnwrapPlatformSharedBufferHandle(
+    MojoHandle mojo_handle,
+    MojoPlatformHandle* platform_handle,
+    size_t* num_bytes,
+    MojoPlatformSharedBufferHandleFlags* flags) {
+  return g_core->UnwrapPlatformSharedBufferHandle(mojo_handle, platform_handle,
+                                                  num_bytes, flags);
 }
 
 }  // extern "C"

@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "mojo/platform_handle/platform_handle_functions.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace leveldb {
 
@@ -189,12 +189,11 @@ void LevelDBMojoProxy::OpenFileHandleImpl(OpaqueDir* dir,
   if (error != filesystem::mojom::FileError::OK) {
     *output_file = base::File(static_cast<base::File::Error>(error));
   } else {
-    MojoPlatformHandle platform_handle;
-    MojoResult extract_result =
-        MojoExtractPlatformHandle(handle.release().value(), &platform_handle);
-
-    if (extract_result == MOJO_RESULT_OK) {
-      *output_file = base::File(platform_handle);
+    base::PlatformFile platform_file;
+    MojoResult unwrap_result = mojo::UnwrapPlatformFile(std::move(handle),
+                                                        &platform_file);
+    if (unwrap_result == MOJO_RESULT_OK) {
+      *output_file = base::File(platform_file);
     } else {
       NOTREACHED();
       *output_file = base::File(base::File::Error::FILE_ERROR_FAILED);

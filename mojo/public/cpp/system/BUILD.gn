@@ -11,6 +11,8 @@ source_set("system") {
     "handle.h",
     "message.h",
     "message_pipe.h",
+    "platform_handle.cc",
+    "platform_handle.h",
     "watcher.cc",
     "watcher.h",
   ]

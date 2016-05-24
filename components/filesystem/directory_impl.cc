@@ -16,7 +16,7 @@
 #include "components/filesystem/lock_table.h"
 #include "components/filesystem/util.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/platform_handle/platform_handle_functions.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace filesystem {
 
@@ -352,16 +352,8 @@ mojo::ScopedHandle DirectoryImpl::OpenFileHandleImpl(
     return mojo::ScopedHandle();
   }
 
-  MojoHandle mojo_handle;
-  MojoResult create_result = MojoCreatePlatformHandleWrapper(
-      base_file.TakePlatformFile(), &mojo_handle);
-  if (create_result != MOJO_RESULT_OK) {
-    *error = mojom::FileError::FAILED;
-    return mojo::ScopedHandle();
-  }
-
   *error = mojom::FileError::OK;
-  return mojo::ScopedHandle(mojo::Handle(mojo_handle));
+  return mojo::WrapPlatformFile(base_file.TakePlatformFile());
 }
 
 }  // namespace filesystem

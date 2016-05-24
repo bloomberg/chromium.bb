@@ -6,7 +6,7 @@
 
 #include "build/build_config.h"
 #include "ipc/ipc_channel_handle.h"
-#include "mojo/platform_handle/platform_handle_functions.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 #if defined(USE_OZONE)
@@ -26,14 +26,9 @@ TypeConverter<mus::mojom::ChannelHandlePtr, IPC::ChannelHandle>::Convert(
   DCHECK(handle.pipe.handle == NULL);
 #else
   DCHECK(handle.socket.auto_close || handle.socket.fd == -1);
-  MojoPlatformHandle platform_handle = handle.socket.fd;
-  MojoHandle mojo_handle = MOJO_HANDLE_INVALID;
-  if (platform_handle != -1) {
-    MojoResult create_result =
-        MojoCreatePlatformHandleWrapper(platform_handle, &mojo_handle);
-    if (create_result == MOJO_RESULT_OK)
-      result->socket.reset(mojo::Handle(mojo_handle));
-  }
+  base::PlatformFile platform_file = handle.socket.fd;
+  if (platform_file != -1)
+    result->socket = mojo::WrapPlatformFile(platform_file);
 #endif
   return result;
 }
@@ -49,10 +44,10 @@ TypeConverter<IPC::ChannelHandle, mus::mojom::ChannelHandlePtr>::Convert(
   DCHECK(!handle->socket.is_valid());
   return IPC::ChannelHandle(handle->name);
 #else
-  MojoPlatformHandle platform_handle = -1;
-  MojoExtractPlatformHandle(handle->socket.release().value(), &platform_handle);
+  base::PlatformFile platform_file = -1;
+  mojo::UnwrapPlatformFile(std::move(handle->socket), &platform_file);
   return IPC::ChannelHandle(handle->name,
-                            base::FileDescriptor(platform_handle, true));
+                            base::FileDescriptor(platform_file, true));
 #endif
 }
 
@@ -104,18 +99,14 @@ mus::mojom::GpuMemoryBufferHandlePtr TypeConverter<
       mus::mojom::GpuMemoryBufferHandle::New();
   result->type = static_cast<mus::mojom::GpuMemoryBufferType>(handle.type);
   result->id = mus::mojom::GpuMemoryBufferId::From(handle.id);
-  MojoPlatformHandle platform_handle;
+  base::PlatformFile platform_file;
 #if defined(OS_WIN)
-  platform_handle = handle.handle.GetHandle();
+  platform_file = handle.handle.GetHandle();
 #else
   DCHECK(handle.handle.auto_close || handle.handle.fd == -1);
-  platform_handle = handle.handle.fd;
+  platform_file = handle.handle.fd;
 #endif
-  MojoHandle mojo_handle = MOJO_HANDLE_INVALID;
-  MojoResult create_result =
-      MojoCreatePlatformHandleWrapper(platform_handle, &mojo_handle);
-  if (create_result == MOJO_RESULT_OK)
-    result->buffer_handle.reset(mojo::Handle(mojo_handle));
+  result->buffer_handle = mojo::WrapPlatformFile(platform_file);
   result->offset = handle.offset;
   result->stride = handle.stride;
 #if defined(USE_OZONE)
@@ -133,15 +124,15 @@ gfx::GpuMemoryBufferHandle TypeConverter<gfx::GpuMemoryBufferHandle,
   gfx::GpuMemoryBufferHandle result;
   result.type = static_cast<gfx::GpuMemoryBufferType>(handle->type);
   result.id = handle->id.To<gfx::GpuMemoryBufferId>();
-  MojoPlatformHandle platform_handle;
-  MojoResult extract_result = MojoExtractPlatformHandle(
-      handle->buffer_handle.release().value(), &platform_handle);
-  if (extract_result == MOJO_RESULT_OK) {
+  base::PlatformFile platform_file;
+  MojoResult unwrap_result = mojo::UnwrapPlatformFile(
+      std::move(handle->buffer_handle), &platform_file);
+  if (unwrap_result == MOJO_RESULT_OK) {
 #if defined(OS_WIN)
     result.handle =
-        base::SharedMemoryHandle(platform_handle, base::GetCurrentProcId());
+        base::SharedMemoryHandle(platform_file, base::GetCurrentProcId());
 #else
-    result.handle = base::SharedMemoryHandle(platform_handle, true);
+    result.handle = base::SharedMemoryHandle(platform_file, true);
 #endif
   }
   result.offset = handle->offset;

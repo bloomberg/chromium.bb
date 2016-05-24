@@ -136,6 +136,22 @@ struct MojoSystemThunks {
                              MojoMessageHandle* message);
   MojoResult (*FreeMessage)(MojoMessageHandle message);
   MojoResult (*GetMessageBuffer)(MojoMessageHandle message, void** buffer);
+  MojoResult (*WrapPlatformHandle)(
+      const struct MojoPlatformHandle* platform_handle,
+      MojoHandle* mojo_handle);
+  MojoResult (*UnwrapPlatformHandle)(
+      MojoHandle mojo_handle,
+      struct MojoPlatformHandle* platform_handle);
+  MojoResult (*WrapPlatformSharedBufferHandle)(
+      const struct MojoPlatformHandle* platform_handle,
+      size_t num_bytes,
+      MojoPlatformSharedBufferHandleFlags flags,
+      MojoHandle* mojo_handle);
+  MojoResult (*UnwrapPlatformSharedBufferHandle)(
+      MojoHandle mojo_handle,
+      struct MojoPlatformHandle* platform_handle,
+      size_t* num_bytes,
+      MojoPlatformSharedBufferHandleFlags* flags);
 };
 #pragma pack(pop)
 
@@ -174,7 +190,11 @@ inline MojoSystemThunks MojoMakeSystemThunks() {
                                     MojoReadMessageNew,
                                     MojoAllocMessage,
                                     MojoFreeMessage,
-                                    MojoGetMessageBuffer};
+                                    MojoGetMessageBuffer,
+                                    MojoWrapPlatformHandle,
+                                    MojoUnwrapPlatformHandle,
+                                    MojoWrapPlatformSharedBufferHandle,
+                                    MojoUnwrapPlatformSharedBufferHandle};
   return system_thunks;
 }
 #endif

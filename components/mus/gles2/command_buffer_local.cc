@@ -25,7 +25,7 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/shader_translator_cache.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
-#include "mojo/platform_handle/platform_handle_functions.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_context.h"
@@ -248,23 +248,12 @@ int32_t CommandBufferLocal::CreateImage(ClientBuffer buffer,
     base::SharedMemoryHandle dupd_handle =
         base::SharedMemory::DuplicateHandle(handle.handle);
 #if defined(OS_WIN)
-    HANDLE platform_handle = dupd_handle.GetHandle();
+    HANDLE platform_file = dupd_handle.GetHandle();
 #else
-    int platform_handle = dupd_handle.fd;
+    int platform_file = dupd_handle.fd;
 #endif
 
-    MojoHandle mojo_handle = MOJO_HANDLE_INVALID;
-    MojoResult create_result =
-        MojoCreatePlatformHandleWrapper(platform_handle, &mojo_handle);
-    // |MojoCreatePlatformHandleWrapper()| always takes the ownership of the
-    // |platform_handle|, so we don't need to close |platform_handle|.
-    if (create_result != MOJO_RESULT_OK) {
-      NOTIMPLEMENTED();
-      return -1;
-    }
-    mojo::ScopedHandle scoped_handle;
-    scoped_handle.reset(mojo::Handle(mojo_handle));
-
+    mojo::ScopedHandle scoped_handle = mojo::WrapPlatformFile(platform_file);
     const int32_t format = static_cast<int32_t>(gpu_memory_buffer->GetFormat());
     gpu_state_->command_buffer_task_runner()->PostTask(
         driver_.get(),

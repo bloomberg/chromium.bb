@@ -59,7 +59,7 @@ struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
 };
 #elif defined(OS_WIN)
 struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
-  PlatformHandle() : handle(INVALID_HANDLE_VALUE) {}
+  PlatformHandle() : PlatformHandle(INVALID_HANDLE_VALUE) {}
   explicit PlatformHandle(HANDLE handle)
       : handle(handle), owning_process(base::GetCurrentProcessHandle()) {}
 

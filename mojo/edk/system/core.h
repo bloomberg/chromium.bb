@@ -24,6 +24,7 @@
 #include "mojo/public/c/system/buffer.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/message_pipe.h"
+#include "mojo/public/c/system/platform_handle.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
@@ -238,6 +239,23 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                        void** buffer,
                        MojoMapBufferFlags flags);
   MojoResult UnmapBuffer(void* buffer);
+
+  // These methods correspond to the API functions defined in
+  // "mojo/public/c/system/platform_handle.h".
+  MojoResult WrapPlatformHandle(const MojoPlatformHandle* platform_handle,
+                                MojoHandle* mojo_handle);
+  MojoResult UnwrapPlatformHandle(MojoHandle mojo_handle,
+                                  MojoPlatformHandle* platform_handle);
+  MojoResult WrapPlatformSharedBufferHandle(
+      const MojoPlatformHandle* platform_handle,
+      size_t size,
+      MojoPlatformSharedBufferHandleFlags flags,
+      MojoHandle* mojo_handle);
+  MojoResult UnwrapPlatformSharedBufferHandle(
+      MojoHandle mojo_handle,
+      MojoPlatformHandle* platform_handle,
+      size_t* size,
+      MojoPlatformSharedBufferHandleFlags* flags);
 
   void GetActiveHandlesForTest(std::vector<MojoHandle>* handles);
 

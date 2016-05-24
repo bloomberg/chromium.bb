@@ -20,7 +20,7 @@
 #include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "mojo/platform_handle/platform_handle_functions.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace gles2 {
 
@@ -237,15 +237,7 @@ int32_t CommandBufferClientImpl::CreateImage(ClientBuffer buffer,
   int platform_handle = dupd_handle.fd;
 #endif
 
-  MojoHandle mojo_handle = MOJO_HANDLE_INVALID;
-  MojoResult create_result = MojoCreatePlatformHandleWrapper(
-      platform_handle, &mojo_handle);
-  if (create_result != MOJO_RESULT_OK) {
-    NOTIMPLEMENTED();
-    return -1;
-  }
-  mojo::ScopedHandle scoped_handle;
-  scoped_handle.reset(mojo::Handle(mojo_handle));
+  mojo::ScopedHandle scoped_handle = mojo::WrapPlatformFile(platform_handle);
   command_buffer_->CreateImage(
       new_id, std::move(scoped_handle), handle.type, std::move(size),
       static_cast<int32_t>(gpu_memory_buffer->GetFormat()), internalformat);

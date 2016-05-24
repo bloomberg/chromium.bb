@@ -157,6 +157,7 @@ test("mojo_system_unittests") {
     "message_pipe_unittest.cc",
     "options_validation_unittest.cc",
     "platform_handle_dispatcher_unittest.cc",
+    "platform_wrapper_unittest.cc",
     "shared_buffer_dispatcher_unittest.cc",
     "shared_buffer_unittest.cc",
     "wait_set_dispatcher_unittest.cc",

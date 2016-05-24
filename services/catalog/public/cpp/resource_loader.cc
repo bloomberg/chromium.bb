@@ -10,20 +10,23 @@
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "components/filesystem/public/interfaces/directory.mojom.h"
-#include "mojo/platform_handle/platform_handle_functions.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
 
 namespace catalog {
+
 namespace {
+
 base::File GetFileFromHandle(mojo::ScopedHandle handle) {
   CHECK(handle.is_valid());
-  MojoPlatformHandle platform_handle;
-  CHECK(MojoExtractPlatformHandle(handle.release().value(),
-                                  &platform_handle) == MOJO_RESULT_OK);
-  return base::File(platform_handle);
+  base::PlatformFile platform_file;
+  CHECK_EQ(mojo::UnwrapPlatformFile(std::move(handle), &platform_file),
+           MOJO_RESULT_OK);
+  return base::File(platform_file);
 }
-}
+
+}  // namespace
 
 ResourceLoader::ResourceLoader() {}
 ResourceLoader::~ResourceLoader() {}

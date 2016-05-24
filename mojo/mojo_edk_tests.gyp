@@ -201,6 +201,7 @@
         'edk/system/multiprocess_message_pipe_unittest.cc',
         'edk/system/options_validation_unittest.cc',
         'edk/system/platform_handle_dispatcher_unittest.cc',
+        'edk/system/platform_wrapper_unittest.cc',
         'edk/system/ports/ports_unittest.cc',
         'edk/system/shared_buffer_dispatcher_unittest.cc',
         'edk/system/shared_buffer_unittest.cc',

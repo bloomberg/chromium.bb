@@ -9,9 +9,9 @@
 
 #include "base/files/file.h"
 #include "components/filesystem/files_test_base.h"
-#include "mojo/platform_handle/platform_handle_functions.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "mojo/util/capture_util.h"
 
 using mojo::Capture;
@@ -670,13 +670,13 @@ TEST_F(FileImplTest, AsHandle) {
     EXPECT_EQ(mojom::FileError::OK, error);
 
     // Pull a file descriptor out of the scoped handle.
-    MojoPlatformHandle platform_handle;
-    MojoResult extract_result =
-        MojoExtractPlatformHandle(handle.release().value(), &platform_handle);
-    EXPECT_EQ(MOJO_RESULT_OK, extract_result);
+    base::PlatformFile platform_file;
+    MojoResult unwrap_result = mojo::UnwrapPlatformFile(std::move(handle),
+                                                        &platform_file);
+    EXPECT_EQ(MOJO_RESULT_OK, unwrap_result);
 
     // Pass this raw file descriptor to a base::File.
-    base::File raw_file(platform_handle);
+    base::File raw_file(platform_file);
     ASSERT_TRUE(raw_file.IsValid());
     EXPECT_EQ(5, raw_file.WriteAtCurrentPos("hello", 5));
   }

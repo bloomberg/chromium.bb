@@ -8,7 +8,7 @@
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "mojo/platform_handle/platform_handle_functions.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "services/shell/public/cpp/connection.h"
 
 static_assert(
@@ -37,16 +37,7 @@ mojo::ScopedHandle GetHandleForPath(const base::FilePath& path) {
     return mojo::ScopedHandle();
   }
 
-  MojoHandle mojo_handle;
-  MojoResult create_result =
-      MojoCreatePlatformHandleWrapper(file.TakePlatformFile(), &mojo_handle);
-  if (create_result != MOJO_RESULT_OK) {
-    LOG(WARNING) << "unable to create wrapper, path=" << path.value()
-                 << "result=" << create_result;
-    return mojo::ScopedHandle();
-  }
-
-  return mojo::ScopedHandle(mojo::Handle(mojo_handle));
+  return mojo::WrapPlatformFile(file.TakePlatformFile());
 }
 
 }  // namespace

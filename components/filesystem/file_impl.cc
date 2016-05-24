@@ -17,7 +17,7 @@
 #include "components/filesystem/shared_temp_dir.h"
 #include "components/filesystem/util.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/platform_handle/platform_handle_functions.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 static_assert(sizeof(off_t) <= sizeof(int64_t), "off_t too big");
 static_assert(sizeof(size_t) >= sizeof(uint32_t), "size_t too small");
@@ -354,15 +354,8 @@ void FileImpl::AsHandle(const AsHandleCallback& callback) {
     return;
   }
 
-  MojoHandle mojo_handle;
-  MojoResult create_result = MojoCreatePlatformHandleWrapper(
-      new_file.TakePlatformFile(), &mojo_handle);
-  if (create_result != MOJO_RESULT_OK) {
-    callback.Run(mojom::FileError::FAILED, ScopedHandle());
-    return;
-  }
-
-  callback.Run(mojom::FileError::OK, ScopedHandle(mojo::Handle(mojo_handle)));
+  callback.Run(mojom::FileError::OK,
+               mojo::WrapPlatformFile(new_file.TakePlatformFile()));
 }
 
 }  // namespace filesystem

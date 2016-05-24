@@ -59,6 +59,82 @@ void CallWatchCallback(MojoWatchCallback callback,
       flags);
 }
 
+MojoResult MojoPlatformHandleToScopedPlatformHandle(
+    const MojoPlatformHandle* platform_handle,
+    ScopedPlatformHandle* out_handle) {
+  if (platform_handle->struct_size != sizeof(MojoPlatformHandle))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  if (platform_handle->type == MOJO_PLATFORM_HANDLE_TYPE_INVALID) {
+    out_handle->reset();
+    return MOJO_RESULT_OK;
+  }
+
+  PlatformHandle handle;
+  switch (platform_handle->type) {
+#if defined(OS_POSIX)
+    case MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR:
+      handle.handle = static_cast<int>(platform_handle->value);
+      break;
+#endif
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+    case MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT:
+      handle.type = PlatformHandle::Type::MACH;
+      handle.port = static_cast<mach_port_t>(platform_handle->value);
+      break;
+#endif
+
+#if defined(OS_WIN)
+    case MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE:
+      handle.handle = reinterpret_cast<HANDLE>(platform_handle->value);
+      break;
+#endif
+
+    default:
+      return MOJO_RESULT_INVALID_ARGUMENT;
+  }
+
+  out_handle->reset(handle);
+  return MOJO_RESULT_OK;
+}
+
+MojoResult ScopedPlatformHandleToMojoPlatformHandle(
+    ScopedPlatformHandle handle,
+    MojoPlatformHandle* platform_handle) {
+  if (platform_handle->struct_size != sizeof(MojoPlatformHandle))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  if (!handle.is_valid()) {
+    platform_handle->type = MOJO_PLATFORM_HANDLE_TYPE_INVALID;
+    return MOJO_RESULT_OK;
+  }
+
+#if defined(OS_POSIX)
+  switch (handle.get().type) {
+    case PlatformHandle::Type::POSIX:
+      platform_handle->type = MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR;
+      platform_handle->value = static_cast<uint64_t>(handle.release().handle);
+      break;
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+    case PlatformHandle::Type::MACH:
+      platform_handle->type = MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT;
+      platform_handle->value = static_cast<uint64_t>(handle.release().port);
+      break;
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+
+    default:
+      return MOJO_RESULT_INVALID_ARGUMENT;
+  }
+#elif defined(OS_WIN)
+  platform_handle->type = MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE;
+  platform_handle->value = reinterpret_cast<uint64_t>(handle.release().handle);
+#endif  // defined(OS_WIN)
+
+  return MOJO_RESULT_OK;
+}
+
 }  // namespace
 
 Core::Core() {}
@@ -149,11 +225,15 @@ MojoResult Core::PassWrappedPlatformHandle(
   MojoResult result = handles_.GetAndRemoveDispatcher(wrapper_handle, &d);
   if (result != MOJO_RESULT_OK)
     return result;
-  PlatformHandleDispatcher* phd =
-      static_cast<PlatformHandleDispatcher*>(d.get());
-  *platform_handle = phd->PassPlatformHandle();
-  phd->Close();
-  return MOJO_RESULT_OK;
+  if (d->GetType() == Dispatcher::Type::PLATFORM_HANDLE) {
+    PlatformHandleDispatcher* phd =
+        static_cast<PlatformHandleDispatcher*>(d.get());
+    *platform_handle = phd->PassPlatformHandle();
+  } else {
+    result = MOJO_RESULT_INVALID_ARGUMENT;
+  }
+  d->Close();
+  return result;
 }
 
 MojoResult Core::CreateSharedBufferWrapper(
@@ -878,6 +958,101 @@ MojoResult Core::UnmapBuffer(void* buffer) {
   RequestContext request_context;
   base::AutoLock lock(mapping_table_lock_);
   return mapping_table_.RemoveMapping(buffer);
+}
+
+MojoResult Core::WrapPlatformHandle(const MojoPlatformHandle* platform_handle,
+                                    MojoHandle* mojo_handle) {
+  ScopedPlatformHandle handle;
+  MojoResult result = MojoPlatformHandleToScopedPlatformHandle(platform_handle,
+                                                               &handle);
+  if (result != MOJO_RESULT_OK)
+    return result;
+
+  return CreatePlatformHandleWrapper(std::move(handle), mojo_handle);
+}
+
+MojoResult Core::UnwrapPlatformHandle(MojoHandle mojo_handle,
+                                      MojoPlatformHandle* platform_handle) {
+  ScopedPlatformHandle handle;
+  MojoResult result = PassWrappedPlatformHandle(mojo_handle, &handle);
+  if (result != MOJO_RESULT_OK)
+    return result;
+
+  return ScopedPlatformHandleToMojoPlatformHandle(std::move(handle),
+                                                  platform_handle);
+}
+
+MojoResult Core::WrapPlatformSharedBufferHandle(
+    const MojoPlatformHandle* platform_handle,
+    size_t size,
+    MojoPlatformSharedBufferHandleFlags flags,
+    MojoHandle* mojo_handle) {
+  DCHECK(size);
+  ScopedPlatformHandle handle;
+  MojoResult result = MojoPlatformHandleToScopedPlatformHandle(platform_handle,
+                                                               &handle);
+  if (result != MOJO_RESULT_OK)
+    return result;
+
+  bool read_only = flags & MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_READ_ONLY;
+  scoped_refptr<PlatformSharedBuffer> platform_buffer =
+      PlatformSharedBuffer::CreateFromPlatformHandle(size, read_only,
+                                                     std::move(handle));
+  if (!platform_buffer)
+    return MOJO_RESULT_UNKNOWN;
+
+  scoped_refptr<SharedBufferDispatcher> dispatcher;
+  result = SharedBufferDispatcher::CreateFromPlatformSharedBuffer(
+      platform_buffer, &dispatcher);
+  if (result != MOJO_RESULT_OK)
+    return result;
+
+  MojoHandle h = AddDispatcher(dispatcher);
+  if (h == MOJO_HANDLE_INVALID) {
+    dispatcher->Close();
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
+  }
+
+  *mojo_handle = h;
+  return MOJO_RESULT_OK;
+}
+
+MojoResult Core::UnwrapPlatformSharedBufferHandle(
+    MojoHandle mojo_handle,
+    MojoPlatformHandle* platform_handle,
+    size_t* size,
+    MojoPlatformSharedBufferHandleFlags* flags) {
+  scoped_refptr<Dispatcher> dispatcher;
+  MojoResult result = MOJO_RESULT_OK;
+  {
+    base::AutoLock lock(handles_lock_);
+    result = handles_.GetAndRemoveDispatcher(mojo_handle, &dispatcher);
+    if (result != MOJO_RESULT_OK)
+      return result;
+  }
+
+  if (dispatcher->GetType() != Dispatcher::Type::SHARED_BUFFER) {
+    dispatcher->Close();
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  }
+
+  SharedBufferDispatcher* shm_dispatcher =
+      static_cast<SharedBufferDispatcher*>(dispatcher.get());
+  scoped_refptr<PlatformSharedBuffer> platform_shared_buffer =
+      shm_dispatcher->PassPlatformSharedBuffer();
+  CHECK(platform_shared_buffer);
+
+  CHECK(size);
+  *size = platform_shared_buffer->GetNumBytes();
+
+  CHECK(flags);
+  *flags = MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_NONE;
+  if (platform_shared_buffer->IsReadOnly())
+    *flags |= MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_READ_ONLY;
+
+  ScopedPlatformHandle handle = platform_shared_buffer->PassPlatformHandle();
+  return ScopedPlatformHandleToMojoPlatformHandle(std::move(handle),
+                                                  platform_handle);
 }
 
 void Core::GetActiveHandlesForTest(std::vector<MojoHandle>* handles) {

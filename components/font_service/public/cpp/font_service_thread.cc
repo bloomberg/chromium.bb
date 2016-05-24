@@ -10,7 +10,7 @@
 #include "base/files/file.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/font_service/public/cpp/mapped_font_file.h"
-#include "mojo/platform_handle/platform_handle_functions.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace font_service {
 namespace internal {
@@ -157,10 +157,10 @@ void FontServiceThread::OnOpenStreamComplete(base::WaitableEvent* done_event,
                                              mojo::ScopedHandle handle) {
   pending_waitable_events_.erase(done_event);
   if (handle.is_valid()) {
-    MojoPlatformHandle platform_handle;
-    CHECK(MojoExtractPlatformHandle(handle.release().value(),
-                                    &platform_handle) == MOJO_RESULT_OK);
-    *output_file = base::File(platform_handle);
+    base::PlatformFile platform_file;
+    CHECK_EQ(mojo::UnwrapPlatformFile(std::move(handle), &platform_file),
+             MOJO_RESULT_OK);
+    *output_file = base::File(platform_file);
   }
 
   done_event->Signal();

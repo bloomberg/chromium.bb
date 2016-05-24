@@ -243,6 +243,40 @@ MojoResult MojoGetMessageBuffer(MojoMessageHandle message, void** buffer) {
   return g_thunks.GetMessageBuffer(message, buffer);
 }
 
+MojoResult MojoWrapPlatformHandle(
+    const struct MojoPlatformHandle* platform_handle,
+    MojoHandle* mojo_handle) {
+  assert(g_thunks.WrapPlatformHandle);
+  return g_thunks.WrapPlatformHandle(platform_handle, mojo_handle);
+}
+
+MojoResult MojoUnwrapPlatformHandle(
+    MojoHandle mojo_handle,
+    struct MojoPlatformHandle* platform_handle) {
+  assert(g_thunks.UnwrapPlatformHandle);
+  return g_thunks.UnwrapPlatformHandle(mojo_handle, platform_handle);
+}
+
+MojoResult MojoWrapPlatformSharedBufferHandle(
+    const struct MojoPlatformHandle* platform_handle,
+    size_t num_bytes,
+    MojoPlatformSharedBufferHandleFlags flags,
+    MojoHandle* mojo_handle) {
+  assert(g_thunks.WrapPlatformSharedBufferHandle);
+  return g_thunks.WrapPlatformSharedBufferHandle(platform_handle, num_bytes,
+                                                 flags, mojo_handle);
+}
+
+MojoResult MojoUnwrapPlatformSharedBufferHandle(
+    MojoHandle mojo_handle,
+    struct MojoPlatformHandle* platform_handle,
+    size_t* num_bytes,
+    MojoPlatformSharedBufferHandleFlags* flags) {
+  assert(g_thunks.UnwrapPlatformSharedBufferHandle);
+  return g_thunks.UnwrapPlatformSharedBufferHandle(mojo_handle, platform_handle,
+                                                   num_bytes, flags);
+}
+
 extern "C" THUNK_EXPORT size_t MojoSetSystemThunks(
     const MojoSystemThunks* system_thunks) {
   if (system_thunks->size >= sizeof(g_thunks))
