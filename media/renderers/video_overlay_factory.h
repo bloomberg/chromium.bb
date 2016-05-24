@@ -5,12 +5,8 @@
 #ifndef MEDIA_RENDERERS_VIDEO_OVERLAY_FACTORY_H_
 #define MEDIA_RENDERERS_VIDEO_OVERLAY_FACTORY_H_
 
-#include <GLES2/gl2.h>
-
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "gpu/command_buffer/common/mailbox.h"
-#include "gpu/command_buffer/common/sync_token.h"
 #include "media/base/media_export.h"
 
 namespace gfx {
@@ -34,11 +30,9 @@ class MEDIA_EXPORT VideoOverlayFactory {
   scoped_refptr<::media::VideoFrame> CreateFrame(const gfx::Size& size);
 
  private:
+  class Texture;
   ::media::GpuVideoAcceleratorFactories* gpu_factories_;
-  gpu::Mailbox mailbox_;
-  gpu::SyncToken sync_token_;
-  GLuint texture_;
-  GLuint image_id_;
+  std::unique_ptr<Texture> texture_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoOverlayFactory);
 };
