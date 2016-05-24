@@ -125,6 +125,7 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
                  .setNegativeButton(R.string.cancel, this)
                  .setTitle(R.string.sign_in_google_account)
                  .create();
+
         d.getDelegate().setHandleNativeActionModesEnabled(false);
         d.setOnShowListener(new DialogInterface.OnShowListener() {
             @Override
@@ -146,6 +147,12 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
         if (which == AlertDialog.BUTTON_NEGATIVE) {
             handleCancel();
         }
+    }
+
+    @Override
+    public void onResume() {
+        resetPassphraseBoxColor();
+        super.onResume();
     }
 
     private String getPromptText() {
@@ -211,14 +218,9 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
         TextView verifying = (TextView) getDialog().findViewById(R.id.verifying);
         verifying.setText(R.string.sync_verifying);
 
+        resetPassphraseBoxColor();
         EditText passphraseEditText = (EditText) getDialog().findViewById(R.id.passphrase);
-        if (mPasswordEditTextOriginalColorFilter != null) {
-            // If the color filter is null, the EditText underline would possibly remain red from a
-            // previous error submission, but once the password is accepted, we dismiss the dialog
-            // so this really shouldn't be visible beyond some amount of UI lag.
-            passphraseEditText.getBackground().mutate().setColorFilter(
-                    mPasswordEditTextOriginalColorFilter);
-        }
+
         String passphrase = passphraseEditText.getText().toString();
 
         boolean success = getListener().onPassphraseEntered(passphrase);
@@ -250,5 +252,16 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
         EditText passphraseEditText = (EditText) getDialog().findViewById(R.id.passphrase);
         passphraseEditText.getBackground().mutate().setColorFilter(
                 errorColor, PorterDuff.Mode.SRC_IN);
+    }
+
+    private void resetPassphraseBoxColor() {
+        // If the color filter is null, the EditText underline would possibly remain red from a
+        // previous error submission, but once the password is accepted, we dismiss the dialog
+        // so this really shouldn't be visible beyond some amount of UI lag.
+        if (mPasswordEditTextOriginalColorFilter == null) return;
+
+        EditText passphraseEditText = (EditText) getDialog().findViewById(R.id.passphrase);
+        passphraseEditText.getBackground().mutate().setColorFilter(
+                mPasswordEditTextOriginalColorFilter);
     }
 }
