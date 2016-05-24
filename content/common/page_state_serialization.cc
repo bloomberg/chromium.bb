@@ -10,7 +10,6 @@
 #include <limits>
 
 #include "base/pickle.h"
-#include "base/strings/nullable_string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,7 +30,8 @@ float g_device_scale_factor_for_testing = 0.0;
 void AppendDataToHttpBody(ExplodedHttpBody* http_body, const char* data,
                           int data_length) {
   ExplodedHttpBodyElement element;
-  element.SetToBytes(data, data_length);
+  element.type = blink::WebHTTPBody::Element::TypeData;
+  element.data.assign(data, data_length);
   http_body->elements.push_back(element);
 }
 
@@ -41,10 +41,11 @@ void AppendFileRangeToHttpBody(ExplodedHttpBody* http_body,
                                int file_length,
                                double file_modification_time) {
   ExplodedHttpBodyElement element;
-  element.SetToFilePathRange(
-      base::FilePath::FromUTF16Unsafe(file_path.string()),
-      static_cast<uint64_t>(file_start), static_cast<uint64_t>(file_length),
-      base::Time::FromDoubleT(file_modification_time));
+  element.type = blink::WebHTTPBody::Element::TypeFile;
+  element.file_path = file_path;
+  element.file_start = file_start;
+  element.file_length = file_length;
+  element.file_modification_time = file_modification_time;
   http_body->elements.push_back(element);
 }
 
@@ -54,17 +55,19 @@ void AppendURLRangeToHttpBody(ExplodedHttpBody* http_body,
                               int file_length,
                               double file_modification_time) {
   ExplodedHttpBodyElement element;
-  element.SetToFileSystemUrlRange(
-      url, static_cast<uint64_t>(file_start),
-      static_cast<uint64_t>(file_length),
-      base::Time::FromDoubleT(file_modification_time));
+  element.type = blink::WebHTTPBody::Element::TypeFileSystemURL;
+  element.filesystem_url = url;
+  element.file_start = file_start;
+  element.file_length = file_length;
+  element.file_modification_time = file_modification_time;
   http_body->elements.push_back(element);
 }
 
 void AppendBlobToHttpBody(ExplodedHttpBody* http_body,
                           const std::string& uuid) {
   ExplodedHttpBodyElement element;
-  element.SetToBlob(uuid);
+  element.type = blink::WebHTTPBody::Element::TypeBlob;
+  element.blob_uuid = uuid;
   http_body->elements.push_back(element);
 }
 
@@ -74,9 +77,8 @@ void AppendReferencedFilesFromHttpBody(
     const std::vector<ExplodedHttpBodyElement>& elements,
     std::vector<base::NullableString16>* referenced_files) {
   for (size_t i = 0; i < elements.size(); ++i) {
-    if (elements[i].type() == ExplodedHttpBodyElement::TYPE_FILE)
-      referenced_files->push_back(
-          base::NullableString16(elements[i].path().AsUTF16Unsafe(), false));
+    if (elements[i].type == blink::WebHTTPBody::Element::TypeFile)
+      referenced_files->push_back(elements[i].file_path);
   }
 }
 
@@ -405,35 +407,24 @@ void WriteHttpBody(const ExplodedHttpBody& http_body, SerializeObject* obj) {
   WriteAndValidateVectorSize(http_body.elements, obj);
   for (size_t i = 0; i < http_body.elements.size(); ++i) {
     const ExplodedHttpBodyElement& element = http_body.elements[i];
-    switch (element.type()) {
-      case ExplodedHttpBodyElement::TYPE_BYTES:
-        WriteInteger(blink::WebHTTPBody::Element::TypeData, obj);
-        WriteData(element.bytes(), static_cast<int>(element.length()), obj);
-        break;
-      case ExplodedHttpBodyElement::TYPE_FILE:
-        WriteInteger(blink::WebHTTPBody::Element::TypeFile, obj);
-        WriteString(
-            base::NullableString16(element.path().AsUTF16Unsafe(), false), obj);
-        WriteInteger64(static_cast<int64_t>(element.offset()), obj);
-        WriteInteger64(static_cast<int64_t>(element.length()), obj);
-        WriteReal(element.expected_modification_time().ToDoubleT(), obj);
-        break;
-      case ExplodedHttpBodyElement::TYPE_FILE_FILESYSTEM:
-        WriteInteger(blink::WebHTTPBody::Element::TypeFileSystemURL, obj);
-        WriteGURL(element.filesystem_url(), obj);
-        WriteInteger64(static_cast<int64_t>(element.offset()), obj);
-        WriteInteger64(static_cast<int64_t>(element.length()), obj);
-        WriteReal(element.expected_modification_time().ToDoubleT(), obj);
-        break;
-      case ExplodedHttpBodyElement::TYPE_BLOB:
-        WriteInteger(blink::WebHTTPBody::Element::TypeBlob, obj);
-        WriteStdString(element.blob_uuid(), obj);
-        break;
-      case ExplodedHttpBodyElement::TYPE_BYTES_DESCRIPTION:
-      case ExplodedHttpBodyElement::TYPE_DISK_CACHE_ENTRY:
-      default:
-        NOTREACHED();
-        continue;
+    WriteInteger(element.type, obj);
+    if (element.type == blink::WebHTTPBody::Element::TypeData) {
+      WriteData(element.data.data(), static_cast<int>(element.data.size()),
+                obj);
+    } else if (element.type == blink::WebHTTPBody::Element::TypeFile) {
+      WriteString(element.file_path, obj);
+      WriteInteger64(element.file_start, obj);
+      WriteInteger64(element.file_length, obj);
+      WriteReal(element.file_modification_time, obj);
+    } else if (element.type ==
+               blink::WebHTTPBody::Element::TypeFileSystemURL) {
+      WriteGURL(element.filesystem_url, obj);
+      WriteInteger64(element.file_start, obj);
+      WriteInteger64(element.file_length, obj);
+      WriteReal(element.file_modification_time, obj);
+    } else {
+      DCHECK(element.type == blink::WebHTTPBody::Element::TypeBlob);
+      WriteStdString(element.blob_uuid, obj);
     }
   }
   WriteInteger64(http_body.identifier, obj);
@@ -676,6 +667,19 @@ void ReadPageState(SerializeObject* obj, ExplodedPageState* state) {
 
 }  // namespace
 
+ExplodedHttpBodyElement::ExplodedHttpBodyElement()
+    : type(blink::WebHTTPBody::Element::TypeData),
+      file_start(0),
+      file_length(-1),
+      file_modification_time(std::numeric_limits<double>::quiet_NaN()) {
+}
+
+ExplodedHttpBodyElement::ExplodedHttpBodyElement(
+    const ExplodedHttpBodyElement& other) = default;
+
+ExplodedHttpBodyElement::~ExplodedHttpBodyElement() {
+}
+
 ExplodedHttpBody::ExplodedHttpBody()
     : identifier(0),
       contains_passwords(false),
@@ -754,7 +758,7 @@ bool GeneratePostData(const ExplodedHttpBody& exploded,
 
   http_body->set_identifier(exploded.identifier);
   for (auto element : exploded.elements)
-    http_body->elements_mutable()->push_back(element);
+    http_body->AppendExplodedHTTPBodyElement(element);
 
   return true;
 }

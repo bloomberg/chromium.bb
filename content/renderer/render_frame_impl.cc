@@ -94,7 +94,6 @@
 #include "content/renderer/gpu/gpu_benchmarking_extension.h"
 #include "content/renderer/history_controller.h"
 #include "content/renderer/history_serialization.h"
-#include "content/renderer/http_body_conversions.h"
 #include "content/renderer/image_downloader/image_downloader_impl.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/internal_document_state_data.h"
@@ -548,12 +547,38 @@ WebURLRequest CreateURLRequestForNavigation(
 // to the WebURLRequest used to commit the navigation. This ensures that the
 // POST data will be in the PageState sent to the browser on commit.
 void AddHTTPBodyToRequest(WebURLRequest* request,
-                          const scoped_refptr<ResourceRequestBody>& body) {
+                          scoped_refptr<ResourceRequestBody> body) {
   WebHTTPBody http_body;
   http_body.initialize();
   http_body.setIdentifier(body->identifier());
-  for (const ResourceRequestBody::Element& element : *(body->elements()))
-    AppendHttpBodyElement(element, &http_body);
+  for (const ResourceRequestBody::Element& element : *(body->elements())) {
+    long long length = -1;
+    switch (element.type()) {
+      case storage::DataElement::TYPE_BYTES:
+        http_body.appendData(WebData(element.bytes(), element.length()));
+        break;
+      case storage::DataElement::TYPE_FILE:
+        if (element.length() != std::numeric_limits<uint64_t>::max())
+          length = element.length();
+        http_body.appendFileRange(
+            element.path().AsUTF16Unsafe(), element.offset(), length,
+            element.expected_modification_time().ToDoubleT());
+        break;
+      case storage::DataElement::TYPE_FILE_FILESYSTEM:
+        http_body.appendFileSystemURLRange(
+            element.filesystem_url(), element.offset(), element.length(),
+            element.expected_modification_time().ToDoubleT());
+        break;
+      case storage::DataElement::TYPE_BLOB:
+        http_body.appendBlob(WebString::fromUTF8(element.blob_uuid()));
+        break;
+      default:
+        // TYPE_BYTES_DESCRIPTION and TYPE_DISK_CACHE_ENTRY should not be
+        // encountered.
+        NOTREACHED();
+        break;
+    }
+  }
   request->setHTTPBody(http_body);
 }
 
