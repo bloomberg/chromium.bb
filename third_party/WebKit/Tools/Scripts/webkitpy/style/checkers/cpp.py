@@ -1410,10 +1410,10 @@ def check_for_non_standard_constructs(clean_lines, line_number,
     if not classinfo.seen_open_brace:
         # If the line has a ';' in it, assume it's a forward declaration or
         # a single-line class declaration, which we won't process.
-        if line.find(';') != -1:
+        if ';' in line:
             classinfo_stack.pop()
             return
-        classinfo.seen_open_brace = (line.find('{') != -1)
+        classinfo.seen_open_brace = ('{' in line)
         # Look for a bare ':'
         if search('(^|[^:]):($|[^:])', line):
             classinfo.is_derived = True
@@ -1925,10 +1925,7 @@ def check_spacing(file_extension, clean_lines, line_number, error):
         #   }
         if line_number + 1 < clean_lines.num_lines():
             next_line = raw[line_number + 1]
-            if (next_line
-                and match(r'\s*}', next_line)
-                and next_line.find('namespace') == -1
-                and next_line.find('} else ') == -1):
+            if next_line and match(r'\s*}', next_line) and 'namespace' not in next_line and '} else ' not in next_line:
                 error(line_number, 'whitespace/blank_line', 3,
                       'Blank line at the end of a code block.  Is this needed?')
 
@@ -2177,7 +2174,7 @@ def check_namespace_indentation(clean_lines, line_number, file_extension, file_s
             if in_preprocessor_directive or (current_line.strip()[0] == '#'):  # This takes care of preprocessor directive syntax.
                 in_preprocessor_directive = current_line[-1] == '\\'
             else:
-                looking_for_semicolon = ((current_line.find(';') == -1) and (current_line.strip()
+                looking_for_semicolon = ((';' not in current_line) and (current_line.strip()
                                                                              [-1] != '}')) or (current_line[-1] == '\\')
         else:
             looking_for_semicolon = False  # If we have a brace we may not need a semicolon.
@@ -2952,7 +2949,7 @@ def check_style(clean_lines, line_number, file_extension, class_state, file_stat
     raw_lines = clean_lines.raw_lines
     line = raw_lines[line_number]
 
-    if line.find('\t') != -1:
+    if '\t' in line:
         error(line_number, 'whitespace/tab', 1,
               'Tab found; better to use spaces')
 
@@ -2963,13 +2960,13 @@ def check_style(clean_lines, line_number, file_extension, class_state, file_stat
 
     if (cleansed_line.count(';') > 1
         # for loops are allowed two ;'s (and may run over two lines).
-        and cleansed_line.find('for') == -1
+        and 'for' not in cleansed_line
         and (get_previous_non_blank_line(clean_lines, line_number)[0].find('for') == -1
              or get_previous_non_blank_line(clean_lines, line_number)[0].find(';') != -1)
         # It's ok to have many commands in a switch case that fits in 1 line
-        and not ((cleansed_line.find('case ') != -1
-                  or cleansed_line.find('default:') != -1)
-                 and cleansed_line.find('break;') != -1)
+        and not (('case ' in cleansed_line
+                  or 'default:' in cleansed_line)
+                 and 'break;' in cleansed_line)
         # Also it's ok to have many commands in trivial single-line accessors in class definitions.
         and not (match(r'.*\(.*\).*{.*.}', line)
                  and class_state.classinfo_stack

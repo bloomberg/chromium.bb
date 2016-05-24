@@ -130,7 +130,7 @@ class _W3CTestConverter(HTMLParser):
 
         converted = text
         for path in self.reference_support_info['files']:
-            if text.find(path) != -1:
+            if path in text:
                 # FIXME: This doesn't handle an edge case where simply removing the relative path doesn't work.
                 # See crbug.com/421584 for details.
                 new_path = re.sub(self.reference_support_info['reference_relpath'], '', path, 1)

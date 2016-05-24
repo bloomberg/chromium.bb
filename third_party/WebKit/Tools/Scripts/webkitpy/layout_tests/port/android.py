@@ -977,7 +977,7 @@ class ChromiumAndroidDriver(driver.Driver):
         driver_host_path = self._port._path_to_driver()
         log_callback("installing apk")
         install_result = self._android_commands.run(['install', driver_host_path])
-        if install_result.find('Success') == -1:
+        if 'Success' not in install_result:
             self._abort('Failed to install %s onto device: %s' % (driver_host_path, install_result))
 
     def _push_fonts(self, log_callback):

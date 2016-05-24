@@ -341,7 +341,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
     def _release_builders(self):
         release_builders = []
         for builder_name in self._tool.builders.all_builder_names():
-            if builder_name.find('ASAN') != -1:
+            if 'ASAN' in builder_name:
                 continue
             port = self._tool.port_factory.get_from_builder_name(builder_name)
             if port.test_configuration().build_type == 'release':
@@ -847,9 +847,9 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
     def tree_status(self):
         blink_tree_status_url = "http://chromium-status.appspot.com/status"
         status = urllib2.urlopen(blink_tree_status_url).read().lower()
-        if status.find('closed') != -1 or status == "0":
+        if 'closed' in status or status == "0":
             return 'closed'
-        elif status.find('open') != -1 or status == "1":
+        elif 'open' in status or status == "1":
             return 'open'
         return 'unknown'
 

@@ -63,7 +63,7 @@ def configuration_options():
 
 def _builder_options(builder_name):
     configuration = "Debug" if re.search(r"[d|D](ebu|b)g", builder_name) else "Release"
-    is_webkit2 = builder_name.find("WK2") != -1
+    is_webkit2 = "WK2" in builder_name
     builder_name = builder_name
     return optparse.Values({'builder_name': builder_name, 'configuration': configuration, 'target': None})
 

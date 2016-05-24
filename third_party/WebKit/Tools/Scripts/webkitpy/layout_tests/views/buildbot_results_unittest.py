@@ -90,7 +90,7 @@ class BuildBotPrinterTests(unittest.TestCase):
         printer.print_unexpected_results(summary)
         output = out.getvalue()
         self.assertTrue(output)
-        self.assertTrue(output.find('Skip') == -1)
+        self.assertTrue('Skip' not in output)
 
     def test_print_unexpected_results_fail_on_retry_also(self):
         port = MockHost().port_factory.get('test')

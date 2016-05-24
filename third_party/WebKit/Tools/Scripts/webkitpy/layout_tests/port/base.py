@@ -1767,7 +1767,7 @@ class VirtualTestSuite(object):
     def __init__(self, prefix=None, base=None, args=None, references_use_default_args=False):
         assert base
         assert args
-        assert prefix.find('/') == -1, "Virtual test suites prefixes cannot contain /'s: %s" % prefix
+        assert '/' not in prefix, "Virtual test suites prefixes cannot contain /'s: %s" % prefix
         self.name = 'virtual/' + prefix + '/' + base
         self.base = base
         self.args = args

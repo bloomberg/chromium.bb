@@ -1014,7 +1014,7 @@ class RebaselineTest(unittest.TestCase, StreamTestingMixin):
         for ext in extensions:
             baseline = file + "-expected" + ext
             baseline_msg = 'Writing new expected result "%s"\n' % baseline
-            self.assertTrue(any(f.find(baseline) != -1 for f in file_list))
+            self.assertTrue(any(baseline in f for f in file_list))
             self.assertContains(err, baseline_msg)
 
     # FIXME: Add tests to ensure that we're *not* writing baselines when we're not
