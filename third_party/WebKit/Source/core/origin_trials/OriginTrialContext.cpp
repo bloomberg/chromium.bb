@@ -241,6 +241,16 @@ void OriginTrialContext::addTokens(const Vector<String>& tokens)
     m_tokens.appendVector(tokens);
 }
 
+void OriginTrialContext::setFeatureBindingsInstalled(const String& featureName)
+{
+    m_bindingsInstalled.add(featureName);
+}
+
+bool OriginTrialContext::featureBindingsInstalled(const String& featureName)
+{
+    return m_bindingsInstalled.contains(featureName);
+}
+
 bool OriginTrialContext::isFeatureEnabled(const String& featureName, String* errorMessage, WebTrialTokenValidator* validator)
 {
     if (!RuntimeEnabledFeatures::originTrialsEnabled()) {

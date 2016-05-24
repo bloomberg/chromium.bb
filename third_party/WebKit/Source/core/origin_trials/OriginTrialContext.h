@@ -72,6 +72,9 @@ public:
     // token validator object that is normally used (e.g. for testing).
     bool isFeatureEnabled(const String& featureName, String* errorMessage, WebTrialTokenValidator* = nullptr);
 
+    void setFeatureBindingsInstalled(const String& featureName);
+    bool featureBindingsInstalled(const String& featureName);
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -87,6 +90,10 @@ private:
     // disabled reasons, the |errorMessage| parameter will not be updated. The
     // caller is responsible for providing a message as appropriate.
     WebOriginTrialTokenStatus checkFeatureEnabled(const String& featureName, String* errorMessage, WebTrialTokenValidator* = nullptr);
+
+    // Records whether a feature has been installed into the host's V8 context,
+    // for each feature name.
+    HashSet<String> m_bindingsInstalled;
 
     // Records whether metrics about the enabled status have been recorded, for
     // each feature name. Only one result should be recorded per context,
