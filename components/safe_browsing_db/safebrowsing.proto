@@ -349,8 +349,8 @@ enum ThreatEntryType {
   // A host-suffix/path-prefix URL expression; for example, "foo.bar.com/baz/".
   URL = 1;
 
-  // The digest of a binary.
-  BINARY_DIGEST = 2;
+  // An executable program.
+  EXECUTABLE = 2;
 
   // An IP range.
   IP_RANGE = 3;

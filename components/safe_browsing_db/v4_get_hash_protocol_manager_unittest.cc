@@ -261,7 +261,7 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest,
 
   FindFullHashesResponse res;
   res.mutable_negative_cache_duration()->set_seconds(600);
-  res.add_matches()->set_threat_entry_type(BINARY_DIGEST);
+  res.add_matches()->set_threat_entry_type(EXECUTABLE);
 
   // Serialize.
   std::string res_data;

@@ -86,7 +86,7 @@ class V4UpdateProtocolManagerTest : public testing::Test {
     current_list_states->insert({list_identifier, "initial_state_2"});
 
     list_identifier.platform_type = WINDOWS_PLATFORM;
-    list_identifier.threat_entry_type = BINARY_DIGEST;
+    list_identifier.threat_entry_type = EXECUTABLE;
     list_identifier.threat_type = MALWARE_THREAT;
     current_list_states->insert({list_identifier, "initial_state_3"});
   }
@@ -110,7 +110,7 @@ class V4UpdateProtocolManagerTest : public testing::Test {
 
     lur.set_platform_type(WINDOWS_PLATFORM);
     lur.set_response_type(ListUpdateResponse::FULL_UPDATE);
-    lur.set_threat_entry_type(BINARY_DIGEST);
+    lur.set_threat_entry_type(EXECUTABLE);
     lur.set_threat_type(MALWARE_THREAT);
     lur.set_new_client_state("new_state_3");
     expected_lurs->push_back(lur);

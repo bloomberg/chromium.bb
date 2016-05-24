@@ -40,7 +40,7 @@ struct V4ProtocolConfig {
 // interested in maintaining and downloading from the SafeBrowsing servers.
 // For example, for digests of Malware binaries on Windows:
 // platform_type = WINDOWS,
-// threat_entry_type = BINARY_DIGEST,
+// threat_entry_type = EXECUTABLE,
 // threat_type = MALWARE
 struct UpdateListIdentifier {
   PlatformType platform_type;
