@@ -45106,6 +45106,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.FileTypeUpdate.Result"
+    enum="SBFileTypeUpdateResult">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    The result of reading/parsing/accepting a new proto for the FileTypePolices
+    repo of file extensions and their meta data.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.FileTypeUpdate.TypeCount"
+    units="number of file types">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    Number of file types (aka file extensions) present in the FileTypePolicies
+    proto loaded.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.FileTypeUpdate.Version"
+    units="FileTypePolicies Version">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    Integer version number citing which version of the proto data chrome just
+    loaded.  Latest version is in download_file_types.asciipb.
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.GetV4HashHttpResponseOrErrorCode"
     enum="CombinedHttpResponseAndNetErrorCode">
   <owner>kcarattini@google.com</owner>
@@ -85596,6 +85623,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="7" label="UPLOAD_COMPLETE_RESPONSE_ERROR"/>
 </enum>
 
+<enum name="SBFileTypeUpdateResult" type="int">
+  <int value="1" label="SUCCESS"/>
+  <int value="2" label="FAILED_EMPTY"/>
+  <int value="3" label="FAILED_PROTO_PARSE"/>
+  <int value="4" label="FAILED_DELTA_CHECK"/>
+  <int value="5" label="FAILED_VERSION_CHECK"/>
+  <int value="6" label="FAILED_DEFAULT_SETTING_SET"/>
+  <int value="7" label="FAILED_WRONG_SETTINGS_COUNT"/>
+</enum>
+
 <enum name="ScrollThread" type="int">
   <int value="0" label="Scroll on impl-thread"/>
   <int value="1" label="Scroll on main-thread"/>
@@ -95749,6 +95786,21 @@ To add a new entry, add it with any value and run test to compute valid value.
              unsafe. Logged as the request is canceled."/>
   <affected-histogram name="SB2.ResourceTypes"/>
   <affected-histogram name="SB2.ResourceTypes2"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="SBFileTypeUpdateSource" separator="."
+    ordering="prefix">
+  <suffix name="ResourceBundle"
+      label="The file types loaded from the resource bundle packaged with
+             Chrome. This is always loaded at startup."/>
+  <suffix name="DynamicUpdate"
+      label="The file types loaded from the component-update system. This
+             includes both those loaded from disk shortly after startup, and
+             those received over the network when the component version
+             changes."/>
+  <affected-histogram name="SafeBrowsing.FileTypeUpdate.Result"/>
+  <affected-histogram name="SafeBrowsing.FileTypeUpdate.TypeCount"/>
+  <affected-histogram name="SafeBrowsing.FileTypeUpdate.Version"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SBInterstitial">
