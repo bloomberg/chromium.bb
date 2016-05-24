@@ -391,6 +391,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void InternalSetBounds(const gfx::Rect& rect);
 
 #if defined(OS_WIN)
+  // Creates and/or updates the legacy dummy window which corresponds to
+  // the bounds of the webcontents. It is needed for accessibility and
+  // for scrolling to work in legacy drivers for trackpoints/trackpads, etc.
+  void UpdateLegacyWin();
+
   bool UsesNativeWindowFrame() const;
 #endif
 

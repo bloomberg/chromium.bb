@@ -53,6 +53,12 @@ class CONTENT_EXPORT WebContentsViewAura
   // Allow the WebContentsViewDelegate to be set explicitly.
   void SetDelegateForTesting(WebContentsViewDelegate* delegate);
 
+  // Set a flag to pass nullptr as the parent_view argument to
+  // RenderWidgetHostViewAura::InitAsChild().
+  void set_init_rwhv_with_null_parent_for_testing(bool set) {
+    init_rwhv_with_null_parent_for_testing_ = set;
+  }
+
  private:
   class WindowObserver;
 
@@ -77,6 +83,9 @@ class CONTENT_EXPORT WebContentsViewAura
 
   ui::TouchSelectionController* GetSelectionController() const;
   TouchSelectionControllerClientAura* GetSelectionControllerClient() const;
+
+  // Returns GetNativeView unless overridden for testing.
+  gfx::NativeView GetRenderWidgetHostViewParent() const;
 
   // Overridden from WebContentsView:
   gfx::NativeView GetNativeView() const override;
@@ -189,6 +198,8 @@ class CONTENT_EXPORT WebContentsViewAura
   std::unique_ptr<OverscrollNavigationOverlay> navigation_overlay_;
 
   std::unique_ptr<GestureNavSimple> gesture_nav_simple_;
+
+  bool init_rwhv_with_null_parent_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAura);
 };

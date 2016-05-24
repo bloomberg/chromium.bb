@@ -17,8 +17,11 @@
 #include "content/browser/accessibility/accessibility_mode_helper.h"
 #include "content/browser/accessibility/accessibility_tree_formatter.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_win.h"
+#include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/web_contents/web_contents_view_aura.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
@@ -30,6 +33,8 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/accessibility_browser_test_utils.h"
 #include "net/base/escape.h"
+#include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
 #include "third_party/isimpledom/ISimpleDOMNode.h"
 #include "ui/aura/window.h"
@@ -1709,6 +1714,45 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIAccessibleAction) {
       image->get_accName(childid_self, image_name.Receive()));
   EXPECT_EQ(L"image2", std::wstring(image_name, image_name.Length()));
   EXPECT_HRESULT_FAILED(image_action->doAction(1));
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, HasHWNDAfterNavigation) {
+  // This test simulates a scenario where RenderWidgetHostViewAura::SetSize
+  // is not called again after its window is added to the root window.
+  // Ensure that we still get a legacy HWND for accessibility.
+
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
+      shell()->web_contents());
+  WebContentsView* web_contents_view = web_contents->GetView();
+  WebContentsViewAura* web_contents_view_aura =
+      static_cast<WebContentsViewAura*>(web_contents_view);
+
+  // Set a flag that will cause WebContentsViewAura to initialize a
+  // RenderWidgetHostViewAura with a null parent view.
+  web_contents_view_aura->set_init_rwhv_with_null_parent_for_testing(true);
+
+  // Navigate to a new page and wait for the accessibility tree to load.
+  AccessibilityNotificationWaiter waiter(
+      shell(), AccessibilityModeComplete,
+      ui::AX_EVENT_LOAD_COMPLETE);
+  NavigateToURL(shell(), embedded_test_server()->GetURL(
+      "/accessibility/html/article.html"));
+  waiter.WaitForNotification();
+
+  // At this point the root of the accessibility tree shouldn't have an HWND
+  // because we never gave a parent window to the RWHVA.
+  BrowserAccessibilityManagerWin* manager =
+      static_cast<BrowserAccessibilityManagerWin*>(
+          web_contents->GetRootBrowserAccessibilityManager());
+  ASSERT_EQ(nullptr, manager->GetParentHWND());
+
+  // Now add the RWHVA's window to the root window and ensure that we have
+  // an HWND for accessibility now.
+  web_contents_view->GetNativeView()->AddChild(
+      web_contents->GetRenderWidgetHostView()->GetNativeView());
+  ASSERT_NE(nullptr, manager->GetParentHWND());
 }
 
 }  // namespace content

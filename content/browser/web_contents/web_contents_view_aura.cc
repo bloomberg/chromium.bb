@@ -502,7 +502,8 @@ WebContentsViewAura::WebContentsViewAura(WebContentsImpl* web_contents,
       current_rvh_for_drag_(NULL),
       current_overscroll_gesture_(OVERSCROLL_NONE),
       completed_overscroll_gesture_(OVERSCROLL_NONE),
-      navigation_overlay_(nullptr) {}
+      navigation_overlay_(nullptr),
+      init_rwhv_with_null_parent_for_testing_(false) {}
 
 void WebContentsViewAura::SetDelegateForTesting(
     WebContentsViewDelegate* delegate) {
@@ -598,6 +599,12 @@ WebContentsViewAura::GetSelectionControllerClient() const {
   RenderWidgetHostViewAura* view =
       ToRenderWidgetHostViewAura(web_contents_->GetRenderWidgetHostView());
   return view ? view->selection_controller_client() : nullptr;
+}
+
+gfx::NativeView WebContentsViewAura::GetRenderWidgetHostViewParent() const {
+  if (init_rwhv_with_null_parent_for_testing_)
+    return nullptr;
+  return window_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -736,7 +743,7 @@ RenderWidgetHostViewBase* WebContentsViewAura::CreateViewForWidget(
 
   RenderWidgetHostViewAura* view =
       new RenderWidgetHostViewAura(render_widget_host, is_guest_view_hack);
-  view->InitAsChild(GetNativeView());
+  view->InitAsChild(GetRenderWidgetHostViewParent());
 
   RenderWidgetHostImpl* host_impl =
       RenderWidgetHostImpl::From(render_widget_host);

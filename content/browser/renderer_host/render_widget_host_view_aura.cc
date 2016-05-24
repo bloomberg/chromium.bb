@@ -557,17 +557,7 @@ void RenderWidgetHostViewAura::Show() {
   delegated_frame_host_->WasShown(browser_latency_info);
 
 #if defined(OS_WIN)
-  if (legacy_render_widget_host_HWND_) {
-    // Reparent the legacy Chrome_RenderWidgetHostHWND window to the parent
-    // window before reparenting any plugins. This ensures that the plugin
-    // windows stay on top of the child Zorder in the parent and receive
-    // mouse events, etc.
-    legacy_render_widget_host_HWND_->UpdateParent(
-        GetNativeView()->GetHost()->GetAcceleratedWidget());
-    legacy_render_widget_host_HWND_->SetBounds(
-        window_->GetBoundsInRootWindow());
-    legacy_render_widget_host_HWND_->Show();
-  }
+  UpdateLegacyWin();
 #endif
 }
 
@@ -2498,31 +2488,37 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
   host_->WasResized();
   delegated_frame_host_->WasResized();
 #if defined(OS_WIN)
-  // Create the legacy dummy window which corresponds to the bounds of the
-  // webcontents. It is needed for accessibility and for scrolling to work in
-  // legacy drivers for trackpoints/trackpads, etc.
-  if (!legacy_window_destroyed_ && GetHostWindowHWND()) {
-    if (!legacy_render_widget_host_HWND_) {
-      legacy_render_widget_host_HWND_ =
-          LegacyRenderWidgetHostHWND::Create(GetHostWindowHWND());
-    }
-    if (legacy_render_widget_host_HWND_) {
-      legacy_render_widget_host_HWND_->set_host(this);
-      legacy_render_widget_host_HWND_->SetBounds(
-          window_->GetBoundsInRootWindow());
-      // There are cases where the parent window is created, made visible and
-      // the associated RenderWidget is also visible before the
-      // LegacyRenderWidgetHostHWND instace is created. Ensure that it is shown
-      // here.
-      if (!host_->is_hidden())
-        legacy_render_widget_host_HWND_->Show();
-    }
-  }
+  UpdateLegacyWin();
 
   if (mouse_locked_)
     UpdateMouseLockRegion();
 #endif
 }
+
+#if defined(OS_WIN)
+void RenderWidgetHostViewAura::UpdateLegacyWin() {
+  if (legacy_window_destroyed_ || !GetHostWindowHWND())
+    return;
+
+  if (!legacy_render_widget_host_HWND_) {
+    legacy_render_widget_host_HWND_ =
+        LegacyRenderWidgetHostHWND::Create(GetHostWindowHWND());
+  }
+
+  if (legacy_render_widget_host_HWND_) {
+    legacy_render_widget_host_HWND_->set_host(this);
+    legacy_render_widget_host_HWND_->UpdateParent(GetHostWindowHWND());
+    legacy_render_widget_host_HWND_->SetBounds(
+        window_->GetBoundsInRootWindow());
+    // There are cases where the parent window is created, made visible and
+    // the associated RenderWidget is also visible before the
+    // LegacyRenderWidgetHostHWND instace is created. Ensure that it is shown
+    // here.
+    if (!host_->is_hidden())
+      legacy_render_widget_host_HWND_->Show();
+  }
+}
+#endif
 
 void RenderWidgetHostViewAura::SchedulePaintIfNotInClip(
     const gfx::Rect& rect,
@@ -2565,10 +2561,7 @@ void RenderWidgetHostViewAura::AddedToRootWindow() {
   }
 
 #if defined(OS_WIN)
-  // The parent may have changed here. Ensure that the legacy window is
-  // reparented accordingly.
-  if (legacy_render_widget_host_HWND_)
-    legacy_render_widget_host_HWND_->UpdateParent(GetHostWindowHWND());
+  UpdateLegacyWin();
 #endif
 
   delegated_frame_host_->SetCompositor(window_->GetHost()->compositor());
