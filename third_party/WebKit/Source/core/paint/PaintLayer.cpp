@@ -895,7 +895,7 @@ PaintLayer* PaintLayer::containingLayerForOutOfFlowPositioned(const PaintLayer* 
 PaintLayer* PaintLayer::enclosingTransformedAncestor() const
 {
     PaintLayer* curr = parent();
-    while (curr && !curr->isRootLayer() && !curr->layoutObject()->hasTransformRelatedProperty())
+    while (curr && !curr->isRootLayer() && !curr->transform())
         curr = curr->parent();
 
     return curr;

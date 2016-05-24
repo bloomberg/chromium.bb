@@ -227,7 +227,7 @@ private:
 
     // Helper methods to updateGraphicsLayerGeometry:
     void computeGraphicsLayerParentLocation(const PaintLayer* compositingContainer, const IntRect& ancestorCompositingBounds, IntPoint& graphicsLayerParentLocation);
-    void updateSquashingLayerGeometry(const LayoutPoint& offsetFromCompositedAncestor, const IntPoint& graphicsLayerParentLocation, const PaintLayer& referenceLayer, Vector<GraphicsLayerPaintInfo>& layers, GraphicsLayer*, LayoutPoint* offsetFromTransformedAncestor, Vector<PaintLayer*>& layersNeedingPaintInvalidation);
+    void updateSquashingLayerGeometry(const IntPoint& graphicsLayerParentLocation, const PaintLayer* compositingContainer, Vector<GraphicsLayerPaintInfo>& layers, GraphicsLayer*, LayoutPoint* offsetFromTransformedAncestor, Vector<PaintLayer*>& layersNeedingPaintInvalidation);
     void updateMainGraphicsLayerGeometry(const IntRect& relativeCompositingBounds, const IntRect& localCompositingBounds, const IntPoint& graphicsLayerParentLocation);
     void updateAncestorClippingLayerGeometry(const PaintLayer* compositingContainer, const IntPoint& snappedOffsetFromCompositedAncestor, IntPoint& graphicsLayerParentLocation);
     void updateOverflowControlsHostLayerGeometry(const PaintLayer* compositingStackingContext, const PaintLayer* compositingContainer);

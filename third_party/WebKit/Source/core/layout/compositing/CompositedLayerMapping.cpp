@@ -601,17 +601,27 @@ void CompositedLayerMapping::computeBoundsOfOwningLayer(const PaintLayer* compos
     compositingBoundsRelativeToCompositedAncestor.moveBy(snappedOffsetFromCompositedAncestor);
 }
 
-void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& offsetFromCompositedAncestor, const IntPoint& graphicsLayerParentLocation, const PaintLayer& referenceLayer,
+void CompositedLayerMapping::updateSquashingLayerGeometry(const IntPoint& graphicsLayerParentLocation, const PaintLayer* compositingContainer,
     Vector<GraphicsLayerPaintInfo>& layers, GraphicsLayer* squashingLayer, LayoutPoint* offsetFromTransformedAncestor, Vector<PaintLayer*>& layersNeedingPaintInvalidation)
 {
     if (!squashingLayer)
         return;
 
-    LayoutPoint offsetFromReferenceLayerToParentGraphicsLayer(offsetFromCompositedAncestor);
-    offsetFromReferenceLayerToParentGraphicsLayer.moveBy(-graphicsLayerParentLocation);
+    LayoutPoint compositingContainerOffsetFromParentGraphicsLayer = -graphicsLayerParentLocation;
+    if (compositingContainer)
+        compositingContainerOffsetFromParentGraphicsLayer += compositingContainer->subpixelAccumulation();
 
+#if DCHECK_IS_ON()
+    const PaintLayer* commonTransformAncestor = nullptr;
+    if (compositingContainer && compositingContainer->transform())
+        commonTransformAncestor = compositingContainer;
+    else if (compositingContainer)
+        commonTransformAncestor = compositingContainer->transformAncestor();
+#endif
     // FIXME: Cache these offsets.
-    LayoutPoint referenceOffsetFromTransformedAncestor = referenceLayer.computeOffsetFromTransformedAncestor();
+    LayoutPoint compositingContainerOffsetFromTransformedAncestor;
+    if (compositingContainer && !compositingContainer->transform())
+        compositingContainerOffsetFromTransformedAncestor = compositingContainer->computeOffsetFromTransformedAncestor();
 
     LayoutRect totalSquashBounds;
     for (size_t i = 0; i < layers.size(); ++i) {
@@ -620,34 +630,37 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& off
         // Store the local bounds of the Layer subtree before applying the offset.
         layers[i].compositedBounds = squashedBounds;
 
-        LayoutPoint offsetFromTransformedAncestorForSquashedLayer = layers[i].paintLayer->computeOffsetFromTransformedAncestor();
-        LayoutSize offsetFromSquashingLayer = offsetFromTransformedAncestorForSquashedLayer - referenceOffsetFromTransformedAncestor;
+#if DCHECK_IS_ON()
+        DCHECK(layers[i].paintLayer->transformAncestor() == commonTransformAncestor);
+#endif
+        LayoutPoint squashedLayerOffsetFromTransformedAncestor = layers[i].paintLayer->computeOffsetFromTransformedAncestor();
+        LayoutSize squashedLayerOffsetFromCompositingContainer = squashedLayerOffsetFromTransformedAncestor - compositingContainerOffsetFromTransformedAncestor;
 
-        squashedBounds.move(offsetFromSquashingLayer);
+        squashedBounds.move(squashedLayerOffsetFromCompositingContainer);
         totalSquashBounds.unite(squashedBounds);
     }
 
-    // The totalSquashBounds is positioned with respect to referenceLayer of this CompositedLayerMapping.
-    // But the squashingLayer needs to be positioned with respect to the ancestor CompositedLayerMapping.
-    // The conversion between referenceLayer and the ancestor CLM is already computed as
-    // offsetFromReferenceLayerToParentGraphicsLayer.
-    totalSquashBounds.moveBy(offsetFromReferenceLayerToParentGraphicsLayer);
+    // The totalSquashBounds is positioned with respect to compositingContainer.
+    // But the squashingLayer needs to be positioned with respect to the graphicsLayerParent.
+    // The conversion between compositingContainer and the graphicsLayerParent is already computed
+    // as compositingContainerOffsetFromParentGraphicsLayer.
+    totalSquashBounds.moveBy(compositingContainerOffsetFromParentGraphicsLayer);
     const IntRect squashLayerBounds = enclosingIntRect(totalSquashBounds);
     const IntPoint squashLayerOrigin = squashLayerBounds.location();
-    const LayoutSize squashLayerOriginInOwningLayerSpace = squashLayerOrigin - offsetFromReferenceLayerToParentGraphicsLayer;
+    const LayoutSize squashLayerOriginInCompositingContainerSpace = squashLayerOrigin - compositingContainerOffsetFromParentGraphicsLayer;
 
     // Now that the squashing bounds are known, we can convert the PaintLayer painting offsets
-    // from CLM owning layer space to the squashing layer space.
+    // from compositingContainer space to the squashing layer space.
     //
-    // The painting offset we want to compute for each squashed PaintLayer is essentially the position of
-    // the squashed PaintLayer described w.r.t. referenceLayer's origin.
-    // So we just need to convert that point from referenceLayer space to the squashing layer's
-    // space. This is simply done by subtracing squashLayerOriginInOwningLayerSpace, but then the offset
-    // overall needs to be negated because that's the direction that the painting code expects the
-    // offset to be.
+    // The painting offset we want to compute for each squashed PaintLayer is essentially the
+    // position of the squashed PaintLayer described w.r.t. compositingContainer's origin.
+    // So we just need to convert that point from compositingContainer space to the squashing
+    // layer's space. This is done by subtracting squashLayerOriginInCompositingContainerSpace,
+    // but then the offset overall needs to be negated because that's the direction that the
+    // painting code expects the offset to be.
     for (size_t i = 0; i < layers.size(); ++i) {
-        const LayoutPoint offsetFromTransformedAncestorForSquashedLayer = layers[i].paintLayer->computeOffsetFromTransformedAncestor();
-        const LayoutSize offsetFromSquashLayerOrigin = (offsetFromTransformedAncestorForSquashedLayer - referenceOffsetFromTransformedAncestor) - squashLayerOriginInOwningLayerSpace;
+        const LayoutPoint squashedLayerOffsetFromTransformedAncestor = layers[i].paintLayer->computeOffsetFromTransformedAncestor();
+        const LayoutSize offsetFromSquashLayerOrigin = (squashedLayerOffsetFromTransformedAncestor - compositingContainerOffsetFromTransformedAncestor) - squashLayerOriginInCompositingContainerSpace;
 
         IntSize newOffsetFromLayoutObject = -IntSize(offsetFromSquashLayerOrigin.width().round(), offsetFromSquashLayerOrigin.height().round());
         LayoutSize subpixelAccumulation = offsetFromSquashLayerOrigin + newOffsetFromLayoutObject;
@@ -668,11 +681,11 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(const LayoutPoint& off
     squashingLayer->setPosition(squashLayerBounds.location());
     squashingLayer->setSize(FloatSize(squashLayerBounds.size()));
 
-    *offsetFromTransformedAncestor = referenceOffsetFromTransformedAncestor;
-    offsetFromTransformedAncestor->move(squashLayerOriginInOwningLayerSpace);
+    *offsetFromTransformedAncestor = compositingContainerOffsetFromTransformedAncestor;
+    offsetFromTransformedAncestor->move(squashLayerOriginInCompositingContainerSpace);
 
     for (size_t i = 0; i < layers.size(); ++i)
-        layers[i].localClipRectForSquashedLayer = localClipRectForSquashedLayer(referenceLayer, layers[i], layers);
+        layers[i].localClipRectForSquashedLayer = localClipRectForSquashedLayer(m_owningLayer, layers[i], layers);
 }
 
 void CompositedLayerMapping::updateGraphicsLayerGeometry(const PaintLayer* compositingContainer, const PaintLayer* compositingStackingContext, Vector<PaintLayer*>& layersNeedingPaintInvalidation)
@@ -718,7 +731,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(const PaintLayer* compo
     updateMainGraphicsLayerGeometry(relativeCompositingBounds, localCompositingBounds, graphicsLayerParentLocation);
     updateOverflowControlsHostLayerGeometry(compositingStackingContext, compositingContainer);
     updateContentsOffsetInCompositingLayer(snappedOffsetFromCompositedAncestor, graphicsLayerParentLocation);
-    updateSquashingLayerGeometry(offsetFromCompositedAncestor, graphicsLayerParentLocation, m_owningLayer, m_squashedLayers, m_squashingLayer.get(), &m_squashingLayerOffsetFromTransformedAncestor, layersNeedingPaintInvalidation);
+    updateSquashingLayerGeometry(graphicsLayerParentLocation, compositingContainer, m_squashedLayers, m_squashingLayer.get(), &m_squashingLayerOffsetFromTransformedAncestor, layersNeedingPaintInvalidation);
 
     // If we have a layer that clips children, position it.
     IntRect clippingBox;

@@ -142,7 +142,7 @@ void CompositingInputsUpdater::updateRecursive(PaintLayer* layer, UpdateType upd
 
             const PaintLayer* parent = layer->parent();
             rareProperties.opacityAncestor = parent->isTransparent() ? parent : parent->opacityAncestor();
-            rareProperties.transformAncestor = parent->hasTransformRelatedProperty() ? parent : parent->transformAncestor();
+            rareProperties.transformAncestor = parent->transform() ? parent : parent->transformAncestor();
             rareProperties.filterAncestor = parent->hasFilterInducingProperty() ? parent : parent->filterAncestor();
             bool layerIsFixedPosition = layer->layoutObject()->style()->position() == FixedPosition;
             rareProperties.nearestFixedPositionLayer = layerIsFixedPosition ? layer : parent->nearestFixedPositionLayer();
