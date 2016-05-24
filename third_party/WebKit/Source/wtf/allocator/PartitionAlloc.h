@@ -658,7 +658,7 @@ ALWAYS_INLINE void* partitionAlloc(PartitionRoot* root, size_t size, const char*
 {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
     void* result = malloc(size);
-    RELEASE_ASSERT(result);
+    CHECK(result);
     return result;
 #else
     size_t requestedSize = size;
@@ -734,7 +734,7 @@ ALWAYS_INLINE void* partitionAllocGenericFlags(PartitionRootGeneric* root, int f
 {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
     void* result = malloc(size);
-    RELEASE_ASSERT(result);
+    CHECK(result);
     return result;
 #else
     ASSERT(root->initialized);
@@ -747,9 +747,9 @@ ALWAYS_INLINE void* partitionAllocGenericFlags(PartitionRootGeneric* root, int f
         // TODO(bashi): Remove following RELEAE_ASSERT()s once we find the cause of
         // http://crbug.com/514141
 #if OS(ANDROID)
-        RELEASE_ASSERT(bucket >= &root->buckets[0] || bucket == &PartitionRootGeneric::gPagedBucket);
-        RELEASE_ASSERT(bucket <= &root->buckets[kGenericNumBuckets - 1] || bucket == &PartitionRootGeneric::gPagedBucket);
-        RELEASE_ASSERT(root->initialized);
+        CHECK(bucket >= &root->buckets[0] || bucket == &PartitionRootGeneric::gPagedBucket);
+        CHECK(bucket <= &root->buckets[kGenericNumBuckets - 1] || bucket == &PartitionRootGeneric::gPagedBucket);
+        CHECK(root->initialized);
 #endif
         ret = partitionBucketAlloc(root, flags, size, bucket);
     }

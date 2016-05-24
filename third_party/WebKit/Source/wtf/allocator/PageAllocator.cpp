@@ -109,12 +109,12 @@ static void* trimMapping(void *base, size_t baseLen, size_t trimLen, uintptr_t a
     (void) pageAccessibility;
     if (preSlack) {
         int res = munmap(base, preSlack);
-        RELEASE_ASSERT(!res);
+        CHECK(!res);
         ret = reinterpret_cast<char*>(base) + preSlack;
     }
     if (postSlack) {
         int res = munmap(reinterpret_cast<char*>(ret) + trimLen, postSlack);
-        RELEASE_ASSERT(!res);
+        CHECK(!res);
     }
 #else // On Windows we can't resize the allocation run.
     if (preSlack || postSlack) {
@@ -172,7 +172,7 @@ void* allocPages(void* addr, size_t len, size_t align, PageAccessibilityConfigur
 
     // Map a larger allocation so we can force alignment, but continue randomizing only on 64-bit POSIX.
     size_t tryLen = len + (align - kPageAllocationGranularity);
-    RELEASE_ASSERT(tryLen >= len);
+    CHECK_GE(tryLen, len);
     void* ret;
 
     do {
@@ -191,10 +191,10 @@ void freePages(void* addr, size_t len)
     ASSERT(!(len & kPageAllocationGranularityOffsetMask));
 #if OS(POSIX)
     int ret = munmap(addr, len);
-    RELEASE_ASSERT(!ret);
+    CHECK(!ret);
 #else
     BOOL ret = VirtualFree(addr, 0, MEM_RELEASE);
-    RELEASE_ASSERT(ret);
+    CHECK(ret);
 #endif
 }
 
@@ -203,10 +203,10 @@ void setSystemPagesInaccessible(void* addr, size_t len)
     ASSERT(!(len & kSystemPageOffsetMask));
 #if OS(POSIX)
     int ret = mprotect(addr, len, PROT_NONE);
-    RELEASE_ASSERT(!ret);
+    CHECK(!ret);
 #else
     BOOL ret = VirtualFree(addr, len, MEM_DECOMMIT);
-    RELEASE_ASSERT(ret);
+    CHECK(ret);
 #endif
 }
 
@@ -225,7 +225,7 @@ void decommitSystemPages(void* addr, size_t len)
     ASSERT(!(len & kSystemPageOffsetMask));
 #if OS(POSIX)
     int ret = madvise(addr, len, MADV_FREE);
-    RELEASE_ASSERT(!ret);
+    CHECK(!ret);
 #else
     setSystemPagesInaccessible(addr, len);
 #endif
@@ -237,7 +237,7 @@ void recommitSystemPages(void* addr, size_t len)
 #if OS(POSIX)
     (void) addr;
 #else
-    RELEASE_ASSERT(setSystemPagesAccessible(addr, len));
+    CHECK(setSystemPagesAccessible(addr, len));
 #endif
 }
 
@@ -264,7 +264,7 @@ void discardSystemPages(void* addr, size_t len)
     // DiscardVirtualMemory is buggy in Win10 SP0, so fall back to MEM_RESET on failure.
     if (ret) {
         void* ret = VirtualAlloc(addr, len, MEM_RESET, PAGE_READWRITE);
-        RELEASE_ASSERT(ret);
+        CHECK(ret);
     }
 #endif
 }

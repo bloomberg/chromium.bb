@@ -93,7 +93,7 @@ protected:
     static PassRefPtr<Subclass> create(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
     {
         RefPtr<ArrayBuffer> buf(buffer);
-        RELEASE_ASSERT(verifySubRange<T>(buf, byteOffset, length));
+        CHECK(verifySubRange<T>(buf, byteOffset, length));
         return adoptRef(new Subclass(buf.release(), byteOffset, length));
     }
 

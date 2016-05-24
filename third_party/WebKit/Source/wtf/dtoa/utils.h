@@ -165,7 +165,8 @@ namespace double_conversion {
 
         // Access individual vector elements.
         T& operator[](int index) const {
-            RELEASE_ASSERT(0 <= index && index < length_);
+            CHECK_LE(0, index);
+            CHECK_LT(index, length_);
             return start_[index];
         }
 

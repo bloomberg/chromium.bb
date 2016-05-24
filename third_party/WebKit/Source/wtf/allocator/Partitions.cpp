@@ -75,7 +75,7 @@ void Partitions::shutdown()
 
 void Partitions::decommitFreeableMemory()
 {
-    RELEASE_ASSERT(isMainThread());
+    CHECK(isMainThread());
     if (!s_initialized)
         return;
 

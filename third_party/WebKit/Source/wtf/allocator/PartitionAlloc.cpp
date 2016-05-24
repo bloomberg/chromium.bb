@@ -80,7 +80,7 @@ static uint8_t partitionBucketNumSystemPages(size_t size)
     if (size > kMaxSystemPagesPerSlotSpan * kSystemPageSize) {
         ASSERT(!(size % kSystemPageSize));
         bestPages = static_cast<uint16_t>(size / kSystemPageSize);
-        RELEASE_ASSERT(bestPages < (1 << 8));
+        CHECK_LT(bestPages, 1 << 8);
         return static_cast<uint8_t>(bestPages);
     }
     ASSERT(size <= kMaxSystemPagesPerSlotSpan * kSystemPageSize);
@@ -100,7 +100,7 @@ static uint8_t partitionBucketNumSystemPages(size_t size)
         }
     }
     ASSERT(bestPages > 0);
-    RELEASE_ASSERT(bestPages <= kMaxSystemPagesPerSlotSpan);
+    CHECK_LE(bestPages, kMaxSystemPagesPerSlotSpan);
     return static_cast<uint8_t>(bestPages);
 }
 
@@ -1009,7 +1009,7 @@ bool partitionReallocDirectMappedInPlace(PartitionRootGeneric* root, PartitionPa
         // pages accessible again.
         size_t recommitSize = newSize - currentSize;
         bool ret = setSystemPagesAccessible(charPtr + currentSize, recommitSize);
-        RELEASE_ASSERT(ret);
+        CHECK(ret);
         partitionRecommitSystemPages(root, charPtr + currentSize, recommitSize);
 
 #if ENABLE(ASSERT)

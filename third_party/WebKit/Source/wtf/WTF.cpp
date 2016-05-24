@@ -65,8 +65,8 @@ void initialize(void (*callOnMainThreadFunction)(MainThreadFunction, void*))
 {
     // WTF, and Blink in general, cannot handle being re-initialized, even if shutdown first.
     // Make that explicit here.
-    RELEASE_ASSERT(!s_initialized);
-    RELEASE_ASSERT(!s_shutdown);
+    CHECK(!s_initialized);
+    CHECK(!s_shutdown);
     s_initialized = true;
     initializeThreading();
 
@@ -78,8 +78,8 @@ void initialize(void (*callOnMainThreadFunction)(MainThreadFunction, void*))
 
 void shutdown()
 {
-    RELEASE_ASSERT(s_initialized);
-    RELEASE_ASSERT(!s_shutdown);
+    CHECK(s_initialized);
+    CHECK(!s_shutdown);
     s_shutdown = true;
 }
 
