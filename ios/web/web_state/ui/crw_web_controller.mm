@@ -56,6 +56,7 @@
 #include "ios/web/public/favicon_url.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/origin_util.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/referrer_util.h"
 #include "ios/web/public/ssl_status.h"
@@ -98,8 +99,10 @@
 #import "ios/web/web_state/web_view_internal_creation_util.h"
 #import "ios/web/web_state/wk_web_view_security_util.h"
 #import "ios/web/webui/crw_web_ui_manager.h"
+#import "ios/web/webui/mojo_facade.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/base/net_errors.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -434,6 +437,9 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   // Handles downloading PassKit data for WKWebView. Lazy initialized.
   base::scoped_nsobject<CRWPassKitDownloader> _passKitDownloader;
 
+  // Backs up property with the same name.
+  std::unique_ptr<web::MojoFacade> _mojoFacade;
+
   // Referrer for the current page; does not include the fragment.
   base::scoped_nsobject<NSString> _currentReferrerString;
 
@@ -512,6 +518,9 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // Returns whether the desktop user agent should be used when setting the user
 // agent.
 @property(nonatomic, readonly) BOOL useDesktopUserAgent;
+
+// Facade for Mojo API.
+@property(nonatomic, readonly) web::MojoFacade* mojoFacade;
 
 // Removes the container view from the hierarchy and resets the ivar.
 - (void)resetContainerView;
@@ -1005,6 +1014,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 @synthesize usePlaceholderOverlay = _usePlaceholderOverlay;
 @synthesize loadPhase = _loadPhase;
 @synthesize shouldSuppressDialogs = _shouldSuppressDialogs;
+@synthesize useMojoForWebUI = _useMojoForWebUI;
 
 - (instancetype)initWithWebState:(WebStateImpl*)webState {
   self = [super init];
@@ -2415,6 +2425,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 - (BOOL)useDesktopUserAgent {
   web::NavigationItem* item = [self currentNavItem];
   return item && item->IsOverridingUserAgent();
+}
+
+- (web::MojoFacade*)mojoFacade {
+  if (!_mojoFacade) {
+    shell::mojom::InterfaceProvider* interfaceProvider =
+        _webStateImpl->GetMojoInterfaceRegistry();
+    _mojoFacade.reset(new web::MojoFacade(interfaceProvider, self));
+  }
+  return _mojoFacade.get();
 }
 
 - (CRWPassKitDownloader*)passKitDownloader {
@@ -4860,6 +4879,15 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                          initiatedByFrame:(WKFrameInfo*)frame
                         completionHandler:
                             (void (^)(NSString* result))completionHandler {
+  GURL origin(web::GURLOriginWithWKSecurityOrigin(frame.securityOrigin));
+  if (self.useMojoForWebUI && web::GetWebClient()->IsAppSpecificURL(origin) &&
+      _webUIManager) {
+    std::string mojoResponse =
+        self.mojoFacade->HandleMojoMessage(base::SysNSStringToUTF8(prompt));
+    completionHandler(base::SysUTF8ToNSString(mojoResponse));
+    return;
+  }
+
   if (self.shouldSuppressDialogs) {
     [self didSuppressDialog];
     completionHandler(nil);
