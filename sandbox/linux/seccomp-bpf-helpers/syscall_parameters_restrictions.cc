@@ -47,11 +47,6 @@
 #define PR_SET_VMA 0x53564d41
 #endif
 
-// https://android.googlesource.com/platform/system/core/+/lollipop-release/libcutils/sched_policy.c
-#if !defined(PR_SET_TIMERSLACK_PID)
-#define PR_SET_TIMERSLACK_PID 41
-#endif
-
 #ifndef PR_SET_PTRACER
 #define PR_SET_PTRACER 0x59616d61
 #endif
@@ -158,9 +153,35 @@ ResultExpr RestrictPrctl() {
   return Switch(option)
       .CASES((PR_GET_NAME, PR_SET_NAME, PR_GET_DUMPABLE, PR_SET_DUMPABLE
 #if defined(OS_ANDROID)
-              ,
-              PR_SET_VMA, PR_SET_TIMERSLACK_PID, PR_SET_PTRACER
-#endif
+              , PR_SET_VMA, PR_SET_PTRACER
+
+// Enable PR_SET_TIMERSLACK_PID, an Android custom prctl which is used in:
+// https://android.googlesource.com/platform/system/core/+/lollipop-release/libcutils/sched_policy.c.
+// Depending on the Android kernel version, this prctl may have different
+// values. Since we don't know the correct value for the running kernel, we must
+// allow them all.
+//
+// The effect is:
+// On 3.14 kernels, this allows PR_SET_TIMERSLACK_PID and 43 and 127 (invalid
+// prctls which will return EINVAL)
+// On 3.18 kernels, this allows PR_SET_TIMERSLACK_PID, PR_SET_THP_DISABLE, and
+// 127 (invalid).
+// On 4.1 kernels and up, this allows PR_SET_TIMERSLACK_PID, PR_SET_THP_DISABLE,
+// and PR_MPX_ENABLE_MANAGEMENT.
+
+// https://android.googlesource.com/kernel/common/+/android-3.14/include/uapi/linux/prctl.h
+#define PR_SET_TIMERSLACK_PID_1 41
+
+// https://android.googlesource.com/kernel/common/+/android-3.18/include/uapi/linux/prctl.h
+#define PR_SET_TIMERSLACK_PID_2 43
+
+// https://android.googlesource.com/kernel/common/+/android-4.1/include/uapi/linux/prctl.h and up
+#define PR_SET_TIMERSLACK_PID_3 127
+
+              , PR_SET_TIMERSLACK_PID_1
+              , PR_SET_TIMERSLACK_PID_2
+              , PR_SET_TIMERSLACK_PID_3
+#endif  // defined(OS_ANDROID)
               ),
              Allow())
       .Default(CrashSIGSYSPrctl());
