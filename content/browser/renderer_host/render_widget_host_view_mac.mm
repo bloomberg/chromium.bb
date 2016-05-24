@@ -909,7 +909,18 @@ void RenderWidgetHostViewMac::Show() {
 void RenderWidgetHostViewMac::Hide() {
   ScopedCAActionDisabler disabler;
   [cocoa_view_ setHidden:YES];
-  WasOccluded();
+  if (!render_widget_host_->is_hidden()) {
+    // Note that the following call to WasHidden() can trigger thumbnail
+    // generation on behalf of the NTP, and that cannot succeed if the browser
+    // compositor view has been suspended. Therefore these two statements must
+    // occur in this specific order. However, because thumbnail generation is
+    // asychronous, that operation won't run before
+    // SuspendBrowserCompositorView()
+    // completes. As a result you won't get a thumbnail for the page unless you
+    // execute these two statements in this specific order.
+    render_widget_host_->WasHidden();
+    SuspendBrowserCompositorView();
+  }
   DestroySuspendedBrowserCompositorViewIfNeeded();
 }
 
@@ -929,13 +940,16 @@ void RenderWidgetHostViewMac::WasOccluded() {
   if (render_widget_host_->is_hidden())
     return;
 
-  // Note that the following call to WasHidden() can trigger thumbnail
-  // generation on behalf of the NTP, and that cannot succeed if the browser
-  // compositor view has been suspended. Therefore these two statements must
-  // occur in this specific order. However, because thumbnail generation is
-  // asychronous, that operation won't run before SuspendBrowserCompositorView()
-  // completes. As a result you won't get a thumbnail for the page unless you
-  // execute these two statements in this specific order.
+  // Ignore occlusion when in fullscreen low power mode, because the occlusion
+  // is likely coming from the fullscreen low power window.
+  if (browser_compositor_) {
+    if (browser_compositor_->accelerated_widget_mac()
+            ->MightBeInFullscreenLowPowerMode())
+      return;
+  }
+
+  // Note the importance of ordering of these calls is the same in the Hide
+  // function.
   render_widget_host_->WasHidden();
   SuspendBrowserCompositorView();
 }

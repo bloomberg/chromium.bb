@@ -124,6 +124,10 @@ CALayer* AcceleratedWidgetMac::GetFullscreenLowPowerLayer() const {
   return fullscreen_low_power_layer_;
 }
 
+bool AcceleratedWidgetMac::MightBeInFullscreenLowPowerMode() const {
+  return fslp_coordinator_;
+}
+
 bool AcceleratedWidgetMac::HasFrameOfSize(
     const gfx::Size& dip_size) const {
   return last_swap_size_dip_ == dip_size;

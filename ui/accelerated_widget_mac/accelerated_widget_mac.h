@@ -66,6 +66,10 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac {
   void ResetFullscreenLowPowerCoordinator();
   CALayer* GetFullscreenLowPowerLayer() const;
 
+  // Returns true if the widget might be in fullscreen low power mode. This
+  // will return a conservative answer.
+  bool MightBeInFullscreenLowPowerMode() const;
+
   // Return true if the last frame swapped has a size in DIP of |dip_size|.
   bool HasFrameOfSize(const gfx::Size& dip_size) const;
 
