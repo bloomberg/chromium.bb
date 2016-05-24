@@ -129,6 +129,20 @@ class ContentCapabilitiesTest : public ExtensionApiTest {
     return TestScriptResult(extension, url, "tests.canWriteClipboard()");
   }
 
+  testing::AssertionResult CanReadClipboardInAboutBlankFrame(
+      const Extension* extension,
+      const GURL& url) {
+    return TestScriptResult(extension, url,
+                            "tests.canReadClipboardInAboutBlankFrame()");
+  }
+
+  testing::AssertionResult CanWriteClipboardInAboutBlankFrame(
+      const Extension* extension,
+      const GURL& url) {
+    return TestScriptResult(extension, url,
+                            "tests.canWriteClipboardInAboutBlankFrame()");
+  }
+
   testing::AssertionResult HasUnlimitedStorage(const Extension* extension,
                                                const GURL& url) {
     if (profile()->GetSpecialStoragePolicy()->IsStorageUnlimited(url))
@@ -162,6 +176,12 @@ IN_PROC_BROWSER_TEST_F(ContentCapabilitiesTest, ClipboardRead) {
       CanReadClipboard(extension.get(), GetTestURLFor("foo.example.com")));
   EXPECT_FALSE(
       CanReadClipboard(extension.get(), GetTestURLFor("bar.example.com")));
+  EXPECT_TRUE(
+      CanReadClipboardInAboutBlankFrame(extension.get(),
+                                         GetTestURLFor("foo.example.com")));
+  EXPECT_FALSE(
+      CanReadClipboardInAboutBlankFrame(extension.get(),
+                                         GetTestURLFor("bar.example.com")));
   // TODO(dcheng): This should be false, but we cannot currently execute testing
   // script without a user gesture.
   EXPECT_TRUE(
@@ -174,10 +194,17 @@ IN_PROC_BROWSER_TEST_F(ContentCapabilitiesTest, ClipboardWrite) {
       MakeJSONList("http://foo.example.com/*"), MakeJSONList("clipboardWrite"));
   EXPECT_TRUE(
       CanWriteClipboard(extension.get(), GetTestURLFor("foo.example.com")));
+  EXPECT_TRUE(
+      CanWriteClipboardInAboutBlankFrame(extension.get(),
+                                          GetTestURLFor("foo.example.com")));
   // TODO(dcheng): This should be false, but we cannot currently execute testing
   // script without a user gesture.
   EXPECT_TRUE(
       CanWriteClipboard(extension.get(), GetTestURLFor("bar.example.com")));
+  EXPECT_TRUE(
+      CanWriteClipboardInAboutBlankFrame(extension.get(),
+                                          GetTestURLFor("bar.example.com")));
+
   EXPECT_FALSE(
       CanReadClipboard(extension.get(), GetTestURLFor("foo.example.com")));
 }

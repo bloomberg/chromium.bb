@@ -1496,9 +1496,15 @@ void Dispatcher::UpdateContentCapabilities(ScriptContext* context) {
   APIPermissionSet permissions;
   for (const auto& extension :
        *RendererExtensionRegistry::Get()->GetMainThreadExtensionSet()) {
+    blink::WebLocalFrame* web_frame = context->web_frame();
+    GURL url = context->url();
+    // We allow about:blank pages to take on the privileges of their parents if
+    // they aren't sandboxed.
+    if (web_frame && !web_frame->getSecurityOrigin().isUnique())
+      url = ScriptContext::GetEffectiveDocumentURL(web_frame, url, true);
     const ContentCapabilitiesInfo& info =
         ContentCapabilitiesInfo::Get(extension.get());
-    if (info.url_patterns.MatchesURL(context->url())) {
+    if (info.url_patterns.MatchesURL(url)) {
       APIPermissionSet new_permissions;
       APIPermissionSet::Union(permissions, info.permissions, &new_permissions);
       permissions = new_permissions;
