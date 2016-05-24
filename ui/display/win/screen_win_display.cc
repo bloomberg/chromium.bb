@@ -5,7 +5,6 @@
 #include "ui/display/win/screen_win_display.h"
 
 #include "ui/display/win/display_info.h"
-#include "ui/display/win/screen_win.h"
 
 namespace display {
 namespace win {
@@ -14,14 +13,13 @@ namespace {
 
 Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info) {
   Display display(display_info.id());
-  gfx::Rect dip_screen_bounds(
-      ScreenWin::ScreenToDIPRect(nullptr, display_info.screen_rect()));
-  display.set_bounds(dip_screen_bounds);
+  float scale_factor = display_info.device_scale_factor();
+  display.set_device_scale_factor(scale_factor);
   display.set_work_area(
-      ScreenWin::ScreenToDIPRect(
-          nullptr, display_info.screen_work_rect()));
-  display.SetScaleAndBounds(display_info.device_scale_factor(),
-                            display_info.screen_rect());
+      gfx::ScaleToEnclosingRect(display_info.screen_work_rect(),
+                                1.0f / scale_factor));
+  display.set_bounds(gfx::ScaleToEnclosingRect(display_info.screen_rect(),
+                     1.0f / scale_factor));
   display.set_rotation(display_info.rotation());
   return display;
 }
@@ -31,7 +29,12 @@ Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info) {
 ScreenWinDisplay::ScreenWinDisplay() = default;
 
 ScreenWinDisplay::ScreenWinDisplay(const DisplayInfo& display_info)
-    : display_(CreateDisplayFromDisplayInfo(display_info)),
+    : ScreenWinDisplay(CreateDisplayFromDisplayInfo(display_info),
+                       display_info) {}
+
+ScreenWinDisplay::ScreenWinDisplay(const Display& display,
+                                   const DisplayInfo& display_info)
+    : display_(display),
       pixel_bounds_(display_info.screen_rect()) {}
 
 }  // namespace win

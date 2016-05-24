@@ -21,6 +21,8 @@ class ScreenWinDisplay final {
  public:
   ScreenWinDisplay();
   explicit ScreenWinDisplay(const DisplayInfo& display_info);
+  ScreenWinDisplay(const Display& display,
+                   const DisplayInfo& display_info);
 
   const Display& display() const { return display_; }
   const gfx::Rect& pixel_bounds() const { return pixel_bounds_; }

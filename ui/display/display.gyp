@@ -96,6 +96,8 @@
         'win/display_info.h',
         'win/dpi.cc',
         'win/dpi.h',
+        'win/scaling_util.cc',
+        'win/scaling_util.h',
         'win/screen_win.cc',
         'win/screen_win.h',
         'win/screen_win_display.cc',
@@ -212,6 +214,8 @@
         'test/display_test_util.h',
         'test/test_screen.cc',
         'test/test_screen.h',
+        'win/test/screen_util_win.h',
+        'win/test/screen_util_win.cc',
       ],
     },
     {
@@ -244,12 +248,12 @@
         'screen_unittest.cc',
         'util/display_util_unittest.cc',
         'util/edid_parser_unittest.cc',
+        'win/scaling_util_unittest.cc',
         'win/screen_win_unittest.cc',
       ],
       'conditions': [
         ['chromeos == 1', {
           'dependencies': [
-            'display',
             'display_test_support',
             'display_test_util',
             'display_types',
@@ -259,6 +263,11 @@
           'sources!': [
             'screen_unittest.cc',
           ],
+        }],
+        ['OS=="win"', {
+          'dependencies': [
+            'display_test_support',
+          ]
         }],
       ],
     },

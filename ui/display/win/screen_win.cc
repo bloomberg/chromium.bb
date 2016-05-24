@@ -6,11 +6,16 @@
 
 #include <windows.h>
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/display_layout.h"
+#include "ui/display/manager/display_layout_builder.h"
 #include "ui/display/win/display_info.h"
 #include "ui/display/win/dpi.h"
+#include "ui/display/win/scaling_util.h"
 #include "ui/display/win/screen_win_display.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -20,14 +25,94 @@
 
 namespace display {
 namespace win {
-
 namespace {
 
+std::vector<DisplayInfo> FindAndRemoveTouchingDisplayInfos(
+    const DisplayInfo& ref_display_info,
+    std::vector<DisplayInfo>* display_infos) {
+  std::vector<DisplayInfo> touching_display_infos;
+  display_infos->erase(
+      std::remove_if(display_infos->begin(), display_infos->end(),
+          [&touching_display_infos, ref_display_info](
+              const DisplayInfo& display_info) {
+            if (DisplayInfosTouch(ref_display_info, display_info)) {
+              touching_display_infos.push_back(display_info);
+              return true;
+            }
+            return false;
+          }), display_infos->end());
+  return touching_display_infos;
+}
+
+display::Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info) {
+  display::Display display(display_info.id());
+  float scale_factor = display_info.device_scale_factor();
+  display.set_device_scale_factor(scale_factor);
+  display.set_work_area(
+      gfx::ScaleToEnclosingRect(display_info.screen_work_rect(),
+                                1.0f / scale_factor));
+  display.set_bounds(gfx::ScaleToEnclosingRect(display_info.screen_rect(),
+                     1.0f / scale_factor));
+  display.set_rotation(display_info.rotation());
+  return display;
+}
+
+// Windows historically has had a hard time handling displays of DPIs higher
+// than 96. Handling multiple DPI displays means we have to deal with Windows'
+// monitor physical coordinates and map into Chrome's DIP coordinates.
+//
+// To do this, DisplayInfosToScreenWinDisplays reasons over monitors as a tree
+// using the primary monitor as the root. All monitors touching this root are
+// considered a children.
+//
+// This also presumes that all monitors are connected components. Windows, by UI
+// construction restricts the layout of monitors to connected components except
+// when DPI virtualization is happening. When this happens, we scale relative
+// to (0, 0).
+//
+// Note that this does not handle cases where a scaled display may have
+// insufficient room to lay out its children. In these cases, a DIP point could
+// map to multiple screen points due to overlap. The first discovered screen
+// will take precedence.
 std::vector<ScreenWinDisplay> DisplayInfosToScreenWinDisplays(
     const std::vector<DisplayInfo>& display_infos) {
-  std::vector<ScreenWinDisplay> screen_win_displays;
+  // Find and extract the primary display.
+  std::vector<DisplayInfo> display_infos_remaining = display_infos;
+  auto primary_display_iter = std::find_if(
+      display_infos_remaining.begin(), display_infos_remaining.end(), [](
+          const DisplayInfo& display_info) {
+        return display_info.screen_rect().origin().IsOrigin();
+      });
+  DCHECK(primary_display_iter != display_infos_remaining.end()) <<
+      "Missing primary display.";
+
+  std::vector<DisplayInfo> available_parents;
+  available_parents.push_back(*primary_display_iter);
+  display::DisplayLayoutBuilder builder(primary_display_iter->id());
+  display_infos_remaining.erase(primary_display_iter);
+  // Build the tree and determine DisplayPlacements along the way.
+  while (available_parents.size()) {
+    const DisplayInfo parent = available_parents.back();
+    available_parents.pop_back();
+    for (const auto& child :
+         FindAndRemoveTouchingDisplayInfos(parent, &display_infos_remaining)) {
+      builder.AddDisplayPlacement(CalculateDisplayPlacement(parent, child));
+      available_parents.push_back(child);
+    }
+  }
+
+  // Layout and create the ScreenWinDisplays.
+  std::vector<display::Display> displays;
   for (const auto& display_info : display_infos)
-    screen_win_displays.push_back(ScreenWinDisplay(display_info));
+    displays.push_back(CreateDisplayFromDisplayInfo(display_info));
+
+  std::unique_ptr<display::DisplayLayout> layout(builder.Build());
+  layout->ApplyToDisplayList(&displays, nullptr, 0);
+
+  std::vector<ScreenWinDisplay> screen_win_displays;
+  const size_t num_displays = display_infos.size();
+  for (size_t i = 0; i < num_displays; ++i)
+    screen_win_displays.emplace_back(displays[i], display_infos[i]);
 
   return screen_win_displays;
 }
