@@ -993,16 +993,14 @@ static CSSValueList* parseSimpleTransformList(CharType*& pos, CharType* end)
     while (pos < end) {
         while (pos < end && isCSSSpace(*pos))
             ++pos;
+        if (pos >= end)
+            break;
         CSSFunctionValue* transformValue = parseSimpleTransformValue(pos, end);
         if (!transformValue)
             return nullptr;
         if (!transformList)
             transformList = CSSValueList::createSpaceSeparated();
         transformList->append(transformValue);
-        if (pos < end) {
-            if (isCSSSpace(*pos))
-                return nullptr;
-        }
     }
     return transformList;
 }

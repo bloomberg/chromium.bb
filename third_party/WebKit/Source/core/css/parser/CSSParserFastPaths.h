@@ -16,7 +16,7 @@ namespace blink {
 
 class CSSValue;
 
-class CSSParserFastPaths {
+class CORE_EXPORT CSSParserFastPaths {
     STATIC_ONLY(CSSParserFastPaths);
 public:
     // Parses simple values like '10px' or 'green', but makes no guarantees
