@@ -258,7 +258,8 @@ imported/wpt/pointerlock [ Skip ]
 imported/wpt/presentation-api [ Skip ]
 imported/wpt/progress-events [ Skip ]
 imported/wpt/proximity [ Skip ]
-imported/wpt/quirks-mode [ Skip ]
+## Owners: rob.buis@samsung.com
+# imported/wpt/quirks-mode [ Skip ]
 ## Owners: mkwst@chromium.org
 # http://crbug.com/360762: Requires HTTPS server with python.
 imported/wpt/referrer-policy [ Skip ]
@@ -326,6 +327,7 @@ imported/wpt/mediacapture-streams/OWNERS [ Skip ]
 imported/wpt/touch-events/OWNERS [ Skip ]
 imported/wpt/uievents/OWNERS [ Skip ]
 imported/wpt/web-animations/OWNERS [ Skip ]
+imported/wpt/quirks-mode/OWNERS [ Skip ]
 
 # Exceptions for individual files that fail due to bugs in the
 # upstream tests that we shouldn't bother importing until they are
