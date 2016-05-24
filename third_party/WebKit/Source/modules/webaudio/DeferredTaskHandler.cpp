@@ -131,9 +131,14 @@ void DeferredTaskHandler::handleDirtyAudioNodeOutputs()
 {
     ASSERT(isGraphOwner());
 
-    for (AudioNodeOutput* output : m_dirtyAudioNodeOutputs)
+    HashSet<AudioNodeOutput*> dirtyOutputs;
+    m_dirtyAudioNodeOutputs.swap(dirtyOutputs);
+
+    // Note: the updating of rendering state may cause output nodes
+    // further down the chain to be marked as dirty. These will not
+    // be processed in this render quantum.
+    for (AudioNodeOutput* output : dirtyOutputs)
         output->updateRenderingState();
-    m_dirtyAudioNodeOutputs.clear();
 }
 
 void DeferredTaskHandler::addAutomaticPullNode(AudioHandler* node)
