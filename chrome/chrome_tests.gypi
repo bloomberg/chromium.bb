@@ -2129,7 +2129,6 @@
         '../base/base.gyp:run_all_unittests',
         '../net/net.gyp:http_server',
         '../net/net.gyp:net',
-        '../net/net.gyp:net_test_support',
         '../testing/gtest.gyp:gtest',
         '../url/url.gyp:url_lib',
       ],
