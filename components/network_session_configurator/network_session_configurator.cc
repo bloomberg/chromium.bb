@@ -333,6 +333,11 @@ int GetQuicSocketReceiveBufferSize(
   return 0;
 }
 
+bool ShouldQuicDelayTcpRace(const VariationParameters& quic_trial_params) {
+  return !base::LowerCaseEqualsASCII(
+      GetVariationParam(quic_trial_params, "disable_delay_tcp_race"), "true");
+}
+
 bool ShouldQuicCloseSessionsOnIpChange(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
@@ -459,6 +464,7 @@ void ConfigureQuicParams(const base::CommandLine& command_line,
     if (receive_buffer_size != 0) {
       params->quic_socket_receive_buffer_size = receive_buffer_size;
     }
+    params->quic_delay_tcp_race = ShouldQuicDelayTcpRace(quic_trial_params);
     float load_server_info_timeout_srtt_multiplier =
         GetQuicLoadServerInfoTimeoutSrttMultiplier(quic_trial_params);
     if (load_server_info_timeout_srtt_multiplier != 0) {
