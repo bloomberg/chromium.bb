@@ -19,6 +19,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
+#include "ui/views/animation/button_ink_drop_delegate.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
@@ -48,7 +49,6 @@ const SkColor kButtonTextColor = SkColorSetARGB(0xFF, 0x7B, 0xAA, 0xF7);
 // These values are in DIP.
 const int kToastHorizontalSpacing = 16;
 const int kToastVerticalSpacing = 16;
-const int kToastChildSpacing = 32;
 const int kToastMaximumWidth = 568;
 const int kToastMinimumWidth = 288;
 
@@ -82,6 +82,12 @@ ToastOverlayLabel::ToastOverlayLabel(const std::string& label) {
   SetEnabledColor(SK_ColorWHITE);
   SetDisabledColor(SK_ColorWHITE);
   SetSubpixelRenderingEnabled(false);
+
+  int verticalSpacing =
+      kToastVerticalSpacing - (GetPreferredSize().height() - GetBaseline());
+  SetBorder(views::Border::CreateEmptyBorder(
+      verticalSpacing, kToastHorizontalSpacing, verticalSpacing,
+      kToastHorizontalSpacing));
 }
 
 ToastOverlayLabel::~ToastOverlayLabel() {}
@@ -110,17 +116,31 @@ class ToastOverlayButton : public views::LabelButton {
  private:
   friend class ToastOverlay;  // for ToastOverlay::ClickDismissButtonForTesting.
 
+  // Controls the visual feedback for the button state.
+  std::unique_ptr<views::InkDropDelegate> ink_drop_delegate_;
+
   DISALLOW_COPY_AND_ASSIGN(ToastOverlayButton);
 };
 
 ToastOverlayButton::ToastOverlayButton(views::ButtonListener* listener,
-                                       const base::string16& label)
-    : views::LabelButton(listener, label) {
+                                       const base::string16& text)
+    : views::LabelButton(listener, text),
+      ink_drop_delegate_(new views::ButtonInkDropDelegate(this, this)) {
+  set_ink_drop_delegate(ink_drop_delegate_.get());
+  set_has_ink_drop_action_on_click(true);
+  set_ink_drop_base_color(SK_ColorWHITE);
+
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
 
   SetEnabledTextColors(kButtonTextColor);
   SetFontList(rb->GetFontList(kTextFontStyle));
-  SetBorder(views::Border::NullBorder());
+
+  // Treat the space below the baseline as a margin.
+  int verticalSpacing = kToastVerticalSpacing -
+                        (GetPreferredSize().height() - label()->GetBaseline());
+  SetBorder(views::Border::CreateEmptyBorder(
+      verticalSpacing, kToastHorizontalSpacing, verticalSpacing,
+      kToastHorizontalSpacing));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -155,16 +175,14 @@ ToastOverlayView::ToastOverlayView(ToastOverlay* overlay,
           this,
           l10n_util::GetStringUTF16(IDS_ASH_TOAST_DISMISS_BUTTON))) {
   ToastOverlayLabel* label = new ToastOverlayLabel(text);
-  label->SetMaximumWidth(GetMaximumSize().width() -
-                         button_->GetPreferredSize().width() -
-                         kToastHorizontalSpacing * 2 - kToastChildSpacing);
+  label->SetMaximumWidth(
+      GetMaximumSize().width() - button_->GetPreferredSize().width() -
+      kToastHorizontalSpacing * 2 - kToastHorizontalSpacing * 2);
   AddChildView(label);
 
   AddChildView(button_);
 
-  auto layout = new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                     kToastHorizontalSpacing,
-                                     kToastVerticalSpacing, kToastChildSpacing);
+  auto layout = new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
   SetLayoutManager(layout);
   layout->SetFlexForView(label, 1);
   layout->SetFlexForView(button_, 0);
