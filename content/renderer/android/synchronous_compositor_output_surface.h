@@ -60,8 +60,8 @@ class SynchronousCompositorOutputSurface
     : NON_EXPORTED_BASE(public cc::OutputSurface) {
  public:
   SynchronousCompositorOutputSurface(
-      const scoped_refptr<cc::ContextProvider>& context_provider,
-      const scoped_refptr<cc::ContextProvider>& worker_context_provider,
+      scoped_refptr<cc::ContextProvider> context_provider,
+      scoped_refptr<cc::ContextProvider> worker_context_provider,
       int routing_id,
       uint32_t output_surface_id,
       SynchronousCompositorRegistry* registry,

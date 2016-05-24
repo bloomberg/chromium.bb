@@ -9,6 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface_client.h"
@@ -69,17 +70,15 @@ class SynchronousCompositorOutputSurface::SoftwareDevice
 };
 
 SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
-    const scoped_refptr<cc::ContextProvider>& context_provider,
-    const scoped_refptr<cc::ContextProvider>& worker_context_provider,
+    scoped_refptr<cc::ContextProvider> context_provider,
+    scoped_refptr<cc::ContextProvider> worker_context_provider,
     int routing_id,
     uint32_t output_surface_id,
     SynchronousCompositorRegistry* registry,
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue)
-    : cc::OutputSurface(
-          context_provider,
-          worker_context_provider,
-          nullptr,
-          std::unique_ptr<cc::SoftwareOutputDevice>(new SoftwareDevice(this))),
+    : cc::OutputSurface(std::move(context_provider),
+                        std::move(worker_context_provider),
+                        base::MakeUnique<SoftwareDevice>(this)),
       routing_id_(routing_id),
       output_surface_id_(output_surface_id),
       registry_(registry),

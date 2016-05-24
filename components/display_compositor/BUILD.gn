@@ -57,6 +57,7 @@ component("display_compositor") {
   }
 }
 
+# These are part of the components_unittests build target.
 source_set("unit_tests") {
   testonly = true
   sources = [

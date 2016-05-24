@@ -85,11 +85,11 @@ const gpu::SurfaceHandle kFakeSurfaceHandle = 1;
 
 class MockBufferQueue : public BufferQueue {
  public:
-  MockBufferQueue(scoped_refptr<cc::ContextProvider> context_provider,
+  MockBufferQueue(gpu::gles2::GLES2Interface* gl,
                   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                   unsigned int target,
                   unsigned int internalformat)
-      : BufferQueue(context_provider,
+      : BufferQueue(gl,
                     target,
                     internalformat,
                     nullptr,
@@ -108,13 +108,12 @@ class BufferQueueTest : public ::testing::Test {
   }
 
   void InitWithContext(std::unique_ptr<cc::TestWebGraphicsContext3D> context) {
-    scoped_refptr<cc::TestContextProvider> context_provider =
-        cc::TestContextProvider::Create(std::move(context));
-    context_provider->BindToCurrentThread();
+    context_provider_ = cc::TestContextProvider::Create(std::move(context));
+    context_provider_->BindToCurrentThread();
     gpu_memory_buffer_manager_.reset(new StubGpuMemoryBufferManager);
-    mock_output_surface_ =
-        new MockBufferQueue(context_provider, gpu_memory_buffer_manager_.get(),
-                            GL_TEXTURE_2D, GL_RGBA);
+    mock_output_surface_ = new MockBufferQueue(context_provider_->ContextGL(),
+                                               gpu_memory_buffer_manager_.get(),
+                                               GL_TEXTURE_2D, GL_RGBA);
     output_surface_.reset(mock_output_surface_);
     output_surface_->Initialize();
   }
@@ -192,6 +191,7 @@ class BufferQueueTest : public ::testing::Test {
     return true;
   }
 
+  scoped_refptr<cc::TestContextProvider> context_provider_;
   std::unique_ptr<StubGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   std::unique_ptr<BufferQueue> output_surface_;
   MockBufferQueue* mock_output_surface_;
@@ -238,28 +238,36 @@ class BufferQueueMockedContextTest : public BufferQueueTest {
   MockedContext* context_;
 };
 
-std::unique_ptr<BufferQueue> CreateOutputSurfaceWithMock(
-    unsigned int target,
-    MockedContext** context,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
-  *context = new MockedContext();
+scoped_refptr<cc::TestContextProvider> CreateMockedContextProvider(
+    MockedContext** context) {
+  std::unique_ptr<MockedContext> owned_context(new MockedContext);
+  *context = owned_context.get();
   scoped_refptr<cc::TestContextProvider> context_provider =
-      cc::TestContextProvider::Create(
-          std::unique_ptr<cc::TestWebGraphicsContext3D>(*context));
+      cc::TestContextProvider::Create(std::move(owned_context));
   context_provider->BindToCurrentThread();
+  return context_provider;
+}
+
+std::unique_ptr<BufferQueue> CreateBufferQueue(
+    unsigned int target,
+    gpu::gles2::GLES2Interface* gl,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
   std::unique_ptr<BufferQueue> buffer_queue(
-      new BufferQueue(context_provider, target, GL_RGBA, nullptr,
-                      gpu_memory_buffer_manager, kFakeSurfaceHandle));
+      new BufferQueue(gl, target, GL_RGBA, nullptr, gpu_memory_buffer_manager,
+                      kFakeSurfaceHandle));
   buffer_queue->Initialize();
   return buffer_queue;
 }
 
 TEST(BufferQueueStandaloneTest, FboInitialization) {
   MockedContext* context;
+  scoped_refptr<cc::TestContextProvider> context_provider =
+      CreateMockedContextProvider(&context);
   std::unique_ptr<StubGpuMemoryBufferManager> gpu_memory_buffer_manager(
       new StubGpuMemoryBufferManager);
-  std::unique_ptr<BufferQueue> output_surface = CreateOutputSurfaceWithMock(
-      GL_TEXTURE_2D, &context, gpu_memory_buffer_manager.get());
+  std::unique_ptr<BufferQueue> output_surface =
+      CreateBufferQueue(GL_TEXTURE_2D, context_provider->ContextGL(),
+                        gpu_memory_buffer_manager.get());
 
   EXPECT_CALL(*context, bindFramebuffer(GL_FRAMEBUFFER, Ne(0U)));
   ON_CALL(*context, framebufferTexture2D(_, _, _, _, _))
@@ -272,11 +280,15 @@ TEST(BufferQueueStandaloneTest, FboBinding) {
   GLenum targets[] = {GL_TEXTURE_2D, GL_TEXTURE_RECTANGLE_ARB};
   for (size_t i = 0; i < 2; ++i) {
     GLenum target = targets[i];
+
     MockedContext* context;
+    scoped_refptr<cc::TestContextProvider> context_provider =
+        CreateMockedContextProvider(&context);
     std::unique_ptr<StubGpuMemoryBufferManager> gpu_memory_buffer_manager(
         new StubGpuMemoryBufferManager);
-    std::unique_ptr<BufferQueue> output_surface = CreateOutputSurfaceWithMock(
-        target, &context, gpu_memory_buffer_manager.get());
+    std::unique_ptr<BufferQueue> output_surface = CreateBufferQueue(
+        target, context_provider->ContextGL(), gpu_memory_buffer_manager.get());
+
     EXPECT_CALL(*context, bindTexture(target, Ne(0U)));
     EXPECT_CALL(*context, destroyImageCHROMIUM(1));
     Expectation image =
@@ -298,20 +310,20 @@ TEST(BufferQueueStandaloneTest, FboBinding) {
 }
 
 TEST(BufferQueueStandaloneTest, CheckBoundFramebuffer) {
+  scoped_refptr<cc::TestContextProvider> context_provider =
+      cc::TestContextProvider::Create();
+  context_provider->BindToCurrentThread();
   std::unique_ptr<StubGpuMemoryBufferManager> gpu_memory_buffer_manager;
   std::unique_ptr<BufferQueue> output_surface;
-  scoped_refptr<cc::TestContextProvider> context_provider =
-      cc::TestContextProvider::Create(cc::TestWebGraphicsContext3D::Create());
-  context_provider->BindToCurrentThread();
   gpu_memory_buffer_manager.reset(new StubGpuMemoryBufferManager);
 
   std::unique_ptr<GLHelper> gl_helper;
   gl_helper.reset(new GLHelper(context_provider->ContextGL(),
                                context_provider->ContextSupport()));
 
-  output_surface.reset(
-      new BufferQueue(context_provider, GL_TEXTURE_2D, GL_RGBA, gl_helper.get(),
-                      gpu_memory_buffer_manager.get(), kFakeSurfaceHandle));
+  output_surface.reset(new BufferQueue(
+      context_provider->ContextGL(), GL_TEXTURE_2D, GL_RGBA, gl_helper.get(),
+      gpu_memory_buffer_manager.get(), kFakeSurfaceHandle));
   output_surface->Initialize();
   output_surface->Reshape(screen_size, 1.0f);
   // Trigger a sub-buffer copy to exercise all paths.
