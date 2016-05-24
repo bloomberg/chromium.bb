@@ -161,7 +161,6 @@ class MessageService : public BrowserContextKeyedAPI {
       int source_process_id,
       int source_routing_id,
       int receiver_port_id,
-      const std::string& source_extension_id,
       const std::string& native_app_name);
 
   // Mark the given port as opened by the frame identified by

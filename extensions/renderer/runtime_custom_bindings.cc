@@ -87,15 +87,11 @@ void RuntimeCustomBindings::OpenChannelToNativeApp(
   if (!render_frame)
     return;
 
-  const std::string& extension_id = context()->GetExtensionID();
-  // Should be caught by JS.
-  CHECK(!extension_id.empty());
-
   std::string native_app_name = *v8::String::Utf8Value(args[0]);
 
   int port_id = -1;
   render_frame->Send(new ExtensionHostMsg_OpenChannelToNativeApp(
-      render_frame->GetRoutingID(), extension_id, native_app_name, &port_id));
+      render_frame->GetRoutingID(), native_app_name, &port_id));
   args.GetReturnValue().Set(static_cast<int32_t>(port_id));
 }
 

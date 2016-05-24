@@ -56,6 +56,15 @@ class ExtensionWebContentsObserver
 
   ExtensionFunctionDispatcher* dispatcher() { return &dispatcher_; }
 
+  // Returns the extension associated with the given |render_frame_host|, or
+  // null if there is none.
+  // If |verify_url| is false, only the SiteInstance is taken into account.
+  // If |verify_url| is true, the frame's last committed URL is also used to
+  // improve the classification of the frame.
+  const Extension* GetExtensionFromFrame(
+      content::RenderFrameHost* render_frame_host,
+      bool verify_url) const;
+
  protected:
   explicit ExtensionWebContentsObserver(content::WebContents* web_contents);
   ~ExtensionWebContentsObserver() override;
@@ -98,15 +107,6 @@ class ExtensionWebContentsObserver
   // the empty string if there is none.
   std::string GetExtensionIdFromFrame(
       content::RenderFrameHost* render_frame_host) const;
-
-  // Returns the extension associated with the given |render_frame_host|, or
-  // null if there is none.
-  // If |verify_url| is false, only the SiteInstance is taken into account.
-  // If |verify_url| is true, the frame's last committed URL is also used to
-  // improve the classification of the frame.
-  const Extension* GetExtensionFromFrame(
-      content::RenderFrameHost* render_frame_host,
-      bool verify_url) const;
 
   // TODO(devlin): Remove these once callers are updated to use the FromFrame
   // equivalents.

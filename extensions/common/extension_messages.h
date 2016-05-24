@@ -676,9 +676,8 @@ IPC_SYNC_MESSAGE_CONTROL4_1(ExtensionHostMsg_OpenChannelToExtension,
                             bool /* include_tls_channel_id */,
                             int /* port_id */)
 
-IPC_SYNC_MESSAGE_CONTROL3_1(ExtensionHostMsg_OpenChannelToNativeApp,
+IPC_SYNC_MESSAGE_CONTROL2_1(ExtensionHostMsg_OpenChannelToNativeApp,
                             int /* frame_routing_id */,
-                            std::string /* source_extension_id */,
                             std::string /* native_app_name */,
                             int /* port_id */)
 

@@ -43,6 +43,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
+#include "extensions/browser/extension_web_contents_observer.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/lazy_background_task_queue.h"
@@ -406,7 +407,6 @@ void MessageService::OpenChannelToNativeApp(
     int source_process_id,
     int source_routing_id,
     int receiver_port_id,
-    const std::string& source_extension_id,
     const std::string& native_app_name) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -416,25 +416,29 @@ void MessageService::OpenChannelToNativeApp(
     return;
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-  Profile* profile =
-      Profile::FromBrowserContext(source->GetProcess()->GetBrowserContext());
-  ExtensionService* extension_service =
-      ExtensionSystem::Get(profile)->extension_service();
-  bool has_permission = false;
-  if (extension_service) {
-    const Extension* extension =
-        extension_service->GetExtensionById(source_extension_id, false);
-    has_permission = extension &&
-                     extension->permissions_data()->HasAPIPermission(
-                         APIPermission::kNativeMessaging);
-  }
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(source);
+  ExtensionWebContentsObserver* extension_web_contents_observer =
+      web_contents ?
+          ExtensionWebContentsObserver::GetForWebContents(web_contents) :
+          nullptr;
+  const Extension* extension =
+      extension_web_contents_observer ?
+          extension_web_contents_observer->GetExtensionFromFrame(source, true) :
+          nullptr;
+
+  bool has_permission = extension &&
+                        extension->permissions_data()->HasAPIPermission(
+                            APIPermission::kNativeMessaging);
 
   if (!has_permission) {
     DispatchOnDisconnect(source, receiver_port_id, kMissingPermissionError);
     return;
   }
 
-  PrefService* pref_service = profile->GetPrefs();
+  PrefService* pref_service =
+      Profile::FromBrowserContext(source->GetProcess()->GetBrowserContext())->
+          GetPrefs();
 
   // Verify that the host is not blocked by policies.
   PolicyPermission policy_permission =
@@ -448,7 +452,7 @@ void MessageService::OpenChannelToNativeApp(
   channel->opener.reset(
       new ExtensionMessagePort(weak_factory_.GetWeakPtr(),
                                GET_OPPOSITE_PORT_ID(receiver_port_id),
-                               source_extension_id, source, false));
+                               extension->id(), source, false));
   if (!channel->opener->IsValidPort())
     return;
   channel->opener->OpenPort(source_process_id, source_routing_id);
@@ -458,7 +462,7 @@ void MessageService::OpenChannelToNativeApp(
 
   std::string error = kReceivingEndDoesntExistError;
   std::unique_ptr<NativeMessageHost> native_host = NativeMessageHost::Create(
-      native_view, source_extension_id, native_app_name,
+      native_view, extension->id(), native_app_name,
       policy_permission == ALLOW_ALL, &error);
 
   // Abandon the channel.
