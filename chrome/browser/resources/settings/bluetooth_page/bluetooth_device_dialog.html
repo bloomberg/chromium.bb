@@ -14,19 +14,12 @@
 <dom-module id="bluetooth-device-dialog">
   <template>
     <style include="settings-shared">
-      #dialogFooterDiv {
-        height: 40px;
-        margin: 0 20px;
-      }
-
       #dialogMessage {
         margin-bottom: 10px;
       }
 
       #dialogDeviceList {
-        -webkit-margin-start: 4px;
         height: 210px;
-        margin-bottom: 20px;
         overflow-y: auto;
       }
 
@@ -94,20 +87,18 @@
       <div class="title">[[getTitle_(dialogType)]]</div>
       <div class="body">
         <template is="dom-if" if="[[isDialogType_(dialogType, 'addDevice')]]">
-          <div class="settings-box flex">
-            <div id="dialogDeviceList" class="settings-box layout vertical"
-                on-device-event="onDeviceEvent_">
-              <span class="no-devices" hidden$="[[haveDevices_(deviceList)]]">
-                $i18n{bluetoothNoDevices}
-              </span>
-              <iron-selector class="flex">
-                <template is="dom-repeat" items="[[deviceList]]"
-                    filter="deviceNotPaired_" observe="paired">
-                  <bluetooth-device-list-item device="[[item]]">
-                  </bluetooth-device-list-item>
-                </template>
-              </iron-selector>
-            </div>
+          <div id="dialogDeviceList" class="layout vertical"
+              on-device-event="onDeviceEvent_">
+            <span class="no-devices" hidden$="[[haveDevices_(deviceList)]]">
+              $i18n{bluetoothNoDevices}
+            </span>
+            <iron-selector class="flex">
+              <template is="dom-repeat" items="[[deviceList]]"
+                  filter="deviceNotPaired_" observe="paired">
+                <bluetooth-device-list-item device="[[item]]">
+                </bluetooth-device-list-item>
+              </template>
+            </iron-selector>
           </div>
         </template>
         <template is="dom-if" if="[[isDialogType_(dialogType, 'pairDevice')]]">
