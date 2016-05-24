@@ -194,10 +194,6 @@ void AudioContext::stopRendering()
         destination()->audioDestinationHandler().stopRendering();
         setContextState(Suspended);
         deferredTaskHandler().clearHandlersToBeDeleted();
-        // The recorded audio thread will be shut down as part
-        // of stopping, so clear that association to avoid
-        // future confusion (crbug.com/612127)
-        deferredTaskHandler().clearAudioThread();
     }
 }
 
