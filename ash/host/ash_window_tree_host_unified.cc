@@ -15,6 +15,7 @@
 #include "ui/aura/window_targeter.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/platform_window/stub/stub_window.h"
 
 namespace ash {
@@ -50,7 +51,8 @@ class UnifiedEventTargeter : public aura::WindowTargeter {
 AshWindowTreeHostUnified::AshWindowTreeHostUnified(
     const gfx::Rect& initial_bounds)
     : AshWindowTreeHostPlatform() {
-  std::unique_ptr<ui::PlatformWindow> window(new ui::StubWindow(this));
+  std::unique_ptr<ui::PlatformWindow> window(
+      new ui::StubWindow(this, gfx::kNullAcceleratedWidget));
   window->SetBounds(initial_bounds);
   SetPlatformWindow(std::move(window));
 }

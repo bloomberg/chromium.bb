@@ -5,13 +5,15 @@
 #include "blimp/engine/app/ui/blimp_window_tree_host.h"
 
 #include "base/memory/ptr_util.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/platform_window/stub/stub_window.h"
 
 namespace blimp {
 namespace engine {
 
 BlimpWindowTreeHost::BlimpWindowTreeHost() : aura::WindowTreeHostPlatform() {
-  SetPlatformWindow(base::WrapUnique(new ui::StubWindow(this)));
+  SetPlatformWindow(base::WrapUnique(
+      new ui::StubWindow(this, gfx::kNullAcceleratedWidget)));
 }
 
 BlimpWindowTreeHost::~BlimpWindowTreeHost() {}

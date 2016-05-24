@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/stub/stub_window_export.h"
 
@@ -15,7 +16,8 @@ namespace ui {
 
 class STUB_WINDOW_EXPORT StubWindow : NON_EXPORTED_BASE(public PlatformWindow) {
  public:
-  explicit StubWindow(PlatformWindowDelegate* delegate);
+  StubWindow(PlatformWindowDelegate* delegate,
+             gfx::AcceleratedWidget accelerated_widget);
   ~StubWindow() override;
 
  private:
