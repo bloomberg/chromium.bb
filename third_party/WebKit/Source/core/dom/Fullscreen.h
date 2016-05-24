@@ -74,14 +74,8 @@ public:
     static bool fullscreenEnabled(Document&);
     Element* fullscreenElement() const { return !m_fullScreenElementStack.isEmpty() ? m_fullScreenElementStack.last().first.get() : 0; }
 
-    // |isAncestorOfFullscreenElement| is used in OOPIF scenarios and is set to
-    // true when these functions are called to enter/exit fullscreen for an
-    // out-of-process descendant element.  In this case, we enter fullscreen
-    // for its (local) iframe container and make sure to also set the
-    // ContainsFullScreenElement flag on it (so that it gains the
-    // -webkit-full-screen-ancestor style).
-    void didEnterFullScreenForElement(Element*, bool isAncestorOfFullscreenElement);
-    void didExitFullScreenForElement(bool isAncestorOfFullscreenElement);
+    void didEnterFullScreenForElement(Element*);
+    void didExitFullScreenForElement(Element*);
 
     void setFullScreenLayoutObject(LayoutFullScreen*);
     LayoutFullScreen* fullScreenLayoutObject() const { return m_fullScreenLayoutObject; }

@@ -175,7 +175,6 @@ class CONTENT_EXPORT RenderFrameProxy
                          bool is_potentially_trustworthy_unique_origin);
   void OnSetPageFocus(bool is_focused);
   void OnSetFocusedFrame();
-  void OnWillEnterFullscreen();
 
   // The routing ID by which this RenderFrameProxy is known.
   const int routing_id_;

@@ -3056,31 +3056,15 @@ void Element::setContainsFullScreenElement(bool flag)
     pseudoStateChanged(CSSSelector::PseudoFullScreenAncestor);
 }
 
-// Unlike Node::parentNode, this can cross frame boundaries.
-static Element* nextAncestorElement(Element* element)
+static Element* parentCrossingFrameBoundaries(Element* element)
 {
     DCHECK(element);
-    if (element->parentElement())
-        return element->parentElement();
-
-    Frame* frame = element->document().frame();
-    if (!frame || !frame->owner())
-        return nullptr;
-
-    // Find the next LocalFrame on the ancestor chain, and return the
-    // corresponding <iframe> element for the remote child if it exists.
-    while (frame->tree().parent() && frame->tree().parent()->isRemoteFrame())
-        frame = frame->tree().parent();
-
-    if (frame->owner() && frame->owner()->isLocal())
-        return toHTMLFrameOwnerElement(frame->owner());
-
-    return nullptr;
+    return element->parentElement() ? element->parentElement() : element->document().localOwner();
 }
 
 void Element::setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(bool flag)
 {
-    for (Element* element = nextAncestorElement(this); element; element = nextAncestorElement(element))
+    for (Element* element = parentCrossingFrameBoundaries(this); element; element = parentCrossingFrameBoundaries(element))
         element->setContainsFullScreenElement(flag);
 }
 

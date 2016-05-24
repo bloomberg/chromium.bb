@@ -194,8 +194,6 @@ void WebFrameWidgetImpl::resizeVisualViewport(const WebSize& newSize)
     // to use Page messages.  https://crbug.com/599688.
     page()->frameHost().visualViewport().setSize(newSize);
     page()->frameHost().visualViewport().clampToBoundaries();
-
-    view()->didUpdateFullScreenSize();
 }
 
 void WebFrameWidgetImpl::updateMainFrameLayoutSize()
@@ -220,12 +218,12 @@ void WebFrameWidgetImpl::setIgnoreInputEvents(bool newValue)
 
 void WebFrameWidgetImpl::didEnterFullScreen()
 {
-    view()->didEnterFullScreen();
+    // FIXME: Implement full screen for out-of-process iframes.
 }
 
 void WebFrameWidgetImpl::didExitFullScreen()
 {
-    view()->didExitFullScreen();
+    // FIXME: Implement full screen for out-of-process iframes.
 }
 
 void WebFrameWidgetImpl::beginFrame(double lastFrameTimeMonotonic)

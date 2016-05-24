@@ -55,7 +55,6 @@ FullscreenController::FullscreenController(WebViewImpl* webViewImpl)
     : m_webViewImpl(webViewImpl)
     , m_haveEnteredFullscreen(false)
     , m_exitFullscreenPageScaleFactor(0)
-    , m_fullscreenIsForCrossProcessAncestor(false)
     , m_isCancelingFullScreen(false)
 {
 }
@@ -75,13 +74,12 @@ void FullscreenController::didEnterFullScreen()
     if (!m_haveEnteredFullscreen) {
         updatePageScaleConstraints(false);
         m_webViewImpl->setPageScaleFactor(1.0f);
-        if (m_webViewImpl->mainFrame()->isWebLocalFrame())
-            m_webViewImpl->mainFrame()->setScrollOffset(WebSize());
+        m_webViewImpl->mainFrame()->setScrollOffset(WebSize());
         m_webViewImpl->setVisualViewportOffset(FloatPoint());
         m_haveEnteredFullscreen = true;
     }
 
-    Fullscreen::from(document).didEnterFullScreenForElement(element, m_fullscreenIsForCrossProcessAncestor);
+    Fullscreen::from(document).didEnterFullScreenForElement(element);
     DCHECK_EQ(Fullscreen::currentFullScreenElementFrom(document), element);
 
     if (isHTMLVideoElement(element)) {
@@ -113,14 +111,12 @@ void FullscreenController::didExitFullScreen()
                 if (m_haveEnteredFullscreen) {
                     updatePageScaleConstraints(true);
                     m_webViewImpl->setPageScaleFactor(m_exitFullscreenPageScaleFactor);
-                    if (m_webViewImpl->mainFrame()->isWebLocalFrame())
-                        m_webViewImpl->mainFrame()->setScrollOffset(WebSize(m_exitFullscreenScrollOffset));
+                    m_webViewImpl->mainFrame()->setScrollOffset(WebSize(m_exitFullscreenScrollOffset));
                     m_webViewImpl->setVisualViewportOffset(m_exitFullscreenVisualViewportOffset);
                     m_haveEnteredFullscreen = false;
                 }
 
-                fullscreen->didExitFullScreenForElement(m_fullscreenIsForCrossProcessAncestor);
-                m_fullscreenIsForCrossProcessAncestor = false;
+                fullscreen->didExitFullScreenForElement(0);
             }
         }
     }
@@ -148,15 +144,14 @@ void FullscreenController::enterFullScreenForElement(Element* element)
     // the scroll offset.
     if (!m_haveEnteredFullscreen) {
         m_exitFullscreenPageScaleFactor = m_webViewImpl->pageScaleFactor();
-        m_exitFullscreenScrollOffset = m_webViewImpl->mainFrame()->isWebLocalFrame() ? m_webViewImpl->mainFrame()->scrollOffset() : WebSize();
+        m_exitFullscreenScrollOffset = m_webViewImpl->mainFrame()->scrollOffset();
         m_exitFullscreenVisualViewportOffset = m_webViewImpl->visualViewportOffset();
     }
 
     // We need to transition to fullscreen mode.
     WebLocalFrameImpl* frame = WebLocalFrameImpl::fromFrame(element->document().frame());
     if (frame && frame->client()) {
-        if (!m_fullscreenIsForCrossProcessAncestor)
-            frame->client()->enterFullscreen();
+        frame->client()->enterFullscreen();
         m_provisionalFullScreenElement = element;
     }
 }
