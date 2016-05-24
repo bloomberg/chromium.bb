@@ -42,6 +42,32 @@ public final class SyncTestUtil {
     private SyncTestUtil() {}
 
     /**
+     * Returns whether sync is active.
+     */
+    public static boolean isSyncActive() {
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return ProfileSyncService.get().isSyncActive();
+            }
+        });
+    }
+
+    /**
+     * Waits for sync's backend to be initialized.
+     */
+    public static void waitForBackendInitialized() throws InterruptedException {
+        CriteriaHelper.pollUiThread(
+                new Criteria("Timed out waiting for sync's backend to initialize.") {
+                    @Override
+                    public boolean isSatisfied() {
+                        return ProfileSyncService.get().isBackendInitialized();
+                    }
+                },
+                TIMEOUT_MS, INTERVAL_MS);
+    }
+
+    /**
      * Verifies that sync is signed out.
      */
     public static void verifySyncIsSignedOut() {

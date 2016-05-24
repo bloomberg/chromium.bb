@@ -29,8 +29,6 @@ import org.chromium.chrome.browser.sync.ui.PassphraseTypeDialogFragment;
 import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.ModelType;
 import org.chromium.sync.PassphraseType;
@@ -159,7 +157,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         assertDefaultSyncOffState(fragment);
         togglePreference(getSyncSwitch(fragment));
-        waitForBackendInitialized();
+        SyncTestUtil.waitForBackendInitialized();
         assertDefaultSyncOnState(fragment);
     }
 
@@ -713,16 +711,6 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
                 return false;
             }
         }).booleanValue();
-    }
-
-    private void waitForBackendInitialized() throws InterruptedException {
-        CriteriaHelper.pollUiThread(new Criteria(
-                "Timed out waiting for sync's backend to be initialized.") {
-            @Override
-            public boolean isSatisfied() {
-                return mProfileSyncService.isBackendInitialized();
-            }
-        }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
     }
 
     // UI interaction convenience methods.
