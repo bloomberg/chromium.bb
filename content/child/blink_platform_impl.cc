@@ -855,6 +855,11 @@ void BlinkPlatformImpl::willStopWorkerThread() {
   WorkerThreadRegistry::Instance()->WillStopCurrentWorkerThread();
 }
 
+bool BlinkPlatformImpl::allowScriptExtensionForServiceWorker(
+    const blink::WebURL& scriptUrl) {
+  return GetContentClient()->AllowScriptExtensionForServiceWorker(scriptUrl);
+}
+
 blink::WebCrypto* BlinkPlatformImpl::crypto() {
   return &web_crypto_;
 }

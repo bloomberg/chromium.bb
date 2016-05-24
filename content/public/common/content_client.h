@@ -157,6 +157,10 @@ class CONTENT_EXPORT ContentClient {
   // trustworthy schemes should be added.
   virtual void AddServiceWorkerSchemes(std::set<std::string>* schemes) {}
 
+  // Returns whether or not V8 script extensions should be allowed for a
+  // service worker.
+  virtual bool AllowScriptExtensionForServiceWorker(const GURL& script_url);
+
   // Returns true if the embedder wishes to supplement the site isolation policy
   // used by the content layer. Returning true enables the infrastructure for
   // out-of-process iframes, and causes the content layer to consult

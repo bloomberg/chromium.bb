@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/child/worker_thread.h"
 #include "content/public/renderer/render_frame.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/script_context.h"
@@ -49,6 +50,12 @@ void BoundLogMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
     LOG(WARNING) << "Could not log \"" << message << "\": no context given";
     return;
   }
+
+  // A worker's ScriptContext neither lives in ScriptContextSet nor it has a
+  // RenderFrame associated with it, so early exit in this case.
+  // TODO(lazyboy): Fix.
+  if (content::WorkerThread::GetCurrentId() > 0)
+    return;
 
   ScriptContext* script_context =
       ScriptContextSet::GetContextByV8Context(context);

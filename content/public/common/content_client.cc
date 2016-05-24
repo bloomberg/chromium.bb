@@ -123,6 +123,11 @@ base::StringPiece ContentClient::GetOriginTrialPublicKey() {
   return base::StringPiece();
 }
 
+bool ContentClient::AllowScriptExtensionForServiceWorker(
+    const GURL& script_url) {
+  return false;
+}
+
 #if defined(OS_ANDROID)
 bool ContentClient::UsingSynchronousCompositing() {
   return false;

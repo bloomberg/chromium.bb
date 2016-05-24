@@ -163,8 +163,12 @@ bool ObjectBackedNativeHandler::ContextCanAccessObject(
     return true;
   if (context == object->CreationContext())
     return true;
+  // TODO(lazyboy): ScriptContextSet isn't available on worker threads. We
+  // should probably use WorkerScriptContextSet somehow.
   ScriptContext* other_script_context =
-      ScriptContextSet::GetContextByObject(object);
+      content::WorkerThread::GetCurrentId() == 0
+          ? ScriptContextSet::GetContextByObject(object)
+          : nullptr;
   if (!other_script_context || !other_script_context->web_frame())
     return allow_null_context;
 

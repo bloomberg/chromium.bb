@@ -31,6 +31,7 @@
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 
 #include "bindings/core/v8/ScriptCallStack.h"
+#include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8DedicatedWorkerGlobalScope.h"
@@ -165,8 +166,18 @@ bool WorkerOrWorkletScriptController::initializeContextIfNeeded()
     v8::Local<v8::ObjectTemplate> globalTemplate = globalInterfaceTemplate->InstanceTemplate();
     v8::Local<v8::Context> context;
     {
+        // Initialize V8 extensions before creating the context.
+        Vector<const char*> extensionNames;
+        if (m_globalScope->isServiceWorkerGlobalScope() && Platform::current()->allowScriptExtensionForServiceWorker(toWorkerGlobalScope(m_globalScope.get())->url())) {
+            const V8Extensions& extensions = ScriptController::registeredExtensions();
+            extensionNames.reserveInitialCapacity(extensions.size());
+            for (const auto* extension : extensions)
+                extensionNames.append(extension->name());
+        }
+        v8::ExtensionConfiguration extensionConfiguration(extensionNames.size(), extensionNames.data());
+
         V8PerIsolateData::UseCounterDisabledScope useCounterDisabled(V8PerIsolateData::from(m_isolate));
-        context = v8::Context::New(m_isolate, nullptr, globalTemplate);
+        context = v8::Context::New(m_isolate, &extensionConfiguration, globalTemplate);
     }
     if (context.IsEmpty())
         return false;

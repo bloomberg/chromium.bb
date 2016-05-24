@@ -42,6 +42,7 @@
 #include "extensions/common/features/behavior_feature.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
+#include "extensions/common/features/feature_util.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -95,6 +96,7 @@
 #include "extensions/renderer/v8_helpers.h"
 #include "extensions/renderer/wake_event_page.h"
 #include "extensions/renderer/worker_script_context_set.h"
+#include "extensions/renderer/worker_thread_dispatcher.h"
 #include "grit/extensions_renderer_resources.h"
 #include "mojo/public/js/constants.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -106,6 +108,7 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebScopedUserGesture.h"
+#include "third_party/WebKit/public/web/WebScriptController.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/layout.h"
@@ -229,6 +232,11 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
   request_sender_.reset(new RequestSender());
   PopulateSourceMap();
   WakeEventPage::Get()->Init(RenderThread::Get());
+  // Ideally this should be done after checking
+  // ExtensionAPIEnabledInExtensionServiceWorkers(), but the Dispatcher is
+  // created so early that sending an IPC from browser/ process to synchronize
+  // this enabled-ness is too late.
+  WorkerThreadDispatcher::Get()->Init(RenderThread::Get());
 
   RenderThread::Get()->RegisterExtension(SafeBuiltins::CreateV8Extension());
 
@@ -327,7 +335,8 @@ void Dispatcher::DidCreateScriptContext(
   // Enable natives in startup.
   ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system);
 
-  RegisterNativeHandlers(module_system, context);
+  RegisterNativeHandlers(module_system, context, request_sender_.get(),
+                         v8_schema_registry_.get());
 
   // chrome.Event is part of the public API (although undocumented). Make it
   // lazily evalulate to Event from event_bindings.js. For extensions only
@@ -385,9 +394,9 @@ void Dispatcher::DidCreateScriptContext(
   VLOG(1) << "Num tracked contexts: " << script_context_set_->size();
 }
 
-// static
 void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
     v8::Local<v8::Context> v8_context,
+    int embedded_worker_id,
     const GURL& url) {
   const base::TimeTicks start_time = base::TimeTicks::Now();
 
@@ -431,6 +440,37 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
       v8_context, nullptr, extension, Feature::SERVICE_WORKER_CONTEXT,
       extension, Feature::SERVICE_WORKER_CONTEXT);
   context->set_url(url);
+
+  if (ExtensionsClient::Get()->ExtensionAPIEnabledInExtensionServiceWorkers()) {
+    WorkerThreadDispatcher::Get()->AddWorkerData(embedded_worker_id);
+    {
+      // TODO(lazyboy): Make sure accessing |source_map_| in worker thread is
+      // safe.
+      std::unique_ptr<ModuleSystem> module_system(
+          new ModuleSystem(context, &source_map_));
+      context->set_module_system(std::move(module_system));
+    }
+
+    ModuleSystem* module_system = context->module_system();
+    // Enable natives in startup.
+    ModuleSystem::NativesEnabledScope natives_enabled_scope(module_system);
+    RegisterNativeHandlers(
+        module_system, context,
+        WorkerThreadDispatcher::Get()->GetRequestSender(),
+        WorkerThreadDispatcher::Get()->GetV8SchemaRegistry());
+    // chrome.Event is part of the public API (although undocumented). Make it
+    // lazily evalulate to Event from event_bindings.js.
+    v8::Local<v8::Object> chrome = AsObjectOrEmpty(GetOrCreateChrome(context));
+    if (!chrome.IsEmpty())
+      module_system->SetLazyField(chrome, "Event", kEventBindings, "Event");
+
+    UpdateBindingsForContext(context);
+    // TODO(lazyboy): Get rid of RequireGuestViewModules() as this doesn't seem
+    // necessary for Extension SW.
+    RequireGuestViewModules(context);
+    delegate_->RequireAdditionalModules(context,
+                                        false /* is_within_platform_app */);
+  }
 
   g_worker_script_context_set.Get().Insert(base::WrapUnique(context));
 
@@ -496,12 +536,15 @@ void Dispatcher::WillReleaseScriptContext(
 // static
 void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
     v8::Local<v8::Context> v8_context,
+    int embedded_worker_id,
     const GURL& url) {
   if (url.SchemeIs(kExtensionScheme) ||
       url.SchemeIs(kExtensionResourceScheme)) {
     // See comment in DidInitializeServiceWorkerContextOnWorkerThread.
     g_worker_script_context_set.Get().Remove(v8_context, url);
   }
+  if (ExtensionsClient::Get()->ExtensionAPIEnabledInExtensionServiceWorkers())
+    WorkerThreadDispatcher::Get()->RemoveWorkerData(embedded_worker_id);
 }
 
 void Dispatcher::DidCreateDocumentElement(blink::WebLocalFrame* frame) {
@@ -1304,6 +1347,8 @@ void Dispatcher::UpdateBindings(const std::string& extension_id) {
                                           base::Unretained(this)));
 }
 
+// Note: this function runs on multiple threads: main renderer thread and
+// service worker threads.
 void Dispatcher::UpdateBindingsForContext(ScriptContext* context) {
   v8::HandleScope handle_scope(context->isolate());
   v8::Context::Scope context_scope(context->v8_context());
@@ -1328,6 +1373,10 @@ void Dispatcher::UpdateBindingsForContext(ScriptContext* context) {
       UpdateContentCapabilities(context);
       break;
 
+    case Feature::SERVICE_WORKER_CONTEXT:
+      DCHECK(ExtensionsClient::Get()
+                 ->ExtensionAPIEnabledInExtensionServiceWorkers());
+    // Intentional fallthrough.
     case Feature::BLESSED_EXTENSION_CONTEXT:
     case Feature::UNBLESSED_EXTENSION_CONTEXT:
     case Feature::CONTENT_SCRIPT_CONTEXT:
@@ -1354,15 +1403,14 @@ void Dispatcher::UpdateBindingsForContext(ScriptContext* context) {
           continue;
         }
 
-        if (context->IsAnyFeatureAvailableToContext(*map_entry.second.get()))
+        if (context->IsAnyFeatureAvailableToContext(*map_entry.second.get())) {
+          // TODO(lazyboy): RegisterBinding() uses |source_map_|, any thread
+          // safety issue?
           RegisterBinding(map_entry.first, context);
+        }
       }
       break;
     }
-    case Feature::SERVICE_WORKER_CONTEXT:
-      // Handled in DidInitializeServiceWorkerContextOnWorkerThread().
-      NOTREACHED();
-      break;
   }
 }
 
@@ -1410,12 +1458,11 @@ void Dispatcher::RegisterBinding(const std::string& api_name,
 
 // NOTE: please use the naming convention "foo_natives" for these.
 void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
-                                        ScriptContext* context) {
-  RegisterNativeHandlers(module_system,
-                         context,
-                         this,
-                         request_sender_.get(),
-                         v8_schema_registry_.get());
+                                        ScriptContext* context,
+                                        RequestSender* request_sender,
+                                        V8SchemaRegistry* v8_schema_registry) {
+  RegisterNativeHandlers(module_system, context, this, request_sender,
+                         v8_schema_registry);
   const Extension* extension = context->extension();
   int manifest_version = extension ? extension->manifest_version() : 1;
   bool is_component_extension =
@@ -1483,6 +1530,7 @@ bool Dispatcher::IsWithinPlatformApp() {
   return false;
 }
 
+// static.
 v8::Local<v8::Object> Dispatcher::GetOrCreateObject(
     const v8::Local<v8::Object>& object,
     const std::string& field,
@@ -1504,6 +1552,7 @@ v8::Local<v8::Object> Dispatcher::GetOrCreateObject(
   return new_object;
 }
 
+// static.
 v8::Local<v8::Object> Dispatcher::GetOrCreateBindObjectIfAvailable(
     const std::string& api_name,
     std::string* bind_name,

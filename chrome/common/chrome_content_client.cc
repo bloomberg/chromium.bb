@@ -680,6 +680,16 @@ void ChromeContentClient::AddServiceWorkerSchemes(
 #endif
 }
 
+bool ChromeContentClient::AllowScriptExtensionForServiceWorker(
+    const GURL& script_url) {
+#if defined(ENABLE_EXTENSIONS)
+  return script_url.SchemeIs(extensions::kExtensionScheme) ||
+         script_url.SchemeIs(extensions::kExtensionResourceScheme);
+#else
+  return false;
+#endif
+}
+
 bool ChromeContentClient::IsSupplementarySiteIsolationModeEnabled() {
 #if defined(ENABLE_EXTENSIONS)
   return extensions::IsIsolateExtensionsEnabled();

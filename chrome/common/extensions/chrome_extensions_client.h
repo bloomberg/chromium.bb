@@ -52,6 +52,7 @@ class ChromeExtensionsClient : public ExtensionsClient {
   bool IsBlacklistUpdateURL(const GURL& url) const override;
   std::set<base::FilePath> GetBrowserImagePaths(
       const Extension* extension) override;
+  bool ExtensionAPIEnabledInExtensionServiceWorkers() const override;
 
   // Get the LazyInstance for ChromeExtensionsClient.
   static ChromeExtensionsClient* GetInstance();

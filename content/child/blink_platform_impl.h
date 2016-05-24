@@ -122,6 +122,8 @@ class CONTENT_EXPORT BlinkPlatformImpl
       const blink::WebSize& cumulative_scroll) override;
   void didStartWorkerThread() override;
   void willStopWorkerThread() override;
+  bool allowScriptExtensionForServiceWorker(
+      const blink::WebURL& script_url) override;
   blink::WebCrypto* crypto() override;
   blink::WebNotificationManager* notificationManager() override;
   blink::WebPushProvider* pushProvider() override;

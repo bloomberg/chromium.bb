@@ -263,6 +263,7 @@ struct SimpleFeature::Mappings {
     contexts["web_page"] = Feature::WEB_PAGE_CONTEXT;
     contexts["blessed_web_page"] = Feature::BLESSED_WEB_PAGE_CONTEXT;
     contexts["webui"] = Feature::WEBUI_CONTEXT;
+    contexts["extension_service_worker"] = Feature::SERVICE_WORKER_CONTEXT;
 
     locations["component"] = SimpleFeature::COMPONENT_LOCATION;
     locations["external_component"] =
@@ -439,6 +440,10 @@ Feature::Availability SimpleFeature::IsAvailableToContext(
       return result;
   }
 
+  // TODO(lazyboy): This isn't quite right for Extension Service Worker
+  // extension API calls, since there's no guarantee that the extension is
+  // "active" in current renderer process when the API permission check is
+  // done.
   if (!contexts_.empty() && !ContainsValue(contexts_, context))
     return CreateAvailability(INVALID_CONTEXT, context);
 

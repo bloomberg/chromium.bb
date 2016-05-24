@@ -378,6 +378,11 @@ std::set<base::FilePath> ChromeExtensionsClient::GetBrowserImagePaths(
   return image_paths;
 }
 
+bool ChromeExtensionsClient::ExtensionAPIEnabledInExtensionServiceWorkers()
+    const {
+  return GetCurrentChannel() == version_info::Channel::UNKNOWN;
+}
+
 // static
 ChromeExtensionsClient* ChromeExtensionsClient::GetInstance() {
   return g_client.Pointer();

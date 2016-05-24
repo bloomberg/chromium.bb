@@ -132,6 +132,7 @@ enum IPCMessageStart {
   DWriteFontProxyMsgStart,
   MediaPlayerDelegateMsgStart,
   SurfaceViewManagerMsgStart,
+  ExtensionWorkerMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 

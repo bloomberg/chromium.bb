@@ -76,11 +76,18 @@ void RequestSender::StartRequest(Source* source,
   if (!context)
     return;
 
+  bool for_service_worker =
+      context->context_type() == Feature::SERVICE_WORKER_CONTEXT;
   // Get the current RenderFrame so that we can send a routed IPC message from
   // the correct source.
+  // Note that |render_frame| would be nullptr for Service Workers. Service
+  // Workers use control IPC instead.
   content::RenderFrame* render_frame = context->GetRenderFrame();
-  if (!render_frame)
+  if (!for_service_worker && !render_frame) {
+    // It is important to early exit here for non Service Worker contexts so
+    // that we do not create orphaned PendingRequests below.
     return;
+  }
 
   // TODO(koz): See if we can make this a CHECK.
   if (!context->HasAccessOrThrowError(name))
@@ -103,6 +110,17 @@ void RequestSender::StartRequest(Source* source,
   params.has_callback = has_callback;
   params.user_gesture =
       blink::WebUserGestureIndicator::isProcessingUserGesture();
+
+  // Set Service Worker specific params to default values.
+  params.worker_thread_id = -1;
+  params.embedded_worker_id = -1;
+
+  SendRequest(render_frame, for_io_thread, params);
+}
+
+void RequestSender::SendRequest(content::RenderFrame* render_frame,
+                                bool for_io_thread,
+                                ExtensionHostMsg_Request_Params& params) {
   if (for_io_thread) {
     render_frame->Send(new ExtensionHostMsg_RequestForIOThread(
         render_frame->GetRoutingID(), params));

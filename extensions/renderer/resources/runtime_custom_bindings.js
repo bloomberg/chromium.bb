@@ -11,7 +11,17 @@ var runtimeNatives = requireNative('runtime');
 var process = requireNative('process');
 var utils = require('utils');
 
-var backgroundPage = window;
+var WINDOW = {};
+try {
+  WINDOW = window;
+} catch (e) {
+  // Running in SW context.
+  // TODO(lazyboy): Synchronous access to background page is not possible from
+  // service worker context. Decide what we should do in this case for the class
+  // of APIs that require access to background page or window object
+}
+
+var backgroundPage = WINDOW;
 var backgroundRequire = require;
 var contextType = process.GetContextType();
 
@@ -26,7 +36,7 @@ if (contextType == 'BLESSED_EXTENSION' ||
       var GetModuleSystem = requireNative('v8_context').GetModuleSystem;
       backgroundRequire = GetModuleSystem(backgroundPage).require;
     } else {
-      backgroundPage = window;
+      backgroundPage = WINDOW;
     }
   }
 }
@@ -35,7 +45,7 @@ if (contextType == 'BLESSED_EXTENSION' ||
 // background page so their FileEntry objects have the background page's context
 // as their own.  This allows them to be used from other windows (including the
 // background page) after the original window is closed.
-if (window == backgroundPage) {
+if (WINDOW == backgroundPage) {
   var lastError = require('lastError');
   var fileSystemNatives = requireNative('file_system_natives');
   var GetIsolatedFileSystem = fileSystemNatives.GetIsolatedFileSystem;

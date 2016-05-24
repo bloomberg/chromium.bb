@@ -561,10 +561,11 @@ TEST_F(SimpleFeatureTest, ParseContexts) {
   contexts->Append(new base::StringValue("web_page"));
   contexts->Append(new base::StringValue("blessed_web_page"));
   contexts->Append(new base::StringValue("webui"));
+  contexts->Append(new base::StringValue("extension_service_worker"));
   value->Set("contexts", contexts);
   std::unique_ptr<SimpleFeature> feature(new SimpleFeature());
   feature->Parse(value.get());
-  EXPECT_EQ(6u, feature->contexts()->size());
+  EXPECT_EQ(7u, feature->contexts()->size());
   EXPECT_TRUE(
       STLCount(*(feature->contexts()), Feature::BLESSED_EXTENSION_CONTEXT));
   EXPECT_TRUE(

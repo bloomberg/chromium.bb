@@ -131,6 +131,13 @@ class ExtensionsClient {
   virtual std::set<base::FilePath> GetBrowserImagePaths(
       const Extension* extension);
 
+  // Returns whether or not extension APIs are allowed in extension service
+  // workers.
+  // This is currently disallowed as the code to support this is work in
+  // progress.
+  // Can be overridden in tests.
+  virtual bool ExtensionAPIEnabledInExtensionServiceWorkers() const;
+
   // Return the extensions client.
   static ExtensionsClient* Get();
 

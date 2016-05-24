@@ -453,6 +453,9 @@ UIThreadExtensionFunction::render_view_host_do_not_use() const {
 
 void UIThreadExtensionFunction::SetRenderFrameHost(
     content::RenderFrameHost* render_frame_host) {
+  // An extension function from Service Worker does not have a RenderFrameHost.
+  if (!render_frame_host)
+    return;
   DCHECK_NE(render_frame_host_ == nullptr, render_frame_host == nullptr);
   render_frame_host_ = render_frame_host;
   tracker_.reset(

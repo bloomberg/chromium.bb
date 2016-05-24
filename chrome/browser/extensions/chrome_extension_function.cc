@@ -48,13 +48,11 @@ Browser* ChromeUIThreadExtensionFunction::GetCurrentBrowser() {
   // preferable to pretend no browser is open then to return a browser on
   // another desktop.
   content::WebContents* web_contents = GetSenderWebContents();
-  if (web_contents) {
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    Browser* browser = chrome::FindAnyBrowser(profile, include_incognito_);
-    if (browser)
-      return browser;
-  }
+  Profile* profile = Profile::FromBrowserContext(
+      web_contents ? web_contents->GetBrowserContext() : browser_context());
+  Browser* browser = chrome::FindAnyBrowser(profile, include_incognito_);
+  if (browser)
+    return browser;
 
   // NOTE(rafaelw): This can return NULL in some circumstances. In particular,
   // a background_page onload chrome.tabs api call can make it into here

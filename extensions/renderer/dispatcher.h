@@ -94,9 +94,11 @@ class Dispatcher : public content::RenderThreadObserver,
                               int extension_group,
                               int world_id);
 
-  // Runs on a different thread and should not use any member variables.
-  static void DidInitializeServiceWorkerContextOnWorkerThread(
+  // Runs on a different thread and should only use thread safe member
+  // variables.
+  void DidInitializeServiceWorkerContextOnWorkerThread(
       v8::Local<v8::Context> v8_context,
+      int embedded_worker_id,
       const GURL& url);
 
   void WillReleaseScriptContext(blink::WebLocalFrame* frame,
@@ -106,6 +108,7 @@ class Dispatcher : public content::RenderThreadObserver,
   // Runs on a different thread and should not use any member variables.
   static void WillDestroyServiceWorkerContextOnWorkerThread(
       v8::Local<v8::Context> v8_context,
+      int embedded_worker_id,
       const GURL& url);
 
   // This method is not allowed to run JavaScript code in the frame.
@@ -223,7 +226,9 @@ class Dispatcher : public content::RenderThreadObserver,
   void RegisterBinding(const std::string& api_name, ScriptContext* context);
 
   void RegisterNativeHandlers(ModuleSystem* module_system,
-                              ScriptContext* context);
+                              ScriptContext* context,
+                              RequestSender* request_sender,
+                              V8SchemaRegistry* v8_schema_registry);
 
   // Determines if a ScriptContext can connect to any externally_connectable-
   // enabled extension.
@@ -241,11 +246,12 @@ class Dispatcher : public content::RenderThreadObserver,
 
   // Gets |field| from |object| or creates it as an empty object if it doesn't
   // exist.
-  v8::Local<v8::Object> GetOrCreateObject(const v8::Local<v8::Object>& object,
-                                          const std::string& field,
-                                          v8::Isolate* isolate);
+  static v8::Local<v8::Object> GetOrCreateObject(
+      const v8::Local<v8::Object>& object,
+      const std::string& field,
+      v8::Isolate* isolate);
 
-  v8::Local<v8::Object> GetOrCreateBindObjectIfAvailable(
+  static v8::Local<v8::Object> GetOrCreateBindObjectIfAvailable(
       const std::string& api_name,
       std::string* bind_name,
       ScriptContext* context);

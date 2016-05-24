@@ -28,6 +28,10 @@ std::set<base::FilePath> ExtensionsClient::GetBrowserImagePaths(
   return paths;
 }
 
+bool ExtensionsClient::ExtensionAPIEnabledInExtensionServiceWorkers() const {
+  return false;
+}
+
 void ExtensionsClient::Set(ExtensionsClient* client) {
   // This can happen in unit tests, where the utility thread runs in-process.
   if (g_client)

@@ -151,9 +151,11 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   void RunScriptsAtDocumentEnd(content::RenderFrame* render_frame) override;
   void DidInitializeServiceWorkerContextOnWorkerThread(
       v8::Local<v8::Context> context,
+      int embedded_worker_id,
       const GURL& url) override;
   void WillDestroyServiceWorkerContextOnWorkerThread(
       v8::Local<v8::Context> context,
+      int embedded_worker_id,
       const GURL& url) override;
   bool ShouldEnforceWebRTCRoutingPreferences() override;
 

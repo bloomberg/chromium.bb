@@ -87,6 +87,7 @@ class ChromeContentClient : public content::ContentClient {
                                   std::set<GURL>* origins) override;
 
   void AddServiceWorkerSchemes(std::set<std::string>* schemes) override;
+  bool AllowScriptExtensionForServiceWorker(const GURL& script_url) override;
 
   bool IsSupplementarySiteIsolationModeEnabled() override;
   base::StringPiece GetOriginTrialPublicKey() override;

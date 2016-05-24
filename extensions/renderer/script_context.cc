@@ -256,8 +256,12 @@ std::string ScriptContext::GetEffectiveContextTypeDescription() const {
 
 bool ScriptContext::IsAnyFeatureAvailableToContext(const Feature& api) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  // TODO(lazyboy): Decide what we should do for SERVICE_WORKER_CONTEXT.
+  GURL url = context_type() == Feature::SERVICE_WORKER_CONTEXT
+                 ? url_
+                 : GetDataSourceURLForFrame(web_frame());
   return ExtensionAPI::GetSharedInstance()->IsAnyFeatureAvailableToContext(
-      api, extension(), context_type(), GetDataSourceURLForFrame(web_frame()));
+      api, extension(), context_type(), url);
 }
 
 // static

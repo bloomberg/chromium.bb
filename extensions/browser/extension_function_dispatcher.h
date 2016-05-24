@@ -96,7 +96,8 @@ class ExtensionFunctionDispatcher
   // The response is sent to the corresponding render view in an
   // ExtensionMsg_Response message.
   void Dispatch(const ExtensionHostMsg_Request_Params& params,
-                content::RenderFrameHost* render_frame_host);
+                content::RenderFrameHost* render_frame_host,
+                int render_process_id);
 
   // Called when an ExtensionFunction is done executing, after it has sent
   // a response (if any) to the extension.
@@ -121,6 +122,14 @@ class ExtensionFunctionDispatcher
   // This class tracks the lifespan of the RenderFrameHost instance, and will be
   // destroyed automatically when it goes away.
   class UIThreadResponseCallbackWrapper;
+
+  // Same as UIThreadResponseCallbackWrapper above, but applies to an extension
+  // function from an extension Service Worker.
+  class UIThreadWorkerResponseCallbackWrapper;
+
+  // Key used to store UIThreadWorkerResponseCallbackWrapper in the map
+  // |ui_thread_response_callback_wrappers_for_worker_|.
+  struct WorkerResponseCallbackMapKey;
 
   // Helper to check whether an ExtensionFunction has the required permissions.
   // This should be called after the function is fully initialized.
@@ -152,7 +161,10 @@ class ExtensionFunctionDispatcher
   void DispatchWithCallbackInternal(
       const ExtensionHostMsg_Request_Params& params,
       content::RenderFrameHost* render_frame_host,
+      int render_process_id,
       const ExtensionFunction::ResponseCallback& callback);
+
+  void RemoveWorkerCallbacksForProcess(int render_process_id);
 
   content::BrowserContext* browser_context_;
 
@@ -164,6 +176,14 @@ class ExtensionFunctionDispatcher
   typedef std::map<content::RenderFrameHost*, UIThreadResponseCallbackWrapper*>
       UIThreadResponseCallbackWrapperMap;
   UIThreadResponseCallbackWrapperMap ui_thread_response_callback_wrappers_;
+
+  using UIThreadWorkerResponseCallbackWrapperMap =
+      std::map<WorkerResponseCallbackMapKey,
+               std::unique_ptr<UIThreadWorkerResponseCallbackWrapper>>;
+  // TODO(lazyboy): The map entries are cleared upon RenderProcessHost shutown,
+  // we should really be clearing it on service worker shutdown.
+  UIThreadWorkerResponseCallbackWrapperMap
+      ui_thread_response_callback_wrappers_for_worker_;
 };
 
 }  // namespace extensions
