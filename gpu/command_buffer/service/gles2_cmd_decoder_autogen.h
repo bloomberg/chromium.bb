@@ -946,13 +946,7 @@ error::Error GLES2DecoderImpl::HandleDeleteSync(uint32_t immediate_data_size,
       *static_cast<const gles2::cmds::DeleteSync*>(cmd_data);
   (void)c;
   GLuint sync = c.sync;
-  GLsync service_id = 0;
-  if (group_->GetSyncServiceId(sync, &service_id)) {
-    glDeleteSync(service_id);
-    group_->RemoveSyncId(sync);
-  } else {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glDeleteSync", "unknown sync");
-  }
+  DeleteSyncHelper(sync);
   return error::kNoError;
 }
 
@@ -2410,8 +2404,7 @@ error::Error GLES2DecoderImpl::HandleIsSync(uint32_t immediate_data_size,
   if (!result_dst) {
     return error::kOutOfBounds;
   }
-  GLsync service_sync = 0;
-  *result_dst = group_->GetSyncServiceId(sync, &service_sync);
+  *result_dst = DoIsSync(sync);
   return error::kNoError;
 }
 

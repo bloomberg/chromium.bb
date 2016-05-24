@@ -744,6 +744,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void DeleteSamplersHelper(GLsizei n, const GLuint* client_ids);
   bool GenTransformFeedbacksHelper(GLsizei n, const GLuint* client_ids);
   void DeleteTransformFeedbacksHelper(GLsizei n, const GLuint* client_ids);
+  void DeleteSyncHelper(GLuint sync);
 
   // Workarounds
   void OnFboChanged() const;
@@ -1601,6 +1602,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool DoIsTransformFeedback(GLuint client_id);
   bool DoIsVertexArrayOES(GLuint client_id);
   bool DoIsPathCHROMIUM(GLuint client_id);
+  bool DoIsSync(GLuint client_id);
 
   void DoLineWidth(GLfloat width);
 
@@ -3779,6 +3781,16 @@ void GLES2DecoderImpl::DeleteTransformFeedbacksHelper(
       }
       RemoveTransformFeedback(client_ids[ii]);
     }
+  }
+}
+
+void GLES2DecoderImpl::DeleteSyncHelper(GLuint sync) {
+  GLsync service_id = 0;
+  if (group_->GetSyncServiceId(sync, &service_id)) {
+    glDeleteSync(service_id);
+    group_->RemoveSyncId(sync);
+  } else {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glDeleteSync", "unknown sync");
   }
 }
 
@@ -14029,6 +14041,11 @@ bool GLES2DecoderImpl::DoIsPathCHROMIUM(GLuint client_id) {
   GLuint service_id = 0;
   return path_manager()->GetPath(client_id, &service_id) &&
          glIsPathNV(service_id) == GL_TRUE;
+}
+
+bool GLES2DecoderImpl::DoIsSync(GLuint client_id) {
+  GLsync service_sync = 0;
+  return group_->GetSyncServiceId(client_id, &service_sync);
 }
 
 #if defined(OS_MACOSX)

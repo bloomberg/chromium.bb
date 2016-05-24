@@ -2371,8 +2371,6 @@ _PEPPER_INTERFACES = [
 # not_shared:   For GENn types, True if objects can't be shared between contexts
 # unsafe:       True = no validation is implemented on the service side and the
 #               command is only available with --enable-unsafe-es3-apis.
-# use_helper:   True = use explicit helper or decoder functions rather than the
-#               defaults created when unsafe is True.
 # id_mapping:   A list of resource type names whose client side IDs need to be
 #               mapped to service side IDs.  This is only used for unsafe APIs.
 
@@ -2436,7 +2434,6 @@ _FUNCTION_INFO = {
     'type': 'Bind',
     'decoder_func': 'DoBindSampler',
     'unsafe': True,
-    'use_helper': True,
   },
   'BindTexture': {
     'type': 'Bind',
@@ -2451,7 +2448,6 @@ _FUNCTION_INFO = {
     'type': 'Bind',
     'decoder_func': 'DoBindTransformFeedback',
     'unsafe': True,
-    'use_helper': True,
     'unit_test': False,
   },
   'BlitFramebufferCHROMIUM': {
@@ -2780,7 +2776,6 @@ _FUNCTION_INFO = {
     'resource_type': 'Sampler',
     'resource_types': 'Samplers',
     'unsafe': True,
-    'use_helper': True
   },
   'DeleteShader': { 'type': 'Delete' },
   'DeleteSync': {
@@ -2799,7 +2794,6 @@ _FUNCTION_INFO = {
     'resource_type': 'TransformFeedback',
     'resource_types': 'TransformFeedbacks',
     'unsafe': True,
-    'use_helper': True,
     'unit_test': False,
   },
   'DepthRangef': {
@@ -2928,7 +2922,6 @@ _FUNCTION_INFO = {
     'resource_type': 'Sampler',
     'resource_types': 'Samplers',
     'unsafe': True,
-    'use_helper': True,
   },
   'GenTextures': {
     'type': 'GENn',
@@ -2942,7 +2935,6 @@ _FUNCTION_INFO = {
     'resource_type': 'TransformFeedback',
     'resource_types': 'TransformFeedbacks',
     'unsafe': True,
-    'use_helper': True,
     'unit_test': False,
   },
   'GetActiveAttrib': {
@@ -3157,14 +3149,12 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoGetSamplerParameterfv',
     'result': ['SizedResult<GLfloat>'],
     'unsafe': True,
-    'use_helper': True,
   },
   'GetSamplerParameteriv': {
     'type': 'GETn',
     'decoder_func': 'DoGetSamplerParameteriv',
     'result': ['SizedResult<GLint>'],
     'unsafe': True,
-    'use_helper': True,
   },
   'GetShaderiv': {
     'type': 'GETn',
@@ -3412,12 +3402,12 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoIsSampler',
     'expectation': False,
     'unsafe': True,
-    'use_helper': True,
   },
   'IsSync': {
     'type': 'Is',
     'id_mapping': [ 'Sync' ],
     'cmd_args': 'GLuint sync',
+    'decoder_func': 'DoIsSync',
     'expectation': False,
     'unsafe': True,
   },
@@ -3431,7 +3421,6 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoIsTransformFeedback',
     'expectation': False,
     'unsafe': True,
-    'use_helper': True,
   },
   'GetLastFlushIdCHROMIUM': {
     'gen_cmd': False,
@@ -3588,7 +3577,6 @@ _FUNCTION_INFO = {
     },
     'decoder_func': 'DoSamplerParameterf',
     'unsafe': True,
-    'use_helper': True,
   },
   'SamplerParameterfv': {
     'type': 'PUT',
@@ -3598,7 +3586,6 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoSamplerParameterfv',
     'first_element_only': True,
     'unsafe': True,
-    'use_helper': True,
   },
   'SamplerParameteri': {
     'valid_args': {
@@ -3606,7 +3593,6 @@ _FUNCTION_INFO = {
     },
     'decoder_func': 'DoSamplerParameteri',
     'unsafe': True,
-    'use_helper': True,
   },
   'SamplerParameteriv': {
     'type': 'PUT',
@@ -3616,7 +3602,6 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoSamplerParameteriv',
     'first_element_only': True,
     'unsafe': True,
-    'use_helper': True,
   },
   'ShaderBinary': {
     'type': 'Custom',
@@ -6116,25 +6101,10 @@ class GENnHandler(TypeHandler):
 
   def WriteImmediateHandlerImplementation(self, func, f):
     """Overrriden from TypeHandler."""
-    if func.IsUnsafe() and not func.UseHelper():
-      f.write("""  for (GLsizei ii = 0; ii < n; ++ii) {
-    if (group_->Get%(resource_name)sServiceId(%(last_arg_name)s[ii], NULL)) {
-      return error::kInvalidArguments;
-    }
-  }
-  std::unique_ptr<GLuint[]> service_ids(new GLuint[n]);
-  gl%(func_name)s(n, service_ids.get());
-  for (GLsizei ii = 0; ii < n; ++ii) {
-    group_->Add%(resource_name)sId(%(last_arg_name)s[ii], service_ids[ii]);
-  }
-""" % { 'func_name': func.original_name,
-        'last_arg_name': func.GetLastOriginalArg().name,
-        'resource_name': func.GetInfo('resource_type') })
-    else:
-      f.write("  if (!%sHelper(n, %s)) {\n"
-                 "    return error::kInvalidArguments;\n"
-                 "  }\n" %
-                 (func.original_name, func.GetLastOriginalArg().name))
+    f.write("  if (!%sHelper(n, %s)) {\n"
+            "    return error::kInvalidArguments;\n"
+            "  }\n" %
+            (func.original_name, func.GetLastOriginalArg().name))
 
   def WriteGLES2Implementation(self, func, f):
     """Overrriden from TypeHandler."""
@@ -6220,16 +6190,7 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
   cmds::%(name)s cmd;
   cmd.Init(%(args)s);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());"""
-    if func.IsUnsafe() and not func.UseHelper():
-      valid_test += """
-  GLuint service_id;
-  EXPECT_TRUE(Get%(resource_name)sServiceId(kNewClientId, &service_id));
-  EXPECT_EQ(kNewServiceId, service_id)
-}
-"""
-    else:
-      valid_test += """
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_TRUE(Get%(resource_name)s(kNewClientId, &service_id) != NULL);
 }
 """
@@ -6266,19 +6227,7 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
   cmd->Init(1, &temp);
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(*cmd, sizeof(temp)));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());"""
-    if func.IsUnsafe() and not func.UseHelper():
-      valid_test += """
-  GLuint service_id;
-  EXPECT_TRUE(Get%(resource_name)sServiceId(kNewClientId, &service_id));
-  EXPECT_EQ(kNewServiceId, service_id);
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand,
-            ExecuteImmediateCmd(*cmd, sizeof(temp)));
-}
-"""
-    else:
-      valid_test += """
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_TRUE(Get%(resource_name)s(kNewClientId) != NULL);
 }
 """
@@ -6569,21 +6518,7 @@ class DeleteHandler(TypeHandler):
     """Overrriden from TypeHandler."""
     assert len(func.GetOriginalArgs()) == 1
     arg = func.GetOriginalArgs()[0]
-    if func.IsUnsafe() and not func.UseHelper():
-      f.write("""  %(arg_type)s service_id = 0;
-  if (group_->Get%(resource_type)sServiceId(%(arg_name)s, &service_id)) {
-    glDelete%(resource_type)s(service_id);
-    group_->Remove%(resource_type)sId(%(arg_name)s);
-  } else {
-     LOCAL_SET_GL_ERROR(
-         GL_INVALID_VALUE, "gl%(func_name)s", "unknown %(arg_name)s");
-  }
-""" % { 'resource_type': func.GetInfo('resource_type'),
-        'arg_name': arg.name,
-        'arg_type': arg.type,
-        'func_name': func.original_name })
-    else:
-      f.write("  %sHelper(%s);\n" % (func.original_name, arg.name))
+    f.write("  %sHelper(%s);\n" % (func.original_name, arg.name))
 
 class DELnHandler(TypeHandler):
   """Handler for glDelete___ type functions."""
@@ -6669,18 +6604,7 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
     valid_test += """
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(client_%(resource_name)s_id_)));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());"""
-    if func.IsUnsafe() and not func.UseHelper():
-      valid_test += """
-  EXPECT_FALSE(Get%(upper_resource_name)sServiceId(
-      client_%(resource_name)s_id_, NULL));
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand,
-            ExecuteImmediateCmd(cmd, sizeof(client_%(resource_name)s_id_)));
-}
-"""
-    else:
-      valid_test += """
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
   EXPECT_TRUE(
       Get%(upper_resource_name)s(client_%(resource_name)s_id_) == NULL);
 }
@@ -6720,20 +6644,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs) {
 
   def WriteImmediateHandlerImplementation (self, func, f):
     """Overrriden from TypeHandler."""
-    if func.IsUnsafe() and not func.UseHelper():
-      f.write("""  for (GLsizei ii = 0; ii < n; ++ii) {
-    GLuint service_id = 0;
-    if (group_->Get%(resource_type)sServiceId(
-            %(last_arg_name)s[ii], &service_id)) {
-      glDelete%(resource_type)ss(1, &service_id);
-      group_->Remove%(resource_type)sId(%(last_arg_name)s[ii]);
-    }
-  }
-""" % { 'resource_type': func.GetInfo('resource_type'),
-        'last_arg_name': func.GetLastOriginalArg().name })
-    else:
-      f.write("  %sHelper(n, %s);\n" %
-                 (func.original_name, func.GetLastOriginalArg().name))
+    f.write("  %sHelper(n, %s);\n" %
+            (func.original_name, func.GetLastOriginalArg().name))
 
   def WriteGLES2Implementation(self, func, f):
     """Overrriden from TypeHandler."""
@@ -8440,17 +8352,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgsBadSharedMemoryId) {
 """
     f.write(code % {'func_name': func.name})
     func.WriteHandlerValidation(f)
-    if func.IsUnsafe() and not func.UseHelper():
-      assert func.GetInfo('id_mapping')
-      assert len(func.GetInfo('id_mapping')) == 1
-      assert len(args) == 1
-      id_type = func.GetInfo('id_mapping')[0]
-      f.write("  %s service_%s = 0;\n" % (args[0].type, id_type.lower()))
-      f.write("  *result_dst = group_->Get%sServiceId(%s, &service_%s);\n" %
-                 (id_type, id_type.lower(), id_type.lower()))
-    else:
-      f.write("  *result_dst = %s(%s);\n" %
-                 (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
+    f.write("  *result_dst = %s(%s);\n" %
+            (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
     f.write("  return error::kNoError;\n")
     f.write("}\n")
     f.write("\n")
@@ -9542,10 +9445,6 @@ class Function(object):
   def IsUnsafe(self):
     """Returns whether the function has service side validation or not."""
     return self.GetInfo('unsafe', False)
-
-  def UseHelper(self):
-    """Returns whether the function uses explicit helper functions."""
-    return self.GetInfo('use_helper', False)
 
   def GetInfo(self, name, default = None):
     """Returns a value from the function info for this function."""
