@@ -13,9 +13,8 @@ namespace blimp {
 namespace client {
 
 BlimpOutputSurface::BlimpOutputSurface(
-    const scoped_refptr<cc::ContextProvider>& context_provider)
-    : cc::OutputSurface(context_provider) {
-}
+    scoped_refptr<cc::ContextProvider> context_provider)
+    : cc::OutputSurface(std::move(context_provider), nullptr, nullptr) {}
 
 BlimpOutputSurface::~BlimpOutputSurface() {}
 

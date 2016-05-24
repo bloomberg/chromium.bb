@@ -51,9 +51,9 @@ class GpuSurfacelessBrowserCompositorOutputSurface
       gfx::SwapResult result,
       const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) override;
 
-  unsigned int internalformat_;
+  const unsigned int internalformat_;
   std::unique_ptr<display_compositor::GLHelper> gl_helper_;
-  std::unique_ptr<display_compositor::BufferQueue> output_surface_;
+  std::unique_ptr<display_compositor::BufferQueue> buffer_queue_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
 };
 

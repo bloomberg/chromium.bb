@@ -46,17 +46,14 @@ class OutputSurfaceClient;
 //      surface (on the compositor thread) and go back to step 1.
 class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
  public:
-  OutputSurface(scoped_refptr<ContextProvider> context_provider,
-                scoped_refptr<ContextProvider> worker_context_provider,
-                scoped_refptr<VulkanContextProvider> vulkan_context_provider,
-                std::unique_ptr<SoftwareOutputDevice> software_device);
-  OutputSurface(scoped_refptr<ContextProvider> context_provider,
-                scoped_refptr<ContextProvider> worker_context_provider);
-  explicit OutputSurface(scoped_refptr<ContextProvider> context_provider);
-  explicit OutputSurface(std::unique_ptr<SoftwareOutputDevice> software_device);
+  // Constructor for GL-based and/or software compositing.
+  explicit OutputSurface(scoped_refptr<ContextProvider> context_provider,
+                         scoped_refptr<ContextProvider> worker_context_provider,
+                         std::unique_ptr<SoftwareOutputDevice> software_device);
 
-  OutputSurface(scoped_refptr<ContextProvider> context_provider,
-                std::unique_ptr<SoftwareOutputDevice> software_device);
+  // Constructor for Vulkan-based compositing.
+  explicit OutputSurface(
+      scoped_refptr<VulkanContextProvider> vulkan_context_provider);
 
   ~OutputSurface() override;
 
@@ -172,9 +169,9 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
  protected:
-  OutputSurfaceClient* client_;
-
   void PostSwapBuffersComplete();
+
+  OutputSurfaceClient* client_ = nullptr;
 
   struct OutputSurface::Capabilities capabilities_;
   scoped_refptr<ContextProvider> context_provider_;
@@ -182,8 +179,8 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   scoped_refptr<VulkanContextProvider> vulkan_context_provider_;
   std::unique_ptr<SoftwareOutputDevice> software_device_;
   gfx::Size surface_size_;
-  float device_scale_factor_;
-  bool has_alpha_;
+  float device_scale_factor_ = -1;
+  bool has_alpha_ = true;
   base::ThreadChecker client_thread_checker_;
 
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect);
@@ -192,7 +189,7 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   void DetachFromClientInternal();
 
  private:
-  bool external_stencil_test_enabled_;
+  bool external_stencil_test_enabled_ = false;
 
   base::WeakPtrFactory<OutputSurface> weak_ptr_factory_;
 

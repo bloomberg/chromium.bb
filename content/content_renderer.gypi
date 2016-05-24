@@ -216,8 +216,6 @@
       'renderer/gpu/compositor_forwarding_message_filter.h',
       'renderer/gpu/compositor_output_surface.cc',
       'renderer/gpu/compositor_output_surface.h',
-      'renderer/gpu/delegated_compositor_output_surface.cc',
-      'renderer/gpu/delegated_compositor_output_surface.h',
       'renderer/gpu/frame_swap_message_queue.cc',
       'renderer/gpu/frame_swap_message_queue.h',
       'renderer/gpu/gpu_benchmarking_extension.cc',

@@ -11,7 +11,7 @@ namespace android_webview {
 
 ParentOutputSurface::ParentOutputSurface(
     scoped_refptr<cc::ContextProvider> context_provider)
-    : cc::OutputSurface(context_provider) {
+    : cc::OutputSurface(std::move(context_provider), nullptr, nullptr) {
   stencil_state_.stencil_test_enabled = false;
 }
 

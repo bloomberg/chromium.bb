@@ -49,7 +49,7 @@ class DirectOutputSurface : public cc::OutputSurface {
       const scoped_refptr<cc::ContextProvider>& context_provider,
       const scoped_refptr<cc::ContextProvider>& worker_context_provider,
       std::unique_ptr<cc::BeginFrameSource> begin_frame_source)
-      : cc::OutputSurface(context_provider, worker_context_provider),
+      : cc::OutputSurface(context_provider, worker_context_provider, nullptr),
         begin_frame_source_(std::move(begin_frame_source)),
         weak_ptr_factory_(this) {}
 

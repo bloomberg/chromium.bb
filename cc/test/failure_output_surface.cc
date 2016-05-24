@@ -7,8 +7,7 @@
 namespace cc {
 
 FailureOutputSurface::FailureOutputSurface(bool is_delegating)
-    : FakeOutputSurface(static_cast<ContextProvider*>(nullptr), is_delegating) {
-}
+    : FakeOutputSurface(nullptr, nullptr, is_delegating) {}
 
 bool FailureOutputSurface::BindToClient(OutputSurfaceClient* client) {
   // This will force this output surface to not initialize in LTHI
