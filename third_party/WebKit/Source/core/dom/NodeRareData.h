@@ -48,6 +48,16 @@ public:
         visitor->trace(transientRegistry);
     }
 
+    DECLARE_TRACE_WRAPPERS()
+    {
+        for (auto registration : registry) {
+            visitor->traceWrappers(registration);
+        }
+        for (auto registration : transientRegistry) {
+            visitor->traceWrappers(registration);
+        }
+    }
+
 private:
     NodeMutationObserverData() { }
 };

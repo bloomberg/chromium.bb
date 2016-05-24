@@ -63,6 +63,8 @@ public:
 
     DECLARE_TRACE();
 
+    DECLARE_TRACE_WRAPPERS();
+
     void dispose();
 
 private:

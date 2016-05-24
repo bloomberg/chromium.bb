@@ -144,4 +144,9 @@ DEFINE_TRACE(MutationObserverRegistration)
     visitor->trace(m_transientRegistrationNodes);
 }
 
+DEFINE_TRACE_WRAPPERS(MutationObserverRegistration)
+{
+    visitor->traceWrappers(m_observer);
+}
+
 } // namespace blink

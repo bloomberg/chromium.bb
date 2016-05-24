@@ -20,8 +20,10 @@ class ScriptWrappable;
     V(ElementRareData);                                              \
     V(ElementShadow);                                                \
     V(HTMLImportsController)                                         \
+    V(MutationObserverRegistration);                                 \
     V(NodeIntersectionObserverData)                                  \
     V(NodeListsNodeData);                                            \
+    V(NodeMutationObserverData);                                     \
     V(NodeRareData);                                                 \
     V(StyleEngine);                                                  \
 
