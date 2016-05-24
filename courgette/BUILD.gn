@@ -68,39 +68,41 @@ static_library("courgette_lib") {
   ]
 }
 
-executable("courgette") {
-  if (is_win && current_cpu == "x64") {
-    # The build infrastructure needs courgette to be named courgette64.
-    output_name = "courgette64"
+if (!is_ios) {
+  executable("courgette") {
+    if (is_win && current_cpu == "x64") {
+      # The build infrastructure needs courgette to be named courgette64.
+      output_name = "courgette64"
+    }
+
+    sources = [
+      "courgette_tool.cc",
+    ]
+
+    if (is_win) {
+      ldflags = [ "/LARGEADDRESSAWARE" ]
+    }
+
+    deps = [
+      ":courgette_lib",
+      "//base",
+      "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
+    ]
   }
 
-  sources = [
-    "courgette_tool.cc",
-  ]
+  executable("courgette_minimal_tool") {
+    sources = [
+      "courgette_minimal_tool.cc",
+    ]
 
-  if (is_win) {
-    ldflags = [ "/LARGEADDRESSAWARE" ]
+    deps = [
+      ":courgette_lib",
+      "//base",
+      "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
+    ]
   }
-
-  deps = [
-    ":courgette_lib",
-    "//base",
-    "//build/config/sanitizers:deps",
-    "//build/win:default_exe_manifest",
-  ]
-}
-
-executable("courgette_minimal_tool") {
-  sources = [
-    "courgette_minimal_tool.cc",
-  ]
-
-  deps = [
-    ":courgette_lib",
-    "//base",
-    "//build/config/sanitizers:deps",
-    "//build/win:default_exe_manifest",
-  ]
 }
 
 test("courgette_unittests") {

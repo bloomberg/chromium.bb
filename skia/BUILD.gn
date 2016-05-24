@@ -707,28 +707,30 @@ test("skia_unittests") {
   }
 }
 
-executable("image_operations_bench") {
-  sources = [
-    "ext/image_operations_bench.cc",
-  ]
+if (!is_ios) {
+  executable("image_operations_bench") {
+    sources = [
+      "ext/image_operations_bench.cc",
+    ]
 
-  deps = [
-    ":skia",
-    "//base",
-    "//build/config/sanitizers:deps",
-  ]
-}
+    deps = [
+      ":skia",
+      "//base",
+      "//build/config/sanitizers:deps",
+    ]
+  }
 
-executable("filter_fuzz_stub") {
-  testonly = true
-  sources = [
-    "tools/filter_fuzz_stub/filter_fuzz_stub.cc",
-  ]
+  executable("filter_fuzz_stub") {
+    testonly = true
+    sources = [
+      "tools/filter_fuzz_stub/filter_fuzz_stub.cc",
+    ]
 
-  deps = [
-    ":skia",
-    "//base",
-    "//base/test:test_support",
-    "//build/config/sanitizers:deps",
-  ]
+    deps = [
+      ":skia",
+      "//base",
+      "//base/test:test_support",
+      "//build/config/sanitizers:deps",
+    ]
+  }
 }

@@ -21,8 +21,6 @@ executable("standalone") {
 
 source_set("lib") {
   sources = [
-    "context.cc",
-    "context.h",
     "desktop/launcher_process.cc",
     "desktop/launcher_process.h",
     "desktop/main_helper.cc",
@@ -49,6 +47,13 @@ source_set("lib") {
   data_deps = [
     "//services/tracing",
   ]
+
+  if (!is_ios) {
+    sources += [
+      "context.cc",
+      "context.h",
+    ]
+  }
 
   # This target includes some files behind #ifdef OS... guards. Since gn is not
   # smart enough to understand preprocess includes, it does complains about

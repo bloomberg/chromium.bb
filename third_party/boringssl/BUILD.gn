@@ -140,17 +140,19 @@ if (build_with_chromium) {
     ]
   }
 
-  test("boringssl_unittests") {
-    deps = [
-      ":boringssl_tests",
-      "//base",
-      "//base/test:run_all_unittests",
-      "//base/test:test_support",
-      "//testing/gtest",
-    ]
-    sources = [
-      "boringssl_unittest.cc",
-    ]
+  if (!is_ios) {
+    test("boringssl_unittests") {
+      deps = [
+        ":boringssl_tests",
+        "//base",
+        "//base/test:run_all_unittests",
+        "//base/test:test_support",
+        "//testing/gtest",
+      ]
+      sources = [
+        "boringssl_unittest.cc",
+      ]
+    }
   }
 
   # The same as boringssl, but builds with BORINGSSL_UNSAFE_FUZZER_MODE.

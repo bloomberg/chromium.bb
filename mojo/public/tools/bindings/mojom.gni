@@ -25,10 +25,15 @@ mojom_generator_sources = [
   "$mojom_generator_script",
 ]
 
-_bindings_configuration_files = [
-  "//mojo/public/tools/bindings/chromium_bindings_configuration.gni",
-  "//mojo/public/tools/bindings/blink_bindings_configuration.gni",
-]
+if (!is_ios) {
+  _bindings_configuration_files = [
+    "//mojo/public/tools/bindings/chromium_bindings_configuration.gni",
+    "//mojo/public/tools/bindings/blink_bindings_configuration.gni",
+  ]
+} else {
+  _bindings_configuration_files =
+      [ "//mojo/public/tools/bindings/chromium_bindings_configuration.gni" ]
+}
 _bindings_configurations = []
 foreach(config_file, _bindings_configuration_files) {
   _bindings_configurations += [ read_file(config_file, "scope") ]

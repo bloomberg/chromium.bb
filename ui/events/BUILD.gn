@@ -348,7 +348,6 @@ source_set("test_support") {
 test("events_unittests") {
   sources = [
     "android/scroller_unittest.cc",
-    "blink/blink_event_util_unittest.cc",
     "cocoa/events_mac_unittest.mm",
     "event_dispatcher_unittest.cc",
     "event_processor_unittest.cc",
@@ -392,6 +391,7 @@ test("events_unittests") {
 
   if (!is_ios) {
     sources += [
+      "blink/blink_event_util_unittest.cc",
       "blink/input_handler_proxy_unittest.cc",
       "blink/input_scroll_elasticity_controller_unittest.cc",
       "gestures/blink/web_gesture_curve_impl_unittest.cc",

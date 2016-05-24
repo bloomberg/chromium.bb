@@ -121,9 +121,12 @@ component("system") {
 group("tests") {
   testonly = true
   deps = [
-    ":mojo_message_pipe_perftests",
     ":mojo_system_unittests",
   ]
+
+  if (!is_ios) {
+    deps += [ ":mojo_message_pipe_perftests" ]
+  }
 }
 
 source_set("test_utils") {
@@ -153,7 +156,6 @@ test("mojo_system_unittests") {
     "core_test_base.cc",
     "core_test_base.h",
     "core_unittest.cc",
-    "data_pipe_unittest.cc",
     "message_pipe_unittest.cc",
     "options_validation_unittest.cc",
     "platform_handle_dispatcher_unittest.cc",
@@ -168,7 +170,10 @@ test("mojo_system_unittests") {
   ]
 
   if (!is_ios) {
-    sources += [ "multiprocess_message_pipe_unittest.cc" ]
+    sources += [
+      "data_pipe_unittest.cc",
+      "multiprocess_message_pipe_unittest.cc",
+    ]
   }
 
   deps = [
@@ -186,18 +191,20 @@ test("mojo_system_unittests") {
   allow_circular_includes_from = [ "//mojo/edk/embedder:embedder_unittests" ]
 }
 
-test("mojo_message_pipe_perftests") {
-  sources = [
-    "message_pipe_perftest.cc",
-  ]
+if (!is_ios) {
+  test("mojo_message_pipe_perftests") {
+    sources = [
+      "message_pipe_perftest.cc",
+    ]
 
-  deps = [
-    ":test_utils",
-    "//base",
-    "//base/test:test_support",
-    "//mojo/edk/system",
-    "//mojo/edk/test:run_all_perftests",
-    "//mojo/edk/test:test_support",
-    "//testing/gtest",
-  ]
+    deps = [
+      ":test_utils",
+      "//base",
+      "//base/test:test_support",
+      "//mojo/edk/system",
+      "//mojo/edk/test:run_all_perftests",
+      "//mojo/edk/test:test_support",
+      "//testing/gtest",
+    ]
+  }
 }

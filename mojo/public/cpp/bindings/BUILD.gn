@@ -144,20 +144,22 @@ source_set("struct_traits") {
   ]
 }
 
-source_set("wtf_support") {
-  sources = [
-    "array_traits_wtf.h",
-    "array_traits_wtf_vector.h",
-    "lib/string_traits_wtf.cc",
-    "lib/wtf_serialization.h",
-    "string_traits_wtf.h",
-    "wtf_array.h",
-  ]
+if (!is_ios) {
+  source_set("wtf_support") {
+    sources = [
+      "array_traits_wtf.h",
+      "array_traits_wtf_vector.h",
+      "lib/string_traits_wtf.cc",
+      "lib/wtf_serialization.h",
+      "string_traits_wtf.h",
+      "wtf_array.h",
+    ]
 
-  public_deps = [
-    ":bindings",
-    "//third_party/WebKit/Source/wtf",
-  ]
+    public_deps = [
+      ":bindings",
+      "//third_party/WebKit/Source/wtf",
+    ]
 
-  public_configs = [ "//third_party/WebKit/Source:config" ]
+    public_configs = [ "//third_party/WebKit/Source:config" ]
+  }
 }
