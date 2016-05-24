@@ -605,6 +605,8 @@
         'browser/ui/commands/show_signin_command.mm',
         'browser/ui/context_menu/context_menu_controller.h',
         'browser/ui/context_menu/context_menu_controller.mm',
+        'browser/ui/context_menu/context_menu_coordinator.h',
+        'browser/ui/context_menu/context_menu_coordinator.mm',
         'browser/ui/context_menu/context_menu_holder.h',
         'browser/ui/context_menu/context_menu_holder.mm',
         'browser/ui/context_menu/context_menu_provider.h',

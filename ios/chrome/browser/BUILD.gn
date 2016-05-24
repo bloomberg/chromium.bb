@@ -470,6 +470,8 @@ source_set("browser") {
     "ui/commands/show_signin_command.mm",
     "ui/context_menu/context_menu_controller.h",
     "ui/context_menu/context_menu_controller.mm",
+    "ui/context_menu/context_menu_coordinator.h",
+    "ui/context_menu/context_menu_coordinator.mm",
     "ui/context_menu/context_menu_holder.h",
     "ui/context_menu/context_menu_holder.mm",
     "ui/context_menu/context_menu_provider.h",
