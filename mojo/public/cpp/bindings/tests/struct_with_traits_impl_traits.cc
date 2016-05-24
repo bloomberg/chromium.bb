@@ -5,6 +5,41 @@
 #include "mojo/public/cpp/bindings/tests/struct_with_traits_impl_traits.h"
 
 namespace mojo {
+namespace {
+
+struct Context {
+  int32_t value;
+};
+
+}  // namespace
+
+// static
+void* StructTraits<test::NestedStructWithTraits,
+                   test::NestedStructWithTraitsImpl>::
+    SetUpContext(const test::NestedStructWithTraitsImpl& input) {
+  Context* context = new Context;
+  context->value = input.value;
+  return context;
+}
+
+// static
+void StructTraits<test::NestedStructWithTraits,
+                  test::NestedStructWithTraitsImpl>::
+    TearDownContext(const test::NestedStructWithTraitsImpl& input,
+                    void* context) {
+  Context* context_obj = static_cast<Context*>(context);
+  CHECK_EQ(context_obj->value, input.value);
+  delete context_obj;
+}
+
+// static
+int32_t StructTraits<test::NestedStructWithTraits,
+                     test::NestedStructWithTraitsImpl>::
+    value(const test::NestedStructWithTraitsImpl& input, void* context) {
+  Context* context_obj = static_cast<Context*>(context);
+  CHECK_EQ(context_obj->value, input.value);
+  return input.value;
+}
 
 // static
 bool StructTraits<test::NestedStructWithTraits,

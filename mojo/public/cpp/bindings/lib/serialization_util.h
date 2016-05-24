@@ -213,18 +213,18 @@ struct CustomContextHelper<Traits, false> {
   }
 };
 
-template <typename ReturnType, typename ParamType, typename MaybeConstUserType>
+template <typename ReturnType, typename ParamType, typename InputUserType>
 ReturnType CallWithContext(ReturnType (*f)(ParamType, void*),
-                           MaybeConstUserType& input,
+                           InputUserType&& input,
                            void* context) {
-  return f(input, context);
+  return f(std::forward<InputUserType>(input), context);
 }
 
-template <typename ReturnType, typename ParamType, typename MaybeConstUserType>
+template <typename ReturnType, typename ParamType, typename InputUserType>
 ReturnType CallWithContext(ReturnType (*f)(ParamType),
-                           MaybeConstUserType& input,
+                           InputUserType&& input,
                            void* context) {
-  return f(input);
+  return f(std::forward<InputUserType>(input));
 }
 
 }  // namespace internal

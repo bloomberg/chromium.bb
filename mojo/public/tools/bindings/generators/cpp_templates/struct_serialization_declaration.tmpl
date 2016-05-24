@@ -17,10 +17,6 @@ struct StructTraits<{{mojom_type}}, {{mojom_type}}Ptr> {
       {{mojom_type}}Ptr& input) {
     return input->{{field.name}};
   }
-  static const decltype({{mojom_type}}::{{field.name}})& {{field.name}}(
-      const {{mojom_type}}Ptr& input) {
-    return input->{{field.name}};
-  }
 {%-   else %}
   static decltype({{mojom_type}}::{{field.name}}) {{field.name}}(
       const {{mojom_type}}Ptr& input) {
@@ -43,8 +39,13 @@ struct Serializer<{{mojom_type}}Ptr, MaybeConstUserType> {
                                    SerializationContext* context) {
     if (CallIsNullIfExists<Traits>(input))
       return 0;
-    {{struct_macros.get_serialized_size(struct, "Traits::%s(input)", "context",
-                                        True)|indent(2)}}
+
+    void* custom_context = CustomContextHelper<Traits>::SetUp(input, context);
+    ALLOW_UNUSED_LOCAL(custom_context);
+
+    {{struct_macros.get_serialized_size(
+          struct, "CallWithContext(Traits::%s, input, custom_context)",
+          "context", True)|indent(2)}}
     return size;
   }
 
@@ -52,14 +53,20 @@ struct Serializer<{{mojom_type}}Ptr, MaybeConstUserType> {
                         Buffer* buffer,
                         {{data_type}}** output,
                         SerializationContext* context) {
-    if (!CallIsNullIfExists<Traits>(input)) {
-      {{struct_macros.serialize(struct, struct.name ~ " struct",
-                                "Traits::%s(input)", "result", "buffer",
-                                "context", True)|indent(4)}}
-      *output = result;
-    } else {
+    if (CallIsNullIfExists<Traits>(input)) {
       *output = nullptr;
+      return;
     }
+
+    void* custom_context = CustomContextHelper<Traits>::GetNext(context);
+
+    {{struct_macros.serialize(
+          struct, struct.name ~ " struct",
+          "CallWithContext(Traits::%s, input, custom_context)", "result",
+          "buffer", "context", True)|indent(4)}}
+    *output = result;
+
+    CustomContextHelper<Traits>::TearDown(input, custom_context);
   }
 
   static bool Deserialize({{data_type}}* input,

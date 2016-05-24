@@ -33,6 +33,10 @@ namespace mojo {
 //        - struct:
 //          Value or reference of any type that has a StructTraits defined.
 //
+//      During serialization, getters for string/struct/array/map/union fields
+//      are called twice (one for size calculation and one for actual
+//      serialization); while the others are called once.
+//
 //   2. A static Read() method to set the contents of a |T| instance from a
 //      |MojomType|DataView (e.g., if |MojomType| is test::Example, the data
 //      view will be test::ExampleDataView).
@@ -72,6 +76,33 @@ namespace mojo {
 //      If it is not defined, null is not allowed to be converted to |T|. In
 //      that case, an incoming null value is considered invalid and causes the
 //      message pipe to be disconnected.
+//
+//   4. [Optional] As mentioned above, getters for string/struct/array/map/union
+//      fields are called multiple times (twice to be exact). If you need to do
+//      some expensive calculation/conversion, you probably want to cache the
+//      result across multiple calls. You can introduce an arbitrary context
+//      object by adding two optional methods:
+//        static void* SetUpContext(const T& input);
+//        static void TearDownContext(const T& input, void* context);
+//
+//      And then you append a second parameter, void* context, to getters:
+//        static <return type> <field name>(const T& input, void* context);
+//
+//      If a T instance is not null, the serialization code will call
+//      SetUpContext() at the beginning, and pass the resulting context pointer
+//      to getters. After serialization is done, it calls TearDownContext() so
+//      that you can do any necessary cleanup.
+//
+// In the description above, methods having an |input| parameter define it as
+// const reference of T. Actually, it can be a non-const reference of T too.
+// E.g., if T contains Mojo handles or interfaces whose ownership needs to be
+// transferred. Correspondingly, it requies you to always give non-const T
+// reference/value to the Mojo bindings for serialization:
+//    - if T is used in the "type_mappings" section of a typemap config file,
+//      you need to declare it as pass-by-value:
+//        type_mappings = [ "MojomType=T(pass_by_value)" ]
+//    - if another type U's StructTraits has a getter for T, it needs to return
+//      non-const reference/value.
 //
 // EXAMPLE:
 //
