@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/ui/login/login_handler.h"
+#include "chrome/browser/ui/views/new_task_manager_view.h"
 
 // This file provides definitions of desktop browser dialog-creation methods for
 // all toolkit-views platforms other than Mac. It also provides the definitions
@@ -39,3 +40,20 @@ ExtensionInstallPrompt::GetDefaultShowDialogCallback() {
 void ChromeDevicePermissionsPrompt::ShowDialog() {
   ShowDialogViews();
 }
+
+namespace chrome {
+
+ui::TableModel* ShowTaskManager(Browser* browser) {
+  return task_management::NewTaskManagerView::Show(browser);
+}
+
+void HideTaskManager() {
+  task_management::NewTaskManagerView::Hide();
+}
+
+bool NotifyOldTaskManagerBytesRead(const net::URLRequest& request,
+                                   int64_t bytes_read) {
+  return false;
+}
+
+}  // namespace chrome

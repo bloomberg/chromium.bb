@@ -13,6 +13,8 @@
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/task_management/task_manager_interface.h"
+#include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/window_size_autosaver.h"
@@ -413,7 +415,7 @@ class SortHelper {
   }
 
   bool enabled = [selection count] > 0 && !selectionContainsBrowserProcess &&
-    TaskManager::IsEndProcessEnabled();
+    task_management::TaskManagerInterface::IsEndProcessEnabled();
   [endProcessButton_ setEnabled:enabled];
 }
 
@@ -610,6 +612,15 @@ void HideTaskManager() {
   }
 
   TaskManagerMac::Hide();
+}
+
+bool NotifyOldTaskManagerBytesRead(const net::URLRequest& request,
+                                   int64_t bytes_read) {
+  if (task_management::TaskManagerInterface::IsNewTaskManagerEnabled())
+    return false;
+
+  TaskManager::GetInstance()->model()->NotifyBytesRead(request, bytes_read);
+  return true;
 }
 
 }  // namespace chrome

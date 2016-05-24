@@ -22,6 +22,8 @@
 #include "third_party/WebKit/public/web/WebCache.h"
 #include "ui/gfx/image/image_skia.h"
 
+class PrefRegistrySimple;
+
 namespace net {
 class URLRequest;
 }  // namespace net
@@ -33,6 +35,17 @@ namespace task_management {
 // enabled calculations of the usage of the various resources.
 class TaskManagerInterface {
  public:
+  // Registers the task manager related prefs.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
+  // Returns true if the user is allowed to end processes.
+  static bool IsEndProcessEnabled();
+
+#if defined(OS_MACOSX)
+  // On Mac OS, the old task manager is still being used on cocoa.
+  static bool IsNewTaskManagerEnabled();
+#endif  // defined(OS_MACOSX)
+
   // Gets the existing instance of the task manager if any, otherwise it will
   // create it first. Must be called on the UI thread.
   static TaskManagerInterface* GetTaskManager();

@@ -51,7 +51,7 @@
 #include "chrome/browser/renderer_host/pepper/device_id_fetcher.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/task_manager/task_manager.h"
+#include "chrome/browser/task_management/task_manager_interface.h"
 #include "chrome/browser/tracing/chrome_tracing_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_prefs.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
@@ -333,7 +333,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #endif
 
 #if defined(ENABLE_TASK_MANAGER)
-  TaskManager::RegisterPrefs(registry);
+  task_management::TaskManagerInterface::RegisterPrefs(registry);
 #endif  // defined(ENABLE_TASK_MANAGER)
 
 #if BUILDFLAG(ENABLE_BACKGROUND)

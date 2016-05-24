@@ -2439,7 +2439,6 @@
       'browser/ui/views/tabs/window_finder.h',
       'browser/ui/views/tabs/window_finder_chromeos.cc',
       'browser/ui/views/tabs/window_finder_win.cc',
-      'browser/ui/views/task_manager_view.cc',
       'browser/ui/views/theme_copying_widget.cc',
       'browser/ui/views/theme_copying_widget.h',
       'browser/ui/views/toolbar/app_menu.cc',

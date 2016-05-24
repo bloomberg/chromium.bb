@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/task_manager/task_manager.h"
-
 #include <stddef.h>
 
 #include "base/files/file_path.h"
@@ -22,6 +20,7 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_management/task_manager_browsertest_util.h"
+#include "chrome/browser/task_management/task_manager_interface.h"
 #include "chrome/browser/task_management/task_manager_tester.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -96,10 +95,7 @@ class TaskManagerBrowserTest : public ExtensionBrowserTest {
   }
 
   void Refresh() {
-    // Refresh() isn't ever needed on the new task manager.
-    if (switches::NewTaskManagerEnabled())
-      return;
-    TaskManager::GetInstance()->model()->Refresh();
+    task_management::TaskManagerTester::MaybeRefreshLegacyInstance();
   }
 
   GURL GetTestURL() {

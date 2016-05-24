@@ -10,8 +10,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/task_management/task_manager_interface.h"
 #include "chrome/browser/task_management/task_manager_observer.h"
-#include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/task_manager/task_manager_columns.h"
 #include "chrome/browser/ui/user_manager.h"
@@ -210,7 +210,7 @@ bool NewTaskManagerView::IsDialogButtonEnabled(ui::DialogButton button) const {
       return false;
   }
 
-  return !selections.empty() && TaskManager::IsEndProcessEnabled();
+  return !selections.empty() && TaskManagerInterface::IsEndProcessEnabled();
 }
 
 void NewTaskManagerView::WindowClosing() {

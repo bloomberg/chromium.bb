@@ -217,7 +217,6 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #include <shellapi.h>
-#include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "components/autofill/core/browser/autofill_ie_toolbar_import_win.h"
 #include "ui/base/touch/touch_device.h"

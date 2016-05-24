@@ -9,7 +9,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/task_management/task_manager_interface.h"
-#include "chrome/browser/task_manager/legacy_task_manager_tester.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/task_manager/task_manager_table_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -20,16 +19,6 @@
 namespace task_management {
 
 namespace {
-
-// Returns whether chrome::ShowTaskManager() will, for the current platform and
-// command line, show a view backed by a task_management::TaskManagerTableModel.
-bool IsNewTaskManagerViewEnabled() {
-#if defined(OS_MACOSX)
-  if (!chrome::ToolkitViewsDialogsEnabled())
-    return false;
-#endif
-  return switches::NewTaskManagerEnabled();
-}
 
 // Temporarily intercepts the calls between a TableModel and its Observer,
 // running |callback| whenever anything happens.
@@ -156,7 +145,6 @@ class TaskManagerTesterImpl : public TaskManagerTester {
 
   // Returns the TaskManagerTableModel for the the visible NewTaskManagerView.
   static task_management::TaskManagerTableModel* GetRealModel() {
-    CHECK(IsNewTaskManagerViewEnabled());
     // This downcast is safe, as long as the new task manager is enabled.
     task_management::TaskManagerTableModel* result =
         static_cast<task_management::TaskManagerTableModel*>(
@@ -169,12 +157,9 @@ class TaskManagerTesterImpl : public TaskManagerTester {
 };
 
 // static
-std::unique_ptr<TaskManagerTester> TaskManagerTester::Create(
+std::unique_ptr<TaskManagerTester> TaskManagerTester::CreateDefault(
     const base::Closure& callback) {
-  if (IsNewTaskManagerViewEnabled())
-    return base::WrapUnique(new TaskManagerTesterImpl(callback));
-  else
-    return task_manager::CreateLegacyTaskManagerTester(callback);
+  return base::WrapUnique(new TaskManagerTesterImpl(callback));
 }
 
 }  // namespace task_management

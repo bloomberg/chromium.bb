@@ -24,6 +24,17 @@
 #include "gpu/ipc/common/memory_stats.h"
 #include "third_party/WebKit/public/web/WebCache.h"
 
+// -----------------------------------------------------------------------------
+// DEPRECATED:
+// - This is currently enabled only on MacOSX, and will be removed soon (See
+//   crbug.com/528486).
+// - Please don't add any new stuff here. See the new implementation in
+//   //src/chrome/browser/task_management.
+// -----------------------------------------------------------------------------
+#if !defined(OS_MACOSX)
+#error "The old task manager is deprecated on non-macos platforms."
+#endif  // defined(OS_MACOSX)
+
 class PrefRegistrySimple;
 class PrivateWorkingSetSnapshot;
 class TaskManagerModel;
@@ -52,11 +63,6 @@ class URLRequest;
 // This class is a singleton.
 class TaskManager {
  public:
-  static void RegisterPrefs(PrefRegistrySimple* registry);
-
-  // Returns true if the user is allowed to end processes.
-  static bool IsEndProcessEnabled();
-
   // Returns true if the process at the specified index is the browser process.
   bool IsBrowserProcess(int index) const;
 

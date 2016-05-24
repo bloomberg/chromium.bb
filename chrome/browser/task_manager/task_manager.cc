@@ -22,6 +22,7 @@
 #include "chrome/browser/private_working_set_snapshot.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/task_management/task_manager_interface.h"
 #include "chrome/browser/task_manager/background_information.h"
 #include "chrome/browser/task_manager/browser_process_resource_provider.h"
 #include "chrome/browser/task_manager/child_process_resource_provider.h"
@@ -1504,21 +1505,6 @@ Resource* TaskManagerModel::GetResource(int index) const {
 ////////////////////////////////////////////////////////////////////////////////
 // TaskManager class
 ////////////////////////////////////////////////////////////////////////////////
-// static
-void TaskManager::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(prefs::kTaskManagerWindowPlacement);
-  registry->RegisterDictionaryPref(prefs::kTaskManagerColumnVisibility);
-  registry->RegisterBooleanPref(prefs::kTaskManagerEndProcessEnabled, true);
-}
-
-// static
-bool TaskManager::IsEndProcessEnabled() {
-  if (g_browser_process->local_state()) {
-    return g_browser_process->local_state()->GetBoolean(
-        prefs::kTaskManagerEndProcessEnabled);
-  }
-  return true;
-}
 
 bool TaskManager::IsBrowserProcess(int index) const {
   // If some of the selection is out of bounds, ignore. This may happen when
@@ -1565,7 +1551,7 @@ void TaskManager::ModelChanged() {
 
 // static
 TaskManager* TaskManager::GetInstance() {
-  CHECK(!switches::NewTaskManagerEnabled());
+  CHECK(!task_management::TaskManagerInterface::IsNewTaskManagerEnabled());
   return base::Singleton<TaskManager>::get();
 }
 

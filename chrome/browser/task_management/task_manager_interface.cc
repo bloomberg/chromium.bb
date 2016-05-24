@@ -4,13 +4,40 @@
 
 #include "chrome/browser/task_management/task_manager_interface.h"
 
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/task_management/sampling/task_manager_impl.h"
 #include "chrome/browser/task_management/sampling/task_manager_io_thread_helper.h"
-#include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/ui/browser_dialogs.h"
+#endif  // defined(OS_MACOSX)
+
 namespace task_management {
+
+// static
+void TaskManagerInterface::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(prefs::kTaskManagerWindowPlacement);
+  registry->RegisterDictionaryPref(prefs::kTaskManagerColumnVisibility);
+  registry->RegisterBooleanPref(prefs::kTaskManagerEndProcessEnabled, true);
+}
+
+// static
+bool TaskManagerInterface::IsEndProcessEnabled() {
+  PrefService* state = g_browser_process->local_state();
+  return !state || state->GetBoolean(prefs::kTaskManagerEndProcessEnabled);
+}
+
+#if defined(OS_MACOSX)
+// static
+bool TaskManagerInterface::IsNewTaskManagerEnabled() {
+  return chrome::ToolkitViewsDialogsEnabled();
+}
+#endif  // defined(OS_MACOSX)
 
 // static
 TaskManagerInterface* TaskManagerInterface::GetTaskManager() {
@@ -24,10 +51,12 @@ void TaskManagerInterface::OnRawBytesRead(const net::URLRequest& request,
                                           int64_t bytes_read) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  if (switches::NewTaskManagerEnabled())
-    TaskManagerIoThreadHelper::OnRawBytesRead(request, bytes_read);
-  else
-    TaskManager::GetInstance()->model()->NotifyBytesRead(request, bytes_read);
+#if defined(OS_MACOSX)
+  if (chrome::NotifyOldTaskManagerBytesRead(request, bytes_read))
+    return;
+#endif  // defined(OS_MACOSX)
+
+  TaskManagerIoThreadHelper::OnRawBytesRead(request, bytes_read);
 }
 
 void TaskManagerInterface::AddObserver(TaskManagerObserver* observer) {

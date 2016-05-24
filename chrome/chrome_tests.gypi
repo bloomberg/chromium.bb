@@ -460,8 +460,6 @@
       'browser/task_management/task_manager_browsertest_util.h',
       'browser/task_management/task_manager_tester.cc',
       'browser/task_management/task_manager_tester.h',
-      'browser/task_manager/legacy_task_manager_tester.cc',
-      'browser/task_manager/legacy_task_manager_tester.h',
       'browser/themes/theme_service_browsertest.cc',
       'browser/tracing/chrome_tracing_delegate_browsertest.cc',
       'browser/translate/cld_data_harness.cc',
@@ -610,6 +608,7 @@
     # Tests corresponding to the files in chrome_browser_ui_cocoa_sources.
     # Built on Mac, except when mac_views_browser==1.
     'chrome_browser_tests_cocoa_sources': [
+      'browser/task_manager/legacy_task_manager_tester.cc',
       'browser/ui/cocoa/accelerators_cocoa_browsertest.mm',
       'browser/ui/cocoa/applescript/browsercrapplication+applescript_test.mm',
       'browser/ui/cocoa/applescript/window_applescript_test.mm',
@@ -672,6 +671,7 @@
       # TODO(tapted): Move these to chrome_browser_tests_views_sources when the
       # the corresponding files are moved in chrome_browser_ui.gypi (i.e. out of
       # chrome_browser_ui_views_non_mac_sources). http://crbug.com/404979.
+      'browser/task_manager/task_manager_tester_nonmac.cc',
       'browser/ui/views/autofill/autofill_popup_base_view_browsertest.cc',
       'browser/ui/views/autofill/card_unmask_prompt_view_tester_views.cc',
       'browser/ui/views/autofill/card_unmask_prompt_view_tester_views.h',

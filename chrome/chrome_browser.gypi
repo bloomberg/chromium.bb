@@ -2480,8 +2480,6 @@
       'browser/service_process/service_process_control.cc',
       'browser/service_process/service_process_control.h',
       'browser/service_process/service_process_control_mac.mm',
-      'browser/task_manager/printing_information.cc',
-      'browser/task_manager/printing_information.h',
     ],
     'chrome_browser_profiles_sources': [
       'browser/profiles/avatar_menu_actions.h',
@@ -3017,11 +3015,6 @@
       'browser/sync/sync_sessions_metrics_android.h',
     ],
     'chrome_browser_task_manager_sources': [
-      # Stats collection for CAPS (uses old task manager):
-      'browser/caps/generate_state_json.cc',
-      'browser/caps/generate_state_json.h',
-
-      # New Task Manager Sources:
       'browser/task_management/providers/browser_process_task.cc',
       'browser/task_management/providers/browser_process_task.h',
       'browser/task_management/providers/browser_process_task_provider.cc',
@@ -3089,8 +3082,8 @@
       'browser/task_management/task_manager_interface.h',
       'browser/task_management/task_manager_observer.cc',
       'browser/task_management/task_manager_observer.h',
-
-      # Old Task Manager Sources:
+    ],
+    'chrome_browser_old_task_manager_cocoa_sources': [
       'browser/task_manager/background_information.cc',
       'browser/task_manager/background_information.h',
       'browser/task_manager/browser_process_resource_provider.cc',
@@ -3103,6 +3096,8 @@
       'browser/task_manager/guest_information.h',
       'browser/task_manager/panel_information.cc',
       'browser/task_manager/panel_information.h',
+      'browser/task_manager/printing_information.cc',
+      'browser/task_manager/printing_information.h',
       'browser/task_manager/renderer_resource.cc',
       'browser/task_manager/renderer_resource.h',
       'browser/task_manager/resource_provider.cc',
@@ -3530,6 +3525,11 @@
           'conditions': [
             ['chromeos==1', {
               'sources': [ '<@(chrome_browser_task_manager_chromeos_sources)' ],
+            }],
+            ['OS=="mac" and mac_views_browser==0', {
+              'sources': [
+                '<@(chrome_browser_old_task_manager_cocoa_sources)'
+              ],
             }],
           ],
         }],

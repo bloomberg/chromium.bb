@@ -70,7 +70,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
-#include "chrome/browser/task_manager/task_manager.h"
+#include "chrome/browser/task_management/task_manager_interface.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/cld_data_harness.h"
 #include "chrome/browser/translate/cld_data_harness_factory.h"
@@ -3647,11 +3647,11 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, SSLErrorOverridingDisallowed) {
                   ->ShowingInterstitialPage());
 }
 
-// Test that TaskManager::IsEndProcessEnabled is controlled by
+// Test that TaskManagerInterface::IsEndProcessEnabled is controlled by
 // TaskManagerEndProcessEnabled policy
 IN_PROC_BROWSER_TEST_F(PolicyTest, TaskManagerEndProcessEnabled) {
   // By default it's allowed to end tasks.
-  EXPECT_TRUE(TaskManager::IsEndProcessEnabled());
+  EXPECT_TRUE(task_management::TaskManagerInterface::IsEndProcessEnabled());
 
   // Disabling ending tasks in task manager by policy
   PolicyMap policies1;
@@ -3661,7 +3661,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TaskManagerEndProcessEnabled) {
   UpdateProviderPolicy(policies1);
 
   // Policy should not allow ending tasks anymore.
-  EXPECT_FALSE(TaskManager::IsEndProcessEnabled());
+  EXPECT_FALSE(task_management::TaskManagerInterface::IsEndProcessEnabled());
 
   // Enabling ending tasks in task manager by policy
   PolicyMap policies2;
@@ -3671,7 +3671,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, TaskManagerEndProcessEnabled) {
   UpdateProviderPolicy(policies2);
 
   // Policy should allow ending tasks again.
-  EXPECT_TRUE(TaskManager::IsEndProcessEnabled());
+  EXPECT_TRUE(task_management::TaskManagerInterface::IsEndProcessEnabled());
 }
 
 #if !defined(OS_CHROMEOS)

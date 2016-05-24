@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/task_manager/legacy_task_manager_tester.h"
+#include "chrome/browser/task_management/task_manager_tester.h"
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/task_management/task_manager_interface.h"
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/strings/grit/extensions_strings.h"
 
-namespace task_manager {
+namespace {
 
 class LegacyTaskManagerTester : public task_management::TaskManagerTester,
                                 public TaskManagerModelObserver {
@@ -85,9 +86,23 @@ class LegacyTaskManagerTester : public task_management::TaskManagerTester,
   TaskManagerModel* model_;
 };
 
-std::unique_ptr<task_management::TaskManagerTester>
-CreateLegacyTaskManagerTester(const base::Closure& callback) {
+}  // namespace
+
+namespace task_management {
+
+// static
+std::unique_ptr<TaskManagerTester> TaskManagerTester::Create(
+    const base::Closure& callback) {
+  if (TaskManagerInterface::IsNewTaskManagerEnabled())
+    return TaskManagerTester::CreateDefault(callback);
   return base::WrapUnique(new LegacyTaskManagerTester(callback));
 }
 
-}  // namespace task_manager
+void TaskManagerTester::MaybeRefreshLegacyInstance() {
+  // On Mac, the old task manager might still be used if we are not using mac
+  // views. Refresh() isn't ever needed on the new task manager.
+  if (!TaskManagerInterface::IsNewTaskManagerEnabled())
+    TaskManager::GetInstance()->model()->Refresh();
+}
+
+}  // namespace task_management

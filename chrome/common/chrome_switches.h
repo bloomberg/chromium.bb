@@ -378,10 +378,6 @@ extern const char kAllowNaClFileHandleAPI[];
 extern const char kAllowNaClSocketAPI[];
 #endif
 
-#if defined(ENABLE_TASK_MANAGER)
-extern const char kDisableNewTaskManager[];
-#endif  // defined(ENABLE_TASK_MANAGER)
-
 #if defined(ENABLE_WAYLAND_SERVER)
 extern const char kEnableWaylandServer[];
 #endif
@@ -401,10 +397,6 @@ bool SettingsWindowEnabled();
 #if defined(OS_CHROMEOS)
 bool PowerOverlayEnabled();
 #endif
-
-#if defined(ENABLE_TASK_MANAGER)
-bool NewTaskManagerEnabled();
-#endif  // defined(ENABLE_TASK_MANAGER)
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
 // alphabetical order, or in one of the ifdefs (also in order in each section).

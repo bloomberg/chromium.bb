@@ -478,6 +478,13 @@ source_set("browser") {
                       ".",
                       "//chrome")
     }
+
+    if (is_mac && !mac_views_browser) {
+      sources +=
+          rebase_path(gypi_values.chrome_browser_old_task_manager_cocoa_sources,
+                      ".",
+                      "//chrome")
+    }
   }
   if (enable_spellcheck) {
     sources += rebase_path(gypi_values.chrome_browser_spellchecker_sources,

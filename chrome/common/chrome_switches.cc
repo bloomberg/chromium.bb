@@ -1231,11 +1231,6 @@ const char kIpcFuzzerTestcase[]             = "ipc-fuzzer-testcase";
 const char kDebugPrint[] = "debug-print";
 #endif
 
-#if defined(ENABLE_TASK_MANAGER)
-// Disables the new implementation of the task manager.
-const char kDisableNewTaskManager[]   = "disable-new-task-manager";
-#endif  // defined(ENABLE_TASK_MANAGER)
-
 #if defined(ENABLE_WAYLAND_SERVER)
 // Enables Wayland display server support.
 const char kEnableWaylandServer[] = "enable-wayland-server";
@@ -1318,17 +1313,6 @@ bool PowerOverlayEnabled() {
       ::switches::kEnablePowerOverlay);
 }
 #endif
-
-#if defined(ENABLE_TASK_MANAGER)
-bool NewTaskManagerEnabled() {
-#if defined(OS_MACOSX)
-  return false;  // The new task manager hasn't been adopted on Mac yet.
-#else
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kDisableNewTaskManager);
-#endif  // defined(OS_MACOSX)
-}
-#endif  // defined(ENABLE_TASK_MANAGER)
 
 // -----------------------------------------------------------------------------
 // DO NOT ADD YOUR CRAP TO THE BOTTOM OF THIS FILE.

@@ -115,6 +115,11 @@ void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,
 ui::TableModel* ShowTaskManagerViews(Browser* browser);
 void HideTaskManagerViews();
 
+// Notifies the old task manager with network bytes read events when the Mac
+// views are not used.
+bool NotifyOldTaskManagerBytesRead(const net::URLRequest& request,
+                                   int64_t bytes_read);
+
 #endif  // OS_MACOSX
 
 #if defined(TOOLKIT_VIEWS)

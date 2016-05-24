@@ -6593,14 +6593,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable hardware-accelerated mjpeg decode for captured frame where available.
         </message>
       </if>
-      <if expr="enable_task_manager">
-        <message name="IDS_FLAGS_NEW_TASK_MANAGER_NAME" desc="Name of the flag for the new implementation of the task manager.">
-          New task manager
-        </message>
-        <message name="IDS_FLAGS_NEW_TASK_MANAGER_DESCRIPTION" desc="Description of the flag for the new implementation of the task manager.">
-          Use the new and optimized implementation of the chrome task manager.
-        </message>
-      </if>
       <message name="IDS_FLAGS_SIMPLIFIED_FULLSCREEN_UI_NAME" desc="Name of the flag to enable the new simplified fullscreen and mouse lock UI.">
         Simplified full screen / mouse lock UI.
       </message>

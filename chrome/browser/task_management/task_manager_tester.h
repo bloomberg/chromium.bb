@@ -26,6 +26,9 @@ class TaskManagerTester {
   static std::unique_ptr<TaskManagerTester> Create(
       const base::Closure& callback);
 
+  // If using a legacy task manager, refresh the model.
+  static void MaybeRefreshLegacyInstance();
+
   virtual ~TaskManagerTester() {}
 
   // Get the number of rows currently in the task manager.
@@ -47,6 +50,11 @@ class TaskManagerTester {
 
   // Kill the process of |row|.
   virtual void Kill(int row) = 0;
+
+ private:
+  // Always creates a tester for the non-legacy TaskManager.
+  static std::unique_ptr<TaskManagerTester> CreateDefault(
+      const base::Closure& callback);
 };
 
 }  // namespace task_management

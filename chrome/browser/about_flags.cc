@@ -1590,11 +1590,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_CLEAR_BROWSING_DATA_COUNTERS_DESCRIPTION, kOsAll,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableClearBrowsingDataCounters,
                                switches::kDisableClearBrowsingDataCounters)},
-#if defined(ENABLE_TASK_MANAGER)
-    {"disable-new-task-manager", IDS_FLAGS_NEW_TASK_MANAGER_NAME,
-     IDS_FLAGS_NEW_TASK_MANAGER_DESCRIPTION, kOsDesktop,
-     SINGLE_DISABLE_VALUE_TYPE(switches::kDisableNewTaskManager)},
-#endif  // defined(ENABLE_TASK_MANAGER)
     {"simplified-fullscreen-ui", IDS_FLAGS_SIMPLIFIED_FULLSCREEN_UI_NAME,
      IDS_FLAGS_SIMPLIFIED_FULLSCREEN_UI_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kSimplifiedFullscreenUI)},

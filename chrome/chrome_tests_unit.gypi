@@ -727,15 +727,11 @@
       'browser/ui/ash/launcher/test/test_chrome_launcher_app_menu_item.h',
     ],
     'chrome_unit_tests_task_manager_sources': [
-      # New Task Manager Tests Sources:
       'browser/task_management/providers/browser_process_task_unittest.cc',
       'browser/task_management/providers/child_process_task_unittest.cc',
       'browser/task_management/task_manager_observer_unittest.cc',
       'browser/task_management/test_task_manager.cc',
       'browser/task_management/test_task_manager.h',
-      # Old Task Manager Tests Sources:
-      'browser/task_manager/task_manager_unittest.cc',
-      'browser/task_manager/task_manager_util_unittest.cc',
     ],
     'chrome_unit_tests_mdns_sources': [
       'browser/local_discovery/local_domain_resolver_unittest.cc',
@@ -1154,6 +1150,8 @@
     # Tests corresponding to the files in chrome_browser_ui_cocoa_sources.
     # Built on Mac, except when mac_views_browser==1.
     'chrome_unit_tests_cocoa_sources': [
+      'browser/task_manager/task_manager_unittest.cc',
+      'browser/task_manager/task_manager_util_unittest.cc',
       'browser/ui/cocoa/accelerators_cocoa_unittest.mm',
       'browser/ui/cocoa/animatable_image_unittest.mm',
       'browser/ui/cocoa/animatable_view_unittest.mm',
