@@ -314,6 +314,15 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/shaderstruct.html',
         ['win', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'teximage3d_depth.html',
+        ['win', 'intel'], bug=614418)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'texsubimage3d_depth.html',
+        ['win', 'intel'], bug=614418)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'texstorage3d_format_depth_stencil.html',
+        ['win', 'intel'], bug=614418)
 
     # Mac only.
     self.Fail('deqp/functional/gles3/texturefiltering/cube_formats_*',
