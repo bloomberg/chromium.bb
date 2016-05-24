@@ -106,7 +106,6 @@ void ConfigureSpdyParams(const base::CommandLine& command_line,
   // "spdy.disabled" preference is not forced via policy.
   if (!is_spdy_allowed_by_policy) {
     params->enable_spdy31 = false;
-    params->enable_http2 = false;
     return;
   }
 

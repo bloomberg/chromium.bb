@@ -161,7 +161,7 @@ TEST_F(NetworkSessionConfiguratorTest, SpdyDisallowedByPolicy) {
   ParseFieldTrialsAndCommandLine();
 
   EXPECT_FALSE(params_.enable_spdy31);
-  EXPECT_FALSE(params_.enable_http2);
+  EXPECT_TRUE(params_.enable_http2);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, NPNFieldTrialEnabled) {
