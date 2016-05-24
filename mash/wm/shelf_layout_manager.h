@@ -12,10 +12,12 @@
 namespace mash {
 namespace wm {
 
+class ShelfLayoutManagerDelegate;
+
 // Lays out the shelf within shelf containers.
 class ShelfLayoutManager : public LayoutManager {
  public:
-  explicit ShelfLayoutManager(mus::Window* owner);
+  ShelfLayoutManager(mus::Window* owner, ShelfLayoutManagerDelegate* delegate);
   ~ShelfLayoutManager() override;
 
   // Returns the shelf, which may be null.
@@ -32,7 +34,9 @@ class ShelfLayoutManager : public LayoutManager {
  private:
   // Overridden from LayoutManager:
   void LayoutWindow(mus::Window* window) override;
+  void WindowAdded(mus::Window* window) override;
 
+  ShelfLayoutManagerDelegate* delegate_;
   shelf::mojom::Alignment alignment_;
   shelf::mojom::AutoHideBehavior auto_hide_behavior_;
 

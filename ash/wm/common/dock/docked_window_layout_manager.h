@@ -35,7 +35,7 @@ class WmShelf;
 
 // DockedWindowLayoutManager is responsible for organizing windows when they are
 // docked to the side of a screen. It is associated with a specific container
-// window (i.e. kShellWindowId_DockContainer) and controls the layout of any
+// window (i.e. kShellWindowId_DockedContainer) and controls the layout of any
 // windows added to that container.
 //
 // The constructor takes a |dock_container| argument which is expected to set

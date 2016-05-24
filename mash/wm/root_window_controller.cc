@@ -219,6 +219,19 @@ void RootWindowController::OnWindowDestroyed(mus::Window* window) {
   root_ = nullptr;
 }
 
+void RootWindowController::OnShelfWindowAvailable() {
+  ash::DockedWindowLayoutManager::Get(WmWindowMus::Get(root_))
+      ->SetShelf(wm_shelf_.get());
+
+  ash::PanelLayoutManager::Get(WmWindowMus::Get(root_))
+      ->SetShelf(wm_shelf_.get());
+
+  // TODO: http://crbug.com/614182 Ash's ShelfLayoutManager implements
+  // DockedWindowLayoutManagerObserver so that it can inset by the docked
+  // windows.
+  // docked_layout_manager_->AddObserver(shelf_->shelf_layout_manager());
+}
+
 void RootWindowController::CreateContainer(
     mash::wm::mojom::Container container,
     mash::wm::mojom::Container parent_container) {
@@ -293,7 +306,8 @@ void RootWindowController::CreateContainers() {
 
   mus::Window* user_shelf =
       GetWindowForContainer(mojom::Container::USER_PRIVATE_SHELF);
-  ShelfLayoutManager* shelf_layout_manager = new ShelfLayoutManager(user_shelf);
+  ShelfLayoutManager* shelf_layout_manager =
+      new ShelfLayoutManager(user_shelf, this);
   layout_managers_[user_shelf].reset(shelf_layout_manager);
 
   wm_shelf_.reset(new WmShelfMus(shelf_layout_manager));

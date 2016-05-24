@@ -7,13 +7,16 @@
 #include "components/mus/public/cpp/window.h"
 #include "mash/wm/property_util.h"
 #include "mash/wm/public/interfaces/ash_window_type.mojom.h"
+#include "mash/wm/shelf_layout_manager_delegate.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace mash {
 namespace wm {
 
-ShelfLayoutManager::ShelfLayoutManager(mus::Window* owner)
+ShelfLayoutManager::ShelfLayoutManager(mus::Window* owner,
+                                       ShelfLayoutManagerDelegate* delegate)
     : LayoutManager(owner),
+      delegate_(delegate),
       alignment_(shelf::mojom::Alignment::BOTTOM),
       auto_hide_behavior_(shelf::mojom::AutoHideBehavior::NEVER) {
   AddLayoutProperty(mus::mojom::WindowManager::kPreferredSize_Property);
@@ -27,6 +30,24 @@ mus::Window* ShelfLayoutManager::GetShelfWindow() {
       return child;
   }
   return nullptr;
+}
+
+void ShelfLayoutManager::SetAlignment(shelf::mojom::Alignment alignment) {
+  if (alignment_ == alignment)
+    return;
+
+  alignment_ = alignment;
+  for (mus::Window* window : owner()->children())
+    LayoutWindow(window);
+}
+
+void ShelfLayoutManager::SetAutoHideBehavior(
+    shelf::mojom::AutoHideBehavior auto_hide) {
+  if (auto_hide_behavior_ == auto_hide)
+    return;
+
+  auto_hide_behavior_ = auto_hide;
+  NOTIMPLEMENTED();
 }
 
 // We explicitly don't make assertions about the number of children in this
@@ -53,22 +74,9 @@ void ShelfLayoutManager::LayoutWindow(mus::Window* window) {
   }
 }
 
-void ShelfLayoutManager::SetAlignment(shelf::mojom::Alignment alignment) {
-  if (alignment_ == alignment)
-    return;
-
-  alignment_ = alignment;
-  for (mus::Window* window : owner()->children())
-    LayoutWindow(window);
-}
-
-void ShelfLayoutManager::SetAutoHideBehavior(
-    shelf::mojom::AutoHideBehavior auto_hide) {
-  if (auto_hide_behavior_ == auto_hide)
-    return;
-
-  auto_hide_behavior_ = auto_hide;
-  NOTIMPLEMENTED();
+void ShelfLayoutManager::WindowAdded(mus::Window* window) {
+  if (GetAshWindowType(window) == mojom::AshWindowType::SHELF)
+    delegate_->OnShelfWindowAvailable();
 }
 
 }  // namespace wm

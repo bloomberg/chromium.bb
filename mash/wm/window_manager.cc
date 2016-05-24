@@ -84,8 +84,10 @@ mus::Window* WindowManager::NewTopLevelWindow(
   mus::Window* root = root_controller_->root();
   DCHECK(root);
 
+  // TODO(sky): panels need a different frame, http:://crbug.com/614362.
   const bool provide_non_client_frame =
-      GetWindowType(*properties) == mus::mojom::WindowType::WINDOW;
+      GetWindowType(*properties) == mus::mojom::WindowType::WINDOW ||
+      GetWindowType(*properties) == mus::mojom::WindowType::PANEL;
   if (provide_non_client_frame)
     (*properties)[mus::mojom::kWaitForUnderlay_Property].clear();
 

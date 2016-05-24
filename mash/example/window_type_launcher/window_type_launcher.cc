@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/mus/public/cpp/property_type_converters.h"
 #include "mash/session/public/interfaces/session.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "services/shell/public/cpp/connection.h"
@@ -59,6 +60,12 @@ class WindowDelegateView : public views::WidgetDelegateView {
     views::Widget::InitParams params(
         (traits & PANEL) != 0 ? views::Widget::InitParams::TYPE_PANEL
                               : views::Widget::InitParams::TYPE_WINDOW);
+    if ((traits & PANEL) != 0) {
+      params
+          .mus_properties[mus::mojom::WindowManager::kInitialBounds_Property] =
+          mojo::TypeConverter<std::vector<uint8_t>, gfx::Rect>::Convert(
+              gfx::Rect(100, 100, 300, 300));
+    }
     params.keep_on_top = (traits & ALWAYS_ON_TOP) != 0;
     // WidgetDelegateView deletes itself when Widget is destroyed.
     params.delegate = new WindowDelegateView(traits);

@@ -69,6 +69,7 @@ source_set("lib") {
     "shelf_layout_impl.h",
     "shelf_layout_manager.cc",
     "shelf_layout_manager.h",
+    "shelf_layout_manager_delegate.h",
     "status_layout_manager.cc",
     "status_layout_manager.h",
     "user_window_controller_impl.cc",

@@ -106,8 +106,9 @@ void WmRootWindowControllerMus::ConfigureWidgetInitParamsForContainer(
     views::Widget* widget,
     int shell_container_id,
     views::Widget::InitParams* init_params) {
-  init_params->parent_mus =
-      root_window_controller_->root()->GetChildByLocalId(shell_container_id);
+  init_params->parent_mus = WmWindowMus::GetMusWindow(
+      WmWindowMus::Get(root_window_controller_->root())
+          ->GetChildByShellWindowId(shell_container_id));
   DCHECK(init_params->parent_mus);
   mus::Window* new_window =
       root_window_controller_->root()->connection()->NewWindow();

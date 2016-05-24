@@ -12,6 +12,7 @@
 #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
+#include "mash/wm/shelf_layout_manager_delegate.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/display/display.h"
 
@@ -50,7 +51,8 @@ class WmTestHelper;
 // RootWindowController deletes itself when the root mus::Window is destroyed.
 // You can trigger deletion explicitly by way of Destroy().
 class RootWindowController : public mus::WindowObserver,
-                             public mus::WindowTreeDelegate {
+                             public mus::WindowTreeDelegate,
+                             public ShelfLayoutManagerDelegate {
  public:
   static RootWindowController* CreateFromDisplay(
       WindowManagerApplication* app,
@@ -103,6 +105,9 @@ class RootWindowController : public mus::WindowObserver,
 
   // mus::WindowObserver:
   void OnWindowDestroyed(mus::Window* window) override;
+
+  // ShelfLayoutManagerDelegate:
+  void OnShelfWindowAvailable() override;
 
   // Sets up the window containers used for z-space management.
   void CreateContainer(mash::wm::mojom::Container container,
