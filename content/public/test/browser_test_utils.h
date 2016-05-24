@@ -264,6 +264,12 @@ void FetchHistogramsFromChildProcesses();
 // "/cross-site/hostname/rest/of/path" to redirect the request to
 // "<scheme>://hostname:<port>/rest/of/path", where <scheme> and <port>
 // are the values for the instance of EmbeddedTestServer.
+//
+// By default, redirection will be done using HTTP 302 response, but in some
+// cases (e.g. to preserve HTTP method and POST body across redirects as
+// prescribed by https://tools.ietf.org/html/rfc7231#section-6.4.7) a test might
+// want to use HTTP 307 response instead.  This can be accomplished by replacing
+// "/cross-site/" URL substring above with "/cross-site-307/".
 void SetupCrossSiteRedirector(net::EmbeddedTestServer* embedded_test_server);
 
 // Waits for an interstitial page to attach to given web contents.

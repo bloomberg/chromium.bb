@@ -1,3 +1,7 @@
 # crbug.com/417518: Get tests working with --site-per-process
 -NavigationControllerBrowserTest.ReloadOriginalRequest
 -*.RestoreSubframeFileAccessForHistoryNavigation
+
+# crbug.com/613004: POST data is lost when navigating back to a post that does
+# cross-site transfer.
+-SessionHistoryTest.GoBackToCrossSitePostWithRedirect

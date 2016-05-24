@@ -15,8 +15,10 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -51,7 +53,10 @@ class SessionHistoryTest : public ContentBrowserTest {
   SessionHistoryTest() {}
 
   void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+
     ASSERT_TRUE(embedded_test_server()->Start());
+    SetupCrossSiteRedirector(embedded_test_server());
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&HandleEchoTitleRequest, "/echotitle"));
 
@@ -497,6 +502,67 @@ IN_PROC_BROWSER_TEST_F(SessionHistoryTest, HistoryLength) {
       "domAutomationController.send(history.length)",
       &length));
   EXPECT_EQ(2, length);
+}
+
+// Test that verifies that a cross-process transfer doesn't lose session
+// history state - https://crbug.com/613004.
+//
+// Trigerring a cross-process transfer via embedded_test_server requires use of
+// a HTTP redirect response (to preserve port number).  Therefore the test ends
+// up accidentally testing redirection logic as well - in particular, the test
+// uses 307 (rather than 302) redirect to preserve the body of HTTP POST across
+// redirects (as mandated by https://tools.ietf.org/html/rfc7231#section-6.4.7).
+IN_PROC_BROWSER_TEST_F(SessionHistoryTest, GoBackToCrossSitePostWithRedirect) {
+  GURL form_url(embedded_test_server()->GetURL(
+      "a.com", "/session_history/form_that_posts_cross_site.html"));
+  GURL redirect_target_url(embedded_test_server()->GetURL("x.com", "/echoall"));
+  GURL page_to_go_back_from(
+      embedded_test_server()->GetURL("c.com", "/title1.html"));
+
+  // Navigate to the page with form that posts via 307 redirection to
+  // |redirect_target_url| (cross-site from |form_url|).
+  EXPECT_TRUE(NavigateToURL(shell(), form_url));
+
+  // Submit the form.
+  TestNavigationObserver form_post_observer(shell()->web_contents(), 1);
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "document.getElementById('form').submit();"));
+  form_post_observer.Wait();
+
+  // Verify that we arrived at the expected, redirected location.
+  EXPECT_EQ(redirect_target_url,
+            shell()->web_contents()->GetLastCommittedURL());
+
+  // Verify that POST body got preserved by 307 redirect.  This expectation
+  // comes from: https://tools.ietf.org/html/rfc7231#section-6.4.7
+  std::string body;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      shell()->web_contents(),
+      "window.domAutomationController.send("
+      "document.getElementsByTagName('pre')[0].innerText);",
+      &body));
+  EXPECT_EQ("text=value\n", body);
+
+  // Navigate to a page from yet another site.
+  EXPECT_TRUE(NavigateToURL(shell(), page_to_go_back_from));
+
+  // Go back - this should resubmit form's post data.
+  TestNavigationObserver back_nav_observer(shell()->web_contents(), 1);
+  shell()->web_contents()->GetController().GoBack();
+  back_nav_observer.Wait();
+
+  // Again verify that we arrived at the expected, redirected location.
+  EXPECT_EQ(redirect_target_url,
+            shell()->web_contents()->GetLastCommittedURL());
+
+  // Again verify that POST body got preserved by 307 redirect.
+  std::string body_after_back_navigation;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      shell()->web_contents(),
+      "window.domAutomationController.send("
+      "document.getElementsByTagName('pre')[0].innerText);",
+      &body_after_back_navigation));
+  EXPECT_EQ("text=value\n", body_after_back_navigation);
 }
 
 }  // namespace content

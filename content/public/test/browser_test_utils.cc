@@ -291,12 +291,25 @@ void SetCookieOnIOThread(const GURL& url,
 std::unique_ptr<net::test_server::HttpResponse>
 CrossSiteRedirectResponseHandler(const GURL& server_base_url,
                                  const net::test_server::HttpRequest& request) {
-  std::string prefix("/cross-site/");
-  if (!base::StartsWith(request.relative_url, prefix,
-                        base::CompareCase::SENSITIVE))
-    return std::unique_ptr<net::test_server::HttpResponse>();
+  net::HttpStatusCode http_status_code;
 
-  std::string params = request.relative_url.substr(prefix.length());
+  // Inspect the prefix and extract the remainder of the url into |params|.
+  size_t length_of_chosen_prefix;
+  std::string prefix_302("/cross-site/");
+  std::string prefix_307("/cross-site-307/");
+  if (base::StartsWith(request.relative_url, prefix_302,
+                       base::CompareCase::SENSITIVE)) {
+    http_status_code = net::HTTP_MOVED_PERMANENTLY;
+    length_of_chosen_prefix = prefix_302.length();
+  } else if (base::StartsWith(request.relative_url, prefix_307,
+                              base::CompareCase::SENSITIVE)) {
+    http_status_code = net::HTTP_TEMPORARY_REDIRECT;
+    length_of_chosen_prefix = prefix_307.length();
+  } else {
+    // Unrecognized prefix - let somebody else handle this request.
+    return std::unique_ptr<net::test_server::HttpResponse>();
+  }
+  std::string params = request.relative_url.substr(length_of_chosen_prefix);
 
   // A hostname to redirect to must be included in the URL, therefore at least
   // one '/' character is expected.
@@ -316,7 +329,7 @@ CrossSiteRedirectResponseHandler(const GURL& server_base_url,
 
   std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse);
-  http_response->set_code(net::HTTP_MOVED_PERMANENTLY);
+  http_response->set_code(http_status_code);
   http_response->AddCustomHeader("Location", redirect_target.spec());
   return std::move(http_response);
 }
