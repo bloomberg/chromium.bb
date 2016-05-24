@@ -829,14 +829,6 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   hr = CreateCOMObjectFromDll(video_processor_dll, CLSID_VideoProcessorMFT,
                               __uuidof(IMFTransform),
                               video_format_converter_mft_.ReceiveVoid());
-  if (FAILED(hr)) {
-    base::debug::Alias(&hr);
-    // TODO(ananta)
-    // Remove this CHECK when the change to use DX11 for H/W decoding
-    // stablizes.
-    CHECK(false);
-  }
-
   RETURN_ON_HR_FAILURE(hr, "Failed to create video format converter", false);
 
   base::win::ScopedComPtr<IMFAttributes> converter_attributes;
@@ -2397,11 +2389,6 @@ void DXVAVideoDecodeAccelerator::CopyTexture(
   hr = MFCreateDXGISurfaceBuffer(__uuidof(ID3D11Texture2D), dest_texture, 0,
                                  FALSE, output_buffer.Receive());
   if (FAILED(hr)) {
-    base::debug::Alias(&hr);
-    // TODO(ananta)
-    // Remove this CHECK when the change to use DX11 for H/W decoding
-    // stablizes.
-    CHECK(false);
     RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to create output sample.",
                                     PLATFORM_FAILURE, );
   }
@@ -2424,11 +2411,7 @@ void DXVAVideoDecodeAccelerator::CopyTexture(
       &format_converter_output, &status);
 
   if (FAILED(hr)) {
-    base::debug::Alias(&hr);
-    // TODO(ananta)
-    // Remove this CHECK when the change to use DX11 for H/W decoding
-    // stablizes.
-    CHECK(false);
+    DCHECK(false);
     RETURN_AND_NOTIFY_ON_HR_FAILURE(
         hr, "Failed to convert output sample format.", PLATFORM_FAILURE, );
   }
@@ -2483,13 +2466,8 @@ void DXVAVideoDecodeAccelerator::FlushDecoder(int iterations,
     BOOL query_data = 0;
     hr = d3d11_device_context_->GetData(d3d11_query_.get(), &query_data,
                                         sizeof(BOOL), 0);
-    if (FAILED(hr)) {
-      base::debug::Alias(&hr);
-      // TODO(ananta)
-      // Remove this CHECK when the change to use DX11 for H/W decoding
-      // stablizes.
-      CHECK(false);
-    }
+    if (FAILED(hr))
+      DCHECK(false);
   } else {
     hr = query_->GetData(NULL, 0, D3DGETDATA_FLUSH);
   }
@@ -2521,13 +2499,9 @@ bool DXVAVideoDecodeAccelerator::InitializeDX11VideoFormatConverterMediaType(
       MFT_MESSAGE_SET_D3D_MANAGER,
       reinterpret_cast<ULONG_PTR>(d3d11_device_manager_.get()));
 
-  if (FAILED(hr)) {
-    base::debug::Alias(&hr);
-    // TODO(ananta)
-    // Remove this CHECK when the change to use DX11 for H/W decoding
-    // stablizes.
-    CHECK(false);
-  }
+  if (FAILED(hr))
+    DCHECK(false);
+
   RETURN_AND_NOTIFY_ON_HR_FAILURE(hr,
                                   "Failed to initialize video format converter",
                                   PLATFORM_FAILURE, false);
@@ -2553,13 +2527,9 @@ bool DXVAVideoDecodeAccelerator::InitializeDX11VideoFormatConverterMediaType(
                                   PLATFORM_FAILURE, false);
 
   hr = video_format_converter_mft_->SetInputType(0, media_type.get(), 0);
-  if (FAILED(hr)) {
-    base::debug::Alias(&hr);
-    // TODO(ananta)
-    // Remove this CHECK when the change to use DX11 for H/W decoding
-    // stablizes.
-    CHECK(false);
-  }
+  if (FAILED(hr))
+    DCHECK(false);
+
   RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to set converter input type",
                                   PLATFORM_FAILURE, false);
 
@@ -2574,8 +2544,6 @@ bool DXVAVideoDecodeAccelerator::InitializeDX11VideoFormatConverterMediaType(
   }
 
   if (!media_type_set) {
-    // Remove this once this stabilizes in the field.
-    CHECK(false);
     LOG(ERROR) << "Failed to find a matching RGB output type in the converter";
     return false;
   }
