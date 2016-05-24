@@ -144,6 +144,10 @@ class Node {
   int LostConnectionToNode(const NodeName& node_name);
 
  private:
+  class LockedPort;
+
+  // Note: Functions that end with _Locked require |ports_lock_| to be held
+  // before calling.
   int OnUserMessage(ScopedMessage message);
   int OnPortAccepted(const PortName& port_name);
   int OnObserveProxy(const PortName& port_name,
@@ -154,26 +158,30 @@ class Node {
 
   int AddPortWithName(const PortName& port_name,
                       const scoped_refptr<Port>& port);
+  void ErasePort(const PortName& port_name);
   void ErasePort_Locked(const PortName& port_name);
   scoped_refptr<Port> GetPort(const PortName& port_name);
   scoped_refptr<Port> GetPort_Locked(const PortName& port_name);
 
   int SendMessageInternal(const PortRef& port_ref, ScopedMessage* message);
   int MergePorts_Locked(const PortRef& port0_ref, const PortRef& port1_ref);
-  void WillSendPort_Locked(Port* port,
-                           const NodeName& to_node_name,
-                           PortName* port_name,
-                           PortDescriptor* port_descriptor);
+  void WillSendPort(const LockedPort& port,
+                    const NodeName& to_node_name,
+                    PortName* port_name,
+                    PortDescriptor* port_descriptor);
   int AcceptPort(const PortName& port_name,
                  const PortDescriptor& port_descriptor);
 
-  int WillSendMessage_Locked(Port* port,
+  int WillSendMessage_Locked(const LockedPort& port,
                              const PortName& port_name,
                              Message* message);
-  int BeginProxying_Locked(Port* port, const PortName& port_name);
-  int ForwardMessages_Locked(Port* port, const PortName& port_name);
-  void InitiateProxyRemoval_Locked(Port* port, const PortName& port_name);
-  void MaybeRemoveProxy_Locked(Port* port, const PortName& port_name);
+  int BeginProxying_Locked(const LockedPort& port, const PortName& port_name);
+  int BeginProxying(PortRef port_ref);
+  int ForwardMessages_Locked(const LockedPort& port, const PortName& port_name);
+  void InitiateProxyRemoval(const LockedPort& port, const PortName& port_name);
+  void MaybeRemoveProxy_Locked(const LockedPort& port,
+                               const PortName& port_name);
+  void TryRemoveProxy(PortRef port_ref);
 
   ScopedMessage NewInternalMessage_Helper(const PortName& port_name,
                                           const EventType& type,
