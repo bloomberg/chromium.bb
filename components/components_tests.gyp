@@ -714,7 +714,6 @@
     'search_engines_unittest_sources': [
       'search_engines/default_search_manager_unittest.cc',
       'search_engines/default_search_pref_migration_unittest.cc',
-      'search_engines/desktop_search_utils_unittest.cc',
       'search_engines/keyword_table_unittest.cc',
       'search_engines/search_engine_data_type_controller_unittest.cc',
       'search_engines/search_host_to_urls_map_unittest.cc',

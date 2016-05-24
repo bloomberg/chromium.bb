@@ -3043,6 +3043,10 @@ should be able to be added at any place in this file.
     Recorded when a desktop search is opened in Chrome. This is currently
     Windows-specific.
   </description>
+  <obsolete>
+    Deprecated 05/2016 because desktop searches are no longer opened in the
+    default browser.
+  </obsolete>
 </action>
 
 <action name="DesktopSearchRedirectionInfoBar_Dismiss">
@@ -3052,6 +3056,10 @@ should be able to be added at any place in this file.
     explaining that a desktop search has been redirected to the default search
     engine.
   </description>
+  <obsolete>
+    Deprecated 05/2016 because desktop searches are no longer opened in the
+    default browser.
+  </obsolete>
 </action>
 
 <action name="DesktopSearchRedirectionInfoBar_Ignore">
@@ -3060,6 +3068,10 @@ should be able to be added at any place in this file.
     Recorded when the infobar explaining that a desktop search has been
     redirected to the default search engine is closed without user interaction.
   </description>
+  <obsolete>
+    Deprecated 05/2016 because desktop searches are no longer opened in the
+    default browser.
+  </obsolete>
 </action>
 
 <action name="DesktopSearchRedirectionInfoBar_ManageSearchSettings">
@@ -3069,6 +3081,10 @@ should be able to be added at any place in this file.
     infobar explaining that a desktop search has been redirected to the default
     search engine.
   </description>
+  <obsolete>
+    Deprecated 05/2016 because desktop searches are no longer opened in the
+    default browser.
+  </obsolete>
 </action>
 
 <action name="DesktopSearchRedirectionInfoBar_Shown">
@@ -3077,6 +3093,10 @@ should be able to be added at any place in this file.
     Recorded when the infobar explaining that a desktop search has been
     redirected to the default search engine is shown.
   </description>
+  <obsolete>
+    Deprecated 05/2016 because desktop searches are no longer opened in the
+    default browser.
+  </obsolete>
 </action>
 
 <action name="Desktop_SwitchTask">

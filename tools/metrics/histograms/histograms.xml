@@ -48781,6 +48781,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Search.DesktopSearch.RedirectionInfobarCloseAction"
     enum="DesktopSearchRedirectionInfobarCloseAction">
+  <obsolete>
+    Deprecated 05/2016 because desktop searches are no longer opened in the
+    default browser.
+  </obsolete>
   <owner>fdoray@chromium.org</owner>
   <summary>
     The action performed by the user to close the infobar explaining that a
@@ -48789,6 +48793,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Search.DesktopSearch.URLAction" enum="DesktopSearchURLAction">
+  <obsolete>
+    Deprecated 05/2016 because desktop searches are no longer opened in the
+    default browser.
+  </obsolete>
   <owner>fdoray@chromium.org</owner>
   <summary>
     The action performed when a desktop search URL is passed to the browser

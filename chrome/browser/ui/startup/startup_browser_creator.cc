@@ -100,7 +100,6 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/metrics/jumplist_metrics_win.h"
-#include "components/search_engines/desktop_search_utils.h"
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -305,8 +304,7 @@ bool ShowUserManagerOnStartupIfNeeded(
 
 StartupBrowserCreator::StartupBrowserCreator()
     : is_default_browser_dialog_suppressed_(false),
-      show_main_browser_window_(true),
-      show_desktop_search_redirection_infobar_(false) {}
+      show_main_browser_window_(true) {}
 
 StartupBrowserCreator::~StartupBrowserCreator() {}
 
@@ -370,8 +368,7 @@ bool StartupBrowserCreator::LaunchBrowser(
   if (!silent_launch) {
     StartupBrowserCreatorImpl lwp(cur_dir, command_line, this, is_first_run);
     const std::vector<GURL> urls_to_launch =
-        GetURLsFromCommandLine(command_line, cur_dir, profile,
-                               &show_desktop_search_redirection_infobar_);
+        GetURLsFromCommandLine(command_line, cur_dir, profile);
     const bool launched =
         lwp.Launch(profile, urls_to_launch, in_synchronous_profile_launch_);
     in_synchronous_profile_launch_ = false;
@@ -490,10 +487,8 @@ void StartupBrowserCreator::RegisterLocalStatePrefs(
 std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
     const base::CommandLine& command_line,
     const base::FilePath& cur_dir,
-    Profile* profile,
-    bool* show_desktop_search_redirection_infobar) {
+    Profile* profile) {
   DCHECK(profile);
-  DCHECK(show_desktop_search_redirection_infobar);
 
   std::vector<GURL> urls;
 
@@ -519,18 +514,6 @@ std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
     // Allow it until this bug is fixed.
     //  http://code.google.com/p/chromium/issues/detail?id=60641
     GURL url = GURL(param.MaybeAsASCII());
-
-#if defined(OS_WIN)
-    // Replace desktop search URL by a default search engine URL if needed.
-    // Ignore cases where there are multiple command line arguments, because
-    // desktop search never passes multiple URLs to the browser.
-    if (params.size() == 1) {
-      *show_desktop_search_redirection_infobar =
-          ReplaceDesktopSearchURLWithDefaultSearchURLIfNeeded(
-              profile->GetPrefs(),
-              TemplateURLServiceFactory::GetForProfile(profile), &url);
-    }
-#endif  // defined(OS_WIN)
 
     // http://crbug.com/371030: Only use URLFixerUpper if we don't have a valid
     // URL, otherwise we will look in the current directory for a file named

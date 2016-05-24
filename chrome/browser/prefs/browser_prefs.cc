@@ -284,6 +284,10 @@ const char kGoogleGeolocationAccessEnabled[] =
 // Deprecated 4/2016.
 const char kCheckDefaultBrowser[] = "browser.check_default_browser";
 
+// Deprecated 5/2016.
+const char kDesktopSearchRedirectionInfobarShownPref[] =
+    "desktop_search_redirection_infobar_shown";
+
 }  // namespace
 
 namespace chrome {
@@ -595,6 +599,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
   registry->RegisterBooleanPref(kCheckDefaultBrowser, true);
+
+  registry->RegisterBooleanPref(kDesktopSearchRedirectionInfobarShownPref,
+                                false);
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -687,6 +694,9 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
                             install_time.ToInternalValue());
   }
   profile_prefs->ClearPref(kCheckDefaultBrowser);
+
+  // Added 5/2016.
+  profile_prefs->ClearPref(kDesktopSearchRedirectionInfobarShownPref);
 }
 
 }  // namespace chrome

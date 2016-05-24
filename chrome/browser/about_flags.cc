@@ -88,10 +88,6 @@
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #endif
 
-#if defined(OS_WIN)
-#include "components/search_engines/desktop_search_utils.h"
-#endif  // defined(OS_WIN)
-
 #if defined(ENABLE_APP_LIST)
 #include "ui/app_list/app_list_switches.h"
 #endif
@@ -1702,12 +1698,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"safe-search-url-reporting", IDS_FLAGS_SAFE_SEARCH_URL_REPORTING_NAME,
      IDS_FLAGS_SAFE_SEARCH_URL_REPORTING_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kSafeSearchUrlReporting)},
-#if defined(OS_WIN)
-    {"enable-windows-desktop-search-redirection",
-     IDS_FLAGS_WINDOWS_DESKTOP_SEARCH_REDIRECTION_NAME,
-     IDS_FLAGS_WINDOWS_DESKTOP_SEARCH_REDIRECTION_DESCRIPTION, kOsWin,
-     FEATURE_VALUE_TYPE(kDesktopSearchRedirectionFeature)},
-#endif  // defined(OS_WIN)
     {"force-ui-direction", IDS_FLAGS_FORCE_UI_DIRECTION_NAME,
      IDS_FLAGS_FORCE_UI_DIRECTION_DESCRIPTION, kOsAll,
      MULTI_VALUE_TYPE(kForceUIDirectionChoices)},

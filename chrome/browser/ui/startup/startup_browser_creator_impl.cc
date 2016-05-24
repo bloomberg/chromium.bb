@@ -110,9 +110,6 @@
 #include "chrome/browser/apps/app_launch_for_metro_restart_win.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/shell_integration_win.h"
-#include "components/search_engines/desktop_search_redirection_infobar_delegate.h"
-#include "components/search_engines/template_url.h"
-#include "components/search_engines/template_url_service.h"
 #endif
 
 #if defined(ENABLE_RLZ)
@@ -822,21 +819,6 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
       }
     }
 #endif
-
-#if defined(OS_WIN)
-    if (browser_creator_ &&
-        browser_creator_->show_desktop_search_redirection_infobar()) {
-      DesktopSearchRedirectionInfobarDelegate::Show(
-          InfoBarService::FromWebContents(
-              browser->tab_strip_model()->GetActiveWebContents()),
-          TemplateURLServiceFactory::GetForProfile(profile_)
-              ->GetDefaultSearchProvider()
-              ->AdjustedShortNameForLocaleDirection(),
-          base::Bind(&chrome::ShowSettingsSubPage, base::Unretained(browser),
-                     chrome::kSearchEnginesSubPage),
-          profile_->GetPrefs());
-    }
-#endif  // defined(OS_WIN)
   }
 }
 
