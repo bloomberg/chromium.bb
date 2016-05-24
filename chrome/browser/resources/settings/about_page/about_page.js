@@ -32,6 +32,9 @@ Polymer({
 
     /** @private {!BrowserChannel} */
     targetChannel_: String,
+
+    /** @private {?RegulatoryInfo} */
+    regulatoryInfo_: Object,
 </if>
   },
 
@@ -59,6 +62,10 @@ Polymer({
       this.targetChannel_ = channels[1];
 
       this.startListening_();
+    }.bind(this));
+
+    this.browserProxy_.getRegulatoryInfo().then(function(info) {
+      this.regulatoryInfo_ = info;
     }.bind(this));
 </if>
 <if expr="not chromeos">
@@ -241,6 +248,14 @@ Polymer({
   shouldShowCheckUpdates_: function() {
     return !this.hasCheckedForUpdates_ ||
         this.currentUpdateStatusEvent_.status == UpdateStatus.FAILED;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowRegulatoryInfo_: function() {
+    return this.regulatoryInfo_ !== null;
   },
 </if>
 

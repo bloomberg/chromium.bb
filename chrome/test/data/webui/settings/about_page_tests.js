@@ -9,42 +9,47 @@ cr.define('settings_about_page', function() {
    * @extends {settings.TestBrowserProxy}
    */
   var TestAboutPageBrowserProxy = function() {
-    settings.TestBrowserProxy.call(this, [
+    var methodNames = [
       'pageReady',
       'refreshUpdateStatus',
       'openHelpPage',
       'openFeedbackDialog',
-      'getCurrentChannel',
-      'getTargetChannel',
-      'getVersionInfo',
-    ]);
+    ];
 
-    /** @type {!VersionInfo} */
-    this.versionInfo_ = {
-      arcVersion: '',
-      osFirmware: '',
-      osVersion: '',
-    };
+    if (cr.isChromeOS) {
+      methodNames.push(
+        'getCurrentChannel',
+        'getTargetChannel',
+        'getVersionInfo',
+        'getRegulatoryInfo');
+    }
+
+    settings.TestBrowserProxy.call(this, methodNames);
 
     /** @private {!UpdateStatus} */
     this.updateStatus_ = UpdateStatus.UPDATED;
 
     if (cr.isChromeOS) {
+      /** @type {!VersionInfo} */
+      this.versionInfo_ = {
+        arcVersion: '',
+        osFirmware: '',
+        osVersion: '',
+      };
+
       /** @private {!BrowserChannel} */
       this.currentChannel_ = BrowserChannel.BETA;
 
       /** @private {!BrowserChannel} */
       this.targetChannel_ = BrowserChannel.BETA;
+
+      /** @private {?RegulatoryInfo} */
+      this.regulatoryInfo_ = null;
     }
   };
 
   TestAboutPageBrowserProxy.prototype = {
     __proto__: settings.TestBrowserProxy.prototype,
-
-    /** @param {!VersionInfo} */
-    setVersionInfo: function(versionInfo) {
-      this.versionInfo_ = versionInfo;
-    },
 
     /** @param {!UpdateStatus} updateStatus */
     setUpdateStatus: function(updateStatus) {
@@ -75,6 +80,11 @@ cr.define('settings_about_page', function() {
   };
 
   if (cr.isChromeOS) {
+    /** @param {!VersionInfo} */
+    TestAboutPageBrowserProxy.prototype.setVersionInfo = function(versionInfo) {
+      this.versionInfo_ = versionInfo;
+    };
+
     /**
      * @param {!BrowserChannel} current
      * @param {!BrowserChannel} target
@@ -83,6 +93,13 @@ cr.define('settings_about_page', function() {
         current, target) {
       this.currentChannel_ = current;
       this.targetChannel_ = target;
+    };
+
+
+    /** @param {?RegulatoryInfo} regulatoryInfo */
+    TestAboutPageBrowserProxy.prototype.setRegulatoryInfo = function(
+        regulatoryInfo) {
+      this.regulatoryInfo_ = regulatoryInfo;
     };
 
     /** @override */
@@ -101,6 +118,12 @@ cr.define('settings_about_page', function() {
     TestAboutPageBrowserProxy.prototype.getVersionInfo = function() {
       this.methodCalled('getVersionInfo');
       return Promise.resolve(this.versionInfo_);
+    };
+
+    /** @override */
+    TestAboutPageBrowserProxy.prototype.getRegulatoryInfo = function() {
+      this.methodCalled('getRegulatoryInfo');
+      return Promise.resolve(this.regulatoryInfo_);
     };
   }
 
@@ -123,7 +146,7 @@ cr.define('settings_about_page', function() {
 
       /** @return {!Promise} */
       function initNewPage() {
-        browserProxy.resetResolver('refreshUpdateStatus');
+        browserProxy.reset();
         PolymerTest.clearBody();
         page = document.createElement('settings-about-page');
         document.body.appendChild(page);
@@ -256,6 +279,40 @@ cr.define('settings_about_page', function() {
 
             assertFalse(page.$.relaunch.hidden);
             assertTrue(page.$.relaunchAndPowerwash.hidden);
+          });
+        });
+
+        test('RegulatoryInfo', function() {
+          var regulatoryInfo = null;
+
+          /**
+           * Checks the visibility of the "regulatory info" section.
+           * @param {boolean} isShowing Whether the section is expected to be
+           *     visible.
+           * @return {!Promise}
+           */
+          function checkRegulatoryInfo(isShowing) {
+            return browserProxy.whenCalled('getRegulatoryInfo').then(
+                function() {
+                  var regulatoryInfoEl = page.$.regulatoryInfo;
+                  assertTrue(!!regulatoryInfoEl);
+                  assertEquals(isShowing, !regulatoryInfoEl.hidden);
+
+                  if (isShowing) {
+                    var img = regulatoryInfoEl.querySelector('img');
+                    assertTrue(!!img);
+                    assertEquals(regulatoryInfo.text, img.getAttribute('alt'));
+                    assertEquals(regulatoryInfo.url, img.getAttribute('src'));
+                  }
+                });
+          }
+
+          return checkRegulatoryInfo(false).then(function() {
+            regulatoryInfo = {text: 'foo', url: 'bar'};
+            browserProxy.setRegulatoryInfo(regulatoryInfo);
+            return initNewPage();
+          }).then(function() {
+            return checkRegulatoryInfo(true);
           });
         });
       }

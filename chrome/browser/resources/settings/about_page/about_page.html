@@ -127,6 +127,12 @@
             <div class="secondary">$i18nRaw{aboutProductTos}</div>
 </if>
           </div>
+<if expr="chromeos">
+          <div class="settings-box product-info" id="regulatoryInfo"
+              hidden$="[[!shouldShowRegulatoryInfo_(regulatoryInfo_)]]">
+            <img src="[[regulatoryInfo_.url]]" alt="[[regulatoryInfo_.text]]">
+          </div>
+</if>
         </neon-animatable>
 <if expr="chromeos">
         <template is="dom-if" name="detailed-build-info">
