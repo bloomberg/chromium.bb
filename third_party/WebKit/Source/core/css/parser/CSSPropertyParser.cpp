@@ -3491,7 +3491,6 @@ static CSSValue* consumeGridTrackList(CSSParserTokenRange& range, CSSParserMode 
 
     bool seenAutoRepeat = false;
     bool allTracksAreFixedSized = true;
-    // TODO(rob.buis): <line-names> should not be able to directly precede <auto-repeat>.
     do {
         bool isAutoRepeat;
         if (range.peek().functionId() == CSSValueRepeat) {
