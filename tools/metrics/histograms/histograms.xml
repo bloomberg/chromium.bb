@@ -36376,6 +36376,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The dismissal reason of the account chooser.</summary>
 </histogram>
 
+<histogram name="PasswordManager.AccountChooserDialogMultipleAccounts"
+    enum="AccountChooserDismissalReason">
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    The dismissal reason of the account chooser with multiple accounts.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.AccountChooserDialogOneAccount"
+    enum="AccountChooserDismissalReason">
+  <owner>vasilii@chromium.org</owner>
+  <summary>
+    The dismissal reason of the account chooser with one account.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.AccountsPerSite">
   <owner>gcasto@chromium.org</owner>
   <owner>vabr@chromium.org</owner>

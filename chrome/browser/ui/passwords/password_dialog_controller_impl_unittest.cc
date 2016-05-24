@@ -121,6 +121,11 @@ TEST_F(PasswordDialogControllerTest, ShowAccountChooser) {
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.AccountChooserDialog",
        password_manager::metrics_util::ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.AccountChooserDialogMultipleAccounts",
+       password_manager::metrics_util::ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN, 1);
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.AccountChooserDialogOneAccount", 0);
 }
 
 TEST_F(PasswordDialogControllerTest, ShowAccountChooserAndSignIn) {
@@ -147,14 +152,21 @@ TEST_F(PasswordDialogControllerTest, ShowAccountChooserAndSignIn) {
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.AccountChooserDialog",
        password_manager::metrics_util::ACCOUNT_CHOOSER_SIGN_IN, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.AccountChooserDialogOneAccount",
+       password_manager::metrics_util::ACCOUNT_CHOOSER_SIGN_IN, 1);
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.AccountChooserDialogMultipleAccounts", 0);
 }
 
 TEST_F(PasswordDialogControllerTest, AccountChooserClosed) {
   base::HistogramTester histogram_tester;
   StrictMock<MockPasswordPrompt> prompt;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> locals;
+  locals.push_back(
+      base::WrapUnique(new autofill::PasswordForm(GetLocalForm())));
   EXPECT_CALL(prompt, ShowAccountChooser());
-  controller().ShowAccountChooser(&prompt,
-                                  PasswordDialogController::FormsVector(),
+  controller().ShowAccountChooser(&prompt, std::move(locals),
                                   PasswordDialogController::FormsVector());
 
   EXPECT_CALL(ui_controller_mock(), OnDialogHidden());
@@ -162,6 +174,11 @@ TEST_F(PasswordDialogControllerTest, AccountChooserClosed) {
   histogram_tester.ExpectUniqueSample(
       "PasswordManager.AccountChooserDialog",
        password_manager::metrics_util::ACCOUNT_CHOOSER_DISMISSED, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.AccountChooserDialogOneAccount",
+       password_manager::metrics_util::ACCOUNT_CHOOSER_DISMISSED, 1);
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.AccountChooserDialogMultipleAccounts", 0);
 }
 
 TEST_F(PasswordDialogControllerTest, AutoSigninPromo) {

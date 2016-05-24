@@ -112,15 +112,20 @@ void PasswordDialogControllerImpl::OnSmartLockLinkClicked() {
 void PasswordDialogControllerImpl::OnChooseCredentials(
     const autofill::PasswordForm& password_form,
     password_manager::CredentialType credential_type) {
-  password_manager::metrics_util::LogAccountChooserUserAction(
-      password_manager::metrics_util::ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN);
+  if (local_credentials_.size() == 1) {
+    password_manager::metrics_util::LogAccountChooserUserActionOneAccount(
+        password_manager::metrics_util::ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN);
+  } else {
+    password_manager::metrics_util::LogAccountChooserUserActionManyAccounts(
+        password_manager::metrics_util::ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN);
+  }
   ResetDialog();
   delegate_->ChooseCredential(password_form, credential_type);
 }
 
 void PasswordDialogControllerImpl::OnSignInClicked() {
   DCHECK_EQ(1u, local_credentials_.size());
-  password_manager::metrics_util::LogAccountChooserUserAction(
+  password_manager::metrics_util::LogAccountChooserUserActionOneAccount(
       password_manager::metrics_util::ACCOUNT_CHOOSER_SIGN_IN);
   ResetDialog();
   delegate_->ChooseCredential(
@@ -150,8 +155,13 @@ void PasswordDialogControllerImpl::OnAutoSigninTurnOff() {
 
 void PasswordDialogControllerImpl::OnCloseDialog() {
   if (account_chooser_dialog_) {
-    password_manager::metrics_util::LogAccountChooserUserAction(
-        password_manager::metrics_util::ACCOUNT_CHOOSER_DISMISSED);
+    if (local_credentials_.size() == 1) {
+      password_manager::metrics_util::LogAccountChooserUserActionOneAccount(
+          password_manager::metrics_util::ACCOUNT_CHOOSER_DISMISSED);
+    } else {
+      password_manager::metrics_util::LogAccountChooserUserActionManyAccounts(
+          password_manager::metrics_util::ACCOUNT_CHOOSER_DISMISSED);
+    }
     account_chooser_dialog_ = nullptr;
   }
   if (autosignin_dialog_) {
