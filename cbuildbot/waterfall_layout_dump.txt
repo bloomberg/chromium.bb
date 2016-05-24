@@ -1,230 +1,230 @@
 == chromeos ==
-amd64-generic-chromium-pfq
-amd64-generic-goofy-release
-amenia-release
-arkham-release
-arm-generic-chromium-pfq
-arm-generic_freon-chromium-pfq
-asuka-release
-auron-paladin
-auron-release
-auron_paine-release
-auron_yuna-release
-banjo-release
-banon-release
-beaglebone-paladin
-beaglebone-release
-beaglebone_servo-release
-buddy-release
-butterfly-paladin
-butterfly-release
-candy-release
-cave-release
-celes-cheets-release
-celes-release
-chell-cheets-release
-chell-release
-clapper-release
-cyan-cheets-android-pfq
-cyan-cheets-chrome-pfq
-cyan-cheets-paladin
-cyan-cheets-release
-cyan-release
-daisy-chromium-pfq
-daisy-paladin
-daisy-release
-daisy_skate-chrome-pfq
-daisy_skate-paladin
-daisy_skate-release
-daisy_spring-paladin
-daisy_spring-release
-edgar-release
-elm-cheets-release
-elm-release
-enguarde-release
-expresso-release
-falco-chrome-pfq
-falco-full-compile-paladin
-falco-paladin
-falco-release
-falco_li-release
-gale-release
-gandof-release
-[gcc-toolchain-group]
+amd64-generic-chromium-pfq (baremetal)
+amd64-generic-goofy-release (baremetal)
+amenia-release (gce_beefy)
+arkham-release (gce_beefy)
+arm-generic-chromium-pfq (baremetal)
+arm-generic_freon-chromium-pfq (baremetal)
+asuka-release (gce_beefy)
+auron-paladin (baremetal)
+auron-release (baremetal)
+auron_paine-release (gce_beefy)
+auron_yuna-release (gce_beefy)
+banjo-release (gce_beefy)
+banon-release (gce_beefy)
+beaglebone-paladin (baremetal)
+beaglebone-release (gce_beefy)
+beaglebone_servo-release (gce_beefy)
+buddy-release (gce_beefy)
+butterfly-paladin (baremetal)
+butterfly-release (gce_beefy)
+candy-release (gce_beefy)
+cave-release (gce_beefy)
+celes-cheets-release (gce_beefy)
+celes-release (gce_beefy)
+chell-cheets-release (gce_beefy)
+chell-release (gce_beefy)
+clapper-release (baremetal)
+cyan-cheets-android-pfq (baremetal)
+cyan-cheets-chrome-pfq (baremetal)
+cyan-cheets-paladin (baremetal)
+cyan-cheets-release (gce_beefy)
+cyan-release (gce_beefy)
+daisy-chromium-pfq (baremetal)
+daisy-paladin (baremetal)
+daisy-release (baremetal)
+daisy_skate-chrome-pfq (baremetal)
+daisy_skate-paladin (baremetal)
+daisy_skate-release (gce_beefy)
+daisy_spring-paladin (baremetal)
+daisy_spring-release (gce_beefy)
+edgar-release (gce_beefy)
+elm-cheets-release (gce_beefy)
+elm-release (gce_beefy)
+enguarde-release (gce_beefy)
+expresso-release (gce_beefy)
+falco-chrome-pfq (baremetal)
+falco-full-compile-paladin (baremetal)
+falco-paladin (baremetal)
+falco-release (gce_beefy)
+falco_li-release (gce_beefy)
+gale-release (baremetal)
+gandof-release (gce_beefy)
+[gcc-toolchain-group] (baremetal)
   daisy-toolchain-gcc
   peppy-toolchain-gcc
   x86-alex-toolchain-gcc
-glados-cheets-android-pfq
-glados-cheets-release
-glados-paladin
-glados-release
-glimmer-release
-gnawty-release
-gru-release
-guado-release
-guado_labstation-release
-guado_moblab-paladin
-guado_moblab-release
-heli-release
-jecht-release
-kefka-release
-kevin-release
-kip-release
-kunimitsu-release
-lakitu-incremental
-lakitu-paladin
-lakitu-release
-lakitu_next-incremental
-lakitu_next-paladin
-lakitu_next-release
-lars-release
-leon-paladin
-leon-release
-link-depthcharge-full-firmware
-link-paladin
-link-release
-[llvm-toolchain-group]
+glados-cheets-android-pfq (baremetal)
+glados-cheets-release (gce_beefy)
+glados-paladin (baremetal)
+glados-release (baremetal)
+glimmer-release (gce_beefy)
+gnawty-release (gce_beefy)
+gru-release (baremetal)
+guado-release (gce_beefy)
+guado_labstation-release (baremetal)
+guado_moblab-paladin (baremetal)
+guado_moblab-release (baremetal)
+heli-release (gce_beefy)
+jecht-release (baremetal)
+kefka-release (gce_beefy)
+kevin-release (gce_beefy)
+kip-release (gce_beefy)
+kunimitsu-release (baremetal)
+lakitu-incremental (baremetal)
+lakitu-paladin (baremetal)
+lakitu-release (baremetal)
+lakitu_next-incremental (baremetal)
+lakitu_next-paladin (baremetal)
+lakitu_next-release (baremetal)
+lars-release (gce_beefy)
+leon-paladin (baremetal)
+leon-release (gce_beefy)
+link-depthcharge-full-firmware (baremetal)
+link-paladin (baremetal)
+link-release (gce_beefy)
+[llvm-toolchain-group] (baremetal)
   daisy-toolchain-llvm
   peppy-toolchain-llvm
   x86-alex-toolchain-llvm
-lulu-cheets-release
-lulu-release
-lumpy-chrome-pfq
-lumpy-incremental-paladin
-lumpy-paladin
-lumpy-release
-mario-incremental
-master-android-pfq
-master-chromium-pfq
-master-paladin
-master-release
-master-toolchain
-mccloud-release
-monroe-paladin
-monroe-release
-ninja-release
-nyan-chrome-pfq
-nyan-full-compile-paladin
-nyan-paladin
-nyan-release
-nyan_big-release
-nyan_blaze-release
-nyan_freon-paladin
-nyan_freon-release
-nyan_kitty-release
-oak-cheets-release
-oak-paladin
-oak-release
-orco-release
-panther-paladin
-panther-release
-panther_embedded-minimal-release
-parrot-paladin
-parrot-release
-parrot_ivb-release
-peach_pi-release
-peach_pit-chrome-pfq
-peach_pit-paladin
-peach_pit-release
-peppy-chrome-pfq
-peppy-paladin
-peppy-release
-pre-cq-launcher
-quawks-release
-rambi-paladin
-rambi-release
-reef-release
-reks-release
-relm-release
-rikku-release
-samus-cheets-android-pfq
-samus-cheets-release
-samus-paladin
-samus-release
-sentry-release
-setzer-release
-smaug-cheets-release
-smaug-kasan-kernel-3_18
-smaug-paladin
-smaug-release
-squawks-release
-storm-paladin
-storm-release
-stout-paladin
-stout-release
-strago-paladin
-strago-release
-stumpy-paladin
-stumpy-release
-sumo-release
-swanky-release
-terra-release
-tidus-release
-tricky-chrome-pfq
-tricky-paladin
-tricky-release
-ultima-release
-umaro-release
-veyron_fievel-release
-veyron_gus-release
-veyron_jaq-release
-veyron_jerry-release
-veyron_mickey-release
-veyron_mighty-paladin
-veyron_mighty-release
-veyron_minnie-cheets-android-pfq
-veyron_minnie-cheets-chrome-pfq
-veyron_minnie-cheets-paladin
-veyron_minnie-cheets-release
-veyron_minnie-chromium-pfq
-veyron_minnie-release
-veyron_pinky-chrome-pfq
-veyron_pinky-paladin
-veyron_pinky-release
-veyron_rialto-chrome-pfq
-veyron_rialto-paladin
-veyron_rialto-release
-veyron_shark-release
-veyron_speedy-paladin
-veyron_speedy-release
-veyron_tiger-release
-whirlwind-paladin
-whirlwind-release
-winky-release
-wizpig-release
-wolf-paladin
-wolf-release
-wolf-tot-paladin
-x86-alex-chrome-pfq
-x86-alex-paladin
-x86-alex-release
-x86-alex_he-release
-x86-generic-chromium-pfq
-x86-mario-nowithdebug-paladin
-x86-mario-paladin
-x86-mario-release
-x86-zgb-paladin
-x86-zgb-release
-x86-zgb_he-release
-zako-release
+lulu-cheets-release (gce_beefy)
+lulu-release (gce_beefy)
+lumpy-chrome-pfq (baremetal)
+lumpy-incremental-paladin (baremetal)
+lumpy-paladin (baremetal)
+lumpy-release (gce_beefy)
+mario-incremental (baremetal)
+master-android-pfq (gce_wimpy)
+master-chromium-pfq (baremetal)
+master-paladin (baremetal)
+master-release (gce_wimpy)
+master-toolchain (gce_wimpy)
+mccloud-release (gce_beefy)
+monroe-paladin (baremetal)
+monroe-release (gce_beefy)
+ninja-release (gce_beefy)
+nyan-chrome-pfq (baremetal)
+nyan-full-compile-paladin (baremetal)
+nyan-paladin (baremetal)
+nyan-release (gce_beefy)
+nyan_big-release (baremetal)
+nyan_blaze-release (gce_beefy)
+nyan_freon-paladin (baremetal)
+nyan_freon-release (baremetal)
+nyan_kitty-release (gce_beefy)
+oak-cheets-release (gce_beefy)
+oak-paladin (baremetal)
+oak-release (baremetal)
+orco-release (gce_beefy)
+panther-paladin (baremetal)
+panther-release (gce_beefy)
+panther_embedded-minimal-release (baremetal)
+parrot-paladin (baremetal)
+parrot-release (baremetal)
+parrot_ivb-release (gce_beefy)
+peach_pi-release (gce_beefy)
+peach_pit-chrome-pfq (baremetal)
+peach_pit-paladin (baremetal)
+peach_pit-release (baremetal)
+peppy-chrome-pfq (baremetal)
+peppy-paladin (baremetal)
+peppy-release (baremetal)
+pre-cq-launcher (gce_wimpy)
+quawks-release (gce_beefy)
+rambi-paladin (baremetal)
+rambi-release (gce_beefy)
+reef-release (baremetal)
+reks-release (gce_beefy)
+relm-release (gce_beefy)
+rikku-release (gce_beefy)
+samus-cheets-android-pfq (baremetal)
+samus-cheets-release (gce_beefy)
+samus-paladin (baremetal)
+samus-release (baremetal)
+sentry-release (gce_beefy)
+setzer-release (gce_beefy)
+smaug-cheets-release (baremetal)
+smaug-kasan-kernel-3_18 (baremetal)
+smaug-paladin (baremetal)
+smaug-release (baremetal)
+squawks-release (gce_beefy)
+storm-paladin (baremetal)
+storm-release (baremetal)
+stout-paladin (baremetal)
+stout-release (baremetal)
+strago-paladin (baremetal)
+strago-release (baremetal)
+stumpy-paladin (baremetal)
+stumpy-release (gce_beefy)
+sumo-release (gce_beefy)
+swanky-release (gce_beefy)
+terra-release (gce_beefy)
+tidus-release (gce_beefy)
+tricky-chrome-pfq (baremetal)
+tricky-paladin (baremetal)
+tricky-release (gce_beefy)
+ultima-release (gce_beefy)
+umaro-release (gce_beefy)
+veyron_fievel-release (gce_beefy)
+veyron_gus-release (gce_beefy)
+veyron_jaq-release (gce_beefy)
+veyron_jerry-release (gce_beefy)
+veyron_mickey-release (gce_beefy)
+veyron_mighty-paladin (baremetal)
+veyron_mighty-release (gce_beefy)
+veyron_minnie-cheets-android-pfq (baremetal)
+veyron_minnie-cheets-chrome-pfq (baremetal)
+veyron_minnie-cheets-paladin (baremetal)
+veyron_minnie-cheets-release (gce_beefy)
+veyron_minnie-chromium-pfq (baremetal)
+veyron_minnie-release (gce_beefy)
+veyron_pinky-chrome-pfq (baremetal)
+veyron_pinky-paladin (baremetal)
+veyron_pinky-release (baremetal)
+veyron_rialto-chrome-pfq (baremetal)
+veyron_rialto-paladin (baremetal)
+veyron_rialto-release (gce_beefy)
+veyron_shark-release (gce_beefy)
+veyron_speedy-paladin (baremetal)
+veyron_speedy-release (gce_beefy)
+veyron_tiger-release (gce_beefy)
+whirlwind-paladin (baremetal)
+whirlwind-release (gce_beefy)
+winky-release (gce_beefy)
+wizpig-release (gce_beefy)
+wolf-paladin (baremetal)
+wolf-release (gce_beefy)
+wolf-tot-paladin (baremetal)
+x86-alex-chrome-pfq (baremetal)
+x86-alex-paladin (baremetal)
+x86-alex-release (gce_beefy)
+x86-alex_he-release (gce_beefy)
+x86-generic-chromium-pfq (baremetal)
+x86-mario-nowithdebug-paladin (baremetal)
+x86-mario-paladin (baremetal)
+x86-mario-release (baremetal)
+x86-zgb-paladin (baremetal)
+x86-zgb-release (gce_beefy)
+x86-zgb_he-release (gce_beefy)
+zako-release (gce_beefy)
 
 == chromeos_release ==
-lumpy-pre-flight-branch
+lumpy-pre-flight-branch (baremetal)
 
 == chromiumos ==
-amd64-generic-asan
-amd64-generic-full
-amd64-generic-incremental
-amd64-generic-paladin
-arm-generic-full
-arm-generic-paladin
-chromiumos-sdk
-daisy-full
-daisy-incremental
-oak-full
-panther_embedded-minimal-paladin
-x86-generic-asan
-x86-generic-full
-x86-generic-incremental
-x86-generic-paladin
+amd64-generic-asan (baremetal)
+amd64-generic-full (baremetal)
+amd64-generic-incremental (baremetal)
+amd64-generic-paladin (baremetal)
+arm-generic-full (baremetal)
+arm-generic-paladin (baremetal)
+chromiumos-sdk (baremetal)
+daisy-full (baremetal)
+daisy-incremental (baremetal)
+oak-full (baremetal)
+panther_embedded-minimal-paladin (baremetal)
+x86-generic-asan (baremetal)
+x86-generic-full (baremetal)
+x86-generic-incremental (baremetal)
+x86-generic-paladin (baremetal)
 
