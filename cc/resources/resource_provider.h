@@ -346,8 +346,6 @@ class CC_EXPORT ResourceProvider
     // resource's GpuMemoryBuffer.
     unsigned GetTextureId() const;
 
-    ResourceId GetResourceId() const;
-
    private:
     ResourceProvider* resource_provider_;
     ResourceId resource_id_;

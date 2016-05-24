@@ -382,6 +382,7 @@ GLRenderer::~GLRenderer() {
     pending_async_read_pixels_.pop_back();
   }
 
+  swapped_overlay_resources_.clear();
   CleanupSharedObjects();
 }
 
@@ -2695,51 +2696,23 @@ void GLRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
     }
     compositor_frame.gl_frame_data->sub_buffer_rect = swap_buffer_rect_;
   }
-
-  swapping_overlay_resources_.push_back(std::move(pending_overlay_resources_));
-  pending_overlay_resources_.clear();
+  output_surface_->SwapBuffers(&compositor_frame);
 
   // We always hold onto resources until an extra frame has swapped, to make
   // sure we don't update the buffer while it's being scanned out.
+  swapped_overlay_resources_.push_back(std::move(pending_overlay_resources_));
+  pending_overlay_resources_.clear();
   if (!settings_->release_overlay_resources_on_swap_complete &&
-      swapping_overlay_resources_.size() > 2) {
-    swapping_overlay_resources_.pop_front();
+      swapped_overlay_resources_.size() > 2) {
+    swapped_overlay_resources_.pop_front();
   }
-
-  output_surface_->SwapBuffers(&compositor_frame);
-
   swap_buffer_rect_ = gfx::Rect();
 }
 
 void GLRenderer::SwapBuffersComplete() {
-  // On OS X, the logic in this block moves resources into
-  // |swapped_and_acked_overlay_resources_|, and then erases resources from
-  // |swapped_and_acked_overlay_resources_| that are no longer in use by the
-  // Window Server. On other platforms, since resources are never in use by the
-  // Window Server, this is equivalent to just erasing all resources from the
-  // first element of |swapping_overlay_resources_|.
-  if (settings_->release_overlay_resources_on_swap_complete) {
-    // Move resources known to be acked into
-    // |swapped_and_acked_overlay_resources_|.
-    if (!swapping_overlay_resources_.empty()) {
-      for (OverlayResourceLock& lock : swapping_overlay_resources_.front()) {
-        swapped_and_acked_overlay_resources_[lock->GetResourceId()] =
-            std::move(lock);
-      }
-      swapping_overlay_resources_.pop_front();
-    }
-
-    // Release resources that are no longer in use by the Window Server.
-    auto it = swapped_and_acked_overlay_resources_.begin();
-    while (it != swapped_and_acked_overlay_resources_.end()) {
-      if (it->second->GetGpuMemoryBuffer() &&
-          it->second->GetGpuMemoryBuffer()->IsInUseByMacOSWindowServer()) {
-        ++it;
-        continue;
-      }
-
-      it = swapped_and_acked_overlay_resources_.erase(it);
-    }
+  if (settings_->release_overlay_resources_on_swap_complete &&
+      !swapped_overlay_resources_.empty()) {
+    swapped_overlay_resources_.pop_front();
   }
 }
 
@@ -3596,9 +3569,9 @@ void GLRenderer::ScheduleCALayers(DrawingFrame* frame) {
     unsigned texture_id = 0;
     if (ca_layer_overlay.contents_resource_id) {
       pending_overlay_resources_.push_back(
-          base::WrapUnique(new ResourceProvider::ScopedReadLockGpuMemoryBuffer(
+          base::WrapUnique(new ResourceProvider::ScopedReadLockGL(
               resource_provider_, ca_layer_overlay.contents_resource_id)));
-      texture_id = pending_overlay_resources_.back()->GetTextureId();
+      texture_id = pending_overlay_resources_.back()->texture_id();
     }
     GLfloat contents_rect[4] = {
         ca_layer_overlay.contents_rect.x(), ca_layer_overlay.contents_rect.y(),
@@ -3639,9 +3612,9 @@ void GLRenderer::ScheduleOverlays(DrawingFrame* frame) {
       DCHECK(texture_id || IsContextLost());
     } else {
       pending_overlay_resources_.push_back(
-          base::WrapUnique(new ResourceProvider::ScopedReadLockGpuMemoryBuffer(
+          base::WrapUnique(new ResourceProvider::ScopedReadLockGL(
               resource_provider_, overlay.resource_id)));
-      texture_id = pending_overlay_resources_.back()->GetTextureId();
+      texture_id = pending_overlay_resources_.back()->texture_id();
     }
 
     context_support_->ScheduleOverlayPlane(
