@@ -6,17 +6,24 @@
 #define UI_GFX_NATIVE_PIXMAP_HANDLE_OZONE_H_
 
 #include <stdint.h>
+#include <vector>
 
 #include "base/file_descriptor_posix.h"
+#include "ui/gfx/gfx_export.h"
 
 namespace gfx {
 
-struct NativePixmapHandle {
-  // A file descriptor for the underlying memory object (usually dmabuf).
-  base::FileDescriptor fd;
+struct GFX_EXPORT NativePixmapHandle {
+  NativePixmapHandle();
+  NativePixmapHandle(const NativePixmapHandle& other);
 
-  // The stride to used when accessing the buffer via a memory mapping.
-  int32_t stride = 0;
+  ~NativePixmapHandle();
+  // File descriptors for the underlying memory objects (usually dmabufs).
+  std::vector<base::FileDescriptor> fds;
+
+  // The strides in bytes to be used when accessing the buffers via a memory
+  // mapping.
+  std::vector<int> strides;
 };
 
 }  // namespace gfx

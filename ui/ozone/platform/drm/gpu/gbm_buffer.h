@@ -5,6 +5,8 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_GBM_BUFFER_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_GBM_BUFFER_H_
 
+#include <vector>
+
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "ui/gfx/buffer_types.h"
@@ -26,16 +28,17 @@ class GbmBuffer : public GbmBufferBase {
       gfx::BufferFormat format,
       const gfx::Size& size,
       gfx::BufferUsage usage);
-  static scoped_refptr<GbmBuffer> CreateBufferFromFD(
+  static scoped_refptr<GbmBuffer> CreateBufferFromFds(
       const scoped_refptr<GbmDevice>& gbm,
       gfx::BufferFormat format,
       const gfx::Size& size,
-      base::ScopedFD fd,
-      int stride);
+      std::vector<base::ScopedFD>&& fds,
+      const std::vector<int>& strides);
   gfx::BufferFormat GetFormat() const { return format_; }
   gfx::BufferUsage GetUsage() const { return usage_; }
-  int GetFd() const;
-  int GetStride() const;
+  bool AreFdsValid() const;
+  int GetFd(size_t plane) const;
+  int GetStride(size_t plane) const;
   gfx::Size GetSize() const override;
 
  private:
@@ -43,16 +46,16 @@ class GbmBuffer : public GbmBufferBase {
             gbm_bo* bo,
             gfx::BufferFormat format,
             gfx::BufferUsage usage,
-            base::ScopedFD fd,
+            std::vector<base::ScopedFD>&& fds,
             const gfx::Size& size,
-            int stride);
+            const std::vector<int>& strides);
   ~GbmBuffer() override;
 
   gfx::BufferFormat format_;
   gfx::BufferUsage usage_;
-  base::ScopedFD fd_;
+  std::vector<base::ScopedFD> fds_;
   gfx::Size size_;
-  int stride_;
+  std::vector<int> strides_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmBuffer);
 };
@@ -67,8 +70,9 @@ class GbmPixmap : public NativePixmap {
 
   // NativePixmap:
   void* GetEGLClientBuffer() const override;
-  int GetDmaBufFd() const override;
-  int GetDmaBufPitch() const override;
+  bool AreDmaBufFdsValid() const override;
+  int GetDmaBufFd(size_t plane) const override;
+  int GetDmaBufPitch(size_t plane) const override;
   gfx::BufferFormat GetBufferFormat() const override;
   gfx::Size GetBufferSize() const override;
   bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,

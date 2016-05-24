@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/gl_image_ozone_native_pixmap.h"
 
 #define FOURCC(a, b, c, d)                                        \
@@ -104,7 +105,7 @@ bool GLImageOzoneNativePixmap::Initialize(ui::NativePixmap* pixmap,
                                     pixmap->GetEGLClientBuffer(), attrs)) {
       return false;
     }
-  } else if (pixmap->GetDmaBufFd() >= 0) {
+  } else if (pixmap->AreDmaBufFdsValid()) {
     if (!ValidInternalFormat(internalformat_)) {
       LOG(ERROR) << "Invalid internalformat: " << internalformat_;
       return false;
@@ -117,22 +118,29 @@ bool GLImageOzoneNativePixmap::Initialize(ui::NativePixmap* pixmap,
 
     // Note: If eglCreateImageKHR is successful for a EGL_LINUX_DMA_BUF_EXT
     // target, the EGL will take a reference to the dma_buf.
-    EGLint attrs[] = {EGL_WIDTH,
-                      size_.width(),
-                      EGL_HEIGHT,
-                      size_.height(),
-                      EGL_LINUX_DRM_FOURCC_EXT,
-                      FourCC(format),
-                      EGL_DMA_BUF_PLANE0_FD_EXT,
-                      pixmap->GetDmaBufFd(),
-                      EGL_DMA_BUF_PLANE0_OFFSET_EXT,
-                      0,
-                      EGL_DMA_BUF_PLANE0_PITCH_EXT,
-                      pixmap->GetDmaBufPitch(),
-                      EGL_NONE};
+    std::vector<EGLint> attrs;
+    attrs.push_back(EGL_WIDTH);
+    attrs.push_back(size_.width());
+    attrs.push_back(EGL_HEIGHT);
+    attrs.push_back(size_.height());
+    attrs.push_back(EGL_LINUX_DRM_FOURCC_EXT);
+    attrs.push_back(FourCC(format));
+
+    for (size_t plane = 0;
+         plane < gfx::NumberOfPlanesForBufferFormat(pixmap->GetBufferFormat());
+         ++plane) {
+      attrs.push_back(EGL_DMA_BUF_PLANE0_FD_EXT + plane * 3);
+      attrs.push_back(pixmap->GetDmaBufFd(plane));
+      attrs.push_back(EGL_DMA_BUF_PLANE0_OFFSET_EXT + plane * 3);
+      attrs.push_back(0);
+      attrs.push_back(EGL_DMA_BUF_PLANE0_PITCH_EXT + plane * 3);
+      attrs.push_back(pixmap->GetDmaBufPitch(plane));
+    }
+    attrs.push_back(EGL_NONE);
+
     if (!gl::GLImageEGL::Initialize(EGL_LINUX_DMA_BUF_EXT,
                                     static_cast<EGLClientBuffer>(nullptr),
-                                    attrs)) {
+                                    &attrs[0])) {
       return false;
     }
   }

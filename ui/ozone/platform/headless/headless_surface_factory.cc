@@ -71,8 +71,9 @@ class TestPixmap : public ui::NativePixmap {
   TestPixmap(gfx::BufferFormat format) : format_(format) {}
 
   void* GetEGLClientBuffer() const override { return nullptr; }
-  int GetDmaBufFd() const override { return -1; }
-  int GetDmaBufPitch() const override { return 0; }
+  bool AreDmaBufFdsValid() const override { return false; }
+  int GetDmaBufFd(size_t plane) const override { return -1; }
+  int GetDmaBufPitch(size_t plane) const override { return 0; }
   gfx::BufferFormat GetBufferFormat() const override { return format_; }
   gfx::Size GetBufferSize() const override { return gfx::Size(); }
   bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,

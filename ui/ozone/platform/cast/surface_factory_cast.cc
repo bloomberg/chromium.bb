@@ -253,8 +253,9 @@ scoped_refptr<NativePixmap> SurfaceFactoryCast::CreateNativePixmap(
       // TODO(halliwell): try to implement this through CastEglPlatform.
       return nullptr;
     }
-    int GetDmaBufFd() const override { return -1; }
-    int GetDmaBufPitch() const override { return 0; }
+    bool AreDmaBufFdsValid() const override { return false; }
+    int GetDmaBufFd(size_t plane) const override { return -1; }
+    int GetDmaBufPitch(size_t plane) const override { return 0; }
     gfx::BufferFormat GetBufferFormat() const override {
       return gfx::BufferFormat::BGRA_8888;
     }

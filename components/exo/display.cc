@@ -62,8 +62,9 @@ std::unique_ptr<Buffer> Display::CreateLinuxDMABufBuffer(
 
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::OZONE_NATIVE_PIXMAP;
-  handle.native_pixmap_handle.fd = base::FileDescriptor(std::move(fd));
-  handle.native_pixmap_handle.stride = stride;
+  handle.native_pixmap_handle.fds.emplace_back(
+      base::FileDescriptor(std::move(fd)));
+  handle.native_pixmap_handle.strides.push_back(stride);
 
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
       aura::Env::GetInstance()

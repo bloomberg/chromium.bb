@@ -113,11 +113,16 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmapFromHandle(
     gfx::Size size,
     gfx::BufferFormat format,
     const gfx::NativePixmapHandle& handle) {
-  scoped_refptr<GbmBuffer> buffer = drm_thread_->CreateBufferFromFD(
-      size, format, base::ScopedFD(handle.fd.fd), handle.stride);
+  std::vector<scoped_refptr<GbmBuffer>> buffers;
+  DCHECK_EQ(handle.fds.size(), handle.strides.size());
+  std::vector<base::ScopedFD> scoped_fds;
+  for (auto& fd : handle.fds) {
+    scoped_fds.emplace_back(base::ScopedFD(fd.fd));
+  }
+  scoped_refptr<GbmBuffer> buffer = drm_thread_->CreateBufferFromFds(
+      size, format, std::move(scoped_fds), handle.strides);
   if (!buffer)
     return nullptr;
-
   return make_scoped_refptr(new GbmPixmap(this, buffer));
 }
 

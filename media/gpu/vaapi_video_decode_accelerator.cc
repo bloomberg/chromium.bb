@@ -797,7 +797,8 @@ static void CloseGpuMemoryBuferHandles(
   for (const auto& handle : handles) {
     // Close the fd by wrapping it in a ScopedFD and letting
     // it fall out of scope.
-    base::ScopedFD fd(handle.native_pixmap_handle.fd.fd);
+    DCHECK_EQ(1u, handle.native_pixmap_handle.fds.size());
+    base::ScopedFD fd(handle.native_pixmap_handle.fds[0].fd);
   }
 }
 

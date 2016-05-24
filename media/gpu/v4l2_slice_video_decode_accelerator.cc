@@ -1674,7 +1674,7 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPicture(
 #if defined(USE_OZONE)
   for (const auto& handle : gpu_memory_buffer_handles) {
     int fd = -1;
-    fd = handle.native_pixmap_handle.fd.fd;
+    fd = handle.native_pixmap_handle.fds[0].fd;
     DCHECK_NE(fd, -1);
     passed_dmabuf_fds->push_back(base::ScopedFD(fd));
   }

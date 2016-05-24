@@ -269,9 +269,9 @@ void ArcGpuVideoDecodeAccelerator::UseBuffer(PortType port,
       if (info.handle.is_valid()) {
         gfx::GpuMemoryBufferHandle handle;
 #if defined(USE_OZONE)
-        handle.native_pixmap_handle.fd =
-            base::FileDescriptor(info.handle.release(), true);
-        handle.native_pixmap_handle.stride = info.stride;
+        handle.native_pixmap_handle.fds.emplace_back(
+            base::FileDescriptor(info.handle.release(), true));
+        handle.native_pixmap_handle.strides.push_back(info.stride);
 #endif
         vda_->ImportBufferForPicture(index, {handle});
       } else {

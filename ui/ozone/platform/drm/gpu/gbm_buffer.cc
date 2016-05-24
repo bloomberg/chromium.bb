@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/native_pixmap_handle_ozone.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
@@ -29,27 +30,40 @@ GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
                      gbm_bo* bo,
                      gfx::BufferFormat format,
                      gfx::BufferUsage usage,
-                     base::ScopedFD fd,
+                     std::vector<base::ScopedFD>&& fds,
                      const gfx::Size& size,
-                     int stride)
+                     const std::vector<int>& strides)
     : GbmBufferBase(gbm, bo, format, usage),
       format_(format),
       usage_(usage),
-      fd_(std::move(fd)),
+      fds_(std::move(fds)),
       size_(size),
-      stride_(stride) {}
+      strides_(strides) {}
 
 GbmBuffer::~GbmBuffer() {
   if (bo())
     gbm_bo_destroy(bo());
 }
 
-int GbmBuffer::GetFd() const {
-  return fd_.get();
+bool GbmBuffer::AreFdsValid() const {
+  if (fds_.empty())
+    return false;
+
+  for (const auto& fd : fds_) {
+    if (fd.get() == -1)
+      return false;
+  }
+  return true;
 }
 
-int GbmBuffer::GetStride() const {
-  return stride_;
+int GbmBuffer::GetFd(size_t plane) const {
+  DCHECK_LT(plane, fds_.size());
+  return fds_[plane].get();
+}
+
+int GbmBuffer::GetStride(size_t plane) const {
+  DCHECK_LT(plane, strides_.size());
+  return strides_[plane];
 }
 
 // TODO(reveman): This should not be needed once crbug.com/597932 is fixed,
@@ -93,9 +107,12 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
     gbm_bo_destroy(bo);
     return nullptr;
   }
-
-  scoped_refptr<GbmBuffer> buffer(new GbmBuffer(
-      gbm, bo, format, usage, std::move(fd), size, gbm_bo_get_stride(bo)));
+  std::vector<base::ScopedFD> fds;
+  fds.emplace_back(std::move(fd));
+  std::vector<int> strides;
+  strides.push_back(gbm_bo_get_stride(bo));
+  scoped_refptr<GbmBuffer> buffer(
+      new GbmBuffer(gbm, bo, format, usage, std::move(fds), size, strides));
   if (usage == gfx::BufferUsage::SCANOUT && !buffer->GetFramebufferId())
     return nullptr;
 
@@ -103,20 +120,20 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
 }
 
 // static
-scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFD(
+scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
     const scoped_refptr<GbmDevice>& gbm,
     gfx::BufferFormat format,
     const gfx::Size& size,
-    base::ScopedFD fd,
-    int stride) {
+    std::vector<base::ScopedFD>&& fds,
+    const std::vector<int>& strides) {
   TRACE_EVENT2("drm", "GbmBuffer::CreateBufferFromFD", "device",
                gbm->device_path().value(), "size", size.ToString());
-
+  DCHECK_EQ(fds.size(), strides.size());
   // TODO(reveman): Use gbm_bo_import after making buffers survive
   // GPU process crashes. crbug.com/597932
   return make_scoped_refptr(new GbmBuffer(gbm, nullptr, format,
                                           gfx::BufferUsage::GPU_READ,
-                                          std::move(fd), size, stride));
+                                          std::move(fds), size, strides));
 }
 
 GbmPixmap::GbmPixmap(GbmSurfaceFactory* surface_manager,
@@ -131,15 +148,17 @@ void GbmPixmap::SetProcessingCallback(
 
 gfx::NativePixmapHandle GbmPixmap::ExportHandle() {
   gfx::NativePixmapHandle handle;
-
-  base::ScopedFD fd(HANDLE_EINTR(dup(buffer_->GetFd())));
-  if (!fd.is_valid()) {
-    PLOG(ERROR) << "dup";
-    return handle;
+  for (size_t i = 0;
+       i < gfx::NumberOfPlanesForBufferFormat(buffer_->GetFormat()); ++i) {
+    base::ScopedFD scoped_fd(HANDLE_EINTR(dup(buffer_->GetFd(i))));
+    if (!scoped_fd.is_valid()) {
+      PLOG(ERROR) << "dup";
+      return gfx::NativePixmapHandle();
+    }
+    handle.fds.emplace_back(
+        base::FileDescriptor(scoped_fd.release(), true /* auto_close */));
+    handle.strides.push_back(buffer_->GetStride(i));
   }
-
-  handle.fd = base::FileDescriptor(fd.release(), true /* auto_close */);
-  handle.stride = buffer_->GetStride();
   return handle;
 }
 
@@ -150,12 +169,16 @@ void* GbmPixmap::GetEGLClientBuffer() const {
   return nullptr;
 }
 
-int GbmPixmap::GetDmaBufFd() const {
-  return buffer_->GetFd();
+bool GbmPixmap::AreDmaBufFdsValid() const {
+  return buffer_->AreFdsValid();
 }
 
-int GbmPixmap::GetDmaBufPitch() const {
-  return buffer_->GetStride();
+int GbmPixmap::GetDmaBufFd(size_t plane) const {
+  return buffer_->GetFd(plane);
+}
+
+int GbmPixmap::GetDmaBufPitch(size_t plane) const {
+  return buffer_->GetStride(plane);
 }
 
 gfx::BufferFormat GbmPixmap::GetBufferFormat() const {

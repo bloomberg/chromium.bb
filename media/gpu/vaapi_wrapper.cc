@@ -615,12 +615,12 @@ scoped_refptr<VASurface> VaapiWrapper::CreateUnownedSurface(
 scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
     const scoped_refptr<ui::NativePixmap>& pixmap) {
   // Get the dmabuf of the created buffer.
-  int dmabuf_fd = pixmap->GetDmaBufFd();
+  int dmabuf_fd = pixmap->GetDmaBufFd(0);
   if (dmabuf_fd < 0) {
     LOG(ERROR) << "Failed to get dmabuf from an Ozone NativePixmap";
     return nullptr;
   }
-  int dmabuf_pitch = pixmap->GetDmaBufPitch();
+  int dmabuf_pitch = pixmap->GetDmaBufPitch(0);
   gfx::Size pixmap_size = pixmap->GetBufferSize();
 
   // Create a VASurface out of the created buffer using the dmabuf.

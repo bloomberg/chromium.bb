@@ -365,12 +365,13 @@ TextureRef::ExportGpuMemoryBufferHandles() const {
   std::vector<gfx::GpuMemoryBufferHandle> handles;
 #if defined(USE_OZONE)
   CHECK(pixmap_);
-  int duped_fd = HANDLE_EINTR(dup(pixmap_->GetDmaBufFd()));
+  int duped_fd = HANDLE_EINTR(dup(pixmap_->GetDmaBufFd(0)));
   LOG_ASSERT(duped_fd != -1) << "Failed duplicating dmabuf fd";
   gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::OZONE_NATIVE_PIXMAP;
-  handle.native_pixmap_handle.fd = base::FileDescriptor(duped_fd, true);
-  handle.native_pixmap_handle.stride = pixmap_->GetDmaBufPitch();
+  handle.native_pixmap_handle.fds.emplace_back(
+      base::FileDescriptor(duped_fd, true));
+  handle.native_pixmap_handle.strides.push_back(pixmap_->GetDmaBufPitch(0));
   handles.push_back(handle);
 #endif
   return handles;
