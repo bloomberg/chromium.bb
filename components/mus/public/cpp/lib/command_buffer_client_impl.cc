@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/gles2/command_buffer_client_impl.h"
+#include "components/mus/public/cpp/lib/command_buffer_client_impl.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -22,7 +22,7 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
-namespace gles2 {
+namespace mus {
 
 namespace {
 
@@ -40,8 +40,8 @@ bool CreateMapAndDupSharedBuffer(size_t size,
     return false;
   DCHECK(duped->is_valid());
 
-  result = mojo::MapBuffer(
-      handle->get(), 0, size, memory, MOJO_MAP_BUFFER_FLAG_NONE);
+  result = mojo::MapBuffer(handle->get(), 0, size, memory,
+                           MOJO_MAP_BUFFER_FLAG_NONE);
   if (result != MOJO_RESULT_OK)
     return false;
   DCHECK(*memory);
@@ -49,9 +49,8 @@ bool CreateMapAndDupSharedBuffer(size_t size,
   return true;
 }
 
-void MakeProgressCallback(
-    gpu::CommandBuffer::State* output,
-    const gpu::CommandBuffer::State& input) {
+void MakeProgressCallback(gpu::CommandBuffer::State* output,
+                          const gpu::CommandBuffer::State& input) {
   *output = input;
 }
 
@@ -88,8 +87,8 @@ bool CommandBufferClientImpl::Initialize() {
   const size_t kSharedStateSize = sizeof(gpu::CommandBufferSharedState);
   void* memory = NULL;
   mojo::ScopedSharedBufferHandle duped;
-  bool result = CreateMapAndDupSharedBuffer(
-      kSharedStateSize, &memory, &shared_state_handle_, &duped);
+  bool result = CreateMapAndDupSharedBuffer(kSharedStateSize, &memory,
+                                            &shared_state_handle_, &duped);
   if (!result)
     return false;
 
@@ -245,7 +244,7 @@ int32_t CommandBufferClientImpl::CreateImage(ClientBuffer buffer,
     NOTIMPLEMENTED();
     // TODO(jam): need to support this if we support types other than
     // SHARED_MEMORY_BUFFER.
-    //gpu_memory_buffer_manager->SetDestructionSyncPoint(gpu_memory_buffer,
+    // gpu_memory_buffer_manager->SetDestructionSyncPoint(gpu_memory_buffer,
     //                                                   InsertSyncPoint());
   }
 
@@ -289,19 +288,15 @@ void CommandBufferClientImpl::Destroyed(int32_t lost_reason, int32_t error) {
   destroyed_ = true;
 }
 
-void CommandBufferClientImpl::SignalAck(uint32_t id) {
-}
+void CommandBufferClientImpl::SignalAck(uint32_t id) {}
 
-void CommandBufferClientImpl::SwapBuffersCompleted(int32_t result) {
-}
+void CommandBufferClientImpl::SwapBuffersCompleted(int32_t result) {}
 
 void CommandBufferClientImpl::UpdateState(
-    const gpu::CommandBuffer::State& state) {
-}
+    const gpu::CommandBuffer::State& state) {}
 
 void CommandBufferClientImpl::UpdateVSyncParameters(int64_t timebase,
-                                                    int64_t interval) {
-}
+                                                    int64_t interval) {}
 
 void CommandBufferClientImpl::TryUpdateState() {
   if (last_state_.error == gpu::error::kNoError)
@@ -310,9 +305,8 @@ void CommandBufferClientImpl::TryUpdateState() {
 
 void CommandBufferClientImpl::MakeProgressAndUpdateState() {
   gpu::CommandBuffer::State state;
-  command_buffer_->MakeProgress(
-      last_state_.get_offset,
-      base::Bind(&MakeProgressCallback, &state));
+  command_buffer_->MakeProgress(last_state_.get_offset,
+                                base::Bind(&MakeProgressCallback, &state));
 
   base::ThreadRestrictions::ScopedAllowWait wait;
   if (!command_buffer_.WaitForIncomingResponse()) {
@@ -326,8 +320,7 @@ void CommandBufferClientImpl::MakeProgressAndUpdateState() {
     last_state_ = state;
 }
 
-void CommandBufferClientImpl::SetLock(base::Lock* lock) {
-}
+void CommandBufferClientImpl::SetLock(base::Lock* lock) {}
 
 void CommandBufferClientImpl::EnsureWorkVisible() {
   // This is only relevant for out-of-process command buffers.
@@ -382,4 +375,4 @@ bool CommandBufferClientImpl::CanWaitUnverifiedSyncToken(
   return false;
 }
 
-}  // namespace gles2
+}  // namespace mus

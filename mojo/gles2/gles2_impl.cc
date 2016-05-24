@@ -8,15 +8,15 @@
 
 #include "base/lazy_instance.h"
 #include "base/threading/thread_local.h"
+#include "components/mus/public/cpp/gles2_context.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "mojo/gles2/gles2_context.h"
 // Even though this isn't used here, we need to include it to get the symbols to
 // be exported in component build.
 #include "mojo/public/c/gles2/chromium_extension.h"
 #include "mojo/public/c/gles2/gles2.h"
 
-using gles2::GLES2Context;
+using mus::GLES2Context;
 
 namespace {
 

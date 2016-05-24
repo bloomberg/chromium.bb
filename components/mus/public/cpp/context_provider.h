@@ -11,10 +11,11 @@
 
 #include "base/macros.h"
 #include "cc/output/context_provider.h"
-#include "mojo/public/c/gles2/gles2_types.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mus {
+
+class GLES2Context;
 
 class ContextProvider : public cc::ContextProvider {
  public:
@@ -43,8 +44,7 @@ class ContextProvider : public cc::ContextProvider {
   void ContextLost();
 
   mojo::ScopedMessagePipeHandle command_buffer_handle_;
-  MojoGLES2Context context_;
-  std::unique_ptr<gpu::gles2::GLES2Interface> context_gl_;
+  std::unique_ptr<GLES2Context> context_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextProvider);
 };

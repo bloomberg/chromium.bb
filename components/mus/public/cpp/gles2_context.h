@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_GLES2_GLES2_CONTEXT_H_
-#define MOJO_GLES2_GLES2_CONTEXT_H_
+#ifndef COMPONENTS_MUS_PUBLIC_CPP_GLES2_CONTEXT_H_
+#define COMPONENTS_MUS_PUBLIC_CPP_GLES2_CONTEXT_H_
 
 #include <stdint.h>
 
@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/mus/public/cpp/lib/command_buffer_client_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
-#include "mojo/gles2/command_buffer_client_impl.h"
 #include "mojo/public/c/gles2/gles2.h"
 
 struct MojoGLES2ContextPrivate {};
@@ -25,7 +25,7 @@ class GLES2Implementation;
 }
 }
 
-namespace gles2 {
+namespace mus {
 
 class GLES2Context : public MojoGLES2ContextPrivate {
  public:
@@ -54,6 +54,6 @@ class GLES2Context : public MojoGLES2ContextPrivate {
   DISALLOW_COPY_AND_ASSIGN(GLES2Context);
 };
 
-}  // namespace gles2
+}  // namespace mus
 
-#endif  // MOJO_GLES2_GLES2_CONTEXT_H_
+#endif  // COMPONENTS_MUS_PUBLIC_CPP_GLES2_CONTEXT_H_

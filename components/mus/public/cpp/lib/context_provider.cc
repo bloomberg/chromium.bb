@@ -7,8 +7,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "mojo/gles2/gles2_context.h"
-#include "mojo/gpu/mojo_gles2_impl_autogen.h"
+#include "components/mus/public/cpp/gles2_context.h"
 
 namespace mus {
 
@@ -20,21 +19,22 @@ ContextProvider::ContextProvider(
 
 bool ContextProvider::BindToCurrentThread() {
   DCHECK(command_buffer_handle_.is_valid());
-  context_ = MojoGLES2CreateContext(command_buffer_handle_.release().value(),
-                                    nullptr, &ContextLostThunk, this);
-  context_gl_.reset(new mojo::MojoGLES2Impl(context_));
+  std::unique_ptr<GLES2Context> context(new GLES2Context(
+      std::vector<int32_t>(), std::move(command_buffer_handle_),
+      &ContextLostThunk, this));
+  if (context->Initialize())
+    context_ = std::move(context);
   return !!context_;
 }
 
 gpu::gles2::GLES2Interface* ContextProvider::ContextGL() {
-  return context_gl_.get();
+  return context_->interface();
 }
 
 gpu::ContextSupport* ContextProvider::ContextSupport() {
   if (!context_)
     return NULL;
-  // TODO(rjkroege): Ensure that UIP does not take this code path.
-  return static_cast<gles2::GLES2Context*>(context_)->context_support();
+  return context_->context_support();
 }
 
 class GrContext* ContextProvider::GrContext() {
@@ -58,9 +58,6 @@ base::Lock* ContextProvider::GetLock() {
 }
 
 ContextProvider::~ContextProvider() {
-  context_gl_.reset();
-  if (context_)
-    MojoGLES2DestroyContext(context_);
 }
 
 void ContextProvider::ContextLost() {}

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_GLES2_COMMAND_BUFFER_CLIENT_IMPL_H_
-#define MOJO_GLES2_COMMAND_BUFFER_CLIENT_IMPL_H_
+#ifndef COMPONENTS_MUS_PUBLIC_CPP_LIB_COMMAND_BUFFER_CLIENT_IMPL_H_
+#define COMPONENTS_MUS_PUBLIC_CPP_LIB_COMMAND_BUFFER_CLIENT_IMPL_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -24,13 +24,12 @@ namespace base {
 class RunLoop;
 }
 
-namespace gles2 {
+namespace mus {
 class CommandBufferClientImpl;
 
-class CommandBufferClientImpl
-    : public mus::mojom::CommandBufferClient,
-      public gpu::CommandBuffer,
-      public gpu::GpuControl {
+class CommandBufferClientImpl : public mus::mojom::CommandBufferClient,
+                                public gpu::CommandBuffer,
+                                public gpu::GpuControl {
  public:
   explicit CommandBufferClientImpl(
       const std::vector<int32_t>& attribs,
@@ -110,6 +109,6 @@ class CommandBufferClientImpl
   uint64_t flushed_fence_sync_release_;
 };
 
-}  // gles2
+}  // mus
 
-#endif  // MOJO_GLES2_COMMAND_BUFFER_CLIENT_IMPL_H_
+#endif  // COMPONENTS_MUS_PUBLIC_CPP_LIB_COMMAND_BUFFER_CLIENT_IMPL_H_

@@ -5,8 +5,12 @@
 source_set("cpp") {
   sources = [
     "context_provider.h",
+    "gles2_context.h",
     "input_event_handler.h",
+    "lib/command_buffer_client_impl.cc",
+    "lib/command_buffer_client_impl.h",
     "lib/context_provider.cc",
+    "lib/gles2_context.cc",
     "lib/in_flight_change.cc",
     "lib/in_flight_change.h",
     "lib/output_surface.cc",
@@ -47,11 +51,16 @@ source_set("cpp") {
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
     "//components/mus/common:mus_common",
+    "//components/mus/gles2:lib",
+    "//gpu/command_buffer/client",
+    "//gpu/command_buffer/client:gles2_cmd_helper",
+    "//gpu/command_buffer/client:gles2_implementation",
+    "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/command_buffer/common",
     "//mojo/converters/geometry",
     "//mojo/converters/input_events",
     "//mojo/converters/surfaces",
-    "//mojo/gles2",
-    "//mojo/gpu:mojo_gles2_implementation",
+    "//mojo/public/c/gles2:gles2",
     "//mojo/public/cpp/bindings:bindings",
     "//mojo/public/cpp/system",
     "//services/shell/public/cpp",
@@ -64,8 +73,4 @@ source_set("cpp") {
   data_deps = [
     "//components/mus",
   ]
-
-  if (is_component_build) {
-    deps += [ "//mojo/gles2" ]
-  }
 }

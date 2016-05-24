@@ -13,10 +13,6 @@ config("gles2_use_mojo") {
 component("gles2") {
   output_name = "mojo_gles2_impl"
   sources = [
-    "command_buffer_client_impl.cc",
-    "command_buffer_client_impl.h",
-    "gles2_context.cc",
-    "gles2_context.h",
     "gles2_impl.cc",
   ]
 
@@ -42,16 +38,9 @@ component("gles2") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//components/mus/gles2:lib",
-    "//components/mus/public/interfaces",
-    "//gpu/command_buffer/client",
-    "//gpu/command_buffer/client:gles2_cmd_helper",
-    "//gpu/command_buffer/client:gles2_implementation",
+    "//components/mus/public/cpp",
     "//gpu/command_buffer/client:gles2_interface",
-    "//gpu/command_buffer/common",
     "//mojo/public/c/system:for_component",
-    "//mojo/public/cpp/bindings",
-    "//mojo/public/cpp/system",
   ]
 
   include_dirs = [ ".." ]

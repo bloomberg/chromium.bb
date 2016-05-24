@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/gles2/gles2_context.h"
+#include "components/mus/public/cpp/gles2_context.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -13,10 +13,9 @@
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
-#include "mojo/public/c/gles2/gles2.h"
 #include "mojo/public/cpp/system/core.h"
 
-namespace gles2 {
+namespace mus {
 
 GLES2Context::GLES2Context(const std::vector<int32_t>& attribs,
                            mojo::ScopedMessagePipeHandle command_buffer_handle,
@@ -45,14 +44,10 @@ bool GLES2Context::Initialize() {
   // this needs to be a public parameter.
   bool lose_context_when_out_of_memory = false;
   bool support_client_side_arrays = false;
-  implementation_.reset(
-      new gpu::gles2::GLES2Implementation(gles2_helper_.get(),
-                                          NULL,
-                                          transfer_buffer_.get(),
-                                          bind_generates_resource,
-                                          lose_context_when_out_of_memory,
-                                          support_client_side_arrays,
-                                          &command_buffer_));
+  implementation_.reset(new gpu::gles2::GLES2Implementation(
+      gles2_helper_.get(), NULL, transfer_buffer_.get(),
+      bind_generates_resource, lose_context_when_out_of_memory,
+      support_client_side_arrays, &command_buffer_));
   if (!implementation_->Initialize(default_limits.start_transfer_buffer_size,
                                    default_limits.min_transfer_buffer_size,
                                    default_limits.max_transfer_buffer_size,
@@ -67,4 +62,4 @@ void GLES2Context::OnLostContext() {
   lost_callback_(closure_);
 }
 
-}  // namespace gles2
+}  // namespace mus
