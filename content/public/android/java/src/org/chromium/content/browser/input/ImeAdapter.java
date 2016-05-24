@@ -323,6 +323,7 @@ public class ImeAdapter {
      * @param nativeImeAdapter The pointer to the native ImeAdapter object.
      */
     public void attach(long nativeImeAdapter) {
+        if (DEBUG_LOGS) Log.d(TAG, "attach");
         if (mNativeImeAdapterAndroid == nativeImeAdapter) return;
         if (mNativeImeAdapterAndroid != 0) {
             nativeResetImeAdapter(mNativeImeAdapterAndroid);
@@ -397,7 +398,7 @@ public class ImeAdapter {
      */
     public void onViewFocusChanged(boolean gainFocus) {
         if (DEBUG_LOGS) Log.w(TAG, "onViewFocusChanged: gainFocus [%b]", gainFocus);
-        if (!gainFocus) reset();
+        if (!gainFocus) resetAndHideKeyboard();
     }
 
     /**
@@ -436,8 +437,8 @@ public class ImeAdapter {
     /**
      * Resets IME adapter and hides keyboard. Note that this will also unblock input connection.
      */
-    public void reset() {
-        if (DEBUG_LOGS) Log.w(TAG, "reset");
+    public void resetAndHideKeyboard() {
+        if (DEBUG_LOGS) Log.w(TAG, "resetAndHideKeyboard");
         mTextInputType = TextInputType.NONE;
         mTextInputFlags = 0;
         // This will trigger unblocking if necessary.
