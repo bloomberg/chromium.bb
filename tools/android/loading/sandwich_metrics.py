@@ -45,6 +45,8 @@ CSV_FIELD_NAMES = [
     # discoverer.
     'cached_subresource_count_theoretic',
     'cached_subresource_count',
+    'first_layout',
+    'first_contentful_paint',
     'total_load',
     'js_onload_event',
     'browser_malloc_avg',
@@ -59,7 +61,12 @@ _UNAVAILABLE_CSV_VALUE = 'unavailable'
 
 _FAILED_CSV_VALUE = 'failed'
 
-_TRACKED_EVENT_NAMES = set(['requestStart', 'loadEventStart', 'loadEventEnd'])
+_TRACKED_EVENT_NAMES = set([
+    'requestStart',
+    'loadEventStart',
+    'loadEventEnd',
+    'firstContentfulPaint',
+    'firstLayout'])
 
 # Points of a completeness record.
 #
@@ -143,7 +150,6 @@ def _GetWebPageTrackedEvents(tracing_track):
     if event_name in _TRACKED_EVENT_NAMES and event_name not in tracked_events:
       logging.info('found url\'s event \'%s\'' % event_name)
       tracked_events[event_name] = event
-  assert len(tracked_events) == len(_TRACKED_EVENT_NAMES)
   return tracked_events
 
 
@@ -158,9 +164,16 @@ def _ExtractDefaultMetrics(loading_trace):
   """
   web_page_tracked_events = _GetWebPageTrackedEvents(
       loading_trace.tracing_track)
+  assert len(web_page_tracked_events) == len(_TRACKED_EVENT_NAMES)
+  request_start_time = web_page_tracked_events['requestStart'].start_msec
   return {
+    'first_layout': (web_page_tracked_events['firstLayout'].start_msec -
+                     request_start_time),
+    'first_contentful_paint': (
+        web_page_tracked_events['firstContentfulPaint'].start_msec -
+        request_start_time),
     'total_load': (web_page_tracked_events['loadEventEnd'].start_msec -
-                   web_page_tracked_events['requestStart'].start_msec),
+                   request_start_time),
     'js_onload_event': (web_page_tracked_events['loadEventEnd'].start_msec -
                         web_page_tracked_events['loadEventStart'].start_msec)
   }

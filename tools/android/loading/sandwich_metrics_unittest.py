@@ -20,10 +20,12 @@ import tracing
 
 _BLINK_CAT = 'blink.user_timing'
 _MEM_CAT = sandwich_runner.MEMORY_DUMP_CATEGORY
-_START='requestStart'
-_LOADS='loadEventStart'
-_LOADE='loadEventEnd'
-_UNLOAD='unloadEventEnd'
+_START = 'requestStart'
+_LOADS = 'loadEventStart'
+_LOADE = 'loadEventEnd'
+_UNLOAD = 'unloadEventEnd'
+_PAINT = 'firstContentfulPaint'
+_LAYOUT = 'firstLayout'
 
 _MINIMALIST_TRACE_EVENTS = [
     {'ph': 'R', 'cat': _BLINK_CAT, 'name': _UNLOAD, 'ts': 10000,
@@ -33,6 +35,10 @@ _MINIMALIST_TRACE_EVENTS = [
     {'cat': _MEM_CAT,   'name': 'periodic_interval', 'pid': 1, 'ph': 'v',
         'ts': 1, 'args': {'dumps': {'allocators': {'malloc': {'attrs': {'size':{
             'units': 'bytes', 'value': '1af2', }}}}}}},
+    {'ph': 'R', 'cat': _BLINK_CAT, 'name': _LAYOUT,  'ts': 24000,
+        'args': {'frame': '0'}},
+    {'ph': 'R', 'cat': _BLINK_CAT, 'name': _PAINT,  'ts': 31000,
+        'args': {'frame': '0'}},
     {'ph': 'R', 'cat': _BLINK_CAT, 'name': _LOADS,  'ts': 35000,
         'args': {'frame': '0'}},
     {'ph': 'R', 'cat': _BLINK_CAT, 'name': _LOADE,  'ts': 40000,
@@ -188,9 +194,11 @@ class PageTrackTest(unittest.TestCase):
   def testExtractDefaultMetrics(self):
     metrics = puller._ExtractDefaultMetrics(LoadingTrace(
         _MINIMALIST_TRACE_EVENTS))
-    self.assertEquals(2, len(metrics))
+    self.assertEquals(4, len(metrics))
     self.assertEquals(20, metrics['total_load'])
     self.assertEquals(5, metrics['js_onload_event'])
+    self.assertEquals(4, metrics['first_layout'])
+    self.assertEquals(11, metrics['first_contentful_paint'])
 
   def testExtractMemoryMetrics(self):
     metrics = puller._ExtractMemoryMetrics(LoadingTrace(
