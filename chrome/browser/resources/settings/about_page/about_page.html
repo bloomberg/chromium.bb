@@ -44,6 +44,16 @@
       iron-icon[icon="settings:error"] {
         fill: var(--paper-red-600);
       }
+
+      .product-info {
+        display: block;
+        padding-bottom: 10px;
+        padding-top: 10px;
+      }
+
+      .info-section {
+        margin-bottom: 12px;
+      }
     </style>
     <settings-section page-title="$i18n{aboutPageTitle}"
         current-route="[[currentRoute]]" section="about">
@@ -101,6 +111,22 @@
             Detailed build info
           </div>
 </if>
+          <div class="settings-box product-info">
+            <div class="info-section">
+              <div class="secondary">$i18n{aboutProductTitle}</div>
+              <div class="secondary">$i18n{aboutProductCopyright}</div>
+            </div>
+
+            <div class="info-section">
+              <div class="secondary">$i18nRaw{aboutProductLicense}</div>
+<if expr="chromeos">
+              <div class="secondary">$i18nRaw{aboutProductOsLicense}</div>
+</if>
+            </div>
+<if expr="_google_chrome">
+            <div class="secondary">$i18nRaw{aboutProductTos}</div>
+</if>
+          </div>
         </neon-animatable>
 <if expr="chromeos">
         <template is="dom-if" name="detailed-build-info">

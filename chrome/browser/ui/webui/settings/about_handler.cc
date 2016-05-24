@@ -284,6 +284,12 @@ AboutHandler* AboutHandler::Create(content::WebUIDataSource* html_source,
                           ObsoleteSystem::IsObsoleteNowOrSoon() &&
                               ObsoleteSystem::IsEndOfTheLine());
 
+#if defined(GOOGLE_CHROME_BUILD)
+  base::string16 tos = l10n_util::GetStringFUTF16(
+      IDS_ABOUT_TERMS_OF_SERVICE, base::UTF8ToUTF16(chrome::kChromeUITermsURL));
+  html_source->AddString("aboutProductTos", tos);
+#endif
+
 #if defined(OS_CHROMEOS)
   base::string16 os_license = l10n_util::GetStringFUTF16(
       IDS_ABOUT_CROS_VERSION_LICENSE,
