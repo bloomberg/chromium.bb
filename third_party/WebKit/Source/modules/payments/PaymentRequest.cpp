@@ -56,7 +56,6 @@ struct TypeConverter<PaymentItemPtr, blink::PaymentItem> {
     static PaymentItemPtr Convert(const blink::PaymentItem& input)
     {
         PaymentItemPtr output = PaymentItem::New();
-        output->id = input.id();
         output->label = input.label();
         output->amount = CurrencyAmount::From(input.amount());
         return output;
@@ -105,16 +104,12 @@ namespace blink {
 namespace {
 
 // Validates ShippingOption and PaymentItem dictionaries, which happen to have identical fields.
+// except for "id", which is present only in ShippingOption.
 template <typename T>
 void validateShippingOptionsOrPaymentItems(HeapVector<T> items, ExceptionState& exceptionState)
 {
     String errorMessage;
     for (const auto& item : items) {
-        if (!item.hasId() || item.id().isEmpty()) {
-            exceptionState.throwTypeError("Item id required");
-            return;
-        }
-
         if (!item.hasLabel() || item.label().isEmpty()) {
             exceptionState.throwTypeError("Item label required");
             return;
@@ -147,6 +142,16 @@ void validateShippingOptionsOrPaymentItems(HeapVector<T> items, ExceptionState& 
     }
 }
 
+void validateShippingOptionsIds(HeapVector<ShippingOption> options, ExceptionState& exceptionState)
+{
+    for (const auto& option : options) {
+        if (!option.hasId() || option.id().isEmpty()) {
+            exceptionState.throwTypeError("ShippingOption id required");
+            return;
+        }
+    }
+}
+
 void validatePaymentDetails(const PaymentDetails& details, ExceptionState& exceptionState)
 {
     if (!details.hasItems()) {
@@ -163,8 +168,10 @@ void validatePaymentDetails(const PaymentDetails& details, ExceptionState& excep
     if (exceptionState.hadException())
         return;
 
-    if (details.hasShippingOptions())
+    if (details.hasShippingOptions()) {
         validateShippingOptionsOrPaymentItems(details.shippingOptions(), exceptionState);
+        validateShippingOptionsIds(details.shippingOptions(), exceptionState);
+    }
 }
 
 } // namespace

@@ -10,7 +10,8 @@
 namespace blink {
 namespace {
 
-// PaymentItem and ShippingOption have identical structure.
+// PaymentItem and ShippingOption have identical structure
+// except for the "id" field, which is present only in ShippingOption.
 template <typename PaymentItemOrShippingOption>
 void setValues(PaymentItemOrShippingOption& original, PaymentTestDataToChange data, PaymentTestModificationType modificationType, const String& valueToUse)
 {
@@ -31,12 +32,6 @@ void setValues(PaymentItemOrShippingOption& original, PaymentTestDataToChange da
     if (data != PaymentTestDataAmount || modificationType != PaymentTestRemoveKey)
         original.setAmount(itemAmount);
 
-    if (data == PaymentTestDataId) {
-        if (modificationType == PaymentTestOverwriteValue)
-            original.setId(valueToUse);
-    } else {
-        original.setId("id");
-    }
     if (data == PaymentTestDataLabel) {
         if (modificationType == PaymentTestOverwriteValue)
             original.setLabel(valueToUse);
@@ -49,6 +44,7 @@ void setValues(PaymentItemOrShippingOption& original, PaymentTestDataToChange da
 
 PaymentItem buildPaymentItemForTest(PaymentTestDataToChange data, PaymentTestModificationType modificationType, const String& valueToUse)
 {
+    DCHECK_NE(data, PaymentTestDataId);
     PaymentItem item;
     setValues(item, data, modificationType, valueToUse);
     return item;
@@ -57,6 +53,12 @@ PaymentItem buildPaymentItemForTest(PaymentTestDataToChange data, PaymentTestMod
 ShippingOption buildShippingOptionForTest(PaymentTestDataToChange data, PaymentTestModificationType modificationType, const String& valueToUse)
 {
     ShippingOption shippingOption;
+    if (data == PaymentTestDataId) {
+        if (modificationType == PaymentTestOverwriteValue)
+            shippingOption.setId(valueToUse);
+    } else {
+        shippingOption.setId("id");
+    }
     setValues(shippingOption, data, modificationType, valueToUse);
     return shippingOption;
 }

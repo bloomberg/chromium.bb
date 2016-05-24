@@ -283,8 +283,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         for (int i = 0; i < details.items.length; i++) {
             PaymentItem item = details.items[i];
             // "id", "label", "currencyCode", and "value" should be non-empty.
-            if (item == null || TextUtils.isEmpty(item.id) || TextUtils.isEmpty(item.label)
-                    || item.amount == null || TextUtils.isEmpty(item.amount.currencyCode)
+            if (item == null || TextUtils.isEmpty(item.label) || item.amount == null
+                    || TextUtils.isEmpty(item.amount.currencyCode)
                     || TextUtils.isEmpty(item.amount.value)) {
                 return null;
             }

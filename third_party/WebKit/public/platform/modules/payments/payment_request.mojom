@@ -68,7 +68,6 @@ struct CurrencyAmount {
 };
 
 struct PaymentItem {
-  string id;
   string label;
   CurrencyAmount amount;
 };
