@@ -3,7 +3,6 @@ include_rules = [
   "+components/gpu",
   "+gpu",
   "+mojo/converters",
-  "+mojo/platform_handle",
   "+mojo/public",
   "+ui",
 ]

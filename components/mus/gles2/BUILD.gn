@@ -47,18 +47,13 @@ source_set("gles2") {
     "//gpu/config:config",
     "//mojo/converters/geometry",
     "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/system",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
     "//ui/gl/init",
     "//ui/mojo/geometry:interfaces",
   ]
-
-  if (is_android) {
-    deps += [ "//mojo/platform_handle:platform_handle_impl" ]
-  } else {
-    deps += [ "//mojo/platform_handle" ]
-  }
 
   if (use_ozone) {
     deps += [ "//ui/ozone:ozone" ]

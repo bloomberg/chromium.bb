@@ -23,7 +23,6 @@ source_set("native_application_support") {
 
   deps = [
     "//base",
-    "//mojo/platform_handle:platform_handle_impl",
     "//services/shell",
   ]
 
@@ -45,7 +44,6 @@ source_set("child_process_base") {
   deps = [
     "//base",
     "//mojo/edk/system",
-    "//mojo/platform_handle:platform_handle_impl",
     "//services/shell",
     "//services/shell/public/interfaces",
     "//services/shell/runner:init",
@@ -70,7 +68,6 @@ source_set("lib") {
     ":native_application_support",
     "//base:base_static",
     "//base:i18n",
-    "//mojo/platform_handle:platform_handle_impl",
     "//services/shell/public/cpp:sources",
     "//services/shell/runner:init",
     "//services/shell/runner/common",

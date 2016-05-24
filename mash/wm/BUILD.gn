@@ -187,7 +187,6 @@ source_set("unittests") {
     "//mojo/converters/input_events",
     "//mojo/edk/system",
     "//mojo/gles2",
-    "//mojo/platform_handle",
     "//mojo/public/cpp/system",
     "//services/shell/public/cpp:shell_test_support",
     "//testing/gtest",

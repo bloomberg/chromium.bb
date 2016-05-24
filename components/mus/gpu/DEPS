@@ -1,7 +1,6 @@
 include_rules = [
   "+gpu/ipc/common",
   "+gpu/ipc/service",
-  "+mojo/platform_handle",
 ]
 
 specific_include_rules = {

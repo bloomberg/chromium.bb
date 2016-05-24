@@ -35,7 +35,6 @@
         '../../services/tracing/tracing.gyp:tracing_lib',
         '../../mojo/mojo_edk.gyp:mojo_system_impl',
         '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
-        '../../mojo/mojo_platform_handle.gyp:platform_handle',
         '../../url/url.gyp:url_lib',
       ],
       'export_dependent_settings': [

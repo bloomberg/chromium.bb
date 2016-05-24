@@ -215,7 +215,6 @@ test("mus_ws_unittests") {
     "//mojo/converters/input_events",
     "//mojo/converters/transform",
     "//mojo/gles2",
-    "//mojo/platform_handle:for_component",
     "//mojo/public/cpp/bindings:bindings",
     "//services/shell/public/cpp:shell_test_support",
     "//services/shell/public/cpp:sources",

@@ -64,7 +64,6 @@ component("mus") {
     "//mojo/converters/ime",
     "//mojo/converters/input_events",
     "//mojo/converters/surfaces",
-    "//mojo/platform_handle:for_component",
     "//mojo/public/c/system:for_component",
     "//mojo/public/cpp/bindings",
     "//services/catalog/public/cpp",

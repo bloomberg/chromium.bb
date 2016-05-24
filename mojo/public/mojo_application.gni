@@ -91,7 +91,6 @@ template("mojo_native_application") {
     data_deps += mojo_data_deps
 
     deps = [
-      "//mojo/platform_handle:for_shared_library",
       "//mojo/public/c/system:for_shared_library",
       "//services/shell/public/cpp:application_support",
     ]

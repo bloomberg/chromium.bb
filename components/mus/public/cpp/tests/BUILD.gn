@@ -69,7 +69,6 @@ test("mus_public_unittests") {
     "//mojo/converters/input_events",
     "//mojo/edk/system",
     "//mojo/gles2",
-    "//mojo/platform_handle:platform_handle_impl",
     "//mojo/public/cpp/system",
     "//services/shell/public/cpp",
     "//testing/gtest",

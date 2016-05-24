@@ -130,7 +130,6 @@
       '<(DEPTH)/base/base.gyp:base_i18n',
       '<(DEPTH)/base/base.gyp:base_static',
       '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',
-      '<(DEPTH)/mojo/mojo_platform_handle.gyp:platform_handle',
       'shell_public.gyp:shell_public',
     ],
     'export_dependent_settings': [

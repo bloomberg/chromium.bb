@@ -43,7 +43,6 @@ test("mash_unittests") {
     "//base/test:test_support",
     "//mash/wm:resources",
     "//mash/wm:unittests",
-    "//mojo/platform_handle:platform_handle_impl",
     "//services/shell/background:main",
     "//ui/aura",
     "//ui/base",

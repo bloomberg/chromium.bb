@@ -21,7 +21,7 @@ source_set("gpu") {
     "//gpu/ipc/common",
     "//gpu/ipc/service",
     "//ipc",
-    "//mojo/platform_handle:platform_handle",
+    "//mojo/public/cpp/system",
     "//ui/gfx:memory_buffer",
   ]
 }
