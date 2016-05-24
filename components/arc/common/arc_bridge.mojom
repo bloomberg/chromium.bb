@@ -16,7 +16,6 @@ import "intent_helper.mojom";
 import "metrics.mojom";
 import "net.mojom";
 import "notifications.mojom";
-import "obb_mounter.mojom";
 import "policy.mojom";
 import "power.mojom";
 import "process.mojom";
@@ -24,9 +23,9 @@ import "storage_manager.mojom";
 import "video.mojom";
 import "window_manager.mojom";
 
-// Next MinVersion: 14
+// Next MinVersion: 13
 // Deprecated method IDs: 101, 105
-// Next method ID: 120
+// Next method ID: 119
 interface ArcBridgeHost {
   // Keep the entries alphabetical. In order to do so without breaking
   // compatibility with the ARC instance, explicitly assign each interface a
@@ -70,9 +69,6 @@ interface ArcBridgeHost {
 
   // Notifies Chrome that the NotificationsInstance interface is ready.
   OnNotificationsInstanceReady@102(NotificationsInstance instance_ptr);
-
-  // Notifies Chrome that the ObbMounter interface is ready.
-  [MinVersion=13] OnObbMounterInstanceReady@119(ObbMounterInstance instance_ptr);
 
   // Notifies Chrome that the PolicyInstance interface is ready.
   [MinVersion=7] OnPolicyInstanceReady@114(PolicyInstance instance_ptr);
