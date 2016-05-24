@@ -51,11 +51,6 @@ MediaStreamSource::MediaStreamSource(const String& id, StreamType type, const St
 
 void MediaStreamSource::dispose()
 {
-    // This prevents the following m_extraData.clear() from invoking
-    // MediaStreamSource::setReadyState and dispatching events in the
-    // pre-finalizer.
-    m_readyState = ReadyStateEnded;
-
     m_extraData.clear();
 }
 
