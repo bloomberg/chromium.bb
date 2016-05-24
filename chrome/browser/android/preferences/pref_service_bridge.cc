@@ -15,6 +15,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -37,6 +38,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/android/android_about_app_info.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/locale_settings.h"
 #include "components/browsing_data_ui/history_notice_utils.h"
@@ -447,6 +449,12 @@ static jboolean GetFullscreenManaged(JNIEnv* env,
 
 static jboolean GetFullscreenAllowed(JNIEnv* env,
                                      const JavaParamRef<jobject>& obj) {
+  // In the simplified fullscreen case, fullscreen is always allowed.
+  // TODO(mgiuca): Remove this pref once all data associated with it is deleted
+  // (https://crbug.com/591896).
+  if (base::FeatureList::IsEnabled(features::kSimplifiedFullscreenUI))
+    return true;
+
   HostContentSettingsMap* content_settings =
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   return content_settings->GetDefaultContentSetting(

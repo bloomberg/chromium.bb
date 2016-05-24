@@ -21,6 +21,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.media.cdm.MediaDrmCredentialManager;
 import org.chromium.chrome.browser.media.cdm.MediaDrmCredentialManager.MediaDrmCredentialManagerCallback;
@@ -615,6 +616,10 @@ public class SingleCategoryPreferences extends PreferenceFragment
                 } else if (mCategory.showFullscreenSites()) {
                     globalToggle.setChecked(
                             PrefServiceBridge.getInstance().isFullscreenAllowed());
+                    // With the simplified flag enabled, the fullscreen global toggle cannot be
+                    // disabled.
+                    globalToggle.setEnabled(
+                            !ChromeFeatureList.isEnabled("ViewsSimplifiedFullscreenUI"));
                 } else if (mCategory.showGeolocationSites()) {
                     globalToggle.setChecked(
                             LocationSettings.getInstance().isChromeLocationSettingEnabled());
