@@ -111,9 +111,10 @@ using base::scoped_nsobject;
   // 10.8) since WebBluetooth is enabled only with 10.10.
   DCHECK(
       [_delegate respondsToSelector:@selector(peripheral:didModifyServices:)]);
-  [_delegate performSelector:@selector(peripheral:didModifyServices:)
-                  withObject:self.peripheral
-                  withObject:@[ serviceToRemove ]];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpartial-availability"
+  [_delegate peripheral:self.peripheral didModifyServices:@[ serviceToRemove ]];
+#pragma clang diagnostic pop
 }
 
 - (NSUUID*)identifier {
