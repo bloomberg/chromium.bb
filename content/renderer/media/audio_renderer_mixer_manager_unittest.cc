@@ -231,8 +231,8 @@ TEST_F(AudioRendererMixerManagerTest, MixerReuse) {
 
 // Verify CreateInput() provides AudioRendererMixerInput with the appropriate
 // callbacks and they are working as expected.  Also, verify that separate
-// mixers are created for separate render views, even though the AudioParameters
-// are the same.
+// mixers are created for separate RenderFrames, even though the
+// AudioParameters are the same.
 TEST_F(AudioRendererMixerManagerTest, CreateInput) {
   // Expect AudioRendererMixerManager to call Start and Stop on our mock twice
   // each.  Note: Under normal conditions, each mixer would get its own sink!

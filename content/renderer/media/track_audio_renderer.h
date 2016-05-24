@@ -127,7 +127,7 @@ class CONTENT_EXPORT TrackAudioRenderer
   // with the audio track.
   blink::WebMediaStreamTrack audio_track_;
 
-  // The render view and frame in which the audio is rendered into |sink_|.
+  // The RenderFrame in which the audio is rendered into |sink_|.
   const int playout_render_frame_id_;
   const int session_id_;
 

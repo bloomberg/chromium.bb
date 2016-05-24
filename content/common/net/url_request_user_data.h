@@ -10,7 +10,7 @@
 namespace content {
 
 // Used to annotate all URLRequests for which the request can be associated
-// with a given render view.
+// with a given RenderFrame.
 class URLRequestUserData : public base::SupportsUserData::Data {
  public:
   URLRequestUserData(int render_process_id,

@@ -37,8 +37,8 @@ class MHTMLGenerationManager {
   // generated file.  On failure |file_size| is -1.
   typedef base::Callback<void(int64_t file_size)> GenerateMHTMLCallback;
 
-  // Instructs the render view to generate a MHTML representation of the current
-  // page for |web_contents|.
+  // Instructs the RenderFrames in |web_contents| to generate a MHTML
+  // representation of the current page.
   void SaveMHTML(WebContents* web_contents,
                  const MHTMLGenerationParams& params,
                  const GenerateMHTMLCallback& callback);

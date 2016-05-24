@@ -2245,7 +2245,7 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
       // a timeout).  If the handler returns false, we'll have to cancel the
       // request.
       //
-      // Also make sure the old render view stops, in case a load is in
+      // Also make sure the old RenderFrame stops, in case a load is in
       // progress.  (We don't want to do this for transfers, since it will
       // interrupt the transfer with an unexpected DidStopLoading.)
       render_frame_host_->Send(new FrameMsg_Stop(

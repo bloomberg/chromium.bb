@@ -195,7 +195,7 @@ struct CONTENT_EXPORT StartNavigationParams {
 #endif
 
   // The following two members identify a previous request that has been
-  // created before this navigation is being transferred to a new render view.
+  // created before this navigation is being transferred to a new process.
   // This serves the purpose of recycling the old request.
   // Unless this refers to a transferred navigation, these values are -1 and -1.
   int transferred_request_child_id;

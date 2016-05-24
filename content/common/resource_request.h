@@ -150,7 +150,7 @@ struct CONTENT_EXPORT ResourceRequest {
   bool should_replace_current_entry = false;
 
   // The following two members identify a previous request that has been
-  // created before this navigation has been transferred to a new render view.
+  // created before this navigation has been transferred to a new process.
   // This serves the purpose of recycling the old request.
   // Unless this refers to a transferred navigation, these values are -1 and -1.
   int transferred_request_child_id = -1;

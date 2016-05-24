@@ -176,7 +176,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // Marks the request, with its current |response|, as "parked". This
   // happens if a request is redirected cross-site and needs to be
-  // resumed by a new render view.
+  // resumed by a new process.
   void MarkAsTransferredNavigation(
       const GlobalRequestID& id,
       const scoped_refptr<ResourceResponse>& response);
@@ -185,7 +185,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // navigation was cancelled.
   void CancelTransferringNavigation(const GlobalRequestID& id);
 
-  // Resumes the request without transferring it to a new render view.
+  // Resumes the request without transferring it to a new process.
   void ResumeDeferredNavigation(const GlobalRequestID& id);
 
   // Returns the number of pending requests. This is designed for the unittests
@@ -539,7 +539,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Returns whether the URLRequest identified by |transferred_request_id| is
   // currently in the process of being transferred to a different renderer.
   // This happens if a request is redirected cross-site and needs to be resumed
-  // by a new render view.
+  // by a new process.
   bool IsTransferredNavigation(
       const GlobalRequestID& transferred_request_id) const;
 

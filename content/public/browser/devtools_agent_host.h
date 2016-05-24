@@ -132,7 +132,7 @@ class CONTENT_EXPORT DevToolsAgentHost
   // Returns related browser context instance if available.
   virtual BrowserContext* GetBrowserContext() = 0;
 
-  // Temporarily detaches render view host from this host. Must be followed by
+  // Temporarily detaches WebContents from this host. Must be followed by
   // a call to ConnectWebContents (may leak the host instance otherwise).
   virtual void DisconnectWebContents() = 0;
 

@@ -81,7 +81,7 @@ struct AudioInputRendererHost::AudioEntry {
   // The AudioInputController that manages the audio input stream.
   scoped_refptr<media::AudioInputController> controller;
 
-  // The audio input stream ID in the render view.
+  // The audio input stream ID in the RenderFrame.
   int stream_id;
 
   // Shared memory for transmission of the audio data. It has
