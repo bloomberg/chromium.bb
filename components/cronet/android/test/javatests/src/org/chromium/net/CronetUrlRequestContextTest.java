@@ -270,10 +270,13 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         mTestFramework.mCronetEngine.shutdown();
     }
 
+    /*
     @SmallTest
     @Feature({"Cronet"})
     // TODO(xunjieli): Remove annotation after crbug.com/539519 is fixed.
     @SuppressWarnings("deprecation")
+    */
+    @FlakyTest(message = "http://crbug.com/614227")
     public void testRealTimeNetworkQualityObservations() throws Exception {
         mTestFramework = startCronetTestFramework();
         TestExecutor testExecutor = new TestExecutor();
