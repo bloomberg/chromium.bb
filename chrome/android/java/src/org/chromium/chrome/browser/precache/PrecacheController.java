@@ -165,11 +165,13 @@ public class PrecacheController {
                 .setTag(PERIODIC_TASK_TAG)
                 .build();
         sTaskScheduler.scheduleTask(context, task);
+        // TODO(rajenrant): Track any failure via UMA.
     }
 
     private static void cancelPeriodicPrecacheTask(Context context) {
         Log.v(TAG, "canceling a periodic precache task");
         sTaskScheduler.cancelTask(context, PERIODIC_TASK_TAG);
+        // TODO(rajenrant): Track any failure via UMA.
     }
 
     /**
@@ -193,11 +195,13 @@ public class PrecacheController {
                 .setUpdateCurrent(true)
                 .build();
         sTaskScheduler.scheduleTask(context, task);
+        // TODO(rajenrant): Track any failure via UMA.
     }
 
     private static void cancelPrecacheCompletionTask(Context context) {
         Log.v(TAG, "canceling a precache completion task");
         sTaskScheduler.cancelTask(context, CONTINUATION_TASK_TAG);
+        // TODO(rajenrant): Track any failure via UMA.
     }
 
     public static void rescheduleTasksOnUpgrade(Context context) {

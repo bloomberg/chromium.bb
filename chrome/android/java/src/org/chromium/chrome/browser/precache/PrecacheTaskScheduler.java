@@ -6,17 +6,37 @@ package org.chromium.chrome.browser.precache;
 
 import android.content.Context;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.Task;
 
 import org.chromium.chrome.browser.ChromeBackgroundService;
 
 class PrecacheTaskScheduler {
-    void scheduleTask(Context context, Task task) {
-        GcmNetworkManager.getInstance(context).schedule(task);
+    boolean scheduleTask(Context context, Task task) {
+        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context)
+                != ConnectionResult.SUCCESS) {
+            return false;
+        }
+        try {
+            GcmNetworkManager.getInstance(context).schedule(task);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+        return true;
     }
 
-    void cancelTask(Context context, String tag) {
-        GcmNetworkManager.getInstance(context).cancelTask(tag, ChromeBackgroundService.class);
+    boolean cancelTask(Context context, String tag) {
+        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context)
+                != ConnectionResult.SUCCESS) {
+            return false;
+        }
+        try {
+            GcmNetworkManager.getInstance(context).cancelTask(tag, ChromeBackgroundService.class);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+        return true;
     }
 }

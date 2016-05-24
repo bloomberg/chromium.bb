@@ -71,21 +71,23 @@ public class PrecacheControllerTest extends InstrumentationTestCase {
         public int cancelContinuationCnt = 0;
 
         @Override
-        void scheduleTask(Context context, Task task) {
+        boolean scheduleTask(Context context, Task task) {
             if (PrecacheController.PERIODIC_TASK_TAG.equals(task.getTag())) {
                 schedulePeriodicCnt++;
             } else if (PrecacheController.CONTINUATION_TASK_TAG.equals(task.getTag())) {
                 scheduleContinuationCnt++;
             }
+            return true;
         }
 
         @Override
-        void cancelTask(Context context, String tag) {
+        boolean cancelTask(Context context, String tag) {
             if (PrecacheController.PERIODIC_TASK_TAG.equals(tag)) {
                 cancelPeriodicCnt++;
             } else if (PrecacheController.CONTINUATION_TASK_TAG.equals(tag)) {
                 cancelContinuationCnt++;
             }
+            return true;
         }
     }
 
