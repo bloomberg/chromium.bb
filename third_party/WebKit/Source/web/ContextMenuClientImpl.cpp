@@ -131,7 +131,14 @@ static String selectMisspellingAsync(LocalFrame* selectedFrame, String& descript
     return markerRange->text();
 }
 
-void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
+static bool shouldShowContextMenuFromTouch(const WebContextMenuData& data)
+{
+    return !data.linkURL.isEmpty()
+        || data.mediaType == WebContextMenuData::MediaTypeImage
+        || data.mediaType == WebContextMenuData::MediaTypeVideo;
+}
+
+bool ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu, bool fromTouch)
 {
     // Displaying the context menu in this function is a big hack as we don't
     // have context, i.e. whether this is being invoked via a script or in
@@ -139,7 +146,7 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
     // Keyboard events KeyVK_APPS, Shift+F10). Check if this is being invoked
     // in response to the above input events before popping up the context menu.
     if (!ContextMenuAllowedScope::isContextMenuAllowed())
-        return;
+        return false;
 
     HitTestResult r = m_webView->page()->contextMenuController().hitTestResult();
 
@@ -256,6 +263,9 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
         }
     }
 
+    if (fromTouch && !shouldShowContextMenuFromTouch(data))
+        return false;
+
     // If it's not a link, an image, a media element, or an image/media link,
     // show a selection menu or a more generic page menu.
     if (selectedFrame->document()->loader())
@@ -362,6 +372,8 @@ void ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu)
     selectedWebFrame->setContextMenuNode(r.innerNodeOrImageMapImage());
     if (selectedWebFrame->client())
         selectedWebFrame->client()->showContextMenu(data);
+
+    return true;
 }
 
 void ContextMenuClientImpl::clearContextMenu()

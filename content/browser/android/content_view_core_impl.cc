@@ -598,6 +598,10 @@ void ContentViewCoreImpl::OnGestureEventAck(const blink::WebGestureEvent& event,
           event.x * dpi_scale(),
           event.y * dpi_scale());
       break;
+    case WebInputEvent::GestureLongPress:
+      if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)
+        Java_ContentViewCore_performLongPressHapticFeedback(env, j_obj.obj());
+      break;
     default:
       break;
   }

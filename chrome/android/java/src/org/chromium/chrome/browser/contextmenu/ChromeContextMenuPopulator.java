@@ -165,11 +165,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     }
 
     @Override
-    public boolean shouldShowContextMenu(ContextMenuParams params) {
-        return params != null && (params.isAnchor() || params.isImage() || params.isVideo());
-    }
-
-    @Override
     public void buildContextMenu(ContextMenu menu, Context context, ContextMenuParams params) {
         if (!TextUtils.isEmpty(params.getLinkUrl()) && !params.getLinkUrl().equals(BLANK_URL)) {
             setHeaderText(context, menu, params.getLinkUrl());

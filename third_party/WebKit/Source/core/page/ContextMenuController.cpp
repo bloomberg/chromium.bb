@@ -173,8 +173,13 @@ PassOwnPtr<ContextMenu> ContextMenuController::createContextMenu(LocalFrame* fra
 
 void ContextMenuController::showContextMenu(Event* event)
 {
-    m_client->showContextMenu(m_contextMenu.get());
-    if (event)
+    bool fromTouch = false;
+    if (event && event->isMouseEvent()) {
+        MouseEvent* mouseEvent = static_cast<MouseEvent*>(event);
+        fromTouch = mouseEvent->fromTouch();
+    }
+
+    if (m_client->showContextMenu(m_contextMenu.get(), fromTouch) && event)
         event->setDefaultHandled();
 }
 

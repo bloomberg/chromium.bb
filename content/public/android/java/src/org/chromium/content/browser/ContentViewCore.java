@@ -2311,9 +2311,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
                 mSelectionRect.set(left, top, right, bottom);
                 mHasSelection = true;
                 mUnselectAllOnActionModeDismiss = true;
-                // TODO(cjhopman): Remove this when there is a better signal that long press caused
-                // a selection. See http://crbug.com/150151.
-                mContainerView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
                 showSelectActionMode(true);
                 break;
 
@@ -2659,15 +2656,18 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     @SuppressWarnings("unused")
     @CalledByNative
     private boolean showPastePopupWithFeedback(int x, int y) {
-        // TODO(jdduke): Remove this when there is a better signal that long press caused
-        // showing of the paste popup. See http://crbug.com/150151.
         if (showPastePopup(x, y)) {
-            mContainerView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
             if (mWebContents != null) mWebContents.onContextMenuOpened();
             return true;
         } else {
             return false;
         }
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void performLongPressHapticFeedback() {
+        mContainerView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
     }
 
     @VisibleForTesting

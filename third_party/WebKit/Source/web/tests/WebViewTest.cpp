@@ -1611,6 +1611,82 @@ TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient)
     localFrame->close();
 }
 
+TEST_F(WebViewTest, LongPressEmptyDiv)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()),
+        WebString::fromUTF8("long_press_empty_div.html"));
+
+    WebViewImpl* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "long_press_empty_div.html", true);
+    webView->resize(WebSize(500, 300));
+    webView->updateAllLifecyclePhases();
+    runPendingTasks();
+
+    WebGestureEvent event;
+    event.type = WebInputEvent::GestureLongPress;
+    event.sourceDevice = WebGestureDeviceTouchscreen;
+    event.x = 250;
+    event.y = 150;
+
+    EXPECT_EQ(WebInputEventResult::NotHandled, webView->handleInputEvent(event));
+}
+
+TEST_F(WebViewTest, LongPressImage)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()),
+        WebString::fromUTF8("long_press_image.html"));
+
+    WebViewImpl* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "long_press_image.html", true);
+    webView->resize(WebSize(500, 300));
+    webView->updateAllLifecyclePhases();
+    runPendingTasks();
+
+    WebGestureEvent event;
+    event.type = WebInputEvent::GestureLongPress;
+    event.sourceDevice = WebGestureDeviceTouchscreen;
+    event.x = 10;
+    event.y = 10;
+
+    EXPECT_EQ(WebInputEventResult::HandledSystem, webView->handleInputEvent(event));
+}
+
+TEST_F(WebViewTest, LongPressVideo)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()),
+        WebString::fromUTF8("long_press_video.html"));
+
+    WebViewImpl* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "long_press_video.html", true);
+    webView->resize(WebSize(500, 300));
+    webView->updateAllLifecyclePhases();
+    runPendingTasks();
+
+    WebGestureEvent event;
+    event.type = WebInputEvent::GestureLongPress;
+    event.sourceDevice = WebGestureDeviceTouchscreen;
+    event.x = 10;
+    event.y = 10;
+
+    EXPECT_EQ(WebInputEventResult::HandledSystem, webView->handleInputEvent(event));
+}
+
+TEST_F(WebViewTest, LongPressLink)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()),
+        WebString::fromUTF8("long_press_link.html"));
+
+    WebViewImpl* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "long_press_link.html", true);
+    webView->resize(WebSize(500, 300));
+    webView->updateAllLifecyclePhases();
+    runPendingTasks();
+
+    WebGestureEvent event;
+    event.type = WebInputEvent::GestureLongPress;
+    event.sourceDevice = WebGestureDeviceTouchscreen;
+    event.x = 500;
+    event.y = 300;
+
+    EXPECT_EQ(WebInputEventResult::HandledSystem, webView->handleInputEvent(event));
+}
+
 TEST_F(WebViewTest, LongPressSelection)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("longpress_selection.html"));

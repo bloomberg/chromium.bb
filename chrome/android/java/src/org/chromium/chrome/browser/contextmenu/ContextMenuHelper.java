@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.contextmenu;
 import android.app.Activity;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
-import android.view.HapticFeedbackConstants;
 import android.view.MenuItem;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
@@ -62,8 +61,7 @@ public class ContextMenuHelper implements OnCreateContextMenuListener, OnMenuIte
     private boolean showContextMenu(ContentViewCore contentViewCore, ContextMenuParams params) {
         final View view = contentViewCore.getContainerView();
 
-        if (!shouldShowMenu(params)
-                || view == null
+        if (view == null
                 || view.getVisibility() != View.VISIBLE
                 || view.getParent() == null) {
             return false;
@@ -71,7 +69,6 @@ public class ContextMenuHelper implements OnCreateContextMenuListener, OnMenuIte
 
         mCurrentContextMenuParams = params;
 
-        view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
         view.setOnCreateContextMenuListener(this);
         if (view.showContextMenu()) {
             WebContents webContents = contentViewCore.getWebContents();
@@ -120,8 +117,6 @@ public class ContextMenuHelper implements OnCreateContextMenuListener, OnMenuIte
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-        if (!shouldShowMenu(mCurrentContextMenuParams)) return;
-
         assert mPopulator != null;
         mPopulator.buildContextMenu(menu, v.getContext(), mCurrentContextMenuParams);
 
@@ -141,10 +136,6 @@ public class ContextMenuHelper implements OnCreateContextMenuListener, OnMenuIte
     @VisibleForTesting
     public ContextMenuPopulator getPopulator() {
         return mPopulator;
-    }
-
-    private boolean shouldShowMenu(ContextMenuParams params) {
-        return (mPopulator != null && mPopulator.shouldShowContextMenu(params));
     }
 
     private native void nativeOnStartDownload(
