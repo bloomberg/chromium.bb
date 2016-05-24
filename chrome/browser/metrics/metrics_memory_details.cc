@@ -90,6 +90,7 @@ void MetricsMemoryDetails::UpdateHistograms() {
     switch (browser.processes[index].process_type) {
       case content::PROCESS_TYPE_BROWSER:
         UMA_HISTOGRAM_MEMORY_KB("Memory.Browser", sample);
+        UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Browser.Large", sample);
         continue;
       case content::PROCESS_TYPE_RENDERER: {
         ProcessMemoryInformation::RendererProcessType renderer_type =

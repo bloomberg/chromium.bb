@@ -22325,6 +22325,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kouhei@chromium.org</owner>
   <summary>
     The private working set used by the browser process.  Recorded once per UMA
+    ping.  Note the existence of Memory.Browser.Large, which doesn't have
+    overflow issues.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Browser.Large" units="MB">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    The private working set used by the browser process.  Recorded once per UMA
     ping.
   </summary>
 </histogram>
