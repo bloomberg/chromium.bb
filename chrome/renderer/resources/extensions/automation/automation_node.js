@@ -220,6 +220,8 @@ AutomationNodeImpl.prototype = {
   },
 
   get parent() {
+    if (!this.rootImpl)
+      return undefined;
     if (this.hostNode_)
       return this.hostNode_;
     var parentID = GetParentID(this.treeID, this.id);
@@ -253,6 +255,8 @@ AutomationNodeImpl.prototype = {
   },
 
   get firstChild() {
+    if (!this.rootImpl)
+      return undefined;
     if (this.childTree)
       return this.childTree;
     if (!GetChildCount(this.treeID, this.id))
@@ -262,6 +266,8 @@ AutomationNodeImpl.prototype = {
   },
 
   get lastChild() {
+    if (!this.rootImpl)
+      return undefined;
     if (this.childTree)
       return this.childTree;
     var count = GetChildCount(this.treeID, this.id);
@@ -272,6 +278,9 @@ AutomationNodeImpl.prototype = {
   },
 
   get children() {
+    if (!this.rootImpl)
+      return [];
+
     if (this.childTree)
       return [this.childTree];
 
@@ -327,6 +336,8 @@ AutomationNodeImpl.prototype = {
   },
 
   domQuerySelector: function(selector, callback) {
+    if (!this.rootImpl)
+      callback();
     automationInternal.querySelector(
       { treeID: this.rootImpl.treeID,
         automationNodeID: this.id,
@@ -449,6 +460,9 @@ AutomationNodeImpl.prototype = {
 
   fireEventListeners_: function(node, event) {
     var nodeImpl = privates(node).impl;
+    if (!nodeImpl.rootImpl)
+      return;
+
     var listeners = nodeImpl.listeners[event.type];
     if (!listeners)
       return;
@@ -469,6 +483,9 @@ AutomationNodeImpl.prototype = {
   },
 
   performAction_: function(actionType, opt_args) {
+    if (!this.rootImpl)
+      return;
+
     // Not yet initialized.
     if (this.rootImpl.treeID === undefined ||
         this.id === undefined) {
@@ -491,7 +508,7 @@ AutomationNodeImpl.prototype = {
     // resultAutomationNodeID could be zero or undefined or (unlikely) null;
     // they all amount to the same thing here, which is that no node was
     // returned.
-    if (!resultAutomationNodeID) {
+    if (!resultAutomationNodeID || !this.rootImpl) {
       userCallback(null);
       return;
     }
@@ -708,7 +725,7 @@ $Array.forEach(nodeRefAttributes, function(params) {
     __proto__: null,
     get: function() {
       var id = GetIntAttribute(this.treeID, this.id, srcAttributeName);
-      if (id)
+      if (id && this.rootImpl)
         return this.rootImpl.get(id);
       else
         return undefined;
@@ -734,7 +751,7 @@ $Array.forEach(nodeRefListAttributes, function(params) {
     __proto__: null,
     get: function() {
       var ids = GetIntListAttribute(this.treeID, this.id, srcAttributeName);
-      if (!ids)
+      if (!ids || !this.rootImpl)
         return undefined;
       var result = [];
       for (var i = 0; i < ids.length; ++i) {
