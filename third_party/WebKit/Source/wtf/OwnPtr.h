@@ -59,7 +59,11 @@ public:
 
     PtrType get() const { return m_ptr; }
 
+    // Note: clear() will soon get renamed to reset() as a part of OwnPtr -> std::unique_ptr transition.
+    // For now, both are allowed to facilitate the rename process. See also: http://crbug.com/611661
     void clear();
+    void reset() { clear(); }
+
     PtrType leakPtr() WARN_UNUSED_RETURN;
 
     ValueType& operator*() const { ASSERT(m_ptr); return *m_ptr; }
