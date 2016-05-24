@@ -2079,6 +2079,58 @@ EVENT_TYPE(NETWORK_CHANGED)
 //   }
 EVENT_TYPE(DNS_CONFIG_CHANGED)
 
+// This event is emitted whenever NetworkChangeNotifier determines that a
+// network has connected and network-specific information is available
+// (i.e. the NetworkChangeNotifier::NetworkHandle of the network is known).
+//   {
+//     "changed_network_handle":        <Network handle>
+//     "changed_network_type":          <Type of network>
+//     "default_active_network_handle": <Network handle of default network>
+//     "current_active_networks":       <Mapping from network handle to network
+//                                       type, containing entries for all active
+//                                       networks.>
+//   }
+EVENT_TYPE(SPECIFIC_NETWORK_CONNECTED)
+
+// This event is emitted whenever NetworkChangeNotifier determines that a
+// network has disconnected and network-specific information is available
+// (i.e. the NetworkChangeNotifier::NetworkHandle of the network is known).
+//   {
+//     "changed_network_handle":        <Network handle>
+//     "changed_network_type":          <Type of network>
+//     "default_active_network_handle": <Network handle of default network>
+//     "current_active_networks":       <Mapping from network handle to network
+//                                       type, containing entries for all active
+//                                       networks.>
+//   }
+EVENT_TYPE(SPECIFIC_NETWORK_DISCONNECTED)
+
+// This event is emitted whenever NetworkChangeNotifier determines that a
+// network is soon to disconnect and network-specific information is available
+// (i.e. the NetworkChangeNotifier::NetworkHandle of the network is known).
+//   {
+//     "changed_network_handle":        <Network handle>
+//     "changed_network_type":          <Type of network>
+//     "default_active_network_handle": <Network handle of default network>
+//     "current_active_networks":       <Mapping from network handle to network
+//                                       type, containing entries for all active
+//                                       networks.>
+//   }
+EVENT_TYPE(SPECIFIC_NETWORK_SOON_TO_DISCONNECT)
+
+// This event is emitted whenever NetworkChangeNotifier determines that a
+// network has become the default and network-specific information is available
+// (i.e. the NetworkChangeNotifier::NetworkHandle of the network is known).
+//   {
+//     "changed_network_handle":        <Network handle>
+//     "changed_network_type":          <Type of network>
+//     "default_active_network_handle": <Network handle of default network>
+//     "current_active_networks":       <Mapping from network handle to network
+//                                       type, containing entries for all active
+//                                       networks.>
+//   }
+EVENT_TYPE(SPECIFIC_NETWORK_MADE_DEFAULT)
+
 // ------------------------------------------------------------------------
 // Exponential back-off throttling events
 // ------------------------------------------------------------------------

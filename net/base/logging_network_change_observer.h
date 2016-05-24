@@ -18,7 +18,8 @@ class NetLog;
 class NET_EXPORT LoggingNetworkChangeObserver
     : public NetworkChangeNotifier::IPAddressObserver,
       public NetworkChangeNotifier::ConnectionTypeObserver,
-      public NetworkChangeNotifier::NetworkChangeObserver {
+      public NetworkChangeNotifier::NetworkChangeObserver,
+      public NetworkChangeNotifier::NetworkObserver {
  public:
   // Note: |net_log| must remain valid throughout the lifetime of this
   // LoggingNetworkChangeObserver.
@@ -36,7 +37,16 @@ class NET_EXPORT LoggingNetworkChangeObserver
   // NetworkChangeNotifier::NetworkChangeObserver implementation.
   void OnNetworkChanged(NetworkChangeNotifier::ConnectionType type) override;
 
- private:
+  // NetworkChangeNotifier::NetworkObserver implementation.
+  void OnNetworkConnected(
+      NetworkChangeNotifier::NetworkHandle network) override;
+  void OnNetworkDisconnected(
+      NetworkChangeNotifier::NetworkHandle network) override;
+  void OnNetworkSoonToDisconnect(
+      NetworkChangeNotifier::NetworkHandle network) override;
+  void OnNetworkMadeDefault(
+      NetworkChangeNotifier::NetworkHandle network) override;
+
   NetLog* net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(LoggingNetworkChangeObserver);
