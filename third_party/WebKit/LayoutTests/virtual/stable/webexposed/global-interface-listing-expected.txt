@@ -3373,6 +3373,7 @@ interface Navigator
     getter product
     getter productSub
     getter serviceWorker
+    getter storage
     getter userAgent
     getter vendor
     getter vendorSub
