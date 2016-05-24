@@ -73,7 +73,7 @@ class WiFiDisplayVideoSink : public content::MediaStreamVideoSink {
 
   void Start() {
     // Callback is invoked on IO thread.
-    ConnectToTrack(track_, callback_);
+    ConnectToTrack(track_, callback_, false);
   }
 
  private:
