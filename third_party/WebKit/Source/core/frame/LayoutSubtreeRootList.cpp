@@ -5,7 +5,6 @@
 #include "core/frame/LayoutSubtreeRootList.h"
 
 #include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutView.h"
 
 namespace blink {
 

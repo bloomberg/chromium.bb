@@ -38,7 +38,6 @@
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutTextControlSingleLine.h"
-#include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutTextControlItem.h"
 #include "platform/UserGestureIndicator.h"
 

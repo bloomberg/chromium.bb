@@ -40,7 +40,6 @@
 
 namespace blink {
 
-class LayoutBlockFlow;
 class LayoutBox;
 class FloatingObject;
 

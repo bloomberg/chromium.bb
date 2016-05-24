@@ -47,7 +47,6 @@
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableRow.h"
-#include "core/layout/LayoutTextControl.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "platform/fonts/Font.h"

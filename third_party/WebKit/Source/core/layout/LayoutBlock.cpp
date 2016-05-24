@@ -47,7 +47,6 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTextCombine.h"
-#include "core/layout/LayoutTextControl.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"

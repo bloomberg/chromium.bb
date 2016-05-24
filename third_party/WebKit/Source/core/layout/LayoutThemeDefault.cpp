@@ -26,7 +26,6 @@
 
 #include "core/CSSValueKeywords.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutProgress.h"
 #include "core/layout/LayoutThemeFontProvider.h"
 #include "core/paint/MediaControlsPainter.h"
 #include "platform/LayoutTestSupport.h"

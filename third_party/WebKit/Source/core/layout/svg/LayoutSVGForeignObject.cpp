@@ -22,7 +22,6 @@
 #include "core/layout/svg/LayoutSVGForeignObject.h"
 
 #include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutView.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/SVGForeignObjectPainter.h"

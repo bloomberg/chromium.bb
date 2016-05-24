@@ -30,7 +30,6 @@
 
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
-#include "core/layout/LayoutListBox.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 
 

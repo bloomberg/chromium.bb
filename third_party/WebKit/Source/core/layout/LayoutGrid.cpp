@@ -25,7 +25,7 @@
 
 #include "core/layout/LayoutGrid.h"
 
-#include "core/layout/LayoutView.h"
+#include "core/layout/LayoutState.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/paint/GridPainter.h"
 #include "core/paint/PaintLayer.h"

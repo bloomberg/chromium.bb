@@ -24,7 +24,6 @@
 #ifndef LineInfo_h
 #define LineInfo_h
 
-#include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/line/LineWidth.h"
 #include "wtf/Allocator.h"
 

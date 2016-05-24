@@ -23,7 +23,6 @@
 #ifndef SVGRootInlineBox_h
 #define SVGRootInlineBox_h
 
-#include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/line/RootInlineBox.h"
 
 namespace blink {

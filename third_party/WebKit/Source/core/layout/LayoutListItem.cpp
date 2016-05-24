@@ -27,7 +27,6 @@
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/html/HTMLOListElement.h"
 #include "core/layout/LayoutListMarker.h"
-#include "core/layout/LayoutView.h"
 #include "core/paint/ListItemPainter.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"

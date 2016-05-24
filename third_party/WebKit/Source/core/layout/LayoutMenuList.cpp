@@ -35,7 +35,6 @@
 #include "core/layout/LayoutBR.h"
 #include "core/layout/LayoutScrollbar.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/layout/LayoutView.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/text/BidiTextRun.h"

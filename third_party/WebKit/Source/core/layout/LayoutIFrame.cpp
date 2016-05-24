@@ -30,7 +30,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/layout/LayoutAnalyzer.h"
-#include "core/layout/LayoutView.h"
 
 namespace blink {
 

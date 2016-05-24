@@ -26,7 +26,6 @@
 #include "core/layout/LayoutGeometryMap.h"
 
 #include "core/frame/LocalFrame.h"
-#include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/geometry/TransformState.h"
 #include "wtf/TemporaryChange.h"

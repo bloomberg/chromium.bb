@@ -28,7 +28,6 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutImage.h"
-#include "core/layout/LayoutView.h"
 #include "platform/graphics/Path.h"
 #include "platform/transforms/AffineTransform.h"
 

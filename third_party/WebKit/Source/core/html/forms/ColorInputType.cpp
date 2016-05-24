@@ -45,7 +45,6 @@
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/forms/ColorChooser.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/layout/LayoutView.h"
 #include "core/page/ChromeClient.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"

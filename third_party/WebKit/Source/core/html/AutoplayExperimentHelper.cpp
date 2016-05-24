@@ -10,7 +10,6 @@
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutVideo.h"
-#include "core/layout/LayoutView.h"
 #include "core/page/Page.h"
 #include "platform/Logging.h"
 #include "platform/UserGestureIndicator.h"
