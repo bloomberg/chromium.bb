@@ -70,7 +70,6 @@
 
 using base::UserMetricsAction;
 using content::BrowserThread;
-using extensions::SharedModuleInfo;
 
 namespace extensions {
 
@@ -477,33 +476,34 @@ void CrxInstaller::CheckInstall() {
   if (SharedModuleInfo::ImportsModules(extension())) {
     const std::vector<SharedModuleInfo::ImportInfo>& imports =
         SharedModuleInfo::GetImports(extension());
-    std::vector<SharedModuleInfo::ImportInfo>::const_iterator i;
-    for (i = imports.begin(); i != imports.end(); ++i) {
-      base::Version version_required(i->minimum_version);
+    for (const auto& import : imports) {
       const Extension* imported_module =
-          service->GetExtensionById(i->extension_id, true);
-      if (imported_module &&
-          !SharedModuleInfo::IsSharedModule(imported_module)) {
+          service->GetExtensionById(import.extension_id, true);
+      if (!imported_module)
+        continue;
+
+      if (!SharedModuleInfo::IsSharedModule(imported_module)) {
         ReportFailureFromUIThread(CrxInstallError(
             CrxInstallError::ERROR_DECLINED,
             l10n_util::GetStringFUTF16(
                 IDS_EXTENSION_INSTALL_DEPENDENCY_NOT_SHARED_MODULE,
                 base::UTF8ToUTF16(imported_module->name()))));
         return;
-      } else if (imported_module && (version_required.IsValid() &&
-                                     imported_module->version()->CompareTo(
-                                         version_required) < 0)) {
+      }
+      base::Version version_required(import.minimum_version);
+      if (version_required.IsValid() &&
+          imported_module->version()->CompareTo(version_required) < 0) {
         ReportFailureFromUIThread(CrxInstallError(
             CrxInstallError::ERROR_DECLINED,
             l10n_util::GetStringFUTF16(
                 IDS_EXTENSION_INSTALL_DEPENDENCY_OLD_VERSION,
                 base::UTF8ToUTF16(imported_module->name()),
-                base::ASCIIToUTF16(i->minimum_version),
+                base::ASCIIToUTF16(import.minimum_version),
                 base::ASCIIToUTF16(imported_module->version()->GetString()))));
         return;
-      } else if (imported_module &&
-                 !SharedModuleInfo::IsExportAllowedByWhitelist(
-                     imported_module, extension()->id())) {
+      }
+      if (!SharedModuleInfo::IsExportAllowedByWhitelist(imported_module,
+                                                        extension()->id())) {
         ReportFailureFromUIThread(CrxInstallError(
             CrxInstallError::ERROR_DECLINED,
             l10n_util::GetStringFUTF16(
@@ -545,16 +545,16 @@ void CrxInstaller::OnInstallChecksComplete(int failed_checks) {
   }
 
   // Check the blacklist state.
-  if (install_checker_.blacklist_state() == extensions::BLACKLISTED_MALWARE) {
+  if (install_checker_.blacklist_state() == BLACKLISTED_MALWARE) {
     install_flags_ |= kInstallFlagIsBlacklistedForMalware;
   }
 
-  if ((install_checker_.blacklist_state() == extensions::BLACKLISTED_MALWARE ||
-       install_checker_.blacklist_state() == extensions::BLACKLISTED_UNKNOWN) &&
+  if ((install_checker_.blacklist_state() == BLACKLISTED_MALWARE ||
+       install_checker_.blacklist_state() == BLACKLISTED_UNKNOWN) &&
       !allow_silent_install_) {
     // User tried to install a blacklisted extension. Show an error and
     // refuse to install it.
-    ReportFailureFromUIThread(extensions::CrxInstallError(
+    ReportFailureFromUIThread(CrxInstallError(
         CrxInstallError::ERROR_DECLINED,
         l10n_util::GetStringFUTF16(IDS_EXTENSION_IS_BLACKLISTED,
                                    base::UTF8ToUTF16(extension()->name()))));
@@ -617,6 +617,7 @@ void CrxInstaller::ConfirmInstall() {
       overlapping_extension->id() != extension()->id()) {
     ReportFailureFromUIThread(CrxInstallError(l10n_util::GetStringFUTF16(
         IDS_EXTENSION_OVERLAPPING_WEB_EXTENT,
+        base::UTF8ToUTF16(extension()->name()),
         base::UTF8ToUTF16(overlapping_extension->name()))));
     return;
   }
@@ -633,7 +634,6 @@ void CrxInstaller::ConfirmInstall() {
   } else {
     UpdateCreationFlagsAndCompleteInstall();
   }
-  return;
 }
 
 void CrxInstaller::OnInstallPromptDone(ExtensionInstallPrompt::Result result) {
@@ -762,9 +762,9 @@ void CrxInstaller::ReportFailureFromUIThread(const CrxInstallError& error) {
 
   content::NotificationService* service =
       content::NotificationService::current();
-  service->Notify(extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
+  service->Notify(NOTIFICATION_EXTENSION_INSTALL_ERROR,
                   content::Source<CrxInstaller>(this),
-                  content::Details<const extensions::CrxInstallError>(&error));
+                  content::Details<const CrxInstallError>(&error));
 
   // This isn't really necessary, it is only used because unit tests expect to
   // see errors get reported via this interface.
@@ -843,8 +843,7 @@ void CrxInstaller::NotifyCrxInstallComplete(bool success) {
   // extension before it is unpacked, so they cannot filter based
   // on the extension.
   content::NotificationService::current()->Notify(
-      extensions::NOTIFICATION_CRX_INSTALLER_DONE,
-      content::Source<CrxInstaller>(this),
+      NOTIFICATION_CRX_INSTALLER_DONE, content::Source<CrxInstaller>(this),
       content::Details<const Extension>(success ? extension() : NULL));
 
   InstallTrackerFactory::GetForBrowserContext(profile())
