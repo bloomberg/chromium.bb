@@ -38,10 +38,6 @@
 const int kIconWidth = 100;
 const int kIconHeight = 100;
 
-// The maximum width and height of badges. Oversized images are scaled down to
-// these values.
-const int kMaxBadgeSize = 96;
-
 const int kNotificationVibrationPattern[] = { 100, 200, 300 };
 const double kNotificationTimestamp = 621046800000.;
 
@@ -280,9 +276,7 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   EXPECT_FALSE(all_options_notification.icon().IsEmpty());
   EXPECT_EQ(kIconWidth, all_options_notification.icon().Width());
   EXPECT_EQ(kIconHeight, all_options_notification.icon().Height());
-  EXPECT_FALSE(all_options_notification.small_image().IsEmpty());
-  EXPECT_EQ(kMaxBadgeSize, all_options_notification.small_image().Width());
-  EXPECT_EQ(kMaxBadgeSize, all_options_notification.small_image().Height());
+  EXPECT_TRUE(all_options_notification.small_image().IsEmpty());
   EXPECT_TRUE(all_options_notification.renotify());
   EXPECT_TRUE(all_options_notification.silent());
   EXPECT_TRUE(all_options_notification.never_timeout());

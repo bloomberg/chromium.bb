@@ -469,10 +469,15 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
   notification.set_renotify(notification_data.renotify);
   notification.set_silent(notification_data.silent);
 
+  // Badges are only supported on Android, primarily because it's the only
+  // platform that makes good use of them in the status bar.
+  // TODO(mvanouwerkerk): ensure no badge is loaded when it will not be used.
+#if defined(OS_ANDROID)
   // TODO(peter): Handle different screen densities instead of always using the
   // 1x bitmap - crbug.com/585815.
   notification.set_small_image(
       gfx::Image::CreateFrom1xBitmap(notification_resources.badge));
+#endif  // defined(OS_ANDROID)
 
   // Developer supplied action buttons.
   std::vector<message_center::ButtonInfo> buttons;
