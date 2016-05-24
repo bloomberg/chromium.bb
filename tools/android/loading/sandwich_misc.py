@@ -5,6 +5,7 @@
 import logging
 import json
 import os
+import re
 from urlparse import urlparse
 
 import chrome_cache
@@ -38,6 +39,8 @@ SUBRESOURCE_DISCOVERERS = set([
   PARSER_DISCOVERER,
   HTML_PRELOAD_SCANNER_DISCOVERER
 ])
+
+_UPLOAD_DATA_STREAM_REQUESTS_REGEX = re.compile(r'^\d+/(?P<url>.*)$')
 
 
 def PatchWpr(wpr_archive_path):
@@ -135,15 +138,8 @@ def PatchCacheArchive(cache_archive_path, loading_trace_path,
       #
       # The fact that these entries are kept in the cache after closing Chrome
       # properly by closing the Chrome tab as the ChromeControler.SetSlowDeath()
-      # do is a known Chrome bug (crbug.com/610725).
-      #
-      # TODO(gabadie): Add support in ValidateCacheArchiveContent() and in
-      #   VerifyBenchmarkOutputDirectory() for POST requests to be known as
-      #   impossible to use from cache.
+      # do is known chrome bug (crbug.com/610725).
       if request.url not in cache_entries:
-        if request.method != 'POST':
-          raise RuntimeError('Unexpected method that is not found in cache.'
-                             ''.format(request.method))
         continue
       # Chrome prunes Set-Cookie from response headers before storing them in
       # disk cache. Also, it adds implicit "Vary: cookie" header to all redirect
@@ -231,7 +227,7 @@ def _PrintUrlSetComparison(ref_url_set, url_set, url_set_name):
 
 
 class RequestOutcome:
-  All, ServedFromCache, NotServedFromCache = range(3)
+  All, ServedFromCache, NotServedFromCache, Post = range(4)
 
 
 def ListUrlRequests(trace, request_kind):
@@ -249,6 +245,9 @@ def ListUrlRequests(trace, request_kind):
       trace.request_track.GetEvents()):
     if (request_kind == RequestOutcome.ServedFromCache and
         request_event.from_disk_cache):
+      urls.add(request_event.url)
+    elif (request_kind == RequestOutcome.Post and
+        request_event.method.upper().strip() == 'POST'):
       urls.add(request_event.url)
     elif (request_kind == RequestOutcome.NotServedFromCache and
         not request_event.from_disk_cache):
@@ -290,6 +289,7 @@ def VerifyBenchmarkOutputDirectory(benchmark_setup_path,
     logging.info('verifying %s from %s' % (trace.url, trace_path))
 
     effective_requests = ListUrlRequests(trace, RequestOutcome.All)
+    effective_post_requests = ListUrlRequests(trace, RequestOutcome.Post)
     effective_cached_requests = \
         ListUrlRequests(trace, RequestOutcome.ServedFromCache)
     effective_uncached_requests = \
@@ -305,8 +305,14 @@ def VerifyBenchmarkOutputDirectory(benchmark_setup_path,
         unexpected_requests).union(missing_cached_requests)
     all_sent_url_requests.update(effective_uncached_requests)
 
+    # POST requests are known to be unable to use the cache.
+    expected_cached_requests.difference_update(effective_post_requests)
+    expected_uncached_requests.update(effective_post_requests)
+
     _PrintUrlSetComparison(original_requests, effective_requests,
                            'All resources')
+    _PrintUrlSetComparison(set(), effective_post_requests,
+                           'POST resources')
     _PrintUrlSetComparison(expected_cached_requests, effective_cached_requests,
                            'Cached resources')
     _PrintUrlSetComparison(expected_uncached_requests,
@@ -359,17 +365,38 @@ def ReadSubresourceFromRunnerOutputDir(runner_output_dir):
   return [url for url in url_set]
 
 
-def ValidateCacheArchiveContent(ref_urls, cache_archive_path):
+def ValidateCacheArchiveContent(cache_build_trace_path, cache_archive_path):
   """Validates a cache archive content.
 
   Args:
-    ref_urls: Reference list of urls.
+    cache_build_trace_path: Path of the generated trace at the cache build time.
     cache_archive_path: Cache archive's path to validate.
   """
   # TODO(gabadie): What's the best way of propagating errors happening in here?
   logging.info('lists cached urls from %s' % cache_archive_path)
   with common_util.TemporaryDirectory() as cache_directory:
     chrome_cache.UnzipDirectoryContent(cache_archive_path, cache_directory)
-    cached_urls = \
-        chrome_cache.CacheBackend(cache_directory, 'simple').ListKeys()
-  _PrintUrlSetComparison(set(ref_urls), set(cached_urls), 'cached resources')
+    cache_keys = set(
+        chrome_cache.CacheBackend(cache_directory, 'simple').ListKeys())
+  trace = LoadingTrace.FromJsonFile(cache_build_trace_path)
+  effective_requests = ListUrlRequests(trace, RequestOutcome.All)
+  effective_post_requests = ListUrlRequests(trace, RequestOutcome.Post)
+
+  upload_data_stream_cache_entry_keys = set()
+  upload_data_stream_requests = set()
+  for cache_entry_key in cache_keys:
+    match = _UPLOAD_DATA_STREAM_REQUESTS_REGEX.match(cache_entry_key)
+    if not match:
+      continue
+    upload_data_stream_cache_entry_keys.add(cache_entry_key)
+    upload_data_stream_requests.add(match.group('url'))
+
+  expected_cached_requests = effective_requests.difference(
+      effective_post_requests)
+  effective_cache_keys = cache_keys.difference(
+      upload_data_stream_cache_entry_keys)
+
+  _PrintUrlSetComparison(effective_post_requests, upload_data_stream_requests,
+                         'POST resources')
+  _PrintUrlSetComparison(expected_cached_requests, effective_cache_keys,
+                         'Cached resources')

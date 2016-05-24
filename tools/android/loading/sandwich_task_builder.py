@@ -125,13 +125,13 @@ class SandwichTaskBuilder(task_manager.Builder):
       runner.output_dir = BuildOriginalCache.run_path
       runner.Run()
     BuildOriginalCache.run_path = BuildOriginalCache.path[:-4] + '-run'
+    original_cache_trace_path = os.path.join(
+        BuildOriginalCache.run_path, '0', sandwich_runner.TRACE_FILENAME)
 
     @self.RegisterTask('common/patched-cache.zip', [BuildOriginalCache])
     def BuildPatchedCache():
       sandwich_misc.PatchCacheArchive(BuildOriginalCache.path,
-          os.path.join(BuildOriginalCache.run_path, '0',
-                       sandwich_runner.TRACE_FILENAME),
-          BuildPatchedCache.path)
+          original_cache_trace_path, BuildPatchedCache.path)
 
     @self.RegisterTask('common/subresources-for-urls-run/',
                        dependencies=[self._original_wpr_task])
@@ -150,14 +150,10 @@ class SandwichTaskBuilder(task_manager.Builder):
         json.dump(url_resources, output)
 
     @self.RegisterTask('common/patched-cache-validation.log',
-                       [BuildPatchedCache, ListUrlsResources])
+                       [BuildPatchedCache])
     def ValidatePatchedCache():
-      json_content = json.load(open(ListUrlsResources.path))
-      ref_urls = set()
-      for urls in json_content.values():
-        ref_urls.update(set(urls))
       sandwich_misc.ValidateCacheArchiveContent(
-          ref_urls, BuildPatchedCache.path)
+          original_cache_trace_path, BuildPatchedCache.path)
 
     self._patched_wpr_task = BuildPatchedWpr
     self._reference_cache_task = BuildPatchedCache

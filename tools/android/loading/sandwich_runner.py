@@ -190,8 +190,8 @@ class SandwichRunner(object):
       except controller.ChromeControllerError as error:
         if not error.IsIntermittent():
           raise
-        if self.trace_output_directory is not None:
-          dump_path = os.path.join(self.trace_output_directory, str(run_id),
+        if self.output_dir is not None:
+          dump_path = os.path.join(self.output_dir, str(run_id),
                                    'error{}'.format(attempt_id))
           with open(dump_path, 'w') as dump_output:
             error.Dump(dump_output)
