@@ -127,4 +127,11 @@ DEFINE_TRACE(CSSStyleRule)
     CSSRule::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(CSSStyleRule)
+{
+    visitor->traceWrappers(parentRule());
+    visitor->traceWrappers(parentStyleSheet());
+    CSSRule::traceWrappers(visitor);
+}
+
 } // namespace blink
