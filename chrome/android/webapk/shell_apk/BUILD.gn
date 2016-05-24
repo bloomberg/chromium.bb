@@ -78,6 +78,7 @@ android_library("shell_apk_javatests") {
   deps = [
     ":dex_loader_lib",
     "//base:base_java",
+    "//base:base_java_test_support",
     "//chrome/android/webapk/libs/common",
     "//content/public/test/android:content_java_test_support",
   ]

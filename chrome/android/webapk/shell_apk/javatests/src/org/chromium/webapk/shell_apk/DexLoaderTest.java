@@ -18,6 +18,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import dalvik.system.DexFile;
 
 import org.chromium.base.FileUtils;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.webapk.shell_apk.test.dex_optimizer.IDexOptimizerService;
 
@@ -176,8 +177,9 @@ public class DexLoaderTest extends InstrumentationTestCase {
     /**
      * Test that {@link DexLoader#load()} does not extract the dex file from the APK if the dex file
      * was extracted in a previous call to {@link DexLoader#load()}
+     * @MediumTest
      */
-    @MediumTest
+    @FlakyTest(message = "crbug.com/613116")
     public void testPreviouslyLoadedFromLocalDataDir() {
         assertTrue(mLocalDexDir.mkdir());
 
