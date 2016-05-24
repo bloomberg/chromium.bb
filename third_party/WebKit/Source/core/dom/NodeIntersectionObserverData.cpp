@@ -49,4 +49,11 @@ DEFINE_TRACE(NodeIntersectionObserverData)
     visitor->trace(m_intersectionObservations);
 }
 
+DEFINE_TRACE_WRAPPERS(NodeIntersectionObserverData)
+{
+    for (auto& entry : m_intersectionObservations) {
+        visitor->traceWrappers(entry.key);
+    }
+}
+
 } // namespace blink

@@ -93,6 +93,7 @@ DEFINE_TRACE_WRAPPERS_AFTER_DISPATCH(ElementRareData)
     visitor->traceWrappers(m_attributeMap);
     visitor->traceWrappers(m_dataset);
     visitor->traceWrappers(m_classList);
+    visitor->traceWrappers(m_intersectionObserverData);
     NodeRareData::traceWrappersAfterDispatch(visitor);
 }
 
