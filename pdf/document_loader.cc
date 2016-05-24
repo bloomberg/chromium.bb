@@ -492,10 +492,12 @@ void DocumentLoader::DidRead(int32_t result) {
     }
 
     ReadMore();
-  } else if (result == PP_OK || result == PP_ERROR_ABORTED) {
-    ReadComplete();
   } else {
-    NOTREACHED();
+    // If |result| == PP_OK, the document was loaded, otherwise an error was
+    // encountered. Either way we want to stop processing the response. In the
+    // case where an error occurred, the renderer will detect that we're missing
+    // data and will display a message.
+    ReadComplete();
   }
 }
 
