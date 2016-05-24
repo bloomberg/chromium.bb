@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/webrtc/processed_local_audio_source.h"
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
@@ -40,10 +41,13 @@ ProcessedLocalAudioSource::ProcessedLocalAudioSource(
   MediaStreamSource::SetDeviceInfo(device_info);
 }
 
-ProcessedLocalAudioSource::~ProcessedLocalAudioSource() {
+// https://crbug.com/612084
+MSVC_DISABLE_OPTIMIZE()
+NOINLINE ProcessedLocalAudioSource::~ProcessedLocalAudioSource() {
   DVLOG(1) << "ProcessedLocalAudioSource::~ProcessedLocalAudioSource()";
   EnsureSourceIsStopped();
 }
+MSVC_ENABLE_OPTIMIZE()
 
 // static
 ProcessedLocalAudioSource* ProcessedLocalAudioSource::From(

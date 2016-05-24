@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -407,8 +408,11 @@ MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
   SetDeviceInfo(device_info);
 }
 
-MediaStreamVideoCapturerSource::~MediaStreamVideoCapturerSource() {
+// https://crbug.com/612084
+MSVC_DISABLE_OPTIMIZE()
+NOINLINE MediaStreamVideoCapturerSource::~MediaStreamVideoCapturerSource() {
 }
+MSVC_ENABLE_OPTIMIZE()
 
 void MediaStreamVideoCapturerSource::RequestRefreshFrame() {
   source_->RequestRefreshFrame();

@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/webrtc/peer_connection_remote_audio_source.h"
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
@@ -67,11 +68,14 @@ PeerConnectionRemoteAudioSource::PeerConnectionRemoteAudioSource(
       << "PeerConnectionRemoteAudioSource::PeerConnectionRemoteAudioSource()";
 }
 
-PeerConnectionRemoteAudioSource::~PeerConnectionRemoteAudioSource() {
+// https://crbug.com/612084
+MSVC_DISABLE_OPTIMIZE()
+NOINLINE PeerConnectionRemoteAudioSource::~PeerConnectionRemoteAudioSource() {
   DVLOG(1)
       << "PeerConnectionRemoteAudioSource::~PeerConnectionRemoteAudioSource()";
   EnsureSourceIsStopped();
 }
+MSVC_ENABLE_OPTIMIZE()
 
 std::unique_ptr<MediaStreamAudioTrack>
 PeerConnectionRemoteAudioSource::CreateMediaStreamAudioTrack(

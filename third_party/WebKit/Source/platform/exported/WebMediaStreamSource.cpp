@@ -35,6 +35,8 @@
 #include "public/platform/WebAudioDestinationConsumer.h"
 #include "public/platform/WebMediaConstraints.h"
 #include "public/platform/WebString.h"
+#include "wtf/Assertions.h"
+#include "wtf/Compiler.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
@@ -43,13 +45,45 @@ namespace blink {
 namespace {
 
 class ExtraDataContainer : public MediaStreamSource::ExtraData {
+private:
+    // http://crbug.com/612084
+    static constexpr uint32_t AliveFlag1 = UINT32_C(0x01020304);
+    static constexpr uint32_t AliveFlag2 = UINT32_C(0x80706050);
+    static constexpr uint32_t DeadFlag = UINT32_C(0xdeadbeef);
+
 public:
-    ExtraDataContainer(PassOwnPtr<WebMediaStreamSource::ExtraData> extraData) : m_extraData(std::move(extraData)) { }
+    ExtraDataContainer(PassOwnPtr<WebMediaStreamSource::ExtraData> extraData) : m_destructionFlag1(AliveFlag1), m_extraData(std::move(extraData)), m_destructionFlag2(AliveFlag2) { }
+
+    // http://crbug.com/612084
+#if COMPILER(MSVC)
+#pragma optimize("", off)
+#endif
+    NEVER_INLINE ~ExtraDataContainer() override {
+        // Was the destructor already invoked?
+        if (m_destructionFlag1 == DeadFlag)
+            CRASH();
+
+        // Was memory illegally written to before the location of |m_extraData|?
+        if (m_destructionFlag1 != AliveFlag1)
+            CRASH();
+
+        // Was memory illegally written to after the location of |m_extraData|?
+        if (m_destructionFlag2 != AliveFlag2)
+            CRASH();
+
+        // Set flags to indicate this destructor has run once.
+        m_destructionFlag1 = m_destructionFlag2 = DeadFlag;
+    }
+#if COMPILER(MSVC)
+#pragma optimize("", on)
+#endif
 
     WebMediaStreamSource::ExtraData* getExtraData() { return m_extraData.get(); }
 
 private:
+    uint32_t m_destructionFlag1;
     OwnPtr<WebMediaStreamSource::ExtraData> m_extraData;
+    uint32_t m_destructionFlag2;
 };
 
 } // namespace

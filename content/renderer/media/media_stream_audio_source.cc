@@ -5,6 +5,7 @@
 #include "content/renderer/media/media_stream_audio_source.h"
 
 #include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "content/renderer/media/media_stream_audio_track.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -19,10 +20,13 @@ MediaStreamAudioSource::MediaStreamAudioSource(bool is_local_source)
            << (is_local_source_ ? "local" : "remote") << " source)";
 }
 
-MediaStreamAudioSource::~MediaStreamAudioSource() {
+// https://crbug.com/612084
+MSVC_DISABLE_OPTIMIZE()
+NOINLINE MediaStreamAudioSource::~MediaStreamAudioSource() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "MediaStreamAudioSource@" << this << " is being destroyed.";
 }
+MSVC_ENABLE_OPTIMIZE()
 
 // static
 MediaStreamAudioSource* MediaStreamAudioSource::From(
