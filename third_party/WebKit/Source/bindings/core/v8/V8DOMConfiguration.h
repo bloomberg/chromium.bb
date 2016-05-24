@@ -84,6 +84,8 @@ public:
 
     static void installAttribute(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::ObjectTemplate> instanceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, const AttributeConfiguration&);
 
+    static void installAttribute(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, const AttributeConfiguration&);
+
     // AccessorConfiguration translates into calls to SetAccessorProperty()
     // on prototype ObjectTemplate.
     struct AccessorConfiguration {

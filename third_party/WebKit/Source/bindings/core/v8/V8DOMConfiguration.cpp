@@ -52,13 +52,31 @@ void installAttributeInternal(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate
     }
     v8::Local<v8::Value> data = v8::External::New(isolate, const_cast<WrapperTypeInfo*>(attribute.data));
 
-    ASSERT(attribute.propertyLocationConfiguration);
+    DCHECK(attribute.propertyLocationConfiguration);
     if (attribute.propertyLocationConfiguration & V8DOMConfiguration::OnInstance)
         instanceTemplate->SetNativeDataProperty(name, getter, setter, data, static_cast<v8::PropertyAttribute>(attribute.attribute), v8::Local<v8::AccessorSignature>(), static_cast<v8::AccessControl>(attribute.settings));
     if (attribute.propertyLocationConfiguration & V8DOMConfiguration::OnPrototype)
         prototypeTemplate->SetNativeDataProperty(name, getter, setter, data, static_cast<v8::PropertyAttribute>(attribute.attribute), v8::Local<v8::AccessorSignature>(), static_cast<v8::AccessControl>(attribute.settings));
     if (attribute.propertyLocationConfiguration & V8DOMConfiguration::OnInterface)
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
+}
+
+void installAttributeInternal(v8::Isolate* isolate, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, const V8DOMConfiguration::AttributeConfiguration& attribute, const DOMWrapperWorld& world)
+{
+    if (attribute.exposeConfiguration == V8DOMConfiguration::OnlyExposedToPrivateScript
+        && !world.isPrivateScriptIsolatedWorld())
+        return;
+
+    v8::Local<v8::Name> name = v8AtomicString(isolate, attribute.name);
+    v8::Local<v8::Value> data = v8::External::New(isolate, const_cast<WrapperTypeInfo*>(attribute.data));
+
+    DCHECK(attribute.propertyLocationConfiguration);
+    if (attribute.propertyLocationConfiguration & V8DOMConfiguration::OnInstance)
+        v8CallOrCrash(instance->DefineOwnProperty(isolate->GetCurrentContext(), name, data, static_cast<v8::PropertyAttribute>(attribute.attribute)));
+    if (attribute.propertyLocationConfiguration & V8DOMConfiguration::OnPrototype)
+        v8CallOrCrash(prototype->DefineOwnProperty(isolate->GetCurrentContext(), name, data, static_cast<v8::PropertyAttribute>(attribute.attribute)));
+    if (attribute.propertyLocationConfiguration & V8DOMConfiguration::OnInterface)
+        NOTREACHED();
 }
 
 template<class FunctionOrTemplate>
@@ -118,7 +136,7 @@ void installAccessorInternal(v8::Isolate* isolate, v8::Local<ObjectOrTemplate> i
         signature = v8::Local<v8::Signature>();
     v8::Local<v8::Value> data = v8::External::New(isolate, const_cast<WrapperTypeInfo*>(accessor.data));
 
-    ASSERT(accessor.propertyLocationConfiguration);
+    DCHECK(accessor.propertyLocationConfiguration);
     if (accessor.propertyLocationConfiguration &
         (V8DOMConfiguration::OnInstance | V8DOMConfiguration::OnPrototype)) {
         v8::Local<FunctionOrTemplate> getter = createAccessorFunctionOrTemplate<FunctionOrTemplate>(isolate, getterCallback, data, signature, 0);
@@ -158,7 +176,7 @@ void installConstantInternal(v8::Isolate* isolate, v8::Local<v8::FunctionTemplat
         value = v8::Number::New(isolate, constant.dvalue);
         break;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
     interfaceTemplate->Set(constantName, value, attributes);
     prototypeTemplate->Set(constantName, value, attributes);
@@ -174,7 +192,7 @@ void installMethodInternal(v8::Isolate* isolate, v8::Local<v8::ObjectTemplate> i
     v8::Local<v8::Name> name = method.methodName(isolate);
     v8::FunctionCallback callback = method.callbackForWorld(world);
 
-    ASSERT(method.propertyLocationConfiguration);
+    DCHECK(method.propertyLocationConfiguration);
     if (method.propertyLocationConfiguration &
         (V8DOMConfiguration::OnInstance | V8DOMConfiguration::OnPrototype)) {
         v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(isolate, callback, v8::Local<v8::Value>(), signature, method.length);
@@ -203,7 +221,7 @@ void installMethodInternal(v8::Isolate* isolate, v8::Local<v8::Object> instance,
     v8::Local<v8::Name> name = method.methodName(isolate);
     v8::FunctionCallback callback = method.callbackForWorld(world);
 
-    ASSERT(method.propertyLocationConfiguration);
+    DCHECK(method.propertyLocationConfiguration);
     if (method.propertyLocationConfiguration &
         (V8DOMConfiguration::OnInstance | V8DOMConfiguration::OnPrototype)) {
         v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(isolate, callback, v8::Local<v8::Value>(), signature, method.length);
@@ -236,6 +254,11 @@ void V8DOMConfiguration::installAttributes(v8::Isolate* isolate, const DOMWrappe
 void V8DOMConfiguration::installAttribute(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::ObjectTemplate> instanceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, const AttributeConfiguration& attribute)
 {
     installAttributeInternal(isolate, instanceTemplate, prototypeTemplate, attribute, world);
+}
+
+void V8DOMConfiguration::installAttribute(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, const AttributeConfiguration& attribute)
+{
+    installAttributeInternal(isolate, instance, prototype, attribute, world);
 }
 
 void V8DOMConfiguration::installAccessors(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::ObjectTemplate> instanceTemplate, v8::Local<v8::ObjectTemplate> prototypeTemplate, v8::Local<v8::FunctionTemplate> interfaceTemplate, v8::Local<v8::Signature> signature, const AccessorConfiguration* accessors, size_t accessorCount)
