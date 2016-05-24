@@ -95887,7 +95887,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="SB2.ResourceTypes2"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="SBFileTypeUpdateSource" separator="."
+<histogram_suffixes name="SBFileTypeUpdateSource" separator=""
     ordering="prefix">
   <suffix name="ResourceBundle"
       label="The file types loaded from the resource bundle packaged with
