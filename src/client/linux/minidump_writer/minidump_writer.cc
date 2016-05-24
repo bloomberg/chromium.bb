@@ -275,6 +275,14 @@ class MinidumpWriter {
       if (max_stack_len >= 0 &&
           stack_len > static_cast<unsigned int>(max_stack_len)) {
         stack_len = max_stack_len;
+        // Skip empty chunks of length max_stack_len.
+        uintptr_t int_stack = reinterpret_cast<uintptr_t>(stack);
+        if (max_stack_len > 0) {
+          while (int_stack + max_stack_len < stack_pointer) {
+            int_stack += max_stack_len;
+          }
+        }
+        stack = reinterpret_cast<const void*>(int_stack);
       }
       if (!memory.Allocate(stack_len))
         return false;
