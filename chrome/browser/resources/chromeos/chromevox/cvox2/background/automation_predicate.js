@@ -45,8 +45,6 @@ AutomationPredicate.checkBox = AutomationPredicate.withRole(RoleType.checkBox);
 /** @type {AutomationPredicate.Unary} */
 AutomationPredicate.comboBox = AutomationPredicate.withRole(RoleType.comboBox);
 /** @type {AutomationPredicate.Unary} */
-AutomationPredicate.editText = AutomationPredicate.withRole(RoleType.textField);
-/** @type {AutomationPredicate.Unary} */
 AutomationPredicate.heading = AutomationPredicate.withRole(RoleType.heading);
 /** @type {AutomationPredicate.Unary} */
 AutomationPredicate.inlineTextBox =
@@ -62,6 +60,17 @@ AutomationPredicate.table = AutomationPredicate.withRole(RoleType.table);
  */
 AutomationPredicate.button = function(node) {
   return /button/i.test(node.role);
+};
+
+
+/**
+ * @param {!AutomationNode} node
+ * @return {boolean}
+ */
+AutomationPredicate.editText = function(node) {
+  return node.state.editable &&
+      node.parent &&
+      !node.parent.state.editable;
 };
 
 /**

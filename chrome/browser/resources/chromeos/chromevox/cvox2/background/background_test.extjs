@@ -703,3 +703,19 @@ TEST_F('BackgroundTest', 'ToggleButton', function() {
         .replay();
   });
 });
+
+TEST_F('BackgroundTest', 'EditText', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <input type="text"></input>
+    <input role="combobox" type="text"></input>
+  */}, function(root) {
+    var nextEditText = this.doCmd('nextEditText');
+    var previousEditText = this.doCmd('previousEditText');
+    mockFeedback.call(nextEditText)
+        .expectSpeech('Combo box')
+        .call(previousEditText)
+        .expectSpeech('Edit text')
+        .replay();
+  });
+});
