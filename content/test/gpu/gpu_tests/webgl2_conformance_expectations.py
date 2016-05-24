@@ -568,6 +568,39 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'basic_teximage3d_3d_02.html',
         ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'basic_teximage3d_3d_03.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'basic_teximage3d_3d_04.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'texstorage2d_format_depth_stencil.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'texstorage3d_format_2d_array_00.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'texstorage3d_format_2d_array_01.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'texstorage3d_format_2d_array_02.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'texstorage3d_format_3d_00.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'texstorage3d_format_3d_01.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'texstorage3d_format_3d_02.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'texstorage3d_format_3d_03.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('deqp/functional/gles3/texturespecification/' +
+        'texstorage3d_format_depth_stencil.html',
+        ['linux', 'amd'], bug=483282)
 
     # Conflicting expectations to test that the
     # "Expectations Have No collisions" unittest works.
