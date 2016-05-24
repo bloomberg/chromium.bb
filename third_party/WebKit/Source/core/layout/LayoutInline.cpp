@@ -436,29 +436,33 @@ void LayoutInline::splitFlow(LayoutObject* beforeChild, LayoutBlock* newBlockBox
     // Delete our line boxes before we do the inline split into continuations.
     containingBlockFlow->deleteLineBoxTree();
 
-    bool madeNewBeforeBlock = false;
-    if (block->isAnonymousBlock() && (!block->parent() || !block->parent()->createsAnonymousWrapper())) {
-        // We can reuse this block and make it the preBlock of the next continuation.
-        containingBlockFlow->removePositionedObjects(nullptr);
-        containingBlockFlow->removeFloatingObjects();
-        pre = containingBlockFlow;
-        block = block->containingBlock();
-    } else {
-        // No anonymous block available for use.  Make one.
-        pre = block->createAnonymousBlock();
-        madeNewBeforeBlock = true;
+    bool reusedAnonymousBlock = false;
+    if (block->isAnonymousBlock()) {
+        LayoutBlock* outerContainingBlock = block->containingBlock();
+        if (outerContainingBlock
+            && outerContainingBlock->isLayoutBlockFlow()
+            && !outerContainingBlock->createsAnonymousWrapper()) {
+            // We can reuse this block and make it the preBlock of the next continuation.
+            containingBlockFlow->removePositionedObjects(nullptr);
+            containingBlockFlow->removeFloatingObjects();
+            pre = containingBlockFlow;
+            block = outerContainingBlock;
+            reusedAnonymousBlock = true;
+        }
     }
+    if (!reusedAnonymousBlock)
+        pre = block->createAnonymousBlock(); // No anonymous block available for use. Make one.
 
     LayoutBlock* post = toLayoutBlock(pre->createAnonymousBoxWithSameTypeAs(block));
 
-    LayoutObject* boxFirst = madeNewBeforeBlock ? block->firstChild() : pre->nextSibling();
-    if (madeNewBeforeBlock)
+    LayoutObject* boxFirst = !reusedAnonymousBlock ? block->firstChild() : pre->nextSibling();
+    if (!reusedAnonymousBlock)
         block->children()->insertChildNode(block, pre, boxFirst);
     block->children()->insertChildNode(block, newBlockBox, boxFirst);
     block->children()->insertChildNode(block, post, boxFirst);
     block->setChildrenInline(false);
 
-    if (madeNewBeforeBlock) {
+    if (!reusedAnonymousBlock) {
         LayoutObject* o = boxFirst;
         while (o) {
             LayoutObject* no = o;
