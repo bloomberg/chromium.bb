@@ -20,9 +20,8 @@ PrerenderingOffliner::PrerenderingOffliner(
 
 PrerenderingOffliner::~PrerenderingOffliner() {}
 
-void PrerenderingOffliner::OnLoadPageDone(
-    const Offliner::CompletionStatus load_status,
-    content::WebContents* contents) {
+void PrerenderingOffliner::OnLoadPageDone(Offliner::RequestStatus load_status,
+                                          content::WebContents* contents) {
   // TODO(dougarnett): Implement save attempt and running CompletionCallback.
 }
 
@@ -41,17 +40,17 @@ void PrerenderingOffliner::Cancel() {
   GetOrCreateLoader()->StopLoading();
 }
 
+void PrerenderingOffliner::SetLoaderForTesting(
+    std::unique_ptr<PrerenderingLoader> loader) {
+  DCHECK(!loader_);
+  loader_ = std::move(loader);
+}
+
 PrerenderingLoader* PrerenderingOffliner::GetOrCreateLoader() {
   if (!loader_) {
     loader_.reset(new PrerenderingLoader(browser_context_));
   }
   return loader_.get();
-}
-
-void PrerenderingOffliner::SetLoaderForTesting(
-    std::unique_ptr<PrerenderingLoader> loader) {
-  DCHECK(!loader_);
-  loader_ = std::move(loader);
 }
 
 }  // namespace offline_pages

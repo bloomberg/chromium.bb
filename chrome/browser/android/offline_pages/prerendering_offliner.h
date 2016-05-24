@@ -41,7 +41,7 @@ class PrerenderingOffliner : public Offliner {
   void SetLoaderForTesting(std::unique_ptr<PrerenderingLoader> loader);
 
  private:
-  void OnLoadPageDone(const Offliner::CompletionStatus load_status,
+  void OnLoadPageDone(const Offliner::RequestStatus load_status,
                       content::WebContents* contents);
 
   PrerenderingLoader* GetOrCreateLoader();
