@@ -7,6 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_metrics.h"
 
 namespace content {
 class WebUI;
