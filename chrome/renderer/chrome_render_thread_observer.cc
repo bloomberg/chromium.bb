@@ -353,11 +353,6 @@ void ChromeRenderThreadObserver::OnSetFieldTrialGroup(
 
   base::FieldTrial* trial =
       base::FieldTrialList::CreateFieldTrial(field_trial_name, group_name);
-  // TODO(asvitkine): To avoid crashes on M51 stable, simply return in this
-  // case. This should be removed and cleaned up when http://crbug.com/359406 is
-  // resolved.
-  if (!trial)
-    return;
   // TODO(asvitkine): Remove this after http://crbug.com/359406 is fixed.
   if (!trial) {
     // Log the --force-fieldtrials= switch value for debugging purposes. Take
