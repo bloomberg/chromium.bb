@@ -41,6 +41,7 @@
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_clear_framebuffer.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/gpu_state_tracer.h"
@@ -544,17 +545,18 @@ void GLES2Decoder::BeginDecoding() {}
 
 void GLES2Decoder::EndDecoding() {}
 
+error::Error GLES2Decoder::DoCommand(unsigned int command,
+                                     unsigned int arg_count,
+                                     const void* cmd_data) {
+  return DoCommands(1, cmd_data, arg_count + 1, 0);
+}
+
 // This class implements GLES2Decoder so we don't have to expose all the GLES2
 // cmd stuff to outside this class.
 class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
  public:
   explicit GLES2DecoderImpl(ContextGroup* group);
   ~GLES2DecoderImpl() override;
-
-  // Overridden from AsyncAPIInterface.
-  Error DoCommand(unsigned int command,
-                  unsigned int arg_count,
-                  const void* args) override;
 
   error::Error DoCommands(unsigned int num_commands,
                           const void* buffer,
@@ -2673,6 +2675,9 @@ GLenum BackFramebuffer::CheckStatus() {
 }
 
 GLES2Decoder* GLES2Decoder::Create(ContextGroup* group) {
+  if (group->gpu_preferences().use_passthrough_cmd_decoder) {
+    return CreateGLES2DecoderPassthroughImpl(group);
+  }
   return new GLES2DecoderImpl(group);
 }
 
@@ -4661,16 +4666,6 @@ const char* GLES2DecoderImpl::GetCommandName(unsigned int command_id) const {
     return gles2::GetCommandName(static_cast<CommandId>(command_id));
   }
   return GetCommonCommandName(static_cast<cmd::CommandId>(command_id));
-}
-
-// Decode a command, and call the corresponding GL functions.
-// NOTE: DoCommand() is slower than calling DoCommands() on larger batches
-// of commands at once, and is now only used for tests that need to track
-// individual commands.
-error::Error GLES2DecoderImpl::DoCommand(unsigned int command,
-                                         unsigned int arg_count,
-                                         const void* cmd_data) {
-  return DoCommands(1, cmd_data, arg_count + 1, 0);
 }
 
 // Decode multiple commands, and call the corresponding GL functions.

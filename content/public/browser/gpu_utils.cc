@@ -97,6 +97,8 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
       command_line->HasSwitch(switches::kEnableGPUServiceTracing);
   gpu_preferences.enable_unsafe_es3_apis =
       command_line->HasSwitch(switches::kEnableUnsafeES3APIs);
+  gpu_preferences.use_passthrough_cmd_decoder =
+      command_line->HasSwitch(switches::kUsePassthroughCmdDecoder);
   return gpu_preferences;
 }
 

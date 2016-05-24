@@ -61,6 +61,8 @@ source_set("service_sources") {
     "gles2_cmd_decoder.cc",
     "gles2_cmd_decoder.h",
     "gles2_cmd_decoder_autogen.h",
+    "gles2_cmd_decoder_passthrough.cc",
+    "gles2_cmd_decoder_passthrough.h",
     "gles2_cmd_validation.cc",
     "gles2_cmd_validation.h",
     "gles2_cmd_validation_autogen.h",

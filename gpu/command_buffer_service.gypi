@@ -65,6 +65,8 @@
     'command_buffer/service/gles2_cmd_decoder.cc',
     'command_buffer/service/gles2_cmd_decoder.h',
     'command_buffer/service/gles2_cmd_decoder_autogen.h',
+    'command_buffer/service/gles2_cmd_decoder_passthrough.cc',
+    'command_buffer/service/gles2_cmd_decoder_passthrough.h',
     'command_buffer/service/gles2_cmd_validation.cc',
     'command_buffer/service/gles2_cmd_validation.h',
     'command_buffer/service/gles2_cmd_validation_autogen.h',

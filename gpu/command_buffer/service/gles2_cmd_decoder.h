@@ -315,6 +315,14 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
  protected:
   GLES2Decoder();
 
+  // Decode a command, and call the corresponding GL functions.
+  // NOTE: DoCommand() is slower than calling DoCommands() on larger batches
+  // of commands at once, and is now only used for tests that need to track
+  // individual commands.
+  error::Error DoCommand(unsigned int command,
+                         unsigned int arg_count,
+                         const void* cmd_data) override;
+
  private:
   bool initialized_;
   bool debug_;

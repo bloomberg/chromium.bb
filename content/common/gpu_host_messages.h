@@ -107,6 +107,7 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::GpuPreferences)
   IPC_STRUCT_TRAITS_MEMBER(enable_gpu_service_logging)
   IPC_STRUCT_TRAITS_MEMBER(enable_gpu_service_tracing)
   IPC_STRUCT_TRAITS_MEMBER(enable_unsafe_es3_apis)
+  IPC_STRUCT_TRAITS_MEMBER(use_passthrough_cmd_decoder)
 IPC_STRUCT_TRAITS_END()
 
 //------------------------------------------------------------------------------
