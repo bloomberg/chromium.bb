@@ -179,6 +179,8 @@ TYPED_TEST(OfflinePageMetadataStoreTest, AddOfflinePage) {
   EXPECT_EQ(offline_page.creation_time, this->offline_pages_[0].creation_time);
   EXPECT_EQ(offline_page.last_access_time,
             this->offline_pages_[0].last_access_time);
+  EXPECT_EQ(offline_page.expiration_time,
+            this->offline_pages_[0].expiration_time);
   EXPECT_EQ(offline_page.access_count, this->offline_pages_[0].access_count);
   EXPECT_EQ(offline_page.client_id, this->offline_pages_[0].client_id);
 }
@@ -250,6 +252,7 @@ TYPED_TEST(OfflinePageMetadataStoreTest, AddRemoveMultipleOfflinePages) {
   OfflinePageItem offline_page_2(GURL("https://other.page.com"), 5678LL,
                                  kTestClientId2, file_path_2, 12345,
                                  base::Time::Now());
+  offline_page_2.expiration_time = base::Time::Now();
   store->AddOrUpdateOfflinePage(
       offline_page_1,
       base::Bind(&OfflinePageMetadataStoreTestBase::UpdateCallback,
@@ -312,6 +315,8 @@ TYPED_TEST(OfflinePageMetadataStoreTest, AddRemoveMultipleOfflinePages) {
             this->offline_pages_[0].creation_time);
   EXPECT_EQ(offline_page_2.last_access_time,
             this->offline_pages_[0].last_access_time);
+  EXPECT_EQ(offline_page_2.expiration_time,
+            this->offline_pages_[0].expiration_time);
   EXPECT_EQ(offline_page_2.access_count, this->offline_pages_[0].access_count);
   EXPECT_EQ(offline_page_2.client_id, this->offline_pages_[0].client_id);
 }
@@ -347,12 +352,15 @@ TYPED_TEST(OfflinePageMetadataStoreTest, UpdateOfflinePage) {
   EXPECT_EQ(offline_page.creation_time, this->offline_pages_[0].creation_time);
   EXPECT_EQ(offline_page.last_access_time,
             this->offline_pages_[0].last_access_time);
+  EXPECT_EQ(offline_page.expiration_time,
+            this->offline_pages_[0].expiration_time);
   EXPECT_EQ(offline_page.access_count, this->offline_pages_[0].access_count);
   EXPECT_EQ(offline_page.client_id, this->offline_pages_[0].client_id);
 
   // Then update some data.
   offline_page.file_size = kFileSize + 1;
   offline_page.access_count++;
+  offline_page.expiration_time = base::Time::Now();
   store->AddOrUpdateOfflinePage(
       offline_page,
       base::Bind(&OfflinePageMetadataStoreTestBase::UpdateCallback,
@@ -377,6 +385,8 @@ TYPED_TEST(OfflinePageMetadataStoreTest, UpdateOfflinePage) {
   EXPECT_EQ(offline_page.creation_time, this->offline_pages_[0].creation_time);
   EXPECT_EQ(offline_page.last_access_time,
             this->offline_pages_[0].last_access_time);
+  EXPECT_EQ(offline_page.expiration_time,
+            this->offline_pages_[0].expiration_time);
   EXPECT_EQ(offline_page.access_count, this->offline_pages_[0].access_count);
   EXPECT_EQ(offline_page.client_id, this->offline_pages_[0].client_id);
 }

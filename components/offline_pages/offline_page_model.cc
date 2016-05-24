@@ -507,6 +507,34 @@ void OfflinePageModel::CheckForExternalFileDeletion() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
+void OfflinePageModel::ExpirePages(const std::vector<int64_t>& offline_ids,
+                                   const base::Time& expiration_time) {
+  for (int64_t offline_id : offline_ids) {
+    auto iter = offline_pages_.find(offline_id);
+    if (iter == offline_pages_.end())
+      continue;
+
+    OfflinePageItem offline_page = iter->second;
+    offline_page.expiration_time = expiration_time;
+
+    store_->AddOrUpdateOfflinePage(
+        offline_page, base::Bind(&OfflinePageModel::OnExpirePageDone,
+                                 weak_ptr_factory_.GetWeakPtr(), offline_id,
+                                 expiration_time));
+  }
+}
+
+void OfflinePageModel::OnExpirePageDone(int64_t offline_id,
+                                        const base::Time& expiration_time,
+                                        bool success) {
+  // TODO(romax): Report UMA about successful expiration.
+  if (success) {
+    auto iter = offline_pages_.find(offline_id);
+    if (iter != offline_pages_.end())
+      iter->second.expiration_time = expiration_time;
+  }
+}
+
 ClientPolicyController* OfflinePageModel::GetPolicyController() {
   return policy_controller_.get();
 }

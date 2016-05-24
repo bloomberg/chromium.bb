@@ -55,6 +55,9 @@ struct OfflinePageItem {
   // Gets a URL of the file under |file_path|.
   GURL GetOfflineURL() const;
 
+  // Returns whether the offline page is expired.
+  bool IsExpired() const;
+
   // The URL of the page.
   GURL url;
   // The primary key/ID for this page in offline pages internal database.
@@ -75,6 +78,8 @@ struct OfflinePageItem {
   base::Time creation_time;
   // The time when the offline archive was last accessed.
   base::Time last_access_time;
+  // The time when the offline page was expired.
+  base::Time expiration_time;
   // Number of times that the offline archive has been accessed.
   int access_count;
   // Flags about the state and behavior of the offline page.

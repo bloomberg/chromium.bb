@@ -215,6 +215,11 @@ class OfflinePageModel : public KeyedService,
   // observers.
   void CheckForExternalFileDeletion();
 
+  // Marks pages as expired and removes their respective files from the archive
+  // directory.
+  void ExpirePages(const std::vector<int64_t>& offline_ids,
+                   const base::Time& expiration_time);
+
   // Returns the policy controller.
   ClientPolicyController* GetPolicyController();
 
@@ -328,6 +333,11 @@ class OfflinePageModel : public KeyedService,
   // requires that the model is loaded.
   void DoDeletePagesByURLPredicate(const UrlPredicate& predicate,
                                    const DeletePageCallback& callback);
+
+  // Callback completing page expiration.
+  void OnExpirePageDone(int64_t offline_id,
+                        const base::Time& expiration_time,
+                        bool success);
 
   void RunWhenLoaded(const base::Closure& job);
 

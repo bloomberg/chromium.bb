@@ -68,4 +68,8 @@ GURL OfflinePageItem::GetOfflineURL() const {
   return net::FilePathToFileURL(file_path);
 }
 
+bool OfflinePageItem::IsExpired() const {
+  return creation_time < expiration_time;
+}
+
 }  // namespace offline_pages

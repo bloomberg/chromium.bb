@@ -38,6 +38,7 @@ const char kOfflinePagesColumns[] =
     // later use.  We will treat NULL as "Unknown" in any subsequent queries
     // for user_initiated values.
     " user_initiated INTEGER,"  // this is actually a boolean
+    " expiration_time INTEGER NOT NULL,"
     " client_namespace VARCHAR NOT NULL,"
     " client_id VARCHAR NOT NULL,"
     " online_url VARCHAR NOT NULL,"
@@ -65,11 +66,12 @@ enum : int {
   OP_ACCESS_COUNT,
   OP_STATUS,
   OP_USER_INITIATED,
+  OP_EXPIRATION_TIME,
   OP_CLIENT_NAMESPACE,
   OP_CLIENT_ID,
   OP_ONLINE_URL,
   OP_OFFLINE_URL,
-  OP_FILE_PATH
+  OP_FILE_PATH,
 };
 
 bool CreateTable(sql::Connection* db, const TableInfo& table_info) {
@@ -126,6 +128,8 @@ OfflinePageItem MakeOfflinePageItem(sql::Statement* statement) {
       statement->ColumnInt64(OP_LAST_ACCESS_TIME));
   item.version = statement->ColumnInt(OP_VERSION);
   item.access_count = statement->ColumnInt(OP_ACCESS_COUNT);
+  item.expiration_time =
+      base::Time::FromInternalValue(statement->ColumnInt64(OP_EXPIRATION_TIME));
   return item;
 }
 
@@ -133,9 +137,10 @@ bool InsertOrReplace(sql::Connection* db, const OfflinePageItem& item) {
   const char kSql[] =
       "INSERT OR REPLACE INTO " OFFLINE_PAGES_TABLE_NAME
       " (offline_id, online_url, client_namespace, client_id, file_path, "
-      "file_size, creation_time, last_access_time, version, access_count)"
+      "file_size, creation_time, last_access_time, version, access_count, "
+      "expiration_time)"
       " VALUES "
-      " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, item.offline_id);
@@ -155,6 +160,7 @@ bool InsertOrReplace(sql::Connection* db, const OfflinePageItem& item) {
   statement.BindInt64(7, item.last_access_time.ToInternalValue());
   statement.BindInt(8, item.version);
   statement.BindInt(9, item.access_count);
+  statement.BindInt64(10, item.expiration_time.ToInternalValue());
   return statement.Run();
 }
 
