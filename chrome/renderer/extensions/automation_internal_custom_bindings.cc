@@ -115,29 +115,31 @@ static gfx::Rect ComputeLocalNodeBounds(TreeCache* cache, ui::AXNode* node) {
 // parent hierarchy to offset by frame offsets and scroll offsets.
 static gfx::Rect ComputeGlobalNodeBounds(TreeCache* cache, ui::AXNode* node) {
   gfx::Rect bounds = ComputeLocalNodeBounds(cache, node);
-  ui::AXNode* parent = node->parent();
-  bool need_to_offset_web_area = node->data().role == ui::AX_ROLE_WEB_AREA ||
-                                 node->data().role == ui::AX_ROLE_ROOT_WEB_AREA;
-  while (parent) {
-    if (bounds.IsEmpty()) {
-      bounds = parent->data().location;
-    } else if (need_to_offset_web_area && parent->data().location.width() > 0 &&
-               parent->data().location.height() > 0) {
-      bounds.Offset(parent->data().location.x(), parent->data().location.y());
-      need_to_offset_web_area = false;
-    }
 
-    if (parent->data().role == ui::AX_ROLE_WEB_AREA ||
-        parent->data().role == ui::AX_ROLE_ROOT_WEB_AREA) {
+  ui::AXNode* root = cache->tree.root();
+  while (root) {
+    // Apply scroll offsets.
+    if (root != node) {
       int sx = 0;
       int sy = 0;
-      if (parent->data().GetIntAttribute(ui::AX_ATTR_SCROLL_X, &sx) &&
-          parent->data().GetIntAttribute(ui::AX_ATTR_SCROLL_Y, &sy)) {
+      if (root->data().GetIntAttribute(ui::AX_ATTR_SCROLL_X, &sx) &&
+          root->data().GetIntAttribute(ui::AX_ATTR_SCROLL_Y, &sy)) {
         bounds.Offset(-sx, -sy);
       }
-      need_to_offset_web_area = true;
     }
-    parent = cache->owner->GetParent(parent, &cache);
+
+    if (root->data().transform) {
+      gfx::RectF boundsf(bounds);
+      root->data().transform->TransformRect(&boundsf);
+      bounds = gfx::Rect(boundsf.x(), boundsf.y(), boundsf.width(),
+                         boundsf.height());
+    }
+
+    ui::AXNode* parent = cache->owner->GetParent(root, &cache);
+    if (!parent)
+      break;
+
+    root = cache->tree.root();
   }
 
   return bounds;
