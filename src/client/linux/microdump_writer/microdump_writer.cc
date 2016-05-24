@@ -504,7 +504,6 @@ class MicrodumpWriter {
 
       if (hole_hi > hole_lo) {
         size_t hole_sz = hole_hi - hole_lo;
-        int log2_hole_sz = Log2Floor(hole_sz);
         hole_sum += hole_sz;
         hole_max = std::max(hole_sz, hole_max);
         ++hole_cnt;
