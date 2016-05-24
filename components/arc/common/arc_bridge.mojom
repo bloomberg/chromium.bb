@@ -10,6 +10,7 @@ import "auth.mojom";
 import "bluetooth.mojom";
 import "clipboard.mojom";
 import "crash_collector.mojom";
+import "file_system.mojom";
 import "ime.mojom";
 import "intent_helper.mojom";
 import "metrics.mojom";
@@ -22,9 +23,9 @@ import "storage_manager.mojom";
 import "video.mojom";
 import "window_manager.mojom";
 
-// Next MinVersion: 13
+// Next MinVersion: 14
 // Deprecated method IDs: 101, 105
-// Next method ID: 119
+// Next method ID: 120
 interface ArcBridgeHost {
   // Keep the entries alphabetical. In order to do so without breaking
   // compatibility with the ARC instance, explicitly assign each interface a
@@ -48,6 +49,10 @@ interface ArcBridgeHost {
   // Notifies Chrome that the CrashCollectorInstance interface is ready.
   [MinVersion=7] OnCrashCollectorInstanceReady@112(
       CrashCollectorInstance instance_ptr);
+
+  // Notifies Chrome that the FileSystemInstance interface is ready.
+  [MinVersion=13] OnFileSystemInstanceReady@119(
+      FileSystemInstance instance_ptr);
 
   // Notifies Chrome that the ImeInstance interface is ready.
   [MinVersion=3] OnImeInstanceReady@110(ImeInstance instance_ptr);
@@ -79,7 +84,7 @@ interface ArcBridgeHost {
 
   // Notifies Chrome that the VideoInstance interface is ready.
   [MinVersion=6] OnVideoInstanceReady@107(VideoInstance instance_ptr);
-  
+
   // Notifies Android of entering / exiting TouchView.
   [MinVersion=11] OnWindowManagerInstanceReady@117(WindowManagerInstance instance_ptr);
 };

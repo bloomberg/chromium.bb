@@ -70,6 +70,8 @@ void ArcBridgeService::AddObserver(Observer* observer) {
     observer->OnClipboardInstanceReady();
   if (crash_collector_instance())
     observer->OnCrashCollectorInstanceReady();
+  if (file_system_instance())
+    observer->OnFileSystemInstanceReady();
   if (ime_instance())
     observer->OnImeInstanceReady();
   if (metrics_instance())
@@ -244,6 +246,34 @@ void ArcBridgeService::CloseCrashCollectorChannel() {
   crash_collector_ptr_.reset();
   FOR_EACH_OBSERVER(Observer, observer_list(),
                     OnCrashCollectorInstanceClosed());
+}
+
+void ArcBridgeService::OnFileSystemInstanceReady(
+    mojom::FileSystemInstancePtr file_system_ptr) {
+  DCHECK(CalledOnValidThread());
+  temporary_file_system_ptr_ = std::move(file_system_ptr);
+  temporary_file_system_ptr_.QueryVersion(
+      base::Bind(&ArcBridgeService::OnFileSystemVersionReady,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void ArcBridgeService::OnFileSystemVersionReady(int32_t version) {
+  DCHECK(CalledOnValidThread());
+  file_system_ptr_ = std::move(temporary_file_system_ptr_);
+  file_system_ptr_.set_connection_error_handler(
+      base::Bind(&ArcBridgeService::CloseFileSystemChannel,
+                 weak_factory_.GetWeakPtr()));
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnFileSystemInstanceReady());
+}
+
+void ArcBridgeService::CloseFileSystemChannel() {
+  DCHECK(CalledOnValidThread());
+  if (!file_system_ptr_)
+    return;
+
+  file_system_ptr_.reset();
+  FOR_EACH_OBSERVER(Observer, observer_list(),
+                    OnFileSystemInstanceClosed());
 }
 
 void ArcBridgeService::OnImeInstanceReady(mojom::ImeInstancePtr ime_ptr) {
@@ -554,6 +584,7 @@ void ArcBridgeService::CloseAllChannels() {
   CloseBluetoothChannel();
   CloseClipboardChannel();
   CloseCrashCollectorChannel();
+  CloseFileSystemChannel();
   CloseImeChannel();
   CloseIntentHelperChannel();
   CloseMetricsChannel();

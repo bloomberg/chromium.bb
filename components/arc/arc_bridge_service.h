@@ -96,6 +96,10 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
     virtual void OnCrashCollectorInstanceReady() {}
     virtual void OnCrashCollectorInstanceClosed() {}
 
+    // Called whenever the ARC file system interface state changes.
+    virtual void OnFileSystemInstanceReady() {}
+    virtual void OnFileSystemInstanceClosed() {}
+
     // Called whenever the ARC IME interface state changes.
     virtual void OnImeInstanceReady() {}
     virtual void OnImeInstanceClosed() {}
@@ -189,6 +193,9 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   mojom::CrashCollectorInstance* crash_collector_instance() {
     return crash_collector_ptr_.get();
   }
+  mojom::FileSystemInstance* file_system_instance() {
+    return file_system_ptr_.get();
+  }
   mojom::ImeInstance* ime_instance() { return ime_ptr_.get(); }
   mojom::IntentHelperInstance* intent_helper_instance() {
     return intent_helper_ptr_.get();
@@ -217,6 +224,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   int32_t crash_collector_version() const {
     return crash_collector_ptr_.version();
   }
+  int32_t file_system_version() const { return file_system_ptr_.version(); }
   int32_t ime_version() const { return ime_ptr_.version(); }
   int32_t intent_helper_version() const { return intent_helper_ptr_.version(); }
   int32_t metrics_version() const { return metrics_ptr_.version(); }
@@ -243,6 +251,8 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
       mojom::ClipboardInstancePtr clipboard_ptr) override;
   void OnCrashCollectorInstanceReady(
       mojom::CrashCollectorInstancePtr crash_collector_ptr) override;
+  void OnFileSystemInstanceReady(
+      mojom::FileSystemInstancePtr file_system_ptr) override;
   void OnImeInstanceReady(mojom::ImeInstancePtr ime_ptr) override;
   void OnIntentHelperInstanceReady(
       mojom::IntentHelperInstancePtr intent_helper_ptr) override;
@@ -295,6 +305,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   void CloseBluetoothChannel();
   void CloseClipboardChannel();
   void CloseCrashCollectorChannel();
+  void CloseFileSystemChannel();
   void CloseImeChannel();
   void CloseIntentHelperChannel();
   void CloseMetricsChannel();
@@ -314,6 +325,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   void OnBluetoothVersionReady(int32_t version);
   void OnClipboardVersionReady(int32_t version);
   void OnCrashCollectorVersionReady(int32_t version);
+  void OnFileSystemVersionReady(int32_t version);
   void OnImeVersionReady(int32_t version);
   void OnIntentHelperVersionReady(int32_t version);
   void OnMetricsVersionReady(int32_t version);
@@ -333,6 +345,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   mojom::BluetoothInstancePtr bluetooth_ptr_;
   mojom::ClipboardInstancePtr clipboard_ptr_;
   mojom::CrashCollectorInstancePtr crash_collector_ptr_;
+  mojom::FileSystemInstancePtr file_system_ptr_;
   mojom::ImeInstancePtr ime_ptr_;
   mojom::IntentHelperInstancePtr intent_helper_ptr_;
   mojom::MetricsInstancePtr metrics_ptr_;
@@ -357,6 +370,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   mojom::BluetoothInstancePtr temporary_bluetooth_ptr_;
   mojom::ClipboardInstancePtr temporary_clipboard_ptr_;
   mojom::CrashCollectorInstancePtr temporary_crash_collector_ptr_;
+  mojom::FileSystemInstancePtr temporary_file_system_ptr_;
   mojom::ImeInstancePtr temporary_ime_ptr_;
   mojom::IntentHelperInstancePtr temporary_intent_helper_ptr_;
   mojom::MetricsInstancePtr temporary_metrics_ptr_;
