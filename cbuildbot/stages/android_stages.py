@@ -7,7 +7,6 @@
 from __future__ import print_function
 
 import os
-import sys
 
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
@@ -75,7 +74,8 @@ class UprevAndroidStage(generic_stages.BuilderStage,
         self._run.options.buildbot and
         self._run.config.build_type == constants.ANDROID_PFQ_TYPE):
       logging.info('Android already uprevved. Nothing else to do.')
-      sys.exit(0)
+      raise failures_lib.ExitEarlyException(
+          'UprevAndroidStage finished and exited early.')
 
 
 class AndroidMetadataStage(generic_stages.BuilderStage,

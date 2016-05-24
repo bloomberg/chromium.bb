@@ -10,7 +10,6 @@ import glob
 import multiprocessing
 import platform
 import os
-import sys
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
@@ -113,7 +112,8 @@ class SyncChromeStage(generic_stages.BuilderStage,
         self._run.options.buildbot and
         self._run.config.build_type == constants.CHROME_PFQ_TYPE):
       logging.info('Chrome already uprevved. Nothing else to do.')
-      sys.exit(0)
+      raise failures_lib.ExitEarlyException(
+          'SyncChromeStage finished and exited early.')
 
   def _WriteChromeVersionToMetadata(self):
     """Write chrome version to metadata and upload partial json file."""

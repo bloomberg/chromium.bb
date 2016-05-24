@@ -135,10 +135,19 @@ class CompoundFailure(StepFailure):
     return False
 
 
+class ExitEarlyException(Exception):
+  """Exception when a stage finishes and exits early."""
+
+# ExitEarlyException is to simulate sys.exit(0), and SystemExit derives
+# from BaseException, so should not catch ExitEarlyException as Exception
+# and reset type to re-raise.
+EXCEPTIONS_TO_EXCLUDE = (ExitEarlyException,)
+
 class SetFailureType(object):
   """A wrapper to re-raise the exception as the pre-set type."""
 
-  def __init__(self, category_exception, source_exception=None):
+  def __init__(self, category_exception, source_exception=None,
+               exclude_exceptions=EXCEPTIONS_TO_EXCLUDE):
     """Initializes the decorator.
 
     Args:
@@ -146,12 +155,15 @@ class SetFailureType(object):
         a subclass of CompoundFailure.
       source_exception: The exception types to re-raise. By default, re-raise
         all Exception classes.
+      exclude_exceptions: Do not set the type of the exception if it's subclass
+        of one exception in exclude_exceptions. Default to EXCLUSIVE_EXCEPTIONS.
     """
     assert issubclass(category_exception, CompoundFailure)
     self.category_exception = category_exception
     self.source_exception = source_exception
     if self.source_exception is None:
       self.source_exception = Exception
+    self.exclude_exceptions = exclude_exceptions
 
   def __call__(self, functor):
     """Returns a wrapped function."""
@@ -162,6 +174,10 @@ class SetFailureType(object):
         # Get the information about the original exception.
         exc_type, exc_value, _ = sys.exc_info()
         exc_traceback = traceback.format_exc()
+        if self.exclude_exceptions is not None:
+          for exclude_exception in self.exclude_exceptions:
+            if issubclass(exc_type, exclude_exception):
+              raise
         if issubclass(exc_type, self.category_exception):
           # Do not re-raise if the exception is a subclass of the set
           # exception type because it offers more information.

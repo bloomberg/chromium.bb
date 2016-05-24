@@ -314,6 +314,10 @@ class Builder(object):
         self.RunStages()
 
     except Exception as ex:
+      if isinstance(ex, failures_lib.ExitEarlyException):
+        # One stage finished and exited early, not a failure.
+        raise
+
       exception_thrown = True
       if results_lib.Results.BuildSucceededSoFar():
         # If the build is marked as successful, but threw exceptions, that's a

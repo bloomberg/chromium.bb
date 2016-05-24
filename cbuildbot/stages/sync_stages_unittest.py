@@ -597,7 +597,8 @@ class MasterCQSyncTest(MasterCQSyncTestCase):
 
   def testTreeClosureBlocksCommit(self):
     """Test that tree closures block commits."""
-    self.assertRaises(SystemExit, self._testCommitNonManifestChange,
+    self.assertRaises(failures_lib.ExitEarlyException,
+                      self._testCommitNonManifestChange,
                       tree_open=False)
 
   def testTreeThrottleUsesAlternateGerritQuery(self):

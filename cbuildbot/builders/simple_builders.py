@@ -13,6 +13,7 @@ from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import results_lib
+from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot.builders import generic_builders
 from chromite.cbuildbot.stages import afdo_stages
 from chromite.cbuildbot.stages import android_stages
@@ -405,7 +406,7 @@ class DistributedBuilder(SimpleBuilder):
     Args:
       was_build_successful: Whether the build succeeded.
       build_finished: Whether the build completed. A build can be successful
-        without completing if it exits early with sys.exit(0).
+        without completing if it raises ExitEarlyException.
     """
     completion_stage = self._GetStageInstance(self.completion_stage_class,
                                               self.sync_stage,
@@ -425,7 +426,7 @@ class DistributedBuilder(SimpleBuilder):
     Args:
       was_build_successful: Whether the build succeeded.
       build_finished: Whether the build completed. A build can be successful
-        without completing if it exits early with sys.exit(0).
+        without completing if it raises ExitEarlyException.
       completion_successful: Whether the compeletion_stage succeeded.
     """
     is_master_chrome_pfq = config_lib.IsMasterChromePFQ(self._run.config)
@@ -469,12 +470,11 @@ class DistributedBuilder(SimpleBuilder):
       super(DistributedBuilder, self).RunStages()
       was_build_successful = results_lib.Results.BuildSucceededSoFar()
       build_finished = True
-    except SystemExit as ex:
-      # If a stage calls sys.exit(0), it's exiting with success, so that means
-      # we should mark ourselves as successful.
-      logging.info('Detected sys.exit(%s)', ex.code)
-      if ex.code == 0:
-        was_build_successful = True
+    except failures_lib.ExitEarlyException as ex:
+      # If a stage throws ExitEarlyException, it's exiting with success,
+      # so that means we should mark ourselves as successful.
+      logging.info('Detected exception %s', ex)
+      was_build_successful = True
       raise
     finally:
       self.Complete(was_build_successful, build_finished)

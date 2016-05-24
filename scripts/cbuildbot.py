@@ -30,6 +30,7 @@ from chromite.cbuildbot import tee
 from chromite.cbuildbot import topology
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import trybot_patch_pool
+from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot.stages import completion_stages
 from chromite.lib import cidb
 from chromite.lib import cgroups
@@ -1272,5 +1273,8 @@ def main(argv):
     if options.timeout > 0:
       stack.Add(timeout_util.FatalTimeout, options.timeout,
                 timeout_display_message)
-
-    _RunBuildStagesWrapper(options, site_config, build_config)
+    try:
+      _RunBuildStagesWrapper(options, site_config, build_config)
+    except failures_lib.ExitEarlyException as ex:
+      # This build finished successfully. Do not re-raise ExitEarlyException.
+      logging.info('One stage exited early: %s', ex)

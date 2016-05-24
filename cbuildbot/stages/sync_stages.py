@@ -731,7 +731,8 @@ class ManifestVersionedSyncStage(SyncStage):
       if self._run.attrs.manifest_manager.DidLastBuildFail():
         raise failures_lib.StepFailure('The previous build failed.')
       else:
-        sys.exit(0)
+        raise failures_lib.ExitEarlyException(
+            'ManifestVersionedSyncStage finished and exited early.')
 
     # Log this early on for the release team to grep out before we finish.
     if self.manifest_manager:

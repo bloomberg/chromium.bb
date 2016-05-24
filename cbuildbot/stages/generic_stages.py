@@ -515,6 +515,10 @@ class BuilderStage(object):
 
       raise
     except Exception as e:
+      if isinstance(e, failures_lib.ExitEarlyException):
+        # One stage finished and exited early, not a failure.
+        raise
+
       if mox is not None and isinstance(e, mox.Error):
         raise
 
