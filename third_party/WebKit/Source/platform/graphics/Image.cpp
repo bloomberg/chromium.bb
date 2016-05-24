@@ -106,19 +106,12 @@ void Image::drawTiled(GraphicsContext& ctxt, const FloatRect& destRect, const Fl
     FloatSize scale(scaledTileSize.width() / intrinsicTileSize.width(),
                     scaledTileSize.height() / intrinsicTileSize.height());
 
-    FloatSize actualTileSize(scaledTileSize.width() + repeatSpacing.width(), scaledTileSize.height() + repeatSpacing.height());
-    FloatRect oneTileRect;
-    oneTileRect.setX(destRect.x() + fmodf(fmodf(-srcPoint.x(), actualTileSize.width()) - actualTileSize.width(), actualTileSize.width()));
-    oneTileRect.setY(destRect.y() + fmodf(fmodf(-srcPoint.y(), actualTileSize.height()) - actualTileSize.height(), actualTileSize.height()));
-    oneTileRect.setSize(scaledTileSize);
+    const FloatRect oneTileRect =
+        computeTileContaining(destRect.location(), scaledTileSize, srcPoint, repeatSpacing);
 
     // Check and see if a single draw of the image can cover the entire area we are supposed to tile.
     if (oneTileRect.contains(destRect)) {
-        FloatRect visibleSrcRect;
-        visibleSrcRect.setX((destRect.x() - oneTileRect.x()) / scale.width());
-        visibleSrcRect.setY((destRect.y() - oneTileRect.y()) / scale.height());
-        visibleSrcRect.setWidth(destRect.width() / scale.width());
-        visibleSrcRect.setHeight(destRect.height() / scale.height());
+        const FloatRect visibleSrcRect = computeSubsetForTile(oneTileRect, destRect, intrinsicTileSize);
         ctxt.drawImage(this, destRect, &visibleSrcRect, op, DoNotRespectImageOrientation);
         return;
     }
@@ -268,6 +261,47 @@ bool Image::isTextureBacked()
 {
     RefPtr<SkImage> image = imageForCurrentFrame();
     return image ? image->isTextureBacked() : false;
+}
+
+bool Image::applyShader(SkPaint& paint, const SkMatrix* localMatrix)
+{
+    // Default shader impl: attempt to build a shader based on the current frame SkImage.
+    RefPtr<SkImage> image = imageForCurrentFrame();
+    if (!image)
+        return false;
+
+    paint.setShader(
+        image->makeShader(SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, localMatrix));
+
+    return true;
+}
+
+FloatRect Image::computeTileContaining(const FloatPoint& point,
+    const FloatSize& tileSize, const FloatPoint& tilePhase, const FloatSize& tileSpacing)
+{
+    const FloatSize actualTileSize(tileSize + tileSpacing);
+    return FloatRect(
+        FloatPoint(
+            point.x() + fmodf(fmodf(-tilePhase.x(), actualTileSize.width()) - actualTileSize.width(), actualTileSize.width()),
+            point.y() + fmodf(fmodf(-tilePhase.y(), actualTileSize.height()) - actualTileSize.height(), actualTileSize.height())
+        ),
+        tileSize);
+}
+
+FloatRect Image::computeSubsetForTile(const FloatRect& tile, const FloatRect& dest,
+    const FloatSize& imageSize)
+{
+    DCHECK(tile.contains(dest));
+
+    const FloatSize scale(tile.width() / imageSize.width(), tile.height() / imageSize.height());
+
+    FloatRect subset = dest;
+    subset.setX((dest.x() - tile.x()) / scale.width());
+    subset.setY((dest.y() - tile.y()) / scale.height());
+    subset.setWidth(dest.width() / scale.width());
+    subset.setHeight(dest.height() / scale.height());
+
+    return subset;
 }
 
 } // namespace blink

@@ -44,6 +44,8 @@
 class SkBitmap;
 class SkCanvas;
 class SkImage;
+class SkMatrix;
+class SkPaint;
 
 namespace blink {
 
@@ -149,6 +151,19 @@ public:
     };
 
     virtual void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) = 0;
+
+    virtual bool applyShader(SkPaint&, const SkMatrix* localMatrix);
+
+    // Compute the tile which contains a given point (assuming a repeating tile grid).
+    // The point and returned value are in destination grid space.
+    static FloatRect computeTileContaining(const FloatPoint&, const FloatSize& tileSize,
+        const FloatPoint& tilePhase, const FloatSize& tileSpacing);
+
+    // Compute the image subset which gets mapped onto dest, when the whole image is drawn into
+    // tile.  Assumes the tile contains dest.  The tile rect is in destination grid space while
+    // the return value is in image coordinate space.
+    static FloatRect computeSubsetForTile(const FloatRect& tile, const FloatRect& dest,
+        const FloatSize& imageSize);
 
 protected:
     Image(ImageObserver* = 0);

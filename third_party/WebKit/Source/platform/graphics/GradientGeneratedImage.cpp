@@ -26,6 +26,7 @@
 #include "platform/graphics/GradientGeneratedImage.h"
 
 #include "platform/geometry/FloatRect.h"
+#include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
@@ -52,6 +53,27 @@ void GradientGeneratedImage::drawTile(GraphicsContext& context, const FloatRect&
     m_gradient->applyToPaint(gradientPaint);
 
     context.drawRect(srcRect, gradientPaint);
+}
+
+bool GradientGeneratedImage::applyShader(SkPaint& paint, const SkMatrix* localMatrix)
+{
+    AffineTransform transform;
+    if (localMatrix) {
+        transform.setMatrix(
+            localMatrix->getScaleX(), localMatrix->getSkewY(),
+            localMatrix->getSkewX(), localMatrix->getScaleY(),
+            localMatrix->getTranslateX(), localMatrix->getTranslateY());
+    }
+
+    DCHECK(m_gradient);
+    // TODO(fmalita): remove the transform from gradient/pattern state, and pass the matrix to
+    // applyToPaint if needed.
+    const AffineTransform previousTransform = m_gradient->gradientSpaceTransform();
+    m_gradient->setGradientSpaceTransform(transform);
+    m_gradient->applyToPaint(paint);
+    m_gradient->setGradientSpaceTransform(previousTransform);
+
+    return true;
 }
 
 } // namespace blink

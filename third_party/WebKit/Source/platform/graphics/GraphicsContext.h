@@ -30,8 +30,6 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/fonts/Font.h"
-#include "platform/geometry/FloatRect.h"
-#include "platform/geometry/FloatRoundedRect.h"
 #include "platform/graphics/DashArray.h"
 #include "platform/graphics/DrawLooperBuilder.h"
 #include "platform/graphics/GraphicsContextState.h"
@@ -57,6 +55,8 @@ struct SkRect;
 
 namespace blink {
 
+class FloatRect;
+class FloatRoundedRect;
 class ImageBuffer;
 class KURL;
 class PaintController;
@@ -156,6 +156,8 @@ public:
     void compositePicture(PassRefPtr<SkPicture>, const FloatRect& dest, const FloatRect& src, SkXfermode::Mode);
 
     void drawImage(Image*, const FloatRect& destRect, const FloatRect* srcRect = nullptr,
+        SkXfermode::Mode = SkXfermode::kSrcOver_Mode, RespectImageOrientationEnum = DoNotRespectImageOrientation);
+    void drawImageRRect(Image*, const FloatRoundedRect& dest, const FloatRect& srcRect,
         SkXfermode::Mode = SkXfermode::kSrcOver_Mode, RespectImageOrientationEnum = DoNotRespectImageOrientation);
     void drawTiledImage(Image*, const FloatRect& destRect, const FloatPoint& srcPoint, const FloatSize& tileSize,
         SkXfermode::Mode = SkXfermode::kSrcOver_Mode, const FloatSize& repeatSpacing = FloatSize());

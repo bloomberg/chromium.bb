@@ -197,21 +197,33 @@ void BoxPainter::paintFillLayers(const PaintInfo& paintInfo, const Color& c, con
 
 namespace {
 
-void applyBoxShadowForBackground(GraphicsContext& context, const LayoutObject& obj)
-{
-    const ShadowList* shadowList = obj.style()->boxShadow();
-    ASSERT(shadowList);
-    for (size_t i = shadowList->shadows().size(); i--; ) {
-        const ShadowData& boxShadow = shadowList->shadows()[i];
-        if (boxShadow.style() != Normal)
-            continue;
-        FloatSize shadowOffset(boxShadow.x(), boxShadow.y());
-        context.setShadow(shadowOffset, boxShadow.blur(),
-            boxShadow.color().resolve(obj.resolveColor(CSSPropertyColor)),
-            DrawLooperBuilder::ShadowRespectsTransforms, DrawLooperBuilder::ShadowIgnoresAlpha);
-        return;
+// RAII shadow helper.
+class ShadowContext {
+    STACK_ALLOCATED();
+public:
+    ShadowContext(GraphicsContext& context, const LayoutObject& obj, bool applyShadow)
+        : m_saver(context, applyShadow)
+    {
+        if (!applyShadow)
+            return;
+
+        const ShadowList* shadowList = obj.style()->boxShadow();
+        DCHECK(shadowList);
+        for (size_t i = shadowList->shadows().size(); i--; ) {
+            const ShadowData& boxShadow = shadowList->shadows()[i];
+            if (boxShadow.style() != Normal)
+                continue;
+            FloatSize shadowOffset(boxShadow.x(), boxShadow.y());
+            context.setShadow(shadowOffset, boxShadow.blur(),
+                boxShadow.color().resolve(obj.resolveColor(CSSPropertyColor)),
+                DrawLooperBuilder::ShadowRespectsTransforms, DrawLooperBuilder::ShadowIgnoresAlpha);
+            break;
+        }
     }
-}
+
+private:
+    GraphicsContextStateSaver m_saver;
+};
 
 FloatRoundedRect getBackgroundRoundedRect(const LayoutObject& obj, const LayoutRect& borderRect,
     const InlineFlowBox* box, LayoutUnit inlineBoxWidth, LayoutUnit inlineBoxHeight,
@@ -321,40 +333,132 @@ struct FillLayerInfo {
     bool shouldPaintShadow;
 };
 
+// RAII image paint helper.
+class ImagePaintContext {
+    STACK_ALLOCATED();
+public:
+    ImagePaintContext(const LayoutBoxModelObject& obj, GraphicsContext& context,
+        const FillLayer& layer, const StyleImage& styleImage, SkXfermode::Mode op,
+        const LayoutObject* backgroundObject, const LayoutSize& containerSize)
+        : m_context(context)
+        , m_previousInterpolationQuality(context.imageInterpolationQuality())
+    {
+        SkXfermode::Mode bgOp = WebCoreCompositeToSkiaComposite(layer.composite(), layer.blendMode());
+        // if op != SkXfermode::kSrcOver_Mode, a mask is being painted.
+        m_compositeOp = (op == SkXfermode::kSrcOver_Mode) ? bgOp : op;
+
+        const LayoutObject& imageClient = backgroundObject ? *backgroundObject : obj;
+        m_image = styleImage.image(imageClient, flooredIntSize(containerSize), obj.style()->effectiveZoom());
+
+        m_interpolationQuality =
+            BoxPainter::chooseInterpolationQuality(imageClient, m_image.get(), &layer, containerSize);
+        if (m_interpolationQuality != m_previousInterpolationQuality)
+            context.setImageInterpolationQuality(m_interpolationQuality);
+
+        if (layer.maskSourceType() == MaskLuminance)
+            context.setColorFilter(ColorFilterLuminanceToAlpha);
+    }
+
+    ~ImagePaintContext()
+    {
+        if (m_interpolationQuality != m_previousInterpolationQuality)
+            m_context.setImageInterpolationQuality(m_previousInterpolationQuality);
+    }
+
+    Image* image() const { return m_image.get(); }
+
+    SkXfermode::Mode compositeOp() const { return m_compositeOp; }
+
+private:
+    RefPtr<Image> m_image;
+    GraphicsContext& m_context;
+    SkXfermode::Mode m_compositeOp;
+    InterpolationQuality m_interpolationQuality;
+    InterpolationQuality m_previousInterpolationQuality;
+};
+
 inline bool paintFastBottomLayer(const LayoutBoxModelObject& obj, const PaintInfo& paintInfo,
-    const FillLayerInfo& info, const LayoutRect& rect, BackgroundBleedAvoidance bleedAvoidance,
-    const InlineFlowBox* box, const LayoutSize& boxSize)
+    const FillLayerInfo& info, const FillLayer& layer, const LayoutRect& rect,
+    BackgroundBleedAvoidance bleedAvoidance, const InlineFlowBox* box, const LayoutSize& boxSize,
+    SkXfermode::Mode op, const LayoutObject* backgroundObject,
+    Optional<BackgroundImageGeometry>& geometry)
 {
     // Complex cases not handled on the fast path.
     if (!info.isBottomLayer || !info.isBorderFill || info.isClippedWithLocalScrolling)
         return false;
 
-    // Not yet.
-    if (info.image)
-        return false;
-
     // Transparent layer, nothing to paint.
-    if (!info.shouldPaintColor)
+    if (!info.shouldPaintColor && !info.shouldPaintImage)
         return true;
 
-    GraphicsContext& context = paintInfo.context;
-    GraphicsContextStateSaver shadowStateSaver(context, info.shouldPaintShadow);
-    if (info.shouldPaintShadow)
-        applyBoxShadowForBackground(context, obj);
+    // When the layer has an image, figure out whether it is covered by a single tile.
+    FloatRect imageTile;
+    if (info.shouldPaintImage) {
+        DCHECK(!geometry);
+        geometry.emplace();
+        geometry->calculate(obj, paintInfo.paintContainer(), paintInfo.getGlobalPaintFlags(), layer, rect);
 
-    if (info.isRoundedFill) {
-        FloatRoundedRect border = backgroundRoundedRectAdjustedForBleedAvoidance(obj, rect,
-            bleedAvoidance, box, boxSize, info.includeLeftEdge, info.includeRightEdge);
+        if (!geometry->destRect().isEmpty()) {
+            // The tile is too small.
+            if (geometry->tileSize().width() < rect.width() || geometry->tileSize().height() < rect.height())
+                return false;
 
-        if (border.isRenderable()) {
-            context.fillRoundedRect(border, info.color);
-        } else {
-            RoundedInnerRectClipper clipper(obj, paintInfo, rect, border, ApplyToContext);
-            context.fillRect(border.rect(), info.color);
+            imageTile = Image::computeTileContaining(
+                FloatPoint(geometry->destRect().location()),
+                FloatSize(geometry->tileSize()),
+                FloatPoint(geometry->phase()),
+                FloatSize(geometry->spaceSize()));
+
+            // The tile is misaligned.
+            if (!imageTile.contains(FloatRect(rect)))
+                return false;
         }
-    } else {
-        context.fillRect(pixelSnappedIntRect(rect), info.color);
     }
+
+    // At this point we're committed to the fast path: the destination (r)rect fits within a single
+    // tile, and we can paint it using direct draw(R)Rect() calls.
+    GraphicsContext& context = paintInfo.context;
+    FloatRoundedRect border = info.isRoundedFill
+        ? backgroundRoundedRectAdjustedForBleedAvoidance(obj, rect, bleedAvoidance, box, boxSize, info.includeLeftEdge, info.includeRightEdge)
+        : FloatRoundedRect(pixelSnappedIntRect(rect));
+
+    Optional<RoundedInnerRectClipper> clipper;
+    if (info.isRoundedFill && !border.isRenderable()) {
+        // When the rrect is not renderable, we resort to clipping.
+        // RoundedInnerRectClipper handles this case via discrete, corner-wise clipping.
+        // TODO(fmalita): looks like the border rrect should always be renderable on this path,
+        // thanks to https://www.w3.org/TR/css3-background/#corner-overlap.  Investigate replacing
+        // the clipper with an assert.
+        clipper.emplace(obj, paintInfo, rect, border, ApplyToContext);
+        border.setRadii(FloatRoundedRect::Radii());
+    }
+
+    // Paint the color + shadow if needed.
+    if (info.shouldPaintColor) {
+        const ShadowContext shadowContext(context, obj, info.shouldPaintShadow);
+        context.fillRoundedRect(border, info.color);
+    }
+
+    // Paint the image + shadow if needed.
+    if (!info.shouldPaintImage || imageTile.isEmpty())
+        return true;
+
+    const ImagePaintContext imageContext(obj, context, layer, *info.image, op, backgroundObject,
+        geometry->tileSize());
+    if (!imageContext.image())
+        return true;
+
+    const FloatSize intrinsicTileSize = imageContext.image()->hasRelativeSize()
+        ? imageTile.size()
+        : FloatSize(imageContext.image()->size());
+    const FloatRect srcRect =
+        Image::computeSubsetForTile(imageTile, border.rect(), intrinsicTileSize);
+
+    // The shadow may have been applied with the color fill.
+    const ShadowContext shadowContext(context, obj, info.shouldPaintShadow && !info.shouldPaintColor);
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data",
+        InspectorPaintImageEvent::data(obj, *info.image));
+    context.drawImageRRect(imageContext.image(), border, srcRect, imageContext.compositeOp());
 
     return true;
 }
@@ -368,10 +472,13 @@ void BoxPainter::paintFillLayer(const LayoutBoxModelObject& obj, const PaintInfo
         return;
 
     const FillLayerInfo info(obj, color, bgLayer, bleedAvoidance, box);
+    Optional<BackgroundImageGeometry> geometry;
 
     // Fast path for drawing simple color backgrounds.
-    if (paintFastBottomLayer(obj, paintInfo, info, rect, bleedAvoidance, box, boxSize))
+    if (paintFastBottomLayer(obj, paintInfo, info, bgLayer, rect, bleedAvoidance, box, boxSize, op,
+        backgroundObject, geometry)) {
         return;
+    }
 
     Optional<RoundedInnerRectClipper> clipToBorder;
     if (info.isRoundedFill) {
@@ -462,34 +569,29 @@ void BoxPainter::paintFillLayer(const LayoutBoxModelObject& obj, const PaintInfo
     if (info.isBottomLayer && info.color.alpha()) {
         IntRect backgroundRect(pixelSnappedIntRect(scrolledPaintRect));
         if (info.shouldPaintColor || info.shouldPaintShadow)  {
-            GraphicsContextStateSaver shadowStateSaver(context, info.shouldPaintShadow);
-            if (info.shouldPaintShadow)
-                applyBoxShadowForBackground(context, obj);
-
+            const ShadowContext shadowContext(context, obj, info.shouldPaintShadow);
             context.fillRect(backgroundRect, info.color);
         }
     }
 
     // no progressive loading of the background image
     if (info.shouldPaintImage) {
-        BackgroundImageGeometry geometry;
-        geometry.calculate(obj, paintInfo.paintContainer(), paintInfo.getGlobalPaintFlags(), bgLayer, scrolledPaintRect);
+        if (!geometry) {
+            geometry.emplace();
+            geometry->calculate(obj, paintInfo.paintContainer(), paintInfo.getGlobalPaintFlags(), bgLayer, scrolledPaintRect);
+        } else {
+            // The geometry was calculated in paintFastBottomLayer().
+            DCHECK(info.isBottomLayer && info.isBorderFill && !info.isClippedWithLocalScrolling);
+        }
 
-        if (!geometry.destRect().isEmpty()) {
-            SkXfermode::Mode bgOp = WebCoreCompositeToSkiaComposite(bgLayer.composite(), bgLayer.blendMode());
-            // if op != SkXfermode::kSrcOver_Mode, a mask is being painted.
-            SkXfermode::Mode compositeOp = op == SkXfermode::kSrcOver_Mode ? bgOp : op;
-            const LayoutObject& clientForBackgroundImage = backgroundObject ? *backgroundObject : obj;
-            RefPtr<Image> image = info.image->image(clientForBackgroundImage, flooredIntSize(geometry.tileSize()), obj.style()->effectiveZoom());
-            InterpolationQuality interpolationQuality = chooseInterpolationQuality(clientForBackgroundImage, image.get(), &bgLayer, LayoutSize(geometry.tileSize()));
-            if (bgLayer.maskSourceType() == MaskLuminance)
-                context.setColorFilter(ColorFilterLuminanceToAlpha);
-            InterpolationQuality previousInterpolationQuality = context.imageInterpolationQuality();
-            context.setImageInterpolationQuality(interpolationQuality);
-            TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data", InspectorPaintImageEvent::data(obj, *info.image));
-            context.drawTiledImage(image.get(), FloatRect(geometry.destRect()), FloatPoint(geometry.phase()), FloatSize(geometry.tileSize()),
-                compositeOp, FloatSize(geometry.spaceSize()));
-            context.setImageInterpolationQuality(previousInterpolationQuality);
+        if (!geometry->destRect().isEmpty()) {
+            const ImagePaintContext imageContext(obj, context, bgLayer, *info.image, op,
+                backgroundObject, geometry->tileSize());
+            TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data",
+                InspectorPaintImageEvent::data(obj, *info.image));
+            context.drawTiledImage(imageContext.image(), FloatRect(geometry->destRect()),
+                FloatPoint(geometry->phase()), FloatSize(geometry->tileSize()),
+                imageContext.compositeOp(), FloatSize(geometry->spaceSize()));
         }
     }
 

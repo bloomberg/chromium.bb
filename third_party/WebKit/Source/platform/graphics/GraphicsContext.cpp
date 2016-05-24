@@ -27,6 +27,8 @@
 #include "platform/graphics/GraphicsContext.h"
 
 #include "platform/TraceEvent.h"
+#include "platform/geometry/FloatRect.h"
+#include "platform/geometry/FloatRoundedRect.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/ColorSpace.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
@@ -778,6 +780,49 @@ void GraphicsContext::drawImage(Image* image, const FloatRect& dest, const Float
     imagePaint.setFilterQuality(computeFilterQuality(image, dest, src));
     imagePaint.setAntiAlias(shouldAntialias());
     image->draw(m_canvas, imagePaint, dest, src, shouldRespectImageOrientation, Image::ClampImageToSourceRect);
+    m_paintController.setImagePainted();
+}
+
+void GraphicsContext::drawImageRRect(Image* image, const FloatRoundedRect& dest,
+    const FloatRect& srcRect, SkXfermode::Mode op, RespectImageOrientationEnum respectOrientation)
+{
+    if (contextDisabled() || !image)
+        return;
+
+    if (!dest.isRounded()) {
+        drawImage(image, dest.rect(), &srcRect, op, respectOrientation);
+        return;
+    }
+
+    DCHECK(dest.isRenderable());
+
+    const FloatRect visibleSrc = intersection(srcRect, image->rect());
+    if (dest.isEmpty() || visibleSrc.isEmpty())
+        return;
+
+    SkPaint imagePaint = immutableState()->fillPaint();
+    imagePaint.setXfermodeMode(op);
+    imagePaint.setColor(SK_ColorBLACK);
+    imagePaint.setFilterQuality(computeFilterQuality(image, dest.rect(), srcRect));
+    imagePaint.setAntiAlias(shouldAntialias());
+
+    bool useShader = (visibleSrc == srcRect) && (respectOrientation == DoNotRespectImageOrientation);
+    if (useShader) {
+        const SkMatrix localMatrix =
+            SkMatrix::MakeRectToRect(visibleSrc, dest.rect(), SkMatrix::kFill_ScaleToFit);
+        useShader = image->applyShader(imagePaint, localMatrix.isIdentity() ? nullptr : &localMatrix);
+    }
+
+    if (useShader) {
+        // Shader-based fast path.
+        m_canvas->drawRRect(dest, imagePaint);
+    } else {
+        // Clip-based fallback.
+        SkAutoCanvasRestore autoRestore(m_canvas, true);
+        m_canvas->clipRRect(dest, SkRegion::kIntersect_Op, imagePaint.isAntiAlias());
+        image->draw(m_canvas, imagePaint, dest.rect(), srcRect, respectOrientation, Image::ClampImageToSourceRect);
+    }
+
     m_paintController.setImagePainted();
 }
 
