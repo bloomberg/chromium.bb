@@ -41,14 +41,11 @@ class MediaRouterCPUMemoryMetric(Metric):
       for (process, process_results) in metric_results.iteritems():
         if not process_results:
           continue
-        # Get rid of 0 values
-        non_zero_results = [result for result in process_results if result]
-        if non_zero_results:
-          avg_result = round(sum(non_zero_results)/len(non_zero_results), 4)
-        else:
-          avg_result = 0
+        avg_result = round(sum(process_results)/len(process_results), 4)
         if metric == 'privateMemory':
           avg_result = round(avg_result/(1024 * 1024), 2)
+        logging.info('metric: %s, process: %s, average value: %s' %
+                     (metric, process, str(avg_result)))
         results.AddValue(scalar.ScalarValue(
             results.current_page,
             '%s_%s' % (METRICS.get(metric).get('display_name'), process),
