@@ -26,6 +26,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/OverflowModel.h"
+#include "core/layout/ScrollEnums.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/ScrollableArea.h"
 
@@ -42,15 +43,9 @@ enum AvailableLogicalHeightType { ExcludeMarginBorderPadding, IncludeMarginBorde
 // When painting, overlay scrollbars do not take up space and should not affect
 // clipping behavior. During hit testing, overlay scrollbars behave like regular
 // scrollbars and should change how hit testing is clipped.
-enum OverlayScrollbarClipBehavior { IgnoreOverlayScrollbarSize, ExcludeOverlayScrollbarSizeForHitTesting };
 enum MarginDirection { BlockDirection, InlineDirection };
 
 enum ShouldComputePreferred { ComputeActual, ComputePreferred };
-
-enum ScrollOffsetClamping {
-    ScrollOffsetUnclamped,
-    ScrollOffsetClamped
-};
 
 enum ApplyOverflowClipFlag {
     ApplyOverflowClip,

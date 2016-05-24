@@ -45,8 +45,8 @@
 #define PaintLayerScrollableArea_h
 
 #include "core/CoreExport.h"
-#include "core/layout/LayoutBox.h"
 #include "core/layout/ScrollAnchor.h"
+#include "core/layout/ScrollEnums.h"
 #include "core/paint/PaintInvalidationCapableScrollableArea.h"
 #include "core/paint/PaintLayerFragment.h"
 #include "platform/heap/Handle.h"
@@ -58,10 +58,14 @@ enum ResizerHitTestType {
     ResizerForTouch
 };
 
-class PlatformEvent;
+class ComputedStyle;
+class HitTestResult;
 class LayoutBox;
-class PaintLayer;
 class LayoutScrollbarPart;
+class PaintLayer;
+class PlatformEvent;
+class StickyPositionScrollingConstraints;
+class SubtreeLayoutScope;
 
 typedef WTF::HashMap<PaintLayer*, StickyPositionScrollingConstraints> StickyConstraintsMap;
 
