@@ -35,6 +35,7 @@ class MEDIA_EXPORT H264POC {
   int32_t ref_pic_order_cnt_lsb_;
   int32_t prev_frame_num_;
   int32_t prev_frame_num_offset_;
+  int32_t prev_poc_;
 
   DISALLOW_COPY_AND_ASSIGN(H264POC);
 };
