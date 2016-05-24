@@ -1085,10 +1085,10 @@ public:
     ComputedStyle& mutableStyleRef() const { ASSERT(m_style); return *m_style; }
 
     /* The following methods are inlined in LayoutObjectInlines.h */
-    const ComputedStyle* firstLineStyle() const;
-    const ComputedStyle& firstLineStyleRef() const;
-    const ComputedStyle* style(bool firstLine) const;
-    const ComputedStyle& styleRef(bool firstLine) const;
+    inline const ComputedStyle* firstLineStyle() const;
+    inline const ComputedStyle& firstLineStyleRef() const;
+    inline const ComputedStyle* style(bool firstLine) const;
+    inline const ComputedStyle& styleRef(bool firstLine) const;
 
     static inline Color resolveColor(const ComputedStyle& styleToUse, int colorProperty)
     {
