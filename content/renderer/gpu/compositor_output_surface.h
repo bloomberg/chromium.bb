@@ -29,14 +29,15 @@ class Message;
 namespace cc {
 class CompositorFrame;
 class CompositorFrameAck;
-class ContextProvider;
+class GLFrameData;
 }
 
 namespace content {
+class ContextProviderCommandBuffer;
 class FrameSwapMessageQueue;
 
 // This class can be created only on the main thread, but then becomes pinned
-// to a fixed thread when BindToClient is called.
+// to a fixed thread when bindToClient is called.
 class CompositorOutputSurface
     : NON_EXPORTED_BASE(public cc::OutputSurface),
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
@@ -44,14 +45,13 @@ class CompositorOutputSurface
   CompositorOutputSurface(
       int32_t routing_id,
       uint32_t output_surface_id,
-      scoped_refptr<cc::ContextProvider> context_provider,
-      scoped_refptr<cc::ContextProvider> worker_context_provider,
-      scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue);
-  CompositorOutputSurface(
-      int32_t routing_id,
-      uint32_t output_surface_id,
-      scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
-      scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue);
+      const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
+      const scoped_refptr<ContextProviderCommandBuffer>&
+          worker_context_provider,
+      const scoped_refptr<cc::VulkanContextProvider>& vulkan_context_provider,
+      std::unique_ptr<cc::SoftwareOutputDevice> software,
+      scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue,
+      bool use_swap_compositor_frame_message);
   ~CompositorOutputSurface() override;
 
   // cc::OutputSurface implementation.
@@ -60,6 +60,12 @@ class CompositorOutputSurface
   void SwapBuffers(cc::CompositorFrame* frame) override;
 
  protected:
+  void ShortcutSwapAck(uint32_t output_surface_id,
+                       std::unique_ptr<cc::GLFrameData> gl_frame_data);
+  virtual void OnSwapAck(uint32_t output_surface_id,
+                         const cc::CompositorFrameAck& ack);
+  virtual void OnReclaimResources(uint32_t output_surface_id,
+                                  const cc::CompositorFrameAck& ack);
   uint32_t output_surface_id_;
 
  private:
@@ -86,10 +92,9 @@ class CompositorOutputSurface
   void OnMessageReceived(const IPC::Message& message);
   void OnUpdateVSyncParametersFromBrowser(base::TimeTicks timebase,
                                           base::TimeDelta interval);
-  void OnSwapAck(uint32_t output_surface_id, const cc::CompositorFrameAck& ack);
-  void OnReclaimResources(uint32_t output_surface_id,
-                          const cc::CompositorFrameAck& ack);
   bool Send(IPC::Message* message);
+
+  bool use_swap_compositor_frame_message_;
 
   scoped_refptr<CompositorForwardingMessageFilter> output_surface_filter_;
   CompositorForwardingMessageFilter::Handler output_surface_filter_handler_;
@@ -97,6 +102,11 @@ class CompositorOutputSurface
   scoped_refptr<IPC::SyncMessageFilter> message_sender_;
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
   int routing_id_;
+
+  // TODO(danakj): Remove this when crbug.com/311404
+  bool layout_test_mode_;
+  std::unique_ptr<cc::CompositorFrameAck> layout_test_previous_frame_ack_;
+  base::WeakPtrFactory<CompositorOutputSurface> weak_ptrs_;
 };
 
 }  // namespace content

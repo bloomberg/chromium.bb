@@ -20,8 +20,7 @@ SurfaceDisplayOutputSurface::SurfaceDisplayOutputSurface(
     scoped_refptr<ContextProvider> context_provider,
     scoped_refptr<ContextProvider> worker_context_provider)
     : OutputSurface(std::move(context_provider),
-                    std::move(worker_context_provider),
-                    nullptr),
+                    std::move(worker_context_provider)),
       display_client_(nullptr),
       factory_(surface_manager, this),
       allocator_(allocator) {
@@ -38,8 +37,11 @@ SurfaceDisplayOutputSurface::SurfaceDisplayOutputSurface(
     SurfaceManager* surface_manager,
     SurfaceIdAllocator* allocator,
     scoped_refptr<VulkanContextProvider> vulkan_context_provider)
-    : OutputSurface(std::move(vulkan_context_provider)),
-      display_client_(nullptr),
+    : OutputSurface(nullptr,
+                    nullptr,
+                    std::move(vulkan_context_provider),
+                    nullptr),
+      display_client_(NULL),
       factory_(surface_manager, this),
       allocator_(allocator) {
   capabilities_.delegated_rendering = true;

@@ -4,8 +4,6 @@
 
 #include "cc/test/pixel_test_output_surface.h"
 
-#include <utility>
-
 #include "cc/output/output_surface_client.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "ui/gfx/transform.h"
@@ -17,9 +15,7 @@ PixelTestOutputSurface::PixelTestOutputSurface(
     scoped_refptr<ContextProvider> worker_context_provider,
     bool flipped_output_surface,
     std::unique_ptr<BeginFrameSource> begin_frame_source)
-    : OutputSurface(std::move(context_provider),
-                    std::move(worker_context_provider),
-                    nullptr),
+    : OutputSurface(context_provider, worker_context_provider),
       begin_frame_source_(std::move(begin_frame_source)),
       external_stencil_test_(false) {
   capabilities_.adjust_deadline_for_parent = false;
@@ -30,7 +26,7 @@ PixelTestOutputSurface::PixelTestOutputSurface(
     scoped_refptr<ContextProvider> context_provider,
     bool flipped_output_surface,
     std::unique_ptr<BeginFrameSource> begin_frame_source)
-    : PixelTestOutputSurface(std::move(context_provider),
+    : PixelTestOutputSurface(context_provider,
                              nullptr,
                              flipped_output_surface,
                              std::move(begin_frame_source)) {}
@@ -38,7 +34,7 @@ PixelTestOutputSurface::PixelTestOutputSurface(
 PixelTestOutputSurface::PixelTestOutputSurface(
     std::unique_ptr<SoftwareOutputDevice> software_device,
     std::unique_ptr<BeginFrameSource> begin_frame_source)
-    : OutputSurface(nullptr, nullptr, std::move(software_device)),
+    : OutputSurface(std::move(software_device)),
       begin_frame_source_(std::move(begin_frame_source)),
       external_stencil_test_(false) {}
 

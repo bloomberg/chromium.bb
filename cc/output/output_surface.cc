@@ -121,19 +121,51 @@ class SkiaGpuTraceMemoryDump : public SkTraceMemoryDump {
 OutputSurface::OutputSurface(
     scoped_refptr<ContextProvider> context_provider,
     scoped_refptr<ContextProvider> worker_context_provider,
+    scoped_refptr<VulkanContextProvider> vulkan_context_provider,
     std::unique_ptr<SoftwareOutputDevice> software_device)
-    : context_provider_(std::move(context_provider)),
+    : client_(NULL),
+      context_provider_(std::move(context_provider)),
       worker_context_provider_(std::move(worker_context_provider)),
+      vulkan_context_provider_(vulkan_context_provider),
       software_device_(std::move(software_device)),
+      device_scale_factor_(-1),
+      has_alpha_(true),
+      external_stencil_test_enabled_(false),
       weak_ptr_factory_(this) {
   client_thread_checker_.DetachFromThread();
 }
 
+OutputSurface::OutputSurface(scoped_refptr<ContextProvider> context_provider)
+    : OutputSurface(std::move(context_provider),
+                    nullptr,
+                    nullptr,
+                    nullptr) {
+}
+
 OutputSurface::OutputSurface(
-    scoped_refptr<VulkanContextProvider> vulkan_context_provider)
-    : vulkan_context_provider_(vulkan_context_provider),
-      weak_ptr_factory_(this) {
-  client_thread_checker_.DetachFromThread();
+    scoped_refptr<ContextProvider> context_provider,
+    scoped_refptr<ContextProvider> worker_context_provider)
+    : OutputSurface(std::move(context_provider),
+                    std::move(worker_context_provider),
+                    nullptr,
+                    nullptr) {
+}
+
+OutputSurface::OutputSurface(
+    std::unique_ptr<SoftwareOutputDevice> software_device)
+    : OutputSurface(nullptr,
+                    nullptr,
+                    nullptr,
+                    std::move(software_device)) {
+}
+
+OutputSurface::OutputSurface(
+    scoped_refptr<ContextProvider> context_provider,
+    std::unique_ptr<SoftwareOutputDevice> software_device)
+    : OutputSurface(std::move(context_provider),
+                    nullptr,
+                    nullptr,
+                    std::move(software_device)) {
 }
 
 // Forwarded to OutputSurfaceClient

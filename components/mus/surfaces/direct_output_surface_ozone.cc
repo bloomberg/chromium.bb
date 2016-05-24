@@ -21,20 +21,20 @@ using display_compositor::BufferQueue;
 namespace mus {
 
 DirectOutputSurfaceOzone::DirectOutputSurfaceOzone(
-    scoped_refptr<SurfacesContextProvider> context_provider,
+    const scoped_refptr<SurfacesContextProvider>& context_provider,
     gfx::AcceleratedWidget widget,
     base::SingleThreadTaskRunner* task_runner,
     uint32_t target,
     uint32_t internalformat)
-    : cc::OutputSurface(context_provider, nullptr, nullptr),
+    : cc::OutputSurface(context_provider),
       gl_helper_(context_provider->ContextGL(),
                  context_provider->ContextSupport()),
-      buffer_queue_(new BufferQueue(context_provider->ContextGL(),
-                                    target,
-                                    internalformat,
-                                    &gl_helper_,
-                                    &gpu_memory_buffer_manager_,
-                                    widget)),
+      output_surface_(new BufferQueue(context_provider,
+                                      target,
+                                      internalformat,
+                                      &gl_helper_,
+                                      &gpu_memory_buffer_manager_,
+                                      widget)),
       synthetic_begin_frame_source_(new cc::SyntheticBeginFrameSource(
           task_runner,
           cc::BeginFrameArgs::DefaultInterval())),
@@ -50,7 +50,7 @@ DirectOutputSurfaceOzone::DirectOutputSurfaceOzone(
   // implementation.
   capabilities_.max_frames_pending = 2;
 
-  buffer_queue_->Initialize();
+  output_surface_->Initialize();
 
   context_provider->SetSwapBuffersCompletionCallback(
       base::Bind(&DirectOutputSurfaceOzone::OnGpuSwapBuffersCompleted,
@@ -67,15 +67,15 @@ bool DirectOutputSurfaceOzone::IsDisplayedAsOverlayPlane() const {
 }
 
 unsigned DirectOutputSurfaceOzone::GetOverlayTextureId() const {
-  DCHECK(buffer_queue_);
-  return buffer_queue_->current_texture_id();
+  DCHECK(output_surface_);
+  return output_surface_->current_texture_id();
 }
 
 void DirectOutputSurfaceOzone::SwapBuffers(cc::CompositorFrame* frame) {
-  DCHECK(buffer_queue_);
+  DCHECK(output_surface_);
   DCHECK(frame->gl_frame_data);
 
-  buffer_queue_->SwapBuffers(frame->gl_frame_data->sub_buffer_rect);
+  output_surface_->SwapBuffers(frame->gl_frame_data->sub_buffer_rect);
 
   // Code combining GpuBrowserCompositorOutputSurface + DirectOutputSurface
   if (frame->gl_frame_data->sub_buffer_rect ==
@@ -118,17 +118,17 @@ void DirectOutputSurfaceOzone::OnUpdateVSyncParametersFromGpu(
 
 void DirectOutputSurfaceOzone::OnGpuSwapBuffersCompleted(
     gfx::SwapResult result) {
-  DCHECK(buffer_queue_);
+  DCHECK(output_surface_);
   bool force_swap = false;
   if (result == gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
     // Even through the swap failed, this is a fixable error so we can pretend
     // it succeeded to the rest of the system.
     result = gfx::SwapResult::SWAP_ACK;
-    buffer_queue_->RecreateBuffers();
+    output_surface_->RecreateBuffers();
     force_swap = true;
   }
 
-  buffer_queue_->PageFlipComplete();
+  output_surface_->PageFlipComplete();
   OnSwapBuffersComplete();
 
   if (force_swap)
@@ -136,8 +136,8 @@ void DirectOutputSurfaceOzone::OnGpuSwapBuffersCompleted(
 }
 
 void DirectOutputSurfaceOzone::BindFramebuffer() {
-  DCHECK(buffer_queue_);
-  buffer_queue_->BindFramebuffer();
+  DCHECK(output_surface_);
+  output_surface_->BindFramebuffer();
 }
 
 // We call this on every frame but changing the size once we've allocated
@@ -149,8 +149,8 @@ void DirectOutputSurfaceOzone::Reshape(const gfx::Size& size,
                                        float scale_factor,
                                        bool alpha) {
   OutputSurface::Reshape(size, scale_factor, alpha);
-  DCHECK(buffer_queue_);
-  buffer_queue_->Reshape(SurfaceSize(), scale_factor);
+  DCHECK(output_surface_);
+  output_surface_->Reshape(SurfaceSize(), scale_factor);
 }
 
 }  // namespace mus

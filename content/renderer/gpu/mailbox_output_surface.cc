@@ -8,13 +8,9 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/gl_frame_data.h"
-#include "cc/output/managed_memory_policy.h"
-#include "cc/output/output_surface_client.h"
 #include "cc/resources/resource_provider.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
-#include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
@@ -27,35 +23,28 @@ using gpu::gles2::GLES2Interface;
 namespace content {
 
 MailboxOutputSurface::MailboxOutputSurface(
+    int32_t routing_id,
     uint32_t output_surface_id,
-    scoped_refptr<cc::ContextProvider> context_provider,
-    scoped_refptr<cc::ContextProvider> worker_context_provider)
-    : cc::OutputSurface(std::move(context_provider),
-                        std::move(worker_context_provider),
-                        nullptr),
-      output_surface_id_(output_surface_id),
+    const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
+    const scoped_refptr<ContextProviderCommandBuffer>& worker_context_provider,
+    scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue,
+    cc::ResourceFormat format)
+    : CompositorOutputSurface(routing_id,
+                              output_surface_id,
+                              context_provider,
+                              worker_context_provider,
+                              nullptr,
+                              nullptr,
+                              swap_frame_message_queue,
+                              true),
       fbo_(0),
       is_backbuffer_discarded_(false),
-      weak_ptrs_(this) {
+      format_(format) {
   pending_textures_.push_back(TransferableFrame());
   capabilities_.uses_default_gl_framebuffer = false;
 }
 
-MailboxOutputSurface::~MailboxOutputSurface() = default;
-
-bool MailboxOutputSurface::BindToClient(cc::OutputSurfaceClient* client) {
-  if (!cc::OutputSurface::BindToClient(client))
-    return false;
-
-  if (!context_provider()) {
-    // Without a GPU context, the memory policy otherwise wouldn't be set.
-    client->SetMemoryPolicy(cc::ManagedMemoryPolicy(
-        128 * 1024 * 1024, gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE,
-        base::SharedMemory::GetHandleLimit() / 3));
-  }
-
-  return true;
-}
+MailboxOutputSurface::~MailboxOutputSurface() {}
 
 void MailboxOutputSurface::DetachFromClient() {
   DiscardBackbuffer();
@@ -98,9 +87,14 @@ void MailboxOutputSurface::EnsureBackbuffer() {
       gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
       gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
       gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-      gl->TexImage2D(GL_TEXTURE_2D, 0, GLInternalFormat(cc::RGBA_8888),
-                     surface_size_.width(), surface_size_.height(), 0,
-                     GLDataFormat(cc::RGBA_8888), GLDataType(cc::RGBA_8888),
+      gl->TexImage2D(GL_TEXTURE_2D,
+                     0,
+                     GLInternalFormat(format_),
+                     surface_size_.width(),
+                     surface_size_.height(),
+                     0,
+                     GLDataFormat(format_),
+                     GLDataType(format_),
                      NULL);
       gl->GenMailboxCHROMIUM(current_backing_.mailbox.name);
       gl->ProduceTextureCHROMIUM(GL_TEXTURE_2D, current_backing_.mailbox.name);
@@ -163,9 +157,10 @@ void MailboxOutputSurface::OnSwapAck(uint32_t output_surface_id,
                                      const cc::CompositorFrameAck& ack) {
   // Ignore message if it's a stale one coming from a different output surface
   // (e.g. after a lost context).
-  if (output_surface_id != output_surface_id_)
+  if (output_surface_id != output_surface_id_) {
+    CompositorOutputSurface::OnSwapAck(output_surface_id, ack);
     return;
-
+  }
   if (!ack.gl_frame_data->mailbox.IsZero()) {
     DCHECK(!ack.gl_frame_data->size.IsEmpty());
     // The browser could be returning the oldest or any other pending texture
@@ -200,36 +195,10 @@ void MailboxOutputSurface::OnSwapAck(uint32_t output_surface_id,
       context_provider_->ContextGL()->DeleteTextures(1, &texture_id);
     pending_textures_.pop_front();
   }
-
-  ReclaimResources(&ack);
-  client_->DidSwapBuffersComplete();
-}
-
-void MailboxOutputSurface::ShortcutSwapAck(
-    uint32_t output_surface_id,
-    std::unique_ptr<cc::GLFrameData> gl_frame_data) {
-  if (!previous_frame_ack_) {
-    previous_frame_ack_.reset(new cc::CompositorFrameAck);
-    previous_frame_ack_->gl_frame_data.reset(new cc::GLFrameData);
-  }
-
-  OnSwapAck(output_surface_id, *previous_frame_ack_);
-
-  previous_frame_ack_->gl_frame_data = std::move(gl_frame_data);
+  CompositorOutputSurface::OnSwapAck(output_surface_id, ack);
 }
 
 void MailboxOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
-  // This class is here to support layout tests that are currently
-  // doing a readback in the renderer instead of the browser. So they
-  // are using deprecated code paths in the renderer and don't need to
-  // actually swap anything to the browser. We shortcut the swap to the
-  // browser here and just ack directly within the renderer process.
-  // Once crbug.com/311404 is fixed, this can be removed.
-
-  // This would indicate that crbug.com/311404 is being fixed, and this
-  // block needs to be removed.
-  DCHECK(!frame->delegated_frame_data);
-
   DCHECK(frame->gl_frame_data);
   DCHECK(!surface_size_.IsEmpty());
   DCHECK(surface_size_ == current_backing_.size);
@@ -244,19 +213,19 @@ void MailboxOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
 
   const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
   gl->Flush();
+
   gl->GenSyncTokenCHROMIUM(fence_sync,
                            frame->gl_frame_data->sync_token.GetData());
 
-  context_provider()->ContextSupport()->SignalSyncToken(
-      frame->gl_frame_data->sync_token,
-      base::Bind(&MailboxOutputSurface::ShortcutSwapAck,
-                 weak_ptrs_.GetWeakPtr(), output_surface_id_,
-                 base::Passed(&frame->gl_frame_data)));
+  CompositorOutputSurface::SwapBuffers(frame);
 
   pending_textures_.push_back(current_backing_);
   current_backing_ = TransferableFrame();
+}
 
-  client_->DidSwapBuffers();
+size_t MailboxOutputSurface::GetNumAcksPending() {
+  DCHECK(pending_textures_.size());
+  return pending_textures_.size() - 1;
 }
 
 MailboxOutputSurface::TransferableFrame::TransferableFrame() : texture_id(0) {}

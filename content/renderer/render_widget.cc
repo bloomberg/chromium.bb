@@ -47,6 +47,7 @@
 #include "content/renderer/devtools/render_widget_screen_metrics_emulator.h"
 #include "content/renderer/external_popup_menu.h"
 #include "content/renderer/gpu/compositor_output_surface.h"
+#include "content/renderer/gpu/delegated_compositor_output_surface.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
 #include "content/renderer/gpu/mailbox_output_surface.h"
 #include "content/renderer/gpu/queue_message_swap_promise.h"
@@ -725,9 +726,9 @@ std::unique_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(
     scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider =
         cc::VulkanInProcessContextProvider::Create();
     if (vulkan_context_provider) {
-      return base::WrapUnique(new CompositorOutputSurface(
-          routing_id(), output_surface_id, vulkan_context_provider,
-          frame_swap_message_queue_));
+      return base::WrapUnique(new DelegatedCompositorOutputSurface(
+          routing_id(), output_surface_id, nullptr, nullptr,
+          vulkan_context_provider, frame_swap_message_queue_));
     }
   }
 
@@ -748,9 +749,9 @@ std::unique_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(
   }
 
   if (use_software) {
-    return base::WrapUnique(
-        new CompositorOutputSurface(routing_id(), output_surface_id, nullptr,
-                                    nullptr, frame_swap_message_queue_));
+    return base::WrapUnique(new DelegatedCompositorOutputSurface(
+        routing_id(), output_surface_id, nullptr, nullptr, nullptr,
+        frame_swap_message_queue_));
   }
 
   scoped_refptr<ContextProviderCommandBuffer> worker_context_provider =
@@ -807,14 +808,15 @@ std::unique_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(
   // them to draw inside in the renderer to do the readback there. This should
   // no longer be the case when crbug.com/311404 is fixed.
   if (RenderThreadImpl::current()->layout_test_mode()) {
-    return base::MakeUnique<MailboxOutputSurface>(
-        output_surface_id, std::move(context_provider),
-        std::move(worker_context_provider));
+    return base::WrapUnique(new MailboxOutputSurface(
+        routing_id(), output_surface_id, std::move(context_provider),
+        std::move(worker_context_provider), frame_swap_message_queue_,
+        cc::RGBA_8888));
   }
 
-  return base::WrapUnique(new CompositorOutputSurface(
+  return base::WrapUnique(new DelegatedCompositorOutputSurface(
       routing_id(), output_surface_id, std::move(context_provider),
-      std::move(worker_context_provider), frame_swap_message_queue_));
+      std::move(worker_context_provider), nullptr, frame_swap_message_queue_));
 }
 
 std::unique_ptr<cc::BeginFrameSource>
