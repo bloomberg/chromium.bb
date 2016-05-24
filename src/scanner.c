@@ -964,7 +964,7 @@ emit_opcodes(struct wl_list *message_list, struct interface *interface)
 
 	opcode = 0;
 	wl_list_for_each(m, message_list, link)
-		printf("#define %s_%s\t%d\n",
+		printf("#define %s_%s %d\n",
 		       interface->uppercase_name, m->uppercase_name, opcode++);
 
 	printf("\n");
@@ -977,7 +977,7 @@ emit_opcode_versions(struct wl_list *message_list, struct interface *interface)
 
 	wl_list_for_each(m, message_list, link) {
 		printf("/**\n * @ingroup iface_%s\n */\n", interface->name);
-		printf("#define %s_%s_SINCE_VERSION\t%d\n",
+		printf("#define %s_%s_SINCE_VERSION %d\n",
 		       interface->uppercase_name, m->uppercase_name, m->since);
 	}
 
