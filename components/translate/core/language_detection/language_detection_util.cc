@@ -111,7 +111,7 @@ std::string DetermineTextLanguage(const base::string16& text,
     // Retry using only the valid characters. This time the check for valid
     // UTF8 can be skipped since the precise number of valid bytes is known.
     CLD2::ExtDetectLanguageSummary(
-        raw_utf8_bytes, num_utf8_bytes, is_plain_text, &cldhints, flags,
+        raw_utf8_bytes, num_bytes_evaluated, is_plain_text, &cldhints, flags,
         language3, percent3, normalized_score3,
         nullptr /* No ResultChunkVector used */, &text_bytes, &is_reliable);
   }
