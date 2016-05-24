@@ -736,10 +736,10 @@ class RequestTrack(devtools_monitor.Track):
                       ('requestHeaders', 'request_headers'),
                       ('headers', 'response_headers')))
     timing_dict = {}
-    # data URLs don't have a timing dict, and timings for cached requests are
-    # stale.
+    # Some URLs don't have a timing dict (e.g. data URLs), and timings for
+    # cached requests are stale.
     # TODO(droger): the timestamp is inacurate, get the real timings instead.
-    if r.protocol in ('data', 'about') or r.served_from_cache:
+    if not response.get('timing') or r.served_from_cache:
       timing_dict = {'requestTime': r.timestamp}
     else:
       timing_dict = response['timing']
