@@ -549,6 +549,9 @@ int Node::OnPortAccepted(const PortName& port_name) {
 
 int Node::OnObserveProxy(const PortName& port_name,
                          const ObserveProxyEventData& event) {
+  if (port_name == kInvalidPortName)
+    return OK;
+
   // The port may have already been closed locally, in which case the
   // ObserveClosure message will contain the last_sequence_num field.
   // We can then silently ignore this message.

@@ -29,6 +29,7 @@ T Align(T t) {
   return t + (k - (t % k)) % k;
 }
 
+// NOTE: Please ONLY append messages to the end of this enum.
 enum class MessageType : uint32_t {
   ACCEPT_CHILD,
   ACCEPT_PARENT,
@@ -42,6 +43,7 @@ enum class MessageType : uint32_t {
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))
   RELAY_PORTS_MESSAGE,
 #endif
+  BROADCAST,
 };
 
 struct Header {
@@ -625,6 +627,13 @@ void NodeChannel::OnChannelMessage(const void* payload,
       break;
     }
 #endif
+
+    case MessageType::BROADCAST:
+      // This is here as a placeholder for now because nothing sends a BROADCAST
+      // message yet. This avoids breakage on version skew (namely for ARC) when
+      // we actually begin using the message.
+      DVLOG(1) << "Ignoring unhandled BROADCAST message.";
+      return;
 
     default:
       break;
