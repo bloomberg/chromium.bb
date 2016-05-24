@@ -102,8 +102,8 @@ void FrameConsole::reportMessageToClient(ConsoleMessage* consoleMessage)
                 stackTrace = captured->toString();
         }
     } else {
-        if (consoleMessage->callStack() && frame().chromeClient().shouldReportDetailedMessageForSource(frame(), consoleMessage->url()))
-            stackTrace = consoleMessage->callStack()->toString();
+        if (consoleMessage->stackTrace() && frame().chromeClient().shouldReportDetailedMessageForSource(frame(), consoleMessage->url()))
+            stackTrace = consoleMessage->stackTrace()->toString();
     }
 
     frame().chromeClient().addMessageToConsole(m_frame, consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->lineNumber(), consoleMessage->url(), stackTrace);

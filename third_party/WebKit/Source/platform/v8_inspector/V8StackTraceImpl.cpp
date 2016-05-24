@@ -107,7 +107,7 @@ PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::create(V8DebuggerAgentImpl* agent
     if (stackTrace.IsEmpty() && !asyncCallChain)
         return nullptr;
 
-    OwnPtr<V8StackTraceImpl> result = adoptPtr(new V8StackTraceImpl(description, frames, asyncCallChain ? asyncCallChain->clone() : nullptr));
+    OwnPtr<V8StackTraceImpl> result = adoptPtr(new V8StackTraceImpl(description, frames, asyncCallChain ? asyncCallChain->cloneImpl() : nullptr));
 
     // Crop to not exceed maxAsyncCallChainDepth.
     V8StackTraceImpl* deepest = result.get();
@@ -135,10 +135,16 @@ PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::capture(V8DebuggerAgentImpl* agen
     return V8StackTraceImpl::create(agent, stackTrace, maxStackSize, description);
 }
 
-PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::clone()
+PassOwnPtr<V8StackTrace> V8StackTraceImpl::clone()
+{
+    OwnPtr<V8StackTraceImpl> copy = cloneImpl();
+    return adoptPtr(static_cast<V8StackTrace*>(copy.leakPtr()));
+}
+
+PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::cloneImpl()
 {
     protocol::Vector<Frame> framesCopy(m_frames);
-    return adoptPtr(new V8StackTraceImpl(m_description, framesCopy, m_parent ? m_parent->clone() : nullptr));
+    return adoptPtr(new V8StackTraceImpl(m_description, framesCopy, m_parent ? m_parent->cloneImpl() : nullptr));
 }
 
 V8StackTraceImpl::V8StackTraceImpl(const String16& description, protocol::Vector<Frame>& frames, PassOwnPtr<V8StackTraceImpl> parent)

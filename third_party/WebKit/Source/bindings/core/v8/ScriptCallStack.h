@@ -57,6 +57,7 @@ public:
     PassOwnPtr<protocol::Runtime::StackTrace> buildInspectorObject() const;
     void toTracedValue(TracedValue*, const char* name) const;
     String toString() const;
+    PassOwnPtr<V8StackTrace> copyStackTrace() const;
 
 private:
     explicit ScriptCallStack(PassOwnPtr<V8StackTrace>);

@@ -25,13 +25,13 @@
 
 #include "core/inspector/InspectorConsoleAgent.h"
 
-#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/ScriptArguments.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
+#include "platform/v8_inspector/public/V8StackTrace.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -198,8 +198,8 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
         if (jsonArgs)
             jsonObj->setParameters(std::move(jsonArgs));
     }
-    if (consoleMessage->callStack())
-        jsonObj->setStack(consoleMessage->callStack()->buildInspectorObject());
+    if (consoleMessage->stackTrace())
+        jsonObj->setStack(consoleMessage->stackTrace()->buildInspectorObject());
     if (consoleMessage->messageId())
         jsonObj->setMessageId(consoleMessage->messageId());
     if (consoleMessage->relatedMessageId())

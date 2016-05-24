@@ -47,7 +47,8 @@ public:
     static PassOwnPtr<V8StackTraceImpl> create(V8DebuggerAgentImpl*, v8::Local<v8::StackTrace>, size_t maxStackSize, const String16& description = String16());
     static PassOwnPtr<V8StackTraceImpl> capture(V8DebuggerAgentImpl*, size_t maxStackSize, const String16& description = String16());
 
-    PassOwnPtr<V8StackTraceImpl> clone();
+    PassOwnPtr<V8StackTrace> clone() override;
+    PassOwnPtr<V8StackTraceImpl> cloneImpl();
     PassOwnPtr<protocol::Runtime::StackTrace> buildInspectorObjectForTail(V8DebuggerAgentImpl*) const;
     ~V8StackTraceImpl() override;
 

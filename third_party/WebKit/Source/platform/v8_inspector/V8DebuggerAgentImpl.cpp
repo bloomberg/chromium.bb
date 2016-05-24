@@ -1026,7 +1026,7 @@ void V8DebuggerAgentImpl::asyncTaskStarted(void* task)
     // - asyncTaskCanceled <-- canceled before finished
     //   <-- async stack requested here -->
     // - asyncTaskFinished
-    m_currentStacks.append(stack ? stack->clone() : nullptr);
+    m_currentStacks.append(stack ? stack->cloneImpl() : nullptr);
 }
 
 void V8DebuggerAgentImpl::asyncTaskFinished(void* task)

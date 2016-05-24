@@ -5,7 +5,6 @@
 #ifndef ConsoleMessage_h
 #define ConsoleMessage_h
 
-#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
@@ -19,7 +18,10 @@
 namespace blink {
 
 class ScriptArguments;
+class ScriptCallStack;
 class ScriptState;
+class SourceLocation;
+class V8StackTrace;
 
 class CORE_EXPORT ConsoleMessage final: public GarbageCollectedFinalized<ConsoleMessage> {
 public:
@@ -41,6 +43,9 @@ public:
     // This method captures callstack.
     static ConsoleMessage* createForConsoleAPI(MessageLevel, MessageType, const String& message, ScriptArguments*);
 
+    static ConsoleMessage* create(MessageSource, MessageLevel, const String& message, PassOwnPtr<SourceLocation>);
+    static ConsoleMessage* create(MessageSource, MessageLevel, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassOwnPtr<V8StackTrace>, int scriptId, ScriptArguments*);
+
     ~ConsoleMessage();
 
     MessageType type() const;
@@ -48,7 +53,7 @@ public:
     const String& url() const;
     unsigned lineNumber() const;
     unsigned columnNumber() const;
-    PassRefPtr<ScriptCallStack> callStack() const;
+    V8StackTrace* stackTrace() const;
     ScriptArguments* scriptArguments() const;
     unsigned long requestIdentifier() const;
     double timestamp() const;
@@ -66,7 +71,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    ConsoleMessage(MessageSource, MessageLevel, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassRefPtr<ScriptCallStack>, int scriptId, ScriptArguments*);
+    ConsoleMessage(MessageSource, MessageLevel, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassOwnPtr<V8StackTrace>, int scriptId, ScriptArguments*);
 
     MessageSource m_source;
     MessageLevel m_level;
@@ -76,7 +81,7 @@ private:
     String m_url;
     unsigned m_lineNumber;
     unsigned m_columnNumber;
-    RefPtr<ScriptCallStack> m_callStack;
+    OwnPtr<V8StackTrace> m_stackTrace;
     Member<ScriptArguments> m_scriptArguments;
     unsigned long m_requestIdentifier;
     double m_timestamp;

@@ -129,4 +129,10 @@ String ScriptCallStack::toString() const
     return m_stackTrace->toString();
 }
 
+PassOwnPtr<V8StackTrace> ScriptCallStack::copyStackTrace() const
+{
+    return m_stackTrace ? m_stackTrace->clone() : nullptr;
+}
+
+
 } // namespace blink

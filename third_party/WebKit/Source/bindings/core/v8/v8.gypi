@@ -102,6 +102,8 @@
             'SerializedScriptValueFactory.cpp',
             'SerializedScriptValueFactory.h',
             'SharedPersistent.h',
+            'SourceLocation.cpp',
+            'SourceLocation.h',
             'Transferables.h',
             'ToV8.cpp',
             'ToV8.h',

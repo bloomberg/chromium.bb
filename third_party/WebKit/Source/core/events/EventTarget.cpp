@@ -32,6 +32,7 @@
 #include "core/events/EventTarget.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptEventListener.h"
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/dom/ExceptionCode.h"

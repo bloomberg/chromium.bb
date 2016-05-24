@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/SourceLocation.h"
 #include "core/inspector/ScriptArguments.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PassOwnPtr.h"
@@ -28,8 +29,8 @@ ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level,
 {
     RefPtr<ScriptCallStack> callStack = passCallStack;
     if (callStack && !callStack->isEmpty() && (!scriptId || !lineNumber))
-        return new ConsoleMessage(source, level, message, callStack->topSourceURL(), callStack->topLineNumber(), callStack->topColumnNumber(), callStack, 0, arguments);
-    return new ConsoleMessage(source, level, message, url, lineNumber, columnNumber, callStack, scriptId, arguments);
+        return new ConsoleMessage(source, level, message, callStack->topSourceURL(), callStack->topLineNumber(), callStack->topColumnNumber(), callStack->copyStackTrace(), 0, arguments);
+    return new ConsoleMessage(source, level, message, url, lineNumber, columnNumber, callStack ? callStack->copyStackTrace() : nullptr, scriptId, arguments);
 }
 
 // static
@@ -66,13 +67,27 @@ ConsoleMessage* ConsoleMessage::createForConsoleAPI(MessageLevel level, MessageT
     return consoleMessage;
 }
 
+// static
+ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level, const String& message, PassOwnPtr<SourceLocation> location)
+{
+    if (!location)
+        return new ConsoleMessage(source, level, message, String(), 0, 0, nullptr, 0, nullptr);
+    return new ConsoleMessage(source, level, message, location->url(), location->lineNumber(), location->columnNumber(), location->takeStackTrace(), location->scriptId(), nullptr);
+}
+
+// static
+ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassOwnPtr<V8StackTrace> stackTrace, int scriptId, ScriptArguments* arguments)
+{
+    return new ConsoleMessage(source, level, message, url, lineNumber, columnNumber, std::move(stackTrace), scriptId, arguments);
+}
+
 ConsoleMessage::ConsoleMessage(MessageSource source,
     MessageLevel level,
     const String& message,
     const String& url,
     unsigned lineNumber,
     unsigned columnNumber,
-    PassRefPtr<ScriptCallStack> callStack,
+    PassOwnPtr<V8StackTrace> stackTrace,
     int scriptId,
     ScriptArguments* arguments)
     : m_source(source)
@@ -83,7 +98,7 @@ ConsoleMessage::ConsoleMessage(MessageSource source,
     , m_url(url)
     , m_lineNumber(lineNumber)
     , m_columnNumber(columnNumber)
-    , m_callStack(callStack)
+    , m_stackTrace(std::move(stackTrace))
     , m_scriptArguments(arguments)
     , m_requestIdentifier(0)
     , m_timestamp(WTF::currentTime())
@@ -121,9 +136,9 @@ unsigned ConsoleMessage::columnNumber() const
     return m_columnNumber;
 }
 
-PassRefPtr<ScriptCallStack> ConsoleMessage::callStack() const
+V8StackTrace* ConsoleMessage::stackTrace() const
 {
-    return m_callStack;
+    return m_stackTrace.get();
 }
 
 ScriptArguments* ConsoleMessage::scriptArguments() const

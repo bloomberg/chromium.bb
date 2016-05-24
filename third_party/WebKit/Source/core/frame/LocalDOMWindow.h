@@ -54,8 +54,8 @@ class IntRect;
 class MessageEvent;
 class Page;
 class PostMessageTimer;
-class ScriptCallStack;
 class SecurityOrigin;
+class SourceLocation;
 
 enum PageshowEventPersistence {
     PageshowEventNotPersisted = 0,
@@ -146,7 +146,6 @@ public:
     int requestIdleCallback(IdleRequestCallback*, const IdleRequestOptions&) override;
     void cancelIdleCallback(int id) override;
     CustomElementsRegistry* customElements(ScriptState*) const override;
-    void schedulePostMessage(MessageEvent*, SecurityOrigin* target, PassRefPtr<ScriptCallStack>);
 
     void registerProperty(DOMWindowProperty*);
     void unregisterProperty(DOMWindowProperty*);
@@ -169,7 +168,7 @@ public:
 
     void postMessageTimerFired(PostMessageTimer*);
     void removePostMessageTimer(PostMessageTimer*);
-    void dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, Event*, PassRefPtr<ScriptCallStack>);
+    void dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, Event*, PassOwnPtr<SourceLocation>);
 
     // Events
     // EventTarget API

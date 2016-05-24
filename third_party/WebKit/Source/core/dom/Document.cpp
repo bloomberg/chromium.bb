@@ -5213,7 +5213,7 @@ void Document::addConsoleMessage(ConsoleMessage* consoleMessage)
             if (parser->isParsingAtLineNumber())
                 lineNumber = parser->lineNumber().oneBasedInt();
         }
-        consoleMessage = ConsoleMessage::create(consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), url().getString(), lineNumber, 0, consoleMessage->callStack(), 0, consoleMessage->scriptArguments());
+        consoleMessage = ConsoleMessage::create(consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), url().getString(), lineNumber, 0, consoleMessage->stackTrace() ? consoleMessage->stackTrace()->clone() : nullptr, 0, consoleMessage->scriptArguments());
     }
     m_frame->console().addMessage(consoleMessage);
 }

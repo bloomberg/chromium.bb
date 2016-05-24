@@ -26,8 +26,8 @@
 
 #include "core/frame/LocalDOMWindow.h"
 
-#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/SourceLocation.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/DOMWindowCSS.h"
@@ -76,6 +76,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebScreenInfo.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -124,12 +125,12 @@ private:
 class PostMessageTimer final : public GarbageCollectedFinalized<PostMessageTimer>, public SuspendableTimer {
     USING_GARBAGE_COLLECTED_MIXIN(PostMessageTimer);
 public:
-    PostMessageTimer(LocalDOMWindow& window, MessageEvent* event, PassRefPtr<SecurityOrigin> targetOrigin, PassRefPtr<ScriptCallStack> stackTrace, UserGestureToken* userGestureToken)
+    PostMessageTimer(LocalDOMWindow& window, MessageEvent* event, PassRefPtr<SecurityOrigin> targetOrigin, PassOwnPtr<SourceLocation> location, UserGestureToken* userGestureToken)
         : SuspendableTimer(window.document())
         , m_event(event)
         , m_window(&window)
         , m_targetOrigin(targetOrigin)
-        , m_stackTrace(stackTrace)
+        , m_location(std::move(location))
         , m_userGestureToken(userGestureToken)
         , m_disposalAllowed(true)
     {
@@ -138,7 +139,7 @@ public:
 
     MessageEvent* event() const { return m_event; }
     SecurityOrigin* targetOrigin() const { return m_targetOrigin.get(); }
-    ScriptCallStack* stackTrace() const { return m_stackTrace.get(); }
+    PassOwnPtr<SourceLocation> takeLocation() { return std::move(m_location); }
     UserGestureToken* userGestureToken() const { return m_userGestureToken.get(); }
     void stop() override
     {
@@ -181,7 +182,7 @@ private:
     Member<MessageEvent> m_event;
     Member<LocalDOMWindow> m_window;
     RefPtr<SecurityOrigin> m_targetOrigin;
-    RefPtr<ScriptCallStack> m_stackTrace;
+    OwnPtr<SourceLocation> m_location;
     RefPtr<UserGestureToken> m_userGestureToken;
     bool m_disposalAllowed;
 };
@@ -668,14 +669,7 @@ void LocalDOMWindow::schedulePostMessage(MessageEvent* event, PassRefPtr<Securit
     // Allowing unbounded amounts of messages to build up for a suspended context
     // is problematic; consider imposing a limit or other restriction if this
     // surfaces often as a problem (see crbug.com/587012).
-
-    // Capture stack trace only when inspector front-end is loaded as it may be time consuming.
-    RefPtr<ScriptCallStack> stackTrace;
-    if (InspectorInstrumentation::consoleAgentEnabled(source))
-        stackTrace = ScriptCallStack::capture();
-
-    // Schedule the message.
-    PostMessageTimer* timer = new PostMessageTimer(*this, event, target, stackTrace.release(), UserGestureIndicator::currentToken());
+    PostMessageTimer* timer = new PostMessageTimer(*this, event, target, SourceLocation::capture(source), UserGestureIndicator::currentToken());
     timer->startOneShot(0, BLINK_FROM_HERE);
     timer->suspendIfNeeded();
     m_postMessageTimers.add(timer);
@@ -691,7 +685,7 @@ void LocalDOMWindow::postMessageTimerFired(PostMessageTimer* timer)
     UserGestureIndicator gestureIndicator(timer->userGestureToken());
 
     event->entangleMessagePorts(document());
-    dispatchMessageEventWithOriginCheck(timer->targetOrigin(), event, timer->stackTrace());
+    dispatchMessageEventWithOriginCheck(timer->targetOrigin(), event, timer->takeLocation());
 }
 
 void LocalDOMWindow::removePostMessageTimer(PostMessageTimer* timer)
@@ -699,7 +693,7 @@ void LocalDOMWindow::removePostMessageTimer(PostMessageTimer* timer)
     m_postMessageTimers.remove(timer);
 }
 
-void LocalDOMWindow::dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, Event* event, PassRefPtr<ScriptCallStack> stackTrace)
+void LocalDOMWindow::dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, Event* event, PassOwnPtr<SourceLocation> location)
 {
     if (intendedTargetOrigin) {
         // Check target origin now since the target document may have changed since the timer was scheduled.
@@ -710,7 +704,7 @@ void LocalDOMWindow::dispatchMessageEventWithOriginCheck(SecurityOrigin* intende
 
         if (!validTarget) {
             String message = ExceptionMessages::failedToExecute("postMessage", "DOMWindow", "The target origin provided ('" + intendedTargetOrigin->toString() + "') does not match the recipient window's origin ('" + document()->getSecurityOrigin()->toString() + "').");
-            ConsoleMessage* consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message, String(), 0, 0, stackTrace);
+            ConsoleMessage* consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message, std::move(location));
             frameConsole()->addMessage(consoleMessage);
             return;
         }

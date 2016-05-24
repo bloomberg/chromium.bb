@@ -35,6 +35,7 @@ public:
     virtual ~V8StackTrace() { }
     virtual PassOwnPtr<protocol::Runtime::StackTrace> buildInspectorObject() const = 0;
     virtual String16 toString() const = 0;
+    virtual PassOwnPtr<V8StackTrace> clone() = 0;
 };
 
 } // namespace blink
