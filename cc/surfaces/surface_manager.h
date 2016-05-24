@@ -111,7 +111,7 @@ class CC_SURFACES_EXPORT SurfaceManager {
 
   // List of surfaces to be destroyed, along with what sequences they're still
   // waiting on.
-  using SurfaceDestroyList = std::list<Surface*>;
+  using SurfaceDestroyList = std::list<std::unique_ptr<Surface>>;
   SurfaceDestroyList surfaces_to_destroy_;
 
   // Set of SurfaceSequences that have been satisfied by a frame but not yet

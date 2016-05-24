@@ -35,8 +35,9 @@ SurfaceManager::~SurfaceManager() {
        it != surfaces_to_destroy_.end();
        ++it) {
     DeregisterSurface((*it)->surface_id());
-    delete *it;
   }
+  surfaces_to_destroy_.clear();
+
   // All hierarchies, sources, and surface factory clients should be
   // unregistered prior to SurfaceManager destruction.
   DCHECK_EQ(namespace_client_map_.size(), 0u);
@@ -60,7 +61,7 @@ void SurfaceManager::DeregisterSurface(SurfaceId surface_id) {
 void SurfaceManager::Destroy(std::unique_ptr<Surface> surface) {
   DCHECK(thread_checker_.CalledOnValidThread());
   surface->set_destroyed(true);
-  surfaces_to_destroy_.push_back(surface.release());
+  surfaces_to_destroy_.push_back(std::move(surface));
   GarbageCollectSurfaces();
 }
 
@@ -123,17 +124,22 @@ void SurfaceManager::GarbageCollectSurfaces() {
     }
   }
 
+  std::vector<std::unique_ptr<Surface>> to_destroy;
+
   // Destroy all remaining unreachable surfaces.
   for (SurfaceDestroyList::iterator dest_it = surfaces_to_destroy_.begin();
        dest_it != surfaces_to_destroy_.end();) {
     if (!live_surfaces_set.count((*dest_it)->surface_id())) {
-      std::unique_ptr<Surface> surf(*dest_it);
+      std::unique_ptr<Surface> surf(std::move(*dest_it));
       DeregisterSurface(surf->surface_id());
       dest_it = surfaces_to_destroy_.erase(dest_it);
+      to_destroy.push_back(std::move(surf));
     } else {
       ++dest_it;
     }
   }
+
+  to_destroy.clear();
 }
 
 void SurfaceManager::RegisterSurfaceFactoryClient(

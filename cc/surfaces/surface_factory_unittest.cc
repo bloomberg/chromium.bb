@@ -62,19 +62,26 @@ gpu::SyncToken GenTestSyncToken(int id) {
   return token;
 }
 
-class SurfaceFactoryTest : public testing::Test {
+class SurfaceFactoryTest : public testing::Test, public SurfaceDamageObserver {
  public:
   SurfaceFactoryTest()
       : factory_(new SurfaceFactory(&manager_, &client_)),
         surface_id_(3),
         frame_sync_token_(GenTestSyncToken(4)),
         consumer_sync_token_(GenTestSyncToken(5)) {
+    manager_.AddObserver(this);
     factory_->Create(surface_id_);
+  }
+
+  // SurfaceDamageObserver implementation.
+  void OnSurfaceDamaged(SurfaceId id, bool* changed) override {
+    *changed = true;
   }
 
   ~SurfaceFactoryTest() override {
     if (!surface_id_.is_null())
       factory_->Destroy(surface_id_);
+    manager_.RemoveObserver(this);
   }
 
   void SubmitCompositorFrameWithResources(ResourceId* resource_ids,
@@ -424,6 +431,35 @@ TEST_F(SurfaceFactoryTest, BlankNoIndexIncrement) {
                                   SurfaceFactory::DrawCallback());
   EXPECT_EQ(2, surface->frame_index());
   factory_->Destroy(surface_id);
+}
+
+void CreateSurfaceDrawCallback(SurfaceFactory* factory,
+                               uint32_t* execute_count,
+                               SurfaceDrawStatus* result,
+                               SurfaceDrawStatus drawn) {
+  SurfaceId new_id(7);
+  factory->Create(new_id);
+  factory->Destroy(new_id);
+  *execute_count += 1;
+  *result = drawn;
+}
+
+TEST_F(SurfaceFactoryTest, AddDuringDestroy) {
+  SurfaceId surface_id(6);
+  factory_->Create(surface_id);
+  std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
+  frame->delegated_frame_data.reset(new DelegatedFrameData);
+
+  uint32_t execute_count = 0;
+  SurfaceDrawStatus drawn = SurfaceDrawStatus::DRAW_SKIPPED;
+  factory_->SubmitCompositorFrame(
+      surface_id, std::move(frame),
+      base::Bind(&CreateSurfaceDrawCallback, base::Unretained(factory_.get()),
+                 &execute_count, &drawn));
+  EXPECT_EQ(0u, execute_count);
+  factory_->Destroy(surface_id);
+  EXPECT_EQ(1u, execute_count);
+  EXPECT_EQ(SurfaceDrawStatus::DRAW_SKIPPED, drawn);
 }
 
 void DrawCallback(uint32_t* execute_count,
