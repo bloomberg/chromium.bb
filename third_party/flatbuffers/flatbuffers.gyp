@@ -22,8 +22,9 @@
         'src/src/idl_parser.cpp',
         'src/src/reflection.cpp',
         'src/src/util.cpp',
-        'src/include/idl.h',
-        'src/include/util.h',
+        'src/include/flatbuffers/code_generators.h',
+        'src/include/flatbuffers/idl.h',
+        'src/include/flatbuffers/util.h',
       ],
     },
     {

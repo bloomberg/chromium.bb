@@ -22,8 +22,9 @@ source_set("flatbuffers") {
 
 source_set("compiler_files") {
   sources = [
-    "src/include/idl.h",
-    "src/include/util.h",
+    "src/include/flatbuffers/code_generators.h",
+    "src/include/flatbuffers/idl.h",
+    "src/include/flatbuffers/util.h",
     "src/src/idl_gen_cpp.cpp",
     "src/src/idl_gen_fbs.cpp",
     "src/src/idl_gen_general.cpp",
