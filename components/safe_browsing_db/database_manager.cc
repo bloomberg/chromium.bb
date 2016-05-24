@@ -51,10 +51,10 @@ void SafeBrowsingDatabaseManager::StopOnIOThread(bool shutdown) {
   STLDeleteElements(&api_checks_);
 }
 
-SafeBrowsingDatabaseManager::CurrentApiChecks::iterator
+SafeBrowsingDatabaseManager::ApiCheckSet::iterator
 SafeBrowsingDatabaseManager::FindClientApiCheck(Client* client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  for (CurrentApiChecks::iterator it = api_checks_.begin();
+  for (ApiCheckSet::iterator it = api_checks_.begin();
       it != api_checks_.end(); ++it) {
     if ((*it)->client() == client) {
       return it;
@@ -65,7 +65,7 @@ SafeBrowsingDatabaseManager::FindClientApiCheck(Client* client) {
 
 bool SafeBrowsingDatabaseManager::CancelApiCheck(Client* client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  CurrentApiChecks::iterator it = FindClientApiCheck(client);
+  ApiCheckSet::iterator it = FindClientApiCheck(client);
   if (it != api_checks_.end()) {
     delete *it;
     api_checks_.erase(it);
@@ -105,7 +105,7 @@ bool SafeBrowsingDatabaseManager::CheckApiBlacklistUrl(const GURL& url,
   DCHECK(!prefixes.empty());
 
   SafeBrowsingApiCheck* check =
-      new SafeBrowsingApiCheck(url, full_hashes, client);
+      new SafeBrowsingApiCheck(url, prefixes, full_hashes, client);
   api_checks_.insert(check);
 
   // TODO(kcarattini): Implement cache compliance.
@@ -123,9 +123,23 @@ void SafeBrowsingDatabaseManager::HandleGetHashesWithApisResults(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(check);
 
+  // If the time is uninitialized, don't cache the results.
+  if (!negative_cache_expire.is_null()) {
+    // Cache the results.
+    // Create or reset all cached results for this prefix.
+    for (const SBPrefix& prefix : check->prefixes()) {
+      api_cache_[prefix] = SBCachedFullHashResult(negative_cache_expire);
+    }
+    // Insert any full hash hits. Note that there may be one, multiple, or no
+    // full hashes for any given prefix.
+    for (const SBFullHashResult& result : full_hash_results) {
+      api_cache_[result.hash.prefix].full_hashes.push_back(result);
+    }
+  }
+
   // If the check is not in |api_checks_| then the request was cancelled by the
   // client.
-  CurrentApiChecks::iterator it = api_checks_.find(check);
+  ApiCheckSet::iterator it = api_checks_.find(check);
   if (it == api_checks_.end())
     return;
 
@@ -150,8 +164,10 @@ void SafeBrowsingDatabaseManager::HandleGetHashesWithApisResults(
 }
 
 SafeBrowsingDatabaseManager::SafeBrowsingApiCheck::SafeBrowsingApiCheck(
-    const GURL& url, const std::vector<SBFullHash>& full_hashes, Client* client)
-        : url_(url), full_hashes_(full_hashes), client_(client) {
+    const GURL& url, const std::vector<SBPrefix>& prefixes,
+    const std::vector<SBFullHash>& full_hashes, Client* client)
+    : url_(url), prefixes_(prefixes), full_hashes_(full_hashes),
+      client_(client) {
 }
 
 SafeBrowsingDatabaseManager::SafeBrowsingApiCheck::~SafeBrowsingApiCheck() {

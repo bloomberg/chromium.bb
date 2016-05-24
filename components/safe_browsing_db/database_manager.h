@@ -178,17 +178,25 @@ class SafeBrowsingDatabaseManager
   class SafeBrowsingApiCheck {
    public:
     SafeBrowsingApiCheck(const GURL& url,
+                         const std::vector<SBPrefix>& prefixes,
                          const std::vector<SBFullHash>& full_hashes,
                          Client* client);
     ~SafeBrowsingApiCheck();
 
     const GURL& url() {return url_;}
-    std::vector<SBFullHash>& full_hashes() {return full_hashes_;}
+    const std::vector<SBPrefix>& prefixes() {return prefixes_;}
+    const std::vector<SBFullHash>& full_hashes() {return full_hashes_;}
     SafeBrowsingDatabaseManager::Client* client() {return client_;}
 
    private:
     GURL url_;
+
+    // Prefixes that were requested in this check.
+    std::vector<SBPrefix> prefixes_;
+
+    // Full hashes for this check.
     std::vector<SBFullHash> full_hashes_;
+
     // Not owned.
     SafeBrowsingDatabaseManager::Client* client_;
 
@@ -211,12 +219,13 @@ class SafeBrowsingDatabaseManager
                            HandleGetHashesWithApisResultsMatches);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseManagerTest,
                            CancelApiCheck);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseManagerTest,
+                           ResultsAreCached);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseManagerTest,
+                           ResultsAreNotCachedOnNull);
 
-  typedef std::set<SafeBrowsingApiCheck*> CurrentApiChecks;
-
-  // In-progress checks. This set owns the SafeBrowsingApiCheck pointers and is
-  // responsible for deleting them when removing from the set.
-  CurrentApiChecks api_checks_;
+  typedef std::set<SafeBrowsingApiCheck*> ApiCheckSet;
+  typedef std::map<SBPrefix, SBCachedFullHashResult> PrefixToFullHashResultsMap;
 
   // Called on the IO thread wheh the SafeBrowsingProtocolManager has received
   // the full hash and api results for prefixes of the |url| argument in
@@ -226,12 +235,19 @@ class SafeBrowsingDatabaseManager
       const std::vector<SBFullHashResult>& full_hash_results,
       const base::Time& negative_cache_expire);
 
+  // In-progress checks. This set owns the SafeBrowsingApiCheck pointers and is
+  // responsible for deleting them when removing from the set.
+  ApiCheckSet api_checks_;
+
+  // A cache of V4 full hash results for api checks.
+  PrefixToFullHashResultsMap api_cache_;
+
   // Created and destroyed via StartOnIOThread/StopOnIOThread.
   V4GetHashProtocolManager* v4_get_hash_protocol_manager_;
 
  private:
   // Returns an iterator to the pending API check with the given |client|.
-  CurrentApiChecks::iterator FindClientApiCheck(Client* client);
+  ApiCheckSet::iterator FindClientApiCheck(Client* client);
 };  // class SafeBrowsingDatabaseManager
 
 }  // namespace safe_browsing
