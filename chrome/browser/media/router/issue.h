@@ -50,7 +50,8 @@ class Issue {
   // |route_id|: The route id, or empty if global.
   // |severity|: The severity of the issue.
   // |is_blocking|: True if the issue needs to be resolved before continuing.
-  // |help_url|: Required if one of the actions is learn-more.
+  // |help_page_id|: Required if one of the actions is learn-more. Passes in -1
+  //                 if the issue is not associated with a help page.
   Issue(const std::string& title,
         const std::string& message,
         const IssueAction& default_action,
@@ -58,7 +59,7 @@ class Issue {
         const MediaRoute::Id& route_id,
         const Severity severity,
         bool is_blocking,
-        const std::string& helpUrl);
+        int help_page_id);
 
   Issue(const Issue& other);
 
@@ -76,7 +77,7 @@ class Issue {
   const Issue::Id& id() const { return id_; }
   bool is_blocking() const { return is_blocking_; }
   bool is_global() const { return route_id_.empty(); }
-  const GURL& help_url() const { return help_url_; }
+  int help_page_id() const { return help_page_id_; }
 
   bool Equals(const Issue& other) const;
 
@@ -89,7 +90,7 @@ class Issue {
   Severity severity_;
   Issue::Id id_;
   bool is_blocking_;
-  GURL help_url_;
+  int help_page_id_;
 };
 
 }  // namespace media_router

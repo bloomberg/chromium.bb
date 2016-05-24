@@ -67,7 +67,7 @@ MATCHER_P(EqualsIssue, other, "") {
   if (arg.is_blocking() != other.is_blocking())
     return false;
 
-  if (arg.help_url() != other.help_url())
+  if (arg.help_page_id() != other.help_page_id())
     return false;
 
   return true;

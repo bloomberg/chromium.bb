@@ -97,8 +97,8 @@ struct Issue {
 
   array<ActionType>? secondary_actions;
 
-  // A help page to be opened if users select learn_more.
-  string? help_url;
+  // The ID of the help page to be opened if users select learn_more.
+  int32 help_page_id;
 };
 
 struct RouteMessage {

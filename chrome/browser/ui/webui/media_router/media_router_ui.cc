@@ -591,7 +591,7 @@ void MediaRouterUI::SendIssueForRouteTimeout(
   Issue issue(issue_title, std::string(),
               IssueAction(IssueAction::TYPE_DISMISS),
               std::vector<IssueAction>(), std::string(), Issue::NOTIFICATION,
-              false, std::string());
+              false, -1);
   AddIssue(issue);
 }
 
@@ -607,7 +607,7 @@ void MediaRouterUI::SendIssueForUnableToCast(MediaCastMode cast_mode) {
   AddIssue(Issue(issue_title, std::string(),
                  IssueAction(IssueAction::TYPE_DISMISS),
                  std::vector<IssueAction>(), std::string(), Issue::WARNING,
-                 false, std::string()));
+                 false, -1));
 }
 
 GURL MediaRouterUI::GetFrameURL() const {

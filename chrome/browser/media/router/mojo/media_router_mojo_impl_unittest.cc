@@ -102,7 +102,7 @@ interfaces::IssuePtr CreateMojoIssue(const std::string& title) {
       mojo::Array<interfaces::Issue::ActionType>::New(0);
   mojoIssue->severity = interfaces::Issue::Severity::WARNING;
   mojoIssue->is_blocking = false;
-  mojoIssue->help_url = "";
+  mojoIssue->help_page_id = -1;
   return mojoIssue;
 }
 

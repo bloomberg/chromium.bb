@@ -76,7 +76,7 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
             "route_id",
             media_router::Issue::NOTIFICATION,
             false,
-            std::string())),
+            -1)),
         fake_issue_warning_(
             media_router::Issue("title warning",
                                 "message warning",
@@ -86,7 +86,7 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
                                 "route_id",
                                 media_router::Issue::WARNING,
                                 false,
-                                "www.google.com")),
+                                12345)),
         fake_issue_fatal_(media_router::Issue(
             "title fatal",
             "message fatal",
@@ -95,7 +95,7 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
             "route_id",
             media_router::Issue::FATAL,
             true,
-            std::string())),
+            -1)),
         fake_source1_("fakeSource1"),
         fake_source2_("fakeSource2"),
         active_icon_(ui::ResourceBundle::GetSharedInstance().GetImageNamed(

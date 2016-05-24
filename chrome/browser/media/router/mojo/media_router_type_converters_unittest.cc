@@ -131,13 +131,13 @@ TEST(MediaRouterTypeConvertersTest, ConvertIssue) {
   mojoIssue->secondary_actions[0] = interfaces::Issue::ActionType::DISMISS;
   mojoIssue->severity = interfaces::Issue::Severity::WARNING;
   mojoIssue->is_blocking = true;
-  mojoIssue->help_url = "help_url";
+  mojoIssue->help_page_id = 12345;
 
   std::vector<IssueAction> secondary_actions;
   secondary_actions.push_back(IssueAction(IssueAction::TYPE_DISMISS));
   Issue expected_issue(
       "title", "msg", IssueAction(IssueAction::TYPE_LEARN_MORE),
-      secondary_actions, "routeId", Issue::WARNING, true, "help_url");
+      secondary_actions, "routeId", Issue::WARNING, true, 12345);
   Issue converted_issue = mojo::TypeConverter<
       media_router::Issue,
       media_router::interfaces::IssuePtr>::Convert(mojoIssue);
@@ -155,7 +155,7 @@ TEST(MediaRouterTypeConvertersTest, ConvertIssue) {
   EXPECT_EQ(expected_issue.route_id(), converted_issue.route_id());
   EXPECT_EQ(expected_issue.severity(), converted_issue.severity());
   EXPECT_EQ(expected_issue.is_blocking(), converted_issue.is_blocking());
-  EXPECT_EQ(expected_issue.help_url(), converted_issue.help_url());
+  EXPECT_EQ(expected_issue.help_page_id(), converted_issue.help_page_id());
 
   // Ensure that the internal Issue objects are considered distinct
   // (they possess different IDs.)
@@ -172,7 +172,7 @@ TEST(MediaRouterTypeConvertersTest, ConvertIssueWithoutOptionalFields) {
 
   Issue expected_issue("title", "", IssueAction(IssueAction::TYPE_DISMISS),
                        std::vector<IssueAction>(), "", Issue::WARNING, true,
-                       "");
+                       -1);
 
   Issue converted_issue = mojo::TypeConverter<
       media_router::Issue,

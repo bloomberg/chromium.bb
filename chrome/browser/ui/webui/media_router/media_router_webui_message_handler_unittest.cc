@@ -21,8 +21,8 @@ namespace media_router {
 
 const char kProviderExtensionIdForTesting[] = "test_id";
 const char kControllerPathForTesting[] = "test_path";
-const std::string kUserEmailForTesting = "nobody@example.com";
-const std::string kUserDomainForTesting = "example.com";
+const char kUserEmailForTesting[] = "nobody@example.com";
+const char kUserDomainForTesting[] = "example.com";
 
 class MockMediaRouterUI : public MediaRouterUI {
  public:
@@ -438,7 +438,7 @@ TEST_F(MediaRouterWebUIMessageHandlerTest, UpdateIssue) {
   MediaRoute::Id route_id("routeId123");
   bool is_blocking = true;
   Issue issue(issue_title, issue_message, default_action, secondary_actions,
-              route_id, Issue::FATAL, is_blocking, "helpUrl");
+              route_id, Issue::FATAL, is_blocking, -1);
   const Issue::Id& issue_id = issue.id();
 
   handler_->UpdateIssue(&issue);

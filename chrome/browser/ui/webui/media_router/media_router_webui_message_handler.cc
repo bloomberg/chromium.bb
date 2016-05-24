@@ -210,6 +210,8 @@ std::unique_ptr<base::DictionaryValue> IssueToValue(const Issue& issue) {
   if (!issue.route_id().empty())
     dictionary->SetString("routeId", issue.route_id());
   dictionary->SetBoolean("isBlocking", issue.is_blocking());
+  if (issue.help_page_id() > 0)
+    dictionary->SetInteger("helpPageId", issue.help_page_id());
 
   return dictionary;
 }
@@ -467,7 +469,7 @@ void MediaRouterWebUIMessageHandler::OnCreateRoute(
         l10n_util::GetStringUTF8(IDS_MEDIA_ROUTER_ISSUE_PENDING_ROUTE),
         std::string(), IssueAction(IssueAction::TYPE_DISMISS),
         std::vector<IssueAction>(), std::string(), Issue::NOTIFICATION,
-        false, std::string());
+        false, -1);
     media_router_ui_->AddIssue(issue);
     return;
   }
@@ -560,7 +562,7 @@ void MediaRouterWebUIMessageHandler::OnJoinRoute(const base::ListValue* args) {
         l10n_util::GetStringUTF8(IDS_MEDIA_ROUTER_ISSUE_PENDING_ROUTE),
         std::string(), IssueAction(IssueAction::TYPE_DISMISS),
         std::vector<IssueAction>(), std::string(), Issue::NOTIFICATION,
-        false, std::string());
+        false, -1);
     media_router_ui_->AddIssue(issue);
     return;
   }

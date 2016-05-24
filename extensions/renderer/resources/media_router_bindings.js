@@ -349,7 +349,7 @@ define('media_router_bindings', [
       'message': issue.message,
       'default_action': issueActionToMojo_(issue.defaultAction),
       'secondary_actions': secondaryActions,
-      'help_url': issue.helpUrl,
+      'help_page_id': issue.helpPageId,
       'is_blocking': issue.isBlocking
     }));
   };

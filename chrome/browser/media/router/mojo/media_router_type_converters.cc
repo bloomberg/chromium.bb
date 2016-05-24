@@ -138,7 +138,7 @@ media_router::Issue TypeConverter<media_router::Issue, IssuePtr>::Convert(
       input->title, input->message,
       media_router::IssueAction(IssueActionTypeFromMojo(input->default_action)),
       actions, input->route_id, IssueSeverityFromMojo(input->severity),
-      input->is_blocking, input->help_url);
+      input->is_blocking, input->help_page_id);
 }
 
 content::PresentationConnectionState PresentationConnectionStateFromMojo(
