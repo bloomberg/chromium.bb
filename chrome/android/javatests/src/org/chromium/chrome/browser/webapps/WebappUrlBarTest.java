@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.MediumTest;
 
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -36,6 +37,7 @@ public class WebappUrlBarTest extends WebappActivityTestBase {
     @UiThreadTest
     @MediumTest
     @Feature({"Webapps"})
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "crbug.com/614338")
     public void testUrlDisplay() {
         final String scheme = "https://";
         final String host = "lorem.com";
