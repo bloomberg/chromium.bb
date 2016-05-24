@@ -41,8 +41,8 @@ namespace error_page {
 
 namespace {
 
-// Some error pages have no details.
-const unsigned int kErrorPagesNoDetails = 0;
+// Some error pages have no details or summary.
+const unsigned int kEmptyMessageResourceID = 0;
 
 static const char kRedirectLoopLearnMoreUrl[] =
     "https://support.google.com/chrome?p=rl_error";
@@ -52,30 +52,25 @@ static const int kGoogleCachedCopySuggestionType = 0;
 
 enum NAV_SUGGESTIONS {
   SUGGEST_NONE                              = 0,
-  SUGGEST_RELOAD                            = 1 << 0,
+  SUGGEST_DIAGNOSE_TOOL                     = 1 << 0,
   SUGGEST_CHECK_CONNECTION                  = 1 << 1,
   SUGGEST_DNS_CONFIG                        = 1 << 2,
   SUGGEST_FIREWALL_CONFIG                   = 1 << 3,
   SUGGEST_PROXY_CONFIG                      = 1 << 4,
-  SUGGEST_DISABLE_EXTENSION_STANDALONE      = 1 << 5,
+  SUGGEST_DISABLE_EXTENSION                 = 1 << 5,
   SUGGEST_LEARNMORE                         = 1 << 6,
-  // Unprefixed suggestion which occurs in a list.
   SUGGEST_CONTACT_ADMINISTRATOR             = 1 << 7,
-  // Standalone suggestion which cannot be mixed with others.
-  // Includes 'Try' prefix to the bulleted suggestion.
-  SUGGEST_CONTACT_ADMINISTRATOR_STANDALONE  = 1 << 8,
-  SUGGEST_UNSUPPORTED_CIPHER                = 1 << 9,
-  SUGGEST_ANTIVIRUS_CONFIG                  = 1 << 10,
-  SUGGEST_OFFLINE_CHECKS                    = 1 << 11,
-  // Standalone suggestion to complete the device setup.
-  // Should not be mixed with others and is not prefixed with 'Try'.
-  SUGGEST_COMPLETE_SETUP_STANDALONE         = 1 << 12,
-  // Standalone reload page suggestion for pages created by a post.
-  // Should not be mixed with others and is not prefixed with 'Try'.
-  SUGGEST_RELOAD_STANDALONE                 = 1 << 13,
-  // Standalone learn more suggestion for linking to Help Center.
-  // Should not be mixed with others and is not prefixed with 'Try'.
-  SUGGEST_LEARNMORE_STANDALONE              = 1 << 14,
+  SUGGEST_UNSUPPORTED_CIPHER                = 1 << 8,
+  SUGGEST_ANTIVIRUS_CONFIG                  = 1 << 9,
+  SUGGEST_OFFLINE_CHECKS                    = 1 << 10,
+  SUGGEST_COMPLETE_SETUP                    = 1 << 11,
+  // Reload page suggestion for pages created by a post.
+  SUGGEST_REPOST_RELOAD                     = 1 << 12,
+};
+
+enum SHOW_BUTTONS {
+  SHOW_NO_BUTTONS    = 0,
+  SHOW_BUTTON_RELOAD = 1,
 };
 
 struct LocalizedErrorMap {
@@ -88,6 +83,7 @@ struct LocalizedErrorMap {
   // a frame.
   unsigned int details_resource_id;
   int suggestions;  // Bitmap of SUGGEST_* values.
+  int buttons; // Which buttons if any to show.
 };
 
 const LocalizedErrorMap net_error_options[] = {
@@ -96,55 +92,61 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
    IDS_ERRORPAGES_SUMMARY_TIMED_OUT,
    IDS_ERRORPAGES_DETAILS_TIMED_OUT,
-   SUGGEST_RELOAD | SUGGEST_CHECK_CONNECTION | SUGGEST_FIREWALL_CONFIG |
-       SUGGEST_PROXY_CONFIG,
+   SUGGEST_CHECK_CONNECTION | SUGGEST_FIREWALL_CONFIG | SUGGEST_PROXY_CONFIG |
+       SUGGEST_DIAGNOSE_TOOL,
+   SHOW_BUTTON_RELOAD,
   },
   {net::ERR_CONNECTION_TIMED_OUT,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
    IDS_ERRORPAGES_SUMMARY_TIMED_OUT,
    IDS_ERRORPAGES_DETAILS_TIMED_OUT,
-   SUGGEST_RELOAD | SUGGEST_CHECK_CONNECTION | SUGGEST_FIREWALL_CONFIG |
-       SUGGEST_PROXY_CONFIG,
+   SUGGEST_CHECK_CONNECTION | SUGGEST_FIREWALL_CONFIG | SUGGEST_PROXY_CONFIG |
+       SUGGEST_DIAGNOSE_TOOL,
+   SHOW_BUTTON_RELOAD,
   },
   {net::ERR_CONNECTION_CLOSED,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
    IDS_ERRORPAGES_SUMMARY_CONNECTION_CLOSED,
    IDS_ERRORPAGES_DETAILS_CONNECTION_CLOSED,
-   SUGGEST_RELOAD | SUGGEST_CHECK_CONNECTION | SUGGEST_FIREWALL_CONFIG |
-       SUGGEST_PROXY_CONFIG,
+   SUGGEST_CHECK_CONNECTION | SUGGEST_FIREWALL_CONFIG | SUGGEST_PROXY_CONFIG |
+       SUGGEST_DIAGNOSE_TOOL,
+   SHOW_BUTTON_RELOAD,
   },
   {net::ERR_CONNECTION_RESET,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
    IDS_ERRORPAGES_SUMMARY_CONNECTION_RESET,
    IDS_ERRORPAGES_DETAILS_CONNECTION_RESET,
-   SUGGEST_RELOAD | SUGGEST_CHECK_CONNECTION | SUGGEST_FIREWALL_CONFIG |
-       SUGGEST_PROXY_CONFIG,
+   SUGGEST_CHECK_CONNECTION | SUGGEST_FIREWALL_CONFIG | SUGGEST_PROXY_CONFIG |
+       SUGGEST_DIAGNOSE_TOOL,
+   SHOW_BUTTON_RELOAD,
   },
   {net::ERR_CONNECTION_REFUSED,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
    IDS_ERRORPAGES_SUMMARY_CONNECTION_REFUSED,
    IDS_ERRORPAGES_DETAILS_CONNECTION_REFUSED,
-   SUGGEST_RELOAD | SUGGEST_CHECK_CONNECTION | SUGGEST_FIREWALL_CONFIG |
-       SUGGEST_PROXY_CONFIG,
+   SUGGEST_CHECK_CONNECTION | SUGGEST_FIREWALL_CONFIG | SUGGEST_PROXY_CONFIG,
+   SHOW_BUTTON_RELOAD,
   },
   {net::ERR_CONNECTION_FAILED,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
    IDS_ERRORPAGES_SUMMARY_CONNECTION_FAILED,
    IDS_ERRORPAGES_DETAILS_CONNECTION_FAILED,
-   SUGGEST_RELOAD,
+   SUGGEST_DIAGNOSE_TOOL,
+   SHOW_BUTTON_RELOAD,
   },
   {net::ERR_NAME_NOT_RESOLVED,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
    IDS_ERRORPAGES_SUMMARY_NAME_NOT_RESOLVED,
    IDS_ERRORPAGES_DETAILS_NAME_NOT_RESOLVED,
-   SUGGEST_RELOAD | SUGGEST_CHECK_CONNECTION | SUGGEST_DNS_CONFIG |
-       SUGGEST_FIREWALL_CONFIG | SUGGEST_PROXY_CONFIG,
+   SUGGEST_CHECK_CONNECTION | SUGGEST_DNS_CONFIG | SUGGEST_FIREWALL_CONFIG |
+       SUGGEST_PROXY_CONFIG | SUGGEST_DIAGNOSE_TOOL,
+   SHOW_BUTTON_RELOAD,
   },
   {net::ERR_ICANN_NAME_COLLISION,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
@@ -152,13 +154,15 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_SUMMARY_ICANN_NAME_COLLISION,
    IDS_ERRORPAGES_DETAILS_ICANN_NAME_COLLISION,
    SUGGEST_NONE,
+   SHOW_NO_BUTTONS,
   },
   {net::ERR_ADDRESS_UNREACHABLE,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
    IDS_ERRORPAGES_SUMMARY_ADDRESS_UNREACHABLE,
    IDS_ERRORPAGES_DETAILS_ADDRESS_UNREACHABLE,
-   SUGGEST_RELOAD,
+   SUGGEST_DIAGNOSE_TOOL,
+   SHOW_BUTTON_RELOAD,
   },
   {net::ERR_NETWORK_ACCESS_DENIED,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
@@ -166,119 +170,136 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_SUMMARY_NETWORK_ACCESS_DENIED,
    IDS_ERRORPAGES_DETAILS_NETWORK_ACCESS_DENIED,
    SUGGEST_CHECK_CONNECTION | SUGGEST_FIREWALL_CONFIG |
-      SUGGEST_ANTIVIRUS_CONFIG,
+       SUGGEST_ANTIVIRUS_CONFIG | SUGGEST_DIAGNOSE_TOOL,
+   SHOW_NO_BUTTONS,
   },
   {net::ERR_PROXY_CONNECTION_FAILED,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED,
    IDS_ERRORPAGES_SUMMARY_PROXY_CONNECTION_FAILED,
    IDS_ERRORPAGES_DETAILS_PROXY_CONNECTION_FAILED,
-   SUGGEST_PROXY_CONFIG | SUGGEST_CONTACT_ADMINISTRATOR,
+   SUGGEST_PROXY_CONFIG | SUGGEST_CONTACT_ADMINISTRATOR | SUGGEST_DIAGNOSE_TOOL,
+   SHOW_NO_BUTTONS,
   },
   {net::ERR_INTERNET_DISCONNECTED,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED,
-   IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED,
+   kEmptyMessageResourceID,
    IDS_ERRORPAGES_DETAILS_INTERNET_DISCONNECTED,
-   SUGGEST_OFFLINE_CHECKS,
+   SUGGEST_OFFLINE_CHECKS | SUGGEST_DIAGNOSE_TOOL,
+   SHOW_NO_BUTTONS,
   },
   {net::ERR_FILE_NOT_FOUND,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
    IDS_ERRORPAGES_HEADING_FILE_NOT_FOUND,
    IDS_ERRORPAGES_SUMMARY_FILE_NOT_FOUND,
    IDS_ERRORPAGES_DETAILS_FILE_NOT_FOUND,
-   SUGGEST_RELOAD,
+   SUGGEST_NONE,
+   SHOW_NO_BUTTONS,
   },
   {net::ERR_CACHE_MISS,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
    IDS_ERRORPAGES_HEADING_CACHE_READ_FAILURE,
    IDS_ERRORPAGES_SUMMARY_CACHE_READ_FAILURE,
    IDS_ERRORPAGES_DETAILS_CACHE_READ_FAILURE,
-   SUGGEST_RELOAD,
+   SUGGEST_NONE,
+   SHOW_BUTTON_RELOAD,
   },
   {net::ERR_CACHE_READ_FAILURE,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
    IDS_ERRORPAGES_HEADING_CACHE_READ_FAILURE,
    IDS_ERRORPAGES_SUMMARY_CACHE_READ_FAILURE,
    IDS_ERRORPAGES_DETAILS_CACHE_READ_FAILURE,
-   SUGGEST_RELOAD,
+   SUGGEST_NONE,
+   SHOW_BUTTON_RELOAD,
   },
   {net::ERR_NETWORK_IO_SUSPENDED,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
    IDS_ERRORPAGES_HEADING_CONNECTION_INTERRUPTED,
    IDS_ERRORPAGES_SUMMARY_NETWORK_IO_SUSPENDED,
    IDS_ERRORPAGES_DETAILS_NETWORK_IO_SUSPENDED,
-   SUGGEST_RELOAD,
+   SUGGEST_NONE,
+   SHOW_BUTTON_RELOAD,
   },
   {net::ERR_TOO_MANY_REDIRECTS,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
    IDS_ERRORPAGES_HEADING_PAGE_NOT_WORKING,
    IDS_ERRORPAGES_SUMMARY_TOO_MANY_REDIRECTS,
    IDS_ERRORPAGES_DETAILS_TOO_MANY_REDIRECTS,
-   SUGGEST_RELOAD | SUGGEST_LEARNMORE_STANDALONE,
+   SUGGEST_LEARNMORE,
+   SHOW_BUTTON_RELOAD,
   },
   {net::ERR_EMPTY_RESPONSE,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
    IDS_ERRORPAGES_HEADING_PAGE_NOT_WORKING,
    IDS_ERRORPAGES_SUMMARY_EMPTY_RESPONSE,
    IDS_ERRORPAGES_DETAILS_EMPTY_RESPONSE,
-   SUGGEST_RELOAD,
+   SUGGEST_NONE,
+   SHOW_BUTTON_RELOAD,
   },
   {net::ERR_RESPONSE_HEADERS_MULTIPLE_CONTENT_LENGTH,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
    IDS_ERRORPAGES_HEADING_PAGE_NOT_WORKING,
    IDS_ERRORPAGES_SUMMARY_INVALID_RESPONSE,
    IDS_ERRORPAGES_DETAILS_RESPONSE_HEADERS_MULTIPLE_CONTENT_LENGTH,
-   SUGGEST_RELOAD,
+   SUGGEST_NONE,
+   SHOW_BUTTON_RELOAD,
   },
   {net::ERR_RESPONSE_HEADERS_MULTIPLE_CONTENT_DISPOSITION,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
    IDS_ERRORPAGES_HEADING_PAGE_NOT_WORKING,
    IDS_ERRORPAGES_SUMMARY_INVALID_RESPONSE,
    IDS_ERRORPAGES_DETAILS_RESPONSE_HEADERS_MULTIPLE_CONTENT_DISPOSITION,
-   SUGGEST_RELOAD,
+   SUGGEST_NONE,
+   SHOW_BUTTON_RELOAD,
   },
   {net::ERR_RESPONSE_HEADERS_MULTIPLE_LOCATION,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
    IDS_ERRORPAGES_HEADING_PAGE_NOT_WORKING,
    IDS_ERRORPAGES_SUMMARY_INVALID_RESPONSE,
    IDS_ERRORPAGES_DETAILS_RESPONSE_HEADERS_MULTIPLE_LOCATION,
-   SUGGEST_RELOAD,
+   SUGGEST_NONE,
+   SHOW_BUTTON_RELOAD,
   },
   {net::ERR_CONTENT_LENGTH_MISMATCH,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_PAGE_NOT_WORKING,
    IDS_ERRORPAGES_SUMMARY_CONNECTION_CLOSED,
    IDS_ERRORPAGES_DETAILS_CONNECTION_CLOSED,
-   SUGGEST_RELOAD,
+   SUGGEST_NONE,
+   SHOW_BUTTON_RELOAD,
   },
   {net::ERR_INCOMPLETE_CHUNKED_ENCODING,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_PAGE_NOT_WORKING,
    IDS_ERRORPAGES_SUMMARY_CONNECTION_CLOSED,
    IDS_ERRORPAGES_DETAILS_CONNECTION_CLOSED,
-   SUGGEST_RELOAD,
+   SUGGEST_NONE,
+   SHOW_BUTTON_RELOAD,
   },
   {net::ERR_SSL_PROTOCOL_ERROR,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
    IDS_ERRORPAGES_HEADING_INSECURE_CONNECTION,
    IDS_ERRORPAGES_SUMMARY_INVALID_RESPONSE,
    IDS_ERRORPAGES_DETAILS_SSL_PROTOCOL_ERROR,
-   SUGGEST_RELOAD,
+   SUGGEST_DIAGNOSE_TOOL,
+   SHOW_BUTTON_RELOAD,
   },
   {net::ERR_BAD_SSL_CLIENT_AUTH_CERT,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
    IDS_ERRORPAGES_HEADING_INSECURE_CONNECTION,
    IDS_ERRORPAGES_SUMMARY_BAD_SSL_CLIENT_AUTH_CERT,
    IDS_ERRORPAGES_DETAILS_BAD_SSL_CLIENT_AUTH_CERT,
-   SUGGEST_CONTACT_ADMINISTRATOR_STANDALONE,
+   SUGGEST_CONTACT_ADMINISTRATOR,
+   SHOW_NO_BUTTONS,
   },
   {net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
    IDS_ERRORPAGES_HEADING_INSECURE_CONNECTION,
    IDS_ERRORPAGES_SUMMARY_SSL_SECURITY_ERROR,
    IDS_ERRORPAGES_DETAILS_SSL_PROTOCOL_ERROR,
-   SUGGEST_LEARNMORE_STANDALONE,
+   SUGGEST_LEARNMORE,
+   SHOW_NO_BUTTONS,
   },
   {net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
@@ -286,41 +307,47 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_CERT_ERROR_SUMMARY_PINNING_FAILURE_DETAILS,
    IDS_CERT_ERROR_SUMMARY_PINNING_FAILURE_DESCRIPTION,
    SUGGEST_NONE,
+   SHOW_NO_BUTTONS,
   },
   {net::ERR_TEMPORARILY_THROTTLED,
    IDS_ERRORPAGES_TITLE_ACCESS_DENIED,
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
    IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE,
    IDS_ERRORPAGES_DETAILS_TEMPORARILY_THROTTLED,
-   SUGGEST_DISABLE_EXTENSION_STANDALONE,
+   SUGGEST_DISABLE_EXTENSION,
+   SHOW_NO_BUTTONS,
   },
   {net::ERR_BLOCKED_BY_CLIENT,
    IDS_ERRORPAGES_TITLE_BLOCKED,
    IDS_ERRORPAGES_HEADING_BLOCKED,
    IDS_ERRORPAGES_SUMMARY_BLOCKED_BY_EXTENSION,
    IDS_ERRORPAGES_DETAILS_BLOCKED_BY_EXTENSION,
-   SUGGEST_RELOAD | SUGGEST_DISABLE_EXTENSION_STANDALONE,
+   SUGGEST_DISABLE_EXTENSION,
+   SHOW_BUTTON_RELOAD,
   },
   {net::ERR_NETWORK_CHANGED,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
    IDS_ERRORPAGES_HEADING_CONNECTION_INTERRUPTED,
    IDS_ERRORPAGES_SUMMARY_NETWORK_CHANGED,
    IDS_ERRORPAGES_DETAILS_NETWORK_CHANGED,
-   SUGGEST_RELOAD,
+   SUGGEST_NONE,
+   SHOW_BUTTON_RELOAD,
   },
   {net::ERR_BLOCKED_BY_ADMINISTRATOR,
    IDS_ERRORPAGES_TITLE_BLOCKED,
    IDS_ERRORPAGES_HEADING_BLOCKED,
    IDS_ERRORPAGES_SUMMARY_BLOCKED_BY_ADMINISTRATOR,
    IDS_ERRORPAGES_DETAILS_BLOCKED_BY_ADMINISTRATOR,
-   SUGGEST_CONTACT_ADMINISTRATOR_STANDALONE,
+   SUGGEST_CONTACT_ADMINISTRATOR,
+   SHOW_NO_BUTTONS,
   },
   {net::ERR_BLOCKED_ENROLLMENT_CHECK_PENDING,
    IDS_ERRORPAGES_TITLE_BLOCKED,
    IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED,
    IDS_ERRORPAGES_SUMMARY_BLOCKED_ENROLLMENT_CHECK_PENDING,
    IDS_ERRORPAGES_DETAILS_BLOCKED_ENROLLMENT_CHECK_PENDING,
-   SUGGEST_COMPLETE_SETUP_STANDALONE,
+   SUGGEST_COMPLETE_SETUP,
+   SHOW_NO_BUTTONS,
   },
   {net::ERR_SSL_FALLBACK_BEYOND_MINIMUM_VERSION,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
@@ -328,6 +355,7 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_SUMMARY_INVALID_RESPONSE,
    IDS_ERRORPAGES_DETAILS_SSL_FALLBACK_BEYOND_MINIMUM_VERSION,
    SUGGEST_NONE,
+   SHOW_NO_BUTTONS,
   },
   {net::ERR_SSL_VERSION_OR_CIPHER_MISMATCH,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
@@ -335,6 +363,7 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_SUMMARY_SSL_VERSION_OR_CIPHER_MISMATCH,
    IDS_ERRORPAGES_DETAILS_SSL_VERSION_OR_CIPHER_MISMATCH,
    SUGGEST_UNSUPPORTED_CIPHER,
+   SHOW_NO_BUTTONS,
   },
   {net::ERR_TEMPORARY_BACKOFF,
    IDS_ERRORPAGES_TITLE_ACCESS_DENIED,
@@ -342,6 +371,7 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_SUMMARY_TEMPORARY_BACKOFF,
    IDS_ERRORPAGES_DETAILS_TEMPORARY_BACKOFF,
    SUGGEST_NONE,
+   SHOW_NO_BUTTONS,
   },
   {net::ERR_SSL_SERVER_CERT_BAD_FORMAT,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
@@ -349,6 +379,7 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_SUMMARY_SSL_SECURITY_ERROR,
    IDS_ERRORPAGES_DETAILS_SSL_PROTOCOL_ERROR,
    SUGGEST_NONE,
+   SHOW_NO_BUTTONS,
   },
 };
 
@@ -361,7 +392,8 @@ const LocalizedErrorMap repost_error = {
   IDS_HTTP_POST_WARNING_TITLE,
   IDS_ERRORPAGES_HTTP_POST_WARNING,
   IDS_ERRORPAGES_DETAILS_CACHE_READ_FAILURE,
-  SUGGEST_RELOAD_STANDALONE,
+  SUGGEST_REPOST_RELOAD,
+  SHOW_NO_BUTTONS,
 };
 
 const LocalizedErrorMap http_error_options[] = {
@@ -370,7 +402,8 @@ const LocalizedErrorMap http_error_options[] = {
    IDS_ERRORPAGES_HEADING_ACCESS_DENIED,
    IDS_ERRORPAGES_SUMMARY_FORBIDDEN,
    IDS_ERRORPAGES_DETAILS_FORBIDDEN,
-   SUGGEST_RELOAD,
+   SUGGEST_NONE,
+   SHOW_BUTTON_RELOAD,
   },
   {410,
    IDS_ERRORPAGES_TITLE_NOT_FOUND,
@@ -378,6 +411,7 @@ const LocalizedErrorMap http_error_options[] = {
    IDS_ERRORPAGES_SUMMARY_GONE,
    IDS_ERRORPAGES_DETAILS_GONE,
    SUGGEST_NONE,
+   SHOW_NO_BUTTONS,
   },
 
   {500,
@@ -385,7 +419,8 @@ const LocalizedErrorMap http_error_options[] = {
    IDS_ERRORPAGES_HEADING_PAGE_NOT_WORKING,
    IDS_ERRORPAGES_SUMMARY_WEBSITE_CANNOT_HANDLE_REQUEST,
    IDS_ERRORPAGES_DETAILS_INTERNAL_SERVER_ERROR,
-   SUGGEST_RELOAD,
+   SUGGEST_NONE,
+   SHOW_BUTTON_RELOAD,
   },
   {501,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
@@ -393,27 +428,31 @@ const LocalizedErrorMap http_error_options[] = {
    IDS_ERRORPAGES_SUMMARY_WEBSITE_CANNOT_HANDLE_REQUEST,
    IDS_ERRORPAGES_DETAILS_NOT_IMPLEMENTED,
    SUGGEST_NONE,
+   SHOW_NO_BUTTONS,
   },
   {502,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
    IDS_ERRORPAGES_HEADING_PAGE_NOT_WORKING,
    IDS_ERRORPAGES_SUMMARY_WEBSITE_CANNOT_HANDLE_REQUEST,
    IDS_ERRORPAGES_DETAILS_BAD_GATEWAY,
-   SUGGEST_RELOAD,
+   SUGGEST_NONE,
+   SHOW_BUTTON_RELOAD,
   },
   {503,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
    IDS_ERRORPAGES_HEADING_PAGE_NOT_WORKING,
    IDS_ERRORPAGES_SUMMARY_WEBSITE_CANNOT_HANDLE_REQUEST,
    IDS_ERRORPAGES_DETAILS_SERVICE_UNAVAILABLE,
-   SUGGEST_RELOAD,
+   SUGGEST_NONE,
+   SHOW_BUTTON_RELOAD,
   },
   {504,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
    IDS_ERRORPAGES_HEADING_PAGE_NOT_WORKING,
    IDS_ERRORPAGES_SUMMARY_GATEWAY_TIMEOUT,
    IDS_ERRORPAGES_DETAILS_GATEWAY_TIMEOUT,
-   SUGGEST_RELOAD,
+   SUGGEST_NONE,
+   SHOW_BUTTON_RELOAD,
   },
 };
 
@@ -423,7 +462,8 @@ const LocalizedErrorMap dns_probe_error_options[] = {
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
    IDS_ERRORPAGES_SUMMARY_DNS_PROBE_RUNNING,
    IDS_ERRORPAGES_DETAILS_DNS_PROBE_RUNNING,
-   SUGGEST_RELOAD,
+   SUGGEST_DIAGNOSE_TOOL,
+   SHOW_BUTTON_RELOAD,
   },
 
   // DNS_PROBE_NOT_RUN is not here; NetErrorHelper will restore the original
@@ -435,7 +475,8 @@ const LocalizedErrorMap dns_probe_error_options[] = {
    IDS_ERRORPAGES_SUMMARY_DNS_PROBE_RUNNING,
    IDS_ERRORPAGES_DETAILS_DNS_PROBE_RUNNING,
    // Include SUGGEST_RELOAD so the More button doesn't jump when we update.
-   SUGGEST_RELOAD,
+   SUGGEST_DIAGNOSE_TOOL,
+   SHOW_BUTTON_RELOAD,
   },
 
   // DNS_PROBE_FINISHED_UNKNOWN is not here; NetErrorHelper will restore the
@@ -444,24 +485,27 @@ const LocalizedErrorMap dns_probe_error_options[] = {
   {error_page::DNS_PROBE_FINISHED_NO_INTERNET,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED,
-   IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED,
+   kEmptyMessageResourceID,
    IDS_ERRORPAGES_DETAILS_INTERNET_DISCONNECTED,
-   SUGGEST_OFFLINE_CHECKS,
+   SUGGEST_OFFLINE_CHECKS | SUGGEST_DIAGNOSE_TOOL,
+   SHOW_NO_BUTTONS,
   },
   {error_page::DNS_PROBE_FINISHED_BAD_CONFIG,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
    IDS_ERRORPAGES_SUMMARY_NAME_NOT_RESOLVED,
    IDS_ERRORPAGES_DETAILS_NAME_NOT_RESOLVED,
-   SUGGEST_RELOAD | SUGGEST_DNS_CONFIG | SUGGEST_FIREWALL_CONFIG |
-      SUGGEST_PROXY_CONFIG,
+   SUGGEST_DNS_CONFIG | SUGGEST_FIREWALL_CONFIG | SUGGEST_PROXY_CONFIG |
+       SUGGEST_DIAGNOSE_TOOL,
+   SHOW_BUTTON_RELOAD,
   },
   {error_page::DNS_PROBE_FINISHED_NXDOMAIN,
    IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
    IDS_ERRORPAGES_SUMMARY_NAME_NOT_RESOLVED,
    IDS_ERRORPAGES_DETAILS_NAME_NOT_RESOLVED,
-   SUGGEST_RELOAD,
+   SUGGEST_DIAGNOSE_TOOL,
+   SHOW_BUTTON_RELOAD,
   },
 };
 
@@ -575,9 +619,13 @@ void AddSingleEntryDictionaryToList(base::ListValue* list,
 // Adds a linked suggestion dictionary entry to the suggestions list.
 void AddLinkedSuggestionToList(const int error_code,
                                const std::string& locale,
-                               base::ListValue* suggestions_summary_list) {
+                               base::ListValue* suggestions_summary_list,
+                               bool standalone_suggestion) {
   GURL learn_more_url;
-  base::string16 suggestion_string;
+  base::string16 suggestion_string = standalone_suggestion ?
+      l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY) :
+      l10n_util::GetStringUTF16(
+          IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY_STANDALONE);
 
   switch (error_code) {
     case net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY:
@@ -609,36 +657,61 @@ void AddLinkedSuggestionToList(const int error_code,
   suggestions_summary_list->Append(suggestion_list_item);
 }
 
+// Check if a suggestion is in the bitmap of suggestions.
+bool IsSuggested(int suggestions, int suggestion) {
+  return !!(suggestions & suggestion);
+}
+
+// Check suggestion is the only item in the suggestions bitmap.
+bool IsOnlySuggestion(int suggestions, int suggestion) {
+  return IsSuggested(suggestions, suggestion) && !(suggestions & ~suggestion);
+}
+
 // Creates a list of suggestions that a user may try to resolve a particular
 // network error. Appears above the fold underneath heading and intro paragraph.
-// Note that the SUGGEST_RELOAD suggestion isn't shown in the list, only as a
-// reload button.
 void GetSuggestionsSummaryList(int error_code,
                                base::DictionaryValue* error_strings,
                                int suggestions,
                                const std::string& locale,
-                               base::ListValue* suggestions_summary_list) {
-  if (suggestions & SUGGEST_CONTACT_ADMINISTRATOR_STANDALONE) {
-    DCHECK(suggestions_summary_list->empty());
-    DCHECK(!(suggestions & ~SUGGEST_CONTACT_ADMINISTRATOR_STANDALONE));
-    AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
-        IDS_ERRORPAGES_SUGGESTION_CONTACT_ADMIN_SUMMARY_WITH_PREFIX, false);
-    return;
+                               base::ListValue* suggestions_summary_list,
+                               bool can_show_network_diagnostics_dialog,
+                               const GURL& failed_url) {
+  // Remove the diagnostic tool suggestion if the platform doesn't support it
+  // or the url isn't valid.
+  if (!can_show_network_diagnostics_dialog || !failed_url.is_valid() ||
+      !failed_url.SchemeIsHTTPOrHTTPS()) {
+    suggestions &= ~SUGGEST_DIAGNOSE_TOOL;
   }
 
-  if (suggestions & SUGGEST_COMPLETE_SETUP_STANDALONE) {
+  if (suggestions == SUGGEST_NONE)
+    return;
+
+  if (IsOnlySuggestion(suggestions, SUGGEST_CONTACT_ADMINISTRATOR)) {
     DCHECK(suggestions_summary_list->empty());
-    DCHECK(!(suggestions & ~SUGGEST_COMPLETE_SETUP_STANDALONE));
+    DCHECK(!(suggestions & ~SUGGEST_CONTACT_ADMINISTRATOR));
+    AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
+        IDS_ERRORPAGES_SUGGESTION_CONTACT_ADMIN_SUMMARY_STANDALONE, false);
+    return;
+  }
+  if (IsSuggested(suggestions, SUGGEST_CONTACT_ADMINISTRATOR)) {
+    AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
+        IDS_ERRORPAGES_SUGGESTION_CONTACT_ADMIN_SUMMARY, false);
+  }
+
+  if (IsOnlySuggestion(suggestions, SUGGEST_COMPLETE_SETUP)) {
+    DCHECK(suggestions_summary_list->empty());
+    DCHECK(!(suggestions & ~SUGGEST_COMPLETE_SETUP));
     AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
         IDS_ERRORPAGES_SUGGESTION_DIAGNOSE_CONNECTION_SUMMARY, false);
     AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
         IDS_ERRORPAGES_SUGGESTION_COMPLETE_SETUP_SUMMARY, false);
     return;
   }
+  DCHECK(!IsSuggested(suggestions, SUGGEST_COMPLETE_SETUP));
 
-  if (suggestions & SUGGEST_RELOAD_STANDALONE) {
+  if (IsOnlySuggestion(suggestions,SUGGEST_REPOST_RELOAD)) {
     DCHECK(suggestions_summary_list->empty());
-    DCHECK(!(suggestions & ~SUGGEST_RELOAD_STANDALONE));
+    DCHECK(!(suggestions & ~SUGGEST_REPOST_RELOAD));
     // If the page was created by a post, it can't be reloaded in the same
     // way, so just add a suggestion instead.
     // TODO(mmenke):  Make the reload button bring up the repost confirmation
@@ -647,19 +720,26 @@ void GetSuggestionsSummaryList(int error_code,
         IDS_ERRORPAGES_SUGGESTION_RELOAD_REPOST_SUMMARY, false);
     return;
   }
+  DCHECK(!IsSuggested(suggestions, SUGGEST_REPOST_RELOAD));
 
-  if (suggestions & SUGGEST_LEARNMORE_STANDALONE) {
+  if (IsOnlySuggestion(suggestions, SUGGEST_LEARNMORE)) {
     DCHECK(suggestions_summary_list->empty());
-    AddLinkedSuggestionToList(error_code, locale, suggestions_summary_list);
+    AddLinkedSuggestionToList(error_code, locale, suggestions_summary_list,
+                              false);
     return;
   }
+  if (IsSuggested(suggestions, SUGGEST_LEARNMORE)) {
+    AddLinkedSuggestionToList(error_code, locale, suggestions_summary_list,
+                              true);
+  }
 
-  if (suggestions & SUGGEST_DISABLE_EXTENSION_STANDALONE) {
+  if (suggestions & SUGGEST_DISABLE_EXTENSION) {
     DCHECK(suggestions_summary_list->empty());
     AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
         IDS_ERRORPAGES_SUGGESTION_DISABLE_EXTENSION_SUMMARY, false);
     return;
   }
+  DCHECK(!IsSuggested(suggestions, SUGGEST_DISABLE_EXTENSION));
 
   if (suggestions & SUGGEST_CHECK_CONNECTION) {
     AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
@@ -667,20 +747,20 @@ void GetSuggestionsSummaryList(int error_code,
   }
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  if ((suggestions & SUGGEST_DNS_CONFIG) &&
-      (suggestions & SUGGEST_FIREWALL_CONFIG) &&
-      (suggestions & SUGGEST_PROXY_CONFIG)) {
+  if (IsSuggested(suggestions, SUGGEST_DNS_CONFIG) &&
+      IsSuggested(suggestions, SUGGEST_FIREWALL_CONFIG) &&
+      IsSuggested(suggestions, SUGGEST_PROXY_CONFIG)) {
     AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
         IDS_ERRORPAGES_SUGGESTION_CHECK_PROXY_FIREWALL_DNS_SUMMARY, false);
-  } else if ((suggestions & SUGGEST_FIREWALL_CONFIG) &&
-             (suggestions & SUGGEST_ANTIVIRUS_CONFIG)) {
+  } else if (IsSuggested(suggestions, SUGGEST_FIREWALL_CONFIG) &&
+             IsSuggested(suggestions, SUGGEST_ANTIVIRUS_CONFIG)) {
     AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
         IDS_ERRORPAGES_SUGGESTION_CHECK_FIREWALL_ANTIVIRUS_SUMMARY, false);
-  } else if ((suggestions & SUGGEST_PROXY_CONFIG) &&
-             (suggestions & SUGGEST_FIREWALL_CONFIG)) {
+  } else if (IsSuggested(suggestions, SUGGEST_PROXY_CONFIG) &&
+             IsSuggested(suggestions, SUGGEST_FIREWALL_CONFIG)) {
     AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
         IDS_ERRORPAGES_SUGGESTION_CHECK_PROXY_FIREWALL_SUMMARY, false);
-  } else if (suggestions & SUGGEST_PROXY_CONFIG) {
+  } else if (IsSuggested(suggestions, SUGGEST_PROXY_CONFIG)) {
     AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
         IDS_ERRORPAGES_SUGGESTION_CHECK_PROXY_ADDRESS_SUMMARY, false);
   } else {
@@ -690,12 +770,7 @@ void GetSuggestionsSummaryList(int error_code,
   }
 #endif
 
-  if (suggestions & SUGGEST_CONTACT_ADMINISTRATOR) {
-    AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
-        IDS_ERRORPAGES_SUGGESTION_CONTACT_ADMIN_SUMMARY, false);
-  }
-
-  if (suggestions & SUGGEST_OFFLINE_CHECKS) {
+  if (IsSuggested(suggestions, SUGGEST_OFFLINE_CHECKS)) {
 #if defined(OS_ANDROID) || defined(OS_IOS)
     AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
         IDS_ERRORPAGES_SUGGESTION_TURN_OFF_AIRPLANE_SUMMARY, false);
@@ -711,9 +786,23 @@ void GetSuggestionsSummaryList(int error_code,
 #endif
   }
 
-  if (suggestions & SUGGEST_LEARNMORE) {
-    AddLinkedSuggestionToList(error_code, locale, suggestions_summary_list);
+// If the current platform has a directly accesible network diagnostics tool and
+// the URL is valid add a suggestion.
+#if defined(OS_CHROMEOS) || defined(OS_WIN) || \
+    (defined(OS_MACOSX) && !defined(OS_IOS))
+  if (IsOnlySuggestion(suggestions, SUGGEST_DIAGNOSE_TOOL)) {
+    AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
+        IDS_ERRORPAGES_SUGGESTION_DIAGNOSE_STANDALONE, false);
+    return;
   }
+  if (IsSuggested(suggestions, SUGGEST_DIAGNOSE_TOOL)) {
+    AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
+        IDS_ERRORPAGES_SUGGESTION_DIAGNOSE, false);
+  }
+#else
+  DCHECK(!IsSuggested(suggestions, SUGGEST_DIAGNOSE_TOOL));
+#endif  // defined(OS_CHROMEOS) || defined(OS_WIN) ||
+        // (defined(OS_MACOSX) && !defined(OS_IOS))
 
   // Add list prefix header.
   error_strings->SetString("suggestionsSummaryListHeader",
@@ -798,7 +887,7 @@ void AddSuggestionsDetails(int error_code,
   }
 #endif
 
-  if (suggestions & SUGGEST_CONTACT_ADMINISTRATOR_STANDALONE &&
+  if (suggestions & SUGGEST_CONTACT_ADMINISTRATOR &&
       error_code == net::ERR_BLOCKED_BY_ADMINISTRATOR) {
     AddSuggestionDetailDictionaryToList(suggestions_details,
         IDS_ERRORPAGES_SUGGESTION_VIEW_POLICIES_HEADER,
@@ -840,8 +929,9 @@ void LocalizedError::GetStrings(
     IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,
     IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
     IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE,
-    kErrorPagesNoDetails,
+    kEmptyMessageResourceID,
     SUGGEST_NONE,
+    SHOW_NO_BUTTONS,
   };
 
   const LocalizedErrorMap* error_map = LookupErrorMap(error_domain, error_code,
@@ -861,6 +951,7 @@ void LocalizedError::GetStrings(
     options.summary_resource_id = IDS_ERRORPAGES_SUMMARY_FILE_ACCESS_DENIED;
     options.details_resource_id = IDS_ERRORPAGES_DETAILS_FILE_ACCESS_DENIED;
     options.suggestions = SUGGEST_NONE;
+    options.buttons = SHOW_BUTTON_RELOAD;
   }
 
   base::string16 failed_url_string(url_formatter::FormatUrl(
@@ -885,8 +976,12 @@ void LocalizedError::GetStrings(
   base::DictionaryValue* summary = new base::DictionaryValue;
 
   // Set summary message under the heading.
-  summary->SetString("msg",
-      l10n_util::GetStringUTF16(options.summary_resource_id));
+  summary->SetString(
+      "msg",
+      options.summary_resource_id != kEmptyMessageResourceID
+          ? l10n_util::GetStringUTF16(options.summary_resource_id)
+          : base::string16());
+
   // Add a DNS definition string.
   summary->SetString("dnsDefinition",
       l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUMMARY_DNS_DEFINITION));
@@ -913,7 +1008,7 @@ void LocalizedError::GetStrings(
 
   error_strings->SetString(
       "errorDetails",
-      options.details_resource_id != kErrorPagesNoDetails
+      options.details_resource_id != kEmptyMessageResourceID
           ? l10n_util::GetStringUTF16(options.details_resource_id)
           : base::string16());
 
@@ -931,38 +1026,10 @@ void LocalizedError::GetStrings(
   }
   error_strings->SetString("errorCode", error_string);
 
-  // Platform specific information for diagnosing network issues on OSX and
-  // Windows.
-#if (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN)
-  if (error_domain == net::kErrorDomain &&
-      error_code == net::ERR_INTERNET_DISCONNECTED) {
-    int platform_string_id =
-        IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM;
-#if defined(OS_WIN)
-    // Different versions of Windows have different instructions.
-    base::win::Version windows_version = base::win::GetVersion();
-    if (windows_version < base::win::VERSION_VISTA) {
-      // XP, XP64, and Server 2003.
-      platform_string_id =
-          IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM_XP;
-    } else if (windows_version == base::win::VERSION_VISTA) {
-      // Vista
-      platform_string_id =
-          IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM_VISTA;
-    }
-#endif  // defined(OS_WIN)
-    // Platform dependent portion of the summary section.
-    summary->SetString("msg",
-        l10n_util::GetStringFUTF16(
-            IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_INSTRUCTIONS_TEMPLATE,
-            l10n_util::GetStringUTF16(platform_string_id)));
-  }
-#endif  // (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN)
-
   // If no parameters were provided, use the defaults.
   if (!params) {
     params.reset(new error_page::ErrorPageParams());
-    params->suggest_reload = !!(options.suggestions & SUGGEST_RELOAD);
+    params->suggest_reload = !!(options.buttons && SHOW_BUTTON_RELOAD);
   }
 
   base::ListValue* suggestions_details = nullptr;
@@ -1008,9 +1075,16 @@ void LocalizedError::GetStrings(
   if (!use_default_suggestions)
     return;
 
+#if defined(OS_CHROMEOS)
+  // ChromeOS has its own diagnostics extension, which doesn't rely on a
+  // browser-initiated dialog.
+  can_show_network_diagnostics_dialog = true;
+#endif  // defined(OS_CHROMEOS)
+
   // Add default suggestions and any relevant supporting details.
   GetSuggestionsSummaryList(error_code, error_strings, options.suggestions,
-                            locale, suggestions_summary_list);
+                            locale, suggestions_summary_list,
+                            can_show_network_diagnostics_dialog, failed_url);
   AddSuggestionsDetails(error_code, error_strings, options.suggestions,
                         suggestions_details);
 
@@ -1038,17 +1112,6 @@ void LocalizedError::GetStrings(
     if (show_saved_copy_primary)
       show_saved_copy_button->SetString("primary", "true");
     error_strings->Set("showSavedCopyButton", show_saved_copy_button);
-  }
-
-#if defined(OS_CHROMEOS)
-  // ChromeOS has its own diagnostics extension, which doesn't rely on a
-  // browser-initiated dialog.
-  can_show_network_diagnostics_dialog = true;
-#endif
-  if (can_show_network_diagnostics_dialog && failed_url.is_valid() &&
-      failed_url.SchemeIsHTTPOrHTTPS()) {
-    error_strings->SetString(
-        "diagnose", l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_DIAGNOSE));
   }
 }
 

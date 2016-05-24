@@ -19,13 +19,15 @@
       <div id="main-message">
         <h1 jsselect="heading" jsvalues=".innerHTML:msg"></h1>
         <p jsselect="summary" jsvalues=".innerHTML:msg"></p>
-        <div id="suggestions-list" jsdisplay="(suggestionsSummaryList && suggestionsSummaryList.length)">
+        <div id="suggestions-list"
+            jsdisplay="(suggestionsSummaryList && suggestionsSummaryList.length)">
           <p jsvalues=".innerHTML:suggestionsSummaryListHeader"></p>
           <ul jsvalues=".className:suggestionsSummaryList.length == 1 ? 'single-suggestion' : ''">
             <li jsselect="suggestionsSummaryList" jsvalues=".innerHTML:summary"></li>
           </ul>
         </div>
         <div class="error-code" jscontent="errorCode"></div>
+        <div id="diagnose-frame" class="hidden"></div>
       </div>
     </div>
     <div id="buttons" class="nav-wrapper">
@@ -60,10 +62,6 @@
         <div class="suggestion-header" jsvalues=".innerHTML:header"></div>
         <div class="suggestion-body" jsvalues=".innerHTML:body"></div>
       </div>
-      <button class="text-button" id="diagnose-button"
-          onclick="diagnoseErrors()" jscontent="diagnose"
-          jsdisplay="diagnose"></button>
-      <div id="diagnose-frame" class="hidden"></div>
     </div>
   </div>
   <div id="sub-frame-error">

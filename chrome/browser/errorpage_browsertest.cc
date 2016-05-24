@@ -111,11 +111,11 @@ bool WARN_UNUSED_RESULT IsDisplayingNetError(Browser* browser,
   return IsDisplayingText(browser, net::ErrorToShortString(error_code));
 }
 
-// Returns true if the diagnostics button is displayed.
-bool WARN_UNUSED_RESULT IsDisplayingDiagnosticsButton(Browser* browser) {
+// Returns true if the diagnostics link suggestion is displayed.
+bool WARN_UNUSED_RESULT IsDisplayingDiagnosticsLink(Browser* browser) {
   std::string command = base::StringPrintf(
-      "var diagnose_button = document.getElementById('diagnose-button');"
-      "domAutomationController.send(diagnose_button.style.display != 'none');");
+      "var diagnose_link = document.getElementById('diagnose-link');"
+      "domAutomationController.send(diagnose_link != null);");
   bool result = false;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       browser->tab_strip_model()->GetActiveWebContents(), command, &result));
@@ -149,7 +149,7 @@ void ExpectDisplayingNavigationCorrections(Browser* browser,
 
   // The diagnostics button isn't displayed when corrections were
   // retrieved from a remote server.
-  EXPECT_FALSE(IsDisplayingDiagnosticsButton(browser));
+  EXPECT_FALSE(IsDisplayingDiagnosticsLink(browser));
 }
 
 std::string GetShowSavedButtonLabel() {
@@ -541,12 +541,11 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, FileNotFound) {
   // Should not request Link Doctor corrections for local errors.
   EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
   // Only errors on HTTP/HTTPS pages should display a diagnostics button.
-  EXPECT_FALSE(IsDisplayingDiagnosticsButton(browser()));
+  EXPECT_FALSE(IsDisplayingDiagnosticsLink(browser()));
 }
 
 // Check an network error page for ERR_FAILED. In particular, this should
-// not trigger a link doctor error page, and should have a diagnostics
-// button, if available on the current platform.
+// not trigger a link doctor error page.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, Failed) {
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
        browser(), URLRequestFailedJob::GetMockHttpUrl(net::ERR_FAILED), 1);
@@ -554,9 +553,6 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, Failed) {
   ExpectDisplayingLocalErrorPage(browser(), net::ERR_FAILED);
   // Should not request Link Doctor corrections for this error.
   EXPECT_EQ(0, link_doctor_interceptor()->num_requests());
-
-  EXPECT_EQ(PlatformSupportsDiagnosticsTool(),
-            IsDisplayingDiagnosticsButton(browser()));
 }
 
 // Test that a DNS error occuring in the main frame redirects to an error page.
@@ -1206,9 +1202,9 @@ IN_PROC_BROWSER_TEST_F(ErrorPageNavigationCorrectionsFailTest,
   // Verify that the expected error page is being displayed.
   ExpectDisplayingLocalErrorPage(browser(), net::ERR_NAME_NOT_RESOLVED);
 
-  // Diagnostics button should be displayed, if avilable on this platform.
+  // Diagnostics button should be displayed, if available on this platform.
   EXPECT_EQ(PlatformSupportsDiagnosticsTool(),
-            IsDisplayingDiagnosticsButton(browser()));
+            IsDisplayingDiagnosticsLink(browser()));
 }
 
 // Checks that when an error occurs and a corrections fail to load, the stale

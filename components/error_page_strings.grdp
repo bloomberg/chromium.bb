@@ -32,9 +32,6 @@
   <message name="IDS_ERRORPAGE_FUN_DISABLED" desc="Explanation for when easter egg has been disabled by administrator">
     The owner of this device turned off the dinosaur game.
   </message>
-  <message name="IDS_ERRORPAGES_BUTTON_DIAGNOSE" desc="Label for the button that invokes the connection diagnostic tool on the error page">
-    Diagnose errors...
-  </message>
   <if expr="is_android">
     <message name="IDS_ERRORPAGES_BUTTON_SETTINGS" desc="Mobile: Label for the button on an error page to launch system settings menu">
       Settings
@@ -197,59 +194,6 @@
   <message name="IDS_ERRORPAGES_SUMMARY_PROXY_CONNECTION_FAILED" desc="Summary in the error page when the proxy server connection failed.">
     There is something wrong with the proxy server, or the address is incorrect.
   </message>
-  <if expr="is_android or is_ios">
-    <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED" desc="Mobile: Summary of the error page when the network connection failed.  May be followed by platform dependent instructions.">
-      Your device is offline.
-    </message>
-  </if>
-  <if expr="not is_android and not is_ios">
-    <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_INSTRUCTIONS_TEMPLATE" desc="Template for the summary of the error page when the network connection failed, on platforms with instructions.">
-      You can try to diagnose the problem by taking the following steps:
-      <ph name="LINE_BREAK">&lt;br /&gt;<ex>&lt;br /&gt;</ex></ph>
-      <ph name="PLATFORM_TEXT">
-        $1<ex>Goto the wrench menu and choose Fix It.</ex>
-      </ph>
-    </message>
-    <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED" desc="Summary of the error page when the network connection failed.  May be followed by platform dependent instructions.">
-      Your computer is offline.
-    </message>
-  </if>
-
-  <if expr="is_macosx">
-    <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM" desc="Summary (platform dependent section) in the error page when the network connection failed.  Describes how to get to the network Diagnostics screen under Mac OSX.">
-      Go to
-      <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
-      Applications &gt; System Preferences &gt; Network &gt; Assist me
-      <ph name="END_BOLD">&lt;/strong&gt;</ph>
-      to test your connection.
-    </message>
-  </if>
-  <if expr="is_win">
-    <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM" desc="Summary (platform dependent section) in the error page when the network connection failed.  Describes how to get to the network Diagnostics screen under Windows 7 and later.">
-      Go to
-      <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
-      Start &gt; Control Panel &gt; Network and Internet &gt; Network and Sharing Center &gt; Troubleshoot Problems (at the bottom) &gt; Internet Connections.
-      <ph name="END_BOLD">&lt;/strong&gt;</ph>
-    </message>
-    <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM_VISTA" desc="Summary (platform dependent section) in the error page when the network connection failed.  Describes how to get to the network Diagnostics screen under Windows Vista.">
-      Go to
-      <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>
-      Start &gt; Control Panel &gt; Network Connections &gt; New Connection Wizard
-      <ph name="END_BOLD">&lt;/strong&gt;</ph>
-      to test your connection.
-    </message>
-    <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_PLATFORM_XP" desc="Summary (platform dependent section) in the error page when the network connection failed.  Describes how to get to the network Diagnostics screen under Windows XP.">
-      Click
-      <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Start<ph name="END_BOLD">&lt;/strong&gt;</ph>,
-      click
-      <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Run<ph name="END_BOLD">&lt;/strong&gt;</ph>,
-      type
-      <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD">&lt;/strong&gt;</ph>,
-      and then click
-      <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>OK<ph name="END_BOLD">&lt;/strong&gt;</ph>.
-    </message>
-  </if>
-
   <message name="IDS_ERRORPAGES_SUMMARY_CACHE_READ_FAILURE" desc="Summary in the error page when we encountered an error reading from the cache.  Generally this happens when the disk cache is corrupted from improper shutdown.">
     The saved (cached) copy of this site was unreadable.
   </message>
@@ -494,10 +438,13 @@
   <message name="IDS_ERRORPAGES_SUGGESTION_CONTACT_ADMIN_SUMMARY" desc="The message displayed in a list of suggestions following a network error suggesting to the user to contact his system administrator. The suggestions list is prefixed with 'Try:'.">
     Contacting the system admin
   </message>
-  <message name="IDS_ERRORPAGES_SUGGESTION_CONTACT_ADMIN_SUMMARY_WITH_PREFIX" desc="Stand alone suggestion following a network error suggesting to the user to contact his system administrator.">
+  <message name="IDS_ERRORPAGES_SUGGESTION_CONTACT_ADMIN_SUMMARY_STANDALONE" desc="Stand alone suggestion following a network error suggesting to the user to contact his system administrator.">
     Try contacting the system admin.
   </message>
-  <message name="IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY" desc="When a webpage fails to load, we provide a link to the help center to learn more about the failure.">
+  <message name="IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY" desc="The message displayed in a list of suggestions when a webpage fails to load. A link provided to the help center to learn more about the failure. The suggestions list is prefixed with 'Try:'.">
+    <ph name="BEGIN_LINK">&lt;a jsvalues="href:learnMoreUrl"&gt;</ph>Learning more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about this problem.
+  </message>
+  <message name="IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY_STANDALONE" desc="When a webpage fails to load, we provide a link to the help center to learn more about the failure.">
     <ph name="BEGIN_LINK">&lt;a jsvalues="href:learnMoreUrl"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about this problem.
   </message>
   <message name="IDS_ERRORPAGES_SUGGESTION_CLEAR_COOKIES_SUMMARY" desc="The message displayed following a network error suggesting the user could try clearing their cookies. We also provide a link to the help center to learn more about the failure.">
@@ -532,6 +479,30 @@
   <message name="IDS_ERRORPAGES_SUGGESTION_GOOGLE_SEARCH_SUMMARY" desc="When a page fails to load, sometimes we suggest a specific Google search.">
     Search Google for <ph name="LINK">&lt;a jsvalues="href:searchUrl;.jstdata:$this" onclick="linkClicked(this.jstdata)" jscontent="searchTerms" id="search-link"&gt;<ex>Example search terms</ex>&lt;/a&gt;</ph>
   </message>
+  <if expr="is_macosx">
+    <message name="IDS_ERRORPAGES_SUGGESTION_DIAGNOSE" desc="Label for the link that invokes the connection diagnostic tool on the error page displayed in a list of suggestions. The suggestions list is prefixed with 'Try:'.">
+      <ph name="BEGIN_LINK">&lt;a href="javascript:diagnoseErrors()" id="diagnose-link"&gt;</ph>Running Network Diagnostics<ph name="END_LINK">&lt;/a&gt;</ph>
+    </message>
+    <message name="IDS_ERRORPAGES_SUGGESTION_DIAGNOSE_STANDALONE" desc="Standalone text for the link that invokes the connection diagnostic tool on the error page">
+      <ph name="BEGIN_LINK">&lt;a href="javascript:diagnoseErrors()" id="diagnose-link"&gt;</ph>Try running Network Diagnostics<ph name="END_LINK">&lt;/a&gt;</ph>.
+    </message>
+  </if>
+  <if expr="is_win">
+    <message name="IDS_ERRORPAGES_SUGGESTION_DIAGNOSE" desc="Label for the link that invokes the connection diagnostic tool on the error page displayed in a list of suggestions. The suggestions list is prefixed with 'Try:'.">
+      <ph name="BEGIN_LINK">&lt;a href="javascript:diagnoseErrors()" id="diagnose-link"&gt;</ph>Running Windows Network Diagnostics<ph name="END_LINK">&lt;/a&gt;</ph>
+    </message>
+    <message name="IDS_ERRORPAGES_SUGGESTION_DIAGNOSE_STANDALONE" desc="Standalone text for the link that invokes the connection diagnostic tool on the error page">
+      <ph name="BEGIN_LINK">&lt;a href="javascript:diagnoseErrors()" id="diagnose-link"&gt;</ph>Try running Windows Network Diagnostics<ph name="END_LINK">&lt;/a&gt;</ph>.
+    </message>
+  </if>
+  <if expr="chromeos">
+    <message name="IDS_ERRORPAGES_SUGGESTION_DIAGNOSE" desc="Label for the link that invokes the connection diagnostic tool on the error page displayed in a list of suggestions. The suggestions list is prefixed with 'Try:'.">
+      <ph name="BEGIN_LINK">&lt;a href="javascript:diagnoseErrors()" id="diagnose-link"&gt;</ph>Running Connectivity Diagnostics<ph name="END_LINK">&lt;/a&gt;</ph>
+    </message>
+    <message name="IDS_ERRORPAGES_SUGGESTION_DIAGNOSE_STANDALONE" desc="Standalone text for the link that invokes the connection diagnostic tool on the error page">
+      <ph name="BEGIN_LINK">&lt;a href="javascript:diagnoseErrors()" id="diagnose-link"&gt;</ph>Try running Connectivity Diagnostics<ph name="END_LINK">&lt;/a&gt;</ph>.
+    </message>
+  </if>
 
   <!-- iOS specific error page messages -->
   <if expr="is_ios">
