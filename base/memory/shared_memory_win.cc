@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -108,6 +110,11 @@ HANDLE CreateFileMappingWithReducedPermissions(SECURITY_ATTRIBUTES* sa,
   HANDLE h = CreateFileMapping(INVALID_HANDLE_VALUE, sa, PAGE_READWRITE, 0,
                                static_cast<DWORD>(rounded_size), name);
   if (!h) {
+    // Debugging to help track down https://crbug.com/585013
+    DWORD last_error = ::GetLastError();
+    base::debug::Alias(&last_error);
+    base::debug::DumpWithoutCrashing();
+
     LogError(CREATE_FILE_MAPPING_FAILURE);
     return nullptr;
   }
