@@ -150,10 +150,6 @@ bool ThemePainter::paint(const LayoutObject& o, const PaintInfo& paintInfo, cons
         return paintSearchField(o, paintInfo, r);
     case SearchFieldCancelButtonPart:
         return paintSearchFieldCancelButton(o, paintInfo, r);
-    case SearchFieldDecorationPart:
-        return paintSearchFieldDecoration(o, paintInfo, r);
-    case SearchFieldResultsDecorationPart:
-        return paintSearchFieldResultsDecoration(o, paintInfo, r);
     default:
         break;
     }
@@ -186,8 +182,6 @@ bool ThemePainter::paintBorderOnly(const LayoutObject& o, const PaintInfo& paint
     case SliderThumbHorizontalPart:
     case SliderThumbVerticalPart:
     case SearchFieldCancelButtonPart:
-    case SearchFieldDecorationPart:
-    case SearchFieldResultsDecorationPart:
     default:
         break;
     }
@@ -217,8 +211,6 @@ bool ThemePainter::paintDecorations(const LayoutObject& o, const PaintInfo& pain
     case SliderThumbVerticalPart:
     case SearchFieldPart:
     case SearchFieldCancelButtonPart:
-    case SearchFieldDecorationPart:
-    case SearchFieldResultsDecorationPart:
     default:
         break;
     }

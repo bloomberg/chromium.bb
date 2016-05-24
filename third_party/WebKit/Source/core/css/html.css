@@ -470,24 +470,6 @@ input[type="search" i]:enabled:read-write:-webkit-any(:focus,:hover)::-webkit-se
     pointer-events: auto;
 }
 
-input[type="search" i]::-webkit-search-decoration {
-    -webkit-appearance: searchfield-decoration;
-    display: block;
-    flex: none;
-    -webkit-user-modify: read-only !important;
-    -webkit-align-self: flex-start;
-    margin: auto 0;
-}
-
-input[type="search" i]::-webkit-search-results-decoration {
-    -webkit-appearance: searchfield-results-decoration;
-    display: block;
-    flex: none;
-    -webkit-user-modify: read-only !important;
-    -webkit-align-self: flex-start;
-    margin: auto 0;
-}
-
 input::-webkit-inner-spin-button {
     -webkit-appearance: inner-spin-button;
     display: inline-block;

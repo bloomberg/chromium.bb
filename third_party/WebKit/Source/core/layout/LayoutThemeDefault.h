@@ -94,8 +94,6 @@ public:
 
     void adjustSearchFieldStyle(ComputedStyle&) const override;
     void adjustSearchFieldCancelButtonStyle(ComputedStyle&) const override;
-    void adjustSearchFieldDecorationStyle(ComputedStyle&) const override;
-    void adjustSearchFieldResultsDecorationStyle(ComputedStyle&) const override;
 
     // MenuList refers to an unstyled menulist (meaning a menulist without
     // background-color or border set) and MenuListButton refers to a styled

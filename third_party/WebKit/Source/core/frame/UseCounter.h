@@ -103,7 +103,6 @@ public:
         PlaceholderAttribute = 45,
         PrefixedDirectoryAttribute = 47,
         RequiredAttribute = 49,
-        ResultsAttribute = 50,
         StepAttribute = 51,
         PageVisits = 52,
         HTMLMarqueeElement = 53,

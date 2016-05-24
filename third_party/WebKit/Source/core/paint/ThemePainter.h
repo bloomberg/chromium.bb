@@ -63,8 +63,6 @@ protected:
     virtual bool paintSliderThumb(const LayoutObject&, const PaintInfo&, const IntRect&) { return true; }
     virtual bool paintSearchField(const LayoutObject&, const PaintInfo&, const IntRect&) { return true; }
     virtual bool paintSearchFieldCancelButton(const LayoutObject&, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintSearchFieldDecoration(const LayoutObject&, const PaintInfo&, const IntRect&) { return true; }
-    virtual bool paintSearchFieldResultsDecoration(const LayoutObject&, const PaintInfo&, const IntRect&) { return true; }
 
     bool paintUsingFallbackTheme(const LayoutObject&, const PaintInfo&, const IntRect&);
     bool paintCheckboxUsingFallbackTheme(const LayoutObject&, const PaintInfo&, const IntRect&);

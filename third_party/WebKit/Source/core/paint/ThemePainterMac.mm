@@ -544,46 +544,4 @@ bool ThemePainterMac::paintSearchFieldCancelButton(const LayoutObject& o, const 
     return false;
 }
 
-bool ThemePainterMac::paintSearchFieldDecoration(const LayoutObject&, const PaintInfo&, const IntRect&)
-{
-    return false;
-}
-
-bool ThemePainterMac::paintSearchFieldResultsDecoration(const LayoutObject& o, const PaintInfo& paintInfo, const IntRect& r)
-{
-    if (!o.node())
-        return false;
-    Node* input = o.node()->shadowHost();
-    if (!input)
-        input = o.node();
-    if (!input->layoutObject()->isBox())
-        return false;
-
-    GraphicsContextStateSaver stateSaver(paintInfo.context);
-
-    float zoomLevel = o.styleRef().effectiveZoom();
-    FloatRect unzoomedRect(r);
-    if (zoomLevel != 1) {
-        unzoomedRect.setWidth(unzoomedRect.width() / zoomLevel);
-        unzoomedRect.setHeight(unzoomedRect.height() / zoomLevel);
-        paintInfo.context.translate(unzoomedRect.x(), unzoomedRect.y());
-        paintInfo.context.scale(zoomLevel, zoomLevel);
-        paintInfo.context.translate(-unzoomedRect.x(), -unzoomedRect.y());
-    }
-
-    LocalCurrentGraphicsContext localContext(paintInfo.context, r);
-
-    NSSearchFieldCell* search = m_layoutTheme.search();
-    m_layoutTheme.setSearchCellState(*input->layoutObject(), r);
-    [search setControlSize:searchFieldControlSizeForFont(o.styleRef())];
-    if ([search searchMenuTemplate] != nil)
-        [search setSearchMenuTemplate:nil];
-
-    m_layoutTheme.updateActiveState([search searchButtonCell], o);
-
-    [[search searchButtonCell] drawWithFrame:unzoomedRect inView:m_layoutTheme.documentViewFor(o)];
-    [[search searchButtonCell] setControlView:nil];
-    return false;
-}
-
 } // namespace blink

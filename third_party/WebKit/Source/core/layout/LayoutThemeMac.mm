@@ -888,30 +888,6 @@ void LayoutThemeMac::adjustSearchFieldCancelButtonStyle(ComputedStyle& style) co
     style.setBoxShadow(nullptr);
 }
 
-const IntSize* LayoutThemeMac::resultsButtonSizes() const
-{
-    static const IntSize sizes[3] = { IntSize(15, 14), IntSize(16, 13), IntSize(14, 11) };
-    return sizes;
-}
-
-void LayoutThemeMac::adjustSearchFieldDecorationStyle(ComputedStyle& style) const
-{
-    NSControlSize controlSize = controlSizeForSystemFont(style);
-    IntSize searchFieldSize = searchFieldSizes()[controlSize];
-    int width = searchFieldSize.height() / 2 - searchFieldBorderWidth - searchFieldHorizontalPaddings()[controlSize];
-    style.setWidth(Length(width, Fixed));
-    style.setHeight(Length(0, Fixed));
-    style.setBoxShadow(nullptr);
-}
-
-void LayoutThemeMac::adjustSearchFieldResultsDecorationStyle(ComputedStyle& style) const
-{
-    IntSize size = sizeForSystemFont(style, resultsButtonSizes());
-    style.setWidth(Length(size.width(), Fixed));
-    style.setHeight(Length(size.height(), Fixed));
-    style.setBoxShadow(nullptr);
-}
-
 IntSize LayoutThemeMac::sliderTickSize() const
 {
     return IntSize(1, 3);

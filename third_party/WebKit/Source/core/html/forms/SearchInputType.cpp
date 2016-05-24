@@ -84,8 +84,6 @@ void SearchInputType::createShadowSubtree()
     Element* viewPort = element().userAgentShadowRoot()->getElementById(ShadowElementNames::editingViewPort());
     ASSERT(container);
     ASSERT(viewPort);
-
-    container->insertBefore(SearchFieldDecorationElement::create(element().document()), viewPort);
     container->insertBefore(SearchFieldCancelButtonElement::create(element().document()), viewPort->nextSibling());
 }
 

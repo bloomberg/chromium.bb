@@ -45,8 +45,6 @@ private:
     bool paintSliderThumb(const LayoutObject&, const PaintInfo&, const IntRect&) override;
     bool paintSearchField(const LayoutObject&, const PaintInfo&, const IntRect&) override;
     bool paintSearchFieldCancelButton(const LayoutObject&, const PaintInfo&, const IntRect&) override;
-    bool paintSearchFieldDecoration(const LayoutObject&, const PaintInfo&, const IntRect&) override;
-    bool paintSearchFieldResultsDecoration(const LayoutObject&, const PaintInfo&, const IntRect&) override;
 
     LayoutThemeMac& m_layoutTheme;
 };

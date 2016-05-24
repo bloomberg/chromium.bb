@@ -51,9 +51,6 @@ static const float defaultControlFontPixelSize = 13;
 static const float defaultCancelButtonSize = 9;
 static const float minCancelButtonSize = 5;
 static const float maxCancelButtonSize = 21;
-static const float defaultSearchFieldResultsDecorationSize = 13;
-static const float minSearchFieldResultsDecorationSize = 9;
-static const float maxSearchFieldResultsDecorationSize = 30;
 static const int menuListArrowPaddingSize = 14;
 
 static bool useMockTheme()
@@ -335,23 +332,6 @@ void LayoutThemeDefault::adjustSearchFieldCancelButtonStyle(ComputedStyle& style
     int cancelButtonSize = lroundf(std::min(std::max(minCancelButtonSize, defaultCancelButtonSize * fontScale), maxCancelButtonSize));
     style.setWidth(Length(cancelButtonSize, Fixed));
     style.setHeight(Length(cancelButtonSize, Fixed));
-}
-
-void LayoutThemeDefault::adjustSearchFieldDecorationStyle(ComputedStyle& style) const
-{
-    IntSize emptySize(1, 11);
-    style.setWidth(Length(emptySize.width(), Fixed));
-    style.setHeight(Length(emptySize.height(), Fixed));
-}
-
-void LayoutThemeDefault::adjustSearchFieldResultsDecorationStyle(ComputedStyle& style) const
-{
-    // Scale the decoration size based on the font size
-    float fontScale = style.fontSize() / defaultControlFontPixelSize;
-    int magnifierSize = lroundf(std::min(std::max(minSearchFieldResultsDecorationSize, defaultSearchFieldResultsDecorationSize * fontScale),
-        maxSearchFieldResultsDecorationSize));
-    style.setWidth(Length(magnifierSize, Fixed));
-    style.setHeight(Length(magnifierSize, Fixed));
 }
 
 void LayoutThemeDefault::adjustMenuListStyle(ComputedStyle& style, Element*) const

@@ -54,7 +54,6 @@ private:
     bool paintTextArea(const LayoutObject&, const PaintInfo&, const IntRect&) override;
     bool paintSearchField(const LayoutObject&, const PaintInfo&, const IntRect&) override;
     bool paintSearchFieldCancelButton(const LayoutObject&, const PaintInfo&, const IntRect&) override;
-    bool paintSearchFieldResultsDecoration(const LayoutObject&, const PaintInfo&, const IntRect&) override;
 
     void setupMenuListArrow(const LayoutBox&, const IntRect&, WebThemeEngine::ExtraParams&);
 };

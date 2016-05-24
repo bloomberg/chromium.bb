@@ -93,8 +93,6 @@ protected:
     void adjustMenuListButtonStyle(ComputedStyle&, Element*) const override;
     void adjustSearchFieldStyle(ComputedStyle&) const override;
     void adjustSearchFieldCancelButtonStyle(ComputedStyle&) const override;
-    void adjustSearchFieldDecorationStyle(ComputedStyle&) const override;
-    void adjustSearchFieldResultsDecorationStyle(ComputedStyle&) const override;
 
 public:
     // Constants and methods shared with ThemePainterMac
@@ -123,7 +121,6 @@ public:
 
     const IntSize* searchFieldSizes() const;
     const IntSize* cancelButtonSizes() const;
-    const IntSize* resultsButtonSizes() const;
     void setSearchCellState(const LayoutObject&, const IntRect&);
     void setSearchFieldSize(ComputedStyle&) const;
 

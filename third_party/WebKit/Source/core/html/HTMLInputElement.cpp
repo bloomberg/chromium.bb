@@ -97,14 +97,12 @@ private:
 // this, even when just clicking in the text field.
 const int HTMLInputElement::maximumLength = 524288;
 const int defaultSize = 20;
-const int maxSavedResults = 256;
 
 HTMLInputElement::HTMLInputElement(Document& document, HTMLFormElement* form, bool createdByParser)
     : HTMLTextFormControlElement(inputTag, document, form)
     , m_size(defaultSize)
     , m_maxLength(maximumLength)
     , m_minLength(-1)
-    , m_maxResults(-1)
     , m_isChecked(false)
     , m_dirtyCheckedness(false)
     , m_isIndeterminate(false)
@@ -724,14 +722,6 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
     } else if (name == onsearchAttr) {
         // Search field and slider attributes all just cause updateFromElement to be called through style recalcing.
         setAttributeEventListener(EventTypeNames::search, createAttributeEventListener(this, name, value, eventParameterName()));
-    } else if (name == resultsAttr) {
-        int oldResults = m_maxResults;
-        m_maxResults = !value.isNull() ? std::min(value.toInt(), maxSavedResults) : -1;
-        // FIXME: Detaching just for maxResults change is not ideal.  We should figure out the right
-        // time to relayout for this change.
-        if ((m_maxResults < 0) != (oldResults < 0))
-            lazyReattachIfAttached();
-        Deprecation::countDeprecation(document(), UseCounter::ResultsAttribute);
     } else if (name == incrementalAttr) {
         UseCounter::count(document(), UseCounter::IncrementalAttribute);
     } else if (name == minAttr) {

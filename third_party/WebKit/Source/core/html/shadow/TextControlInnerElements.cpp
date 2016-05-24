@@ -151,54 +151,6 @@ PassRefPtr<ComputedStyle> TextControlInnerEditorElement::customStyleForLayoutObj
 
 // ----------------------------
 
-inline SearchFieldDecorationElement::SearchFieldDecorationElement(Document& document)
-    : HTMLDivElement(document)
-{
-}
-
-SearchFieldDecorationElement* SearchFieldDecorationElement::create(Document& document)
-{
-    SearchFieldDecorationElement* element = new SearchFieldDecorationElement(document);
-    element->setAttribute(idAttr, ShadowElementNames::searchDecoration());
-    return element;
-}
-
-const AtomicString& SearchFieldDecorationElement::shadowPseudoId() const
-{
-    DEFINE_STATIC_LOCAL(AtomicString, resultsDecorationId, ("-webkit-search-results-decoration"));
-    DEFINE_STATIC_LOCAL(AtomicString, decorationId, ("-webkit-search-decoration"));
-    Element* host = shadowHost();
-    if (!host)
-        return resultsDecorationId;
-    if (isHTMLInputElement(*host)) {
-        if (toHTMLInputElement(host)->maxResults() < 0)
-            return decorationId;
-        return resultsDecorationId;
-    }
-    return resultsDecorationId;
-}
-
-void SearchFieldDecorationElement::defaultEventHandler(Event* event)
-{
-    // On mousedown, focus the search field
-    HTMLInputElement* input = toHTMLInputElement(shadowHost());
-    if (input && event->type() == EventTypeNames::mousedown && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
-        input->focus();
-        input->select(NotDispatchSelectEvent);
-        event->setDefaultHandled();
-    }
-
-    if (!event->defaultHandled())
-        HTMLDivElement::defaultEventHandler(event);
-}
-
-bool SearchFieldDecorationElement::willRespondToMouseClickEvents()
-{
-    return true;
-}
-
-// ----------------------------
-
 inline SearchFieldCancelButtonElement::SearchFieldCancelButtonElement(Document& document)
     : HTMLDivElement(document)
     , m_capturing(false)

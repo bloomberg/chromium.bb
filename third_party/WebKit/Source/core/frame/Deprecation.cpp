@@ -357,9 +357,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::HTMLKeygenElement:
         return willBeRemoved("The <keygen> element", 54, "5716060992962560");
 
-    case UseCounter::ResultsAttribute:
-        return willBeRemoved("'results' attribute", 53, "5738199536107520");
-
     case UseCounter::WebAnimationsEasingAsFunctionLinear:
         return String::format("Specifying animation easing as a function is deprecated and all support will be removed in %s, at which point this will throw a TypeError. This warning may have been triggered by the Web Animations or Polymer polyfills. See http://crbug.com/601672 for details.", milestoneString(54));
 

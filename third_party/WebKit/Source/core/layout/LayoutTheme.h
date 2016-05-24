@@ -210,8 +210,6 @@ protected:
     virtual void adjustSliderThumbStyle(ComputedStyle&) const;
     virtual void adjustSearchFieldStyle(ComputedStyle&) const;
     virtual void adjustSearchFieldCancelButtonStyle(ComputedStyle&) const;
-    virtual void adjustSearchFieldDecorationStyle(ComputedStyle&) const;
-    virtual void adjustSearchFieldResultsDecorationStyle(ComputedStyle&) const;
     void adjustStyleUsingFallbackTheme(ComputedStyle&);
     void adjustCheckboxStyleUsingFallbackTheme(ComputedStyle&) const;
     void adjustRadioStyleUsingFallbackTheme(ComputedStyle&) const;

@@ -217,10 +217,6 @@ void LayoutTheme::adjustStyle(ComputedStyle& style, Element* e)
         return adjustSearchFieldStyle(style);
     case SearchFieldCancelButtonPart:
         return adjustSearchFieldCancelButtonStyle(style);
-    case SearchFieldDecorationPart:
-        return adjustSearchFieldDecorationStyle(style);
-    case SearchFieldResultsDecorationPart:
-        return adjustSearchFieldResultsDecorationStyle(style);
     default:
         break;
     }
@@ -645,14 +641,6 @@ void LayoutTheme::adjustSearchFieldStyle(ComputedStyle&) const
 }
 
 void LayoutTheme::adjustSearchFieldCancelButtonStyle(ComputedStyle&) const
-{
-}
-
-void LayoutTheme::adjustSearchFieldDecorationStyle(ComputedStyle&) const
-{
-}
-
-void LayoutTheme::adjustSearchFieldResultsDecorationStyle(ComputedStyle&) const
 {
 }
 

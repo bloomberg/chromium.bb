@@ -504,12 +504,6 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ControlPart e)
     case SearchFieldPart:
         m_value.valueID = CSSValueSearchfield;
         break;
-    case SearchFieldDecorationPart:
-        m_value.valueID = CSSValueSearchfieldDecoration;
-        break;
-    case SearchFieldResultsDecorationPart:
-        m_value.valueID = CSSValueSearchfieldResultsDecoration;
-        break;
     case SearchFieldCancelButtonPart:
         m_value.valueID = CSSValueSearchfieldCancelButton;
         break;
