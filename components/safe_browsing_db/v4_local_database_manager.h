@@ -27,7 +27,7 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
  public:
   // Construct V4LocalDatabaseManager.
   // Must be initialized by calling StartOnIOThread() before using.
-  V4LocalDatabaseManager();
+  V4LocalDatabaseManager(const base::FilePath& base_path);
 
   //
   // SafeBrowsingDatabaseManager implementation
@@ -41,9 +41,8 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   bool IsDownloadProtectionEnabled() const override;
   bool CheckBrowseUrl(const GURL& url, Client* client) override;
   void CancelCheck(Client* client) override;
-  void StartOnIOThread(
-      net::URLRequestContextGetter* request_context_getter,
-      const V4ProtocolConfig& config) override;
+  void StartOnIOThread(net::URLRequestContextGetter* request_context_getter,
+                       const V4ProtocolConfig& config) override;
   void StopOnIOThread(bool shutdown) override;
   bool CheckDownloadUrl(const std::vector<GURL>& url_chain,
                         Client* client) override;
@@ -65,6 +64,20 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // successfully.
   void UpdateRequestCompleted(const std::vector<ListUpdateResponse>& responses);
 
+  void SetupUpdateProtocolManager(
+      net::URLRequestContextGetter* request_context_getter,
+      const V4ProtocolConfig& config);
+
+  void SetupDatabase();
+
+  void DatabaseReady(std::unique_ptr<V4Database> v4_database);
+
+  void OnCloseDatabase();
+
+  // The base directory under which to create the files that contain hashes.
+  const base::FilePath base_path_;
+
+  // Whether the service is running.
   bool enabled_;
 
   // Stores the current status of the lists to download from the SafeBrowsing
@@ -77,7 +90,11 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   std::unique_ptr<V4UpdateProtocolManager> v4_update_protocol_manager_;
 
   // The database that manages the stores containing the hash prefix updates.
+  // All writes to this variable must happen on the IO thread only.
   std::unique_ptr<V4Database> v4_database_;
+
+  // The sequenced task runner for running safe browsing database operations.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   friend class base::RefCountedThreadSafe<V4LocalDatabaseManager>;
   DISALLOW_COPY_AND_ASSIGN(V4LocalDatabaseManager);
