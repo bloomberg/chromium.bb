@@ -249,6 +249,10 @@ group("both_gn_and_gyp") {
       "//ios/web:ios_web_unittests",
       "//ios/web/shell:ios_web_shell",
     ]
+
+    if (!is_component_build) {
+      deps += [ "//components/cronet/ios:cronet_package" ]
+    }
   }
 
   deps += root_extra_deps

@@ -62,6 +62,8 @@ def main():
                                'stack',
                                'debug',
                                'build-debug'])
+  parser.add_argument('-g', '--gn', action='store_true',
+                      help='use gn output directory suffix')
   parser.add_argument('-d', '--out_dir', action='store',
                       help='name of the build directory')
   parser.add_argument('-i', '--iphoneos', action='store_true',
@@ -77,24 +79,30 @@ def main():
   if is_os:
     target_os = 'ios'
     test_target = 'cronet_test'
+    gn_args = 'target_cpu = "x64" '
     out_dir_suffix = '-iphonesimulator'
     if options.iphoneos:
+      gn_args = 'target_cpu = "arm64" '
       out_dir_suffix = '-iphoneos'
   else:
     target_os = 'android'
     test_target = 'cronet_test_instrumentation_apk'
+    gn_args = 'use_errorprone_java_compiler=true '
     out_dir_suffix = ''
 
   gyp_defines = 'GYP_DEFINES="OS=' + target_os + ' enable_websockets=0 '+ \
       'disable_file_support=1 disable_ftp_support=1 '+ \
       'enable_errorprone=1 use_platform_icu_alternatives=1 ' + \
       'disable_brotli_filter=1"'
-  gn_args = 'target_os="' + target_os + '" enable_websockets=false '+ \
+  gn_args += 'target_os="' + target_os + '" enable_websockets=false '+ \
       'disable_file_support=true disable_ftp_support=true '+ \
-      'use_errorprone_java_compiler=true use_platform_icu_alternatives=true '+ \
+      'use_platform_icu_alternatives=true '+ \
       'disable_brotli_filter=true'
 
   extra_options = ' '.join(extra_options_list)
+  if options.gn:
+    out_dir_suffix += "-gn"
+
   if options.release:
     out_dir = 'out/Release' + out_dir_suffix
     release_arg = ' --release'

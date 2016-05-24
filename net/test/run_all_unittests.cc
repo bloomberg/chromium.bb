@@ -19,10 +19,10 @@
 #include "base/test/test_ui_thread_android.h"
 #include "net/android/dummy_spnego_authenticator.h"
 #include "net/android/net_jni_registrar.h"
-#endif
-
 #if BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
 #include "url/android/url_jni_registrar.h"  // nogncheck
+#endif
+
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)

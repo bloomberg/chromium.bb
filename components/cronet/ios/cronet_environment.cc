@@ -20,7 +20,7 @@
 #include "base/path_service.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/worker_pool.h"
-#include "components/cronet/version.h"
+#include "components/cronet/ios/version.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_filter.h"
 #include "net/base/net_errors.h"

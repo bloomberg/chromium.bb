@@ -734,7 +734,7 @@
                 'cronet/version.h.in',
               ],
               'outputs': [
-                '<(SHARED_INTERMEDIATE_DIR)/components/cronet/version.h',
+                '<(SHARED_INTERMEDIATE_DIR)/components/cronet/ios/version.h',
               ],
               'action': [
                 'python',
