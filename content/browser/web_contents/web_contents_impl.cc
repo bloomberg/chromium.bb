@@ -4445,14 +4445,13 @@ void WebContentsImpl::UpdateTitle(RenderFrameHost* render_frame_host,
 
   // Try to find the navigation entry, which might not be the current one.
   // For example, it might be from a recently swapped out RFH.
-  NavigationEntryImpl* entry = controller_.GetEntryWithUniqueID(
-      static_cast<RenderFrameHostImpl*>(render_frame_host)->nav_entry_id());
-
-  // Sanity check that we would find the same entry via page ID.
-  // TODO(creis): Remove this and all of page_id.  https://crbug.com/369661.
-  NavigationEntryImpl* entry_via_page_id = controller_.GetEntryWithPageID(
+  NavigationEntryImpl* entry = controller_.GetEntryWithPageID(
       render_frame_host->GetSiteInstance(), page_id);
-  CHECK_EQ(entry, entry_via_page_id);
+
+  // TODO(creis): Switch to use this as the default.
+  NavigationEntryImpl* new_entry = controller_.GetEntryWithUniqueID(
+      static_cast<RenderFrameHostImpl*>(render_frame_host)->nav_entry_id());
+  DCHECK_EQ(entry, new_entry);
 
   // We can handle title updates when we don't have an entry in
   // UpdateTitleForEntry, but only if the update is from the current RVH.
