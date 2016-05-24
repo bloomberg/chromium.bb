@@ -118,7 +118,7 @@ class Builder(object):
       output_subdirectory: Subdirectory to put all created tasks in or None.
     """
     self.output_directory = output_directory
-    self._output_subdirectory = output_subdirectory
+    self.output_subdirectory = output_subdirectory
     self._tasks = {}
 
   def CreateStaticTask(self, task_name, path):
@@ -182,8 +182,8 @@ class Builder(object):
     return InnerAddTaskWithNewPath
 
   def _RebaseTaskName(self,  task_name):
-    if self._output_subdirectory:
-      return os.path.join(self._output_subdirectory, task_name)
+    if self.output_subdirectory:
+      return os.path.join(self.output_subdirectory, task_name)
     return task_name
 
 

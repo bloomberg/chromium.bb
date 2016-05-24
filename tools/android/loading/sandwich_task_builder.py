@@ -33,7 +33,7 @@ def NetworkSimulationTransformer(network_condition):
   return Transformer
 
 
-class SandwichTaskBuilder(task_manager.Builder):
+class SandwichCommonBuilder(task_manager.Builder):
   """A builder for a graph of tasks, each prepares or invokes a SandwichRunner.
   """
 
@@ -51,19 +51,11 @@ class SandwichTaskBuilder(task_manager.Builder):
     task_manager.Builder.__init__(self, output_directory, output_subdirectory)
     self._android_device = android_device
     self._url = url
-    self._default_final_tasks = []
+    self.default_final_tasks = []
 
-    self._original_wpr_task = None
-    self._patched_wpr_task = None
-    self._reference_cache_task = None
-    self._subresources_for_urls_run_task = None
-    self._subresources_for_urls_task = None
+    self.original_wpr_task = None
 
-  @property
-  def default_final_tasks(self):
-      return self._default_final_tasks
-
-  def _CreateSandwichRunner(self):
+  def CreateSandwichRunner(self):
     """Create a runner for non benchmark purposes."""
     runner = sandwich_runner.SandwichRunner()
     runner.url = self._url
@@ -76,7 +68,7 @@ class SandwichTaskBuilder(task_manager.Builder):
     Args:
       original_wpr_path: Path of the original WPR archive to be used.
     """
-    self._original_wpr_task = \
+    self.original_wpr_task = \
         self.CreateStaticTask('common/webpages.wpr', original_wpr_path)
 
   def PopulateWprRecordingTask(self):
@@ -84,14 +76,30 @@ class SandwichTaskBuilder(task_manager.Builder):
     @self.RegisterTask('common/webpages.wpr')
     def BuildOriginalWpr():
       common_util.EnsureParentDirectoryExists(BuildOriginalWpr.path)
-      runner = self._CreateSandwichRunner()
+      runner = self.CreateSandwichRunner()
       runner.wpr_archive_path = BuildOriginalWpr.path
       runner.wpr_record = True
       runner.Run()
 
-    self._original_wpr_task = BuildOriginalWpr
+    self.original_wpr_task = BuildOriginalWpr
 
-  def PopulateCommonPipelines(self):
+
+class PrefetchBenchmarkBuilder(task_manager.Builder):
+  """A builder for a graph of tasks for NoState-Prefetch emulated benchmarks."""
+
+  def __init__(self, common_builder):
+    task_manager.Builder.__init__(self,
+                                  common_builder.output_directory,
+                                  common_builder.output_subdirectory)
+    self._common_builder = common_builder
+
+    self._patched_wpr_task = None
+    self._reference_cache_task = None
+    self._subresources_for_urls_run_task = None
+    self._subresources_for_urls_task = None
+    self._PopulateCommonPipelines()
+
+  def _PopulateCommonPipelines(self):
     """Creates necessary tasks to produce initial cache archive.
 
     Also creates a task for producing a json file with a mapping of URLs to
@@ -106,19 +114,18 @@ class SandwichTaskBuilder(task_manager.Builder):
       depends on: common/urls-resources.json
         depends on: common/urls-resources-run/
           depends on: common/webpages.wpr
-
-    Returns:
-      The last task of the pipeline.
     """
-    @self.RegisterTask('common/webpages-patched.wpr', [self._original_wpr_task])
+    @self.RegisterTask('common/webpages-patched.wpr',
+                       dependencies=[self._common_builder.original_wpr_task])
     def BuildPatchedWpr():
       common_util.EnsureParentDirectoryExists(BuildPatchedWpr.path)
-      shutil.copyfile(self._original_wpr_task.path, BuildPatchedWpr.path)
+      shutil.copyfile(
+          self._common_builder.original_wpr_task.path, BuildPatchedWpr.path)
       sandwich_misc.PatchWpr(BuildPatchedWpr.path)
 
     @self.RegisterTask('common/original-cache.zip', [BuildPatchedWpr])
     def BuildOriginalCache():
-      runner = self._CreateSandwichRunner()
+      runner = self._common_builder.CreateSandwichRunner()
       runner.wpr_archive_path = BuildPatchedWpr.path
       runner.cache_archive_path = BuildOriginalCache.path
       runner.cache_operation = sandwich_runner.CacheOperation.SAVE
@@ -134,10 +141,10 @@ class SandwichTaskBuilder(task_manager.Builder):
           original_cache_trace_path, BuildPatchedCache.path)
 
     @self.RegisterTask('common/subresources-for-urls-run/',
-                       dependencies=[self._original_wpr_task])
+                       dependencies=[self._common_builder.original_wpr_task])
     def UrlsResourcesRun():
-      runner = self._CreateSandwichRunner()
-      runner.wpr_archive_path = self._original_wpr_task.path
+      runner = self._common_builder.CreateSandwichRunner()
+      runner.wpr_archive_path = self._common_builder.original_wpr_task.path
       runner.cache_operation = sandwich_runner.CacheOperation.CLEAR
       runner.output_dir = UrlsResourcesRun.path
       runner.Run()
@@ -160,8 +167,7 @@ class SandwichTaskBuilder(task_manager.Builder):
     self._subresources_for_urls_run_task = UrlsResourcesRun
     self._subresources_for_urls_task = ListUrlsResources
 
-    self._default_final_tasks.append(ValidatePatchedCache)
-    return ValidatePatchedCache
+    self._common_builder.default_final_tasks.append(ValidatePatchedCache)
 
   def PopulateLoadBenchmark(self, subresource_discoverer,
                             transformer_list_name, transformer_list):
@@ -182,10 +188,6 @@ class SandwichTaskBuilder(task_manager.Builder):
           depends on: some tasks saved by PopulateCommonPipelines()
           depends on: common/<subresource_discoverer>-setup.json
             depends on: some tasks saved by PopulateCommonPipelines()
-
-    Returns:
-      task_manager.Task for
-          <transformer_list_name>/<subresource_discoverer>-metrics.csv
     """
     assert subresource_discoverer in sandwich_misc.SUBRESOURCE_DISCOVERERS
     assert 'common' not in sandwich_misc.SUBRESOURCE_DISCOVERERS
@@ -222,7 +224,7 @@ class SandwichTaskBuilder(task_manager.Builder):
     @self.RegisterTask(task_prefix + '-run/',
                        dependencies=[BuildBenchmarkCacheArchive])
     def RunBenchmark():
-      runner = self._CreateSandwichRunner()
+      runner = self._common_builder.CreateSandwichRunner()
       for transformer in transformer_list:
         transformer(runner)
       runner.wpr_archive_path = self._patched_wpr_task.path
@@ -249,5 +251,4 @@ class SandwichTaskBuilder(task_manager.Builder):
         for trace_metrics in trace_metrics_list:
           writer.writerow(trace_metrics)
 
-    self._default_final_tasks.append(ExtractMetrics)
-    return ExtractMetrics
+    self._common_builder.default_final_tasks.append(ExtractMetrics)

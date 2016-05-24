@@ -215,7 +215,7 @@ def _ExtractBenchmarkStatistics(benchmark_setup, loading_trace):
   Args:
     benchmark_setup: benchmark_setup: dict representing the benchmark setup
         JSON. The JSON format is according to:
-            SandwichTaskBuilder.PopulateLoadBenchmark.SetupBenchmark.
+            PrefetchBenchmarkBuilder.PopulateLoadBenchmark.SetupBenchmark.
     loading_trace: loading_trace_module.LoadingTrace.
 
   Returns:
@@ -298,7 +298,7 @@ def _ExtractMetricsFromRunDirectory(benchmark_setup, run_directory_path):
   Args:
     benchmark_setup: benchmark_setup: dict representing the benchmark setup
         JSON. The JSON format is according to:
-            SandwichTaskBuilder.PopulateLoadBenchmark.SetupBenchmark.
+            PrefetchBenchmarkBuilder.PopulateLoadBenchmark.SetupBenchmark.
     run_directory_path: Path of the run directory.
 
   Returns:
@@ -315,8 +315,9 @@ def _ExtractMetricsFromRunDirectory(benchmark_setup, run_directory_path):
   }
   run_metrics.update(_ExtractDefaultMetrics(loading_trace))
   run_metrics.update(_ExtractMemoryMetrics(loading_trace))
-  run_metrics.update(
-      _ExtractBenchmarkStatistics(benchmark_setup, loading_trace))
+  if benchmark_setup:
+    run_metrics.update(
+        _ExtractBenchmarkStatistics(benchmark_setup, loading_trace))
   video_path = os.path.join(run_directory_path, 'video.mp4')
   if os.path.isfile(video_path):
     logging.info('processing speed-index video \'%s\'' % video_path)
@@ -347,7 +348,9 @@ def ExtractMetricsFromRunnerOutputDirectory(benchmark_setup_path,
   Returns:
     List of dictionaries.
   """
-  benchmark_setup = json.load(open(benchmark_setup_path))
+  benchmark_setup = None
+  if benchmark_setup_path:
+    benchmark_setup = json.load(open(benchmark_setup_path))
   assert os.path.isdir(output_directory_path)
   metrics = []
   for node_name in os.listdir(output_directory_path):
@@ -361,7 +364,9 @@ def ExtractMetricsFromRunnerOutputDirectory(benchmark_setup_path,
     run_metrics = _ExtractMetricsFromRunDirectory(
         benchmark_setup, run_directory_path)
     run_metrics['repeat_id'] = repeat_id
-    assert set(run_metrics.keys()) == set(CSV_FIELD_NAMES)
+    # TODO(gabadie): Make common metrics extraction with benchmark type
+    # specific CSV column.
+    # assert set(run_metrics.keys()) == set(CSV_FIELD_NAMES)
     metrics.append(run_metrics)
   assert len(metrics) > 0, ('Looks like \'{}\' was not a sandwich runner ' +
                             'output directory.').format(output_directory_path)
