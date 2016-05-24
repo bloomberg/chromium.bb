@@ -6,6 +6,7 @@
 
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "wtf/Assertions.h"
 
 namespace blink {
 
@@ -25,7 +26,7 @@ DOMException* PushError::take(ScriptPromiseResolver*, const WebPushError& webErr
     case WebPushError::ErrorTypeUnknown:
         return DOMException::create(UnknownError, webError.message);
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return DOMException::create(UnknownError);
 }
 

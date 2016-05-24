@@ -35,6 +35,7 @@
 #include "modules/geolocation/GeolocationError.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/ServiceRegistry.h"
+#include "wtf/Assertions.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
@@ -97,7 +98,7 @@ Geolocation::Geolocation(ExecutionContext* context)
 
 Geolocation::~Geolocation()
 {
-    ASSERT(m_geolocationPermission != PermissionRequested);
+    DCHECK(m_geolocationPermission != PermissionRequested);
 }
 
 DEFINE_TRACE(Geolocation)
@@ -134,10 +135,10 @@ void Geolocation::contextDestroyed()
 
 void Geolocation::recordOriginTypeAccess() const
 {
-    ASSERT(frame());
+    DCHECK(frame());
 
     Document* document = this->document();
-    ASSERT(document);
+    DCHECK(document);
 
     // It is required by isSecureContext() but isn't
     // actually used. This could be used later if a warning is shown in the
@@ -375,7 +376,7 @@ void Geolocation::copyToSet(const GeoNotifierVector& src, GeoNotifierSet& dest)
 
 void Geolocation::handleError(PositionError* error)
 {
-    ASSERT(error);
+    DCHECK(error);
 
     GeoNotifierVector oneShotsCopy;
     copyToVector(m_oneShots, oneShotsCopy);
@@ -432,8 +433,8 @@ void Geolocation::requestPermission()
 
 void Geolocation::makeSuccessCallbacks()
 {
-    ASSERT(m_lastPosition);
-    ASSERT(isAllowed());
+    DCHECK(m_lastPosition);
+    DCHECK(isAllowed());
 
     GeoNotifierVector oneShotsCopy;
     copyToVector(m_oneShots, oneShotsCopy);
@@ -455,7 +456,7 @@ void Geolocation::makeSuccessCallbacks()
 
 void Geolocation::positionChanged()
 {
-    ASSERT(isAllowed());
+    DCHECK(isAllowed());
 
     // Stop all currently running timers.
     stopTimers();

@@ -52,6 +52,7 @@
 #include "public/platform/modules/notifications/WebNotificationAction.h"
 #include "public/platform/modules/notifications/WebNotificationConstants.h"
 #include "public/platform/modules/notifications/WebNotificationManager.h"
+#include "wtf/Assertions.h"
 #include "wtf/Functional.h"
 
 namespace blink {
@@ -126,7 +127,7 @@ Notification::Notification(ExecutionContext* context, const WebNotificationData&
     , m_state(NotificationStateIdle)
     , m_prepareShowMethodRunner(AsyncMethodRunner<Notification>::create(this, &Notification::prepareShow))
 {
-    ASSERT(notificationManager());
+    DCHECK(notificationManager());
 }
 
 Notification::~Notification()
@@ -135,15 +136,15 @@ Notification::~Notification()
 
 void Notification::schedulePrepareShow()
 {
-    ASSERT(m_state == NotificationStateIdle);
-    ASSERT(!m_prepareShowMethodRunner->isActive());
+    DCHECK_EQ(m_state, NotificationStateIdle);
+    DCHECK(!m_prepareShowMethodRunner->isActive());
 
     m_prepareShowMethodRunner->runAsync();
 }
 
 void Notification::prepareShow()
 {
-    ASSERT(m_state == NotificationStateIdle);
+    DCHECK_EQ(m_state, NotificationStateIdle);
     if (Notification::checkPermission(getExecutionContext()) != mojom::blink::PermissionStatus::GRANTED) {
         dispatchErrorEvent();
         return;
@@ -158,7 +159,7 @@ void Notification::didLoadResources(NotificationResourcesLoader* loader)
     DCHECK_EQ(loader, m_loader.get());
 
     SecurityOrigin* origin = getExecutionContext()->getSecurityOrigin();
-    ASSERT(origin);
+    DCHECK(origin);
 
     notificationManager()->show(WebSecurityOrigin(origin), m_data, loader->getResources(), this);
     m_loader.clear();
@@ -181,7 +182,7 @@ void Notification::close()
         m_state = NotificationStateClosed;
 
         SecurityOrigin* origin = getExecutionContext()->getSecurityOrigin();
-        ASSERT(origin);
+        DCHECK(origin);
 
         notificationManager()->closePersistent(WebSecurityOrigin(origin), m_persistentId);
     }
@@ -231,7 +232,7 @@ String Notification::dir() const
         return "auto";
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return String();
 }
 
@@ -344,7 +345,7 @@ String Notification::permissionString(mojom::blink::PermissionStatus permission)
         return "default";
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return "denied";
 }
 
@@ -356,7 +357,7 @@ String Notification::permission(ExecutionContext* context)
 mojom::blink::PermissionStatus Notification::checkPermission(ExecutionContext* context)
 {
     SecurityOrigin* origin = context->getSecurityOrigin();
-    ASSERT(origin);
+    DCHECK(origin);
 
     return notificationManager()->checkPermission(WebSecurityOrigin(origin));
 }
@@ -368,7 +369,8 @@ ScriptPromise Notification::requestPermission(ScriptState* scriptState, Notifica
         return permissionClient->requestPermission(scriptState, deprecatedCallback);
 
     // The context has been detached. Return a promise that will never settle.
-    ASSERT(context->activeDOMObjectsAreStopped());
+    DCHECK(context->activeDOMObjectsAreStopped());
+
     return ScriptPromise();
 }
 
@@ -379,7 +381,7 @@ size_t Notification::maxActions()
 
 DispatchEventResult Notification::dispatchEventInternal(Event* event)
 {
-    ASSERT(getExecutionContext()->isContextThread());
+    DCHECK(getExecutionContext()->isContextThread());
     return EventTarget::dispatchEventInternal(event);
 }
 

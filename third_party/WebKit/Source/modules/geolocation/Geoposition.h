@@ -30,6 +30,7 @@
 #include "modules/EventModules.h"
 #include "modules/geolocation/Coordinates.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Assertions.h"
 
 namespace blink {
 
@@ -54,7 +55,7 @@ private:
         : m_coordinates(coordinates)
         , m_timestamp(timestamp)
     {
-        ASSERT(m_coordinates);
+        DCHECK(m_coordinates);
     }
 
     Member<Coordinates> m_coordinates;

@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "modules/push_messaging/PushError.h"
+#include "wtf/Assertions.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -43,7 +44,7 @@ String PushPermissionStatusCallbacks::permissionString(WebPushPermissionStatus s
         return "prompt";
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return "denied";
 }
 

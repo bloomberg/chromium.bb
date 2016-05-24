@@ -14,6 +14,7 @@
 #include "modules/device_orientation/DeviceOrientationEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "wtf/Assertions.h"
 
 namespace blink {
 
@@ -109,7 +110,7 @@ const AtomicString& DeviceOrientationController::eventTypeName() const
 
 void DeviceOrientationController::setOverride(DeviceOrientationData* deviceOrientationData)
 {
-    ASSERT(deviceOrientationData);
+    DCHECK(deviceOrientationData);
     m_overrideOrientationData = deviceOrientationData;
     dispatchDeviceEvent(lastEvent());
 }

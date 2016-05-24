@@ -39,6 +39,7 @@
 #include "platform/mediastream/MediaStreamCenter.h"
 #include "platform/mediastream/MediaStreamComponent.h"
 #include "public/platform/WebSourceInfo.h"
+#include "wtf/Assertions.h"
 
 namespace blink {
 
@@ -207,8 +208,7 @@ void MediaStreamTrack::sourceChangedState()
 
 void MediaStreamTrack::propagateTrackEnded()
 {
-    // TODO(mcasas): Substitute with CHECK, see https://crbug.com/599867.
-    RELEASE_ASSERT(!m_isIteratingRegisteredMediaStreams);
+    CHECK(!m_isIteratingRegisteredMediaStreams);
     m_isIteratingRegisteredMediaStreams = true;
     for (HeapHashSet<Member<MediaStream>>::iterator iter = m_registeredMediaStreams.begin(); iter != m_registeredMediaStreams.end(); ++iter)
         (*iter)->trackEnded();
@@ -244,18 +244,16 @@ PassOwnPtr<AudioSourceProvider> MediaStreamTrack::createWebAudioSource()
 
 void MediaStreamTrack::registerMediaStream(MediaStream* mediaStream)
 {
-    // TODO(mcasas): Substitute with CHECK, see https://crbug.com/599867.
-    RELEASE_ASSERT(!m_isIteratingRegisteredMediaStreams);
-    RELEASE_ASSERT(!m_registeredMediaStreams.contains(mediaStream));
+    CHECK(!m_isIteratingRegisteredMediaStreams);
+    CHECK(!m_registeredMediaStreams.contains(mediaStream));
     m_registeredMediaStreams.add(mediaStream);
 }
 
 void MediaStreamTrack::unregisterMediaStream(MediaStream* mediaStream)
 {
-    // TODO(mcasas): Substitute with CHECK, see https://crbug.com/599867.
-    RELEASE_ASSERT(!m_isIteratingRegisteredMediaStreams);
+    CHECK(!m_isIteratingRegisteredMediaStreams);
     HeapHashSet<Member<MediaStream>>::iterator iter = m_registeredMediaStreams.find(mediaStream);
-    RELEASE_ASSERT(iter != m_registeredMediaStreams.end());
+    CHECK(iter != m_registeredMediaStreams.end());
     m_registeredMediaStreams.remove(iter);
 }
 

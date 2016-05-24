@@ -5,6 +5,7 @@
 #include "modules/push_messaging/PushController.h"
 
 #include "public/platform/modules/push_messaging/WebPushClient.h"
+#include "wtf/Assertions.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -22,9 +23,9 @@ PushController* PushController::create(WebPushClient* client)
 WebPushClient& PushController::clientFrom(LocalFrame* frame)
 {
     PushController* controller = PushController::from(frame);
-    ASSERT(controller);
+    DCHECK(controller);
     WebPushClient* client = controller->client();
-    ASSERT(client);
+    DCHECK(client);
     return *client;
 }
 

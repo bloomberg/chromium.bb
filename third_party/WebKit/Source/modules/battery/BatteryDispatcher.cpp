@@ -32,7 +32,7 @@ void BatteryDispatcher::onDidChange(device::blink::BatteryStatusPtr batteryStatu
 {
     queryNextStatus();
 
-    ASSERT(batteryStatus);
+    DCHECK(batteryStatus);
 
     updateBatteryStatus(BatteryStatus(
         batteryStatus->charging,
@@ -50,7 +50,7 @@ void BatteryDispatcher::updateBatteryStatus(const BatteryStatus& batteryStatus)
 
 void BatteryDispatcher::startListening()
 {
-    ASSERT(!m_monitor.is_bound());
+    DCHECK(!m_monitor.is_bound());
     Platform::current()->serviceRegistry()->connectToRemoteService(
         mojo::GetProxy(&m_monitor));
     queryNextStatus();

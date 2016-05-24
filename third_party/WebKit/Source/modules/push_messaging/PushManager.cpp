@@ -22,6 +22,7 @@
 #include "public/platform/modules/push_messaging/WebPushClient.h"
 #include "public/platform/modules/push_messaging/WebPushProvider.h"
 #include "public/platform/modules/push_messaging/WebPushSubscriptionOptions.h"
+#include "wtf/Assertions.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
@@ -32,7 +33,7 @@ const int kMaxApplicationServerKeyLength = 255;
 WebPushProvider* pushProvider()
 {
     WebPushProvider* webPushProvider = Platform::current()->pushProvider();
-    ASSERT(webPushProvider);
+    DCHECK(webPushProvider);
     return webPushProvider;
 }
 
@@ -51,7 +52,7 @@ String bufferSourceToString(const ArrayBufferOrArrayBufferView& applicationServe
             applicationServerKey.getAsArrayBufferView()->buffer()->data());
         length = applicationServerKey.getAsArrayBufferView()->buffer()->byteLength();
     } else {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return String();
     }
 
@@ -69,7 +70,7 @@ String bufferSourceToString(const ArrayBufferOrArrayBufferView& applicationServe
 PushManager::PushManager(ServiceWorkerRegistration* registration)
     : m_registration(registration)
 {
-    ASSERT(registration);
+    DCHECK(registration);
 }
 
 WebPushSubscriptionOptions PushManager::toWebPushSubscriptionOptions(const PushSubscriptionOptions& options, ExceptionState& exceptionState)

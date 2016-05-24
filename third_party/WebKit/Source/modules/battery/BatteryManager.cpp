@@ -8,6 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
 #include "modules/battery/BatteryDispatcher.h"
+#include "wtf/Assertions.h"
 
 namespace blink {
 
@@ -68,7 +69,7 @@ double BatteryManager::level()
 
 void BatteryManager::didUpdateData()
 {
-    ASSERT(m_batteryProperty);
+    DCHECK(m_batteryProperty);
 
     BatteryStatus oldStatus = m_batteryStatus;
     m_batteryStatus = *BatteryDispatcher::instance().latestData();
@@ -79,7 +80,7 @@ void BatteryManager::didUpdateData()
     }
 
     Document* document = toDocument(getExecutionContext());
-    ASSERT(document);
+    DCHECK(document);
     if (document->activeDOMObjectsAreSuspended() || document->activeDOMObjectsAreStopped())
         return;
 

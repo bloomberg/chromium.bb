@@ -45,7 +45,7 @@ class MODULES_EXPORT BatteryStatus final {
     // are generally reported with 1% granularity). It also serves the purpose
     // of reducing the possibility of fingerprinting and triggers less level
     // change events on platforms where the granularity is high.
-    ASSERT(level >= 0 && level <= 1);
+    DCHECK(level >= 0 && level <= 1);
     return std::round(level * 100) / 100.f;
   }
 

@@ -19,6 +19,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/modules/notifications/WebNotificationData.h"
+#include "wtf/Assertions.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
@@ -88,7 +89,7 @@ ScriptPromise ServiceWorkerRegistrationNotifications::getNotifications(ScriptSta
     WebNotificationGetCallbacks* callbacks = new CallbackPromiseAdapter<NotificationArray, void>(resolver);
 
     WebNotificationManager* notificationManager = Platform::current()->notificationManager();
-    ASSERT(notificationManager);
+    DCHECK(notificationManager);
 
     notificationManager->getNotifications(options.tag(), registration.webRegistration(), callbacks);
     return promise;

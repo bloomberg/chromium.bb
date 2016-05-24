@@ -9,6 +9,7 @@
 #include "modules/push_messaging/PushSubscription.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "public/platform/modules/push_messaging/WebPushSubscription.h"
+#include "wtf/Assertions.h"
 
 namespace blink {
 
@@ -16,8 +17,8 @@ PushSubscriptionCallbacks::PushSubscriptionCallbacks(ScriptPromiseResolver* reso
     : m_resolver(resolver)
     , m_serviceWorkerRegistration(serviceWorkerRegistration)
 {
-    ASSERT(m_resolver);
-    ASSERT(m_serviceWorkerRegistration);
+    DCHECK(m_resolver);
+    DCHECK(m_serviceWorkerRegistration);
 }
 
 PushSubscriptionCallbacks::~PushSubscriptionCallbacks()
