@@ -814,15 +814,8 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
     child_context_->GetPixels(size, format, result);
     EXPECT_EQ(0, memcmp(data1, result, pixel_size));
   }
-  {
-    child_resource_provider_->WaitSyncTokenIfNeeded(id2);
-    ResourceProvider::ScopedReadLockGL lock(child_resource_provider_.get(),
-                                            id2);
-    ASSERT_NE(0U, lock.texture_id());
-    child_context_->bindTexture(GL_TEXTURE_2D, lock.texture_id());
-    child_context_->GetPixels(size, format, result);
-    EXPECT_EQ(0, memcmp(data2, result, pixel_size));
-  }
+  // Ensure copying to resource doesn't fail.
+  child_resource_provider_->CopyToResource(id2, data2, size);
   {
     child_resource_provider_->WaitSyncTokenIfNeeded(id3);
     ResourceProvider::ScopedReadLockGL lock(child_resource_provider_.get(),

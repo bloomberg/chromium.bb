@@ -756,6 +756,9 @@ void ResourceProvider::CopyToResource(ResourceId id,
   DCHECK_EQ(image_size.width(), resource->size.width());
   DCHECK_EQ(image_size.height(), resource->size.height());
 
+  if (resource->allocated)
+    WaitSyncTokenIfNeeded(id);
+
   if (resource->type == RESOURCE_TYPE_BITMAP) {
     DCHECK_EQ(RESOURCE_TYPE_BITMAP, resource->type);
     DCHECK(resource->allocated);
@@ -784,6 +787,11 @@ void ResourceProvider::CopyToResource(ResourceId id,
                         image_size.height(), GLDataFormat(resource->format),
                         GLDataType(resource->format), image);
     }
+    const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
+    gl->OrderingBarrierCHROMIUM();
+    gpu::SyncToken sync_token;
+    gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+    lock.UpdateResourceSyncToken(sync_token);
   }
 }
 
