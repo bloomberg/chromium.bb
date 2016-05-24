@@ -410,95 +410,94 @@ void DocumentLoader::ReadMore() {
 }
 
 void DocumentLoader::DidRead(int32_t result) {
-  if (result > 0) {
-    char* start = buffer_;
-    size_t length = result;
-    if (is_multipart_ && result > 2) {
-      for (int i = 2; i < result; ++i) {
-        if ((buffer_[i - 1] == '\n' && buffer_[i - 2] == '\n') ||
-            (i >= 4 &&
-             buffer_[i - 1] == '\n' && buffer_[i - 2] == '\r' &&
-             buffer_[i - 3] == '\n' && buffer_[i - 4] == '\r')) {
-          uint32_t start_pos, end_pos;
-          if (GetByteRange(std::string(buffer_, i), &start_pos, &end_pos)) {
-            current_pos_ = start_pos;
-            start += i;
-            length -= i;
-            if (end_pos && end_pos > start_pos)
-              current_chunk_size_ = end_pos - start_pos + 1;
-          }
-          break;
-        }
-      }
-
-      // Reset this flag so we don't look inside the buffer in future calls of
-      // DidRead for this response.  Note that this code DOES NOT handle multi-
-      // part responses with more than one part (we don't issue them at the
-      // moment, so they shouldn't arrive).
-      is_multipart_ = false;
-    }
-
-    if (current_chunk_size_ &&
-        current_chunk_read_ + length > current_chunk_size_)
-      length = current_chunk_size_ - current_chunk_read_;
-
-    if (length) {
-      if (document_size_ > 0) {
-        chunk_stream_.WriteData(current_pos_, start, length);
-      } else {
-        // If we did not get content-length in the response, we can't
-        // preallocate buffer for the entire document. Resizing array causing
-        // memory fragmentation issues on the large files and OOM exceptions.
-        // To fix this, we collect all chunks of the file to the list and
-        // concatenate them together after request is complete.
-        std::vector<unsigned char> buf(length);
-        memcpy(buf.data(), start, length);
-        chunk_buffer_.push_back(std::move(buf));
-      }
-      current_pos_ += length;
-      current_chunk_read_ += length;
-      client_->OnNewDataAvailable();
-    }
-
-    // Only call the renderer if we allow partial loading.
-    if (!partial_document_) {
-      ReadMore();
-      return;
-    }
-
-    UpdateRendering();
-    RemoveCompletedRanges();
-
-    if (!pending_requests_.empty()) {
-      // If there are pending requests and the current content we're downloading
-      // doesn't satisfy any of these requests, cancel the current request to
-      // fullfill those more important requests.
-      bool satisfying_pending_request =
-            SatisfyingRequest(current_request_offset_, current_request_size_);
-      for (const auto& pending_request : pending_requests_) {
-        if (SatisfyingRequest(pending_request.first, pending_request.second)) {
-          satisfying_pending_request = true;
-          break;
-        }
-      }
-      // Cancel the request as it's not satisfying any request from the
-      // renderer, unless the current request is finished in which case we let
-      // it finish cleanly.
-      if (!satisfying_pending_request &&
-          current_pos_ < current_request_offset_ +
-          current_request_extended_size_) {
-        loader_.Close();
-      }
-    }
-
-    ReadMore();
-  } else {
+  if (result <= 0) {
     // If |result| == PP_OK, the document was loaded, otherwise an error was
     // encountered. Either way we want to stop processing the response. In the
     // case where an error occurred, the renderer will detect that we're missing
     // data and will display a message.
     ReadComplete();
+    return;
   }
+
+  char* start = buffer_;
+  size_t length = result;
+  if (is_multipart_ && result > 2) {
+    for (int i = 2; i < result; ++i) {
+      if ((buffer_[i - 1] == '\n' && buffer_[i - 2] == '\n') ||
+          (i >= 4 && buffer_[i - 1] == '\n' && buffer_[i - 2] == '\r' &&
+           buffer_[i - 3] == '\n' && buffer_[i - 4] == '\r')) {
+        uint32_t start_pos, end_pos;
+        if (GetByteRange(std::string(buffer_, i), &start_pos, &end_pos)) {
+          current_pos_ = start_pos;
+          start += i;
+          length -= i;
+          if (end_pos && end_pos > start_pos)
+            current_chunk_size_ = end_pos - start_pos + 1;
+        }
+        break;
+      }
+    }
+
+    // Reset this flag so we don't look inside the buffer in future calls of
+    // DidRead for this response.  Note that this code DOES NOT handle multi-
+    // part responses with more than one part (we don't issue them at the
+    // moment, so they shouldn't arrive).
+    is_multipart_ = false;
+  }
+
+  if (current_chunk_size_ && current_chunk_read_ + length > current_chunk_size_)
+    length = current_chunk_size_ - current_chunk_read_;
+
+  if (length) {
+    if (document_size_ > 0) {
+      chunk_stream_.WriteData(current_pos_, start, length);
+    } else {
+      // If we did not get content-length in the response, we can't
+      // preallocate buffer for the entire document. Resizing array causing
+      // memory fragmentation issues on the large files and OOM exceptions.
+      // To fix this, we collect all chunks of the file to the list and
+      // concatenate them together after request is complete.
+      std::vector<unsigned char> buf(length);
+      memcpy(buf.data(), start, length);
+      chunk_buffer_.push_back(std::move(buf));
+    }
+    current_pos_ += length;
+    current_chunk_read_ += length;
+    client_->OnNewDataAvailable();
+  }
+
+  // Only call the renderer if we allow partial loading.
+  if (!partial_document_) {
+    ReadMore();
+    return;
+  }
+
+  UpdateRendering();
+  RemoveCompletedRanges();
+
+  if (!pending_requests_.empty()) {
+    // If there are pending requests and the current content we're downloading
+    // doesn't satisfy any of these requests, cancel the current request to
+    // fullfill those more important requests.
+    bool satisfying_pending_request =
+        SatisfyingRequest(current_request_offset_, current_request_size_);
+    for (const auto& pending_request : pending_requests_) {
+      if (SatisfyingRequest(pending_request.first, pending_request.second)) {
+        satisfying_pending_request = true;
+        break;
+      }
+    }
+    // Cancel the request as it's not satisfying any request from the
+    // renderer, unless the current request is finished in which case we let
+    // it finish cleanly.
+    if (!satisfying_pending_request &&
+        current_pos_ <
+            current_request_offset_ + current_request_extended_size_) {
+      loader_.Close();
+    }
+  }
+
+  ReadMore();
 }
 
 bool DocumentLoader::SatisfyingRequest(size_t offset, size_t size) const {
