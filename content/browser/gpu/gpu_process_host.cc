@@ -981,11 +981,11 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id,
 
   base::CommandLine* cmd_line = new base::CommandLine(exe_path);
 #endif
-  BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(cmd_line);
   cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kGpuProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
   cmd_line->AppendSwitchASCII(switches::kMojoApplicationChannelToken,
                               mojo_application_host_->GetToken());
+  BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(cmd_line);
 
 #if defined(OS_WIN)
   if (GetContentClient()->browser()->ShouldUseWindowsPrefetchArgument())
