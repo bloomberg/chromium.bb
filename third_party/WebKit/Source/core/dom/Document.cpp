@@ -2116,10 +2116,8 @@ void Document::updateUseShadowTreesIfNeeded()
     if (m_useElementsNeedingUpdate.isEmpty())
         return;
 
-    HeapVector<Member<SVGUseElement>> elements;
-    copyToVector(m_useElementsNeedingUpdate, elements);
-    m_useElementsNeedingUpdate.clear();
-
+    HeapHashSet<Member<SVGUseElement>> elements;
+    m_useElementsNeedingUpdate.swap(elements);
     for (SVGUseElement* element : elements)
         element->buildPendingResource();
 }

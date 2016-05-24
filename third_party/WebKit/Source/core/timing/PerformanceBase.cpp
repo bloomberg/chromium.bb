@@ -410,14 +410,13 @@ void PerformanceBase::resumeSuspendedObservers()
 void PerformanceBase::deliverObservationsTimerFired(Timer<PerformanceBase>*)
 {
     ASSERT(isMainThread());
-    PerformanceObserverVector observers;
-    copyToVector(m_activeObservers, observers);
-    m_activeObservers.clear();
-    for (size_t i = 0; i < observers.size(); ++i) {
-        if (observers[i]->shouldBeSuspended())
-            m_suspendedObservers.add(observers[i]);
+    PerformanceObservers observers;
+    m_activeObservers.swap(observers);
+    for (const auto& observer : observers) {
+        if (observer->shouldBeSuspended())
+            m_suspendedObservers.add(observer);
         else
-            observers[i]->deliver();
+            observer->deliver();
     }
 }
 

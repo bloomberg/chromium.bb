@@ -9,8 +9,6 @@
 
 namespace blink {
 
-typedef HeapVector<Member<IntersectionObserver>> IntersectionObserverVector;
-
 IntersectionObserverController* IntersectionObserverController::create(Document* document)
 {
     IntersectionObserverController* result = new IntersectionObserverController(document);
@@ -64,9 +62,8 @@ void IntersectionObserverController::deliverIntersectionObservations()
         m_callbackFiredWhileSuspended = true;
         return;
     }
-    IntersectionObserverVector observers;
-    copyToVector(m_pendingIntersectionObservers, observers);
-    m_pendingIntersectionObservers.clear();
+    HeapHashSet<Member<IntersectionObserver>> observers;
+    m_pendingIntersectionObservers.swap(observers);
     for (auto& observer : observers)
         observer->deliver();
 }
