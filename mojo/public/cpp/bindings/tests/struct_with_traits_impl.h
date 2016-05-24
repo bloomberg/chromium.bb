@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/strings/string_piece.h"
+#include "mojo/public/cpp/system/handle.h"
 
 namespace mojo {
 namespace test {
@@ -67,6 +68,20 @@ class StructWithTraitsImpl {
   std::vector<std::string> string_array_;
   NestedStructWithTraitsImpl struct_;
   std::vector<NestedStructWithTraitsImpl> struct_array_;
+};
+
+// A type which knows how to look like a mojo::test::PassByValueStructWithTraits
+// mojom type by way of mojo::StructTraits.
+class PassByValueStructWithTraitsImpl {
+ public:
+  PassByValueStructWithTraitsImpl();
+  PassByValueStructWithTraitsImpl(PassByValueStructWithTraitsImpl&& other);
+  ~PassByValueStructWithTraitsImpl();
+
+  ScopedHandle& get_mutable_handle() { return handle_; }
+
+ private:
+  ScopedHandle handle_;
 };
 
 }  // namespace test

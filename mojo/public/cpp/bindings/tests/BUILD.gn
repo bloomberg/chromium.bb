@@ -104,6 +104,7 @@ source_set("struct_with_traits_impl") {
 
   deps = [
     "//base",
+    "//mojo/public/cpp/system:system",
   ]
 }
 

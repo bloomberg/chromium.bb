@@ -1,6 +1,6 @@
 {%- macro declare_params(prefix, parameters) %}
 {%-   for param in parameters -%}
-{{param.kind|cpp_const_wrapper_type}} {{prefix}}{{param.name}}
+{{param.kind|cpp_wrapper_param_type}} {{prefix}}{{param.name}}
 {%- if not loop.last %}, {% endif %}
 {%-   endfor %}
 {%- endmacro %}
@@ -8,11 +8,10 @@
 {%- macro declare_callback(method, for_blink) -%}
 mojo::Callback<void(
 {%-   for param in method.response_parameters -%}
-{#- TODO(yzshen): Previously |cpp_result_type| is used here incorrectly.
-    The outcome is we will use mojo::String instead of const mojo::String&.
-    Preserve the behavior temporarily. #}
+{#- TODO(yzshen): For historical reasons, we use mojo::String here (instead of
+    const mojo::String&) inconsistently. Preserve the behavior temporarily. #}
 {%- if (not param.kind|is_string_kind) or for_blink -%}
-{{param.kind|cpp_const_wrapper_type}}
+{{param.kind|cpp_wrapper_param_type}}
 {%- else -%}
 mojo::String
 {%- endif %}

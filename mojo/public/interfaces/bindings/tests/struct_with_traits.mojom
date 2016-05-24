@@ -19,6 +19,13 @@ struct StructWithTraits {
   array<NestedStructWithTraits> f_struct_array;
 };
 
+struct PassByValueStructWithTraits {
+  handle f_handle;
+};
+
 interface TraitsTestService {
-  PassStructWithTraits(StructWithTraits s) => (StructWithTraits passed);
+  EchoStructWithTraits(StructWithTraits s) => (StructWithTraits passed);
+
+  EchoPassByValueStructWithTraits(PassByValueStructWithTraits s) =>
+      (PassByValueStructWithTraits passed);
 };

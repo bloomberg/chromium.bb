@@ -60,6 +60,7 @@ generates a bar.typemap containing
 import argparse
 import json
 import os
+import re
 
 
 def ReadTypemap(path):
@@ -83,10 +84,26 @@ def ParseTypemap(typemap):
     key, _, value = line.partition('=')
     values[key].append(value.lstrip('/'))
   result = {}
+  mapping_pattern = \
+      re.compile(r"""^([^=]+)           # mojom type
+                     =
+                     ([^(]+)            # native type
+                     (?:\(([^)]+)\))?$  # optional attribute in parentheses
+                 """, re.X)
   for typename in values['type_mappings']:
-    mojom_type, _, native_type = typename.partition('=')
+    match_result = mapping_pattern.match(typename)
+    assert match_result, (
+        "Cannot parse entry in the \"type_mappings\" section: %s" % typename)
+
+    mojom_type = match_result.group(1)
+    native_type = match_result.group(2)
+    # The only attribute supported currently is "pass_by_value".
+    pass_by_value = (match_result.group(3) and
+                     match_result.group(3) == "pass_by_value")
+
     result[mojom_type] = {
         'typename': native_type,
+        'pass_by_value': pass_by_value,
         'public_headers': values['public_headers'],
         'traits_headers': values['traits_headers'],
     }

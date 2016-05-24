@@ -11,5 +11,12 @@ StructWithTraitsImpl::StructWithTraitsImpl() {}
 
 StructWithTraitsImpl::~StructWithTraitsImpl() {}
 
+PassByValueStructWithTraitsImpl::PassByValueStructWithTraitsImpl() {}
+
+PassByValueStructWithTraitsImpl::PassByValueStructWithTraitsImpl(
+    PassByValueStructWithTraitsImpl&& other) = default;
+
+PassByValueStructWithTraitsImpl::~PassByValueStructWithTraitsImpl() {}
+
 }  // namespace test
 }  // namespace mojo

@@ -71,6 +71,20 @@ struct StructTraits<test::StructWithTraits, test::StructWithTraitsImpl> {
   }
 };
 
+template <>
+struct StructTraits<test::PassByValueStructWithTraits,
+                    test::PassByValueStructWithTraitsImpl> {
+  // Deserialization to test::PassByValueStructTraitsImpl.
+  static bool Read(test::PassByValueStructWithTraitsDataView data,
+                   test::PassByValueStructWithTraitsImpl* out);
+
+  // Fields in test::PassByValueStructWithTraits.
+  // See src/mojo/public/interfaces/bindings/tests/struct_with_traits.mojom.
+  static ScopedHandle& f_handle(test::PassByValueStructWithTraitsImpl& value) {
+    return value.get_mutable_handle();
+  }
+};
+
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_TESTS_STRUCT_WITH_TRAITS_IMPL_TRAITS_H_

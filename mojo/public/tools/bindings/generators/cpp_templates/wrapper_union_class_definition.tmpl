@@ -70,7 +70,7 @@ bool {{union.name}}::is_{{field.name}}() const {
 {%-   endif %}
 }
 
-void {{union.name}}::set_{{field.name}}({{field.kind|cpp_const_wrapper_type}} {{field.name}}) {
+void {{union.name}}::set_{{field.name}}({{field.kind|cpp_wrapper_param_type}} {{field.name}}) {
   SwitchActive(Tag::{{field.name|upper}});
 {%    if field.kind|is_string_kind %}
   *(data_.{{field.name}}) = {{field.name}};

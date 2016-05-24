@@ -12,9 +12,11 @@ sources = [
 ]
 deps = [
   "//mojo/public/cpp/bindings/tests:struct_with_traits_impl",
+  "//mojo/public/cpp/system:system",
 ]
 
 type_mappings = [
   "mojo.test.StructWithTraits=mojo::test::StructWithTraitsImpl",
-  "mojo.test.NestedStructWithTraits=mojo::test::NestedStructWithTraitsImpl"
+  "mojo.test.NestedStructWithTraits=mojo::test::NestedStructWithTraitsImpl",
+  "mojo.test.PassByValueStructWithTraits=mojo::test::PassByValueStructWithTraitsImpl(pass_by_value)"
 ]

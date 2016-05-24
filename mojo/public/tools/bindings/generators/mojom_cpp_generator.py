@@ -211,47 +211,6 @@ def GetCppArrayArgWrapperType(kind):
     return "mojo::ScopedSharedBufferHandle"
   return _kind_to_cpp_type[kind]
 
-def GetCppResultWrapperType(kind):
-  if IsTypemappedKind(kind):
-    return "const %s&" % GetNativeTypeName(kind)
-  if mojom.IsEnumKind(kind):
-    return GetNameForKind(kind)
-  if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
-    return "%sPtr" % GetNameForKind(kind)
-  if mojom.IsArrayKind(kind):
-    pattern = "mojo::WTFArray<%s>" if _for_blink else "mojo::Array<%s>"
-    return pattern % GetCppArrayArgWrapperType(kind.kind)
-  if mojom.IsMapKind(kind):
-    return "mojo::Map<%s, %s>" % (GetCppArrayArgWrapperType(kind.key_kind),
-                                  GetCppArrayArgWrapperType(kind.value_kind))
-  if mojom.IsInterfaceKind(kind):
-    return "%sPtr" % GetNameForKind(kind)
-  if mojom.IsInterfaceRequestKind(kind):
-    return "%sRequest" % GetNameForKind(kind.kind)
-  if mojom.IsAssociatedInterfaceKind(kind):
-    return "%sAssociatedPtrInfo" % GetNameForKind(kind.kind)
-  if mojom.IsAssociatedInterfaceRequestKind(kind):
-    return "%sAssociatedRequest" % GetNameForKind(kind.kind)
-  if mojom.IsStringKind(kind):
-    return "WTF::String" if _for_blink else "mojo::String"
-  if mojom.IsGenericHandleKind(kind):
-    return "mojo::ScopedHandle"
-  if mojom.IsDataPipeConsumerKind(kind):
-    return "mojo::ScopedDataPipeConsumerHandle"
-  if mojom.IsDataPipeProducerKind(kind):
-    return "mojo::ScopedDataPipeProducerHandle"
-  if mojom.IsMessagePipeKind(kind):
-    return "mojo::ScopedMessagePipeHandle"
-  if mojom.IsSharedBufferKind(kind):
-    return "mojo::ScopedSharedBufferHandle"
-  # TODO(rudominer) After improvements to compiler front end have landed,
-  # revisit strategy used below for emitting a useful error message when an
-  # undefined identifier is referenced.
-  val =  _kind_to_cpp_type.get(kind)
-  if (val is not None):
-    return val
-  raise Exception("Unrecognized kind %s" % kind.spec)
-
 def GetCppWrapperType(kind):
   if IsTypemappedKind(kind):
     return GetNativeTypeName(kind)
@@ -285,44 +244,19 @@ def GetCppWrapperType(kind):
     return "mojo::ScopedMessagePipeHandle"
   if mojom.IsSharedBufferKind(kind):
     return "mojo::ScopedSharedBufferHandle"
+  if not kind in _kind_to_cpp_type:
+    raise Exception("Unrecognized kind %s" % kind.spec)
   return _kind_to_cpp_type[kind]
 
-def GetCppConstWrapperType(kind):
+def ShouldPassParamByValue(kind):
   if IsTypemappedKind(kind):
-    return "const %s&" % GetNativeTypeName(kind)
-  if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
-    return "%sPtr" % GetNameForKind(kind)
-  if mojom.IsArrayKind(kind):
-    pattern = "mojo::WTFArray<%s>" if _for_blink else "mojo::Array<%s>"
-    return pattern % GetCppArrayArgWrapperType(kind.kind)
-  if mojom.IsMapKind(kind):
-    return "mojo::Map<%s, %s>" % (GetCppArrayArgWrapperType(kind.key_kind),
-                                  GetCppArrayArgWrapperType(kind.value_kind))
-  if mojom.IsInterfaceKind(kind):
-    return "%sPtr" % GetNameForKind(kind)
-  if mojom.IsInterfaceRequestKind(kind):
-    return "%sRequest" % GetNameForKind(kind.kind)
-  if mojom.IsAssociatedInterfaceKind(kind):
-    return "%sAssociatedPtrInfo" % GetNameForKind(kind.kind)
-  if mojom.IsAssociatedInterfaceRequestKind(kind):
-    return "%sAssociatedRequest" % GetNameForKind(kind.kind)
-  if mojom.IsEnumKind(kind):
-    return GetNameForKind(kind)
-  if mojom.IsStringKind(kind):
-    return "const WTF::String&" if _for_blink else "const mojo::String&"
-  if mojom.IsGenericHandleKind(kind):
-    return "mojo::ScopedHandle"
-  if mojom.IsDataPipeConsumerKind(kind):
-    return "mojo::ScopedDataPipeConsumerHandle"
-  if mojom.IsDataPipeProducerKind(kind):
-    return "mojo::ScopedDataPipeProducerHandle"
-  if mojom.IsMessagePipeKind(kind):
-    return "mojo::ScopedMessagePipeHandle"
-  if mojom.IsSharedBufferKind(kind):
-    return "mojo::ScopedSharedBufferHandle"
-  if not kind in _kind_to_cpp_type:
-    print "missing:", kind.spec
-  return _kind_to_cpp_type[kind]
+    return _current_typemap[GetFullMojomNameForKind(kind)]["pass_by_value"]
+  return not mojom.IsStringKind(kind)
+
+def GetCppWrapperParamType(kind):
+  cpp_wrapper_type = GetCppWrapperType(kind)
+  return (cpp_wrapper_type if ShouldPassParamByValue(kind)
+                           else "const %s&" % cpp_wrapper_type)
 
 def GetCppFieldType(kind):
   if mojom.IsStructKind(kind):
@@ -358,12 +292,9 @@ def GetCppUnionFieldType(kind):
   return GetCppFieldType(kind)
 
 def GetUnionGetterReturnType(kind):
-  if (mojom.IsStructKind(kind) or mojom.IsUnionKind(kind) or
-      mojom.IsArrayKind(kind) or mojom.IsMapKind(kind) or
-      mojom.IsAnyHandleKind(kind) or mojom.IsInterfaceKind(kind)
-      or mojom.IsAssociatedKind(kind)):
+  if mojom.IsReferenceKind(kind):
     return "%s&" % GetCppWrapperType(kind)
-  return GetCppResultWrapperType(kind)
+  return GetCppWrapperType(kind)
 
 # TODO(yzshen): It is unfortunate that we have so many functions for returning
 # types. Refactor them.
@@ -495,11 +426,10 @@ class Generator(generator.Generator):
 
   cpp_filters = {
     "constant_value": ConstantValue,
-    "cpp_const_wrapper_type": GetCppConstWrapperType,
+    "cpp_wrapper_param_type": GetCppWrapperParamType,
     "cpp_field_type": GetCppFieldType,
     "cpp_union_field_type": GetCppUnionFieldType,
     "cpp_pod_type": GetCppPodType,
-    "cpp_result_type": GetCppResultWrapperType,
     "cpp_union_getter_return_type": GetUnionGetterReturnType,
     "cpp_wrapper_type": GetCppWrapperType,
     "default_value": DefaultValue,

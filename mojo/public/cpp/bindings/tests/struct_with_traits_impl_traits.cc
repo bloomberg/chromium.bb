@@ -43,4 +43,13 @@ bool StructTraits<test::StructWithTraits, test::StructWithTraitsImpl>::Read(
   return true;
 }
 
+// static
+bool StructTraits<test::PassByValueStructWithTraits,
+                  test::PassByValueStructWithTraitsImpl>::
+    Read(test::PassByValueStructWithTraitsDataView data,
+         test::PassByValueStructWithTraitsImpl* out) {
+  out->get_mutable_handle() = data.TakeFHandle();
+  return true;
+}
+
 }  // namespace mojo

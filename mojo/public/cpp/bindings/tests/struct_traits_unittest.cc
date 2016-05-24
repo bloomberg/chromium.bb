@@ -127,10 +127,16 @@ class StructTraitsTest : public testing::Test,
 
  private:
   // TraitsTestService:
-  void PassStructWithTraits(
+  void EchoStructWithTraits(
       const StructWithTraitsImpl& s,
-      const PassStructWithTraitsCallback& callback) override {
+      const EchoStructWithTraitsCallback& callback) override {
     callback.Run(s);
+  }
+
+  void EchoPassByValueStructWithTraits(
+      PassByValueStructWithTraitsImpl s,
+      const EchoPassByValueStructWithTraitsCallback& callback) override {
+    callback.Run(std::move(s));
   }
 
   base::MessageLoop loop_;
@@ -208,7 +214,7 @@ TEST_F(StructTraitsTest, BlinkProxyToChromiumService) {
   }
 }
 
-TEST_F(StructTraitsTest, FieldTypes) {
+TEST_F(StructTraitsTest, EchoStructWithTraits) {
   StructWithTraitsImpl input;
   input.set_bool(true);
   input.set_uint32(7);
@@ -222,19 +228,56 @@ TEST_F(StructTraitsTest, FieldTypes) {
 
   base::RunLoop loop;
   TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  proxy->PassStructWithTraits(
-      input,
-      [&] (const StructWithTraitsImpl& passed) {
-        EXPECT_EQ(input.get_bool(), passed.get_bool());
-        EXPECT_EQ(input.get_uint32(), passed.get_uint32());
-        EXPECT_EQ(input.get_uint64(), passed.get_uint64());
-        EXPECT_EQ(input.get_string(), passed.get_string());
-        EXPECT_EQ(input.get_string_array(), passed.get_string_array());
-        EXPECT_EQ(input.get_struct(), passed.get_struct());
-        EXPECT_EQ(input.get_struct_array(), passed.get_struct_array());
+
+  proxy->EchoStructWithTraits(input, [&](const StructWithTraitsImpl& passed) {
+    EXPECT_EQ(input.get_bool(), passed.get_bool());
+    EXPECT_EQ(input.get_uint32(), passed.get_uint32());
+    EXPECT_EQ(input.get_uint64(), passed.get_uint64());
+    EXPECT_EQ(input.get_string(), passed.get_string());
+    EXPECT_EQ(input.get_string_array(), passed.get_string_array());
+    EXPECT_EQ(input.get_struct(), passed.get_struct());
+    EXPECT_EQ(input.get_struct_array(), passed.get_struct_array());
+    loop.Quit();
+  });
+  loop.Run();
+}
+
+TEST_F(StructTraitsTest, EchoPassByValueStructWithTraits) {
+  MessagePipe mp;
+  PassByValueStructWithTraitsImpl input;
+  input.get_mutable_handle().reset(mp.handle0.release());
+
+  base::RunLoop loop;
+  TraitsTestServicePtr proxy = GetTraitsTestProxy();
+
+  ScopedMessagePipeHandle received;
+  proxy->EchoPassByValueStructWithTraits(
+      std::move(input), [&](PassByValueStructWithTraitsImpl passed) {
+        received.reset(
+            MessagePipeHandle(passed.get_mutable_handle().release().value()));
         loop.Quit();
       });
   loop.Run();
+
+  ASSERT_TRUE(received.is_valid());
+
+  // Verify that the message pipe handle is correctly passed.
+  const char kHello[] = "hello";
+  const uint32_t kHelloSize = static_cast<uint32_t>(sizeof(kHello));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            WriteMessageRaw(mp.handle1.get(), kHello, kHelloSize, nullptr, 0,
+                            MOJO_WRITE_MESSAGE_FLAG_NONE));
+
+  EXPECT_EQ(MOJO_RESULT_OK, Wait(received.get(), MOJO_HANDLE_SIGNAL_READABLE,
+                                 MOJO_DEADLINE_INDEFINITE, nullptr));
+
+  char buffer[10] = {0};
+  uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            ReadMessageRaw(received.get(), buffer, &buffer_size, nullptr,
+                           nullptr, MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(kHelloSize, buffer_size);
+  EXPECT_STREQ(kHello, buffer);
 }
 
 }  // namespace test
