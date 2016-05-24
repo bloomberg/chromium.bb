@@ -1268,6 +1268,9 @@
       'filepath': 'third_party/WebKit/LayoutTests/imported/' \
                   '|third_party/WebKit/Tools/Scripts/webkitpy/w3c/'
     },
+    'blink_web': {
+      'filepath': 'third_party/WebKit/Source/web'
+    },
     'blink_webcomponents': {
       'filepath': 'third_party/WebKit/Source/core/dom/shadow/' \
                   '|third_party/WebKit/Source/core/dom/custom/' \
@@ -1463,7 +1466,7 @@
                        'mlamouri+watch-sensors@chromium.org'],
     'developer_recommended_flags': ['scheib+watch@chromium.org'],
     'devtools': ['pfeldman@chromium.org', 'devtools-reviews@chromium.org'],
-    'disk_cache': ['gavinp+disk@chromium.org'],
+    'disk_cache': ['gavinp+disk@chromium.org', 'kinuko+cache@chromium.org' ],
     'dns': ['mmenke@chromium.org'],
     'download': ['asanka@chromium.org'],
     'downloads_ui': ['asanka@chromium.org',
@@ -1724,7 +1727,6 @@
                       'tyoshino+watch@chromium.org',
                       'loading-reviews@chromium.org' ],
     'blink_owners': [ 'abarth@chromium.org'],
-    'blink_platform': [ 'kinuko+watch@chromium.org' ],
     'blink_platform_graphics': [ 'schenney@chromium.org',
                                  'danakj+watch@chromium.org',
                                  'pdr+graphicswatchlist@chromium.org',
@@ -1837,6 +1839,7 @@
     'blink_out_of_process_frames': [ 'dcheng@chromium.org',
                                      'mlamouri+watch-blink@chromium.org' ],
     'blink_screen_orientation': [ 'mlamouri+watch-blink@chromium.org' ],
+    'blink_web': [ 'kinuko+watch@chromium.org' ],
     'blink_websockets': [ 'tyoshino+watch@chromium.org',
                           'yhirano+watch@chromium.org' ],
     'blink_workers': [ 'blink-worker-reviews@chromium.org',
