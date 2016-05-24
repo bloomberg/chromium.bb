@@ -86,12 +86,6 @@
   "Chromium OS (valgrind)(1)": {
     "gtest_tests": [
       {
-        "test": "app_list_unittests"
-      },
-      {
-        "test": "app_list_presenter_unittests"
-      },
-      {
         "test": "display_unittests"
       },
       {
@@ -251,8 +245,6 @@
     "additional_compile_targets": [
       "accessibility_unittests",
       "angle_unittests",
-      "app_list_unittests",
-      "app_list_presenter_unittests",
       "aura_unittests",
       "base_unittests",
       "blink_heap_unittests",
@@ -302,8 +294,6 @@
     "additional_compile_targets": [
       "accessibility_unittests",
       "angle_unittests",
-      "app_list_unittests",
-      "app_list_presenter_unittests",
       "aura_unittests",
       "base_unittests",
       "blink_heap_unittests",
@@ -358,18 +348,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "accessibility_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "app_list_presenter_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "app_list_unittests"
       },
       {
         "swarming": {
@@ -661,18 +639,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "accessibility_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "app_list_presenter_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "app_list_unittests"
       },
       {
         "swarming": {
@@ -981,18 +947,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "accessibility_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "app_list_presenter_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "app_list_unittests"
       },
       {
         "swarming": {
@@ -2284,12 +2238,6 @@
         "test": "angle_unittests"
       },
       {
-        "test": "app_list_unittests"
-      },
-      {
-        "test": "app_list_presenter_unittests"
-      },
-      {
         "test": "aura_unittests"
       },
       {
@@ -2352,12 +2300,6 @@
       },
       {
         "test": "angle_unittests"
-      },
-      {
-        "test": "app_list_unittests"
-      },
-      {
-        "test": "app_list_presenter_unittests"
       },
       {
         "test": "aura_unittests"
@@ -2497,12 +2439,6 @@
       },
       {
         "test": "angle_unittests"
-      },
-      {
-        "test": "app_list_unittests"
-      },
-      {
-        "test": "app_list_presenter_unittests"
       },
       {
         "test": "aura_unittests"

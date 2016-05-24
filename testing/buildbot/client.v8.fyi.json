@@ -8,8 +8,6 @@
   "V8 Linux GN": {
     "additional_compile_targets": [
       "accessibility_unittests",
-      "app_list_unittests",
-      "app_list_presenter_unittests",
       "aura_unittests",
       "browser_tests",
       "cacheinvalidation_unittests",
