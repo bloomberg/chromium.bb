@@ -129,7 +129,8 @@ def PostUploadHook(cl, change, output_api):
     'android_s5_perf_cq',
     'winx64_10_perf_cq',
     'mac_retina_perf_cq',
-    'linux_perf_cq'
+    # TODO(prasadv): Uncomment this once crbug.com/601699 is fixed.
+    # 'linux_perf_cq'
   ]
   bots = ['tryserver.chromium.perf:%s' % s for s in bots]
   bots_string = ';'.join(bots)
