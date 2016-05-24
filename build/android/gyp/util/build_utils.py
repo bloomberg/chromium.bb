@@ -225,6 +225,9 @@ def ExtractAll(zip_path, path=None, no_clobber=True, pattern=None,
   elif not os.path.exists(path):
     MakeDirectory(path)
 
+  if not zipfile.is_zipfile(zip_path):
+    raise Exception('Invalid zip file: %s' % zip_path)
+
   with zipfile.ZipFile(zip_path) as z:
     for name in z.namelist():
       if name.endswith('/'):
