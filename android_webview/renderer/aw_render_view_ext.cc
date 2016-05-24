@@ -40,7 +40,16 @@ void AwRenderViewExt::PostCheckContentsSize() {
 
 void AwRenderViewExt::CheckContentsSize() {
   blink::WebView* webview = render_view()->GetWebView();
-  if (!webview)
+  content::RenderFrame* main_render_frame = render_view()->GetMainRenderFrame();
+
+  // Even without out-of-process iframes, we now create RemoteFrames for the
+  // main frame when you navigate cross-process, to create a placeholder in the
+  // old process. This is necessary to support things like postMessage across
+  // windows that have references to each other. The RemoteFrame will
+  // immediately go away if there aren't any active frames left in the old
+  // process. RenderView's main frame pointer will become null in the old
+  // process when it is no longer the active main frame.
+  if (!webview || !main_render_frame)
     return;
 
   gfx::Size contents_size;
@@ -59,10 +68,8 @@ void AwRenderViewExt::CheckContentsSize() {
     return;
 
   last_sent_contents_size_ = contents_size;
-  render_view()->GetMainRenderFrame()->Send(
-      new AwViewHostMsg_OnContentsSizeChanged(
-        render_view()->GetMainRenderFrame()->GetRoutingID(),
-        contents_size));
+  main_render_frame->Send(new AwViewHostMsg_OnContentsSizeChanged(
+      main_render_frame->GetRoutingID(), contents_size));
 }
 
 }  // namespace android_webview
