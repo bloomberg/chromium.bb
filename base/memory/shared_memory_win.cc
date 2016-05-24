@@ -238,7 +238,7 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
   SECURITY_DESCRIPTOR sd;
   ACL dacl;
 
-  if (name_.empty() && !options.create_without_name_or_permissions) {
+  if (name_.empty()) {
     // Add an empty DACL to enforce anonymous read-only sections.
     sa.lpSecurityDescriptor = &sd;
     if (!InitializeAcl(&dacl, sizeof(dacl), ACL_REVISION)) {
