@@ -15,8 +15,7 @@ layer at (0,0) size 800x266
           text run at (131,18) width 4: " "
         LayoutTextControl {INPUT} at (135,18) size 133x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutFlexibleBox {DIV} at (4,3) size 125x13
-            LayoutBlockFlow {DIV} at (0,6.50) size 5x0
-            LayoutBlockFlow {DIV} at (5,0) size 108x13
+            LayoutBlockFlow {DIV} at (0,0) size 113x13
         LayoutText {#text} at (268,18) size 4x18
           text run at (268,18) width 4: " "
         LayoutTextControl {INPUT} at (272,18) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -24,8 +23,7 @@ layer at (0,0) size 800x266
           text run at (403,18) width 4: " "
         LayoutTextControl {INPUT} at (407,18) size 133x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutFlexibleBox {DIV} at (4,3) size 125x13
-            LayoutBlockFlow {DIV} at (0,6.50) size 5x0
-            LayoutBlockFlow {DIV} at (5,0) size 108x13
+            LayoutBlockFlow {DIV} at (0,0) size 113x13
         LayoutText {#text} at (540,18) size 4x18
           text run at (540,18) width 4: " "
         LayoutTextControl {INPUT} at (544,18) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -35,8 +33,7 @@ layer at (0,0) size 800x266
           text run at (131,37) width 4: " "
         LayoutTextControl {INPUT} at (135,37) size 133x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutFlexibleBox {DIV} at (4,3) size 125x13
-            LayoutBlockFlow {DIV} at (0,6.50) size 5x0
-            LayoutBlockFlow {DIV} at (5,0) size 108x13
+            LayoutBlockFlow {DIV} at (0,0) size 113x13
         LayoutText {#text} at (268,37) size 4x18
           text run at (268,37) width 4: " "
         LayoutTextControl {INPUT} at (272,37) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -44,8 +41,7 @@ layer at (0,0) size 800x266
           text run at (403,37) width 4: " "
         LayoutTextControl {INPUT} at (407,37) size 133x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutFlexibleBox {DIV} at (4,3) size 125x13
-            LayoutBlockFlow {DIV} at (0,6.50) size 5x0
-            LayoutBlockFlow {DIV} at (5,0) size 108x13
+            LayoutBlockFlow {DIV} at (0,0) size 113x13
         LayoutText {#text} at (540,37) size 4x18
           text run at (540,37) width 4: " "
         LayoutTextControl {INPUT} at (544,37) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -59,8 +55,7 @@ layer at (0,0) size 800x266
           text run at (131,18) width 4: " "
         LayoutTextControl {INPUT} at (135,18) size 133x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutFlexibleBox {DIV} at (4,3) size 125x13
-            LayoutBlockFlow {DIV} at (0,6.50) size 5x0
-            LayoutBlockFlow {DIV} at (5,0) size 108x13
+            LayoutBlockFlow {DIV} at (0,0) size 113x13
         LayoutText {#text} at (268,18) size 4x18
           text run at (268,18) width 4: " "
         LayoutTextControl {INPUT} at (272,18) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -68,8 +63,7 @@ layer at (0,0) size 800x266
           text run at (403,18) width 4: " "
         LayoutTextControl {INPUT} at (407,18) size 133x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutFlexibleBox {DIV} at (4,3) size 125x13
-            LayoutBlockFlow {DIV} at (0,6.50) size 5x0
-            LayoutBlockFlow {DIV} at (5,0) size 108x13
+            LayoutBlockFlow {DIV} at (0,0) size 113x13
         LayoutText {#text} at (540,18) size 4x18
           text run at (540,18) width 4: " "
         LayoutTextControl {INPUT} at (544,18) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -79,8 +73,7 @@ layer at (0,0) size 800x266
           text run at (131,37) width 4: " "
         LayoutTextControl {INPUT} at (135,37) size 133x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutFlexibleBox {DIV} at (4,3) size 125x13
-            LayoutBlockFlow {DIV} at (0,6.50) size 5x0
-            LayoutBlockFlow {DIV} at (5,0) size 108x13
+            LayoutBlockFlow {DIV} at (0,0) size 113x13
         LayoutText {#text} at (268,37) size 4x18
           text run at (268,37) width 4: " "
         LayoutTextControl {INPUT} at (272,37) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -88,8 +81,7 @@ layer at (0,0) size 800x266
           text run at (403,37) width 4: " "
         LayoutTextControl {INPUT} at (407,37) size 133x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutFlexibleBox {DIV} at (4,3) size 125x13
-            LayoutBlockFlow {DIV} at (0,6.50) size 5x0
-            LayoutBlockFlow {DIV} at (5,0) size 108x13
+            LayoutBlockFlow {DIV} at (0,0) size 113x13
         LayoutText {#text} at (540,37) size 4x18
           text run at (540,37) width 4: " "
         LayoutTextControl {INPUT} at (544,37) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -122,18 +114,18 @@ layer at (11,71) size 125x13 scrollWidth 274
       text run at (0,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (11,71) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-layer at (152,71) size 108x13 scrollWidth 274
-  LayoutBlockFlow {DIV} at (9,3) size 108x13 [color=#A9A9A9]
+layer at (147,71) size 113x13 scrollWidth 274
+  LayoutBlockFlow {DIV} at (4,3) size 113x13 [color=#A9A9A9]
     LayoutText {#text} at (0,0) size 274x13
       text run at (0,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-layer at (152,71) size 108x13
-  LayoutBlockFlow {DIV} at (0,0) size 108x13
+layer at (147,71) size 113x13
+  LayoutBlockFlow {DIV} at (0,0) size 113x13
 layer at (283,71) size 125x13 scrollWidth 275
   LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (0,0) size 274x13
       text run at (0,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-layer at (424,71) size 108x13 scrollWidth 275
-  LayoutBlockFlow {DIV} at (0,0) size 108x13
+layer at (419,71) size 113x13 scrollWidth 275
+  LayoutBlockFlow {DIV} at (0,0) size 113x13
     LayoutText {#text} at (0,0) size 274x13
       text run at (0,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (555,71) size 125x13 scrollWidth 345
@@ -146,20 +138,20 @@ layer at (11,90) size 125x13 scrollX 148.00 scrollWidth 274
       text run at (-148,0) width 273: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (11,90) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-layer at (152,90) size 108x13 scrollX 165.00 scrollWidth 274
-  LayoutBlockFlow {DIV} at (9,3) size 108x13 [color=#A9A9A9]
-    LayoutText {#text} at (-165,0) size 274x13
-      text run at (-165,0) width 273: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-layer at (152,90) size 108x13
-  LayoutBlockFlow {DIV} at (0,0) size 108x13
+layer at (147,90) size 113x13 scrollX 160.00 scrollWidth 274
+  LayoutBlockFlow {DIV} at (4,3) size 113x13 [color=#A9A9A9]
+    LayoutText {#text} at (-160,0) size 274x13
+      text run at (-160,0) width 273: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (147,90) size 113x13
+  LayoutBlockFlow {DIV} at (0,0) size 113x13
 layer at (283,90) size 125x13 scrollX 148.00 scrollWidth 274
   LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (-148,0) size 274x13
       text run at (-148,0) width 273: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-layer at (424,90) size 108x13 scrollX 165.00 scrollWidth 274
-  LayoutBlockFlow {DIV} at (0,0) size 108x13
-    LayoutText {#text} at (-165,0) size 274x13
-      text run at (-165,0) width 273: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (419,90) size 113x13 scrollX 160.00 scrollWidth 274
+  LayoutBlockFlow {DIV} at (0,0) size 113x13
+    LayoutText {#text} at (-160,0) size 274x13
+      text run at (-160,0) width 273: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (555,90) size 125x13 scrollX 219.00 scrollWidth 344
   LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (-219,0) size 345x13
@@ -170,18 +162,18 @@ layer at (11,143) size 125x13 scrollWidth 274
       text run at (0,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (11,143) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-layer at (152,143) size 108x13 scrollWidth 274
-  LayoutBlockFlow {DIV} at (9,3) size 108x13 [color=#A9A9A9]
+layer at (147,143) size 113x13 scrollWidth 274
+  LayoutBlockFlow {DIV} at (4,3) size 113x13 [color=#A9A9A9]
     LayoutText {#text} at (0,0) size 274x13
       text run at (0,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-layer at (152,143) size 108x13
-  LayoutBlockFlow {DIV} at (0,0) size 108x13
+layer at (147,143) size 113x13
+  LayoutBlockFlow {DIV} at (0,0) size 113x13
 layer at (283,143) size 125x13 scrollWidth 275
   LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (0,0) size 274x13
       text run at (0,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-layer at (424,143) size 108x13 scrollWidth 275
-  LayoutBlockFlow {DIV} at (0,0) size 108x13
+layer at (419,143) size 113x13 scrollWidth 275
+  LayoutBlockFlow {DIV} at (0,0) size 113x13
     LayoutText {#text} at (0,0) size 274x13
       text run at (0,0) width 274: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (555,143) size 125x13 scrollWidth 345
@@ -194,20 +186,20 @@ layer at (11,162) size 125x13 scrollX 148.00 scrollWidth 274
       text run at (-148,0) width 273: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (11,162) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-layer at (152,162) size 108x13 scrollX 165.00 scrollWidth 274
-  LayoutBlockFlow {DIV} at (9,3) size 108x13 [color=#A9A9A9]
-    LayoutText {#text} at (-165,0) size 274x13
-      text run at (-165,0) width 273: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-layer at (152,162) size 108x13
-  LayoutBlockFlow {DIV} at (0,0) size 108x13
+layer at (147,162) size 113x13 scrollX 160.00 scrollWidth 274
+  LayoutBlockFlow {DIV} at (4,3) size 113x13 [color=#A9A9A9]
+    LayoutText {#text} at (-160,0) size 274x13
+      text run at (-160,0) width 273: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (147,162) size 113x13
+  LayoutBlockFlow {DIV} at (0,0) size 113x13
 layer at (283,162) size 125x13 scrollX 148.00 scrollWidth 274
   LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (-148,0) size 274x13
       text run at (-148,0) width 273: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
-layer at (424,162) size 108x13 scrollX 165.00 scrollWidth 274
-  LayoutBlockFlow {DIV} at (0,0) size 108x13
-    LayoutText {#text} at (-165,0) size 274x13
-      text run at (-165,0) width 273: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
+layer at (419,162) size 113x13 scrollX 160.00 scrollWidth 274
+  LayoutBlockFlow {DIV} at (0,0) size 113x13
+    LayoutText {#text} at (-160,0) size 274x13
+      text run at (-160,0) width 273: "Lorem ipsum dolor sit amet, consectetur adipiscing elit"
 layer at (555,162) size 125x13 scrollX 219.00 scrollWidth 344
   LayoutBlockFlow {DIV} at (3,3) size 125x13
     LayoutText {#text} at (-219,0) size 345x13

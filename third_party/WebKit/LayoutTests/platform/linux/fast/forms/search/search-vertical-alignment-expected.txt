@@ -1,4 +1,3 @@
-CONSOLE WARNING: 'results' attribute is deprecated and will be removed in M53, around September 2016. See https://www.chromestatus.com/features/5738199536107520 for more details.
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
@@ -14,8 +13,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,56) size 784x45
         LayoutTextControl {INPUT} at (0,0) size 156x45 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutFlexibleBox {DIV} at (3,14.50) size 150x16
-            LayoutBlockFlow {DIV} at (2,1.50) size 13x13
-            LayoutBlockFlow {DIV} at (18,0) size 119x16
+            LayoutBlockFlow {DIV} at (0,0) size 137x16
         LayoutText {#text} at (156,12) size 4x19
           text run at (156,12) width 4: " "
         LayoutTextControl {INPUT} at (160,0) size 154x45 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -23,8 +21,7 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,117) size 784x20
         LayoutTextControl {INPUT} at (0,2) size 156x16 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutFlexibleBox {DIV} at (3,0) size 150x16
-            LayoutBlockFlow {DIV} at (2,1.50) size 13x13
-            LayoutBlockFlow {DIV} at (18,0) size 119x16
+            LayoutBlockFlow {DIV} at (0,0) size 137x16
         LayoutText {#text} at (156,0) size 4x19
           text run at (156,0) width 4: " "
         LayoutTextControl {INPUT} at (160,2) size 154x16 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -32,30 +29,29 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {P} at (0,153) size 784x20
         LayoutTextControl {INPUT} at (0,4) size 156x12 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutFlexibleBox {DIV} at (3,-2) size 150x16
-            LayoutBlockFlow {DIV} at (2,1.50) size 13x13
-            LayoutBlockFlow {DIV} at (18,0) size 119x16
+            LayoutBlockFlow {DIV} at (0,0) size 137x16
         LayoutText {#text} at (156,0) size 4x19
           text run at (156,0) width 4: " "
         LayoutTextControl {INPUT} at (160,4) size 154x12 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutText {#text} at (0,0) size 0x0
-layer at (29,79) size 119x16
-  LayoutBlockFlow {DIV} at (0,0) size 119x16
+layer at (11,79) size 137x16
+  LayoutBlockFlow {DIV} at (0,0) size 137x16
     LayoutText {#text} at (0,0) size 24x16
       text run at (0,0) width 24: "Text"
 layer at (170,79) size 150x16
   LayoutBlockFlow {DIV} at (2,14.50) size 150x16
     LayoutText {#text} at (0,0) size 24x16
       text run at (0,0) width 24: "Text"
-layer at (29,127) size 119x16
-  LayoutBlockFlow {DIV} at (0,0) size 119x16
+layer at (11,127) size 137x16
+  LayoutBlockFlow {DIV} at (0,0) size 137x16
     LayoutText {#text} at (0,0) size 24x16
       text run at (0,0) width 24: "Text"
 layer at (170,127) size 150x16
   LayoutBlockFlow {DIV} at (2,0) size 150x16
     LayoutText {#text} at (0,0) size 24x16
       text run at (0,0) width 24: "Text"
-layer at (29,163) size 119x16
-  LayoutBlockFlow {DIV} at (0,0) size 119x16
+layer at (11,163) size 137x16
+  LayoutBlockFlow {DIV} at (0,0) size 137x16
     LayoutText {#text} at (0,0) size 24x16
       text run at (0,0) width 24: "Text"
 layer at (170,163) size 150x16

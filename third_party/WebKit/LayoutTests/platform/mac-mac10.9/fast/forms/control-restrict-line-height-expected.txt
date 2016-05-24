@@ -22,11 +22,10 @@ layer at (0,0) size 800x600
       LayoutBR {BR} at (0,0) size 0x0
       LayoutTextControl {INPUT} at (0,56) size 125x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
         LayoutFlexibleBox {DIV} at (4,3) size 117x13
-          LayoutBlockFlow {DIV} at (0,6.50) size 5x0
-          LayoutBlockFlow {DIV} at (5,0) size 100x13
+          LayoutBlockFlow {DIV} at (0,0) size 105x13
       LayoutText {#text} at (0,0) size 0x0
-layer at (17,67) size 100x13 scrollWidth 278
-  LayoutBlockFlow {DIV} at (0,0) size 100x13
+layer at (12,67) size 105x13 scrollWidth 278
+  LayoutBlockFlow {DIV} at (0,0) size 105x13
     LayoutText {#text} at (0,0) size 278x13
       text run at (0,0) width 278: "This text should be centered vertically in the button"
 layer at (118,68) size 11x11 transparent

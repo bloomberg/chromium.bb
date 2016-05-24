@@ -90,8 +90,7 @@ layer at (0,0) size 800x600
           text run at (0,210) width 45: "search "
         LayoutTextControl {INPUT} at (44.86,210) size 133x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutFlexibleBox {DIV} at (4,3) size 125x13
-            LayoutBlockFlow {DIV} at (0,6.50) size 5x0
-            LayoutBlockFlow {DIV} at (5,0) size 108x13
+            LayoutBlockFlow {DIV} at (0,0) size 113x13
         LayoutText {#text} at (0,0) size 0x0
 layer at (48,29) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
@@ -101,7 +100,7 @@ layer at (61,201) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
 layer at (75,220) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
-layer at (62,239) size 108x13
-  LayoutBlockFlow {DIV} at (0,0) size 108x13
+layer at (57,239) size 113x13
+  LayoutBlockFlow {DIV} at (0,0) size 113x13
 layer at (171,240) size 11x11 transparent
   LayoutBlockFlow {DIV} at (114,1) size 11x11
