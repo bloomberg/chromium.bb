@@ -175,6 +175,7 @@ class POLICY_EXPORT DeviceManagementService : public net::URLFetcherDelegate {
 
   // Starts a job.
   void StartJob(DeviceManagementRequestJobImpl* job);
+  void StartJobAfterDelay(base::WeakPtr<DeviceManagementRequestJobImpl> job);
 
   // Adds a job. Caller must make sure the job pointer stays valid until the job
   // completes or gets canceled via RemoveJob().

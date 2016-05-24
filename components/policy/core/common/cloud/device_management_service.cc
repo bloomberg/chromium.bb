@@ -188,6 +188,11 @@ class DeviceManagementRequestJobImpl : public DeviceManagementRequestJob {
   // Number of times that this job has been retried due to connection errors.
   int retries_count() { return retries_count_; }
 
+  // Get weak pointer
+  base::WeakPtr<DeviceManagementRequestJobImpl> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
  protected:
   // DeviceManagementRequestJob:
   void Run() override;
@@ -208,6 +213,9 @@ class DeviceManagementRequestJobImpl : public DeviceManagementRequestJob {
   // The request context to use for this job.
   scoped_refptr<net::URLRequestContextGetter> request_context_;
 
+  // Used to get notified if the job has been canceled while waiting for retry.
+  base::WeakPtrFactory<DeviceManagementRequestJobImpl> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(DeviceManagementRequestJobImpl);
 };
 
@@ -221,8 +229,8 @@ DeviceManagementRequestJobImpl::DeviceManagementRequestJobImpl(
       service_(service),
       bypass_proxy_(false),
       retries_count_(0),
-      request_context_(request_context) {
-}
+      request_context_(request_context),
+      weak_ptr_factory_(this) {}
 
 DeviceManagementRequestJobImpl::~DeviceManagementRequestJobImpl() {
   service_->RemoveJob(this);
@@ -505,6 +513,15 @@ void DeviceManagementService::StartJob(DeviceManagementRequestJobImpl* job) {
   fetcher->Start();
 }
 
+void DeviceManagementService::StartJobAfterDelay(
+    base::WeakPtr<DeviceManagementRequestJobImpl> job) {
+  // Check if the job still exists (it is possible that it had been canceled
+  // while we were waiting for the retry).
+  if (job) {
+    StartJob(job.get());
+  }
+}
+
 std::string DeviceManagementService::GetServerUrl() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return configuration_->GetServerUrl();
@@ -533,8 +550,9 @@ void DeviceManagementService::OnURLFetchComplete(
     LOG(WARNING) << "Dmserver request failed, retrying in " << delay / 1000
                  << "s.";
     task_runner_->PostDelayedTask(
-        FROM_HERE, base::Bind(&DeviceManagementService::StartJob,
-                              weak_ptr_factory_.GetWeakPtr(), job),
+        FROM_HERE,
+        base::Bind(&DeviceManagementService::StartJobAfterDelay,
+                   weak_ptr_factory_.GetWeakPtr(), job->GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(delay));
   } else {
     std::string data;

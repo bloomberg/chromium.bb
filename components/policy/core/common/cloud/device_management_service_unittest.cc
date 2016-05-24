@@ -716,4 +716,27 @@ TEST_F(DeviceManagementServiceTest, RetryLimit) {
   Mock::VerifyAndClearExpectations(this);
 }
 
+TEST_F(DeviceManagementServiceTest, CancelDuringRetry) {
+  // Make a request.
+  EXPECT_CALL(*this, OnJobDone(_, _, _)).Times(0);
+  EXPECT_CALL(*this, OnJobRetry(_));
+
+  std::unique_ptr<DeviceManagementRequestJob> request_job(
+      StartRegistrationJob());
+  net::TestURLFetcher* fetcher = GetFetcher();
+  ASSERT_TRUE(fetcher);
+
+  // Make it fail with ERR_NETWORK_CHANGED.
+  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                            net::ERR_NETWORK_CHANGED));
+  fetcher->set_url(GURL(kServiceUrl));
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  // Before we retry, cancel the job
+  request_job.reset();
+
+  // We must not crash
+  base::RunLoop().RunUntilIdle();
+}
+
 }  // namespace policy
