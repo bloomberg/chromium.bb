@@ -71,8 +71,12 @@ public:
             if (WorkerOrWorkletScriptController* scriptController = globalScope->scriptController())
                 scriptController->getRejectedPromises()->processQueue();
             if (globalScope->isClosing()) {
+                // |m_workerThread| will eventually be requested to terminate.
                 m_workerThread->workerReportingProxy().workerGlobalScopeClosed();
-                m_workerThread->terminateFromWorkerThread();
+
+                // Dispose WorkerGlobalScope to stop associated ActiveDOMObjects
+                // and close the event queue.
+                m_workerThread->prepareForShutdown();
             }
         }
     }
@@ -104,6 +108,12 @@ unsigned WorkerThread::workerThreadCount()
 void WorkerThread::performTask(std::unique_ptr<ExecutionContextTask> task, bool isInstrumented)
 {
     DCHECK(isCurrentThread());
+    {
+        MutexLocker lock(m_threadStateMutex);
+        if (m_readyToShutdown)
+            return;
+    }
+
     WorkerGlobalScope* globalScope = workerGlobalScope();
     // If the thread is terminated before it had a chance initialize (see
     // WorkerThread::Initialize()), we mustn't run any of the posted tasks.
@@ -128,13 +138,7 @@ std::unique_ptr<CrossThreadClosure> WorkerThread::createWorkerThreadTask(std::un
 }
 
 WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy)
-    : m_started(false)
-    , m_terminated(false)
-    , m_shutdown(false)
-    , m_pausedInDebugger(false)
-    , m_runningDebuggerTask(false)
-    , m_shouldTerminateV8Execution(false)
-    , m_inspectorTaskRunner(adoptPtr(new InspectorTaskRunner()))
+    : m_inspectorTaskRunner(adoptPtr(new InspectorTaskRunner()))
     , m_workerLoaderProxy(workerLoaderProxy)
     , m_workerReportingProxy(workerReportingProxy)
     , m_terminationEvent(adoptPtr(new WaitableEvent(
@@ -234,29 +238,16 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
     postInitialize();
 }
 
-void WorkerThread::shutdown()
-{
-    DCHECK(isCurrentThread());
-    {
-        MutexLocker lock(m_threadStateMutex);
-        if (m_shutdown)
-            return;
-        m_shutdown = true;
-    }
-
-    // This should be called before we start the shutdown procedure.
-    workerReportingProxy().willDestroyWorkerGlobalScope();
-
-    InspectorInstrumentation::allAsyncTasksCanceled(workerGlobalScope());
-    workerGlobalScope()->dispose();
-
-    workerBackingThread().backingThread().removeTaskObserver(m_microtaskRunner.get());
-    postTask(BLINK_FROM_HERE, createSameThreadTask(&WorkerThread::performShutdownTask, this));
-}
-
 void WorkerThread::performShutdownTask()
 {
     DCHECK(isCurrentThread());
+#if DCHECK_IS_ON
+    {
+        MutexLocker lock(m_threadStateMutex);
+        DCHECK(m_terminated);
+        DCHECK(m_readyToShutdown);
+    }
+#endif
 
     // The below assignment will destroy the context, which will in turn notify
     // messaging proxy. We cannot let any objects survive past thread exit,
@@ -298,43 +289,47 @@ void WorkerThread::terminate()
     if (m_terminationEvent)
         m_terminationEvent->signal();
 
-    // If the thread has already initiated shutdown, just return.
-    if (m_shutdown)
-        return;
-
     // If the worker thread was never initialized, don't start another
     // shutdown, but still wait for the thread to signal when shutdown has
     // completed on initialize().
     if (!m_workerGlobalScope)
         return;
 
-    // Ensure that tasks are being handled by thread event loop. If script
-    // execution weren't forbidden, a while(1) loop in JS could keep the thread
-    // alive forever.
-    m_workerGlobalScope->scriptController()->willScheduleExecutionTermination();
+    if (!m_readyToShutdown) {
+        // Ensure that tasks are being handled by thread event loop. If script
+        // execution weren't forbidden, a while(1) loop in JS could keep the
+        // thread alive forever.
+        // If |m_readyToShutdown| is set, the worker thread has already noticed
+        // that the thread is about to be terminated and the worker global scope
+        // is already disposed, so we don't have to explicitly terminate the
+        // execution.
+        m_workerGlobalScope->scriptController()->willScheduleExecutionTermination();
 
-    if (workerBackingThread().workerScriptCount() == 1) {
-        // This condition is not entirely correct because other scripts
-        // can be being initialized or terminated simuletaneously. Though this
+        // This condition is not entirely correct because other scripts can
+        // be being initialized or terminated simuletaneously. Though this
         // function itself is protected by a mutex, it is possible that
         // |workerScriptCount()| here is not consistent with that in
         // |initialize| and |shutdown|.
-        // TODO(yhirano): TerminateExecution should be called more carefully.
-        // https://crbug.com/413518
-        if (m_runningDebuggerTask) {
-            // Terminating during debugger task may lead to crash due to heavy
-            // use of v8 api in debugger. Any debugger task is guaranteed to
-            // finish, so we can postpone termination after task has finished.
-            // Note: m_runningDebuggerTask and m_shouldTerminateV8Execution
-            // access must be guarded by the lock.
-            m_shouldTerminateV8Execution = true;
-        } else {
-            isolate()->TerminateExecution();
+        if (workerBackingThread().workerScriptCount() == 1) {
+            if (m_runningDebuggerTask) {
+                // Terminating during debugger task may lead to crash due to
+                // heavy use of v8 api in debugger. Any debugger task is
+                // guaranteed to finish, so we can postpone termination after
+                // task has finished.
+                // Note: m_runningDebuggerTask and m_shouldTerminateV8Execution
+                // access must be guarded by the lock.
+                m_shouldTerminateV8Execution = true;
+            } else {
+                // TODO(yhirano): TerminateExecution should be called more
+                // carefully (https://crbug.com/413518).
+                isolate()->TerminateExecution();
+            }
         }
     }
 
     m_inspectorTaskRunner->kill();
-    workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::shutdown, AllowCrossThreadAccess(this)));
+    workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::prepareForShutdown, AllowCrossThreadAccess(this)));
+    workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::performShutdownTask, AllowCrossThreadAccess(this)));
 }
 
 void WorkerThread::terminateAndWait()
@@ -358,10 +353,20 @@ void WorkerThread::terminateAndWaitForAllWorkers()
         thread->m_shutdownEvent->wait();
 }
 
-void WorkerThread::terminateFromWorkerThread()
+void WorkerThread::prepareForShutdown()
 {
     DCHECK(isCurrentThread());
-    shutdown();
+    {
+        MutexLocker lock(m_threadStateMutex);
+        if (m_readyToShutdown)
+            return;
+        m_readyToShutdown = true;
+    }
+
+    workerReportingProxy().willDestroyWorkerGlobalScope();
+    InspectorInstrumentation::allAsyncTasksCanceled(workerGlobalScope());
+    workerGlobalScope()->dispose();
+    workerBackingThread().backingThread().removeTaskObserver(m_microtaskRunner.get());
 }
 
 WorkerGlobalScope* WorkerThread::workerGlobalScope()
@@ -403,7 +408,7 @@ void WorkerThread::appendDebuggerTask(std::unique_ptr<CrossThreadClosure> task)
 {
     {
         MutexLocker lock(m_threadStateMutex);
-        if (m_shutdown)
+        if (m_readyToShutdown)
             return;
     }
     m_inspectorTaskRunner->appendTask(threadSafeBind(&WorkerThread::runDebuggerTask, AllowCrossThreadAccess(this), passed(std::move(task))));

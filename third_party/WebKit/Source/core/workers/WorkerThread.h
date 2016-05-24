@@ -58,6 +58,9 @@ enum WorkerThreadStartMode {
 // can access the lower thread infrastructure via an implementation of this
 // abstract class. Multiple WorkerThreads can share one WorkerBackingThread.
 // See WorkerBackingThread.h for more details.
+//
+// WorkerThread start and termination must be initiated on the main thread and
+// an actual task is executed on the worker thread.
 class CORE_EXPORT WorkerThread {
 public:
     virtual ~WorkerThread();
@@ -72,8 +75,8 @@ public:
     void terminateAndWait();
     static void terminateAndWaitForAllWorkers();
 
-    // Called on the worker thread for WorkerGlobleScope::close().
-    void terminateFromWorkerThread();
+    // Called on the worker thread. Disposes |m_workerGlobalScope|.
+    void prepareForShutdown();
 
     virtual WorkerBackingThread& workerBackingThread() = 0;
     virtual bool shouldAttachThreadDebugger() const { return true; }
@@ -129,27 +132,27 @@ private:
 
     // Called on the worker thread.
     void initialize(PassOwnPtr<WorkerThreadStartupData>);
-    void shutdown();
     void performTask(std::unique_ptr<ExecutionContextTask>, bool isInstrumented);
     void performShutdownTask();
     void runDebuggerTask(std::unique_ptr<CrossThreadClosure>);
     void runDebuggerTaskDontWait();
 
-    bool m_started;
-    bool m_terminated;
-    bool m_shutdown;
-    bool m_pausedInDebugger;
-    bool m_runningDebuggerTask;
-    bool m_shouldTerminateV8Execution;
+    bool m_started = false;
+    bool m_terminated = false;
+    bool m_readyToShutdown = false;
+    bool m_pausedInDebugger = false;
+    bool m_runningDebuggerTask = false;
+    bool m_shouldTerminateV8Execution = false;
+
     OwnPtr<InspectorTaskRunner> m_inspectorTaskRunner;
     OwnPtr<WebThread::TaskObserver> m_microtaskRunner;
 
     RefPtr<WorkerLoaderProxy> m_workerLoaderProxy;
     WorkerReportingProxy& m_workerReportingProxy;
 
-    // This lock protects |m_workerGlobalScope|, |m_terminated|, |m_shutdown|,
-    // |m_runningDebuggerTask|, |m_shouldTerminateV8Execution| and
-    // |m_microtaskRunner|.
+    // This lock protects |m_workerGlobalScope|, |m_terminated|,
+    // |m_readyToShutdown|, |m_runningDebuggerTask|,
+    // |m_shouldTerminateV8Execution| and |m_microtaskRunner|.
     Mutex m_threadStateMutex;
 
     Persistent<WorkerGlobalScope> m_workerGlobalScope;
