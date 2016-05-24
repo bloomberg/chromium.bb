@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -116,8 +117,10 @@ void SyncBackendHostImpl::Initialize(
   }
   syncer::PassphraseTransitionClearDataOption clear_data_option =
       syncer::PASSPHRASE_TRANSITION_DO_NOT_CLEAR_DATA;
-  if (cl->HasSwitch(switches::kSyncEnableClearDataOnPassphraseEncryption))
+  if (base::FeatureList::IsEnabled(
+          switches::kSyncClearDataOnPassphraseEncryption)) {
     clear_data_option = syncer::PASSPHRASE_TRANSITION_CLEAR_DATA;
+  }
 
   std::map<syncer::ModelType, int64_t> invalidation_versions;
   sync_prefs_->GetInvalidationVersions(&invalidation_versions);

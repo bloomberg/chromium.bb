@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -705,8 +706,9 @@ TEST_F(ProfileSyncServiceTest, MemoryPressureRecording) {
 // Verify that OnLocalSetPassphraseEncryption triggers catch up configure sync
 // cycle, calls ClearServerData, shuts down and restarts sync.
 TEST_F(ProfileSyncServiceTest, OnLocalSetPassphraseEncryption) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kSyncEnableClearDataOnPassphraseEncryption);
+  base::FeatureList::ClearInstanceForTesting();
+  ASSERT_TRUE(base::FeatureList::InitializeInstance(
+      switches::kSyncClearDataOnPassphraseEncryption.name, std::string()));
   IssueTestTokens();
   CreateService(ProfileSyncService::AUTO_START);
 
@@ -756,8 +758,9 @@ TEST_F(ProfileSyncServiceTest, OnLocalSetPassphraseEncryption) {
 TEST_F(ProfileSyncServiceTest,
        OnLocalSetPassphraseEncryption_RestartDuringCatchUp) {
   syncer::ConfigureReason configure_reason = syncer::CONFIGURE_REASON_UNKNOWN;
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kSyncEnableClearDataOnPassphraseEncryption);
+  base::FeatureList::ClearInstanceForTesting();
+  ASSERT_TRUE(base::FeatureList::InitializeInstance(
+      switches::kSyncClearDataOnPassphraseEncryption.name, std::string()));
   IssueTestTokens();
   CreateService(ProfileSyncService::AUTO_START);
   ExpectSyncBackendHostCreation(1);
@@ -811,8 +814,9 @@ TEST_F(ProfileSyncServiceTest,
        OnLocalSetPassphraseEncryption_RestartDuringClearServerData) {
   syncer::SyncManager::ClearServerDataCallback captured_callback;
   syncer::ConfigureReason configure_reason = syncer::CONFIGURE_REASON_UNKNOWN;
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kSyncEnableClearDataOnPassphraseEncryption);
+  base::FeatureList::ClearInstanceForTesting();
+  ASSERT_TRUE(base::FeatureList::InitializeInstance(
+      switches::kSyncClearDataOnPassphraseEncryption.name, std::string()));
   IssueTestTokens();
   CreateService(ProfileSyncService::AUTO_START);
   ExpectSyncBackendHostCreationCaptureClearServerData(&captured_callback);

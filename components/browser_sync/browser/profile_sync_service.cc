@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -416,8 +417,8 @@ void ProfileSyncService::TrySyncDatatypePrefRecovery() {
 void ProfileSyncService::StartSyncingWithServer() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSyncEnableClearDataOnPassphraseEncryption) &&
+  if (base::FeatureList::IsEnabled(
+          switches::kSyncClearDataOnPassphraseEncryption) &&
       sync_prefs_.GetPassphraseEncryptionTransitionInProgress()) {
     BeginConfigureCatchUpBeforeClear();
     return;
@@ -1310,8 +1311,8 @@ void ProfileSyncService::OnActionableError(const SyncProtocolError& error) {
 void ProfileSyncService::OnLocalSetPassphraseEncryption(
     const syncer::SyncEncryptionHandler::NigoriState& nigori_state) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSyncEnableClearDataOnPassphraseEncryption))
+  if (!base::FeatureList::IsEnabled(
+          switches::kSyncClearDataOnPassphraseEncryption))
     return;
 
   // At this point the user has set a custom passphrase and we have received the

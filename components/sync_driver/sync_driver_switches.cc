@@ -14,10 +14,6 @@ const char kSyncDeferredStartupTimeoutSeconds[] =
 // occur.
 const char kSyncDisableDeferredStartup[] = "sync-disable-deferred-startup";
 
-// Enables clearing of sync data when a user enables passphrase encryption.
-const char kSyncEnableClearDataOnPassphraseEncryption[] =
-    "enable-clear-sync-data-on-passphrase-encryption";
-
 // Enables feature to avoid unnecessary GetUpdate requests.
 const char kSyncEnableGetUpdateAvoidance[] =
     "sync-enable-get-update-avoidance";
@@ -34,5 +30,9 @@ const char kSyncServiceURL[] = "sync-url";
 // when it encounters an error, as the first step towards exponential backoff.
 const char kSyncShortInitialRetryOverride[] =
     "sync-short-initial-retry-override";
+
+// Enables clearing of sync data when a user enables passphrase encryption.
+const base::Feature kSyncClearDataOnPassphraseEncryption{
+    "ClearSyncDataOnPassphraseEncryption", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace switches
