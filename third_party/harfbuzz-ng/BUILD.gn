@@ -5,6 +5,7 @@
 import("//build/config/chrome_build.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
 declare_args() {
   # Blink uses a cutting-edge version of Harfbuzz; most Linux distros do not
@@ -200,4 +201,15 @@ if (use_system_harfbuzz) {
       ]
     }
   }
+}
+
+fuzzer_test("harfbuzz_fuzzer") {
+  sources = [
+    "fuzz/harfbuzz_fuzzer.cc",
+  ]
+  deps = [
+    ":harfbuzz-ng",
+  ]
+  libfuzzer_options = [ "max_len=16800" ]
+  seed_corpus = "fuzz/seed_corpus"
 }
