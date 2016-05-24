@@ -63,6 +63,7 @@ bool passesAccessControlCheck(const ResourceResponse&, StoredCredentials, Securi
 bool passesPreflightStatusCheck(const ResourceResponse&, String& errorDescription);
 bool passesExternalPreflightCheck(const ResourceResponse&, String& errorDescription);
 CORE_EXPORT void parseAccessControlExposeHeadersAllowList(const String& headerValue, HTTPHeaderSet&);
+CORE_EXPORT void extractCorsExposedHeaderNamesList(const ResourceResponse&, HTTPHeaderSet&);
 
 } // namespace blink
 

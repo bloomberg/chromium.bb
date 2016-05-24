@@ -82,6 +82,9 @@ ServiceWorkerResponse ResponseFromWebResponse(
     const blink::WebServiceWorkerResponse& web_response) {
   ServiceWorkerHeaderMap headers;
   GetServiceWorkerHeaderMapFromWebResponse(web_response, &headers);
+  ServiceWorkerHeaderList cors_exposed_header_names;
+  GetCorsExposedHeaderNamesFromWebResponse(web_response,
+                                           &cors_exposed_header_names);
   // We don't support streaming for cache.
   DCHECK(web_response.streamURL().isEmpty());
   return ServiceWorkerResponse(
@@ -93,7 +96,7 @@ ServiceWorkerResponse ResponseFromWebResponse(
       blink::WebServiceWorkerResponseErrorUnknown,
       base::Time::FromInternalValue(web_response.responseTime()),
       !web_response.cacheStorageCacheName().isNull(),
-      web_response.cacheStorageCacheName().utf8());
+      web_response.cacheStorageCacheName().utf8(), cors_exposed_header_names);
 }
 
 CacheStorageCacheQueryParams QueryParamsFromWebQueryParams(
@@ -655,6 +658,13 @@ void CacheStorageDispatcher::PopulateWebResponseFromResponse(
       response.is_in_cache_storage
           ? blink::WebString::fromUTF8(response.cache_storage_cache_name)
           : blink::WebString());
+  blink::WebVector<blink::WebString> headers(
+      response.cors_exposed_header_names.size());
+  std::transform(
+      response.cors_exposed_header_names.begin(),
+      response.cors_exposed_header_names.end(), headers.begin(),
+      [](const std::string& h) { return blink::WebString::fromLatin1(h); });
+  web_response->setCorsExposedHeaderNames(headers);
 
   for (const auto& i : response.headers) {
     web_response->setHeader(base::ASCIIToUTF16(i.first),

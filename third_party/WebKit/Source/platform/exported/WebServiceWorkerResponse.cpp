@@ -31,6 +31,7 @@ public:
     WebServiceWorkerResponseError error;
     int64_t responseTime;
     WebString cacheStorageCacheName;
+    WebVector<WebString> corsExposedHeaderNames;
 };
 
 WebServiceWorkerResponse::WebServiceWorkerResponse()
@@ -139,21 +140,6 @@ uint64_t WebServiceWorkerResponse::blobSize() const
     return m_private->blobDataHandle->size();
 }
 
-const HTTPHeaderMap& WebServiceWorkerResponse::headers() const
-{
-    return m_private->headers;
-}
-
-void WebServiceWorkerResponse::setBlobDataHandle(PassRefPtr<BlobDataHandle> blobDataHandle)
-{
-    m_private->blobDataHandle = blobDataHandle;
-}
-
-PassRefPtr<BlobDataHandle> WebServiceWorkerResponse::blobDataHandle() const
-{
-    return m_private->blobDataHandle;
-}
-
 void WebServiceWorkerResponse::setStreamURL(const WebURL& url)
 {
     m_private->streamURL = url;
@@ -192,6 +178,31 @@ void WebServiceWorkerResponse::setCacheStorageCacheName(const WebString& cacheSt
 WebString WebServiceWorkerResponse::cacheStorageCacheName() const
 {
     return m_private->cacheStorageCacheName;
+}
+
+void WebServiceWorkerResponse::setCorsExposedHeaderNames(const WebVector<WebString>& headerNames)
+{
+    m_private->corsExposedHeaderNames = headerNames;
+}
+
+WebVector<WebString> WebServiceWorkerResponse::corsExposedHeaderNames() const
+{
+    return m_private->corsExposedHeaderNames;
+}
+
+const HTTPHeaderMap& WebServiceWorkerResponse::headers() const
+{
+    return m_private->headers;
+}
+
+void WebServiceWorkerResponse::setBlobDataHandle(PassRefPtr<BlobDataHandle> blobDataHandle)
+{
+    m_private->blobDataHandle = blobDataHandle;
+}
+
+PassRefPtr<BlobDataHandle> WebServiceWorkerResponse::blobDataHandle() const
+{
+    return m_private->blobDataHandle;
 }
 
 } // namespace blink

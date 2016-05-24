@@ -61,4 +61,14 @@ void GetServiceWorkerHeaderMapFromWebResponse(
   web_response.visitHTTPHeaderFields(MakeHeaderVisitor(headers).get());
 }
 
+void GetCorsExposedHeaderNamesFromWebResponse(
+    const blink::WebServiceWorkerResponse& web_response,
+    ServiceWorkerHeaderList* result) {
+  blink::WebVector<blink::WebString> headers =
+      web_response.corsExposedHeaderNames();
+  result->resize(headers.size());
+  std::transform(headers.begin(), headers.end(), result->begin(),
+                 [](const blink::WebString& s) { return s.latin1(); });
+}
+
 }  // namespace content

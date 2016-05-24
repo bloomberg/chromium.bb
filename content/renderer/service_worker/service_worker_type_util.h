@@ -22,6 +22,10 @@ void GetServiceWorkerHeaderMapFromWebResponse(
     const blink::WebServiceWorkerResponse& web_response,
     ServiceWorkerHeaderMap* headers);
 
+void GetCorsExposedHeaderNamesFromWebResponse(
+    const blink::WebServiceWorkerResponse& web_response,
+    ServiceWorkerHeaderList* result);
+
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_TYPE_UTIL_H_

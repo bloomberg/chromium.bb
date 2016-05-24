@@ -228,6 +228,11 @@ bool ResponseMetadataEqual(const ServiceWorkerResponse& expected,
   if (expected.cache_storage_cache_name != actual.cache_storage_cache_name)
     return false;
 
+  EXPECT_EQ(expected.cors_exposed_header_names,
+            actual.cors_exposed_header_names);
+  if (expected.cors_exposed_header_names != actual.cors_exposed_header_names)
+    return false;
+
   return true;
 }
 
@@ -246,11 +251,10 @@ bool ResponseSideDataEqual(const std::string& expected_side_data,
 }
 
 ServiceWorkerResponse SetCacheName(const ServiceWorkerResponse& original) {
-  return ServiceWorkerResponse(
-      original.url, original.status_code, original.status_text,
-      original.response_type, original.headers, original.blob_uuid,
-      original.blob_size, original.stream_url, original.error,
-      original.response_time, true, kCacheName);
+  ServiceWorkerResponse result(original);
+  result.is_in_cache_storage = true;
+  result.cache_storage_cache_name = kCacheName;
+  return result;
 }
 
 }  // namespace
@@ -388,7 +392,8 @@ class CacheStorageCacheTest : public testing::Test {
         blob_handle_->uuid(), expected_blob_data_.size(), GURL(),
         blink::WebServiceWorkerResponseErrorUnknown, base::Time::Now(),
         false /* is_in_cache_storage */,
-        std::string() /* cache_storage_cache_name */);
+        std::string() /* cache_storage_cache_name */,
+        ServiceWorkerHeaderList() /* cors_exposed_header_names */);
 
     body_response_with_query_ = ServiceWorkerResponse(
         GURL("http://example.com/body.html?query=test"), 200, "OK",
@@ -396,14 +401,16 @@ class CacheStorageCacheTest : public testing::Test {
         blob_handle_->uuid(), expected_blob_data_.size(), GURL(),
         blink::WebServiceWorkerResponseErrorUnknown, base::Time::Now(),
         false /* is_in_cache_storage */,
-        std::string() /* cache_storage_cache_name */);
+        std::string() /* cache_storage_cache_name */,
+        {"a"} /* cors_exposed_header_names */);
 
     no_body_response_ = ServiceWorkerResponse(
         GURL("http://example.com/no_body.html"), 200, "OK",
         blink::WebServiceWorkerResponseTypeDefault, headers, "", 0, GURL(),
         blink::WebServiceWorkerResponseErrorUnknown, base::Time::Now(),
         false /* is_in_cache_storage */,
-        std::string() /* cache_storage_cache_name */);
+        std::string() /* cache_storage_cache_name */,
+        ServiceWorkerHeaderList() /* cors_exposed_header_names */);
   }
 
   std::unique_ptr<ServiceWorkerFetchRequest> CopyFetchRequest(
@@ -1224,12 +1231,13 @@ TEST_P(CacheStorageCacheTestP, WriteSideData_NotFound) {
 TEST_F(CacheStorageCacheTest, CaselessServiceWorkerResponseHeaders) {
   // CacheStorageCache depends on ServiceWorkerResponse having caseless
   // headers so that it can quickly lookup vary headers.
-  ServiceWorkerResponse response(GURL("http://www.example.com"), 200, "OK",
-                                 blink::WebServiceWorkerResponseTypeDefault,
-                                 ServiceWorkerHeaderMap(), "", 0, GURL(),
-                                 blink::WebServiceWorkerResponseErrorUnknown,
-                                 base::Time(), false /* is_in_cache_storage */,
-                                 std::string() /* cache_storage_cache_name */);
+  ServiceWorkerResponse response(
+      GURL("http://www.example.com"), 200, "OK",
+      blink::WebServiceWorkerResponseTypeDefault, ServiceWorkerHeaderMap(), "",
+      0, GURL(), blink::WebServiceWorkerResponseErrorUnknown, base::Time(),
+      false /* is_in_cache_storage */,
+      std::string() /* cache_storage_cache_name */,
+      ServiceWorkerHeaderList() /* cors_exposed_header_names */);
   response.headers["content-type"] = "foo";
   response.headers["Content-Type"] = "bar";
   EXPECT_EQ("bar", response.headers["content-type"]);

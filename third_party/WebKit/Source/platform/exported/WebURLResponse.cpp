@@ -455,6 +455,13 @@ void WebURLResponse::setCacheStorageCacheName(const WebString& cacheStorageCache
     m_private->m_resourceResponse->setCacheStorageCacheName(cacheStorageCacheName);
 }
 
+void WebURLResponse::setCorsExposedHeaderNames(const WebVector<WebString>& headerNames)
+{
+    Vector<String> exposedHeaderNames;
+    exposedHeaderNames.append(headerNames.data(), headerNames.size());
+    m_private->m_resourceResponse->setCorsExposedHeaderNames(exposedHeaderNames);
+}
+
 WebString WebURLResponse::downloadFilePath() const
 {
     return m_private->m_resourceResponse->downloadedFilePath();

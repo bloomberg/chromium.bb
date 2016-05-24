@@ -225,6 +225,12 @@ public:
     const String& cacheStorageCacheName() const { return m_cacheStorageCacheName; }
     void setCacheStorageCacheName(const String& cacheStorageCacheName) { m_cacheStorageCacheName = cacheStorageCacheName; }
 
+    const Vector<String>& corsExposedHeaderNames() const { return m_corsExposedHeaderNames; }
+    void setCorsExposedHeaderNames(const Vector<String>& headerNames)
+    {
+        m_corsExposedHeaderNames = headerNames;
+    }
+
     int64_t responseTime() const { return m_responseTime; }
     void setResponseTime(int64_t responseTime) { m_responseTime = responseTime; }
 
@@ -345,6 +351,10 @@ private:
     // The cache name of the CacheStorage from where the response is served via
     // the ServiceWorker. Null if the response isn't from the CacheStorage.
     String m_cacheStorageCacheName;
+
+    // The headers that should be exposed according to CORS. Only guaranteed
+    // to be set if the response was fetched by a ServiceWorker.
+    Vector<String> m_corsExposedHeaderNames;
 
     // The time at which the response headers were received.  For cached
     // responses, this time could be "far" in the past.

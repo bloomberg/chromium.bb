@@ -512,6 +512,9 @@ void ServiceWorkerContextClient::didHandleFetchEvent(
     const blink::WebServiceWorkerResponse& web_response) {
   ServiceWorkerHeaderMap headers;
   GetServiceWorkerHeaderMapFromWebResponse(web_response, &headers);
+  ServiceWorkerHeaderList cors_exposed_header_names;
+  GetCorsExposedHeaderNamesFromWebResponse(web_response,
+                                           &cors_exposed_header_names);
   ServiceWorkerResponse response(
       web_response.url(), web_response.status(),
       web_response.statusText().utf8(), web_response.responseType(), headers,
@@ -519,7 +522,7 @@ void ServiceWorkerContextClient::didHandleFetchEvent(
       web_response.streamURL(), web_response.error(),
       base::Time::FromInternalValue(web_response.responseTime()),
       !web_response.cacheStorageCacheName().isNull(),
-      web_response.cacheStorageCacheName().utf8());
+      web_response.cacheStorageCacheName().utf8(), cors_exposed_header_names);
   Send(new ServiceWorkerHostMsg_FetchEventFinished(
       GetRoutingID(), request_id,
       SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,

@@ -82,6 +82,9 @@ public:
     void setCacheStorageCacheName(const WebString&);
     WebString cacheStorageCacheName() const;
 
+    void setCorsExposedHeaderNames(const WebVector<WebString>&);
+    WebVector<WebString> corsExposedHeaderNames() const;
+
 #if INSIDE_BLINK
     const HTTPHeaderMap& headers() const;
 

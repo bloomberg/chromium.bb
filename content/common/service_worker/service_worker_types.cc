@@ -73,7 +73,8 @@ ServiceWorkerResponse::ServiceWorkerResponse(
     blink::WebServiceWorkerResponseError error,
     base::Time response_time,
     bool is_in_cache_storage,
-    const std::string& cache_storage_cache_name)
+    const std::string& cache_storage_cache_name,
+    const ServiceWorkerHeaderList& cors_exposed_headers)
     : url(url),
       status_code(status_code),
       status_text(status_text),
@@ -85,7 +86,8 @@ ServiceWorkerResponse::ServiceWorkerResponse(
       error(error),
       response_time(response_time),
       is_in_cache_storage(is_in_cache_storage),
-      cache_storage_cache_name(cache_storage_cache_name) {}
+      cache_storage_cache_name(cache_storage_cache_name),
+      cors_exposed_header_names(cors_exposed_headers) {}
 
 ServiceWorkerResponse::ServiceWorkerResponse(
     const ServiceWorkerResponse& other) = default;

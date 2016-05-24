@@ -72,47 +72,6 @@ void HTTPRequestHeaderValidator::visitHeader(const WebString& name, const WebStr
     m_isSafe = m_isSafe && isValidHTTPToken(name) && !FetchUtils::isForbiddenHeaderName(name) && isValidHTTPHeaderValue(value);
 }
 
-// FIXME: Remove this and use WebCore code that does the same thing.
-class HTTPResponseHeaderValidator : public WebHTTPHeaderVisitor {
-    WTF_MAKE_NONCOPYABLE(HTTPResponseHeaderValidator);
-public:
-    HTTPResponseHeaderValidator(bool usingAccessControl) : m_usingAccessControl(usingAccessControl) { }
-
-    void visitHeader(const WebString& name, const WebString& value);
-    const HTTPHeaderSet& blockedHeaders();
-
-private:
-    HTTPHeaderSet m_exposedHeaders;
-    HTTPHeaderSet m_blockedHeaders;
-    bool m_usingAccessControl;
-};
-
-void HTTPResponseHeaderValidator::visitHeader(const WebString& name, const WebString& value)
-{
-    String headerName(name);
-    if (m_usingAccessControl) {
-        if (equalIgnoringCase(headerName, "access-control-expose-headers"))
-            parseAccessControlExposeHeadersAllowList(value, m_exposedHeaders);
-        else if (!isOnAccessControlResponseHeaderWhitelist(headerName))
-            m_blockedHeaders.add(static_cast<String>(name));
-    }
-}
-
-const HTTPHeaderSet& HTTPResponseHeaderValidator::blockedHeaders()
-{
-    // Remove exposed headers from the blocked set.
-    if (!m_exposedHeaders.isEmpty()) {
-        // Don't allow Set-Cookie headers to be exposed.
-        m_exposedHeaders.remove("set-cookie");
-        m_exposedHeaders.remove("set-cookie2");
-        // Block Access-Control-Expose-Header itself. It could be exposed later.
-        m_blockedHeaders.add("access-control-expose-headers");
-        m_blockedHeaders.removeAll(m_exposedHeaders);
-    }
-
-    return m_blockedHeaders;
-}
-
 } // namespace
 
 // This class bridges the interface differences between WebCore and WebKit loader clients.
@@ -205,20 +164,30 @@ void AssociatedURLLoader::ClientAdapter::didReceiveResponse(unsigned long, const
     if (!m_client)
         return;
 
-    // Try to use the original ResourceResponse if possible.
-    WebURLResponse validatedResponse = WrappedResourceResponse(response);
-    HTTPResponseHeaderValidator validator(m_options.crossOriginRequestPolicy == WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl);
-    if (!m_options.exposeAllResponseHeaders)
-        validatedResponse.visitHTTPHeaderFields(&validator);
+    if (m_options.exposeAllResponseHeaders || m_options.crossOriginRequestPolicy != WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl) {
+        // Use the original ResourceResponse.
+        m_client->didReceiveResponse(m_loader, WrappedResourceResponse(response));
+        return;
+    }
+
+    HTTPHeaderSet exposedHeaders;
+    extractCorsExposedHeaderNamesList(response, exposedHeaders);
+    HTTPHeaderSet blockedHeaders;
+    for (const auto& header : response.httpHeaderFields()) {
+        if (FetchUtils::isForbiddenResponseHeaderName(header.key) || (!isOnAccessControlResponseHeaderWhitelist(header.key) && !exposedHeaders.contains(header.key)))
+            blockedHeaders.add(header.key);
+    }
+
+    if (blockedHeaders.isEmpty()) {
+        // Use the original ResourceResponse.
+        m_client->didReceiveResponse(m_loader, WrappedResourceResponse(response));
+        return;
+    }
 
     // If there are blocked headers, copy the response so we can remove them.
-    const HTTPHeaderSet& blockedHeaders = validator.blockedHeaders();
-    if (!blockedHeaders.isEmpty()) {
-        validatedResponse = WebURLResponse(validatedResponse);
-        HTTPHeaderSet::const_iterator end = blockedHeaders.end();
-        for (HTTPHeaderSet::const_iterator it = blockedHeaders.begin(); it != end; ++it)
-            validatedResponse.clearHTTPHeaderField(*it);
-    }
+    WebURLResponse validatedResponse = WrappedResourceResponse(response);
+    for (const auto& header : blockedHeaders)
+        validatedResponse.clearHTTPHeaderField(header);
     m_client->didReceiveResponse(m_loader, validatedResponse);
 }
 

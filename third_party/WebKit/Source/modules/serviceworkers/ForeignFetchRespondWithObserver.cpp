@@ -4,6 +4,7 @@
 
 #include "modules/serviceworkers/ForeignFetchRespondWithObserver.h"
 
+#include "core/fetch/CrossOriginAccessControl.h"
 #include "modules/serviceworkers/ForeignFetchResponse.h"
 
 namespace blink {
@@ -44,7 +45,22 @@ void ForeignFetchRespondWithObserver::responseWasFulfilled(const ScriptValue& va
         responseWasRejected(WebServiceWorkerResponseErrorForeignFetchMismatchedOrigin);
         return;
     } else if (!isOpaque) {
-        // TODO(mek): Handle |headers| response attribute, and properly filter response.
+        HTTPHeaderSet headers;
+        if (foreignFetchResponse.hasHeaders()) {
+            for (const String& header : foreignFetchResponse.headers())
+                headers.add(header);
+            if (response->response()->getType() == FetchResponseData::CORSType) {
+                const HTTPHeaderSet& existingHeaders = response->response()->corsExposedHeaderNames();
+                HTTPHeaderSet headersToRemove;
+                for (HTTPHeaderSet::iterator it = headers.begin(); it != headers.end(); ++it) {
+                    if (!existingHeaders.contains(*it))
+                        headersToRemove.add(*it);
+                }
+                headers.removeAll(headersToRemove);
+            }
+        }
+        FetchResponseData* responseData = internalResponse->createCORSFilteredResponse(headers);
+        response = Response::create(getExecutionContext(), responseData);
     }
 
     RespondWithObserver::responseWasFulfilled(ScriptValue::from(value.getScriptState(), response));

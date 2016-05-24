@@ -740,6 +740,7 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     streaming_version_->AddStreamingURLRequestJob(this);
     response_url_ = response.url;
     service_worker_response_type_ = response.response_type;
+    cors_exposed_header_names_ = response.cors_exposed_header_names;
     response_time_ = response.response_time;
     CreateResponseHeader(
         response.status_code, response.status_text, response.headers);
@@ -781,6 +782,7 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
   response_time_ = response.response_time;
   response_is_in_cache_storage_ = response.is_in_cache_storage;
   response_cache_storage_cache_name_ = response.cache_storage_cache_name;
+  cors_exposed_header_names_ = response.cors_exposed_header_names;
   CreateResponseHeader(
       response.status_code, response.status_text, response.headers);
   load_timing_info_.receive_headers_end = base::TimeTicks::Now();
@@ -915,15 +917,16 @@ void ServiceWorkerURLRequestJob::OnStartCompleted() const {
             base::TimeTicks() /* service_worker_start_time */,
             base::TimeTicks() /* service_worker_ready_time */,
             false /* respons_is_in_cache_storage */,
-            std::string() /* response_cache_storage_cache_name */);
+            std::string() /* response_cache_storage_cache_name */,
+            ServiceWorkerHeaderList() /* cors_exposed_header_names */);
     return;
   }
   ServiceWorkerResponseInfo::ForRequest(request_, true)
-      ->OnStartCompleted(true /* was_fetched_via_service_worker */,
-                         fall_back_required_, response_url_,
-                         service_worker_response_type_, worker_start_time_,
-                         worker_ready_time_, response_is_in_cache_storage_,
-                         response_cache_storage_cache_name_);
+      ->OnStartCompleted(
+          true /* was_fetched_via_service_worker */, fall_back_required_,
+          response_url_, service_worker_response_type_, worker_start_time_,
+          worker_ready_time_, response_is_in_cache_storage_,
+          response_cache_storage_cache_name_, cors_exposed_header_names_);
 }
 
 bool ServiceWorkerURLRequestJob::IsMainResourceLoad() const {

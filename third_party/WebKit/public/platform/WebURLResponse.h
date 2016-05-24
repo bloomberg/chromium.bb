@@ -35,6 +35,7 @@
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebPrivateOwnPtr.h"
 #include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
 
 namespace blink {
@@ -231,6 +232,11 @@ public:
     // the ServiceWorker. Null if the response isn't from the CacheStorage.
     BLINK_PLATFORM_EXPORT WebString cacheStorageCacheName() const;
     BLINK_PLATFORM_EXPORT void setCacheStorageCacheName(const WebString&);
+
+    // The headers that should be exposed according to CORS. Only guaranteed
+    // to be set if the response was fetched by a ServiceWorker.
+    BLINK_PLATFORM_EXPORT WebVector<WebString> corsExposedHeaderNames() const;
+    BLINK_PLATFORM_EXPORT void setCorsExposedHeaderNames(const WebVector<WebString>&);
 
     // This indicates the location of a downloaded response if the
     // WebURLRequest had the downloadToFile flag set to true. This file path

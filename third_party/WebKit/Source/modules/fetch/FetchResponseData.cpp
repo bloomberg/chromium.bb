@@ -6,7 +6,6 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMArrayBuffer.h"
-#include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/FetchUtils.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/DataConsumerHandleUtil.h"
@@ -41,6 +40,17 @@ WebServiceWorkerResponseType fetchTypeToWebType(FetchResponseData::Type fetchTyp
         break;
     }
     return webType;
+}
+
+WebVector<WebString> headerSetToWebVector(const HTTPHeaderSet& headers)
+{
+    // Can't just pass *headers to the WebVector constructor because HashSet
+    // iterators are not stl iterator compatible.
+    WebVector<WebString> result(static_cast<size_t>(headers.size()));
+    int idx = 0;
+    for (const auto& header : headers)
+        result[idx++] = header;
+    return result;
 }
 
 } // namespace
@@ -90,6 +100,16 @@ FetchResponseData* FetchResponseData::createBasicFilteredResponse() const
 FetchResponseData* FetchResponseData::createCORSFilteredResponse() const
 {
     DCHECK_EQ(m_type, DefaultType);
+    HTTPHeaderSet accessControlExposeHeaderSet;
+    String accessControlExposeHeaders;
+    if (m_headerList->get(HTTPNames::Access_Control_Expose_Headers, accessControlExposeHeaders))
+        parseAccessControlExposeHeadersAllowList(accessControlExposeHeaders, accessControlExposeHeaderSet);
+    return createCORSFilteredResponse(accessControlExposeHeaderSet);
+}
+
+FetchResponseData* FetchResponseData::createCORSFilteredResponse(const HTTPHeaderSet& exposedHeaders) const
+{
+    DCHECK_EQ(m_type, DefaultType);
     // "A CORS filtered response is a filtered response whose type is |CORS|,
     // header list excludes all headers in internal response's header list,
     // except those whose name is either one of `Cache-Control`,
@@ -99,15 +119,15 @@ FetchResponseData* FetchResponseData::createCORSFilteredResponse() const
     // list."
     FetchResponseData* response = new FetchResponseData(CORSType, m_status, m_statusMessage);
     response->m_url = m_url;
-    HTTPHeaderSet accessControlExposeHeaderSet;
-    String accessControlExposeHeaders;
-    if (m_headerList->get("access-control-expose-headers", accessControlExposeHeaders))
-        parseAccessControlExposeHeadersAllowList(accessControlExposeHeaders, accessControlExposeHeaderSet);
     for (size_t i = 0; i < m_headerList->size(); ++i) {
         const FetchHeaderList::Header* header = m_headerList->list()[i].get();
         const String& name = header->first;
-        if (isOnAccessControlResponseHeaderWhitelist(name) || (accessControlExposeHeaderSet.contains(name) && !FetchUtils::isForbiddenResponseHeaderName(name)))
+        const bool explicitlyExposed = exposedHeaders.contains(name);
+        if (isOnAccessControlResponseHeaderWhitelist(name) || (explicitlyExposed && !FetchUtils::isForbiddenResponseHeaderName(name))) {
+            if (explicitlyExposed)
+                response->m_corsExposedHeaderNames.add(name);
             response->m_headerList->append(name, header->second);
+        }
     }
     response->m_buffer = m_buffer;
     response->m_mimeType = m_mimeType;
@@ -179,6 +199,7 @@ FetchResponseData* FetchResponseData::clone(ScriptState* scriptState)
     newResponse->m_mimeType = m_mimeType;
     newResponse->m_responseTime = m_responseTime;
     newResponse->m_cacheStorageCacheName = m_cacheStorageCacheName;
+    newResponse->m_corsExposedHeaderNames = m_corsExposedHeaderNames;
 
     switch (m_type) {
     case BasicType:
@@ -221,6 +242,7 @@ void FetchResponseData::populateWebServiceWorkerResponse(WebServiceWorkerRespons
     if (m_internalResponse) {
         m_internalResponse->populateWebServiceWorkerResponse(response);
         response.setResponseType(fetchTypeToWebType(m_type));
+        response.setCorsExposedHeaderNames(headerSetToWebVector(m_corsExposedHeaderNames));
         return;
     }
 
@@ -230,6 +252,7 @@ void FetchResponseData::populateWebServiceWorkerResponse(WebServiceWorkerRespons
     response.setResponseType(fetchTypeToWebType(m_type));
     response.setResponseTime(responseTime());
     response.setCacheStorageCacheName(cacheStorageCacheName());
+    response.setCorsExposedHeaderNames(headerSetToWebVector(m_corsExposedHeaderNames));
     for (size_t i = 0; i < headerList()->size(); ++i) {
         const FetchHeaderList::Header* header = headerList()->list()[i].get();
         response.appendHeader(header->first, header->second);

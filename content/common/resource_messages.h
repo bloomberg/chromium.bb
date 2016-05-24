@@ -180,6 +180,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::ResourceResponseInfo)
   IPC_STRUCT_TRAITS_MEMBER(is_using_lofi)
   IPC_STRUCT_TRAITS_MEMBER(effective_connection_type)
   IPC_STRUCT_TRAITS_MEMBER(signed_certificate_timestamps)
+  IPC_STRUCT_TRAITS_MEMBER(cors_exposed_header_names)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(net::RedirectInfo)

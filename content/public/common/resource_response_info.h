@@ -157,6 +157,10 @@ struct ResourceResponseInfo {
   // validation status. Only present if the renderer process set
   // report_raw_headers to true.
   net::SignedCertificateTimestampAndStatusList signed_certificate_timestamps;
+
+  // In case this is a CORS response fetched by a ServiceWorker, this is the
+  // set of headers that should be exposed.
+  std::vector<std::string> cors_exposed_header_names;
 };
 
 }  // namespace content

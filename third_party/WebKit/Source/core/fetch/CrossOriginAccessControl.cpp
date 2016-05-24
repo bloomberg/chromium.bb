@@ -255,6 +255,21 @@ void parseAccessControlExposeHeadersAllowList(const String& headerValue, HTTPHea
     }
 }
 
+void extractCorsExposedHeaderNamesList(const ResourceResponse& response, HTTPHeaderSet& headerSet)
+{
+    // If a response was fetched via a service worker, it will always have
+    // corsExposedHeaderNames set, either from the Access-Control-Expose-Headers
+    // header, or explicitly via foreign fetch. For requests that didn't come
+    // from a service worker, foreign fetch doesn't apply so just parse the CORS
+    // header.
+    if (response.wasFetchedViaServiceWorker()) {
+        for (const auto& header : response.corsExposedHeaderNames())
+            headerSet.add(header);
+        return;
+    }
+    parseAccessControlExposeHeadersAllowList(response.httpHeaderField(HTTPNames::Access_Control_Expose_Headers), headerSet);
+}
+
 bool CrossOriginAccessControl::isLegalRedirectLocation(const KURL& requestURL, String& errorDescription)
 {
     // CORS restrictions imposed on Location: URL -- http://www.w3.org/TR/cors/#redirect-steps (steps 2 + 3.)

@@ -343,7 +343,8 @@ class ProviderDeleteHelper : public EmbeddedWorkerTestHelper {
             ServiceWorkerHeaderMap(), std::string(), 0, GURL(),
             blink::WebServiceWorkerResponseErrorUnknown, base::Time(),
             false /* response_is_in_cache_storage */,
-            std::string() /* response_cache_storage_cache_name */)));
+            std::string() /* response_cache_storage_cache_name */,
+            ServiceWorkerHeaderList() /* cors_exposed_header_names */)));
   }
 
  private:
@@ -421,7 +422,8 @@ class BlobResponder : public EmbeddedWorkerTestHelper {
             ServiceWorkerHeaderMap(), blob_uuid_, blob_size_, GURL(),
             blink::WebServiceWorkerResponseErrorUnknown, base::Time(),
             false /* response_is_in_cache_storage */,
-            std::string() /* response_cache_storage_cache_name */)));
+            std::string() /* response_cache_storage_cache_name */,
+            ServiceWorkerHeaderList() /* cors_exposed_header_names */)));
   }
 
   std::string blob_uuid_;
@@ -499,7 +501,8 @@ class StreamResponder : public EmbeddedWorkerTestHelper {
             ServiceWorkerHeaderMap(), "", 0, stream_url_,
             blink::WebServiceWorkerResponseErrorUnknown, base::Time(),
             false /* response_is_in_cache_storage */,
-            std::string() /* response_cache_storage_cache_name */)));
+            std::string() /* response_cache_storage_cache_name */,
+            ServiceWorkerHeaderList() /* cors_exposed_header_names */)));
   }
 
   const GURL stream_url_;

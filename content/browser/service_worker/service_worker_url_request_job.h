@@ -276,6 +276,8 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   bool response_is_in_cache_storage_ = false;
   std::string response_cache_storage_cache_name_;
 
+  ServiceWorkerHeaderList cors_exposed_header_names_;
+
   std::unique_ptr<BlobConstructionWaiter> blob_construction_waiter_;
 
   base::WeakPtrFactory<ServiceWorkerURLRequestJob> weak_factory_;

@@ -908,7 +908,8 @@ void CacheStorageCache::Put(const CacheStorageBatchOperation& operation,
       operation.response.blob_size, operation.response.stream_url,
       operation.response.error, operation.response.response_time,
       false /* is_in_cache_storage */,
-      std::string() /* cache_storage_cache_name */));
+      std::string() /* cache_storage_cache_name */,
+      operation.response.cors_exposed_header_names));
 
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
 
@@ -1045,6 +1046,8 @@ void CacheStorageCache::PutDidCreateEntry(
     header_map->set_name(it->first);
     header_map->set_value(it->second);
   }
+  for (const auto& header : put_context->response->cors_exposed_header_names)
+    response_metadata->add_cors_exposed_header_names(header);
 
   std::unique_ptr<std::string> serialized(new std::string());
   if (!metadata.SerializeToString(serialized.get())) {
@@ -1517,7 +1520,10 @@ void CacheStorageCache::PopulateResponseMetadata(
       ServiceWorkerHeaderMap(), "", 0, GURL(),
       blink::WebServiceWorkerResponseErrorUnknown,
       base::Time::FromInternalValue(metadata.response().response_time()),
-      true /* is_in_cache_storage */, cache_name_);
+      true /* is_in_cache_storage */, cache_name_,
+      ServiceWorkerHeaderList(
+          metadata.response().cors_exposed_header_names().begin(),
+          metadata.response().cors_exposed_header_names().end()));
 
   for (int i = 0; i < metadata.response().headers_size(); ++i) {
     const CacheHeaderMap header = metadata.response().headers(i);

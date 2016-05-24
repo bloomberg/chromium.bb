@@ -7,6 +7,7 @@
 
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
+#include "content/common/service_worker/service_worker_types.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
 #include "url/gurl.h"
 
@@ -25,6 +26,8 @@ class CONTENT_EXPORT ServiceWorkerResponseInfo
                                                bool create = false);
   static void ResetDataForRequest(net::URLRequest* request);
 
+  ~ServiceWorkerResponseInfo() override;
+
   void GetExtraResponseInfo(ResourceResponseInfo* response_info) const;
   void OnPrepareToRestart(base::TimeTicks service_worker_start_time,
                           base::TimeTicks service_worker_ready_time);
@@ -36,7 +39,8 @@ class CONTENT_EXPORT ServiceWorkerResponseInfo
       base::TimeTicks service_worker_start_time,
       base::TimeTicks service_worker_ready_time,
       bool response_is_in_cache_storage,
-      const std::string& response_cache_storage_cache_name);
+      const std::string& response_cache_storage_cache_name,
+      const ServiceWorkerHeaderList& cors_exposed_header_names);
   void ResetData();
 
   bool was_fetched_via_service_worker() const {
@@ -74,6 +78,7 @@ class CONTENT_EXPORT ServiceWorkerResponseInfo
   base::TimeTicks service_worker_ready_time_;
   bool response_is_in_cache_storage_ = false;
   std::string response_cache_storage_cache_name_;
+  ServiceWorkerHeaderList cors_exposed_header_names_;
 };
 
 }  // namespace content

@@ -59,9 +59,13 @@ FetchResponseData* createFetchResponseDataFromWebResponse(ScriptState* scriptSta
     case WebServiceWorkerResponseTypeBasic:
         response = response->createBasicFilteredResponse();
         break;
-    case WebServiceWorkerResponseTypeCORS:
-        response = response->createCORSFilteredResponse();
+    case WebServiceWorkerResponseTypeCORS: {
+        HTTPHeaderSet headerNames;
+        for (const auto& header : webResponse.corsExposedHeaderNames())
+            headerNames.add(String(header));
+        response = response->createCORSFilteredResponse(headerNames);
         break;
+    }
     case WebServiceWorkerResponseTypeOpaque:
         response = response->createOpaqueFilteredResponse();
         break;

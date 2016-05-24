@@ -955,6 +955,13 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
       info.is_in_cache_storage
           ? blink::WebString::fromUTF8(info.cache_storage_cache_name)
           : blink::WebString());
+  blink::WebVector<blink::WebString> cors_exposed_header_names(
+      info.cors_exposed_header_names.size());
+  std::transform(
+      info.cors_exposed_header_names.begin(),
+      info.cors_exposed_header_names.end(), cors_exposed_header_names.begin(),
+      [](const std::string& h) { return blink::WebString::fromLatin1(h); });
+  response->setCorsExposedHeaderNames(cors_exposed_header_names);
 
   SetSecurityStyleAndDetails(url, info.security_info, response,
                              report_security_info);

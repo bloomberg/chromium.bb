@@ -331,9 +331,12 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
         case FetchRequestData::BasicTainting:
             taintedResponse = responseData->createBasicFilteredResponse();
             break;
-        case FetchRequestData::CORSTainting:
-            taintedResponse = responseData->createCORSFilteredResponse();
+        case FetchRequestData::CORSTainting: {
+            HTTPHeaderSet headerNames;
+            extractCorsExposedHeaderNamesList(response, headerNames);
+            taintedResponse = responseData->createCORSFilteredResponse(headerNames);
             break;
+        }
         case FetchRequestData::OpaqueTainting:
             taintedResponse = responseData->createOpaqueFilteredResponse();
             break;
