@@ -39,6 +39,7 @@ class AXObjectCacheImpl;
 class AXTableCell;
 
 class MODULES_EXPORT AXTable : public AXLayoutObject {
+    WTF_MAKE_NONCOPYABLE(AXTable);
 
 protected:
     AXTable(LayoutObject*, AXObjectCacheImpl&);

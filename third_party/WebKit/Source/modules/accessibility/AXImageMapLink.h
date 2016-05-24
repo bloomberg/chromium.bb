@@ -38,6 +38,7 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AXImageMapLink final : public AXNodeObject {
+    WTF_MAKE_NONCOPYABLE(AXImageMapLink);
 
 private:
     explicit AXImageMapLink(HTMLAreaElement*, AXObjectCacheImpl&);

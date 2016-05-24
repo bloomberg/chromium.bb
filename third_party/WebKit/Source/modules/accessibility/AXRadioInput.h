@@ -14,6 +14,7 @@ class AXObjectCacheImpl;
 class HTMLInputElement;
 
 class AXRadioInput final : public AXLayoutObject {
+    WTF_MAKE_NONCOPYABLE(AXRadioInput);
 
 public:
     static AXRadioInput* create(LayoutObject*, AXObjectCacheImpl&);

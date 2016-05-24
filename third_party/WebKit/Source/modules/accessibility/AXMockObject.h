@@ -34,6 +34,7 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class MODULES_EXPORT AXMockObject : public AXObject {
+    WTF_MAKE_NONCOPYABLE(AXMockObject);
 
 protected:
     explicit AXMockObject(AXObjectCacheImpl&);

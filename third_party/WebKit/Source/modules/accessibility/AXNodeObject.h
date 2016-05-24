@@ -42,6 +42,7 @@ class LayoutRect;
 class Node;
 
 class MODULES_EXPORT AXNodeObject : public AXObject {
+    WTF_MAKE_NONCOPYABLE(AXNodeObject);
 protected:
     AXNodeObject(Node*, AXObjectCacheImpl&);
 

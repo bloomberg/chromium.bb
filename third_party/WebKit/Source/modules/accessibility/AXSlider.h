@@ -38,6 +38,7 @@ class AXObjectCacheImpl;
 class HTMLInputElement;
 
 class AXSlider : public AXLayoutObject {
+    WTF_MAKE_NONCOPYABLE(AXSlider);
 
 public:
     static AXSlider* create(LayoutObject*, AXObjectCacheImpl&);
@@ -63,6 +64,7 @@ private:
 };
 
 class AXSliderThumb final : public AXMockObject {
+    WTF_MAKE_NONCOPYABLE(AXSliderThumb);
 
 public:
     static AXSliderThumb* create(AXObjectCacheImpl&);

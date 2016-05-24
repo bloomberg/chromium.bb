@@ -39,6 +39,7 @@ class AXObjectCacheImpl;
 class HTMLSelectElement;
 
 class AXListBoxOption final : public AXLayoutObject {
+    WTF_MAKE_NONCOPYABLE(AXListBoxOption);
 
 private:
     AXListBoxOption(LayoutObject*, AXObjectCacheImpl&);

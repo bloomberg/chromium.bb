@@ -216,6 +216,8 @@ enum AccessibilityState {
 };
 
 class AccessibilityText final : public GarbageCollectedFinalized<AccessibilityText> {
+    WTF_MAKE_NONCOPYABLE(AccessibilityText);
+
 public:
     DEFINE_INLINE_TRACE()
     {
@@ -391,6 +393,8 @@ public:
 };
 
 class NameSourceRelatedObject : public GarbageCollectedFinalized<NameSourceRelatedObject> {
+    WTF_MAKE_NONCOPYABLE(NameSourceRelatedObject);
+
 public:
     WeakMember<AXObject> object;
     String text;
@@ -477,6 +481,7 @@ WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::DescriptionSource);
 namespace blink {
 
 class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
+    WTF_MAKE_NONCOPYABLE(AXObject);
 public:
     typedef HeapVector<Member<AXObject>> AXObjectVector;
 

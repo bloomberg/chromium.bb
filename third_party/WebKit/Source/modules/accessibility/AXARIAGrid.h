@@ -37,6 +37,8 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AXARIAGrid final : public AXTable {
+    WTF_MAKE_NONCOPYABLE(AXARIAGrid);
+
 private:
     AXARIAGrid(LayoutObject*, AXObjectCacheImpl&);
 

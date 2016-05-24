@@ -34,6 +34,8 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AXMenuListOption final : public AXMockObject {
+    WTF_MAKE_NONCOPYABLE(AXMenuListOption);
+
 public:
     static AXMenuListOption* create(HTMLOptionElement* element, AXObjectCacheImpl& axObjectCache) { return new AXMenuListOption(element, axObjectCache); }
     ~AXMenuListOption() override;

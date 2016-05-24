@@ -35,6 +35,8 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AXSpinButton final : public AXMockObject {
+    WTF_MAKE_NONCOPYABLE(AXSpinButton);
+
 public:
     static AXSpinButton* create(AXObjectCacheImpl&);
     ~AXSpinButton() override;

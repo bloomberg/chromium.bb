@@ -37,6 +37,7 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AXInlineTextBox final : public AXObject {
+    WTF_MAKE_NONCOPYABLE(AXInlineTextBox);
 
 private:
     AXInlineTextBox(PassRefPtr<AbstractInlineTextBox>, AXObjectCacheImpl&);

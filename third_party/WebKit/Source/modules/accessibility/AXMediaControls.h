@@ -38,6 +38,7 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AccessibilityMediaControl : public AXLayoutObject {
+    WTF_MAKE_NONCOPYABLE(AccessibilityMediaControl);
 
 public:
     static AXObject* create(LayoutObject*, AXObjectCacheImpl&);
@@ -56,6 +57,7 @@ protected:
 
 
 class AccessibilityMediaTimeline final : public AXSlider {
+    WTF_MAKE_NONCOPYABLE(AccessibilityMediaTimeline);
 
 public:
     static AXObject* create(LayoutObject*, AXObjectCacheImpl&);
@@ -70,6 +72,7 @@ private:
 
 
 class AXMediaControlsContainer final : public AccessibilityMediaControl {
+    WTF_MAKE_NONCOPYABLE(AXMediaControlsContainer);
 
 public:
     static AXObject* create(LayoutObject*, AXObjectCacheImpl&);
@@ -87,6 +90,7 @@ private:
 
 
 class AccessibilityMediaTimeDisplay final : public AccessibilityMediaControl {
+    WTF_MAKE_NONCOPYABLE(AccessibilityMediaTimeDisplay);
 
 public:
     static AXObject* create(LayoutObject*, AXObjectCacheImpl&);

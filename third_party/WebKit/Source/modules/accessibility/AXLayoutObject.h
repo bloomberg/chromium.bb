@@ -46,6 +46,8 @@ class Node;
 class Widget;
 
 class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
+    WTF_MAKE_NONCOPYABLE(AXLayoutObject);
+
 protected:
     AXLayoutObject(LayoutObject*, AXObjectCacheImpl&);
 

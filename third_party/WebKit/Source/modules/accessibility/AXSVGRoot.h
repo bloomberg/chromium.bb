@@ -36,6 +36,7 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AXSVGRoot final : public AXLayoutObject {
+    WTF_MAKE_NONCOPYABLE(AXSVGRoot);
 
 protected:
     AXSVGRoot(LayoutObject*, AXObjectCacheImpl&);

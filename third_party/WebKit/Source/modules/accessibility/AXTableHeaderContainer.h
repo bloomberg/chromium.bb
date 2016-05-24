@@ -37,6 +37,7 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AXTableHeaderContainer final : public AXMockObject {
+    WTF_MAKE_NONCOPYABLE(AXTableHeaderContainer);
 
 private:
     explicit AXTableHeaderContainer(AXObjectCacheImpl&);

@@ -30,6 +30,8 @@ class HTMLProgressElement;
 class LayoutProgress;
 
 class AXProgressIndicator final : public AXLayoutObject {
+    WTF_MAKE_NONCOPYABLE(AXProgressIndicator);
+
 public:
     static AXProgressIndicator* create(LayoutProgress*, AXObjectCacheImpl&);
 

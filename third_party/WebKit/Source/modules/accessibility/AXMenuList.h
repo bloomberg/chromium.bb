@@ -34,6 +34,8 @@ class AXObjectCacheImpl;
 class LayoutMenuList;
 
 class AXMenuList final : public AXLayoutObject {
+    WTF_MAKE_NONCOPYABLE(AXMenuList);
+
 public:
     static AXMenuList* create(LayoutMenuList* layoutObject, AXObjectCacheImpl&);
 

@@ -35,6 +35,8 @@ class AXMenuListOption;
 class HTMLElement;
 
 class AXMenuListPopup final : public AXMockObject {
+    WTF_MAKE_NONCOPYABLE(AXMenuListPopup);
+
 public:
     static AXMenuListPopup* create(AXObjectCacheImpl& axObjectCache) { return new AXMenuListPopup(axObjectCache); }
 

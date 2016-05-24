@@ -36,6 +36,7 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AXList final : public AXLayoutObject {
+    WTF_MAKE_NONCOPYABLE(AXList);
 
 private:
     AXList(LayoutObject*, AXObjectCacheImpl&);

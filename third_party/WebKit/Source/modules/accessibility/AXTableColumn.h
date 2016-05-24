@@ -39,6 +39,7 @@ class AXObjectCacheImpl;
 class LayoutTableSection;
 
 class MODULES_EXPORT AXTableColumn final : public AXMockObject {
+    WTF_MAKE_NONCOPYABLE(AXTableColumn);
 
 private:
     explicit AXTableColumn(AXObjectCacheImpl&);

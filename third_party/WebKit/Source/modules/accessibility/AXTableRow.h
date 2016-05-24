@@ -36,6 +36,7 @@ namespace blink {
 class AXObjectCacheImpl;
 
 class AXTableRow : public AXLayoutObject {
+    WTF_MAKE_NONCOPYABLE(AXTableRow);
 
 protected:
     AXTableRow(LayoutObject*, AXObjectCacheImpl&);
