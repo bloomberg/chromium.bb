@@ -231,6 +231,8 @@ private:
 
     bool m_trackNeedsRepaint;
     bool m_thumbNeedsRepaint;
+
+    DISPLAY_ITEM_CACHE_STATUS_IMPLEMENTATION
 };
 
 DEFINE_TYPE_CASTS(Scrollbar, Widget, widget, widget->isScrollbar(), widget.isScrollbar());

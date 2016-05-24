@@ -17,6 +17,7 @@
 #include "platform/graphics/paint/PaintChunker.h"
 #include "platform/graphics/paint/Transform3DDisplayItem.h"
 #include "wtf/Alignment.h"
+#include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"
@@ -49,7 +50,7 @@ public:
 
     // Record when paint offsets change during paint.
     void invalidatePaintOffset(const DisplayItemClient&);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     bool paintOffsetWasInvalidated(const DisplayItemClient&) const;
 #endif
 
@@ -103,7 +104,7 @@ public:
     void removeLastDisplayItem();
 
     void beginSkippingCache() { ++m_skippingCacheCount; }
-    void endSkippingCache() { ASSERT(m_skippingCacheCount > 0); --m_skippingCacheCount; }
+    void endSkippingCache() { DCHECK(m_skippingCacheCount > 0); --m_skippingCacheCount; }
     bool skippingCache() const { return m_skippingCacheCount; }
 
     // Must be called when a painting is finished.
@@ -143,56 +144,45 @@ public:
     void showDebugData() const;
 #endif
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     bool hasInvalidations() { return !m_invalidations.isEmpty(); }
 #endif
 
     void startTrackingPaintInvalidationObjects()
     {
-        ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+        DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
         m_trackedPaintInvalidationObjects = adoptPtr(new Vector<String>());
     }
     void stopTrackingPaintInvalidationObjects()
     {
-        ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+        DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
         m_trackedPaintInvalidationObjects = nullptr;
     }
     Vector<String> trackedPaintInvalidationObjects()
     {
-        ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+        DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
         return m_trackedPaintInvalidationObjects ? *m_trackedPaintInvalidationObjects : Vector<String>();
     }
 
-    bool clientHasCheckedPaintInvalidation(const DisplayItemClient& client) const
-    {
-        return m_clientsCheckedPaintInvalidation.contains(&client);
-    }
-    void setClientHasCheckedPaintInvalidation(const DisplayItemClient& client)
-    {
-        m_clientsCheckedPaintInvalidation.add(&client);
-    }
-
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     void assertDisplayItemClientsAreLive();
 #endif
 
 protected:
     PaintController()
         : m_newDisplayItemList(kInitialDisplayItemListCapacityBytes)
-        , m_validlyCachedClientsDirty(false)
         , m_constructionDisabled(false)
         , m_subsequenceCachingDisabled(false)
         , m_textPainted(false)
         , m_imagePainted(false)
         , m_skippingCacheCount(0)
         , m_numCachedNewItems(0)
-        , m_nextScope(1) { }
+        , m_nextScope(1)
+    { }
 
 private:
     // Set new item state (scopes, cache skipping, etc) for a new item.
     void processNewItem(DisplayItem&);
-
-    void updateValidlyCachedClientsIfNeeded() const;
 
 #ifndef NDEBUG
     WTF::String displayItemListAsDebugString(const DisplayItemList&) const;
@@ -210,7 +200,7 @@ private:
     DisplayItemList::iterator findOutOfOrderCachedItemForward(const DisplayItem::Id&, OutOfOrderIndexContext&);
     void copyCachedSubsequence(const DisplayItemList& currentList, DisplayItemList::iterator& currentIt, DisplayItemList& updatedList, SkPictureGpuAnalyzer&);
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     // The following two methods are for checking under-invalidations
     // (when RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled).
     void checkUnderInvalidation(DisplayItemList::iterator& newIt, DisplayItemList::iterator& currentIt);
@@ -220,6 +210,8 @@ private:
 
     void commitNewDisplayItemsInternal(const LayoutSize& offsetFromLayoutObject);
 
+    void updateCacheGeneration();
+
     // The last complete paint artifact.
     // In SPv2, this includes paint chunks as well as display items.
     PaintArtifact m_currentPaintArtifact;
@@ -228,19 +220,7 @@ private:
     DisplayItemList m_newDisplayItemList;
     PaintChunker m_newPaintChunks;
 
-    // Contains all clients having valid cached paintings if updated.
-    // It's lazily updated in updateValidlyCachedClientsIfNeeded().
-    // TODO(wangxianzhu): In the future we can replace this with client-side repaint flags
-    // to avoid the cost of building and querying the hash table.
-    mutable HashSet<const DisplayItemClient*> m_validlyCachedClients;
-    mutable bool m_validlyCachedClientsDirty;
-
-    // Used during painting. Contains clients that have checked paint invalidation and
-    // are known to be valid.
-    // TODO(wangxianzhu): Use client side flag to avoid const of hash table.
-    HashSet<const DisplayItemClient*> m_clientsCheckedPaintInvalidation;
-
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     // Set of clients which had paint offset changes since the last commit. This is used for
     // ensuring paint offsets are only updated once and are the same in all phases.
     HashSet<const DisplayItemClient*> m_clientsWithPaintOffsetInvalidations;
@@ -264,7 +244,7 @@ private:
     unsigned m_nextScope;
     Vector<unsigned> m_scopeStack;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     // Record the debug names of invalidated clients for assertion and debugging.
     Vector<String> m_invalidations;
 
@@ -275,6 +255,8 @@ private:
 #endif
 
     OwnPtr<Vector<String>> m_trackedPaintInvalidationObjects;
+
+    DisplayItemCacheGeneration m_currentCacheGeneration;
 };
 
 } // namespace blink

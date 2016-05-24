@@ -330,7 +330,7 @@ public:
     virtual bool isBegin() const { return false; }
     virtual bool isEnd() const { return false; }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     virtual bool isEndAndPairedWith(DisplayItem::Type otherType) const { return false; }
     virtual bool equals(const DisplayItem& other) const
     {
@@ -340,13 +340,13 @@ public:
             && m_derivedSize == other.m_derivedSize
             && m_skippedCache == other.m_skippedCache;
     }
+#endif
 
     // True if the client is non-null. Because m_client is const, this should
     // never be false except when we explicitly create a tombstone/"dead display
     // item" as part of moving an item from one list to another (see:
     // DisplayItemList::appendByMoving).
     bool hasValidClient() const { return m_client; }
-#endif
 
     virtual bool drawsContent() const { return false; }
 

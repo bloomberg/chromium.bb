@@ -332,6 +332,7 @@ void LinkHighlightImpl::notifyAnimationFinished(double, int)
 class LinkHighlightDisplayItemClientForTracking : public DisplayItemClient {
     String debugName() const final { return "LinkHighlight"; }
     LayoutRect visualRect() const final { return LayoutRect(); }
+    DISPLAY_ITEM_CACHE_STATUS_UNCACHEABLE_IMPLEMENTATION
 };
 
 void LinkHighlightImpl::updateGeometry()

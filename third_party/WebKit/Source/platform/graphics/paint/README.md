@@ -179,9 +179,52 @@ replaced with the cached content from the previous artifact.
 
 At this point, the paint artifact is ready to be drawn or composited.
 
-*** aside
-TODO(jbroman): Explain invalidation.
-***
+### Paint result caching and invalidation
+
+See [Display item caching](../../../core/paint/README.md#paint-result-caching)
+and [Paint invalidation](../../../core/paint/README.md#paint-invalidation) for
+more details about how caching and invalidation are handled in blink core
+module using `PaintController` API.
+
+We use 'cache generation' which is a unique id of cache status in each
+`DisplayItemClient` and `PaintController` to determine if the client is validly
+cached by a `PaintController`.
+
+A paint controller sets its cache generation to
+`DisplayItemCacheGeneration::next()` at the end of each
+`commitNewDisplayItems()`, and updates the cache generation of each client with
+cached drawings by calling `DisplayItemClient::setDisplayItemsCached()`.
+A display item is treated as validly cached in a paint controller if its cache
+generation matches the paint controller's cache generation.
+
+`kInvalidCacheGeneration` is a special cache generation value which matches no
+other cache generations. When a `DisplayItemClient` is invalidated, we set its
+cache generation to `kInvalidCacheGeneration`. When a `PaintController` is
+cleared (e.g. when the corresponding `GraphicsLayer` is fully invalidated), we
+also set its cache generation to `kInvalidCacheGeneration`.
+
+For now we use a uint32_t variable to store cache generation. Assuming there is
+an animation in 60fps needing main-thread repaint, the cache generation will
+overflow after 2^32/86400/60 = 828 days. The time may be shorter if there are
+multiple animating `PaintController`s in the same process. When it overflows,
+we may treat some object that is not cached as cached if the following
+conditions are all met:
+*   the object was painted when the cache generation was *n*;
+*   the object has been neither painted nor invalidated since cache generation
+    *n*;
+*   when the cache generation wraps back to exact *n*, the object happens to be
+    painted again.
+As the paint controller doesn't have cached display items for the object, there
+will be corrupted painting or assertion failure. The chance is too low to be
+concerned.
+
+SPv1 only: If a display item is painted on multiple paint controllers, because
+cache generations are unique, the client's cache generation matches the last
+paint controller only. The client will be treated as invalid on other paint
+controllers regardless if it's validly cached by these paint controllers.
+The situation is very rare (about 0.07% clients were painted on multiple paint
+controllers in a [Cluster Telemetry run](https://ct.skia.org/chromium_perf_runs)
+(run 803) so the performance penalty is trivial.
 
 ## Paint artifact compositor
 

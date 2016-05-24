@@ -27,6 +27,7 @@ public:
 private:
     FloatRect m_rect;
     Color m_color;
+    DISPLAY_ITEM_CACHE_STATUS_IMPLEMENTATION
 };
 
 PassRefPtr<SkPicture> TestPaintArtifact::DummyRectClient::makePicture() const

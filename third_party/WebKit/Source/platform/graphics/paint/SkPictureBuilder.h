@@ -43,6 +43,8 @@ public:
     LayoutRect visualRect() const final { return LayoutRect(); }
 
 private:
+    DISPLAY_ITEM_CACHE_STATUS_UNCACHEABLE_IMPLEMENTATION
+
     OwnPtr<PaintController> m_paintController;
     OwnPtr<GraphicsContext> m_context;
     FloatRect m_bounds;

@@ -87,6 +87,7 @@ public:
 
 private:
     WebScrollbar& m_scrollbar;
+    DISPLAY_ITEM_CACHE_STATUS_IMPLEMENTATION
 };
 
 } // namespace blink
