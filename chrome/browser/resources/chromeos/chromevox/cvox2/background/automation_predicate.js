@@ -177,6 +177,21 @@ AutomationPredicate.leafDomNode = function(node) {
       node.role == RoleType.staticText;
 };
 
+
+/**
+ * Matches nodes that are containers that should be ignored during
+ * element navigation.
+ * @param {!AutomationNode} node
+ * @return {boolean}
+ */
+AutomationPredicate.ignoredContainer = function(node) {
+  return (node.role == RoleType.rootWebArea ||
+          node.role == RoleType.embeddedObject ||
+          node.role == RoleType.iframe ||
+          node.role == RoleType.iframePresentational ||
+          node.role == RoleType.embeddedObject);
+};
+
 /**
  * Matches against nodes visited during element navigation. An element as
  * defined below, are all nodes that are focusable or static text. When used in
@@ -186,7 +201,10 @@ AutomationPredicate.leafDomNode = function(node) {
  * @return {boolean}
  */
 AutomationPredicate.element = function(node) {
-  return (node.state .focusable && node.role != RoleType.rootWebArea) ||
+  if (AutomationPredicate.ignoredContainer(node))
+    return false;
+
+  return node.state.focusable ||
       (AutomationPredicate.leafDomNode(node) &&
        (/\S+/.test(node.name) ||
         (node.role != RoleType.lineBreak &&

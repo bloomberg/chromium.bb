@@ -71,7 +71,7 @@ BackgroundTest.prototype = {
   iframesDoc: function() {/*!
     <p>start</p>
     <button>Before</button>
-    <iframe srcdoc="<button>Inside</button>"></iframe>
+    <iframe srcdoc="<button>Inside</button><h1>Inside</h1>"></iframe>
     <button>After</button>
   */},
 };
@@ -616,29 +616,84 @@ TEST_F('BackgroundTest', 'Checkbox', function() {
   });
 });
 
-/** Tests navigating into and out of iframes.. */
-TEST_F('BackgroundTest', 'DISABLED_ForwardNavigationThroughIframes', function() {
+/** Tests navigating into and out of iframes using nextButton */
+TEST_F('BackgroundTest', 'ForwardNavigationThroughIframeButtons', function() {
   var mockFeedback = this.createMockFeedback();
 
+  var running = false;
   var runTestIfIframeIsLoaded = function(rootNode) {
+    if (running)
+      return;
+
     // Return if the iframe hasn't loaded yet.
     var iframe = rootNode.find({role: 'iframe'});
     var childDoc = iframe.firstChild;
-    if (childDoc && childDoc.children.length == 0) {
+    if (!childDoc || childDoc.children.length == 0)
       return;
-    }
 
+    running = true;
     var doCmd = this.doCmd.bind(this);
 
-    mockFeedback.expectSpeech('start').expectBraille('start');
-
-    mockFeedback.call(doCmd('nextButton'))
-        .expectSpeech('Before', 'Button');
+    var beforeButton = rootNode.find({role: RoleType.button,
+                                      name: 'Before'});
+    beforeButton.focus();
+    mockFeedback.expectSpeech('Before', 'Button');
     mockFeedback.call(doCmd('nextButton'))
         .expectSpeech('Inside', 'Button');
     mockFeedback.call(doCmd('nextButton'))
         .expectSpeech('After', 'Button');
+    mockFeedback.call(doCmd('previousButton'))
+        .expectSpeech('Inside', 'Button');
+    mockFeedback.call(doCmd('previousButton'))
+        .expectSpeech('Before', 'Button');
+    mockFeedback.replay();
+  }.bind(this);
 
+  this.runWithLoadedTree(this.iframesDoc, function(rootNode) {
+    chrome.automation.getDesktop(function(desktopNode) {
+      runTestIfIframeIsLoaded(rootNode);
+
+      desktopNode.addEventListener('loadComplete', function(evt) {
+        runTestIfIframeIsLoaded(rootNode);
+      }, true);      
+    });
+  });
+});
+
+/** Tests navigating into and out of iframes using nextObject */
+TEST_F('BackgroundTest', 'ForwardObjectNavigationThroughIframes', function() {
+  var mockFeedback = this.createMockFeedback();
+
+  var running = false;
+  var runTestIfIframeIsLoaded = function(rootNode) {
+    if (running)
+      return;
+
+    // Return if the iframe hasn't loaded yet.
+    var iframe = rootNode.find({role: 'iframe'});
+    var childDoc = iframe.firstChild;
+    if (!childDoc || childDoc.children.length == 0)
+      return;
+
+    running = true;
+    var doCmd = this.doCmd.bind(this);
+
+    var beforeButton = rootNode.find({role: RoleType.button,
+                                      name: 'Before'});
+    beforeButton.focus();
+    mockFeedback.expectSpeech('Before', 'Button');
+    mockFeedback.call(doCmd('nextObject'))
+        .expectSpeech('Inside', 'Button');
+    mockFeedback.call(doCmd('nextObject'))
+        .expectSpeech('Inside', 'Heading 1');
+    mockFeedback.call(doCmd('nextObject'))
+        .expectSpeech('After', 'Button');
+    mockFeedback.call(doCmd('previousObject'))
+        .expectSpeech('Inside', 'Heading 1');
+    mockFeedback.call(doCmd('previousObject'))
+        .expectSpeech('Inside', 'Button');
+    mockFeedback.call(doCmd('previousObject'))
+        .expectSpeech('Before', 'Button');
     mockFeedback.replay();
   }.bind(this);
 
