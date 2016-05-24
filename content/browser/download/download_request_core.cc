@@ -29,7 +29,7 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/power_save_blocker.h"
+#include "content/public/browser/power_save_blocker_factory.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/elements_upload_data_stream.h"
@@ -204,7 +204,7 @@ DownloadRequestCore::DownloadRequestCore(net::URLRequest* request,
   DCHECK(request_);
   DCHECK(delegate_);
   RecordDownloadCount(UNTHROTTLED_COUNT);
-  power_save_blocker_ = PowerSaveBlocker::Create(
+  power_save_blocker_ = CreatePowerSaveBlocker(
       PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
       PowerSaveBlocker::kReasonOther, "Download in progress");
   DownloadRequestData* request_data = DownloadRequestData::Get(request_);

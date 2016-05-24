@@ -15,7 +15,7 @@
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/power_save_blocker.h"
+#include "content/public/browser/power_save_blocker_factory.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_util.h"
 #include "media/capture/content/thread_safe_capture_oracle.h"
@@ -86,10 +86,10 @@ bool AuraWindowCaptureMachine::InternalStart(
   compositor->AddAnimationObserver(this);
 
   power_save_blocker_.reset(
-      PowerSaveBlocker::Create(
+      CreatePowerSaveBlocker(
           PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
-          PowerSaveBlocker::kReasonOther,
-          "DesktopCaptureDevice is running").release());
+          PowerSaveBlocker::kReasonOther, "DesktopCaptureDevice is running")
+          .release());
 
   return true;
 }
