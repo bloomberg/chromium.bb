@@ -47,6 +47,7 @@ CONFIG_TYPE_DUMP_ORDER = (
     'chromium-pfq-informational-gn',
     'chrome-perf',
     'chrome-pfq',
+    'chrome-pfq-cheets-informational',
     'chrome-pfq-informational',
     'android-pfq',
     'pre-flight-branch',
