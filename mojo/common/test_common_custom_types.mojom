@@ -10,3 +10,10 @@ interface TestFilePath {
   BounceFilePath(mojo.common.mojom.FilePath in)
       => (mojo.common.mojom.FilePath out);
 };
+
+interface TestValue {
+  BounceDictionaryValue(mojo.common.mojom.DictionaryValue in)
+      => (mojo.common.mojom.DictionaryValue out);
+  BounceListValue(mojo.common.mojom.ListValue in)
+      => (mojo.common.mojom.ListValue out);
+};

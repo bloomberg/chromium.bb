@@ -3,10 +3,17 @@
 # found in the LICENSE file.
 
 mojom = "//mojo/common/common_custom_types.mojom"
-public_headers = [ "//base/files/file_path.h" ]
+public_headers = [
+  "//base/files/file_path.h",
+  "//base/values.h"
+]
 traits_headers = [ "//ipc/ipc_message_utils.h" ]
 deps = [
   "//ipc",
 ]
 
-type_mappings = [ "mojo.common.mojom.FilePath=base::FilePath" ]
+type_mappings = [
+  "mojo.common.mojom.FilePath=base::FilePath",
+  "mojo.common.mojom.DictionaryValue=base::DictionaryValue",
+  "mojo.common.mojom.ListValue=base::ListValue",
+]

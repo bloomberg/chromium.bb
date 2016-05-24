@@ -5,6 +5,7 @@
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/values.h"
 #include "mojo/common/common_custom_types.mojom.h"
 #include "mojo/common/test_common_custom_types.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -13,6 +14,7 @@
 namespace mojo {
 namespace common {
 namespace test {
+namespace {
 
 class TestFilePathImpl : public TestFilePath {
  public:
@@ -29,8 +31,40 @@ class TestFilePathImpl : public TestFilePath {
   mojo::Binding<TestFilePath> binding_;
 };
 
-TEST(CommonCustomTypesTest, FilePath) {
-  base::MessageLoop message_loop;
+class TestValueImpl : public TestValue {
+ public:
+  explicit TestValueImpl(TestValueRequest request)
+      : binding_(this, std::move(request)) {}
+
+  // TestValue implementation:
+  void BounceDictionaryValue(
+      const base::DictionaryValue& in,
+      const BounceDictionaryValueCallback& callback) override {
+    callback.Run(in);
+  }
+  void BounceListValue(const base::ListValue& in,
+                       const BounceListValueCallback& callback) override {
+    callback.Run(in);
+  }
+
+ private:
+  mojo::Binding<TestValue> binding_;
+};
+
+class CommonCustomTypesTest : public testing::Test {
+ protected:
+  CommonCustomTypesTest() {}
+  ~CommonCustomTypesTest() override {}
+
+ private:
+  base::MessageLoop message_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(CommonCustomTypesTest);
+};
+
+}  // namespace
+
+TEST_F(CommonCustomTypesTest, FilePath) {
   base::RunLoop run_loop;
 
   TestFilePathPtr ptr;
@@ -45,6 +79,57 @@ TEST(CommonCustomTypesTest, FilePath) {
   });
 
   run_loop.Run();
+}
+
+TEST_F(CommonCustomTypesTest, Value) {
+  TestValuePtr ptr;
+  TestValueImpl impl(GetProxy(&ptr));
+
+  base::DictionaryValue dict;
+  dict.SetBoolean("bool", false);
+  dict.SetInteger("int", 2);
+  dict.SetString("string", "some string");
+  dict.SetBoolean("nested.bool", true);
+  dict.SetInteger("nested.int", 9);
+  dict.Set(
+      "some_binary",
+      base::WrapUnique(base::BinaryValue::CreateWithCopiedBuffer("mojo", 4)));
+  {
+    std::unique_ptr<base::ListValue> dict_list(new base::ListValue());
+    dict_list->AppendString("string");
+    dict_list->AppendBoolean(true);
+    dict.Set("list", std::move(dict_list));
+  }
+  {
+    base::RunLoop run_loop;
+    ptr->BounceDictionaryValue(
+        dict, [&run_loop, &dict](const base::DictionaryValue& out) {
+          EXPECT_TRUE(dict.Equals(&out));
+          run_loop.Quit();
+        });
+    run_loop.Run();
+  }
+
+  base::ListValue list;
+  list.AppendString("string");
+  list.AppendDouble(42.1);
+  list.AppendBoolean(true);
+  list.Append(
+      base::WrapUnique(base::BinaryValue::CreateWithCopiedBuffer("mojo", 4)));
+  {
+    std::unique_ptr<base::DictionaryValue> list_dict(
+        new base::DictionaryValue());
+    list_dict->SetString("string", "str");
+    list.Append(std::move(list_dict));
+  }
+  {
+    base::RunLoop run_loop;
+    ptr->BounceListValue(list, [&run_loop, &list](const base::ListValue& out) {
+      EXPECT_TRUE(list.Equals(&out));
+      run_loop.Quit();
+    });
+    run_loop.Run();
+  }
 }
 
 }  // namespace test
