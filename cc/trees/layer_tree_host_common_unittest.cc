@@ -182,7 +182,7 @@ TEST_F(LayerTreeHostCommonTest, EffectTreeTransformIdTest) {
                                false);
   child->SetOpacity(0.f);
   ExecuteCalculateDrawProperties(parent);
-  EffectTree effect_tree =
+  EffectTree& effect_tree =
       parent->layer_tree_impl()->property_trees()->effect_tree;
   EffectNode* node = effect_tree.Node(child->effect_tree_index());
   const int transform_tree_size = parent->layer_tree_impl()
@@ -5571,7 +5571,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   // but the copy_layer and copy_child should be drawn for the copy request.
   // copy grand child should not be drawn as its hidden even in the copy
   // request.
-  EffectTree tree =
+  EffectTree& tree =
       root_layer->layer_tree_impl()->property_trees()->effect_tree;
   EffectNode* node = tree.Node(copy_grand_parent_layer->effect_tree_index());
   EXPECT_FALSE(node->data.is_drawn);
@@ -9054,7 +9054,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceClipsSubtree) {
   test_layer->test_properties()->force_render_surface = false;
   ExecuteCalculateDrawProperties(root);
 
-  TransformTree transform_tree =
+  TransformTree& transform_tree =
       root->layer_tree_impl()->property_trees()->transform_tree;
   TransformNode* transform_node =
       transform_tree.Node(significant_transform->transform_tree_index());
@@ -9066,7 +9066,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceClipsSubtree) {
   EXPECT_TRUE(render_surface->has_render_surface());
   EXPECT_FALSE(test_layer->has_render_surface());
 
-  ClipTree clip_tree = root->layer_tree_impl()->property_trees()->clip_tree;
+  ClipTree& clip_tree = root->layer_tree_impl()->property_trees()->clip_tree;
   ClipNode* clip_node = clip_tree.Node(render_surface->clip_tree_index());
   EXPECT_FALSE(clip_node->data.applies_local_clip);
   EXPECT_EQ(gfx::Rect(22, 21), test_layer->visible_layer_rect());
@@ -9988,11 +9988,11 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   const int kRootPropertyTreeNodeId = 0;
 
   // Property tree root
-  ScrollTree scroll_tree = host()->property_trees()->scroll_tree;
+  ScrollTree& scroll_tree = host()->property_trees()->scroll_tree;
   PropertyTrees property_trees;
   property_trees.is_main_thread = true;
   property_trees.is_active = false;
-  ScrollTree expected_scroll_tree = property_trees.scroll_tree;
+  ScrollTree& expected_scroll_tree = property_trees.scroll_tree;
   ScrollNode* property_tree_root = expected_scroll_tree.Node(0);
   property_tree_root->id = kRootPropertyTreeNodeId;
   property_tree_root->parent_id = kInvalidPropertyTreeNodeId;

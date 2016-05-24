@@ -383,34 +383,34 @@ class PropertyTreeTest : public testing::Test {
 
   virtual void StartTest() = 0;
 
-  TransformTree TransformTreeForTest(const TransformTree& transform_tree) {
-    if (!test_serialization_) {
-      return transform_tree;
-    }
+  void SetupTransformTreeForTest(TransformTree* transform_tree) {
+    if (!test_serialization_)
+      return;
+
     TransformTree new_tree;
     proto::PropertyTree proto;
-    transform_tree.ToProtobuf(&proto);
+    transform_tree->ToProtobuf(&proto);
     std::unordered_map<int, int> transform_id_to_index_map;
     new_tree.FromProtobuf(proto, &transform_id_to_index_map);
+    EXPECT_EQ(*transform_tree, new_tree);
 
-    new_tree.SetPropertyTrees(transform_tree.property_trees());
-
-    EXPECT_EQ(transform_tree, new_tree);
-    return new_tree;
+    PropertyTrees* property_trees = transform_tree->property_trees();
+    *transform_tree = new_tree;
+    transform_tree->SetPropertyTrees(property_trees);
   }
 
-  EffectTree EffectTreeForTest(const EffectTree& effect_tree) {
-    if (!test_serialization_) {
-      return effect_tree;
-    }
+  void SetupEffectTreeForTest(EffectTree* effect_tree) {
+    if (!test_serialization_)
+      return;
+
     EffectTree new_tree;
     proto::PropertyTree proto;
-    effect_tree.ToProtobuf(&proto);
+    effect_tree->ToProtobuf(&proto);
     std::unordered_map<int, int> effect_id_to_index_map;
     new_tree.FromProtobuf(proto, &effect_id_to_index_map);
 
-    EXPECT_EQ(effect_tree, new_tree);
-    return new_tree;
+    EXPECT_EQ(*effect_tree, new_tree);
+    *effect_tree = new_tree;
   }
 
  private:
@@ -431,11 +431,11 @@ class PropertyTreeTestComputeTransformRoot : public PropertyTreeTest {
  protected:
   void StartTest() override {
     PropertyTrees property_trees;
-    TransformTree tree = property_trees.transform_tree;
+    TransformTree& tree = property_trees.transform_tree;
     TransformNode& root = *tree.Node(0);
     root.data.local.Translate(2, 2);
     root.data.target_id = 0;
-    tree = TransformTreeForTest(tree);
+    SetupTransformTreeForTest(&tree);
     tree.UpdateTransforms(0);
 
     gfx::Transform expected;
@@ -466,7 +466,7 @@ class PropertyTreeTestComputeTransformChild : public PropertyTreeTest {
  protected:
   void StartTest() override {
     PropertyTrees property_trees;
-    TransformTree tree = property_trees.transform_tree;
+    TransformTree& tree = property_trees.transform_tree;
     TransformNode& root = *tree.Node(0);
     root.data.local.Translate(2, 2);
     root.data.target_id = 0;
@@ -478,7 +478,7 @@ class PropertyTreeTestComputeTransformChild : public PropertyTreeTest {
     child.data.source_node_id = 0;
 
     tree.Insert(child, 0);
-    tree = TransformTreeForTest(tree);
+    SetupTransformTreeForTest(&tree);
     tree.UpdateTransforms(1);
 
     gfx::Transform expected;
@@ -519,7 +519,7 @@ class PropertyTreeTestComputeTransformSibling : public PropertyTreeTest {
  protected:
   void StartTest() override {
     PropertyTrees property_trees;
-    TransformTree tree = property_trees.transform_tree;
+    TransformTree& tree = property_trees.transform_tree;
     TransformNode& root = *tree.Node(0);
     root.data.local.Translate(2, 2);
     root.data.target_id = 0;
@@ -538,7 +538,7 @@ class PropertyTreeTestComputeTransformSibling : public PropertyTreeTest {
     tree.Insert(child, 0);
     tree.Insert(sibling, 0);
 
-    tree = TransformTreeForTest(tree);
+    SetupTransformTreeForTest(&tree);
 
     tree.UpdateTransforms(1);
     tree.UpdateTransforms(2);
@@ -577,7 +577,7 @@ class PropertyTreeTestComputeTransformSiblingSingularAncestor
     // basis
     // transforms between these nodes.
     PropertyTrees property_trees;
-    TransformTree tree = property_trees.transform_tree;
+    TransformTree& tree = property_trees.transform_tree;
     TransformNode& root = *tree.Node(0);
     root.data.local.Translate(2, 2);
     root.data.target_id = 0;
@@ -602,7 +602,7 @@ class PropertyTreeTestComputeTransformSiblingSingularAncestor
     tree.Insert(child, 1);
     tree.Insert(sibling, 1);
 
-    tree = TransformTreeForTest(tree);
+    SetupTransformTreeForTest(&tree);
 
     tree.UpdateTransforms(1);
     tree.UpdateTransforms(2);
@@ -632,7 +632,7 @@ class PropertyTreeTestTransformsWithFlattening : public PropertyTreeTest {
  protected:
   void StartTest() override {
     PropertyTrees property_trees;
-    TransformTree tree = property_trees.transform_tree;
+    TransformTree& tree = property_trees.transform_tree;
 
     int grand_parent = tree.Insert(TransformNode(), 0);
     tree.Node(grand_parent)->data.content_target_id = grand_parent;
@@ -664,7 +664,7 @@ class PropertyTreeTestTransformsWithFlattening : public PropertyTreeTest {
     tree.Node(grand_child)->data.local = rotation_about_x;
 
     tree.set_needs_update(true);
-    tree = TransformTreeForTest(tree);
+    SetupTransformTreeForTest(&tree);
     draw_property_utils::ComputeTransforms(&tree);
 
     gfx::Transform flattened_rotation_about_x = rotation_about_x;
@@ -695,7 +695,7 @@ class PropertyTreeTestTransformsWithFlattening : public PropertyTreeTest {
     // Remove flattening at grand_child, and recompute transforms.
     tree.Node(grand_child)->data.flattens_inherited_transform = false;
     tree.set_needs_update(true);
-    tree = TransformTreeForTest(tree);
+    SetupTransformTreeForTest(&tree);
     draw_property_utils::ComputeTransforms(&tree);
 
     EXPECT_TRANSFORMATION_MATRIX_EQ(rotation_about_x * rotation_about_x,
@@ -718,7 +718,7 @@ class PropertyTreeTestMultiplicationOrder : public PropertyTreeTest {
  protected:
   void StartTest() override {
     PropertyTrees property_trees;
-    TransformTree tree = property_trees.transform_tree;
+    TransformTree& tree = property_trees.transform_tree;
     TransformNode& root = *tree.Node(0);
     root.data.local.Translate(2, 2);
     root.data.target_id = 0;
@@ -730,7 +730,7 @@ class PropertyTreeTestMultiplicationOrder : public PropertyTreeTest {
     child.data.source_node_id = 0;
 
     tree.Insert(child, 0);
-    tree = TransformTreeForTest(tree);
+    SetupTransformTreeForTest(&tree);
     tree.UpdateTransforms(1);
 
     gfx::Transform expected;
@@ -760,7 +760,7 @@ class PropertyTreeTestComputeTransformWithUninvertibleTransform
  protected:
   void StartTest() override {
     PropertyTrees property_trees;
-    TransformTree tree = property_trees.transform_tree;
+    TransformTree& tree = property_trees.transform_tree;
     TransformNode& root = *tree.Node(0);
     root.data.target_id = 0;
     tree.UpdateTransforms(0);
@@ -771,7 +771,7 @@ class PropertyTreeTestComputeTransformWithUninvertibleTransform
     child.data.source_node_id = 0;
 
     tree.Insert(child, 0);
-    tree = TransformTreeForTest(tree);
+    SetupTransformTreeForTest(&tree);
     tree.UpdateTransforms(1);
 
     gfx::Transform expected;
@@ -799,7 +799,7 @@ class PropertyTreeTestComputeTransformWithSublayerScale
  protected:
   void StartTest() override {
     PropertyTrees property_trees;
-    TransformTree tree = property_trees.transform_tree;
+    TransformTree& tree = property_trees.transform_tree;
     TransformNode& root = *tree.Node(0);
     root.data.target_id = 0;
     tree.UpdateTransforms(0);
@@ -832,7 +832,7 @@ class PropertyTreeTestComputeTransformWithSublayerScale
     grand_child.data.source_node_id = child_id;
     grand_child.data.needs_sublayer_scale = true;
     int grand_child_id = tree.Insert(grand_child, child_id);
-    tree = TransformTreeForTest(tree);
+    SetupTransformTreeForTest(&tree);
     tree.UpdateTransforms(grand_child_id);
 
     EXPECT_EQ(gfx::Vector2dF(2.f, 2.f),
@@ -917,7 +917,7 @@ class PropertyTreeTestComputeTransformToTargetWithZeroSublayerScale
  protected:
   void StartTest() override {
     PropertyTrees property_trees;
-    TransformTree tree = property_trees.transform_tree;
+    TransformTree& tree = property_trees.transform_tree;
     TransformNode& root = *tree.Node(0);
     root.data.target_id = 0;
     tree.UpdateTransforms(0);
@@ -945,7 +945,7 @@ class PropertyTreeTestComputeTransformToTargetWithZeroSublayerScale
     child.data.content_target_id = grand_parent_id;
     child.data.source_node_id = parent_id;
     int child_id = tree.Insert(child, parent_id);
-    tree = TransformTreeForTest(tree);
+    SetupTransformTreeForTest(&tree);
     tree.UpdateTransforms(child_id);
 
     gfx::Transform expected_transform;
@@ -960,7 +960,7 @@ class PropertyTreeTestComputeTransformToTargetWithZeroSublayerScale
     tree.Node(grand_parent_id)->data.local.Scale(0.f, 2.f);
     tree.Node(grand_parent_id)->data.needs_local_transform_update = true;
     tree.set_needs_update(true);
-    tree = TransformTreeForTest(tree);
+    SetupTransformTreeForTest(&tree);
 
     draw_property_utils::ComputeTransforms(&tree);
 
@@ -972,7 +972,7 @@ class PropertyTreeTestComputeTransformToTargetWithZeroSublayerScale
     tree.Node(grand_parent_id)->data.local.Scale(0.f, 0.f);
     tree.Node(grand_parent_id)->data.needs_local_transform_update = true;
     tree.set_needs_update(true);
-    tree = TransformTreeForTest(tree);
+    SetupTransformTreeForTest(&tree);
 
     draw_property_utils::ComputeTransforms(&tree);
 
@@ -993,7 +993,7 @@ class PropertyTreeTestFlatteningWhenDestinationHasOnlyFlatAncestors
     // destination and its ancestors are flat, but there are 3d transforms
     // and flattening between the source and destination.
     PropertyTrees property_trees;
-    TransformTree tree = property_trees.transform_tree;
+    TransformTree& tree = property_trees.transform_tree;
 
     int parent = tree.Insert(TransformNode(), 0);
     tree.Node(parent)->data.content_target_id = parent;
@@ -1017,7 +1017,7 @@ class PropertyTreeTestFlatteningWhenDestinationHasOnlyFlatAncestors
     tree.Node(grand_child)->data.flattens_inherited_transform = true;
 
     tree.set_needs_update(true);
-    tree = TransformTreeForTest(tree);
+    SetupTransformTreeForTest(&tree);
     draw_property_utils::ComputeTransforms(&tree);
 
     gfx::Transform flattened_rotation_about_x = rotation_about_x;
@@ -1044,18 +1044,18 @@ class PropertyTreeTestScreenSpaceOpacityUpdateTest : public PropertyTreeTest {
 
     int parent = tree.Insert(EffectNode(), 0);
     int child = tree.Insert(EffectNode(), parent);
-    tree = EffectTreeForTest(tree);
+    SetupEffectTreeForTest(&tree);
 
     EXPECT_EQ(tree.Node(child)->data.screen_space_opacity, 1.f);
     tree.Node(parent)->data.opacity = 0.5f;
     tree.set_needs_update(true);
-    tree = EffectTreeForTest(tree);
+    SetupEffectTreeForTest(&tree);
     draw_property_utils::ComputeEffects(&tree);
     EXPECT_EQ(tree.Node(child)->data.screen_space_opacity, 0.5f);
 
     tree.Node(child)->data.opacity = 0.5f;
     tree.set_needs_update(true);
-    tree = EffectTreeForTest(tree);
+    SetupEffectTreeForTest(&tree);
     draw_property_utils::ComputeEffects(&tree);
     EXPECT_EQ(tree.Node(child)->data.screen_space_opacity, 0.25f);
   }
@@ -1070,7 +1070,7 @@ class PropertyTreeTestNonIntegerTranslationTest : public PropertyTreeTest {
     // This tests that when a node has non-integer translation, the information
     // is propagated to the subtree.
     PropertyTrees property_trees;
-    TransformTree tree = property_trees.transform_tree;
+    TransformTree& tree = property_trees.transform_tree;
 
     int parent = tree.Insert(TransformNode(), 0);
     tree.Node(parent)->data.target_id = parent;
@@ -1080,7 +1080,7 @@ class PropertyTreeTestNonIntegerTranslationTest : public PropertyTreeTest {
     tree.Node(child)->data.target_id = parent;
     tree.Node(child)->data.local.Translate(1, 1);
     tree.set_needs_update(true);
-    tree = TransformTreeForTest(tree);
+    SetupTransformTreeForTest(&tree);
     draw_property_utils::ComputeTransforms(&tree);
     EXPECT_FALSE(tree.Node(parent)
                      ->data.node_and_ancestors_have_only_integer_translation);
@@ -1090,7 +1090,7 @@ class PropertyTreeTestNonIntegerTranslationTest : public PropertyTreeTest {
     tree.Node(parent)->data.local.Translate(0.5f, 0.5f);
     tree.Node(child)->data.local.Translate(0.5f, 0.5f);
     tree.set_needs_update(true);
-    tree = TransformTreeForTest(tree);
+    SetupTransformTreeForTest(&tree);
     draw_property_utils::ComputeTransforms(&tree);
     EXPECT_TRUE(tree.Node(parent)
                     ->data.node_and_ancestors_have_only_integer_translation);
@@ -1100,7 +1100,7 @@ class PropertyTreeTestNonIntegerTranslationTest : public PropertyTreeTest {
     tree.Node(child)->data.local.Translate(0.5f, 0.5f);
     tree.Node(child)->data.target_id = child;
     tree.set_needs_update(true);
-    tree = TransformTreeForTest(tree);
+    SetupTransformTreeForTest(&tree);
     draw_property_utils::ComputeTransforms(&tree);
     EXPECT_TRUE(tree.Node(parent)
                     ->data.node_and_ancestors_have_only_integer_translation);
@@ -1118,7 +1118,7 @@ class PropertyTreeTestSingularTransformSnapTest : public PropertyTreeTest {
     // This tests that to_target transform is not snapped when it has a singular
     // transform.
     PropertyTrees property_trees;
-    TransformTree tree = property_trees.transform_tree;
+    TransformTree& tree = property_trees.transform_tree;
 
     int parent = tree.Insert(TransformNode(), 0);
     tree.Node(parent)->data.target_id = parent;
@@ -1132,7 +1132,7 @@ class PropertyTreeTestSingularTransformSnapTest : public PropertyTreeTest {
     child_node->data.local.Translate(1.3f, 1.3f);
     tree.set_needs_update(true);
 
-    tree = TransformTreeForTest(tree);
+    SetupTransformTreeForTest(&tree);
     draw_property_utils::ComputeTransforms(&tree);
 
     gfx::Transform from_target;

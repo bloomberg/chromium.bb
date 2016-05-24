@@ -139,7 +139,7 @@ class CC_EXPORT LayerTreeImpl {
   std::unique_ptr<OwnedLayerImplList> DetachLayers();
   void ClearLayers();
 
-  void SetPropertyTrees(const PropertyTrees property_trees) {
+  void SetPropertyTrees(const PropertyTrees& property_trees) {
     property_trees_ = property_trees;
     property_trees_.is_main_thread = false;
     property_trees_.is_active = IsActiveTree();

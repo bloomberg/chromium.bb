@@ -343,6 +343,7 @@ template <typename T>
 class CC_EXPORT PropertyTree {
  public:
   PropertyTree();
+  PropertyTree(const PropertyTree& other) = delete;
   ~PropertyTree();
 
   bool operator==(const PropertyTree<T>& other) const;
@@ -391,7 +392,6 @@ class CC_EXPORT PropertyTree {
   void AsValueInto(base::trace_event::TracedValue* value) const;
 
  private:
-  // Copy and assign are permitted. This is how we do tree sync.
   std::vector<T> nodes_;
 
   bool needs_update_;
@@ -401,7 +401,6 @@ class CC_EXPORT PropertyTree {
 class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
  public:
   TransformTree();
-  TransformTree(const TransformTree& other);
   ~TransformTree();
 
   bool operator==(const TransformTree& other) const;
@@ -598,7 +597,6 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
 class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
  public:
   ScrollTree();
-  ScrollTree(const ScrollTree& other);
   ~ScrollTree();
 
   ScrollTree& operator=(const ScrollTree& from);
@@ -663,7 +661,7 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
 class CC_EXPORT PropertyTrees final {
  public:
   PropertyTrees();
-  PropertyTrees(const PropertyTrees& other);
+  PropertyTrees(const PropertyTrees& other) = delete;
   ~PropertyTrees();
 
   bool operator==(const PropertyTrees& other) const;

@@ -438,7 +438,7 @@ TEST_F(LayerTreeImplTest, HitTestingClipNodeDifferentTransformAndTargetIds) {
   ASSERT_TRUE(result_layer);
   EXPECT_EQ(5, result_layer->id());
 
-  ClipTree clip_tree = host_impl().active_tree()->property_trees()->clip_tree;
+  ClipTree& clip_tree = host_impl().active_tree()->property_trees()->clip_tree;
   ClipNode* clip_node = clip_tree.Node(result_layer->clip_tree_index());
   EXPECT_NE(clip_node->data.transform_id, clip_node->data.target_id);
 }
