@@ -68,8 +68,6 @@
         'edk/embedder/embedder.h',
         'edk/embedder/embedder_internal.h',
         'edk/embedder/entrypoints.cc',
-        'edk/embedder/named_platform_channel_pair_win.cc',
-        'edk/embedder/named_platform_channel_pair_win.h',
         'edk/embedder/platform_channel_pair.cc',
         'edk/embedder/platform_channel_pair.h',
         'edk/embedder/platform_channel_pair_posix.cc',

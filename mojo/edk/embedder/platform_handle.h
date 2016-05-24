@@ -72,10 +72,6 @@ struct MOJO_SYSTEM_IMPL_EXPORT PlatformHandle {
   // A Windows HANDLE may be duplicated to another process but not yet sent to
   // that process. This tracks the handle's owning process.
   base::ProcessHandle owning_process;
-
-  // A Windows HANDLE may be an unconnected named pipe. In this case, we need to
-  // wait for a connection before communicating on the pipe.
-  bool needs_connection = false;
 };
 #else
 #error "Platform not yet supported."

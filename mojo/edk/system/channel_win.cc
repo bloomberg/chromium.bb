@@ -80,8 +80,6 @@ class ChannelWin : public Channel,
         handle_(std::move(handle)),
         io_task_runner_(io_task_runner) {
     CHECK(handle_.is_valid());
-
-    wait_for_connect_ = handle_.get().needs_connection;
   }
 
   void Start() override {
@@ -141,29 +139,6 @@ class ChannelWin : public Channel,
     base::MessageLoopForIO::current()->RegisterIOHandler(
         handle_.get().handle, this);
 
-    if (wait_for_connect_) {
-      BOOL ok = ConnectNamedPipe(handle_.get().handle,
-                                 &connect_context_.overlapped);
-      if (ok) {
-        PLOG(ERROR) << "Unexpected success while waiting for pipe connection";
-        OnError();
-        return;
-      }
-
-      const DWORD err = GetLastError();
-      switch (err) {
-        case ERROR_PIPE_CONNECTED:
-          wait_for_connect_ = false;
-          break;
-        case ERROR_IO_PENDING:
-          AddRef();
-          return;
-        case ERROR_NO_DATA:
-          OnError();
-          return;
-      }
-    }
-
     // Now that we have registered our IOHandler, we can start writing.
     {
       base::AutoLock lock(write_lock_);
@@ -204,16 +179,6 @@ class ChannelWin : public Channel,
                      DWORD error) override {
     if (error != ERROR_SUCCESS) {
       OnError();
-    } else if (context == &connect_context_) {
-      DCHECK(wait_for_connect_);
-      wait_for_connect_ = false;
-      ReadMore(0);
-
-      base::AutoLock lock(write_lock_);
-      if (delay_writes_) {
-        delay_writes_ = false;
-        WriteNextNoLock();
-      }
     } else if (context == &read_context_) {
       OnReadDone(static_cast<size_t>(bytes_transfered));
     } else {
@@ -312,7 +277,6 @@ class ChannelWin : public Channel,
   ScopedPlatformHandle handle_;
   scoped_refptr<base::TaskRunner> io_task_runner_;
 
-  base::MessageLoopForIO::IOContext connect_context_;
   base::MessageLoopForIO::IOContext read_context_;
   base::MessageLoopForIO::IOContext write_context_;
 
@@ -323,8 +287,6 @@ class ChannelWin : public Channel,
 
   bool reject_writes_ = false;
   std::deque<MessageView> outgoing_messages_;
-
-  bool wait_for_connect_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelWin);
 };

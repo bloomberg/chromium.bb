@@ -7,7 +7,6 @@ source_set("headers") {
     "configuration.h",
     "embedder.h",
     "embedder_internal.h",
-    "named_platform_channel_pair.h",
     "platform_channel_pair.h",
     "platform_handle.h",
     "platform_handle_utils.h",
@@ -73,8 +72,6 @@ source_set("platform") {
   ]
 
   sources = [
-    "named_platform_channel_pair.h",
-    "named_platform_channel_pair_win.cc",
     "platform_channel_pair.cc",
     "platform_channel_pair.h",
     "platform_channel_pair_posix.cc",
