@@ -335,6 +335,14 @@ public:
         float topControlsHeight,
         bool topControlsShrinkLayout) = 0;
 
+    // This is called in OOPIF scenarios when an element contained in a remote
+    // <iframe> is about to enter fullscreen.  The provided WebRemoteFrame
+    // identifies the frame containing the fullscreen element, and its frame
+    // owner corresponds to the HTMLFrameOwnerElement to be fullscreened.
+    // Calling this prepares FullscreenController to enter fullscreen for that
+    // frame owner.
+    virtual void willEnterFullScreen(WebRemoteFrame*) = 0;
+
     // Auto-Resize -----------------------------------------------------------
 
     // In auto-resize mode, the view is automatically adjusted to fit the html
