@@ -2468,6 +2468,13 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         print('WARNING: underscores in title will be converted to spaces.')
       refspec_opts.append('m=' + options.title.replace(' ', '_'))
 
+    if options.send_mail:
+      if not change_desc.get_reviewers():
+        DieWithError('Must specify reviewers to send email.')
+      refspec_opts.append('notify=ALL')
+    else:
+      refspec_opts.append('notify=NONE')
+
     cc = self.GetCCList().split(',')
     if options.cc:
       cc.extend(options.cc)
@@ -2481,7 +2488,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     if change_desc.get_reviewers():
       refspec_opts.extend('r=' + email.strip()
                           for email in change_desc.get_reviewers())
-
 
     refspec_suffix = ''
     if refspec_opts:

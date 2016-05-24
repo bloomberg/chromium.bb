@@ -758,7 +758,7 @@ class TestGitCl(TestCase):
   @classmethod
   def _gerrit_upload_calls(cls, description, reviewers, squash,
                            expected_upstream_ref='origin/refs/heads/master',
-                           ref_suffix='',
+                           ref_suffix='', notify=False,
                            post_amend_description=None, issue=None):
     if post_amend_description is None:
       post_amend_description = description
@@ -827,12 +827,15 @@ class TestGitCl(TestCase):
     #   ref_suffix = '%cc=joe@example.com'
     # else:
     #   ref_suffix += ',cc=joe@example.com'
+
+    notify_suffix = 'notify=%s' % ('ALL' if notify else 'NONE')
+    if ref_suffix:
+      ref_suffix += ',' + notify_suffix
+    else:
+      ref_suffix = '%' + notify_suffix
     if reviewers:
-      if ref_suffix:
-        ref_suffix += ','
-      else:
-        ref_suffix = '%'
-      ref_suffix += ','.join('r=%s' % email for email in sorted(reviewers))
+      ref_suffix += ',' + ','.join('r=%s' % email
+                                   for email in sorted(reviewers))
     calls += [
         ((['git', 'push', 'origin',
            ref_to_push + ':refs/for/refs/heads/master' + ref_suffix],),
@@ -869,6 +872,7 @@ class TestGitCl(TestCase):
       squash=False,
       expected_upstream_ref='origin/refs/heads/master',
       ref_suffix='',
+      notify=False,
       post_amend_description=None,
       issue=None):
     """Generic gerrit upload test framework."""
@@ -880,7 +884,7 @@ class TestGitCl(TestCase):
     self.calls += self._gerrit_upload_calls(
         description, reviewers, squash,
         expected_upstream_ref=expected_upstream_ref,
-        ref_suffix=ref_suffix,
+        ref_suffix=ref_suffix, notify=notify,
         post_amend_description=post_amend_description,
         issue=issue)
     # Uncomment when debugging.
@@ -909,9 +913,10 @@ class TestGitCl(TestCase):
 
   def test_gerrit_reviewers_cmd_line(self):
     self._run_gerrit_upload_test(
-        ['-r', 'foo@example.com'],
+        ['-r', 'foo@example.com', '--send-mail'],
         'desc\n\nBUG=\n\nChange-Id: I123456789',
-        ['foo@example.com'])
+        ['foo@example.com'],
+        notify=True)
 
   def test_gerrit_reviewer_multiple(self):
     self._run_gerrit_upload_test(
