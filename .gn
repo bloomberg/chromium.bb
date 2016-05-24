@@ -53,6 +53,7 @@ check_targets = [
   "//content/test:content_test_mojo_bindings",
   "//content/test:content_unittests",
   "//content/test:test_support",
+  "//content/utility/*",
   "//courgette/*",
   "//crypto/*",
   "//data/*",
