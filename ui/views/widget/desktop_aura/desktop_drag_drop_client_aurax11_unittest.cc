@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -117,6 +118,8 @@ class SimpleTestDragDropClient : public DesktopDragDropClientAuraX11 {
 
   // Returns true if the move loop is running.
   bool IsMoveLoopRunning();
+
+  Widget* drag_widget() { return DesktopDragDropClientAuraX11::drag_widget(); }
 
  private:
   // DesktopDragDropClientAuraX11:
@@ -385,6 +388,10 @@ class DesktopDragDropClientAuraX11Test : public ViewsTestBase {
   int StartDragAndDrop() {
     ui::OSExchangeData data;
     data.SetString(base::ASCIIToUTF16("Test"));
+    SkBitmap drag_bitmap;
+    drag_bitmap.allocN32Pixels(10, 10);
+    gfx::ImageSkia drag_image(gfx::ImageSkia::CreateFrom1xBitmap(drag_bitmap));
+    data.provider().SetDragImage(drag_image, gfx::Vector2d());
 
     return client_->StartDragAndDrop(
         data,
@@ -398,6 +405,7 @@ class DesktopDragDropClientAuraX11Test : public ViewsTestBase {
   // ViewsTestBase:
   void SetUp() override {
     ViewsTestBase::SetUp();
+    views_delegate()->set_use_desktop_native_widgets(true);
 
     // Create widget to initiate the drags.
     widget_.reset(new Widget);
@@ -539,6 +547,49 @@ TEST_F(DesktopDragDropClientAuraX11Test, Basic) {
                                          toplevel));
   result = StartDragAndDrop();
   EXPECT_EQ(ui::DragDropTypes::DRAG_COPY, result);
+}
+
+void HighDPIStep(TestDragDropClient* client) {
+  float scale =
+      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
+  // Start dragging at 100, 100 in native coordinates.
+  gfx::Point mouse_position_in_screen_pixel(100, 100);
+  client->OnMouseMovement(mouse_position_in_screen_pixel, 0,
+                          ui::EventTimeForNow());
+
+  EXPECT_EQ(gfx::ScaleToFlooredPoint(gfx::Point(100, 100), 1.f / scale),
+            client->drag_widget()->GetWindowBoundsInScreen().origin());
+
+  // Drag the mouse down 200 pixels.
+  mouse_position_in_screen_pixel.Offset(200, 0);
+  client->OnMouseMovement(mouse_position_in_screen_pixel, 0,
+                          ui::EventTimeForNow());
+  EXPECT_EQ(gfx::ScaleToFlooredPoint(gfx::Point(300, 100), 1.f / scale),
+            client->drag_widget()->GetWindowBoundsInScreen().origin());
+
+  client->OnMouseReleased();
+}
+
+TEST_F(DesktopDragDropClientAuraX11Test, HighDPI200) {
+  aura::TestScreen* screen =
+      static_cast<aura::TestScreen*>(display::Screen::GetScreen());
+  screen->SetDeviceScaleFactor(2.0f);
+
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::Bind(&HighDPIStep, client()));
+  int result = StartDragAndDrop();
+  EXPECT_EQ(ui::DragDropTypes::DRAG_NONE, result);
+}
+
+TEST_F(DesktopDragDropClientAuraX11Test, HighDPI150) {
+  aura::TestScreen* screen =
+      static_cast<aura::TestScreen*>(display::Screen::GetScreen());
+  screen->SetDeviceScaleFactor(1.5f);
+
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::Bind(&HighDPIStep, client()));
+  int result = StartDragAndDrop();
+  EXPECT_EQ(ui::DragDropTypes::DRAG_NONE, result);
 }
 
 namespace {
