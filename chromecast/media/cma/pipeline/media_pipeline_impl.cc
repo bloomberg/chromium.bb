@@ -504,8 +504,8 @@ void MediaPipelineImpl::OnError(::media::PipelineStatus error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(error, ::media::PIPELINE_OK) << "PIPELINE_OK is not an error!";
 
-  metrics::CastMetricsHelper::GetInstance()->RecordApplicationEvent(
-      "Cast.Platform.Error");
+  metrics::CastMetricsHelper::GetInstance()->RecordApplicationEventWithValue(
+      "Cast.Platform.Error", error);
 
   if (!client_.error_cb.is_null())
     client_.error_cb.Run(error);
