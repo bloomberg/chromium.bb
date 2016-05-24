@@ -25,6 +25,8 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/named_platform_channel_pair.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 
 #if defined(OS_WIN)
@@ -142,9 +144,8 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
   base::Process process;
 #if defined(OS_WIN)
   if (launch_elevated) {
-    // TODO(rockot): We may want to support Mojo IPC to elevated processes as
-    // well, but this isn't currently feasible without sharing a pipe path on
-    // the command line as elevated process launch goes through ShellExecuteEx.
+    // When establishing a Mojo connection, the pipe path has already been added
+    // to the command line.
     base::LaunchOptions options;
     options.start_hidden = true;
     process = base::LaunchElevatedProcess(*cmd_line, options);
@@ -454,8 +455,19 @@ void ChildProcessLauncher::Launch(
   NotifyCallback reply_callback(base::Bind(&ChildProcessLauncher::DidLaunch,
                                            weak_factory_.GetWeakPtr(),
                                            terminate_child_on_shutdown_));
-  mojo::edk::ScopedPlatformHandle client_handle =
-      mojo_platform_channel_.PassClientHandle();
+  mojo::edk::ScopedPlatformHandle client_handle;
+#if defined(OS_WIN)
+  if (delegate->ShouldLaunchElevated()) {
+    mojo::edk::NamedPlatformChannelPair named_pair;
+    mojo_host_platform_handle_ = named_pair.PassServerHandle();
+    named_pair.PrepareToPassClientHandleToChildProcess(cmd_line);
+  } else
+#endif
+  {
+    mojo::edk::PlatformChannelPair channel_pair;
+    mojo_host_platform_handle_ = channel_pair.PassServerHandle();
+    client_handle = channel_pair.PassClientHandle();
+  }
   BrowserThread::PostTask(
       BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
       base::Bind(&LaunchOnLauncherThread, reply_callback, client_thread_id_,
@@ -545,7 +557,7 @@ void ChildProcessLauncher::Notify(ZygoteHandle zygote,
   if (process_.IsValid()) {
     // Set up Mojo IPC to the new process.
     mojo::edk::ChildProcessLaunched(process_.Handle(),
-                                    mojo_platform_channel_.PassServerHandle());
+                                    std::move(mojo_host_platform_handle_));
   }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)

@@ -17,21 +17,25 @@ namespace content {
 
 class UtilityProcessHostImplBrowserTest : public ContentBrowserTest {
  public:
-  void RunUtilityProcess() {
+  void RunUtilityProcess(bool elevated) {
     base::RunLoop run_loop;
     done_closure_ = run_loop.QuitClosure();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(
             &UtilityProcessHostImplBrowserTest::RunUtilityProcessOnIOThread,
-            base::Unretained(this)));
+            base::Unretained(this), elevated));
     run_loop.Run();
   }
 
  protected:
-  void RunUtilityProcessOnIOThread() {
+  void RunUtilityProcessOnIOThread(bool elevated) {
     UtilityProcessHost* host = UtilityProcessHost::Create(nullptr, nullptr);
     host->SetName(base::ASCIIToUTF16("TestProcess"));
+#if defined(OS_WIN)
+    if (elevated)
+      host->ElevatePrivileges();
+#endif
     EXPECT_TRUE(host->Start());
 
     ServiceRegistry* service_registry = host->GetServiceRegistry();
@@ -51,7 +55,14 @@ class UtilityProcessHostImplBrowserTest : public ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(UtilityProcessHostImplBrowserTest, LaunchProcess) {
-  RunUtilityProcess();
+  RunUtilityProcess(false);
 }
+
+#if defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(UtilityProcessHostImplBrowserTest,
+                       LaunchElevatedProcess) {
+  RunUtilityProcess(true);
+}
+#endif
 
 }  // namespace content
