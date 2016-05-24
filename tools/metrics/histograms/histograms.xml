@@ -45272,10 +45272,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="SafeBrowsing.UnverifiedDownloads.Allowed"
     enum="SBClientDownloadExtensions">
   <owner>asanka@chromium.org</owner>
-  <obsolete>
-    Deprected. This was a temporary measure until PPAPI based download code
-    paths were migrated to use SafeBrowsing.
-  </obsolete>
   <summary>
     File types that were allowed to be downloaded without verifying their
     content nor their source URLs with Safe Browsing.
@@ -45285,10 +45281,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="SafeBrowsing.UnverifiedDownloads.AllowedByWhitelist"
     enum="SBClientDownloadExtensions">
   <owner>asanka@chromium.org</owner>
-  <obsolete>
-    Deprected. This was a temporary measure until PPAPI based download code
-    paths were migrated to use SafeBrowsing.
-  </obsolete>
   <summary>
     File types that were allowed to be downloaded without verifying their
     content nor their source URLs with Safe Browsing due to the requestor URL
@@ -45300,10 +45292,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="SafeBrowsing.UnverifiedDownloads.AllowedDueToDisabledService"
     enum="SBClientDownloadExtensions">
   <owner>asanka@chromium.org</owner>
-  <obsolete>
-    Deprected. This was a temporary measure until PPAPI based download code
-    paths were migrated to use SafeBrowsing.
-  </obsolete>
   <summary>
     File types that were allowed to be downloaded without verifying their
     content nor their source URLs with Safe Browsing due to the SafeBrowsing
@@ -45314,10 +45302,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SafeBrowsing.UnverifiedDownloads.AlternateExtensionCount">
   <owner>asanka@chromium.org</owner>
-  <obsolete>
-    Deprected. This was a temporary measure until PPAPI based download code
-    paths were migrated to use SafeBrowsing.
-  </obsolete>
   <summary>
     Count of alternate extensions that were supplied when attempting to download
     a file without verifying their content nor their source URLs with Safe
@@ -45328,10 +45312,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="SafeBrowsing.UnverifiedDownloads.Blocked"
     enum="SBClientDownloadExtensions">
   <owner>asanka@chromium.org</owner>
-  <obsolete>
-    Deprected. This was a temporary measure until PPAPI based download code
-    paths were migrated to use SafeBrowsing.
-  </obsolete>
   <summary>
     File types that were blocked from downloaded without verifying their content
     nor their source URLs with Safe Browsing.
