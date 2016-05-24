@@ -1,78 +1,57 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests that the magic file header "WEBVTT" leads to the file properly recognized as a WebVTT file.</title>
+<script src="track-helpers.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<video>
+    <track src="captions-webvtt/tc004-webvtt-file.vtt">
+    <track src="captions-webvtt/tc004-webvtt-rubbish.vtt">
+    <track src="captions-webvtt/tc004-no-webvtt.vtt">
+</video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    
+    var trackElements = document.querySelectorAll("track");
+    trackElements[0].onload = t.step_func(trackLoaded);
+    trackElements[1].onload = t.step_func(trackLoaded);
+    trackElements[2].onerror = t.step_func(trackLoaded);
+    
+    enableAllTextTracks(video.textTracks);
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
+    var numberOfTracksLoaded = 0;
+    function trackLoaded() {
+        numberOfTracksLoaded++;
+        if (numberOfTracksLoaded != 3)
+            return;
 
-            numberOfTrackTests = 3;
+        testTrack(0);
+        testTrack(1);
+        testTrackError(2);
+        t.done();
+    }
 
-            function trackLoaded()
+    function testTrack(index) {
+        var expected = [
             {
-                numberOfTracksLoaded++;
-                if (numberOfTracksLoaded == numberOfTrackTests) {
-                    testTrack(0);
-                    testTrack(1);
-                    testTrackError(2);
-                }
-            }
-
-            function testTrack(i)
+                id : "1",
+                startTime : 0,
+                endTime : 30.5,
+                text : "Bear is Coming!!!!!"
+            },
             {
-                findMediaElement();
-                var expected =
-                {
-                    length : 2,
-                    tests:
-                    [
-                        {
-                            property : "id",
-                            values : [1, 2],
-                        },
-                        {
-                            property : "startTime",
-                            values : [0.0, 31.0],
-                        },
-                        {
-                            property : "endTime",
-                            values : [30.5, 1200.5],
-                        },
-                        {
-                            property : "text",
-                            values : ["Bear is Coming!!!!!", "I said Bear is coming!!!!"],
-                        },
-                    ],
-                };
-                testCues(i, expected);
-
-                allTestsEnded();
+                id : "2",
+                startTime : 31,
+                endTime : 1200.5,
+                text : "I said Bear is coming!!!!"
             }
+        ];
 
-            function testTrackError(i)
-            {
-                findMediaElement();
-                var expected =
-                {
-                    length : 0,
-                    tests:
-                    [],
-                };
-                testCues(i, expected);
+        assert_cues_equal(video.textTracks[index].cues, expected);
+    }
 
-                allTestsEnded();
-            }
-        </script>
-    </head>
-    <body onload="enableAllTextTracks()">
-        <p>Tests that the magic file header "WEBVTT" leads to the file properly recognized as a WebVTT file.</p>
-        <video>
-            <track src="captions-webvtt/tc004-webvtt-file.vtt" onload="trackLoaded()">
-            <track src="captions-webvtt/tc004-webvtt-rubbish.vtt" onload="trackLoaded()">
-            <track src="captions-webvtt/tc004-no-webvtt.vtt" onerror="trackLoaded()">
-        </video>
-    </body>
-</html>
+    function testTrackError(index) {
+        assert_cues_equal(video.textTracks[index].cues, []);
+    }
+});
+</script>

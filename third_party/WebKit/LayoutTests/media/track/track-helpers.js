@@ -7,6 +7,7 @@ function enableAllTextTracks(textTracks) {
 }
 
 function assert_cues_equal(cues, expected) {
+    assert_equals(cues.length, expected.length);
     for (var i = 0; i < cues.length; i++) {
         assert_equals(cues[i].id, expected[i].id);
         assert_equals(cues[i].startTime, expected[i].startTime);

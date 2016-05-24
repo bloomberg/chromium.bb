@@ -1,61 +1,50 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests that the optional comment area under the "WEBVTT" file header is properly ignored.  Also, default settings and styling are currently ignored (treated as faulty cues).</title>
+<script src="track-helpers.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<video>
+    <track src="captions-webvtt/tc005-default-styles.vtt">
+    <track src="captions-webvtt/tc005-metadata-area.vtt">
+</video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    
+    var trackElements = document.querySelectorAll("track");
+    for (var i = 0; i < video.textTracks.length; i++)
+        trackElements[i].onload = t.step_func(trackLoaded);
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
+    enableAllTextTracks(video.textTracks);
 
-            numberOfTrackTests = 2;
+    var numberOfTracksLoaded = 0;
+    function trackLoaded() {
+        numberOfTracksLoaded++;
+        if (numberOfTracksLoaded != 2)
+            return;
 
-            function trackLoaded()
+        testTrack(0);
+        testTrack(1);
+        t.done();
+    }
+
+    function testTrack(index) {
+        var expected = [
             {
-                numberOfTracksLoaded++;
-                if (numberOfTracksLoaded == numberOfTrackTests) {
-                    testTrack(0);
-                    testTrack(1);
-                }
-            }
-
-            function testTrack(i)
+                id : "1",
+                startTime : 0,
+                endTime : 30.5,
+                text : "Bear is Coming!!!!!"
+            },
             {
-                var expected =
-                {
-                    length : 2,
-                    tests:
-                    [
-                        {
-                            property : "id",
-                            values : [1, 2],
-                        },
-                        {
-                            property : "startTime",
-                            values : [0.0, 31.0],
-                        },
-                        {
-                            property : "endTime",
-                            values : [30.5, 1200.5],
-                        },
-                        {
-                            property : "text",
-                            values : ["Bear is Coming!!!!!", "I said Bear is coming!!!!"],
-                        },
-                    ],
-                };
-                testCues(i, expected);
-
-                allTestsEnded();
+                id : "2",
+                startTime : 31,
+                endTime : 1200.5,
+                text : "I said Bear is coming!!!!"
             }
-        </script>
-    </head>
-    <body onload="enableAllTextTracks()">
-        <p>Tests that the optional comment area under the "WEBVTT" file header is properly ignored.  Also, default settings and styling are currently ignored (treated as faulty cues).</p>
-        <video>
-            <track src="captions-webvtt/tc005-default-styles.vtt" onload="trackLoaded()">
-            <track src="captions-webvtt/tc005-metadata-area.vtt" onload="trackLoaded()">
-        </video>
-    </body>
-</html>
+        ];
+
+        assert_cues_equal(video.textTracks[index].cues, expected);
+    }
+});
+</script>
