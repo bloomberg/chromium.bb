@@ -5,12 +5,13 @@
 package org.chromium.android_webview.test;
 
 import android.content.Context;
+import android.test.suitebuilder.annotation.SmallTest;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -96,11 +97,8 @@ public class AwImeTest extends AwTestBase {
     }
 
     // https://crbug.com/569556
-    /*
     @SmallTest
     @Feature({"AndroidWebView", "TextInput"})
-    */
-    @DisabledTest // crbug.com/611928
     public void testPressNextFromEditTextAndType() throws Throwable {
         focusOnEditTextAndShowKeyboard();
         focusOnWebViewAndEnableEditing();
