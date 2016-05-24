@@ -4,7 +4,6 @@
 
 #include "components/offline_pages/offline_page_item.h"
 
-#include "components/offline_pages/proto/offline_pages.pb.h"
 #include "net/base/filename_util.h"
 
 namespace offline_pages {

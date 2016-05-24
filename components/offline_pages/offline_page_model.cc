@@ -22,7 +22,6 @@
 #include "components/offline_pages/client_policy_controller.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_storage_manager.h"
-#include "components/offline_pages/proto/offline_pages.pb.h"
 #include "url/gurl.h"
 
 using ArchiverResult = offline_pages::OfflinePageArchiver::ArchiverResult;
