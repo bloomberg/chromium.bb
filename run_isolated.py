@@ -374,6 +374,7 @@ def map_and_run(
       change_tree_read_only(run_dir, bundle.read_only)
       cwd = os.path.normpath(os.path.join(cwd, bundle.relative_cwd))
       command = bundle.command + extra_args
+    command = tools.fix_python_path(command)
     file_path.ensure_command_has_abs_path(command, cwd)
     sys.stdout.flush()
     start = time.time()
