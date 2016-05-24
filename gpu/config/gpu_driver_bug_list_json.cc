@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.67",
+  "version": "8.68",
   "entries": [
     {
       "id": 1,
@@ -2026,6 +2026,18 @@ LONG_STRING_CONST(
       "gl_renderer": ".*Mali-4.*",
       "features": [
         "avda_dont_copy_pictures"
+      ]
+    },
+    {
+      "id": 168,
+      "description": "VirtualBox driver doesn't correctly support partial swaps.",
+      "cr_bugs": [613722],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x80ee",
+      "features": [
+        "disable_post_sub_buffers_for_onscreen_surfaces"
       ]
     }
   ]
