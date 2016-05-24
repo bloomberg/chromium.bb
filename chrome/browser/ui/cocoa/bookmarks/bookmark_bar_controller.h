@@ -400,6 +400,9 @@ willAnimateFromState:(BookmarkBar::State)oldState
 // Import bookmarks from another browser.
 - (IBAction)importBookmarks:(id)sender;
 
+// Returns the app page shortcut button.
+- (NSButton*)appsPageShortcutButton;
+
 // Returns the "off the side" button (aka the chevron button).
 - (NSButton*)offTheSideButton;
 
@@ -437,7 +440,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
 - (void)openOrCloseBookmarkFolderForOffTheSideButton;
 - (BookmarkBarView*)buttonView;
 - (NSMutableArray*)buttons;
-- (NSButton*)appsPageShortcutButton;
 - (BOOL)offTheSideButtonIsHidden;
 - (BOOL)appsPageShortcutButtonIsHidden;
 - (BookmarkButton*)otherBookmarksButton;

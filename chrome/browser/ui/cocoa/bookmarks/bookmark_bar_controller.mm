@@ -911,6 +911,10 @@ CGFloat BookmarkRightMargin() {
   chrome::ShowImportDialog(browser_);
 }
 
+- (NSButton*)appsPageShortcutButton {
+  return appsPageShortcutButton_;
+}
+
 - (NSButton*)offTheSideButton {
   return offTheSideButton_;
 }
@@ -1889,10 +1893,6 @@ CGFloat BookmarkRightMargin() {
 
 - (NSMutableArray*)buttons {
   return buttons_.get();
-}
-
-- (NSButton*)appsPageShortcutButton {
-  return appsPageShortcutButton_;
 }
 
 - (BOOL)offTheSideButtonIsHidden {

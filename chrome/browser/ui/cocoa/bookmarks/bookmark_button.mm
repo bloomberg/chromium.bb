@@ -453,6 +453,12 @@ BookmarkButton* gDraggedButton = nil; // Weak
   BookmarkBarView* bookmarkBarView =
       base::mac::ObjCCastStrict<BookmarkBarView>([self superview]);
   BookmarkBarController* bookmarkBarController = [bookmarkBarView controller];
+
+  // The apps page shortcut button does not need to be updated.
+  if (self == [bookmarkBarController appsPageShortcutButton]) {
+    return;
+  }
+
   BOOL darkTheme = [[self window] hasDarkTheme];
   NSImage* theImage = nil;
   // Make sure the "off the side" button gets the chevron icon.
