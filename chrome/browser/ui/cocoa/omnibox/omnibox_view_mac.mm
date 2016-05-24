@@ -175,6 +175,23 @@ NSColor* OmniboxViewMac::BaseTextColor(bool in_dark_mode) {
   return skia::SkColorToCalibratedNSColor(BaseTextColorSkia(in_dark_mode));
 }
 
+// static
+NSColor* OmniboxViewMac::GetSecureTextColor(
+    security_state::SecurityStateModel::SecurityLevel security_level,
+    bool in_dark_mode) {
+  if (security_level == security_state::SecurityStateModel::EV_SECURE ||
+      security_level == security_state::SecurityStateModel::SECURE) {
+    return SecureSchemeColor(in_dark_mode);
+  }
+
+  if (security_level == security_state::SecurityStateModel::SECURITY_ERROR)
+    return SecurityErrorSchemeColor(in_dark_mode);
+
+  DCHECK_EQ(security_state::SecurityStateModel::SECURITY_WARNING,
+            security_level);
+  return SecurityWarningSchemeColor(in_dark_mode);
+}
+
 OmniboxViewMac::OmniboxViewMac(OmniboxEditController* controller,
                                Profile* profile,
                                CommandUpdater* command_updater,
@@ -598,27 +615,16 @@ void OmniboxViewMac::ApplyTextAttributes(
   if (!model()->user_input_in_progress() && model()->CurrentTextIsURL() &&
       scheme.is_nonempty() &&
       (security_level != security_state::SecurityStateModel::NONE)) {
-    NSColor* color;
-    if (security_level == security_state::SecurityStateModel::EV_SECURE ||
-        security_level == security_state::SecurityStateModel::SECURE) {
-      color = SecureSchemeColor(in_dark_mode);
-    } else if (security_level ==
-               security_state::SecurityStateModel::SECURITY_ERROR) {
-      color = SecurityErrorSchemeColor(in_dark_mode);
+    if (security_level == security_state::SecurityStateModel::SECURITY_ERROR) {
       // Add a strikethrough through the scheme.
       [attributedString addAttribute:NSStrikethroughStyleAttributeName
                  value:[NSNumber numberWithInt:NSUnderlineStyleSingle]
                  range:ComponentToNSRange(scheme)];
-    } else if (security_level ==
-               security_state::SecurityStateModel::SECURITY_WARNING) {
-      color = SecurityWarningSchemeColor(in_dark_mode);
-    } else {
-      NOTREACHED();
-      color = BaseTextColor(in_dark_mode);
     }
-    [attributedString addAttribute:NSForegroundColorAttributeName
-                             value:color
-                             range:ComponentToNSRange(scheme)];
+    [attributedString
+        addAttribute:NSForegroundColorAttributeName
+               value:GetSecureTextColor(security_level, in_dark_mode)
+               range:ComponentToNSRange(scheme)];
   }
 }
 

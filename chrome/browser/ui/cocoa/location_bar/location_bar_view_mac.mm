@@ -57,6 +57,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/security_state/security_state_model.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/ui/zoom/zoom_controller.h"
 #include "components/ui/zoom/zoom_event_manager.h"
@@ -576,11 +577,17 @@ void LocationBarViewMac::UpdateLocationIcon() {
                             : gfx::kGoogleGreen700;
     icon_size = kMaterialIconSize;
   } else {
-    vector_icon_id = omnibox_view_->GetVectorIcon(in_dark_mode);
+    vector_icon_id = omnibox_view_->GetVectorIcon();
     if (in_dark_mode) {
       vector_icon_color = SK_ColorWHITE;
     } else {
-      vector_icon_color = OmniboxViewMac::BaseTextColorSkia(in_dark_mode);
+      security_state::SecurityStateModel::SecurityLevel security_level =
+          GetToolbarModel()->GetSecurityLevel(false);
+      vector_icon_color =
+          (security_level == security_state::SecurityStateModel::NONE)
+              ? OmniboxViewMac::BaseTextColorSkia(in_dark_mode)
+              : skia::NSDeviceColorToSkColor(OmniboxViewMac::GetSecureTextColor(
+                    security_level, in_dark_mode));
     }
   }
 

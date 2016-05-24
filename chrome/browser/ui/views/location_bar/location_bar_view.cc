@@ -339,37 +339,24 @@ SkColor LocationBarView::GetColor(
 
 SkColor LocationBarView::GetSecureTextColor(
     security_state::SecurityStateModel::SecurityLevel security_level) const {
-  bool inverted = color_utils::IsDark(GetColor(BACKGROUND));
-  SkColor color;
-  switch (security_level) {
-    case security_state::SecurityStateModel::EV_SECURE:
-    case security_state::SecurityStateModel::SECURE:
-      if (ui::MaterialDesignController::IsModeMaterial() && inverted)
-        return GetColor(TEXT);
-      color = GetColor(EV_BUBBLE_TEXT_AND_BORDER);
-      break;
-
-    case security_state::SecurityStateModel::SECURITY_POLICY_WARNING:
-      return GetColor(DEEMPHASIZED_TEXT);
-      break;
-
-    case security_state::SecurityStateModel::SECURITY_ERROR: {
-      bool md = ui::MaterialDesignController::IsModeMaterial();
-      if (md && inverted)
-        return GetColor(TEXT);
-      color = md ? gfx::kGoogleRed700 : SkColorSetRGB(162, 0, 0);
-      break;
-    }
-
-    case security_state::SecurityStateModel::SECURITY_WARNING:
-      return GetColor(TEXT);
-      break;
-
-    default:
-      NOTREACHED();
-      return gfx::kPlaceholderColor;
+  if (security_level ==
+      security_state::SecurityStateModel::SECURITY_POLICY_WARNING) {
+    return GetColor(DEEMPHASIZED_TEXT);
   }
-  return color_utils::GetReadableColor(color, GetColor(BACKGROUND));
+
+  SkColor text_color = GetColor(TEXT);
+  if ((security_level == security_state::SecurityStateModel::EV_SECURE) ||
+      (security_level == security_state::SecurityStateModel::SECURE) ||
+      (security_level == security_state::SecurityStateModel::SECURITY_ERROR)) {
+    const bool md = ui::MaterialDesignController::IsModeMaterial();
+    if (md && color_utils::IsDark(GetColor(BACKGROUND)))
+      return text_color;
+    if (security_level == security_state::SecurityStateModel::SECURITY_ERROR)
+      text_color = md ? gfx::kGoogleRed700 : SkColorSetRGB(162, 0, 0);
+    else
+      text_color = GetColor(EV_BUBBLE_TEXT_AND_BORDER);
+  }
+  return color_utils::GetReadableColor(text_color, GetColor(BACKGROUND));
 }
 
 void LocationBarView::ZoomChangedForActiveTab(bool can_show_bubble) {
@@ -869,9 +856,12 @@ void LocationBarView::RefreshLocationIcon() {
       icon_id = gfx::VectorIconId::LOCATION_BAR_HTTPS_VALID_IN_CHIP;
       icon_color = location_icon_view_->GetTextColor();
     } else {
-      icon_id = omnibox_view_->GetVectorIcon(
-          color_utils::IsDark(GetColor(BACKGROUND)));
-      icon_color = color_utils::DeriveDefaultIconColor(GetColor(TEXT));
+      icon_id = omnibox_view_->GetVectorIcon();
+      security_state::SecurityStateModel::SecurityLevel security_level =
+          GetToolbarModel()->GetSecurityLevel(false);
+      icon_color = (security_level == security_state::SecurityStateModel::NONE)
+                       ? color_utils::DeriveDefaultIconColor(GetColor(TEXT))
+                       : GetSecureTextColor(security_level);
     }
     location_icon_view_->SetImage(
         gfx::CreateVectorIcon(icon_id, kIconSize, icon_color));
