@@ -54,6 +54,7 @@ void LayoutTestRuntimeFlags::Reset() {
 
   set_dump_title_changes(false);
   set_dump_icon_changes(false);
+  set_dump_console_messages(true);
 
   set_stay_on_page_after_handling_before_unload(false);
 

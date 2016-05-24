@@ -211,6 +211,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetDatabaseQuota(int quota);
   void SetDomainRelaxationForbiddenForURLScheme(bool forbidden,
                                                 const std::string& scheme);
+  void SetDumpConsoleMessages(bool value);
   void SetImagesAllowed(bool allowed);
   void SetIsolatedWorldContentSecurityPolicy(int world_id,
                                              const std::string& policy);
@@ -511,6 +512,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("setDatabaseQuota", &TestRunnerBindings::SetDatabaseQuota)
       .SetMethod("setDomainRelaxationForbiddenForURLScheme",
                  &TestRunnerBindings::SetDomainRelaxationForbiddenForURLScheme)
+      .SetMethod("setDumpConsoleMessages",
+                 &TestRunnerBindings::SetDumpConsoleMessages)
       .SetMethod("setIconDatabaseEnabled", &TestRunnerBindings::NotImplemented)
       .SetMethod("setImagesAllowed", &TestRunnerBindings::SetImagesAllowed)
       .SetMethod("setIsolatedWorldContentSecurityPolicy",
@@ -695,6 +698,11 @@ void TestRunnerBindings::SetDomainRelaxationForbiddenForURLScheme(
     bool forbidden, const std::string& scheme) {
   if (view_runner_)
     view_runner_->SetDomainRelaxationForbiddenForURLScheme(forbidden, scheme);
+}
+
+void TestRunnerBindings::SetDumpConsoleMessages(bool enabled) {
+  if (runner_)
+    runner_->SetDumpConsoleMessages(enabled);
 }
 
 v8::Local<v8::Value>
@@ -2551,6 +2559,15 @@ void TestRunner::DumpDragImage() {
 void TestRunner::DumpNavigationPolicy() {
   layout_test_runtime_flags_.set_dump_navigation_policy(true);
   OnLayoutTestRuntimeFlagsChanged();
+}
+
+void TestRunner::SetDumpConsoleMessages(bool value) {
+  layout_test_runtime_flags_.set_dump_console_messages(value);
+  OnLayoutTestRuntimeFlagsChanged();
+}
+
+bool TestRunner::ShouldDumpConsoleMessages() const {
+  return layout_test_runtime_flags_.dump_console_messages();
 }
 
 void TestRunner::CloseWebInspector() {

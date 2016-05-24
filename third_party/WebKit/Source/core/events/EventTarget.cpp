@@ -98,7 +98,7 @@ void reportBlockedEvent(ExecutionContext* context, const Event* event, Registere
     String messageText = String::format(
         "Handling of '%s' input event was delayed for %ld ms due to main thread being busy. "
         "Consider marking event handler as 'passive' to make the page more responive.",
-        event->type().characters8(), lround(delayedSeconds * 1000));
+        event->type().getString().utf8().data(), lround(delayedSeconds * 1000));
     ConsoleMessage* message = nullptr;
 
     v8::Local<v8::Function> function = eventListenerEffectiveFunction(v8Listener->isolate(), handler);
@@ -577,13 +577,19 @@ bool EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
 
         InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(context, this, event);
 
+        EventListener* listener = registeredListener.listener();
+
         // To match Mozilla, the AT_TARGET phase fires both capturing and bubbling
         // event listeners, even though that violates some versions of the DOM spec.
-        registeredListener.listener()->handleEvent(context, event);
+        listener->handleEvent(context, event);
         firedListener = true;
 
-        if (shouldReportBlockedEvent && !registeredListener.passive() && !registeredListener.blockedEventWarningEmitted() && !event->defaultPrevented())
-            reportBlockedEvent(context, event, &registeredListener, now - event->platformTimeStamp());
+        // If we're about to report this event listener as blocking, make sure it wasn't
+        // removed while handling the event.
+        if (shouldReportBlockedEvent && i > 0 && entry[i - 1].listener() == listener
+            && !entry[i - 1].passive() && !entry[i - 1].blockedEventWarningEmitted() && !event->defaultPrevented()) {
+            reportBlockedEvent(context, event, &entry[i - 1], now - event->platformTimeStamp());
+        }
 
         event->setHandlingPassive(false);
 

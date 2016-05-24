@@ -161,6 +161,8 @@ class TestRunner : public WebTestRunner {
   void DidOpenChooser();
   void DidCloseChooser();
 
+  bool ShouldDumpConsoleMessages() const;
+
   // A single item in the work queue.
   class WorkItem {
    public:
@@ -449,6 +451,10 @@ class TestRunner : public WebTestRunner {
   // Sets a flag that tells the WebTestProxy to dump the default navigation
   // policy passed to the decidePolicyForNavigation callback.
   void DumpNavigationPolicy();
+
+  // Controls whether console messages produced by the page are dumped
+  // to test output.
+  void SetDumpConsoleMessages(bool value);
 
   ///////////////////////////////////////////////////////////////////////////
   // Methods interacting with the WebTestProxy

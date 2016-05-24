@@ -663,6 +663,8 @@ void WebFrameTestClient::didAddMessageToConsole(
     const blink::WebString& source_name,
     unsigned source_line,
     const blink::WebString& stack_trace) {
+  if (!test_runner_->ShouldDumpConsoleMessages())
+    return;
   std::string level;
   switch (message.level) {
     case blink::WebConsoleMessage::LevelDebug:

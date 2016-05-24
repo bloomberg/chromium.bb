@@ -151,6 +151,10 @@ class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
   // If true, the test_shell will print out the icon change notifications.
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_icon_changes)
 
+  // If true, the console messages produced by the page will
+  // be part of test output.
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_console_messages)
+
   // Desired return value of WebFrameClient::runModalBeforeUnloadDialog.
   DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(
       stay_on_page_after_handling_before_unload)
