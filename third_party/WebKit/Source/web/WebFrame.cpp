@@ -134,6 +134,18 @@ bool WebFrame::shouldEnforceStrictMixedContentChecking() const
     return toImplBase()->frame()->securityContext()->shouldEnforceStrictMixedContentChecking();
 }
 
+void WebFrame::setFrameOwnerProperties(const WebFrameOwnerProperties& properties)
+{
+    // At the moment, this is only used to replicate frame owner properties
+    // for frames with a remote owner.
+    RemoteFrameOwner* owner = toRemoteFrameOwner(toImplBase()->frame()->owner());
+    DCHECK(owner);
+    owner->setScrollingMode(properties.scrollingMode);
+    owner->setMarginWidth(properties.marginWidth);
+    owner->setMarginHeight(properties.marginHeight);
+    owner->setAllowFullscreen(properties.allowFullscreen);
+}
+
 WebFrame* WebFrame::opener() const
 {
     return m_opener;

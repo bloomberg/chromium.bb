@@ -39,7 +39,7 @@ public:
     // attached to the frame tree: it has the same parent as its potential
     // replacee but is invisible to the rest of the frames in the frame tree.
     // If the load commits, call swap() to fully attach this frame.
-    BLINK_EXPORT static WebLocalFrame* createProvisional(WebFrameClient*, WebRemoteFrame*, WebSandboxFlags, const WebFrameOwnerProperties&);
+    BLINK_EXPORT static WebLocalFrame* createProvisional(WebFrameClient*, WebRemoteFrame*, WebSandboxFlags);
 
     // Returns the WebFrame associated with the current V8 context. This
     // function can return 0 if the context is associated with a Document that
@@ -61,15 +61,6 @@ public:
     virtual WebAutofillClient* autofillClient() = 0;
     virtual void setDevToolsAgentClient(WebDevToolsAgentClient*) = 0;
     virtual WebDevToolsAgent* devToolsAgent() = 0;
-
-    // Basic properties ---------------------------------------------------
-
-    // Updates the scrolling and margin properties in the frame's FrameOwner.
-    // This is used when this frame's parent is in another process and it
-    // dynamically updates these properties.
-    // TODO(dcheng): Currently, the update only takes effect on next frame
-    // navigation.  This matches the in-process frame behavior.
-    virtual void setFrameOwnerProperties(const WebFrameOwnerProperties&) = 0;
 
     // Hierarchy ----------------------------------------------------------
 

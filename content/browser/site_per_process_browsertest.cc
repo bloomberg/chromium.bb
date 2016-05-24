@@ -7118,4 +7118,100 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 }
 #endif
 
+// Check that out-of-process frames correctly calculate their ability to enter
+// fullscreen. A frame is allowed enter fullscreen if the allowFullscreen
+// attribute is present in all of its ancestor <iframe> elements.  For OOPIF,
+// when a parent frame changes this attribute, the change is replicated to the
+// child frame and its proxies.
+//
+// The test checks the following cases:
+//
+// 1. Static attribute (<iframe allowfullscreen>)
+// 2. Attribute injected dynamically via JavaScript
+// 3. Multiple levels of nesting (A-embed-B-embed-C)
+// 4. Cross-site subframe navigation
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, AllowFullscreen) {
+  // Load a page with a cross-site <iframe allowFullscreen>.
+  GURL url_1(embedded_test_server()->GetURL(
+      "a.com", "/page_with_allowfullscreen_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+
+  WebContentsImpl* contents = web_contents();
+  FrameTreeNode* root = contents->GetFrameTree()->root();
+
+  // Helper to check if a frame is allowed to go fullscreen on the renderer
+  // side.
+  auto is_fullscreen_allowed = [](FrameTreeNode* ftn) {
+    bool fullscreen_allowed = false;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(
+        ftn->current_frame_host(),
+        "window.domAutomationController.send(document.webkitFullscreenEnabled)",
+        &fullscreen_allowed));
+    return fullscreen_allowed;
+  };
+
+  EXPECT_TRUE(is_fullscreen_allowed(root));
+  EXPECT_TRUE(is_fullscreen_allowed(root->child_at(0)));
+  EXPECT_TRUE(root->child_at(0)->frame_owner_properties().allowFullscreen);
+
+  // Now navigate to a page with two <iframe>'s, both without allowFullscreen.
+  GURL url_2(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b,c)"));
+  EXPECT_TRUE(NavigateToURL(shell(), url_2));
+  EXPECT_FALSE(root->child_at(0)->frame_owner_properties().allowFullscreen);
+  EXPECT_FALSE(root->child_at(1)->frame_owner_properties().allowFullscreen);
+
+  EXPECT_TRUE(is_fullscreen_allowed(root));
+  EXPECT_FALSE(is_fullscreen_allowed(root->child_at(0)));
+  EXPECT_FALSE(is_fullscreen_allowed(root->child_at(1)));
+
+  // Dynamically enable fullscreen for first subframe and check that the
+  // fullscreen property was updated on the FrameTreeNode.
+  EXPECT_TRUE(ExecuteScript(
+      root->current_frame_host(),
+      "document.getElementById('child-0').allowFullscreen='true'"));
+  EXPECT_TRUE(root->child_at(0)->frame_owner_properties().allowFullscreen);
+
+  // Check that the first subframe is now allowed to go fullscreen.  Other
+  // frames shouldn't be affected.
+  EXPECT_TRUE(is_fullscreen_allowed(root));
+  EXPECT_TRUE(is_fullscreen_allowed(root->child_at(0)));
+  EXPECT_FALSE(is_fullscreen_allowed(root->child_at(1)));
+
+  // Now navigate to a page with two levels of nesting.
+  GURL url_3(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
+  EXPECT_TRUE(NavigateToURL(shell(), url_3));
+
+  EXPECT_TRUE(is_fullscreen_allowed(root));
+  EXPECT_FALSE(is_fullscreen_allowed(root->child_at(0)));
+  EXPECT_FALSE(is_fullscreen_allowed(root->child_at(0)->child_at(0)));
+
+  // Dynamically enable fullscreen for bottom subframe.
+  EXPECT_TRUE(ExecuteScript(
+      root->child_at(0)->current_frame_host(),
+      "document.getElementById('child-0').allowFullscreen='true'"));
+
+  // This still shouldn't allow the bottom child to go fullscreen, since the
+  // top frame hasn't allowed fullscreen for the middle frame.
+  EXPECT_TRUE(is_fullscreen_allowed(root));
+  EXPECT_FALSE(is_fullscreen_allowed(root->child_at(0)));
+  EXPECT_FALSE(is_fullscreen_allowed(root->child_at(0)->child_at(0)));
+
+  // Now allow fullscreen for the middle frame.
+  EXPECT_TRUE(ExecuteScript(
+      root->current_frame_host(),
+      "document.getElementById('child-0').allowFullscreen='true'"));
+
+  // All frames should be allowed to go fullscreen now.
+  EXPECT_TRUE(is_fullscreen_allowed(root));
+  EXPECT_TRUE(is_fullscreen_allowed(root->child_at(0)));
+  EXPECT_TRUE(is_fullscreen_allowed(root->child_at(0)->child_at(0)));
+
+  // Cross-site navigation should preserve the fullscreen flags.
+  NavigateFrameToURL(root->child_at(0)->child_at(0),
+                     embedded_test_server()->GetURL("d.com", "/title1.html"));
+  EXPECT_TRUE(is_fullscreen_allowed(root->child_at(0)->child_at(0)));
+}
+
 }  // namespace content

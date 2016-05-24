@@ -18,22 +18,38 @@ struct WebFrameOwnerProperties {
     ScrollingMode scrollingMode;
     int marginWidth;
     int marginHeight;
+    bool allowFullscreen;
 
     WebFrameOwnerProperties()
         : scrollingMode(ScrollingMode::Auto)
         , marginWidth(-1)
         , marginHeight(-1)
+        , allowFullscreen(false)
     {
     }
 
 #if INSIDE_BLINK
-    WebFrameOwnerProperties(ScrollbarMode scrollingMode, int marginWidth, int marginHeight)
+    WebFrameOwnerProperties(ScrollbarMode scrollingMode, int marginWidth, int marginHeight, bool allowFullscreen)
         : scrollingMode(static_cast<ScrollingMode>(scrollingMode))
         , marginWidth(marginWidth)
         , marginHeight(marginHeight)
+        , allowFullscreen(allowFullscreen)
     {
     }
 #endif
+
+    bool operator==(const WebFrameOwnerProperties& other) const
+    {
+        return scrollingMode == other.scrollingMode
+            && marginWidth == other.marginWidth
+            && marginHeight == other.marginHeight
+            && allowFullscreen == other.allowFullscreen;
+    }
+
+    bool operator!=(const WebFrameOwnerProperties& other) const
+    {
+        return !(*this == other);
+    }
 };
 
 } // namespace blink

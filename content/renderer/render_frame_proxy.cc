@@ -269,6 +269,8 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnResetContentSecurityPolicy)
     IPC_MESSAGE_HANDLER(FrameMsg_EnforceStrictMixedContentChecking,
                         OnEnforceStrictMixedContentChecking)
+    IPC_MESSAGE_HANDLER(FrameMsg_SetFrameOwnerProperties,
+                        OnSetFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateOrigin, OnDidUpdateOrigin)
     IPC_MESSAGE_HANDLER(InputMsg_SetFocus, OnSetPageFocus)
     IPC_MESSAGE_HANDLER(FrameMsg_SetFocusedFrame, OnSetFocusedFrame)
@@ -352,6 +354,11 @@ void RenderFrameProxy::OnEnforceStrictMixedContentChecking(
     bool should_enforce) {
   web_frame_->setReplicatedShouldEnforceStrictMixedContentChecking(
       should_enforce);
+}
+
+void RenderFrameProxy::OnSetFrameOwnerProperties(
+    const blink::WebFrameOwnerProperties& properties) {
+  web_frame_->setFrameOwnerProperties(properties);
 }
 
 void RenderFrameProxy::OnDidUpdateOrigin(

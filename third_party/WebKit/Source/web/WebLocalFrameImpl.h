@@ -202,7 +202,6 @@ public:
     WebAutofillClient* autofillClient() override;
     void setDevToolsAgentClient(WebDevToolsAgentClient*) override;
     WebDevToolsAgent* devToolsAgent() override;
-    void setFrameOwnerProperties(const WebFrameOwnerProperties&) override;
     WebLocalFrameImpl* localRoot() override;
     WebLocalFrame* traversePreviousLocal(bool wrap) const override;
     WebLocalFrame* traverseNextLocal(bool wrap) const override;
@@ -251,7 +250,7 @@ public:
     void willDetachParent();
 
     static WebLocalFrameImpl* create(WebTreeScopeType, WebFrameClient*, WebFrame* opener);
-    static WebLocalFrameImpl* createProvisional(WebFrameClient*, WebRemoteFrame*, WebSandboxFlags, const WebFrameOwnerProperties&);
+    static WebLocalFrameImpl* createProvisional(WebFrameClient*, WebRemoteFrame*, WebSandboxFlags);
     ~WebLocalFrameImpl() override;
 
     LocalFrame* createChildFrame(const FrameLoadRequest&, const AtomicString& name, HTMLFrameOwnerElement*);

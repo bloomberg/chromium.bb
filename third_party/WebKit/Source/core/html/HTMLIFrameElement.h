@@ -59,8 +59,11 @@ private:
 
     ReferrerPolicy referrerPolicyAttribute() override;
 
+    bool allowFullscreen() const override { return m_allowFullscreen; }
+
     AtomicString m_name;
     bool m_didLoadNonEmptyDocument;
+    bool m_allowFullscreen;
     Member<HTMLIFrameElementSandbox> m_sandbox;
 
     ReferrerPolicy m_referrerPolicy;

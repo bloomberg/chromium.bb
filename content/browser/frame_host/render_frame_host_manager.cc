@@ -972,6 +972,36 @@ void RenderFrameHostManager::OnEnforceStrictMixedContentChecking(
   }
 }
 
+void RenderFrameHostManager::OnDidUpdateFrameOwnerProperties(
+    const blink::WebFrameOwnerProperties& properties) {
+  if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
+    return;
+
+  // WebFrameOwnerProperties exist only for frames that have a parent.
+  CHECK(frame_tree_node_->parent());
+  SiteInstance* parent_instance =
+      frame_tree_node_->parent()->current_frame_host()->GetSiteInstance();
+
+  // Notify the RenderFrame if it lives in a different process from its parent.
+  if (render_frame_host_->GetSiteInstance() != parent_instance) {
+    render_frame_host_->Send(new FrameMsg_SetFrameOwnerProperties(
+        render_frame_host_->GetRoutingID(), properties));
+  }
+
+  // Notify this frame's proxies if they live in a different process from its
+  // parent.  This is only currently needed for the allowFullscreen property,
+  // since that can be queried on RemoteFrame ancestors.
+  //
+  // TODO(alexmos): It would be sufficient to only send this update to proxies
+  // in the current FrameTree.
+  for (const auto& pair : proxy_hosts_) {
+    if (pair.second->GetSiteInstance() != parent_instance) {
+      pair.second->Send(new FrameMsg_SetFrameOwnerProperties(
+          pair.second->GetRoutingID(), properties));
+    }
+  }
+}
+
 void RenderFrameHostManager::OnDidUpdateOrigin(
     const url::Origin& origin,
     bool is_potentially_trustworthy_unique_origin) {

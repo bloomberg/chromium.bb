@@ -163,6 +163,7 @@ IPC_STRUCT_TRAITS_BEGIN(blink::WebFrameOwnerProperties)
   IPC_STRUCT_TRAITS_MEMBER(scrollingMode)
   IPC_STRUCT_TRAITS_MEMBER(marginWidth)
   IPC_STRUCT_TRAITS_MEMBER(marginHeight)
+  IPC_STRUCT_TRAITS_MEMBER(allowFullscreen)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::TransitionElement)

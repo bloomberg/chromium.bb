@@ -84,6 +84,7 @@ public:
     ScrollbarMode scrollingMode() const override { return ScrollbarAuto; }
     int marginWidth() const override { return -1; }
     int marginHeight() const override { return -1; }
+    bool allowFullscreen() const override { return false; }
 
     DECLARE_VIRTUAL_TRACE();
 

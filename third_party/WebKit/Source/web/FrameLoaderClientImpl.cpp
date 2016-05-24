@@ -936,7 +936,7 @@ void FrameLoaderClientImpl::didChangeFrameOwnerProperties(HTMLFrameElementBase* 
     if (!m_webFrame->client())
         return;
 
-    m_webFrame->client()->didChangeFrameOwnerProperties(WebFrame::fromFrame(frameElement->contentFrame()), WebFrameOwnerProperties(frameElement->scrollingMode(), frameElement->marginWidth(), frameElement->marginHeight()));
+    m_webFrame->client()->didChangeFrameOwnerProperties(WebFrame::fromFrame(frameElement->contentFrame()), WebFrameOwnerProperties(frameElement->scrollingMode(), frameElement->marginWidth(), frameElement->marginHeight(), frameElement->allowFullscreen()));
 }
 
 void FrameLoaderClientImpl::dispatchWillOpenWebSocket(WebSocketHandle* handle)

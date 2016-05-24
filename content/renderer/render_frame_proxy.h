@@ -169,6 +169,8 @@ class CONTENT_EXPORT RenderFrameProxy
   void OnAddContentSecurityPolicy(const ContentSecurityPolicyHeader& header);
   void OnResetContentSecurityPolicy();
   void OnEnforceStrictMixedContentChecking(bool should_enforce);
+  void OnSetFrameOwnerProperties(
+      const blink::WebFrameOwnerProperties& properties);
   void OnDidUpdateOrigin(const url::Origin& origin,
                          bool is_potentially_trustworthy_unique_origin);
   void OnSetPageFocus(bool is_focused);

@@ -173,6 +173,13 @@ public:
     // Returns true if the frame is enforcing strict mixed content checking.
     BLINK_EXPORT bool shouldEnforceStrictMixedContentChecking() const;
 
+    // Updates this frame's FrameOwner properties, such as scrolling, margin,
+    // or allowfullscreen.  This is used when this frame's parent is in
+    // another process and it dynamically updates these properties.
+    // TODO(dcheng): Currently, the update only takes effect on next frame
+    // navigation.  This matches the in-process frame behavior.
+    BLINK_EXPORT void setFrameOwnerProperties(const WebFrameOwnerProperties&);
+
     // Geometry -----------------------------------------------------------
 
     // NOTE: These routines do not force page layout so their results may

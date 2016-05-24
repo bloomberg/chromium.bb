@@ -1611,23 +1611,15 @@ void RenderFrameHostImpl::OnDidChangeSandboxFlags(
 
 void RenderFrameHostImpl::OnDidChangeFrameOwnerProperties(
     int32_t frame_routing_id,
-    const blink::WebFrameOwnerProperties& frame_owner_properties) {
+    const blink::WebFrameOwnerProperties& properties) {
   FrameTreeNode* child = FindAndVerifyChild(
       frame_routing_id, bad_message::RFH_OWNER_PROPERTY);
   if (!child)
     return;
 
-  child->set_frame_owner_properties(frame_owner_properties);
+  child->set_frame_owner_properties(properties);
 
-  // Notify the RenderFrame if it lives in a different process from its parent.
-  // These properties only affect the RenderFrame and live in its parent
-  // (HTMLFrameOwnerElement). Therefore, we do not need to notify this frame's
-  // proxies.
-  RenderFrameHost* child_rfh = child->current_frame_host();
-  if (child_rfh->GetSiteInstance() != GetSiteInstance()) {
-    child_rfh->Send(new FrameMsg_SetFrameOwnerProperties(
-        child_rfh->GetRoutingID(), frame_owner_properties));
-  }
+  child->render_manager()->OnDidUpdateFrameOwnerProperties(properties);
 }
 
 void RenderFrameHostImpl::OnUpdateTitle(

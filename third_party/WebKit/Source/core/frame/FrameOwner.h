@@ -38,6 +38,7 @@ public:
     virtual ScrollbarMode scrollingMode() const = 0;
     virtual int marginWidth() const = 0;
     virtual int marginHeight() const = 0;
+    virtual bool allowFullscreen() const = 0;
 };
 
 class CORE_EXPORT DummyFrameOwner : public GarbageCollectedFinalized<DummyFrameOwner>, public FrameOwner {
@@ -61,6 +62,7 @@ public:
     ScrollbarMode scrollingMode() const override { return ScrollbarAuto; }
     int marginWidth() const override { return -1; }
     int marginHeight() const override { return -1; }
+    bool allowFullscreen() const override { return false; }
 };
 
 } // namespace blink

@@ -37,10 +37,12 @@ public:
     ScrollbarMode scrollingMode() const override { return m_scrolling; }
     int marginWidth() const override { return m_marginWidth; }
     int marginHeight() const override { return m_marginHeight; }
+    bool allowFullscreen() const override { return m_allowFullscreen; }
 
     void setScrollingMode(WebFrameOwnerProperties::ScrollingMode);
     void setMarginWidth(int marginWidth) { m_marginWidth = marginWidth; }
     void setMarginHeight(int marginHeight) { m_marginHeight = marginHeight; }
+    void setAllowFullscreen(bool allowFullscreen) { m_allowFullscreen = allowFullscreen; }
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -52,6 +54,7 @@ private:
     ScrollbarMode m_scrolling;
     int m_marginWidth;
     int m_marginHeight;
+    bool m_allowFullscreen;
 };
 
 DEFINE_TYPE_CASTS(RemoteFrameOwner, FrameOwner, owner, owner->isRemote(), owner.isRemote());

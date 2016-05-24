@@ -55,6 +55,8 @@ protected:
     void setMarginWidth(int);
     void setMarginHeight(int);
 
+    void frameOwnerPropertiesChanged();
+
 private:
     bool supportsFocus() const final;
     void setFocus(bool) final;
@@ -68,8 +70,6 @@ private:
     void setLocation(const String&);
     void setNameAndOpenURL();
     void openURL(bool replaceCurrentItem = true);
-
-    void frameOwnerPropertiesChanged();
 
     ScrollbarMode m_scrollingMode;
     int m_marginWidth;

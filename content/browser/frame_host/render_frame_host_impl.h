@@ -657,7 +657,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                blink::WebSandboxFlags flags);
   void OnDidChangeFrameOwnerProperties(
       int32_t frame_routing_id,
-      const blink::WebFrameOwnerProperties& frame_owner_properties);
+      const blink::WebFrameOwnerProperties& properties);
   void OnUpdateTitle(const base::string16& title,
                      blink::WebTextDirection title_direction);
   void OnUpdateEncoding(const std::string& encoding);

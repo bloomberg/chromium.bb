@@ -15,6 +15,7 @@ RemoteFrameOwner::RemoteFrameOwner(SandboxFlags flags, const WebFrameOwnerProper
     , m_scrolling(static_cast<ScrollbarMode>(frameOwnerProperties.scrollingMode))
     , m_marginWidth(frameOwnerProperties.marginWidth)
     , m_marginHeight(frameOwnerProperties.marginHeight)
+    , m_allowFullscreen(frameOwnerProperties.allowFullscreen)
 {
 }
 

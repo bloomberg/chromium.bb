@@ -1369,9 +1369,9 @@ WebLocalFrame* WebLocalFrame::create(WebTreeScopeType scope, WebFrameClient* cli
     return WebLocalFrameImpl::create(scope, client, opener);
 }
 
-WebLocalFrame* WebLocalFrame::createProvisional(WebFrameClient* client, WebRemoteFrame* oldWebFrame, WebSandboxFlags flags, const WebFrameOwnerProperties& frameOwnerProperties)
+WebLocalFrame* WebLocalFrame::createProvisional(WebFrameClient* client, WebRemoteFrame* oldWebFrame, WebSandboxFlags flags)
 {
-    return WebLocalFrameImpl::createProvisional(client, oldWebFrame, flags, frameOwnerProperties);
+    return WebLocalFrameImpl::createProvisional(client, oldWebFrame, flags);
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::create(WebTreeScopeType scope, WebFrameClient* client, WebFrame* opener)
@@ -1381,7 +1381,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::create(WebTreeScopeType scope, WebFrameCli
     return frame;
 }
 
-WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(WebFrameClient* client, WebRemoteFrame* oldWebFrame, WebSandboxFlags flags, const WebFrameOwnerProperties& frameOwnerProperties)
+WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(WebFrameClient* client, WebRemoteFrame* oldWebFrame, WebSandboxFlags flags)
 {
     WebLocalFrameImpl* webFrame = new WebLocalFrameImpl(oldWebFrame, client);
     Frame* oldFrame = oldWebFrame->toImplBase()->frame();
@@ -1401,12 +1401,8 @@ WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(WebFrameClient* client, 
 
     frame->setOwner(oldFrame->owner());
 
-    if (frame->owner() && frame->owner()->isRemote()) {
+    if (frame->owner() && frame->owner()->isRemote())
         toRemoteFrameOwner(frame->owner())->setSandboxFlags(static_cast<SandboxFlags>(flags));
-        // Since a remote frame doesn't get the notifications about frame owner
-        // property modifications, we need to sync up those properties here.
-        webFrame->setFrameOwnerProperties(frameOwnerProperties);
-    }
 
     // We must call init() after m_frame is assigned because it is referenced
     // during init(). Note that this may dispatch JS events; the frame may be
@@ -1511,7 +1507,7 @@ LocalFrame* WebLocalFrameImpl::createChildFrame(const FrameLoadRequest& request,
     WebTreeScopeType scope = frame()->document() == ownerElement->treeScope()
         ? WebTreeScopeType::Document
         : WebTreeScopeType::Shadow;
-    WebFrameOwnerProperties ownerProperties(ownerElement->scrollingMode(), ownerElement->marginWidth(), ownerElement->marginHeight());
+    WebFrameOwnerProperties ownerProperties(ownerElement->scrollingMode(), ownerElement->marginWidth(), ownerElement->marginHeight(), ownerElement->allowFullscreen());
     // FIXME: Using subResourceAttributeName as fallback is not a perfect
     // solution. subResourceAttributeName returns just one attribute name. The
     // element might not have the attribute, and there might be other attributes
@@ -1798,17 +1794,6 @@ void WebLocalFrameImpl::setDevToolsAgentClient(WebDevToolsAgentClient* devToolsC
 WebDevToolsAgent* WebLocalFrameImpl::devToolsAgent()
 {
     return m_devToolsAgent.get();
-}
-
-void WebLocalFrameImpl::setFrameOwnerProperties(const WebFrameOwnerProperties& frameOwnerProperties)
-{
-    // At the moment, this is only used to replicate frame owner properties
-    // for frames with a remote owner.
-    FrameOwner* owner = frame()->owner();
-    DCHECK(owner);
-    toRemoteFrameOwner(owner)->setScrollingMode(frameOwnerProperties.scrollingMode);
-    toRemoteFrameOwner(owner)->setMarginWidth(frameOwnerProperties.marginWidth);
-    toRemoteFrameOwner(owner)->setMarginHeight(frameOwnerProperties.marginHeight);
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::localRoot()

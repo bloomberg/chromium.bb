@@ -439,6 +439,13 @@ class CONTENT_EXPORT RenderFrameHostManager
   // frame proxies when the frame changes its setting.
   void OnEnforceStrictMixedContentChecking(bool should_enforce);
 
+  // Called on a frame to notify it that its out-of-process parent frame
+  // changed a property (such as allowFullscreen) on its <iframe> element.
+  // Sends updated WebFrameOwnerProperties to the RenderFrame and to all
+  // proxies, skipping the parent process.
+  void OnDidUpdateFrameOwnerProperties(
+      const blink::WebFrameOwnerProperties& properties);
+
   // Send updated origin to all frame proxies when the frame navigates to a new
   // origin.
   void OnDidUpdateOrigin(const url::Origin& origin,
