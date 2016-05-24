@@ -23,6 +23,13 @@ char kGetDocumentBodyJavaScript[] =
 namespace web {
 
 id<GREYMatcher> webViewContainingText(NSString* text, web::WebState* webState) {
+  return [GREYMatchers
+      matcherForWebViewContainingText:base::SysNSStringToUTF8(text)
+                           inWebState:webState];
+}
+
+id<GREYMatcher> webViewContainingText(const std::string& text,
+                                      web::WebState* webState) {
   return
       [GREYMatchers matcherForWebViewContainingText:text inWebState:webState];
 }
@@ -31,7 +38,7 @@ id<GREYMatcher> webViewContainingText(NSString* text, web::WebState* webState) {
 
 @implementation GREYMatchers (WebViewAdditions)
 
-+ (id<GREYMatcher>)matcherForWebViewContainingText:(NSString*)text
++ (id<GREYMatcher>)matcherForWebViewContainingText:(const std::string&)text
                                         inWebState:(web::WebState*)webState {
   MatchesBlock matches = ^BOOL(UIView* view) {
     if (![view isKindOfClass:[WKWebView class]]) {
@@ -52,8 +59,7 @@ id<GREYMatcher> webViewContainingText(NSString* text, web::WebState* webState) {
             std::string response;
             if (value && value->IsType(base::Value::TYPE_STRING) &&
                 value->GetAsString(&response)) {
-              didSucceed = response.find(base::SysNSStringToUTF8(text)) !=
-                           std::string::npos;
+              didSucceed = response.find(text) != std::string::npos;
             }
           }));
       base::test::ios::SpinRunLoopWithMaxDelay(
@@ -63,8 +69,8 @@ id<GREYMatcher> webViewContainingText(NSString* text, web::WebState* webState) {
   };
 
   DescribeToBlock describe = ^(id<GREYDescription> description) {
-    [description
-        appendText:[NSString stringWithFormat:@"web view containing %@", text]];
+    [description appendText:@"web view containing "];
+    [description appendText:base::SysUTF8ToNSString(text)];
   };
 
   return [[[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches

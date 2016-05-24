@@ -5,6 +5,7 @@
 #import "ios/web/shell/test/earl_grey/shell_matchers.h"
 
 #import "base/mac/foundation_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/test/ios/wait_util.h"
 #include "ios/testing/earl_grey/wait_util.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -15,10 +16,20 @@
 namespace web {
 
 id<GREYMatcher> webViewContainingText(NSString* text) {
-  return [GREYMatchers matcherForWebViewContainingText:text];
+  return [GREYMatchers
+      matcherForWebViewContainingText:base::SysNSStringToUTF8(text)];
 }
 
 id<GREYMatcher> addressFieldText(NSString* text) {
+  return [GREYMatchers
+      matcherForAddressFieldEqualToText:base::SysNSStringToUTF8(text)];
+}
+
+id<GREYMatcher> webViewContainingText(const std::string& text) {
+  return [GREYMatchers matcherForWebViewContainingText:text];
+}
+
+id<GREYMatcher> addressFieldText(const std::string& text) {
   return [GREYMatchers matcherForAddressFieldEqualToText:text];
 }
 
@@ -38,12 +49,12 @@ id<GREYMatcher> addressField() {
 
 @implementation GREYMatchers (WebShellAdditions)
 
-+ (id<GREYMatcher>)matcherForWebViewContainingText:(NSString*)text {
++ (id<GREYMatcher>)matcherForWebViewContainingText:(const std::string&)text {
   web::WebState* webState = web::shell_test_util::GetCurrentWebState();
   return web::webViewContainingText(text, webState);
 }
 
-+ (id<GREYMatcher>)matcherForAddressFieldEqualToText:(NSString*)text {
++ (id<GREYMatcher>)matcherForAddressFieldEqualToText:(const std::string&)text {
   MatchesBlock matches = ^BOOL(UIView* view) {
     if (![view isKindOfClass:[UITextField class]]) {
       return NO;
@@ -53,11 +64,10 @@ id<GREYMatcher> addressField() {
       return NO;
     }
     UITextField* textField = base::mac::ObjCCastStrict<UITextField>(view);
-
     NSDate* deadline =
         [NSDate dateWithTimeIntervalSinceNow:testing::kWaitForUIElementTimeout];
     while ([[NSDate date] compare:deadline] != NSOrderedDescending) {
-      if ([textField.text isEqualToString:text]) {
+      if ([textField.text isEqualToString:base::SysUTF8ToNSString(text)]) {
         return YES;
       }
       base::test::ios::SpinRunLoopWithMaxDelay(
@@ -68,7 +78,7 @@ id<GREYMatcher> addressField() {
 
   DescribeToBlock describe = ^(id<GREYDescription> description) {
     [description appendText:@"address field containing "];
-    [description appendText:text];
+    [description appendText:base::SysUTF8ToNSString(text)];
   };
 
   return [[[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
