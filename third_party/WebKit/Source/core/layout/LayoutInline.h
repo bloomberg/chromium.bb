@@ -32,6 +32,8 @@
 
 namespace blink {
 
+class LayoutBlockFlow;
+
 // LayoutInline is the LayoutObject associated with display: inline.
 // This is called an "inline box" in CSS 2.1.
 // http://www.w3.org/TR/CSS2/visuren.html#inline-boxes
@@ -215,9 +217,9 @@ private:
 
     void moveChildrenToIgnoringContinuation(LayoutInline* to, LayoutObject* startChild);
 
-    void splitInlines(LayoutBlock* fromBlock, LayoutBlock* toBlock, LayoutBlock* middleBlock,
+    void splitInlines(LayoutBlockFlow* fromBlock, LayoutBlockFlow* toBlock, LayoutBlockFlow* middleBlock,
         LayoutObject* beforeChild, LayoutBoxModelObject* oldCont);
-    void splitFlow(LayoutObject* beforeChild, LayoutBlock* newBlockBox,
+    void splitFlow(LayoutObject* beforeChild, LayoutBlockFlow* newBlockBox,
         LayoutObject* newChild, LayoutBoxModelObject* oldCont);
 
     void layout() final { ASSERT_NOT_REACHED(); } // Do nothing for layout()

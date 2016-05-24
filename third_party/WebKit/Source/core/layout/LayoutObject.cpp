@@ -2141,7 +2141,7 @@ void LayoutObject::propagateStyleToAnonymousChildren()
 
         // Preserve the position style of anonymous block continuations as they can have relative position when
         // they contain block descendants of relative positioned inlines.
-        if (child->isInFlowPositioned() && child->isLayoutBlock() && toLayoutBlock(child)->isAnonymousBlockContinuation())
+        if (child->isInFlowPositioned() && child->isLayoutBlockFlow() && toLayoutBlockFlow(child)->isAnonymousBlockContinuation())
             newStyle->setPosition(child->style()->position());
 
         updateAnonymousChildStyle(*child, *newStyle);
@@ -2865,7 +2865,7 @@ void LayoutObject::destroyAndCleanupAnonymousWrappers()
     LayoutObject* destroyRoot = this;
     for (LayoutObject* destroyRootParent = destroyRoot->parent(); destroyRootParent && destroyRootParent->isAnonymous(); destroyRoot = destroyRootParent, destroyRootParent = destroyRootParent->parent()) {
         // Anonymous block continuations are tracked and destroyed elsewhere (see the bottom of LayoutBlock::removeChild)
-        if (destroyRootParent->isLayoutBlock() && toLayoutBlock(destroyRootParent)->isAnonymousBlockContinuation())
+        if (destroyRootParent->isLayoutBlockFlow() && toLayoutBlockFlow(destroyRootParent)->isAnonymousBlockContinuation())
             break;
         // A flow thread is tracked by its containing block. Whether its children are removed or not is irrelevant.
         if (destroyRootParent->isLayoutFlowThread())
@@ -3143,8 +3143,8 @@ void LayoutObject::getTextDecorations(unsigned decorations, AppliedTextDecoratio
         if (curr->isRubyText())
             return;
         curr = curr->parent();
-        if (curr && curr->isAnonymousBlock() && toLayoutBlock(curr)->continuation())
-            curr = toLayoutBlock(curr)->continuation();
+        if (curr && curr->isAnonymousBlock() && curr->isLayoutBlockFlow() && toLayoutBlockFlow(curr)->continuation())
+            curr = toLayoutBlockFlow(curr)->continuation();
     } while (curr && decorations && (!quirksMode || !curr->node() || (!isHTMLAnchorElement(*curr->node()) && !isHTMLFontElement(*curr->node()))));
 
     // If we bailed out, use the element we bailed out at (typically a <font> or <a> element).

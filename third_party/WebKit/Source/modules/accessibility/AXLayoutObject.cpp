@@ -1694,8 +1694,8 @@ Element* AXLayoutObject::anchorElement() const
 
     // Search up the layout tree for a LayoutObject with a DOM node. Defer to an earlier continuation, though.
     for (currLayoutObject = m_layoutObject; currLayoutObject && !currLayoutObject->node(); currLayoutObject = currLayoutObject->parent()) {
-        if (currLayoutObject->isAnonymousBlock()) {
-            LayoutObject* continuation = toLayoutBlock(currLayoutObject)->continuation();
+        if (currLayoutObject->isAnonymousBlock() && currLayoutObject->isLayoutBlockFlow()) {
+            LayoutObject* continuation = toLayoutBlockFlow(currLayoutObject)->continuation();
             if (continuation)
                 return cache.getOrCreate(continuation)->anchorElement();
         }

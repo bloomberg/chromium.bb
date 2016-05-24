@@ -462,7 +462,7 @@ void LayoutBoxModelObject::addOutlineRectsForNormalChildren(Vector<LayoutRect>& 
         // Outline of an element continuation or anonymous block continuation is added when we iterate the continuation chain.
         // See LayoutBlock::addOutlineRects() and LayoutInline::addOutlineRects().
         if (child->isElementContinuation()
-            || (child->isLayoutBlock() && toLayoutBlock(child)->isAnonymousBlockContinuation()))
+            || (child->isLayoutBlockFlow() && toLayoutBlockFlow(child)->isAnonymousBlockContinuation()))
             continue;
 
         addOutlineRectsForDescendant(*child, rects, additionalOffset, includeBlockOverflows);

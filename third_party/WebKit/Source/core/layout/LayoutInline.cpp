@@ -345,8 +345,8 @@ void LayoutInline::moveChildrenToIgnoringContinuation(LayoutInline* to, LayoutOb
     }
 }
 
-void LayoutInline::splitInlines(LayoutBlock* fromBlock, LayoutBlock* toBlock,
-    LayoutBlock* middleBlock, LayoutObject* beforeChild, LayoutBoxModelObject* oldCont)
+void LayoutInline::splitInlines(LayoutBlockFlow* fromBlock, LayoutBlockFlow* toBlock,
+    LayoutBlockFlow* middleBlock, LayoutObject* beforeChild, LayoutBoxModelObject* oldCont)
 {
     ASSERT(isDescendantOf(fromBlock));
 
@@ -426,15 +426,14 @@ void LayoutInline::splitInlines(LayoutBlock* fromBlock, LayoutBlock* toBlock,
     moveChildrenToIgnoringContinuation(cloneInline, beforeChild);
 }
 
-void LayoutInline::splitFlow(LayoutObject* beforeChild, LayoutBlock* newBlockBox,
+void LayoutInline::splitFlow(LayoutObject* beforeChild, LayoutBlockFlow* newBlockBox,
     LayoutObject* newChild, LayoutBoxModelObject* oldCont)
 {
-    LayoutBlockFlow* containingBlockFlow = toLayoutBlockFlow(containingBlock());
-    LayoutBlock* pre = nullptr;
-    LayoutBlock* block = containingBlockFlow;
+    LayoutBlockFlow* block = toLayoutBlockFlow(containingBlock());
+    LayoutBlockFlow* pre = nullptr;
 
     // Delete our line boxes before we do the inline split into continuations.
-    containingBlockFlow->deleteLineBoxTree();
+    block->deleteLineBoxTree();
 
     bool reusedAnonymousBlock = false;
     if (block->isAnonymousBlock()) {
@@ -443,17 +442,17 @@ void LayoutInline::splitFlow(LayoutObject* beforeChild, LayoutBlock* newBlockBox
             && outerContainingBlock->isLayoutBlockFlow()
             && !outerContainingBlock->createsAnonymousWrapper()) {
             // We can reuse this block and make it the preBlock of the next continuation.
-            containingBlockFlow->removePositionedObjects(nullptr);
-            containingBlockFlow->removeFloatingObjects();
-            pre = containingBlockFlow;
-            block = outerContainingBlock;
+            block->removePositionedObjects(nullptr);
+            block->removeFloatingObjects();
+            pre = block;
+            block = toLayoutBlockFlow(outerContainingBlock);
             reusedAnonymousBlock = true;
         }
     }
     if (!reusedAnonymousBlock)
-        pre = block->createAnonymousBlock(); // No anonymous block available for use. Make one.
+        pre = toLayoutBlockFlow(block->createAnonymousBlock()); // No anonymous block available for use. Make one.
 
-    LayoutBlock* post = toLayoutBlock(pre->createAnonymousBoxWithSameTypeAs(block));
+    LayoutBlockFlow* post = toLayoutBlockFlow(pre->createAnonymousBlock());
 
     LayoutObject* boxFirst = !reusedAnonymousBlock ? block->firstChild() : pre->nextSibling();
     if (!reusedAnonymousBlock)
@@ -1135,7 +1134,7 @@ void LayoutInline::updateDragState(bool dragOn)
 void LayoutInline::childBecameNonInline(LayoutObject* child)
 {
     // We have to split the parent flow.
-    LayoutBlock* newBox = containingBlock()->createAnonymousBlock();
+    LayoutBlockFlow* newBox = toLayoutBlockFlow(containingBlock()->createAnonymousBlock());
     LayoutBoxModelObject* oldContinuation = continuation();
     setContinuation(newBox);
     LayoutObject* beforeChild = child->nextSibling();

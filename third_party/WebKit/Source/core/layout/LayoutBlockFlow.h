@@ -158,6 +158,12 @@ public:
 
     void removeFloatingObjects();
 
+    LayoutBoxModelObject* virtualContinuation() const final { return continuation(); }
+    bool isAnonymousBlockContinuation() const { return continuation() && isAnonymousBlock(); }
+
+    using LayoutBoxModelObject::continuation;
+    using LayoutBoxModelObject::setContinuation;
+
     LayoutInline* inlineElementContinuation() const;
 
     void addChild(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) override;

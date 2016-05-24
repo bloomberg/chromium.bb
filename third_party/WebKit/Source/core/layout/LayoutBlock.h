@@ -190,12 +190,6 @@ public:
 
     void setSelectionState(SelectionState) override;
 
-    LayoutBoxModelObject* virtualContinuation() const final { return continuation(); }
-    bool isAnonymousBlockContinuation() const { return continuation() && isAnonymousBlock(); }
-
-    using LayoutBoxModelObject::continuation;
-    using LayoutBoxModelObject::setContinuation;
-
     static LayoutBlock* createAnonymousWithParentAndDisplay(const LayoutObject*, EDisplay = BLOCK);
     LayoutBlock* createAnonymousBlock(EDisplay display = BLOCK) const { return createAnonymousWithParentAndDisplay(this, display); }
 

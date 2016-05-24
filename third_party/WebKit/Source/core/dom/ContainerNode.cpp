@@ -859,7 +859,7 @@ static inline LayoutObject* endOfContinuations(LayoutObject* layoutObject)
     LayoutObject* prev = nullptr;
     LayoutObject* cur = layoutObject;
 
-    if (!cur->isLayoutInline() && !cur->isLayoutBlock())
+    if (!cur->isLayoutInline() && !cur->isLayoutBlockFlow())
         return nullptr;
 
     while (cur) {
@@ -867,7 +867,7 @@ static inline LayoutObject* endOfContinuations(LayoutObject* layoutObject)
         if (cur->isLayoutInline())
             cur = toLayoutInline(cur)->continuation();
         else
-            cur = toLayoutBlock(cur)->continuation();
+            cur = toLayoutBlockFlow(cur)->continuation();
     }
 
     return prev;
