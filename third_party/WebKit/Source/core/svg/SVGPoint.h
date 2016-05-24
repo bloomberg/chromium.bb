@@ -40,7 +40,7 @@ namespace blink {
 class AffineTransform;
 class SVGPointTearOff;
 
-class SVGPoint : public SVGPropertyHelper<SVGPoint> {
+class SVGPoint final : public SVGPropertyHelper<SVGPoint> {
 public:
     typedef SVGPointTearOff TearOffType;
 

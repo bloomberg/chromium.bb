@@ -60,6 +60,7 @@ public:
     float calculateDistance(SVGPropertyBase* to, SVGElement*) override;
 
     static AnimatedPropertyType classType() { return AnimatedNumberList; }
+    AnimatedPropertyType type() const override { return classType(); }
 
     Vector<float> toFloatVector() const;
 

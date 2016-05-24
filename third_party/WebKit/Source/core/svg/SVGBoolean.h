@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class SVGBoolean : public SVGPropertyHelper<SVGBoolean> {
+class SVGBoolean final : public SVGPropertyHelper<SVGBoolean> {
 public:
     // SVGBoolean does not have a tear-off type.
     typedef void TearOffType;

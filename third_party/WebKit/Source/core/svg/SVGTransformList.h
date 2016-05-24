@@ -68,6 +68,7 @@ public:
     float calculateDistance(SVGPropertyBase* to, SVGElement*) override;
 
     static AnimatedPropertyType classType() { return AnimatedTransformList; }
+    AnimatedPropertyType type() const override { return classType(); }
 
 private:
     SVGTransformList();

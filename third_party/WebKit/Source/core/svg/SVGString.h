@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class SVGString : public SVGPropertyBase {
+class SVGString final : public SVGPropertyBase {
 public:
     // SVGString does not have a tear-off type.
     typedef void TearOffType;
@@ -73,18 +73,11 @@ public:
     void setValue(const String& value) { m_value = value; }
 
     static AnimatedPropertyType classType() { return AnimatedString; }
+    AnimatedPropertyType type() const override { return classType(); }
 
 private:
-    SVGString()
-        : SVGPropertyBase(classType())
-    {
-    }
-
-    explicit SVGString(const String& value)
-        : SVGPropertyBase(classType())
-        , m_value(value)
-    {
-    }
+    SVGString() { }
+    explicit SVGString(const String& value) : m_value(value) {}
 
     String m_value;
 };

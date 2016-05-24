@@ -96,6 +96,7 @@ public:
     float calculateDistance(SVGPropertyBase* to, SVGElement* contextElement) override;
 
     static AnimatedPropertyType classType() { return AnimatedLength; }
+    AnimatedPropertyType type() const override { return classType(); }
 
 private:
     SVGLength(SVGLengthMode);

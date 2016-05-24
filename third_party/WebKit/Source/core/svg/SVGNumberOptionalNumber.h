@@ -37,7 +37,7 @@
 
 namespace blink {
 
-class SVGNumberOptionalNumber : public SVGPropertyBase {
+class SVGNumberOptionalNumber final : public SVGPropertyBase {
 public:
     // Tearoff of SVGNumberOptionalNumber is never created.
     typedef void TearOffType;
@@ -59,6 +59,7 @@ public:
     float calculateDistance(SVGPropertyBase* to, SVGElement* contextElement) override;
 
     static AnimatedPropertyType classType() { return AnimatedNumberOptionalNumber; }
+    AnimatedPropertyType type() const override { return classType(); }
 
     SVGNumber* firstNumber() const { return m_firstNumber; }
     SVGNumber* secondNumber() const { return m_secondNumber; }

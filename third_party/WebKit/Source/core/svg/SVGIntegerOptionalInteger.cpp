@@ -36,8 +36,7 @@
 namespace blink {
 
 SVGIntegerOptionalInteger::SVGIntegerOptionalInteger(SVGInteger* firstInteger, SVGInteger* secondInteger)
-    : SVGPropertyBase(classType())
-    , m_firstInteger(firstInteger)
+    : m_firstInteger(firstInteger)
     , m_secondInteger(secondInteger)
 {
 }

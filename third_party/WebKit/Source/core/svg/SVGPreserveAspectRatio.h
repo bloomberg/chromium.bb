@@ -30,7 +30,7 @@ class AffineTransform;
 class FloatRect;
 class SVGPreserveAspectRatioTearOff;
 
-class SVGPreserveAspectRatio : public SVGPropertyHelper<SVGPreserveAspectRatio> {
+class SVGPreserveAspectRatio final : public SVGPropertyHelper<SVGPreserveAspectRatio> {
 public:
     enum SVGPreserveAspectRatioType {
         SVG_PRESERVEASPECTRATIO_UNKNOWN = 0,

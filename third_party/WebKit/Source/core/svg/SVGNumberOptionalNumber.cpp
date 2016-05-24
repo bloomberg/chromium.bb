@@ -36,8 +36,7 @@
 namespace blink {
 
 SVGNumberOptionalNumber::SVGNumberOptionalNumber(SVGNumber* firstNumber, SVGNumber* secondNumber)
-    : SVGPropertyBase(classType())
-    , m_firstNumber(firstNumber)
+    : m_firstNumber(firstNumber)
     , m_secondNumber(secondNumber)
 {
 }

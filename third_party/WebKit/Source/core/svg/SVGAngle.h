@@ -41,7 +41,7 @@ enum SVGMarkerOrientType {
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGMarkerOrientType>();
 template<> unsigned short getMaxExposedEnumValue<SVGMarkerOrientType>();
 
-class SVGMarkerOrientEnumeration : public SVGEnumeration<SVGMarkerOrientType> {
+class SVGMarkerOrientEnumeration final : public SVGEnumeration<SVGMarkerOrientType> {
 public:
     static SVGMarkerOrientEnumeration* create(SVGAngle* angle)
     {
@@ -64,7 +64,7 @@ private:
     Member<SVGAngle> m_angle;
 };
 
-class SVGAngle : public SVGPropertyHelper<SVGAngle> {
+class SVGAngle final : public SVGPropertyHelper<SVGAngle> {
 public:
     typedef SVGAngleTearOff TearOffType;
 

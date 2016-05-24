@@ -27,8 +27,7 @@
 namespace blink {
 
 SVGColorProperty::SVGColorProperty(const String& colorString)
-    : SVGPropertyBase(classType())
-    , m_styleColor(StyleColor::currentColor())
+    : m_styleColor(StyleColor::currentColor())
 {
     Color color;
     if (CSSParser::parseColor(color, colorString.stripWhiteSpace()))

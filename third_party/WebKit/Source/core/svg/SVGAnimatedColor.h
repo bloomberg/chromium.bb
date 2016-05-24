@@ -55,6 +55,7 @@ public:
     float calculateDistance(SVGPropertyBase* to, SVGElement*) override;
 
     static AnimatedPropertyType classType() { return AnimatedColor; }
+    AnimatedPropertyType type() const override { return classType(); }
 
 private:
     explicit SVGColorProperty(const String&);

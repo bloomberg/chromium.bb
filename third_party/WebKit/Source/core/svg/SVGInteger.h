@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class SVGInteger : public SVGPropertyHelper<SVGInteger> {
+class SVGInteger final : public SVGPropertyHelper<SVGInteger> {
 public:
     typedef void TearOffType;
     typedef int PrimitiveType;

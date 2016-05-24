@@ -29,7 +29,7 @@ namespace blink {
 
 class SVGRectTearOff;
 
-class SVGRect : public SVGPropertyHelper<SVGRect> {
+class SVGRect final : public SVGPropertyHelper<SVGRect> {
 public:
     typedef SVGRectTearOff TearOffType;
 

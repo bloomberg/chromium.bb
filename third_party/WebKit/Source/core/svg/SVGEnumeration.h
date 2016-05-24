@@ -62,6 +62,7 @@ public:
     float calculateDistance(SVGPropertyBase* to, SVGElement*) override;
 
     static AnimatedPropertyType classType() { return AnimatedEnumeration; }
+    AnimatedPropertyType type() const override { return classType(); }
 
     static unsigned short valueOfLastEnum(const StringEntries& entries) { return entries.last().first; }
 
@@ -70,8 +71,7 @@ public:
 
 protected:
     SVGEnumerationBase(unsigned short value, const StringEntries& entries, unsigned short maxExposed)
-        : SVGPropertyBase(classType())
-        , m_value(value)
+        : m_value(value)
         , m_maxExposed(maxExposed)
         , m_entries(entries)
     {

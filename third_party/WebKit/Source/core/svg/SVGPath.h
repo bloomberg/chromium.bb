@@ -38,7 +38,7 @@
 
 namespace blink {
 
-class SVGPath : public SVGPropertyBase {
+class SVGPath final : public SVGPropertyBase {
 public:
     typedef void TearOffType;
 
@@ -68,6 +68,7 @@ public:
     float calculateDistance(SVGPropertyBase* to, SVGElement*) override;
 
     static AnimatedPropertyType classType() { return AnimatedPath; }
+    AnimatedPropertyType type() const override { return classType(); }
 
     DECLARE_VIRTUAL_TRACE();
 

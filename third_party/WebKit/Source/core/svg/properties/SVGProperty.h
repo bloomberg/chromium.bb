@@ -63,10 +63,7 @@ public:
     virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDurationValue, SVGElement*) = 0;
     virtual float calculateDistance(SVGPropertyBase* to, SVGElement*) = 0;
 
-    AnimatedPropertyType type() const
-    {
-        return m_type;
-    }
+    virtual AnimatedPropertyType type() const = 0;
 
     SVGPropertyBase* ownerList() const
     {
@@ -84,15 +81,9 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 protected:
-    explicit SVGPropertyBase(AnimatedPropertyType type)
-        : m_type(type)
-        , m_ownerList(nullptr)
-    {
-    }
+    SVGPropertyBase() : m_ownerList(nullptr) {}
 
 private:
-    const AnimatedPropertyType m_type;
-
     // Oilpan: the back reference to the owner should be a Member, but this can create
     // cycles when SVG properties meet the off-heap InterpolationValue hierarchy.
     // Not tracing it is safe, albeit an undesirable state of affairs.

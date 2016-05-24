@@ -33,16 +33,14 @@
 namespace blink {
 
 SVGLength::SVGLength(SVGLengthMode mode)
-    : SVGPropertyBase(classType())
-    , m_value(cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::UserUnits))
+    : m_value(cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::UserUnits))
     , m_unitMode(static_cast<unsigned>(mode))
 {
     ASSERT(unitMode() == mode);
 }
 
 SVGLength::SVGLength(const SVGLength& o)
-    : SVGPropertyBase(classType())
-    , m_value(o.m_value)
+    : m_value(o.m_value)
     , m_unitMode(o.m_unitMode)
 {
 }

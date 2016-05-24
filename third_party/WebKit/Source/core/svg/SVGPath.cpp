@@ -66,15 +66,10 @@ PassOwnPtr<SVGPathByteStream> conditionallyAddPathByteStreams(PassOwnPtr<SVGPath
 
 } // namespace
 
-SVGPath::SVGPath()
-    : SVGPropertyBase(classType())
-    , m_pathValue(CSSPathValue::emptyPathValue())
-{
-}
+SVGPath::SVGPath() : m_pathValue(CSSPathValue::emptyPathValue()) {}
 
 SVGPath::SVGPath(CSSPathValue* pathValue)
-    : SVGPropertyBase(classType())
-    , m_pathValue(pathValue)
+    : m_pathValue(pathValue)
 {
     ASSERT(m_pathValue);
 }
