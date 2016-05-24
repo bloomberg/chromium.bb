@@ -73,6 +73,8 @@ public:
     // PannerNodes if necessary.
     void updateState();
 
+    bool isListenerDirty() const { return m_isListenerDirty; }
+
     const FloatPoint3D position() const
     {
         return FloatPoint3D(
@@ -174,6 +176,11 @@ private:
 
     // Last time that the automations were updated.
     double m_lastUpdateTime;
+
+    // Set every rendering quantum if the listener has moved in any way
+    // (position, forward, or up).  This should only be read or written to from
+    // the audio thread.
+    bool m_isListenerDirty;
 
     void updateValuesIfNeeded(size_t framesToProcess);
 

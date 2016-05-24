@@ -47,6 +47,7 @@ AudioListener::AudioListener(AbstractAudioContext& context)
     , m_dopplerFactor(1)
     , m_speedOfSound(343.3)
     , m_lastUpdateTime(-1)
+    , m_isListenerDirty(false)
     , m_positionXValues(AudioUtilities::kRenderQuantumFrames)
     , m_positionYValues(AudioUtilities::kRenderQuantumFrames)
     , m_positionZValues(AudioUtilities::kRenderQuantumFrames)
@@ -200,25 +201,31 @@ const float* AudioListener::getUpZValues(size_t framesToProcess)
 
 void AudioListener::updateState()
 {
-    FloatPoint3D currentPosition = position();
-    FloatPoint3D currentForward = orientation();
-    FloatPoint3D currentUp = upVector();
+    // This must be called from the audio thread in pre or post render phase of
+    // the graph processing.  (AudioListener doesn't have access to the context
+    // to check for the audio thread.)
+    DCHECK(!isMainThread());
 
-    bool hasMoved = currentPosition != m_lastPosition
-        || currentForward != m_lastForward
-        || currentUp != m_lastUp;
+    MutexTryLocker tryLocker(m_listenerLock);
+    if (tryLocker.locked()) {
+        FloatPoint3D currentPosition = position();
+        FloatPoint3D currentForward = orientation();
+        FloatPoint3D currentUp = upVector();
 
-    if (hasMoved) {
-        m_lastPosition = currentPosition;
-        m_lastForward = currentForward;
-        m_lastUp = currentUp;
+        m_isListenerDirty = currentPosition != m_lastPosition
+            || currentForward != m_lastForward
+            || currentUp != m_lastUp;
 
-        markPannersAsDirty(PannerHandler::AzimuthElevationDirty | PannerHandler::DistanceConeGainDirty);
+        if (m_isListenerDirty) {
+            m_lastPosition = currentPosition;
+            m_lastForward = currentForward;
+            m_lastUp = currentUp;
+        }
     } else {
-        // Tell each panner to check its dirty state in case the panner position/orientation
-        // changed.
-        for (PannerHandler* panner : m_panners)
-            panner->updateDirtyState();
+        // Main thread must be updating the position, forward, or up vector;
+        // just assume the listener is dirty.  At worst, we'll do a little more
+        // work than necessary for one rendering quantum.
+        m_isListenerDirty = true;
     }
 }
 
@@ -241,12 +248,15 @@ void AudioListener::waitForHRTFDatabaseLoaderThreadCompletion()
 
 void AudioListener::markPannersAsDirty(unsigned type)
 {
+    DCHECK(isMainThread());
     for (PannerHandler* panner : m_panners)
         panner->markPannerAsDirty(type);
 }
 
 void AudioListener::setPosition(const FloatPoint3D& position)
 {
+    DCHECK(isMainThread());
+
     // This synchronizes with panner's process().
     MutexLocker listenerLocker(m_listenerLock);
     m_positionX->setValue(position.x());
@@ -257,6 +267,8 @@ void AudioListener::setPosition(const FloatPoint3D& position)
 
 void AudioListener::setOrientation(const FloatPoint3D& orientation)
 {
+    DCHECK(isMainThread());
+
     // This synchronizes with panner's process().
     MutexLocker listenerLocker(m_listenerLock);
     m_forwardX->setValue(orientation.x());
@@ -267,6 +279,8 @@ void AudioListener::setOrientation(const FloatPoint3D& orientation)
 
 void AudioListener::setUpVector(const FloatPoint3D& upVector)
 {
+    DCHECK(isMainThread());
+
     // This synchronizes with panner's process().
     MutexLocker listenerLocker(m_listenerLock);
     m_upX->setValue(upVector.x());

@@ -104,7 +104,6 @@ public:
     void setConeOuterGain(double);
 
     void markPannerAsDirty(unsigned);
-    void updateDirtyState();
 
     double tailTime() const override { return m_panner ? m_panner->tailTime() : 0; }
     double latencyTime() const override { return m_panner ? m_panner->latencyTime() : 0; }
@@ -148,6 +147,7 @@ private:
 
     bool isAzimuthElevationDirty() const { return m_isAzimuthElevationDirty; }
     bool isDistanceConeGainDirty() const { return m_isDistanceConeGainDirty; }
+    void updateDirtyState();
 
     // This Persistent doesn't make a reference cycle including the owner
     // PannerNode.

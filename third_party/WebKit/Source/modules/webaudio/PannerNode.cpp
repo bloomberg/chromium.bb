@@ -148,6 +148,11 @@ void PannerHandler::process(size_t framesToProcess)
             // Apply the panning effect.
             double azimuth;
             double elevation;
+
+            // Update dirty state in case something has moved; this can happen if the AudioParam for
+            // the position or orientation component is set directly.
+            updateDirtyState();
+
             azimuthElevation(&azimuth, &elevation);
 
             m_panner->pan(azimuth, elevation, source, destination, framesToProcess);
@@ -507,7 +512,9 @@ void PannerHandler::azimuthElevation(double* outAzimuth, double* outElevation)
 {
     ASSERT(context()->isAudioThread());
 
-    if (isAzimuthElevationDirty()) {
+    // Calculate new azimuth and elevation if the panner or the listener changed
+    // position or orientation in any way.
+    if (isAzimuthElevationDirty() || listener()->isListenerDirty()) {
         calculateAzimuthElevation(
             &m_cachedAzimuth,
             &m_cachedElevation,
@@ -526,7 +533,9 @@ float PannerHandler::distanceConeGain()
 {
     ASSERT(context()->isAudioThread());
 
-    if (isDistanceConeGainDirty()) {
+    // Calculate new distance and cone gain if the panner or the listener
+    // changed position or orientation in any way.
+    if (isDistanceConeGainDirty() || listener()->isListenerDirty()) {
         m_cachedDistanceConeGain = calculateDistanceConeGain(position(), orientation(), listener()->position());
         m_isDistanceConeGainDirty = false;
     }
@@ -606,6 +615,8 @@ bool PannerHandler::hasSampleAccurateValues() const
 
 void PannerHandler::updateDirtyState()
 {
+    DCHECK(context()->isAudioThread());
+
     FloatPoint3D currentPosition = position();
     FloatPoint3D currentOrientation = orientation();
 
