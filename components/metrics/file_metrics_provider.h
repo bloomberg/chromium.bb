@@ -40,7 +40,12 @@ class FileMetricsProvider : public MetricsProvider {
     // by an atomic rename) and the file is never updated again except to
     // be replaced by a completely new set of histograms. This is the only
     // option that can be used if the file is not writeable by *this*
-    // process.
+    // process. Once the file has been read, an attempt will be made to
+    // delete it thus providing some measure of safety should different
+    // instantiations (such as by different users of a system-level install)
+    // try to read it. In case the delete operation fails, this class
+    // persistently tracks the last-modified time of the file so it will
+    // not be read a second time.
     SOURCE_HISTOGRAMS_ATOMIC_FILE,
 
     // A directory of atomic PMA files. This handles a directory in which
@@ -146,11 +151,16 @@ class FileMetricsProvider : public MetricsProvider {
   // be internally updated to indicate the next file to be read.
   static bool LocateNextFileInDirectory(SourceInfo* source);
 
+  // Deletes the file at the specified |path|. If the file is currently open,
+  // it is made inaccessible and deleted when closed. This needs to run on a
+  // thread allowed to do disk I/O.
+  static void DeleteFileWhenPossible(const base::FilePath& path);
+
   // Creates a task to check all monitored sources for updates.
   void ScheduleSourcesCheck();
 
-  // Creates a PersistentMemoryAllocator for a source that has been marked to
-  // have its metrics collected.
+  // Creates a PersistentMemoryAllocator for a |source| that has been marked
+  // to have its metrics collected.
   void CreateAllocatorForSource(SourceInfo* source);
 
   // Records all histograms from a given source via a snapshot-manager.
@@ -163,7 +173,7 @@ class FileMetricsProvider : public MetricsProvider {
   void RecordSourcesChecked(SourceInfoList* checked);
 
   // Updates the persistent state information to show a source as being read.
-  void RecordSourceAsSeen(SourceInfo* source);
+  void RecordSourceAsRead(SourceInfo* source);
 
   // metrics::MetricsDataProvider:
   void OnDidCreateMetricsLog() override;
