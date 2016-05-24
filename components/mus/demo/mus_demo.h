@@ -16,7 +16,7 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_manager_delegate.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
-#include "components/mus/public/interfaces/window_tree_host.mojom.h"
+#include "components/mus/public/interfaces/window_manager_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/shell_client.h"
@@ -32,6 +32,7 @@ namespace mus_demo {
 // window and draws a spinning square in the center of the window. Provides a
 // simple way to demonstrate that the graphic stack works as intended.
 class MusDemo : public shell::ShellClient,
+                public mus::mojom::WindowManagerFactory,
                 public mus::WindowTreeDelegate,
                 public mus::WindowManagerDelegate {
  public:
@@ -50,6 +51,11 @@ class MusDemo : public shell::ShellClient,
   void OnUnembed(mus::Window* root) override;
   void OnConnectionLost(mus::WindowTreeConnection* connection) override;
   void OnEventObserved(const ui::Event& event, mus::Window* target) override;
+
+  // mus::mojom::WindowManagerFactory:
+  void CreateWindowManager(
+      mus::mojom::DisplayPtr display,
+      mus::mojom::WindowTreeClientRequest request) override;
 
   // WindowManagerDelegate:
   void SetWindowManagerClient(mus::WindowManagerClient* client) override;
@@ -71,7 +77,10 @@ class MusDemo : public shell::ShellClient,
   shell::Connector* connector_ = nullptr;
 
   mus::Window* window_ = nullptr;
-  mus::mojom::WindowTreeHostPtr window_tree_host_;
+  std::unique_ptr<mus::WindowTreeConnection> window_tree_connection_;
+  mus::WindowManagerClient* window_manager_client_ = nullptr;
+  mojo::Binding<mus::mojom::WindowManagerFactory>
+      window_manager_factory_binding_;
 
   // Used to send frames to mus.
   std::unique_ptr<bitmap_uploader::BitmapUploader> uploader_;

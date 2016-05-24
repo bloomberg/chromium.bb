@@ -4,8 +4,10 @@
   "display_name": "MUS Demo",
   "capabilities": {
     "required": {
-      "*": { "classes": [ "app" ] },
-      "mojo:mus": { "interfaces":  [ "mus::mojom::WindowTreeHostFactory" ] }
+      "mojo:mus": {
+        "interfaces": [ "mus::mojom::WindowManagerFactoryService"],
+      "classes": [ "app" ]
+      }
     }
   }
 }

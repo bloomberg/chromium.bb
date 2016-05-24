@@ -6,7 +6,7 @@
 
 #include "base/time/time.h"
 #include "components/bitmap_uploader/bitmap_uploader.h"
-#include "components/mus/public/cpp/window_tree_host_factory.h"
+#include "components/mus/public/cpp/window_tree_connection.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
@@ -54,7 +54,7 @@ void DrawSquare(const gfx::Rect& bounds, double angle, SkCanvas* canvas) {
 
 }  // namespace
 
-MusDemo::MusDemo() {}
+MusDemo::MusDemo() : window_manager_factory_binding_(this) {}
 
 MusDemo::~MusDemo() {}
 
@@ -62,9 +62,10 @@ void MusDemo::Initialize(shell::Connector* connector,
                          const shell::Identity& identity,
                          uint32_t id) {
   connector_ = connector;
-
-  CreateWindowTreeHost(connector_, this, &window_tree_host_, this);
-  window_tree_host_->SetTitle("MUS Demo");
+  mus::mojom::WindowManagerFactoryServicePtr wm_factory_service;
+  connector->ConnectToInterface("mojo:mus", &wm_factory_service);
+  wm_factory_service->SetWindowManagerFactory(
+      window_manager_factory_binding_.CreateInterfacePtrAndBind());
 }
 
 bool MusDemo::AcceptConnection(shell::Connection* connection) {
@@ -92,7 +93,18 @@ void MusDemo::OnConnectionLost(mus::WindowTreeConnection* connection) {
 
 void MusDemo::OnEventObserved(const ui::Event& event, mus::Window* target) {}
 
-void MusDemo::SetWindowManagerClient(mus::WindowManagerClient* client) {}
+// mus::mojom::WindowManagerFactory:
+void MusDemo::CreateWindowManager(mus::mojom::DisplayPtr display,
+                                  mus::mojom::WindowTreeClientRequest request) {
+  mus::WindowTreeConnection::CreateForWindowManager(
+      this, std::move(request),
+      mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED, this);
+}
+
+// mus::WindowManagerDelegate:
+void MusDemo::SetWindowManagerClient(mus::WindowManagerClient* client) {
+  window_manager_client_ = client;
+}
 
 bool MusDemo::OnWmSetBounds(mus::Window* window, gfx::Rect* bounds) {
   return true;
@@ -106,11 +118,12 @@ bool MusDemo::OnWmSetProperty(mus::Window* window,
 
 mus::Window* MusDemo::OnWmCreateTopLevelWindow(
     std::map<std::string, std::vector<uint8_t>>* properties) {
-  // TODO(kylechar): Check if this should return something useful.
   return nullptr;
 }
 
-void MusDemo::OnAccelerator(uint32_t id, const ui::Event& event) {}
+void MusDemo::OnAccelerator(uint32_t id, const ui::Event& event) {
+  // Don't care
+}
 
 void MusDemo::AllocBitmap() {
   const gfx::Rect bounds = window_->GetBoundsInRoot();
