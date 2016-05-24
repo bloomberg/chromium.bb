@@ -39,6 +39,10 @@
 #include "testing/perf/perf_test.h"
 #include "ui/gl/gl_switches.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 namespace {
 std::string MakeLabel(const char* test_name, const std::string& video_codec) {
   std::string codec_label = video_codec.empty() ? "" : "_" + video_codec;
@@ -280,6 +284,15 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
   }
 
   void TestVideoQuality(const std::string& video_codec) {
+#if defined(OS_WIN)
+    // Too slow for bots with bad GL config: see http://crbug.com/613947.
+    bool is_hd = test_config_.width >= 1024;
+    if (is_hd && base::win::GetVersion() == base::win::VERSION_WIN7) {
+      LOG(WARNING) << "Skipping HD test on Win7.";
+      return;
+    }
+#endif
+
     ASSERT_GE(TestTimeouts::action_max_timeout().InSeconds(), 150)
         << "This is a long-running test; you must specify "
            "--ui-test-action-max-timeout to have a value of at least 150000.";
