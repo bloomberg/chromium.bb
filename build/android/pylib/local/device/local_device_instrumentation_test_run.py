@@ -274,6 +274,15 @@ class LocalDeviceInstrumentationTestRun(
     if any(r.GetType() not in (base_test_result.ResultType.PASS,
                                base_test_result.ResultType.SKIP)
            for r in results):
+      if self._test_instance.screenshot_dir:
+        file_name = '%s-%s.png' % (
+            test_display_name,
+            time.strftime('%Y%m%dT%H%M%S', time.localtime()))
+        saved_dir = device.TakeScreenshot(
+            os.path.join(self._test_instance.screenshot_dir, file_name))
+        logging.info(
+            'Saved screenshot for %s to %s.',
+            test_display_name, saved_dir)
       logging.info('detected failure in %s. raw output:', test_display_name)
       for l in output:
         logging.info('  %s', l)
