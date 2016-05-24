@@ -47,6 +47,7 @@ class AudioSourceProviderClient;
 class AudioTrackList;
 class ContentType;
 class CueTimeline;
+class EnumerationHistogram;
 class Event;
 class ExceptionState;
 class HTMLSourceElement;
@@ -483,6 +484,8 @@ private:
     // parameters.
     void rejectPlayPromises();
     void rejectPlayPromises(ExceptionCode, const String&);
+
+    EnumerationHistogram& showControlsHistogram() const;
 
     UnthrottledTimer<HTMLMediaElement> m_loadTimer;
     UnthrottledTimer<HTMLMediaElement> m_progressEventTimer;

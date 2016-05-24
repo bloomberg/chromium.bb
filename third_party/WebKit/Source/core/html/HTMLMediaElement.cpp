@@ -2190,29 +2190,27 @@ void HTMLMediaElement::setLoop(bool b)
 
 bool HTMLMediaElement::shouldShowControls(const RecordMetricsBehavior recordMetrics) const
 {
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, showControlsHistogram, ("Media.Controls.Show", MediaControlsShowMax));
-
     if (fastHasAttribute(controlsAttr)) {
         if (recordMetrics == RecordMetricsBehavior::DoRecord)
-            showControlsHistogram.count(MediaControlsShowAttribute);
+            showControlsHistogram().count(MediaControlsShowAttribute);
         return true;
     }
 
     if (isFullscreen()) {
         if (recordMetrics == RecordMetricsBehavior::DoRecord)
-            showControlsHistogram.count(MediaControlsShowFullscreen);
+            showControlsHistogram().count(MediaControlsShowFullscreen);
         return true;
     }
 
     LocalFrame* frame = document().frame();
     if (frame && !frame->script().canExecuteScripts(NotAboutToExecuteScript)) {
         if (recordMetrics == RecordMetricsBehavior::DoRecord)
-            showControlsHistogram.count(MediaControlsShowNoScript);
+            showControlsHistogram().count(MediaControlsShowNoScript);
         return true;
     }
 
     if (recordMetrics == RecordMetricsBehavior::DoRecord)
-        showControlsHistogram.count(MediaControlsShowNotShown);
+        showControlsHistogram().count(MediaControlsShowNotShown);
     return false;
 }
 
@@ -3757,6 +3755,17 @@ void HTMLMediaElement::rejectPlayPromises(ExceptionCode code, const String& mess
         resolver->reject(DOMException::create(code, message));
 
     m_playResolvers.clear();
+}
+
+EnumerationHistogram& HTMLMediaElement::showControlsHistogram() const
+{
+    if (isHTMLVideoElement()) {
+        DEFINE_STATIC_LOCAL(EnumerationHistogram, histogram, ("Media.Controls.Show.Video", MediaControlsShowMax));
+        return histogram;
+    }
+
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, histogram, ("Media.Controls.Show.Audio", MediaControlsShowMax));
+    return histogram;
 }
 
 void HTMLMediaElement::clearWeakMembers(Visitor* visitor)
