@@ -1226,7 +1226,7 @@ size_t LayoutGrid::computeAutoRepeatTracksCount(GridTrackSizingDirection directi
     DCHECK_EQ(autoRepeatTracks.size(), static_cast<size_t>(1));
     auto autoTrackSize = autoRepeatTracks.at(0);
     DCHECK(autoTrackSize.minTrackBreadth().isLength());
-    DCHECK(!autoTrackSize.minTrackBreadth().isContentSized());
+    DCHECK(!autoTrackSize.minTrackBreadth().isFlex());
 
     LayoutUnit availableSize = isRowAxis ? availableLogicalWidth() : computeContentLogicalHeight(MainOrPreferredSize, styleRef().logicalHeight(), LayoutUnit(-1));
     if (availableSize == -1) {

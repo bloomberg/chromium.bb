@@ -3259,16 +3259,23 @@ static CSSValue* consumeGridLine(CSSParserTokenRange& range)
     return values;
 }
 
-static bool isGridTrackFixedSized(const CSSValue& value)
+static bool isGridTrackFixedSized(const CSSPrimitiveValue& primitiveValue)
 {
-    const CSSPrimitiveValue& primitiveValue = value.isPrimitiveValue()
-        ? toCSSPrimitiveValue(value)
-        : toCSSPrimitiveValue(*toCSSFunctionValue(value).item(0));
     CSSValueID valueID = primitiveValue.getValueID();
     if (valueID == CSSValueMinContent || valueID == CSSValueMaxContent || valueID == CSSValueAuto || primitiveValue.isFlex())
         return false;
 
     return true;
+}
+
+static bool isGridTrackFixedSized(const CSSValue& value)
+{
+    if (value.isPrimitiveValue())
+        return isGridTrackFixedSized(toCSSPrimitiveValue(value));
+
+    const CSSPrimitiveValue& minPrimitiveValue = toCSSPrimitiveValue(*toCSSFunctionValue(value).item(0));
+    const CSSPrimitiveValue& maxPrimitiveValue = toCSSPrimitiveValue(*toCSSFunctionValue(value).item(1));
+    return isGridTrackFixedSized(minPrimitiveValue) || isGridTrackFixedSized(maxPrimitiveValue);
 }
 
 static Vector<String> parseGridTemplateAreasColumnNames(const String& gridRowNames)
