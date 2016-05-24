@@ -121,6 +121,7 @@ class ExtensionApiFrameIdMap {
 
   // Retrieves the FrameData for a given |rfh|. The map may be updated with the
   // result if the map did not contain the FrameData before the lookup.
+  // If |rfh| is nullptr, then the map is not modified.
   FrameData GetFrameData(content::RenderFrameHost* rfh) WARN_UNUSED_RESULT;
 
   // Looks up the FrameData and stores it in the map. This method should be

@@ -310,6 +310,9 @@ ExtensionApiFrameIdMap::FrameData ExtensionApiFrameIdMap::GetFrameData(
     content::RenderFrameHost* rfh) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  if (!rfh)
+    return FrameData();
+
   const RenderFrameIdKey key(rfh->GetProcess()->GetID(), rfh->GetRoutingID());
   return LookupFrameDataOnUI(key, false /* is_from_io */);
 }
