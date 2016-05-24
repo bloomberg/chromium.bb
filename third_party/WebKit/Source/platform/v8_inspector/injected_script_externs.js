@@ -21,9 +21,10 @@ InjectedScriptHostClass.prototype.internalConstructorName = function(obj) {}
 
 /**
  * @param {*} obj
+ * @param {function()|undefined} func
  * @return {boolean}
  */
-InjectedScriptHostClass.prototype.formatAccessorsAsProperties = function(obj) {}
+InjectedScriptHostClass.prototype.formatAccessorsAsProperties = function(obj, func) {}
 
 /**
  * @param {*} obj
