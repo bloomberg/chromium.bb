@@ -143,7 +143,7 @@ std::string V4GetHashProtocolManager::GetHashRequest(
   FindFullHashesRequest req;
   ThreatInfo* info = req.mutable_threat_info();
   info->add_threat_types(threat_type);
-  info->add_threat_entry_types(URL_EXPRESSION);
+  info->add_threat_entry_types(URL);
   for (const PlatformType p : platforms) {
     info->add_platform_types(p);
   }
@@ -192,7 +192,7 @@ bool V4GetHashProtocolManager::ParseHashResponse(
   for (const ThreatMatch& match : response.matches()) {
     // Make sure the platform and threat entry type match.
     if (!(match.has_threat_entry_type() &&
-          match.threat_entry_type() == URL_EXPRESSION && match.has_threat())) {
+          match.threat_entry_type() == URL && match.has_threat())) {
       RecordParseGetHashResult(UNEXPECTED_THREAT_ENTRY_TYPE_ERROR);
       return false;
     }

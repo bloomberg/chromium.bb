@@ -51,7 +51,7 @@ class SafeBrowsingV4GetHashProtocolManagerTest : public testing::Test {
     ThreatMatch* m = res.add_matches();
     m->set_threat_type(API_ABUSE);
     m->set_platform_type(CHROME_PLATFORM);
-    m->set_threat_entry_type(URL_EXPRESSION);
+    m->set_threat_entry_type(URL);
     m->mutable_cache_duration()->set_seconds(300);
     m->mutable_threat()->set_hash(
         SBFullHashToString(SBFullHashForString("Everything's shiny, Cap'n.")));
@@ -183,7 +183,7 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest, TestGetHashRequest) {
   ThreatInfo* info = req.mutable_threat_info();
   info->add_threat_types(API_ABUSE);
   info->add_platform_types(CHROME_PLATFORM);
-  info->add_threat_entry_types(URL_EXPRESSION);
+  info->add_threat_entry_types(URL);
 
   SBPrefix one = 1u;
   SBPrefix two = 2u;
@@ -223,7 +223,7 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest, TestParseHashResponse) {
   ThreatMatch* m = res.add_matches();
   m->set_threat_type(API_ABUSE);
   m->set_platform_type(CHROME_PLATFORM);
-  m->set_threat_entry_type(URL_EXPRESSION);
+  m->set_threat_entry_type(URL);
   m->mutable_cache_duration()->set_seconds(300);
   m->mutable_threat()->set_hash(
       SBFullHashToString(SBFullHashForString("Everything's shiny, Cap'n.")));
@@ -290,7 +290,7 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest,
   ThreatMatch* se = se_res.add_matches();
   se->set_threat_type(SOCIAL_ENGINEERING_PUBLIC);
   se->set_platform_type(CHROME_PLATFORM);
-  se->set_threat_entry_type(URL_EXPRESSION);
+  se->set_threat_entry_type(URL);
   SBFullHash hash_string = SBFullHashForString("Everything's shiny, Cap'n.");
   se->mutable_threat()->set_hash(SBFullHashToString(hash_string));
   ThreatEntryMetadata::MetadataEntry* se_meta =
@@ -316,7 +316,7 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest,
   pha_res.mutable_negative_cache_duration()->set_seconds(600);
   ThreatMatch* pha = pha_res.add_matches();
   pha->set_threat_type(POTENTIALLY_HARMFUL_APPLICATION);
-  pha->set_threat_entry_type(URL_EXPRESSION);
+  pha->set_threat_entry_type(URL);
   pha->set_platform_type(CHROME_PLATFORM);
   hash_string = SBFullHashForString("Not to fret.");
   pha->mutable_threat()->set_hash(SBFullHashToString(hash_string));
@@ -339,7 +339,7 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest,
   invalid_res.mutable_negative_cache_duration()->set_seconds(600);
   ThreatMatch* invalid = invalid_res.add_matches();
   invalid->set_threat_type(POTENTIALLY_HARMFUL_APPLICATION);
-  invalid->set_threat_entry_type(URL_EXPRESSION);
+  invalid->set_threat_entry_type(URL);
   invalid->set_platform_type(CHROME_PLATFORM);
   invalid->mutable_threat()->set_hash(SBFullHashToString(hash_string));
   ThreatEntryMetadata::MetadataEntry* invalid_meta =
@@ -368,7 +368,7 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest,
   ThreatMatch* m = res.add_matches();
   m->set_threat_type(API_ABUSE);
   m->set_platform_type(CHROME_PLATFORM);
-  m->set_threat_entry_type(URL_EXPRESSION);
+  m->set_threat_entry_type(URL);
   m->mutable_threat()->set_hash(
       SBFullHashToString(SBFullHashForString("Not to fret.")));
   ThreatEntryMetadata::MetadataEntry* e =
@@ -397,13 +397,13 @@ TEST_F(SafeBrowsingV4GetHashProtocolManagerTest,
   ThreatMatch* m1 = res.add_matches();
   m1->set_threat_type(API_ABUSE);
   m1->set_platform_type(CHROME_PLATFORM);
-  m1->set_threat_entry_type(URL_EXPRESSION);
+  m1->set_threat_entry_type(URL);
   m1->mutable_threat()->set_hash(
       SBFullHashToString(SBFullHashForString("Everything's shiny, Cap'n.")));
   m1->mutable_threat_entry_metadata()->add_entries();
   ThreatMatch* m2 = res.add_matches();
   m2->set_threat_type(MALWARE_THREAT);
-  m2->set_threat_entry_type(URL_EXPRESSION);
+  m2->set_threat_entry_type(URL);
   m2->mutable_threat()->set_hash(
       SBFullHashToString(SBFullHashForString("Not to fret.")));
 

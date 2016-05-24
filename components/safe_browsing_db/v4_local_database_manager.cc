@@ -146,7 +146,7 @@ void V4LocalDatabaseManager::StartOnIOThread(
 #else
   update_list_identifier.platform_type = OSX_PLATFORM;
 #endif
-  update_list_identifier.threat_entry_type = URL_EXPRESSION;
+  update_list_identifier.threat_entry_type = URL;
   update_list_identifier.threat_type = MALWARE_THREAT;
   current_list_states_[update_list_identifier] = "";
 #endif

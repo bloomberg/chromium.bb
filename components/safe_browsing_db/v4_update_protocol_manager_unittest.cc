@@ -76,12 +76,12 @@ class V4UpdateProtocolManagerTest : public testing::Test {
       base::hash_map<UpdateListIdentifier, std::string>* current_list_states) {
     UpdateListIdentifier list_identifier;
     list_identifier.platform_type = WINDOWS_PLATFORM;
-    list_identifier.threat_entry_type = URL_EXPRESSION;
+    list_identifier.threat_entry_type = URL;
     list_identifier.threat_type = MALWARE_THREAT;
     current_list_states->insert({list_identifier, "initial_state_1"});
 
     list_identifier.platform_type = WINDOWS_PLATFORM;
-    list_identifier.threat_entry_type = URL_EXPRESSION;
+    list_identifier.threat_entry_type = URL;
     list_identifier.threat_type = UNWANTED_SOFTWARE;
     current_list_states->insert({list_identifier, "initial_state_2"});
 
@@ -96,14 +96,14 @@ class V4UpdateProtocolManagerTest : public testing::Test {
     ListUpdateResponse lur;
     lur.set_platform_type(WINDOWS_PLATFORM);
     lur.set_response_type(ListUpdateResponse::PARTIAL_UPDATE);
-    lur.set_threat_entry_type(URL_EXPRESSION);
+    lur.set_threat_entry_type(URL);
     lur.set_threat_type(MALWARE_THREAT);
     lur.set_new_client_state("new_state_1");
     expected_lurs->push_back(lur);
 
     lur.set_platform_type(WINDOWS_PLATFORM);
     lur.set_response_type(ListUpdateResponse::PARTIAL_UPDATE);
-    lur.set_threat_entry_type(URL_EXPRESSION);
+    lur.set_threat_entry_type(URL);
     lur.set_threat_type(UNWANTED_SOFTWARE);
     lur.set_new_client_state("new_state_2");
     expected_lurs->push_back(lur);
