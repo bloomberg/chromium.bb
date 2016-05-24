@@ -55,6 +55,7 @@ CONFIG_TYPE_DUMP_ORDER = (
     CONFIG_TYPE_FIRMWARE,
     'master-toolchain',
     'llvm-toolchain-group',
+    'llvm-next-toolchain-group',
     'gcc-toolchain-group',
     'llvm',
     'gcc',

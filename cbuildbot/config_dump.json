@@ -6186,6 +6186,20 @@
         ],
         "vm_tests": []
     },
+    "daisy-next-toolchain-llvm": {
+        "_template": "llvm",
+        "boards": [
+            "daisy"
+        ],
+        "chrome_sdk": false,
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": false,
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal",
+            "llvm-next"
+        ]
+    },
     "daisy-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
         "boards": [
@@ -11927,6 +11941,65 @@
             "-chrome_internal"
         ]
     },
+    "llvm-next-toolchain-group": {
+        "_template": "llvm",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "peppy"
+        ],
+        "child_configs": [
+            {
+                "_template": "llvm",
+                "boards": [
+                    "peppy"
+                ],
+                "grouped": true,
+                "name": "peppy-next-toolchain-llvm",
+                "useflags": [
+                    "-cros-debug",
+                    "chrome_internal",
+                    "llvm-next"
+                ]
+            },
+            {
+                "_template": "llvm",
+                "boards": [
+                    "daisy"
+                ],
+                "chrome_sdk": false,
+                "chrome_sdk_build_chrome": false,
+                "chroot_replace": false,
+                "grouped": true,
+                "name": "daisy-next-toolchain-llvm",
+                "useflags": [
+                    "-cros-debug",
+                    "chrome_internal",
+                    "llvm-next"
+                ]
+            },
+            {
+                "_template": "llvm",
+                "boards": [
+                    "x86-alex"
+                ],
+                "chrome_sdk": false,
+                "chrome_sdk_build_chrome": false,
+                "chroot_replace": false,
+                "grouped": true,
+                "name": "x86-alex-next-toolchain-llvm",
+                "useflags": [
+                    "-cros-debug",
+                    "chrome_internal",
+                    "llvm-next"
+                ]
+            }
+        ],
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal",
+            "llvm-next"
+        ]
+    },
     "llvm-toolchain-group": {
         "_template": "llvm",
         "active_waterfall": "chromeos",
@@ -16286,6 +16359,17 @@
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
+        ]
+    },
+    "peppy-next-toolchain-llvm": {
+        "_template": "llvm",
+        "boards": [
+            "peppy"
+        ],
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal",
+            "llvm-next"
         ]
     },
     "peppy-no-vmtest-pre-cq": {
@@ -24665,6 +24749,20 @@
         "prebuilts": "public",
         "useflags": [
             "-chrome_internal"
+        ]
+    },
+    "x86-alex-next-toolchain-llvm": {
+        "_template": "llvm",
+        "boards": [
+            "x86-alex"
+        ],
+        "chrome_sdk": false,
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": false,
+        "useflags": [
+            "-cros-debug",
+            "chrome_internal",
+            "llvm-next"
         ]
     },
     "x86-alex-no-vmtest-pre-cq": {

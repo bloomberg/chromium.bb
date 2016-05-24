@@ -7,8 +7,8 @@ arm-generic-chromium-pfq (baremetal)
 arm-generic_freon-chromium-pfq (baremetal)
 asuka-release (gce_beefy)
 auron-paladin (baremetal)
-auron-release (baremetal)
-auron_paine-release (gce_beefy)
+auron-release (gce_beefy)
+auron_paine-release (baremetal)
 auron_yuna-release (gce_beefy)
 banjo-release (gce_beefy)
 banon-release (gce_beefy)
@@ -83,6 +83,10 @@ leon-release (gce_beefy)
 link-depthcharge-full-firmware (baremetal)
 link-paladin (baremetal)
 link-release (gce_beefy)
+[llvm-next-toolchain-group] (baremetal)
+  daisy-next-toolchain-llvm
+  peppy-next-toolchain-llvm
+  x86-alex-next-toolchain-llvm
 [llvm-toolchain-group] (baremetal)
   daisy-toolchain-llvm
   peppy-toolchain-llvm

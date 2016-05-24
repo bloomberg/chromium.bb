@@ -696,6 +696,7 @@ _waterfall_config_map = {
 
         # LLVM
         'llvm-toolchain-group',
+        'llvm-next-toolchain-group',
     ]),
 
     constants.WATERFALL_RELEASE: frozenset([
@@ -2244,6 +2245,25 @@ def GetConfig():
       site_config.Add(
           'x86-alex-toolchain-llvm', _llvm_grouped,
           boards=['x86-alex'],
+      ),
+  )
+
+  site_config.AddGroup(
+      'llvm-next-toolchain-group',
+      site_config.Add(
+          'peppy-next-toolchain-llvm', llvm,
+          boards=['peppy'],
+          useflags=append_useflags(['llvm-next']),
+      ),
+      site_config.Add(
+          'daisy-next-toolchain-llvm', _llvm_grouped,
+          boards=['daisy'],
+          useflags=append_useflags(['llvm-next']),
+      ),
+      site_config.Add(
+          'x86-alex-next-toolchain-llvm', _llvm_grouped,
+          boards=['x86-alex'],
+          useflags=append_useflags(['llvm-next']),
       ),
   )
 
