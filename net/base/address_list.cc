@@ -34,6 +34,8 @@ std::unique_ptr<base::Value> NetLogAddressListCallback(
 
 AddressList::AddressList() {}
 
+AddressList::AddressList(const AddressList&) = default;
+
 AddressList::~AddressList() {}
 
 AddressList::AddressList(const IPEndPoint& endpoint) {
