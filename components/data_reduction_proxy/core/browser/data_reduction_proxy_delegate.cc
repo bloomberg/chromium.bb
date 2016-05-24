@@ -14,6 +14,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
@@ -116,7 +117,7 @@ void OnResolveProxyHandler(const GURL& url,
   bool data_saver_proxy_used = true;
   if (result->is_empty() || !result->proxy_server().is_direct() ||
       result->proxy_list().size() != 1 || url.SchemeIsWSOrWSS() ||
-      method == "POST") {
+      !IsMethodIdempotent(method)) {
     return;
   }
 

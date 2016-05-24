@@ -49,10 +49,6 @@ class DataReductionProxyBypassProtocol {
       DataReductionProxyBypassType* proxy_bypass_type,
       DataReductionProxyInfo* data_reduction_proxy_info);
 
-  // Returns true if the request method is idempotent. Only idempotent requests
-  // are retried on a bypass. Visible as part of the public API for testing.
-  static bool IsRequestIdempotent(const net::URLRequest* request);
-
  private:
   // Must outlive |this|.
   DataReductionProxyConfig* config_;

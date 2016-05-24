@@ -79,6 +79,8 @@
         'data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h',
         'data_reduction_proxy/core/common/data_reduction_proxy_switches.cc',
         'data_reduction_proxy/core/common/data_reduction_proxy_switches.h',
+        'data_reduction_proxy/core/common/data_reduction_proxy_util.cc',
+        'data_reduction_proxy/core/common/data_reduction_proxy_util.h',
         'data_reduction_proxy/core/common/lofi_decider.h',
         'data_reduction_proxy/core/common/lofi_ui_service.h',
      ],

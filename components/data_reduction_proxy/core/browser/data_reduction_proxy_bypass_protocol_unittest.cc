@@ -25,6 +25,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
@@ -343,9 +344,7 @@ TEST_F(DataReductionProxyProtocolTest, TestIdempotency) {
     std::unique_ptr<net::URLRequest> request(context.CreateRequest(
         GURL("http://www.google.com/"), net::DEFAULT_PRIORITY, NULL));
     request->set_method(tests[i].method);
-    EXPECT_EQ(
-        tests[i].expected_result,
-        DataReductionProxyBypassProtocol::IsRequestIdempotent(request.get()));
+    EXPECT_EQ(tests[i].expected_result, IsMethodIdempotent(request->method()));
   }
 }
 
