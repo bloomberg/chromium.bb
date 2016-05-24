@@ -237,6 +237,7 @@
         '../components/components.gyp:metrics_profiler',
         '../components/components.gyp:metrics_ui',
         '../components/components.gyp:navigation_interception',
+        '../components/components.gyp:network_session_configurator_switches',
         '../components/components.gyp:printing_common',
         '../components/components.gyp:printing_browser',
         '../components/components.gyp:printing_renderer',

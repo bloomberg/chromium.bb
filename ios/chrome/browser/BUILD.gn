@@ -602,6 +602,7 @@ source_set("browser") {
     "//components/metrics_services_manager",
     "//components/navigation_metrics",
     "//components/net_log",
+    "//components/network_session_configurator",
     "//components/network_time",
     "//components/ntp_snippets",
     "//components/omnibox/browser",

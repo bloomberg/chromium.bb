@@ -458,12 +458,11 @@ void ChromeBrowserStateIOData::set_channel_id_service(
 std::unique_ptr<net::HttpNetworkSession>
 ChromeBrowserStateIOData::CreateHttpNetworkSession(
     const ProfileParams& profile_params) const {
-  net::HttpNetworkSession::Params params;
   net::URLRequestContext* context = main_request_context();
 
   IOSChromeIOThread* const io_thread = profile_params.io_thread;
 
-  io_thread->InitializeNetworkSessionParams(&params);
+  net::HttpNetworkSession::Params params(io_thread->NetworkSessionParams());
   net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(context,
                                                                  &params);
   if (!IsOffTheRecord() && io_thread->globals()->network_quality_estimator) {

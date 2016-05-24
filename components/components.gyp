@@ -55,6 +55,7 @@
     'metrics_services_manager.gypi',
     'navigation_metrics.gypi',
     'net_log.gypi',
+    'network_session_configurator.gypi',
     'network_time.gypi',
     'ntp_snippets.gypi',
     'ntp_tiles.gypi',

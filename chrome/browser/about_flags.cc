@@ -43,6 +43,7 @@
 #include "components/flags_ui/flags_storage.h"
 #include "components/flags_ui/flags_ui_switches.h"
 #include "components/nacl/common/nacl_switches.h"
+#include "components/network_session_configurator/switches.h"
 #include "components/ntp_tiles/switches.h"
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/omnibox/browser/omnibox_switches.h"

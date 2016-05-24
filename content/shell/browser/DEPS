@@ -1,4 +1,5 @@
 include_rules = [
+  "+components/network_session_configurator/switches.h",
   "-content/shell/browser/layout_test",
 ]
 

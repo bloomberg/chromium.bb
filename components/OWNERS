@@ -117,6 +117,8 @@ per-file navigation_interception.gypi=file://components/navigation_interception/
 
 per-file network_hints.gypi=file://components/network_hints/OWNERS
 
+per-file network_session_configurator.gypi=file://components/network_session_configurator/OWNERS
+
 per-file network_time.gypi=file://components/network_time/OWNERS
 
 per-file ntp_snippets.gypi=file://components/ntp_snippets/OWNERS

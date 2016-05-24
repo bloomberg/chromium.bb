@@ -408,6 +408,9 @@
       'network_hints/renderer/dns_prefetch_queue_unittest.cc',
       'network_hints/renderer/renderer_dns_prefetch_unittest.cc',
     ],
+    'network_session_configurator_unittest_sources': [
+      'network_session_configurator/network_session_configurator_unittest.cc',
+    ],
     'network_time_unittest_sources': [
       'network_time/network_time_tracker_unittest.cc',
     ],
@@ -1009,6 +1012,7 @@
         '<@(memory_pressure_unittest_sources)',
         '<@(metrics_unittest_sources)',
         '<@(mime_util_unittest_sources)',
+        '<@(network_session_configurator_unittest_sources)',
         '<@(network_time_unittest_sources)',
         '<@(ntp_snippets_unittest_sources)',
         '<@(offline_pages_background_unittest_sources)',
@@ -1133,6 +1137,7 @@
         'components.gyp:metrics_test_support',
         'components.gyp:metrics_ui',
         'components.gyp:net_log',
+        'components.gyp:network_session_configurator',
         'components.gyp:network_time',
         'components.gyp:ntp_snippets',
         'components.gyp:offline_pages',

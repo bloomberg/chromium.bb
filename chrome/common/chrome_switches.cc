@@ -271,9 +271,6 @@ const char kDisableExtensionsHttpThrottling[] =
 // Disable field trial tests configured in fieldtrial_testing_config.json.
 const char kDisableFieldTrialTestingConfig[] = "disable-field-trial-config";
 
-// Disable HTTP/2 and SPDY/3.1 protocols.
-const char kDisableHttp2[]                   = "disable-http2";
-
 // Disable the behavior that the second click on a launcher item (the click when
 // the item is already active) minimizes the item.
 const char kDisableMinimizeOnSecondLauncherItemClick[] =
@@ -309,13 +306,6 @@ const char kDisablePrintPreview[]           = "disable-print-preview";
 // a post we prompt to make sure they want to. This switch may be used to
 // disable that check. This switch is used during automated testing.
 const char kDisablePromptOnRepost[]         = "disable-prompt-on-repost";
-
-// Disables support for the QUIC protocol.
-const char kDisableQuic[]                   = "disable-quic";
-
-// Disable use of Chromium's port selection for the ephemeral port via bind().
-// This only has an effect if QUIC protocol is enabled.
-const char kDisableQuicPortSelection[]      = "disable-quic-port-selection";
 
 // Disables using bubbles for session restore request.
 const char kDisableSessionCrashedBubble[] = "disable-session-crashed-bubble";
@@ -496,19 +486,9 @@ const char kEnableProfiling[]               = "enable-profiling";
 const char kEnablePushApiBackgroundMode[] = "enable-push-api-background-mode";
 const char kDisablePushApiBackgroundMode[] = "disable-push-api-background-mode";
 
-// Enables support for the QUIC protocol.  This is a temporary testing flag.
-const char kEnableQuic[]                    = "enable-quic";
-
-// Enable use of Chromium's port selection for the ephemeral port via bind().
-// This only has an effect if QUIC protocol is enabled.
-const char kEnableQuicPortSelection[]       = "enable-quic-port-selection";
-
 // If the WebRTC logging private API is active, enables WebRTC event logging.
 const char kEnableWebRtcEventLoggingFromExtension[] =
     "enable-webrtc-event-logging-from-extension";
-
-// Enables support for HTTP alternative services.
-const char kEnableAlternativeServices[] = "enable-alternative-services";
 
 // Enables using bubbles for session restore request instead of infobars.
 const char kEnableSessionCrashedBubble[] = "enable-session-crashed-bubble";
@@ -643,13 +623,6 @@ const char kHostRules[]                     = "host-rules";
 // to disable host resolver retry attempts.
 const char kHostResolverRetryAttempts[]     = "host-resolver-retry-attempts";
 
-// Causes net::URLFetchers to ignore requests for SSL client certificates,
-// causing them to attempt an unauthenticated SSL/TLS session. This is intended
-// for use when testing various service URLs (eg: kPromoServerURL, kSbURLPrefix,
-// kSyncServiceURL, etc)
-const char kIgnoreUrlFetcherCertRequests[]  =
-    "ignore-urlfetcher-cert-requests";
-
 // Causes the browser to launch directly in incognito mode.
 const char kIncognito[]                     = "incognito";
 
@@ -778,9 +751,6 @@ const char kNumPacThreads[]                 = "num-pac-threads";
 // Launches URL in new browser window.
 const char kOpenInNewWindow[]               = "new-window";
 
-// Specifies a comma separated list of host/port pairs to force use of QUIC.
-const char kOriginToForceQuicOn[]           = "origin-to-force-quic-on";
-
 // The time that a new chrome process which is delegating to an already running
 // chrome process started. (See ProcessSingleton for more details.)
 const char kOriginalProcessStartTime[]      = "original-process-start-time";
@@ -888,19 +858,6 @@ const char kProxyServer[]                   = "proxy-server";
 // suspended to save memory usage. The default value is "0" and purging and
 // suspending never happen.
 const char kPurgeAndSuspendTime[]           = "purge-and-suspend-time";
-
-// Specifies a comma separated list of QUIC connection options to send to
-// the server.
-const char kQuicConnectionOptions[]         = "quic-connection-options";
-
-// Specifies a comma separated list of hosts to whitelist QUIC for.
-const char kQuicHostWhitelist[]             = "quic-host-whitelist";
-
-// Specifies the maximum length for a QUIC packet.
-const char kQuicMaxPacketLength[]           = "quic-max-packet-length";
-
-// Specifies the version of QUIC to use.
-const char kQuicVersion[]                   = "quic-version";
 
 // Porvides a list of addresses to discover DevTools remote debugging targets.
 // The format is <host>:<port>,...,<host>:port.

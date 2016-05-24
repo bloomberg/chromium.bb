@@ -7,6 +7,7 @@ include_rules = [
   "+components/mime_util",
   "+components/mus/public/interfaces",
   "+components/mus/public",
+  "+components/network_session_configurator/switches.h",
   "+components/profile_service",
   "+components/scheduler/common",
   "+components/tracing",

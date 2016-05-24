@@ -17,6 +17,7 @@ include_rules = [
   "+components/crash/content/browser",
   "+components/data_reduction_proxy/core/browser",
   "+components/navigation_interception",
+  "+components/network_session_configurator/switches.h",
   "+components/policy/core/browser",
   "+components/policy/core/common",
   "+components/pref_registry",

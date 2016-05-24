@@ -21,7 +21,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -30,6 +29,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "components/net_log/chrome_net_log.h"
+#include "components/network_session_configurator/network_session_configurator.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/pref_proxy_config_tracker.h"
 #include "components/variations/variations_associated_data.h"
@@ -60,16 +60,12 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_network_layer.h"
-#include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/nqe/external_estimate_provider.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
-#include "net/quic/crypto/crypto_protocol.h"
-#include "net/quic/quic_protocol.h"
-#include "net/quic/quic_utils.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/spdy/spdy_session.h"
 #include "net/ssl/channel_id_service.h"
@@ -91,54 +87,10 @@ namespace {
 
 const char kSupportedAuthSchemes[] = "basic,digest,ntlm";
 
-const char kTCPFastOpenFieldTrialName[] = "TCPFastOpen";
-const char kTCPFastOpenHttpsEnabledGroupName[] = "HttpsEnabled";
-
-const char kQuicFieldTrialName[] = "QUIC";
-const char kQuicFieldTrialEnabledGroupName[] = "Enabled";
-const char kQuicFieldTrialHttpsEnabledGroupName[] = "HttpsEnabled";
-
-// The SPDY trial composes two different trial plus control groups:
-//  * A "holdback" group with SPDY disabled, and corresponding control
-//  (SPDY/3.1). The primary purpose of the holdback group is to encourage site
-//  operators to do feature detection rather than UA-sniffing. As such, this
-//  trial runs continuously.
-//  * A SPDY/4 experiment, for SPDY/4 (aka HTTP/2) vs SPDY/3.1 comparisons and
-//  eventual SPDY/4 deployment.
-const char kSpdyFieldTrialName[] = "SPDY";
-const char kSpdyFieldTrialHoldbackGroupNamePrefix[] = "SpdyDisabled";
-const char kSpdyFieldTrialSpdy31GroupNamePrefix[] = "Spdy31Enabled";
-const char kSpdyFieldTrialSpdy4GroupNamePrefix[] = "Spdy4Enabled";
-const char kSpdyFieldTrialParametrizedPrefix[] = "Parametrized";
-
-// The AltSvc trial controls whether Alt-Svc headers are parsed.
-// Disabled:
-//     Alt-Svc headers are not parsed.
-//     Alternate-Protocol headers are parsed.
-// Enabled:
-//     Alt-Svc headers are parsed, but only same-host entries are used by
-//     default.  (Use "enable_alternative_service_with_different_host" QUIC
-//     parameter to enable entries with different hosts.)
-//     Alternate-Protocol headers are ignored for responses that have an Alt-Svc
-//     header.
-const char kAltSvcFieldTrialName[] = "ParseAltSvc";
-const char kAltSvcFieldTrialDisabledPrefix[] = "AltSvcDisabled";
-const char kAltSvcFieldTrialEnabledPrefix[] = "AltSvcEnabled";
-
 // Field trial for network quality estimator. Seeds RTT and downstream
 // throughput observations with values that correspond to the connection type
 // determined by the operating system.
 const char kNetworkQualityEstimatorFieldTrialName[] = "NetworkQualityEstimator";
-
-// Field trial for NPN.
-const char kNpnTrialName[] = "NPN";
-const char kNpnTrialEnabledGroupNamePrefix[] = "Enable";
-const char kNpnTrialDisabledGroupNamePrefix[] = "Disable";
-
-// Field trial for priority dependencies.
-const char kSpdyDependenciesFieldTrial[] = "SpdyEnableDependencies";
-const char kSpdyDependenciesFieldTrialEnable[] = "Enable";
-const char kSpdyDepencenciesFieldTrialDisable[] = "Disable";
 
 // Used for the "system" URLRequestContext.
 class SystemURLRequestContext : public net::URLRequestContext {
@@ -183,18 +135,6 @@ int GetSwitchValueAsInt(const base::CommandLine& command_line,
     return 0;
   }
   return value;
-}
-
-// Returns the value associated with |key| in |params| or "" if the
-// key is not present in the map.
-const std::string& GetVariationParam(
-    const std::map<std::string, std::string>& params,
-    const std::string& key) {
-  std::map<std::string, std::string>::const_iterator it = params.find(key);
-  if (it == params.end())
-    return base::EmptyString();
-
-  return it->second;
 }
 
 }  // namespace
@@ -310,9 +250,7 @@ IOSChromeIOThread::Globals::SystemRequestContextLeakChecker::
 }
 
 IOSChromeIOThread::Globals::Globals()
-    : system_request_context_leak_checker(this),
-      testing_fixed_http_port(0),
-      testing_fixed_https_port(0) {}
+    : system_request_context_leak_checker(this) {}
 
 IOSChromeIOThread::Globals::~Globals() {}
 
@@ -423,8 +361,7 @@ void IOSChromeIOThread::Init() {
   // Add built-in logs
   ct_verifier->AddLogs(ct_logs);
 
-  net::CTPolicyEnforcer* policy_enforcer = new net::CTPolicyEnforcer;
-  globals_->ct_policy_enforcer.reset(policy_enforcer);
+  params_.ct_policy_enforcer = new net::CTPolicyEnforcer;
 
   globals_->ssl_config_service = GetSSLConfigService();
 
@@ -441,19 +378,28 @@ void IOSChromeIOThread::Init() {
   globals_->http_user_agent_settings.reset(new net::StaticHttpUserAgentSettings(
       std::string(), web::GetWebClient()->GetUserAgent(false)));
   if (command_line.HasSwitch(switches::kIOSTestingFixedHttpPort)) {
-    globals_->testing_fixed_http_port =
+    params_.testing_fixed_http_port =
         GetSwitchValueAsInt(command_line, switches::kIOSTestingFixedHttpPort);
   }
   if (command_line.HasSwitch(switches::kIOSTestingFixedHttpsPort)) {
-    globals_->testing_fixed_https_port =
+    params_.testing_fixed_https_port =
         GetSwitchValueAsInt(command_line, switches::kIOSTestingFixedHttpsPort);
   }
-  ConfigureAltSvcGlobals(
-      base::FieldTrialList::FindFullName(kAltSvcFieldTrialName), globals_);
-  ConfigureQuic();
-  ConfigurePriorityDependencies();
-  InitializeNetworkOptions();
 
+  params_.ignore_certificate_errors = false;
+  params_.enable_quic_port_selection = false;
+  params_.enable_user_alternate_protocol_ports = false;
+
+  std::string quic_user_agent_id = ::GetChannelString();
+  if (!quic_user_agent_id.empty())
+    quic_user_agent_id.push_back(' ');
+  quic_user_agent_id.append(
+      version_info::GetProductNameAndVersionForUserAgent());
+  quic_user_agent_id.push_back(' ');
+  quic_user_agent_id.append(web::BuildOSCpuInfo());
+
+  network_session_configurator::ParseFieldTrials(true, true, quic_user_agent_id,
+                                                 &params_);
   const version_info::Channel channel = ::GetChannel();
   if (channel == version_info::Channel::UNKNOWN ||
       channel == version_info::Channel::CANARY ||
@@ -498,102 +444,6 @@ void IOSChromeIOThread::CleanUp() {
   base::debug::LeakTracker<SystemURLRequestContextGetter>::CheckForLeaks();
 }
 
-void IOSChromeIOThread::InitializeNetworkOptions() {
-  std::string group = base::FieldTrialList::FindFullName(kSpdyFieldTrialName);
-  VariationParameters params;
-  if (!variations::GetVariationParams(kSpdyFieldTrialName, &params)) {
-    params.clear();
-  }
-  ConfigureSpdyGlobals(group, params, globals_);
-
-  ConfigureSSLTCPFastOpen();
-
-  ConfigureNPNGlobals(base::FieldTrialList::FindFullName(kNpnTrialName),
-                      globals_);
-
-  // TODO(rch): Make the client socket factory a per-network session
-  // instance, constructed from a NetworkSession::Params, to allow us
-  // to move this option to IOSChromeIOThread::Globals &
-  // HttpNetworkSession::Params.
-}
-
-void IOSChromeIOThread::ConfigureSSLTCPFastOpen() {
-  const std::string trial_group =
-      base::FieldTrialList::FindFullName(kTCPFastOpenFieldTrialName);
-  if (trial_group == kTCPFastOpenHttpsEnabledGroupName)
-    globals_->enable_tcp_fast_open_for_ssl.set(true);
-}
-
-// static
-void IOSChromeIOThread::ConfigureSpdyGlobals(
-    base::StringPiece spdy_trial_group,
-    const VariationParameters& spdy_trial_params,
-    IOSChromeIOThread::Globals* globals) {
-  // No SPDY command-line flags have been specified. Examine trial groups.
-  if (spdy_trial_group.starts_with(kSpdyFieldTrialHoldbackGroupNamePrefix)) {
-    net::HttpStreamFactory::set_spdy_enabled(false);
-    return;
-  }
-  if (spdy_trial_group.starts_with(kSpdyFieldTrialSpdy31GroupNamePrefix)) {
-    globals->enable_spdy31.set(true);
-    globals->enable_http2.set(false);
-    return;
-  }
-  if (spdy_trial_group.starts_with(kSpdyFieldTrialSpdy4GroupNamePrefix)) {
-    globals->enable_spdy31.set(true);
-    globals->enable_http2.set(true);
-    return;
-  }
-  if (spdy_trial_group.starts_with(kSpdyFieldTrialParametrizedPrefix)) {
-    bool spdy_enabled = false;
-    globals->enable_spdy31.set(false);
-    globals->enable_http2.set(false);
-    if (base::LowerCaseEqualsASCII(
-            GetVariationParam(spdy_trial_params, "enable_http2"), "true")) {
-      spdy_enabled = true;
-      globals->enable_http2.set(true);
-    }
-    if (base::LowerCaseEqualsASCII(
-            GetVariationParam(spdy_trial_params, "enable_spdy31"), "true")) {
-      spdy_enabled = true;
-      globals->enable_spdy31.set(true);
-    }
-    // TODO(bnc): https://crbug.com/521597
-    // HttpStreamFactory::spdy_enabled_ is redundant with globals->enable_http2
-    // and enable_spdy31, can it be eliminated?
-    net::HttpStreamFactory::set_spdy_enabled(spdy_enabled);
-    return;
-  }
-
-  // By default, enable HTTP/2.
-  globals->enable_spdy31.set(true);
-  globals->enable_http2.set(true);
-}
-
-// static
-void IOSChromeIOThread::ConfigureAltSvcGlobals(
-    base::StringPiece altsvc_trial_group,
-    IOSChromeIOThread::Globals* globals) {
-  if (altsvc_trial_group.starts_with(kAltSvcFieldTrialEnabledPrefix)) {
-    globals->parse_alternative_services.set(true);
-    return;
-  }
-  if (altsvc_trial_group.starts_with(kAltSvcFieldTrialDisabledPrefix)) {
-    globals->parse_alternative_services.set(false);
-  }
-}
-
-// static
-void IOSChromeIOThread::ConfigureNPNGlobals(
-    base::StringPiece npn_trial_group,
-    IOSChromeIOThread::Globals* globals) {
-  if (npn_trial_group.starts_with(kNpnTrialEnabledGroupNamePrefix)) {
-    globals->enable_npn.set(true);
-  } else if (npn_trial_group.starts_with(kNpnTrialDisabledGroupNamePrefix)) {
-    globals->enable_npn.set(false);
-  }
-}
-
 void IOSChromeIOThread::CreateDefaultAuthHandlerFactory() {
   std::vector<std::string> supported_schemes =
       base::SplitString(kSupportedAuthSchemes, ",", base::TRIM_WHITESPACE,
@@ -613,65 +463,9 @@ void IOSChromeIOThread::ClearHostCache() {
     host_cache->clear();
 }
 
-void IOSChromeIOThread::InitializeNetworkSessionParams(
-    net::HttpNetworkSession::Params* params) {
-  InitializeNetworkSessionParamsFromGlobals(*globals_, params);
-}
-
-void IOSChromeIOThread::InitializeNetworkSessionParamsFromGlobals(
-    const IOSChromeIOThread::Globals& globals,
-    net::HttpNetworkSession::Params* params) {
-  //  The next two properties of the params don't seem to be
-  // elements of URLRequestContext, so they must be set here.
-  params->ct_policy_enforcer = globals.ct_policy_enforcer.get();
-
-  params->ignore_certificate_errors = false;
-  params->testing_fixed_http_port = globals.testing_fixed_http_port;
-  params->testing_fixed_https_port = globals.testing_fixed_https_port;
-  globals.enable_tcp_fast_open_for_ssl.CopyToIfSet(
-      &params->enable_tcp_fast_open_for_ssl);
-
-  globals.enable_spdy31.CopyToIfSet(&params->enable_spdy31);
-  globals.enable_http2.CopyToIfSet(&params->enable_http2);
-  globals.parse_alternative_services.CopyToIfSet(
-      &params->parse_alternative_services);
-  globals.enable_alternative_service_with_different_host.CopyToIfSet(
-      &params->enable_alternative_service_with_different_host);
-
-  globals.enable_npn.CopyToIfSet(&params->enable_npn);
-
-  globals.enable_priority_dependencies.CopyToIfSet(
-      &params->enable_priority_dependencies);
-
-  globals.enable_quic.CopyToIfSet(&params->enable_quic);
-  globals.quic_always_require_handshake_confirmation.CopyToIfSet(
-      &params->quic_always_require_handshake_confirmation);
-  globals.quic_disable_connection_pooling.CopyToIfSet(
-      &params->quic_disable_connection_pooling);
-  globals.quic_load_server_info_timeout_srtt_multiplier.CopyToIfSet(
-      &params->quic_load_server_info_timeout_srtt_multiplier);
-  globals.quic_enable_connection_racing.CopyToIfSet(
-      &params->quic_enable_connection_racing);
-  globals.quic_enable_non_blocking_io.CopyToIfSet(
-      &params->quic_enable_non_blocking_io);
-  globals.quic_prefer_aes.CopyToIfSet(&params->quic_prefer_aes);
-  globals.quic_disable_disk_cache.CopyToIfSet(&params->quic_disable_disk_cache);
-  globals.quic_max_number_of_lossy_connections.CopyToIfSet(
-      &params->quic_max_number_of_lossy_connections);
-  globals.quic_packet_loss_threshold.CopyToIfSet(
-      &params->quic_packet_loss_threshold);
-  globals.quic_socket_receive_buffer_size.CopyToIfSet(
-      &params->quic_socket_receive_buffer_size);
-  globals.quic_delay_tcp_race.CopyToIfSet(&params->quic_delay_tcp_race);
-  params->enable_quic_port_selection = false;
-  globals.quic_max_packet_length.CopyToIfSet(&params->quic_max_packet_length);
-  globals.quic_user_agent_id.CopyToIfSet(&params->quic_user_agent_id);
-  globals.quic_supported_versions.CopyToIfSet(&params->quic_supported_versions);
-  params->quic_connection_options = globals.quic_connection_options;
-  globals.quic_close_sessions_on_ip_change.CopyToIfSet(
-      &params->quic_close_sessions_on_ip_change);
-
-  params->enable_user_alternate_protocol_ports = false;
+const net::HttpNetworkSession::Params& IOSChromeIOThread::NetworkSessionParams()
+    const {
+  return params_;
 }
 
 base::TimeTicks IOSChromeIOThread::creation_time() const {
@@ -719,261 +513,12 @@ void IOSChromeIOThread::InitSystemRequestContextOnIOThread() {
       std::move(system_proxy_config_service_), true /* quick_check_enabled */);
 
   globals_->system_request_context.reset(
-      ConstructSystemRequestContext(globals_, net_log_));
-}
-
-void IOSChromeIOThread::ConfigurePriorityDependencies() {
-  std::string group =
-      base::FieldTrialList::FindFullName(kSpdyDependenciesFieldTrial);
-  if (group == kSpdyDependenciesFieldTrialEnable) {
-    globals_->enable_priority_dependencies.set(true);
-  } else if (group == kSpdyDepencenciesFieldTrialDisable) {
-    globals_->enable_priority_dependencies.set(false);
-  }
-}
-
-void IOSChromeIOThread::ConfigureQuic() {
-  // Always fetch the field trial group to ensure it is reported correctly.
-  // The command line flags will be associated with a group that is reported
-  // so long as trial is actually queried.
-  std::string group = base::FieldTrialList::FindFullName(kQuicFieldTrialName);
-  VariationParameters params;
-  if (!variations::GetVariationParams(kQuicFieldTrialName, &params)) {
-    params.clear();
-  }
-
-  ConfigureQuicGlobals(group, params, globals_);
-}
-
-void IOSChromeIOThread::ConfigureQuicGlobals(
-    base::StringPiece quic_trial_group,
-    const VariationParameters& quic_trial_params,
-    IOSChromeIOThread::Globals* globals) {
-  bool enable_quic = ShouldEnableQuic(quic_trial_group);
-  globals->enable_quic.set(enable_quic);
-
-  if (ShouldQuicEnableAlternativeServicesForDifferentHost(quic_trial_params)) {
-    globals->enable_alternative_service_with_different_host.set(true);
-    globals->parse_alternative_services.set(true);
-  } else {
-    globals->enable_alternative_service_with_different_host.set(false);
-  }
-
-  if (enable_quic) {
-    globals->quic_always_require_handshake_confirmation.set(
-        ShouldQuicAlwaysRequireHandshakeConfirmation(quic_trial_params));
-    globals->quic_disable_connection_pooling.set(
-        ShouldQuicDisableConnectionPooling(quic_trial_params));
-    int receive_buffer_size = GetQuicSocketReceiveBufferSize(quic_trial_params);
-    if (receive_buffer_size != 0) {
-      globals->quic_socket_receive_buffer_size.set(receive_buffer_size);
-    }
-    globals->quic_delay_tcp_race.set(ShouldQuicDelayTcpRace(quic_trial_params));
-    float load_server_info_timeout_srtt_multiplier =
-        GetQuicLoadServerInfoTimeoutSrttMultiplier(quic_trial_params);
-    if (load_server_info_timeout_srtt_multiplier != 0) {
-      globals->quic_load_server_info_timeout_srtt_multiplier.set(
-          load_server_info_timeout_srtt_multiplier);
-    }
-    globals->quic_enable_connection_racing.set(
-        ShouldQuicEnableConnectionRacing(quic_trial_params));
-    globals->quic_enable_non_blocking_io.set(
-        ShouldQuicEnableNonBlockingIO(quic_trial_params));
-    globals->quic_disable_disk_cache.set(
-        ShouldQuicDisableDiskCache(quic_trial_params));
-    globals->quic_prefer_aes.set(ShouldQuicPreferAes(quic_trial_params));
-    int max_number_of_lossy_connections =
-        GetQuicMaxNumberOfLossyConnections(quic_trial_params);
-    if (max_number_of_lossy_connections != 0) {
-      globals->quic_max_number_of_lossy_connections.set(
-          max_number_of_lossy_connections);
-    }
-    float packet_loss_threshold = GetQuicPacketLossThreshold(quic_trial_params);
-    if (packet_loss_threshold != 0)
-      globals->quic_packet_loss_threshold.set(packet_loss_threshold);
-    globals->quic_connection_options =
-        GetQuicConnectionOptions(quic_trial_params);
-    globals->quic_close_sessions_on_ip_change.set(
-        ShouldQuicCloseSessionsOnIpChange(quic_trial_params));
-  }
-
-  size_t max_packet_length = GetQuicMaxPacketLength(quic_trial_params);
-  if (max_packet_length != 0) {
-    globals->quic_max_packet_length.set(max_packet_length);
-  }
-
-  std::string quic_user_agent_id = ::GetChannelString();
-  if (!quic_user_agent_id.empty())
-    quic_user_agent_id.push_back(' ');
-  quic_user_agent_id.append(
-      version_info::GetProductNameAndVersionForUserAgent());
-  quic_user_agent_id.push_back(' ');
-  quic_user_agent_id.append(web::BuildOSCpuInfo());
-  globals->quic_user_agent_id.set(quic_user_agent_id);
-
-  net::QuicVersion version = GetQuicVersion(quic_trial_params);
-  if (version != net::QUIC_VERSION_UNSUPPORTED) {
-    net::QuicVersionVector supported_versions;
-    supported_versions.push_back(version);
-    globals->quic_supported_versions.set(supported_versions);
-  }
-}
-
-bool IOSChromeIOThread::ShouldEnableQuic(base::StringPiece quic_trial_group) {
-  return quic_trial_group.starts_with(kQuicFieldTrialEnabledGroupName) ||
-         quic_trial_group.starts_with(kQuicFieldTrialHttpsEnabledGroupName);
-}
-
-net::QuicTagVector IOSChromeIOThread::GetQuicConnectionOptions(
-    const VariationParameters& quic_trial_params) {
-  VariationParameters::const_iterator it =
-      quic_trial_params.find("connection_options");
-  if (it == quic_trial_params.end()) {
-    return net::QuicTagVector();
-  }
-
-  return net::QuicUtils::ParseQuicConnectionOptions(it->second);
-}
-
-bool IOSChromeIOThread::ShouldQuicAlwaysRequireHandshakeConfirmation(
-    const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params,
-                        "always_require_handshake_confirmation"),
-      "true");
-}
-
-bool IOSChromeIOThread::ShouldQuicDisableConnectionPooling(
-    const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "disable_connection_pooling"),
-      "true");
-}
-
-float IOSChromeIOThread::GetQuicLoadServerInfoTimeoutSrttMultiplier(
-    const VariationParameters& quic_trial_params) {
-  double value;
-  if (base::StringToDouble(
-          GetVariationParam(quic_trial_params, "load_server_info_time_to_srtt"),
-          &value)) {
-    return static_cast<float>(value);
-  }
-  return 0.0f;
-}
-
-bool IOSChromeIOThread::ShouldQuicEnableConnectionRacing(
-    const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "enable_connection_racing"), "true");
-}
-
-bool IOSChromeIOThread::ShouldQuicEnableNonBlockingIO(
-    const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "enable_non_blocking_io"), "true");
-}
-
-bool IOSChromeIOThread::ShouldQuicDisableDiskCache(
-    const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "disable_disk_cache"), "true");
-}
-
-bool IOSChromeIOThread::ShouldQuicPreferAes(
-    const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "prefer_aes"), "true");
-}
-
-bool IOSChromeIOThread::ShouldQuicEnableAlternativeServicesForDifferentHost(
-    const VariationParameters& quic_trial_params) {
-  // TODO(bnc): Remove inaccurately named "use_alternative_services" parameter.
-  return base::LowerCaseEqualsASCII(
-             GetVariationParam(quic_trial_params, "use_alternative_services"),
-             "true") ||
-         base::LowerCaseEqualsASCII(
-             GetVariationParam(
-                 quic_trial_params,
-                 "enable_alternative_service_with_different_host"),
-             "true");
-}
-
-int IOSChromeIOThread::GetQuicMaxNumberOfLossyConnections(
-    const VariationParameters& quic_trial_params) {
-  int value;
-  if (base::StringToInt(GetVariationParam(quic_trial_params,
-                                          "max_number_of_lossy_connections"),
-                        &value)) {
-    return value;
-  }
-  return 0;
-}
-
-float IOSChromeIOThread::GetQuicPacketLossThreshold(
-    const VariationParameters& quic_trial_params) {
-  double value;
-  if (base::StringToDouble(
-          GetVariationParam(quic_trial_params, "packet_loss_threshold"),
-          &value)) {
-    return static_cast<float>(value);
-  }
-  return 0.0f;
-}
-
-int IOSChromeIOThread::GetQuicSocketReceiveBufferSize(
-    const VariationParameters& quic_trial_params) {
-  int value;
-  if (base::StringToInt(
-          GetVariationParam(quic_trial_params, "receive_buffer_size"),
-          &value)) {
-    return value;
-  }
-  return 0;
-}
-
-bool IOSChromeIOThread::ShouldQuicDelayTcpRace(
-    const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "delay_tcp_race"), "true");
-}
-
-bool IOSChromeIOThread::ShouldQuicCloseSessionsOnIpChange(
-    const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "close_sessions_on_ip_change"),
-      "true");
-}
-
-size_t IOSChromeIOThread::GetQuicMaxPacketLength(
-    const VariationParameters& quic_trial_params) {
-  unsigned value;
-  if (base::StringToUint(
-          GetVariationParam(quic_trial_params, "max_packet_length"), &value)) {
-    return value;
-  }
-  return 0;
-}
-
-net::QuicVersion IOSChromeIOThread::GetQuicVersion(
-    const VariationParameters& quic_trial_params) {
-  return ParseQuicVersion(GetVariationParam(quic_trial_params, "quic_version"));
-}
-
-net::QuicVersion IOSChromeIOThread::ParseQuicVersion(
-    const std::string& quic_version) {
-  net::QuicVersionVector supported_versions = net::QuicSupportedVersions();
-  for (size_t i = 0; i < supported_versions.size(); ++i) {
-    net::QuicVersion version = supported_versions[i];
-    if (net::QuicVersionToString(version) == quic_version) {
-      return version;
-    }
-  }
-
-  return net::QUIC_VERSION_UNSUPPORTED;
+      ConstructSystemRequestContext(globals_, params_, net_log_));
 }
 
 net::URLRequestContext* IOSChromeIOThread::ConstructSystemRequestContext(
     IOSChromeIOThread::Globals* globals,
+    const net::HttpNetworkSession::Params& params,
     net::NetLog* net_log) {
   net::URLRequestContext* context = new SystemURLRequestContext;
   context->set_net_log(net_log);
@@ -1010,8 +555,7 @@ net::URLRequestContext* IOSChromeIOThread::ConstructSystemRequestContext(
   context->set_http_server_properties(
       globals->http_server_properties->GetWeakPtr());
 
-  net::HttpNetworkSession::Params system_params;
-  InitializeNetworkSessionParamsFromGlobals(*globals, &system_params);
+  net::HttpNetworkSession::Params system_params(params);
   net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(
       context, &system_params);
 

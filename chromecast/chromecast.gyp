@@ -333,6 +333,7 @@
         '../components/components.gyp:devtools_http_handler',
         '../components/components.gyp:network_hints_browser',
         '../components/components.gyp:network_hints_renderer',
+        '../components/components.gyp:network_session_configurator_switches',
         '../components/components.gyp:metrics',
         '../components/components.gyp:metrics_gpu',
         '../components/components.gyp:metrics_net',

@@ -90,6 +90,7 @@ static_library("common") {
     "//components/metrics:net",
     "//components/nacl/common:process_type",
     "//components/nacl/common:switches",
+    "//components/network_session_configurator:switches",
     "//components/offline_pages:switches",
     "//components/omnibox/common",
     "//components/policy",

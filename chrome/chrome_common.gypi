@@ -339,6 +339,7 @@
         '<(DEPTH)/components/components.gyp:json_schema',
         '<(DEPTH)/components/components.gyp:metrics',
         '<(DEPTH)/components/components.gyp:metrics_net',
+        '<(DEPTH)/components/components.gyp:network_session_configurator_switches',
         '<(DEPTH)/components/components.gyp:omnibox_common',
         '<(DEPTH)/components/components.gyp:policy',
         '<(DEPTH)/components/components.gyp:policy_component_common',

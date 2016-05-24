@@ -1,6 +1,7 @@
 include_rules = [
   "+chrome/grit",  # For generated headers.
   "+components/prefs",
+  "+components/network_session_configurator/switches.h",
 
   # TODO(fdoray): Remove this once the PreRead field trial has expired.
   # crbug.com/577698

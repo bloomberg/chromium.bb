@@ -3343,6 +3343,7 @@
             '../components/components.gyp:navigation_interception',
             '../components/components.gyp:net_log',
             '../components/components.gyp:network_hints_common',
+            '../components/components.gyp:network_session_configurator',
             '../components/components.gyp:ntp_snippets',
             '../components/components.gyp:ntp_tiles',
             '../components/components.gyp:packed_ct_ev_whitelist',

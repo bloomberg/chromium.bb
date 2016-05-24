@@ -84,6 +84,7 @@
         '../../components/components.gyp:metrics_ui',
         '../../components/components.gyp:navigation_metrics',
         '../../components/components.gyp:net_log',
+        '../../components/components.gyp:network_session_configurator',
         '../../components/components.gyp:network_time',
         '../../components/components.gyp:ntp_snippets',
         '../../components/components.gyp:omnibox_browser',
