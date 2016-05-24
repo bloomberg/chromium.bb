@@ -591,6 +591,16 @@ std::unique_ptr<base::SharedMemory> ChildThreadImpl::AllocateSharedMemory(
     size_t buf_size,
     IPC::Sender* sender) {
   std::unique_ptr<base::SharedMemory> shared_buf;
+#if defined(OS_WIN)
+  shared_buf.reset(new base::SharedMemory);
+  base::SharedMemoryCreateOptions options;
+  options.create_without_name_or_permissions = true;
+  options.size = buf_size;
+  if (!shared_buf->Create(options)) {
+    NOTREACHED();
+    return nullptr;
+  }
+#else
   // Ask the browser to create the shared memory, since this is blocked by the
   // sandbox on most platforms.
   base::SharedMemoryHandle shared_mem_handle;
@@ -606,6 +616,7 @@ std::unique_ptr<base::SharedMemory> ChildThreadImpl::AllocateSharedMemory(
     // Send is allowed to fail during shutdown. Return null in this case.
     return nullptr;
   }
+#endif
   return shared_buf;
 }
 

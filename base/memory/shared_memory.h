@@ -55,6 +55,12 @@ struct BASE_EXPORT SharedMemoryCreateOptions {
 
   // If true, the file can be shared read-only to a process.
   bool share_read_only;
+
+#if defined(OS_WIN)
+  // If true, creates a file mapping without a name or proper ACLs. This is a
+  // stop-gap measure during investigation of https://crbug.com/585013.
+  bool create_without_name_or_permissions = false;
+#endif
 };
 
 // Platform abstraction for shared memory.  Provides a C++ wrapper
