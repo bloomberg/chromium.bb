@@ -1,76 +1,61 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests cue timings that contain hours (they are optional), and tests various syntax errors in timings with hours.</title>
+<script src="track-helpers.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<video>
+    <track src="captions-webvtt/tc009-timings-hour.vtt">
+    <track src="captions-webvtt/tc009-timings-hour-error.vtt">
+</video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
+    var trackElements = document.querySelectorAll("track");
+    for (var i = 0; i < video.textTracks.length; i++)
+        trackElements[i].onload = t.step_func(trackLoaded);
 
-            numberOfTrackTests = 2;
+    enableAllTextTracks(video.textTracks);
 
-            function trackLoaded()
+    var numberOfTracksLoaded = 0;
+    function trackLoaded() {
+        numberOfTracksLoaded++;
+        if (numberOfTracksLoaded != 2)
+            return;
+
+        testTrack0();
+        testTrack1();
+        t.done();
+    }
+
+    function testTrack0() {
+        var expected = [
             {
-                numberOfTracksLoaded++;
-                if (numberOfTracksLoaded == numberOfTrackTests) {
-                    testTrack0();
-                    testTrack1();
-                }
-            }
-
-            function testTrack0()
+                id : "1",
+                startTime : 0,
+                endTime : 30.5,
+                text : "Bear is Coming!!!!!"
+            },
             {
-                findMediaElement();
-                var expected =
-                {
-                    length : 3,
-                    tests:
-                    [
-                        {
-                            property : "id",
-                            values : ["1", "2", "3"],
-                        },
-                        {
-                            property : "startTime",
-                            values : [0.0, 31.0, 61.0],
-                        },
-                        {
-                            property : "endTime",
-                            values : [30.5, 60.5, 361200.5],
-                        },
-                        {
-                            property : "text",
-                            values : ["Bear is Coming!!!!!", "I said Bear is coming!!!!", "I said Bear is coming now!!!!"],
-                        },
-                    ],
-                };
-                testCues(0, expected);
-
-                allTestsEnded();
-            }
-
-            function testTrack1()
+                id : "2",
+                startTime : 31,
+                endTime : 60.5,
+                text : "I said Bear is coming!!!!"
+            },
             {
-                findMediaElement();
-                var expected =
-                {
-                    length : 0,
-                    tests:
-                    [],
-                };
-                testCues(1, expected);
-
-                allTestsEnded();
+                id : "3",
+                startTime : 61,
+                endTime : 361200.5,
+                text : "I said Bear is coming now!!!!"
             }
-        </script>
-    </head>
-    <body onload="enableAllTextTracks()">
-        <p>Tests cue timings that contain hours (they are optional), and tests various syntax errors in timings with hours.</p>
-        <video>
-            <track src="captions-webvtt/tc009-timings-hour.vtt" onload="trackLoaded()">
-            <track src="captions-webvtt/tc009-timings-hour-error.vtt" onload="trackLoaded()">
-        </video>
-    </body>
-</html>
+        ];
+
+        assert_cues_equal(video.textTracks[0].cues, expected);
+    }
+
+    function testTrack1() {
+        // Test that all the cues are ignored.
+        assert_cues_equal(video.textTracks[1].cues, []);
+    }
+});
+</script>

@@ -1,34 +1,17 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests cue without timings are ignored.</title>
+<script src="track-helpers.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<video>
+    <track src="captions-webvtt/tc010-no-timings.vtt" default>
+</video>
+<script>
+async_test(function(t) {
+    var track = document.querySelector("track");
 
-        <script src=../media-file.js></script>
-        <!-- TODO(philipj): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
-
-            function trackLoaded()
-            {
-                findMediaElement();
-                var expected =
-                {
-                    length : 0,
-                    tests:
-                    [],
-                };
-                testCues(0, expected);
-
-                endTest();
-            }
-
-        </script>
-    </head>
-    <body>
-    <p>Tests cue without timings are ignored.</p>
-        <video>
-            <track src="captions-webvtt/tc010-no-timings.vtt" onload="trackLoaded()" default>
-        </video>
-    </body>
-</html>
+    track.onload = t.step_func_done(function() {
+        assert_cues_equal(track.track.cues, []);
+    });
+});
+</script>
