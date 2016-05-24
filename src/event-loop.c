@@ -228,7 +228,7 @@ struct wl_event_source_signal {
 
 static int
 wl_event_source_signal_dispatch(struct wl_event_source *source,
-			       struct epoll_event *ep)
+				struct epoll_event *ep)
 {
 	struct wl_event_source_signal *signal_source =
 		(struct wl_event_source_signal *) source;
@@ -250,9 +250,9 @@ struct wl_event_source_interface signal_source_interface = {
 
 WL_EXPORT struct wl_event_source *
 wl_event_loop_add_signal(struct wl_event_loop *loop,
-			int signal_number,
-			wl_event_loop_signal_func_t func,
-			void *data)
+			 int signal_number,
+			 wl_event_loop_signal_func_t func,
+			 void *data)
 {
 	struct wl_event_source_signal *source;
 	sigset_t mask;

@@ -69,9 +69,9 @@ wl_event_loop_add_timer(struct wl_event_loop *loop,
 
 struct wl_event_source *
 wl_event_loop_add_signal(struct wl_event_loop *loop,
-			int signal_number,
-			wl_event_loop_signal_func_t func,
-			void *data);
+			 int signal_number,
+			 wl_event_loop_signal_func_t func,
+			 void *data);
 
 int
 wl_event_source_timer_update(struct wl_event_source *source,
