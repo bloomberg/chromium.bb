@@ -33,6 +33,7 @@ public:
     unsigned columnNumber() const { return m_columnNumber; }
     PassOwnPtr<V8StackTrace> takeStackTrace() { return std::move(m_stackTrace); }
     int scriptId() const { return m_scriptId; }
+    void toTracedValue(TracedValue*, const char* name) const;
 
 private:
     SourceLocation(const String& url, unsigned lineNumber, unsigned columnNumber, PassOwnPtr<V8StackTrace>, int scriptId);

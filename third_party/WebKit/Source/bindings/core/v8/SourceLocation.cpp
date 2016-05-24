@@ -84,4 +84,19 @@ SourceLocation::~SourceLocation()
 {
 }
 
+void SourceLocation::toTracedValue(TracedValue* value, const char* name) const
+{
+    if (!m_stackTrace || m_stackTrace->isEmpty())
+        return;
+    value->beginArray(name);
+    value->beginDictionary();
+    value->setString("functionName", m_stackTrace->topFunctionName());
+    value->setString("scriptId", m_stackTrace->topScriptId());
+    value->setString("url", m_stackTrace->topSourceURL());
+    value->setInteger("lineNumber", m_stackTrace->topLineNumber());
+    value->setInteger("columnNumber", m_stackTrace->topColumnNumber());
+    value->endDictionary();
+    value->endArray();
+}
+
 } // namespace blink

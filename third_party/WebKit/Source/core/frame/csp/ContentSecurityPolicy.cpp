@@ -25,8 +25,8 @@
 
 #include "core/frame/csp/ContentSecurityPolicy.h"
 
-#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
 #include "core/dom/SandboxFlags.h"
@@ -811,15 +811,12 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
     if (!SecurityOrigin::isSecure(document->url()) && document->loader())
         init.setStatusCode(document->loader()->response().httpStatusCode());
 
-    RefPtr<ScriptCallStack> stack = ScriptCallStack::capture(1);
-    if (!stack || stack->isEmpty())
-        return;
-
-    if (stack->topLineNumber()) {
-        KURL source = KURL(ParsedURLString, stack->topSourceURL());
+    OwnPtr<SourceLocation> location = SourceLocation::capture(document);
+    if (location->lineNumber()) {
+        KURL source = KURL(ParsedURLString, location->url());
         init.setSourceFile(stripURLForUseInReport(document, source));
-        init.setLineNumber(stack->topLineNumber());
-        init.setColumnNumber(stack->topColumnNumber());
+        init.setLineNumber(location->lineNumber());
+        init.setColumnNumber(location->columnNumber());
     }
 }
 

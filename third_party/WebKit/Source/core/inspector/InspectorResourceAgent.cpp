@@ -31,7 +31,7 @@
 #include "core/inspector/InspectorResourceAgent.h"
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
-#include "bindings/core/v8/ScriptCallStack.h"
+#include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/fetch/FetchInitiatorInfo.h"
@@ -788,7 +788,7 @@ void InspectorResourceAgent::didScheduleStyleRecalculation(Document* document)
 
 PassOwnPtr<protocol::Network::Initiator> InspectorResourceAgent::buildInitiatorObject(Document* document, const FetchInitiatorInfo& initiatorInfo)
 {
-    RefPtr<ScriptCallStack> stackTrace = ScriptCallStack::capture();
+    OwnPtr<V8StackTrace> stackTrace = SourceLocation::capture(document)->takeStackTrace();
     if (stackTrace) {
         OwnPtr<protocol::Network::Initiator> initiatorObject = protocol::Network::Initiator::create()
             .setType(protocol::Network::Initiator::TypeEnum::Script).build();
