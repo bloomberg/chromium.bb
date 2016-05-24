@@ -77,7 +77,7 @@ public class SyncPreference extends Preference {
         boolean syncEnabled = AndroidSyncSettings.isSyncEnabled(context);
 
         if (syncEnabled) {
-            if (!profileSyncService.isBackendInitialized()) {
+            if (!profileSyncService.isSyncActive()) {
                 return res.getString(R.string.sync_setup_progress);
             }
 
