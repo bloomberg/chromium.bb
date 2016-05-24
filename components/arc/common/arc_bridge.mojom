@@ -16,6 +16,7 @@ import "intent_helper.mojom";
 import "metrics.mojom";
 import "net.mojom";
 import "notifications.mojom";
+import "obb_mounter.mojom";
 import "policy.mojom";
 import "power.mojom";
 import "process.mojom";
@@ -69,6 +70,9 @@ interface ArcBridgeHost {
 
   // Notifies Chrome that the NotificationsInstance interface is ready.
   OnNotificationsInstanceReady@102(NotificationsInstance instance_ptr);
+
+  // Notifies Chrome that the ObbMounter interface is ready.
+  [MinVersion=13] OnObbMounterInstanceReady@119(ObbMounterInstance instance_ptr);
 
   // Notifies Chrome that the PolicyInstance interface is ready.
   [MinVersion=7] OnPolicyInstanceReady@114(PolicyInstance instance_ptr);

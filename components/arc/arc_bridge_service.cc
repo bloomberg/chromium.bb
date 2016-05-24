@@ -80,6 +80,8 @@ void ArcBridgeService::AddObserver(Observer* observer) {
     observer->OnNetInstanceReady();
   if (notifications_instance())
     observer->OnNotificationsInstanceReady();
+  if (obb_mounter_instance())
+    observer->OnObbMounterInstanceReady();
   if (policy_instance())
     observer->OnPolicyInstanceReady();
   if (power_instance())
@@ -402,6 +404,32 @@ void ArcBridgeService::CloseNotificationsChannel() {
   FOR_EACH_OBSERVER(Observer, observer_list(), OnNotificationsInstanceClosed());
 }
 
+void ArcBridgeService::OnObbMounterInstanceReady(
+    mojom::ObbMounterInstancePtr obb_mounter_ptr) {
+  DCHECK(CalledOnValidThread());
+  temporary_obb_mounter_ptr_ = std::move(obb_mounter_ptr);
+  temporary_obb_mounter_ptr_.QueryVersion(base::Bind(
+      &ArcBridgeService::OnObbMounterVersionReady,
+      weak_factory_.GetWeakPtr()));
+}
+
+void ArcBridgeService::OnObbMounterVersionReady(int32_t version) {
+  DCHECK(CalledOnValidThread());
+  obb_mounter_ptr_ = std::move(temporary_obb_mounter_ptr_);
+  obb_mounter_ptr_.set_connection_error_handler(base::Bind(
+      &ArcBridgeService::CloseObbMounterChannel,
+      weak_factory_.GetWeakPtr()));
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnObbMounterInstanceReady());
+}
+
+void ArcBridgeService::CloseObbMounterChannel() {
+  if (!obb_mounter_ptr_)
+    return;
+
+  obb_mounter_ptr_.reset();
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnObbMounterInstanceClosed());
+}
+
 void ArcBridgeService::OnPolicyInstanceReady(
     mojom::PolicyInstancePtr policy_ptr) {
   DCHECK(CalledOnValidThread());
@@ -590,6 +618,7 @@ void ArcBridgeService::CloseAllChannels() {
   CloseMetricsChannel();
   CloseNetChannel();
   CloseNotificationsChannel();
+  CloseObbMounterChannel();
   ClosePolicyChannel();
   ClosePowerChannel();
   CloseProcessChannel();

@@ -120,6 +120,10 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
     virtual void OnNetInstanceReady() {}
     virtual void OnNetInstanceClosed() {}
 
+    // Called whenever the ARC OBB mounter interface state changes.
+    virtual void OnObbMounterInstanceReady() {}
+    virtual void OnObbMounterInstanceClosed() {}
+
     // Called whenever the ARC policy interface state changes.
     virtual void OnPolicyInstanceReady() {}
     virtual void OnPolicyInstanceClosed() {}
@@ -205,6 +209,9 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   mojom::NotificationsInstance* notifications_instance() {
     return notifications_ptr_.get();
   }
+  mojom::ObbMounterInstance* obb_mounter_instance() {
+    return obb_mounter_ptr_.get();
+  }
   mojom::PolicyInstance* policy_instance() { return policy_ptr_.get(); }
   mojom::PowerInstance* power_instance() { return power_ptr_.get(); }
   mojom::ProcessInstance* process_instance() { return process_ptr_.get(); }
@@ -230,6 +237,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   int32_t metrics_version() const { return metrics_ptr_.version(); }
   int32_t net_version() const { return net_ptr_.version(); }
   int32_t notifications_version() const { return notifications_ptr_.version(); }
+  int32_t obb_mounter_version() const { return obb_mounter_ptr_.version(); }
   int32_t policy_version() const { return policy_ptr_.version(); }
   int32_t power_version() const { return power_ptr_.version(); }
   int32_t process_version() const { return process_ptr_.version(); }
@@ -260,6 +268,8 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   void OnNetInstanceReady(mojom::NetInstancePtr net_ptr) override;
   void OnNotificationsInstanceReady(
       mojom::NotificationsInstancePtr notifications_ptr) override;
+  void OnObbMounterInstanceReady(
+      mojom::ObbMounterInstancePtr obb_mounter_ptr) override;
   void OnPolicyInstanceReady(mojom::PolicyInstancePtr policy_ptr) override;
   void OnPowerInstanceReady(mojom::PowerInstancePtr power_ptr) override;
   void OnProcessInstanceReady(mojom::ProcessInstancePtr process_ptr) override;
@@ -311,6 +321,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   void CloseMetricsChannel();
   void CloseNetChannel();
   void CloseNotificationsChannel();
+  void CloseObbMounterChannel();
   void ClosePolicyChannel();
   void ClosePowerChannel();
   void CloseProcessChannel();
@@ -331,6 +342,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   void OnMetricsVersionReady(int32_t version);
   void OnNetVersionReady(int32_t version);
   void OnNotificationsVersionReady(int32_t version);
+  void OnObbMounterVersionReady(int32_t version);
   void OnPolicyVersionReady(int32_t version);
   void OnPowerVersionReady(int32_t version);
   void OnProcessVersionReady(int32_t version);
@@ -351,6 +363,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   mojom::MetricsInstancePtr metrics_ptr_;
   mojom::NetInstancePtr net_ptr_;
   mojom::NotificationsInstancePtr notifications_ptr_;
+  mojom::ObbMounterInstancePtr obb_mounter_ptr_;
   mojom::PolicyInstancePtr policy_ptr_;
   mojom::PowerInstancePtr power_ptr_;
   mojom::ProcessInstancePtr process_ptr_;
@@ -376,6 +389,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   mojom::MetricsInstancePtr temporary_metrics_ptr_;
   mojom::NetInstancePtr temporary_net_ptr_;
   mojom::NotificationsInstancePtr temporary_notifications_ptr_;
+  mojom::ObbMounterInstancePtr temporary_obb_mounter_ptr_;
   mojom::PolicyInstancePtr temporary_policy_ptr_;
   mojom::PowerInstancePtr temporary_power_ptr_;
   mojom::ProcessInstancePtr temporary_process_ptr_;
