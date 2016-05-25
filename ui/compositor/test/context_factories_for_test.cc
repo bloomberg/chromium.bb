@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/sys_info.h"
+#include "cc/surfaces/surface_manager.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/test/in_process_context_factory.h"
@@ -13,6 +14,7 @@
 
 namespace {
 
+static cc::SurfaceManager* g_surface_manager = nullptr;
 static ui::ContextFactory* g_implicit_factory = NULL;
 static gfx::DisableNullDrawGLBindings* g_disable_null_draw = NULL;
 
@@ -30,14 +32,17 @@ ui::ContextFactory* InitializeContextFactoryForTests(bool enable_pixel_output) {
   if (enable_pixel_output)
     g_disable_null_draw = new gfx::DisableNullDrawGLBindings;
   bool context_factory_for_test = true;
+  g_surface_manager = new cc::SurfaceManager;
   g_implicit_factory =
-      new InProcessContextFactory(context_factory_for_test, nullptr);
+      new InProcessContextFactory(context_factory_for_test, g_surface_manager);
   return g_implicit_factory;
 }
 
 void TerminateContextFactoryForTests() {
   delete g_implicit_factory;
   g_implicit_factory = NULL;
+  delete g_surface_manager;
+  g_surface_manager = nullptr;
   delete g_disable_null_draw;
   g_disable_null_draw = NULL;
 }
