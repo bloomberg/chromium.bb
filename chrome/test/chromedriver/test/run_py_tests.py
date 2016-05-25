@@ -67,11 +67,6 @@ _VERSION_SPECIFIC_FILTER = {}
 _VERSION_SPECIFIC_FILTER['HEAD'] = [
     # https://code.google.com/p/chromedriver/issues/detail?id=992
     'ChromeDownloadDirTest.testDownloadDirectoryOverridesExistingPreferences',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1381
-    'ChromeDriverTest.testCanClickAlertInIframes',
-    'ChromeDriverTest.testAlert',
-    'ChromeDriverTest.testClickElementAfterNavigation',
-    'ChromeDriverTest.testUnexpectedAlertOpenExceptionMessage',
 ]
 _VERSION_SPECIFIC_FILTER['49'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1302
@@ -153,11 +148,6 @@ _ANDROID_NEGATIVE_FILTER['chrome_beta'] = (
 _ANDROID_NEGATIVE_FILTER['chromium'] = (
     _ANDROID_NEGATIVE_FILTER['chrome'] + [
         'ChromeDriverTest.testSwitchToWindow',
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1381
-        'ChromeDriverTest.testCanClickAlertInIframes',
-        'ChromeDriverTest.testAlert',
-        'ChromeDriverTest.testClickElementAfterNavigation',
-        'ChromeDriverTest.testUnexpectedAlertOpenExceptionMessage',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (

@@ -62,6 +62,15 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
                                               const Timeout* timeout,
                                               bool* is_pending) {
   if (!IsExpectingFrameLoadingEvents()) {
+    if (dialog_manager_->IsDialogOpen()) {
+      // The render process is paused while modal dialogs are open, so
+      // Runtime.evaluate will block and time out if we attempt to call it. In
+      // this case we can consider the page to have loaded, so that we return
+      // control back to the test and let it dismiss the dialog.
+      *is_pending = false;
+      return Status(kOk);
+    }
+
     // Some DevTools commands (e.g. Input.dispatchMouseEvent) are handled in the
     // browser process, and may cause the renderer process to start a new
     // navigation. We need to call Runtime.evaluate to force a roundtrip to the
@@ -79,13 +88,11 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
       // events from it until we reconnect.
       *is_pending = false;
       return Status(kOk);
-    } else if (status.IsError() && dialog_manager_->IsDialogOpen()) {
-      // When a dialog is open, DevTools returns "Internal error: result is not
-      // an Object" for this request. If this happens, we assume that we're
-      // talking to the right renderer process, and determine whether a
-      // navigation is pending based on the number of scheduled and pending
-      // frames.
-      LOG(WARNING) << "Failed to evaluate expression while dialog was open";
+    } else if (status.code() == kUnexpectedAlertOpen) {
+      // The JS event loop is paused while modal dialogs are open, so return
+      // control to the test so that it can dismiss the dialog.
+      *is_pending = false;
+      return Status(kOk);
     } else if (status.IsError() ||
                !result->GetInteger("result.value", &value) ||
                value != 1) {
