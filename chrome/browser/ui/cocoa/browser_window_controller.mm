@@ -198,6 +198,13 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
                             autorelease]];
 }
 
+// Returns true if the Tab Detaching in Fullscreen is enabled. It's enabled by
+// default.
+bool IsTabDetachingInFullscreenEnabled() {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableFullscreenTabDetaching);
+}
+
 }  // namespace
 
 @interface NSWindow (NSPrivateApis)
@@ -1306,9 +1313,7 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
 }
 
 - (BOOL)tabTearingAllowed {
-  return ![self isInAnyFullscreenMode] ||
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableFullscreenTabDetaching);
+  return ![self isInAnyFullscreenMode] || IsTabDetachingInFullscreenEnabled();
 }
 
 - (BOOL)windowMovementAllowed {

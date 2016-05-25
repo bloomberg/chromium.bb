@@ -333,6 +333,7 @@ extern const char kAppsKeepChromeAliveInTests[];
 extern const char kHostedAppQuitNotification[];
 extern const char kDisableAppInfoDialogMac[];
 extern const char kDisableAppWindowCycling[];
+extern const char kDisableFullscreenTabDetaching[];
 extern const char kDisableHostedAppShimCreation[];
 extern const char kDisableHostedAppsInWindows[];
 extern const char kDisableMacViewsNativeAppWindows[];

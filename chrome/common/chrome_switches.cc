@@ -1121,6 +1121,10 @@ const char kDisableAppInfoDialogMac[] = "disable-app-info-dialog-mac";
 // Disables custom Cmd+` window cycling for platform apps and hosted apps.
 const char kDisableAppWindowCycling[] = "disable-app-window-cycling";
 
+// Disables tab detaching in fullscreen mode on Mac.
+const char kDisableFullscreenTabDetaching[] =
+    "disable-fullscreen-tab-detaching";
+
 // Disables app shim creation for hosted apps on Mac.
 const char kDisableHostedAppShimCreation[] = "disable-hosted-app-shim-creation";
 

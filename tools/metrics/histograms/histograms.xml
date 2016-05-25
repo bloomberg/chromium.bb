@@ -78111,6 +78111,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1832575380" label="show-saved-copy"/>
   <int value="-1832221649" label="disable-out-of-process-pac"/>
   <int value="-1821058653" label="enable-delay-agnostic-aec"/>
+  <int value="-1804485171" label="disable-fullscreen-tab-detaching"/>
   <int value="-1798337879" label="enable-md-downloads"/>
   <int value="-1772172557" label="enable-osk-overscroll"/>
   <int value="-1767470652" label="out-of-process-pdf"/>

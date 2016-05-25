@@ -846,8 +846,7 @@ const FeatureEntry kFeatureEntries[] = {
         "disable-display-color-calibration",
         IDS_FLAGS_DISPLAY_COLOR_CALIBRATION_NAME,
         IDS_FLAGS_DISPLAY_COLOR_CALIBRATION_DESCRIPTION, kOsCrOS,
-        SINGLE_DISABLE_VALUE_TYPE(
-            ::switches::kDisableDisplayColorCalibration),
+        SINGLE_DISABLE_VALUE_TYPE(::switches::kDisableDisplayColorCalibration),
     },
     {
         "disable-quirks-client", IDS_FLAGS_DISABLE_QUIRKS_CLIENT_NAME,
@@ -1683,11 +1682,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_TAB_SWITCHER_IN_DOCUMENT_MODE_NAME,
      IDS_FLAGS_TAB_SWITCHER_IN_DOCUMENT_MODE_DESCRIPTION, kOsAndroid,
      SINGLE_VALUE_TYPE(switches::kEnableTabSwitcherInDocumentMode)},
-     {"app-link", IDS_FLAGS_ENABLE_APP_LINK_NAME,
+    {"app-link", IDS_FLAGS_ENABLE_APP_LINK_NAME,
      IDS_FLAGS_ENABLE_APP_LINK_DESCRIPTION, kOsAndroid,
-     ENABLE_DISABLE_VALUE_TYPE(
-       switches::kEnableAppLink,
-       switches::kDisableAppLink)},
+     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAppLink,
+                               switches::kDisableAppLink)},
 #endif  // OS_ANDROID
     {"enable-md-feedback", IDS_FLAGS_ENABLE_MATERIAL_DESIGN_FEEDBACK_NAME,
      IDS_FLAGS_ENABLE_MATERIAL_DESIGN_FEEDBACK_DESCRIPTION, kOsDesktop,
@@ -1837,11 +1835,9 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_NATIVE_CUPS_NAME,
      IDS_FLAGS_ENABLE_NATIVE_CUPS_DESCRIPTION, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kEnableNativeCups)},
-    {"enable-files-details-panel",
-      IDS_FLAGS_ENABLE_FILES_DETAILS_PANEL_NAME,
-      IDS_FLAGS_ENABLE_FILES_DETAILS_PANEL_DESCRIPTION,
-      kOsCrOS,
-      SINGLE_VALUE_TYPE(chromeos::switches::kEnableFilesDetailsPanel)},
+    {"enable-files-details-panel", IDS_FLAGS_ENABLE_FILES_DETAILS_PANEL_NAME,
+     IDS_FLAGS_ENABLE_FILES_DETAILS_PANEL_DESCRIPTION, kOsCrOS,
+     SINGLE_VALUE_TYPE(chromeos::switches::kEnableFilesDetailsPanel)},
 #endif // defined(OS_CHROMEOS)
 #if !defined(OS_ANDROID) && !defined(OS_IOS) && defined(GOOGLE_CHROME_BUILD)
     {"enable-google-branded-context-menu",
@@ -1853,7 +1849,8 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-fullscreen-in-tab-detaching",
      IDS_FLAGS_TAB_DETACHING_IN_FULLSCREEN_NAME,
      IDS_FLAGS_TAB_DETACHING_IN_FULLSCREEN_DESCRIPTION, kOsMac,
-     SINGLE_VALUE_TYPE(switches::kEnableFullscreenTabDetaching)},
+     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableFullscreenTabDetaching,
+                               switches::kDisableFullscreenTabDetaching)},
 #endif
 #if defined(OS_ANDROID)
     {"media-style-notification", IDS_FLAGS_MEDIA_STYLE_NOTIFICATION_NAME,
