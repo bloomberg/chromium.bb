@@ -139,18 +139,18 @@ std::unique_ptr<base::DictionaryValue> SinksAndIdentityToValue(
 
 std::unique_ptr<base::DictionaryValue> RouteToValue(
     const MediaRoute& route,
-    bool canJoin,
-    const std::string& extension_id) {
+    bool can_join,
+    const std::string& extension_id,
+    bool off_the_record) {
   std::unique_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue);
   dictionary->SetString("id", route.media_route_id());
   dictionary->SetString("sinkId", route.media_sink_id());
   dictionary->SetString("description", route.description());
   dictionary->SetBoolean("isLocal", route.is_local());
-  dictionary->SetBoolean("canJoin", canJoin);
-  dictionary->SetBoolean("isOffTheRecord", route.off_the_record());
+  dictionary->SetBoolean("canJoin", can_join);
 
   const std::string& custom_path = route.custom_controller_path();
-  if (!custom_path.empty()) {
+  if (!off_the_record && !custom_path.empty()) {
     std::string full_custom_controller_path = base::StringPrintf("%s://%s/%s",
         extensions::kExtensionScheme, extension_id.c_str(),
             custom_path.c_str());
@@ -160,22 +160,6 @@ std::unique_ptr<base::DictionaryValue> RouteToValue(
   }
 
   return dictionary;
-}
-
-std::unique_ptr<base::ListValue> RoutesToValue(
-    const std::vector<MediaRoute>& routes,
-    const std::vector<MediaRoute::Id>& joinable_route_ids,
-    const std::string& extension_id) {
-  std::unique_ptr<base::ListValue> value(new base::ListValue);
-
-  for (const MediaRoute& route : routes) {
-    bool canJoin = ContainsValue(joinable_route_ids, route.media_route_id());
-    std::unique_ptr<base::DictionaryValue> route_val(
-        RouteToValue(route, canJoin, extension_id));
-    value->Append(route_val.release());
-  }
-
-  return value;
 }
 
 std::unique_ptr<base::ListValue> CastModesToValue(
@@ -244,10 +228,10 @@ std::string GetLearnMoreUrl(const base::DictionaryValue* args) {
 
 MediaRouterWebUIMessageHandler::MediaRouterWebUIMessageHandler(
     MediaRouterUI* media_router_ui)
-    : dialog_closing_(false),
-      media_router_ui_(media_router_ui) {
-  DCHECK(media_router_ui_);
-}
+    : off_the_record_(
+          Profile::FromWebUI(media_router_ui->web_ui())->IsOffTheRecord()),
+      dialog_closing_(false),
+      media_router_ui_(media_router_ui) {}
 
 MediaRouterWebUIMessageHandler::~MediaRouterWebUIMessageHandler() {
 }
@@ -265,8 +249,7 @@ void MediaRouterWebUIMessageHandler::UpdateRoutes(
     const std::vector<MediaRoute>& routes,
     const std::vector<MediaRoute::Id>& joinable_route_ids) {
   std::unique_ptr<base::ListValue> routes_val(
-      RoutesToValue(routes, joinable_route_ids,
-                    media_router_ui_->GetRouteProviderExtensionId()));
+      RoutesToValue(routes, joinable_route_ids));
   web_ui()->CallJavascriptFunction(kSetRouteList, *routes_val);
 }
 
@@ -285,7 +268,8 @@ void MediaRouterWebUIMessageHandler::OnCreateRouteResponseReceived(
   DVLOG(2) << "OnCreateRouteResponseReceived";
   if (route) {
     std::unique_ptr<base::DictionaryValue> route_value(RouteToValue(
-        *route, false, media_router_ui_->GetRouteProviderExtensionId()));
+        *route, false, media_router_ui_->GetRouteProviderExtensionId(),
+        off_the_record_));
     web_ui()->CallJavascriptFunction(
         kOnCreateRouteResponseReceived,
         base::StringValue(sink_id), *route_value,
@@ -420,17 +404,13 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
   initial_data.Set("sinksAndIdentity", sinks_and_identity.release());
 
   std::unique_ptr<base::ListValue> routes(RoutesToValue(
-      media_router_ui_->routes(), media_router_ui_->joinable_route_ids(),
-      media_router_ui_->GetRouteProviderExtensionId()));
+      media_router_ui_->routes(), media_router_ui_->joinable_route_ids()));
   initial_data.Set("routes", routes.release());
 
   const std::set<MediaCastMode> cast_modes = media_router_ui_->cast_modes();
   std::unique_ptr<base::ListValue> cast_modes_list(CastModesToValue(
       cast_modes, media_router_ui_->GetPresentationRequestSourceName()));
   initial_data.Set("castModes", cast_modes_list.release());
-
-  Profile* profile = Profile::FromWebUI(web_ui());
-  initial_data.SetBoolean("isOffTheRecord", profile->IsOffTheRecord());
 
   web_ui()->CallJavascriptFunction(kSetInitialData, initial_data);
   media_router_ui_->UIInitialized();
@@ -868,6 +848,23 @@ AccountInfo MediaRouterWebUIMessageHandler::GetAccountInfo() {
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
   return AccountInfo();
+}
+
+std::unique_ptr<base::ListValue> MediaRouterWebUIMessageHandler::RoutesToValue(
+    const std::vector<MediaRoute>& routes,
+    const std::vector<MediaRoute::Id>& joinable_route_ids) const {
+  std::unique_ptr<base::ListValue> value(new base::ListValue);
+  const std::string& extension_id =
+      media_router_ui_->GetRouteProviderExtensionId();
+
+  for (const MediaRoute& route : routes) {
+    bool can_join = ContainsValue(joinable_route_ids, route.media_route_id());
+    std::unique_ptr<base::DictionaryValue> route_val(
+        RouteToValue(route, can_join, extension_id, off_the_record_));
+    value->Append(route_val.release());
+  }
+
+  return value;
 }
 
 void MediaRouterWebUIMessageHandler::SetWebUIForTest(content::WebUI* web_ui) {

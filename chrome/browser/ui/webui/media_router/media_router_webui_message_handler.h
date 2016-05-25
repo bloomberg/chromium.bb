@@ -55,6 +55,9 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   void UpdateMaxDialogHeight(int height);
 
   void SetWebUIForTest(content::WebUI* webui);
+  void set_off_the_record_for_test(bool off_the_record) {
+    off_the_record_ = off_the_record;
+  }
 
  private:
   // WebUIMessageHandler implementation.
@@ -95,10 +98,19 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   // initializing the WebUI.
   void MaybeUpdateFirstRunFlowData();
 
+  // Converts |routes| and |joinable_route_ids| into base::ListValue that can be
+  // passed to WebUI.
+  std::unique_ptr<base::ListValue> RoutesToValue(
+      const std::vector<MediaRoute>& routes,
+      const std::vector<MediaRoute::Id>& joinable_route_ids) const;
+
   // Retrieve the account info for email and domain of signed in users. This is
   // used when updating sinks to determine if identity should be displayed.
   // Marked virtual for tests.
   virtual AccountInfo GetAccountInfo();
+
+  // |true| if the associated Profile is off the record.
+  bool off_the_record_;
 
   // Keeps track of whether a command to close the dialog has been issued.
   bool dialog_closing_;

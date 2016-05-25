@@ -152,15 +152,6 @@ Polymer({
     },
 
     /**
-     * Whether the browser is currently incognito.
-     * @type {boolean}
-     */
-    isOffTheRecord: {
-      type: Boolean,
-      value: false,
-    },
-
-    /**
      * Records whether the search input is focused when a window blur event is
      * received. This is used to handle search focus edge cases. See
      * |setSearchFocusHandlers_| for details.

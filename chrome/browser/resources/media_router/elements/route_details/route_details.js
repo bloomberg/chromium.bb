@@ -17,14 +17,6 @@ Polymer({
     },
 
     /**
-     * Whether the browser is currently incognito.
-     * @type {boolean|undefined}
-     */
-    isOffTheRecord: {
-      type: Boolean,
-    },
-
-    /**
      * The route to show.
      * @type {?media_router.Route|undefined}
      */
@@ -82,8 +74,7 @@ Polymer({
                                 this.route.description) :
         '';
 
-    if (!this.route || !this.route.customControllerPath ||
-        this.isOffTheRecord) {
+    if (!this.route || !this.route.customControllerPath) {
       this.isCustomControllerHidden_ = true;
       return;
     }

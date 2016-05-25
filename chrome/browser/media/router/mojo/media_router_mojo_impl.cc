@@ -148,7 +148,6 @@ void MediaRouterMojoImpl::RegisterMediaRouteProvider(
     const interfaces::MediaRouter::RegisterMediaRouteProviderCallback&
         callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
 #if defined(OS_WIN)
   // The MRPM may have been upgraded or otherwise reload such that we could be
   // seeing an MRPM that doesn't know mDNS is enabled, even if we've told a
@@ -288,11 +287,6 @@ void MediaRouterMojoImpl::RouteResponseReceived(
     result = RouteRequestResult::FromError(
         error, RouteRequestResult::OFF_THE_RECORD_MISMATCH);
   } else {
-    // Off the record media routes do not support custom controllers.
-    // crbug.com/590376
-    if (media_route->off_the_record)
-      media_route->custom_controller_path = nullptr;
-
     result = RouteRequestResult::FromSuccess(
         media_route.To<std::unique_ptr<MediaRoute>>(), presentation_id);
   }
