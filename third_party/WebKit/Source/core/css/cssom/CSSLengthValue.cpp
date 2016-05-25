@@ -5,6 +5,7 @@
 #include "core/css/cssom/CSSLengthValue.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/css/CSSPrimitiveValueUnitTrie.h"
 #include "core/css/cssom/CSSSimpleLength.h"
 #include "core/css/cssom/CalcDictionary.h"
 #include "core/css/cssom/StyleCalcLength.h"
@@ -17,7 +18,9 @@ CSSPrimitiveValue::UnitType CSSLengthValue::unitFromName(const String& name)
     if (equalIgnoringASCIICase(name, "percent") || name == "%") {
         return CSSPrimitiveValue::UnitType::Percentage;
     }
-    return CSSPrimitiveValue::fromName(name);
+    if (name.is8Bit())
+        return lookupCSSPrimitiveValueUnit(name.characters8(), name.length());
+    return lookupCSSPrimitiveValueUnit(name.characters16(), name.length());
 }
 
 CSSLengthValue* CSSLengthValue::from(const String& cssString, ExceptionState& exceptionState)

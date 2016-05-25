@@ -61,6 +61,7 @@
       '<(blink_core_output_dir)/CSSValueKeywords.cpp',
 
       # Additional .cpp files from make_core_generated actions.
+      '<(blink_core_output_dir)/CSSPrimitiveValueUnitTrie.cpp',
       '<(blink_core_output_dir)/Event.cpp',
       '<(blink_core_output_dir)/EventHeaders.h',
       '<(blink_core_output_dir)/EventNames.cpp',

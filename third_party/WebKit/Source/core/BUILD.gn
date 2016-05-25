@@ -343,6 +343,7 @@ source_set("core_generated") {
     "$blink_core_output_dir/CSSValueKeywords.cpp",
 
     # Additional .cpp files from make_core_generated actions.
+    "$blink_core_output_dir/CSSPrimitiveValueUnitTrie.cpp",
     "$blink_core_output_dir/Event.cpp",
     "$blink_core_output_dir/EventHeaders.h",
     "$blink_core_output_dir/EventNames.cpp",
@@ -556,6 +557,7 @@ action("generated_testing_idls_internal_runtime_flags") {
 group("make_core_generated") {
   public_deps = [
     ":make_core_generated_bison",
+    ":make_core_generated_css_primitive_value_unit_trie",
     ":make_core_generated_css_property_metadata",
     ":make_core_generated_css_property_names",
     ":make_core_generated_css_tokenizer_codepoints",
@@ -954,6 +956,30 @@ action("make_core_generated_css_tokenizer_codepoints") {
   ]
 
   args = [
+    "--output_dir",
+    rel_blink_core_gen_dir,
+  ]
+
+  deps = make_core_generated_deps
+}
+
+# "CSSPrimitiveValueUnitTrie" in make_core_generated from GYP.
+action("make_core_generated_css_primitive_value_unit_trie") {
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ ":make_core_generated" ]
+  script = "../build/scripts/make_css_primitive_value_unit_trie.py"
+
+  input_file = "css/CSSPrimitiveValueUnits.in"
+  inputs = make_trie_helpers_files + [
+             input_file,
+             "../build/scripts/templates/CSSPrimitiveValueUnitTrie.cpp.tmpl",
+           ]
+  outputs = [
+    "$blink_core_output_dir/CSSPrimitiveValueUnitTrie.cpp",
+  ]
+
+  args = [
+    rebase_path(input_file, root_build_dir),
     "--output_dir",
     rel_blink_core_gen_dir,
   ]

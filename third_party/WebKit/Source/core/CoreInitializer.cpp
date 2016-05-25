@@ -123,7 +123,6 @@ void CoreInitializer::initialize()
     MediaFeatureNames::init();
     MediaTypeNames::init();
 
-    CSSPrimitiveValue::initUnitTable();
     CSSParserTokenRange::initStaticEOFToken();
 
     StyleChangeExtraData::init();
