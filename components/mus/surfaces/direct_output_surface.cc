@@ -18,7 +18,7 @@ namespace mus {
 DirectOutputSurface::DirectOutputSurface(
     scoped_refptr<SurfacesContextProvider> context_provider,
     base::SingleThreadTaskRunner* task_runner)
-    : cc::OutputSurface(context_provider),
+    : cc::OutputSurface(context_provider, nullptr, nullptr),
       synthetic_begin_frame_source_(new cc::SyntheticBeginFrameSource(
           task_runner,
           cc::BeginFrameArgs::DefaultInterval())),

@@ -24,7 +24,7 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
     base::SingleThreadTaskRunner* task_runner,
     std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
         overlay_candidate_validator)
-    : OutputSurface(std::move(context_provider)),
+    : OutputSurface(std::move(context_provider), nullptr, nullptr),
       vsync_manager_(std::move(vsync_manager)),
       synthetic_begin_frame_source_(new cc::SyntheticBeginFrameSource(
           task_runner,
@@ -41,7 +41,7 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
     std::unique_ptr<cc::SoftwareOutputDevice> software_device,
     const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
     base::SingleThreadTaskRunner* task_runner)
-    : OutputSurface(std::move(software_device)),
+    : OutputSurface(nullptr, nullptr, std::move(software_device)),
       vsync_manager_(vsync_manager),
       synthetic_begin_frame_source_(new cc::SyntheticBeginFrameSource(
           task_runner,
@@ -57,7 +57,7 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
     const scoped_refptr<cc::VulkanContextProvider>& vulkan_context_provider,
     const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
     base::SingleThreadTaskRunner* task_runner)
-    : OutputSurface(nullptr, nullptr, vulkan_context_provider, nullptr),
+    : OutputSurface(std::move(vulkan_context_provider)),
       vsync_manager_(vsync_manager),
       synthetic_begin_frame_source_(new cc::SyntheticBeginFrameSource(
           task_runner,

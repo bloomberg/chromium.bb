@@ -23,19 +23,23 @@ namespace {
 class TestOutputSurface : public OutputSurface {
  public:
   explicit TestOutputSurface(scoped_refptr<ContextProvider> context_provider)
-      : OutputSurface(context_provider) {}
+      : OutputSurface(std::move(context_provider), nullptr, nullptr) {}
 
   TestOutputSurface(scoped_refptr<ContextProvider> context_provider,
                     scoped_refptr<ContextProvider> worker_context_provider)
-      : OutputSurface(worker_context_provider) {}
+      : OutputSurface(std::move(context_provider),
+                      std::move(worker_context_provider),
+                      nullptr) {}
 
   explicit TestOutputSurface(
       std::unique_ptr<SoftwareOutputDevice> software_device)
-      : OutputSurface(std::move(software_device)) {}
+      : OutputSurface(nullptr, nullptr, std::move(software_device)) {}
 
   TestOutputSurface(scoped_refptr<ContextProvider> context_provider,
                     std::unique_ptr<SoftwareOutputDevice> software_device)
-      : OutputSurface(context_provider, std::move(software_device)) {}
+      : OutputSurface(std::move(context_provider),
+                      nullptr,
+                      std::move(software_device)) {}
 
   void SwapBuffers(CompositorFrame* frame) override {
     client_->DidSwapBuffers();
@@ -117,6 +121,8 @@ TEST(OutputSurfaceTest, ClientPointerIndicatesWorkerBindToClientSuccess) {
   EXPECT_TRUE(client.did_lose_output_surface_called());
 }
 
+// TODO(danakj): Add a test for worker context failure as well when
+// OutputSurface creates/binds it.
 TEST(OutputSurfaceTest, ClientPointerIndicatesBindToClientFailure) {
   scoped_refptr<TestContextProvider> context_provider =
       TestContextProvider::Create();
@@ -125,23 +131,6 @@ TEST(OutputSurfaceTest, ClientPointerIndicatesBindToClientFailure) {
   context_provider->UnboundTestContext3d()->set_context_lost(true);
 
   TestOutputSurface output_surface(context_provider);
-  EXPECT_FALSE(output_surface.HasClient());
-
-  FakeOutputSurfaceClient client;
-  EXPECT_FALSE(output_surface.BindToClient(&client));
-  EXPECT_FALSE(output_surface.HasClient());
-}
-
-TEST(OutputSurfaceTest, ClientPointerIndicatesWorkerBindToClientFailure) {
-  scoped_refptr<TestContextProvider> context_provider =
-      TestContextProvider::Create();
-  scoped_refptr<TestContextProvider> worker_context_provider =
-      TestContextProvider::Create();
-
-  // Lose the context so BindToClient fails.
-  worker_context_provider->UnboundTestContext3d()->set_context_lost(true);
-
-  TestOutputSurface output_surface(context_provider, worker_context_provider);
   EXPECT_FALSE(output_surface.HasClient());
 
   FakeOutputSurfaceClient client;

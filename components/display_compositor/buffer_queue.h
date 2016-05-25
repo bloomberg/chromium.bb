@@ -18,16 +18,16 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace cc {
-class ContextProvider;
-}
-
 namespace gfx {
 class GpuMemoryBuffer;
 }
 
 namespace gpu {
 class GpuMemoryBufferManager;
+
+namespace gles2 {
+class GLES2Interface;
+}
 }
 
 namespace display_compositor {
@@ -40,7 +40,7 @@ class GLHelper;
 // before the next BindFramebuffer call, otherwise it creates extra buffers.
 class DISPLAY_COMPOSITOR_EXPORT BufferQueue {
  public:
-  BufferQueue(scoped_refptr<cc::ContextProvider> context_provider,
+  BufferQueue(gpu::gles2::GLES2Interface* gl,
               unsigned int texture_target,
               unsigned int internalformat,
               GLHelper* gl_helper,
@@ -99,8 +99,8 @@ class DISPLAY_COMPOSITOR_EXPORT BufferQueue {
   std::unique_ptr<AllocatedSurface> RecreateBuffer(
       std::unique_ptr<AllocatedSurface> surface);
 
+  gpu::gles2::GLES2Interface* const gl_;
   gfx::Size size_;
-  scoped_refptr<cc::ContextProvider> context_provider_;
   unsigned int fbo_;
   size_t allocated_count_;
   unsigned int texture_target_;

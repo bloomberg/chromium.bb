@@ -27,7 +27,7 @@ class TestOutputSurface : public OutputSurface {
 
 TestOutputSurface::TestOutputSurface(
     scoped_refptr<ContextProvider> context_provider)
-    : OutputSurface(std::move(context_provider)) {}
+    : OutputSurface(std::move(context_provider), nullptr, nullptr) {}
 
 TestOutputSurface::~TestOutputSurface() {
 }

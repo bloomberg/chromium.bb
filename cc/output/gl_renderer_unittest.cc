@@ -1139,6 +1139,7 @@ class NonReshapableOutputSurface : public FakeOutputSurface {
   explicit NonReshapableOutputSurface(
       std::unique_ptr<TestWebGraphicsContext3D> context3d)
       : FakeOutputSurface(TestContextProvider::Create(std::move(context3d)),
+                          nullptr,
                           false) {
     surface_size_ = gfx::Size(500, 500);
   }
@@ -1761,9 +1762,11 @@ class OutputSurfaceMockContext : public TestWebGraphicsContext3D {
 class MockOutputSurface : public OutputSurface {
  public:
   MockOutputSurface()
-      : OutputSurface(TestContextProvider::Create(
-            std::unique_ptr<TestWebGraphicsContext3D>(
-                new StrictMock<OutputSurfaceMockContext>))) {
+      : OutputSurface(
+            TestContextProvider::Create(
+                base::MakeUnique<StrictMock<OutputSurfaceMockContext>>()),
+            nullptr,
+            nullptr) {
     surface_size_ = gfx::Size(100, 100);
   }
   virtual ~MockOutputSurface() {}
