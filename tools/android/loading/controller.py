@@ -24,6 +24,8 @@ import tempfile
 import time
 import traceback
 
+import psutil
+
 import chrome_cache
 import common_util
 import device_setup
@@ -420,6 +422,29 @@ class LocalChromeController(ChromeControllerBase):
     if self._using_temp_profile_dir:
       shutil.rmtree(self._profile_dir)
 
+  @staticmethod
+  def KillChromeProcesses():
+    """Kills all the running instances of Chrome.
+
+    Returns: (int) The number of processes that were killed.
+    """
+    killed_count = 0
+    chrome_path = OPTIONS.LocalBinary('chrome')
+    for process in psutil.process_iter():
+      try:
+        if process.exe() == chrome_path:
+          process.terminate()
+          killed_count += 1
+          try:
+            process.wait(timeout=10)
+          except psutil.TimeoutExpired:
+            process.kill()
+      except psutil.AccessDenied:
+        pass
+      except psutil.NoSuchProcess:
+        pass
+    return killed_count
+
   def SetChromeEnvOverride(self, env):
     """Set the environment for Chrome.
 
@@ -431,6 +456,11 @@ class LocalChromeController(ChromeControllerBase):
   @contextlib.contextmanager
   def Open(self):
     """Overridden connection creation."""
+    # Kill all existing Chrome instances.
+    killed_count = LocalChromeController.KillChromeProcesses()
+    if killed_count > 0:
+      logging.warning('Killed existing Chrome instance.')
+
     chrome_cmd = [OPTIONS.LocalBinary('chrome')]
     chrome_cmd.extend(self._GetChromeArguments())
     # Force use of simple cache.
@@ -445,7 +475,7 @@ class LocalChromeController(ChromeControllerBase):
         tempfile.NamedTemporaryFile(prefix="chrome_controller_", suffix='.log')
     chrome_process = None
     try:
-      chrome_env_override = self._chrome_env_override or {}
+      chrome_env_override = self._chrome_env_override.copy() or {}
       if self._wpr_attributes:
         chrome_env_override.update(self._wpr_attributes.chrome_env_override)
 
@@ -490,7 +520,10 @@ class LocalChromeController(ChromeControllerBase):
         sys.stderr.write(open(tmp_log.name).read())
       del tmp_log
       if chrome_process:
-        chrome_process.kill()
+        try:
+          chrome_process.kill()
+        except OSError:
+          pass  # Chrome is already dead.
 
   def ResetBrowserState(self):
     """Override for chrome state reseting."""

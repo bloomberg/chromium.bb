@@ -5,8 +5,11 @@
 import multiprocessing
 import os
 import re
+import resource
 import sys
 import traceback
+
+import psutil
 
 import common.clovis_paths
 from common.clovis_task import ClovisTask
@@ -16,6 +19,18 @@ from failure_database import FailureDatabase
 import loading_trace
 import options
 import xvfb_helper
+
+
+def LimitMemory(memory_share):
+  """Limits the memory available to this process, to avoid OOM issues.
+
+  Args:
+    memory_share: (float) Share coefficient of the total physical memory that
+                          the process can use.
+  """
+  total_memory = psutil.virtual_memory().total
+  memory_limit = memory_share * total_memory
+  resource.setrlimit(resource.RLIMIT_AS, (memory_limit, -1L))
 
 
 def GenerateTrace(url, emulate_device, emulate_network, filename, log_filename):
@@ -150,25 +165,35 @@ class TraceTaskHandler(object):
     See the GenerateTrace() documentation for a description of the parameters
     and return values.
     """
-    self._logger.info('Starting external process for trace generation')
+    self._logger.info('Starting external process for trace generation.')
     failed_metadata = {'succeeded':False, 'url':url}
-    pool = multiprocessing.Pool(1)
+    failed = False
+    pool = multiprocessing.Pool(1, initializer=LimitMemory, initargs=(0.9,))
 
     apply_result = pool.apply_async(
         GenerateTrace,
         (url, emulate_device, emulate_network, filename, log_filename))
-    apply_result.wait(timeout=300)
+    pool.close()
+    apply_result.wait(timeout=180)
 
     if not apply_result.ready():
       self._logger.error('Process timeout for trace generation of URL: ' + url)
       self._failure_database.AddFailure('trace_process_timeout', url)
-      return failed_metadata
+      # Explicitly kill Chrome now, or pool.terminate() will hang.
+      controller.LocalChromeController.KillChromeProcesses()
+      pool.terminate()
+      failed = True
 
     if not apply_result.successful():
       self._logger.error('Process failure for trace generation of URL: ' + url)
       self._failure_database.AddFailure('trace_process_error', url)
-      return failed_metadata
+      failed = True
 
+    self._logger.info('Cleaning up external process.')
+    pool.join()
+
+    if failed:
+      return failed_metadata
     return apply_result.get()
 
   def _HandleTraceGenerationResults(self, local_filename, log_filename,
