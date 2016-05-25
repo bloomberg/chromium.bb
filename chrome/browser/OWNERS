@@ -10,10 +10,10 @@ per-file browser_resources.grd=michaelpg@chromium.org
 per-file browser_resources.grd=pam@chromium.org
 per-file browser_resources.grd=xiyuan@chromium.org
 
+per-file browser_close_manager_browsertest.cc=creis@chromium.org
+
 per-file browser_navigator_browsertest.*=alexmos@chromium.org
-per-file browser_navigator_browsertest.*=creis@chromium.org
-per-file browser_navigator_browsertest.*=nasko@chromium.org
-per-file browser_navigator_browsertest.*=nick@chromium.org
+per-file browser_navigator_browsertest.*=file://content/OWNERS
 
 per-file chrome_content_browser_client.cc=*
 per-file chrome_content_browser_client.h=*
@@ -29,9 +29,13 @@ per-file chrome_elf_init_*=csharp@chromium.org
 per-file chrome_elf_init_*=robertshield@chromium.org
 
 per-file chrome_navigation_browsertest.cc=alexmos@chromium.org
-per-file chrome_navigation_browsertest.cc=creis@chromium.org
-per-file chrome_navigation_browsertest.cc=nasko@chromium.org
-per-file chrome_navigation_browsertest.cc=nick@chromium.org
+per-file chrome_navigation_browsertest.cc=file://content/OWNERS
+
+per-file chrome_security_exploit_browsertest.cc=alexmos@chromium.org
+per-file chrome_security_exploit_browsertest.cc=file://content/OWNERS
+
+per-file chrome_site_per_process_browsertest.cc=alexmos@chromium.org
+per-file chrome_site_per_process_browsertest.cc=file://content/OWNERS
 
 per-file chrome_webusb_browser_client*=juncai@chromium.org
 per-file chrome_webusb_browser_client*=reillyg@chromium.org
@@ -62,13 +66,17 @@ per-file shell_integration_win*=gab@chromium.org
 per-file shell_integration_win*=grt@chromium.org
 per-file shell_integration_linux*=erg@chromium.org
 
+per-file site_details*=creis@chromium.org
+per-file site_details*=nasko@chromium.org
+per-file site_details*=nick@chromium.org
+
 per-file site_per_process_interactive_browsertest.cc=alexmos@chromium.org
-per-file site_per_process_interactive_browsertest.cc=creis@chromium.org
-per-file site_per_process_interactive_browsertest.cc=nasko@chromium.org
-per-file site_per_process_interactive_browsertest.cc=nick@chromium.org
+per-file site_per_process_interactive_browsertest.cc=file://content/OWNERS
 
 per-file PRESUBMIT.py=dbeam@chromium.org
 per-file test_presubmit.py=dbeam@chromium.org
+
+per-file unload_browsertest.cc=file://content/OWNERS
 
 per-file web_bluetooth*=jyasskin@chromium.org
 per-file web_bluetooth*=ortuno@chromium.org
