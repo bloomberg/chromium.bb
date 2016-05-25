@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+
+var FAKE_SESSION_ID = 'fake';
+var gCurrentConnection = null;
+
+// Returns the test runner used to run this test..
+// Current possible values are 'blink' and 'manual'.
+function getTestRunner() {
+  if ('internals' in window)
+    return 'blink';
+  return 'manual';
+}
+
+// Returns a promise that is resolved when the user press a 'click me' button or
+// is automatically resolved if a supported test runner is detected.
+function getUserGesture() {
+  return new Promise(function (resolve) {
+    switch (getTestRunner()) {
+      case 'blink':
+        internals.settings.setPresentationRequiresUserGesture(false);
+        setTimeout(resolve);
+        break;
+      case 'manual':
+        var button = document.createElement('button');
+        button.textContent = 'click me';
+        button.onclick = function() {
+          document.body.removeChild(button);
+          resolve();
+        };
+        document.body.appendChild(button);
+        break;
+      default:
+        parent.window.postMessage({ error: 'unknown test runner' }, '*');
+    }
+  });
+}
+
+var results = [];
+
+// start()
+getUserGesture().then(function() {
+  if (getTestRunner() == 'manual') {
+    var description = document.createElement('div');
+    description.id = 'description';
+    description.textContent = 'Pick a device if asked for it';
+    document.body.appendChild(description);
+  }
+
+  var p = new PresentationRequest('https://example.com');
+  return p.start().then(function(connection) {
+    gCurrentConnection = connection;
+    results.push({ test: 'start', status: 'success' })
+  }, function(e) {
+    results.push({ test: 'start', status: 'failure', name: e.name });
+  }).then(function() {
+    if (getTestRunner() == 'manual')
+      document.body.removeChild(document.querySelector('#description'));
+  });
+}).then(function() {
+  // reconnect()
+  return getUserGesture().then(function() {
+    var p = new PresentationRequest('https://example.com');
+    return p.reconnect(gCurrentConnection ? gCurrentConnection.id : FAKE_SESSION_ID).then(function() {
+      results.push({ test: 'reconnect', status: 'success' })
+    }, function(e) {
+      results.push({ test: 'reconnect', status: 'failure', name: e.name });
+    });
+  });
+}).then(function() {
+  // getAvailability()
+  return getUserGesture().then(function() {
+    var p = new PresentationRequest('https://example.com');
+    return p.getAvailability().then(function() {
+      results.push({ test: 'getAvailability', status: 'success' })
+    }, function(e) {
+      results.push({ test: 'getAvailability', status: 'failure', name: e.name });
+    });
+  });
+}).then(function() {
+  parent.window.postMessage(results, '*');
+});
+
+</script>
+</body>
+</html>

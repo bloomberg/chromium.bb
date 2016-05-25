@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<iframe></iframe>
+
+<script>
+
+async_test(function(t) {
+  window.onmessage = t.step_func_done(function(e) {
+    e.data.forEach(function(result) {
+      if (result.test == 'getAvailability') {
+        assert_equals(result.status, 'success', result.test);
+        return;
+      }
+
+      // TODO(mlamouri): we are only testing that it doesn't fail for security
+      // reasons because the request will still fail for lack of devices/backend.
+      assert_equals(result.status, 'failure', result.test);
+      assert_not_equals(result.name, 'SecurityError', result.test);
+    });
+  });
+
+  document.querySelector('iframe').src = 'resources/embedded-smoke-tests.html';
+}, 'Test that Presentation API works from inside an iframe.');
+
+</script>
+</body>
+</html>

@@ -28,7 +28,7 @@ namespace {
 // TODO(mlamouri): refactor in one common place.
 WebPresentationClient* presentationClient(ExecutionContext* executionContext)
 {
-    ASSERT(executionContext && executionContext->isDocument());
+    DCHECK(executionContext);
 
     Document* document = toDocument(executionContext);
     if (!document->frame())
@@ -39,7 +39,7 @@ WebPresentationClient* presentationClient(ExecutionContext* executionContext)
 
 Settings* settings(ExecutionContext* executionContext)
 {
-    ASSERT(executionContext && executionContext->isDocument());
+    DCHECK(executionContext);
 
     Document* document = toDocument(executionContext);
     return document->settings();
@@ -101,13 +101,17 @@ ScriptPromise PresentationRequest::start(ScriptState* scriptState)
         return promise;
     }
 
+    if (toDocument(getExecutionContext())->isSandboxed(SandboxPresentation)) {
+        resolver->reject(DOMException::create(SecurityError, "The document is sandboxed and lacks the 'allow-presentation' flag."));
+        return promise;
+    }
+
     WebPresentationClient* client = presentationClient(getExecutionContext());
     if (!client) {
         resolver->reject(DOMException::create(InvalidStateError, "The PresentationRequest is no longer associated to a frame."));
         return promise;
     }
     client->startSession(m_url.getString(), new PresentationConnectionCallbacks(resolver, this));
-
     return promise;
 }
 
@@ -116,13 +120,17 @@ ScriptPromise PresentationRequest::reconnect(ScriptState* scriptState, const Str
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
+    if (toDocument(getExecutionContext())->isSandboxed(SandboxPresentation)) {
+        resolver->reject(DOMException::create(SecurityError, "The document is sandboxed and lacks the 'allow-presentation' flag."));
+        return promise;
+    }
+
     WebPresentationClient* client = presentationClient(getExecutionContext());
     if (!client) {
         resolver->reject(DOMException::create(InvalidStateError, "The PresentationRequest is no longer associated to a frame."));
         return promise;
     }
     client->joinSession(m_url.getString(), id, new PresentationConnectionCallbacks(resolver, this));
-
     return promise;
 }
 
@@ -130,6 +138,11 @@ ScriptPromise PresentationRequest::getAvailability(ScriptState* scriptState)
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
+
+    if (toDocument(getExecutionContext())->isSandboxed(SandboxPresentation)) {
+        resolver->reject(DOMException::create(SecurityError, "The document is sandboxed and lacks the 'allow-presentation' flag."));
+        return promise;
+    }
 
     WebPresentationClient* client = presentationClient(getExecutionContext());
     if (!client) {

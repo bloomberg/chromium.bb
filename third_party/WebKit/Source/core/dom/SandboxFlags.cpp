@@ -63,6 +63,8 @@ SandboxFlags parseSandboxPolicy(const SpaceSplitString& policy, String& invalidT
             flags &= ~SandboxPropagatesToAuxiliaryBrowsingContexts;
         } else if (equalIgnoringCase(sandboxToken, "allow-modals") && RuntimeEnabledFeatures::sandboxBlocksModalsEnabled()) {
             flags &= ~SandboxModals;
+        } else if (equalIgnoringCase(sandboxToken, "allow-presentation")) {
+            flags &= ~SandboxPresentation;
         } else {
             if (numberOfTokenErrors)
                 tokenErrors.appendLiteral(", '");

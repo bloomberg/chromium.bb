@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<iframe sandbox='allow-scripts allow-same-origin'></iframe>
+
+<script>
+
+async_test(function(t) {
+  window.onmessage = t.step_func_done(function(e) {
+    e.data.forEach(function(result) {
+      assert_equals(result.status, 'failure', result.test);
+      assert_equals(result.name, 'SecurityError', result.test);
+    });
+  });
+
+  document.querySelector('iframe').src = 'resources/embedded-smoke-tests.html';
+}, 'Test that Presentation API is blocked inside a sandboxed iframe without "allow-presentation".');
+
+</script>
+</body>
+</html>
