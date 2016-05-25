@@ -5,7 +5,6 @@
 #include "modules/canvas2d/HitRegion.h"
 
 #include "core/dom/AXObjectCache.h"
-#include "core/layout/LayoutBoxModelObject.h"
 
 namespace blink {
 
