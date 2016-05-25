@@ -41,12 +41,21 @@ gfx::ScopedJavaSurface AndroidDeferredRenderingBackingStrategy::Initialize(
     int surface_view_id) {
   shared_state_ = new AVDASharedState();
 
-  // Create a texture for the SurfaceTexture to use.  We don't attach it here
-  // so that it gets attached in the compositor gl context in the common case.
-  GLuint service_id = 0;
+  // Create a texture for the SurfaceTexture to use.
+  GLuint service_id;
   glGenTextures(1, &service_id);
-  DCHECK(service_id);
   shared_state_->set_surface_texture_service_id(service_id);
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_EXTERNAL_OES, service_id);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+  state_provider_->GetGlDecoder()->RestoreTextureUnitBindings(0);
+  state_provider_->GetGlDecoder()->RestoreActiveTexture();
+  DCHECK_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 
   gfx::ScopedJavaSurface surface;
   if (surface_view_id != media::VideoDecodeAccelerator::Config::kNoSurfaceID) {

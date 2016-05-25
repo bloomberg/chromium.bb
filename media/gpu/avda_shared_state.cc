@@ -62,12 +62,6 @@ void AVDASharedState::DidAttachSurfaceTexture() {
   surface_texture_is_attached_ = true;
 }
 
-void AVDASharedState::DidDetachSurfaceTexture() {
-  context_ = nullptr;
-  surface_ = nullptr;
-  surface_texture_is_attached_ = false;
-}
-
 void AVDASharedState::CodecChanged(media::MediaCodecBridge* codec) {
   for (auto& image_kv : codec_images_)
     image_kv.second->CodecChanged(codec);

@@ -73,10 +73,6 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
   // to match.
   void DidAttachSurfaceTexture();
 
-  // Call this when the SurfaceTexture is detached from its GL context.  This
-  // will cause us to forget the last binding.
-  void DidDetachSurfaceTexture();
-
   // Helper method for coordinating the interactions between
   // MediaCodec::ReleaseOutputBuffer() and WaitForFrameAvailable() when
   // rendering to a SurfaceTexture; this method should never be called when

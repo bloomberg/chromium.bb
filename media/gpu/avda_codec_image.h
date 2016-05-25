@@ -118,10 +118,6 @@ class AVDACodecImage : public gpu::gles2::GLStreamTextureImage {
   // RENDER_TO_FRONT_BUFFER and RENDER_TO_BACK_BUFFER do the same thing.
   void ReleaseOutputBuffer(UpdateMode update_mode);
 
-  // Attach the surface texture to our GL context to whatever texture is bound
-  // on the active unit.
-  void AttachSurfaceTextureToContext();
-
   // Make shared_state_->context() current if it isn't already.
   std::unique_ptr<ui::ScopedMakeCurrent> MakeCurrentIfNeeded();
 
