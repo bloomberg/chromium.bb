@@ -32,6 +32,10 @@ void SetCommandLineDefaults(base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(
       ::switches::kUseGL,
       "osmesa");  // Avoid invoking gpu::CollectDriverVersionNVidia.
+
+  // Disable threaded animation since we don't support them right now.
+  // (crbug/570376).
+  command_line->AppendSwitch(cc::switches::kDisableThreadedAnimation);
 }
 
 BlimpEngineConfig::~BlimpEngineConfig() {}
