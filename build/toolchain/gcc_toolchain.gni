@@ -98,6 +98,9 @@ if (allow_posix_link_time_opt || is_cfi) {
 #      Override the global cc_wrapper setting. e.g. "ccache" or "icecc".
 #      useful to opt-out of cc_wrapper in a particular toolchain by setting
 #      cc_wrapper = "" in it.
+#  - use_debug_fission
+#      Override the global use_debug_fission setting, useful if the particular
+#      toolchain should not be generating split-dwarf code.
 #  - use_goma
 #      Override the global use_goma setting, useful to opt-out of goma in a
 #      particular toolchain by setting use_gome = false in it.
@@ -461,6 +464,9 @@ template("gcc_toolchain") {
       if (defined(invoker.use_allocator)) {
         use_allocator = invoker.use_allocator
       }
+      if (defined(invoker.use_debug_fission)) {
+        use_debug_fission = invoker.use_debug_fission
+      }
       if (defined(invoker.use_gold)) {
         use_gold = invoker.use_gold
       }
@@ -520,5 +526,9 @@ template("clang_toolchain") {
                              "use_gold",
                              "strip",
                            ])
+
+    if (defined(invoker.use_debug_fission)) {
+      use_debug_fission = invoker.use_debug_fission
+    }
   }
 }
