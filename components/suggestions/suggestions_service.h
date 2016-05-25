@@ -24,6 +24,10 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
+namespace gfx {
+class Image;
+}
+
 namespace net {
 class URLRequestContextGetter;
 }  // namespace net
@@ -38,7 +42,6 @@ class PrefRegistrySyncable;
 
 class OAuth2TokenService;
 class SigninManagerBase;
-class SkBitmap;
 
 namespace suggestions {
 
@@ -52,7 +55,7 @@ class SuggestionsService : public KeyedService,
                            public sync_driver::SyncServiceObserver {
  public:
   using ResponseCallback = base::Callback<void(const SuggestionsProfile&)>;
-  using BitmapCallback = base::Callback<void(const GURL&, const SkBitmap*)>;
+  using BitmapCallback = base::Callback<void(const GURL&, const gfx::Image&)>;
 
   using ResponseCallbackList =
       base::CallbackList<void(const SuggestionsProfile&)>;

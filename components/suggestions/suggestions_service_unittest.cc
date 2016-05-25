@@ -28,6 +28,7 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/image/image.h"
 
 using testing::DoAll;
 using ::testing::AnyNumber;
@@ -153,7 +154,7 @@ class MockImageManager : public suggestions::ImageManager {
   MOCK_METHOD1(Initialize, void(const SuggestionsProfile&));
   MOCK_METHOD2(GetImageForURL,
                void(const GURL&,
-                    base::Callback<void(const GURL&, const SkBitmap*)>));
+                    base::Callback<void(const GURL&, const gfx::Image&)>));
   MOCK_METHOD2(AddImageURL, void(const GURL&, const GURL&));
 };
 
@@ -742,7 +743,7 @@ TEST_F(SuggestionsServiceTest, GetPageThumbnail) {
 
   GURL test_url(kTestUrl);
   GURL thumbnail_url("https://www.thumbnails.com/thumb.jpg");
-  base::Callback<void(const GURL&, const SkBitmap*)> dummy_callback;
+  base::Callback<void(const GURL&, const gfx::Image&)> dummy_callback;
 
   EXPECT_CALL(*mock_thumbnail_manager_, GetImageForURL(test_url, _));
   suggestions_service->GetPageThumbnail(test_url, dummy_callback);

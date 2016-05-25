@@ -257,39 +257,47 @@ void MostVisitedSites::OnLocalThumbnailFetched(
     const ThumbnailCallback& callback,
     std::unique_ptr<SkBitmap> bitmap) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!bitmap.get()) {
-    // A thumbnail is not locally available for |url|. Make sure it is put in
-    // the list to be fetched at the next visit to this site.
-    if (top_sites_)
-      top_sites_->AddForcedURL(url, base::Time::Now());
-    // Also fetch a remote thumbnail if possible. PopularSites or the
-    // SuggestionsService can supply a thumbnail download URL.
-    if (popular_sites_) {
-      const std::vector<PopularSites::Site>& sites = popular_sites_->sites();
-      auto it = std::find_if(
-          sites.begin(), sites.end(),
-          [&url](const PopularSites::Site& site) { return site.url == url; });
-      if (it != sites.end() && it->thumbnail_url.is_valid()) {
-        return suggestions_service_->GetPageThumbnailWithURL(
-            url, it->thumbnail_url,
-            base::Bind(&MostVisitedSites::OnObtainedThumbnail,
-                       weak_ptr_factory_.GetWeakPtr(), false, callback));
-      }
-    }
-    if (mv_source_ == SUGGESTIONS_SERVICE) {
-      return suggestions_service_->GetPageThumbnail(
-          url, base::Bind(&MostVisitedSites::OnObtainedThumbnail,
-                          weak_ptr_factory_.GetWeakPtr(), false, callback));
+  if (bitmap.get()) {
+    callback.Run(true /* is_local_thumbnail */, bitmap.get());
+    return;
+  }
+
+  // A thumbnail is not locally available for |url|. Make sure it is put in
+  // the list to be fetched at the next visit to this site.
+  if (top_sites_)
+    top_sites_->AddForcedURL(url, base::Time::Now());
+  // Also fetch a remote thumbnail if possible. PopularSites or the
+  // SuggestionsService can supply a thumbnail download URL.
+  if (popular_sites_) {
+    const std::vector<PopularSites::Site>& sites = popular_sites_->sites();
+    auto it = std::find_if(
+        sites.begin(), sites.end(),
+        [&url](const PopularSites::Site& site) { return site.url == url; });
+    if (it != sites.end() && it->thumbnail_url.is_valid()) {
+      return suggestions_service_->GetPageThumbnailWithURL(
+          url, it->thumbnail_url,
+          base::Bind(&MostVisitedSites::OnObtainedThumbnail,
+                     weak_ptr_factory_.GetWeakPtr(), false, callback));
     }
   }
-  OnObtainedThumbnail(true, callback, url, bitmap.get());
+  if (mv_source_ == SUGGESTIONS_SERVICE) {
+    return suggestions_service_->GetPageThumbnail(
+        url, base::Bind(&MostVisitedSites::OnObtainedThumbnail,
+                        weak_ptr_factory_.GetWeakPtr(), false, callback));
+  }
+  // If no bitmap could be fetched and neither PopularSites nor the
+  // SuggestionsService is available then a nullptr is passed to the callback.
+  callback.Run(true /* is_local_thumbnail */, nullptr);
 }
 
 void MostVisitedSites::OnObtainedThumbnail(bool is_local_thumbnail,
                                            const ThumbnailCallback& callback,
                                            const GURL& url,
-                                           const SkBitmap* bitmap) {
+                                           const gfx::Image& image) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  const SkBitmap* bitmap = nullptr;
+  if (!image.IsEmpty())
+    bitmap = image.ToSkBitmap();
   callback.Run(is_local_thumbnail, bitmap);
 }
 

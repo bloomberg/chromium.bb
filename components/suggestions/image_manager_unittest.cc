@@ -105,8 +105,8 @@ class ImageManagerTest : public testing::Test {
   }
 
   void OnImageAvailable(base::RunLoop* loop, const GURL& url,
-                        const SkBitmap* bitmap) {
-    if (bitmap) {
+                        const gfx::Image& image) {
+    if (!image.IsEmpty()) {
       num_callback_valid_called_++;
     } else {
       num_callback_null_called_++;

@@ -30,19 +30,6 @@ std::unique_ptr<SkBitmap> DecodeImage(
                                            encoded_data->size());
 }
 
-// Wraps an ImageManager callback so that it can be used with the ImageFetcher.
-// ImageManager callbacks expect SkBitmaps while ImageFetcher callbacks expect
-// gfx::Images. The image can be empty. In this case it is mapped to nullptr.
-void WrapImageManagerCallback(
-    const base::Callback<void(const GURL&, const SkBitmap*)>& wrapped_callback,
-    const GURL& url,
-    const gfx::Image& image) {
-  const SkBitmap* bitmap = nullptr;
-  if (!image.IsEmpty())
-    bitmap = image.ToSkBitmap();
-  wrapped_callback.Run(url, bitmap);
-}
-
 }  // namespace
 
 namespace suggestions {
@@ -89,15 +76,13 @@ void ImageManager::AddImageURL(const GURL& url, const GURL& image_url) {
   image_url_map_[url] = image_url;
 }
 
-void ImageManager::GetImageForURL(
-    const GURL& url,
-    base::Callback<void(const GURL&, const SkBitmap*)> callback) {
+void ImageManager::GetImageForURL(const GURL& url, ImageCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // If |url| is not found in |image_url_map_|, then invoke |callback| with
   // NULL since there is no associated image for this |url|.
   GURL image_url;
   if (!GetImageURL(url, &image_url)) {
-    callback.Run(url, nullptr);
+    callback.Run(url, gfx::Image());
     return;
   }
 
@@ -127,8 +112,7 @@ bool ImageManager::GetImageURL(const GURL& url, GURL* image_url) {
 }
 
 void ImageManager::QueueCacheRequest(
-    const GURL& url, const GURL& image_url,
-    base::Callback<void(const GURL&, const SkBitmap*)> callback) {
+    const GURL& url, const GURL& image_url, ImageCallback callback) {
   // To be served when the database has loaded.
   ImageCacheRequestMap::iterator it = pending_cache_requests_.find(url);
   if (it == pending_cache_requests_.end()) {
@@ -146,13 +130,13 @@ void ImageManager::QueueCacheRequest(
 void ImageManager::OnCacheImageDecoded(
     const GURL& url,
     const GURL& image_url,
-    base::Callback<void(const GURL&, const SkBitmap*)> callback,
+    const ImageCallback& callback,
     std::unique_ptr<SkBitmap> bitmap) {
   if (bitmap.get()) {
-    callback.Run(url, bitmap.get());
+    callback.Run(url, gfx::Image::CreateFrom1xBitmap(*bitmap));
   } else {
     image_fetcher_->StartOrQueueNetworkRequest(
-        url, image_url, base::Bind(&WrapImageManagerCallback, callback));
+        url, image_url, callback);
   }
 }
 
@@ -168,7 +152,7 @@ scoped_refptr<base::RefCountedMemory> ImageManager::GetEncodedImageFromCache(
 void ImageManager::ServeFromCacheOrNetwork(
     const GURL& url,
     const GURL& image_url,
-    base::Callback<void(const GURL&, const SkBitmap*)> callback) {
+    ImageCallback callback) {
   scoped_refptr<base::RefCountedMemory> encoded_data =
       GetEncodedImageFromCache(url);
   if (encoded_data.get()) {
@@ -178,8 +162,7 @@ void ImageManager::ServeFromCacheOrNetwork(
         base::Bind(&ImageManager::OnCacheImageDecoded,
                    weak_ptr_factory_.GetWeakPtr(), url, image_url, callback));
   } else {
-    image_fetcher_->StartOrQueueNetworkRequest(
-        url, image_url, base::Bind(&WrapImageManagerCallback, callback));
+    image_fetcher_->StartOrQueueNetworkRequest(url, image_url, callback);
   }
 }
 

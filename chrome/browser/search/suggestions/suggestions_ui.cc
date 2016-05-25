@@ -28,6 +28,7 @@
 #include "net/base/escape.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
@@ -145,7 +146,7 @@ class SuggestionsSource : public content::URLDataSource {
 
   // Callback for responses from each Thumbnail request.
   void OnThumbnailAvailable(RequestContext* context, base::Closure barrier,
-                            const GURL& url, const SkBitmap* bitmap);
+                            const GURL& url, const gfx::Image& image);
 
   // Callback for when all requests are complete. Renders the output webpage and
   // passes the result to the original caller.
@@ -249,10 +250,10 @@ void SuggestionsSource::OnThumbnailsFetched(RequestContext* context) {
 void SuggestionsSource::OnThumbnailAvailable(RequestContext* context,
                                              base::Closure barrier,
                                              const GURL& url,
-                                             const SkBitmap* bitmap) {
-  if (bitmap) {
+                                             const gfx::Image& image) {
+  if (!image.IsEmpty()) {
     std::vector<unsigned char> output;
-    gfx::PNGCodec::EncodeBGRASkBitmap(*bitmap, false, &output);
+    gfx::PNGCodec::EncodeBGRASkBitmap(*image.ToSkBitmap(), false, &output);
 
     std::string encoded_output;
     base::Base64Encode(

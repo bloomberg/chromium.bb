@@ -15,7 +15,6 @@
 class AppListControllerDelegate;
 class GURL;
 class Profile;
-class SkBitmap;
 
 namespace favicon {
 class FaviconService;
@@ -24,6 +23,10 @@ class FaviconService;
 namespace favicon_base {
 struct FaviconRawBitmapResult;
 }  // namespace favicon_base
+
+namespace gfx {
+class Image;
+}  // namespace gfx
 
 namespace suggestions {
 class SuggestionsService;
@@ -53,7 +56,8 @@ class URLSuggestionResult : public SearchResult {
   void UpdateIcon();
   void OnDidGetIcon(
       const favicon_base::FaviconRawBitmapResult& bitmap_result);
-  void OnSuggestionsThumbnailAvailable(const GURL& url, const SkBitmap* bitmap);
+  void OnSuggestionsThumbnailAvailable(const GURL& url,
+                                       const gfx::Image& image);
 
   Profile* profile_;
   AppListControllerDelegate* list_controller_;

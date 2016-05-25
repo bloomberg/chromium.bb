@@ -24,6 +24,10 @@
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
+namespace gfx {
+class Image;
+}
+
 namespace image_fetcher {
 class ImageFetcher;
 }
@@ -42,6 +46,7 @@ class SuggestionsProfile;
 class ImageManager : public image_fetcher::ImageFetcherDelegate {
  public:
   typedef std::vector<ImageData> ImageDataVector;
+  using ImageCallback = base::Callback<void(const GURL&, const gfx::Image&)>;
 
   ImageManager(
       std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
@@ -56,9 +61,7 @@ class ImageManager : public image_fetcher::ImageFetcherDelegate {
   virtual void AddImageURL(const GURL& url, const GURL& image_url);
 
   // Should be called from the UI thread.
-  virtual void GetImageForURL(
-      const GURL& url,
-      base::Callback<void(const GURL&, const SkBitmap*)> callback);
+  virtual void GetImageForURL(const GURL& url, ImageCallback callback);
 
  protected:
   // Methods inherited from image_fetcher::ImageFetcherDelegate
@@ -78,7 +81,7 @@ class ImageManager : public image_fetcher::ImageFetcherDelegate {
   // Used for testing.
   ImageManager();
 
-  typedef std::vector<base::Callback<void(const GURL&, const SkBitmap*)> >
+  typedef std::vector<base::Callback<void(const GURL&, const gfx::Image&)> >
       CallbackVector;
   typedef base::hash_map<std::string, scoped_refptr<base::RefCountedMemory>>
       ImageMap;
@@ -104,17 +107,15 @@ class ImageManager : public image_fetcher::ImageFetcherDelegate {
   bool GetImageURL(const GURL& url, GURL* image_url);
 
   void QueueCacheRequest(
-      const GURL& url, const GURL& image_url,
-      base::Callback<void(const GURL&, const SkBitmap*)> callback);
+      const GURL& url, const GURL& image_url, ImageCallback callback);
 
   void ServeFromCacheOrNetwork(
-      const GURL& url, const GURL& image_url,
-      base::Callback<void(const GURL&, const SkBitmap*)> callback);
+      const GURL& url, const GURL& image_url, ImageCallback callback);
 
   void OnCacheImageDecoded(
       const GURL& url,
       const GURL& image_url,
-      base::Callback<void(const GURL&, const SkBitmap*)> callback,
+      const ImageCallback& callback,
       std::unique_ptr<SkBitmap> bitmap);
 
   // Returns null if the |url| had no entry in the cache.

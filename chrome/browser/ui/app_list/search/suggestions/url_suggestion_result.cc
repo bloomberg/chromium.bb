@@ -102,9 +102,9 @@ void URLSuggestionResult::OnDidGetIcon(
 }
 
 void URLSuggestionResult::OnSuggestionsThumbnailAvailable(
-    const GURL& url, const SkBitmap* bitmap) {
-  if (bitmap) {
-    SetIcon(gfx::ImageSkia::CreateFrom1xBitmap(*bitmap));
+    const GURL& url, const gfx::Image& image) {
+  if (!image.IsEmpty()) {
+    SetIcon(*image.ToImageSkia());
   } else {
     // There is no image for this suggestion. Disable being shown on the start
     // screen.

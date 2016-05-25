@@ -23,6 +23,10 @@
 #include "components/suggestions/suggestions_service.h"
 #include "url/gurl.h"
 
+namespace gfx {
+class Image;
+}
+
 namespace history {
 class TopSites;
 }
@@ -220,7 +224,7 @@ class MostVisitedSites : public history::TopSitesObserver,
       bool is_local_thumbnail,
       const ThumbnailCallback& callback,
       const GURL& url,
-      const SkBitmap* bitmap);
+      const gfx::Image& bitmap);
 
   // Records thumbnail-related UMA histogram metrics.
   void RecordThumbnailUMAMetrics();
