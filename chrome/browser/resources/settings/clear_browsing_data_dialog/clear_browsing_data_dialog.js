@@ -82,6 +82,8 @@ Polymer({
   updateFooter_: function(syncing, otherFormsOfBrowsingHistory) {
     this.$.googleFooter.hidden = !otherFormsOfBrowsingHistory;
     this.$.syncedDataSentence.hidden = !syncing;
+    this.$.dialog.notifyResize();
+    this.$.dialog.classList.add('fully-rendered');
   },
 
   open: function() {

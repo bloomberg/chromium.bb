@@ -21,6 +21,13 @@ Polymer({
       value: false,
     },
 
+    sizingTarget: {
+      type: Element,
+      value: function() {
+        return this.$$('.body-container');
+      },
+    },
+
     /** @override */
     withBackdrop: {
       type: Boolean,

@@ -17,6 +17,20 @@
         max-width: 600px;
       }
 
+      #dialog:not(.fully-rendered) {
+        visibility: hidden;
+      }
+
+      .row {
+        align-items: center;
+        display: flex;
+        min-height: 40px;
+      }
+
+      .row .start {
+        flex: 1;
+      }
+
       paper-spinner {
         -webkit-margin-end: 16px;
         margin-bottom: auto;
