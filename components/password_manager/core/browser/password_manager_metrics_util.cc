@@ -88,12 +88,6 @@ void LogAutoSigninPromoUserAction(AutoSigninPromoUserAction action) {
                             AUTO_SIGNIN_PROMO_ACTION_COUNT);
 }
 
-void LogAccountChooserUserAction(AccountChooserUserAction action) {
-  // TODO(vasilii): deprecate the histogram when the new ones hit the Stable.
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.AccountChooserDialog", action,
-                            ACCOUNT_CHOOSER_ACTION_COUNT);
-}
-
 void LogAccountChooserUserActionOneAccount(AccountChooserUserAction action) {
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.AccountChooserDialogOneAccount",
                             action, ACCOUNT_CHOOSER_ACTION_COUNT);

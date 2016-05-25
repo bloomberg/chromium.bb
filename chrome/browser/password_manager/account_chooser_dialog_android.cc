@@ -20,7 +20,6 @@
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
-#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "jni/AccountChooserDialog_jni.h"
@@ -226,13 +225,8 @@ void AccountChooserDialogAndroid::ChooseCredential(
   using namespace password_manager;
   if (type == CredentialType::CREDENTIAL_TYPE_EMPTY) {
     passwords_data_.ChooseCredential(nullptr);
-    password_manager::metrics_util::LogAccountChooserUserAction(
-        password_manager::metrics_util::ACCOUNT_CHOOSER_DISMISSED);
-
     return;
   }
-  password_manager::metrics_util::LogAccountChooserUserAction(
-      password_manager::metrics_util::ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN);
   const auto& credentials_forms =
       (type == CredentialType::CREDENTIAL_TYPE_PASSWORD)
           ? local_credentials_forms()
