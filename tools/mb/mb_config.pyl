@@ -133,7 +133,7 @@
       'ClangToTAndroidASan': 'android_clang_tot_asan',
       'ClangToTAndroidASan tester': 'none',
       'ClangToTLinux':
-        'swarming_gyp_clang_tot_linux_dump_symbols_shared_release',
+        'swarming_gn_clang_tot_linux_full_symbols_shared_release',
       'ClangToTLinux tester': 'none',
       'ClangToTLinux (dbg)': 'swarming_clang_tot_shared_debug',
       'ClangToTLinuxASan': 'swarming_gyp_clang_tot_asan_lsan_static_release',
@@ -1734,11 +1734,10 @@
       'static', 'release',
     ],
 
-    'swarming_gyp_clang_tot_linux_dump_symbols_shared_release': [
+    'swarming_gn_clang_tot_linux_full_symbols_shared_release': [
       # Enable debug info, as on official builders, to catch issues with
       # optimized debug info.
-      'swarming', 'gyp', 'clang_tot', 'linux_dump_symbols',
-      'shared', 'release',
+      'swarming', 'gn', 'clang_tot', 'full_symbols', 'shared', 'release',
     ],
 
     'swarming_gyp_clang_tot_minimal_symbols_shared_debug': [
@@ -2096,11 +2095,6 @@
     'line_tables': {
       'gn_args': '', # TODO(GYP): check that this is not needed
       'gyp_defines': 'debug_extra_cflags="-gline-tables-only"',
-    },
-
-    'linux_dump_symbols': {
-      'gn_args': 'error', # TODO(crbug.com/605819): implement this.
-      'gyp_defines': 'linux_dump_symbols=1',
     },
 
     'ubsan_security': { 'gn_args': 'is_ubsan_security=true' },
