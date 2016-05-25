@@ -390,6 +390,7 @@ class DesktopDragDropClientAuraX11Test : public ViewsTestBase {
     data.SetString(base::ASCIIToUTF16("Test"));
     SkBitmap drag_bitmap;
     drag_bitmap.allocN32Pixels(10, 10);
+    drag_bitmap.eraseARGB(0xFF, 0, 0, 0);
     gfx::ImageSkia drag_image(gfx::ImageSkia::CreateFrom1xBitmap(drag_bitmap));
     data.provider().SetDragImage(drag_image, gfx::Vector2d());
 
