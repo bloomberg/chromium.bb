@@ -59,7 +59,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/shadertexturefunction/*.html', bug=483282)
     self.Skip('deqp/functional/gles3/sync.html', bug=483282)
     self.Skip('deqp/functional/gles3/textureshadow.html', bug=483282)
-    self.Skip('deqp/functional/gles3/texturewrap.html', bug=483282)
     self.Skip('deqp/functional/gles3/transformfeedback.html', bug=483282)
     self.Skip('deqp/functional/gles3/uniformapi.html', bug=483282)
     self.Skip('deqp/functional/gles3/uniformbuffers.html', bug=483282)
@@ -349,6 +348,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/textureformat/compressed_2d.html',
         ['mac'], bug=612205)
     self.Fail('deqp/functional/gles3/textureformat/compressed_cube.html',
+        ['mac'], bug=612205)
+    self.Fail('deqp/functional/gles3/texturewrap/e*',
         ['mac'], bug=612205)
 
     self.Fail('deqp/data/gles3/shaders/qualification_order.html',
