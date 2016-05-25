@@ -5,18 +5,21 @@
 #ifndef BoxBorderPainter_h
 #define BoxBorderPainter_h
 
-#include "core/layout/LayoutBoxModelObject.h"
+#include "core/layout/BackgroundBleedAvoidance.h"
 #include "core/style/BorderEdge.h"
 #include "platform/geometry/FloatRoundedRect.h"
-#include "platform/heap/Heap.h"
 
 namespace blink {
 
 class ComputedStyle;
+class GraphicsContext;
 class IntRect;
 class LayoutBox;
 class LayoutRect;
 struct PaintInfo;
+class Path;
+
+typedef unsigned BorderEdgeFlags;
 
 class BoxBorderPainter {
     STACK_ALLOCATED();

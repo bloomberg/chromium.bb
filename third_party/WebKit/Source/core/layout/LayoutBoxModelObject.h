@@ -49,7 +49,6 @@ enum PaintLayerType {
 // Modes for some of the line-related functions.
 enum LinePositionMode { PositionOnContainingLine, PositionOfInteriorLineBoxes };
 enum LineDirectionMode { HorizontalLine, VerticalLine };
-typedef unsigned BorderEdgeFlags;
 
 enum ContentChangeType {
     ImageChanged,
