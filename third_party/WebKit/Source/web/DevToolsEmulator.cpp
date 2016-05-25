@@ -377,8 +377,8 @@ bool DevToolsEmulator::handleInputEvent(const WebInputEvent& inputEvent)
             m_webViewImpl->mainFrame()->setScrollOffset(toIntSize(*m_lastPinchAnchorCss.get() - toIntSize(anchorCss)));
         }
         if (gestureEvent.type() == PlatformEvent::GesturePinchEnd) {
-            m_lastPinchAnchorCss.clear();
-            m_lastPinchAnchorDip.clear();
+            m_lastPinchAnchorCss.reset();
+            m_lastPinchAnchorDip.reset();
         }
         return true;
     }

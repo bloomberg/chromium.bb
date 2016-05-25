@@ -83,8 +83,8 @@ TEST(SpinLockTest, Torture)
     thread1->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&threadMain, AllowCrossThreadAccess(static_cast<char*>(sharedBuffer))));
     thread2->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&threadMain, AllowCrossThreadAccess(static_cast<char*>(sharedBuffer))));
 
-    thread1.clear();
-    thread2.clear();
+    thread1.reset();
+    thread2.reset();
 }
 
 } // namespace blink

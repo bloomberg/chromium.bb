@@ -52,7 +52,7 @@ protected:
 
     void destroyHelperPlugin()
     {
-        m_plugin.clear();
+        m_plugin.reset();
         // WebHelperPlugin is destroyed by a task posted to the message loop.
         testing::runPendingTasks();
     }

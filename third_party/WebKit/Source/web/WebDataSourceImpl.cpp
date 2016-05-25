@@ -144,7 +144,7 @@ WebDataSourceImpl::~WebDataSourceImpl()
 void WebDataSourceImpl::detachFromFrame()
 {
     DocumentLoader::detachFromFrame();
-    m_extraData.clear();
+    m_extraData.reset();
 }
 
 DEFINE_TRACE(WebDataSourceImpl)

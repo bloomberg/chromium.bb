@@ -4619,7 +4619,7 @@ public:
     void clearSelection() override
     {
         m_selectionCleared = true;
-        m_selection.clear();
+        m_selection.reset();
     }
 
     bool getAndResetSelectionCleared()

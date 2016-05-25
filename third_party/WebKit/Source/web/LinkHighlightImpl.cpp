@@ -103,7 +103,7 @@ LinkHighlightImpl::~LinkHighlightImpl()
     if (m_owningWebViewImpl->linkHighlightsTimeline())
         m_owningWebViewImpl->linkHighlightsTimeline()->playerDestroyed(*this);
     m_compositorPlayer->setAnimationDelegate(nullptr);
-    m_compositorPlayer.clear();
+    m_compositorPlayer.reset();
 
     clearGraphicsLayerLinkHighlightPointer();
     releaseResources();

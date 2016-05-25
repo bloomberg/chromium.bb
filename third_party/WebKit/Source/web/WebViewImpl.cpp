@@ -968,7 +968,7 @@ void WebViewImpl::transferActiveWheelFlingAnimation(const WebActiveWheelFlingPar
 bool WebViewImpl::endActiveFlingAnimation()
 {
     if (m_gestureAnimation) {
-        m_gestureAnimation.clear();
+        m_gestureAnimation.reset();
         m_flingSourceDevice = WebGestureDeviceUninitialized;
         if (m_layerTreeView)
             m_layerTreeView->didStopFlinging();
@@ -2767,7 +2767,7 @@ void WebViewImpl::willCloseLayerTreeView()
     if (m_linkHighlightsTimeline) {
         m_linkHighlights.clear();
         detachCompositorAnimationTimeline(m_linkHighlightsTimeline.get());
-        m_linkHighlightsTimeline.clear();
+        m_linkHighlightsTimeline.reset();
     }
 
     if (m_layerTreeView)
@@ -4133,7 +4133,7 @@ void WebViewImpl::setZoomFactorOverride(float zoomFactor)
 void WebViewImpl::setPageOverlayColor(WebColor color)
 {
     if (m_pageColorOverlay)
-        m_pageColorOverlay.clear();
+        m_pageColorOverlay.reset();
 
     if (color == Color::transparent)
         return;

@@ -301,7 +301,7 @@ void InspectorOverlay::hideHighlight()
 {
     m_highlightNode.clear();
     m_eventTargetNode.clear();
-    m_highlightQuad.clear();
+    m_highlightQuad.reset();
     scheduleUpdate();
 }
 
@@ -367,7 +367,7 @@ void InspectorOverlay::scheduleUpdate()
 {
     if (isEmpty()) {
         if (m_pageOverlay)
-            m_pageOverlay.clear();
+            m_pageOverlay.reset();
         return;
     }
     m_needsUpdate = true;

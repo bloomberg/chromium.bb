@@ -126,7 +126,7 @@ void ExternalPopupMenu::show()
 void ExternalPopupMenu::dispatchEvent(Timer<ExternalPopupMenu>*)
 {
     m_webView.handleInputEvent(*m_syntheticEvent);
-    m_syntheticEvent.clear();
+    m_syntheticEvent.reset();
 }
 
 void ExternalPopupMenu::hide()

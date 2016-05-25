@@ -401,9 +401,9 @@ void AssociatedURLLoader::cancelLoader()
 
     if (m_loader) {
         m_loader->cancel();
-        m_loader.clear();
+        m_loader.reset();
     }
-    m_clientAdapter.clear();
+    m_clientAdapter.reset();
 }
 
 void AssociatedURLLoader::setDefersLoading(bool defersLoading)
