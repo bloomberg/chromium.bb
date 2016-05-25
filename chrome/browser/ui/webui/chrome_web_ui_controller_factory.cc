@@ -47,6 +47,7 @@
 #include "chrome/browser/ui/webui/predictors/predictors_ui.h"
 #include "chrome/browser/ui/webui/profiler_ui.h"
 #include "chrome/browser/ui/webui/settings/md_settings_ui.h"
+#include "chrome/browser/ui/webui/settings_utils.h"
 #include "chrome/browser/ui/webui/signin/md_user_manager_ui.h"
 #include "chrome/browser/ui/webui/signin/profile_signin_confirmation_ui.h"
 #include "chrome/browser/ui/webui/signin_internals_ui.h"
@@ -761,10 +762,11 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
   if (page_url.host() == chrome::kChromeUIDownloadsHost)
     return MdDownloadsUI::GetFaviconResourceBytes(scale_factor);
 
-  // Android doesn't use the Options pages.
+  // Android doesn't use the Options/Settings pages.
   if (page_url.host() == chrome::kChromeUISettingsHost ||
-      page_url.host() == chrome::kChromeUISettingsFrameHost)
-    return options::OptionsUI::GetFaviconResourceBytes(scale_factor);
+      page_url.host() == chrome::kChromeUISettingsFrameHost ||
+      page_url.host() == chrome::kChromeUIMdSettingsHost)
+    return settings_utils::GetFaviconResourceBytes(scale_factor);
 
 #if defined(ENABLE_EXTENSIONS)
   if (page_url.host() == chrome::kChromeUIExtensionsHost ||

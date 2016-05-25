@@ -6,6 +6,8 @@
 
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "components/url_formatter/url_fixer.h"
+#include "grit/theme_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 
 namespace settings_utils {
@@ -17,6 +19,11 @@ bool FixupAndValidateStartupPage(const std::string& url_string,
   if (valid && fixed_url)
     fixed_url->Swap(&url);
   return valid;
+}
+
+base::RefCountedMemory* GetFaviconResourceBytes(ui::ScaleFactor scale_factor) {
+  return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
+      IDR_SETTINGS_FAVICON, scale_factor);
 }
 
 }  // namespace settings_utils

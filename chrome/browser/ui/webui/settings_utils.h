@@ -8,8 +8,13 @@
 #include <string>
 
 #include "base/macros.h"
+#include "ui/base/resource/scale_factor.h"
 
 class GURL;
+
+namespace base {
+class RefCountedMemory;
+}
 
 namespace content {
 class WebContents;
@@ -27,6 +32,8 @@ void ShowManageSSLCertificates(content::WebContents* web_contents);
 // the fixed up, valid URL if not null.
 bool FixupAndValidateStartupPage(const std::string& url_string,
                                  GURL* fixed_url);
+
+base::RefCountedMemory* GetFaviconResourceBytes(ui::ScaleFactor scale_factor);
 
 }  // namespace settings_utils
 

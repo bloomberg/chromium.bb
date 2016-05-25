@@ -419,13 +419,6 @@ void OptionsUI::ProcessAutocompleteSuggestions(
   }
 }
 
-// static
-base::RefCountedMemory* OptionsUI::GetFaviconResourceBytes(
-      ui::ScaleFactor scale_factor) {
-  return ui::ResourceBundle::GetSharedInstance().
-      LoadDataResourceBytesForScale(IDR_SETTINGS_FAVICON, scale_factor);
-}
-
 void OptionsUI::DidStartProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
