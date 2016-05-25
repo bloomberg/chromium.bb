@@ -46,7 +46,12 @@ define("mojo/public/js/support", [
      * @param {!MojoResult} mojoResult to call callback with.
      */
     callCallback: function(callbackId, mojoResult) {
-      this.callbackIds_.get(callbackId)(mojoResult);
+      var callback = this.callbackIds_.get(callbackId);
+
+      // Signalling the watch is asynchronous operation and this function may be
+      // called for already removed watch.
+      if (callback)
+        callback(mojoResult);
     },
 
     /**
