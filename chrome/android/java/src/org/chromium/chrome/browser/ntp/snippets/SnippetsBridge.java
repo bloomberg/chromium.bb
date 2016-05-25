@@ -111,7 +111,8 @@ public class SnippetsBridge {
 
     @CalledByNative
     private void onSnippetsAvailable(String[] ids, String[] titles, String[] urls, String[] ampUrls,
-            String[] thumbnailUrls, String[] previewText, long[] timestamps, String[] publishers) {
+            String[] thumbnailUrls, String[] previewText, long[] timestamps, String[] publishers,
+            float[] scores) {
         // Don't notify observer if we've already been destroyed.
         if (mNativeSnippetsBridge == 0) return;
         assert mObserver != null;
@@ -119,7 +120,7 @@ public class SnippetsBridge {
         List<SnippetArticle> newSnippets = new ArrayList<>(ids.length);
         for (int i = 0; i < ids.length; i++) {
             newSnippets.add(new SnippetArticle(ids[i], titles[i], publishers[i], previewText[i],
-                    urls[i], ampUrls[i], thumbnailUrls[i], timestamps[i], i));
+                    urls[i], ampUrls[i], thumbnailUrls[i], timestamps[i], scores[i], i));
         }
 
         mObserver.onSnippetsReceived(newSnippets);

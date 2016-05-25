@@ -33810,6 +33810,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.Snippets.CardClickedAge" units="min">
+  <owner>jkrcal@chromium.org</owner>
+  <summary>
+    Android: The age of the snippets card on the NTP, that is clicked through to
+    the host website of the content. The age is measured from the moment the
+    content has been published. In each &quot;_x_y&quot; suffix of the
+    histogram, only snippets on positions \gt;=x and \lt;=y are tracked.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Snippets.CardClickedScore" units="score">
+  <owner>jkrcal@chromium.org</owner>
+  <summary>
+    Android: The score of the snippets card on the NTP, that is clicked through
+    to the host website of the content. The recorded score is from the moment
+    the snippet was fetched, it could have changed since. In each &quot;_x&quot;
+    suffix  of the histogram, only snippets on positions \lt;=x are tracked.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.Snippets.CardExpanded">
   <owner>knn@chromium.org</owner>
   <summary>
@@ -95160,6 +95180,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="NaCl.Perf.PNaClLoadTime.TotalUncachedTime"/>
   <affected-histogram name="NaCl.Perf.Size.PexeNexeSizePct"/>
   <affected-histogram name="NaCl.Perf.Size.PNaClTranslatedNexe"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PositionVariants">
+  <suffix name="0_0" label="Only snippets on position 0"/>
+  <suffix name="1_2" label="Only snippets on position 1-2"/>
+  <suffix name="3_4" label="Only snippets on position 3-4"/>
+  <suffix name="5_9" label="Only snippets on position 5-9"/>
+  <affected-histogram name="NewTabPage.Snippets.CardClickedAge"/>
+  <affected-histogram name="NewTabPage.Snippets.CardClickedScore"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PpapiPluginName">

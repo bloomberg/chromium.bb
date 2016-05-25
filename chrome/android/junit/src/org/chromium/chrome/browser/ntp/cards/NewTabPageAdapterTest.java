@@ -75,7 +75,7 @@ public class NewTabPageAdapterTest {
 
         // The adapter should ignore any new incoming data.
         mSnippetsObserver.onSnippetsReceived(Arrays.asList(new SnippetArticle[] {
-                new SnippetArticle("foo", "title1", "pub1", "txt1", "foo", "bar", null, 0, 0)}));
+                new SnippetArticle("foo", "title1", "pub1", "txt1", "foo", "bar", null, 0, 0, 0)}));
         assertEquals(loadedItems, ntpa.getItemsForTesting());
     }
 
@@ -106,7 +106,7 @@ public class NewTabPageAdapterTest {
 
         // The adapter should ignore any new incoming data.
         mSnippetsObserver.onSnippetsReceived(Arrays.asList(new SnippetArticle[] {
-                new SnippetArticle("foo", "title1", "pub1", "txt1", "foo", "bar", null, 0, 0)}));
+                new SnippetArticle("foo", "title1", "pub1", "txt1", "foo", "bar", null, 0, 0, 0)}));
         assertEquals(loadedItems, ntpa.getItemsForTesting());
     }
 
@@ -136,10 +136,10 @@ public class NewTabPageAdapterTest {
     private List<SnippetArticle> createDummySnippets() {
         return Arrays.asList(new SnippetArticle[] {
                 new SnippetArticle("https://site.com/url1", "title1", "pub1", "txt1",
-                        "https://site.com/url1", "https://amp.site.com/url1", null, 0, 0),
+                        "https://site.com/url1", "https://amp.site.com/url1", null, 0, 0, 0),
                 new SnippetArticle("https://site.com/url2", "title2", "pub2", "txt2",
-                        "https://site.com/url2", "https://amp.site.com/url1", null, 0, 0),
+                        "https://site.com/url2", "https://amp.site.com/url1", null, 0, 0, 0),
                 new SnippetArticle("https://site.com/url3", "title3", "pub3", "txt3",
-                        "https://site.com/url3", "https://amp.site.com/url1", null, 0, 0)});
+                        "https://site.com/url3", "https://amp.site.com/url1", null, 0, 0, 0)});
     }
 }

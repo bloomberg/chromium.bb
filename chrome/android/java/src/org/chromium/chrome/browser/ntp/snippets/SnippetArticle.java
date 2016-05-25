@@ -19,6 +19,7 @@ public class SnippetArticle implements NewTabPageListItem {
     public final String mAmpUrl;
     public final String mThumbnailUrl;
     public final long mTimestamp;
+    public final float mScore;
     public final int mPosition;
 
     /** Bitmap of the thumbnail, fetched lazily, when the RecyclerView wants to show the snippet. */
@@ -33,10 +34,11 @@ public class SnippetArticle implements NewTabPageListItem {
      * @param mAmpUrl the AMP url for the article (possible for this to be empty)
      * @param thumbnailUrl the URL of the thumbnail
      * @param timestamp the time in ms when this article was published
+     * @param score the score expressing relative quality of the article for the user
      * @param position the position of this article in the list of snippets
      */
     public SnippetArticle(String id, String title, String publisher, String previewText, String url,
-            String ampUrl, String thumbnailUrl, long timestamp, int position) {
+            String ampUrl, String thumbnailUrl, long timestamp, float score, int position) {
         mId = id;
         mTitle = title;
         mPublisher = publisher;
@@ -45,6 +47,7 @@ public class SnippetArticle implements NewTabPageListItem {
         mAmpUrl = ampUrl;
         mThumbnailUrl = thumbnailUrl;
         mTimestamp = timestamp;
+        mScore = score;
         mPosition = position;
     }
 

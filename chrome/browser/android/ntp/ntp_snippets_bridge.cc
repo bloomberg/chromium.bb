@@ -28,6 +28,7 @@ using base::android::ConvertJavaStringToUTF8;
 using base::android::JavaParamRef;
 using base::android::ToJavaArrayOfStrings;
 using base::android::ToJavaLongArray;
+using base::android::ToJavaFloatArray;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 
@@ -135,6 +136,7 @@ void NTPSnippetsBridge::NTPSnippetsServiceLoaded() {
   std::vector<std::string> snippets;
   std::vector<int64_t> timestamps;
   std::vector<std::string> publishers;
+  std::vector<float> scores;
   for (const std::unique_ptr<ntp_snippets::NTPSnippet>& snippet :
        ntp_snippets_service_->snippets()) {
     ids.push_back(snippet->id());
@@ -147,6 +149,7 @@ void NTPSnippetsBridge::NTPSnippetsServiceLoaded() {
     snippets.push_back(snippet->snippet());
     timestamps.push_back(snippet->publish_date().ToJavaTime());
     publishers.push_back(snippet->best_source().publisher_name);
+    scores.push_back(snippet->score());
   }
 
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -158,7 +161,8 @@ void NTPSnippetsBridge::NTPSnippetsServiceLoaded() {
       ToJavaArrayOfStrings(env, thumbnail_urls).obj(),
       ToJavaArrayOfStrings(env, snippets).obj(),
       ToJavaLongArray(env, timestamps).obj(),
-      ToJavaArrayOfStrings(env, publishers).obj());
+      ToJavaArrayOfStrings(env, publishers).obj(),
+      ToJavaFloatArray(env, scores).obj());
 }
 
 void NTPSnippetsBridge::NTPSnippetsServiceShutdown() {
