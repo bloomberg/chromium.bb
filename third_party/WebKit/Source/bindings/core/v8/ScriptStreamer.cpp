@@ -541,7 +541,7 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
             // V8 cannot stream the script.
             suppressStreaming();
             m_stream = 0;
-            m_source.clear();
+            m_source.reset();
             recordNotStreamingReasonHistogram(m_scriptType, V8CannotStream);
             recordStartedStreamingHistogram(m_scriptType, 0);
             return;

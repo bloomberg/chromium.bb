@@ -186,7 +186,7 @@ void V8PerIsolateData::willBeDestroyed(v8::Isolate* isolate)
 {
     V8PerIsolateData* data = from(isolate);
 
-    data->m_threadDebugger.clear();
+    data->m_threadDebugger.reset();
     // Clear any data that may have handles into the heap,
     // prior to calling ThreadState::detach().
     data->clearEndOfScopeTasks();
@@ -206,9 +206,9 @@ void V8PerIsolateData::destroy(v8::Isolate* isolate)
     if (data->m_scriptRegexpScriptState)
         data->m_scriptRegexpScriptState->disposePerContextData();
     data->m_liveRoot.clear();
-    data->m_hiddenValue.clear();
+    data->m_hiddenValue.reset();
     data->m_stringCache->dispose();
-    data->m_stringCache.clear();
+    data->m_stringCache.reset();
     data->m_interfaceTemplateMapForNonMainWorld.clear();
     data->m_interfaceTemplateMapForMainWorld.clear();
     data->m_operationTemplateMapForNonMainWorld.clear();

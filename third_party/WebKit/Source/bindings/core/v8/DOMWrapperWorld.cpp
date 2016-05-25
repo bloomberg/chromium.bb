@@ -198,7 +198,7 @@ DOMWrapperWorld::~DOMWrapperWorld()
 void DOMWrapperWorld::dispose()
 {
     m_domObjectHolders.clear();
-    m_domDataStore.clear();
+    m_domDataStore.reset();
 }
 
 #if ENABLE(ASSERT)

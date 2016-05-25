@@ -122,7 +122,7 @@ public:
 
     void destroyContext()
     {
-        m_page.clear();
+        m_page.reset();
         if (m_otherScriptState) {
             m_otherScriptState->disposePerContextData();
             m_otherScriptState = nullptr;
