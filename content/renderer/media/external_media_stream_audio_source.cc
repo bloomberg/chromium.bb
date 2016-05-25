@@ -4,8 +4,6 @@
 
 #include "content/renderer/media/external_media_stream_audio_source.h"
 
-#include "base/compiler_specific.h"
-
 namespace content {
 
 ExternalMediaStreamAudioSource::ExternalMediaStreamAudioSource(
@@ -26,14 +24,11 @@ ExternalMediaStreamAudioSource::ExternalMediaStreamAudioSource(
       frames_per_buffer));
 }
 
-// https://crbug.com/612084
-MSVC_DISABLE_OPTIMIZE()
-NOINLINE ExternalMediaStreamAudioSource::~ExternalMediaStreamAudioSource() {
+ExternalMediaStreamAudioSource::~ExternalMediaStreamAudioSource() {
   DVLOG(1)
       << "ExternalMediaStreamAudioSource::~ExternalMediaStreamAudioSource()";
   EnsureSourceIsStopped();
 }
-MSVC_ENABLE_OPTIMIZE()
 
 bool ExternalMediaStreamAudioSource::EnsureSourceIsStarted() {
   DCHECK(thread_checker_.CalledOnValidThread());

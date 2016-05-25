@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/compiler_specific.h"
 #include "base/logging.h"
 
 namespace content {
@@ -21,13 +20,10 @@ WebAudioMediaStreamSource::WebAudioMediaStreamSource(
   DVLOG(1) << "WebAudioMediaStreamSource::WebAudioMediaStreamSource()";
 }
 
-// https://crbug.com/612084
-MSVC_DISABLE_OPTIMIZE()
-NOINLINE WebAudioMediaStreamSource::~WebAudioMediaStreamSource() {
+WebAudioMediaStreamSource::~WebAudioMediaStreamSource() {
   DVLOG(1) << "WebAudioMediaStreamSource::~WebAudioMediaStreamSource()";
   EnsureSourceIsStopped();
 }
-MSVC_ENABLE_OPTIMIZE()
 
 void WebAudioMediaStreamSource::setFormat(size_t number_of_channels,
                                           float sample_rate) {

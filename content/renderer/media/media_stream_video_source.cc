@@ -8,7 +8,6 @@
 #include <limits>
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -320,12 +319,9 @@ MediaStreamVideoSource::MediaStreamVideoSource()
           new VideoTrackAdapter(ChildProcess::current()->io_task_runner())),
       weak_factory_(this) {}
 
-// https://crbug.com/612084
-MSVC_DISABLE_OPTIMIZE()
-NOINLINE MediaStreamVideoSource::~MediaStreamVideoSource() {
+MediaStreamVideoSource::~MediaStreamVideoSource() {
   DCHECK(CalledOnValidThread());
 }
-MSVC_ENABLE_OPTIMIZE()
 
 void MediaStreamVideoSource::AddTrack(
     MediaStreamVideoTrack* track,

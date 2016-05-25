@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "base/base64.h"
-#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/rand_util.h"
@@ -255,12 +254,9 @@ PepperMediaStreamVideoTrackHost::PepperMediaStreamVideoTrackHost(
   DCHECK(!track_.isNull());
 }
 
-// https://crbug.com/612084
-MSVC_DISABLE_OPTIMIZE()
-NOINLINE PepperMediaStreamVideoTrackHost::~PepperMediaStreamVideoTrackHost() {
+PepperMediaStreamVideoTrackHost::~PepperMediaStreamVideoTrackHost() {
   OnClose();
 }
-MSVC_ENABLE_OPTIMIZE()
 
 bool PepperMediaStreamVideoTrackHost::IsMediaStreamVideoTrackHost() {
   return true;

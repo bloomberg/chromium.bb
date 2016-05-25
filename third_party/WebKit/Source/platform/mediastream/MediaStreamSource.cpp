@@ -46,6 +46,12 @@ MediaStreamSource::MediaStreamSource(const String& id, StreamType type, const St
     , m_readyState(readyState)
     , m_requiresConsumer(requiresConsumer)
 {
+    ThreadState::current()->registerPreFinalizer(this);
+}
+
+void MediaStreamSource::dispose()
+{
+    m_extraData.reset();
 }
 
 void MediaStreamSource::setReadyState(ReadyState readyState)

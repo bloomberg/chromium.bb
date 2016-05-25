@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/media/webrtc/track_observer.h"
@@ -147,13 +146,10 @@ MediaStreamRemoteVideoSource::MediaStreamRemoteVideoSource(
       base::Unretained(this)));
 }
 
-// https://crbug.com/612084
-MSVC_DISABLE_OPTIMIZE()
-NOINLINE MediaStreamRemoteVideoSource::~MediaStreamRemoteVideoSource() {
+MediaStreamRemoteVideoSource::~MediaStreamRemoteVideoSource() {
   DCHECK(CalledOnValidThread());
   DCHECK(!observer_);
 }
-MSVC_ENABLE_OPTIMIZE()
 
 void MediaStreamRemoteVideoSource::OnSourceTerminated() {
   DCHECK(CalledOnValidThread());

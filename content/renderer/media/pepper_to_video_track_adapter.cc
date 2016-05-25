@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/base64.h"
-#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/rand_util.h"
@@ -112,12 +111,9 @@ PpFrameWriter::PpFrameWriter() {
   DVLOG(3) << "PpFrameWriter ctor";
 }
 
-// https://crbug.com/612084
-MSVC_DISABLE_OPTIMIZE()
-NOINLINE PpFrameWriter::~PpFrameWriter() {
+PpFrameWriter::~PpFrameWriter() {
   DVLOG(3) << "PpFrameWriter dtor";
 }
-MSVC_ENABLE_OPTIMIZE()
 
 void PpFrameWriter::GetCurrentSupportedFormats(
     int max_requested_width,

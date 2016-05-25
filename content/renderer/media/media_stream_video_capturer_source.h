@@ -56,6 +56,10 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
       const VideoCaptureDeliverFrameCB& frame_callback) override;
   void StopSourceImpl() override;
 
+  // RenderFrame does NOT own this object. Avoid unintended multiple destruction
+  // by overriding RenderFrameObserver::OnDestruct().
+  void OnDestruct() final {}
+
   // Method to bind as RunningCallback in VideoCapturerSource::StartCapture().
   void OnStarted(bool result);
 

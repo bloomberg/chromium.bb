@@ -5,7 +5,6 @@
 #include "content/renderer/media/media_stream_source.h"
 
 #include "base/callback_helpers.h"
-#include "base/compiler_specific.h"
 
 namespace content {
 
@@ -14,13 +13,10 @@ const char MediaStreamSource::kSourceId[] = "sourceId";
 MediaStreamSource::MediaStreamSource() {
 }
 
-// https://crbug.com/612084
-MSVC_DISABLE_OPTIMIZE()
-NOINLINE MediaStreamSource::~MediaStreamSource() {
+MediaStreamSource::~MediaStreamSource() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(stop_callback_.is_null());
 }
-MSVC_ENABLE_OPTIMIZE()
 
 void MediaStreamSource::StopSource() {
   DCHECK(thread_checker_.CalledOnValidThread());
