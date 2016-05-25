@@ -47,34 +47,18 @@
 
 namespace blink {
 
-template <typename ResultType, typename CallbackArg>
-struct HelperResultType {
-    DISALLOW_NEW();
-public:
-    typedef ResultType* ReturnType;
-    typedef Member<ResultType> StorageType;
-
-    static ReturnType createFromCallbackArg(CallbackArg argument)
-    {
-        return ResultType::create(argument);
-    }
-};
-
 // A helper template for FileSystemSync implementation.
 template <typename SuccessCallback, typename CallbackArg, typename ResultType>
 class SyncCallbackHelper final : public GarbageCollected<SyncCallbackHelper<SuccessCallback, CallbackArg, ResultType>> {
 public:
     typedef SyncCallbackHelper<SuccessCallback, CallbackArg, ResultType> HelperType;
-    typedef HelperResultType<ResultType, CallbackArg> ResultTypeTrait;
-    typedef typename ResultTypeTrait::StorageType ResultStorageType;
-    typedef typename ResultTypeTrait::ReturnType ResultReturnType;
 
     static HelperType* create()
     {
         return new SyncCallbackHelper();
     }
 
-    ResultReturnType getResult(ExceptionState& exceptionState)
+    ResultType* getResult(ExceptionState& exceptionState)
     {
         if (m_errorCode)
             FileError::throwDOMException(exceptionState, m_errorCode);
@@ -163,11 +147,11 @@ private:
 
     void setResult(CallbackArg result)
     {
-        m_result = ResultTypeTrait::createFromCallbackArg(result);
+        m_result = ResultType::create(result);
         m_completed = true;
     }
 
-    ResultStorageType m_result;
+    Member<ResultType> m_result;
     FileError::ErrorCode m_errorCode;
     bool m_completed;
 };
