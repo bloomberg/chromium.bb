@@ -280,30 +280,21 @@ public class UrlManagerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
-    public void testUpgradeFrom1or2() throws Exception {
-        String oldPrefsFile = "org.chromium.chrome.browser.physicalweb.URL_CACHE";
-        final String arbitraryKey = "arbitrary_key";
+    public void testUpgradeFromNone() throws Exception {
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
-        final SharedPreferences oldPrefs =
-                context.getSharedPreferences(oldPrefsFile, Context.MODE_PRIVATE);
-        oldPrefs.edit()
-                .putInt(arbitraryKey, 1)
-                .apply();
         mSharedPreferences.edit()
                 .remove(UrlManager.getVersionKey())
                 .apply();
         new UrlManager(context);
 
-        // Make sure the old prefs are cleared.
+        // Make sure the new prefs are populated.
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mSharedPreferences.contains(UrlManager.getVersionKey())
-                        && !oldPrefs.contains(arbitraryKey);
+                return mSharedPreferences.contains(UrlManager.getVersionKey());
             }
         }, 5000, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
-        // Make sure the new prefs are populated.
         assertEquals(UrlManager.getVersion(),
                 mSharedPreferences.getInt(UrlManager.getVersionKey(), 0));
     }

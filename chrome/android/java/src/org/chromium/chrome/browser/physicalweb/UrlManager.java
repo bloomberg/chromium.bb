@@ -58,8 +58,6 @@ import java.util.Set;
  */
 class UrlManager {
     private static final String TAG = "PhysicalWeb";
-    private static final String DEPRECATED_PREFS_NAME =
-            "org.chromium.chrome.browser.physicalweb.URL_CACHE";
     private static final String PREFS_VERSION_KEY = "physicalweb_version";
     private static final String PREFS_ALL_URLS_KEY = "physicalweb_all_urls";
     private static final String PREFS_NEARBY_URLS_KEY = "physicalweb_nearby_urls";
@@ -324,15 +322,9 @@ class UrlManager {
         // Check the version.
         final SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         if (prefs.getInt(PREFS_VERSION_KEY, 0) != PREFS_VERSION) {
-            // Stored preferences are old, upgrade to the current version.
-            // TODO(cco3): This code may be deleted around m53.
             new AsyncTask<Void, Void, Void>() {
                 @Override
                 protected Void doInBackground(Void... params) {
-                    mContext.getSharedPreferences(
-                            DEPRECATED_PREFS_NAME, Context.MODE_PRIVATE).edit()
-                            .clear()
-                            .apply();
                     prefs.edit()
                             .putInt(PREFS_VERSION_KEY, PREFS_VERSION)
                             .apply();
