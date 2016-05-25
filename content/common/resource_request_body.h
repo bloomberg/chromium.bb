@@ -22,8 +22,6 @@ class FilePath;
 
 namespace content {
 
-struct ExplodedHttpBodyElement;
-
 // A struct used to represent upload data. The data field is populated by
 // WebURLLoader from the data given as WebHTTPBody.
 class CONTENT_EXPORT ResourceRequestBody
@@ -33,8 +31,6 @@ class CONTENT_EXPORT ResourceRequestBody
   typedef storage::DataElement Element;
 
   ResourceRequestBody();
-
-  void AppendExplodedHTTPBodyElement(const ExplodedHttpBodyElement& element);
 
   void AppendBytes(const char* bytes, int bytes_len);
   void AppendFileRange(const base::FilePath& file_path,

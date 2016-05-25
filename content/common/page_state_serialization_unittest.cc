@@ -43,17 +43,18 @@ void ExpectEquality(const std::vector<T>& a, const std::vector<T>& b) {
 template <>
 void ExpectEquality(const ExplodedHttpBodyElement& a,
                     const ExplodedHttpBodyElement& b) {
-  EXPECT_EQ(a.type, b.type);
-  EXPECT_EQ(a.data, b.data);
-  EXPECT_EQ(a.file_path, b.file_path);
-  EXPECT_EQ(a.filesystem_url, b.filesystem_url);
-  EXPECT_EQ(a.file_start, b.file_start);
-  EXPECT_EQ(a.file_length, b.file_length);
-  if (!(std::isnan(a.file_modification_time) &&
-        std::isnan(b.file_modification_time))) {
-    EXPECT_DOUBLE_EQ(a.file_modification_time, b.file_modification_time);
+  EXPECT_EQ(a.type(), b.type());
+  if (a.type() == ExplodedHttpBodyElement::TYPE_BYTES &&
+      b.type() == ExplodedHttpBodyElement::TYPE_BYTES) {
+    EXPECT_EQ(std::string(a.bytes(), a.length()),
+              std::string(b.bytes(), b.length()));
   }
-  EXPECT_EQ(a.blob_uuid, b.blob_uuid);
+  EXPECT_EQ(a.path(), b.path());
+  EXPECT_EQ(a.filesystem_url(), b.filesystem_url());
+  EXPECT_EQ(a.offset(), b.offset());
+  EXPECT_EQ(a.length(), b.length());
+  EXPECT_EQ(a.expected_modification_time(), b.expected_modification_time());
+  EXPECT_EQ(a.blob_uuid(), b.blob_uuid());
 }
 
 template <>
@@ -120,19 +121,17 @@ class PageStateSerializationTest : public testing::Test {
     http_body->http_content_type = NS16("text/foo");
 
     ExplodedHttpBodyElement e1;
-    e1.type = blink::WebHTTPBody::Element::TypeData;
-    e1.data = "foo";
+    std::string test_body("foo");
+    e1.SetToBytes(test_body.data(), test_body.size());
     http_body->elements.push_back(e1);
 
     ExplodedHttpBodyElement e2;
-    e2.type = blink::WebHTTPBody::Element::TypeFile;
-    e2.file_path = NS16("file.txt");
-    e2.file_start = 100;
-    e2.file_length = 1024;
-    e2.file_modification_time = 9999.0;
+    e2.SetToFilePathRange(base::FilePath::FromUTF8Unsafe("file.txt"), 100, 1024,
+                          base::Time::FromDoubleT(9999.0));
     http_body->elements.push_back(e2);
 
-    referenced_files->push_back(e2.file_path);
+    referenced_files->push_back(
+        base::NullableString16(e2.path().AsUTF16Unsafe(), false));
   }
 
   void PopulateFrameStateForBackwardsCompatTest(
@@ -167,18 +166,17 @@ class PageStateSerializationTest : public testing::Test {
       frame_state->http_body.is_null = false;
 
       ExplodedHttpBodyElement e1;
-      e1.type = blink::WebHTTPBody::Element::TypeData;
-      e1.data = "first data block";
+      std::string test_body("first data block");
+      e1.SetToBytes(test_body.data(), test_body.size());
       frame_state->http_body.elements.push_back(e1);
 
       ExplodedHttpBodyElement e2;
-      e2.type = blink::WebHTTPBody::Element::TypeFile;
-      e2.file_path = NS16("file.txt");
+      e2.SetToFilePath(base::FilePath::FromUTF8Unsafe("file.txt"));
       frame_state->http_body.elements.push_back(e2);
 
       ExplodedHttpBodyElement e3;
-      e3.type = blink::WebHTTPBody::Element::TypeData;
-      e3.data = "data the second";
+      std::string test_body2("data the second");
+      e3.SetToBytes(test_body2.data(), test_body2.size());
       frame_state->http_body.elements.push_back(e3);
 
       ExplodedFrameState child_state;

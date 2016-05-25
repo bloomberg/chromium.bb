@@ -42,7 +42,7 @@ class STORAGE_COMMON_EXPORT DataElement {
   ~DataElement();
 
   Type type() const { return type_; }
-  const char* bytes() const { return bytes_ ? bytes_ : &buf_[0]; }
+  const char* bytes() const { return bytes_ ? bytes_ : buf_.data(); }
   const base::FilePath& path() const { return path_; }
   const GURL& filesystem_url() const { return filesystem_url_; }
   const std::string& blob_uuid() const { return blob_uuid_; }

@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/files/file_path.h"
+#include "base/strings/nullable_string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/page_state_serialization.h"
 
@@ -87,17 +88,15 @@ PageState PageState::CreateForTesting(
     state.top.http_body.is_null = false;
     if (optional_body_data) {
       ExplodedHttpBodyElement element;
-      element.type = blink::WebHTTPBody::Element::TypeData;
-      element.data = optional_body_data;
+      std::string body_data(optional_body_data);
+      element.SetToBytes(body_data.data(), body_data.size());
       state.top.http_body.elements.push_back(element);
     }
     if (optional_body_file_path) {
       ExplodedHttpBodyElement element;
-      element.type = blink::WebHTTPBody::Element::TypeFile;
-      element.file_path =
-          ToNullableString16(optional_body_file_path->AsUTF8Unsafe());
-      state.top.http_body.elements.push_back(element);
-      state.referenced_files.push_back(element.file_path);
+      element.SetToFilePath(*optional_body_file_path);
+      state.referenced_files.push_back(base::NullableString16(
+          optional_body_file_path->AsUTF16Unsafe(), false));
     }
     state.top.http_body.contains_passwords =
         body_contains_password_data;
