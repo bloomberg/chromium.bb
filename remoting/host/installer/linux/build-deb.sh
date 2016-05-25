@@ -7,7 +7,14 @@
 SCRIPTDIR="$(dirname "$(readlink -f "$0")")"
 PACKAGE="chrome-remote-desktop"
 ARCHITECTURE=$(dpkg-architecture | awk -F '=' '/DEB_BUILD_ARCH=/{print $2}')
-REPOCONFIG="deb http://dl.google.com/linux/chrome-remote-desktop/deb/ stable main"
+
+# These settings are copied from chrome/installer/linux/debian/build.sh .
+BASEREPOCONFIG="dl.google.com/linux/chrome-remote-desktop/deb/ stable main"
+REPOCONFIG="deb [arch=${ARCHITECTURE}] http://${BASEREPOCONFIG}}"
+# Allowed configs include optional HTTPS support and explicit multiarch
+# platforms.
+REPOCONFIGREGEX="deb (\\\\[arch=[^]]*\\\\b${ARCHITECTURE}\\\\b[^]]*\\\\]"
+REPOCONFIGREGEX+="[[:space:]]*) https?://${BASEREPOCONFIG}"
 
 source ${SCRIPTDIR}/../../../../chrome/installer/linux/common/installer.include
 
