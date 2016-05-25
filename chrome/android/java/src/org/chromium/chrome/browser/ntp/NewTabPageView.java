@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.MostVisitedItem.MostVisitedItemManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
+import org.chromium.chrome.browser.ntp.cards.CardsLayoutOperations;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
@@ -415,7 +416,8 @@ public class NewTabPageView extends FrameLayout
             });
             initializeSearchBoxRecyclerViewScrollHandling();
             mRecyclerView.addItemDecoration(new SnippetItemDecoration());
-            updateSnippetsHeaderDisplay();
+            CardsLayoutOperations.updateSnippetsHeaderDisplay(mRecyclerView,
+                    mNewTabPageLayout.getPaddingTop());
         } else {
             initializeSearchBoxScrollHandling();
         }
@@ -450,16 +452,6 @@ public class NewTabPageView extends FrameLayout
         return mUseCardsUi ? mRecyclerView : mScrollView;
     }
 
-    private View getFirstViewMatchingViewType(int newTabPageListItemViewType) {
-        int adapterSize = mNewTabPageAdapter.getItemCount();
-        for (int i = 0; i < adapterSize; i++) {
-            if (mNewTabPageAdapter.getItemViewType(i) == newTabPageListItemViewType) {
-                return mRecyclerView.getLayoutManager().findViewByPosition(i);
-            }
-        }
-        return null;
-    }
-
     /**
      * Get the number of listed items (visible or not) for the given type.
      * @param newTabPageListItemViewType the item type to count.
@@ -477,96 +469,6 @@ public class NewTabPageView extends FrameLayout
     }
 
     /**
-     * Change the peeking card's width, padding and children's opacity to give a smooth transition.
-     */
-    private void updatePeekingCard() {
-        // Get the first snippet that could display to make the peeking card transition.
-        ViewGroup firstSnippet =
-                (ViewGroup) getFirstViewMatchingViewType(NewTabPageListItem.VIEW_TYPE_SNIPPET);
-
-        if (firstSnippet == null || !firstSnippet.isShown()) return;
-
-        // If first snippet exists change the peeking card margin and padding to change its
-        // width when scrolling.
-        // Value used for max peeking card height and padding.
-        int maxPadding = getResources().getDimensionPixelSize(
-                R.dimen.snippets_padding_and_peeking_card_height);
-
-        // The peeking card's resting position is |maxPadding| from the bottom of the screen hence
-        // |getHeight() - maxPadding|, and it grows the further it gets from this.
-        int padding = getHeight() - maxPadding - firstSnippet.getTop();
-
-        // Make sure the |padding| is between 0 and |maxPadding|.
-        padding = Math.min(Math.max(padding, 0), maxPadding);
-
-        // Modify the padding so as the margin increases, the padding decreases, keeping the card's
-        // contents in the same position. The top and bottom remain the same.
-        firstSnippet.setPadding(padding, maxPadding, padding, maxPadding);
-
-        RecyclerView.LayoutParams params =
-                (RecyclerView.LayoutParams) firstSnippet.getLayoutParams();
-        params.leftMargin = maxPadding - padding;
-        params.rightMargin = maxPadding - padding;
-
-        // Set the opacity of the card content to be 0 when peeking and 1 when full width.
-        int firstSnippetChildCount = firstSnippet.getChildCount();
-        for (int i = 0; i < firstSnippetChildCount; ++i) {
-            View snippetChild = firstSnippet.getChildAt(i);
-            snippetChild.setAlpha(padding / (float) maxPadding);
-        }
-    }
-
-    /**
-     * Show the snippets header when the user scrolls down and snippet articles starts reaching the
-     * top of the screen.
-     */
-    private void updateSnippetsHeaderDisplay() {
-        // Get the snippet header view.
-        View snippetHeader = getFirstViewMatchingViewType(NewTabPageListItem.VIEW_TYPE_HEADER);
-
-        if (snippetHeader == null || !snippetHeader.isShown()) return;
-
-        // Start doing the calculations if the snippet header is currently shown on screen.
-        RecyclerView.LayoutParams params =
-                (RecyclerView.LayoutParams) snippetHeader.getLayoutParams();
-        float headerAlpha = 0;
-        int headerHeight = 0;
-
-        // Get the max snippet header height.
-        int maxSnippetHeaderHeight =
-                getResources().getDimensionPixelSize(R.dimen.snippets_article_header_height);
-        // Measurement used to multiply the max snippet height to get a range on when to start
-        // modifying the display of article header.
-        final int numberHeaderHeight = 2;
-        // Used to indicate when to start modifying the snippet header.
-        int heightToStartChangingHeader = maxSnippetHeaderHeight * numberHeaderHeight;
-        int snippetHeaderTop = snippetHeader.getTop();
-        int omniBoxHeight = mNewTabPageLayout.getPaddingTop();
-
-        // Check if snippet header top is within range to start showing the snippet header.
-        if (snippetHeaderTop < omniBoxHeight + heightToStartChangingHeader) {
-            // The amount of space the article header has scrolled into the
-            // |heightToStartChangingHeader|.
-            int amountScrolledIntoHeaderSpace =
-                    heightToStartChangingHeader - (snippetHeaderTop - omniBoxHeight);
-
-            // Remove the |numberHeaderHeight| to get the actual header height we want to
-            // display. Never let the height be more than the |maxSnippetHeaderHeight|.
-            headerHeight = Math.min(
-                    amountScrolledIntoHeaderSpace / numberHeaderHeight, maxSnippetHeaderHeight);
-
-            // Get the alpha for the snippet header.
-            headerAlpha = (float) headerHeight / maxSnippetHeaderHeight;
-        }
-        snippetHeader.setAlpha(headerAlpha);
-        params.height = headerHeight;
-        snippetHeader.setLayoutParams(params);
-
-        // Update the space at the bottom, which needs to know about the height of the header.
-        mRecyclerView.refreshBottomSpacing();
-    }
-
-    /**
      * Sets up scrolling when snippets are enabled. It adds scroll listeners and touch listeners to
      * the RecyclerView.
      */
@@ -578,55 +480,10 @@ public class NewTabPageView extends FrameLayout
             @Override
             public void run() {
                 assert mPendingSnapScroll;
-                NewTabPageUma.SnapState currentSnapState = updateSnapScroll();
-                snapStateObserver.updateSnapState(NewTabPageView.this, currentSnapState);
-            }
-
-            private NewTabPageUma.SnapState updateSnapScroll() {
-                // These calculations only work if the first item is visible (since
-                // computeVerticalScrollOffset only takes into account visible items).
-                // Luckily, we only need to perform the calculations if the first item is visible.
-                if (!mRecyclerView.isFirstItemVisible()) {
-                    return NewTabPageUma.SnapState.BELOW_THE_FOLD;
-                }
-
-                final int currentScroll = getVerticalScroll();
-
-                // If snapping to Most Likely or to Articles, the omnibox will be at the top of the
-                // page, so offset the scroll so the scroll targets appear below it.
-                final int omniBoxHeight = mNewTabPageLayout.getPaddingTop();
-                final int topOfMostLikelyScroll = mMostVisitedLayout.getTop() - omniBoxHeight;
-                final int topOfSnippetsScroll = mNewTabPageLayout.getHeight() - omniBoxHeight;
-
-                assert currentScroll >= 0;
-                // Do not do any scrolling if the user is currently viewing articles.
-                if (currentScroll >= topOfSnippetsScroll) {
-                    return NewTabPageUma.SnapState.BELOW_THE_FOLD;
-                }
-
-                // If Most Likely is fully visible when we are scrolled to the top, we have two
-                // snap points: the Top and Articles.
-                // If not, we have three snap points, the Top, Most Likely and Articles.
-                boolean snapToMostLikely =
-                        mRecyclerView.getHeight() < mMostVisitedLayout.getBottom();
-
-                int targetScroll;
-                NewTabPageUma.SnapState snapState = NewTabPageUma.SnapState.ABOVE_THE_FOLD;
-                if (currentScroll < mNewTabPageLayout.getHeight() / 3) {
-                    // In either case, if in the top 1/3 of the original NTP, snap to the top.
-                    targetScroll = 0;
-                } else if (snapToMostLikely
-                        && currentScroll < mNewTabPageLayout.getHeight() * 2 / 3) {
-                    // If in the middle 1/3 and we are snapping to Most Likely, snap to it.
-                    targetScroll = topOfMostLikelyScroll;
-                } else {
-                    // Otherwise, snap to the Articles.
-                    targetScroll = topOfSnippetsScroll;
-                    snapState = NewTabPageUma.SnapState.BELOW_THE_FOLD;
-                }
-                mRecyclerView.smoothScrollBy(0, targetScroll - currentScroll);
                 mPendingSnapScroll = false;
-                return snapState;
+                NewTabPageUma.SnapState currentSnapState = CardsLayoutOperations.snapScroll(
+                        mRecyclerView, mNewTabPageLayout, mMostVisitedLayout, getVerticalScroll());
+                snapStateObserver.updateSnapState(NewTabPageView.this, currentSnapState);
             }
         };
 
@@ -638,8 +495,10 @@ public class NewTabPageView extends FrameLayout
                     mRecyclerView.postDelayed(mSnapScrollRunnable, SNAP_SCROLL_DELAY_MS);
                 }
                 updateSearchBoxOnScroll();
-                updatePeekingCard();
-                updateSnippetsHeaderDisplay();
+                CardsLayoutOperations
+                        .updatePeekingCard(mRecyclerView, mNewTabPageLayout, getHeight());
+                CardsLayoutOperations.updateSnippetsHeaderDisplay(mRecyclerView,
+                        mNewTabPageLayout.getPaddingTop());
             }
         });
 
@@ -977,7 +836,7 @@ public class NewTabPageView extends FrameLayout
         updateSearchBoxOnScroll();
 
         if (mUseCardsUi) {
-            updatePeekingCard();
+            CardsLayoutOperations.updatePeekingCard(mRecyclerView, mNewTabPageLayout, getHeight());
         }
     }
 
@@ -1241,7 +1100,7 @@ public class NewTabPageView extends FrameLayout
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         if (mUseCardsUi) {
-            updatePeekingCard();
+            CardsLayoutOperations.updatePeekingCard(mRecyclerView, mNewTabPageLayout, getHeight());
         }
     }
 
