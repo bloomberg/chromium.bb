@@ -446,7 +446,6 @@ Polymer({
         this.$$('#focus-placeholder').remove();
 
       document.addEventListener('keydown', this.onKeydown_.bind(this), true);
-      this.setSearchFocusHandlers_();
       this.listen(this, 'focus', 'onFocus_');
       this.listen(this, 'header-height-changed', 'updateElementPositioning_');
       this.listen(this, 'header-or-arrow-click', 'toggleCastModeHidden_');
@@ -2045,6 +2044,7 @@ Polymer({
   searchEnabledChanged_: function(searchEnabled) {
     if (searchEnabled) {
       this.async(function() {
+        this.setSearchFocusHandlers_();
         this.putSearchAtBottom_();
       });
     }
@@ -2070,7 +2070,6 @@ Polymer({
    * @private
    */
   setSearchFocusHandlers_: function() {
-    var search = this.$$('#sink-search');
     var searchInput = this.$$('#sink-search-input');
     var that = this;
 
@@ -2086,15 +2085,13 @@ Polymer({
     // |showSearchResults_()|.
     window.addEventListener('blur', function() {
       that.isSearchFocusedOnWindowBlur_ =
-          that.shadowRoot.activeElement == search;
+          that.shadowRoot.activeElement == searchInput;
     });
-    if (this.hasConditionalElement_(search)) {
-      searchInput.addEventListener('focus', function() {
-        if (!that.isSearchFocusedOnWindowBlur_) {
-          that.showSearchResults_();
-        }
-      });
-    }
+    searchInput.addEventListener('focus', function() {
+      if (!that.isSearchFocusedOnWindowBlur_) {
+        that.showSearchResults_();
+      }
+    });
   },
 
   /**
