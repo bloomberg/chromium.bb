@@ -41,7 +41,8 @@ public class AcceptLanguageTest extends AwTestBase {
         super.tearDown();
     }
 
-    private static final Pattern COMMA_AND_OPTIONAL_Q_VALUE = Pattern.compile("(?:;q=[^,]+)?,");
+    private static final Pattern COMMA_AND_OPTIONAL_Q_VALUE =
+            Pattern.compile("(?:;q=[^,]+)?(?:,|$)");
     private static final Pattern MAYBE_QUOTED_STRING = Pattern.compile("^(\"?)(.*)\\1$");
 
     /**
