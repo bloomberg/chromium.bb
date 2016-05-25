@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/chromecast_build.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
 # Chromecast doesn't ship expat as a system library
 if (is_linux && !is_chromecast) {
@@ -36,4 +37,14 @@ if (is_linux && !is_chromecast) {
       defines += [ "HAVE_EXPAT_CONFIG_H" ]
     }
   }
+}
+
+fuzzer_test("expat_xml_parse_fuzzer") {
+  sources = [
+    "fuzz/expat_xml_parse_fuzzer.cc",
+  ]
+  deps = [
+    ":expat",
+  ]
+  dict = "//testing/libfuzzer/fuzzers/dicts/xml.dict"
 }
