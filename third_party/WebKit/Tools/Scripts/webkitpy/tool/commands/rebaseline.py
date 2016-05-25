@@ -97,9 +97,6 @@ class BaseInternalRebaselineCommand(AbstractRebaseliningCommand):
 
     def _baseline_directory(self, builder_name):
         port = self._tool.port_factory.get_from_builder_name(builder_name)
-        override_dir = self._tool.builders.rebaseline_override_dir(builder_name)
-        if override_dir:
-            return self._tool.filesystem.join(port.layout_tests_dir(), 'platform', override_dir)
         return port.baseline_version_dir()
 
     def _test_root(self, test_name):

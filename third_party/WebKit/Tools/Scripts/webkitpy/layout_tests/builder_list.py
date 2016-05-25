@@ -26,8 +26,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import re
-
 """Represents a set of builder bots running layout tests.
 
 This class is used to hold a list of builder bots running layout tests and their
@@ -35,6 +33,8 @@ corresponding port names and TestExpectations specifiers.
 
 The actual constants are in webkitpy.common.config.builders.
 """
+
+import re
 
 
 class BuilderList(object):
@@ -45,31 +45,18 @@ class BuilderList(object):
             port_name: A fully qualified port name.
             specifiers: TestExpectations specifiers for that config. Valid values are found in
                   TestExpectationsParser._configuration_tokens_list.
-            TODO(qyearsley): Remove rebaseline_override_dir if it's not used.
-            rebaseline_override_dir (optional): Directory to put baselines in instead of where
-                  you would normally put them. This is useful when we don't have bots that cover
-                  particular configurations; so, e.g., you might support mac-mountainlion but not
-                  have a mac-mountainlion bot yet, so you'd want to put the mac-lion results into
-                  platform/mac temporarily.
 
         Possible refactoring note: Potentially, it might make sense to use
         webkitpy.common.buildbot.Builder and add port_name and specifiers
         properties to that class.
         """
         self._exact_matches = builders_dict
-        self._ports_without_builders = []
-
-    def builder_path_from_name(self, builder_name):
-        return re.sub(r'[\s().]', '_', builder_name)
 
     def all_builder_names(self):
         return sorted(set(self._exact_matches.keys()))
 
     def all_port_names(self):
-        return sorted(set(map(lambda x: x["port_name"], self._exact_matches.values()) + self._ports_without_builders))
-
-    def rebaseline_override_dir(self, builder_name):
-        return self._exact_matches[builder_name].get("rebaseline_override_dir", None)
+        return sorted(set(map(lambda x: x["port_name"], self._exact_matches.values())))
 
     def port_name_for_builder_name(self, builder_name):
         return self._exact_matches[builder_name]["port_name"]
@@ -86,6 +73,3 @@ class BuilderList(object):
                 else:
                     return builder_name
         return debug_builder_name
-
-    def builder_path_for_port_name(self, port_name):
-        self.builder_path_from_name(self.builder_name_for_port_name(port_name))
