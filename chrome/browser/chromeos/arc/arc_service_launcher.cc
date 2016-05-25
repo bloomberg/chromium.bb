@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_downloads_watcher_service.h"
 #include "chrome/browser/chromeos/arc/arc_policy_bridge.h"
 #include "chrome/browser/chromeos/arc/arc_process_service.h"
 #include "chrome/browser/chromeos/arc/arc_settings_service.h"
@@ -28,6 +29,9 @@ void ArcServiceLauncher::Initialize() {
       new ArcServiceManager(content::BrowserThread::GetBlockingPool()));
   arc_service_manager_->AddService(base::WrapUnique(
       new ArcAuthService(arc_service_manager_->arc_bridge_service())));
+  arc_service_manager_->AddService(
+      base::WrapUnique(new ArcDownloadsWatcherService(
+          arc_service_manager_->arc_bridge_service())));
   arc_service_manager_->AddService(base::WrapUnique(
       new ArcPolicyBridge(arc_service_manager_->arc_bridge_service())));
   arc_service_manager_->AddService(base::WrapUnique(

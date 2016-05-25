@@ -60,6 +60,8 @@
         'browser/chromeos/arc/arc_auth_notification.h',
         'browser/chromeos/arc/arc_auth_service.cc',
         'browser/chromeos/arc/arc_auth_service.h',
+        'browser/chromeos/arc/arc_downloads_watcher_service.cc',
+        'browser/chromeos/arc/arc_downloads_watcher_service.h',
         'browser/chromeos/arc/arc_service_launcher.cc',
         'browser/chromeos/arc/arc_service_launcher.h',
         'browser/chromeos/arc/arc_support_host.cc',
