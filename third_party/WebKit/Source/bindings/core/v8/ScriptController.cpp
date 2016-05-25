@@ -288,6 +288,16 @@ void ScriptController::updateDocument()
         windowProxy(DOMWrapperWorld::mainWorld())->updateDocument();
 }
 
+void ScriptController::namedItemAdded(HTMLDocument* doc, const AtomicString& name)
+{
+    windowProxy(DOMWrapperWorld::mainWorld())->namedItemAdded(doc, name);
+}
+
+void ScriptController::namedItemRemoved(HTMLDocument* doc, const AtomicString& name)
+{
+    windowProxy(DOMWrapperWorld::mainWorld())->namedItemRemoved(doc, name);
+}
+
 static bool isInPrivateScriptIsolateWorld(v8::Isolate* isolate)
 {
     v8::Local<v8::Context> context = isolate->GetCurrentContext();

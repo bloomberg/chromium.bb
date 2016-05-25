@@ -23,7 +23,6 @@
 // whose value is the Document interface object."
 // https://html.spec.whatwg.org/#the-window-object
 
-[OverrideBuiltins]
 interface HTMLDocument : Document {
     // https://html.spec.whatwg.org/#Document-partial
 
@@ -36,9 +35,6 @@ interface HTMLDocument : Document {
     [MeasureAs=DocumentClear] void clear();
     [MeasureAs=DocumentCaptureEvents] void captureEvents();
     [MeasureAs=DocumentReleaseEvents] void releaseEvents();
-
-    [Custom, NotEnumerable] getter object (unsigned long index);
-    [Custom, NotEnumerable] getter object (DOMString name);
 
     // FIXME: all should not be [Replaceable].
     [Replaceable, ImplementedAs=allForBinding] readonly attribute HTMLAllCollection all;

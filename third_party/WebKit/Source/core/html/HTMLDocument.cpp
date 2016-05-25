@@ -170,6 +170,8 @@ void HTMLDocument::addItemToMap(HashCountedSet<AtomicString>& map, const AtomicS
     if (name.isEmpty())
         return;
     map.add(name);
+    if (LocalFrame* f = frame())
+        f->script().namedItemAdded(this, name);
 }
 
 void HTMLDocument::removeItemFromMap(HashCountedSet<AtomicString>& map, const AtomicString& name)
@@ -177,6 +179,8 @@ void HTMLDocument::removeItemFromMap(HashCountedSet<AtomicString>& map, const At
     if (name.isEmpty())
         return;
     map.remove(name);
+    if (LocalFrame* f = frame())
+        f->script().namedItemRemoved(this, name);
 }
 
 void HTMLDocument::addNamedItem(const AtomicString& name)
