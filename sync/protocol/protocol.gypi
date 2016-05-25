@@ -34,6 +34,7 @@
       '<(sync_proto_sources_dir)/favicon_tracking_specifics.proto',
       '<(sync_proto_sources_dir)/get_updates_caller_info.proto',
       '<(sync_proto_sources_dir)/history_delete_directive_specifics.proto',
+      '<(sync_proto_sources_dir)/history_status.proto',
       '<(sync_proto_sources_dir)/nigori_specifics.proto',
       '<(sync_proto_sources_dir)/managed_user_setting_specifics.proto',
       '<(sync_proto_sources_dir)/managed_user_shared_setting_specifics.proto',

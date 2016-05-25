@@ -10,8 +10,9 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
-        'browser_sync_browser',
         'history_core_browser',
+        'sync_driver',
+        'version_info',
       ],
       'include_dirs': [
         '..',

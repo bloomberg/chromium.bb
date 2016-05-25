@@ -24,11 +24,9 @@ namespace history {
 // Use |SetupFakeResponse| to influence whether the requests should succeed
 // or fail, and with which error code.
 //
-// Note: Currently, the only test that uses this class only counts the number
-// of visits and does not inspect their contents. Therefore, the behavior
-// of this class is only defined for |WebHistoryService::QueryHistory| queries
-// and even for them, we only return the correct number of items, without
-// contents.
+// Note: The behavior of this class is only defined for some WebHistoryService
+// queries. If needed, improve FakeRequest::GetResponseBody() to simulate
+// responses for other queries.
 //
 // TODO(msramek): This class might need its own set of tests.
 class FakeWebHistoryService : public history::WebHistoryService {
@@ -53,6 +51,14 @@ class FakeWebHistoryService : public history::WebHistoryService {
   // Counts the number of visits within a certain time range.
   int GetNumberOfVisitsBetween(const base::Time& begin, const base::Time& end);
 
+  // Get and set the fake state of web and app activity.
+  bool IsWebAndAppActivityEnabled();
+  void SetWebAndAppActivityEnabled(bool enabled);
+
+  // Get and set the fake state of other forms of browsing history.
+  bool AreOtherFormsOfBrowsingHistoryPresent();
+  void SetOtherFormsOfBrowsingHistoryPresent(bool present);
+
  private:
   base::Time GetTimeForKeyInQuery(const GURL& url, const std::string& key);
 
@@ -63,6 +69,10 @@ class FakeWebHistoryService : public history::WebHistoryService {
   // Parameters for the fake request.
   bool emulate_success_;
   int emulate_response_code_;
+
+  // States of serverside corpora.
+  bool web_and_app_activity_enabled_;
+  bool other_forms_of_browsing_history_present_;
 
   // Fake visits storage.
   typedef std::pair<std::string, base::Time> Visit;

@@ -10,7 +10,27 @@ static_library("browsing_data_ui") {
 
   deps = [
     "//base",
-    "//components/browser_sync/browser",
     "//components/history/core/browser",
+    "//components/sync_driver:sync_driver",
+    "//components/version_info",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "history_notice_utils_unittest.cc",
+  ]
+
+  deps = [
+    ":browsing_data_ui",
+    "//base",
+    "//components/history/core/test:test",
+    "//components/signin/core/browser:test_support",
+    "//components/sync_driver:test_support",
+    "//components/version_info:version_info",
+    "//net",
+    "//sync/protocol:protocol",
+    "//testing/gtest",
   ]
 }

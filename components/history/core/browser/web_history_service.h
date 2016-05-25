@@ -25,6 +25,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace version_info {
+enum class Channel;
+}
+
 class OAuth2TokenService;
 class SigninManagerBase;
 
@@ -55,6 +59,11 @@ class WebHistoryService : public KeyedService {
 
     virtual void SetPostData(const std::string& post_data) = 0;
 
+    virtual void SetPostDataAndType(const std::string& post_data,
+                                    const std::string& mime_type) = 0;
+
+    virtual void SetUserAgent(const std::string& user_agent) = 0;
+
     // Tells the request to begin.
     virtual void Start() = 0;
 
@@ -74,6 +83,9 @@ class WebHistoryService : public KeyedService {
       AudioWebHistoryCallback;
 
   typedef base::Callback<void(bool success)> QueryWebAndAppActivityCallback;
+
+  typedef base::Callback<void(bool success)>
+      QueryOtherFormsOfBrowsingHistoryCallback;
 
   typedef base::Callback<void(Request*, bool success)> CompletionCallback;
 
@@ -121,7 +133,9 @@ class WebHistoryService : public KeyedService {
   size_t GetNumberOfPendingAudioHistoryRequests();
 
   // Whether there are other forms of browsing history stored on the server.
-  bool HasOtherFormsOfBrowsingHistory() const;
+  void QueryOtherFormsOfBrowsingHistory(
+      version_info::Channel channel,
+      const QueryOtherFormsOfBrowsingHistoryCallback& callback);
 
  protected:
   // This function is pulled out for testing purposes. Caller takes ownership of
@@ -166,6 +180,14 @@ class WebHistoryService : public KeyedService {
     WebHistoryService::Request* request,
     bool success);
 
+  // Called by |request| when a query for other forms of browsing history has
+  // completed. Unpacks the response and calls |callback|, which is the original
+  // callback that was passed to QueryOtherFormsOfBrowsingHistory().
+  void QueryOtherFormsOfBrowsingHistoryCompletionCallback(
+    const WebHistoryService::QueryWebAndAppActivityCallback& callback,
+    WebHistoryService::Request* request,
+    bool success);
+
  private:
   friend class WebHistoryServiceTest;
 
@@ -192,6 +214,10 @@ class WebHistoryService : public KeyedService {
   // Pending web and app activity queries to be canceled if not complete by
   // profile shutdown.
   std::set<Request*> pending_web_and_app_activity_requests_;
+
+  // Pending queries for other forms of browsing history to be canceled if not
+  // complete by profile shutdown.
+  std::set<Request*> pending_other_forms_of_browsing_history_requests_;
 
   base::WeakPtrFactory<WebHistoryService> weak_ptr_factory_;
 

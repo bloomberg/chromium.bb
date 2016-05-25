@@ -31,6 +31,7 @@
         'signin_core_browser',
         'sync_driver',
         'url_formatter/url_formatter.gyp:url_formatter',
+        'version_info',
       ],
       'export_dependent_settings': [
         '../skia/skia.gyp:skia',

@@ -122,6 +122,11 @@ class TestRequest : public WebHistoryService::Request {
   void SetPostData(const std::string& post_data) override {
     post_data_ = post_data;
   }
+  void SetPostDataAndType(const std::string& post_data,
+                          const std::string& mime_type) override {
+    SetPostData(post_data);
+  }
+  void SetUserAgent(const std::string& post_data) override {}
 
   void Start() override {
     is_pending_ = true;

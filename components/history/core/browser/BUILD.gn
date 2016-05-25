@@ -99,6 +99,7 @@ static_library("browser") {
     "//components/signin/core/browser",
     "//components/sync_driver",
     "//components/url_formatter",
+    "//components/version_info",
     "//google_apis",
     "//net",
     "//sql",

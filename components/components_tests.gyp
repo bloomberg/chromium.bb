@@ -1,4 +1,4 @@
- # Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -88,6 +88,9 @@
       'browser_watcher/watcher_client_win_unittest.cc',
       'browser_watcher/watcher_metrics_provider_win_unittest.cc',
       'browser_watcher/window_hang_monitor_win_unittest.cc',
+    ],
+    'browsing_data_ui_unittest_sources': [
+      'browsing_data_ui/history_notice_utils_unittest.cc'
     ],
     'bubble_unittest_sources': [
       'bubble/bubble_manager_mocks.cc',
@@ -979,6 +982,7 @@
         '<@(bookmarks_unittest_sources)',
         '<@(browser_sync_unittest_sources)',
         '<@(browser_watcher_unittest_sources)',
+        '<@(browsing_data_ui_unittest_sources)',
         '<@(bubble_unittest_sources)',
         '<@(captive_portal_unittest_sources)',
         '<@(cast_certificate_unittest_sources)',
@@ -1089,6 +1093,7 @@
         'components.gyp:bookmarks_test_support',
         'components.gyp:browser_sync_browser',
         'components.gyp:browser_sync_browser_test_support',
+        'components.gyp:browsing_data_ui',
         'components.gyp:bubble',
         'components.gyp:captive_portal_test_support',
         'components.gyp:cast_certificate',

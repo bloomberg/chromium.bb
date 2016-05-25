@@ -33,6 +33,7 @@ static_library("test") {
     "//net",
     "//sql",
     "//sql:test_support",
+    "//sync/protocol:protocol",
     "//testing/gtest",
     "//ui/gfx",
     "//url",

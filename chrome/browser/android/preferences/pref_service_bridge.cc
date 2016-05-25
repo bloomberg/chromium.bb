@@ -38,9 +38,11 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/android/android_about_app_info.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/locale_settings.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/browsing_data_ui/history_notice_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -704,6 +706,7 @@ static void RequestInfoAboutOtherFormsOfBrowsingHistory(
   browsing_data_ui::ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
       ProfileSyncServiceFactory::GetForProfile(GetOriginalProfile()),
       WebHistoryServiceFactory::GetForProfile(GetOriginalProfile()),
+      chrome::GetChannel(),
       base::Bind(&EnableDialogAboutOtherFormsOfBrowsingHistory,
                  base::Owned(new ScopedJavaGlobalRef<jobject>(env, listener))));
 }

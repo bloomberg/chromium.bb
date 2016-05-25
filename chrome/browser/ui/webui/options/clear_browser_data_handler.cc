@@ -34,6 +34,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/accelerator_utils.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
@@ -408,6 +409,7 @@ void ClearBrowserDataHandler::RefreshHistoryNotice() {
     browsing_data_ui::ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
         sync_service_,
         WebHistoryServiceFactory::GetForProfile(Profile::FromWebUI(web_ui())),
+        chrome::GetChannel(),
         base::Bind(&ClearBrowserDataHandler::UpdateHistoryDeletionDialog,
                    weak_ptr_factory_.GetWeakPtr()));
   }
