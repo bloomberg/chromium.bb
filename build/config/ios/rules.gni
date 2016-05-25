@@ -74,6 +74,14 @@ template("ios_info_plist") {
 #       path to the template to use to generate the application Info.plist
 #       by performing variable substitutions.
 #
+#   bundle_extension:
+#       (optional) bundle extension including the dot, default to ".app".
+#
+#   product_type
+#       (optional) string, product type for the generated Xcode project,
+#       default to "com.apple.product-type.application". Should generally
+#       not be overridden.
+#
 # For more information, see "gn help executable".
 template("ios_app_bundle") {
   assert(defined(invoker.info_plist),
@@ -118,11 +126,13 @@ template("ios_app_bundle") {
                            "*",
                            [
                              "assert_no_deps",
+                             "bundle_extension",
                              "code_signing_identity",
                              "data_deps",
                              "entitlements_path",
                              "info_plist",
                              "output_name",
+                             "product_type",
                              "visibility",
                            ])
 
@@ -172,11 +182,22 @@ template("ios_app_bundle") {
       data_deps += [ "//testing/iossim" ]
     }
 
-    product_type = "com.apple.product-type.application"
-    bundle_root_dir = "$root_out_dir/$_output_name.app"
+    if (defined(invoker.product_type)) {
+      product_type = invoker.product_type
+    } else {
+      product_type = "com.apple.product-type.application"
+    }
+
+    if (defined(invoker.bundle_extension)) {
+      _bundle_extension = invoker.bundle_extension
+    } else {
+      _bundle_extension = ".app"
+    }
+
+    bundle_root_dir = "$root_out_dir/$_output_name$_bundle_extension"
     bundle_resources_dir = bundle_root_dir
     bundle_executable_dir = bundle_root_dir
-    bundle_plugins_dir = "$bundle_root_dir/Plugins"
+    bundle_plugins_dir = "$bundle_root_dir/PlugIns"
   }
 
   # TODO(crbug.com/297668):
@@ -184,6 +205,53 @@ template("ios_app_bundle") {
   # - find a way to make "ninja -C out/Default base_unittests.app" work as
   #   an alias to "ninja -C out/Default base_unittests" (for convenience
   #   and compatibility with gyp),
+}
+
+# Template to build an application extension bundle for iOS.
+#
+# This should be used instead of "executable" built-in target type on iOS.
+# As the template forward the generation of the application executable to
+# an "executable" target, all arguments supported by "executable" targets
+# are also supported by this template.
+#
+# Arguments
+#
+#   output_name:
+#       (optional) string, name of the generated application, if omitted,
+#       defaults to the target_name.
+#
+#   extra_substitutions:
+#       (optional) list of string in "key=value" format, each value will
+#       be used as an additional variable substitution rule when generating
+#       the application Info.plist
+#
+#   info_plist:
+#       path to the template to use to generate the application Info.plist
+#       by performing variable substitutions.
+#
+# For more information, see "gn help executable".
+template("ios_appext_bundle") {
+  ios_app_bundle(target_name) {
+    forward_variables_from(invoker,
+                           "*",
+                           [
+                             "bundle_extension",
+                             "product_type",
+                           ])
+    bundle_extension = ".appext"
+    product_type = "com.apple.product-type.app-extension"
+
+    # Add linker flags required for an application extension (determined by
+    # inspecting the link command-line when using Xcode 9.0+).
+    if (!defined(ldflags)) {
+      ldflags = []
+    }
+    ldflags += [
+      "-e",
+      "_NSExtensionMain",
+      "-fapplication-extension",
+    ]
+  }
 }
 
 # Compile a xib or storyboard file and add it to a bundle_data so that it is
