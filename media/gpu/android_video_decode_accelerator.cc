@@ -368,6 +368,19 @@ AndroidVideoDecodeAccelerator::CodecConfig::CodecConfig() {}
 
 AndroidVideoDecodeAccelerator::CodecConfig::~CodecConfig() {}
 
+AndroidVideoDecodeAccelerator::BitstreamRecord::BitstreamRecord(
+    const media::BitstreamBuffer& bitstream_buffer)
+    : buffer(bitstream_buffer) {
+  if (buffer.id() != -1)
+    memory.reset(new SharedMemoryRegion(buffer, true));
+}
+
+AndroidVideoDecodeAccelerator::BitstreamRecord::BitstreamRecord(
+    BitstreamRecord&& other)
+    : buffer(std::move(other.buffer)), memory(std::move(other.memory)) {}
+
+AndroidVideoDecodeAccelerator::BitstreamRecord::~BitstreamRecord() {}
+
 AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const GetGLES2DecoderCallback& get_gles2_decoder_cb)
@@ -572,7 +585,7 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
   base::AutoReset<bool> auto_reset(&defer_errors_, true);
   if (bitstreams_notified_in_advance_.size() > kMaxBitstreamsNotifiedInAdvance)
     return false;
-  if (pending_bitstream_buffers_.empty())
+  if (pending_bitstream_records_.empty())
     return false;
   if (state_ == WAITING_FOR_KEY)
     return false;
@@ -601,12 +614,13 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
 
   DCHECK_NE(input_buf_index, -1);
 
-  media::BitstreamBuffer bitstream_buffer = pending_bitstream_buffers_.front();
+  media::BitstreamBuffer bitstream_buffer =
+      pending_bitstream_records_.front().buffer;
 
   if (bitstream_buffer.id() == -1) {
-    pending_bitstream_buffers_.pop();
+    pending_bitstream_records_.pop();
     TRACE_COUNTER1("media", "AVDA::PendingBitstreamBufferCount",
-                   pending_bitstream_buffers_.size());
+                   pending_bitstream_records_.size());
 
     media_codec_->QueueEOS(input_buf_index);
     return true;
@@ -618,7 +632,7 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
     // When |pending_input_buf_index_| is not -1, the buffer is already dequeued
     // from MediaCodec, filled with data and bitstream_buffer.handle() is
     // closed.
-    shm.reset(new SharedMemoryRegion(bitstream_buffer, true));
+    shm = std::move(pending_bitstream_records_.front().memory);
 
     if (!shm->Map()) {
       POST_ERROR(UNREADABLE_INPUT, "Failed to SharedMemoryRegion::Map()");
@@ -673,9 +687,9 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
   }
 
   pending_input_buf_index_ = -1;
-  pending_bitstream_buffers_.pop();
+  pending_bitstream_records_.pop();
   TRACE_COUNTER1("media", "AVDA::PendingBitstreamBufferCount",
-                 pending_bitstream_buffers_.size());
+                 pending_bitstream_records_.size());
   // We should call NotifyEndOfBitstreamBuffer(), when no more decoded output
   // will be returned from the bitstream buffer. However, MediaCodec API is
   // not enough to guarantee it.
@@ -921,9 +935,9 @@ void AndroidVideoDecodeAccelerator::Decode(
 
 void AndroidVideoDecodeAccelerator::DecodeBuffer(
     const media::BitstreamBuffer& bitstream_buffer) {
-  pending_bitstream_buffers_.push(bitstream_buffer);
+  pending_bitstream_records_.push(BitstreamRecord(bitstream_buffer));
   TRACE_COUNTER1("media", "AVDA::PendingBitstreamBufferCount",
-                 pending_bitstream_buffers_.size());
+                 pending_bitstream_records_.size());
 
   DoIOTask(true);
 }
@@ -1170,9 +1184,9 @@ void AndroidVideoDecodeAccelerator::ResetCodecState(
   if (pending_input_buf_index_ != -1) {
     // The data for that index exists in the input buffer, but corresponding
     // shm block been deleted. Check that it is safe to flush the coec, i.e.
-    // |pending_bitstream_buffers_| is empty.
+    // |pending_bitstream_records_| is empty.
     // TODO(timav): keep shm block for that buffer and remove this restriction.
-    DCHECK(pending_bitstream_buffers_.empty());
+    DCHECK(pending_bitstream_records_.empty());
     pending_input_buf_index_ = -1;
   }
 
@@ -1217,9 +1231,10 @@ void AndroidVideoDecodeAccelerator::Reset() {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("media", "AVDA::Reset");
 
-  while (!pending_bitstream_buffers_.empty()) {
-    int32_t bitstream_buffer_id = pending_bitstream_buffers_.front().id();
-    pending_bitstream_buffers_.pop();
+  while (!pending_bitstream_records_.empty()) {
+    int32_t bitstream_buffer_id =
+        pending_bitstream_records_.front().buffer.id();
+    pending_bitstream_records_.pop();
 
     if (bitstream_buffer_id != -1) {
       base::MessageLoop::current()->PostTask(
@@ -1271,9 +1286,9 @@ void AndroidVideoDecodeAccelerator::Destroy() {
   // Some VP8 files require complete MediaCodec drain before we can call
   // MediaCodec.flush() or MediaCodec.reset(). http://crbug.com/598963.
   if (media_codec_ && codec_config_->codec_ == media::kCodecVP8) {
-    // Clear pending_bitstream_buffers_.
-    while (!pending_bitstream_buffers_.empty())
-      pending_bitstream_buffers_.pop();
+    // Clear pending_bitstream_records_.
+    while (!pending_bitstream_records_.empty())
+      pending_bitstream_records_.pop();
 
     // Postpone ActualDestroy after the drain.
     StartCodecDrain(DRAIN_FOR_DESTROY);

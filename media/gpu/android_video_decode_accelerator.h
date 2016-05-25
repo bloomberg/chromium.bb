@@ -35,6 +35,8 @@ class SurfaceTexture;
 
 namespace media {
 
+class SharedMemoryRegion;
+
 // A VideoDecodeAccelerator implementation for Android.
 // This class decodes the input encoded stream by using Android's MediaCodec
 // class. http://developer.android.com/reference/android/media/MediaCodec.html
@@ -378,9 +380,23 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // The resolution of the stream.
   gfx::Size size_;
 
+  // Handy structure to remember a BitstreamBuffer and also its shared memory,
+  // if any.  The goal is to prevent leaving a BitstreamBuffer's shared memory
+  // handle open.
+  struct BitstreamRecord {
+    BitstreamRecord(const media::BitstreamBuffer&);
+    BitstreamRecord(BitstreamRecord&& other);
+    ~BitstreamRecord();
+
+    media::BitstreamBuffer buffer;
+
+    // |memory| is not mapped, and may be null if buffer has no data.
+    std::unique_ptr<SharedMemoryRegion> memory;
+  };
+
   // Encoded bitstream buffers to be passed to media codec, queued until an
   // input buffer is available.
-  std::queue<media::BitstreamBuffer> pending_bitstream_buffers_;
+  std::queue<BitstreamRecord> pending_bitstream_records_;
 
   // A map of presentation timestamp to bitstream buffer id for the bitstream
   // buffers that have been submitted to the decoder but haven't yet produced an
