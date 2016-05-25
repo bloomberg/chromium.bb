@@ -200,13 +200,17 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
         super.onStop();
     }
 
-    private void resolve(Collection<UrlInfo> urls) {
+    private void resolve(Collection<UrlInfo> urls, final boolean isUserInitiated) {
         final long timestamp = SystemClock.elapsedRealtime();
         mPwsClient.resolve(urls, new PwsClient.ResolveScanCallback() {
             @Override
             public void onPwsResults(Collection<PwsResult> pwsResults) {
                 long duration = SystemClock.elapsedRealtime() - timestamp;
-                PhysicalWebUma.onForegroundPwsResolution(ListUrlsActivity.this, duration);
+                if (isUserInitiated) {
+                    PhysicalWebUma.onRefreshPwsResolution(ListUrlsActivity.this, duration);
+                } else {
+                    PhysicalWebUma.onForegroundPwsResolution(ListUrlsActivity.this, duration);
+                }
 
                 // filter out duplicate site URLs.
                 for (PwsResult pwsResult : pwsResults) {
@@ -247,7 +251,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
      */
     @Override
     public void onDisplayableUrlsAdded(Collection<UrlInfo> urls) {
-        resolve(urls);
+        resolve(urls, false);
     }
 
     private void startRefresh(boolean isUserInitiated, boolean isSwipeInitiated) {
@@ -285,7 +289,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
                     (AnimationDrawable) mScanningImageView.getDrawable();
             animationDrawable.start();
 
-            resolve(urls);
+            resolve(urls, isUserInitiated);
         }
     }
 
