@@ -204,6 +204,8 @@ class V8MobileInfiniteScroll(_InfiniteScrollBenchmark):
 class V8Adword(perf_benchmark.PerfBenchmark):
   """Measures V8 Execution metrics on the Adword page."""
 
+  options = {'pageset_repeat': 3}
+
   def CreateTimelineBasedMeasurementOptions(self):
     return CreateV8TimelineBasedMeasurementOptions()
 
