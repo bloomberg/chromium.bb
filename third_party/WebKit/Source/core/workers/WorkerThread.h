@@ -45,7 +45,6 @@ class WaitableEvent;
 class WorkerBackingThread;
 class WorkerGlobalScope;
 class WorkerInspectorController;
-class WorkerMicrotaskRunner;
 class WorkerReportingProxy;
 class WorkerThreadStartupData;
 
@@ -74,9 +73,6 @@ public:
     // worker(s) is/are shut down.
     void terminateAndWait();
     static void terminateAndWaitForAllWorkers();
-
-    // Called on the worker thread. Disposes |m_workerGlobalScope|.
-    void prepareForShutdown();
 
     virtual WorkerBackingThread& workerBackingThread() = 0;
     virtual bool shouldAttachThreadDebugger() const { return true; }
@@ -128,12 +124,15 @@ protected:
     virtual void postInitialize() { }
 
 private:
+    class WorkerMicrotaskRunner;
+
     std::unique_ptr<CrossThreadClosure> createWorkerThreadTask(std::unique_ptr<ExecutionContextTask>, bool isInstrumented);
 
     // Called on the worker thread.
     void initialize(PassOwnPtr<WorkerThreadStartupData>);
     void performTask(std::unique_ptr<ExecutionContextTask>, bool isInstrumented);
-    void performShutdownTask();
+    void prepareForShutdown();
+    void performShutdown();
     void runDebuggerTask(std::unique_ptr<CrossThreadClosure>);
     void runDebuggerTaskDontWait();
 
@@ -145,7 +144,7 @@ private:
     bool m_shouldTerminateV8Execution = false;
 
     OwnPtr<InspectorTaskRunner> m_inspectorTaskRunner;
-    OwnPtr<WebThread::TaskObserver> m_microtaskRunner;
+    OwnPtr<WorkerMicrotaskRunner> m_microtaskRunner;
 
     RefPtr<WorkerLoaderProxy> m_workerLoaderProxy;
     WorkerReportingProxy& m_workerReportingProxy;

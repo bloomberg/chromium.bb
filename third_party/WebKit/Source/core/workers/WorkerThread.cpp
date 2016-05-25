@@ -51,7 +51,7 @@
 
 namespace blink {
 
-class WorkerMicrotaskRunner : public WebThread::TaskObserver {
+class WorkerThread::WorkerMicrotaskRunner : public WebThread::TaskObserver {
 public:
     explicit WorkerMicrotaskRunner(WorkerThread* workerThread)
         : m_workerThread(workerThread)
@@ -238,7 +238,23 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
     postInitialize();
 }
 
-void WorkerThread::performShutdownTask()
+void WorkerThread::prepareForShutdown()
+{
+    DCHECK(isCurrentThread());
+    {
+        MutexLocker lock(m_threadStateMutex);
+        if (m_readyToShutdown)
+            return;
+        m_readyToShutdown = true;
+    }
+
+    workerReportingProxy().willDestroyWorkerGlobalScope();
+    InspectorInstrumentation::allAsyncTasksCanceled(workerGlobalScope());
+    workerGlobalScope()->dispose();
+    workerBackingThread().backingThread().removeTaskObserver(m_microtaskRunner.get());
+}
+
+void WorkerThread::performShutdown()
 {
     DCHECK(isCurrentThread());
 #if DCHECK_IS_ON
@@ -329,7 +345,7 @@ void WorkerThread::terminate()
 
     m_inspectorTaskRunner->kill();
     workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::prepareForShutdown, AllowCrossThreadAccess(this)));
-    workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::performShutdownTask, AllowCrossThreadAccess(this)));
+    workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::performShutdown, AllowCrossThreadAccess(this)));
 }
 
 void WorkerThread::terminateAndWait()
@@ -351,22 +367,6 @@ void WorkerThread::terminateAndWaitForAllWorkers()
 
     for (WorkerThread* thread : threads)
         thread->m_shutdownEvent->wait();
-}
-
-void WorkerThread::prepareForShutdown()
-{
-    DCHECK(isCurrentThread());
-    {
-        MutexLocker lock(m_threadStateMutex);
-        if (m_readyToShutdown)
-            return;
-        m_readyToShutdown = true;
-    }
-
-    workerReportingProxy().willDestroyWorkerGlobalScope();
-    InspectorInstrumentation::allAsyncTasksCanceled(workerGlobalScope());
-    workerGlobalScope()->dispose();
-    workerBackingThread().backingThread().removeTaskObserver(m_microtaskRunner.get());
 }
 
 WorkerGlobalScope* WorkerThread::workerGlobalScope()
