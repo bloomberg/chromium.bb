@@ -6,8 +6,7 @@
 
 <dom-module id="settings-dialog">
   <template>
-    <style include="paper-dialog-shared-styles"></style>
-    <style>
+    <style include="paper-dialog-shared-styles">
       :host {
         border-radius: 2px;
       }
@@ -33,10 +32,14 @@
       }
 
       #close {
-        height: 20px;
-        margin: 16px;
-        padding: 0;
-        width: 20px;
+        --paper-icon-button: {
+          height: 40px;
+          width: 40px;
+        };
+        -webkit-margin-end: 6px;
+        /* <paper-icon-button> overrides --iron-icon-{height,width}, so this
+         * padding essentially reduces 40x40 to 20x20. */
+        padding: 10px;
       }
 
       .body-container {
