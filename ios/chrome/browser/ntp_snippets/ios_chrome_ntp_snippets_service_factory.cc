@@ -104,8 +104,9 @@ IOSChromeNTPSnippetsServiceFactory::BuildServiceInstanceFor(
               base::SequencedWorkerPool::GetSequenceToken(),
               base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
   return base::WrapUnique(new ntp_snippets::NTPSnippetsService(
-      chrome_browser_state->GetPrefs(), sync_service, suggestions_service,
-      task_runner, GetApplicationContext()->GetApplicationLocale(), scheduler,
+      false /* enabled */, chrome_browser_state->GetPrefs(), sync_service,
+      suggestions_service, task_runner,
+      GetApplicationContext()->GetApplicationLocale(), scheduler,
       base::WrapUnique(new ntp_snippets::NTPSnippetsFetcher(
           signin_manager, token_service, request_context,
           base::Bind(&ParseJson),

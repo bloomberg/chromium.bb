@@ -12,7 +12,6 @@ import android.widget.LinearLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 
 /**
  * Layout for the new tab page. This positions the page elements in the correct vertical positions.
@@ -173,8 +172,7 @@ public class NewTabPageLayout extends LinearLayout {
      * material design is enabled.
      */
     private void setSearchBoxStyle() {
-        if ((ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS)
-                    || ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_MATERIAL_DESIGN))
+        if (NtpColorUtils.shouldUseMaterialColors()
                 && ApiCompatibilityUtils.setElevation(mSearchBoxView,
                            getResources().getDimensionPixelSize(R.dimen.toolbar_elevation))) {
             // Replace drawable with one that does not contain a border.

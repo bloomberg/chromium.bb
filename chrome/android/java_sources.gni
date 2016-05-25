@@ -504,6 +504,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetHeaderListItem.java",
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetItemDecoration.java",
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetsBridge.java",
+  "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetsConfig.java",
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetsLauncher.java",
   "java/src/org/chromium/chrome/browser/ntp/cards/AboveTheFoldListItem.java",
   "java/src/org/chromium/chrome/browser/ntp/cards/NewTabPageAdapter.java",

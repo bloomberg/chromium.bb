@@ -108,7 +108,6 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/ntp_snippets/ntp_snippets_service_factory.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
 #endif
@@ -1230,10 +1229,7 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
 
 #if defined(OS_ANDROID)
   // Service is responsible for fetching content snippets for the NTP.
-  // Note: Create the service even if the feature is disabled, so that any
-  // remaining tasks will be cleaned up.
-  NTPSnippetsServiceFactory::GetForProfile(profile)->Init(
-      base::FeatureList::IsEnabled(chrome::android::kNTPSnippetsFeature));
+  NTPSnippetsServiceFactory::GetForProfile(profile);
 #endif
 }
 

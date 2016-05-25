@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.ntp.interests.InterestsPage.InterestsClickLis
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge.SnippetsObserver;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.MostVisitedSites;
@@ -263,7 +264,7 @@ public class NewTabPage
         @Override
         public boolean isToolbarEnabled() {
             return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_TOOLBAR)
-                    && !ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS);
+                    && !SnippetsConfig.isEnabled();
         }
 
         @Override
@@ -655,7 +656,7 @@ public class NewTabPage
         mLogoBridge = new LogoBridge(mProfile);
         updateSearchProviderHasLogo();
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS)) {
+        if (SnippetsConfig.isEnabled()) {
             mSnippetsBridge = new SnippetsBridge(mProfile);
         }
 

@@ -64,6 +64,7 @@ class NTPSnippetsService : public KeyedService,
   // the locale, so 'en_US' (English language with US locale) and 'en-GB_US'
   // (British English person in the US) are not language codes.
   NTPSnippetsService(
+      bool enabled,
       PrefService* pref_service,
       sync_driver::SyncService* sync_service,
       suggestions::SuggestionsService* suggestions_service,
@@ -75,8 +76,6 @@ class NTPSnippetsService : public KeyedService,
   ~NTPSnippetsService() override;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
-
-  void Init(bool enabled);
 
   // Inherited from KeyedService.
   void Shutdown() override;
@@ -163,11 +162,13 @@ class NTPSnippetsService : public KeyedService,
   bool IsSyncStateIncompatible();
 
   enum class State {
-    NOT_INITED,
     INITED,
     SHUT_DOWN
   } state_;
 
+  // When |enabled_| is true the service will fetch snippets from the server
+  // using |snippets_fetcher_|, load snippets from device storage, and schedule
+  // the |scheduler_|.
   bool enabled_;
 
   PrefService* pref_service_;

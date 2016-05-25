@@ -186,6 +186,7 @@ void WrapImageFetchedCallback(
 }  // namespace
 
 NTPSnippetsService::NTPSnippetsService(
+    bool enabled,
     PrefService* pref_service,
     sync_driver::SyncService* sync_service,
     SuggestionsService* suggestions_service,
@@ -194,8 +195,8 @@ NTPSnippetsService::NTPSnippetsService(
     NTPSnippetsScheduler* scheduler,
     std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
     std::unique_ptr<ImageFetcher> image_fetcher)
-    : state_(State::NOT_INITED),
-      enabled_(false),
+    : state_(State::INITED),
+      enabled_(enabled),
       pref_service_(pref_service),
       sync_service_(sync_service),
       sync_service_observer_(this),
@@ -211,24 +212,7 @@ NTPSnippetsService::NTPSnippetsService(
   // |sync_service_| can be null in tests or if sync is disabled.
   if (sync_service_)
     sync_service_observer_.Add(sync_service_);
-}
 
-NTPSnippetsService::~NTPSnippetsService() {
-  DCHECK(state_ == State::NOT_INITED || state_ == State::SHUT_DOWN);
-}
-
-// static
-void NTPSnippetsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterListPref(prefs::kSnippets);
-  registry->RegisterListPref(prefs::kDiscardedSnippets);
-  registry->RegisterListPref(prefs::kSnippetHosts);
-}
-
-void NTPSnippetsService::Init(bool enabled) {
-  DCHECK(state_ == State::NOT_INITED);
-  state_ = State::INITED;
-
-  enabled_ = enabled;
   if (enabled_) {
     // |suggestions_service_| can be null in tests.
     if (snippets_fetcher_->UsesHostRestrictions() && suggestions_service_) {
@@ -247,6 +231,17 @@ void NTPSnippetsService::Init(bool enabled) {
   }
 
   RescheduleFetching();
+}
+
+NTPSnippetsService::~NTPSnippetsService() {
+  DCHECK(state_ == State::SHUT_DOWN);
+}
+
+// static
+void NTPSnippetsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterListPref(prefs::kSnippets);
+  registry->RegisterListPref(prefs::kDiscardedSnippets);
+  registry->RegisterListPref(prefs::kSnippetHosts);
 }
 
 void NTPSnippetsService::Shutdown() {

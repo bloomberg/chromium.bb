@@ -9,13 +9,13 @@ import android.content.res.Resources;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 
 /**
  * Utility class for figuring out which colors to use for the NTP. This class is needed while we
  * transition the NTP to the new material design spec.
  */
-public class NtpColorUtils {
-
+public final class NtpColorUtils {
     private NtpColorUtils() {}
 
     public static int getBackgroundColorResource(Resources res, boolean isIncognito) {
@@ -34,8 +34,8 @@ public class NtpColorUtils {
                 : ApiCompatibilityUtils.getColor(res, R.color.ntp_bg);
     }
 
-    private static boolean shouldUseMaterialColors() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SNIPPETS)
+    public static boolean shouldUseMaterialColors() {
+        return SnippetsConfig.isEnabled()
                 || ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_MATERIAL_DESIGN);
     }
 }

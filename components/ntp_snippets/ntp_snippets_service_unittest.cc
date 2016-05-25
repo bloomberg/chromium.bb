@@ -278,14 +278,13 @@ class NTPSnippetsServiceTest : public testing::Test {
         new net::TestURLRequestContextGetter(task_runner.get());
 
     service_.reset(new NTPSnippetsService(
-        pref_service_.get(), mock_sync_service_.get(), nullptr, task_runner,
-        std::string("fr"), &scheduler_,
+        enabled, pref_service_.get(), mock_sync_service_.get(), nullptr,
+        task_runner, std::string("fr"), &scheduler_,
         base::WrapUnique(new NTPSnippetsFetcher(
             fake_signin_manager_.get(), fake_token_service_.get(),
             std::move(request_context_getter), base::Bind(&ParseJson),
             /*is_stable_channel=*/true)),
         /*image_fetcher=*/nullptr));
-    service_->Init(enabled);
   }
 
  protected:
