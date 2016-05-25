@@ -39,6 +39,10 @@ class LoadingReportTestCase(unittest.TestCase):
     self.requests[0].encoded_data_length = self._FIRST_REQUEST_DATA_LENGTH
     self.requests[1].encoded_data_length = self._SECOND_REQUEST_DATA_LENGTH
 
+    self.ad_domain = 'i-ve-got-the-best-ads.com'
+    self.ad_url = 'http://www.' + self.ad_domain + '/i-m-really-rich.js'
+    self.requests[0].url = self.ad_url
+
     self.trace_events = [
         {'args': {'name': 'CrRendererMain'}, 'cat': '__metadata',
          'name': 'thread_name', 'ph': 'M', 'pid': 1, 'tid': 1, 'ts': 0},
@@ -106,6 +110,8 @@ class LoadingReportTestCase(unittest.TestCase):
     self.assertIsNone(loading_report['ad_or_tracking_requests'])
     self.assertIsNone(loading_report['ad_or_tracking_initiated_requests'])
     self.assertIsNone(loading_report['ad_or_tracking_initiated_transfer_size'])
+    self.assertIsNone(loading_report['ad_or_tracking_script_frac'])
+    self.assertIsNone(loading_report['ad_or_tracking_parsing_frac'])
     self.assertEqual(
         self._FIRST_REQUEST_DATA_LENGTH + self._SECOND_REQUEST_DATA_LENGTH
         + metrics.HTTP_OK_LENGTH * 2,
@@ -138,11 +144,9 @@ class LoadingReportTestCase(unittest.TestCase):
                            loading_report['plt_ms'])
 
   def testAdTrackingRules(self):
-    ad_domain = 'i-ve-got-the-best-ads.com'
-    self.requests[0].url = 'http://www.' + ad_domain
     trace = self._MakeTrace()
     loading_report = report.LoadingReport(
-        trace, [ad_domain], []).GenerateReport()
+        trace, [self.ad_domain], []).GenerateReport()
     self.assertEqual(1, loading_report['ad_requests'])
     self.assertEqual(1, loading_report['ad_or_tracking_requests'])
     self.assertEqual(1, loading_report['ad_or_tracking_initiated_requests'])
@@ -185,6 +189,19 @@ class LoadingReportTestCase(unittest.TestCase):
     self.assertAlmostEqual(
         (self._PARSING_EVENT_DURATION - self._SCRIPT_EVENT_DURATION)
         / contentful_time, loading_report['parsing_contentful_frac'])
+
+  def testAdsAndTrackingCost(self):
+    load_time = float(self._LOAD_END_TIME - self._NAVIGATION_START_TIME)
+    self.trace_events.append(
+       {'ts':  load_time / 3. * self.MILLI_TO_MICRO,
+        'pid': 1, 'tid': 1, 'ph': 'X',
+        'dur': load_time / 2. * self.MILLI_TO_MICRO,
+        'cat': 'devtools.timeline', 'name': 'EvaluateScript',
+        'args': {'data': {'scriptName': self.ad_url}}})
+    loading_report = report.LoadingReport(
+        self._MakeTrace(), [self.ad_domain]).GenerateReport()
+    self.assertAlmostEqual(.5, loading_report['ad_or_tracking_script_frac'])
+    self.assertAlmostEqual(0., loading_report['ad_or_tracking_parsing_frac'])
 
 
 if __name__ == '__main__':

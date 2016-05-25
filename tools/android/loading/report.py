@@ -68,45 +68,9 @@ class LoadingReport(object):
     has_tracking_rules = bool(tracking_rules)
     self._ad_report = self._AdRequestsReport(
         trace, content_lens, has_ad_rules, has_tracking_rules)
-
-  def _ComputeCpuBusyness(self, activity):
-    load_start = self._navigation_start_msec
-    load_end = self._load_end_msec
-    contentful = self._contentful_paint_msec
-    significant = self._significant_paint_msec
-
-    load_time = float(load_end - load_start)
-    contentful_time = float(contentful - load_start)
-    significant_time = float(significant - load_start)
-
-    result = {
-        'activity_load_frac': (
-            activity.MainRendererThreadBusyness(load_start, load_end)
-            / load_time),
-        'activity_contentful_paint_frac': (
-            activity.MainRendererThreadBusyness(load_start, contentful)
-            / contentful_time),
-        'activity_significant_paint_frac': (
-            activity.MainRendererThreadBusyness(load_start, significant)
-            / significant_time)}
-
-    activity_load = activity.ComputeActivity(load_start, load_end)
-    activity_contentful = activity.ComputeActivity(load_start, contentful)
-    activity_significant = activity.ComputeActivity(load_start, significant)
-
-    result['parsing_load_frac'] = (
-        sum(activity_load['parsing'].values()) / load_time)
-    result['script_load_frac'] = (
-        sum(activity_load['script'].values()) / load_time)
-    result['parsing_contentful_frac'] = (
-        sum(activity_contentful['parsing'].values()) / contentful_time)
-    result['script_contentful_frac'] = (
-        sum(activity_contentful['script'].values()) / contentful_time)
-    result['parsing_significant_frac'] = (
-        sum(activity_significant['parsing'].values()) / significant_time)
-    result['script_significant_frac'] = (
-        sum(activity_significant['script'].values()) / significant_time)
-    return result
+    self._ads_cost = self._AdsAndTrackingCpuCost(
+        self._navigation_start_msec, self._load_end_msec, content_lens,
+        activity, has_tracking_rules or has_ad_rules)
 
   def GenerateReport(self):
     """Returns a report as a dict."""
@@ -131,6 +95,7 @@ class LoadingReport(object):
         'transfer_size': self._transfer_size}
     report.update(self._ad_report)
     report.update(self._cpu_busyness)
+    report.update(self._ads_cost)
     return report
 
   @classmethod
@@ -180,6 +145,80 @@ class LoadingReport(object):
     # Main frame onLoad() didn't finish. Take the end of the last completed
     # request.
     return max(r.end_msec or -1 for r in trace.request_track.GetEvents())
+
+  def _ComputeCpuBusyness(self, activity):
+    load_start = self._navigation_start_msec
+    load_end = self._load_end_msec
+    contentful = self._contentful_paint_msec
+    significant = self._significant_paint_msec
+
+    load_time = float(load_end - load_start)
+    contentful_time = float(contentful - load_start)
+    significant_time = float(significant - load_start)
+
+    result = {
+        'activity_load_frac': (
+            activity.MainRendererThreadBusyness(load_start, load_end)
+            / load_time),
+        'activity_contentful_paint_frac': (
+            activity.MainRendererThreadBusyness(load_start, contentful)
+            / contentful_time),
+        'activity_significant_paint_frac': (
+            activity.MainRendererThreadBusyness(load_start, significant)
+            / significant_time)}
+
+    activity_load = activity.ComputeActivity(load_start, load_end)
+    activity_contentful = activity.ComputeActivity(load_start, contentful)
+    activity_significant = activity.ComputeActivity(load_start, significant)
+
+    result['parsing_load_frac'] = (
+        sum(activity_load['parsing'].values()) / load_time)
+    result['script_load_frac'] = (
+        sum(activity_load['script'].values()) / load_time)
+    result['parsing_contentful_frac'] = (
+        sum(activity_contentful['parsing'].values()) / contentful_time)
+    result['script_contentful_frac'] = (
+        sum(activity_contentful['script'].values()) / contentful_time)
+    result['parsing_significant_frac'] = (
+        sum(activity_significant['parsing'].values()) / significant_time)
+    result['script_significant_frac'] = (
+        sum(activity_significant['script'].values()) / significant_time)
+    return result
+
+  @classmethod
+  def _AdsAndTrackingCpuCost(
+      cls, start_msec, end_msec, content_lens, activity, has_rules):
+    """Returns the CPU cost associated with Ads and tracking between timestamps.
+
+    Can return an overestimate, as execution slices are tagged by URL, and not
+    by requests.
+
+    Args:
+      start_msec: (float)
+      end_msec: (float)
+      content_lens: (ContentClassificationLens)
+      activity: (ActivityLens)
+
+    Returns:
+      {'ad_and_tracking_script_frac': float,
+       'ad_and_tracking_parsing_frac': float}
+    """
+    result = {'ad_or_tracking_script_frac': None,
+              'ad_or_tracking_parsing_frac': None}
+    if not has_rules:
+      return result
+
+    duration = float(end_msec - start_msec)
+    requests = content_lens.AdAndTrackingRequests()
+    urls = {r.url for r in requests}
+    cpu_breakdown = activity.ComputeActivity(start_msec, end_msec)
+    result['ad_or_tracking_script_frac'] = sum(
+            value for (url, value) in cpu_breakdown['script'].items()
+            if url in urls) / duration
+    result['ad_or_tracking_parsing_frac'] = sum(
+            value for (url, value) in cpu_breakdown['parsing'].items()
+            if url in urls) / duration
+    return result
 
 
 def _Main(args):
