@@ -64,7 +64,7 @@ public:
     }
 
     void setScrollGestureData(float deltaX, float deltaY, ScrollGranularity deltaUnits, float velocityX, float velocityY,
-        bool inertial, bool preventPropagation, int resendingPluginId)
+        ScrollInertialPhase inertialPhase, bool preventPropagation, int resendingPluginId)
     {
         ASSERT(type() == PlatformEvent::GestureScrollBegin
             || type() == PlatformEvent::GestureScrollUpdate
@@ -78,14 +78,14 @@ public:
         }
 
         if (type() == PlatformEvent::GestureScrollBegin)
-            ASSERT(!inertial);
+            DCHECK_NE(ScrollInertialPhaseMomentum, inertialPhase);
 
         m_data.m_scroll.m_deltaX = deltaX;
         m_data.m_scroll.m_deltaY = deltaY;
         m_data.m_scroll.m_deltaUnits = deltaUnits;
         m_data.m_scroll.m_velocityX = velocityX;
         m_data.m_scroll.m_velocityY = velocityY;
-        m_data.m_scroll.m_inertial = inertial;
+        m_data.m_scroll.m_inertialPhase = inertialPhase;
         m_data.m_scroll.m_resendingPluginId = resendingPluginId;
         m_data.m_scroll.m_preventPropagation = preventPropagation;
     }
@@ -133,10 +133,10 @@ public:
         return m_data.m_scroll.m_velocityY;
     }
 
-    bool inertial() const
+    ScrollInertialPhase inertialPhase() const
     {
         ASSERT(m_type == PlatformEvent::GestureScrollBegin || m_type == PlatformEvent::GestureScrollUpdate || m_type == PlatformEvent::GestureScrollEnd);
-        return m_data.m_scroll.m_inertial;
+        return m_data.m_scroll.m_inertialPhase;
     }
 
     bool synthetic() const
@@ -227,7 +227,7 @@ protected:
             float m_velocityX;
             float m_velocityY;
             int m_preventPropagation;
-            bool m_inertial;
+            ScrollInertialPhase m_inertialPhase;
             ScrollGranularity m_deltaUnits;
             int m_resendingPluginId;
             bool m_synthetic;

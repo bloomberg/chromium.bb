@@ -60,7 +60,9 @@ std::unique_ptr<blink::WebGestureEvent> ProtoToGestureScrollUpdate(
   event->data.scrollUpdate.previousUpdateInSequencePrevented =
       details.previous_update_in_sequence_prevented();
   event->data.scrollUpdate.preventPropagation = details.prevent_propagation();
-  event->data.scrollUpdate.inertial = details.inertial();
+  event->data.scrollUpdate.inertialPhase =
+      details.inertial() ? blink::WebGestureEvent::MomentumPhase
+                         : blink::WebGestureEvent::UnknownMomentumPhase;
 
   return event;
 }

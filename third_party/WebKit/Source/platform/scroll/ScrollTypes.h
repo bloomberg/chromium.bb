@@ -143,6 +143,12 @@ enum ScrollGranularity {
     ScrollByPrecisePixel
 };
 
+enum ScrollInertialPhase {
+    ScrollInertialPhaseUnknown,
+    ScrollInertialPhaseNonMomentum,
+    ScrollInertialPhaseMomentum
+};
+
 enum ScrollbarOrientation { HorizontalScrollbar, VerticalScrollbar };
 
 enum ScrollbarMode { ScrollbarAuto, ScrollbarAlwaysOff, ScrollbarAlwaysOn };

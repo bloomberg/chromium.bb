@@ -2372,7 +2372,7 @@ WebInputEventResult EventHandler::handleGestureScrollEnd(const PlatformGestureEv
         if (RuntimeEnabledFeatures::scrollCustomizationEnabled()) {
             OwnPtr<ScrollStateData> scrollStateData = adoptPtr(new ScrollStateData());
             scrollStateData->is_ending = true;
-            scrollStateData->is_in_inertial_phase = gestureEvent.inertial();
+            scrollStateData->is_in_inertial_phase = gestureEvent.inertialPhase() == ScrollInertialPhaseMomentum;
             scrollStateData->from_user_input = true;
             scrollStateData->is_direct_manipulation = true;
             scrollStateData->delta_consumed_for_scroll_sequence = m_deltaConsumedForScrollSequence;
@@ -2482,7 +2482,7 @@ WebInputEventResult EventHandler::handleGestureScrollUpdate(const PlatformGestur
             scrollStateData->velocity_x = velocity.width();
             scrollStateData->velocity_y = velocity.height();
             scrollStateData->should_propagate = !gestureEvent.preventPropagation();
-            scrollStateData->is_in_inertial_phase = gestureEvent.inertial();
+            scrollStateData->is_in_inertial_phase = gestureEvent.inertialPhase() == ScrollInertialPhaseMomentum;
             scrollStateData->from_user_input = true;
             scrollStateData->delta_consumed_for_scroll_sequence = m_deltaConsumedForScrollSequence;
             ScrollState* scrollState = ScrollState::create(std::move(scrollStateData));

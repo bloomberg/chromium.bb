@@ -597,7 +597,8 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
     // a signal to let the guest handle the fling, though we'd need to be
     // sure other plugins would behave appropriately (i.e. return 'false').
     if (gesture_event.type == blink::WebInputEvent::GestureScrollUpdate &&
-        gesture_event.data.scrollUpdate.inertial) {
+        gesture_event.data.scrollUpdate.inertialPhase ==
+            blink::WebGestureEvent::MomentumPhase) {
       return;
     }
     host_->ForwardGestureEvent(gesture_event);

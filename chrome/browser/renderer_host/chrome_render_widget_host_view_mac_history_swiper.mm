@@ -125,8 +125,11 @@ BOOL forceMagicMouse = NO;
                                  consumed:(BOOL)consumed {
   switch (event.type) {
     case blink::WebInputEvent::GestureScrollBegin:
-      if (event.data.scrollBegin.synthetic || event.data.scrollBegin.inertial)
+      if (event.data.scrollBegin.synthetic ||
+          event.data.scrollBegin.inertialPhase ==
+              blink::WebGestureEvent::MomentumPhase) {
         return;
+      }
       waitingForFirstGestureScroll_ = YES;
       break;
     case blink::WebInputEvent::GestureScrollUpdate:

@@ -134,6 +134,23 @@ ScrollGranularity toPlatformScrollGranularity(WebGestureEvent::ScrollUnits units
     }
 }
 
+ScrollInertialPhase toPlatformScrollInertialPhase(WebGestureEvent::InertialPhaseState state)
+{
+    static_assert(ScrollInertialPhaseUnknown == static_cast<ScrollInertialPhase>(WebGestureEvent::UnknownMomentumPhase),
+        "Inertial phases not equal");
+    static_assert(ScrollInertialPhaseNonMomentum == static_cast<ScrollInertialPhase>(WebGestureEvent::NonMomentumPhase),
+        "Inertial phases not equal");
+    static_assert(ScrollInertialPhaseMomentum == static_cast<ScrollInertialPhase>(WebGestureEvent::MomentumPhase),
+        "Inertial phases not equal");
+
+    return static_cast<ScrollInertialPhase>(state);
+}
+
+WebGestureEvent::InertialPhaseState toWebGestureInertialPhaseState(ScrollInertialPhase state)
+{
+    return static_cast<WebGestureEvent::InertialPhaseState>(state);
+}
+
 WebGestureEvent::ScrollUnits toWebGestureScrollUnits(ScrollGranularity granularity)
 {
     switch (granularity) {
@@ -236,14 +253,14 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
         m_data.m_scroll.m_deltaX = e.data.scrollBegin.deltaXHint;
         m_data.m_scroll.m_deltaY = e.data.scrollBegin.deltaYHint;
         m_data.m_scroll.m_deltaUnits = toPlatformScrollGranularity(e.data.scrollBegin.deltaHintUnits);
-        m_data.m_scroll.m_inertial = e.data.scrollBegin.inertial;
+        m_data.m_scroll.m_inertialPhase = toPlatformScrollInertialPhase(e.data.scrollBegin.inertialPhase);
         m_data.m_scroll.m_synthetic = e.data.scrollBegin.synthetic;
         break;
     case WebInputEvent::GestureScrollEnd:
         m_type = PlatformEvent::GestureScrollEnd;
         m_data.m_scroll.m_resendingPluginId = e.resendingPluginId;
         m_data.m_scroll.m_deltaUnits = toPlatformScrollGranularity(e.data.scrollEnd.deltaUnits);
-        m_data.m_scroll.m_inertial = e.data.scrollEnd.inertial;
+        m_data.m_scroll.m_inertialPhase = toPlatformScrollInertialPhase(e.data.scrollEnd.inertialPhase);
         m_data.m_scroll.m_synthetic = e.data.scrollEnd.synthetic;
         break;
     case WebInputEvent::GestureFlingStart:
@@ -259,7 +276,7 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
         m_data.m_scroll.m_velocityX = e.data.scrollUpdate.velocityX;
         m_data.m_scroll.m_velocityY = e.data.scrollUpdate.velocityY;
         m_data.m_scroll.m_preventPropagation = e.data.scrollUpdate.preventPropagation;
-        m_data.m_scroll.m_inertial = e.data.scrollUpdate.inertial;
+        m_data.m_scroll.m_inertialPhase = toPlatformScrollInertialPhase(e.data.scrollUpdate.inertialPhase);
         m_data.m_scroll.m_deltaUnits = toPlatformScrollGranularity(e.data.scrollUpdate.deltaUnits);
         break;
     case WebInputEvent::GestureTap:
@@ -762,20 +779,20 @@ WebGestureEventBuilder::WebGestureEventBuilder(const LayoutItem layoutItem, cons
         data.scrollBegin.deltaXHint = event.deltaX();
         data.scrollBegin.deltaYHint = event.deltaY();
         data.scrollBegin.deltaHintUnits = toWebGestureScrollUnits(event.deltaUnits());
-        data.scrollBegin.inertial = event.inertial();
+        data.scrollBegin.inertialPhase = toWebGestureInertialPhaseState(event.inertialPhase());
         data.scrollBegin.synthetic = event.synthetic();
     } else if (event.type() == EventTypeNames::gesturescrollend) {
         type = GestureScrollEnd;
         resendingPluginId = event.resendingPluginId();
         data.scrollEnd.deltaUnits = toWebGestureScrollUnits(event.deltaUnits());
-        data.scrollEnd.inertial = event.inertial();
+        data.scrollEnd.inertialPhase = toWebGestureInertialPhaseState(event.inertialPhase());
         data.scrollEnd.synthetic = event.synthetic();
     } else if (event.type() == EventTypeNames::gesturescrollupdate) {
         type = GestureScrollUpdate;
         data.scrollUpdate.deltaUnits = toWebGestureScrollUnits(event.deltaUnits());
         data.scrollUpdate.deltaX = event.deltaX();
         data.scrollUpdate.deltaY = event.deltaY();
-        data.scrollUpdate.inertial = event.inertial();
+        data.scrollUpdate.inertialPhase = toWebGestureInertialPhaseState(event.inertialPhase());
         resendingPluginId = event.resendingPluginId();
     } else if (event.type() == EventTypeNames::gestureflingstart) {
         type = GestureFlingStart;

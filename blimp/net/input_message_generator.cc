@@ -56,7 +56,8 @@ void GestureScrollUpdateToProto(const blink::WebGestureEvent& event,
       event.data.scrollUpdate.previousUpdateInSequencePrevented);
   details->set_prevent_propagation(
       event.data.scrollUpdate.preventPropagation);
-  details->set_inertial(event.data.scrollUpdate.inertial);
+  details->set_inertial(event.data.scrollUpdate.inertialPhase ==
+                        blink::WebGestureEvent::MomentumPhase);
 }
 
 void GestureFlingStartToProto(const blink::WebGestureEvent& event,

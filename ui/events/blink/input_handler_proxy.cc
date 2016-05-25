@@ -142,7 +142,9 @@ cc::ScrollState CreateScrollStateForGesture(const WebGestureEvent& event) {
       scroll_state_data.delta_y = -event.data.scrollUpdate.deltaY;
       scroll_state_data.velocity_x = event.data.scrollUpdate.velocityX;
       scroll_state_data.velocity_y = event.data.scrollUpdate.velocityY;
-      scroll_state_data.is_in_inertial_phase = event.data.scrollUpdate.inertial;
+      scroll_state_data.is_in_inertial_phase =
+          event.data.scrollUpdate.inertialPhase ==
+          WebGestureEvent::MomentumPhase;
       break;
     case WebInputEvent::GestureScrollEnd:
     case WebInputEvent::GestureFlingCancel:

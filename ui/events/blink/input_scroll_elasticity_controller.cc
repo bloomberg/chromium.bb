@@ -178,11 +178,14 @@ void InputScrollElasticityController::ObserveGestureEventAndResult(
     case blink::WebInputEvent::GestureScrollBegin: {
       if (gesture_event.data.scrollBegin.synthetic)
         return;
-      if (gesture_event.data.scrollBegin.inertial) {
+      if (gesture_event.data.scrollBegin.inertialPhase ==
+          blink::WebGestureEvent::MomentumPhase) {
         if (state_ == kStateInactive)
           state_ = kStateMomentumScroll;
-      } else if (gesture_event.data.scrollBegin.deltaHintUnits ==
-                 blink::WebGestureEvent::PrecisePixels) {
+      } else if (gesture_event.data.scrollBegin.inertialPhase ==
+                     blink::WebGestureEvent::NonMomentumPhase &&
+                 gesture_event.data.scrollBegin.deltaHintUnits ==
+                     blink::WebGestureEvent::PrecisePixels) {
         scroll_velocity = gfx::Vector2dF();
         last_scroll_event_timestamp_ = base::TimeTicks();
         state_ = kStateActiveScroll;
@@ -201,7 +204,8 @@ void InputScrollElasticityController::ObserveGestureEventAndResult(
         case kStateMomentumScroll:
           UpdateVelocity(event_delta, event_timestamp);
           Overscroll(event_delta, scroll_result.unused_scroll_delta);
-          if (gesture_event.data.scrollUpdate.inertial &&
+          if (gesture_event.data.scrollUpdate.inertialPhase ==
+                  blink::WebGestureEvent::MomentumPhase &&
               !helper_->StretchAmount().IsZero()) {
             EnterStateMomentumAnimated(event_timestamp);
           }

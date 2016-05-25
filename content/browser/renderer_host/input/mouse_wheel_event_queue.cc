@@ -101,11 +101,17 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
         event_sent_for_gesture_ack_->event.deltaX;
     scroll_update.data.scrollUpdate.deltaY =
         event_sent_for_gesture_ack_->event.deltaY;
-    // Only OSX populates the momentumPhase; so expect this to
-    // always be PhaseNone on all other platforms.
-    scroll_update.data.scrollUpdate.inertial =
-        event_sent_for_gesture_ack_->event.momentumPhase !=
-        blink::WebMouseWheelEvent::PhaseNone;
+    // Only OSX populates the phase and momentumPhase; so
+    // |inertialPhase| will be UnknownMomentumPhase on all other platforms.
+    if (event_sent_for_gesture_ack_->event.momentumPhase !=
+        blink::WebMouseWheelEvent::PhaseNone) {
+      scroll_update.data.scrollUpdate.inertialPhase =
+          WebGestureEvent::MomentumPhase;
+    } else if (event_sent_for_gesture_ack_->event.phase !=
+               blink::WebMouseWheelEvent::PhaseNone) {
+      scroll_update.data.scrollUpdate.inertialPhase =
+          WebGestureEvent::NonMomentumPhase;
+    }
     if (event_sent_for_gesture_ack_->event.scrollByPage) {
       scroll_update.data.scrollUpdate.deltaUnits = WebGestureEvent::Page;
 
@@ -247,7 +253,8 @@ void MouseWheelEventQueue::SendScrollEnd(WebGestureEvent update_event,
   scroll_end.type = WebInputEvent::GestureScrollEnd;
   scroll_end.resendingPluginId = -1;
   scroll_end.data.scrollEnd.synthetic = synthetic;
-  scroll_end.data.scrollEnd.inertial = update_event.data.scrollUpdate.inertial;
+  scroll_end.data.scrollEnd.inertialPhase =
+      update_event.data.scrollUpdate.inertialPhase;
   scroll_end.data.scrollEnd.deltaUnits =
       update_event.data.scrollUpdate.deltaUnits;
 
@@ -269,8 +276,8 @@ void MouseWheelEventQueue::SendScrollBegin(
   WebGestureEvent scroll_begin(gesture_update);
   scroll_begin.type = WebInputEvent::GestureScrollBegin;
   scroll_begin.data.scrollBegin.synthetic = synthetic;
-  scroll_begin.data.scrollBegin.inertial =
-      gesture_update.data.scrollUpdate.inertial;
+  scroll_begin.data.scrollBegin.inertialPhase =
+      gesture_update.data.scrollUpdate.inertialPhase;
   scroll_begin.data.scrollBegin.deltaXHint =
       gesture_update.data.scrollUpdate.deltaX;
   scroll_begin.data.scrollBegin.deltaYHint =

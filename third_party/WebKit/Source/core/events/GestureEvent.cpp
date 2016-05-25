@@ -37,7 +37,7 @@ GestureEvent* GestureEvent::create(AbstractView* view, const PlatformGestureEven
     float deltaY = 0;
     float velocityX = 0;
     float velocityY = 0;
-    bool inertial = false;
+    ScrollInertialPhase inertialPhase = ScrollInertialPhase::ScrollInertialPhaseUnknown;
     bool synthetic = false;
     ScrollGranularity deltaUnits = ScrollGranularity::ScrollByPrecisePixel;
 
@@ -58,13 +58,13 @@ GestureEvent* GestureEvent::create(AbstractView* view, const PlatformGestureEven
         eventType = EventTypeNames::gesturescrollstart;
         synthetic = event.synthetic();
         deltaUnits = event.deltaUnits();
-        inertial = event.inertial();
+        inertialPhase = event.inertialPhase();
         break;
     case PlatformEvent::GestureScrollEnd:
         eventType = EventTypeNames::gesturescrollend;
         synthetic = event.synthetic();
         deltaUnits = event.deltaUnits();
-        inertial = event.inertial();
+        inertialPhase = event.inertialPhase();
         break;
     case PlatformEvent::GestureScrollUpdate:
         // Only deltaX/Y are used when converting this
@@ -72,7 +72,7 @@ GestureEvent* GestureEvent::create(AbstractView* view, const PlatformGestureEven
         eventType = EventTypeNames::gesturescrollupdate;
         deltaX = event.deltaX();
         deltaY = event.deltaY();
-        inertial = event.inertial();
+        inertialPhase = event.inertialPhase();
         deltaUnits = event.deltaUnits();
         break;
     case PlatformEvent::GestureTap:
@@ -98,7 +98,7 @@ GestureEvent* GestureEvent::create(AbstractView* view, const PlatformGestureEven
     default:
         return nullptr;
     }
-    return new GestureEvent(eventType, view, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(), event.getModifiers(), deltaX, deltaY, velocityX, velocityY, inertial, synthetic, deltaUnits, event.timestamp(), event.resendingPluginId(), source);
+    return new GestureEvent(eventType, view, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(), event.getModifiers(), deltaX, deltaY, velocityX, velocityY, inertialPhase, synthetic, deltaUnits, event.timestamp(), event.resendingPluginId(), source);
 }
 
 const AtomicString& GestureEvent::interfaceName() const
@@ -119,7 +119,7 @@ GestureEvent::GestureEvent()
     , m_deltaY(0)
     , m_velocityX(0)
     , m_velocityY(0)
-    , m_inertial(false)
+    , m_inertialPhase(ScrollInertialPhase::ScrollInertialPhaseUnknown)
     , m_synthetic(false)
     , m_deltaUnits(ScrollGranularity::ScrollByPrecisePixel)
     , m_source(GestureSourceUninitialized)
@@ -127,13 +127,13 @@ GestureEvent::GestureEvent()
 {
 }
 
-GestureEvent::GestureEvent(const AtomicString& type, AbstractView* view, int screenX, int screenY, int clientX, int clientY, PlatformEvent::Modifiers modifiers, float deltaX, float deltaY, float velocityX, float velocityY, bool inertial, bool synthetic, ScrollGranularity deltaUnits, double platformTimeStamp, int resendingPluginId, GestureSource source)
+GestureEvent::GestureEvent(const AtomicString& type, AbstractView* view, int screenX, int screenY, int clientX, int clientY, PlatformEvent::Modifiers modifiers, float deltaX, float deltaY, float velocityX, float velocityY, ScrollInertialPhase inertialPhase, bool synthetic, ScrollGranularity deltaUnits, double platformTimeStamp, int resendingPluginId, GestureSource source)
     : MouseRelatedEvent(type, true, true, nullptr, view, 0, IntPoint(screenX, screenY), IntPoint(clientX, clientY), IntPoint(0, 0), modifiers, platformTimeStamp, PositionType::Position)
     , m_deltaX(deltaX)
     , m_deltaY(deltaY)
     , m_velocityX(velocityX)
     , m_velocityY(velocityY)
-    , m_inertial(inertial)
+    , m_inertialPhase(inertialPhase)
     , m_synthetic(synthetic)
     , m_deltaUnits(deltaUnits)
     , m_source(source)

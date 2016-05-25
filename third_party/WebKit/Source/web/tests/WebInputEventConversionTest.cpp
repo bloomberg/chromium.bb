@@ -296,7 +296,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
         webGestureEvent.data.scrollUpdate.deltaY = 32;
         webGestureEvent.data.scrollUpdate.velocityX = 40;
         webGestureEvent.data.scrollUpdate.velocityY = 42;
-        webGestureEvent.data.scrollUpdate.inertial = true;
+        webGestureEvent.data.scrollUpdate.inertialPhase = WebGestureEvent::MomentumPhase;
         webGestureEvent.data.scrollUpdate.preventPropagation = true;
 
         PlatformGestureEventBuilder platformGestureBuilder(view, webGestureEvent);
@@ -310,7 +310,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
         // order to remain consist with delta values.
         EXPECT_EQ(40, platformGestureBuilder.velocityX());
         EXPECT_EQ(42, platformGestureBuilder.velocityY());
-        EXPECT_TRUE(platformGestureBuilder.inertial());
+        EXPECT_EQ(ScrollInertialPhaseMomentum, platformGestureBuilder.inertialPhase());
         EXPECT_TRUE(platformGestureBuilder.preventPropagation());
     }
 
@@ -328,7 +328,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
         EXPECT_EQ(6, platformGestureBuilder.position().y());
         EXPECT_EQ(20, platformGestureBuilder.globalPosition().x());
         EXPECT_EQ(22, platformGestureBuilder.globalPosition().y());
-        EXPECT_FALSE(platformGestureBuilder.inertial());
+        EXPECT_EQ(ScrollInertialPhaseUnknown, platformGestureBuilder.inertialPhase());
     }
 
     {
@@ -456,7 +456,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     {
         PlatformGestureEvent platformGestureEvent(PlatformEvent::GestureScrollUpdate, IntPoint(10, 12), IntPoint(20, 22), IntSize(25, 27), 0,
             PlatformEvent::NoModifiers, PlatformGestureSourceTouchscreen);
-        platformGestureEvent.setScrollGestureData(30, 32, ScrollByPrecisePixel, 40, 42, true, true, -1 /* null plugin id */);
+        platformGestureEvent.setScrollGestureData(30, 32, ScrollByPrecisePixel, 40, 42, ScrollInertialPhaseMomentum, true, -1 /* null plugin id */);
         // FIXME: GestureEvent does not preserve velocityX, velocityY,
         // or preventPropagation. It also fails to scale
         // coordinates (x, y, deltaX, deltaY) to the page scale. This
@@ -473,7 +473,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
         EXPECT_EQ(32, webGestureBuilder.data.scrollUpdate.deltaY);
         EXPECT_EQ(0, webGestureBuilder.data.scrollUpdate.velocityX);
         EXPECT_EQ(0, webGestureBuilder.data.scrollUpdate.velocityY);
-        EXPECT_TRUE(webGestureBuilder.data.scrollUpdate.inertial);
+        EXPECT_EQ(WebGestureEvent::MomentumPhase, webGestureBuilder.data.scrollUpdate.inertialPhase);
         EXPECT_FALSE(webGestureBuilder.data.scrollUpdate.preventPropagation);
         EXPECT_EQ(WebGestureDeviceTouchscreen,  webGestureBuilder.sourceDevice);
     }
@@ -1044,7 +1044,7 @@ TEST(WebInputEventConversionTest, PlatformGestureEventBuilder)
         webGestureEvent.globalY = 15;
         webGestureEvent.sourceDevice = WebGestureDeviceTouchpad;
         webGestureEvent.resendingPluginId = 2;
-        webGestureEvent.data.scrollBegin.inertial = true;
+        webGestureEvent.data.scrollBegin.inertialPhase = WebGestureEvent::MomentumPhase;
         webGestureEvent.data.scrollBegin.synthetic = true;
         webGestureEvent.data.scrollBegin.deltaXHint = 100;
         webGestureEvent.data.scrollBegin.deltaYHint = 10;
@@ -1057,7 +1057,7 @@ TEST(WebInputEventConversionTest, PlatformGestureEventBuilder)
         EXPECT_EQ(5, platformGestureBuilder.position().y());
         EXPECT_EQ(10, platformGestureBuilder.globalPosition().x());
         EXPECT_EQ(15, platformGestureBuilder.globalPosition().y());
-        EXPECT_TRUE(platformGestureBuilder.inertial());
+        EXPECT_EQ(ScrollInertialPhaseMomentum, platformGestureBuilder.inertialPhase());
         EXPECT_TRUE(platformGestureBuilder.synthetic());
         EXPECT_EQ(100, platformGestureBuilder.deltaX());
         EXPECT_EQ(10, platformGestureBuilder.deltaY());
@@ -1073,7 +1073,7 @@ TEST(WebInputEventConversionTest, PlatformGestureEventBuilder)
         webGestureEvent.globalY = 15;
         webGestureEvent.sourceDevice = WebGestureDeviceTouchpad;
         webGestureEvent.resendingPluginId = 2;
-        webGestureEvent.data.scrollEnd.inertial = false;
+        webGestureEvent.data.scrollEnd.inertialPhase = WebGestureEvent::NonMomentumPhase;
         webGestureEvent.data.scrollEnd.synthetic = true;
         webGestureEvent.data.scrollEnd.deltaUnits = WebGestureEvent::Page;
 
@@ -1084,7 +1084,7 @@ TEST(WebInputEventConversionTest, PlatformGestureEventBuilder)
         EXPECT_EQ(5, platformGestureBuilder.position().y());
         EXPECT_EQ(10, platformGestureBuilder.globalPosition().x());
         EXPECT_EQ(15, platformGestureBuilder.globalPosition().y());
-        EXPECT_FALSE(platformGestureBuilder.inertial());
+        EXPECT_EQ(ScrollInertialPhaseNonMomentum, platformGestureBuilder.inertialPhase());
         EXPECT_TRUE(platformGestureBuilder.synthetic());
         EXPECT_EQ(ScrollGranularity::ScrollByPage, platformGestureBuilder.deltaUnits());
     }

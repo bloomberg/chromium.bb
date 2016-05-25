@@ -687,7 +687,7 @@ bool WebViewImpl::scrollBy(const WebFloatSize& delta, const WebFloatSize& veloci
         WebGestureEvent syntheticScrollBegin = createGestureScrollEventFromFling(WebInputEvent::GestureScrollBegin, WebGestureDeviceTouchpad);
         syntheticScrollBegin.data.scrollBegin.deltaXHint = delta.width;
         syntheticScrollBegin.data.scrollBegin.deltaYHint = delta.height;
-        syntheticScrollBegin.data.scrollBegin.inertial = true;
+        syntheticScrollBegin.data.scrollBegin.inertialPhase = WebGestureEvent::MomentumPhase;
         handleGestureEvent(syntheticScrollBegin);
 
         WebGestureEvent syntheticScrollUpdate = createGestureScrollEventFromFling(WebInputEvent::GestureScrollUpdate, WebGestureDeviceTouchpad);
@@ -695,11 +695,11 @@ bool WebViewImpl::scrollBy(const WebFloatSize& delta, const WebFloatSize& veloci
         syntheticScrollUpdate.data.scrollUpdate.deltaY = delta.height;
         syntheticScrollUpdate.data.scrollUpdate.velocityX = velocity.width;
         syntheticScrollUpdate.data.scrollUpdate.velocityY = velocity.height;
-        syntheticScrollUpdate.data.scrollUpdate.inertial = true;
+        syntheticScrollUpdate.data.scrollUpdate.inertialPhase = WebGestureEvent::MomentumPhase;
         bool scrollUpdateHandled = handleGestureEvent(syntheticScrollUpdate) != WebInputEventResult::NotHandled;
 
         WebGestureEvent syntheticScrollEnd = createGestureScrollEventFromFling(WebInputEvent::GestureScrollEnd, WebGestureDeviceTouchpad);
-        syntheticScrollEnd.data.scrollEnd.inertial = true;
+        syntheticScrollEnd.data.scrollEnd.inertialPhase = WebGestureEvent::MomentumPhase;
         handleGestureEvent(syntheticScrollEnd);
         return scrollUpdateHandled;
     } else {
@@ -709,7 +709,7 @@ bool WebViewImpl::scrollBy(const WebFloatSize& delta, const WebFloatSize& veloci
         syntheticGestureEvent.data.scrollUpdate.deltaY = delta.height;
         syntheticGestureEvent.data.scrollUpdate.velocityX = velocity.width;
         syntheticGestureEvent.data.scrollUpdate.velocityY = velocity.height;
-        syntheticGestureEvent.data.scrollUpdate.inertial = true;
+        syntheticGestureEvent.data.scrollUpdate.inertialPhase = WebGestureEvent::MomentumPhase;
 
         return handleGestureEvent(syntheticGestureEvent) != WebInputEventResult::NotHandled;
     }
@@ -1972,7 +1972,7 @@ void WebViewImpl::beginFrame(double lastFrameTimeMonotonic)
             PlatformGestureEvent endScrollEvent(PlatformEvent::GestureScrollEnd,
                 m_positionOnFlingStart, m_globalPositionOnFlingStart,
                 IntSize(), 0, PlatformEvent::NoModifiers, lastFlingSourceDevice == WebGestureDeviceTouchpad ? PlatformGestureSourceTouchpad : PlatformGestureSourceTouchscreen);
-            endScrollEvent.setScrollGestureData(0, 0, ScrollByPrecisePixel, 0, 0, true, false, -1 /* null plugin id */);
+            endScrollEvent.setScrollGestureData(0, 0, ScrollByPrecisePixel, 0, 0, ScrollInertialPhaseMomentum, false, -1 /* null plugin id */);
 
             mainFrameImpl()->frame()->eventHandler().handleGestureScrollEnd(endScrollEvent);
         }

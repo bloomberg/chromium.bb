@@ -71,7 +71,7 @@ TEST(InputMessageTest, TestGestureScrollUpdateRoundTrip) {
   event.data.scrollUpdate.velocityY = 5.67f;
   event.data.scrollUpdate.previousUpdateInSequencePrevented = true;
   event.data.scrollUpdate.preventPropagation = true;
-  event.data.scrollUpdate.inertial = true;
+  event.data.scrollUpdate.inertialPhase = blink::WebGestureEvent::MomentumPhase;
   ValidateWebGestureEventRoundTripping(event);
 }
 
