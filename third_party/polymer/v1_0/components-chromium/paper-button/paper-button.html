@@ -7,10 +7,9 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 --><html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-material/paper-material.html">
-<link rel="import" href="../paper-ripple/paper-ripple.html">
-<link rel="import" href="../paper-behaviors/paper-button-behavior.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../paper-behaviors/paper-button-behavior.html">
+<link rel="import" href="../paper-material/paper-material.html">
 
 <!--
 Material design: [Buttons](https://www.google.com/design/spec/components/buttons.html)
@@ -37,6 +36,14 @@ create a button with an icon and some text:
       <iron-icon icon="favorite"></iron-icon>
       custom button content
     </paper-button>
+
+To use `paper-button` as a link, wrap it in an anchor tag. Since `paper-button` will already
+receive focus, you may want to prevent the anchor tag from receiving focus as well by setting
+its tabindex to -1.
+
+    <a href="https://www.polymer-project.org/" tabindex="-1">
+      <paper-button raised>Polymer Project</paper-button>
+    </a>
 
 ### Styling
 
@@ -74,16 +81,17 @@ Custom property | Description | Default
 
 </head><body><dom-module id="paper-button">
   <template strip-whitespace="">
-
     <style include="paper-material">
       :host {
-        display: inline-block;
+        @apply(--layout-inline);
+        @apply(--layout-center-center);
         position: relative;
         box-sizing: border-box;
         min-width: 5.14em;
         margin: 0 0.29em;
         background: transparent;
-        text-align: center;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        -webkit-tap-highlight-color: transparent;
         font: inherit;
         text-transform: uppercase;
         outline-width: 0;
@@ -96,6 +104,7 @@ Custom property | Description | Default
         z-index: 0;
         padding: 0.7em 0.57em;
 
+        @apply(--paper-font-common-base);
         @apply(--paper-button);
       }
 
@@ -121,13 +130,10 @@ Custom property | Description | Default
       paper-ripple {
         color: var(--paper-button-ink-color);
       }
-
-      :host > ::content * {
-        text-transform: inherit;
-      }
     </style>
+
     <content></content>
   </template>
-</dom-module>
 
+  </dom-module>
 <script src="paper-button-extracted.js"></script></body></html>

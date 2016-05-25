@@ -112,7 +112,7 @@
         var attr = this.attrForItemTitle || 'textContent';
         var title = item[attr] || item.getAttribute(attr);
 
-        if (!item.hasAttribute('disabled') && title && 
+        if (!item.hasAttribute('disabled') && title &&
             title.trim().charAt(0).toLowerCase() === String.fromCharCode(event.keyCode).toLowerCase()) {
           this._setFocusedItem(item);
           break;
@@ -193,17 +193,8 @@
      * detail.
      */
     _onIronItemsChanged: function(event) {
-      var mutations = event.detail;
-      var mutation;
-      var index;
-
-      for (index = 0; index < mutations.length; ++index) {
-        mutation = mutations[index];
-
-        if (mutation.addedNodes.length) {
-          this._resetTabindices();
-          break;
-        }
+      if (event.detail.addedNodes.length) {
+        this._resetTabindices();
       }
     },
 

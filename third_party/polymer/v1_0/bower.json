@@ -2,7 +2,8 @@
   "name": "chromium",
   "private": true,
   "dependencies": {
-    "carbon-route": "PolymerElements/carbon-route#^0.8.4",
+    "app-layout": "PolymerElements/app-layout#^0.9.0",
+    "app-route": "PolymerElements/app-route#^0.9.0",
     "font-roboto": "PolymerElements/font-roboto#^1.0.0",
     "iron-a11y-announcer": "PolymerElements/iron-a11y-announcer#^1.0.4",
     "iron-a11y-keys-behavior": "PolymerElements/iron-a11y-keys-behavior#^1.0.0",

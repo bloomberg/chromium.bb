@@ -1,17 +1,17 @@
 {
-  "name": "carbon-route",
-  "version": "0.8.4",
+  "name": "app-route",
+  "version": "0.9.1",
   "authors": [
     "The Polymer Authors"
   ],
   "description": "App routing expressed as Polymer Custom Elements.",
   "main": [
-    "carbon-route.html",
-    "carbon-location.html",
-    "carbon-route-converter.html"
+    "app-route.html",
+    "app-location.html",
+    "app-route-converter.html"
   ],
   "license": "http://polymer.github.io/LICENSE.txt",
-  "homepage": "https://github.com/PolymerElements/carbon-route",
+  "homepage": "https://github.com/PolymerElements/app-route",
   "private": true,
   "ignore": [],
   "devDependencies": {

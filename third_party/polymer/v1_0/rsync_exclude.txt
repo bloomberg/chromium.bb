@@ -1,9 +1,11 @@
 .bower.json
 build.log
+build.sh
 compiled_resources*.gyp
 */demo/
 demo*.html
 */demos/
+docs.html
 .github
 .gitignore
 hero.svg
@@ -13,3 +15,8 @@ metadata.html
 */test/
 */tests/
 .travis.yml
+
+# app-layout specific
+*/patterns/
+*/site/
+*/templates/

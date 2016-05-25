@@ -2,8 +2,7 @@ Polymer({
     is: 'paper-radio-group',
 
     behaviors: [
-      Polymer.IronA11yKeysBehavior,
-      Polymer.IronSelectableBehavior
+      Polymer.IronMenubarBehavior
     ],
 
     hostAttributes: {
@@ -51,15 +50,15 @@ Polymer({
       }
     },
 
-    keyBindings: {
-      'left up': 'selectPrevious',
-      'right down': 'selectNext',
-    },
-
     /**
      * Selects the given value.
      */
      select: function(value) {
+      var newItem = this._valueToItem(value);
+      if (newItem && newItem.hasAttribute('disabled')) {
+        return;
+      }
+
       if (this.selected) {
         var oldItem = this._valueToItem(this.selected);
 
@@ -84,33 +83,29 @@ Polymer({
       this.fire('paper-radio-group-changed');
     },
 
-    /**
-     * Selects the previous item. If the previous item is disabled, then it is
-     * skipped, and its previous item is selected
-     */
-    selectPrevious: function() {
-      var length = this.items.length;
-      var newIndex = Number(this._valueToIndex(this.selected));
-
-      do {
-        newIndex = (newIndex - 1 + length) % length;
-      } while (this.items[newIndex].disabled)
-
-      this._itemActivate(this._indexToValue(newIndex), this.items[newIndex]);
+    _activateFocusedItem: function() {
+      this._itemActivate(this._valueForItem(this.focusedItem), this.focusedItem);
     },
 
-    /**
-     * Selects the next item. If the next item is disabled, then it is
-     * skipped, and the next item after it is selected.
-     */
-    selectNext: function() {
-      var length = this.items.length;
-      var newIndex = Number(this._valueToIndex(this.selected));
-
-      do {
-        newIndex = (newIndex + 1 + length) % length;
-      } while (this.items[newIndex].disabled)
-
-      this._itemActivate(this._indexToValue(newIndex), this.items[newIndex]);
+    _onUpKey: function(event) {
+      this._focusPrevious();
+      event.preventDefault();
+      this._activateFocusedItem();
     },
+
+    _onDownKey: function(event) {
+      this._focusNext();
+      event.preventDefault();
+      this._activateFocusedItem();
+    },
+
+    _onLeftKey: function(event) {
+      Polymer.IronMenubarBehaviorImpl._onLeftKey.apply(this, arguments);
+      this._activateFocusedItem();
+    },
+
+    _onRightKey: function(event) {
+      Polymer.IronMenubarBehaviorImpl._onRightKey.apply(this, arguments);
+      this._activateFocusedItem();
+    }
   });

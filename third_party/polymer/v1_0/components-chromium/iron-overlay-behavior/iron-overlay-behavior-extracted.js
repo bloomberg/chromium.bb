@@ -300,10 +300,15 @@ context. You should place this element as a child of `<body>` whenever possible.
         return;
       }
 
-      this._manager.addOrRemoveOverlay(this);
-
       if (this.__openChangedAsync) {
         window.cancelAnimationFrame(this.__openChangedAsync);
+      }
+
+      // Synchronously remove the overlay.
+      // The adding is done asynchronously to go out of the scope of the event
+      // which might have generated the opening.
+      if (!this.opened) {
+        this._manager.removeOverlay(this);
       }
 
       // Defer any animation-related code on attached
@@ -318,6 +323,7 @@ context. You should place this element as a child of `<body>` whenever possible.
       this.__openChangedAsync = window.requestAnimationFrame(function() {
         this.__openChangedAsync = null;
         if (this.opened) {
+          this._manager.addOverlay(this);
           this._prepareRenderOpened();
           this._renderOpened();
         } else {
@@ -340,7 +346,7 @@ context. You should place this element as a child of `<body>` whenever possible.
         this.removeAttribute('tabindex');
         this.__shouldRemoveTabIndex = false;
       }
-      if (this.opened) {
+      if (this.opened && this.isAttached) {
         this._manager.trackBackdrop();
       }
     },
@@ -390,6 +396,12 @@ context. You should place this element as a child of `<body>` whenever possible.
 
       this.notifyResize();
       this.__isAnimating = false;
+
+      // Store it so we don't query too much.
+      var focusableNodes = this._focusableNodes;
+      this.__firstFocusableNode = focusableNodes[0];
+      this.__lastFocusableNode = focusableNodes[focusableNodes.length - 1];
+
       this.fire('iron-overlay-opened');
     },
 
@@ -494,12 +506,32 @@ context. You should place this element as a child of `<body>` whenever possible.
      * @protected
      */
     _onCaptureTab: function(event) {
+      if (!this.withBackdrop) {
+        return;
+      }
       // TAB wraps from last to first focusable.
       // Shift + TAB wraps from first to last focusable.
       var shift = event.shiftKey;
       var nodeToCheck = shift ? this.__firstFocusableNode : this.__lastFocusableNode;
       var nodeToSet = shift ? this.__lastFocusableNode : this.__firstFocusableNode;
-      if (this.withBackdrop && this._focusedChild === nodeToCheck) {
+      var shouldWrap = false;
+      if (nodeToCheck === nodeToSet) {
+        // If nodeToCheck is the same as nodeToSet, it means we have an overlay
+        // with 0 or 1 focusables; in either case we still need to trap the
+        // focus within the overlay.
+        shouldWrap = true;
+      } else {
+        // In dom=shadow, the manager will receive focus changes on the main
+        // root but not the ones within other shadow roots, so we can't rely on
+        // _focusedChild, but we should check the deepest active element.
+        var focusedNode = this._manager.deepActiveElement;
+        // If the active element is not the nodeToCheck but the overlay itself,
+        // it means the focus is about to go outside the overlay, hence we
+        // should prevent that (e.g. user opens the overlay and hit Shift+TAB).
+        shouldWrap = (focusedNode === nodeToCheck || focusedNode === this);
+      }
+
+      if (shouldWrap) {
         // When the overlay contains the last focusable element of the document
         // and it's already focused, pressing TAB would move the focus outside
         // the document (e.g. to the browser search bar). Similarly, when the
@@ -542,10 +574,6 @@ context. You should place this element as a child of `<body>` whenever possible.
       if (this.opened && !this.__isAnimating) {
         this.notifyResize();
       }
-      // Store it so we don't query too much.
-      var focusableNodes = this._focusableNodes;
-      this.__firstFocusableNode = focusableNodes[0];
-      this.__lastFocusableNode = focusableNodes[focusableNodes.length - 1];
     }
   };
 

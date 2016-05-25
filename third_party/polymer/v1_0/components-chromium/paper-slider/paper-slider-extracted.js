@@ -65,8 +65,7 @@ Polymer({
         maxMarkers: {
           type: Number,
           value: 0,
-          notify: true,
-          observer: '_maxMarkersChanged'
+          notify: true
         },
 
         /**
@@ -103,7 +102,8 @@ Polymer({
       observers: [
         '_updateKnob(value, min, max, snaps, step)',
         '_valueChanged(value)',
-        '_immediateValueChanged(immediateValue)'
+        '_immediateValueChanged(immediateValue)',
+        '_updateMarkers(maxMarkers, min, max, snaps)'
       ],
 
       hostAttributes: {
@@ -114,13 +114,6 @@ Polymer({
       keyBindings: {
         'left down pagedown home': '_decrementKey',
         'right up pageup end': '_incrementKey'
-      },
-
-      ready: function() {
-        // issue polymer/polymer#1305
-        this.async(function() {
-          this._updateKnob(this.value);
-        }, 1);
       },
 
       /**
@@ -289,11 +282,11 @@ Polymer({
         }
       },
 
-      _maxMarkersChanged: function(maxMarkers) {
-        if (!this.snaps) {
+      _updateMarkers: function(maxMarkers, min, max, snaps) {
+        if (!snaps) {
           this._setMarkers([]);
         }
-        var steps = Math.round((this.max - this.min) / this.step);
+        var steps = Math.round((max - min) / this.step);
         if (steps > maxMarkers) {
           steps = maxMarkers;
         }
@@ -383,7 +376,12 @@ Polymer({
      */
 
     /**
-     * Fired when the slider's immediateValue changes.
+     * Fired when the slider's immediateValue changes. Only occurs while the
+     * user is dragging.
+     *
+     * To detect changes to immediateValue that happen for any input (i.e.                                                          
+     * dragging, tapping, clicking, etc.) listen for immediate-value-changed
+     * instead.
      *
      * @event immediate-value-change
      */

@@ -6,20 +6,27 @@
 {
   'targets': [
     {
-      'target_name': 'carbon-location-extracted',
+      'target_name': 'app-location-extracted',
       'dependencies': [
         '../iron-location/compiled_resources2.gyp:iron-location-extracted',
         '../iron-location/compiled_resources2.gyp:iron-query-params-extracted',
-        'carbon-route-converter-extracted',
+        'app-route-converter-behavior-extracted',
       ],
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'carbon-route-converter-extracted',
+      'target_name': 'app-route-converter-behavior-extracted',
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'carbon-route-extracted',
+      'target_name': 'app-route-converter-extracted',
+      'dependencies': [
+        './compiled_resources2.gyp:app-route-converter-behavior-extracted',
+      ],
+      'includes': ['../../../../closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'app-route-extracted',
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },
   ],

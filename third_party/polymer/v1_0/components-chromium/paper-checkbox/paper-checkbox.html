@@ -38,9 +38,12 @@ Custom property | Description | Default
 `--paper-checkbox-checked-ink-color` | Selected/focus ripple color when the input is checked | `--primary-color`
 `--paper-checkbox-checkmark-color` | Checkmark color | `white`
 `--paper-checkbox-label-color` | Label color | `--primary-text-color`
+`--paper-checkbox-label-checked-color` | Label color when the input is checked | `--paper-checkbox-label-color`
 `--paper-checkbox-label-spacing` | Spacing between the label and the checkbox | `8px`
 `--paper-checkbox-error-color` | Checkbox color when invalid | `--error-color`
 `--paper-checkbox-size` | Size of the checkbox | `18px`
+`--paper-checkbox-margin` | Margin around the checkbox container | `initial`
+`--paper-checkbox-vertical-align` | Vertical alignment of the checkbox container | `middle`
 
 This element applies the mixin `--paper-font-common-base` but does not import `paper-styles/typography.html`.
 In order to apply the `Roboto` font to this element, make sure you've imported `paper-styles/typography.html`.
@@ -74,7 +77,8 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
         width: var(--calculated-paper-checkbox-size);
         height: var(--calculated-paper-checkbox-size);
         min-width: var(--calculated-paper-checkbox-size);
-        vertical-align: middle;
+        margin: var(--paper-checkbox-margin, initial);
+        vertical-align: var(--paper-checkbox-vertical-align, middle);
         background-color: var(--paper-checkbox-unchecked-background-color, transparent);
       }
 
@@ -171,6 +175,10 @@ In order to apply the `Roboto` font to this element, make sure you've imported `
         white-space: normal;
         line-height: normal;
         color: var(--paper-checkbox-label-color, --primary-text-color);
+      }
+
+      :host([checked]) #checkboxLabel {
+        color: var(--paper-checkbox-label-checked-color, --paper-checkbox-label-color);
       }
 
       :host-context([dir="rtl"]) #checkboxLabel {

@@ -23,8 +23,8 @@
 
       /**
        * Fired when the list of selectable items changes (e.g., items are
-       * added or removed). The detail of the event is a list of mutation
-       * records that describe what changed.
+       * added or removed). The detail of the event is a mutation record that
+       * describes what changed.
        *
        * @event iron-items-changed
        */
@@ -331,7 +331,7 @@
 
     // observe items change under the given node.
     _observeItems: function(node) {
-      return Polymer.dom(node).observeNodes(function(mutations) {
+      return Polymer.dom(node).observeNodes(function(mutation) {
         this._updateItems();
 
         if (this._shouldUpdateSelection) {
@@ -340,7 +340,7 @@
 
         // Let other interested parties know about the change so that
         // we don't have to recreate mutation observers everywhere.
-        this.fire('iron-items-changed', mutations, {
+        this.fire('iron-items-changed', mutation, {
           bubbles: false,
           cancelable: false
         });

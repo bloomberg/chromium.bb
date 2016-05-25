@@ -1,7 +1,7 @@
 'use strict';
 
     Polymer({
-      is: 'carbon-location',
+      is: 'app-location',
 
       properties: {
         /**
@@ -74,20 +74,37 @@
          */
         __hash: {
           type: String
+        },
+
+        /**
+         * The route path, which will be either the hash or the path, depending
+         * on useHashAsPath.
+         */
+        path: {
+          type: String,
+          observer: '__onPathChanged'
         }
       },
 
-      __computeRoutePath: function(path, hash, useHashAsPath) {
-        return useHashAsPath ? hash : path;
+      behaviors: [Polymer.AppRouteConverterBehavior],
+
+      observers: [
+        '__computeRoutePath(useHashAsPath, __hash, __path)'
+      ],
+
+      __computeRoutePath: function() {
+        this.path = this.useHashAsPath ? this.__hash : this.__path;
       },
 
-      __onPathChanged: function(event) {
-        var path = event.detail.value;
+      __onPathChanged: function() {
+        if (!this._readied) {
+          return;
+        }
 
         if (this.useHashAsPath) {
-          this.__hash = path;
+          this.__hash = this.path;
         } else {
-          this.__path = path;
+          this.__path = this.path;
         }
       }
     });

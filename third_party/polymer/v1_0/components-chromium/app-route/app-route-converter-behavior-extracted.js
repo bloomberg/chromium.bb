@@ -1,21 +1,26 @@
 'use strict';
 
-  Polymer({
-    is: 'carbon-route-converter',
-
+  /**
+   * Provides bidirectional mapping between `path` and `queryParams` and a
+   * app-route compatible `route` object.
+   *
+   * For more information, see the docs for `app-route-converter`.
+   *
+   * @polymerBehavior
+   */
+  Polymer.AppRouteConverterBehavior = {
     properties: {
       /**
        * A model representing the deserialized path through the route tree, as
        * well as the current queryParams.
        *
        * A route object is the kernel of the routing system. It is intended to
-       * be fed into consuming elements such as `carbon-route`.
+       * be fed into consuming elements such as `app-route`.
        *
        * @type {?Object}
        */
       route: {
         type: Object,
-        value: null,
         notify: true
       },
 
@@ -27,7 +32,6 @@
        */
       queryParams: {
         type: Object,
-        value: null,
         notify: true
       },
 
@@ -39,7 +43,6 @@
       path: {
         type: String,
         notify: true,
-        value: ''
       }
     },
 
@@ -56,32 +59,29 @@
 
     /**
      * Handler called when the path or queryParams change.
-     *
-     * @param  {!string} path The serialized path through the route tree.
-     * @param  {Object} queryParams A set of key/value pairs that are
-     * universally accessible to branches of the route tree.
      */
-    _locationChanged: function(path, queryParams) {
+    _locationChanged: function() {
+      if (this.route &&
+          this.route.path === this.path &&
+          this.queryParams === this.route.__queryParams) {
+        return;
+      }
       this.route = {
         prefix: '',
-        path: path,
-        __queryParams: queryParams
+        path: this.path,
+        __queryParams: this.queryParams
       };
     },
 
     /**
      * Handler called when the route prefix and route path change.
-     *
-     * @param  {!string} prefix The fragment of the pathname that precedes the
-     * path.
-     * @param  {!string} path The serialized path through the route tree.
      */
-    _routeChanged: function(prefix, path) {
+    _routeChanged: function() {
       if (!this.route) {
         return;
       }
 
-      this.path = prefix + path;
+      this.path = this.route.prefix + this.route.path;
     },
 
     /**
@@ -96,4 +96,4 @@
       }
       this.queryParams = queryParams;
     }
-  });
+  };

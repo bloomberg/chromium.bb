@@ -5633,40 +5633,6 @@ Polymer({
     Polymer.PaperRippleBehavior,
     Polymer.PaperInkyFocusBehaviorImpl
   ];
-Polymer({
-    is: 'paper-material',
-
-    properties: {
-      /**
-       * The z-depth of this element, from 0-5. Setting to 0 will remove the
-       * shadow, and each increasing number greater than 0 will be "deeper"
-       * than the last.
-       *
-       * @attribute elevation
-       * @type number
-       * @default 1
-       */
-      elevation: {
-        type: Number,
-        reflectToAttribute: true,
-        value: 1
-      },
-
-      /**
-       * Set this to true to animate the shadow when setting a new
-       * `elevation` value.
-       *
-       * @attribute animated
-       * @type boolean
-       * @default false
-       */
-      animated: {
-        type: Boolean,
-        reflectToAttribute: true,
-        value: false
-      }
-    }
-  });
 /** @polymerBehavior Polymer.PaperButtonBehavior */
   Polymer.PaperButtonBehaviorImpl = {
 
@@ -5753,41 +5719,75 @@ Polymer({
     Polymer.PaperButtonBehaviorImpl
   ];
 Polymer({
-    is: 'paper-button',
-
-    behaviors: [
-      Polymer.PaperButtonBehavior
-    ],
+    is: 'paper-material',
 
     properties: {
       /**
-       * If true, the button should be styled with a shadow.
+       * The z-depth of this element, from 0-5. Setting to 0 will remove the
+       * shadow, and each increasing number greater than 0 will be "deeper"
+       * than the last.
+       *
+       * @attribute elevation
+       * @type number
+       * @default 1
        */
-      raised: {
+      elevation: {
+        type: Number,
+        reflectToAttribute: true,
+        value: 1
+      },
+
+      /**
+       * Set this to true to animate the shadow when setting a new
+       * `elevation` value.
+       *
+       * @attribute animated
+       * @type boolean
+       * @default false
+       */
+      animated: {
         type: Boolean,
         reflectToAttribute: true,
-        value: false,
-        observer: '_calculateElevation'
-      }
-    },
-
-    _calculateElevation: function() {
-      if (!this.raised) {
-        this._setElevation(0);
-      } else {
-        Polymer.PaperButtonBehaviorImpl._calculateElevation.apply(this);
+        value: false
       }
     }
-    /**
-
-    Fired when the animation finishes.
-    This is useful if you want to wait until
-    the ripple animation finishes to perform some action.
-
-    @event transitionend
-    @param {{node: Object}} detail Contains the animated node.
-    */
   });
+Polymer({
+      is: 'paper-button',
+
+      behaviors: [
+        Polymer.PaperButtonBehavior
+      ],
+
+      properties: {
+        /**
+         * If true, the button should be styled with a shadow.
+         */
+        raised: {
+          type: Boolean,
+          reflectToAttribute: true,
+          value: false,
+          observer: '_calculateElevation'
+        }
+      },
+
+      _calculateElevation: function() {
+        if (!this.raised) {
+          this._setElevation(0);
+        } else {
+          Polymer.PaperButtonBehaviorImpl._calculateElevation.apply(this);
+        }
+      }
+
+      /**
+      Fired when the animation finishes.
+      This is useful if you want to wait until
+      the ripple animation finishes to perform some action.
+
+      @event transitionend
+      Event param: {{node: Object}} detail Contains the animated node.
+      */
+    });
 /**
  * `iron-range-behavior` provides the behavior for something with a minimum to maximum range.
  *
@@ -5859,18 +5859,27 @@ Polymer({
   },
 
   _calcStep: function(value) {
-   /**
-    * if we calculate the step using
-    * `Math.round(value / step) * step` we may hit a precision point issue
-    * eg. 0.1 * 0.2 =  0.020000000000000004
-    * http://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html
-    *
-    * as a work around we can divide by the reciprocal of `step`
-    */
     // polymer/issues/2493
     value = parseFloat(value);
-    return this.step ? (Math.round((value + this.min) / this.step) -
-        (this.min / this.step)) / (1 / this.step) : value;
+
+    if (!this.step) {
+      return value;
+    }
+
+    var numSteps = Math.round((value - this.min) / this.step);
+    if (this.step < 1) {
+     /**
+      * For small values of this.step, if we calculate the step using
+      * `Math.round(value / step) * step` we may hit a precision point issue
+      * eg. 0.1 * 0.2 =  0.020000000000000004
+      * http://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html
+      *
+      * as a work around we can divide by the reciprocal of `step`
+      */
+      return numSteps / (1 / this.step) + this.min;
+    } else {
+      return numSteps * this.step + this.min;
+    }
   },
 
   _validateValue: function() {
@@ -6625,8 +6634,8 @@ Polymer({
 
       /**
        * Fired when the list of selectable items changes (e.g., items are
-       * added or removed). The detail of the event is a list of mutation
-       * records that describe what changed.
+       * added or removed). The detail of the event is a mutation record that
+       * describes what changed.
        *
        * @event iron-items-changed
        */
@@ -6933,7 +6942,7 @@ Polymer({
 
     // observe items change under the given node.
     _observeItems: function(node) {
-      return Polymer.dom(node).observeNodes(function(mutations) {
+      return Polymer.dom(node).observeNodes(function(mutation) {
         this._updateItems();
 
         if (this._shouldUpdateSelection) {
@@ -6942,7 +6951,7 @@ Polymer({
 
         // Let other interested parties know about the change so that
         // we don't have to recreate mutation observers everywhere.
-        this.fire('iron-items-changed', mutations, {
+        this.fire('iron-items-changed', mutation, {
           bubbles: false,
           cancelable: false
         });
@@ -7223,7 +7232,7 @@ Polymer({
         var attr = this.attrForItemTitle || 'textContent';
         var title = item[attr] || item.getAttribute(attr);
 
-        if (!item.hasAttribute('disabled') && title && 
+        if (!item.hasAttribute('disabled') && title &&
             title.trim().charAt(0).toLowerCase() === String.fromCharCode(event.keyCode).toLowerCase()) {
           this._setFocusedItem(item);
           break;
@@ -7304,17 +7313,8 @@ Polymer({
      * detail.
      */
     _onIronItemsChanged: function(event) {
-      var mutations = event.detail;
-      var mutation;
-      var index;
-
-      for (index = 0; index < mutations.length; ++index) {
-        mutation = mutations[index];
-
-        if (mutation.addedNodes.length) {
-          this._resetTabindices();
-          break;
-        }
+      if (event.detail.addedNodes.length) {
+        this._resetTabindices();
       }
     },
 
@@ -7749,10 +7749,15 @@ Use `noOverlap` to position the element around another element without overlappi
      * Equivalent to calling `resetFit()` and `fit()`. Useful to call this after
      * the element or the `fitInto` element has been resized, or if any of the
      * positioning properties (e.g. `horizontalAlign, verticalAlign`) is updated.
+     * It preserves the scroll position of the sizingTarget.
      */
     refit: function() {
+      var scrollLeft = this.sizingTarget.scrollLeft;
+      var scrollTop = this.sizingTarget.scrollTop;
       this.resetFit();
       this.fit();
+      this.sizingTarget.scrollLeft = scrollLeft;
+      this.sizingTarget.scrollTop = scrollTop;
     },
 
     /**
@@ -7976,36 +7981,40 @@ Use `noOverlap` to position the element around another element without overlappi
       var position;
       for (var i = 0; i < positions.length; i++) {
         var pos = positions[i];
-        // Align is ok if:
-        // - Horizontal AND vertical are required and match, or
-        // - Only vertical is required and matches, or
-        // - Only horizontal is required and matches.
-        var alignOk = (pos.verticalAlign === vAlign && pos.horizontalAlign === hAlign) ||
-                      (pos.verticalAlign === vAlign && !hAlign) ||
-                      (pos.horizontalAlign === hAlign && !vAlign);
 
         // If both vAlign and hAlign are defined, return exact match.
         // For dynamicAlign and noOverlap we'll have more than one candidate, so
         // we'll have to check the croppedArea to make the best choice.
-        if (!this.dynamicAlign && !this.noOverlap && vAlign && hAlign && alignOk) {
+        if (!this.dynamicAlign && !this.noOverlap &&
+            pos.verticalAlign === vAlign && pos.horizontalAlign === hAlign) {
           position = pos;
           break;
         }
 
+        // Align is ok if alignment preferences are respected. If no preferences,
+        // it is considered ok.
+        var alignOk = (!vAlign || pos.verticalAlign === vAlign) &&
+                      (!hAlign || pos.horizontalAlign === hAlign);
+
         // Filter out elements that don't match the alignment (if defined).
         // With dynamicAlign, we need to consider all the positions to find the
         // one that minimizes the cropped area.
-        if (!this.dynamicAlign && (vAlign || hAlign) && !alignOk) {
+        if (!this.dynamicAlign && !alignOk) {
           continue;
         }
 
         position = position || pos;
         pos.croppedArea = this.__getCroppedArea(pos, size, fitRect);
         var diff = pos.croppedArea - position.croppedArea;
-        // Check which crops less. If it crops equally,
-        // check for alignment preferences.
+        // Check which crops less. If it crops equally, check if align is ok.
         if (diff < 0 || (diff === 0 && alignOk)) {
           position = pos;
+        }
+        // If not cropped and respects the align requirements, keep it.
+        // This allows to prefer positions overlapping horizontally over the
+        // ones overlapping vertically.
+        if (position.croppedArea === 0 && alignOk) {
+          break;
         }
       }
 
@@ -8146,10 +8155,10 @@ Use `noOverlap` to position the element around another element without overlappi
      */
     this._backdropElement = null;
 
-    // Listen to mousedown or touchstart to be sure to be the first to capture
-    // clicks outside the overlay.
-    var clickEvent = ('ontouchstart' in window) ? 'touchstart' : 'mousedown';
-    document.addEventListener(clickEvent, this._onCaptureClick.bind(this), true);
+    // Enable document-wide tap recognizer.
+    Polymer.Gestures.add(document, 'tap', null);
+    // Need to have useCapture=true, Polymer.Gestures doesn't offer that.
+    document.addEventListener('tap', this._onCaptureClick.bind(this), true);
     document.addEventListener('focus', this._onCaptureFocus.bind(this), true);
     document.addEventListener('keydown', this._onCaptureKeyDown.bind(this), true);
   };
@@ -8229,7 +8238,6 @@ Use `noOverlap` to position the element around another element without overlappi
       } else {
         this.removeOverlay(overlay);
       }
-      this.trackBackdrop();
     },
 
     /**
@@ -8241,6 +8249,7 @@ Use `noOverlap` to position the element around another element without overlappi
       var i = this._overlays.indexOf(overlay);
       if (i >= 0) {
         this._bringOverlayAtIndexToFront(i);
+        this.trackBackdrop();
         return;
       }
       var insertionIndex = this._overlays.length;
@@ -8267,6 +8276,7 @@ Use `noOverlap` to position the element around another element without overlappi
       // Get focused node.
       var element = this.deepActiveElement;
       overlay.restoreFocusNode = this._overlayParent(element) ? null : element;
+      this.trackBackdrop();
     },
 
     /**
@@ -8285,6 +8295,7 @@ Use `noOverlap` to position the element around another element without overlappi
       if (node && Polymer.dom(document.body).deepContains(node)) {
         node.focus();
       }
+      this.trackBackdrop();
     },
 
     /**
@@ -8453,12 +8464,6 @@ Use `noOverlap` to position the element around another element without overlappi
       var overlay = /** @type {?} */ (this.currentOverlay());
       // Check if clicked outside of top overlay.
       if (overlay && this._overlayInPath(Polymer.dom(event).path) !== overlay) {
-        if (overlay.withBackdrop) {
-          // There's no need to stop the propagation as the backdrop element
-          // already got this mousedown/touchstart event. Calling preventDefault
-          // on this event ensures that click/tap won't be triggered at all.
-          event.preventDefault();
-        }
         overlay._onCaptureClick(event);
       }
     },
@@ -8808,10 +8813,15 @@ context. You should place this element as a child of `<body>` whenever possible.
         return;
       }
 
-      this._manager.addOrRemoveOverlay(this);
-
       if (this.__openChangedAsync) {
         window.cancelAnimationFrame(this.__openChangedAsync);
+      }
+
+      // Synchronously remove the overlay.
+      // The adding is done asynchronously to go out of the scope of the event
+      // which might have generated the opening.
+      if (!this.opened) {
+        this._manager.removeOverlay(this);
       }
 
       // Defer any animation-related code on attached
@@ -8826,6 +8836,7 @@ context. You should place this element as a child of `<body>` whenever possible.
       this.__openChangedAsync = window.requestAnimationFrame(function() {
         this.__openChangedAsync = null;
         if (this.opened) {
+          this._manager.addOverlay(this);
           this._prepareRenderOpened();
           this._renderOpened();
         } else {
@@ -8848,7 +8859,7 @@ context. You should place this element as a child of `<body>` whenever possible.
         this.removeAttribute('tabindex');
         this.__shouldRemoveTabIndex = false;
       }
-      if (this.opened) {
+      if (this.opened && this.isAttached) {
         this._manager.trackBackdrop();
       }
     },
@@ -8898,6 +8909,12 @@ context. You should place this element as a child of `<body>` whenever possible.
 
       this.notifyResize();
       this.__isAnimating = false;
+
+      // Store it so we don't query too much.
+      var focusableNodes = this._focusableNodes;
+      this.__firstFocusableNode = focusableNodes[0];
+      this.__lastFocusableNode = focusableNodes[focusableNodes.length - 1];
+
       this.fire('iron-overlay-opened');
     },
 
@@ -9002,12 +9019,32 @@ context. You should place this element as a child of `<body>` whenever possible.
      * @protected
      */
     _onCaptureTab: function(event) {
+      if (!this.withBackdrop) {
+        return;
+      }
       // TAB wraps from last to first focusable.
       // Shift + TAB wraps from first to last focusable.
       var shift = event.shiftKey;
       var nodeToCheck = shift ? this.__firstFocusableNode : this.__lastFocusableNode;
       var nodeToSet = shift ? this.__lastFocusableNode : this.__firstFocusableNode;
-      if (this.withBackdrop && this._focusedChild === nodeToCheck) {
+      var shouldWrap = false;
+      if (nodeToCheck === nodeToSet) {
+        // If nodeToCheck is the same as nodeToSet, it means we have an overlay
+        // with 0 or 1 focusables; in either case we still need to trap the
+        // focus within the overlay.
+        shouldWrap = true;
+      } else {
+        // In dom=shadow, the manager will receive focus changes on the main
+        // root but not the ones within other shadow roots, so we can't rely on
+        // _focusedChild, but we should check the deepest active element.
+        var focusedNode = this._manager.deepActiveElement;
+        // If the active element is not the nodeToCheck but the overlay itself,
+        // it means the focus is about to go outside the overlay, hence we
+        // should prevent that (e.g. user opens the overlay and hit Shift+TAB).
+        shouldWrap = (focusedNode === nodeToCheck || focusedNode === this);
+      }
+
+      if (shouldWrap) {
         // When the overlay contains the last focusable element of the document
         // and it's already focused, pressing TAB would move the focus outside
         // the document (e.g. to the browser search bar). Similarly, when the
@@ -9050,10 +9087,6 @@ context. You should place this element as a child of `<body>` whenever possible.
       if (this.opened && !this.__isAnimating) {
         this.notifyResize();
       }
-      // Store it so we don't query too much.
-      var focusableNodes = this._focusableNodes;
-      this.__firstFocusableNode = focusableNodes[0];
-      this.__lastFocusableNode = focusableNodes[focusableNodes.length - 1];
     }
   };
 
@@ -9729,6 +9762,11 @@ Polymer({
           return this.focusTarget || this.containedElement;
         },
 
+        detached: function() {
+          this.cancelAnimation();
+          Polymer.IronDropdownScrollManager.removeScrollLock(this);
+        },
+
         /**
          * Called when the value of `opened` changes.
          * Overridden from `IronOverlayBehavior`
@@ -9753,10 +9791,7 @@ Polymer({
          * Overridden from `IronOverlayBehavior`.
          */
         _renderOpened: function() {
-          if (!this.noAnimations && this.animationConfig && this.animationConfig.open) {
-            if (this.withBackdrop) {
-              this.backdropElement.open();
-            }
+          if (!this.noAnimations && this.animationConfig.open) {
             this.$.contentWrapper.classList.add('animating');
             this.playAnimation('open');
           } else {
@@ -9768,10 +9803,7 @@ Polymer({
          * Overridden from `IronOverlayBehavior`.
          */
         _renderClosed: function() {
-          if (!this.noAnimations && this.animationConfig && this.animationConfig.close) {
-            if (this.withBackdrop) {
-              this.backdropElement.close();
-            }
+          if (!this.noAnimations && this.animationConfig.close) {
             this.$.contentWrapper.classList.add('animating');
             this.playAnimation('close');
           } else {
@@ -9788,9 +9820,9 @@ Polymer({
         _onNeonAnimationFinish: function() {
           this.$.contentWrapper.classList.remove('animating');
           if (this.opened) {
-            Polymer.IronOverlayBehaviorImpl._finishRenderOpened.apply(this);
+            this._finishRenderOpened();
           } else {
-            Polymer.IronOverlayBehaviorImpl._finishRenderClosed.apply(this);
+            this._finishRenderClosed();
           }
         },
 
@@ -9799,30 +9831,14 @@ Polymer({
          * to configure specific parts of the opening and closing animations.
          */
         _updateAnimationConfig: function() {
-          var animationConfig = {};
-          var animations = [];
-
-          if (this.openAnimationConfig) {
-            // NOTE(cdata): When making `display:none` elements visible in Safari,
-            // the element will paint once in a fully visible state, causing the
-            // dropdown to flash before it fades in. We prepend an
-            // `opaque-animation` to fix this problem:
-            animationConfig.open = [{
-              name: 'opaque-animation',
-            }].concat(this.openAnimationConfig);
-            animations = animations.concat(animationConfig.open);
+          var animations = (this.openAnimationConfig || []).concat(this.closeAnimationConfig || []);
+          for (var i = 0; i < animations.length; i++) {
+            animations[i].node = this.containedElement;
           }
-
-          if (this.closeAnimationConfig) {
-            animationConfig.close = this.closeAnimationConfig;
-            animations = animations.concat(animationConfig.close);
-          }
-
-          animations.forEach(function(animation) {
-            animation.node = this.containedElement;
-          }, this);
-
-          this.animationConfig = animationConfig;
+          this.animationConfig = {
+            open: this.openAnimationConfig,
+            close: this.closeAnimationConfig
+          };
         },
 
         /**
@@ -9833,30 +9849,6 @@ Polymer({
           if (this.isAttached) {
             // This triggers iron-resize, and iron-overlay-behavior will call refit if needed.
             this.notifyResize();
-          }
-        },
-
-        /**
-         * Useful to call this after the element, the window, or the `fitInfo`
-         * element has been resized. Will maintain the scroll position.
-         */
-        refit: function () {
-          if (!this.opened) {
-            return
-          }
-          var containedElement = this.containedElement;
-          var scrollTop;
-          var scrollLeft;
-
-          if (containedElement) {
-            scrollTop = containedElement.scrollTop;
-            scrollLeft = containedElement.scrollLeft;
-          }
-          Polymer.IronFitBehavior.refit.apply(this, arguments);
-
-          if (containedElement) {
-            containedElement.scrollTop = scrollTop;
-            containedElement.scrollLeft = scrollLeft;
           }
         },
 

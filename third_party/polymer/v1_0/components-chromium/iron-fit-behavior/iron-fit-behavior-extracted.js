@@ -304,10 +304,15 @@ Use `noOverlap` to position the element around another element without overlappi
      * Equivalent to calling `resetFit()` and `fit()`. Useful to call this after
      * the element or the `fitInto` element has been resized, or if any of the
      * positioning properties (e.g. `horizontalAlign, verticalAlign`) is updated.
+     * It preserves the scroll position of the sizingTarget.
      */
     refit: function() {
+      var scrollLeft = this.sizingTarget.scrollLeft;
+      var scrollTop = this.sizingTarget.scrollTop;
       this.resetFit();
       this.fit();
+      this.sizingTarget.scrollLeft = scrollLeft;
+      this.sizingTarget.scrollTop = scrollTop;
     },
 
     /**
@@ -531,36 +536,40 @@ Use `noOverlap` to position the element around another element without overlappi
       var position;
       for (var i = 0; i < positions.length; i++) {
         var pos = positions[i];
-        // Align is ok if:
-        // - Horizontal AND vertical are required and match, or
-        // - Only vertical is required and matches, or
-        // - Only horizontal is required and matches.
-        var alignOk = (pos.verticalAlign === vAlign && pos.horizontalAlign === hAlign) ||
-                      (pos.verticalAlign === vAlign && !hAlign) ||
-                      (pos.horizontalAlign === hAlign && !vAlign);
 
         // If both vAlign and hAlign are defined, return exact match.
         // For dynamicAlign and noOverlap we'll have more than one candidate, so
         // we'll have to check the croppedArea to make the best choice.
-        if (!this.dynamicAlign && !this.noOverlap && vAlign && hAlign && alignOk) {
+        if (!this.dynamicAlign && !this.noOverlap &&
+            pos.verticalAlign === vAlign && pos.horizontalAlign === hAlign) {
           position = pos;
           break;
         }
 
+        // Align is ok if alignment preferences are respected. If no preferences,
+        // it is considered ok.
+        var alignOk = (!vAlign || pos.verticalAlign === vAlign) &&
+                      (!hAlign || pos.horizontalAlign === hAlign);
+
         // Filter out elements that don't match the alignment (if defined).
         // With dynamicAlign, we need to consider all the positions to find the
         // one that minimizes the cropped area.
-        if (!this.dynamicAlign && (vAlign || hAlign) && !alignOk) {
+        if (!this.dynamicAlign && !alignOk) {
           continue;
         }
 
         position = position || pos;
         pos.croppedArea = this.__getCroppedArea(pos, size, fitRect);
         var diff = pos.croppedArea - position.croppedArea;
-        // Check which crops less. If it crops equally,
-        // check for alignment preferences.
+        // Check which crops less. If it crops equally, check if align is ok.
         if (diff < 0 || (diff === 0 && alignOk)) {
           position = pos;
+        }
+        // If not cropped and respects the align requirements, keep it.
+        // This allows to prefer positions overlapping horizontally over the
+        // ones overlapping vertically.
+        if (position.croppedArea === 0 && alignOk) {
+          break;
         }
       }
 

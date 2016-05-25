@@ -1,7 +1,7 @@
 'use strict';
 
   Polymer({
-    is: 'carbon-route',
+    is: 'app-route',
 
     properties: {
       /**
@@ -60,7 +60,7 @@
         readOnly: true
       },
 
-      _skipMatch: {
+      _queryParamsUpdating: {
         type: Boolean,
         value: false
       },
@@ -89,6 +89,9 @@
 
     // IE Object.assign polyfill
     __assign: function(target, source) {
+      if (Object.assign) {
+        return Object.assign(target, source);
+      }
       if (source != null) {
         for (var key in source) {
           target[key] = source[key];
@@ -98,38 +101,38 @@
       return target;
     },
 
-    // Deal with the query params object being assigned to wholesale
+    /**
+     * Deal with the query params object being assigned to wholesale.
+     * @export
+     */
     __routeQueryParamsChanged: function(queryParams) {
       if (queryParams && this.tail) {
         this.set('tail.__queryParams', queryParams);
 
-        if (!this.active || this._skipMatch) {
+        if (!this.active || this._queryParamsUpdating) {
           return;
         }
 
-        this._skipMatch = true;
-
-        var qp;
-
-        if (Object.assign) {
-          qp = Object.assign({}, queryParams);
-        } else {
-          qp = this.__assign({}, queryParams);
-        }
-
-        this.set('queryParams', qp);
-        this._skipMatch = false;
+        this._queryParamsUpdating = true;
+        this.set('queryParams', this.__assign({}, queryParams));
+        this._queryParamsUpdating = false;
       }
     },
 
+    /**
+     * @export
+     */
     __tailQueryParamsChanged: function(queryParams) {
       if (queryParams && this.route) {
         this.set('route.__queryParams', queryParams);
       }
     },
 
+    /**
+     * @export
+     */
     __queryParamsChanged: function(changes) {
-      if (!this.active || this._skipMatch) {
+      if (!this.active || this._queryParamsUpdating) {
         return;
       }
 
@@ -143,8 +146,16 @@
       //this.data = {};
     },
 
-    __tryToMatch: function(path, pattern) {
-      if (this._skipMatch || !pattern) {
+    /**
+     * @export
+     */
+    __tryToMatch: function() {
+      if (!this.route) {
+        return;
+      }
+      var path = this.route.path;
+      var pattern = this.pattern;
+      if (!pattern) {
         return;
       }
 
@@ -181,54 +192,77 @@
         }
       }
 
-      matched = matched.join('/');
+      this._matched = matched.join('/');
+
+      // Properties that must be updated atomically.
+      var propertyUpdates = {};
+
+      //this.active
+      if (!this.active) {
+        propertyUpdates.active = true;
+      }
+
+      // this.tail
+      var tailPrefix = this.route.prefix + this._matched;
       var tailPath = remainingPieces.join('/');
       if (remainingPieces.length > 0) {
         tailPath = '/' + tailPath;
       }
-
-      this._skipMatch = true;
-      this._matched = matched;
-      this.data = namedMatches;
-      var tailPrefix = this.route.prefix + matched;
-
-      if (!this.tail || this.tail.prefix !== tailPrefix || this.tail.path !== tailPath) {
-        this.tail = {
+      if (!this.tail ||
+          this.tail.prefix !== tailPrefix ||
+          this.tail.path !== tailPath) {
+        propertyUpdates.tail = {
           prefix: tailPrefix,
           path: tailPath,
           __queryParams: this.route.__queryParams
         };
       }
-      this._setActive(true);
-      this._skipMatch = false;
+
+      // this.data
+      propertyUpdates.data = namedMatches;
+      this._dataInUrl = {};
+      for (var key in namedMatches) {
+        this._dataInUrl[key] = namedMatches[key];
+      }
+
+      this.__setMulti(propertyUpdates);
     },
 
-    __tailPathChanged: function(path) {
-      if (!this.active || this._skipMatch) {
+    /**
+     * @export
+     */
+    __tailPathChanged: function() {
+      if (!this.active) {
         return;
       }
+      var tailPath = this.tail.path;
       var newPath = this._matched;
-      if (path) {
-        if (path.charAt(0) !== '/') {
-          path = '/' + path;
+      if (tailPath) {
+        if (tailPath.charAt(0) !== '/') {
+          tailPath = '/' + tailPath;
         }
-        newPath += path;
+        newPath += tailPath;
       }
       this.set('route.path', newPath);
     },
 
+    /**
+     * @export
+     */
     __updatePathOnDataChange: function() {
-      if (!this.route || this._skipMatch || !this.active) {
+      if (!this.route || !this.active) {
         return;
       }
-      this._skipMatch = true;
-      this.tail = {path: null, prefix: null, queryParams: null};
-      this.set('route.path', this.__getLink({}));
-      this._skipMatch = false;
+      var newPath = this.__getLink({});
+      var oldPath = this.__getLink(this._dataInUrl);
+      if (newPath === oldPath) {
+        return;
+      }
+      this.set('route.path', newPath);
     },
 
     __getLink: function(overrideValues) {
-      var values = {tail: this.tail};
+      var values = {tail: null};
       for (var key in this.data) {
         values[key] = this.data[key];
       }
@@ -243,8 +277,34 @@
         return value;
       }, this);
       if (values.tail && values.tail.path) {
-        interp.push(values.tail.path);
+        if (interp.length > 0 && values.tail.path.charAt(0) === '/') {
+          interp.push(values.tail.path.slice(1));
+        } else {
+          interp.push(values.tail.path);
+        }
       }
       return interp.join('/');
+    },
+
+    __setMulti: function(setObj) {
+      // HACK(rictic): skirting around 1.0's lack of a setMulti by poking at
+      //     internal data structures. I would not advise that you copy this
+      //     example.
+      //
+      //     In the future this will be a feature of Polymer itself.
+      //     See: https://github.com/Polymer/polymer/issues/3640
+      //
+      //     Hacking around with private methods like this is juggling footguns,
+      //     and is likely to have unexpected and unsupported rough edges.
+      //
+      //     Be ye so warned.
+      for (var property in setObj) {
+        this._propertySetter(property, setObj[property]);
+      }
+
+      for (var property in setObj) {
+        this._pathEffector(property, this[property]);
+        this._notifyPathUp(property, this[property]);
+      }
     }
   });

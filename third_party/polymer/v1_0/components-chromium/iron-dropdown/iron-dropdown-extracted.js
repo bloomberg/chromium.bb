@@ -102,6 +102,11 @@
           return this.focusTarget || this.containedElement;
         },
 
+        detached: function() {
+          this.cancelAnimation();
+          Polymer.IronDropdownScrollManager.removeScrollLock(this);
+        },
+
         /**
          * Called when the value of `opened` changes.
          * Overridden from `IronOverlayBehavior`
@@ -126,10 +131,7 @@
          * Overridden from `IronOverlayBehavior`.
          */
         _renderOpened: function() {
-          if (!this.noAnimations && this.animationConfig && this.animationConfig.open) {
-            if (this.withBackdrop) {
-              this.backdropElement.open();
-            }
+          if (!this.noAnimations && this.animationConfig.open) {
             this.$.contentWrapper.classList.add('animating');
             this.playAnimation('open');
           } else {
@@ -141,10 +143,7 @@
          * Overridden from `IronOverlayBehavior`.
          */
         _renderClosed: function() {
-          if (!this.noAnimations && this.animationConfig && this.animationConfig.close) {
-            if (this.withBackdrop) {
-              this.backdropElement.close();
-            }
+          if (!this.noAnimations && this.animationConfig.close) {
             this.$.contentWrapper.classList.add('animating');
             this.playAnimation('close');
           } else {
@@ -161,9 +160,9 @@
         _onNeonAnimationFinish: function() {
           this.$.contentWrapper.classList.remove('animating');
           if (this.opened) {
-            Polymer.IronOverlayBehaviorImpl._finishRenderOpened.apply(this);
+            this._finishRenderOpened();
           } else {
-            Polymer.IronOverlayBehaviorImpl._finishRenderClosed.apply(this);
+            this._finishRenderClosed();
           }
         },
 
@@ -172,30 +171,14 @@
          * to configure specific parts of the opening and closing animations.
          */
         _updateAnimationConfig: function() {
-          var animationConfig = {};
-          var animations = [];
-
-          if (this.openAnimationConfig) {
-            // NOTE(cdata): When making `display:none` elements visible in Safari,
-            // the element will paint once in a fully visible state, causing the
-            // dropdown to flash before it fades in. We prepend an
-            // `opaque-animation` to fix this problem:
-            animationConfig.open = [{
-              name: 'opaque-animation',
-            }].concat(this.openAnimationConfig);
-            animations = animations.concat(animationConfig.open);
+          var animations = (this.openAnimationConfig || []).concat(this.closeAnimationConfig || []);
+          for (var i = 0; i < animations.length; i++) {
+            animations[i].node = this.containedElement;
           }
-
-          if (this.closeAnimationConfig) {
-            animationConfig.close = this.closeAnimationConfig;
-            animations = animations.concat(animationConfig.close);
-          }
-
-          animations.forEach(function(animation) {
-            animation.node = this.containedElement;
-          }, this);
-
-          this.animationConfig = animationConfig;
+          this.animationConfig = {
+            open: this.openAnimationConfig,
+            close: this.closeAnimationConfig
+          };
         },
 
         /**
@@ -206,30 +189,6 @@
           if (this.isAttached) {
             // This triggers iron-resize, and iron-overlay-behavior will call refit if needed.
             this.notifyResize();
-          }
-        },
-
-        /**
-         * Useful to call this after the element, the window, or the `fitInfo`
-         * element has been resized. Will maintain the scroll position.
-         */
-        refit: function () {
-          if (!this.opened) {
-            return
-          }
-          var containedElement = this.containedElement;
-          var scrollTop;
-          var scrollLeft;
-
-          if (containedElement) {
-            scrollTop = containedElement.scrollTop;
-            scrollLeft = containedElement.scrollLeft;
-          }
-          Polymer.IronFitBehavior.refit.apply(this, arguments);
-
-          if (containedElement) {
-            containedElement.scrollTop = scrollTop;
-            containedElement.scrollLeft = scrollLeft;
           }
         },
 
