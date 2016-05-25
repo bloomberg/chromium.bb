@@ -256,7 +256,7 @@ class PageCyclerUnitTest(unittest.TestCase):
 
         # On Mac, there is an additional measurement: the number of keychain
         # accesses.
-        value_count = 3
+        value_count = 4
         if sys.platform == 'darwin':
           value_count += 1
         self.assertEqual(value_count, len(values))
@@ -265,9 +265,11 @@ class PageCyclerUnitTest(unittest.TestCase):
         chart_name = 'cold_times' if i == 0 else 'warm_times'
         self.assertEqual(values[0].name, '%s.page_load_time' % chart_name)
         self.assertEqual(values[0].units, 'ms')
+        self.assertEqual(values[1].name, '%s.time_to_onload' % chart_name)
+        self.assertEqual(values[1].units, 'ms')
 
         expected_values = ['gpu', 'browser']
-        for value, expected in zip(values[1:len(expected_values) + 1],
+        for value, expected in zip(values[2:len(expected_values) + 1],
                                    expected_values):
           self.assertEqual(value.page, page)
           self.assertEqual(value.name,

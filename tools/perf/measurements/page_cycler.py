@@ -119,6 +119,12 @@ class PageCycler(legacy_page_test.LegacyPageTest):
                     'are the times when the page is loaded cold, i.e. without '
                     'loading it before, and warm times are times when the '
                     'page is loaded after being loaded previously.'))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, '%stimes.time_to_onload' % chart_name_prefix,
+        'ms', tab.EvaluateJavaScript('performance.timing.loadEventStart'
+                                     '- performance.timing.navigationStart'),
+        description='Time to onload. This is temporary metric to check that '
+                    'PCv1 and PCv2 emit similar results'))
 
     self._has_loaded_page[page.url] += 1
 
