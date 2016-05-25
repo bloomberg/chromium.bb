@@ -5,14 +5,17 @@
 #ifndef SnapCoordinator_h
 #define SnapCoordinator_h
 
-#include "core/layout/LayoutBox.h"
+#include "core/CoreExport.h"
+#include "core/css/CSSPrimitiveValueMappings.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
 class ComputedStyle;
+class ContainerNode;
 class Element;
+class LayoutBox;
 struct LengthPoint;
 
 // Snap Coordinator keeps track of snap containers and all of their associated
