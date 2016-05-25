@@ -78,6 +78,7 @@ class NavigationTracker : public DevToolsEventListener {
 
   void ResetLoadingState(LoadingState loading_state);
   bool IsExpectingFrameLoadingEvents();
+  bool IsEventLoopPausedByDialogs();
 
   DISALLOW_COPY_AND_ASSIGN(NavigationTracker);
 };

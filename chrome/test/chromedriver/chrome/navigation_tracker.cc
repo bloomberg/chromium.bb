@@ -62,7 +62,7 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
                                               const Timeout* timeout,
                                               bool* is_pending) {
   if (!IsExpectingFrameLoadingEvents()) {
-    if (dialog_manager_->IsDialogOpen()) {
+    if (IsEventLoopPausedByDialogs() && dialog_manager_->IsDialogOpen()) {
       // The render process is paused while modal dialogs are open, so
       // Runtime.evaluate will block and time out if we attempt to call it. In
       // this case we can consider the page to have loaded, so that we return
@@ -88,11 +88,20 @@ Status NavigationTracker::IsPendingNavigation(const std::string& frame_id,
       // events from it until we reconnect.
       *is_pending = false;
       return Status(kOk);
-    } else if (status.code() == kUnexpectedAlertOpen) {
+    } else if (status.code() == kUnexpectedAlertOpen &&
+               IsEventLoopPausedByDialogs()) {
       // The JS event loop is paused while modal dialogs are open, so return
       // control to the test so that it can dismiss the dialog.
       *is_pending = false;
       return Status(kOk);
+    } else if (status.IsError() && dialog_manager_->IsDialogOpen()) {
+      // TODO(samuong): Remove when we stop supporting M51.
+      // When a dialog is open, DevTools returns "Internal error: result is not
+      // an Object" for this request. If this happens, we assume that any
+      // cross-process navigation has started, and determine whether a
+      // navigation is pending based on the number of scheduled and pending
+      // frames.
+      LOG(WARNING) << "Failed to evaluate expression while dialog was open";
     } else if (status.IsError() ||
                !result->GetInteger("result.value", &value) ||
                value != 1) {
@@ -430,4 +439,17 @@ bool NavigationTracker::IsExpectingFrameLoadingEvents() {
     return browser_info_->build_no < 2358;
   else
     return browser_info_->major_version < 44;
+}
+
+bool NavigationTracker::IsEventLoopPausedByDialogs() {
+  // As of crrev.com/394883 (Chrome 52+) the JavaScript event loop is paused by
+  // modal dialogs. This pauses the render process so we need to be careful not
+  // to issue Runtime.evaluate commands while an alert is up, otherwise the call
+  // will block and timeout. For details refer to
+  // https://bugs.chromium.org/p/chromedriver/issues/detail?id=1381.
+  // TODO(samuong): Remove this once we stop supporting M51.
+  if (browser_info_->browser_name == "chrome")
+    return browser_info_->build_no >= 2743;
+  else
+    return browser_info_->major_version >= 52;
 }
