@@ -487,6 +487,20 @@
         "test": "blimp_unittests"
       },
       {
+        "override_isolate_target": "blink_heap_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ],
+          "hard_timeout": 60
+        },
+        "test": "blink_heap_unittests"
+      },
+      {
         "override_isolate_target": "breakpad_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -656,6 +670,20 @@
         "test": "gl_tests"
       },
       {
+        "override_isolate_target": "gl_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ],
+          "hard_timeout": 30
+        },
+        "test": "gl_unittests"
+      },
+      {
         "override_isolate_target": "gpu_ipc_service_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -682,6 +710,20 @@
         "test": "gpu_unittests"
       },
       {
+        "override_isolate_target": "ipc_mojo_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ],
+          "hard_timeout": 30
+        },
+        "test": "ipc_mojo_unittests"
+      },
+      {
         "override_isolate_target": "ipc_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -706,6 +748,104 @@
           ]
         },
         "test": "media_unittests"
+      },
+      {
+        "override_isolate_target": "mojo_common_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ],
+          "hard_timeout": 30
+        },
+        "test": "mojo_common_unittests"
+      },
+      {
+        "override_isolate_target": "mojo_public_application_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ],
+          "hard_timeout": 30
+        },
+        "test": "mojo_public_application_unittests"
+      },
+      {
+        "override_isolate_target": "mojo_public_bindings_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ],
+          "hard_timeout": 30
+        },
+        "test": "mojo_public_bindings_unittests"
+      },
+      {
+        "override_isolate_target": "mojo_public_system_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ],
+          "hard_timeout": 30
+        },
+        "test": "mojo_public_system_unittests"
+      },
+      {
+        "override_isolate_target": "mojo_runner_host_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ],
+          "hard_timeout": 30
+        },
+        "test": "mojo_runner_host_unittests"
+      },
+      {
+        "override_isolate_target": "mojo_surfaces_lib_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ],
+          "hard_timeout": 30
+        },
+        "test": "mojo_surfaces_lib_unittests"
+      },
+      {
+        "override_isolate_target": "mojo_system_unittests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ],
+          "hard_timeout": 60
+        },
+        "test": "mojo_system_unittests"
       },
       {
         "override_isolate_target": "net_unittests",
