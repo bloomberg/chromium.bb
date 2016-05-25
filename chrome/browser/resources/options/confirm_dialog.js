@@ -22,10 +22,13 @@ cr.define('options', function() {
    *     user has confirmed the dialog before. This ensures that the user is
    *     presented with the dialog only once. If left |undefined|, the dialog
    *     will pop up every time the user attempts to set |pref| to |true|.
+   * @param {boolean=} opt_confirmValue The value to which changing should
+   *     trigger the confirmation dialog.  Defaults to |true| if left
+   *     |undefined|.
    * @extends {options.SettingsDialog}
    */
   function ConfirmDialog(name, title, pageDivName, okButton, cancelButton, pref,
-                         metric, opt_confirmedPref) {
+                         metric, opt_confirmedPref, opt_confirmValue) {
     SettingsDialog.call(this, name, title, pageDivName, okButton, cancelButton);
 
     /** @protected */
@@ -39,6 +42,9 @@ cr.define('options', function() {
 
     /** @private */
     this.confirmed_ = false;
+
+    /** @private */
+    this.confirmValue_ = opt_confirmValue === false ? false : true;
   }
 
   ConfirmDialog.prototype = {
@@ -57,7 +63,7 @@ cr.define('options', function() {
       if (!event.value.uncommitted)
         return;
 
-      if (event.value.value && !this.confirmed_)
+      if (event.value.value == this.confirmValue_ && !this.confirmed_)
         PageManager.showPageByName(this.name, false);
       else
         Preferences.getInstance().commitPref(this.pref, this.metric);
@@ -97,7 +103,8 @@ cr.define('options', function() {
 
       Preferences.getInstance().commitPref(this.pref, this.metric);
       if (this.confirmedPref_)
-        Preferences.setBooleanPref(this.confirmedPref_, true, true);
+        Preferences.setBooleanPref(
+            this.confirmedPref_, this.confirmValue_, true);
     },
 
     /**
