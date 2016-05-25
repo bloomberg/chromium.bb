@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/libfuzzer/fuzzer_test.gni")
+
 config("ots_config") {
   include_dirs = [ "include" ]
 }
@@ -86,4 +88,15 @@ source_set("ots") {
       "/wd4334",  # 32-bit shift implicitly converted to 64-bits.
     ]
   }
+}
+
+fuzzer_test("ots_fuzzer") {
+  sources = [
+    "fuzz/ots_fuzzer.cc",
+  ]
+  deps = [
+    ":ots",
+  ]
+  libfuzzer_options = [ "max_len=16800" ]
+  seed_corpus = "//third_party/harfbuzz-ng/fuzz/seed_corpus"
 }
