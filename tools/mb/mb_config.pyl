@@ -758,8 +758,8 @@
       'linux_chromium_webkit_leak_variable': 'findit',
       'linux_chromium_webkit_msan_variable': 'findit',
       'linux_chromium_webkit_variable': 'findit',
-      'linux_nacl_sdk': 'nacl_annotator',
-      'linux_nacl_sdk_build': 'nacl_annotator',
+      'linux_nacl_sdk': 'gn_release_bot',
+      'linux_nacl_sdk_build': 'gn_release_bot',
       'linux_optional_gpu_tests_rel':
         'swarming_gpu_fyi_tests_gn_release_trybot',
       'linux_site_isolation': 'gn_release_trybot',
