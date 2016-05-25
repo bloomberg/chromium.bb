@@ -61,7 +61,9 @@ protected:
 private:
     FRIEND_TEST_ALL_PREFIXES(ScrollbarThemeAuraTest, ButtonSizeHorizontal);
     FRIEND_TEST_ALL_PREFIXES(ScrollbarThemeAuraTest, ButtonSizeVertical);
+    FRIEND_TEST_ALL_PREFIXES(ScrollbarThemeAuraTest, NoButtonsReturnsSize0);
 
+    virtual bool hasScrollbarButtons(ScrollbarOrientation) const;
     IntSize buttonSize(const ScrollbarThemeClient&);
 };
 
