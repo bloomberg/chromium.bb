@@ -35,8 +35,6 @@
 #include "core/editing/TextAffinity.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/html/HTMLElement.h"
-#include "core/layout/LayoutBlock.h"
-#include "core/layout/line/RootInlineBox.h"
 #include "platform/geometry/FloatQuad.h"
 #include "wtf/text/CString.h"
 #include <ostream> // NOLINT

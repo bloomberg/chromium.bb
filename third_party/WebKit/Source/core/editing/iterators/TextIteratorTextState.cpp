@@ -26,6 +26,8 @@
 
 #include "core/editing/iterators/TextIteratorTextState.h"
 
+#include "core/layout/LayoutText.h"
+
 namespace blink {
 
 TextIteratorTextState::TextIteratorTextState(bool emitsOriginalText)

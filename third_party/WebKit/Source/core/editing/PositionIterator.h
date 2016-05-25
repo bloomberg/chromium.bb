@@ -30,7 +30,6 @@
 #include "core/editing/EditingStrategy.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/html/HTMLHtmlElement.h"
-#include "core/layout/LayoutBlock.h"
 
 namespace blink {
 

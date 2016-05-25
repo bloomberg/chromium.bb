@@ -35,7 +35,6 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/html/HTMLBRElement.h"
 #include "core/html/HTMLElement.h"
-#include "core/layout/LayoutObject.h"
 #include "core/style/ComputedStyle.h"
 
 namespace blink {

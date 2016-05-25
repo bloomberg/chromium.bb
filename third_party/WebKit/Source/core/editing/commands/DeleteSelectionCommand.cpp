@@ -40,7 +40,6 @@
 #include "core/html/HTMLStyleElement.h"
 #include "core/html/HTMLTableRowElement.h"
 #include "core/layout/LayoutTableCell.h"
-#include "core/layout/LayoutText.h"
 
 namespace blink {
 
