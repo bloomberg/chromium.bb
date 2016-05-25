@@ -75,66 +75,6 @@ void UpdateLatencyCoordinates(const WebInputEvent& event,
   }
 }
 
-void ComputeInputLatencyHistograms(WebInputEvent::Type type,
-                                   int64_t latency_component_id,
-                                   const LatencyInfo& latency) {
-  if (latency.coalesced())
-    return;
-
-  LatencyInfo::LatencyComponent rwh_component;
-  if (!latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-                           latency_component_id, &rwh_component)) {
-    return;
-  }
-  DCHECK_EQ(rwh_component.event_count, 1u);
-
-  LatencyInfo::LatencyComponent ui_component;
-  if (latency.FindLatency(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0,
-                          &ui_component)) {
-    DCHECK_EQ(ui_component.event_count, 1u);
-    base::TimeDelta ui_delta =
-        rwh_component.event_time - ui_component.event_time;
-    switch (type) {
-      case blink::WebInputEvent::MouseWheel:
-        UMA_HISTOGRAM_CUSTOM_COUNTS(
-            "Event.Latency.Browser.WheelUI",
-            ui_delta.InMicroseconds(), 1, 20000, 100);
-        break;
-      case blink::WebInputEvent::TouchTypeFirst:
-        UMA_HISTOGRAM_CUSTOM_COUNTS(
-            "Event.Latency.Browser.TouchUI",
-            ui_delta.InMicroseconds(), 1, 20000, 100);
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-  }
-
-  LatencyInfo::LatencyComponent acked_component;
-  if (latency.FindLatency(ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0,
-                          &acked_component)) {
-    DCHECK_EQ(acked_component.event_count, 1u);
-    base::TimeDelta acked_delta =
-        acked_component.event_time - rwh_component.event_time;
-    switch (type) {
-      case blink::WebInputEvent::MouseWheel:
-        UMA_HISTOGRAM_CUSTOM_COUNTS(
-            "Event.Latency.Browser.WheelAcked",
-            acked_delta.InMicroseconds(), 1, 1000000, 100);
-        break;
-      case blink::WebInputEvent::TouchTypeFirst:
-        UMA_HISTOGRAM_CUSTOM_COUNTS(
-            "Event.Latency.Browser.TouchAcked",
-            acked_delta.InMicroseconds(), 1, 1000000, 100);
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-  }
-}
-
 // Touch to scroll latency that is mostly under 1 second.
 #define UMA_HISTOGRAM_TOUCH_TO_SCROLL_LATENCY(name, start, end)               \
   UMA_HISTOGRAM_CUSTOM_COUNTS(                                                \
@@ -287,11 +227,11 @@ RenderWidgetHostLatencyTracker::RenderWidgetHostLatencyTracker()
     : last_event_id_(0),
       latency_component_id_(0),
       device_scale_factor_(1),
-      has_seen_first_gesture_scroll_update_(false) {
-}
+      has_seen_first_gesture_scroll_update_(false),
+      multi_finger_gesture_(false),
+      touch_start_default_prevented_(false) {}
 
-RenderWidgetHostLatencyTracker::~RenderWidgetHostLatencyTracker() {
-}
+RenderWidgetHostLatencyTracker::~RenderWidgetHostLatencyTracker() {}
 
 void RenderWidgetHostLatencyTracker::Initialize(int routing_id,
                                                 int process_id) {
@@ -299,6 +239,95 @@ void RenderWidgetHostLatencyTracker::Initialize(int routing_id,
   DCHECK_EQ(0, latency_component_id_);
   last_event_id_ = static_cast<int64_t>(process_id) << 32;
   latency_component_id_ = routing_id | last_event_id_;
+}
+
+void RenderWidgetHostLatencyTracker::ComputeInputLatencyHistograms(
+    WebInputEvent::Type type,
+    int64_t latency_component_id,
+    const LatencyInfo& latency,
+    InputEventAckState ack_result) {
+  if (latency.coalesced())
+    return;
+
+  LatencyInfo::LatencyComponent rwh_component;
+  if (!latency.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+                           latency_component_id, &rwh_component)) {
+    return;
+  }
+  DCHECK_EQ(rwh_component.event_count, 1u);
+
+  LatencyInfo::LatencyComponent ui_component;
+  if (latency.FindLatency(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0,
+                          &ui_component)) {
+    DCHECK_EQ(ui_component.event_count, 1u);
+    base::TimeDelta ui_delta =
+        rwh_component.event_time - ui_component.event_time;
+
+    if (type == blink::WebInputEvent::MouseWheel) {
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.Browser.WheelUI",
+                                  ui_delta.InMicroseconds(), 1, 20000, 100);
+
+    } else {
+      DCHECK(WebInputEvent::isTouchEventType(type));
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.Browser.TouchUI",
+                                  ui_delta.InMicroseconds(), 1, 20000, 100);
+    }
+  }
+
+  LatencyInfo::LatencyComponent main_component;
+  if (latency.FindLatency(ui::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT, 0,
+                          &main_component)) {
+    DCHECK_EQ(main_component.event_count, 1u);
+    base::TimeDelta queueing_delta =
+        main_component.event_time - rwh_component.event_time;
+    if (type == WebInputEvent::TouchMove && !multi_finger_gesture_) {
+      if (touch_start_default_prevented_ ||
+          ack_result == INPUT_EVENT_ACK_STATE_CONSUMED) {
+        UMA_HISTOGRAM_TIMES(
+            "Event.Latency.QueueingTime.TouchMoveDefaultPrevented",
+            queueing_delta);
+      } else if (ack_result == INPUT_EVENT_ACK_STATE_NOT_CONSUMED) {
+        UMA_HISTOGRAM_TIMES(
+            "Event.Latency.QueueingTime.TouchMoveDefaultAllowed",
+            queueing_delta);
+      }
+    }
+  }
+
+  LatencyInfo::LatencyComponent acked_component;
+  if (latency.FindLatency(ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0,
+                          &acked_component)) {
+    DCHECK_EQ(acked_component.event_count, 1u);
+    base::TimeDelta acked_delta =
+        acked_component.event_time - rwh_component.event_time;
+    if (type == blink::WebInputEvent::MouseWheel) {
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.Browser.WheelAcked",
+                                  acked_delta.InMicroseconds(), 1, 1000000,
+                                  100);
+    } else {
+      DCHECK(WebInputEvent::isTouchEventType(type));
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.Browser.TouchAcked",
+                                  acked_delta.InMicroseconds(), 1, 1000000,
+                                  100);
+    }
+
+    if (type == WebInputEvent::TouchMove && !multi_finger_gesture_ &&
+        main_component.event_time != base::TimeTicks()) {
+      base::TimeDelta blocking_delta;
+      blocking_delta = acked_component.event_time - main_component.event_time;
+
+      if (touch_start_default_prevented_ ||
+          ack_result == INPUT_EVENT_ACK_STATE_CONSUMED) {
+        UMA_HISTOGRAM_TIMES(
+            "Event.Latency.BlockingTime.TouchMoveDefaultPrevented",
+            blocking_delta);
+      } else if (ack_result == INPUT_EVENT_ACK_STATE_NOT_CONSUMED) {
+        UMA_HISTOGRAM_TIMES(
+            "Event.Latency.BlockingTime.TouchMoveDefaultAllowed",
+            blocking_delta);
+      }
+    }
+  }
 }
 
 void RenderWidgetHostLatencyTracker::OnInputEvent(
@@ -362,7 +391,7 @@ void RenderWidgetHostLatencyTracker::OnInputEvent(
 
 void RenderWidgetHostLatencyTracker::OnInputEventAck(
     const blink::WebInputEvent& event,
-    LatencyInfo* latency) {
+    LatencyInfo* latency, InputEventAckState ack_result) {
   DCHECK(latency);
 
   // Latency ends when it is acked but does not cause render scheduling.
@@ -381,13 +410,23 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
   }
 
   if (WebInputEvent::isTouchEventType(event.type)) {
+    const WebTouchEvent& touch_event =
+        *static_cast<const WebTouchEvent*>(&event);
+    if (event.type == WebInputEvent::TouchStart) {
+      DCHECK(touch_event.touchesLength >= 1);
+      multi_finger_gesture_ = touch_event.touchesLength != 1;
+      touch_start_default_prevented_ =
+          ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
+    }
+
     latency->AddLatencyNumber(ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0, 0);
+
     if (!rendering_scheduled) {
       latency->AddLatencyNumber(
           ui::INPUT_EVENT_LATENCY_TERMINATED_TOUCH_COMPONENT, 0, 0);
     }
-    ComputeInputLatencyHistograms(WebInputEvent::TouchTypeFirst,
-                                  latency_component_id_, *latency);
+    ComputeInputLatencyHistograms(event.type, latency_component_id_, *latency,
+                                  ack_result);
     return;
   }
 
@@ -397,8 +436,8 @@ void RenderWidgetHostLatencyTracker::OnInputEventAck(
       latency->AddLatencyNumber(
           ui::INPUT_EVENT_LATENCY_TERMINATED_MOUSE_WHEEL_COMPONENT, 0, 0);
     }
-    ComputeInputLatencyHistograms(WebInputEvent::MouseWheel,
-                                  latency_component_id_, *latency);
+    ComputeInputLatencyHistograms(event.type, latency_component_id_, *latency,
+                                  ack_result);
     return;
   }
 

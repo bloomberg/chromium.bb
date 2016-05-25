@@ -11946,6 +11946,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Event.Latency.BlockingTime.TouchMoveDefaultAllowed"
+    units="microseconds">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Time between the renderer main thread receiving a touchmove event and acking
+    it, for events which were not preventDefaulted.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.BlockingTime.TouchMoveDefaultPrevented"
+    units="microseconds">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Time between the renderer main thread receiving a touchmove event and acking
+    it, for events which were preventDefaulted.
+  </summary>
+</histogram>
+
 <histogram name="Event.Latency.Browser" units="microseconds">
   <owner>rbyers@chromium.org</owner>
   <summary>
@@ -12274,6 +12292,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Duration of a recursive hitTest operation. The hit test is recursive when
     the AllowChildFrameContent flag is set. See also Event.Latency.HitTest.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.QueueingTime.TouchMoveDefaultAllowed"
+    units="microseconds">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Time between sending a touchmove event to the renderer main thread and when
+    the renderer begins to process that event, for events which were not
+    preventDefaulted.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.QueueingTime.TouchMoveDefaultPrevented"
+    units="microseconds">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    Time between sending a touchmove event to the renderer main thread and when
+    the renderer begins to process that event, for events which were
+    preventDefaulted.
   </summary>
 </histogram>
 

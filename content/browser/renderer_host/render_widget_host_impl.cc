@@ -1886,12 +1886,13 @@ void RenderWidgetHostImpl::DidStopFlinging() {
 void RenderWidgetHostImpl::OnKeyboardEventAck(
       const NativeWebKeyboardEventWithLatencyInfo& event,
       InputEventAckState ack_result) {
-  latency_tracker_.OnInputEventAck(event.event, &event.latency);
+  latency_tracker_.OnInputEventAck(event.event, &event.latency, ack_result);
+
+  const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
 
   // We only send unprocessed key event upwards if we are not hidden,
   // because the user has moved away from us and no longer expect any effect
   // of this key event.
-  const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
   if (delegate_ && !processed && !is_hidden() && !event.event.skip_in_browser) {
     delegate_->HandleKeyboardEvent(event.event);
 
@@ -1904,13 +1905,15 @@ void RenderWidgetHostImpl::OnKeyboardEventAck(
 void RenderWidgetHostImpl::OnMouseEventAck(
     const MouseEventWithLatencyInfo& mouse_event,
     InputEventAckState ack_result) {
-  latency_tracker_.OnInputEventAck(mouse_event.event, &mouse_event.latency);
+  latency_tracker_.OnInputEventAck(mouse_event.event, &mouse_event.latency,
+                                   ack_result);
 }
 
 void RenderWidgetHostImpl::OnWheelEventAck(
     const MouseWheelEventWithLatencyInfo& wheel_event,
     InputEventAckState ack_result) {
-  latency_tracker_.OnInputEventAck(wheel_event.event, &wheel_event.latency);
+  latency_tracker_.OnInputEventAck(wheel_event.event, &wheel_event.latency,
+                                   ack_result);
 
   if (!is_hidden() && view_) {
     if (ack_result != INPUT_EVENT_ACK_STATE_CONSUMED &&
@@ -1924,7 +1927,7 @@ void RenderWidgetHostImpl::OnWheelEventAck(
 void RenderWidgetHostImpl::OnGestureEventAck(
     const GestureEventWithLatencyInfo& event,
     InputEventAckState ack_result) {
-  latency_tracker_.OnInputEventAck(event.event, &event.latency);
+  latency_tracker_.OnInputEventAck(event.event, &event.latency, ack_result);
 
   if (view_)
     view_->GestureEventAck(event.event, ack_result);
@@ -1933,7 +1936,7 @@ void RenderWidgetHostImpl::OnGestureEventAck(
 void RenderWidgetHostImpl::OnTouchEventAck(
     const TouchEventWithLatencyInfo& event,
     InputEventAckState ack_result) {
-  latency_tracker_.OnInputEventAck(event.event, &event.latency);
+  latency_tracker_.OnInputEventAck(event.event, &event.latency, ack_result);
 
   if (touch_emulator_ &&
       touch_emulator_->HandleTouchEventAck(event.event, ack_result)) {

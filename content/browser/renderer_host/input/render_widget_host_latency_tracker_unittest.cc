@@ -6,9 +6,12 @@
 #include "content/browser/renderer_host/input/render_widget_host_latency_tracker.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::Bucket;
 using blink::WebInputEvent;
+using testing::ElementsAre;
 
 namespace content {
 namespace {
@@ -74,6 +77,10 @@ class RenderWidgetHostLatencyTrackerTest : public testing::Test {
     histogram_tester_.reset(new base::HistogramTester());
   }
 
+  const base::HistogramTester& histogram_tester() {
+    return *histogram_tester_;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostLatencyTrackerTest);
   const int kTestRoutingId = 3;
@@ -100,7 +107,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestHistograms) {
       EXPECT_TRUE(scroll_latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
       EXPECT_EQ(1U, scroll_latency.input_coordinates_size());
-      tracker()->OnInputEventAck(scroll, &scroll_latency);
+      tracker()->OnInputEventAck(scroll, &scroll_latency,
+                                 INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
     }
 
     {
@@ -118,7 +126,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestHistograms) {
       EXPECT_TRUE(wheel_latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
       EXPECT_EQ(1U, wheel_latency.input_coordinates_size());
-      tracker()->OnInputEventAck(wheel, &wheel_latency);
+      tracker()->OnInputEventAck(wheel, &wheel_latency,
+                                 INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
     }
 
     {
@@ -135,7 +144,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestHistograms) {
       EXPECT_TRUE(touch_latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
       EXPECT_EQ(2U, touch_latency.input_coordinates_size());
-      tracker()->OnInputEventAck(touch, &touch_latency);
+      tracker()->OnInputEventAck(touch, &touch_latency,
+                                 INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
       tracker()->OnFrameSwapped(touch_latency);
     }
 
@@ -177,7 +187,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     // Don't include the rendering schedule component, since we're testing the
     // case where rendering isn't scheduled.
     tracker()->OnInputEvent(scroll, &scroll_latency);
-    tracker()->OnInputEventAck(scroll, &scroll_latency);
+    tracker()->OnInputEventAck(scroll, &scroll_latency,
+                               INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
     EXPECT_TRUE(scroll_latency.FindLatency(
         ui::INPUT_EVENT_LATENCY_TERMINATED_GESTURE_COMPONENT, 0, nullptr));
     EXPECT_TRUE(scroll_latency.terminated());
@@ -189,7 +200,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     ui::LatencyInfo wheel_latency;
     AddFakeComponents(*tracker(), &wheel_latency);
     tracker()->OnInputEvent(wheel, &wheel_latency);
-    tracker()->OnInputEventAck(wheel, &wheel_latency);
+    tracker()->OnInputEventAck(wheel, &wheel_latency,
+                               INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
     EXPECT_TRUE(wheel_latency.FindLatency(
         ui::INPUT_EVENT_LATENCY_TERMINATED_MOUSE_WHEEL_COMPONENT, 0, nullptr));
     EXPECT_TRUE(wheel_latency.terminated());
@@ -201,7 +213,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     ui::LatencyInfo touch_latency;
     AddFakeComponents(*tracker(), &touch_latency);
     tracker()->OnInputEvent(touch, &touch_latency);
-    tracker()->OnInputEventAck(touch, &touch_latency);
+    tracker()->OnInputEventAck(touch, &touch_latency,
+                               INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
     EXPECT_TRUE(touch_latency.FindLatency(
         ui::INPUT_EVENT_LATENCY_TERMINATED_TOUCH_COMPONENT, 0, nullptr));
     EXPECT_TRUE(touch_latency.terminated());
@@ -214,7 +227,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     ui::LatencyInfo mouse_latency;
     AddFakeComponents(*tracker(), &mouse_latency);
     tracker()->OnInputEvent(mouse_move, &mouse_latency);
-    tracker()->OnInputEventAck(mouse_move, &mouse_latency);
+    tracker()->OnInputEventAck(mouse_move, &mouse_latency,
+                               INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
     EXPECT_TRUE(mouse_latency.FindLatency(
         ui::INPUT_EVENT_LATENCY_TERMINATED_MOUSE_COMPONENT, 0, nullptr));
     EXPECT_TRUE(mouse_latency.terminated());
@@ -226,7 +240,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
     ui::LatencyInfo key_latency;
     AddFakeComponents(*tracker(), &key_latency);
     tracker()->OnInputEvent(key_event, &key_latency);
-    tracker()->OnInputEventAck(key_event, &key_latency);
+    tracker()->OnInputEventAck(key_event, &key_latency,
+                               INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
     EXPECT_TRUE(key_latency.FindLatency(
         ui::INPUT_EVENT_LATENCY_TERMINATED_KEYBOARD_COMPONENT, 0, nullptr));
     EXPECT_TRUE(key_latency.terminated());
@@ -362,6 +377,64 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, ScrollLatency) {
       ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
       tracker()->latency_component_id(), nullptr));
   EXPECT_EQ(3U, scroll_latency.latency_components().size());
+}
+
+TEST_F(RenderWidgetHostLatencyTrackerTest, TouchBlockingAndQueueingTime) {
+  for (InputEventAckState blocking :
+       {INPUT_EVENT_ACK_STATE_NOT_CONSUMED, INPUT_EVENT_ACK_STATE_CONSUMED}) {
+    SyntheticWebTouchEvent event;
+    event.PressPoint(1, 1);
+
+    ui::LatencyInfo latency_start;
+    tracker()->OnInputEvent(event, &latency_start);
+    tracker()->OnInputEventAck(event, &latency_start,
+                               INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+    ui::LatencyInfo latency_move;
+    event.MovePoint(0, 20, 20);
+    tracker()->OnInputEvent(event, &latency_move);
+
+    EXPECT_TRUE(latency_move.FindLatency(
+        ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, nullptr));
+    EXPECT_TRUE(
+        latency_move.FindLatency(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+                                 tracker()->latency_component_id(), nullptr));
+
+    EXPECT_EQ(2U, latency_move.latency_components().size());
+
+    ui::LatencyInfo fake_latency_move;
+    fake_latency_move.AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+        tracker()->latency_component_id(), 0,
+        base::TimeTicks() + base::TimeDelta::FromMilliseconds(1), 1);
+
+    fake_latency_move.AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT, 0, 0,
+        base::TimeTicks() + base::TimeDelta::FromMilliseconds(5), 1);
+
+    fake_latency_move.AddLatencyNumberWithTimestamp(
+        ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT, 0, 0,
+        base::TimeTicks() + base::TimeDelta::FromMilliseconds(12), 1);
+
+    // Call ComputeInputLatencyHistograms directly to avoid OnInputEventAck
+    // overwriting components.
+    tracker()->ComputeInputLatencyHistograms(event.type,
+                                             tracker()->latency_component_id(),
+                                             fake_latency_move, blocking);
+  }
+
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "Event.Latency.QueueingTime.TouchMoveDefaultPrevented"),
+              ElementsAre(Bucket(4, 1)));
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "Event.Latency.QueueingTime.TouchMoveDefaultAllowed"),
+              ElementsAre(Bucket(4, 1)));
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "Event.Latency.BlockingTime.TouchMoveDefaultPrevented"),
+              ElementsAre(Bucket(7, 1)));
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "Event.Latency.BlockingTime.TouchMoveDefaultAllowed"),
+              ElementsAre(Bucket(7, 1)));
 }
 
 }  // namespace content
