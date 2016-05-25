@@ -6,16 +6,10 @@ Here we change row border width, expect that cache is invalidated and paint prod
     <head>
         <title></title>
         <link rel="stylesheet" href="resources/cached.css">
-        <script src="../../../fast/repaint/resources/text-based-repaint.js"></script>
-        <script type="text/javascript">
-            function repaintTest() {
-                document.getElementById("row").style.borderWidth = "4px";
-            }
-        </script>
     </head>
-    <body onload="runRepaintAndPixelTest()">
+    <body>
         <table style="border-collapse:collapse; border:1px solid blue">
-            <tr style="border:1px solid yellow" id="row">
+            <tr style="border:4px solid yellow" id="row">
                 <td style="border:2px solid lime"/>
             </tr>
             <tr>

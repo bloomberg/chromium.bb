@@ -4,7 +4,6 @@ Collapsed borders should not disappear.
 -->
 <html>
     <head>
-        <script src="../../../fast/repaint/resources/text-based-repaint.js"></script>
         <style>
             BODY {
                 margin: 20px;
@@ -17,27 +16,13 @@ Collapsed borders should not disappear.
                 height: 50px;
                 border: 1px solid #333333;
             }
-            #row1:hover {
+            #row1 {
                 background-color: #ddd;
                 color: #111;
             }
         </style>
-    <head>
-        <script type="text/javascript">
-            function repaintTest() {
-                row = document.getElementById('row1');
-                rowRect = row.getBoundingClientRect();
-                x = rowRect.left + 75;
-                y = rowRect.top;
-                document.body.offsetTop;
-                if (window.eventSender) {
-                    eventSender.mouseMoveTo(x, y + 1);
-                    eventSender.mouseMoveTo(x, y - 1);
-                }
-            }
-        </script>
     </head>
-    <body onload="runRepaintAndPixelTest()">
+    <body>
         <table>
             <tr id="row1">
                 <td valign="top"/>
