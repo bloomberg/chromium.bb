@@ -44,8 +44,10 @@ void DisplayItemClient::beginShouldKeepAlive() const
     CHECK(isAlive());
     if (!displayItemClientsShouldKeepAlive)
         displayItemClientsShouldKeepAlive = new HashMap<const DisplayItemClient*, String>();
+#ifdef NDEBUG
+    displayItemClientsShouldKeepAlive->add(this, "");
+#else
     auto addResult = displayItemClientsShouldKeepAlive->add(this, "");
-#ifndef NDEBUG
     if (addResult.isNewEntry)
         addResult.storedValue->value = debugName();
 #endif
