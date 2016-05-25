@@ -31,6 +31,7 @@
 #ifndef WorkerWebSocketChannel_h
 #define WorkerWebSocketChannel_h
 
+#include "bindings/core/v8/SourceLocation.h"
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "platform/heap/Handle.h"
@@ -56,9 +57,9 @@ class WorkerLoaderProxy;
 class WorkerWebSocketChannel final : public WebSocketChannel {
     WTF_MAKE_NONCOPYABLE(WorkerWebSocketChannel);
 public:
-    static WebSocketChannel* create(WorkerGlobalScope& workerGlobalScope, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber)
+    static WebSocketChannel* create(WorkerGlobalScope& workerGlobalScope, WebSocketChannelClient* client, PassOwnPtr<SourceLocation> location)
     {
-        return new WorkerWebSocketChannel(workerGlobalScope, client, sourceURL, lineNumber);
+        return new WorkerWebSocketChannel(workerGlobalScope, client, std::move(location));
     }
     ~WorkerWebSocketChannel() override;
 
@@ -76,7 +77,7 @@ public:
         ASSERT_NOT_REACHED();
     }
     void close(int code, const String& reason) override;
-    void fail(const String& reason, MessageLevel, const String&, unsigned) override;
+    void fail(const String& reason, MessageLevel, PassOwnPtr<SourceLocation>) override;
     void disconnect() override; // Will suppress didClose().
 
     DECLARE_VIRTUAL_TRACE();
@@ -90,16 +91,15 @@ public:
         Peer(Bridge*, PassRefPtr<WorkerLoaderProxy>, WebSocketChannelSyncHelper*);
         ~Peer() override;
 
-        // sourceURLAtConnection and lineNumberAtConnection parameters may
-        // be shown when the connection fails.
-        void initialize(const String& sourceURLAtConnection, unsigned lineNumberAtConnection, ExecutionContext*);
+        // SourceLocation parameter may be shown when the connection fails.
+        void initialize(PassOwnPtr<SourceLocation>, ExecutionContext*);
 
         void connect(const KURL&, const String& protocol);
         void sendTextAsCharVector(PassOwnPtr<Vector<char>>);
         void sendBinaryAsCharVector(PassOwnPtr<Vector<char>>);
         void sendBlob(PassRefPtr<BlobDataHandle>);
         void close(int code, const String& reason);
-        void fail(const String& reason, MessageLevel, const String& sourceURL, unsigned lineNumber);
+        void fail(const String& reason, MessageLevel, PassOwnPtr<SourceLocation>);
         void disconnect();
 
         DECLARE_VIRTUAL_TRACE();
@@ -126,15 +126,14 @@ public:
     public:
         Bridge(WebSocketChannelClient*, WorkerGlobalScope&);
         ~Bridge();
-        // sourceURLAtConnection and lineNumberAtConnection parameters may
-        // be shown when the connection fails.
-        void initialize(const String& sourceURLAtConnection, unsigned lineNumberAtConnection);
+        // SourceLocation parameter may be shown when the connection fails.
+        void initialize(PassOwnPtr<SourceLocation>);
         bool connect(const KURL&, const String& protocol);
         void send(const CString& message);
         void send(const DOMArrayBuffer&, unsigned byteOffset, unsigned byteLength);
         void send(PassRefPtr<BlobDataHandle>);
         void close(int code, const String& reason);
-        void fail(const String& reason, MessageLevel, const String& sourceURL, unsigned lineNumber);
+        void fail(const String& reason, MessageLevel, PassOwnPtr<SourceLocation>);
         void disconnect();
 
         // Returns null when |disconnect| has already been called.
@@ -154,11 +153,10 @@ public:
     };
 
 private:
-    WorkerWebSocketChannel(WorkerGlobalScope&, WebSocketChannelClient*, const String& sourceURL, unsigned lineNumber);
+    WorkerWebSocketChannel(WorkerGlobalScope&, WebSocketChannelClient*, PassOwnPtr<SourceLocation>);
 
     Member<Bridge> m_bridge;
-    String m_sourceURLAtConnection;
-    unsigned m_lineNumberAtConnection;
+    OwnPtr<SourceLocation> m_locationAtConnection;
 };
 
 } // namespace blink

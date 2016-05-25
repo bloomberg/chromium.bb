@@ -28,12 +28,14 @@ public:
     static PassOwnPtr<SourceLocation> create(const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId = 0);
     ~SourceLocation();
 
+    bool isEmpty() const { return m_url.isNull(); }
     String url() const { return m_url; }
     unsigned lineNumber() const { return m_lineNumber; }
     unsigned columnNumber() const { return m_columnNumber; }
     std::unique_ptr<V8StackTrace> takeStackTrace() { return std::move(m_stackTrace); }
     int scriptId() const { return m_scriptId; }
     void toTracedValue(TracedValue*, const char* name) const;
+    PassOwnPtr<SourceLocation> clone() const;
 
 private:
     SourceLocation(const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId);

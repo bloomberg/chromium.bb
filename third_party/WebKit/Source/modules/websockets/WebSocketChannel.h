@@ -31,6 +31,7 @@
 #ifndef WebSocketChannel_h
 #define WebSocketChannel_h
 
+#include "bindings/core/v8/SourceLocation.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/v8_inspector/public/ConsoleTypes.h"
@@ -84,16 +85,13 @@ public:
 
     // Log the reason text and close the connection. Will call didClose().
     // The MessageLevel parameter will be used for the level of the message
-    // shown at the devtool console.
-    // sourceURL and lineNumber parameters may be shown with the reason text
-    // at the devtool console.
-    // Even if sourceURL and lineNumber are specified, they may be ignored
-    // and the "current" url and the line number in the sense of
-    // JavaScript execution may be shown if this method is called in
-    // a JS execution context.
-    // You can specify String() and 0 for sourceURL and lineNumber
-    // respectively, if you can't / needn't provide the information.
-    virtual void fail(const String& reason, MessageLevel, const String& sourceURL, unsigned lineNumber) = 0;
+    // shown at the devtools console.
+    // SourceLocation parameter may be shown with the reason text
+    // at the devtools console. Even if location is specified, it may be ignored
+    // and the "current" location in the sense of JavaScript execution
+    // may be shown if this method is called in a JS execution context.
+    // You can pass null location if unknown.
+    virtual void fail(const String& reason, MessageLevel, PassOwnPtr<SourceLocation>) = 0;
 
     // Do not call any methods after calling this method.
     virtual void disconnect() = 0; // Will suppress didClose().

@@ -30,7 +30,6 @@
 
 #include "modules/websockets/WorkerWebSocketChannel.h"
 
-#include "bindings/core/v8/ScriptCallStack.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
@@ -104,12 +103,11 @@ private:
     bool m_connectRequestResult;
 };
 
-WorkerWebSocketChannel::WorkerWebSocketChannel(WorkerGlobalScope& workerGlobalScope, WebSocketChannelClient* client, const String& sourceURL, unsigned lineNumber)
+WorkerWebSocketChannel::WorkerWebSocketChannel(WorkerGlobalScope& workerGlobalScope, WebSocketChannelClient* client, PassOwnPtr<SourceLocation> location)
     : m_bridge(new Bridge(client, workerGlobalScope))
-    , m_sourceURLAtConnection(sourceURL)
-    , m_lineNumberAtConnection(lineNumber)
+    , m_locationAtConnection(std::move(location))
 {
-    m_bridge->initialize(sourceURL, lineNumber);
+    m_bridge->initialize(m_locationAtConnection->clone());
 }
 
 WorkerWebSocketChannel::~WorkerWebSocketChannel()
@@ -147,24 +145,23 @@ void WorkerWebSocketChannel::close(int code, const String& reason)
     m_bridge->close(code, reason);
 }
 
-void WorkerWebSocketChannel::fail(const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
+void WorkerWebSocketChannel::fail(const String& reason, MessageLevel level, PassOwnPtr<SourceLocation> location)
 {
     if (!m_bridge)
         return;
 
-    RefPtr<ScriptCallStack> callStack = ScriptCallStack::capture(1);
-    if (callStack && !callStack->isEmpty())  {
-        // In order to emulate the ConsoleMessage behavior,
-        // we should ignore the specified url and line number if
-        // we can get the JavaScript context.
-        m_bridge->fail(reason, level, callStack->topSourceURL(), callStack->topLineNumber());
-    } else if (sourceURL.isEmpty() && !lineNumber) {
+    OwnPtr<SourceLocation> capturedLocation = SourceLocation::capture();
+    if (!capturedLocation->isEmpty()) {
+        // If we are in JavaScript context, use the current location instead
+        // of passed one - it's more precise.
+        m_bridge->fail(reason, level, std::move(capturedLocation));
+    } else if (!location || location->isEmpty()) {
         // No information is specified by the caller - use the url
         // and the line number at the connection.
-        m_bridge->fail(reason, level, m_sourceURLAtConnection, m_lineNumberAtConnection);
+        m_bridge->fail(reason, level, m_locationAtConnection->clone());
     } else {
         // Use the specified information.
-        m_bridge->fail(reason, level, sourceURL, lineNumber);
+        m_bridge->fail(reason, level, std::move(location));
     }
 }
 
@@ -194,11 +191,11 @@ Peer::~Peer()
     ASSERT(!isMainThread());
 }
 
-void Peer::initialize(const String& sourceURL, unsigned lineNumber, ExecutionContext* context)
+void Peer::initialize(PassOwnPtr<SourceLocation> location, ExecutionContext* context)
 {
     ASSERT(isMainThread());
     Document* document = toDocument(context);
-    m_mainWebSocketChannel = DocumentWebSocketChannel::create(document, this, sourceURL, lineNumber);
+    m_mainWebSocketChannel = DocumentWebSocketChannel::create(document, this, std::move(location));
     m_syncHelper->signalWorkerThread();
 }
 
@@ -245,13 +242,13 @@ void Peer::close(int code, const String& reason)
     m_mainWebSocketChannel->close(code, reason);
 }
 
-void Peer::fail(const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
+void Peer::fail(const String& reason, MessageLevel level, PassOwnPtr<SourceLocation> location)
 {
     ASSERT(isMainThread());
     ASSERT(m_syncHelper);
     if (!m_mainWebSocketChannel)
         return;
-    m_mainWebSocketChannel->fail(reason, level, sourceURL, lineNumber);
+    m_mainWebSocketChannel->fail(reason, level, std::move(location));
 }
 
 void Peer::disconnect()
@@ -382,9 +379,9 @@ Bridge::~Bridge()
     ASSERT(!m_peer);
 }
 
-void Bridge::initialize(const String& sourceURL, unsigned lineNumber)
+void Bridge::initialize(PassOwnPtr<SourceLocation> location)
 {
-    if (!waitForMethodCompletion(createCrossThreadTask(&Peer::initialize, wrapCrossThreadPersistent(m_peer.get()), sourceURL, lineNumber))) {
+    if (!waitForMethodCompletion(createCrossThreadTask(&Peer::initialize, wrapCrossThreadPersistent(m_peer.get()), passed(std::move(location))))) {
         // The worker thread has been signalled to shutdown before method completion.
         disconnect();
     }
@@ -434,10 +431,10 @@ void Bridge::close(int code, const String& reason)
     m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::close, wrapCrossThreadPersistent(m_peer.get()), code, reason));
 }
 
-void Bridge::fail(const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
+void Bridge::fail(const String& reason, MessageLevel level, PassOwnPtr<SourceLocation> location)
 {
     ASSERT(m_peer);
-    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::fail, wrapCrossThreadPersistent(m_peer.get()), reason, level, sourceURL, lineNumber));
+    m_loaderProxy->postTaskToLoader(createCrossThreadTask(&Peer::fail, wrapCrossThreadPersistent(m_peer.get()), reason, level, passed(std::move(location))));
 }
 
 void Bridge::disconnect()

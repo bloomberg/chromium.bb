@@ -92,7 +92,7 @@ public:
         : m_pageHolder(DummyPageHolder::create())
         , m_channelClient(MockWebSocketChannelClient::create())
         , m_handle(MockWebSocketHandle::create())
-        , m_channel(DocumentWebSocketChannel::create(&m_pageHolder->document(), m_channelClient.get(), String(), 0, handle()))
+        , m_channel(DocumentWebSocketChannel::create(&m_pageHolder->document(), m_channelClient.get(), SourceLocation::capture(), handle()))
         , m_sumOfConsumedBufferedAmount(0)
     {
         ON_CALL(*channelClient(), didConsumeBufferedAmount(_)).WillByDefault(Invoke(this, &DocumentWebSocketChannelTest::didConsumeBufferedAmount));
@@ -680,7 +680,7 @@ TEST_F(DocumentWebSocketChannelTest, failFromWebSocket)
         EXPECT_CALL(*channelClient(), didClose(WebSocketChannelClient::ClosingHandshakeIncomplete, WebSocketChannel::CloseEventCodeAbnormalClosure, String()));
     }
 
-    channel()->fail("fail message from WebSocket", ErrorMessageLevel, "sourceURL", 1234);
+    channel()->fail("fail message from WebSocket", ErrorMessageLevel, nullptr);
 }
 
 } // namespace

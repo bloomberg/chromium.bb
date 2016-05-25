@@ -510,7 +510,7 @@ void DOMWebSocket::closeInternal(int code, const String& reason, ExceptionState&
         return;
     if (m_state == CONNECTING) {
         m_state = CLOSING;
-        m_channel->fail("WebSocket is closed before the connection is established.", WarningMessageLevel, String(), 0);
+        m_channel->fail("WebSocket is closed before the connection is established.", WarningMessageLevel, nullptr);
         return;
     }
     m_state = CLOSING;

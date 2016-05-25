@@ -99,4 +99,9 @@ void SourceLocation::toTracedValue(TracedValue* value, const char* name) const
     value->endArray();
 }
 
+PassOwnPtr<SourceLocation> SourceLocation::clone() const
+{
+    return adoptPtr(new SourceLocation(m_url, m_lineNumber, m_columnNumber, m_stackTrace ? m_stackTrace->clone() : nullptr, m_scriptId));
+}
+
 } // namespace blink

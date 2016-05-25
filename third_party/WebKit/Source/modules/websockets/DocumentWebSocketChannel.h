@@ -31,6 +31,7 @@
 #ifndef DocumentWebSocketChannel_h
 #define DocumentWebSocketChannel_h
 
+#include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"
@@ -68,9 +69,9 @@ public:
     // In the usual case, they are set automatically and you don't have to
     // pass it.
     // Specify handle explicitly only in tests.
-    static DocumentWebSocketChannel* create(Document* document, WebSocketChannelClient* client, const String& sourceURL = String(), unsigned lineNumber = 0, WebSocketHandle *handle = 0)
+    static DocumentWebSocketChannel* create(Document* document, WebSocketChannelClient* client, PassOwnPtr<SourceLocation> location, WebSocketHandle *handle = 0)
     {
-        return new DocumentWebSocketChannel(document, client, sourceURL, lineNumber, handle);
+        return new DocumentWebSocketChannel(document, client, std::move(location), handle);
     }
     ~DocumentWebSocketChannel() override;
 
@@ -84,7 +85,7 @@ public:
     // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
     // argument to omit payload.
     void close(int code, const String& reason) override;
-    void fail(const String& reason, MessageLevel, const String&, unsigned lineNumber) override;
+    void fail(const String& reason, MessageLevel, PassOwnPtr<SourceLocation>) override;
     void disconnect() override;
 
     DECLARE_VIRTUAL_TRACE();
@@ -107,11 +108,11 @@ private:
         Vector<char> data;
     };
 
-    DocumentWebSocketChannel(Document*, WebSocketChannelClient*, const String&, unsigned, WebSocketHandle*);
+    DocumentWebSocketChannel(Document*, WebSocketChannelClient*, PassOwnPtr<SourceLocation>, WebSocketHandle*);
     void sendInternal(WebSocketHandle::MessageType, const char* data, size_t totalSize, uint64_t* consumedBufferedAmount);
     void processSendQueue();
     void flowControlIfNecessary();
-    void failAsError(const String& reason) { fail(reason, ErrorMessageLevel, m_sourceURLAtConstruction, m_lineNumberAtConstruction); }
+    void failAsError(const String& reason) { fail(reason, ErrorMessageLevel, m_locationAtConstruction->clone()); }
     void abortAsyncOperations();
     void handleDidClose(bool wasClean, unsigned short code, const String& reason);
     Document* document();
@@ -149,8 +150,7 @@ private:
     uint64_t m_receivedDataSizeForFlowControl;
     size_t m_sentSizeOfTopMessage;
 
-    String m_sourceURLAtConstruction;
-    unsigned m_lineNumberAtConstruction;
+    OwnPtr<SourceLocation> m_locationAtConstruction;
     RefPtr<WebSocketHandshakeRequest> m_handshakeRequest;
 
     static const uint64_t receivedDataSizeForFlowControlHighWaterMark = 1 << 15;

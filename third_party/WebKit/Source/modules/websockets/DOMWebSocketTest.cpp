@@ -62,7 +62,11 @@ public:
     }
     MOCK_CONST_METHOD0(bufferedAmount, unsigned());
     MOCK_METHOD2(close, void(int, const String&));
-    MOCK_METHOD4(fail, void(const String&, MessageLevel, const String&, unsigned));
+    MOCK_METHOD3(failMock, void(const String&, MessageLevel, SourceLocation*));
+    void fail(const String& reason, MessageLevel level, PassOwnPtr<SourceLocation> location)
+    {
+        failMock(reason, level, location.get());
+    }
     MOCK_METHOD0(disconnect, void());
 
     MockWebSocketChannel()
@@ -335,7 +339,7 @@ TEST_F(DOMWebSocketTest, maximumReasonSize)
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), fail(_, _, _, _));
+        EXPECT_CALL(channel(), failMock(_, _, _));
     }
     String reason;
     for (size_t i = 0; i < 123; ++i)
@@ -378,7 +382,7 @@ TEST_F(DOMWebSocketTest, closeWhenConnecting)
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), fail(String("WebSocket is closed before the connection is established."), WarningMessageLevel, String(), 0));
+        EXPECT_CALL(channel(), failMock(String("WebSocket is closed before the connection is established."), WarningMessageLevel, _));
     }
     m_websocket->connect("ws://example.com/", Vector<String>(), m_exceptionState);
 
@@ -526,7 +530,7 @@ TEST_F(DOMWebSocketTest, sendStringWhenClosing)
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), fail(_, _, _, _));
+        EXPECT_CALL(channel(), failMock(_, _, _));
     }
     m_websocket->connect("ws://example.com/", Vector<String>(), m_exceptionState);
 
@@ -629,7 +633,7 @@ TEST_F(DOMWebSocketTest, sendArrayBufferWhenClosing)
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), fail(_, _, _, _));
+        EXPECT_CALL(channel(), failMock(_, _, _));
     }
     m_websocket->connect("ws://example.com/", Vector<String>(), m_exceptionState);
 
@@ -717,7 +721,7 @@ TEST_P(DOMWebSocketValidClosingTest, test)
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), fail(_, _, _, _));
+        EXPECT_CALL(channel(), failMock(_, _, _));
     }
     m_websocket->connect("ws://example.com/", Vector<String>(), m_exceptionState);
 

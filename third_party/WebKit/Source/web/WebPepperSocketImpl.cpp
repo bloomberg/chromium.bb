@@ -54,7 +54,7 @@ WebPepperSocketImpl::WebPepperSocketImpl(const WebDocument& document, WebPepperS
     , m_bufferedAmountAfterClose(0)
 {
     Document* coreDocument = document;
-    m_private = DocumentWebSocketChannel::create(coreDocument, m_channelProxy.get());
+    m_private = DocumentWebSocketChannel::create(coreDocument, m_channelProxy.get(), SourceLocation::capture());
 }
 
 WebPepperSocketImpl::~WebPepperSocketImpl()
@@ -140,7 +140,7 @@ void WebPepperSocketImpl::close(int code, const WebString& reason)
 
 void WebPepperSocketImpl::fail(const WebString& reason)
 {
-    m_private->fail(reason, ErrorMessageLevel, String(), 0);
+    m_private->fail(reason, ErrorMessageLevel, nullptr);
 }
 
 void WebPepperSocketImpl::disconnect()

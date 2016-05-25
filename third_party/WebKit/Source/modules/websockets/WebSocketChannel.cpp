@@ -30,7 +30,7 @@
 
 #include "modules/websockets/WebSocketChannel.h"
 
-#include "bindings/core/v8/ScriptCallStack.h"
+#include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -46,21 +46,15 @@ WebSocketChannel* WebSocketChannel::create(ExecutionContext* context, WebSocketC
     ASSERT(context);
     ASSERT(client);
 
-    String sourceURL;
-    unsigned lineNumber = 0;
-    RefPtr<ScriptCallStack> callStack = ScriptCallStack::capture(1);
-    if (callStack && !callStack->isEmpty()) {
-        sourceURL = callStack->topSourceURL();
-        lineNumber = callStack->topLineNumber();
-    }
+    OwnPtr<SourceLocation> location = SourceLocation::capture(context);
 
     if (context->isWorkerGlobalScope()) {
         WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
-        return WorkerWebSocketChannel::create(*workerGlobalScope, client, sourceURL, lineNumber);
+        return WorkerWebSocketChannel::create(*workerGlobalScope, client, std::move(location));
     }
 
     Document* document = toDocument(context);
-    return DocumentWebSocketChannel::create(document, client, sourceURL, lineNumber);
+    return DocumentWebSocketChannel::create(document, client, std::move(location));
 }
 
 } // namespace blink
