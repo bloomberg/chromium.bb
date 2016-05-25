@@ -204,8 +204,8 @@ check_images_match(pixman_image_t *img_a, pixman_image_t *img_b,
 bool
 write_surface_as_png(const struct surface *weston_surface, const char *fname);
 
-struct surface *
-load_surface_from_png(const char *fname);
+pixman_image_t *
+load_image_from_png(const char *fname);
 
 struct surface *
 create_screenshot_surface(struct client *client);

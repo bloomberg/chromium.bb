@@ -66,8 +66,8 @@ TEST(internal_screenshot)
 	struct client *client;
 	struct wl_surface *surface;
 	struct surface *screenshot = NULL;
-	struct surface *reference_good = NULL;
-	struct surface *reference_bad = NULL;
+	pixman_image_t *reference_good = NULL;
+	pixman_image_t *reference_bad = NULL;
 	struct rectangle clip;
 	const char *fname;
 	bool match = false;
@@ -111,24 +111,23 @@ TEST(internal_screenshot)
 	/* Load good reference image */
 	fname = screenshot_reference_filename("internal-screenshot-good", 0);
 	printf("Loading good reference image %s\n", fname);
-	reference_good = load_surface_from_png(fname);
+	reference_good = load_image_from_png(fname);
 	assert(reference_good);
 
 	/* Load bad reference image */
 	fname = screenshot_reference_filename("internal-screenshot-bad", 0);
 	printf("Loading bad reference image %s\n", fname);
-	reference_bad = load_surface_from_png(fname);
+	reference_bad = load_image_from_png(fname);
 	assert(reference_bad);
 
 	/* Test check_images_match() without a clip.
 	 * We expect this to fail since we use a bad reference image
 	 */
 	match = check_images_match(screenshot->buffer->image,
-				   reference_bad->buffer->image, NULL);
+				   reference_bad, NULL);
 	printf("Screenshot %s reference image\n", match? "equal to" : "different from");
 	assert(!match);
-	buffer_destroy(reference_bad->buffer);
-	free(reference_bad);
+	pixman_image_unref(reference_bad);
 
 	/* Test check_images_match() with clip.
 	 * Alpha-blending and other effects can cause irrelevant discrepancies, so look only
@@ -140,11 +139,9 @@ TEST(internal_screenshot)
 	clip.height = 100;
 	printf("Clip: %d,%d %d x %d\n", clip.x, clip.y, clip.width, clip.height);
 	match = check_images_match(screenshot->buffer->image,
-				   reference_good->buffer->image,
-				   &clip);
+				   reference_good, &clip);
 	printf("Screenshot %s reference image in clipped area\n", match? "matches" : "doesn't match");
-	buffer_destroy(reference_good->buffer);
-	free(reference_good);
+	pixman_image_unref(reference_good);
 
 	/* Test dumping of non-matching images */
 	if (!match || dump_all_images) {

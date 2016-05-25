@@ -967,6 +967,30 @@ screenshot_reference_filename(const char *basename, uint32_t seq)
 	return filename;
 }
 
+struct format_map_entry {
+	cairo_format_t cairo;
+	pixman_format_code_t pixman;
+};
+
+static const struct format_map_entry format_map[] = {
+	{ CAIRO_FORMAT_ARGB32,    PIXMAN_a8r8g8b8 },
+	{ CAIRO_FORMAT_RGB24,     PIXMAN_x8r8g8b8 },
+	{ CAIRO_FORMAT_A8,        PIXMAN_a8 },
+	{ CAIRO_FORMAT_RGB16_565, PIXMAN_r5g6b5 },
+};
+
+static pixman_format_code_t
+format_cairo2pixman(cairo_format_t fmt)
+{
+	unsigned i;
+
+	for (i = 0; i < ARRAY_LENGTH(format_map); i++)
+		if (format_map[i].cairo == fmt)
+			return format_map[i].pixman;
+
+	assert(0 && "unknown Cairo pixel format");
+}
+
 /**
  * Compute the ROI for image comparisons
  *
@@ -1126,25 +1150,63 @@ write_surface_as_png(const struct surface *weston_surface, const char *fname)
 	return true;
 }
 
-/** load_surface_from_png()
+static pixman_image_t *
+image_convert_to_a8r8g8b8(pixman_image_t *image)
+{
+	pixman_image_t *ret;
+	int width;
+	int height;
+
+	if (pixman_image_get_format(image) == PIXMAN_a8r8g8b8)
+		return pixman_image_ref(image);
+
+	width = pixman_image_get_width(image);
+	height = pixman_image_get_height(image);
+
+	ret = pixman_image_create_bits_no_clear(PIXMAN_a8r8g8b8, width, height,
+						NULL, 0);
+	assert(ret);
+
+	pixman_image_composite32(PIXMAN_OP_SRC, image, NULL, ret,
+				 0, 0, 0, 0, 0, 0, width, height);
+
+	return ret;
+}
+
+static void
+destroy_cairo_surface(pixman_image_t *image, void *data)
+{
+	cairo_surface_t *surface = data;
+
+	cairo_surface_destroy(surface);
+}
+
+/**
+ * Load an image from a PNG file
  *
  * Reads a PNG image from disk using the given filename (and path)
- * and returns as a freshly allocated weston test surface.
+ * and returns as a Pixman image. Use pixman_image_unref() to free it.
  *
- * @returns weston test surface with image, which should be free'd
- * when no longer used; or, NULL in case of error.
+ * The returned image is always in PIXMAN_a8r8g8b8 format.
+ *
+ * @returns Pixman image, or NULL in case of error.
  */
-struct surface *
-load_surface_from_png(const char *fname)
+pixman_image_t *
+load_image_from_png(const char *fname)
 {
-	struct surface *reference;
+	pixman_image_t *image;
+	pixman_image_t *converted;
+	cairo_format_t cairo_fmt;
+	pixman_format_code_t pixman_fmt;
 	cairo_surface_t *reference_cairo_surface;
 	cairo_status_t status;
-	size_t source_data_size;
-	int bpp;
+	int width;
+	int height;
 	int stride;
+	void *data;
 
 	reference_cairo_surface = cairo_image_surface_create_from_png(fname);
+	cairo_surface_flush(reference_cairo_surface);
 	status = cairo_surface_status(reference_cairo_surface);
 	if (status != CAIRO_STATUS_SUCCESS) {
 		printf("Could not open %s: %s\n", fname, cairo_status_to_string(status));
@@ -1152,43 +1214,26 @@ load_surface_from_png(const char *fname)
 		return NULL;
 	}
 
-	/* Disguise the cairo surface in a weston test surface */
-	reference = zalloc(sizeof *reference);
-	if (reference == NULL) {
-		perror("zalloc reference");
-		cairo_surface_destroy(reference_cairo_surface);
-		return NULL;
-	}
-	reference->width = cairo_image_surface_get_width(reference_cairo_surface);
-	reference->height = cairo_image_surface_get_height(reference_cairo_surface);
+	cairo_fmt = cairo_image_surface_get_format(reference_cairo_surface);
+	pixman_fmt = format_cairo2pixman(cairo_fmt);
+
+	width = cairo_image_surface_get_width(reference_cairo_surface);
+	height = cairo_image_surface_get_height(reference_cairo_surface);
 	stride = cairo_image_surface_get_stride(reference_cairo_surface);
-	source_data_size = stride * reference->height;
+	data = cairo_image_surface_get_data(reference_cairo_surface);
 
-	/* Check that the file's stride matches our assumption */
-	bpp = 4;
-	if (stride != bpp * reference->width) {
-		printf("Mismatched stride for screenshot reference image %s\n", fname);
-		cairo_surface_destroy(reference_cairo_surface);
-		free(reference);
-		return NULL;
-	}
+	/* The Cairo surface will own the data, so we keep it around. */
+	image = pixman_image_create_bits_no_clear(pixman_fmt,
+						  width, height, data, stride);
+	assert(image);
 
-	/* Allocate new buffer for our weston reference, and copy the data from
-	   the cairo surface so we can destroy it */
+	pixman_image_set_destroy_function(image, destroy_cairo_surface,
+					  reference_cairo_surface);
 
-	reference->buffer = xzalloc(sizeof *reference->buffer);
-	reference->buffer->image = pixman_image_create_bits(PIXMAN_a8r8g8b8,
-							    reference->width,
-							    reference->height,
-							    NULL, 0);
-	assert(reference->buffer->image);
+	converted = image_convert_to_a8r8g8b8(image);
+	pixman_image_unref(image);
 
-	memcpy(pixman_image_get_data(reference->buffer->image),
-	       cairo_image_surface_get_data(reference_cairo_surface),
-	       source_data_size);
-
-	cairo_surface_destroy(reference_cairo_surface);
-	return reference;
+	return converted;
 }
 
 /** create_screenshot_surface()
