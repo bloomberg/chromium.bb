@@ -1715,7 +1715,7 @@ GLboolean WebGL2RenderingContextBase::isQuery(WebGLQuery* query)
     return contextGL()->IsQueryEXT(query->object());
 }
 
-void WebGL2RenderingContextBase::beginQuery(GLenum target, WebGLQuery* query)
+void WebGL2RenderingContextBase::beginQuery(ScriptState* scriptState, GLenum target, WebGLQuery* query)
 {
     bool deleted;
     if (!query) {
@@ -1764,6 +1764,7 @@ void WebGL2RenderingContextBase::beginQuery(GLenum target, WebGLQuery* query)
         query->setTarget(target);
 
     contextGL()->BeginQueryEXT(target, query->object());
+    preserveObjectWrapper(scriptState, this, V8HiddenValue::webglQueries(scriptState->isolate()), &m_queryWrappers, static_cast<uint32_t>(target), query);
 }
 
 void WebGL2RenderingContextBase::endQuery(GLenum target)
@@ -1901,7 +1902,7 @@ GLboolean WebGL2RenderingContextBase::isSampler(WebGLSampler* sampler)
     return contextGL()->IsSampler(sampler->object());
 }
 
-void WebGL2RenderingContextBase::bindSampler(GLuint unit, WebGLSampler* sampler)
+void WebGL2RenderingContextBase::bindSampler(ScriptState* scriptState, GLuint unit, WebGLSampler* sampler)
 {
     if (isContextLost())
         return;
@@ -1922,6 +1923,8 @@ void WebGL2RenderingContextBase::bindSampler(GLuint unit, WebGLSampler* sampler)
     m_samplerUnits[unit] = sampler;
 
     contextGL()->BindSampler(unit, objectOrZero(sampler));
+
+    preserveObjectWrapper(scriptState, this, V8HiddenValue::webglSamplers(scriptState->isolate()), &m_samplerWrappers, static_cast<uint32_t>(unit), sampler);
 }
 
 void WebGL2RenderingContextBase::samplerParameter(WebGLSampler* sampler, GLenum pname, GLfloat paramf, GLint parami, bool isFloat)
@@ -2155,7 +2158,7 @@ GLboolean WebGL2RenderingContextBase::isTransformFeedback(WebGLTransformFeedback
     return contextGL()->IsTransformFeedback(feedback->object());
 }
 
-void WebGL2RenderingContextBase::bindTransformFeedback(GLenum target, WebGLTransformFeedback* feedback)
+void WebGL2RenderingContextBase::bindTransformFeedback(ScriptState* scriptState, GLenum target, WebGLTransformFeedback* feedback)
 {
     bool deleted;
     if (!checkObjectToBeBound("bindTransformFeedback", feedback, deleted))
@@ -2178,8 +2181,11 @@ void WebGL2RenderingContextBase::bindTransformFeedback(GLenum target, WebGLTrans
     m_transformFeedbackBinding = feedback;
 
     contextGL()->BindTransformFeedback(target, objectOrZero(feedback));
-    if (feedback)
+    if (feedback) {
         feedback->setTarget(target);
+        preserveObjectWrapper(scriptState, this, V8HiddenValue::webglMisc(scriptState->isolate()), &m_miscWrappers, static_cast<uint32_t>(PreservedTransformFeedback), feedback);
+    }
+
 }
 
 void WebGL2RenderingContextBase::beginTransformFeedback(GLenum primitiveMode)

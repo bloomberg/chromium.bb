@@ -1057,6 +1057,7 @@ protected:
         PreservedRenderbuffer,
         PreservedDefaultVAO,
         PreservedVAO,
+        PreservedTransformFeedback,
     };
     ScopedPersistent<v8::Array> m_miscWrappers;
 

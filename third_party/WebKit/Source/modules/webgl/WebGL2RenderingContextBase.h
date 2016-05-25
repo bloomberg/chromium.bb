@@ -146,7 +146,7 @@ public:
     WebGLQuery* createQuery();
     void deleteQuery(WebGLQuery*);
     GLboolean isQuery(WebGLQuery*);
-    void beginQuery(GLenum, WebGLQuery*);
+    void beginQuery(ScriptState*, GLenum, WebGLQuery*);
     void endQuery(GLenum);
     WebGLQuery* getQuery(GLenum, GLenum);
     ScriptValue getQueryParameter(ScriptState*, WebGLQuery*, GLenum);
@@ -155,7 +155,7 @@ public:
     WebGLSampler* createSampler();
     void deleteSampler(WebGLSampler*);
     GLboolean isSampler(WebGLSampler*);
-    void bindSampler(GLuint, WebGLSampler*);
+    void bindSampler(ScriptState*, GLuint, WebGLSampler*);
     void samplerParameteri(WebGLSampler*, GLenum, GLint);
     void samplerParameterf(WebGLSampler*, GLenum, GLfloat);
     ScriptValue getSamplerParameter(ScriptState*, WebGLSampler*, GLenum);
@@ -173,7 +173,7 @@ public:
     WebGLTransformFeedback* createTransformFeedback();
     void deleteTransformFeedback(WebGLTransformFeedback*);
     GLboolean isTransformFeedback(WebGLTransformFeedback*);
-    void bindTransformFeedback(GLenum, WebGLTransformFeedback*);
+    void bindTransformFeedback(ScriptState*, GLenum, WebGLTransformFeedback*);
     void beginTransformFeedback(GLenum);
     void endTransformFeedback();
     void transformFeedbackVaryings(WebGLProgram*, const Vector<String>&, GLenum);
@@ -311,6 +311,9 @@ protected:
     GLint m_unpackSkipPixels;
     GLint m_unpackSkipRows;
     GLint m_unpackSkipImages;
+
+    ScopedPersistent<v8::Array> m_samplerWrappers;
+    ScopedPersistent<v8::Array> m_queryWrappers;
 };
 
 DEFINE_TYPE_CASTS(WebGL2RenderingContextBase, CanvasRenderingContext, context,
