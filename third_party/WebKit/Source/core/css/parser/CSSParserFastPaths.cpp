@@ -836,8 +836,7 @@ static CSSValue* parseKeywordValue(CSSPropertyID propertyId, const String& strin
 
     if (!CSSParserFastPaths::isKeywordPropertyID(propertyId)) {
         // All properties accept the values of "initial" and "inherit".
-        String lowerCaseString = string.lower();
-        if (lowerCaseString != "initial" && lowerCaseString != "inherit")
+        if (!equalIgnoringASCIICase(string, "initial") && !equalIgnoringASCIICase(string, "inherit"))
             return nullptr;
 
         // Parse initial/inherit shorthands using the CSSPropertyParser.

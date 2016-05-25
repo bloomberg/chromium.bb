@@ -503,6 +503,8 @@ inline bool equalIgnoringCase(const LChar* a, const String& b) { return equalIgn
 inline bool equalIgnoringCase(const char* a, const String& b) { return equalIgnoringCase(reinterpret_cast<const LChar*>(a), b.impl()); }
 
 inline bool equalIgnoringASCIICase(const String& a, const String& b) { return equalIgnoringASCIICase(a.impl(), b.impl()); }
+inline bool equalIgnoringASCIICase(const String& a, const LChar* b) { return equalIgnoringASCIICase(a.impl(), b); }
+inline bool equalIgnoringASCIICase(const String& a, const char* b) { return equalIgnoringASCIICase(a.impl(), b); }
 
 inline bool equalPossiblyIgnoringCase(const String& a, const String& b, bool ignoreCase)
 {

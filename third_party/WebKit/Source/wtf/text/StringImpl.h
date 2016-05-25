@@ -488,8 +488,8 @@ ALWAYS_INLINE bool equal(const UChar* a, const LChar* b, unsigned length) { retu
 WTF_EXPORT bool equalIgnoringCase(const StringImpl*, const StringImpl*);
 WTF_EXPORT bool equalIgnoringCase(const StringImpl*, const LChar*);
 inline bool equalIgnoringCase(const LChar* a, const StringImpl* b) { return equalIgnoringCase(b, a); }
-WTF_EXPORT bool equalIgnoringCase(const LChar*, const LChar*, unsigned);
-WTF_EXPORT bool equalIgnoringCase(const UChar*, const LChar*, unsigned);
+WTF_EXPORT bool equalIgnoringCase(const LChar*, const LChar*, unsigned length);
+WTF_EXPORT bool equalIgnoringCase(const UChar*, const LChar*, unsigned length);
 inline bool equalIgnoringCase(const UChar* a, const char* b, unsigned length) { return equalIgnoringCase(a, reinterpret_cast<const LChar*>(b), length); }
 inline bool equalIgnoringCase(const LChar* a, const UChar* b, unsigned length) { return equalIgnoringCase(b, a, length); }
 inline bool equalIgnoringCase(const char* a, const UChar* b, unsigned length) { return equalIgnoringCase(b, reinterpret_cast<const LChar*>(a), length); }
@@ -514,7 +514,14 @@ inline bool equalIgnoringASCIICase(const CharacterTypeA* a, const CharacterTypeB
 }
 
 WTF_EXPORT bool equalIgnoringASCIICase(const StringImpl*, const StringImpl*);
-WTF_EXPORT bool equalIgnoringASCIICase(const StringImpl*, const LChar*);
+WTF_EXPORT bool equalIgnoringASCIICase(const StringImpl*, const LChar*, unsigned length);
+inline bool equalIgnoringASCIICase(const StringImpl* a, const char* b, unsigned length) { return equalIgnoringASCIICase(a, reinterpret_cast<const LChar*>(b), length); }
+inline bool equalIgnoringASCIICase(const StringImpl* a, const LChar* b)
+{
+    size_t length = b ? strlen(reinterpret_cast<const char*>(b)) : 0;
+    return equalIgnoringASCIICase(a, b, length);
+}
+inline bool equalIgnoringASCIICase(const StringImpl* a, const char* b) { return equalIgnoringASCIICase(a, reinterpret_cast<const LChar*>(b)); }
 
 WTF_EXPORT int codePointCompareIgnoringASCIICase(const StringImpl*, const LChar*);
 

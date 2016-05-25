@@ -10,6 +10,36 @@
 
 namespace blink {
 
+TEST(CSSParserFastPathsTest, ParseKeyword)
+{
+    CSSValue* value = CSSParserFastPaths::maybeParseValue(CSSPropertyFloat, "left", HTMLStandardMode);
+    ASSERT_NE(nullptr, value);
+    EXPECT_TRUE(value->isPrimitiveValue());
+    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
+    EXPECT_TRUE(primitiveValue->isValueID());
+    EXPECT_EQ(CSSValueLeft, primitiveValue->getValueID());
+    value = CSSParserFastPaths::maybeParseValue(CSSPropertyFloat, "foo", HTMLStandardMode);
+    ASSERT_EQ(nullptr, value);
+}
+TEST(CSSParserFastPathsTest, ParseInitialAndInheritKeyword)
+{
+    CSSValue* value = CSSParserFastPaths::maybeParseValue(CSSPropertyMarginTop, "inherit", HTMLStandardMode);
+    ASSERT_NE(nullptr, value);
+    EXPECT_TRUE(value->isInheritedValue());
+    value = CSSParserFastPaths::maybeParseValue(CSSPropertyMarginRight, "InHeriT", HTMLStandardMode);
+    ASSERT_NE(nullptr, value);
+    EXPECT_TRUE(value->isInheritedValue());
+    value = CSSParserFastPaths::maybeParseValue(CSSPropertyMarginBottom, "initial", HTMLStandardMode);
+    ASSERT_NE(nullptr, value);
+    EXPECT_TRUE(value->isInitialValue());
+    value = CSSParserFastPaths::maybeParseValue(CSSPropertyMarginLeft, "IniTiaL", HTMLStandardMode);
+    ASSERT_NE(nullptr, value);
+    EXPECT_TRUE(value->isInitialValue());
+    // Fast path doesn't handle short hands.
+    value = CSSParserFastPaths::maybeParseValue(CSSPropertyMargin, "initial", HTMLStandardMode);
+    ASSERT_EQ(nullptr, value);
+}
+
 TEST(CSSParserFastPathsTest, ParseTransform)
 {
     CSSValue* value = CSSParserFastPaths::maybeParseValue(CSSPropertyTransform, "translate(5.5px, 5px)", HTMLStandardMode);

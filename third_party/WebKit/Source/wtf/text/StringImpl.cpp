@@ -2292,12 +2292,10 @@ bool equalIgnoringASCIICase(const StringImpl* a, const StringImpl* b)
     return equalIgnoringASCIICase(a->characters16(), b->characters16(), length);
 }
 
-bool equalIgnoringASCIICase(const StringImpl* a, const LChar* b)
+bool equalIgnoringASCIICase(const StringImpl* a, const LChar* b, unsigned length)
 {
     if (!a || !b)
         return !a == !b;
-    size_t length = strlen(reinterpret_cast<const char*>(b));
-    CHECK_LE(length, numeric_limits<unsigned>::max());
     if (length != a->length())
         return false;
     return equalSubstringIgnoringASCIICase(a, 0, b, length);
