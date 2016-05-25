@@ -56,23 +56,12 @@
             alt="$i18n{siteSettingsDelete}"></paper-icon-button>
       </paper-item>
       <h2>$i18n{siteSettingsPermissions}</h2>
+
       <site-details-permission site="[[site]]" id="cookies"
           category="{{ContentSettingsTypes.COOKIES}}">
       </site-details-permission>
-      <site-details-permission site="[[site]]" id="javascript"
-          category="{{ContentSettingsTypes.JAVASCRIPT}}">
-      </site-details-permission>
-      <site-details-permission site="[[site]]" id="popups"
-          category="{{ContentSettingsTypes.POPUPS}}">
-      </site-details-permission>
       <site-details-permission site="[[site]]" id="geolocation"
           category="{{ContentSettingsTypes.GEOLOCATION}}">
-      </site-details-permission>
-      <site-details-permission site="[[site]]" id="notification"
-          category="{{ContentSettingsTypes.NOTIFICATIONS}}">
-      </site-details-permission>
-      <site-details-permission site="[[site]]" id="fullscreen"
-          category="{{ContentSettingsTypes.FULLSCREEN}}">
       </site-details-permission>
       <site-details-permission site="[[site]]" id="camera"
           category="{{ContentSettingsTypes.CAMERA}}">
@@ -80,6 +69,19 @@
       <site-details-permission site="[[site]]" id="mic"
           category="{{ContentSettingsTypes.MIC}}">
       </site-details-permission>
+      <site-details-permission site="[[site]]" id="notification"
+          category="{{ContentSettingsTypes.NOTIFICATIONS}}">
+      </site-details-permission>
+      <site-details-permission site="[[site]]" id="javascript"
+          category="{{ContentSettingsTypes.JAVASCRIPT}}">
+      </site-details-permission>
+      <site-details-permission site="[[site]]" id="popups"
+          category="{{ContentSettingsTypes.POPUPS}}">
+      </site-details-permission>
+      <site-details-permission site="[[site]]" id="fullscreen"
+          category="{{ContentSettingsTypes.FULLSCREEN}}">
+      </site-details-permission>
+
       <paper-button on-tap="onClearAndReset_" raised class="reset-button">
         $i18n{siteSettingsClearAndReset}
       </paper-button>

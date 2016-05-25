@@ -54,25 +54,6 @@
       </div>
     </div>
     <div class="settings-box two-line"
-        category$="[[ContentSettingsTypes.JAVASCRIPT]]"
-        on-tap="onTapCategory">
-      <iron-icon icon="[[computeIconForContentCategory(
-          ContentSettingsTypes.JAVASCRIPT)]]" item-icon=""></iron-icon>
-      <div class="middle">
-        [[computeTitleForContentCategory(ContentSettingsTypes.JAVASCRIPT)]]
-        <div id="javascript" class="secondary"></div>
-      </div>
-    </div>
-    <div class="settings-box two-line"
-        category$="[[ContentSettingsTypes.POPUPS]]" on-tap="onTapCategory">
-      <iron-icon icon="[[computeIconForContentCategory(
-          ContentSettingsTypes.POPUPS)]]" item-icon=""></iron-icon>
-      <div class="middle">
-        [[computeTitleForContentCategory(ContentSettingsTypes.POPUPS)]]
-        <div id="popups" class="secondary"></div>
-      </div>
-    </div>
-    <div class="settings-box two-line"
         category$="[[ContentSettingsTypes.NOTIFICATIONS]]"
         on-tap="onTapCategory">
       <iron-icon icon="[[computeIconForContentCategory(
@@ -83,12 +64,31 @@
       </div>
     </div>
     <div class="settings-box two-line"
+        category$="[[ContentSettingsTypes.JAVASCRIPT]]"
+        on-tap="onTapCategory">
+      <iron-icon icon="[[computeIconForContentCategory(
+          ContentSettingsTypes.JAVASCRIPT)]]" item-icon=""></iron-icon>
+      <div class="middle">
+        [[computeTitleForContentCategory(ContentSettingsTypes.JAVASCRIPT)]]
+        <div id="javascript" class="secondary"></div>
+      </div>
+    </div>
+    <div class="settings-box two-line"
         category$="[[ContentSettingsTypes.IMAGES]]" on-tap="onTapCategory">
       <iron-icon icon="[[computeIconForContentCategory(
           ContentSettingsTypes.IMAGES)]]" item-icon=""></iron-icon>
       <div class="middle">
         [[computeTitleForContentCategory(ContentSettingsTypes.IMAGES)]]
         <div id="images" class="secondary"></div>
+      </div>
+    </div>
+    <div class="settings-box two-line"
+        category$="[[ContentSettingsTypes.POPUPS]]" on-tap="onTapCategory">
+      <iron-icon icon="[[computeIconForContentCategory(
+          ContentSettingsTypes.POPUPS)]]" item-icon=""></iron-icon>
+      <div class="middle">
+        [[computeTitleForContentCategory(ContentSettingsTypes.POPUPS)]]
+        <div id="popups" class="secondary"></div>
       </div>
     </div>
   </template>
