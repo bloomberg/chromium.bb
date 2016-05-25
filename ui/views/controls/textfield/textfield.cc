@@ -46,6 +46,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
+#include "ui/base/win/osk_display_manager.h"
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -764,8 +765,11 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
       }
       CreateTouchSelectionControllerAndNotifyIt();
 #if defined(OS_WIN)
-      if (!read_only())
-        base::win::DisplayVirtualKeyboard();
+      if (!read_only()) {
+        DCHECK(ui::OnScreenKeyboardDisplayManager::GetInstance());
+        ui::OnScreenKeyboardDisplayManager::GetInstance()
+            ->DisplayVirtualKeyboard(nullptr);
+      }
 #endif
       event->SetHandled();
       break;

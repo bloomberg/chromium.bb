@@ -393,9 +393,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // The termination status of the last render view that terminated.
   base::TerminationStatus render_view_termination_status_;
 
-  // Set to true if we requested the on screen keyboard to be displayed.
-  bool virtual_keyboard_requested_;
-
   // True if the current focused element is editable.
   bool is_focused_element_editable_;
 

@@ -90,8 +90,8 @@
 #include "url/url_constants.h"
 
 #if defined(OS_WIN)
-#include "base/win/win_util.h"
 #include "ui/display/win/dpi.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/platform_font_win.h"
 #endif
 
@@ -108,27 +108,6 @@ namespace content {
 namespace {
 
 #if defined(OS_WIN)
-
-const int kVirtualKeyboardDisplayWaitTimeoutMs = 100;
-const int kMaxVirtualKeyboardDisplayRetries = 5;
-
-void DismissVirtualKeyboardTask() {
-  static int virtual_keyboard_display_retries = 0;
-  // If the virtual keyboard is not yet visible, then we execute the task again
-  // waiting for it to show up.
-  if (!base::win::DismissVirtualKeyboard()) {
-    if (virtual_keyboard_display_retries < kMaxVirtualKeyboardDisplayRetries) {
-      BrowserThread::PostDelayedTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(base::IgnoreResult(&DismissVirtualKeyboardTask)),
-          TimeDelta::FromMilliseconds(kVirtualKeyboardDisplayWaitTimeoutMs));
-      ++virtual_keyboard_display_retries;
-    } else {
-      virtual_keyboard_display_retries = 0;
-    }
-  }
-}
-
 void GetWindowsSpecificPrefs(RendererPreferences* prefs) {
   NONCLIENTMETRICS_XP metrics = {0};
   base::win::GetNonClientMetrics(&metrics);
@@ -163,7 +142,6 @@ void GetWindowsSpecificPrefs(RendererPreferences* prefs) {
       display::win::GetSystemMetricsInDIP(SM_CXHSCROLL);
 }
 #endif
-
 }  // namespace
 
 // static
@@ -227,7 +205,6 @@ RenderViewHostImpl::RenderViewHostImpl(
       is_waiting_for_close_ack_(false),
       sudden_termination_allowed_(false),
       render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING),
-      virtual_keyboard_requested_(false),
       is_focused_element_editable_(false),
       updating_web_preferences_(false),
       render_view_ready_on_process_launch_(false),
@@ -1127,16 +1104,6 @@ void RenderViewHostImpl::OnFocusedNodeChanged(
   is_focused_element_editable_ = is_editable_node;
   if (GetWidget()->GetView())
     GetWidget()->GetView()->FocusedNodeChanged(is_editable_node);
-#if defined(OS_WIN)
-  if (!is_editable_node && virtual_keyboard_requested_) {
-    virtual_keyboard_requested_ = false;
-    delegate_->SetIsVirtualKeyboardRequested(false);
-    BrowserThread::PostDelayedTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(base::IgnoreResult(&DismissVirtualKeyboardTask)),
-        TimeDelta::FromMilliseconds(kVirtualKeyboardDisplayWaitTimeoutMs));
-  }
-#endif
 
   // None of the rest makes sense without a view.
   if (!GetWidget()->GetView())
@@ -1299,14 +1266,20 @@ void RenderViewHostImpl::OnRunFileChooser(const FileChooserParams& params) {
 
 void RenderViewHostImpl::OnFocusedNodeTouched(bool editable) {
 #if defined(OS_WIN)
-  if (editable) {
-    virtual_keyboard_requested_ = base::win::DisplayVirtualKeyboard();
-    delegate_->SetIsVirtualKeyboardRequested(true);
-  } else {
-    virtual_keyboard_requested_ = false;
-    delegate_->SetIsVirtualKeyboardRequested(false);
-    base::win::DismissVirtualKeyboard();
-  }
+  // We use the cursor position to determine where the touch occurred.
+  // TODO(ananta)
+  // Pass this information from blink.
+  // In site isolation mode, we may not have a RenderViewHostImpl instance
+  // which means that displaying the OSK is not going to work. We should
+  // probably move this to RenderWidgetHostImpl and call the view from there.
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=613326
+  POINT cursor_pos = {};
+  ::GetCursorPos(&cursor_pos);
+  float scale = GetScaleFactorForView(GetWidget()->GetView());
+  gfx::Point location_dips_screen =
+      gfx::ConvertPointToDIP(scale, gfx::Point(cursor_pos));
+  if (GetWidget()->GetView())
+    GetWidget()->GetView()->FocusedNodeTouched(location_dips_screen, editable);
 #endif
 }
 

@@ -59,6 +59,7 @@ class DelegatedFrameData;
 namespace gfx {
 class Canvas;
 class Display;
+class Point;
 class Rect;
 }
 
@@ -70,6 +71,9 @@ namespace ui {
 class CompositorLock;
 class InputMethod;
 class LocatedEvent;
+#if defined(OS_WIN)
+class OnScreenKeyboardObserver;
+#endif
 class Texture;
 class TouchSelectionController;
 }
@@ -126,6 +130,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void SetBackgroundColor(SkColor color) override;
   gfx::Size GetVisibleViewportSize() const override;
   void SetInsets(const gfx::Insets& insets) override;
+  void FocusedNodeTouched(const gfx::Point& location_dips_screen,
+                          bool editable) override;
 
   // Overridden from RenderWidgetHostViewBase:
   void InitAsPopup(RenderWidgetHostView* parent_host_view,
@@ -203,6 +209,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void TransformPointToLocalCoordSpace(const gfx::Point& point,
                                        cc::SurfaceId original_surface,
                                        gfx::Point* transformed_point) override;
+  void FocusedNodeChanged(bool is_editable_node) override;
 
   // Overridden from ui::TextInputClient:
   void SetCompositionText(const ui::CompositionText& composition) override;
@@ -644,6 +651,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Contains a copy of the last context menu request parameters. Only set when
   // we receive a request to show the context menu on a long press.
   std::unique_ptr<ContextMenuParams> last_context_menu_params_;
+
+  // Set to true if we requested the on screen keyboard to be displayed.
+  bool virtual_keyboard_requested_;
+
+  std::unique_ptr<ui::OnScreenKeyboardObserver> keyboard_observer_;
 #endif
 
   bool has_snapped_to_boundary_;

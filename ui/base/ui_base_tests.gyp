@@ -133,6 +133,7 @@
             'dragdrop/os_exchange_data_win_unittest.cc',
             'win/hwnd_subclass_unittest.cc',
             'win/open_file_name_win_unittest.cc',
+            'win/osk_display_manager_unittest.cc',
           ],
           'msvs_settings': {
             'VCLinkerTool': {

@@ -279,6 +279,9 @@ component("base") {
     "win/mouse_wheel_util.h",
     "win/open_file_name_win.cc",
     "win/open_file_name_win.h",
+    "win/osk_display_manager.cc",
+    "win/osk_display_manager.h",
+    "win/osk_display_observer.h",
     "win/scoped_ole_initializer.cc",
     "win/scoped_ole_initializer.h",
     "win/shell.cc",
@@ -847,6 +850,7 @@ test("ui_base_unittests") {
       "dragdrop/os_exchange_data_win_unittest.cc",
       "win/hwnd_subclass_unittest.cc",
       "win/open_file_name_win_unittest.cc",
+      "win/osk_display_manager_unittest.cc",
     ]
 
     ldflags = [

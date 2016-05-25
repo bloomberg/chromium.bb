@@ -97,10 +97,13 @@
 #include "ui/wm/public/window_types.h"
 
 #if defined(OS_WIN)
+#include "base/time/time.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/browser/renderer_host/legacy_render_widget_host_win.h"
 #include "ui/base/win/hidden_window.h"
+#include "ui/base/win/osk_display_manager.h"
+#include "ui/base/win/osk_display_observer.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/gdi_util.h"
 #endif
@@ -211,6 +214,87 @@ void MarkUnchangedTouchPointsAsStationary(
     }
   }
 }
+
+#if defined(OS_WIN)
+// This class implements the ui::OnScreenKeyboardObserver interface
+// which provides notifications about the on screen keyboard on Windows getting
+// displayed or hidden in response to taps on editable fields.
+// It provides functionality to request blink to scroll the input field if it
+// is obscured by the on screen keyboard.
+class WinScreenKeyboardObserver : public ui::OnScreenKeyboardObserver {
+ public:
+  WinScreenKeyboardObserver(RenderWidgetHostImpl* host,
+                            const gfx::Point& location_in_screen,
+                            float scale_factor,
+                            aura::Window* window)
+      : host_(host),
+        location_in_screen_(location_in_screen),
+        device_scale_factor_(scale_factor),
+        window_(window) {
+    host_->GetView()->SetInsets(gfx::Insets());
+  }
+
+  // base::win::OnScreenKeyboardObserver overrides.
+  void OnKeyboardVisible(const gfx::Rect& keyboard_rect_pixels) override {
+    gfx::Point location_in_pixels =
+        gfx::ConvertPointToPixel(device_scale_factor_, location_in_screen_);
+
+    // Restore the viewport.
+    host_->GetView()->SetInsets(gfx::Insets());
+
+    if (keyboard_rect_pixels.Contains(location_in_pixels)) {
+      aura::client::ScreenPositionClient* screen_position_client =
+          aura::client::GetScreenPositionClient(window_->GetRootWindow());
+      if (!screen_position_client)
+        return;
+
+      DVLOG(1) << "OSK covering focus point.";
+      gfx::Rect keyboard_rect =
+          gfx::ConvertRectToDIP(device_scale_factor_, keyboard_rect_pixels);
+      gfx::Rect bounds_in_screen = window_->GetBoundsInScreen();
+
+      DCHECK(bounds_in_screen.bottom() > keyboard_rect.y());
+
+      // Set the viewport of the window to be just above the on screen
+      // keyboard.
+      int viewport_bottom = bounds_in_screen.bottom() - keyboard_rect.y();
+
+      // If the viewport is bigger than the view, then we cannot handle it
+      // with the current approach. Moving the window above the OSK is one way.
+      // That for a later patchset.
+      if (viewport_bottom > bounds_in_screen.height())
+        return;
+
+      host_->GetView()->SetInsets(gfx::Insets(0, 0, viewport_bottom, 0));
+
+      gfx::Point origin(location_in_screen_);
+      screen_position_client->ConvertPointFromScreen(window_, &origin);
+
+      // We want to scroll the node into a rectangle which originates from
+      // the touch point and a small offset (10) in either direction.
+      gfx::Rect node_rect(origin.x(), origin.y(), 10, 10);
+      host_->ScrollFocusedEditableNodeIntoRect(node_rect);
+    }
+  }
+
+  void OnKeyboardHidden(const gfx::Rect& keyboard_rect_pixels) override {
+    // Restore the viewport.
+    host_->GetView()->SetInsets(gfx::Insets());
+  }
+
+ private:
+  RenderWidgetHostImpl* host_;
+  // The location in DIPs where the touch occurred.
+  gfx::Point location_in_screen_;
+  // The current device scale factor.
+  float device_scale_factor_;
+
+  // The content Window.
+  aura::Window* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(WinScreenKeyboardObserver);
+};
+#endif
 
 }  // namespace
 
@@ -383,6 +467,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
 #if defined(OS_WIN)
       legacy_render_widget_host_HWND_(nullptr),
       legacy_window_destroyed_(false),
+      virtual_keyboard_requested_(false),
 #endif
       has_snapped_to_boundary_(false),
       is_guest_view_hack_(is_guest_view_hack),
@@ -852,6 +937,29 @@ void RenderWidgetHostViewAura::SetInsets(const gfx::Insets& insets) {
     insets_ = insets;
     host_->WasResized();
   }
+}
+
+void RenderWidgetHostViewAura::FocusedNodeTouched(
+    const gfx::Point& location_dips_screen,
+    bool editable) {
+#if defined(OS_WIN)
+  RenderViewHost* rvh = RenderViewHost::From(host_);
+  if (rvh && rvh->GetDelegate())
+    rvh->GetDelegate()->SetIsVirtualKeyboardRequested(editable);
+
+  ui::OnScreenKeyboardDisplayManager* osk_display_manager =
+      ui::OnScreenKeyboardDisplayManager::GetInstance();
+  DCHECK(osk_display_manager);
+  if (editable && host_ && host_->GetView()) {
+    keyboard_observer_.reset(new WinScreenKeyboardObserver(
+        host_, location_dips_screen, device_scale_factor_, window_));
+    virtual_keyboard_requested_ =
+        osk_display_manager->DisplayVirtualKeyboard(keyboard_observer_.get());
+  } else {
+    virtual_keyboard_requested_ = false;
+    osk_display_manager->DismissVirtualKeyboard();
+  }
+#endif
 }
 
 void RenderWidgetHostViewAura::UpdateCursor(const WebCursor& cursor) {
@@ -1993,6 +2101,21 @@ void RenderWidgetHostViewAura::TransformPointToLocalCoordSpace(
       gfx::ConvertPointToDIP(device_scale_factor_, *transformed_point);
 }
 
+void RenderWidgetHostViewAura::FocusedNodeChanged(bool editable) {
+#if defined(OS_WIN)
+  if (!editable && virtual_keyboard_requested_) {
+    virtual_keyboard_requested_ = false;
+
+    RenderViewHost* rvh = RenderViewHost::From(host_);
+    if (rvh && rvh->GetDelegate())
+      rvh->GetDelegate()->SetIsVirtualKeyboardRequested(false);
+
+    DCHECK(ui::OnScreenKeyboardDisplayManager::GetInstance());
+    ui::OnScreenKeyboardDisplayManager::GetInstance()->DismissVirtualKeyboard();
+  }
+#endif
+}
+
 void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {
   TRACE_EVENT0("input", "RenderWidgetHostViewAura::OnScrollEvent");
 
@@ -2276,6 +2399,14 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
   // RenderWidgetHostViewAura::OnWindowDestroying and the pointer should
   // be set to NULL.
   DCHECK(!legacy_render_widget_host_HWND_);
+  if (virtual_keyboard_requested_) {
+    DCHECK(keyboard_observer_.get());
+    ui::OnScreenKeyboardDisplayManager* osk_display_manager =
+        ui::OnScreenKeyboardDisplayManager::GetInstance();
+    DCHECK(osk_display_manager);
+    osk_display_manager->RemoveObserver(keyboard_observer_.get());
+  }
+
 #endif
 }
 

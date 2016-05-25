@@ -250,6 +250,12 @@ void RenderWidgetHostViewBase::EndFrameSubscription() {
   NOTREACHED();
 }
 
+void RenderWidgetHostViewBase::FocusedNodeTouched(
+    const gfx::Point& location_dips_screen,
+    bool editable) {
+  DVLOG(1) << "FocusedNodeTouched: " << editable;
+}
+
 uint32_t RenderWidgetHostViewBase::RendererFrameNumber() {
   return renderer_frame_number_;
 }
