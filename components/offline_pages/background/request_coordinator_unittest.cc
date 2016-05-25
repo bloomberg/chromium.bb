@@ -6,7 +6,6 @@
 
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -56,8 +55,7 @@ class OfflinerStub : public Offliner {
                    const CompletionCallback& callback) override {
     // Post the callback on the run loop.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, request, Offliner::RequestStatus::SAVED));
+        FROM_HERE, base::Bind(callback, request, Offliner::SAVED));
     return true;
   }
 
@@ -174,8 +172,7 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
   EXPECT_TRUE(scheduler_stub->schedule_called());
 
   // Check that the offliner callback got a response.
-  EXPECT_EQ(Offliner::RequestStatus::SAVED,
-            coordinator()->last_offlining_status());
+  EXPECT_EQ(Offliner::SAVED, coordinator()->last_offlining_status());
 
   // TODO(petewil): Expect that the scheduler got notified.
 }

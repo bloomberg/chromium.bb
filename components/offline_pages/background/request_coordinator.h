@@ -60,7 +60,7 @@ class RequestCoordinator :
   Scheduler* GetSchedulerForTesting() { return scheduler_.get(); }
 
   // Returns the status of the most recent offlining.
-  Offliner::RequestStatus last_offlining_status() {
+  Offliner::CompletionStatus last_offlining_status() {
     return last_offlining_status_;
   }
 
@@ -68,10 +68,10 @@ class RequestCoordinator :
   void AddRequestResultCallback(RequestQueue::AddRequestResult result,
                                 const SavePageRequest& request);
 
-  void SendRequestToOffliner(const SavePageRequest& request);
+  void SendRequestToOffliner(SavePageRequest& request);
 
   void OfflinerDoneCallback(const SavePageRequest& request,
-                            Offliner::RequestStatus status);
+                            Offliner::CompletionStatus status);
 
   // RequestCoordinator takes over ownership of the policy
   std::unique_ptr<OfflinerPolicy> policy_;
@@ -82,7 +82,7 @@ class RequestCoordinator :
   // Scheduler. Used to request a callback when network is available.  Owned.
   std::unique_ptr<Scheduler> scheduler_;
   // Status of the most recent offlining.
-  Offliner::RequestStatus last_offlining_status_;
+  Offliner::CompletionStatus last_offlining_status_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestCoordinator);
 };

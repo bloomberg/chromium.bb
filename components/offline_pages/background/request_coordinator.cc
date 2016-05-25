@@ -23,7 +23,7 @@ RequestCoordinator::RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
       factory_(std::move(factory)),
       queue_(std::move(queue)),
       scheduler_(std::move(scheduler)),
-      last_offlining_status_(Offliner::RequestStatus::UNKNOWN) {
+      last_offlining_status_(Offliner::UNKNOWN) {
   DCHECK(policy_ != nullptr);
 }
 
@@ -45,7 +45,7 @@ bool RequestCoordinator::SavePageLater(
   queue_->AddRequest(request,
                      base::Bind(&RequestCoordinator::AddRequestResultCallback,
                                 AsWeakPtr()));
-  // TODO(petewil): Do I need to persist the request in case the add fails?
+  // TODO: Do I need to persist the request in case the add fails?
 
   // TODO(petewil): Eventually we will wait for the StartProcessing callback,
   // but for now just kick start the request so we can test the wiring.
@@ -73,26 +73,25 @@ bool RequestCoordinator::StartProcessing(
 void RequestCoordinator::StopProcessing() {
 }
 
-void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
+void RequestCoordinator::SendRequestToOffliner(SavePageRequest& request) {
   // TODO(petewil): When we have multiple offliners, we need to pick one.
   Offliner* offliner = factory_->GetOffliner(policy_.get());
   if (!offliner) {
-    DVLOG(0) << "Unable to create Offliner. "
-             << "Cannot background offline page.";
+    LOG(ERROR) << "Unable to create Prerendering Offliner. "
+               << "Cannot background offline page.";
     return;
   }
 
-  // Start the load and save process in the offliner (Async).
+  // Start the load and save process in the prerenderer (Async).
   offliner->LoadAndSave(
       request,
       base::Bind(&RequestCoordinator::OfflinerDoneCallback, AsWeakPtr()));
 }
 
-void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
-                                              Offliner::RequestStatus status) {
-  DVLOG(2) << "offliner finished, saved: "
-           << (status == Offliner::RequestStatus::SAVED) << ", "
-           << __FUNCTION__;
+void RequestCoordinator::OfflinerDoneCallback(
+    const SavePageRequest& request,
+    Offliner::CompletionStatus status) {
+  DVLOG(2) << "prerenderer finished, status " << status << ", " << __FUNCTION__;
   last_offlining_status_ = status;
 }
 
