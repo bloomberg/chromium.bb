@@ -6,6 +6,10 @@ import("//build/config/features.gni")
 import("//remoting/remoting_enable.gni")
 import("//remoting/remoting_srcs.gni")
 
+if (is_win) {
+  import("//remoting/host/predefines_win.gni")
+}
+
 source_set("common") {
   sources = rebase_path(
           remoting_host_srcs_gypi_values.remoting_it2me_host_static_sources,
@@ -52,7 +56,7 @@ if (!is_chromeos && !is_android && enable_remoting_host) {
         "it2me_native_messaging_host_entry_point.cc",
       ]
 
-      defines = [ "BINARY=BINARY_REMOTE_ASSISTANCE_HOST" ]
+      defines = host_predefines + [ "BINARY=BINARY_REMOTE_ASSISTANCE_HOST" ]
 
       ldflags = [
         "/MANIFEST:EMBED",

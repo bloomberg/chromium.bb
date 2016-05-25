@@ -8,13 +8,9 @@
        see http://crbug.com/121785 -->
   <?if $(var.Branding) ~= Chrome ?>
     <?define ChromotingHost = "Chrome Remote Desktop Host" ?>
-    <?define ChromotingServiceName = "Chrome Remote Desktop Service" ?>
-    <?define ChromotingServiceDescription = "This service enables incoming connections from Chrome Remote Desktop clients." ?>
     <?define Manufacturer = "Google Inc." ?>
   <?else?>
     <?define ChromotingHost = "Chromoting Host" ?>
-    <?define ChromotingServiceName = "Chromoting Service" ?>
-    <?define ChromotingServiceDescription = "This service enables incoming connections from Chromoting clients." ?>
     <?define Manufacturer = "The Chromium Authors" ?>
   <?endif?>
 
