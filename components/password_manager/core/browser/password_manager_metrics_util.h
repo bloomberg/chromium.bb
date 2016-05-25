@@ -173,6 +173,7 @@ void LogMultiAccountUpdateBubbleUserAction(
 void LogAutoSigninPromoUserAction(AutoSigninPromoUserAction action);
 
 // Log a user action on showing the account chooser for one or many accounts.
+void LogAccountChooserUserAction(AccountChooserUserAction action);
 void LogAccountChooserUserActionOneAccount(AccountChooserUserAction action);
 void LogAccountChooserUserActionManyAccounts(AccountChooserUserAction action);
 
