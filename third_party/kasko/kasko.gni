@@ -2,16 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chrome_build.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 
 declare_args() {
   # Enable the reporting of browser hangs with Kasko.
   # TODO(pmonette): ensure hang reporting is disabled for syzyasan builds.
-  enable_kasko_hang_reports = false
+  enable_kasko_hang_reports = is_win && is_chrome_branded && target_cpu == "x86"
 
   # Enable the reporting of failed browser rendez-vous with Kasko.
   # TODO(pmonette): ensure hang reporting is disabled for syzyasan builds.
-  enable_kasko_failed_rdv_reports = false
+  enable_kasko_failed_rdv_reports =
+      is_win && is_chrome_branded && target_cpu == "x86"
 }
 
 # Enable the Kasko crash reporter. Enabled by default on syzyasan build.
