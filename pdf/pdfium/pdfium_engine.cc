@@ -2403,8 +2403,8 @@ void PDFiumEngine::LoadDocument() {
 
   ScopedUnsupportedFeature scoped_unsupported_feature(this);
   bool needs_password = false;
-  if (TryLoadingDoc(false, std::string(), &needs_password)) {
-    ContinueLoadingDocument(false, std::string());
+  if (TryLoadingDoc(std::string(), &needs_password)) {
+    ContinueLoadingDocument(std::string());
     return;
   }
   if (needs_password)
@@ -2413,15 +2413,14 @@ void PDFiumEngine::LoadDocument() {
     client_->DocumentLoadFailed();
 }
 
-bool PDFiumEngine::TryLoadingDoc(bool with_password,
-                                 const std::string& password,
+bool PDFiumEngine::TryLoadingDoc(const std::string& password,
                                  bool* needs_password) {
   *needs_password = false;
   if (doc_)
     return true;
 
   const char* password_cstr = nullptr;
-  if (with_password) {
+  if (!password.empty()) {
     password_cstr = password.c_str();
     password_tries_remaining_--;
   }
@@ -2449,24 +2448,18 @@ void PDFiumEngine::OnGetPasswordComplete(int32_t result,
                                          const pp::Var& password) {
   getting_password_ = false;
 
-  bool password_given = false;
   std::string password_text;
-  if (result == PP_OK && password.is_string()) {
+  if (result == PP_OK && password.is_string())
     password_text = password.AsString();
-    if (!password_text.empty())
-      password_given = true;
-  }
-  ContinueLoadingDocument(password_given, password_text);
+  ContinueLoadingDocument(password_text);
 }
 
-void PDFiumEngine::ContinueLoadingDocument(
-    bool has_password,
-    const std::string& password) {
+void PDFiumEngine::ContinueLoadingDocument(const std::string& password) {
   ScopedUnsupportedFeature scoped_unsupported_feature(this);
 
   bool needs_password = false;
-  bool loaded = TryLoadingDoc(has_password, password, &needs_password);
-  bool password_incorrect = !loaded && has_password && needs_password;
+  bool loaded = TryLoadingDoc(password, &needs_password);
+  bool password_incorrect = !loaded && needs_password && !password.empty();
   if (password_incorrect && password_tries_remaining_ > 0) {
     GetPasswordAndLoad();
     return;

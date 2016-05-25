@@ -204,13 +204,10 @@ class PDFiumEngine : public PDFEngine,
   void LoadDocument();
 
   // Try loading the document. Returns true if the document is successfully
-  // loaded or is already loaded otherwise it will return false. If
-  // |with_password| is set to true, the document will be loaded with
-  // |password|. If the document could not be loaded and needs a password,
-  // |needs_password| will be set to true.
-  bool TryLoadingDoc(bool with_password,
-                     const std::string& password,
-                     bool* needs_password);
+  // loaded or is already loaded otherwise it will return false. If there is a
+  // password, then |password| is non-empty. If the document could not be loaded
+  // and needs a password, |needs_password| will be set to true.
+  bool TryLoadingDoc(const std::string& password, bool* needs_password);
 
   // Ask the user for the document password and then continue loading the
   // document.
@@ -221,9 +218,8 @@ class PDFiumEngine : public PDFEngine,
                              const pp::Var& password);
 
   // Continues loading the document when the password has been retrieved, or if
-  // there is no password.
-  void ContinueLoadingDocument(bool has_password,
-                               const std::string& password);
+  // there is no password. If there is no password, then |password| is empty.
+  void ContinueLoadingDocument(const std::string& password);
 
   // Finish loading the document and notify the client that the document has
   // been loaded. This should only be run after |doc_| has been loaded and the
