@@ -171,13 +171,13 @@ void V8InjectedScriptHost::suppressWarningsAndCallFunctionCallback(const v8::Fun
 
     v8::Local<v8::Function> function = info[0].As<v8::Function>();
     v8::Local<v8::Value> receiver = info[1];
-    OwnPtr<v8::Local<v8::Value>[]> argv = nullptr;
+    std::unique_ptr<v8::Local<v8::Value>[]> argv = nullptr;
     size_t argc = 0;
 
     if (info.Length() > 2 && info[2]->IsArray()) {
         v8::Local<v8::Array> arguments = info[2].As<v8::Array>();
         argc = arguments->Length();
-        argv = adoptArrayPtr(new v8::Local<v8::Value>[argc]);
+        argv.reset(new v8::Local<v8::Value>[argc]);
         for (size_t i = 0; i < argc; ++i) {
             if (!arguments->Get(context, i).ToLocal(&argv[i]))
                 return;

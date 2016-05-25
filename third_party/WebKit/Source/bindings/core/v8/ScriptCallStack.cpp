@@ -45,7 +45,7 @@ PassRefPtr<ScriptCallStack> ScriptCallStack::create(v8::Isolate* isolate, v8::Lo
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     if (!data->threadDebugger())
         return nullptr;
-    OwnPtr<V8StackTrace> stack = data->threadDebugger()->debugger()->createStackTrace(stackTrace, maxStackSize);
+    std::unique_ptr<V8StackTrace> stack = data->threadDebugger()->debugger()->createStackTrace(stackTrace, maxStackSize);
     return stack ? adoptRef(new ScriptCallStack(std::move(stack))) : nullptr;
 }
 
@@ -58,7 +58,7 @@ PassRefPtr<ScriptCallStack> ScriptCallStack::capture(size_t maxStackSize)
     if (!data->threadDebugger())
         return nullptr;
     ScriptForbiddenScope::AllowUserAgentScript allowScripting;
-    OwnPtr<V8StackTrace> stack = data->threadDebugger()->debugger()->captureStackTrace(maxStackSize);
+    std::unique_ptr<V8StackTrace> stack = data->threadDebugger()->debugger()->captureStackTrace(maxStackSize);
     return stack ? adoptRef(new ScriptCallStack(std::move(stack))) : nullptr;
 }
 
@@ -75,7 +75,7 @@ PassRefPtr<ScriptCallStack> ScriptCallStack::captureForConsole()
     return ScriptCallStack::capture(stackSize);
 }
 
-ScriptCallStack::ScriptCallStack(PassOwnPtr<V8StackTrace> stackTrace)
+ScriptCallStack::ScriptCallStack(std::unique_ptr<V8StackTrace> stackTrace)
     : m_stackTrace(std::move(stackTrace))
 {
 }
@@ -104,7 +104,7 @@ unsigned ScriptCallStack::topColumnNumber() const
     return m_stackTrace->topColumnNumber();
 }
 
-PassOwnPtr<protocol::Runtime::StackTrace> ScriptCallStack::buildInspectorObject() const
+std::unique_ptr<protocol::Runtime::StackTrace> ScriptCallStack::buildInspectorObject() const
 {
     return m_stackTrace->buildInspectorObject();
 }
@@ -129,10 +129,9 @@ String ScriptCallStack::toString() const
     return m_stackTrace->toString();
 }
 
-PassOwnPtr<V8StackTrace> ScriptCallStack::copyStackTrace() const
+std::unique_ptr<V8StackTrace> ScriptCallStack::copyStackTrace() const
 {
     return m_stackTrace ? m_stackTrace->clone() : nullptr;
 }
-
 
 } // namespace blink

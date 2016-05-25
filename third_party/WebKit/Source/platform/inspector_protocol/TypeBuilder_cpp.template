@@ -9,27 +9,27 @@
 namespace blink {
 namespace protocol {
 
-PassOwnPtr<Object> Object::parse(protocol::Value* value, ErrorSupport* errors)
+std::unique_ptr<Object> Object::parse(protocol::Value* value, ErrorSupport* errors)
 {
     protocol::DictionaryValue* object = DictionaryValue::cast(value);
     if (!object) {
         errors->addError("object expected");
         return nullptr;
     }
-    return adoptPtr(new Object(adoptPtr(static_cast<DictionaryValue*>(object->clone().leakPtr()))));
+    return wrapUnique(new Object(wrapUnique(static_cast<DictionaryValue*>(object->clone().release()))));
 }
 
-PassOwnPtr<protocol::DictionaryValue> Object::serialize() const
+std::unique_ptr<protocol::DictionaryValue> Object::serialize() const
 {
     return DictionaryValue::cast(m_object->clone());
 }
 
-PassOwnPtr<Object> Object::clone() const
+std::unique_ptr<Object> Object::clone() const
 {
-    return adoptPtr(new Object(DictionaryValue::cast(m_object->clone())));
+    return wrapUnique(new Object(DictionaryValue::cast(m_object->clone())));
 }
 
-Object::Object(PassOwnPtr<protocol::DictionaryValue> object) : m_object(std::move(object)) { }
+Object::Object(std::unique_ptr<protocol::DictionaryValue> object) : m_object(std::move(object)) { }
 Object::~Object() { }
 
 // ------------- Enum values from types.
@@ -55,14 +55,14 @@ const char* {{type.id}}::{{property.name | to_title_case}}Enum::{{ literal | das
     {% endfor %}
     {% if not (type.type == "object") or not ("properties" in type) %}{% continue %}{% endif %}
 
-PassOwnPtr<{{type.id}}> {{type.id}}::parse(protocol::Value* value, ErrorSupport* errors)
+std::unique_ptr<{{type.id}}> {{type.id}}::parse(protocol::Value* value, ErrorSupport* errors)
 {
     if (!value || value->type() != protocol::Value::TypeObject) {
         errors->addError("object expected");
         return nullptr;
     }
 
-    OwnPtr<{{type.id}}> result = adoptPtr(new {{type.id}}());
+    std::unique_ptr<{{type.id}}> result(new {{type.id}}());
     protocol::DictionaryValue* object = DictionaryValue::cast(value);
     errors->push();
     {% for property in type.properties %}
@@ -83,9 +83,9 @@ PassOwnPtr<{{type.id}}> {{type.id}}::parse(protocol::Value* value, ErrorSupport*
     return result;
 }
 
-PassOwnPtr<protocol::DictionaryValue> {{type.id}}::serialize() const
+std::unique_ptr<protocol::DictionaryValue> {{type.id}}::serialize() const
 {
-    OwnPtr<protocol::DictionaryValue> result = DictionaryValue::create();
+    std::unique_ptr<protocol::DictionaryValue> result = DictionaryValue::create();
     {% for property in type.properties %}
       {% if property.optional %}
     if (m_{{property.name}}.isJust())
@@ -97,7 +97,7 @@ PassOwnPtr<protocol::DictionaryValue> {{type.id}}::serialize() const
     return result;
 }
 
-PassOwnPtr<{{type.id}}> {{type.id}}::clone() const
+std::unique_ptr<{{type.id}}> {{type.id}}::clone() const
 {
     ErrorSupport errors;
     return parse(serialize().get(), &errors);

@@ -63,7 +63,7 @@ bool V8Inspector::formatAccessorsAsProperties(v8::Local<v8::Value> value)
 void V8Inspector::connectFrontend(protocol::FrontendChannel* channel)
 {
     DCHECK(!m_frontend);
-    m_frontend = adoptPtr(new protocol::Frontend(channel));
+    m_frontend = wrapUnique(new protocol::Frontend(channel));
     m_dispatcher = protocol::Dispatcher::create(channel);
 
     m_dispatcher->registerAgent(m_session->runtimeAgent());

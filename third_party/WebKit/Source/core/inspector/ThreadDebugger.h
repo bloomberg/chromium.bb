@@ -56,7 +56,7 @@ protected:
     void onTimer(Timer<ThreadDebugger>*);
 
     v8::Isolate* m_isolate;
-    OwnPtr<V8Debugger> m_debugger;
+    std::unique_ptr<V8Debugger> m_debugger;
 
 private:
     v8::Local<v8::Function> eventLogFunction();

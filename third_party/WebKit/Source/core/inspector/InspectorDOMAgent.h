@@ -110,10 +110,10 @@ public:
     // Methods called from the frontend for DOM nodes inspection.
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;
-    void getDocument(ErrorString*, OwnPtr<protocol::DOM::Node>* root) override;
+    void getDocument(ErrorString*, std::unique_ptr<protocol::DOM::Node>* root) override;
     void requestChildNodes(ErrorString*, int nodeId, const Maybe<int>& depth) override;
     void querySelector(ErrorString*, int nodeId, const String& selector, int* outNodeId) override;
-    void querySelectorAll(ErrorString*, int nodeId, const String& selector, OwnPtr<protocol::Array<int>>* nodeIds) override;
+    void querySelectorAll(ErrorString*, int nodeId, const String& selector, std::unique_ptr<protocol::Array<int>>* nodeIds) override;
     void setNodeName(ErrorString*, int nodeId, const String& name, int* outNodeId) override;
     void setNodeValue(ErrorString*, int nodeId, const String& value) override;
     void removeNode(ErrorString*, int nodeId) override;
@@ -123,31 +123,31 @@ public:
     void getOuterHTML(ErrorString*, int nodeId, String* outerHTML) override;
     void setOuterHTML(ErrorString*, int nodeId, const String& outerHTML) override;
     void performSearch(ErrorString*, const String& query, const Maybe<bool>& includeUserAgentShadowDOM, String* searchId, int* resultCount) override;
-    void getSearchResults(ErrorString*, const String& searchId, int fromIndex, int toIndex, OwnPtr<protocol::Array<int>>* nodeIds) override;
+    void getSearchResults(ErrorString*, const String& searchId, int fromIndex, int toIndex, std::unique_ptr<protocol::Array<int>>* nodeIds) override;
     void discardSearchResults(ErrorString*, const String& searchId) override;
     void requestNode(ErrorString*, const String16& objectId, int* outNodeId) override;
     void setInspectMode(ErrorString*, const String& mode, const Maybe<protocol::DOM::HighlightConfig>&) override;
     void highlightRect(ErrorString*, int x, int y, int width, int height, const Maybe<protocol::DOM::RGBA>& color, const Maybe<protocol::DOM::RGBA>& outlineColor) override;
-    void highlightQuad(ErrorString*, PassOwnPtr<protocol::Array<double>> quad, const Maybe<protocol::DOM::RGBA>& color, const Maybe<protocol::DOM::RGBA>& outlineColor) override;
-    void highlightNode(ErrorString*, PassOwnPtr<protocol::DOM::HighlightConfig>, const Maybe<int>& nodeId, const Maybe<int>& backendNodeId, const Maybe<String16>& objectId) override;
+    void highlightQuad(ErrorString*, std::unique_ptr<protocol::Array<double>> quad, const Maybe<protocol::DOM::RGBA>& color, const Maybe<protocol::DOM::RGBA>& outlineColor) override;
+    void highlightNode(ErrorString*, std::unique_ptr<protocol::DOM::HighlightConfig>, const Maybe<int>& nodeId, const Maybe<int>& backendNodeId, const Maybe<String16>& objectId) override;
     void hideHighlight(ErrorString*) override;
     void highlightFrame(ErrorString*, const String& frameId, const Maybe<protocol::DOM::RGBA>& contentColor, const Maybe<protocol::DOM::RGBA>& contentOutlineColor) override;
     void pushNodeByPathToFrontend(ErrorString*, const String& path, int* outNodeId) override;
-    void pushNodesByBackendIdsToFrontend(ErrorString*, PassOwnPtr<protocol::Array<int>> backendNodeIds, OwnPtr<protocol::Array<int>>* nodeIds) override;
+    void pushNodesByBackendIdsToFrontend(ErrorString*, std::unique_ptr<protocol::Array<int>> backendNodeIds, std::unique_ptr<protocol::Array<int>>* nodeIds) override;
     void setInspectedNode(ErrorString*, int nodeId) override;
-    void resolveNode(ErrorString*, int nodeId, const Maybe<String>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>*) override;
-    void getAttributes(ErrorString*, int nodeId, OwnPtr<protocol::Array<String>>* attributes) override;
+    void resolveNode(ErrorString*, int nodeId, const Maybe<String>& objectGroup, std::unique_ptr<protocol::Runtime::RemoteObject>*) override;
+    void getAttributes(ErrorString*, int nodeId, std::unique_ptr<protocol::Array<String>>* attributes) override;
     void copyTo(ErrorString*, int nodeId, int targetNodeId, const Maybe<int>& insertBeforeNodeId, int* outNodeId) override;
     void moveTo(ErrorString*, int nodeId, int targetNodeId, const Maybe<int>& insertBeforeNodeId, int* outNodeId) override;
     void undo(ErrorString*) override;
     void redo(ErrorString*) override;
     void markUndoableState(ErrorString*) override;
     void focus(ErrorString*, int nodeId) override;
-    void setFileInputFiles(ErrorString*, int nodeId, PassOwnPtr<protocol::Array<String>> files) override;
-    void getBoxModel(ErrorString*, int nodeId, OwnPtr<protocol::DOM::BoxModel>*) override;
+    void setFileInputFiles(ErrorString*, int nodeId, std::unique_ptr<protocol::Array<String>> files) override;
+    void getBoxModel(ErrorString*, int nodeId, std::unique_ptr<protocol::DOM::BoxModel>*) override;
     void getNodeForLocation(ErrorString*, int x, int y, int* outNodeId) override;
     void getRelayoutBoundary(ErrorString*, int nodeId, int* outNodeId) override;
-    void getHighlightObjectForTest(ErrorString*, int nodeId, OwnPtr<protocol::DictionaryValue>* highlight) override;
+    void getHighlightObjectForTest(ErrorString*, int nodeId, std::unique_ptr<protocol::DictionaryValue>* highlight) override;
 
     bool enabled() const;
     void releaseDanglingNodes();
@@ -178,7 +178,7 @@ public:
 
     static String documentURLString(Document*);
 
-    PassOwnPtr<protocol::Runtime::RemoteObject> resolveNode(Node*, const String16& objectGroup);
+    std::unique_ptr<protocol::Runtime::RemoteObject> resolveNode(Node*, const String16& objectGroup);
 
     InspectorHistory* history() { return m_history.get(); }
 
@@ -217,11 +217,11 @@ private:
 
     void invalidateFrameOwnerElement(LocalFrame*);
 
-    PassOwnPtr<protocol::DOM::Node> buildObjectForNode(Node*, int depth, NodeToIdMap*);
-    PassOwnPtr<protocol::Array<String>> buildArrayForElementAttributes(Element*);
-    PassOwnPtr<protocol::Array<protocol::DOM::Node>> buildArrayForContainerChildren(Node* container, int depth, NodeToIdMap* nodesMap);
-    PassOwnPtr<protocol::Array<protocol::DOM::Node>> buildArrayForPseudoElements(Element*, NodeToIdMap* nodesMap);
-    PassOwnPtr<protocol::Array<protocol::DOM::BackendNode>> buildArrayForDistributedNodes(InsertionPoint*);
+    std::unique_ptr<protocol::DOM::Node> buildObjectForNode(Node*, int depth, NodeToIdMap*);
+    std::unique_ptr<protocol::Array<String>> buildArrayForElementAttributes(Element*);
+    std::unique_ptr<protocol::Array<protocol::DOM::Node>> buildArrayForContainerChildren(Node* container, int depth, NodeToIdMap* nodesMap);
+    std::unique_ptr<protocol::Array<protocol::DOM::Node>> buildArrayForPseudoElements(Element*, NodeToIdMap* nodesMap);
+    std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>> buildArrayForDistributedNodes(InsertionPoint*);
 
     Node* nodeForPath(const String& path);
     Node* nodeForRemoteId(ErrorString*, const String& id);

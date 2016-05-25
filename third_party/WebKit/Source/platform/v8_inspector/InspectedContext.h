@@ -55,7 +55,7 @@ private:
     const String16 m_humanReadableName;
     const String16 m_frameId;
     bool m_reported;
-    OwnPtr<InjectedScript> m_injectedScript;
+    std::unique_ptr<InjectedScript> m_injectedScript;
     v8::Global<v8::Object> m_console;
 };
 

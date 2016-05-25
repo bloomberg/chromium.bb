@@ -101,9 +101,9 @@ public:
     void setAutoAttachToCreatedPages(ErrorString*, bool autoAttach) override;
     void reload(ErrorString*, const Maybe<bool>& bypassCache, const Maybe<String>& scriptToEvaluateOnLoad) override;
     void navigate(ErrorString*, const String& url, String* frameId) override;
-    void getResourceTree(ErrorString*, OwnPtr<protocol::Page::FrameResourceTree>* frameTree) override;
-    void getResourceContent(ErrorString*, const String& frameId, const String& url, PassOwnPtr<GetResourceContentCallback>) override;
-    void searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const Maybe<bool>& caseSensitive, const Maybe<bool>& isRegex, PassOwnPtr<SearchInResourceCallback>) override;
+    void getResourceTree(ErrorString*, std::unique_ptr<protocol::Page::FrameResourceTree>* frameTree) override;
+    void getResourceContent(ErrorString*, const String& frameId, const String& url, std::unique_ptr<GetResourceContentCallback>) override;
+    void searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const Maybe<bool>& caseSensitive, const Maybe<bool>& isRegex, std::unique_ptr<SearchInResourceCallback>) override;
     void setDocumentContent(ErrorString*, const String& frameId, const String& html) override;
     void startScreencast(ErrorString*, const Maybe<String>& format, const Maybe<int>& quality, const Maybe<int>& maxWidth, const Maybe<int>& maxHeight, const Maybe<int>& everyNthFrame) override;
     void stopScreencast(ErrorString*) override;
@@ -138,13 +138,13 @@ private:
     InspectorPageAgent(InspectedFrames*, Client*, InspectorResourceContentLoader*, V8InspectorSession*);
 
     void finishReload();
-    void getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, PassOwnPtr<GetResourceContentCallback>);
-    void searchContentAfterResourcesContentLoaded(const String& frameId, const String& url, const String& query, bool caseSensitive, bool isRegex, PassOwnPtr<SearchInResourceCallback>);
+    void getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, std::unique_ptr<GetResourceContentCallback>);
+    void searchContentAfterResourcesContentLoaded(const String& frameId, const String& url, const String& query, bool caseSensitive, bool isRegex, std::unique_ptr<SearchInResourceCallback>);
 
     static bool dataContent(const char* data, unsigned size, const String& textEncodingName, bool withBase64Encode, String* result);
 
-    PassOwnPtr<protocol::Page::Frame> buildObjectForFrame(LocalFrame*);
-    PassOwnPtr<protocol::Page::FrameResourceTree> buildObjectForFrameTree(LocalFrame*);
+    std::unique_ptr<protocol::Page::Frame> buildObjectForFrame(LocalFrame*);
+    std::unique_ptr<protocol::Page::FrameResourceTree> buildObjectForFrameTree(LocalFrame*);
     Member<InspectedFrames> m_inspectedFrames;
     V8InspectorSession* m_v8Session;
     Client* m_client;

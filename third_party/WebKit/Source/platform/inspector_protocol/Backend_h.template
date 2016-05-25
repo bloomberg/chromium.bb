@@ -53,7 +53,7 @@ public:
         {%- endif -%}
     {%- endfor -%}
     {%- if "async" in command -%}
-            , PassOwnPtr<{{command.name | to_title_case}}Callback> callback
+            , std::unique_ptr<{{command.name | to_title_case}}Callback> callback
     {%- else -%}
       {%- for parameter in command.returns -%}
         {%- if "optional" in parameter -%}

@@ -69,9 +69,9 @@ v8::MaybeLocal<v8::Value> V8DebuggerImpl::callDebuggerMethod(const char* functio
     return function->Call(m_isolate->GetCurrentContext(), debuggerScript, argc, argv);
 }
 
-PassOwnPtr<V8Debugger> V8Debugger::create(v8::Isolate* isolate, V8DebuggerClient* client)
+std::unique_ptr<V8Debugger> V8Debugger::create(v8::Isolate* isolate, V8DebuggerClient* client)
 {
-    return adoptPtr(new V8DebuggerImpl(isolate, client));
+    return wrapUnique(new V8DebuggerImpl(isolate, client));
 }
 
 V8DebuggerImpl::V8DebuggerImpl(v8::Isolate* isolate, V8DebuggerClient* client)
@@ -372,9 +372,9 @@ bool V8DebuggerImpl::setScriptSource(const String16& sourceID, const String16& n
     DCHECK(enabled());
     v8::HandleScope scope(m_isolate);
 
-    OwnPtr<v8::Context::Scope> contextScope;
+    std::unique_ptr<v8::Context::Scope> contextScope;
     if (!isPaused())
-        contextScope = adoptPtr(new v8::Context::Scope(debuggerContext()));
+        contextScope = wrapUnique(new v8::Context::Scope(debuggerContext()));
 
     v8::Local<v8::Value> argv[] = { toV8String(m_isolate, sourceID), toV8String(m_isolate, newContent), v8Boolean(preview, m_isolate) };
 
@@ -725,16 +725,16 @@ v8::Local<v8::Script> V8DebuggerImpl::compileInternalScript(v8::Local<v8::Contex
     return script;
 }
 
-PassOwnPtr<V8StackTrace> V8DebuggerImpl::createStackTrace(v8::Local<v8::StackTrace> stackTrace, size_t maxStackSize)
+std::unique_ptr<V8StackTrace> V8DebuggerImpl::createStackTrace(v8::Local<v8::StackTrace> stackTrace, size_t maxStackSize)
 {
     V8DebuggerAgentImpl* agent = findEnabledDebuggerAgent(m_isolate->GetCurrentContext());
     return V8StackTraceImpl::create(agent, stackTrace, maxStackSize);
 }
 
-PassOwnPtr<V8InspectorSession> V8DebuggerImpl::connect(int contextGroupId, V8InspectorSessionClient* client, const String16* state)
+std::unique_ptr<V8InspectorSession> V8DebuggerImpl::connect(int contextGroupId, V8InspectorSessionClient* client, const String16* state)
 {
     DCHECK(!m_sessions.contains(contextGroupId));
-    OwnPtr<V8InspectorSessionImpl> session = V8InspectorSessionImpl::create(this, contextGroupId, client, state);
+    std::unique_ptr<V8InspectorSessionImpl> session = V8InspectorSessionImpl::create(this, contextGroupId, client, state);
     m_sessions.set(contextGroupId, session.get());
     return std::move(session);
 }
@@ -756,10 +756,10 @@ void V8DebuggerImpl::contextCreated(const V8ContextInfo& info)
     info.context->SetEmbedderData(static_cast<int>(v8::Context::kDebugIdIndex), toV8String(m_isolate, debugData));
 
     if (!m_contexts.contains(info.contextGroupId))
-        m_contexts.set(info.contextGroupId, adoptPtr(new ContextByIdMap()));
+        m_contexts.set(info.contextGroupId, wrapUnique(new ContextByIdMap()));
     DCHECK(!m_contexts.get(info.contextGroupId)->contains(contextId));
 
-    OwnPtr<InspectedContext> contextOwner = adoptPtr(new InspectedContext(this, info, contextId));
+    std::unique_ptr<InspectedContext> contextOwner(new InspectedContext(this, info, contextId));
     InspectedContext* inspectedContext = contextOwner.get();
     m_contexts.get(info.contextGroupId)->set(contextId, std::move(contextOwner));
 
@@ -812,7 +812,7 @@ void V8DebuggerImpl::idleFinished()
     m_isolate->GetCpuProfiler()->SetIdle(false);
 }
 
-PassOwnPtr<V8StackTrace> V8DebuggerImpl::captureStackTrace(size_t maxStackSize)
+std::unique_ptr<V8StackTrace> V8DebuggerImpl::captureStackTrace(size_t maxStackSize)
 {
     V8DebuggerAgentImpl* agent = findEnabledDebuggerAgent(m_isolate->GetCurrentContext());
     return V8StackTraceImpl::capture(agent, maxStackSize);

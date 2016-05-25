@@ -9,7 +9,7 @@
 #include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "platform/v8_inspector/public/V8InspectorSessionClient.h"
 
-#include "wtf/OwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include <v8.h>
 
 namespace blink {
@@ -70,10 +70,10 @@ private:
     void startRepeatingTimer(double, TimerCallback, void* data) override { }
     void cancelTimer(void* data) override { }
 
-    OwnPtr<V8Debugger> m_debugger;
-    OwnPtr<V8InspectorSession> m_session;
-    OwnPtr<protocol::Dispatcher> m_dispatcher;
-    OwnPtr<protocol::Frontend> m_frontend;
+    std::unique_ptr<V8Debugger> m_debugger;
+    std::unique_ptr<V8InspectorSession> m_session;
+    std::unique_ptr<protocol::Dispatcher> m_dispatcher;
+    std::unique_ptr<protocol::Frontend> m_frontend;
 };
 
 }

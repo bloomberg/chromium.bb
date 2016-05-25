@@ -13,7 +13,7 @@
 #include "platform/inspector_protocol/TypeBuilder.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "platform/v8_inspector/public/V8InspectorSessionClient.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 
 #include <v8.h>
 
@@ -30,7 +30,7 @@ class V8RuntimeAgentImpl;
 class V8InspectorSessionImpl : public V8InspectorSession {
     PROTOCOL_DISALLOW_COPY(V8InspectorSessionImpl);
 public:
-    static PassOwnPtr<V8InspectorSessionImpl> create(V8DebuggerImpl*, int contextGroupId, V8InspectorSessionClient*, const String16* state);
+    static std::unique_ptr<V8InspectorSessionImpl> create(V8DebuggerImpl*, int contextGroupId, V8InspectorSessionClient*, const String16* state);
     ~V8InspectorSessionImpl();
 
     V8DebuggerImpl* debugger() const { return m_debugger; }
@@ -51,11 +51,11 @@ public:
     // V8InspectorSession implementation.
     void dispatchProtocolMessage(const String16& message) override;
     String16 stateJSON() override;
-    void addInspectedObject(PassOwnPtr<V8InspectorSession::Inspectable>) override;
-    void schedulePauseOnNextStatement(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data) override;
+    void addInspectedObject(std::unique_ptr<V8InspectorSession::Inspectable>) override;
+    void schedulePauseOnNextStatement(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data) override;
     void cancelPauseOnNextStatement() override;
-    void breakProgram(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data) override;
-    void breakProgramOnException(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data) override;
+    void breakProgram(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data) override;
+    void breakProgramOnException(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data) override;
     void setSkipAllPauses(bool) override;
     void resume() override;
     void stepOver() override;
@@ -66,8 +66,8 @@ public:
     void allAsyncTasksCanceled() override;
     void releaseObjectGroup(const String16& objectGroup) override;
     v8::Local<v8::Value> findObject(ErrorString*, const String16& objectId, v8::Local<v8::Context>* = nullptr, String16* groupName = nullptr) override;
-    PassOwnPtr<protocol::Runtime::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& groupName, bool generatePreview = false) override;
-    PassOwnPtr<protocol::Runtime::RemoteObject> wrapTable(v8::Local<v8::Context>, v8::Local<v8::Value> table, v8::Local<v8::Value> columns) override;
+    std::unique_ptr<protocol::Runtime::RemoteObject> wrapObject(v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& groupName, bool generatePreview = false) override;
+    std::unique_ptr<protocol::Runtime::RemoteObject> wrapTable(v8::Local<v8::Context>, v8::Local<v8::Value> table, v8::Local<v8::Value> columns) override;
 
     V8InspectorSession::Inspectable* inspectedObject(unsigned num);
     static const unsigned kInspectedObjectBufferSize = 5;
@@ -82,15 +82,15 @@ private:
     bool m_customObjectFormatterEnabled;
     int m_instrumentationCounter;
 
-    OwnPtr<protocol::Frontend> m_frontend;
-    OwnPtr<protocol::Dispatcher> m_dispatcher;
-    OwnPtr<protocol::DictionaryValue> m_state;
+    std::unique_ptr<protocol::Frontend> m_frontend;
+    std::unique_ptr<protocol::Dispatcher> m_dispatcher;
+    std::unique_ptr<protocol::DictionaryValue> m_state;
 
-    OwnPtr<V8RuntimeAgentImpl> m_runtimeAgent;
-    OwnPtr<V8DebuggerAgentImpl> m_debuggerAgent;
-    OwnPtr<V8HeapProfilerAgentImpl> m_heapProfilerAgent;
-    OwnPtr<V8ProfilerAgentImpl> m_profilerAgent;
-    protocol::Vector<OwnPtr<V8InspectorSession::Inspectable>> m_inspectedObjects;
+    std::unique_ptr<V8RuntimeAgentImpl> m_runtimeAgent;
+    std::unique_ptr<V8DebuggerAgentImpl> m_debuggerAgent;
+    std::unique_ptr<V8HeapProfilerAgentImpl> m_heapProfilerAgent;
+    std::unique_ptr<V8ProfilerAgentImpl> m_profilerAgent;
+    protocol::Vector<std::unique_ptr<V8InspectorSession::Inspectable>> m_inspectedObjects;
 };
 
 } // namespace blink

@@ -7,7 +7,7 @@
 
 #include "platform/inspector_protocol/Collections.h"
 #include "platform/v8_inspector/public/V8StackTrace.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -34,7 +34,7 @@ public:
 
     private:
         friend class V8StackTraceImpl;
-        PassOwnPtr<protocol::Runtime::CallFrame> buildInspectorObject() const;
+        std::unique_ptr<protocol::Runtime::CallFrame> buildInspectorObject() const;
         void toTracedValue(TracedValue*) const;
 
         String16 m_functionName;
@@ -44,12 +44,12 @@ public:
         int m_columnNumber;
     };
 
-    static PassOwnPtr<V8StackTraceImpl> create(V8DebuggerAgentImpl*, v8::Local<v8::StackTrace>, size_t maxStackSize, const String16& description = String16());
-    static PassOwnPtr<V8StackTraceImpl> capture(V8DebuggerAgentImpl*, size_t maxStackSize, const String16& description = String16());
+    static std::unique_ptr<V8StackTraceImpl> create(V8DebuggerAgentImpl*, v8::Local<v8::StackTrace>, size_t maxStackSize, const String16& description = String16());
+    static std::unique_ptr<V8StackTraceImpl> capture(V8DebuggerAgentImpl*, size_t maxStackSize, const String16& description = String16());
 
-    PassOwnPtr<V8StackTrace> clone() override;
-    PassOwnPtr<V8StackTraceImpl> cloneImpl();
-    PassOwnPtr<protocol::Runtime::StackTrace> buildInspectorObjectForTail(V8DebuggerAgentImpl*) const;
+    std::unique_ptr<V8StackTrace> clone() override;
+    std::unique_ptr<V8StackTraceImpl> cloneImpl();
+    std::unique_ptr<protocol::Runtime::StackTrace> buildInspectorObjectForTail(V8DebuggerAgentImpl*) const;
     ~V8StackTraceImpl() override;
 
     // V8StackTrace implementation.
@@ -59,15 +59,15 @@ public:
     int topColumnNumber() const override;
     String16 topScriptId() const override;
     String16 topFunctionName() const override;
-    PassOwnPtr<protocol::Runtime::StackTrace> buildInspectorObject() const override;
+    std::unique_ptr<protocol::Runtime::StackTrace> buildInspectorObject() const override;
     String16 toString() const override;
 
 private:
-    V8StackTraceImpl(const String16& description, protocol::Vector<Frame>& frames, PassOwnPtr<V8StackTraceImpl> parent);
+    V8StackTraceImpl(const String16& description, protocol::Vector<Frame>& frames, std::unique_ptr<V8StackTraceImpl> parent);
 
     String16 m_description;
     protocol::Vector<Frame> m_frames;
-    OwnPtr<V8StackTraceImpl> m_parent;
+    std::unique_ptr<V8StackTraceImpl> m_parent;
 };
 
 } // namespace blink

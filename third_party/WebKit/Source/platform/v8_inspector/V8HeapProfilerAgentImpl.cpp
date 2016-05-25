@@ -133,7 +133,7 @@ public:
     WriteResult WriteHeapStatsChunk(v8::HeapStatsUpdate* updateData, int count) override
     {
         DCHECK_GT(count, 0);
-        OwnPtr<protocol::Array<int>> statsDiff = protocol::Array<int>::create();
+        std::unique_ptr<protocol::Array<int>> statsDiff = protocol::Array<int>::create();
         for (int i = 0; i < count; ++i) {
             statsDiff->addItem(updateData[i].index);
             statsDiff->addItem(updateData[i].count);
@@ -224,9 +224,9 @@ void V8HeapProfilerAgentImpl::takeHeapSnapshot(ErrorString* errorString, const p
         *errorString = "Cannot access v8 heap profiler";
         return;
     }
-    OwnPtr<HeapSnapshotProgress> progress;
+    std::unique_ptr<HeapSnapshotProgress> progress;
     if (reportProgress.fromMaybe(false))
-        progress = adoptPtr(new HeapSnapshotProgress(m_frontend));
+        progress = wrapUnique(new HeapSnapshotProgress(m_frontend));
 
     GlobalObjectNameResolver resolver(m_session);
     const v8::HeapSnapshot* snapshot = profiler->TakeHeapSnapshot(progress.get(), &resolver);
@@ -239,7 +239,7 @@ void V8HeapProfilerAgentImpl::takeHeapSnapshot(ErrorString* errorString, const p
     const_cast<v8::HeapSnapshot*>(snapshot)->Delete();
 }
 
-void V8HeapProfilerAgentImpl::getObjectByHeapObjectId(ErrorString* error, const String16& heapSnapshotObjectId, const protocol::Maybe<String16>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* result)
+void V8HeapProfilerAgentImpl::getObjectByHeapObjectId(ErrorString* error, const String16& heapSnapshotObjectId, const protocol::Maybe<String16>& objectGroup, std::unique_ptr<protocol::Runtime::RemoteObject>* result)
 {
     bool ok;
     int id = heapSnapshotObjectId.toInt(&ok);
@@ -286,7 +286,7 @@ void V8HeapProfilerAgentImpl::addInspectedHeapObject(ErrorString* errorString, c
         return;
     }
 
-    m_session->addInspectedObject(adoptPtr(new InspectableHeapObject(id)));
+    m_session->addInspectedObject(wrapUnique(new InspectableHeapObject(id)));
 }
 
 void V8HeapProfilerAgentImpl::getHeapObjectId(ErrorString* errorString, const String16& objectId, String16* heapSnapshotObjectId)
@@ -357,7 +357,7 @@ void V8HeapProfilerAgentImpl::startSampling(ErrorString* errorString, const Mayb
 
 #if V8_MAJOR_VERSION >= 5
 namespace {
-PassOwnPtr<protocol::HeapProfiler::SamplingHeapProfileNode> buildSampingHeapProfileNode(const v8::AllocationProfile::Node* node)
+std::unique_ptr<protocol::HeapProfiler::SamplingHeapProfileNode> buildSampingHeapProfileNode(const v8::AllocationProfile::Node* node)
 {
     auto children = protocol::Array<protocol::HeapProfiler::SamplingHeapProfileNode>::create();
     for (const auto* child : node->children)
@@ -365,7 +365,7 @@ PassOwnPtr<protocol::HeapProfiler::SamplingHeapProfileNode> buildSampingHeapProf
     size_t selfSize = 0;
     for (const auto& allocation : node->allocations)
         selfSize += allocation.size * allocation.count;
-    OwnPtr<protocol::HeapProfiler::SamplingHeapProfileNode> result = protocol::HeapProfiler::SamplingHeapProfileNode::create()
+    std::unique_ptr<protocol::HeapProfiler::SamplingHeapProfileNode> result = protocol::HeapProfiler::SamplingHeapProfileNode::create()
         .setFunctionName(toProtocolString(node->name))
         .setScriptId(String16::number(node->script_id))
         .setUrl(toProtocolString(node->script_name))
@@ -378,7 +378,7 @@ PassOwnPtr<protocol::HeapProfiler::SamplingHeapProfileNode> buildSampingHeapProf
 } // namespace
 #endif
 
-void V8HeapProfilerAgentImpl::stopSampling(ErrorString* errorString, OwnPtr<protocol::HeapProfiler::SamplingHeapProfile>* profile)
+void V8HeapProfilerAgentImpl::stopSampling(ErrorString* errorString, std::unique_ptr<protocol::HeapProfiler::SamplingHeapProfile>* profile)
 {
 #if V8_MAJOR_VERSION >= 5
     v8::HeapProfiler* profiler = m_isolate->GetHeapProfiler();
@@ -387,7 +387,7 @@ void V8HeapProfilerAgentImpl::stopSampling(ErrorString* errorString, OwnPtr<prot
         return;
     }
     v8::HandleScope scope(m_isolate); // Allocation profile contains Local handles.
-    OwnPtr<v8::AllocationProfile> v8Profile = adoptPtr(profiler->GetAllocationProfile());
+    std::unique_ptr<v8::AllocationProfile> v8Profile(profiler->GetAllocationProfile());
     profiler->StopSamplingHeapProfiler();
     m_state->setBoolean(HeapProfilerAgentState::samplingHeapProfilerEnabled, false);
     if (!v8Profile) {

@@ -83,15 +83,15 @@ private:
     bool isInstrumenting();
 
     Client* m_client;
-    OwnPtr<V8InspectorSession> m_v8Session;
+    std::unique_ptr<V8InspectorSession> m_v8Session;
     int m_sessionId;
     bool m_autoFlush;
     bool m_disposed;
     Member<InspectedFrames> m_inspectedFrames;
     Member<InstrumentingAgents> m_instrumentingAgents;
-    OwnPtr<protocol::Frontend> m_inspectorFrontend;
-    OwnPtr<protocol::Dispatcher> m_inspectorBackendDispatcher;
-    OwnPtr<protocol::DictionaryValue> m_state;
+    std::unique_ptr<protocol::Frontend> m_inspectorFrontend;
+    std::unique_ptr<protocol::Dispatcher> m_inspectorBackendDispatcher;
+    std::unique_ptr<protocol::DictionaryValue> m_state;
     HeapVector<Member<InspectorAgent>> m_agents;
     Vector<protocol::String16> m_notificationQueue;
     String m_lastSentState;

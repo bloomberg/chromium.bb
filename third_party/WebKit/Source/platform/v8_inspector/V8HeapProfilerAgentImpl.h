@@ -33,12 +33,12 @@ public:
 
     void takeHeapSnapshot(ErrorString*, const Maybe<bool>& reportProgress) override;
 
-    void getObjectByHeapObjectId(ErrorString*, const String16& heapSnapshotObjectId, const Maybe<String16>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* result) override;
+    void getObjectByHeapObjectId(ErrorString*, const String16& heapSnapshotObjectId, const Maybe<String16>& objectGroup, std::unique_ptr<protocol::Runtime::RemoteObject>* result) override;
     void addInspectedHeapObject(ErrorString*, const String16& inspectedHeapObjectId) override;
     void getHeapObjectId(ErrorString*, const String16& objectId, String16* heapSnapshotObjectId) override;
 
     void startSampling(ErrorString*, const Maybe<double>& samplingInterval) override;
-    void stopSampling(ErrorString*, OwnPtr<protocol::HeapProfiler::SamplingHeapProfile>*) override;
+    void stopSampling(ErrorString*, std::unique_ptr<protocol::HeapProfiler::SamplingHeapProfile>*) override;
 
 private:
     void startTrackingHeapObjectsInternal(bool trackAllocations);

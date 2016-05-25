@@ -35,7 +35,7 @@
 #include "platform/v8_inspector/JavaScriptCallFrame.h"
 #include "platform/v8_inspector/V8DebuggerScript.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 
 #include <v8-debug.h>
 #include <v8.h>
@@ -106,7 +106,7 @@ public:
     v8::Local<v8::Context> regexContext();
 
     // V8Debugger implementation
-    PassOwnPtr<V8InspectorSession> connect(int contextGroupId, V8InspectorSessionClient*, const String16* state) override;
+    std::unique_ptr<V8InspectorSession> connect(int contextGroupId, V8InspectorSessionClient*, const String16* state) override;
     void contextCreated(const V8ContextInfo&) override;
     void contextDestroyed(v8::Local<v8::Context>) override;
     void resetContextGroup(int contextGroupId) override;
@@ -114,10 +114,10 @@ public:
     void didExecuteScript(v8::Local<v8::Context>) override;
     void idleStarted() override;
     void idleFinished() override;
-    PassOwnPtr<V8StackTrace> createStackTrace(v8::Local<v8::StackTrace>, size_t maxStackSize) override;
-    PassOwnPtr<V8StackTrace> captureStackTrace(size_t maxStackSize) override;
+    std::unique_ptr<V8StackTrace> createStackTrace(v8::Local<v8::StackTrace>, size_t maxStackSize) override;
+    std::unique_ptr<V8StackTrace> captureStackTrace(size_t maxStackSize) override;
 
-    using ContextByIdMap = protocol::HashMap<int, OwnPtr<InspectedContext>>;
+    using ContextByIdMap = protocol::HashMap<int, std::unique_ptr<InspectedContext>>;
     void discardInspectedContext(int contextGroupId, int contextId);
     const ContextByIdMap* contextGroup(int contextGroupId);
     void disconnect(V8InspectorSessionImpl*);
@@ -148,7 +148,7 @@ private:
 
     v8::Isolate* m_isolate;
     V8DebuggerClient* m_client;
-    using ContextsByGroupMap = protocol::HashMap<int, OwnPtr<ContextByIdMap>>;
+    using ContextsByGroupMap = protocol::HashMap<int, std::unique_ptr<ContextByIdMap>>;
     ContextsByGroupMap m_contexts;
     using SessionMap = protocol::HashMap<int, V8InspectorSessionImpl*>;
     SessionMap m_sessions;

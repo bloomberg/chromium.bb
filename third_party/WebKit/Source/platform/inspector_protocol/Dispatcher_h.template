@@ -18,21 +18,21 @@ class DispatcherImplWeakPtr;
 
 class PLATFORM_EXPORT Dispatcher {
 public:
-    static PassOwnPtr<Dispatcher> create(FrontendChannel* frontendChannel);
+    static std::unique_ptr<Dispatcher> create(FrontendChannel* frontendChannel);
     virtual ~Dispatcher() { }
 
     class PLATFORM_EXPORT CallbackBase {
     public:
-        CallbackBase(PassOwnPtr<DispatcherImplWeakPtr> backendImpl, int callId);
+        CallbackBase(std::unique_ptr<DispatcherImplWeakPtr> backendImpl, int callId);
         virtual ~CallbackBase();
         void sendFailure(const ErrorString&);
         void dispose();
 
     protected:
-        void sendIfActive(PassOwnPtr<protocol::DictionaryValue> partialMessage, const ErrorString& invocationError);
+        void sendIfActive(std::unique_ptr<protocol::DictionaryValue> partialMessage, const ErrorString& invocationError);
 
     private:
-        OwnPtr<DispatcherImplWeakPtr> m_backendImpl;
+        std::unique_ptr<DispatcherImplWeakPtr> m_backendImpl;
         int m_callId;
     };
 

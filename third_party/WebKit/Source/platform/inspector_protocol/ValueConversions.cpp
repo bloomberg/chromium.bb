@@ -7,42 +7,42 @@
 namespace blink {
 namespace protocol {
 
-PassOwnPtr<protocol::Value> toValue(int value)
+std::unique_ptr<protocol::Value> toValue(int value)
 {
     return FundamentalValue::create(value);
 }
 
-PassOwnPtr<protocol::Value> toValue(double value)
+std::unique_ptr<protocol::Value> toValue(double value)
 {
     return FundamentalValue::create(value);
 }
 
-PassOwnPtr<protocol::Value> toValue(bool value)
+std::unique_ptr<protocol::Value> toValue(bool value)
 {
     return FundamentalValue::create(value);
 }
 
-PassOwnPtr<protocol::Value> toValue(const String16& param)
+std::unique_ptr<protocol::Value> toValue(const String16& param)
 {
     return StringValue::create(param);
 }
 
-PassOwnPtr<protocol::Value> toValue(const String& param)
+std::unique_ptr<protocol::Value> toValue(const String& param)
 {
     return StringValue::create(param);
 }
 
-PassOwnPtr<protocol::Value> toValue(Value* param)
+std::unique_ptr<protocol::Value> toValue(Value* param)
 {
     return param->clone();
 }
 
-PassOwnPtr<protocol::Value> toValue(DictionaryValue* param)
+std::unique_ptr<protocol::Value> toValue(DictionaryValue* param)
 {
     return param->clone();
 }
 
-PassOwnPtr<protocol::Value> toValue(ListValue* param)
+std::unique_ptr<protocol::Value> toValue(ListValue* param)
 {
     return param->clone();
 }

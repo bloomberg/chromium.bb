@@ -44,7 +44,7 @@ public:
     static ConsoleMessage* createForConsoleAPI(MessageLevel, MessageType, const String& message, ScriptArguments*);
 
     static ConsoleMessage* create(MessageSource, MessageLevel, const String& message, PassOwnPtr<SourceLocation>);
-    static ConsoleMessage* create(MessageSource, MessageLevel, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassOwnPtr<V8StackTrace>, int scriptId, ScriptArguments*);
+    static ConsoleMessage* create(MessageSource, MessageLevel, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId, ScriptArguments*);
 
     ~ConsoleMessage();
 
@@ -71,7 +71,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    ConsoleMessage(MessageSource, MessageLevel, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassOwnPtr<V8StackTrace>, int scriptId, ScriptArguments*);
+    ConsoleMessage(MessageSource, MessageLevel, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId, ScriptArguments*);
 
     MessageSource m_source;
     MessageLevel m_level;
@@ -81,7 +81,7 @@ private:
     String m_url;
     unsigned m_lineNumber;
     unsigned m_columnNumber;
-    OwnPtr<V8StackTrace> m_stackTrace;
+    std::unique_ptr<V8StackTrace> m_stackTrace;
     Member<ScriptArguments> m_scriptArguments;
     unsigned long m_requestIdentifier;
     double m_timestamp;

@@ -82,7 +82,7 @@ void InspectedContext::createInjectedScript()
 
 void InspectedContext::discardInjectedScript()
 {
-    m_injectedScript.clear();
+    m_injectedScript.reset();
 }
 
 } // namespace blink

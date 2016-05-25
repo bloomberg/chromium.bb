@@ -10,7 +10,7 @@
 
 namespace blink {
 
-PLATFORM_EXPORT PassOwnPtr<protocol::Value> toProtocolValue(v8::Local<v8::Context>, v8::Local<v8::Value>, int maxDepth = protocol::Value::maxDepth);
+PLATFORM_EXPORT std::unique_ptr<protocol::Value> toProtocolValue(v8::Local<v8::Context>, v8::Local<v8::Value>, int maxDepth = protocol::Value::maxDepth);
 
 } // namespace blink
 

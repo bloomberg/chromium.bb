@@ -23,6 +23,7 @@
 #include "core/inspector/ScriptArguments.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/OwnPtr.h"
 
 namespace blink {
 

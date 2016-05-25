@@ -33,17 +33,16 @@
 
 #include "platform/inspector_protocol/Collections.h"
 #include "platform/inspector_protocol/String16.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include <v8.h>
 
 namespace blink {
 
 class JavaScriptCallFrame {
 public:
-    static PassOwnPtr<JavaScriptCallFrame> create(v8::Local<v8::Context> debuggerContext, v8::Local<v8::Object> callFrame)
+    static std::unique_ptr<JavaScriptCallFrame> create(v8::Local<v8::Context> debuggerContext, v8::Local<v8::Object> callFrame)
     {
-        return adoptPtr(new JavaScriptCallFrame(debuggerContext, callFrame));
+        return wrapUnique(new JavaScriptCallFrame(debuggerContext, callFrame));
     }
     ~JavaScriptCallFrame();
 
@@ -68,7 +67,7 @@ private:
     v8::Global<v8::Object> m_callFrame;
 };
 
-using JavaScriptCallFrames = protocol::Vector<OwnPtr<JavaScriptCallFrame>>;
+using JavaScriptCallFrames = protocol::Vector<std::unique_ptr<JavaScriptCallFrame>>;
 
 } // namespace blink
 

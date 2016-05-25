@@ -71,7 +71,7 @@ public:
         const Maybe<bool>& returnByValue,
         const Maybe<bool>& generatePreview,
         const Maybe<bool>& userGesture,
-        OwnPtr<protocol::Runtime::RemoteObject>* result,
+        std::unique_ptr<protocol::Runtime::RemoteObject>* result,
         Maybe<bool>* wasThrown,
         Maybe<protocol::Runtime::ExceptionDetails>*) override;
     void callFunctionOn(ErrorString*,
@@ -82,7 +82,7 @@ public:
         const Maybe<bool>& returnByValue,
         const Maybe<bool>& generatePreview,
         const Maybe<bool>& userGesture,
-        OwnPtr<protocol::Runtime::RemoteObject>* result,
+        std::unique_ptr<protocol::Runtime::RemoteObject>* result,
         Maybe<bool>* wasThrown) override;
     void releaseObject(ErrorString*, const String16& objectId) override;
     void getProperties(ErrorString*,
@@ -90,7 +90,7 @@ public:
         const Maybe<bool>& ownProperties,
         const Maybe<bool>& accessorPropertiesOnly,
         const Maybe<bool>& generatePreview,
-        OwnPtr<protocol::Array<protocol::Runtime::PropertyDescriptor>>* result,
+        std::unique_ptr<protocol::Array<protocol::Runtime::PropertyDescriptor>>* result,
         Maybe<protocol::Array<protocol::Runtime::InternalPropertyDescriptor>>* internalProperties,
         Maybe<protocol::Runtime::ExceptionDetails>*) override;
     void releaseObjectGroup(ErrorString*, const String16& objectGroup) override;
@@ -109,13 +109,13 @@ public:
         const Maybe<String16>& objectGroup,
         const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
         const Maybe<bool>& includeCommandLineAPI,
-        OwnPtr<protocol::Runtime::RemoteObject>* result,
+        std::unique_ptr<protocol::Runtime::RemoteObject>* result,
         Maybe<protocol::Runtime::ExceptionDetails>*) override;
 
     void reset();
     void reportExecutionContextCreated(InspectedContext*);
     void reportExecutionContextDestroyed(InspectedContext*);
-    void inspect(PassOwnPtr<protocol::Runtime::RemoteObject> objectToInspect, PassOwnPtr<protocol::DictionaryValue> hints);
+    void inspect(std::unique_ptr<protocol::Runtime::RemoteObject> objectToInspect, std::unique_ptr<protocol::DictionaryValue> hints);
 
 private:
     V8InspectorSessionImpl* m_session;
@@ -123,7 +123,7 @@ private:
     protocol::Frontend::Runtime* m_frontend;
     V8DebuggerImpl* m_debugger;
     bool m_enabled;
-    protocol::HashMap<String16, OwnPtr<v8::Global<v8::Script>>> m_compiledScripts;
+    protocol::HashMap<String16, std::unique_ptr<v8::Global<v8::Script>>> m_compiledScripts;
 };
 
 } // namespace blink

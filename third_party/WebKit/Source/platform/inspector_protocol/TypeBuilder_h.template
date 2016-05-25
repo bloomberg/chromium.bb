@@ -15,7 +15,7 @@
 #include "platform/inspector_protocol/Values.h"
 #include "platform/inspector_protocol/ValueConversions.h"
 #include "wtf/Assertions.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 namespace protocol {
@@ -24,14 +24,14 @@ using ErrorString = String16;
 
 class PLATFORM_EXPORT Object {
 public:
-    static PassOwnPtr<Object> parse(protocol::Value* value, ErrorSupport* errors);
+    static std::unique_ptr<Object> parse(protocol::Value* value, ErrorSupport* errors);
     ~Object();
 
-    PassOwnPtr<protocol::DictionaryValue> serialize() const;
-    PassOwnPtr<Object> clone() const;
+    std::unique_ptr<protocol::DictionaryValue> serialize() const;
+    std::unique_ptr<Object> clone() const;
 private:
-    Object(PassOwnPtr<protocol::DictionaryValue> object);
-    OwnPtr<protocol::DictionaryValue> m_object;
+    Object(std::unique_ptr<protocol::DictionaryValue> object);
+    std::unique_ptr<protocol::DictionaryValue> m_object;
 };
 
 {% for domain in api.domains %}
@@ -103,7 +103,7 @@ namespace {{domain.domain}} {
 // {{type.description}}
 class PLATFORM_EXPORT {{type.id}} {
 public:
-    static PassOwnPtr<{{type.id}}> parse(protocol::Value* value, ErrorSupport* errors);
+    static std::unique_ptr<{{type.id}}> parse(protocol::Value* value, ErrorSupport* errors);
 
     ~{{type.id}}() { }
     {% for property in type.properties %}
@@ -125,8 +125,8 @@ public:
     void set{{property.name | to_title_case}}({{resolve_type(property).pass_type}} value) { m_{{property.name}} = {{resolve_type(property).to_rvalue % "value"}}; }
     {% endfor %}
 
-    PassOwnPtr<protocol::DictionaryValue> serialize() const;
-    PassOwnPtr<{{type.id}}> clone() const;
+    std::unique_ptr<protocol::DictionaryValue> serialize() const;
+    std::unique_ptr<{{type.id}}> clone() const;
 
     template<int STATE>
     class {{type.id}}Builder {
@@ -163,7 +163,7 @@ public:
       {% endif %}
     {% endfor %}
 
-        PassOwnPtr<{{type.id}}> build()
+        std::unique_ptr<{{type.id}}> build()
         {
             static_assert(STATE == AllFieldsSet, "state should be AllFieldsSet");
             return std::move(m_result);
@@ -171,7 +171,7 @@ public:
 
     private:
         friend class {{type.id}};
-        {{type.id}}Builder() : m_result(adoptPtr(new {{type.id}}())) { }
+        {{type.id}}Builder() : m_result(new {{type.id}}()) { }
 
         template<int STEP> {{type.id}}Builder<STATE | STEP>& castState()
         {

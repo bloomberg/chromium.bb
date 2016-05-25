@@ -147,7 +147,7 @@ static bool hasInternalError(ErrorString* errorString, bool hasError)
     return hasError;
 }
 
-static PassOwnPtr<protocol::Debugger::Location> buildProtocolLocation(const String16& scriptId, int lineNumber, int columnNumber)
+static std::unique_ptr<protocol::Debugger::Location> buildProtocolLocation(const String16& scriptId, int lineNumber, int columnNumber)
 {
     return protocol::Debugger::Location::create()
         .setScriptId(scriptId)
@@ -314,9 +314,9 @@ void V8DebuggerAgentImpl::setSkipAllPauses(ErrorString*, bool skipped)
     m_state->setBoolean(DebuggerAgentState::skipAllPauses, m_skipAllPauses);
 }
 
-static PassOwnPtr<protocol::DictionaryValue> buildObjectForBreakpointCookie(const String16& url, int lineNumber, int columnNumber, const String16& condition, bool isRegex)
+static std::unique_ptr<protocol::DictionaryValue> buildObjectForBreakpointCookie(const String16& url, int lineNumber, int columnNumber, const String16& condition, bool isRegex)
 {
-    OwnPtr<protocol::DictionaryValue> breakpointObject = protocol::DictionaryValue::create();
+    std::unique_ptr<protocol::DictionaryValue> breakpointObject = protocol::DictionaryValue::create();
     breakpointObject->setString(DebuggerAgentState::url, url);
     breakpointObject->setNumber(DebuggerAgentState::lineNumber, lineNumber);
     breakpointObject->setNumber(DebuggerAgentState::columnNumber, columnNumber);
@@ -341,7 +341,7 @@ void V8DebuggerAgentImpl::setBreakpointByUrl(ErrorString* errorString,
     const Maybe<int>& optionalColumnNumber,
     const Maybe<String16>& optionalCondition,
     String16* outBreakpointId,
-    OwnPtr<protocol::Array<protocol::Debugger::Location>>* locations)
+    std::unique_ptr<protocol::Array<protocol::Debugger::Location>>* locations)
 {
     *locations = Array<protocol::Debugger::Location>::create();
     if (optionalURL.isJust() == optionalURLRegex.isJust()) {
@@ -364,7 +364,7 @@ void V8DebuggerAgentImpl::setBreakpointByUrl(ErrorString* errorString,
     String16 breakpointId = (isRegex ? "/" + url + "/" : url) + ":" + String16::number(lineNumber) + ":" + String16::number(columnNumber);
     protocol::DictionaryValue* breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
     if (!breakpointsCookie) {
-        OwnPtr<protocol::DictionaryValue> newValue = protocol::DictionaryValue::create();
+        std::unique_ptr<protocol::DictionaryValue> newValue = protocol::DictionaryValue::create();
         breakpointsCookie = newValue.get();
         m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, std::move(newValue));
     }
@@ -379,7 +379,7 @@ void V8DebuggerAgentImpl::setBreakpointByUrl(ErrorString* errorString,
     for (auto& script : m_scripts) {
         if (!matches(m_debugger, script.second->sourceURL(), url, isRegex))
             continue;
-        OwnPtr<protocol::Debugger::Location> location = resolveBreakpoint(breakpointId, script.first, breakpoint, UserBreakpointSource);
+        std::unique_ptr<protocol::Debugger::Location> location = resolveBreakpoint(breakpointId, script.first, breakpoint, UserBreakpointSource);
         if (location)
             (*locations)->addItem(std::move(location));
     }
@@ -387,7 +387,7 @@ void V8DebuggerAgentImpl::setBreakpointByUrl(ErrorString* errorString,
     *outBreakpointId = breakpointId;
 }
 
-static bool parseLocation(ErrorString* errorString, PassOwnPtr<protocol::Debugger::Location> location, String16* scriptId, int* lineNumber, int* columnNumber)
+static bool parseLocation(ErrorString* errorString, std::unique_ptr<protocol::Debugger::Location> location, String16* scriptId, int* lineNumber, int* columnNumber)
 {
     *scriptId = location->getScriptId();
     *lineNumber = location->getLineNumber();
@@ -396,10 +396,10 @@ static bool parseLocation(ErrorString* errorString, PassOwnPtr<protocol::Debugge
 }
 
 void V8DebuggerAgentImpl::setBreakpoint(ErrorString* errorString,
-    PassOwnPtr<protocol::Debugger::Location> location,
+    std::unique_ptr<protocol::Debugger::Location> location,
     const Maybe<String16>& optionalCondition,
     String16* outBreakpointId,
-    OwnPtr<protocol::Debugger::Location>* actualLocation)
+    std::unique_ptr<protocol::Debugger::Location>* actualLocation)
 {
     String16 scriptId;
     int lineNumber;
@@ -450,7 +450,7 @@ void V8DebuggerAgentImpl::removeBreakpoint(const String16& breakpointId)
 }
 
 void V8DebuggerAgentImpl::continueToLocation(ErrorString* errorString,
-    PassOwnPtr<protocol::Debugger::Location> location,
+    std::unique_ptr<protocol::Debugger::Location> location,
     const protocol::Maybe<bool>& interstateLocationOpt)
 {
     if (!checkEnabled(errorString))
@@ -472,7 +472,7 @@ void V8DebuggerAgentImpl::continueToLocation(ErrorString* errorString,
     resume(errorString);
 }
 
-void V8DebuggerAgentImpl::getBacktrace(ErrorString* errorString, OwnPtr<Array<CallFrame>>* callFrames, Maybe<StackTrace>* asyncStackTrace)
+void V8DebuggerAgentImpl::getBacktrace(ErrorString* errorString, std::unique_ptr<Array<CallFrame>>* callFrames, Maybe<StackTrace>* asyncStackTrace)
 {
     if (!assertPaused(errorString))
         return;
@@ -558,7 +558,7 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::shouldSkipStepPause(J
     return RequestStepFrame;
 }
 
-PassOwnPtr<protocol::Debugger::Location> V8DebuggerAgentImpl::resolveBreakpoint(const String16& breakpointId, const String16& scriptId, const ScriptBreakpoint& breakpoint, BreakpointSource source)
+std::unique_ptr<protocol::Debugger::Location> V8DebuggerAgentImpl::resolveBreakpoint(const String16& breakpointId, const String16& scriptId, const ScriptBreakpoint& breakpoint, BreakpointSource source)
 {
     DCHECK(enabled());
     // FIXME: remove these checks once crbug.com/520702 is resolved.
@@ -591,7 +591,7 @@ PassOwnPtr<protocol::Debugger::Location> V8DebuggerAgentImpl::resolveBreakpoint(
 void V8DebuggerAgentImpl::searchInContent(ErrorString* error, const String16& scriptId, const String16& query,
     const Maybe<bool>& optionalCaseSensitive,
     const Maybe<bool>& optionalIsRegex,
-    OwnPtr<Array<protocol::Debugger::SearchMatch>>* results)
+    std::unique_ptr<Array<protocol::Debugger::SearchMatch>>* results)
 {
     ScriptsMap::iterator it = m_scripts.find(scriptId);
     if (it != m_scripts.end())
@@ -614,7 +614,7 @@ void V8DebuggerAgentImpl::setScriptSource(ErrorString* errorString,
     if (!debugger().setScriptSource(scriptId, newContent, preview.fromMaybe(false), errorString, optOutCompileError, &m_pausedCallFrames, stackChanged))
         return;
 
-    OwnPtr<Array<CallFrame>> callFrames = currentCallFrames(errorString);
+    std::unique_ptr<Array<CallFrame>> callFrames = currentCallFrames(errorString);
     if (!callFrames)
         return;
     *newCallFrames = std::move(callFrames);
@@ -628,7 +628,7 @@ void V8DebuggerAgentImpl::setScriptSource(ErrorString* errorString,
 
 void V8DebuggerAgentImpl::restartFrame(ErrorString* errorString,
     const String16& callFrameId,
-    OwnPtr<Array<CallFrame>>* newCallFrames,
+    std::unique_ptr<Array<CallFrame>>* newCallFrames,
     Maybe<StackTrace>* asyncStackTrace)
 {
     if (!assertPaused(errorString))
@@ -667,7 +667,7 @@ void V8DebuggerAgentImpl::getScriptSource(ErrorString* error, const String16& sc
     *scriptSource = it->second->source();
 }
 
-void V8DebuggerAgentImpl::getFunctionDetails(ErrorString* errorString, const String16& functionId, OwnPtr<FunctionDetails>* details)
+void V8DebuggerAgentImpl::getFunctionDetails(ErrorString* errorString, const String16& functionId, std::unique_ptr<FunctionDetails>* details)
 {
     if (!checkEnabled(errorString))
         return;
@@ -688,14 +688,14 @@ void V8DebuggerAgentImpl::getFunctionDetails(ErrorString* errorString, const Str
             return;
     }
 
-    OwnPtr<FunctionDetails> functionDetails = FunctionDetails::create()
+    std::unique_ptr<FunctionDetails> functionDetails = FunctionDetails::create()
         .setLocation(buildProtocolLocation(String16::number(function->ScriptId()), function->GetScriptLineNumber(), function->GetScriptColumnNumber()))
         .setFunctionName(toProtocolStringWithTypeCheck(function->GetDebugName()))
         .setIsGenerator(function->IsGeneratorFunction()).build();
 
     if (!scopes.IsEmpty()) {
         protocol::ErrorSupport errorSupport;
-        OwnPtr<protocol::Array<protocol::Debugger::Scope>> scopeChain = protocol::Array<protocol::Debugger::Scope>::parse(toProtocolValue(scope.context(), scopes).get(), &errorSupport);
+        std::unique_ptr<protocol::Array<protocol::Debugger::Scope>> scopeChain = protocol::Array<protocol::Debugger::Scope>::parse(toProtocolValue(scope.context(), scopes).get(), &errorSupport);
         if (hasInternalError(errorString, errorSupport.hasErrors()))
             return;
         functionDetails->setScopeChain(std::move(scopeChain));
@@ -704,7 +704,7 @@ void V8DebuggerAgentImpl::getFunctionDetails(ErrorString* errorString, const Str
     *details = std::move(functionDetails);
 }
 
-void V8DebuggerAgentImpl::getGeneratorObjectDetails(ErrorString* errorString, const String16& objectId, OwnPtr<GeneratorObjectDetails>* outDetails)
+void V8DebuggerAgentImpl::getGeneratorObjectDetails(ErrorString* errorString, const String16& objectId, std::unique_ptr<GeneratorObjectDetails>* outDetails)
 {
     if (!checkEnabled(errorString))
         return;
@@ -726,13 +726,13 @@ void V8DebuggerAgentImpl::getGeneratorObjectDetails(ErrorString* errorString, co
         return;
 
     protocol::ErrorSupport errors;
-    OwnPtr<GeneratorObjectDetails> protocolDetails = GeneratorObjectDetails::parse(toProtocolValue(scope.context(), detailsObject).get(), &errors);
+    std::unique_ptr<GeneratorObjectDetails> protocolDetails = GeneratorObjectDetails::parse(toProtocolValue(scope.context(), detailsObject).get(), &errors);
     if (hasInternalError(errorString, !protocolDetails))
         return;
     *outDetails = std::move(protocolDetails);
 }
 
-void V8DebuggerAgentImpl::getCollectionEntries(ErrorString* errorString, const String16& objectId, OwnPtr<protocol::Array<CollectionEntry>>* outEntries)
+void V8DebuggerAgentImpl::getCollectionEntries(ErrorString* errorString, const String16& objectId, std::unique_ptr<protocol::Array<CollectionEntry>>* outEntries)
 {
     if (!checkEnabled(errorString))
         return;
@@ -760,13 +760,13 @@ void V8DebuggerAgentImpl::getCollectionEntries(ErrorString* errorString, const S
     if (!scope.injectedScript()->wrapPropertyInArray(errorString, entriesArray, toV8StringInternalized(m_isolate, "value"), scope.objectGroupName()))
         return;
     protocol::ErrorSupport errors;
-    OwnPtr<protocol::Array<CollectionEntry>> entries = protocol::Array<CollectionEntry>::parse(toProtocolValue(scope.context(), entriesArray).get(), &errors);
+    std::unique_ptr<protocol::Array<CollectionEntry>> entries = protocol::Array<CollectionEntry>::parse(toProtocolValue(scope.context(), entriesArray).get(), &errors);
     if (hasInternalError(errorString, !entries))
         return;
     *outEntries = std::move(entries);
 }
 
-void V8DebuggerAgentImpl::schedulePauseOnNextStatement(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data)
+void V8DebuggerAgentImpl::schedulePauseOnNextStatement(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data)
 {
     if (!enabled() || m_scheduledDebuggerStep == StepInto || m_javaScriptPauseScheduled || debugger().isPaused() || !debugger().breakpointsActivated())
         return;
@@ -915,7 +915,7 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString,
     const Maybe<bool>& doNotPauseOnExceptionsAndMuteConsole,
     const Maybe<bool>& returnByValue,
     const Maybe<bool>& generatePreview,
-    OwnPtr<RemoteObject>* result,
+    std::unique_ptr<RemoteObject>* result,
     Maybe<bool>* wasThrown,
     Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
@@ -953,7 +953,7 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString,
 void V8DebuggerAgentImpl::setVariableValue(ErrorString* errorString,
     int scopeNumber,
     const String16& variableName,
-    PassOwnPtr<protocol::Runtime::CallArgument> newValueArgument,
+    std::unique_ptr<protocol::Runtime::CallArgument> newValueArgument,
     const String16& callFrameId)
 {
     if (!checkEnabled(errorString))
@@ -992,7 +992,7 @@ void V8DebuggerAgentImpl::asyncTaskScheduled(const String16& taskName, void* tas
     if (!m_maxAsyncCallStackDepth)
         return;
     v8::HandleScope scope(m_isolate);
-    OwnPtr<V8StackTraceImpl> chain = V8StackTraceImpl::capture(this, V8StackTrace::maxCallStackSizeToCapture, taskName);
+    std::unique_ptr<V8StackTraceImpl> chain = V8StackTraceImpl::capture(this, V8StackTrace::maxCallStackSizeToCapture, taskName);
     if (chain) {
         m_asyncTaskStacks.set(task, std::move(chain));
         if (recurring)
@@ -1058,7 +1058,7 @@ void V8DebuggerAgentImpl::allAsyncTasksCanceled()
 #endif
 }
 
-void V8DebuggerAgentImpl::setBlackboxPatterns(ErrorString* errorString, PassOwnPtr<protocol::Array<String16>> patterns)
+void V8DebuggerAgentImpl::setBlackboxPatterns(ErrorString* errorString, std::unique_ptr<protocol::Array<String16>> patterns)
 {
     if (!patterns->length()) {
         m_blackboxPattern = nullptr;
@@ -1079,7 +1079,7 @@ void V8DebuggerAgentImpl::setBlackboxPatterns(ErrorString* errorString, PassOwnP
 
 bool V8DebuggerAgentImpl::setBlackboxPattern(ErrorString* errorString, const String16& pattern)
 {
-    OwnPtr<V8Regex> regex = adoptPtr(new V8Regex(m_debugger, pattern, true /** caseSensitive */, false /** multiline */));
+    std::unique_ptr<V8Regex> regex(new V8Regex(m_debugger, pattern, true /** caseSensitive */, false /** multiline */));
     if (!regex->isValid()) {
         *errorString = "Pattern parser error: " + regex->errorMessage();
         return false;
@@ -1088,7 +1088,7 @@ bool V8DebuggerAgentImpl::setBlackboxPattern(ErrorString* errorString, const Str
     return true;
 }
 
-void V8DebuggerAgentImpl::setBlackboxedRanges(ErrorString* error, const String16& scriptId, PassOwnPtr<protocol::Array<protocol::Debugger::ScriptPosition>> inPositions)
+void V8DebuggerAgentImpl::setBlackboxedRanges(ErrorString* error, const String16& scriptId, std::unique_ptr<protocol::Array<protocol::Debugger::ScriptPosition>> inPositions)
 {
     if (!m_scripts.contains(scriptId)) {
         *error = "No script with passed id.";
@@ -1176,7 +1176,7 @@ void V8DebuggerAgentImpl::changeJavaScriptRecursionLevel(int step)
     }
 }
 
-PassOwnPtr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames(ErrorString* errorString)
+std::unique_ptr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames(ErrorString* errorString)
 {
     if (m_pausedContext.IsEmpty() || !m_pausedCallFrames.size())
         return Array<CallFrame>::create();
@@ -1228,13 +1228,13 @@ PassOwnPtr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames(ErrorString*
     }
 
     protocol::ErrorSupport errorSupport;
-    OwnPtr<Array<CallFrame>> callFrames = Array<CallFrame>::parse(toProtocolValue(context, objects).get(), &errorSupport);
+    std::unique_ptr<Array<CallFrame>> callFrames = Array<CallFrame>::parse(toProtocolValue(context, objects).get(), &errorSupport);
     if (hasInternalError(errorString, !callFrames))
         return Array<CallFrame>::create();
     return callFrames;
 }
 
-PassOwnPtr<StackTrace> V8DebuggerAgentImpl::currentAsyncStackTrace()
+std::unique_ptr<StackTrace> V8DebuggerAgentImpl::currentAsyncStackTrace()
 {
     if (m_pausedContext.IsEmpty() || !m_maxAsyncCallStackDepth || !m_currentStacks.size() || !m_currentStacks.last())
         return nullptr;
@@ -1309,7 +1309,7 @@ void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScr
         breakpointObject->getNumber(DebuggerAgentState::lineNumber, &breakpoint.lineNumber);
         breakpointObject->getNumber(DebuggerAgentState::columnNumber, &breakpoint.columnNumber);
         breakpointObject->getString(DebuggerAgentState::condition, &breakpoint.condition);
-        OwnPtr<protocol::Debugger::Location> location = resolveBreakpoint(cookie.first, parsedScript.scriptId, breakpoint, UserBreakpointSource);
+        std::unique_ptr<protocol::Debugger::Location> location = resolveBreakpoint(cookie.first, parsedScript.scriptId, breakpoint, UserBreakpointSource);
         if (location)
             m_frontend->breakpointResolved(cookie.first, std::move(location));
     }
@@ -1356,7 +1356,7 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8
         }
     }
 
-    OwnPtr<Array<String16>> hitBreakpointIds = Array<String16>::create();
+    std::unique_ptr<Array<String16>> hitBreakpointIds = Array<String16>::create();
 
     for (const auto& point : hitBreakpoints) {
         DebugServerBreakpointToBreakpointIdAndSourceMap::iterator breakpointIterator = m_serverBreakpoints.find(point);
@@ -1395,7 +1395,7 @@ void V8DebuggerAgentImpl::didContinue()
     m_frontend->resumed();
 }
 
-void V8DebuggerAgentImpl::breakProgram(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data)
+void V8DebuggerAgentImpl::breakProgram(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data)
 {
     if (!enabled() || m_skipAllPauses || !m_pausedContext.IsEmpty() || isCurrentCallStackEmptyOrBlackboxed() || !debugger().breakpointsActivated())
         return;
@@ -1407,7 +1407,7 @@ void V8DebuggerAgentImpl::breakProgram(const String16& breakReason, PassOwnPtr<p
     debugger().breakProgram();
 }
 
-void V8DebuggerAgentImpl::breakProgramOnException(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data)
+void V8DebuggerAgentImpl::breakProgramOnException(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data)
 {
     if (!enabled() || m_debugger->getPauseOnExceptionsState() == V8DebuggerImpl::DontPauseOnExceptions)
         return;

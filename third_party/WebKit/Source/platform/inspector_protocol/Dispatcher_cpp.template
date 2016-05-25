@@ -63,9 +63,9 @@ public:
         m_weakPtrs.clear();
     }
 
-    PassOwnPtr<DispatcherImplWeakPtr> weakPtr()
+    std::unique_ptr<DispatcherImplWeakPtr> weakPtr()
     {
-        OwnPtr<DispatcherImplWeakPtr> weak = adoptPtr(new DispatcherImplWeakPtr(this));
+        std::unique_ptr<DispatcherImplWeakPtr> weak(new DispatcherImplWeakPtr(this));
         m_weakPtrs.add(weak.get());
         return weak;
     }
@@ -74,7 +74,7 @@ public:
     virtual void reportProtocolError(int callId, CommonErrorCode, const String16& errorMessage, ErrorSupport* errors) const;
     using Dispatcher::reportProtocolError;
 
-    void sendResponse(int callId, const ErrorString& invocationError, ErrorSupport* errors, PassOwnPtr<protocol::DictionaryValue> result);
+    void sendResponse(int callId, const ErrorString& invocationError, ErrorSupport* errors, std::unique_ptr<protocol::DictionaryValue> result);
 
 {% for domain in api.domains %}
     virtual void registerAgent(blink::protocol::Backend::{{domain.domain}}* agent) { DCHECK(!m_{{domain.domain | lower}}Agent); m_{{domain.domain | lower}}Agent = agent; }
@@ -83,14 +83,14 @@ public:
 private:
     friend class DispatcherCallbackBase;
     friend class DispatcherImplWeakPtr;
-    using CallHandler = void (DispatcherImpl::*)(int callId, PassOwnPtr<DictionaryValue> messageObject, ErrorSupport* errors);
+    using CallHandler = void (DispatcherImpl::*)(int callId, std::unique_ptr<DictionaryValue> messageObject, ErrorSupport* errors);
     using DispatchMap = protocol::HashMap<String16, CallHandler>;
 
 {% for domain in api.domains %}
   {% for command in domain.commands %}
     {% if "redirect" in command %}{% continue %}{% endif %}
     {% if "handlers" in command and not ("renderer" in command["handlers"]) %}{% continue %}{% endif %}
-    void {{domain.domain}}_{{command.name}}(int callId, PassOwnPtr<DictionaryValue> requestMessageObject, ErrorSupport*);
+    void {{domain.domain}}_{{command.name}}(int callId, std::unique_ptr<DictionaryValue> requestMessageObject, ErrorSupport*);
   {% endfor %}
 {% endfor %}
 
@@ -100,7 +100,7 @@ private:
     Backend::{{domain.domain}}* m_{{domain.domain | lower}}Agent;
 {% endfor %}
 
-    void sendResponse(int callId, ErrorString invocationError, PassOwnPtr<protocol::DictionaryValue> result)
+    void sendResponse(int callId, ErrorString invocationError, std::unique_ptr<protocol::DictionaryValue> result)
     {
         sendResponse(callId, invocationError, nullptr, std::move(result));
     }
@@ -119,13 +119,13 @@ private:
 
 class PLATFORM_EXPORT DispatcherCallbackBase : public protocol::Backend::CallbackBase {
 public:
-    DispatcherCallbackBase(PassOwnPtr<DispatcherImplWeakPtr> backendImpl, int callId)
+    DispatcherCallbackBase(std::unique_ptr<DispatcherImplWeakPtr> backendImpl, int callId)
         : m_backendImpl(std::move(backendImpl)), m_callId(callId) { }
     virtual ~DispatcherCallbackBase() { }
     void dispose() { m_backendImpl = nullptr; }
 
 protected:
-    void sendIfActive(PassOwnPtr<protocol::DictionaryValue> partialMessage, const ErrorString& invocationError)
+    void sendIfActive(std::unique_ptr<protocol::DictionaryValue> partialMessage, const ErrorString& invocationError)
     {
         if (!m_backendImpl->get())
             return;
@@ -134,7 +134,7 @@ protected:
     }
 
 private:
-    OwnPtr<DispatcherImplWeakPtr> m_backendImpl;
+    std::unique_ptr<DispatcherImplWeakPtr> m_backendImpl;
     int m_callId;
 };
 
@@ -155,7 +155,7 @@ const char DispatcherImpl::kInvalidRequest[] = "Invalid request";
 
 class PLATFORM_EXPORT {{domain.domain}}{{command.name | to_title_case}}Callback : public Backend::{{domain.domain}}::{{command.name | to_title_case}}Callback, public DispatcherCallbackBase {
 public:
-    {{domain.domain}}{{command.name | to_title_case}}Callback(PassOwnPtr<DispatcherImplWeakPtr> backendImpl, int callId)
+    {{domain.domain}}{{command.name | to_title_case}}Callback(std::unique_ptr<DispatcherImplWeakPtr> backendImpl, int callId)
         : DispatcherCallbackBase(std::move(backendImpl), callId) { }
 
     void sendSuccess(
@@ -168,7 +168,7 @@ public:
       {%- if not loop.last -%}, {% endif -%}
     {%- endfor -%}) override
     {
-        OwnPtr<protocol::DictionaryValue> resultObject = DictionaryValue::create();
+        std::unique_ptr<protocol::DictionaryValue> resultObject = DictionaryValue::create();
           {% for parameter in command.returns %}
             {% if "optional" in parameter %}
         if ({{parameter.name}}.isJust())
@@ -188,7 +188,7 @@ public:
 };
     {% endif %}
 
-void DispatcherImpl::{{domain.domain}}_{{command.name}}(int callId, PassOwnPtr<DictionaryValue> requestMessageObject, ErrorSupport* errors)
+void DispatcherImpl::{{domain.domain}}_{{command.name}}(int callId, std::unique_ptr<DictionaryValue> requestMessageObject, ErrorSupport* errors)
 {
     if (!m_{{domain.domain | lower}}Agent)
         errors->addError("{{domain.domain}} handler is not available.");
@@ -223,10 +223,10 @@ void DispatcherImpl::{{domain.domain}}_{{command.name}}(int callId, PassOwnPtr<D
     {% endif %}
 
     {% if "async" in command %}
-    OwnPtr<{{domain.domain}}{{command.name | to_title_case}}Callback> callback = adoptPtr(new {{domain.domain}}{{command.name | to_title_case}}Callback(weakPtr(), callId));
+    std::unique_ptr<{{domain.domain}}{{command.name | to_title_case}}Callback> callback(new {{domain.domain}}{{command.name | to_title_case}}Callback(weakPtr(), callId));
     {% elif "returns" in command %}
     // Declare output parameters.
-    OwnPtr<protocol::DictionaryValue> result = DictionaryValue::create();
+    std::unique_ptr<protocol::DictionaryValue> result = DictionaryValue::create();
       {% for property in command.returns %}
         {% if "optional" in property %}
     Maybe<{{resolve_type(property).raw_type}}> out_{{property.name}};
@@ -236,7 +236,7 @@ void DispatcherImpl::{{domain.domain}}_{{command.name}}(int callId, PassOwnPtr<D
       {% endfor %}
     {% endif %}
 
-    OwnPtr<DispatcherImplWeakPtr> weak = weakPtr();
+    std::unique_ptr<DispatcherImplWeakPtr> weak = weakPtr();
     ErrorString error;
     m_{{domain.domain | lower}}Agent->{{command.name}}(&error
       {%- for property in command.parameters -%}
@@ -274,17 +274,17 @@ void DispatcherImpl::{{domain.domain}}_{{command.name}}(int callId, PassOwnPtr<D
   {% endfor %}
 {% endfor %}
 
-PassOwnPtr<Dispatcher> Dispatcher::create(FrontendChannel* frontendChannel)
+std::unique_ptr<Dispatcher> Dispatcher::create(FrontendChannel* frontendChannel)
 {
-    return adoptPtr(new DispatcherImpl(frontendChannel));
+    return wrapUnique(new DispatcherImpl(frontendChannel));
 }
 
 void DispatcherImpl::dispatch(const String16& message)
 {
     int callId = 0;
-    OwnPtr<protocol::Value> parsedMessage = parseJSON(message);
+    std::unique_ptr<protocol::Value> parsedMessage = parseJSON(message);
     DCHECK(parsedMessage);
-    OwnPtr<protocol::DictionaryValue> messageObject = DictionaryValue::cast(std::move(parsedMessage));
+    std::unique_ptr<protocol::DictionaryValue> messageObject = DictionaryValue::cast(std::move(parsedMessage));
     DCHECK(messageObject);
 
     protocol::Value* callIdValue = messageObject->get("id");
@@ -306,14 +306,14 @@ void DispatcherImpl::dispatch(const String16& message)
     ((*this).*(*it->second))(callId, std::move(messageObject), &errors);
 }
 
-void DispatcherImpl::sendResponse(int callId, const ErrorString& invocationError, ErrorSupport* errors, PassOwnPtr<protocol::DictionaryValue> result)
+void DispatcherImpl::sendResponse(int callId, const ErrorString& invocationError, ErrorSupport* errors, std::unique_ptr<protocol::DictionaryValue> result)
 {
     if (invocationError.length() || (errors && errors->hasErrors())) {
         reportProtocolError(callId, ServerError, invocationError, errors);
         return;
     }
 
-    OwnPtr<protocol::DictionaryValue> responseMessage = DictionaryValue::create();
+    std::unique_ptr<protocol::DictionaryValue> responseMessage = DictionaryValue::create();
     responseMessage->setNumber("id", callId);
     responseMessage->setObject("result", std::move(result));
     if (m_frontendChannel)
@@ -331,13 +331,13 @@ void DispatcherImpl::reportProtocolError(int callId, CommonErrorCode code, const
     DCHECK(code >=0);
     DCHECK((unsigned)code < m_commonErrors.size());
     DCHECK(m_commonErrors[code]);
-    OwnPtr<protocol::DictionaryValue> error = DictionaryValue::create();
+    std::unique_ptr<protocol::DictionaryValue> error = DictionaryValue::create();
     error->setNumber("code", m_commonErrors[code]);
     error->setString("message", errorMessage);
     DCHECK(error);
     if (errors && errors->hasErrors())
         error->setString("data", errors->errors());
-    OwnPtr<protocol::DictionaryValue> message = DictionaryValue::create();
+    std::unique_ptr<protocol::DictionaryValue> message = DictionaryValue::create();
     message->setObject("error", std::move(error));
     message->setNumber("id", callId);
     if (m_frontendChannel)
@@ -346,7 +346,7 @@ void DispatcherImpl::reportProtocolError(int callId, CommonErrorCode code, const
 
 bool Dispatcher::getCommandName(const String16& message, String16* result)
 {
-    OwnPtr<protocol::Value> value = parseJSON(message);
+    std::unique_ptr<protocol::Value> value = parseJSON(message);
     if (!value)
         return false;
 

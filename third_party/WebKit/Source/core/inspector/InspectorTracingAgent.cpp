@@ -49,7 +49,7 @@ void InspectorTracingAgent::start(ErrorString* errorString,
     const Maybe<double>& bufferUsageReportingInterval,
     const Maybe<String>& transferMode,
     const Maybe<protocol::Tracing::TraceConfig>& config,
-    PassOwnPtr<StartCallback> callback)
+    std::unique_ptr<StartCallback> callback)
 {
     ASSERT(sessionId().isEmpty());
     if (config.isJust()) {
@@ -64,7 +64,7 @@ void InspectorTracingAgent::start(ErrorString* errorString,
     callback->sendSuccess();
 }
 
-void InspectorTracingAgent::end(ErrorString* errorString, PassOwnPtr<EndCallback> callback)
+void InspectorTracingAgent::end(ErrorString* errorString, std::unique_ptr<EndCallback> callback)
 {
     m_client->disableTracing();
     resetSessionId();

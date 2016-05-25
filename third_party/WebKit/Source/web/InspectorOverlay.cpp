@@ -396,9 +396,9 @@ void InspectorOverlay::rebuildOverlayPage()
         m_layoutEditor->rebuild();
 }
 
-static PassOwnPtr<protocol::DictionaryValue> buildObjectForSize(const IntSize& size)
+static std::unique_ptr<protocol::DictionaryValue> buildObjectForSize(const IntSize& size)
 {
-    OwnPtr<protocol::DictionaryValue> result = protocol::DictionaryValue::create();
+    std::unique_ptr<protocol::DictionaryValue> result = protocol::DictionaryValue::create();
     result->setNumber("width", size.width());
     result->setNumber("height", size.height());
     return result;
@@ -421,7 +421,7 @@ void InspectorOverlay::drawNodeHighlight()
         for (unsigned i = 0; i < elements->length(); ++i) {
             Element* element = elements->item(i);
             InspectorHighlight highlight(element, m_nodeHighlightConfig, false);
-            OwnPtr<protocol::DictionaryValue> highlightJSON = highlight.asProtocolValue();
+            std::unique_ptr<protocol::DictionaryValue> highlightJSON = highlight.asProtocolValue();
             evaluateInOverlay("drawHighlight", std::move(highlightJSON));
         }
     }
@@ -431,7 +431,7 @@ void InspectorOverlay::drawNodeHighlight()
     if (m_eventTargetNode)
         highlight.appendEventTargetQuads(m_eventTargetNode.get(), m_nodeHighlightConfig);
 
-    OwnPtr<protocol::DictionaryValue> highlightJSON = highlight.asProtocolValue();
+    std::unique_ptr<protocol::DictionaryValue> highlightJSON = highlight.asProtocolValue();
     evaluateInOverlay("drawHighlight", std::move(highlightJSON));
 }
 
@@ -528,7 +528,7 @@ LocalFrame* InspectorOverlay::overlayMainFrame()
 
 void InspectorOverlay::reset(const IntSize& viewportSize, const IntPoint& documentScrollOffset)
 {
-    OwnPtr<protocol::DictionaryValue> resetData = protocol::DictionaryValue::create();
+    std::unique_ptr<protocol::DictionaryValue> resetData = protocol::DictionaryValue::create();
     resetData->setNumber("deviceScaleFactor", m_webViewImpl->page()->deviceScaleFactor());
     resetData->setNumber("pageScaleFactor", m_webViewImpl->page()->pageScaleFactor());
     resetData->setObject("viewportSize", buildObjectForSize(viewportSize));
@@ -541,16 +541,16 @@ void InspectorOverlay::reset(const IntSize& viewportSize, const IntPoint& docume
 void InspectorOverlay::evaluateInOverlay(const String& method, const String& argument)
 {
     ScriptForbiddenScope::AllowUserAgentScript allowScript;
-    OwnPtr<protocol::ListValue> command = protocol::ListValue::create();
+    std::unique_ptr<protocol::ListValue> command = protocol::ListValue::create();
     command->pushValue(protocol::StringValue::create(method));
     command->pushValue(protocol::StringValue::create(argument));
     toLocalFrame(overlayPage()->mainFrame())->script().executeScriptInMainWorld("dispatch(" + command->toJSONString() + ")", ScriptController::ExecuteScriptWhenScriptsDisabled);
 }
 
-void InspectorOverlay::evaluateInOverlay(const String& method, PassOwnPtr<protocol::Value> argument)
+void InspectorOverlay::evaluateInOverlay(const String& method, std::unique_ptr<protocol::Value> argument)
 {
     ScriptForbiddenScope::AllowUserAgentScript allowScript;
-    OwnPtr<protocol::ListValue> command = protocol::ListValue::create();
+    std::unique_ptr<protocol::ListValue> command = protocol::ListValue::create();
     command->pushValue(protocol::StringValue::create(method));
     command->pushValue(std::move(argument));
     toLocalFrame(overlayPage()->mainFrame())->script().executeScriptInMainWorld("dispatch(" + command->toJSONString() + ")", ScriptController::ExecuteScriptWhenScriptsDisabled);

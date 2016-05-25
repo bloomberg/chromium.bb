@@ -121,7 +121,7 @@ public:
     void frameScheduledNavigation(LocalFrame*, double);
     void frameClearedScheduledNavigation(LocalFrame*);
 
-    PassOwnPtr<protocol::Network::Initiator> buildInitiatorObject(Document*, const FetchInitiatorInfo&);
+    std::unique_ptr<protocol::Network::Initiator> buildInitiatorObject(Document*, const FetchInitiatorInfo&);
 
     void didCreateWebSocket(Document*, unsigned long identifier, const KURL& requestURL, const String&);
     void willSendWebSocketHandshakeRequest(Document*, unsigned long identifier, const WebSocketHandshakeRequest*);
@@ -135,8 +135,8 @@ public:
     void enable(ErrorString*, const Maybe<int>& totalBufferSize, const Maybe<int>& resourceBufferSize) override;
     void disable(ErrorString*) override;
     void setUserAgentOverride(ErrorString*, const String& userAgent) override;
-    void setExtraHTTPHeaders(ErrorString*, PassOwnPtr<protocol::Network::Headers>) override;
-    void getResponseBody(ErrorString*, const String& requestId, PassOwnPtr<GetResponseBodyCallback>) override;
+    void setExtraHTTPHeaders(ErrorString*, std::unique_ptr<protocol::Network::Headers>) override;
+    void getResponseBody(ErrorString*, const String& requestId, std::unique_ptr<GetResponseBodyCallback>) override;
     void addBlockedURL(ErrorString*, const String& url) override;
     void removeBlockedURL(ErrorString*, const String& url) override;
     void replayXHR(ErrorString*, const String& requestId) override;
@@ -161,7 +161,7 @@ private:
     void didFinishXHRInternal(ExecutionContext*, XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString&, const String&, bool);
 
     bool canGetResponseBodyBlob(const String& requestId);
-    void getResponseBodyBlob(const String& requestId, PassOwnPtr<GetResponseBodyCallback>);
+    void getResponseBodyBlob(const String& requestId, std::unique_ptr<GetResponseBodyCallback>);
     void clearPendingRequestData();
 
     Member<InspectedFrames> m_inspectedFrames;
@@ -180,11 +180,11 @@ private:
 
     Member<XHRReplayData> m_pendingXHRReplayData;
 
-    typedef HashMap<String, OwnPtr<protocol::Network::Initiator>> FrameNavigationInitiatorMap;
+    typedef HashMap<String, std::unique_ptr<protocol::Network::Initiator>> FrameNavigationInitiatorMap;
     FrameNavigationInitiatorMap m_frameNavigationInitiatorMap;
 
     // FIXME: InspectorResourceAgent should now be aware of style recalculation.
-    OwnPtr<protocol::Network::Initiator> m_styleRecalculationInitiator;
+    std::unique_ptr<protocol::Network::Initiator> m_styleRecalculationInitiator;
     bool m_isRecalculatingStyle;
 
     HeapHashSet<Member<XMLHttpRequest>> m_replayXHRs;

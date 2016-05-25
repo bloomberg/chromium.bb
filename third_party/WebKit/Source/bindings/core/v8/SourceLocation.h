@@ -25,23 +25,23 @@ public:
     // Shortcut when location is unknown. Tries to capture call stack or parsing location if available.
     static PassOwnPtr<SourceLocation> capture(ExecutionContext* = nullptr);
 
-    static PassOwnPtr<SourceLocation> create(const String& url, unsigned lineNumber, unsigned columnNumber, PassOwnPtr<V8StackTrace>, int scriptId = 0);
+    static PassOwnPtr<SourceLocation> create(const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId = 0);
     ~SourceLocation();
 
     String url() const { return m_url; }
     unsigned lineNumber() const { return m_lineNumber; }
     unsigned columnNumber() const { return m_columnNumber; }
-    PassOwnPtr<V8StackTrace> takeStackTrace() { return std::move(m_stackTrace); }
+    std::unique_ptr<V8StackTrace> takeStackTrace() { return std::move(m_stackTrace); }
     int scriptId() const { return m_scriptId; }
     void toTracedValue(TracedValue*, const char* name) const;
 
 private:
-    SourceLocation(const String& url, unsigned lineNumber, unsigned columnNumber, PassOwnPtr<V8StackTrace>, int scriptId);
+    SourceLocation(const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId);
 
     String m_url;
     unsigned m_lineNumber;
     unsigned m_columnNumber;
-    OwnPtr<V8StackTrace> m_stackTrace;
+    std::unique_ptr<V8StackTrace> m_stackTrace;
     int m_scriptId;
 };
 

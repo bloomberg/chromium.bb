@@ -7,7 +7,7 @@
 
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
 #include "wtf/VectorTraits.h"
 
@@ -48,16 +48,16 @@ private:
 };
 
 template <typename T>
-class Vector<OwnPtr<T>> {
+class Vector<std::unique_ptr<T>> {
     WTF_MAKE_NONCOPYABLE(Vector);
 public:
     Vector() { }
     Vector(size_t capacity) : m_impl(capacity) { }
-    Vector(Vector<OwnPtr<T>>&& other) : m_impl(std::move(other.m_impl)) { }
+    Vector(Vector<std::unique_ptr<T>>&& other) : m_impl(std::move(other.m_impl)) { }
     ~Vector() { }
 
-    typedef OwnPtr<T>* iterator;
-    typedef const OwnPtr<T>* const_iterator;
+    typedef std::unique_ptr<T>* iterator;
+    typedef const std::unique_ptr<T>* const_iterator;
 
     iterator begin() { return m_impl.begin(); }
     iterator end() { return m_impl.end(); }
@@ -73,16 +73,16 @@ public:
     const T* at(size_t i) const { return m_impl.at(i).get(); }
     T* last() { return m_impl.last().get(); }
     const T* last() const { return m_impl.last(); }
-    void append(PassOwnPtr<T> t) { m_impl.append(std::move(t)); }
-    void prepend(PassOwnPtr<T> t) { m_impl.prepend(std::move(t)); }
+    void append(std::unique_ptr<T> t) { m_impl.append(std::move(t)); }
+    void prepend(std::unique_ptr<T> t) { m_impl.prepend(std::move(t)); }
     void remove(size_t i) { m_impl.remove(i); }
     void clear() { m_impl.clear(); }
-    void swap(Vector<OwnPtr<T>>& other) { m_impl.swap(other.m_impl); }
-    void swap(Vector<OwnPtr<T>>&& other) { m_impl.swap(other.m_impl); }
+    void swap(Vector<std::unique_ptr<T>>& other) { m_impl.swap(other.m_impl); }
+    void swap(Vector<std::unique_ptr<T>>&& other) { m_impl.swap(other.m_impl); }
     void removeLast() { m_impl.removeLast(); }
 
 private:
-    WTF::Vector<OwnPtr<T>> m_impl;
+    WTF::Vector<std::unique_ptr<T>> m_impl;
 };
 
 template <typename K, typename V, typename I>
@@ -105,7 +105,7 @@ private:
 };
 
 template <typename K, typename V, typename I>
-class HashMapIterator<K, OwnPtr<V>, I> {
+class HashMapIterator<K, std::unique_ptr<V>, I> {
     STACK_ALLOCATED();
 public:
     HashMapIterator(const I& impl) : m_impl(impl) { }
@@ -113,10 +113,10 @@ public:
     std::pair<K, V*>& operator*() const { return *get(); }
     std::pair<K, V*>* operator->() const { return get(); }
 
-    bool operator==(const HashMapIterator<K, OwnPtr<V>, I>& other) const { return m_impl == other.m_impl; }
-    bool operator!=(const HashMapIterator<K, OwnPtr<V>, I>& other) const { return m_impl != other.m_impl; }
+    bool operator==(const HashMapIterator<K, std::unique_ptr<V>, I>& other) const { return m_impl == other.m_impl; }
+    bool operator!=(const HashMapIterator<K, std::unique_ptr<V>, I>& other) const { return m_impl != other.m_impl; }
 
-    HashMapIterator<K, OwnPtr<V>, I>& operator++() { ++m_impl; return *this; }
+    HashMapIterator<K, std::unique_ptr<V>, I>& operator++() { ++m_impl; return *this; }
 
 private:
     mutable std::pair<K, V*> m_pair;
@@ -153,13 +153,13 @@ private:
 };
 
 template <typename K, typename V>
-class HashMap<K, OwnPtr<V>> {
+class HashMap<K, std::unique_ptr<V>> {
 public:
     HashMap() { }
     ~HashMap() { }
 
-    using iterator = HashMapIterator<K, OwnPtr<V>, typename WTF::HashMap<K, OwnPtr<V>>::iterator>;
-    using const_iterator = HashMapIterator<K, OwnPtr<V>, typename WTF::HashMap<K, OwnPtr<V>>::const_iterator>;
+    using iterator = HashMapIterator<K, std::unique_ptr<V>, typename WTF::HashMap<K, std::unique_ptr<V>>::iterator>;
+    using const_iterator = HashMapIterator<K, std::unique_ptr<V>, typename WTF::HashMap<K, std::unique_ptr<V>>::const_iterator>;
 
     iterator begin() { return iterator(m_impl.begin()); }
     iterator end() { return iterator(m_impl.end()); }
@@ -170,15 +170,15 @@ public:
 
     size_t size() const { return m_impl.size(); }
     bool isEmpty() const { return m_impl.isEmpty(); }
-    bool set(const K& k, PassOwnPtr<V> v) { return m_impl.set(k, std::move(v)).isNewEntry; }
+    bool set(const K& k, std::unique_ptr<V> v) { return m_impl.set(k, std::move(v)).isNewEntry; }
     bool contains(const K& k) const { return m_impl.contains(k); }
     V* get(const K& k) const { return m_impl.get(k); }
-    PassOwnPtr<V> take(const K& k) { return m_impl.take(k); }
+    std::unique_ptr<V> take(const K& k) { return m_impl.take(k); }
     void remove(const K& k) { m_impl.remove(k); }
     void clear() { m_impl.clear(); }
 
 private:
-    WTF::HashMap<K, OwnPtr<V>> m_impl;
+    WTF::HashMap<K, std::unique_ptr<V>> m_impl;
 };
 
 template <typename K>

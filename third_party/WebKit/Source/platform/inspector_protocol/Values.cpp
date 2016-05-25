@@ -104,7 +104,7 @@ void Value::writeJSON(String16Builder* output) const
     output->append(nullString, 4);
 }
 
-PassOwnPtr<Value> Value::clone() const
+std::unique_ptr<Value> Value::clone() const
 {
     return Value::null();
 }
@@ -150,7 +150,7 @@ void FundamentalValue::writeJSON(String16Builder* output) const
     }
 }
 
-PassOwnPtr<Value> FundamentalValue::clone() const
+std::unique_ptr<Value> FundamentalValue::clone() const
 {
     return type() == TypeNumber ? FundamentalValue::create(m_doubleValue) : FundamentalValue::create(m_boolValue);
 }
@@ -167,7 +167,7 @@ void StringValue::writeJSON(String16Builder* output) const
     doubleQuoteStringForJSON(m_stringValue, output);
 }
 
-PassOwnPtr<Value> StringValue::clone() const
+std::unique_ptr<Value> StringValue::clone() const
 {
     return StringValue::create(m_stringValue);
 }
@@ -191,21 +191,21 @@ void DictionaryValue::setString(const String16& name, const String16& value)
     setValue(name, StringValue::create(value));
 }
 
-void DictionaryValue::setValue(const String16& name, PassOwnPtr<Value> value)
+void DictionaryValue::setValue(const String16& name, std::unique_ptr<Value> value)
 {
     DCHECK(value);
     if (m_data.set(name, std::move(value)))
         m_order.append(name);
 }
 
-void DictionaryValue::setObject(const String16& name, PassOwnPtr<DictionaryValue> value)
+void DictionaryValue::setObject(const String16& name, std::unique_ptr<DictionaryValue> value)
 {
     DCHECK(value);
     if (m_data.set(name, std::move(value)))
         m_order.append(name);
 }
 
-void DictionaryValue::setArray(const String16& name, PassOwnPtr<ListValue> value)
+void DictionaryValue::setArray(const String16& name, std::unique_ptr<ListValue> value)
 {
     DCHECK(value);
     if (m_data.set(name, std::move(value)))
@@ -292,9 +292,9 @@ void DictionaryValue::writeJSON(String16Builder* output) const
     output->append('}');
 }
 
-PassOwnPtr<Value> DictionaryValue::clone() const
+std::unique_ptr<Value> DictionaryValue::clone() const
 {
-    OwnPtr<DictionaryValue> result = DictionaryValue::create();
+    std::unique_ptr<DictionaryValue> result = DictionaryValue::create();
     for (size_t i = 0; i < m_order.size(); ++i) {
         String16 key = m_order[i];
         Value* value = m_data.get(key);
@@ -316,7 +316,7 @@ ListValue::~ListValue()
 void ListValue::writeJSON(String16Builder* output) const
 {
     output->append('[');
-    for (Vector<OwnPtr<protocol::Value>>::const_iterator it = m_data.begin(); it != m_data.end(); ++it) {
+    for (Vector<std::unique_ptr<protocol::Value>>::const_iterator it = m_data.begin(); it != m_data.end(); ++it) {
         if (it != m_data.begin())
             output->append(',');
         (*it)->writeJSON(output);
@@ -324,10 +324,10 @@ void ListValue::writeJSON(String16Builder* output) const
     output->append(']');
 }
 
-PassOwnPtr<Value> ListValue::clone() const
+std::unique_ptr<Value> ListValue::clone() const
 {
-    OwnPtr<ListValue> result = ListValue::create();
-    for (Vector<OwnPtr<protocol::Value>>::const_iterator it = m_data.begin(); it != m_data.end(); ++it)
+    std::unique_ptr<ListValue> result = ListValue::create();
+    for (Vector<std::unique_ptr<protocol::Value>>::const_iterator it = m_data.begin(); it != m_data.end(); ++it)
         result->pushValue((*it)->clone());
     return std::move(result);
 }
@@ -337,7 +337,7 @@ ListValue::ListValue()
 {
 }
 
-void ListValue::pushValue(PassOwnPtr<protocol::Value> value)
+void ListValue::pushValue(std::unique_ptr<protocol::Value> value)
 {
     DCHECK(value);
     m_data.append(std::move(value));

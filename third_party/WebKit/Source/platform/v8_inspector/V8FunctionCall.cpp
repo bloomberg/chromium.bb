@@ -34,7 +34,7 @@
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 
 #include <v8.h>
 
@@ -97,7 +97,7 @@ v8::Local<v8::Value> V8FunctionCall::callWithoutExceptionHandling()
     DCHECK(value->IsFunction());
 
     v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(value);
-    OwnPtr<v8::Local<v8::Value>[]> info = adoptArrayPtr(new v8::Local<v8::Value>[m_arguments.size()]);
+    std::unique_ptr<v8::Local<v8::Value>[]> info(new v8::Local<v8::Value>[m_arguments.size()]);
     for (size_t i = 0; i < m_arguments.size(); ++i) {
         info[i] = m_arguments[i];
         DCHECK(!info[i].IsEmpty());

@@ -72,7 +72,7 @@ public:
     void removeInstrumentationBreakpoint(ErrorString*, const String& eventName) override;
     void setXHRBreakpoint(ErrorString*, const String& url) override;
     void removeXHRBreakpoint(ErrorString*, const String& url) override;
-    void getEventListeners(ErrorString*, const String16& objectId, OwnPtr<protocol::Array<protocol::DOMDebugger::EventListener>>* listeners) override;
+    void getEventListeners(ErrorString*, const String16& objectId, std::unique_ptr<protocol::Array<protocol::DOMDebugger::EventListener>>* listeners) override;
 
     // InspectorInstrumentation API
     void willInsertDOMNode(Node* parent);
@@ -93,8 +93,8 @@ public:
     void didCommitLoadForLocalFrame(LocalFrame*) override;
 
 private:
-    void pauseOnNativeEventIfNeeded(PassOwnPtr<protocol::DictionaryValue> eventData, bool synchronous);
-    PassOwnPtr<protocol::DictionaryValue> preparePauseOnNativeEventData(const String& eventName, const String* targetName);
+    void pauseOnNativeEventIfNeeded(std::unique_ptr<protocol::DictionaryValue> eventData, bool synchronous);
+    std::unique_ptr<protocol::DictionaryValue> preparePauseOnNativeEventData(const String& eventName, const String* targetName);
 
     protocol::DictionaryValue* eventListenerBreakpoints();
     protocol::DictionaryValue* xhrBreakpoints();
@@ -110,7 +110,7 @@ private:
     void setEnabled(bool);
 
     void eventListeners(v8::Local<v8::Context>, v8::Local<v8::Value>, const String16& objectGroup, protocol::Array<protocol::DOMDebugger::EventListener>* listenersArray);
-    PassOwnPtr<protocol::DOMDebugger::EventListener> buildObjectForEventListener(v8::Local<v8::Context>, const V8EventListenerInfo&, const String16& objectGroupId);
+    std::unique_ptr<protocol::DOMDebugger::EventListener> buildObjectForEventListener(v8::Local<v8::Context>, const V8EventListenerInfo&, const String16& objectGroupId);
 
     v8::Isolate* m_isolate;
     Member<InspectorDOMAgent> m_domAgent;

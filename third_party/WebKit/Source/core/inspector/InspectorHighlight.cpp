@@ -25,7 +25,7 @@ public:
     PathBuilder() : m_path(protocol::ListValue::create()) { }
     virtual ~PathBuilder() { }
 
-    PassOwnPtr<protocol::ListValue> release() { return std::move(m_path); }
+    std::unique_ptr<protocol::ListValue> release() { return std::move(m_path); }
 
     void appendPath(const Path& path)
     {
@@ -44,7 +44,7 @@ private:
     void appendPathElement(const PathElement*);
     void appendPathCommandAndPoints(const char* command, const FloatPoint points[], size_t length);
 
-    OwnPtr<protocol::ListValue> m_path;
+    std::unique_ptr<protocol::ListValue> m_path;
 };
 
 void PathBuilder::appendPathCommandAndPoints(const char* command, const FloatPoint points[], size_t length)
@@ -90,7 +90,7 @@ public:
         , m_layoutObject(layoutObject)
         , m_shapeOutsideInfo(shapeOutsideInfo) { }
 
-    static PassOwnPtr<protocol::ListValue> buildPath(FrameView& view, LayoutObject& layoutObject, const ShapeOutsideInfo& shapeOutsideInfo, const Path& path)
+    static std::unique_ptr<protocol::ListValue> buildPath(FrameView& view, LayoutObject& layoutObject, const ShapeOutsideInfo& shapeOutsideInfo, const Path& path)
     {
         ShapePathBuilder builder(view, layoutObject, shapeOutsideInfo);
         builder.appendPath(path);
@@ -111,9 +111,9 @@ private:
 };
 
 
-PassOwnPtr<protocol::Array<double>> buildArrayForQuad(const FloatQuad& quad)
+std::unique_ptr<protocol::Array<double>> buildArrayForQuad(const FloatQuad& quad)
 {
-    OwnPtr<protocol::Array<double>> array = protocol::Array<double>::create();
+    std::unique_ptr<protocol::Array<double>> array = protocol::Array<double>::create();
     array->addItem(quad.p1().x());
     array->addItem(quad.p1().y());
     array->addItem(quad.p2().x());
@@ -163,9 +163,9 @@ const ShapeOutsideInfo* shapeOutsideInfoForNode(Node* node, Shape::DisplayPaths*
     return shapeOutsideInfo;
 }
 
-PassOwnPtr<protocol::DictionaryValue> buildElementInfo(Element* element)
+std::unique_ptr<protocol::DictionaryValue> buildElementInfo(Element* element)
 {
-    OwnPtr<protocol::DictionaryValue> elementInfo = protocol::DictionaryValue::create();
+    std::unique_ptr<protocol::DictionaryValue> elementInfo = protocol::DictionaryValue::create();
     Element* realElement = element;
     PseudoElement* pseudoElement = nullptr;
     if (element->isPseudoElement()) {
@@ -253,9 +253,9 @@ void InspectorHighlight::appendQuad(const FloatQuad& quad, const Color& fillColo
     appendPath(builder.release(), fillColor, outlineColor, name);
 }
 
-void InspectorHighlight::appendPath(PassOwnPtr<protocol::ListValue> path, const Color& fillColor, const Color& outlineColor, const String& name)
+void InspectorHighlight::appendPath(std::unique_ptr<protocol::ListValue> path, const Color& fillColor, const Color& outlineColor, const String& name)
 {
-    OwnPtr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
+    std::unique_ptr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
     object->setValue("path", std::move(path));
     object->setString("fillColor", fillColor.serialized());
     if (outlineColor != Color::transparent)
@@ -321,9 +321,9 @@ void InspectorHighlight::appendNodeHighlight(Node* node, const InspectorHighligh
     appendQuad(margin, highlightConfig.margin, Color::transparent, "margin");
 }
 
-PassOwnPtr<protocol::DictionaryValue> InspectorHighlight::asProtocolValue() const
+std::unique_ptr<protocol::DictionaryValue> InspectorHighlight::asProtocolValue() const
 {
-    OwnPtr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
+    std::unique_ptr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
     object->setValue("paths", m_highlightPaths->clone());
     object->setBoolean("showRulers", m_showRulers);
     object->setBoolean("showExtensionLines", m_showExtensionLines);
@@ -334,7 +334,7 @@ PassOwnPtr<protocol::DictionaryValue> InspectorHighlight::asProtocolValue() cons
 }
 
 // static
-bool InspectorHighlight::getBoxModel(Node* node, OwnPtr<protocol::DOM::BoxModel>* model)
+bool InspectorHighlight::getBoxModel(Node* node, std::unique_ptr<protocol::DOM::BoxModel>* model)
 {
     LayoutObject* layoutObject = node->layoutObject();
     FrameView* view = node->document().view();

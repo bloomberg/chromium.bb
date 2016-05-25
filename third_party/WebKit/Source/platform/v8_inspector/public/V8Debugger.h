@@ -7,7 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/inspector_protocol/Frontend.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 
 #include <v8.h>
 
@@ -25,7 +25,7 @@ class DictionaryValue;
 
 class PLATFORM_EXPORT V8Debugger {
 public:
-    static PassOwnPtr<V8Debugger> create(v8::Isolate*, V8DebuggerClient*);
+    static std::unique_ptr<V8Debugger> create(v8::Isolate*, V8DebuggerClient*);
     virtual ~V8Debugger() { }
 
     // TODO(dgozman): make this non-static?
@@ -40,15 +40,15 @@ public:
     virtual void idleStarted() = 0;
     virtual void idleFinished() = 0;
 
-    virtual PassOwnPtr<V8InspectorSession> connect(int contextGroupId, V8InspectorSessionClient*, const String16* state) = 0;
+    virtual std::unique_ptr<V8InspectorSession> connect(int contextGroupId, V8InspectorSessionClient*, const String16* state) = 0;
     virtual bool isPaused() = 0;
 
     static v8::Local<v8::Private> scopeExtensionPrivate(v8::Isolate*);
     static bool isCommandLineAPIMethod(const String16& name);
     static bool isCommandLineAPIGetter(const String16& name);
 
-    virtual PassOwnPtr<V8StackTrace> createStackTrace(v8::Local<v8::StackTrace>, size_t maxStackSize) = 0;
-    virtual PassOwnPtr<V8StackTrace> captureStackTrace(size_t maxStackSize) = 0;
+    virtual std::unique_ptr<V8StackTrace> createStackTrace(v8::Local<v8::StackTrace>, size_t maxStackSize) = 0;
+    virtual std::unique_ptr<V8StackTrace> captureStackTrace(size_t maxStackSize) = 0;
 };
 
 } // namespace blink

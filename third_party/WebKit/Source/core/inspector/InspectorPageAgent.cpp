@@ -378,7 +378,7 @@ void InspectorPageAgent::addScriptToEvaluateOnLoad(ErrorString*, const String& s
 {
     protocol::DictionaryValue* scripts = m_state->getObject(PageAgentState::pageAgentScriptsToEvaluateOnLoad);
     if (!scripts) {
-        OwnPtr<protocol::DictionaryValue> newScripts = protocol::DictionaryValue::create();
+        std::unique_ptr<protocol::DictionaryValue> newScripts = protocol::DictionaryValue::create();
         scripts = newScripts.get();
         m_state->setObject(PageAgentState::pageAgentScriptsToEvaluateOnLoad, std::move(newScripts));
     }
@@ -465,7 +465,7 @@ static HeapVector<Member<Resource>> cachedResourcesForFrame(LocalFrame* frame, b
     return result;
 }
 
-void InspectorPageAgent::getResourceTree(ErrorString*, OwnPtr<protocol::Page::FrameResourceTree>* object)
+void InspectorPageAgent::getResourceTree(ErrorString*, std::unique_ptr<protocol::Page::FrameResourceTree>* object)
 {
     *object = buildObjectForFrameTree(m_inspectedFrames->root());
 }
@@ -478,7 +478,7 @@ void InspectorPageAgent::finishReload()
     m_v8Session->setSkipAllPauses(false);
 }
 
-void InspectorPageAgent::getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, PassOwnPtr<GetResourceContentCallback> callback)
+void InspectorPageAgent::getResourceContentAfterResourcesContentLoaded(const String& frameId, const String& url, std::unique_ptr<GetResourceContentCallback> callback)
 {
     LocalFrame* frame = IdentifiersFactory::frameById(m_inspectedFrames, frameId);
     if (!frame) {
@@ -493,16 +493,16 @@ void InspectorPageAgent::getResourceContentAfterResourcesContentLoaded(const Str
         callback->sendFailure("No resource with given URL found");
 }
 
-void InspectorPageAgent::getResourceContent(ErrorString* errorString, const String& frameId, const String& url, PassOwnPtr<GetResourceContentCallback> callback)
+void InspectorPageAgent::getResourceContent(ErrorString* errorString, const String& frameId, const String& url, std::unique_ptr<GetResourceContentCallback> callback)
 {
     if (!m_enabled) {
         callback->sendFailure("Agent is not enabled.");
         return;
     }
-    m_inspectorResourceContentLoader->ensureResourcesContentLoaded(m_resourceContentLoaderClientId, bind(&InspectorPageAgent::getResourceContentAfterResourcesContentLoaded, this, frameId, url, passed(std::move(callback))));
+    m_inspectorResourceContentLoader->ensureResourcesContentLoaded(m_resourceContentLoaderClientId, WTF::bind(&InspectorPageAgent::getResourceContentAfterResourcesContentLoaded, this, frameId, url, passed(std::move(callback))));
 }
 
-void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& frameId, const String& url, const String& query, bool caseSensitive, bool isRegex, PassOwnPtr<SearchInResourceCallback> callback)
+void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& frameId, const String& url, const String& query, bool caseSensitive, bool isRegex, std::unique_ptr<SearchInResourceCallback> callback)
 {
     LocalFrame* frame = IdentifiersFactory::frameById(m_inspectedFrames, frameId);
     if (!frame) {
@@ -516,18 +516,18 @@ void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& 
         return;
     }
 
-    OwnPtr<protocol::Array<protocol::Debugger::SearchMatch>> results;
+    std::unique_ptr<protocol::Array<protocol::Debugger::SearchMatch>> results;
     results = V8ContentSearchUtil::searchInTextByLines(m_v8Session, content, query, caseSensitive, isRegex);
     callback->sendSuccess(std::move(results));
 }
 
-void InspectorPageAgent::searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const Maybe<bool>& optionalCaseSensitive, const Maybe<bool>& optionalIsRegex, PassOwnPtr<SearchInResourceCallback> callback)
+void InspectorPageAgent::searchInResource(ErrorString*, const String& frameId, const String& url, const String& query, const Maybe<bool>& optionalCaseSensitive, const Maybe<bool>& optionalIsRegex, std::unique_ptr<SearchInResourceCallback> callback)
 {
     if (!m_enabled) {
         callback->sendFailure("Agent is not enabled.");
         return;
     }
-    m_inspectorResourceContentLoader->ensureResourcesContentLoaded(m_resourceContentLoaderClientId, bind(&InspectorPageAgent::searchContentAfterResourcesContentLoaded, this, frameId, url, query, optionalCaseSensitive.fromMaybe(false), optionalIsRegex.fromMaybe(false), passed(std::move(callback))));
+    m_inspectorResourceContentLoader->ensureResourcesContentLoaded(m_resourceContentLoaderClientId, WTF::bind(&InspectorPageAgent::searchContentAfterResourcesContentLoaded, this, frameId, url, query, optionalCaseSensitive.fromMaybe(false), optionalIsRegex.fromMaybe(false), passed(std::move(callback))));
 }
 
 void InspectorPageAgent::setDocumentContent(ErrorString* errorString, const String& frameId, const String& html)
@@ -667,9 +667,9 @@ void InspectorPageAgent::windowCreated(LocalFrame* created)
         m_client->waitForCreateWindow(created);
 }
 
-PassOwnPtr<protocol::Page::Frame> InspectorPageAgent::buildObjectForFrame(LocalFrame* frame)
+std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::buildObjectForFrame(LocalFrame* frame)
 {
-    OwnPtr<protocol::Page::Frame> frameObject = protocol::Page::Frame::create()
+    std::unique_ptr<protocol::Page::Frame> frameObject = protocol::Page::Frame::create()
         .setId(frameId(frame))
         .setLoaderId(IdentifiersFactory::loaderId(frame->loader().documentLoader()))
         .setUrl(urlWithoutFragment(frame->document()->url()).getString())
@@ -689,14 +689,14 @@ PassOwnPtr<protocol::Page::Frame> InspectorPageAgent::buildObjectForFrame(LocalF
     return frameObject;
 }
 
-PassOwnPtr<protocol::Page::FrameResourceTree> InspectorPageAgent::buildObjectForFrameTree(LocalFrame* frame)
+std::unique_ptr<protocol::Page::FrameResourceTree> InspectorPageAgent::buildObjectForFrameTree(LocalFrame* frame)
 {
-    OwnPtr<protocol::Page::Frame> frameObject = buildObjectForFrame(frame);
-    OwnPtr<protocol::Array<protocol::Page::FrameResource>> subresources = protocol::Array<protocol::Page::FrameResource>::create();
+    std::unique_ptr<protocol::Page::Frame> frameObject = buildObjectForFrame(frame);
+    std::unique_ptr<protocol::Array<protocol::Page::FrameResource>> subresources = protocol::Array<protocol::Page::FrameResource>::create();
 
     HeapVector<Member<Resource>> allResources = cachedResourcesForFrame(frame, true);
     for (Resource* cachedResource : allResources) {
-        OwnPtr<protocol::Page::FrameResource> resourceObject = protocol::Page::FrameResource::create()
+        std::unique_ptr<protocol::Page::FrameResource> resourceObject = protocol::Page::FrameResource::create()
             .setUrl(urlWithoutFragment(cachedResource->url()).getString())
             .setType(cachedResourceTypeJson(*cachedResource))
             .setMimeType(cachedResource->response().mimeType()).build();
@@ -709,18 +709,18 @@ PassOwnPtr<protocol::Page::FrameResourceTree> InspectorPageAgent::buildObjectFor
 
     HeapVector<Member<Document>> allImports = InspectorPageAgent::importsForFrame(frame);
     for (Document* import : allImports) {
-        OwnPtr<protocol::Page::FrameResource> resourceObject = protocol::Page::FrameResource::create()
+        std::unique_ptr<protocol::Page::FrameResource> resourceObject = protocol::Page::FrameResource::create()
             .setUrl(urlWithoutFragment(import->url()).getString())
             .setType(resourceTypeJson(InspectorPageAgent::DocumentResource))
             .setMimeType(import->suggestedMIMEType()).build();
         subresources->addItem(std::move(resourceObject));
     }
 
-    OwnPtr<protocol::Page::FrameResourceTree> result = protocol::Page::FrameResourceTree::create()
+    std::unique_ptr<protocol::Page::FrameResourceTree> result = protocol::Page::FrameResourceTree::create()
         .setFrame(std::move(frameObject))
         .setResources(std::move(subresources)).build();
 
-    OwnPtr<protocol::Array<protocol::Page::FrameResourceTree>> childrenArray;
+    std::unique_ptr<protocol::Array<protocol::Page::FrameResourceTree>> childrenArray;
     for (Frame* child = frame->tree().firstChild(); child; child = child->tree().nextSibling()) {
         if (!child->isLocalFrame())
             continue;

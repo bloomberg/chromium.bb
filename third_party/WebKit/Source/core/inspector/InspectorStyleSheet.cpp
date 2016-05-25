@@ -674,7 +674,7 @@ enum MediaListSource {
     MediaListSourceImportRule
 };
 
-PassOwnPtr<protocol::CSS::SourceRange> InspectorStyleSheetBase::buildSourceRangeObject(const SourceRange& range)
+std::unique_ptr<protocol::CSS::SourceRange> InspectorStyleSheetBase::buildSourceRangeObject(const SourceRange& range)
 {
     const LineEndings* lineEndings = this->lineEndings();
     if (!lineEndings)
@@ -682,7 +682,7 @@ PassOwnPtr<protocol::CSS::SourceRange> InspectorStyleSheetBase::buildSourceRange
     TextPosition start = TextPosition::fromOffsetAndLineEndings(range.start, *lineEndings);
     TextPosition end = TextPosition::fromOffsetAndLineEndings(range.end, *lineEndings);
 
-    OwnPtr<protocol::CSS::SourceRange> result = protocol::CSS::SourceRange::create()
+    std::unique_ptr<protocol::CSS::SourceRange> result = protocol::CSS::SourceRange::create()
         .setStartLine(start.m_line.zeroBasedInt())
         .setStartColumn(start.m_column.zeroBasedInt())
         .setEndLine(end.m_line.zeroBasedInt())
@@ -703,9 +703,9 @@ InspectorStyle::InspectorStyle(CSSStyleDeclaration* style, CSSRuleSourceData* so
     ASSERT(m_style);
 }
 
-PassOwnPtr<protocol::CSS::CSSStyle> InspectorStyle::buildObjectForStyle()
+std::unique_ptr<protocol::CSS::CSSStyle> InspectorStyle::buildObjectForStyle()
 {
-    OwnPtr<protocol::CSS::CSSStyle> result = styleWithProperties();
+    std::unique_ptr<protocol::CSS::CSSStyle> result = styleWithProperties();
     if (m_sourceData) {
         if (m_parentStyleSheet && !m_parentStyleSheet->id().isEmpty())
             result->setStyleSheetId(m_parentStyleSheet->id());
@@ -721,14 +721,14 @@ PassOwnPtr<protocol::CSS::CSSStyle> InspectorStyle::buildObjectForStyle()
     return result;
 }
 
-PassOwnPtr<protocol::Array<protocol::CSS::CSSComputedStyleProperty>> InspectorStyle::buildArrayForComputedStyle()
+std::unique_ptr<protocol::Array<protocol::CSS::CSSComputedStyleProperty>> InspectorStyle::buildArrayForComputedStyle()
 {
-    OwnPtr<protocol::Array<protocol::CSS::CSSComputedStyleProperty>> result = protocol::Array<protocol::CSS::CSSComputedStyleProperty>::create();
+    std::unique_ptr<protocol::Array<protocol::CSS::CSSComputedStyleProperty>> result = protocol::Array<protocol::CSS::CSSComputedStyleProperty>::create();
     HeapVector<CSSPropertySourceData> properties;
     populateAllProperties(properties);
 
     for (auto& property : properties) {
-        OwnPtr<protocol::CSS::CSSComputedStyleProperty> entry = protocol::CSS::CSSComputedStyleProperty::create()
+        std::unique_ptr<protocol::CSS::CSSComputedStyleProperty> entry = protocol::CSS::CSSComputedStyleProperty::create()
             .setName(property.name)
             .setValue(property.value).build();
         result->addItem(std::move(entry));
@@ -783,10 +783,10 @@ void InspectorStyle::populateAllProperties(HeapVector<CSSPropertySourceData>& re
     }
 }
 
-PassOwnPtr<protocol::CSS::CSSStyle> InspectorStyle::styleWithProperties()
+std::unique_ptr<protocol::CSS::CSSStyle> InspectorStyle::styleWithProperties()
 {
-    OwnPtr<Array<protocol::CSS::CSSProperty>> propertiesObject = Array<protocol::CSS::CSSProperty>::create();
-    OwnPtr<Array<protocol::CSS::ShorthandEntry>> shorthandEntries = Array<protocol::CSS::ShorthandEntry>::create();
+    std::unique_ptr<Array<protocol::CSS::CSSProperty>> propertiesObject = Array<protocol::CSS::CSSProperty>::create();
+    std::unique_ptr<Array<protocol::CSS::ShorthandEntry>> shorthandEntries = Array<protocol::CSS::ShorthandEntry>::create();
     HashSet<String> foundShorthands;
 
     HeapVector<CSSPropertySourceData> properties;
@@ -796,7 +796,7 @@ PassOwnPtr<protocol::CSS::CSSStyle> InspectorStyle::styleWithProperties()
         const CSSPropertySourceData& propertyEntry = styleProperty;
         const String& name = propertyEntry.name;
 
-        OwnPtr<protocol::CSS::CSSProperty> property = protocol::CSS::CSSProperty::create()
+        std::unique_ptr<protocol::CSS::CSSProperty> property = protocol::CSS::CSSProperty::create()
             .setName(name)
             .setValue(propertyEntry.value).build();
 
@@ -823,7 +823,7 @@ PassOwnPtr<protocol::CSS::CSSStyle> InspectorStyle::styleWithProperties()
             String shorthand = m_style->getPropertyShorthand(name);
             if (!shorthand.isEmpty()) {
                 if (foundShorthands.add(shorthand).isNewEntry) {
-                    OwnPtr<protocol::CSS::ShorthandEntry> entry = protocol::CSS::ShorthandEntry::create()
+                    std::unique_ptr<protocol::CSS::ShorthandEntry> entry = protocol::CSS::ShorthandEntry::create()
                         .setName(shorthand)
                         .setValue(shorthandValue(shorthand)).build();
                     if (!m_style->getPropertyPriority(name).isEmpty())
@@ -835,7 +835,7 @@ PassOwnPtr<protocol::CSS::CSSStyle> InspectorStyle::styleWithProperties()
         propertiesObject->addItem(std::move(property));
     }
 
-    OwnPtr<protocol::CSS::CSSStyle> result = protocol::CSS::CSSStyle::create()
+    std::unique_ptr<protocol::CSS::CSSStyle> result = protocol::CSS::CSSStyle::create()
         .setCssProperties(std::move(propertiesObject))
         .setShorthandEntries(std::move(shorthandEntries)).build();
     return result;
@@ -890,7 +890,7 @@ void InspectorStyleSheetBase::onStyleSheetTextChanged()
         listener()->styleSheetChanged(this);
 }
 
-PassOwnPtr<protocol::CSS::CSSStyle> InspectorStyleSheetBase::buildObjectForStyle(CSSStyleDeclaration* style)
+std::unique_ptr<protocol::CSS::CSSStyle> InspectorStyleSheetBase::buildObjectForStyle(CSSStyleDeclaration* style)
 {
     return inspectorStyle(style)->buildObjectForStyle();
 }
@@ -1310,7 +1310,7 @@ void InspectorStyleSheet::innerSetText(const String& text, bool markAsLocallyMod
     }
 }
 
-PassOwnPtr<protocol::CSS::CSSStyleSheetHeader> InspectorStyleSheet::buildObjectForStyleSheetInfo()
+std::unique_ptr<protocol::CSS::CSSStyleSheetHeader> InspectorStyleSheet::buildObjectForStyleSheetInfo()
 {
     CSSStyleSheet* styleSheet = pageStyleSheet();
     if (!styleSheet)
@@ -1319,7 +1319,7 @@ PassOwnPtr<protocol::CSS::CSSStyleSheetHeader> InspectorStyleSheet::buildObjectF
     Document* document = styleSheet->ownerDocument();
     LocalFrame* frame = document ? document->frame() : nullptr;
 
-    OwnPtr<protocol::CSS::CSSStyleSheetHeader> result = protocol::CSS::CSSStyleSheetHeader::create()
+    std::unique_ptr<protocol::CSS::CSSStyleSheetHeader> result = protocol::CSS::CSSStyleSheetHeader::create()
         .setStyleSheetId(id())
         .setOrigin(m_origin)
         .setDisabled(styleSheet->disabled())
@@ -1342,10 +1342,10 @@ PassOwnPtr<protocol::CSS::CSSStyleSheetHeader> InspectorStyleSheet::buildObjectF
     return result;
 }
 
-PassOwnPtr<protocol::Array<protocol::CSS::Value>> InspectorStyleSheet::selectorsFromSource(CSSRuleSourceData* sourceData, const String& sheetText)
+std::unique_ptr<protocol::Array<protocol::CSS::Value>> InspectorStyleSheet::selectorsFromSource(CSSRuleSourceData* sourceData, const String& sheetText)
 {
     ScriptRegexp comment("/\\*[^]*?\\*/", TextCaseSensitive, MultilineEnabled);
-    OwnPtr<protocol::Array<protocol::CSS::Value>> result = protocol::Array<protocol::CSS::Value>::create();
+    std::unique_ptr<protocol::Array<protocol::CSS::Value>> result = protocol::Array<protocol::CSS::Value>::create();
     const SelectorRangeList& ranges = sourceData->selectorRanges;
     for (size_t i = 0, size = ranges.size(); i < size; ++i) {
         const SourceRange& range = ranges.at(i);
@@ -1357,7 +1357,7 @@ PassOwnPtr<protocol::Array<protocol::CSS::Value>> InspectorStyleSheet::selectors
         while ((offset = comment.match(selector, offset, &matchLength)) >= 0)
             selector.replace(offset, matchLength, "");
 
-        OwnPtr<protocol::CSS::Value> simpleSelector = protocol::CSS::Value::create()
+        std::unique_ptr<protocol::CSS::Value> simpleSelector = protocol::CSS::Value::create()
             .setText(selector.stripWhiteSpace()).build();
         simpleSelector->setRange(buildSourceRangeObject(range));
         result->addItem(std::move(simpleSelector));
@@ -1365,10 +1365,10 @@ PassOwnPtr<protocol::Array<protocol::CSS::Value>> InspectorStyleSheet::selectors
     return result;
 }
 
-PassOwnPtr<protocol::CSS::SelectorList> InspectorStyleSheet::buildObjectForSelectorList(CSSStyleRule* rule)
+std::unique_ptr<protocol::CSS::SelectorList> InspectorStyleSheet::buildObjectForSelectorList(CSSStyleRule* rule)
 {
     CSSRuleSourceData* sourceData = sourceDataForRule(rule);
-    OwnPtr<protocol::Array<protocol::CSS::Value>> selectors;
+    std::unique_ptr<protocol::Array<protocol::CSS::Value>> selectors;
 
     // This intentionally does not rely on the source data to avoid catching the trailing comments (before the declaration starting '{').
     String selectorText = rule->selectorText();
@@ -1391,13 +1391,13 @@ static bool canBind(const String& origin)
     return origin != protocol::CSS::StyleSheetOriginEnum::UserAgent && origin != protocol::CSS::StyleSheetOriginEnum::Injected;
 }
 
-PassOwnPtr<protocol::CSS::CSSRule> InspectorStyleSheet::buildObjectForRuleWithoutMedia(CSSStyleRule* rule)
+std::unique_ptr<protocol::CSS::CSSRule> InspectorStyleSheet::buildObjectForRuleWithoutMedia(CSSStyleRule* rule)
 {
     CSSStyleSheet* styleSheet = pageStyleSheet();
     if (!styleSheet)
         return nullptr;
 
-    OwnPtr<protocol::CSS::CSSRule> result = protocol::CSS::CSSRule::create()
+    std::unique_ptr<protocol::CSS::CSSRule> result = protocol::CSS::CSSRule::create()
         .setSelectorList(buildObjectForSelectorList(rule))
         .setOrigin(m_origin)
         .setStyle(buildObjectForStyle(rule->style())).build();
@@ -1410,17 +1410,17 @@ PassOwnPtr<protocol::CSS::CSSRule> InspectorStyleSheet::buildObjectForRuleWithou
     return result;
 }
 
-PassOwnPtr<protocol::CSS::CSSKeyframeRule> InspectorStyleSheet::buildObjectForKeyframeRule(CSSKeyframeRule* keyframeRule)
+std::unique_ptr<protocol::CSS::CSSKeyframeRule> InspectorStyleSheet::buildObjectForKeyframeRule(CSSKeyframeRule* keyframeRule)
 {
     CSSStyleSheet* styleSheet = pageStyleSheet();
     if (!styleSheet)
         return nullptr;
 
-    OwnPtr<protocol::CSS::Value> keyText = protocol::CSS::Value::create().setText(keyframeRule->keyText()).build();
+    std::unique_ptr<protocol::CSS::Value> keyText = protocol::CSS::Value::create().setText(keyframeRule->keyText()).build();
     CSSRuleSourceData* sourceData = sourceDataForRule(keyframeRule);
     if (sourceData)
         keyText->setRange(buildSourceRangeObject(sourceData->ruleHeaderRange));
-    OwnPtr<protocol::CSS::CSSKeyframeRule> result = protocol::CSS::CSSKeyframeRule::create()
+    std::unique_ptr<protocol::CSS::CSSKeyframeRule> result = protocol::CSS::CSSKeyframeRule::create()
         // TODO(samli): keyText() normalises 'from' and 'to' keyword values.
         .setKeyText(std::move(keyText))
         .setOrigin(m_origin)
@@ -1439,7 +1439,7 @@ bool InspectorStyleSheet::getText(String* result)
     return false;
 }
 
-PassOwnPtr<protocol::CSS::SourceRange> InspectorStyleSheet::ruleHeaderSourceRange(CSSRule* rule)
+std::unique_ptr<protocol::CSS::SourceRange> InspectorStyleSheet::ruleHeaderSourceRange(CSSRule* rule)
 {
     if (!m_sourceData)
         return nullptr;
@@ -1449,7 +1449,7 @@ PassOwnPtr<protocol::CSS::SourceRange> InspectorStyleSheet::ruleHeaderSourceRang
     return buildSourceRangeObject(sourceData->ruleHeaderRange);
 }
 
-PassOwnPtr<protocol::CSS::SourceRange> InspectorStyleSheet::mediaQueryExpValueSourceRange(CSSRule* rule, size_t mediaQueryIndex, size_t mediaQueryExpIndex)
+std::unique_ptr<protocol::CSS::SourceRange> InspectorStyleSheet::mediaQueryExpValueSourceRange(CSSRule* rule, size_t mediaQueryIndex, size_t mediaQueryExpIndex)
 {
     if (!m_sourceData)
         return nullptr;

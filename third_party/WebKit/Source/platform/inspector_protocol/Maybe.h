@@ -16,14 +16,14 @@ template<typename T>
 class Maybe {
 public:
     Maybe() { }
-    Maybe(PassOwnPtr<T> value) : m_value(std::move(value)) { }
-    void operator=(PassOwnPtr<T> value) { m_value = std::move(value); }
+    Maybe(std::unique_ptr<T> value) : m_value(std::move(value)) { }
+    void operator=(std::unique_ptr<T> value) { m_value = std::move(value); }
     T* fromJust() const { DCHECK(m_value); return m_value.get(); }
     T* fromMaybe(T* defaultValue) const { return m_value ? m_value.get() : defaultValue; }
     bool isJust() const { return !!m_value; }
-    PassOwnPtr<T> takeJust() { DCHECK(m_value); return m_value.release(); }
+    std::unique_ptr<T> takeJust() { DCHECK(m_value); return m_value.release(); }
 private:
-    OwnPtr<T> m_value;
+    std::unique_ptr<T> m_value;
 };
 
 template<typename T>

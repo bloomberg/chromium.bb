@@ -336,7 +336,7 @@ void V8Console::countCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
     String16 title = helper.firstArgToString(String16());
     String16 identifier;
     if (title.isEmpty()) {
-        OwnPtr<V8StackTraceImpl> stackTrace = V8StackTraceImpl::capture(nullptr, 1);
+        std::unique_ptr<V8StackTraceImpl> stackTrace = V8StackTraceImpl::capture(nullptr, 1);
         if (stackTrace)
             identifier = stackTrace->topSourceURL() + ":" + String16::number(stackTrace->topLineNumber());
     } else {
@@ -589,11 +589,11 @@ static void inspectImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool co
     if (!injectedScript)
         return;
     ErrorString errorString;
-    OwnPtr<protocol::Runtime::RemoteObject> wrappedObject = injectedScript->wrapObject(&errorString, info[0], "", false /** forceValueType */, false /** generatePreview */);
+    std::unique_ptr<protocol::Runtime::RemoteObject> wrappedObject = injectedScript->wrapObject(&errorString, info[0], "", false /** forceValueType */, false /** generatePreview */);
     if (!wrappedObject || !errorString.isEmpty())
         return;
 
-    OwnPtr<protocol::DictionaryValue> hints = protocol::DictionaryValue::create();
+    std::unique_ptr<protocol::DictionaryValue> hints = protocol::DictionaryValue::create();
     if (copyToClipboard)
         hints->setBoolean("copyToClipboard", true);
     if (V8InspectorSessionImpl* session = helper.currentSession())

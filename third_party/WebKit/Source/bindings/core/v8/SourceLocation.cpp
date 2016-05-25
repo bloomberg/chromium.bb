@@ -19,7 +19,7 @@ namespace blink {
 
 namespace {
 
-PassOwnPtr<V8StackTrace> captureStackTrace()
+std::unique_ptr<V8StackTrace> captureStackTrace()
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
@@ -39,7 +39,7 @@ PassOwnPtr<V8StackTrace> captureStackTrace()
 // static
 PassOwnPtr<SourceLocation> SourceLocation::capture(const String& url, unsigned lineNumber, unsigned columnNumber)
 {
-    OwnPtr<V8StackTrace> stackTrace = captureStackTrace();
+    std::unique_ptr<V8StackTrace> stackTrace = captureStackTrace();
     if (stackTrace && !stackTrace->isEmpty())
         return SourceLocation::create(stackTrace->topSourceURL(), stackTrace->topLineNumber(), stackTrace->topColumnNumber(), std::move(stackTrace), 0);
     return SourceLocation::create(url, lineNumber, columnNumber, std::move(stackTrace));
@@ -48,7 +48,7 @@ PassOwnPtr<SourceLocation> SourceLocation::capture(const String& url, unsigned l
 // static
 PassOwnPtr<SourceLocation> SourceLocation::capture(ExecutionContext* executionContext)
 {
-    OwnPtr<V8StackTrace> stackTrace = captureStackTrace();
+    std::unique_ptr<V8StackTrace> stackTrace = captureStackTrace();
     if (stackTrace && !stackTrace->isEmpty())
         return SourceLocation::create(stackTrace->topSourceURL(), stackTrace->topLineNumber(), stackTrace->topColumnNumber(), std::move(stackTrace), 0);
 
@@ -66,12 +66,12 @@ PassOwnPtr<SourceLocation> SourceLocation::capture(ExecutionContext* executionCo
 }
 
 // static
-PassOwnPtr<SourceLocation> SourceLocation::create(const String& url, unsigned lineNumber, unsigned columnNumber, PassOwnPtr<V8StackTrace> stackTrace, int scriptId)
+PassOwnPtr<SourceLocation> SourceLocation::create(const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId)
 {
     return adoptPtr(new SourceLocation(url, lineNumber, columnNumber, std::move(stackTrace), scriptId));
 }
 
-SourceLocation::SourceLocation(const String& url, unsigned lineNumber, unsigned columnNumber, PassOwnPtr<V8StackTrace> stackTrace, int scriptId)
+SourceLocation::SourceLocation(const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId)
     : m_url(url)
     , m_lineNumber(lineNumber)
     , m_columnNumber(columnNumber)

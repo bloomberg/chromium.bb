@@ -7,7 +7,7 @@
 
 #include "platform/inspector_protocol/String16.h"
 #include "platform/inspector_protocol/TypeBuilder.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
@@ -23,14 +23,14 @@ protected:
     RemoteObjectIdBase();
     ~RemoteObjectIdBase() { }
 
-    PassOwnPtr<protocol::DictionaryValue> parseInjectedScriptId(const String16&);
+    std::unique_ptr<protocol::DictionaryValue> parseInjectedScriptId(const String16&);
 
     int m_injectedScriptId;
 };
 
 class RemoteObjectId final : public RemoteObjectIdBase {
 public:
-    static PassOwnPtr<RemoteObjectId> parse(ErrorString*, const String16&);
+    static std::unique_ptr<RemoteObjectId> parse(ErrorString*, const String16&);
     ~RemoteObjectId() { }
     int id() const { return m_id; }
 
@@ -42,7 +42,7 @@ private:
 
 class RemoteCallFrameId final : public RemoteObjectIdBase {
 public:
-    static PassOwnPtr<RemoteCallFrameId> parse(ErrorString*, const String16&);
+    static std::unique_ptr<RemoteCallFrameId> parse(ErrorString*, const String16&);
     ~RemoteCallFrameId() { }
 
     int frameOrdinal() const { return m_frameOrdinal; }

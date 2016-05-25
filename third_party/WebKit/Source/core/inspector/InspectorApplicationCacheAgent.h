@@ -56,17 +56,17 @@ public:
     void networkStateChanged(LocalFrame*, bool online);
 
     // ApplicationCache API for InspectorFrontend
-    void getFramesWithManifests(ErrorString*, OwnPtr<protocol::Array<protocol::ApplicationCache::FrameWithManifest>>* frameIds) override;
+    void getFramesWithManifests(ErrorString*, std::unique_ptr<protocol::Array<protocol::ApplicationCache::FrameWithManifest>>* frameIds) override;
     void enable(ErrorString*) override;
     void getManifestForFrame(ErrorString*, const String& frameId, String* manifestURL) override;
-    void getApplicationCacheForFrame(ErrorString*, const String& frameId, OwnPtr<protocol::ApplicationCache::ApplicationCache>*) override;
+    void getApplicationCacheForFrame(ErrorString*, const String& frameId, std::unique_ptr<protocol::ApplicationCache::ApplicationCache>*) override;
 
 private:
     explicit InspectorApplicationCacheAgent(InspectedFrames*);
 
-    PassOwnPtr<protocol::ApplicationCache::ApplicationCache> buildObjectForApplicationCache(const ApplicationCacheHost::ResourceInfoList&, const ApplicationCacheHost::CacheInfo&);
-    PassOwnPtr<protocol::Array<protocol::ApplicationCache::ApplicationCacheResource>> buildArrayForApplicationCacheResources(const ApplicationCacheHost::ResourceInfoList&);
-    PassOwnPtr<protocol::ApplicationCache::ApplicationCacheResource> buildObjectForApplicationCacheResource(const ApplicationCacheHost::ResourceInfo&);
+    std::unique_ptr<protocol::ApplicationCache::ApplicationCache> buildObjectForApplicationCache(const ApplicationCacheHost::ResourceInfoList&, const ApplicationCacheHost::CacheInfo&);
+    std::unique_ptr<protocol::Array<protocol::ApplicationCache::ApplicationCacheResource>> buildArrayForApplicationCacheResources(const ApplicationCacheHost::ResourceInfoList&);
+    std::unique_ptr<protocol::ApplicationCache::ApplicationCacheResource> buildObjectForApplicationCacheResource(const ApplicationCacheHost::ResourceInfo&);
 
     DocumentLoader* assertFrameWithDocumentLoader(ErrorString*, String frameId);
 

@@ -31,9 +31,9 @@ void Frontend::{{domain.domain}}::{{event.name}}(
       {%- endif %} {{parameter.name}}{%- if not loop.last -%}, {% endif -%}
     {% endfor -%})
 {
-    OwnPtr<protocol::DictionaryValue> jsonMessage = DictionaryValue::create();
+    std::unique_ptr<protocol::DictionaryValue> jsonMessage = DictionaryValue::create();
     jsonMessage->setString("method", "{{domain.domain}}.{{event.name}}");
-    OwnPtr<protocol::DictionaryValue> paramsObject = DictionaryValue::create();
+    std::unique_ptr<protocol::DictionaryValue> paramsObject = DictionaryValue::create();
     {% for parameter in event.parameters %}
       {% if "optional" in parameter %}
     if ({{parameter.name}}.isJust())

@@ -6,19 +6,19 @@
 
 #include "platform/inspector_protocol/Parser.h"
 #include "platform/inspector_protocol/Values.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 
 RemoteObjectIdBase::RemoteObjectIdBase() : m_injectedScriptId(0) { }
 
-PassOwnPtr<protocol::DictionaryValue> RemoteObjectIdBase::parseInjectedScriptId(const String16& objectId)
+std::unique_ptr<protocol::DictionaryValue> RemoteObjectIdBase::parseInjectedScriptId(const String16& objectId)
 {
-    OwnPtr<protocol::Value> parsedValue = protocol::parseJSON(objectId);
+    std::unique_ptr<protocol::Value> parsedValue = protocol::parseJSON(objectId);
     if (!parsedValue || parsedValue->type() != protocol::Value::TypeObject)
         return nullptr;
 
-    OwnPtr<protocol::DictionaryValue> parsedObjectId = adoptPtr(protocol::DictionaryValue::cast(parsedValue.leakPtr()));
+    std::unique_ptr<protocol::DictionaryValue> parsedObjectId(protocol::DictionaryValue::cast(parsedValue.release()));
     bool success = parsedObjectId->getNumber("injectedScriptId", &m_injectedScriptId);
     if (success)
         return parsedObjectId;
@@ -27,10 +27,10 @@ PassOwnPtr<protocol::DictionaryValue> RemoteObjectIdBase::parseInjectedScriptId(
 
 RemoteObjectId::RemoteObjectId() : RemoteObjectIdBase(), m_id(0) { }
 
-PassOwnPtr<RemoteObjectId> RemoteObjectId::parse(ErrorString* errorString, const String16& objectId)
+std::unique_ptr<RemoteObjectId> RemoteObjectId::parse(ErrorString* errorString, const String16& objectId)
 {
-    OwnPtr<RemoteObjectId> result = adoptPtr(new RemoteObjectId());
-    OwnPtr<protocol::DictionaryValue> parsedObjectId = result->parseInjectedScriptId(objectId);
+    std::unique_ptr<RemoteObjectId> result(new RemoteObjectId());
+    std::unique_ptr<protocol::DictionaryValue> parsedObjectId = result->parseInjectedScriptId(objectId);
     if (!parsedObjectId) {
         *errorString = "Invalid remote object id";
         return nullptr;
@@ -46,10 +46,10 @@ PassOwnPtr<RemoteObjectId> RemoteObjectId::parse(ErrorString* errorString, const
 
 RemoteCallFrameId::RemoteCallFrameId() : RemoteObjectIdBase(), m_frameOrdinal(0) { }
 
-PassOwnPtr<RemoteCallFrameId> RemoteCallFrameId::parse(ErrorString* errorString, const String16& objectId)
+std::unique_ptr<RemoteCallFrameId> RemoteCallFrameId::parse(ErrorString* errorString, const String16& objectId)
 {
-    OwnPtr<RemoteCallFrameId> result = adoptPtr(new RemoteCallFrameId());
-    OwnPtr<protocol::DictionaryValue> parsedObjectId = result->parseInjectedScriptId(objectId);
+    std::unique_ptr<RemoteCallFrameId> result(new RemoteCallFrameId());
+    std::unique_ptr<protocol::DictionaryValue> parsedObjectId = result->parseInjectedScriptId(objectId);
     if (!parsedObjectId) {
         *errorString = "Invalid call frame id";
         return nullptr;

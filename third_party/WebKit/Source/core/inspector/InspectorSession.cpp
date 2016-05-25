@@ -30,13 +30,13 @@ InspectorSession::InspectorSession(Client* client, InspectedFrames* inspectedFra
     , m_disposed(false)
     , m_inspectedFrames(inspectedFrames)
     , m_instrumentingAgents(instrumentingAgents)
-    , m_inspectorFrontend(adoptPtr(new protocol::Frontend(this)))
+    , m_inspectorFrontend(new protocol::Frontend(this))
     , m_inspectorBackendDispatcher(protocol::Dispatcher::create(this))
 {
     InspectorInstrumentation::frontendCreated();
 
     if (savedState) {
-        OwnPtr<protocol::Value> state = protocol::parseJSON(*savedState);
+        std::unique_ptr<protocol::Value> state = protocol::parseJSON(*savedState);
         if (state)
             m_state = protocol::DictionaryValue::cast(std::move(state));
         if (!m_state)
@@ -73,12 +73,12 @@ void InspectorSession::dispose()
     DCHECK(!m_disposed);
     m_disposed = true;
     m_inspectorBackendDispatcher->clearFrontend();
-    m_inspectorBackendDispatcher.clear();
+    m_inspectorBackendDispatcher.reset();
     for (size_t i = m_agents.size(); i > 0; i--)
         m_agents[i - 1]->dispose();
-    m_inspectorFrontend.clear();
+    m_inspectorFrontend.reset();
     m_agents.clear();
-    m_v8Session.clear();
+    m_v8Session.reset();
     DCHECK(!isInstrumenting());
     InspectorInstrumentation::frontendDeleted();
 }
@@ -136,7 +136,7 @@ void InspectorSession::flushProtocolNotifications()
 void InspectorSession::scriptExecutionBlockedByCSP(const String& directiveText)
 {
     DCHECK(isInstrumenting());
-    OwnPtr<protocol::DictionaryValue> directive = protocol::DictionaryValue::create();
+    std::unique_ptr<protocol::DictionaryValue> directive = protocol::DictionaryValue::create();
     directive->setString("directiveText", directiveText);
     m_v8Session->breakProgramOnException(protocol::Debugger::Paused::ReasonEnum::CSPViolation, std::move(directive));
 }

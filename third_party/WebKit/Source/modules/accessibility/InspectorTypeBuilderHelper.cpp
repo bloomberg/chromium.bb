@@ -14,7 +14,7 @@ namespace blink {
 using namespace HTMLNames;
 using namespace protocol::Accessibility;
 
-PassOwnPtr<AXProperty> createProperty(const String& name, PassOwnPtr<AXValue> value)
+std::unique_ptr<AXProperty> createProperty(const String& name, std::unique_ptr<AXValue> value)
 {
     return AXProperty::create().setName(name).setValue(std::move(value)).build();
 }
@@ -61,42 +61,42 @@ String ignoredReasonName(AXIgnoredReason reason)
     return "";
 }
 
-PassOwnPtr<AXProperty> createProperty(IgnoredReason reason)
+std::unique_ptr<AXProperty> createProperty(IgnoredReason reason)
 {
     if (reason.relatedObject)
         return createProperty(ignoredReasonName(reason.reason), createRelatedNodeListValue(reason.relatedObject, nullptr, AXValueTypeEnum::Idref));
     return createProperty(ignoredReasonName(reason.reason), createBooleanValue(true));
 }
 
-PassOwnPtr<AXValue> createValue(const String& value, const String& type)
+std::unique_ptr<AXValue> createValue(const String& value, const String& type)
 {
     return AXValue::create().setType(type).setValue(protocol::toValue(value)).build();
 }
 
-PassOwnPtr<AXValue> createValue(int value, const String& type)
+std::unique_ptr<AXValue> createValue(int value, const String& type)
 {
     return AXValue::create().setType(type).setValue(protocol::toValue(value)).build();
 }
 
-PassOwnPtr<AXValue> createValue(float value, const String& type)
+std::unique_ptr<AXValue> createValue(float value, const String& type)
 {
     return AXValue::create().setType(type).setValue(protocol::toValue(value)).build();
 }
 
-PassOwnPtr<AXValue> createBooleanValue(bool value, const String& type)
+std::unique_ptr<AXValue> createBooleanValue(bool value, const String& type)
 {
     return AXValue::create().setType(type).setValue(protocol::toValue(value)).build();
 }
 
-PassOwnPtr<AXRelatedNode> relatedNodeForAXObject(const AXObject* axObject, String* name = nullptr)
+std::unique_ptr<AXRelatedNode> relatedNodeForAXObject(const AXObject* axObject, String* name = nullptr)
 {
     Node* node = axObject->getNode();
     if (!node)
-        return PassOwnPtr<AXRelatedNode>();
+        return nullptr;
     int backendNodeId = DOMNodeIds::idForNode(node);
     if (!backendNodeId)
-        return PassOwnPtr<AXRelatedNode>();
-    OwnPtr<AXRelatedNode> relatedNode = AXRelatedNode::create().setBackendNodeId(backendNodeId).build();
+        return nullptr;
+    std::unique_ptr<AXRelatedNode> relatedNode = AXRelatedNode::create().setBackendNodeId(backendNodeId).build();
     if (!node->isElementNode())
         return relatedNode;
 
@@ -110,29 +110,29 @@ PassOwnPtr<AXRelatedNode> relatedNodeForAXObject(const AXObject* axObject, Strin
     return relatedNode;
 }
 
-PassOwnPtr<AXValue> createRelatedNodeListValue(const AXObject* axObject, String* name, const String& valueType)
+std::unique_ptr<AXValue> createRelatedNodeListValue(const AXObject* axObject, String* name, const String& valueType)
 {
-    OwnPtr<protocol::Array<AXRelatedNode>> relatedNodes = protocol::Array<AXRelatedNode>::create();
+    std::unique_ptr<protocol::Array<AXRelatedNode>> relatedNodes = protocol::Array<AXRelatedNode>::create();
     relatedNodes->addItem(relatedNodeForAXObject(axObject, name));
     return AXValue::create().setType(valueType).setRelatedNodes(std::move(relatedNodes)).build();
 }
 
-PassOwnPtr<AXValue> createRelatedNodeListValue(AXRelatedObjectVector& relatedObjects, const String& valueType)
+std::unique_ptr<AXValue> createRelatedNodeListValue(AXRelatedObjectVector& relatedObjects, const String& valueType)
 {
-    OwnPtr<protocol::Array<AXRelatedNode>> frontendRelatedNodes = protocol::Array<AXRelatedNode>::create();
+    std::unique_ptr<protocol::Array<AXRelatedNode>> frontendRelatedNodes = protocol::Array<AXRelatedNode>::create();
     for (unsigned i = 0; i < relatedObjects.size(); i++) {
-        OwnPtr<AXRelatedNode> frontendRelatedNode = relatedNodeForAXObject(relatedObjects[i]->object, &(relatedObjects[i]->text));
+        std::unique_ptr<AXRelatedNode> frontendRelatedNode = relatedNodeForAXObject(relatedObjects[i]->object, &(relatedObjects[i]->text));
         if (frontendRelatedNode)
             frontendRelatedNodes->addItem(std::move(frontendRelatedNode));
     }
     return AXValue::create().setType(valueType).setRelatedNodes(std::move(frontendRelatedNodes)).build();
 }
 
-PassOwnPtr<AXValue> createRelatedNodeListValue(AXObject::AXObjectVector& axObjects, const String& valueType)
+std::unique_ptr<AXValue> createRelatedNodeListValue(AXObject::AXObjectVector& axObjects, const String& valueType)
 {
-    OwnPtr<protocol::Array<AXRelatedNode>> relatedNodes = protocol::Array<AXRelatedNode>::create();
+    std::unique_ptr<protocol::Array<AXRelatedNode>> relatedNodes = protocol::Array<AXRelatedNode>::create();
     for (unsigned i = 0; i < axObjects.size(); i++) {
-        OwnPtr<AXRelatedNode> relatedNode = relatedNodeForAXObject(axObjects[i].get());
+        std::unique_ptr<AXRelatedNode> relatedNode = relatedNodeForAXObject(axObjects[i].get());
         if (relatedNode)
             relatedNodes->addItem(std::move(relatedNode));
     }
@@ -180,13 +180,13 @@ String nativeSourceType(AXTextFromNativeHTML nativeSource)
     }
 }
 
-PassOwnPtr<AXValueSource> createValueSource(NameSource& nameSource)
+std::unique_ptr<AXValueSource> createValueSource(NameSource& nameSource)
 {
     String type = valueSourceType(nameSource.type);
-    OwnPtr<AXValueSource> valueSource = AXValueSource::create().setType(type).build();
+    std::unique_ptr<AXValueSource> valueSource = AXValueSource::create().setType(type).build();
     if (!nameSource.relatedObjects.isEmpty()) {
         if (nameSource.attribute == aria_labelledbyAttr || nameSource.attribute == aria_labeledbyAttr) {
-            OwnPtr<AXValue> attributeValue = createRelatedNodeListValue(nameSource.relatedObjects, AXValueTypeEnum::IdrefList);
+            std::unique_ptr<AXValue> attributeValue = createRelatedNodeListValue(nameSource.relatedObjects, AXValueTypeEnum::IdrefList);
             if (!nameSource.attributeValue.isNull())
                 attributeValue->setValue(protocol::StringValue::create(nameSource.attributeValue.getString()));
             valueSource->setAttributeValue(std::move(attributeValue));

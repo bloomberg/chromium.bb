@@ -356,12 +356,12 @@ bool decodeString(const UChar* start, const UChar* end, String16* output)
     return true;
 }
 
-PassOwnPtr<Value> buildValue(const UChar* start, const UChar* end, const UChar** valueTokenEnd, int depth)
+std::unique_ptr<Value> buildValue(const UChar* start, const UChar* end, const UChar** valueTokenEnd, int depth)
 {
     if (depth > stackLimit)
         return nullptr;
 
-    OwnPtr<Value> result;
+    std::unique_ptr<Value> result;
     const UChar* tokenStart;
     const UChar* tokenEnd;
     Token token = parseToken(start, end, &tokenStart, &tokenEnd);
@@ -394,11 +394,11 @@ PassOwnPtr<Value> buildValue(const UChar* start, const UChar* end, const UChar**
         break;
     }
     case ArrayBegin: {
-        OwnPtr<ListValue> array = ListValue::create();
+        std::unique_ptr<ListValue> array = ListValue::create();
         start = tokenEnd;
         token = parseToken(start, end, &tokenStart, &tokenEnd);
         while (token != ArrayEnd) {
-            OwnPtr<Value> arrayNode = buildValue(start, end, &tokenEnd, depth + 1);
+            std::unique_ptr<Value> arrayNode = buildValue(start, end, &tokenEnd, depth + 1);
             if (!arrayNode)
                 return nullptr;
             array->pushValue(std::move(arrayNode));
@@ -422,7 +422,7 @@ PassOwnPtr<Value> buildValue(const UChar* start, const UChar* end, const UChar**
         break;
     }
     case ObjectBegin: {
-        OwnPtr<DictionaryValue> object = DictionaryValue::create();
+        std::unique_ptr<DictionaryValue> object = DictionaryValue::create();
         start = tokenEnd;
         token = parseToken(start, end, &tokenStart, &tokenEnd);
         while (token != ObjectEnd) {
@@ -438,7 +438,7 @@ PassOwnPtr<Value> buildValue(const UChar* start, const UChar* end, const UChar**
                 return nullptr;
             start = tokenEnd;
 
-            OwnPtr<Value> value = buildValue(start, end, &tokenEnd, depth + 1);
+            std::unique_ptr<Value> value = buildValue(start, end, &tokenEnd, depth + 1);
             if (!value)
                 return nullptr;
             object->setValue(key, std::move(value));
@@ -472,11 +472,11 @@ PassOwnPtr<Value> buildValue(const UChar* start, const UChar* end, const UChar**
     return result;
 }
 
-PassOwnPtr<Value> parseJSONInternal(const UChar* start, unsigned length)
+std::unique_ptr<Value> parseJSONInternal(const UChar* start, unsigned length)
 {
     const UChar* end = start + length;
     const UChar *tokenEnd;
-    OwnPtr<Value> value = buildValue(start, end, &tokenEnd, 0);
+    std::unique_ptr<Value> value = buildValue(start, end, &tokenEnd, 0);
     if (!value || tokenEnd != end)
         return nullptr;
     return value;
@@ -484,7 +484,7 @@ PassOwnPtr<Value> parseJSONInternal(const UChar* start, unsigned length)
 
 } // anonymous namespace
 
-PassOwnPtr<Value> parseJSON(const String16& json)
+std::unique_ptr<Value> parseJSON(const String16& json)
 {
     if (json.isEmpty())
         return nullptr;

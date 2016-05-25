@@ -76,7 +76,7 @@ ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level,
 }
 
 // static
-ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassOwnPtr<V8StackTrace> stackTrace, int scriptId, ScriptArguments* arguments)
+ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId, ScriptArguments* arguments)
 {
     return new ConsoleMessage(source, level, message, url, lineNumber, columnNumber, std::move(stackTrace), scriptId, arguments);
 }
@@ -87,7 +87,7 @@ ConsoleMessage::ConsoleMessage(MessageSource source,
     const String& url,
     unsigned lineNumber,
     unsigned columnNumber,
-    PassOwnPtr<V8StackTrace> stackTrace,
+    std::unique_ptr<V8StackTrace> stackTrace,
     int scriptId,
     ScriptArguments* arguments)
     : m_source(source)

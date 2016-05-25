@@ -38,11 +38,11 @@ public:
     void getPlaybackRate(ErrorString*, double* playbackRate) override;
     void setPlaybackRate(ErrorString*, double playbackRate) override;
     void getCurrentTime(ErrorString*, const String& id, double* currentTime) override;
-    void setPaused(ErrorString*, PassOwnPtr<protocol::Array<String>> animations, bool paused) override;
+    void setPaused(ErrorString*, std::unique_ptr<protocol::Array<String>> animations, bool paused) override;
     void setTiming(ErrorString*, const String& animationId, double duration, double delay) override;
-    void seekAnimations(ErrorString*, PassOwnPtr<protocol::Array<String>> animations, double currentTime) override;
-    void releaseAnimations(ErrorString*, PassOwnPtr<protocol::Array<String>> animations) override;
-    void resolveAnimation(ErrorString*, const String& animationId, OwnPtr<protocol::Runtime::RemoteObject>*) override;
+    void seekAnimations(ErrorString*, std::unique_ptr<protocol::Array<String>> animations, double currentTime) override;
+    void releaseAnimations(ErrorString*, std::unique_ptr<protocol::Array<String>> animations) override;
+    void resolveAnimation(ErrorString*, const String& animationId, std::unique_ptr<protocol::Runtime::RemoteObject>*) override;
 
     // API for InspectorInstrumentation
     void didCreateAnimation(unsigned);
@@ -57,8 +57,8 @@ public:
 private:
     using AnimationType = protocol::Animation::Animation::TypeEnum;
 
-    PassOwnPtr<protocol::Animation::Animation> buildObjectForAnimation(blink::Animation&);
-    PassOwnPtr<protocol::Animation::Animation> buildObjectForAnimation(blink::Animation&, String, PassOwnPtr<protocol::Animation::KeyframesRule> keyframeRule = nullptr);
+    std::unique_ptr<protocol::Animation::Animation> buildObjectForAnimation(blink::Animation&);
+    std::unique_ptr<protocol::Animation::Animation> buildObjectForAnimation(blink::Animation&, String, std::unique_ptr<protocol::Animation::KeyframesRule> keyframeRule = nullptr);
     double normalizedStartTime(blink::Animation&);
     AnimationTimeline& referenceTimeline();
     blink::Animation* animationClone(blink::Animation*);

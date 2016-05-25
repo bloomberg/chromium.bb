@@ -26,9 +26,9 @@ bool V8InspectorSession::isV8ProtocolMethod(const String16& method)
     return method.startWith("Debugger.") || method.startWith("HeapProfiler.") || method.startWith("Profiler.") || method.startWith("Runtime.");
 }
 
-PassOwnPtr<V8InspectorSessionImpl> V8InspectorSessionImpl::create(V8DebuggerImpl* debugger, int contextGroupId, V8InspectorSessionClient* client, const String16* state)
+std::unique_ptr<V8InspectorSessionImpl> V8InspectorSessionImpl::create(V8DebuggerImpl* debugger, int contextGroupId, V8InspectorSessionClient* client, const String16* state)
 {
-    return adoptPtr(new V8InspectorSessionImpl(debugger, contextGroupId, client, state));
+    return wrapUnique(new V8InspectorSessionImpl(debugger, contextGroupId, client, state));
 }
 
 V8InspectorSessionImpl::V8InspectorSessionImpl(V8DebuggerImpl* debugger, int contextGroupId, V8InspectorSessionClient* client, const String16* savedState)
@@ -37,7 +37,7 @@ V8InspectorSessionImpl::V8InspectorSessionImpl(V8DebuggerImpl* debugger, int con
     , m_client(client)
     , m_customObjectFormatterEnabled(false)
     , m_instrumentationCounter(0)
-    , m_frontend(adoptPtr(new protocol::Frontend(client)))
+    , m_frontend(new protocol::Frontend(client))
     , m_dispatcher(protocol::Dispatcher::create(client))
     , m_state(nullptr)
     , m_runtimeAgent(nullptr)
@@ -46,7 +46,7 @@ V8InspectorSessionImpl::V8InspectorSessionImpl(V8DebuggerImpl* debugger, int con
     , m_profilerAgent(nullptr)
 {
     if (savedState) {
-        OwnPtr<protocol::Value> state = protocol::parseJSON(*savedState);
+        std::unique_ptr<protocol::Value> state = protocol::parseJSON(*savedState);
         if (state)
             m_state = protocol::DictionaryValue::cast(std::move(state));
         if (!m_state)
@@ -55,16 +55,16 @@ V8InspectorSessionImpl::V8InspectorSessionImpl(V8DebuggerImpl* debugger, int con
         m_state = protocol::DictionaryValue::create();
     }
 
-    m_runtimeAgent = adoptPtr(new V8RuntimeAgentImpl(this, protocol::Frontend::Runtime::from(m_frontend.get()), agentState("Runtime")));
+    m_runtimeAgent = wrapUnique(new V8RuntimeAgentImpl(this, protocol::Frontend::Runtime::from(m_frontend.get()), agentState("Runtime")));
     m_dispatcher->registerAgent(static_cast<protocol::Backend::Runtime*>(m_runtimeAgent.get()));
 
-    m_debuggerAgent = adoptPtr(new V8DebuggerAgentImpl(this, protocol::Frontend::Debugger::from(m_frontend.get()), agentState("Debugger")));
+    m_debuggerAgent = wrapUnique(new V8DebuggerAgentImpl(this, protocol::Frontend::Debugger::from(m_frontend.get()), agentState("Debugger")));
     m_dispatcher->registerAgent(static_cast<protocol::Backend::Debugger*>(m_debuggerAgent.get()));
 
-    m_heapProfilerAgent = adoptPtr(new V8HeapProfilerAgentImpl(this, protocol::Frontend::HeapProfiler::from(m_frontend.get()), agentState("HeapProfiler")));
+    m_heapProfilerAgent = wrapUnique(new V8HeapProfilerAgentImpl(this, protocol::Frontend::HeapProfiler::from(m_frontend.get()), agentState("HeapProfiler")));
     m_dispatcher->registerAgent(static_cast<protocol::Backend::HeapProfiler*>(m_heapProfilerAgent.get()));
 
-    m_profilerAgent = adoptPtr(new V8ProfilerAgentImpl(this, protocol::Frontend::Profiler::from(m_frontend.get()), agentState("Profiler")));
+    m_profilerAgent = wrapUnique(new V8ProfilerAgentImpl(this, protocol::Frontend::Profiler::from(m_frontend.get()), agentState("Profiler")));
     m_dispatcher->registerAgent(static_cast<protocol::Backend::Profiler*>(m_profilerAgent.get()));
 
     if (savedState) {
@@ -78,7 +78,7 @@ V8InspectorSessionImpl::V8InspectorSessionImpl(V8DebuggerImpl* debugger, int con
 V8InspectorSessionImpl::~V8InspectorSessionImpl()
 {
     m_dispatcher->clearFrontend();
-    m_dispatcher.clear();
+    m_dispatcher.reset();
 
     ErrorString errorString;
     m_profilerAgent->disable(&errorString);
@@ -86,7 +86,7 @@ V8InspectorSessionImpl::~V8InspectorSessionImpl()
     m_debuggerAgent->disable(&errorString);
     m_runtimeAgent->disable(&errorString);
 
-    m_frontend.clear();
+    m_frontend.reset();
     discardInjectedScripts();
     m_debugger->disconnect(this);
 }
@@ -95,7 +95,7 @@ protocol::DictionaryValue* V8InspectorSessionImpl::agentState(const String16& na
 {
     protocol::DictionaryValue* state = m_state->getObject(name);
     if (!state) {
-        OwnPtr<protocol::DictionaryValue> newState = protocol::DictionaryValue::create();
+        std::unique_ptr<protocol::DictionaryValue> newState = protocol::DictionaryValue::create();
         state = newState.get();
         m_state->setObject(name, std::move(newState));
     }
@@ -178,7 +178,7 @@ void V8InspectorSessionImpl::releaseObjectGroup(const String16& objectGroup)
 
 v8::Local<v8::Value> V8InspectorSessionImpl::findObject(ErrorString* errorString, const String16& objectId, v8::Local<v8::Context>* context, String16* groupName)
 {
-    OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(errorString, objectId);
+    std::unique_ptr<RemoteObjectId> remoteId = RemoteObjectId::parse(errorString, objectId);
     if (!remoteId)
         return v8::Local<v8::Value>();
     InjectedScript* injectedScript = findInjectedScript(errorString, remoteId.get());
@@ -195,7 +195,7 @@ v8::Local<v8::Value> V8InspectorSessionImpl::findObject(ErrorString* errorString
     return objectValue;
 }
 
-PassOwnPtr<protocol::Runtime::RemoteObject> V8InspectorSessionImpl::wrapObject(v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String16& groupName, bool generatePreview)
+std::unique_ptr<protocol::Runtime::RemoteObject> V8InspectorSessionImpl::wrapObject(v8::Local<v8::Context> context, v8::Local<v8::Value> value, const String16& groupName, bool generatePreview)
 {
     ErrorString errorString;
     InjectedScript* injectedScript = findInjectedScript(&errorString, V8Debugger::contextId(context));
@@ -204,7 +204,7 @@ PassOwnPtr<protocol::Runtime::RemoteObject> V8InspectorSessionImpl::wrapObject(v
     return injectedScript->wrapObject(&errorString, value, groupName, false, generatePreview);
 }
 
-PassOwnPtr<protocol::Runtime::RemoteObject> V8InspectorSessionImpl::wrapTable(v8::Local<v8::Context> context, v8::Local<v8::Value> table, v8::Local<v8::Value> columns)
+std::unique_ptr<protocol::Runtime::RemoteObject> V8InspectorSessionImpl::wrapTable(v8::Local<v8::Context> context, v8::Local<v8::Value> table, v8::Local<v8::Value> columns)
 {
     ErrorString errorString;
     InjectedScript* injectedScript = findInjectedScript(&errorString, V8Debugger::contextId(context));
@@ -255,7 +255,7 @@ String16 V8InspectorSessionImpl::stateJSON()
     return m_state->toJSONString();
 }
 
-void V8InspectorSessionImpl::addInspectedObject(PassOwnPtr<V8InspectorSession::Inspectable> inspectable)
+void V8InspectorSessionImpl::addInspectedObject(std::unique_ptr<V8InspectorSession::Inspectable> inspectable)
 {
     m_inspectedObjects.prepend(std::move(inspectable));
     while (m_inspectedObjects.size() > kInspectedObjectBufferSize)
@@ -269,7 +269,7 @@ V8InspectorSession::Inspectable* V8InspectorSessionImpl::inspectedObject(unsigne
     return m_inspectedObjects[num];
 }
 
-void V8InspectorSessionImpl::schedulePauseOnNextStatement(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data)
+void V8InspectorSessionImpl::schedulePauseOnNextStatement(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data)
 {
     m_debuggerAgent->schedulePauseOnNextStatement(breakReason, std::move(data));
 }
@@ -279,12 +279,12 @@ void V8InspectorSessionImpl::cancelPauseOnNextStatement()
     m_debuggerAgent->cancelPauseOnNextStatement();
 }
 
-void V8InspectorSessionImpl::breakProgram(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data)
+void V8InspectorSessionImpl::breakProgram(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data)
 {
     m_debuggerAgent->breakProgram(breakReason, std::move(data));
 }
 
-void V8InspectorSessionImpl::breakProgramOnException(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data)
+void V8InspectorSessionImpl::breakProgramOnException(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data)
 {
     m_debuggerAgent->breakProgramOnException(breakReason, std::move(data));
 }

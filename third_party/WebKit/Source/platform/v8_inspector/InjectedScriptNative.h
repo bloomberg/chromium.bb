@@ -7,7 +7,7 @@
 
 #include "platform/inspector_protocol/Collections.h"
 #include "platform/inspector_protocol/String16.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 #include <v8.h>
 
 namespace blink {
@@ -32,7 +32,7 @@ private:
 
     int m_lastBoundObjectId;
     v8::Isolate* m_isolate;
-    protocol::HashMap<int, OwnPtr<v8::Global<v8::Value>>> m_idToWrappedObject;
+    protocol::HashMap<int, std::unique_ptr<v8::Global<v8::Value>>> m_idToWrappedObject;
     typedef protocol::HashMap<int, String16> IdToObjectGroupName;
     IdToObjectGroupName m_idToObjectGroupName;
     typedef protocol::HashMap<String16, protocol::Vector<int>> NameToObjectGroup;

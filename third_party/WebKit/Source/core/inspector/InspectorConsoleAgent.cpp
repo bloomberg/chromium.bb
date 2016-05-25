@@ -156,7 +156,7 @@ static String messageLevelValue(MessageLevel level)
 
 void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* consoleMessage, bool generatePreview, double* timestamp)
 {
-    OwnPtr<protocol::Console::ConsoleMessage> jsonObj = protocol::Console::ConsoleMessage::create()
+    std::unique_ptr<protocol::Console::ConsoleMessage> jsonObj = protocol::Console::ConsoleMessage::create()
         .setSource(messageSourceValue(consoleMessage->source()))
         .setLevel(messageLevelValue(consoleMessage->level()))
         .setText(consoleMessage->message())
@@ -176,18 +176,18 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
     if (arguments && arguments->argumentCount()) {
         ScriptState::Scope scope(arguments->getScriptState());
         v8::Local<v8::Context> context = arguments->getScriptState()->context();
-        OwnPtr<protocol::Array<protocol::Runtime::RemoteObject>> jsonArgs = protocol::Array<protocol::Runtime::RemoteObject>::create();
+        std::unique_ptr<protocol::Array<protocol::Runtime::RemoteObject>> jsonArgs = protocol::Array<protocol::Runtime::RemoteObject>::create();
         if (consoleMessage->type() == TableMessageType && generatePreview) {
             v8::Local<v8::Value> table = arguments->argumentAt(0).v8Value();
             v8::Local<v8::Value> columns = arguments->argumentCount() > 1 ? arguments->argumentAt(1).v8Value() : v8::Local<v8::Value>();
-            OwnPtr<protocol::Runtime::RemoteObject> inspectorValue = m_v8Session->wrapTable(context, table, columns);
+            std::unique_ptr<protocol::Runtime::RemoteObject> inspectorValue = m_v8Session->wrapTable(context, table, columns);
             if (inspectorValue)
                 jsonArgs->addItem(std::move(inspectorValue));
             else
                 jsonArgs = nullptr;
         } else {
             for (unsigned i = 0; i < arguments->argumentCount(); ++i) {
-                OwnPtr<protocol::Runtime::RemoteObject> inspectorValue = m_v8Session->wrapObject(context, arguments->argumentAt(i).v8Value(), "console", generatePreview);
+                std::unique_ptr<protocol::Runtime::RemoteObject> inspectorValue = m_v8Session->wrapObject(context, arguments->argumentAt(i).v8Value(), "console", generatePreview);
                 if (!inspectorValue) {
                     jsonArgs = nullptr;
                     break;

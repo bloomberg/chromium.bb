@@ -13,34 +13,34 @@
 namespace blink {
 namespace protocol {
 
-PLATFORM_EXPORT PassOwnPtr<protocol::Value> toValue(int value);
+PLATFORM_EXPORT std::unique_ptr<protocol::Value> toValue(int value);
 
-PLATFORM_EXPORT PassOwnPtr<protocol::Value> toValue(double value);
+PLATFORM_EXPORT std::unique_ptr<protocol::Value> toValue(double value);
 
-PLATFORM_EXPORT PassOwnPtr<protocol::Value> toValue(bool value);
+PLATFORM_EXPORT std::unique_ptr<protocol::Value> toValue(bool value);
 
-PLATFORM_EXPORT PassOwnPtr<protocol::Value> toValue(const String16& param);
+PLATFORM_EXPORT std::unique_ptr<protocol::Value> toValue(const String16& param);
 
-PLATFORM_EXPORT PassOwnPtr<protocol::Value> toValue(const String& param);
+PLATFORM_EXPORT std::unique_ptr<protocol::Value> toValue(const String& param);
 
-PLATFORM_EXPORT PassOwnPtr<protocol::Value> toValue(protocol::Value* param);
+PLATFORM_EXPORT std::unique_ptr<protocol::Value> toValue(protocol::Value* param);
 
-PLATFORM_EXPORT PassOwnPtr<protocol::Value> toValue(protocol::DictionaryValue* param);
+PLATFORM_EXPORT std::unique_ptr<protocol::Value> toValue(protocol::DictionaryValue* param);
 
-PLATFORM_EXPORT PassOwnPtr<protocol::Value> toValue(protocol::ListValue* param);
+PLATFORM_EXPORT std::unique_ptr<protocol::Value> toValue(protocol::ListValue* param);
 
-template<typename T> PassOwnPtr<protocol::Value> toValue(T* param)
+template<typename T> std::unique_ptr<protocol::Value> toValue(T* param)
 {
     return param->serialize();
 }
 
-template<typename T> PassOwnPtr<protocol::Value> toValue(const OwnPtr<T>& param)
+template<typename T> std::unique_ptr<protocol::Value> toValue(const std::unique_ptr<T>& param)
 {
     static_assert(sizeof(T) == 0, "use raw pointer version.");
     return nullptr;
 }
 
-template<typename T> PassOwnPtr<protocol::Value> toValue(PassOwnPtr<T> param)
+template<typename T> std::unique_ptr<protocol::Value> toValue(std::unique_ptr<T> param)
 {
     static_assert(sizeof(T) == 0, "use raw pointer version.");
     return nullptr;
@@ -48,7 +48,7 @@ template<typename T> PassOwnPtr<protocol::Value> toValue(PassOwnPtr<T> param)
 
 template<typename T>
 struct FromValue {
-    static PassOwnPtr<T> parse(protocol::Value* value, ErrorSupport* errors)
+    static std::unique_ptr<T> parse(protocol::Value* value, ErrorSupport* errors)
     {
         return T::parse(value, errors);
     }
@@ -116,7 +116,7 @@ struct FromValue<String16> {
 
 template<>
 struct FromValue<Value> {
-    static PassOwnPtr<Value> parse(protocol::Value* value, ErrorSupport* errors)
+    static std::unique_ptr<Value> parse(protocol::Value* value, ErrorSupport* errors)
     {
         bool success = !!value;
         if (!success)
@@ -127,7 +127,7 @@ struct FromValue<Value> {
 
 template<>
 struct FromValue<DictionaryValue> {
-    static PassOwnPtr<DictionaryValue> parse(protocol::Value* value, ErrorSupport* errors)
+    static std::unique_ptr<DictionaryValue> parse(protocol::Value* value, ErrorSupport* errors)
     {
         bool success = value && value->type() == protocol::Value::TypeObject;
         if (!success)
@@ -138,7 +138,7 @@ struct FromValue<DictionaryValue> {
 
 template<>
 struct FromValue<ListValue> {
-    static PassOwnPtr<ListValue> parse(protocol::Value* value, ErrorSupport* errors)
+    static std::unique_ptr<ListValue> parse(protocol::Value* value, ErrorSupport* errors)
     {
         bool success = value && value->type() == protocol::Value::TypeArray;
         if (!success)
@@ -151,7 +151,7 @@ template<typename T> class Array;
 
 template<typename T>
 struct FromValue<protocol::Array<T>> {
-    static PassOwnPtr<protocol::Array<T>> parse(protocol::Value* value, ErrorSupport* errors)
+    static std::unique_ptr<protocol::Array<T>> parse(protocol::Value* value, ErrorSupport* errors)
     {
         return protocol::Array<T>::parse(value, errors);
     }

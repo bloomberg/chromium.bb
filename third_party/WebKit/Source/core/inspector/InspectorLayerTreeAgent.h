@@ -73,16 +73,16 @@ public:
     // Called from the front-end.
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;
-    void compositingReasons(ErrorString*, const String& layerId, OwnPtr<protocol::Array<String>>* compositingReasons) override;
+    void compositingReasons(ErrorString*, const String& layerId, std::unique_ptr<protocol::Array<String>>* compositingReasons) override;
     void makeSnapshot(ErrorString*, const String& layerId, String* snapshotId) override;
-    void loadSnapshot(ErrorString*, PassOwnPtr<protocol::Array<protocol::LayerTree::PictureTile>> tiles, String* snapshotId) override;
+    void loadSnapshot(ErrorString*, std::unique_ptr<protocol::Array<protocol::LayerTree::PictureTile>> tiles, String* snapshotId) override;
     void releaseSnapshot(ErrorString*, const String& snapshotId) override;
-    void profileSnapshot(ErrorString*, const String& snapshotId, const Maybe<int>& minRepeatCount, const Maybe<double>& minDuration, const Maybe<protocol::DOM::Rect>& clipRect, OwnPtr<protocol::Array<protocol::Array<double>>>* timings) override;
+    void profileSnapshot(ErrorString*, const String& snapshotId, const Maybe<int>& minRepeatCount, const Maybe<double>& minDuration, const Maybe<protocol::DOM::Rect>& clipRect, std::unique_ptr<protocol::Array<protocol::Array<double>>>* timings) override;
     void replaySnapshot(ErrorString*, const String& snapshotId, const Maybe<int>& fromStep, const Maybe<int>& toStep, const Maybe<double>& scale, String* dataURL) override;
-    void snapshotCommandLog(ErrorString*, const String& snapshotId, OwnPtr<protocol::Array<protocol::DictionaryValue>>* commandLog) override;
+    void snapshotCommandLog(ErrorString*, const String& snapshotId, std::unique_ptr<protocol::Array<protocol::DictionaryValue>>* commandLog) override;
 
     // Called by other agents.
-    PassOwnPtr<protocol::Array<protocol::LayerTree::Layer>> buildLayerTree();
+    std::unique_ptr<protocol::Array<protocol::LayerTree::Layer>> buildLayerTree();
 
 private:
     static unsigned s_lastSnapshotId;
@@ -97,7 +97,7 @@ private:
 
     typedef HashMap<int, int> LayerIdToNodeIdMap;
     void buildLayerIdToNodeIdMap(PaintLayer*, LayerIdToNodeIdMap&);
-    void gatherGraphicsLayers(GraphicsLayer*, HashMap<int, int>& layerIdToNodeIdMap, OwnPtr<protocol::Array<protocol::LayerTree::Layer>>&, bool hasWheelEventHandlers, int scrollingRootLayerId);
+    void gatherGraphicsLayers(GraphicsLayer*, HashMap<int, int>& layerIdToNodeIdMap, std::unique_ptr<protocol::Array<protocol::LayerTree::Layer>>&, bool hasWheelEventHandlers, int scrollingRootLayerId);
     int idForNode(Node*);
 
     Member<InspectedFrames> m_inspectedFrames;

@@ -117,9 +117,9 @@ bool matches(const String& url, const String& pattern)
     return true;
 }
 
-static PassOwnPtr<protocol::Network::Headers> buildObjectForHeaders(const HTTPHeaderMap& headers)
+static std::unique_ptr<protocol::Network::Headers> buildObjectForHeaders(const HTTPHeaderMap& headers)
 {
-    OwnPtr<protocol::DictionaryValue> headersObject = protocol::DictionaryValue::create();
+    std::unique_ptr<protocol::DictionaryValue> headersObject = protocol::DictionaryValue::create();
     for (const auto& header : headers)
         headersObject->setString(header.key.getString(), header.value);
     protocol::ErrorSupport errors;
@@ -129,7 +129,7 @@ static PassOwnPtr<protocol::Network::Headers> buildObjectForHeaders(const HTTPHe
 class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
     WTF_MAKE_NONCOPYABLE(InspectorFileReaderLoaderClient);
 public:
-    InspectorFileReaderLoaderClient(PassRefPtr<BlobDataHandle> blob, const String& mimeType, const String& textEncodingName, PassOwnPtr<GetResponseBodyCallback> callback)
+    InspectorFileReaderLoaderClient(PassRefPtr<BlobDataHandle> blob, const String& mimeType, const String& textEncodingName, std::unique_ptr<GetResponseBodyCallback> callback)
         : m_blob(blob)
         , m_mimeType(mimeType)
         , m_textEncodingName(textEncodingName)
@@ -182,7 +182,7 @@ private:
     RefPtr<BlobDataHandle> m_blob;
     String m_mimeType;
     String m_textEncodingName;
-    OwnPtr<GetResponseBodyCallback> m_callback;
+    std::unique_ptr<GetResponseBodyCallback> m_callback;
     OwnPtr<FileReaderLoader> m_loader;
     RefPtr<SharedBuffer> m_rawData;
 };
@@ -254,7 +254,7 @@ void InspectorResourceAgent::restore()
     }
 }
 
-static PassOwnPtr<protocol::Network::ResourceTiming> buildObjectForTiming(const ResourceLoadTiming& timing)
+static std::unique_ptr<protocol::Network::ResourceTiming> buildObjectForTiming(const ResourceLoadTiming& timing)
 {
     return protocol::Network::ResourceTiming::create()
         .setRequestTime(timing.requestTime())
@@ -276,9 +276,9 @@ static PassOwnPtr<protocol::Network::ResourceTiming> buildObjectForTiming(const 
         .build();
 }
 
-static PassOwnPtr<protocol::Network::Request> buildObjectForResourceRequest(const ResourceRequest& request)
+static std::unique_ptr<protocol::Network::Request> buildObjectForResourceRequest(const ResourceRequest& request)
 {
-    OwnPtr<protocol::Network::Request> requestObject = protocol::Network::Request::create()
+    std::unique_ptr<protocol::Network::Request> requestObject = protocol::Network::Request::create()
         .setUrl(urlWithoutFragment(request.url()).getString())
         .setMethod(request.httpMethod())
         .setHeaders(buildObjectForHeaders(request.httpHeaderFields()))
@@ -291,7 +291,7 @@ static PassOwnPtr<protocol::Network::Request> buildObjectForResourceRequest(cons
     return requestObject;
 }
 
-static PassOwnPtr<protocol::Network::Response> buildObjectForResourceResponse(const ResourceResponse& response, Resource* cachedResource = nullptr, bool* isEmpty = nullptr)
+static std::unique_ptr<protocol::Network::Response> buildObjectForResourceResponse(const ResourceResponse& response, Resource* cachedResource = nullptr, bool* isEmpty = nullptr)
 {
     if (response.isNull())
         return nullptr;
@@ -340,7 +340,7 @@ static PassOwnPtr<protocol::Network::Response> buildObjectForResourceResponse(co
     if (isEmpty)
         *isEmpty = !status && mimeType.isEmpty() && !headersMap.size();
 
-    OwnPtr<protocol::Network::Response> responseObject = protocol::Network::Response::create()
+    std::unique_ptr<protocol::Network::Response> responseObject = protocol::Network::Response::create()
         .setUrl(urlWithoutFragment(response.url()).getString())
         .setStatus(status)
         .setStatusText(statusText)
@@ -400,12 +400,12 @@ static PassOwnPtr<protocol::Network::Response> buildObjectForResourceResponse(co
         int numInvalidSCTs = safeCast<int>(responseSecurityDetails->numInvalidSCTs);
         int numValidSCTs = safeCast<int>(responseSecurityDetails->numValidSCTs);
 
-        OwnPtr<protocol::Network::CertificateValidationDetails> certificateValidationDetails = protocol::Network::CertificateValidationDetails::create()
+        std::unique_ptr<protocol::Network::CertificateValidationDetails> certificateValidationDetails = protocol::Network::CertificateValidationDetails::create()
             .setNumUnknownScts(numUnknownSCTs)
             .setNumInvalidScts(numInvalidSCTs)
             .setNumValidScts(numValidSCTs).build();
 
-        OwnPtr<protocol::Network::SecurityDetails> securityDetails = protocol::Network::SecurityDetails::create()
+        std::unique_ptr<protocol::Network::SecurityDetails> securityDetails = protocol::Network::SecurityDetails::create()
             .setProtocol(responseSecurityDetails->protocol)
             .setKeyExchange(responseSecurityDetails->keyExchange)
             .setCipher(responseSecurityDetails->cipher)
@@ -481,14 +481,14 @@ void InspectorResourceAgent::willSendRequestInternal(LocalFrame* frame, unsigned
     }
 
     String frameId = loader->frame() ? IdentifiersFactory::frameId(loader->frame()) : "";
-    OwnPtr<protocol::Network::Initiator> initiatorObject = buildInitiatorObject(loader->frame() ? loader->frame()->document() : 0, initiatorInfo);
+    std::unique_ptr<protocol::Network::Initiator> initiatorObject = buildInitiatorObject(loader->frame() ? loader->frame()->document() : 0, initiatorInfo);
     if (initiatorInfo.name == FetchInitiatorTypeNames::document) {
         FrameNavigationInitiatorMap::iterator it = m_frameNavigationInitiatorMap.find(frameId);
         if (it != m_frameNavigationInitiatorMap.end())
             initiatorObject = it->value->clone();
     }
 
-    OwnPtr<protocol::Network::Request> requestInfo(buildObjectForResourceRequest(request));
+    std::unique_ptr<protocol::Network::Request> requestInfo(buildObjectForResourceRequest(request));
 
     requestInfo->setMixedContentType(mixedContentTypeForContextType(MixedContentChecker::contextTypeForInspector(frame, request)));
 
@@ -543,7 +543,7 @@ void InspectorResourceAgent::didReceiveResourceResponse(LocalFrame* frame, unsig
     bool isNotModified = response.httpStatusCode() == 304;
 
     bool resourceIsEmpty = true;
-    OwnPtr<protocol::Network::Response> resourceResponse = buildObjectForResourceResponse(response, cachedResource, &resourceIsEmpty);
+    std::unique_ptr<protocol::Network::Response> resourceResponse = buildObjectForResourceResponse(response, cachedResource, &resourceIsEmpty);
 
     InspectorPageAgent::ResourceType type = cachedResource ? InspectorPageAgent::cachedResourceType(*cachedResource) : InspectorPageAgent::OtherResource;
     // Override with already discovered resource type.
@@ -786,11 +786,11 @@ void InspectorResourceAgent::didScheduleStyleRecalculation(Document* document)
         m_styleRecalculationInitiator = buildInitiatorObject(document, FetchInitiatorInfo());
 }
 
-PassOwnPtr<protocol::Network::Initiator> InspectorResourceAgent::buildInitiatorObject(Document* document, const FetchInitiatorInfo& initiatorInfo)
+std::unique_ptr<protocol::Network::Initiator> InspectorResourceAgent::buildInitiatorObject(Document* document, const FetchInitiatorInfo& initiatorInfo)
 {
-    OwnPtr<V8StackTrace> stackTrace = SourceLocation::capture(document)->takeStackTrace();
+    std::unique_ptr<V8StackTrace> stackTrace = SourceLocation::capture(document)->takeStackTrace();
     if (stackTrace) {
-        OwnPtr<protocol::Network::Initiator> initiatorObject = protocol::Network::Initiator::create()
+        std::unique_ptr<protocol::Network::Initiator> initiatorObject = protocol::Network::Initiator::create()
             .setType(protocol::Network::Initiator::TypeEnum::Script).build();
         initiatorObject->setStack(stackTrace->buildInspectorObject());
         return initiatorObject;
@@ -799,7 +799,7 @@ PassOwnPtr<protocol::Network::Initiator> InspectorResourceAgent::buildInitiatorO
     while (document && !document->scriptableDocumentParser())
         document = document->localOwner() ? document->localOwner()->ownerDocument() : nullptr;
     if (document && document->scriptableDocumentParser()) {
-        OwnPtr<protocol::Network::Initiator> initiatorObject = protocol::Network::Initiator::create()
+        std::unique_ptr<protocol::Network::Initiator> initiatorObject = protocol::Network::Initiator::create()
             .setType(protocol::Network::Initiator::TypeEnum::Parser).build();
         initiatorObject->setUrl(urlWithoutFragment(document->url()).getString());
         if (TextPosition::belowRangePosition() != initiatorInfo.position)
@@ -824,7 +824,7 @@ void InspectorResourceAgent::didCreateWebSocket(Document*, unsigned long identif
 void InspectorResourceAgent::willSendWebSocketHandshakeRequest(Document*, unsigned long identifier, const WebSocketHandshakeRequest* request)
 {
     ASSERT(request);
-    OwnPtr<protocol::Network::WebSocketRequest> requestObject = protocol::Network::WebSocketRequest::create()
+    std::unique_ptr<protocol::Network::WebSocketRequest> requestObject = protocol::Network::WebSocketRequest::create()
         .setHeaders(buildObjectForHeaders(request->headerFields())).build();
     frontend()->webSocketWillSendHandshakeRequest(IdentifiersFactory::requestId(identifier), monotonicallyIncreasingTime(), currentTime(), std::move(requestObject));
 }
@@ -832,7 +832,7 @@ void InspectorResourceAgent::willSendWebSocketHandshakeRequest(Document*, unsign
 void InspectorResourceAgent::didReceiveWebSocketHandshakeResponse(Document*, unsigned long identifier, const WebSocketHandshakeRequest* request, const WebSocketHandshakeResponse* response)
 {
     ASSERT(response);
-    OwnPtr<protocol::Network::WebSocketResponse> responseObject = protocol::Network::WebSocketResponse::create()
+    std::unique_ptr<protocol::Network::WebSocketResponse> responseObject = protocol::Network::WebSocketResponse::create()
         .setStatus(response->statusCode())
         .setStatusText(response->statusText())
         .setHeaders(buildObjectForHeaders(response->headerFields())).build();
@@ -854,7 +854,7 @@ void InspectorResourceAgent::didCloseWebSocket(Document*, unsigned long identifi
 
 void InspectorResourceAgent::didReceiveWebSocketFrame(unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength)
 {
-    OwnPtr<protocol::Network::WebSocketFrame> frameObject = protocol::Network::WebSocketFrame::create()
+    std::unique_ptr<protocol::Network::WebSocketFrame> frameObject = protocol::Network::WebSocketFrame::create()
         .setOpcode(opCode)
         .setMask(masked)
         .setPayloadData(String::fromUTF8WithLatin1Fallback(payload, payloadLength)).build();
@@ -863,7 +863,7 @@ void InspectorResourceAgent::didReceiveWebSocketFrame(unsigned long identifier, 
 
 void InspectorResourceAgent::didSendWebSocketFrame(unsigned long identifier, int opCode, bool masked, const char* payload, size_t payloadLength)
 {
-    OwnPtr<protocol::Network::WebSocketFrame> frameObject = protocol::Network::WebSocketFrame::create()
+    std::unique_ptr<protocol::Network::WebSocketFrame> frameObject = protocol::Network::WebSocketFrame::create()
         .setOpcode(opCode)
         .setMask(masked)
         .setPayloadData(String::fromUTF8WithLatin1Fallback(payload, payloadLength)).build();
@@ -906,7 +906,7 @@ void InspectorResourceAgent::setUserAgentOverride(ErrorString*, const String& us
     m_state->setString(ResourceAgentState::userAgentOverride, userAgent);
 }
 
-void InspectorResourceAgent::setExtraHTTPHeaders(ErrorString*, const PassOwnPtr<protocol::Network::Headers> headers)
+void InspectorResourceAgent::setExtraHTTPHeaders(ErrorString*, const std::unique_ptr<protocol::Network::Headers> headers)
 {
     m_state->setObject(ResourceAgentState::extraRequestHeaders, headers->serialize());
 }
@@ -921,7 +921,7 @@ bool InspectorResourceAgent::canGetResponseBodyBlob(const String& requestId)
     return frame && frame->document();
 }
 
-void InspectorResourceAgent::getResponseBodyBlob(const String& requestId, PassOwnPtr<GetResponseBodyCallback> callback)
+void InspectorResourceAgent::getResponseBodyBlob(const String& requestId, std::unique_ptr<GetResponseBodyCallback> callback)
 {
     NetworkResourcesData::ResourceData const* resourceData = m_resourcesData->data(requestId);
     BlobDataHandle* blob = resourceData->downloadedFileBlob();
@@ -931,9 +931,9 @@ void InspectorResourceAgent::getResponseBodyBlob(const String& requestId, PassOw
     client->start(document);
 }
 
-void InspectorResourceAgent::getResponseBody(ErrorString* errorString, const String& requestId, PassOwnPtr<GetResponseBodyCallback> passCallback)
+void InspectorResourceAgent::getResponseBody(ErrorString* errorString, const String& requestId, std::unique_ptr<GetResponseBodyCallback> passCallback)
 {
-    OwnPtr<GetResponseBodyCallback> callback = std::move(passCallback);
+    std::unique_ptr<GetResponseBodyCallback> callback = std::move(passCallback);
     NetworkResourcesData::ResourceData const* resourceData = m_resourcesData->data(requestId);
     if (!resourceData) {
         callback->sendFailure("No resource with given identifier found");
@@ -986,7 +986,7 @@ void InspectorResourceAgent::addBlockedURL(ErrorString*, const String& url)
 {
     protocol::DictionaryValue* blockedURLs = m_state->getObject(ResourceAgentState::blockedURLs);
     if (!blockedURLs) {
-        OwnPtr<protocol::DictionaryValue> newList = protocol::DictionaryValue::create();
+        std::unique_ptr<protocol::DictionaryValue> newList = protocol::DictionaryValue::create();
         blockedURLs = newList.get();
         m_state->setObject(ResourceAgentState::blockedURLs, std::move(newList));
     }
@@ -1073,7 +1073,7 @@ void InspectorResourceAgent::didCommitLoad(LocalFrame* frame, DocumentLoader* lo
 
 void InspectorResourceAgent::frameScheduledNavigation(LocalFrame* frame, double)
 {
-    OwnPtr<protocol::Network::Initiator> initiator = buildInitiatorObject(frame->document(), FetchInitiatorInfo());
+    std::unique_ptr<protocol::Network::Initiator> initiator = buildInitiatorObject(frame->document(), FetchInitiatorInfo());
     m_frameNavigationInitiatorMap.set(IdentifiersFactory::frameId(frame), std::move(initiator));
 }
 

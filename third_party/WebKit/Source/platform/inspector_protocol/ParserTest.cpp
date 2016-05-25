@@ -14,8 +14,8 @@ namespace protocol {
 TEST(ParserTest, Reading)
 {
     protocol::Value* tmpValue;
-    OwnPtr<protocol::Value> root;
-    OwnPtr<protocol::Value> root2;
+    std::unique_ptr<protocol::Value> root;
+    std::unique_ptr<protocol::Value> root2;
     String16 strVal;
     int intVal = 0;
 
@@ -495,7 +495,7 @@ TEST(ParserTest, InvalidSanity)
     };
 
     for (size_t i = 0; i < 11; ++i) {
-        OwnPtr<protocol::Value> result = parseJSON(invalidJson[i]);
+        std::unique_ptr<protocol::Value> result = parseJSON(invalidJson[i]);
         EXPECT_FALSE(result.get());
     }
 }

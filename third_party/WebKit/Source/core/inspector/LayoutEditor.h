@@ -46,12 +46,12 @@ public:
 private:
     LayoutEditor(Element*, InspectorCSSAgent*, InspectorDOMAgent*, ScriptController*);
     CSSPrimitiveValue* getPropertyCSSValue(CSSPropertyID) const;
-    PassOwnPtr<protocol::DictionaryValue> createValueDescription(const String&);
+    std::unique_ptr<protocol::DictionaryValue> createValueDescription(const String&);
     void appendAnchorFor(protocol::ListValue*, const String&, const String&);
     bool setCSSPropertyValueInCurrentRule(const String&);
     void editableSelectorUpdated(bool hasChanged) const;
-    void evaluateInOverlay(const String&, PassOwnPtr<protocol::Value>) const;
-    PassOwnPtr<protocol::DictionaryValue> currentSelectorInfo(CSSStyleDeclaration*) const;
+    void evaluateInOverlay(const String&, std::unique_ptr<protocol::Value>) const;
+    std::unique_ptr<protocol::DictionaryValue> currentSelectorInfo(CSSStyleDeclaration*) const;
     bool growInside(String propertyName, CSSPrimitiveValue*);
 
     Member<Element> m_element;

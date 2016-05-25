@@ -9,7 +9,7 @@
 #include "platform/inspector_protocol/Allocator.h"
 #include "platform/inspector_protocol/Collections.h"
 #include "platform/inspector_protocol/String16.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 
 namespace blink {
 namespace protocol {
@@ -25,9 +25,9 @@ public:
 
     virtual ~Value() { }
 
-    static PassOwnPtr<Value> null()
+    static std::unique_ptr<Value> null()
     {
-        return adoptPtr(new Value());
+        return wrapUnique(new Value());
     }
 
     enum ValueType {
@@ -50,7 +50,7 @@ public:
 
     String16 toJSONString() const;
     virtual void writeJSON(String16Builder* output) const;
-    virtual PassOwnPtr<Value> clone() const;
+    virtual std::unique_ptr<Value> clone() const;
 
 protected:
     Value() : m_type(TypeNull) { }
@@ -65,26 +65,26 @@ private:
 
 class PLATFORM_EXPORT FundamentalValue : public Value {
 public:
-    static PassOwnPtr<FundamentalValue> create(bool value)
+    static std::unique_ptr<FundamentalValue> create(bool value)
     {
-        return adoptPtr(new FundamentalValue(value));
+        return wrapUnique(new FundamentalValue(value));
     }
 
-    static PassOwnPtr<FundamentalValue> create(int value)
+    static std::unique_ptr<FundamentalValue> create(int value)
     {
-        return adoptPtr(new FundamentalValue(value));
+        return wrapUnique(new FundamentalValue(value));
     }
 
-    static PassOwnPtr<FundamentalValue> create(double value)
+    static std::unique_ptr<FundamentalValue> create(double value)
     {
-        return adoptPtr(new FundamentalValue(value));
+        return wrapUnique(new FundamentalValue(value));
     }
 
     bool asBoolean(bool* output) const override;
     bool asNumber(double* output) const override;
     bool asNumber(int* output) const override;
     void writeJSON(String16Builder* output) const override;
-    PassOwnPtr<Value> clone() const override;
+    std::unique_ptr<Value> clone() const override;
 
 private:
     explicit FundamentalValue(bool value) : Value(TypeBoolean), m_boolValue(value) { }
@@ -99,19 +99,19 @@ private:
 
 class PLATFORM_EXPORT StringValue : public Value {
 public:
-    static PassOwnPtr<StringValue> create(const String16& value)
+    static std::unique_ptr<StringValue> create(const String16& value)
     {
-        return adoptPtr(new StringValue(value));
+        return wrapUnique(new StringValue(value));
     }
 
-    static PassOwnPtr<StringValue> create(const char* value)
+    static std::unique_ptr<StringValue> create(const char* value)
     {
-        return adoptPtr(new StringValue(value));
+        return wrapUnique(new StringValue(value));
     }
 
     bool asString(String16* output) const override;
     void writeJSON(String16Builder* output) const override;
-    PassOwnPtr<Value> clone() const override;
+    std::unique_ptr<Value> clone() const override;
 
 private:
     explicit StringValue(const String16& value) : Value(TypeString), m_stringValue(value) { }
@@ -123,9 +123,9 @@ private:
 class PLATFORM_EXPORT DictionaryValue : public Value {
 public:
     using Entry = std::pair<String16, Value*>;
-    static PassOwnPtr<DictionaryValue> create()
+    static std::unique_ptr<DictionaryValue> create()
     {
-        return adoptPtr(new DictionaryValue());
+        return wrapUnique(new DictionaryValue());
     }
 
     static DictionaryValue* cast(Value* value)
@@ -135,22 +135,22 @@ public:
         return static_cast<DictionaryValue*>(value);
     }
 
-    static PassOwnPtr<DictionaryValue> cast(PassOwnPtr<Value> value)
+    static std::unique_ptr<DictionaryValue> cast(std::unique_ptr<Value> value)
     {
-        return adoptPtr(DictionaryValue::cast(value.leakPtr()));
+        return wrapUnique(DictionaryValue::cast(value.release()));
     }
 
     void writeJSON(String16Builder* output) const override;
-    PassOwnPtr<Value> clone() const override;
+    std::unique_ptr<Value> clone() const override;
 
     size_t size() const { return m_data.size(); }
 
     void setBoolean(const String16& name, bool);
     void setNumber(const String16& name, double);
     void setString(const String16& name, const String16&);
-    void setValue(const String16& name, PassOwnPtr<Value>);
-    void setObject(const String16& name, PassOwnPtr<DictionaryValue>);
-    void setArray(const String16& name, PassOwnPtr<ListValue>);
+    void setValue(const String16& name, std::unique_ptr<Value>);
+    void setObject(const String16& name, std::unique_ptr<DictionaryValue>);
+    void setArray(const String16& name, std::unique_ptr<ListValue>);
 
     bool getBoolean(const String16& name, bool* output) const;
     template<class T> bool getNumber(const String16& name, T* output) const
@@ -176,16 +176,16 @@ public:
 private:
     DictionaryValue();
 
-    using Dictionary = protocol::HashMap<String16, OwnPtr<Value>>;
+    using Dictionary = protocol::HashMap<String16, std::unique_ptr<Value>>;
     Dictionary m_data;
     protocol::Vector<String16> m_order;
 };
 
 class PLATFORM_EXPORT ListValue : public Value {
 public:
-    static PassOwnPtr<ListValue> create()
+    static std::unique_ptr<ListValue> create()
     {
-        return adoptPtr(new ListValue());
+        return wrapUnique(new ListValue());
     }
 
     static ListValue* cast(Value* value)
@@ -195,24 +195,24 @@ public:
         return static_cast<ListValue*>(value);
     }
 
-    static PassOwnPtr<ListValue> cast(PassOwnPtr<Value> value)
+    static std::unique_ptr<ListValue> cast(std::unique_ptr<Value> value)
     {
-        return adoptPtr(ListValue::cast(value.leakPtr()));
+        return wrapUnique(ListValue::cast(value.release()));
     }
 
     ~ListValue() override;
 
     void writeJSON(String16Builder* output) const override;
-    PassOwnPtr<Value> clone() const override;
+    std::unique_ptr<Value> clone() const override;
 
-    void pushValue(PassOwnPtr<Value>);
+    void pushValue(std::unique_ptr<Value>);
 
     Value* at(size_t index);
     size_t size() const { return m_data.size(); }
 
 private:
     ListValue();
-    protocol::Vector<OwnPtr<Value>> m_data;
+    protocol::Vector<std::unique_ptr<Value>> m_data;
 };
 
 } // namespace protocol

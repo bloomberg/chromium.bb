@@ -62,21 +62,21 @@ namespace {
 
 class ExecuteSQLCallbackWrapper : public RefCounted<ExecuteSQLCallbackWrapper> {
 public:
-    static PassRefPtr<ExecuteSQLCallbackWrapper> create(PassOwnPtr<ExecuteSQLCallback> callback) { return adoptRef(new ExecuteSQLCallbackWrapper(std::move(callback))); }
+    static PassRefPtr<ExecuteSQLCallbackWrapper> create(std::unique_ptr<ExecuteSQLCallback> callback) { return adoptRef(new ExecuteSQLCallbackWrapper(std::move(callback))); }
     ~ExecuteSQLCallbackWrapper() { }
     ExecuteSQLCallback* get() { return m_callback.get(); }
 
     void reportTransactionFailed(SQLError* error)
     {
-        OwnPtr<protocol::Database::Error> errorObject = protocol::Database::Error::create()
+        std::unique_ptr<protocol::Database::Error> errorObject = protocol::Database::Error::create()
             .setMessage(error->message())
             .setCode(error->code()).build();
         m_callback->sendSuccess(Maybe<protocol::Array<String>>(), Maybe<protocol::Array<protocol::Value>>(), std::move(errorObject));
     }
 
 private:
-    explicit ExecuteSQLCallbackWrapper(PassOwnPtr<ExecuteSQLCallback> callback) : m_callback(std::move(callback)) { }
-    OwnPtr<ExecuteSQLCallback> m_callback;
+    explicit ExecuteSQLCallbackWrapper(std::unique_ptr<ExecuteSQLCallback> callback) : m_callback(std::move(callback)) { }
+    std::unique_ptr<ExecuteSQLCallback> m_callback;
 };
 
 class StatementCallback final : public SQLStatementCallback {
@@ -97,12 +97,12 @@ public:
     {
         SQLResultSetRowList* rowList = resultSet->rows();
 
-        OwnPtr<protocol::Array<String>> columnNames = protocol::Array<String>::create();
+        std::unique_ptr<protocol::Array<String>> columnNames = protocol::Array<String>::create();
         const Vector<String>& columns = rowList->columnNames();
         for (size_t i = 0; i < columns.size(); ++i)
             columnNames->addItem(columns[i]);
 
-        OwnPtr<protocol::Array<protocol::Value>> values = protocol::Array<protocol::Value>::create();
+        std::unique_ptr<protocol::Array<protocol::Value>> values = protocol::Array<protocol::Value>::create();
         const Vector<SQLValue>& data = rowList->values();
         for (size_t i = 0; i < data.size(); ++i) {
             const SQLValue& value = rowList->values()[i];
@@ -287,7 +287,7 @@ void InspectorDatabaseAgent::restore()
     }
 }
 
-void InspectorDatabaseAgent::getDatabaseTableNames(ErrorString* error, const String& databaseId, OwnPtr<protocol::Array<String>>* names)
+void InspectorDatabaseAgent::getDatabaseTableNames(ErrorString* error, const String& databaseId, std::unique_ptr<protocol::Array<String>>* names)
 {
     if (!m_enabled) {
         *error = "Database agent is not enabled";
@@ -305,9 +305,9 @@ void InspectorDatabaseAgent::getDatabaseTableNames(ErrorString* error, const Str
     }
 }
 
-void InspectorDatabaseAgent::executeSQL(ErrorString*, const String& databaseId, const String& query, PassOwnPtr<ExecuteSQLCallback> prpRequestCallback)
+void InspectorDatabaseAgent::executeSQL(ErrorString*, const String& databaseId, const String& query, std::unique_ptr<ExecuteSQLCallback> prpRequestCallback)
 {
-    OwnPtr<ExecuteSQLCallback> requestCallback = std::move(prpRequestCallback);
+    std::unique_ptr<ExecuteSQLCallback> requestCallback = std::move(prpRequestCallback);
 
     if (!m_enabled) {
         requestCallback->sendFailure("Database agent is not enabled");

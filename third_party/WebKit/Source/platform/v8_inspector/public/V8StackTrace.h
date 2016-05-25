@@ -6,7 +6,7 @@
 #define V8StackTrace_h
 
 #include "platform/inspector_protocol/TypeBuilder.h"
-#include "wtf/PassOwnPtr.h"
+#include "wtf/PtrUtil.h"
 
 #include <v8.h>
 
@@ -33,9 +33,9 @@ public:
     virtual String16 topFunctionName() const = 0;
 
     virtual ~V8StackTrace() { }
-    virtual PassOwnPtr<protocol::Runtime::StackTrace> buildInspectorObject() const = 0;
+    virtual std::unique_ptr<protocol::Runtime::StackTrace> buildInspectorObject() const = 0;
     virtual String16 toString() const = 0;
-    virtual PassOwnPtr<V8StackTrace> clone() = 0;
+    virtual std::unique_ptr<V8StackTrace> clone() = 0;
 };
 
 } // namespace blink
