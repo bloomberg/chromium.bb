@@ -108,15 +108,24 @@ ChildSharedBitmapManager::AllocateSharedMemoryBitmap(const gfx::Size& size) {
   std::unique_ptr<base::SharedMemory> memory;
 #if defined(OS_POSIX)
   base::SharedMemoryHandle handle;
-  sender_->Send(new ChildProcessHostMsg_SyncAllocateSharedBitmap(
-      memory_size, id, &handle));
+  bool send_success =
+      sender_->Send(new ChildProcessHostMsg_SyncAllocateSharedBitmap(
+          memory_size, id, &handle));
+  if (!send_success)
+    return nullptr;
   memory = base::WrapUnique(new base::SharedMemory(handle, false));
   if (!memory->Map(memory_size))
     CollectMemoryUsageAndDie(size, memory_size);
 #else
-  memory = ChildThreadImpl::AllocateSharedMemory(memory_size, sender_.get());
-  if (!memory)
-    CollectMemoryUsageAndDie(size, memory_size);
+  bool out_of_memory;
+  memory = ChildThreadImpl::AllocateSharedMemory(memory_size, sender_.get(),
+                                                 &out_of_memory);
+  if (!memory) {
+    if (out_of_memory)
+      CollectMemoryUsageAndDie(size, memory_size);
+    else
+      return nullptr;
+  }
 
   if (!memory->Map(memory_size))
     CollectMemoryUsageAndDie(size, memory_size);

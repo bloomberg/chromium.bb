@@ -103,9 +103,12 @@ class CONTENT_EXPORT ChildThreadImpl
 
   // A static variant that can be called on background threads provided
   // the |sender| passed in is safe to use on background threads.
+  // |out_of_memory| is an output variable populated on failure which tells the
+  // caller whether the failure was caused by an out of memory error.
   static std::unique_ptr<base::SharedMemory> AllocateSharedMemory(
       size_t buf_size,
-      IPC::Sender* sender);
+      IPC::Sender* sender,
+      bool* out_of_memory);
 
   ChildSharedBitmapManager* shared_bitmap_manager() const {
     return shared_bitmap_manager_.get();

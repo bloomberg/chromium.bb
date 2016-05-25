@@ -1284,7 +1284,8 @@ void RenderThreadImpl::RecordComputedAction(const std::string& action) {
 
 std::unique_ptr<base::SharedMemory>
 RenderThreadImpl::HostAllocateSharedMemoryBuffer(size_t size) {
-  return ChildThreadImpl::AllocateSharedMemory(size, thread_safe_sender());
+  return ChildThreadImpl::AllocateSharedMemory(size, thread_safe_sender(),
+                                               nullptr);
 }
 
 cc::SharedBitmapManager* RenderThreadImpl::GetSharedBitmapManager() {

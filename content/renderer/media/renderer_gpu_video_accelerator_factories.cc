@@ -264,8 +264,8 @@ RendererGpuVideoAcceleratorFactories::GetGLContextLock() {
 
 std::unique_ptr<base::SharedMemory>
 RendererGpuVideoAcceleratorFactories::CreateSharedMemory(size_t size) {
-  std::unique_ptr<base::SharedMemory> mem(
-      ChildThreadImpl::AllocateSharedMemory(size, thread_safe_sender_.get()));
+  std::unique_ptr<base::SharedMemory> mem(ChildThreadImpl::AllocateSharedMemory(
+      size, thread_safe_sender_.get(), nullptr));
   if (mem && !mem->Map(size))
     return nullptr;
   return mem;
