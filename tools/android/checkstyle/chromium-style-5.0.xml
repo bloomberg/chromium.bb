@@ -7,6 +7,9 @@
 <module name="Checker">
   <property name="severity" value="warning"/>
   <property name="charset" value="UTF-8"/>
+  <module name="SuppressionFilter">
+    <property name="file" value="tools/android/checkstyle/suppressions.xml"/>
+  </module>
   <module name="TreeWalker">
     <module name="AvoidStarImport">
       <property name="severity" value="error"/>
@@ -207,6 +210,13 @@
       <property name="format" value="android\.app\.AlertDialog"/>
       <property name="ignoreComments" value="true"/>
       <property name="message" value="Avoid android.app.AlertDialog; if possible, use android.support.v7.app.AlertDialog instead, which has a Material look on all devices. (Some parts of the codebase can’t depend on the support library, in which case android.app.AlertDialog is the only option)"/>
+    </module>
+    <module name="RegexpSinglelineJava">
+      <property name="id" value="SharedPreferencesCheck"/>
+      <property name="severity" value="error"/>
+      <property name="format" value="getDefaultSharedPreferences"/>
+      <property name="ignoreComments" value="true"/>
+      <property name="message" value="Use ContextUtils.getAppSharedPreferences() instead to access app-wide SharedPreferences."/>
     </module>
   </module>
 

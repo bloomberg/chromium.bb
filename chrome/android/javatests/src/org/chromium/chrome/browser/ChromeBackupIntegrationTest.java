@@ -9,9 +9,9 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
-import android.preference.PreferenceManager;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
@@ -63,7 +63,7 @@ public class ChromeBackupIntegrationTest extends ChromeTabbedActivityTestBase {
         Context targetContext = getInstrumentation().getTargetContext();
 
         // Fake having previously gone through FRE and signed in.
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(targetContext);
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor preferenceEditor = prefs.edit();
         preferenceEditor.putBoolean(FirstRunStatus.FIRST_RUN_FLOW_COMPLETE, true);
         preferenceEditor.putBoolean(FirstRunSignInProcessor.FIRST_RUN_FLOW_SIGNIN_SETUP, true);
@@ -93,7 +93,7 @@ public class ChromeBackupIntegrationTest extends ChromeTabbedActivityTestBase {
         Context targetContext = getInstrumentation().getTargetContext();
 
         // Fake having previously gone through FRE and signed in.
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(targetContext);
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor preferenceEditor = prefs.edit();
         preferenceEditor.putBoolean(FirstRunStatus.FIRST_RUN_FLOW_COMPLETE, true);
         preferenceEditor.putBoolean(FirstRunSignInProcessor.FIRST_RUN_FLOW_SIGNIN_SETUP, true);

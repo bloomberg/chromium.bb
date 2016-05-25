@@ -25,6 +25,7 @@ _EXCLUDED_PATHS = (
     r"^chrome[\\\/]browser[\\\/]resources[\\\/]pdf[\\\/]index.js",
 )
 
+
 # The NetscapePlugIn library is excluded from pan-project as it will soon
 # be deleted together with the rest of the NPAPI and it's not worthwhile to
 # update the coding style until then.
@@ -32,9 +33,11 @@ _TESTRUNNER_PATHS = (
     r"^content[\\\/]shell[\\\/]tools[\\\/]plugin[\\\/].*",
 )
 
+
 # Fragment of a regular expression that matches C++ and Objective-C++
 # implementation files.
 _IMPLEMENTATION_EXTENSIONS = r'\.(cc|cpp|cxx|mm)$'
+
 
 # Regular expression that matches code only used for test binaries
 # (best effort).
@@ -55,6 +58,7 @@ _TEST_CODE_EXCLUDED_PATHS = (
     r'testing[\\\/]iossim[\\\/]iossim\.mm$',
 )
 
+
 _TEST_ONLY_WARNING = (
     'You might be calling functions intended only for testing from\n'
     'production code.  It is OK to ignore this warning if you know what\n'
@@ -66,6 +70,7 @@ _INCLUDE_ORDER_WARNING = (
     'Your #include order seems to be broken. Remember to use the right '
     'collation (LC_COLLATE=C) and check\nhttps://google.github.io/styleguide/'
     'cppguide.html#Names_and_Order_of_Includes')
+
 
 _BANNED_OBJC_FUNCTIONS = (
     (
@@ -291,6 +296,7 @@ _BANNED_CPP_FUNCTIONS = (
     ),
 )
 
+
 _IPC_ENUM_TRAITS_DEPRECATED = (
     'You are using IPC_ENUM_TRAITS() in your code. It has been deprecated.\n'
     'See http://www.chromium.org/Home/chromium-security/education/security-tips-for-ipc')
@@ -322,9 +328,11 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
     'net/tools/testserver/testserver.pydeps',
 ]
 
+
 _GENERIC_PYDEPS_FILES = [
     'build/secondary/tools/swarming_client/isolate.pydeps',
 ]
+
 
 _ALL_PYDEPS_FILES = _ANDROID_SPECIFIC_PYDEPS_FILES + _GENERIC_PYDEPS_FILES
 
@@ -491,6 +499,7 @@ def _CheckUmaHistogramChanges(input_api, output_api):
     'been modified and the associated histogram name has no match in either '
     '%s or the modifications of it:' % (histograms_xml_path),  problems)]
 
+
 def _CheckFlakyTestUsage(input_api, output_api):
   """Check that FlakyTest annotation is our own instead of the android one"""
   pattern = input_api.re.compile(r'import android.test.FlakyTest;')
@@ -505,6 +514,7 @@ def _CheckFlakyTestUsage(input_api, output_api):
       'android.test.FlakyTest',
       files)]
   return []
+
 
 def _CheckNoNewWStrings(input_api, output_api):
   """Checks to make sure we don't introduce use of wstrings."""
@@ -566,51 +576,42 @@ def _CheckNoBannedFunctions(input_api, output_api):
   warnings = []
   errors = []
 
+  def IsBlacklisted(affected_file, blacklist):
+    local_path = affected_file.LocalPath()
+    for item in blacklist:
+      if input_api.re.match(item, local_path):
+        return True
+    return False
+
+  def CheckForMatch(affected_file, line_num, line, func_name, message, error):
+    matched = False
+    if func_name[0:1] == '/':
+      regex = func_name[1:]
+      if input_api.re.search(regex, line):
+        matched = True
+    elif func_name in line:
+        matched = True
+    if matched:
+      problems = warnings;
+      if error:
+        problems = errors;
+      problems.append('    %s:%d:' % (affected_file.LocalPath(), line_num))
+      for message_line in message:
+        problems.append('      %s' % message_line)
+
   file_filter = lambda f: f.LocalPath().endswith(('.mm', '.m', '.h'))
   for f in input_api.AffectedFiles(file_filter=file_filter):
     for line_num, line in f.ChangedContents():
       for func_name, message, error in _BANNED_OBJC_FUNCTIONS:
-        matched = False
-        if func_name[0:1] == '/':
-          regex = func_name[1:]
-          if input_api.re.search(regex, line):
-            matched = True
-        elif func_name in line:
-            matched = True
-        if matched:
-          problems = warnings;
-          if error:
-            problems = errors;
-          problems.append('    %s:%d:' % (f.LocalPath(), line_num))
-          for message_line in message:
-            problems.append('      %s' % message_line)
+        CheckForMatch(f, line_num, line, func_name, message, error)
 
   file_filter = lambda f: f.LocalPath().endswith(('.cc', '.mm', '.h'))
   for f in input_api.AffectedFiles(file_filter=file_filter):
     for line_num, line in f.ChangedContents():
       for func_name, message, error, excluded_paths in _BANNED_CPP_FUNCTIONS:
-        def IsBlacklisted(affected_file, blacklist):
-          local_path = affected_file.LocalPath()
-          for item in blacklist:
-            if input_api.re.match(item, local_path):
-              return True
-          return False
         if IsBlacklisted(f, excluded_paths):
           continue
-        matched = False
-        if func_name[0:1] == '/':
-          regex = func_name[1:]
-          if input_api.re.search(regex, line):
-            matched = True
-        elif func_name in line:
-            matched = True
-        if matched:
-          problems = warnings;
-          if error:
-            problems = errors;
-          problems.append('    %s:%d:' % (f.LocalPath(), line_num))
-          for message_line in message:
-            problems.append('      %s' % message_line)
+        CheckForMatch(f, line_num, line, func_name, message, error)
 
   result = []
   if (warnings):
@@ -1862,6 +1863,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckSingletonInHeaders(input_api, output_api))
   results.extend(_CheckNoDeprecatedCompiledResourcesGYP(input_api, output_api))
   results.extend(_CheckPydepsNeedsUpdating(input_api, output_api))
+  results.extend(_CheckJavaStyle(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
@@ -2085,7 +2087,6 @@ def CheckChangeOnUpload(input_api, output_api):
   results = []
   results.extend(_CommonChecks(input_api, output_api))
   results.extend(_CheckValidHostsInDEPS(input_api, output_api))
-  results.extend(_CheckJavaStyle(input_api, output_api))
   results.extend(
       input_api.canned_checks.CheckGNFormatted(input_api, output_api))
   results.extend(_CheckUmaHistogramChanges(input_api, output_api))

@@ -11,8 +11,8 @@ import android.app.backup.BackupDataOutput;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
-import android.preference.PreferenceManager;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -62,8 +62,7 @@ public class ChromeBackupAgent extends BackupAgent {
 
     @Override
     public void onRestoreFinished() {
-        SharedPreferences sharedPrefs =
-                PreferenceManager.getDefaultSharedPreferences(ChromeBackupAgent.this);
+        SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         Set<String> prefNames = sharedPrefs.getAll().keySet();
         // Save the user name for later restoration.
         String userName = sharedPrefs.getString(ChromeSigninController.SIGNED_IN_ACCOUNT_KEY, null);

@@ -9,9 +9,10 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -32,10 +33,14 @@ public class ChromeBackupAgentTest {
         }
     }
 
+    @Before
+    public void setUp() throws Exception {
+        ContextUtils.initApplicationContextForTests(Robolectric.application);
+    }
+
     @Test
     public void testOnRestoreFinished() {
-        SharedPreferences sharedPrefs =
-                PreferenceManager.getDefaultSharedPreferences(Robolectric.application);
+        SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putBoolean("crash_dump_upload", false);
         editor.putString("google.services.username", "user1");
