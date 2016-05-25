@@ -345,7 +345,7 @@ void ListValue::pushValue(std::unique_ptr<protocol::Value> value)
 
 protocol::Value* ListValue::at(size_t index)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(index < m_data.size());
+    DCHECK_LT(index, m_data.size());
     return m_data[index];
 }
 

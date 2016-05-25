@@ -232,9 +232,7 @@ private:
     AsyncTaskToStackTrace m_asyncTaskStacks;
     protocol::HashSet<void*> m_recurringTasks;
     int m_maxAsyncCallStackDepth;
-#if ENABLE(ASSERT)
     protocol::Vector<void*> m_currentTasks;
-#endif
     protocol::Vector<std::unique_ptr<V8StackTraceImpl>> m_currentStacks;
     std::unique_ptr<V8Regex> m_blackboxPattern;
     protocol::HashMap<String16, protocol::Vector<std::pair<int, int>>> m_blackboxedPositions;

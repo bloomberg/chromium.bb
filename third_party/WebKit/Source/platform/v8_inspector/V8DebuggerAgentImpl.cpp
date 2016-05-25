@@ -1014,10 +1014,7 @@ void V8DebuggerAgentImpl::asyncTaskStarted(void* task)
     if (!m_maxAsyncCallStackDepth)
         return;
 
-#if ENABLE(ASSERT)
     m_currentTasks.append(task);
-#endif
-
     V8StackTraceImpl* stack = m_asyncTaskStacks.get(task);
     // Needs to support following order of events:
     // - asyncTaskScheduled
@@ -1037,10 +1034,8 @@ void V8DebuggerAgentImpl::asyncTaskFinished(void* task)
     if (!m_currentStacks.size())
         return;
 
-#if ENABLE(ASSERT)
     DCHECK(m_currentTasks.last() == task);
     m_currentTasks.removeLast();
-#endif
 
     m_currentStacks.removeLast();
     if (!m_recurringTasks.contains(task))
@@ -1052,10 +1047,7 @@ void V8DebuggerAgentImpl::allAsyncTasksCanceled()
     m_asyncTaskStacks.clear();
     m_recurringTasks.clear();
     m_currentStacks.clear();
-
-#if ENABLE(ASSERT)
     m_currentTasks.clear();
-#endif
 }
 
 void V8DebuggerAgentImpl::setBlackboxPatterns(ErrorString* errorString, std::unique_ptr<protocol::Array<String16>> patterns)
