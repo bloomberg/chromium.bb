@@ -25,6 +25,7 @@
 #include "core/animation/css/CSSAnimationData.h"
 #include "core/animation/css/CSSTransitionData.h"
 #include "core/css/CSSPaintValue.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSPropertyEquality.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/layout/LayoutTheme.h"
@@ -1860,6 +1861,22 @@ bool ComputedStyle::shadowListHasCurrentColor(const ShadowList* shadowList)
             return true;
     }
     return false;
+}
+
+int adjustForAbsoluteZoom(int value, float zoomFactor)
+{
+    if (zoomFactor == 1)
+        return value;
+    // Needed because computeLengthInt truncates (rather than rounds) when scaling up.
+    float fvalue = value;
+    if (zoomFactor > 1) {
+        if (value < 0)
+            fvalue -= 0.5f;
+        else
+            fvalue += 0.5f;
+    }
+
+    return roundForImpreciseConversion<int>(fvalue / zoomFactor);
 }
 
 } // namespace blink

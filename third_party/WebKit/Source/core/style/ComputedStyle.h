@@ -27,7 +27,6 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
-#include "core/css/CSSPrimitiveValue.h"
 #include "core/style/BorderValue.h"
 #include "core/style/CounterDirectives.h"
 #include "core/style/DataRef.h"
@@ -1932,25 +1931,14 @@ private:
 
 // FIXME: Reduce/remove the dependency on zoom adjusted int values.
 // The float or LayoutUnit versions of layout values should be used.
-inline int adjustForAbsoluteZoom(int value, float zoomFactor)
-{
-    if (zoomFactor == 1)
-        return value;
-    // Needed because computeLengthInt truncates (rather than rounds) when scaling up.
-    float fvalue = value;
-    if (zoomFactor > 1) {
-        if (value < 0)
-            fvalue -= 0.5f;
-        else
-            fvalue += 0.5f;
-    }
-
-    return roundForImpreciseConversion<int>(fvalue / zoomFactor);
-}
+int adjustForAbsoluteZoom(int value, float zoomFactor);
 
 inline int adjustForAbsoluteZoom(int value, const ComputedStyle* style)
 {
-    return adjustForAbsoluteZoom(value, style->effectiveZoom());
+    float zoomFactor = style->effectiveZoom();
+    if (zoomFactor == 1)
+        return value;
+    return adjustForAbsoluteZoom(value, zoomFactor);
 }
 
 inline float adjustFloatForAbsoluteZoom(float value, const ComputedStyle& style)
