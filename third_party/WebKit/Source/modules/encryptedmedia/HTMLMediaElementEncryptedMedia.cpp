@@ -21,6 +21,8 @@
 #include "platform/Logging.h"
 #include "wtf/Functional.h"
 
+#define EME_LOG_LEVEL 3
+
 namespace blink {
 
 // This class allows MediaKeys to be set asynchronously.
@@ -73,13 +75,13 @@ public:
 
     void completeWithContentDecryptionModule(WebContentDecryptionModule*) override
     {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         (*m_failureCallback)(InvalidStateError, "Unexpected completion.");
     }
 
     void completeWithSession(WebContentDecryptionModuleResult::SessionStatus status) override
     {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         (*m_failureCallback)(InvalidStateError, "Unexpected completion.");
     }
 
@@ -116,7 +118,7 @@ SetMediaKeysHandler::SetMediaKeysHandler(ScriptState* scriptState, HTMLMediaElem
     , m_madeReservation(false)
     , m_timer(this, &SetMediaKeysHandler::timerFired)
 {
-    WTF_LOG(Media, "SetMediaKeysHandler::SetMediaKeysHandler");
+    DVLOG(EME_LOG_LEVEL) << __FUNCTION__;
 
     // 5. Run the following steps in parallel.
     m_timer.startOneShot(0, BLINK_FROM_HERE);
@@ -133,7 +135,7 @@ void SetMediaKeysHandler::timerFired(Timer<SetMediaKeysHandler>*)
 
 void SetMediaKeysHandler::clearExistingMediaKeys()
 {
-    WTF_LOG(Media, "SetMediaKeysHandler::clearExistingMediaKeys");
+    DVLOG(EME_LOG_LEVEL) << __FUNCTION__;
     HTMLMediaElementEncryptedMedia& thisElement = HTMLMediaElementEncryptedMedia::from(*m_element);
 
     // 5.1 If mediaKeys is not null, the CDM instance represented by
@@ -182,7 +184,7 @@ void SetMediaKeysHandler::clearExistingMediaKeys()
 
 void SetMediaKeysHandler::setNewMediaKeys()
 {
-    WTF_LOG(Media, "SetMediaKeysHandler::setNewMediaKeys");
+    DVLOG(EME_LOG_LEVEL) << __FUNCTION__;
 
     // 5.3 If mediaKeys is not null, run the following steps:
     if (m_newMediaKeys) {
@@ -210,7 +212,7 @@ void SetMediaKeysHandler::setNewMediaKeys()
 
 void SetMediaKeysHandler::finish()
 {
-    WTF_LOG(Media, "SetMediaKeysHandler::finish");
+    DVLOG(EME_LOG_LEVEL) << __FUNCTION__;
     HTMLMediaElementEncryptedMedia& thisElement = HTMLMediaElementEncryptedMedia::from(*m_element);
 
     // 5.4 Set the mediaKeys attribute to mediaKeys.
@@ -242,7 +244,7 @@ void SetMediaKeysHandler::fail(ExceptionCode code, const String& errorMessage)
 
 void SetMediaKeysHandler::clearFailed(ExceptionCode code, const String& errorMessage)
 {
-    WTF_LOG(Media, "SetMediaKeysHandler::clearFailed (%d, %s)", code, errorMessage.ascii().data());
+    DVLOG(EME_LOG_LEVEL) << __FUNCTION__ << "(" << code << ", " << errorMessage << ")";
     HTMLMediaElementEncryptedMedia& thisElement = HTMLMediaElementEncryptedMedia::from(*m_element);
 
     // 5.2.4 If the preceding step failed, let this object's attaching media
@@ -254,7 +256,7 @@ void SetMediaKeysHandler::clearFailed(ExceptionCode code, const String& errorMes
 
 void SetMediaKeysHandler::setFailed(ExceptionCode code, const String& errorMessage)
 {
-    WTF_LOG(Media, "SetMediaKeysHandler::setFailed (%d, %s)", code, errorMessage.ascii().data());
+    DVLOG(EME_LOG_LEVEL) << __FUNCTION__ << "(" << code << ", " << errorMessage << ")";
     HTMLMediaElementEncryptedMedia& thisElement = HTMLMediaElementEncryptedMedia::from(*m_element);
 
     // 5.3.2 If the preceding step failed (in setContentDecryptionModule()
@@ -286,7 +288,7 @@ HTMLMediaElementEncryptedMedia::HTMLMediaElementEncryptedMedia(HTMLMediaElement&
 
 HTMLMediaElementEncryptedMedia::~HTMLMediaElementEncryptedMedia()
 {
-    WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::~HTMLMediaElementEncryptedMedia");
+    DVLOG(EME_LOG_LEVEL) << __FUNCTION__;
 }
 
 const char* HTMLMediaElementEncryptedMedia::supplementName()
@@ -313,7 +315,7 @@ MediaKeys* HTMLMediaElementEncryptedMedia::mediaKeys(HTMLMediaElement& element)
 ScriptPromise HTMLMediaElementEncryptedMedia::setMediaKeys(ScriptState* scriptState, HTMLMediaElement& element, MediaKeys* mediaKeys)
 {
     HTMLMediaElementEncryptedMedia& thisElement = HTMLMediaElementEncryptedMedia::from(element);
-    WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::setMediaKeys current(%p), new(%p)", thisElement.m_mediaKeys.get(), mediaKeys);
+    DVLOG(EME_LOG_LEVEL) << __FUNCTION__ << " current(" << thisElement.m_mediaKeys.get() << "), new(" << mediaKeys << ")";
 
     // From http://w3c.github.io/encrypted-media/#setMediaKeys
 
@@ -350,7 +352,7 @@ static Event* createEncryptedEvent(WebEncryptedMediaInitDataType initDataType, c
 
 void HTMLMediaElementEncryptedMedia::encrypted(WebEncryptedMediaInitDataType initDataType, const unsigned char* initData, unsigned initDataLength)
 {
-    WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::encrypted");
+    DVLOG(EME_LOG_LEVEL) << __FUNCTION__;
 
     Event* event;
     if (m_mediaElement->isMediaDataCORSSameOrigin(m_mediaElement->getExecutionContext()->getSecurityOrigin())) {
@@ -367,7 +369,7 @@ void HTMLMediaElementEncryptedMedia::encrypted(WebEncryptedMediaInitDataType ini
 
 void HTMLMediaElementEncryptedMedia::didBlockPlaybackWaitingForKey()
 {
-    WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::didBlockPlaybackWaitingForKey");
+    DVLOG(EME_LOG_LEVEL) << __FUNCTION__;
 
     // From https://w3c.github.io/encrypted-media/#queue-waitingforkey:
     // It should only be called when the HTMLMediaElement object is potentially
@@ -392,7 +394,7 @@ void HTMLMediaElementEncryptedMedia::didBlockPlaybackWaitingForKey()
 
 void HTMLMediaElementEncryptedMedia::didResumePlaybackBlockedForKey()
 {
-    WTF_LOG(Media, "HTMLMediaElementEncryptedMedia::didResumePlaybackBlockedForKey");
+    DVLOG(EME_LOG_LEVEL) << __FUNCTION__;
 
     // Logic is on the Chromium side to attempt to resume playback when a new
     // key is available. However, |m_isWaitingForKey| needs to be cleared so

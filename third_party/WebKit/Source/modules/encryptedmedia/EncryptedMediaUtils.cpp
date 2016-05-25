@@ -41,7 +41,7 @@ String EncryptedMediaUtils::convertFromInitDataType(WebEncryptedMediaInitDataTyp
         return String();
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return String();
 }
 
@@ -67,11 +67,11 @@ String EncryptedMediaUtils::convertFromSessionType(WebEncryptedMediaSessionType 
     case WebEncryptedMediaSessionType::PersistentReleaseMessage:
     case WebEncryptedMediaSessionType::Unknown:
         // Chromium should not use Unknown.
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return String();
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return String();
 }
 

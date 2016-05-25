@@ -33,7 +33,7 @@ ExceptionCode WebCdmExceptionToExceptionCode(WebContentDecryptionModuleException
         return UnknownError;
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return UnknownError;
 }
 
@@ -48,19 +48,19 @@ ContentDecryptionModuleResultPromise::~ContentDecryptionModuleResultPromise()
 
 void ContentDecryptionModuleResultPromise::complete()
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     reject(InvalidStateError, "Unexpected completion.");
 }
 
 void ContentDecryptionModuleResultPromise::completeWithContentDecryptionModule(WebContentDecryptionModule* cdm)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     reject(InvalidStateError, "Unexpected completion.");
 }
 
 void ContentDecryptionModuleResultPromise::completeWithSession(WebContentDecryptionModuleResult::SessionStatus status)
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     reject(InvalidStateError, "Unexpected completion.");
 }
 

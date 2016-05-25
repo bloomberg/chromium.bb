@@ -91,7 +91,7 @@ static String convertMediaKeysRequirement(WebMediaKeySystemConfiguration::Requir
         return "not-allowed";
     }
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return "not-allowed";
 }
 

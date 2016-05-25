@@ -67,7 +67,7 @@ static WebMediaKeySystemConfiguration::Requirement convertMediaKeysRequirement(c
         return WebMediaKeySystemConfiguration::Requirement::NotAllowed;
 
     // Everything else gets the default value.
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return WebMediaKeySystemConfiguration::Requirement::Optional;
 }
 
@@ -147,9 +147,9 @@ MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(ScriptState* sc
             webConfig.hasVideoCapabilities = true;
             webConfig.videoCapabilities = convertCapabilities(config.videoCapabilities());
         }
-        ASSERT(config.hasDistinctiveIdentifier());
+        DCHECK(config.hasDistinctiveIdentifier());
         webConfig.distinctiveIdentifier = convertMediaKeysRequirement(config.distinctiveIdentifier());
-        ASSERT(config.hasPersistentState());
+        DCHECK(config.hasPersistentState());
         webConfig.persistentState = convertMediaKeysRequirement(config.persistentState());
         if (config.hasSessionTypes()) {
             webConfig.hasSessionTypes = true;
@@ -250,7 +250,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
     const String& keySystem,
     const HeapVector<MediaKeySystemConfiguration>& supportedConfigurations)
 {
-    WTF_LOG(Media, "NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess()");
+    DVLOG(3) << __FUNCTION__;
 
     // From https://w3c.github.io/encrypted-media/#requestMediaKeySystemAccess
     // When this method is invoked, the user agent must run the following steps:
