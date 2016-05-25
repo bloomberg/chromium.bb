@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
+#include "chrome/browser/tracing/background_tracing_field_trial.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/metrics/metrics_pref_names.h"
 
@@ -69,4 +70,5 @@ void ChromeBrowserFieldTrials::SetupFieldTrials() {
 void ChromeBrowserFieldTrials::InstantiateDynamicTrials() {
   // Persistent histograms must be enabled as soon as possible.
   InstantiatePersistentHistograms();
+  tracing::SetupBackgroundTracingFieldTrial();
 }

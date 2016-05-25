@@ -2923,11 +2923,7 @@ ChromeContentBrowserClient::GetDevToolsManagerDelegate() {
 }
 
 content::TracingDelegate* ChromeContentBrowserClient::GetTracingDelegate() {
-#if !defined(OS_ANDROID)
   return new ChromeTracingDelegate();
-#else
-  return nullptr;
-#endif
 }
 
 bool ChromeContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(

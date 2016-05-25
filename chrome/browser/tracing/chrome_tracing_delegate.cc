@@ -36,17 +36,23 @@ void ChromeTracingDelegate::RegisterPrefs(PrefRegistrySimple* registry) {
 
 ChromeTracingDelegate::ChromeTracingDelegate() : incognito_launched_(false) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+#if !defined(OS_ANDROID)
   BrowserList::AddObserver(this);
+#endif
 }
 
 ChromeTracingDelegate::~ChromeTracingDelegate() {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+#if !defined(OS_ANDROID)
   BrowserList::RemoveObserver(this);
+#endif
 }
 
 void ChromeTracingDelegate::OnBrowserAdded(Browser* browser) {
+#if !defined(OS_ANDROID)
   if (browser->profile()->IsOffTheRecord())
     incognito_launched_ = true;
+#endif
 }
 
 std::unique_ptr<content::TraceUploader> ChromeTracingDelegate::GetTraceUploader(
@@ -110,6 +116,12 @@ bool ProfileAllowsScenario(const content::BackgroundTracingConfig& config,
 bool ChromeTracingDelegate::IsAllowedToBeginBackgroundScenario(
     const content::BackgroundTracingConfig& config,
     bool requires_anonymized_data) {
+#if defined(OS_ANDROID)
+  // TODO(oysteine): Support preemptive mode safely in Android.
+  if (config.tracing_mode() == content::BackgroundTracingConfig::PREEMPTIVE)
+    return false;
+#endif
+
   if (!ProfileAllowsScenario(config, PROFILE_NOT_REQUIRED))
     return false;
 
@@ -122,8 +134,10 @@ bool ChromeTracingDelegate::IsAllowedToBeginBackgroundScenario(
 bool ChromeTracingDelegate::IsAllowedToEndBackgroundScenario(
     const content::BackgroundTracingConfig& config,
     bool requires_anonymized_data) {
-  if (requires_anonymized_data && incognito_launched_)
+  if (requires_anonymized_data &&
+      (incognito_launched_ || chrome::IsOffTheRecordSessionActive())) {
     return false;
+  }
 
   if (!ProfileAllowsScenario(config, PROFILE_REQUIRED))
     return false;

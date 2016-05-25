@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
-#include "chrome/browser/tracing/background_tracing_field_trial.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/variations/variations_util.h"
 #include "components/variations/variations_associated_data.h"
@@ -52,7 +51,6 @@ void SetupStunProbeTrial() {
 void SetupDesktopFieldTrials(const base::CommandLine& parsed_command_line) {
   prerender::ConfigurePrerender(parsed_command_line);
   SetupLightSpeedTrials();
-  tracing::SetupBackgroundTracingFieldTrial();
   SetupStunProbeTrial();
 }
 
