@@ -318,7 +318,7 @@ void LocalFrame::detach(FrameDetachType type)
     SubframeLoadingDisabler disabler(*document());
     m_loader.dispatchUnloadEvent();
     detachChildren();
-    m_frameScheduler.clear();
+    m_frameScheduler.reset();
 
     // All done if detaching the subframes brought about a detach of this frame also.
     if (!client())

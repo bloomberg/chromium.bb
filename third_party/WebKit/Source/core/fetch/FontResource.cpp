@@ -169,7 +169,7 @@ void FontResource::fontLoadLongLimitCallback(Timer<FontResource>*)
 
 void FontResource::allClientsAndObserversRemoved()
 {
-    m_fontData.clear();
+    m_fontData.reset();
     Resource::allClientsAndObserversRemoved();
 }
 

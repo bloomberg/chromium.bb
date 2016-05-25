@@ -91,7 +91,7 @@ void LayoutReplaced::layout()
     updateLogicalWidth();
     updateLogicalHeight();
 
-    m_overflow.clear();
+    m_overflow.reset();
     addVisualEffectOverflow();
     updateLayerTransformAfterLayout();
     invalidateBackgroundObscurationStatus();

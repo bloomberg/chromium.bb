@@ -146,7 +146,7 @@ void TextResourceDecoder::setEncoding(const WTF::TextEncoding& encoding, Encodin
     else
         m_encoding = encoding;
 
-    m_codec.clear();
+    m_codec.reset();
     m_source = source;
 }
 
@@ -344,7 +344,7 @@ void TextResourceDecoder::checkForMetaCharset(const char* data, size_t length)
         return;
 
     setEncoding(m_charsetParser->encoding(), EncodingFromMetaTag);
-    m_charsetParser.clear();
+    m_charsetParser.reset();
     m_checkedForMetaCharset = true;
     return;
 }
@@ -436,7 +436,7 @@ String TextResourceDecoder::flush()
 
     String result = m_codec->decode(m_buffer.data(), m_buffer.size(), FetchEOF, m_contentType == XMLContent && !m_useLenientXMLDecoding, m_sawError);
     m_buffer.clear();
-    m_codec.clear();
+    m_codec.reset();
     m_checkedForBOM = false; // Skip BOM again when re-decoding.
     return result;
 }

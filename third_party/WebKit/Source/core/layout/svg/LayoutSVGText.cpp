@@ -257,7 +257,7 @@ void LayoutSVGText::layout()
     if (!firstLineBox())
         setFrameRect(LayoutRect());
 
-    m_overflow.clear();
+    m_overflow.reset();
     addVisualEffectOverflow();
 
     if (!updateParentBoundaries)

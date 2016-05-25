@@ -126,7 +126,7 @@ public:
     }
 
     void cancelLoader() override { m_loader->cancel(); }
-    void clearLoader() override { m_loader.clear(); }
+    void clearLoader() override { m_loader.reset(); }
     Checkpoint& checkpoint() override { return m_checkpoint; }
     void callCheckpoint(int n) override { m_checkpoint.Call(n); }
 
@@ -140,7 +140,7 @@ public:
 
     void onTearDown() override
     {
-        m_loader.clear();
+        m_loader.reset();
     }
 
 private:
@@ -194,7 +194,7 @@ public:
     {
         ASSERT(m_workerThread);
         ASSERT(m_workerThread->isCurrentThread());
-        m_loader.clear();
+        m_loader.reset();
     }
 
     Checkpoint& checkpoint() override
@@ -375,7 +375,7 @@ private:
         m_helper->onTearDown();
         Platform::current()->getURLLoaderMockFactory()->unregisterAllURLs();
         memoryCache()->evictResources();
-        m_client.clear();
+        m_client.reset();
     }
 
     void setUpSuccessURL()

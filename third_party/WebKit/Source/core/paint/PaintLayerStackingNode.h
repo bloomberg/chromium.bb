@@ -196,8 +196,8 @@ inline void PaintLayerStackingNode::clearZOrderLists()
     updateStackingParentForZOrderLists(0);
 #endif
 
-    m_posZOrderList.clear();
-    m_negZOrderList.clear();
+    m_posZOrderList.reset();
+    m_negZOrderList.reset();
 }
 
 inline void PaintLayerStackingNode::updateZOrderLists()

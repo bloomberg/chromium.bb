@@ -43,7 +43,7 @@ struct InterpolationValue {
 
     void clear()
     {
-        interpolableValue.clear();
+        interpolableValue.reset();
         nonInterpolableValue.clear();
     }
 

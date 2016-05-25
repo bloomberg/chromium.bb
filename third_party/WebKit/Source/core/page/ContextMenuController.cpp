@@ -67,7 +67,7 @@ DEFINE_TRACE(ContextMenuController)
 
 void ContextMenuController::clearContextMenu()
 {
-    m_contextMenu.clear();
+    m_contextMenu.reset();
     if (m_menuProvider)
         m_menuProvider->contextMenuCleared();
     m_menuProvider = nullptr;

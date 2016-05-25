@@ -408,7 +408,7 @@ public:
     void addOverflowFromChild(LayoutBox* child) { addOverflowFromChild(child, child->locationOffset()); }
     void addOverflowFromChild(LayoutBox* child, const LayoutSize& delta);
     void clearLayoutOverflow();
-    void clearAllOverflows() { m_overflow.clear(); }
+    void clearAllOverflows() { m_overflow.reset(); }
 
     void updateLayerTransformAfterLayout();
 

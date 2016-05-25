@@ -91,9 +91,9 @@ bool InvalidatableInterpolation::isNeutralKeyframeActive() const
 void InvalidatableInterpolation::clearCache() const
 {
     m_isCached = false;
-    m_cachedPairConversion.clear();
+    m_cachedPairConversion.reset();
     m_conversionCheckers.clear();
-    m_cachedValue.clear();
+    m_cachedValue.reset();
 }
 
 bool InvalidatableInterpolation::isCacheValid(const InterpolationEnvironment& environment, const UnderlyingValueOwner& underlyingValueOwner) const

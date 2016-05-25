@@ -412,7 +412,7 @@ void PaintLayer::updateTransform(const ComputedStyle* oldStyle, const ComputedSt
         if (hasTransform)
             ensureRareData().transform = TransformationMatrix::create();
         else
-            m_rareData->transform.clear();
+            m_rareData->transform.reset();
 
         // PaintLayers with transforms act as clip rects roots, so clear the cached clip rects here.
         clipper().clearClipRectsIncludingDescendants();
@@ -989,7 +989,7 @@ void PaintLayer::updateAncestorDependentCompositingInputs(const AncestorDependen
 {
     m_ancestorDependentCompositingInputs = compositingInputs;
     if (rareCompositingInputs.isDefault())
-        m_rareAncestorDependentCompositingInputs.clear();
+        m_rareAncestorDependentCompositingInputs.reset();
     else
         m_rareAncestorDependentCompositingInputs = adoptPtr(new RareAncestorDependentCompositingInputs(rareCompositingInputs));
     m_hasAncestorWithClipPath = hasAncestorWithClipPath;
@@ -2349,7 +2349,7 @@ void PaintLayer::clearCompositedLayerMapping(bool layerBeingDestroyed)
     }
 
     if (m_rareData)
-        m_rareData->compositedLayerMapping.clear();
+        m_rareData->compositedLayerMapping.reset();
 
     if (!layerBeingDestroyed)
         updateOrRemoveFilterEffectBuilder();

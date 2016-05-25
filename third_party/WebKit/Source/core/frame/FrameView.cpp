@@ -224,7 +224,7 @@ void FrameView::reset()
     m_visuallyNonEmptyPixelCount = 0;
     m_isVisuallyNonEmpty = false;
     clearFragmentAnchor();
-    m_viewportConstrainedObjects.clear();
+    m_viewportConstrainedObjects.reset();
     m_layoutSubtreeRootList.clear();
     m_orthogonalWritingModeRootList.clear();
 }
@@ -825,7 +825,7 @@ void FrameView::prepareLayoutAnalyzer()
     bool isTracing = false;
     TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout"), &isTracing);
     if (!isTracing) {
-        m_analyzer.clear();
+        m_analyzer.reset();
         return;
     }
     if (!m_analyzer)

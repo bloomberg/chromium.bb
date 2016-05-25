@@ -251,7 +251,7 @@ void LayoutView::layout()
         if (!m_fragmentationContext)
             m_fragmentationContext = adoptPtr(new ViewFragmentationContext(*this));
     } else if (m_fragmentationContext) {
-        m_fragmentationContext.clear();
+        m_fragmentationContext.reset();
     }
 
     SubtreeLayoutScope layoutScope(*this);
@@ -997,7 +997,7 @@ void LayoutView::willBeDestroyed()
     if (PaintLayer* layer = this->layer())
         layer->setNeedsRepaint();
     LayoutBlockFlow::willBeDestroyed();
-    m_compositor.clear();
+    m_compositor.reset();
 }
 
 void LayoutView::registerMediaForPositionChangeNotification(LayoutMedia& media)

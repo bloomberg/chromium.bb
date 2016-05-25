@@ -696,7 +696,7 @@ public:
             m_clipRectsCache = adoptPtr(new ClipRectsCache);
         return *m_clipRectsCache;
     }
-    void clearClipRectsCache() const { m_clipRectsCache.clear(); }
+    void clearClipRectsCache() const { m_clipRectsCache.reset(); }
 
     void dirty3DTransformedDescendantStatus();
     // Both updates the status, and returns true if descendants of this have 3d.

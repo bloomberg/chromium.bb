@@ -164,8 +164,8 @@ void HTMLDocumentParser::detach()
     m_treeBuilder->detach();
     // FIXME: It seems wrong that we would have a preload scanner here.
     // Yet during fast/dom/HTMLScriptElement/script-load-events.html we do.
-    m_preloadScanner.clear();
-    m_insertionPreloadScanner.clear();
+    m_preloadScanner.reset();
+    m_insertionPreloadScanner.reset();
     if (m_parserScheduler) {
         m_parserScheduler->detach();
         m_parserScheduler.clear();
@@ -174,8 +174,8 @@ void HTMLDocumentParser::detach()
     // HTMLToken::m_data and let the allocator reuse the memory for
     // HTMLToken::m_data of a next HTMLDocumentParser. We need to clear
     // m_tokenizer first because m_tokenizer has a raw pointer to m_token.
-    m_tokenizer.clear();
-    m_token.clear();
+    m_tokenizer.reset();
+    m_token.reset();
 }
 
 void HTMLDocumentParser::stopParsing()
@@ -763,7 +763,7 @@ void HTMLDocumentParser::append(const String& inputSource)
         if (m_input.current().isEmpty() && !isWaitingForScripts()) {
             // We have parsed until the end of the current input and so are now moving ahead of the preload scanner.
             // Clear the scanner so we know to scan starting from the current input point if we block again.
-            m_preloadScanner.clear();
+            m_preloadScanner.reset();
         } else {
             m_preloadScanner->appendToEnd(source);
             if (isWaitingForScripts())
@@ -933,7 +933,7 @@ void HTMLDocumentParser::resumeParsingAfterScriptExecution()
         return;
     }
 
-    m_insertionPreloadScanner.clear();
+    m_insertionPreloadScanner.reset();
     pumpTokenizerIfPossible();
     endIfDelayed();
 }

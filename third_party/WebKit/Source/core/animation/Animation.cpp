@@ -762,7 +762,7 @@ void Animation::setCompositorPending(bool effectChanged)
     // FIXME: KeyframeEffect could notify this directly?
     if (!hasActiveAnimationsOnCompositor()) {
         destroyCompositorPlayer();
-        m_compositorState.clear();
+        m_compositorState.reset();
     }
     if (effectChanged && m_compositorState) {
         m_compositorState->effectChanged = true;
@@ -919,7 +919,7 @@ void Animation::destroyCompositorPlayer()
     if (m_compositorPlayer) {
         detachCompositorTimeline();
         m_compositorPlayer->setAnimationDelegate(nullptr);
-        m_compositorPlayer.clear();
+        m_compositorPlayer.reset();
     }
 }
 

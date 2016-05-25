@@ -40,7 +40,7 @@ CanvasFontCache::CanvasFontCache(Document& document)
 
 CanvasFontCache::~CanvasFontCache()
 {
-    m_mainCachePurgePreventer.clear();
+    m_mainCachePurgePreventer.reset();
     if (m_pruningScheduled) {
         Platform::current()->currentThread()->removeTaskObserver(this);
     }
@@ -124,7 +124,7 @@ void CanvasFontCache::didProcessTask()
         m_fontsResolvedUsingDefaultStyle.remove(m_fontLRUList.first());
         m_fontLRUList.removeFirst();
     }
-    m_mainCachePurgePreventer.clear();
+    m_mainCachePurgePreventer.reset();
     Platform::current()->currentThread()->removeTaskObserver(this);
     m_pruningScheduled = false;
 }

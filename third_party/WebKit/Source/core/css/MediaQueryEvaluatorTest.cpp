@@ -187,7 +187,7 @@ TEST(MediaQueryEvaluatorTest, DynamicNoView)
 {
     OwnPtr<DummyPageHolder> pageHolder = DummyPageHolder::create(IntSize(500, 500));
     LocalFrame* frame = &pageHolder->frame();
-    pageHolder.clear();
+    pageHolder.reset();
     ASSERT_EQ(nullptr, frame->view());
     MediaQueryEvaluator mediaQueryEvaluator(frame);
     MediaQuerySet* querySet = MediaQuerySet::create("foobar");

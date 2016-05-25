@@ -184,7 +184,7 @@ void ApplicationCacheHost::detachFromDocumentLoader()
 {
     // Detach from the owning DocumentLoader and let go of WebApplicationCacheHost.
     setApplicationCache(nullptr);
-    m_host.clear();
+    m_host.reset();
     m_documentLoader = nullptr;
 }
 

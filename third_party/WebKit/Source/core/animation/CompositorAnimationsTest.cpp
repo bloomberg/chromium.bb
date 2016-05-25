@@ -690,7 +690,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimation)
     Vector<OwnPtr<CompositorAnimation>> result;
     getAnimationOnCompositor(m_timing, *effect, result);
     EXPECT_EQ(1U, result.size());
-    result[0].clear();
+    result[0].reset();
 }
 
 TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationDuration)
@@ -735,7 +735,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationDuration)
     Vector<OwnPtr<CompositorAnimation>> result;
     getAnimationOnCompositor(m_timing, *effect, result);
     EXPECT_EQ(1U, result.size());
-    result[0].clear();
+    result[0].reset();
 }
 
 TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimationLinear)
@@ -787,7 +787,7 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
     Vector<OwnPtr<CompositorAnimation>> result;
     getAnimationOnCompositor(m_timing, *effect, result);
     EXPECT_EQ(1U, result.size());
-    result[0].clear();
+    result[0].reset();
 }
 
 TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationStartDelay)
@@ -834,7 +834,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationStartDelay
     Vector<OwnPtr<CompositorAnimation>> result;
     getAnimationOnCompositor(m_timing, *effect, result);
     EXPECT_EQ(1U, result.size());
-    result[0].clear();
+    result[0].reset();
 }
 
 TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimationChained)
@@ -891,7 +891,7 @@ TEST_F(AnimationCompositorAnimationsTest, createMultipleKeyframeOpacityAnimation
     Vector<OwnPtr<CompositorAnimation>> result;
     getAnimationOnCompositor(m_timing, *effect, result);
     EXPECT_EQ(1U, result.size());
-    result[0].clear();
+    result[0].reset();
 }
 
 TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation)
@@ -949,7 +949,7 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimation)
     Vector<OwnPtr<CompositorAnimation>> result;
     getAnimationOnCompositor(m_timing, *effect, result);
     EXPECT_EQ(1U, result.size());
-    result[0].clear();
+    result[0].reset();
 }
 
 TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimationNegativeStartDelay)
@@ -997,7 +997,7 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimationNegative
     Vector<OwnPtr<CompositorAnimation>> result;
     getAnimationOnCompositor(m_timing, *effect, result);
     EXPECT_EQ(1U, result.size());
-    result[0].clear();
+    result[0].reset();
 }
 
 TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationPlaybackRates)
@@ -1043,7 +1043,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationPlaybackRa
     // Set player plaback rate also
     getAnimationOnCompositor(m_timing, *effect, result, -1.5);
     EXPECT_EQ(1U, result.size());
-    result[0].clear();
+    result[0].reset();
 }
 
 TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationFillModeNone)
@@ -1088,7 +1088,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationFillModeNo
     Vector<OwnPtr<CompositorAnimation>> result;
     getAnimationOnCompositor(m_timing, *effect, result);
     EXPECT_EQ(1U, result.size());
-    result[0].clear();
+    result[0].reset();
 }
 
 TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationFillModeAuto)
@@ -1133,7 +1133,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationFillModeAu
     Vector<OwnPtr<CompositorAnimation>> result;
     getAnimationOnCompositor(m_timing, *effect, result);
     EXPECT_EQ(1U, result.size());
-    result[0].clear();
+    result[0].reset();
 }
 
 TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationWithTimingFunction)
@@ -1178,7 +1178,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationWithTiming
     Vector<OwnPtr<CompositorAnimation>> result;
     getAnimationOnCompositor(m_timing, *effect, result);
     EXPECT_EQ(1U, result.size());
-    result[0].clear();
+    result[0].reset();
 }
 
 TEST_F(AnimationCompositorAnimationsTest, CancelIncompatibleCompositorAnimations)

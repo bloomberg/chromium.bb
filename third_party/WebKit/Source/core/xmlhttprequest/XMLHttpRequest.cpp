@@ -992,7 +992,7 @@ void XMLHttpRequest::clearVariablesForLoading()
         m_blobLoader = nullptr;
     }
 
-    m_decoder.clear();
+    m_decoder.reset();
 
     if (m_responseDocumentParser) {
         m_responseDocumentParser->removeClient(this);

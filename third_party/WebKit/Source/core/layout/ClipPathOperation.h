@@ -104,7 +104,7 @@ public:
     const Path& path(const FloatRect& boundingRect)
     {
         ASSERT(m_shape);
-        m_path.clear();
+        m_path.reset();
         m_path = adoptPtr(new Path);
         m_shape->path(*m_path, boundingRect);
         m_path->setWindRule(m_shape->getWindRule());

@@ -75,7 +75,7 @@ void SelectorFilter::popParentStackFrame()
     m_parentStack.removeLast();
     if (m_parentStack.isEmpty()) {
         ASSERT(m_ancestorIdentifierFilter->likelyEmpty());
-        m_ancestorIdentifierFilter.clear();
+        m_ancestorIdentifierFilter.reset();
     }
 }
 

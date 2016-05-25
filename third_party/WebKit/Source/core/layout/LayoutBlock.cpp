@@ -479,7 +479,7 @@ void LayoutBlock::addOverflowFromChildren()
 
 void LayoutBlock::computeOverflow(LayoutUnit oldClientAfterEdge, bool)
 {
-    m_overflow.clear();
+    m_overflow.reset();
 
     // Add overflow from children.
     addOverflowFromChildren();

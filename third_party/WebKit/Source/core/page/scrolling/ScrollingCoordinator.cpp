@@ -689,7 +689,7 @@ void ScrollingCoordinator::willCloseLayerTreeView(WebLayerTreeView& layerTreeVie
 {
     if (m_programmaticScrollAnimatorTimeline) {
         layerTreeView.detachCompositorAnimationTimeline(m_programmaticScrollAnimatorTimeline->animationTimeline());
-        m_programmaticScrollAnimatorTimeline.clear();
+        m_programmaticScrollAnimatorTimeline.reset();
     }
 }
 

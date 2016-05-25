@@ -109,7 +109,7 @@ public:
     static void removeInfo(const LayoutBox& key) { infoMap().remove(&key); }
     static ShapeOutsideInfo* info(const LayoutBox& key) { return infoMap().get(&key); }
 
-    void markShapeAsDirty() { m_shape.clear(); }
+    void markShapeAsDirty() { m_shape.reset(); }
     bool isShapeDirty() { return !m_shape.get(); }
     LayoutSize shapeSize() const { return m_referenceBoxLogicalSize; }
     bool isComputingShape() const { return m_isComputingShape; }

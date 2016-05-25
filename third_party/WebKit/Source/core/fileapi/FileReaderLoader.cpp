@@ -166,10 +166,10 @@ void FileReaderLoader::cleanup()
 
     // If we get any error, we do not need to keep a buffer around.
     if (m_errorCode) {
-        m_rawData.clear();
+        m_rawData.reset();
         m_stringResult = "";
         m_isRawDataConverted = true;
-        m_decoder.clear();
+        m_decoder.reset();
     }
 }
 
@@ -248,7 +248,7 @@ void FileReaderLoader::didReceiveData(const char* data, unsigned dataLength)
 
     unsigned bytesAppended = m_rawData->append(data, dataLength);
     if (!bytesAppended) {
-        m_rawData.clear();
+        m_rawData.reset();
         m_bytesLoaded = 0;
         failed(FileError::NOT_READABLE_ERR);
         return;

@@ -166,7 +166,7 @@ void ExecutionContext::reportException(ErrorEvent* errorEvent, int scriptId, Pas
         PendingException* e = m_pendingExceptions->at(i).get();
         logExceptionToConsole(e->m_errorMessage, e->m_scriptId, e->m_sourceURL, e->m_lineNumber, e->m_columnNumber, e->m_callStack);
     }
-    m_pendingExceptions.clear();
+    m_pendingExceptions.reset();
 }
 
 bool ExecutionContext::dispatchErrorEvent(ErrorEvent* errorEvent, AccessControlStatus corsStatus)

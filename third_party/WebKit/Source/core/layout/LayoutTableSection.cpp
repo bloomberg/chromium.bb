@@ -1141,7 +1141,7 @@ void LayoutTableSection::computeOverflowFromCells(unsigned totalRows, unsigned n
     unsigned totalCellsCount = nEffCols * totalRows;
     unsigned maxAllowedOverflowingCellsCount = totalCellsCount < gMinTableSizeToUseFastPaintPathWithOverflowingCell ? 0 : gMaxAllowedOverflowingCellRatioForFastPaintPath * totalCellsCount;
 
-    m_overflow.clear();
+    m_overflow.reset();
     m_overflowingCells.clear();
     m_forceSlowPaintPathWithOverflowingCell = false;
 #if ENABLE(ASSERT)

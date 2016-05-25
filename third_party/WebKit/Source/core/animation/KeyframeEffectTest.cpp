@@ -368,7 +368,7 @@ TEST_F(KeyframeEffectTest, ElementDestructorClearsAnimationTarget)
     KeyframeEffect* animation = KeyframeEffect::create(element.get(), nullptr, timing);
     EXPECT_EQ(element.get(), animation->target());
     document().timeline().play(animation);
-    pageHolder.clear();
+    pageHolder.reset();
     element.clear();
 }
 

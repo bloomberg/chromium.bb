@@ -165,7 +165,7 @@ void LayoutSVGRoot::layout()
         m_needsBoundariesOrTransformUpdate = false;
     }
 
-    m_overflow.clear();
+    m_overflow.reset();
     addVisualEffectOverflow();
 
     if (!shouldApplyViewportClip()) {

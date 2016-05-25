@@ -154,7 +154,7 @@ void ResourceLoader::didReceiveResponse(WebURLLoader*, const WebURLResponse& res
     if (responseNeedsAccessControlCheck()) {
         if (response.wasFetchedViaServiceWorker()) {
             if (response.wasFallbackRequiredByServiceWorker()) {
-                m_loader.clear();
+                m_loader.reset();
                 m_loader = adoptPtr(Platform::current()->createURLLoader());
                 ASSERT(m_loader);
                 ResourceRequest request = m_resource->lastResourceRequest();
@@ -206,13 +206,13 @@ void ResourceLoader::didFinishLoadingFirstPartInMultipart()
 
 void ResourceLoader::didFinishLoading(WebURLLoader*, double finishTime, int64_t encodedDataLength)
 {
-    m_loader.clear();
+    m_loader.reset();
     m_fetcher->didFinishLoading(m_resource.get(), finishTime, encodedDataLength, ResourceFetcher::DidFinishLoading);
 }
 
 void ResourceLoader::didFail(WebURLLoader*, const WebURLError& error)
 {
-    m_loader.clear();
+    m_loader.reset();
     m_fetcher->didFailLoading(m_resource.get(), error);
 }
 

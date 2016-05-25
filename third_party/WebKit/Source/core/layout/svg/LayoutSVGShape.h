@@ -91,7 +91,7 @@ public:
     const char* name() const override { return "LayoutSVGShape"; }
 
 protected:
-    void clearPath() { m_path.clear(); }
+    void clearPath() { m_path.reset(); }
     void createPath();
 
     virtual void updateShapeFromElement();

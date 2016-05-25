@@ -950,7 +950,7 @@ PassRefPtr<Image> HTMLCanvasElement::copiedImage(SourceDrawingBuffer sourceBuffe
 
 void HTMLCanvasElement::discardImageBuffer()
 {
-    m_imageBuffer.clear();
+    m_imageBuffer.reset();
     m_dirtyRect = FloatRect();
     updateExternallyAllocatedMemory();
 }

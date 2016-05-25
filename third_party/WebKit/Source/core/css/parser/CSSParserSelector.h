@@ -67,7 +67,7 @@ public:
 
     CSSParserSelector* tagHistory() const { return m_tagHistory.get(); }
     void setTagHistory(PassOwnPtr<CSSParserSelector> selector) { m_tagHistory = std::move(selector); }
-    void clearTagHistory() { m_tagHistory.clear(); }
+    void clearTagHistory() { m_tagHistory.reset(); }
     void appendTagHistory(CSSSelector::RelationType, PassOwnPtr<CSSParserSelector>);
     PassOwnPtr<CSSParserSelector> releaseTagHistory();
     void prependTagSelector(const QualifiedName&, bool tagIsImplicit = false);
