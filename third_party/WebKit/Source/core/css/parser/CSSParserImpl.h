@@ -113,7 +113,7 @@ private:
     // FIXME: Can we build StylePropertySets directly?
     // FIXME: Investigate using a smaller inline buffer
     HeapVector<CSSProperty, 256> m_parsedProperties;
-    CSSParserContext m_context;
+    const CSSParserContext& m_context;
 
     Member<StyleSheetContents> m_styleSheet;
 
