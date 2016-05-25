@@ -327,12 +327,17 @@ int GlassBrowserFrameView::FrameTopBorderThickness(bool restored) const {
   // windows an offscreen CYSIZEFRAME-thick region around the edges. The
   // left/right/bottom edges don't worry about this because we cancel them out
   // in BrowserDesktopWindowTreeHostWin::GetClientAreaInsets() so the offscreen
-  // area is non-client as far as Windows is concerned. However because we want
-  // to push away the top part of the glass's gradient in Win7 we set the top
-  // client inset to 0. Thus we must compensate here to avoid having UI elements
-  // drift off the top of the screen.
-  return (frame()->IsFullscreen() && !restored) ?
-      0 : display::win::GetSystemMetricsInDIP(SM_CYSIZEFRAME);
+  // area is non-client as far as Windows is concerned. However we can't do this
+  // with the top inset because otherwise Windows will give us a standard
+  // titlebar. Thus we must compensate here to avoid having UI elements drift
+  // off the top of the screen.
+  if (frame()->IsFullscreen() && !restored)
+    return 0;
+  // Mouse and touch locations are floored but GetSystemMetricsInDIP is rounded,
+  // so we need to floor instead or else the difference will cause the hittest
+  // to fail when it ought to succeed.
+  return std::floor(GetSystemMetrics(SM_CYSIZEFRAME) /
+                    display::win::GetDPIScale());
 }
 
 int GlassBrowserFrameView::TopAreaHeight(bool restored) const {
