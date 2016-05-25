@@ -410,7 +410,7 @@ bool Fullscreen::fullscreenEnabled(Document& document)
     return fullscreenIsAllowedForAllOwners(document) && fullscreenIsSupported(document);
 }
 
-void Fullscreen::didEnterFullScreenForElement(Element* element)
+void Fullscreen::didEnterFullScreenForElement(Element* element, bool isAncestorOfFullscreenElement)
 {
     DCHECK(element);
     if (!document()->isActive())
@@ -432,10 +432,20 @@ void Fullscreen::didEnterFullScreenForElement(Element* element)
         m_savedPlaceholderComputedStyle = ComputedStyle::clone(layoutObject->styleRef());
     }
 
+    // TODO(alexmos): When |isAncestorOfFullscreenElement| is true, some of
+    // this layout work has already been done in another process, so it should
+    // not be necessary to repeat it here.
     if (m_fullScreenElement != document()->documentElement())
         LayoutFullScreen::wrapLayoutObject(layoutObject, layoutObject ? layoutObject->parent() : 0, document());
 
+    if (isAncestorOfFullscreenElement) {
+        DCHECK(m_fullScreenElement->isFrameOwnerElement());
+        DCHECK(toHTMLFrameOwnerElement(m_fullScreenElement)->contentFrame()->isRemoteFrame());
+        m_fullScreenElement->setContainsFullScreenElement(true);
+    }
+
     m_fullScreenElement->setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(true);
+
     document()->styleEngine().ensureFullscreenUAStyle();
     m_fullScreenElement->pseudoStateChanged(CSSSelector::PseudoFullScreen);
 
@@ -450,7 +460,7 @@ void Fullscreen::didEnterFullScreenForElement(Element* element)
     m_eventQueueTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
-void Fullscreen::didExitFullScreenForElement(Element*)
+void Fullscreen::didExitFullScreenForElement(bool isAncestorOfFullscreenElement)
 {
     if (!m_fullScreenElement)
         return;
@@ -459,6 +469,9 @@ void Fullscreen::didExitFullScreenForElement(Element*)
         return;
 
     m_fullScreenElement->willStopBeingFullscreenElement();
+
+    if (isAncestorOfFullscreenElement)
+        m_fullScreenElement->setContainsFullScreenElement(false);
 
     m_fullScreenElement->setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
 

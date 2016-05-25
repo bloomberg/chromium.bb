@@ -147,6 +147,7 @@
 #include "public/web/WebPlugin.h"
 #include "public/web/WebPluginAction.h"
 #include "public/web/WebRange.h"
+#include "public/web/WebScopedUserGesture.h"
 #include "public/web/WebSelection.h"
 #include "public/web/WebTextInputInfo.h"
 #include "public/web/WebViewClient.h"
@@ -1946,6 +1947,35 @@ void WebViewImpl::resize(const WebSize& newSize)
         newSize, topControls().height(), topControls().shrinkViewport());
 }
 
+void WebViewImpl::willEnterFullScreen(WebRemoteFrame* fullscreenFrame)
+{
+    FrameOwner* owner = toWebRemoteFrameImpl(fullscreenFrame)->frame()->owner();
+    HTMLFrameOwnerElement* ownerElement = toHTMLFrameOwnerElement(owner);
+
+    // Let FullscreenController know that |ownerElement| is an ancestor of the
+    // actual fullscreen element, so that it can be treated a little
+    // differently:
+    // - it will need :-webkit-full-screen-ancestor style in addition to
+    //   :-webkit-full-screen.
+    // - it does not need to resend the ToggleFullscreen IPC to the browser
+    //   process.
+    m_fullscreenController->setFullscreenIsForCrossProcessAncestor();
+
+    // Call requestFullscreen() on |ownerElement| to make it the provisional
+    // fullscreen element in FullscreenController, and to prepare
+    // fullscreenchange events that will need to fire on it and its (local)
+    // ancestors. The events will be triggered if/when fullscreen is entered.
+    // Note that requestFullscreen() requires a user gesture.
+    //
+    // TODO(alexmos): currently, this assumes prefixed requests, but in the
+    // future, this should plumb in information about which request type
+    // (prefixed or unprefixed) to use for firing fullscreen events.
+    {
+        WebScopedUserGesture userGesture;
+        Fullscreen::from(ownerElement->document()).requestFullscreen(*ownerElement, Fullscreen::PrefixedRequest);
+    }
+}
+
 void WebViewImpl::didEnterFullScreen()
 {
     m_fullscreenController->didEnterFullScreen();
@@ -1954,6 +1984,11 @@ void WebViewImpl::didEnterFullScreen()
 void WebViewImpl::didExitFullScreen()
 {
     m_fullscreenController->didExitFullScreen();
+}
+
+void WebViewImpl::didUpdateFullScreenSize()
+{
+    m_fullscreenController->updateSize();
 }
 
 void WebViewImpl::beginFrame(double lastFrameTimeMonotonic)

@@ -1822,7 +1822,40 @@ void RenderFrameHostImpl::OnAccessibilitySnapshotResponse(
   }
 }
 
+// TODO(alexmos): When the allowFullscreen flag is known in the browser
+// process, use it to double-check that fullscreen can be entered here.
 void RenderFrameHostImpl::OnToggleFullscreen(bool enter_fullscreen) {
+  // Entering fullscreen from a cross-process subframe also affects all
+  // renderers for ancestor frames, which will need to apply fullscreen CSS to
+  // appropriate ancestor <iframe> elements, fire fullscreenchange events, etc.
+  // Thus, walk through the ancestor chain of this frame and for each (parent,
+  // child) pair, send a message about the pending fullscreen change to the
+  // child's proxy in parent's SiteInstance. The renderer process will use this
+  // to find the <iframe> element in the parent frame that will need fullscreen
+  // styles. This is done at most once per SiteInstance: for example, with a
+  // A-B-A-B hierarchy, if the bottom frame goes fullscreen, this only needs to
+  // notify its parent, and Blink-side logic will take care of applying
+  // necessary changes to the other two ancestors.
+  if (enter_fullscreen &&
+      SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
+    std::set<SiteInstance*> notified_instances;
+    notified_instances.insert(GetSiteInstance());
+    for (FrameTreeNode* node = frame_tree_node_; node->parent();
+         node = node->parent()) {
+      SiteInstance* parent_site_instance =
+          node->parent()->current_frame_host()->GetSiteInstance();
+      if (ContainsKey(notified_instances, parent_site_instance))
+        continue;
+
+      RenderFrameProxyHost* child_proxy =
+          node->render_manager()->GetRenderFrameProxyHost(parent_site_instance);
+      child_proxy->Send(
+          new FrameMsg_WillEnterFullscreen(child_proxy->GetRoutingID()));
+      notified_instances.insert(parent_site_instance);
+    }
+  }
+
+  // TODO(alexmos): See if this can use the last committed origin instead.
   if (enter_fullscreen)
     delegate_->EnterFullscreenMode(last_committed_url().GetOrigin());
   else
@@ -1830,6 +1863,12 @@ void RenderFrameHostImpl::OnToggleFullscreen(bool enter_fullscreen) {
 
   // The previous call might change the fullscreen state. We need to make sure
   // the renderer is aware of that, which is done via the resize message.
+  // Typically, this will be sent as part of the call on the |delegate_| above
+  // when resizing the native windows, but sometimes fullscreen can be entered
+  // without causing a resize, so we need to ensure that the resize message is
+  // sent in that case. We always send this to the main frame's widget, and if
+  // there are any OOPIF widgets, this will also trigger them to resize via
+  // frameRectsChanged.
   render_view_host_->GetWidget()->WasResized();
 }
 
