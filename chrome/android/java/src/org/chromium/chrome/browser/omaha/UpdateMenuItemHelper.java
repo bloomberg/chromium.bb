@@ -396,26 +396,25 @@ public class UpdateMenuItemHelper {
 
         File path = Environment.getDataDirectory();
         StatFs statFs = new StatFs(path.getAbsolutePath());
-        int size;
+        long size;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
             size = getSize(statFs);
         } else {
             size = getSizeUpdatedApi(statFs);
         }
         RecordHistogram.recordLinearCountHistogram(
-                "GoogleUpdate.InfoBar.InternalStorageSizeAvailable", size, 1, 200, 100);
+                "GoogleUpdate.InfoBar.InternalStorageSizeAvailable", (int) size, 1, 200, 100);
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-    private static int getSizeUpdatedApi(StatFs statFs) {
-        return (int) statFs.getAvailableBytes() / (1024 * 1024);
+    private static long getSizeUpdatedApi(StatFs statFs) {
+        return statFs.getAvailableBytes() / (1024 * 1024);
     }
 
     @SuppressWarnings("deprecation")
-    private static int getSize(StatFs statFs) {
+    private static long getSize(StatFs statFs) {
         int blockSize = statFs.getBlockSize();
         int availableBlocks = statFs.getAvailableBlocks();
-        int size = (blockSize * availableBlocks) / (1024 * 1024);
-        return size;
+        return (blockSize * availableBlocks) / (1024 * 1024);
     }
 }
