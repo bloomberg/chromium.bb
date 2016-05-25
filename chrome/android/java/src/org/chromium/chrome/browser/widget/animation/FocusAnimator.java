@@ -145,6 +145,9 @@ public class FocusAnimator {
             @Override
             public void onAnimationEnd(Animator animator) {
                 finishAnimation(callback);
+
+                // Request a layout to put everything in the right final place.
+                mLayout.requestLayout();
             }
         });
         animator.start();
