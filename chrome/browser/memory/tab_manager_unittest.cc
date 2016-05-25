@@ -5,11 +5,13 @@
 #include "chrome/browser/memory/tab_manager.h"
 
 #include <algorithm>
+#include <map>
 #include <vector>
 
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "base/test/mock_entropy_provider.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -18,9 +20,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/test_tab_strip_model_delegate.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -432,6 +436,61 @@ TEST_F(TabManagerTest, DiscardedTabKeepsLastActiveTime) {
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());
 }
+
+// Test to see if a tab can only be discarded once. On Windows and Mac, this
+// defaults to true unless overridden through a variation parameter. On other
+// platforms, it's always false
+#if defined(OS_WIN) || defined(OS_MACOSX)
+TEST_F(TabManagerTest, CanOnlyDiscardOnce) {
+  TabManager tab_manager;
+  const std::string kTrialName = features::kAutomaticTabDiscarding.name;
+
+  // Not setting the variation parameter.
+  {
+    bool discard_once_value = tab_manager.CanOnlyDiscardOnce();
+    EXPECT_TRUE(discard_once_value);
+  }
+
+  // Setting the variation parameter to true.
+  {
+    std::unique_ptr<base::FieldTrialList> field_trial_list_;
+    field_trial_list_.reset(
+        new base::FieldTrialList(new base::MockEntropyProvider()));
+    variations::testing::ClearAllVariationParams();
+
+    std::map<std::string, std::string> params;
+    params["AllowMultipleDiscards"] = "true";
+    ASSERT_TRUE(variations::AssociateVariationParams(kTrialName, "A", params));
+    base::FieldTrialList::CreateFieldTrial(kTrialName, "A");
+
+    bool discard_once_value = tab_manager.CanOnlyDiscardOnce();
+    EXPECT_FALSE(discard_once_value);
+  }
+
+  // Setting the variation parameter to something else.
+  {
+    std::unique_ptr<base::FieldTrialList> field_trial_list_;
+    field_trial_list_.reset(
+        new base::FieldTrialList(new base::MockEntropyProvider()));
+    variations::testing::ClearAllVariationParams();
+
+    std::map<std::string, std::string> params;
+    params["AllowMultipleDiscards"] = "somethingElse";
+    ASSERT_TRUE(variations::AssociateVariationParams(kTrialName, "B", params));
+    base::FieldTrialList::CreateFieldTrial(kTrialName, "B");
+
+    bool discard_once_value = tab_manager.CanOnlyDiscardOnce();
+    EXPECT_TRUE(discard_once_value);
+  }
+}
+#else
+TEST_F(TabManagerTest, CanOnlyDiscardOnce) {
+  TabManager tab_manager;
+
+  bool discard_once_value = tab_manager.CanOnlyDiscardOnce();
+  EXPECT_FALSE(discard_once_value);
+}
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 namespace {
 
