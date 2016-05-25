@@ -54,5 +54,10 @@
         '<(DEPTH)/third_party/libva',
       ],
     }],
+    ['OS=="android"', {
+      'dependencies': [
+        '<(DEPTH)/media/media.gyp:player_android',
+      ],
+    }],
   ],
 }

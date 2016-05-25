@@ -47,6 +47,7 @@
 #endif
 
 #if defined(OS_ANDROID)
+#include "media/base/android/media_client_android.h"
 #include "media/gpu/avda_surface_tracker.h"
 #endif
 
@@ -223,7 +224,16 @@ void GpuChildThread::Shutdown() {
 void GpuChildThread::Init(const base::Time& process_start_time) {
   process_start_time_ = process_start_time;
 
+#if defined(OS_ANDROID)
+  // When running in in-process mode, this has been set in the browser at
+  // ChromeBrowserMainPartsAndroid::PreMainMessageLoopRun().
+  if (!in_browser_process_)
+    media::SetMediaClientAndroid(GetContentClient()->GetMediaClientAndroid());
+#endif
+
+  // Only set once per process instance.
   process_control_.reset(new GpuProcessControlImpl());
+
   // Use of base::Unretained(this) is safe here because |service_registry()|
   // will be destroyed before GpuChildThread is destructed.
   service_registry()->AddService(base::Bind(

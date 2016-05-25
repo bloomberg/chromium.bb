@@ -65,11 +65,12 @@ source_set("gpu_sources") {
     "//ui/gl/init",
   ]
 
+  if (is_android) {
+    deps += [ "//media/base/android" ]
+  }
+
   if (mojo_media_host == "gpu") {
     deps += [ "//media/mojo/services" ]
-    if (is_android) {
-      deps += [ "//media/base/android" ]
-    }
   }
 
   if (is_win) {
