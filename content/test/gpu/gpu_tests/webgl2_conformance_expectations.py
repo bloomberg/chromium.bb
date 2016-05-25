@@ -326,6 +326,16 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texstorage3d_format_depth_stencil.html',
         ['win', 'intel'], bug=614418)
+    self.Fail('deqp/functional/gles3/textureformat/sized_color_3d_pot_00.html',
+        ['win', 'intel'], bug=614418)
+    self.Fail('deqp/functional/gles3/textureformat/sized_color_3d_pot_02.html',
+        ['win', 'intel'], bug=614418)
+    self.Fail('deqp/functional/gles3/textureformat/sized_color_3d_pot_03.html',
+        ['win', 'intel'], bug=614418)
+    self.Fail('deqp/functional/gles3/textureformat/sized_depth_stencil.html',
+        ['win', 'intel'], bug=614418)
+    self.Fail('deqp/functional/gles3/textureformat/compressed_cube.html',
+        ['win', 'intel'], bug=614418)
 
     # Mac only.
     self.Fail('deqp/functional/gles3/texturefiltering/cube_formats_*',
