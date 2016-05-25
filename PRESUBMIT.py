@@ -2106,7 +2106,9 @@ def GetTryServerMasterForBot(bot):
   }
   master = master_map.get(bot)
   if not master:
-    if 'linux' in bot or 'android' in bot or 'presubmit' in bot:
+    if 'android' in bot:
+      master = 'tryserver.chromium.android'
+    elif 'linux' in bot or 'presubmit' in bot:
       master = 'tryserver.chromium.linux'
     elif 'win' in bot:
       master = 'tryserver.chromium.win'
