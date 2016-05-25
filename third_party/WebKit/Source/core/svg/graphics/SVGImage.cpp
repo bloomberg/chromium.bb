@@ -406,14 +406,6 @@ void SVGImage::startAnimation(CatchUpAnimation)
     rootElement->unpauseAnimations();
 }
 
-void SVGImage::stopAnimation()
-{
-    SVGSVGElement* rootElement = svgRootElement(m_page.get());
-    if (!rootElement)
-        return;
-    rootElement->pauseAnimations();
-}
-
 void SVGImage::resetAnimation()
 {
     SVGSVGElement* rootElement = svgRootElement(m_page.get());

@@ -44,8 +44,9 @@ namespace blink {
 template <typename T> class Timer;
 
 class PLATFORM_EXPORT BitmapImage final : public Image {
-    friend class GeneratedImage;
+    friend class BitmapImageTest;
     friend class CrossfadeGeneratedImage;
+    friend class GeneratedImage;
     friend class GradientGeneratedImage;
     friend class GraphicsContext;
 public:
@@ -69,11 +70,6 @@ public:
     bool isAllDataReceived() const { return m_allDataReceived; }
     bool hasColorProfile() const;
 
-    // It may look unusual that there's no start animation call as public API.
-    // This because we start and stop animating lazily. Animation starts when
-    // the image is rendered, and automatically pauses once all observers no
-    // longer want to render the image.
-    void stopAnimation() override;
     void resetAnimation() override;
     bool maybeAnimated() override;
 
@@ -94,11 +90,6 @@ public:
     static PassRefPtr<BitmapImage> createWithOrientationForTesting(const SkBitmap&, ImageOrientation);
     // Advance the image animation by one frame.
     void advanceAnimationForTesting() override { internalAdvanceAnimation(false); }
-
-private:
-    friend class BitmapImageTest;
-
-    void updateSize() const;
 
 private:
     enum RepetitionCountStatus {
@@ -122,27 +113,17 @@ private:
     bool frameHasAlphaAtIndex(size_t);
     ImageOrientation frameOrientationAtIndex(size_t);
 
-    // Decodes and caches a frame. Never accessed except internally.
-    void cacheFrame(size_t index);
-
-    // Called before accessing m_frames[index]. Returns false on index out of bounds.
-    bool ensureFrameIsCached(size_t index);
+    PassRefPtr<SkImage> decodeAndCacheFrame(size_t index);
+    void updateSize() const;
 
     // Returns the total number of bytes allocated for all framebuffers, i.e.
     // the sum of m_source.frameBytesAtIndex(...) for all frames.
     size_t totalFrameBytes();
 
-    // Called to invalidate cached data. When |destroyAll| is true, we wipe out
-    // the entire frame buffer cache and tell the image source to destroy
-    // everything; this is used when e.g. we want to free some room in the image
-    // cache. If |destroyAll| is false, we delete frames except the current
-    // frame; this is used while animating large images to keep memory footprint
-    // low; the decoder should preserve the current frame and may preserve some
-    // other frames to avoid redecoding the whole image on every frame.
-    void destroyDecodedData(bool destroyAll) override;
-
-    // If the image is large enough, calls destroyDecodedData().
-    void destroyDecodedDataIfNecessary();
+    // Called to wipe out the entire frame buffer cache and tell the image
+    // source to destroy everything; this is used when e.g. we want to free
+    // some room in the image cache.
+    void destroyDecodedData() override;
 
     // Notifies observers that the memory footprint has changed.
     void notifyMemoryChanged();
@@ -151,9 +132,13 @@ private:
     bool isSizeAvailable();
 
     // Animation.
+    // We start and stop animating lazily.  Animation starts when the image is
+    // rendered, and automatically stops once no observer wants to render the
+    // image.
     int repetitionCount(bool imageKnownToBeComplete);  // |imageKnownToBeComplete| should be set if the caller knows the entire image has been decoded.
     bool shouldAnimate();
     void startAnimation(CatchUpAnimation = CatchUp) override;
+    void stopAnimation();
     void advanceAnimation(Timer<BitmapImage>*);
 
     // Function that does the real work of advancing the animation.  When
@@ -169,6 +154,9 @@ private:
 
     size_t m_currentFrame; // The index of the current frame of animation.
     Vector<FrameData, 1> m_frames; // An array of the cached frames of the animation. We have to ref frames to pin them in the cache.
+
+    RefPtr<SkImage> m_cachedFrame; // A cached copy of the most recently-accessed frame.
+    size_t m_cachedFrameIndex; // Index of the frame that is cached.
 
     OwnPtr<Timer<BitmapImage>> m_frameTimer;
     int m_repetitionCount; // How many total animation loops we should do.  This will be cAnimationNone if this image type is incapable of animation.

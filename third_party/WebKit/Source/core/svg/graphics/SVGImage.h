@@ -59,7 +59,6 @@ public:
     bool currentFrameHasSingleSecurityOrigin() const override;
 
     void startAnimation(CatchUpAnimation = CatchUp) override;
-    void stopAnimation() override;
     void resetAnimation() override;
 
     // Advances an animated image. This will trigger an animation update for CSS
@@ -99,7 +98,7 @@ private:
 
     // FIXME: SVGImages are underreporting decoded sizes and will be unable
     // to prune because these functions are not implemented yet.
-    void destroyDecodedData(bool) override { }
+    void destroyDecodedData() override { }
 
     // FIXME: Implement this to be less conservative.
     bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override { return false; }

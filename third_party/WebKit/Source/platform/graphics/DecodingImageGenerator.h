@@ -48,9 +48,14 @@ class PLATFORM_EXPORT DecodingImageGenerator final : public SkImageGenerator {
     USING_FAST_MALLOC(DecodingImageGenerator);
     WTF_MAKE_NONCOPYABLE(DecodingImageGenerator);
 public:
+    // Make SkImageGenerator::kNeedNewImageUniqueID accessible.
+    enum {
+        kNeedNewImageUniqueID = SkImageGenerator::kNeedNewImageUniqueID
+    };
+
     static SkImageGenerator* create(SkData*);
 
-    DecodingImageGenerator(PassRefPtr<ImageFrameGenerator>, const SkImageInfo&, PassRefPtr<SegmentReader>, bool allDataReceived, size_t index);
+    DecodingImageGenerator(PassRefPtr<ImageFrameGenerator>, const SkImageInfo&, PassRefPtr<SegmentReader>, bool allDataReceived, size_t index, uint32_t uniqueID = kNeedNewImageUniqueID);
     ~DecodingImageGenerator() override;
 
     void setCanYUVDecode(bool yes) { m_canYUVDecode = yes; }

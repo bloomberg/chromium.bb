@@ -68,7 +68,7 @@ private:
     {
     }
 
-    void destroyDecodedData(bool) override { }
+    void destroyDecodedData() override { }
 
     SVGImage* m_image;
     const FloatSize m_containerSize;

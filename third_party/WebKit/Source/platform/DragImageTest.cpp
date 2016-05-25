@@ -78,7 +78,7 @@ public:
         return false;
     }
 
-    void destroyDecodedData(bool) override
+    void destroyDecodedData() override
     {
         // Image pure virtual stub.
     }

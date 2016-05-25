@@ -41,7 +41,7 @@ namespace blink {
 
 class ImageFrameGenerator;
 class SharedBuffer;
-struct FrameData;
+struct DeferredFrameData;
 
 class PLATFORM_EXPORT DeferredImageDecoder final {
     WTF_MAKE_NONCOPYABLE(DeferredImageDecoder);
@@ -85,7 +85,7 @@ private:
     void activateLazyDecoding();
     void prepareLazyDecodedFrames();
 
-    PassRefPtr<SkImage> createFrameImageAtIndex(size_t index, bool knownToBeOpaque) const;
+    PassRefPtr<SkImage> createFrameImageAtIndex(size_t index, bool knownToBeOpaque);
 
     // Copy of the data that is passed in, used by deferred decoding.
     // Allows creating readonly snapshots that may be read in another thread.
@@ -99,8 +99,8 @@ private:
     bool m_hasColorProfile;
     bool m_canYUVDecode;
 
-    // Carries only frame state and other information. Does not carry bitmap.
-    Vector<FrameData> m_frameData;
+    // Caches frame state information.
+    Vector<DeferredFrameData> m_frameData;
     RefPtr<ImageFrameGenerator> m_frameGenerator;
 
     static bool s_enabled;

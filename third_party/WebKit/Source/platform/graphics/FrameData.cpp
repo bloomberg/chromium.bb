@@ -44,19 +44,13 @@ FrameData::~FrameData()
     clear(true);
 }
 
-bool FrameData::clear(bool clearMetadata)
+void FrameData::clear(bool clearMetadata)
 {
     if (clearMetadata)
         m_haveMetadata = false;
 
     m_orientation = DefaultImageOrientation;
     m_frameBytes = 0;
-
-    if (m_frame) {
-        m_frame.clear();
-        return true;
-    }
-    return false;
 }
 
 } // namespace blink

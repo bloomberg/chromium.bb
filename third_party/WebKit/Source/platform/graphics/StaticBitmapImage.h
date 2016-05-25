@@ -18,7 +18,7 @@ public:
 
     static PassRefPtr<StaticBitmapImage> create(PassRefPtr<SkImage>);
     static PassRefPtr<StaticBitmapImage> create(WebExternalTextureMailbox&);
-    virtual void destroyDecodedData(bool destroyAll) { }
+    virtual void destroyDecodedData() { }
     virtual bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata);
     virtual IntSize size() const;
     void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) override;

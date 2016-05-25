@@ -202,7 +202,7 @@ void ImageResource::destroyDecodedDataIfPossible()
         m_image = nullptr;
         setDecodedSize(0);
     } else if (m_image && !errorOccurred()) {
-        m_image->destroyDecodedData(true);
+        m_image->destroyDecodedData();
     }
 }
 

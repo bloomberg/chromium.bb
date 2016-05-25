@@ -106,7 +106,7 @@ public:
 
     virtual String filenameExtension() const { return String(); } // null string if unknown
 
-    virtual void destroyDecodedData(bool destroyAll) = 0;
+    virtual void destroyDecodedData() = 0;
 
     SharedBuffer* data() { return m_encodedImageData.get(); }
 
@@ -114,7 +114,6 @@ public:
     // It will automatically pause once all observers no longer want to render the image anywhere.
     enum CatchUpAnimation { DoNotCatchUp, CatchUp };
     virtual void startAnimation(CatchUpAnimation = CatchUp) { }
-    virtual void stopAnimation() {}
     virtual void resetAnimation() {}
 
     // True if this image can potentially animate.

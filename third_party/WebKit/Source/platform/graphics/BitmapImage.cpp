@@ -57,6 +57,7 @@ PassRefPtr<BitmapImage> BitmapImage::createWithOrientationForTesting(const SkBit
 BitmapImage::BitmapImage(ImageObserver* observer)
     : Image(observer)
     , m_currentFrame(0)
+    , m_cachedFrameIndex(0)
     , m_repetitionCount(cAnimationNone)
     , m_repetitionCountStatus(Unknown)
     , m_repetitionsComplete(0)
@@ -75,6 +76,8 @@ BitmapImage::BitmapImage(const SkBitmap& bitmap, ImageObserver* observer)
     : Image(observer)
     , m_size(bitmap.width(), bitmap.height())
     , m_currentFrame(0)
+    , m_cachedFrame(adoptRef(SkImage::NewFromBitmap(bitmap)))
+    , m_cachedFrameIndex(0)
     , m_repetitionCount(cAnimationNone)
     , m_repetitionCountStatus(Unknown)
     , m_repetitionsComplete(0)
@@ -92,7 +95,6 @@ BitmapImage::BitmapImage(const SkBitmap& bitmap, ImageObserver* observer)
 
     m_frames.grow(1);
     m_frames[0].m_hasAlpha = !bitmap.isOpaque();
-    m_frames[0].m_frame = adoptRef(SkImage::NewFromBitmap(bitmap));
     m_frames[0].m_haveMetadata = true;
 }
 
@@ -106,31 +108,13 @@ bool BitmapImage::currentFrameHasSingleSecurityOrigin() const
     return true;
 }
 
-void BitmapImage::destroyDecodedData(bool destroyAll)
+void BitmapImage::destroyDecodedData()
 {
-    for (size_t i = 0; i < m_frames.size(); ++i) {
-        // The underlying frame isn't actually changing (we're just trying to
-        // save the memory for the framebuffer data), so we don't need to clear
-        // the metadata.
-        m_frames[i].clear(false);
-    }
-
-    m_source.clearCacheExceptFrame(destroyAll ? kNotFound : m_currentFrame);
-    notifyMemoryChanged();
-}
-
-void BitmapImage::destroyDecodedDataIfNecessary()
-{
-    // Animated images >5MB are considered large enough that we'll only hang on
-    // to one frame at a time.
-    static const size_t cLargeAnimationCutoff = 5242880;
-    size_t allFrameBytes = 0;
+    m_cachedFrame.clear();
     for (size_t i = 0; i < m_frames.size(); ++i)
-        allFrameBytes += m_frames[i].m_frameBytes;
-
-    if (allFrameBytes > cLargeAnimationCutoff) {
-        destroyDecodedData(false);
-    }
+        m_frames[i].clear(true);
+    m_source.clearCacheExceptFrame(kNotFound);
+    notifyMemoryChanged();
 }
 
 void BitmapImage::notifyMemoryChanged()
@@ -148,7 +132,7 @@ size_t BitmapImage::totalFrameBytes()
     return totalBytes;
 }
 
-void BitmapImage::cacheFrame(size_t index)
+PassRefPtr<SkImage> BitmapImage::decodeAndCacheFrame(size_t index)
 {
     size_t numFrames = frameCount();
     if (m_frames.size() < numFrames)
@@ -156,7 +140,9 @@ void BitmapImage::cacheFrame(size_t index)
 
     // We are caching frame snapshots.  This is OK even for partially decoded frames,
     // as they are cleared by dataChanged() when new data arrives.
-    m_frames[index].m_frame = m_source.createFrameAtIndex(index);
+    RefPtr<SkImage> image = m_source.createFrameAtIndex(index);
+    m_cachedFrame = image;
+    m_cachedFrameIndex = index;
 
     m_frames[index].m_orientation = m_source.orientationAtIndex(index);
     m_frames[index].m_haveMetadata = true;
@@ -167,6 +153,7 @@ void BitmapImage::cacheFrame(size_t index)
     m_frames[index].m_frameBytes = m_source.frameBytesAtIndex(index);
 
     notifyMemoryChanged();
+    return image.release();
 }
 
 void BitmapImage::updateSize() const
@@ -221,8 +208,11 @@ bool BitmapImage::dataChanged(bool allDataReceived)
         // NOTE: Don't call frameIsCompleteAtIndex() here, that will try to
         // decode any uncached (i.e. never-decoded or
         // cleared-on-a-previous-pass) frames!
-        if (m_frames[i].m_haveMetadata && !m_frames[i].m_isComplete)
+        if (m_frames[i].m_haveMetadata && !m_frames[i].m_isComplete) {
             m_frames[i].clear(true);
+            if (i == m_cachedFrameIndex)
+                m_cachedFrame.clear();
+        }
     }
 
     // Feed all the data we've seen so far to the image decoder.
@@ -283,7 +273,7 @@ void BitmapImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& 
     canvas->drawImageRect(image.get(), adjustedSrcRect, adjustedDstRect, &paint,
         WebCoreClampingModeToSkiaRectConstraint(clampMode));
 
-    if (currentFrameIsLazyDecoded())
+    if (image->isLazyGenerated())
         PlatformInstrumentation::didDrawLazyPixelRef(image->uniqueID());
 
     if (ImageObserver* observer = getImageObserver())
@@ -325,23 +315,15 @@ bool BitmapImage::isSizeAvailable()
     return m_sizeAvailable;
 }
 
-bool BitmapImage::ensureFrameIsCached(size_t index)
-{
-    if (index >= frameCount())
-        return false;
-
-    if (index >= m_frames.size() || !m_frames[index].m_frame)
-        cacheFrame(index);
-
-    return true;
-}
-
 PassRefPtr<SkImage> BitmapImage::frameAtIndex(size_t index)
 {
-    if (!ensureFrameIsCached(index))
+    if (index >= frameCount())
         return nullptr;
 
-    return m_frames[index].m_frame;
+    if (index == m_cachedFrameIndex && m_cachedFrame)
+        return m_cachedFrame;
+
+    return decodeAndCacheFrame(index);
 }
 
 bool BitmapImage::frameIsCompleteAtIndex(size_t index)
@@ -557,9 +539,7 @@ void BitmapImage::resetAnimation()
     m_repetitionsComplete = 0;
     m_desiredFrameStartTime = 0;
     m_animationFinished = false;
-
-    // For extremely large animations, when the animation is reset, we just throw everything away.
-    destroyDecodedDataIfNecessary();
+    m_cachedFrame.clear();
 }
 
 bool BitmapImage::maybeAnimated()
@@ -617,12 +597,12 @@ bool BitmapImage::internalAdvanceAnimation(bool skippingFrames)
         } else
             m_currentFrame = 0;
     }
-    destroyDecodedDataIfNecessary();
 
     // We need to draw this frame if we advanced to it while not skipping, or if
     // while trying to skip frames we hit the last frame and thus had to stop.
     if (skippingFrames != advancedAnimation)
         getImageObserver()->animationAdvanced(this);
+
     return advancedAnimation;
 }
 

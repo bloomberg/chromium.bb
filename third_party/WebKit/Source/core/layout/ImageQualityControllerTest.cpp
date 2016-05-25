@@ -52,7 +52,7 @@ public:
     bool maybeAnimated() override { return true; }
     bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override { return false; }
     IntSize size() const override { return IntSize(); }
-    void destroyDecodedData(bool) override { }
+    void destroyDecodedData() override { }
     void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) override { }
     PassRefPtr<SkImage> imageForCurrentFrame() override { return nullptr; }
 };
@@ -71,7 +71,7 @@ public:
     bool maybeAnimated() override { return true; }
     bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override { return false; }
     IntSize size() const override { return IntSize(); }
-    void destroyDecodedData(bool) override { }
+    void destroyDecodedData() override { }
     void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) override { }
 
     bool isBitmapImage() const override { return true; }
@@ -92,7 +92,7 @@ public:
     bool maybeAnimated() override { return true; }
     bool currentFrameKnownToBeOpaque(MetadataMode = UseCurrentMetadata) override { return false; }
     IntSize size() const override { return IntSize(1, 1); }
-    void destroyDecodedData(bool) override { }
+    void destroyDecodedData() override { }
     void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) override { }
 
     bool isBitmapImage() const override { return true; }

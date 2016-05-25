@@ -35,8 +35,8 @@
 
 namespace blink {
 
-DecodingImageGenerator::DecodingImageGenerator(PassRefPtr<ImageFrameGenerator> frameGenerator, const SkImageInfo& info, PassRefPtr<SegmentReader> data, bool allDataReceived, size_t index)
-    : SkImageGenerator(info)
+DecodingImageGenerator::DecodingImageGenerator(PassRefPtr<ImageFrameGenerator> frameGenerator, const SkImageInfo& info, PassRefPtr<SegmentReader> data, bool allDataReceived, size_t index, uint32_t uniqueID)
+    : SkImageGenerator(info, uniqueID)
     , m_frameGenerator(frameGenerator)
     , m_data(data)
     , m_allDataReceived(allDataReceived)

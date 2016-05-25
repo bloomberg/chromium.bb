@@ -47,9 +47,8 @@ public:
 
     // Clear the cached image data on the frame, and (optionally) the metadata.
     // Returns whether there was cached image data to clear.
-    bool clear(bool clearMetadata);
+    void clear(bool clearMetadata);
 
-    RefPtr<SkImage> m_frame;
     ImageOrientation m_orientation;
     float m_duration;
     bool m_haveMetadata : 1;
