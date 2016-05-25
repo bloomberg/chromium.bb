@@ -70,7 +70,7 @@ void WmShelfAura::RemoveObserver(WmShelfObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void WmShelfAura::WillDeleteShelf() {
+void WmShelfAura::WillDeleteShelfLayoutManager() {
   shelf_layout_manager_->RemoveObserver(this);
   shelf_layout_manager_ = nullptr;
 }

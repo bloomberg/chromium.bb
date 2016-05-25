@@ -265,7 +265,7 @@ class ShelfWindowTargeter : public ::wm::EasyResizeWindowTargeter,
   }
 
   // ShelfLayoutManagerObserver:
-  void WillDeleteShelf() override {
+  void WillDeleteShelfLayoutManager() override {
     shelf_->RemoveObserver(this);
     shelf_ = NULL;
   }
@@ -603,6 +603,8 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container,
 }
 
 ShelfWidget::~ShelfWidget() {
+  // Must call Shutdown() before destruction.
+  DCHECK(!status_area_widget_);
   Shell::GetInstance()->focus_cycler()->RemoveWidget(this);
   SetFocusCycler(nullptr);
   RemoveObserver(this);
@@ -751,12 +753,19 @@ FocusCycler* ShelfWidget::GetFocusCycler() {
   return delegate_view_->focus_cycler();
 }
 
-void ShelfWidget::ShutdownStatusAreaWidget() {
+void ShelfWidget::Shutdown() {
+  // Shutting down the status area widget may cause some widgets (e.g. bubbles)
+  // to close, so uninstall the ShelfLayoutManager event filters first. Don't
+  // reset the pointer until later because other widgets (e.g. app list) may
+  // access it later in shutdown.
+  if (shelf_layout_manager_)
+    shelf_layout_manager_->PrepareForShutdown();
+
   if (status_area_widget_) {
     Shell::GetInstance()->focus_cycler()->RemoveWidget(status_area_widget_);
     status_area_widget_->Shutdown();
+    status_area_widget_ = nullptr;
   }
-  status_area_widget_ = NULL;
 }
 
 void ShelfWidget::ForceUndimming(bool force) {
@@ -789,7 +798,7 @@ void ShelfWidget::DisableDimmingAnimationsForTest() {
   return delegate_view_->disable_dimming_animations_for_test();
 }
 
-void ShelfWidget::WillDeleteShelf() {
+void ShelfWidget::WillDeleteShelfLayoutManager() {
   shelf_layout_manager_->RemoveObserver(this);
   shelf_layout_manager_ = NULL;
 }

@@ -248,7 +248,8 @@ ShelfLayoutManager::~ShelfLayoutManager() {
   if (update_shelf_observer_)
     update_shelf_observer_->Detach();
 
-  FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_, WillDeleteShelf());
+  FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
+                    WillDeleteShelfLayoutManager());
   Shell::GetInstance()->RemoveShellObserver(this);
   Shell::GetInstance()->lock_state_controller()->RemoveObserver(this);
   Shell::GetInstance()->

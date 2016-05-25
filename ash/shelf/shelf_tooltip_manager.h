@@ -72,7 +72,7 @@ class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
                       views::Widget* target) override;
 
   // ShelfLayoutManagerObserver overrides:
-  void WillDeleteShelf() override;
+  void WillDeleteShelfLayoutManager() override;
   void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
   void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
 

@@ -101,7 +101,7 @@ ShelfTooltipManager::ShelfTooltipManager(ShelfView* shelf_view)
       weak_factory_(this) {}
 
 ShelfTooltipManager::~ShelfTooltipManager() {
-  WillDeleteShelf();
+  WillDeleteShelfLayoutManager();
 
   Shell::GetInstance()->RemovePointerWatcher(this);
 
@@ -226,7 +226,7 @@ void ShelfTooltipManager::OnWindowDestroying(aura::Window* window) {
   }
 }
 
-void ShelfTooltipManager::WillDeleteShelf() {
+void ShelfTooltipManager::WillDeleteShelfLayoutManager() {
   if (shelf_layout_manager_)
     shelf_layout_manager_->RemoveObserver(this);
   shelf_layout_manager_ = nullptr;

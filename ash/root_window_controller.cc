@@ -519,13 +519,8 @@ void RootWindowController::CloseChildWindows() {
   aura::Window* root_window = GetRootWindow();
   aura::client::SetDragDropClient(root_window, NULL);
 
-  // TODO(harrym): Remove when Status Area Widget is a child view.
-  if (shelf_) {
-    shelf_->ShutdownStatusAreaWidget();
-
-    if (shelf_->shelf_layout_manager())
-      shelf_->shelf_layout_manager()->PrepareForShutdown();
-  }
+  if (shelf_)
+    shelf_->Shutdown();
 
   // Close background widget first as it depends on tooltip.
   wallpaper_controller_.reset();

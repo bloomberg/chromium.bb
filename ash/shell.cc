@@ -486,12 +486,12 @@ void Shell::ShowShelf() {
     (*iter)->ShowShelf();
 }
 
-void Shell::HideShelf() {
+void Shell::ShutdownShelf() {
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();
        iter != controllers.end(); ++iter) {
     if ((*iter)->shelf())
-      (*iter)->shelf()->ShutdownStatusAreaWidget();
+      (*iter)->shelf()->Shutdown();
   }
 }
 
@@ -754,7 +754,7 @@ Shell::~Shell() {
 
   // Destroy SystemTrayDelegate before destroying the status area(s). Make sure
   // to deinitialize the shelf first, as it is initialized after the delegate.
-  HideShelf();
+  ShutdownShelf();
   system_tray_delegate_->Shutdown();
   system_tray_delegate_.reset();
 

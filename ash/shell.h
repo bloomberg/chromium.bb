@@ -643,8 +643,8 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Initializes the root window so that it can host browser windows.
   void InitRootWindow(aura::Window* root_window);
 
-  // Hides the shelf view if any are visible.
-  void HideShelf();
+  // Prepares the shelf to be deleted.
+  void ShutdownShelf();
 
   // ash::SystemModalContainerEventFilterDelegate overrides:
   bool CanWindowReceiveEvents(aura::Window* window) override;

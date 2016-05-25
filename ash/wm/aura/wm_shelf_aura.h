@@ -42,7 +42,7 @@ class ASH_EXPORT WmShelfAura : public WmShelf,
   void RemoveObserver(WmShelfObserver* observer) override;
 
   // ShelfLayoutManagerObserver:
-  void WillDeleteShelf() override;
+  void WillDeleteShelfLayoutManager() override;
   void OnBackgroundUpdated(wm::ShelfBackgroundType background_type,
                            BackgroundAnimatorChangeType change_type) override;
   void WillChangeVisibilityState(ShelfVisibilityState new_state) override;

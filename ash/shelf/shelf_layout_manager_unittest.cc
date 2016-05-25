@@ -2275,8 +2275,7 @@ TEST_F(ShelfLayoutManagerTest, ShutdownHandlesWindowActivation) {
   window2->Show();
   wm::ActivateWindow(window1);
 
-  shelf->ShutdownStatusAreaWidget();
-  shelf_manager->PrepareForShutdown();
+  shelf->Shutdown();
 
   // Deleting a focused maximized window will switch focus to |window2|. This
   // would normally cause the ShelfLayoutManager to update its state. However

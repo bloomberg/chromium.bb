@@ -75,8 +75,8 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   aura::Window* window_container() { return window_container_; }
 
-  // TODO(harrym): Remove when Status Area Widget is a child view.
-  void ShutdownStatusAreaWidget();
+  // Clean up prior to deletion.
+  void Shutdown();
 
   // Force the shelf to be presented in an undimmed state.
   void ForceUndimming(bool force);
@@ -96,11 +96,12 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   void DisableDimmingAnimationsForTest();
 
   // ShelfLayoutManagerObserver overrides:
-  void WillDeleteShelf() override;
+  void WillDeleteShelfLayoutManager() override;
 
  private:
   class DelegateView;
 
+  // Owned by the shelf container's aura::Window.
   ShelfLayoutManager* shelf_layout_manager_;
   std::unique_ptr<Shelf> shelf_;
   StatusAreaWidget* status_area_widget_;
