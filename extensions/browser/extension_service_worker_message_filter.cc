@@ -14,7 +14,6 @@ ExtensionServiceWorkerMessageFilter::ExtensionServiceWorkerMessageFilter(
     content::BrowserContext* context)
     : content::BrowserMessageFilter(ExtensionWorkerMsgStart),
       render_process_id_(render_process_id),
-      browser_context_(context),
       dispatcher_(new ExtensionFunctionDispatcher(context)) {}
 
 ExtensionServiceWorkerMessageFilter::~ExtensionServiceWorkerMessageFilter() {
